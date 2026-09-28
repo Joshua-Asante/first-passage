@@ -1,0 +1,1594 @@
+{
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "code_identity": {
+    "worker_runtime": {
+      "dependency_lock_sha256": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+      "platform": "win32",
+      "python_version": "3.13.2",
+      "signing_configuration_sha256": "f9214dba2b34f6d4de287e0cef9b3f3e478d153c1b4a237ea509263e7f319acd"
+    }
+  },
+  "decision_bearing": false,
+  "dispatched_head": null,
+  "executed_identity": {
+    "code_identity": {
+      "worker_runtime": {
+        "dependency_lock_sha256": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+        "platform": "win32",
+        "python_version": "3.13.2",
+        "signing_configuration_sha256": "f9214dba2b34f6d4de287e0cef9b3f3e478d153c1b4a237ea509263e7f319acd"
+      }
+    },
+    "harness_sha256": "4aaab823c8c18a60d9396cedb1f5ece2f28b6d9e920a4a95e07dfbe0ea1ed4f5",
+    "measured_commit": "7675c088179aab7c1dbd8c80d758e1f8dac0c6f1",
+    "source_sha256": {
+      "core/dd_geometry.py": "b471e27f24c95af33fe9899d770ca2bd35cc3b10aef6a46af2467a5c14525134",
+      "core/dd_protection.py": "fcc5532ea327fd62271fb8ee6daa303891198c9080dafad38118fc356d4edd8d",
+      "core/firm_rules.py": "c68bbc3262c7470e4b3dbb69a2751b49598b623841f3d7f5e01747023fbf8942",
+      "core/historical_challenge.py": "39f1cabc2e035a338d7c402870a1610574248cf233b8d2a005da99cfbf7ac1e0",
+      "core/lib/atomic_io.py": "874b92d3bc39b28309b4ef127d1355f7bb2b06fbc99ab2ea55f3d0f9663fb774",
+      "core/lib/file_lock.py": "9fd3afe199d10794ece04f2d146930b82fd31020a1a37d4a2985eac053d2e352",
+      "core/lib/mvd.py": "17f6279764379e99c8d73e0834234b1b42c16dd1d37a8e237bda7a2a1d3044b9",
+      "core/lib/validation.py": "02b04aa024a5b8be238ed2764722504e7abd82bc81825bf271a372baaa4f508d",
+      "core/lifecycle.py": "1f1ad1ab85e98533cdd6e1b134d6b678188ccda45375781136ceca348f505ceb",
+      "core/mc/__init__.py": "6885ba20fabe5472930637bcfdb2dd4b48f8a3287886fa1f5f3ab3e03f39e6b9",
+      "core/mc/ingest.py": "94a0819d180d6ed0732efcff965f2eac906a1aa7d5462d76bb03ea07bdfa4655",
+      "core/mc/modes.py": "651848933c3d3bcfd5f37ff6a298367bb8644579207a302b4481ab6878b06cc7",
+      "core/mc/preflight.py": "b20b169ea6df221778492c69cbcaa277f75663fb534a7f08cbc6c71ee5cf5d63",
+      "core/mc/simulation.py": "e6539c2f4efd41b173ec30faa6025175bdacc982ad157cbaa8acf109a3cbda48",
+      "core/tv_schema.py": "0335836b841931aff3b5e08acba965c578eda2f60e707bf8e10dc793c0c614b8",
+      "deploy/qualification/bootstrap.py": "d2790c29ff094882cc35c6b55319a4132f98e233393a5b459ebdb13e2b82a204",
+      "ops/c1_rail/__init__.py": "6bec736a516af7ea223e23dab31740cb44353144accd0b79efb209c3a7a7e1ed",
+      "ops/c1_rail/book_policy.py": "ffcd3aab3e74235e60c711f266f884f96874072c3d84d0b3e1d25d67abd8567a",
+      "ops/c1_rail/book_schedule.py": "e9e98d9989dec9cf1d535a7b97c2c6425f0df74ac2e3bb72802a00137c7b06fd",
+      "ops/c1_rail/ed25519_verify.py": "60c4e4d7c06d4572b43fbaf155dc08801549f73db2713cb6eab07f4f188ffe15",
+      "ops/c1_rail/policy_fingerprint.py": "45214014035aa2f8ebe484dfe71b288cfa4440efcfc795ecbba3becae293d5eb",
+      "ops/c1_rail/qualification/__init__.py": "bd470381dfb33671ba46a70df62f35382fbea7bf1f656b1a58f82638ee823764",
+      "ops/c1_rail/qualification/blocks.py": "53d3e3f9c3fb6b9acaee40e0eb5a4b893a73092b5ccf7d317dd8c8a760ede7f3",
+      "ops/c1_rail/qualification/checkpoint_plan.py": "6b04a51b7ed84edb0668a322788b4d6a5fc0b27afb97e964c5545a6d0535a433",
+      "ops/c1_rail/qualification/clock.py": "25556abf6b6dc1a1770560409bc440f208d7117cbccbe01e617f922bad084872",
+      "ops/c1_rail/qualification/contract.py": "48d6e5e9cd43e11fb7c3843642c899474303733f7e1b51cf1877c81e3e310522",
+      "ops/c1_rail/qualification/execution/__init__.py": "1e75bf04e211bd1164489627117566f1bdb1722aca3a8519bdf61df5f52ec630",
+      "ops/c1_rail/qualification/execution/admission.py": "9359edaad8207652b7636667354d146f82418d2dd8c5c064a712204a4414ae49",
+      "ops/c1_rail/qualification/execution/budget.py": "409247b5b3941eadd27a272302c2d31511d2fe169a63068a35e76a7781aba645",
+      "ops/c1_rail/qualification/execution/campaign_budget.py": "fc062da9ce541a56ba7fbf77f7a35f7102f8b0595cd786149ed547795af0328a",
+      "ops/c1_rail/qualification/execution/campaign_probe.py": "fc47debaf6f7ce83a3e185cd9f2d16ab982c06d40c16c44128881dd02757e35d",
+      "ops/c1_rail/qualification/execution/campaign_protocol.py": "9f320558cb2de2ba38bb612a7b26ece5afb26c48884d349e71c2646a24b8737c",
+      "ops/c1_rail/qualification/execution/compute.py": "f7d6c9b596535712928d33b521373846981e7b28532b4fc4a6ea365028ef6a74",
+      "ops/c1_rail/qualification/execution/evidence.py": "dd32d643cf74c85079c8aa16641486f89abe80d99e102576097aee341f8ab4c1",
+      "ops/c1_rail/qualification/execution/files.py": "81fe49853ecdb1f193c3dd24bcf89691597dffb19d14514559ecdaa28913507e",
+      "ops/c1_rail/qualification/execution/keys.py": "6bcbf04a78d0b224a7a337f2e86a441dab6f8cf2be20241e833d725a9097751f",
+      "ops/c1_rail/qualification/execution/plan.py": "ba1db3d547be109de218cdfc359b3f9cbad6b586bf6a3608dc0b6b928ece3ef7",
+      "ops/c1_rail/qualification/execution/profile.py": "6e038fd3382cc030e5502cb61336cdda2eaebf250f10f86d3170a3442c574a83",
+      "ops/c1_rail/qualification/execution/protocol.py": "c36c882b8aeca46ce07213d80c00a1baa77b4829dfd1537f0bdd111c4e9b764b",
+      "ops/c1_rail/qualification/execution/release_schema.py": "787f09fc3816a875a38f78f69d4bfcc9353d6d09dd5856c53899739ce2d782fb",
+      "ops/c1_rail/qualification/execution/runtime.py": "b9230e4cbc0096097c674a9b37c103688bac559ec112bfaaaf0df9eb879d4dd2",
+      "ops/c1_rail/qualification/execution/worker.py": "9e3d2b2cf0e8fda23b5c5a50b9dfa401e8708c7df0657e256d14fbb1cbffd249",
+      "ops/c1_rail/qualification/legality.py": "d57947503a0fcf60c183067eadd67e722ea75d673dcd964b9c29dd80dad78eda",
+      "ops/c1_rail/qualification/model.py": "4683e2b80b3e26f4fbee9a5bb797ca56a70a7040c8b96f2a1e437a08c0551125",
+      "ops/c1_rail/qualification/panel.py": "66b3795938876da7a7db1c6fca2e0e86ab9d7b4b9f72b14a27d8cd07c457ca87",
+      "ops/c1_rail/qualification/paths.py": "11eeb20064145bd93a505545cc72d9b0cae5e33d747c4589a2a32f0709dbe97d",
+      "ops/c1_rail/qualification/policy.py": "b89d6ad68405c29b0400383801a0f7abb7192e6502c2bf1a5644b8195472030f",
+      "ops/c1_rail/qualification/policy_sources.py": "2d3ba35d8afc086a13453b389607873fb8411b1ea9de8d0e98097b4d67afc206",
+      "ops/c1_rail/qualification/preflight.py": "b6798e2637c228e3d1c5c910a05df72d5662247aaf0c2442db534785ce00c22f",
+      "ops/c1_rail/qualification/production_source.py": "90e3bc09dc1e8818bb61b3091458005283a02bb1f8f889744d08dc6e73519487",
+      "ops/c1_rail/qualification/provider.py": "8be790e12dee0c82f5624b18a8eb232e66e07e21a367053c30777b7517167d55",
+      "ops/c1_rail/qualification/regime.py": "5fc321613fd705c0c0990b811e122655ba29624fb86949185c480176a7ef0b30",
+      "ops/c1_rail/qualification/replay.py": "c5e4c895cc18e1c35337e989720df6a14ea8c0ff2554eca6d3f606664b7fc84d",
+      "ops/c1_rail/qualification/runner.py": "9a6d8e8f0f7ad6c0601ab89e15720b12baa0747d75174c52e9ba3fd503d27a6e",
+      "ops/c1_rail/qualification/seed_identity.py": "7dd82d57632358ebae79c49f346dc63a938e0159fcafd3d00187db352b4bd68d",
+      "ops/c1_rail/qualification/sessions.py": "867240d7ae32aacc0367b8bd869b69058eefcf3cd19ed9c85f7f573cfa5bde42",
+      "ops/c1_rail/qualification/source_admission.py": "9e44e834d65a38d6f4360090f3e8cd29bdc371903e951f667534136297d18a3a",
+      "ops/c1_rail/qualification/trust_domain.py": "efa486872a968086d3d8e9fa54e21ed019544922982acb1b4e8b18768940a7a7",
+      "ops/c1_signal_daemon/__init__.py": "35ae4cb5838e47d2f8240dc014094de106a5b1522ec8ca23e0349ec48a27c0da",
+      "ops/c1_signal_daemon/book_adapters.py": "de4b6a9d5c0d1429454f9ee09a1266afc31198e0b464df7c5ddab59833e190a1",
+      "ops/c1_signal_daemon/book_protocol.py": "4d33780b9033b5b5e34cc16e663edce8a7932535f99bc3d63ab22fea28337ad9",
+      "ops/c1_signal_daemon/feed.py": "5a7b5251c111ab9518a64eee2e517465cd38457832af8bda771cf3218138cc8c",
+      "ops/c1_signal_daemon/pine_ta.py": "0c21464de8c5007ad03a3b83cf510a2557882e4267c5036794414c02269c1d15",
+      "ops/c1_signal_daemon/tv_broker_emulator.py": "3f6067dac87a5b7816709a979f1a2bd65df2268c9d3634d89f0443faeebdae8f",
+      "requirements-ops.lock": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+      "tests/ops/qualification/composition_fixture.py": "727166d55b7a3f26e437ae577017eb36067d0dbe77f7ac8fb5157d7c55a9cf23",
+      "tests/ops/qualification/runtime_fixture.py": "cca04e61d2f259026f76b026c023c74e06cd25dc9360f4826524a7518186e5db",
+      "tests/ops/qualification/test_contract.py": "dfad10e135617416757da61c269f6ce99654c956c80081933f0c0b1c8d32e3b4",
+      "tests/ops/qualification/test_trust_domain.py": "3aeeec317a41ae95fc6f3d0e372e19191dadb725f6fcab213429c086385cf65d"
+    },
+    "tree_clean_tracked": true
+  },
+  "forcing": {
+    "adapter_callable_identity": null,
+    "label": "TEST_ONLY_MEASUREMENT_FORCED_EXPANSION",
+    "prescribed_within_pp": 0.01,
+    "seam": "harness_request",
+    "within_pp": 1.0
+  },
+  "harness_sha256": "4aaab823c8c18a60d9396cedb1f5ece2f28b6d9e920a4a95e07dfbe0ea1ed4f5",
+  "measured_commit": "7675c088179aab7c1dbd8c80d758e1f8dac0c6f1",
+  "mode": "measure",
+  "probe": null,
+  "recorded_utc": "2026-09-28T01:06:05Z",
+  "repeats": [
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": true,
+      "cold_prep": {
+        "detail": null,
+        "ok": true
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.09375,
+        "part_a": 9.125,
+        "process_total": 20.484375,
+        "serialize": 0.0,
+        "setup_excluded": 8.078125,
+        "start": 1.40625,
+        "verify": 0.546875,
+        "workload": 12.171875
+      },
+      "cpu_input_s": 12.578125,
+      "dry_run": false,
+      "elapsed_seconds": 9.29432220000308,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 120451072,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98615296
+      },
+      "panels": 4,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.045695800043177,
+      "probe_seconds": 1.3281562000047415,
+      "repeat": 1,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": true,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 1,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 20.65625,
+      "unit_cpu_workload_s": 12.578125,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.0993870999955107,
+          "part_a": 9.294358500003,
+          "serialize": 0.000498099994729273,
+          "verify": 0.5848999000008916
+        },
+        "outer": 23.26730230000976,
+        "setup_excluded": 9.937940400006482,
+        "workload": 13.329361900003278
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.265625,
+        "part_a": 9.328125,
+        "process_total": 20.09375,
+        "serialize": 0.0,
+        "setup_excluded": 8.046875,
+        "start": 0.671875,
+        "verify": 0.59375,
+        "workload": 11.859375
+      },
+      "cpu_input_s": 12.21875,
+      "dry_run": false,
+      "elapsed_seconds": 9.489535800006706,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 119848960,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98308096
+      },
+      "panels": 4,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.291278199962107,
+      "probe_seconds": 1.3764097999955993,
+      "repeat": 2,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 2,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 20.265625,
+      "unit_cpu_workload_s": 12.21875,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.2965691999997944,
+          "part_a": 9.489565900003072,
+          "serialize": 0.0003487000067252666,
+          "verify": 0.5962461000017356
+        },
+        "outer": 21.86582220000855,
+        "setup_excluded": 9.290906199996243,
+        "workload": 12.574916000012308
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.15625,
+        "part_a": 9.25,
+        "process_total": 19.984375,
+        "serialize": 0.0,
+        "setup_excluded": 7.84375,
+        "start": 0.71875,
+        "verify": 0.703125,
+        "workload": 11.828125
+      },
+      "cpu_input_s": 12.375,
+      "dry_run": false,
+      "elapsed_seconds": 9.593726400009473,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 120201216,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98902016
+      },
+      "panels": 4,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.975746000010986,
+      "probe_seconds": 1.4963388000032865,
+      "repeat": 3,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 3,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 20.21875,
+      "unit_cpu_workload_s": 12.375,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.1623070999921765,
+          "part_a": 9.593759499999578,
+          "serialize": 0.00045479999971576035,
+          "verify": 0.7025233000022126
+        },
+        "outer": 21.899295299997902,
+        "setup_excluded": 9.070582400017884,
+        "workload": 12.828712899980019
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.09375,
+        "part_a": 9.015625,
+        "process_total": 19.640625,
+        "serialize": 0.0,
+        "setup_excluded": 7.84375,
+        "start": 0.890625,
+        "verify": 0.578125,
+        "workload": 11.578125
+      },
+      "cpu_input_s": 11.984375,
+      "dry_run": false,
+      "elapsed_seconds": 9.260256800000207,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 118685696,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 97116160
+      },
+      "panels": 4,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.180240400048206,
+      "probe_seconds": 1.3476148000045214,
+      "repeat": 4,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 4,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 19.828125,
+      "unit_cpu_workload_s": 11.984375,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.1230828000116162,
+          "part_a": 9.260284899995895,
+          "serialize": 0.000407300001825206,
+          "verify": 0.6052803999918979
+        },
+        "outer": 21.195641900005285,
+        "setup_excluded": 8.838864399978775,
+        "workload": 12.35677750002651
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.125,
+        "part_a": 9.0625,
+        "process_total": 19.265625,
+        "serialize": 0.0,
+        "setup_excluded": 7.59375,
+        "start": 0.6875,
+        "verify": 0.59375,
+        "workload": 11.46875
+      },
+      "cpu_input_s": 11.8125,
+      "dry_run": false,
+      "elapsed_seconds": 9.378775200006203,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 119910400,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98447360
+      },
+      "panels": 4,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.270203099949867,
+      "probe_seconds": 1.3602358999924036,
+      "repeat": 5,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 5,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 19.40625,
+      "unit_cpu_workload_s": 11.8125,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.115918800001964,
+          "part_a": 9.3788069000002,
+          "serialize": 0.00032900000223889947,
+          "verify": 0.59864430000016
+        },
+        "outer": 20.94255659999908,
+        "setup_excluded": 8.687691199986148,
+        "workload": 12.254865400012932
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": {
+        "proof": 5,
+        "replay": 14,
+        "verify_for": 15
+      },
+      "cpu": {
+        "adapter": null,
+        "admission": 1.09375,
+        "part_a": 9.015625,
+        "process_total": 19.59375,
+        "serialize": 0.0,
+        "setup_excluded": 8.046875,
+        "start": 0.671875,
+        "verify": 0.578125,
+        "workload": 11.359375
+      },
+      "cpu_input_s": 11.6875,
+      "dry_run": false,
+      "elapsed_seconds": 9.312256299992441,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": true,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 119451648,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98082816
+      },
+      "panels": 4,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.857045700016897,
+      "probe_seconds": 1.4839544999995269,
+      "repeat": 0,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": true,
+        "repeat": 0,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 19.734375,
+      "unit_cpu_workload_s": 11.6875,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.1189224000117974,
+          "part_a": 9.312283499995829,
+          "serialize": 0.0003440000000409782,
+          "verify": 0.5930414000031305
+        },
+        "outer": 21.363268499990227,
+        "setup_excluded": 9.189243899993016,
+        "workload": 12.17402459999721
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": true,
+      "cold_prep": {
+        "detail": null,
+        "ok": true
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 2.015625,
+        "part_a": 5.171875,
+        "process_total": 16.796875,
+        "serialize": 0.0,
+        "setup_excluded": 7.90625,
+        "start": 0.875,
+        "verify": 0.609375,
+        "workload": 8.671875
+      },
+      "cpu_input_s": 9.078125,
+      "dry_run": false,
+      "elapsed_seconds": 5.480533800000558,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 120324096,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98512896
+      },
+      "panels": 2,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.572078199940734,
+      "probe_seconds": 1.4076709999935701,
+      "repeat": 1,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": true,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 1,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 16.984375,
+      "unit_cpu_workload_s": 9.078125,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 2.3179349999991246,
+          "part_a": 5.480567899998277,
+          "serialize": 0.0003167999966535717,
+          "verify": 0.6396686999942176
+        },
+        "outer": 19.005229000002146,
+        "setup_excluded": 9.162173900011112,
+        "workload": 9.843055099991034
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.078125,
+        "part_a": 5.140625,
+        "process_total": 15.3125,
+        "serialize": 0.0,
+        "setup_excluded": 7.640625,
+        "start": 0.671875,
+        "verify": 0.59375,
+        "workload": 7.484375
+      },
+      "cpu_input_s": 7.8125,
+      "dry_run": false,
+      "elapsed_seconds": 5.515596999990521,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 119369728,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 97742848
+      },
+      "panels": 2,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.718667299937806,
+      "probe_seconds": 1.4262712999916403,
+      "repeat": 2,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 2,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 15.453125,
+      "unit_cpu_workload_s": 7.8125,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.1390441999974428,
+          "part_a": 5.515625800006092,
+          "serialize": 0.0002415000053588301,
+          "verify": 0.6201962999912212
+        },
+        "outer": 17.546962899999926,
+        "setup_excluded": 9.097638600011123,
+        "workload": 8.449324299988803
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.09375,
+        "part_a": 5.65625,
+        "process_total": 16.78125,
+        "serialize": 0.0,
+        "setup_excluded": 8.46875,
+        "start": 0.765625,
+        "verify": 0.578125,
+        "workload": 8.09375
+      },
+      "cpu_input_s": 8.46875,
+      "dry_run": false,
+      "elapsed_seconds": 5.7588259000040125,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 120115200,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98541568
+      },
+      "panels": 2,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 10.156775800001924,
+      "probe_seconds": 1.4603474000032293,
+      "repeat": 3,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 3,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 16.9375,
+      "unit_cpu_workload_s": 8.46875,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.1012667000031797,
+          "part_a": 5.758854799991241,
+          "serialize": 0.00030020000122021884,
+          "verify": 0.5746392000000924
+        },
+        "outer": 18.269518399989465,
+        "setup_excluded": 9.589507099997718,
+        "workload": 8.680011299991747
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.1875,
+        "part_a": 5.53125,
+        "process_total": 16.609375,
+        "serialize": 0.0,
+        "setup_excluded": 8.3125,
+        "start": 0.71875,
+        "verify": 0.65625,
+        "workload": 8.09375
+      },
+      "cpu_input_s": 8.4375,
+      "dry_run": false,
+      "elapsed_seconds": 5.572463100004825,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 119623680,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98140160
+      },
+      "panels": 2,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.644943900057115,
+      "probe_seconds": 1.4274563000071794,
+      "repeat": 4,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 4,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 16.75,
+      "unit_cpu_workload_s": 8.4375,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.2328989000088768,
+          "part_a": 5.572491400002036,
+          "serialize": 0.0002491000050213188,
+          "verify": 0.6706398000096669
+        },
+        "outer": 18.070155099994736,
+        "setup_excluded": 9.39928929998132,
+        "workload": 8.670865800013416
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.15625,
+        "part_a": 6.5625,
+        "process_total": 17.84375,
+        "serialize": 0.0,
+        "setup_excluded": 8.59375,
+        "start": 0.671875,
+        "verify": 0.609375,
+        "workload": 9.0
+      },
+      "cpu_input_s": 9.453125,
+      "dry_run": false,
+      "elapsed_seconds": 7.612134099996183,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 119611392,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 97968128
+      },
+      "panels": 2,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 18.883029599965084,
+      "probe_seconds": 2.9280887999921106,
+      "repeat": 5,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 5,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 18.046875,
+      "unit_cpu_workload_s": 9.453125,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.1612373999960255,
+          "part_a": 7.612166700011585,
+          "serialize": 0.0003296000068075955,
+          "verify": 0.6247522000048775
+        },
+        "outer": 20.671970399998827,
+        "setup_excluded": 10.02137909999874,
+        "workload": 10.650591300000087
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": null,
+      "cold": false,
+      "cold_prep": {
+        "detail": null,
+        "ok": false
+      },
+      "completed": true,
+      "counts": {
+        "proof": 3,
+        "replay": 8,
+        "verify_for": 9
+      },
+      "cpu": {
+        "adapter": null,
+        "admission": 1.203125,
+        "part_a": 5.375,
+        "process_total": 19.890625,
+        "serialize": 0.0,
+        "setup_excluded": 11.265625,
+        "start": 1.09375,
+        "verify": 0.59375,
+        "workload": 8.265625
+      },
+      "cpu_input_s": 8.859375,
+      "dry_run": false,
+      "elapsed_seconds": 5.42552409999189,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": true,
+      "memory": {
+        "cgroup_path": null,
+        "cgroup_path_matches_unit": null,
+        "complete": false,
+        "in_unit_peak_bytes": null,
+        "lower_bound_bytes": 119820288,
+        "memory_bytes": null,
+        "method": "lower_bound_windows_working_set",
+        "oom_events": null,
+        "swap_max": null,
+        "swap_off": false,
+        "swap_peak_bytes": null,
+        "systemd_peak_bytes": null,
+        "windows_job_peak_commit_bytes": 98516992
+      },
+      "panels": 2,
+      "poll_bound_s": "launcher",
+      "predicted_seconds": 9.326517100053024,
+      "probe_seconds": 1.3692803000012645,
+      "repeat": 0,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": true,
+        "repeat": 0,
+        "stage": "1a"
+      },
+      "row_present": true,
+      "row_unit": null,
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": null,
+      "unit_cpu_s": 20.125,
+      "unit_cpu_workload_s": 8.859375,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.2465777000033995,
+          "part_a": 5.425560500007123,
+          "serialize": 0.0003119000029982999,
+          "verify": 0.6292340999934822
+        },
+        "outer": 22.327552300004754,
+        "setup_excluded": 13.251311400003033,
+        "workload": 9.076240900001721
+      }
+    }
+  ],
+  "runtime": {
+    "arch": "AMD64",
+    "arm_order": [
+      "forced",
+      "prescribed"
+    ],
+    "cpu_model": "Intel64 Family 6 Model 190 Stepping 0, GenuineIntel",
+    "executable_sha256": "d70fced7f461f38f9f224d8673fb74e96e4facb4283ff4e8697543b457fea8a0",
+    "host_facts": null,
+    "image_digest": null,
+    "implementation": "CPython",
+    "job": null,
+    "kernel": "11",
+    "logical_cpus": 8,
+    "os_id": "windows",
+    "os_release": "11",
+    "platform_accounting": "windows_process_time_job_object",
+    "python": "3.13.2",
+    "requirements_lock_sha256": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+    "run_attempt": null,
+    "run_id": null,
+    "runner": null,
+    "runtime_kind": "windows_dev_host",
+    "swap_total_kb": null,
+    "systemd_version": null,
+    "thread_env": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "schema": "s5-part-a-max-expansion-measurement/v2",
+  "scope": "job",
+  "source_sha256": {
+    "core/dd_geometry.py": "b471e27f24c95af33fe9899d770ca2bd35cc3b10aef6a46af2467a5c14525134",
+    "core/dd_protection.py": "fcc5532ea327fd62271fb8ee6daa303891198c9080dafad38118fc356d4edd8d",
+    "core/firm_rules.py": "c68bbc3262c7470e4b3dbb69a2751b49598b623841f3d7f5e01747023fbf8942",
+    "core/historical_challenge.py": "39f1cabc2e035a338d7c402870a1610574248cf233b8d2a005da99cfbf7ac1e0",
+    "core/lib/atomic_io.py": "874b92d3bc39b28309b4ef127d1355f7bb2b06fbc99ab2ea55f3d0f9663fb774",
+    "core/lib/file_lock.py": "9fd3afe199d10794ece04f2d146930b82fd31020a1a37d4a2985eac053d2e352",
+    "core/lib/mvd.py": "17f6279764379e99c8d73e0834234b1b42c16dd1d37a8e237bda7a2a1d3044b9",
+    "core/lib/validation.py": "02b04aa024a5b8be238ed2764722504e7abd82bc81825bf271a372baaa4f508d",
+    "core/lifecycle.py": "1f1ad1ab85e98533cdd6e1b134d6b678188ccda45375781136ceca348f505ceb",
+    "core/mc/__init__.py": "6885ba20fabe5472930637bcfdb2dd4b48f8a3287886fa1f5f3ab3e03f39e6b9",
+    "core/mc/ingest.py": "94a0819d180d6ed0732efcff965f2eac906a1aa7d5462d76bb03ea07bdfa4655",
+    "core/mc/modes.py": "651848933c3d3bcfd5f37ff6a298367bb8644579207a302b4481ab6878b06cc7",
+    "core/mc/preflight.py": "b20b169ea6df221778492c69cbcaa277f75663fb534a7f08cbc6c71ee5cf5d63",
+    "core/mc/simulation.py": "e6539c2f4efd41b173ec30faa6025175bdacc982ad157cbaa8acf109a3cbda48",
+    "core/tv_schema.py": "0335836b841931aff3b5e08acba965c578eda2f60e707bf8e10dc793c0c614b8",
+    "deploy/qualification/bootstrap.py": "d2790c29ff094882cc35c6b55319a4132f98e233393a5b459ebdb13e2b82a204",
+    "ops/c1_rail/__init__.py": "6bec736a516af7ea223e23dab31740cb44353144accd0b79efb209c3a7a7e1ed",
+    "ops/c1_rail/book_policy.py": "ffcd3aab3e74235e60c711f266f884f96874072c3d84d0b3e1d25d67abd8567a",
+    "ops/c1_rail/book_schedule.py": "e9e98d9989dec9cf1d535a7b97c2c6425f0df74ac2e3bb72802a00137c7b06fd",
+    "ops/c1_rail/ed25519_verify.py": "60c4e4d7c06d4572b43fbaf155dc08801549f73db2713cb6eab07f4f188ffe15",
+    "ops/c1_rail/policy_fingerprint.py": "45214014035aa2f8ebe484dfe71b288cfa4440efcfc795ecbba3becae293d5eb",
+    "ops/c1_rail/qualification/__init__.py": "bd470381dfb33671ba46a70df62f35382fbea7bf1f656b1a58f82638ee823764",
+    "ops/c1_rail/qualification/blocks.py": "53d3e3f9c3fb6b9acaee40e0eb5a4b893a73092b5ccf7d317dd8c8a760ede7f3",
+    "ops/c1_rail/qualification/checkpoint_plan.py": "6b04a51b7ed84edb0668a322788b4d6a5fc0b27afb97e964c5545a6d0535a433",
+    "ops/c1_rail/qualification/clock.py": "25556abf6b6dc1a1770560409bc440f208d7117cbccbe01e617f922bad084872",
+    "ops/c1_rail/qualification/contract.py": "48d6e5e9cd43e11fb7c3843642c899474303733f7e1b51cf1877c81e3e310522",
+    "ops/c1_rail/qualification/execution/__init__.py": "1e75bf04e211bd1164489627117566f1bdb1722aca3a8519bdf61df5f52ec630",
+    "ops/c1_rail/qualification/execution/admission.py": "9359edaad8207652b7636667354d146f82418d2dd8c5c064a712204a4414ae49",
+    "ops/c1_rail/qualification/execution/budget.py": "409247b5b3941eadd27a272302c2d31511d2fe169a63068a35e76a7781aba645",
+    "ops/c1_rail/qualification/execution/campaign_budget.py": "fc062da9ce541a56ba7fbf77f7a35f7102f8b0595cd786149ed547795af0328a",
+    "ops/c1_rail/qualification/execution/campaign_probe.py": "fc47debaf6f7ce83a3e185cd9f2d16ab982c06d40c16c44128881dd02757e35d",
+    "ops/c1_rail/qualification/execution/campaign_protocol.py": "9f320558cb2de2ba38bb612a7b26ece5afb26c48884d349e71c2646a24b8737c",
+    "ops/c1_rail/qualification/execution/compute.py": "f7d6c9b596535712928d33b521373846981e7b28532b4fc4a6ea365028ef6a74",
+    "ops/c1_rail/qualification/execution/evidence.py": "dd32d643cf74c85079c8aa16641486f89abe80d99e102576097aee341f8ab4c1",
+    "ops/c1_rail/qualification/execution/files.py": "81fe49853ecdb1f193c3dd24bcf89691597dffb19d14514559ecdaa28913507e",
+    "ops/c1_rail/qualification/execution/keys.py": "6bcbf04a78d0b224a7a337f2e86a441dab6f8cf2be20241e833d725a9097751f",
+    "ops/c1_rail/qualification/execution/plan.py": "ba1db3d547be109de218cdfc359b3f9cbad6b586bf6a3608dc0b6b928ece3ef7",
+    "ops/c1_rail/qualification/execution/profile.py": "6e038fd3382cc030e5502cb61336cdda2eaebf250f10f86d3170a3442c574a83",
+    "ops/c1_rail/qualification/execution/protocol.py": "c36c882b8aeca46ce07213d80c00a1baa77b4829dfd1537f0bdd111c4e9b764b",
+    "ops/c1_rail/qualification/execution/release_schema.py": "787f09fc3816a875a38f78f69d4bfcc9353d6d09dd5856c53899739ce2d782fb",
+    "ops/c1_rail/qualification/execution/runtime.py": "b9230e4cbc0096097c674a9b37c103688bac559ec112bfaaaf0df9eb879d4dd2",
+    "ops/c1_rail/qualification/execution/worker.py": "9e3d2b2cf0e8fda23b5c5a50b9dfa401e8708c7df0657e256d14fbb1cbffd249",
+    "ops/c1_rail/qualification/legality.py": "d57947503a0fcf60c183067eadd67e722ea75d673dcd964b9c29dd80dad78eda",
+    "ops/c1_rail/qualification/model.py": "4683e2b80b3e26f4fbee9a5bb797ca56a70a7040c8b96f2a1e437a08c0551125",
+    "ops/c1_rail/qualification/panel.py": "66b3795938876da7a7db1c6fca2e0e86ab9d7b4b9f72b14a27d8cd07c457ca87",
+    "ops/c1_rail/qualification/paths.py": "11eeb20064145bd93a505545cc72d9b0cae5e33d747c4589a2a32f0709dbe97d",
+    "ops/c1_rail/qualification/policy.py": "b89d6ad68405c29b0400383801a0f7abb7192e6502c2bf1a5644b8195472030f",
+    "ops/c1_rail/qualification/policy_sources.py": "2d3ba35d8afc086a13453b389607873fb8411b1ea9de8d0e98097b4d67afc206",
+    "ops/c1_rail/qualification/preflight.py": "b6798e2637c228e3d1c5c910a05df72d5662247aaf0c2442db534785ce00c22f",
+    "ops/c1_rail/qualification/production_source.py": "90e3bc09dc1e8818bb61b3091458005283a02bb1f8f889744d08dc6e73519487",
+    "ops/c1_rail/qualification/provider.py": "8be790e12dee0c82f5624b18a8eb232e66e07e21a367053c30777b7517167d55",
+    "ops/c1_rail/qualification/regime.py": "5fc321613fd705c0c0990b811e122655ba29624fb86949185c480176a7ef0b30",
+    "ops/c1_rail/qualification/replay.py": "c5e4c895cc18e1c35337e989720df6a14ea8c0ff2554eca6d3f606664b7fc84d",
+    "ops/c1_rail/qualification/runner.py": "9a6d8e8f0f7ad6c0601ab89e15720b12baa0747d75174c52e9ba3fd503d27a6e",
+    "ops/c1_rail/qualification/seed_identity.py": "7dd82d57632358ebae79c49f346dc63a938e0159fcafd3d00187db352b4bd68d",
+    "ops/c1_rail/qualification/sessions.py": "867240d7ae32aacc0367b8bd869b69058eefcf3cd19ed9c85f7f573cfa5bde42",
+    "ops/c1_rail/qualification/source_admission.py": "9e44e834d65a38d6f4360090f3e8cd29bdc371903e951f667534136297d18a3a",
+    "ops/c1_rail/qualification/trust_domain.py": "efa486872a968086d3d8e9fa54e21ed019544922982acb1b4e8b18768940a7a7",
+    "ops/c1_signal_daemon/__init__.py": "35ae4cb5838e47d2f8240dc014094de106a5b1522ec8ca23e0349ec48a27c0da",
+    "ops/c1_signal_daemon/book_adapters.py": "de4b6a9d5c0d1429454f9ee09a1266afc31198e0b464df7c5ddab59833e190a1",
+    "ops/c1_signal_daemon/book_protocol.py": "4d33780b9033b5b5e34cc16e663edce8a7932535f99bc3d63ab22fea28337ad9",
+    "ops/c1_signal_daemon/feed.py": "5a7b5251c111ab9518a64eee2e517465cd38457832af8bda771cf3218138cc8c",
+    "ops/c1_signal_daemon/pine_ta.py": "0c21464de8c5007ad03a3b83cf510a2557882e4267c5036794414c02269c1d15",
+    "ops/c1_signal_daemon/tv_broker_emulator.py": "3f6067dac87a5b7816709a979f1a2bd65df2268c9d3634d89f0443faeebdae8f",
+    "requirements-ops.lock": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+    "tests/ops/qualification/composition_fixture.py": "727166d55b7a3f26e437ae577017eb36067d0dbe77f7ac8fb5157d7c55a9cf23",
+    "tests/ops/qualification/runtime_fixture.py": "cca04e61d2f259026f76b026c023c74e06cd25dc9360f4826524a7518186e5db",
+    "tests/ops/qualification/test_contract.py": "dfad10e135617416757da61c269f6ce99654c956c80081933f0c0b1c8d32e3b4",
+    "tests/ops/qualification/test_trust_domain.py": "3aeeec317a41ae95fc6f3d0e372e19191dadb725f6fcab213429c086385cf65d"
+  },
+  "stage": "1a",
+  "start_head": null,
+  "summary": {
+    "arms": {
+      "forced": {
+        "ceiling_inputs_complete": true,
+        "ceiling_inputs_missing": [],
+        "cold_over_warm_median": 1.039380245319561,
+        "cpu_input_s": {
+          "all": {
+            "max": 12.578125,
+            "median": 12.21875,
+            "min": 11.8125,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.0648148148148149
+          },
+          "warm": {
+            "max": 12.375,
+            "median": 12.1015625,
+            "min": 11.8125,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.0476190476190477
+          }
+        },
+        "cpu_inputs_complete": true,
+        "cpu_workload_in_process_s": {
+          "all": {
+            "max": 12.171875,
+            "median": 11.828125,
+            "min": 11.46875,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.061307901907357
+          },
+          "warm": {
+            "max": 11.859375,
+            "median": 11.703125,
+            "min": 11.46875,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.034059945504087
+          }
+        },
+        "digest_pairs": [
+          [
+            "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+            "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d"
+          ]
+        ],
+        "digests_identical": true,
+        "lower_bound_max_bytes": 120451072,
+        "memory_bytes": {
+          "all": null,
+          "warm": null
+        },
+        "memory_complete_all_timed_repeats": false,
+        "memory_max_bytes_complete_only": null,
+        "predicted_seconds_max": 9.975746000010986,
+        "spread_all": 1.0648148148148149,
+        "spread_all_in_process": 1.061307901907357,
+        "timed_repeats_valid": 5,
+        "wall_workload_s": {
+          "all": {
+            "max": 13.329361900003278,
+            "median": 12.574916000012308,
+            "min": 12.254865400012932,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.087679175977666
+          },
+          "warm": {
+            "max": 12.828712899980019,
+            "median": 12.46584675001941,
+            "min": 12.254865400012932,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.0468260956963658
+          }
+        },
+        "warm_spread": 1.0476190476190477,
+        "warm_spread_in_process": 1.034059945504087
+      },
+      "prescribed": {
+        "ceiling_inputs_complete": true,
+        "ceiling_inputs_missing": [],
+        "cold_over_warm_median": 1.0739371534195934,
+        "cpu_input_s": {
+          "all": {
+            "max": 9.453125,
+            "median": 8.46875,
+            "min": 7.8125,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.21
+          },
+          "warm": {
+            "max": 9.453125,
+            "median": 8.453125,
+            "min": 7.8125,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.21
+          }
+        },
+        "cpu_inputs_complete": true,
+        "cpu_workload_in_process_s": {
+          "all": {
+            "max": 9.0,
+            "median": 8.09375,
+            "min": 7.484375,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.2025052192066805
+          },
+          "warm": {
+            "max": 9.0,
+            "median": 8.09375,
+            "min": 7.484375,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.2025052192066805
+          }
+        },
+        "digest_pairs": [
+          [
+            "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+            "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440"
+          ]
+        ],
+        "digests_identical": true,
+        "lower_bound_max_bytes": 120324096,
+        "memory_bytes": {
+          "all": null,
+          "warm": null
+        },
+        "memory_complete_all_timed_repeats": false,
+        "memory_max_bytes_complete_only": null,
+        "predicted_seconds_max": 18.883029599965084,
+        "spread_all": 1.21,
+        "spread_all_in_process": 1.2025052192066805,
+        "timed_repeats_valid": 5,
+        "wall_workload_s": {
+          "all": {
+            "max": 10.650591300000087,
+            "median": 8.680011299991747,
+            "min": 8.449324299988803,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.2605258032307036
+          },
+          "warm": {
+            "max": 10.650591300000087,
+            "median": 8.675438550002582,
+            "min": 8.449324299988803,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.2605258032307036
+          }
+        },
+        "warm_spread": 1.21,
+        "warm_spread_in_process": 1.2025052192066805
+      }
+    },
+    "estimates": {
+      "C_hat_s": 12.578125,
+      "M_hat_bytes": null,
+      "P_hat_s": 9.975746000010986,
+      "W_hat_s": 13.329361900003278,
+      "arm": "forced",
+      "provisional": "D\u0302 uncovered until Stage 1c (r2 \u00a74, \u00a79 PA-1)"
+    },
+    "memory_complete_all_timed_repeats": false,
+    "prefix_matches_prescribed": true
+  },
+  "tree_clean": false,
+  "verdict": {
+    "ceiling_inputs_complete": true,
+    "exit_code": 0,
+    "memory_feasibility": "UNVERIFIED",
+    "memory_scope": "PA-3a payload unit (r2 \u00a716 C6)",
+    "pa3a_screen": {
+      "fails": null,
+      "m_m": 1.5,
+      "reference_bytes": 256000000,
+      "reference_note": "equals the binding maximum_memory_bytes only with the P4 tuple extended to /v7 (r2 \u00a78.1); unextended the binding is 230,400,000 and BUDGET_EXHAUSTED at binding",
+      "scope": "PA-3a (payload unit only; shared scope is PA-3b at C3, r2 \u00a716 C6)",
+      "value_bytes": null
+    },
+    "reasons": [],
+    "rerun_eligible": null,
+    "rule_applicable": false,
+    "sigma_screen": {
+      "basis": "r2 \u00a710.2 \u03a3-only row: cap 10,000 s CPU / 10,000 s wall with the P4 tuple extended to /v7; N2 360 s / 900 s (CP-1a ruling (3)); PA-1 m_c 2.0, 1.5 \u00d7 P\u0302, O 20 s, 120 s floor; PA-2 m_w 3.0, L 30 s, 300 s floor; D\u0302 uncovered (provisional)",
+      "cpu_limit_s": 8440.0,
+      "cpu_value_s": 120.0,
+      "sigma_infeasible": false,
+      "wall_limit_s": 6100.0,
+      "wall_value_s": 300.0
+    },
+    "stop_class": "none",
+    "validity_ok": true
+  },
+  "workload": {
+    "forced": {
+      "arm": "forced",
+      "bars_per_session_per_leg": 4,
+      "budget_seconds": 3600.0,
+      "expanded_panels": 4,
+      "expected": {
+        "expanded": true,
+        "panels": 4,
+        "proofs": 5,
+        "replays": 14,
+        "verify_for": 15
+      },
+      "fixture": "tests/ops/qualification/composition_fixture.py",
+      "floor": 0.95,
+      "frozen_expansion_tolerance": 0.01,
+      "full_pass_rate_input": 1.0,
+      "horizon_sessions": 5,
+      "idle": false,
+      "initial_panels": 2,
+      "inner_block_sessions": 5,
+      "legs": [
+        "aegis_6j",
+        "dj30_mym_p250",
+        "orb_mnq_v7",
+        "vanguard_mgc"
+      ],
+      "n2_capture_sha256": null,
+      "outer_months": 6,
+      "paths_per_panel": 2,
+      "percentile": 0.05,
+      "percentile_method": "nearest_rank",
+      "recipe": "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)",
+      "root_rng_namespace": "TEST_ONLY/composition-fixture/v1",
+      "sessions": 174,
+      "within_pp": 1.0
+    },
+    "prescribed": {
+      "arm": "prescribed",
+      "bars_per_session_per_leg": 4,
+      "budget_seconds": 3600.0,
+      "expanded_panels": 4,
+      "expected": {
+        "expanded": false,
+        "panels": 2,
+        "proofs": 3,
+        "replays": 8,
+        "verify_for": 9
+      },
+      "fixture": "tests/ops/qualification/composition_fixture.py",
+      "floor": 0.95,
+      "frozen_expansion_tolerance": 0.01,
+      "full_pass_rate_input": 1.0,
+      "horizon_sessions": 5,
+      "idle": false,
+      "initial_panels": 2,
+      "inner_block_sessions": 5,
+      "legs": [
+        "aegis_6j",
+        "dj30_mym_p250",
+        "orb_mnq_v7",
+        "vanguard_mgc"
+      ],
+      "n2_capture_sha256": null,
+      "outer_months": 6,
+      "paths_per_panel": 2,
+      "percentile": 0.05,
+      "percentile_method": "nearest_rank",
+      "recipe": "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)",
+      "root_rng_namespace": "TEST_ONLY/composition-fixture/v1",
+      "sessions": 174,
+      "within_pp": 0.01
+    }
+  }
+}

@@ -904,7 +904,7 @@ Every blockquote under **Current** was inserted by a scratch script (not committ
 
 The operator accepted this note's full text at `011ce9e4`. A Codex review of PR #525 then found four defects (corrections 1–4, at `9b161f29`). A second round on `9b161f29` found four more (corrections 5–8). Each was verified against the code at `origin/main` `08196100`. Corrections 9 and 10 mirror two changes that Codex's review of #527 prompted in the packet there (`f9a7ccdd`, `36b79e1b`), so that this note and the applied packet agree. Correction 11 answers a Codex finding raised on #527 at `b6c38a80`, verified against the same `origin/main`. The corrections are marked inline where they occur. No other accepted text is changed.
 
-The operator's acceptance at `011ce9e4` covers the text before these corrections; these corrections await the operator's acceptance.
+The operator's acceptance at `011ce9e4` covers the text before these corrections; these corrections await the operator's acceptance. *[2026-09-28: the operator accepted corrections 1, 2, 4–7 and 9–11 as build-entry text ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-acceptance--h1c-post-acceptance-corrections-1-2-47-and-911-2026-09-28)); 3 and 8 stay at C3.]*
 
 | # | Where | Change | Code evidence |
 |---|---|---|---|
