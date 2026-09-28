@@ -1,6 +1,6 @@
 # S4 run logs: second-copy retention proposal
 
-**Status:** PROPOSAL, 2026-09-27. Returned for operator approval. Nothing below has been executed: no file was packed, archived, pushed or registered, and the originals were not modified.
+**Status:** APPROVED 2026-09-28 (option A) and executed; see the [ledger entry](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling-and-execution--s4-run-logs-second-copy-m-41-2026-09-28). *Status at proposal, kept as history:* PROPOSAL, 2026-09-27, returned for operator approval; nothing below had been executed.
 
 **Owner of the preservation record:** [full-E1 ledger, 2026-09-26 conditional ruling](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--part-a-measurement-rule-conditionally-approved-s5-held-2026-09-26) ("Authorized: preservation of the existing S4 evidence"). Stage 0 context: [r2 §16.4](2026-09-27-s5-part-a-measurement-proposal-r2.md#164-stage-0). The ruling on this proposal belongs in that ledger.
 

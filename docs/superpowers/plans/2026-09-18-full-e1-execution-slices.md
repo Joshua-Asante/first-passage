@@ -1115,3 +1115,37 @@ Every r2 §12.7 and §12.9 stop returns at once. A further dispatch after a stop
 - production, activation or live authority.
 
 S5 stays **HELD**.
+
+### Operator ruling and execution — S4 run logs second copy (M-41), 2026-09-28
+
+**Source.** The operator relayed a suggested ruling on #538 (the [retention proposal](../../notes/2026-09-27-s4-run-logs-archive-retention-proposal.md)) and, asked by structured question whether he adopted it, answered "Yes, adopt it". This entry records it as his decision.
+
+**Ruling.** Option A is approved, with GO for the bounded preservation task:
+- compress the two `journal.sqlite` files;
+- archive and push the specified artifacts to first-passage-archive;
+- open the registry/ledger PR through normal repository controls.
+
+**Completion requires:**
+1. verify the manifest and all 222 source files before packing, and leave the originals unchanged;
+2. account for all 224 archive inputs; deduplicated blobs are acceptable, skipped or missing inputs are not;
+3. fetch and verify against the archive's `origin/main` after the archive change lands, confirming every new registry entry ARCHIVED; an exit-zero audit alone is insufficient;
+4. restore the complete 222-file set into a separate directory from archived blobs, decompress the two databases, and pass the original `SHA256SUMS`;
+5. record the archive commit and verification evidence here; public changes are limited to approved metadata.
+
+**Excluded:** deletion of the originals, changes to `evidence_archive.py`, and future S5 retention work.
+
+**Execution, 2026-09-28** (primary checkout, ops interpreter CPython 3.13.2):
+1. `SHA256SUMS` hashes to `e2c14228…189a7`, and `sha256sum -c` passes for all 222 files. A path, size and mtime snapshot of the 223 files, taken before packing and again after archiving, is identical.
+2. Packed into the sibling directory `local_artifacts/s4-linux-run-logs-2026-09-25.packed/`, never inside the originals:
+   - run 36180568493: 110,350,336 B → `6b83b7ea…8b15`, 1,723,740 B;
+   - run 36181780676: 110,469,120 B → `83b07817…851a`, 1,728,948 B;
+   - `PACKED_SHA256SUMS.tsv` is `cb978a83…5068`.
+
+   Each `.xz` decompresses to its pinned original.
+3. `evidence_archive.py put` over 224 inputs returned 0 with empty stderr: 114 archived and 110 already archived. The inputs are 120 distinct digests: 114 new blobs, and 6 already on the archive's `main`. No input was skipped. Every staged blob id equals `git hash-object --no-filters`. Archive commit `88b24580` is on branch `claude/evidence-s4-run-logs-2026-09-25`, first-passage-archive#845.
+4. Registry: 224 pins were added to `docs/evidence/PRIVATE_EVIDENCE.sha256`. The raw `journal.sqlite` digests are recorded in the comment, not pinned.
+5. Pre-merge checks against the pushed archive branch:
+   - `audit --verify` reports 395 pins: 307 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. None of the 120 new digests is listed as non-ARCHIVED.
+   - A restore from archived blobs alone (`git cat-file blob`, both databases decompressed) into a scratch directory passes `sha256sum -c` for all 222 files.
+
+**Owed after the operator merges first-passage-archive#845:** checks 3 and 4 against the archive's `origin/main`, recorded below.
