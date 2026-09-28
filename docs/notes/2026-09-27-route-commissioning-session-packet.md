@@ -72,7 +72,7 @@ Decided once, against this packet (addendum §4 CP-2, line 490). The operator wr
 | F-1 | **REST entitlement confirmed.** The operator's CrossTrade account shows the Pro plan, active; CrossTrade states that Pro includes REST access. No upgrade or purchase | **Confirmed** (vendor-reported). The §2.3 capture (`P-1-entitlement`) is owed; under drill plan line 40 the recording procedure "does not add to the ruling's condition", so it is not a gate on the reads |
 | F-2 | **No separate equivalent sandbox verified.** The linked account runs on Tradovate Demo, which is how Tradeify evaluation accounts run; that label does not identify a separate test account. Any other sim would need an accepted equivalence argument | Each order-producing row's environment is therefore the incumbent eval, **explicitly decided at that row's CP-3**; no automatic fallback |
 | F-6(b) | **Evening sessions permitted** under Tradeify's published evaluation rule: sessions open 6 p.m. ET Sunday–Thursday, positions closed by 4:45 p.m. ET the following trading day; holiday restrictions apply | Confirmed as reported; a capture of the rule is owed with the first Stage 1 row |
-| F-6(a) | **Venue permission for this route: still unconfirmed.** Tradeify permits personal algorithms conditionally (ownership, exclusive use, no HFT). That is not specific confirmation of this CrossTrade-mediated setup, and CrossTrade's compatibility statement cannot supply Tradeify's permission | **OPEN. Blocks every Stage 1 row (X-1 onward).** Does not block Stage 0 reads |
+| F-6(a) | ~~**Venue permission for this route: still unconfirmed.**~~ **Answered 2026-09-28 by Tradeify support, in writing, to the operator's question about this CrossTrade-mediated setup: conditional permission.** A personal, low-frequency automated strategy is allowed. A third-party API or router such as CrossTrade is not explicitly prohibited but is not supported, is used at the operator's own risk, and "approval by a third-party provider does not guarantee approval by Tradeify". The conditions are: **ownership** (the strategy is the operator's and not shared with other traders or firms); **exclusive use** (only the operator's own accounts, "not be used across multiple firms"); **not HFT**; **full responsibility** for all activity the automation generates; **no rule circumvention** (not designed to bypass risk controls or exploit platform behavior) | **ANSWERED, CONDITIONAL.** Stage 1 no longer waits on an answer. Each Stage 1 row's CP-3 carries the operator's attestation that the five conditions are met (X-1's CP-3 table). **Open for the operator:** whether "not be used across multiple firms" conflicts with running the same strategies at the other firms of the [four-firm program](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md); a clarifying question to Tradeify may be needed before that program deploys elsewhere. The original reply is retained privately under `local_artifacts/route-drills-2026-09/` (step `P-1-venue`), owed |
 
 **Operator rulings (adopted as proposed).**
 
@@ -87,8 +87,8 @@ Decided once, against this packet (addendum §4 CP-2, line 490). The operator wr
 
 **What this unlocks, and what it does not.**
 - **Stage 0** can run in the session of this week's preservation trade (due by 2026-10-02): §2.1 host disarm read, §2.2 inventory, then R-1 on that trade, operator-performed. R-2 on the same trade after a reset. T07 reads once a qualifying completed target is confirmed.
-- **Stage 1** stays blocked on **F-6(a)** and on each row's own CP-3. A-11 (firm-side automatic liquidation) remains a Stage 1 question under GC-7.
-- **Owed:** the `P-1-entitlement` capture and its manifest SHA-256 (§2.3 step 4), and a capture of the F-6(b) rule.
+- **Stage 1:** F-6(a) is answered, conditionally (above). Each row still needs its own CP-3, which now includes the operator's attestation of Tradeify's conditions. A-11 (firm-side automatic liquidation) remains a Stage 1 question under GC-7.
+- **Owed:** the `P-1-entitlement` capture and its manifest SHA-256 (§2.3 step 4); a capture of the F-6(b) rule; the original Tradeify reply (`P-1-venue`).
 
 ---
 
@@ -297,6 +297,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 | Take-profit | ☐ included at `<OP: take-profit distance>` (so a later X-3 exercises an OCO pair) ☐ omitted |
 | Wait / time / window / cost | `<OP: stop-activation wait>` · `<OP: max time in market>` · `<OP: session window>` · `<OP: cost ceiling>` |
 | Request body (§3.7) | ☐ exact request body (field names and non-private values) reviewed and recorded privately before send · SHA-256 ____ |
+| Venue conditions (F-6(a), added 2026-09-28) | ☐ operator attests Tradeify's five conditions are met (§1.1: ownership, exclusive use, not HFT, full responsibility, no rule circumvention) |
 | Written authorization | Date ____ · text reference (private) SHA-256 ____ |
 
 **Preconditions:** §3.2 in full.
@@ -733,7 +734,7 @@ Both rows send an operation whose shape no owner named either.
 
 **What is still not documented, and therefore still the reason X-2 and X-4 exist:**
 - **X-4 / GC-4.** No page says what becomes of the `Suspended` OSO children when the parent entry is cancelled before any fill. CT-CX is silent; CT-OT describes creation and first-fill activation and stops there. The allocation map's C08 "Fate of Suspended children on cancel: `UNVERIFIED`" **stands unchanged**.
-- **X-2 / GC-2b.** No page says whether a rejected `change` leaves the original order `Working` at its original price. CT-CH's only rejection statement is "Only nonterminal orders can be changed. A terminal order returns an error", which is a different case. **The mechanism is not established from public documentation** — see C.6.
+- **X-2 / GC-2b.** No page says whether a rejected `change` leaves the original order `Working` at its original price. CT-CH's Tradovate tab states no rule on which orders can be changed and nothing about a broker refusal; it has only a generic failure envelope. *(Corrected 2026-09-28, [M2 return, PR #541](https://github.com/Joshua-Asante/first-passage/pull/541), D-1: the sentence "Only nonterminal orders can be changed. A terminal order returns an error", cited here earlier as CT-CH's statement, is **NT8-tab** text in both the 2026-09-25 and 2026-09-28 captures.)* **The mechanism is not established from public documentation** — see C.6.
 
 ### C.5 Findings that bear on rows and reads other than §3.7
 
@@ -760,7 +761,7 @@ M2 is the vendor-semantics step for GC-2b, and X-2 cannot be requested at CP-3 w
 
 **What the public pages add for that executor** (card §3 item 2 permits public retrieval for a named gap; these are inputs, not an M2 return):
 - the `change` request shape and verb (C.4), so Q1–Q4 can be asked about the exact REST operation;
-- Q1 (rejected modify leaves the old stop `Working`): **no public statement found.** The only rejection sentence on the change surface is the terminal-order case (CT-CH);
+- Q1 (rejected modify leaves the old stop `Working`): **no public statement found.** The change surface's Tradovate tab has no rejection sentence at all (the terminal-order sentence cited here earlier is NT8-tab text; corrected 2026-09-28, [M2 return, PR #541](https://github.com/Joshua-Asante/first-passage/pull/541), D-1);
 - Q2 and the GC-3 record: the lifecycle read exposes a `version` and command reports with reject reasons (F-e); a late risk-layer rejection pattern is documented for placements (F-g), not stated for `change`;
 - Q3 and Q4: no public statement found. The partial-change server-side restore (C.4 item 3) states what the broker **receives**, not what survives a refusal or an unknown outcome, and is itself a new GC-3 gap.
 
