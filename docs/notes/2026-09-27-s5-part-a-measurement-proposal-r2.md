@@ -609,20 +609,25 @@ runs_since() {
   printf '%s\n' "$all"
 }
 # snapshot MODE: record the ids of every dispatch run of MODE since BASELINE, on any head, before dispatching.
-# A Stage 1b run of either mode that is still queued or in progress, since BASELINE or among the newest 100 runs
-# of any date, stops it: an earlier invocation may have lost track of that run, and a new dispatch beside it
-# would exceed the per-stage cap. The coordinator resumes that run instead.
+# A Stage 1b run of either mode that is not completed, of any date, stops it: an earlier invocation may have lost
+# track of that run, and a new dispatch beside it would exceed the per-stage cap. The coordinator resumes that run
+# instead. Live runs are found by GitHub's own status filter, one listing per non-terminal status, so no count of
+# completed runs can push one out of view; a listing of 100 stops, since it cannot rule one out.
 snapshot() {
-  local all live
+  local all live="" st
   all=$(runs_since) || return 1
   jq -r '.[] | select(.displayTitle | startswith("S5 Part A measurement [stage 1b, ")) |
          "\(.databaseId) \(.status) \(.displayTitle)"' <<< "$all" > "$S/runs-$1.txt" || return 1
-  live=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 --json databaseId,displayTitle,status \
-    --jq '.[] | select((.displayTitle | startswith("S5 Part A measurement [stage 1b, ")) and .status != "completed") |
-          .databaseId') || return 1
-  live="$live$(awk '$2 != "completed" {print " " $1}' "$S/runs-$1.txt")"
-  [ -z "$live" ] || { echo "a Stage 1b run is still live: $live; the coordinator resumes it, never dispatch beside it" >&2; return 1; }
-  grep -F "[stage 1b, $1," "$S/runs-$1.txt" | cut -d' ' -f1 > "$S/before-$1.txt" || true
+  for st in queued in_progress requested waiting pending; do
+    all=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --status "$st" --limit 100 \
+            --json databaseId,displayTitle) || return 1
+    [ "$(jq length <<< "$all")" -lt 100 ] || { echo "100 $st runs: a live Stage 1b run cannot be ruled out" >&2; return 1; }
+    live="$live$(jq -r '.[] | select(.displayTitle | startswith("S5 Part A measurement [stage 1b, ")) | " \(.databaseId)"' \
+                   <<< "$all" | tr -d '\n')" || return 1
+  done
+  [ -z "$live" ] || { echo "a Stage 1b run is still live:$live; the coordinator resumes it, never dispatch beside it" >&2; return 1; }
+  # only grep's "no match" (exit 1) is ignored: a failed read or write of the snapshot stops, never undercounts
+  { grep -F "[stage 1b, $1," "$S/runs-$1.txt" || [ $? = 1 ]; } | cut -d' ' -f1 > "$S/before-$1.txt" || return 1
 }
 # cap: the §12.7 dispatch caps within this approval, counted from the dry-run snapshot (runs since BASELINE): one
 # measure dispatch, and one dry run with one re-dispatch. The re-dispatch needs the earlier dry run's retained,
@@ -834,7 +839,9 @@ d=0; ( cd "$S/wt" && python -I scripts/fp.py doctor ) || d=$?
 c=0; [ "$d" != 0 ] || ( cd "$S/wt" && python -I scripts/fp.py python "$NOTE/measure_part_a_max.py.txt" \
     --summarize "$REPO/$D/$MEASURE_ID-a-attempt${ATT[a]}/record.json" "$REPO/$D/$MEASURE_ID-b-attempt${ATT[b]}/record.json" \
     --record "$REPO/$D/$MEASURE_ID-combined.json" ) || c=$?
-COMBINED=""                                      # the combine returned: a record it wrote is kept and classified below
+# the combine returned: its record is kept only if it is whole JSON carrying a stop class (a verdict, whatever the
+# exit); a missing or truncated one leaves COMBINED set, so any halt below removes it
+! jq -e '.verdict.stop_class' "$COMBINED" > /dev/null 2>&1 || COMBINED=""
 [ "$d" = 0 ] || halt "doctor failed in the measured checkout (exit $d); the combine did not run"
 [ "$c" = 0 ] || halt "the combine exited $c (§12.7: 3 or 4 is a verdict, anything else a harness failure)"
 # D2 and PA-3 are verdicts on a valid measurement, so the combine exits 0 with them: read the stop class
@@ -903,6 +910,13 @@ git worktree remove --force "$WT" || halt "the combine worktree could not be rem
 - *a failed `git worktree remove` ended the block under `set -e`, after `COMBINED` was cleared and before the record was classified. The record is now classified first, and removal is checked last, with `WT` still set, so `halt` retries it.*
 
 *Each fix was exercised against a fake `gh` that honors `--created`: runs before the baseline set aside, 100 listed runs, a partial dry-run download, a clean earlier dry run (returned to the coordinator), and a failing worktree removal.]*
+
+*[Corrected 2026-09-28 (Codex review of 20cb6247 on #539). Three fixes:*
+- *the live-run guard listed only the newest 100 runs, so a live run older than `BASELINE` could fall out of view. It now asks GitHub for each non-terminal status (`queued`, `in_progress`, `requested`, `waiting`, `pending`) and stops on a listing of 100;*
+- *`snapshot` masked any failure writing `before-<mode>.txt` with `|| true`. Only grep's "no match" is now ignored, and a failed read or write stops the stage rather than undercounting;*
+- *`COMBINED` was cleared before the record was checked, so a combine that failed mid-write left a truncated record. The record is now kept only if it parses and carries `.verdict.stop_class`; otherwise `halt` removes it.*
+
+*Each fix was exercised against a fake `gh` that honors `--status`: a live run from before the baseline (refused), an unwritable snapshot (stopped), and a combine that exits 1 after writing a truncated record (removed) or exits 0 with `D2_ACCOUNTING_FALSIFIER` (kept, stopped).]*
 
 *[Status 2026-09-28: Stage 1b ran before this block merged. Dry run 36364714432 and measure run 36364854404 ran on `7675c088`, and their evidence and the CP-1b packet are in [#537](https://github.com/Joshua-Asante/first-passage/pull/537) (open). This block therefore governs only a re-measurement under a fresh approval (§12.7), whose `BASELINE` falls after those runs and sets them aside, and it is the form §12.8 adapts for Stage 1c.]*
 
