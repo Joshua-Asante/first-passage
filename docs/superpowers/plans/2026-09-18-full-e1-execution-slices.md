@@ -1078,10 +1078,10 @@ The relayed draft is not a committed record. This entry records what the operato
 **Execution dispatch.** This entry adds no authority beyond CP-1a decision (2), its confirmed re-run interpretation, and r2 §12.7 and §12.9.
 1. **Stage 0.**
    - Run the r2 §16.4 coverage check in the primary checkout, read-only.
-   - If coverage holds: the §12.1 local read and public-clone review.
+   - If coverage holds: the §12.1 local read and public-clone review. *[2026-09-28: run r2 §16.4's check-and-read block instead ([#536](https://github.com/Joshua-Asante/first-passage/pull/536)). The §12.1 extraction lines double-count systemd CPU lines and drop each line's run; r2 marks them superseded (helper review of #523, C1, C5 and C12).]*
    - Otherwise: record `UNAVAILABLE`. No download.
 2. **Stage 1a.** Run the README Stage 1a commands through the LF checkout's `fp.ps1`.
-3. **Stage 1b dry run.**
+3. **Stage 1b dry run.** *[2026-09-28: do not dispatch with the commands in steps 3–5. They never bind a run id, download or retain the evidence by run, job and attempt, or read the re-run decision from the records (helper review of #523, C2, C3, C6, C7 and C10). Stage 1b runs from r2 §12.3's tested dispatch block in [#539](https://github.com/Joshua-Asante/first-passage/pull/539), once it merges. That block stays within this entry's authority and the §12.7 caps.]*
    - Command: `gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir=docs/notes/2026-09-27-s5-part-a-measurement`.
    - Then `gh run watch`, and `gh run download` into scratch, pass or fail.
    - At most one re-dispatch, and only for I-1 or I-6.
