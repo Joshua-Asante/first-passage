@@ -92,11 +92,11 @@ It never drives the E1 route, the retired executor class or any service.
 ```powershell
 .\fp.ps1 doctor
 $bundle = "docs/notes/2026-09-27-s5-part-a-measurement/windows-$((Get-Date).ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'")).json"
-.\fp.ps1 python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --launcher --stage 1a --arms forced,prescribed --repeats 5 --out $bundle
+.\fp.ps1 python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --launcher --stage 1a --arms 'forced,prescribed' --repeats 5 --out $bundle
 .\fp.ps1 python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --summarize $bundle --stage 1a
 ```
 
-Each run writes its own UTC-stamped bundle (r2 §12.2): the launcher refuses to overwrite an existing bundle, and r2 §12.9 (2) forbids removing or overwriting one. *[Corrected 2026-09-27: the commands previously wrote a fixed `windows.json`, which a second run could not reuse.]*
+Each run writes its own UTC-stamped bundle (r2 §12.2): the launcher refuses to overwrite an existing bundle, and r2 §12.9 (2) forbids removing or overwriting one. *[Corrected 2026-09-27: the commands previously wrote a fixed `windows.json`, which a second run could not reuse.]* *[Corrected 2026-09-28: `--arms` is quoted. PowerShell reads a bare `forced,prescribed` as an array, and `fp.ps1` forwards it as two arguments.]*
 
 Stage 1a validates the harness only. It checks panel counts, digest identity, prefix identity, all fields populated and call counts. Memory is always `UNVERIFIED` and the rule is never applied. A harness defect is fixed and re-run locally; it is not a validity-check count.
 
@@ -112,6 +112,8 @@ gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-p
 # (.\fp.ps1 python ... on Windows):
 python -I scripts/fp.py python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --summarize <a>/record.json <b>/record.json --record <combined>.json
 ```
+
+The lines above are the dispatches and the combine only. The executable sequence is r2 §12.3's dispatch block. It binds each dispatch to its run id, watches and downloads every run, reads the re-run decision from the downloaded records and cleanup receipts, and copies the evidence into `stage1b/`. *[Added 2026-09-28 (helper review of #523, C2, C3 and C7).]*
 
 **Caps (r2 §12.7):**
 - at most one re-dispatch of a failed dry run (I-1 or I-6);
