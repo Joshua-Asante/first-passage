@@ -596,12 +596,17 @@ R=Joshua-Asante/first-passage; WF=qualification-s5-part-a-measurement.yml
 NOTE=docs/notes/2026-09-27-s5-part-a-measurement; D="$NOTE/stage1b"   # D: the retained copy, in the repository
 S=<scratch>/s5-1b-$(date -u +%Y%m%dT%H%M%SZ); mkdir "$S"            # S: this invocation's raw downloads, new
                                                                     # and outside the repository (mkdir fails if it exists)
-# snapshot MODE: record the ids of every dispatch run of MODE that already exists, on any head, before dispatching
+# snapshot MODE: record the ids of every dispatch run of MODE that already exists, on any head, before dispatching.
+# A run of MODE that is still queued or in progress stops it: an earlier invocation may have lost track of that run
+# (an interrupted session), and a new dispatch beside it would exceed the per-stage cap. Resume that run instead.
 snapshot() {
-  gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 \
-    --json databaseId,displayTitle \
-    --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId" \
-    > "$S/before-$1.txt"
+  local live
+  gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 --json databaseId,displayTitle,status \
+    --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | \"\(.databaseId) \(.status)\"" \
+    > "$S/runs-$1.txt" || return 1
+  live=$(awk '$2 != "completed" {print $1}' "$S/runs-$1.txt")
+  [ -z "$live" ] || { echo "a $1 run is still live: $live; resume it, do not dispatch another" >&2; return 1; }
+  cut -d' ' -f1 "$S/runs-$1.txt" > "$S/before-$1.txt"
 }
 # bind MODE: print the id of the one dispatch run of MODE, on any head, that the snapshot did not hold, or stop.
 # The run listing carries no dispatch identity, so a run someone else started in the same window could be taken
@@ -609,26 +614,34 @@ snapshot() {
 # candidate appeared): if a second new run of MODE shows up, the binding is ambiguous and the stage stops. The caller then confirms the run's headSha
 # (the s2-linux-run rule: never take --limit 1, confirm headSha).
 bind() {
-  local ids n i id=""
+  local ids n i id="" clean=0
   for i in $(seq 60); do                                                 # discovery: about 10 minutes
-    ids=$(list_new "$1"); n=$(printf '%s' "$ids" | grep -c . || true)
-    if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous" >&2; return 1; fi
-    if [ "$n" = 1 ]; then id=$ids; break; fi
+    if ids=$(list_new "$1"); then
+      n=$(printf '%s' "$ids" | grep -c . || true)
+      if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous" >&2; return 1; fi
+      if [ "$n" = 1 ]; then id=$ids; break; fi
+    else echo "run listing failed; retrying" >&2; fi
     sleep 10
   done
   [ -n "$id" ] || { echo "no new $1 run appeared" >&2; return 1; }
-  for i in $(seq 6); do                                                  # settle: about a minute more, from discovery
+  echo "$1 $id" >> "$S/bound.txt"                                       # durable before the settle and any watch
+  for i in $(seq 18); do                                                 # settle: 6 clean polls from discovery, 3 min at most
     sleep 10
-    ids=$(list_new "$1"); n=$(printf '%s' "$ids" | grep -c . || true)
-    if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous" >&2; return 1; fi
+    if ids=$(list_new "$1"); then
+      n=$(printf '%s' "$ids" | grep -c . || true)
+      if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous" >&2; return 1; fi
+      clean=$((clean + 1)); [ "$clean" -lt 6 ] || { echo "$id"; return 0; }
+    else echo "run listing failed during the settle; not counted" >&2; fi
   done
-  echo "$id"
+  echo "the $1 binding could not settle (listing failures); candidate $id" >&2; return 1
 }
-# list_new MODE: the dispatch runs of MODE, on any head, that the snapshot did not hold
+# list_new MODE: the dispatch runs of MODE, on any head, that the snapshot did not hold. A failed listing returns
+# nonzero; only grep's "no match" is ignored.
 list_new() {
-  gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 --json databaseId,displayTitle \
-    --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId" \
-    | grep -vxF -f "$S/before-$1.txt" || true
+  local all
+  all=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 --json databaseId,displayTitle \
+    --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId") || return 1
+  printf '%s\n' "$all" | grep -vxF -f "$S/before-$1.txt" || true
 }
 # run_head ID: the commit run ID actually checked out
 run_head() { gh run view "$1" -R "$R" --json headSha --jq .headSha; }
@@ -681,7 +694,7 @@ retain() {
   done
   mkdir -p "$D" || return 1; m="$D/downloads-${S##*/}.sha256"         # one manifest per invocation, never replaced
   [ ! -e "$m" ] || { echo "$m already exists; not overwritten" >&2; return 1; }
-  ( cd "$S" && find . -type f ! -name 'before-*.txt' -print0 | sort -z | xargs -0 -r sha256sum ) > "$m" || return 1
+  ( cd "$S" && find . -type f ! -name 'before-*.txt' ! -name 'runs-*.txt' ! -name bound.txt -print0 | sort -z | xargs -0 -r sha256sum ) > "$m" || return 1
   RETAINED=1
 }
 # field ID MODE JOB ATTEMPT FILE JQ: one value from a downloaded record or receipt
@@ -693,13 +706,18 @@ receipt_ok() {
 }
 # halt MESSAGE: every stop returns to the coordinator (§12.7), keeping whatever this invocation downloaded
 RETAINED=""
-halt() { echo "$1; stop" >&2; [ -n "$RETAINED" ] || retain || true; exit 1; }
+halt() {
+  echo "$1; stop" >&2
+  [ ! -s "$S/bound.txt" ] || { echo "bound runs (mode id), which may still be live; watch them, never dispatch beside them:" >&2; cat "$S/bound.txt" >&2; }
+  [ -n "$RETAINED" ] || retain || true; exit 1
+}
+trap 'halt "interrupted"' INT TERM HUP                                 # an interrupted session still names its runs
 
 # 1. dry run (one job, a); H is the head the dry run actually ran on
 snapshot dry-run || halt "the dry-run snapshot failed"
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir="$NOTE" \
-  || halt "the dry-run dispatch failed"
-DRY_ID=$(bind dry-run) || halt "the dry run was not bound"
+  || echo "the dry-run dispatch returned nonzero; reconciling against the snapshot" >&2   # it may still have been created
+DRY_ID=$(bind dry-run) || halt "the dry run was not bound (a dispatch that returned nonzero and bound nothing was not created)"
 H=$(run_head "$DRY_ID") || halt "the dry run's head could not be read"; echo "dry run $DRY_ID on $H"
 { fetch "$DRY_ID" dry-run 1 a && verdicts "$DRY_ID" dry-run 1 a; } || halt "dry run $DRY_ID: evidence incomplete"
 receipt_ok "$DRY_ID" dry-run a 1 || halt "dry run $DRY_ID: cleanup receipt not clean"
@@ -713,7 +731,7 @@ e=$(field "$DRY_ID" dry-run a 1 record.json .verdict.exit_code)
 [ "$(gh api "repos/$R/commits/main" --jq .sha)" = "$H" ] || halt "main moved since the dry run"
 snapshot measure || halt "the measure snapshot failed"
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=measure -f runtime=host_venv -f note_dir="$NOTE" \
-  || halt "the measure dispatch failed"
+  || echo "the measure dispatch returned nonzero; reconciling against the snapshot" >&2
 MEASURE_ID=$(bind measure) || halt "the measure run was not bound"
 M=$(run_head "$MEASURE_ID") || halt "measure run $MEASURE_ID: head could not be read"
 [ "$M" = "$H" ] || halt "measure run $MEASURE_ID ran on $M, not the dry run's $H: an attempt on an unvalidated head"
@@ -735,11 +753,13 @@ for j in a b; do
   esac
 done
 if [ -n "$RERUN" ]; then
-  gh run rerun "$MEASURE_ID" -R "$R" --failed || halt "the --failed re-run request failed"
+  gh run rerun "$MEASURE_ID" -R "$R" --failed \
+    || echo "the re-run request returned nonzero; reconciling against the run's attempt" >&2   # the wait below decides
   a=""; for i in $(seq 60); do                                         # about 10 minutes
     a=$(gh run view "$MEASURE_ID" -R "$R" --json attempt --jq .attempt || true); [ "$a" = 2 ] && break; sleep 10
   done
   [ "$a" = 2 ] || halt "attempt 2 of $MEASURE_ID not observed (last read: ${a:-none})"
+  echo "measure-attempt2 $MEASURE_ID" >> "$S/bound.txt"
   { fetch "$MEASURE_ID" measure 2 $RERUN && verdicts "$MEASURE_ID" measure 2 $RERUN; } \
     || halt "measure run $MEASURE_ID attempt 2: evidence incomplete"
   for j in $RERUN; do                                                  # any failure after the re-run stops the stage
@@ -796,6 +816,13 @@ git worktree remove --force "$S/wt"                                     # remove
 - *a nonzero watch can be a CLI or API failure rather than a failed run, so the run's GitHub status is read and must be `completed`. Otherwise the stage stops, saying the run is still live and merges stay held.*
 
 *Each fix was exercised against a fake `gh`: a normal pass with job b re-run (the combine read a from attempt 1 and b from attempt 2), job b exiting 4, a dirty receipt, and a live run after a failed watch.]*
+
+*[Corrected 2026-09-28 (Codex review of 2e7a9744 on #539). Three fixes, each for a failure that is ambiguous rather than definite:*
+- *`list_new` masked a failed `gh run list` as "no runs". A failed listing now returns nonzero. Discovery retries it, and the settle window counts only clean polls, needing six within three minutes;*
+- *a nonzero `gh workflow run` or `gh run rerun` does not prove the run was not created, so the block now reconciles against the snapshot, or the run's attempt, before treating the request as failed;*
+- *a lost session could leave a bound run live and unnamed. Each bound id is now written to `$S/bound.txt` before any watch. An interrupt (INT, TERM or HUP) goes through `halt`, which names the bound runs and retains the evidence. `snapshot` refuses to dispatch while a run of the same mode is still queued or in progress, so a new invocation cannot dispatch beside a lost run.*
+
+*Each fix was exercised against a fake `gh`: a dispatch that returns nonzero but creates the run (bound), a dispatch that fails outright (halts as not created), alternating listing failures, a live pre-existing run (refused), and a TERM during the watch (halts, naming the run).]*
 
 *[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
 - **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
