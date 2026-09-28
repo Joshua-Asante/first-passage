@@ -47,6 +47,13 @@
 
 **Corrected next action:** the integrated B–D packet. It contains D19 and the gate-C decisive capabilities (close and protection cleanup; stop activation and rejected modify; evidence freshness and coherence; REST reconciliation and actor inventory), the UB-8 bounded comparison run in parallel, the remaining gate-B decisions, the revised option-B rules and a T09 handoff held until B–D acceptance.
 
+**Documentation addendum 2026-09-28 (coordinator; evidence-status corrections only, no allocation change).** Source: the commissioning packet's [§3.7 closure](2026-09-27-route-commissioning-session-packet.md#37-closure-2026-09-28--request-shapes-from-the-current-public-crosstrade-documentation), public CrossTrade pages read 2026-09-28 and pinned there by SHA-256 (not yet cross-checked against the retained Gate A captures, R-3.7a). The rows' recommendations stand.
+- **C08, "Day-order expiry".** Reads: `DOCUMENTED` field `tif` and its values (`day`, `gtc`, `ioc`, `fok`, `gtd`); bracket exits are GTC whatever the entry's `tif`; on demo and prop-firm accounts GTD and scheduled cancels are enforced by CrossTrade server-side, not by Tradovate. **Default when `tif` is omitted: `UNVERIFIED`**, and expiry behavior unobserved. Every drill sends `tif` explicitly. "Fate of Suspended children on cancel" stays `UNVERIFIED` (no page addresses it; X-4 remains its trace).
+- **C06b / C16.** "Tradovate's API does not expose a prop firm's trailing drawdown figure, and CrossTrade has no endpoint that returns one" (CT-OV). No allocation option may delegate trailing-drawdown observation to the vendor on this interface; the local and settlement-bound ownership recorded in C05, C06b and C16 is the only documented one.
+- **C14.** Confirmed at field level: REST placements have no Alert History row and late risk-layer rejections arrive about a second after a 2xx, so the local post-placement poll remains required.
+- **C08 / C12, deadline owner on this account class.** On demo and prop-firm evaluation accounts Tradovate records GTD expirations and scheduled cancels but does not execute them; CrossTrade enforces them server-side (CT-OT). Any timed cancel on this account is CrossTrade-reachability-dependent, not broker-hosted. Decision-bearing for ORB under the ruled L1 lifecycle; it does not reopen L1.
+- **C18 / GC-3.** New documented gap on the amend path: a partial `change` is completed **server-side** from a live-order read CrossTrade makes and we do not observe (CT-OV "Mutation safety"). Carried in B–D packet GC-3; it removes nothing and adds no build here.
+
 ---
 
 **Operator objective (checklist addendum 2026-09-26):** TradingView and CrossTrade own what they can reliably do on the exact route; our controller fills only evidenced gaps.
