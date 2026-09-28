@@ -371,7 +371,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 
 ### 4.4 X-3: full close by broker liquidation (C-a normal case; drill plan §2.3, lines 251–263)
 
-**State:** **ONLY as part of the operator's decision on the residual-risk statement** (CR-3, line 52). #519's M return marks M1–M9 OPEN, S CONFLICTING and elements (a)–(c) OPEN (CS-note lines 8–32; §2.1 lines 121–132 for M and S; §2.2 lines 136–142 for (a)–(e)). CP-3 for X-3 is therefore taken **within** that decision, never on its own. It is **also READY ON owner confirmation of the fresh-position precondition** (§4 sequencing note) and on the §3.7 request-body item for its opening entry.
+**State:** **ONLY as part of the operator's decision on the residual-risk statement** (CR-3, line 52). #519's M return marks M1–M9 OPEN, S CONFLICTING and elements (a)–(c) OPEN (CS-note lines 8–32; §2.1 lines 121–132 for M and S; §2.2 lines 136–142 for (a)–(e)). CP-3 for X-3 is therefore taken **within** that decision, never on its own. It is **also READY ON owner confirmation of the fresh-position precondition** (§4 sequencing note) and on the §3.7 request-body item for its opening entry. *(2026-09-28: §3.7 is discharged for X-3's opening entry too, closure C.2; the other holds above stand.)*
 
 The residual-risk statement returned for decision is CS-note §3 (lines 146–166). Its choices are listed at line 154:
 - accept the residual under named conditions in the §1.1a amendment;
@@ -621,7 +621,7 @@ Dispositions:
 
 ### C.1 Sources read (2026-09-28 UTC)
 
-Retrieved with `curl` over HTTPS on 2026-09-28. **Preserved 2026-09-28** in the operator's primary checkout under `local_artifacts/route-drills-2026-09/vendor-docs/` (gitignored). The folder holds the original bytes, a `SHA256SUMS`, and a `SOURCES.tsv` listing file, ref, URL, bytes, SHA-256 and capture UTC. Each file also has a row in `local_artifacts/route-drills-2026-09/MANIFEST.tsv` under step id `P-3.7-docs`. The copies were re-hashed against the session originals and match. The session copy under `.cache/tradeify-next-steps/vendor-docs/` dies with the worktree. A sixth capture, `https://crosstrade.io/docs/api/overview` (SHA-256 `8fd7368ba42ad4fc9e94fefc384a50f8d11ee6c2c3e995506ed671f6ef5c3156`), is preserved there too but cited nowhere in this section. Nothing from these pages is private; the hashes below pin **what was read**.
+Retrieved with `curl` over HTTPS on 2026-09-28. **Preserved 2026-09-28** in the operator's primary checkout under `local_artifacts/route-drills-2026-09/vendor-docs/` (gitignored). The folder holds the original bytes, a `SHA256SUMS`, and a `SOURCES.tsv` listing file, ref, URL, bytes, SHA-256 and capture UTC. Each of the six captures also has a row in `local_artifacts/route-drills-2026-09/MANIFEST.tsv` under step id `P-3.7-docs`. The sixth, `https://crosstrade.io/docs/api/overview` (SHA-256 `8fd7368ba42ad4fc9e94fefc384a50f8d11ee6c2c3e995506ed671f6ef5c3156`), is preserved in the same primary-checkout folder but cited nowhere in this section. The copies were re-hashed against the session originals and match. The session copy under `.cache/tradeify-next-steps/vendor-docs/` dies with the worktree. Nothing from these pages is private; the hashes below pin **what was read**.
 
 | Ref | Page | SHA-256 of retrieved bytes |
 |---|---|---|
@@ -629,7 +629,7 @@ Retrieved with `curl` over HTTPS on 2026-09-28. **Preserved 2026-09-28** in the 
 | **CT-PL** | `https://crosstrade.io/docs/api/orders/post-place-order` | `ff2f02d394490ff3a6971313d5d6d64f2ab1620fee3d1b387fdde44904eddb6b` |
 | **CT-CH** | `https://crosstrade.io/docs/api/orders/put-change-order` | `0dff1c8806633cb60c82b9792e5a2820ebb87c7dc5a7fae1c3804d60b1b2cb5d` |
 | **CT-CX** | `https://crosstrade.io/docs/api/orders/post-cancel-order` | `eb7ce58c6c98c362856dab1d1997c72c002a459c4d2d871c6a8179fb5346c12e` |
-| **CT-OT** | `https://crosstrade.io/docs/getting-started/tradovate-guides/tradovate-order-types-and-exits` | `5ed93386d28c9c8a6e199e2b1e80a5e4c124a099c12ae09aa3dd2d7de991ec1c` |
+| **CT-OT** | `https://crosstrade.io/docs/getting-started/tradovate-guides/tradovate-order-types-and-exits` (retrieval URL; the page declares its canonical URL as `https://crosstrade.io/docs/tradovate/order-types-and-exits`) | `5ed93386d28c9c8a6e199e2b1e80a5e4c124a099c12ae09aa3dd2d7de991ec1c` |
 
 Pages are living documents. A capture is evidence of the page on 2026-09-28, not a vendor commitment.
 
@@ -756,6 +756,7 @@ Every M2 classification remains the executor's to make against the retained capt
 | X-4 order-type and `cancel` shape | Drill plan X-4 action 2 | **Applied**: dated inline note |
 | R-2's fills step on a prior-session target (F-d) | Drill plan R-2 table | **Applied**: step 3 names `fills/history` and records which endpoint answered |
 | Position-read form in recovery and SC-3 (F-c) | Drill plan §2.0; this packet §3.4 | **Applied** in both (safety-bearing) |
+| Distance-to-level conversion, including X-4's entry-anchored bracket (C.2; corrected 2026-09-28 after the executive review of #540) | Drill plan §2.0; this packet §4.2 | **Applied**: the "Absolute levels" bullet of the §2.0 addendum, the X-4 action-2 note, and §4.2's Levels line and abort |
 | C08 wording (C.3); trailing-drawdown unavailability (F-i); C14; C18 | Allocation map | **Applied**: documentation addendum 2026-09-28 under the coordinator note |
 | Partial-change server-side restore (C.4 item 3) | B–D packet GC-3 | **Applied**: B–D packet continuation 2026-09-28 |
 | X-2 level selection and late rejection (F-g) | CP-3 for X-2 | Stays a CP-3 note: the level must be chosen for a synchronous refusal, or the row observes something else |
