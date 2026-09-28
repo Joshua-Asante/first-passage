@@ -633,6 +633,7 @@ snapshot() {
   [ -z "$live" ] || { echo "a Stage 1b run is still live:$live; the coordinator resumes it, never dispatch beside it" >&2; return 1; }
   # only grep's "no match" (exit 1) is ignored: a failed read or write of the snapshot stops, never undercounts
   { grep -F "[stage 1b, $1," "$S/runs-$1.txt" || [ $? = 1 ]; } | cut -d' ' -f1 > "$S/before-$1.txt" || return 1
+  cut -d' ' -f1 "$S/runs-$1.txt" > "$S/all-$1.txt" || return 1      # every Stage 1b run since BASELINE, either mode
 }
 # cap: the §12.7 dispatch caps within this approval, counted from the dry-run snapshot (runs since BASELINE): one
 # measure dispatch, and one dry run with one re-dispatch. The re-dispatch needs the earlier dry run's retained,
@@ -660,16 +661,18 @@ cap() {
 # bind MODE: print the id of the one dispatch run of MODE, on any head, that the snapshot did not hold, or stop.
 # The run listing carries no dispatch identity, so a run someone else started in the same window could be taken
 # for this one. After a candidate appears, bind keeps listing for about a minute more (its own window, however late the
-# candidate appeared): if a second new run of MODE shows up, the binding is ambiguous and the stage stops. The caller then confirms the run's headSha
+# candidate appeared): if a second new run of MODE shows up, the binding is ambiguous and the stage stops. A new
+# Stage 1b run of the other mode stops it too, at any poll: no client-side sweep is atomic, so a run that arrived
+# around the live-run sweep is caught here, before anything is watched. The caller then confirms the run's headSha
 # (the s2-linux-run rule: never take --limit 1, confirm headSha).
 bind() {
-  local ids n i id="" clean=0
+  local ids n i id="" clean=0 rc
   for i in $(seq 60); do                                                 # discovery: about 10 minutes
     if ids=$(list_new "$1"); then
       n=$(printf '%s' "$ids" | grep -c . || true)
       if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous" >&2; return 1; fi
       if [ "$n" = 1 ]; then id=$ids; break; fi
-    else echo "run listing failed; retrying" >&2; fi
+    else rc=$?; [ "$rc" != 2 ] || return 1; echo "run listing failed; retrying" >&2; fi
     sleep 10
   done
   [ -n "$id" ] || { echo "no new $1 run appeared" >&2; return 1; }
@@ -680,18 +683,23 @@ bind() {
       n=$(printf '%s' "$ids" | grep -c . || true)
       if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous" >&2; return 1; fi
       clean=$((clean + 1)); [ "$clean" -lt 6 ] || { echo "$id"; return 0; }
-    else echo "run listing failed during the settle; not counted" >&2; fi
+    else rc=$?; [ "$rc" != 2 ] || return 1; echo "run listing failed during the settle; not counted" >&2; fi
   done
   echo "the $1 binding could not settle (listing failures); candidate $id" >&2; return 1
 }
-# list_new MODE: the dispatch runs of MODE, on any head, that the snapshot did not hold. A failed listing returns
-# nonzero; only grep's "no match" is ignored.
+# list_new MODE: the ids of the Stage 1b dispatch runs of MODE since BASELINE, on any head, that the snapshot did
+# not hold. Returns 2 if a new Stage 1b run of the other mode is among them (the stage stops), and 1 if the
+# listing or the comparison failed (the poll is retried); only grep's "no match" is ignored.
 list_new() {
-  local all
+  local all new
   all=$(runs_since) || return 1
-  all=$(jq -r --arg m "S5 Part A measurement [stage 1b, $1," '.[] | select(.displayTitle | startswith($m)) | .databaseId' \
+  all=$(jq -r '.[] | select(.displayTitle | startswith("S5 Part A measurement [stage 1b, ")) | "\(.databaseId) \(.displayTitle)"' \
           <<< "$all") || return 1
-  printf '%s\n' "$all" | grep -vxF -f "$S/before-$1.txt" || [ $? = 1 ]   # only "no match" is ignored
+  new=$(printf '%s\n' "$all" | awk 'FILENAME == ARGV[1] {seen[$1]; next} NF && !($1 in seen)' "$S/all-$1.txt" -) || return 1
+  if printf '%s\n' "$new" | grep -v '^$' | grep -qvF "[stage 1b, $1,"; then
+    echo "a new Stage 1b run of the other mode appeared: $(printf '%s\n' "$new" | cut -d' ' -f1 | tr '\n' ' ')" >&2; return 2
+  fi
+  { printf '%s\n' "$new" | grep -F "[stage 1b, $1," || [ $? = 1 ]; } | cut -d' ' -f1
 }
 # run_head ID: the commit run ID actually checked out
 run_head() { gh run view "$1" -R "$R" --json headSha --jq .headSha; }
@@ -740,7 +748,10 @@ retain() {
     n=${a##*/}; run=${a%/*}; run=${run##*/}
     job=${n%-attempt*}; job=${job##*-}; dest="$D/$run-$job-attempt${n##*-attempt}"
     [ -e "$a.complete" ] || dest="$dest.partial"     # an interrupted or failed download is kept, never read as whole
-    [ ! -e "$dest" ] || { echo "$dest already exists; not overwritten" >&2; return 1; }
+    if [ -e "$dest" ]; then                        # retained by an earlier try of this invocation: skip it if identical
+      diff -r -x journal.log "$a" "$dest" > /dev/null || { echo "$dest exists and differs; not overwritten" >&2; return 1; }
+      continue
+    fi
     # built under a temporary name and renamed only when whole, so a failed copy never leaves a directory that
     # reads as complete (the raw download stays in scratch). Each command is checked: retain runs on the left of
     # `||`, where set -e does not apply
@@ -750,7 +761,9 @@ retain() {
   done
   mkdir -p "$D" || return 1; m="$D/downloads-${S##*/}.sha256"         # one manifest per invocation, never replaced
   [ ! -e "$m" ] || { echo "$m already exists; not overwritten" >&2; return 1; }
-  ( cd "$S" && find . -type f ! -name 'before-*.txt' ! -name 'runs-*.txt' ! -name bound.txt -print0 | sort -z | xargs -0 -r sha256sum ) > "$m" || return 1
+  ( cd "$S" && find . -type f ! -name 'before-*.txt' ! -name 'runs-*.txt' ! -name 'all-*.txt' ! -name bound.txt -print0 \
+      | sort -z | xargs -0 -r sha256sum ) > "$m.tmp" && mv "$m.tmp" "$m" \
+    || { rm -f "$m.tmp"; echo "the manifest $m could not be written" >&2; return 1; }   # renamed only when whole
   RETAINED=1
 }
 # field ID MODE JOB ATTEMPT FILE JQ: one value from a downloaded record or receipt
@@ -939,6 +952,13 @@ git worktree remove --force "$WT" || halt "the combine worktree could not be rem
 - *the measure step checked only for earlier measure runs. It now also requires the dry runs since `BASELINE` to be exactly those `cap` counted plus this invocation's own, so a dry run dispatched by someone else meanwhile stops the stage.*
 
 *Each fix was exercised against a fake `gh`: a future baseline, an unreadable snapshot during binding, a failed copy during retention, and a foreign dry run appearing during the dry run. A normal pass, a re-run and an eligible re-dispatch still complete.]*
+
+*[Corrected 2026-09-28 (Codex review of 48b8fecb on #539). Three fixes:*
+- *a retry of `retain` stopped at the first directory an earlier try had already renamed into place, so later artifacts stayed only in scratch. An existing destination identical to its download (apart from `journal.log`) is now skipped, and one that differs still stops;*
+- *the manifest was written straight to its final name, so a failed hash left a truncated manifest. It is now written to `<manifest>.tmp` and renamed only when whole;*
+- *no client-side sweep of GitHub's statuses is atomic, so a run arriving just after the sweep could go unseen. `bind` now also stops on any new Stage 1b run of the other mode since `BASELINE`, at every poll before and after the candidate appears, so such a run is caught before anything is watched or retained.*
+
+*Each fix was exercised against a fake `gh`: a retention retry after one directory was already in place, a failing manifest write, and a measure run dispatched by someone else beside this dry run.]*
 
 *[Status 2026-09-28: Stage 1b ran before this block merged. Dry run 36364714432 and measure run 36364854404 ran on `7675c088`, and their evidence and the CP-1b packet are in [#537](https://github.com/Joshua-Asante/first-passage/pull/537) (open). This block therefore governs only a re-measurement under a fresh approval (§12.7), whose `BASELINE` falls after those runs and sets them aside, and it is the form §12.8 adapts for Stage 1c.]*
 
