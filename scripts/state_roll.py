@@ -612,7 +612,7 @@ def _literal_end(text: str, at: int) -> int | None:
 
 
 def _structural_text(text: str) -> str:
-    """Mask literal regions without joining structure across their boundaries."""
+    """Mask literals and complete inline links without joining boundaries."""
     parts: list[str] = []
     at = 0
     while at < len(text):
@@ -623,21 +623,18 @@ def _structural_text(text: str) -> str:
         else:
             parts.append(text[at])
             at += 1
-    return "".join(parts)
+    visible = list("".join(parts))
+    for start, end, _, _ in _inline_links(text):
+        visible[start:end] = " " * (end - start)
+    return "".join(visible)
 
 
-def rewrite_links(
-    row: str,
-    from_dir: Path = REPO,
-    to_dir: Path = DEFAULT_ARCHIVE.parent,
-) -> str:
-    """Rebase every filesystem-relative link target from STATE's directory to
-    the archive's. URL schemes, root-absolute paths and pure `#`/`?` targets
-    are left alone. Code spans, HTML code/pre regions and escaped syntax keep
-    their literal bytes; only paired inline link/image destinations are rebased.
+def _inline_links(row: str) -> Iterator[tuple[int, int, int, int]]:
+    """Yield (link start, link end, target start, target end), inner links first.
+
+    Only complete inline links/images outside literal regions are yielded.
+    The same spans drive rebasing and record-boundary detection.
     """
-
-    edits: list[tuple[int, int, str]] = []
     brackets: list[int] = []
     at = 0
     while at < len(row):
@@ -648,7 +645,7 @@ def rewrite_links(
         if row[at] == "[":
             brackets.append(at)
         elif row[at] == "]" and brackets:
-            brackets.pop()
+            label_start = brackets.pop()
             if row[at + 1:at + 2] == "(":
                 end = at + 2
                 depth = 1
@@ -671,11 +668,26 @@ def rewrite_links(
                             break
                     end += 1
                 if depth == 0:
-                    target = row[at + 2:end]
-                    edits.append((at + 2, end, _rebase_target(target, from_dir, to_dir)))
+                    yield label_start, end + 1, at + 2, end
                     at = end + 1
                     continue
         at += 1
+
+
+def rewrite_links(
+    row: str,
+    from_dir: Path = REPO,
+    to_dir: Path = DEFAULT_ARCHIVE.parent,
+) -> str:
+    """Rebase every filesystem-relative link target from STATE's directory to
+    the archive's. URL schemes, root-absolute paths and pure `#`/`?` targets
+    are left alone. Code spans, HTML code/pre regions and escaped syntax keep
+    their literal bytes; only paired inline link/image destinations are rebased.
+    """
+
+    edits: list[tuple[int, int, str]] = []
+    for _, _, start, end in _inline_links(row):
+        edits.append((start, end, _rebase_target(row[start:end], from_dir, to_dir)))
     for start, end, target in reversed(edits):
         row = row[:start] + target + row[end:]
     return row

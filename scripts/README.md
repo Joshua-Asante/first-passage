@@ -379,7 +379,8 @@ invocation, including a due Weekly roll or keep-15 archive:
   overflow row followed (after any blank lines)
   by anything other than another index row or the section end, such as an
   indented continuation line. Inline code, HTML code/pre regions and escaped
-  examples do not count as fused structure; standalone non-row lines remain invalid
+  examples and complete inline links (including their labels) do not count as
+  fused structure; standalone non-row lines remain invalid
   below an archive header;
 - an archive that breaks its shape (checked on every run, rows due or not):
   roll headers are read by date key (case, Unicode spacing and suffix aside) and

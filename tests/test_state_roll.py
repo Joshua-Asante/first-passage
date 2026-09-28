@@ -2207,3 +2207,38 @@ def test_review_date_references_are_not_fused_rows(reference):
     row = "- **2026-09-20** — " + reference
     assert len(mod.index_rows(_state(rows=[row]))) == 1
     assert mod.parse_archive(ROLLED_HEADER + "\n\n" + row + "\n").rows == (row,)
+
+
+@pytest.mark.parametrize("link", [
+    "[**Roll 2026-09-26**](docs/history.md)",
+    "![**Roll 2026-09-26**](images/chart.png)",
+    "[caption [**Roll 2026-09-26**]](docs/history.md)",
+    "[![**Roll 2026-09-26**](images/chart.png)](docs/history.md)",
+    "[**Roll 2026-09-26** `literal`](docs/history.md)",
+    "[1. **2026-09-19** — example](docs/history.md)",
+])
+def test_final_review_link_labels_are_not_records(tmp_path, link):
+    row = "- **2026-09-01** — see " + link
+    state, archive = _pair(tmp_path, _state(rows=_rows(15) + [row]))
+    assert len(mod.index_rows(_read(state))) == 16
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    expected = row.replace("(docs/", "(../../../../../docs/").replace("(images/", "(../../../../../images/")
+    assert mod.parse_archive(_read(archive)).rows[0] == expected
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 0
+    assert _state_bytes(state, archive) == before
+
+
+@pytest.mark.parametrize("suffix", ["**Roll 2026-09-26**:", "1. **2026-09-19** — another"])
+def test_final_review_link_does_not_hide_following_fused_record(suffix):
+    row = "- **2026-09-20** — [history](docs/history.md)" + suffix
+    with pytest.raises(mod.StateRollError):
+        mod.index_rows(_state(rows=[row]))
+    with pytest.raises(mod.StateRollError):
+        mod.parse_archive(ROLLED_HEADER + "\n\n" + row + "\n")
+
+
+def test_final_review_header_suffix_can_reference_a_header_link():
+    header = '**Roll 2026-09-26** (see [**Roll 2026-09-25**](docs/history.md)):'
+    assert len(mod.parse_archive(header + '\n\n- **2026-09-20** — kept\n').headers) == 1
