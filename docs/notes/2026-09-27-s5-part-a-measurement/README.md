@@ -102,7 +102,7 @@ Stage 1a validates the harness only. It checks panel counts, digest identity, pr
 
 **Stage 1b** (the coordinator, after this file is on `main`; within the r2 §12.7 caps):
 
-*[2026-09-28: do not dispatch from the lines below. They never bind a run id, download or retain the evidence, or read the re-run decision from the records (helper review of #523: C2, C3, C6, C7 and C10; r2 §12.3's marker). Stage 1b dispatches from r2 §12.3's tested replacement block, on branch `claude/r2-stage1b-dispatch-block` in #539, once it merges.]* *[Coordinator record 2026-09-28: Stage 1b had already run under the ledger's H1(b) execution dispatch steps 3–4 as merged in #535, at 01:06–01:12 UTC, before this marker merged (#536, 03:18 UTC). The dry run was 36364714432 and the measure run 36364854404, both at head `7675c088`. Each run id was bound by listing this workflow's runs right after its dispatch: exactly one new run appeared each time, with its `headSha` confirmed, and the workflow has no other runs. Each run was watched to completion and its artifacts downloaded whole into a per-run directory, named by job and attempt. They are retained publicly under `stage1b/` and privately in first-passage-archive#844. The re-run decision was read from each job's record and summarize log: all exit 0, so no re-run was used. The marker governs any further Stage 1b dispatch. It does not invalidate the executed runs; see the [CP-1b packet entry](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-cp-1b-packet--build-entry-status-2026-09-28).]*
+*[Coordinator record 2026-09-28: Stage 1b had already run under the ledger's H1(b) execution dispatch steps 3–4 as merged in #535, at 01:06–01:12 UTC, before the dispatch marker merged (#536, 03:18 UTC). The dry run was 36364714432 and the measure run 36364854404, both at head `7675c088`. Each run id was bound by listing this workflow's runs right after its dispatch: exactly one new run appeared each time, with its `headSha` confirmed, and the workflow has no other runs. Each run was watched to completion and its artifacts downloaded whole into a per-run directory, named by job and attempt. They are retained publicly under `stage1b/` and privately in first-passage-archive#844. The re-run decision was read from each job's record and summarize log: all exit 0, so no re-run was used. The executable sequence for any further Stage 1b dispatch is now r2 §12.3, merged in #539. It does not invalidate the executed runs; see the [CP-1b packet entry](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-cp-1b-packet--build-entry-status-2026-09-28).]*
 
 ```bash
 gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main \
@@ -114,6 +114,8 @@ gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-p
 # (.\fp.ps1 python ... on Windows):
 python -I scripts/fp.py python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --summarize <a>/record.json <b>/record.json --record <combined>.json
 ```
+
+The lines above are the dispatches and the combine only. The executable sequence is r2 §12.3's dispatch block. It binds each dispatch to its run id, watches and downloads every run, reads the re-run decision from the downloaded records and cleanup receipts, and copies the evidence into `stage1b/`. *[Added 2026-09-28 (helper review of #523, C2, C3 and C7).]*
 
 **Caps (r2 §12.7):**
 - at most one re-dispatch of a failed dry run (I-1 or I-6);
