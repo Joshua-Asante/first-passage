@@ -1143,13 +1143,13 @@ S5 stays **HELD**.
 
    Each `.xz` decompresses to its pinned original.
 3. `evidence_archive.py put` over 224 inputs returned 0 with empty stderr: 114 archived and 110 already archived. The inputs are 120 distinct digests: 114 new blobs, and 6 already on the archive's `main`. No input was skipped. Every staged blob id equals `git hash-object --no-filters`. Archive commit `88b24580` is on branch `claude/evidence-s4-run-logs-2026-09-25`, first-passage-archive#845.
-4. Registry: 224 pins were added to `docs/evidence/PRIVATE_EVIDENCE.sha256`. The raw `journal.sqlite` digests are recorded in the comment, not pinned.
+4. Registry: 120 pins were added to `docs/evidence/PRIVATE_EVIDENCE.sha256`, one per distinct digest, each under its first path in path order. *[Corrected 2026-09-28: the first registry commit added 224 lines, one per input, which duplicated 104 digests and failed `test_registry_digests_are_well_formed_and_unique`. The archived `SHA256SUMS` maps every path.]* The raw `journal.sqlite` digests are recorded in the comment, not pinned.
 5. Pre-merge checks against the pushed archive branch:
-   - `audit --verify` reports 395 pins: 307 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. None of the 120 new digests is listed as non-ARCHIVED.
+   - `audit --verify` (with the 224-line registry, since corrected) reports 395 pins: 307 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. None of the 120 new digests is listed as non-ARCHIVED.
    - A restore from archived blobs alone (`git cat-file blob`, both databases decompressed) into a scratch directory passes `sha256sum -c` for all 222 files.
 
 **Post-merge verification, 2026-09-28.** The operator directed the merge of first-passage-archive#845. It merged as `2ec6f6c9`, and `88b24580` is an ancestor of the archive's `main`. After `git fetch`, the clone's `main` tracks `origin/main` at `2ec6f6c9`.
-- **Check 3.** `audit --verify` reports 395 pins: 307 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. None of the 120 new digests is listed as non-ARCHIVED. All 120 are present under `evidence/sha256/` on `origin/main`, and each committed blob (`git cat-file blob`) hashes to its address.
+- **Check 3.** With the corrected 120-pin registry, `audit --verify` reports 291 pins: 203 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. The 224-line registry had reported 395 pins, 307 of them ARCHIVED. None of the 120 new digests is listed as non-ARCHIVED. All 120 are present under `evidence/sha256/` on `origin/main`, and each committed blob (`git cat-file blob`) hashes to its address.
 - **Check 4.** A restore from `origin/main` blobs alone rebuilt 222 files into a scratch directory, 2 of them by decompression. The restored `SHA256SUMS` hashes to `e2c14228…189a7`, and `sha256sum -c` passes for all 222 files. The scratch copy was then deleted.
 - **Originals.** The path, size and mtime snapshot still matches the pre-packing snapshot.
 

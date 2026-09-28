@@ -55,6 +55,8 @@ A is the simplest route. It needs no code change, stays inside the content-addre
 4. **Register (public-repo PR).** Add to `docs/evidence/PRIVATE_EVIDENCE.sha256`, under one dated comment block citing this note and the ledger entry: the 221 direct digests (220 files plus `SHA256SUMS`), the two `.xz` digests and the manifest digest. The comment maps each `.xz` digest to its original digest. The originals' digests are **not** registered as pins, because `audit` would report them MISSING (the archived blob is the `.xz`). No log content enters the public repository: only digests and relative file names, consistent with r2 §12.1's rule that hashes may be committed and raw logs never are.
 5. **Verify.**
    - `evidence_archive.py audit --verify` shows all 224 digests ARCHIVED.
+
+   *[Corrected 2026-09-28: the 224 inputs hold 120 distinct digests. The registry test requires unique digests, so each is pinned once and 120 pins were registered. See the ledger entry.]*
    - A decompression check reads the committed blob from the archive's remote ref: `git -C <archive> cat-file blob origin/main:evidence/sha256/<aa>/<xz digest>`, decompressed with Python `lzma` and hashed, equals `0102ec14…6968` and `d67b5d77…d2a6` respectively. Use `cat-file`, per M-41's extraction rule, not `checkout` or `archive`.
 6. **Record.** Add a dated line to the ledger entry: the archive commit, the audit counts and the decompression check result.
 
