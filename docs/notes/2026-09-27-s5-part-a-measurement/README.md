@@ -1,6 +1,6 @@
 # S5 Part A measurement harness and dispatch-only workflow (H1 step (b))
 
-**Status:** PREPARED, NOT RUN. This directory holds the harness for the bounded S5 Part A measurement. Nothing in it has been measured. No engine workload, Stage 1a, Stage 0 or Stage 1b dispatch, re-run or artifact download has run. Output class `TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING`. S5 stays **HELD**.
+**Status:** EXECUTED 2026-09-28 (see [Measurement execution](#measurement-execution-2026-09-28)). *Earlier status, kept as history:* PREPARED, NOT RUN. This directory holds the harness for the bounded S5 Part A measurement. Nothing in it has been measured. No engine workload, Stage 1a, Stage 0 or Stage 1b dispatch, re-run or artifact download has run. Output class `TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING`. S5 stays **HELD**.
 
 **Authority:**
 - **Ruling:** the CP-1a ruling at commit `baa09ffd`, the ledger entry "Operator ruling — CP-1a decisions (1)–(6) adopted as recommended, hold kept, 2026-09-27". Read it with `git show baa09ffd:docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`; it is on [#523](https://github.com/Joshua-Asante/first-passage/pull/523) and not yet on `main`. Decision (2) approves the bounded measurement dispatch of r2 §12. Decisions (1), (3), (4) and (6) set the parameters, the N2 value, the D2 split and the seam that this harness's stop screens use.
@@ -92,11 +92,11 @@ It never drives the E1 route, the retired executor class or any service.
 ```powershell
 .\fp.ps1 doctor
 $bundle = "docs/notes/2026-09-27-s5-part-a-measurement/windows-$((Get-Date).ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'")).json"
-.\fp.ps1 python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --launcher --stage 1a --arms forced,prescribed --repeats 5 --out $bundle
+.\fp.ps1 python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --launcher --stage 1a --arms 'forced,prescribed' --repeats 5 --out $bundle
 .\fp.ps1 python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --summarize $bundle --stage 1a
 ```
 
-Each run writes its own UTC-stamped bundle (r2 §12.2): the launcher refuses to overwrite an existing bundle, and r2 §12.9 (2) forbids removing or overwriting one. *[Corrected 2026-09-27: the commands previously wrote a fixed `windows.json`, which a second run could not reuse.]*
+Each run writes its own UTC-stamped bundle (r2 §12.2): the launcher refuses to overwrite an existing bundle, and r2 §12.9 (2) forbids removing or overwriting one. *[Corrected 2026-09-27: the commands previously wrote a fixed `windows.json`, which a second run could not reuse.]* *[Corrected 2026-09-28: `--arms` is quoted. PowerShell parses an unquoted `forced,prescribed` as an array and passes `prescribed` as a separate argument, which argparse refuses before any repeat runs.]*
 
 Stage 1a validates the harness only. It checks panel counts, digest identity, prefix identity, all fields populated and call counts. Memory is always `UNVERIFIED` and the rule is never applied. A harness defect is fixed and re-run locally; it is not a validity-check count.
 
@@ -196,9 +196,26 @@ Both are **screens, not the r2 §13 application**. The coordinator computes X an
   - Inputs that carry no evidence are refused with a message, never a traceback, and nothing is written: a missing input path, a readable file that is not a launcher bundle, and, when combining, an unreadable or malformed job record. The job's retained rows and units can be re-summarized.
 - **Summarize step exit.** The runner's default shell is `bash -eo pipefail`, so the summarize step turns `-e` off. An exit 3 or 4 from the summarizer, whose record is already written, then still reaches the step summary before the step returns that status. Cleanup and upload are `if: always()` and run after it (r2 §12.9 (3)).
 - **Coordinator readings (r2 §12.9 (6)).** A run attempt outside 1–2 is I-7. A Windows bundle's arm order must be `forced,prescribed`.
-- **Cleanup receipt.** r2 names no class for a failed owned cleanup. The job fails at that step, so it counts as a failed job under the §12.7 re-run cap, and combining refuses its record. That refusal is a harness choice.
+- **Cleanup receipt.** r2 names no class for a failed owned cleanup. The job fails at that step, so it counts as a failed job under the §12.7 re-run cap, and combining refuses its record. That refusal is a harness choice. *[Corrected 2026-09-28: r2 §12.7 (`:689`) governs the re-run count. A failed owned cleanup is not an exit 3; it stops the stage for diagnosis, and any new dispatch needs a fresh approval. The combine refusal is unchanged.]*
 
+## Measurement execution (2026-09-28)
+
+The r2 §12 bounded measurement ran under the [execution dispatch](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-transfer-and-execution-dispatch--h1-step-b-measurement-2026-09-28). The results, the rule application and the CP-1b build-entry table are in the [CP-1b packet entry](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-cp-1b-packet--build-entry-status-2026-09-28). Every run measured `7675c088`.
+
+| Stage | Run | Outcome | Files here |
+|---|---|---|---|
+| 0 | local read of the preserved S4 set | Coverage holds; calibration only | `stage0/` |
+| 1a | Windows, detached LF checkout | Valid (exit 0); memory UNVERIFIED by design | `windows-20260928T010154Z.json`, `.record.json` |
+| 1b dry run | 36364714432, attempt 1, job a | Valid (exit 0) | `stage1b/36364714432-a-attempt1/` |
+| 1b measure | 36364854404, attempt 1, jobs a and b | Both valid; memory VERIFIED; no re-run used | `stage1b/36364854404-{a,b}-attempt1/`, `stage1b/36364854404-combined.json` |
+
+- **Line endings.** Stage 1a and the combine ran from a checkout made with `git -c core.autocrlf=false worktree add --detach`. The harness pins the LF SHA-256 of both fixtures and hashes working-tree bytes, so a CRLF checkout can only exit 4 on Stage 1a and is refused at combine. `.gitattributes` here keeps the committed evidence byte-exact on every checkout.
+- **Committed Linux files.** Each job directory holds the r2 §12.3 file list: `record.json`, `probe-in-unit.json`, `probe.unit`, `host-facts.txt`, the per-repeat `.json` and `.unit` files, and `cleanup-receipt.json`. The complete artifacts are private: `journal.log`, `summarize.log`, `probe.json` and `git-head.txt`. So are the Stage 1a launcher logs, including the first invocation that argparse refused before any repeat ran, and the raw Stage 0 extracts. All of them are in `h1b-stage1b-measurement-evidence-2026-09-28.tar.gz`, which is pinned in `docs/evidence/PRIVATE_EVIDENCE.sha256` and pushed to first-passage-archive#844. It counts as ARCHIVED once that PR merges.
+- **Stage 0 public-clone review.** Every one of the 836 lines in `stage0/lines.txt` has the form `<UTC timestamp> <runner VM name> systemd[1]: <unit>: Consumed <CPU> CPU time[, <memory> memory peak, <swap> memory swap peak].` The unit names use only `[A-Za-z0-9._-]`. There is no host path, account or token, and the fixed journal prefix is kept verbatim. Two `Binary file … journal.sqlite matches` rows were dropped from `stage0/memory_peak.txt`; they were grep noise naming a local path. The preserved set's `SHA256SUMS` is cited by its SHA-256, `e2c142281d819e071d15f99a242358f93389a479dcc5e6b5c1f6a20d5db189a7`, not committed. A tracked `*SHA256SUMS` would register its 222 files as pinned private evidence (`scripts/evidence_archive.py`). Two of those files, the `boundary/journal.sqlite` files at about 110 MB each, exceed GitHub's per-file limit and cannot be archived.
+- **Stage 1a bundle.** The bundle is committed unmodified, because r2 §12.9 (2) forbids altering a bundle. Its per-repeat `environment` records the local checkout and venv paths.
 ## Not run
+
+*[History: this section describes the harness as returned on #526, before the 2026-09-28 execution above.]*
 
 No measurement, engine workload, `_run_part_a` or `build_verified_composition` execution, Stage 0 read, Stage 1a, workflow dispatch, re-run, cancel or artifact download was made. The harness was invoked only in these ways:
 - `py_compile`, `--help` and `--check-stage`;
