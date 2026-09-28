@@ -167,6 +167,14 @@ d9c6f99c4407a4bf98092f3e7e606d40149626006ae05ce3fb2cc718f25a3b47  .cache/fp-veri
 f79c76236120b49a81f2fcb2ccca0ebaa8e499e7119e5661fa2b412e462796e0  .cache/fp-verification/20260927T233836Z-1005f7b5bf2f/record.json
 846e81d84f6333cb788b4a17459f192e04bf3332dab0b706c198ff4d2b9bf842  actionlint-77b916f7-coord.txt
 04eda1246ac875cfdde4553e87e6bb4e2f2c9387936e7213387d68ced3c084f4  h1b-526-r13-verification-evidence-2026-09-27.tar.gz
+# H1 step (b) execution 2026-09-28 (ledger: "Coordinator CP-1b packet — build-entry status, 2026-09-28"): the complete
+# Stage 1b dry-run (36364714432) and measure (36364854404) artifacts including journal.log and summarize.log,
+# the Stage 1a bundle, record and launcher logs, the raw Stage 0 extracts and the combined record, with a MANIFEST.tsv;
+# pushed to first-passage-archive (7ae9a62, first-passage-archive#844); ARCHIVED once that PR merges.
+# With it, the launcher check records for #535 and for this packet's tree.
+9b00b8c163f7514015256283a61998b60b1afa0fa5bd3dfc5c804ef573deee29  h1b-stage1b-measurement-evidence-2026-09-28.tar.gz
+90ce9b52eb7e45eb3b516a58cfb5ca23a1d1b63542deff2af11e06823644fc56  .cache/fp-verification/20260928T002434Z-18669aab5ba0/record.json
+c7246306e9cc8f1ae0a01074a62eb125e38423252e3952b6fa6bec2e5fadad64  .cache/fp-verification/20260928T012306Z-7f00a0069a0b/record.json
 #
 # 2026-09-28 — S4 run logs of 2026-09-25 (runs 36180568493 and 36181780676, artifact
 # qualification-s2-supervision), preserved in the primary checkout's ignored local_artifacts/: the 222 files

@@ -848,7 +848,7 @@ The sequencing record is the [deployment-checklist addendum 2026-09-27](2026-09-
 
 | Stage | Conditions | Status 2026-09-27 |
 |---|---|---|
-| **Build entry** (releases the hold for the TEST_ONLY build only) | **RC-1**: D1–D3 ruled. **The §3.4(d) text** applied (S5 draft §4, consistency correction). **RC-4/RC-5 assignment**: the seed-view owner and slice, with the F1 admission-check text, and an owner, gate and record location for each of OF-1..OF-7, resolving S5 draft §6 Q12. **RC-6**: the packet re-anchored at the release head, including #519's findings that the (2, 4, 2) fixture cannot expand and the three `/v7` profile pitfalls. **RC-3a**:<br>– an operator-approved measurement-and-margin rule;<br>– a valid (PA-4) record from an operator-approved forced-expansion measurement of the **existing** `_run_part_a` on the reference runtime (#519 Stage 1b);<br>– the rule applied as a **provisional** PART_A TEST_ONLY ceiling, with D̂ uncovered;<br>– Σ-feasibility shown as **arithmetic on the proposed `/v7` values** (#519 proposal §5).<br>Then an operator hold-release entry here | **RC-1 met** on `main` (#517 merged at `5ad04cf`). The others are open. The measurement dispatch is prepared under [handoff H1](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1--s5-measurement-correct-the-519-proposal-return-a-measurement-dispatch) and executed only after the operator approves it. *[2026-09-28: superseded. The [CP-1a ruling](#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27) approved the bounded dispatch (decision (2)) and met the RC-4/RC-5 assignment for build entry (decision (5)). The [H1(c) acceptance](#operator-acceptance--h1c-full-text-accepted-build-entry-sections-to-be-applied-2026-09-27) applied the §3.4(d) text and the RC-6 re-anchor, and RC-6 is met when CP-1b records the reviewed revision. RC-3a stays open.]* |
+| **Build entry** (releases the hold for the TEST_ONLY build only) | **RC-1**: D1–D3 ruled. **The §3.4(d) text** applied (S5 draft §4, consistency correction). **RC-4/RC-5 assignment**: the seed-view owner and slice, with the F1 admission-check text, and an owner, gate and record location for each of OF-1..OF-7, resolving S5 draft §6 Q12. **RC-6**: the packet re-anchored at the release head, including #519's findings that the (2, 4, 2) fixture cannot expand and the three `/v7` profile pitfalls. **RC-3a**:<br>– an operator-approved measurement-and-margin rule;<br>– a valid (PA-4) record from an operator-approved forced-expansion measurement of the **existing** `_run_part_a` on the reference runtime (#519 Stage 1b);<br>– the rule applied as a **provisional** PART_A TEST_ONLY ceiling, with D̂ uncovered;<br>– Σ-feasibility shown as **arithmetic on the proposed `/v7` values** (#519 proposal §5).<br>Then an operator hold-release entry here | **RC-1 met** on `main` (#517 merged at `5ad04cf`). The others are open. The measurement dispatch is prepared under [handoff H1](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1--s5-measurement-correct-the-519-proposal-return-a-measurement-dispatch) and executed only after the operator approves it. *[2026-09-28: superseded. The [CP-1a ruling](#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27) approved the bounded dispatch (decision (2)) and met the RC-4/RC-5 assignment for build entry (decision (5)). The [H1(c) acceptance](#operator-acceptance--h1c-full-text-accepted-build-entry-sections-to-be-applied-2026-09-27) applied the §3.4(d) text and the RC-6 re-anchor, and RC-6 is met when CP-1b records the reviewed revision. RC-3a stays open.]* *[Status 2026-09-28, after the measurement: see the [CP-1b packet entry](#coordinator-cp-1b-packet--build-entry-status-2026-09-28). RC-1, the §3.4(d) text, the RC-4/RC-5 assignment and RC-3a are met there, and RC-6 is met subject to CP-1b naming the revision.]* |
 | **Checkpoint C3 and S5 acceptance** | The S5 packet's C3 items. **RC-3b**:<br>– the adapter-specific measurement (#519 Stage 1c), which covers D̂ and ends the provisional status;<br>– the **executed** `bind_budget` Σ-feasibility check on the built `/v7` profile;<br>– the Stage 2 service-route consistency check (PA-5).<br>Inside the approved rule the coordinator re-applies with an entry here; outside it, an operator ruling. The full RC-2 owner-text set accepted and applied | Open |
 | **Before F1** (expanding authority) | The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built. *[Corrected 2026-09-27: the OF attestations fall due at the gates the RC-5 entry below assigns; before F1 that is OF-7 (G-F1), and the full set is read at CP-8.]* | Open |
 
@@ -1081,7 +1081,7 @@ The relayed draft is not a committed record. This entry records what the operato
    - If coverage holds: the §12.1 local read and public-clone review. *[2026-09-28: run r2 §16.4's check-and-read block instead ([#536](https://github.com/Joshua-Asante/first-passage/pull/536)). The §12.1 extraction lines double-count systemd CPU lines and drop each line's run; r2 marks them superseded (helper review of #523, C1, C5 and C12).]*
    - Otherwise: record `UNAVAILABLE`. No download.
 2. **Stage 1a.** Run the README Stage 1a commands through the LF checkout's `fp.ps1`.
-3. **Stage 1b dry run.** *[2026-09-28: do not dispatch with the commands in steps 3–5. They never bind a run id, download or retain the evidence by run, job and attempt, or read the re-run decision from the records (helper review of #523, C2, C3, C6, C7 and C10). Stage 1b runs from r2 §12.3's tested dispatch block in [#539](https://github.com/Joshua-Asante/first-passage/pull/539), once it merges. That block stays within this entry's authority and the §12.7 caps.]*
+3. **Stage 1b dry run.** *[2026-09-28: do not dispatch with the commands in steps 3–5. They never bind a run id, download or retain the evidence by run, job and attempt, or read the re-run decision from the records (helper review of #523, C2, C3, C6, C7 and C10). Stage 1b runs from r2 §12.3's tested dispatch block in [#539](https://github.com/Joshua-Asante/first-passage/pull/539), once it merges. That block stays within this entry's authority and the §12.7 caps.]* *[Coordinator record 2026-09-28: Stage 1b had already run under steps 3–4 as merged in #535, at 01:06–01:12 UTC, before this marker merged (#536, 03:18 UTC). The dry run was 36364714432 and the measure run 36364854404, both at head `7675c088`. Each run id was bound by listing this workflow's runs right after its dispatch: exactly one new run appeared each time, with its `headSha` confirmed, and the workflow has no other runs. Each run was watched to completion and its artifacts downloaded whole into a per-run directory, named by job and attempt. They are retained publicly under `stage1b/` and privately in first-passage-archive#844. The re-run decision was read from each job's record and summarize log: all exit 0, so no re-run was used. The marker governs any further Stage 1b dispatch. It does not invalidate the executed runs; see the [CP-1b packet entry](#coordinator-cp-1b-packet--build-entry-status-2026-09-28).]*
    - Command: `gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir=docs/notes/2026-09-27-s5-part-a-measurement`.
    - Then `gh run watch`, and `gh run download` into scratch, pass or fail.
    - At most one re-dispatch, and only for I-1 or I-6.
@@ -1115,6 +1115,135 @@ Every r2 §12.7 and §12.9 stop returns at once. A further dispatch after a stop
 - production, activation or live authority.
 
 S5 stays **HELD**.
+
+### Operator acceptance — H1(c) post-acceptance corrections 1, 2, 4–7 and 9–11, 2026-09-28
+
+**Source.** In session on 2026-09-28 (UTC), asked "Is it your decision to accept post-acceptance corrections 1, 2, 4–7 and 9–11 … as build-entry text, with 3 and 8 staying at C3?", the operator answered by structured answer: "Yes, accept them".
+
+**Scope.**
+- The accepted corrections are the ones in the register of `docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md` (`:907-919`), at blob `bb082bca` (last changed in `e59333b`).
+- They are applied in the S5 packet `docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md` at blob `ee7329c1` (last mirror `7b6df3f`), which carries 14 "Post-acceptance" markers.
+- Correction 5 (pre-decision prefix custody) adds an executor obligation: the initial-prefix artifact is written and fsynced before the expansion decision. Correction 2 drops a redundant seam-gate predicate, correction 9 makes CP-1b the only freeze trigger, and correction 10 states PA-5's prescribed-arm denominator. Corrections 1, 4, 6, 7 and 11 bring the S5 scope into validation, test selection and operator commands.
+
+**Effect.**
+- The build-entry text applied by #527 is now accepted text in full.
+- Corrections 3 and 8 are C3 text and stay unaccepted until C3.
+
+**Not granted:** the hold release, S5 build, freeze or dispatch, and any RC-2 application. S5 stays **HELD**.
+
+### Coordinator application: PART_A TEST_ONLY diagnostic ceiling under the approved measurement-and-margin rule (2026-09-28)
+
+**Rule and scope.**
+- The rule is the r2 §9 measurement-and-margin rule. Its numeric defaults were conditionally approved on 2026-09-26 and confirmed by CP-1a decision (1): m_c 2.0, m_w 3.0, L 30 s, m_m 1.5, the floors 120 s / 300 s, and rounding up to whole 10 s. CP-1a (1) keeps the 1.5 × P̂ pilot-budget term provisionally; it is not among the 2026-09-26 defaults. O = 20 s is the profile constant `profile.py:212`.
+- It is applied under the r2 §13 procedure.
+- Scope: the `/v7` TEST_ONLY diagnostic profile, PART_A only. No production value is set or implied.
+
+**§13 preconditions.**
+- The CP-1a ruling is recorded above.
+- The record is the combined Stage 1b record `docs/notes/2026-09-27-s5-part-a-measurement/stage1b/36364854404-combined.json` (SHA-256 `e1efa8fd127ce24f44f0cfcb8c9d0bf15d647af4def007fc3971f791e8613d73`). It shows:
+  - `scope = combined`, `stage = 1b`, `mode = measure`;
+  - `validity_ok = true`, `rule_applicable = true`;
+  - `memory_feasibility = VERIFIED` and `stop_class = none`.
+- The `/v7` N2 value is 360 s / 900 s, from CP-1a decision (3).
+
+**Inputs.** From `summary.estimates` (forced arm; maxima over the 10 timed repeats of both jobs, cold included):
+- Ĉ = 11.038634 s: job a, forced repeat 1 (cold). It is `max(C_w, CPUUsageNSec − setup) = max(10.518016, 15.141 − 4.103)`.
+- Ŵ = 11.390639 s.
+- P̂ = 8.426527 s.
+- M̂ = 168,366,080 B: job b, forced repeat 1 (cold).
+
+Ĉ and M̂ are shown exactly. Ŵ (recorded 11.390638705000004) and P̂ (recorded 8.426527197999889) are shown rounded to six places, and the computation uses them at full recorded precision. The only rounding applied is the final upward rounding of X and Y to whole 10 s. The per-job records are:
+- job a: `…/stage1b/36364854404-a-attempt1/record.json` (SHA-256 `65bda0488acd9919116d29f2bc0c3af8cebf4e93b63d01fca0848130cedbbcc5`);
+- job b: `…/stage1b/36364854404-b-attempt1/record.json` (SHA-256 `c67368207e145a33602749a40ef38df8abfed85bb4721b5ea8a7c4cfb4ada3d2`).
+
+**Computation** (the arithmetic is reproduced by the harness screens: `sigma_screen` 120 / 300 and `pa3a_screen` 252,549,120):
+- **PA-1:**
+  - B = max(2.0 × 11.038634, 1.5 × 8.426527) = max(22.077268, 12.639791) = 22.077268.
+  - X_raw = max(120, 22.077268 + 20) = 120, so **X = 120 s**.
+  - It is **provisional: D̂ uncovered** until Stage 1c.
+- **PA-2:**
+  - Y_raw = max(300, 3.0 × (11.390639 + 30)) = max(300, 124.171916) = 300, so **Y = 300 s**.
+  - It is **provisional** too.
+  - m_w ≥ m_c ÷ (m_c − 1) holds (3 ≥ 2).
+- **PA-2b:** 1.5 × P̂ = 12.639791 ≤ B, and X − 20 = 100 ≥ B.
+  - The 1.5 × P̂ term stays provisional until the C3 check on SR-8's `probe_seconds` and `predicted_seconds` (CP-1a (1)).
+- **PA-3a** (payload scope):
+  - 1.5 × M̂ = 252,549,120 ≤ 256,000,000, so memory is **VERIFIED**. The margin is 3,450,880 B (1.35%).
+  - The same test over every timed repeat of both arms (r2 §8.3's wording) uses M̂ = 169,336,832 (job a, prescribed cold) and gives 254,005,248, still within the bound (margin 0.78%).
+  - Both exceed the unextended binding of 230,400,000. So the 256,000,000 reference needs the P4 tuple extended to `/v7`, which is precondition 1 below.
+  - The memory maxima come from the cold repeats (about 165–169 MB against about 100 MB warm).
+- **PA-3b:** the composition `m_m × (P₂ + max(0, M̂ − M̂ₚ))` is accepted as a provisional C3 check. Its additive assumption is **UNVERIFIED** (CP-1a (1)).
+
+**Shared ceilings suffice.** X = 120 s and Y = 300 s equal the shared PART_A diagnostic values (`profile.py:209`). So r2 §13 step 5 does not trigger: no `/v7`-gated PART_A constant and no profile edit follow from this application.
+
+**Feasibility (r2 §10.2, arithmetic on the proposed `/v7` values):**
+
+| Row | CPU | Wall | Result |
+|---|---|---|---|
+| Σ phases, the code check (`campaign_store.py:2776-2783`) | 1,560 + 120 = 1,680 ≤ 10,000 | 3,900 + 300 = 4,200 ≤ 10,000 | feasible |
+| + one signing retry of a 120 s / 300 s phase | 1,800 ≤ 10,000 | 4,500 ≤ 10,000 | feasible |
+| + D3's two future compute re-executions (not S5) | 1,680 + 3 × 120 = 2,040 ≤ 10,000 | 4,200 + 3 × 300 = 5,100 ≤ 10,000 | feasible |
+| Memory: max phase `memory_bytes` against the binding | 256,000,000 ≤ 256,000,000 with the P4 tuple extended | — | feasible only with the extension |
+
+- The two gaps r2 §10.2 names stand: Σ counts one reservation per phase, and no code checks the wall slack between works.
+- The **D2 ACCOUNTING-DESIGN FALSIFIER** is not engaged: Σ is feasible from a valid record.
+- There is no PA-3 failure.
+
+**`/v7` preconditions** (for the S5 build, not applied here):
+1. add `/v7` to the P4 tuple at `fixture_producer.py:154-155`;
+2. add `/v7` at `profile.py:219-226`;
+3. add `/v7` at `profile.py:243-252`;
+4. extend `profile.py:239` to `/v7` with 360 s / 900 s.
+
+**Recorded alongside.**
+- **Host variance.** The between-job forced median CPU ratio is 1.534. Job a ran on an AMD EPYC 7763 and job b on an AMD EPYC 9V74. r2 §6.2 records a ratio above 1.30 as host variance, not a validity failure. The PA-4 warm spread within each job and arm is about 1.01–1.02.
+- **Runtime.** `host_venv`, CPython 3.12.3 on Ubuntu 24.04, kernel 6.17.0-1022-azure, systemd 255, 4 vCPU, swap off. PA-5 at C3 validates the host-to-worker mismatch (CP-1a (2)(d)).
+- **C3 re-measurement trigger 5 thresholds:** 0.8 × B = 17.66 s and 0.8 × Y = 240 s.
+
+**Not granted:** a production value; any value for another phase; closing RC-3b; the hold release; S5 build, freeze or dispatch. S5 stays **HELD**.
+
+### Coordinator CP-1b packet — build-entry status, 2026-09-28
+
+**Execution record (H1 step (b), under the dispatch entry above).** `main` was `7675c088` at Stage 1a, at both dispatches and after the combine; no commit landed on `main` during either Linux window.
+
+| Stage | Outcome | Evidence |
+|---|---|---|
+| Stage 0 (optional calibration) | r2 §16.4 coverage **holds**: `SHA256SUMS` = `e2c14228…189a7`, all 222 files verify, and both log files are present in each run directory. Extraction and public-clone review are done, with the review rule recorded in the README. The read used the §16.4 block as it stood at `7675c088`, which greps both `journal.log` and `systemd-units.log`. So `lines.txt` double-counts the systemd CPU lines, which appear in both files, and carries no run or file labels. #536's corrected block (`journal.log` only, labelled lines, pin and entry checks) post-dates the read. This is calibration only; it sets nothing. *Deviation from the dispatch entry's output list:* `stage0/SHA256SUMS` is not committed. Its hash is cited instead, because a tracked `*SHA256SUMS` would pin 222 private files, two of which (110 MB each) cannot be archived | `docs/notes/2026-09-27-s5-part-a-measurement/stage0/{lines.txt,memory_peak.txt}`. It sets no ceiling and no N2 value |
+| Stage 1a (Windows, LF checkout at `7675c088`, ops env CPython 3.13.2) | **Valid** (exit 0). The first invocation was refused by argparse before any repeat ran: PowerShell split the unquoted `--arms` list. The README command is corrected and the refusal log is archived. Memory is UNVERIFIED by design; the record is never rule-applicable | `windows-20260928T010154Z.json` (`1eaf8fb9…`) and its `.record.json` (`9ecff272…`) |
+| Stage 1b accounting probe and dry run | Run **36364714432**, attempt 1: **valid** (exit 0). The probe is OK: in-unit peak 76.0 MB for a 64 MiB child, cgroup path matches, swap off. Memory is complete, CPU captured and cleanup exit 0. The image-first decision rests on the recorded static finding (`host_venv`) | `stage1b/36364714432-a-attempt1/` |
+| Stage 1b measure | Run **36364854404**, attempt 1, jobs a and b: both **valid**, memory VERIFIED, cleanup exit 0. No re-run was used: 0 of 1 dry-run re-dispatches and 0 of 1 `--failed` re-runs | `stage1b/36364854404-{a,b}-attempt1/`; combined record `e1efa8fd127ce24f44f0cfcb8c9d0bf15d647af4def007fc3971f791e8613d73` |
+
+The complete downloaded artifacts, including the journals, are private. So are the Stage 1a logs and the raw Stage 0 extracts. They are in the package `h1b-stage1b-measurement-evidence-2026-09-28.tar.gz` (SHA-256 `9b00b8c163f7514015256283a61998b60b1afa0fa5bd3dfc5c804ef573deee29`, 86 files with a `MANIFEST.tsv`), which is pinned in `docs/evidence/PRIVATE_EVIDENCE.sha256` and pushed to first-passage-archive in [first-passage-archive#844](https://github.com/Joshua-Asante/first-passage-archive/pull/844) (commit `7ae9a62`). It counts as ARCHIVED once the operator merges that PR, and the post-merge `audit --verify` is recorded then.
+
+**Build-entry table** (this updates the [2026-09-27 direction entry](#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27)'s status column):
+
+| Condition | Status 2026-09-28 | Evidence |
+|---|---|---|
+| RC-1 | **Met** | #517 merged at `5ad04cf`; [D1–D3 ruling](#operator-ruling--s5-directions-adopted-hold-kept-2026-09-26) |
+| §3.4(d) text | **Applied** | #527 application commit `afa26a66` (merged at `6380dcb4`): contract decision 6 and the S5 Behavior text in this plan, each with its D-2 bridging note (removed at C3) |
+| RC-4/RC-5 assignment | **Met** | [RC-5 assignment](#coordinator-assignment--rc-5-host-checks-recorded-and-rc-4-seed-view-slice-pending-the-operator-2026-09-27); RC-4 slice accepted at [CP-1a (5)](#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27). The implementation is due before F1; the attestations fall at their assigned gates |
+| RC-6 | **Met, subject to CP-1b naming the revision** (the evidence and the re-check follow the table) | The packet was re-anchored at `875ecf29` by #527 |
+| RC-3a | **Met** | The rule (CP-1a (1)); a valid record from the approved forced-expansion measurement of the existing engine (run 36364854404); the provisional application and the §10 arithmetic ([entry above](#coordinator-application-part_a-test_only-diagnostic-ceiling-under-the-approved-measurement-and-margin-rule-2026-09-28)) |
+| RC-2 | At C3 (open) | The draft's §3 plus corrections 3 and 8 |
+| RC-3b | At C3 (open) | Stage 1c, the executed `bind_budget` on the built `/v7`, and Stage 2/PA-5 |
+
+**RC-6 evidence.**
+- **Operator acceptance:** the full text at `011ce9e4`, and corrections 1, 2, 4–7 and 9–11 ([entry above](#operator-acceptance--h1c-post-acceptance-corrections-1-2-47-and-911-2026-09-28)).
+- **Coordinator review:** at `7675c088`, all 99 build-entry PROPOSED lines of the note are present verbatim in the packet and this plan. At `afa26a66` it was 91 of 91 against the note at `011ce9e4`.
+- **Anchor re-check against the candidate.** Between the application head `875ecf29` and `7675c088`, the only anchored code that changed is `ops/c1_rail/qualification/replay.py`, from #522. That change is the lifecycle-L1 exemption from the one-bar cancel for `orb_mnq_v7` base entries.
+  - The packet cites `replay.py` only as a file-level Rule-0 read (packet line 12), with no line anchor.
+  - `part_a.py` imports only `ReplayDeadlineFailure` from it, and that is unchanged.
+  - Stage 1b measured `7675c088`, which includes the change.
+  - The packet's statement that `ops/c1_rail/qualification/` is unchanged refers to `228447c` against `875ecf29`, and it remains true of those two commits.
+  - The packet PR that carries this entry changes no anchored line or section. In this plan it changes only line 851 in place and appends entries at the end.
+
+**CP-1b candidate revision:** `main` at the merge of the PR that carries this entry. It is documentation-only over `7675c088`.
+
+**Coordinator recommendation, for the operator's decision:** release the S5 hold for the **TEST_ONLY build** at that revision.
+- C3 obligations stay: Stage 1c through the built adapter with the SR/P set; the executed `bind_budget` Σ check on the built `/v7`; Stage 2/PA-5 with the named worker-side residual; PA-3b and the pilot-budget term validation; the RC-2 owner-text set with corrections 3 and 8; OQ-1, Q1, Q7 and Q9.
+- The four `/v7` preconditions land with the S5 build.
+
+**Not granted:** the hold release (the operator's, at CP-1b); S5 build, freeze or dispatch; Stage 1c or Stage 2; production, activation or live authority. S5 stays **HELD**.
 
 ### Operator ruling and execution — S4 run logs second copy (M-41), 2026-09-28
 
