@@ -605,34 +605,41 @@ snapshot() {
 }
 # bind MODE: print the id of the one dispatch run of MODE, on any head, that the snapshot did not hold, or stop.
 # The run listing carries no dispatch identity, so a run someone else started in the same window could be taken
-# for this one. After a candidate appears, bind therefore keeps listing for about a minute more: if a second new
-# run of MODE shows up, the binding is ambiguous and the stage stops. The caller then confirms the run's headSha
+# for this one. After a candidate appears, bind keeps listing for about a minute more (its own window, however late the
+# candidate appeared): if a second new run of MODE shows up, the binding is ambiguous and the stage stops. The caller then confirms the run's headSha
 # (the s2-linux-run rule: never take --limit 1, confirm headSha).
 bind() {
-  local ids n i settle=0 id=""
-  for i in $(seq 66); do                                                 # about 10 minutes, then the settle
-    ids=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 \
-            --json databaseId,displayTitle \
-            --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId" \
-          | grep -vxF -f "$S/before-$1.txt" || true)
-    n=$(printf '%s' "$ids" | grep -c . || true)
-    if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous; stop" >&2; return 1; fi
-    if [ "$n" = 1 ]; then
-      id=$ids; settle=$((settle + 1))
-      if [ "$settle" -gt 6 ]; then echo "$id"; return 0; fi             # one run, unchanged for about a minute
-    elif [ -z "$id" ] && [ "$i" -gt 60 ]; then break; fi
+  local ids n i id=""
+  for i in $(seq 60); do                                                 # discovery: about 10 minutes
+    ids=$(list_new "$1"); n=$(printf '%s' "$ids" | grep -c . || true)
+    if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous" >&2; return 1; fi
+    if [ "$n" = 1 ]; then id=$ids; break; fi
     sleep 10
   done
-  echo "no new $1 run bound; stop" >&2; return 1
+  [ -n "$id" ] || { echo "no new $1 run appeared" >&2; return 1; }
+  for i in $(seq 6); do                                                  # settle: about a minute more, from discovery
+    sleep 10
+    ids=$(list_new "$1"); n=$(printf '%s' "$ids" | grep -c . || true)
+    if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous" >&2; return 1; fi
+  done
+  echo "$id"
+}
+# list_new MODE: the dispatch runs of MODE, on any head, that the snapshot did not hold
+list_new() {
+  gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 --json databaseId,displayTitle \
+    --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId" \
+    | grep -vxF -f "$S/before-$1.txt" || true
 }
 # run_head ID: the commit run ID actually checked out
 run_head() { gh run view "$1" -R "$R" --json headSha --jq .headSha; }
-# fetch ID MODE ATTEMPT JOBS...: watch run ID to completion, then download each job's artifact by its exact
+# fetch ID MODE ATTEMPT JOBS...: watch run ID to completion (at most 3 hours), then download each job's artifact by its exact
 # name into $S/ID/<artifact name>/ (-n with one name extracts into -D itself), pass or fail. Returns nonzero if
 # any artifact could not be downloaded (§12.7: a failure before a record exists stops the stage).
 fetch() {
   local id=$1 mode=$2 att=$3 j a rc=0; shift 3
-  gh run watch "$id" -R "$R" --exit-status > /dev/null && echo "run $id: success" || echo "run $id: failed"
+  local w=0; timeout 10800 gh run watch "$id" -R "$R" --exit-status > /dev/null || w=$?   # 3 h: the job's 120 min plus queue
+  if [ "$w" = 124 ]; then echo "run $id: not complete within 3 hours" >&2; return 1; fi
+  if [ "$w" = 0 ]; then echo "run $id: success"; else echo "run $id: failed"; fi
   for j in "$@"; do
     a="s5-part-a-measurement-1b-$mode-$j-attempt$att"
     gh run download "$id" -R "$R" -n "$a" -D "$S/$id/$a" || { echo "run $id: artifact $a not downloaded" >&2; rc=1; }
@@ -655,9 +662,9 @@ verdicts() {
 }
 # retain: copy this invocation's downloads into one directory per run, job and attempt (dry runs and failed
 # attempts included). journal.log (the runner's whole boot journal) stays in scratch; every downloaded file,
-# journal.log included, is pinned by hash.
+# journal.log included, is pinned in this invocation's own manifest, so a later retry never drops earlier pins.
 retain() {
-  local a n run job dest
+  local a n run job dest m
   for a in "$S"/*/s5-part-a-measurement-1b-*-attempt*; do
     [ -d "$a" ] || continue
     n=${a##*/}; run=${a%/*}; run=${run##*/}
@@ -665,11 +672,14 @@ retain() {
     [ ! -e "$dest" ] || { echo "$dest already exists; not overwritten" >&2; return 1; }
     mkdir -p "$dest"; cp -a "$a/." "$dest/"; rm -f "$dest/journal.log"
   done
-  mkdir -p "$D"
-  ( cd "$S" && find . -type f ! -name 'before-*.txt' -print0 | sort -z | xargs -0 -r sha256sum ) > "$D/downloads.sha256"
+  mkdir -p "$D"; m="$D/downloads-${S##*/}.sha256"                      # one manifest per invocation, never replaced
+  [ ! -e "$m" ] || { echo "$m already exists; not overwritten" >&2; return 1; }
+  ( cd "$S" && find . -type f ! -name 'before-*.txt' -print0 | sort -z | xargs -0 -r sha256sum ) > "$m"
+  RETAINED=1
 }
 # halt MESSAGE: every stop returns to the coordinator (§12.7), keeping whatever this invocation downloaded
-halt() { echo "$1; stop" >&2; retain || true; exit 1; }
+RETAINED=""
+halt() { echo "$1; stop" >&2; [ -n "$RETAINED" ] || retain || true; exit 1; }
 
 # 1. dry run (one job, a); H is the head the dry run actually ran on
 snapshot dry-run || halt "the dry-run snapshot failed"
@@ -716,10 +726,11 @@ find "$D" -type f | sort
 # 5. combine: exactly one job a and one job b record from MEASURE_ID (per job, its highest attempt), from a
 #    checkout at the measured head H (the harness refuses any other HEAD):
 REPO=$(git rev-parse --show-toplevel); git -c core.autocrlf=false worktree add --detach "$S/wt" "$H"   # LF bytes
-( cd "$S/wt" && python -I scripts/fp.py python "$NOTE/measure_part_a_max.py.txt" \
+c=0; ( cd "$S/wt" && python -I scripts/fp.py python "$NOTE/measure_part_a_max.py.txt" \
     --summarize "$REPO/$D/$MEASURE_ID-a-attempt<n>/record.json" "$REPO/$D/$MEASURE_ID-b-attempt<n>/record.json" \
-    --record "$REPO/$D/$MEASURE_ID-combined.json" )
-git worktree remove "$S/wt"
+    --record "$REPO/$D/$MEASURE_ID-combined.json" ) || c=$?
+git worktree remove --force "$S/wt"                                     # removed whatever the combine returned
+[ "$c" = 0 ] || halt "the combine exited $c (§12.7: 3 or 4 is a verdict, anything else a harness failure)"
 ```
 
 *[Corrected 2026-09-28 (Codex review of 9bccf9de). The block previously had four defects:*
@@ -736,6 +747,14 @@ git worktree remove "$S/wt"
 
 *[Corrected 2026-09-28 (Codex review of db901da2). `fetch` and `verdicts` reported a missing artifact or an unreadable record or receipt, but still returned success. So the procedure could reach the re-run or retention steps with incomplete evidence. Both helpers now return nonzero. Every stop goes through `halt`, which retains whatever this invocation already downloaded, because §12.7 keeps failed evidence, and then exits. Step 4 is the same `retain`. Re-run against a fake `gh` with one measure artifact missing: the stage stops before any re-run, and the dry run and job a evidence are retained and hashed.]*
 
+*[Corrected 2026-09-28 (Codex review of 455cd1d3). Four fixes:*
+- *`gh run watch` has no timeout of its own, so each watch now runs under `timeout 10800`: three hours, which covers the 120-minute job plus queueing. A run that does not finish stops the stage;*
+- *`bind`'s one-minute settle window used to share the discovery loop, so a run found late could go unbound. The settle window now starts when the candidate is found;*
+- *each invocation writes its own `downloads-<invocation>.sha256` and never replaces an earlier one, so a retry after a stop keeps the earlier `journal.log` pins;*
+- *the combine worktree is removed whatever the combine returns, and a nonzero combine then stops the stage.*
+
+*Each fix was exercised against a fake `gh`: a hung watch, a combine that exits 3, a normal pass, a missing artifact, a moved head and another actor's run.]*
+
 *[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
 - **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
 - **Which record per job.** Each artifact is named `…-<job>-attempt<n>`. For each job (a and b), use the record from the **highest run attempt in which that job ran**: attempt 2 for a job that the `--failed` re-run repeated, attempt 1 for a job that passed on attempt 1 and was not re-run. The artifact name carries the run attempt, so both attempts' artifacts stay distinct in the two download directories.
@@ -748,7 +767,7 @@ git worktree remove "$S/wt"
 - the workflow YAML above;
 - `docs/notes/<date>-s5-part-a-measurement/measure_part_a_max.py.txt`;
 - `docs/notes/<date>-s5-part-a-measurement/stage1b/<run_id>-<job>-attempt<n>/{record.json,probe-in-unit.json,probe.unit,host-facts.txt,<arm>-<r>.json,<arm>-<r>.unit,cleanup-receipt.json}`, one directory per job and attempt, failed attempts included; *[Corrected 2026-09-28 (helper review of #523, C3): the directory holds every file of that job's artifact except `journal.log`, dry runs included, because the dry run's probe is the `memory.peak` evidence §8.4 relies on. `journal.log` is the runner's whole boot journal. It stays outside the repository, as Stage 0's raw logs do (§12.1).]*
-- `docs/notes/<date>-s5-part-a-measurement/stage1b/downloads.sha256`: the SHA-256 of every downloaded file, `journal.log` included; *[added 2026-09-28, C3]*
+- `docs/notes/<date>-s5-part-a-measurement/stage1b/downloads-<invocation>.sha256`: the SHA-256 of every file one invocation downloaded, `journal.log` included, one manifest per invocation; *[added 2026-09-28, C3; one per invocation after the Codex review of 455cd1d3]*
 - `docs/notes/<date>-s5-part-a-measurement/stage1b/<run_id>-combined.json`, the combined record. §13 applies the rule to this record and cites its path and SHA-256. It is retained and archived with the per-job evidence. *[Corrected 2026-09-27 (Codex review of 7f362372): the combined record and per-attempt directories are retained files.]*
 - a short note `docs/notes/<date>-s5-part-a-measurement/README.md`.
 
@@ -1288,7 +1307,7 @@ A helper session reviewed [#523](https://github.com/Joshua-Asante/first-passage/
 |---|---|
 | C1 | Fixed: §16.4 has its own `D` and commit lines, and no run metadata |
 | C2 | Fixed: §12.3 binds every dispatch to its run id (`DRY_ID`, `MEASURE_ID`) under the s2-linux-run rule. Binding takes only a run absent from the snapshot made before the dispatch, on any head, and confirms its `headSha` (Codex reviews of 9bccf9de and 6f93d54a) |
-| C3 | Fixed: §12.3 step 4 copies every run, job and attempt into `stage1b/` (dry runs included), keeps `journal.log` out and pins every download by hash. Each artifact is downloaded by name, only this invocation's downloads are retained, and the review inventory is `find` (Codex review of 9bccf9de) |
+| C3 | Fixed: §12.3 step 4 copies every run, job and attempt into `stage1b/` (dry runs included), keeps `journal.log` out and pins every download by hash. Each artifact is downloaded by name, only this invocation's downloads are retained, each invocation has its own hash manifest, and the review inventory is `find` (Codex reviews of 9bccf9de and 455cd1d3) |
 | C4 | Fixed: `--arms` is quoted in §12.2 and in the harness README |
 | C5 | Fixed in §16.4: `journal.log` only, with each line keeping its run and file. §12.1's lines are marked superseded |
 | C6 | Fixed: §12.3 waits for `attempt` 2 before watching and downloading. The wait is bounded at about 10 minutes and stops explicitly (Codex review of 83ce9f76) |
