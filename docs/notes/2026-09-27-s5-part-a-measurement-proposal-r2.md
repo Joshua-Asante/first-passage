@@ -647,7 +647,10 @@ fetch "$MEASURE_ID" 1; verdicts "$MEASURE_ID" 1 1
 #    every job not reading exit=0 reads exit=3 and rerun_eligible=true; none reads exit=4 or has no record;
 #    every job reads cleanup_exit=0 for this run, attempt 1 and its own job (§12.7)
 gh run rerun "$MEASURE_ID" -R "$R" --failed
-until [ "$(gh run view "$MEASURE_ID" -R "$R" --json attempt --jq .attempt)" = 2 ]; do sleep 10; done
+a=""; for i in $(seq 60); do                                           # about 10 minutes
+  a=$(gh run view "$MEASURE_ID" -R "$R" --json attempt --jq .attempt || true); [ "$a" = 2 ] && break; sleep 10
+done
+[ "$a" = 2 ] || { echo "attempt 2 of $MEASURE_ID not observed (last read: ${a:-none}); stop"; exit 1; }
 fetch "$MEASURE_ID" 2; verdicts "$MEASURE_ID" 2 2
 
 # 4. retain: one directory per run, job and attempt (dry runs included; failed attempts included). journal.log
@@ -1133,6 +1136,13 @@ got=$(sha256sum < "$P/SHA256SUMS" | cut -d' ' -f1)
 n=$(grep -c . "$P/SHA256SUMS")
 ( cd "$P" && sha256sum -c --quiet SHA256SUMS ) || { echo "a listed file is missing or differs; stop"; exit 1; }
 echo "all $n listed files match"                         # the record says 222
+# every file under the two run directories must be listed in the pinned SHA256SUMS (sha256sum -c
+# ignores unlisted files), so nothing read below can come from outside the pin
+mkdir -p "$S"
+( cd "$P" && find run-36180568493 run-36181780676 -type f | sort ) > "$S/present.txt"
+cut -c67- "$P/SHA256SUMS" | sed -e 's#^\*##' -e 's#^\./##' | sort > "$S/listed.txt"   # "<sha>  <path>"
+comm -23 "$S/present.txt" "$S/listed.txt" > "$S/unlisted.txt"
+[ ! -s "$S/unlisted.txt" ] || { echo "files not in the pinned SHA256SUMS:"; cat "$S/unlisted.txt"; exit 1; }
 # coverage: exactly one journal.log per run directory. systemd-units.log is not read: it is the
 # `_COMM=systemd` subset of the same boot journal (qualification-s2-supervision.yml:161, :164).
 for run in 36180568493 36181780676; do
@@ -1140,7 +1150,6 @@ for run in 36180568493 36181780676; do
   [ "$c" = 1 ] || { echo "run-$run: $c journal.log files, expected 1; stop"; exit 1; }
 done
 # only if coverage holds, and only after CP-1a approves Stage 0 (§14.1 decision (2)(a); approved 2026-09-27):
-mkdir -p "$S"
 for run in 36180568493 36181780676; do    # each line keeps its run; the journal line keeps its unit and time
   { grep -E "Consumed .* CPU time|memory peak" "$(find "$P/run-$run" -name journal.log)" || true; } \
     | sed "s/^/run-$run: /"
@@ -1162,7 +1171,7 @@ Only reviewed extracted lines and the hashes enter the repository; the raw logs 
 - *an empty `find` made `grep` read standard input;*
 - *the expected hash was compared only by eye, and a failed `sha256sum -c` did not stop the block.*
 
-*The block was exercised under `set -euo pipefail` on a synthetic tree of the recorded layout: a clean tree passes, and a wrong pin, a changed listed file or a missing `journal.log` each stop it.]*
+*The block was exercised under `set -euo pipefail` on a synthetic tree of the recorded layout: a clean tree passes, and a wrong pin, a changed listed file or a missing `journal.log` each stop it.]* *[Corrected 2026-09-28 (Codex review of 83ce9f76): `sha256sum -c` checks only the files the manifest lists, so an added or substituted unlisted file could have supplied extracted lines. The block now stops if any file under the two run directories is missing from the pinned `SHA256SUMS`. A synthetic tree with one extra unlisted file stops it.]*
 
 ### 16.5 Citation drift and other stale statements in this note
 
@@ -1225,13 +1234,13 @@ A helper session reviewed [#523](https://github.com/Joshua-Asante/first-passage/
 | C3 | Fixed: §12.3 step 4 copies every run, job and attempt into `stage1b/` (dry runs included), keeps `journal.log` out and pins every download by hash |
 | C4 | Fixed: `--arms` is quoted in §12.2 and in the harness README |
 | C5 | Fixed in §16.4: `journal.log` only, with each line keeping its run and file. §12.1's lines are marked superseded |
-| C6 | Fixed: §12.3 waits for `attempt` 2 before watching and downloading |
+| C6 | Fixed: §12.3 waits for `attempt` 2 before watching and downloading. The wait is bounded at about 10 minutes and stops explicitly (Codex review of 83ce9f76) |
 | C7 | Fixed: the re-run decision reads each job's `record.json` verdict and `cleanup-receipt.json` (§12.3 step 3) |
 | C8 | Answered in part: the workflow writes `git-parent.txt` for `stage=1c`, and §12.3 retains it. The harness field is owed with the C3 path (§12.4 marker) |
 | C9 | Open to C3: the Stage 1c form of the block is written with the `--stage 1c` harness path (§12.4 marker) |
 | C10 | Fixed: the measure is dispatched only while `main` is still the head the clean dry run validated; if `main` moved, the stage stops for the coordinator |
 | C11 | Open to C3: the Stage 2 read is owned by the S5 packet's SR-8 export and run-tooling scope. That scope includes the S5 `--expect-scope` (owner text, post-acceptance correction 11). §12.5's command is illustrative until then |
-| C12 | Fixed in §16.4: the pin is compared by the script, a failed `sha256sum -c` stops it, the count is printed from the file, and no `grep` can read standard input |
+| C12 | Fixed in §16.4: the pin is compared by the script, a failed `sha256sum -c` stops it, the count is printed from the file, and no `grep` can read standard input. A file under the run directories that the pin does not list also stops it (Codex review of 83ce9f76) |
 | C13 | Fixed: §12.2 computes the stamp once into `$bundle` and names the summary record `windows-<utc>.record.json` |
 | C14 | Arithmetic: 12 repeats × 1,800 s = 21,600 s of poll bound. The workflow's loop deadline is (120 − 15) min = 6,300 s after the job clock starts, before setup is subtracted. The workflow governs: once the deadline passes, a repeat that has not started or is still being waited on is recorded as I-6 (`HarnessNotStarted`, or the poll bound capped at the loop deadline), and summarize, cleanup and upload still run |
 | C15 | Not reproduced: a repeat that never ran is not `completed`, and the H-COUNTS check skips it (harness `:1348-1349`, "already I-6"). A failed cold purge therefore gives I-6 for the remaining repeats, re-runnable once, not H-COUNTS |
