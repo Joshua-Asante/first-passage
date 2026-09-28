@@ -102,8 +102,6 @@ Stage 1a validates the harness only. It checks panel counts, digest identity, pr
 
 **Stage 1b** (the coordinator, after this file is on `main`; within the r2 §12.7 caps):
 
-*[2026-09-28: do not dispatch from the lines below. They never bind a run id, download or retain the evidence, or read the re-run decision from the records (helper review of #523: C2, C3, C6, C7 and C10; r2 §12.3's marker). Stage 1b dispatches from r2 §12.3's tested replacement block, on branch `claude/r2-stage1b-dispatch-block` in #539, once it merges.]*
-
 ```bash
 gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-passage --ref main \
   -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir=docs/notes/2026-09-27-s5-part-a-measurement
@@ -114,6 +112,8 @@ gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-p
 # (.\fp.ps1 python ... on Windows):
 python -I scripts/fp.py python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --summarize <a>/record.json <b>/record.json --record <combined>.json
 ```
+
+The lines above are the dispatches and the combine only. The executable sequence is r2 §12.3's dispatch block. It binds each dispatch to its run id, watches and downloads every run, reads the re-run decision from the downloaded records and cleanup receipts, and copies the evidence into `stage1b/`. *[Added 2026-09-28 (helper review of #523, C2, C3 and C7).]*
 
 **Caps (r2 §12.7):**
 - at most one re-dispatch of a failed dry run (I-1 or I-6);
