@@ -94,11 +94,13 @@ def schedule_eligibility(release, profile):
     funded route for harmless probe work. The /v5 dispatch revision is a
     superset of /v4: it keeps every v4 restriction for probes and additionally
     admits the two dispatch roles through its own gate; /v6 (S4-D3) supersedes
-    it again for the joint N2 roles."""
+    it again for the joint N2 roles, and /v7 (S5-D3) adds the PART_A compute
+    checkpoint beside them."""
     pairs = (
         (EXECUTABLE_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v4'),
         (release_schema.DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v5'),
         (release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v6'),
+        (release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v7'),
     )
     return (
         type(release) is dict
@@ -108,30 +110,44 @@ def schedule_eligibility(release, profile):
 
 
 def dispatch_eligibility(release, profile):
-    """Fixed at startup: only the dispatch revisions (D4/D3) admit N1 dispatch
-    roles -- each names exactly its own closed checkpoint set."""
+    """Fixed at startup: only the dispatch revisions (D4/D3/S5-D3) admit N1
+    dispatch roles -- each names exactly its own closed checkpoint set."""
     return (
         type(release) is dict
         and release.get('schema')
-        in (release_schema.DISPATCH_DIAGNOSTIC_RELEASE, release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE)
+        in (
+            release_schema.DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE,
+        )
         and release.get('capability') == 'FULL_E1'
         and release.get('dispatch_enabled') is True
-        and release.get('dispatch_checkpoints') in (['N1'], ['N1', 'N2'])
+        and release.get('dispatch_checkpoints')
+        in (['N1'], ['N1', 'N2'], ['N1', 'N2', 'PART_A'])
         and profile.values['schema']
-        in ('qualification_execution_profile/v5', 'qualification_execution_profile/v6')
+        in (
+            'qualification_execution_profile/v5',
+            'qualification_execution_profile/v6',
+            'qualification_execution_profile/v7',
+        )
     )
 
 
 def joint_dispatch_eligibility(release, profile):
-    """Fixed at startup: only the S4 joint dispatch revision (D3) admits the
-    N2 dispatch roles."""
+    """Fixed at startup: only the joint dispatch revisions (D3, plus its S5-D3
+    /v7 successor) admit the N2 dispatch roles."""
     return (
         type(release) is dict
-        and release.get('schema') == release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE
+        and release.get('schema')
+        in (
+            release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE,
+        )
         and release.get('capability') == 'FULL_E1'
         and release.get('dispatch_enabled') is True
-        and release.get('dispatch_checkpoints') == ['N1', 'N2']
-        and profile.values['schema'] == 'qualification_execution_profile/v6'
+        and release.get('dispatch_checkpoints') in (['N1', 'N2'], ['N1', 'N2', 'PART_A'])
+        and profile.values['schema']
+        in ('qualification_execution_profile/v6', 'qualification_execution_profile/v7')
     )
 
 
@@ -349,6 +365,7 @@ class ExecutionService:
             EXECUTABLE_DIAGNOSTIC_RELEASE,
             release_schema.DISPATCH_DIAGNOSTIC_RELEASE,
             release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE,
         ):
             if (
                 operation == 'SUBMIT_E1'
@@ -1076,6 +1093,7 @@ class ExecutionService:
             'qualification_execution_profile/v4',
             'qualification_execution_profile/v5',
             'qualification_execution_profile/v6',
+            'qualification_execution_profile/v7',
         ):
             campaigns = campaign_store.CampaignStore(self.store)
             with self.store.transaction() as connection:

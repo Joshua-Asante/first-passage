@@ -1366,6 +1366,7 @@ def guardian_main():
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
         'qualification_execution_profile/v6',
+        'qualification_execution_profile/v7',
     ):
         raise ValueError('diagnostic guardian requires fresh installed revision')
     campaigns = CampaignStore(context.store)

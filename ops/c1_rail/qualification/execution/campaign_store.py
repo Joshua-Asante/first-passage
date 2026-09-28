@@ -2221,6 +2221,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 'qualification_execution_release/v4',
                 'qualification_execution_release/v5',
                 'qualification_execution_release/v6',
+                'qualification_execution_release/v7',
             )
             or context.attempt_id != request['attempt_id']
             or context.bundle_sha256 != request['bundle_sha256']

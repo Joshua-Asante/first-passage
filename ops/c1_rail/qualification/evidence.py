@@ -946,11 +946,13 @@ def build_checkpoint_evidence(
         not in (
             'qualification_execution_release/v5',
             'qualification_execution_release/v6',
+            'qualification_execution_release/v7',
         )
         or release.get('capability') != 'FULL_E1'
         or release.get('production_execution') is not False
         or release.get('dispatch_enabled') is not True
-        or release.get('dispatch_checkpoints') not in (['N1'], ['N1', 'N2'])
+        or release.get('dispatch_checkpoints')
+        not in (['N1'], ['N1', 'N2'], ['N1', 'N2', 'PART_A'])
         or release.get('qualification_policy_sha256') != policy.sha256
         or release.get('source_owner_sha256') != resolved['source_owner_sha256']
         or plan.get('schema') != 'qualification_checkpoint_plan/v2'
@@ -1285,11 +1287,12 @@ def build_joint_checkpoint_evidence(
         type(release) is not dict
         or type(plan) is not dict
         or type(payload) is not dict
-        or release.get('schema') != 'qualification_execution_release/v6'
+        or release.get('schema')
+        not in ('qualification_execution_release/v6', 'qualification_execution_release/v7')
         or release.get('capability') != 'FULL_E1'
         or release.get('production_execution') is not False
         or release.get('dispatch_enabled') is not True
-        or release.get('dispatch_checkpoints') != ['N1', 'N2']
+        or release.get('dispatch_checkpoints') not in (['N1', 'N2'], ['N1', 'N2', 'PART_A'])
         or release.get('qualification_policy_sha256') != policy.sha256
         or release.get('source_owner_sha256') != resolved['source_owner_sha256']
         or plan.get('schema') != 'qualification_checkpoint_plan/v3'
