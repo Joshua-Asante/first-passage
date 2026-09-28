@@ -208,7 +208,7 @@ git show <dispatch-sha>:docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md
 **Evidence:** `local_artifacts/modify-semantics-2026-09-27/` in this worktree (gitignored), containing:
 - four public captures made 2026-09-28;
 - `MANIFEST.tsv`, SHA-256 `8cb975e48cf6f1e80c8dc9de5a3d91a6de186eb84c1985ce91d995e8b8979372`;
-- `QUOTE_INDEX.txt` (MR01–MR18, MT01–MT12, MS01–MS05), SHA-256 `0aae89ecae95f0b109163f94074739d944117a6669659fa9256057602a790b5a`;
+- `QUOTE_INDEX.txt` (MR01–MR22, MT01–MT13, MS01–MS06, MP01), SHA-256 `f8fc48da588011daa03272e175a3ba293f480bbbffd25087019aeef0a847c0a7`;
 - `SHA256SUMS`.
 
 The coordinator or operator relocates it to the primary checkout.
@@ -220,11 +220,11 @@ The coordinator or operator relocates it to the primary checkout.
   - a refusal is reported through `CommandResult` or a command report (`commandStatus`, `rejectReason`, timestamp, optional `ordStatus`);
   - Tradovate can create a version for a command it later rejects, and version-derived price fields can reflect that refused modification;
   - versions have no timestamp and no command reference.
-- **Consequence for X-2:** no documented CrossTrade read returns a working order's effective price after a refused modify. An X-2 trace can show the refusal and a `Working` status; "at its original price" rests on inference.
+- **Consequence for X-2:** no documented CrossTrade read returns a working order's effective price after a refused modify: not the status read, order rows, the lifecycle, the snapshot, or the WebSocket order stream. An X-2 trace can show the refusal and a `Working` status; "at its original price" rests on inference.
 
 **Contradictions (documentary; no trace exists):**
-- **D-1:** PR #540's packet cites an **NT8-tab** sentence ("Only nonterminal orders can be changed…") as the change surface's statement; the Tradovate tab has none.
-- **D-2:** drill plan X-2's "version, unchanged" conflicts with Q21.
+- **D-1:** PR #540's packet cites an **NT8-tab** sentence ("Only nonterminal orders can be changed…") as the change surface's statement. The Tradovate tab has only a generic failure envelope.
+- **D-2:** drill plan X-2's "version, unchanged" conflicts with Q21; a new version carrying the refused price makes the price indeterminate (the owner decides whether that is a fail).
 - **D-3:** which version CrossTrade restores from after a refused modify is not stated.
 - **D-4:** the §3.7 closure's partial-body guidance for X-2 interacts with D-3.
 
