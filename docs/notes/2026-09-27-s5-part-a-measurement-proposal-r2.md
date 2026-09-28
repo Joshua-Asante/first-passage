@@ -598,7 +598,8 @@ S=<scratch>/s5-1b-$(date -u +%Y%m%dT%H%M%SZ); mkdir "$S"            # S: this in
                                                                     # and outside the repository (mkdir fails if it exists)
 BASELINE=<the approval's baseline, UTC, e.g. 2026-10-01T00:00:00Z>  # runs created before it are set aside by the
                                                                     # approval that authorizes this attempt; their evidence stays retained
-[[ $BASELINE =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || { echo "BASELINE is not a UTC time; stop" >&2; exit 1; }
+[[ $BASELINE =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] && b=$(date -u -d "$BASELINE" +%s) \
+  && [ "$b" -le "$(date -u +%s)" ] || { echo "BASELINE is not a real UTC time at or before now; stop" >&2; exit 1; }
 # runs_since: every dispatch run of the workflow created at or after BASELINE, as a JSON array. A listing of 100
 # may be truncated (--limit caps what is fetched before any title filter), so it fails rather than undercount.
 runs_since() {
@@ -612,18 +613,22 @@ runs_since() {
 # A Stage 1b run of either mode that is not completed, of any date, stops it: an earlier invocation may have lost
 # track of that run, and a new dispatch beside it would exceed the per-stage cap. The coordinator resumes that run
 # instead. Live runs are found by GitHub's own status filter, one listing per non-terminal status, so no count of
-# completed runs can push one out of view; a listing of 100 stops, since it cannot rule one out.
+# completed runs can push one out of view; a listing of 100 stops, since it cannot rule one out. The statuses are
+# read in lifecycle order, so a run that advances during a sweep moves into a status not yet read, and two whole
+# sweeps must both find none.
 snapshot() {
-  local all live="" st
+  local all live="" st k
   all=$(runs_since) || return 1
   jq -r '.[] | select(.displayTitle | startswith("S5 Part A measurement [stage 1b, ")) |
          "\(.databaseId) \(.status) \(.displayTitle)"' <<< "$all" > "$S/runs-$1.txt" || return 1
-  for st in queued in_progress requested waiting pending; do
-    all=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --status "$st" --limit 100 \
-            --json databaseId,displayTitle) || return 1
-    [ "$(jq length <<< "$all")" -lt 100 ] || { echo "100 $st runs: a live Stage 1b run cannot be ruled out" >&2; return 1; }
-    live="$live$(jq -r '.[] | select(.displayTitle | startswith("S5 Part A measurement [stage 1b, ")) | " \(.databaseId)"' \
-                   <<< "$all" | tr -d '\n')" || return 1
+  for k in 1 2; do
+    for st in requested queued pending waiting in_progress; do
+      all=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --status "$st" --limit 100 \
+              --json databaseId,displayTitle) || return 1
+      [ "$(jq length <<< "$all")" -lt 100 ] || { echo "100 $st runs: a live Stage 1b run cannot be ruled out" >&2; return 1; }
+      live="$live$(jq -r '.[] | select(.displayTitle | startswith("S5 Part A measurement [stage 1b, ")) | " \(.databaseId)"' \
+                     <<< "$all" | tr -d '\n')" || return 1
+    done
   done
   [ -z "$live" ] || { echo "a Stage 1b run is still live:$live; the coordinator resumes it, never dispatch beside it" >&2; return 1; }
   # only grep's "no match" (exit 1) is ignored: a failed read or write of the snapshot stops, never undercounts
@@ -686,7 +691,7 @@ list_new() {
   all=$(runs_since) || return 1
   all=$(jq -r --arg m "S5 Part A measurement [stage 1b, $1," '.[] | select(.displayTitle | startswith($m)) | .databaseId' \
           <<< "$all") || return 1
-  printf '%s\n' "$all" | grep -vxF -f "$S/before-$1.txt" || true
+  printf '%s\n' "$all" | grep -vxF -f "$S/before-$1.txt" || [ $? = 1 ]   # only "no match" is ignored
 }
 # run_head ID: the commit run ID actually checked out
 run_head() { gh run view "$1" -R "$R" --json headSha --jq .headSha; }
@@ -736,8 +741,12 @@ retain() {
     job=${n%-attempt*}; job=${job##*-}; dest="$D/$run-$job-attempt${n##*-attempt}"
     [ -e "$a.complete" ] || dest="$dest.partial"     # an interrupted or failed download is kept, never read as whole
     [ ! -e "$dest" ] || { echo "$dest already exists; not overwritten" >&2; return 1; }
-    # each command is checked: retain runs on the left of `||`, where set -e does not apply
-    mkdir -p "$dest" || return 1; cp -a "$a/." "$dest/" || return 1; rm -f "$dest/journal.log" || return 1
+    # built under a temporary name and renamed only when whole, so a failed copy never leaves a directory that
+    # reads as complete (the raw download stays in scratch). Each command is checked: retain runs on the left of
+    # `||`, where set -e does not apply
+    rm -rf "$dest.tmp" || return 1
+    { mkdir -p "$dest.tmp" && cp -a "$a/." "$dest.tmp/" && rm -f "$dest.tmp/journal.log" && mv "$dest.tmp" "$dest"; } \
+      || { rm -rf "$dest.tmp"; echo "$dest could not be retained whole" >&2; return 1; }
   done
   mkdir -p "$D" || return 1; m="$D/downloads-${S##*/}.sha256"         # one manifest per invocation, never replaced
   [ ! -e "$m" ] || { echo "$m already exists; not overwritten" >&2; return 1; }
@@ -782,6 +791,10 @@ e=$(field "$DRY_ID" dry-run a 1 record.json .verdict.exit_code)
 [ "$(gh api "repos/$R/commits/main" --jq .sha)" = "$H" ] || halt "main moved since the dry run"
 snapshot measure || halt "the measure snapshot failed"
 [ ! -s "$S/before-measure.txt" ] || halt "a Stage 1b measure run already exists; the stage's measure dispatch is spent"
+# the dry runs since BASELINE must still be exactly the ones cap counted plus this invocation's own
+[ "$({ grep -F '[stage 1b, dry-run,' "$S/runs-measure.txt" || [ $? = 1 ]; } | cut -d' ' -f1 | sort)" \
+  = "$({ cat "$S/before-dry-run.txt"; echo "$DRY_ID"; } | grep . | sort)" ] \
+  || halt "another Stage 1b dry run appeared since the dry-run snapshot; the §12.7 cap no longer holds"
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=measure -f runtime=host_venv -f note_dir="$NOTE" \
   || echo "the measure dispatch returned nonzero; reconciling against the snapshot" >&2
 MEASURE_ID=$(bind measure) || halt "the measure run was not bound"
@@ -917,6 +930,15 @@ git worktree remove --force "$WT" || halt "the combine worktree could not be rem
 - *`COMBINED` was cleared before the record was checked, so a combine that failed mid-write left a truncated record. The record is now kept only if it parses and carries `.verdict.stop_class`; otherwise `halt` removes it.*
 
 *Each fix was exercised against a fake `gh` that honors `--status`: a live run from before the baseline (refused), an unwritable snapshot (stopped), and a combine that exits 1 after writing a truncated record (removed) or exits 0 with `D2_ACCOUNTING_FALSIFIER` (kept, stopped).]*
+
+*[Corrected 2026-09-28 (Codex review of 02a6df21 on #539). Five fixes:*
+- *`BASELINE` was checked for shape only. It must now parse with GNU `date` as a real instant no later than the invocation, so a future baseline cannot hide the new runs;*
+- *the live-run sweep read each status once, so a run changing status between two reads could be missed. The statuses are now read in lifecycle order (`requested`, `queued`, `pending`, `waiting`, `in_progress`), and two whole sweeps must both find none;*
+- *`list_new` ignored every grep failure. Only "no match" is ignored now, so an unreadable snapshot fails the poll instead of counting as clean;*
+- *`retain` created the final directory before copying into it, so a failed copy left a directory that read as complete. Each directory is now built under `<dest>.tmp` and renamed only when whole;*
+- *the measure step checked only for earlier measure runs. It now also requires the dry runs since `BASELINE` to be exactly those `cap` counted plus this invocation's own, so a dry run dispatched by someone else meanwhile stops the stage.*
+
+*Each fix was exercised against a fake `gh`: a future baseline, an unreadable snapshot during binding, a failed copy during retention, and a foreign dry run appearing during the dry run. A normal pass, a re-run and an eligible re-dispatch still complete.]*
 
 *[Status 2026-09-28: Stage 1b ran before this block merged. Dry run 36364714432 and measure run 36364854404 ran on `7675c088`, and their evidence and the CP-1b packet are in [#537](https://github.com/Joshua-Asante/first-passage/pull/537) (open). This block therefore governs only a re-measurement under a fresh approval (§12.7), whose `BASELINE` falls after those runs and sets them aside, and it is the form §12.8 adapts for Stage 1c.]*
 
