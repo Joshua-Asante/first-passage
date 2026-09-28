@@ -195,7 +195,7 @@ git show <dispatch-sha>:docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md
 
 **Status: `DONE_WITH_CONCERNS`.** Documentary determination only; it accepts, authorizes, qualifies or releases nothing. **Dispatch revision (frozen):** `48c178aa7c2bf9010ad66f28483a4c7c7dd84689` (`origin/main`, descending from #532's merge `6da1b2b`). The worktree `HEAD` was verified to descend from it, and this card at that revision matched the working tree, before any research. **Executor:** Claude Code (Opus 5.5) in its own worktree of the operator's primary checkout, branch `claude/m2-modify-semantics`.
 
-**Output:** [`docs/notes/2026-09-27-m2-modify-semantics.md`](../../notes/2026-09-27-m2-modify-semantics.md), with the six sections of §6.
+**Output:** [`docs/notes/2026-09-27-m2-modify-semantics.md`](../../notes/2026-09-27-m2-modify-semantics.md), with the six sections of §6. **PR:** [#541](https://github.com/Joshua-Asante/first-passage/pull/541), holding only the note and this section.
 
 **Premise check (§9), reported before research:**
 - `HEAD` descends from the dispatch revision.
