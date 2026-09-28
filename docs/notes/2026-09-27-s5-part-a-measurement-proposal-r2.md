@@ -1065,6 +1065,12 @@ P=local_artifacts/s4-linux-run-logs-2026-09-25          # operator's primary che
 S=<scratch>/s5-stage0                                   # outside the repository
 D=docs/notes/2026-09-27-s5-part-a-measurement/stage0    # the committed copy
 want=e2c142281d819e071d15f99a242358f93389a479dcc5e6b5c1f6a20d5db189a7
+# before any file is read: SHA256SUMS and everything under the two run directories must be regular files or
+# directories. A symlink could point outside the pin, and a FIFO would block a read (sha256sum -c included).
+[ -f "$P/SHA256SUMS" ] && [ ! -L "$P/SHA256SUMS" ] || { echo "SHA256SUMS is not a regular file; stop"; exit 1; }
+mkdir -p "$S"
+( cd "$P" && find run-36180568493 run-36181780676 ! -type d ! -type f ) > "$S/irregular.txt"
+[ ! -s "$S/irregular.txt" ] || { echo "entries that are not regular files:"; cat "$S/irregular.txt"; exit 1; }
 got=$(sha256sum < "$P/SHA256SUMS" | cut -d' ' -f1)
 [ "$got" = "$want" ] || { echo "SHA256SUMS is $got, not $want; stop"; exit 1; }
 n=$(grep -c . "$P/SHA256SUMS")
@@ -1073,10 +1079,6 @@ echo "all $n listed files match"                         # the record says 222
 # every file under the two run directories must be listed in the pinned SHA256SUMS (sha256sum -c
 # ignores unlisted files), so nothing read below can come from outside the pin
 mkdir -p "$S"
-# only regular files and directories may sit under the run directories: a symlink could point outside the pin
-# and a FIFO could block a read, so any other entry type stops the block
-( cd "$P" && find run-36180568493 run-36181780676 ! -type d ! -type f ) > "$S/irregular.txt"
-[ ! -s "$S/irregular.txt" ] || { echo "entries that are not regular files:"; cat "$S/irregular.txt"; exit 1; }
 ( cd "$P" && find run-36180568493 run-36181780676 -type f | sort ) > "$S/present.txt"
 cut -c67- "$P/SHA256SUMS" | sed -e 's#^\*##' -e 's#^\./##' | sort > "$S/listed.txt"   # "<sha>  <path>"
 comm -23 "$S/present.txt" "$S/listed.txt" > "$S/unlisted.txt"
@@ -1109,7 +1111,7 @@ Only reviewed extracted lines and the hashes enter the repository; the raw logs 
 - *an empty `find` made `grep` read standard input;*
 - *the expected hash was compared only by eye, and a failed `sha256sum -c` did not stop the block.*
 
-*The block was exercised under `set -euo pipefail` on a synthetic tree of the recorded layout: a clean tree passes, and a wrong pin, a changed listed file or a missing `journal.log` each stop it.]* *[Corrected 2026-09-28 (Codex review of 83ce9f76): `sha256sum -c` checks only the files the manifest lists, so an added or substituted unlisted file could have supplied extracted lines. The block now stops if any file under the two run directories is missing from the pinned `SHA256SUMS`. A synthetic tree with one extra unlisted file stops it.]* *[Corrected 2026-09-28 (Codex review of 051fe28d): the inventory listed regular files only, while the journal lookup accepted a symlink, so a `journal.log` symlink could pass both checks and feed unpinned bytes to the read. A FIFO could also block it. Any entry under the run directories that is not a regular file or directory now stops the block, and the journal lookup takes regular files only. A synthetic tree with a `journal.log` symlink in place of the listed file stops it.]*
+*The block was exercised under `set -euo pipefail` on a synthetic tree of the recorded layout: a clean tree passes, and a wrong pin, a changed listed file or a missing `journal.log` each stop it.]* *[Corrected 2026-09-28 (Codex review of 83ce9f76): `sha256sum -c` checks only the files the manifest lists, so an added or substituted unlisted file could have supplied extracted lines. The block now stops if any file under the two run directories is missing from the pinned `SHA256SUMS`. A synthetic tree with one extra unlisted file stops it.]* *[Corrected 2026-09-28 (Codex review of 051fe28d): the inventory listed regular files only, while the journal lookup accepted a symlink, so a `journal.log` symlink could pass both checks and feed unpinned bytes to the read. A FIFO could also block it. Any entry under the run directories that is not a regular file or directory now stops the block, and the journal lookup takes regular files only. A synthetic tree with a `journal.log` symlink in place of the listed file stops it.]* *[Corrected 2026-09-28 (Codex review of e7504248): the irregular-entry check ran after `sha256sum -c`, which opens every listed file and so could hang on a FIFO or follow a symlink. The check now runs before any file is read, and `SHA256SUMS` itself must be a regular file. A synthetic tree with a listed file replaced by a FIFO now stops at once.]*
 
 ### 16.5 Citation drift and other stale statements in this note
 
