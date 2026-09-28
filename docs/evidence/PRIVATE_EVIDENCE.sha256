@@ -158,3 +158,12 @@ c53c65a8e417b6968d5777ed0e8d4d7b2bd4c5903acef782c7a1e53d872ad06e  .cache/fp-veri
 2a06f3b46094e43f7909ca9c48fdebe26dda2392cf77589ffec090934b886eee  .cache/fp-verification/20260927T223204Z-526df770fa53/record.json
 09b92ac2065b1fe010afc39be8ff9b7e64434d62d7f0be310245f22dc6d14bfb  actionlint-a6b43bdb-coord.txt
 6728d84ee39029a233ea751e7eeb7d1573c25a82e4a17d9f34420a8ab6236176  h1b-526-r12-verification-evidence-2026-09-27.tar.gz
+# H1(b) #526 at 77b916f7, the third update from main under the same approval (the operator's
+# update-branch after #523 merged; parents a6b43bdb and c918cad5; harness files unchanged): the
+# coordinator's clean-worktree re-check (module pytest, --workers 2, check), the actionlint 1.7.7
+# output, and the manifest package; archived in first-passage-archive (5802a900, first-passage-archive#843).
+d9c6f99c4407a4bf98092f3e7e606d40149626006ae05ce3fb2cc718f25a3b47  .cache/fp-verification/20260927T233808Z-c5adc9c18463/record.json
+481283abce889235f7e1fd2f0dbe309fb63f36869056a3cd846f57ff15ae864d  .cache/fp-verification/20260927T233821Z-5cf67b73287c/record.json
+f79c76236120b49a81f2fcb2ccca0ebaa8e499e7119e5661fa2b412e462796e0  .cache/fp-verification/20260927T233836Z-1005f7b5bf2f/record.json
+846e81d84f6333cb788b4a17459f192e04bf3332dab0b706c198ff4d2b9bf842  actionlint-77b916f7-coord.txt
+04eda1246ac875cfdde4553e87e6bb4e2f2c9387936e7213387d68ced3c084f4  h1b-526-r13-verification-evidence-2026-09-27.tar.gz
