@@ -14,8 +14,8 @@
 **Result.**
 - **Stage 0** (read-only; §2) can run once the CP-2 facts in §1 are supplied. It covers the host disarm check, the actor inventory, the entitlement record, the transaction identity of each read's target, R-2 and T07 R1–R3 on a completed preservation trade that qualifies, and R-1 in the session of this week's preservation trade. In Stage 0 the inventory is completed and recorded, but an actor found outside its required state does not by itself stop the reads; the drill plan's "session ends before it starts" rule applies from the first order-producing row (§2.2).
 - **Stage 1** (order-producing; §3–§4) has four row cards. Each needs its **own CP-3**, and the rows run in this order. *(Updated 2026-09-28: the §3.7 documentary item is discharged for all four rows by the [§3.7 closure](#37-closure-2026-09-28--request-shapes-from-the-current-public-crosstrade-documentation); the per-row bullets below are otherwise unchanged.)*
-  - **X-1:** ready on CP-3, except one documentary item: the exact `orders/place` request body for a market entry, which no owner names (§3.7). *(Closed 2026-09-28; X-1 now waits on CP-3 alone.)*
-  - **X-4:** ready on CP-3, except the same item for a resting stop entry (§3.7; drill plan line 272: "none are specified here"). *(Closed 2026-09-28; X-4 now waits on CP-3 alone.)*
+  - **X-1:** ready on CP-3, except one documentary item: the exact `orders/place` request body for a market entry, which no owner names (§3.7). *(Closed 2026-09-28; X-1 now waits on the CP-2 facts (F-1, F-4, F-6), the §3.2 session preconditions and its own CP-3.)*
+  - **X-4:** ready on CP-3, except the same item for a resting stop entry (§3.7; drill plan line 272: "none are specified here"). *(Closed 2026-09-28; X-4 now waits on the CP-2 facts (F-1, F-4, F-6), the §3.2 session preconditions and its own CP-3.)*
   - **X-2:** waits for M2's return. No M2 dispatch or return was found; see §4.3. *(Corrected 2026-09-28: M2 was carded later on 2026-09-27 and is DISPATCH-READY, [M2 card](../briefs/handoffs/2026-09-27-m2-modify-semantics.md); no return exists. See [§3.7 closure C.6](#c6-m2-x-2s-documentary-precondition-the-exact-remaining-dependency).)* It also waits for the owner's confirmation of the fresh-position precondition (§4).
   - **X-3:** runs only as part of the operator's residual-risk decision. CS-note left every M question and every element (a)–(e) OPEN, and S is CONFLICTING (CS-note lines 8–32). It also waits for the owner's confirmation of the fresh-position precondition (§4).
 - **Excluded:** X-5, C-b rows and the GC-5 takeover composite (§6).
@@ -234,7 +234,7 @@ Every row card uses these. The operator fixes each in that row's CP-3 authorizat
 
 `<OP: max stop distance>` · `<OP: take-profit distance, if used>` · `<OP: stop-activation wait after fill>` · `<OP: max time in market>` · `<OP: session window (ET)>` · `<OP: cost ceiling for this row>` · row-specific: `<OP: rejected-modify level>` (X-2), `<OP: resting-entry distance>` and `<OP: cancel buffer>` (X-4).
 
-*Added 2026-09-28:* `<OP: tif for this row>`, on every row that sends `orders/place`. The time-in-force field is `tif` and its default when omitted is undocumented, so no row may rely on one ([§3.7 closure C.3](#c3-time-in-force--x-12-answered-in-part-and-the-part-that-stays-open)).
+*Added 2026-09-28:* `<OP: tif for this row>` and `<OP: quote source>` (the reference price for the distance-to-level conversion, [C.2](#c2-the-tradovate-ordersplace-body-ct-pl-ct-ov)), on every row that sends `orders/place`. The time-in-force field is `tif` and its default when omitted is undocumented, so no row may rely on one ([§3.7 closure C.3](#c3-time-in-force--x-12-answered-in-part-and-the-part-that-stays-open)).
 
 ### 3.7 Request body (a documentary item, not a private figure)
 
@@ -256,7 +256,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 
 ### 4.1 X-1: one-contract REST OSO entry with its stop (drill plan §2.1, lines 216–227)
 
-**State:** READY on CP-3, except the §3.7 request-body item (market entry fields).
+**State:** READY on CP-3, except the §3.7 request-body item (market entry fields). *(2026-09-28: §3.7 discharged, [closure](#37-closure-2026-09-28--request-shapes-from-the-current-public-crosstrade-documentation); the §3.2 checklist, including the CP-2 facts, still applies.)*
 
 **CP-3 authorization block (operator fills in):**
 
@@ -300,7 +300,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 
 ### 4.2 X-4: cancel of a resting stop entry ends its Suspended children (drill plan §2.4, lines 265–278)
 
-**State:** READY on CP-3, except the §3.7 request-body item (resting stop entry fields). The drill plan schedules X-4 independently: "in session A after teardown, or on its own" (line 213). *Packet reading, returned for operator and coordinator decision:* whether X-4 still has value after an X-1 fail (ROUTE STOPS for all legs, GC-2a) is an operator decision; no owner bars it.
+**State:** READY on CP-3, except the §3.7 request-body item (resting stop entry fields). *(2026-09-28: §3.7 discharged; the §3.2 checklist still applies.)* The drill plan schedules X-4 independently: "in session A after teardown, or on its own" (line 213). *Packet reading, returned for operator and coordinator decision:* whether X-4 still has value after an X-1 fail (ROUTE STOPS for all legs, GC-2a) is an operator decision; no owner bars it.
 
 **CP-3 authorization block:** as X-1, except:
 - Symbol: **MNQ** front month, one contract (ORB's leg; line 270).
@@ -315,7 +315,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 **Actions, in order** (line 272):
 1. Read the starting state.
 2. Assign a fresh `clOrdId`.
-3. Record the local time. Send one REST `orders/place` for the resting buy stop entry with `stopLoss` and `takeProfit`. The REST return does not name the order-type fields, and none are specified here (drill plan line 272); the body is the one recorded under §3.7.
+3. Record the local time. Send one REST `orders/place` for the resting buy stop entry with `stopLoss` and `takeProfit`. The REST return does not name the order-type fields, and none are specified here (drill plan line 272); the body is the one recorded under §3.7. *(2026-09-28: `"orderType": "stop"`, `stopPrice` at the computed resting-entry level, explicit `tif`; closure C.2–C.3.)*
 4. Read: entry `Working`, children `Suspended`.
 5. Record the local time. Send one REST `cancel` of the parent.
 6. Read the lifecycle and status of the parent and both children, positions and fills.
@@ -336,7 +336,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 
 ### 4.3 X-2: rejected modify leaves the old stop working (drill plan §2.2, lines 229–249)
 
-**State:** **READY ON M2's return**, then CP-3. M2 is a documentary step whose return is a precondition of X-2 (line 231). It needs a coordinator dispatch (authorization table, line 372). **No M2 dispatch or return was found** on this branch or at `8c15f18` (§8). X-2 therefore cannot be requested at CP-3 yet. It is **also READY ON owner confirmation of the fresh-position precondition** (§4 sequencing note) and on the §3.7 request-body item for its opening entry.
+**State:** **READY ON M2's return**, then CP-3. M2 is a documentary step whose return is a precondition of X-2 (line 231). It needs a coordinator dispatch (authorization table, line 372). **No M2 dispatch or return was found** on this branch or at `8c15f18` (§8). X-2 therefore cannot be requested at CP-3 yet. *(Corrected 2026-09-28: M2 was carded later on 2026-09-27 and is DISPATCH-READY; it has not run. It runs in a primary-checkout session the operator starts ([closure C.6](#c6-m2-x-2s-documentary-precondition-the-exact-remaining-dependency)). The §3.7 item named below is discharged.)* It is **also READY ON owner confirmation of the fresh-position precondition** (§4 sequencing note) and on the §3.7 request-body item for its opening entry.
 
 **CP-3 authorization block:** as X-1, plus `<OP: rejected-modify level>`: a stop level on the wrong side of the market, which the broker should refuse (line 243).
 
@@ -643,9 +643,9 @@ Required for every row here: `instrument` (string; continuous `MYM1!`, NT8 `MYM 
 | Row | Entry shape | Type field and its price field |
 |---|---|---|
 | **X-1**, and the opening entries of X-2 and X-3 | market entry, one contract, bracket attached | `"orderType": "market"`. No `limitPrice`, no `stopPrice` |
-| **X-4** | resting **buy stop** entry above the market, one contract, bracket attached | `"orderType": "stop"` with `"stopPrice": <OP: resting-entry level>`. `stopPrice` is "Required for stop orders" (CT-OV request-field table) |
+| **X-4** | resting **buy stop** entry above the market, one contract, bracket attached | `"orderType": "stop"` with `"stopPrice"` = the level computed from `<OP: resting-entry distance>` (conversion below). `stopPrice` is "Required for stop orders" (CT-OV request-field table) |
 
-**Bracket fields.** `takeProfit` and `stopLoss` are **absolute prices**, both optional, and setting either attaches one native Tradovate OSO; setting both OCO-links the two legs. `REST does not run webhook relative-price preprocessing` (CT-OV), so tick/point offsets that work on the webhook path are **not** available here: every level is an absolute price the operator fixes at CP-3. This confirms, at field level, REST §6.11 Q02 and the drill plan's "absolute `stopLoss`".
+**Bracket fields.** `takeProfit` and `stopLoss` are **absolute prices**, both optional, and setting either attaches one native Tradovate OSO; setting both OCO-links the two legs. `REST does not run webhook relative-price preprocessing` (CT-OV), so tick/point offsets that work on the webhook path are **not** available here: every level is an absolute price. **Distance-to-level conversion (binding for every row):** CP-3 fixes *distances* (§3.6), and the REST surface serves no quotes (CT-OV: bring your own market data), so the absolute level is computed immediately before each send as the `<OP: quote source>` reference price ± the fixed distance; the reference price, its time and the computed levels are recorded before the send. Bracket prices are fixed at submission and are not recalculated from the fill (CT-PL), so after a market entry's fill the row reads the realized stop distance, and **if it exceeds `<OP: max stop distance>`, recovery runs** (an SC-2-class exposure fault, not a pass). `<OP: quote source>` joins §3.6's placeholders. This confirms, at field level, REST §6.11 Q02 and the drill plan's "absolute `stopLoss`".
 
 **Do not send** (packet allow-list, extending drill plan §2.0's `atm*` / `cancel_after` / copier / multi-account bar; **applied to the drill-plan owner** in its §2.0 addendum 2026-09-28):
 
@@ -653,14 +653,14 @@ Required for every row here: `instrument` (string; continuous `MYM1!`, NT8 `MYM 
 |---|---|
 | `atmTargets`, `atmStops`, `atmQtys`, `atmTrail`, `atmTrailTrigger`, `atmTrailOffset`, `atmBreakeven`, `atmBreakevenOffset` | Drill plan §2.0. CT-OT independently notes `atm_*` cannot be combined with `take_profit` / `stop_loss` at all, and an inline ATM placement returns `orderStrategyId` **instead of** `orderId` with no child-order map and no `clOrdId` submitted (CT-OV) — it would destroy the row's identity chain |
 | `cancelAfter` | Excluded by incident ADR §A1 (allocation map C08). CT-PL scopes it to "an unfilled **limit** entry" anyway, so it would not reach X-4's stop entry |
-| `flattenFirst` | It "flattens the position and cancels working orders on this instrument before entering" (CT-PL). That is an unrequested close inside an entry row |
-| `requireMarketPosition`, `maxPositions` | Position gates that would silently suppress the row instead of producing an observation |
+| `flattenFirst` | Per CT-PL it flattens the position and cancels working orders on the instrument before entering. That is an unrequested close inside an entry row |
+| `requireMarketPosition`, `maxPositions` | Position gates: when unmet, CrossTrade returns a 400 and places nothing (CT-PL), so the row would observe a CrossTrade gate rather than the broker behavior it exists to test |
 | `syncStrategy`, `marketPosition`, `prevMarketPosition`, `outOfSync`, `targetQuantity`, `strategyExitBlock` | Strategy Sync. `outOfSync=wait` "withholds this request's entry and returns" (CT-OV) — a silent no-op |
 | `maxShow`, `trailOffset`, `pegDifference`, `expireTime` | Iceberg / native trailing / GTD. None is in any row's design; trailing fields are also barred from edition legs (allocation map B06) |
-| `text` | Free-form note forwarded to the broker and visible in Tradovate reports (CT-PL). Nothing that could carry an identifier goes in it |
+| `text` | Free-form note forwarded to the broker and visible in Tradovate reports (CT-PL, CT-OT). Nothing that could carry an identifier goes in it |
 
 **Identity fields — `orderId` and `clOrdId` are two different fields (CT-OV request-field table).** This is sharper than the packet's current wording:
-- `orderId` is "an optional tracking id you choose (up to 64 characters)", remembered by CrossTrade for **seven days** so later `cancel`, `change` and `replace` calls can reference it, **and forwarded as `clOrdId` unless you supply `clOrdId` separately**.
+- `orderId` is an "optional tracking id you choose (up to 64 characters)", remembered by CrossTrade for **seven days** so later `cancel`, `change` and `replace` calls can reference it, **and forwarded as `clOrdId` unless you supply `clOrdId` separately**.
 - `clOrdId` is the client order id actually sent to Tradovate (up to 64 characters).
 - "Tradovate does not reject a repeated `clOrdId`; it is a label for reconciliation, not an idempotency key" (CT-OV) — the public page now states directly what the repo holds as A1/Q05 and as the standing `order_id` idempotency disproof.
 
@@ -670,7 +670,7 @@ Required for every row here: `instrument` (string; continuous `MYM1!`, NT8 `MYM 
 
 ### C.3 Time in force — X-12 answered in part, and the part that stays OPEN
 
-The field is **`tif`** on the Tradovate surface (string, optional; CT-PL, CT-CH body tables). Documented values: `day`, `gtc`, `ioc`, `fok`, `gtd` (`gtd` requires `expireTime` in ISO-8601) (CT-OT "Extra TIFs"; CT-PL `expireTime` row).
+The field is **`tif`** on the Tradovate surface (string, optional; CT-PL, CT-CH body tables). Documented values: `day`, `gtc`, `ioc`, `fok`, `gtd` (CT-OT shows IOC/FOK/GTD in the webhook's uppercase form; the lowercase REST casing is inferred from CT-PL's lowercase-enum rule) (`gtd` requires `expireTime` in ISO-8601) (CT-OT "Extra TIFs"; CT-PL `expireTime` row).
 
 **What the public pages establish:**
 - The bracket children are **not** governed by the entry's `tif`: "The exits are sent GTC whatever `tif` the entry carries, so they outlive the entry's session" (CT-OT); CT-PL says the same. So a day entry's exits are GTC, and the ORB resting entry's Suspended children would outlive the session even if the entry did not.
@@ -689,7 +689,7 @@ Both rows send an operation whose shape no owner named either.
 
 **`change` — X-2 step 3.** `PUT /v1/api/tv/accounts/{account}/orders/{id}/change` (CT-CH). Three facts that change how the row is written:
 1. **`PUT` is canonical**; `POST` on the same path "remains accepted as a backward-compatibility alias" (CT-CH). The row must fix the verb, because a `POST` that silently routes through a compatibility alias is a different observation.
-2. **`{id}` accepts "the Tradovate order id or an `orderId` assigned on an earlier place call"** (CT-CH path table) — so the row can address the stop child by its `oso*Id` from the placement response. The `orderId` route is the seven-day memory in C.2.
+2. **`{id}` accepts the "Tradovate order id or an `orderId` assigned on an earlier place call"** (CT-CH path table) — so the row can address the stop child by its `oso*Id` from the placement response. The `orderId` route is the seven-day memory in C.2.
 3. **A partial change is completed server-side from the live order.** "When omitted, CrossTrade reads and restores quantity, order type, the limit and/or stop price required by the final order type, and the trailing offset required by trailing orders" (CT-OV "Mutation safety"; CT-CH "Platform nuances"). **This is a GC-3 finding, not a convenience:** the request the broker receives is composed from a version of the order that *CrossTrade* read, at a moment we do not observe, and that read is not in our evidence chain. It bears directly on §1.1a (d) coherence and on the packet's GC-3 record.
 
 **Body for X-2** — send only the field that changes: `{"stopPrice": <OP: rejected-modify level>}`. `stopPrice` is the field for a stop-market child; `limitPrice` "is applied only to limit and stop-limit orders" (CT-CH). Do not send `qty`, `orderType`, `tif`, `text`, `expireTime`, `maxShow`, `trailOffset` or `pegDifference`. Response: the envelope with `api: "modify_order"` and an **empty `response` object** — so the row's evidence is the lifecycle read (below), not the response body. Failure is `{"success": false, "error": "<message>"}`.
@@ -739,7 +739,7 @@ Every M2 classification remains the executor's to make against the retained capt
 - §3.7's documentary step is discharged as described, with residuals R-3.7a and R-3.7b named.
 - The CP-3 request-body field (§3.2, §4.1, §4.2) is now checkable against a concrete shape.
 - A new placeholder `<OP: tif for this row>` joins §3.6 for rows that send `orders/place`.
-- X-1, X-4 and the opening entries of X-2 and X-3 are **no longer blocked on §3.7**. Their other holds are unchanged: X-1 and X-4 wait only on CP-3; X-2 waits on M2 (C.6), X-1's pass and the fresh-position confirmation; X-3 waits on the residual-risk decision and the same confirmation.
+- X-1, X-4 and the opening entries of X-2 and X-3 are **no longer blocked on §3.7**. Their other holds are unchanged: X-1 and X-4 wait on the CP-2 facts, the §3.2 session preconditions and their own CP-3; X-2 waits on M2 (C.6), X-1's pass and the fresh-position confirmation; X-3 waits on the residual-risk decision and the same confirmation.
 
 **Applied in the other owners, 2026-09-28.** The coordinator card of 2026-09-28 grants `governance.author` over the route and allocation documents. The items below were first drafted as routes, then written into their owners as dated addenda. Each is a documentary correction within accepted behavior; none changes an allocation or a row's pass/fail rule.
 
