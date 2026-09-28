@@ -20,6 +20,15 @@ on:
       - "core/strategies/PORT_MANIFEST.sha256"
       - "scripts/check_pine_manifest.py"
 
+# A new push to a PR supersedes that PR's earlier runs, which only occupy the shared
+# runner pool: cancel them. This workflow also runs on pushes to every branch, so a
+# push to a non-main branch is grouped by its ref and superseded the same way. Runs
+# for a push to main or a dispatch get a group of their own (run_id), so they are
+# never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref != 'refs/heads/main' && github.ref) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}
+
 permissions:
   contents: read
 
