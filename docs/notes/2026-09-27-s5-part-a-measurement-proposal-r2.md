@@ -637,9 +637,15 @@ run_head() { gh run view "$1" -R "$R" --json headSha --jq .headSha; }
 # any artifact could not be downloaded (§12.7: a failure before a record exists stops the stage).
 fetch() {
   local id=$1 mode=$2 att=$3 j a rc=0; shift 3
-  local w=0; timeout 10800 gh run watch "$id" -R "$R" --exit-status > /dev/null || w=$?   # 3 h: the job's 120 min plus queue
-  if [ "$w" = 124 ]; then echo "run $id: not complete within 3 hours" >&2; return 1; fi
-  if [ "$w" = 0 ]; then echo "run $id: success"; else echo "run $id: failed"; fi
+  local w=0 st; timeout 10800 gh run watch "$id" -R "$R" --exit-status > /dev/null || w=$?   # 3 h: the job's 120 min plus queue
+  if [ "$w" != 0 ]; then
+    # a nonzero watch is a failed run, a timeout or a CLI/API failure: only GitHub's own status tells which
+    st=$(gh run view "$id" -R "$R" --json status --jq .status) || st="unreadable"
+    if [ "$st" != completed ]; then
+      echo "run $id: watch exit $w and the run is $st, not completed; merges stay held until it ends" >&2; return 1
+    fi
+  fi
+  if [ "$w" = 0 ]; then echo "run $id: success"; else echo "run $id: completed, failed"; fi
   for j in "$@"; do
     a="s5-part-a-measurement-1b-$mode-$j-attempt$att"
     gh run download "$id" -R "$R" -n "$a" -D "$S/$id/$a" || { echo "run $id: artifact $a not downloaded" >&2; rc=1; }
@@ -670,12 +676,20 @@ retain() {
     n=${a##*/}; run=${a%/*}; run=${run##*/}
     job=${n%-attempt*}; job=${job##*-}; dest="$D/$run-$job-attempt${n##*-attempt}"
     [ ! -e "$dest" ] || { echo "$dest already exists; not overwritten" >&2; return 1; }
-    mkdir -p "$dest"; cp -a "$a/." "$dest/"; rm -f "$dest/journal.log"
+    # each command is checked: retain runs on the left of `||`, where set -e does not apply
+    mkdir -p "$dest" || return 1; cp -a "$a/." "$dest/" || return 1; rm -f "$dest/journal.log" || return 1
   done
-  mkdir -p "$D"; m="$D/downloads-${S##*/}.sha256"                      # one manifest per invocation, never replaced
+  mkdir -p "$D" || return 1; m="$D/downloads-${S##*/}.sha256"         # one manifest per invocation, never replaced
   [ ! -e "$m" ] || { echo "$m already exists; not overwritten" >&2; return 1; }
-  ( cd "$S" && find . -type f ! -name 'before-*.txt' -print0 | sort -z | xargs -0 -r sha256sum ) > "$m"
+  ( cd "$S" && find . -type f ! -name 'before-*.txt' -print0 | sort -z | xargs -0 -r sha256sum ) > "$m" || return 1
   RETAINED=1
+}
+# field ID MODE JOB ATTEMPT FILE JQ: one value from a downloaded record or receipt
+field() { jq -r "$6" "$S/$1/s5-part-a-measurement-1b-$2-$3-attempt$4/$5"; }
+# receipt_ok ID MODE JOB ATTEMPT: the job's cleanup receipt shows exit 0 for this run, attempt and job (§12.7)
+receipt_ok() {
+  [ "$(field "$1" "$2" "$3" "$4" cleanup-receipt.json '"\(.cleanup_exit) \(.run_id) \(.run_attempt) \(.job)"')" \
+    = "0 $1 $4 $3" ]
 }
 # halt MESSAGE: every stop returns to the coordinator (§12.7), keeping whatever this invocation downloaded
 RETAINED=""
@@ -688,8 +702,10 @@ gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=dry-run -f runtime=
 DRY_ID=$(bind dry-run) || halt "the dry run was not bound"
 H=$(run_head "$DRY_ID") || halt "the dry run's head could not be read"; echo "dry run $DRY_ID on $H"
 { fetch "$DRY_ID" dry-run 1 a && verdicts "$DRY_ID" dry-run 1 a; } || halt "dry run $DRY_ID: evidence incomplete"
-# only if the dry run's job reads exit=3 with every reason I-1 or I-6, once per stage: repeat step 1 with a
-# fresh snapshot, binding DRY2_ID; the clean dry run's id and head are DRY_ID and H from here on
+receipt_ok "$DRY_ID" dry-run a 1 || halt "dry run $DRY_ID: cleanup receipt not clean"
+e=$(field "$DRY_ID" dry-run a 1 record.json .verdict.exit_code)
+[ "$e" = 0 ] || halt "dry run $DRY_ID exit=$e. Only I-1 or I-6 alone allows one re-dispatch per stage (§12.7); that
+  re-dispatch is a new invocation of this block, and this one's evidence is retained"
 
 # 2. measure, only after a clean dry run (exit=0), and only on the head that dry run validated. The operator's
 #    merge hold (ledger H1(b) execution entry) keeps main at H; the check below catches it moving anyway, and the
@@ -704,16 +720,35 @@ M=$(run_head "$MEASURE_ID") || halt "measure run $MEASURE_ID: head could not be 
 echo "measure run $MEASURE_ID on $H"
 { fetch "$MEASURE_ID" measure 1 a b && verdicts "$MEASURE_ID" measure 1 a b; } \
   || halt "measure run $MEASURE_ID attempt 1: evidence incomplete"
-# 3. the one --failed re-run, only if all of these hold: both jobs a and b are listed; at least one reads exit=3;
-#    every job not reading exit=0 reads exit=3 and rerun_eligible=true; none reads exit=4 or has no record;
-#    every job reads cleanup_exit=0 for this run, attempt 1 and its own job (§12.7)
-gh run rerun "$MEASURE_ID" -R "$R" --failed || halt "the --failed re-run request failed"
-a=""; for i in $(seq 60); do                                           # about 10 minutes
-  a=$(gh run view "$MEASURE_ID" -R "$R" --json attempt --jq .attempt || true); [ "$a" = 2 ] && break; sleep 10
+# 3. the re-run decision (§12.7), read from the records and receipts: every job's receipt is clean; a job reading
+#    exit=0 is kept; a job reading exit=3 with rerun_eligible=true joins the one --failed re-run; anything else
+#    (exit 4, exit 3 not eligible) stops the stage
+declare -A ATT=([a]=1 [b]=1); RERUN=""
+for j in a b; do
+  receipt_ok "$MEASURE_ID" measure "$j" 1 || halt "measure run $MEASURE_ID job $j: cleanup receipt not clean"
+  e=$(field "$MEASURE_ID" measure "$j" 1 record.json .verdict.exit_code)
+  r=$(field "$MEASURE_ID" measure "$j" 1 record.json .verdict.rerun_eligible)
+  case "$e" in
+    0) ;;
+    3) [ "$r" = true ] || halt "measure run $MEASURE_ID job $j: exit 3, not re-run eligible"; RERUN="$RERUN $j" ;;
+    *) halt "measure run $MEASURE_ID job $j: exit $e, no re-run" ;;
+  esac
 done
-[ "$a" = 2 ] || halt "attempt 2 of $MEASURE_ID not observed (last read: ${a:-none})"
-{ fetch "$MEASURE_ID" measure 2 <the re-run jobs> && verdicts "$MEASURE_ID" measure 2 <the re-run jobs>; } \
-  || halt "measure run $MEASURE_ID attempt 2: evidence incomplete"
+if [ -n "$RERUN" ]; then
+  gh run rerun "$MEASURE_ID" -R "$R" --failed || halt "the --failed re-run request failed"
+  a=""; for i in $(seq 60); do                                         # about 10 minutes
+    a=$(gh run view "$MEASURE_ID" -R "$R" --json attempt --jq .attempt || true); [ "$a" = 2 ] && break; sleep 10
+  done
+  [ "$a" = 2 ] || halt "attempt 2 of $MEASURE_ID not observed (last read: ${a:-none})"
+  { fetch "$MEASURE_ID" measure 2 $RERUN && verdicts "$MEASURE_ID" measure 2 $RERUN; } \
+    || halt "measure run $MEASURE_ID attempt 2: evidence incomplete"
+  for j in $RERUN; do                                                  # any failure after the re-run stops the stage
+    receipt_ok "$MEASURE_ID" measure "$j" 2 || halt "measure run $MEASURE_ID job $j attempt 2: cleanup receipt not clean"
+    e=$(field "$MEASURE_ID" measure "$j" 2 record.json .verdict.exit_code)
+    [ "$e" = 0 ] || halt "measure run $MEASURE_ID job $j attempt 2: exit $e"
+    ATT[$j]=2
+  done
+fi
 
 # 4. retain this invocation's evidence (retain above; every stop has already done this)
 retain || halt "retention failed"
@@ -723,11 +758,11 @@ retain || halt "retention failed"
 # runner's work tree) is removed, and the removal is recorded.
 find "$D" -type f | sort
 
-# 5. combine: exactly one job a and one job b record from MEASURE_ID (per job, its highest attempt), from a
+# 5. combine: exactly one job a and one job b record from MEASURE_ID (per job, its highest attempt, ATT), from a
 #    checkout at the measured head H (the harness refuses any other HEAD):
 REPO=$(git rev-parse --show-toplevel); git -c core.autocrlf=false worktree add --detach "$S/wt" "$H"   # LF bytes
 c=0; ( cd "$S/wt" && python -I scripts/fp.py python "$NOTE/measure_part_a_max.py.txt" \
-    --summarize "$REPO/$D/$MEASURE_ID-a-attempt<n>/record.json" "$REPO/$D/$MEASURE_ID-b-attempt<n>/record.json" \
+    --summarize "$REPO/$D/$MEASURE_ID-a-attempt${ATT[a]}/record.json" "$REPO/$D/$MEASURE_ID-b-attempt${ATT[b]}/record.json" \
     --record "$REPO/$D/$MEASURE_ID-combined.json" ) || c=$?
 git worktree remove --force "$S/wt"                                     # removed whatever the combine returned
 [ "$c" = 0 ] || halt "the combine exited $c (§12.7: 3 or 4 is a verdict, anything else a harness failure)"
@@ -754,6 +789,13 @@ git worktree remove --force "$S/wt"                                     # remove
 - *the combine worktree is removed whatever the combine returns, and a nonzero combine then stops the stage.*
 
 *Each fix was exercised against a fake `gh`: a hung watch, a combine that exits 3, a normal pass, a missing artifact, a moved head and another actor's run.]*
+
+*[Corrected 2026-09-28 (Codex review of 51218ff3 on #539). Three fixes:*
+- *a stop driven by a verdict (exit 4, exit 3 not re-run eligible, a dirty cleanup receipt, a failing dry run, a failure after the re-run) was left to the operator and bypassed retention. Those decisions are now read from the records and receipts by the block itself, and each one stops through `halt`, which retains the evidence first. The re-run takes exactly the eligible jobs, and the combine takes each job's highest attempt, so the placeholders are gone. A dry-run re-dispatch is a new invocation;*
+- *`retain` runs on the left of `||`, where `set -e` does not apply, so every command in it is now checked;*
+- *a nonzero watch can be a CLI or API failure rather than a failed run, so the run's GitHub status is read and must be `completed`. Otherwise the stage stops, saying the run is still live and merges stay held.*
+
+*Each fix was exercised against a fake `gh`: a normal pass with job b re-run (the combine read a from attempt 1 and b from attempt 2), job b exiting 4, a dirty receipt, and a live run after a failed watch.]*
 
 *[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
 - **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
