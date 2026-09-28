@@ -594,33 +594,47 @@ done
 set -euo pipefail
 R=Joshua-Asante/first-passage; WF=qualification-s5-part-a-measurement.yml
 NOTE=docs/notes/2026-09-27-s5-part-a-measurement; D="$NOTE/stage1b"   # D: the retained copy, in the repository
-S=<scratch>/s5-1b; mkdir -p "$S"                                    # S: raw downloads, outside the repository
-# bind MODE HEAD SINCE: print the id of the one dispatch run of MODE on HEAD created at or after SINCE, or stop.
+S=<scratch>/s5-1b-$(date -u +%Y%m%dT%H%M%SZ); mkdir "$S"            # S: this invocation's raw downloads, new
+                                                                    # and outside the repository (mkdir fails if it exists)
+# snapshot MODE HEAD: record the ids of every dispatch run of MODE already on HEAD, before dispatching
+snapshot() {
+  gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --commit "$2" --limit 100 \
+    --json databaseId,displayTitle \
+    --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId" \
+    > "$S/before-$1-$2.txt"
+}
+# bind MODE HEAD: print the id of the one dispatch run of MODE on HEAD that the snapshot did not hold, or stop.
 # The s2-linux-run rule: list dispatch runs on the exact commit, never take --limit 1, confirm headSha.
 bind() {
   local ids n i
   for i in $(seq 60); do                                                 # about 10 minutes
-    ids=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --commit "$2" \
-            --json databaseId,headSha,displayTitle,createdAt \
-            --jq ".[] | select(.headSha == \"$2\" and .createdAt >= \"$3\"
-                    and (.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\"))) | .databaseId")
+    ids=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --commit "$2" --limit 100 \
+            --json databaseId,headSha,displayTitle \
+            --jq ".[] | select(.headSha == \"$2\"
+                    and (.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\"))) | .databaseId" \
+          | grep -vxF -f "$S/before-$1-$2.txt" || true)
     n=$(printf '%s' "$ids" | grep -c . || true)
     if [ "$n" = 1 ]; then echo "$ids"; return 0; fi
-    if [ "$n" -gt 1 ]; then echo "several $1 runs on $2 since $3: $ids; stop" >&2; return 1; fi
+    if [ "$n" -gt 1 ]; then echo "several new $1 runs on $2: $ids; stop" >&2; return 1; fi
     sleep 10
   done
-  echo "no $1 run appeared on $2 (main may have moved); stop" >&2; return 1
+  echo "no new $1 run appeared on $2 (main may have moved); stop" >&2; return 1
 }
-# fetch ID K: watch run ID to completion, then download all its artifacts into $S/ID/download-K (pass or fail)
+# fetch ID MODE ATTEMPT JOBS...: watch run ID to completion, then download each job's artifact by its exact
+# name into $S/ID/<artifact name>/ (-n with one name extracts into -D itself), pass or fail
 fetch() {
-  gh run watch "$1" -R "$R" --exit-status > /dev/null && echo "run $1: success" || echo "run $1: failed"
-  gh run download "$1" -R "$R" -D "$S/$1/download-$2"
+  local id=$1 mode=$2 att=$3 j a; shift 3
+  gh run watch "$id" -R "$R" --exit-status > /dev/null && echo "run $id: success" || echo "run $id: failed"
+  for j in "$@"; do
+    a="s5-part-a-measurement-1b-$mode-$j-attempt$att"
+    gh run download "$id" -R "$R" -n "$a" -D "$S/$id/$a" || echo "run $id: artifact $a not downloaded (stop)"
+  done
 }
-# verdicts ID K ATTEMPT: print each job's exit code, stop class, re-run eligibility, reasons and cleanup status
+# verdicts ID MODE ATTEMPT JOBS...: print each job's exit code, stop class, re-run eligibility, reasons and cleanup
 verdicts() {
-  local a
-  for a in "$S/$1/download-$2"/s5-part-a-measurement-1b-*-attempt"$3"; do
-    echo "${a##*/}:"
+  local id=$1 mode=$2 att=$3 j a; shift 3
+  for j in "$@"; do
+    a="$S/$id/s5-part-a-measurement-1b-$mode-$j-attempt$att"; echo "${a##*/}:"
     jq -r '"  exit=\(.verdict.exit_code) stop=\(.verdict.stop_class) rerun_eligible=\(.verdict.rerun_eligible)",
            (.verdict.reasons[] | "  reason \(.)")' "$a/record.json" 2>/dev/null \
       || echo "  no readable record.json: the job failed before summarize (stop)"
@@ -629,20 +643,20 @@ verdicts() {
   done
 }
 
-# 1. dry run
-H=$(gh api "repos/$R/commits/main" --jq .sha); T=$(date -u -d '-1 minute' +%Y-%m-%dT%H:%M:%SZ)
+# 1. dry run (one job, a)
+H=$(gh api "repos/$R/commits/main" --jq .sha); snapshot dry-run "$H"
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir="$NOTE"
-DRY_ID=$(bind dry-run "$H" "$T"); echo "dry run $DRY_ID on $H"
-fetch "$DRY_ID" 1; verdicts "$DRY_ID" 1 1
-# only if the dry run's one job reads exit=3 with every reason I-1 or I-6, once per stage: repeat step 1
-# with a fresh H and T, binding DRY2_ID; the clean dry run's id is DRY_ID from here on
+DRY_ID=$(bind dry-run "$H"); echo "dry run $DRY_ID on $H"
+fetch "$DRY_ID" dry-run 1 a; verdicts "$DRY_ID" dry-run 1 a
+# only if the dry run's job reads exit=3 with every reason I-1 or I-6, once per stage: repeat step 1 with a
+# fresh H and snapshot, binding DRY2_ID; the clean dry run's id is DRY_ID from here on
 
 # 2. measure, only after a clean dry run (exit=0), and only on the head that dry run validated
 [ "$(gh api "repos/$R/commits/main" --jq .sha)" = "$H" ] || { echo "main moved since the dry run; stop"; exit 1; }
-T=$(date -u -d '-1 minute' +%Y-%m-%dT%H:%M:%SZ)
+snapshot measure "$H"
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=measure -f runtime=host_venv -f note_dir="$NOTE"
-MEASURE_ID=$(bind measure "$H" "$T"); echo "measure run $MEASURE_ID on $H"
-fetch "$MEASURE_ID" 1; verdicts "$MEASURE_ID" 1 1
+MEASURE_ID=$(bind measure "$H"); echo "measure run $MEASURE_ID on $H"
+fetch "$MEASURE_ID" measure 1 a b; verdicts "$MEASURE_ID" measure 1 a b
 # 3. the one --failed re-run, only if all of these hold: both jobs a and b are listed; at least one reads exit=3;
 #    every job not reading exit=0 reads exit=3 and rerun_eligible=true; none reads exit=4 or has no record;
 #    every job reads cleanup_exit=0 for this run, attempt 1 and its own job (§12.7)
@@ -651,24 +665,23 @@ a=""; for i in $(seq 60); do                                           # about 1
   a=$(gh run view "$MEASURE_ID" -R "$R" --json attempt --jq .attempt || true); [ "$a" = 2 ] && break; sleep 10
 done
 [ "$a" = 2 ] || { echo "attempt 2 of $MEASURE_ID not observed (last read: ${a:-none}); stop"; exit 1; }
-fetch "$MEASURE_ID" 2; verdicts "$MEASURE_ID" 2 2
+fetch "$MEASURE_ID" measure 2 <the re-run jobs>; verdicts "$MEASURE_ID" measure 2 <the re-run jobs>
 
-# 4. retain: one directory per run, job and attempt (dry runs included; failed attempts included). journal.log
-#    (the runner's whole boot journal) stays in scratch; every downloaded file, journal.log included, is pinned
-#    by hash. A later download repeats earlier attempts' artifacts; the copy takes each artifact once.
-for a in "$S"/*/download-*/s5-part-a-measurement-1b-*-attempt*; do
-  n=${a##*/}; run=${a%/download-*}; run=${run##*/}
+# 4. retain: one directory per run, job and attempt, from this invocation's downloads only (dry runs and failed
+#    attempts included). journal.log (the runner's whole boot journal) stays in scratch; every downloaded file,
+#    journal.log included, is pinned by hash.
+for a in "$S"/*/s5-part-a-measurement-1b-*-attempt*; do
+  n=${a##*/}; run=${a%/*}; run=${run##*/}
   job=${n%-attempt*}; job=${job##*-}; dest="$D/$run-$job-attempt${n##*-attempt}"
-  if [ -d "$dest" ]; then
-    diff -r -x journal.log "$a" "$dest" > /dev/null || { echo "$run/$n differs between downloads; stop"; exit 1; }
-    continue
-  fi
+  [ ! -e "$dest" ] || { echo "$dest already exists; stop"; exit 1; }
   mkdir -p "$dest"; cp -a "$a/." "$dest/"; rm -f "$dest/journal.log"
 done
-( cd "$S" && find . -type f -print0 | sort -z | xargs -0 sha256sum ) > "$D/downloads.sha256"
-# public-clone review, before git add: read every retained file (git status --short "$D" lists them). Each holds
-# only harness JSON, unit properties, host facts, digests, commit ids and runner names. A line holding anything
-# else (a token, an account, a host path outside the runner's work tree) is removed, and the removal is recorded.
+( cd "$S" && find . -type f ! -name 'before-*.txt' -print0 | sort -z | xargs -0 sha256sum ) > "$D/downloads.sha256"
+# public-clone review, before git add: read every file this lists (a new untracked tree shows as one line in
+# `git status`, so the inventory is find's). Each holds only harness JSON, unit properties, host facts, digests,
+# commit ids and runner names. A line holding anything else (a token, an account, a host path outside the
+# runner's work tree) is removed, and the removal is recorded.
+find "$D" -type f | sort
 
 # 5. combine: exactly one job a and one job b record from MEASURE_ID (per job, its highest attempt), from a
 #    checkout at the measured head H (the harness refuses any other HEAD):
@@ -678,6 +691,14 @@ REPO=$(git rev-parse --show-toplevel); git -c core.autocrlf=false worktree add -
     --record "$REPO/$D/$MEASURE_ID-combined.json" )
 git worktree remove "$S/wt"
 ```
+
+*[Corrected 2026-09-28 (Codex review of 9bccf9de). The block previously had four defects:*
+- *it bound runs by creation time, so a same-mode run created in the preceding minute could be taken for the new one;*
+- *it downloaded every artifact of a run without names, so the dry run's single artifact may land flattened into the destination and its record go unread;*
+- *it retained everything under a reused scratch directory;*
+- *it offered `git status --short`, which collapses a new untracked tree to one line, as the review inventory.*
+
+*Now `snapshot` records the run ids already on the head before each dispatch, and `bind` takes only a new one. Each artifact is downloaded by its exact name into its own directory. `S` is a new directory per invocation. The review inventory is `find`. At step 3, `<the re-run jobs>` are the jobs whose attempt-1 record did not read exit=0. The block was re-run against a fake `gh` that flattens single-name downloads and holds an older same-mode run on the head.]*
 
 *[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
 - **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
@@ -1230,8 +1251,8 @@ A helper session reviewed [#523](https://github.com/Joshua-Asante/first-passage/
 | # | Disposition |
 |---|---|
 | C1 | Fixed: §16.4 has its own `D` and commit lines, and no run metadata |
-| C2 | Fixed: §12.3 binds every dispatch to its run id (`DRY_ID`, `MEASURE_ID`) under the s2-linux-run rule |
-| C3 | Fixed: §12.3 step 4 copies every run, job and attempt into `stage1b/` (dry runs included), keeps `journal.log` out and pins every download by hash |
+| C2 | Fixed: §12.3 binds every dispatch to its run id (`DRY_ID`, `MEASURE_ID`) under the s2-linux-run rule. Binding takes only a run absent from the snapshot made before the dispatch (Codex review of 9bccf9de) |
+| C3 | Fixed: §12.3 step 4 copies every run, job and attempt into `stage1b/` (dry runs included), keeps `journal.log` out and pins every download by hash. Each artifact is downloaded by name, only this invocation's downloads are retained, and the review inventory is `find` (Codex review of 9bccf9de) |
 | C4 | Fixed: `--arms` is quoted in §12.2 and in the harness README |
 | C5 | Fixed in §16.4: `journal.log` only, with each line keeping its run and file. §12.1's lines are marked superseded |
 | C6 | Fixed: §12.3 waits for `attempt` 2 before watching and downloading. The wait is bounded at about 10 minutes and stops explicitly (Codex review of 83ce9f76) |
