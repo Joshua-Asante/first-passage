@@ -38,6 +38,8 @@ acceptance:
   - tests/test_s2_evidence_tooling_followups.py
 ```
 
+`test_campaign_part_a.py` is new (packet §2) and absent at `05f3788`. The list is the Windows-run set. The Linux file `test_campaign_part_a_linux.py` and the conditional `tests/test_qualification_invariant_manifest.py` (packet §2, "only if the registration requires it") are outside it.
+
 ## 0. Phase 0: premise check, then Rule 0 reads, before any edit
 
 The first act is the §9 premise check, reported before any edit: the executor runs the repository items, and the coordinator runs the two `glm_agent` items (card text and workdir) before the first ticket. Any failure is a stop (§7), returned under §6. A contradiction between this card, the packet and what the executor reads is returned as `NEEDS_CONTEXT` ([surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#decision), handoff contract item 2). The executor does not choose a reading itself.
@@ -123,12 +125,12 @@ This section adds no requirement. It restates the packet's and the ruling's requ
   - fail-on-base not shown: `part_a_worker` refused on `/v6`, and `validate_campaign_checkpoint('PART_A')` refused by the S4 builder.
 - **No Linux run** (§5). *Falsified by* any workflow dispatch, `gh workflow run`, or artifact download under this card.
 - **Existing tooling behavior** (packet §2, "Existing S2–S4 behaviour is preserved"). *Falsified by* a changed `s2`/`s3`/`s4` result, a changed default mode (`s4`), or a changed `DEFAULT_SCOPE` (`S4_JOINT_N2`).
-- **Return shape** (§6). *Falsified by* a missing packet §5 return item or a missing §1a conformance table.
+- **Return shape** (§6). *Falsified by* a missing item of §6's list or a missing §1a conformance table. The list covers packet §5's push-and-return, the Windows-producible C3 items of packet §1 line 70 (the `/v8` snapshot diff and the E04/E05, E06/E08/E09 PART_A ownership among them) and the Windows return items of packet §4. The Linux-only items are deferred (§6).
 
 ## 5. Forbidden
 
 Everything in packet §6 and §2's forbidden list, plus these, which bound this card's grant:
-- **any Linux or CI dispatch**: `gh workflow run`, `-f mode=s5`, a subset iteration, or an artifact download. Two separate grants govern these, and neither is in this card: the subset-iteration dispatch needs "its own grant at C3" (packet §2), and the acceptance-grade run needs the C3 step 2 dispatch grant (packet §5);
+- **any Linux or CI dispatch**: `gh workflow run`, `-f mode=s5`, a subset iteration, or an artifact download. Neither is in this card. Every `s5` dispatch, the subset iteration first (packet §4), needs its own grant at C3 (packet §2), and the acceptance-grade run is the C3 step 2 separate dispatch grant (packet §5);
 - opening a PR, merging, or pushing to `main`;
 - the Stage 1c harness, the Stage 1c or Stage 2 measurement, and the `bind_budget` execution. These are the coordinator's, at C3 step 1 (packet §5);
 - any production value, budget or cap; any `/v7`-gated PART_A constant (§0); any change to a locked or frozen control;
@@ -180,7 +182,7 @@ A `DONE` return opens **C3 step 1** (packet §5), the coordinator's review. It h
 - the executed `bind_budget` Σ check on the built `/v7`;
 - the RC-2 owner text, accepted and applied.
 
-Linux runs follow packet §4's order, subset iteration first, and each needs its own operator grant: the subset-iteration dispatch (packet §2, "its own grant at C3"), then C3 step 2, the **separate dispatch grant** for the acceptance-grade Linux run (packet §5). Then the run, then Stage 2/PA-5, then S5 acceptance. T05 integration preparation may start once C3 is accepted. Integration acceptance still waits on full S5 acceptance (deployment checklist, S5 → T05 → S8 row).
+Linux runs follow packet §4's order, subset iteration first, and every `s5` dispatch needs its own grant at C3 (packet §2): the subset iteration first, then C3 step 2, the **separate dispatch grant** for the acceptance-grade Linux run (packet §5). Then the run, then Stage 2/PA-5, then S5 acceptance. T05 integration preparation may start once C3 is accepted. Integration acceptance still waits on full S5 acceptance (deployment checklist, S5 → T05 → S8 row).
 
 **Not granted:** the Stage 1c harness or measurement; any Linux or CI run; C3; S5 acceptance; any production value, budget or cap; production qualification, activation, arm, deployment or trade; any change to a locked or frozen control.
 
@@ -196,10 +198,12 @@ Linux runs follow packet §4's order, subset iteration first, and each needs its
   Any failure is a stop.
 - **2026-09-28 (drafted):** carded on the operator's instruction "draft the S5 build handoff". At drafting, `origin/main` was `d86f6ff`. Against `05f3788` it changes no code (`git diff --stat 05f3788 d86f6ff` over the paths above is empty), and the packet is unchanged (same digest). **Owed:** coordinator review, then the operator's merge, then the dispatch with the frozen SHA recorded here.
 - **2026-09-28 (review folded):** one focused read-only reviewer on `6bf194d` returned 4 FIX and 3 NIT, no BLOCKER. All seven are folded, each checked against its source first: (FIX 1) `fixture_producer.py` is a §2 installed fixture (S4 packet line 96), so the "outside §2" carve-outs are removed; (FIX 2) the CP-1b ruling is absent at `05f3788` and is read at the dispatch revision; (FIX 3) §6 adds the packet §1 line-70 items and defers the Linux-only return items; (FIX 4) seven §2 test files join the acceptance list, with the journal-snapshot test at its actual path `tests/ops/qualification/test_journal_snapshot.py` (the reviewer's `execution/` path does not exist); (NIT 1) the subset-iteration grant is separated from the C3 step 2 grant, subset first; (NIT 2) `DISPATCH` replaces the `<dispatch-sha>` placeholder; (NIT 3) every §10 test prints a failure line, and the two `glm_agent` premise items are the coordinator's. The four CP-1b anchors were re-read on `d86f6ff` and hold, and `origin/main` was still `d86f6ff`.
+- **2026-09-28 (fold reviewed):** one focused reviewer on the fold (`f178c17`) found no BLOCKER, 1 FIX and 4 NIT, all applied. The FIX widened §4 "Return shape" to match §6. The NITs: the new-file and Windows-set note under the acceptance list; the grant wording now follows packet §2's "any dispatch"; a `DISPATCH` guard in §10; and the §10 hooks labelled by runner.
 
 ## 10. Audit hooks (runnable)
 
 ```bash
+# Coordinator, at the dispatch revision (a worktree cut from 05f3788 does not contain this card).
 # Card form and authority block, through the checkout's launcher. Expected: RESULT: well-formed; exit 0.
 python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-09-28-s5-test-only-build-dispatch.md
 python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-09-28-s5-test-only-build-dispatch.md
@@ -207,12 +211,15 @@ python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/ha
 # §9 premise check (Git Bash). Set DISPATCH to the frozen SHA recorded in §9.
 REL=05f3788d9e4895308d6734e650a42875c59f669c
 DISPATCH=REPLACE_WITH_DISPATCH_SHA
+git rev-parse --verify -q "$DISPATCH^{commit}" >/dev/null || echo "FAIL: DISPATCH not set to a commit"
 git merge-base --is-ancestor "$REL" HEAD && echo "descends from the release head" || echo "FAIL: not descended"
 test "$(git show "$REL":docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md | sha256sum | cut -c1-64)" \
   = 058c265e48a81adbde049cdb108858c6a093c2c58e872ee48000dcc05e9d68c9 && echo "packet pinned at the release head" || echo "FAIL: packet digest"
 git diff --quiet "$REL" "$DISPATCH" -- docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md && echo "packet unchanged at dispatch" || echo "FAIL: packet changed"
 git diff --quiet "$REL" "$DISPATCH" -- ops core tests scripts tools .github && echo "no code drift since the release head" || echo "FAIL: code drift; re-check anchors, NEEDS_CONTEXT"
-# Coordinator, in the glm_agent workdir, before the first ticket:
+# Coordinator, before the first ticket: diff each ticket's quoted card text against
+#   git show "$DISPATCH":docs/briefs/handoffs/2026-09-28-s5-test-only-build-dispatch.md
+# then, in the glm_agent workdir:
 test ! -e .env && echo "no .env in the workdir" || echo "FAIL: .env present"
 
 # Scope at return: only packet §2 files (installed fixtures included).
