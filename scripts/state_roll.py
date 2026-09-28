@@ -176,9 +176,11 @@ ARCHIVE_HEADER_KEY_RE = re.compile(
     r"(?P<date>\d{4}-\d{2}-\d{2}):?\*\*(?P<suffix>.*)"
 )
 ROW_ON_HEADER_LINE_RE = re.compile(r"\*\*\d{4}-\d{2}-\d{2}\*\*")
-# A second row start inside a row's line (searched from key offset 1): two
-# rows fused by a lost line break, in STATE or the archive.
-FUSED_ROW_RE = re.compile(r"- ?\*\*\d{4}-\d{2}-\d{2}\*\* ?[—–-]")
+# Share all loose list prefixes, but do not read either star in a bold
+# date as a bullet. Search after the first row date, outside literal regions.
+FUSED_ROW_RE = re.compile(
+    r"(?<!\*)(?!\*\*)" + DATED_BULLET_LOOSE_RE.pattern + r"(?:\*\* ?| )[—–-]"
+)
 
 LINE_END_RE = re.compile(r"\r?\n")
 LINK_DEST_RE = re.compile(r"(\S+)(.*)", re.S)
@@ -586,6 +588,44 @@ def _rebase_target(target: str, from_dir: Path, to_dir: Path) -> str:
     return rebased + suffix + rest
 
 
+def _literal_end(text: str, at: int) -> int | None:
+    """End of a literal/escaped Markdown region starting at at, if any.
+
+    Shared by link rebasing and structural guards so documented examples
+    remain evidence rather than being interpreted as record boundaries.
+    """
+    if text[at] == "\\":
+        return min(at + 2, len(text))
+    if text[at] == "`":
+        run = re.match(r"`+", text[at:]).group(0)
+        close = re.search(r"(?<!`)" + re.escape(run) + r"(?!`)", text[at + len(run):])
+        return at + len(run) + close.end() if close else at + len(run)
+    if text[at] == "<":
+        html = re.match(r"<(code|pre)\b[^>]*>", text[at:], re.I)
+        if html:
+            close = re.search(r"</" + html.group(1) + r"\s*>", text[at + html.end():], re.I)
+            return at + html.end() + close.end() if close else len(text)
+        tag = re.match(r"<!--.*?(?:-->|$)|<[^>]*>", text[at:])
+        if tag:
+            return at + tag.end()
+    return None
+
+
+def _structural_text(text: str) -> str:
+    """Mask literal regions without joining structure across their boundaries."""
+    parts: list[str] = []
+    at = 0
+    while at < len(text):
+        end = _literal_end(text, at)
+        if end is not None:
+            parts.append(" " * (end - at))
+            at = end
+        else:
+            parts.append(text[at])
+            at += 1
+    return "".join(parts)
+
+
 def rewrite_links(
     row: str,
     from_dir: Path = REPO,
@@ -601,27 +641,10 @@ def rewrite_links(
     brackets: list[int] = []
     at = 0
     while at < len(row):
-        if row[at] == "\\":
-            at += 2  # escaped punctuation, including brackets and backticks
+        literal_end = _literal_end(row, at)
+        if literal_end is not None:
+            at = literal_end
             continue
-        if row[at] == "`":
-            run = re.match(r"`+", row[at:]).group(0)
-            close = re.search(r"(?<!`)" + re.escape(run) + r"(?!`)", row[at + len(run):])
-            if close is not None:
-                at += len(run) + close.end()
-                continue
-            at += len(run)  # unmatched backticks are ordinary text
-            continue
-        if row[at] == "<":
-            html = re.match(r"<(code|pre)\b[^>]*>", row[at:], re.I)
-            if html:
-                close = re.search(r"</" + html.group(1) + r"\s*>", row[at + html.end():], re.I)
-                at = at + html.end() + close.end() if close else len(row)
-                continue
-            tag = re.match(r"<!--.*?(?:-->|$)|<[^>]*>", row[at:])
-            if tag:
-                at += tag.end()
-                continue
         if row[at] == "[":
             brackets.append(at)
         elif row[at] == "]" and brackets:
@@ -651,7 +674,6 @@ def rewrite_links(
                     target = row[at + 2:end]
                     edits.append((at + 2, end, _rebase_target(target, from_dir, to_dir)))
                     at = end + 1
-                    brackets.clear()
                     continue
         at += 1
     for start, end, target in reversed(edits):
@@ -664,13 +686,15 @@ def rewrite_links(
 
 def _refuse_fused_row(line: str, where: str) -> None:
     """Refuse a row fused with another row or a date-keyed roll header."""
-    key = lookalike_key(line)
+    key = lookalike_key(_structural_text(line))
     if ARCHIVE_HEADER_KEY_RE.search(key):
         raise StateRollError(
             f"{where} index row shares its line with a roll header: "
             f"{line.strip()[:80]!r}; split it by hand"
         )
-    if FUSED_ROW_RE.search(key, 1):
+    first_date = ROW_ON_HEADER_LINE_RE.search(key)
+    assert first_date is not None  # called only for strict index rows
+    if FUSED_ROW_RE.search(key, first_date.end()):
         raise StateRollError(
             f"{where} line holds two index rows (a lost line break): "
             f"{line.strip()[:80]!r}; split it by hand"
@@ -819,7 +843,7 @@ def parse_archive(text: str) -> Archive:
         line = raw.rstrip("\r")
         key = lookalike_key(line)
         if ARCHIVE_HEADER_LOOSE_RE.match(key):
-            header = ARCHIVE_HEADER_KEY_RE.fullmatch(key)
+            header = ARCHIVE_HEADER_KEY_RE.fullmatch(lookalike_key(_structural_text(line)))
             if header is None:
                 raise StateRollError(
                     "archive line looks like a roll header but is neither "
@@ -905,6 +929,33 @@ class Snapshot(NamedTuple):
     archive: Archive
 
 
+def _archive_identity(row: str, present: set[str], from_dir: Path, to_dir: Path) -> str:
+    """Use an exact pre-513 archived representation for interrupted-run recovery.
+
+    The old writer rebased all ](...) substrings, including literal examples.
+    Reproduce that representation only to recognize existing evidence; never
+    use it for a new archive row or rewrite the bytes already archived.
+    """
+    current = rewrite_links(row, from_dir, to_dir)
+    try:
+        legacy = re.sub(
+            r"\]\(([^)]+)\)",
+            lambda match: "](" + _rebase_target(match.group(1), from_dir, to_dir) + ")",
+            row,
+        )
+    except StateRollError:
+        # Such input could not have been archived by the old writer.
+        return current
+    if legacy != current and legacy in present:
+        if current in present:
+            raise StateRollError(
+                "archive holds both current and legacy representations of a decision row; "
+                "reconcile the duplicate evidence by hand"
+            )
+        return legacy
+    return current
+
+
 def validate(
     state_text: str,
     archive_text: str,
@@ -918,11 +969,14 @@ def validate(
     and the composed post-state (refuse to write one)."""
     line_ending(state_text, "STATE.md")
     recurring_fields(state_text)
+    archive = parse_archive(archive_text)
+    present = set(archive.rows)
     state_rows = tuple(
-        rewrite_links(row.group(0), from_dir, to_dir) for row in index_rows(state_text)
+        _archive_identity(row.group(0), present, from_dir, to_dir)
+        for row in index_rows(state_text)
     )
     _require_unique(state_rows, "STATE.md decision index")
-    snapshot = Snapshot(state_rows, parse_archive(archive_text))
+    snapshot = Snapshot(state_rows, archive)
     if before is not None:
         _check_conservation(before, snapshot)
     return snapshot

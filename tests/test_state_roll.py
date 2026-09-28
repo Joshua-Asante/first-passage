@@ -2115,3 +2115,95 @@ def test_513_backfill_appends_before_next_header_without_rewriting_rows() -> Non
     result, _ = mod.archive_overflow(mod.parse_archive(text), [addition], date(2026, 9, 26))
     assert result == prefix + addition + "\n\n" + legacy
     mod.parse_archive(result)
+
+
+@pytest.mark.parametrize("prefix", ["1. ", "2) ", "- [ ] ", "+ [x] ", "* ", "１． "])
+@pytest.mark.parametrize("location", ["state", "archive"])
+def test_review_fused_loose_prefixes_refused(tmp_path, prefix, location):
+    row = "- **2026-09-20** — first" + prefix + "**2026-09-19** — second"
+    text = _state(rows=[row]) if location == "state" else _state()
+    archived = _archive_with(ROLLED_HEADER + "\n\n" + row + "\n\n") if location == "archive" else _archive()
+    state, archive = _pair(tmp_path, text, archived)
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 2
+    assert _state_bytes(state, archive) == before
+    if location == "state":
+        with pytest.raises(ValueError):
+            mod.index_rows(text)
+
+
+@pytest.mark.parametrize("literal", [
+    "`**Roll 2026-09-26**:`", "``a `**Roll 2026-09-26**:` b``",
+    r"\*\*Roll 2026-09-26\*\*:", "<code>**Roll 2026-09-26**:</code>",
+    "`- **2026-09-19** — sample`", "`1. **2026-09-19** — sample`",
+])
+def test_review_literal_structure_survives_roll(tmp_path, literal):
+    row = "- **2026-09-01** — document " + literal + " here"
+    state, archive = _pair(tmp_path, _state(rows=_rows(15) + [row]))
+    assert len(mod.index_rows(_read(state))) == 16
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    assert mod.parse_archive(_read(archive)).rows[0] == row
+
+
+def test_review_literal_header_suffix_is_not_fused_structure():
+    text = '**Roll 2026-09-26** (example `**Roll 2026-09-25**` and `- **2026-09-01** — row`):\n\n- **2026-09-02** — kept\n'
+    assert len(mod.parse_archive(text).headers) == 1
+
+
+@pytest.mark.parametrize("label", ["![chart](images/chart.png)", "caption ![chart](images/chart.png) `literal`", "![one](images/a.png) ![two](images/b.png)"])
+def test_review_linked_image_rebases_both_destinations(label):
+    row = "[" + label + "](reports/result.md)"
+    expected_label = label.replace("(images/", "(../../../../../images/")
+    assert mod.rewrite_links(row) == "[" + expected_label + "](../../../../../reports/result.md)"
+
+
+@pytest.mark.parametrize("literal", ["`[example](docs/a.md)`", r"\[example](docs/a.md)", "<code>[example](docs/a.md)</code>"])
+@pytest.mark.parametrize("newline", ["\n", "\r\n"])
+def test_review_old_rewriter_residue_is_not_archived_twice(tmp_path, literal, newline):
+    row = "- **2026-09-01** — " + literal + " [real](docs/b.md)"
+    old = row.replace("(docs/", "(../../../../../docs/")
+    archive_text = _archive_with(ROLLED_HEADER + "\n\n" + old + "\n\n")
+    state, archive = _pair(tmp_path, _state(rows=_rows(15) + [row]).replace("\n", newline), archive_text.replace("\n", newline))
+    before_archive = archive.read_bytes()
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    assert archive.read_bytes() == before_archive
+    assert len(mod.index_rows(_read(state))) == 15
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 0
+    assert _state_bytes(state, archive) == before
+
+
+def test_review_dual_rewriter_residue_refuses_without_writing(tmp_path):
+    row = "- **2026-09-01** — `[example](docs/a.md)`"
+    old = "- **2026-09-01** — `[example](../../../../../docs/a.md)`"
+    archive_text = _archive_with(ROLLED_HEADER + "\n\n" + old + "\n\n" + row + "\n\n")
+    state, archive = _pair(tmp_path, _state(rows=_rows(15) + [row]), archive_text)
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 2
+    assert _state_bytes(state, archive) == before
+
+
+@pytest.mark.parametrize("line", ["`example`", "<!-- example -->", "<code>example</code>"])
+def test_review_literal_only_archive_line_is_still_invalid(line):
+    text = ROLLED_HEADER + "\n\n" + line + "\n"
+    with pytest.raises(mod.StateRollError):
+        mod.parse_archive(text)
+
+
+def test_review_bold_date_in_prose_is_not_a_second_bullet():
+    row = "- **2026-09-20** — recorded **2026-09-19** as the effective date"
+    assert len(mod.index_rows(_state(rows=[row]))) == 1
+    assert mod.parse_archive(ROLLED_HEADER + "\n\n" + row + "\n").rows == (row,)
+
+
+@pytest.mark.parametrize("reference", [
+    "[owner](docs/foo-2026-09-19-closure.md)",
+    "[owner](docs/owner.md#addendum-2026-09-19--record)",
+    "see - 2026-09-19 note",
+])
+def test_review_date_references_are_not_fused_rows(reference):
+    row = "- **2026-09-20** — " + reference
+    assert len(mod.index_rows(_state(rows=[row]))) == 1
+    assert mod.parse_archive(ROLLED_HEADER + "\n\n" + row + "\n").rows == (row,)

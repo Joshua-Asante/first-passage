@@ -343,6 +343,9 @@ stay operator-recorded. Output depends only on the input bytes and the date, so
 concurrent sessions make identical edits that merge cleanly. Run it instead of
 hand-editing a stale deadline; `--check` reports without writing. A rerun after
 an interrupted write is safe: rows already in the archive are not added again.
+An exact archived representation from the old link rewriter is also recognized
+without rewriting that evidence. If both old and current representations exist,
+the roller refuses the ambiguous duplicate for manual reconciliation.
 
 It fails closed (exit 2, nothing written, `--check` included) on anything it
 cannot roll unambiguously, and that refusal withholds **every** change of the
@@ -372,9 +375,12 @@ invocation, including a due Weekly roll or keep-15 archive:
 - a decision index out of newest-first date order, a dated bullet not in
   `- **YYYY-MM-DD** — ` form (`* **date**`, unbolded or indented included), two
   rows fused on one line (including an en-dash separator), a row fused to a roll
-  header, a task-list or numbered decision row, or an overflow row followed (after any blank lines)
+  header, a task-list or numbered decision row (also detected when fused), or an
+  overflow row followed (after any blank lines)
   by anything other than another index row or the section end, such as an
-  indented continuation line;
+  indented continuation line. Inline code, HTML code/pre regions and escaped
+  examples do not count as fused structure; standalone non-row lines remain invalid
+  below an archive header;
 - an archive that breaks its shape (checked on every run, rows due or not):
   roll headers are read by date key (case, Unicode spacing and suffix aside) and
   must be newest first with strictly decreasing dates (adjacent hand-written
