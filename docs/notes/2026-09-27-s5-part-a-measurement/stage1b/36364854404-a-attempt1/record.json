@@ -1,0 +1,1565 @@
+{
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "code_identity": {
+    "worker_runtime": {
+      "dependency_lock_sha256": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+      "platform": "linux",
+      "python_version": "3.12.3",
+      "signing_configuration_sha256": "f9214dba2b34f6d4de287e0cef9b3f3e478d153c1b4a237ea509263e7f319acd"
+    }
+  },
+  "decision_bearing": false,
+  "dispatched_head": "7675c088179aab7c1dbd8c80d758e1f8dac0c6f1",
+  "executed_identity": null,
+  "forcing": {
+    "adapter_callable_identity": null,
+    "label": "TEST_ONLY_MEASUREMENT_FORCED_EXPANSION",
+    "prescribed_within_pp": 0.01,
+    "seam": "harness_request",
+    "within_pp": 1.0
+  },
+  "harness_sha256": "4aaab823c8c18a60d9396cedb1f5ece2f28b6d9e920a4a95e07dfbe0ea1ed4f5",
+  "measured_commit": "7675c088179aab7c1dbd8c80d758e1f8dac0c6f1",
+  "mode": "measure",
+  "probe": {
+    "cgroup_path": "/system.slice/fp-s5pa-probe.service",
+    "cgroup_path_matches_unit": true,
+    "child_exit": 0,
+    "child_touched_bytes": 67108864,
+    "cpu_usage_nsec": 58730000,
+    "exec_main_status": "0",
+    "in_unit_peak_bytes": 76017664,
+    "ok": true,
+    "reasons": [],
+    "result": "success",
+    "schema": "s5-part-a-max-expansion-measurement/v2#accounting-probe",
+    "swap_max": "0",
+    "swap_off": true,
+    "swap_total_kb": 0,
+    "systemd_peak_bytes": 3141632,
+    "unit": "fp-s5pa-probe"
+  },
+  "recorded_utc": "2026-09-28T01:12:27Z",
+  "repeats": [
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 14903644,
+      "cold": true,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=done",
+        "ok": true
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.01451,
+        "part_a": 8.425522999999998,
+        "process_total": 14.713861000000001,
+        "serialize": 0.00041699999999877946,
+        "setup_excluded": 4.102617,
+        "start": 0.545415,
+        "verify": 0.5321510000000007,
+        "workload": 10.518015999999998
+      },
+      "cpu_input_s": 11.038634,
+      "dry_run": false,
+      "elapsed_seconds": 8.428171043999996,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-forced-1.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 165560320,
+        "lower_bound_bytes": 120606720,
+        "memory_bytes": 165560320,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 165560320,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 4,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.344728412999956,
+      "probe_seconds": 1.2288668129999962,
+      "repeat": 1,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": true,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 1,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-forced-1",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-forced-1",
+      "unit_cpu_s": 15.141251,
+      "unit_cpu_workload_s": 11.038634,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.0155059789999967,
+          "part_a": 8.428229493000003,
+          "serialize": 0.00041774100000679937,
+          "verify": 0.5323239739999934
+        },
+        "outer": 15.580631,
+        "setup_excluded": 4.189992294999996,
+        "workload": 11.390638705000004
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 14729274,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.0269559999999998,
+        "part_a": 8.325958,
+        "process_total": 14.567891,
+        "serialize": 0.0004030000000003753,
+        "setup_excluded": 4.1213619999999995,
+        "start": 0.470402,
+        "verify": 0.533015999999999,
+        "workload": 10.356734999999999
+      },
+      "cpu_input_s": 10.778867,
+      "dry_run": false,
+      "elapsed_seconds": 8.327509653000007,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-forced-2.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100851712,
+        "lower_bound_bytes": 120061952,
+        "memory_bytes": 100851712,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100851712,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 4,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.242442711999999,
+      "probe_seconds": 1.2143680719999992,
+      "repeat": 2,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 2,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-forced-2",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-forced-2",
+      "unit_cpu_s": 14.900229,
+      "unit_cpu_workload_s": 10.778867,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.0272162800000046,
+          "part_a": 8.327573150999996,
+          "serialize": 0.00040426499998602594,
+          "verify": 0.5331491700000015
+        },
+        "outer": 14.903856,
+        "setup_excluded": 4.122174922999989,
+        "workload": 10.78168107700001
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 14217691,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.0063519999999997,
+        "part_a": 8.271778000000001,
+        "process_total": 14.057236,
+        "serialize": 0.0004120000000007451,
+        "setup_excluded": 3.7832980000000003,
+        "start": 0.389926,
+        "verify": 0.5147119999999994,
+        "workload": 10.18318
+      },
+      "cpu_input_s": 10.575688,
+      "dry_run": false,
+      "elapsed_seconds": 8.272891919999978,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-forced-3.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100507648,
+        "lower_bound_bytes": 120152064,
+        "memory_bytes": 100507648,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100507648,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 4,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.185682654000004,
+      "probe_seconds": 1.2105281300000001,
+      "repeat": 3,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 3,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-forced-3",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-forced-3",
+      "unit_cpu_s": 14.358986,
+      "unit_cpu_workload_s": 10.575688,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.0064797309999847,
+          "part_a": 8.272949648000008,
+          "serialize": 0.00041278099999431106,
+          "verify": 0.5147515800000235
+        },
+        "outer": 14.363637,
+        "setup_excluded": 3.7847097499999904,
+        "workload": 10.57892725000001
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 14636774,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.028908,
+        "part_a": 8.356506,
+        "process_total": 14.466035999999999,
+        "serialize": 0.00041500000000027626,
+        "setup_excluded": 4.048356,
+        "start": 0.40856,
+        "verify": 0.5338479999999999,
+        "workload": 10.328237
+      },
+      "cpu_input_s": 10.751288,
+      "dry_run": false,
+      "elapsed_seconds": 8.357775868999994,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-forced-4.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100610048,
+        "lower_bound_bytes": 120139776,
+        "memory_bytes": 100610048,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100610048,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 4,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.299016642999902,
+      "probe_seconds": 1.2199815509999894,
+      "repeat": 4,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 4,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-forced-4",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-forced-4",
+      "unit_cpu_s": 14.799644,
+      "unit_cpu_workload_s": 10.751288,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.0291972079999994,
+          "part_a": 8.357821905000009,
+          "serialize": 0.0004161779999947157,
+          "verify": 0.533988039999997
+        },
+        "outer": 14.803107,
+        "setup_excluded": 4.0491183430000035,
+        "workload": 10.753988656999997
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 14541981,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.012893,
+        "part_a": 8.411452,
+        "process_total": 14.377141,
+        "serialize": 0.00041199999999896875,
+        "setup_excluded": 3.9125110000000003,
+        "start": 0.41660600000000003,
+        "verify": 0.5339780000000003,
+        "workload": 10.375341
+      },
+      "cpu_input_s": 10.773244,
+      "dry_run": false,
+      "elapsed_seconds": 8.412549130999992,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-forced-5.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100253696,
+        "lower_bound_bytes": 120254464,
+        "memory_bytes": 100253696,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100253696,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 4,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.426527197999889,
+      "probe_seconds": 1.2405513739999776,
+      "repeat": 5,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 5,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-forced-5",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-forced-5",
+      "unit_cpu_s": 14.685755,
+      "unit_cpu_workload_s": 10.773244,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.0130453959999954,
+          "part_a": 8.412596339000004,
+          "serialize": 0.0004144449999898825,
+          "verify": 0.5340300419999835
+        },
+        "outer": 14.688891,
+        "setup_excluded": 3.912899993000025,
+        "workload": 10.775991006999975
+      }
+    },
+    {
+      "arm": "forced",
+      "assertions": {
+        "expected_expanded": true,
+        "expected_panels": 4,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 14332029,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": {
+        "proof": 5,
+        "replay": 14,
+        "verify_for": 15
+      },
+      "cpu": {
+        "adapter": null,
+        "admission": 1.0208080000000006,
+        "part_a": 8.332448,
+        "process_total": 14.175514,
+        "serialize": 0.0005379999999988172,
+        "setup_excluded": 3.8227389999999994,
+        "start": 0.38305599999999995,
+        "verify": 0.5266170000000008,
+        "workload": 10.263466999999999
+      },
+      "cpu_input_s": 10.651214,
+      "dry_run": false,
+      "elapsed_seconds": 8.334766737999985,
+      "error": null,
+      "exit_code": 0,
+      "expanded": true,
+      "final_sha256": "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": true,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-forced-0.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100651008,
+        "lower_bound_bytes": 120238080,
+        "memory_bytes": 100651008,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100651008,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 4,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.34959613500007,
+      "probe_seconds": 1.2315561350000053,
+      "repeat": 0,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "forced",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": true,
+        "repeat": 0,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-forced-0",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-forced-0",
+      "unit_cpu_s": 14.473953,
+      "unit_cpu_workload_s": 10.651214,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.020920846999985,
+          "part_a": 8.334825487999979,
+          "serialize": 0.0005388470000013967,
+          "verify": 0.526646970999991
+        },
+        "outer": 14.47845,
+        "setup_excluded": 3.8234235120000335,
+        "workload": 10.655026487999967
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 10884260,
+      "cold": true,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=done",
+        "ok": true
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 0.9963610000000003,
+        "part_a": 4.736019000000001,
+        "process_total": 10.685386,
+        "serialize": 0.0003019999999995804,
+        "setup_excluded": 3.8122999999999996,
+        "start": 0.510843,
+        "verify": 0.5409300000000004,
+        "workload": 6.784455000000001
+      },
+      "cpu_input_s": 7.206155,
+      "dry_run": false,
+      "elapsed_seconds": 4.73782765499999,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-prescribed-1.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 169336832,
+        "lower_bound_bytes": 120492032,
+        "memory_bytes": 169336832,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 169336832,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 2,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.307929316000013,
+      "probe_seconds": 1.2204711159999988,
+      "repeat": 1,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": true,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 1,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-prescribed-1",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-prescribed-1",
+      "unit_cpu_s": 11.018455,
+      "unit_cpu_workload_s": 7.206155,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 0.9971957090000103,
+          "part_a": 4.737879783000011,
+          "serialize": 0.00030346700000905,
+          "verify": 0.541034040999989
+        },
+        "outer": 11.583366,
+        "setup_excluded": 3.91623014999999,
+        "workload": 7.66713585000001
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 10674711,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 0.9891610000000002,
+        "part_a": 4.7965,
+        "process_total": 10.517049,
+        "serialize": 0.0002760000000012752,
+        "setup_excluded": 3.7172029999999996,
+        "start": 0.39124299999999995,
+        "verify": 0.5330360000000001,
+        "workload": 6.710216000000002
+      },
+      "cpu_input_s": 7.079355,
+      "dry_run": false,
+      "elapsed_seconds": 4.797007825999998,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-prescribed-2.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100651008,
+        "lower_bound_bytes": 120049664,
+        "memory_bytes": 100651008,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100651008,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 2,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.353216592999843,
+      "probe_seconds": 1.2302409889999808,
+      "repeat": 2,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 2,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-prescribed-2",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-prescribed-2",
+      "unit_cpu_s": 10.796558,
+      "unit_cpu_workload_s": 7.079355,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 0.989273742999984,
+          "part_a": 4.797087724999983,
+          "serialize": 0.0002758949999872584,
+          "verify": 0.5330527600000039
+        },
+        "outer": 10.799201,
+        "setup_excluded": 3.717830794000008,
+        "workload": 7.081370205999992
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 10543032,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 1.0038019999999999,
+        "part_a": 4.7189939999999995,
+        "process_total": 10.384558,
+        "serialize": 0.00026900000000118496,
+        "setup_excluded": 3.6584429999999997,
+        "start": 0.39236399999999994,
+        "verify": 0.5257290000000001,
+        "workload": 6.641158000000001
+      },
+      "cpu_input_s": 6.992642999999999,
+      "dry_run": false,
+      "elapsed_seconds": 4.719453756000007,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-prescribed-3.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100237312,
+        "lower_bound_bytes": 120090624,
+        "memory_bytes": 100237312,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100237312,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 2,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.235030650999988,
+      "probe_seconds": 1.213415327000007,
+      "repeat": 3,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 3,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-prescribed-3",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-prescribed-3",
+      "unit_cpu_s": 10.651086,
+      "unit_cpu_workload_s": 6.992642999999999,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.00393395399999,
+          "part_a": 4.719517583999988,
+          "serialize": 0.00026995500002158224,
+          "verify": 0.5257806230000028
+        },
+        "outer": 10.653077,
+        "setup_excluded": 3.6588406989999953,
+        "workload": 6.994236301000004
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 10418202,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 0.9809789999999992,
+        "part_a": 4.734352000000001,
+        "process_total": 10.266361,
+        "serialize": 0.00027000000000043656,
+        "setup_excluded": 3.567117000000001,
+        "start": 0.37426400000000004,
+        "verify": 0.5224130000000002,
+        "workload": 6.612278000000002
+      },
+      "cpu_input_s": 6.965283999999999,
+      "dry_run": false,
+      "elapsed_seconds": 4.734717960000012,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-prescribed-4.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100646912,
+        "lower_bound_bytes": 120049664,
+        "memory_bytes": 100646912,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100646912,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 2,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.263337609000047,
+      "probe_seconds": 1.2192616009999995,
+      "repeat": 4,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 4,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-prescribed-4",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-prescribed-4",
+      "unit_cpu_s": 10.532401,
+      "unit_cpu_workload_s": 6.965283999999999,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 0.9810626989999776,
+          "part_a": 4.734757082999977,
+          "serialize": 0.0002707449999945766,
+          "verify": 0.522443442999986
+        },
+        "outer": 10.533516,
+        "setup_excluded": 3.567636066000034,
+        "workload": 6.965879933999966
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 10572928,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": null,
+      "cpu": {
+        "adapter": null,
+        "admission": 0.9887600000000001,
+        "part_a": 4.814196,
+        "process_total": 10.418249,
+        "serialize": 0.00030300000000060834,
+        "setup_excluded": 3.6158659999999996,
+        "start": 0.38187399999999994,
+        "verify": 0.5270239999999999,
+        "workload": 6.712157
+      },
+      "cpu_input_s": 7.102881000000001,
+      "dry_run": false,
+      "elapsed_seconds": 4.814645743,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": false,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-prescribed-5.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100376576,
+        "lower_bound_bytes": 119918592,
+        "memory_bytes": 100376576,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100376576,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 2,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.168359540999973,
+      "probe_seconds": 1.2027465969999867,
+      "repeat": 5,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": false,
+        "repeat": 5,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-prescribed-5",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-prescribed-5",
+      "unit_cpu_s": 10.718747,
+      "unit_cpu_workload_s": 7.102881000000001,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 0.9888900820000117,
+          "part_a": 4.814693261999992,
+          "serialize": 0.0003034970000044268,
+          "verify": 0.5271205370000018
+        },
+        "outer": 10.720791,
+        "setup_excluded": 3.616300437999996,
+        "workload": 7.104490562000004
+      }
+    },
+    {
+      "arm": "prescribed",
+      "assertions": {
+        "expected_expanded": false,
+        "expected_panels": 2,
+        "ok": true
+      },
+      "cgroup_cpu_usage_usec": 10817498,
+      "cold": false,
+      "cold_prep": {
+        "detail": "HarnessColdPrep=None",
+        "ok": false
+      },
+      "completed": true,
+      "counts": {
+        "proof": 3,
+        "replay": 8,
+        "verify_for": 9
+      },
+      "cpu": {
+        "adapter": null,
+        "admission": 1.0119810000000005,
+        "part_a": 4.818111000000001,
+        "process_total": 10.655125,
+        "serialize": 0.00027199999999893976,
+        "setup_excluded": 3.813508999999999,
+        "start": 0.39564299999999997,
+        "verify": 0.5266039999999998,
+        "workload": 6.752611
+      },
+      "cpu_input_s": 7.1522260000000015,
+      "dry_run": false,
+      "elapsed_seconds": 4.819064891000011,
+      "error": null,
+      "exit_code": 0,
+      "expanded": false,
+      "final_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "fsync_count": null,
+      "initial_prefix_sha256": "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+      "instrumented": true,
+      "memory": {
+        "cgroup_path": "/system.slice/fp-s5pa-1b-prescribed-0.service",
+        "cgroup_path_matches_unit": true,
+        "complete": true,
+        "in_unit_peak_bytes": 100253696,
+        "lower_bound_bytes": 120250368,
+        "memory_bytes": 100253696,
+        "method": "cgroup_in_unit",
+        "oom_events": 0,
+        "swap_max": "0",
+        "swap_off": true,
+        "swap_peak_bytes": 0,
+        "systemd_peak_bytes": 100253696,
+        "windows_job_peak_commit_bytes": null
+      },
+      "panels": 2,
+      "poll_bound_s": 1800,
+      "predicted_seconds": 8.443354701999908,
+      "probe_seconds": 1.2422159939999915,
+      "repeat": 0,
+      "result": "success",
+      "row_exit_status": 0,
+      "row_flags": {
+        "arm": "prescribed",
+        "cold": false,
+        "dry_run": false,
+        "instrumented": true,
+        "repeat": 0,
+        "stage": "1b"
+      },
+      "row_present": true,
+      "row_unit": "fp-s5pa-1b-prescribed-0",
+      "thread_env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "timed_out": false,
+      "unit": "fp-s5pa-1b-prescribed-0",
+      "unit_cpu_s": 10.965735,
+      "unit_cpu_workload_s": 7.1522260000000015,
+      "unit_present": true,
+      "wall": {
+        "boundaries": {
+          "admission": 1.012126864999999,
+          "part_a": 4.819129071999981,
+          "serialize": 0.0002727990000153113,
+          "verify": 0.5266744480000227
+        },
+        "outer": 10.96843,
+        "setup_excluded": 3.8140522180000005,
+        "workload": 7.154377781999999
+      }
+    }
+  ],
+  "runtime": {
+    "arch": "x86_64",
+    "arm_order": [
+      "forced",
+      "prescribed"
+    ],
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+    "host_facts": {
+      "cgroup_controllers": "cpuset cpu io memory hugetlb pids rdma misc dmem",
+      "cgroup_fs": "cgroup2fs",
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "kernel": "6.17.0-1022-azure",
+      "nproc": "4",
+      "swap_total": "SwapTotal: 0 kB",
+      "swapon_show": "",
+      "systemd_version": "systemd 255 (255.4-1ubuntu8.17)"
+    },
+    "image_digest": null,
+    "implementation": "CPython",
+    "job": "a",
+    "kernel": "6.17.0-1022-azure",
+    "logical_cpus": 4,
+    "os_id": "ubuntu",
+    "os_release": "24.04",
+    "platform_accounting": "linux_getrusage_cgroup_v2",
+    "python": "3.12.3",
+    "requirements_lock_sha256": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+    "run_attempt": "1",
+    "run_id": "36364854404",
+    "runner": "GitHub Actions 1000021898",
+    "runtime_kind": "host_venv",
+    "swap_total_kb": 0,
+    "systemd_version": "systemd 255 (255.4-1ubuntu8.17)",
+    "thread_env": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "schema": "s5-part-a-max-expansion-measurement/v2",
+  "scope": "job",
+  "source_sha256": {
+    "core/dd_geometry.py": "b471e27f24c95af33fe9899d770ca2bd35cc3b10aef6a46af2467a5c14525134",
+    "core/dd_protection.py": "fcc5532ea327fd62271fb8ee6daa303891198c9080dafad38118fc356d4edd8d",
+    "core/firm_rules.py": "c68bbc3262c7470e4b3dbb69a2751b49598b623841f3d7f5e01747023fbf8942",
+    "core/historical_challenge.py": "39f1cabc2e035a338d7c402870a1610574248cf233b8d2a005da99cfbf7ac1e0",
+    "core/lib/atomic_io.py": "874b92d3bc39b28309b4ef127d1355f7bb2b06fbc99ab2ea55f3d0f9663fb774",
+    "core/lib/file_lock.py": "9fd3afe199d10794ece04f2d146930b82fd31020a1a37d4a2985eac053d2e352",
+    "core/lib/mvd.py": "17f6279764379e99c8d73e0834234b1b42c16dd1d37a8e237bda7a2a1d3044b9",
+    "core/lib/validation.py": "02b04aa024a5b8be238ed2764722504e7abd82bc81825bf271a372baaa4f508d",
+    "core/lifecycle.py": "1f1ad1ab85e98533cdd6e1b134d6b678188ccda45375781136ceca348f505ceb",
+    "core/mc/__init__.py": "6885ba20fabe5472930637bcfdb2dd4b48f8a3287886fa1f5f3ab3e03f39e6b9",
+    "core/mc/ingest.py": "94a0819d180d6ed0732efcff965f2eac906a1aa7d5462d76bb03ea07bdfa4655",
+    "core/mc/modes.py": "651848933c3d3bcfd5f37ff6a298367bb8644579207a302b4481ab6878b06cc7",
+    "core/mc/preflight.py": "b20b169ea6df221778492c69cbcaa277f75663fb534a7f08cbc6c71ee5cf5d63",
+    "core/mc/simulation.py": "e6539c2f4efd41b173ec30faa6025175bdacc982ad157cbaa8acf109a3cbda48",
+    "core/tv_schema.py": "0335836b841931aff3b5e08acba965c578eda2f60e707bf8e10dc793c0c614b8",
+    "deploy/qualification/bootstrap.py": "d2790c29ff094882cc35c6b55319a4132f98e233393a5b459ebdb13e2b82a204",
+    "ops/c1_rail/__init__.py": "6bec736a516af7ea223e23dab31740cb44353144accd0b79efb209c3a7a7e1ed",
+    "ops/c1_rail/book_policy.py": "ffcd3aab3e74235e60c711f266f884f96874072c3d84d0b3e1d25d67abd8567a",
+    "ops/c1_rail/book_schedule.py": "e9e98d9989dec9cf1d535a7b97c2c6425f0df74ac2e3bb72802a00137c7b06fd",
+    "ops/c1_rail/ed25519_verify.py": "60c4e4d7c06d4572b43fbaf155dc08801549f73db2713cb6eab07f4f188ffe15",
+    "ops/c1_rail/policy_fingerprint.py": "45214014035aa2f8ebe484dfe71b288cfa4440efcfc795ecbba3becae293d5eb",
+    "ops/c1_rail/qualification/__init__.py": "bd470381dfb33671ba46a70df62f35382fbea7bf1f656b1a58f82638ee823764",
+    "ops/c1_rail/qualification/blocks.py": "53d3e3f9c3fb6b9acaee40e0eb5a4b893a73092b5ccf7d317dd8c8a760ede7f3",
+    "ops/c1_rail/qualification/checkpoint_plan.py": "6b04a51b7ed84edb0668a322788b4d6a5fc0b27afb97e964c5545a6d0535a433",
+    "ops/c1_rail/qualification/clock.py": "25556abf6b6dc1a1770560409bc440f208d7117cbccbe01e617f922bad084872",
+    "ops/c1_rail/qualification/contract.py": "48d6e5e9cd43e11fb7c3843642c899474303733f7e1b51cf1877c81e3e310522",
+    "ops/c1_rail/qualification/execution/__init__.py": "1e75bf04e211bd1164489627117566f1bdb1722aca3a8519bdf61df5f52ec630",
+    "ops/c1_rail/qualification/execution/admission.py": "9359edaad8207652b7636667354d146f82418d2dd8c5c064a712204a4414ae49",
+    "ops/c1_rail/qualification/execution/budget.py": "409247b5b3941eadd27a272302c2d31511d2fe169a63068a35e76a7781aba645",
+    "ops/c1_rail/qualification/execution/campaign_budget.py": "fc062da9ce541a56ba7fbf77f7a35f7102f8b0595cd786149ed547795af0328a",
+    "ops/c1_rail/qualification/execution/campaign_probe.py": "fc47debaf6f7ce83a3e185cd9f2d16ab982c06d40c16c44128881dd02757e35d",
+    "ops/c1_rail/qualification/execution/campaign_protocol.py": "9f320558cb2de2ba38bb612a7b26ece5afb26c48884d349e71c2646a24b8737c",
+    "ops/c1_rail/qualification/execution/compute.py": "f7d6c9b596535712928d33b521373846981e7b28532b4fc4a6ea365028ef6a74",
+    "ops/c1_rail/qualification/execution/evidence.py": "dd32d643cf74c85079c8aa16641486f89abe80d99e102576097aee341f8ab4c1",
+    "ops/c1_rail/qualification/execution/files.py": "81fe49853ecdb1f193c3dd24bcf89691597dffb19d14514559ecdaa28913507e",
+    "ops/c1_rail/qualification/execution/keys.py": "6bcbf04a78d0b224a7a337f2e86a441dab6f8cf2be20241e833d725a9097751f",
+    "ops/c1_rail/qualification/execution/plan.py": "ba1db3d547be109de218cdfc359b3f9cbad6b586bf6a3608dc0b6b928ece3ef7",
+    "ops/c1_rail/qualification/execution/profile.py": "6e038fd3382cc030e5502cb61336cdda2eaebf250f10f86d3170a3442c574a83",
+    "ops/c1_rail/qualification/execution/protocol.py": "c36c882b8aeca46ce07213d80c00a1baa77b4829dfd1537f0bdd111c4e9b764b",
+    "ops/c1_rail/qualification/execution/release_schema.py": "787f09fc3816a875a38f78f69d4bfcc9353d6d09dd5856c53899739ce2d782fb",
+    "ops/c1_rail/qualification/execution/runtime.py": "b9230e4cbc0096097c674a9b37c103688bac559ec112bfaaaf0df9eb879d4dd2",
+    "ops/c1_rail/qualification/execution/worker.py": "9e3d2b2cf0e8fda23b5c5a50b9dfa401e8708c7df0657e256d14fbb1cbffd249",
+    "ops/c1_rail/qualification/legality.py": "d57947503a0fcf60c183067eadd67e722ea75d673dcd964b9c29dd80dad78eda",
+    "ops/c1_rail/qualification/model.py": "4683e2b80b3e26f4fbee9a5bb797ca56a70a7040c8b96f2a1e437a08c0551125",
+    "ops/c1_rail/qualification/panel.py": "66b3795938876da7a7db1c6fca2e0e86ab9d7b4b9f72b14a27d8cd07c457ca87",
+    "ops/c1_rail/qualification/paths.py": "11eeb20064145bd93a505545cc72d9b0cae5e33d747c4589a2a32f0709dbe97d",
+    "ops/c1_rail/qualification/policy.py": "b89d6ad68405c29b0400383801a0f7abb7192e6502c2bf1a5644b8195472030f",
+    "ops/c1_rail/qualification/policy_sources.py": "2d3ba35d8afc086a13453b389607873fb8411b1ea9de8d0e98097b4d67afc206",
+    "ops/c1_rail/qualification/preflight.py": "b6798e2637c228e3d1c5c910a05df72d5662247aaf0c2442db534785ce00c22f",
+    "ops/c1_rail/qualification/production_source.py": "90e3bc09dc1e8818bb61b3091458005283a02bb1f8f889744d08dc6e73519487",
+    "ops/c1_rail/qualification/provider.py": "8be790e12dee0c82f5624b18a8eb232e66e07e21a367053c30777b7517167d55",
+    "ops/c1_rail/qualification/regime.py": "5fc321613fd705c0c0990b811e122655ba29624fb86949185c480176a7ef0b30",
+    "ops/c1_rail/qualification/replay.py": "c5e4c895cc18e1c35337e989720df6a14ea8c0ff2554eca6d3f606664b7fc84d",
+    "ops/c1_rail/qualification/runner.py": "9a6d8e8f0f7ad6c0601ab89e15720b12baa0747d75174c52e9ba3fd503d27a6e",
+    "ops/c1_rail/qualification/seed_identity.py": "7dd82d57632358ebae79c49f346dc63a938e0159fcafd3d00187db352b4bd68d",
+    "ops/c1_rail/qualification/sessions.py": "867240d7ae32aacc0367b8bd869b69058eefcf3cd19ed9c85f7f573cfa5bde42",
+    "ops/c1_rail/qualification/source_admission.py": "9e44e834d65a38d6f4360090f3e8cd29bdc371903e951f667534136297d18a3a",
+    "ops/c1_rail/qualification/trust_domain.py": "efa486872a968086d3d8e9fa54e21ed019544922982acb1b4e8b18768940a7a7",
+    "ops/c1_signal_daemon/__init__.py": "35ae4cb5838e47d2f8240dc014094de106a5b1522ec8ca23e0349ec48a27c0da",
+    "ops/c1_signal_daemon/book_adapters.py": "de4b6a9d5c0d1429454f9ee09a1266afc31198e0b464df7c5ddab59833e190a1",
+    "ops/c1_signal_daemon/book_protocol.py": "4d33780b9033b5b5e34cc16e663edce8a7932535f99bc3d63ab22fea28337ad9",
+    "ops/c1_signal_daemon/feed.py": "5a7b5251c111ab9518a64eee2e517465cd38457832af8bda771cf3218138cc8c",
+    "ops/c1_signal_daemon/pine_ta.py": "0c21464de8c5007ad03a3b83cf510a2557882e4267c5036794414c02269c1d15",
+    "ops/c1_signal_daemon/tv_broker_emulator.py": "3f6067dac87a5b7816709a979f1a2bd65df2268c9d3634d89f0443faeebdae8f",
+    "requirements-ops.lock": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+    "tests/ops/qualification/composition_fixture.py": "727166d55b7a3f26e437ae577017eb36067d0dbe77f7ac8fb5157d7c55a9cf23",
+    "tests/ops/qualification/runtime_fixture.py": "cca04e61d2f259026f76b026c023c74e06cd25dc9360f4826524a7518186e5db",
+    "tests/ops/qualification/test_contract.py": "dfad10e135617416757da61c269f6ce99654c956c80081933f0c0b1c8d32e3b4",
+    "tests/ops/qualification/test_trust_domain.py": "3aeeec317a41ae95fc6f3d0e372e19191dadb725f6fcab213429c086385cf65d"
+  },
+  "stage": "1b",
+  "start_head": "7675c088179aab7c1dbd8c80d758e1f8dac0c6f1",
+  "summary": {
+    "arms": {
+      "forced": {
+        "ceiling_inputs_complete": true,
+        "ceiling_inputs_missing": [],
+        "cold_over_warm_median": 1.0256793504267596,
+        "cpu_input_s": {
+          "all": {
+            "max": 11.038634,
+            "median": 10.773244,
+            "min": 10.575688,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.0437745515941848
+          },
+          "warm": {
+            "max": 10.778867,
+            "median": 10.762266,
+            "min": 10.575688,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.0192118942994537
+          }
+        },
+        "cpu_inputs_complete": true,
+        "cpu_workload_in_process_s": {
+          "all": {
+            "max": 10.518015999999998,
+            "median": 10.356734999999999,
+            "min": 10.18318,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.0328812807001346
+          },
+          "warm": {
+            "max": 10.375341,
+            "median": 10.342486,
+            "min": 10.18318,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.0188704314369381
+          }
+        },
+        "digest_pairs": [
+          [
+            "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+            "841183266df1d65fa38db954a5b96fa7d9b37932e156c2426dbf2855cbb9967d"
+          ]
+        ],
+        "digests_identical": true,
+        "lower_bound_max_bytes": 120606720,
+        "memory_bytes": {
+          "all": {
+            "max": 165560320,
+            "median": 100610048,
+            "min": 100253696,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.651413629678052
+          },
+          "warm": {
+            "max": 100851712,
+            "median": 100558848.0,
+            "min": 100253696,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.0059650269651903
+          }
+        },
+        "memory_complete_all_timed_repeats": true,
+        "memory_max_bytes_complete_only": 165560320,
+        "predicted_seconds_max": 8.426527197999889,
+        "spread_all": 1.0437745515941848,
+        "spread_all_in_process": 1.0328812807001346,
+        "timed_repeats_valid": 5,
+        "wall_workload_s": {
+          "all": {
+            "max": 11.390638705000004,
+            "median": 10.775991006999975,
+            "min": 10.57892725000001,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.0767290894263397
+          },
+          "warm": {
+            "max": 10.78168107700001,
+            "median": 10.764989831999987,
+            "min": 10.57892725000001,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.0191658210902244
+          }
+        },
+        "warm_spread": 1.0192118942994537,
+        "warm_spread_in_process": 1.0188704314369381
+      },
+      "prescribed": {
+        "ceiling_inputs_complete": true,
+        "ceiling_inputs_missing": [],
+        "cold_over_warm_median": 1.0241836304979577,
+        "cpu_input_s": {
+          "all": {
+            "max": 7.206155,
+            "median": 7.079355,
+            "min": 6.965283999999999,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.0345816480706316
+          },
+          "warm": {
+            "max": 7.102881000000001,
+            "median": 7.0359989999999994,
+            "min": 6.965283999999999,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.0197546862410782
+          }
+        },
+        "cpu_inputs_complete": true,
+        "cpu_workload_in_process_s": {
+          "all": {
+            "max": 6.784455000000001,
+            "median": 6.710216000000002,
+            "min": 6.612278000000002,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.026038983841877
+          },
+          "warm": {
+            "max": 6.712157,
+            "median": 6.675687000000002,
+            "min": 6.612278000000002,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.015105081788757
+          }
+        },
+        "digest_pairs": [
+          [
+            "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440",
+            "8ea0d05d5839483dc566dcf2076fd71acdd5009c1e1ae1d5c3eac5b7cda77440"
+          ]
+        ],
+        "digests_identical": true,
+        "lower_bound_max_bytes": 120492032,
+        "memory_bytes": {
+          "all": {
+            "max": 169336832,
+            "median": 100646912,
+            "min": 100237312,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.6893592677345537
+          },
+          "warm": {
+            "max": 100651008,
+            "median": 100511744.0,
+            "min": 100237312,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.004127165740438
+          }
+        },
+        "memory_complete_all_timed_repeats": true,
+        "memory_max_bytes_complete_only": 169336832,
+        "predicted_seconds_max": 8.353216592999843,
+        "spread_all": 1.0345816480706316,
+        "spread_all_in_process": 1.026038983841877,
+        "timed_repeats_valid": 5,
+        "wall_workload_s": {
+          "all": {
+            "max": 7.66713585000001,
+            "median": 7.081370205999992,
+            "min": 6.965879933999966,
+            "missing": 0,
+            "n": 5,
+            "spread": 1.1006701124113931
+          },
+          "warm": {
+            "max": 7.104490562000004,
+            "median": 7.037803253499998,
+            "min": 6.965879933999966,
+            "missing": 0,
+            "n": 4,
+            "spread": 1.019898509493896
+          }
+        },
+        "warm_spread": 1.0197546862410782,
+        "warm_spread_in_process": 1.015105081788757
+      }
+    },
+    "estimates": {
+      "C_hat_s": 11.038634,
+      "M_hat_bytes": 165560320,
+      "P_hat_s": 8.426527197999889,
+      "W_hat_s": 11.390638705000004,
+      "arm": "forced",
+      "provisional": "D\u0302 uncovered until Stage 1c (r2 \u00a74, \u00a79 PA-1)"
+    },
+    "memory_complete_all_timed_repeats": true,
+    "prefix_matches_prescribed": true
+  },
+  "tree_clean": true,
+  "verdict": {
+    "ceiling_inputs_complete": true,
+    "exit_code": 0,
+    "memory_feasibility": "VERIFIED",
+    "memory_scope": "PA-3a payload unit (r2 \u00a716 C6)",
+    "pa3a_screen": {
+      "fails": false,
+      "m_m": 1.5,
+      "reference_bytes": 256000000,
+      "reference_note": "equals the binding maximum_memory_bytes only with the P4 tuple extended to /v7 (r2 \u00a78.1); unextended the binding is 230,400,000 and BUDGET_EXHAUSTED at binding",
+      "scope": "PA-3a (payload unit only; shared scope is PA-3b at C3, r2 \u00a716 C6)",
+      "value_bytes": 248340480.0
+    },
+    "reasons": [],
+    "rerun_eligible": false,
+    "rule_applicable": true,
+    "sigma_screen": {
+      "basis": "r2 \u00a710.2 \u03a3-only row: cap 10,000 s CPU / 10,000 s wall with the P4 tuple extended to /v7; N2 360 s / 900 s (CP-1a ruling (3)); PA-1 m_c 2.0, 1.5 \u00d7 P\u0302, O 20 s, 120 s floor; PA-2 m_w 3.0, L 30 s, 300 s floor; D\u0302 uncovered (provisional)",
+      "cpu_limit_s": 8440.0,
+      "cpu_value_s": 120.0,
+      "sigma_infeasible": false,
+      "wall_limit_s": 6100.0,
+      "wall_value_s": 300.0
+    },
+    "stop_class": "none",
+    "validity_ok": true
+  },
+  "workload": {
+    "forced": {
+      "arm": "forced",
+      "bars_per_session_per_leg": 4,
+      "budget_seconds": 3600.0,
+      "expanded_panels": 4,
+      "expected": {
+        "expanded": true,
+        "panels": 4,
+        "proofs": 5,
+        "replays": 14,
+        "verify_for": 15
+      },
+      "fixture": "tests/ops/qualification/composition_fixture.py",
+      "floor": 0.95,
+      "frozen_expansion_tolerance": 0.01,
+      "full_pass_rate_input": 1.0,
+      "horizon_sessions": 5,
+      "idle": false,
+      "initial_panels": 2,
+      "inner_block_sessions": 5,
+      "legs": [
+        "aegis_6j",
+        "dj30_mym_p250",
+        "orb_mnq_v7",
+        "vanguard_mgc"
+      ],
+      "n2_capture_sha256": null,
+      "outer_months": 6,
+      "paths_per_panel": 2,
+      "percentile": 0.05,
+      "percentile_method": "nearest_rank",
+      "recipe": "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)",
+      "root_rng_namespace": "TEST_ONLY/composition-fixture/v1",
+      "sessions": 174,
+      "within_pp": 1.0
+    },
+    "prescribed": {
+      "arm": "prescribed",
+      "bars_per_session_per_leg": 4,
+      "budget_seconds": 3600.0,
+      "expanded_panels": 4,
+      "expected": {
+        "expanded": false,
+        "panels": 2,
+        "proofs": 3,
+        "replays": 8,
+        "verify_for": 9
+      },
+      "fixture": "tests/ops/qualification/composition_fixture.py",
+      "floor": 0.95,
+      "frozen_expansion_tolerance": 0.01,
+      "full_pass_rate_input": 1.0,
+      "horizon_sessions": 5,
+      "idle": false,
+      "initial_panels": 2,
+      "inner_block_sessions": 5,
+      "legs": [
+        "aegis_6j",
+        "dj30_mym_p250",
+        "orb_mnq_v7",
+        "vanguard_mgc"
+      ],
+      "n2_capture_sha256": null,
+      "outer_months": 6,
+      "paths_per_panel": 2,
+      "percentile": 0.05,
+      "percentile_method": "nearest_rank",
+      "recipe": "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)",
+      "root_rng_namespace": "TEST_ONLY/composition-fixture/v1",
+      "sessions": 174,
+      "within_pp": 0.01
+    }
+  }
+}

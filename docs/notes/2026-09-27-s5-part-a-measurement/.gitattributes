@@ -1,0 +1,4 @@
+# Measurement evidence is committed byte for byte (hashes are cited in the ledger); never convert line endings.
+windows-*.json -text
+stage0/** -text
+stage1b/** -text
