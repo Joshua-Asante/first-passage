@@ -609,6 +609,22 @@ snapshot() {
   [ -z "$live" ] || { echo "a Stage 1b run is still live: $live; resume it, do not dispatch another" >&2; return 1; }
   grep -F "[stage 1b, $1," "$S/runs-$1.txt" | cut -d' ' -f1 > "$S/before-$1.txt" || true
 }
+# cap: the §12.7 dispatch caps, counted across invocations from the dry-run snapshot's listing of every Stage 1b
+# run: one measure dispatch per stage; one dry run, and one re-dispatch only when the earlier dry run's retained
+# record reads exit 3 with every reason I-1 or I-6. A missing or unreadable earlier record allows none. Checked
+# with `|| return 1` and `-e`: cap runs on the left of `||`, where set -e does not apply.
+cap() {
+  local n prev
+  n=$(grep -cF '[stage 1b, measure,' "$S/runs-dry-run.txt" || true)
+  [ "$n" = 0 ] || { echo "a Stage 1b measure run already exists; the stage's measure dispatch is spent" >&2; return 1; }
+  n=$(grep -c . "$S/before-dry-run.txt" || true)
+  [ "$n" = 0 ] && return 0
+  [ "$n" = 1 ] || { echo "$n Stage 1b dry runs already exist; the one re-dispatch is spent" >&2; return 1; }
+  prev=$(cat "$S/before-dry-run.txt") || return 1
+  jq -e '.verdict.exit_code == 3 and (.verdict.reasons | length > 0) and all(.verdict.reasons[]; test("^I-[16]:"))' \
+    "$D/$prev-a-attempt1/record.json" > /dev/null \
+    || { echo "dry run $prev has no retained exit-3 record whose every reason is I-1 or I-6; no re-dispatch" >&2; return 1; }
+}
 # bind MODE: print the id of the one dispatch run of MODE, on any head, that the snapshot did not hold, or stop.
 # The run listing carries no dispatch identity, so a run someone else started in the same window could be taken
 # for this one. After a candidate appears, bind keeps listing for about a minute more (its own window, however late the
@@ -716,6 +732,7 @@ trap 'halt "interrupted"' INT TERM HUP                                 # an inte
 
 # 1. dry run (one job, a); H is the head the dry run actually ran on
 snapshot dry-run || halt "the dry-run snapshot failed"
+cap || halt "the §12.7 dispatch cap refuses this dispatch"
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir="$NOTE" \
   || echo "the dry-run dispatch returned nonzero; reconciling against the snapshot" >&2   # it may still have been created
 DRY_ID=$(bind dry-run) || halt "the dry run was not bound (a dispatch that returned nonzero and bound nothing was not created)"
@@ -731,6 +748,7 @@ e=$(field "$DRY_ID" dry-run a 1 record.json .verdict.exit_code)
 #    headSha check catches a move between that check and GitHub resolving --ref main
 [ "$(gh api "repos/$R/commits/main" --jq .sha)" = "$H" ] || halt "main moved since the dry run"
 snapshot measure || halt "the measure snapshot failed"
+[ ! -s "$S/before-measure.txt" ] || halt "a Stage 1b measure run already exists; the stage's measure dispatch is spent"
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=measure -f runtime=host_venv -f note_dir="$NOTE" \
   || echo "the measure dispatch returned nonzero; reconciling against the snapshot" >&2
 MEASURE_ID=$(bind measure) || halt "the measure run was not bound"
@@ -781,12 +799,18 @@ find "$D" -type f | sort
 
 # 5. combine: exactly one job a and one job b record from MEASURE_ID (per job, its highest attempt, ATT), from a
 #    checkout at the measured head H (the harness refuses any other HEAD):
+#    The measured checkout's doctor runs first (AGENTS.md), and the combine runs only if it passes.
 REPO=$(git rev-parse --show-toplevel); git -c core.autocrlf=false worktree add --detach "$S/wt" "$H"   # LF bytes
-c=0; ( cd "$S/wt" && python -I scripts/fp.py python "$NOTE/measure_part_a_max.py.txt" \
+d=0; ( cd "$S/wt" && python -I scripts/fp.py doctor ) || d=$?
+c=0; [ "$d" != 0 ] || ( cd "$S/wt" && python -I scripts/fp.py python "$NOTE/measure_part_a_max.py.txt" \
     --summarize "$REPO/$D/$MEASURE_ID-a-attempt${ATT[a]}/record.json" "$REPO/$D/$MEASURE_ID-b-attempt${ATT[b]}/record.json" \
     --record "$REPO/$D/$MEASURE_ID-combined.json" ) || c=$?
-git worktree remove --force "$S/wt"                                     # removed whatever the combine returned
+git worktree remove --force "$S/wt"                                     # removed whatever doctor or the combine returned
+[ "$d" = 0 ] || halt "doctor failed in the measured checkout (exit $d); the combine did not run"
 [ "$c" = 0 ] || halt "the combine exited $c (§12.7: 3 or 4 is a verdict, anything else a harness failure)"
+# D2 and PA-3 are verdicts on a valid measurement, so the combine exits 0 with them: read the stop class
+s=$(jq -r .verdict.stop_class "$D/$MEASURE_ID-combined.json") || halt "the combined record is unreadable"
+[ "$s" = none ] || halt "the combined record's stop_class is $s: returned to the operator under §12.7; §13 does not apply"
 ```
 
 *[Corrected 2026-09-28 (Codex review of 9bccf9de). The block previously had four defects:*
@@ -826,6 +850,15 @@ git worktree remove --force "$S/wt"                                     # remove
 *Each fix was exercised against a fake `gh`: a dispatch that returns nonzero but creates the run (bound), a dispatch that fails outright (halts as not created), alternating listing failures, a live pre-existing run (refused), and a TERM during the watch (halts, naming the run).]*
 
 *[Corrected 2026-09-28 (Codex review of 4b96752d on #539). `snapshot` now refuses while a Stage 1b run of either mode is live, not only the mode it is about to dispatch, so a restart after an interrupted measure cannot dispatch a dry run beside it. Writing each bound id to `bound.txt` is now checked, because `bind` runs on the left of `||`, where `set -e` does not apply. Re-run against a fake `gh` with a live measure run and a new dry-run dispatch: the dispatch is refused.]*
+
+*[Corrected 2026-09-28 (Codex review of b2af02a3 on #539). Three fixes:*
+- *`snapshot` refused only while a run was live, so repeated invocations could each dispatch a dry run. `cap` now applies §12.7's caps across invocations: no dispatch once a Stage 1b measure run exists, and a second dry run only when the first one's retained record reads exit 3 with every reason I-1 or I-6. The measure step refuses if a measure run appeared since;*
+- *the combine exits 0 with `stop_class` `D2_ACCOUNTING_FALSIFIER` or `PA3_FAILURE`, because both are verdicts on a valid measurement (`_classify`, `measure_part_a_max.py.txt:1086-1092`). The block now reads the combined record's stop class and stops on anything but `none`, returning it to the operator under §12.7 before §13;*
+- *the measured checkout's `doctor` now runs before the combine, and a failed doctor stops the stage without running it.*
+
+*Each fix was exercised against a fake `gh`: an earlier measure run, two earlier dry runs, an earlier I-6 dry run (re-dispatch allowed), an earlier exit-4 dry run, a combine writing `PA3_FAILURE` with exit 0, and a failing doctor.]*
+
+*[Status 2026-09-28: Stage 1b ran before this block merged. Dry run 36364714432 and measure run 36364854404 ran on `7675c088`, and their evidence and the CP-1b packet are in [#537](https://github.com/Joshua-Asante/first-passage/pull/537) (open). On that state `cap` refuses every Stage 1b dispatch. This block therefore governs only a re-measurement under a fresh approval (§12.7), which must say which earlier runs it sets aside, and it is the form §12.8 adapts for Stage 1c.]*
 
 *[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
 - **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
