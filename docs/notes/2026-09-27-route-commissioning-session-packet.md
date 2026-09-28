@@ -92,7 +92,7 @@ Decided once, against this packet (addendum §4 CP-2, line 490). The operator wr
 
 ### 1.2 Next attended session: checklist (2026-09-28)
 
-This checklist gathers the steps this packet already requires, in dependency order. It adds no condition and authorizes nothing: preparing the session is not permission to run its reads or place its trade. **CP-2 is not complete.** The entitlement capture, the venue reply and every read's target binding are still missing.
+This checklist gathers the steps this packet already requires, in dependency order. It adds no condition and authorizes nothing: preparing the session is not permission to run its reads or place its trade. **CP-2 is not complete:** each read's target binding (§2.4) is still missing. The entitlement capture and the venue reply are owed but gate nothing (§1.1).
 
 **CrossTrade observations, 2026-09-28 (Codex, in the operator's authenticated browser; conversation only, not retained evidence).**
 - Membership: Pro, monthly, active.
@@ -117,21 +117,21 @@ These observations are not an entitlement package, and they do not show that the
 | T07 R3 | The same trade | Only if a zone-explicit source time exists: (a) a CrossTrade time with an explicit zone, or (b) a scrubbed browser capture, if the coordinator rules (b) admissible | No. If neither exists, R3 does not run |
 
 **B. The session of this week's preservation trade (due by 2026-10-02).** Timing is the operator's choice. A Mon–Thu evening trade after 18:00 ET can serve R-1, R-2 and T07. A Friday-evening trade does not cover this week (§2.5). Positions close by 4:45 PM ET; Tradeify closes any position still open (captured rule).
-1. **Link check.** CrossTrade shows the Tradovate connection Connected and the account linked. This is an operator look at the page, not a REST call. If the link has expired, re-authenticate first. Any read that returns 401, 403 or 409 ends with no inference (§2.6).
-2. **Host disarm** (§2.1), read on the host: `dry_run=true`, `armed_until=null`, `emit_enabled=false`. Record the time and a capture hash. If either value cannot be confirmed, the session does not start.
+1. **Link check** *(a practical step drawn from the 2026-09-28 observation; not a packet requirement)*. CrossTrade shows the Tradovate connection Connected and the account linked. This is an operator look at the page, not a REST call. If the link has expired, re-authenticate first. Any read that returns 401, 403 or 409 ends with no inference (§2.6).
+2. **Host disarm** (§2.1), read on the host: `dry_run=true` and `emit_enabled=false` (an ordinary disarm also writes `armed_until=null`). Record the time and a capture hash. If either required value cannot be confirmed, the session does not start.
 3. **Actor inventory** (§2.2), A-1 to A-13, recorded privately. In the A-9 row, record the preservation trade's platform session. Record the known firm-side close owners (drill plan's candidate table: end-of-session auto-close, drawdown-breach liquidation) against A-11. In Stage 0, an actor outside its required state is recorded and returned, and does not stop the reads (§1.1 Stage 0).
 4. **The preservation trade** (placed by the operator because the account requires it; not authorized by this packet). Automation stays fenced and the trade is reconciled afterwards (F-5). **In the same session**, retain the original bytes and a hash for:
    - the order and fill ids;
    - the original timestamps, with their zone;
    - a note of whether the fill came after the 17:00 ET rollover.
 5. **R-1**, before the next reset: steps 1 and 3–5 only, because a platform-placed trade has no known `clOrdId` (§2.5 item 3). Reads only.
-6. **Flat and reconciled**, confirmed from fresh reads.
+6. **Flat and reconciled**, confirmed from R-1 steps 1 and 5 (the F-5 reconciliation).
 
 **C. After at least one reset.** R-2 on the same trade, then T07 R1–R2 if the fill was post-rollover, and T07 R3 only with a zone-explicit source. Every read waits for its own binding (A3).
 
 **D. Before X-1 (a separate drill session, never while the preservation trade is open or working).**
-- **Decision still open:** whether a non-disableable firm-side liquidation (A-11) blocks Stage 1 under GC-7 (§7). Tradeify's end-of-session auto-close is published, and no way to disable it is known. Under §2.2, A-11 reading "configured, not disableable" means no Stage 1 session starts until the operator and coordinator decide.
-- **Permission:** Tradeify answered conditionally, and the operator ruled no clarification is needed (§1.1 F-6(a)). What remains is the operator's attestation of the five conditions in X-1's CP-3. Tradeify's published guideline also says it may require "a live video of you enabling the code on your own PC", so the operator should be ready to supply that.
+- **Decision still open:** whether a non-disableable firm-side liquidation (A-11) blocks Stage 1 under GC-7 (§7). Tradeify's end-of-session auto-close is published; the published captures give no way to disable it, and this is not verified on this account. Under §2.2, A-11 reading "configured, not disableable" means no Stage 1 session starts until the operator and coordinator decide.
+- **Permission:** Tradeify answered conditionally, and the operator ruled no clarification is needed (§1.1 F-6(a)). What remains is the operator's attestation of the five conditions in X-1's CP-3. *Observation from the `P-1-public` capture, not a CP-3 item:* Tradeify's published guideline also says it may require "a live video of you enabling the code on your own PC".
 - **X-1's own CP-3** (§4.1): the environment named explicitly (the incumbent eval, F-2); every placeholder fixed, including `tif` and the quote source; the request body recorded privately with its hash; the cost ceiling (F-4); written authorization.
 - **On the day:** §3.2 in full. That means host disarm, the full inventory with every actor in its required state, a flat start with nothing working, and no scheduled high-impact release within 15 minutes.
 - X-1 and X-4 do not wait on M2. X-2 does: see §4.3.
@@ -215,7 +215,7 @@ Outcome line: `P-1-entitlement · REST entitlement confirmed (existing plan) · 
 3. **R-1, only in the session of a preservation trade the operator places anyway.** R-1 runs exactly within the R-1 table (drill plan lines 158–171):
    - Read steps 1–5 in order: list working and session orders; lifecycle per candidate; children through `ocoId`/`parentId`/`linkedId` plus `ordStatus`; fills by `orderId`; fill-reconciled positions.
    - **Excluded:** the "place again when no order carries the id" step, and every `orders/place`, `change`, `cancelreplace`, `cancel` or `close` call.
-   - **Partial coverage.** A preservation trade placed on the platform, not through REST, carries an unknown `clOrdId`, if any. R-1 then covers **steps 1 and 3–5 only**, and the `clOrdId` match waits for a REST-placed order: X-1's (drill plan line 171). Whether R-1 may target X-1's order is F-3's open question (§2.4).
+   - **Partial coverage.** A preservation trade placed on the platform, not through REST, carries an unknown `clOrdId`, if any. R-1 then covers **steps 1 and 3–5 only**, and the `clOrdId` match waits for a REST-placed order: X-1's (drill plan line 171). Whether R-1 may target X-1's order is F-3's open question (§2.4). *(Decided 2026-09-28, §1.1 F-3.)*
 4. After a reset, R-2 may be run on the R-1 target as its known order, under the R-2 table. Repeated R-2 reads of one order at stated intervals are a retention probe, which needs separate authorization for each read (drill plan line 184).
 
 **This week's preservation trade: the natural R-1 opportunity.**
@@ -575,13 +575,13 @@ It does not settle drill plan open questions 1, 3–9 or the known-order definit
 | Checkpoint | Decision | Where |
 |---|---|---|
 | **CP-2** | Facts F-1 to F-5, plus F-6 (P-1 and the session plan §2 venue-rules item) before Stage 1. Each read's target identity (§2.4). The §2.1 and §2.2 records for each session | §1, §2 |
-| **CP-2 (F-3)** | May R-1 and R-2 target X-1's REST-placed order? The drill plan's definition (line 156) predates §A11.3, which with addendum §1.3 (line 443) confines R-1 to a preservation-trade session | §1 F-3, §2.4, §4.1 step 8 |
+| **CP-2 (F-3)** | *(Decided 2026-09-28, §1.1 F-3.)* May R-1 and R-2 target X-1's REST-placed order? The drill plan's definition (line 156) predates §A11.3, which with addendum §1.3 (line 443) confines R-1 to a preservation-trade session | §1 F-3, §2.4, §4.1 step 8 |
 | **CP-2 (Stage 0 inventory)** | Keep this packet's stage split (Stage 0: inventory recorded and returned; the "session ends before it starts" rule from the first order-producing row, drill plan line 101), or adopt the stricter reading that an actor outside its required state also stops Stage 0 reads | §2.2 |
 | **Coordinator (documentary)** | Name the `orders/place` request-body fields for a market entry and a resting stop entry, from retained vendor documentation with quote IDs. **Discharged 2026-09-28 from public documentation** ([closure](#37-closure-2026-09-28--request-shapes-from-the-current-public-crosstrade-documentation)); residuals R-3.7a (retained-capture cross-check) and R-3.7b (`tif` default) remain, neither blocking a CP-3 request | §3.7 |
 | **Operator (2026-09-28)** | *(Done: M2 returned 2026-09-28, [#541](https://github.com/Joshua-Asante/first-passage/pull/541), Q1 `OPEN`; the vendor-question and GC-2b decisions below remain the operator's.)* Start the carded M2 in a local session of the primary checkout, on a frozen revision descending from #532's merge `6da1b2b` (M2 card §9). If M2 returns Q1 OPEN or CONFLICTING, whether to send its draft vendor question, and whether that uses the one permitted T08 follow-up | [closure C.6](#c6-m2-x-2s-documentary-precondition-the-exact-remaining-dependency), §4.3, §5.2 |
 | **CP-3 (X-1)** | Written authorization with the environment, every §3.6 placeholder fixed and the §3.7 request body recorded | §4.1 |
 | **CP-3 (X-4)** | The same, after X-1's traces are reviewed. Whether X-4 still runs after an X-1 fail is an operator decision (packet reading) | §4.2 |
-| **CP-3 (X-2)** | The same, after M2 returns, X-1 passes and the owner confirms the fresh-position precondition. **M2 needs a coordinator dispatch first** *(2026-09-28: carded and DISPATCH-READY; it waits on the operator starting the primary-checkout session, C.6)* | §4.3 |
+| **CP-3 (X-2)** | *(Later 2026-09-28: M2 returned, [#541](https://github.com/Joshua-Asante/first-passage/pull/541); the coordinator's review is owed.)* The same, after M2 returns, X-1 passes and the owner confirms the fresh-position precondition. **M2 needs a coordinator dispatch first** *(2026-09-28: carded and DISPATCH-READY; it waits on the operator starting the primary-checkout session, C.6)* | §4.3 |
 | **Residual-risk decision, with X-3's CP-3 inside it** | Under CR-3, on CS-note §3; also after the owner confirms the fresh-position precondition | §4.4 |
 | **Drill-plan owner** | Amend X-2's and X-3's preconditions (lines 241, 256) to a fresh X-1-shaped opening position, or reject; and confirm the packet reading that an opening-entry failure carries X-1's GC-2a consequence | §4 sequencing note |
 | Operator | Whether to send #519's vendor question; whether and how to use the T08 follow-up | §5 |
