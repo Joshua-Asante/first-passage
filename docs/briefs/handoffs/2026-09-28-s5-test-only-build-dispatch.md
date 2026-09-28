@@ -1,7 +1,7 @@
 # S5 TEST_ONLY build — dispatch card for the frozen S5 packet (Protected Full E1 / T04)
 
 **Type:** cc_handoff (dispatch card; it freezes and dispatches an existing packet and adds no build requirement)
-**Status:** DRAFT 2026-09-28, for coordinator and operator review. It becomes DISPATCH-READY when the operator merges it. The dispatch revision is the `origin/main` commit that carries this card, recorded as a frozen SHA in §9 at dispatch.
+**Status:** DISPATCH-READY 2026-09-28. The operator merged it in #547. The dispatch revision is `eef77836473f7bc304018217f452fb68daa40f17`, frozen in §9. Dispatch itself still needs the coordinator's grant. *[Status updated 2026-09-28 on the merge; before it, the card was a DRAFT for coordinator and operator review.]*
 **Executor:** GLM, single writer for every file in the packet's §2 (packet header). It is reached through `glm_agent` from a Claude coordinator session, in a worktree that contains no `.env` (§0.5). **Coordinator:** Claude; it owns the pre-dispatch read, diff review, Checkpoint C3, integration and acceptance. **Operator:** the separate C3 dispatch grant for Linux runs, the merge, and any versioned change.
 
 **What this card is.** The [CP-1b ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1b-s5-hold-released-for-the-test_only-build-2026-09-28) released the S5 hold **for the TEST_ONLY build only**. It named the release head `05f3788d9e4895308d6734e650a42875c59f669c` (the merge of #537), and it said: "The next coordinator issues the bounded S5 build handoff from this release head." The build specification is the [S5 packet](2026-09-21-full-e1-s5-part-a-DRAFT.md), which "freezes only at the CP-1b hold-release" (packet line 4). This card freezes it at that head and bounds the dispatch: build up to the packet's Checkpoint C3 push-and-return (packet §5), then stop. **The packet governs every build requirement.** Where this card and the packet differ, the packet governs, and the difference is a defect in this card, to be returned.
@@ -199,6 +199,11 @@ Linux runs follow packet §4's order, subset iteration first, and every `s5` dis
 - **2026-09-28 (drafted):** carded on the operator's instruction "draft the S5 build handoff". At drafting, `origin/main` was `d86f6ff`. Against `05f3788` it changes no code (`git diff --stat 05f3788 d86f6ff` over the paths above is empty), and the packet is unchanged (same digest). **Owed:** coordinator review, then the operator's merge, then the dispatch with the frozen SHA recorded here.
 - **2026-09-28 (review folded):** one focused read-only reviewer on `6bf194d` returned 4 FIX and 3 NIT, no BLOCKER. All seven are folded, each checked against its source first: (FIX 1) `fixture_producer.py` is a §2 installed fixture (S4 packet line 96), so the "outside §2" carve-outs are removed; (FIX 2) the CP-1b ruling is absent at `05f3788` and is read at the dispatch revision; (FIX 3) §6 adds the packet §1 line-70 items and defers the Linux-only return items; (FIX 4) seven §2 test files join the acceptance list, with the journal-snapshot test at its actual path `tests/ops/qualification/test_journal_snapshot.py` (the reviewer's `execution/` path does not exist); (NIT 1) the subset-iteration grant is separated from the C3 step 2 grant, subset first; (NIT 2) `DISPATCH` replaces the `<dispatch-sha>` placeholder; (NIT 3) every §10 test prints a failure line, and the two `glm_agent` premise items are the coordinator's. The four CP-1b anchors were re-read on `d86f6ff` and hold, and `origin/main` was still `d86f6ff`.
 - **2026-09-28 (fold reviewed):** one focused reviewer on the fold (`f178c17`) found no BLOCKER, 1 FIX and 4 NIT, all applied. The FIX widened §4 "Return shape" to match §6. The NITs: the new-file and Windows-set note under the acceptance list; the grant wording now follows packet §2's "any dispatch"; a `DISPATCH` guard in §10; and the §10 hooks labelled by runner.
+- **2026-09-28 (dispatch SHA recorded):** the operator merged #547 at 19:53:16Z. **Dispatch revision: `eef77836473f7bc304018217f452fb68daa40f17`**, the merge commit, which carries this card.
+  - The card at that SHA is byte-identical to the Codex-accepted head `f98380d`.
+  - Premise items 2 and 3 re-checked against it: the packet digest is still `058c265e…d68c9`, and `git diff --quiet 05f3788 eef7783 -- ops core tests scripts tools .github` is clean.
+  - The later commit that records this SHA changes only this line, the Status line and the §10 `DISPATCH` value. The card text handed to `glm_agent` is the one at `eef7783`.
+  - Recording the SHA dispatches nothing. The GLM dispatch still needs the coordinator's grant.
 
 ## 10. Audit hooks (runnable)
 
@@ -210,7 +215,7 @@ python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/ha
 
 # §9 premise check (Git Bash). Set DISPATCH to the frozen SHA recorded in §9.
 REL=05f3788d9e4895308d6734e650a42875c59f669c
-DISPATCH=REPLACE_WITH_DISPATCH_SHA
+DISPATCH=eef77836473f7bc304018217f452fb68daa40f17
 git rev-parse --verify -q "$DISPATCH^{commit}" >/dev/null || echo "FAIL: DISPATCH not set to a commit"
 git merge-base --is-ancestor "$REL" HEAD && echo "descends from the release head" || echo "FAIL: not descended"
 test "$(git show "$REL":docs/briefs/handoffs/2026-09-21-full-e1-s5-part-a-DRAFT.md | sha256sum | cut -c1-64)" \
