@@ -335,11 +335,17 @@ only reports: a past Weekly/Monthly recurring deadline advances (next Friday / s
 day-of-month) and decision-index rows past 15 move into the
 [archive](../docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md)
 under a date-keyed `**Roll YYYY-MM-DD**` header, with relative links rebased.
+Code spans, HTML code/pre regions and escaped link examples retain their literal
+bytes. Same-day backfills insert by descending row date, after existing rows
+with the same date; existing archive rows retain their bytes.
 It moves dates only: covered or missed weeks, reconfirm results and `Last curated`
 stay operator-recorded. Output depends only on the input bytes and the date, so
 concurrent sessions make identical edits that merge cleanly. Run it instead of
 hand-editing a stale deadline; `--check` reports without writing. A rerun after
 an interrupted write is safe: rows already in the archive are not added again.
+An exact archived representation from the old link rewriter is also recognized
+without rewriting that evidence. If both old and current representations exist,
+the roller refuses the ambiguous duplicate for manual reconciliation.
 
 It fails closed (exit 2, nothing written, `--check` included) on anything it
 cannot roll unambiguously, and that refusal withholds **every** change of the
@@ -359,7 +365,8 @@ invocation, including a due Weekly roll or keep-15 archive:
 - a recurring heading without exactly one `next deadline **YYYY-MM-DD**` field
   (a second deadline, bolded or not, would never be rolled), or a Weekly
   `bucket` that is not exactly one lower-case `bucket MM-DD→MM-DD` naming real
-  month-days and exactly the Monday–Friday week of its deadline;
+  month-days and exactly the Monday–Friday week of its deadline, or any Weekly
+  deadline that is not Friday (also checked when no bucket is present);
 - anything read as unique that is not exactly one: a Weekly/Monthly heading
   (including a case, dash or Unicode-spacing variant — NBSP, zero-width,
   fullwidth — or a copy outside the forward section), a
@@ -367,16 +374,22 @@ invocation, including a due Weekly roll or keep-15 archive:
   (including look-alike headings at any level);
 - a decision index out of newest-first date order, a dated bullet not in
   `- **YYYY-MM-DD** — ` form (`* **date**`, unbolded or indented included), two
-  rows fused on one line, or an overflow row followed (after any blank lines)
+  rows fused on one line (including an en-dash separator), a row fused to a roll
+  header, a task-list or numbered decision row (also detected when fused), or an
+  overflow row followed (after any blank lines)
   by anything other than another index row or the section end, such as an
-  indented continuation line;
+  indented continuation line. Inline code, HTML code/pre regions and escaped
+  examples and complete inline links (including their labels) do not count as
+  fused structure; standalone non-row lines remain invalid
+  below an archive header;
 - an archive that breaks its shape (checked on every run, rows due or not):
   roll headers are read by date key (case, Unicode spacing and suffix aside) and
   must be newest first with strictly decreasing dates (adjacent hand-written
   ordinal headers may share a date); an automated `**Roll YYYY-MM-DD**` header
   may share its date with no other header; below the first header every
   non-blank line must be a header or one whole index row (a line holding two
-  headers or two rows is refused); no row may appear twice;
+  headers or two rows is refused); rows within each block must be newest first;
+  no row may appear twice;
 - mixed line endings (CRLF with LF, or a lone CR) in STATE or the archive;
 - a row roll that cannot be placed: `--today` older than the archive's newest
   header, or a hand-written header already dated today (archive those rows by
@@ -384,7 +397,9 @@ invocation, including a due Weekly roll or keep-15 archive:
 - a lock file `STATE.md.state_roll.lock` beside STATE. A writing run creates it
   exclusively and removes it on exit; one that exists means another run is
   writing or one died holding it. It is never taken over: once no run is
-  active, delete it by hand and rerun. `--check` takes no lock.
+  active, delete it by hand and rerun. `--check` takes no lock. Symlink inputs
+  resolve to their canonical target before locking; hard-linked STATE or archive
+  inputs are refused because alternate names would bypass the path-based lock.
 
 The module docstring of `state_roll.py` states the invariants (I1 row
 conservation, I2 archive shape, I3 line endings, I4 one writer, I5 exactly-one
