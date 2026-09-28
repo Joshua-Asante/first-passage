@@ -113,8 +113,6 @@ gh workflow run qualification-s5-part-a-measurement.yml -R Joshua-Asante/first-p
 python -I scripts/fp.py python docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt --summarize <a>/record.json <b>/record.json --record <combined>.json
 ```
 
-The lines above are the dispatches and the combine only. The executable sequence is r2 §12.3's dispatch block. It binds each dispatch to its run id, watches and downloads every run, reads the re-run decision from the downloaded records and cleanup receipts, and copies the evidence into `stage1b/`. *[Added 2026-09-28 (helper review of #523, C2, C3 and C7).]*
-
 **Caps (r2 §12.7):**
 - at most one re-dispatch of a failed dry run (I-1 or I-6);
 - at most one `gh run rerun <id> --failed` of the measure dispatch (up to both jobs). Combining enforces this: it refuses a job record whose run attempt is outside 1–2, and it accepts the attempt-1/attempt-2 mixture a `--failed` re-run produces. The dry-run re-dispatch cap spans separate runs, so no single record can show it; the coordinator keeps that count;
