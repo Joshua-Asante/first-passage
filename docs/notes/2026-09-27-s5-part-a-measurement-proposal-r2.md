@@ -597,16 +597,17 @@ NOTE=docs/notes/2026-09-27-s5-part-a-measurement; D="$NOTE/stage1b"   # D: the r
 S=<scratch>/s5-1b-$(date -u +%Y%m%dT%H%M%SZ); mkdir "$S"            # S: this invocation's raw downloads, new
                                                                     # and outside the repository (mkdir fails if it exists)
 # snapshot MODE: record the ids of every dispatch run of MODE that already exists, on any head, before dispatching.
-# A run of MODE that is still queued or in progress stops it: an earlier invocation may have lost track of that run
-# (an interrupted session), and a new dispatch beside it would exceed the per-stage cap. Resume that run instead.
+# A Stage 1b run of either mode that is still queued or in progress stops it: an earlier invocation may have lost
+# track of that run (an interrupted session), and a new dispatch beside it would exceed the per-stage cap. Resume
+# that run instead.
 snapshot() {
   local live
   gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 --json databaseId,displayTitle,status \
-    --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | \"\(.databaseId) \(.status)\"" \
-    > "$S/runs-$1.txt" || return 1
+    --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, \")) |
+          \"\(.databaseId) \(.status) \(.displayTitle)\"" > "$S/runs-$1.txt" || return 1
   live=$(awk '$2 != "completed" {print $1}' "$S/runs-$1.txt")
-  [ -z "$live" ] || { echo "a $1 run is still live: $live; resume it, do not dispatch another" >&2; return 1; }
-  cut -d' ' -f1 "$S/runs-$1.txt" > "$S/before-$1.txt"
+  [ -z "$live" ] || { echo "a Stage 1b run is still live: $live; resume it, do not dispatch another" >&2; return 1; }
+  grep -F "[stage 1b, $1," "$S/runs-$1.txt" | cut -d' ' -f1 > "$S/before-$1.txt" || true
 }
 # bind MODE: print the id of the one dispatch run of MODE, on any head, that the snapshot did not hold, or stop.
 # The run listing carries no dispatch identity, so a run someone else started in the same window could be taken
@@ -624,7 +625,7 @@ bind() {
     sleep 10
   done
   [ -n "$id" ] || { echo "no new $1 run appeared" >&2; return 1; }
-  echo "$1 $id" >> "$S/bound.txt"                                       # durable before the settle and any watch
+  echo "$1 $id" >> "$S/bound.txt" || { echo "cannot record bound $1 run $id" >&2; return 1; }   # durable first
   for i in $(seq 18); do                                                 # settle: 6 clean polls from discovery, 3 min at most
     sleep 10
     if ids=$(list_new "$1"); then
@@ -759,7 +760,7 @@ if [ -n "$RERUN" ]; then
     a=$(gh run view "$MEASURE_ID" -R "$R" --json attempt --jq .attempt || true); [ "$a" = 2 ] && break; sleep 10
   done
   [ "$a" = 2 ] || halt "attempt 2 of $MEASURE_ID not observed (last read: ${a:-none})"
-  echo "measure-attempt2 $MEASURE_ID" >> "$S/bound.txt"
+  echo "measure-attempt2 $MEASURE_ID" >> "$S/bound.txt" || halt "cannot record attempt 2 of $MEASURE_ID"
   { fetch "$MEASURE_ID" measure 2 $RERUN && verdicts "$MEASURE_ID" measure 2 $RERUN; } \
     || halt "measure run $MEASURE_ID attempt 2: evidence incomplete"
   for j in $RERUN; do                                                  # any failure after the re-run stops the stage
@@ -823,6 +824,8 @@ git worktree remove --force "$S/wt"                                     # remove
 - *a lost session could leave a bound run live and unnamed. Each bound id is now written to `$S/bound.txt` before any watch. An interrupt (INT, TERM or HUP) goes through `halt`, which names the bound runs and retains the evidence. `snapshot` refuses to dispatch while a run of the same mode is still queued or in progress, so a new invocation cannot dispatch beside a lost run.*
 
 *Each fix was exercised against a fake `gh`: a dispatch that returns nonzero but creates the run (bound), a dispatch that fails outright (halts as not created), alternating listing failures, a live pre-existing run (refused), and a TERM during the watch (halts, naming the run).]*
+
+*[Corrected 2026-09-28 (Codex review of 4b96752d on #539). `snapshot` now refuses while a Stage 1b run of either mode is live, not only the mode it is about to dispatch, so a restart after an interrupted measure cannot dispatch a dry run beside it. Writing each bound id to `bound.txt` is now checked, because `bind` runs on the left of `||`, where `set -e` does not apply. Re-run against a fake `gh` with a live measure run and a new dry-run dispatch: the dispatch is refused.]*
 
 *[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
 - **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
