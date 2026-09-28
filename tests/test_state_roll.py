@@ -1958,3 +1958,160 @@ def test_fsync_dir_runs_on_posix_and_is_skipped_elsewhere(
     monkeypatch.setattr(mod.os, "fsync", synced.append)
     mod._fsync_dir(tmp_path)
     assert len(synced) == (1 if os.name == "posix" else 0)
+
+# Issue #513: shared validation and preservation regressions.
+@pytest.mark.parametrize("deadline", ["2026-09-21", "2026-09-24", "2026-09-26", "2026-09-27"])
+@pytest.mark.parametrize("bucket", [True, False])
+def test_513_non_friday_deadline_refused_by_gate_and_roller(tmp_path, deadline, bucket):
+    text = _state(weekly=deadline)
+    if not bucket:
+        text = text.replace(f", bucket {_week_bucket(deadline)}", "")
+    state, archive = _pair(tmp_path, text)
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, "2026-09-25").returncode == 2
+    assert _state_bytes(state, archive) == before
+    gate = subprocess.run([sys.executable, str(CHECKER_SCRIPT), "--state", str(state)],
+                          env={**os.environ, "STATE_CURRENCY_TODAY": "2026-09-25"}, capture_output=True)
+    assert gate.returncode == 1
+    assert b"Friday" in gate.stderr
+
+
+@pytest.mark.parametrize("prefix", ["- [ ] ", "- [x] ", "+ [X] ", "1. ", "2) ", "１． "])
+def test_513_malformed_row_prefix_refused(tmp_path, prefix):
+    text = _state(rows=[prefix + "**2026-09-26** — hidden newest", *_rows(16)])
+    state, archive = _pair(tmp_path, text)
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 2
+    assert _state_bytes(state, archive) == before
+    gate = subprocess.run([sys.executable, str(CHECKER_SCRIPT), "--state", str(state)],
+                          env={**os.environ, "STATE_CURRENCY_TODAY": "2026-09-25"}, capture_output=True)
+    assert gate.returncode == 1
+    with pytest.raises(mod.StateRollError):
+        mod.parse_archive(prefix + "**2026-09-26** — hidden\n" + _archive())
+
+
+@pytest.mark.parametrize("suffix", ["**Roll 2026-09-26**:", "**Eighteenth roll, 2026-09-26**:",
+                                    "- **2026-09-19** – another row"])
+@pytest.mark.parametrize("location", ["state", "archive"])
+def test_513_fused_row_refused(tmp_path, suffix, location):
+    row = "- **2026-09-20** — entry" + suffix
+    state_text = _state(rows=[row]) if location == "state" else _state()
+    archive_text = _archive_with(ROLLED_HEADER + "\n\n" + row + "\n\n") if location == "archive" else _archive()
+    state, archive = _pair(tmp_path, state_text, archive_text)
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 2
+    assert _state_bytes(state, archive) == before
+
+
+def test_513_rollback_prose_is_not_a_header():
+    text = "**Rollback guidance:** retain the old copy.\n\n" + _archive()
+    assert mod.parse_archive(text).rows
+
+
+@pytest.mark.parametrize("newline", ["\n", "\r\n"])
+@pytest.mark.parametrize("residue", [False, True])
+def test_513_same_day_backfill_merges_in_date_order(tmp_path, newline, residue):
+    older = "- **2026-09-05** — backfilled"
+    equal = "- **2026-09-08** — backfilled equal"
+    archived_rows = ["- **2026-09-10** — newer", "- **2026-09-08** — existing equal", "- **2026-09-04** — oldest"]
+    rows = _rows(15) + ([archived_rows[0]] if residue else []) + [equal, older]
+    archive_text = _archive_with(ROLLED_HEADER + "\n\n" + "\n\n".join(archived_rows) + "\n\n")
+    state, archive = _pair(tmp_path, _state(rows=rows).replace("\n", newline), archive_text.replace("\n", newline))
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    assert mod.parse_archive(_read(archive)).rows[:5] == (
+        archived_rows[0], archived_rows[1], equal, older, archived_rows[2])
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 0
+    assert _state_bytes(state, archive) == before
+    assert mod.line_ending(_read(archive)) == newline
+
+
+def test_513_archive_rejects_rows_out_of_order():
+    text = _archive_with(ROLLED_HEADER + "\n\n- **2026-09-05** — older\n\n- **2026-09-06** — newer\n\n")
+    with pytest.raises(mod.StateRollError, match="order"):
+        mod.parse_archive(text)
+
+
+@pytest.mark.parametrize("literal", [
+    "`[example](docs/a.md)`", "``a `[example](docs/a.md)` b``",
+    "<code>[example](docs/a.md)</code>", '<CODE class="x">[example](docs/a.md)</CODE>',
+    "<pre>[example](docs/a.md)</pre>", r"\[example](docs/a.md)",
+    r"[example\](docs/a.md)",
+    "`[example](<docs/a b.md>)`", "] (docs/a.md)", "](docs/a.md)",
+])
+def test_513_rebase_preserves_literal_examples(literal):
+    row = "- **2026-09-10** — " + literal + " [real](docs/b.md)"
+    assert mod.rewrite_links(row) == "- **2026-09-10** — " + literal + " [real](../../../../../docs/b.md)"
+
+
+def test_513_rebase_balanced_destination_and_escaped_backslash():
+    row = r"\\[real](docs/a(b).md#x) ![image](docs/i.png)"
+    assert mod.rewrite_links(row) == r"\\[real](../../../../../docs/a(b).md#x) ![image](../../../../../docs/i.png)"
+
+
+@pytest.mark.parametrize("which", ["state", "archive"])
+def test_513_hard_link_inputs_refused(tmp_path, which):
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    source = state if which == "state" else archive
+    alias = tmp_path / "alias.md"
+    os.link(source, alias)
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 2
+    assert _state_bytes(state, archive) == before
+    assert alias.read_bytes() == source.read_bytes()
+
+
+def test_513_restore_directory_sync_failure_reports_uncertainty(tmp_path, monkeypatch):
+    archive = tmp_path / "archive.md"
+    archive.write_text("written", encoding="utf-8")
+    def fail_sync(_directory):
+        raise OSError("directory sync failed")
+    monkeypatch.setattr(mod, "_fsync_dir", fail_sync)
+    with pytest.raises(mod.StateRollError) as caught:
+        mod._restore_archive(archive, "written", "original", mod.StateRollError("state write failed"))
+    assert archive.read_text(encoding="utf-8") == "original"
+    assert "holds the overflow rows" not in str(caught.value)
+    assert "check both files" in str(caught.value)
+
+
+def test_513_literal_links_survive_archive_and_retry(tmp_path: Path) -> None:
+    literal = '- **2026-09-01** — `[sample](docs/a.md)` <code>[sample](docs/c.md)</code> [record](docs/b.md)'
+    state, archive = _pair(tmp_path, _state(rows=_rows(15) + [literal]))
+    result = _run(state, archive, TODAY)
+    assert result.returncode == 0, result.stderr
+    assert mod.parse_archive(_read(archive)).rows[0] == (
+        '- **2026-09-01** — `[sample](docs/a.md)` <code>[sample](docs/c.md)</code> '
+        '[record](../../../../../docs/b.md)'
+    )
+    before = _state_bytes(state, archive)
+    assert _run(state, archive, TODAY).returncode == 0
+    assert _state_bytes(state, archive) == before
+
+
+def test_513_symlink_uses_target_lock(tmp_path: Path) -> None:
+    state, archive = _pair(tmp_path, _state(rows=_rows(17)))
+    alias = tmp_path / "alias.md"
+    try:
+        alias.symlink_to(state)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+    before = _state_bytes(state, archive)
+    with mod.roll_lock(state):
+        assert _run(alias, archive, TODAY).returncode == 2
+        assert _state_bytes(state, archive) == before
+    assert _run(alias, archive, TODAY).returncode == 0
+    assert alias.is_symlink()
+    assert len(mod.index_rows(_read(state))) == 15
+
+
+def test_513_backfill_appends_before_next_header_without_rewriting_rows() -> None:
+    prefix = ROLLED_HEADER + "\n\n- **2026-09-08** — existing\n\n"
+    text = prefix + _archive()
+    addition = "- **2026-09-01** — backfilled"
+    # No preamble is legal below the first header; use the legacy block only.
+    legacy = _archive()[_archive().index("**Seventeenth"):]
+    text = prefix + legacy
+    result, _ = mod.archive_overflow(mod.parse_archive(text), [addition], date(2026, 9, 26))
+    assert result == prefix + addition + "\n\n" + legacy
+    mod.parse_archive(result)

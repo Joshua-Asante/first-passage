@@ -37,7 +37,8 @@ I2  Archive shape. A roll header is a line `**Roll YYYY-MM-DD**...`
     pairs); an automated header shares its date with no other header. Below
     the first header every non-blank line is a header or one whole index row
     (`- **YYYY-MM-DD** — ...`), so each header is followed by whole rows; no
-    row sits above the first header, no row shares a header's line, and no
+    row sits above the first header, rows within each block are newest first
+    (same-date rows retain authored order), no row shares a header's line, and no
     line holds two headers or two rows (a lost line break fuses them).
 I3  Line endings. Each file uses one line-ending style: all CRLF or all LF (a
     lone CR is a third style and refused). Inserted text uses the file's own
@@ -51,7 +52,8 @@ I5  Exactly one. Every element read as one thing (each section, each
     recurring heading, its deadline field, the Weekly bucket, the Monthly
     cadence anchor, each decision-index row) occurs exactly once, and a
     look-alike of it fails closed instead of being skipped. A Weekly bucket
-    is two real month-days naming the Monday-Friday week of its deadline. The
+    is two real month-days naming the Monday-Friday week of its Friday deadline.
+    A Weekly deadline must be Friday even when its optional bucket is absent. The
     currency gate reads the forward triggers, the recurring headings and the
     index through this module (`recurring_fields`, `index_rows`), so it fails
     on any heading or index the roller would refuse.
@@ -160,13 +162,15 @@ RECURRING_HEADING_LOOSE_RE = re.compile(r"#{1,6} ?(weekly|monthly)\b.*?\brecurri
 DEADLINE_WORD_RE = re.compile(r"\bnext[ _-]*deadline\b")
 BUCKET_WORD_RE = re.compile(r"\bbucket\b")
 CADENCE_DAY_WORD_RE = re.compile(r"\bcadence[ _-]*day\b")
-# Any dated bullet, bolded or not, `-`/`*`/`+`, indented or not. Every such
+# Any dated list item, including task and numbered items, bolded or not. Every such
 # line must be an INDEX_ROW_RE row, or keep-15 and the gate's newest-date read
 # would miss it.
-DATED_BULLET_LOOSE_RE = re.compile(r"[-*+][ *]*\d{4}-\d{2}-\d{2}")
+DATED_BULLET_LOOSE_RE = re.compile(
+    r"(?:[-*+]|[0-9]+[.)]) ?(?:\[[ x]\] ?)?[ *]*\d{4}-\d{2}-\d{2}"
+)
 # Archive roll headers (I2). Anything bold that opens with a `roll` word is a
 # header candidate and must read as one of the two header forms.
-ARCHIVE_HEADER_LOOSE_RE = re.compile(r"\*\*[^*]*\broll")
+ARCHIVE_HEADER_LOOSE_RE = re.compile(r"\*\*[^*]*\broll\b")
 ARCHIVE_HEADER_KEY_RE = re.compile(
     r"\*\*(?:(?P<auto>roll)|(?P<ordinal>[^\W\d_]+(?:[ -][^\W\d_]+)*) roll,) "
     r"(?P<date>\d{4}-\d{2}-\d{2}):?\*\*(?P<suffix>.*)"
@@ -174,11 +178,9 @@ ARCHIVE_HEADER_KEY_RE = re.compile(
 ROW_ON_HEADER_LINE_RE = re.compile(r"\*\*\d{4}-\d{2}-\d{2}\*\*")
 # A second row start inside a row's line (searched from key offset 1): two
 # rows fused by a lost line break, in STATE or the archive.
-FUSED_ROW_RE = re.compile(r"- ?\*\*\d{4}-\d{2}-\d{2}\*\* ?—")
+FUSED_ROW_RE = re.compile(r"- ?\*\*\d{4}-\d{2}-\d{2}\*\* ?[—–-]")
 
 LINE_END_RE = re.compile(r"\r?\n")
-BLANK_LINE_RE = re.compile(r"[ \t]*\r?\n")
-LINK_TARGET_RE = re.compile(r"\]\(([^)]+)\)")
 LINK_DEST_RE = re.compile(r"(\S+)(.*)", re.S)
 URL_SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 PATH_SUFFIX_RE = re.compile(r"([^#?]*)(.*)", re.S)
@@ -494,6 +496,10 @@ def recurring_fields(text: str) -> tuple[re.Match[str], dict[str, Recurring]]:
         heading = _recurring_heading(text, section, kind)
         deadline = _deadline(body, heading, kind)
         deadline_date = _iso_date(deadline.group(1), f"{kind} next deadline")
+        if kind == "Weekly" and deadline_date.weekday() != 4:
+            raise StateRollError(
+                f"Weekly deadline {deadline_date} must be a Friday; correct the heading by hand"
+            )
         bucket = _bucket(body, heading) if kind == "Weekly" else None
         if bucket is not None:
             _check_bucket(bucket, deadline_date)
@@ -587,20 +593,84 @@ def rewrite_links(
 ) -> str:
     """Rebase every filesystem-relative link target from STATE's directory to
     the archive's. URL schemes, root-absolute paths and pure `#`/`?` targets
-    are left alone."""
+    are left alone. Code spans, HTML code/pre regions and escaped syntax keep
+    their literal bytes; only paired inline link/image destinations are rebased.
+    """
 
-    def _rebase(match: re.Match[str]) -> str:
-        return "](" + _rebase_target(match.group(1), from_dir, to_dir) + ")"
-
-    return LINK_TARGET_RE.sub(_rebase, row)
+    edits: list[tuple[int, int, str]] = []
+    brackets: list[int] = []
+    at = 0
+    while at < len(row):
+        if row[at] == "\\":
+            at += 2  # escaped punctuation, including brackets and backticks
+            continue
+        if row[at] == "`":
+            run = re.match(r"`+", row[at:]).group(0)
+            close = re.search(r"(?<!`)" + re.escape(run) + r"(?!`)", row[at + len(run):])
+            if close is not None:
+                at += len(run) + close.end()
+                continue
+            at += len(run)  # unmatched backticks are ordinary text
+            continue
+        if row[at] == "<":
+            html = re.match(r"<(code|pre)\b[^>]*>", row[at:], re.I)
+            if html:
+                close = re.search(r"</" + html.group(1) + r"\s*>", row[at + html.end():], re.I)
+                at = at + html.end() + close.end() if close else len(row)
+                continue
+            tag = re.match(r"<!--.*?(?:-->|$)|<[^>]*>", row[at:])
+            if tag:
+                at += tag.end()
+                continue
+        if row[at] == "[":
+            brackets.append(at)
+        elif row[at] == "]" and brackets:
+            brackets.pop()
+            if row[at + 1:at + 2] == "(":
+                end = at + 2
+                depth = 1
+                quote: str | None = None
+                while end < len(row):
+                    char = row[end]
+                    if char == "\\":
+                        end += 2
+                        continue
+                    if quote:
+                        if char == quote:
+                            quote = None
+                    elif char in "\"'" and row[end - 1].isspace():
+                        quote = char
+                    elif char == "(":
+                        depth += 1
+                    elif char == ")":
+                        depth -= 1
+                        if depth == 0:
+                            break
+                    end += 1
+                if depth == 0:
+                    target = row[at + 2:end]
+                    edits.append((at + 2, end, _rebase_target(target, from_dir, to_dir)))
+                    at = end + 1
+                    brackets.clear()
+                    continue
+        at += 1
+    for start, end, target in reversed(edits):
+        row = row[:start] + target + row[end:]
+    return row
 
 
 # --- STATE: decision index ---------------------------------------------------
 
 
 def _refuse_fused_row(line: str, where: str) -> None:
-    """A row line holding a second row start is two rows missing a line break."""
-    if FUSED_ROW_RE.search(lookalike_key(line), 1):
+    """Refuse a row fused with another row or a date-keyed roll header."""
+    key = lookalike_key(line)
+    if ARCHIVE_HEADER_KEY_RE.search(key):
+        raise StateRollError(
+            f"{where} index row shares its line with a roll header: "
+            f"{line.strip()[:80]!r}; split it by hand"
+        )
+    if FUSED_ROW_RE.search(key, 1):
         raise StateRollError(
             f"{where} line holds two index rows (a lost line break): "
             f"{line.strip()[:80]!r}; split it by hand"
@@ -743,6 +813,7 @@ def parse_archive(text: str) -> Archive:
     newline = line_ending(text, "archive")
     headers: list[ArchiveHeader] = []
     rows: list[str] = []
+    previous_row_day: date | None = None
     pos = 0
     for raw in text.split("\n"):
         line = raw.rstrip("\r")
@@ -765,6 +836,7 @@ def parse_archive(text: str) -> Archive:
                     "archive roll header shares its line with an index row: "
                     f"{line.strip()[:80]!r}; put the row on its own line by hand"
                 )
+            previous_row_day = None
             headers.append(
                 ArchiveHeader(
                     pos,
@@ -780,7 +852,13 @@ def parse_archive(text: str) -> Archive:
                 raise StateRollError(
                     f"archive has an index row above its first roll header: {line[:80]!r}"
                 )
-            _iso_date(row.group(1), "archive row date")
+            row_day = _iso_date(row.group(1), "archive row date")
+            if previous_row_day is not None and row_day > previous_row_day:
+                raise StateRollError(
+                    f"archive rows out of date order within roll block: "
+                    f"{previous_row_day} sits above {row_day}; restore newest-first order by hand"
+                )
+            previous_row_day = row_day
             _refuse_fused_row(line, "archive")
             rows.append(line)
         elif DATED_BULLET_LOOSE_RE.match(key):
@@ -886,7 +964,9 @@ def archive_overflow(
     new `**Roll today**` header goes above the newest header. The archive is
     newest first, so a `today` older than the newest header, or a hand-written
     header dated today, is refused rather than written out of order or into a
-    hand-counted block."""
+    hand-counted block. Within today's block insert by descending row date,
+    after existing rows with the same date, without rewriting existing bytes.
+    """
     present = set(archive.rows)
     pending = [row for row in rows if row not in present]
     already = len(rows) - len(pending)
@@ -919,11 +999,24 @@ def archive_overflow(
         text += newline  # I3: a missing final line ending would fuse lines
     block = "".join(row + newline + newline for row in pending)
     if today == newest.day:
-        at = text.index("\n", newest.offset) + 1
-        blank = BLANK_LINE_RE.match(text, at)
-        if blank is not None:
-            return text[: blank.end()] + block + text[blank.end() :], message
-        return text[:at] + newline + block + text[at:], message
+        start = text.index("\n", newest.offset) + 1
+        end = archive.headers[1].offset if len(archive.headers) > 1 else len(text)
+        existing = list(INDEX_ROW_RE.finditer(text, start, end))
+        insertions: dict[int, list[str]] = {}
+        for row in pending:
+            match = INDEX_ROW_RE.fullmatch(row)
+            assert match is not None  # validated STATE row, in archive form
+            day = match.group(1)
+            # Existing same-date rows retain precedence and authored order.
+            at = next((m.start() for m in existing if m.group(1) < day), end)
+            insertions.setdefault(at, []).append(row)
+        for at, additions in sorted(insertions.items(), reverse=True):
+            prefix = text[:at]
+            if not prefix.endswith(newline + newline):
+                prefix += newline
+            block = "".join(row + newline + newline for row in additions)
+            text = prefix + block + text[at:]
+        return text, message
     header = (
         f"**Roll {today.isoformat()}** "
         "(automated keep-15 roll; `scripts/state_roll.py`):"
@@ -1171,8 +1264,8 @@ def _restore_archive(
     except StateRollError as again:
         raise StateRollError(
             f"{cause}; restoring the archive also failed ({again}): the archive "
-            "holds the overflow rows and STATE.md still lists them, the residue "
-            "state a rerun resolves"
+            "may hold its original or newly written bytes and durability is "
+            "unconfirmed; STATE.md still lists its rows, check both files by hand"
         ) from cause
 
 
@@ -1196,10 +1289,18 @@ def main(argv: list[str] | None = None) -> int:
         help="report pending rolls without writing; exit 1 if any are due",
     )
     args = parser.parse_args(argv)
-    from_dir = args.state.resolve().parent
-    to_dir = args.archive.resolve().parent
+    # Symlink aliases must use the same lock and replacement target.
+    args.state = args.state.resolve()
+    args.archive = args.archive.resolve()
+    from_dir = args.state.parent
+    to_dir = args.archive.parent
     try:
         today = today_et(args.today)
+        # Replacing one hard-link name breaks the alias and path-based locks
+        # cannot serialize writers using different names for the same inode.
+        for path in (args.state, args.archive):
+            if path.stat().st_nlink > 1:
+                raise StateRollError(f"{path} has hard-link aliases; use a single-link file")
         if args.check:
             result = plan(
                 read_text(args.state), read_text(args.archive), today, from_dir, to_dir

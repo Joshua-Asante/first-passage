@@ -174,14 +174,14 @@ def test_today_et_reads_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_weekly_deadline_beyond_horizon_exits_one(tmp_path: Path) -> None:
-    state = _write(tmp_path / "STATE.md", _state(weekly="2027-09-04"))
+    state = _write(tmp_path / "STATE.md", _state(weekly="2027-09-03"))
     assert _run(state, "2026-09-03") == 1
 
 
 def test_weekly_horizon_is_seven_days(tmp_path: Path) -> None:
-    on_horizon = _write(tmp_path / "on.md", _state(weekly="2026-09-10"))
+    on_horizon = _write(tmp_path / "on.md", _state(weekly="2026-09-11"))
     past_horizon = _write(tmp_path / "past.md", _state(weekly="2026-09-11"))
-    assert _run(on_horizon, "2026-09-03") == 0
+    assert _run(on_horizon, "2026-09-04") == 0
     assert _run(past_horizon, "2026-09-03") == 1
 
 
@@ -262,7 +262,7 @@ def _fail_text(state: Path, today: str) -> bytes:
 def test_beyond_horizon_fail_asks_for_manual_correction(tmp_path: Path) -> None:
     # Codex 4110271939: state_roll.py only rolls PAST deadlines, so a future
     # (beyond-horizon) deadline must not be pointed at it.
-    state = _write(tmp_path / "STATE.md", _state(weekly="2027-09-04"))
+    state = _write(tmp_path / "STATE.md", _state(weekly="2027-09-03"))
     stderr = _fail_text(state, "2026-09-03")
     assert b"state_roll.py" not in stderr
     assert b"correct the heading by hand" in stderr
