@@ -596,30 +596,32 @@ R=Joshua-Asante/first-passage; WF=qualification-s5-part-a-measurement.yml
 NOTE=docs/notes/2026-09-27-s5-part-a-measurement; D="$NOTE/stage1b"   # D: the retained copy, in the repository
 S=<scratch>/s5-1b-$(date -u +%Y%m%dT%H%M%SZ); mkdir "$S"            # S: this invocation's raw downloads, new
                                                                     # and outside the repository (mkdir fails if it exists)
-# snapshot MODE HEAD: record the ids of every dispatch run of MODE already on HEAD, before dispatching
+# snapshot MODE: record the ids of every dispatch run of MODE that already exists, on any head, before dispatching
 snapshot() {
-  gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --commit "$2" --limit 100 \
+  gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 \
     --json databaseId,displayTitle \
     --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId" \
-    > "$S/before-$1-$2.txt"
+    > "$S/before-$1.txt"
 }
-# bind MODE HEAD: print the id of the one dispatch run of MODE on HEAD that the snapshot did not hold, or stop.
-# The s2-linux-run rule: list dispatch runs on the exact commit, never take --limit 1, confirm headSha.
+# bind MODE: print the id of the one dispatch run of MODE, on any head, that the snapshot did not hold, or stop.
+# Binding on every head means a run that GitHub resolved to a moved main is still found; the caller then
+# confirms its headSha (the s2-linux-run rule: never take --limit 1, confirm headSha).
 bind() {
   local ids n i
   for i in $(seq 60); do                                                 # about 10 minutes
-    ids=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --commit "$2" --limit 100 \
-            --json databaseId,headSha,displayTitle \
-            --jq ".[] | select(.headSha == \"$2\"
-                    and (.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\"))) | .databaseId" \
-          | grep -vxF -f "$S/before-$1-$2.txt" || true)
+    ids=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 \
+            --json databaseId,displayTitle \
+            --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId" \
+          | grep -vxF -f "$S/before-$1.txt" || true)
     n=$(printf '%s' "$ids" | grep -c . || true)
     if [ "$n" = 1 ]; then echo "$ids"; return 0; fi
-    if [ "$n" -gt 1 ]; then echo "several new $1 runs on $2: $ids; stop" >&2; return 1; fi
+    if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; stop" >&2; return 1; fi
     sleep 10
   done
-  echo "no new $1 run appeared on $2 (main may have moved); stop" >&2; return 1
+  echo "no new $1 run appeared; stop" >&2; return 1
 }
+# run_head ID: the commit run ID actually checked out
+run_head() { gh run view "$1" -R "$R" --json headSha --jq .headSha; }
 # fetch ID MODE ATTEMPT JOBS...: watch run ID to completion, then download each job's artifact by its exact
 # name into $S/ID/<artifact name>/ (-n with one name extracts into -D itself), pass or fail
 fetch() {
@@ -643,19 +645,23 @@ verdicts() {
   done
 }
 
-# 1. dry run (one job, a)
-H=$(gh api "repos/$R/commits/main" --jq .sha); snapshot dry-run "$H"
+# 1. dry run (one job, a); H is the head the dry run actually ran on
+snapshot dry-run
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=dry-run -f runtime=host_venv -f note_dir="$NOTE"
-DRY_ID=$(bind dry-run "$H"); echo "dry run $DRY_ID on $H"
+DRY_ID=$(bind dry-run); H=$(run_head "$DRY_ID"); echo "dry run $DRY_ID on $H"
 fetch "$DRY_ID" dry-run 1 a; verdicts "$DRY_ID" dry-run 1 a
 # only if the dry run's job reads exit=3 with every reason I-1 or I-6, once per stage: repeat step 1 with a
-# fresh H and snapshot, binding DRY2_ID; the clean dry run's id is DRY_ID from here on
+# fresh snapshot, binding DRY2_ID; the clean dry run's id and head are DRY_ID and H from here on
 
-# 2. measure, only after a clean dry run (exit=0), and only on the head that dry run validated
+# 2. measure, only after a clean dry run (exit=0), and only on the head that dry run validated. The operator's
+#    merge hold (ledger H1(b) execution entry) keeps main at H; the check below catches it moving anyway, and the
+#    headSha check catches a move between that check and GitHub resolving --ref main
 [ "$(gh api "repos/$R/commits/main" --jq .sha)" = "$H" ] || { echo "main moved since the dry run; stop"; exit 1; }
-snapshot measure "$H"
+snapshot measure
 gh workflow run "$WF" -R "$R" --ref main -f stage=1b -f mode=measure -f runtime=host_venv -f note_dir="$NOTE"
-MEASURE_ID=$(bind measure "$H"); echo "measure run $MEASURE_ID on $H"
+MEASURE_ID=$(bind measure); M=$(run_head "$MEASURE_ID")
+[ "$M" = "$H" ] || { echo "measure run $MEASURE_ID ran on $M, not the dry run's $H: an attempt on an unvalidated head; stop"; exit 1; }
+echo "measure run $MEASURE_ID on $H"
 fetch "$MEASURE_ID" measure 1 a b; verdicts "$MEASURE_ID" measure 1 a b
 # 3. the one --failed re-run, only if all of these hold: both jobs a and b are listed; at least one reads exit=3;
 #    every job not reading exit=0 reads exit=3 and rerun_eligible=true; none reads exit=4 or has no record;
@@ -699,6 +705,8 @@ git worktree remove "$S/wt"
 - *it offered `git status --short`, which collapses a new untracked tree to one line, as the review inventory.*
 
 *Now `snapshot` records the run ids already on the head before each dispatch, and `bind` takes only a new one. Each artifact is downloaded by its exact name into its own directory. `S` is a new directory per invocation. The review inventory is `find`. At step 3, `<the re-run jobs>` are the jobs whose attempt-1 record did not read exit=0. The block was re-run against a fake `gh` that flattens single-name downloads and holds an older same-mode run on the head.]*
+
+*[Corrected 2026-09-28 (Codex review of 6f93d54a). `--ref main` names a branch, so the head GitHub resolves for a dispatch can differ from the one checked just before it. The snapshot and `bind` now cover dispatch runs on every head, and each bound run's `headSha` is read back. The dry run's head `H` is the head that run actually used. A measure run on any other head is named as an attempt on an unvalidated head, and the stage stops. A tag would pin the ref but needs a repository write outside the approved command, so the operator's merge hold (ledger H1(b) execution entry) remains the first guard. Re-run against a fake `gh` whose measure dispatch resolves to a moved head: it stops, naming the run.]*
 
 *[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
 - **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
@@ -1251,7 +1259,7 @@ A helper session reviewed [#523](https://github.com/Joshua-Asante/first-passage/
 | # | Disposition |
 |---|---|
 | C1 | Fixed: §16.4 has its own `D` and commit lines, and no run metadata |
-| C2 | Fixed: §12.3 binds every dispatch to its run id (`DRY_ID`, `MEASURE_ID`) under the s2-linux-run rule. Binding takes only a run absent from the snapshot made before the dispatch (Codex review of 9bccf9de) |
+| C2 | Fixed: §12.3 binds every dispatch to its run id (`DRY_ID`, `MEASURE_ID`) under the s2-linux-run rule. Binding takes only a run absent from the snapshot made before the dispatch, on any head, and confirms its `headSha` (Codex reviews of 9bccf9de and 6f93d54a) |
 | C3 | Fixed: §12.3 step 4 copies every run, job and attempt into `stage1b/` (dry runs included), keeps `journal.log` out and pins every download by hash. Each artifact is downloaded by name, only this invocation's downloads are retained, and the review inventory is `find` (Codex review of 9bccf9de) |
 | C4 | Fixed: `--arms` is quoted in §12.2 and in the harness README |
 | C5 | Fixed in §16.4: `journal.log` only, with each line keeping its run and file. §12.1's lines are marked superseded |
@@ -1259,7 +1267,7 @@ A helper session reviewed [#523](https://github.com/Joshua-Asante/first-passage/
 | C7 | Fixed: the re-run decision reads each job's `record.json` verdict and `cleanup-receipt.json` (§12.3 step 3) |
 | C8 | Answered in part: the workflow writes `git-parent.txt` for `stage=1c`, and §12.3 retains it. The harness field is owed with the C3 path (§12.4 marker) |
 | C9 | Open to C3: the Stage 1c form of the block is written with the `--stage 1c` harness path (§12.4 marker) |
-| C10 | Fixed: the measure is dispatched only while `main` is still the head the clean dry run validated; if `main` moved, the stage stops for the coordinator |
+| C10 | Fixed: the measure is dispatched only while `main` is still the head the clean dry run validated; if `main` moved, the stage stops for the coordinator. A move between that check and dispatch is caught by reading the bound run's `headSha` (Codex review of 6f93d54a) |
 | C11 | Open to C3: the Stage 2 read is owned by the S5 packet's SR-8 export and run-tooling scope. That scope includes the S5 `--expect-scope` (owner text, post-acceptance correction 11). §12.5's command is illustrative until then |
 | C12 | Fixed in §16.4: the pin is compared by the script, a failed `sha256sum -c` stops it, the count is printed from the file, and no `grep` can read standard input. A file under the run directories that the pin does not list also stops it (Codex review of 83ce9f76) |
 | C13 | Fixed: §12.2 computes the stamp once into `$bundle` and names the summary record `windows-<utc>.record.json` |
