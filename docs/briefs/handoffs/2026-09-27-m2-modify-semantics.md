@@ -190,3 +190,49 @@ git show <dispatch-sha>:docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md
  echo "verified=$ok mismatched=$bad (expected 222 and 0)"
  test "$ok" -eq 222 && test "$bad" -eq 0)
 ```
+
+## Executor return (2026-09-28)
+
+**Status: `DONE_WITH_CONCERNS`.** Documentary determination only; it accepts, authorizes, qualifies or releases nothing. **Dispatch revision (frozen):** `48c178aa7c2bf9010ad66f28483a4c7c7dd84689` (`origin/main`, descending from #532's merge `6da1b2b`). The worktree `HEAD` was verified to descend from it, and this card at that revision matched the working tree, before any research. **Executor:** Claude Code (Opus 5.5) in its own worktree of the operator's primary checkout, branch `claude/m2-modify-semantics`.
+
+**Output:** [`docs/notes/2026-09-27-m2-modify-semantics.md`](../../notes/2026-09-27-m2-modify-semantics.md), with the six sections of §6. **PR:** [#541](https://github.com/Joshua-Asante/first-passage/pull/541), holding only the note and this section.
+
+**Premise check (§9), reported before research:**
+- `HEAD` descends from the dispatch revision.
+- The card matches.
+- Drill plan §2.2's questions are unchanged.
+- The close-research captures verify: the index digest `8dd20292…` is pinned, and all 637 captures verify.
+- The REST-assessment captures gave **218 verified, 0 mismatched**, where §10 expected 222. The index's 227 lines are 4 comment lines, 5 note entries and 218 files; "222 = 227 − 5" counted the comments. Under §0 the executor did not choose a reading.
+- **Operator ruling 2026-09-28: "Accept 218; proceed."**
+
+**Evidence:** `local_artifacts/modify-semantics-2026-09-27/` in this worktree (gitignored), containing:
+- four public captures made 2026-09-28;
+- `MANIFEST.tsv`, SHA-256 `8cb975e48cf6f1e80c8dc9de5a3d91a6de186eb84c1985ce91d995e8b8979372`;
+- `QUOTE_INDEX.txt` (MR01–MR22, MT01–MT13, MS01–MS06, MP01), SHA-256 `f8fc48da588011daa03272e175a3ba293f480bbbffd25087019aeef0a847c0a7`;
+- `SHA256SUMS`.
+
+The coordinator or operator relocates it to the primary checkout.
+
+**Findings.**
+- **Q1–Q4 are all `OPEN`; none is `CONFLICTING`.** The GC-3 record is `DOCUMENTED` for broker timestamps on commands and command reports, and `OPEN` on clock comparability and version ordering.
+- **Documented:**
+  - a Tradovate modify carries "no guarantee";
+  - a refusal is reported through `CommandResult` or a command report (`commandStatus`, `rejectReason`, timestamp, optional `ordStatus`);
+  - Tradovate can create a version for a command it later rejects, and version-derived price fields can reflect that refused modification;
+  - versions have no timestamp and no command reference.
+- **Consequence for X-2:** no documented CrossTrade read returns a working order's effective price after a refused modify: not the status read, order rows, the lifecycle, the snapshot, or the WebSocket order stream. An X-2 trace can show the refusal and a `Working` status; "at its original price" rests on inference.
+
+**Contradictions (documentary; no trace exists):**
+- **D-1:** PR #540's packet cites an **NT8-tab** sentence ("Only nonterminal orders can be changed…") as the change surface's statement. The Tradovate tab has only a generic failure envelope.
+- **D-2:** drill plan X-2's "version, unchanged" conflicts with Q21; a new version carrying the refused price makes the price indeterminate (the owner decides whether that is a fail).
+- **D-3:** which version CrossTrade restores from after a refused modify is not stated.
+- **D-4:** the §3.7 closure's partial-body guidance for X-2 interacts with D-3.
+
+**Concerns for the coordinator:**
+1. The §10 count is corrected by the operator's ruling above. The card's §10 line is unchanged here.
+2. D-1 corrects text in PR #540, which is accepted but not yet merged.
+3. §8 lists "the §3.7 request-body item" among X-2's needs; #540 discharges it.
+
+**Decision unlocked (§8):** Q1 is not `DOCUMENTED`, so the GC-2b consequence (Striker and Aegis: OPERATOR DECISION, with alternatives) may go to the operator now. A draft vendor question is in the note's §5, for the operator to send or not. Whether the one T08 follow-up has been used is UNVERIFIED. X-2 still needs X-1's pass, the fresh-position confirmation and its own CP-3.
+
+**Not granted:** any drill, order, account read, vendor contact, spend, merge, arm, deployment or GO.
