@@ -604,21 +604,26 @@ snapshot() {
     > "$S/before-$1.txt"
 }
 # bind MODE: print the id of the one dispatch run of MODE, on any head, that the snapshot did not hold, or stop.
-# Binding on every head means a run that GitHub resolved to a moved main is still found; the caller then
-# confirms its headSha (the s2-linux-run rule: never take --limit 1, confirm headSha).
+# The run listing carries no dispatch identity, so a run someone else started in the same window could be taken
+# for this one. After a candidate appears, bind therefore keeps listing for about a minute more: if a second new
+# run of MODE shows up, the binding is ambiguous and the stage stops. The caller then confirms the run's headSha
+# (the s2-linux-run rule: never take --limit 1, confirm headSha).
 bind() {
-  local ids n i
-  for i in $(seq 60); do                                                 # about 10 minutes
+  local ids n i settle=0 id=""
+  for i in $(seq 66); do                                                 # about 10 minutes, then the settle
     ids=$(gh run list -R "$R" --workflow "$WF" --event workflow_dispatch --limit 100 \
             --json databaseId,displayTitle \
             --jq ".[] | select(.displayTitle | startswith(\"S5 Part A measurement [stage 1b, $1,\")) | .databaseId" \
           | grep -vxF -f "$S/before-$1.txt" || true)
     n=$(printf '%s' "$ids" | grep -c . || true)
-    if [ "$n" = 1 ]; then echo "$ids"; return 0; fi
-    if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; stop" >&2; return 1; fi
+    if [ "$n" -gt 1 ]; then echo "several new $1 runs: $ids; the binding is ambiguous; stop" >&2; return 1; fi
+    if [ "$n" = 1 ]; then
+      id=$ids; settle=$((settle + 1))
+      if [ "$settle" -gt 6 ]; then echo "$id"; return 0; fi             # one run, unchanged for about a minute
+    elif [ -z "$id" ] && [ "$i" -gt 60 ]; then break; fi
     sleep 10
   done
-  echo "no new $1 run appeared; stop" >&2; return 1
+  echo "no new $1 run bound; stop" >&2; return 1
 }
 # run_head ID: the commit run ID actually checked out
 run_head() { gh run view "$1" -R "$R" --json headSha --jq .headSha; }
@@ -707,6 +712,8 @@ git worktree remove "$S/wt"
 *Now `snapshot` records the run ids already on the head before each dispatch, and `bind` takes only a new one. Each artifact is downloaded by its exact name into its own directory. `S` is a new directory per invocation. The review inventory is `find`. At step 3, `<the re-run jobs>` are the jobs whose attempt-1 record did not read exit=0. The block was re-run against a fake `gh` that flattens single-name downloads and holds an older same-mode run on the head.]*
 
 *[Corrected 2026-09-28 (Codex review of 6f93d54a). `--ref main` names a branch, so the head GitHub resolves for a dispatch can differ from the one checked just before it. The snapshot and `bind` now cover dispatch runs on every head, and each bound run's `headSha` is read back. The dry run's head `H` is the head that run actually used. A measure run on any other head is named as an attempt on an unvalidated head, and the stage stops. A tag would pin the ref but needs a repository write outside the approved command, so the operator's merge hold (ledger H1(b) execution entry) remains the first guard. Re-run against a fake `gh` whose measure dispatch resolves to a moved head: it stops, naming the run.]*
+
+*[Corrected 2026-09-28 (Codex review of cf14fcf3). The run listing carries no dispatch identity. Another actor's same-mode run, started between the snapshot and this dispatch, could therefore be the only new run and be bound. `bind` now lists for about a minute more after a candidate appears, and a second new run of the mode stops the stage as ambiguous. A unique `run-name` input would bind exactly, but it is a workflow change, so it is proposed for the next workflow revision beside C16. Until then the H1(b) execution entry's single dispatching session and the operator's merge hold keep other dispatches out. Re-run against a fake `gh` that shows another actor's run before this one: it stops as ambiguous.]*
 
 *[Corrected 2026-09-27 (Codex review of 5177ed2d): the combine step.]*
 - **Invocation.** The harness README's `--summarize <a>/record.json <b>/record.json --record <combined>.json` runs through the operations launcher, from a checkout at the measured revision.
@@ -1273,7 +1280,7 @@ A helper session reviewed [#523](https://github.com/Joshua-Asante/first-passage/
 | C13 | Fixed: §12.2 computes the stamp once into `$bundle` and names the summary record `windows-<utc>.record.json` |
 | C14 | Arithmetic: 12 repeats × 1,800 s = 21,600 s of poll bound. The workflow's loop deadline is (120 − 15) min = 6,300 s after the job clock starts, before setup is subtracted. The workflow governs: once the deadline passes, a repeat that has not started or is still being waited on is recorded as I-6 (`HarnessNotStarted`, or the poll bound capped at the loop deadline), and summarize, cleanup and upload still run |
 | C15 | Not reproduced: a repeat that never ran is not `completed`, and the H-COUNTS check skips it (harness `:1348-1349`, "already I-6"). A failed cold purge therefore gives I-6 for the remaining repeats, re-runnable once, not H-COUNTS |
-| C16 | Accepted limit: an unknown unit reads `Result=success` but never reaches `exited`, so the poll times out and the repeat is I-6. Capturing `LoadState` is a workflow change, so it is proposed for the next workflow revision and not made here |
+| C16 | Accepted limit: an unknown unit reads `Result=success` but never reaches `exited`, so the poll times out and the repeat is I-6. Capturing `LoadState` is a workflow change, so it is proposed for the next workflow revision and not made here. The same revision is proposed to add a unique dispatch input to `run-name`, so that §12.3 binds each run exactly (Codex review of cf14fcf3) |
 | C17 | Accepted limit: an uncaught assertion before the row write gives I-6 (re-runnable once), not I-5 (immediate stop). A real panel-count defect therefore costs one re-run before the stage stops. Moving the row write first is a harness change, so it is proposed for the next harness revision and not made here |
 | C18 | Fixed: §13 step 3 stops on an infeasible Σ and returns the D2 falsifier |
 
