@@ -246,6 +246,24 @@ gates:
       - scripts/check_handoff_authority.py
       - --all
 
+  # Handoff-contract item 1 (surface-allocation ADR §Decision; Addendum 2026-09-27): a
+  # handoff card passes `scripts/check_brief.py --type handoff` (the type is forced: every
+  # card in scope is a handoff card); only RESULT: well-formed passes. Scope: every card anywhere under
+  # docs/briefs/handoffs/ except the historical cards listed by name in
+  # scripts/handoff_brief_form_grandfathered.txt (item 7's "historical cards are not
+  # retrofitted"), plus any card with a `yaml authority` block. The ruling's four exempt
+  # files are named in the script; the gate pins them to the ADR's ruling table and the
+  # historical list to main at 38e62ee. The regex selects every path whose change can fail
+  # the gate: the briefs, the checker and its engine, the list, the ruling ADR and the
+  # block reader.
+  - id: handoff-brief-form
+    tier: path-conditional
+    when:
+      staged_regex: '^(docs/briefs/|scripts/check_brief[.]py$|scripts/check_handoff_brief_form[.]py$|scripts/handoff_brief_form_grandfathered[.]txt$|docs/adr/2026-07-14-cc-cursor-surface-allocation[.]md$|scripts/check_handoff_authority[.]py$|[.]claude/skills/brief-authoring/scripts/brief_checks[.]py$)'
+    cmd:
+      - python
+      - scripts/check_handoff_brief_form.py
+
   # D4 enforcement instrument (docs/adr/2026-08-09-rejection-register-topology-
   # and-bar-wiring.md, dispatched as a separate packet at ratification): does
   # every terminal-negative closure naming one instrument have a DEAD row in

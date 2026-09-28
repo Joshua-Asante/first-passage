@@ -117,7 +117,11 @@ about which vendor runs the session, so all four survive the retirement unchange
 
 **Handoff contract (all seven required for worker eligibility):**
 
-- A handoff brief under `docs/briefs/**` passing `check_brief.py`.
+- A handoff brief under `docs/briefs/**` passing `check_brief.py`. Four 2026-09-27 files that were
+  dispatched, or used for dispatch, without passing it are exempted by a dated ruling as recorded
+  deviations, not restructured after the build. Since that ruling the `handoff-brief-form` gate
+  enforces this item on every card anywhere under `docs/briefs/handoffs/` except the listed
+  historical ones, and on any card with an authority block ([Addendum 2026-09-27](#addendum-2026-09-27)).
 - §0 Phase-0 reads with a **read-report-before-code** requirement and a `NEEDS_CONTEXT` bounce
   on any contradiction; the worker runs the [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md)
   checklist as that Phase 0.
@@ -293,6 +297,7 @@ Rules:
 | Act | Enforcement point | Status 2026-09-25 |
 |---|---|---|
 | card grants | `check_handoff_authority.py` (`handoff-authority` gate): binds a card's grants to the seat the card **declares** and never binds that seat to the executor; a worker card must name its parent; parents must be inside the repository, are checked recursively, and a cycle is refused; a parent without a block narrows nothing beyond the seat; any card granting `worktree.write` or `research.run` names its acceptance tests whatever its seat ([2026-09-26b](#addendum-2026-09-26b)) | enforced for cards with a block; seat-to-executor binding is the coordinator's pre-dispatch read plus the executive review (human, not code) |
+| card form (item 1) | `check_handoff_brief_form.py` (`handoff-brief-form` gate, pre-commit when a brief, the checker or its engine is staged; required CI `skills (3.12)` via `--tier check`): requires `check_brief.py`'s `RESULT: well-formed` on every card anywhere under `docs/briefs/handoffs/` except the 74 historical cards listed in `scripts/handoff_brief_form_grandfathered.txt`, and on any `docs/briefs/**` card with an authority block; a card whose staged and unstaged copies differ fails when either copy is in scope; the four files of the [2026-09-27 ruling](#addendum-2026-09-27) are exempt by name | enforced from 2026-09-27 for cards in scope; earlier cards are not retrofitted (item 7's precedent), so item 1 binds them only through the coordinator's pre-dispatch read |
 | merge | the operator merges on GitHub; the ruleset makes every change to `main` a PR with a green strict `skills (3.12)`; best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges in the forms it recognises (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool), only when the call pins the head SHA, and denies the unpinned forms it recognises | **not enforced server-side against an agent:** the ruleset does not stop a write credential from merging a green PR, so the limit is the operator not giving an agent a merge-capable credential (operator-held); the hook is a best-effort prompt for Claude Code only. **That limit does not hold for GLM workers today:** they run as the operator's user with the operator's `gh` credential; isolation ruled 2026-09-26, host change **OWED** ([2026-09-26b](#addendum-2026-09-26b)) |
 | auto-merge | the repository setting `allow_auto_merge: false` (GitHub refuses to enable auto-merge on any PR); CI holds no write credential (2026-08-29 addendum #1 bar); best effort: the hook denies the auto-merge forms it recognises | **enforced server-side** by the repository setting (verified read-only 2026-09-25); the setting itself is operator-held |
 | push to `main` | GitHub ruleset 21071355 `main-protection` on `refs/heads/main`: PR required, `skills (3.12)` required and strict, non-fast-forward and deletion blocked, empty bypass list; best effort: the hook denies the `git push` forms it recognises whose destination is `main` (named, bulk, matching `:` or glob) | **enforced server-side** for every credential (bypass list empty, `current_user_can_bypass: never`, verified read-only 2026-09-25) |
@@ -792,6 +797,103 @@ environment change asks while one before a later `cd` or write does not, a deplo
 `cd` asks, a backquote substitution is read rather than dropping the command to raw patterns, the M1-override arm
 asks and never denies; `LIVE_FLY_APPS` pinned to the two fly.toml files), run test-first through the launcher.
 
+<a id="addendum-2026-09-27"></a>
+## Addendum 2026-09-27 — operator ruling: cards dispatched without passing handoff-contract item 1
+
+**Source.** Operator ruling of 2026-09-27. In the session, the operator chose "Exempt by dated
+ruling" from three analysed options; the other two were restructuring all five files, and
+exempting the returned cards while restructuring the set file. The operator then directed the
+same day: "address the root cause directly"; *Enforcement* below is that change. The text above
+is not rewritten, except that handoff-contract item 1 gains a pointer here and the
+enforcement-point table gains a *card form* row. Ratifies on operator merge of the PR that carries it.
+
+**Finding.** On 2026-09-27, `python3 scripts/check_brief.py <card>` reported `RESULT: MALFORMED`
+for every new card under `docs/briefs/handoffs/`. The typical HARD violations were a missing §0,
+§0.5 or §10; no §4 `H:` or falsifier; no §5 list; and an incomplete §6 status taxonomy. The
+merge-train card was restructured on its own PR ([#531](https://github.com/Joshua-Asante/first-passage/pull/531)). The mechanism: nothing runs item 1
+before a dispatch. `check_brief.py` is not in the `check` gate list (`scripts/gates.yml`), no
+git hook or CI workflow runs it (the pre-ratification panel runs it only when invoked on a
+document), and it is not a step of the
+[`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md) Phase-0 checklist. The authority
+block (item 7) is checked by `check_handoff_authority.py`; the brief's form was not. The gap
+predates 2026-09-27: on that day 58 of the 80 files under `docs/briefs/handoffs/` reported
+`MALFORMED`, including all but six of the cards dated 2026-09-20 to 2026-09-26.
+
+**Ruling.**
+
+| File under `docs/briefs/handoffs/` | State at the ruling | Disposition |
+|---|---|---|
+| `2026-09-27-h4-fence-classification-orb-l1-repair.md` | Dispatched; returned `DONE_WITH_CONCERNS` on [PR #522](https://github.com/Joshua-Asante/first-passage/pull/522) (open at the ruling); coordinator acceptance of the return recorded on the card | **Exempt.** Dispatched without passing item 1: a recorded deviation, not compliance. |
+| `2026-09-27-h5b-attended-incident-rehearsal.md` | Dispatched; returned `DONE_WITH_CONCERNS` on [PR #521](https://github.com/Joshua-Asante/first-passage/pull/521) (merged); accepted partial under its §7 (B) variance | **Exempt**, as above. |
+| `2026-09-27-h8c-omission-incident-session-end.md` | Dispatched; returned `DONE_WITH_CONCERNS` on [PR #530](https://github.com/Joshua-Asante/first-passage/pull/530) (merged) | **Exempt**, as above. |
+| `2026-09-27-staged-acceptance-handoffs.md` | A set file carrying no authority block; several of its steps have run and returned (its state table) | **Exempt as a set file.** It is not dispatched as a card. Under its own *Ownership* rule, each step it still shows as READY, READY ON or LATER is copied into its own card file at dispatch. That card must pass `check_brief.py` at the coordinator's pre-dispatch read, and this exemption does not reach it. |
+| `2026-09-27-m2-modify-semantics.md` | Carded, not dispatched | **Not exempt.** Restructured before dispatch into the numbered sections, with no change of scope, grants or acceptance; it passes `check_brief.py`. |
+
+*Why exemption, not restructure.* Restructuring a card after its build to make the record
+compliant is the retained §5 forbidden move "retro-fitting a brief after the build" (§8 table),
+which the prior text (blob `0bcd6699…`) names as self-attestation. The exemption leaves each exempt file's text,
+authority block and acceptance record byte-identical.
+
+*Scope.* The exemption covers the four files above and nothing else. It does not amend item 1,
+and it does not reach a later card, including one copied out of the set file. It grants nothing
+and changes no grant: the three worker cards' authority blocks are untouched and still pass
+`check_handoff_authority.py`.
+
+*Enforcement.* A `check` gate, `handoff-brief-form`
+([`scripts/check_handoff_brief_form.py`](../../scripts/check_handoff_brief_form.py), wired in
+[`scripts/gates.yml`](../../scripts/gates.yml)), runs `check_brief.py --type handoff` on every card in
+scope. The type is forced because every card in scope is a handoff card; inference from content
+would let a card that omits §0.5 and the four-state return pass as `generic`. Only
+`RESULT: well-formed` passes: the zero-exit `NOT CHECKED` outcome validates nothing, so it fails.
+The gate adds scope, not rules: the handoff contract is `check_brief.py`'s own. It runs at
+pre-commit whenever a brief, the checker, its engine, the block reader or the historical list is
+staged, and in the required
+`skills (3.12)` check on every PR. A card is committed before it is dispatched (committed-handoff
+rule), so a malformed card now fails before dispatch. The scope:
+- every card anywhere under `docs/briefs/handoffs/`, where the committed-handoff rule places cards
+  (`docs/briefs/handoffs/**`), except that directory's own `README.md` and the historical cards:
+  the 74 direct children dated before 2026-09-27 that were on `main` at `38e62ee`, listed by name in
+  [`scripts/handoff_brief_form_grandfathered.txt`](../../scripts/handoff_brief_form_grandfathered.txt).
+  Because the list is by name, a new card with a backdated name is still checked. The gate
+  pins the list: every name on it must be a card at `38e62ee`, so the list can shrink but never
+  gain a card, and a checkout that cannot read `38e62ee` (a shallow clone) fails closed;
+- any `docs/briefs/**` card carrying a `yaml authority` block, read with
+  `check_handoff_authority.py`'s block reader;
+- minus the four files exempted above, named in the script. The gate itself pins them to this
+  table's **Exempt** rows, so an exemption the ruling does not grant fails the required check,
+  and this ADR is in the gate's path trigger. An exemption naming a missing file fails the gate,
+  so a renamed exempt card loses its exemption.
+
+In a git checkout, a card with both staged and unstaged changes fails, because pre-commit reads
+the working copy while the commit records the staged one. That check runs before scope, on both
+copies, so a staged card whose working copy has left scope, or has been deleted, still fails. These
+rules came from the Codex reviews of #532: the name-based list, the verdict and partial staging at
+`35e91ac`; the forced handoff type at `afdac7d`; nested cards and the check order at `0efe06d`;
+the pinned historical list at `f061616`.
+
+The historical cards are **not retrofitted**, following item 7's precedent ("historical cards are not
+retrofitted"). The gate does not check them, and this is not an exemption: item 1 still binds any
+of them that is dispatched, through the coordinator's pre-dispatch read. Run against `ed3e476`,
+before the M2 restructure, the gate exits 1 and names only the M2 card; on this change it exits 0.
+One intervention was chosen, at the cheapest reliable layer. A `handoff-verify` step was not
+added: once the committed card has passed the gate, the step would repeat the same check.
+
+**Verification.**
+
+```bash
+# Through the checkout's launcher (AGENTS.md, "Python environment and local checks"); on Windows
+# with PowerShell 7.3+, `.\fp.ps1 <command>` is the same entry point.
+python -I scripts/fp.py doctor
+python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md  # RESULT: well-formed
+python -I scripts/fp.py python scripts/check_handoff_authority.py --all      # 0 violation(s)
+python -I scripts/fp.py python scripts/check_handoff_brief_form.py           # 0 failing
+python -I scripts/fp.py python -m pytest tests/scripts/test_check_handoff_brief_form.py tests/test_gate_manifest.py
+git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/2026-09-27-h4-fence-classification-orb-l1-repair.md \
+  docs/briefs/handoffs/2026-09-27-h5b-attended-incident-rehearsal.md \
+  docs/briefs/handoffs/2026-09-27-h8c-omission-incident-session-end.md \
+  docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md                         # empty: the ruling left them unchanged
+```
+
 ---
 
 ## Change history
@@ -810,3 +912,4 @@ asks and never denies; `LIVE_FLY_APPS` pinned to the two fly.toml files), run te
 | 2026-09-25 | Revision proposed — action classes, authority block (item 7), approval bound to its object, `IN_DOUBT`, decision packets, enforcement-point table, seat-name mapping. Prior text at blob `cbe2a5886e3b6588b68294ac801f88acde3637b5`. Ratifies on operator merge. | Joshua (direction) + Claude Code |
 | 2026-09-26 | Addendum — operator rulings on the four open hook questions (M1 override permitted through the prompt; deploy prompt scoped to live-path apps; `--admin` merges stay askable; card-to-seat binding under consideration) and the AGENTS.md activation-gap wording correction. Rail-deploy enforcement row updated to the ruled scope; open-questions paragraph gains a pointer. | Joshua (rulings) + Claude Code |
 | 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check, GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
+| 2026-09-27 | Addendum 2026-09-27 — operator ruling on handoff-contract item 1: the H4, H5b and H8c cards (dispatched and returned without passing `check_brief.py`) are exempted as recorded deviations, not retro-fitted; the staged-acceptance set is exempted as a set file whose copied-out cards must pass; the undispatched M2 card is restructured instead. Enforcement at the operator's same-day direction: the `handoff-brief-form` gate (forward-only from 2026-09-27, plus any card with an authority block; the four exempt files named). Item 1 gains a pointer; the enforcement-point table gains a *card form* row. | Joshua (ruling, direction) + Claude Code |

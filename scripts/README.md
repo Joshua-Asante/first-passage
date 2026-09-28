@@ -412,7 +412,14 @@ The [brief-authoring skill](../.claude/skills/brief-authoring/SKILL.md#checker-o
 owns the canonical checker source, type contracts and repo-subset limits. Follow
 the artifact's verification contract; a `NOT CHECKED` or delegation notice is not
 a full validation pass. Checker/template unification remains unresolved and is
-not commissioned here. Neither brief checker is in the gate manifest.
+not commissioned here. The skill-side checker is not in the gate manifest. The
+repo-side checker is run by one gate, `handoff-brief-form`
+([`check_handoff_brief_form.py`](check_handoff_brief_form.py)). That gate enforces
+handoff-contract item 1 of the
+[surface-allocation ADR](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-27)
+on the cards its docstring scopes. It runs `check_brief.py --type handoff`, because every
+card in scope is a handoff card, and accepts only its `RESULT: well-formed`. Other briefs
+are not gated.
 
 The separate unresolved 26-letter session-label ceiling remains with the
 [SESSIONS header](../docs/SESSIONS.md) and [`roll_sessions.py`](roll_sessions.py).
