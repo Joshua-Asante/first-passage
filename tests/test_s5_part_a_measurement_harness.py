@@ -1618,3 +1618,100 @@ def test_cli_repeat_run_in_another_unit_is_h_shape(tmp_path):
     code, record, done = _cli_job(tmp_path, directory)
     assert any(r.startswith('H-SHAPE: forced-4') and 'unit' in r for r in record['verdict']['reasons'])
     assert code == 4
+
+
+# ---- Stage 1c SR-5 staging placement (operator ruling 2026-09-29, "Fix harness, re-measure"):
+# the depth-60 N2 staging never runs inside a unit whose memory.peak feeds M-hat.
+
+PASSING_PROBE_UNIT = 'CPUUsageNSec=5\nMemoryPeak=70000000\nExecMainStatus=0\nResult=success\n'
+
+
+def test_stage_1c_order_self_check_holds_on_the_workflow(h):
+    assert h._stage_1c_order_problems() == []
+    assert h.check_stage('1c') == 0
+
+
+def test_stage_1c_order_self_check_fails_when_staging_moves_into_a_unit(h, tmp_path, monkeypatch):
+    text = h.WORKFLOW.read_text(encoding='utf-8')
+    wrapped = text.replace('sudo "$host_root/env/bin/python" -I "$NOTE_DIR/measure_part_a_max.py.txt" --probe-verdict',
+                           'sudo systemd-run --unit=x "$host_root/env/bin/python" -I '
+                           '"$NOTE_DIR/measure_part_a_max.py.txt" --probe-verdict')
+    assert wrapped != text
+    moved = tmp_path / 'moved.yml'
+    moved.write_text(wrapped, encoding='utf-8')
+    monkeypatch.setattr(h, 'WORKFLOW', moved)
+    assert h._stage_1c_order_problems()
+    assert h.check_stage('1c') == 2
+
+
+@pytest.mark.parametrize('unit_text, stage_1c, staged', [
+    (PASSING_PROBE_UNIT, True, True),
+    (PASSING_PROBE_UNIT, False, False),
+    ('CPUUsageNSec=5\nMemoryPeak=70000000\nExecMainStatus=9\nResult=signal\n', True, False),
+])
+def test_probe_verdict_stages_only_for_1c_after_a_passing_probe(h, tmp_path, monkeypatch, unit_text, stage_1c,
+                                                                staged):
+    directory = _probe_dir(tmp_path, unit_text)
+    if stage_1c:
+        (directory / 'git-parent.txt').write_text(HEAD + '\n')
+    calls = []
+    monkeypatch.setattr(h, 'stage_n2_before_loop', lambda d: calls.append(d) or {
+        'ok': False, 'cache': 'c', 'refused': None, 'returncode': 1})
+    code = h.probe_verdict(directory)
+    assert calls == ([directory] if staged else [])
+    # A failed staging keeps the probe's own exit; the repeats then refuse.
+    assert code == (0 if unit_text == PASSING_PROBE_UNIT else 3)
+
+
+def test_pre_loop_stager_refuses_inside_a_measured_unit(h, tmp_path, monkeypatch):
+    directory = tmp_path / 'out'
+    directory.mkdir()
+    monkeypatch.setattr(h, '_own_cgroup_path', lambda: '/system.slice/fp-s5pa-1c-forced-1.service')
+
+    def never(*args, **kwargs):
+        raise AssertionError('staging must not start inside a measured unit')
+    monkeypatch.setattr(h.subprocess, 'run', never)
+    receipt = h.stage_n2_before_loop(directory)
+    assert receipt['ok'] is False and receipt['stager_in_measured_unit'] is True and receipt['refused']
+    assert json.loads((directory / h.N2_RECEIPT_FILE).read_text())['refused']
+    assert not h._default_n2_cache(directory).exists()
+
+
+def test_repeat_side_refuses_an_absent_mount_and_never_stages(h, tmp_path):
+    cache = tmp_path / 'out.n2-staged'
+    manifest, refusal = h._staged_n2_manifest(cache)
+    assert manifest is None and 'absent' in refusal
+    assert not cache.exists()
+    for function in (h._repeat_mode_1c, h._staged_n2_manifest):
+        assert not {'subprocess', 'stage_n2', 'stage_n2_before_loop'} & set(function.__code__.co_names)
+
+
+def test_summarize_reads_a_refusal_as_i6_and_in_unit_staging_as_h_shape(h):
+    reasons = []
+    h._stage_1c_row_reasons({'n2_staging': {'refused': 'SR-5 staged mount absent'}}, 'forced-1', False, reasons)
+    assert [code for code, _ in reasons] == ['I-6']
+    reasons = []
+    h._stage_1c_row_reasons({'n2_staging': {'generated_in_this_repeat': {'returncode': 0}}}, 'forced-1', False,
+                            reasons)
+    assert [code for code, _ in reasons] == ['H-SHAPE']
+
+
+@pytest.mark.parametrize('receipt, row_manifest, codes', [
+    (None, 'm', ['I-6']),
+    ({'ok': True, 'stager_in_measured_unit': False, 'manifest_sha256': 'm'}, 'm', []),
+    ({'ok': False, 'stager_in_measured_unit': False, 'manifest_sha256': None}, None, ['I-6', 'I-4']),
+    ({'ok': True, 'stager_in_measured_unit': True, 'manifest_sha256': 'm'}, 'm', ['H-SHAPE']),
+    ({'ok': True, 'stager_in_measured_unit': None, 'manifest_sha256': 'm'}, 'm', ['H-SHAPE']),
+    ({'ok': True, 'stager_in_measured_unit': False, 'manifest_sha256': 'm'}, 'other', ['I-4']),
+])
+def test_pre_loop_staging_receipt_reasons(h, tmp_path, receipt, row_manifest, codes):
+    if receipt is not None:
+        (tmp_path / h.N2_RECEIPT_FILE).write_text(json.dumps(dict(
+            receipt, schema=h.N2_RECEIPT_SCHEMA, placement=h.N2_STAGING_PLACEMENT)))
+    rep = {'arm': 'forced', 'repeat': 1, 'completed': True, 'n2_staging': {'manifest_sha256': row_manifest}}
+    reasons = []
+    h._n2_receipt_reasons(tmp_path, [rep], True, reasons)
+    assert [code for code, _ in reasons] == codes
+    reasons = []
+    h._n2_receipt_reasons(tmp_path, [rep], False, reasons)   # the loop never ran: nothing to attribute
+    assert reasons == []

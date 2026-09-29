@@ -14,19 +14,34 @@ existing Part A engine function directly, as r2 §6.3 step 5 prescribes.
 Modes (exactly one):
   --repeat-mode   one repeat in the current process (inside a systemd unit on
                   Linux; a job-object child of --launcher on Windows);
-  --launcher      Windows only: fresh sys.executable repeats in job objects;
+  --launcher      Windows only: fresh sys.executable repeats in job objects
+                  (Stage 1a; or Stage 1c as a validation of the 1c path only);
   --summarize     summary, validity and stop class; writes record.json and
                   exits 0 (valid), 3 (validity failure, re-runnable) or
                   4 (invalid, no re-run).
-Workflow helpers (stdlib only, no repository import):
+Workflow helpers (stdlib only, no repository import in their own process):
   --probe-verdict DIR   judge the per-job accounting probe (r2 §8.4, §12.3
-                        step 6); writes DIR/probe.json; exits 0 or 3;
+                        step 6); writes DIR/probe.json; exits 0 or 3. For a
+                        Stage 1c job (DIR/git-parent.txt present) whose probe
+                        passed, it then stages the SR-5 mount in a child
+                        process, before the measurement loop and outside every
+                        fp-s5pa unit, and writes DIR/n2-staging.json; the
+                        exit code stays the probe's;
   --check-stage STAGE   exit 0 if this harness implements the stage for a
-                        Linux dispatch, else 2 (Stage 1c is added at C3).
+                        Linux dispatch (1b, 1c), else 2. For 1c it also
+                        self-checks the staging order this harness relies on.
+Stage 1c helper (repository imports; setup, never inside a measured unit):
+  --stage-n2 DIR        SR-5: build the TEST_ONLY bundle and run the genuine N2
+                        worker once, staging the PART_A input mount at DIR.
+A Stage 1c repeat never stages: without the staged mount it refuses (I-6).
+
+Stage 1c (r2 §12.4 "Repeat body"; S5 packet §1a SR-3..SR-6, P-6, P-7) replaces
+Stage 1b's steps 3-6 with one call of the SR-3 callable `worker.run_part_a_body`,
+the object `run_worker` itself calls (P-7, asserted in every row).
 
 The module level imports the standard library only. Repository modules are
-imported inside --repeat-mode (engine first, then the fixture) and, for the
-code-identity block only, inside --summarize.
+imported inside --repeat-mode (engine first, then the fixture), inside
+--stage-n2 and, for the code-identity block only, inside --summarize.
 """
 import argparse
 import dataclasses
@@ -36,6 +51,7 @@ import os
 import platform
 import re
 import shutil
+import stat
 import statistics
 import subprocess
 import sys
@@ -84,7 +100,7 @@ PINNED_FIXTURE_SHA256 = {
 }
 FORCING_LABEL = 'TEST_ONLY_MEASUREMENT_FORCED_EXPANSION'  # r2 §7.3 label; seam=harness_request at 1b
 RECIPE = "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)"
-DISPATCH_STAGES = ('1b',)       # Linux dispatch stages implemented here; 1c is added at C3 (r2 §12.4)
+DISPATCH_STAGES = ('1b', '1c')  # Linux dispatch stages implemented here; 1c added at C3 (r2 §12.4)
 EXIT_VALID, EXIT_RERUN, EXIT_INVALID = 0, 3, 4
 EXIT_REPEAT_ERROR, EXIT_ASSERTION = 1, 5
 DEFAULT_TIMED_REPEATS = 5       # r2 §6.2 and §12.2: the fixed timed-repeat count per arm (H-SHAPE otherwise)
@@ -102,6 +118,29 @@ M_M, PA3_REFERENCE_BYTES = 1.5, 256_000_000    # valid only with the P4 tuple ex
 SPREAD_LIMIT = 1.30
 SIGMA_CPU_LIMIT_S, SIGMA_WALL_LIMIT_S = 8440.0, 6100.0   # r2 §10.2 Σ-only row, N2 360 s / 900 s (ruling (3))
 PROBE_MIN_PEAK_BYTES = 67_108_864              # r2 §8.4
+
+# Stage 1c (r2 §12.4; S5 packet §1a). SR-6: the worker's own PhaseBudgetGuard with
+# measurement limits, cpu_ns = wall_ns = 3600 s and memory_bytes above the runner's
+# memory (the vendor's 16 GB is UNVERIFIED, r2 §5.1), so the pilot predicate cannot
+# abort and the per-replay budget checks run production code.
+MEASUREMENT_LIMITS = {'cpu_ns': 3600 * 10 ** 9, 'wall_ns': 3600 * 10 ** 9, 'memory_bytes': 64 * 2 ** 30}
+EXPECTED_FSYNC = 2              # SR-4: the two S5-D1 artifacts, each fsynced once (instrumented repeat)
+N2_STAGED_SCHEMA = SCHEMA + '#n2-staged-mount'
+STAGING_SYS_PATHS = ('tests/ops/qualification/execution',)   # bundle_fixture, test_worker, test_profile
+RECIPE_1C = ("tests/ops/qualification/execution/test_worker.py part_a_stage_input over "
+             "bundle_fixture.build_bundle(capability='FULL_E1', part_a=True) (composition_fixture "
+             "build_artifacts/verified_domain/contract_document, confirmation_depth=60, decision_alpha='0.05'); "
+             "the genuine N2 run_worker payload staged once per job, copied into a repeat-local mount")
+FORCING_SEAM_1C = 'adapter_measurement_override'   # r2 §12.8 forcing.seam at 1c
+# SR-5 staging placement (operator ruling 2026-09-29, "Fix harness, re-measure"): the genuine
+# depth-60 N2 run is setup, not the PART_A payload, so it must never run inside a unit whose
+# memory.peak feeds M̂. The workflow's probe step invokes --probe-verdict after the probe unit
+# is stopped and before the measurement loop step; that is where a Stage 1c job stages.
+N2_RECEIPT_SCHEMA = SCHEMA + '#n2-staging-receipt'
+N2_RECEIPT_FILE = 'n2-staging.json'
+N2_STAGING_PLACEMENT = 'probe_verdict_before_measurement_loop'
+MEASURED_UNIT_PREFIX = 'fp-s5pa-'
+WORKFLOW = ROOT / '.github' / 'workflows' / 'qualification-s5-part-a-measurement.yml'
 
 
 # --------------------------------------------------------------------- common
@@ -332,9 +371,12 @@ def _count_wrappers(cls, counts):
 
 
 def repeat_mode(args):
-    if args.stage not in ('1a', '1b'):
-        print('refused: --repeat-mode implements stages 1a and 1b; the --stage 1c path is added at C3 '
-              '(r2 §12.4) and is BLOCKED (I-8) until then', file=sys.stderr)
+    if args.stage not in ('1a', '1b', '1c'):
+        print('refused: --repeat-mode implements stages 1a, 1b and 1c', file=sys.stderr)
+        return 2
+    if args.stage == '1c' and sys.platform != 'linux' and os.name != 'nt':
+        print('refused: Stage 1c runs on Linux (r2 §12.4), or on Windows as a validation of the 1c path',
+              file=sys.stderr)
         return 2
     if args.stage == '1a' and os.name != 'nt':
         print('refused: Stage 1a is the Windows harness validation (r2 §12.2)', file=sys.stderr)
@@ -361,6 +403,8 @@ def repeat_mode(args):
         'counts': None, 'initial_prefix_sha256': None, 'final_sha256': None, 'fsync_count': None,
         'assertions': None, 'workload': None, 'memory': None, 'error': None,
     }
+    if args.stage == '1c':
+        return _repeat_mode_1c(args, out, row)
     status = EXIT_REPEAT_ERROR
     tmp = None
     restore_counts = None
@@ -466,35 +510,392 @@ def repeat_mode(args):
     finally:
         if restore_counts is not None:
             restore_counts()
-        row['environment'] = {
-            'python': platform.python_version(), 'implementation': platform.python_implementation(),
-            'executable': sys.executable, 'pid': os.getpid(), 'root': str(ROOT),
-            'thread_env': {name: os.environ.get(name) for name in THREAD_ENV},
+        _finish_row(row, args, status, out)
+        if tmp is not None:
+            shutil.rmtree(tmp, ignore_errors=True)
+    return status
+
+
+def _finish_row(row, args, status, out, extra_fixture_files=()):
+    """Steps 8-9, shared by every stage so the in-unit memory read is exactly Stage 1b's.
+    extra_fixture_files: Stage 1c's staging child's loaded fixture files (hashed at summarize)."""
+    loaded = [Path(module.__file__).resolve().relative_to(ROOT).as_posix()
+              for module in list(sys.modules.values())
+              if getattr(module, '__file__', None)
+              and Path(module.__file__).resolve().is_relative_to(ROOT / 'tests')]
+    if extra_fixture_files:
+        loaded = set(loaded) | set(extra_fixture_files)
+    row['environment'] = {
+        'python': platform.python_version(), 'implementation': platform.python_implementation(),
+        'executable': sys.executable, 'pid': os.getpid(), 'root': str(ROOT),
+        'thread_env': {name: os.environ.get(name) for name in THREAD_ENV},
+        'loaded_fixture_files': sorted(loaded),
+    }
+    # Step 8: the in-unit memory read is the last act after the boundary (r2 §8.2).
+    memory = {'lower_bound_bytes': None, 'lower_bound_method': None, 'swap_total_kb': _swap_total_kb()}
+    try:
+        from c1_rail.qualification import production as _production
+        memory['lower_bound_bytes'] = _production._peak_memory_bytes()
+        memory['lower_bound_method'] = ('lower_bound_windows_working_set' if os.name == 'nt'
+                                        else 'lower_bound_ru_maxrss')
+    except BaseException as exc:
+        memory['lower_bound_error'] = '%s: %s' % (type(exc).__name__, exc)
+    if sys.platform == 'linux':
+        memory.update(_read_own_cgroup(args.unit))
+    row['memory'] = memory
+    row['cpu']['process_total'] = _cpu_clock()
+    row['recorded_utc'] = _now()
+    row['exit_status'] = status
+    # Step 9: one JSON row.
+    _write_json(out, row, exclusive=True)
+
+
+# ------------------------------------------------------------- Stage 1c (C3)
+
+def _force_remove(func, path, _exc):
+    # The S5-D1 artifacts are read-only by convention (SR-4); clear that to delete them.
+    try:
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+    except OSError:
+        pass
+
+
+def _staging_paths():
+    _setup_paths()
+    for part in STAGING_SYS_PATHS:
+        path = str(ROOT / part)
+        if path not in sys.path:
+            sys.path.insert(0, path)
+
+
+def stage_n2(directory):
+    """SR-5 (setup, never inside a measured boundary): the genuine staged N2 capture.
+
+    Builds the TEST_ONLY FULL_E1 PART_A bundle from the composition fixture, runs the
+    real joint N2 worker once on its own mount and stages its framed payload, with the
+    minimal receipt/assessment wrappers and the PART_A plan, exactly as the S5 worker
+    tests do (test_worker.part_a_stage_input). The mount is renamed into place only
+    when whole, with a manifest pinning every file's SHA-256."""
+    cache = Path(directory).resolve()
+    if cache.exists():
+        print('refused: will not overwrite ' + str(cache), file=sys.stderr)
+        return 2
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cpu0, wall0 = time.process_time(), time.perf_counter()
+    work = Path(tempfile.mkdtemp(prefix=cache.name + '.work-', dir=str(cache.parent)))
+    try:
+        _staging_paths()
+        import pytest
+        from bundle_fixture import build_bundle
+        import test_worker
+        with pytest.MonkeyPatch.context() as patch:   # the tests' pinned worker clock, undone on exit
+            case = build_bundle(work / 'case', capability='FULL_E1', part_a=True)
+            context, mount, _out, payload, _assessment, _receipt = test_worker.part_a_stage_input(work, case, patch)
+        mount.rename(work / 'mount')
+        for name in ('case', 'n2', 'out'):
+            if (work / name).exists():
+                shutil.rmtree(work / name, onerror=_force_remove)
+        mount = work / 'mount'
+        files = {path.relative_to(mount).as_posix(): _sha256_file(path)
+                 for path in sorted(mount.rglob('*')) if path.is_file()}
+        n2_sha = hashlib.sha256(payload).hexdigest()
+        if files.get('predecessor-payload.json') != n2_sha:
+            raise RuntimeError('staged payload file differs from the N2 worker payload')
+        manifest = {
+            'schema': N2_STAGED_SCHEMA, 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
+            'n2_capture_sha256': n2_sha, 'n2_capture_bytes': len(payload), 'files': files,
+            'attempt_id': context.attempt_id, 'contract_sha256': context.contract.contract_sha256,
+            'recipe': RECIPE_1C, 'harness_sha256': _sha256_file(HARNESS), 'generated_utc': _now(),
+            'generator': {'pid': os.getpid(), 'cpu_s': time.process_time() - cpu0,
+                          'wall_s': time.perf_counter() - wall0},
             'loaded_fixture_files': sorted(
                 Path(module.__file__).resolve().relative_to(ROOT).as_posix()
                 for module in list(sys.modules.values())
                 if getattr(module, '__file__', None)
                 and Path(module.__file__).resolve().is_relative_to(ROOT / 'tests')),
         }
-        # Step 8: the in-unit memory read is the last act after the boundary (r2 §8.2).
-        memory = {'lower_bound_bytes': None, 'lower_bound_method': None, 'swap_total_kb': _swap_total_kb()}
+        _write_json(work / 'manifest.json', manifest, exclusive=True)
+        os.rename(work, cache)
+    except BaseException:
+        shutil.rmtree(work, onerror=_force_remove)
+        raise
+    print('staged N2 capture %s at %s' % (n2_sha, cache))
+    return 0
+
+
+def _default_n2_cache(job_dir):
+    """The job-level SR-5 mount beside the job directory ($OUT.n2-staged), so it is not uploaded."""
+    job_dir = Path(job_dir).resolve()
+    return job_dir.with_name(job_dir.name + '.n2-staged')
+
+
+def _staged_n2_manifest(cache):
+    """(manifest, None) for a whole staged SR-5 mount, else (None, refusal). A repeat never
+    stages: the mount is built before the first repeat, outside every measured unit
+    (--probe-verdict on Linux, --launcher on Windows). Absent means refuse (I-6)."""
+    cache = Path(cache)
+    if not cache.is_dir():
+        return None, 'SR-5 staged mount absent at %s; staging runs only before the first repeat' % cache
+    manifest, error = _read_json_dict(cache / 'manifest.json')
+    if manifest is None or manifest.get('schema') != N2_STAGED_SCHEMA or not isinstance(manifest.get('files'), dict):
+        return None, 'SR-5 staged mount at %s has no valid manifest (%s)' % (cache, error or 'schema')
+    return manifest, None
+
+
+def _own_cgroup_path():
+    try:
+        with open('/proc/self/cgroup', encoding='utf-8') as handle:
+            return next((line[3:].strip() for line in handle if line.startswith('0::')), None)
+    except OSError:
+        return None
+
+
+def stage_n2_before_loop(directory):
+    """Linux Stage 1c: stage the SR-5 mount once per job, before the measurement loop.
+
+    Called from --probe-verdict, which the workflow runs in the probe step's own shell after
+    `systemctl stop fp-s5pa-probe` and before the loop step starts any fp-s5pa-1c-* unit, so
+    the staging process is in no unit whose memory.peak or CPUUsageNSec feeds a repeat. It
+    runs as a child through the operations launcher, exactly as the repeats are launched.
+    Writes DIR/n2-staging.json (never overwritten) and returns it. Never raises."""
+    directory = Path(directory)
+    cache = _default_n2_cache(directory)
+    cgroup = _own_cgroup_path()
+    in_unit = None if cgroup is None else cgroup.rstrip('/').rsplit('/', 1)[-1].startswith(MEASURED_UNIT_PREFIX)
+    receipt = {'schema': N2_RECEIPT_SCHEMA, 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
+               'placement': N2_STAGING_PLACEMENT, 'cache': str(cache), 'stager_cgroup': cgroup,
+               'accounting': 'setup_excluded: outside every measured unit, never an input to Ĉ, Ŵ or M̂',
+               'stager_in_measured_unit': in_unit, 'returncode': None, 'ok': False, 'refused': None,
+               'wall_s': None, 'cpu_s_children': None, 'child_peak_rss_bytes': None,
+               'manifest_sha256': None, 'n2_capture_sha256': None, 'harness_sha256': _sha256_file(HARNESS),
+               'output_tail': None}
+    command = [sys.executable, '-I', str(ROOT / 'scripts' / 'fp.py'), '--env', sys.prefix, 'python',
+               str(HARNESS), '--stage-n2', str(cache)]
+    receipt['command'] = command
+    if in_unit:
+        receipt['refused'] = 'the stager is inside a measured fp-s5pa unit (%s)' % cgroup
+    elif (directory / N2_RECEIPT_FILE).exists() or cache.exists():
+        receipt['refused'] = 'staging already attempted for this job; never restaged or overwritten'
+    else:
+        env = dict(os.environ)
+        env.update({name: '1' for name in THREAD_ENV})   # as the repeat units' -E settings
+        kids0 = resource.getrusage(resource.RUSAGE_CHILDREN) if resource is not None else None
+        wall0 = time.perf_counter()
         try:
-            from c1_rail.qualification import production as _production
-            memory['lower_bound_bytes'] = _production._peak_memory_bytes()
-            memory['lower_bound_method'] = ('lower_bound_windows_working_set' if os.name == 'nt'
-                                            else 'lower_bound_ru_maxrss')
-        except BaseException as exc:
-            memory['lower_bound_error'] = '%s: %s' % (type(exc).__name__, exc)
-        if sys.platform == 'linux':
-            memory.update(_read_own_cgroup(args.unit))
-        row['memory'] = memory
-        row['cpu']['process_total'] = _cpu_clock()
-        row['recorded_utc'] = _now()
-        row['exit_status'] = status
-        # Step 9: one JSON row.
-        _write_json(out, row, exclusive=True)
+            done = subprocess.run(command, cwd=str(ROOT), env=env, capture_output=True, text=True, check=False)
+            receipt['returncode'] = done.returncode
+            tail = (done.stdout or '') + (done.stderr or '')
+        except OSError as exc:
+            tail = '%s: %s' % (type(exc).__name__, exc)
+        receipt['wall_s'] = time.perf_counter() - wall0
+        if kids0 is not None:
+            kids1 = resource.getrusage(resource.RUSAGE_CHILDREN)
+            receipt['cpu_s_children'] = (kids1.ru_utime + kids1.ru_stime) - (kids0.ru_utime + kids0.ru_stime)
+            receipt['child_peak_rss_bytes'] = kids1.ru_maxrss * 1024   # Linux ru_maxrss is KiB
+        manifest, _error = _staged_n2_manifest(cache)
+        if manifest is not None:
+            receipt['manifest_sha256'] = _sha256_file(cache / 'manifest.json')
+            receipt['n2_capture_sha256'] = manifest.get('n2_capture_sha256')
+        receipt['ok'] = receipt['returncode'] == 0 and manifest is not None
+        if not receipt['ok']:
+            receipt['output_tail'] = tail[-2000:]
+    receipt['recorded_utc'] = _now()
+    try:
+        _write_json(directory / N2_RECEIPT_FILE, receipt, exclusive=True)
+    except OSError as exc:
+        print('SR-5 staging receipt not written: %s: %s' % (type(exc).__name__, exc), file=sys.stderr)
+    return receipt
+
+
+def _verify_mount(mount, manifest):
+    found = {path.relative_to(mount).as_posix(): _sha256_file(path)
+             for path in sorted(Path(mount).rglob('*')) if path.is_file()}
+    if found != manifest['files']:
+        raise RuntimeError('repeat-local mount differs from the staged manifest')
+
+
+def _repeat_mode_1c(args, out, row):
+    """r2 §12.4 "Repeat body": Stage 1b's steps 3-6 replaced by the SR-3 callable."""
+    row['wall']['boundaries'] = dict.fromkeys(('admission', 'adapter'))
+    row.update(n2_capture_sha256=None, adapter_callable=None, preconditions=None, n2_staging=None,
+               artifacts=None, n2_full_baseline=None, forcing=None)
+    status = EXIT_REPEAT_ERROR
+    tmp = None
+    undo = []
+    staged_fixture_files = ()
+    try:
+        _setup_paths()
+        # Worker start: interpreter plus the worker closure (the SR-3 body and the adapter),
+        # before any fixture import (r2 §6.1 `start`).
+        from c1_rail.qualification import production_source
+        from c1_rail.qualification.execution import compute, worker
+        from c1_rail.qualification.execution.plan import derive_campaign_plan_from_context
+        entry_cpu, entry_wall = _clocks()
+        row['cpu']['start'] = entry_cpu
+
+        # r2 §7.7: SR-1 (the override type), SR-3 (the callable), SR-4 (the writer) and SR-6
+        # (the guard) must exist; otherwise Stage 1c is BLOCKED (I-8 at summarize).
+        required = ((compute, 'PartAMeasurementOverride'), (worker, 'run_part_a_body'), (worker, 'run_worker'),
+                    (worker, 'write_part_a_artifact'), (worker, 'PhaseBudgetGuard'),
+                    (worker, 'PART_A_STAGED_ROLES'))
+        row['preconditions'] = {'missing': ['%s.%s' % (mod.__name__, name) for mod, name in required
+                                            if not hasattr(mod, name)]}
+        if row['preconditions']['missing']:
+            raise RuntimeError('SR preconditions unmet: ' + ', '.join(row['preconditions']['missing']))
+
+        # P-7: the entry point is the object run_worker's own code loads under that global name.
+        body = worker.run_part_a_body
+        route = worker.run_worker
+        identity = {
+            'qualified_name': '%s.%s' % (body.__module__, body.__qualname__), 'id': id(body),
+            'route': '%s.%s' % (route.__module__, route.__qualname__),
+            'route_global_id': id(route.__globals__.get('run_part_a_body')),
+            'route_globals_are_module': route.__globals__ is vars(worker),
+            'route_loads_name': 'run_part_a_body' in route.__code__.co_names,
+            'module_file': Path(worker.__file__).resolve().relative_to(ROOT).as_posix(),
+            'module_sha256': _sha256_file(worker.__file__),
+            'adapter_module_file': Path(compute.__file__).resolve().relative_to(ROOT).as_posix(),
+            'adapter_module_sha256': _sha256_file(compute.__file__),
+            'identical_after_call': None,
+        }
+        identity['identical'] = (body is route.__globals__.get('run_part_a_body')
+                                 and identity['route_globals_are_module'] and identity['route_loads_name'])
+        row['adapter_callable'] = identity
+        if not identity['identical']:
+            raise RuntimeError('P-7: the harness entry point is not the object run_worker calls')
+
+        # ---- setup (excluded): SR-5 mount copied into a repeat-local input directory ----
+        from test_contract import NOW   # the fixture's pinned clock, as the worker tests' utc_now
+        cache = Path(args.n2_cache) if args.n2_cache else _default_n2_cache(Path(out).resolve().parent)
+        # The repeat never stages (the staging workload is not the PART_A payload): the mount
+        # must already exist, built before the first repeat outside every measured unit.
+        row['n2_staging'] = {'cache': str(cache), 'generated_in_this_repeat': None, 'refused': None}
+        manifest, refusal = _staged_n2_manifest(cache)
+        if refusal is not None:
+            row['n2_staging']['refused'] = refusal
+            raise RuntimeError('refused: ' + refusal)
+        staged_fixture_files = manifest.get('loaded_fixture_files') or ()
+        row['n2_staging'].update({'manifest_sha256': _sha256_file(cache / 'manifest.json'),
+                                  'n2_capture_sha256': manifest.get('n2_capture_sha256'),
+                                  'contract_sha256': manifest.get('contract_sha256'),
+                                  'generator': manifest.get('generator')})
+        tmp = tempfile.mkdtemp(prefix='s5-part-a-1c-')
+        mount, output = Path(tmp) / 'input', Path(tmp) / 'output'
+        shutil.copytree(cache / 'mount', mount)
+        output.mkdir()
+        _verify_mount(mount, manifest)
+        # Bundle verification and plan derivation exactly as run_worker performs them before
+        # the SR-3 body (outside the boundary; the disclosed residual, r2 §7.6).
+        release = worker.read_regular(mount, 'installation/release.json', limit=worker.BOOTSTRAP_BYTE_LIMIT)
+        authority = worker.parse_canonical_json(release, label='installed release')['authority_class']
+        keys = worker.load_keys(worker.read_regular(mount, 'installation/keys.json',
+                                                    limit=worker.BOOTSTRAP_BYTE_LIMIT), authority_class=authority)
+        context = worker.verify_bundle(mount / 'bundle', release, keys, NOW)
+        if context.domain.authority_class != 'TEST_ONLY' or not context.domain.permits_synthetic:
+            raise RuntimeError('Stage 1c requires the TEST_ONLY synthetic release')
+        plan = worker.read_regular(mount, 'plan.json', limit=context.profile.input_byte_limit)
+        receipt = worker.read_regular(mount, 'predecessor-receipt.json', limit=worker.BOOTSTRAP_BYTE_LIMIT)
+        if plan != worker.derive_checkpoint_plan(derive_campaign_plan_from_context(context), 'PART_A', receipt):
+            raise RuntimeError('independently derived PART_A plan differs')
+        # Source admission, charged as in Stage 1b (r2 §7.6): the worker's one admit_source call.
+        c0, w0 = _clocks()
+        admitted = worker.admit_source(context.contract, artifact_root=context.bundle_dir, policy=context.policy)
+        c1, w1 = _clocks()
+        row['cpu']['admission'], row['wall']['boundaries']['admission'] = c1 - c0, w1 - w0
+        override = (compute.PartAMeasurementOverride(within_pp=FORCED_WITHIN_PP) if args.arm == 'forced'
+                    else None)
+        budget = worker.PhaseBudgetGuard(dict(MEASUREMENT_LIMITS))   # SR-6
+        budget_seconds = budget.remaining_wall_seconds()
+        row['forcing'] = {'measurement_override': None if override is None else {
+            'type': '%s.%s' % (type(override).__module__, type(override).__qualname__),
+            'within_pp': override.within_pp, 'label': override.label},
+            'budget_guard': 'worker.PhaseBudgetGuard', 'limits': dict(MEASUREMENT_LIMITS),
+            'budget_seconds_at_open': budget_seconds}
+
+        counts = {'replay': 0, 'proof': 0, 'verify_for': 0}
+        fsyncs = [0]
+        if row['instrumented']:   # excluded from statistics (r2 §6.1), as in Stage 1b
+            undo.append(_count_wrappers(production_source.ProductionSource, counts))
+            real_fsync = os.fsync
+
+            def counted_fsync(descriptor):
+                fsyncs[0] += 1
+                return real_fsync(descriptor)
+            os.fsync = counted_fsync
+            undo.append(lambda: setattr(os, 'fsync', real_fsync))
+
+        open_cpu, open_wall = _clocks()
+        row['cpu']['setup_excluded'] = (open_cpu - entry_cpu) - row['cpu']['admission']
+        row['wall']['setup_excluded'] = (open_wall - entry_wall) - row['wall']['boundaries']['admission']
+        # ---- boundary open: the staged N2 capture is read (in the worker's role order) ----
+        staged = {name: worker.read_regular(mount, 'predecessor-' + name + '.json', limit=worker.BOOTSTRAP_BYTE_LIMIT)
+                  for name in worker.PART_A_STAGED_ROLES}
+        run = body(context, plan, staged, admitted, budget, output, measurement_override=override)
+        close_cpu, close_wall = _clocks()
+        # ---- boundary closed: the SR-3 body returned after the second artifact's fsync ----
+        row['cpu']['adapter'], row['wall']['boundaries']['adapter'] = close_cpu - open_cpu, close_wall - open_wall
+        cpu = row['cpu']
+        cpu['workload'] = cpu['start'] + cpu['admission'] + cpu['adapter']
+        while undo:
+            undo.pop()()
+        if row['instrumented']:
+            row['counts'] = dict(counts)
+            row['fsync_count'] = fsyncs[0]
+        identity['identical_after_call'] = (worker.run_part_a_body is body
+                                            and route.__globals__.get('run_part_a_body') is body)
+
+        compute_run = run.compute
+        result = compute_run.result
+        initial = (output / worker.PART_A_INITIAL_ARTIFACT).read_bytes()
+        final = (output / worker.PART_A_FINAL_ARTIFACT).read_bytes()
+        n2_sha = hashlib.sha256(staged['payload']).hexdigest()
+        row.update(panels=compute_run.final_panels, expanded=bool(compute_run.expansion_required),
+                   initial_p5=result.initial_p5, final_p5=result.final_p5, passed=bool(result.passed),
+                   failure_reason=result.failure_reason, probe_seconds=result.probe_seconds,
+                   predicted_seconds=result.predicted_seconds, elapsed_seconds=result.elapsed_seconds,
+                   initial_prefix_sha256=hashlib.sha256(initial).hexdigest(),
+                   final_sha256=hashlib.sha256(final).hexdigest(), n2_capture_sha256=n2_sha,
+                   n2_full_baseline=run.n2_full_baseline,
+                   artifacts={'initial': worker.PART_A_INITIAL_ARTIFACT, 'final': worker.PART_A_FINAL_ARTIFACT,
+                              'initial_bytes': len(initial), 'final_bytes': len(final)})
+        forced = args.arm == 'forced'
+        row['assertions'] = {
+            'expected_panels': EXPECTED_PANELS[args.arm], 'expected_expanded': EXPECTED_EXPANDED[args.arm],
+            'ok': (row['panels'] == EXPECTED_PANELS[args.arm] and row['expanded'] is EXPECTED_EXPANDED[args.arm]
+                   and len(result.panels) == compute_run.final_panels),
+            # S5-D1 (packet §3): the final artifact begins with the initial-prefix artifact.
+            'prefix_ok': final[:len(initial)] == initial,
+            # The files on disk are the bytes the adapter returned (SR-4 writer, no other copy).
+            'artifacts_match_compute': (initial == compute_run.initial_panel_bytes
+                                        and final == compute_run.final_panel_bytes),
+            'forcing_ok': compute_run.measurement_forced is forced,
+            'n2_capture_matches_staging': n2_sha == manifest.get('n2_capture_sha256'),
+            'p7_identity': identity['identical'] is True and identity['identical_after_call'] is True,
+        }
+        request = compute.part_a_request(context.contract, admitted.source.path_start_date, budget_seconds)
+        if override is not None:
+            request = dataclasses.replace(request, within_pp=override.within_pp)
+        workload = _workload(context.contract, admitted.source, request, args.arm)
+        workload.update(recipe=RECIPE_1C, full_pass_rate_input=compute_run.full_pass_rate,
+                        n2_capture_sha256=n2_sha,
+                        request_note='reconstructed with compute.part_a_request at the guard budget the adapter '
+                                     'read; the adapter builds its own request inside the boundary')
+        row['workload'] = workload
+        status = EXIT_VALID if all(row['assertions'][key] is True for key in (
+            'ok', 'prefix_ok', 'artifacts_match_compute', 'forcing_ok', 'n2_capture_matches_staging',
+            'p7_identity')) else EXIT_ASSERTION
+    except BaseException as exc:  # a failed repeat is retained, never dropped (r2 §12)
+        row['error'] = '%s: %s' % (type(exc).__name__, exc)
+        status = EXIT_REPEAT_ERROR
+        if isinstance(exc, KeyboardInterrupt):
+            status = 130
+    finally:
+        while undo:
+            undo.pop()()
+        _finish_row(row, args, status, out, extra_fixture_files=staged_fixture_files)
         if tmp is not None:
-            shutil.rmtree(tmp, ignore_errors=True)
+            shutil.rmtree(tmp, onerror=_force_remove)
     return status
 
 
@@ -605,8 +1006,11 @@ def launcher(args):
     if os.name != 'nt':
         print('refused: --launcher is Windows only (r2 §6.3); Linux repeats run in systemd units', file=sys.stderr)
         return 2
-    if args.stage != '1a':
+    if args.stage != '1a' and args.stage != '1c':
         print('refused: --launcher runs Stage 1a only (r2 §12.2)', file=sys.stderr)
+        return 2
+    if args.dry_run and args.stage != '1c':
+        print('refused: --launcher --dry-run is the Windows validation of the Stage 1c path only', file=sys.stderr)
         return 2
     out = Path(args.out)
     if out.exists():
@@ -620,33 +1024,55 @@ def launcher(args):
     env.update({name: '1' for name in THREAD_ENV})
     entries = []
     interrupted = None
+    staging = None
+    stage_1c = args.stage == '1c'
     # Every repeat leaves an entry and the bundle is always written: a failure to create,
     # assign or run a repeat, or an unreadable row, is a retained failed entry (I-6).
     with tempfile.TemporaryDirectory(prefix='s5-part-a-rows-', ignore_cleanup_errors=True) as rows:
         try:
+            extra = ()
+            if stage_1c:
+                # SR-5 staged once, outside every job object (setup); the repeats copy it.
+                cache = Path(rows) / 'n2-staged'
+                wall0 = time.perf_counter()
+                done = subprocess.run([sys.executable, str(HARNESS), '--stage-n2', str(cache)], cwd=str(ROOT),
+                                      env=env, check=False)
+                manifest, _ = _read_json_dict(cache / 'manifest.json')
+                staging = {'returncode': done.returncode, 'wall_s': time.perf_counter() - wall0,
+                           'n2_capture_sha256': (manifest or {}).get('n2_capture_sha256'),
+                           'generator': (manifest or {}).get('generator')}
+                extra = ('--n2-cache', str(cache)) + (('--dry-run',) if args.dry_run else ())
+            repeats = [1] if args.dry_run else [*range(1, args.repeats + 1), 0]   # 0 = instrumented, last
             for arm in arms:
-                for repeat in [*range(1, args.repeats + 1), 0]:   # 0 = instrumented, last, excluded
-                    entries.append(_launch_repeat(arm, repeat, Path(rows), env, args.timeout_s))
+                for repeat in repeats:
+                    entries.append(_launch_repeat(arm, repeat, Path(rows), env, args.timeout_s,
+                                                  stage=args.stage, extra=extra))
         except BaseException as exc:   # an interrupted launcher still writes what it has (I-6 for the rest)
             interrupted = '%s: %s' % (type(exc).__name__, exc)
-    shape_ok = (sorted(arms) == sorted(ARMS) and args.repeats == DEFAULT_TIMED_REPEATS
+    shape_ok = (sorted(arms) == sorted(ARMS) and (args.dry_run or args.repeats == DEFAULT_TIMED_REPEATS)
                 and args.timeout_s == REPEAT_TIMEOUT_S)
-    if not shape_ok:
+    if stage_1c:
+        print('NOTE: Stage 1c on Windows validates the 1c path only; it is never a measurement or an '
+              'acceptance record (r2 §12.4 runs Stage 1c on Linux)', flush=True)
+    elif not shape_ok:
         print('NOTE: arms %s x %d timed repeats is not the fixed Stage 1a shape (both arms x %d, r2 §12.2); '
               '--summarize marks this bundle H-SHAPE (debug only, never an acceptance record)' % (
                   arms, args.repeats, DEFAULT_TIMED_REPEATS), flush=True)
     bundle = {'schema': BUNDLE_SCHEMA, 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
-              'stage': '1a', 'mode': 'measure', 'platform_accounting': 'windows_process_time_job_object',
+              'stage': args.stage, 'mode': 'dry-run' if args.dry_run else 'measure',
+              'platform_accounting': 'windows_process_time_job_object',
               'arm_order': arms, 'timed_repeats': args.repeats, 'timeout_s': args.timeout_s,
               'fixed_shape': shape_ok, 'interrupted': interrupted, 'recorded_utc': _now(),
               'harness_sha256': _sha256_file(HARNESS),
               'executed_identity': _executed_identity([entry['row'] for entry in entries]), 'entries': entries}
+    if stage_1c:
+        bundle['n2_staging'] = staging
     _write_json(out, bundle, exclusive=True)
     print('wrote', out)
     return 130 if interrupted else 0
 
 
-def _launch_repeat(arm, repeat, rows, env, timeout_s):
+def _launch_repeat(arm, repeat, rows, env, timeout_s, stage='1a', extra=()):
     """One launcher repeat. Never raises: a failure is recorded in the entry and the
     summarizer reads it as a failed repeat (I-6), since it is not an explicit success."""
     unit = {'pid': None, 'exit_code': None, 'timed_out': None, 'outer_wall_s': None, 'job_cpu_s': None}
@@ -657,8 +1083,8 @@ def _launch_repeat(arm, repeat, rows, env, timeout_s):
         except OSError as exc:
             unit['purge_error'] = '%s: %s' % (type(exc).__name__, exc)
     row_path = rows / ('%s-%d.json' % (arm, repeat))
-    command = [sys.executable, str(HARNESS), '--repeat-mode', '--stage', '1a', '--arm', arm,
-               '--repeat', str(repeat), '--out', str(row_path)]
+    command = [sys.executable, str(HARNESS), '--repeat-mode', '--stage', stage, '--arm', arm,
+               '--repeat', str(repeat), *extra, '--out', str(row_path)]
     try:
         unit.update(_run_in_job(command, env=env, timeout_s=timeout_s))
     except Exception as exc:
@@ -716,18 +1142,56 @@ def probe_verdict(directory):
     probe['reasons'] = reasons
     _write_json(directory / 'probe.json', probe, exclusive=False)
     print('probe ok' if probe['ok'] else 'probe FAILED (I-1): ' + '; '.join(reasons))
+    # Stage 1c (the workflow writes git-parent.txt only for stage=1c): stage SR-5 here, before
+    # the loop and outside every measured unit. A failed staging keeps the probe's exit; every
+    # repeat then refuses (I-6) and the summarizer names the receipt.
+    if probe['ok'] and (directory / 'git-parent.txt').is_file():
+        receipt = stage_n2_before_loop(directory)
+        print('SR-5 staged before the measurement loop: %s' % receipt['cache'] if receipt['ok'] else
+              'SR-5 staging FAILED before the measurement loop (repeats will refuse, I-6): %s' % (
+                  receipt['refused'] or 'exit %s' % receipt['returncode']))
     return EXIT_VALID if probe['ok'] else EXIT_RERUN
+
+
+def _stage_1c_order_problems():
+    """--check-stage 1c self-check: the order the SR-5 fix relies on. Stdlib only."""
+    problems = []
+    staging_names = {'subprocess', 'stage_n2', 'stage_n2_before_loop'}
+    for function in (_repeat_mode_1c, _staged_n2_manifest):
+        found = staging_names & set(function.__code__.co_names)
+        if found:
+            problems.append('%s reaches staging (%s): a repeat must refuse, never stage' % (
+                function.__name__, ', '.join(sorted(found))))
+    if 'stage_n2_before_loop' not in probe_verdict.__code__.co_names:
+        problems.append('probe_verdict no longer stages SR-5 before the loop')
+    text = _read_text_or_none(WORKFLOW) if WORKFLOW.is_file() else None
+    if text is None:
+        return problems + ['workflow %s unreadable' % WORKFLOW]
+    parent = text.find('git rev-parse HEAD^ > "$OUT/git-parent.txt"')
+    probe_unit = text.find('unit=fp-s5pa-probe')
+    probe_stop = text.find('sudo systemctl stop "$unit"', max(probe_unit, 0))
+    verdict = text.find('--probe-verdict "$OUT"')
+    loop = text.find('--repeat-mode')
+    if not 0 <= parent < probe_unit < probe_stop < verdict < loop:
+        problems.append('workflow order is not: git-parent.txt, probe unit, probe unit stopped, '
+                        '--probe-verdict, --repeat-mode (positions %s)' % (
+                            [parent, probe_unit, probe_stop, verdict, loop],))
+    verdict_line = text[text.rfind('\n', 0, max(verdict, 0)) + 1:max(verdict, 0)]
+    if verdict < 0 or 'systemd-run' in verdict_line or not verdict_line.strip().startswith('sudo "$host_root/env/bin/python"'):
+        problems.append('the --probe-verdict call is not a direct host-venv call outside any unit')
+    return problems
 
 
 def check_stage(stage):
     if stage in DISPATCH_STAGES:
+        if stage == '1c':
+            problems = _stage_1c_order_problems()
+            if problems:
+                print('stage 1c: SR-5 staging order not shown (I-8): ' + '; '.join(problems))
+                return 2
         print('stage %s: implemented for Linux dispatch' % stage)
         return 0
-    if stage == '1c':
-        print('stage 1c: BLOCKED (I-8). The --stage 1c repeat path is added at C3 on a measurement branch '
-              'based on the S5 head, after the coordinator records its read of that diff (r2 §12.4)')
-    else:
-        print('stage %s: not a Linux dispatch stage (Stage 1a runs on the Windows host, r2 §12.2)' % stage)
+    print('stage %s: not a Linux dispatch stage (Stage 1a runs on the Windows host, r2 §12.2)' % stage)
     return 2
 
 
@@ -847,7 +1311,7 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
     # manager's (or job object's) view, and a success result, all present and clean.
     completed = (bool(row) and exit_code == 0 and row.get('exit_status') == 0 and result == 'success'
                  and not timed_out and not (oom or 0) > 0)
-    return {
+    merged = {
         'arm': arm, 'repeat': repeat, 'unit': row.get('unit'),
         'cold': bool(row.get('cold', repeat == 1)), 'instrumented': bool(row.get('instrumented', repeat == 0)),
         'dry_run': bool(row.get('dry_run', False)),
@@ -879,6 +1343,11 @@ def _merge_repeat(arm, repeat, row, unit_values, launcher_unit, stage, row_error
         'row_present': bool(row), 'error': row.get('error') if row else (row_error or 'repeat row missing'),
         'workload': row.get('workload'), 'environment': row.get('environment'),
     }
+    if stage == '1c':   # r2 §12.4 "Files created": n2_capture_sha256 and the two artifact digests per repeat
+        merged.update({key: row.get(key) for key in (
+            'n2_capture_sha256', 'adapter_callable', 'preconditions', 'n2_staging', 'artifacts',
+            'n2_full_baseline', 'forcing')})
+    return merged
 
 
 def _read_row(path):
@@ -927,7 +1396,8 @@ def _expected_keys(arm_order, mode, timed):
 # INCOMPLETE_EVIDENCE gate (exit 3), not as a harness field defect (H-FIELDS, exit 4).
 CEILING_INPUT_FIELDS = frozenset({'cpu.start', 'cpu.admission', 'cpu.setup_excluded', 'cpu.verify', 'cpu.part_a',
                                   'cpu.serialize', 'cpu.workload', 'cpu.process_total', 'wall.outer',
-                                  'wall.setup_excluded', 'wall.workload', 'unit_cpu_s', 'predicted_seconds'})
+                                  'wall.setup_excluded', 'wall.workload', 'unit_cpu_s', 'predicted_seconds',
+                                  'cpu.adapter'})   # cpu.adapter: Stage 1c only (r2 §6.1 `adapter`)
 
 
 # In a Stage 1b dry run these are the runner's accounting values (systemd CPUUsageNSec and
@@ -938,18 +1408,24 @@ RUNNER_FIELD_SOURCE = {'unit_cpu_s': 'CPUUsageNSec',
                        'wall.workload': 'ExecMainStartTimestampMonotonic/ExecMainExitTimestampMonotonic'}
 
 
-def _required_fields_missing(rep, stage, mode='measure'):
-    missing = _all_required_fields_missing(rep)
-    if stage == '1b' and mode == 'measure':
+def _required_fields_missing(rep, stage, mode='measure', linux=None):
+    missing = _all_required_fields_missing(rep, stage)
+    if (stage == '1b' if linux is None else linux) and mode == 'measure':
         missing = [name for name in missing if name not in CEILING_INPUT_FIELDS]
     return missing
 
 
-def _all_required_fields_missing(rep):
+CPU_FIELDS_1C = ('start', 'admission', 'setup_excluded', 'adapter', 'workload', 'process_total')   # r2 §6.1
+
+
+def _all_required_fields_missing(rep, stage='1b'):
     missing = []
-    for key in ('start', 'admission', 'setup_excluded', 'verify', 'part_a', 'serialize', 'workload', 'process_total'):
+    for key in (CPU_FIELDS_1C if stage == '1c' else
+                ('start', 'admission', 'setup_excluded', 'verify', 'part_a', 'serialize', 'workload', 'process_total')):
         if rep['cpu'].get(key) is None:
             missing.append('cpu.' + key)
+    if stage == '1c' and rep.get('n2_capture_sha256') is None:
+        missing.append('n2_capture_sha256')
     for key in ('outer', 'setup_excluded', 'workload'):
         if rep['wall'].get(key) is None:
             missing.append('wall.' + key)
@@ -1030,12 +1506,14 @@ def _ceiling_inputs(summaries, estimates):
     return reasons
 
 
-def _screens(estimates):
-    """Stop-class screens only (r2 §10.3 Σ limb; §9 PA-3a). Not the §13 application."""
+def _screens(estimates, stage='1b'):
+    """Stop-class screens only (r2 §10.3 Σ limb; §9 PA-1 as applied after Stage 1c, PA-3a). Not the §13 application."""
     c_hat, w_hat, p_hat, m_hat = (estimates.get(k) for k in ('C_hat_s', 'W_hat_s', 'P_hat_s', 'M_hat_bytes'))
     screen = {'basis': 'r2 §10.2 Σ-only row: cap 10,000 s CPU / 10,000 s wall with the P4 tuple extended to /v7; '
                        'N2 360 s / 900 s (CP-1a ruling (3)); PA-1 m_c 2.0, 1.5 × P̂, O 20 s, 120 s floor; PA-2 '
-                       'm_w 3.0, L 30 s, 300 s floor; D̂ uncovered (provisional)',
+                       'm_w 3.0, L 30 s, 300 s floor; ' + (
+                           'Ĉ is Ĉ₁c (D̂ covered through the adapter, r2 §9 PA-1)' if stage == '1c'
+                           else 'D̂ uncovered (provisional)'),
               'cpu_limit_s': SIGMA_CPU_LIMIT_S, 'wall_limit_s': SIGMA_WALL_LIMIT_S,
               'cpu_value_s': None, 'wall_value_s': None, 'sigma_infeasible': None}
     if c_hat is not None and p_hat is not None:
@@ -1097,9 +1575,105 @@ def _rerun_eligible(stage, mode, exit_code, attempts):
     """r2 §12.9 (3): for a Stage 1b measure record, true only for an exit-3 failure
     when every failing job is on run attempt 1. It shares the single `--failed`
     re-run of r2 §12.7 and grants no additional attempt. None outside 1b measure."""
-    if stage != '1b' or mode != 'measure':
+    if stage not in ('1b', '1c') or mode != 'measure':   # r2 §12.7: the same caps per stage
         return None
     return exit_code == EXIT_RERUN and bool(attempts) and all(_int_or_none(a) == 1 for a in attempts)
+
+
+PROVISIONAL_1C = ('no: Stage 1c measures Ĉ₁c through the adapter, covering D̂ (r2 §9 PA-1), except the '
+                  'worker-side residual outside the SR-3 callable (r2 §7.6, §16 C4)')
+ASSERTIONS_1C = {'prefix_ok': ('I-4', 'final artifact does not begin with the initial-prefix artifact (S5-D1)'),
+                 'artifacts_match_compute': ('I-4', 'artifact files differ from the bytes the adapter returned'),
+                 'n2_capture_matches_staging': ('I-4', 'staged N2 capture differs from the SR-5 manifest'),
+                 'forcing_ok': ('I-5', 'measurement_forced does not match the arm (seam defect)')}
+
+
+def _stage_1c_row_reasons(rep, key, reached, reasons):
+    """Stage 1c row checks (r2 §12.4 assertions; §7.7). Appends reasons; returns True when a
+    repeat that reached its assertions failed one of the 1c ones (so exit 5 is not I-6)."""
+    missing = (rep.get('preconditions') or {}).get('missing')
+    identity = rep.get('adapter_callable') or {}
+    asserts = rep.get('assertions') or {}
+    if missing:
+        reasons.append(('I-8', '%s: SR preconditions unmet: %s (r2 §7.7)' % (key, ', '.join(missing))))
+    if identity and identity.get('identical') is not True:
+        reasons.append(('I-8', '%s: P-7 identity failed before the call: %s is not the object run_worker '
+                               'loads' % (key, identity.get('qualified_name'))))
+    staging = rep.get('n2_staging') or {}
+    if staging.get('refused'):
+        reasons.append(('I-6', '%s: refused: %s' % (key, staging['refused'])))
+    if staging.get('generated_in_this_repeat') is not None:
+        reasons.append(('H-SHAPE', '%s: SR-5 staging ran inside this measured repeat; its memory is in the '
+                                   "unit's memory.peak (operator ruling 2026-09-29)" % key))
+    if not reached:
+        return False
+    failed = False
+    if asserts.get('p7_identity') is not True:
+        failed = True
+        if identity.get('identical') is True:
+            reasons.append(('I-8', '%s: P-7 identity not shown after the call (%s)' % (key, identity)))
+    for name, (code, text) in ASSERTIONS_1C.items():
+        if asserts.get(name) is not True:
+            failed = True
+            reasons.append((code, '%s: %s' % (key, text)))
+    return failed
+
+
+def _p6_prefix_ok(forced_reps, prescribed_reps):
+    forced = {r['initial_prefix_sha256'] for r in forced_reps if r.get('initial_prefix_sha256')}
+    prescribed = {r['initial_prefix_sha256'] for r in prescribed_reps if r.get('initial_prefix_sha256')}
+    if not forced or not prescribed:
+        return None
+    return forced == prescribed and len(prescribed) == 1
+
+
+def _n2_receipt_reasons(path, repeats, loop_ran, reasons):
+    """Linux Stage 1c: the SR-5 staging receipt --probe-verdict wrote before the loop. It must
+    show staging succeeded outside every fp-s5pa unit, and every completed repeat must have
+    copied that mount. Returns the receipt (or None)."""
+    receipt, error = _read_json_dict(Path(path) / N2_RECEIPT_FILE)
+    if receipt is not None and receipt.get('schema') != N2_RECEIPT_SCHEMA:
+        receipt, error = None, 'schema %r' % receipt.get('schema')
+    if not loop_ran:
+        return receipt
+    if receipt is None:
+        reasons.append(('I-6', 'SR-5 pre-loop staging receipt %s absent or unreadable (%s): staging outside '
+                               'the measured units is not shown' % (N2_RECEIPT_FILE, error)))
+        return None
+    if receipt.get('ok') is not True:
+        reasons.append(('I-6', 'SR-5 staging before the measurement loop failed (exit %s, refused %s): %s' % (
+            receipt.get('returncode'), receipt.get('refused'), (receipt.get('output_tail') or '')[-300:])))
+    if receipt.get('stager_in_measured_unit') is not False or receipt.get('placement') != N2_STAGING_PLACEMENT:
+        reasons.append(('H-SHAPE', 'SR-5 staging placement %r in cgroup %r is not shown outside every %s* unit' % (
+            receipt.get('placement'), receipt.get('stager_cgroup'), MEASURED_UNIT_PREFIX)))
+    want = receipt.get('manifest_sha256')
+    for rep in repeats:
+        got = (rep.get('n2_staging') or {}).get('manifest_sha256')
+        if rep['completed'] and (want is None or got != want):
+            reasons.append(('I-4', '%s-%d: staged mount manifest %s is not the pre-loop receipt\'s %s' % (
+                rep['arm'], rep['repeat'], got, want)))
+    return receipt
+
+
+def _git_parent_file(path):
+    """git-parent.txt beside the job's rows (the workflow writes it for stage=1c), else None."""
+    path = Path(path)
+    if not path.is_dir() or not (path / 'git-parent.txt').is_file():
+        return None
+    text = _read_text_or_none(path / 'git-parent.txt')
+    return (text.strip() or None) if text is not None else None
+
+
+def _forcing_1c(repeats, workload):
+    identities = [rep['adapter_callable'] for rep in repeats if rep.get('adapter_callable')]
+    first = dict(identities[0]) if identities else None
+    return {'seam': FORCING_SEAM_1C, 'within_pp': FORCED_WITHIN_PP, 'label': FORCING_LABEL,
+            'prescribed_within_pp': (workload.get('prescribed') or {}).get('within_pp'),
+            'measurement_override': 'compute.PartAMeasurementOverride(within_pp=1.0) for forced; None for prescribed',
+            'budget_guard': {'class': 'worker.PhaseBudgetGuard', 'limits': dict(MEASUREMENT_LIMITS)},
+            'adapter_callable_identity': first,
+            'p7_identity_all_repeats': bool(identities) and all(
+                i.get('identical') is True and i.get('identical_after_call') is True for i in identities)}
 
 
 def _read_bundle(path):
@@ -1145,7 +1719,10 @@ def _job_record(path, args, current=None):
         '1a' if launcher_bundle else '1b')
     mode = args.mode or ('dry-run' if rows and all((r or {}).get('dry_run') for r in rows.values())
                          else 'measure')
-    probe_failed_first = stage == '1b' and not (rows or units) and not (probe or {}).get('ok')
+    # The Linux dispatch checks apply to Stage 1b and to Stage 1c from a Linux job directory.
+    # A Windows Stage 1c bundle validates the 1c path only and is judged like Stage 1a.
+    linux = stage == '1b' or (stage == '1c' and launcher_bundle is None)
+    probe_failed_first = linux and not (rows or units) and not (probe or {}).get('ok')
     keys = sorted(set(rows) | set(units) | set(launch_units)
                   | (set() if probe_failed_first else set(_expected_keys(arm_order, mode, timed))),
                   key=lambda k: (arm_order.index(k[0]) if k[0] in arm_order else 9, k[1] == 0, k[1]))
@@ -1190,21 +1767,21 @@ def _job_record(path, args, current=None):
         reasons.append(('H-SHAPE', 'bundle arm order %s; r2 §12.2 runs --arms forced,prescribed' % list(arm_order)))
     if duplicate_entries:
         reasons.append(('H-SHAPE', 'the bundle repeats an (arm, repeat) entry'))
-    if stage == '1b' and mode == 'measure' and args.job in ('a', 'b'):
+    if linux and mode == 'measure' and args.job in ('a', 'b'):
         want_order = ['forced', 'prescribed'] if args.job == 'a' else ['prescribed', 'forced']
         if list(arm_order) != want_order:   # r2 §6.2: job a forced first, job b prescribed first
             reasons.append(('H-SHAPE', 'job %s arm order %s; r2 §6.2 alternation is %s' % (
                 args.job, list(arm_order), want_order)))
-    elif stage == '1b' and mode == 'measure':
+    elif linux and mode == 'measure':
         reasons.append(('H-SHAPE', 'job %r is not a or b (r2 §6.2 two-job alternation)' % args.job))
     if launcher_bundle is not None and not legacy and not bundle_error:
         # r2 §5.1, §12.2: a Windows summary describes the code the launcher ran.
         for mismatch in _identity_mismatches(launcher_bundle.get('executed_identity'), current):
             reasons.append(('I-7', 'Windows bundle: ' + mismatch))
-    if stage == '1c':
-        reasons.append(('I-8', 'Stage 1c: SR/P preconditions and the --stage 1c path are established at C3 '
-                               '(r2 §7.7, §12.4); this harness has no 1c path'))
-    if stage == '1b':
+    if stage == '1c' and not linux:
+        reasons.append(('note', 'Stage 1c on Windows validates the 1c path only; it is never a measurement, '
+                                'memory stays UNVERIFIED and the rule is not applicable (r2 §12.4)'))
+    if linux:
         attempt = _int_or_none(args.run_attempt)
         if attempt is None or not 1 <= attempt <= MAX_RUN_ATTEMPT:
             reasons.append(('I-7', 'run attempt %r is absent or outside 1..%d (r2 §12.7)' % (
@@ -1235,7 +1812,7 @@ def _job_record(path, args, current=None):
                                        'cold (r2 §6.2)' % (key, cold.get('detail') or 'no record of the purge')))
         # The repeat ran in its own unit, with the thread environment pinned to 1 (r2 §5.1, §12.3).
         if rep['completed'] and rep['row_present']:
-            if stage == '1b' and rep.get('row_unit') != 'fp-s5pa-%s-%s-%d' % (stage, rep['arm'], rep['repeat']):
+            if linux and rep.get('row_unit') != 'fp-s5pa-%s-%s-%d' % (stage, rep['arm'], rep['repeat']):
                 reasons.append(('H-SHAPE', '%s: ran in unit %r, not its own fp-s5pa unit' % (key, rep.get('row_unit'))))
             threads = rep.get('thread_env') or {}
             if sorted(threads) != sorted(THREAD_ENV) or any(threads[k] != '1' for k in threads):
@@ -1266,8 +1843,9 @@ def _job_record(path, args, current=None):
             reasons.append(('I-5', '%s: panels=%s expanded=%s assertions=%s, expected %s/%s' % (
                 key, rep['panels'], rep['expanded'], rep['assertions'], EXPECTED_PANELS.get(rep['arm']),
                 EXPECTED_EXPANDED.get(rep['arm']))))
+        failed_1c = stage == '1c' and _stage_1c_row_reasons(rep, key, reached, reasons)
         oom = (rep['memory'].get('oom_events') or 0) > 0 or rep['result'] == 'oom-kill'
-        assertion_exit = (failed_assertion and rep['exit_code'] == EXIT_ASSERTION
+        assertion_exit = ((failed_assertion or failed_1c) and rep['exit_code'] == EXIT_ASSERTION
                           and rep['row_exit_status'] == EXIT_ASSERTION and not rep['timed_out'] and not oom)
         if not rep['completed'] and not assertion_exit:
             reasons.append(('I-6', '%s: exit=%s row_exit=%s result=%s timed_out=%s oom=%s error=%s' % (
@@ -1288,6 +1866,14 @@ def _job_record(path, args, current=None):
             prefix_ok = forced_prefixes == prescribed_finals and len(prescribed_finals) == 1
             if not prefix_ok:
                 reasons.append(('I-4', 'forced initial prefix differs from the prescribed result'))
+        if stage == '1c':
+            # PA-4 / P-6: the forced initial-prefix bytes equal the prescribed initial-prefix bytes.
+            p6_ok = _p6_prefix_ok(by_arm['forced'], by_arm['prescribed'])
+            if p6_ok is False:
+                reasons.append(('I-4', 'forced initial-prefix artifact differs from the prescribed initial-prefix '
+                                       'artifact (PA-4, P-6)'))
+            if p6_ok is not None:
+                prefix_ok = p6_ok if prefix_ok is None else (prefix_ok and p6_ok)
     if any(code == 'I-4' for code, _ in reasons):
         reasons.append(('note', 'I-4 bears on D3 R7 only after diagnosis excludes harness, host and '
                                 'instrumentation causes (r2 §16 C8)'))
@@ -1295,13 +1881,25 @@ def _job_record(path, args, current=None):
     measured = _git('rev-parse', 'HEAD')
     status = _git('status', '--porcelain')
     tree_clean = None if status is None else status == ''
-    if stage == '1b':
+    if linux:
         # Fail closed: the dispatched head, the head at loop start and the head at
         # summarize must all be present and equal, on a clean tree (r2 §5.1, §12.7 I-7).
         if (not args.dispatched_head or start_head != args.dispatched_head
                 or measured != args.dispatched_head or tree_clean is not True):
             reasons.append(('I-7', 'dispatched %s, at start %s, at summarize %s, tree_clean %s' % (
                 args.dispatched_head, start_head, measured, tree_clean)))
+    dispatched_parent = measured_parent = n2_receipt = None
+    if stage == '1c':
+        # r2 §12.4: the workflow writes git-parent.txt (HEAD^, the S5 head the measurement branch
+        # is based on) for stage=1c. Recorded here; the coordinator compares it with the S5 head
+        # reported at C3. Absent, unreadable or different from HEAD^ at summarize: I-7.
+        dispatched_parent = _git_parent_file(path)
+        measured_parent = _git('rev-parse', 'HEAD^')
+        if linux and (dispatched_parent is None or dispatched_parent != measured_parent):
+            reasons.append(('I-7', 'dispatched parent (git-parent.txt) %s, HEAD^ at summarize %s' % (
+                dispatched_parent, measured_parent)))
+        if linux:
+            n2_receipt = _n2_receipt_reasons(path, repeats, loop_ran, reasons)
     # Memory completeness is judged on the repeats that ran to completion; a failed
     # repeat is already I-6 and is retained as it is.
     timed_reps = [r for r in repeats if not r['instrumented'] and not r['dry_run']
@@ -1310,25 +1908,25 @@ def _job_record(path, args, current=None):
     if mode == 'dry-run':
         dry = [r for r in repeats if r['dry_run'] and r['completed']]
         memory_complete = bool(dry) and all(r['memory']['complete'] for r in dry)
-    if stage == '1b' and not memory_complete and expected:
+    if linux and not memory_complete and expected:
         reasons.append(('I-3', 'a %s repeat lacks a complete aggregate memory reading (swap off plus in-unit '
                                'memory.peak or systemd MemoryPeak)' % ('dry-run' if mode == 'dry-run' else 'timed')))
     if mode == 'measure':
         for arm, summary in summaries.items():
             spread = summary['warm_spread']
             if spread is not None and spread > SPREAD_LIMIT:
-                if stage == '1b':
+                if linux:
                     reasons.append(('I-2', 'arm %s warm CPU spread %.3f > %.2f' % (arm, spread, SPREAD_LIMIT)))
                 else:
-                    reasons.append(('note', 'arm %s warm CPU spread %.3f > %.2f (Stage 1a: informational)' % (
-                        arm, spread, SPREAD_LIMIT)))
+                    reasons.append(('note', 'arm %s warm CPU spread %.3f > %.2f (Stage %s: informational)' % (
+                        arm, spread, SPREAD_LIMIT, stage)))
     for rep in repeats:
         if (rep['arm'], rep['repeat']) in expected:
-            missing = _required_fields_missing(rep, stage, mode)
+            missing = _required_fields_missing(rep, stage, mode, linux)
             if not (missing and rep['completed']):
                 continue
             runner = []
-            if stage == '1b' and mode == 'dry-run':
+            if linux and mode == 'dry-run':
                 runner = [m for m in missing if m in RUNNER_ACCOUNTING_FIELDS
                           or (m == 'wall.workload' and 'wall.outer' in missing)]
                 missing = [m for m in missing if m not in runner]
@@ -1355,6 +1953,9 @@ def _job_record(path, args, current=None):
                 want['replays'], want['proofs'], want['verify_for']):
             reasons.append(('H-COUNTS', '%s-%d call counts %s differ from the r2 §4 workload %s' % (
                 rep['arm'], rep['repeat'], got, want)))
+        if stage == '1c' and rep.get('fsync_count') != EXPECTED_FSYNC:   # SR-4: two artifacts, one fsync each
+            reasons.append(('H-COUNTS', '%s-%d fsync count %s, expected %d (SR-4)' % (
+                rep['arm'], rep['repeat'], rep.get('fsync_count'), EXPECTED_FSYNC)))
 
     forced = summaries.get('forced') or {}
     estimates = {
@@ -1363,22 +1964,22 @@ def _job_record(path, args, current=None):
         'W_hat_s': ((forced.get('wall_workload_s') or {}).get('all') or {}).get('max'),
         'M_hat_bytes': forced.get('memory_max_bytes_complete_only') if memory_complete else None,
         'P_hat_s': forced.get('predicted_seconds_max'),
-        'provisional': 'D̂ uncovered until Stage 1c (r2 §4, §9 PA-1)',
+        'provisional': PROVISIONAL_1C if stage == '1c' else 'D̂ uncovered until Stage 1c (r2 §4, §9 PA-1)',
     }
-    if stage == '1a' or mode == 'dry-run':
+    if stage == '1a' or mode == 'dry-run' or not linux:
         memory_feasibility = 'UNVERIFIED'
     elif (not memory_complete or estimates['M_hat_bytes'] is None
           or any(code == 'I-1' for code, _ in reasons)):   # r2 §12.7 I-1: memory UNVERIFIED
         memory_feasibility = 'UNVERIFIED'
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
-    screen, pa3 = _screens(estimates)
+    screen, pa3 = _screens(estimates, stage)
     ceiling_missing = _ceiling_inputs(summaries, estimates) if mode == 'measure' else []
-    if stage == '1b' and ceiling_missing:
+    if linux and ceiling_missing:
         reasons.append(('INCOMPLETE', 'ceiling inputs incomplete, rule not applicable (r2 §6.2, §9): '
                                       + '; '.join(ceiling_missing)))
     blocking = {code for code, _ in reasons} & BLOCKING_CODES
-    rule_applicable = (stage == '1b' and mode == 'measure' and not blocking and not ceiling_missing
+    rule_applicable = (linux and mode == 'measure' and not blocking and not ceiling_missing
                        and memory_feasibility in ('VERIFIED', 'FAILED'))
     stop, validity_ok, exit_code = _classify(reasons, rule_applicable=rule_applicable,
                                              memory_feasibility=memory_feasibility, screen=screen)
@@ -1388,7 +1989,8 @@ def _job_record(path, args, current=None):
     executable = env.get('executable')
     lock = ROOT / 'requirements-ops.lock'
     runtime = {
-        'runtime_kind': args.runtime_kind or ('host_venv' if stage != '1a' else 'windows_dev_host'),
+        'runtime_kind': args.runtime_kind or ('host_venv' if stage != '1a' and launcher_bundle is None
+                                              else 'windows_dev_host'),
         'os_id': osr.get('ID') or platform.system().lower(), 'os_release': osr.get('VERSION_ID') or platform.release(),
         'kernel': facts.get('kernel') or platform.release(), 'systemd_version': facts.get('systemd_version'),
         'arch': platform.machine(), 'cpu_model': facts.get('cpu_model') or _cpu_model(),
@@ -1398,7 +2000,7 @@ def _job_record(path, args, current=None):
                               and Path(executable).is_file() else None),
         'requirements_lock_sha256': _sha256_or_error(lock) if lock.is_file() else None,
         'thread_env': env.get('thread_env'), 'image_digest': None,
-        'platform_accounting': ('windows_process_time_job_object' if stage == '1a'
+        'platform_accounting': ('windows_process_time_job_object' if stage == '1a' or launcher_bundle is not None
                                 else 'linux_getrusage_cgroup_v2'),
         'runner': args.runner, 'run_id': args.run_id, 'run_attempt': args.run_attempt, 'job': args.job,
         'arm_order': arm_order,
@@ -1414,7 +2016,7 @@ def _job_record(path, args, current=None):
             workload[arm] = found
     for rep in repeats:
         rep.pop('workload', None)
-    return {
+    record = {
         'schema': SCHEMA, 'scope': 'job', 'artifact_class': ARTIFACT_CLASS, 'decision_bearing': False,
         'recorded_utc': _now(), 'measured_commit': measured, 'tree_clean': tree_clean,
         'dispatched_head': args.dispatched_head, 'start_head': start_head,
@@ -1434,6 +2036,17 @@ def _job_record(path, args, current=None):
                     'rerun_eligible': rerun_eligible, 'sigma_screen': screen, 'pa3a_screen': pa3,
                     'reasons': ['%s: %s' % pair for pair in reasons], 'exit_code': exit_code},
     }
+    if stage == '1c':
+        record['dispatched_parent'] = dispatched_parent   # git-parent.txt, else null (r2 §12.4)
+        record['measured_parent'] = measured_parent       # git rev-parse HEAD^ at summarize
+        record['forcing'] = _forcing_1c(repeats, workload)
+        record['n2_capture_sha256s'] = {arm: sorted({r['n2_capture_sha256'] for r in reps if r.get('n2_capture_sha256')})
+                                        for arm, reps in by_arm.items()}
+        if launcher_bundle is not None:
+            record['n2_staging'] = launcher_bundle.get('n2_staging')
+        else:
+            record['n2_staging'] = n2_receipt   # the pre-loop receipt (n2-staging.json), else null
+    return record
 
 
 FIXED_SOURCE_FILES = ('tests/ops/qualification/composition_fixture.py',
@@ -1653,8 +2266,9 @@ def _combined(records, locations=None):
         if not (record.get('code_identity') or {}).get('worker_runtime'):
             reasons.append(('I-7', 'job %s record has no observe_runtime identity' % (
                 (record.get('runtime') or {}).get('job'))))
-    # Both jobs must have measured the same code (I-7, r2 §12.7).
-    for key in ('measured_commit', 'dispatched_head', 'harness_sha256', 'source_sha256'):
+    # Both jobs must have measured the same code (I-7, r2 §12.7); at Stage 1c, on the same S5 head.
+    for key in ('measured_commit', 'dispatched_head', 'harness_sha256', 'source_sha256') + (
+            ('dispatched_parent',) if stages == {'1c'} else ()):
         values = [json.dumps(r.get(key), sort_keys=True) for r in records]
         if len(set(values)) != 1 or records[0].get(key) is None:
             reasons.append(('I-7', 'job records differ in or lack %s' % key))
@@ -1671,7 +2285,10 @@ def _combined(records, locations=None):
     for arm, summary in summaries.items():
         if summary['digests_identical'] is False:
             reasons.append(('I-4', 'artifact digests differ between jobs for arm %s' % arm))
-    medians = [((r['summary']['arms'].get('forced') or {}).get('cpu_input_s') or {}).get('all') for r in records]
+    if stage == '1c' and _p6_prefix_ok(by_arm.get('forced', []), by_arm.get('prescribed', [])) is False:
+        reasons.append(('I-4', 'forced initial-prefix artifact differs from the prescribed initial-prefix '
+                               'artifact across jobs (PA-4, P-6)'))
+    medians =[((r['summary']['arms'].get('forced') or {}).get('cpu_input_s') or {}).get('all') for r in records]
     medians = [m['median'] for m in medians if m]
     ratio = (max(medians) / min(medians)) if len(medians) > 1 and min(medians) > 0 else None
     memory_complete = all(r['summary']['memory_complete_all_timed_repeats'] for r in records)
@@ -1682,20 +2299,20 @@ def _combined(records, locations=None):
         'W_hat_s': ((forced.get('wall_workload_s') or {}).get('all') or {}).get('max'),
         'M_hat_bytes': forced.get('memory_max_bytes_complete_only') if memory_complete else None,
         'P_hat_s': forced.get('predicted_seconds_max'),
-        'provisional': 'D̂ uncovered until Stage 1c (r2 §4, §9 PA-1)',
+        'provisional': PROVISIONAL_1C if stage == '1c' else 'D̂ uncovered until Stage 1c (r2 §4, §9 PA-1)',
     }
     if (stage == '1a' or mode == 'dry-run' or not memory_complete or estimates['M_hat_bytes'] is None
             or any(code == 'I-1' for code, _ in reasons)):   # r2 §12.7 I-1: memory UNVERIFIED
         memory_feasibility = 'UNVERIFIED'
     else:
         memory_feasibility = 'FAILED' if M_M * estimates['M_hat_bytes'] > PA3_REFERENCE_BYTES else 'VERIFIED'
-    screen, pa3 = _screens(estimates)
+    screen, pa3 = _screens(estimates, stage)
     ceiling_missing = _ceiling_inputs(summaries, estimates) if mode == 'measure' else []
-    if stage == '1b' and ceiling_missing:
+    if stage in ('1b', '1c') and ceiling_missing:
         reasons.append(('INCOMPLETE', 'combined ceiling inputs incomplete, rule not applicable (r2 §6.2, §9): '
                                       + '; '.join(ceiling_missing)))
     blocking = {c for c, _ in reasons} & BLOCKING_CODES
-    rule_applicable = (stage == '1b' and mode == 'measure' and not blocking and not ceiling_missing
+    rule_applicable = (stage in ('1b', '1c') and mode == 'measure' and not blocking and not ceiling_missing
                        and memory_feasibility in ('VERIFIED', 'FAILED'))
     stop, validity_ok, exit_code = _classify(reasons, rule_applicable=rule_applicable,
                                              memory_feasibility=memory_feasibility, screen=screen)
@@ -1733,11 +2350,16 @@ def build_parser():
                        help='a Linux job directory, a Windows launcher bundle, or several job records to combine')
     modes.add_argument('--probe-verdict', metavar='DIR', help='workflow helper: judge the accounting probe')
     modes.add_argument('--check-stage', metavar='STAGE', help='workflow helper: exit 0 if STAGE is dispatchable')
+    modes.add_argument('--stage-n2', metavar='DIR', help='Stage 1c setup: stage the SR-5 N2 capture mount at DIR')
     parser.add_argument('--stage', choices=('1a', '1b', '1c'), help='measurement stage (r2 §12.2-§12.4)')
     parser.add_argument('--arm', choices=ARMS, help='--repeat-mode: forced or prescribed')
     parser.add_argument('--repeat', type=int, help='--repeat-mode: 1..N timed (1 is cold), 0 instrumented')
     parser.add_argument('--unit', help='--repeat-mode (Linux): the systemd unit name the repeat runs in')
-    parser.add_argument('--dry-run', action='store_true', help='--repeat-mode: untimed dry-run repeat')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='--repeat-mode: untimed dry-run repeat; --launcher --stage 1c: one per arm')
+    parser.add_argument('--n2-cache', help='--repeat-mode --stage 1c: the job-level SR-5 staged mount '
+                                           '(default: <--out directory>.n2-staged; never created by a '
+                                           'repeat: absent means refuse, I-6)')
     parser.add_argument('--out', help='--repeat-mode: row path; --launcher: bundle path (never overwritten)')
     parser.add_argument('--arms', default='forced,prescribed', help='--launcher: arm order')
     parser.add_argument('--repeats', type=int, default=DEFAULT_TIMED_REPEATS, help='timed repeats per arm')
@@ -1760,13 +2382,15 @@ def main(argv=None):
         return check_stage(args.check_stage)
     if args.probe_verdict:
         return probe_verdict(args.probe_verdict)
+    if args.stage_n2:
+        return stage_n2(args.stage_n2)
     if args.repeat_mode:
         if args.stage is None or args.arm is None or args.repeat is None or not args.out:
             print('--repeat-mode needs --stage, --arm, --repeat and --out', file=sys.stderr)
             return 2
         return repeat_mode(args)
     if args.launcher:
-        if args.stage is None or not args.out or args.repeats < 2:
+        if args.stage is None or not args.out or (args.repeats < 2 and not args.dry_run):
             print('--launcher needs --stage 1a, --out and --repeats >= 2', file=sys.stderr)
             return 2
         return launcher(args)
