@@ -1464,3 +1464,42 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 - **Standing constraint:** no pushes to `claude/s5-part-a` or `claude/s5-stage1c-harness` while any run is in flight.
 
 **Not granted:** S5 acceptance (it follows Stage 2/PA-5), any merge of the draft PR, any production value, and any activation or live authority. RC-2 still becomes met only when #552 merges and is reviewed.
+
+### Coordinator execution — C3 Linux grant steps 1–2; Stage 1c stopped PA3_FAILURE; operator ruling: fix the harness and re-measure, 2026-09-29
+
+**Step 1: the harness regression module on Linux.**
+- **Run:** draft do-not-merge [#557](https://github.com/Joshua-Asante/first-passage/pull/557), `pytest (3.11)` run `36624580401` (`pull_request`). It tested merge `0b5732ae` = `main` `37b590b` + `0fe3e25`.
+- **Binding to `0fe3e25`:** at that merge, `tests/test_s5_part_a_measurement_harness.py`, the harness, its README and `.github/workflows/qualification-s5-part-a-measurement.yml` are byte-identical to `0fe3e25`.
+- **Result:** **138 passed, 0 failed, 0 skipped**, including the 8 POSIX-stub cases that Windows skips. The run's junit SHA-256 is `080b4f0a4f883d2fcedcd05f149763380ad67067e8efd9b9953dee3dc2c0e796`.
+- It is cited beside the first diagnostic subset, as the operator ruled.
+
+**Step 2: Stage 1c** (the r2 §12.3 block in its Stage 1c form, from the C3 record worktree; `BRANCH=claude/s5-stage1c-harness`, `BASELINE=2026-09-29T00:00:00Z`, `S5_HEAD=c7713e7`).
+- **Dry run `36634115845`:** ran on `0fe3e25`, exit 0, `stop_class` none, cleanup clean, `dispatched_parent` = `c7713e7`.
+- **Measure run `36634465166`:** ran on `0fe3e25`. Jobs a and b each had exit 0 and validity OK, clean cleanup receipts and `dispatched_parent` = `c7713e7`. No re-run was used.
+- **CPU and wall screens:** feasible.
+- **Combined record** `stage1c/36634465166-combined.json`: `memory_feasibility` **FAILED**, `stop_class` **`PA3_FAILURE`**. The PA-3a screen gives 1.5 × M̂ = **346,773,504 B > 256,000,000 B**, where M̂ is job a's `forced-1` peak of 231,182,336 B. Job b alone read VERIFIED (235,991,040 B).
+- **The block stopped** on the stop class, as §12.7 requires.
+- **Evidence retained** under `docs/notes/2026-09-27-s5-part-a-measurement/stage1c/`, with the manifest `downloads-s5-1c-20260929T213343Z.sha256`.
+  - Following the Stage 1b precedent, `journal.log`, `summarize.log`, `probe.json` and `git-head.txt` are held back from the public tree. **Their private archive to first-passage-archive is owed.**
+  - The public-clone review found only runner work-tree paths.
+
+**Diagnosis (coordinator).** The excess is the **first repeat of each job's first arm**, whichever arm that is:
+
+| Repeat | Peak | CPU |
+|---|---|---|
+| job a `forced-1` | 231,182,336 B | 111.6 s |
+| job b `prescribed-1` | 232,239,104 B | 76.5 s |
+| other arm's cold repeat | about 157–158 MB | normal |
+| warm repeats | 87–91 MB | 5–11 s |
+
+That repeat is the one where harness decision 1 builds the SR-5 staged N2 capture: a genuine depth-60 N2 worker, run in a child process inside the repeat's own unit. Its CPU is excluded as setup, but its memory lands in the unit's `memory.peak` (r2 §8.2). The PART_A payload footprint is the cold and warm figures, consistent with Stage 1b's cold maximum of 169 MB.
+
+**Operator ruling (2026-09-29), chosen over two alternatives:** "Fix harness, re-measure". The alternatives were to rule the staging repeat out of this record, or to treat 346.8 MB as binding and hold S5. Under B9 this record stays a stop: no budget is widened, and it is not reinterpreted.
+
+**Next:**
+- the harness fix moves the SR-5 staging outside every measured unit, and a repeat refuses without the staged cache;
+- the measurement branch is rebuilt as `c7713e7` plus one harness commit;
+- the operator records a read of the new diff;
+- the operator gives a fresh Stage 1c approval with a new `BASELINE`, for one dry run and one measure (this approval's §12.7 measure dispatch is spent).
+
+The first diagnostic subset and everything after it wait for a valid Stage 1c.
