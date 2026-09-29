@@ -1,7 +1,7 @@
 # CC handoff — CC-3 ordinary unknown outcome durably ends automation
 
 **Date:** 2026-09-29.
-**Status:** PREPARED; implementation not dispatched.
+**Status:** ~~PREPARED; implementation not dispatched.~~ FROZEN 2026-09-29 at `b77b6f4`, after the implementation had already run. The coordinator record (§8) states that order and assigns review and commit. Implementation returned; **not accepted**.
 **Parent session:** X-1 decision and CC-3 handoff preparation.
 **Spawn target:** Codex local, isolated checkout; no private inputs.
 **Brief type:** CC handoff, bounded repair.
@@ -140,6 +140,93 @@ Awaiting dispatch and implementation. Return:
 revision, permitted file diff, baseline failure, per-case results, interpreter and launcher record paths, retained failures/skips, source stability, and exact remaining live-evidence obligations.
 Coordinator reviews specification compliance, then implementation quality and the complete composed path.
 No synthetic result establishes commissioning or whole-route acceptance.
+
+## §8 — Coordinator record (2026-09-29)
+
+**Coordinator.** The "Coordinate parallel sessions" Claude Code session holds the deployment-coordinator role for CC-3. Joshua assigned it in session on 2026-09-29. The assignment covers CC-3 only and moves no other coordinator work.
+
+**What happened, in order (not backdated).**
+1. Codex prepared this card on 2026-09-29 in `C:/Users/joshu/.codex/worktrees/x1-cc3-packets/multi_firm_operations`. It was staged there, uncommitted, at base `1ca4233` (card SHA-256 `3cda0545…695b1`).
+2. Joshua pasted the card into a Claude Code session on branch `claude/cc3-ordinary-unknown-outcome-36ba29`, a checkout at `1ca4233` (`C:\Users\joshu\multi_firm_operations\.claude\worktrees\pr-363-babysit-671b91`).
+3. That session implemented the repair between about 16:01 and 16:13 UTC. Its first launcher record is `20260929T160142Z`. No committed card revision or coordinator dispatch existed at the time, although this card's Authority line and §10 require both before implementation.
+4. Codex reviewed the returns twice at Joshua's request and did not accept them. The executor then ran `check_brief.py --type handoff` read-only against the staged card and got 0 HARD and 0 WARN. That is a draft validation of bytes `3cda0545…`.
+5. On Joshua's direct grant of commit and push on its branch, the executor committed the six-file patch as `b9b72f9` and pushed it. No PR was opened.
+6. The coordinator froze the card at `b77b6f4`, on top of `b9b72f9`, with bytes identical to `3cda0545…`. This record was added in the next commit.
+
+**Disposition of the missing freeze and dispatch.** This is recorded as a **procedural deviation, not repaired by re-running**. The implementation is not repeated to reconstruct the prescribed order. §0–§6 and §10 are unchanged from the bytes the executor worked against, so `b77b6f4` is the revision the patch is reviewed against. From now on, the executor works under the grants below.
+
+**The patch under review** is commit `b9b72f97ffc020f695e34bc9087be82836cfdcb0`, on base `1ca4233b5f486f2946b4bbad3b2d13b427370ecb`. Four files are modified and two are new; all six are within §2's footprint. The coordinator read these SHA-256 values on 2026-09-29. The working-copy column holds the bytes the records hashed. For three files the working copy is CRLF, and the committed LF blob has no other difference: `git diff` against the commit is empty, and the CR-stripped hashes match.
+
+| File | State | Working copy | Committed blob |
+|---|---|---|---|
+| `ops/c1_rail/book_account_owner.py` | modified | `09e37cca…3350` | same |
+| `tests/ops/test_attended_incident_rehearsal.py` | modified | `b5ae4d93…1f9e` | `eecbc4c1df36…` |
+| `tests/ops/test_book_account_owner.py` | modified | `e2640331…2c67` | `b3b456034403…` |
+| `docs/spec/2026-09-14-tb-s3-halt-resume-contract.md` | modified | `6e547b08…5c6b` | `4e257631e67e…` |
+| `tests/ops/test_book_ordinary_unknown_halt.py` | new | `b4e90948…1143` | same |
+| `docs/notes/2026-09-29-cc3-ordinary-unknown-halt-evidence.md` | new | `5212c01c…ed03` | same |
+
+**Evidence** (launcher records in that checkout's `.cache/fp-verification/`):
+- `20260929T161059Z-5ccb92360004`: the §10 related suite, 220 passed. The code-file hashes in the record match the patch.
+- `20260929T170917Z-44a993effddf`: `check` on the final bytes of all six files. It completed with exit 0, stable source and complete capture.
+- `20260929T160142Z-0fa5f98ce430` and `20260929T160722Z-63341ffc753d`: the runs against the unrepaired code. They fail as the card predicts.
+- **Coverage gaps:** `test_halt_storage_failure_stops_remaining_cancel_targets` and `test_protection_unknown_keeps_only_its_own_incident` were added after the unrepaired-code run. They have no evidence of failing on the unrepaired code. `check_brief` has not yet been run against the frozen revision.
+
+**The coordinator's specification read.** This is not acceptance; that review follows the PR.
+- All eight cases named in §6 exist in the new module.
+- The production change stays in `_dispatch_action_locked`. An unknown result commits the attempt observation and `_halt_db("ordinary-unknown:<attempt_id>", "execution")` in one transaction, before any attached fact is observed. Accepted and rejected results keep their existing path.
+- No schema, policy or interface change was found.
+
+**Consequences recorded for review (they add no gate).**
+- **Scheduled exits:** after an unknown cutoff cancel or scheduled flatten, the account halts to INTERVENTION. Later automatic deadline sends are suppressed, and operator intervention is required. This follows §0.5(A) and matches how the protection path already treats an unknown result. The coordinator found no conflict with owner text, so no decision question is raised. No deadline exception or resume route was added.
+- **Changed expectation:** `test_ambiguous_cutoff_cancel_is_retained_and_deadline_revokes_all_sends` now expects a single `execution` incident at the cutoff, where it previously expected a later `schedule` incident. Its no-send and reservation assertions are unchanged.
+
+**Dispatch grant (from this record forward).**
+
+```yaml authority
+seat: worker
+parent: docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md
+max_risk: medium
+capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open]
+constraints:
+  - no_main_write
+  - no_merge
+  - section_2_footprint_only
+  - no_qualification_or_s5_file
+  - no_schema_policy_or_interface_change
+  - no_rail_deploy
+  - no_rail_arm
+  - no_account_traffic
+  - no_broker_or_vendor_contact
+  - no_external_send
+  - no_private_source_read
+  - no_resend_timeout_closure_or_auto_recovery
+  - windows_ack_defect_preserved_not_fixed
+  - no_owner_record_edit
+acceptance:
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_unknown_result_halts_before_return
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_send_exception_halts_and_retains_attempt
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_terminal_or_fill_after_unknown_never_resumes
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_unknown_halt_survives_restart_and_duplicate_occurrence
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_concurrent_dispatch_serializes_behind_unknown_halt
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_unknown_halts_remaining_cancel_targets
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_accepted_rejected_and_refused_do_not_gain_unknown_incident
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_halt_storage_failure_suppresses_further_dispatch
+  - tests/ops/test_attended_incident_rehearsal.py::test_lost_entry_response_terminal_does_not_restart_automation_in_session
+  - tests/ops/test_book_account_owner.py::test_crash_cuts_retain_obligation_and_never_retry_on_boot
+```
+
+**The executor (the CC-3 session) may:**
+1. Fast-forward its branch to this record's commit (`git merge --ff-only claude/cc3-card-freeze`). This is possible because the record sits directly on `b9b72f9`.
+2. Run `check_brief.py --type handoff` on this card at that revision.
+3. Complete §7's return against the frozen revision, which is this card's only other permitted edit. It does not repeat the unchanged code-test runs.
+4. Push `claude/cc3-ordinary-unknown-outcome-36ba29` and open a PR against `main`.
+
+Any change to the six patch files, or any necessary change outside §2's footprint, returns NEEDS_CONTEXT.
+
+**Review and acceptance.** The coordinator reviews the PR for specification compliance, then implementation quality and the composed path, as set out in §7. Codex PR review serves as the independent review (D-codex hybrid). The coordinator may mark CC-3 RESOLVED **in synthetic scope only** after that review and a passing required check, with a note in §7. Joshua retains the merge.
+
+**Not granted.** No synthetic acceptance or RESOLVED status before that review. No real broker evidence producer, route recovery, T09 work, resume design, live notification, X-1, S5, commissioning action, merge or operational GO.
 
 ## §10 — Audit hooks
 
