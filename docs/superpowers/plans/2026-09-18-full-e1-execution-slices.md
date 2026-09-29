@@ -1402,10 +1402,10 @@ Applying it would mean choosing wording. The coordinator drafts a reconciled O-1
 - **Checked:** the 1c path's post-call `dataclasses.replace(request, within_pp=...)` only rebuilds the record's workload description, outside the boundary. The adapter builds its own request, so the seam is not bypassed.
 - **Condition before dispatch.** Run `tests/test_s5_part_a_measurement_harness.py` on `0fe3e25` through the launcher and record the result.
   - **Result (2026-09-29, from a detached LF worktree, ops-env CPython 3.13.2):** 138 collected, **129 passed, 8 skipped, 1 failed**. Record `20260929T184959Z-397992611a69` (SHA-256 `3047df3a…c6ce3a`), `source_stable` true, capture complete.
-  - The one failure, `test_cli_unreadable_start_head_is_i7[ÿþ]`, **reproduces identically on the base `c7713e7`**: record `20260929T185050Z-5209d398750b` (SHA-256 `1d69db75…f0fd1`), with the same counts. The refactor introduced no regression.
+  - The one failure, `test_cli_unreadable_start_head_is_i7[ÿþ]`, **reproduces identically on the base `c7713e7`**: record `20260929T185050Z-5209d398750b` (SHA-256 `1d69db75…f0fd1`), with the same counts. No additional failures were observed in the executed Windows cases; the eight POSIX-only cases remain unexecuted there.
   - The 8 skips are the POSIX-stub workflow-step tests, which do not run on Windows.
   - The condition's word "passing" is **not literally met**, because of that one base-reproduced Windows failure. The operator decides whether this satisfies it before any Stage 1c dispatch.
-  - **Operator ruling, 2026-09-29:** "met, and include the harness regression module in the first Linux subset". The condition is **met**. `tests/test_s5_part_a_measurement_harness.py` runs on Linux alongside the first C3 Linux subset, where its 8 POSIX-stub cases execute. The S5 subset selector (`-f mode=s5 -f cases=…`) selects only the boundary-integration files, so this module needs a companion Linux run bound to the same head. Its record is cited beside the first subset's record. Neither run is granted by this entry.
+  - **Operator ruling, 2026-09-29:** "met, and include the harness regression module in the first Linux subset". The condition is **met**. `tests/test_s5_part_a_measurement_harness.py` runs on Linux alongside the first C3 Linux subset, where its 8 POSIX-stub cases execute. The S5 subset selector (`-f mode=s5 -f cases=…`) selects only the boundary-integration files, so this module needs a companion Linux run bound to the same head. Retain the companion run's launcher record and cite it beside the first subset's record, with both records identifying the same tested commit and the companion results showing all eight POSIX-stub cases executed. Neither run is granted by this entry.
 
 **B. Rulings on the §7 concerns of `c7713e7`.**
 1. The four out-of-§2 test files (`test_campaign_funding.py`, `test_campaign_snapshot_versions.py`, `test_checkpoint_widening.py`, `test_checkpoint_validation.py`) are **ADMITTED**, test-only.
@@ -1421,7 +1421,7 @@ Applying it would mean choosing wording. The coordinator drafts a reconciled O-1
 **C. The executed `bind_budget` evidence is now durable.** It is in [`docs/notes/2026-09-29-s5-c3-record/`](../../notes/2026-09-29-s5-c3-record/README.md): the script and its output, with SHA-256 pins.
 - Σ CPU 1,680 ≤ 10,000; Σ wall 4,200 ≤ 10,000; max phase memory 256,000,000 = 256,000,000; state `BOUND`.
 - The unextended control is `BUDGET_EXHAUSTED`.
-- **RC-3b's executed check is done.**
+- **RC-3b's executed budget-binding check is done; RC-3b remains open overall.** Stage 1c, measured memory feasibility, and Stage 2/PA-5 remain outstanding.
 
 **Still open at C3:**
 - Stage 1c: Linux dispatch, after the harness condition above and the operator's C3 Linux grant;
