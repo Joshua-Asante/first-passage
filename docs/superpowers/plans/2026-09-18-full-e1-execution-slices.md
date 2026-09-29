@@ -1405,6 +1405,7 @@ Applying it would mean choosing wording. The coordinator drafts a reconciled O-1
   - The one failure, `test_cli_unreadable_start_head_is_i7[ÿþ]`, **reproduces identically on the base `c7713e7`**: record `20260929T185050Z-5209d398750b` (SHA-256 `1d69db75…f0fd1`), with the same counts. The refactor introduced no regression.
   - The 8 skips are the POSIX-stub workflow-step tests, which do not run on Windows.
   - The condition's word "passing" is **not literally met**, because of that one base-reproduced Windows failure. The operator decides whether this satisfies it before any Stage 1c dispatch.
+  - **Operator ruling, 2026-09-29:** "met, and include the harness regression module in the first Linux subset". The condition is **met**. `tests/test_s5_part_a_measurement_harness.py` runs on Linux alongside the first C3 Linux subset, where its 8 POSIX-stub cases execute. The S5 subset selector (`-f mode=s5 -f cases=…`) selects only the boundary-integration files, so this module needs a companion Linux run bound to the same head. Its record is cited beside the first subset's record. Neither run is granted by this entry.
 
 **B. Rulings on the §7 concerns of `c7713e7`.**
 1. The four out-of-§2 test files (`test_campaign_funding.py`, `test_campaign_snapshot_versions.py`, `test_checkpoint_widening.py`, `test_checkpoint_validation.py`) are **ADMITTED**, test-only.
