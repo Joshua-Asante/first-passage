@@ -1,7 +1,7 @@
 # X-1 decision packet: one attended REST entry and native stop
 
 **Date:** 2026-09-29.
-**Status:** PREPARED FOR DECISION; NOT CLEARED TO EXECUTE.
+**Status:** PREPARED FOR DECISION; NOT CLEARED TO EXECUTE. *2026-09-29:* A-11 exception accepted and the evening window withdrawn (§2 decision record); still not cleared to execute.
 **Selected outcome:** A reviewable decision packet and preparation checklist for one attended X-1 entry-and-stop observation. Execution remains a separate CP-3 decision.
 **Dispatch scope:** Preparation only. Prepare the observer procedure and decision materials; Joshua performs the offline platform rehearsal. This dispatch authorizes no order-producing action or execution of §5. Proposed limits remain proposals until explicitly accepted.
 **Execution prerequisites:** The A-11 ruling below, reviewed observer procedure and rehearsal evidence, operator-fixed limits and private request binding, then X-1's own written CP-3. All fresh session checks remain owed.
@@ -51,7 +51,15 @@ If the configured controls cannot be identified adequately for the decision, ret
 - **Owner.** GC-7 itself is owned by the [B–D packet](2026-09-26-tradeify-bd-decision-packet.md). An accepted exception is mirrored in its GC-7 row, as well as in the drill plan and commissioning §2.2.
 - **Threshold exposure.** Before CP-3, the operator privately confirms that the account's headroom to its trailing-drawdown floor is a large multiple of the row's planned cost allowance. That makes threshold liquidation during X-1 implausible, although not impossible. No figure appears here.
 
-**Decision record:** no ruling supplied in this authoring session. The recommendation is PROPOSED.
+**Decision record:** ~~no ruling supplied in this authoring session. The recommendation is PROPOSED.~~ **Operator ruling 2026-09-29, in session ("proceed as recommended"):**
+1. **A-11:** the narrow exception quoted above is **ACCEPTED**, for X-1 only.
+   - The review notes are part of the ruling. The drill plan §0.1 ROUTE STOPS consequence for C-a and X-3 stands unchanged.
+   - The drawdown-headroom check is a CP-3 item.
+   - It is mirrored in drill plan §0.1, commissioning §2.2 and B–D packet GC-7.
+   - It is an exception to the session-start rule only. It grants no CP-3, row, send or spend.
+2. **Sequencing:** the 2026-09-29 evening window is **withdrawn**. X-1's CP-3 is not requested until R-1 has run on this week's preservation trade, in that trade's own session. That R-1 is the same-session per-order read check (§6 gap 2).
+   - If its per-order reads fail, X-1 stays held.
+   - The observer review, the offline tool and the operator rehearsal remain owed.
 
 ## 3. Proposed row and missing operator inputs
 
@@ -68,7 +76,7 @@ If the configured controls cannot be identified adequately for the decision, ret
 | Reference quote side | **Proposed:** the ask for a buy, the price a market buy is expected to fill near. Record which side was used |
 | Stop-activation wait | **Proposed:** 10 seconds after first observed fill; known rejection or unknown request triggers recovery immediately. Delayed fill observation is not a measured activation bound |
 | Time in market | **Proposed:** teardown as soon as evidence is obtained; initiate teardown no later than 120 seconds after first observed fill. This is not a guarantee of flatness by that time |
-| Session window (ET) | **Availability confirmed:** 2026-09-29, 19:00-19:30 EDT (23:00-23:30 UTC). Session checks and CP-3 remain owed |
+| Session window (ET) | ~~**Availability confirmed:** 2026-09-29, 19:00-19:30 EDT (23:00-23:30 UTC).~~ **Withdrawn 2026-09-29 (operator ruling, §2).** Next available evening after the preservation-trade R-1 and the other prerequisites; named at CP-3. Session checks and CP-3 remain owed |
 | Planned cost allowance | **Proposed:** $30 total including fees and adverse execution; one entry attempt. This is a planning allowance, not a guaranteed maximum loss; no repeat attempt. It counts against the $700 ceiling (CP-2 F-4), whose remaining headroom is confirmed privately at CP-3 |
 
 Only availability and platform are confirmed. Numerical limits and row selections remain proposals, not executable defaults.

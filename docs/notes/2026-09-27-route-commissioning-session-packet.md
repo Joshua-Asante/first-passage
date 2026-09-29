@@ -132,7 +132,7 @@ These observations are not an entitlement package, and they do not show that the
 **C. After at least one reset.** R-2 on the same trade, then T07 R1–R2 if the fill was post-rollover, and T07 R3 only with a zone-explicit source. Every read waits for its own binding (A3).
 
 **D. Before X-1 (a separate drill session, never while the preservation trade is open or working).**
-- **Decision still open:** whether a non-disableable firm-side liquidation (A-11) blocks Stage 1 under GC-7 (§7). Tradeify's end-of-session auto-close is published; the published captures give no way to disable it, and this is not verified on this account. Under §2.2, A-11 reading "configured, not disableable" means no Stage 1 session starts until the operator and coordinator decide.
+- ~~**Decision still open:** whether a non-disableable firm-side liquidation (A-11) blocks Stage 1 under GC-7 (§7).~~ *Decided 2026-09-29 for X-1 only (§2.2 ruling note): an identified mandatory firm control need not be disabled; the rest of this bullet is context.* Tradeify's end-of-session auto-close is published; the published captures give no way to disable it, and this is not verified on this account. Under §2.2, A-11 reading "configured, not disableable" means no Stage 1 session starts until the operator and coordinator decide.
 - **Permission:** Tradeify answered conditionally, and the operator ruled no clarification is needed (§1.1 F-6(a)). What remains is the operator's attestation of the five conditions in X-1's CP-3. *Observation from the `P-1-public` capture, not a CP-3 item:* Tradeify's published guideline also says it may require "a live video of you enabling the code on your own PC".
 - **X-1's own CP-3** (§4.1): the environment named explicitly (the incumbent eval, F-2); every placeholder fixed, including `tif` and the quote source; the request body recorded privately with its hash; the cost ceiling (F-4); written authorization.
 - **On the day:** §3.2 in full. That means host disarm, the full inventory with every actor in its required state, a flat start with nothing working, and no scheduled high-impact release within 15 minutes.
@@ -182,6 +182,8 @@ Repeat this at the start of **every** session: an inventory attests one moment o
 | A-13 | Our runtime (c1 rail, signal daemon) | Disarmed with emission off, per §2.1 | Drill plan line 112 | ☐ per §2.1 |
 
 **Note on A-11 (returned for decision; UNVERIFIED).** A firm's risk settings may not be the operator's to disable. CS-note says exclusive ownership "does not remove a firm-side automatic liquidation, if one is configured" (line 162). Under the drill plan's §0.1 consequence (line 135), an actor that cannot be disabled while C-a is the close candidate means **ROUTE STOPS** (packet GC-7). This packet does not decide whether a firm-side liquidation on a drawdown threshold counts as an uncoordinated actor under GC-7. If A-11 reads "configured, not disableable", no Stage 1 session starts, and the question returns to the operator and coordinator. In Stage 0 it is recorded and returned; the reads are not stopped by it (see the stage split above).
+
+*Operator ruling 2026-09-29 (A-11 exception, X-1 only; owner text: [X-1 decision packet §2](2026-09-29-x1-decision-packet.md#2-a-11--gc-7-decision)):* identified, non-disableable firm risk liquidation is recorded as an external risk-control actor and need not be disabled **for an X-1 session to start**. All operator-configurable competing senders remain disabled. Any firm-side intervention ends X-1 with no PASS. The ROUTE STOPS consequence for C-a and X-3 is unchanged. This ruling grants no CP-3, row, send or spend.
 
 **Recovery flatten (from #519).** A plain exit order leaves brackets working (CS-card line 94; CS09, CT02). Any attended flatten must therefore also cancel working orders, as drill plan recovery step 2 already requires (§3.4).
 
@@ -587,7 +589,7 @@ It does not settle drill plan open questions 1, 3–9 or the known-order definit
 | **Residual-risk decision, with X-3's CP-3 inside it** | Under CR-3, on CS-note §3; also after the owner confirms the fresh-position precondition | §4.4 |
 | **Drill-plan owner** | Amend X-2's and X-3's preconditions (lines 241, 256) to a fresh X-1-shaped opening position, or reject; and confirm the packet reading that an opening-entry failure carries X-1's GC-2a consequence | §4 sequencing note |
 | Operator | Whether to send #519's vendor question; whether and how to use the T08 follow-up | §5 |
-| Operator and coordinator | Whether a non-disableable firm-side liquidation (A-11) blocks Stage 1 sessions under GC-7 | §2.2 note |
+| Operator and coordinator | Whether a non-disableable firm-side liquidation (A-11) blocks Stage 1 sessions under GC-7. *Decided 2026-09-29 for X-1 only; other rows still open* | §2.2 note |
 | Coordinator | Confirmed at acceptance (below). Reconcile it with H5's halt/resume §4 amendment when H5 is accepted | §0 |
 
 ---
@@ -844,4 +846,4 @@ Every M2 classification remains the executor's to make against the retained capt
 
 ## X-1 decision preparation — 2026-09-29
 
-The [bounded X-1 decision packet](2026-09-29-x1-decision-packet.md) carries the proposed A-11 disposition, the row binding and the remaining operator inputs. It is prepared for decision and grants no CP-3. The drill plan and this packet keep their ownership. R-2's limited closure does not establish cross-session recovery.
+The [bounded X-1 decision packet](2026-09-29-x1-decision-packet.md) carries the A-11 disposition (accepted 2026-09-29 for X-1 only), the row binding and the remaining operator inputs. It is prepared for decision and grants no CP-3. The drill plan and this packet keep their ownership. R-2's limited closure does not establish cross-session recovery.
