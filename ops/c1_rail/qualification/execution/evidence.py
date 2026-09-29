@@ -15,6 +15,23 @@ class CapturedN1:
     document: dict
 
 
+@dataclass(frozen=True)
+class CapturedPartA:
+    """One captured PART_A result: panel objects plus the document (W5)."""
+
+    panels: tuple
+    document: dict
+
+
+@dataclass(frozen=True)
+class CapturedPartAPanel:
+    """One captured panel row; ``part_a_panel_bytes`` re-encodes it exactly."""
+
+    index: int
+    source_session_ids: tuple
+    outcomes: tuple
+
+
 def outcome_record(row):
     if type(row) is not PathOutcome:
         raise TypeError('exact path outcome required')
@@ -74,9 +91,86 @@ def path_inventory(plan, populations):
     )
 
 
+def _part_a_plan_shape(plan):
+    """The PART_A plan's frozen panel parameters (W5; never decision inputs)."""
+    part = plan.get('part_a') if type(plan) is dict else None
+    if type(part) is not dict:
+        raise ValueError('plan part a vector required')
+    parameters = part.get('parameters')
+    depth = parameters.get('paths_per_population_per_panel') if type(parameters) is dict else None
+    initial = parameters.get('initial_panels') if type(parameters) is dict else None
+    if (
+        type(depth) is not int
+        or depth <= 0
+        or type(initial) is not int
+        or initial <= 0
+        or type(part.get('potential_panels')) is not list
+        or len(part['potential_panels']) < initial
+        or any(type(row) is not dict for row in part['potential_panels'])
+    ):
+        raise ValueError('plan part a parameters differ')
+    return initial, depth, part['potential_panels']
+
+
+def _part_a_panel_row(panel):
+    """The canonical panel row shared by the artifact bytes and the document."""
+    if type(panel) is dict:
+        return fields(panel, {'index', 'source_session_ids', 'outcomes'})
+    return dict(
+        index=panel.index,
+        source_session_ids=list(panel.source_session_ids),
+        outcomes=[outcome_record(outcome) for outcome in panel.outcomes],
+    )
+
+
+def part_a_path_inventory(plan, panels):
+    """The PART_A panel-major source-occurrence inventory, re-derived (W5).
+
+    ``panels`` are the computation's panel objects when encoding and captured
+    panel rows when parsing; each record binds one path outcome to its panel
+    index, its panel's source-occurrence digest and the plan's seed input at
+    that exact panel/path address.
+    """
+    _, depth, potential = _part_a_plan_shape(plan)
+    records = []
+    for panel in panels:
+        row = _part_a_panel_row(panel)
+        index = row['index']
+        if type(index) is not int or not 0 <= index < len(potential):
+            raise ValueError('part a panel index differs from the plan')
+        seeds = potential[index].get('path_seeds')
+        if type(seeds) is not list or len(seeds) != depth:
+            raise ValueError('part a panel seed vector differs from the plan')
+        outcomes = row['outcomes']
+        if type(outcomes) is not list or len(outcomes) != depth:
+            raise ValueError('part a panel outcome depth differs from the plan')
+        occurrence = sha256(encoded(list(row['source_session_ids'])))
+        for path, outcome in enumerate(outcomes):
+            records.append(
+                dict(
+                    stage='PART_A',
+                    population='FULL',
+                    panel_id=index,
+                    path_index=path,
+                    source_occurrence_sha256=occurrence,
+                    seed_input_sha256=sha256(encoded(seeds[path])),
+                    outcome_sha256=sha256(encoded(outcome)),
+                )
+            )
+    return dict(
+        schema='qualification_path_inventory/v1',
+        trust_domain_sha256=plan['trust_domain_sha256'],
+        records=records,
+    )
+
+
 def encode_worker_result(context, execution_id, plan_bytes, run, observations, *, admitted):
     admitted.source.verify_for(context.contract)
     plan = json.loads(plan_bytes)
+    if type(plan) is dict and plan.get('checkpoint') == 'PART_A':
+        return _encode_part_a_worker_result(
+            context, execution_id, plan_bytes, plan, run, observations, admitted=admitted
+        )
     stages = _plan_stages(plan)
     if run.stage not in ('n1', 'n2') or run.synthetic is not context.domain.permits_synthetic:
         raise ValueError('worker computation domain differs')
@@ -111,16 +205,77 @@ def encode_worker_result(context, execution_id, plan_bytes, run, observations, *
     )
 
 
+def _encode_part_a_worker_result(
+    context, execution_id, plan_bytes, plan, run, observations, *, admitted
+):
+    """W5: the PART_A worker-result document; ``populations`` becomes ``part_a``."""
+    from .compute import PartACompute
+
+    if (
+        type(run) is not PartACompute
+        or run.result.synthetic is not context.domain.permits_synthetic
+    ):
+        raise ValueError('worker computation domain differs')
+    initial = _part_a_plan_shape(plan)[0]
+    panels = [_part_a_panel_row(panel) for panel in run.result.panels]
+    if (
+        run.initial_panels != initial
+        or run.final_panels != len(panels)
+        or len(panels) < initial
+        or run.expansion_required != (run.final_panels > run.initial_panels)
+    ):
+        raise ValueError('worker part a panel counts differ from the plan')
+    return encoded(
+        dict(
+            schema='qualification_worker_result/v1',
+            execution_id=execution_id,
+            plan_sha256=sha256(plan_bytes),
+            source_admission=json.loads(admitted.source_admission_bytes),
+            legality=json.loads(admitted.legality_bytes),
+            part_a=dict(
+                initial_panels=run.initial_panels,
+                final_panels=run.final_panels,
+                expansion_required=run.expansion_required,
+                initial_prefix_sha256=sha256(run.initial_panel_bytes),
+                final_sha256=sha256(run.final_panel_bytes),
+                initial_p5=run.result.initial_p5,
+                final_p5=run.result.final_p5,
+                probe_seconds=run.result.probe_seconds,
+                predicted_seconds=run.result.predicted_seconds,
+                panels=panels,
+            ),
+            runtime_load_manifest=[
+                dict(role=role, sha256=digest)
+                for role, _, digest in sorted(admitted.source.prepared.load_trace)
+            ],
+            path_inventory=part_a_path_inventory(plan, run.result.panels),
+            observations=observations,
+        )
+    )
+
+
 def parse_worker_result(raw, *, context, execution_id, plan_bytes, campaign_limits=None):
     """Validate one captured worker result.
 
-    ``campaign_limits`` (FULL_E1 only, D3) supplies the work's remaining phase
+    A PART_A plan takes the ``part_a`` branch (W5): the same common fields
+    with ``populations`` replaced by the panel document. ``campaign_limits``
+    (FULL_E1 only, D3) supplies the work's remaining phase
     limits; the observations are then compared against those limits instead of
     the contract maxima, exactly as the phase-limited guard enforced them. The
     N1_ONLY path keeps the contract maxima (``None`` here).
     """
     if type(raw) is not bytes or len(raw) > context.profile.output_byte_limit:
         raise ValueError('bounded captured result required')
+    plan = json.loads(plan_bytes)
+    if type(plan) is dict and plan.get('checkpoint') == 'PART_A':
+        return _parse_part_a_worker_result(
+            raw,
+            context=context,
+            execution_id=execution_id,
+            plan_bytes=plan_bytes,
+            plan=plan,
+            campaign_limits=campaign_limits,
+        )
     doc = fields(
         parse_canonical_json(raw, label='worker result'),
         {
@@ -141,6 +296,61 @@ def parse_worker_result(raw, *, context, execution_id, plan_bytes, campaign_limi
         or doc['plan_sha256'] != sha256(plan_bytes)
     ):
         raise ValueError('worker admission/execution/plan differs')
+    _verify_worker_bindings(doc, context=context)
+    joint = plan.get('checkpoint') == 'N2'
+    stages = _plan_stages(plan)
+    if type(doc['populations']) is not list or len(doc['populations']) != len(stages):
+        raise ValueError('complete ordered worker populations required')
+    populations = []
+    for population, expected, stage in zip(doc['populations'], plan['depths'], stages):
+        keys = {'population', 'outcomes'} | ({'stage'} if joint else set())
+        fields(population, keys)
+        rows = population['outcomes']
+        if (
+            population['population'] != expected['population']
+            or (joint and population.get('stage') != stage)
+            or type(rows) is not list
+            or len(rows) != expected['depth']
+        ):
+            raise ValueError('worker population order/depth differs')
+        outcomes = [_captured_outcome(row, context=context) for row in rows]
+        populations.append((population['population'], tuple(outcomes)))
+    if encoded(doc['path_inventory']) != encoded(path_inventory(plan, doc['populations'])):
+        raise ValueError('captured path inventory differs')
+    _verify_worker_observations(doc, context=context, campaign_limits=campaign_limits)
+    return CapturedN1(tuple(populations), doc)
+
+
+def _captured_outcome(row, *, context):
+    """One closed outcome row and its frozen-horizon bound (N1/N2 and PART_A)."""
+    fields(row, {'status', 'sessions_to_pass', 'failure_reason', 'diagnostics'})
+    if type(row['status']) is not str or (
+        row['failure_reason'] is not None and type(row['failure_reason']) is not str
+    ):
+        raise ValueError('closed outcome status/reason required')
+    if type(row['diagnostics']) is not list or any(
+        type(pair) is not list
+        or len(pair) != 2
+        or any(type(value) is not str for value in pair)
+        for pair in row['diagnostics']
+    ):
+        raise ValueError('outcome string diagnostic pairs required')
+    outcome = PathOutcome(
+        row['status'],
+        row['sessions_to_pass'],
+        row['failure_reason'],
+        tuple(tuple(pair) for pair in row['diagnostics']),
+    )
+    if (
+        outcome.status == 'PASS'
+        and outcome.sessions_to_pass > context.contract.replay.horizon_sessions
+    ):
+        raise ValueError('outcome beyond frozen horizon')
+    return outcome
+
+
+def _verify_worker_bindings(doc, *, context):
+    """The admission and legality bindings every captured worker result carries."""
     admission_bytes = encoded(doc['source_admission'])
     admission = parse_source_admission(
         admission_bytes,
@@ -176,52 +386,10 @@ def parse_worker_result(raw, *, context, execution_id, plan_bytes, campaign_limi
     )
     if encoded(doc['legality']) != expected_legality:
         raise ValueError('worker legality differs')
-    plan = json.loads(plan_bytes)
-    joint = plan.get('checkpoint') == 'N2'
-    stages = _plan_stages(plan)
-    if type(doc['populations']) is not list or len(doc['populations']) != len(stages):
-        raise ValueError('complete ordered worker populations required')
-    populations = []
-    for population, expected, stage in zip(doc['populations'], plan['depths'], stages):
-        keys = {'population', 'outcomes'} | ({'stage'} if joint else set())
-        fields(population, keys)
-        rows = population['outcomes']
-        if (
-            population['population'] != expected['population']
-            or (joint and population.get('stage') != stage)
-            or type(rows) is not list
-            or len(rows) != expected['depth']
-        ):
-            raise ValueError('worker population order/depth differs')
-        outcomes = []
-        for row in rows:
-            fields(row, {'status', 'sessions_to_pass', 'failure_reason', 'diagnostics'})
-            if type(row['status']) is not str or (
-                row['failure_reason'] is not None and type(row['failure_reason']) is not str
-            ):
-                raise ValueError('closed outcome status/reason required')
-            if type(row['diagnostics']) is not list or any(
-                type(pair) is not list
-                or len(pair) != 2
-                or any(type(value) is not str for value in pair)
-                for pair in row['diagnostics']
-            ):
-                raise ValueError('outcome string diagnostic pairs required')
-            outcome = PathOutcome(
-                row['status'],
-                row['sessions_to_pass'],
-                row['failure_reason'],
-                tuple(tuple(pair) for pair in row['diagnostics']),
-            )
-            if (
-                outcome.status == 'PASS'
-                and outcome.sessions_to_pass > context.contract.replay.horizon_sessions
-            ):
-                raise ValueError('outcome beyond frozen horizon')
-            outcomes.append(outcome)
-        populations.append((population['population'], tuple(outcomes)))
-    if encoded(doc['path_inventory']) != encoded(path_inventory(plan, doc['populations'])):
-        raise ValueError('captured path inventory differs')
+
+
+def _verify_worker_observations(doc, *, context, campaign_limits):
+    """The retained budget observations against the binding limits (D3)."""
     observations = fields(
         doc['observations'], {'worker_compute_wall_ns', 'worker_cpu_ns', 'worker_peak_memory_bytes'}
     )
@@ -245,4 +413,110 @@ def parse_worker_result(raw, *, context, execution_id, plan_bytes, campaign_limi
         or observations['worker_peak_memory_bytes'] > budget_bound[2]
     ):
         raise ValueError('worker exceeded frozen budget')
-    return CapturedN1(tuple(populations), doc)
+
+
+def _parse_part_a_worker_result(
+    raw, *, context, execution_id, plan_bytes, plan, campaign_limits
+):
+    """W5: the PART_A worker-result parse: closed keys, panel order, digests.
+
+    The panel rows must run in index order from zero, each at the plan's frozen
+    panel depth; the panel counts and the expansion fact must agree with each
+    other and with the plan's initial panel count; the two artifact digests
+    must be the digests of exactly the re-encoded initial prefix and the full
+    panel vector; and the panel-major occurrence inventory must re-derive from
+    the plan. The G5 comparisons (tolerance, floor, FULL sanity) are ticket 2d
+    and are not part of this document.
+    """
+    from math import isfinite
+
+    from .compute import part_a_panel_bytes
+    from .protocol import digest
+
+    doc = fields(
+        parse_canonical_json(raw, label='worker result'),
+        {
+            'schema',
+            'execution_id',
+            'plan_sha256',
+            'source_admission',
+            'legality',
+            'runtime_load_manifest',
+            'part_a',
+            'path_inventory',
+            'observations',
+        },
+    )
+    if (
+        doc['schema'] != 'qualification_worker_result/v1'
+        or doc['execution_id'] != execution_id
+        or doc['plan_sha256'] != sha256(plan_bytes)
+    ):
+        raise ValueError('worker admission/execution/plan differs')
+    _verify_worker_bindings(doc, context=context)
+    initial, depth, _ = _part_a_plan_shape(plan)
+    record = fields(
+        doc['part_a'],
+        {
+            'initial_panels',
+            'final_panels',
+            'expansion_required',
+            'initial_prefix_sha256',
+            'final_sha256',
+            'initial_p5',
+            'final_p5',
+            'probe_seconds',
+            'predicted_seconds',
+            'panels',
+        },
+    )
+    rows = record['panels']
+    if type(rows) is not list or not rows:
+        raise ValueError('complete ordered part a panels required')
+    panels = []
+    for expected_index, row in enumerate(rows):
+        fields(row, {'index', 'source_session_ids', 'outcomes'})
+        sessions = row['source_session_ids']
+        if (
+            type(row['index']) is not int
+            or row['index'] != expected_index
+            or type(sessions) is not list
+            or not sessions
+            or any(type(session) is not str or not session for session in sessions)
+        ):
+            raise ValueError('part a panel order or source occurrences differ')
+        outcomes = row['outcomes']
+        if type(outcomes) is not list or len(outcomes) != depth:
+            raise ValueError('part a panel depth differs from the plan')
+        panels.append(
+            CapturedPartAPanel(
+                expected_index,
+                tuple(sessions),
+                tuple(_captured_outcome(outcome, context=context) for outcome in outcomes),
+            )
+        )
+    initial_panels = record['initial_panels']
+    final_panels = record['final_panels']
+    if (
+        type(initial_panels) is not int
+        or type(final_panels) is not int
+        or initial_panels != initial
+        or final_panels != len(panels)
+        or not 0 < initial_panels <= final_panels
+        or type(record['expansion_required']) is not bool
+        or record['expansion_required'] != (final_panels > initial_panels)
+    ):
+        raise ValueError('part a panel counts or expansion fact differ')
+    for name in ('initial_p5', 'final_p5', 'probe_seconds', 'predicted_seconds'):
+        if type(record[name]) is not float or not isfinite(record[name]):
+            raise ValueError('finite part a measurement floats required')
+    digest(record['initial_prefix_sha256'])
+    digest(record['final_sha256'])
+    if sha256(part_a_panel_bytes(panels[:initial_panels])) != record['initial_prefix_sha256']:
+        raise ValueError('part a initial prefix digest differs')
+    if sha256(part_a_panel_bytes(panels)) != record['final_sha256']:
+        raise ValueError('part a final digest differs')
+    if encoded(doc['path_inventory']) != encoded(part_a_path_inventory(plan, panels)):
+        raise ValueError('captured path inventory differs')
+    _verify_worker_observations(doc, context=context, campaign_limits=campaign_limits)
+    return CapturedPartA(tuple(panels), doc)

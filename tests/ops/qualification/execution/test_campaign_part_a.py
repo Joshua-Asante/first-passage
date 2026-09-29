@@ -5,18 +5,28 @@ providers and exact outcome vectors; adapter cases run
 ``compute.run_part_a_compute`` on the real TEST_ONLY composition fixture the
 way ``test_compute.py`` builds it. The packet's third required assertion
 (``part_a_worker_launch_count == 1``) needs the worker route and lives with
-it, not here.
+it, not here. Ticket 2c adds the worker-route boundary cases beside them: the
+P-3/P-7/SR-6/SR-9 static facts and the W5 worker-result parse refusals.
 """
+import ast
+import importlib
+import inspect
+import json
 from dataclasses import FrozenInstanceError, replace
 from datetime import date
 from decimal import Decimal, localcontext
 from math import ceil
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
+from bundle_fixture import build_bundle
 from composition_fixture import build_verified_composition
 from test_part_a import EDGE, STATE, request, source
+from test_worker import part_a_stage_input
+from c1_rail.qualification.contract import canonical_json_bytes as encoded
+from c1_rail.qualification.execution.protocol import decode_frame, sha256
 from c1_rail.qualification.execution import compute
 from c1_rail.qualification.execution.budget import BudgetGuard
 from c1_rail.qualification.model import ReplayResult, SessionRecord
@@ -349,3 +359,138 @@ def test_adapter_parity_with_exact_decimal_recomputation(tmp_path):
     assert out.expansion_required == expanded
     assert out.result.failure_reason == reason
     assert out.result.passed == (reason is None)
+
+
+# ---- Ticket 2c: the worker route boundary (P-3, P-7, SR-6, SR-9, W5) ---------
+
+
+def _override_sites():
+    """Every ops/ file naming PartAMeasurementOverride, split by use kind."""
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    root = Path(worker.__file__).resolve().parents[3]
+    class_sites, call_sites = {}, {}
+    for path in sorted(root.rglob('*.py')):
+        tree = ast.parse(path.read_bytes(), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name == 'PartAMeasurementOverride':
+                class_sites.setdefault(path.relative_to(root).as_posix(), []).append(node.lineno)
+            if isinstance(node, ast.Call):
+                target = node.func
+                name = (target.id if isinstance(target, ast.Name)
+                        else target.attr if isinstance(target, ast.Attribute) else None)
+                if name == 'PartAMeasurementOverride':
+                    call_sites.setdefault(path.relative_to(root).as_posix(), []).append(node.lineno)
+    return class_sites, call_sites
+
+
+def test_only_the_compute_adapter_may_name_the_part_a_measurement_override():
+    """P-3: the override exists only as the compute adapter's TEST_ONLY seam.
+
+    In ops/ the name may appear only as compute.py's ClassDef (or a call to
+    it there); no dispatch or settlement route constructs one."""
+    class_sites, call_sites = _override_sites()
+    compute_path = 'c1_rail/qualification/execution/compute.py'
+    assert set(class_sites) == {compute_path}
+    assert set(call_sites) <= {compute_path}
+    for module in ('worker.py', 'service.py', 'campaign_supervisor.py', 'g5.py',
+                   'campaign_protocol.py'):
+        assert 'c1_rail/qualification/execution/' + module not in call_sites
+
+
+def test_run_part_a_body_is_compute_side_and_store_free():
+    """P-7: the PART_A body runs behind the compute boundary with no campaign
+    store or journal import, and run_worker routes the checkpoint through it."""
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    tree = ast.parse(inspect.getsource(worker))
+    imported = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                imported.add(node.module)
+            imported.update(alias.name for alias in node.names)
+    assert 'campaign_store' not in imported
+    assert 'journal' not in imported
+    assert not any('campaign_store' in name for name in imported)
+    assert not any('journal' in name for name in imported)
+    run_worker_def = next(node for node in tree.body
+                          if isinstance(node, ast.FunctionDef) and node.name == 'run_worker')
+    assert any(isinstance(node, ast.Name) and node.id == 'run_part_a_body'
+               for node in ast.walk(run_worker_def))
+
+
+def test_phase_budget_guard_measures_the_three_settlement_observations():
+    """SR-6: the campaign guard reports exactly the three observations the
+    settlement compares; it never re-derives a fresh contract allowance."""
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    guard = worker.PhaseBudgetGuard(
+        {'cpu_ns': 3600 * 10**9, 'wall_ns': 3600 * 10**9, 'memory_bytes': 2**40})
+    observed = guard.check_and_measure()
+    assert set(observed) == {'worker_compute_wall_ns', 'worker_cpu_ns',
+                             'worker_peak_memory_bytes', 'remaining_wall_seconds'}
+    assert all(type(observed[name]) is int and observed[name] >= 0 for name in
+               ('worker_compute_wall_ns', 'worker_cpu_ns', 'worker_peak_memory_bytes'))
+    assert observed['worker_compute_wall_ns'] < 3600 * 10**9
+    assert observed['worker_cpu_ns'] < 3600 * 10**9
+
+
+@pytest.mark.parametrize('phrase', [
+    'unnecessary expansion',
+    'omitted expansion',
+    'expansion_center_p5',
+    'expansion_tolerance',
+])
+def test_the_part_a_body_names_no_expansion_justification(phrase):
+    """SR-9: the worker body justifies no expansion decision; the criteria
+    live in the frozen contract and the engine, never in the route."""
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    assert phrase not in inspect.getsource(worker.run_part_a_body)
+
+
+def test_part_a_worker_result_parse_refuses_every_mutation(tmp_path, monkeypatch):
+    """W5: the captured PART_A document from a real worker run refuses a
+    swapped panel vector, an altered source occurrence, a wrong panel count, a
+    wrong prefix digest and a forced expansion fact. One real PART_A run
+    stages the document; every mutation is re-encoded and refused."""
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    evidence = importlib.import_module('c1_rail.qualification.execution.evidence')
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
+    context, pa, out, payload, assessment, receipt = part_a_stage_input(tmp_path, case, monkeypatch)
+    frame = worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=out)
+    doc = json.loads(decode_frame(frame, limit=context.profile.output_byte_limit))
+    plan = (pa / 'plan.json').read_bytes()
+    evidence.parse_worker_result(encoded(doc), context=context, execution_id='pawork',
+                                 plan_bytes=plan)
+
+    def swap_two_panels(document):
+        rows = document['part_a']['panels']
+        rows[0], rows[1] = rows[1], rows[0]
+
+    def alter_one_source_session_id(document):
+        document['part_a']['panels'][0]['source_session_ids'][0] += '-tampered'
+
+    def wrong_final_panels(document):
+        document['part_a']['final_panels'] += 1
+
+    def altered_initial_prefix_digest(document):
+        document['part_a']['initial_prefix_sha256'] = '0' * 64
+
+    def forced_expansion_fact(document):
+        document['part_a']['expansion_required'] = True
+
+    for name, mutate in (
+        ('swap-two-panels', swap_two_panels),
+        ('alter-one-source-session-id', alter_one_source_session_id),
+        ('wrong-final-panels', wrong_final_panels),
+        ('altered-initial-prefix-digest', altered_initial_prefix_digest),
+        ('forced-expansion-fact', forced_expansion_fact),
+    ):
+        mutated = json.loads(json.dumps(doc))
+        mutate(mutated)
+        try:
+            evidence.parse_worker_result(encoded(mutated), context=context,
+                                         execution_id='pawork', plan_bytes=plan)
+        except ValueError:
+            continue
+        raise AssertionError('the captured part a document accepted ' + name)

@@ -2,6 +2,9 @@
 import base64
 import importlib
 import json
+import os
+import shutil
+import stat
 
 import pytest
 from bundle_fixture import build_bundle
@@ -9,7 +12,7 @@ from test_contract import NOW
 from c1_rail.qualification.contract import canonical_json_bytes as encoded
 from c1_rail.qualification.execution.admission import verify_bundle
 from c1_rail.qualification.execution.plan import derive_n1_plan
-from c1_rail.qualification.execution.protocol import decode_frame
+from c1_rail.qualification.execution.protocol import decode_frame, sha256
 
 
 def stage_input(root, case):
@@ -195,3 +198,262 @@ def test_worker_refuses_a_tampered_predecessor_receipt(tmp_path, monkeypatch):
     (tmp_path / 'predecessor-receipt.json').write_bytes(encoded(tampered))
     with pytest.raises(ValueError, match='committed predecessor decision differs'):
         worker.run_worker(tmp_path, execution_id='n2work', checkpoint='N2')
+
+
+# ---- S5: the PART_A worker route (W1 staged custody, S5-D1 prefix artifacts) --
+
+
+def _stage_bundle(case, mount):
+    """``run_worker`` reads its retained bundle from <input>/bundle; a staged
+    mount in its own directory sees byte-identical retained files."""
+    shutil.copytree(case['root'], mount / 'bundle')
+
+
+def _part_a_predecessor_documents(pa, context, payload):
+    """Write the three staged N2 predecessor documents into a PART_A mount.
+
+    The assessment is a minimal wrapper, not G5's real one: G5 builds the real
+    committed assessment, and the worker's W1 checks bind only these facts to
+    the staged bytes (the receipt's ``assessment_sha256`` and the assessment's
+    capture digests, the payload digest among them).
+    """
+    assessment = encoded(
+        {
+            'schema': 'qualification_campaign_checkpoint_assessment/v1',
+            'checkpoint': 'N2',
+            'decision': 'CONTINUE',
+            'capture': {
+                'result_sha256': '3' * 64,
+                'payload_sha256': sha256(payload),
+                'attestation_sha256': '4' * 64,
+            },
+        }
+    )
+    receipt = encoded(
+        {
+            'schema': 'qualification_campaign_checkpoint_receipt/v1',
+            'attempt_id': context.attempt_id,
+            'checkpoint': 'N2',
+            'work_id': 'n2g5',
+            'campaign_id': 'c1',
+            'assessment_sha256': sha256(assessment),
+            'cutoff_sha256': '1' * 64,
+            'decision': 'CONTINUE',
+            'campaign_state': 'PART_A_READY',
+            'signing_at_utc': '2026-09-22T02:00:00Z',
+            'committed_at_utc': '2026-09-22T02:00:01Z',
+            'intent_sha256': '2' * 64,
+            'predecessor_receipt_sha256': '5' * 64,
+            'stage_decisions': {'N2': 'PASS', 'PART_B': 'PASS'},
+        }
+    )
+    (pa / 'predecessor-receipt.json').write_bytes(receipt)
+    (pa / 'predecessor-assessment.json').write_bytes(assessment)
+    (pa / 'predecessor-payload.json').write_bytes(payload)
+    return assessment, receipt
+
+
+def _write_part_a_plan(pa, context, receipt):
+    from c1_rail.qualification.checkpoint_plan import derive_checkpoint_plan
+    from c1_rail.qualification.execution.plan import derive_campaign_plan_from_context
+
+    plan = derive_checkpoint_plan(derive_campaign_plan_from_context(context), 'PART_A', receipt)
+    (pa / 'plan.json').write_bytes(plan)
+    return plan
+
+
+def part_a_stage_input(tmp_path, case, monkeypatch):
+    """A guardian-staged PART_A mount over a genuine committed N2 capture.
+
+    The staged payload is a genuine N2 worker payload (SR-5): the real joint
+    worker runs once on its own mount, and its framed result is exactly the
+    capture the PART_A mount stages. Returns ``(context, pa, out, payload,
+    assessment, receipt)``.
+    """
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    monkeypatch.setattr(worker, 'utc_now', lambda: NOW)
+    n2 = tmp_path / 'n2'
+    n2.mkdir()
+    _stage_bundle(case, n2)
+    context, _ = joint_stage_input(n2, case)
+    payload = decode_frame(
+        worker.run_worker(n2, execution_id='n2work', checkpoint='N2'),
+        limit=context.profile.output_byte_limit,
+    )
+    pa = tmp_path / 'pa'
+    pa.mkdir()
+    stage_input(pa, case)
+    _stage_bundle(case, pa)
+    assessment, receipt = _part_a_predecessor_documents(pa, context, payload)
+    _write_part_a_plan(pa, context, receipt)
+    out = tmp_path / 'out'
+    out.mkdir()
+    return context, pa, out, payload, assessment, receipt
+
+
+def hand_staged_part_a(tmp_path, case, monkeypatch):
+    """The same PART_A mount without the N2 worker run, for the cheap refusals.
+
+    The staged payload is a closed-shape stand-in: the W1 digest chain and the
+    captured outcome-status parse are all these routes read, never the
+    capture's genuineness (``part_a_stage_input`` owns SR-5).
+    """
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    monkeypatch.setattr(worker, 'utc_now', lambda: NOW)
+    pa = tmp_path / 'pa'
+    pa.mkdir()
+    context = stage_input(pa, case)
+    _stage_bundle(case, pa)
+    depth = context.contract.stage_specs['N2'].exact_depth
+    outcome = {'status': 'PASS', 'sessions_to_pass': 1, 'failure_reason': None, 'diagnostics': []}
+    payload = encoded(
+        {
+            'schema': 'qualification_worker_result/v1',
+            'execution_id': 'n2work',
+            'plan_sha256': '0' * 64,
+            'source_admission': {},
+            'legality': {},
+            'runtime_load_manifest': [],
+            'populations': [
+                dict(population='FULL', stage='N2', outcomes=[dict(outcome) for _ in range(depth)])
+            ],
+            'path_inventory': {},
+            'observations': {},
+        }
+    )
+    assessment, receipt = _part_a_predecessor_documents(pa, context, payload)
+    _write_part_a_plan(pa, context, receipt)
+    out = tmp_path / 'out'
+    out.mkdir()
+    return context, pa, out, payload, assessment, receipt
+
+
+def test_worker_runs_part_a_with_both_prefix_artifacts(tmp_path, monkeypatch):
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
+    context, pa, out, payload, assessment, receipt = part_a_stage_input(tmp_path, case, monkeypatch)
+    overrides = []
+    original = worker.run_part_a_body
+
+    def spying_body(*args, **kwargs):
+        overrides.append(kwargs.get('measurement_override'))
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(worker, 'run_part_a_body', spying_body)
+    frame = worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=out)
+    doc = json.loads(decode_frame(frame, limit=context.profile.output_byte_limit))
+    part_a_worker_launch_count = len(overrides)
+    initial_panel_bytes = (out / 'part-a-initial.jsonl').read_bytes()
+    final_panel_bytes = (out / 'part-a-final.jsonl').read_bytes()
+    part = context.contract.replay.part_a
+    initial_panels = part.initial_panels
+    expanded_panels = part.expanded_panels
+    expansion_required = doc['part_a']['expansion_required']
+    actual_panel_count = doc['part_a']['final_panels']
+    assert final_panel_bytes[:len(initial_panel_bytes)] == initial_panel_bytes
+    assert actual_panel_count == (expanded_panels if expansion_required else initial_panels)
+    assert part_a_worker_launch_count == 1
+    # No expansion on this fixture: the initial prefix is the whole final
+    # artifact, and the panel vector is exactly the initial panel count.
+    assert expansion_required is False
+    assert actual_panel_count == initial_panels == len(doc['part_a']['panels'])
+    assert doc['part_a']['initial_prefix_sha256'] == sha256(initial_panel_bytes)
+    assert doc['part_a']['final_sha256'] == sha256(final_panel_bytes)
+    # SR-4 read-only by convention. Windows chmod carries only the read-only
+    # attribute and os.stat synthesizes the mode bits there, so the 0o444
+    # equality is asserted as the POSIX fact it is (not a pytest skip).
+    if os.name != 'nt':
+        for name in ('part-a-initial.jsonl', 'part-a-final.jsonl'):
+            assert stat.S_IMODE((out / name).stat().st_mode) == 0o444
+    # P-3: the route never passes a measurement override.
+    assert overrides == [None]
+
+
+def test_part_a_initial_artifact_is_fsynced_before_the_decision(tmp_path, monkeypatch):
+    """S5-D1 custody ordering: the initial artifact's fsync precedes the first
+    percentile (the expansion decision input), and the final artifact's fsync
+    follows the last one."""
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    part_a = importlib.import_module('c1_rail.qualification.part_a')
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
+    context, pa, out, payload, assessment, receipt = hand_staged_part_a(tmp_path, case, monkeypatch)
+    events = []
+    real_fsync = os.fsync
+
+    def recording_fsync(descriptor):
+        events.append('fsync')
+        return real_fsync(descriptor)
+
+    real_percentile = part_a._percentile
+
+    def recording_percentile(panels, probability, method):
+        events.append('percentile')
+        return real_percentile(panels, probability, method)
+
+    monkeypatch.setattr(os, 'fsync', recording_fsync)
+    monkeypatch.setattr(part_a, '_percentile', recording_percentile)
+    worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=out)
+    fsyncs = [index for index, event in enumerate(events) if event == 'fsync']
+    percentiles = [index for index, event in enumerate(events) if event == 'percentile']
+    assert fsyncs and percentiles
+    assert min(fsyncs) < min(percentiles)
+    assert max(fsyncs) > max(percentiles)
+
+
+@pytest.mark.parametrize('role,expected', [
+    ('assessment', 'staged N2 assessment differs from the receipt binding'),
+    ('payload', 'staged N2 capture payload differs from the assessment binding'),
+    ('receipt', 'staged N2 assessment differs from the receipt binding'),
+])
+def test_part_a_refuses_tampered_staged_predecessors(tmp_path, monkeypatch, role, expected):
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
+    context, pa, out, payload, assessment, receipt = hand_staged_part_a(tmp_path, case, monkeypatch)
+    if role == 'assessment':
+        tampered = json.loads(assessment)
+        tampered['capture']['payload_sha256'] = '7' * 64
+        (pa / 'predecessor-assessment.json').write_bytes(encoded(tampered))
+    elif role == 'payload':
+        (pa / 'predecessor-payload.json').write_bytes(payload + b'\n')
+    else:
+        # The plan is re-derived from the tampered receipt, so the refusal is
+        # the worker's own W1 custody check, not the plan equality check.
+        tampered = json.loads(receipt)
+        tampered['assessment_sha256'] = '6' * 64
+        tampered_bytes = encoded(tampered)
+        (pa / 'predecessor-receipt.json').write_bytes(tampered_bytes)
+        _write_part_a_plan(pa, context, tampered_bytes)
+    with pytest.raises(ValueError, match=expected):
+        worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=out)
+    assert list(out.iterdir()) == []
+
+
+def test_part_a_failing_initial_write_leaves_no_final_file(tmp_path, monkeypatch):
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
+    context, pa, out, payload, assessment, receipt = hand_staged_part_a(tmp_path, case, monkeypatch)
+
+    class CustodyWriteRefused(RuntimeError):
+        pass
+
+    original = worker.write_part_a_artifact
+
+    def refusing_writer(directory, name, raw):
+        if name == 'part-a-initial.jsonl':
+            raise CustodyWriteRefused('initial prefix artifact write failed')
+        return original(directory, name, raw)
+
+    monkeypatch.setattr(worker, 'write_part_a_artifact', refusing_writer)
+    # The custody failure propagates: no final artifact and no frame follow it.
+    with pytest.raises(CustodyWriteRefused):
+        worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=out)
+    assert list(out.iterdir()) == []
+
+
+def test_part_a_worker_requires_the_output_mount(tmp_path, monkeypatch):
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
+    context, pa, out, payload, assessment, receipt = hand_staged_part_a(tmp_path, case, monkeypatch)
+    with pytest.raises(ValueError, match='campaign output mount'):
+        worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=None)
+    assert list(out.iterdir()) == []
