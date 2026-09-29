@@ -1423,9 +1423,17 @@ Applying it would mean choosing wording. The coordinator drafts a reconciled O-1
 - The unextended control is `BUDGET_EXHAUSTED`.
 - **RC-3b's executed budget-binding check is done; RC-3b remains open overall.** Stage 1c, measured memory feasibility, and Stage 2/PA-5 remain outstanding.
 
+**Codex C3 step-1 review, 2026-09-29: RESOLVED** (a reviewer verdict, not C3 or S5 acceptance). Scope: `05f3788..c7713e7`, the four escalation-lane commits and the rulings above.
+- **B3: yes.** The unchanged closure test (`tests/ops/qualification/execution/test_runtime.py:20`) excludes `production_source` from G5, so full source admission would violate it. The calendar-based replacement satisfies the rule and refuses all four re-minted mutations: nonexistent session, wrong-position session, substituted prefix and reordered prefix. The rule requires the loader's exclusion; it does not uniquely prescribe this implementation.
+- **B7: yes.** `e38b308`, `c2f834a`, `3362b43` and `d4afa5b` match their declared scope. There are no weakened tolerances, suppressed assertions or production forcing paths. `537cb17` corrects `d4afa5b`'s wording to "before artifact creation".
+- **Conformance.** Every SR-1..SR-9 and P-1..P-7 node exists, exercises its stated behavior and passes; P-3, P-4 and P-5 hold. The `/v7` roles, `/v8` snapshot, two-artifact custody and transitively bound N2 baseline are consistent with the packet. SR-8's Linux export production and P-7's Stage 1c execution remain unexecuted.
+- **Disclosures.** All six are confirmed: pilot identity proves plan agreement only; P-4 holds by construction for the plans; G5 completion gains both states; the CPU split is null; above-FULL is unreachable at N2 depth 60; the inode case proves neither SIGKILL nor power-loss behavior.
+- **Linux: yes, conditionally.** Green execution of the four Part A nodes would establish the four required witnesses. Discharging packet §4's full Linux line also needs the full S4-plus-Part-A selection with valid retained evidence.
+- **Verification:** a fresh Windows launcher run of nine reviewed modules on the unchanged `c7713e7` (ops-env CPython 3.13.2). **340 passed, 0 skipped**; record `20260929T192731Z-28f8c6e20559` (SHA-256 `f22359a9122235f530d0af1d05cdecaf3cb973ede93d6d6e1363c7175f549d9c`). The record shows completed, exit 0, `source_stable` true, complete capture and no report errors; the coordinator re-read it.
+
 **Still open at C3:**
-- Stage 1c: Linux dispatch, after the harness condition above and the operator's C3 Linux grant;
-- Codex's C3 review, including items B3 and B7;
+- the operator's C3 step-1 decision;
+- Stage 1c: Linux dispatch after the operator's C3 Linux grant;
 - RC-2's merge (#552) and O-10's merge (#555);
 - Stage 2/PA-5 after the acceptance-grade run;
 - OQ-1, Q1, Q7 and Q9.
