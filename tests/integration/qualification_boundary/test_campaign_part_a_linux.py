@@ -38,8 +38,10 @@ Cases the packet's Linux line names, and how each stands here:
 (c) crash after the initial-prefix artifact is fsynced and before the final
     artifact -> IN_DOUBT with the initial prefix retained. The boundary host
     caps the work's output tmpfs at exactly one free inode (a host-side
-    remount of the manager-created mount, before the payload container
-    exists; no production seam). The worker's SR-4 writer then creates, writes,
+    remount of the manager-created mount, applied before artifact creation:
+    the test polls for the mount and asserts it is still empty with one free
+    inode, so a late cap cannot pass falsely; no production seam; this is not
+    evidence of SIGKILL or power-loss behavior). The worker's SR-4 writer then creates, writes,
     fsyncs and chmods the initial-prefix artifact as the last inode, and the
     final artifact's exclusive create is refused by the kernel (ENOSPC): the
     payload dies from that refusal after the prefix fsync and before any final
@@ -431,9 +433,10 @@ def output_mount(boundary, attempt, work_id, seconds=120):
 
 def cap_output_mount_inodes(boundary, attempt, work_id):
     """Case (c)'s host-side condition: the output tmpfs keeps exactly one free
-    inode. Applied to the manager-created mount before the payload container
-    exists (the guardian mounts, stages the input, then creates the container),
-    so the first exclusive create on the mount -- the SR-4 initial-prefix
+    inode. Applied to the manager-created mount before artifact creation: this
+    polls for the mount and does not synchronize with container creation; the
+    empty-mount and one-free-inode assertions below make a late cap fail
+    rather than pass. The first exclusive create on the mount -- the SR-4 initial-prefix
     write -- succeeds and the second -- the final artifact -- is refused by the
     kernel with ENOSPC. Nothing in production changes."""
     out_path = output_mount(boundary, attempt, work_id)
