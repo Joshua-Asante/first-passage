@@ -192,7 +192,7 @@ VOID and both publication transactions have a single observable ordering. If VOI
 
 ## §4 — Falsifier and response
 
-If any tested route publishes a new usable result/seal after VOID, repeats a started draw, resets campaign budget on restart, accepts fabricated output, changes panel-prefix identity or accepts incomplete PASS, then reject this release and stop integration/activation. Preserve evidence and amend the design explicitly before rerunning acceptance. Otherwise accept only when every §6 requirement is demonstrated at the selected revision. Check on every candidate release and every change to execution, adjudication, budget, signing, storage or deployment configuration.
+If any tested route publishes a new usable result/seal after VOID, repeats a started draw (a §2.6 bounded same-sample re-execution is not a repeat), resets campaign budget on restart, accepts fabricated output, changes panel-prefix identity or accepts incomplete PASS, then reject this release and stop integration/activation. Preserve evidence and amend the design explicitly before rerunning acceptance. Otherwise accept only when every §6 requirement is demonstrated at the selected revision. Check on every candidate release and every change to execution, adjudication, budget, signing, storage or deployment configuration.
 
 ## §5 — Forbidden moves
 
