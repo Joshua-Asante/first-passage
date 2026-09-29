@@ -477,3 +477,181 @@ def test_v7_budget_snapshot_vector_beside_v6():
     uncommitted['checkpoints']['N2'].pop('decision')
     with pytest.raises(ValueError):
         parse_campaign_budget_snapshot(canonical_json_bytes(uncommitted))
+
+
+def test_v8_budget_snapshot_vector_beside_v7():
+    from c1_rail.qualification.journal_snapshot import (
+        encode_campaign_budget_snapshot,
+        parse_campaign_budget_snapshot,
+    )
+
+    doc = v5_snapshot()
+    doc['schema'] = 'qualification_campaign_budget_snapshot/v8'
+    doc['checkpoints'] = {
+        'N1': {
+            'state': 'COMMITTED',
+            'work_id': 'n1work',
+            'payload_sha256': '1' * 64,
+            'result_sha256': '2' * 64,
+            'attestation_sha256': '3' * 64,
+            'assessment_sha256': '4' * 64,
+            'receipt_sha256': '5' * 64,
+            'decision': 'CONTINUE',
+        },
+        'N2': {
+            'state': 'COMMITTED',
+            'work_id': 'n2work',
+            'payload_sha256': '6' * 64,
+            'result_sha256': '7' * 64,
+            'attestation_sha256': '8' * 64,
+            'assessment_sha256': '9' * 64,
+            'receipt_sha256': 'a' * 64,
+            'decision': 'CONTINUE',
+            'stage_decisions': {'N2': 'PASS', 'PART_B': 'PASS'},
+        },
+        'PART_A': {
+            'state': 'CAPTURED',
+            'work_id': 'pawork',
+            'payload_sha256': 'b' * 64,
+            'initial_prefix_sha256': 'c' * 64,
+            'final_sha256': 'd' * 64,
+            'initial_panels': 2,
+            'final_panels': 4,
+            'expansion_required': True,
+        },
+    }
+    raw = encode_campaign_budget_snapshot(doc)
+    parsed = parse_campaign_budget_snapshot(raw)
+    assert parsed['schema'] == 'qualification_campaign_budget_snapshot/v8'
+    assert parsed['checkpoints']['PART_A']['initial_panels'] == 2
+    assert parsed['checkpoints']['PART_A']['final_panels'] == 4
+    assert parsed['checkpoints']['PART_A']['expansion_required'] is True
+    # A PART_A key under /v7, and a /v8 without the PART_A key, both refuse.
+    mislabeled = json.loads(json.dumps(doc))
+    mislabeled['schema'] = 'qualification_campaign_budget_snapshot/v7'
+    with pytest.raises(ValueError, match='checkpoint contents differ from snapshot version'):
+        parse_campaign_budget_snapshot(canonical_json_bytes(mislabeled))
+    unexpanded = json.loads(json.dumps(doc))
+    unexpanded['checkpoints'].pop('PART_A')
+    with pytest.raises(ValueError, match='checkpoint contents differ from snapshot version'):
+        parse_campaign_budget_snapshot(canonical_json_bytes(unexpanded))
+    # PART_A requires its N2 predecessor committed and continuing.
+    uncommitted = json.loads(json.dumps(doc))
+    row = uncommitted['checkpoints']['N2']
+    row.update(state='ATTESTED', result_sha256='e' * 64, attestation_sha256='f' * 64)
+    for name in ('assessment_sha256', 'receipt_sha256', 'decision', 'stage_decisions'):
+        row.pop(name)
+    with pytest.raises(ValueError, match='part a checkpoint requires a committed continuing n2'):
+        parse_campaign_budget_snapshot(canonical_json_bytes(uncommitted))
+    failing = json.loads(json.dumps(doc))
+    failing['checkpoints']['N2'].update(
+        decision='FAILURE', stage_decisions={'N2': 'PASS', 'PART_B': 'FAIL'}
+    )
+    with pytest.raises(ValueError, match='part a checkpoint requires a committed continuing n2'):
+        parse_campaign_budget_snapshot(canonical_json_bytes(failing))
+    # A missing capture field refuses through the closed field set.
+    missing = json.loads(json.dumps(doc))
+    missing['checkpoints']['PART_A'].pop('initial_panels')
+    with pytest.raises(ValueError, match='checkpoint family fields differ'):
+        parse_campaign_budget_snapshot(canonical_json_bytes(missing))
+    # expansion_required must agree with the panel counts, both ways.
+    for initial, final, fact in ((2, 4, False), (2, 2, True)):
+        inconsistent = json.loads(json.dumps(doc))
+        inconsistent['checkpoints']['PART_A'].update(
+            initial_panels=initial, final_panels=final, expansion_required=fact
+        )
+        with pytest.raises(ValueError, match='part a expansion fact differs'):
+            parse_campaign_budget_snapshot(canonical_json_bytes(inconsistent))
+    # final_panels never falls below initial_panels.
+    shrunk = json.loads(json.dumps(doc))
+    shrunk['checkpoints']['PART_A'].update(
+        initial_panels=4, final_panels=2, expansion_required=False
+    )
+    with pytest.raises(ValueError, match='part a panel counts differ'):
+        parse_campaign_budget_snapshot(canonical_json_bytes(shrunk))
+    # A PART_A row carries no stage_decisions.
+    staged = json.loads(json.dumps(doc))
+    staged['checkpoints']['PART_A']['stage_decisions'] = {'N2': 'PASS'}
+    with pytest.raises(ValueError):
+        parse_campaign_budget_snapshot(canonical_json_bytes(staged))
+    # The capture fields belong to the PART_A row alone, never to N1 or N2.
+    for checkpoint in ('N1', 'N2'):
+        leaked = json.loads(json.dumps(doc))
+        leaked['checkpoints'][checkpoint]['final_panels'] = 4
+        with pytest.raises(ValueError):
+            parse_campaign_budget_snapshot(canonical_json_bytes(leaked))
+    # P-4: the /v8 snapshot admits no measurement_override or within_pp key,
+    # neither on the document nor on the PART_A family row.
+    for key in ('measurement_override', 'within_pp'):
+        broken = json.loads(json.dumps(doc))
+        broken[key] = True
+        with pytest.raises(ValueError):
+            parse_campaign_budget_snapshot(canonical_json_bytes(broken))
+        row_key = json.loads(json.dumps(doc))
+        row_key['checkpoints']['PART_A'][key] = True
+        with pytest.raises(ValueError):
+            parse_campaign_budget_snapshot(canonical_json_bytes(row_key))
+
+
+def test_checkpoint_snapshot_accepts_part_a_with_an_n2_predecessor():
+    from c1_rail.qualification.journal_snapshot import (
+        encode_campaign_checkpoint_snapshot,
+        parse_campaign_checkpoint_snapshot,
+    )
+
+    good = {
+        'attempt_id': 'a1',
+        'checkpoint': 'PART_A',
+        'contract_sha256': '1' * 64,
+        'trust_domain_sha256': '2' * 64,
+        'policy_sha256': '3' * 64,
+        'validity': 'VALID',
+        'campaign_revision': 4,
+        'authority_head': '4' * 64,
+        'event_head': '5' * 64,
+        'campaign_state': 'PART_A_READY',
+        'works': [
+            {'work_id': 'pawork', 'phase': 'PART_A', 'state': 'CAPTURED', 'settled': False}
+        ],
+        'capture': {
+            'work_id': 'pawork',
+            'result_sha256': '6' * 64,
+            'payload_sha256': '7' * 64,
+            'attestation_sha256': '8' * 64,
+        },
+        'intent': {'work_id': 'pag5work', 'candidate_sha256': None},
+        'members': [
+            {'role': role, 'sha256': digest, 'byte_length': 10}
+            for role, digest in (
+                ('plan', '9' * 64),
+                ('result', 'a' * 64),
+                ('payload', 'b' * 64),
+                ('attestation', 'c' * 64),
+                ('retained_bundle_index', 'd' * 64),
+                ('predecessor_receipt', 'e' * 64),
+                ('predecessor_assessment', '1' * 64),
+                ('predecessor_plan', '2' * 64),
+                ('predecessor_payload', '3' * 64),
+            )
+        ],
+        'predecessor': {
+            'checkpoint': 'N2',
+            'assessment_sha256': '4' * 64,
+            'receipt_sha256': '5' * 64,
+        },
+    }
+    raw = encode_campaign_checkpoint_snapshot(**good)
+    parsed = parse_campaign_checkpoint_snapshot(raw)
+    assert parsed['checkpoint'] == 'PART_A'
+    assert parsed['predecessor']['checkpoint'] == 'N2'
+    assert {row['role'] for row in parsed['members']} >= {
+        'predecessor_receipt',
+        'predecessor_assessment',
+        'predecessor_plan',
+        'predecessor_payload',
+    }
+    # The N1 predecessor belongs to N2 alone; PART_A binds the committed N2.
+    doc = json.loads(raw)
+    wrong = dict(doc, predecessor=dict(doc['predecessor'], checkpoint='N1'))
+    with pytest.raises(ValueError, match='predecessor checkpoint differs'):
+        parse_campaign_checkpoint_snapshot(canonical_json_bytes(wrong))

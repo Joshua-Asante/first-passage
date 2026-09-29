@@ -469,7 +469,9 @@ def test_checkpoint_snapshot_parser_refuses_open_shapes():
 
     doc = json.loads(raw)
     for mutation, pattern in (
-        ({'checkpoint': 'PART_A'}, 'schema required'),
+        # S5: PART_A is a valid checkpoint now; this N1-shaped document
+        # still refuses, on its missing predecessor binding.
+        ({'checkpoint': 'PART_A'}, 'fields differ'),
         ({'campaign_state': 'N3_READY'}, 'state differs'),
         ({'validity': 'MAYBE'}, 'state differs'),
         ({'members': doc['members'][:4]}, 'incomplete'),

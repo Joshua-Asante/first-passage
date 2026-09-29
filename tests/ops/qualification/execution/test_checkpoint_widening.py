@@ -242,3 +242,95 @@ def test_the_frozen_v8_literal_is_not_the_widened_layout():
     assert CHECKPOINT_SCHEMA_V8 != CHECKPOINT_SCHEMA
     assert "CHECK(checkpoint='N1')" in CHECKPOINT_SCHEMA_V8
     assert 'PRIMARY KEY(attempt_id,role,sha256)' in CHECKPOINT_SCHEMA_V8
+
+
+# ---- S5 R1/R2/R4: the PART_A progression pair and the capture field set -----
+
+
+def test_part_a_progression_pair_and_phase_sets():
+    """R1: the PART_A advance pair exists and both names are progression states
+    (the settling G5 work completes in them). R2: PART_A_READY admits exactly
+    the PART_A compute/capture/G5 phases; FULL_PASS_READY and PART_A_FAILED
+    admit none."""
+    from c1_rail.qualification.execution.campaign_store import (
+        CHECKPOINT_ADVANCES,
+        CHECKPOINT_PROGRESSION_STATES,
+        PROGRESSION_PHASES,
+    )
+
+    assert CHECKPOINT_ADVANCES['PART_A'] == ('FULL_PASS_READY', 'PART_A_FAILED')
+    assert 'FULL_PASS_READY' in CHECKPOINT_PROGRESSION_STATES
+    assert 'PART_A_FAILED' in CHECKPOINT_PROGRESSION_STATES
+    assert PROGRESSION_PHASES['PART_A_READY'] == ('PART_A', 'PART_A_CAPTURE', 'PART_A_G5')
+    assert 'FULL_PASS_READY' not in PROGRESSION_PHASES
+    assert 'PART_A_FAILED' not in PROGRESSION_PHASES
+
+
+def test_part_a_capture_fields_form_a_validated_closed_set():
+    """R4: PART_A requires the five S5-D1 fields, N1/N2 refuse any of them, and
+    the digests, panel counts and expansion fact are validated. The method is
+    a static helper, so it is tested directly."""
+    from c1_rail.qualification.execution.campaign_store import (
+        PART_A_CAPTURE_FIELDS,
+        CampaignStore,
+    )
+
+    capture = CampaignStore._part_a_capture
+    valid = {
+        'initial_prefix_sha256': '1' * 64,
+        'final_sha256': '2' * 64,
+        'initial_panels': 2,
+        'final_panels': 4,
+        'expansion_required': True,
+    }
+    assert capture('PART_A', **valid) == valid
+    # The production call shape (retain_checkpoint_capture) always names all
+    # five arguments; an unset one arrives as None.
+    unset = dict.fromkeys(PART_A_CAPTURE_FIELDS)
+    # N1 and N2 take none of the fields; their capture stays the empty set.
+    assert capture('N1', **unset) == {}
+    assert capture('N2', **unset) == {}
+    for checkpoint in ('N1', 'N2'):
+        for name in PART_A_CAPTURE_FIELDS:
+            with pytest.raises(
+                ValueError, match='part a capture fields required only for part a'
+            ):
+                capture(checkpoint, **dict(unset, **{name: valid[name]}))
+    # PART_A without the whole set refuses, whichever field is missing.
+    with pytest.raises(ValueError, match='part a capture fields required'):
+        capture('PART_A', **unset)
+    for name in PART_A_CAPTURE_FIELDS:
+        partial = dict(valid, **{name: None})
+        with pytest.raises(ValueError, match='part a capture fields required'):
+            capture('PART_A', **partial)
+    # Both digests must be canonical lowercase SHA-256 hex.
+    for name in ('initial_prefix_sha256', 'final_sha256'):
+        for bad in ('0' * 63, 'A' * 64, 'prefix', 64):
+            with pytest.raises(ValueError, match='canonical SHA256 required'):
+                capture('PART_A', **dict(valid, **{name: bad}))
+    # Both panel counts must be exact positive integers.
+    for name in ('initial_panels', 'final_panels'):
+        for bad in (0, -2, True, 2.0, '4'):
+            with pytest.raises(ValueError, match='bounded exact integer required'):
+                capture('PART_A', **dict(valid, **{name: bad}))
+    # final_panels never falls below initial_panels.
+    with pytest.raises(ValueError, match='part a panel counts differ'):
+        capture(
+            'PART_A',
+            initial_prefix_sha256=valid['initial_prefix_sha256'],
+            final_sha256=valid['final_sha256'],
+            initial_panels=4,
+            final_panels=2,
+            expansion_required=False,
+        )
+    # The expansion fact must follow the panel counts, both ways.
+    for initial, final, fact in ((2, 4, False), (3, 3, True)):
+        with pytest.raises(ValueError, match='part a expansion fact differs'):
+            capture(
+                'PART_A',
+                initial_prefix_sha256=valid['initial_prefix_sha256'],
+                final_sha256=valid['final_sha256'],
+                initial_panels=initial,
+                final_panels=final,
+                expansion_required=fact,
+            )
