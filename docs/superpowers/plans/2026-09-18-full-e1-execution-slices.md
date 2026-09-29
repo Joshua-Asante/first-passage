@@ -1503,3 +1503,26 @@ That repeat is the one where harness decision 1 builds the SR-5 staged N2 captur
 - the operator gives a fresh Stage 1c approval with a new `BASELINE`, for one dry run and one measure (this approval's §12.7 measure dispatch is spent).
 
 The first diagnostic subset and everything after it wait for a valid Stage 1c.
+
+### Harness fix `b5f53da` read; fresh Stage 1c approval, 2026-09-29
+
+**Harness fix.** `claude/s5-stage1c-harness` was rebuilt as **`b5f53da44ea9ce4e75c17501ec8051836f5b2edf`** = `c7713e7` + one harness commit. It supersedes `0fe3e25` (force-with-lease; no run was in flight).
+- **Scope:** three files only: `measure_part_a_max.py.txt`, its README, and `tests/test_s5_part_a_measurement_harness.py` (7 new tests, 14 cases). `.github`, `ops` and `core` are unchanged.
+- **Staging:** SR-5 staging runs in the probe step's `--probe-verdict`, after the probe unit stops and before any `fp-s5pa-1c-*` unit starts. Its own peak is recorded as `setup_excluded` (`n2_staging`). Each repeat still copies and verifies the staged mount inside its unit. A repeat without the cache refuses (I-6).
+- **README:** decision 1's old text is shown struck through as SUPERSEDED.
+- **Windows regression at `b5f53da`:** record `20260929T224520Z-b94174d9d790` shows 143 passed, 8 skipped (POSIX-stub) and 1 failed, the base-reproduced `test_cli_unreadable_start_head_is_i7[ÿþ]`. `--check-stage 1c` exits 0.
+
+**Coordinator read** (the "Coordinating parallel Claude sessions" session, 2026-09-29): **all six conditions MET, with two notes and no blocker.** The operator recorded it here on 2026-09-29.
+- **Note 1 (file ownership):** the stager runs under `sudo`. The repeat units also run as root: `sudo systemd-run` with no `--uid`, workflow `:226`. A dry-run refusal is checked explicitly before the measure dispatch.
+- **Note 2 (side effect in a verdict helper):** SR-5 staging now happens inside `--probe-verdict`, a helper whose name says it only judges. This is accepted because it keeps the workflow frozen, and `--check-stage 1c` pins the dependency. **By operator choice it is recorded here rather than in the README**, so the reviewed head stays `b5f53da`. The README takes it with the next harness change, if any.
+
+**Operator approval, 2026-09-29:** "Record read + approve".
+- A **fresh Stage 1c approval** for **one dry run and one measure** on `b5f53da`, under r2 §12.7's caps, with **`BASELINE=2026-09-29T23:07:49Z`**.
+- It is a new measurement, not a re-run of `36634465166`. That run stays the recorded stop.
+- It is dispatched only after #557's Linux regression of the harness module is bound to `b5f53da` by byte-identity and passes.
+
+**Pre-committed stop rule:** if this measurement also fails PA-3 on memory, it is a real result. The stage stops at C3 and returns to the operator with the numbers. There is no second harness fix for the same issue, and nothing is widened.
+
+**Owed from the operator:**
+- the private archive of the held-back Stage 1c files;
+- the #556 merge.
