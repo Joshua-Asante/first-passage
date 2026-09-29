@@ -525,3 +525,495 @@ def test_part_a_worker_result_parse_refuses_every_mutation(tmp_path, monkeypatch
         except ValueError:
             continue
         raise AssertionError('the captured part a document accepted ' + name)
+
+
+# ---- Ticket 2d / P1 / P2: the G5 PART_A reconstruction over a genuine chain ----
+#
+# One /v7 bundle drives the real worker three times (N1, joint N2, PART_A);
+# each committed assessment is G5's own reconstruction of the previous
+# capture, so the PART_A builder sees genuine predecessor custody. The
+# capture families (result, attestation, snapshot) are fabricated over the
+# real worker bytes with shape-only signatures: custody is the G5 driver's
+# and the service's, never the builder's. Cases the (2, 4, 2) fixture cannot
+# produce stand on the adjudicator directly and say so:
+#   omitted expansion -> test_result_adjudication
+#       ::test_initial_close_call_requires_expansion_with_original_prefix
+#   above-FULL failure -> test_result_adjudication
+#       ::test_fifth_rank_and_full_sanity_use_actual_nested_outcomes
+
+
+def _signed(core_bytes):
+    import base64
+
+    return encoded(
+        dict(
+            json.loads(core_bytes),
+            signature={
+                'algorithm': 'Ed25519',
+                'key_id': 'fixture',
+                'value_b64': base64.b64encode(bytes(64)).decode('ascii'),
+            },
+        )
+    )
+
+
+def _receipt(context, checkpoint, work_id, assessment, campaign_state, **extra):
+    return encoded(
+        dict(
+            {
+                'schema': 'qualification_campaign_checkpoint_receipt/v1',
+                'attempt_id': context.attempt_id,
+                'checkpoint': checkpoint,
+                'work_id': work_id,
+                'campaign_id': 'c1',
+                'assessment_sha256': sha256(assessment),
+                'cutoff_sha256': '1' * 64,
+                'decision': 'CONTINUE',
+                'campaign_state': campaign_state,
+                'signing_at_utc': '2026-09-22T02:00:00Z',
+                'committed_at_utc': '2026-09-22T02:00:01Z',
+                'intent_sha256': '2' * 64,
+            },
+            **extra,
+        )
+    )
+
+
+def _family(context, *, checkpoint, work_id, plan_bytes, payload_bytes, campaign_state,
+            revision, predecessor=None, predecessor_members=()):
+    """The capture family G5 reads for one checkpoint, over real worker bytes."""
+    from c1_rail.qualification.journal_snapshot import encode_campaign_checkpoint_snapshot
+
+    release = json.loads(context.installed_release)
+    observations = json.loads(payload_bytes)['observations']
+    runtime_digest = sha256(encoded(release['runtime_manifests']['worker']))
+    times = {
+        'authorized_at_utc': '2026-09-22T00:59:59Z',
+        'started_utc': '2026-09-22T01:00:00Z',
+        'completed_utc': '2026-09-22T01:00:01Z',
+    }
+    scope = {'campaign_scope_id': 'fpq-c', 'work_scope_id': 'fpq-w', 'payload_slice': 'fpq-p'}
+    exit_facts = {'exit_code': 0, 'oom_killed': False}
+    result = encoded(
+        {
+            'schema': 'qualification_campaign_checkpoint_result/v1',
+            'attempt_id': context.attempt_id,
+            'checkpoint': checkpoint,
+            'work_id': work_id,
+            'campaign_id': 'c1',
+            'plan_sha256': sha256(plan_bytes),
+            'plan_byte_length': len(plan_bytes),
+            'payload_sha256': sha256(payload_bytes),
+            'payload_byte_length': len(payload_bytes),
+            'worker_execution_id': work_id,
+            'container_id': '9' * 64,
+            'worker_image_digest': release['worker_image_digest'],
+            'runtime_manifest_sha256': runtime_digest,
+            'capture': dict(exit_facts, **times, **scope),
+            'limits': {
+                'cpu_ns': 120_000_000_000,
+                'wall_ns': 300_000_000_000,
+                'memory_bytes': 1000000000,
+                'orchestration_cpu_ns': 20_000_000_000,
+            },
+            'observations': dict(exit_facts, **observations),
+            'created_utc': '2026-09-22T01:00:02Z',
+        }
+    )
+    attestation = encoded(
+        {
+            'schema': 'qualification_campaign_checkpoint_attestation/v1',
+            'payload': {
+                'schema': 'qualification_campaign_checkpoint_attestation_payload/v1',
+                'scope': 'ATTEST_CAMPAIGN_CHECKPOINT',
+                'attempt_id': context.attempt_id,
+                'checkpoint': checkpoint,
+                'work_id': work_id,
+                'result_sha256': sha256(result),
+                'payload_sha256': sha256(payload_bytes),
+                'payload_byte_length': len(payload_bytes),
+                'plan_sha256': sha256(plan_bytes),
+                'execution_release_sha256': sha256(context.installed_release),
+                'profile_sha256': release['profile_sha256'],
+                'service_id': release['service_id'],
+                'worker_image_digest': release['worker_image_digest'],
+                'runtime_manifest_sha256': runtime_digest,
+                'container_id': '9' * 64,
+                'capture': dict(exit_facts, **scope),
+                'observations': dict(exit_facts, **observations),
+                **times,
+                'campaign_revision': revision,
+            },
+            'signature': {'algorithm': 'Ed25519', 'key_id': 'fixture', 'value_b64': 'AA=='},
+        }
+    )
+    members = [('plan', plan_bytes), ('result', result), ('payload', payload_bytes),
+               ('attestation', attestation), ('retained_bundle_index', b'index')]
+    members.extend(predecessor_members)
+    snapshot = encode_campaign_checkpoint_snapshot(
+        attempt_id=context.attempt_id,
+        checkpoint=checkpoint,
+        contract_sha256=context.contract.contract_sha256,
+        trust_domain_sha256=context.contract.trust_domain_sha256,
+        policy_sha256=context.policy.sha256,
+        validity='VALID',
+        campaign_revision=revision,
+        authority_head='a' * 64,
+        event_head='b' * 64,
+        campaign_state=campaign_state,
+        works=[
+            {'work_id': 'admission', 'phase': 'ADMISSION', 'state': 'COMPLETED', 'settled': True},
+            {'work_id': work_id, 'phase': checkpoint, 'state': 'COMPLETED', 'settled': True},
+        ],
+        capture={
+            'work_id': work_id,
+            'result_sha256': sha256(result),
+            'payload_sha256': sha256(payload_bytes),
+            'attestation_sha256': sha256(attestation),
+        },
+        intent={'work_id': work_id + '-g5', 'candidate_sha256': None},
+        members=[
+            {'role': name, 'sha256': sha256(raw), 'byte_length': len(raw)} for name, raw in members
+        ],
+        predecessor=predecessor,
+    )
+    return {'attestation': attestation, 'snapshot': snapshot}
+
+
+def _g5_chain(tmp_path, monkeypatch):
+    """N1 -> joint N2 -> PART_A on one /v7 bundle; returns the PART_A inputs
+    and an ``assess(payload_bytes)`` that reconstructs through G5's builder."""
+    from test_contract import NOW
+    from test_worker import _stage_bundle, stage_input
+    from c1_rail.qualification.checkpoint_plan import derive_checkpoint_plan
+    from c1_rail.qualification.evidence import build_checkpoint_evidence
+    from c1_rail.qualification.execution.plan import derive_campaign_plan_from_context
+    from c1_rail.qualification.source_admission import admit_source
+
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    monkeypatch.setattr(worker, 'utc_now', lambda: NOW)
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
+
+    def mount(name):
+        root = tmp_path / name
+        root.mkdir()
+        context = stage_input(root, case)
+        _stage_bundle(case, root)
+        return root, context
+
+    n1, context = mount('n1')
+    limit = context.profile.output_byte_limit
+    common = dict(contract=context.contract, policy=context.policy,
+                  installed_release_bytes=context.installed_release)
+    n1_plan = (n1 / 'plan.json').read_bytes()
+    n1_payload = decode_frame(worker.run_worker(n1, execution_id='n1work'), limit=limit)
+    family = _family(context, checkpoint='N1', work_id='n1work', plan_bytes=n1_plan,
+                     payload_bytes=n1_payload, campaign_state='BOUND', revision=3)
+    n1_assessment = _signed(build_checkpoint_evidence(
+        worker_result_bytes=n1_payload, plan_bytes=n1_plan, checkpoint='N1',
+        checkpoint_attestation_bytes=family['attestation'],
+        checkpoint_snapshot_bytes=family['snapshot'], **common).envelope_bytes)
+    n1_receipt = _receipt(context, 'N1', 'n1g5', n1_assessment, 'N2_READY')
+    campaign = derive_campaign_plan_from_context(context)
+
+    n2, _ = mount('n2')
+    (n2 / 'predecessor-receipt.json').write_bytes(n1_receipt)
+    n2_plan = derive_checkpoint_plan(campaign, 'N2', n1_receipt)
+    (n2 / 'plan.json').write_bytes(n2_plan)
+    n2_payload = decode_frame(
+        worker.run_worker(n2, execution_id='n2work', checkpoint='N2'), limit=limit)
+    n1_family = dict(predecessor_receipt_bytes=n1_receipt, predecessor_assessment_bytes=n1_assessment,
+                     predecessor_plan_bytes=n1_plan, predecessor_payload_bytes=n1_payload)
+    family = _family(
+        context, checkpoint='N2', work_id='n2work', plan_bytes=n2_plan, payload_bytes=n2_payload,
+        campaign_state='N2_READY', revision=5,
+        predecessor={'checkpoint': 'N1', 'assessment_sha256': sha256(n1_assessment),
+                     'receipt_sha256': sha256(n1_receipt)},
+        predecessor_members=[('predecessor_receipt', n1_receipt), ('predecessor_assessment', n1_assessment),
+                             ('predecessor_plan', n1_plan), ('predecessor_payload', n1_payload)])
+    n2_core = build_checkpoint_evidence(
+        worker_result_bytes=n2_payload, plan_bytes=n2_plan, checkpoint='N2',
+        checkpoint_attestation_bytes=family['attestation'],
+        checkpoint_snapshot_bytes=family['snapshot'], **common, **n1_family).envelope_bytes
+    n2_assessment = _signed(n2_core)
+    n2_receipt = _receipt(context, 'N2', 'n2g5', n2_assessment, 'PART_A_READY',
+                          predecessor_receipt_sha256=sha256(n1_receipt),
+                          stage_decisions=json.loads(n2_core)['stage_decisions'])
+
+    pa, _ = mount('pa')
+    for name, raw in (('receipt', n2_receipt), ('assessment', n2_assessment), ('payload', n2_payload)):
+        (pa / ('predecessor-' + name + '.json')).write_bytes(raw)
+    pa_plan = derive_checkpoint_plan(campaign, 'PART_A', n2_receipt)
+    (pa / 'plan.json').write_bytes(pa_plan)
+    out = tmp_path / 'out'
+    out.mkdir()
+    pa_payload = decode_frame(
+        worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=out), limit=limit)
+    source = admit_source(context.contract, artifact_root=context.bundle_dir, policy=context.policy).source
+    n2_family = dict(predecessor_receipt_bytes=n2_receipt, predecessor_assessment_bytes=n2_assessment,
+                     predecessor_plan_bytes=n2_plan, predecessor_payload_bytes=n2_payload,
+                     n1_plan_bytes=n1_plan, n1_payload_bytes=n1_payload, source=source)
+
+    def assess(payload_bytes, builder=None, **overrides):
+        family = _family(
+            context, checkpoint='PART_A', work_id='pawork', plan_bytes=pa_plan,
+            payload_bytes=payload_bytes, campaign_state='PART_A_READY', revision=7,
+            predecessor={'checkpoint': 'N2', 'assessment_sha256': sha256(n2_assessment),
+                         'receipt_sha256': sha256(n2_receipt)},
+            predecessor_members=[('predecessor_receipt', n2_receipt), ('predecessor_assessment', n2_assessment),
+                                 ('predecessor_plan', n2_plan), ('predecessor_payload', n2_payload)])
+        arguments = dict(worker_result_bytes=payload_bytes, plan_bytes=pa_plan,
+                         checkpoint_attestation_bytes=family['attestation'],
+                         checkpoint_snapshot_bytes=family['snapshot'], **common, **n2_family)
+        arguments.update(overrides)
+        if builder is None:
+            return build_checkpoint_evidence(checkpoint='PART_A', **arguments)
+        accepted = inspect.signature(builder).parameters
+        return builder(**{name: value for name, value in arguments.items() if name in accepted})
+
+    return SimpleNamespace(context=context, plan=pa_plan, payload=pa_payload, source=source,
+                           assess=assess, n2_payload=n2_payload)
+
+
+def _remint(document, plan_bytes):
+    """Recompute every dependent digest and the inventory after a mutation, so
+    that only an independent G5 check can refuse the document."""
+    from c1_rail.qualification.execution.evidence import CapturedPartAPanel, part_a_path_inventory
+    from c1_rail.qualification.model import PathOutcome
+
+    part = document['part_a']
+    panels = [
+        CapturedPartAPanel(
+            row['index'],
+            tuple(row['source_session_ids']),
+            tuple(
+                PathOutcome(o['status'], o['sessions_to_pass'], o['failure_reason'],
+                            tuple(tuple(pair) for pair in o['diagnostics']))
+                for o in row['outcomes']
+            ),
+        )
+        for row in part['panels']
+    ]
+    part['initial_prefix_sha256'] = sha256(compute.part_a_panel_bytes(panels[:part['initial_panels']]))
+    part['final_sha256'] = sha256(compute.part_a_panel_bytes(panels))
+    document['path_inventory'] = part_a_path_inventory(json.loads(plan_bytes), part['panels'])
+    return encoded(document)
+
+
+def _rederived_sessions(chain, index):
+    """The engine's own outer-panel draw for panel ``index`` (the P1 check)."""
+    from random import Random
+
+    from c1_rail.qualification.regime import domain_seed, sample_outer_panel
+
+    contract, source = chain.context.contract, chain.source
+    seed = domain_seed(root=contract.replay.root_rng_namespace, stage='n2', population='FULL',
+                       panel_index=index, path_index=0, purpose='outer',
+                       synthetic=contract.trust_domain.permits_synthetic)
+    return [s.session_id for s in sample_outer_panel(
+        source.sessions, Random(seed), months=contract.replay.outer_months, adjacent=source.adjacent,
+        covered_until=source.covered_until, tail_covered=source.tail_covered)]
+
+
+@pytest.fixture(scope='module')
+def g5_chain(tmp_path_factory):
+    monkeypatch = pytest.MonkeyPatch()
+    try:
+        yield _g5_chain(tmp_path_factory.mktemp('g5-part-a'), monkeypatch)
+    finally:
+        monkeypatch.undo()
+
+
+def test_g5_part_a_reconstructs_continue_from_a_genuine_chain(g5_chain):
+    from c1_rail.qualification.evidence import (
+        compare_checkpoint_evidence, parse_checkpoint_assessment)
+
+    evidence = g5_chain.assess(g5_chain.payload)
+    core = json.loads(evidence.envelope_bytes)
+    assert core['checkpoint'] == 'PART_A' and core['decision'] == 'CONTINUE'
+    assert [row['stage'] for row in core['stages']] == ['LEGALITY', 'N1', 'N2', 'PART_B', 'PART_A']
+    assert core['predecessor']['checkpoint'] == 'N2' and 'stage_decisions' not in core
+    part = core['part_a']
+    assert set(part) == {'initial_panels', 'final_panels', 'expansion_required', 'initial_prefix_sha256',
+                         'final_sha256', 'tolerance_comparison', 'floor_comparison',
+                         'full_sanity_comparison'}
+    assert (part['initial_panels'], part['final_panels'], part['expansion_required']) == (2, 2, False)
+    assert part['tolerance_comparison']['within'] is False
+    assert part['floor_comparison']['at_or_above'] is True
+    assert part['full_sanity_comparison']['at_or_below'] is True
+    assert Decimal(part['full_sanity_comparison']['full_pass_rate']) == 1
+    assert core['cutoff'] == {'checkpoint': 'PART_A', 'stage_thresholds': {}}
+    # The worker's captured occurrences are exactly the engine's re-derived draws.
+    doc = json.loads(g5_chain.payload)
+    for row in doc['part_a']['panels']:
+        assert row['source_session_ids'] == _rederived_sessions(g5_chain, row['index'])
+    compare_checkpoint_evidence(evidence, expected=evidence)
+    parsed = parse_checkpoint_assessment(_signed(evidence.envelope_bytes),
+                                         attempt_id=g5_chain.context.attempt_id)
+    assert parsed['decision'] == 'CONTINUE'
+
+
+def test_g5_part_a_genuine_all_failure_is_a_failure_decision(g5_chain):
+    """A below-floor run through the builder: every path FAILURE, the reported
+    statistics re-derived to the exact zeros, every digest re-minted."""
+    doc = json.loads(g5_chain.payload)
+    for row in doc['part_a']['panels']:
+        for outcome in row['outcomes']:
+            outcome.update(status='FAILURE', sessions_to_pass=None, failure_reason='synthetic')
+    doc['part_a'].update(initial_p5=0.0, final_p5=0.0)
+    core = json.loads(g5_chain.assess(_remint(doc, g5_chain.plan)).envelope_bytes)
+    assert core['decision'] == 'FAILURE' and core['stages'][4]['status'] == 'FAIL'
+    assert core['part_a']['floor_comparison'] == {'final_p5': '0', 'floor': '0.95', 'at_or_above': False}
+
+
+def _nonexistent_session(doc, chain):
+    doc['part_a']['panels'][0]['source_session_ids'][0] = 'NONEXISTENT-SESSION'
+
+
+def _real_but_wrong_occurrence(doc, chain):
+    ids = doc['part_a']['panels'][0]['source_session_ids']
+    other = next(session for session in ids[1:] if session != ids[0])
+    ids[0] = other
+
+
+def _substituted_prefix(doc, chain):
+    ids = doc['part_a']['panels'][0]['source_session_ids']
+    assert ids != ids[::-1]
+    ids.reverse()
+
+
+def _reordered_prefix(doc, chain):
+    rows = doc['part_a']['panels']
+    first, second = rows[0], rows[1]
+    assert (first['source_session_ids'], first['outcomes']) != (second['source_session_ids'], second['outcomes'])
+    rows[0], rows[1] = dict(second, index=0), dict(first, index=1)
+
+
+def _initial_p5_overstated(doc, chain):
+    doc['part_a']['initial_p5'] += 0.25
+
+
+def _final_p5_understated(doc, chain):
+    doc['part_a']['final_p5'] -= 0.25
+
+
+def _altered_pilot(doc, chain):
+    doc['part_a']['pilot']['seed_input_sha256s'][0] = 'e' * 64
+
+
+def _mismatched_baseline(doc, chain):
+    doc['part_a']['n2_full_baseline']['passes'] -= 1
+
+
+def _unnecessary_expansion(doc, chain):
+    """P-5: a forced-expanded result whose appended panels carry the engine's
+    own occurrences, so only the expansion decision can refuse it."""
+    part = doc['part_a']
+    depth = len(part['panels'][0]['outcomes'])
+    for index in range(part['initial_panels'], chain.context.contract.replay.part_a.expanded_panels):
+        part['panels'].append({'index': index, 'source_session_ids': _rederived_sessions(chain, index),
+                               'outcomes': json.loads(json.dumps(part['panels'][0]['outcomes']))[:depth]})
+    part.update(final_panels=len(part['panels']), expansion_required=True)
+
+
+@pytest.mark.parametrize('mutate,message', [
+    (_nonexistent_session, 'altered source occurrences'),
+    (_real_but_wrong_occurrence, 'altered source occurrences'),
+    (_substituted_prefix, 'altered source occurrences'),
+    (_reordered_prefix, 'altered source occurrences'),
+    (_initial_p5_overstated, 'part a reported statistic differs'),
+    (_final_p5_understated, 'part a reported statistic differs'),
+    (_altered_pilot, 'missing pilot identity'),
+    (_mismatched_baseline, 'mismatched N2 FULL baseline'),
+    (_unnecessary_expansion, 'unnecessary expansion'),
+])
+def test_g5_part_a_refuses_reminted_mutations(g5_chain, mutate, message):
+    """Every dependent digest and the inventory are recomputed after the
+    mutation (``_remint``); only G5's independent check can refuse it."""
+    doc = json.loads(g5_chain.payload)
+    mutate(doc, g5_chain)
+    with pytest.raises(ValueError, match=message):
+        g5_chain.assess(_remint(doc, g5_chain.plan))
+
+
+def test_g5_part_a_requires_the_retained_source(g5_chain):
+    from c1_rail.qualification.evidence import build_part_a_checkpoint_evidence
+
+    with pytest.raises(ValueError, match='retained source required'):
+        g5_chain.assess(g5_chain.payload, builder=build_part_a_checkpoint_evidence, source=None)
+
+
+def test_s4_joint_builder_refuses_a_part_a_plan(g5_chain):
+    """Fail-on-base: the S4 joint builder never adjudicates PART_A custody --
+    it refuses the PART_A worker document at its closed key set (no
+    ``populations``), before any schema or plan comparison."""
+    from c1_rail.qualification.evidence import build_joint_checkpoint_evidence
+
+    with pytest.raises(ValueError, match='worker result fields differ'):
+        g5_chain.assess(g5_chain.payload, builder=build_joint_checkpoint_evidence)
+
+
+@pytest.mark.parametrize('key', ['measurement_override', 'within_pp'])
+@pytest.mark.parametrize('place', ['assessment', 'part_a', 'tolerance_comparison', 'cutoff'])
+def test_p4_part_a_assessment_and_cutoff_refuse_seam_keys(g5_chain, key, place):
+    from c1_rail.qualification.evidence import parse_checkpoint_assessment, parse_checkpoint_cutoff
+
+    attempt = g5_chain.context.attempt_id
+    core = json.loads(g5_chain.assess(g5_chain.payload).envelope_bytes)
+    cutoff = {'schema': 'qualification_campaign_cutoff_receipt/v1', 'attempt_id': attempt,
+              'checkpoint': 'PART_A', 'assessment_sha256': sha256(encoded(core)), 'decision': 'CONTINUE',
+              'stage_thresholds': {}, 'predecessor_receipt_sha256': core['predecessor']['receipt_sha256'],
+              'created_utc': '2026-09-22T03:00:00Z'}
+    parse_checkpoint_assessment(_signed(encoded(core)), attempt_id=attempt)
+    parse_checkpoint_cutoff(encoded(cutoff), attempt_id=attempt)
+    if place == 'cutoff':
+        cutoff[key] = 1.0
+        with pytest.raises(ValueError):
+            parse_checkpoint_cutoff(encoded(cutoff), attempt_id=attempt)
+        return
+    target = core if place == 'assessment' else core['part_a'] if place == 'part_a' else (
+        core['part_a']['tolerance_comparison'])
+    target[key] = 1.0
+    with pytest.raises(ValueError):
+        parse_checkpoint_assessment(_signed(encoded(core)), attempt_id=attempt)
+
+
+# ---- P1(b) / P2 at the worker-result parser -------------------------------------
+
+
+def test_part_a_worker_result_parser_checks_occurrences_and_statistics(tmp_path, monkeypatch):
+    """The parser's own independent checks: a source occurrence outside the
+    contract's admitted FULL population, and reported p5 floats that differ
+    from the exact re-derived rank -- each with every dependent digest and
+    the inventory re-minted so no hash check can catch it first."""
+    worker = importlib.import_module('c1_rail.qualification.execution.worker')
+    evidence = importlib.import_module('c1_rail.qualification.execution.evidence')
+    case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
+    context, pa, out, *_ = part_a_stage_input(tmp_path, case, monkeypatch)
+    frame = worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=out)
+    doc = json.loads(decode_frame(frame, limit=context.profile.output_byte_limit))
+    plan = (pa / 'plan.json').read_bytes()
+    assert all(session in set(context.contract.populations['FULL'])
+               for row in doc['part_a']['panels'] for session in row['source_session_ids'])
+    evidence.parse_worker_result(_remint(json.loads(json.dumps(doc)), plan), context=context,
+                                 execution_id='pawork', plan_bytes=plan)
+
+    def nonexistent_session(document):
+        document['part_a']['panels'][0]['source_session_ids'][0] = 'NONEXISTENT-SESSION'
+
+    def initial_p5_overstated(document):
+        document['part_a']['initial_p5'] = 456.0
+
+    def final_p5_understated(document):
+        document['part_a']['final_p5'] = -123.0
+
+    for mutate, message in (
+        (nonexistent_session, 'outside the admitted FULL population'),
+        (initial_p5_overstated, 'part a reported statistic differs'),
+        (final_p5_understated, 'part a reported statistic differs'),
+    ):
+        mutated = json.loads(json.dumps(doc))
+        mutate(mutated)
+        with pytest.raises(ValueError, match=message):
+            evidence.parse_worker_result(_remint(mutated, plan), context=context,
+                                         execution_id='pawork', plan_bytes=plan)

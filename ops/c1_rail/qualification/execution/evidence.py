@@ -124,6 +124,29 @@ def _part_a_pilot(plan):
     return dict(seed_input_sha256s=[sha256(encoded(seed)) for seed in seeds])
 
 
+def _part_a_exact_percentiles(panels, *, spec, initial_panels):
+    """The frozen INVERSE_ECDF_LEFT rank over exact Decimal panel pass rates.
+
+    Exactly ``result_adjudication.adjudicate_panel_inventory``'s arithmetic
+    (P2): the worker's reported ``initial_p5``/``final_p5`` floats must equal
+    ``float`` of these exact values; a band is never admitted.
+    """
+    from decimal import Decimal, ROUND_CEILING
+
+    if spec.percentile_method != 'INVERSE_ECDF_LEFT':
+        raise ValueError('unsupported frozen percentile method')
+    rates = [
+        Decimal(sum(outcome.status == 'PASS' for outcome in panel.outcomes)) / len(panel.outcomes)
+        for panel in panels
+    ]
+
+    def percentile(values):
+        rank = int((spec.percentile * len(values)).to_integral_value(rounding=ROUND_CEILING))
+        return sorted(values)[max(0, rank - 1)]
+
+    return percentile(rates[:initial_panels]), percentile(rates)
+
+
 def _part_a_panel_row(panel):
     """The canonical panel row shared by the artifact bytes and the document."""
     if type(panel) is dict:
@@ -487,6 +510,9 @@ def _parse_part_a_worker_result(
         raise ValueError('worker admission/execution/plan differs')
     _verify_worker_bindings(doc, context=context)
     initial, depth, _ = _part_a_plan_shape(plan)
+    # P1(b): every source occurrence must name an admitted session -- the
+    # contract's frozen FULL population, the set the retained source covers.
+    admitted = frozenset(context.contract.populations['FULL'])
     record = fields(
         doc['part_a'],
         {
@@ -519,6 +545,8 @@ def _parse_part_a_worker_result(
             or any(type(session) is not str or not session for session in sessions)
         ):
             raise ValueError('part a panel order or source occurrences differ')
+        if any(session not in admitted for session in sessions):
+            raise ValueError('part a source occurrence outside the admitted FULL population')
         outcomes = row['outcomes']
         if type(outcomes) is not list or len(outcomes) != depth:
             raise ValueError('part a panel depth differs from the plan')
@@ -544,6 +572,11 @@ def _parse_part_a_worker_result(
     for name in ('initial_p5', 'final_p5', 'probe_seconds', 'predicted_seconds'):
         if type(record[name]) is not float or not isfinite(record[name]):
             raise ValueError('finite part a measurement floats required')
+    initial_p5, final_p5 = _part_a_exact_percentiles(
+        panels, spec=context.contract.replay.part_a, initial_panels=initial_panels
+    )
+    if record['initial_p5'] != float(initial_p5) or record['final_p5'] != float(final_p5):
+        raise ValueError('part a reported statistic differs')
     pilot = fields(record['pilot'], {'seed_input_sha256s'})
     seed_digests = pilot['seed_input_sha256s']
     if type(seed_digests) is not list or not seed_digests:
