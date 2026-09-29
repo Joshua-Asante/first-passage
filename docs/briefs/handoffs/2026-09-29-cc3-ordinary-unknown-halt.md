@@ -202,7 +202,7 @@ capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open]
 constraints:
   - no_main_write
   - no_merge
-  - section_2_footprint_only
+  - section_2_footprint_plus_amendment_1_test_files_only
   - no_qualification_or_s5_file
   - no_schema_policy_or_interface_change
   - no_rail_deploy
@@ -225,6 +225,8 @@ acceptance:
   - tests/ops/test_book_ordinary_unknown_halt.py::test_halt_storage_failure_suppresses_further_dispatch
   - tests/ops/test_attended_incident_rehearsal.py::test_lost_entry_response_terminal_does_not_restart_automation_in_session
   - tests/ops/test_book_account_owner.py::test_crash_cuts_retain_obligation_and_never_retry_on_boot
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_attached_fact_failure_rolls_back_halt_and_facts_together
+  - tests/ops/test_book_ordinary_unknown_halt.py::test_unknown_with_attached_fill_commits_capacity_and_halt_together
 ```
 
 **The executor (the CC-3 session) may:**
@@ -238,6 +240,54 @@ Any change to the six patch files, or any necessary change outside §2's footpri
 **Review and acceptance.** The coordinator reviews the PR for specification compliance, then implementation quality and the composed path, as set out in §7. Codex PR review serves as the independent review (D-codex hybrid). The coordinator may mark CC-3 RESOLVED **in synthetic scope only** after that review and a passing required check, with a note in §7. Joshua retains the merge.
 
 **Not granted.** No synthetic acceptance or RESOLVED status before that review. No real broker evidence producer, route recovery, T09 work, resume design, live notification, X-1, S5, commissioning action, merge or operational GO.
+
+### §8.1 — Coordinator amendment 1 (2026-09-29; confirmed by Joshua in session)
+
+**Why.** Codex's review of `ec96a0e` returned two P1 findings, and the coordinator accepts both ([#554 response](https://github.com/Joshua-Asante/first-passage/pull/554#issuecomment-5897487491)). The coordinator's earlier "no blocking findings" review is withdrawn. Joshua confirmed this amendment in the coordinating session on 2026-09-29 ("I confirm the amendment").
+
+**(1) Attached facts commit with the halt (a production fix, in `book_account_owner.py`).**
+- **The defect.** `b9b72f9` commits the halt before any attached fact is journaled. A crash between the two therefore loses the fact bodies and their capacity effects, while the observation still lists their IDs. That is §4's falsifier "discarded valid evidence". The ordering was an implementation choice and was not required by this card, since §2.3 requires facts to be preserved.
+- **The fix.** In the unknown branch of `_dispatch_action_locked`, one transaction runs `_settle_attempt_db`, then `_halt_db("ordinary-unknown:<attempt_id>", "execution", now)`, then `_observe_locked(fact, …, db=db)` for each attached fact.
+- **On failure.** Any exception in that transaction sets `_input_send_suppressed` before it re-raises.
+- **What the executor confirms.** Given `db`, `_observe_locked` opens no transaction of its own.
+- **New acceptance cases** (added to the authority block):
+  - `test_attached_fact_failure_rolls_back_halt_and_facts_together`: an unknown result with an attached fill, where the fact observation fails partway. There is no incident, no fact and no capacity event; the attempt is `UNKNOWN` with a null observation; later sends are suppressed; and a fresh boot is `HALTED/INTERVENTION`, retains the attempt and sends nothing.
+  - `test_unknown_with_attached_fill_commits_capacity_and_halt_together`: the fill's capacity effect and the halt persist together.
+
+**(2) Superseded unknown-continuity tests (test-only).** The footprint widens to these seven files in `tests/ops/`:
+- `test_book_close_reconciliation.py`
+- `test_book_fence_classification.py`
+- `test_book_takeover_phases.py`
+- `test_pr409_owner_lifecycle.py`
+- `test_pr409_related_cases.py`
+- `test_pr409_review3.py`
+- `test_pr409_review4.py`
+
+They encode the continuity rule that halt/resume §2 and incident ADR §A11.2 supersede: an unknown blocks until a postdating terminal arrives, and then automatic sends resume. These rules apply:
+1. Only the authority expectation changes: `unknown_order` becomes `intervention_fence`, and "resumes after a terminal" becomes "stays halted". Every no-send, reservation, reconciliation, late-fill-retention and restart assertion is kept.
+2. A case whose purpose was "later evidence resumes automation" is rewritten to assert the fence plus the reconciliation. It is not deleted.
+3. Every change is listed in one table in the evidence note: node, old expectation, new expectation, governing text.
+4. Any case whose expectation cannot be expressed as (a) unknown → `INTERVENTION`, (b) no automatic send afterwards, and (c) facts still reconcile and retained obligations survive returns **NEEDS_CONTEXT for that case**. It is not resolved locally.
+
+`test_qualification_isolation.py::test_qualification_suite_in_clean_process` is checked against `main` first. If it fails there too, it is disclosed as independent and left untouched.
+
+**(3) Verification.** The **full `tests/ops` suite** through the launcher is now an acceptance criterion, in addition to §10's list. §10's related list was incomplete: it omitted these seven files. The 220-pass record on that list does not stand in for the full suite. The retained evidence is:
+- a completed, stable-source launcher record for full `tests/ops` on the final head;
+- `check` on the final bytes.
+
+**(4) Mechanics.**
+1. Fast-forward to this amendment's commit (`git merge --ff-only origin/claude/cc3-amendment-1`).
+2. Merge `main` into the branch, without rebasing, so the freeze commit `b77b6f4` keeps its SHA.
+3. Include the pending docs-only evidence-note correction: label the opening NEEDS_CONTEXT as historical, drop "passes on both", and add the `170917` and `174520` check rows.
+4. Push, reply on both Codex threads, and re-request `@codex review`.
+
+**Authority block.** It is updated in place by this amendment:
+- The constraint `section_2_footprint_only` became `section_2_footprint_plus_amendment_1_test_files_only`.
+- The two acceptance cases above were added.
+
+Nothing else in it changed.
+
+**Acceptance.** RESOLVED, in synthetic scope only, requires all of the following: both Codex threads resolved, green `pytest (3.11)` and `skills (3.12)`, the full `tests/ops` record, and the coordinator's review of the new diff. The merge stays Joshua's. No other grant changes.
 
 ## §10 — Audit hooks
 
