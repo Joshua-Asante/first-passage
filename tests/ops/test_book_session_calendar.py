@@ -492,9 +492,13 @@ def test_evidence_file_cannot_escape_the_repository(tmp_path):
 
 
 def test_checked_in_ratification_binds_exactly_the_checked_in_bytes():
-    """The operator's 2026-09-15 ratification names the current calendar and overlay digests."""
+    """The operator's 2026-09-15 ratification names the current calendar and overlay digests.
+
+    The 2026-09-29 October row is the only other ratification; it is checked in
+    test_october_is_ratified_and_admits.
+    """
     rows = load_ratifications(RATIFIED)
-    assert set(rows) == {CALENDAR_SHA256}
+    assert set(rows) == {CALENDAR_SHA256, OCT_CALENDAR_SHA256}
     row = rows[CALENDAR_SHA256]
     assert row["closure_overlay_sha256"] == OVERLAY_SHA256
     assert row["ratified_by"] == "operator" and row["instruction"] == "ratify calendar 650e8aab"
@@ -1045,8 +1049,8 @@ def test_october_ordinary_session_derives_regular_times_in_edt():
     assert cal.schedule_for("tradeify-account-day:2026-10-30").closes_at == datetime(2026, 10, 30, 21, tzinfo=timezone.utc)
 
 
-def test_october_denied_columbus_day_keeps_regular_deadlines_and_chain(tmp_path):
-    cal = synthetic_ratified(tmp_path, path=OCT_CALENDAR, overlay=OVERLAY, repo=REPO)
+def test_october_denied_columbus_day_keeps_regular_deadlines_and_chain():
+    cal = load_ratified_calendar(OCT_CALENDAR, overlay_path=OVERLAY, ratified_path=RATIFIED, repo_root=REPO)
     row = cal.schedule_for("tradeify-account-day:2026-10-12")
     assert row.permission == "DENIED" and row.denial_reason == "MISSING_SOURCE"
     assert row.prior_session_id == "tradeify-account-day:2026-10-09"
@@ -1057,10 +1061,15 @@ def test_october_denied_columbus_day_keeps_regular_deadlines_and_chain(tmp_path)
     assert cal.session_for(et(2026, 10, 13, 9)).permitted
 
 
-def test_october_is_not_ratified_and_cannot_admit():
-    cal = load_october()
-    decision = cal.session_for(et(2026, 10, 15, 9))
-    assert decision.refusal == "calendar_not_ratified" and decision.session is None
-    assert OCT_CALENDAR_SHA256 not in load_ratifications(RATIFIED)
-    with pytest.raises(CalendarError, match="calendar_not_ratified"):
-        load_ratified_calendar(OCT_CALENDAR, overlay_path=OVERLAY, ratified_path=RATIFIED, repo_root=REPO)
+def test_october_is_ratified_and_admits():
+    """The operator ratified the October digest on 2026-09-29 ("ratify the calendar", PR #560)."""
+    raw = load_october()
+    assert raw.session_for(et(2026, 10, 15, 9)).refusal == "calendar_not_ratified"
+    row = load_ratifications(RATIFIED)[OCT_CALENDAR_SHA256]
+    assert row["closure_overlay_sha256"] == OVERLAY_SHA256
+    assert row["ratified_by"] == "operator" and row["instruction"] == "ratify the calendar"
+    assert (row["coverage_start_utc"], row["coverage_end_utc"]) == ("2026-09-30T22:00:00Z", "2026-10-30T21:00:00Z")
+    cal = load_ratified_calendar(OCT_CALENDAR, overlay_path=OVERLAY, ratified_path=RATIFIED, repo_root=REPO)
+    assert cal.calendar_digest == OCT_CALENDAR_SHA256
+    assert cal.session_for(et(2026, 10, 15, 9), expected_digest=OCT_CALENDAR_SHA256).permitted
+    assert cal.session_for(et(2026, 10, 12, 9)).refusal == "session_denied:MISSING_SOURCE"

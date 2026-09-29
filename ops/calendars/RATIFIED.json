@@ -15,6 +15,20 @@
       "instruction": "ratify calendar 650e8aab",
       "record": "docs/notes/2026-09-15-packet1-step4-session-calendar.md",
       "scope": "Book permission rows for the first attended release only. Grants no activation, deployment, resumption or historical legality; the volume config pin at activation is a separate Packet 6 step."
+    },
+    {
+      "calendar_id": "tradeify-select-100k/forward/2026-10",
+      "calendar_file": "ops/calendars/book_session_calendar_2026-10.json",
+      "calendar_sha256": "4d8a7f29f83b5fbf3c177be07cb12e829401af0b46585843981b1effaf6e504d",
+      "closure_overlay_file": "ops/calendars/book_closure_overlay.json",
+      "closure_overlay_sha256": "483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b",
+      "coverage_start_utc": "2026-09-30T22:00:00Z",
+      "coverage_end_utc": "2026-10-30T21:00:00Z",
+      "ratified_by": "operator",
+      "ratified_utc": "2026-09-29T23:28:00Z",
+      "instruction": "ratify the calendar",
+      "record": "https://github.com/Joshua-Asante/first-passage/pull/560",
+      "scope": "Book permission rows for the October 2026 monthly extension only, as authored, with 2026-10-12 DENIED (MISSING_SOURCE). Grants no activation, deployment, resumption or historical legality."
     }
   ]
 }
