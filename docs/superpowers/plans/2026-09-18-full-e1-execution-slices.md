@@ -1439,3 +1439,22 @@ Applying it would mean choosing wording. The coordinator drafts a reconciled O-1
 - OQ-1, Q1, Q7 and Q9.
 
 **Not granted:** the C3 Linux grant, any dispatch, C3 acceptance, any merge, and any production authority.
+
+### Operator acceptance — S5 C3 step 1 accepted; C3 Linux grant, 2026-09-29
+
+**Source.** In session on 2026-09-29 the operator wrote: "Accept C3 step 1. B3 accepted, with "G5 independent bars verification" carried to the CP-6 inventory as a residual. B4 accepted for TEST_ONLY; strengthening to an independently observed pilot draw is due with T05, before CP-6. B7 closed per Codex. C3 Linux grant: open a draft do-not-merge PR for claude/s5-stage1c-harness to get the harness module's Linux run at 0fe3e25, cited beside the first subset. Then Stage 1c (dry run, then measure), the first diagnostic subset, the full S4-plus-Part-A selection with retained evidence, then Stage 2/PA-5. No pushes to claude/s5-part-a or claude/s5-stage1c-harness while any run is in flight."
+
+**Effect.**
+- **C3 step 1 is ACCEPTED** on the S5 return `c7713e7` and the harness `0fe3e25`. The basis is the entry above: Codex RESOLVED, and the executed `bind_budget` check.
+- **B3 is accepted.** The residual **"G5 independent bars verification"** is carried to the **CP-6 inventory**. For PART_A, G5 does not re-verify the calendar ↔ population-index ↔ bars consistency.
+- **B4 is accepted for TEST_ONLY.** Strengthening pilot identity to an independently observed pilot draw is **due with T05, before CP-6**.
+- **B7 is closed** per Codex's review.
+- **C3 Linux grant, in this order:**
+  1. The harness module's Linux run for `0fe3e25`, through a draft, do-not-merge PR of `claude/s5-stage1c-harness`. It is cited beside the first subset. `pull_request` CI checks out the PR merge ref, so the coordinator binds the run to `0fe3e25` by showing that the harness module, the harness and the measurement workflow are byte-identical there.
+  2. Stage 1c: the dry run, then the measurement, under r2 §12.4 and the §12.7 caps.
+  3. The first S5 diagnostic subset.
+  4. The full S4-plus-Part-A selection (`mode=s5`), with retained evidence.
+  5. Stage 2/PA-5 from that run.
+- **Standing constraint:** no pushes to `claude/s5-part-a` or `claude/s5-stage1c-harness` while any run is in flight.
+
+**Not granted:** S5 acceptance (it follows Stage 2/PA-5), any merge of the draft PR, any production value, and any activation or live authority. RC-2 still becomes met only when #552 merges and is reviewed.
