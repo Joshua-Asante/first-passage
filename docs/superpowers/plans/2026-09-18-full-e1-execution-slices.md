@@ -1379,3 +1379,54 @@ Applying it would mean choosing wording. The coordinator drafts a reconciled O-1
 **Effect.** RC-2 is met when this commit is merged and reviewed, and the C3 record cites it. Until then RC-2 stays open.
 
 **Not granted:** C3; S5 acceptance; Stage 1c; any Linux or CI run; any production value; the O-10 text.
+
+### Operator rulings and recorded harness read — S5 C3 step 1, 2026-09-29
+
+**Source.** The operator confirmed these in the "Coordinate parallel sessions" session on 2026-09-29 ("confirmed. send the read"). That session relayed them to this one, and the operator confirmed the relay directly here the same day ("Yes, record A–C").
+
+**Reviewed heads.**
+- S5 executor return: `claude/s5-part-a` at `c7713e7`, status DONE_WITH_CONCERNS (packet §7).
+- Stage 1c harness: `claude/s5-stage1c-harness` at `0fe3e25`, which is `c7713e7` plus one harness commit.
+
+**A. Recorded read of the Stage 1c harness diff** (r2 §12.4: "Without that record the dispatch is not made").
+- **Scope:** two files only, `measure_part_a_max.py.txt` and its README under `docs/notes/2026-09-27-s5-part-a-measurement/`. Nothing under `ops/`, `core/`, `tests/` or the workflow changed.
+- **The eight harness decisions are read and accepted:**
+  1. the SR-5 capture is staged once per job and copied into each repeat;
+  2. staging runs in a child process;
+  3. the boundary opens before the receipt and assessment reads, which is conservative;
+  4. admission is the whole `admit_source` call;
+  5. the guard's memory limit is 64 GiB, so it measures and never trips;
+  6. an S5-D1 prefix failure is I-4;
+  7. the parent check is I-7 at summarize, for both jobs;
+  8. P-7 is checked through `run_worker.__globals__` and `co_names`, before and after the call.
+- **Checked:** the 1c path's post-call `dataclasses.replace(request, within_pp=...)` only rebuilds the record's workload description, outside the boundary. The adapter builds its own request, so the seam is not bypassed.
+- **Condition before dispatch.** Run `tests/test_s5_part_a_measurement_harness.py` on `0fe3e25` through the launcher and record the result.
+  - **Result (2026-09-29, from a detached LF worktree, ops-env CPython 3.13.2):** 138 collected, **129 passed, 8 skipped, 1 failed**. Record `20260929T184959Z-397992611a69` (SHA-256 `3047df3a…c6ce3a`), `source_stable` true, capture complete.
+  - The one failure, `test_cli_unreadable_start_head_is_i7[ÿþ]`, **reproduces identically on the base `c7713e7`**: record `20260929T185050Z-5209d398750b` (SHA-256 `1d69db75…f0fd1`), with the same counts. The refactor introduced no regression.
+  - The 8 skips are the POSIX-stub workflow-step tests, which do not run on Windows.
+  - The condition's word "passing" is **not literally met**, because of that one base-reproduced Windows failure. The operator decides whether this satisfies it before any Stage 1c dispatch.
+
+**B. Rulings on the §7 concerns of `c7713e7`.**
+1. The four out-of-§2 test files (`test_campaign_funding.py`, `test_campaign_snapshot_versions.py`, `test_checkpoint_widening.py`, `test_checkpoint_validation.py`) are **ADMITTED**, test-only.
+2. The G5 completion-state tuple gaining `FULL_PASS_READY` and `PART_A_FAILED` is **ACCEPTED**.
+3. G5 dropping full source admission for PART_A is **ACCEPTED for TEST_ONLY**, on condition that Codex's C3 review confirms the G5 closure rule requires it. G5 relies on the contract-pinned calendar digest and the frozen FULL population.
+4. Pilot identity checked against the plan is **ACCEPTED for TEST_ONLY**. **Carried forward:** before the acceptance-grade or production run it must be strengthened to an independently observed pilot draw.
+5. The P-4 by-construction limitation is **ACCEPTED**: byte equality with the frozen derivation is at least as strong as a parser refusal.
+6. The SR-8 CPU split exported as null is **ACCEPTED** as disclosed.
+7. The hook-workaround writes are **ACCEPTED**: they were in scope and reviewed before each commit, and no new rule is added. Codex's C3 review is asked to look closely at the escalation-lane commits `e38b308`, `c2f834a`, `3362b43` and `d4afa5b`.
+8. The Linux cases were not executed. There is no ruling; the C3 Linux grant covers them.
+9. Memory at zero headroom from `bind_budget`: **PROCEED**. Stage 1c measures it. A measured excess is a stop at C3, and no budget is widened beforehand.
+
+**C. The executed `bind_budget` evidence is now durable.** It is in [`docs/notes/2026-09-29-s5-c3-record/`](../../notes/2026-09-29-s5-c3-record/README.md): the script and its output, with SHA-256 pins.
+- Σ CPU 1,680 ≤ 10,000; Σ wall 4,200 ≤ 10,000; max phase memory 256,000,000 = 256,000,000; state `BOUND`.
+- The unextended control is `BUDGET_EXHAUSTED`.
+- **RC-3b's executed check is done.**
+
+**Still open at C3:**
+- Stage 1c: Linux dispatch, after the harness condition above and the operator's C3 Linux grant;
+- Codex's C3 review, including items B3 and B7;
+- RC-2's merge (#552) and O-10's merge (#555);
+- Stage 2/PA-5 after the acceptance-grade run;
+- OQ-1, Q1, Q7 and Q9.
+
+**Not granted:** the C3 Linux grant, any dispatch, C3 acceptance, any merge, and any production authority.

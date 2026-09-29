@@ -1,0 +1,102 @@
+"""C3 step 1 (RC-3b): the EXECUTED bind_budget Sigma-feasibility check on the built /v7.
+
+Runs the real CampaignStore.bind_budget with (a) the built /v7 campaign budget
+profile, derived exactly as the installation derives it from
+deploy/qualification/test-profile.json, and (b) the binding the TEST_ONLY
+fixture producer gives a /v7 release (the P4-extended cap). A negative control
+repeats the bind with the unextended binding (120 s / 180 s / 90% memory) that a
+/v7 release would get without precondition 1. Read-only against the repo: all
+state lives in a temporary directory. Run from the checkout under test via
+`python -I scripts/fp.py python <this file>`.
+"""
+import importlib.util
+import json
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path.cwd()
+for _p in reversed((ROOT / 'core', ROOT / 'lab', ROOT / 'ops', ROOT / 'ops/c1_rail', ROOT / 'ops/c1_signal_daemon', ROOT / 'tests/ops/qualification', ROOT / 'tests/ops/qualification/execution', ROOT)):
+    sys.path.insert(0, str(_p))
+
+from c1_rail.qualification.contract import canonical_json_bytes as encoded  # noqa: E402
+from c1_rail.qualification.execution.campaign_store import CampaignStore  # noqa: E402
+from c1_rail.qualification.execution.profile import (  # noqa: E402
+    diagnostic_budget_profile,
+    part_a_dispatch_diagnostic_execution_profile,
+)
+from c1_rail.qualification.execution.store import ExecutionStore  # noqa: E402
+
+
+def clock(t, boot='boot-c3'):
+    return dict(schema='qualification_campaign_clock/v1', boot_id=boot,
+                boottime_ns=t, utc='2026-09-29T00:00:00Z')
+
+
+def bind(tmp, attempt, budget_profile, binding):
+    store = CampaignStore(ExecutionStore(Path(tmp) / (attempt + '.sqlite')))
+    request = encoded(dict(schema='qualification_campaign_request/v1', operation='SUBMIT_E1',
+                           attempt_id=attempt, request_id='request-' + attempt,
+                           bundle_sha256='b' * 64))
+    store.begin_admission(request, encoded(budget_profile), encoded(clock(10)))
+    revision = json.loads(store.budget_snapshot(attempt))['authority_revision']
+    return json.loads(store.bind_budget(attempt, encoded(binding), expected_revision=revision))
+
+
+def main():
+    base = json.loads((ROOT / 'deploy/qualification/test-profile.json').read_bytes())
+    profile = part_a_dispatch_diagnostic_execution_profile(encoded(base))
+    budget_profile = diagnostic_budget_profile(encoded(profile))
+    phases = budget_profile['phases']
+
+    spec = importlib.util.spec_from_file_location(
+        'c3_v7_producer', ROOT / 'tests/integration/qualification_boundary/fixture_producer.py')
+    fixture = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fixture)
+    private, keys, _ = fixture.fresh_keys(execution_seed=b'a' * 32, result_seed=b'b' * 32)
+    release = fixture.release_document(ROOT, profile, 'sha256:' + 'c' * 64, keys)
+    release.update(schema='qualification_execution_release/v7', capability='FULL_E1',
+                   dispatch_enabled=True, dispatch_checkpoints=['N1', 'N2', 'PART_A'],
+                   campaign_budget_profile=budget_profile)
+    with tempfile.TemporaryDirectory() as tmp:
+        bundle = fixture.build_real_bundle(Path(tmp) / 'retained', repo=ROOT,
+                                           release=encoded(release), private=private, keys=keys,
+                                           attempt_id='c3-bind-v7', idle=True)
+        contract = json.loads(bundle['contract'].canonical_bytes)
+        binding = contract['replay']['budget']
+        memory_limit = profile['memory_bytes']
+        unextended = dict(binding, maximum_wall_seconds=180, maximum_cpu_seconds=120,
+                          maximum_memory_bytes=memory_limit * 9 // 10)
+        extended_state = bind(tmp, 'c3-bind-v7', budget_profile, binding)
+        control_state = bind(tmp, 'c3-bind-v7-unextended', budget_profile, unextended)
+
+    sigma_cpu = sum(p['cpu_ns'] for p in phases.values())
+    sigma_wall = sum(p['wall_ns'] for p in phases.values())
+    max_mem = max(p['memory_bytes'] for p in phases.values())
+    report = {
+        'schema': 'c3_bind_budget_check/v1',
+        'profile_schema': profile['schema'],
+        'budget_profile_schema': budget_profile['schema'],
+        'phases': {k: {'cpu_s': v['cpu_ns'] / 1e9, 'wall_s': v['wall_ns'] / 1e9,
+                       'memory_bytes': v['memory_bytes']} for k, v in phases.items()},
+        'sigma_cpu_s': sigma_cpu / 1e9,
+        'sigma_wall_s': sigma_wall / 1e9,
+        'max_phase_memory_bytes': max_mem,
+        'binding': {k: binding[k] for k in ('maximum_cpu_seconds', 'maximum_wall_seconds',
+                                            'maximum_memory_bytes')},
+        'extended_bind_state': extended_state['state'],
+        'extended_bind_budget_recorded': extended_state['budget'] is not None,
+        'unextended_control': {k: unextended[k] for k in ('maximum_cpu_seconds',
+                                                           'maximum_wall_seconds',
+                                                           'maximum_memory_bytes')},
+        'unextended_control_state': control_state['state'],
+    }
+    print(json.dumps(report, indent=2, sort_keys=True))
+    ok = (report['extended_bind_state'] == 'BOUND'
+          and report['unextended_control_state'] == 'BUDGET_EXHAUSTED')
+    print('RESULT:', 'FEASIBLE (control refused as predicted)' if ok else 'UNEXPECTED')
+    return 0 if ok else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
