@@ -1374,8 +1374,8 @@ The CP-1b ruling's "Next" line (the bounded S5 build handoff from the release he
 - D-8's admission-crash wording;
 - §3.3's no-salt-hash rule.
 
-Applying it would mean choosing wording. The coordinator drafts a reconciled O-10 row for the umbrella §0.8 and returns it for the operator's acceptance before it lands.
+Applying it would mean choosing wording. The coordinator drafted a reconciled O-10 row for the umbrella §0.8. The operator accepted it on 2026-09-29, and it lands in PR #555 after this commit merges, so that its routing reference to full-E1 spec §2.4 resolves.
 
-**Effect.** RC-2 is met when this commit is merged and reviewed, and the C3 record cites it. Until then RC-2 stays open.
+**Effect.** RC-2 is met when this commit and the O-10 landing (PR #555, the optional RC-2 landing place the operator chose) are both merged and reviewed, and the C3 record cites both. Until then RC-2 stays open.
 
 **Not granted:** C3; S5 acceptance; Stage 1c; any Linux or CI run; any production value; the O-10 text.
