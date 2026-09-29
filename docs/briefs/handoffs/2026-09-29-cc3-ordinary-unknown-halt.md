@@ -202,7 +202,7 @@ capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open]
 constraints:
   - no_main_write
   - no_merge
-  - section_2_footprint_plus_amendment_1_test_files_only
+  - section_2_footprint_plus_amendment_1_2_test_files_only
   - no_qualification_or_s5_file
   - no_schema_policy_or_interface_change
   - no_rail_deploy
@@ -288,6 +288,26 @@ They encode the continuity rule that halt/resume §2 and incident ADR §A11.2 su
 Nothing else in it changed.
 
 **Acceptance.** RESOLVED, in synthetic scope only, requires all of the following: both Codex threads resolved, green `pytest (3.11)` and `skills (3.12)`, the full `tests/ops` record, and the coordinator's review of the new diff. The merge stays Joshua's. No other grant changes.
+
+### §8.2 — Coordinator amendment 2 (2026-09-29; recorded by the executor at the coordinator's direction)
+
+**Provenance.** The coordinator ruled on the executor's NEEDS_CONTEXT return by cross-session message on 2026-09-29, and directed the executor to record the ruling here in its own commit. Joshua's confirmation of amendment 1 is recorded in §8.1. This section records no separate confirmation from Joshua for amendment 2.
+
+**Why.** Eight test nodes hit an *implicit* unknown outcome through `SyntheticBroker`'s empty-queue default (`book_account_owner.py:227`, which returns `BrokerResult("unknown")` when no result is queued). They never meant to test an unknown, and the repaired owner now halts on it. With that default temporarily flipped to `accepted`, all 12 parameterized nodes passed. The coordinator accepted the diagnosis.
+
+**Ruling.**
+1. **Fixture-queue changes are allowed (test-only).** For each of the 8 nodes, queue explicit `BrokerResult("accepted")` for every send the test did not mean to be unknown, and keep every existing assertion. For `test_async_cancel_terminal_resolves_control_attempt[unknown]` the entry is accepted and the cancel is unknown, and the expected authority becomes `INTERVENTION` (was `SCHEDULED_EXIT`), following halt/resume §2 and incident ADR §A11.2. Its reconciliation assertions stay.
+2. **`tests/ops/test_pr409_review2.py` is admitted**, test-only, for `test_definitive_rejection_releases_only_its_own_reservation[cancel]` only, under the same rules.
+3. **Rejected: changing `SyntheticBroker`'s empty-queue default.** Returning `unknown` for an empty queue is the fail-safe choice for a test double, and changing it is a production-file edit outside the footprint. It stays as it is.
+4. **The per-change table.** Each of the 8 nodes gets its own row in the evidence note's per-change table, with the cause marked "implicit unknown via empty queue; fixture made explicit".
+
+**The eight nodes:** `test_book_takeover_phases.py::test_producer_cancel_removes_remainder_and_retains_late_fill`; `test_pr409_owner_lifecycle.py::test_scheduled_close_survives_ticks_and_partial_terminal`, `::test_invalid_cancel_target_never_sends[other-leg]`, `::test_invalid_cancel_target_never_sends[close]`, `::test_async_cancel_terminal_resolves_control_attempt[unknown]`, `::test_scheduled_flatten_handles_late_entry_fill`; `test_pr409_review3.py::test_cutoff_retires_takeover_before_displaced_terminal`; `test_pr409_review2.py::test_definitive_rejection_releases_only_its_own_reservation[cancel]`.
+
+**Qualification isolation.** `test_qualification_isolation.py::test_qualification_suite_in_clean_process` is baselined on a clean `main` worktree and the result is disclosed. If it times out there too, it is independent of this PR. It stays untouched either way. The acceptance record is a full `tests/ops` run made without other load on the machine.
+
+**Authority block.** Its shape is unchanged. The constraint `section_2_footprint_plus_amendment_1_test_files_only` became `section_2_footprint_plus_amendment_1_2_test_files_only`, which adds `tests/ops/test_pr409_review2.py` beside the seven files of §8.1.
+
+**Sequence and ownership.** The executor then adds the evidence-note fix and the per-change table, runs the full `tests/ops` record on the final head and `check`, pushes, and sends the head and record paths to the coordinator. The coordinator replies on both Codex threads and re-requests `@codex review` after the push. No other grant changes.
 
 ## §10 — Audit hooks
 
