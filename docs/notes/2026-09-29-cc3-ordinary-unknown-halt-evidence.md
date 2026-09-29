@@ -29,9 +29,12 @@ Records are under the checkout's `.cache/fp-verification/`. All show `source_sta
 | `20260929T174520Z-5d897db4ba48` | `.\fp.ps1 check` with the card's §7 return | completed, exit 0; reviewed by Codex at `ec96a0e` |
 | `20260929T195919Z-96d59d4a2e3d` | new module against `ec96a0e`'s ordering (attached facts after the halt) | 1 failed, 17 passed: `test_attached_fact_failure_rolls_back_halt_and_facts_together` fails, because the halt survives the failed fact observation |
 | `20260929T195953Z-6a90667d1c75` | first **full `tests/ops`** run, with the atomic-facts fix | 22 failed, 2920 passed, 18 skipped: the 21 superseded or implicit-unknown nodes in §4, plus `test_qualification_isolation` (timed out in its child at 3,600 s) |
-| `FULL_OPS_RECORD` | full `tests/ops`, final head, no other load | `FULL_OPS_RESULT` |
-| `FINAL_CHECK_RECORD` | `.\fp.ps1 check` on the final bytes | `FINAL_CHECK_RESULT` |
-| `BASELINE_RECORD` | qualification child suite on a clean `main` worktree (`6c6759f`) | `BASELINE_RESULT` |
+| `20260929T211550Z-4b202ed9ff32` | **full `tests/ops`** on the tree at `c310128` (clean), `--workers 2`; completed, `source_stable: true`, `capture_complete: true`, no capture errors | 1 failed, 2941 passed, 18 skipped (collected 2960). The one failure is `test_qualification_isolation` (below); every node in section 3 and section 4 passes. The 18 skips are private inputs absent from a public clone. Another session's pytest was running on the machine, so "no other load" was not fully met |
+| `20260929T221943Z-2d4a2ad5a74c` | the same full `tests/ops` run on a clean `main` worktree (`6c6759f`, detached, no patch); completed, `source_stable: true` | 1 failed, 2922 passed, 18 skipped, 1 xfailed (S1's CC-3 pin). The one failure is the same `test_qualification_isolation`, with the same 3,600 s child timeout |
+
+**`test_qualification_isolation`.** This bridge runs the whole qualification suite in one serial child with a 3,600 s hang bound. On this machine the child reaches about 68 % of its 1,712 tests in that time (CI measured the same child at 1,079-1,538 s). It times out identically on clean `main` and on this branch, so it is independent of this PR. It is untouched and stays a disclosed failure of any full local `tests/ops` run here; it is not a pass.
+
+**The final `check`.** A note cannot name the gate record that runs on its own final bytes. The `fp check` record for the final head is cited in the executor's return on the PR; the earlier `check` rows above ran on earlier bytes of this note.
 
 Coverage gaps, stated plainly: `test_halt_storage_failure_stops_remaining_cancel_targets` and `test_protection_unknown_keeps_only_its_own_incident` were added after the `160722Z` run, so they have no fail-on-base evidence. The protection case is a no-duplicate control. The second new atomic case, `test_unknown_with_attached_fill_commits_capacity_and_halt_together`, passes on both orderings by design.
 
