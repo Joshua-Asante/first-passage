@@ -61,7 +61,13 @@ If the configured controls cannot be identified adequately for the decision, ret
    - **Open sequencing item (recorded 2026-09-29; for Joshua, not resolved here).** This week's preservation trade was placed on Monday 2026-09-28 and became R-2's target (closed with limits, #550). No R-1 read is recorded in that trade's own session. The earliest retained read (`reads/R2prep-20260929T003518Z…`, 2026-09-29 00:35 UTC) falls after the reset. The condition above therefore cannot be met this week without an extra trade, and no extra trade is authorized. Joshua's options:
      - (a) run R-1 on next week's preservation trade (due 2026-10-09), in its own session;
      - (b) rule, under CP-2 F-3, that X-1's own REST-placed order may supply the same-session read, which would remove the separate R-1 prerequisite for X-1.
-     - Neither is chosen.
+     - ~~Neither is chosen.~~ **Operator ruling 2026-09-29 (in session): option (a).** R-1 runs on next week's preservation trade (bucket 2026-10-05 → 10-09, due 10-09), in that trade's own session. Conditions:
+       - The trade is placed Monday–Thursday after the 18:00 ET reopen, so it can also serve R-2 and T07.
+       - R-1 runs before the next ~17:00 ET reset, and the trade's ids and timestamps are retained in that session.
+       - The R-1 v3.1 collector's clearance to run is confirmed first; its return says it is not cleared until the coordinator accepts it.
+       - If R-1's per-order reads fail, X-1 stays held, and the next step is a vendor question, not a drill.
+       - Option (b) is not adopted. X-1's CP-3 is not requested before a successful R-1.
+       - The ruling authorizes no trade. The preservation trade is placed because the account requires it.
    - If its per-order reads fail, X-1 stays held.
    - The observer review, the offline tool and the operator rehearsal remain owed.
 
