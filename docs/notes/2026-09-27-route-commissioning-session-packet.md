@@ -4,6 +4,8 @@
 
 **Card:** [H2](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md) (lines 136–196), dispatch revision `521d8f2`. **Sequencing owner:** [checklist addendum 2026-09-27](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step), §0–§5 (lines 375–506). **Executor:** agent subagent (Claude Code, Opus 5.5), writing this one file only.
 
+**R-2 disposition (2026-09-29):** the operator closed the preservation-trade investigation **with limits / inconclusive**. Both collector runs remain `STOPPED(HTTP_FAILURE)`; the prescribed sequence was not completed. Cross-session recovery remains unestablished and unresolved attempts stay held. This closes only the investigation's administrative HOLD and grants no Stage 1, trading or release authority. Decision and private-evidence pins: [drill-plan R-2 closure](2026-09-26-tradeify-route-drill-plan-draft.md#r-2-closure-with-limits--operator-decision-2026-09-29).
+
 **Rulings applied** (read at their owners):
 - **R-CLOSE (2026-09-26):** R-1/R-2 authorized after existing entitlement is confirmed; no order-producing row authorized; X-5 deferred; no automatic fallback to the live eval. Sources: [incident ADR §A11.1](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26) (lines 362–376) and the drill plan's ruling block (lines 16–42).
 - **§A11.2 (2026-09-27):** no same-session restart of automation after an incident; review before another session ([incident ADR §A11.2](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27), lines 378–386).
