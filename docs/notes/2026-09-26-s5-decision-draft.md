@@ -227,6 +227,14 @@ The delta's outer-cgroup form, as written, would need quota_campaign × (deadlin
 
 **Falsifier:** revisit the uniform model if PART_A's maximum-expansion CPU cannot be bounded ahead of time. That would mean a ceiling covering maximum expansion either fails the Σ-feasibility check against any admissible cap or cannot be measured before S5 is released.
 
+**Reading (operator, CP-1a decision (4), 2026-09-27: the three-way split).** Three outcomes are kept apart:
+- (i) **A Σ failure from a valid record is the D2 ACCOUNTING-DESIGN FALSIFIER stop.** A valid record means PA-4 validity and complete memory. The failure is Σ-feasibility failing at every admissible value, from the proposed-value arithmetic at build entry; at Checkpoint C3 the same test is the executed `bind_budget` on the built `/v7` (r2 §10.3). It returns the accounting-design question: revisit the uniform model.
+- (ii) **Missing permission, or a run not executed, never engages the falsifier.** It keeps the hold, because CP-1b needs RC-3a.
+- (iii) **An invalid measurement is investigated**, and re-measured only under a fresh approval.
+- (iv) The accounting-design question also returns if a diagnosis traces an invalid run to the workload itself.
+
+Memory evidence that stays incomplete after the allowed re-run is neither the falsifier nor a PA-3 failure: it leaves RC-3a unmet, and build entry then needs an operator ruling (r2 §8.3). This reading supersedes r2 §10.3's release-point reading. **Still open for the operator, when it arises:** whether a PART_A ceiling set by ruling, without a measurement, answers the "cannot be measured before S5 is released" limb.
+
 ### 2.4 Exhausted campaign with a valid stage result (review point e)
 
 Rule:
