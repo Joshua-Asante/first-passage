@@ -841,3 +841,7 @@ Every M2 classification remains the executor's to make against the retained capt
 | Retained-capture cross-check (R-3.7a) | Primary-checkout session or operator | Owed; does not block a CP-3 request |
 
 **Not granted by this closure.** No CP-2 or CP-3 decision; no read, row, drill or trade; no additional preservation trade; no vendor contact; no purchase, plan change or new access; no spend; no gate B, C or D acceptance; no close-contract amendment or residual-risk acceptance; no T09 dispatch, S5 release, arming, deployment, GO or merge. §7's list stands in full.
+
+## X-1 decision preparation — 2026-09-29
+
+The [bounded X-1 decision packet](2026-09-29-x1-decision-packet.md) carries the proposed A-11 disposition, the row binding and the remaining operator inputs. It is prepared for decision and grants no CP-3. The drill plan and this packet keep their ownership. R-2's limited closure does not establish cross-session recovery.
