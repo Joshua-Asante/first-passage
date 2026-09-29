@@ -108,7 +108,7 @@ Never pass the main checkout (`C:\Users\joshu\multi_firm_operations`, which has 
 
 ## 5. Open operator items (one batch)
 1. Merge per §3.
-2. T00 recovery §7.1 reading, and §7.7 items 1–3.
+2. **Closed 2026-09-24:** T00 recovery accepted for one override map; candidate 1 not reopened and further recovery parked. Candidate 3′ plus P7 inputs is the forward route; see [recovery ruling](2026-09-24-seven-strategy-evidence-recovery.md#78-operator-acceptance-and-recovery-disposition-2026-09-24) and [T00 continuation](2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24).
 3. T08: send the vendor question. Decide whether the bounded-exposure amendment proceeds to an addendum draft.
 4. T07: authorize (or decline) the account-side reads the S2 facts need.
 5. T10: acknowledge the step-4 finding. Decide whether the confirming `verify_for` probe and the horizon-500 fixture extension run next (both synthetic, no private data).

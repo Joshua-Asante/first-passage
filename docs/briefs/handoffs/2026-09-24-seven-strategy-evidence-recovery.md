@@ -150,3 +150,16 @@ grep -c "460f40fa079c00a97711d743aa0a5acee62f1c8f2cc33972b8a92b7948e42d08" lab/a
 # No private artifact committed; expect no output
 git ls-files local_artifacts lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts
 ```
+
+### 7.8 Operator acceptance and recovery disposition (2026-09-24)
+
+*Recorded on main 2026-09-29.* This section was written on 2026-09-24 in local commit `6492565`, which was never pushed. The coordinating session replayed it unchanged on 2026-09-29; see [T00 §7.9](2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24) for the recording note and the 2026-09-29 route ruling.
+
+**Operator, in session, verbatim:** "accept the recovery return, and let's take the shortest path forward". This accepts the coordinator's recommended reading of §7.1 and dispositions for §7.7 items 1–3.
+
+- **Accepted: DONE — RECOVERED, for the Aegis override map only.** Its SHA-256 is `460f40fa079c00a97711d743aa0a5acee62f1c8f2cc33972b8a92b7948e42d08`. The coordinator independently re-hashed the recovered file and both candidate indexes on the primary checkout on 2026-09-24; all three matched the recorded digests. This is a byte-identity check, not a repeat of the search or verification of the other candidates.
+- **Candidate 1 stays UNKNOWN and is not reopened for P1–P7 scoring. T00 stays INSUFFICIENT.** The recovery hypothesis is falsified by one file; a usable replay/evidence bundle has not been recovered.
+- **Further recovery is parked:** preserve the verified file and UNVERIFIED candidates and indexes; defer sandbox access, ACL changes, operator identification and partial-edit reconstruction. The unsearched frontier remains explicit, so this is not an exhaustive NONE or UNREACHABLE verdict. Reopen only on a specific new source or evidence-bearing lead under a bounded assignment.
+- **Forward route:** candidate 3′ plus its P7 inputs, as selected by the [T00 return §7.5](2026-09-22-tradeify-t00-step1-producer-inventory.md#75-verdict). The next bounded outcome and remaining dependencies are recorded in that packet's continuation below. This acceptance grants no T00 step 2, outcome-bearing replay, screen, MC, feed purchase, deployment or arm.
+
+Follow-up 4 was separately discharged by the tracked root ignore and private-evidence archival work (#484); it is not reopened by this ruling.

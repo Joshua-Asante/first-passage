@@ -292,3 +292,23 @@ Neither holds the joint replay, the 125-test synthetic replay, canonical ledgers
 - **Panels: MATCH.** The four panels that the Step 3 admission binds (MNQ `cceaac41…`, MYM `15b34615…`, MGC `c5487470…` per `core/data/bar_data/SHA256SUMS`; Aegis attested-prefix `8ae083d0…` per [identity ledger](../phase3-preparation/2026-09-15/identity-ledger.md) line 165) match on disk. All six `SHA256SUMS` rows pass.
 
 P7 (a) is **MET** on the primary checkout. P7 (b), the reviewed source calendar, population index, startup policy and cost model, stays **NOT MET**: none exists. T10's phase-1 return (branch `claude/t10-source-freeze`, not merged) lists the panel-derived session-index producer run as phase 2 / step 4 work, and phase 2 has not started. The verdict stays **INSUFFICIENT** until P7 (b) is met.
+
+### 7.9 Recovery accepted; shortest-path continuation (2026-09-24)
+
+**Recording note.** The operator gave the 2026-09-24 ruling below in a Codex session. It was recorded that day in local commit `6492565` on branch `codex/t00-recovery-acceptance`, which was never pushed, so the ruling was not in force on `main`. The coordinating Claude Code session re-recorded it here on 2026-09-29, as the [T00 → T10 → CP-7 note](../../notes/2026-09-29-t00-t10-cp7-sequence.md) §3 step 0 proposes. It carries the operator's verbatim wording and refreshes the roadmap, because #486 has since merged. It also adds the operator's 2026-09-29 route ruling. The original commit is superseded and is not pushed.
+
+**Operator, 2026-09-24, verbatim:** "accept the recovery return, and let's take the shortest path forward". This accepts the [recovery return §7.8](2026-09-24-seven-strategy-evidence-recovery.md#78-operator-acceptance-and-recovery-disposition-2026-09-24). Candidate 1 remains UNKNOWN and is not reopened, and further recovery is parked. Candidate 3′ plus its P7 inputs remains the selected route. The verdict remains **INSUFFICIENT**.
+
+**Route ruling, operator, 2026-09-29, in the coordinating session ("option 1").** P7 (b) is produced by T00's own step-1b **Task 3** under the [P7-closure packet](2026-09-24-tradeify-t00-p7-closure.md), not "through T10 under its existing phase gates". P7 (b) covers the reviewed source calendar, population index, startup policy and cost model.
+- **Shared producer.** The session-index producer is built once and shared, by exact identity, with T10's phase-1 step 4 and phase 2.
+- **What it replaces.** This supersedes the 2026-09-24 roadmap's "through T10" clause.
+- **Consequence.** T00 no longer waits on S4 → S5 → T05 → T06. CP-7 still requires the T10 phase-2 F1 packet, under D-feed.
+
+**Roadmap (refreshed 2026-09-29):**
+1. The bracket convention: **done.** #486 merged at `1f564ab` on 2026-09-25, with all head checks green, including both S2 supervision Linux runs.
+2. **Step-1b Task 2.** Rewrite the seven required test cases (P7-closure §7, "Required test update") so they fail against the frozen interface (`ScheduleExecutionBracket.for_run`, `ScheduleSplit.prefix_executes`), and record that failing run. Then implement only the frozen interface.
+3. **Task 3.** Produce P7 (b), using the ruled panel-derived session count (T10 R2).
+4. **Task 4.** Verify P7 on the real retained inputs on the primary checkout, then return. The coordinator updates this packet's disposition.
+5. **Step 2 ratification (operator act), then the step-3 screen.** D-feed (a) requires a verdict outside {INSUFFICIENT, NO-GO-evidence}: in practice, GO-evidence. Step 2 should say, before any run, how R1/R2 disagreement days (`UNDETERMINED`) count.
+
+**Authority.** Tasks 2–4 are already authorized by the P7-closure packet (§7, "Authorized continuation boundary"). They need only an executor dispatched against that packet. This record grants no step 2, screen, MC, outcome-bearing replay, provider contact, feed purchase, deployment or arm.
