@@ -1357,12 +1357,16 @@ The CP-1b ruling's "Next" line (the bounded S5 build handoff from the release he
 **Source.** In session on 2026-09-29 the operator wrote: "accept corrections 3 and 8, and use the optional O-10 landing". Earlier the same day the operator gave GO to prepare the RC-2 owner text. Corrections 3 and 8 are the C3 evidence corrections in the register of `docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md`; correction 8's block replaces correction 3's and is the operative C3 check.
 
 **Applied by this entry's commit**, against the pinned application head `origin/main` `3ce500e`:
-- the accepted note's §3.1–§3.10 PROPOSED passages, verbatim, at their anchors. Every anchor is unchanged between `875ecf29` and `3ce500e`, and every "Current" quote matched its owner line before writing:
+- the accepted note's §3.1–§3.10 PROPOSED passages, verbatim, at their anchors, except for the two amendments recorded below. Every anchor is unchanged between `875ecf29` and `3ce500e`, and every "Current" quote matched its owner line before writing:
   - boundary spec §3.1;
   - full-E1 spec §2.2a, §2.4 (first and last paragraphs), §2.5, §2.6 (the two table rows and the new paragraph) and §5;
   - slices plan contract decision 3;
   - S5 draft §2.3.
 - the two D-2 bridging notes ("This note is removed when the §2.6 text lands at C3"): contract decision 6 and S5 Behavior.
+
+**Amendments after Codex review of this PR (2026-09-29).** Two passages differ from the accepted note's text:
+- §2.2a seed digest (note §3.2). The note says each seed is replaced by "its digest", which leaves the construction undefined. The applied text specifies HMAC-SHA256 keyed by the attempt salt over the seed record's canonical bytes, with the client recomputing after reveal. The operator chose this wording in session on 2026-09-29. It is the wording proposed in `docs/notes/2026-09-27-host-obligations-assignment.md`.
+- §2.6 re-execution limits (note §3.6). The note says "once, and at most twice per campaign". The applied text restates accepted rule R9 of `docs/notes/2026-09-26-s5-decision-draft.md`: once per interruption, at most twice per campaign, and an interruption of the second re-execution is terminal. This restates R9 and adds no new limit. The operator has not yet accepted this wording separately.
 
 **Evidence** (on the applied tree):
 - correction 8's block passes on the CRLF tree and an LF mirror, and fails on the unapplied tree as the note predicts;
