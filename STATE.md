@@ -101,6 +101,20 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   is the operator's attestation; the private compliance record was not
   independently verified. The 09-21→09-25 obligation is covered; the next
   bucket is 09-28→10-02 (deadline 10-02), advanced on 2026-09-26.
+  Week 09-28→10-02 is operator-attested: on 2026-09-29, the operator reported
+  placing the trade on Monday, 2026-09-28. Its platform captures (buy and sell
+  order lifecycles, about 19:40 UTC) and the same-day fills and position-history
+  captures are private, under `local_artifacts/route-drills-2026-09/`
+  (`platform-2026-09-28/`, `account-binding-2026-09-28/`) in the primary
+  checkout, and hashed in that folder's `MANIFEST.tsv`. That trade was the R-2
+  target ([closed with limits 2026-09-29](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-2-closure-with-limits--operator-decision-2026-09-29)).
+  No R-1 read is recorded in that trade's own session (the earliest retained
+  read is 2026-09-29 00:35 UTC, after the reset), so it does not serve as
+  R-1's target. By the operator's ruling of 2026-09-29, R-1 runs on X-1's own
+  order in X-1's session instead ([X-1 packet §2, #551](https://github.com/Joshua-Asante/first-passage/pull/551)).
+  The
+  private compliance record was not independently verified. The 09-28→10-02
+  obligation is covered; the roller advances the deadline after 10-02.
 - **Earlier record still owed:** week 08-31→09-04 was operator-attested on
   09-04 and restated on 09-05; the exact trade day remains unresolved between
   09-02/09-03, and its private ledger row remains unverified.
