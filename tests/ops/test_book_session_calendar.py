@@ -970,3 +970,97 @@ def test_author_cli_refuses_evidence_outside_checkout(tmp_path):
                              str(evidence), "--out", str(out)], cwd=tmp_path, capture_output=True, text=True)
     assert result.returncode != 0 and "repository root" in result.stderr
     assert out.read_bytes() == b"existing output"
+
+
+# ---------------------------------------------------------------- October 2026 monthly extension (candidate)
+# Pinned so a changed byte is visible. Not ratified: RATIFIED.json names only September, and
+# ratification is the operator's separate act.
+
+OCT_CALENDAR = REPO / "ops" / "calendars" / "book_session_calendar_2026-10.json"
+OCT_EVIDENCE = REPO / "ops" / "calendars" / "evidence" / "2026-09-29-forward-session-source-captures.json"
+OCT_CALENDAR_SHA256 = "4d8a7f29f83b5fbf3c177be07cb12e829401af0b46585843981b1effaf6e504d"
+OCT_EVIDENCE_SHA256 = "d0043f689a74add5c36bace8ce1a29e80615e624eae2a6710359cb5c3583b01c"
+OCT_COLUMBUS_NOTE = (
+    "Columbus Day / Indigenous Peoples' Day. The CME Globex calendar shows regular Sunday 17:00 CT open "
+    "and Monday 16:00 CT close for 6J, MGC, MYM and MNQ (cme-ui-columbus-2026), but CME lists a Columbus "
+    "Day clearing advisory and settlement-times notice for 12 October whose contents were not captured, "
+    "and Tradeify announces holiday hours only in Discord; denied as not positively qualified")
+
+
+def load_october():
+    return load_session_calendar(OCT_CALENDAR, overlay_path=OVERLAY, repo_root=REPO)
+
+
+def test_october_calendar_and_evidence_are_byte_pinned_and_v2():
+    assert sha256(OCT_CALENDAR.read_bytes()).hexdigest() == OCT_CALENDAR_SHA256
+    assert sha256(OCT_EVIDENCE.read_bytes()).hexdigest() == OCT_EVIDENCE_SHA256
+    assert json.loads(OCT_EVIDENCE.read_bytes())["schema"] == "forward_session_source_captures/v2"
+    cal = load_october()
+    assert cal.calendar_digest == OCT_CALENDAR_SHA256
+    assert cal.overlay_digest == OVERLAY_SHA256
+    assert cal.evidence_warning is None
+    assert "evidence_schema_v1_no_product_coverage" not in cal.session_for(et(2026, 10, 15, 9)).warnings
+
+
+def test_october_covers_the_named_horizon_and_denies_only_columbus_day():
+    """October 1-30 2026, twenty-two account days; 2026-10-12 denied as not positively qualified."""
+    cal = load_october()
+    assert cal.rows[0].session_id == "tradeify-account-day:2026-10-01"
+    assert cal.rows[-1].session_id == "tradeify-account-day:2026-10-30"
+    assert len(cal.rows) == 22
+    assert cal.coverage_start == et(2026, 9, 30, 18)
+    assert cal.coverage_end == et(2026, 10, 30, 17)
+    denied = {r.session_id.split(":")[1]: r.denial_reason for r in cal.rows if r.permission == "DENIED"}
+    assert denied == {"2026-10-12": "MISSING_SOURCE"}
+    assert not any(r.overlay_blocked for r in cal.rows)
+
+
+def test_october_chains_from_the_last_september_session():
+    september = load_session_calendar(CALENDAR, overlay_path=OVERLAY, repo_root=REPO)
+    october = load_october()
+    assert october.rows[0].prior_session_id == september.rows[-1].session_id
+    assert september.coverage_end == et(2026, 9, 30, 17)
+    assert october.coverage_start == et(2026, 9, 30, 18)
+
+
+def test_october_reproduces_from_the_authoring_tool():
+    denials = {date(2026, 10, 12): author.Denial("MISSING_SOURCE", OCT_COLUMBUS_NOTE)}
+    payload = author.build_calendar(date(2026, 10, 1), date(2026, 10, 30), denials, OCT_EVIDENCE,
+                                    "2026-09-29T23:18:11Z", "tradeify-select-100k/forward/2026-10")
+    payload["sources"]["evidence_file"] = "ops/calendars/evidence/" + OCT_EVIDENCE.name
+    regenerated = json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8") + b"\n"
+    assert sha256(regenerated).hexdigest() == OCT_CALENDAR_SHA256
+
+
+def test_october_ordinary_session_derives_regular_times_in_edt():
+    """All of October is EDT (DST ends 2026-11-01): 16:45 ET V is 20:45Z."""
+    cal = load_october()
+    row = cal.schedule_for("tradeify-account-day:2026-10-15")
+    assert row.opens_at == et(2026, 10, 14, 18) == datetime(2026, 10, 14, 22, tzinfo=timezone.utc)
+    assert row.closes_at == et(2026, 10, 15, 17)
+    assert row.v == et(2026, 10, 15, 16, 45) == datetime(2026, 10, 15, 20, 45, tzinfo=timezone.utc)
+    assert row.risk_add_cutoff == et(2026, 10, 15, 15, 45)
+    assert row.flatten_start == et(2026, 10, 15, 15, 55)
+    assert row.own_flat_deadline == et(2026, 10, 15, 16)
+    assert cal.schedule_for("tradeify-account-day:2026-10-30").closes_at == datetime(2026, 10, 30, 21, tzinfo=timezone.utc)
+
+
+def test_october_denied_columbus_day_keeps_regular_deadlines_and_chain(tmp_path):
+    cal = synthetic_ratified(tmp_path, path=OCT_CALENDAR, overlay=OVERLAY, repo=REPO)
+    row = cal.schedule_for("tradeify-account-day:2026-10-12")
+    assert row.permission == "DENIED" and row.denial_reason == "MISSING_SOURCE"
+    assert row.prior_session_id == "tradeify-account-day:2026-10-09"
+    assert row.v == et(2026, 10, 12, 16, 45)
+    assert row.own_flat_deadline == et(2026, 10, 12, 16)
+    assert cal.session_for(et(2026, 10, 12, 9)).refusal == "session_denied:MISSING_SOURCE"
+    assert cal.schedule_for("tradeify-account-day:2026-10-13").prior_session_id == "tradeify-account-day:2026-10-12"
+    assert cal.session_for(et(2026, 10, 13, 9)).permitted
+
+
+def test_october_is_not_ratified_and_cannot_admit():
+    cal = load_october()
+    decision = cal.session_for(et(2026, 10, 15, 9))
+    assert decision.refusal == "calendar_not_ratified" and decision.session is None
+    assert OCT_CALENDAR_SHA256 not in load_ratifications(RATIFIED)
+    with pytest.raises(CalendarError, match="calendar_not_ratified"):
+        load_ratified_calendar(OCT_CALENDAR, overlay_path=OVERLAY, ratified_path=RATIFIED, repo_root=REPO)
