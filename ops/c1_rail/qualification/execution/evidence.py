@@ -112,6 +112,18 @@ def _part_a_plan_shape(plan):
     return initial, depth, part['potential_panels']
 
 
+def _part_a_pilot(plan):
+    """W5a: the PART_A probe identity -- the plan's probe seed-input digests.
+
+    Shared by the encoder (which writes it beside the panels) and the parser
+    (which refuses a missing or altered pilot against the same plan bytes).
+    """
+    seeds = plan.get('seed_inputs') if type(plan) is dict else None
+    if type(seeds) is not list or not seeds:
+        raise ValueError('plan part a probe seed inputs required')
+    return dict(seed_input_sha256s=[sha256(encoded(seed)) for seed in seeds])
+
+
 def _part_a_panel_row(panel):
     """The canonical panel row shared by the artifact bytes and the document."""
     if type(panel) is dict:
@@ -124,12 +136,15 @@ def _part_a_panel_row(panel):
 
 
 def part_a_path_inventory(plan, panels):
-    """The PART_A panel-major source-occurrence inventory, re-derived (W5).
+    """The PART_A panel-major source-occurrence inventory, re-derived (W5a).
 
     ``panels`` are the computation's panel objects when encoding and captured
     panel rows when parsing; each record binds one path outcome to its panel
     index, its panel's source-occurrence digest and the plan's seed input at
-    that exact panel/path address.
+    that exact panel/path address. ``panel_id`` is the digest of the plan's
+    outer seed for that panel -- the hex-string identity the installed
+    adjudicator keys PART_A panels by, unique by construction -- and the
+    records carry population ``REGIME`` with the panel index beside it.
     """
     _, depth, potential = _part_a_plan_shape(plan)
     records = []
@@ -138,19 +153,22 @@ def part_a_path_inventory(plan, panels):
         index = row['index']
         if type(index) is not int or not 0 <= index < len(potential):
             raise ValueError('part a panel index differs from the plan')
+        outer = potential[index].get('outer_seed')
         seeds = potential[index].get('path_seeds')
-        if type(seeds) is not list or len(seeds) != depth:
+        if type(outer) is not dict or type(seeds) is not list or len(seeds) != depth:
             raise ValueError('part a panel seed vector differs from the plan')
         outcomes = row['outcomes']
         if type(outcomes) is not list or len(outcomes) != depth:
             raise ValueError('part a panel outcome depth differs from the plan')
         occurrence = sha256(encoded(list(row['source_session_ids'])))
+        identity = sha256(encoded(outer))
         for path, outcome in enumerate(outcomes):
             records.append(
                 dict(
                     stage='PART_A',
-                    population='FULL',
-                    panel_id=index,
+                    population='REGIME',
+                    panel_id=identity,
+                    panel_index=index,
                     path_index=path,
                     source_occurrence_sha256=occurrence,
                     seed_input_sha256=sha256(encoded(seeds[path])),
@@ -208,21 +226,28 @@ def encode_worker_result(context, execution_id, plan_bytes, run, observations, *
 def _encode_part_a_worker_result(
     context, execution_id, plan_bytes, plan, run, observations, *, admitted
 ):
-    """W5: the PART_A worker-result document; ``populations`` becomes ``part_a``."""
-    from .compute import PartACompute
+    """W5a: the PART_A worker-result document; ``populations`` becomes ``part_a``.
+
+    ``run`` is the SR-3 body's ``PartAWorkerRun``: the computation beside the
+    N2 FULL baseline the body itself derived from the staged capture (S5-D2).
+    The pilot identity needs no transport -- it derives from the same plan
+    bytes the body verified against its own independent derivation.
+    """
+    from .worker import PartAWorkerRun
 
     if (
-        type(run) is not PartACompute
-        or run.result.synthetic is not context.domain.permits_synthetic
+        type(run) is not PartAWorkerRun
+        or run.compute.result.synthetic is not context.domain.permits_synthetic
     ):
         raise ValueError('worker computation domain differs')
+    compute = run.compute
     initial = _part_a_plan_shape(plan)[0]
-    panels = [_part_a_panel_row(panel) for panel in run.result.panels]
+    panels = [_part_a_panel_row(panel) for panel in compute.result.panels]
     if (
-        run.initial_panels != initial
-        or run.final_panels != len(panels)
+        compute.initial_panels != initial
+        or compute.final_panels != len(panels)
         or len(panels) < initial
-        or run.expansion_required != (run.final_panels > run.initial_panels)
+        or compute.expansion_required != (compute.final_panels > compute.initial_panels)
     ):
         raise ValueError('worker part a panel counts differ from the plan')
     return encoded(
@@ -233,22 +258,24 @@ def _encode_part_a_worker_result(
             source_admission=json.loads(admitted.source_admission_bytes),
             legality=json.loads(admitted.legality_bytes),
             part_a=dict(
-                initial_panels=run.initial_panels,
-                final_panels=run.final_panels,
-                expansion_required=run.expansion_required,
-                initial_prefix_sha256=sha256(run.initial_panel_bytes),
-                final_sha256=sha256(run.final_panel_bytes),
-                initial_p5=run.result.initial_p5,
-                final_p5=run.result.final_p5,
-                probe_seconds=run.result.probe_seconds,
-                predicted_seconds=run.result.predicted_seconds,
+                initial_panels=compute.initial_panels,
+                final_panels=compute.final_panels,
+                expansion_required=compute.expansion_required,
+                initial_prefix_sha256=sha256(compute.initial_panel_bytes),
+                final_sha256=sha256(compute.final_panel_bytes),
+                initial_p5=compute.result.initial_p5,
+                final_p5=compute.result.final_p5,
+                probe_seconds=compute.result.probe_seconds,
+                predicted_seconds=compute.result.predicted_seconds,
+                pilot=_part_a_pilot(plan),
+                n2_full_baseline=run.n2_full_baseline,
                 panels=panels,
             ),
             runtime_load_manifest=[
                 dict(role=role, sha256=digest)
                 for role, _, digest in sorted(admitted.source.prepared.load_trace)
             ],
-            path_inventory=part_a_path_inventory(plan, run.result.panels),
+            path_inventory=part_a_path_inventory(plan, compute.result.panels),
             observations=observations,
         )
     )
@@ -425,8 +452,13 @@ def _parse_part_a_worker_result(
     other and with the plan's initial panel count; the two artifact digests
     must be the digests of exactly the re-encoded initial prefix and the full
     panel vector; and the panel-major occurrence inventory must re-derive from
-    the plan. The G5 comparisons (tolerance, floor, FULL sanity) are ticket 2d
-    and are not part of this document.
+    the plan. W5a adds the probe identity (``pilot``: exactly the plan's probe
+    seed-input digests, so a missing or altered pilot refuses) and the N2 FULL
+    baseline the worker derived from the staged capture (a closed
+    ``{'passes', 'paths'}`` pair; only its range is checkable here -- the value
+    itself is G5's independent derivation, S5-D2). The G5 comparisons
+    (tolerance, floor, FULL sanity) are ticket 2d and are not part of this
+    document.
     """
     from math import isfinite
 
@@ -467,6 +499,8 @@ def _parse_part_a_worker_result(
             'final_p5',
             'probe_seconds',
             'predicted_seconds',
+            'pilot',
+            'n2_full_baseline',
             'panels',
         },
     )
@@ -510,6 +544,22 @@ def _parse_part_a_worker_result(
     for name in ('initial_p5', 'final_p5', 'probe_seconds', 'predicted_seconds'):
         if type(record[name]) is not float or not isfinite(record[name]):
             raise ValueError('finite part a measurement floats required')
+    pilot = fields(record['pilot'], {'seed_input_sha256s'})
+    seed_digests = pilot['seed_input_sha256s']
+    if type(seed_digests) is not list or not seed_digests:
+        raise ValueError('part a pilot seed digests required')
+    for value in seed_digests:
+        digest(value)
+    if encoded(pilot) != encoded(_part_a_pilot(plan)):
+        raise ValueError('part a pilot identity differs from the plan')
+    baseline = fields(record['n2_full_baseline'], {'passes', 'paths'})
+    if (
+        type(baseline['passes']) is not int
+        or type(baseline['paths']) is not int
+        or baseline['paths'] <= 0
+        or not 0 <= baseline['passes'] <= baseline['paths']
+    ):
+        raise ValueError('part a n2 full baseline out of range')
     digest(record['initial_prefix_sha256'])
     digest(record['final_sha256'])
     if sha256(part_a_panel_bytes(panels[:initial_panels])) != record['initial_prefix_sha256']:

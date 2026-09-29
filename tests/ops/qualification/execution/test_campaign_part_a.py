@@ -449,10 +449,12 @@ def test_the_part_a_body_names_no_expansion_justification(phrase):
 
 
 def test_part_a_worker_result_parse_refuses_every_mutation(tmp_path, monkeypatch):
-    """W5: the captured PART_A document from a real worker run refuses a
+    """W5/W5a: the captured PART_A document from a real worker run refuses a
     swapped panel vector, an altered source occurrence, a wrong panel count, a
-    wrong prefix digest and a forced expansion fact. One real PART_A run
-    stages the document; every mutation is re-encoded and refused."""
+    wrong prefix digest, a forced expansion fact, a missing, altered or open
+    pilot identity, and an N2 FULL baseline that is out of range or not two
+    integers. One real PART_A run stages the document; every mutation is
+    re-encoded and refused."""
     worker = importlib.import_module('c1_rail.qualification.execution.worker')
     evidence = importlib.import_module('c1_rail.qualification.execution.evidence')
     case = build_bundle(tmp_path / 'bundle', capability='FULL_E1', part_a=True)
@@ -479,12 +481,41 @@ def test_part_a_worker_result_parse_refuses_every_mutation(tmp_path, monkeypatch
     def forced_expansion_fact(document):
         document['part_a']['expansion_required'] = True
 
+    def missing_pilot(document):
+        del document['part_a']['pilot']
+
+    def altered_pilot_digest(document):
+        document['part_a']['pilot']['seed_input_sha256s'][0] = 'e' * 64
+
+    def added_pilot_key(document):
+        document['part_a']['pilot']['within_pp'] = 1.0
+
+    def zero_path_baseline(document):
+        document['part_a']['n2_full_baseline']['paths'] = 0
+
+    def negative_pass_baseline(document):
+        document['part_a']['n2_full_baseline']['passes'] = -1
+
+    def above_path_baseline(document):
+        baseline = document['part_a']['n2_full_baseline']
+        baseline['passes'] = baseline['paths'] + 1
+
+    def boolean_pass_baseline(document):
+        document['part_a']['n2_full_baseline']['passes'] = True
+
     for name, mutate in (
         ('swap-two-panels', swap_two_panels),
         ('alter-one-source-session-id', alter_one_source_session_id),
         ('wrong-final-panels', wrong_final_panels),
         ('altered-initial-prefix-digest', altered_initial_prefix_digest),
         ('forced-expansion-fact', forced_expansion_fact),
+        ('missing-pilot', missing_pilot),
+        ('altered-pilot-digest', altered_pilot_digest),
+        ('added-pilot-key', added_pilot_key),
+        ('zero-path-baseline', zero_path_baseline),
+        ('negative-pass-baseline', negative_pass_baseline),
+        ('above-path-baseline', above_path_baseline),
+        ('boolean-pass-baseline', boolean_pass_baseline),
     ):
         mutated = json.loads(json.dumps(doc))
         mutate(mutated)

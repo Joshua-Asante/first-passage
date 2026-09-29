@@ -359,6 +359,33 @@ def test_worker_runs_part_a_with_both_prefix_artifacts(tmp_path, monkeypatch):
     assert actual_panel_count == initial_panels == len(doc['part_a']['panels'])
     assert doc['part_a']['initial_prefix_sha256'] == sha256(initial_panel_bytes)
     assert doc['part_a']['final_sha256'] == sha256(final_panel_bytes)
+    # W5a: the panel-major occurrence inventory keys each panel by the digest
+    # of the plan's outer seed for it (population REGIME, panel index kept
+    # beside it), in the panel-major order the installed adjudicator reads.
+    plan_document = json.loads((pa / 'plan.json').read_bytes())
+    potential = plan_document['part_a']['potential_panels']
+    records = doc['path_inventory']['records']
+    depth = part.paths_per_population_per_panel
+    assert len(records) == initial_panels * depth
+    assert {row['stage'] for row in records} == {'PART_A'}
+    assert {row['population'] for row in records} == {'REGIME'}
+    identities = [sha256(encoded(panel['outer_seed'])) for panel in potential[:initial_panels]]
+    assert len(set(identities)) == len(identities)
+    for panel_index, identity in enumerate(identities):
+        block = records[panel_index * depth:(panel_index + 1) * depth]
+        assert [row['panel_index'] for row in block] == [panel_index] * depth
+        assert [row['path_index'] for row in block] == list(range(depth))
+        assert {row['panel_id'] for row in block} == {identity}
+    # W5a: the probe identity (the plan's probe seed-input digests) and the
+    # worker's own N2 FULL baseline, derived from the staged capture statuses.
+    assert doc['part_a']['pilot'] == {
+        'seed_input_sha256s': [sha256(encoded(seed)) for seed in plan_document['seed_inputs']]
+    }
+    staged_full = json.loads(payload)['populations'][0]['outcomes']
+    assert doc['part_a']['n2_full_baseline'] == {
+        'passes': sum(row['status'] == 'PASS' for row in staged_full),
+        'paths': len(staged_full),
+    }
     # SR-4 read-only by convention. Windows chmod carries only the read-only
     # attribute and os.stat synthesizes the mode bits there, so the 0o444
     # equality is asserted as the POSIX fact it is (not a pytest skip).

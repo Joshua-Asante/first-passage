@@ -1,5 +1,6 @@
 """Fixed N1 worker adapter; no journal, launcher or private-key imports."""
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -134,6 +135,23 @@ def run_worker(
 PART_A_INITIAL_ARTIFACT = 'part-a-initial.jsonl'
 PART_A_FINAL_ARTIFACT = 'part-a-final.jsonl'
 PART_A_STAGED_ROLES = ('receipt', 'assessment', 'payload')
+
+
+@dataclass(frozen=True)
+class PartAWorkerRun:
+    """W5a: what the SR-3 body returns beside the ``PartACompute``.
+
+    The computation cannot carry the one worker-result fact that is not a
+    computation output: the N2 FULL baseline the body itself derived from the
+    staged capture statuses (S5-D2), as the closed ``{'passes', 'paths'}``
+    pair the result document carries (``run_part_a_compute``'s signature is
+    unchanged and never sees integers). The pilot identity needs no transport:
+    the encoder derives it from the same plan bytes this body verified against
+    its own independent derivation.
+    """
+
+    compute: object
+    n2_full_baseline: dict
 
 
 def write_part_a_artifact(directory, name, raw):
@@ -279,7 +297,8 @@ def run_part_a_body(
     captured N2 FULL outcome parse (S5-D2), one adapter computation whose
     custody hook writes and fsyncs the initial-prefix artifact before the
     adapter's decision point, and the final artifact write. Returns the
-    ``PartACompute``.
+    ``PartAWorkerRun``: the ``PartACompute`` beside the N2 FULL baseline this
+    body derived from the staged statuses (W5a).
     """
     if output_dir is None:
         raise ValueError('PART_A output directory required')
@@ -298,7 +317,13 @@ def run_part_a_body(
         on_initial_prefix=prefix_to_custody,
     )
     write_part_a_artifact(output_dir, PART_A_FINAL_ARTIFACT, compute.final_panel_bytes)
-    return compute
+    return PartAWorkerRun(
+        compute=compute,
+        n2_full_baseline={
+            'passes': sum(status == 'PASS' for status in n2_full_outcomes),
+            'paths': len(n2_full_outcomes),
+        },
+    )
 
 
 def main():
