@@ -131,10 +131,11 @@ class Boundary:
             uid=uid,gid=uid,groups=groups,timeout=60)
         return json.loads(reply)
 
-    def prepare(self,*,idle,fault=None,depth_valid_seconds=14400):
+    def prepare(self,*,idle,fault=None,depth_valid_seconds=14400,scenario=None):
         attempt='linux-'+uuid4().hex
         return self.admin('prepare','--attempt',attempt,*(['--idle'] if idle else []),
-            *(['--fault',fault] if fault else []),'--depth-valid-seconds',str(depth_valid_seconds))
+            *(['--fault',fault] if fault else []),*(['--scenario',scenario] if scenario else []),
+            '--depth-valid-seconds',str(depth_valid_seconds))
 
     def submit(self,bundle):
         return json.loads(self.request('SUBMIT_N1',attempt_id=bundle['attempt_id'],bundle_sha256=bundle['bundle_sha256']))

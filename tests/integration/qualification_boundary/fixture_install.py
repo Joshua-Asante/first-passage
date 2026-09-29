@@ -23,7 +23,7 @@ from c1_rail.qualification.execution.release import install_release,stage_bundle
 from c1_rail.qualification.execution.runtime import protected_path
 from c1_rail.qualification.execution.protocol import sha256
 from tools.qualification_verification import host
-from fixture_producer import fresh_keys,approve,release_document,build_real_bundle
+from fixture_producer import SCENARIOS,fresh_keys,approve,release_document,build_real_bundle
 
 
 def write(path,raw,*,uid=0,gid=None,mode=0o444):
@@ -90,7 +90,7 @@ def install(root,manifest,image,*,diagnostic=False,dispatch=False,joint=False,pa
     return dict(installation_root=str(installation),image_id=image)
 
 
-def prepare(root,attempt,idle,*,fault=None,depth_valid_seconds=14400):
+def prepare(root,attempt,idle,*,fault=None,depth_valid_seconds=14400,scenario=None):
     private={name:Ed25519PrivateKey.from_private_bytes(base64.b64decode(value))
         for name,value in json.loads((root/'keys/test-authority.json').read_bytes()).items()}
     keys={name:TrustedApprovalKey(name,key.public_key().public_bytes_raw(),'TEST_ONLY') for name,key in private.items()}
@@ -100,7 +100,7 @@ def prepare(root,attempt,idle,*,fault=None,depth_valid_seconds=14400):
     identity(attempt)
     source=root/'keys/retained'/attempt
     bundle=build_real_bundle(source,repo=CODE,release=release,private=private,keys=keys,attempt_id=attempt,idle=idle,
-        fault=fault,depth_valid_seconds=depth_valid_seconds)
+        fault=fault,depth_valid_seconds=depth_valid_seconds,scenario=scenario)
     # Administrator pre-dispatch diagnostics, not protected worker attestation.
     write(root/'evidence'/f'{attempt}-source-admission.json',bundle['source_admission'])
     write(root/'evidence'/f'{attempt}-legality.json',bundle['legality'])
@@ -121,6 +121,8 @@ def main():
     parser.add_argument('--image'); parser.add_argument('--attempt'); parser.add_argument('--idle',action='store_true')
     parser.add_argument('--contract'); parser.add_argument('--reason')
     parser.add_argument('--fault',choices=['stop','exit_zero','cpu','memory','wall'])
+    # S5: a source scenario for the genuine PART_A_FAILED witness (fixture_producer.SCENARIOS).
+    parser.add_argument('--scenario',choices=list(SCENARIOS))
     parser.add_argument('--depth-valid-seconds',type=int,default=14400)
     args=parser.parse_args()
     path=host.protected(args.manifest); root=path.parent
@@ -136,7 +138,7 @@ def main():
         result=dict(operator_approval_bytes=base64.b64encode(approval).decode())
     else:
         result=install(root,manifest,args.image,diagnostic=args.diagnostic,dispatch=args.dispatch,joint=args.joint,part_a=args.part_a) if args.operation=='install' else prepare(root,args.attempt,args.idle,
-            fault=args.fault,depth_valid_seconds=args.depth_valid_seconds)
+            fault=args.fault,depth_valid_seconds=args.depth_valid_seconds,scenario=args.scenario)
     sys.stdout.buffer.write(encoded(result))
 
 

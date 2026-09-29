@@ -20,38 +20,41 @@ Cases the packet's Linux line names, and how each stands here:
     null: the guardian retains no per-side CPU (PAYLOAD_EXIT carries exit
     facts only), so it is "not available" in SR-8's own words.
 
-(b) a genuine below-floor or above-FULL failure -> PART_A_FAILED: NOT
-    PRESENT. The fixture supports exactly two synthetic sources, the default
-    ORB port (which passes N1, N2/Part B and Part A: the S4 witness plus F1)
-    and ``--idle`` (no orders at all, which fails at N1 -> N1_FAILED before any
-    PART_A dispatch exists). ``--fault`` variants fault the first replayed bar
-    inside the N1 worker, and a ``budget`` override ends in BUDGET_EXHAUSTED,
-    never a statistical decision. Section 3 forbids a fabricated FAIL, so the
-    Linux line has no genuine PART_A_FAILED witness on this fixture; the
-    below-floor and above-FULL decisions stand on the adapter boundary tests
-    and the G5 all-failure reconstruction in
-    tests/ops/qualification/execution/test_campaign_part_a.py.
+(b) a genuine below-floor failure -> PART_A_FAILED, through the installed
+    service path on the ``part_a_below_floor`` source scenario
+    (fixture_producer.PART_A_BELOW_FLOOR_IDLE_DATES): the default ORB port
+    stays flat on two source session dates that only Part A panel 1, path 0
+    contains together, so N1 and the joint N2/Part B batch pass exactly as
+    before (every N2 path passes; a path with one idle session still passes,
+    on day 5) and the Part A p5 is 0.5 against the 0.95 floor. The decision is the installed
+    adjudicator's own, reconstructed by G5 from genuinely computed outcomes.
+    The above-FULL failure has no genuine witness on this fixture: at N2 depth
+    60 the joint rule tolerates zero failures (max_certifying_busts(60, 0.05,
+    0.05) == 0), so any campaign that reaches PART_A_READY carries a FULL
+    baseline of exactly 1.0 and ``final_p5 > 1.0`` is unreachable. That
+    decision stands on the adapter boundary test
+    (tests/ops/qualification/execution/test_campaign_part_a.py).
 
 (c) crash after the initial-prefix artifact is fsynced and before the final
-    artifact -> IN_DOUBT with the initial prefix retained: the NEAREST HONEST
-    CASE only. The existing fault mechanism (fixture_install --fault
-    stop|exit_zero|cpu|memory|wall) is a signed port hook at the first
-    replayed bar: it fires in the N1 worker, so a fault bundle never reaches
-    PART_A_READY, and inside a PART_A worker every replay precedes the prefix
-    write. No existing mechanism lands between the two S5-D1 writes, and no
-    production seam is added. The case here kills the payload slice while the
-    PART_A worker is RUNNING: the guardian's abnormal-exit path then archives
-    whichever S5-D1 artifact already exists (role part_a_initial_prefix and/or
-    part_a_final) for inspection before the IN_DOUBT transition, and the
-    campaign never relaunches. Which artifacts exist at the kill is timing
-    dependent, so the assertions are conditional: a retained final implies a
-    retained initial prefix that it byte-extends, and nothing else is ever
-    staged. The retained-prefix-only outcome is therefore witnessed only when
-    the kill happens to land in the window; it is never forced.
+    artifact -> IN_DOUBT with the initial prefix retained. The boundary host
+    caps the work's output tmpfs at exactly one free inode (a host-side
+    remount of the manager-created mount, before the payload container
+    exists; no production seam). The worker's SR-4 writer then creates, writes,
+    fsyncs and chmods the initial-prefix artifact as the last inode, and the
+    final artifact's exclusive create is refused by the kernel (ENOSPC): the
+    payload dies from that refusal after the prefix fsync and before any final
+    artifact exists. This is deterministic synchronization by construction, not
+    by timing. A host-side SIGSTOP or cgroup freeze cannot land in that window
+    deterministically: on the non-expanding fixture nothing but in-memory work
+    (two percentile reads and the result encoding) separates the two writes,
+    and a host poller only sees the prefix once it exists.
 
 (d) g5 death + exact retry: the held PART_A intent, the killed part_a_g5
-    unit, the SIGNING_INTENT work, and an exact ``signing_retry_of`` that
-    commits FULL_PASS_READY with the persisted intent's signing clock.
+    unit (kill result checked), the SIGNING_INTENT work, an exact
+    ``signing_retry_of`` that commits FULL_PASS_READY with the persisted
+    intent's signing clock, the receipt bound to the original candidate bytes
+    and the persisted intent, and a byte-identical historical receipt on a
+    repeated committed retry.
 
 No case constructs PartAMeasurementOverride (P-3).
 """
@@ -59,9 +62,13 @@ No case constructs PartAMeasurementOverride (P-3).
 import base64
 import hashlib
 import json
+import os
 import sqlite3
+import stat
 import subprocess
 import time
+from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
@@ -74,12 +81,15 @@ from test_campaign_n1_linux import (
     wait,
     work,
 )
-from test_campaign_n2_linux import committed_n1, n2_family
+from test_campaign_n2_linux import committed_n1, n2_family, stage_decisions
 from tools.qualification_verification import host
 
 PART_A_EXPORT_NAME = 'part_a_observations.json'
 PART_A_EXPORT_SCHEMA = 'qualification_part_a_observations/v1'
 PART_A_STAGED_ROLES = {'part_a_initial_prefix', 'part_a_final'}
+PART_A_INITIAL_ARTIFACT = 'part-a-initial.jsonl'
+PART_A_FINAL_ARTIFACT = 'part-a-final.jsonl'
+PART_A_BELOW_FLOOR_SCENARIO = 'part_a_below_floor'
 
 
 def part_a_family(state):
@@ -92,18 +102,23 @@ def _journal(boundary):
     )
 
 
+def _query(boundary, statement, parameters):
+    connection = _journal(boundary)
+    try:
+        return connection.execute(statement, parameters).fetchall()
+    finally:
+        connection.close()
+
+
 def staged_part_a(boundary, attempt):
     """The archived S5-D1 artifacts, role -> bytes (campaigns.stage_checkpoint_artifact,
     checkpoint PART_A)."""
-    connection = _journal(boundary)
-    try:
-        rows = connection.execute(
-            'SELECT role,body FROM full_campaign_checkpoint_staged '
-            "WHERE attempt_id=? AND checkpoint='PART_A'",
-            (attempt,),
-        ).fetchall()
-    finally:
-        connection.close()
+    rows = _query(
+        boundary,
+        'SELECT role,body FROM full_campaign_checkpoint_staged '
+        "WHERE attempt_id=? AND checkpoint='PART_A'",
+        (attempt,),
+    )
     staged = {}
     for role, body in rows:
         assert role not in staged, 'one archived artifact per PART_A role'
@@ -113,27 +128,104 @@ def staged_part_a(boundary, attempt):
 
 def captured_part_a_payload(boundary, attempt):
     """The captured PART_A worker document exactly as archived."""
-    connection = _journal(boundary)
-    try:
-        row = connection.execute(
-            'SELECT payload_bytes FROM full_campaign_checkpoint_captures '
-            "WHERE attempt_id=? AND checkpoint='PART_A'",
-            (attempt,),
-        ).fetchone()
-    finally:
-        connection.close()
-    assert row is not None, 'captured PART_A payload required'
-    return json.loads(bytes(row[0]))
+    rows = _query(
+        boundary,
+        'SELECT payload_bytes FROM full_campaign_checkpoint_captures '
+        "WHERE attempt_id=? AND checkpoint='PART_A'",
+        (attempt,),
+    )
+    assert rows, 'captured PART_A payload required'
+    return json.loads(bytes(rows[0][0]))
+
+
+def part_a_intent_row(boundary, attempt):
+    """(intent_bytes, candidate_bytes, receipt_bytes) of the PART_A checkpoint, or None."""
+    rows = _query(
+        boundary,
+        'SELECT intent_bytes,candidate_bytes,receipt_bytes FROM full_campaign_checkpoint_intents '
+        "WHERE attempt_id=? AND checkpoint='PART_A'",
+        (attempt,),
+    )
+    if not rows:
+        return None
+    intent, candidate, receipt = rows[0]
+    return bytes(intent), bytes(candidate), None if receipt is None else bytes(receipt)
+
+
+def retained_enrollment(boundary, attempt, work_id):
+    """The guardian's retained supervision enrollment (campaigns.retain_supervision,
+    role supervision_<work_id>), or None before the work is prepared."""
+    rows = _query(
+        boundary,
+        'SELECT body FROM full_campaign_objects WHERE attempt_id=? AND role=?',
+        (attempt, 'supervision_' + work_id),
+    )
+    return None if not rows else json.loads(bytes(rows[0][0]))
 
 
 def _decoded(value):
     return json.loads(base64.b64decode(value))
 
 
-def committed_n2(boundary):
+def _transitions(row):
+    return [_decoded(item)['state'] for item in row['transitions']]
+
+
+def _sha256(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _prefix_panels(raw):
+    """The S5-D1 artifact lines (execution/evidence.part_a_panel_bytes)."""
+    return [json.loads(line) for line in raw.split(b'\n') if line]
+
+
+def _admit(boundary, *, scenario):
+    """Admission of a source-scenario bundle (test_campaign_n1_linux.admit
+    takes the idle variant only); the same request and BOUND wait."""
+    bundle = boundary.prepare(idle=False, scenario=scenario)
+    fields = {
+        'schema': 'qualification_campaign_request/v2',
+        'request_id': 'dispatch',
+        'attempt_id': bundle['attempt_id'],
+        'bundle_sha256': bundle['bundle_sha256'],
+    }
+    first = json.loads(boundary.request('SUBMIT_E1', **fields))
+    assert first['schema'] == 'qualification_campaign_status/v2', first
+    state = wait(
+        boundary, bundle['attempt_id'], lambda s: work(s, 'admission')['state'] == 'COMPLETED'
+    )
+    assert state['state'] == 'BOUND', state
+    return bundle['attempt_id']
+
+
+def _commit_n1(boundary, attempt):
+    """The committed N1 receipt (campaign N2_READY) for an already admitted
+    attempt: test_campaign_n2_linux.committed_n1's route, minus its admission."""
+    dispatch(boundary, attempt, 'n1work', 'n1_worker')
+    state = wait(
+        boundary,
+        attempt,
+        lambda s: n2_family(s) is None
+        and work(s, 'n1work')['state'] == 'COMPLETED'
+        and (s.get('checkpoints') or {}).get('N1', {}).get('state') == 'ATTESTED',
+    )
+    assert work(state, 'n1work')['state'] == 'COMPLETED', state
+    dispatch(boundary, attempt, 'g5work', 'n1_g5')
+    state = wait(boundary, attempt, lambda s: s['state'] in ('N2_READY', 'N1_FAILED'))
+    assert state['state'] == 'N2_READY', state
+    committing_g5_completed(boundary, attempt, 'N2_READY')
+
+
+def committed_n2(boundary, *, scenario=None):
     """Admission through the committed joint N2/Part B receipt (campaign
-    PART_A_READY): the S4 genuine joint pass, reused as this file's prelude."""
-    attempt = committed_n1(boundary)
+    PART_A_READY): the S4 genuine joint pass, reused as this file's prelude.
+    A source scenario admits its own bundle and takes the same route."""
+    if scenario is None:
+        attempt = committed_n1(boundary)
+    else:
+        attempt = _admit(boundary, scenario=scenario)
+        _commit_n1(boundary, attempt)
     dispatch(boundary, attempt, 'n2work', 'n2_worker')
     state = wait(
         boundary,
@@ -179,6 +271,43 @@ def attested_part_a(boundary, attempt):
     return state
 
 
+def committed_part_a_decision(boundary, attempt, progression):
+    """One part_a_g5 through the route to the named terminal progression; the
+    committed family, the settled committing work and the custody assertions
+    shared by the CONTINUE and FAILURE witnesses."""
+    dispatch(boundary, attempt, 'pag5', 'part_a_g5')
+    state = wait(
+        boundary,
+        attempt,
+        lambda s: s['state'] in ('FULL_PASS_READY', 'PART_A_FAILED'),
+        seconds=1080,
+    )
+    assert state['state'] == progression, state
+    family = part_a_family(state)
+    assert family['state'] == 'COMMITTED'
+    assert family['decision'] == ('CONTINUE' if progression == 'FULL_PASS_READY' else 'FAILURE')
+    committing_g5_completed(boundary, attempt, progression, work_id='pag5')
+    # S5-D1 custody: both artifacts archived, the final a byte-extension of the
+    # initial prefix, each bound to the payload's own digests; no expansion (F1).
+    payload_part_a = captured_part_a_payload(boundary, attempt)['part_a']
+    staged = staged_part_a(boundary, attempt)
+    assert set(staged) == PART_A_STAGED_ROLES, sorted(staged)
+    initial = staged['part_a_initial_prefix']
+    final = staged['part_a_final']
+    assert final[: len(initial)] == initial
+    assert _sha256(initial) == payload_part_a['initial_prefix_sha256']
+    assert _sha256(final) == payload_part_a['final_sha256']
+    assert payload_part_a['expansion_required'] is False
+    assert payload_part_a['final_panels'] == payload_part_a['initial_panels'] == 2
+    state = budget(boundary, attempt)
+    finished = {w['work_id'] for w in completed_works(state)}
+    assert finished >= {'admission', 'n1work', 'g5work', 'n2work', 'n2g5', 'pawork'}
+    for row in completed_works(state):
+        if row['work_id'] != 'admission':
+            assert payload_identity_events(boundary, attempt, row['work_id']), row['work_id']
+    return payload_part_a
+
+
 def write_part_a_observations(boundary, attempt):
     """SR-8: the PART_A settled observation fields, the reservation-to-CAPTURED
     boottime, the CPU split where available (null here), and the captured
@@ -222,69 +351,151 @@ def test_s5_genuine_part_a_without_expansion_reaches_full_pass_ready(real_bounda
     boundary = real_boundary
     attempt = committed_n2(boundary)
     attested_part_a(boundary, attempt)
-    dispatch(boundary, attempt, 'pag5', 'part_a_g5')
-    state = wait(
-        boundary,
-        attempt,
-        lambda s: s['state'] in ('FULL_PASS_READY', 'PART_A_FAILED'),
-        seconds=1080,
-    )
-    assert state['state'] == 'FULL_PASS_READY', state
-    family = part_a_family(state)
-    assert family['state'] == 'COMMITTED' and family['decision'] == 'CONTINUE'
-    committing_g5_completed(boundary, attempt, 'FULL_PASS_READY', work_id='pag5')
-    # S5-D1 custody: both artifacts archived, the final a byte-extension of the
-    # initial prefix, each bound to the payload's own digests; no expansion (F1).
-    payload_part_a = captured_part_a_payload(boundary, attempt)['part_a']
-    staged = staged_part_a(boundary, attempt)
-    assert set(staged) == PART_A_STAGED_ROLES, sorted(staged)
-    initial = staged['part_a_initial_prefix']
-    final = staged['part_a_final']
-    assert final[: len(initial)] == initial
-    assert hashlib.sha256(initial).hexdigest() == payload_part_a['initial_prefix_sha256']
-    assert hashlib.sha256(final).hexdigest() == payload_part_a['final_sha256']
-    assert payload_part_a['expansion_required'] is False
-    assert payload_part_a['final_panels'] == payload_part_a['initial_panels']
-    state = budget(boundary, attempt)
-    finished = {w['work_id'] for w in completed_works(state)}
-    assert finished >= {'admission', 'n1work', 'g5work', 'n2work', 'n2g5', 'pawork'}
-    for row in completed_works(state):
-        if row['work_id'] != 'admission':
-            assert payload_identity_events(boundary, attempt, row['work_id']), row['work_id']
+    payload_part_a = committed_part_a_decision(boundary, attempt, 'FULL_PASS_READY')
+    assert all(
+        outcome['status'] == 'PASS'
+        for panel in payload_part_a['panels']
+        for outcome in panel['outcomes']
+    ), payload_part_a['panels']
     exported = write_part_a_observations(boundary, attempt)
     assert exported['attempt_id'] == attempt
 
 
-def _kill_payload_slice(boundary, attempt, work_id):
-    from tools.qualification_verification.container_ownership import campaign_scopes
-
-    unit = campaign_scopes(boundary.manifest['run_id'], attempt, work_id)['payload_slice']
-    subprocess.run(
-        [
-            '/usr/bin/systemctl',
-            '--system',
-            '--no-ask-password',
-            'kill',
-            '--signal=KILL',
-            unit,
-        ],
-        check=True,
-    )
-
-
-def test_s5_payload_death_mid_part_a_is_in_doubt_and_archives_only_written_artifacts(
-    real_boundary,
-):
-    """The nearest honest form of the packet's case (c); see the module
-    docstring for the gap. The payload dies while the PART_A worker is RUNNING;
-    the guardian's abnormal-exit path archives whichever S5-D1 artifact exists,
-    the work is IN_DOUBT, no PART_A family exists, N2 stays COMMITTED, and a
-    restart relaunches nothing."""
+def test_s5_genuine_below_floor_part_a_is_part_a_failed(real_boundary):
+    """Case (b): the ``part_a_below_floor`` source scenario through the whole
+    installed route. N1 and the joint batch commit CONTINUE on the same
+    adjudicators as the pass witness; the Part A decision is the installed
+    below-floor FAILURE on genuinely computed outcomes (module docstring)."""
     if not getattr(real_boundary, 'part_a', False):
         pytest.skip('FP_QUALIFICATION_S5=1 required; the Part A /v7 installation')
     boundary = real_boundary
+    attempt = committed_n2(boundary, scenario=PART_A_BELOW_FLOOR_SCENARIO)
+    assert stage_decisions(boundary, attempt) == {'N2': 'PASS', 'PART_B': 'PASS'}
+    attested_part_a(boundary, attempt)
+    payload_part_a = committed_part_a_decision(boundary, attempt, 'PART_A_FAILED')
+    # The designed outcome vector, computed by the worker and reconstructed by
+    # G5: panel 0 passes on both paths, panel 1 fails exactly path 0 (the two
+    # idle sessions leave three winning sessions, one short of the pass), so
+    # the panel rates are 1.0 and 0.5 and p5 is 0.5.
+    statuses = [
+        [outcome['status'] for outcome in panel['outcomes']] for panel in payload_part_a['panels']
+    ]
+    assert statuses == [['PASS', 'PASS'], ['UNRESOLVED', 'PASS']], statuses
+    assert payload_part_a['panels'][1]['outcomes'][0]['failure_reason'] == 'horizon_cap'
+    # Panel 1, path 1 holds one idle session and passes on day 5; every other
+    # passing path passes on day 4 exactly as the unmodified source does.
+    days = [
+        [outcome['sessions_to_pass'] for outcome in panel['outcomes']]
+        for panel in payload_part_a['panels']
+    ]
+    assert days == [[4, 4], [None, 5]], days
+    assert payload_part_a['initial_p5'] == payload_part_a['final_p5'] == 0.5
+    assert payload_part_a['n2_full_baseline'] == {'passes': 60, 'paths': 60}
+    intent, candidate, receipt = part_a_intent_row(boundary, attempt)
+    assessment = json.loads(candidate)['part_a']
+    comparison = assessment['floor_comparison']
+    assert Decimal(comparison['final_p5']) == Decimal('0.5'), comparison
+    assert Decimal(comparison['floor']) == Decimal('0.95'), comparison
+    assert comparison['at_or_above'] is False, comparison
+    assert assessment['full_sanity_comparison']['at_or_below'] is True, assessment
+    assert assessment['tolerance_comparison']['within'] is False, assessment
+    assert assessment['expansion_required'] is False
+    committed = json.loads(receipt)
+    assert committed['decision'] == 'FAILURE' and committed['campaign_state'] == 'PART_A_FAILED'
+    assert committed['assessment_sha256'] == _sha256(candidate)
+    assert committed['intent_sha256'] == _sha256(intent)
+    host.save(
+        boundary.output / (attempt + '-part-a-below-floor.json'),
+        dict(scenario=PART_A_BELOW_FLOOR_SCENARIO, statuses=statuses, part_a=assessment,
+             receipt=committed),
+    )
+
+
+def output_mount(boundary, attempt, work_id, seconds=120):
+    """The work's output tmpfs (campaign_supervisor.checkpoint_io_paths of the
+    retained enrollment), once the manager has mounted it."""
+    from c1_rail.qualification.execution.campaign_supervisor import checkpoint_io_paths
+
+    deadline = time.monotonic() + seconds
+    out_path = None
+    while time.monotonic() < deadline:
+        if out_path is None:
+            enrollment = retained_enrollment(boundary, attempt, work_id)
+            if enrollment is not None:
+                out_path = Path(checkpoint_io_paths(enrollment)['out_path'])
+        if out_path is not None and os.path.ismount(out_path):
+            return out_path
+        time.sleep(0.002)
+    raise AssertionError('the PART_A output mount never appeared')
+
+
+def cap_output_mount_inodes(boundary, attempt, work_id):
+    """Case (c)'s host-side condition: the output tmpfs keeps exactly one free
+    inode. Applied to the manager-created mount before the payload container
+    exists (the guardian mounts, stages the input, then creates the container),
+    so the first exclusive create on the mount -- the SR-4 initial-prefix
+    write -- succeeds and the second -- the final artifact -- is refused by the
+    kernel with ENOSPC. Nothing in production changes."""
+    out_path = output_mount(boundary, attempt, work_id)
+    before = os.statvfs(out_path)
+    assert before.f_files > 0, 'tmpfs inode accounting required'
+    used = before.f_files - before.f_ffree
+    remount = subprocess.run(
+        ['/usr/bin/mount', '-o', 'remount,nr_inodes=%d' % (used + 1), str(out_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert remount.returncode == 0, remount.stderr
+    after = os.statvfs(out_path)
+    assert after.f_files == used + 1 and after.f_ffree == 1, (before, after)
+    # The cap precedes every payload write: the mount is still empty.
+    assert list(out_path.iterdir()) == [], list(out_path.iterdir())
+    from test_campaign_supervision_linux import supervision_events
+
+    return out_path, dict(
+        out_path=str(out_path),
+        inodes_before=dict(f_files=before.f_files, f_ffree=before.f_ffree),
+        inodes_after=dict(f_files=after.f_files, f_ffree=after.f_ffree),
+        container_events_at_cap=len(supervision_events(boundary, attempt, 'CONTAINER', work_id)),
+    )
+
+
+def settled_in_doubt(boundary, attempt, work_id, seconds=1080):
+    """The work IN_DOUBT with its settlement retained (the guardian's
+    abnormal-exit path transitions and settles in two store calls)."""
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        state = budget(boundary, attempt)
+        row = work(state, work_id)
+        assert row['state'] != 'COMPLETED', row
+        assert not {'CAPTURED', 'SIGNING_INTENT'} & set(_transitions(row)), _transitions(row)
+        if row['state'] == 'IN_DOUBT' and row['observation_bytes_b64'] is not None:
+            host.save(boundary.output / (attempt + '-part-a-in-doubt.json'), state)
+            return state
+        time.sleep(0.1)
+    raise AssertionError('bounded PART_A settlement wait expired')
+
+
+def test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_retained(
+    real_boundary,
+):
+    """Case (c), deterministic by construction (module docstring): the payload
+    dies after the initial-prefix artifact is written, fsynced and marked
+    read-only, and before any final artifact exists. The guardian's
+    abnormal-exit path archives exactly the initial prefix, the work is
+    IN_DOUBT, the campaign ends IN_DOUBT from PART_A_READY with no PART_A
+    family, N2 stays COMMITTED, nothing relaunches, and a restart preserves
+    all of it."""
+    if not getattr(real_boundary, 'part_a', False):
+        pytest.skip('FP_QUALIFICATION_S5=1 required; the Part A /v7 installation')
+    from test_campaign_supervision_linux import payload_exit_retained, supervision_events
+
+    boundary = real_boundary
     attempt = committed_n2(boundary)
     dispatch(boundary, attempt, 'pawork', 'part_a_worker')
+    out_path, cap = cap_output_mount_inodes(boundary, attempt, 'pawork')
     state = wait(
         boundary,
         attempt,
@@ -294,28 +505,68 @@ def test_s5_payload_death_mid_part_a_is_in_doubt_and_archives_only_written_artif
     )
     assert state['state'] == 'PART_A_READY'
     assert work(state, 'pawork')['state'] == 'RUNNING'
-    _kill_payload_slice(boundary, attempt, 'pawork')
-    state = wait(boundary, attempt, lambda s: work(s, 'pawork')['state'] == 'IN_DOUBT')
-    assert work(state, 'pawork')['state'] == 'IN_DOUBT'
-    assert state['state'] == 'PART_A_READY'
+    state = settled_in_doubt(boundary, attempt, 'pawork')
+    row = work(state, 'pawork')
+    assert row['state'] == 'IN_DOUBT'
+    assert state['state'] == 'IN_DOUBT', state['state']
     assert part_a_family(state) is None
     assert (n2_family(state) or {}).get('state') == 'COMMITTED'
-    works_before = sorted(w['work_id'] for w in state['works'])
+    assert not {'CAPTURED', 'SIGNING_INTENT', 'COMPLETED'} & set(_transitions(row)), _transitions(row)
+    # The mount holds exactly the fsynced prefix: the SR-4 writer chmods 0444
+    # only after its fsync, and the final artifact was never created.
+    assert sorted(p.name for p in out_path.iterdir()) == [PART_A_INITIAL_ARTIFACT]
+    prefix_path = out_path / PART_A_INITIAL_ARTIFACT
+    assert stat.S_IMODE(prefix_path.stat().st_mode) == 0o444
+    assert os.statvfs(out_path).f_ffree == 0
+    host_prefix = prefix_path.read_bytes()
+    panels = _prefix_panels(host_prefix)
+    assert [panel['index'] for panel in panels] == [0, 1], panels
+    assert all(len(panel['outcomes']) == 2 for panel in panels), panels
+    assert not (out_path / PART_A_FINAL_ARTIFACT).exists()
+    assert not (out_path / 'result.frame').exists()
+    # Archived for inspection: the initial prefix only, byte-identical to what
+    # the worker wrote; no part_a_final.
     staged = staged_part_a(boundary, attempt)
-    assert set(staged) <= PART_A_STAGED_ROLES, sorted(staged)
-    if 'part_a_final' in staged:
-        assert 'part_a_initial_prefix' in staged
-        initial = staged['part_a_initial_prefix']
-        assert staged['part_a_final'][: len(initial)] == initial
+    assert set(staged) == {'part_a_initial_prefix'}, sorted(staged)
+    assert staged['part_a_initial_prefix'] == host_prefix
+    assert _sha256(staged['part_a_initial_prefix']) == _sha256(host_prefix)
+    # The retained cause is the refused final create, after the prefix fsync.
+    failures = [e['data']['reason'] for e in supervision_events(boundary, attempt, 'FAILURE', 'pawork')]
+    assert len(failures) == 1, failures
+    assert 'No space left on device' in failures[0] and PART_A_FINAL_ARTIFACT in failures[0], failures
+    exit_facts = payload_exit_retained(boundary, attempt, 'pawork')
+    assert exit_facts['exit_code'] != 0 and not exit_facts['oom_killed'], exit_facts
+    # No relaunch: one container, one guardian dispatch, and no other PART_A work.
+    assert len(supervision_events(boundary, attempt, 'CONTAINER', 'pawork')) == 1
+    guardian_dispatches = [
+        r for r in state.get('dispatches', ()) if r['work_id'] == 'pawork' and r['role'] == 'guardian'
+    ]
+    assert len(guardian_dispatches) == 1, guardian_dispatches
+    assert [w['work_id'] for w in state['works'] if w['phase'] == 'PART_A'] == ['pawork']
+    works_before = sorted((w['work_id'], w['state']) for w in state['works'])
+    host.save(
+        boundary.output / (attempt + '-part-a-prefix-crash.json'),
+        dict(cap=cap, prefix_sha256=_sha256(host_prefix), prefix_panels=len(panels),
+             failure=failures[0], payload_exit=exit_facts, campaign_state=state['state']),
+    )
     boundary.restart()
-    state = wait(boundary, attempt, lambda s: work(s, 'pawork')['state'] == 'IN_DOUBT')
+    state = settled_in_doubt(boundary, attempt, 'pawork', seconds=120)
     assert work(state, 'pawork')['state'] == 'IN_DOUBT'
+    assert state['state'] == 'IN_DOUBT'
     assert part_a_family(state) is None
-    assert sorted(w['work_id'] for w in state['works']) == works_before
+    assert (n2_family(state) or {}).get('state') == 'COMMITTED'
+    assert sorted((w['work_id'], w['state']) for w in state['works']) == works_before
+    assert len(supervision_events(boundary, attempt, 'CONTAINER', 'pawork')) == 1
     assert staged_part_a(boundary, attempt) == staged
+    assert not (out_path / PART_A_FINAL_ARTIFACT).exists()
 
 
 def test_s5_part_a_g5_unit_death_and_exact_receipt_retry(real_boundary):
+    """Case (d): the qg5 unit dies after T1 (the durable PART_A intent and
+    candidate), before T2. A fresh retry unit redelivers the exact candidate,
+    the commit completes with the persisted instant, the receipt binds the
+    original candidate bytes and the persisted intent, and the exact wire retry
+    returns the byte-identical historical receipt."""
     if not getattr(real_boundary, 'part_a', False):
         pytest.skip('FP_QUALIFICATION_S5=1 required; the Part A /v7 installation')
     boundary = real_boundary
@@ -333,35 +584,35 @@ def test_s5_part_a_g5_unit_death_and_exact_receipt_retry(real_boundary):
         }
     )
     assert dispatch_frozen['ok'], dispatch_frozen
-    connection = _journal(boundary)
-    try:
-        row = None
-        for _ in range(1200):
-            row = connection.execute(
-                'SELECT intent_bytes,candidate_bytes FROM full_campaign_checkpoint_intents '
-                "WHERE attempt_id=? AND checkpoint='PART_A'",
-                (attempt,),
-            ).fetchone()
-            if row is not None:
-                break
-            time.sleep(0.25)
-    finally:
-        connection.close()
+    row = None
+    for _ in range(1200):
+        row = part_a_intent_row(boundary, attempt)
+        if row is not None:
+            break
+        time.sleep(0.25)
     assert row is not None, 'the held PART_A intent never persisted'
-    persisted_intent = json.loads(bytes(row[0]))
+    intent_bytes, original_candidate, receipt_bytes = row
+    assert receipt_bytes is None, 'no receipt may exist mid-window'
+    persisted_intent = json.loads(intent_bytes)
+    assert persisted_intent['checkpoint'] == 'PART_A' and persisted_intent['work_id'] == 'pag5'
+    assert persisted_intent['candidate_sha256'] == _sha256(original_candidate)
     from tools.qualification_verification.container_ownership import campaign_scopes
 
     unit = campaign_scopes(boundary.manifest['run_id'], attempt, 'pag5')['g5_unit']
-    subprocess.run(
-        ['systemctl', '--system', 'kill', '--signal=KILL', unit],
+    kill = subprocess.run(
+        ['/usr/bin/systemctl', '--system', '--no-ask-password', 'kill', '--signal=KILL', unit],
         check=False,
         capture_output=True,
+        text=True,
         timeout=10,
     )
+    assert kill.returncode == 0, (unit, kill.stderr)
     state = wait(
         boundary, attempt, lambda s: work(s, 'pag5')['observation_bytes_b64'] is not None
     )
     assert work(state, 'pag5')['state'] == 'SIGNING_INTENT'
+    assert state['state'] == 'PART_A_READY', state
+    assert part_a_intent_row(boundary, attempt)[:2] == (intent_bytes, original_candidate)
     retry = boundary.schedule(
         {
             'schema': 'qualification_campaign_schedule_request/v1',
@@ -378,15 +629,38 @@ def test_s5_part_a_g5_unit_death_and_exact_receipt_retry(real_boundary):
         boundary, attempt, lambda s: s['state'] in ('FULL_PASS_READY', 'PART_A_FAILED')
     )
     assert state['state'] == 'FULL_PASS_READY'
-    connection = _journal(boundary)
-    try:
-        receipt = connection.execute(
-            'SELECT receipt_bytes FROM full_campaign_checkpoint_intents '
-            "WHERE attempt_id=? AND checkpoint='PART_A'",
-            (attempt,),
-        ).fetchone()
-    finally:
-        connection.close()
-    committed = json.loads(bytes(receipt[0]))
+    intent_after, candidate_after, receipt_bytes = part_a_intent_row(boundary, attempt)
+    assert (intent_after, candidate_after) == (intent_bytes, original_candidate)
+    assert receipt_bytes is not None
+    committed = json.loads(receipt_bytes)
     assert committed['signing_at_utc'] == persisted_intent['signing_at_utc'], committed
-    assert committed['campaign_state'] == 'FULL_PASS_READY'
+    assert committed['campaign_state'] == 'FULL_PASS_READY' and committed['decision'] == 'CONTINUE'
+    assert committed['checkpoint'] == 'PART_A'
+    # Bound to the original candidate bytes and the persisted intent.
+    assert committed['assessment_sha256'] == _sha256(original_candidate)
+    assert committed['intent_sha256'] == _sha256(intent_bytes)
+    family = part_a_family(state)
+    assert family['state'] == 'COMMITTED' and family['decision'] == 'CONTINUE'
+    assert family['assessment_sha256'] == _sha256(original_candidate)
+    assert family['receipt_sha256'] == _sha256(receipt_bytes)
+    # The exact wire retry as the qg5 peer returns the byte-identical receipt,
+    # historical, with nothing re-signed.
+    retry_reply = json.loads(
+        boundary.request(
+            'COMMIT_CHECKPOINT_ASSESSMENT',
+            role='qg5',
+            schema='qualification_campaign_request/v2',
+            attempt_id=attempt,
+            checkpoint='PART_A',
+            work_id='pag5',
+            candidate_bytes_b64=base64.b64encode(original_candidate).decode('ascii'),
+            artifacts=[],
+        )
+    )
+    assert retry_reply['receipt'] == committed and retry_reply['historical'] is True, retry_reply
+    assert part_a_intent_row(boundary, attempt) == (intent_bytes, original_candidate, receipt_bytes)
+    host.save(
+        boundary.output / (attempt + '-part-a-g5-retry.json'),
+        dict(unit=unit, kill_returncode=kill.returncode, intent=persisted_intent,
+             candidate_sha256=_sha256(original_candidate), receipt=committed),
+    )
