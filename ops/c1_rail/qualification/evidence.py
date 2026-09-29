@@ -1,7 +1,9 @@
 """Pure reconstruction of retained evidence; no signer or persistent authority."""
 
 from dataclasses import dataclass
+from datetime import date, timedelta
 import hashlib
+import json
 import re
 from typing import Mapping
 from types import MappingProxyType
@@ -2273,6 +2275,83 @@ def parse_checkpoint_result(raw, *, attempt_id):
     return doc
 
 
+@dataclass(frozen=True)
+class PartASourceSession:
+    """One source session as ``regime.sample_outer_panel`` reads it."""
+
+    session_id: str
+    source_session_date: date
+
+
+@dataclass(frozen=True)
+class PartASourceCalendar:
+    """Loader-free session metadata for the Part A occurrence re-derivation."""
+
+    sessions: tuple
+    adjacent: tuple
+    covered_until: date
+    tail_covered: bool
+
+
+def derive_part_a_source_calendar(contract, retained_bytes) -> PartASourceCalendar:
+    """Exactly what ``regime.sample_outer_panel`` consumes, without the loader (P1).
+
+    Two inputs G5 already holds: the frozen FULL population (the ordered
+    session ids; each id is its source date, ``panel.build_panel``) and the
+    retained ``source_calendar`` bytes, bound to the contract's pinned digest.
+    Adjacency is what ``build_panel`` reports for the admitted source: two
+    accepted sessions are adjacent exactly when they are consecutive calendar
+    rows (admission pins the calendar rows to the expected-date index and the
+    accepted ids to FULL). ``covered_until`` and ``tail_covered`` are the
+    calendar's coverage end (exclusive) and tail attestation. No provider
+    bar, port or adapter is loaded.
+    """
+    pinned = [item.sha256 for item in contract.artifacts if item.role == 'source_calendar']
+    raw = retained_bytes.get('source_calendar') if isinstance(retained_bytes, Mapping) else None
+    if len(pinned) != 1 or type(raw) is not bytes or _hash(raw) != pinned[0]:
+        raise ValueError('contract-bound retained source calendar required')
+    doc = json.loads(raw.decode('utf-8'))
+    if (
+        type(doc) is not dict
+        or set(doc) != {'schema', 'coverage_start', 'coverage_end', 'tail_covered', 'sessions'}
+        or doc['schema'] != 'qualification-source-calendar/v1'
+        or type(doc['tail_covered']) is not bool
+        or type(doc['sessions']) is not list
+        or not doc['sessions']
+        or any(type(row) is not dict or type(row.get('date')) is not str for row in doc['sessions'])
+    ):
+        raise ValueError('explicit qualification source-calendar schema required')
+    calendar = tuple(date.fromisoformat(row['date']) for row in doc['sessions'])
+    coverage_start = date.fromisoformat(doc['coverage_start'])
+    coverage_end = date.fromisoformat(doc['coverage_end'])
+    if (
+        any(a >= b for a, b in zip(calendar, calendar[1:]))
+        or coverage_start > coverage_end
+        or not coverage_start <= calendar[0]
+        or not calendar[-1] <= coverage_end
+    ):
+        raise ValueError('unique ordered source calendar rows inside coverage required')
+    position = {day: index for index, day in enumerate(calendar)}
+    sessions, positions = [], []
+    for session_id in contract.populations['FULL']:
+        try:
+            day = date.fromisoformat(session_id)
+        except ValueError as exc:
+            raise ValueError('FULL population session ids must be source dates') from exc
+        if day.isoformat() != session_id or day not in position:
+            raise ValueError('FULL population session outside the retained source calendar')
+        sessions.append(PartASourceSession(session_id, day))
+        positions.append(position[day])
+    if not sessions or any(a >= b for a, b in zip(positions, positions[1:])):
+        raise ValueError('FULL population must follow the source calendar order')
+    return PartASourceCalendar(
+        tuple(sessions),
+        tuple(b == a + 1 for a, b in zip(positions, positions[1:])),
+        coverage_end + timedelta(days=1),
+        doc['tail_covered'],
+    )
+
+
 def build_part_a_checkpoint_evidence(
     *,
     contract,
@@ -2302,21 +2381,23 @@ def build_part_a_checkpoint_evidence(
     member protocol (coordinator ruling G1); the campaign plan itself is not a
     served member, so the plan vector is checked field by field against the
     contract's own derivation instead of byte-comparing a
-    ``derive_checkpoint_plan`` slice. ``source`` is the retained
-    ``ProductionSource`` G5 admits from the same bundle the worker used (P1):
+    ``derive_checkpoint_plan`` slice. ``source`` is the loader-free
+    ``PartASourceCalendar`` G5 derives from the frozen FULL population and the
+    contract-bound retained calendar bytes of the bundle the worker used (P1):
     each panel's source-session occurrences are re-derived by re-running the
-    engine's outer-panel sampling over the retained session metadata -- no
-    path is replayed -- and a captured occurrence that differs refuses.
+    engine's outer-panel sampling over that session metadata -- no source is
+    loaded, no path is replayed -- and a captured occurrence that differs
+    refuses.
     """
     from decimal import Decimal, ROUND_CEILING
     from math import isfinite
 
-    from .execution.compute import part_a_panel_bytes
     from .execution.evidence import (
         CapturedPartAPanel,
         _part_a_panel_row,
         _part_a_pilot,
         _part_a_plan_shape,
+        part_a_panel_bytes,
         part_a_path_inventory,
     )
     from .journal_snapshot import parse_campaign_checkpoint_snapshot
@@ -2599,12 +2680,10 @@ def build_part_a_checkpoint_evidence(
             raise ValueError('part a panel depth differs from the plan')
     from random import Random
 
-    from .production_source import ProductionSource
     from .regime import domain_seed, sample_outer_panel
 
-    if type(source) is not ProductionSource:
-        raise ValueError('factory-built retained source required for part a occurrences')
-    source.verify_for(contract)
+    if type(source) is not PartASourceCalendar:
+        raise ValueError('derived retained source required for part a occurrences')
     for index, row in enumerate(rows):
         # Exactly part_a._run_part_a's panel_blocks for a non-pilot panel: the
         # plan's outer seed at this index over the retained source calendar.

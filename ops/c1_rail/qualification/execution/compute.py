@@ -3,12 +3,11 @@ from dataclasses import dataclass, replace
 
 from mc.simulation import EvaluationState
 
-from ..contract import canonical_json_bytes
-from ..part_a import _run_part_a
-from ..production import _part_a_request
+from ..part_a import SyntheticPartARequest, _run_part_a
 from ..provider import _ReplayProvider
 from ..runner import SyntheticStageRequest, _run_stage
-from .evidence import outcome_record
+# The S5-D1 encoder lives beside the result encoder; re-exported for callers.
+from .evidence import part_a_panel_bytes  # noqa: F401
 
 
 def initial_state(contract):
@@ -104,13 +103,20 @@ class PartACompute:
     measurement_forced: bool
 
 
-def part_a_panel_bytes(panels):
-    """S5-D1 artifact encoding: one canonical JSON line per panel, in order."""
-    return b''.join(canonical_json_bytes({
-        'index': panel.index,
-        'source_session_ids': list(panel.source_session_ids),
-        'outcomes': [outcome_record(outcome) for outcome in panel.outcomes],
-    }) + b'\n' for panel in panels)
+def part_a_request(contract, path_start_date, budget_seconds):
+    """The gated route's Part A request mapping (``production._part_a_request``).
+
+    Carried here so the worker closure never reaches ``production``, whose
+    deferred ``attempt`` import is an authority the closure excludes. The
+    parity test in ``test_campaign_part_a.py`` pins the two mappings equal.
+    """
+    part = contract.replay.part_a
+    if part.percentile_method != 'INVERSE_ECDF_LEFT':
+        raise ValueError('unsupported frozen percentile method')
+    return SyntheticPartARequest('n2', contract.replay.outer_months, contract.replay.inner_block_sessions,
+        part.paths_per_population_per_panel, contract.replay.horizon_sessions, part.initial_panels,
+        part.expanded_panels, float(part.percentile), 'nearest_rank', float(part.expansion_center_p5),
+        float(part.expansion_tolerance), contract.replay.root_rng_namespace, budget_seconds, path_start_date)
 
 
 def _part_a_full_pass_rate(n2_full_outcomes):
@@ -168,7 +174,7 @@ def run_part_a_compute(contract, source, budget, *, n2_full_outcomes,
             on_initial_prefix(raw)
 
     try:
-        request = _part_a_request(contract, source.path_start_date, budget.remaining_wall_seconds())
+        request = part_a_request(contract, source.path_start_date, budget.remaining_wall_seconds())
         if measurement_override is not None:
             request = replace(request, within_pp=measurement_override.within_pp)
         result = _run_part_a(request, source.sessions, adjacent=source.adjacent,

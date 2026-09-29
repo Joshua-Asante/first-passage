@@ -383,6 +383,21 @@ def _override_sites():
     return class_sites, call_sites
 
 
+def test_compute_part_a_request_matches_the_gated_route_mapping(tmp_path):
+    """R1 parity: the worker-closure copy of the request mapping equals
+    ``production._part_a_request`` on the composition fixture contract.
+    Placed before the module-scoped ``g5_chain`` fixture's first use: that
+    fixture patches ``worker.utc_now`` for the rest of the module, and the
+    composition build's runtime inventory refuses a patched role module."""
+    from c1_rail.qualification.production import _part_a_request
+
+    setup = build_verified_composition(tmp_path / 'source')
+    contract, start = setup.contract, setup.source.path_start_date
+    for budget in (12., 0.5):
+        assert compute.part_a_request(contract, start, budget) == _part_a_request(contract, start, budget)
+    assert compute.part_a_request(contract, start, 12.).initial_panels == contract.replay.part_a.initial_panels
+
+
 def test_only_the_compute_adapter_may_name_the_part_a_measurement_override():
     """P-3: the override exists only as the compute adapter's TEST_ONLY seam.
 
@@ -686,7 +701,7 @@ def _g5_chain(tmp_path, monkeypatch):
     from test_contract import NOW
     from test_worker import _stage_bundle, stage_input
     from c1_rail.qualification.checkpoint_plan import derive_checkpoint_plan
-    from c1_rail.qualification.evidence import build_checkpoint_evidence
+    from c1_rail.qualification.evidence import build_checkpoint_evidence, derive_part_a_source_calendar
     from c1_rail.qualification.execution.plan import derive_campaign_plan_from_context
     from c1_rail.qualification.source_admission import admit_source
 
@@ -749,10 +764,13 @@ def _g5_chain(tmp_path, monkeypatch):
     out.mkdir()
     pa_payload = decode_frame(
         worker.run_worker(pa, execution_id='pawork', checkpoint='PART_A', output_dir=out), limit=limit)
+    # ``source`` is the loader-built oracle for ``_rederived_sessions``; G5's
+    # builder consumes only the loader-free calendar derivation.
     source = admit_source(context.contract, artifact_root=context.bundle_dir, policy=context.policy).source
+    calendar = derive_part_a_source_calendar(context.contract, context.retained_bytes)
     n2_family = dict(predecessor_receipt_bytes=n2_receipt, predecessor_assessment_bytes=n2_assessment,
                      predecessor_plan_bytes=n2_plan, predecessor_payload_bytes=n2_payload,
-                     n1_plan_bytes=n1_plan, n1_payload_bytes=n1_payload, source=source)
+                     n1_plan_bytes=n1_plan, n1_payload_bytes=n1_payload, source=calendar)
 
     def assess(payload_bytes, builder=None, **overrides):
         family = _family(
@@ -941,6 +959,40 @@ def test_g5_part_a_requires_the_retained_source(g5_chain):
 
     with pytest.raises(ValueError, match='retained source required'):
         g5_chain.assess(g5_chain.payload, builder=build_part_a_checkpoint_evidence, source=None)
+    # The loader-built source is not the builder's input either: G5's closure
+    # never contains the source loader (test_runtime).
+    with pytest.raises(ValueError, match='retained source required'):
+        g5_chain.assess(g5_chain.payload, builder=build_part_a_checkpoint_evidence,
+                        source=g5_chain.source)
+
+
+def test_g5_loader_free_calendar_matches_the_loader_built_source(g5_chain):
+    """P1 parity: the session metadata G5 derives from the frozen FULL
+    population and the retained calendar bytes equals what the admitted
+    ``ProductionSource`` hands ``sample_outer_panel``, field by field."""
+    from c1_rail.qualification.evidence import derive_part_a_source_calendar
+
+    context, source = g5_chain.context, g5_chain.source
+    calendar = derive_part_a_source_calendar(context.contract, context.retained_bytes)
+    assert [(s.session_id, s.source_session_date) for s in calendar.sessions] == \
+        [(s.session_id, s.source_session_date) for s in source.sessions]
+    assert calendar.adjacent == source.adjacent
+    assert calendar.covered_until == source.covered_until
+    assert calendar.tail_covered is source.tail_covered
+    assert any(calendar.adjacent) and len(calendar.adjacent) == len(calendar.sessions) - 1
+
+
+@pytest.mark.parametrize('mutate', [
+    lambda retained: {**retained, 'source_calendar': retained['source_calendar'] + b' '},
+    lambda retained: {name: raw for name, raw in retained.items() if name != 'source_calendar'},
+])
+def test_g5_loader_free_calendar_refuses_unbound_calendar_bytes(g5_chain, mutate):
+    from c1_rail.qualification.evidence import derive_part_a_source_calendar
+
+    context = g5_chain.context
+    with pytest.raises(ValueError, match='contract-bound retained source calendar required'):
+        derive_part_a_source_calendar(context.contract, mutate(dict(context.retained_bytes)))
+
 
 
 def test_s4_joint_builder_refuses_a_part_a_plan(g5_chain):

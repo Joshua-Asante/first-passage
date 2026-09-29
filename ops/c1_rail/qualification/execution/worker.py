@@ -1,6 +1,5 @@
 """Fixed N1 worker adapter; no journal, launcher or private-key imports."""
 
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -14,7 +13,7 @@ from .compute import (
     run_n2_compute,
     run_part_a_compute,
 )
-from .evidence import encode_worker_result, parse_worker_result
+from .evidence import PartAWorkerRun, encode_worker_result, parse_worker_result
 from .files import read_regular
 from .keys import load_keys
 from .plan import derive_n1_plan
@@ -135,23 +134,6 @@ def run_worker(
 PART_A_INITIAL_ARTIFACT = 'part-a-initial.jsonl'
 PART_A_FINAL_ARTIFACT = 'part-a-final.jsonl'
 PART_A_STAGED_ROLES = ('receipt', 'assessment', 'payload')
-
-
-@dataclass(frozen=True)
-class PartAWorkerRun:
-    """W5a: what the SR-3 body returns beside the ``PartACompute``.
-
-    The computation cannot carry the one worker-result fact that is not a
-    computation output: the N2 FULL baseline the body itself derived from the
-    staged capture statuses (S5-D2), as the closed ``{'passes', 'paths'}``
-    pair the result document carries (``run_part_a_compute``'s signature is
-    unchanged and never sees integers). The pilot identity needs no transport:
-    the encoder derives it from the same plan bytes this body verified against
-    its own independent derivation.
-    """
-
-    compute: object
-    n2_full_baseline: dict
 
 
 def write_part_a_artifact(directory, name, raw):

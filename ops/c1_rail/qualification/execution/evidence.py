@@ -32,6 +32,24 @@ class CapturedPartAPanel:
     outcomes: tuple
 
 
+@dataclass(frozen=True)
+class PartAWorkerRun:
+    """W5a: what the SR-3 body returns beside the ``PartACompute``.
+
+    The computation cannot carry the one worker-result fact that is not a
+    computation output: the N2 FULL baseline the body itself derived from the
+    staged capture statuses (S5-D2), as the closed ``{'passes', 'paths'}``
+    pair the result document carries (``run_part_a_compute``'s signature is
+    unchanged and never sees integers). The pilot identity needs no transport:
+    the encoder derives it from the same plan bytes this body verified against
+    its own independent derivation. Defined here, beside its encoder, so the
+    G5 closure never reaches the worker entrypoint.
+    """
+
+    compute: object
+    n2_full_baseline: dict
+
+
 def outcome_record(row):
     if type(row) is not PathOutcome:
         raise TypeError('exact path outcome required')
@@ -41,6 +59,15 @@ def outcome_record(row):
         failure_reason=row.failure_reason,
         diagnostics=[list(pair) for pair in row.diagnostics],
     )
+
+
+def part_a_panel_bytes(panels):
+    """S5-D1 artifact encoding: one canonical JSON line per panel, in order."""
+    return b''.join(encoded({
+        'index': panel.index,
+        'source_session_ids': list(panel.source_session_ids),
+        'outcomes': [outcome_record(outcome) for outcome in panel.outcomes],
+    }) + b'\n' for panel in panels)
 
 
 def _plan_stages(plan):
@@ -256,8 +283,6 @@ def _encode_part_a_worker_result(
     The pilot identity needs no transport -- it derives from the same plan
     bytes the body verified against its own independent derivation.
     """
-    from .worker import PartAWorkerRun
-
     if (
         type(run) is not PartAWorkerRun
         or run.compute.result.synthetic is not context.domain.permits_synthetic
@@ -485,7 +510,6 @@ def _parse_part_a_worker_result(
     """
     from math import isfinite
 
-    from .compute import part_a_panel_bytes
     from .protocol import digest
 
     doc = fields(

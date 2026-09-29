@@ -6,7 +6,8 @@ This library does not establish process isolation or commit journal state.
 from datetime import datetime, timezone
 from dataclasses import replace
 from ..contract import parse_canonical_json, canonical_json_bytes as encoded
-from ..evidence import InspectedEvidence, build_n1_evidence, compare_n1_evidence
+from ..evidence import (InspectedEvidence, build_n1_evidence, compare_n1_evidence,
+    derive_part_a_source_calendar)
 from ..journal_snapshot import parse_assessment_snapshot
 from .admission import verify_bundle
 from .evidence import parse_worker_result
@@ -539,14 +540,13 @@ def validate_campaign_checkpoint(
         predecessor.update(
             n1_plan_bytes=artifacts['n1_plan'], n1_payload_bytes=artifacts['n1_payload']
         )
-        # P1: the panel source occurrences are re-derived from the retained
-        # source (session metadata, no replay), admitted from the same bundle
-        # the worker admitted.
-        from ..source_admission import admit_source
-
-        predecessor['source'] = admit_source(
-            context.contract, artifact_root=context.bundle_dir, policy=context.policy
-        ).source
+        # P1: the panel source occurrences are re-derived from the frozen FULL
+        # population and the contract-bound retained calendar bytes of the
+        # verified bundle (session metadata only: no source loader, no
+        # replay).
+        predecessor['source'] = derive_part_a_source_calendar(
+            context.contract, context.retained_bytes
+        )
     inspected = build_checkpoint_evidence(
         contract=context.contract,
         policy=context.policy,
