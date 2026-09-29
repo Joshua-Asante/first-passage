@@ -620,7 +620,9 @@ def test_producer_cancel_removes_remainder_and_retains_late_fill(tmp_path):
     from c1_rail import book_takeover as t
     account = owner(tmp_path, [])
     occurrence = account.make_occurrence('direct', 'base')
-    broker = SyntheticProtectionBroker(account=occurrence.account, account_epoch=occurrence.account_epoch, at=NOW)
+    # The entry and the cancel are both accepted (an empty queue would make each an unknown).
+    broker = SyntheticProtectionBroker([BrokerResult('accepted'), BrokerResult('accepted')],
+                                       account=occurrence.account, account_epoch=occurrence.account_epoch, at=NOW)
     account.synthetic_broker = broker
     account.dispatch(entry('vanguard_mgc', 2), occurrence=occurrence, now=NOW)
     broker.execute_entry('entry:vanguard_mgc', fill_id='f1', quantity=1, price=100, at=NOW)

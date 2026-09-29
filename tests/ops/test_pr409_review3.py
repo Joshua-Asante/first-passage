@@ -137,7 +137,8 @@ def test_schema_two_missing_source_watch_is_corruption(tmp_path):
 
 def test_cutoff_retires_takeover_before_displaced_terminal(tmp_path):
     from test_four_leg_runtime import owner
-    account = owner(tmp_path, [BrokerResult('accepted')])
+    # The orb entry and the cutoff cancel are both accepted (an empty queue would be unknown).
+    account = owner(tmp_path, [BrokerResult('accepted'), BrokerResult('accepted')])
     runtime = FourLegRuntime(account, inert_adapters())
     runtime._mode_actions(Mode.NORMAL)
     account.dispatch(entry("orb_mnq_v7", 1), occurrence=account.make_occurrence("direct", "test_pr409_review3:134"), now=NOW)
