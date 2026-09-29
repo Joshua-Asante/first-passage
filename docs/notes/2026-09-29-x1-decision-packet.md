@@ -58,6 +58,10 @@ If the configured controls cannot be identified adequately for the decision, ret
    - It is mirrored in drill plan §0.1, commissioning §2.2 and B–D packet GC-7.
    - It is an exception to the session-start rule only. It grants no CP-3, row, send or spend.
 2. **Sequencing:** the 2026-09-29 evening window is **withdrawn**. X-1's CP-3 is not requested until R-1 has run on this week's preservation trade, in that trade's own session. That R-1 is the same-session per-order read check (§6 gap 2).
+   - **Open sequencing item (recorded 2026-09-29; for Joshua, not resolved here).** This week's preservation trade was placed on Monday 2026-09-28 and became R-2's target (closed with limits, #550). No R-1 read is recorded in that trade's own session. The earliest retained read (`reads/R2prep-20260929T003518Z…`, 2026-09-29 00:35 UTC) falls after the reset. The condition above therefore cannot be met this week without an extra trade, and no extra trade is authorized. Joshua's options:
+     - (a) run R-1 on next week's preservation trade (due 2026-10-09), in its own session;
+     - (b) rule, under CP-2 F-3, that X-1's own REST-placed order may supply the same-session read, which would remove the separate R-1 prerequisite for X-1.
+     - Neither is chosen.
    - If its per-order reads fail, X-1 stays held.
    - The observer review, the offline tool and the operator rehearsal remain owed.
 
@@ -111,7 +115,7 @@ Before CP-3, the private binding must also name the approved quote-freshness int
 
 *Review note (2026-09-29):* the paragraph above requires byte-specific CP-3 within the quote-freshness interval. Codex (the author) agrees that is unnecessarily restrictive and recommends the amendment below.
 
-**Proposed amendment (derivation-rule CP-3; PROPOSED, awaiting operator decision; replaces the paragraph above only if accepted).**
+**Amendment (derivation-rule CP-3): ACCEPTED by the operator 2026-09-29. It replaces the byte-specific CP-3 paragraph above.** Source: Joshua's statement "I accept the derivation-rule", made in the coordinating session on 2026-09-29 and confirmed by Joshua directly in this session the same day ("I accept the derivation rule"). The paragraph above is superseded wherever it requires byte-specific approval; its recheck and no-silent-repricing duties continue through items 2–3 below.
 
 1. **Scope.** CP-3 approves a deterministic derivation rule and a reviewed generator/checker version, instead of quote-bound bytes. The rule binds:
    - the account/environment, the exact dated contract, the direction, `qty` = 1, `orderType` = market, `tif`, and the excluded-field list;
@@ -126,7 +130,7 @@ Before CP-3, the private binding must also name the approved quote-freshness int
    - Any change to the rule, the limits, the generator/checker version, the contract, the direction or the environment requires a renewed CP-3.
 4. **Unchanged.** Joshua still performs the send. Everything else in this section stands.
 
-Until the operator accepts this amendment, the paragraph above governs.
+~~Until the operator accepts this amendment, the paragraph above governs.~~ Accepted 2026-09-29. CP-3 approves the rule and the generator/checker version; that tool is not yet built or reviewed.
 
 ## 5. Single-row sequence and verification
 
@@ -169,7 +173,7 @@ At MYM's $0.50 per index point, the proposed 30-point distance represents $15 be
    - **No successful REST per-order read is established in retained evidence for this account.** Browser-rendered lifecycle displays exist, but they are not REST responses. The R-2 closure records the lifecycle, order and status reads by id all failing with HTTP 400 for historical orders, cause unconfirmed. Same-session behavior is unestablished.
    - Stop quantity and price are observable only in the lifecycle `version`. The status read carries neither, and a `partial` lifecycle reply means not observed.
    - No offline observer tool or tests exist yet.
-4. **Recommended sequencing (from gap 2):** run R-1 on this week's preservation trade, in its own session, before X-1. It checks same-session per-order reads with no added exposure. If those reads fail, X-1 can yield no PASS and should stay held. The 2026-09-29 evening window is therefore premature unless R-1 has completed first.
+4. **Recommended sequencing (from gap 2):** run R-1 on this week's preservation trade, in its own session, before X-1. It checks same-session per-order reads with no added exposure. If those reads fail, X-1 can yield no PASS and should stay held. The 2026-09-29 evening window is therefore premature unless R-1 has completed first. *(2026-09-29: this week's trade cannot serve; see the open sequencing item in §2.)*
 5. The exact account, contract, fresh quote, absolute stop level, fresh orderId and serialized request hash remain private session-time bindings. No executable request has been prepared from a stale quote.
 
 **Offline rehearsal checklist (not yet performed by the operator):** with no send action, locate Tradovate web's position and working-order views and the required flatten/cancel controls; walk through accepted entry, missing/rejected stop, unknown response, and already-flat cases. For each, identify the evidence to retain and the governing recovery branch in commissioning section 3.4. An unknown response never leads to a retry. A flat display never substitutes for terminal order evidence. Do not test these controls against an exposed account as part of preparation.
