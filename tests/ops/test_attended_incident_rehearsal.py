@@ -9,7 +9,8 @@ producer (card §4).
 
 What the cases show:
 - after the S2-S6 scripted incidents, no path restarts automation in the same session;
-- S1's terminal-recovery case remains strict XFAIL under CC-3; acceptance is partial;
+- S1's ordinary unknown outcome halts into INTERVENTION at once (CC-3, synthetic repair:
+  docs/notes/2026-09-29-cc3-ordinary-unknown-halt-evidence.md); a later terminal restores nothing;
 - a correctly handled refusal (S7) refuses only that request, and the session keeps running;
 - the local notifier (``FileAckNotifier``) cannot change the halt, generation or permission.
 
@@ -135,37 +136,39 @@ def test_lost_entry_response_blocks_risk_add_at_once(tmp_path):
     sent = _dispatch(account, intent(), "base", NOW)
     assert sent.transport_state == "unknown"
     assert account.unresolved_attempts == (sent.attempt_id,)
+    # CC-3: the unknown outcome is itself the incident (halt/resume §2 `:26`).
+    assert (account.permission, account.authority) == ("HALTED", "INTERVENTION")
+    assert _incident_ids(account) == ("ordinary-unknown:" + sent.attempt_id,)
 
     at = NOW + timedelta(seconds=1)  # well inside the order's first bar
     refused = _dispatch(account, _other_leg_entry("other", at), "other", at)
-    assert refused.refusal_reason == "unknown_order"
+    assert refused.refusal_reason == "intervention_fence"
     assert refused.transport_state == "not_attempted"
     assert len(broker.commands) == 1
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "CC-3 (TB-I3/T09), open defect: the owner raises no halt for an ordinary unknown entry "
-    "outcome (halt/resume §2 `:26`) and admits risk-adds again in the same session after an "
-    "accepted, postdating terminal, contrary to incident ADR §A11.2 (halt/resume §4.1). "
-    "Pinned under the recorded coordinator variance, card §7 option (B); this XFAIL is NOT "
-    "acceptance of §A11.2 behavior."))
 def test_lost_entry_response_terminal_does_not_restart_automation_in_session(tmp_path):
     account, broker = _rehearsal_owner(tmp_path, [BrokerResult("unknown"), BrokerResult("accepted")])
-    _dispatch(account, intent(), "base", NOW)
+    sent = _dispatch(account, intent(), "base", NOW)
+    assert (account.permission, account.authority) == ("HALTED", "INTERVENTION")
+    generation = account.status()["generation"]
     blocked_at = NOW + timedelta(seconds=1)
     assert _dispatch(account, _other_leg_entry("other", blocked_at), "other",
-                     blocked_at).refusal_reason == "unknown_order"
+                     blocked_at).refusal_reason == "intervention_fence"
 
     terminal_at = NOW + timedelta(seconds=2)
     account.observe(BrokerFact.terminal("base", "cancelled", 0, terminal_at), now=terminal_at)
 
     retry_at = NOW + timedelta(seconds=3)
     retry = _dispatch(account, _other_leg_entry("after-terminal", retry_at), "after-terminal", retry_at)
-    # §A11.2: the incident ends automated trading for the session. Once the §2 halt exists,
-    # the owner is HALTED and nothing admits a further risk-add in this session.
+    # §A11.2: the incident ends automated trading for the session. The terminal settles the
+    # obligation; it does not undo the incident, so nothing admits a further risk-add.
     assert (account.permission, account.authority) == ("HALTED", "INTERVENTION")
-    assert retry.refusal_reason is not None
+    assert account.status()["generation"] == generation
+    assert _incident_ids(account) == ("ordinary-unknown:" + sent.attempt_id,)
+    assert retry.refusal_reason == "intervention_fence"
     assert len(broker.commands) == 1
+    _assert_no_same_session_activation(account, retry_at)
 
 
 # -- S2: stale evidence ---------------------------------------------------------------------

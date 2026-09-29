@@ -1874,16 +1874,29 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             facts = result.facts
             if result.state == "rejected" and not facts:
                 facts = (BrokerFact.terminal(operation_id, "rejected", 0, now),)
+            observation = _body({"state": result.state, "facts": [f.fact_id for f in facts]})
+            if result.state == "unknown":
+                # An unknown outcome is an incident (halt/resume §2, incident ADR §A11.2). The halt
+                # commits with the unknown observation, before any attached fact is consumed and
+                # before this serializer turn ends; later evidence may settle the obligation but
+                # cannot undo the incident.
+                with self._transaction() as db:
+                    self._settle_attempt_db(db, attempt_id, result.state, observation)
+                    self._halt_db(db, "ordinary-unknown:" + attempt_id, "execution", now)
             for fact in facts:
                 events.extend(self._observe_locked(
                     fact, now=now,
                     boundary_time=getattr(action, "bar_time", None) or now))
-            with self._transaction() as db:
-                db.execute("UPDATE attempts SET state=?, observation=? WHERE attempt_id=?",
-                           (result.state.upper(), _body({"state": result.state,
-                                                        "facts": [f.fact_id for f in facts]}), attempt_id))
+            if result.state != "unknown":
+                with self._transaction() as db:
+                    self._settle_attempt_db(db, attempt_id, result.state, observation)
             return DispatchResult(operation_id, quantity, attempt_id, result.state,
                                   confirmed_events=tuple(events))
+
+    @staticmethod
+    def _settle_attempt_db(db, attempt_id, state, observation):
+        db.execute("UPDATE attempts SET state=?, observation=? WHERE attempt_id=?",
+                   (state.upper(), observation, attempt_id))
 
     def _flatten_action(self, db, root_id, leg_id, reason, now):
         """Keep an unresolved close intact; allocate a new identity for its remainder."""
