@@ -60,10 +60,18 @@ def test_unresolved_ordinary_order_blocks_other_leg_until_postdating_terminal(tm
     at = NOW + timedelta(seconds=elapsed)
     other = replace(intent('other'), leg_id='orb_mnq_v7', qty=1, bar_time=at)
     refusal = account.dispatch(other, occurrence=account.make_occurrence('direct', 'blocked'), now=at)
-    assert refusal.refusal_reason == 'unknown_order'
+    # CC-3: an unknown outcome halts into INTERVENTION at once; only the accepted-but-unresolved
+    # order is held by the ordinary unknown fence.
+    assert refusal.refusal_reason == ('intervention_fence' if outcome == 'unknown' else 'unknown_order')
     assert len(broker.commands) == 1 and account.exposure('dj30_mym_p250') == (0, 3)
     account.observe(BrokerFact.terminal('base', 'cancelled', 0, at), now=at)
     result = account.dispatch(replace(other, order_id='after'), occurrence=account.make_occurrence('direct', 'after'), now=at)
+    if outcome == 'unknown':
+        # The terminal reconciles the order; it does not resume automation.
+        assert account.exposure('dj30_mym_p250') == (0, 0)
+        assert result.refusal_reason == 'intervention_fence' and len(broker.commands) == 1
+        assert (account.permission, account.authority) == ('HALTED', 'INTERVENTION')
+        return
     assert result.transport_state == 'accepted'
 
 
@@ -94,7 +102,7 @@ def test_unknown_order_equal_time_terminal_does_not_clear_and_restart_retains_at
     account.observe(BrokerFact.terminal('base', 'cancelled', 0, NOW), now=NOW)
     refusal = account.dispatch(replace(intent('other'), leg_id='orb_mnq_v7', qty=1),
         occurrence=account.make_occurrence('direct', 'other'), now=NOW+timedelta(seconds=1))
-    assert refusal.refusal_reason == 'unknown_order'
+    assert refusal.refusal_reason == 'intervention_fence'  # CC-3: the unknown halts at once
     restarted = BookAccountOwner.boot(account.path, account.account, binding=account.binding, synthetic_broker=broker)
     assert restarted.permission == 'HALTED'
     result = restarted.dispatch(intent('restart'), occurrence=restarted.make_occurrence('direct', 'restart'), now=NOW)

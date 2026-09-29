@@ -1875,19 +1875,27 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             if result.state == "rejected" and not facts:
                 facts = (BrokerFact.terminal(operation_id, "rejected", 0, now),)
             observation = _body({"state": result.state, "facts": [f.fact_id for f in facts]})
+            boundary = getattr(action, "bar_time", None) or now
             if result.state == "unknown":
-                # An unknown outcome is an incident (halt/resume §2, incident ADR §A11.2). The halt
-                # commits with the unknown observation, before any attached fact is consumed and
-                # before this serializer turn ends; later evidence may settle the obligation but
-                # cannot undo the incident.
-                with self._transaction() as db:
-                    self._settle_attempt_db(db, attempt_id, result.state, observation)
-                    self._halt_db(db, "ordinary-unknown:" + attempt_id, "execution", now)
-            for fact in facts:
-                events.extend(self._observe_locked(
-                    fact, now=now,
-                    boundary_time=getattr(action, "bar_time", None) or now))
-            if result.state != "unknown":
+                # An unknown outcome is an incident (halt/resume section 2, incident ADR A11.2).
+                # The unknown observation, the halt and every attached fact commit in ONE
+                # transaction inside this serializer turn: a crash cannot leave the halt without
+                # the fact bodies and capacity effects the observation lists, and a failure
+                # rolls all of it back and suppresses further sends. Later evidence may settle
+                # the obligation; it cannot undo the incident.
+                try:
+                    with self._transaction() as db:
+                        self._settle_attempt_db(db, attempt_id, result.state, observation)
+                        self._halt_db(db, "ordinary-unknown:" + attempt_id, "execution", now)
+                        for fact in facts:
+                            events.extend(self._observe_locked(
+                                fact, now=now, boundary_time=boundary, db=db))
+                except BaseException:
+                    self._input_send_suppressed = True
+                    raise
+            else:
+                for fact in facts:
+                    events.extend(self._observe_locked(fact, now=now, boundary_time=boundary))
                 with self._transaction() as db:
                     self._settle_attempt_db(db, attempt_id, result.state, observation)
             return DispatchResult(operation_id, quantity, attempt_id, result.state,

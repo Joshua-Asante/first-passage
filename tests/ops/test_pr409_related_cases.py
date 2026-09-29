@@ -28,7 +28,9 @@ def test_close_refuses_live_entry_remainder_until_terminal(tmp_path, kind, scope
                     scope_fill_ids=('early',) if scoped else None)
     occurrence = account.make_occurrence('direct', 'close')
     result = account.dispatch(close, occurrence=occurrence, now=NOW)
-    assert result.refusal_reason == 'entry_remainder_pending'
+    # CC-3: an unknown cancel halts the account, so the close meets the intervention fence.
+    assert result.refusal_reason == ('intervention_fence' if outcome == 'unknown'
+                                     else 'entry_remainder_pending')
     assert [c.kind for c in broker.commands] == ['entry', 'cancel']
     with sqlite3.connect(account.path) as db:
         assert db.execute('SELECT count(*) FROM close_reservations').fetchone()[0] == 0
@@ -38,6 +40,14 @@ def test_close_refuses_live_entry_remainder_until_terminal(tmp_path, kind, scope
     account.observe(BrokerFact.terminal('base', 'cancelled', 2, at), now=at)
     # Refusal is immutable for its occurrence; a new evaluation may close.
     assert account.dispatch(close, occurrence=occurrence, now=at) == result
+    if outcome == 'unknown':
+        # The late facts reconcile, but the incident stays: nothing is admitted or sent.
+        assert account.exposure('dj30_mym_p250') == (2, 0)
+        retry = account.dispatch(close, occurrence=account.make_occurrence('direct', 'retry'), now=at)
+        assert retry.refusal_reason == 'intervention_fence'
+        assert [c.kind for c in broker.commands] == ['entry', 'cancel']
+        assert (account.permission, account.authority) == ('HALTED', 'INTERVENTION')
+        return
     broker.queue(BrokerResult('accepted'))
     admitted = account.dispatch(close, occurrence=account.make_occurrence('direct', 'retry'), now=at)
     assert admitted.transport_state == 'accepted'

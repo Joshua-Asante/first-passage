@@ -347,3 +347,64 @@ def test_protection_unknown_keeps_only_its_own_incident(tmp_path):
     assert outcome.transport_state == "unknown"
     assert [row["reason"] for row in account.incidents] == ["protection"]
     assert not any(i.startswith("ordinary-unknown:") for i in _incident_ids(account))
+
+
+def _rows(account, table):
+    with sqlite3.connect(account.path) as db:
+        return db.execute("SELECT COUNT(*) FROM " + table).fetchone()[0]
+
+
+def test_attached_fact_failure_rolls_back_halt_and_facts_together(tmp_path, monkeypatch):
+    account, route, action = _scenario(tmp_path, "entry")
+    route.queue(BrokerResult("unknown", (FILLED, CANCELLED)))
+    delegate = account._append_capacity
+
+    def flaky(db, kind, *args, **kwargs):
+        if kind == "terminal":  # the fill is journaled first; the terminal then fails
+            raise sqlite3.OperationalError("disk I/O error")
+        return delegate(db, kind, *args, **kwargs)
+
+    monkeypatch.setattr(account, "_append_capacity", flaky)
+    with pytest.raises(AccountOwnerError, match="state unavailable"):
+        _dispatch(account, action, "attached-fails")
+
+    # The halt, the observation and the already-applied fill roll back as one unit.
+    assert len(route.commands) == 1
+    assert account.incidents == ()
+    assert _rows(account, "broker_facts") == 0
+    with sqlite3.connect(account.path) as db:  # only the pre-send reservation survives
+        assert {row[0] for row in db.execute("SELECT fact_type FROM capacity_events")} == {"reserve"}
+    assert account.exposure(LEG) == (0, 3)
+    with sqlite3.connect(account.path) as db:
+        assert db.execute("SELECT state, observation FROM attempts").fetchall() == [("UNKNOWN", None)]
+    assert len(account.unresolved_attempts) == 1
+    with pytest.raises(AccountOwnerError, match="local send suppression"):
+        _dispatch(account, _other_leg_entry("after-failure"), "after-failure")
+    assert len(route.commands) == 1
+
+    recovery = BootstrapBroker([])
+    restarted = BookAccountOwner.boot(account.path, account.account, binding=binding(),
+                                      synthetic_broker=recovery)
+    assert (restarted.permission, restarted.authority) == ("HALTED", "INTERVENTION")
+    assert len(restarted.unresolved_attempts) == 1
+    assert restarted.exposure(LEG) == (0, 3)
+    assert recovery.commands == []
+
+
+def test_unknown_with_attached_fill_commits_capacity_and_halt_together(tmp_path):
+    account, route, action = _scenario(tmp_path, "entry")
+    route.queue(BrokerResult("unknown", (FILLED, CANCELLED)))
+    sent = _dispatch(account, action, "attached-commits")
+    _assert_unknown_incident(account, route, sent, commands=1, unresolved=False)
+
+    # A fresh boot reads only what was durably committed: the incident, both fact bodies, the
+    # fill's capacity effect and the observation that lists them all persisted together.
+    restarted = BookAccountOwner.boot(account.path, account.account, binding=binding(),
+                                      synthetic_broker=BootstrapBroker([]))
+    assert _incident_ids(restarted) == ("ordinary-unknown:" + sent.attempt_id,)
+    assert restarted.exposure(LEG) == (2, 0)
+    with sqlite3.connect(account.path) as db:
+        stored = {row[0] for row in db.execute("SELECT fact_id FROM broker_facts")}
+        observation = json.loads(db.execute("SELECT observation FROM attempts").fetchone()[0])
+    assert {FILLED.fact_id, CANCELLED.fact_id} <= stored
+    assert observation == {"state": "unknown", "facts": [FILLED.fact_id, CANCELLED.fact_id]}
