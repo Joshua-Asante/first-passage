@@ -266,6 +266,71 @@ def test_the_executed_environment_selects_the_joint_installation_only_for_s4(
         assert 'FP_QUALIFICATION_S4' not in seen['env']
 
 
+@pytest.mark.parametrize('mode,s2,s3,s4,s5', [
+    ('--test-only', False, False, False, False),
+    ('--s2', True, False, False, False),
+    ('--s3', True, True, False, False),
+    ('--s4', True, True, True, False),
+    ('--s5', True, True, True, True),
+])
+def test_the_executed_environment_selects_the_part_a_installation_only_for_s5(
+        tmp_path, monkeypatch, mode, s2, s3, s4, s5):
+    """Coordinator ruling E1: --s5 hands pytest --s4's environment (S2, S3 and
+    S4 set) plus FP_QUALIFICATION_S5=1, which selects the Part A /v7
+    installation; every other mode pops the S5 variable rather than trusting
+    the caller, exactly as --s3 pops an inherited S4."""
+    module = runner()
+    manifest_path = tmp_path / 'run' / 'ownership.json'
+    manifest_path.parent.mkdir()
+    manifest_path.write_text(json.dumps({'host_config_sha256': 'configured', 'source': {'commit': 'candidate'}}))
+    seen = {}
+
+    class Record:
+        def __init__(self, *_args):
+            self.data = {'before': {'commit': 'candidate'}, 'metadata': {}}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def begin(self):
+            pass
+
+        def execute(self, _command, **kwargs):
+            seen['env'] = kwargs.get('env')
+            self.data['test_summary'] = {'collected': 1, 'passed': 1, 'failed': 0, 'errors': 0, 'skipped': 0}
+            self.data['verification_exit_code'] = 0
+
+    @contextmanager
+    def lock(_root):
+        yield
+
+    monkeypatch.setattr(module.platform, 'system', lambda: 'Linux')
+    monkeypatch.setattr(module.os, 'geteuid', lambda: 0, raising=False)
+    monkeypatch.setattr(module, 'protected', lambda path: path)
+    monkeypatch.setattr(module, 'RunRecord', Record)
+    monkeypatch.setattr(module, 'require_invariants', lambda *args, **kwargs: {'passed': True})
+    monkeypatch.setattr(module, 'ownership_lock', lock)
+    monkeypatch.setattr(module, 'cleanup', lambda path: {'ok': True})
+    monkeypatch.setattr(module, 'create_process_group', lambda root: root / 'group')
+    monkeypatch.setattr(module, 'owned_command', lambda group, command, interpreter: command)
+    # Inherited S4 and S5 variables must not survive a mode that does not
+    # select those installations: the wrapper pops them.
+    monkeypatch.setenv('FP_QUALIFICATION_S4', '1')
+    monkeypatch.setenv('FP_QUALIFICATION_S5', '1')
+
+    assert module.main([mode, '--manifest', str(manifest_path)]) == 0
+    env = seen['env']
+    for name, expected in (('FP_QUALIFICATION_S2', s2), ('FP_QUALIFICATION_S3', s3),
+                           ('FP_QUALIFICATION_S4', s4), ('FP_QUALIFICATION_S5', s5)):
+        if expected:
+            assert env[name] == '1', (mode, name)
+        else:
+            assert name not in env, (mode, name)
+
+
 def test_s5_selection_places_the_part_a_file_immediately_before_the_oom_case(
         tmp_path, monkeypatch):
     """--s5 runs the S5 file set in S5_CASES order, so the Part A file sits

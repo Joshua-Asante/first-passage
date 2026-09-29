@@ -174,13 +174,18 @@ def main(argv=None):
                     report = output / 'junit.xml'
                     env = os.environ.copy()
                     env['FP_QUALIFICATION_HOST_MANIFEST'] = str(manifest_path)
-                    if args.s2 or args.s3 or args.s4: env['FP_QUALIFICATION_S2'] = '1'
+                    if args.s2 or args.s3 or args.s4 or args.s5: env['FP_QUALIFICATION_S2'] = '1'
                     else: env.pop('FP_QUALIFICATION_S2', None)
-                    if args.s3 or args.s4: env['FP_QUALIFICATION_S3'] = '1'
+                    if args.s3 or args.s4 or args.s5: env['FP_QUALIFICATION_S3'] = '1'
                     else: env.pop('FP_QUALIFICATION_S3', None)
-                    # --s3 keeps the v5 installation: only --s4 sets the joint v6 one.
-                    if args.s4: env['FP_QUALIFICATION_S4'] = '1'
+                    # --s3 keeps the v5 installation: --s4 sets the joint v6 one, and
+                    # --s5 sets it too (coordinator ruling E1: --s5 is --s4's
+                    # environment plus FP_QUALIFICATION_S5, which selects the Part A
+                    # /v7 installation); every other mode pops the S5 variable.
+                    if args.s4 or args.s5: env['FP_QUALIFICATION_S4'] = '1'
                     else: env.pop('FP_QUALIFICATION_S4', None)
+                    if args.s5: env['FP_QUALIFICATION_S5'] = '1'
+                    else: env.pop('FP_QUALIFICATION_S5', None)
                     selection=['tests/integration/qualification_host']
                     if args.test_only or args.s2 or args.s3 or args.s4 or args.s5:
                         # Run boundary files in full so new lifecycle cases also run.

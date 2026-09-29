@@ -59,10 +59,14 @@ class Boundary:
         self.diagnostic = os.environ.get('FP_QUALIFICATION_S2') == '1'
         self.dispatch = os.environ.get('FP_QUALIFICATION_S3') == '1'
         self.joint = os.environ.get('FP_QUALIFICATION_S4') == '1'
+        # S5 (--s5): FP_QUALIFICATION_S5=1 on top of the S4 environment selects
+        # the Part A /v7 installation (fixture_install --part-a, profile/release v7).
+        self.part_a = os.environ.get('FP_QUALIFICATION_S5') == '1'
         self.admin('install','--image',self.image,
             *(['--diagnostic'] if self.diagnostic or self.dispatch or self.joint else []),
             *(['--dispatch'] if self.dispatch or self.joint else []),
-            *(['--joint'] if self.joint else []))
+            *(['--joint'] if self.joint else []),
+            *(['--part-a'] if self.part_a else []))
         self.installation=self.code/'qualification-installation'
         self.config=json.loads((self.installation/'supervisor.json').read_bytes())
         report=inspect_environment(self.installation/'test-instance.json',(self.installation/'profile.json').read_bytes(),
