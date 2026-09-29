@@ -61,13 +61,22 @@ If the configured controls cannot be identified adequately for the decision, ret
    - **Open sequencing item (recorded 2026-09-29; for Joshua, not resolved here).** This week's preservation trade was placed on Monday 2026-09-28 and became R-2's target (closed with limits, #550). No R-1 read is recorded in that trade's own session. The earliest retained read (`reads/R2prep-20260929T003518Z…`, 2026-09-29 00:35 UTC) falls after the reset. The condition above therefore cannot be met this week without an extra trade, and no extra trade is authorized. Joshua's options:
      - (a) run R-1 on next week's preservation trade (due 2026-10-09), in its own session;
      - (b) rule, under CP-2 F-3, that X-1's own REST-placed order may supply the same-session read, which would remove the separate R-1 prerequisite for X-1.
-     - ~~Neither is chosen.~~ **Operator ruling 2026-09-29 (in session): option (a).** R-1 runs on next week's preservation trade (bucket 2026-10-05 → 10-09, due 10-09), in that trade's own session. Conditions:
+     - ~~Neither is chosen.~~ ~~**Operator ruling 2026-09-29 (in session): option (a).**~~ *Superseded the same day by option (b); see the amendment below.* R-1 runs on next week's preservation trade (bucket 2026-10-05 → 10-09, due 10-09), in that trade's own session. Conditions:
        - The trade is placed Monday–Thursday after the 18:00 ET reopen, so it can also serve R-2 and T07.
        - R-1 runs before the next ~17:00 ET reset, and the trade's ids and timestamps are retained in that session.
        - The R-1 v3.1 collector's clearance to run is confirmed first; its return says it is not cleared until the coordinator accepts it.
        - If R-1's per-order reads fail, X-1 stays held, and the next step is a vendor question, not a drill.
        - Option (b) is not adopted. X-1's CP-3 is not requested before a successful R-1.
        - The ruling authorizes no trade. The preservation trade is placed because the account requires it.
+   - **Amendment 2026-09-29: operator ruling, option (b); supersedes (a).** Joshua ruled this in the coordinating session and confirmed it directly in this session: "we're going with b, so that we can deploy the tradeify portfolio as quickly as possible".
+     - X-1's CP-3 no longer waits for R-1 on a preservation trade.
+     - The same-session per-order read check (§6 gap 2) is done on **X-1's own REST-placed order, in X-1's session**. This follows the CP-2 F-3 decision of 2026-09-28, which admits an independently approved X-1 order as the R-1/R-2 target when it meets their conditions.
+     - During the row, the observer's own per-order reads exercise that path.
+     - After teardown, when every id is terminal, R-1 runs on X-1's order before the next ~17:00 ET reset. It runs exactly within the drill plan's R-1 table, including the `clOrdId` match that a platform-placed trade could not supply.
+     - **Consequence, stated plainly:** X-1 now takes exposure without any prior successful per-order REST read on this account. R-2's direct order and status reads failed with HTTP 400 on historical orders (#550).
+     - If the reads fail on X-1's own order, the observer's uncertain-protection path applies: check Tradovate web, tear down, **no PASS** (observer v2 §3.3, §4). The cost is one entry attempt with no X-1 result.
+     - The v2 re-review must confirm that this path covers a read failure on X-1's own order, including a failure from the first per-order read onward.
+     - This ruling grants no extra trade and no X-1 approval. Still owed: the Codex re-review of observer v2, operator acceptance of its limits, the offline tool and the request generator/checker, the operator's no-send rehearsal, fresh session checks, and X-1's own written CP-3 in the derivation-rule form.
    - If its per-order reads fail, X-1 stays held.
    - The observer review, the offline tool and the operator rehearsal remain owed.
 
@@ -179,7 +188,7 @@ At MYM's $0.50 per index point, the proposed 30-point distance represents $15 be
    - **No successful REST per-order read is established in retained evidence for this account.** Browser-rendered lifecycle displays exist, but they are not REST responses. The R-2 closure records the lifecycle, order and status reads by id all failing with HTTP 400 for historical orders, cause unconfirmed. Same-session behavior is unestablished.
    - Stop quantity and price are observable only in the lifecycle `version`. The status read carries neither, and a `partial` lifecycle reply means not observed.
    - No offline observer tool or tests exist yet.
-4. **Recommended sequencing (from gap 2):** run R-1 on this week's preservation trade, in its own session, before X-1. It checks same-session per-order reads with no added exposure. If those reads fail, X-1 can yield no PASS and should stay held. The 2026-09-29 evening window is therefore premature unless R-1 has completed first. *(2026-09-29: this week's trade cannot serve; see the open sequencing item in §2.)*
+4. **Recommended sequencing (from gap 2):** run R-1 on this week's preservation trade, in its own session, before X-1. It checks same-session per-order reads with no added exposure. If those reads fail, X-1 can yield no PASS and should stay held. The 2026-09-29 evening window is therefore premature unless R-1 has completed first. *(2026-09-29: superseded. Under the option (b) ruling in §2, the check is done on X-1's own order, in X-1's session.)*
 5. The exact account, contract, fresh quote, absolute stop level, fresh orderId and serialized request hash remain private session-time bindings. No executable request has been prepared from a stale quote.
 
 **Offline rehearsal checklist (not yet performed by the operator):** with no send action, locate Tradovate web's position and working-order views and the required flatten/cancel controls; walk through accepted entry, missing/rejected stop, unknown response, and already-flat cases. For each, identify the evidence to retain and the governing recovery branch in commissioning section 3.4. An unknown response never leads to a retry. A flat display never substitutes for terminal order evidence. Do not test these controls against an exposed account as part of preparation.
