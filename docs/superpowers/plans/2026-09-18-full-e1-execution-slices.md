@@ -1506,6 +1506,13 @@ That repeat is the one where harness decision 1 builds the SR-5 staged N2 captur
 
 The first diagnostic subset and everything after it wait for a valid Stage 1c.
 
+### Archive record for the S5 C3 evidence (2026-09-30)
+Private copies in `first-passage-archive`; none is acceptance evidence.
+- [#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846) (merged): the held-back Stage 1c files for dry runs `36634115845`, `36647169582` and measurement runs `36634465166`, `36647434808`, plus the #557 Linux JUnit files (`080b4f0a…`, `4b2cb9ae…`).
+- [#847](https://github.com/Joshua-Asante/first-passage-archive/pull/847): the executed harness delta `c7713e7..b5f53da` (README, `measure_part_a_max.py.txt`, the harness test) as a tar, SHA-256 `004f69a27009fb6b1b4406e1a5f122466b1433ad31d9f8339268bd70367d1693`. `b5f53da` is no longer reachable from `claude/s5-stage1c-harness`.
+- [#848](https://github.com/Joshua-Asante/first-passage-archive/pull/848): the diagnostic subset artifacts `36648289195` and `36652211355` (49 files); per-file hashes in [`subsets-archive.sha256`](../../notes/2026-09-29-s5-c3-record/subsets-archive.sha256) (manifest SHA-256 `1f2ab5bade742e065990c528538389cb1d100a37e540ee1285f513ac2c538e62`). `36660441353` is not archived pending the operator.
+Both #847 and #848 are open until the operator merges them.
+
 ### Harness fix `b5f53da` read; fresh Stage 1c approval, 2026-09-29
 
 **Harness fix.** `claude/s5-stage1c-harness` was rebuilt as **`b5f53da44ea9ce4e75c17501ec8051836f5b2edf`** = `c7713e7` + one harness commit. It supersedes `0fe3e25` (force-with-lease; no run was in flight).
