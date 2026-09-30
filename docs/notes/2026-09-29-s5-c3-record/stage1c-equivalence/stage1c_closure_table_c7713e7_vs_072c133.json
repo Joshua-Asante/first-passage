@@ -9,9 +9,10 @@
    "c1_rail.qualification.part_a",
    "c1_rail.qualification.production",
    "c1_rail.qualification.execution.plan",
-   "c1_rail.qualification.execution.runtime"
+   "c1_rail.qualification.execution.runtime",
+   "test_contract"
   ],
-  "module_count": 66,
+  "module_count": 68,
   "same_membership": true,
   "changed": [],
   "rows": [
@@ -468,6 +469,20 @@
     "path": "core/mc/simulation.py",
     "sha256_a": "e6539c2f4efd41b173ec30faa6025175bdacc982ad157cbaa8acf109a3cbda48",
     "sha256_b": "e6539c2f4efd41b173ec30faa6025175bdacc982ad157cbaa8acf109a3cbda48",
+    "bytes_identical": true
+   },
+   {
+    "module": "test_contract",
+    "path": "tests/ops/qualification/test_contract.py",
+    "sha256_a": "dfad10e135617416757da61c269f6ce99654c956c80081933f0c0b1c8d32e3b4",
+    "sha256_b": "dfad10e135617416757da61c269f6ce99654c956c80081933f0c0b1c8d32e3b4",
+    "bytes_identical": true
+   },
+   {
+    "module": "test_trust_domain",
+    "path": "tests/ops/qualification/test_trust_domain.py",
+    "sha256_a": "3aeeec317a41ae95fc6f3d0e372e19191dadb725f6fcab213429c086385cf65d",
+    "sha256_b": "3aeeec317a41ae95fc6f3d0e372e19191dadb725f6fcab213429c086385cf65d",
     "bytes_identical": true
    },
    {

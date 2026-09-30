@@ -1640,7 +1640,7 @@ Line 1's two failures are the known pre-existing base failures, `test_s2_evidenc
 Its harness files are byte-identical to the reviewed `b5f53da`: all 91 blobs, empty diff.
 
 **Stage 1c closure equivalence, `c7713e7` → `072c133`** (asked for by the coordinator seat). The full per-module table is in [`docs/notes/2026-09-29-s5-c3-record/stage1c-equivalence/`](../../notes/2026-09-29-s5-c3-record/stage1c-equivalence/README.md). It is computed from git blob bytes by the static import closure, using `runtime.source_closure`'s resolution rule.
-- **Measured closure.** Roots: `worker` (holding `run_part_a_body`), `compute`, `production_source`, `part_a`, `production`, `plan` and `runtime`. That is **66 modules**, including `replay`, `model` and `runner`, with the same membership at both commits. **All 66 are byte-identical** (SHA-256 at each commit is in the table).
+- **Measured closure.** Roots: `worker` (holding `run_part_a_body`), `compute`, `production_source`, `part_a`, `production`, `plan`, `runtime` and `test_contract`, whose `NOW` is imported inside `_repeat_mode_1c`. That is **68 modules**, including `replay`, `model`, `runner` and `test_trust_domain`, with the same membership at both commits. **All 68 are byte-identical** (SHA-256 at each commit is in the table). Codex's C3 re-review (P2) found that the first version of this table omitted `test_contract` from the measured roots and so counted 66. Codex recomputed the closure independently and got the same 68, all identical.
 - **Not in the closure:** `journal_snapshot` and `campaign_funding`, the two ops modules `d2e00a9` changed. So the route fix cannot change what Stage 1c measured.
 - **Staging closure** (outside every measured unit). Roots: the harness's fixtures, `composition_fixture`, `bundle_fixture`, `test_worker`, `test_contract` and `test_profile`. That is 63 modules, and one differs: `test_profile.py`, changed by `c016c60`. The changed definitions are test functions and `fixture_producer_module`. `document()`, the only name staging uses, is AST-identical at both commits.
 - **Result:** Stage 1c `36647434808` (VERIFIED, 1.5×M̂ = 235,739,136 B) covers the measured code at `072c133`. No re-measure decision is needed.
@@ -1649,7 +1649,16 @@ Its harness files are byte-identical to the reviewed `b5f53da`: all 91 blobs, em
 - **§7.7's closed-set claim** (the return's statement that every state set naming the Part A states was widened) did not hold. Three closed sets omitted the new terminal states.
 - **The review did not exercise the commit path.** The Windows suite and Codex's step-1 review had no real-store `PART_A` commit test, only constant assertions. Only Linux exposed the defect.
 
-`d2e00a9` adds that test. Codex is asked to re-review `c7713e7..072c133` and the harness `db748f8`. The step-1 acceptance stands with this addendum, subject to that re-review.
+`d2e00a9` adds that test.
+
+**Codex C3 re-review, 2026-09-30** (scope `c7713e7..072c133` and harness `db748f8`; a reviewer verdict, not C3 acceptance):
+- (A) State-set sweep: no further improper omissions. The remaining narrow sets enforce checkpoint prerequisites or phase-admission boundaries.
+- (B) Staged roles: the exact ten-role union is correct against the cited production paths, for both PASS and FAIL.
+- Harness: SR-5 generation runs outside the measured units. Repeat-local copying deliberately stays inside them. A missing cache refuses with I-6. The harness files match `b5f53da`. Four existing harness checks passed against the `db748f8` source under the validated operations Python 3.13.2.
+- One P2: the closure table omitted `test_contract` from the measured roots. It is corrected above (68 modules), and the conclusion stands.
+- Codex did not re-run the Linux integration or the full suites.
+
+The step-1 acceptance stands with this addendum.
 
 **Next under the C3 Linux grant:** the full S4-plus-Part-A selection, run `36673465130` on `072c133` (`-f mode=s5`, dispatched 05:27:08Z), with its evidence retained and read through `scripts/s2_run_evidence.py --expect-head 072c133 --expect-scope S5_PART_A`. Then Stage 2/PA-5.
 

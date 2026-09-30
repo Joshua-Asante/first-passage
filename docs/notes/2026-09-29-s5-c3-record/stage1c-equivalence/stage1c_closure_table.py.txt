@@ -11,7 +11,8 @@ BASES = ['ops', 'core', 'lab', 'governance', '', 'tests/ops/qualification', 'tes
 MEASURED_ROOTS = ['c1_rail.qualification.execution.worker', 'c1_rail.qualification.execution.compute',
                   'c1_rail.qualification.production_source', 'c1_rail.qualification.part_a',
                   'c1_rail.qualification.production', 'c1_rail.qualification.execution.plan',
-                  'c1_rail.qualification.execution.runtime']
+                  'c1_rail.qualification.execution.runtime',
+                  'test_contract']  # test_contract.NOW is imported inside _repeat_mode_1c (Codex C3 re-review P2)
 STAGING_ROOTS = ['composition_fixture', 'bundle_fixture', 'test_worker', 'test_contract', 'test_profile']
 WATCH = ['c1_rail.qualification.journal_snapshot', 'c1_rail.qualification.execution.campaign_funding']
 
