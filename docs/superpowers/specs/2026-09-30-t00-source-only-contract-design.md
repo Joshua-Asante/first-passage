@@ -7,7 +7,21 @@
 - the coordinator's sequencing in [card §8.1](../../briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md#81--coordinator-sequencing-after-the-checkpoint-1-return-2026-09-30).
 
 **Review path:** the coordinator reviews, then Codex, then Joshua accepts.
-**Code read at:** `claude/t00-p7-tasks-3-4` @ `e3d95b3`, whose production code equals the Task 2 head `672d49f`.
+**Code read at:** `claude/t00-p7-tasks-3-4` @ `e3d95b3` (revisions 1–2) and `7e0c49c` (revision 3); production code equals the Task 2 head `672d49f`.
+
+## Revision 3 — Codex review of `7e0c49c` (2026-09-30)
+
+Codex made seven findings, all accepted. This revision is an additive commit.
+
+| # | Finding | Change | Section |
+|---|---|---|---|
+| 1 | [P1] The source-only path cannot build or replay: `_qualification_domain` rejects the type, and `_check_path` calls `verify_for`, which refuses source-only | Integrity is split from authorization. `_resolve_domain` dispatches by exact type through preparation and loading. `replay` / `replay_bracket` / `proof` call `_verify_integrity`, never `verify_for`. A12 becomes an end-to-end positive with the guards intact. | §2.6, §5 A12 |
+| 2 | [P1] Source-only `ReplayResult`s can reach `runner.evaluate_replay` / the MC kernel unseen by A10b | The source-only API returns sealed `SourceOnlyReplay` wrappers that are not `ReplayResult`. Inner results are registered, and `evaluate_replay`, the first-party route to the MC kernel, refuses them. An import-separation test forbids the P7 driver from importing runner, MC or stage code. | §2.6c, §5 A10c/A10d |
+| 3 | [P1] The closure hashes files, not the code executed | Execution-origin validation (every closure module is first imported after the start check, with origin inside the code root) plus start/end source stability | §2.5a, §5 A16/A16c |
+| 4 | [P1] Re-verification is only documentary | Named gate `accept_p7_record` recomputes the current closure and refuses stale evidence | §2.5a, §5 A17 |
+| 5 | [P2] Revocation lacks an authoritative input and a receipt-lifecycle test | The pin carries `revoked_at`. Every use of an issued receipt re-checks the window, the pin membership and revocation. | §2.3, §2.5, §5 A6c/A12b |
+| 6 | [P2] "Unchanged parsers" do not enforce the new source constraints | A named source-only calendar validator enforces the fact role, interior-truncation refusal and stand-in refusal | §2.6a, §5 A13/A18 |
+| 7 | [P2] State-table refusals are untested | Explicit tests for rows 3, 7 and 18. Every negative asserts its own refusal code against a fixture whose unmodified twin passes. | §5 |
 
 ## Revision 2 — coordinator design review 2026-09-30
 
@@ -57,7 +71,7 @@ Canonical bytes are `contract.canonical_json_bytes(doc)`: sorted keys, `(",", ":
 | `populations` | `{FULL, H1, H2}` lists of session ids | the same ordered ceil-partition law as `contract.py`; must equal the population index's pools (checked at build) |
 | `initial_state` | the same six fields as the F1 contract | PRISTINE only, with the same rule as `contract.py:841` |
 | `path_start_date` | ISO weekday date; a PROPOSED path-label origin | must be a weekday and must equal the `source_startup_policy` value, so the operator signs it knowingly |
-| `source_trust` | `{source_key_ids, trusted_key_sha256}` | a sorted nonempty list of key IDs, each carrying the `source:` prefix, and exactly one fingerprint per enrolled ID |
+| `source_trust` | `{key_id: {sha256, revoked_at}}` | must equal the pinned `SOURCE_SIGNING_KEYS` exactly (revision 3), including `revoked_at` |
 | `refusals` | `["QUALIFICATION_STAGES","BUDGET","DECISION_RULES","SCREEN","MONTE_CARLO","SEAL","ADMISSION","DEPLOYMENT"]` | exact list; it is declarative, and enforcement is §2.6 |
 
 There is no `replay`, `result_plan`, `approval_policy`, `coverage`, `clocks`, `trust_domain_sha256` or `policy_sha256` field. A document carrying any F1 field is refused, and so is a document missing any field above.
@@ -77,7 +91,8 @@ There is no `replay`, `result_plan`, `approval_policy`, `coverage`, `clocks`, `t
 **Residual (accepted by the coordinator, 2026-09-30).** Code cannot stop the operator from enrolling the *same public key* under a non-`source:` ID in a later qualification domain. The ceremony uses a **dedicated operator key**, generated only for source contracts, and the P7 return records that key's fingerprint. With the pinned root, this residual is procedural and narrow.
 
 **Trust root (revision 2, BLOCKING 1).** The trust root is **pinned in tracked code**, never supplied by the caller.
-- `contract.py` gains the compiled constant `SOURCE_SIGNING_KEYS: Mapping[str, str]`, mapping a `source:` key ID to the SHA-256 of its 32-byte Ed25519 public key. It ships **empty**, and an empty pin refuses every source contract (`SOURCE_TRUST_ROOT_UNENROLLED`).
+- `contract.py` gains the compiled constant `SOURCE_SIGNING_KEYS: Mapping[str, SourceKeyPin]`, mapping a `source:` key ID to `SourceKeyPin(sha256, revoked_at)`. `sha256` is the SHA-256 of the 32-byte Ed25519 public key, and `revoked_at` is a UTC instant or `None`. It ships **empty**, and an empty pin refuses every source contract (`SOURCE_TRUST_ROOT_UNENROLLED`).
+- **Revocation (revision 3).** The authoritative revocation input is the pin's `revoked_at`, set only by an operator-merged PR. The validator builds each `TrustedApprovalKey` with `revoked_at` taken from the pin, never from the caller, so the reused verifier's revocation check reads the authoritative value.
 - Joshua's dedicated source key is enrolled by its own PR, which **only the operator merges**. That PR changes only this constant and its test expectation.
 - `validate_source_contract(contract_bytes, approval_bytes, public_keys, observed, *, now)` receives public key *bytes*. Each key it uses must hash to the pinned fingerprint for that ID.
 - `source_trust` in the contract must equal the pinned map exactly. A registry the caller passes is accepted only if it is byte-equal to the pinned set; any extra, missing or different key is refused.
@@ -85,7 +100,14 @@ There is no `replay`, `result_plan`, `approval_policy`, `coverage`, `clocks`, `t
 - Tests exercise signing by monkeypatching `SOURCE_SIGNING_KEYS` **inside the test process only**. The pinned constant in the tree never holds a test key; a test asserts that the shipped constant holds only operator-enrolled IDs.
 - **Falsifier (A6b):** a well-formed contract, signed by a freshly generated key and presented with a matching self-supplied registry and `source_trust`, is REFUSED.
 
-**Validity window.** `issued_at <= now < expires_at` is checked at build. Task 4 must run inside the window.
+**Validity window and receipt lifecycle (revision 3).** `issued_at <= now < expires_at` is checked at validation.
+
+Every later use of the receipt re-checks three conditions through `require_validated_source_contract(contract, now=...)`:
+- `now` is still before `expires_at`;
+- the signer's key ID is still in the *current* pin, with the same fingerprint;
+- that pin entry's `revoked_at` is `None` or later than `now`.
+
+"Every later use" means `build` and each `replay` / `replay_bracket` / `proof` call. A failure raises `SOURCE_APPROVAL_EXPIRED`, `SOURCE_KEY_REMOVED` or `SOURCE_KEY_REVOKED`. `now` comes from a single module seam, `production_source._now()`, which tests patch. Task 4 must run inside the window.
 
 ### 2.4 Role set (closed)
 
@@ -97,7 +119,7 @@ The set is exactly 25 roles. There are no optional roles, and any extra or missi
 | Admitted panels (4) | `panel_aegis_6j`, `panel_dj30_mym_p250`, `panel_vanguard_mgc`, `panel_orb_mnq_v7` | each digest equals the Step 3 admission's panel digest for that leg (the Aegis attested prefix is `8ae083d0…`); `decode_admitted_csv`; interval bounds |
 | Settings successor (1) | `effective_settings_successor` | SHA-256 equals `RUNTIME_EFFECTIVE_INPUTS_SHA256`; `_qualification_snapshots` checks (ORB `qty == 1`) |
 | Deadline facts (1) | `calendar_producer` | the Ruling-2 fact record (`t00-p7-calendar-deadline-facts/v1`); every calendar `fact` must bind this role and digest |
-| Source roles (8) | `source_startup_policy`, `source_calendar`, `source_calendar_review`, `population_index`, `population_index_review`, `schedule_execution_evidence`, `schedule_execution_evidence_review`, `cost_model` | the existing parsers in `production_source.py`, unchanged |
+| Source roles (8) | `source_startup_policy`, `source_calendar`, `source_calendar_review`, `population_index`, `population_index_review`, `schedule_execution_evidence`, `schedule_execution_evidence_review`, `cost_model` | the existing parsers, plus the source-only checks: `validate_source_only_calendar` (§2.6a) and v2 reviews (§2.6b) |
 
 The panels are named roles, not F1 roles. `_derive_retained_inputs` already finds panels by digest, which stays the check. The role names make the inventory readable, and the uniqueness check refuses a second artifact with the same digest.
 
@@ -130,6 +152,21 @@ P7 answers whether *specific code* is a faithful producer, so every P7 evidence 
 
 The private ports are not in the AST closure, because they load from retained bytes; they are bound by the contract's pins. Implementing this adds a `P7` role to `ENTRYPOINTS` or an equivalent pure function that reuses the same traversal. The rule is shared, not reimplemented.
 
+**Execution-origin validation (revision 3).** File hashes alone do not prove which code ran, so the P7 driver wraps the run in three checks.
+
+1. **Start check.** It runs before any `c1_rail` / `c1_signal_daemon` / `mc` import. It:
+   - records `code_head`;
+   - requires a clean tree for the closure paths;
+   - computes the closure table;
+   - requires that **no closure module is already in `sys.modules`**, because a preloaded module would run cached code (`P7_PRELOADED_MODULE`);
+   - runs with `sys.dont_write_bytecode = True` and requires Python's `-B` flag, so no bytecode cache is written.
+2. **Origin check.** After the run, it requires, for every closure module in `sys.modules`:
+   - `module.__spec__.origin` resolves to exactly the closure-table path under the code root, loaded by `SourceFileLoader` (`P7_ALTERNATE_ORIGIN`);
+   - every closure module actually imported is in the table, and no `c1_rail` / `c1_signal_daemon` / `mc` / `core` module outside the table was imported (`P7_UNRECORDED_MODULE`).
+3. **Stability check.** It recomputes the closure table and `code_head`, and requires both to be byte-equal to the start values (`P7_SOURCE_CHANGED_DURING_RUN`).
+
+Any failure writes no P7 record.
+
 **Each P7 record carries:**
 - `code_head` (the git HEAD of the executing checkout) and `code_tree_clean` (true is required);
 - `code_closure`, the table;
@@ -139,6 +176,11 @@ The Task 4 return names `code_closure_sha256`.
 
 **Scope of a P7 result.** P7 MET holds **only for that closure**. Any later change to a module inside it, including the rebase onto post-S5 `main` required by the merge hold, requires re-verification against the new closure. Reuse is not allowed. A change outside the closure does not void it.
 
+**Reuse gate (revision 3).** `p7_evidence.accept_p7_record(record_bytes, *, code_root) -> AcceptedP7Record` is the only way to consume a P7 record.
+- It recomputes the closure at `code_root` with the same traversal.
+- It refuses the record when the recomputed `code_closure_sha256` differs (`P7_EVIDENCE_STALE`), when the tree is dirty (`P7_TREE_DIRTY`), or when the record's contract or approval no longer passes `require_validated_source_contract`.
+- The coordinator's P7 acceptance and every later consumer of a P7 verdict (the T00 step-1 verdict update, the post-S5 rebase re-check) call this gate. A test fixes the rule that no other function reads P7 record bytes: an AST scan for `p7_record` readers outside `p7_evidence.py`.
+
 ### 2.6 What `ProductionSource.build` does and refuses
 
 **Dispatch.** `build(contract, *, artifact_root)` dispatches on the exact type of `contract`:
@@ -146,15 +188,56 @@ The Task 4 return names `code_closure_sha256`.
 - `ValidatedSourceContract`: the new path, below.
 - Anything else: refused.
 
-**New path.** Once the source domain is resolved (`book_adapters._source_domain(contract)`, a sibling of `_qualification_domain` that requires the source receipt), it runs the **same** steps as today, `_prepare_domain_inputs` → `_build_from_prepared`, with the same parsers and checks: reviews, calendar, population index, `validate_calendar` / `validate_provider_generation` / `validate_coverage`, `UNKNOWN_SOURCE_DATE` refusal, adapter-capital equality, `build_panel`, schedule evidence and costs. The only differences are:
-- the domain object (`SourceTrustDomain`) and the loader entry (`_load_domain_adapters` accepts either validated domain, dispatching on its type);
-- the issued source records `evidence_class = "T00_P7_SOURCE_ONLY"`.
+**New path (revision 3: integrity separated from authorization).** Today every internal step calls `_qualification_domain(contract)`: `_derive_retained_inputs`, `_build_from_prepared`, `_load_domain_adapters`, `verify_for` and, through `_check_path`, `replay`. Each of those rejects the new type. The design therefore replaces each internal call with **`book_adapters._resolve_domain(contract)`**, which dispatches on the exact receipt type:
+- `ValidatedFrozenContract` goes to `_qualification_domain`, unchanged;
+- `ValidatedSourceContract` goes to `_source_domain`, which calls `require_validated_source_contract(contract, now=_now())`;
+- anything else is refused.
+
+The callers switched are exactly:
+- `production_source`: `_derive_retained_inputs`, `_build_from_prepared`, `_engine` (via `_load_domain_adapters`) and the new `_verify_integrity`;
+- `book_adapters`: `_load_domain_adapters`.
+
+`prepare_production_inputs`, `load_qualification_adapters` and `_build_composition` keep their current exact-domain checks, so they stay qualification-only or TEST_ONLY-only.
+
+The build then runs the **same** checks as today: reviews, calendar, population index, `validate_calendar` / `validate_provider_generation` / `validate_coverage`, `UNKNOWN_SOURCE_DATE` refusal, adapter-capital equality, `build_panel`, schedule evidence and costs. It adds the source-only checks of §2.6a–§2.6b, and the issued source records `evidence_class = "T00_P7_SOURCE_ONLY"`.
+
+**Integrity versus authorization.** The current `verify_for` body is split in two.
+- **`_verify_integrity()`** checks:
+  - the issuance registry and the execution snapshot;
+  - `_resolve_domain(self.contract) is self._domain`;
+  - the retained-byte re-hash (`_qualification_snapshots`);
+  - for source-only, the receipt lifecycle of §2.3.
+  It authorizes nothing.
+- **`verify_for(contract)`** is `_verify_integrity()` plus qualification authorization. It requires `type(self.contract) is ValidatedFrozenContract` and `self.contract is contract`, and otherwise raises `SOURCE_ONLY_NOT_QUALIFICATION`.
+- `_check_path`, and therefore `replay`, `replay_bracket` and `proof`, call `_verify_integrity()` only. Qualification consumers keep calling `verify_for`, which refuses a source-only source.
 
 **Refused for a source-only source.**
 - `ProductionSource.verify_for(contract)` raises `SOURCE_ONLY_NOT_QUALIFICATION` when `self.contract` is a `ValidatedSourceContract`. That covers every current qualification consumer: `production.py` executor binding, `execution/compute.py` and `execution/evidence.py`. None of them runs.
-- The source-only path calls no stage, Part A, budget, adjudication, seal or screen code. `replay`, `replay_bracket` and `proof` stay available, because each checks the path against its own issued sessions.
+- The source-only path calls no stage, Part A, budget, adjudication, seal or screen code. `replay`, `replay_bracket` and `proof` stay available through `_verify_integrity`, and each checks the path against its own issued sessions. Their outputs are sealed (§2.6c).
 - `_build_composition` and the TEST_ONLY domain are untouched, and a `TEST_ONLY` key cannot sign a source contract.
 - **Structural guard (A10b).** Refusal does not depend on `verify_for` alone. A test scans every module under `ops/` by AST for references to `ProductionSource` or a `.contract` attribute read on one. Outside `production_source.py`, each reference must be either on an explicit source-only allowlist (the Task 4 driver) or dominated by a `verify_for(...)` call in the same function before use. A new consumer that skips `verify_for` fails the test.
+
+### 2.6c Source-only results cannot reach qualification or MC consumers (revision 3)
+
+Refusing the source object does not stop its *results* from travelling: `runner.evaluate_replay` accepts any `ReplayResult` and calls the MC kernel. The boundary is therefore on the results as well.
+
+1. **Sealed return types.** On a source-only source:
+   - `replay` returns `SourceOnlyReplay`;
+   - `replay_bracket` returns `SourceOnlyBracket(r1: SourceOnlyReplay, r2: SourceOnlyReplay)`;
+   - `proof` returns its edges and joins wrapped in the same seal.
+
+   Neither type is a `ReplayResult` or a subclass. Each exposes for the hand recompute only primitive per-session tuples: source date, occurrence, start and end edges, daily P&L, `intraday_low`, and an events digest. It carries `evidence_class`, the contract SHA-256 and the approval SHA-256. The F1 path still returns `ReplayResult` / `BracketReplayResult`, unchanged.
+2. **Inner-result registry.** The `ReplayResult` objects created inside a source-only run are registered by identity in `production_source._SOURCE_ONLY_RESULTS`, a weak registry.
+   - `runner.evaluate_replay` refuses any registered result (`SOURCE_ONLY_RESULT_NOT_EVALUABLE`).
+   - `simulate_path` callers inside `runner` and `part_a` are reached only through `evaluate_replay`.
+   - This catches a leaked inner result, including one reached through a wrapper.
+3. **Import separation (A10d).** The P7 driver module, and any module on the A10b source-only allowlist, must not import, directly or transitively through first-party code:
+   - `c1_rail.qualification.runner`, `part_a`, `bracket` (the `run_bracket` MC path), `benchmark*`, `production`, `orchestration`, `result_adjudication`, `seal` or `execution.*`;
+   - `mc.simulation`.
+
+   An AST test enforces this. A deliberate reconstruction of a `ReplayResult` from the primitive projection would therefore have to live in a module that imports both sides, and the test refuses that module.
+
+**Residual.** Code outside `ops/` (for example a notebook) can rebuild a `ReplayResult` from printed primitives. P7 evidence is private and is never emitted in a `ReplayResult`-shaped format, and the public return carries hashes and labels only.
 
 **Invariants kept.**
 - `candidate_book_protection_policy()` stays at 1%/0.40, and `core/dd_protection.py` is not touched.
@@ -168,12 +251,19 @@ The Task 4 return names `code_closure_sha256`.
 **Change.**
 - Add `SourceDayStatus.SOURCE_TRUNCATED = 'source_truncated'` in `clock.py`.
 - Add `'source_truncated'` to the exclusion reasons `parse_population_index` allows.
-- `ProductionSource._build_from_prepared` already relabels denied dates with their typed status, so no further change is needed there.
+- `_build_from_prepared` already relabels denied dates with their typed status. That relabel is **not** a guard. The guards are in the new validator below.
 
 **Rules.**
 - A `source_truncated` row must carry an empty `venue_deadlines` and a reason naming the truncated slots.
 - It may appear only at `coverage_start` or `coverage_end`. An interior truncation is refused as `UNKNOWN_SOURCE_DATE`.
 - At the source-only contract build, a `policy_denied` row whose reason begins `panel truncated` is refused, which retires the stand-in. The source pack is regenerated with the typed status before signing.
+
+**Where these rules are enforced (revision 3).** A new function, `production_source.validate_source_only_calendar(raw, *, contract)`, runs in `_build_from_prepared` on the source-only path **before** `parse_source_calendar`. It re-reads the calendar JSON and refuses:
+- any `facts[]` entry or `venue_deadlines[*].fact` whose `role` is not exactly `calendar_producer`, or whose digest differs from the contract's `calendar_producer` artifact (`CALENDAR_FACT_ROLE`). This closes the gap that `_fact` accepts any retained role with a matching digest;
+- a `source_truncated` row with non-empty `venue_deadlines`, or at a date other than `coverage_start` / `coverage_end` (`SOURCE_TRUNCATION_INTERIOR`);
+- a `policy_denied` row whose reason begins `panel truncated` (`TRUNCATION_STAND_IN_RETIRED`).
+
+The F1 path does not call it, so F1 behavior is unchanged.
 
 ### 2.6b Review companions are reviewer-authored
 
@@ -225,15 +315,18 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 | 8 | A `ValidatedSourceContract` is passed to a qualification consumer (`ProductionExecutor`, compute, evidence) | `verify_for` raises `SOURCE_ONLY_NOT_QUALIFICATION` |
 | 9 | A receipt is mutated after issuance, or a lookalike is constructed | `require_validated_source_contract` refuses it |
 | 10 | Source roles are missing, a review mismatches, a date is UNKNOWN, or coverage/population disagree | The existing `ProductionSourceNeedsContext` / `ValueError`, unchanged |
-| 11 | `build` succeeds | The issued `ProductionSource` has `evidence_class == "T00_P7_SOURCE_ONLY"`; `replay_bracket` returns `BracketReplayResult(r1, r2)` from two fresh engines |
-| 12 | `now` is outside the approval window at build | Refused; re-signing is an operator act |
+| 11 | `build` succeeds | The issued `ProductionSource` has `evidence_class == "T00_P7_SOURCE_ONLY"`; `replay_bracket` passes `_verify_integrity` and returns `SourceOnlyBracket(r1, r2)` from two fresh engines |
+| 12 | `now` is outside the approval window at build, **or at any later replay call after a valid build**, or the key was removed from or revoked in the pin after issuance | Refused (`SOURCE_APPROVAL_EXPIRED` / `SOURCE_KEY_REMOVED` / `SOURCE_KEY_REVOKED`); re-signing is an operator act |
 | 13 | A calendar row is `source_truncated` at an interval end | Excluded with a typed reason; FULL omits it |
 | 14 | A `source_truncated` row falls in the interior, or a `panel truncated` `policy_denied` stand-in appears on the source-only path | Refused |
 | 15 | A review companion is a template, or v1 on the source-only path, or has reviewer equal to producer | Refused (`REVIEW_NOT_INDEPENDENT` for self-review) |
 | 16 | `path_start_date` in the contract differs from the startup policy, or is not a weekday | Refused |
 | 17 | The signer's key is not in the pinned `SOURCE_SIGNING_KEYS`, or the caller's registry differs from the pin, or the pin is empty | Refused (`SOURCE_TRUST_ROOT_UNENROLLED` / `SOURCE_TRUST_ROOT_MISMATCH`) |
 | 18 | P7 evidence is emitted from a dirty tree, or without a closure digest | Refused; no P7 record is written |
-| 19 | A module inside the recorded closure changes after P7 MET | The P7 result is void for the new code; re-verify |
+| 19 | A module inside the recorded closure changes after P7 MET, and the old record is presented | `accept_p7_record` refuses (`P7_EVIDENCE_STALE`) |
+| 20 | A source-only inner `ReplayResult` or its wrapper is passed to `evaluate_replay` | Refused (`SOURCE_ONLY_RESULT_NOT_EVALUABLE`, or a type refusal for the wrapper) |
+| 21 | A closure module was preloaded, loaded from another origin, left unrecorded, or changed during the run | No record (`P7_PRELOADED_MODULE` / `P7_ALTERNATE_ORIGIN` / `P7_UNRECORDED_MODULE` / `P7_SOURCE_CHANGED_DURING_RUN`) |
+| 22 | A calendar fact names a role other than `calendar_producer`, a truncation is interior, or the stand-in appears | Refused (`CALENDAR_FACT_ROLE` / `SOURCE_TRUNCATION_INTERIOR` / `TRUNCATION_STAND_IN_RETIRED`) |
 
 ## 4. Files it would touch (admitted only by a later amendment)
 
@@ -241,8 +334,10 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 |---|---|
 | `ops/c1_rail/qualification/contract.py` | Adds `SOURCE_SIGNING_KEYS` (the pinned root, shipped empty; enrolled only by an operator-merged PR), `SOURCE_CONTRACT_SCHEMA`, `SOURCE_SCOPE`, `ValidatedSourceContract`, `validate_source_contract`, `require_validated_source_contract` and a separate issuance registry. `validate_frozen_contract` gains the `source:` key-ID refusal. No existing F1 rule changes. |
 | `ops/c1_rail/qualification/trust_domain.py` | Adds `SourceTrustDomain` (compiled from constants, with no signed domain bytes). `validate_qualification_trust_domain` refuses `source:` key IDs. |
-| `ops/c1_signal_daemon/book_adapters.py` | Adds `_source_domain(contract)`. `_load_domain_adapters` accepts either validated domain type. Historical and qualification loaders are unchanged. |
-| `ops/c1_rail/qualification/production_source.py` | `build` dispatches on type, the issued source records `evidence_class`, and `verify_for` refuses source-only for qualification consumers. `parse_population_index` allows `source_truncated`. `_review` accepts v2 on the source-only path (§2.6b). The other parsers are unchanged. |
+| `ops/c1_signal_daemon/book_adapters.py` | Adds `_source_domain(contract)` and `_resolve_domain(contract)`. `_load_domain_adapters` resolves through `_resolve_domain`. `load_qualification_adapters`, `_load_composition_adapters` and the historical loader are unchanged. |
+| `ops/c1_rail/qualification/runner.py` | `evaluate_replay` refuses registered source-only results (§2.6c). This is its only change. |
+| `ops/c1_rail/qualification/p7_evidence.py` (new) | The P7 record writer with its start/origin/stability checks, and `accept_p7_record` (§2.5a) |
+| `ops/c1_rail/qualification/production_source.py` | `_resolve_domain` callers, `_verify_integrity` / `verify_for` split, sealed source-only results and the inner-result registry, `validate_source_only_calendar`, `_now()` seam. `build` dispatches on type, the issued source records `evidence_class`, and `verify_for` refuses source-only for qualification consumers. `parse_population_index` allows `source_truncated`. `_review` accepts v2 on the source-only path (§2.6b). The other parsers are unchanged. |
 | `ops/c1_rail/qualification/clock.py` | Adds `SourceDayStatus.SOURCE_TRUNCATED` (§2.6a) |
 | `ops/c1_rail/qualification/execution/runtime.py` | Adds a `P7` entrypoint to `ENTRYPOINTS`, or exposes the traversal as a pure function the P7 driver reuses (§2.5a); no change to existing roles |
 | `tests/ops/qualification/test_source_consumers.py` (new) | A10b AST consumer scan |
@@ -253,6 +348,8 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 `clock.py` changes only by the new enum member. No change to `replay.py`, `model.py`, `book_policy.py`, `core/dd_protection.py`, runner, screen, seal or execution code.
 
 ## 5. Acceptance tests and falsifiers
+
+**Attribution rule (revision 3).** Every negative test asserts its **own** refusal code or message, and each is paired with a positive twin: the same fixture, unmodified, which passes the same call. A refusal raised earlier, by an unrelated check, fails the test. Negatives reach their intended boundary by mutating only the one input under test.
 
 Tests use TEST_ONLY-generated Ed25519 keys **only inside the test process**, to exercise the verifier. The production signature is the operator's act, and no test key is ever written to the artifact root.
 
@@ -272,10 +369,20 @@ Tests use TEST_ONLY-generated Ed25519 keys **only inside the test process**, to 
 | A6b | `test_self_signed_source_contract_with_matching_self_registry_is_refused` | A freshly generated key, a matching self-supplied registry and `source_trust`, and a valid signature are REFUSED against the pinned root; the shipped pin holds no test key | Any self-enrolled key validates |
 | A10b | `test_every_production_source_consumer_is_allowlisted_or_verified` | The AST scan of `ops/` finds each `ProductionSource` / `.contract` use outside `production_source.py` either on the allowlist or preceded by `verify_for` in the same function; a planted unguarded consumer in a temp module fails the scan | An unguarded consumer passes |
 | A16 | `test_p7_record_binds_head_and_code_closure` | The record holds `code_head`, `code_tree_clean: true`, the closure table and its digest, computed by the shared `source_closure` traversal; editing any closure module changes the digest | A record omits or mis-binds the closure |
-| A13 | `test_source_truncated_disposition_only_at_interval_ends` | An end-of-interval truncated date is excluded as `source_truncated`; an interior one and a `policy_denied` truncation stand-in are refused | The stand-in or an interior truncation builds |
+| A13 | `test_source_truncated_disposition_only_at_interval_ends` | An end-of-interval truncated date is excluded as `source_truncated`; an interior one (`SOURCE_TRUNCATION_INTERIOR`) and a `policy_denied` truncation stand-in (`TRUNCATION_STAND_IN_RETIRED`) are refused by `validate_source_only_calendar` | The stand-in or an interior truncation builds |
 | A14 | `test_review_companion_v2_reviewer_authored` | A v2 companion with an independent reviewer passes; a template, a v1 companion on the source path, or reviewer == producer, or a companion missing `reviewer` / `reviewed_at` / `notes` / `artifact_sha256` are refused | Self-certified or template reviews bind |
 | A15 | `test_path_start_date_signed_and_consistent` | A mismatch with the startup policy, or a weekend date, is refused | An unsigned or inconsistent origin passes |
-| A12 | `test_source_only_replay_bracket_fresh_engines_and_label` | `replay_bracket` returns two results from separate engines; the issued source's `evidence_class == "T00_P7_SOURCE_ONLY"`; the policy is 1%/0.40 | Shared state, a missing label or a changed policy |
+| A3b | `test_observed_digest_mismatch_refused_at_digest_check` | With the correct role set, the observed digest of one retained artifact is changed; the refusal is the observed-digest error (row 3), and the twin passes | The mismatch validates, or fails elsewhere |
+| A6c | `test_revoked_or_removed_pin_key_refused` | A pin entry with `revoked_at <= now` refuses at validation (`SOURCE_KEY_REVOKED`); removing the key from the pin after issuance refuses the next `replay` (`SOURCE_KEY_REMOVED`) | A revoked or removed key is honored |
+| A7b | `test_real_source_approval_refused_by_both_qualification_validators` | An otherwise-valid F1 contract and trust-domain fixture (the existing test fixtures) is re-signed with a genuine `APPROVE_T00_SOURCE_CONTRACT` source approval; `validate_frozen_contract` and `validate_qualification_trust_domain` each refuse with the scope mismatch or `SOURCE_KEY_IN_QUALIFICATION_DOMAIN`, and the twin passes | Either validator accepts, or refuses before reaching the approval |
+| A10c | `test_source_only_results_refused_by_evaluate_replay` | `evaluate_replay` refuses the `SourceOnlyReplay` wrapper and, separately, the leaked inner `ReplayResult` pulled from a source-only run (`SOURCE_ONLY_RESULT_NOT_EVALUABLE`); an F1-path result still evaluates | The MC kernel runs on source-only output |
+| A10d | `test_p7_driver_import_separation` | The AST scan finds no import from the P7 driver or allowlisted modules to runner / part_a / bracket / benchmark / production / orchestration / result_adjudication / seal / execution / mc.simulation; a planted violating module fails | A violating import passes |
+| A12b | `test_receipt_expires_between_build_and_replay` | Validation and build succeed inside the window; with `_now()` advanced past `expires_at`, the next `replay_bracket` is refused (`SOURCE_APPROVAL_EXPIRED`) | A replay runs on an expired receipt |
+| A16b | `test_dirty_tree_writes_no_p7_record` | A dirty closure path at start refuses with `P7_TREE_DIRTY`, and no record file exists afterwards | A record is written from a dirty tree |
+| A16c | `test_execution_origin_negatives` | Each of four cases refuses with its own code and writes no record: a closure module preloaded before the start check; a closure module imported from a copy outside the code root; an unrecorded first-party module imported mid-run; a closure file edited between start and end | Any case yields a record |
+| A17 | `test_stale_p7_record_refused_after_closure_change` | Produce a MET record at closure A; change one included module to B (a temp git commit in a fixture repo); `accept_p7_record` refuses A's record (`P7_EVIDENCE_STALE`); a record produced at B is accepted | Stale evidence is accepted |
+| A18 | `test_calendar_fact_must_bind_calendar_producer` | A calendar whose fact names another retained role with that role's correct digest is refused (`CALENDAR_FACT_ROLE`), although `_fact` alone would accept it | A non-producer fact binds |
+| A12 | `test_source_only_replay_bracket_fresh_engines_and_label` | **End to end, with the guards intact.** A synthetic source-only contract, signed in-process with only the pinned root monkeypatched, validates. `build` succeeds, and `replay_bracket` on a path with a consumed intrabar split passes `_verify_integrity` and returns a `SourceOnlyBracket` from two separate engines. The label is `T00_P7_SOURCE_ONLY`, the policy is 1%/0.40, and `verify_for` on the same source still raises `SOURCE_ONLY_NOT_QUALIFICATION`. No guard function is patched. | Shared state, a missing label, a changed policy, a patched guard, or a build/replay failure |
 
 **Regression.** The Task 2 acceptance nodes named on the card, the full `tests/ops/qualification` suite, `tests/ops/test_book_adapters_parity.py` and `fp.ps1 check` all stay green.
 
