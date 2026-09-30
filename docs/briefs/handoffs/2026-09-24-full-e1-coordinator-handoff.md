@@ -87,6 +87,8 @@
 - Rail: disarmed, `emit_enabled=false`, no deployed book, production feed deferred (O-4). Nothing above changes that.
 
 ## 3. Conditional merge order (operator-approved)
+*Refreshed 2026-09-29: this is the 2026-09-24 order and is historical. #486 merged on 2026-09-25 at `1f564ab`, so item 4 is complete, not HOLD. Read the current merge state of #482, #488 and #490 on GitHub before acting on items 1–3.*
+
 1. **#490**: merge after this correction, preserving #483's complete ruling entry followed by this handoff entry.
 2. **#482**: resolve the #480 conflict append-only, verify the refreshed head, then merge.
 3. **#488**: only after #482; retarget to `main`, reconcile its expanded scope and stale description, rerun checks, and keep the incident-ADR amendment **Proposed—not accepted**.
@@ -107,7 +109,7 @@
 Never pass the main checkout (`C:\Users\joshu\multi_firm_operations`, which has a `.env`) as a `glm_agent` workdir. Stale remote branches from merged PRs (`claude/t00-*`, `claude/t10-phase1-merge-*`, `claude/t10-step4-*`, `claude/s4-g5-settlement-wait`, `claude/t05-settlement-wait`, `claude/t08-step1-broker-gono-go-*`) can be pruned under `repo-hygiene` (report first).
 
 ## 5. Open operator items (one batch)
-1. Merge per §3.
+1. ~~Merge per §3.~~ Historical (2026-09-24); superseded 2026-09-29 by the actual merge state on GitHub. #486 is merged.
 2. **Closed 2026-09-24:** T00 recovery accepted for one override map; candidate 1 not reopened and further recovery parked. Candidate 3′ plus P7 inputs is the forward route; see [recovery ruling](2026-09-24-seven-strategy-evidence-recovery.md#78-operator-acceptance-and-recovery-disposition-2026-09-24) and [T00 continuation](2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24).
 3. T08: send the vendor question. Decide whether the bounded-exposure amendment proceeds to an addendum draft.
 4. T07: authorize (or decline) the account-side reads the S2 facts need.
