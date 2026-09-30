@@ -1,0 +1,180 @@
+{
+  "schema": "s5-part-a-stage2-service-consistency/v1",
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "decision_bearing": false,
+  "stage": "2",
+  "rule": "r2 \u00a712.5 and \u00a79 PA-5 (threshold 1.25), CPU-only for TEST_ONLY by operator ruling 2026-09-30 (2)",
+  "source_run": {
+    "run_id": "36766144433",
+    "head": "606e6e083c3264e8b2ff670889dfb5234e093e82",
+    "branch": "claude/s5-part-a",
+    "event": "workflow_dispatch",
+    "scope": "S5_PART_A",
+    "record_id": "20d0a964ea1645d1aa4c4b8c1b2c5c85",
+    "s2_run_evidence": {
+      "command": "python scripts/s2_run_evidence.py 36766144433 --expect-head 606e6e0 --expect-scope S5_PART_A",
+      "tool_revision": "606e6e083c3264e8b2ff670889dfb5234e093e82",
+      "launcher": "fp.ps1 python (ops-env CPython 3.13.2)",
+      "ok": true,
+      "refusals": [],
+      "status": "completed",
+      "exit_code": 0,
+      "verification_exit_code": 0,
+      "source_stable": true,
+      "capture_complete": true,
+      "cleanup_ok": true,
+      "tested_commit_kind": "head",
+      "invariants_passed": true,
+      "required_nodes": 27,
+      "junit": {
+        "tests": 27,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "part_a_observation": {
+      "export_schema": "qualification_part_a_observations/v1",
+      "attempt_id": "linux-cca27e50c3694f6a903dfe1ad359c702",
+      "producer": "tests/integration/qualification_boundary/test_campaign_part_a_linux.py::test_s5_genuine_part_a_without_expansion_reaches_full_pass_ready (SR-8)",
+      "campaign_state": "FULL_PASS_READY",
+      "campaign_validity": "VALID",
+      "expansion_required": false,
+      "initial_panels": 2,
+      "final_panels": 2
+    }
+  },
+  "service_cpu": {
+    "value_s": 9.896463,
+    "cpu_ns": 9896463000,
+    "payload_cpu_ns": null,
+    "guardian_cpu_ns": null,
+    "basis": "whole settled charge: the PART_A work's settled observation cpu_ns (payload and guardian together), because SR-8 exports the payload/guardian split as null (C3 step-1 ruling B6)",
+    "excludes": "the fixed orchestration charge O (orchestration_charge_cpu_ns 20000000000), which the store adds to form charge_cpu_ns 29896463000; PA-1 adds O separately",
+    "source": "boundary/part_a_observations.json field cpu_ns"
+  },
+  "harness_cpu": {
+    "value_s": 7.329488,
+    "definition": "Stage 1c prescribed-arm maximum workload CPU over the timed repeats of both jobs, cold included: summary.arms.prescribed.cpu_input_s.all.max, each repeat's max(C_w, CPUUsageNSec - setup_excluded) (r2 \u00a76.1), derivation and real artifacts included",
+    "source": "docs/notes/2026-09-27-s5-part-a-measurement/stage1c/36647434808-combined.json",
+    "repeat": {
+      "job": "b",
+      "arm": "prescribed",
+      "repeat": 1,
+      "cold": true,
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "record": "docs/notes/2026-09-27-s5-part-a-measurement/stage1c/36647434808-b-attempt1/record.json"
+    }
+  },
+  "pa5": {
+    "k": 1.350225691071,
+    "k_exact": "9896463/7329488",
+    "threshold": 1.25,
+    "verdict": "RE-APPLY",
+    "reapplication": {
+      "adopted": false,
+      "note": "computed, not adopted: any new value is a new profile revision and returns to the operator",
+      "inputs": {
+        "C_hat_1c_s": 10.647178,
+        "W_hat_1c_s": 10.789614095,
+        "P_hat_1c_s": 7.971461731,
+        "C_hat_1c_times_k_s": 14.376093273,
+        "W_hat_1c_times_k_s": 14.568414148,
+        "P_hat_not_scaled": "PA-5 scales C_hat_1c and W_hat_1c only"
+      },
+      "parameters": {
+        "m_c": 2.0,
+        "m_w": 3.0,
+        "L_s": 30,
+        "O_s": 20,
+        "cpu_floor_s": 120,
+        "wall_floor_s": 300,
+        "rounding": "up to whole 10 s"
+      },
+      "unscaled": {
+        "B_s": 21.294356,
+        "cpu_s": 120,
+        "wall_s": 300,
+        "m_w_ge_m_c_over_m_c_minus_1": true
+      },
+      "scaled": {
+        "B_s": 28.752186546,
+        "cpu_s": 120,
+        "wall_s": 300,
+        "m_w_ge_m_c_over_m_c_minus_1": true
+      },
+      "ceilings_changed": false,
+      "shared_ceilings_hold_while": {
+        "k_cpu_le": 4.696080032,
+        "k_wall_le": 6.487720449
+      }
+    },
+    "sensitivity": {
+      "charge_including_O_k": 4.078929251,
+      "charge_including_O_scaled": {
+        "B_s": 86.858171575,
+        "cpu_s": 120,
+        "wall_s": 300,
+        "m_w_ge_m_c_over_m_c_minus_1": true
+      },
+      "host": "the harness maximum ran on AMD EPYC 7763 64-Core Processor (job b); run 36766144433 ran on AMD EPYC 9V74 80-Core (its kernel.log). Stage 1b measured the 9V74 about 1.5x faster than the 7763 on the same workload, so a same-host k would be larger than this k, not smaller"
+    }
+  },
+  "pa2b": {
+    "basis": "CP-1a decision (1)(b)(i): check PA-2b on the service's PART_A probe_seconds and predicted_seconds; the 1.5 x P_hat term becomes final only when this check is recorded",
+    "probe_seconds": 3.987613859,
+    "predicted_seconds": 27.081855051,
+    "engine_predicate": "part_a.py:185-186 refuses when predicted_seconds > budget_seconds, the guard's remaining wall at the request (compute.py:177)",
+    "budget_seconds_lower_bound": 265.122105653,
+    "budget_seconds_basis": "PART_A wall limit 300.0 s minus the work's reservation-to-CAPTURED boottime 34.877894347 s; budget_seconds itself is not exported",
+    "check": "1.5 x predicted_seconds <= budget_seconds lower bound",
+    "lhs_s": 40.622782576,
+    "rhs_s": 265.122105653,
+    "holds": true,
+    "throttled_prediction_note": "informational: predicted_seconds is a wall figure under the payload quota (cpu - O) / remaining wall, nominally 100.0 / 300.0; the Stage 1c prescribed maximum 7.817348009 s times 3.0 is 23.452044027 s against the service's 27.081855051 s"
+  },
+  "memory": {
+    "label": "upper_bound_only_not_attribution",
+    "memory_peak_bytes": 256000000,
+    "maximum_memory_bytes": 256000000,
+    "binding": "/v7 with the P4 tuple extended: budget.maximum_memory_bytes 256000000 in the attempt's budget snapshot, the PART_A phase memory_bytes 256000000, and the executed bind_budget (docs/notes/2026-09-29-s5-c3-record/)",
+    "clipped": true,
+    "oom_events": 0,
+    "reading": "the slice-wide, clipped, never-reset memory.peak (campaign_supervisor.py:974): an upper bound on the shared footprint only (operator ruling 2026-09-30 (2)); not a Part A attribution and not a PA-5 input",
+    "pa3b": "the shared footprint is bounded above by 256000000 = the binding value; m_m headroom cannot be shown from a clipped reading. The per-phase field is the CP-6 inventory item of ruling (2)"
+  },
+  "remeasurement_triggers": {
+    "5_cpu": {
+      "value_s": 9.896463,
+      "threshold_s": 17.0354848,
+      "basis": "0.8 x B from Stage 1c",
+      "engaged": false
+    },
+    "5_wall": {
+      "value_s": 34.877894347,
+      "threshold_s": 240.0,
+      "basis": "reservation-to-CAPTURED boottime against 0.8 x the 300 s ceiling",
+      "engaged": false
+    },
+    "5_overrun_or_oom": {
+      "work_state": "COMPLETED",
+      "oom_events": 0,
+      "engaged": false
+    },
+    "6_k_above_1_25": {
+      "engaged": true
+    }
+  },
+  "source_sha256": {
+    "boundary/part_a_observations.json": "d4b682ce2eb0c2215372e154750fcb9b87c3712d8712744c9442c8c41a5c5991",
+    "20d0a964ea1645d1aa4c4b8c1b2c5c85/record.json": "b4ea25cce385539a52b3995fcca3cb933acda7c228a735e4b1d293c9203cad5d",
+    "20d0a964ea1645d1aa4c4b8c1b2c5c85/invariants.json": "9710c06eb24257d23b50d6b61510a2c52bebfe575b293ac52a497b5e27b9d080",
+    "20d0a964ea1645d1aa4c4b8c1b2c5c85/junit.xml": "e408ad06d57c363b64b97376699afee33bc4ec3f664e28fd62c1b7e8b8d85aef",
+    "boundary/linux-cca27e50c3694f6a903dfe1ad359c702-n1-budget.json": "82081330801347c4901cb79098bd638f4fe912edbfc85c009c1c5d8b6f9dc854",
+    "s2_run_evidence.stdout.json": "85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d",
+    "stage1c/36647434808-combined.json": "024cdcdd7e3c499af49f1358f7a4a6048641badc9b0679a99999f4bb8ba1f87e",
+    "stage1c/36647434808-b-attempt1/record.json": "45d84cd5b3af43ffcc0a33a0efd869fb0fb37f822de936937909024a1ad153e3"
+  },
+  "private_evidence": "the run artifact and the reader's output stay under local_artifacts/s5-c3-evidence/; this record carries hashes, counts and labels only",
+  "not_granted": "C3 acceptance, S5 acceptance, adoption of any re-applied value, any production value"
+}
