@@ -1639,10 +1639,11 @@ Line 1's two failures are the known pre-existing base failures, `test_s2_evidenc
 
 Its harness files are byte-identical to the reviewed `b5f53da`: all 91 blobs, empty diff.
 
-**Stage 1c equivalence** (the result `36647434808` stands for the measured code):
-- The worker closure (65 modules) is identical between `c7713e7` and `d2e00a9`.
-- The two changed ops modules, `journal_snapshot` and `campaign_funding`, are outside that closure.
-- `d2e00a9..072c133` touches only the Linux test module.
+**Stage 1c closure equivalence, `c7713e7` → `072c133`** (asked for by the coordinator seat). The full per-module table is in [`docs/notes/2026-09-29-s5-c3-record/stage1c-equivalence/`](../../notes/2026-09-29-s5-c3-record/stage1c-equivalence/README.md). It is computed from git blob bytes by the static import closure, using `runtime.source_closure`'s resolution rule.
+- **Measured closure.** Roots: `worker` (holding `run_part_a_body`), `compute`, `production_source`, `part_a`, `production`, `plan` and `runtime`. That is **66 modules**, including `replay`, `model` and `runner`, with the same membership at both commits. **All 66 are byte-identical** (SHA-256 at each commit is in the table).
+- **Not in the closure:** `journal_snapshot` and `campaign_funding`, the two ops modules `d2e00a9` changed. So the route fix cannot change what Stage 1c measured.
+- **Staging closure** (outside every measured unit). Roots: the harness's fixtures, `composition_fixture`, `bundle_fixture`, `test_worker`, `test_contract` and `test_profile`. That is 63 modules, and one differs: `test_profile.py`, changed by `c016c60`. The changed definitions are test functions and `fixture_producer_module`. `document()`, the only name staging uses, is AST-identical at both commits.
+- **Result:** Stage 1c `36647434808` (VERIFIED, 1.5×M̂ = 235,739,136 B) covers the measured code at `072c133`. No re-measure decision is needed.
 
 **C3 step-1 addendum.** Two claims behind the step-1 acceptance were incomplete:
 - **§7.7's closed-set claim** (the return's statement that every state set naming the Part A states was widened) did not hold. Three closed sets omitted the new terminal states.

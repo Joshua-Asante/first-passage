@@ -1,0 +1,82 @@
+"""Stage 1c closure table: static import closure of the harness's measured and staging roots,
+per-module SHA-256 at two commits (git blob bytes), AST identity (docstrings stripped) where they differ.
+Same resolution rule as runtime.source_closure (roots ops/core/lab/governance/''), extended with the
+test fixture directories the harness puts on sys.path. Reads git objects only; no worktree state."""
+import ast, hashlib, json, subprocess, sys
+from importlib.util import resolve_name
+
+REPO = sys.argv[1]
+A, B = sys.argv[2], sys.argv[3]
+BASES = ['ops', 'core', 'lab', 'governance', '', 'tests/ops/qualification', 'tests/ops/qualification/execution']
+MEASURED_ROOTS = ['c1_rail.qualification.execution.worker', 'c1_rail.qualification.execution.compute',
+                  'c1_rail.qualification.production_source', 'c1_rail.qualification.part_a',
+                  'c1_rail.qualification.production', 'c1_rail.qualification.execution.plan',
+                  'c1_rail.qualification.execution.runtime']
+STAGING_ROOTS = ['composition_fixture', 'bundle_fixture', 'test_worker', 'test_contract', 'test_profile']
+WATCH = ['c1_rail.qualification.journal_snapshot', 'c1_rail.qualification.execution.campaign_funding']
+
+def git(*args):
+    return subprocess.run(['git', '-C', REPO, *args], capture_output=True, check=True).stdout
+
+def tree(rev):
+    return set(git('ls-tree', '-r', '--name-only', rev).decode().splitlines())
+
+def closure(rev, roots):
+    files = tree(rev)
+    def locate(name):
+        rel = name.replace('.', '/')
+        found = [p for b in BASES for p in ((b + '/' if b else '') + rel + '.py', (b + '/' if b else '') + rel + '/__init__.py') if p in files]
+        return found[0] if found else None
+    pending, out = list(roots), {}
+    while pending:
+        name = pending.pop()
+        if name in out:
+            continue
+        path = locate(name)
+        if path is None:
+            continue  # stdlib / third-party
+        raw = git('show', f'{rev}:{path}')
+        out[name] = (path, raw)
+        package = name if path.endswith('__init__.py') else name.rpartition('.')[0]
+        deps = {'.'.join(name.split('.')[:i]) for i in range(1, len(name.split('.')))}
+        for node in ast.walk(ast.parse(raw)):
+            if isinstance(node, ast.Import):
+                deps.update(a.name for a in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                base = node.module or ''
+                if node.level:
+                    try:
+                        base = resolve_name('.' * node.level + base, package)
+                    except (ImportError, ValueError):
+                        continue
+                deps.add(base)
+                deps.update(base + '.' + a.name for a in node.names if a.name != '*')
+        pending.extend(d for d in deps if d)
+    return out
+
+def strip(raw):
+    tree_ = ast.parse(raw)
+    for node in ast.walk(tree_):
+        if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.body \
+                and isinstance(node.body[0], ast.Expr) and isinstance(getattr(node.body[0], 'value', None), ast.Constant) \
+                and isinstance(node.body[0].value.value, str):
+            node.body = node.body[1:] or [ast.Pass()]
+    return ast.dump(tree_, include_attributes=False)
+
+result = {}
+for label, roots in (('measured', MEASURED_ROOTS), ('staging', STAGING_ROOTS)):
+    ca, cb = closure(A, roots), closure(B, roots)
+    rows = []
+    for name in sorted(set(ca) | set(cb)):
+        pa, ra = ca.get(name, (None, None))
+        pb, rb = cb.get(name, (None, None))
+        ha = hashlib.sha256(ra).hexdigest() if ra is not None else None
+        hb = hashlib.sha256(rb).hexdigest() if rb is not None else None
+        row = dict(module=name, path=pb or pa, sha256_a=ha, sha256_b=hb, bytes_identical=ha == hb)
+        if ha != hb and ra is not None and rb is not None:
+            row['ast_identical_docstrings_stripped'] = strip(ra) == strip(rb)
+        rows.append(row)
+    result[label] = dict(roots=roots, module_count=len(rows), same_membership=set(ca) == set(cb),
+                         changed=[r for r in rows if not r['bytes_identical']], rows=rows,
+                         watched_in_closure={w: (w in ca or w in cb) for w in WATCH})
+print(json.dumps(dict(a=A, b=B, **result), indent=1))
