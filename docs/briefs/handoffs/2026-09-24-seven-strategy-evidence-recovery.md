@@ -153,7 +153,7 @@ git ls-files local_artifacts lab/analysis/c1/tradeify_seven_strategy_phase1_2026
 
 ### 7.8 Operator acceptance and recovery disposition (2026-09-24)
 
-*Recorded on main 2026-09-29.* This section was written on 2026-09-24 in local commit `6492565`, which was never pushed. The coordinating session replayed it unchanged on 2026-09-29; see [T00 §7.9](2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24) for the recording note and the 2026-09-29 route ruling.
+*Recorded on main 2026-09-29.* This section was written on 2026-09-24 in local commit `6492565`, which was never pushed. The coordinating session replayed it on 2026-09-29 with the operator's wording and the acceptance bullets unchanged. **Amended 2026-09-30 in review:** the closing "Follow-up 4" line (an archive pointer that mis-cited #484) was corrected to record an outstanding archive action; see [T00 §7.9](2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24) for the recording note and the 2026-09-29 route ruling.
 
 **Operator, in session, verbatim:** "accept the recovery return, and let's take the shortest path forward". This accepts the coordinator's recommended reading of §7.1 and dispositions for §7.7 items 1–3.
 
