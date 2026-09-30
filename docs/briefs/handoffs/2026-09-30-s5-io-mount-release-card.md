@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (fix card; it closes the C3 memory stop on `claude/s5-part-a`)
 
-**Status:** FROZEN, 2026-09-30, under the operator's GO; amended as **A1**, **A2** and **A3** the same day (below):
+**Status:** FROZEN, 2026-09-30, under the operator's GO; amended as **A1**–**A4** the same day (below):
 - In the coordinating session Joshua wrote "I agree with your recommendation. Send it to the S5 agent." He confirmed it directly in the S5 coordinator session: "Confirmed, proceed".
 - The ruling is recorded in the C3 ledger addendum (`docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the entry beginning "Full S4-plus-Part-A selection: run `36673465130`").
 - This card is committed before implementation, under the committed-handoff rule.
@@ -92,6 +92,44 @@ Codex's review of `eff41ca..0ab8f6b` returned two P2 findings; production orderi
 
    A run that observes no pair fails.
 3. **§2 and §5 are unchanged otherwise:** only node (c) and the new node (4) may be edited in the Linux file.
+
+**Amendment A4, 2026-09-30 (operator ruling "Archive-based on Linux"). It supersedes A2 and A3 for node (c), and A3 item 2's end-record rule for node (4).**
+
+Codex's review of `e7c9826`/`aeabbd4` returned three P2 findings:
+1. The freeze is acquired after an unprotected race: the guardian can settle and unmount before the freeze lands.
+2. The freeze does not stop the guardian's CLOCK_BOOTTIME SIGKILL timer or `RuntimeMaxUSec`, so a long hold can change the outcome.
+3. Node (4) takes `UNIT_PROCESS_EXIT` as a mount's end, but an unmount helper's exit is not deactivation.
+
+Findings 1–2 are node (c)'s **second failed correction**. Under the AGENTS.md two-failure rule, the coordinator stopped and returned to the operator, and node (c) restarts with the explicit criteria below. The lesson: a host read of a mount inside production's own flow cannot be made race-free from the test side. The archive's fidelity to the mount bytes is a property of `_archive_part_a_for_inspection`, and fake-bus test (2) already proves it deterministically.
+
+**Node (c) criteria** (`test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_retained`):
+- (c1) No host read of `out_path` or `in_path` anywhere in the node. Remove `held_guardian`, `payload_exited` and `final_prefix` if nothing else uses them. No freeze, no SIGSTOP, and no timing window of any kind.
+- (c2) Keep, unchanged, the setup (`cap_output_mount_inodes`, the RUNNING wait) and every settled assertion from `072c133`:
+  - the work and attempt `IN_DOUBT`;
+  - `part_a_family(state) is None`;
+  - N2 `COMMITTED`;
+  - no `CAPTURED`/`SIGNING_INTENT`/`COMPLETED` transition;
+  - `set(staged) == {'part_a_initial_prefix'}`;
+  - the retained failure reason, the refused final create after the prefix fsync;
+  - every restart check.
+- (c3) The prefix-content checks move from `host_prefix` to the **staged bytes**: `_prefix_panels(staged['part_a_initial_prefix'])` has indices `[0, 1]`, each with 2 outcomes.
+- (c4) Add the release check: `io_pair_released(boundary, attempt, 'pawork')`.
+- (c5) Fake-bus test (2) in `test_campaign_io_release.py` stays, and must assert that the staged bytes equal the pre-release mount bytes, for both the abnormal-exit and the absent-frame paths. The node's docstring names it as the fidelity proof.
+- **Removed from the Linux node, by operator ruling:** the host-side listing, the 0444 mode, `f_ffree == 0`, and "no final or frame on the mount". The staged set and the failure reason cover the "no final" fact.
+
+**Node (4) criteria** (`test_s5_io_mount_pairs_are_released_with_each_work_guardian`), a first correction:
+- (d1) A unit's interval ends only at a **deactivation** record: `UNIT_STOPPED` (`9d1aaa27…`) or `UNIT_SUCCESS` (`7ad2d189…`). `UNIT_PROCESS_EXIT` is never an end.
+- (d2) Any `UNIT_FAILURE_RESULT` (`d9b373ed…`) for an io mount unit, or a `UNIT_PROCESS_EXIT` with a non-zero status for one, **fails the node**. That is a failed unmount or stop.
+- (d3) The guardian's end is its own deactivation record. A failed guardian result also fails the node, because this sequence is the normal path.
+- (d4) Keep the positive-observation, containment (with the 30 s bound-stop grace), cross-work overlap and nothing-live-after-settlement assertions. Note in the docstring that journal timestamps are receipt times, which is why the grace exists.
+
+**Verification for the return:**
+- the manifest, boundary-verification and io-release tests, with a record;
+- the Linux file collects 5 nodes, with a record;
+- `git diff --check`;
+- a diff showing that node (c) contains no reference to `out_path`/`in_path` reads, `cgroup.freeze` or SIGSTOP (grep output).
+
+A failure of node (c) under these criteria, or a third correction of it, stops the work under §7.
 
 ```yaml authority
 seat: worker
