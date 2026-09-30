@@ -165,6 +165,8 @@ A failed required acceptance criterion is not DONE_WITH_CONCERNS.
 Coordinator reviews specification compliance, then implementation quality and the complete composed path.
 No synthetic result establishes commissioning or whole-route acceptance.
 
+**Coordinator acceptance (2026-09-30), recorded by the executor at the coordinator's direction.** CC-3 is **RESOLVED in synthetic scope only**, at head `cc08f05` (this card as amended by §8.1-§8.3, executor return DONE_WITH_CONCERNS). The coordinator's acceptance text is the PR comment at https://github.com/Joshua-Asante/first-passage/pull/554#issuecomment-5906152141. Its stated conditions: Codex's review of `76a80e9` found no major issues and all review threads are resolved; the required `skills (3.12)` and `pytest (3.11)` are green on `cc08f05`. The executor checked those against GitHub before recording this line. One caveat is not in the executor's control: the `qualification-windows` check was still running when the coordinator wrote the comment, and was still pending when the executor read it. The disclosed baseline limitation (`test_qualification_isolation`) is unchanged. **Not established by this acceptance:** the real broker evidence producer and route recovery (T09); the durable resume owner (T13); live notification; X-1, S5 and commissioning; any operational GO. The merge is Joshua's.
+
 ## §8 — Coordinator record (2026-09-29)
 
 **Coordinator.** The "Coordinate parallel sessions" Claude Code session holds the deployment-coordinator role for CC-3. Joshua assigned it in session on 2026-09-29. The assignment covers CC-3 only and moves no other coordinator work.
