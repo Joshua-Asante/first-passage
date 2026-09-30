@@ -256,36 +256,44 @@ def test_v7_n2_phase_keeps_the_360s_900s_ceiling_not_the_shared_fallback():
     )
 
 
-def test_v7_release_binds_the_10000s_test_only_cap_in_the_fixture_producer(tmp_path):
-    """P4 (#519 S5 build pitfall): the fixture producer raises the TEST_ONLY cap
-    (10,000 s CPU / 10,000 s wall / memory_limit) only for the named release
-    revisions; a /v7 release left outside binds 120 s / 180 s / 90% memory and
-    is BUDGET_EXHAUSTED at binding. Lives here because test_profile.py owns the
-    profile literals; fixture_producer is loaded exactly as
-    test_boundary_fixture.py loads it."""
+def fixture_producer_module():
+    """Load fixture_producer exactly as test_boundary_fixture.py loads it."""
     import importlib.util
-    from c1_rail.qualification.execution.profile import (
-        diagnostic_budget_profile,
-        part_a_dispatch_diagnostic_execution_profile,
-    )
-
     root = Path(__file__).resolve().parents[4]
-    profile = part_a_dispatch_diagnostic_execution_profile(canonical_json_bytes(document()))
     spec = importlib.util.spec_from_file_location(
         'qualification_boundary_v7_producer',
         root / 'tests/integration/qualification_boundary/fixture_producer.py',
     )
     fixture = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(fixture)
+    return fixture
+
+
+def test_v7_release_binds_the_10000s_test_only_cap_in_the_fixture_producer(tmp_path):
+    """P4 (#519 S5 build pitfall): the fixture producer raises the TEST_ONLY cap
+    (10,000 s CPU / 10,000 s wall / memory_limit) only for the named release
+    revisions; a /v7 release left outside binds 120 s / 180 s / 90% memory and
+    is BUDGET_EXHAUSTED at binding. Lives here because test_profile.py owns the
+    profile literals; fixture_producer is loaded exactly as
+    test_boundary_fixture.py loads it. The release is taken exactly as
+    release_document produces it for the /v7 profile (no hand overrides): a
+    /v7 profile left outside release_document's revision map falls through to
+    release/v1, which parse_release refuses (Linux run 36648289195)."""
+    from c1_rail.qualification.execution.profile import (
+        part_a_dispatch_diagnostic_execution_profile,
+    )
+    from c1_rail.qualification.execution.release_schema import parse_release
+
+    root = Path(__file__).resolve().parents[4]
+    fixture = fixture_producer_module()
+    profile = part_a_dispatch_diagnostic_execution_profile(canonical_json_bytes(document()))
     private, keys, _ = fixture.fresh_keys(execution_seed=b'a' * 32, result_seed=b'b' * 32)
     release = fixture.release_document(root, profile, 'sha256:' + 'c' * 64, keys)
-    release.update(
-        schema='qualification_execution_release/v7',
-        capability='FULL_E1',
-        dispatch_enabled=True,
-        dispatch_checkpoints=['N1', 'N2', 'PART_A'],
-        campaign_budget_profile=diagnostic_budget_profile(canonical_json_bytes(profile)),
-    )
+    assert release['schema'] == 'qualification_execution_release/v7'
+    assert release['capability'] == 'FULL_E1'
+    assert release['dispatch_enabled'] is True
+    assert release['dispatch_checkpoints'] == ['N1', 'N2', 'PART_A']
+    parse_release(canonical_json_bytes(release))
     bundle = fixture.build_real_bundle(
         tmp_path / 'retained',
         repo=root,
@@ -299,3 +307,19 @@ def test_v7_release_binds_the_10000s_test_only_cap_in_the_fixture_producer(tmp_p
     assert budget.maximum_wall_seconds == 10000
     assert budget.maximum_cpu_seconds == 10000
     assert budget.maximum_memory_bytes == release['profile']['memory_bytes']
+
+
+def test_v6_release_document_still_binds_release_v6_with_n1_n2():
+    """The S5 /v7 addition to release_document leaves the S4 /v6 pairing as it was."""
+    from c1_rail.qualification.execution.profile import joint_dispatch_diagnostic_execution_profile
+    from c1_rail.qualification.execution.release_schema import parse_release
+
+    root = Path(__file__).resolve().parents[4]
+    fixture = fixture_producer_module()
+    profile = joint_dispatch_diagnostic_execution_profile(canonical_json_bytes(document()))
+    _, keys, _ = fixture.fresh_keys(execution_seed=b'a' * 32, result_seed=b'b' * 32)
+    release = fixture.release_document(root, profile, 'sha256:' + 'c' * 64, keys)
+    assert release['schema'] == 'qualification_execution_release/v6'
+    assert release['dispatch_enabled'] is True
+    assert release['dispatch_checkpoints'] == ['N1', 'N2']
+    parse_release(canonical_json_bytes(release))

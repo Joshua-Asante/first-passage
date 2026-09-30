@@ -67,20 +67,25 @@ def release_document(repo, profile, image, keys):
         trusted_key_sha256={key: sha256(value.public_key) for key, value in keys.items()})
 
     if profile['schema'] in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4',
-                             'qualification_execution_profile/v5', 'qualification_execution_profile/v6'):
+                             'qualification_execution_profile/v5', 'qualification_execution_profile/v6',
+                             'qualification_execution_profile/v7'):
         from c1_rail.qualification.execution.profile import diagnostic_budget_profile
         # profile/v4 pairs the execution-capable release revision and budget
         # profile/v3; profile/v5 pairs the S3 dispatch revision (D4) with the
         # same budget profile and the closed N1 dispatch checkpoint set; the
         # S4 profile/v6 pairs the joint dispatch revision (D3) with the closed
-        # N1+N2 checkpoint set.
-        revision = ('v6' if profile['schema'].endswith('/v6') else 'v5' if
+        # N1+N2 checkpoint set; the S5 profile/v7 pairs the Part A dispatch
+        # revision with the closed N1+N2+PART_A checkpoint set.
+        revision = ('v7' if profile['schema'].endswith('/v7') else 'v6' if
+                    profile['schema'].endswith('/v6') else 'v5' if
                     profile['schema'].endswith('/v5') else 'v4' if
                     profile['schema'].endswith('/v4') else 'v3')
         result.update(schema='qualification_execution_release/' + revision, capability='FULL_E1',
-                      dispatch_enabled=revision in ('v5', 'v6'),
+                      dispatch_enabled=revision in ('v5', 'v6', 'v7'),
                       campaign_budget_profile=diagnostic_budget_profile(encoded(profile)))
-        if revision == 'v6':
+        if revision == 'v7':
+            result.update(dispatch_checkpoints=['N1', 'N2', 'PART_A'])
+        elif revision == 'v6':
             result.update(dispatch_checkpoints=['N1', 'N2'])
         elif revision == 'v5':
             result.update(dispatch_checkpoints=['N1'])
