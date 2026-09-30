@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (fix card; it closes the C3 memory stop on `claude/s5-part-a`)
 
-**Status:** FROZEN, 2026-09-30, under the operator's GO; amended as **A1** the same day (below):
+**Status:** FROZEN, 2026-09-30, under the operator's GO; amended as **A1** and **A2** the same day (below):
 - In the coordinating session Joshua wrote "I agree with your recommendation. Send it to the S5 agent." He confirmed it directly in the S5 coordinator session: "Confirmed, proceed".
 - The ruling is recorded in the C3 ledger addendum (`docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the entry beginning "Full S4-plus-Part-A selection: run `36673465130`").
 - This card is committed before implementation, under the committed-handoff rule.
@@ -45,6 +45,28 @@ The operator chose lifecycle binding:
    - (3) Ordering: `retain_checkpoint_capture` precedes the guardian's end; a crash between stays recoverable.
    - (4) Linux, a required node under `QEXEC-01`: after each work's guardian ends, its `var-lib-fpq-*` pair is inactive or absent. The live pair count is ≤ in-flight works throughout.
 5. **§5 Forbidden is narrowed accordingly.** "Any change to … mount properties" now excludes these two properties, and only these two.
+
+**Amendment A2, 2026-09-30 (operator ruling "Amend node (c) as proposed"). It adds to A1.**
+
+The executor returned NEEDS_CONTEXT under A1's §7: a reader of `out_path` runs after the inspection archive. The coordinator verified it. `test_campaign_part_a_linux.py::test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_retained` (`:546-564`) reads the output mount from the host *after* `settled_in_doubt`. Under A1 the pair unmounts as the guardian exits, so those reads would race. The operator allowed that node to be amended:
+
+1. **Allowed edit, this node only.** The host reads of `out_path` move to *before* settlement. The node polls while the work is RUNNING until the prefix is final: `part-a-initial.jsonl` exists with mode 0444 (the SR-4 writer chmods only after its fsync), and `statvfs(out_path).f_ffree == 0` (the one-inode cap is full). Then it reads and asserts, unchanged in content:
+   - the folder listing == `[part-a-initial.jsonl]`;
+   - mode 0444;
+   - `f_ffree == 0`;
+   - `host_prefix = read_bytes()`, with its two panels of two outcomes;
+   - no final artifact and no `result.frame` at that moment.
+2. **After `settled_in_doubt`, every existing assertion is kept:**
+   - the states and transitions;
+   - `part_a_family(state) is None`;
+   - `set(staged) == {'part_a_initial_prefix'}`;
+   - `staged == host_prefix` and the equal sha256;
+   - the failure reason;
+   - the restart checks.
+
+   One assertion is **added**: the work's io pair is inactive or absent, which is the release.
+3. **Absence of a final artifact or frame after the read** is proven by the staged set being exactly `{part_a_initial_prefix}` and by the unchanged retained failure reason (the refused final create). No assertion is removed or weakened; each is moved earlier or kept.
+4. **§2 and §5 are narrowed accordingly.** This one existing node may be edited as described, and no other existing test may be. Any other reader found stops the work under §7 as before.
 
 ```yaml authority
 seat: worker
