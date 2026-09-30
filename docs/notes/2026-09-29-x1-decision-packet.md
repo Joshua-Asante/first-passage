@@ -159,7 +159,17 @@ The validated bytes are sent unchanged, without re-derivation. Generation is unc
 1. repair and verification of the validation-integrity and refusal-record findings;
 2. the operator rehearsal;
 3. fresh session checks;
-4. written CP-3.~~ Accepted 2026-09-29. CP-3 approves the rule and the generator/checker version; that tool is not yet built or reviewed.
+4. written CP-3.
+
+*Tool acceptance 2026-09-30 (Codex, `tools/x1-r7-codex-review/RULING.json`):* the **round-7 tool set is ACCEPTED** for the X-1 window 2026-09-30 22:00–22:30Z, under contract v3.3 plus the movement rule above. It applies only to the verified, byte-identical R7 set (primary `tools/x1-r7/`, 17 hashes pinned in `X1_TOOL_RETURN_R7.md`).
+
+- **Closed:** R6-I1 (validation integrity: sidecar hash, stop checked against the hashed payload, generation-rule check) and R6-I2 (complete refusal records, with evaluation order b, a, c, d, e, f).
+- **Codex's independent runs:** serial and `--workers 2`, 247 tests and 370 subtests passed each.
+- **Added to CP-3's procedure:**
+  - At generation, record the printed validation hash **and** the request hash in the private authorization worksheet, **outside** the request folder.
+  - Before launching the observer or the sender, compare both files' actual hashes against that record. A mismatch stops the attempt.
+  - The hash is **not** added to the canonical binding, and CP-3 approves this procedure rather than a future hash.
+- **Still required:** this is tool acceptance, not CP-3 or execution GO. The operator rehearsal, fresh session checks and written CP-3 remain.~~ Accepted 2026-09-29. CP-3 approves the rule and the generator/checker version; that tool is not yet built or reviewed.
 
 ## 5. Single-row sequence and verification
 
