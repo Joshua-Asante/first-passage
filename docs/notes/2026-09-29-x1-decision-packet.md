@@ -1,7 +1,7 @@
 # X-1 decision packet: one attended REST entry and native stop
 
 **Date:** 2026-09-29.
-**Status:** PREPARED FOR DECISION; NOT CLEARED TO EXECUTE. *2026-09-29:* A-11 exception accepted and the evening window withdrawn (§2 decision record); still not cleared to execute. *2026-09-30:* R7 tool set accepted for the 22:00–22:30Z window (§4, line 164); cleared to execute only on the operator's written CP-3.
+**Status:** PREPARED FOR DECISION; NOT CLEARED TO EXECUTE. *2026-09-29:* A-11 exception accepted and the evening window withdrawn (§2 decision record); still not cleared to execute. *2026-09-30:* R7 tool set accepted for the 22:00–22:30Z window (§4). Cleared to execute only when **all** of these hold: the operator rehearsal is complete; the fresh session checks pass (host disarm, actor inventory, P0a–c, OR "nothing outstanding"); the headroom gate passes (§6, headroom ≥ 2 × L); and the operator's written CP-3 is given.
 **Selected outcome:** A reviewable decision packet and preparation checklist for one attended X-1 entry-and-stop observation. Execution remains a separate CP-3 decision.
 **Dispatch scope:** Preparation only. Prepare the observer procedure and decision materials; Joshua performs the offline platform rehearsal. This dispatch authorizes no order-producing action or execution of §5. Proposed limits remain proposals until explicitly accepted.
 **Execution prerequisites:** The A-11 ruling below, reviewed observer procedure and rehearsal evidence, operator-fixed limits and private request binding, then X-1's own written CP-3. All fresh session checks remain owed.
@@ -55,9 +55,9 @@ If the configured controls cannot be identified adequately for the decision, ret
 1. **A-11:** the narrow exception quoted above is **ACCEPTED**, for X-1 only.
    - The review notes are part of the ruling. The drill plan §0.1 ROUTE STOPS consequence for C-a and X-3 stands unchanged.
    - The drawdown-headroom check is a CP-3 item.
-   - It is mirrored in drill plan §0.1, commissioning §2.2 and B–D packet GC-7.
+   - Its canonical text is the B–D packet's GC-7 row, as that packet owns GC-7. Drill plan §0.1 and commissioning §2.2 carry labelled mirrors.
    - It is an exception to the session-start rule only. It grants no CP-3, row, send or spend.
-2. **Sequencing:** the 2026-09-29 evening window is **withdrawn**. X-1's CP-3 is not requested until R-1 has run on this week's preservation trade, in that trade's own session. That R-1 is the same-session per-order read check (§6 gap 2).
+2. **Sequencing:** the 2026-09-29 evening window is **withdrawn**. ~~X-1's CP-3 is not requested until R-1 has run on this week's preservation trade, in that trade's own session. That R-1 is the same-session per-order read check (§6 gap 2).~~ *Superseded 2026-09-29 by the option (b) amendment below: no R-1 prerequisite applies.*
    - **Open sequencing item (recorded 2026-09-29; for Joshua, not resolved here).** This week's preservation trade was placed on Monday 2026-09-28 and became R-2's target (closed with limits, #550). No R-1 read is recorded in that trade's own session. The earliest retained read (`reads/R2prep-20260929T003518Z…`, 2026-09-29 00:35 UTC) falls after the reset. The condition above therefore cannot be met this week without an extra trade, and no extra trade is authorized. Joshua's options:
      - (a) run R-1 on next week's preservation trade (due 2026-10-09), in its own session;
      - (b) rule, under CP-2 F-3, that X-1's own REST-placed order may supply the same-session read, which would remove the separate R-1 prerequisite for X-1.
@@ -66,7 +66,7 @@ If the configured controls cannot be identified adequately for the decision, ret
        - R-1 runs before the next ~17:00 ET reset, and the trade's ids and timestamps are retained in that session.
        - The R-1 v3.1 collector's clearance to run is confirmed first; its return says it is not cleared until the coordinator accepts it.
        - If R-1's per-order reads fail, X-1 stays held, and the next step is a vendor question, not a drill.
-       - Option (b) is not adopted. X-1's CP-3 is not requested before a successful R-1.
+       - ~~Option (b) is not adopted. X-1's CP-3 is not requested before a successful R-1.~~ *(Superseded; option (b) adopted, below.)*
        - The ruling authorizes no trade. The preservation trade is placed because the account requires it.
    - **Amendment 2026-09-29: operator ruling, option (b); supersedes (a).** Joshua ruled this in the coordinating session and confirmed it directly in this session: "we're going with b, so that we can deploy the tradeify portfolio as quickly as possible".
      - X-1's CP-3 no longer waits for R-1 on a preservation trade.
@@ -77,8 +77,8 @@ If the configured controls cannot be identified adequately for the decision, ret
      - If the reads fail on X-1's own order, the observer's uncertain-protection path applies: check Tradovate web, tear down, **no PASS** (observer v2 §3.3, §4). The cost is one entry attempt with no X-1 result.
      - The v2 re-review must confirm that this path covers a read failure on X-1's own order, including a failure from the first per-order read onward.
      - This ruling grants no extra trade and no X-1 approval. Still owed: the Codex re-review of observer v2, operator acceptance of its limits, the offline tool and the request generator/checker, the operator's no-send rehearsal, fresh session checks, and X-1's own written CP-3 in the derivation-rule form.
-   - If its per-order reads fail, X-1 stays held.
-   - The observer review, the offline tool and the operator rehearsal remain owed.
+   - ~~If its per-order reads fail, X-1 stays held.~~ *(Applied to option (a)'s R-1 only; superseded by option (b).)*
+   - ~~The observer review, the offline tool and the operator rehearsal remain owed.~~ *(2026-09-30: the observer and tools are accepted (§4); the operator rehearsal remains owed.)*
 
 ## 3. Proposed row and missing operator inputs
 
@@ -95,7 +95,7 @@ If the configured controls cannot be identified adequately for the decision, ret
 | Reference quote side | **Proposed:** the ask for a buy, the price a market buy is expected to fill near. Record which side was used |
 | Stop-activation wait | **Proposed:** 10 seconds after first observed fill; known rejection or unknown request triggers recovery immediately. Delayed fill observation is not a measured activation bound |
 | Time in market | **Proposed:** teardown as soon as evidence is obtained; initiate teardown no later than 120 seconds after first observed fill. This is not a guarantee of flatness by that time |
-| Session window (ET) | ~~**Availability confirmed:** 2026-09-29, 19:00-19:30 EDT (23:00-23:30 UTC).~~ **Withdrawn 2026-09-29 (operator ruling, §2).** Next available evening after the preservation-trade R-1 and the other prerequisites; named at CP-3. Session checks and CP-3 remain owed |
+| Session window (ET) | ~~**Availability confirmed:** 2026-09-29, 19:00-19:30 EDT (23:00-23:30 UTC).~~ **Withdrawn 2026-09-29 (operator ruling, §2).** ~~Next available evening after the preservation-trade R-1 and the other prerequisites; named at CP-3.~~ **2026-09-30: 18:00–18:30 EDT (22:00–22:30Z), confirmed by the operator.** Under option (b) there is no R-1 prerequisite. Session checks and CP-3 remain owed |
 | Planned cost allowance | **Proposed:** $30 total including fees and adverse execution; one entry attempt. This is a planning allowance, not a guaranteed maximum loss; no repeat attempt. It counts against the $700 ceiling (CP-2 F-4), whose remaining headroom is confirmed privately at CP-3 |
 
 Only availability and platform are confirmed. Numerical limits and row selections remain proposals, not executable defaults.
@@ -117,7 +117,8 @@ Apply the drill plan's extended excluded-field list unchanged: no ATM, trailing,
 A price move can make the realized stop distance exceed the authorized distance; that is an abort after fill, not permission to widen the allowance.
 
 Before CP-3, retain privately:
-- exact serialized request body and SHA-256, without authentication material;
+- ~~exact serialized request body and SHA-256, without authentication material;~~ *(Superseded by the derivation-rule amendment below: the request bytes are generated **after** CP-3, and their request and validation hashes are recorded at generation, per the round-7 procedure.)*
+- **the headroom-gate result:** net liquidation value, trailing-drawdown floor, index level at the reference ask, L (§6), and the pass/fail of headroom ≥ 2 × L. A fail means X-1 does not run;
 - authorization record with all selected limits, session and environment identity;
 - operator attestation of Tradeify's five conditions, using commissioning §1.1's wording;
 - the A-11 decision and privately identified controls;
@@ -137,7 +138,8 @@ Before CP-3, the private binding must also name the approved quote-freshness int
    - the quote source and side (the ask, for a buy), the freshness interval, the permitted quote movement and the session window;
    - the stop rule. For a buy: `stopLoss` = the tick-grid value obtained by subtracting the approved distance from the recorded ask and **rounding up** to the contract's tick. Rounding up never increases the quote-to-stop distance. The result must also pass the approved validity checks;
    - how the fresh per-attempt `orderId` is constructed, with exactly one entry attempt;
-   - every recovery limit (the wait, the time in market, the realized-distance maximum and the cost allowance).
+   - every recovery limit (the wait, the time in market, the realized-distance maximum and the cost allowance);
+   - the headroom gate (headroom ≥ 2 × L, with L as defined in §6), recorded privately before CP-3 and re-checked at session start.
 2. **Before the send.** The operator runs the approved generator/checker. It retains the quote (price, side and timestamp), the derived level, the exact serialized bytes and their SHA-256, and the mechanical validation result.
 3. **Stop and renewal rules.**
    - A failed check stops the attempt; nothing is repriced by hand.
@@ -145,7 +147,7 @@ Before CP-3, the private binding must also name the approved quote-freshness int
    - Any change to the rule, the limits, the generator/checker version, the contract, the direction or the environment requires a renewed CP-3.
 4. **Unchanged.** Joshua still performs the send. Everything else in this section stands.
 
-~~Until the operator accepts this amendment, the paragraph above governs.
+~~Until the operator accepts this amendment, the paragraph above governs.~~ Accepted 2026-09-29. CP-3 approves the rule and the generator/checker version; the tool set is now built and accepted (round 7, below).
 
 *Clarification 2026-09-30 (operator-directed; rule accepted by Codex, `tools/x1-r6-codex-review/RULING.json`):* for X-1 in the window 22:00–22:30Z, a movement-tolerant recheck replaces exact-stop reproduction. At the pre-send check and the final check:
 - the quote is at most 10 seconds old;
@@ -169,7 +171,7 @@ The validated bytes are sent unchanged, without re-derivation. Generation is unc
   - At generation, record the printed validation hash **and** the request hash in the private authorization worksheet, **outside** the request folder.
   - Before launching the observer or the sender, compare both files' actual hashes against that record. A mismatch stops the attempt.
   - The hash is **not** added to the canonical binding, and CP-3 approves this procedure rather than a future hash.
-- **Still required:** this is tool acceptance, not CP-3 or execution GO. The operator rehearsal, fresh session checks and written CP-3 remain.~~ Accepted 2026-09-29. CP-3 approves the rule and the generator/checker version; that tool is not yet built or reviewed.
+- **Still required:** this is tool acceptance, not CP-3 or execution GO. The operator rehearsal, fresh session checks and written CP-3 remain.
 
 ## 5. Single-row sequence and verification
 
@@ -177,7 +179,12 @@ This sequence belongs to the later operator-executed row, not to the preparation
 
 1. Confirm the A-11 disposition, reviewed observer procedure and completed operator rehearsal. Read actual host disarm/emission state this session; inventory every actor.
 2. Read account-wide flatness, working orders and outstanding requests. All must meet commissioning §3.2 before sending.
-3. Record the quote and timestamp, tick-valid level, fresh orderId, exact serialized request and hash in the private binding. Obtain written CP-3 for that binding. Immediately before send, recheck §4's freshness/movement conditions and the session gates; return for renewed CP-3 if required. Record local send time as Joshua sends the approved bytes once.
+3. *(Revised 2026-09-30 for the derivation-rule CP-3 and the round-7 tools.)* In this order:
+   1. **Headroom gate:** read the net liquidation value and the trailing-drawdown floor now, compute L (§6) at the reference ask, and require headroom ≥ 2 × L. A fail stops X-1. Record the result privately.
+   2. **Written CP-3** for the derivation rule, the approved generator/checker version (round 7) and the limits. CP-3 does not approve specific bytes.
+   3. **Generate** under that approval: record the quote and timestamp, and the validation and request hashes printed at generation, in the private worksheet outside the request folder.
+   4. **Compare** both files' actual hashes with that record before launching the observer or the sender. A mismatch stops the attempt.
+   5. **Send:** the sender re-checks freshness, the window, both 5-point movements and the 0–40 distance (§4 clarification) just before the POST. A failed check refuses without sending; regenerate under the same CP-3 only through the approved rule. Joshua sends the validated bytes once, and the local send time is recorded.
 4. Retain response, entry/child identifiers, lifecycle/status reads, fill identities and quantities. Read account-scoped fill-reconciled positions; do not substitute raw singular-position reads.
 5. Apply the drill plan's X-1 pass/fail/abort criteria, including quantity, first-fill stop activation, identity correlation, partial outcomes and realized stop distance. HTTP acceptance alone is not PASS.
 6. Teardown using commissioning §3.4. On a known outcome, attended platform flatten plus cancel; on an unknown outcome, read first and intervene only as that procedure permits. Never resend an unknown request.
@@ -211,7 +218,7 @@ At MYM's $0.50 per index point, the proposed 30-point distance represents $15 be
    *Prepared 2026-09-29:* the observer procedure v0 is in the private worksheet folder as `X1_OBSERVER_PROCEDURE.md` (SHA-256 `da22ea177786b1bd0823c43456be0a6c331b88adaf8b298c20ec485ed14dead6`). It is **PROPOSED and UNTESTED**. *Codex reviewed v0 on 2026-09-29 and returned corrections. Revised as v1, `X1_OBSERVER_PROCEDURE_V1.md` (SHA-256 `49ab29ec04bc197e50e7ead6fd2d350dc5ba0f65d441ff7e82f72c4fb48cfaf1`). v1 adds an enforced request budget, bounded concurrency, timeouts, 429 handling, a no-fill deadline, triggers checked as each response arrives, error-specific triage, explicit version paths, identity-validated status reads, a scheduled entry-lifecycle read, SC-5/SC-6 and the A-11 stop, and an outstanding-request record. Codex re-reviewed v1 on 2026-09-29 and found it not yet acceptable. The principal finding: an HTTP 400 without dispatcher context does not establish pre-dispatch rejection. Revised as v2, `X1_OBSERVER_PROCEDURE_V2.md` (SHA-256 `358486fce4b5ba5912e959c9f253a48b504e42972fdc550594f2d549ad794231`). v2 makes these changes: every 400 is classified as unknown; the 40-attempt ceiling counts every attempt, with 12 reserved for confirmation, and at the ceiling only attended recovery continues; deadlines run on the wall clock, independent of HTTP; error precedence is explicit, and a REST-unavailable path is added that never flattens on a rate limit alone; action-case mapping, a version schema rule and a `parentId` link rule are defined; carried-in outstanding requests are included; SC-5 not being observed during the interval is stated as a limitation. Codex reviewed v2 on 2026-09-29. It found the 28/12 allocation and the sampled SC-5 approach supportable, subject to operator acceptance and offline tests, and returned six corrections. Revised as v3, `X1_OBSERVER_PROCEDURE_V3.md` (SHA-256 `ce4df8993ec211b6d98e03a34885f66eaff9b225261851b567dcb390bae60643`). v3's changes: all candidate pre-dispatch codes stay unknown; 429s are evaluated first, and a failed retry leaves observation; a flat account still gets its working orders reconciled and cancelled; the stop type is frozen as `Stop`; PASS requires `Working`; the sampling limits are stated plainly; no request overlaps an abandoned one in flight; the option (b) read-failure case is covered. **Operator ruling 2026-09-29 (in session):** v3's §3.0 limits are **ACCEPTED**: a 40-attempt ceiling, with observation stopping at 28; no more than 60 attempts per rolling 60 s; a 10 s per-request timeout; deadlines of 30 s to fill (D-fill), 10 s to confirm the stop (D-stop), 120 s in market (D-market) and the end of the session window (D-session). **Codex accepted v3 on 2026-09-29 as the implementation contract for the offline observer tool.** The acceptance's scope is offline implementation and its synthetic tests. Codex listed three textual corrections needing no further design review. They are applied as v3.1, `X1_OBSERVER_PROCEDURE_V3_1.md` (SHA-256 `819e88a242f56a2d6f80db0f690d402c43be8e0878d27a113981e98b792f2cd1`): the status checklist is updated; teardown confirmation may use any attempts left under the 40 total; post-teardown R-1 runs only when every involved id is terminal, and is not a fallback for missing evidence. **Tool build and review, 2026-09-29.** The offline tools were built by a separate Claude Code session and reviewed by Codex over five repair rounds: an observer, an adjudicator, a request generator/checker, and an operator-run single-send wrapper (option (i), chosen by the operator). Codex's schema rulings amended the contract twice: v3.2 (`cdd4b0316010a3ec0a1af6c889d0ea24e46808314783074896e143aa9c852e13`) adds Tradovate's report-record shape and the full `ordStatus` vocabulary, from Tradovate's public OpenAPI schemas retained under `vendor-docs/tradovate-openapi-2026-09-29/`; v3.3 (`5da9618623e96cf38c6bb494557131c95e0731fc387356bcd39a6b8a63e81b2e`) adds a required final stop read before sufficiency. **Codex accepted the round-5 tool set on 2026-09-29 for the operator's no-send rehearsal only, under pinned contract v3.3.** The acceptance covers the observer, adjudicator, generator and sender together, and is tied to the twelve verified round-5 file hashes. It carries over only to byte-identical copies. It grants no execution authority. Codex's wording correction to v3.3 §5: confirmation may detect a regression after the final stop read, but a transient change between samples can escape detection. The tools, their returns and their evidence are private, under `local_artifacts/route-drills-2026-09/tools/` in the primary checkout. Still owed before execution: the operator's no-send rehearsal with these tools, fresh session checks, and X-1's written CP-3 in the derivation-rule form.* The procedure names the read surfaces and fields, the capture rules and the outcome-to-§3.4 mapping. It records these blockers:
    - **No successful REST per-order read is established in retained evidence for this account.** Browser-rendered lifecycle displays exist, but they are not REST responses. The R-2 closure records the lifecycle, order and status reads by id all failing with HTTP 400 for historical orders, cause unconfirmed. Same-session behavior is unestablished.
    - Stop quantity and price are observable only in the lifecycle `version`. The status read carries neither, and a `partial` lifecycle reply means not observed.
-   - No offline observer tool or tests exist yet.
+   - ~~No offline observer tool or tests exist yet.~~ *Superseded 2026-09-30:* built, tested and accepted (round 7, §4).
 4. **Recommended sequencing (from gap 2):** run R-1 on this week's preservation trade, in its own session, before X-1. It checks same-session per-order reads with no added exposure. If those reads fail, X-1 can yield no PASS and should stay held. The 2026-09-29 evening window is therefore premature unless R-1 has completed first. *(2026-09-29: superseded. Under the option (b) ruling in §2, the check is done on X-1's own order, in X-1's session.)*
 5. The exact account, contract, fresh quote, absolute stop level, fresh orderId and serialized request hash remain private session-time bindings. No executable request has been prepared from a stale quote.
 
@@ -228,10 +235,11 @@ At MYM's $0.50 per index point, the proposed 30-point distance represents $15 be
     - No outstanding request is identified. The record is private; Codex's acceptance is pending.  
   - A-8 still closes only at session start (v3.3 §3.1).
 - **A-11 headroom criterion. Ruling (the operator's chosen risk tolerance):**
-  - The stress loss L is 3.5% of the index level × $0.50 per point, plus fees. The 3.5% is the largest evening (18:00–21:00 ET) two-consecutive-bar 15-minute MYM range in 2022-09..2026-09 (3.34%, the 2025-04-06 Sunday reopen), rounded up. The dataset hash and method are in the private record.
-  - The required headroom to the trailing-drawdown floor is ≥ 2 × L, checked privately at CP-3. If it fails, X-1 is not run.
+  - **Historical-move component: 3.5% of the index level.** This is the largest evening (18:00–21:00 ET) two-consecutive-bar 15-minute MYM range in 2022-09..2026-09 (3.34%, the 2025-04-06 Sunday reopen), rounded up. The dataset hash and method are in the private record. **This component is not L;** L is defined once, below.
+  - The required headroom to the trailing-drawdown floor is ≥ 2 × L, with L as defined below. It is checked privately at CP-3 and re-checked at session start (§5 step 3.1). If it fails, X-1 is not run.
   - **It is a stress scenario, not a loss bound.** The 15-minute exposure is assumed, not guaranteed: CME protection functionality can leave an order partly unfilled, and larger unscheduled shocks remain possible.
-  - **Slippage allowance (operator ruling 2026-09-29): +0.5% of the index level.** It is a judgment figure, not measured. **The governing stress loss is L = 4.0% × index × $0.50 + fees, with headroom ≥ 2 × L.**
+  - **Slippage allowance (operator ruling 2026-09-29): +0.5% of the index level.** It is a judgment figure, not measured.
+  - **L, the single governing definition: L = 4.0% × index level × $0.50 per point + $1.82 fees** (the 3.5% historical component plus the 0.5% slippage allowance). Headroom ≥ 2 × L.
 - The hedging check counts as unreachable only once the inventory and the no-hedge attestation confirm it.
 - Private records: `CARRIED_IN_OR_RECORD.md`, `A11_FIRM_CONTROLS_RECORD.md` and `X1_PREP_RETURN_2026-09-29.md`, in the private worksheet folder.
 
