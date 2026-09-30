@@ -72,6 +72,7 @@ import sqlite3
 import stat
 import subprocess
 import time
+from contextlib import contextmanager
 from decimal import Decimal
 from pathlib import Path
 
@@ -545,30 +546,91 @@ def io_pair_released(boundary, attempt, work_id, seconds=60):
         time.sleep(0.1)
 
 
-def final_prefix(boundary, attempt, work_id, out_path, seconds=120):
-    """Fix card A2: while the work is RUNNING, wait until the initial-prefix
-    artifact is final -- mode 0444 (the SR-4 writer chmods only after its
-    fsync) and the one-inode cap full -- so the host reads it from the live
-    mount before the guardian settles and its pair is released."""
-    prefix_path = out_path / PART_A_INITIAL_ARTIFACT
+def _cgroup_events(group):
+    return dict(
+        line.split(' ', 1) for line in (group / 'cgroup.events').read_text().splitlines() if line
+    )
+
+
+@contextmanager
+def held_guardian(boundary, scopes, seconds=30):
+    """Fix card A3: freeze the work's guardian unit cgroup (cgroup v2
+    ``cgroup.freeze``) and hold it until the ``with`` body ends; thaw in a
+    finally. While the guardian's process is frozen and still present its unit
+    stays active, so the io pair bound to it (BindsTo, A1) stays mounted no
+    matter where in its code the guardian was frozen. Only the guardian's own
+    cgroup is frozen: the payload slice is a separate cgroup and runs on."""
+    from test_campaign_supervision_linux import scope_group
+
+    group = scope_group(boundary, scopes, 'guardian_unit')
+    (group / 'cgroup.freeze').write_text('1\n')
+    try:
+        deadline = time.monotonic() + seconds
+        while _cgroup_events(group).get('frozen') != '1':
+            assert time.monotonic() < deadline, ('guardian never froze', _cgroup_events(group))
+            time.sleep(0.01)
+        events = _cgroup_events(group)
+        # The guardian process is still there (frozen, not exited): its unit
+        # and therefore the bound pair are active for the whole hold.
+        assert events.get('populated') == '1', events
+        yield dict(group=str(group), frozen_events=events)
+    finally:
+        (group / 'cgroup.freeze').write_text('0\n')
+
+
+def payload_exited(boundary, scopes, seconds=1080):
+    """The work's payload slice is empty: the container's processes are gone."""
+    from test_campaign_supervision_linux import scope_group
+
+    group = scope_group(boundary, scopes, 'payload_slice')
     deadline = time.monotonic() + seconds
-    checked = 0.0
-    while time.monotonic() < deadline:
-        assert os.path.ismount(out_path), 'the output mount was released before the prefix read'
-        try:
-            final = (
-                stat.S_IMODE(prefix_path.stat().st_mode) == 0o444
-                and os.statvfs(out_path).f_ffree == 0
-            )
-        except FileNotFoundError:
-            final = False
-        if final:
-            return prefix_path
-        if time.monotonic() - checked >= 0.5:
-            checked = time.monotonic()
-            assert work(budget(boundary, attempt), work_id)['state'] == 'RUNNING'
-        time.sleep(0.002)
-    raise AssertionError('the PART_A initial prefix never became final')
+    while _cgroup_events(group).get('populated') != '0':
+        assert time.monotonic() < deadline, 'the PART_A payload never exited'
+        time.sleep(0.05)
+
+
+# systemd's catalog MESSAGE_IDs for PID 1's unit lifecycle records.
+UNIT_STARTED = '39f53479d3a045ac8e11786248231fbf'
+UNIT_STOPPED = '9d1aaa27d60140bd96365438aad20286'
+UNIT_SUCCESS = '7ad2d189f7e94e70a38c781354912448'
+UNIT_FAILURE_RESULT = 'd9b373ed55a64feb8242e02dbe79a49c'
+UNIT_PROCESS_EXIT = '98e322203f7a4ed290d09fe03c09fe15'
+UNIT_ENDED = (UNIT_STOPPED, UNIT_SUCCESS, UNIT_FAILURE_RESULT, UNIT_PROCESS_EXIT)
+# The manager's stop of a bound unit follows its guardian's end; bounded.
+BOUND_STOP_GRACE_USEC = 30 * 10**6
+
+
+def manager_interval(unit, seconds=60):
+    """The unit's active interval on this boot as PID 1 recorded it: the
+    CLOCK_MONOTONIC (usec) receipt of its start-job completion and of the first
+    end record after it. Transient units are collected once inactive, so the
+    journal, not the manager's live table, keeps the interval. Retried
+    (bounded) for journald's flush; a unit with no complete interval fails."""
+    deadline = time.monotonic() + seconds
+    while True:
+        output = subprocess.run(
+            ['/usr/bin/journalctl', '--boot', '--no-pager', '--output=json', '_PID=1',
+             'UNIT=' + unit],
+            capture_output=True, text=True, check=True, timeout=60,
+        ).stdout
+        records = [json.loads(line) for line in output.splitlines() if line.strip()]
+        starts = [int(r['__MONOTONIC_TIMESTAMP']) for r in records
+                  if r.get('MESSAGE_ID') == UNIT_STARTED]
+        if starts:
+            ends = [int(r['__MONOTONIC_TIMESTAMP']) for r in records
+                    if r.get('MESSAGE_ID') in UNIT_ENDED
+                    and int(r['__MONOTONIC_TIMESTAMP']) >= min(starts)]
+            if ends:
+                assert len(starts) == 1, (unit, 'started more than once', starts)
+                return dict(unit=unit, start=min(starts), end=min(ends))
+        if time.monotonic() >= deadline:
+            raise AssertionError(('no complete manager interval', unit,
+                                  [(r.get('MESSAGE_ID'), r.get('MESSAGE')) for r in records]))
+        time.sleep(0.5)
+
+
+def _overlap(first, second):
+    return first['start'] < second['end'] and second['start'] < first['end']
 
 
 def settled_in_doubt(boundary, attempt, work_id, seconds=1080):
@@ -596,7 +658,9 @@ def test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_
     abnormal-exit path archives exactly the initial prefix, the work is
     IN_DOUBT, the campaign ends IN_DOUBT from PART_A_READY with no PART_A
     family, N2 stays COMMITTED, nothing relaunches, and a restart preserves
-    all of it."""
+    all of it. The host reads the output mount while the work's guardian is
+    frozen and the payload has exited (fix card A3), then the pair is released
+    with the guardian (A1)."""
     if not getattr(real_boundary, 'part_a', False):
         pytest.skip('FP_QUALIFICATION_S5=1 required; the Part A /v7 installation')
     from test_campaign_supervision_linux import payload_exit_retained, supervision_events
@@ -614,20 +678,36 @@ def test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_
     )
     assert state['state'] == 'PART_A_READY'
     assert work(state, 'pawork')['state'] == 'RUNNING'
-    # Fix card A2: the guardian's pair is released when its unit ends (A1), so
-    # the host reads the output mount before settlement, once the prefix is
-    # final. The mount holds exactly the fsynced prefix: the SR-4 writer chmods
-    # 0444 only after its fsync, and the final artifact was never created.
-    prefix_path = final_prefix(boundary, attempt, 'pawork', out_path)
-    assert sorted(p.name for p in out_path.iterdir()) == [PART_A_INITIAL_ARTIFACT]
-    assert stat.S_IMODE(prefix_path.stat().st_mode) == 0o444
-    assert os.statvfs(out_path).f_ffree == 0
-    host_prefix = prefix_path.read_bytes()
-    panels = _prefix_panels(host_prefix)
-    assert [panel['index'] for panel in panels] == [0, 1], panels
-    assert all(len(panel['outcomes']) == 2 for panel in panels), panels
-    assert not (out_path / PART_A_FINAL_ARTIFACT).exists()
-    assert not (out_path / 'result.frame').exists()
+    # Fix card A3: the pair is released when the guardian's unit ends (A1), so
+    # the host reads the output mount inside a held window. The guardian has
+    # sent the resume (a RESUMED event is retained only after the send; the
+    # worker blocked SIGUSR1 before declaring readiness, so the first send is
+    # pending for its sigtimedwait), then its cgroup is frozen, and the payload
+    # -- a separate cgroup -- runs to its death on the refused final create.
+    wait(
+        boundary,
+        attempt,
+        lambda s: supervision_events(boundary, attempt, 'RESUMED', 'pawork'),
+        seconds=120,
+    )
+    scopes = retained_enrollment(boundary, attempt, 'pawork')['scopes']
+    with held_guardian(boundary, scopes) as held:
+        payload_exited(boundary, scopes)
+        assert os.path.ismount(out_path)
+        # The mount holds exactly the fsynced prefix: the SR-4 writer chmods
+        # 0444 only after its fsync, and the final artifact was never created.
+        assert sorted(p.name for p in out_path.iterdir()) == [PART_A_INITIAL_ARTIFACT]
+        prefix_path = out_path / PART_A_INITIAL_ARTIFACT
+        assert stat.S_IMODE(prefix_path.stat().st_mode) == 0o444
+        assert os.statvfs(out_path).f_ffree == 0
+        host_prefix = prefix_path.read_bytes()
+        panels = _prefix_panels(host_prefix)
+        assert [panel['index'] for panel in panels] == [0, 1], panels
+        assert all(len(panel['outcomes']) == 2 for panel in panels), panels
+        assert not (out_path / PART_A_FINAL_ARTIFACT).exists()
+        assert not (out_path / 'result.frame').exists()
+        # Every read above came from the live mount.
+        assert os.path.ismount(out_path)
     state = settled_in_doubt(boundary, attempt, 'pawork')
     row = work(state, 'pawork')
     assert row['state'] == 'IN_DOUBT'
@@ -655,14 +735,14 @@ def test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_
     assert len(guardian_dispatches) == 1, guardian_dispatches
     assert [w['work_id'] for w in state['works'] if w['phase'] == 'PART_A'] == ['pawork']
     works_before = sorted((w['work_id'], w['state']) for w in state['works'])
-    # Fix card A2 (added): the inspection copy is archived, so the work's io
-    # pair is released with its guardian unit.
+    # Fix card A2/A3 (added): the inspection copy is archived, so the work's
+    # io pair is released with its guardian unit.
     released = io_pair_released(boundary, attempt, 'pawork')
     host.save(
         boundary.output / (attempt + '-part-a-prefix-crash.json'),
         dict(cap=cap, prefix_sha256=_sha256(host_prefix), prefix_panels=len(panels),
              failure=failures[0], payload_exit=exit_facts, campaign_state=state['state'],
-             io_release=released),
+             io_release=released, held=held),
     )
     boundary.restart()
     state = settled_in_doubt(boundary, attempt, 'pawork', seconds=120)
@@ -801,55 +881,55 @@ def test_s5_part_a_g5_unit_death_and_exact_receipt_retry(real_boundary):
 
 
 def test_s5_io_mount_pairs_are_released_with_each_work_guardian(real_boundary):
-    """Fix card test (4), QEXEC-01: on one attempt's multi-work sequence --
-    N1 worker, N1 g5, N2 worker, N2 g5, Part A worker, Part A g5 -- the live
-    var-lib-fpq-*.mount count never exceeds 2 x the worker works in flight
-    (the sequence runs one worker work at a time and a g5 work creates no
-    mount), and after each worker work settles its pair is inactive or
-    absent. A background sampler reads the manager's unit table every 50 ms
-    for the whole sequence."""
+    """Fix card test (4), QEXEC-01, A3: on one attempt's multi-work sequence --
+    N1 worker, N1 g5, N2 worker, N2 g5, Part A worker, Part A g5 -- each worker
+    work's io pair has an exact manager interval (PID 1's journal records,
+    CLOCK_MONOTONIC) that starts inside its own guardian unit's interval and
+    ends no later than the manager's bounded stop after that guardian's end;
+    pairs of works whose guardians do not overlap never overlap; and no pair
+    is active after settlement. A work with no observed interval fails."""
     if not getattr(real_boundary, 'part_a', False):
         pytest.skip('FP_QUALIFICATION_S5=1 required; the Part A /v7 installation')
-    import threading
+    from c1_rail.qualification.execution.campaign_supervisor import checkpoint_io_paths
 
     boundary = real_boundary
     # Units a prior case left live (none expected) are outside this sequence.
     baseline = set(live_io_mounts())
-    samples = []
-    stop = threading.Event()
-    failures = []
-
-    def sample():
-        while not stop.is_set():
-            try:
-                samples.append(len(set(live_io_mounts()) - baseline))
-            except (OSError, subprocess.SubprocessError) as exc:  # retained, never swallowed
-                failures.append(repr(exc))
-            stop.wait(0.05)
-
-    sampler = threading.Thread(target=sample, daemon=True)
-    sampler.start()
-    try:
-        attempt = committed_n2(boundary)
-        boundaries = []
-        for work_id in ('n1work', 'n2work'):
-            boundaries.append(io_pair_released(boundary, attempt, work_id))
-        after_prefix = sorted(set(live_io_mounts()) - baseline)
-        assert after_prefix == [], after_prefix
-        attested_part_a(boundary, attempt)
-        boundaries.append(io_pair_released(boundary, attempt, 'pawork'))
-        committed_part_a_decision(boundary, attempt, 'FULL_PASS_READY')
-        settled = sorted(set(live_io_mounts()) - baseline)
-    finally:
-        stop.set()
-        sampler.join(timeout=30)
-    assert not failures, failures
-    assert samples, 'the io-mount sampler took no sample'
-    # One worker work in flight at a time: at most one pair live.
-    assert max(samples) <= 2, max(samples)
+    attempt = committed_n2(boundary)
+    attested_part_a(boundary, attempt)
+    committed_part_a_decision(boundary, attempt, 'FULL_PASS_READY')
+    worker_works = ('n1work', 'n2work', 'pawork')
+    released = [io_pair_released(boundary, attempt, work_id) for work_id in worker_works]
+    settled = sorted(set(live_io_mounts()) - baseline)
     assert settled == [], settled
+    intervals = {}
+    for work_id in worker_works:
+        enrollment = retained_enrollment(boundary, attempt, work_id)
+        assert enrollment is not None, work_id
+        io = checkpoint_io_paths(enrollment)
+        guardian = manager_interval(enrollment['scopes']['guardian_unit'])
+        pair = [manager_interval(io['in_unit']), manager_interval(io['out_unit'])]
+        intervals[work_id] = dict(guardian=guardian, pair=pair)
+        for mount in pair:
+            # Started by the guardian while it ran; ended either while it ran or
+            # by the manager's stop after its end (BindsTo), within the grace.
+            assert guardian['start'] <= mount['start'] <= guardian['end'], (work_id, guardian, mount)
+            assert mount['start'] <= mount['end'] <= guardian['end'] + BOUND_STOP_GRACE_USEC, (
+                work_id, guardian, mount)
+    assert len(intervals) == len(worker_works) and all(
+        len(value['pair']) == 2 for value in intervals.values()
+    ), intervals
+    for first in worker_works:
+        for second in worker_works:
+            if first >= second:
+                continue
+            if _overlap(intervals[first]['guardian'], intervals[second]['guardian']):
+                continue
+            for mount in intervals[first]['pair']:
+                for other in intervals[second]['pair']:
+                    assert not _overlap(mount, other), (first, second, mount, other)
     host.save(
         boundary.output / (attempt + '-io-release.json'),
-        dict(baseline=sorted(baseline), samples=len(samples), max_live_io_mounts=max(samples),
-             released=boundaries, settled_live_io_mounts=settled),
+        dict(baseline=sorted(baseline), intervals=intervals, released=released,
+             settled_live_io_mounts=settled),
     )
