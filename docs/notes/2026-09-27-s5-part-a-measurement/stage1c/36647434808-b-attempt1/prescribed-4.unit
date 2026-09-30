@@ -1,0 +1,10 @@
+Result=success
+ExecMainStartTimestampMonotonic=253893158
+ExecMainExitTimestampMonotonic=261253284
+ExecMainStatus=0
+ControlGroup=
+MemoryPeak=88006656
+MemorySwapPeak=0
+CPUUsageNSec=7357613000
+HarnessPollTimeout=no
+HarnessPollBoundS=1800

@@ -175,6 +175,7 @@ resolved identity at qualification and activation.
 **Verification:** Full PASS/failure, duplicate/conflicting requests, invalidation races, crash cuts and historical receipt identity.
 **Checkpoint:** S6 result commit is an explicit internal acceptance boundary; split S7 into its own task if needed.
 **Return boundary:** Result and seal accepted; no production authority.
+**Carried obligation (operator, 2026-09-29):** an independently observed pilot draw, replacing the TEST_ONLY plan-agreement pilot identity (S5 B4), is due with T05 and before CP-6; see H9 in [staged acceptance](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md).
 
 ### T06 — Full synthetic E1 acceptance / S8 (500k–750k)
 **Selected outcome:** One integrated Linux release proves SEALED_PASS and the complete required negative-case suite.
@@ -492,7 +493,7 @@ Each checkpoint takes the decision once, against a returned artifact. Between ch
 | CP-3 | Authorize **each** order-producing commissioning row, in writing, with environment and exposure limits, before that row | H2 stage-1 row, after the prior row's traces | That row only; its traces return before the next |
 | CP-4 | Rule B-13 (the ORB lifecycle); accept the state-classification contract. **RULED 2026-09-27** (§59 Ruling 7): L1, and the fresh-evidence contract | #519 returns | H3 applies the owner text; H4 (synthetic repair plus replay correction); the ORB side of edition preparation |
 | CP-5 | Accept gates B–D using commissioning traces, H3/H4 and the allocation map | Gate record above | Bounded T09 dispatch (including the fence's producer and route integration); edition file production (G2b) |
-| CP-6 | Freeze / F1: feed later-binding rule, RC-4 change landed, K3, complete behavior inventory | T10 phase-2 packet; §5 check | Reservation of the production attempt (distinct dependent approvals retained) |
+| CP-6 | Freeze / F1: feed later-binding rule, RC-4 change landed, K3, complete behavior inventory. **Carried residual (operator, 2026-09-29, S5 C3 step 1):** G5 independent bars verification, i.e. the calendar ↔ population-index ↔ bars consistency that PART_A's G5 does not re-verify ([ledger](2026-09-18-full-e1-execution-slices.md)) | T10 phase-2 packet; §5 check | Reservation of the production attempt (distinct dependent approvals retained) |
 | CP-7 | Feed funding (O-4) | D-feed conditions; H8 packet | Provider-specific adapter and shadow collection |
 | CP-8 | Production host provisioning (and any spend); admit the production attempt after OF attestation | H7 plus the attested reads | Production E1 once (T15) |
 | CP-9 | Deployment GO and authority for one attended session | T16 candidate; H10 rehearsal; fresh B7/n3 | One attended session; explicit review before extension (§A11 item 1) |

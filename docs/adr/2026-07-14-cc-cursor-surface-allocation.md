@@ -63,7 +63,7 @@ landed change first, operator attention second. Throughput is not a metric.**
 | **Executive** | Codex ("Astra") | Goal, constraints, next milestone; accept/reject on the evidence pack (diff, test log, reviewer dissent) — never on the coordinator's synthesis alone; independent PR review of the diff against the *goal* (the 2026-08-29 addendum #1 review path, retained) | Author tickets, implement, merge |
 | **Coordinator** | Claude Code, Opus (default effort; raise effort before changing model) | Decompose the milestone into frozen cards, dispatch, steer, adjudicate `DONE_WITH_CONCERNS`, integrate, write the evidence pack and the campaign record | Be the sole signer on a diff whose card it wrote; implement the hard 20 % by default instead of escalating; touch `main` |
 | **Worker** | Z Code (GLM 5.3) sessions; a Claude Code or Codex session may take a packet when the operator routes one there | Bounded implementation, tests, docs and refactors in a worktree against a frozen card; return the four-state status with the evidence the card names | Change architecture, expand scope, resolve a spec ambiguity, write reserved files, merge |
-| **Escalation** | Claude Code, Fable 5.1 | Only on a named trigger (below): milestone adjudication, the rebuild after a second failed round, load-bearing contract authoring | Daily decomposition, worker supervision, a second executive |
+| **Escalation** | Claude Code, ~~Fable 5.1~~ Opus in a separate session at raised effort (amended 2026-09-30) | Only on a named trigger (below): milestone adjudication, the rebuild after a second failed round, load-bearing contract authoring | Daily decomposition, worker supervision, a second executive |
 | **Operator** | Joshua | Merge, GO/NO-GO, every irreversible act, arming | — (no model owns these) |
 
 Worker branches use `glm/`, `codex/` or `claude/`. **Cursor stays retired** (2026-09-15) — no
@@ -189,7 +189,7 @@ still needs [`task-routing`](../../.claude/skills/task-routing/SKILL.md)'s GO (i
 the operator already chose the environment for that work (its step 1); a proactive dispatch to a
 worker session on the operator's own machine needs neither.
 
-**Escalation lane (Fable 5.1) — named triggers only.** Fable is not a seat; it is an interrupt
+**Escalation lane (~~Fable 5.1~~ Opus, amended 2026-09-30) — named triggers only.** *[Amended 2026-09-30: the lane runs on Opus, not Fable — see [Addendum 2026-09-30](#addendum-2026-09-30--operator-ruling-the-escalation-lane-runs-on-opus).]* Fable is not a seat; it is an interrupt
 with a budget (one milestone review per milestone, one unstick per day, unless the operator
 raises it). It fires on exactly these triggers, and the coordinator states the trigger in the
 dispatch:
@@ -346,7 +346,7 @@ repo use other names; they are translated at the boundary and never adopted as a
 |---|---|
 | Executive / Principal (human) | **Operator** |
 | Chief of Staff | **Executive** (Codex "Astra") — may author the mandate (goal, constraints, milestone, success criteria), never cards, so its PR review against its goal stays independent |
-| COO | **Coordinator** (Opus); Fable stays the escalation lane and never takes this seat |
+| COO | **Coordinator** (Opus); the escalation lane (Opus in a separate session since 2026-09-30; Fable before) never takes this seat |
 | Execution teams | **Workers** |
 | Review / verification | reviewer ≠ planner signatures plus deterministic gates |
 
@@ -895,6 +895,24 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 ```
 
 ---
+
+## Addendum 2026-09-30 — operator ruling: the escalation lane runs on Opus
+
+**Source.** In session on 2026-09-30, the operator wrote: "when this fable review is done, i want to amend the fable escalation rule and use opus instead". The ruling took effect after the escalation run then in flight completed (the S5 PART_A state-set fix, `d2e00a9`).
+
+**Decision.** From 2026-09-30 the escalation lane runs on **Claude Code, Opus**, in place of Fable 5.1. Everything else about the lane is unchanged:
+- the three named triggers (two-failure rule, milestone adjudication, load-bearing contract authoring);
+- the budget (one milestone review per milestone, one unstick per day, unless the operator raises it);
+- ownership and precedence: the coordinator owns the item, and no trigger is a worker retry on a stronger model;
+- the restrictions: the lane never takes the coordinator seat, never supervises the worker day to day, and never sits beside the executive as a second planner.
+
+**What now distinguishes the lane from the coordinator.** Both run on Opus, so the difference is no longer the model. An escalation is taken in a **separate Opus session or subagent with a fresh context**, at raised effort, briefed from the invariants or the state model rather than from the coordinator's working context. It is not a continuation of the coordinator's own session. Trigger 1's clause "Raising Opus effort is tried first when the failure is a reasoning gap rather than a missing model" now reads: raising the coordinator's own effort is tried first. The escalation is the fresh-context rebuild.
+
+**Wherever this ADR says "Fable" for the lane,** in the trigger text, the precedence paragraph and the §4-style measure ("the Fable lane fires on more than a third of cards"), read "the escalation lane". The seat table, the lane heading and the COO row are marked in place. Historical records naming Fable, such as dated authorship lines, earlier addenda and the S5 build's escalation-lane commits, are left as they were: they describe what ran at the time.
+
+**Not changed:** the `fable-judge` and `fable-method` skills. Those are methodology names, not model assignments; they run on whatever model the lane uses.
+
+**Grounds.** Operator direction. Evidence from the S5 build (2026-09-29/30): the escalation-lane work was fresh-context rebuilds, and the gain came from the context reset and the rebuild discipline more than from the model.
 
 ## Change history
 

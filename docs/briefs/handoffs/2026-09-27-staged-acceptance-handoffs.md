@@ -529,6 +529,7 @@ The card changes no production code and invents no resume interface. It is READY
 
 **Prerequisites and existing authorization:**
 - **Integration preparation:** S5 Checkpoint C3 accepted (the PART_A field sets, the `/v8` snapshot and the capture contract are stable), and the existing T05 build acceptance.
+- **Carried obligation (operator, S5 C3 step 1, 2026-09-29):** B4 was accepted for TEST_ONLY only. Strengthening pilot identity from plan agreement to an independently observed pilot draw is **due with T05, before CP-6**. The T05 integration owner tracks it ([ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md)).
 - **Checkpoint R1, integration acceptance:** full S5 acceptance. This is the existing dependency ("Integrate the frozen head `6cf2732` after S5 acceptance"); it is not replaced.
 - **Checkpoint R2, recovery-slice acceptance:** the D3 owner text (S5 draft §3.4) accepted, and R1 accepted.
 
