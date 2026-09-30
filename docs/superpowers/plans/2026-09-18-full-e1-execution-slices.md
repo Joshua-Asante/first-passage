@@ -1703,4 +1703,51 @@ The step-1 acceptance stands with this addendum.
 
 The failed run `36673465130` stays on record as the stop. This addendum's PR stays held until the fix's Linux selection has been read.
 
+### Coordinator execution — io-mount release fix; full S4-plus-Part-A selection GREEN, 2026-09-30
+
+**Card and amendments** (the escalation lane is Opus; the card is `docs/briefs/handoffs/2026-09-30-s5-io-mount-release-card.md` on `claude/s5-part-a`):
+- Frozen at `50d229f` after the operator's GO. Each amendment below was committed before the work it governs.
+- **A1** (`a3c8e77`, ruling "Bind mounts to the work"): the executor returned NEEDS_CONTEXT, because the guardian cannot `StopUnit` its mounts. Its bus child admits only `StartTransientUnit` (`deploy/qualification/bootstrap.py:93`), and the polkit rule admits unit-scoped actions only for `fpq`-prefixed names (`tools/qualification_verification/campaign_host.py:88-93`). A1 therefore binds each io mount unit to the work's guardian unit with exactly `BindsTo=`/`After=`.
+- **A2** (`eff41ca`, ruling "Amend node (c) as proposed"): node (c) read `out_path` after settlement, so its host reads moved to before settlement.
+- **A3** (`e7c9826`, ruling "Freeze the guardian"): Codex found two P2s, A2's read still raced and node (4)'s sampling was insufficient. A3 held node (c)'s window with a cgroup freeze, and node (4) moved to exact journal intervals.
+- **A4** (`68a7fd7`, ruling "Archive-based on Linux"): Codex found that the freeze's acquisition raced and that deadlines run on while frozen. That was **node (c)'s second failed correction**, so the coordinator stopped under the two-failure rule and returned to the operator.
+  - Node (c) restarted with explicit criteria. It makes no host mount read, keeps every settled assertion, checks the prefix on the staged bytes, and adds the release check.
+  - Archive-to-mount fidelity is proven by fake-bus test (2), which covers both the abnormal-exit and absent-frame paths.
+  - Node (4) ends an interval only at a deactivation record and fails on any failed stop.
+  - **Removed from node (c) by operator ruling:** the host-side listing, 0444, `f_ffree`, and the on-mount absence checks.
+
+**Code.**
+- `7c97a69`: the only production change. `_io_mount_properties` gains `guardian_unit` and adds exactly `BindsTo`/`After`, +19/−2 in `campaign_supervisor.py`.
+- Tests:
+  - `d33bddf`: tests (1)–(3), fail-first on `072c133` (record `20260930T171825Z-b5f2756d3eb8`); they pass on the fix (`20260930T171850Z-6f40aacff83b`, the acceptance set, 259 passed, 1 skipped).
+  - `5268f5b`: the harness.
+  - `0ab8f6b`: the new required node `test_s5_io_mount_pairs_are_released_with_each_work_guardian` under `QEXEC-01` (41 → 42 nodes).
+  - `aeabbd4`, then `606e6e0`: the A3 and A4 test revisions.
+
+**Verification.**
+- Windows on `0ab8f6b`:
+  - line 1, `20260930T173142Z-7020a1971a25`: 1254 passed, **2 failed**. These are the known base whitespace cases in `test_s2_evidence_tooling_followups`; line 1 is not a pass.
+  - line 2, `20260930T180209Z-0c7b29f1db56`: 80 passed, 1 skipped.
+  - line 3, `20260930T180319Z-eaf81326edda`: 1845 passed, 1 skipped.
+  - `check`, `20260930T191134Z-8366de74c21c`: completed.
+  - `git diff --check` is clean.
+- Later commits change only the Linux test file.
+  - On `aeabbd4`: line 2 plus boundary-verification, `20260930T191324Z-410943c4e83c`, 106 passed, 1 skipped; collection `20260930T191502Z-17ef4e47a239`, 5 nodes.
+  - On `606e6e0`: `20260930T192328Z-616ea49366fa`, 78 passed, 1 skipped; collection `20260930T192336Z-bc60f17958e1`.
+- The Stage 1c closure re-run on `0ab8f6b` is 68 measured modules, all byte-identical to `c7713e7`, with `campaign_supervisor`, `campaign_store` and `campaign_host` outside it.
+- Codex:
+  - `eff41ca..0ab8f6b`: two P2s, both in tests. Production ordering, custody, BindsTo and Stage 1c were confirmed.
+  - `e7c9826`/`aeabbd4`: three P2s.
+  - `606e6e0`: **RESOLVED, no actionable findings.**
+
+**Linux full S4-plus-Part-A selection: run `36766144433`** (`-f mode=s5` on `606e6e0`; record `20d0a964…`) is **GREEN**, and `s2_run_evidence.py --expect-head 606e6e0 --expect-scope S5_PART_A` reads `ok: true` with no refusals.
+- `status=completed`, exit 0, verification exit 0; source stable; capture complete; cleanup ok; the tested commit is the head.
+- `invariants.json` passed, 27 required nodes; junit 27/0/0/0 (sha256 `e408ad06…`).
+- The only OOM on the host was the deliberate `test_s2_shared_memory_oom_is_retained_last`, which killed its own payload inside its work slice at the run's end. The supervisor was not killed.
+- The Part A observation's `memory_peak_bytes` is again 256,000,000. That is the clipped slice-wide peak, which by operator ruling (2) is an upper bound only.
+
+**Next under the C3 Linux grant:** Stage 2/PA-5, CPU-only for TEST_ONLY.
+
+**Not granted:** C3 acceptance, S5 acceptance, any merge of `claude/s5-part-a`, and any production authority.
+
 **Not granted:** C3 acceptance, S5 acceptance, any merge of `claude/s5-part-a`, and any production authority.
