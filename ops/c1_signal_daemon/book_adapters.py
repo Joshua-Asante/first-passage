@@ -273,6 +273,34 @@ def _qualification_domain(contract):
     return domain
 
 
+def _source_domain(contract, *, now=None):
+    """Source-only receipt domain (T00 design rev 4.2); re-checks lifecycle on every use."""
+    from c1_rail.qualification.contract import ValidatedSourceContract, require_validated_source_contract
+    from c1_rail.qualification.trust_domain import SourceTrustDomain
+    if type(contract) is not ValidatedSourceContract:
+        raise ValueError('exact validated source contract required')
+    if now is None:
+        from c1_rail.qualification.production_source import _now
+        now = _now()
+    require_validated_source_contract(contract, now=now)
+    domain = contract.trust_domain
+    if type(domain) is not SourceTrustDomain or domain.contract_sha256 != contract.contract_sha256:
+        raise ValueError('source contract domain differs')
+    if contract.effective_settings_sha256 != domain.effective_settings_sha256:
+        raise ValueError('contract settings differ from source domain')
+    return domain
+
+
+def _resolve_domain(contract):
+    """Dispatch on the exact receipt type: F1 qualification or source-only."""
+    from c1_rail.qualification.contract import ValidatedFrozenContract, ValidatedSourceContract
+    if type(contract) is ValidatedFrozenContract:
+        return _qualification_domain(contract)
+    if type(contract) is ValidatedSourceContract:
+        return _source_domain(contract)
+    raise ValueError('exact G1-validated frozen or source contract required')
+
+
 def _load_composition_adapters(contract, *, retained_bytes):
     """Internal TEST_ONLY composition entry; never exposed by production CLI."""
     domain = _qualification_domain(contract)
@@ -283,7 +311,7 @@ def _load_composition_adapters(contract, *, retained_bytes):
 
 def _load_domain_adapters(contract, *, retained_bytes, domain):
     from c1_signal_daemon.book_protocol import Mode
-    if _qualification_domain(contract) is not domain:
+    if _resolve_domain(contract) is not domain:
         raise ValueError('adapter domain differs from exact contract domain')
     if __name__ != 'c1_signal_daemon.book_adapters':
         raise ValueError('qualification adapter module alias is forbidden')

@@ -53,6 +53,16 @@ class ProductionSourceNeedsContext(NeedsContext):
         super().__init__('concrete production source capabilities missing: ' + '; '.join(g.code for g in self.gaps))
 
 
+def _now():
+    """Single time seam for source-only receipt lifecycle checks (spec §2.3)."""
+    return datetime.now(timezone.utc)
+
+
+def _is_source_only(contract):
+    from .contract import ValidatedSourceContract
+    return type(contract) is ValidatedSourceContract
+
+
 def port_active_window(leg, instant, params):
     """RC7 session windows from the accepted corrected ports, not entry signals."""
     aware(instant)
@@ -343,7 +353,7 @@ def parse_population_index(raw, *, populations):
     if not full or len(set(full)) != len(full) or pools['H1'] != full[:middle] or pools['H2'] != full[middle:]:
         raise ValueError('source population halves must be the disjoint chronological ceil partition')
     exclusions = []
-    allowed = {'missing_active_bar','missing_entire_session','exchange_closed','policy_denied'}
+    allowed = {'missing_active_bar','missing_entire_session','exchange_closed','policy_denied','source_truncated'}
     for row in doc['expected_exclusions']:
         if set(row) != {'source_date','reason','detail'} or row['reason'] not in allowed or type(row['detail']) is not str or not row['detail']:
             raise ValueError('explicit supported source exclusion required; deadline failure is not an exclusion')
@@ -691,8 +701,8 @@ def _prepare_domain_inputs(contract, *, artifact_root, domain):
 
 def _derive_retained_inputs(contract, *, retained, domain):
     """Derive all source inputs from one verified retained byte snapshot."""
-    from c1_signal_daemon.book_adapters import _qualification_domain
-    if _qualification_domain(contract) is not domain:
+    from c1_signal_daemon.book_adapters import _resolve_domain
+    if _resolve_domain(contract) is not domain:
         raise ValueError('source preparation domain differs from exact contract domain')
     snapshots, _, trace = _qualification_snapshots(contract, retained)
     by_role = {row.role: row for row in contract.artifacts}
@@ -723,6 +733,63 @@ def _derive_retained_inputs(contract, *, retained, domain):
     return PreparedProductionInputs(contract.contract_sha256, tuple(retained.items()), trace, admission, tuple(panels), startup, gaps)
 
 
+def truncated_slot_ranges(index_raw):
+    """ET first-last slot range per indexed date, as a truncation reason must name it."""
+    doc = _json(index_raw)
+    ranges = {}
+    for day, values in doc.get('expected_source_slots', {}).items():
+        if values:
+            first, last = (_instant(v).astimezone(ET).strftime('%H:%M') for v in (values[0], values[-1]))
+            ranges[day] = f'{first}-{last}'
+    return ranges
+
+
+def validate_source_only_calendar(raw, *, contract, truncated_slots):
+    """Source-only calendar rules the generic parser does not enforce (spec §2.6a)."""
+    doc = _json(raw)
+    producer = {row.role: row.sha256 for row in contract.artifacts}.get('calendar_producer')
+    expected = {'role': 'calendar_producer', 'sha256': producer}
+    ends = {doc.get('coverage_start'), doc.get('coverage_end')}
+    for row in doc.get('sessions') or ():
+        deadlines = row.get('venue_deadlines') or {}
+        facts = list(row.get('facts') or ()) + [item.get('fact') for item in deadlines.values()
+                                                if isinstance(item, dict)]
+        if producer is None or any(fact != expected for fact in facts):
+            raise ValueError('CALENDAR_FACT_ROLE: every calendar fact must bind the calendar_producer role')
+        status, reason = row.get('status'), row.get('reason') or ''
+        if status == 'policy_denied' and reason.startswith('panel truncated'):
+            raise ValueError('TRUNCATION_STAND_IN_RETIRED: use the typed source_truncated disposition')
+        if status == SourceDayStatus.SOURCE_TRUNCATED.value:
+            if deadlines or row.get('date') not in ends:
+                raise ValueError('SOURCE_TRUNCATION_INTERIOR: truncation is allowed only at an interval end')
+            slots = truncated_slots.get(row.get('date'))
+            if not slots or slots not in reason.replace('\u2013', '-'):
+                raise ValueError('SOURCE_TRUNCATION_REASON: the reason must name the truncated slots')
+
+
+def _review_source(raw, *, role, digest, scope, contract, source_binding_sha256=None):
+    """Reviewer-authored v2 companion (spec §2.6b); a producer never reviews itself."""
+    doc = _json(raw)
+    fields = {'schema', 'artifact_role', 'artifact_sha256', 'scope', 'decision', 'reviewer', 'reviewed_at', 'notes'}
+    if source_binding_sha256 is not None:
+        fields.add('source_binding_sha256')
+    if (type(doc) is not dict or set(doc) != fields or doc['schema'] != 'qualification-source-review/v2'
+            or doc['artifact_role'] != role or doc['artifact_sha256'] != digest or doc['scope'] != scope
+            or doc['decision'] != 'ACCEPTED'
+            or (source_binding_sha256 is not None and doc['source_binding_sha256'] != source_binding_sha256)
+            or type(doc['reviewer']) is not str or not doc['reviewer'].strip()
+            or type(doc['notes']) is not list or not doc['notes']
+            or any(type(note) is not str or not note.strip() for note in doc['notes'])):
+        raise ValueError('review companion does not bind exact source artifact/scope/reviewer')
+    try:
+        _instant(doc['reviewed_at'])
+    except (TypeError, ValueError, AttributeError) as exc:
+        raise ValueError('review companion reviewed_at must be an aware instant') from exc
+    producers = {row.role: row.producer for row in contract.artifacts}
+    if doc['reviewer'] == producers.get(role):
+        raise ValueError('REVIEW_NOT_INDEPENDENT: the reviewer produced the reviewed artifact')
+
+
 def _review(raw, *, role, digest, scope, source_binding_sha256=None):
     doc = _json(raw)
     expected = {'schema': 'qualification-source-review/v1', 'artifact_role': role,
@@ -731,6 +798,59 @@ def _review(raw, *, role, digest, scope, source_binding_sha256=None):
         expected['source_binding_sha256'] = source_binding_sha256
     if doc != expected:
         raise ValueError('review companion does not bind exact source artifact/scope')
+
+
+@dataclass(frozen=True)
+class SourceOnlySession:
+    """Primitive per-session projection for the P7 hand recompute (spec §2.6c)."""
+    source_session_id: str
+    occurrence: int
+    pnl: float
+    intraday_low: float
+    fills: int
+    flat_before_deadline: bool
+    start_flat: bool
+    end_flat: bool
+
+
+@dataclass(frozen=True)
+class SourceOnlyReplay:
+    """Sealed source-only run result; deliberately not a ReplayResult."""
+    evidence_class: str
+    contract_sha256: str
+    approval_sha256: str
+    sessions: tuple
+    events_sha256: str
+    consumed_intrabar_splits: tuple
+    deadline_failure: bool
+
+
+@dataclass(frozen=True)
+class SourceOnlyBracket:
+    r1: SourceOnlyReplay
+    r2: SourceOnlyReplay
+
+
+@dataclass(frozen=True)
+class SourceOnlyProof:
+    evidence_class: str
+    contract_sha256: str
+    approval_sha256: str
+    edges: tuple
+    joins: tuple
+
+
+def _seal(contract, result, *, provider=None, deadline_failure=False):
+    events = json.dumps([[e.path_time.isoformat(), e.kind, e.leg_id, e.detail] for e in result.events],
+                        separators=(',', ':')).encode()
+    placed = () if provider is None else tuple(sorted(
+        (occurrence, leg, instant.isoformat()) for occurrence, leg, instant in provider._placed
+        if instant.minute % 15 or instant.second or instant.microsecond))
+    rows = tuple(SourceOnlySession(row.source_session_id, row.occurrence, float(row.pnl), float(row.intraday_low),
+                                   row.fills, row.flat_before_deadline, row.start_edge.is_flat, row.end_edge.is_flat)
+                 for row in result.sessions)
+    return SourceOnlyReplay(contract.evidence_class, contract.contract_sha256, contract.approval.approval_sha256,
+                            rows, hashlib.sha256(events).hexdigest(), placed, deadline_failure)
 
 
 _SOURCE_TOKEN = object()
@@ -841,13 +961,16 @@ class ProductionSource:
     _instruments: tuple
     _token: object
     _domain: object
+    evidence_class: str
 
     def __new__(cls, *args, **kwargs):
         raise ProductionSourceNeedsContext()
 
     @classmethod
     def build(cls, contract, *, artifact_root):
-        from c1_signal_daemon.book_adapters import _qualification_domain
+        from c1_signal_daemon.book_adapters import _qualification_domain, _source_domain
+        if _is_source_only(contract):
+            return cls._build_domain(contract, artifact_root=artifact_root, domain=_source_domain(contract))
         domain = _qualification_domain(contract)
         if domain.authority_class != 'OPERATOR' or domain.permits_synthetic:
             raise ValueError('exact production OPERATOR contract required')
@@ -869,13 +992,13 @@ class ProductionSource:
     @classmethod
     def _build_from_prepared(cls, contract, prepared, *, domain):
         """Internal reuse of the exact retained snapshot checked by admission."""
-        from c1_signal_daemon.book_adapters import _qualification_domain
+        from c1_signal_daemon.book_adapters import _resolve_domain
         from c1_signal_daemon.book_adapters import _load_domain_adapters
         from .panel import build_panel, CoverageReport, Exclusion
         from .replay import Instrument
         if (type(prepared) is not PreparedProductionInputs
                 or prepared.contract_sha256 != contract.contract_sha256
-                or _qualification_domain(contract) is not domain):
+                or _resolve_domain(contract) is not domain):
             raise ValueError('prepared source contract/domain mismatch')
         retained = dict(prepared.retained_bytes)
         derived = _derive_retained_inputs(contract, retained=retained, domain=domain)
@@ -895,13 +1018,20 @@ class ProductionSource:
                                     'Concrete source capability and review bytes must be retained in the signed closed artifact inventory.')
                          for role in sorted(missing))
             raise ProductionSourceNeedsContext(gaps, prepared=prepared)
+        source_only = _is_source_only(contract)
+        review = (lambda raw, **kw: _review_source(raw, contract=contract, **kw)) if source_only else _review
         for role, scope in (('source_calendar', 'SOURCE_CALENDAR'), ('schedule_execution_evidence', 'SCHEDULE_EXECUTION')):
-            _review(snapshots[role+'_review'], role=role, digest=digests[role], scope=scope)
+            review(snapshots[role+'_review'], role=role, digest=digests[role], scope=scope)
         startup = parse_startup_policy(snapshots['source_startup_policy'])
+        if source_only:
+            if startup.path_start_date != contract.path_start_date:
+                raise ValueError('path_start_date differs between the signed contract and the startup policy')
+            validate_source_only_calendar(snapshots['source_calendar'], contract=contract,
+                                          truncated_slots=truncated_slot_ranges(snapshots['population_index']))
         clock, tail = parse_source_calendar(snapshots['source_calendar'], artifact_digests=digests)
         population_index = parse_population_index(snapshots['population_index'], populations=contract.populations)
-        _review(snapshots['population_index_review'], role='population_index', digest=digests['population_index'], scope='SOURCE_POPULATION_INDEX',
-                source_binding_sha256=hashlib.sha256(population_index.source_binding_bytes).hexdigest())
+        review(snapshots['population_index_review'], role='population_index', digest=digests['population_index'], scope='SOURCE_POPULATION_INDEX',
+               source_binding_sha256=hashlib.sha256(population_index.source_binding_bytes).hexdigest())
         population_index.validate_calendar(clock)
         population_index.validate_provider_generation(prepared.panels, expected_binding={
             'panel_sha256':dict(prepared.historical_admission.panels), 'port_sha256':dict(prepared.historical_admission.ports),
@@ -950,7 +1080,8 @@ class ProductionSource:
                       path_start_date=startup.path_start_date, exclusions=exclusions, _quotes=quotes,
                       shared_provider_gaps=tuple((day,instant) for day,instant,state,_ in population_index.slot_provenance
                                                  if state=='PROVIDER_SHARED_ABSENCE'),
-                      _instruments=tuple(instruments), _token=_SOURCE_TOKEN, _domain=domain)
+                      _instruments=tuple(instruments), _token=_SOURCE_TOKEN, _domain=domain,
+                      evidence_class=contract.evidence_class if source_only else 'QUALIFICATION')
         for name, value in fields.items():
             object.__setattr__(result, name, value)
         identity = id(result)
@@ -958,28 +1089,43 @@ class ProductionSource:
                                     _source_execution_snapshot(result))
         return result
 
-    def verify_for(self, contract):
-        from c1_signal_daemon.book_adapters import _qualification_domain
+    def _verify_integrity(self):
+        """Issuance, snapshot, domain and retained bytes; authorizes nothing (spec §2.6)."""
+        from c1_signal_daemon.book_adapters import _resolve_domain
         issued = _SOURCE_ISSUED.get(id(self))
         if issued is None or issued[0]() is not self:
             raise ValueError('factory-issued source object required')
         if _source_execution_snapshot(self) != issued[1]:
             raise ValueError('issued source execution state changed')
-        if (type(self) is not ProductionSource or self._token is not _SOURCE_TOKEN or self.contract is not contract
-                or _qualification_domain(contract) is not self._domain
+        contract = self.contract
+        if (type(self) is not ProductionSource or self._token is not _SOURCE_TOKEN
+                or _resolve_domain(contract) is not self._domain
                 or self.prepared.contract_sha256 != contract.contract_sha256):
             raise ValueError('source factory identity does not bind the exact production G1 contract')
         _qualification_snapshots(contract, dict(self.prepared.retained_bytes))
 
+    def verify_for(self, contract):
+        """Integrity plus qualification authorization; source-only sources are refused."""
+        from .contract import ValidatedFrozenContract
+        self._verify_integrity()
+        if type(self.contract) is not ValidatedFrozenContract:
+            raise ValueError('SOURCE_ONLY_NOT_QUALIFICATION: a source-only source never serves qualification')
+        if self.contract is not contract:
+            raise ValueError('source factory identity does not bind the exact production G1 contract')
+
     def _check_path(self, path):
-        self.verify_for(self.contract)
+        self._verify_integrity()
         by_id = {s.session_id: s for s in self.sessions}
         if not path or any(by_id.get(s.source.session_id) != s.source for s in path):
             raise ValueError('path contains a source session outside retained covered panel')
 
-    def replay(self, path):
+    def _replay_raw(self, path):
         self._check_path(path)
         return self._engine(self._quotes).run(path)
+
+    def replay(self, path):
+        result = self._replay_raw(path)
+        return _seal(self.contract, result) if _is_source_only(self.contract) else result
 
     def replay_bracket(self, path):
         """R1 and R2 on separate freshly loaded engines; each keeps its own result.
@@ -991,14 +1137,19 @@ class ProductionSource:
         from .replay import ReplayDeadlineFailure
         self._check_path(path)
         bracket = ScheduleExecutionBracket(self._quotes)
-        results = []
+        results, sealed = [], []
         for run_id in BRACKET_RUNS:
-            engine = self._engine(bracket.for_run(run_id))
+            provider = bracket.for_run(run_id)
+            engine = self._engine(provider)
+            failed = False
             try:
-                results.append(engine.run(path))
+                result = engine.run(path)
             except ReplayDeadlineFailure as exc:
-                results.append(exc.result)
-        return BracketReplayResult(*results)
+                result, failed = exc.result, True
+            results.append(result)
+            if _is_source_only(self.contract):
+                sealed.append(_seal(self.contract, result, provider=provider, deadline_failure=failed))
+        return SourceOnlyBracket(*sealed) if sealed else BracketReplayResult(*results)
 
     def _engine(self, schedule_quotes):
         """One fresh engine: reloaded ports, brokers, ledger, cash and clock."""
@@ -1029,7 +1180,7 @@ class ProductionSource:
     def proof(self, panel):
         from .paths import PathAssembler
         path = PathAssembler(self.path_start_date).assemble(tuple((s,) for s in panel), horizon_sessions=len(panel))
-        result = self.replay(path)
+        result = self._replay_raw(path)
         rows = result.sessions
         if len(rows) != len(panel) or any(a.end_edge != b.start_edge for a, b in zip(rows, rows[1:])):
             raise ValueError('continuous proof replay has incomplete or discontinuous ledger edges')
@@ -1039,4 +1190,7 @@ class ProductionSource:
         for left, right in zip(panel, panel[1:]):
             a, b = source_index[left.session_id], source_index[right.session_id]
             joins.append(self.adjacent[a] if b == a+1 else True)
+        if _is_source_only(self.contract):
+            return SourceOnlyProof(self.contract.evidence_class, self.contract.contract_sha256,
+                                   self.contract.approval.approval_sha256, edges, tuple(joins))
         return edges, tuple(joins)

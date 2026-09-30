@@ -11,7 +11,7 @@ import hashlib
 import json
 import math
 from dataclasses import dataclass, fields, is_dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
 from types import MappingProxyType
@@ -238,6 +238,8 @@ def _receipt_snapshot(value: Any) -> Any:
         return ("Decimal", str(value))
     if isinstance(value, datetime):
         return ("datetime", value.astimezone(timezone.utc).isoformat())
+    if isinstance(value, date):
+        return ("date", value.isoformat())
     if isinstance(value, bytes):
         return ("bytes", hashlib.sha256(value).hexdigest(), len(value))
     if value is None:
@@ -862,6 +864,7 @@ def validate_frozen_contract(
             or (domain is not None and policy_authority != domain.authority_class)):
         raise ContractValidationError("freeze approval policy has the wrong scope/authority role")
     enrolled_keys = approval_policy["freeze_key_ids"]
+    _refuse_source_key_ids(enrolled_keys if isinstance(enrolled_keys, list) else ())
     if (not isinstance(enrolled_keys, list) or not enrolled_keys
             or any(not isinstance(key, str) or not key for key in enrolled_keys)
             or enrolled_keys != sorted(set(enrolled_keys))):
@@ -949,10 +952,271 @@ def validate_frozen_contract(
     return result
 
 
+# ---------------------------------------------------------------------------
+# T00 source-only contract (design rev 4.2, docs/superpowers/specs/
+# 2026-09-30-t00-source-only-contract-design.md §2.2–§2.5). A separately
+# signed contract that authorizes only P7 source verification; it is never a
+# qualification, F1, screen or Monte Carlo authority.
+# ---------------------------------------------------------------------------
+
+SOURCE_CONTRACT_SCHEMA = "t00_source_contract/v1"
+SOURCE_SCOPE = "APPROVE_T00_SOURCE_CONTRACT"
+SOURCE_PURPOSE = "T00_P7_SOURCE_VERIFICATION"
+SOURCE_EVIDENCE_CLASS = "T00_P7_SOURCE_ONLY"
+SOURCE_KEY_PREFIX = "source:"
+SOURCE_REFUSALS = ("QUALIFICATION_STAGES", "BUDGET", "DECISION_RULES", "SCREEN", "MONTE_CARLO", "SEAL",
+                   "ADMISSION", "DEPLOYMENT")
+SOURCE_ROLES = frozenset({
+    "source_startup_policy", "source_calendar", "source_calendar_review", "population_index",
+    "population_index_review", "schedule_execution_evidence", "schedule_execution_evidence_review",
+    "cost_model",
+})
+SOURCE_CONTRACT_ROLES = (frozenset(ACCEPTED_HISTORICAL_PINS)
+                         | frozenset("panel_" + leg for leg in REQUIRED_LEGS)
+                         | frozenset({"effective_settings_successor", "calendar_producer"})
+                         | SOURCE_ROLES)
+_SOURCE_FIELDS = frozenset({
+    "schema", "contract_id", "purpose", "artifacts", "historical_pins", "port_runtime_pins",
+    "effective_settings", "populations", "initial_state", "path_start_date", "source_trust", "refusals",
+})
+
+
+@dataclass(frozen=True)
+class SourceKeyPin:
+    """Pinned operator source-signing key: public-key SHA-256 and revocation."""
+    sha256: str
+    revoked_at: datetime | None = None
+
+
+# The trust root. Ships EMPTY: every source contract is refused until the
+# operator enrolls a dedicated key through an operator-merged PR (spec §2.3).
+SOURCE_SIGNING_KEYS: Mapping[str, SourceKeyPin] = MappingProxyType({})
+
+
+def _refuse_source_key_ids(key_ids) -> None:
+    """Qualification validators never enroll a source-signing key ID."""
+    if any(isinstance(key, str) and key.startswith(SOURCE_KEY_PREFIX) for key in key_ids):
+        raise ContractValidationError(
+            "SOURCE_KEY_IN_QUALIFICATION_DOMAIN: source-signing key IDs are never qualification keys")
+
+
+@dataclass(frozen=True)
+class ValidatedSourceContract:
+    contract_id: str
+    contract_sha256: str
+    canonical_bytes: bytes
+    artifacts: tuple[ArtifactRecord, ...]
+    runtime_load_sha256: Mapping[str, str]
+    populations: Mapping[str, tuple[str, ...]]
+    initial_state: EvaluationState
+    effective_settings_sha256: str
+    path_start_date: date
+    approval: ApprovalRecord
+    approval_bytes: bytes
+    trust_domain: object
+    evidence_class: str = SOURCE_EVIDENCE_CLASS
+
+
+_ISSUED_SOURCE_CONTRACTS: dict[int, tuple[weakref.ReferenceType, object]] = {}
+
+
+def _pinned_source_keys() -> Mapping[str, SourceKeyPin]:
+    pins = SOURCE_SIGNING_KEYS
+    if not pins:
+        raise ContractValidationError("SOURCE_TRUST_ROOT_UNENROLLED: no operator source-signing key is pinned")
+    return pins
+
+
+def _source_trust_document(pins: Mapping[str, SourceKeyPin]) -> dict:
+    return {key_id: {"sha256": pin.sha256,
+                     "revoked_at": None if pin.revoked_at is None
+                     else pin.revoked_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")}
+            for key_id, pin in pins.items()}
+
+
+def _check_source_key_lifecycle(approval: ApprovalRecord, now: datetime) -> None:
+    """Re-check expiry, pin membership and revocation for every use (§2.3)."""
+    if now.tzinfo is None or now.utcoffset() is None:
+        raise ContractValidationError("source approval check time must be timezone-aware")
+    now_utc = now.astimezone(timezone.utc)
+    if not approval.issued_at <= now_utc < approval.expires_at:
+        raise ContractValidationError("SOURCE_APPROVAL_EXPIRED: approval is not valid at this time")
+    pin = SOURCE_SIGNING_KEYS.get(approval.key_id)
+    if pin is None:
+        raise ContractValidationError("SOURCE_KEY_REMOVED: signing key is no longer pinned")
+    if pin.revoked_at is not None and pin.revoked_at.astimezone(timezone.utc) <= now_utc:
+        raise ContractValidationError("SOURCE_KEY_REVOKED: signing key is revoked in the pinned root")
+
+
+def _source_constants():
+    from .trust_domain import SOURCE_TRUST_CONSTANTS
+    return SOURCE_TRUST_CONSTANTS
+
+
+def validate_source_contract(
+    contract_bytes: bytes,
+    approval_bytes: bytes,
+    public_keys: Mapping[str, bytes],
+    observed: ObservedBindings,
+    *,
+    now: datetime,
+) -> ValidatedSourceContract:
+    """Validate a source-only contract against the pinned operator root only."""
+    if type(contract_bytes) is not bytes or type(approval_bytes) is not bytes:
+        raise ContractValidationError("source contract and approval require immutable bytes")
+    doc = parse_canonical_json(contract_bytes, label="source contract")
+    if type(doc) is not dict or set(doc) != _SOURCE_FIELDS:
+        actual = set(doc) if isinstance(doc, dict) else set()
+        raise ContractValidationError(
+            f"SOURCE_CONTRACT_FIELDS: missing={sorted(_SOURCE_FIELDS - actual)}, extra={sorted(actual - _SOURCE_FIELDS)}")
+    if (doc["schema"] != SOURCE_CONTRACT_SCHEMA or doc["purpose"] != SOURCE_PURPOSE
+            or doc["refusals"] != list(SOURCE_REFUSALS)):
+        raise ContractValidationError("SOURCE_CONTRACT_FIELDS: schema, purpose and refusals must be exact")
+    contract_id = _text(doc["contract_id"], label="contract_id")
+
+    # Role set and closed artifact inventory.
+    if not isinstance(doc["artifacts"], list) or not doc["artifacts"]:
+        raise ContractValidationError("SOURCE_ROLE_SET: artifacts must be a non-empty list")
+    artifacts, roles, paths = [], set(), set()
+    for index, raw in enumerate(doc["artifacts"]):
+        row = _fields(raw, {"role", "path", "sha256", "producer", "authority_class"}, label=f"artifact[{index}]")
+        role, path = _text(row["role"], label="artifact role"), _text(row["path"], label="artifact path")
+        if role in roles or path in paths:
+            raise ContractValidationError("SOURCE_ROLE_SET: artifact roles and paths must be unique")
+        if row["authority_class"] != "PRODUCTION_REVIEWED":
+            raise ContractValidationError("SOURCE_ROLE_SET: artifacts must be PRODUCTION_REVIEWED")
+        roles.add(role); paths.add(path)
+        artifacts.append(ArtifactRecord(role, path, _sha256(row["sha256"], label="artifact sha256"),
+                                        _text(row["producer"], label="artifact producer"), row["authority_class"]))
+    if roles != SOURCE_CONTRACT_ROLES:
+        raise ContractValidationError(
+            f"SOURCE_ROLE_SET: missing={sorted(SOURCE_CONTRACT_ROLES - roles)}, extra={sorted(roles - SOURCE_CONTRACT_ROLES)}")
+    if len({row.sha256 for row in artifacts}) != len(artifacts):
+        raise ContractValidationError("SOURCE_ROLE_SET: two artifacts share one digest")
+    declared = {row.path: row.sha256 for row in artifacts}
+    if type(observed) is not ObservedBindings or dict(observed.artifact_sha256) != declared:
+        raise ContractValidationError("SOURCE_OBSERVED_DIGEST: observed retained digests differ from the contract")
+    by_role = {row.role: row.sha256 for row in artifacts}
+
+    # Pins equal the compiled constants (spec §2.2, §2.4).
+    constants = _source_constants()
+    pins = _fields(doc["historical_pins"], set(ACCEPTED_HISTORICAL_PINS), label="historical pins")
+    ports = doc["port_runtime_pins"]
+    expected_ports = {leg: {"runtime_sha256": pin.runtime_sha256, "pine_sha256": pin.pine_sha256}
+                      for leg, pin in constants.port_runtime_pins.items()}
+    settings = _fields(doc["effective_settings"], {"settings_sha256", "orb_normal_base"}, label="effective settings")
+    if (dict(pins) != dict(constants.accepted_historical_pins)
+            or any(by_role[role] != digest for role, digest in constants.accepted_historical_pins.items())
+            or ports != expected_ports
+            or settings["settings_sha256"] != constants.effective_settings_sha256
+            or settings["settings_sha256"] == HISTORICAL_EFFECTIVE_INPUTS
+            or by_role["effective_settings_successor"] != constants.effective_settings_sha256
+            or settings["orb_normal_base"] != 1
+            or observed.effective_settings_sha256 != constants.effective_settings_sha256
+            or observed.orb_normal_base != 1):
+        raise ContractValidationError("SOURCE_PIN_MISMATCH: pins differ from the compiled source constants")
+
+    # Populations, initial state and path origin.
+    populations = _fields(doc["populations"], {"FULL", "H1", "H2"}, label="populations")
+    normalized = {}
+    for name in ("FULL", "H1", "H2"):
+        values = populations[name]
+        if (not isinstance(values, list) or not values or len(set(values)) != len(values)
+                or any(not isinstance(v, str) or not v for v in values)):
+            raise ContractValidationError(f"population {name} must contain unique session identities")
+        normalized[name] = tuple(values)
+    split = math.ceil(len(normalized["FULL"]) / 2)
+    if normalized["H1"] != normalized["FULL"][:split] or normalized["H2"] != normalized["FULL"][split:]:
+        raise ContractValidationError("H1/H2 are not the exact ordered ceil partition of FULL")
+    state_raw = _fields(doc["initial_state"], {
+        "class", "original_basis", "current_equity", "historical_eod_peak", "prior_trade_days", "prior_max_day_profit",
+    }, label="initial_state")
+    state = EvaluationState(
+        state_class=_text(state_raw["class"], label="initial state class"),
+        original_basis=_decimal(state_raw["original_basis"], label="original_basis"),
+        current_equity=_decimal(state_raw["current_equity"], label="current_equity"),
+        historical_eod_peak=_decimal(state_raw["historical_eod_peak"], label="historical_eod_peak"),
+        prior_trade_days=_positive_int(state_raw["prior_trade_days"], label="prior_trade_days", allow_zero=True),
+        prior_max_day_profit=_decimal(state_raw["prior_max_day_profit"], label="prior_max_day_profit"),
+    )
+    if (state.state_class != "PRISTINE" or state.original_basis <= 0
+            or state.current_equity != state.original_basis or state.historical_eod_peak != state.original_basis
+            or state.prior_trade_days != 0 or state.prior_max_day_profit != 0):
+        raise ContractValidationError("INITIAL_STATE_ALTERNATIVE_UNSUPPORTED: source contracts carry PRISTINE only")
+    try:
+        path_start = date.fromisoformat(_text(doc["path_start_date"], label="path_start_date"))
+    except ValueError as exc:
+        raise ContractValidationError("path_start_date must be an ISO date") from exc
+    if path_start.isoformat() != doc["path_start_date"] or path_start.weekday() >= 5:
+        raise ContractValidationError("path_start_date must be an exact ISO weekday date")
+
+    # Trust root: pinned in tracked code, never supplied by the caller (§2.3).
+    pinned = _pinned_source_keys()
+    if doc["source_trust"] != _source_trust_document(pinned):
+        raise ContractValidationError("SOURCE_TRUST_ROOT_MISMATCH: source_trust differs from the pinned root")
+    if (not isinstance(public_keys, Mapping) or set(public_keys) != set(pinned)
+            or any(type(raw) is not bytes or hashlib.sha256(raw).hexdigest() != pinned[key].sha256
+                   for key, raw in public_keys.items())):
+        raise ContractValidationError("SOURCE_TRUST_ROOT_MISMATCH: supplied public keys differ from the pinned root")
+    outer = parse_canonical_json(approval_bytes, label="approval")
+    signer = outer.get("signature", {}).get("key_id") if isinstance(outer, dict) else None
+    if not isinstance(signer, str) or not signer.startswith(SOURCE_KEY_PREFIX):
+        raise ContractValidationError("SOURCE_KEY_ID: source approvals are signed only by source: keys")
+    if signer not in pinned:
+        raise ContractValidationError("SOURCE_TRUST_ROOT_MISMATCH: signer is not a pinned source key")
+    authority = outer.get("payload", {}).get("authority_class") if isinstance(outer.get("payload"), dict) else None
+    if authority != "OPERATOR":
+        raise ContractValidationError(f"TEST_ONLY or non-OPERATOR approval authority is refused: {authority!r}")
+    pin = pinned[signer]
+    if pin.revoked_at is not None and now.astimezone(timezone.utc) >= pin.revoked_at.astimezone(timezone.utc):
+        raise ContractValidationError("SOURCE_KEY_REVOKED: signing key is revoked in the pinned root")
+    trusted = {key: TrustedApprovalKey(key, public_keys[key], "OPERATOR", pinned[key].revoked_at) for key in pinned}
+    contract_sha = hashlib.sha256(contract_bytes).hexdigest()
+    approval = verify_detached_approval(approval_bytes, trusted_keys=trusted, expected_scope=SOURCE_SCOPE,
+        expected_subject_sha256=contract_sha, expected_contract_sha256=contract_sha, now=now,
+        allow_test_authority=False)
+    if approval.key_id != signer or approval.authority_class != "OPERATOR":
+        raise ContractValidationError("SOURCE_KEY_ID: approval signer differs")
+    _check_source_key_lifecycle(approval, now)
+
+    from .trust_domain import SourceTrustDomain
+    domain = SourceTrustDomain(
+        authority_class="OPERATOR", permits_synthetic=False,
+        accepted_historical_pins=MappingProxyType(dict(constants.accepted_historical_pins)),
+        port_runtime_pins=MappingProxyType(dict(constants.port_runtime_pins)),
+        effective_settings_sha256=constants.effective_settings_sha256,
+        required_artifact_roles=tuple(sorted(SOURCE_CONTRACT_ROLES)), contract_sha256=contract_sha)
+    result = ValidatedSourceContract(
+        contract_id=contract_id, contract_sha256=contract_sha, canonical_bytes=bytes(contract_bytes),
+        artifacts=tuple(artifacts), runtime_load_sha256=MappingProxyType(dict(by_role)),
+        populations=MappingProxyType(normalized), initial_state=state,
+        effective_settings_sha256=constants.effective_settings_sha256, path_start_date=path_start,
+        approval=approval, approval_bytes=bytes(approval_bytes), trust_domain=domain)
+    identity = id(result)
+    _ISSUED_SOURCE_CONTRACTS[identity] = (
+        weakref.ref(result, lambda ref: _ISSUED_SOURCE_CONTRACTS.pop(identity, None)),
+        _receipt_snapshot(result),
+    )
+    return result
+
+
+def require_validated_source_contract(contract: Any, *, now: datetime) -> ValidatedSourceContract:
+    """The exact unchanged issued receipt, re-checked for expiry and pin state."""
+    issued = _ISSUED_SOURCE_CONTRACTS.get(id(contract))
+    if type(contract) is not ValidatedSourceContract or issued is None or issued[0]() is not contract:
+        raise ContractValidationError("validator-issued source contract required")
+    if issued[1] != _receipt_snapshot(contract):
+        raise ContractValidationError("validated source contract fields changed")
+    _check_source_key_lifecycle(contract.approval, now)
+    return contract
+
+
 __all__ = [
     "ACCEPTED_HISTORICAL_PINS", "ApprovalRecord", "ArtifactRecord", "BudgetSpec", "DecisionRuleSpec",
     "ContractValidationError", "EvaluationState", "ObservedBindings", "PartASpec",
     "ReplayConfiguration", "REQUIRED_ARTIFACT_ROLES", "StageSpec", "TrustedApprovalKey", "ValidatedFrozenContract",
     "canonical_json_bytes", "parse_canonical_json", "validate_frozen_contract",
     "verify_detached_approval", "require_validated_frozen_contract",
+    "SOURCE_CONTRACT_ROLES", "SOURCE_EVIDENCE_CLASS", "SOURCE_SCOPE", "SOURCE_SIGNING_KEYS", "SourceKeyPin",
+    "ValidatedSourceContract", "require_validated_source_contract", "validate_source_contract",
 ]
