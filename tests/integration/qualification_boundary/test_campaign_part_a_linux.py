@@ -500,6 +500,77 @@ def cap_output_mount_inodes(boundary, attempt, work_id):
     )
 
 
+IO_LIVE_STATES = ('active', 'activating', 'deactivating', 'reloading')
+
+
+def live_io_mounts():
+    """Every checkpoint io mount unit the manager holds live, host-wide."""
+    rows = subprocess.run(
+        ['/usr/bin/systemctl', '--system', '--no-pager', '--no-legend', '--all', '--plain',
+         'list-units', 'var-lib-fpq-*.mount'],
+        capture_output=True, text=True, check=True, timeout=30,
+    ).stdout.splitlines()
+    return sorted(
+        fields[0] for fields in (row.split() for row in rows)
+        if len(fields) >= 3 and fields[2] in IO_LIVE_STATES
+    )
+
+
+def _unit_active_state(unit):
+    """The manager's ActiveState; an unknown (collected) unit reads inactive."""
+    result = subprocess.run(
+        ['/usr/bin/systemctl', '--system', 'show', '--property=ActiveState', '--value', '--', unit],
+        capture_output=True, text=True, check=False, timeout=30,
+    )
+    return result.stdout.strip() or 'absent'
+
+
+def io_pair_released(boundary, attempt, work_id, seconds=60):
+    """Fix card A1: the work's io tmpfs pair is inactive or absent once its
+    guardian unit has ended (BindsTo), and neither path is still mounted.
+    Bounded: the guardian exits shortly after its last store call."""
+    from c1_rail.qualification.execution.campaign_supervisor import checkpoint_io_paths
+
+    enrollment = retained_enrollment(boundary, attempt, work_id)
+    assert enrollment is not None, work_id
+    io = checkpoint_io_paths(enrollment)
+    deadline = time.monotonic() + seconds
+    while True:
+        states = {unit: _unit_active_state(unit) for unit in (io['in_unit'], io['out_unit'])}
+        mounted = [p for p in (io['in_path'], io['out_path']) if os.path.ismount(p)]
+        if not mounted and not set(states.values()) & set(IO_LIVE_STATES):
+            return dict(work_id=work_id, units=states)
+        if time.monotonic() >= deadline:
+            raise AssertionError(('io pair still live after the guardian', work_id, states, mounted))
+        time.sleep(0.1)
+
+
+def final_prefix(boundary, attempt, work_id, out_path, seconds=120):
+    """Fix card A2: while the work is RUNNING, wait until the initial-prefix
+    artifact is final -- mode 0444 (the SR-4 writer chmods only after its
+    fsync) and the one-inode cap full -- so the host reads it from the live
+    mount before the guardian settles and its pair is released."""
+    prefix_path = out_path / PART_A_INITIAL_ARTIFACT
+    deadline = time.monotonic() + seconds
+    checked = 0.0
+    while time.monotonic() < deadline:
+        assert os.path.ismount(out_path), 'the output mount was released before the prefix read'
+        try:
+            final = (
+                stat.S_IMODE(prefix_path.stat().st_mode) == 0o444
+                and os.statvfs(out_path).f_ffree == 0
+            )
+        except FileNotFoundError:
+            final = False
+        if final:
+            return prefix_path
+        if time.monotonic() - checked >= 0.5:
+            checked = time.monotonic()
+            assert work(budget(boundary, attempt), work_id)['state'] == 'RUNNING'
+        time.sleep(0.002)
+    raise AssertionError('the PART_A initial prefix never became final')
+
+
 def settled_in_doubt(boundary, attempt, work_id, seconds=1080):
     """The work IN_DOUBT with its settlement retained (the guardian's
     abnormal-exit path transitions and settles in two store calls)."""
@@ -543,17 +614,12 @@ def test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_
     )
     assert state['state'] == 'PART_A_READY'
     assert work(state, 'pawork')['state'] == 'RUNNING'
-    state = settled_in_doubt(boundary, attempt, 'pawork')
-    row = work(state, 'pawork')
-    assert row['state'] == 'IN_DOUBT'
-    assert state['state'] == 'IN_DOUBT', state['state']
-    assert part_a_family(state) is None
-    assert (n2_family(state) or {}).get('state') == 'COMMITTED'
-    assert not {'CAPTURED', 'SIGNING_INTENT', 'COMPLETED'} & set(_transitions(row)), _transitions(row)
-    # The mount holds exactly the fsynced prefix: the SR-4 writer chmods 0444
-    # only after its fsync, and the final artifact was never created.
+    # Fix card A2: the guardian's pair is released when its unit ends (A1), so
+    # the host reads the output mount before settlement, once the prefix is
+    # final. The mount holds exactly the fsynced prefix: the SR-4 writer chmods
+    # 0444 only after its fsync, and the final artifact was never created.
+    prefix_path = final_prefix(boundary, attempt, 'pawork', out_path)
     assert sorted(p.name for p in out_path.iterdir()) == [PART_A_INITIAL_ARTIFACT]
-    prefix_path = out_path / PART_A_INITIAL_ARTIFACT
     assert stat.S_IMODE(prefix_path.stat().st_mode) == 0o444
     assert os.statvfs(out_path).f_ffree == 0
     host_prefix = prefix_path.read_bytes()
@@ -562,6 +628,13 @@ def test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_
     assert all(len(panel['outcomes']) == 2 for panel in panels), panels
     assert not (out_path / PART_A_FINAL_ARTIFACT).exists()
     assert not (out_path / 'result.frame').exists()
+    state = settled_in_doubt(boundary, attempt, 'pawork')
+    row = work(state, 'pawork')
+    assert row['state'] == 'IN_DOUBT'
+    assert state['state'] == 'IN_DOUBT', state['state']
+    assert part_a_family(state) is None
+    assert (n2_family(state) or {}).get('state') == 'COMMITTED'
+    assert not {'CAPTURED', 'SIGNING_INTENT', 'COMPLETED'} & set(_transitions(row)), _transitions(row)
     # Archived for inspection: the initial prefix only, byte-identical to what
     # the worker wrote; no part_a_final.
     staged = staged_part_a(boundary, attempt)
@@ -582,10 +655,14 @@ def test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_
     assert len(guardian_dispatches) == 1, guardian_dispatches
     assert [w['work_id'] for w in state['works'] if w['phase'] == 'PART_A'] == ['pawork']
     works_before = sorted((w['work_id'], w['state']) for w in state['works'])
+    # Fix card A2 (added): the inspection copy is archived, so the work's io
+    # pair is released with its guardian unit.
+    released = io_pair_released(boundary, attempt, 'pawork')
     host.save(
         boundary.output / (attempt + '-part-a-prefix-crash.json'),
         dict(cap=cap, prefix_sha256=_sha256(host_prefix), prefix_panels=len(panels),
-             failure=failures[0], payload_exit=exit_facts, campaign_state=state['state']),
+             failure=failures[0], payload_exit=exit_facts, campaign_state=state['state'],
+             io_release=released),
     )
     boundary.restart()
     state = settled_in_doubt(boundary, attempt, 'pawork', seconds=120)
@@ -720,4 +797,59 @@ def test_s5_part_a_g5_unit_death_and_exact_receipt_retry(real_boundary):
         boundary.output / (attempt + '-part-a-g5-retry.json'),
         dict(unit=unit, kill_returncode=kill.returncode, intent=persisted_intent,
              candidate_sha256=_sha256(original_candidate), receipt=committed),
+    )
+
+
+def test_s5_io_mount_pairs_are_released_with_each_work_guardian(real_boundary):
+    """Fix card test (4), QEXEC-01: on one attempt's multi-work sequence --
+    N1 worker, N1 g5, N2 worker, N2 g5, Part A worker, Part A g5 -- the live
+    var-lib-fpq-*.mount count never exceeds 2 x the worker works in flight
+    (the sequence runs one worker work at a time and a g5 work creates no
+    mount), and after each worker work settles its pair is inactive or
+    absent. A background sampler reads the manager's unit table every 50 ms
+    for the whole sequence."""
+    if not getattr(real_boundary, 'part_a', False):
+        pytest.skip('FP_QUALIFICATION_S5=1 required; the Part A /v7 installation')
+    import threading
+
+    boundary = real_boundary
+    # Units a prior case left live (none expected) are outside this sequence.
+    baseline = set(live_io_mounts())
+    samples = []
+    stop = threading.Event()
+    failures = []
+
+    def sample():
+        while not stop.is_set():
+            try:
+                samples.append(len(set(live_io_mounts()) - baseline))
+            except (OSError, subprocess.SubprocessError) as exc:  # retained, never swallowed
+                failures.append(repr(exc))
+            stop.wait(0.05)
+
+    sampler = threading.Thread(target=sample, daemon=True)
+    sampler.start()
+    try:
+        attempt = committed_n2(boundary)
+        boundaries = []
+        for work_id in ('n1work', 'n2work'):
+            boundaries.append(io_pair_released(boundary, attempt, work_id))
+        after_prefix = sorted(set(live_io_mounts()) - baseline)
+        assert after_prefix == [], after_prefix
+        attested_part_a(boundary, attempt)
+        boundaries.append(io_pair_released(boundary, attempt, 'pawork'))
+        committed_part_a_decision(boundary, attempt, 'FULL_PASS_READY')
+        settled = sorted(set(live_io_mounts()) - baseline)
+    finally:
+        stop.set()
+        sampler.join(timeout=30)
+    assert not failures, failures
+    assert samples, 'the io-mount sampler took no sample'
+    # One worker work in flight at a time: at most one pair live.
+    assert max(samples) <= 2, max(samples)
+    assert settled == [], settled
+    host.save(
+        boundary.output / (attempt + '-io-release.json'),
+        dict(baseline=sorted(baseline), samples=len(samples), max_live_io_mounts=max(samples),
+             released=boundaries, settled_live_io_mounts=settled),
     )

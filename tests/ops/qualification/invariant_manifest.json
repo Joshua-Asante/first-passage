@@ -368,6 +368,7 @@
       "tests/integration/qualification_boundary/test_campaign_n2_linux.py::test_s4_n2_g5_unit_death_and_exact_receipt_retry",
       "tests/integration/qualification_boundary/test_campaign_part_a_linux.py::test_s5_genuine_below_floor_part_a_is_part_a_failed",
       "tests/integration/qualification_boundary/test_campaign_part_a_linux.py::test_s5_genuine_part_a_without_expansion_reaches_full_pass_ready",
+      "tests/integration/qualification_boundary/test_campaign_part_a_linux.py::test_s5_io_mount_pairs_are_released_with_each_work_guardian",
       "tests/integration/qualification_boundary/test_campaign_part_a_linux.py::test_s5_part_a_g5_unit_death_and_exact_receipt_retry",
       "tests/integration/qualification_boundary/test_campaign_part_a_linux.py::test_s5_payload_death_between_the_part_a_writes_is_in_doubt_with_the_prefix_retained",
       "tests/integration/qualification_boundary/test_campaign_service_linux.py::test_s2_admission_retry_after_service_death_never_double_starts",
