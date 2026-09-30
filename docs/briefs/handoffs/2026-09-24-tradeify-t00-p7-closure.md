@@ -359,6 +359,144 @@ identity/scope checkpoints and at final P7 scoring. No T00 step 2, screen, Monte
 Carlo, provider/account action, deployment, activation, arm or order action is
 authorized or occurred in Task 1.
 
+### Task 2 return — 2026-09-29 (escalation lane, Claude)
+
+#### Status: `DONE` for Task 2 — implementation returned for coordinator review; candidate 3-prime P7 remains NOT MET
+
+GLM hit its iteration cap twice on this ticket, so it moved to the escalation lane and restarted
+clean. GLM's draft was treated as unreviewed input. Its legacy-tuple compatibility shim and its
+`observe_exposure` call were dropped.
+
+The first return was `NEEDS_CONTEXT`: the frozen refusal of tuples and side channels broke
+`bracket.py` and `benchmark.py`, and a `production_source → bracket` import broke the execution
+closure. The coordinator's ruling of 2026-09-29 was (a) PORT, don't retire, with the constraints
+applied below.
+
+**Merge hold:** `execution/compute.py` and `part_a.py` on S5's branch import these modules. This
+branch is not proposed for merge until S5 merges. It then rebases onto post-S5 main and
+re-verifies. No PR has been opened.
+
+- **Branch:** `claude/t00-task2-bracket`.
+  - Base: `028c5ce`.
+  - Red-test commit: `b98e0c1`.
+  - Implementation commit: `92d9ecd`.
+  - This §7 entry follows as a docs-only commit.
+- **Files** (`git diff --stat 028c5ce..92d9ecd`):
+
+  | File | Change |
+  |---|---|
+  | `model.py` | +50 |
+  | `production_source.py` | 188 lines changed |
+  | `replay.py` | 76 lines changed |
+  | `bracket.py` | 113 lines changed |
+  | `benchmark.py` | 5 lines changed |
+  | `test_replay.py` | +456 |
+  | `test_production_source.py` | +235 |
+  | `test_bracket.py` | 18 lines changed |
+
+  The first five are under `ops/c1_rail/qualification/`; the test files are under
+  `tests/ops/qualification/`. `git diff --check` is clean. No private byte, port or artifact was
+  touched.
+- **Interpreter:** `C:/Users/joshu/multi_firm_operations/tmp/ops-env/Scripts/python.exe`,
+  CPython 3.13.2. `fp.py doctor` passed with 62 locked packages.
+- **Red record** (base production code at `028c5ce` plus the new tests; two test files):
+  `.cache/fp-verification/20260930T011841Z-d2507d353f00/record.json`, rerun as
+  `20260930T012039Z-b63179b87c4b`.
+  - `status: failed`, exit 1, `source_stable: true`. 86 failed and 63 passed; there were no
+    collection errors.
+  - New tests failed on ImportError of the frozen names, or on `TypeError` from the legacy
+    `_split`/`split_bar` signatures. Base code cannot pass an exposure at all.
+  - Existing tests failed only where their fixtures were migrated to `ScheduleSplit` plus
+    `exposure`.
+- **Green, focused:** `20260930T011407Z-d2a62cec4f25`. Completed, exit 0, stable; 149 passed.
+- **Green, full suite** (`tests/ops/qualification` plus `tests/ops/test_book_adapters_parity.py`,
+  `--workers 2`): `20260930T023603Z-e3f0ef4f5d7b`.
+  - Completed, exit 0, stable. 1707 passed and 13 skipped.
+  - Skip reasons: 1 Linux-only SIGSTOP ordering case; 4 private ports absent from the worktree;
+    8 `effective_inputs.json` absent from the port root.
+  - This run covers the runner, panel and cost/schedule suites.
+- **`fp.py check`:** `20260930T034404Z-3c0801d691ae`. Completed, exit 0, stable.
+
+**Test → §7 "Required test update" item** (case names carry the item number):
+
+| Item | Tests |
+|---|---|
+| 1 | `test_production_source.py`: `test_t2_item1_frozen_types_have_exact_fields_immutability_and_validation`, `…_for_run_accepts_only_exact_ids_and_issues_fresh_providers`, `…_retained_evidence_returns_executing_schedule_split`; `test_replay.py`: `test_t2_item1_split_refuses_legacy_two_bar_tuple`, `…_refuses_positional_legacy_provider`, `…_refuses_side_channel_providers[×2]`, `…_requires_a_captured_exposure_for_every_leg[×3]`, `…_returns_one_schedule_split_per_leg` |
+| 2 | `test_t2_item2_provider_places_the_ratified_two_run_table`; `test_t2_item2_held_long_and_short_flatten_at_each_runs_vertex[×2]`; `test_t2_item2_position_plus_pending_follows_position_rule_and_prefix_reach` |
+| 3 | `test_t2_item3_r2_pending_only_cancels_before_gap_open_fill_on_ordinary_bar`; `…_cancels_on_flat_zero_volume_bar`; `…_non_executing_prefix_is_refused_for_a_position_leg` |
+| 4 | `test_t2_item4_frozen_splits_of_20000_generated_bars_pass_split_unchanged` (20,008 bars × 6 run/exposure cases, including tie, flat and zero-volume degeneracies); `test_t2_item4_split_rejections_unchanged_even_when_prefix_does_not_execute[True/False]` |
+| 5 | `test_t2_item5_second_same_bar_boundary_splits_retained_suffix_with_fresh_exposure`; `test_t2_item5_provider_splits_the_current_suffix_and_stays_occurrence_local` |
+| 6 | `test_t2_item6_native_states_satisfy_reservation_invariants_at_schedule_callbacks[×10]` (THIS_CLOSE, NEXT_OPEN, two resting stops and position plus add, under R1 and R2); `test_t2_item6_reservation_only_state_is_refused_before_any_split[×2]`; `test_t2_item6_provider_refuses_missing_inactive_and_reservation_only_exposure` |
+| 7 | `test_t2_item7_one_bar_call_unchanged_costs_and_occurrence_local_quotes`; `test_t2_item7_replay_bracket_builds_two_fresh_engines_with_separate_results` (TEST_ONLY composition fixture holding ORB through the 15:55 intrabar flatten) |
+
+**Order-sum (ruling 7).** §7 states the invariant as: "`reserved[leg]` equals the
+still-outstanding admitted entry/add quantity, and a positive reservation has a corresponding
+broker-pending order". It then gives the refusal only for the second half: "`reserved > 0 and
+pending is False` is an inconsistent reservation-only state and raises `ReplayNeedsContext`".
+Item 6 lists "reservation/order-sum, reservation-implies-pending and reservation-only refusal".
+
+The order sum is therefore asserted as a native invariant at every schedule callback, and only
+the reservation-only state is enforced. "The implementation must therefore check it at exposure
+capture" could be read as also requiring an order-sum refusal. That would be a one-line
+fail-closed addition if the coordinator reads it that way.
+
+**Additions and review items:**
+
+- **Accepted addition (ruling 4):** a fail-closed guard. The replay refuses a non-executing
+  prefix unless the leg is pending-only and the prefix has one price.
+- **Task 4 review item (ruling 5):** `replay_bracket` records a run's `ReplayDeadlineFailure` as
+  that run's `ReplayResult`, following `run_bracket`.
+- **Task 3 open item (ruling 6):** run-local providers ignore reviewed intrabar split rows.
+  Provider precedence is placement, then reviewed quote, then ratified reading 3.
+
+**Verbatim move (ruling 3).** `vertex_split` and `placement` moved from `bracket.py` into
+`production_source.py`, and `bracket.py` re-exports them. SHA-256 of each `ast` source segment,
+for base `bracket.py@028c5ce` and head `production_source.py`:
+
+| Function | SHA-256 |
+|---|---|
+| `vertex_split` | `ffd9a5fda55aa086c08e33bc176c09a281e66aaa6016f5503e5ae796c3f24fba` (both) |
+| `placement` | `432a65a510bf7c77a0f029e7d10affab5f83cfbd0986a674e33041abc40df52a` (both) |
+
+`production_source` gains no new import edge: it already imported `.replay`, and `.bracket` is
+not imported. `test_execution_closure.py` passes unchanged, and the policy was not edited.
+
+**`bracket.py` port (ruling 1).** `BracketScheduleQuotes` delegates splits and prices to a fresh
+`ScheduleExecutionBracket.for_run` provider over empty reviewed evidence. It adds only its
+`Placement` record, and fails closed if the record disagrees with the provider. It no longer has
+`observe_exposure` or `prefix_is_empty`. `run_bracket` is unchanged.
+
+In `test_bracket.py` only interface shape changed; no expected value changed:
+
+| Node | Old call shape | New call shape |
+|---|---|---|
+| module import | `PathOutcome, SessionSchedule` | adds `ScheduleExposure, ScheduleSplit` |
+| `test_every_vertex_split_passes_the_engine_validator_unchanged` (via `_validate`) | stub `split_bar = lambda *args: (prefix, suffix)`; `left, right = BookReplay._split(stub, None, pb, bars, INSTANT)`; assert `(left['leg'], right['leg'])` | stub `lambda *args, exposure: ScheduleSplit(prefix, suffix, True)`; `BookReplay._split(..., INSTANT, {'leg': ScheduleExposure(1, False, 0)})['leg']`; assert `(split.prefix, split.suffix)` |
+| `test_placement_refuses_without_observed_exposure` | `split_bar(session, pb, INSTANT, 'leg')` twice, with `observe_exposure(session, INSTANT - 1 min, {'leg': 1})` between | `split_bar(session, pb, INSTANT, 'leg', exposure=None)` twice; `observe_exposure` removed. The stale-instant sub-case has no analogue once no observer state exists, so the second block now repeats the missing-exposure refusal. |
+| `test_interval_split_places_on_the_remaining_path` | `observe_exposure(session, INSTANT, {'leg': 1})`; `prefix, suffix = split_interval(session, None, remaining, INSTANT, 'leg')` | `split = split_interval(..., exposure=ScheduleExposure(1, False, 0))`; `prefix, suffix = split.prefix, split.suffix` |
+
+All other `test_bracket.py` nodes, including every engine-level R1/R2 case, are unchanged and
+pass on the ported class.
+
+**`benchmark.py` equivalence (ruling 2).** `SyntheticQuotes.split_bar` now takes keyword-only
+`exposure` and returns `ScheduleSplit(original, flat suffix, True)`. A pytest plugin captured
+every call's prefix and suffix while running `test_benchmark`, `test_benchmark_part_a`,
+`test_provider` and `test_seed_probability_vectors`. Each bar was encoded as `ts.isoformat()`
+plus `float.hex` OHLCV.
+
+| Tree | Tests | Calls | Log SHA-256 |
+|---|---|---|---|
+| Base: `028c5ce` production files | 76 passed | 1135 (9 nodes) | `5b8accbfac8b4bb2f9a5d95881de6f91762c9b6cbfbe1a42cc28b7267f9b9b17` |
+| Head | 76 passed | 1135 (9 nodes) | `5b8accbfac8b4bb2f9a5d95881de6f91762c9b6cbfbe1a42cc28b7267f9b9b17` |
+
+The two logs are byte-identical (`cmp`). The only difference is the flag: head records
+`prefix_executes=True`, base records a legacy tuple. The capture script and both logs are in the
+executor scratchpad and are not committed.
+
+**Remaining:** Tasks 3–4 (retained source pack, signed OPERATOR contract, real-input R1/R2 replay,
+hand recompute, independent review). No T00 step 2, screen, MC, real replay or private-input run
+occurred.
+
 ## 10. Audit hooks
 
 ```powershell
