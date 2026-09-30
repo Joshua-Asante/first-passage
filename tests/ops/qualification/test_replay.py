@@ -1357,3 +1357,26 @@ def test_t2_item7_one_bar_call_unchanged_costs_and_occurrence_local_quotes():
         assert adapters['orb_mnq_v7'].bars == source_bars      # original bars once; no segments
         assert all(len(a.bars) == 8 for a in adapters.values())
     assert placed == {'R1': (90, 100), 'R2': (115, 100)}
+
+
+@pytest.mark.parametrize('delta', [1, -1])
+def test_t2_item6_reservation_order_sum_mismatch_is_refused_before_any_split(delta):
+    # Coordinator ruling 2026-09-29: both halves of the reservation invariant
+    # are enforced at capture. A resting ORB entry keeps its pending order while
+    # the ledger reservation is moved above or below its outstanding quantity.
+    session = cutoff_session([(100, 100, 100, 100)] * 4, bar=2)
+    seen = []
+    def emit(a, b):
+        if len(a.bars) == 1:
+            return [OrderIntent('rest', a.leg_id, 'entry', Side.BUY, 1, 'stop', 200)]
+        if len(a.bars) == 2:
+            replay = seen[0]
+            assert replay.brokers['orb_mnq_v7'].pending_order_ids() == ['rest']
+            replay.ledger.reserved['orb_mnq_v7'] = replay.ledger.reserved.get('orb_mnq_v7', 0) + delta
+        return []
+    for run in ('R1', 'R2'):
+        replay, _, quotes = bracket_engine(run, {'orb_mnq_v7': emit})
+        seen[:] = [replay]
+        with pytest.raises(ReplayNeedsContext, match=r'orb_mnq_v7.*reserved %d.*outstanding 1' % (1 + delta)):
+            replay.run((session,))
+        assert quotes.calls == [] and quotes.inner._placed == {}

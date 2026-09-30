@@ -284,13 +284,22 @@ class BookReplay:
         return cash_before + adverse - fees
 
     def _capture_exposure(self, k):
-        """One immutable exposure snapshot; a reservation needs a pending order."""
+        """One immutable exposure snapshot, enforcing the reservation invariant.
+
+        The reservation equals the still-outstanding admitted entry/add
+        quantity, and a positive reservation has a broker-pending order.
+        Native evidence does not guarantee this for injected brokers.
+        """
         from .model import ScheduleExposure
         exposure = ScheduleExposure(self.brokers[k].position(),
                                     bool(self.brokers[k].pending_order_ids()),
                                     self.ledger.reserved.get(k, 0))
         if exposure.reserved > 0 and not exposure.pending:
             raise ReplayNeedsContext("reservation without a broker-pending order has no ratified branch")
+        outstanding = sum(intent.qty for (leg_id, _), (intent, _) in self.orders.items() if leg_id == k)
+        if exposure.reserved != outstanding:
+            raise ReplayNeedsContext(f"{k}: reserved {exposure.reserved} differs from outstanding {outstanding}"
+                                     " admitted entry/add quantity")
         return exposure
 
     def _split(self, session, pb, bars, instant, exposures):
