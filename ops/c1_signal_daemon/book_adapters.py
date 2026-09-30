@@ -273,16 +273,15 @@ def _qualification_domain(contract):
     return domain
 
 
-def _source_domain(contract, *, now=None):
-    """Source-only receipt domain (T00 design rev 4.2); re-checks lifecycle on every use."""
-    from c1_rail.qualification.contract import ValidatedSourceContract, require_validated_source_contract
+def _source_domain(contract):
+    """Source-only receipt domain (T00 design rev 4.2). Identity only: the time-based
+    lifecycle (expiry, pin membership, revocation) is re-checked by every
+    ProductionSource use through require_validated_source_contract."""
+    from c1_rail.qualification.contract import ValidatedSourceContract, require_issued_source_contract
     from c1_rail.qualification.trust_domain import SourceTrustDomain
     if type(contract) is not ValidatedSourceContract:
         raise ValueError('exact validated source contract required')
-    if now is None:
-        from c1_rail.qualification.production_source import _now
-        now = _now()
-    require_validated_source_contract(contract, now=now)
+    require_issued_source_contract(contract)
     domain = contract.trust_domain
     if type(domain) is not SourceTrustDomain or domain.contract_sha256 != contract.contract_sha256:
         raise ValueError('source contract domain differs')

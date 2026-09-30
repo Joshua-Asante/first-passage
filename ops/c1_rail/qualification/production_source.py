@@ -970,6 +970,8 @@ class ProductionSource:
     def build(cls, contract, *, artifact_root):
         from c1_signal_daemon.book_adapters import _qualification_domain, _source_domain
         if _is_source_only(contract):
+            from .contract import require_validated_source_contract
+            require_validated_source_contract(contract, now=_now())
             return cls._build_domain(contract, artifact_root=artifact_root, domain=_source_domain(contract))
         domain = _qualification_domain(contract)
         if domain.authority_class != 'OPERATOR' or domain.permits_synthetic:
@@ -1103,6 +1105,9 @@ class ProductionSource:
                 or self.prepared.contract_sha256 != contract.contract_sha256):
             raise ValueError('source factory identity does not bind the exact production G1 contract')
         _qualification_snapshots(contract, dict(self.prepared.retained_bytes))
+        if _is_source_only(contract):
+            from .contract import require_validated_source_contract
+            require_validated_source_contract(contract, now=_now())
 
     def verify_for(self, contract):
         """Integrity plus qualification authorization; source-only sources are refused."""

@@ -600,6 +600,12 @@ The design is [`docs/superpowers/specs/2026-09-30-t00-source-only-contract-desig
 
 No code starts before the amendment.
 
+**Revision 4.3.** 4.3 correction accepted by the operator 2026-09-30 (implementation conflict: production_source imports runner/mc.simulation).
+- The refusal list is `part_a`, `bracket`, `benchmark`, `benchmark_part_a`, `production`, `orchestration`, `result_adjudication`, `seal` and `execution.*`, matched by exact name or package prefix.
+- `runner` and `mc.simulation` load with their kernel entry points stubbed (`P7_FORBIDDEN_CALL`), with an identity check at record time.
+
+The spec records this in its revision 4.3 section.
+
 ## 10. Audit hooks
 
 ```powershell

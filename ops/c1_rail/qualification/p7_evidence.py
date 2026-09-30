@@ -30,6 +30,20 @@ EVIDENCE_LABEL = 'P7 producer-faithfulness evidence; not qualification, screen, 
 VOLATILE_FIELDS = ('run_started_at', 'run_finished_at', 'host_run_id')
 P7_SITE_PACKAGES_RELATIVE = {'nt': 'Lib/site-packages', 'posix': 'lib/python{major}.{minor}/site-packages'}
 
+# Revision 4.3 (a): modules a P7 run never needs, matched by exact name or
+# package prefix only. runner and mc.simulation load with stubbed entry points.
+P7_FORBIDDEN_MODULES = (
+    'c1_rail.qualification.part_a', 'c1_rail.qualification.bracket', 'c1_rail.qualification.benchmark',
+    'c1_rail.qualification.benchmark_part_a', 'c1_rail.qualification.production',
+    'c1_rail.qualification.orchestration', 'c1_rail.qualification.result_adjudication',
+    'c1_rail.qualification.seal', 'c1_rail.qualification.execution',
+)
+
+
+def forbidden_module(name):
+    return any(name == module or name.startswith(module + '.') for module in P7_FORBIDDEN_MODULES)
+
+
 # The inline bootstrap. Everything before ``runpy`` uses only builtins, ``sys``
 # and stdlib modules recorded as stdlib; nothing first-party runs unrecorded.
 P7_BOOTSTRAP = r'''
@@ -239,20 +253,28 @@ def _p7_bootstrap():
     sys.path[:0] = roots + [code_root]
     sys.path.append(site)
     sys.p7_recorder = state
+    # Revision 4.3 (b): runner and mc.simulation load for their types; their kernel
+    # entry points are stubbed in this process only and checked again at record time.
+    import importlib as _importlib
+    runner = _importlib.import_module('c1_rail.qualification.runner')
+    simulation = _importlib.import_module('mc.simulation')
+    state.stubs = []
+
+    def make_stub(label):
+        def stub(*args, **kwargs):
+            raise refuse('P7_FORBIDDEN_CALL', label)
+        return stub
+    for module, attr in ((runner, 'evaluate_replay'), (runner, 'run_synthetic_stage'), (runner, '_run_stage'),
+                         (runner, 'simulate_path'), (simulation, 'simulate_path')):
+        stub = make_stub(module.__name__ + '.' + attr)
+        setattr(module, attr, stub)
+        state.stubs.append((module, attr, stub))
     import runpy
     runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__', alter_sys=False)
 
 
 _p7_bootstrap()
-'''.replace('FORBIDDEN_MODULES', repr((
-    # Modules a P7 run never needs. runner and mc.simulation are not listed:
-    # production_source imports them for types; see the pending ruling in the
-    # dispatch card's implementation return.
-    'c1_rail.qualification.part_a', 'c1_rail.qualification.bracket', 'c1_rail.qualification.benchmark',
-    'c1_rail.qualification.benchmark_part_a', 'c1_rail.qualification.production',
-    'c1_rail.qualification.orchestration', 'c1_rail.qualification.result_adjudication',
-    'c1_rail.qualification.seal', 'c1_rail.qualification.execution',
-)))
+'''.replace('FORBIDDEN_MODULES', repr(P7_FORBIDDEN_MODULES))
 P7_BOOTSTRAP_SHA256 = hashlib.sha256(P7_BOOTSTRAP.encode('utf-8')).hexdigest()
 
 
@@ -363,6 +385,9 @@ def finish_record(state, fields, out_path):
     """Exit checks, then one exclusive write of the canonical record (driver only)."""
     if state.refusals:
         raise P7Refusal(state.refusals[0])
+    for module, attr, stub in state.stubs:
+        if getattr(module, attr, None) is not stub:
+            raise P7Refusal(f'P7_FORBIDDEN_CALL: {module.__name__}.{attr} was rebound after stubbing')
     code_root = Path(state.code_root)
     for name, row in sorted(state.first_party.items()):
         if row['path'] is not None and sha256_bytes((code_root / row['path']).read_bytes()) != row['sha256']:

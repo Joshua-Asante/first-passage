@@ -1200,13 +1200,19 @@ def validate_source_contract(
     return result
 
 
-def require_validated_source_contract(contract: Any, *, now: datetime) -> ValidatedSourceContract:
-    """The exact unchanged issued receipt, re-checked for expiry and pin state."""
+def require_issued_source_contract(contract: Any) -> ValidatedSourceContract:
+    """The exact unchanged issued receipt; no time check (identity/domain use only)."""
     issued = _ISSUED_SOURCE_CONTRACTS.get(id(contract))
     if type(contract) is not ValidatedSourceContract or issued is None or issued[0]() is not contract:
         raise ContractValidationError("validator-issued source contract required")
     if issued[1] != _receipt_snapshot(contract):
         raise ContractValidationError("validated source contract fields changed")
+    return contract
+
+
+def require_validated_source_contract(contract: Any, *, now: datetime) -> ValidatedSourceContract:
+    """The exact unchanged issued receipt, re-checked for expiry and pin state."""
+    require_issued_source_contract(contract)
     _check_source_key_lifecycle(contract.approval, now)
     return contract
 

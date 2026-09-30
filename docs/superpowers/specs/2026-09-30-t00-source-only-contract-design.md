@@ -1,7 +1,7 @@
 # T00 source-only contract: design (Phase A)
 
 **Date:** 2026-09-30.
-**Status:** **Design ACCEPTED 2026-09-30 by the operator (option 1), on revision 4.2.** The final Codex review, `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`, resolved the record-authentication and stale-input P1s; the pre-hook P1 is closed by the `-S` fix and A23, without a further design review.
+**Status:** 4.3 correction accepted by the operator 2026-09-30 (implementation conflict: production_source imports runner/mc.simulation). **Design ACCEPTED 2026-09-30 by the operator (option 1), on revision 4.2.** The final Codex review, `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`, resolved the record-authentication and stale-input P1s; the pre-hook P1 is closed by the `-S` fix and A23, without a further design review.
 
 This is a design only. It adds no code, and no file below is admitted for editing until a later amendment to the [dispatch card](../../briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md) admits it.
 **Authority:**
@@ -10,6 +10,27 @@ This is a design only. It adds no code, and no file below is admitted for editin
 
 **Review path:** the coordinator reviews, then Codex, then Joshua accepts.
 **Code read at:** `claude/t00-p7-tasks-3-4` @ `e3d95b3` (revisions 1–2), `7e0c49c` (revision 3), `e6fad26` (revision 4) and `a6ab1e2` (revision 4.1); production code equals the Task 2 head `672d49f`.
+
+## Revision 4.3 — forbidden-load correction (operator ruling 2026-09-30, "I accept")
+
+**Why.** Implementation found that `c1_rail.qualification.production_source` itself imports `c1_rail.qualification.runner`, for `NeedsContext` at module top, and `mc.simulation`, for `EvaluationState` in `_engine`. Under the revision 4.2 refusal list, every P7 run would therefore refuse itself, and removing those imports would need edits to `runner.py` or `core/`, both forbidden. Joshua accepted this correction, which is limited to §2.5a "Refusal", §2.5b, state row 20 and A16c. The §2.6c procedural rule is unchanged.
+
+**(a) Refusal list.** The load-refusal list is exactly `c1_rail.qualification.` + `part_a`, `bracket`, `benchmark`, `benchmark_part_a`, `production`, `orchestration`, `result_adjudication`, `seal` and `execution` (with all of `execution.*`). A name matches when `name == m or name.startswith(m + ".")`. It never matches by string prefix, so `production_source` is **not** matched by `production`. A test asserts this.
+
+**(b) Entry-point stubs.** `runner` and `mc.simulation` may load, for their exception and dataclass types, and both are recorded in the loaded closure like any other module.
+- **Replacement.** Before `runpy`, the bootstrap imports both through the recording finder. It replaces these attributes in the P7 process only with stubs that record `P7_FORBIDDEN_CALL` and raise, so a call means no record:
+  - `runner.evaluate_replay`, `runner.run_synthetic_stage` and `runner._run_stage`;
+  - `mc.simulation.simulate_path`;
+  - `runner.simulate_path`, runner's own import-time binding of the kernel. This one goes beyond the four named in the ruling; it closes `evaluate_replay`'s default `kernel=`.
+- **Record-time check.** When writing the record, the driver confirms by identity that every stub is still the bound attribute. A replaced-back attribute refuses with `P7_FORBIDDEN_CALL`.
+
+**(c) A16c.** The test gains these cases, each with an unmodified twin:
+- importing `part_a` is refused as `P7_FORBIDDEN_IMPORT`;
+- calling `evaluate_replay` is refused as `P7_FORBIDDEN_CALL`;
+- calling `simulate_path` is refused as `P7_FORBIDDEN_CALL`;
+- restoring an original attribute is refused at record time as `P7_FORBIDDEN_CALL`.
+
+A separate test proves `production_source` loads while `production` is refused.
 
 ## Revision 4.2 — the `-S` correction (operator ruling 2026-09-30, "option 1")
 
@@ -203,7 +224,7 @@ P7 answers whether *specific code* is a faithful producer, so every P7 evidence 
   - (d) a pinned private port, loaded from retained bytes and recorded by its pinned digest.
 - **Refusal.**
   - Any origin outside (a)–(d), including a first-party-named module loaded from another tree, refuses with `P7_ORIGIN_OUTSIDE_ROOT`.
-  - Loading a module on the refusal list (`c1_rail.qualification.runner`, `part_a`, `bracket`, `benchmark*`, `production`, `orchestration`, `result_adjudication`, `seal`, `execution.*`, `mc.simulation`) refuses with `P7_FORBIDDEN_IMPORT`.
+  - Loading a module on the refusal list (`c1_rail.qualification.runner`, `part_a`, `bracket`, `benchmark*`, `production`, `orchestration`, `result_adjudication`, `seal`, `execution.*`, `mc.simulation`) refuses with `P7_FORBIDDEN_IMPORT`. *(Corrected in revision 4.3: `runner` and `mc.simulation` load with their kernel entry points stubbed, and matching is by exact name or package prefix.)*
   - A first-party file whose bytes at exit differ from its recorded load hash refuses with `P7_SOURCE_CHANGED_DURING_RUN`.
 - **Why this covers dynamic imports.** Nothing is predicted: `importlib.import_module`, `__import__` and lazy imports all pass through the audited import path. Code executed through `exec` / `compile` of first-party file bytes, which would bypass import, is covered by the audit events `exec` and `compile`: any such event whose source is not the pinned port loader refuses with `P7_UNAUDITED_EXEC`.
 
@@ -239,8 +260,11 @@ These requirements bind the implementation. Where §2.5a conflicts with them, th
   1. installs the `sys.addaudithook` recorder (events `import`, `exec`, `compile`);
   2. inserts the recording `sys.meta_path` finder at position 0;
   3. sets `sys.dont_write_bytecode = True`;
-  4. **(revision 4.2)** inserts the locked ops-env `site-packages` directory into `sys.path`. The path comes from the pinned constant `P7_SITE_PACKAGES_RELATIVE`, resolved against `sys.prefix` of the bound interpreter. The bootstrap processes **no** `.pth` file and runs **no** `sitecustomize` or `usercustomize`, because `site` is never imported. It records the inserted path, and each `.pth` file present in that directory with its SHA-256 (listed, never executed), under the record's interpreter binding as `site_packages_path` and `unexecuted_pth`. It also inserts the code roots, since `-I` ignores `PYTHONPATH`;
-  5. runs `runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__')`.
+  4. **(revision 4.2; site path derivation per the 4.3 implementation note below)** inserts the locked ops-env `site-packages` directory into `sys.path`. The path comes from the pinned constant `P7_SITE_PACKAGES_RELATIVE`, resolved against `sys.prefix` of the bound interpreter. The bootstrap processes **no** `.pth` file and runs **no** `sitecustomize` or `usercustomize`, because `site` is never imported. It records the inserted path, and each `.pth` file present in that directory with its SHA-256 (listed, never executed), under the record's interpreter binding as `site_packages_path` and `unexecuted_pth`. It also inserts the code roots, since `-I` ignores `PYTHONPATH`;
+  5. **(revision 4.3)** imports `c1_rail.qualification.runner` and `mc.simulation` through the recording finder and installs the `P7_FORBIDDEN_CALL` stubs of revision 4.3(b);
+  6. runs `runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__')`.
+
+  *Implementation note (4.3):* under `-S`, `pyvenv.cfg` is never applied to `sys.prefix`, so the environment root is derived from the interpreter binding: the directory above `sys.executable`'s directory when it holds `pyvenv.cfg`, else `sys.prefix`.
 
   The order is fixed: hook, then finder, then path insertion, then `runpy`.
 
@@ -419,7 +443,7 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 | 17 | The signer's key is not in the pinned `SOURCE_SIGNING_KEYS`, or the caller's registry differs from the pin, or the pin is empty | Refused (`SOURCE_TRUST_ROOT_UNENROLLED` / `SOURCE_TRUST_ROOT_MISMATCH`) |
 | 18 | P7 evidence is emitted from a dirty tree, or without a closure digest | Refused; no P7 record is written |
 | 19 | A recorded first-party file or third-party distribution changes after P7 MET, and the old record is presented to `accept_p7_record` | Refused (`P7_EVIDENCE_STALE`); the embedded contract and approval are also re-validated at acceptance time |
-| 20 | The P7 process loads a module on the refusal list (runner, MC, stage, Part A, adjudication, seal, execution) | Refused (`P7_FORBIDDEN_IMPORT`); no record |
+| 20 | The P7 process loads a module on the 4.3 refusal list (`part_a`, `bracket`, `benchmark*`, `production`, `orchestration`, `result_adjudication`, `seal`, `execution.*`), or calls a stubbed kernel entry point, or restores one | Refused (`P7_FORBIDDEN_IMPORT` / `P7_FORBIDDEN_CALL`); no record |
 | 21 | A loaded module's origin is outside {code root, stdlib, locked site-packages, pinned ports}; a first-party file changes during the run; an unaudited `exec` / `compile` of first-party bytes occurs | No record (`P7_ORIGIN_OUTSIDE_ROOT` / `P7_SOURCE_CHANGED_DURING_RUN` / `P7_UNAUDITED_EXEC`) |
 | 23 | The driver, or a module it imports, runs without passing through the bootstrap's recorder; or the bootstrap constant and its pinned hash disagree | No record (`P7_BOOTSTRAP_MISMATCH`); the run is refused unless launched by `run_p7` with the pinned constant |
 | 24 | A presented record differs from the reconstructed record in any non-volatile field | Refused (`P7_RECORD_NOT_REPRODUCED`) |
@@ -478,7 +502,7 @@ Tests use TEST_ONLY-generated Ed25519 keys **only inside the test process**, to 
 | A10d | *Retired in revision 4* (replaced by the hook's `P7_FORBIDDEN_IMPORT`, tested in A16c) | — | — |
 | A12b | `test_receipt_expires_between_build_and_replay` | Validation and build succeed inside the window; with `_now()` advanced past `expires_at`, the next `replay_bracket` is refused (`SOURCE_APPROVAL_EXPIRED`) | A replay runs on an expired receipt |
 | A16b | `test_dirty_tree_writes_no_p7_record` | A dirty closure path at start refuses with `P7_TREE_DIRTY`, and no record file exists afterwards | A record is written from a dirty tree |
-| A16c | `test_p7_loaded_set_negatives` | Each case refuses with its own code and leaves no record: a first-party-named module loaded from a tree outside the code root (`P7_ORIGIN_OUTSIDE_ROOT`); an import of `c1_rail.qualification.runner` and of `mc.simulation` (`P7_FORBIDDEN_IMPORT`); a first-party file edited mid-run (`P7_SOURCE_CHANGED_DURING_RUN`); `exec` of first-party bytes (`P7_UNAUDITED_EXEC`). Each has an unmodified twin that yields a record. | Any case yields a record |
+| A16c | `test_p7_loaded_set_negatives` | Each case refuses with its own code and leaves no record: a first-party-named module loaded from a tree outside the code root (`P7_ORIGIN_OUTSIDE_ROOT`); an import of `c1_rail.qualification.part_a` (`P7_FORBIDDEN_IMPORT`); a call of `evaluate_replay` or of `simulate_path`, and a restored original attribute (`P7_FORBIDDEN_CALL`) *(revision 4.3)*; a first-party file edited mid-run (`P7_SOURCE_CHANGED_DURING_RUN`); `exec` of first-party bytes (`P7_UNAUDITED_EXEC`). Each has an unmodified twin that yields a record. | Any case yields a record |
 | A17 | `test_accept_p7_record_from_bytes` | In a fresh process with no receipts, a MET record at closure A is accepted. After changing one recorded module to B, it is refused (`P7_EVIDENCE_STALE`). After advancing `now` past approval expiry, or revoking the key in the pin, it is refused at acceptance. A record produced at B is accepted. | Stale, expired or revoked evidence is accepted, or acceptance needs an in-process receipt |
 | A19 | `test_two_independent_p7_runs_produce_identical_records` | Two fresh-process runs through `run_p7` on the same synthetic fixture produce records that are byte-identical after removing exactly the enumerated volatile fields | Any other field differs between runs |
 | A20 | `test_driver_edit_is_reflected_or_refused` | Editing `p7_driver.py` changes its recorded hash and `code_closure_sha256`. An old record presented after the edit is refused (`P7_EVIDENCE_STALE`). A launch that bypasses the bootstrap, running the driver directly, or a bootstrap string whose hash differs from `P7_BOOTSTRAP_SHA256`, yields no record (`P7_BOOTSTRAP_MISMATCH`). Each case has an unmodified twin that yields and accepts a record. | A driver edit is absent from the closure, or a bypassed launch yields a record |
