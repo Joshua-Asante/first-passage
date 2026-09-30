@@ -145,7 +145,21 @@ Before CP-3, the private binding must also name the approved quote-freshness int
    - Any change to the rule, the limits, the generator/checker version, the contract, the direction or the environment requires a renewed CP-3.
 4. **Unchanged.** Joshua still performs the send. Everything else in this section stands.
 
-~~Until the operator accepts this amendment, the paragraph above governs.~~ Accepted 2026-09-29. CP-3 approves the rule and the generator/checker version; that tool is not yet built or reviewed.
+~~Until the operator accepts this amendment, the paragraph above governs.
+
+*Clarification 2026-09-30 (operator-directed; rule accepted by Codex, `tools/x1-r6-codex-review/RULING.json`):* for X-1 in the window 22:00–22:30Z, a movement-tolerant recheck replaces exact-stop reproduction. At the pre-send check and the final check:
+- the quote is at most 10 seconds old;
+- the current time is inside the session window;
+- the ask is within 5 points of both the approved reference and the generation ask;
+- 0 < ask − submitted stopLoss ≤ 40.
+
+The validated bytes are sent unchanged, without re-derivation. Generation is unchanged. The checked ask-to-stop distance may therefore be 25–35 points, and the post-fill abort above 40 remains.
+
+**Rule acceptance does not clear the round-6 tool bytes.** Still required, in order:
+1. repair and verification of the validation-integrity and refusal-record findings;
+2. the operator rehearsal;
+3. fresh session checks;
+4. written CP-3.~~ Accepted 2026-09-29. CP-3 approves the rule and the generator/checker version; that tool is not yet built or reviewed.
 
 ## 5. Single-row sequence and verification
 
