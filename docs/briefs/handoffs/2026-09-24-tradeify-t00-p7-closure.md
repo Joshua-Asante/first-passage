@@ -576,6 +576,30 @@ The coordinator reviewed the first Task 3 source pack and ruled as follows. The 
 
 **Conflict noted.** The v1 review companion schema is closed, so the required statements cannot live inside v1 companion bytes. They are in the r2 `reviewer-notes.json`. The design's v2 companion adds `reviewer`, `reviewed_at` and `notes`.
 
+#### Source-only contract design: review path and acceptance (2026-09-30)
+
+The design is [`docs/superpowers/specs/2026-09-30-t00-source-only-contract-design.md`](../../superpowers/specs/2026-09-30-t00-source-only-contract-design.md). Each revision is additive and carries its own changes table.
+
+| Revision | Commit | Review and outcome |
+|---|---|---|
+| 1 | `48bf30a` | Coordinator: REVISE, with two BLOCKING (a caller-supplied trust root; P7 not bound to code) and four required changes |
+| 1 → typed truncation, reviewer-authored companions | `c9742f0` | The coordinator's Task 3 review rulings |
+| 2 | `7e0c49c` | Codex (local): seven findings |
+| 3 | `e6fad26` | Codex cloud `task_e_6abd361aed38832c9c9f2b847e08c267`: NOT RESOLVED, with two new P1s |
+| 4 | `f1cfa4f`, `a6ab1e2` | Operator-approved scope simplification. Codex `task_e_6abd41a3f030832cb583866d33d63406`: cuts 1 and 4 resolved, three new P1s |
+| 4.1 | `35f233e` | Three binding requirements (operator "yes"). Codex `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`: record authentication and stale inputs RESOLVED; the pre-hook P1 remained because `-I` does not imply `-S` |
+| 4.2 | this revision | The `-S` correction and test A23 |
+
+**Operator acceptance, 2026-09-30 ("option 1").** Design ACCEPTED 2026-09-30 by the operator (option 1), on revision 4.2. The final Codex review, `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`, resolved the record-authentication and stale-input P1s, and the pre-hook P1 is closed by the `-S` fix and A23 without a further design review. This is an explicit operator exception to the pre-committed stop rule, taken because the finding was a factual error with a one-flag correction.
+
+**Next.**
+1. A coordinator card amendment admits the implementation files.
+2. The implementation proceeds with fail-first tests.
+3. Codex reviews the code before any merge.
+4. The merge hold until S5 merges still stands.
+
+No code starts before the amendment.
+
 ## 10. Audit hooks
 
 ```powershell

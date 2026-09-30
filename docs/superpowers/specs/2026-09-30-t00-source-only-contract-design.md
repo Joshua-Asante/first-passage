@@ -1,13 +1,28 @@
 # T00 source-only contract: design (Phase A)
 
 **Date:** 2026-09-30.
-**Status:** DRAFT for review. This is a design only. It adds no code, and no file below is admitted for editing until a later amendment to the [dispatch card](../../briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md) admits it.
+**Status:** **Design ACCEPTED 2026-09-30 by the operator (option 1), on revision 4.2.** The final Codex review, `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`, resolved the record-authentication and stale-input P1s; the pre-hook P1 is closed by the `-S` fix and A23, without a further design review.
+
+This is a design only. It adds no code, and no file below is admitted for editing until a later amendment to the [dispatch card](../../briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md) admits it.
 **Authority:**
 - the operator's 2026-09-30 Ruling 1, "Source-only contract" ([P7-closure packet §7, Operator rulings 2026-09-30](../../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#operator-rulings-2026-09-30));
 - the coordinator's sequencing in [card §8.1](../../briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md#81--coordinator-sequencing-after-the-checkpoint-1-return-2026-09-30).
 
 **Review path:** the coordinator reviews, then Codex, then Joshua accepts.
 **Code read at:** `claude/t00-p7-tasks-3-4` @ `e3d95b3` (revisions 1–2), `7e0c49c` (revision 3), `e6fad26` (revision 4) and `a6ab1e2` (revision 4.1); production code equals the Task 2 head `672d49f`.
+
+## Revision 4.2 — the `-S` correction (operator ruling 2026-09-30, "option 1")
+
+Codex's final review of revision 4.1 (`35f233e`, `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`) left one P1. The revision 4.1 claim that `-I` excludes `site` is false: `-I` implies `-E -P -s`, not `-S`. So the global `site` module, `.pth` processing and `sitecustomize` could run before the hook.
+
+Joshua accepted the design on this one-flag correction, without a further review round. It is an explicit exception to the stop rule, because the finding was a factual error with a one-flag fix.
+
+| Change | Section / test |
+|---|---|
+| The launch becomes `python -I -S -B -c P7_BOOTSTRAP`, and the false sentence is corrected | §2.5b(1) |
+| The bootstrap inserts the locked ops-env `site-packages` itself, after the hook and before `runpy`. It processes no `.pth` and runs no `sitecustomize` / `usercustomize`, and it records the inserted path and each present `.pth` file's hash without executing it. | §2.5b(1) |
+| A23 falsifier: a planted `sitecustomize.py` and a `.pth` file with an import line must not execute, while third-party packages still load | §5 A23 |
+| The startup residual is narrowed to the frozen stdlib init under `-I -S` | §2.5b(1) |
 
 ## Revision 4.1 — three binding requirements (operator ruling 2026-09-30)
 
@@ -177,7 +192,7 @@ It also carries a **`SourceTrustDomain`** built from compiled constants, with `a
 
 P7 answers whether *specific code* is a faithful producer, so every P7 evidence record binds that code.
 
-**Process boundary (revision 4).** P7 runs as its own process: `python -I -B <p7_driver> <contract> <approval> <artifact_root> <out>`, launched through the checkout's validated operations interpreter. The process validates, builds, replays, writes one evidence file and exits. It imports no runner, MC, stage, Part A, adjudication, seal or execution code. Any such import is refused by the loaded-set rule below, because those modules are named in a refusal list checked by the hook.
+**Process boundary (revision 4; the launch form is superseded by §2.5b).** P7 runs as its own process: `python -I -B <p7_driver> <contract> <approval> <artifact_root> <out>`, launched through the checkout's validated operations interpreter. The process validates, builds, replays, writes one evidence file and exits. It imports no runner, MC, stage, Part A, adjudication, seal or execution code. Any such import is refused by the loaded-set rule below, because those modules are named in a refusal list checked by the hook.
 
 **The closure is the loaded set (revision 4).** The driver's first statements, before any first-party import, install an import audit hook with `sys.addaudithook`, observing the `import` event. A `sys.meta_path` recording finder is an acceptable equivalent.
 - **Recording.** The hook records every module **as it loads**: name, origin path and the SHA-256 of the origin file's bytes, read at load. A module later removed from `sys.modules` is still recorded, so removing it does not hide it.
@@ -219,17 +234,20 @@ The Task 4 return names `code_closure_sha256`.
 These requirements bind the implementation. Where §2.5a conflicts with them, this section governs.
 
 **(1) Pinned bootstrap.**
-- **Launch.** P7 is launched only as `<ops-env python> -I -B -c <P7_BOOTSTRAP> <args>`. `P7_BOOTSTRAP` is a compiled string constant in `p7_evidence.py`, and `P7_BOOTSTRAP_SHA256`, the SHA-256 of its UTF-8 bytes, is a second compiled constant. A test asserts that they agree.
+- **Launch (revision 4.2).** P7 is launched only as `<ops-env python> -I -S -B -c <P7_BOOTSTRAP> <args>`. `P7_BOOTSTRAP` is a compiled string constant in `p7_evidence.py`, and `P7_BOOTSTRAP_SHA256`, the SHA-256 of its UTF-8 bytes, is a second compiled constant. A test asserts that they agree.
 - **What the bootstrap does.** Its source, in order:
   1. installs the `sys.addaudithook` recorder (events `import`, `exec`, `compile`);
   2. inserts the recording `sys.meta_path` finder at position 0;
   3. sets `sys.dont_write_bytecode = True`;
-  4. runs `runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__')`, with the code roots on `sys.path` set by the bootstrap, since `-I` ignores `PYTHONPATH`.
+  4. **(revision 4.2)** inserts the locked ops-env `site-packages` directory into `sys.path`. The path comes from the pinned constant `P7_SITE_PACKAGES_RELATIVE`, resolved against `sys.prefix` of the bound interpreter. The bootstrap processes **no** `.pth` file and runs **no** `sitecustomize` or `usercustomize`, because `site` is never imported. It records the inserted path, and each `.pth` file present in that directory with its SHA-256 (listed, never executed), under the record's interpreter binding as `site_packages_path` and `unexecuted_pth`. It also inserts the code roots, since `-I` ignores `PYTHONPATH`;
+  5. runs `runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__')`.
+
+  The order is fixed: hook, then finder, then path insertion, then `runpy`.
 
   The driver, and everything it imports, is therefore loaded through the recorded path, and `p7_driver.py` appears in `loaded_closure` like any other first-party module. `p7_evidence` itself is the only first-party module imported by the bootstrap before the hook exists. The bootstrap therefore installs the hook from inline code first, and imports `p7_evidence` afterwards, so it is recorded too.
 - **Launcher.** The command string is built only from the constant. The bootstrap cannot hash its own `-c` source, so the record's `bootstrap_sha256` is written by the launcher, which is `p7_evidence.run_p7`. A forged value fails reconstruction (2), because the acceptor always launches with its own pinned constant.
-- **What `-I` excludes.** `-I` excludes `site` and user-site customization, `PYTHON*` environment variables and the script directory; `-B` prevents bytecode writes.
-- **Residual (named).** Interpreter startup before the bootstrap is unrecorded: the frozen and built-in stdlib initialization that runs under `-I`. It is bound by recording `interpreter_sha256` (the SHA-256 of `sys.executable`'s bytes), `sys.version`, `sys.implementation.cache_tag` and the locked environment's `requirements-ops.lock` SHA-256. Acceptance requires all four to be equal.
+- **What the flags exclude (corrected in revision 4.2).** `-I` implies `-E` (ignore `PYTHON*` environment variables), `-P` (no script or current directory on `sys.path`) and `-s` (no user site-packages). It does **not** suppress the global `site` module. Revision 4.1 wrongly said it did. **`-S`** is what suppresses `site`, and with it global `.pth` processing and `sitecustomize`. `-B` prevents bytecode writes.
+- **Residual (named; narrowed in revision 4.2).** The only unrecorded pre-bootstrap code is the frozen and built-in stdlib initialization that runs under `-I -S`. No `site`, `.pth` or customization module runs. It is bound by recording `interpreter_sha256` (the SHA-256 of `sys.executable`'s bytes), `sys.version` and `sys.implementation.cache_tag`. The record additionally binds the locked environment's `requirements-ops.lock` SHA-256, `site_packages_path` and `unexecuted_pth`, and acceptance requires all of these to be equal (`P7_INTERPRETER_MISMATCH`).
 
 **(2) Acceptance by reconstruction.** `accept_p7_record(record_bytes, *, code_root, artifact_root, now)`:
 1. **Current-bytes check (3)** runs first.
@@ -466,6 +484,7 @@ Tests use TEST_ONLY-generated Ed25519 keys **only inside the test process**, to 
 | A20 | `test_driver_edit_is_reflected_or_refused` | Editing `p7_driver.py` changes its recorded hash and `code_closure_sha256`. An old record presented after the edit is refused (`P7_EVIDENCE_STALE`). A launch that bypasses the bootstrap, running the driver directly, or a bootstrap string whose hash differs from `P7_BOOTSTRAP_SHA256`, yields no record (`P7_BOOTSTRAP_MISMATCH`). Each case has an unmodified twin that yields and accepts a record. | A driver edit is absent from the closure, or a bypassed launch yields a record |
 | A21 | `test_hand_constructed_record_over_valid_contract_is_not_reproduced` | A record built by hand around a valid signed contract and approval, with plausible hashes and labels, or with one result label altered, or with a forged `bootstrap_sha256`, is refused by `accept_p7_record` (`P7_RECORD_NOT_REPRODUCED`); the genuine twin is accepted | A constructed record is accepted |
 | A22 | `test_artifact_changed_after_run_is_stale` | After a genuine MET record, changing one retained artifact (a source-role byte, a panel byte, and separately a pinned port byte) in the current artifact root makes acceptance refuse `P7_EVIDENCE_STALE` **before** any re-execution. A spy asserts that no process was launched. | A stale artifact is accepted, or acceptance re-executes first |
+| A23 | `test_bootstrap_runs_no_site_pth_or_sitecustomize` | In a temporary copy of the interpreter's global site-packages layout (or a venv made for the test), plant a `sitecustomize.py` and a `.pth` file with an `import` line; each writes a marker file when executed. Launching through `run_p7` with the pinned bootstrap leaves no marker from either and does not execute them. Third-party packages still import from the inserted `site-packages`, and the record lists the `.pth` file's hash under `unexecuted_pth`. The unmodified twin (the same layout with no planted files) yields a record. A control launch **without** `-S` shows that the markers do fire, proving the planted files are live. | Any marker is written under the bootstrap, third-party imports fail, or the control shows the plant is inert |
 | A18 | `test_calendar_fact_must_bind_calendar_producer` | A calendar whose fact names another retained role with that role's correct digest is refused (`CALENDAR_FACT_ROLE`), although `_fact` alone would accept it | A non-producer fact binds |
 | A12 | `test_source_only_replay_bracket_fresh_engines_and_label` | **End to end, with the guards intact.** A synthetic source-only contract, signed in-process with only the pinned root monkeypatched, validates. `build` succeeds, and `replay_bracket` on a path with a consumed intrabar split passes `_verify_integrity` and returns a `SourceOnlyBracket` from two separate engines. The label is `T00_P7_SOURCE_ONLY`, the policy is 1%/0.40, and `verify_for` on the same source still raises `SOURCE_ONLY_NOT_QUALIFICATION`. No guard function is patched. | Shared state, a missing label, a changed policy, a patched guard, or a build/replay failure |
 
