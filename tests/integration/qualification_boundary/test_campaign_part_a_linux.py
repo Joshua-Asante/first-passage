@@ -91,7 +91,30 @@ from tools.qualification_verification import host
 
 PART_A_EXPORT_NAME = 'part_a_observations.json'
 PART_A_EXPORT_SCHEMA = 'qualification_part_a_observations/v1'
-PART_A_STAGED_ROLES = {'part_a_initial_prefix', 'part_a_final'}
+# The two S5-D1 artifacts the guardian archives on a normal exit
+# (ops/c1_rail/qualification/execution/campaign_supervisor.py:1889-1892
+# PART_A_ARTIFACT_ROLES, staged at :1951-1954 under checkpoint PART_A).
+PART_A_S5_D1_ROLES = {'part_a_initial_prefix', 'part_a_final'}
+# The committing part_a_g5 stages every PART_A assessment output under the same
+# checkpoint (ops/c1_rail/qualification/execution/g5.py:748-759 stages each role
+# of evidence.output_bytes_by_role). Those roles are the ``outputs`` dict of
+# build_part_a_checkpoint_evidence (ops/c1_rail/qualification/evidence.py:2944-2953,
+# returned at :3023), checked by validate_output_roles (:2954-2960) against
+# policy.required_output_roles (ops/c1_rail/qualification/policy.py:144-154):
+# BASE_ARTIFACT_ROLES (:18) plus STAGE_ARTIFACT_ROLES (:16-17) for all five
+# stages. For the full stage order the role set is the same for verdict PASS
+# and FAIL (policy.py:151,154), so CONTINUE and FAILURE stage one set.
+PART_A_G5_OUTPUT_ROLES = {
+    'attempt_journal',
+    'path_inventory',
+    'runtime_load_trace',
+    'legality_result',
+    'n1_result',
+    'n2_result',
+    'part_b_result',
+    'part_a_result',
+}
+PART_A_STAGED_ROLES = PART_A_S5_D1_ROLES | PART_A_G5_OUTPUT_ROLES
 PART_A_INITIAL_ARTIFACT = 'part-a-initial.jsonl'
 PART_A_FINAL_ARTIFACT = 'part-a-final.jsonl'
 PART_A_BELOW_FLOOR_SCENARIO = 'part_a_below_floor'
@@ -116,8 +139,9 @@ def _query(boundary, statement, parameters):
 
 
 def staged_part_a(boundary, attempt):
-    """The archived S5-D1 artifacts, role -> bytes (campaigns.stage_checkpoint_artifact,
-    checkpoint PART_A)."""
+    """Every artifact archived under checkpoint PART_A, role -> bytes
+    (campaigns.stage_checkpoint_artifact): the S5-D1 artifacts and, once a
+    part_a_g5 has staged them, its assessment outputs."""
     rows = _query(
         boundary,
         'SELECT role,body FROM full_campaign_checkpoint_staged '
@@ -292,11 +316,19 @@ def committed_part_a_decision(boundary, attempt, progression):
     assert family['state'] == 'COMMITTED'
     assert family['decision'] == ('CONTINUE' if progression == 'FULL_PASS_READY' else 'FAILURE')
     committing_g5_completed(boundary, attempt, progression, work_id='pag5')
-    # S5-D1 custody: both artifacts archived, the final a byte-extension of the
-    # initial prefix, each bound to the payload's own digests; no expansion (F1).
+    # The archived PART_A set is exactly the S5-D1 artifacts plus the committing
+    # g5's assessment outputs (module constants cite the production sources).
+    from c1_rail.qualification.execution.campaign_supervisor import PART_A_ARTIFACT_ROLES
+    from c1_rail.qualification.policy import BASE_ARTIFACT_ROLES, STAGE_ARTIFACT_ROLES
+
+    assert PART_A_S5_D1_ROLES == set(PART_A_ARTIFACT_ROLES.values())
+    assert PART_A_G5_OUTPUT_ROLES == set(BASE_ARTIFACT_ROLES) | set(STAGE_ARTIFACT_ROLES.values())
     payload_part_a = captured_part_a_payload(boundary, attempt)['part_a']
     staged = staged_part_a(boundary, attempt)
     assert set(staged) == PART_A_STAGED_ROLES, sorted(staged)
+    # S5-D1 custody: both artifacts archived, the final a byte-extension of the
+    # initial prefix, each bound to the payload's own digests; no expansion (F1).
+    assert PART_A_S5_D1_ROLES <= set(staged), sorted(staged)
     initial = staged['part_a_initial_prefix']
     final = staged['part_a_final']
     assert final[: len(initial)] == initial
@@ -610,7 +642,8 @@ def test_s5_part_a_g5_unit_death_and_exact_receipt_retry(real_boundary):
     # running unit: its exit status is not the fact under test. What is
     # asserted is that the unit is not active afterwards -- exactly inactive,
     # failed, or no longer loaded by systemd.
-    subprocess.run(
+    # The kill's return code is recorded as a fact (host.save below), not asserted.
+    kill = subprocess.run(
         ['/usr/bin/systemctl', '--system', '--no-ask-password', 'kill', '--signal=KILL', unit],
         check=False,
         capture_output=True,
