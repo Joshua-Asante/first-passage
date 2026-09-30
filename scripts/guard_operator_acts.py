@@ -119,8 +119,9 @@ call, because one answer approves all of them.
 Z Code sessions are not hooked). It adds a prompt where an agent session holds a
 credential that could otherwise act; it does not replace the ruleset, the repository
 setting, the arming interlock or keeping credentials off agent environments. It cannot
-see ``trade.submit``: that is enforced by the trading credentials never being present in
-an agent environment.
+see broker actions: since the 2026-09-30 amendment, ``trade.submit`` is an operator act,
+enforced by the operator's direction and by trading credentials being absent from agent
+environments unless the operator supplies them for that act.
 
 **Reading commands.** Bash and PowerShell tool commands are read with
 `scripts/_shell_tokens.py` in strict mode, judging words in command position (wrappers,
@@ -252,7 +253,8 @@ _DETAIL_MESSAGES = {
         "confirm only if you, the operator, are taking that deviation now.",
         "Operator ruling 2026-09-26: an agent may pass --acknowledge-m1-unresolved, but only "
         "through this operator-act prompt; the operator's answer is the GO for this armed "
-        "session, and no agent places a trade. Do not proceed unless the operator confirms "
+        "session, and any order, exit or cancel still needs its own operator direction. "
+        "Do not proceed unless the operator confirms "
         "this prompt."),
 }
 

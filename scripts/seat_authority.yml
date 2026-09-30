@@ -48,11 +48,11 @@ capabilities:
   spend:                {risk: high}     # operator act — any paid service or subscription
   rail.deploy:          {risk: high}     # operator act — fly deploy of c1-rail
   rail.arm:             {risk: high}     # operator act — M1 RESOLVED + a GO per armed session
+  trade.submit:         {risk: high}     # operator act; an order, exit or cancel only when the operator directs it;
+                                       # AGENTS.md amendment 2026-09-30; ADR Addendum 2026-09-30b;
+                                       # never grantable in a card.
 
 forbidden:
-  trade.submit:
-    rule: "No agent may place a trade."
-    owner: AGENTS.md#live-execution-posture
   pr.auto_merge:
     rule: "Merge authority is the operator's, with no automated exception."
     owner: docs/adr/2026-07-14-cc-cursor-surface-allocation.md
