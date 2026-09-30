@@ -4,7 +4,7 @@ Ratified 2026-09-23 (revision 2) with build GO 2026-09-24:
 docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md.
 The accepted emulator path of a bar is fixed; each run places an intrabar
 schedule instant at one vertex of it and supplies that split through the
-existing ``schedule_quotes`` seam, so ``BookReplay._split`` validates it
+``schedule_quotes`` seam (the frozen ``ScheduleSplit`` interface), so ``BookReplay._split`` validates it
 unchanged. R1 and R2 are complete replays evaluated separately; a path's
 outcome is taken only where they agree. The two placements are extreme
 vertices, not proven bounds on the true instant.
@@ -15,48 +15,18 @@ runner or adjudication consumes it yet.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
-from c1_signal_daemon.feed import Bar
 from .model import PathOutcome
 from .replay import ReplayDeadlineFailure, ReplayNeedsContext, accepted_path
+# vertex_split and placement moved verbatim to production_source (T00 step-1b
+# Task 2); re-exported here under their public names.
+from .production_source import placement, vertex_split  # noqa: F401
 from .runner import evaluate_replay
 
 CONVENTION = 'PATH_POSITION_BRACKET/rev2'
 RUNS = ('R1', 'R2')
 UNDETERMINED = 'UNDETERMINED'
-
-
-def vertex_split(original, index, instant):
-    """Prefix is the accepted path up to vertex ``index``; suffix is the rest.
-
-    Volume carries no price and is kept whole on the prefix so the split
-    aggregates to the source bar.
-    """
-    path = accepted_path(original)
-    if type(index) is not int or not 0 <= index < len(path):
-        raise ValueError('vertex index outside the accepted path')
-    head, tail = path[:index+1], path[index:]
-    return (Bar(original.ts, path[0], max(head), min(head), path[index], original.volume),
-            Bar(instant, path[index], max(tail), min(tail), path[-1], 0.0))
-
-
-def placement(run, position, path):
-    """(rule, vertex index) for one leg: the addendum's two-run table.
-
-    A signed position places the instant at its adverse (R1) or favourable
-    (R2) extreme, first reached along the path. Without a position the
-    endpoints are used: close (R1, fill) and open (R2, cancel).
-    """
-    if run not in RUNS:
-        raise ValueError('bracket run must be R1 or R2')
-    if type(position) is not int:
-        raise ValueError('signed integer position required')
-    if position == 0:
-        return ('fill', len(path)-1) if run == 'R1' else ('cancel', 0)
-    low, high = path.index(min(path)), path.index(max(path))
-    adverse, favourable = (low, high) if position > 0 else (high, low)
-    return ('adverse', adverse) if run == 'R1' else ('favourable', favourable)
 
 
 @dataclass(frozen=True)
@@ -75,63 +45,44 @@ class Placement:
 class BracketScheduleQuotes:
     """One run's schedule prices for one fresh replay; never reused.
 
-    Intrabar prices exist only as placements made from the replay's observed
-    exposure. A grid-boundary instant uses the retained source price there:
-    the open of the leg's bar starting at the instant, else the close of its
-    bar ending there. Anything else fails closed.
+    Ported to the frozen T00 step-1b split interface: the replay passes each
+    leg's captured ``ScheduleExposure`` and receives one ``ScheduleSplit``.
+    Placement, pricing and the R2 pending-only non-executing prefix are
+    delegated to a fresh ``ScheduleExecutionBracket.for_run`` provider over
+    empty reviewed evidence; this class adds only the placement record. A
+    grid-boundary instant uses the retained source price there: the open of
+    the leg's bar starting at the instant, else the close of its bar ending
+    there. Anything else fails closed.
     """
 
     def __init__(self, run):
+        from types import MappingProxyType
+        from .production_source import ScheduleExecutionBracket, ScheduleExecutionEvidence
         if run not in RUNS:
             raise ValueError('bracket run must be R1 or R2')
         self.run = run
-        self._exposure = None
-        self._prices = {}
-        self._empty_prefixes = set()
+        empty = ScheduleExecutionEvidence(MappingProxyType({}), MappingProxyType({}), ())
+        self._provider = ScheduleExecutionBracket(empty).for_run(run)
         self.placements = []
 
-    def observe_exposure(self, session, instant, positions):
-        self._exposure = (session.occurrence, instant, dict(positions))
+    def split_bar(self, session, pb, instant, leg, *, exposure):
+        split = self._provider.split_bar(session, pb, instant, leg, exposure=exposure)
+        return self._record(session, dict(pb.bars)[leg], instant, leg, exposure, split)
 
-    def split_bar(self, session, pb, instant, leg):
-        return self._place(session, dict(pb.bars)[leg], instant, leg)
+    def split_interval(self, session, pb, original, instant, leg, *, exposure):
+        split = self._provider.split_interval(session, pb, original, instant, leg, exposure=exposure)
+        return self._record(session, original, instant, leg, exposure, split)
 
-    def split_interval(self, session, pb, original, instant, leg):
-        return self._place(session, original, instant, leg)
-
-    def _place(self, session, original, instant, leg):
-        exposure = self._exposure
-        if exposure is None or exposure[:2] != (session.occurrence, instant) or leg not in exposure[2]:
-            raise ReplayNeedsContext('bracket placement requires the leg exposure at the instant')
-        key = (session.occurrence, leg, instant)
-        if key in self._prices:
-            raise ReplayNeedsContext('bracket instant already placed for this leg')
-        position = exposure[2][leg]
-        rule, vertex = placement(self.run, position, accepted_path(original))
-        prefix, suffix = vertex_split(original, vertex, instant)
-        self._prices[key] = prefix.close
-        if rule == 'cancel':
-            self._empty_prefixes.add(key)
+    def _record(self, session, original, instant, leg, exposure, split):
+        rule, vertex = placement(self.run, exposure.position, accepted_path(original))
+        if split.prefix.close != accepted_path(original)[vertex] or split.prefix_executes is (rule == 'cancel'):
+            raise ReplayNeedsContext('bracket provider placement differs from the ratified table')
         self.placements.append(Placement(session.occurrence, session.source.source_session_date, leg,
-                                         instant, self.run, position, rule, vertex, prefix.close))
-        return prefix, suffix
-
-    def prefix_is_empty(self, session, instant, leg):
-        """R2 pending-only cancellation precedes even the opening price event."""
-        return (session.occurrence, leg, instant) in self._empty_prefixes
+                                         instant, self.run, exposure.position, rule, vertex, split.prefix.close))
+        return split
 
     def __call__(self, session, instant, leg):
-        placed = self._prices.get((session.occurrence, leg, instant))
-        if placed is not None:
-            return placed
-        bars = [(pb.source_bar_time, dict(pb.bars).get(leg)) for pb in session.bars]
-        for start, bar in bars:
-            if bar is not None and start == instant:
-                return bar.open
-        for start, bar in bars:
-            if bar is not None and start + timedelta(minutes=15) == instant:
-                return bar.close
-        raise ReplayNeedsContext('no placement or retained source price at the schedule instant')
+        return self._provider(session, instant, leg)
 
 
 @dataclass(frozen=True)

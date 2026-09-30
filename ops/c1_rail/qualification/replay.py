@@ -283,20 +283,45 @@ class BookReplay:
             adverse += contribution(f, "open" if at_open else "midbar", intent.price)
         return cash_before + adverse - fees
 
-    def _split(self, session, pb, bars, instant):
-        splitter = getattr(self.schedule_quotes, "split_bar", None)
+    def _capture_exposure(self, k):
+        """One immutable exposure snapshot; a reservation needs a pending order."""
+        from .model import ScheduleExposure
+        exposure = ScheduleExposure(self.brokers[k].position(),
+                                    bool(self.brokers[k].pending_order_ids()),
+                                    self.ledger.reserved.get(k, 0))
+        if exposure.reserved > 0 and not exposure.pending:
+            raise ReplayNeedsContext("reservation without a broker-pending order has no ratified branch")
+        return exposure
+
+    def _split(self, session, pb, bars, instant, exposures):
+        """Validate each leg's ScheduleSplit; returns {leg: ScheduleSplit}.
+
+        Both segments are validated even when the prefix does not execute.
+        Execution is never inferred from timestamps, prices, volume or shape.
+        """
+        from .model import ScheduleExposure, ScheduleSplit
+        provider = self.schedule_quotes
+        splitter = getattr(provider, "split_bar", None)
         if splitter is None:
             raise ReplayNeedsContext("intrabar schedule requires split OHLC lifetime evidence")
-        left, right = {}, {}
+        if any(hasattr(provider, name) for name in ("observe_exposure", "prefix_is_empty")):
+            raise ReplayNeedsContext("schedule exposure side channels are not part of the split interface")
+        splits = {}
         vertices, turns = accepted_path, path_turns
         for k, original in bars.items():
+            exposure = exposures.get(k)
+            if type(exposure) is not ScheduleExposure:
+                raise ReplayNeedsContext("schedule split requires a captured exposure snapshot")
             if original.ts != pb.source_bar_time:
-                interval_splitter = getattr(self.schedule_quotes, "split_interval", None)
+                interval_splitter = getattr(provider, "split_interval", None)
                 if interval_splitter is None:
                     raise ReplayNeedsContext("multiple intrabar boundaries require interval split evidence")
-                prefix, suffix = interval_splitter(session, pb, original, instant, k)
+                split = interval_splitter(session, pb, original, instant, k, exposure=exposure)
             else:
-                prefix, suffix = splitter(session, pb, instant, k)
+                split = splitter(session, pb, instant, k, exposure=exposure)
+            if type(split) is not ScheduleSplit:
+                raise ReplayNeedsContext("split provider must return one ScheduleSplit")
+            prefix, suffix = split.prefix, split.suffix
             if (not isinstance(prefix, Bar) or not isinstance(suffix, Bar)
                     or prefix.ts != original.ts or suffix.ts != instant
                     or prefix.open != original.open or suffix.close != original.close
@@ -311,12 +336,12 @@ class BookReplay:
                         or not 0 < segment.low <= min(segment.open, segment.close)
                         <= max(segment.open, segment.close) <= segment.high):
                     raise ReplayNeedsContext("invalid split OHLC evidence")
-            if prefix.close != self.schedule_quotes(session, instant, k):
+            if prefix.close != provider(session, instant, k):
                 raise ReplayNeedsContext("split boundary differs from schedule price")
             if turns(vertices(prefix) + vertices(suffix)) != turns(vertices(original)):
                 raise ReplayNeedsContext("split evidence changes the accepted emulator path")
-            left[k], right[k] = prefix, suffix
-        return left, right
+            splits[k] = split
+        return splits
 
     def _submit(self, k, actions, bar):
         events = self.brokers[k].submit(actions, bar)
@@ -529,23 +554,22 @@ class BookReplay:
                         # _split remains a pure all-supplied-bars validator for
                         # source-evidence consumers. Inert legs need no price
                         # evidence; retain their original bar for completion.
-                        # A placement convention chooses its split from each
-                        # exposed leg's signed position before the instant.
-                        observe = getattr(self.schedule_quotes, "observe_exposure", None)
-                        if observe is not None:
-                            observe(session, instant, {k: self.brokers[k].position() for k in exposed})
-                        prefix, suffix = self._split(session, pb, exposed, instant)
-                        segment_bars = {**segment_bars, **suffix}
-                        # An R2 pending-only placement has no price event before
-                        # cancellation, even when the open crosses a stop. Keep
-                        # the full suffix for consumption after the schedule.
-                        empty_prefix = getattr(self.schedule_quotes, "prefix_is_empty", None)
-                        for k, bar in list(prefix.items()):
-                            if empty_prefix is not None and empty_prefix(session, instant, k):
-                                if (self.brokers[k].position()
-                                        or not bar.open == bar.high == bar.low == bar.close):
-                                    raise ReplayNeedsContext("empty prefix requires a flat leg and one price")
-                                del prefix[k]
+                        # Frozen boundary order: snapshot exposure (after any
+                        # earlier boundary's action), validate splits, execute
+                        # only executing prefixes, act, then keep every suffix.
+                        exposures = {k: self._capture_exposure(k) for k in exposed}
+                        splits = self._split(session, pb, exposed, instant, exposures)
+                        prefix = {}
+                        for k, split in splits.items():
+                            if split.prefix_executes is True:
+                                prefix[k] = split.prefix
+                            elif exposures[k].position or not exposures[k].pending or not (
+                                    split.prefix.open == split.prefix.high == split.prefix.low
+                                    == split.prefix.close):
+                                # Only a pending-only leg may act before any
+                                # price event, and a skipped prefix has one price.
+                                raise ReplayNeedsContext("non-executing prefix requires a pending-only leg and one price")
+                        segment_bars = {**segment_bars, **{k: split.suffix for k, split in splits.items()}}
                         low = min(low, self._process_segment(prefix) - opening)
                         self._session_low = low
                     self._path_time = pb.path_time + (instant - pb.source_bar_time)

@@ -8,7 +8,7 @@ No missing production fact is supplied by the synthetic implementation.
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, field, fields, is_dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal, DecimalException
 from enum import Enum
@@ -25,6 +25,7 @@ from c1_signal_daemon.feed import Bar
 from .model import ET, LEG_IDS, SessionSchedule, SourceBar, aware
 from .clock import AccountClock, SourceDayDisposition, SourceDayStatus
 from .runner import NeedsContext
+from .replay import accepted_path
 
 
 @dataclass(frozen=True)
@@ -354,11 +355,75 @@ def parse_population_index(raw, *, populations):
     return SourcePopulationIndex(dates, tuple(slot_rows), tuple((name,pools[name]) for name in ('FULL','H1','H2')), tuple(exclusions), binding_bytes, tuple(provenance))
 
 
+RUNS = ('R1', 'R2')
+BRACKET_RUNS = RUNS
+
+
+def vertex_split(original, index, instant):
+    """Prefix is the accepted path up to vertex ``index``; suffix is the rest.
+
+    Volume carries no price and is kept whole on the prefix so the split
+    aggregates to the source bar.
+    """
+    path = accepted_path(original)
+    if type(index) is not int or not 0 <= index < len(path):
+        raise ValueError('vertex index outside the accepted path')
+    head, tail = path[:index+1], path[index:]
+    return (Bar(original.ts, path[0], max(head), min(head), path[index], original.volume),
+            Bar(instant, path[index], max(tail), min(tail), path[-1], 0.0))
+
+
+def placement(run, position, path):
+    """(rule, vertex index) for one leg: the addendum's two-run table.
+
+    A signed position places the instant at its adverse (R1) or favourable
+    (R2) extreme, first reached along the path. Without a position the
+    endpoints are used: close (R1, fill) and open (R2, cancel).
+    """
+    if run not in RUNS:
+        raise ValueError('bracket run must be R1 or R2')
+    if type(position) is not int:
+        raise ValueError('signed integer position required')
+    if position == 0:
+        return ('fill', len(path)-1) if run == 'R1' else ('cancel', 0)
+    low, high = path.index(min(path)), path.index(max(path))
+    adverse, favourable = (low, high) if position > 0 else (high, low)
+    return ('adverse', adverse) if run == 'R1' else ('favourable', favourable)
+
+
+
+
+def _require_exposure(exposure):
+    """Fail closed on a missing, inactive or reservation-only exposure."""
+    from .model import ScheduleExposure
+    from .replay import ReplayNeedsContext
+    if type(exposure) is not ScheduleExposure:
+        raise ReplayNeedsContext('schedule split requires a captured exposure snapshot')
+    if exposure.reserved > 0 and not exposure.pending:
+        raise ReplayNeedsContext('reservation without a broker-pending order has no ratified branch')
+    if exposure.position == 0 and not exposure.pending:
+        raise ReplayNeedsContext('inactive leg exposure has no schedule placement')
+    return exposure
+
+
 @dataclass(frozen=True)
 class ScheduleExecutionEvidence:
+    """Reviewed schedule evidence, or one run's bracket provider.
+
+    With ``run`` None, splits are the reviewed retained rows and every prefix
+    executes. A provider issued by ``ScheduleExecutionBracket.for_run`` places
+    each intrabar instant at the ratified vertex of the accepted path for its
+    own run; its placed prices are local to that provider and path occurrence.
+    """
     quotes: object
     splits: object
     source_rows: tuple
+    run: str | None = None
+    _placed: dict = field(default_factory=dict, compare=False, repr=False)
+
+    def __post_init__(self):
+        if self.run is not None and (type(self.run) is not str or self.run not in BRACKET_RUNS):
+            raise ValueError('bracket run must be exactly R1 or R2')
 
     @property
     def schedule_quotes(self):
@@ -366,28 +431,61 @@ class ScheduleExecutionEvidence:
 
     def __call__(self, session, instant, leg):
         from .replay import ReplayNeedsContext
+        if self.run is not None:
+            placed = self._placed.get((session.occurrence, leg, instant))
+            if placed is not None:
+                return placed
         try:
             return self.quotes[(session.source.source_session_date, leg, instant)]
         except KeyError as exc:
-            raise ReplayNeedsContext('missing reviewed source-instant schedule price') from exc
+            if self.run is None:
+                raise ReplayNeedsContext('missing reviewed source-instant schedule price') from exc
+        # Ratified reading 3: a grid-boundary instant is the open of the leg's
+        # bar starting there, else the close of its bar ending there.
+        bars = [(pb.source_bar_time, dict(pb.bars).get(leg)) for pb in session.bars]
+        for start, bar in bars:
+            if bar is not None and start == instant:
+                return bar.open
+        for start, bar in bars:
+            if bar is not None and start + timedelta(minutes=15) == instant:
+                return bar.close
+        raise ReplayNeedsContext('no placement or retained source price at the schedule instant')
 
-    def split_bar(self, session, pb, instant, leg):
-        return self._split_at(session, pb, pb.source_bar_time, instant, leg)
+    def split_bar(self, session, pb, instant, leg, *, exposure):
+        return self._split_at(session, pb, dict(pb.bars)[leg] if self.run else None,
+                              pb.source_bar_time, instant, leg, exposure)
 
-    def split_interval(self, session, pb, original, instant, leg):
-        return self._split_at(session, pb, original.ts, instant, leg)
+    def split_interval(self, session, pb, original, instant, leg, *, exposure):
+        return self._split_at(session, pb, original, original.ts, instant, leg, exposure)
 
-    def _split_at(self, session, pb, start, instant, leg):
+    def _split_at(self, session, pb, original, start, instant, leg, exposure):
+        from .model import ScheduleSplit
         from .replay import ReplayNeedsContext
-        try:
-            return self.splits[(session.source.source_session_date, leg, pb.source_bar_time, start, instant)]
-        except KeyError as exc:
-            raise ReplayNeedsContext('missing reviewed source interval split evidence') from exc
+        _require_exposure(exposure)
+        if self.run is None:
+            try:
+                prefix, suffix = self.splits[(session.source.source_session_date, leg, pb.source_bar_time, start, instant)]
+            except KeyError as exc:
+                raise ReplayNeedsContext('missing reviewed source interval split evidence') from exc
+            return ScheduleSplit(prefix, suffix, True)
+        key = (session.occurrence, leg, instant)
+        if key in self._placed:
+            raise ReplayNeedsContext('bracket instant already placed for this leg and occurrence')
+        rule, vertex = placement(self.run, exposure.position, accepted_path(original))
+        prefix, suffix = vertex_split(original, vertex, instant)
+        self._placed[key] = prefix.close
+        return ScheduleSplit(prefix, suffix, rule != 'cancel')
 
     def validate_split(self, session, pb, bars, instant):
+        from .model import ScheduleExposure
         from .replay import BookReplay
+        if self.run is not None:
+            raise ValueError('retained evidence validation uses the reviewed provider only')
         # The exact engine validator owns OHLC aggregation and TV path law.
-        return BookReplay._split(self, session, pb, bars, instant)
+        # Reviewed rows do not depend on exposure; an active pending-only
+        # snapshot only satisfies the frozen split interface.
+        return BookReplay._split(self, session, pb, bars, instant,
+                                 {leg: ScheduleExposure(0, True, 0) for leg in bars})
 
     def validate_supplied(self, panels):
         """Check supplied claims against retained bars without requiring claims.
@@ -416,11 +514,26 @@ class ScheduleExecutionEvidence:
                 raise ValueError('source subinterval split has no validated prefix anchor')
             session = SimpleNamespace(source=SimpleNamespace(source_session_date=day))
             pb = SimpleNamespace(source_bar_time=bar_time)
-            _, right = self.validate_split(session, pb, {leg: anchor}, instant)
+            suffix = self.validate_split(session, pb, {leg: anchor}, instant)[leg].suffix
             suffix_key = (day, leg, bar_time, instant)
-            if suffix_key in suffixes and suffixes[suffix_key] != right[leg]:
+            if suffix_key in suffixes and suffixes[suffix_key] != suffix:
                 raise ValueError('conflicting retained source subinterval evidence')
-            suffixes[suffix_key] = right[leg]
+            suffixes[suffix_key] = suffix
+
+
+class ScheduleExecutionBracket:
+    """Issues one fresh run-local provider per bracket run; holds no run state."""
+
+    def __init__(self, evidence):
+        if type(evidence) is not ScheduleExecutionEvidence or evidence.run is not None:
+            raise ValueError('reviewed schedule execution evidence required')
+        self._evidence = evidence
+
+    def for_run(self, run_id: str) -> ScheduleExecutionEvidence:
+        if type(run_id) is not str or run_id not in BRACKET_RUNS:
+            raise ValueError('bracket run must be exactly R1 or R2')
+        evidence = self._evidence
+        return ScheduleExecutionEvidence(evidence.quotes, evidence.splits, evidence.source_rows, run_id)
 
 
 def parse_schedule_execution_evidence(raw):
@@ -858,16 +971,42 @@ class ProductionSource:
             raise ValueError('source factory identity does not bind the exact production G1 contract')
         _qualification_snapshots(contract, dict(self.prepared.retained_bytes))
 
+    def _check_path(self, path):
+        self.verify_for(self.contract)
+        by_id = {s.session_id: s for s in self.sessions}
+        if not path or any(by_id.get(s.source.session_id) != s.source for s in path):
+            raise ValueError('path contains a source session outside retained covered panel')
+
     def replay(self, path):
+        self._check_path(path)
+        return self._engine(self._quotes).run(path)
+
+    def replay_bracket(self, path):
+        """R1 and R2 on separate freshly loaded engines; each keeps its own result.
+
+        A confirmed deadline violation is that run's T=infinity result, as in
+        ``bracket.run_bracket``. No hybrid, default run or screen is formed.
+        """
+        from .model import BracketReplayResult
+        from .replay import ReplayDeadlineFailure
+        self._check_path(path)
+        bracket = ScheduleExecutionBracket(self._quotes)
+        results = []
+        for run_id in BRACKET_RUNS:
+            engine = self._engine(bracket.for_run(run_id))
+            try:
+                results.append(engine.run(path))
+            except ReplayDeadlineFailure as exc:
+                results.append(exc.result)
+        return BracketReplayResult(*results)
+
+    def _engine(self, schedule_quotes):
+        """One fresh engine: reloaded ports, brokers, ledger, cash and clock."""
         from c1_signal_daemon.book_adapters import _load_domain_adapters
         from c1_signal_daemon.tv_broker_emulator import TVBrokerEmulator
         from c1_rail.book_policy import candidate_book_protection_policy
         from mc.simulation import EvaluationState
         from .replay import BookReplay
-        self.verify_for(self.contract)
-        by_id = {s.session_id: s for s in self.sessions}
-        if not path or any(by_id.get(s.source.session_id) != s.source for s in path):
-            raise ValueError('path contains a source session outside retained covered panel')
         loaded = _load_domain_adapters(self.contract, retained_bytes=dict(self.prepared.retained_bytes), domain=self._domain)
         startup = self.prepared.startup
         if startup is None:
@@ -884,9 +1023,8 @@ class ProductionSource:
         state = self.contract.initial_state
         initial = EvaluationState(float(state.original_basis), float(state.current_equity), float(state.historical_eod_peak),
                                   state.prior_trade_days, float(state.prior_max_day_profit))
-        engine = BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy(),
-                            initial_state=initial, sizing_inputs=sizing, schedule_quotes=self._quotes, broker_factory=brokers)
-        return engine.run(path)
+        return BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy(),
+                          initial_state=initial, sizing_inputs=sizing, schedule_quotes=schedule_quotes, broker_factory=brokers)
 
     def proof(self, panel):
         from .paths import PathAssembler
