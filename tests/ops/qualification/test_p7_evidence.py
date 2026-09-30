@@ -375,3 +375,53 @@ def test_bootstrap_runs_no_site_pth_or_sitecustomize(env):  # A23
     assert listed.get('zz_planted.pth') == sha((target / 'zz_planted.pth').read_bytes())
     assert 'numpy' in doc['loaded_closure']['distributions'] or any(
         name.startswith('numpy') for name in doc['loaded_closure']['third_party'])
+
+
+# ---- Codex code review P2s --------------------------------------------------------
+
+LEG_ID_TEXT = LEG_IDS
+TIMESTAMP = r'\d{4}-\d\d-\d\dT\d\d:\d\d'
+
+
+def test_public_record_has_no_event_level_values(env):  # Codex P2: hashes, counts, labels only
+    import re
+    done, record = env.run(env.code_root())
+    assert record is not None, done.stderr[-3000:]
+    doc = json.loads(record)
+    for run in ('r1', 'r2'):
+        result = doc['result'][run]
+        assert 'consumed_intrabar_splits' not in result
+        assert result['consumed_intrabar_split_count'] > 0
+        assert len(result['consumed_intrabar_splits_sha256']) == 64
+    assert 'CONSUMED_INTRABAR_SPLIT' in doc['result']['labels']
+    public = {key: value for key, value in doc.items() if key not in (
+        'contract_b64', 'approval_b64', 'loaded_closure', 'artifact_inventory', 'interpreter',
+        'run_started_at', 'run_finished_at')}
+    text = json.dumps(public)
+    assert not re.search(TIMESTAMP, text), 'no timestamps in the public record'
+    assert not any(leg in text for leg in LEG_ID_TEXT), 'no leg identifiers in the public record'
+    assert 'occurrence' not in text
+
+
+@pytest.mark.parametrize('field', ['interpreter_sha256', 'base_interpreter_sha256', 'version', 'cache_tag',
+                                   'lock_sha256', 'site_packages_path', 'unexecuted_pth', 'lock_file'])
+def test_accept_prechecks_interpreter_binding_before_launch(env, monkeypatch, field):  # Codex P2
+    from c1_rail.qualification import p7_evidence
+    from c1_rail.qualification.contract import canonical_json_bytes
+    root = env.code_root()
+    done, record = env.run(root)
+    assert record is not None, done.stderr[-3000:]
+    doc = json.loads(record)
+    if field == 'lock_file':
+        lock = root / 'requirements-ops.lock'
+        lock.write_text(lock.read_text(encoding='utf-8') + '\n# changed\n', encoding='utf-8', newline='\n')
+        _git(root, 'commit', '-q', '-am', 'lock change')
+    elif field == 'unexecuted_pth':
+        doc['interpreter'][field] = doc['interpreter'][field] + [{'name': 'x.pth', 'sha256': '0' * 64}]
+    else:
+        doc['interpreter'][field] = 'changed'
+    launches = []
+    monkeypatch.setattr(p7_evidence, 'run_p7', lambda **kwargs: launches.append(kwargs))
+    with pytest.raises(ValueError, match='P7_INTERPRETER_MISMATCH'):
+        env.accept(canonical_json_bytes(doc), root)
+    assert launches == []
