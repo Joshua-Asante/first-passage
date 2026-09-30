@@ -1472,7 +1472,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 **Step 1: the harness regression module on Linux.**
 - **Run:** draft do-not-merge [#557](https://github.com/Joshua-Asante/first-passage/pull/557), `pytest (3.11)` run `36624580401` (`pull_request`). It tested merge `0b5732ae` = `main` `37b590b` + `0fe3e25`.
 - **Binding to `0fe3e25`:** at that merge, `tests/test_s5_part_a_measurement_harness.py`, the harness, its README and `.github/workflows/qualification-s5-part-a-measurement.yml` are byte-identical to `0fe3e25`.
-- **Result:** **138 passed, 0 failed, 0 skipped**, including the 8 POSIX-stub cases that Windows skips. The run's junit SHA-256 is `080b4f0a4f883d2fcedcd05f149763380ad67067e8efd9b9953dee3dc2c0e796`.
+- **Result:** **138 passed, 0 failed, 0 skipped**, including the 8 POSIX-stub cases that Windows skips. The run's junit SHA-256 is `080b4f0a4f883d2fcedcd05f149763380ad67067e8efd9b9953dee3dc2c0e796`. The JUnit file (1.33 MB, over the public tree's 1 MB file cap) is archived privately in [first-passage-archive#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846); the second #557 run (`36641530220`, `b5f53da`) JUnit `4b2cb9ae4109196579a22e4fb61efa2c1ea29d6bb88544c74a14ca1254fdcea` is archived with it.
 - It is cited beside the first diagnostic subset, as the operator ruled.
 
 **Step 2: Stage 1c** (the r2 §12.3 block in its Stage 1c form, from the C3 record worktree; `BRANCH=claude/s5-stage1c-harness`, `BASELINE=2026-09-29T00:00:00Z`, `S5_HEAD=c7713e7`).
@@ -1482,7 +1482,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 - **Combined record** `stage1c/36634465166-combined.json`: `memory_feasibility` **FAILED**, `stop_class` **`PA3_FAILURE`**. The PA-3a screen gives 1.5 × M̂ = **346,773,504 B > 256,000,000 B**, where M̂ is job a's `forced-1` peak of 231,182,336 B. Job b alone read VERIFIED (235,991,040 B).
 - **The block stopped** on the stop class, as §12.7 requires.
 - **Evidence retained** under `docs/notes/2026-09-27-s5-part-a-measurement/stage1c/`, with the manifest `downloads-s5-1c-20260929T213343Z.sha256`.
-  - Following the Stage 1b precedent, `journal.log`, `summarize.log`, `probe.json` and `git-head.txt` are held back from the public tree. **Their private archive to first-passage-archive is owed.**
+  - Following the Stage 1b precedent, `journal.log`, `summarize.log`, `probe.json` and `git-head.txt` are held back from the public tree. **Their private archive to first-passage-archive is done (2026-09-30, [first-passage-archive#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846), awaiting the operator's merge): the held-back files of runs `36634465166` and `36647434808`, checked by the archive tool's content-address verification.**
   - The public-clone review found only runner work-tree paths.
 
 **Diagnosis (coordinator).** The excess is the **first repeat of each job's first arm**, whichever arm that is:
@@ -1552,7 +1552,7 @@ The first diagnostic subset and everything after it wait for a valid Stage 1c.
   - **Σ screen:** feasible (CPU input 120 s ≤ 8,440 s; wall input 300 s ≤ 6,100 s).
 - **Per-repeat peaks, both jobs:** cold repeats 155.8–157.3 MB; warm repeats 87.7–91.1 MB.
 - **The stopped record** `36634465166` (PA3_FAILURE) stays retained as the stop, and nothing was widened.
-- **Held back** as before: `summarize.log`, `probe.json` and `git-head.txt` (and `journal.log`, never copied). **Their private archive is owed.**
+- **Held back** as before: `summarize.log`, `probe.json` and `git-head.txt` (and `journal.log`, never copied). **Archived with the run above ([first-passage-archive#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846), awaiting merge).**
 
 **Effect.** Stage 1c through the built adapter is valid and **ends the PART_A ceiling's provisional status** (r2 §12.4 output; r2 §13 step 6), with the named worker-side residual still carried by PA-5.
 
