@@ -24,6 +24,9 @@ def filled_owner(tmp_path):
 
 def test_scheduled_close_survives_ticks_and_partial_terminal(tmp_path):
     account, route = filled_owner(tmp_path)
+    # The scheduled flatten and its remainder are both accepted (an empty queue would be unknown).
+    route.queue(BrokerResult("accepted"))
+    route.queue(BrokerResult("accepted"))
     account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:25"), now=NOW)
     start = SESSION.flatten_start
     account.advance_schedule(now=start)
@@ -93,6 +96,8 @@ def test_wrong_side_never_reserves_or_sends(tmp_path, kind, leg_id):
 def test_invalid_cancel_target_never_sends(tmp_path, target):
     account, route = filled_owner(tmp_path)
     account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:93"), now=NOW)
+    if target in ("other-leg", "close"):
+        route.queue(BrokerResult("accepted"))  # the setup send is accepted, not an implicit unknown
     if target == "other-leg":
         account.dispatch(OrderIntent("orb", "orb_mnq_v7", "entry", Side.BUY, 1), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:95"), now=NOW)
         target_id = "orb"
@@ -151,7 +156,9 @@ def test_async_takeover_completes_and_sends_retained_aegis_once(tmp_path):
 
 @pytest.mark.parametrize("transport", ["accepted", "unknown"])
 def test_async_cancel_terminal_resolves_control_attempt(tmp_path, transport):
-    account, route = owner(tmp_path, [BrokerResult(transport), BrokerResult(transport)])
+    # The entry is always accepted; only the cancel carries the transport under test. An unknown
+    # entry would halt the account before the cancel is ever sent.
+    account, route = owner(tmp_path, [BrokerResult("accepted"), BrokerResult(transport)])
     account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:161"), now=NOW)
     cancel = account.dispatch(Cancel("dj30_mym_p250", "base"), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:162"), now=NOW)
     assert cancel.attempt_id in account.unresolved_attempts
@@ -159,11 +166,13 @@ def test_async_cancel_terminal_resolves_control_attempt(tmp_path, transport):
     account.observe(BrokerFact.terminal("base", "cancelled", 0, NOW), now=NOW)
     assert account.unresolved_attempts == ()
     account.advance_schedule(now=SESSION.own_flat_deadline)
-    assert account.authority == "SCHEDULED_EXIT"
+    # CC-3: an unknown cancel halts into INTERVENTION and the terminal does not resume anything.
+    assert account.authority == ("INTERVENTION" if transport == "unknown" else "SCHEDULED_EXIT")
 
 
 def test_scheduled_flatten_handles_late_entry_fill(tmp_path):
-    account, route = owner(tmp_path, [])
+    # Entry, scheduled cancel and final flatten are all accepted (an empty queue would be unknown).
+    account, route = owner(tmp_path, [BrokerResult("accepted")] * 3)
     account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_owner_lifecycle:173"), now=NOW)
     start = SESSION.flatten_start
     account.advance_schedule(now=start)

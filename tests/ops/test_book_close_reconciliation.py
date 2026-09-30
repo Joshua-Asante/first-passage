@@ -45,6 +45,16 @@ def test_close_demands_queue_per_symbol_without_reserving_or_sending_twice(tmp_p
     account.dispatch(close('first', scope=('a',)), occurrence=account.make_occurrence('direct', 'first'), now=NOW)
     occurrence = account.make_occurrence('direct', 'second')
     queued = account.dispatch(close('second', scope=('b',)), occurrence=occurrence, now=NOW)
+    if outcome == 'unknown':
+        # CC-3: the unknown first close halts the account; the second close is fenced, not queued.
+        assert queued.refusal_reason == 'intervention_fence'
+        assert len(broker.commands) == 2
+        at = NOW + timedelta(seconds=1)
+        account.observe(BrokerFact.terminal('first', 'cancelled', 0, at), now=at)
+        assert account.resume_closes(now=at) == ()
+        assert len(broker.commands) == 2
+        assert (account.permission, account.authority) == ('HALTED', 'INTERVENTION')
+        return
     assert queued.refusal_reason == 'close_pending'
     assert account.occurrence_state(occurrence)['state'] == 'close_pending'
     assert len(broker.commands) == 2

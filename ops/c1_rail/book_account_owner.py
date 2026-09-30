@@ -1874,16 +1874,37 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             facts = result.facts
             if result.state == "rejected" and not facts:
                 facts = (BrokerFact.terminal(operation_id, "rejected", 0, now),)
-            for fact in facts:
-                events.extend(self._observe_locked(
-                    fact, now=now,
-                    boundary_time=getattr(action, "bar_time", None) or now))
-            with self._transaction() as db:
-                db.execute("UPDATE attempts SET state=?, observation=? WHERE attempt_id=?",
-                           (result.state.upper(), _body({"state": result.state,
-                                                        "facts": [f.fact_id for f in facts]}), attempt_id))
+            observation = _body({"state": result.state, "facts": [f.fact_id for f in facts]})
+            boundary = getattr(action, "bar_time", None) or now
+            if result.state == "unknown":
+                # An unknown outcome is an incident (halt/resume section 2, incident ADR A11.2).
+                # The unknown observation, the halt and every attached fact commit in ONE
+                # transaction inside this serializer turn: a crash cannot leave the halt without
+                # the fact bodies and capacity effects the observation lists, and a failure
+                # rolls all of it back and suppresses further sends. Later evidence may settle
+                # the obligation; it cannot undo the incident.
+                try:
+                    with self._transaction() as db:
+                        self._settle_attempt_db(db, attempt_id, result.state, observation)
+                        self._halt_db(db, "ordinary-unknown:" + attempt_id, "execution", now)
+                        for fact in facts:
+                            events.extend(self._observe_locked(
+                                fact, now=now, boundary_time=boundary, db=db))
+                except BaseException:
+                    self._input_send_suppressed = True
+                    raise
+            else:
+                for fact in facts:
+                    events.extend(self._observe_locked(fact, now=now, boundary_time=boundary))
+                with self._transaction() as db:
+                    self._settle_attempt_db(db, attempt_id, result.state, observation)
             return DispatchResult(operation_id, quantity, attempt_id, result.state,
                                   confirmed_events=tuple(events))
+
+    @staticmethod
+    def _settle_attempt_db(db, attempt_id, state, observation):
+        db.execute("UPDATE attempts SET state=?, observation=? WHERE attempt_id=?",
+                   (state.upper(), observation, attempt_id))
 
     def _flatten_action(self, db, root_id, leg_id, reason, now):
         """Keep an unresolved close intact; allocate a new identity for its remainder."""
