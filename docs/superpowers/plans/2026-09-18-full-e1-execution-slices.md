@@ -1668,6 +1668,39 @@ Its harness files are byte-identical to the reviewed `b5f53da`: all 91 blobs, em
 
 The step-1 acceptance stands with this addendum.
 
-**Next under the C3 Linux grant:** the full S4-plus-Part-A selection, run `36673465130` on `072c133` (`-f mode=s5`, dispatched 05:27:08Z), with its evidence retained and read through `scripts/s2_run_evidence.py --expect-head 072c133 --expect-scope S5_PART_A`. Then Stage 2/PA-5.
+**Full S4-plus-Part-A selection: run `36673465130`** (`-f mode=s5` on `072c133`; record `e49e91ce…`, scope `S5_PART_A`, source stable, capture complete, cleanup ok, tested commit = head) is **RED, a C3 memory stop**.
+- **Result:** 14 of 26 required nodes failed; `s2_run_evidence.py` refuses the record.
+- **Passed (12):** every S2 service, S3 N1 and S4 N2 node, plus S5 (a) → `FULL_PASS_READY` and (b) → `PART_A_FAILED`.
+- **Failure:** S5 (c) failed "private transport child failed" during its n2g5 dispatch. At 05:56:41 a memory-cgroup OOM in the shared qualification slice (250,000 kB of 250,000 kB) killed the supervisor service, which ended "Failed with result 'oom-kill'". The 12 later nodes all failed on ConnectionRefused: one cause, a cascade.
+- **Stopped:** no re-dispatch and nothing widened, under step-1 item 9. The evidence is archived privately.
+
+**Diagnosis.**
+- **Operator ruling, 2026-09-30:** "Diagnose first, no runs". A read-only diagnosis followed.
+- **Operator ruling:** "go with the one instrumented run". Diagnostic branch `claude/s5-diag-memory` (not for merge): `072c133` plus a root sampler and a test-labelling pytest plugin only, at the same limit, with no ops, core, tests or tools change.
+  - The first attempt, `36677826842` at `f0fc885`, ran zero tests: `scripts/fp.py:104-105` strips `PYTHONPATH`, so the plugin could not import. That was an instrumentation defect.
+  - The corrected run `36678879864` at `553270d` reproduced the OOM exactly: 1,747 samples, 0 sampler errors.
+- **Attribution: a combination, with the leftover io tmpfs decisive.**
+  - Each work's checkpoint io tmpfs pair (`campaign_supervisor.py:2084-2104`) is stopped only by the harness's campaign cleanup (`tools/qualification_verification/campaign_host.py:155-170`).
+  - Slice shmem equals the mounts' used bytes exactly, +3.17 MB per work: the staged 135-file bundle plus the plan in `in`, and `result.frame` in `out`.
+  - At the OOM: anon 194.8 + kernel 7.1 + shmem 53.9 = 255.8 MB, with 17 pairs. Without the tmpfs, S5 (c) peaks at about 202 MB.
+  - **This is production code/lifecycle, not test debris:** no ops code releases the mounts.
+  - Only four readers use the mounts, all before `retain_checkpoint_capture` (`:2377`). Retry, g5 and recovery read the store only.
+- **Unreclaimable headroom without the tmpfs:** a 225.7 MB peak (anon 199.3 + kernel 26.4, in S4 guardian-death-mid-N2), which is **30.3 MB, 11.8 %**. THP is `enabled=[always]`, with `anon_thp` up to 48 MB. Supervisor anon grows 57.0 → 72.7 MB, then is flat: bounded.
+- **`memory_peak_bytes` = 256,000,000 for attempt `505c81c0` is clipped.** It is the whole slice's never-reset `memory.peak` (`campaign_supervisor.py:974`, `:804`), already at the cap from S3 on. PA-5 compares CPU only. The memory figure bounds only the shared footprint, through PA-3b. A per-phase figure needs a new field, because the store refuses a decreasing `memory_peak_bytes` (`campaign_store.py:3118-3119`).
+
+**Operator rulings, 2026-09-30.** Source: in the coordinating session Joshua wrote "I agree with your recommendation. Send it to the S5 agent." He confirmed all three directly in this session ("Confirmed, proceed").
+1. **io-mount release fix: GO.**
+   - The card is frozen at `docs/briefs/handoffs/2026-09-30-s5-io-mount-release-card.md` on `claude/s5-part-a` and implemented on the Opus escalation lane.
+   - Release happens after `retain_checkpoint_capture`, and after `_archive_part_a_for_inspection` before IN_DOUBT. Campaign cleanup is the backstop.
+   - Order: four fail-first tests → Windows lines 1–3, `check` and `git diff --check` → a closure re-run on the fix head → Codex → one Linux full S4-plus-Part-A selection.
+   - The new Linux mount-count assertion becomes a **required node** under `QEXEC-01`.
+2. **Stage 2 memory, option (a).**
+   - For TEST_ONLY, PA-5 is CPU-only, and PA-3b takes the whole-footprint `memory_peak_bytes` as an upper bound on the shared footprint.
+   - A **per-phase memory field** (the payload unit's own `memory.peak`) is a named item before production qualification, recorded in the CP-6 behavior inventory. It is not built in S5.
+3. **The 11.8 % unreclaimable headroom, option (a).**
+   - Accepted for TEST_ONLY, with the cap unchanged.
+   - Carried to production host sizing (T11/CP-8) as a named item, with the THP share (up to 48 MB `anon_thp`) to be separated there.
+
+The failed run `36673465130` stays on record as the stop. This addendum's PR stays held until the fix's Linux selection has been read.
 
 **Not granted:** C3 acceptance, S5 acceptance, any merge of `claude/s5-part-a`, and any production authority.
