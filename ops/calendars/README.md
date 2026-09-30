@@ -145,6 +145,7 @@ umbrella's original claim manifest named a `lab/analysis/...` path, and the
 | File | What it owns |
 |---|---|
 | [`book_session_calendar_2026-09.json`](book_session_calendar_2026-09.json) | Schema `book_session_calendar/v1`. Twenty Tradeify account sessions, September 3–30, 2026, for 6J/MGC/MYM/MNQ. Each row carries its account-session key, predecessor, permission, per-product matching interval and CME trade date, the venue flat deadline, and the TB-S3 rev9 §5 derived times (`V`, own-flat `D`, cutoff, flatten start) in both ET and UTC. Eighteen rows are `PERMITTED`; 2026-09-07 (`HOLIDAY`) and 2026-09-08 (`UNCERTAIN_ADJACENT`) are `DENIED` but keep their identities and deadlines so chronology and safe flattening survive. |
+| [`book_session_calendar_2026-10.json`](book_session_calendar_2026-10.json) | **Ratified by the operator (2026-09-30, digest `16e322b1…`).** Same schema; twenty-four rows: the rollover overlap rows 2026-09-29 and 2026-09-30 (identical to September's, so Sept 30 can be settled and the Oct 1 challenge issued from one calendar) plus twenty-two account sessions, October 1–30, 2026 (all EDT), built by the author tool from v2 evidence [`evidence/2026-09-29-forward-session-source-captures.json`](evidence/2026-09-29-forward-session-source-captures.json). The October days: twenty-one `PERMITTED`; 2026-10-12 (Columbus Day) is `DENIED` `MISSING_SOURCE`: CME Globex shows regular hours for all four products, but the CME Columbus Day clearing and settlement notices were not captured. Admission starts at the row's `ratified_utc`. |
 | [`book_closure_overlay.json`](book_closure_overlay.json) | Schema `book_closure_overlay/v1`. The three typed book no-trade dates (2023-04-07, 2025-01-09, 2026-04-03), each flagged `overrides_d19: true`. A book permission restriction, never an exchange-closure claim. |
 | [`evidence/2026-09-15-forward-session-source-captures.json`](evidence/2026-09-15-forward-session-source-captures.json) | Quoted source statements with URLs and capture instants: Tradeify permitted times (4:45 PM ET regular, 12:59 PM ET holiday-shortened, 6 PM–5 PM ET account day), the CME 2026 Globex holiday schedule (Labor Day 6–8 September; next holiday Thanksgiving), the four product spec pages, and the retained 2026-09-07 product observations. |
 
@@ -180,14 +181,19 @@ carries. Ratification pins that digest in the runtime's trusted configuration; a
 replacement freeze and a new operator decision. Current digests are pinned in
 `tests/ops/test_book_session_calendar.py`.
 
-**Monthly extension (owed before 2026-09-30 21:00Z; review due 2026-09-24):** re-capture the sources
-into a new dated evidence file, then run
+**Monthly extension (November owed before 2026-10-30 21:00Z, the October candidate's coverage end;
+review due 2026-10-24):** re-capture the sources into a new dated evidence file, then run
 
 ```
-python scripts/author_book_session_calendar.py --first 2026-10-01 --last 2026-10-30 \
+python -I scripts/fp.py python scripts/author_book_session_calendar.py --first 2026-10-29 --last 2026-11-30 \
+    --calendar-id tradeify-select-100k/forward/2026-11 \
     --deny <date> <HOLIDAY|SHORTENED|UNCERTAIN_ADJACENT|MISSING_SOURCE> "<source-backed note>" ... \
-    --evidence ops/calendars/evidence/<new-capture>.json --out ops/calendars/book_session_calendar_2026-10.json
+    --evidence ops/calendars/evidence/<new-capture>.json --out ops/calendars/book_session_calendar_2026-11.json
 ```
+
+The November file starts at 2026-10-29 so it carries the last two October account days as rollover overlap (settlement of the last day of a month and the first challenge of the next need both in one calendar).
+November needs `HOLIDAY`/`SHORTENED` halt evidence (`matching_halts` plus `--halts`) for the
+Thanksgiving schedule dates, and crosses the 2026-11-01 DST end.
 
 Every denied session must be named explicitly with its reason; the tool enumerates Monday–Friday
 account days inside the named horizon and nothing else. Pin the new digest in the tests and record the
