@@ -1558,3 +1558,41 @@ The first diagnostic subset and everything after it wait for a valid Stage 1c.
 1. The first diagnostic subset: `-f mode=s5 -f cases='test_s5_'` on `claude/s5-part-a`, which selects the four Part A Linux nodes. The harness module's Linux runs above are cited beside it.
 2. The full S4-plus-Part-A selection, with retained evidence.
 3. Stage 2/PA-5 from that run.
+
+### Coordinator execution — first diagnostic subset: two S5 build defects found; operator rulings, 2026-09-30
+
+**Subset 1: run `36648289195`** (`-f mode=s5 -f cases='test_s5_'` on `claude/s5-part-a` at `c7713e7`; `DIAGNOSTIC_SUBSET`; cleanup ok).
+- **Result:** all four Part A nodes **errored at setup**. The `/v7` boundary install failed with `parse_release`: "funding profile is persistence-only; runtime release not enabled".
+- **Root cause:** `tests/integration/qualification_boundary/fixture_producer.py` `release_document` mapped profiles v3–v6 only, so a `/v7` profile kept release schema v1. Precondition 1 had extended the cap tuple in the same file but not this mapping. The precondition-1 unit test masked the gap by overwriting the schema by hand.
+- **Operator ruling:** "Fix on S5 branch". The fix is **`c016c60`** (escalation lane): `/v7` maps to release `/v7` with dispatch set `['N1','N2','PART_A']`. The unit test now takes `release_document`'s output as-is, and it fails on the unfixed fixture with `release/v1`. The change touches installed test fixtures only; `ops`, `core`, `.github`, `scripts`, `tools` and `docs` are unchanged since `c7713e7`.
+- **Stage 1c equivalence.** Stage 1c's staging path imports `test_profile` only for `document()`. Between `c7713e7` and `c016c60`, `document()` and every module-level statement of `test_profile.py` are AST-identical, so the Stage 1c result (`36647434808`) stands for the measured code.
+- **Harness branch** rebuilt as **`c3bec2f`** = `c016c60` + the same harness commit. Its harness files are byte-identical to the reviewed `b5f53da`.
+
+**Subset 2: run `36652211355`** (the same subset on `c016c60`; `DIAGNOSTIC_SUBSET`; cleanup ok). The `/v7` install now succeeds.
+
+| Node | Result |
+|---|---|
+| (c) payload death between the Part A writes | **passed** |
+| (a) genuine Part A without expansion | **failed**: "bounded N1 campaign wait expired" (1,080 s) |
+| (b) genuine below-floor Part A | **failed**: same |
+| (d) g5 unit death and exact retry | **failed**: the kill returned 1, "unit not loaded" |
+
+**Artifact diagnosis** (s2-linux-run §3; read-only, from `journal.sqlite`, `journal.log` and the units):
+- **(a) and (b) are a ROUTE DEFECT.** Every attempt reached `PART_A_READY` in about 300 s, and the Part A worker completed. Then the `part_a_g5` commit failed inside its own transaction with `ValueError: campaign budget state differs`, so there was no receipt and the campaign stayed `PART_A_READY`.
+  - **Root cause:** `CAMPAIGN_BUDGET_STATES` (`ops/c1_rail/qualification/journal_snapshot.py:118-129`) and `CAMPAIGN_CHECKPOINT_STATES` (`:491-502`) were never widened for `FULL_PASS_READY`/`PART_A_FAILED`. `d6ea766` added them to `CHECKPOINT_ADVANCES` only, so the T2 snapshot re-parse refuses the new state and the transaction rolls back.
+  - **Windows missed it** because no test drives a real-store `commit_checkpoint_assessment(checkpoint='PART_A')`: the widening test asserts constants only. Codex's C3 step-1 review and the §7 conformance table did not reach it either.
+- **(d) is a TEST DEFECT.** By the service's hold semantics (`service.py:725-728`), the g5 unit exits by itself right after T1. The S3/S4 cases run the same kill with `check=False`, but S5's `assert kill.returncode == 0` (added in 3c for Codex's P2) cannot pass.
+- **(c)'s evidence** reads sound. It is cosmetic that the retained failure reason carries raw docker stream frame headers.
+
+**Operator ruling, 2026-09-30:** "Fix both, re-verify". The fix, on the escalation lane on `claude/s5-part-a`:
+- widen both tuples, and sweep every closed state set for the same omission;
+- add a real-store PART_A commit test that fails on the unfixed code;
+- make (d) assert that the unit is inactive or absent after T1, keeping every load-bearing check.
+
+**Re-verification before the Linux grant continues:**
+- Windows lines 1–3, `check` and `git diff --check` on the new head;
+- a **C3 step-1 addendum**, with Codex re-reviewing the commit path;
+- the harness branch rebuilt, with a Stage 1c byte-equivalence record;
+- one subset re-run.
+
+This is a new defect, not the Stage 1c memory issue, so the pre-committed stop rule does not apply.
