@@ -1657,6 +1657,14 @@ Its harness files are byte-identical to the reviewed `b5f53da`: all 91 blobs, em
 - Harness: SR-5 generation runs outside the measured units. Repeat-local copying deliberately stays inside them. A missing cache refuses with I-6. The harness files match `b5f53da`. Four existing harness checks passed against the `db748f8` source under the validated operations Python 3.13.2.
 - One P2: the closure table omitted `test_contract` from the measured roots. It is corrected above (68 modules), and the conclusion stands.
 - Codex did not re-run the Linux integration or the full suites.
+- **An independent second Codex review** (a cloud task submitted by the coordinator seat, `task_e_6abcabc95e24832c8ea05349c49ef647`): **RESOLVED, no findings**. It corroborates A, B and the harness:
+  - an AST sweep of `ops/c1_rail/qualification` plus a grep of the state literals, which found the remaining narrow tuples are checkpoint-specific guards;
+  - the ten-role set;
+  - the unchanged closure, with neither `journal_snapshot` nor `campaign_funding` in it;
+  - `db748f8`'s blobs matching `b5f53da`;
+  - the (d) assertion.
+
+  It judged the original closure roots appropriate and did not raise the `test_contract` point. The 68-module correction is the more conservative reading, and both agree the closure is unchanged. That review could not run the tests either, because its environment has no `tmp/ops-env`.
 
 The step-1 acceptance stands with this addendum.
 
