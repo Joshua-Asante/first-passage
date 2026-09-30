@@ -1598,3 +1598,58 @@ The first diagnostic subset and everything after it wait for a valid Stage 1c.
 - one subset re-run.
 
 This is a new defect, not the Stage 1c memory issue, so the pre-committed stop rule does not apply.
+
+### Coordinator execution — re-verification after "Fix both": subsets 3–4, Windows on the fix head, C3 step-1 addendum, 2026-09-30
+
+**Fix commit `d2e00a9`** (escalation lane, on `c016c60`).
+- **Route fix:** `FULL_PASS_READY` and `PART_A_FAILED` are added to:
+  - `journal_snapshot.CAMPAIGN_BUDGET_STATES`;
+  - `journal_snapshot.CAMPAIGN_CHECKPOINT_STATES`;
+  - `campaign_funding._decode`'s state tuple. The sweep found this one; it is load-bearing, because with only the journal tuples fixed the commit still fails with "funding state differs".
+- **Not widened, deliberately:** predecessor-receipt checks that must equal `PART_A_READY`, and `PROGRESSION_PHASES`, where terminal states admit no phase.
+- **New test:** `test_campaign_n2::test_part_a_commit_advances_through_the_real_store` drives a real `CampaignStore` to both terminal states. It fails on the unfixed tuples: record `20260930T021026Z-b44a8e48f267`. The ticket set passes, 140: record `20260930T021459Z-18977f084c59`.
+- **(d) change:** assert the g5 unit is inactive, failed or absent after T1.
+
+**Subset 3: run `36660441353`** (on `d2e00a9`; `DIAGNOSTIC_SUBSET`; junit sha256 prefix `07f2e01073242863`). The route defect is fixed: (a) and (b) now reach their terminal states, and (c) passed. Two test defects that the route defect had masked surfaced:
+- **(a) and (b) failed** the exact staged-role assertion. It expected only the two S5-D1 roles, but the G5 output roles (`attempt_journal`, `runtime_load_trace`, …) are staged too. The assertion was over-narrow; the code was right.
+- **(d) failed** with `NameError: name 'kill' is not defined`. The `d2e00a9` change dropped the binding. This is the **first failed correction** of (d) under AGENTS.md's two-failure rule.
+
+**Second correction `072c133`** (Opus escalation lane, on `d2e00a9`; the Linux test module only, +39/−6).
+- **Staged-role check:** it stays **exact**, against `PART_A_STAGED_ROLES = S5-D1 roles ∪ G5 output roles`. Each role is sourced to `campaign_supervisor.py:1889-1892`/`:1951-1954`, `g5.py:748-759`, `evidence.py:2944-2960` and `policy.py:144-154`. A run-time check confirms the set equals those production constants, and a separate assertion keeps S5-D1 presence explicit. The coordinator condition was to keep the check exact, not narrow it.
+- **(d):** the kill `CompletedProcess` is bound again, and its return code is recorded as a fact.
+- **Local records:** collection 4 in `20260930T041954Z-a597a6e06a4f`; the manifest and selector tests 72 passed, 1 skipped in `20260930T042005Z-ba9bfd218ed6`.
+
+**Windows on `d2e00a9`.** `072c133` changes only the Linux-only module above.
+
+| Line | Record | Result |
+|---|---|---|
+| line 1 | `20260930T023033Z-a30f6d25dabb` | 1248 passed, **2 failed** |
+| line 2 | `20260930T032142Z-cbd001445b30` | 80 passed, 1 skipped; completed, exit 0 |
+| line 3 | `20260930T032313Z-584196cbf455` | 1839 passed, 1 skipped; completed, exit 0 |
+| `check` | `20260930T045102Z-84d632f6b610` | completed, exit 0 |
+| `git diff --check` | — | exit 0 |
+
+Line 1's two failures are the known pre-existing base failures, `test_s2_evidence_tooling_followups::test_validate_inputs_uses_the_wrappers_whitespace_test[\xa0-False]` and `[\u3000 \u2003-False]`. They are outside the S5 change. Line 1 is not a pass, and this record does not describe it as one.
+
+**Subset 4: run `36670938260`** (on `072c133`; `DIAGNOSTIC_SUBSET`; source stable, capture complete, cleanup ok; junit sha256 prefix `c75cb48e7153356c`). **All four Part A nodes passed**, 4/0/0/0. The verification exit of 2 is by design for a diagnostic run.
+
+**Harness branch** rebuilt twice:
+- `cd3623b` on `d2e00a9`;
+- then **`db748f8`** = `072c133` + the harness commit, pushed with a lease from `cd3623b` after subset 4 closed.
+
+Its harness files are byte-identical to the reviewed `b5f53da`: all 91 blobs, empty diff.
+
+**Stage 1c equivalence** (the result `36647434808` stands for the measured code):
+- The worker closure (65 modules) is identical between `c7713e7` and `d2e00a9`.
+- The two changed ops modules, `journal_snapshot` and `campaign_funding`, are outside that closure.
+- `d2e00a9..072c133` touches only the Linux test module.
+
+**C3 step-1 addendum.** Two claims behind the step-1 acceptance were incomplete:
+- **§7.7's closed-set claim** (the return's statement that every state set naming the Part A states was widened) did not hold. Three closed sets omitted the new terminal states.
+- **The review did not exercise the commit path.** The Windows suite and Codex's step-1 review had no real-store `PART_A` commit test, only constant assertions. Only Linux exposed the defect.
+
+`d2e00a9` adds that test. Codex is asked to re-review `c7713e7..072c133` and the harness `db748f8`. The step-1 acceptance stands with this addendum, subject to that re-review.
+
+**Next under the C3 Linux grant:** the full S4-plus-Part-A selection, run `36673465130` on `072c133` (`-f mode=s5`, dispatched 05:27:08Z), with its evidence retained and read through `scripts/s2_run_evidence.py --expect-head 072c133 --expect-scope S5_PART_A`. Then Stage 2/PA-5.
+
+**Not granted:** C3 acceptance, S5 acceptance, any merge of `claude/s5-part-a`, and any production authority.
