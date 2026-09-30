@@ -2,3 +2,4 @@
 windows-*.json -text
 stage0/** -text
 stage1b/** -text
+stage1c/** -text
