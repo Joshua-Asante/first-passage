@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (fix card; it closes the C3 memory stop on `claude/s5-part-a`)
 
-**Status:** FROZEN, 2026-09-30, under the operator's GO; amended as **A1** and **A2** the same day (below):
+**Status:** FROZEN, 2026-09-30, under the operator's GO; amended as **A1**, **A2** and **A3** the same day (below):
 - In the coordinating session Joshua wrote "I agree with your recommendation. Send it to the S5 agent." He confirmed it directly in the S5 coordinator session: "Confirmed, proceed".
 - The ruling is recorded in the C3 ledger addendum (`docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the entry beginning "Full S4-plus-Part-A selection: run `36673465130`").
 - This card is committed before implementation, under the committed-handoff rule.
@@ -67,6 +67,31 @@ The executor returned NEEDS_CONTEXT under A1's §7: a reader of `out_path` runs 
    One assertion is **added**: the work's io pair is inactive or absent, which is the release.
 3. **Absence of a final artifact or frame after the read** is proven by the staged set being exactly `{part_a_initial_prefix}` and by the unchanged retained failure reason (the refused final create). No assertion is removed or weakened; each is moved earlier or kept.
 4. **§2 and §5 are narrowed accordingly.** This one existing node may be edited as described, and no other existing test may be. Any other reader found stops the work under §7 as before.
+
+**Amendment A3, 2026-09-30 (operator ruling "Freeze the guardian"). It supersedes A2's read timing, and adds to A1 test (4).**
+
+Codex's review of `eff41ca..0ab8f6b` returned two P2 findings; production ordering, custody, BindsTo and Stage 1c were confirmed.
+- **P2-1, node (c):** A2's pre-settlement read still races. Mode 0444 does not hold the guardian, which can archive, settle, exit and unmount before or during the host reads. This is the first failed correction of node (c); a second failure stops the work under §7.
+- **P2-2, node (4):** mount-count sampling against a constant does not establish the per-guardian lifetime bound.
+
+1. **Node (c), a held window.** Once the work is RUNNING, the test freezes the work's guardian unit cgroup (`cgroup.freeze` = 1, then waits for `cgroup.events` `frozen 1`). It waits for the payload to exit, the final create having been refused by the one-inode cap. It then reads and asserts, from the still-mounted `out_path`:
+   - the listing == `[part-a-initial.jsonl]`;
+   - mode 0444;
+   - `f_ffree == 0`;
+   - `host_prefix` bytes and panels;
+   - no final artifact and no frame.
+
+   It then thaws the guardian (`cgroup.freeze` = 0) in a `finally`, and after `settled_in_doubt` asserts every existing assertion plus the release check, as in A2.
+   - **Precondition, proven from the source before writing:** a frozen guardian for that span cannot trip service supervision, a deadline, a budget or timer, recovery, or the evidence (for example CPU or wall accounting, or a heartbeat). If it can, stop and return NEEDS_CONTEXT.
+   - The freeze is test-only. No production change.
+2. **Node (4), exact intervals, not sampling.** For each worker work, the test obtains the guardian unit and the io mount units' active intervals from the system journal or the manager (monotonic timestamps: mounted/unmounted, guardian started/deactivated). It asserts:
+   - each pair was observed active (a positive observation);
+   - each pair's interval lies within its own guardian's interval, allowing only the manager's stop after the guardian's end;
+   - the pairs of different works never overlap unless their guardians overlap;
+   - no pair is active after settlement.
+
+   A run that observes no pair fails.
+3. **§2 and §5 are unchanged otherwise:** only node (c) and the new node (4) may be edited in the Linux file.
 
 ```yaml authority
 seat: worker
