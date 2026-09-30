@@ -312,6 +312,8 @@ def test_io_pairs_are_bound_to_the_guardian_and_bounded_by_the_works_in_flight(
         def __getattr__(self, name):
             return getattr(self.inner, name)
 
+    # The retry runs over the g5 harness's own kernel fakes, not the worker's.
+    monkeypatch.undo()
     before = set(manager.units)
     _, _, commits, transitions = _run_g5_work(
         tmp_path, _RedirectBus(monkeypatch), progression='N2_READY', parent='n2g5'
