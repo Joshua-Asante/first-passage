@@ -140,6 +140,8 @@ def _decode(raw, limit):
             'N1_FAILED',
             'PART_A_READY',
             'N2_FAILED',
+            'FULL_PASS_READY',
+            'PART_A_FAILED',
         ) or doc['validity'] not in ('VALID', 'VOID'):
             raise ValueError('funding state differs')
         profile = parse_campaign_budget_profile(encoded(doc['profile']))

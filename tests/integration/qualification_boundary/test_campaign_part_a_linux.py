@@ -51,8 +51,11 @@ Cases the packet's Linux line names, and how each stands here:
     (two percentile reads and the result encoding) separates the two writes,
     and a host poller only sees the prefix once it exists.
 
-(d) g5 death + exact retry: the held PART_A intent, the killed part_a_g5
-    unit (kill result checked), the SIGNING_INTENT work, an exact
+(d) g5 death + exact retry: the held PART_A intent, the part_a_g5 unit
+    asserted not active after T1 (under ``hold_after_intent`` the unit exits on
+    its own right after the persisted intent, so a KILL may find nothing to
+    kill; the unit's exit is asserted, not a successful kill), the
+    SIGNING_INTENT work, an exact
     ``signing_retry_of`` that commits FULL_PASS_READY with the persisted
     intent's signing clock, the receipt bound to the original candidate bytes
     and the persisted intent, and a byte-identical historical receipt on a
@@ -602,14 +605,32 @@ def test_s5_part_a_g5_unit_death_and_exact_receipt_retry(real_boundary):
     from tools.qualification_verification.container_ownership import campaign_scopes
 
     unit = campaign_scopes(boundary.manifest['run_id'], attempt, 'pag5')['g5_unit']
-    kill = subprocess.run(
+    # The g5 unit exits on its own right after T1 under 'hold_after_intent'
+    # (service.py returns after the persisted intent), so the kill may find no
+    # running unit: its exit status is not the fact under test. What is
+    # asserted is that the unit is not active afterwards -- exactly inactive,
+    # failed, or no longer loaded by systemd.
+    subprocess.run(
         ['/usr/bin/systemctl', '--system', '--no-ask-password', 'kill', '--signal=KILL', unit],
         check=False,
         capture_output=True,
         text=True,
         timeout=10,
     )
-    assert kill.returncode == 0, (unit, kill.stderr)
+    def unit_property(name):
+        shown = subprocess.run(
+            ['/usr/bin/systemctl', '--system', 'show', '-p', name, '--value', unit],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        return shown.stdout.strip()
+
+    active_state, load_state = unit_property('ActiveState'), unit_property('LoadState')
+    assert load_state == 'not-found' or active_state in ('inactive', 'failed'), (
+        unit, active_state, load_state,
+    )
     state = wait(
         boundary, attempt, lambda s: work(s, 'pag5')['observation_bytes_b64'] is not None
     )

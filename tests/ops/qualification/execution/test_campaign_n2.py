@@ -102,6 +102,12 @@ def n2_plan(instance, receipt):
     return derive_checkpoint_plan(instance.campaign_plan, 'N2', receipt)
 
 
+def part_a_plan(instance):
+    return derive_checkpoint_plan(
+        instance.campaign_plan, 'PART_A', committed_receipt(instance, 'N2')
+    )
+
+
 def committed_receipt(instance, checkpoint='N1'):
     with instance.store.transaction() as connection:
         row = connection.execute(
@@ -174,7 +180,7 @@ def _work_phase(instance, work):
 
 
 def result_document(instance, work, checkpoint, payload, plan):
-    phase = 'N1' if checkpoint == 'N1' else 'N2'
+    phase = checkpoint  # the compute phase is named after its checkpoint
     scopes = supervisor.work_enrollment('host1', instance.attempt, work)
     state = snap(instance)
     release = json.loads(instance.release)
@@ -269,11 +275,15 @@ def attestation_document(instance, work, checkpoint, result, payload, plan):
     )
 
 
-def capture_checkpoint(instance, work, checkpoint, payload):
+def capture_checkpoint(instance, work, checkpoint, payload, **capture_fields):
+    """Archive one checkpoint capture and its attestation through the real
+    store; ``capture_fields`` are the S5-D1 PART_A capture fields (R4)."""
     plan = (
         n1_plan(instance)
         if checkpoint == 'N1'
         else n2_plan(instance, committed_receipt(instance))
+        if checkpoint == 'N2'
+        else part_a_plan(instance)
     )
     result = result_document(instance, work, checkpoint, payload, plan)
     transition_bytes = encoded(
@@ -287,7 +297,8 @@ def capture_checkpoint(instance, work, checkpoint, payload):
         }
     )
     store(instance).retain_checkpoint_capture(
-        instance.attempt, work, result, payload, transition_bytes, checkpoint=checkpoint
+        instance.attempt, work, result, payload, transition_bytes, checkpoint=checkpoint,
+        **capture_fields,
     )
     attestation = attestation_document(instance, work, checkpoint, result, payload, plan)
     store(instance).retain_checkpoint_attestation(
@@ -430,6 +441,19 @@ def cutoff_document(instance, checkpoint, candidate):
                 'n1_cutoffs': core['cutoff']['n1_cutoffs'],
                 'n2_thresholds': core['n2_thresholds']['stages'],
                 'n2_bound_to': sha256(candidate),
+                'created_utc': '2026-09-22T02:00:00Z',
+            }
+        )
+    if checkpoint == 'PART_A':
+        return encoded(
+            {
+                'schema': 'qualification_campaign_cutoff_receipt/v1',
+                'attempt_id': instance.attempt,
+                'checkpoint': 'PART_A',
+                'assessment_sha256': sha256(candidate),
+                'decision': core['decision'],
+                'stage_thresholds': {},
+                'predecessor_receipt_sha256': sha256(committed_receipt(instance, 'N2')),
                 'created_utc': '2026-09-22T02:00:00Z',
             }
         )
@@ -1898,3 +1922,169 @@ def test_n2_capture_is_unchanged_by_the_part_a_binding(tmp_path, monkeypatch):
     assert campaigns.staged == []
     assert campaigns.captures == [{'checkpoint': 'N2'}]
     assert campaigns.transitions == ['COMPLETED']
+
+
+# ---- PART_A T2 through the real store (escalation fix, operator ruling ------
+# 2026-09-30 "Fix both, re-verify"). The Linux subset run 36652211355 rolled
+# every PART_A commit back with "campaign budget state differs": the store
+# advanced to FULL_PASS_READY / PART_A_FAILED (CHECKPOINT_ADVANCES) but the
+# budget/checkpoint snapshot parsers' closed state tuples lacked both names.
+# These cases drive the real CampaignStore through the PART_A T1/T2 boundary
+# and re-parse every snapshot the commit and the settling g5 work produce.
+
+
+def _part_a_capture_fields(*, expanded):
+    final = FINAL if expanded else INITIAL
+    return {
+        'initial_prefix_sha256': sha256(INITIAL),
+        'final_sha256': sha256(final),
+        'initial_panels': 2,
+        'final_panels': 3 if expanded else 2,
+        'expansion_required': expanded,
+    }
+
+
+def part_a_candidate(instance, work, *, passed, capture_fields):
+    """A structurally complete PART_A assessment over the retained PART_A family
+    and the committed N2 predecessor. The store's T1/T2 boundary is structural
+    (``parse_checkpoint_assessment`` plus the custody bindings); the genuine
+    PART_A reconstruction through G5's builder is test_campaign_part_a.py's
+    ``g5_chain``, not repeated here."""
+    campaigns = store(instance)
+    snapshot_bytes = campaigns.checkpoint_snapshot(instance.attempt, 'PART_A')
+    snapshot = json.loads(snapshot_bytes)
+    capture = campaigns.checkpoint_capture(instance.attempt, 'PART_A')
+    predecessor = committed_receipt(instance, 'N2')
+    release = json.loads(instance.release)
+    status = 'PASS' if passed else 'FAIL'
+
+    def stage(name, verdict):
+        return {
+            'stage': name,
+            'status': verdict,
+            'input_sha256': sha256(name.encode('ascii')),
+            'output_sha256': sha256((name + verdict).encode('ascii')),
+            'population_counts': {'FULL': 1},
+        }
+
+    core = {
+        'schema': 'qualification_campaign_checkpoint_assessment/v1',
+        'attempt_id': instance.attempt,
+        'checkpoint': 'PART_A',
+        'work_id': work,
+        'binding': {
+            'contract_sha256': instance.verified.contract.contract_sha256,
+            'trust_domain_sha256': instance.verified.contract.trust_domain_sha256,
+            'policy_sha256': instance.verified.policy.sha256,
+            'execution_release_sha256': sha256(instance.release),
+        },
+        'snapshot': {
+            'campaign_revision': snapshot['campaign_revision'],
+            'authority_head': snapshot['authority_head'],
+            'snapshot_sha256': sha256(snapshot_bytes),
+        },
+        'capture': {
+            'result_sha256': sha256(capture['result_bytes']),
+            'payload_sha256': sha256(capture['payload_bytes']),
+            'attestation_sha256': sha256(capture['attestation_bytes']),
+        },
+        'stages': [
+            stage('LEGALITY', 'PASS'),
+            stage('N1', 'PASS'),
+            stage('N2', 'PASS'),
+            stage('PART_B', 'PASS'),
+            stage('PART_A', status),
+        ],
+        'decision': 'CONTINUE' if passed else 'FAILURE',
+        'part_a': dict(
+            capture_fields,
+            tolerance_comparison={
+                'within': True, 'initial_p5': '0.90', 'center': '0.90', 'tolerance': '0.05'
+            },
+            floor_comparison={'at_or_above': passed, 'final_p5': '0.90', 'floor': '0.85'},
+            full_sanity_comparison={
+                'at_or_below': True, 'final_p5': '0.90', 'full_pass_rate': '0.95'
+            },
+        ),
+        'predecessor': {
+            'checkpoint': 'N2',
+            'assessment_sha256': json.loads(predecessor)['assessment_sha256'],
+            'receipt_sha256': sha256(predecessor),
+        },
+        'cutoff': {'checkpoint': 'PART_A', 'stage_thresholds': {}},
+        'artifacts': [],
+    }
+    assert release['dispatch_checkpoints'] == ['N1', 'N2', 'PART_A']
+    return sign_candidate(instance, SimpleNamespace(assessment_bytes=encoded(core)))
+
+
+def committed_part_a(tmp_path, monkeypatch, *, passed):
+    """The S5 scene: PART_A_READY -> part_a_worker capture (S5-D1 fields) ->
+    part_a_g5 intent -> the real store's PART_A T2 commit."""
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    capture_fields = _part_a_capture_fields(expanded=True)
+    run_work(instance, 'pawork', 'part_a_worker')
+    payload = encoded(
+        {
+            'schema': 'fixture_part_a_worker_result',
+            'observations': {
+                'worker_compute_wall_ns': 1, 'worker_cpu_ns': 1, 'worker_peak_memory_bytes': 1
+            },
+        }
+    )
+    capture_checkpoint(instance, 'pawork', 'PART_A', payload, **capture_fields)
+    settle(instance, 'pawork')
+    transition(instance, 'pawork', 'COMPLETED')
+    run_work(instance, 'pag5', 'part_a_g5')
+    candidate = part_a_candidate(
+        instance, 'pawork', passed=passed, capture_fields=capture_fields
+    )
+    persist_intent(instance, 'pag5', 'PART_A', candidate)
+    reply = json.loads(commit(instance, 'pag5', 'PART_A', candidate))
+    return instance, candidate, reply
+
+
+@pytest.mark.parametrize(
+    'passed, decision, campaign_state',
+    [(True, 'CONTINUE', 'FULL_PASS_READY'), (False, 'FAILURE', 'PART_A_FAILED')],
+)
+def test_part_a_commit_advances_through_the_real_store(
+    tmp_path, monkeypatch, passed, decision, campaign_state
+):
+    """The PART_A T2 commit writes the receipt, the budget snapshot and the
+    PART_A checkpoint snapshot re-parse in the advanced state, and the
+    committing part_a_g5 work settles and completes in that state (each step
+    re-encodes and re-parses the budget snapshot and the funding record)."""
+    from c1_rail.qualification.journal_snapshot import (
+        parse_campaign_budget_snapshot,
+        parse_campaign_checkpoint_snapshot,
+    )
+
+    instance, candidate, reply = committed_part_a(tmp_path, monkeypatch, passed=passed)
+    assert reply['historical'] is False
+    assert reply['receipt']['checkpoint'] == 'PART_A'
+    assert reply['receipt']['decision'] == decision
+    assert reply['receipt']['campaign_state'] == campaign_state
+    receipt = committed_receipt(instance, 'PART_A')
+    assert encoded(reply['receipt']) == receipt
+    assert json.loads(receipt)['assessment_sha256'] == sha256(candidate)
+    budget = parse_campaign_budget_snapshot(store(instance).budget_snapshot(instance.attempt))
+    assert (budget['state'], budget['validity']) == (campaign_state, 'VALID')
+    assert budget['schema'] == 'qualification_campaign_budget_snapshot/v8'
+    family = budget['checkpoints']['PART_A']
+    assert (family['state'], family['decision']) == ('COMMITTED', decision)
+    assert family['receipt_sha256'] == sha256(receipt)
+    assert budget['checkpoints']['N2']['state'] == 'COMMITTED'
+    checkpoint = parse_campaign_checkpoint_snapshot(
+        store(instance).checkpoint_snapshot(instance.attempt, 'PART_A')
+    )
+    assert checkpoint['campaign_state'] == campaign_state
+    assert checkpoint['predecessor']['checkpoint'] == 'N2'
+    settle(instance, 'pag5')
+    transition(instance, 'pag5', 'COMPLETED')
+    state = parse_campaign_budget_snapshot(store(instance).budget_snapshot(instance.attempt))
+    assert state['state'] == campaign_state
+    assert next(w for w in state['works'] if w['work_id'] == 'pag5')['state'] == 'COMPLETED'
+    # An exact retry after the reply returns the byte-identical receipt.
+    again = json.loads(commit(instance, 'pag5', 'PART_A', candidate))
+    assert again['historical'] is True and encoded(again['receipt']) == receipt
