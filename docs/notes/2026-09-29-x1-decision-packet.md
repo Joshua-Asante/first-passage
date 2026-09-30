@@ -1,7 +1,7 @@
 # X-1 decision packet: one attended REST entry and native stop
 
 **Date:** 2026-09-29.
-**Status:** PREPARED FOR DECISION; NOT CLEARED TO EXECUTE. *2026-09-29:* A-11 exception accepted and the evening window withdrawn (§2 decision record); still not cleared to execute.
+**Status:** PREPARED FOR DECISION; NOT CLEARED TO EXECUTE. *2026-09-29:* A-11 exception accepted and the evening window withdrawn (§2 decision record); still not cleared to execute. *2026-09-30:* R7 tool set accepted for the 22:00–22:30Z window (§4, line 164); cleared to execute only on the operator's written CP-3.
 **Selected outcome:** A reviewable decision packet and preparation checklist for one attended X-1 entry-and-stop observation. Execution remains a separate CP-3 decision.
 **Dispatch scope:** Preparation only. Prepare the observer procedure and decision materials; Joshua performs the offline platform rehearsal. This dispatch authorizes no order-producing action or execution of §5. Proposed limits remain proposals until explicitly accepted.
 **Execution prerequisites:** The A-11 ruling below, reviewed observer procedure and rehearsal evidence, operator-fixed limits and private request binding, then X-1's own written CP-3. All fresh session checks remain owed.
