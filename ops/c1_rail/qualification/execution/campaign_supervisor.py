@@ -1631,13 +1631,25 @@ def _guardian_bus_call(campaigns, unit, properties):
     return stdout
 
 
-def _io_mount_properties(where, *, size_bytes, uid, mode):
+def _io_mount_properties(where, *, size_bytes, uid, mode, guardian_unit):
+    """One checkpoint io tmpfs mount unit, bound to the work's guardian unit.
+
+    BindsTo/After on the guardian unit (the payload slice's and the qg5 unit's
+    own interlock) make the manager stop the pair when the guardian ends: the
+    guardian cannot StopUnit a var-lib-fpq-* unit itself (campaign_control
+    admits StartTransientUnit only; the polkit rule binds unit-scoped actions to
+    the run prefix). The guardian's process is its unit's main process, so the
+    unit ends only after _run_n1_worker has retained the capture or archived
+    the Part A artifacts for inspection; campaign cleanup stays the backstop.
+    """
     return {
         'What': 'tmpfs',
         'Where': where,
         'Type': 'tmpfs',
         'Options': 'rw,size=%d,uid=%d,gid=%d,mode=0%o' % (size_bytes, uid, uid, mode),
         'DefaultDependencies': False,
+        'BindsTo': [guardian_unit],
+        'After': [guardian_unit],
     }
 
 
@@ -2093,13 +2105,18 @@ def _run_n1_worker(
             size_bytes=staged_bytes + staged_bytes // 2 + 65536,
             uid=context.config['service_uid'],
             mode=0o755,
+            guardian_unit=enrollment['scopes']['guardian_unit'],
         ),
     )
     _guardian_bus_call(
         campaigns,
         io['out_unit'],
         _io_mount_properties(
-            io['out_path'], size_bytes=output_bound, uid=context.profile.worker_uid, mode=0o755
+            io['out_path'],
+            size_bytes=output_bound,
+            uid=context.profile.worker_uid,
+            mode=0o755,
+            guardian_unit=enrollment['scopes']['guardian_unit'],
         ),
     )
     _write_worker_input(enrollment, files)
