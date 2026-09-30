@@ -1384,6 +1384,8 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 
 **Effect.** RC-2 is met when this commit and the O-10 landing (PR #555, the optional RC-2 landing place the operator chose) are both merged and reviewed, and the C3 record cites both. Until then RC-2 stays open.
 
+*[Updated 2026-09-30: both landings are merged. #552 merged at `37b590b` and #555 at `6c6759f`; this record cites both. The condition above is met on the merged, reviewed landings; the forward-looking text is the state at the time of writing.]*
+
 **Not granted:** C3; S5 acceptance; Stage 1c; any Linux or CI run; any production value; the O-10 text.
 
 ### Operator rulings and recorded harness read — S5 C3 step 1, 2026-09-29
@@ -1435,7 +1437,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 - **Conformance.** Every SR-1..SR-9 and P-1..P-7 node exists, exercises its stated behavior and passes; P-3, P-4 and P-5 hold. The `/v7` roles, `/v8` snapshot, two-artifact custody and transitively bound N2 baseline are consistent with the packet. SR-8's Linux export production and P-7's Stage 1c execution remain unexecuted.
 - **Disclosures.** All six are confirmed: pilot identity proves plan agreement only; P-4 holds by construction for the plans; G5 completion gains both states; the CPU split is null; above-FULL is unreachable at N2 depth 60; the inode case proves neither SIGKILL nor power-loss behavior.
 - **Linux: yes, conditionally.** Green execution of the four Part A nodes would establish the four required witnesses. Discharging packet §4's full Linux line also needs the full S4-plus-Part-A selection with valid retained evidence.
-- **Verification:** a fresh Windows launcher run of nine reviewed modules on the unchanged `c7713e7` (ops-env CPython 3.13.2). **340 passed, 0 skipped**; record `20260929T192731Z-28f8c6e20559` (SHA-256 `f22359a9122235f530d0af1d05cdecaf3cb973ede93d6d6e1363c7175f549d9c`). The record shows completed, exit 0, `source_stable` true, complete capture and no report errors; the coordinator re-read it.
+- **Verification:** a fresh Windows launcher run of nine reviewed modules on the unchanged `c7713e7` (ops-env CPython 3.13.2): `python -m pytest tests/ops/qualification/execution/test_campaign_part_a.py tests/ops/qualification/execution/test_worker.py tests/ops/qualification/execution/test_runtime.py tests/ops/qualification/execution/test_release.py tests/ops/qualification/execution/test_profile.py tests/ops/qualification/test_journal_snapshot.py tests/ops/qualification/test_checkpoint_validation.py tests/ops/qualification/test_result_adjudication.py tests/test_s2_run_evidence.py -q` (the record's `requested_command`). The harness regression module is not among them; it ran separately on Linux (below). **340 passed, 0 skipped**; record `20260929T192731Z-28f8c6e20559` (SHA-256 `f22359a9122235f530d0af1d05cdecaf3cb973ede93d6d6e1363c7175f549d9c`). The record shows completed, exit 0, `source_stable` true, complete capture and no report errors; the coordinator re-read it.
 
 **Still open at C3:**
 - the operator's C3 step-1 decision;
@@ -1463,7 +1465,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
   5. Stage 2/PA-5 from that run.
 - **Standing constraint:** no pushes to `claude/s5-part-a` or `claude/s5-stage1c-harness` while any run is in flight.
 
-**Not granted:** S5 acceptance (it follows Stage 2/PA-5), any merge of the draft PR, any production value, and any activation or live authority. RC-2 still becomes met only when #552 merges and is reviewed.
+**Not granted:** S5 acceptance (it follows Stage 2/PA-5), any merge of the draft PR, any production value, and any activation or live authority. RC-2 still becomes met only when #552 merges and is reviewed. *[Updated 2026-09-30: #552 and #555 are merged (`37b590b`, `6c6759f`); RC-2 is met.]*
 
 ### Coordinator execution — C3 Linux grant steps 1–2; Stage 1c stopped PA3_FAILURE; operator ruling: fix the harness and re-measure, 2026-09-29
 
