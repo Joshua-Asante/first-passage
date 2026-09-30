@@ -43,6 +43,7 @@ Canonical bytes are `contract.canonical_json_bytes(doc)`: sorted keys, `(",", ":
 | `effective_settings` | `{settings_sha256, orb_normal_base}` | `settings_sha256 == book_adapters.RUNTIME_EFFECTIVE_INPUTS_SHA256` (the loader-derived reviewed successor), never `66406dee…`; `orb_normal_base == 1` |
 | `populations` | `{FULL, H1, H2}` lists of session ids | the same ordered ceil-partition law as `contract.py`; must equal the population index's pools (checked at build) |
 | `initial_state` | the same six fields as the F1 contract | PRISTINE only, with the same rule as `contract.py:841` |
+| `path_start_date` | ISO weekday date; a PROPOSED path-label origin | must be a weekday and must equal the `source_startup_policy` value, so the operator signs it knowingly |
 | `source_trust` | `{source_key_ids, trusted_key_sha256}` | a sorted nonempty list of key IDs, each carrying the `source:` prefix, and exactly one fingerprint per enrolled ID |
 | `refusals` | `["QUALIFICATION_STAGES","BUDGET","DECISION_RULES","SCREEN","MONTE_CARLO","SEAL","ADMISSION","DEPLOYMENT"]` | exact list; it is declarative, and enforcement is §2.6 |
 
@@ -119,6 +120,31 @@ It also carries a **`SourceTrustDomain`** built from compiled constants, with `a
 - R1 and R2 each run on a fresh engine.
 - The frozen Task 2 interface is unchanged.
 
+### 2.6a Typed truncation disposition (replaces the POLICY_DENIED stand-in)
+
+**Problem.** A panel that ends or starts mid-session leaves a source date with no active-window bar, like the 2026-09-03 tail. Today the only way to exclude it is `policy_denied`, which the coordinator accepted on 2026-09-30 as a stand-in, not a venue fact.
+
+**Change.**
+- Add `SourceDayStatus.SOURCE_TRUNCATED = 'source_truncated'` in `clock.py`.
+- Add `'source_truncated'` to the exclusion reasons `parse_population_index` allows.
+- `ProductionSource._build_from_prepared` already relabels denied dates with their typed status, so no further change is needed there.
+
+**Rules.**
+- A `source_truncated` row must carry an empty `venue_deadlines` and a reason naming the truncated slots.
+- It may appear only at `coverage_start` or `coverage_end`. An interior truncation is refused as `UNKNOWN_SOURCE_DATE`.
+- At the source-only contract build, a `policy_denied` row whose reason begins `panel truncated` is refused, which retires the stand-in. The source pack is regenerated with the typed status before signing.
+
+### 2.6b Review companions are reviewer-authored
+
+**The rule.** A review companion is written by the reviewer, after the review, over the exact reviewed digest. A producer may emit only a template, named `*.UNREVIEWED-TEMPLATE.json`, and a template never satisfies a review role.
+
+**Schema.** The companion schema becomes `qualification-source-review/v2` and adds three fields to the v1 fields:
+- `reviewer`: a nonempty identity, such as the coordinator session or a named reviewer;
+- `reviewed_at`: a UTC instant;
+- `notes`: a nonempty list of statements. For the source calendar and population index these must include the truncation, head-partial and residual statements.
+
+**Validation.** `_review` in `production_source.py` accepts v2 only on the source-only path, and requires `reviewer` to differ from the artifact's producer identity recorded in the contract's `artifacts[].producer`. v1 stays unchanged for the F1 path. Self-certification (a producer equal to the reviewer) is refused as `REVIEW_NOT_INDEPENDENT`.
+
 ### 2.7 Labelling of P7 evidence
 
 Every artifact produced under a source-only contract carries:
@@ -143,6 +169,10 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 | 10 | Source roles are missing, a review mismatches, a date is UNKNOWN, or coverage/population disagree | The existing `ProductionSourceNeedsContext` / `ValueError`, unchanged |
 | 11 | `build` succeeds | The issued `ProductionSource` has `evidence_class == "T00_P7_SOURCE_ONLY"`; `replay_bracket` returns `BracketReplayResult(r1, r2)` from two fresh engines |
 | 12 | `now` is outside the approval window at build | Refused; re-signing is an operator act |
+| 13 | A calendar row is `source_truncated` at an interval end | Excluded with a typed reason; FULL omits it |
+| 14 | A `source_truncated` row falls in the interior, or a `panel truncated` `policy_denied` stand-in appears on the source-only path | Refused |
+| 15 | A review companion is a template, or v1 on the source-only path, or has reviewer equal to producer | Refused (`REVIEW_NOT_INDEPENDENT` for self-review) |
+| 16 | `path_start_date` in the contract differs from the startup policy, or is not a weekday | Refused |
 
 ## 4. Files it would touch (admitted only by a later amendment)
 
@@ -151,12 +181,13 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 | `ops/c1_rail/qualification/contract.py` | Adds `SOURCE_CONTRACT_SCHEMA`, `SOURCE_SCOPE`, `ValidatedSourceContract`, `validate_source_contract`, `require_validated_source_contract` and a separate issuance registry. `validate_frozen_contract` gains the `source:` key-ID refusal. No existing F1 rule changes. |
 | `ops/c1_rail/qualification/trust_domain.py` | Adds `SourceTrustDomain` (compiled from constants, with no signed domain bytes). `validate_qualification_trust_domain` refuses `source:` key IDs. |
 | `ops/c1_signal_daemon/book_adapters.py` | Adds `_source_domain(contract)`. `_load_domain_adapters` accepts either validated domain type. Historical and qualification loaders are unchanged. |
-| `ops/c1_rail/qualification/production_source.py` | `build` dispatches on type, the issued source records `evidence_class`, and `verify_for` refuses source-only for qualification consumers. The eight parsers are unchanged. |
+| `ops/c1_rail/qualification/production_source.py` | `build` dispatches on type, the issued source records `evidence_class`, and `verify_for` refuses source-only for qualification consumers. `parse_population_index` allows `source_truncated`. `_review` accepts v2 on the source-only path (§2.6b). The other parsers are unchanged. |
+| `ops/c1_rail/qualification/clock.py` | Adds `SourceDayStatus.SOURCE_TRUNCATED` (§2.6a) |
 | `tests/ops/qualification/test_source_contract.py` (new) | Acceptance tests A1–A10 below |
 | `tests/ops/qualification/test_production_source.py` | A11–A12, plus Task 4's real-path wiring |
 | `tests/ops/qualification/test_trust_domain.py` / `test_contract.py` (existing) | The `source:` refusal cases, A7 |
 
-No change to `replay.py`, `model.py`, `book_policy.py`, `core/dd_protection.py`, runner, screen, seal or execution code.
+`clock.py` changes only by the new enum member. No change to `replay.py`, `model.py`, `book_policy.py`, `core/dd_protection.py`, runner, screen, seal or execution code.
 
 ## 5. Acceptance tests and falsifiers
 
@@ -175,15 +206,17 @@ Tests use TEST_ONLY-generated Ed25519 keys **only inside the test process**, to 
 | A9 | `test_build_dispatches_on_exact_contract_type` | `build` accepts both validated types and refuses a subclass, a duck-typed object or the TEST_ONLY composition contract on the source path | A wrong type builds |
 | A10 | `test_source_only_source_is_refused_by_qualification_consumers` | `verify_for` with a `ValidatedFrozenContract`, `ProductionExecutor` binding, `execution.compute` and `execution.evidence` all refuse a source-only source | Any consumer proceeds |
 | A11 | `test_source_only_build_runs_the_same_source_checks` | With a synthetic source-only fixture signed in the test process: each existing source-pack negative (missing role, review mismatch, UNKNOWN date, population mismatch, capital mismatch) fails identically to the F1 path | Any negative passes on the source path |
+| A13 | `test_source_truncated_disposition_only_at_interval_ends` | An end-of-interval truncated date is excluded as `source_truncated`; an interior one and a `policy_denied` truncation stand-in are refused | The stand-in or an interior truncation builds |
+| A14 | `test_review_companion_v2_reviewer_authored` | A v2 companion with an independent reviewer passes; a template, a v1 companion on the source path, or reviewer == producer are refused | Self-certified or template reviews bind |
+| A15 | `test_path_start_date_signed_and_consistent` | A mismatch with the startup policy, or a weekend date, is refused | An unsigned or inconsistent origin passes |
 | A12 | `test_source_only_replay_bracket_fresh_engines_and_label` | `replay_bracket` returns two results from separate engines; the issued source's `evidence_class == "T00_P7_SOURCE_ONLY"`; the policy is 1%/0.40 | Shared state, a missing label or a changed policy |
 
 **Regression.** The Task 2 acceptance nodes named on the card, the full `tests/ops/qualification` suite, `tests/ops/test_book_adapters_parity.py` and `fp.ps1 check` all stay green.
 
 ## 6. Open items for review
 
-1. **Tail session (raised with the Task 3 pack).** 2026-09-03 enters FULL as a 9-slot session made only of pre-RTH bars, because the panels end at `2026-09-03T00:00Z`. No existing exclusion reason fits. The options are:
-   - a `policy_denied` calendar row with a truncation reason, which is the executor's recommendation;
-   - a typed truncation disposition, which would add a `SourceDayStatus` member and falls outside this design's file list unless admitted.
+1. **Tail session, RULED 2026-09-30.** The coordinator ruled (a) now and (b) in the design. The r2 pack carries the `policy_denied` stand-in; §2.6a retires it.
 2. **Same-key reuse.** Key separation is code-enforced by ID and scope only; reusing the same public key across classes is prevented by procedure (§2.3).
-3. **`path_start_date`.** The pack proposes the first FULL date. It is a label origin that no replay rule reads, and it needs owner acceptance.
-4. **Review companions.** The pack's three `decision: ACCEPTED` companions are the exact parser-required bytes. Acceptance is conferred only by coordinator review plus the operator's signature over a contract binding them.
+3. **`path_start_date`, ACCEPTED as proposed.** It is an explicit signed contract field (§2.2).
+4. **Review companions, CORRECTED.** The first pack's producer-written `ACCEPTED` companions are UNREVIEWED drafts. The r2 pack emits templates plus producer notes only; §2.6b makes companions reviewer-authored.
+5. **Words in v1 companions.** The v1 `_review` schema is closed, so the statements the coordinator required cannot live inside the v1 companion bytes. They are in the r2 `reviewer-notes.json` for the reviewer, and §2.6b's `notes` field carries them in the signed companion.
