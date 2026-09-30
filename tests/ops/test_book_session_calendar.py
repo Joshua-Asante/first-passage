@@ -977,12 +977,11 @@ def test_author_cli_refuses_evidence_outside_checkout(tmp_path):
 
 
 # ---------------------------------------------------------------- October 2026 monthly extension (candidate)
-# Pinned so a changed byte is visible. Not ratified: RATIFIED.json names only September, and
-# ratification is the operator's separate act.
+# Pinned so a changed byte is visible. Ratified by the operator (RATIFIED.json row, 2026-09-30).
 
 OCT_CALENDAR = REPO / "ops" / "calendars" / "book_session_calendar_2026-10.json"
 OCT_EVIDENCE = REPO / "ops" / "calendars" / "evidence" / "2026-09-29-forward-session-source-captures.json"
-OCT_CALENDAR_SHA256 = "4d8a7f29f83b5fbf3c177be07cb12e829401af0b46585843981b1effaf6e504d"
+OCT_CALENDAR_SHA256 = "16e322b1b7c9c7e2b1e8a5fdebb6eaba34e7a509630677f7ac389df54e211b3b"
 OCT_EVIDENCE_SHA256 = "d0043f689a74add5c36bace8ce1a29e80615e624eae2a6710359cb5c3583b01c"
 OCT_COLUMBUS_NOTE = (
     "Columbus Day / Indigenous Peoples' Day. The CME Globex calendar shows regular Sunday 17:00 CT open "
@@ -1007,12 +1006,12 @@ def test_october_calendar_and_evidence_are_byte_pinned_and_v2():
 
 
 def test_october_covers_the_named_horizon_and_denies_only_columbus_day():
-    """October 1-30 2026, twenty-two account days; 2026-10-12 denied as not positively qualified."""
+    """Overlap 2026-09-29/30 plus October 1-30 (22 account days); 2026-10-12 denied as not positively qualified."""
     cal = load_october()
-    assert cal.rows[0].session_id == "tradeify-account-day:2026-10-01"
+    assert cal.rows[0].session_id == "tradeify-account-day:2026-09-29"
     assert cal.rows[-1].session_id == "tradeify-account-day:2026-10-30"
-    assert len(cal.rows) == 22
-    assert cal.coverage_start == et(2026, 9, 30, 18)
+    assert len(cal.rows) == 24
+    assert cal.coverage_start == et(2026, 9, 28, 18)
     assert cal.coverage_end == et(2026, 10, 30, 17)
     denied = {r.session_id.split(":")[1]: r.denial_reason for r in cal.rows if r.permission == "DENIED"}
     assert denied == {"2026-10-12": "MISSING_SOURCE"}
@@ -1022,14 +1021,19 @@ def test_october_covers_the_named_horizon_and_denies_only_columbus_day():
 def test_october_chains_from_the_last_september_session():
     september = load_session_calendar(CALENDAR, overlay_path=OVERLAY, repo_root=REPO)
     october = load_october()
-    assert october.rows[0].prior_session_id == september.rows[-1].session_id
+    assert october.rows[0].prior_session_id == september.rows[-2].prior_session_id
+    overlap = {r.session_id: r for r in october.rows[:2]}
+    for sept in september.rows[-2:]:
+        assert overlap[sept.session_id].prior_session_id == sept.prior_session_id
+        assert overlap[sept.session_id].closes_at == sept.closes_at and overlap[sept.session_id].v == sept.v
+        assert overlap[sept.session_id].permission == sept.permission
+    assert october.rows[2].prior_session_id == september.rows[-1].session_id
     assert september.coverage_end == et(2026, 9, 30, 17)
-    assert october.coverage_start == et(2026, 9, 30, 18)
 
 
 def test_october_reproduces_from_the_authoring_tool():
     denials = {date(2026, 10, 12): author.Denial("MISSING_SOURCE", OCT_COLUMBUS_NOTE)}
-    payload = author.build_calendar(date(2026, 10, 1), date(2026, 10, 30), denials, OCT_EVIDENCE,
+    payload = author.build_calendar(date(2026, 9, 29), date(2026, 10, 30), denials, OCT_EVIDENCE,
                                     "2026-09-29T23:18:11Z", "tradeify-select-100k/forward/2026-10")
     payload["sources"]["evidence_file"] = "ops/calendars/evidence/" + OCT_EVIDENCE.name
     regenerated = json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8") + b"\n"
@@ -1062,14 +1066,36 @@ def test_october_denied_columbus_day_keeps_regular_deadlines_and_chain():
 
 
 def test_october_is_ratified_and_admits():
-    """The operator ratified the October digest on 2026-09-29 ("ratify the calendar", PR #560)."""
+    """The operator ratified the October digest on 2026-09-29 ("ratify the calendar", PR #560; row re-written 2026-09-30 for the overlap re-authoring)."""
     raw = load_october()
     assert raw.session_for(et(2026, 10, 15, 9)).refusal == "calendar_not_ratified"
     row = load_ratifications(RATIFIED)[OCT_CALENDAR_SHA256]
     assert row["closure_overlay_sha256"] == OVERLAY_SHA256
-    assert row["ratified_by"] == "operator" and row["instruction"] == "ratify the calendar"
-    assert (row["coverage_start_utc"], row["coverage_end_utc"]) == ("2026-09-30T22:00:00Z", "2026-10-30T21:00:00Z")
+    assert row["ratified_by"] == "operator" and row["instruction"].startswith("ratify the calendar")
+    assert (row["coverage_start_utc"], row["coverage_end_utc"]) == ("2026-09-28T22:00:00Z", "2026-10-30T21:00:00Z")
     cal = load_ratified_calendar(OCT_CALENDAR, overlay_path=OVERLAY, ratified_path=RATIFIED, repo_root=REPO)
     assert cal.calendar_digest == OCT_CALENDAR_SHA256
     assert cal.session_for(et(2026, 10, 15, 9), expected_digest=OCT_CALENDAR_SHA256).permitted
     assert cal.session_for(et(2026, 10, 12, 9)).refusal == "session_denied:MISSING_SOURCE"
+
+
+def test_october_alone_supports_the_september_30_settlement_and_the_october_1_challenge():
+    """Rollover: the lookups the settlement flow makes for Sept 30 and Oct 1 all resolve in one calendar.
+
+    account_close_assembler needs the settled session and its predecessor; issue_challenge needs the
+    target row whose prior_session_id is the proposed (settled) session; _v5_session_chain needs the
+    settled session's prior to be the chain head. Sept 29 and 30 are overlap rows.
+    """
+    cal = load_october()
+    s30 = cal.schedule_for("tradeify-account-day:2026-09-30")
+    s29 = cal.schedule_for("tradeify-account-day:2026-09-29")
+    oct1 = cal.schedule_for("tradeify-account-day:2026-10-01")
+    assert s30 is not None and s29 is not None and oct1 is not None
+    assert s30.prior_session_id == s29.session_id and oct1.prior_session_id == s30.session_id
+    assert oct1.permission == "PERMITTED" and oct1.risk_add_cutoff > s30.closes_at
+    assert [r.session_id for r in cal.rows if r.prior_session_id == s30.session_id] == [oct1.session_id]
+    september = load_session_calendar(CALENDAR, overlay_path=OVERLAY, repo_root=REPO)
+    for sid in (s29.session_id, s30.session_id):
+        a, b = september.schedule_for(sid), cal.schedule_for(sid)
+        assert (a.prior_session_id, a.opens_at, a.closes_at, a.v, a.risk_add_cutoff, a.permission) == \
+               (b.prior_session_id, b.opens_at, b.closes_at, b.v, b.risk_add_cutoff, b.permission)
