@@ -213,7 +213,7 @@ capabilities: [repository.read, tests.run, worktree.write, branch.push, pr.open]
 constraints:
   - no_main_write
   - no_merge
-  - section_2_footprint_plus_amendment_1_2_test_files_only
+  - section_2_footprint_plus_amendments_1_3
   - no_qualification_or_s5_file
   - no_schema_policy_or_interface_change
   - no_rail_deploy
@@ -319,6 +319,27 @@ Nothing else in it changed.
 **Authority block.** Its shape is unchanged. The constraint `section_2_footprint_plus_amendment_1_test_files_only` became `section_2_footprint_plus_amendment_1_2_test_files_only`, which adds `tests/ops/test_pr409_review2.py` beside the seven files of §8.1.
 
 **Sequence and ownership.** The executor then adds the evidence-note fix and the per-change table, runs the full `tests/ops` record on the final head and `check`, pushes, and sends the head and record paths to the coordinator. The coordinator replies on both Codex threads and re-requests `@codex review` after the push. No other grant changes.
+
+### §8.3 — Coordinator amendment 3 (2026-09-30; recorded by the executor at the coordinator's direction)
+
+**Provenance.** The coordinator ruled on the executor's NEEDS_CONTEXT return by cross-session message on 2026-09-30, and directed the executor to record the ruling here in its own commit. The coordinator's message says Joshua is being told that the coordinator admitted the file below, and that it will tell the executor before a push if he overrules it. This section records no confirmation from Joshua for amendment 3.
+
+**Why.** Codex's P2 on merge head `84a2a78` (thread `PRRT_kwDOT46Eac6nXbfX`, `book_account_owner.py:1889`): for a takeover-generated cancel or flat that returns unknown, the CC-3 halt records `ordinary-unknown:<attempt_id>`, and `_advance_takeover_locked` then records `takeover-child:<operation_id>` for the same outcome. That contradicts §3 row 1 ("one durable incident") and §0.5(D) (no duplicate incident where another path already halts). The coordinator accepted the finding.
+
+**The executor's read-only probe** (throwaway test on `84a2a78`, deleted; `TakeoverScenario`, the child's result forced to each outcome):
+- **Unknown:** generation 1 → 3, two incidents (`ordinary-unknown:<attempt>`, then `takeover-child:control:<operation>`), and two `HALT` events on plan `entry:aegis_6j` (generations 2 and 3). Exposure stays `(1, 1)`.
+- **Rejected:** generation 1 → 2, one incident (`takeover-child` only), one `HALT` event. No CC-3 halt exists on that path, so it must not change.
+- **Precondition confirmed:** `_halt_db` already writes the takeover plans' `HALT` events when it inserts the `ordinary-unknown` incident (it skips only plans in phase `ATTEMPTED` or `RETIRED`; this plan was in `CONFIRM_CANCELLATIONS`). The later `takeover-child` halt therefore adds, for an unknown, only a second incident, generation and `HALT` event.
+
+**Ruling.**
+1. **Keep the CC-3 halt; consolidate the takeover one.** The `ordinary-unknown` incident is committed atomically inside the dispatch serializer before anything else runs; moving ownership back to the takeover halt would reopen the timing gap CC-3 closed.
+2. **The footprint extension: `ops/c1_rail/book_takeover_owner.py`, one hunk only,** the tail of `_advance_takeover_locked` (around lines 536–542). Inside the existing transaction, the `_halt_db('takeover-child:' + result.operation_id, ...)` call is skipped only when all three hold: `result.transport_state == 'unknown'`; `result.attempt_id` is set; and `SELECT 1 FROM incidents WHERE incident_id = 'ordinary-unknown:' || attempt_id` finds a row. The `break` stays. The `rejected` path is byte-for-byte unchanged. One comment cites §8.3 and "one durable incident". No other edit to that file.
+3. **Rejected alternative:** changing `_halt_db` in `book_account_owner.py` to swallow `takeover-child:` ids. Takeover-specific logic in the shared halt owner could hide a genuinely distinct second incident.
+4. **Tests** (in the admitted `test_book_takeover_phases.py`): the strengthened `test_cancel_failure_fences_and_retains_exposure[unknown]` and a new `test_flat_failure_fences_and_retains_exposure[unknown]` (a takeover-generated flat), each asserting exactly one incident `ordinary-unknown:<attempt_id>`, one generation step 1 → 2, exactly one plan `HALT` event, and exposure retained. Both fail on `84a2a78` and pass with the hunk. The `rejected` variants assert the unchanged behavior (one `takeover-child` incident, one generation step, one `HALT` event) and pass before and after.
+
+**Authority block.** Its shape is unchanged. The constraint `section_2_footprint_plus_amendment_1_2_test_files_only` became `section_2_footprint_plus_amendments_1_3`, which now means: the production files `ops/c1_rail/book_account_owner.py` and `ops/c1_rail/book_takeover_owner.py` (that one hunk only), plus the test files admitted by §8.1 and §8.2 and `tests/ops/test_book_takeover_phases.py`.
+
+**Sequence and ownership.** The executor then runs the related suite, the full `tests/ops` (with the machine load disclosed), and `check`, all through the launcher, pushes as a fast-forward, and sends the coordinator the head and record paths. The coordinator handles the Codex thread and re-request. No merge, no RESOLVED, and no other grant changes.
 
 ## §10 — Audit hooks
 
