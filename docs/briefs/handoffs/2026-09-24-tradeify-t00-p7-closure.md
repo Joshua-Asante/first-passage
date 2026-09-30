@@ -514,6 +514,42 @@ executor scratchpad and are not committed.
 hand recompute, independent review). No T00 step 2, screen, MC, real replay or private-input run
 occurred.
 
+### Tasks 3–4 Checkpoint 1 return — 2026-09-30 (local Claude, Opus)
+
+#### Status: `NEEDS_CONTEXT`. Task 3 did not start and nothing was written.
+
+**Setup.** The executor worktree is `.claude/worktrees/t00-p7-tasks-3-4`, on `claude/t00-p7-tasks-3-4` at `34f5b12` with a clean tree.
+- `fp.ps1 doctor` passed on CPython 3.13.2 with 62 locked packages.
+- `check_brief --type handoff` on the [dispatch card](2026-09-30-t00-p7-tasks-3-4-dispatch.md) reported 0 HARD and 0 WARN violations.
+
+**§0.1 reverified; all MATCH.**
+- The six `SHA256SUMS` panel rows pass, and the Aegis attested-prefix panel is `8ae083d0…`.
+- The Aegis, Vanguard and ORB ports are at their pins.
+- The corrected Striker `efd479b6…` matches in both the Step 3 root and the staged copy. The active Striker is still the refused `c81aa59c…`.
+- The historical settings are `66406dee…`, and D19 is `2698f268…`.
+
+**Blocker 1 (plan conflict).** `ProductionSource.build` accepts only a `ValidatedFrozenContract` from `validate_frozen_contract` under a signed production trust domain.
+- That contract's role set is fixed at the full `REQUIRED_ARTIFACT_ROLES` plus every production code role (`contract.py:509`).
+- It also requires the complete F1 qualification freeze: horizons, six stage specs, budget, decision rules and result plan.
+- Several of those values amount to T00 step-2 pre-registration, which §6 forbids. A narrower route needs files outside §3.
+
+**Blocker 2 (missing fact).** OPEN `source_calendar` rows need per-leg venue deadlines bound to a retained role. D19 was accepted for early-close membership only.
+
+#### Operator rulings 2026-09-30
+
+Joshua gave these on 2026-09-30 by structured answer in the coordinating session. The coordinator relayed them, and they are recorded verbatim:
+
+> **Ruling 1, the contract. Option (b) chosen: "Source-only contract".** Design a separately signed source-only contract class that `ProductionSource.build` accepts. It is new trust-domain / authority code, so it is designed and reviewed before any of it is implemented. T00 stays in parallel with S5 → T06.
+>
+> **Ruling 2, the deadlines. The candidate reading is accepted, with residuals named.**
+> - Date membership is panel-derived (R2).
+> - A D19 `venue_flat_dates` date gets V = 12:59 ET for all legs. Every other date gets V = 16:45 ET (Tradeify's blanket account-level rule).
+> - The facts are bound through the `calendar_producer` role.
+> - Two residuals are carried by name: the 2025-11-28 Globex outage, and possible ad-hoc closures after 2026-05-28. The second is the non-conservative one.
+> - If the P7 hand-recompute day is chosen, it must not be a residual date.
+
+The coordinator's sequencing is [card §8.1](2026-09-30-t00-p7-tasks-3-4-dispatch.md#81--coordinator-sequencing-after-the-checkpoint-1-return-2026-09-30). The source-only design (Phase A) and the Task 3 source pack proceed in parallel. Signing, implementation and Task 4 wait for the accepted design.
+
 ## 10. Audit hooks
 
 ```powershell
