@@ -7,7 +7,24 @@
 - the coordinator's sequencing in [card §8.1](../../briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md#81--coordinator-sequencing-after-the-checkpoint-1-return-2026-09-30).
 
 **Review path:** the coordinator reviews, then Codex, then Joshua accepts.
-**Code read at:** `claude/t00-p7-tasks-3-4` @ `e3d95b3` (revisions 1–2), `7e0c49c` (revision 3) and `e6fad26` (revision 4); production code equals the Task 2 head `672d49f`.
+**Code read at:** `claude/t00-p7-tasks-3-4` @ `e3d95b3` (revisions 1–2), `7e0c49c` (revision 3), `e6fad26` (revision 4) and `a6ab1e2` (revision 4.1); production code equals the Task 2 head `672d49f`.
+
+## Revision 4.1 — three binding requirements (operator ruling 2026-09-30)
+
+Codex's narrow review of revision 4 (`a6ab1e2`, task `task_e_6abd41a3f030832cb583866d33d63406`) resolved cuts 1 and 4 but not cuts 2 and 3. It raised three new P1s:
+- code runs before the hook is installed;
+- the evidence record is unauthenticated;
+- acceptance trusts the record's artifact digests.
+
+Joshua ruled on 2026-09-30 ("yes") to fold three targeted fixes in as **binding requirements**, in an additive revision. They are specified in §2.5b, which **supersedes** the conflicting parts of §2.5a.
+
+| P1 | Binding requirement | Section / tests |
+|---|---|---|
+| Pre-hook code is unrecorded (the driver file and interpreter startup) | **Pinned bootstrap.** P7 starts as `python -I -B -c P7_BOOTSTRAP`. The pinned constant installs the hook and finder, then runs `p7_driver` through `runpy`, so the driver is recorded. The only residual is interpreter startup, bound by the executable hash and version. | §2.5b(1); A20 |
+| The record is unauthenticated | **Acceptance by reconstruction.** `accept_p7_record` re-executes P7 in a fresh process through the pinned bootstrap against the current artifact root. The regenerated record must equal the presented one byte for byte, outside an enumerated set of volatile fields; otherwise `P7_RECORD_NOT_REPRODUCED`. Determinism is required. | §2.5b(2); A19, A21 |
+| Acceptance trusts the record's artifact digests | **Current bytes first.** Acceptance re-hashes every contract artifact, ports included, from the current artifact root before anything else; `P7_EVIDENCE_STALE` on a mismatch | §2.5b(3); A22 |
+
+**Pre-committed stop.** Codex gets one narrow review of these three requirements. A further P1 **parks** the source-only route and returns it to Joshua with the fallback of waiting for the T10 F1 freeze. There is no revision 5.
 
 ## Revision 4 — scope simplification (operator-approved 2026-09-30)
 
@@ -190,12 +207,61 @@ The Task 4 return names `code_closure_sha256`.
 
 **Scope of a P7 result.** P7 MET holds **only for that loaded closure**. Any later change to a recorded first-party file or third-party distribution, including the rebase onto post-S5 `main` required by the merge hold, requires re-verification. Reuse is not allowed. A change to a file that was never loaded does not void it.
 
-**Acceptance from bytes (revision 4).** `p7_evidence.accept_p7_record(record_bytes, *, code_root, now) -> AcceptedP7Record` is a standalone check. It uses no in-process receipt or issuance registry.
+**Acceptance from bytes (revision 4; superseded where it conflicts by §2.5b).** `p7_evidence.accept_p7_record(record_bytes, *, code_root, now) -> AcceptedP7Record` is a standalone check. It uses no in-process receipt or issuance registry.
 1. It re-validates the embedded contract and approval bytes with `validate_source_contract` against the pinned `SOURCE_SIGNING_KEYS` at `now`, including expiry and pin revocation. Observed artifact digests come from the record's inventory; retained bytes are not re-read.
 2. It re-hashes every recorded first-party path under `code_root`, and every recorded third-party distribution file in the current interpreter. Any difference refuses with `P7_EVIDENCE_STALE`.
 3. It requires a clean tree for those paths (`P7_TREE_DIRTY`) and `code_closure_sha256` to recompute exactly.
 
 **Required procedure.** Calling `accept_p7_record` is a **required step** of the coordinator's P7 acceptance and of the post-S5 rebase re-check. Both procedures record the call's result, with its `code_closure_sha256` and the acceptance time. A P7 verdict not accepted this way is not accepted. This is enforced by procedure, not by a lexical code scan: the revision-3 AST reader rule is dropped.
+
+### 2.5b Binding requirements (revision 4.1)
+
+These requirements bind the implementation. Where §2.5a conflicts with them, this section governs.
+
+**(1) Pinned bootstrap.**
+- **Launch.** P7 is launched only as `<ops-env python> -I -B -c <P7_BOOTSTRAP> <args>`. `P7_BOOTSTRAP` is a compiled string constant in `p7_evidence.py`, and `P7_BOOTSTRAP_SHA256`, the SHA-256 of its UTF-8 bytes, is a second compiled constant. A test asserts that they agree.
+- **What the bootstrap does.** Its source, in order:
+  1. installs the `sys.addaudithook` recorder (events `import`, `exec`, `compile`);
+  2. inserts the recording `sys.meta_path` finder at position 0;
+  3. sets `sys.dont_write_bytecode = True`;
+  4. runs `runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__')`, with the code roots on `sys.path` set by the bootstrap, since `-I` ignores `PYTHONPATH`.
+
+  The driver, and everything it imports, is therefore loaded through the recorded path, and `p7_driver.py` appears in `loaded_closure` like any other first-party module. `p7_evidence` itself is the only first-party module imported by the bootstrap before the hook exists. The bootstrap therefore installs the hook from inline code first, and imports `p7_evidence` afterwards, so it is recorded too.
+- **Launcher.** The command string is built only from the constant. The bootstrap cannot hash its own `-c` source, so the record's `bootstrap_sha256` is written by the launcher, which is `p7_evidence.run_p7`. A forged value fails reconstruction (2), because the acceptor always launches with its own pinned constant.
+- **What `-I` excludes.** `-I` excludes `site` and user-site customization, `PYTHON*` environment variables and the script directory; `-B` prevents bytecode writes.
+- **Residual (named).** Interpreter startup before the bootstrap is unrecorded: the frozen and built-in stdlib initialization that runs under `-I`. It is bound by recording `interpreter_sha256` (the SHA-256 of `sys.executable`'s bytes), `sys.version`, `sys.implementation.cache_tag` and the locked environment's `requirements-ops.lock` SHA-256. Acceptance requires all four to be equal.
+
+**(2) Acceptance by reconstruction.** `accept_p7_record(record_bytes, *, code_root, artifact_root, now)`:
+1. **Current-bytes check (3)** runs first.
+2. **Re-validation.** It re-validates the embedded canonical contract and approval with `validate_source_contract` against the pinned `SOURCE_SIGNING_KEYS` at `now`, with expiry and pin revocation. An approval that has expired means acceptance needs a fresh operator signature; it is never reused.
+3. **Re-execution.** It re-executes P7 through `run_p7` in a **fresh process**, with the pinned bootstrap, against the current `code_root` and `artifact_root`, into a temporary output.
+4. **Comparison.** It requires the regenerated record to equal the presented record **byte for byte** after removing exactly the volatile fields below. Any other difference refuses with `P7_RECORD_NOT_REPRODUCED`.
+
+The **volatile fields** are the complete list; no other field may vary.
+
+| Field | Why it varies | Why it is safe to exclude |
+|---|---|---|
+| `run_started_at`, `run_finished_at` | Wall-clock instants of the run | No verdict, count or hash depends on them; the approval window is re-checked at acceptance with the acceptor's own `now` |
+| `host_run_id` | A random per-process identifier used to name the temporary output | It names a file and binds no content |
+| `accepted_at` / acceptor identity | Present only in the acceptor's own record of acceptance, never in the P7 record | Not part of the compared bytes |
+
+**Everything else is compared**, including:
+- `code_head`, `loaded_closure`, `code_closure_sha256` and `bootstrap_sha256`;
+- the interpreter binding;
+- the contract and approval bytes;
+- the artifact inventory digests;
+- the result hashes, counts and labels.
+
+**Determinism requirement.** The P7 run must be a pure function of (code closure, interpreter binding, contract, approval, retained artifact bytes):
+- no RNG, or only a seeded RNG whose seed is in the contract (P7 has none today);
+- no wall-clock reads outside the volatile fields;
+- no dependence on dict or set iteration order, filesystem listing order, the process ID, the hostname or environment variables;
+- every emitted collection is sorted, and records are canonical JSON, with floats encoded as `float.hex` inside result digests;
+- the source-only receipt check at run time uses the approval window with the run's `now`, which is not recorded.
+
+Because a forged or hand-edited record cannot be reproduced by a real run over the current inputs, reconstruction authenticates the record. No separate signature over the record is needed.
+
+**(3) Current bytes first.** Before re-validation and re-execution, acceptance re-reads every artifact named in the embedded contract, including the four pinned ports, the panels, the historical pins and the source roles, from the **current** `artifact_root`, and compares each SHA-256 with the contract's declared digest. It also re-hashes every recorded first-party and third-party closure file. Any mismatch refuses with `P7_EVIDENCE_STALE` before the process is launched. The record's own inventory is never trusted for this check.
 
 ### 2.6 What `ProductionSource.build` does and refuses
 
@@ -337,6 +403,10 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 | 19 | A recorded first-party file or third-party distribution changes after P7 MET, and the old record is presented to `accept_p7_record` | Refused (`P7_EVIDENCE_STALE`); the embedded contract and approval are also re-validated at acceptance time |
 | 20 | The P7 process loads a module on the refusal list (runner, MC, stage, Part A, adjudication, seal, execution) | Refused (`P7_FORBIDDEN_IMPORT`); no record |
 | 21 | A loaded module's origin is outside {code root, stdlib, locked site-packages, pinned ports}; a first-party file changes during the run; an unaudited `exec` / `compile` of first-party bytes occurs | No record (`P7_ORIGIN_OUTSIDE_ROOT` / `P7_SOURCE_CHANGED_DURING_RUN` / `P7_UNAUDITED_EXEC`) |
+| 23 | The driver, or a module it imports, runs without passing through the bootstrap's recorder; or the bootstrap constant and its pinned hash disagree | No record (`P7_BOOTSTRAP_MISMATCH`); the run is refused unless launched by `run_p7` with the pinned constant |
+| 24 | A presented record differs from the reconstructed record in any non-volatile field | Refused (`P7_RECORD_NOT_REPRODUCED`) |
+| 25 | Any current artifact or closure file differs from the contract's digest or the recorded hash at acceptance | Refused (`P7_EVIDENCE_STALE`) before re-execution |
+| 26 | The interpreter executable hash, version, cache tag or lock hash differs at acceptance | Refused (`P7_INTERPRETER_MISMATCH`) |
 | 22 | A calendar fact names a role other than `calendar_producer`, a truncation is interior, its reason does not name the slots, or the stand-in appears | Refused (`CALENDAR_FACT_ROLE` / `SOURCE_TRUNCATION_INTERIOR` / `SOURCE_TRUNCATION_REASON` / `TRUNCATION_STAND_IN_RETIRED`) |
 
 ## 4. Files it would touch (admitted only by a later amendment)
@@ -347,10 +417,10 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 | `ops/c1_rail/qualification/trust_domain.py` | Adds `SourceTrustDomain` (compiled from constants, with no signed domain bytes). `validate_qualification_trust_domain` refuses `source:` key IDs. |
 | `ops/c1_signal_daemon/book_adapters.py` | Adds `_source_domain(contract)` and `_resolve_domain(contract)`. `_load_domain_adapters` resolves through `_resolve_domain`. `load_qualification_adapters`, `_load_composition_adapters` and the historical loader are unchanged. |
 | `ops/c1_rail/qualification/runner.py` | **Not changed** (revision 4 removes the result registry) |
-| `ops/c1_rail/qualification/p7_evidence.py` (new) | The import audit hook and loaded-set recorder, the P7 record writer and `accept_p7_record` (§2.5a) |
+| `ops/c1_rail/qualification/p7_evidence.py` (new) | `P7_BOOTSTRAP` and `P7_BOOTSTRAP_SHA256`, the audit hook and recording finder, `run_p7` (the launcher), the P7 record writer, and `accept_p7_record` (current-bytes check, re-validation, re-execution, byte comparison) (§2.5a–§2.5b) |
 | `ops/c1_rail/qualification/production_source.py` | `_resolve_domain` callers, `_verify_integrity` / `verify_for` split, sealed source-only results and the inner-result registry, `validate_source_only_calendar`, `_now()` seam. `build` dispatches on type, the issued source records `evidence_class`, and `verify_for` refuses source-only for qualification consumers. `parse_population_index` allows `source_truncated`. `_review` accepts v2 on the source-only path (§2.6b). The other parsers are unchanged. |
 | `ops/c1_rail/qualification/clock.py` | Adds `SourceDayStatus.SOURCE_TRUNCATED` (§2.6a) |
-| `ops/c1_rail/qualification/p7_driver.py` (new) | The one-shot P7 entrypoint: installs the hook first, then validates, builds, replays and writes the record (§2.5a) |
+| `ops/c1_rail/qualification/p7_driver.py` (new) | The P7 body, run only via `runpy` from the pinned bootstrap: validates, builds, replays and writes the record (§2.5b) |
 | `tests/ops/qualification/test_source_consumers.py` (new) | A10b AST consumer scan |
 | `tests/ops/qualification/test_source_contract.py` (new) | Acceptance tests A1–A10 below |
 | `tests/ops/qualification/test_production_source.py` | A11–A12, plus Task 4's real-path wiring |
@@ -392,6 +462,10 @@ Tests use TEST_ONLY-generated Ed25519 keys **only inside the test process**, to 
 | A16b | `test_dirty_tree_writes_no_p7_record` | A dirty closure path at start refuses with `P7_TREE_DIRTY`, and no record file exists afterwards | A record is written from a dirty tree |
 | A16c | `test_p7_loaded_set_negatives` | Each case refuses with its own code and leaves no record: a first-party-named module loaded from a tree outside the code root (`P7_ORIGIN_OUTSIDE_ROOT`); an import of `c1_rail.qualification.runner` and of `mc.simulation` (`P7_FORBIDDEN_IMPORT`); a first-party file edited mid-run (`P7_SOURCE_CHANGED_DURING_RUN`); `exec` of first-party bytes (`P7_UNAUDITED_EXEC`). Each has an unmodified twin that yields a record. | Any case yields a record |
 | A17 | `test_accept_p7_record_from_bytes` | In a fresh process with no receipts, a MET record at closure A is accepted. After changing one recorded module to B, it is refused (`P7_EVIDENCE_STALE`). After advancing `now` past approval expiry, or revoking the key in the pin, it is refused at acceptance. A record produced at B is accepted. | Stale, expired or revoked evidence is accepted, or acceptance needs an in-process receipt |
+| A19 | `test_two_independent_p7_runs_produce_identical_records` | Two fresh-process runs through `run_p7` on the same synthetic fixture produce records that are byte-identical after removing exactly the enumerated volatile fields | Any other field differs between runs |
+| A20 | `test_driver_edit_is_reflected_or_refused` | Editing `p7_driver.py` changes its recorded hash and `code_closure_sha256`. An old record presented after the edit is refused (`P7_EVIDENCE_STALE`). A launch that bypasses the bootstrap, running the driver directly, or a bootstrap string whose hash differs from `P7_BOOTSTRAP_SHA256`, yields no record (`P7_BOOTSTRAP_MISMATCH`). Each case has an unmodified twin that yields and accepts a record. | A driver edit is absent from the closure, or a bypassed launch yields a record |
+| A21 | `test_hand_constructed_record_over_valid_contract_is_not_reproduced` | A record built by hand around a valid signed contract and approval, with plausible hashes and labels, or with one result label altered, or with a forged `bootstrap_sha256`, is refused by `accept_p7_record` (`P7_RECORD_NOT_REPRODUCED`); the genuine twin is accepted | A constructed record is accepted |
+| A22 | `test_artifact_changed_after_run_is_stale` | After a genuine MET record, changing one retained artifact (a source-role byte, a panel byte, and separately a pinned port byte) in the current artifact root makes acceptance refuse `P7_EVIDENCE_STALE` **before** any re-execution. A spy asserts that no process was launched. | A stale artifact is accepted, or acceptance re-executes first |
 | A18 | `test_calendar_fact_must_bind_calendar_producer` | A calendar whose fact names another retained role with that role's correct digest is refused (`CALENDAR_FACT_ROLE`), although `_fact` alone would accept it | A non-producer fact binds |
 | A12 | `test_source_only_replay_bracket_fresh_engines_and_label` | **End to end, with the guards intact.** A synthetic source-only contract, signed in-process with only the pinned root monkeypatched, validates. `build` succeeds, and `replay_bracket` on a path with a consumed intrabar split passes `_verify_integrity` and returns a `SourceOnlyBracket` from two separate engines. The label is `T00_P7_SOURCE_ONLY`, the policy is 1%/0.40, and `verify_for` on the same source still raises `SOURCE_ONLY_NOT_QUALIFICATION`. No guard function is patched. | Shared state, a missing label, a changed policy, a patched guard, or a build/replay failure |
 
