@@ -9,6 +9,19 @@
 **Review path:** the coordinator reviews, then Codex, then Joshua accepts.
 **Code read at:** `claude/t00-p7-tasks-3-4` @ `e3d95b3`, whose production code equals the Task 2 head `672d49f`.
 
+## Revision 2 — coordinator design review 2026-09-30
+
+The review was made at `35fe1a80…` (`48bf30a`), and its verdict was REVISE. Some items were already applied in `c9742f0`. This revision is an additive commit.
+
+| Finding | Change | Section |
+|---|---|---|
+| BLOCKING 1: caller-supplied trust root | The operator source-key fingerprint(s) are pinned in a tracked, compiled constant that only an operator-merged PR changes. A caller registry is accepted only if byte-equal to the pin. Test A6b is the self-signed forgery falsifier. | §2.3, §4, §5 |
+| BLOCKING 2: P7 evidence does not bind code | Every P7 evidence record carries the git HEAD and the executed module closure (the `runtime.source_closure` rule) with its digest. P7 MET holds for that closure only. | §2.5a, §2.7, §5 A16 |
+| 3: consumer refusal relies on `verify_for` alone | Test A10b: an AST scan of `ops/` for `ProductionSource` / `.contract` use outside the allowlist or without `verify_for` | §2.6, §5 |
+| 4: typed truncation disposition | Already in `c9742f0`: §2.6a, `SourceDayStatus` in `clock.py`, which is named in §4. The stand-in is retired by this build. | §2.6a, §4 |
+| 5: reviewer-authored companions | Already in `c9742f0`: §2.6b. This revision makes the reviewer identity and reviewed digest explicit and names the refusal test. | §2.6b, §5 A14 |
+| 6: `path_start_date` and the signing packet | The explicit field was already in `c9742f0`. This revision adds §2.8, the signing packet. | §2.2, §2.8 |
+
 ## 1. Problem
 
 `ProductionSource.build(contract, artifact_root=...)` accepts only a `ValidatedFrozenContract` from `validate_frozen_contract`, under a signed production `QualificationTrustDomain` (`book_adapters._qualification_domain`). That contract is the complete F1 qualification freeze:
@@ -61,9 +74,16 @@ There is no `replay`, `result_plan`, `approval_policy`, `coverage`, `clocks`, `t
 - **Source validator:** every signing key ID must start with `source:`, must be listed in `source_trust.source_key_ids`, and its public-key SHA-256 must equal `trusted_key_sha256[key_id]`.
 - **Qualification validator:** `trust_domain.validate_qualification_trust_domain` and `contract.validate_frozen_contract` refuse any enrolled key ID that starts with `source:`, raising `SOURCE_KEY_IN_QUALIFICATION_DOMAIN`. This is the one edit to the qualification path.
 
-**Residual.** No shared registry exists, so code cannot stop the operator from enrolling the *same public key* under a non-`source:` ID in a later qualification domain. The ceremony therefore requires a **dedicated operator key**, generated only for source contracts. This rests on procedure, not code, and is recorded as such.
+**Residual (accepted by the coordinator, 2026-09-30).** Code cannot stop the operator from enrolling the *same public key* under a non-`source:` ID in a later qualification domain. The ceremony uses a **dedicated operator key**, generated only for source contracts, and the P7 return records that key's fingerprint. With the pinned root, this residual is procedural and narrow.
 
-**Trust root.** The `trusted_keys` mapping is supplied by the caller, as it is for F1: it is the operator's public-key registry (`qualification_trusted_keys/v1`, `authority_class` OPERATOR). The contract's `source_trust` fingerprints must match it. A contract that self-enrolls a key without a matching registry entry fails.
+**Trust root (revision 2, BLOCKING 1).** The trust root is **pinned in tracked code**, never supplied by the caller.
+- `contract.py` gains the compiled constant `SOURCE_SIGNING_KEYS: Mapping[str, str]`, mapping a `source:` key ID to the SHA-256 of its 32-byte Ed25519 public key. It ships **empty**, and an empty pin refuses every source contract (`SOURCE_TRUST_ROOT_UNENROLLED`).
+- Joshua's dedicated source key is enrolled by its own PR, which **only the operator merges**. That PR changes only this constant and its test expectation.
+- `validate_source_contract(contract_bytes, approval_bytes, public_keys, observed, *, now)` receives public key *bytes*. Each key it uses must hash to the pinned fingerprint for that ID.
+- `source_trust` in the contract must equal the pinned map exactly. A registry the caller passes is accepted only if it is byte-equal to the pinned set; any extra, missing or different key is refused.
+- The TEST_ONLY authority path does not exist for source contracts.
+- Tests exercise signing by monkeypatching `SOURCE_SIGNING_KEYS` **inside the test process only**. The pinned constant in the tree never holds a test key; a test asserts that the shipped constant holds only operator-enrolled IDs.
+- **Falsifier (A6b):** a well-formed contract, signed by a freshly generated key and presented with a matching self-supplied registry and `source_trust`, is REFUSED.
 
 **Validity window.** `issued_at <= now < expires_at` is checked at build. Task 4 must run inside the window.
 
@@ -99,6 +119,26 @@ The receipt exposes the attributes `ProductionSource` reads:
 
 It also carries a **`SourceTrustDomain`** built from compiled constants, with `authority_class="OPERATOR"`, `permits_synthetic=False`, `accepted_historical_pins`, `port_runtime_pins`, `effective_settings_sha256` and `required_artifact_roles` (the §2.4 set). It carries no freeze/result/seal/execution key sets and no workload policy.
 
+### 2.5a Producer-code binding (revision 2, BLOCKING 2)
+
+P7 answers whether *specific code* is a faithful producer, so every P7 evidence record binds that code.
+
+**The closure.** It is computed with the rule of `ops/c1_rail/qualification/execution/runtime.py::source_closure`:
+- the transitive AST import closure over the `ops`, `core`, `lab`, `governance` and root trees;
+- rooted at the P7 entrypoints, which are `c1_rail.qualification.production_source` and the Task 4 driver module;
+- recorded as a module → `{path, sha256}` table.
+
+The private ports are not in the AST closure, because they load from retained bytes; they are bound by the contract's pins. Implementing this adds a `P7` role to `ENTRYPOINTS` or an equivalent pure function that reuses the same traversal. The rule is shared, not reimplemented.
+
+**Each P7 record carries:**
+- `code_head` (the git HEAD of the executing checkout) and `code_tree_clean` (true is required);
+- `code_closure`, the table;
+- `code_closure_sha256`, the SHA-256 of its canonical JSON.
+
+The Task 4 return names `code_closure_sha256`.
+
+**Scope of a P7 result.** P7 MET holds **only for that closure**. Any later change to a module inside it, including the rebase onto post-S5 `main` required by the merge hold, requires re-verification against the new closure. Reuse is not allowed. A change outside the closure does not void it.
+
 ### 2.6 What `ProductionSource.build` does and refuses
 
 **Dispatch.** `build(contract, *, artifact_root)` dispatches on the exact type of `contract`:
@@ -114,6 +154,7 @@ It also carries a **`SourceTrustDomain`** built from compiled constants, with `a
 - `ProductionSource.verify_for(contract)` raises `SOURCE_ONLY_NOT_QUALIFICATION` when `self.contract` is a `ValidatedSourceContract`. That covers every current qualification consumer: `production.py` executor binding, `execution/compute.py` and `execution/evidence.py`. None of them runs.
 - The source-only path calls no stage, Part A, budget, adjudication, seal or screen code. `replay`, `replay_bracket` and `proof` stay available, because each checks the path against its own issued sessions.
 - `_build_composition` and the TEST_ONLY domain are untouched, and a `TEST_ONLY` key cannot sign a source contract.
+- **Structural guard (A10b).** Refusal does not depend on `verify_for` alone. A test scans every module under `ops/` by AST for references to `ProductionSource` or a `.contract` attribute read on one. Outside `production_source.py`, each reference must be either on an explicit source-only allowlist (the Task 4 driver) or dominated by a `verify_for(...)` call in the same function before use. A new consumer that skips `verify_for` fails the test.
 
 **Invariants kept.**
 - `candidate_book_protection_policy()` stays at 1%/0.40, and `core/dd_protection.py` is not touched.
@@ -143,12 +184,29 @@ It also carries a **`SourceTrustDomain`** built from compiled constants, with `a
 - `reviewed_at`: a UTC instant;
 - `notes`: a nonempty list of statements. For the source calendar and population index these must include the truncation, head-partial and residual statements.
 
+**Reviewed digest.** `artifact_sha256` is the digest of the exact bytes the reviewer reviewed. A companion missing `reviewer`, `reviewed_at`, `notes` or `artifact_sha256` is refused.
+
 **Validation.** `_review` in `production_source.py` accepts v2 only on the source-only path, and requires `reviewer` to differ from the artifact's producer identity recorded in the contract's `artifacts[].producer`. v1 stays unchanged for the F1 path. Self-certification (a producer equal to the reviewer) is refused as `REVIEW_NOT_INDEPENDENT`.
+
+### 2.8 Signing packet (revision 2)
+
+Before the operator signs, the executor assembles a **signing packet** under the private root and the coordinator reviews it:
+1. the contract's canonical bytes and their SHA-256;
+2. a human-readable listing of every role's path and digest, grouped as in §2.4;
+3. the populations' counts (FULL, H1, H2 and exclusions by reason);
+4. `initial_state`;
+5. `path_start_date`, marked PROPOSED;
+6. the Ruling-2 deadline model (12:59 ET on D19 venue-flat dates, 16:45 ET otherwise, for all legs) and its two named residuals;
+7. the tail disposition (`source_truncated` at 2026-09-03);
+8. the dedicated source key's ID and fingerprint, matching the pinned constant.
+
+Joshua signs the canonical bytes only after reading the listing. The approval's `subject_sha256` must equal the packet's contract SHA-256. The packet holds no private strategy values: paper capitals appear only as `== constructor` / `== Step 3` equality labels.
 
 ### 2.7 Labelling of P7 evidence
 
 Every artifact produced under a source-only contract carries:
 - `evidence_class: "T00_P7_SOURCE_ONLY"`, the contract SHA-256 and the approval SHA-256;
+- `code_head`, `code_closure_sha256` and the closure table (§2.5a);
 - the label **"P7 producer-faithfulness evidence; not qualification, screen, GO/NO-GO or F1 evidence"**.
 
 The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENUE_HISTORY`, and the schedule evidence's model-convention status carry into the Task 4 return. The public return contains only hashes, counts and equality/verdict labels.
@@ -173,16 +231,21 @@ The `calendar_producer` record's label, `RULED_MODEL_DEADLINES_NOT_OBSERVED_VENU
 | 14 | A `source_truncated` row falls in the interior, or a `panel truncated` `policy_denied` stand-in appears on the source-only path | Refused |
 | 15 | A review companion is a template, or v1 on the source-only path, or has reviewer equal to producer | Refused (`REVIEW_NOT_INDEPENDENT` for self-review) |
 | 16 | `path_start_date` in the contract differs from the startup policy, or is not a weekday | Refused |
+| 17 | The signer's key is not in the pinned `SOURCE_SIGNING_KEYS`, or the caller's registry differs from the pin, or the pin is empty | Refused (`SOURCE_TRUST_ROOT_UNENROLLED` / `SOURCE_TRUST_ROOT_MISMATCH`) |
+| 18 | P7 evidence is emitted from a dirty tree, or without a closure digest | Refused; no P7 record is written |
+| 19 | A module inside the recorded closure changes after P7 MET | The P7 result is void for the new code; re-verify |
 
 ## 4. Files it would touch (admitted only by a later amendment)
 
 | File | Change |
 |---|---|
-| `ops/c1_rail/qualification/contract.py` | Adds `SOURCE_CONTRACT_SCHEMA`, `SOURCE_SCOPE`, `ValidatedSourceContract`, `validate_source_contract`, `require_validated_source_contract` and a separate issuance registry. `validate_frozen_contract` gains the `source:` key-ID refusal. No existing F1 rule changes. |
+| `ops/c1_rail/qualification/contract.py` | Adds `SOURCE_SIGNING_KEYS` (the pinned root, shipped empty; enrolled only by an operator-merged PR), `SOURCE_CONTRACT_SCHEMA`, `SOURCE_SCOPE`, `ValidatedSourceContract`, `validate_source_contract`, `require_validated_source_contract` and a separate issuance registry. `validate_frozen_contract` gains the `source:` key-ID refusal. No existing F1 rule changes. |
 | `ops/c1_rail/qualification/trust_domain.py` | Adds `SourceTrustDomain` (compiled from constants, with no signed domain bytes). `validate_qualification_trust_domain` refuses `source:` key IDs. |
 | `ops/c1_signal_daemon/book_adapters.py` | Adds `_source_domain(contract)`. `_load_domain_adapters` accepts either validated domain type. Historical and qualification loaders are unchanged. |
 | `ops/c1_rail/qualification/production_source.py` | `build` dispatches on type, the issued source records `evidence_class`, and `verify_for` refuses source-only for qualification consumers. `parse_population_index` allows `source_truncated`. `_review` accepts v2 on the source-only path (§2.6b). The other parsers are unchanged. |
 | `ops/c1_rail/qualification/clock.py` | Adds `SourceDayStatus.SOURCE_TRUNCATED` (§2.6a) |
+| `ops/c1_rail/qualification/execution/runtime.py` | Adds a `P7` entrypoint to `ENTRYPOINTS`, or exposes the traversal as a pure function the P7 driver reuses (§2.5a); no change to existing roles |
+| `tests/ops/qualification/test_source_consumers.py` (new) | A10b AST consumer scan |
 | `tests/ops/qualification/test_source_contract.py` (new) | Acceptance tests A1–A10 below |
 | `tests/ops/qualification/test_production_source.py` | A11–A12, plus Task 4's real-path wiring |
 | `tests/ops/qualification/test_trust_domain.py` / `test_contract.py` (existing) | The `source:` refusal cases, A7 |
@@ -206,8 +269,11 @@ Tests use TEST_ONLY-generated Ed25519 keys **only inside the test process**, to 
 | A9 | `test_build_dispatches_on_exact_contract_type` | `build` accepts both validated types and refuses a subclass, a duck-typed object or the TEST_ONLY composition contract on the source path | A wrong type builds |
 | A10 | `test_source_only_source_is_refused_by_qualification_consumers` | `verify_for` with a `ValidatedFrozenContract`, `ProductionExecutor` binding, `execution.compute` and `execution.evidence` all refuse a source-only source | Any consumer proceeds |
 | A11 | `test_source_only_build_runs_the_same_source_checks` | With a synthetic source-only fixture signed in the test process: each existing source-pack negative (missing role, review mismatch, UNKNOWN date, population mismatch, capital mismatch) fails identically to the F1 path | Any negative passes on the source path |
+| A6b | `test_self_signed_source_contract_with_matching_self_registry_is_refused` | A freshly generated key, a matching self-supplied registry and `source_trust`, and a valid signature are REFUSED against the pinned root; the shipped pin holds no test key | Any self-enrolled key validates |
+| A10b | `test_every_production_source_consumer_is_allowlisted_or_verified` | The AST scan of `ops/` finds each `ProductionSource` / `.contract` use outside `production_source.py` either on the allowlist or preceded by `verify_for` in the same function; a planted unguarded consumer in a temp module fails the scan | An unguarded consumer passes |
+| A16 | `test_p7_record_binds_head_and_code_closure` | The record holds `code_head`, `code_tree_clean: true`, the closure table and its digest, computed by the shared `source_closure` traversal; editing any closure module changes the digest | A record omits or mis-binds the closure |
 | A13 | `test_source_truncated_disposition_only_at_interval_ends` | An end-of-interval truncated date is excluded as `source_truncated`; an interior one and a `policy_denied` truncation stand-in are refused | The stand-in or an interior truncation builds |
-| A14 | `test_review_companion_v2_reviewer_authored` | A v2 companion with an independent reviewer passes; a template, a v1 companion on the source path, or reviewer == producer are refused | Self-certified or template reviews bind |
+| A14 | `test_review_companion_v2_reviewer_authored` | A v2 companion with an independent reviewer passes; a template, a v1 companion on the source path, or reviewer == producer, or a companion missing `reviewer` / `reviewed_at` / `notes` / `artifact_sha256` are refused | Self-certified or template reviews bind |
 | A15 | `test_path_start_date_signed_and_consistent` | A mismatch with the startup policy, or a weekend date, is refused | An unsigned or inconsistent origin passes |
 | A12 | `test_source_only_replay_bracket_fresh_engines_and_label` | `replay_bracket` returns two results from separate engines; the issued source's `evidence_class == "T00_P7_SOURCE_ONLY"`; the policy is 1%/0.40 | Shared state, a missing label or a changed policy |
 
