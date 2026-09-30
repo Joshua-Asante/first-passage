@@ -233,9 +233,9 @@ The build then runs the **same** checks as today: reviews, calendar, population 
 - `_build_composition` and the TEST_ONLY domain are untouched, and a `TEST_ONLY` key cannot sign a source contract.
 - **Structural guard (A10b).** Refusal does not depend on `verify_for` alone. A test scans every module under `ops/` by AST for references to `ProductionSource` or a `.contract` attribute read on one. Outside `production_source.py`, each reference must be either on an explicit source-only allowlist (the Task 4 driver) or dominated by a `verify_for(...)` call in the same function before use. A new consumer that skips `verify_for` fails the test.
 
-### 2.6c Source-only results cannot reach qualification or MC consumers (revision 3)
+### 2.6c Source-only results: sealed types, process boundary and procedural rule (revisions 3–4)
 
-Refusing the source object does not stop its *results* from travelling: `runner.evaluate_replay` accepts any `ReplayResult` and calls the MC kernel. The boundary is therefore on the results as well.
+Refusing the source object does not stop its *results* from travelling: `runner.evaluate_replay` accepts any `ReplayResult` and calls the MC kernel. Revision 4 bounds result use by the P7 process boundary and a named procedural rule, not by in-process taint.
 
 1. **Sealed return types.** On a source-only source:
    - `replay` returns `SourceOnlyReplay`;
