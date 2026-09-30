@@ -179,6 +179,9 @@ OUTSIDE = 'evil_outside_module'
     ('forbidden_import', 'P7_FORBIDDEN_IMPORT'),
     ('edited_mid_run', 'P7_SOURCE_CHANGED_DURING_RUN'),
     ('unaudited_exec', 'P7_UNAUDITED_EXEC'),
+    ('forbidden_call_evaluate', 'P7_FORBIDDEN_CALL'),
+    ('forbidden_call_simulate', 'P7_FORBIDDEN_CALL'),
+    ('restored_original', 'P7_FORBIDDEN_CALL'),
 ])
 def test_p7_loaded_set_negatives(env, variant, code):  # A16c
     twin = env.code_root('twin')
@@ -193,10 +196,33 @@ def test_p7_loaded_set_negatives(env, variant, code):  # A16c
                            '_f.write_bytes(_f.read_bytes() + b"\\n# edited mid-run\\n")\n'),
         'unaudited_exec': ('from pathlib import Path as _P\n_f = _P(__file__).with_name("clock.py").resolve()\n'
                            'exec(compile(_f.read_bytes(), str(_f), "exec"), {})\n'),
+        # Revision 4.3: a caught stub call still leaves no record.
+        'forbidden_call_evaluate': ('from c1_rail.qualification import runner as _r\n'
+                                    'try:\n    _r.evaluate_replay(None, initial_state=None)\nexcept Exception:\n    pass\n'),
+        'forbidden_call_simulate': ('import mc.simulation as _s\n'
+                                    'try:\n    _s.simulate_path()\nexcept Exception:\n    pass\n'),
+        'restored_original': ('from c1_rail.qualification import runner as _r\n'
+                              '_r.evaluate_replay = (lambda *a, **k: None)\n'),
     }
     root = env.code_root(variant, edits={'ops/c1_rail/qualification/production_source.py':
                                          lambda text: text + '\n' + snippets[variant]})
     refusal(code, *env.run(root))
+
+
+def test_forbidden_matching_is_exact_or_package_prefix(env):  # rev 4.3 (a)
+    from c1_rail.qualification import p7_evidence
+    forbidden = p7_evidence.forbidden_module
+    assert forbidden('c1_rail.qualification.production')
+    assert not forbidden('c1_rail.qualification.production_source')
+    assert forbidden('c1_rail.qualification.execution.worker') and forbidden('c1_rail.qualification.part_a')
+    assert not forbidden('c1_rail.qualification.runner') and not forbidden('mc.simulation')
+    assert repr(p7_evidence.P7_FORBIDDEN_MODULES) in p7_evidence.P7_BOOTSTRAP
+    done, record = env.run(env.code_root())
+    assert record is not None, done.stderr[-3000:]
+    loaded = json.loads(record)['loaded_closure']['first_party']
+    assert 'c1_rail.qualification.production_source' in loaded
+    assert 'c1_rail.qualification.runner' in loaded and 'mc.simulation' in loaded
+    assert 'c1_rail.qualification.production' not in loaded
 
 
 # ---- A17, A19–A22 ------------------------------------------------------------
