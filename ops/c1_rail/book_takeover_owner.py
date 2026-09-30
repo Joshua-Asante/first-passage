@@ -538,7 +538,12 @@ class TakeoverOwnerMixin:
             results.append(result)
             if result.transport_state in ('unknown', 'rejected'):
                 with self._transaction() as db:
-                    self._halt_db(db, 'takeover-child:' + result.operation_id, 'execution', now)
+                    # CC-3 8.3: an unknown child is already one durable incident, ordinary-unknown:<attempt>
+                    # (section 3 row 1); do not add a second incident or generation for the same outcome.
+                    if not (result.transport_state == 'unknown' and result.attempt_id and db.execute(
+                            'SELECT 1 FROM incidents WHERE incident_id=?',
+                            ('ordinary-unknown:' + result.attempt_id,)).fetchone()):
+                        self._halt_db(db, 'takeover-child:' + result.operation_id, 'execution', now)
                 break
         return tuple(results), False
 

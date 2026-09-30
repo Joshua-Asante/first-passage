@@ -84,6 +84,7 @@ def test_definitive_rejection_releases_only_its_own_reservation(tmp_path, kind):
     if kind == "entry":
         action = intent()
     elif kind == "cancel":
+        route.queue(BrokerResult("accepted"))  # the setup entry is accepted, not an implicit unknown
         account.dispatch(intent(), occurrence=account.make_occurrence("direct", "test_pr409_review2:79"), now=NOW)
         action = Cancel("dj30_mym_p250", "base")
     elif kind == "bracket":
