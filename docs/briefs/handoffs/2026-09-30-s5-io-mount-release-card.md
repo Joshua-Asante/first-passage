@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (fix card; it closes the C3 memory stop on `claude/s5-part-a`)
 
-**Status:** FROZEN, 2026-09-30, under the operator's GO:
+**Status:** FROZEN, 2026-09-30, under the operator's GO; amended as **A1** the same day (below):
 - In the coordinating session Joshua wrote "I agree with your recommendation. Send it to the S5 agent." He confirmed it directly in the S5 coordinator session: "Confirmed, proceed".
 - The ruling is recorded in the C3 ledger addendum (`docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md`, the entry beginning "Full S4-plus-Part-A selection: run `36673465130`").
 - This card is committed before implementation, under the committed-handoff rule.
@@ -18,6 +18,33 @@
 - At 17 pairs (53.9 MB) the slice OOMed and killed the supervisor.
 
 The fix releases each work's pair once custody no longer needs it.
+
+**Amendment A1, 2026-09-30 (operator ruling "Bind mounts to the work"). It supersedes §2's release table, §3 and §4 tests 1–4 where they conflict.**
+
+The executor returned NEEDS_CONTEXT at §0.3 (§7, first stop condition), and the coordinator verified the finding:
+- The guardian's fixed bus child admits only `StartTransientUnit` (`deploy/qualification/bootstrap.py:93`, `tools/qualification_verification/container_ownership.py:79-81`).
+- The enrolled polkit rule admits unit-scoped actions only for names starting with the run prefix `fpq<16hex>` (`tools/qualification_verification/campaign_host.py:88-93`).
+- The mount units are named `var-lib-fpq-fpq-…`, so the guardian cannot `StopUnit` its mounts in scope.
+
+The operator chose lifecycle binding:
+
+1. **Mechanism.** `_io_mount_properties` adds exactly two unit properties to each io mount unit: `BindsTo=<the work's guardian unit>` and `After=<the work's guardian unit>`. systemd then stops the pair when that guardian unit stops.
+   - No other mount property changes: not `size=`, mode, uid, options or `CollectMode`.
+   - No new privilege, no polkit change, no bus-command change.
+   - Campaign cleanup stays the backstop.
+2. **The release point is the guardian unit's end.** This holds only if the guardian unit ends after `retain_checkpoint_capture` (committed works) or after `_archive_part_a_for_inspection` (IN_DOUBT) on every path. The executor must prove it from the source.
+   - On a pre-capture guardian death the pair stops with the guardian. That is acceptable: recovery and retry read the store only (§0.2), and those paths have no capture to keep.
+3. **New stop conditions (§7):**
+   - The guardian unit's name is not known when the mounts are created.
+   - Any path lets the guardian unit end before custody commits while a later step still needs the mount.
+   - `BindsTo`/`After` cannot be set through the existing `StartTransientUnit` property path.
+   - The guardian unit is not the right lifetime owner. Return the correct owner instead.
+4. **Tests (these replace §4 1–4):**
+   - (1) Fake bus: each mount unit's start properties carry exactly `BindsTo`/`After` on the work's guardian unit. With a simulated guardian exit, the live pairs are bounded by the works in flight across a multi-work ordering. It fails on `072c133`.
+   - (2) IN_DOUBT: the inspection archive is staged before the guardian unit can end.
+   - (3) Ordering: `retain_checkpoint_capture` precedes the guardian's end; a crash between stays recoverable.
+   - (4) Linux, a required node under `QEXEC-01`: after each work's guardian ends, its `var-lib-fpq-*` pair is inactive or absent. The live pair count is ≤ in-flight works throughout.
+5. **§5 Forbidden is narrowed accordingly.** "Any change to … mount properties" now excludes these two properties, and only these two.
 
 ```yaml authority
 seat: worker
