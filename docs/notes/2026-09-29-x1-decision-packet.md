@@ -195,9 +195,14 @@ At MYM's $0.50 per index point, the proposed 30-point distance represents $15 be
 - **Carried-in outstanding requests (A-8).** Retained evidence shows no REST order-producing request was ever sent.  
   - Only the 2026-09-28 preservation trade has terminal evidence. The earlier webhook-era and weekly trades are identified but unevidenced.  
   - Rail ledger records 20–32 are unidentified. Until they are reconciled, the carried-in record cannot read "nothing outstanding".  
-  - **Ruling: the closer is a Tradovate native Orders export (including cancelled and rejected orders) for 2026-07-18..09-29, performed by the operator and retained privately.**  
+  - **Ruling: a Tradovate native Orders export (including cancelled and rejected orders) for 2026-07-18..09-29, performed by the operator and retained privately.**  
+  - *Codex's review:* the export cannot show webhook requests that never created a broker order. Records 20–32 still need itemization from the rail's own ledger (an allowlisted host read, **pending operator authorization**), mapped to their outcomes. Missing ids stay explicit.  
   - A-8 still closes only at session start (v3.3 §3.1).
-- **A-11 headroom criterion. Ruling:** the stress loss L is 3.5% of the index level × $0.50 per point, plus fees. The 3.5% is the largest evening (18:00–21:00 ET) 15-minute MYM range in 2022-09..2026-09 (3.34%), rounded up. The required headroom to the trailing-drawdown floor is ≥ 2 × L, checked privately at CP-3; if it fails, X-1 is not run. This is a stress bound, not a guaranteed maximum.
+- **A-11 headroom criterion. Ruling (the operator's chosen risk tolerance):**
+  - The stress loss L is 3.5% of the index level × $0.50 per point, plus fees. The 3.5% is the largest evening (18:00–21:00 ET) two-consecutive-bar 15-minute MYM range in 2022-09..2026-09 (3.34%, the 2025-04-06 Sunday reopen), rounded up. The dataset hash and method are in the private record.
+  - The required headroom to the trailing-drawdown floor is ≥ 2 × L, checked privately at CP-3. If it fails, X-1 is not run.
+  - **It is a stress scenario, not a loss bound.** The 15-minute exposure is assumed, not guaranteed: CME protection functionality can leave an order partly unfilled, and larger unscheduled shocks remain possible.
+  - An explicit execution-slippage allowance is pending the operator's decision.
 - The hedging check counts as unreachable only once the inventory and the no-hedge attestation confirm it.
 - Private records: `CARRIED_IN_OR_RECORD.md`, `A11_FIRM_CONTROLS_RECORD.md` and `X1_PREP_RETURN_2026-09-29.md`, in the private worksheet folder.
 
