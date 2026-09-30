@@ -148,6 +148,32 @@ acceptance:
   - tests/ops/test_book_adapters_parity.py
 ```
 
+## §8 — Amendments
+
+### §8.1 — Coordinator sequencing after the Checkpoint 1 return (2026-09-30)
+
+*Recorded by the executor at the coordinator's direction.* At Checkpoint 1 the executor returned `NEEDS_CONTEXT` on two blockers:
+- the only OPERATOR contract the code accepts is the full F1 qualification contract;
+- no accepted fact supplies historical venue deadlines.
+
+Joshua ruled on both on 2026-09-30. The rulings are recorded verbatim in the [P7-closure packet §7](2026-09-24-tradeify-t00-p7-closure.md#operator-rulings-2026-09-30). This amendment sequences the work that follows:
+
+1. **Phase A, design only, with no code.** Write `docs/superpowers/specs/2026-09-30-t00-source-only-contract-design.md`. It is a behavioral contract for a separately signed source-only contract that `ProductionSource.build` accepts. It covers:
+   - the schema and canonical bytes;
+   - a signing scope and approval name distinct from the qualification approval;
+   - the trust-domain binding and key-class separation;
+   - the exact role set;
+   - what `build` does and what it refuses (no stages, budget, decision rules or screen);
+   - the labelling of P7 evidence produced under it;
+   - the files it would touch, plus a state/event table;
+   - named acceptance tests with falsifiers.
+
+   Then stop and return the spec's path and SHA-256. The coordinator reviews it, Codex reviews it, and Joshua accepts it. Implementation files are admitted only by a later amendment.
+2. **Task 3 source pack, in parallel with the design review.** Produce the eight role artifacts under the approved private root, applying the deadline ruling, each bound by path and SHA-256. Stop before assembling any contract.
+3. **Wait for the accepted design.** Signing, implementation and Task 4 all wait for it.
+
+**Allowed now:** the design spec file, this §8.1 and packet §7. Private writes go only to the approved root. No production or test code edits yet.
+
 ## §10 — Audit hooks
 
 Run from the checkout under test:
