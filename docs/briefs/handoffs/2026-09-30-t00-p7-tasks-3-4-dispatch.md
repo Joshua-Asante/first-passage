@@ -128,7 +128,7 @@ constraints:
   - no_main_write
   - no_merge
   - no_pr_until_s5_merged
-  - packet_section_3_file_list_only
+  - packet_section_3_plus_amendment_2_files
   - private_bytes_primary_checkout_root_only
   - no_private_bytes_in_git
   - no_agent_signature
@@ -173,6 +173,39 @@ Joshua ruled on both on 2026-09-30. The rulings are recorded verbatim in the [P7
 3. **Wait for the accepted design.** Signing, implementation and Task 4 all wait for it.
 
 **Allowed now:** the design spec file, this §8.1 and packet §7. Private writes go only to the approved root. No production or test code edits yet.
+
+### §8.2 — Amendment 2: implementation files admitted (2026-09-30)
+
+*Recorded by the executor at the coordinator's direction.*
+
+**Basis.** Joshua accepted the [source-only contract design](../../superpowers/specs/2026-09-30-t00-source-only-contract-design.md) ("option 1") at revision 4.2: commit `3543b24`, spec SHA-256 `7f80277cc1576920f0fc863bd071834ff7687654673504a76d4087113eb2b794`. That spec is the frozen contract for the implementation, and any change to it needs a new operator acceptance.
+
+**Admitted files.** These are exactly spec §4, plus test homes for A13–A23.
+- **Production:**
+  - `ops/c1_rail/qualification/contract.py`
+  - `ops/c1_rail/qualification/trust_domain.py`
+  - `ops/c1_signal_daemon/book_adapters.py` (the `_source_domain` / `_resolve_domain` additions only)
+  - `ops/c1_rail/qualification/production_source.py`
+  - `ops/c1_rail/qualification/clock.py` (`SOURCE_TRUNCATED` only)
+  - `ops/c1_rail/qualification/p7_evidence.py` (new)
+  - `ops/c1_rail/qualification/p7_driver.py` (new)
+- **Tests:**
+  - `tests/ops/qualification/test_source_contract.py` (new)
+  - `tests/ops/qualification/test_source_consumers.py` (new)
+  - `tests/ops/qualification/test_p7_evidence.py` (new; A16–A23)
+  - `tests/ops/qualification/test_production_source.py`, `test_contract.py`, `test_trust_domain.py` and `test_clock.py` (A13/A18)
+- **Records:** this card's §7/§8, the P7-closure packet §7, and the spec's **status lines only**.
+
+**Still forbidden:** `runner.py`, `replay.py`, `model.py`, `book_policy.py`, `core/`, policy files and every other file.
+
+**Spec inconsistency.** Spec §4's `production_source.py` row still names "the inner-result registry", which revision 4 removed (§2.6c). Revision 4 governs, so no registry is built. The §4 row gets a dated status note, not a design change.
+
+**Rules:**
+1. **Fail-first.** The A-tests are authored first and recorded failing on `3543b24`'s production code through the launcher; the implementation follows. They include A6b, A21, A22 (with a no-launch spy) and A23 (with a live control).
+2. **`SOURCE_SIGNING_KEYS` ships empty.** No agent enrolls a key. Test keys exist only inside the test process.
+3. **Verification.** Run the new and affected modules, the full `tests/ops/qualification` suite, `tests/ops/test_book_adapters_parity.py` and `check`, all through the launcher. Report every skip and failure, and show any pre-existing failure against the base.
+4. **Return after green.** Push, then return the head, the red and green records, and a test → A-ID table. Codex reviews the code next. The r3 pack, the coordinator's reviewer companions, the operator's key-enrollment PR and the operator's signature come after that code review.
+5. **Merge hold.** No PR until S5 merges, then rebase and re-verify. Do not merge `main` without the coordinator's instruction.
 
 ## §10 — Audit hooks
 
