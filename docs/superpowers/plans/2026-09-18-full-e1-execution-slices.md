@@ -1482,7 +1482,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 - **Combined record** `stage1c/36634465166-combined.json`: `memory_feasibility` **FAILED**, `stop_class` **`PA3_FAILURE`**. The PA-3a screen gives 1.5 × M̂ = **346,773,504 B > 256,000,000 B**, where M̂ is job a's `forced-1` peak of 231,182,336 B. Job b alone read VERIFIED (235,991,040 B).
 - **The block stopped** on the stop class, as §12.7 requires.
 - **Evidence retained** under `docs/notes/2026-09-27-s5-part-a-measurement/stage1c/`, with the manifest `downloads-s5-1c-20260929T213343Z.sha256`.
-  - Following the Stage 1b precedent, `journal.log`, `summarize.log`, `probe.json` and `git-head.txt` are held back from the public tree. **Their private archive to first-passage-archive is done (2026-09-30, [first-passage-archive#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846), awaiting the operator's merge): the held-back files of runs `36634465166` and `36647434808`, checked by the archive tool's content-address verification.**
+  - Following the Stage 1b precedent, `journal.log`, `summarize.log`, `probe.json` and `git-head.txt` are held back from the public tree. **Their private archive to first-passage-archive is done (2026-09-30, [first-passage-archive#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846), awaiting the operator's merge): the held-back files of the dry runs `36634115845` and `36647169582` and the measurement runs `36634465166` and `36647434808`, checked by the archive tool's content-address verification.**
   - The public-clone review found only runner work-tree paths.
 
 **Diagnosis (coordinator).** The excess is the **first repeat of each job's first arm**, whichever arm that is:

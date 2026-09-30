@@ -175,6 +175,7 @@ resolved identity at qualification and activation.
 **Verification:** Full PASS/failure, duplicate/conflicting requests, invalidation races, crash cuts and historical receipt identity.
 **Checkpoint:** S6 result commit is an explicit internal acceptance boundary; split S7 into its own task if needed.
 **Return boundary:** Result and seal accepted; no production authority.
+**Carried obligation (operator, 2026-09-29):** an independently observed pilot draw, replacing the TEST_ONLY plan-agreement pilot identity (S5 B4), is due with T05 and before CP-6; see H9 in [staged acceptance](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md).
 
 ### T06 — Full synthetic E1 acceptance / S8 (500k–750k)
 **Selected outcome:** One integrated Linux release proves SEALED_PASS and the complete required negative-case suite.
