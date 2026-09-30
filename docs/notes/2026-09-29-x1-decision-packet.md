@@ -197,6 +197,11 @@ At MYM's $0.50 per index point, the proposed 30-point distance represents $15 be
   - Rail ledger records 20–32 are unidentified. Until they are reconciled, the carried-in record cannot read "nothing outstanding".  
   - **Ruling: a Tradovate native Orders export (including cancelled and rejected orders) for 2026-07-18..09-29, performed by the operator and retained privately.**  
   - *Codex's review:* the export cannot show webhook requests that never created a broker order. Records 20–32 still need itemization from the rail's own ledger, mapped to their outcomes. That is an allowlisted, read-only host read, **authorized by the operator 2026-09-29**; its result is not yet reviewed. Missing ids stay explicit.  
+  - **Reconciliation, 2026-09-30:**  
+    - The native Orders and Fills exports reconcile every known event (24 orders, all Market and Filled, all flat, no child orders).  
+    - Rail ledger records 17–36: dry-run / never sent, except record 33, which is definitively rejected (listener path-authentication 404).  
+    - Records 26–29 are **never sent**. An operator-authorized, whitelisted, read-only audit-log read showed each request halted at the equity read ("no order") before signal handling, and the rail's only boot in the window running `dry_run=True`.  
+    - No outstanding request is identified. The record is private; Codex's acceptance is pending.  
   - A-8 still closes only at session start (v3.3 §3.1).
 - **A-11 headroom criterion. Ruling (the operator's chosen risk tolerance):**
   - The stress loss L is 3.5% of the index level × $0.50 per point, plus fees. The 3.5% is the largest evening (18:00–21:00 ET) two-consecutive-bar 15-minute MYM range in 2022-09..2026-09 (3.34%, the 2025-04-06 Sunday reopen), rounded up. The dataset hash and method are in the private record.
