@@ -311,6 +311,24 @@ def comparable(record_bytes):
     return canonical(doc)
 
 
+def current_interpreter_binding(code_root):
+    """The acceptor's own interpreter binding, derived exactly as the bootstrap derives it."""
+    venv = os.path.dirname(os.path.dirname(os.path.abspath(sys.executable)))
+    prefix = venv if os.path.isfile(os.path.join(venv, 'pyvenv.cfg')) else sys.prefix
+    site = os.path.realpath(os.path.join(prefix, *site_packages_relative().split('/')))
+    pth = sorted((name, sha256_bytes(Path(site, name).read_bytes()))
+                 for name in (os.listdir(site) if os.path.isdir(site) else ()) if name.endswith('.pth'))
+    lock = Path(code_root) / 'requirements-ops.lock'
+    return {
+        'interpreter_sha256': sha256_bytes(Path(sys.executable).read_bytes()),
+        'base_interpreter_sha256': sha256_bytes(Path(getattr(sys, '_base_executable', sys.executable)).read_bytes()),
+        'version': sys.version, 'cache_tag': sys.implementation.cache_tag,
+        'lock_sha256': sha256_bytes(lock.read_bytes()) if lock.is_file() else None,
+        'site_packages_path': site,
+        'unexecuted_pth': [{'name': name, 'sha256': digest} for name, digest in pth],
+    }
+
+
 @dataclass(frozen=True)
 class AcceptedP7Record:
     code_closure_sha256: str
@@ -327,6 +345,11 @@ def _current_bytes_check(doc, *, code_root, artifact_root):
         path = (root / row['path']).resolve()
         if not path.is_relative_to(root) or not path.is_file() or sha256_bytes(path.read_bytes()) != row['sha256']:
             raise P7Refusal(f"P7_EVIDENCE_STALE: artifact {row['role']} differs from the contract digest")
+    current = current_interpreter_binding(code_root)
+    recorded = doc['interpreter']
+    differing = sorted(key for key in set(current) | set(recorded) if current.get(key) != recorded.get(key))
+    if differing:
+        raise P7Refusal('P7_INTERPRETER_MISMATCH: recorded interpreter binding differs: ' + ', '.join(differing))
     code = Path(code_root).resolve()
     closure = doc['loaded_closure']
     for name, row in closure['first_party'].items():
@@ -351,10 +374,9 @@ def accept_p7_record(record_bytes, *, code_root, artifact_root, now, public_keys
     doc = json.loads(record_bytes)
     if doc.get('schema') != RECORD_SCHEMA:
         raise P7Refusal('P7_RECORD_NOT_REPRODUCED: unsupported record schema')
+    if python is not None and Path(python).resolve() != Path(sys.executable).resolve():
+        raise P7Refusal('P7_INTERPRETER_MISMATCH: acceptance runs only under the acceptor interpreter itself')
     contract = _current_bytes_check(doc, code_root=code_root, artifact_root=artifact_root)
-    interpreter = Path(python or sys.executable)
-    if sha256_bytes(interpreter.read_bytes()) != doc['interpreter']['interpreter_sha256']:
-        raise P7Refusal('P7_INTERPRETER_MISMATCH: acceptor interpreter differs from the recorded binding')
     contract_bytes = base64.b64decode(doc['contract_b64'])
     approval_bytes = base64.b64decode(doc['approval_b64'])
     observed = ObservedBindings({row['path']: row['sha256'] for row in contract['artifacts']},

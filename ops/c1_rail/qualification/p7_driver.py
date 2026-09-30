@@ -59,7 +59,10 @@ def _run(p7_evidence, argv):
             'digest': p7_evidence.sha256_bytes(p7_evidence.canonical([projection, run.events_sha256])),
             'sessions': len(run.sessions), 'fills': sum(row.fills for row in run.sessions),
             'events_sha256': run.events_sha256, 'deadline_failure': run.deadline_failure,
-            'consumed_intrabar_splits': [list(item) for item in run.consumed_intrabar_splits],
+            # Hashes and counts only: split occurrence, leg and instant stay private (Task 4 worksheet).
+            'consumed_intrabar_split_count': len(run.consumed_intrabar_splits),
+            'consumed_intrabar_splits_sha256': p7_evidence.sha256_bytes(p7_evidence.canonical(
+                sorted(list(item) for item in run.consumed_intrabar_splits))),
         }
     labels = []
     both = (result.r1, result.r2)
