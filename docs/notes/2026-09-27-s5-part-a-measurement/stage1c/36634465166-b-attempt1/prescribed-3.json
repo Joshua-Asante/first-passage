@@ -1,0 +1,189 @@
+{
+  "adapter_callable": {
+    "adapter_module_file": "ops/c1_rail/qualification/execution/compute.py",
+    "adapter_module_sha256": "f9ec8d3e75553939c7348010edaa4f1d9ab74d71bdba58bfffe0173270b86da3",
+    "id": 139927711642976,
+    "identical": true,
+    "identical_after_call": true,
+    "module_file": "ops/c1_rail/qualification/execution/worker.py",
+    "module_sha256": "798ef75aea380ec63bfb007f9e0373e2e7d70d33ae5af5a602c0a9b8b7304286",
+    "qualified_name": "c1_rail.qualification.execution.worker.run_part_a_body",
+    "route": "c1_rail.qualification.execution.worker.run_worker",
+    "route_global_id": 139927711642976,
+    "route_globals_are_module": true,
+    "route_loads_name": true
+  },
+  "arm": "prescribed",
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "artifacts": {
+    "final": "part-a-final.jsonl",
+    "final_bytes": 5200,
+    "initial": "part-a-initial.jsonl",
+    "initial_bytes": 5200
+  },
+  "assertions": {
+    "artifacts_match_compute": true,
+    "expected_expanded": false,
+    "expected_panels": 2,
+    "forcing_ok": true,
+    "n2_capture_matches_staging": true,
+    "ok": true,
+    "p7_identity": true,
+    "prefix_ok": true
+  },
+  "cold": false,
+  "counts": null,
+  "cpu": {
+    "adapter": 3.489452,
+    "admission": 1.013492,
+    "part_a": null,
+    "process_total": 5.008369,
+    "serialize": null,
+    "setup_excluded": 0.16102499999999975,
+    "start": 0.28387,
+    "verify": null,
+    "workload": 4.786814
+  },
+  "decision_bearing": false,
+  "dry_run": false,
+  "elapsed_seconds": 3.1347570179999877,
+  "environment": {
+    "executable": "/var/lib/fp-qualification-tests/7d13b38efe714abdae8d062d155d2e17/env/bin/python",
+    "implementation": "CPython",
+    "loaded_fixture_files": [
+      "tests/ops/qualification/composition_fixture.py",
+      "tests/ops/qualification/execution/bundle_fixture.py",
+      "tests/ops/qualification/execution/test_profile.py",
+      "tests/ops/qualification/execution/test_worker.py",
+      "tests/ops/qualification/runtime_fixture.py",
+      "tests/ops/qualification/test_contract.py",
+      "tests/ops/qualification/test_trust_domain.py"
+    ],
+    "pid": 2916,
+    "python": "3.12.3",
+    "root": "/home/runner/work/first-passage/first-passage",
+    "thread_env": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "error": null,
+  "exit_status": 0,
+  "expanded": false,
+  "failure_reason": null,
+  "final_p5": 1.0,
+  "final_sha256": "70fce1b92a1ee29ca6cb199d4dfda9f8f36ca9eeae630a636ac8b21db3048cf1",
+  "forcing": {
+    "budget_guard": "worker.PhaseBudgetGuard",
+    "budget_seconds_at_open": 3600.0,
+    "limits": {
+      "cpu_ns": 3600000000000,
+      "memory_bytes": 68719476736,
+      "wall_ns": 3600000000000
+    },
+    "measurement_override": null
+  },
+  "fsync_count": null,
+  "initial_p5": 1.0,
+  "initial_prefix_sha256": "70fce1b92a1ee29ca6cb199d4dfda9f8f36ca9eeae630a636ac8b21db3048cf1",
+  "instrumented": false,
+  "memory": {
+    "cgroup_cpu_usage_usec": 5116562,
+    "cgroup_path": "/system.slice/fp-s5pa-1c-prescribed-3.service",
+    "cgroup_path_matches_unit": true,
+    "in_unit_peak_bytes": 89845760,
+    "lower_bound_bytes": 105349120,
+    "lower_bound_method": "lower_bound_ru_maxrss",
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "oom_events": 0,
+    "read_error": null,
+    "swap_max": "0",
+    "swap_peak_bytes": 0,
+    "swap_total_kb": 0
+  },
+  "n2_capture_sha256": "c884f13e6914de4cb55704ee00c2887ee84fae0f9c1d9398fe8f8f06a9d4eee7",
+  "n2_full_baseline": {
+    "passes": 60,
+    "paths": 60
+  },
+  "n2_staging": {
+    "cache": "/home/runner/work/_temp/s5-part-a-measurement.n2-staged",
+    "contract_sha256": "b2c513c07d7d46c837c1ea91695c3d7a5575b8f7e37557a5a35d2b9b5fae4279",
+    "generated_in_this_repeat": null,
+    "generator": {
+      "cpu_s": 71.109057537,
+      "pid": 2477,
+      "wall_s": 71.56894803
+    },
+    "manifest_sha256": "a99ebe55b9ba509a81b00f8bf3adffd33b424dbdb5cc50eb4bfa33323cef556e",
+    "n2_capture_sha256": "c884f13e6914de4cb55704ee00c2887ee84fae0f9c1d9398fe8f8f06a9d4eee7"
+  },
+  "panels": 2,
+  "passed": true,
+  "platform_accounting": "linux_getrusage_cgroup_v2",
+  "preconditions": {
+    "missing": []
+  },
+  "predicted_seconds": 5.42940549000005,
+  "probe_seconds": 0.7968058140000096,
+  "recorded_utc": "2026-09-29T21:39:17Z",
+  "repeat": 3,
+  "row_schema": "s5-part-a-max-expansion-measurement/v2#repeat-row",
+  "stage": "1c",
+  "unit": "fp-s5pa-1c-prescribed-3",
+  "wall": {
+    "boundaries": {
+      "adapter": 3.491895674999995,
+      "admission": 1.0135585109999852
+    },
+    "outer": null,
+    "setup_excluded": 0.1610387220000007,
+    "workload": null
+  },
+  "workload": {
+    "arm": "prescribed",
+    "bars_per_session_per_leg": 4,
+    "budget_seconds": 3600.0,
+    "expanded_panels": 4,
+    "expected": {
+      "expanded": false,
+      "panels": 2,
+      "proofs": 3,
+      "replays": 8,
+      "verify_for": 9
+    },
+    "fixture": "tests/ops/qualification/composition_fixture.py",
+    "floor": 0.95,
+    "frozen_expansion_tolerance": 0.01,
+    "full_pass_rate_input": 1.0,
+    "horizon_sessions": 5,
+    "idle": false,
+    "initial_panels": 2,
+    "inner_block_sessions": 5,
+    "legs": [
+      "aegis_6j",
+      "dj30_mym_p250",
+      "orb_mnq_v7",
+      "vanguard_mgc"
+    ],
+    "n2_capture_sha256": "c884f13e6914de4cb55704ee00c2887ee84fae0f9c1d9398fe8f8f06a9d4eee7",
+    "outer_months": 6,
+    "paths_per_panel": 2,
+    "percentile": 0.05,
+    "percentile_method": "nearest_rank",
+    "recipe": "tests/ops/qualification/execution/test_worker.py part_a_stage_input over bundle_fixture.build_bundle(capability='FULL_E1', part_a=True) (composition_fixture build_artifacts/verified_domain/contract_document, confirmation_depth=60, decision_alpha='0.05'); the genuine N2 run_worker payload staged once per job, copied into a repeat-local mount",
+    "request_note": "reconstructed with compute.part_a_request at the guard budget the adapter read; the adapter builds its own request inside the boundary",
+    "root_rng_namespace": "TEST_ONLY/composition-fixture/v1",
+    "sessions": 174,
+    "within_pp": 0.01
+  }
+}

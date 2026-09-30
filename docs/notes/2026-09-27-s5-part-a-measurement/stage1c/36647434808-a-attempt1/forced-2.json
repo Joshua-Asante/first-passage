@@ -1,0 +1,194 @@
+{
+  "adapter_callable": {
+    "adapter_module_file": "ops/c1_rail/qualification/execution/compute.py",
+    "adapter_module_sha256": "f9ec8d3e75553939c7348010edaa4f1d9ab74d71bdba58bfffe0173270b86da3",
+    "id": 139945953737312,
+    "identical": true,
+    "identical_after_call": true,
+    "module_file": "ops/c1_rail/qualification/execution/worker.py",
+    "module_sha256": "798ef75aea380ec63bfb007f9e0373e2e7d70d33ae5af5a602c0a9b8b7304286",
+    "qualified_name": "c1_rail.qualification.execution.worker.run_part_a_body",
+    "route": "c1_rail.qualification.execution.worker.run_worker",
+    "route_global_id": 139945953737312,
+    "route_globals_are_module": true,
+    "route_loads_name": true
+  },
+  "arm": "forced",
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "artifacts": {
+    "final": "part-a-final.jsonl",
+    "final_bytes": 10400,
+    "initial": "part-a-initial.jsonl",
+    "initial_bytes": 5200
+  },
+  "assertions": {
+    "artifacts_match_compute": true,
+    "expected_expanded": true,
+    "expected_panels": 4,
+    "forcing_ok": true,
+    "n2_capture_matches_staging": true,
+    "ok": true,
+    "p7_identity": true,
+    "prefix_ok": true
+  },
+  "cold": false,
+  "counts": null,
+  "cpu": {
+    "adapter": 6.630142000000001,
+    "admission": 1.1535250000000001,
+    "part_a": null,
+    "process_total": 8.348635999999999,
+    "serialize": null,
+    "setup_excluded": 0.1783499999999998,
+    "start": 0.331458,
+    "verify": null,
+    "workload": 8.115125
+  },
+  "decision_bearing": false,
+  "dry_run": false,
+  "elapsed_seconds": 6.22904527899999,
+  "environment": {
+    "executable": "/var/lib/fp-qualification-tests/dd04a3a59150463b8d111d180c13dafe/env/bin/python",
+    "implementation": "CPython",
+    "loaded_fixture_files": [
+      "tests/ops/qualification/composition_fixture.py",
+      "tests/ops/qualification/execution/bundle_fixture.py",
+      "tests/ops/qualification/execution/test_profile.py",
+      "tests/ops/qualification/execution/test_worker.py",
+      "tests/ops/qualification/runtime_fixture.py",
+      "tests/ops/qualification/test_contract.py",
+      "tests/ops/qualification/test_trust_domain.py"
+    ],
+    "pid": 2547,
+    "python": "3.12.3",
+    "root": "/home/runner/work/first-passage/first-passage",
+    "thread_env": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "error": null,
+  "exit_status": 0,
+  "expanded": true,
+  "failure_reason": null,
+  "final_p5": 1.0,
+  "final_sha256": "1e43d838badc557929db0e520ac9043de02a0c3eaff706bfb6ace55c634d337a",
+  "forcing": {
+    "budget_guard": "worker.PhaseBudgetGuard",
+    "budget_seconds_at_open": 3600.0,
+    "limits": {
+      "cpu_ns": 3600000000000,
+      "memory_bytes": 68719476736,
+      "wall_ns": 3600000000000
+    },
+    "measurement_override": {
+      "label": "TEST_ONLY_MEASUREMENT_FORCED_EXPANSION",
+      "type": "c1_rail.qualification.execution.compute.PartAMeasurementOverride",
+      "within_pp": 1.0
+    }
+  },
+  "fsync_count": null,
+  "initial_p5": 1.0,
+  "initial_prefix_sha256": "70fce1b92a1ee29ca6cb199d4dfda9f8f36ca9eeae630a636ac8b21db3048cf1",
+  "instrumented": false,
+  "memory": {
+    "cgroup_cpu_usage_usec": 8472074,
+    "cgroup_path": "/system.slice/fp-s5pa-1c-forced-2.service",
+    "cgroup_path_matches_unit": true,
+    "in_unit_peak_bytes": 90513408,
+    "lower_bound_bytes": 105836544,
+    "lower_bound_method": "lower_bound_ru_maxrss",
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "oom_events": 0,
+    "read_error": null,
+    "swap_max": "0",
+    "swap_peak_bytes": 0,
+    "swap_total_kb": 0
+  },
+  "n2_capture_sha256": "33d0a717513928c081a92b3a1a04945db2826a111d61079fe0fadc7cd56951b3",
+  "n2_full_baseline": {
+    "passes": 60,
+    "paths": 60
+  },
+  "n2_staging": {
+    "cache": "/home/runner/work/_temp/s5-part-a-measurement.n2-staged",
+    "contract_sha256": "585550a9362a8edc43f6ac7dad2d9dcadbaf7f6a5017b1331d9852fb3672f4fb",
+    "generated_in_this_repeat": null,
+    "generator": {
+      "cpu_s": 81.084892613,
+      "pid": 2450,
+      "wall_s": 81.16864394200002
+    },
+    "manifest_sha256": "b62046bd6001fb422e3fe2be9e0316d71cbaaa4172d1dc5b9091504119f63d02",
+    "n2_capture_sha256": "33d0a717513928c081a92b3a1a04945db2826a111d61079fe0fadc7cd56951b3",
+    "refused": null
+  },
+  "panels": 4,
+  "passed": true,
+  "platform_accounting": "linux_getrusage_cgroup_v2",
+  "preconditions": {
+    "missing": []
+  },
+  "predicted_seconds": 6.18676458799996,
+  "probe_seconds": 0.9079423919999954,
+  "recorded_utc": "2026-09-29T23:54:25Z",
+  "repeat": 2,
+  "row_schema": "s5-part-a-max-expansion-measurement/v2#repeat-row",
+  "stage": "1c",
+  "unit": "fp-s5pa-1c-forced-2",
+  "wall": {
+    "boundaries": {
+      "adapter": 6.633307979999984,
+      "admission": 1.1536036040000113
+    },
+    "outer": null,
+    "setup_excluded": 0.1783689650000042,
+    "workload": null
+  },
+  "workload": {
+    "arm": "forced",
+    "bars_per_session_per_leg": 4,
+    "budget_seconds": 3600.0,
+    "expanded_panels": 4,
+    "expected": {
+      "expanded": true,
+      "panels": 4,
+      "proofs": 5,
+      "replays": 14,
+      "verify_for": 15
+    },
+    "fixture": "tests/ops/qualification/composition_fixture.py",
+    "floor": 0.95,
+    "frozen_expansion_tolerance": 0.01,
+    "full_pass_rate_input": 1.0,
+    "horizon_sessions": 5,
+    "idle": false,
+    "initial_panels": 2,
+    "inner_block_sessions": 5,
+    "legs": [
+      "aegis_6j",
+      "dj30_mym_p250",
+      "orb_mnq_v7",
+      "vanguard_mgc"
+    ],
+    "n2_capture_sha256": "33d0a717513928c081a92b3a1a04945db2826a111d61079fe0fadc7cd56951b3",
+    "outer_months": 6,
+    "paths_per_panel": 2,
+    "percentile": 0.05,
+    "percentile_method": "nearest_rank",
+    "recipe": "tests/ops/qualification/execution/test_worker.py part_a_stage_input over bundle_fixture.build_bundle(capability='FULL_E1', part_a=True) (composition_fixture build_artifacts/verified_domain/contract_document, confirmation_depth=60, decision_alpha='0.05'); the genuine N2 run_worker payload staged once per job, copied into a repeat-local mount",
+    "request_note": "reconstructed with compute.part_a_request at the guard budget the adapter read; the adapter builds its own request inside the boundary",
+    "root_rng_namespace": "TEST_ONLY/composition-fixture/v1",
+    "sessions": 174,
+    "within_pp": 1.0
+  }
+}

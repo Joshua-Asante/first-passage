@@ -1,0 +1,1662 @@
+{
+  "schema": "book_session_calendar/v1",
+  "calendar_id": "tradeify-select-100k/forward/2026-10",
+  "version": 1,
+  "generated_utc": "2026-09-29T23:18:11Z",
+  "authoring_note": "First attended-release forward session file. Permits only qualified ordinary sessions; holiday, shortened and uncertain adjacent sessions are denied as a book permission restriction, not as an assertion of exchange closure. Denied rows keep their identities and deadlines so account-session chronology and safe flattening are preserved. Immutable D19 and the typed closure overlay are separate artifacts.",
+  "venue": {
+    "firm": "Tradeify",
+    "edition": "Tradeify_Select_100K",
+    "account_identity": "BOUND_AT_RUNTIME",
+    "account_day_basis": "TRADEIFY_ACCOUNT_DAY",
+    "account_day_note": "A Tradeify trading day spans 18:00 ET to 17:00 ET the next calendar day and is independent of the CME business trade date; holiday days are independent days.",
+    "timezone": "America/New_York",
+    "account_day_opens_local": "18:00",
+    "account_day_closes_local": "17:00",
+    "regular_flat_deadline_local": "16:45",
+    "holiday_shortened_flat_deadline_local": "12:59",
+    "source_ids": [
+      "tradeify-permitted-times-2026-07-14",
+      "tradeify-trading-day-2026-06-18"
+    ]
+  },
+  "schedule_rule": {
+    "owner": "docs/spec/2026-09-14-tb-s3-halt-resume-contract.md#5-exact-schedule-rule",
+    "own_flat_cap_local": "16:00",
+    "own_flat_before_v_minutes": 15,
+    "cutoff_before_own_flat_minutes": 15,
+    "flatten_start_before_own_flat_minutes": 5
+  },
+  "products": {
+    "6J": {
+      "globex_code": "6J",
+      "description": "Japanese Yen futures",
+      "regular_matching_open_local": "18:00",
+      "regular_matching_close_local": "17:00",
+      "source_ids": [
+        "cme-spec-6J"
+      ]
+    },
+    "MGC": {
+      "globex_code": "MGC",
+      "description": "Micro Gold futures",
+      "regular_matching_open_local": "18:00",
+      "regular_matching_close_local": "17:00",
+      "source_ids": [
+        "cme-spec-MGC"
+      ]
+    },
+    "MYM": {
+      "globex_code": "MYM",
+      "description": "Micro E-mini Dow futures",
+      "regular_matching_open_local": "18:00",
+      "regular_matching_close_local": "17:00",
+      "source_ids": [
+        "cme-spec-MYM"
+      ]
+    },
+    "MNQ": {
+      "globex_code": "MNQ",
+      "description": "Micro E-mini Nasdaq-100 futures",
+      "regular_matching_open_local": "18:00",
+      "regular_matching_close_local": "17:00",
+      "source_ids": [
+        "cme-spec-MNQ"
+      ]
+    }
+  },
+  "sources": {
+    "evidence_file": "ops/calendars/evidence/2026-09-29-forward-session-source-captures.json",
+    "evidence_sha256": "d0043f689a74add5c36bace8ce1a29e80615e624eae2a6710359cb5c3583b01c",
+    "ids": [
+      "cme-globex-2026-holiday-schedule",
+      "cme-spec-6J",
+      "cme-spec-MGC",
+      "cme-spec-MNQ",
+      "cme-spec-MYM",
+      "cme-ui-columbus-2026",
+      "tradeify-permitted-times-2026-07-14",
+      "tradeify-trading-day-2026-06-18"
+    ]
+  },
+  "coverage": {
+    "first_session_id": "tradeify-account-day:2026-09-29",
+    "last_session_id": "tradeify-account-day:2026-10-30",
+    "coverage_start_utc": "2026-09-28T22:00:00Z",
+    "coverage_end_utc": "2026-10-30T21:00:00Z",
+    "review_due_utc": "2026-10-24T21:00:00Z",
+    "horizon_authority": "docs/notes/2026-09-15-calendar-account-contract-resolution.md#step-1-closure--approved-design-and-bounded-calendar-route"
+  },
+  "first_release_policy": {
+    "permit_only": "QUALIFIED_ORDINARY",
+    "deny": [
+      "HOLIDAY",
+      "SHORTENED",
+      "UNCERTAIN_ADJACENT",
+      "MISSING_SOURCE"
+    ],
+    "authority": "docs/notes/2026-09-15-calendar-parity-separation-amendment.md"
+  },
+  "sessions": [
+    {
+      "session_id": "tradeify-account-day:2026-09-29",
+      "account_date": "2026-09-29",
+      "prior_session_id": "tradeify-account-day:2026-09-28",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-09-28T18:00:00-04:00",
+      "closes_local": "2026-09-29T17:00:00-04:00",
+      "opens_utc": "2026-09-28T22:00:00Z",
+      "closes_utc": "2026-09-29T21:00:00Z",
+      "venue_flat_deadline_local": "2026-09-29T16:45:00-04:00",
+      "v_utc": "2026-09-29T20:45:00Z",
+      "own_flat_deadline_utc": "2026-09-29T20:00:00Z",
+      "flatten_start_utc": "2026-09-29T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-09-29T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-09-29",
+          "matching_open_utc": "2026-09-28T22:00:00Z",
+          "matching_close_utc": "2026-09-29T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-09-29",
+          "matching_open_utc": "2026-09-28T22:00:00Z",
+          "matching_close_utc": "2026-09-29T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-09-29",
+          "matching_open_utc": "2026-09-28T22:00:00Z",
+          "matching_close_utc": "2026-09-29T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-09-29",
+          "matching_open_utc": "2026-09-28T22:00:00Z",
+          "matching_close_utc": "2026-09-29T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": false
+    },
+    {
+      "session_id": "tradeify-account-day:2026-09-30",
+      "account_date": "2026-09-30",
+      "prior_session_id": "tradeify-account-day:2026-09-29",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-09-29T18:00:00-04:00",
+      "closes_local": "2026-09-30T17:00:00-04:00",
+      "opens_utc": "2026-09-29T22:00:00Z",
+      "closes_utc": "2026-09-30T21:00:00Z",
+      "venue_flat_deadline_local": "2026-09-30T16:45:00-04:00",
+      "v_utc": "2026-09-30T20:45:00Z",
+      "own_flat_deadline_utc": "2026-09-30T20:00:00Z",
+      "flatten_start_utc": "2026-09-30T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-09-30T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-09-30",
+          "matching_open_utc": "2026-09-29T22:00:00Z",
+          "matching_close_utc": "2026-09-30T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-09-30",
+          "matching_open_utc": "2026-09-29T22:00:00Z",
+          "matching_close_utc": "2026-09-30T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-09-30",
+          "matching_open_utc": "2026-09-29T22:00:00Z",
+          "matching_close_utc": "2026-09-30T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-09-30",
+          "matching_open_utc": "2026-09-29T22:00:00Z",
+          "matching_close_utc": "2026-09-30T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-01",
+      "account_date": "2026-10-01",
+      "prior_session_id": "tradeify-account-day:2026-09-30",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-09-30T18:00:00-04:00",
+      "closes_local": "2026-10-01T17:00:00-04:00",
+      "opens_utc": "2026-09-30T22:00:00Z",
+      "closes_utc": "2026-10-01T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-01T16:45:00-04:00",
+      "v_utc": "2026-10-01T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-01T20:00:00Z",
+      "flatten_start_utc": "2026-10-01T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-01T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-01",
+          "matching_open_utc": "2026-09-30T22:00:00Z",
+          "matching_close_utc": "2026-10-01T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-01",
+          "matching_open_utc": "2026-09-30T22:00:00Z",
+          "matching_close_utc": "2026-10-01T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-01",
+          "matching_open_utc": "2026-09-30T22:00:00Z",
+          "matching_close_utc": "2026-10-01T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-01",
+          "matching_open_utc": "2026-09-30T22:00:00Z",
+          "matching_close_utc": "2026-10-01T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-02",
+      "account_date": "2026-10-02",
+      "prior_session_id": "tradeify-account-day:2026-10-01",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-01T18:00:00-04:00",
+      "closes_local": "2026-10-02T17:00:00-04:00",
+      "opens_utc": "2026-10-01T22:00:00Z",
+      "closes_utc": "2026-10-02T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-02T16:45:00-04:00",
+      "v_utc": "2026-10-02T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-02T20:00:00Z",
+      "flatten_start_utc": "2026-10-02T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-02T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-02",
+          "matching_open_utc": "2026-10-01T22:00:00Z",
+          "matching_close_utc": "2026-10-02T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-02",
+          "matching_open_utc": "2026-10-01T22:00:00Z",
+          "matching_close_utc": "2026-10-02T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-02",
+          "matching_open_utc": "2026-10-01T22:00:00Z",
+          "matching_close_utc": "2026-10-02T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-02",
+          "matching_open_utc": "2026-10-01T22:00:00Z",
+          "matching_close_utc": "2026-10-02T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-05",
+      "account_date": "2026-10-05",
+      "prior_session_id": "tradeify-account-day:2026-10-02",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-04T18:00:00-04:00",
+      "closes_local": "2026-10-05T17:00:00-04:00",
+      "opens_utc": "2026-10-04T22:00:00Z",
+      "closes_utc": "2026-10-05T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-05T16:45:00-04:00",
+      "v_utc": "2026-10-05T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-05T20:00:00Z",
+      "flatten_start_utc": "2026-10-05T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-05T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-05",
+          "matching_open_utc": "2026-10-04T22:00:00Z",
+          "matching_close_utc": "2026-10-05T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-05",
+          "matching_open_utc": "2026-10-04T22:00:00Z",
+          "matching_close_utc": "2026-10-05T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-05",
+          "matching_open_utc": "2026-10-04T22:00:00Z",
+          "matching_close_utc": "2026-10-05T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-05",
+          "matching_open_utc": "2026-10-04T22:00:00Z",
+          "matching_close_utc": "2026-10-05T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-06",
+      "account_date": "2026-10-06",
+      "prior_session_id": "tradeify-account-day:2026-10-05",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-05T18:00:00-04:00",
+      "closes_local": "2026-10-06T17:00:00-04:00",
+      "opens_utc": "2026-10-05T22:00:00Z",
+      "closes_utc": "2026-10-06T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-06T16:45:00-04:00",
+      "v_utc": "2026-10-06T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-06T20:00:00Z",
+      "flatten_start_utc": "2026-10-06T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-06T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-06",
+          "matching_open_utc": "2026-10-05T22:00:00Z",
+          "matching_close_utc": "2026-10-06T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-06",
+          "matching_open_utc": "2026-10-05T22:00:00Z",
+          "matching_close_utc": "2026-10-06T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-06",
+          "matching_open_utc": "2026-10-05T22:00:00Z",
+          "matching_close_utc": "2026-10-06T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-06",
+          "matching_open_utc": "2026-10-05T22:00:00Z",
+          "matching_close_utc": "2026-10-06T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-07",
+      "account_date": "2026-10-07",
+      "prior_session_id": "tradeify-account-day:2026-10-06",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-06T18:00:00-04:00",
+      "closes_local": "2026-10-07T17:00:00-04:00",
+      "opens_utc": "2026-10-06T22:00:00Z",
+      "closes_utc": "2026-10-07T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-07T16:45:00-04:00",
+      "v_utc": "2026-10-07T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-07T20:00:00Z",
+      "flatten_start_utc": "2026-10-07T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-07T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-07",
+          "matching_open_utc": "2026-10-06T22:00:00Z",
+          "matching_close_utc": "2026-10-07T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-07",
+          "matching_open_utc": "2026-10-06T22:00:00Z",
+          "matching_close_utc": "2026-10-07T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-07",
+          "matching_open_utc": "2026-10-06T22:00:00Z",
+          "matching_close_utc": "2026-10-07T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-07",
+          "matching_open_utc": "2026-10-06T22:00:00Z",
+          "matching_close_utc": "2026-10-07T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-08",
+      "account_date": "2026-10-08",
+      "prior_session_id": "tradeify-account-day:2026-10-07",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-07T18:00:00-04:00",
+      "closes_local": "2026-10-08T17:00:00-04:00",
+      "opens_utc": "2026-10-07T22:00:00Z",
+      "closes_utc": "2026-10-08T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-08T16:45:00-04:00",
+      "v_utc": "2026-10-08T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-08T20:00:00Z",
+      "flatten_start_utc": "2026-10-08T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-08T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-08",
+          "matching_open_utc": "2026-10-07T22:00:00Z",
+          "matching_close_utc": "2026-10-08T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-08",
+          "matching_open_utc": "2026-10-07T22:00:00Z",
+          "matching_close_utc": "2026-10-08T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-08",
+          "matching_open_utc": "2026-10-07T22:00:00Z",
+          "matching_close_utc": "2026-10-08T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-08",
+          "matching_open_utc": "2026-10-07T22:00:00Z",
+          "matching_close_utc": "2026-10-08T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-09",
+      "account_date": "2026-10-09",
+      "prior_session_id": "tradeify-account-day:2026-10-08",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-08T18:00:00-04:00",
+      "closes_local": "2026-10-09T17:00:00-04:00",
+      "opens_utc": "2026-10-08T22:00:00Z",
+      "closes_utc": "2026-10-09T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-09T16:45:00-04:00",
+      "v_utc": "2026-10-09T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-09T20:00:00Z",
+      "flatten_start_utc": "2026-10-09T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-09T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-09",
+          "matching_open_utc": "2026-10-08T22:00:00Z",
+          "matching_close_utc": "2026-10-09T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-09",
+          "matching_open_utc": "2026-10-08T22:00:00Z",
+          "matching_close_utc": "2026-10-09T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-09",
+          "matching_open_utc": "2026-10-08T22:00:00Z",
+          "matching_close_utc": "2026-10-09T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-09",
+          "matching_open_utc": "2026-10-08T22:00:00Z",
+          "matching_close_utc": "2026-10-09T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-12",
+      "account_date": "2026-10-12",
+      "prior_session_id": "tradeify-account-day:2026-10-09",
+      "permission": "DENIED",
+      "denial_reason": "MISSING_SOURCE",
+      "denial_note": "Columbus Day / Indigenous Peoples' Day. The CME Globex calendar shows regular Sunday 17:00 CT open and Monday 16:00 CT close for 6J, MGC, MYM and MNQ (cme-ui-columbus-2026), but CME lists a Columbus Day clearing advisory and settlement-times notice for 12 October whose contents were not captured, and Tradeify announces holiday hours only in Discord; denied as not positively qualified",
+      "opens_local": "2026-10-11T18:00:00-04:00",
+      "closes_local": "2026-10-12T17:00:00-04:00",
+      "opens_utc": "2026-10-11T22:00:00Z",
+      "closes_utc": "2026-10-12T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-12T16:45:00-04:00",
+      "v_utc": "2026-10-12T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-12T20:00:00Z",
+      "flatten_start_utc": "2026-10-12T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-12T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": false,
+          "cme_trade_date": "2026-10-12",
+          "matching_open_utc": "2026-10-11T22:00:00Z",
+          "matching_close_utc": "2026-10-12T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": false,
+          "cme_trade_date": "2026-10-12",
+          "matching_open_utc": "2026-10-11T22:00:00Z",
+          "matching_close_utc": "2026-10-12T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": false,
+          "cme_trade_date": "2026-10-12",
+          "matching_open_utc": "2026-10-11T22:00:00Z",
+          "matching_close_utc": "2026-10-12T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": false,
+          "cme_trade_date": "2026-10-12",
+          "matching_open_utc": "2026-10-11T22:00:00Z",
+          "matching_close_utc": "2026-10-12T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-13",
+      "account_date": "2026-10-13",
+      "prior_session_id": "tradeify-account-day:2026-10-12",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-12T18:00:00-04:00",
+      "closes_local": "2026-10-13T17:00:00-04:00",
+      "opens_utc": "2026-10-12T22:00:00Z",
+      "closes_utc": "2026-10-13T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-13T16:45:00-04:00",
+      "v_utc": "2026-10-13T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-13T20:00:00Z",
+      "flatten_start_utc": "2026-10-13T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-13T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-13",
+          "matching_open_utc": "2026-10-12T22:00:00Z",
+          "matching_close_utc": "2026-10-13T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-13",
+          "matching_open_utc": "2026-10-12T22:00:00Z",
+          "matching_close_utc": "2026-10-13T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-13",
+          "matching_open_utc": "2026-10-12T22:00:00Z",
+          "matching_close_utc": "2026-10-13T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-13",
+          "matching_open_utc": "2026-10-12T22:00:00Z",
+          "matching_close_utc": "2026-10-13T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-14",
+      "account_date": "2026-10-14",
+      "prior_session_id": "tradeify-account-day:2026-10-13",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-13T18:00:00-04:00",
+      "closes_local": "2026-10-14T17:00:00-04:00",
+      "opens_utc": "2026-10-13T22:00:00Z",
+      "closes_utc": "2026-10-14T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-14T16:45:00-04:00",
+      "v_utc": "2026-10-14T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-14T20:00:00Z",
+      "flatten_start_utc": "2026-10-14T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-14T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-14",
+          "matching_open_utc": "2026-10-13T22:00:00Z",
+          "matching_close_utc": "2026-10-14T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-14",
+          "matching_open_utc": "2026-10-13T22:00:00Z",
+          "matching_close_utc": "2026-10-14T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-14",
+          "matching_open_utc": "2026-10-13T22:00:00Z",
+          "matching_close_utc": "2026-10-14T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-14",
+          "matching_open_utc": "2026-10-13T22:00:00Z",
+          "matching_close_utc": "2026-10-14T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-15",
+      "account_date": "2026-10-15",
+      "prior_session_id": "tradeify-account-day:2026-10-14",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-14T18:00:00-04:00",
+      "closes_local": "2026-10-15T17:00:00-04:00",
+      "opens_utc": "2026-10-14T22:00:00Z",
+      "closes_utc": "2026-10-15T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-15T16:45:00-04:00",
+      "v_utc": "2026-10-15T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-15T20:00:00Z",
+      "flatten_start_utc": "2026-10-15T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-15T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-15",
+          "matching_open_utc": "2026-10-14T22:00:00Z",
+          "matching_close_utc": "2026-10-15T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-15",
+          "matching_open_utc": "2026-10-14T22:00:00Z",
+          "matching_close_utc": "2026-10-15T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-15",
+          "matching_open_utc": "2026-10-14T22:00:00Z",
+          "matching_close_utc": "2026-10-15T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-15",
+          "matching_open_utc": "2026-10-14T22:00:00Z",
+          "matching_close_utc": "2026-10-15T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-16",
+      "account_date": "2026-10-16",
+      "prior_session_id": "tradeify-account-day:2026-10-15",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-15T18:00:00-04:00",
+      "closes_local": "2026-10-16T17:00:00-04:00",
+      "opens_utc": "2026-10-15T22:00:00Z",
+      "closes_utc": "2026-10-16T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-16T16:45:00-04:00",
+      "v_utc": "2026-10-16T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-16T20:00:00Z",
+      "flatten_start_utc": "2026-10-16T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-16T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-16",
+          "matching_open_utc": "2026-10-15T22:00:00Z",
+          "matching_close_utc": "2026-10-16T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-16",
+          "matching_open_utc": "2026-10-15T22:00:00Z",
+          "matching_close_utc": "2026-10-16T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-16",
+          "matching_open_utc": "2026-10-15T22:00:00Z",
+          "matching_close_utc": "2026-10-16T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-16",
+          "matching_open_utc": "2026-10-15T22:00:00Z",
+          "matching_close_utc": "2026-10-16T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-19",
+      "account_date": "2026-10-19",
+      "prior_session_id": "tradeify-account-day:2026-10-16",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-18T18:00:00-04:00",
+      "closes_local": "2026-10-19T17:00:00-04:00",
+      "opens_utc": "2026-10-18T22:00:00Z",
+      "closes_utc": "2026-10-19T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-19T16:45:00-04:00",
+      "v_utc": "2026-10-19T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-19T20:00:00Z",
+      "flatten_start_utc": "2026-10-19T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-19T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-19",
+          "matching_open_utc": "2026-10-18T22:00:00Z",
+          "matching_close_utc": "2026-10-19T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-19",
+          "matching_open_utc": "2026-10-18T22:00:00Z",
+          "matching_close_utc": "2026-10-19T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-19",
+          "matching_open_utc": "2026-10-18T22:00:00Z",
+          "matching_close_utc": "2026-10-19T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-19",
+          "matching_open_utc": "2026-10-18T22:00:00Z",
+          "matching_close_utc": "2026-10-19T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-20",
+      "account_date": "2026-10-20",
+      "prior_session_id": "tradeify-account-day:2026-10-19",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-19T18:00:00-04:00",
+      "closes_local": "2026-10-20T17:00:00-04:00",
+      "opens_utc": "2026-10-19T22:00:00Z",
+      "closes_utc": "2026-10-20T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-20T16:45:00-04:00",
+      "v_utc": "2026-10-20T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-20T20:00:00Z",
+      "flatten_start_utc": "2026-10-20T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-20T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-20",
+          "matching_open_utc": "2026-10-19T22:00:00Z",
+          "matching_close_utc": "2026-10-20T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-20",
+          "matching_open_utc": "2026-10-19T22:00:00Z",
+          "matching_close_utc": "2026-10-20T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-20",
+          "matching_open_utc": "2026-10-19T22:00:00Z",
+          "matching_close_utc": "2026-10-20T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-20",
+          "matching_open_utc": "2026-10-19T22:00:00Z",
+          "matching_close_utc": "2026-10-20T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-21",
+      "account_date": "2026-10-21",
+      "prior_session_id": "tradeify-account-day:2026-10-20",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-20T18:00:00-04:00",
+      "closes_local": "2026-10-21T17:00:00-04:00",
+      "opens_utc": "2026-10-20T22:00:00Z",
+      "closes_utc": "2026-10-21T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-21T16:45:00-04:00",
+      "v_utc": "2026-10-21T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-21T20:00:00Z",
+      "flatten_start_utc": "2026-10-21T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-21T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-21",
+          "matching_open_utc": "2026-10-20T22:00:00Z",
+          "matching_close_utc": "2026-10-21T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-21",
+          "matching_open_utc": "2026-10-20T22:00:00Z",
+          "matching_close_utc": "2026-10-21T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-21",
+          "matching_open_utc": "2026-10-20T22:00:00Z",
+          "matching_close_utc": "2026-10-21T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-21",
+          "matching_open_utc": "2026-10-20T22:00:00Z",
+          "matching_close_utc": "2026-10-21T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-22",
+      "account_date": "2026-10-22",
+      "prior_session_id": "tradeify-account-day:2026-10-21",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-21T18:00:00-04:00",
+      "closes_local": "2026-10-22T17:00:00-04:00",
+      "opens_utc": "2026-10-21T22:00:00Z",
+      "closes_utc": "2026-10-22T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-22T16:45:00-04:00",
+      "v_utc": "2026-10-22T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-22T20:00:00Z",
+      "flatten_start_utc": "2026-10-22T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-22T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-22",
+          "matching_open_utc": "2026-10-21T22:00:00Z",
+          "matching_close_utc": "2026-10-22T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-22",
+          "matching_open_utc": "2026-10-21T22:00:00Z",
+          "matching_close_utc": "2026-10-22T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-22",
+          "matching_open_utc": "2026-10-21T22:00:00Z",
+          "matching_close_utc": "2026-10-22T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-22",
+          "matching_open_utc": "2026-10-21T22:00:00Z",
+          "matching_close_utc": "2026-10-22T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-23",
+      "account_date": "2026-10-23",
+      "prior_session_id": "tradeify-account-day:2026-10-22",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-22T18:00:00-04:00",
+      "closes_local": "2026-10-23T17:00:00-04:00",
+      "opens_utc": "2026-10-22T22:00:00Z",
+      "closes_utc": "2026-10-23T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-23T16:45:00-04:00",
+      "v_utc": "2026-10-23T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-23T20:00:00Z",
+      "flatten_start_utc": "2026-10-23T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-23T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-23",
+          "matching_open_utc": "2026-10-22T22:00:00Z",
+          "matching_close_utc": "2026-10-23T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-23",
+          "matching_open_utc": "2026-10-22T22:00:00Z",
+          "matching_close_utc": "2026-10-23T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-23",
+          "matching_open_utc": "2026-10-22T22:00:00Z",
+          "matching_close_utc": "2026-10-23T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-23",
+          "matching_open_utc": "2026-10-22T22:00:00Z",
+          "matching_close_utc": "2026-10-23T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-26",
+      "account_date": "2026-10-26",
+      "prior_session_id": "tradeify-account-day:2026-10-23",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-25T18:00:00-04:00",
+      "closes_local": "2026-10-26T17:00:00-04:00",
+      "opens_utc": "2026-10-25T22:00:00Z",
+      "closes_utc": "2026-10-26T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-26T16:45:00-04:00",
+      "v_utc": "2026-10-26T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-26T20:00:00Z",
+      "flatten_start_utc": "2026-10-26T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-26T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-26",
+          "matching_open_utc": "2026-10-25T22:00:00Z",
+          "matching_close_utc": "2026-10-26T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-26",
+          "matching_open_utc": "2026-10-25T22:00:00Z",
+          "matching_close_utc": "2026-10-26T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-26",
+          "matching_open_utc": "2026-10-25T22:00:00Z",
+          "matching_close_utc": "2026-10-26T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-26",
+          "matching_open_utc": "2026-10-25T22:00:00Z",
+          "matching_close_utc": "2026-10-26T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-27",
+      "account_date": "2026-10-27",
+      "prior_session_id": "tradeify-account-day:2026-10-26",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-26T18:00:00-04:00",
+      "closes_local": "2026-10-27T17:00:00-04:00",
+      "opens_utc": "2026-10-26T22:00:00Z",
+      "closes_utc": "2026-10-27T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-27T16:45:00-04:00",
+      "v_utc": "2026-10-27T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-27T20:00:00Z",
+      "flatten_start_utc": "2026-10-27T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-27T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-27",
+          "matching_open_utc": "2026-10-26T22:00:00Z",
+          "matching_close_utc": "2026-10-27T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-27",
+          "matching_open_utc": "2026-10-26T22:00:00Z",
+          "matching_close_utc": "2026-10-27T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-27",
+          "matching_open_utc": "2026-10-26T22:00:00Z",
+          "matching_close_utc": "2026-10-27T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-27",
+          "matching_open_utc": "2026-10-26T22:00:00Z",
+          "matching_close_utc": "2026-10-27T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-28",
+      "account_date": "2026-10-28",
+      "prior_session_id": "tradeify-account-day:2026-10-27",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-27T18:00:00-04:00",
+      "closes_local": "2026-10-28T17:00:00-04:00",
+      "opens_utc": "2026-10-27T22:00:00Z",
+      "closes_utc": "2026-10-28T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-28T16:45:00-04:00",
+      "v_utc": "2026-10-28T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-28T20:00:00Z",
+      "flatten_start_utc": "2026-10-28T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-28T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-28",
+          "matching_open_utc": "2026-10-27T22:00:00Z",
+          "matching_close_utc": "2026-10-28T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-28",
+          "matching_open_utc": "2026-10-27T22:00:00Z",
+          "matching_close_utc": "2026-10-28T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-28",
+          "matching_open_utc": "2026-10-27T22:00:00Z",
+          "matching_close_utc": "2026-10-28T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-28",
+          "matching_open_utc": "2026-10-27T22:00:00Z",
+          "matching_close_utc": "2026-10-28T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-29",
+      "account_date": "2026-10-29",
+      "prior_session_id": "tradeify-account-day:2026-10-28",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-28T18:00:00-04:00",
+      "closes_local": "2026-10-29T17:00:00-04:00",
+      "opens_utc": "2026-10-28T22:00:00Z",
+      "closes_utc": "2026-10-29T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-29T16:45:00-04:00",
+      "v_utc": "2026-10-29T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-29T20:00:00Z",
+      "flatten_start_utc": "2026-10-29T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-29T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-29",
+          "matching_open_utc": "2026-10-28T22:00:00Z",
+          "matching_close_utc": "2026-10-29T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-29",
+          "matching_open_utc": "2026-10-28T22:00:00Z",
+          "matching_close_utc": "2026-10-29T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-29",
+          "matching_open_utc": "2026-10-28T22:00:00Z",
+          "matching_close_utc": "2026-10-29T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-29",
+          "matching_open_utc": "2026-10-28T22:00:00Z",
+          "matching_close_utc": "2026-10-29T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    },
+    {
+      "session_id": "tradeify-account-day:2026-10-30",
+      "account_date": "2026-10-30",
+      "prior_session_id": "tradeify-account-day:2026-10-29",
+      "permission": "PERMITTED",
+      "denial_reason": null,
+      "denial_note": null,
+      "opens_local": "2026-10-29T18:00:00-04:00",
+      "closes_local": "2026-10-30T17:00:00-04:00",
+      "opens_utc": "2026-10-29T22:00:00Z",
+      "closes_utc": "2026-10-30T21:00:00Z",
+      "venue_flat_deadline_local": "2026-10-30T16:45:00-04:00",
+      "v_utc": "2026-10-30T20:45:00Z",
+      "own_flat_deadline_utc": "2026-10-30T20:00:00Z",
+      "flatten_start_utc": "2026-10-30T19:55:00Z",
+      "risk_add_cutoff_utc": "2026-10-30T19:45:00Z",
+      "products": {
+        "6J": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-30",
+          "matching_open_utc": "2026-10-29T22:00:00Z",
+          "matching_close_utc": "2026-10-30T21:00:00Z",
+          "source_ids": [
+            "cme-spec-6J",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MGC": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-30",
+          "matching_open_utc": "2026-10-29T22:00:00Z",
+          "matching_close_utc": "2026-10-30T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MGC",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MYM": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-30",
+          "matching_open_utc": "2026-10-29T22:00:00Z",
+          "matching_close_utc": "2026-10-30T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MYM",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        },
+        "MNQ": {
+          "qualified": true,
+          "cme_trade_date": "2026-10-30",
+          "matching_open_utc": "2026-10-29T22:00:00Z",
+          "matching_close_utc": "2026-10-30T21:00:00Z",
+          "source_ids": [
+            "cme-spec-MNQ",
+            "cme-globex-2026-holiday-schedule"
+          ]
+        }
+      },
+      "source_ids": [
+        "tradeify-permitted-times-2026-07-14",
+        "tradeify-trading-day-2026-06-18",
+        "cme-globex-2026-holiday-schedule"
+      ],
+      "predecessor_in_file": true
+    }
+  ]
+}
