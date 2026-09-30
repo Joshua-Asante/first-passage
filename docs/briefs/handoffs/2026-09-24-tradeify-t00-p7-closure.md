@@ -429,16 +429,33 @@ re-verifies. No PR has been opened.
 | 6 | `test_t2_item6_native_states_satisfy_reservation_invariants_at_schedule_callbacks[×10]` (THIS_CLOSE, NEXT_OPEN, two resting stops and position plus add, under R1 and R2); `test_t2_item6_reservation_only_state_is_refused_before_any_split[×2]`; `test_t2_item6_provider_refuses_missing_inactive_and_reservation_only_exposure` |
 | 7 | `test_t2_item7_one_bar_call_unchanged_costs_and_occurrence_local_quotes`; `test_t2_item7_replay_bracket_builds_two_fresh_engines_with_separate_results` (TEST_ONLY composition fixture holding ORB through the 15:55 intrabar flatten) |
 
-**Order-sum (ruling 7).** §7 states the invariant as: "`reserved[leg]` equals the
-still-outstanding admitted entry/add quantity, and a positive reservation has a corresponding
-broker-pending order". It then gives the refusal only for the second half: "`reserved > 0 and
-pending is False` is an inconsistent reservation-only state and raises `ReplayNeedsContext`".
-Item 6 lists "reservation/order-sum, reservation-implies-pending and reservation-only refusal".
+**Order-sum: enforced at capture (coordinator ruling 2026-09-29).** The ruling reads "it" in
+"The implementation must therefore check it at exposure capture" as the whole invariant:
+"`reserved[leg]` equals the still-outstanding admitted entry/add quantity, and a positive
+reservation has a corresponding broker-pending order". Native evidence is "not a guarantee for
+arbitrary injected brokers", so both halves are checked at capture.
 
-The order sum is therefore asserted as a native invariant at every schedule callback, and only
-the reservation-only state is enforced. "The implementation must therefore check it at exposure
-capture" could be read as also requiring an order-sum refusal. That would be a one-line
-fail-closed addition if the coordinator reads it that way.
+- **Commit `83b82d2`** (new; `92d9ecd` and `b42510c` are not rewritten). The existing
+  reservation-only refusal is kept. `_capture_exposure` also raises `ReplayNeedsContext` naming
+  the leg and both values when the ledger reservation differs from the outstanding admitted
+  entry/add quantity.
+- **Test:** `test_replay.py::test_t2_item6_reservation_order_sum_mismatch_is_refused_before_any_split[+1/-1]`.
+  A resting ORB entry keeps its pending order while the ledger reservation is moved above or
+  below its outstanding quantity. In both R1 and R2 the run is refused before any split. The
+  provider records no split call and no placement, so neither run selects a branch.
+- **Red on `92d9ecd` code:** `.cache/fp-verification/20260930T034858Z-9c3a527f991e/record.json`.
+  Failed, exit 1, stable; 2 failed.
+  - For +1, base code split the leg, and a later capture then raised the reservation-only
+    refusal.
+  - For −1, the cutoff cancel raised `CapacityError: release 1 exceeds reservation 0`.
+- **Green, two test files:** `20260930T034951Z-0104597a0fcf`. Completed, exit 0, stable;
+  151 passed.
+- **Green, full suite** (`tests/ops/qualification` plus `tests/ops/test_book_adapters_parity.py`,
+  `--workers 2`, at `83b82d2`): `20260930T035237Z-2052d59debde`. Completed, exit 0, stable;
+  1709 passed and 13 skipped, with the same skip reasons as above.
+- **`fp.py check` at `83b82d2`:** `20260930T050532Z-8eea6d6c7076`. Completed, exit 0, stable.
+
+Item 6 in the test table above also covers this new test.
 
 **Additions and review items:**
 
