@@ -1,0 +1,32 @@
+{
+  "accounting": "setup_excluded: outside every measured unit, never an input to \u0108, \u0174 or M\u0302",
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "cache": "/home/runner/work/_temp/s5-part-a-measurement.n2-staged",
+  "child_peak_rss_bytes": 119537664,
+  "command": [
+    "/var/lib/fp-qualification-tests/3ac011c6161d434492bb82d7d5babf2f/env/bin/python",
+    "-I",
+    "/home/runner/work/first-passage/first-passage/scripts/fp.py",
+    "--env",
+    "/var/lib/fp-qualification-tests/3ac011c6161d434492bb82d7d5babf2f/env",
+    "python",
+    "/home/runner/work/first-passage/first-passage/docs/notes/2026-09-27-s5-part-a-measurement/measure_part_a_max.py.txt",
+    "--stage-n2",
+    "/home/runner/work/_temp/s5-part-a-measurement.n2-staged"
+  ],
+  "cpu_s_children": 99.79208200000001,
+  "decision_bearing": false,
+  "harness_sha256": "42832e648be383e3b91c227c5425166a4511ada60fa925dc74f3a83092fceeca",
+  "manifest_sha256": "01d6ab98c7fa48910dfa1369eb3d16b9aac36172ee6b18c9bd549a1e42561471",
+  "n2_capture_sha256": "1119c20077b30210dc73dfc6fb4d3da15758b249aaeff08f1680d164969edba0",
+  "ok": true,
+  "output_tail": null,
+  "placement": "probe_verdict_before_measurement_loop",
+  "recorded_utc": "2026-09-29T23:54:28Z",
+  "refused": null,
+  "returncode": 0,
+  "schema": "s5-part-a-max-expansion-measurement/v2#n2-staging-receipt",
+  "stager_cgroup": "/system.slice/hosted-compute-agent.service",
+  "stager_in_measured_unit": false,
+  "wall_s": 99.864177238
+}

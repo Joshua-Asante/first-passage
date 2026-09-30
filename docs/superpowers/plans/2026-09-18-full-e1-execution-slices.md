@@ -1526,3 +1526,35 @@ The first diagnostic subset and everything after it wait for a valid Stage 1c.
 **Owed from the operator:**
 - the private archive of the held-back Stage 1c files;
 - the #556 merge.
+
+### Coordinator execution — Stage 1c (fresh approval) VALID, memory VERIFIED, 2026-09-29
+
+**Linux regression of the harness module at `b5f53da`** (the approval's precondition):
+- **Run:** #557 `pytest (3.11)` run `36641530220` tested merge `9acfc804` = `028c5ce` + `b5f53da`. At that merge the module, harness, README and measurement workflow are byte-identical to `b5f53da`.
+- **Result:** **152 passed, 0 failed, 0 skipped**, including the 14 new cases and the 8 POSIX-stub cases. The run's junit SHA-256 is `4b2cb9aee4109196579a22e4fb61efa2c1ea29d6bb88544c74a14ca1254fdcea`.
+
+**Stage 1c** (the r2 §12.3 block in its Stage 1c form; `BASELINE=2026-09-29T23:07:49Z`; `MEAS_HEAD=b5f53da`; `S5_HEAD=c7713e7`):
+
+| Check | Dry run `36647169582` | Measure run `36647434808` |
+|---|---|---|
+| Head | `b5f53da` | `b5f53da` |
+| Exit / validity | exit 0 | jobs a and b exit 0, validity OK |
+| Cleanup receipts | clean | clean |
+| `dispatched_parent` = `measured_parent` = `c7713e7` | yes | yes |
+| Re-run used | — | none |
+
+- **Staging placement.** Every record shows `n2_staging.placement = probe_verdict_before_measurement_loop` and `stager_in_measured_unit = false`, with the stager's cgroup `/system.slice/hosted-compute-agent.service`. The stager's own peak RSS, about 120 MB, is recorded as `setup_excluded`.
+- **Coordinator note 1 is checked:** no repeat refused, and the dry run's exit is 0.
+- **Combined record** `stage1c/36647434808-combined.json` (SHA-256 `024cdcdd7e3c499af49f1358f7a4a6048641badc9b0679a99999f4bb8ba1f87e`): `memory_feasibility` **VERIFIED**, `stop_class` **none**, validity OK.
+  - **PA-3a:** 1.5 × M̂ = **235,739,136 B ≤ 256,000,000 B**, a margin of 20,260,864 B (7.9%).
+  - **Σ screen:** feasible (CPU input 120 s ≤ 8,440 s; wall input 300 s ≤ 6,100 s).
+- **Per-repeat peaks, both jobs:** cold repeats 155.8–157.3 MB; warm repeats 87.7–91.1 MB.
+- **The stopped record** `36634465166` (PA3_FAILURE) stays retained as the stop, and nothing was widened.
+- **Held back** as before: `summarize.log`, `probe.json` and `git-head.txt` (and `journal.log`, never copied). **Their private archive is owed.**
+
+**Effect.** Stage 1c through the built adapter is valid and **ends the PART_A ceiling's provisional status** (r2 §12.4 output; r2 §13 step 6), with the named worker-side residual still carried by PA-5.
+
+**Next under the C3 Linux grant:**
+1. The first diagnostic subset: `-f mode=s5 -f cases='test_s5_'` on `claude/s5-part-a`, which selects the four Part A Linux nodes. The harness module's Linux runs above are cited beside it.
+2. The full S4-plus-Part-A selection, with retained evidence.
+3. Stage 2/PA-5 from that run.
