@@ -191,6 +191,16 @@ At MYM's $0.50 per index point, the proposed 30-point distance represents $15 be
 4. **Recommended sequencing (from gap 2):** run R-1 on this week's preservation trade, in its own session, before X-1. It checks same-session per-order reads with no added exposure. If those reads fail, X-1 can yield no PASS and should stay held. The 2026-09-29 evening window is therefore premature unless R-1 has completed first. *(2026-09-29: superseded. Under the option (b) ruling in §2, the check is done on X-1's own order, in X-1's session.)*
 5. The exact account, contract, fresh quote, absolute stop level, fresh orderId and serialized request hash remain private session-time bindings. No executable request has been prepared from a stale quote.
 
+**Remaining preparation, 2026-09-29 (X-1 coordinator return; Codex review; operator rulings in session):**
+- **Carried-in outstanding requests (A-8).** Retained evidence shows no REST order-producing request was ever sent.  
+  - Only the 2026-09-28 preservation trade has terminal evidence. The earlier webhook-era and weekly trades are identified but unevidenced.  
+  - Rail ledger records 20–32 are unidentified. Until they are reconciled, the carried-in record cannot read "nothing outstanding".  
+  - **Ruling: the closer is a Tradovate native Orders export (including cancelled and rejected orders) for 2026-07-18..09-29, performed by the operator and retained privately.**  
+  - A-8 still closes only at session start (v3.3 §3.1).
+- **A-11 headroom criterion. Ruling:** the stress loss L is 3.5% of the index level × $0.50 per point, plus fees. The 3.5% is the largest evening (18:00–21:00 ET) 15-minute MYM range in 2022-09..2026-09 (3.34%), rounded up. The required headroom to the trailing-drawdown floor is ≥ 2 × L, checked privately at CP-3; if it fails, X-1 is not run. This is a stress bound, not a guaranteed maximum.
+- The hedging check counts as unreachable only once the inventory and the no-hedge attestation confirm it.
+- Private records: `CARRIED_IN_OR_RECORD.md`, `A11_FIRM_CONTROLS_RECORD.md` and `X1_PREP_RETURN_2026-09-29.md`, in the private worksheet folder.
+
 **Offline rehearsal checklist (not yet performed by the operator):** with no send action, locate Tradovate web's position and working-order views and the required flatten/cancel controls; walk through accepted entry, missing/rejected stop, unknown response, and already-flat cases. For each, identify the evidence to retain and the governing recovery branch in commissioning section 3.4. An unknown response never leads to a retry. A flat display never substitutes for terminal order evidence. Do not test these controls against an exposed account as part of preparation.
 
 The private session worksheet is `local_artifacts/route-drills-2026-09/x1-prep-2026-09-29/SESSION_BINDING.md` in the primary checkout. It records missing fields explicitly. Preparation is ready for review; execution readiness remains open on the items above and the decisions below.
