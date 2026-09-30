@@ -1,0 +1,100 @@
+{
+  "schema": "forward_session_source_captures/v2",
+  "purpose": "Public source statements captured for the October 1-30, 2026 book session calendar (monthly extension of the September file). Text extracts only; each statement is quoted from the rendered page at the capture instant. Capture ids are the authoring tool's fixed source ids; an id's embedded date names the article revision it was first bound to and was re-verified unchanged at this capture. These establish source semantics for the forward file and are not exchange-closure facts for historical dates.",
+  "captured_by": "in-app browser, read-only page loads, 2026-09-29",
+  "captures": [
+    {
+      "id": "tradeify-permitted-times-2026-07-14",
+      "url": "https://help.tradeify.co/en/articles/10495876-rules-permitted-times-to-trade",
+      "article_date": "2026-07-14",
+      "captured_utc": "2026-09-29T23:13:18Z",
+      "products": ["6J", "MGC", "MYM", "MNQ"],
+      "statements": [
+        "All positions must be closed by 4:45 PM Eastern Time each trading day. You cannot hold positions overnight or swing trade. This applies to ALL account types including Live.",
+        "Market opens: 6:00 PM Eastern Time (Sunday through Thursday). Market closes: 5:00 PM Eastern Time (Monday through Friday). Daily maintenance break: 5:00 PM to 6:00 PM Eastern Time.",
+        "Regular days: Close all positions by 4:45 PM ET. Holiday shortened days: Close all positions by 12:59 PM ET.",
+        "Important: Holiday market hours are announced in our Discord server. Check before trading on holidays.",
+        "A trading day at Tradeify spans from 6:00 PM ET to 5:00 PM ET the next calendar day.",
+        "Holiday trading days count as independent trading days, even with shortened hours",
+        "Eastern Time (ET). This is Eastern Standard Time (EST) in winter and Eastern Daylight Time (EDT) in summer."
+      ]
+    },
+    {
+      "id": "tradeify-trading-day-2026-06-18",
+      "url": "https://help.tradeify.co/en/articles/10468225-what-is-a-trading-day",
+      "article_date": "2026-06-18",
+      "captured_utc": "2026-09-29T23:13:24Z",
+      "products": ["6J", "MGC", "MYM", "MNQ"],
+      "statements": [
+        "A trading day is counted as at least one trade placed from 6:00 P.M. EST/EDT to 5:00 P.M. EST/EDT the next day."
+      ]
+    },
+    {
+      "id": "cme-globex-2026-holiday-schedule",
+      "url": "https://www.cmegroup.com/trading-hours.html",
+      "captured_utc": "2026-09-29T23:13:33Z",
+      "products": ["6J", "MGC", "MYM", "MNQ"],
+      "statements": [
+        "2026 CME Globex Trading Schedule: Labor Day includes the following dates: 6 - 8 September 2026 (Holiday Schedule).",
+        "2026 CME Globex Trading Schedule: Thanksgiving includes the following dates: 26 - 28 November 2026 (Holiday Schedule). No U.S. holiday row lists an October 2026 date.",
+        "2026 Settlement Notices: Columbus Day includes the following dates: 12 October 2026 (PDF). 2026 Clearing Notices: Columbus Day 12 October 2026 (Futures and Options; OTC).",
+        "2026 BrokerTec US Repo Holiday Calendar: Monday, October 12, 2026 Columbus Day: U.S. Repo market is Closed.",
+        "Note: This schedule is subject to change. Trading hours are usually finalized approximately two weeks prior to the holiday.",
+        "Trading hours are subject to change and are in U.S. Central Time unless otherwise stated."
+      ]
+    },
+    {
+      "id": "cme-ui-columbus-2026",
+      "url": "https://www.cmegroup.com/trading-hours.html",
+      "captured_utc": "2026-09-29T23:16:21Z",
+      "products": ["6J", "MGC", "MYM", "MNQ"],
+      "statements": [
+        "Full Calendar view, date picker October 2026: the upcoming-holiday list shows 2026 Nov 26 Thanksgiving and Dec 25 Christmas; no October date is listed.",
+        "Full Calendar view, Futures, each of 6J, MGC, MYM, MNQ searched separately, Central Time: Friday 9 Oct 2026: TRADE DATE: FRI 09 OCT 16:00 CLOSED. Sunday 11 Oct 2026: TRADE DATE: MON 12 OCT 16:00 PREOPEN, 17:00 OPEN.",
+        "Full Calendar view, Futures, each of 6J, MGC, MYM, MNQ searched separately, Central Time: Monday 12 Oct 2026: TRADE DATE: MON 12 OCT 16:00 CLOSED; TRADE DATE: TUE 13 OCT 16:45 PREOPEN, 17:00 OPEN. Tuesday 13 Oct 2026: TRADE DATE: TUE 13 OCT 16:00 CLOSED; TRADE DATE: WED 14 OCT 16:45 PREOPEN, 17:00 OPEN.",
+        "The Columbus Day clearing advisory (/tools-information/holiday-calendar/files/2026/2026-columbus-day-clearing-advisory.pdf) and settlement-times notice (/tools-information/holiday-calendar/files/2026/columbus-day-holiday-settlement-times-2026.pdf) are served as file downloads, not rendered pages; their contents were not captured."
+      ]
+    },
+    {
+      "id": "cme-spec-6J",
+      "url": "https://www.cmegroup.com/markets/fx/g10/japanese-yen.contractSpecs.html",
+      "rendered_url": "https://www.cmegroup.com/markets/fx/g10/japanese-yen/specs",
+      "captured_utc": "2026-09-29T23:16:57Z",
+      "product_code": "CME Globex: 6J",
+      "products": ["6J"],
+      "statements": [
+        "CME Globex: Sunday - Friday 5:00 p.m. - 4:00 p.m. (6:00 p.m. - 5:00 p.m. ET) with a 60-minute break each day beginning at 4:00 p.m. (5:00 p.m. ET)"
+      ]
+    },
+    {
+      "id": "cme-spec-MGC",
+      "url": "https://www.cmegroup.com/markets/metals/precious/e-micro-gold.contractSpecs.html",
+      "captured_utc": "2026-09-29T23:17:13Z",
+      "product_code": "CME Globex: MGC",
+      "products": ["MGC"],
+      "statements": [
+        "Trading Hours: Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)"
+      ]
+    },
+    {
+      "id": "cme-spec-MYM",
+      "url": "https://www.cmegroup.com/markets/equities/dow-jones/micro-e-mini-dow.contractSpecs.html",
+      "captured_utc": "2026-09-29T23:17:18Z",
+      "product_code": "CME Globex: MYM",
+      "products": ["MYM"],
+      "statements": [
+        "CME Globex: Sunday 6:00 p.m. - Friday - 5:00 p.m. ET (5:00 p.m. - 4:00 p.m. CT) with a daily maintenance period from 5:00 p.m. - 6:00 p.m. ET (4:00 p.m. - 5:00 p.m. CT)"
+      ]
+    },
+    {
+      "id": "cme-spec-MNQ",
+      "url": "https://www.cmegroup.com/markets/equities/nasdaq/micro-e-mini-nasdaq-100.contractSpecs.html",
+      "captured_utc": "2026-09-29T23:17:23Z",
+      "product_code": "CME Globex: MNQ",
+      "products": ["MNQ"],
+      "statements": [
+        "CME Globex: Sunday 6:00 p.m. - Friday - 5:00 p.m. ET (5:00 p.m. - 4:00 p.m. CT) with a daily maintenance period from 5:00 p.m. - 6:00 p.m. ET (4:00 p.m. - 5:00 p.m. CT)"
+      ]
+    }
+  ]
+}
