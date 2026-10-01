@@ -67,20 +67,25 @@ def release_document(repo, profile, image, keys):
         trusted_key_sha256={key: sha256(value.public_key) for key, value in keys.items()})
 
     if profile['schema'] in ('qualification_execution_profile/v3', 'qualification_execution_profile/v4',
-                             'qualification_execution_profile/v5', 'qualification_execution_profile/v6'):
+                             'qualification_execution_profile/v5', 'qualification_execution_profile/v6',
+                             'qualification_execution_profile/v7'):
         from c1_rail.qualification.execution.profile import diagnostic_budget_profile
         # profile/v4 pairs the execution-capable release revision and budget
         # profile/v3; profile/v5 pairs the S3 dispatch revision (D4) with the
         # same budget profile and the closed N1 dispatch checkpoint set; the
         # S4 profile/v6 pairs the joint dispatch revision (D3) with the closed
-        # N1+N2 checkpoint set.
-        revision = ('v6' if profile['schema'].endswith('/v6') else 'v5' if
+        # N1+N2 checkpoint set; the S5 profile/v7 pairs the Part A dispatch
+        # revision with the closed N1+N2+PART_A checkpoint set.
+        revision = ('v7' if profile['schema'].endswith('/v7') else 'v6' if
+                    profile['schema'].endswith('/v6') else 'v5' if
                     profile['schema'].endswith('/v5') else 'v4' if
                     profile['schema'].endswith('/v4') else 'v3')
         result.update(schema='qualification_execution_release/' + revision, capability='FULL_E1',
-                      dispatch_enabled=revision in ('v5', 'v6'),
+                      dispatch_enabled=revision in ('v5', 'v6', 'v7'),
                       campaign_budget_profile=diagnostic_budget_profile(encoded(profile)))
-        if revision == 'v6':
+        if revision == 'v7':
+            result.update(dispatch_checkpoints=['N1', 'N2', 'PART_A'])
+        elif revision == 'v6':
             result.update(dispatch_checkpoints=['N1', 'N2'])
         elif revision == 'v5':
             result.update(dispatch_checkpoints=['N1'])
@@ -88,13 +93,63 @@ def release_document(repo, profile, image, keys):
 
 
 
+# S5 source scenario (test_campaign_part_a_linux, the genuine PART_A_FAILED
+# witness). The default ORB port stays flat on exactly these two source session
+# dates and trades every other session as before. Derivation, recorded on the
+# composition fixture at the Linux depth (N2 FULL/H1/H2 60, N1 2, Part A
+# (2, 4, 2)) by replaying the real samplers and outcomes offline:
+#   - every path passes on its fourth winning session (sessions_to_pass 4 of a
+#     5-session horizon), so one idle session leaves a path PASS (day 5) and two
+#     idle sessions leave it UNRESOLVED (horizon_cap);
+#   - Part A panel 1, path 0 is the source block 2024-04-15..2024-04-19; no N1
+#     path (6) and no N2 FULL/H1/H2 path (180) contains both 04-15 and 04-17.
+#     Exactly two N2 FULL paths (one source block drawn twice) contain 04-15
+#     alone, and Part A panel 1, path 1 contains 04-17 alone: each keeps four
+#     winning sessions and passes on day 5, inside the speed horizon;
+#   - at depth 60 the N2 rule tolerates no failure at all
+#     (max_certifying_busts(60, 0.05, 0.05) == 0), so N2 stays PASS only with
+#     every path passing, the FULL baseline is then exactly 1.0, and the
+#     p5-above-FULL failure is unreachable on this fixture whatever the source
+#     does;
+#   - Part A: panel rates 1.0 and 0.5, p5 (INVERSE_ECDF_LEFT) 0.5 < floor 0.95,
+#     no expansion (|0.5 - 0.95| > 0.01), decision FAILURE -> PART_A_FAILED.
+# Any change to the seeds, the calendar or the samplers fails the Linux case
+# loudly (N1/N2 failure or FULL_PASS_READY), never silently.
+PART_A_BELOW_FLOOR_IDLE_DATES = ('2024-04-15', '2024-04-17')
+SCENARIOS = ('part_a_below_floor',)
+
+
+def scenario_port_transform(scenario):
+    """The signed synthetic ORB program for one source scenario: the entry
+    branch gains a source-date guard; nothing else in the port changes, and
+    the port never manufactures PathOutcome, capture or qualification evidence."""
+    if scenario not in SCENARIOS:
+        raise ValueError('unknown TEST_ONLY source scenario')
+    marker = b"        if local.hour == 9 and local.minute == 0 and not self.position:\n"
+    guarded = (b"        if (local.hour == 9 and local.minute == 0 and not self.position\n"
+               b"                and local.date().isoformat() not in _IDLE_SOURCE_DATES):\n")
+    tail = ('\n_IDLE_SOURCE_DATES = frozenset(' + repr(PART_A_BELOW_FLOOR_IDLE_DATES) + ')\n').encode()
+
+    def port_transform(leg, raw):
+        if leg != 'orb_mnq_v7':
+            return raw
+        if raw.count(marker) != 1:
+            raise ValueError('synthetic port entry branch differs')
+        return raw.replace(marker, guarded) + tail
+    return port_transform
+
+
 def build_real_bundle(root, *, repo, release, private, keys, attempt_id, idle=False, budget=None,
-                      fault=None,depth_valid_seconds=14400):
+                      fault=None,depth_valid_seconds=14400,scenario=None):
     current = datetime.now(timezone.utc)
     policy_raw=build_qualification_policy()
     release_doc = json.loads(release)
     memory_limit = release_doc['profile']['memory_bytes']
     port_transform = None
+    if scenario is not None:
+        if fault is not None or idle:
+            raise ValueError('a source scenario excludes the fault and idle variants')
+        port_transform = scenario_port_transform(scenario)
     if fault is not None:
         # These signed synthetic strategy programs cause actual worker faults.
         # They never manufacture PathOutcome, capture or qualification evidence.
@@ -152,7 +207,8 @@ def _boundary_fault():
     contract_doc['replay']['budget'].update(maximum_wall_seconds=180, maximum_cpu_seconds=120,
                                            maximum_memory_bytes=memory_limit*9//10)
     if release_doc['schema'] in ('qualification_execution_release/v3', 'qualification_execution_release/v4',
-                                 'qualification_execution_release/v5', 'qualification_execution_release/v6'):
+                                 'qualification_execution_release/v5', 'qualification_execution_release/v6',
+                                 'qualification_execution_release/v7'):
         contract_doc['replay']['budget'].update(maximum_wall_seconds=10000, maximum_cpu_seconds=10000, maximum_memory_bytes=memory_limit)
     if budget:
         contract_doc['replay']['budget'].update(budget)

@@ -20,7 +20,7 @@
 
 | Condition | State at `521d8f2` | Source |
 |---|---|---|
-| (a) T00 verdict ∉ {INSUFFICIENT, NO-GO-evidence} | **Not met.** The step-1 return was accepted as INSUFFICIENT on 2026-09-23. Step 1b (P7 closure) was authorized on 2026-09-24; no step-1b return is recorded at `521d8f2` (UNVERIFIED beyond that). The checklist still records "T00 INSUFFICIENT on P7(b)" | [STATE](../../STATE.md) `:58`; [checklist current state](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger) `:32`; [T00 P7 closure](../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md) status `:5` |
+| (a) T00 verdict ∉ {INSUFFICIENT, NO-GO-evidence} | **Not met.** The step-1 return was accepted as INSUFFICIENT on 2026-09-23. Step 1b (P7 closure) was authorized on 2026-09-24; no step-1b return is recorded at `521d8f2` (UNVERIFIED beyond that). The checklist still records "T00 INSUFFICIENT on P7(b)" | [STATE](../../STATE.md) `:58`; [checklist current state](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger) `:32`; [T00 P7 closure](../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md) status `:5` *2026-10-01: still not met. Step 1 is now RESOLVED (P7 MET at `2baa516`), but (a) needs the step-3 screen's verdict, in practice GO-evidence, which needs step 2 ratified first.* |
 | (b) T10 phase 2 has assembled the F1 packet | **Not met.** "Phase 2: pending" | [T10 packet](../briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet.md) `:26–:28`, `:56` |
 
 **Why the wait is correct, from the owners:**

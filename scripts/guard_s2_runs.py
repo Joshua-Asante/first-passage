@@ -21,11 +21,12 @@ open-PR refinement below, which keeps refusing when `gh pr list` fails):
     own concurrency group and only blocks diagnostics), or when the newest
     definitive same-mode `workflow_dispatch` run on the dispatched SHA already
     decided it: `success` → read the artifact, `failure` → root-cause it, do
-    not re-roll. `[s2]`, `[s3]` and `[s4]` are mutually incomparable (an s4 run
-    installs the joint v6 dispatch profile, an s3 run the v5 one and an s2 run
-    the v4 funded one — none covers another); `pull_request` runs tested the
-    merge ref and never count as the head's bytes; `cases` is accepted in `s3`
-    and `s4` only, so an s2 diagnostic is refused.
+    not re-roll. `[s2]`, `[s3]`, `[s4]` and `[s5]` are mutually incomparable (an
+    s5 run installs the joint /v7 dispatch profile, an s4 run the v6 one, an s3
+    run the v5 one and an s2 run the v4 funded one — none covers another);
+    `pull_request` runs tested the merge ref and never count as the head's
+    bytes; `cases` is accepted in `s3`, `s4` and `s5` only, so an s2 diagnostic
+    is refused.
   * **rerun** — `gh run rerun` of a definitive full run of this workflow, or of
     a run whose concurrency group is live (same ref and kind, or, for
     `pull_request` runs, the same PR).
@@ -89,11 +90,11 @@ RUN_FIELDS = ("databaseId,headSha,status,conclusion,event,displayTitle,headBranc
               "createdAt,workflowName,workflowDatabaseId")
 VIEW_FIELDS = ("databaseId,status,conclusion,event,displayTitle,headBranch,headSha,"
                "workflowName,workflowDatabaseId")
-S2_CASES_NOTE = ("the workflow accepts `cases` only with mode s3 or s4 (an s2 selection "
+S2_CASES_NOTE = ("the workflow accepts `cases` only with mode s3, s4 or s5 (an s2 selection "
                  "has nothing to subset), so this dispatch would fail at setup; re-run it "
                  "as `-f mode=s4 -f cases='<expr>'` or a full s4 dispatch.")
 
-_TITLE_MODE = re.compile(r"\[(s2|s3|s4)\]")
+_TITLE_MODE = re.compile(r"\[(s2|s3|s4|s5)\]")
 _TITLE_PR = re.compile(r"\((\d+)/merge\)")
 
 
@@ -187,16 +188,22 @@ def dispatch_redundancy_refusal(sha: str, runs: list[dict], *, mode: str) -> str
         return None
     run = max(decided, key=lambda r: str(r.get("createdAt", "")))
     if run.get("conclusion") == "success":
+        # The reader's default scope is S4_JOINT_N2, so every other mode's
+        # advice must name the scope its artifact reads as.
+        scope = (" --expect-scope S2_DIAGNOSTIC_SUPERVISION" if mode == "s2" else
+                 " --expect-scope S5_PART_A" if mode == "s5" else "")
         return (f"S2 run {run.get('databaseId')} [{mode}] already passed on "
                 f"{sha[:12]} (same bytes, same mode): read its artifact "
-                f"(scripts/s2_run_evidence.py {run.get('databaseId')}"
-                f"{' --expect-scope S2_DIAGNOSTIC_SUPERVISION' if mode == 's2' else ''}) "
+                f"(scripts/s2_run_evidence.py {run.get('databaseId')}{scope}) "
                 f"instead of re-running. Deliberate re-dispatch: {OVERRIDE} gh workflow run ….")
+    # A failed s5 run iterates on the s5 selection, whose file set carries the
+    # Part A case; the other modes keep the accepted s3 advice.
+    diagnostic_mode = "s5" if mode == "s5" else "s3"
     return (f"S2 run {run.get('databaseId')} [{mode}] already failed on {sha[:12]}, "
             f"and the newest definitive same-mode run decides: a re-dispatch on "
             f"unchanged bytes is a re-roll, not a fix. Root-cause it from the "
             f"artifact (s2-linux-run §3), or iterate on one case with "
-            f"-f mode=s3 -f cases='<expr>'. Justified re-dispatch: "
+            f"-f mode={diagnostic_mode} -f cases='<expr>'. Justified re-dispatch: "
             f"{OVERRIDE} gh workflow run ….")
 
 
@@ -762,7 +769,7 @@ def _dispatch_reason(parsed: dict, dir_now: str, pushed: list[str]) -> str | Non
     ref = "" if parsed["json"] else _resolve_ref(parsed["ref"], parsed["repo"],
                                                  dir_now)
     runs = None
-    if not parsed["json"] and (mode is UNKNOWN or mode in ("s2", "s3", "s4")) and ref:
+    if not parsed["json"] and (mode is UNKNOWN or mode in ("s2", "s3", "s4", "s5")) and ref:
         runs = _gh_runs(parsed["repo"], branch=ref, event="workflow_dispatch",
                         cwd=dir_now)
     if diagnostic and mode == "s2":
