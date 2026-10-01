@@ -94,7 +94,7 @@ forward-confirmation requirements beside an incompatible accelerated path.
 | Intraday-honest failure clock | EOD peak ratchets the fixed-dollar floor; synchronized intraday equity tests it. Missing timing evidence cannot qualify a book. |
 | No parameter fishing | No post-result signal edits, new template, target relaxation, filter, governor or size added to rescue a loser. |
 | D33 | One selected winner, one final validation. Any failed acceptance condition ends the attempt with no qualifying configuration. No runner-up promotion, extra paths or repeated n3. |
-| Deployment | Winner parity, M1 RESOLVED and a separate operator GO. No agent places trades. Passing an evaluation does not authorize a funded Striker book. |
+| Deployment | Winner parity, M1 RESOLVED and a separate operator GO. Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Passing an evaluation does not authorize a funded Striker book. |
 
 Venue specification was rechecked on 2026-09-05 against the
 [Select evaluation page](https://help.tradeify.co/en/articles/12853921-select-evaluation-accounts):
@@ -102,7 +102,9 @@ Venue specification was rechecked on 2026-09-05 against the
 trading days, without an evaluation daily loss limit. `core/firm_rules.py` remains
 the implementation owner. Keep per-instrument commissions and session rules in
 their existing authorities; never substitute the tier's index-micro fee for 6J/MGC.
-The weekly operator token trade remains the accepted inactivity mitigation.
+The weekly token trade remains the accepted inactivity mitigation (operator-placed, or
+agent-placed at the operator's direction for that specific trade under
+[ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b)).
 
 ## Approved speed definition and final-validation timing
 

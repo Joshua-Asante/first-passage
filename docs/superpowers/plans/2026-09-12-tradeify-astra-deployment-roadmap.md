@@ -17,7 +17,7 @@
 - Private source, exports, account evidence and numerical qualification outputs remain in approved ignored roots. Public records carry permitted digests and verdicts.
 - Compute remains single-process. Freeze streams, workloads, acceptance criteria and compute budget before decision-bearing runs.
 - Claude/Fable is no longer an implementation, coordination or adjudication dependency. Historical authorship and evidence remain intact.
-- No agent places trades. A7 is a separate attended, disarmed ceremony. Funding, deployment GO and each armed session retain their operator gates.
+- Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. A7 is a separate attended, disarmed ceremony. Funding, deployment GO and each armed session retain their operator gates.
 - This is a sequencing and acceptance roadmap, not a claim that the missing specifications are already implementable. Write bounded code-level packets only after their named contract issues close.
 
 ## Evidence baseline

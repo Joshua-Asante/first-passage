@@ -1,5 +1,7 @@
 # Feed: provider-neutral preparation for the four-leg book (H8)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Status:** RETURNED FOR COORDINATOR REVIEW 2026-09-27. This is preparation only. It contains PROPOSED text for the F1 packet and owner decisions, and nothing in it is in force. The companion is the [draft TB-I5 successor specification](../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md) (status DRAFT — NOT FROZEN).
 **Assignment:** [handoff H8](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h8--feed-provider-neutral-preparation). **Sequencing owner:** [checklist addendum 2026-09-27](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step) (Feed row; CP-6, CP-7; §1.4; §5). **Base:** `521d8f2`.
 **Owners this note serves, not replaces (Rule 7):**
