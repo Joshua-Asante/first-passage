@@ -150,6 +150,8 @@ An inventory attests the state at one time; it does not prove later absence, so 
 
 *Open for the operator and the packet owner (GC-7); not determined here:* the captures show no way for the operator to disable the two firm-side close owners (the end-of-session auto-close and the drawdown-breach auto-liquidation). That is an inference from silence, to be confirmed with Tradeify at the inventory. Whether they fall under the ROUTE STOPS consequence above ("an actor cannot be disabled") is not decided by this addition. The close-semantics return already routed firm-side automatic liquidation as an inventory candidate (its F10; handoff routing item 3); these rows name Tradeify's published policies.
 
+*Operator ruling 2026-09-29 (A-11 exception, X-1 only). Mirror; canonical text is the [B–D packet GC-7 row](2026-09-26-tradeify-bd-decision-packet.md); decision record: [X-1 decision packet §2](2026-09-29-x1-decision-packet.md#2-a-11--gc-7-decision):* identified, non-disableable firm risk liquidation is recorded as an external risk-control actor and need not be disabled **for an X-1 session to start**. All operator-configurable competing senders remain disabled. Any firm-side intervention ends X-1 with no PASS. The ROUTE STOPS consequence for C-a and X-3 is unchanged. This ruling grants no CP-3, row, send or spend.
+
 ### 0.2 Entitlement and venue permission (P-1)
 
 - **Before any REST call, reads included:** the operator confirms REST access. It needs the Pro plan; entitlement is vendor-reported and not independently checked (Q01). Only **existing** entitlement counts: the operator ruling of 2026-09-26 authorizes no purchase or new access.
