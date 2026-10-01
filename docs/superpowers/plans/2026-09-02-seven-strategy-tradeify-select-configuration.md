@@ -102,7 +102,9 @@ Venue specification was rechecked on 2026-09-05 against the
 trading days, without an evaluation daily loss limit. `core/firm_rules.py` remains
 the implementation owner. Keep per-instrument commissions and session rules in
 their existing authorities; never substitute the tier's index-micro fee for 6J/MGC.
-The weekly operator token trade remains the accepted inactivity mitigation.
+The weekly token trade remains the accepted inactivity mitigation (operator-placed, or
+agent-placed at the operator's direction for that specific trade under
+[ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b)).
 
 ## Approved speed definition and final-validation timing
 
