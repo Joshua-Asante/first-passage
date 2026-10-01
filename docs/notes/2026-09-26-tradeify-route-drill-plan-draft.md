@@ -150,6 +150,8 @@ An inventory attests the state at one time; it does not prove later absence, so 
 
 *Open for the operator and the packet owner (GC-7); not determined here:* the captures show no way for the operator to disable the two firm-side close owners (the end-of-session auto-close and the drawdown-breach auto-liquidation). That is an inference from silence, to be confirmed with Tradeify at the inventory. Whether they fall under the ROUTE STOPS consequence above ("an actor cannot be disabled") is not decided by this addition. The close-semantics return already routed firm-side automatic liquidation as an inventory candidate (its F10; handoff routing item 3); these rows name Tradeify's published policies.
 
+*Operator ruling 2026-09-29 (A-11 exception, X-1 only). Mirror; canonical text is the [B–D packet GC-7 row](2026-09-26-tradeify-bd-decision-packet.md); decision record: [X-1 decision packet §2](2026-09-29-x1-decision-packet.md#2-a-11--gc-7-decision):* identified, non-disableable firm risk liquidation is recorded as an external risk-control actor and need not be disabled **for an X-1 session to start**. All operator-configurable competing senders remain disabled. Any firm-side intervention ends X-1 with no PASS. The ROUTE STOPS consequence for C-a and X-3 is unchanged. This ruling grants no CP-3, row, send or spend.
+
 ### 0.2 Entitlement and venue permission (P-1)
 
 - **Before any REST call, reads included:** the operator confirms REST access. It needs the Pro plan; entitlement is vendor-reported and not independently checked (Q01). Only **existing** entitlement counts: the operator ruling of 2026-09-26 authorizes no purchase or new access.
@@ -200,6 +202,22 @@ Reads cannot place, change or cancel anything. They still use the operator's RES
 | Would NOT establish | A retention limit (how many sessions or days); readability of other orders; recovery of a request whose order id was never learned (the lost-response case, §6.4); any processing bound or fence; a recovery-time bound. An `unknown_order` result shows unavailability at this interval only. A retention probe needs repeated reads at stated intervals, each separately authorized and recorded. |
 | Consequence (GC-6) | If the order is readable, the packet §3 row "Establish whether and when a block can end, using D4/D5 (A-1)" can use this read for requests whose id was learned (BE-4). **[CR-11]** It is a readability fact about that order only: it does not show coverage of the unknown classes, reach requests whose id was never learned, or bound a recovery time τ (BE-4 as corrected, UB-8 Corr. 2). If it is not, cross-session recovery stays unestablished and unresolved attempts stay held (§6.4). Neither result releases a reservation or permits a resend. |
 | OPEN | The REST return does not settle which identifier the read accepts: the broker order id learned in session, or the caller's tracking id, which CrossTrade remembers for seven days and forwards as `clOrdId` (Q05). R-2 uses the id the operator retained and records which one it was. If the read accepts the caller's id, R-2 would also bear on lost-response requests; that is not assumed. |
+
+### R-1 result on X-1's order — 2026-10-01
+
+**Result: `LOCATED_WITH_CLORDID`. R-1 is DISCHARGED for X-1's order, at this time only.** The run was operator-performed, read-only, and in X-1's own session (before the ~17:00 ET reset of 2026-10-01). It ran under the [X-1 packet §8](2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30) R-1 tooling ruling (option A) and its start-by rule.
+
+- **Tool:** R-1 v3.2 (the v3.1 rules, plus R-2 v1.3.1's host stage, plus the step-2 `clOrdId` search). Package `PACKAGE_SHA256SUMS` `3bf9ace1a2d29c6c81b74a0efa7a6d4752b80f97217274a98f988a197db8d0a5`. Local Codex ACCEPTED_WITH_CONDITIONS on 2026-10-01 (private `tools/r1-v3_2/CODEX_R1_V3_2_REVIEW.md`), with no P1.
+- **Run:** private `reads/R1-X1-20261001T082255Z`. Every stage exited 0: init, retain, host, collect, seal, adjudicate.
+  - init 08:22:55Z;
+  - inventory retained 08:55:46Z: one account in scope, with the CrossTrade linked-accounts capture and the actor inventory A-1 to A-13 recorded (Stage 0: recorded, not gating);
+  - HOST_CONFIRMED 08:56:04Z: rail `dry_run=True`, `armed_until=None`; daemon emission off on disk and in process; the captured 2026-09-29 boot is the newest start, with no intervening machine event;
+  - collected 08:58:45Z: 9 reads; sealed 08:59:33Z.
+- **Reads:** no working orders; 3 session orders, all explained and terminal; lifecycles Filled / Canceled / Filled; fills by `orderId` 1 / 0 / 1; account-scoped fill-reconciled positions flat.
+- **Step 2:** exactly one candidate carries the bound `clOrdId`, and it is the bound entry. The stop child is linked to the entry (`linkedId` / `parentId`), and an entry fill was observed.
+- **Evidence:** run `SHA256SUMS` `2fa5d5246c90601b649df29885b92b724679fcbf8902e793e6d2f9a1176f4ce8`; adjudication `R1-X1-20261001T082255Z-ADJUDICATION.json` `56f8c23d72bd75cb2937130d18301574f4c1d6cf317ea4ccb242b7f22b28bbee`. Rows are appended to `MANIFEST.tsv`. The coordinator re-verified every seal member against `SHA256SUMS` and read the adjudicated class. The evidence is private and never committed.
+- **Would NOT establish** (this table's row, unchanged): uniqueness, since a repeated `clOrdId` is accepted (Q05); anything about an absent order; fill completeness (Q23, Q24); a recovery rate or a recovery-time bound; cross-session behavior (R-2); REST placement classification (X-1). The result establishes only this order at this time. No read result releases a reservation or permits a resend (commissioning packet §2.6).
+- **Residual (non-blocking, owed to any future v3.3):** Codex's P2 that some offline tests omit a call-count or reason assertion. The accepted bytes were not changed.
 
 ### R-2 closure with limits — operator decision 2026-09-29
 

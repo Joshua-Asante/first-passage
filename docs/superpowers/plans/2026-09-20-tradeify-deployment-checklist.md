@@ -535,6 +535,15 @@ This addendum consumes their returns by reference and redispatches none of them.
 
 **What this sequence rests on, restated so it is not assumed away.** No commissioning row has run, so there is **no actual-route observation** of any kind. Gate A is accepted with changes; gates B, C and D are pending. S5 is **HELD**. TradingView has no live role. Preserve-and-block for one attended session is the posture, with no same-session restart of automation after an incident. Statistical qualification and the sole final n3 are not waived by any step above.
 
+## Addendum 2026-10-01 — continuation after X-1
+
+Dated and additive. The 2026-09-28 continuation above is unchanged as the record of its date. **Its "next step" (Stage 0 / R-1 on the week's preservation trade) and its "no commissioning row has run" statement are superseded:**
+
+- **X-1 executed on 2026-09-30** (T0 23:42:32Z, in the operator-amended 23:30–00:00Z window). A **scoped GC-2a PASS, evidence accepted with limits**, with no release ratification. Codex's X-1 acceptance is [PR #572](https://github.com/Joshua-Asante/first-passage/pull/572); the record and its limits are in the [X-1 decision packet §8](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30).
+- *Mirror; the owner is the [X-1 packet §8 R-1 tooling ruling](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30), which defines options A, B and C and the fallback:* ~~**R-1 on X-1's order is owed.**~~ *(Historical: discharged 2026-10-01; see the update at the end of this bullet.)* The same-session window closes **2026-10-01 at ~17:00 ET**, the next reset (drill plan R-1 table, precondition 3). **Option A is selected** (operator, 2026-10-01): the builder is dispatched to build a reviewed R-1 v3.2 collector with the `clOrdId` step, for build and offline testing only. The read is Joshua's, after local-Codex acceptance only. **Start-by rule: start by 16:30 ET or C; started reads run to the ~17:00 gate.** If the read has not started by 16:30 ET, for any reason, C applies: R-1 is rehomed under the R-1 table, and nothing runs ([§8 start-by rule](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30)). **Update 2026-10-01 08:59Z: R-1 DISCHARGED** for X-1's order (`LOCATED_WITH_CLORDID`; operator-run, option A, before 16:30 ET; the start-by rule is spent and C did not apply). Mirror of the [drill plan's R-1 result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01).
+- **The attended-input adapter** is retrospectively accepted for X-1 run-1930 only, **qualified**. Its pin/path-safety review and the reconstruction of the resolved import set are owed. **Future use stays barred** until both are accepted.
+- **Still owed after X-1:** the drill plan's "X-1 acceptance" addendum (#572), and the governance sweep for the 2026-09-30 AGENTS.md amendment. The next order-producing row needs its own CP-3.
+
 ## Verification of this planning artifact
 
 Current status was checked through authenticated GitHub queries and fetched Git
