@@ -112,13 +112,13 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   read is 2026-09-29 00:35 UTC, after the reset), so it does not serve as
   R-1's target. By the operator's ruling of 2026-09-29, R-1 runs on X-1's own
   order in X-1's session instead ([X-1 packet §2, #551](https://github.com/Joshua-Asante/first-passage/pull/551)).
-  The trade is T7 in the A-8 reconciliation: an MYMZ6 sell at 19:01:11Z and
+  The 09-28 trade (not X-1's) is T7 in the A-8 reconciliation: an MYMZ6 sell at 19:01:11Z and
   a buy at 19:05:52Z, with fills in the native export (operator, 2026-09-30,
   relayed by the X-1 packet session). **Operator ruling 2026-09-30:** X-1's
   trade, if it executes, also counts toward the weekly preservation
   obligation. It applies to X-1's trade (week 09-28→10-02); its owner is the
-  [X-1 decision packet, #551](https://github.com/Joshua-Asante/first-passage/pull/551)
-  (`docs/notes/2026-09-29-x1-decision-packet.md`), where the ruling is recorded. The
+  [X-1 decision packet, #551](https://github.com/Joshua-Asante/first-passage/pull/551),
+  where the ruling is recorded; that packet is not in the tree until #551 merges. The
   private compliance record was not independently verified. The 09-28→10-02
   obligation is covered; the roller advances the deadline after 10-02.
 - **Earlier record still owed:** week 08-31→09-04 was operator-attested on
