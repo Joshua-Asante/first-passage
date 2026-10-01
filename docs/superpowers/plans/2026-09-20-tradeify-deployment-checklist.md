@@ -580,7 +580,7 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
      - validation of both child identities;
      - attended cancel of every live order if the account is flat.
      - **Post-cancel status read: OPEN, C1 item 7** (operator, 2026-10-01). After the parent cancel is acknowledged, a reviewed GET-only reader must capture any child still `Suspended`/`Working`. Today no reviewed tool covers this: the pre-cancel reader runs only before the cancel, and R-1 v3.2 runs only once all ids are terminal. It's resolved at the C1 interface review (a post-cancel reader vs an extended, reviewed R-1) before any build or live X-4.
-   - This supersedes the drafted suite where they differ. #572's six recorded C1 items apply only where they bind the kept items.
+   - This supersedes the drafted suite where they differ. #572's seven recorded C1 items apply only where they bind the kept items.
 4. **#571: parked, whole.** It changes only the legacy c1-rail `EventLedger` path. The book route uses CC-3's durable halt and never reaches it.
    - **Guard while parked:**
      - `dry_run=true` stays;
