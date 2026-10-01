@@ -440,4 +440,6 @@ Reads: this file @ `770413b` (sites located by `grep -n RUNBOOK`) · `deploy/c1_
 
 Refundable deposits and minimum balances **stay under the cap**, as clarified above.
 
+**Still counted under the cap:** any charge whose purpose is not receiving the market data. That includes account, inactivity, platform or trading fees that are not required for data access, and the eval and rail costs.
+
 **Unchanged.** Feed signup and spend still require D-feed (a)+(b) and CP-7. Every feed purchase stays an operator act. Feed costs are still recorded, outside the ceiling tally, wherever their owner keeps them.
