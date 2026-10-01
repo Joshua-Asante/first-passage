@@ -79,13 +79,13 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > **Questions 4 to 13 below (Q3–Q12): please answer separately for (a) Market Data over WebSocket API and (b) Smart Stream on GCP.** The two products may differ in authentication, storage rights, replay, symbology, latency and session handling.
 >
 > 4. **(Q3, for the direct feed)** Your Market Data over WebSocket API and Smart Stream on GCP are data-only. Can an individual subscribe to either, and what are the minimum commitments? **For each product separately**, what is the all-in monthly cost for these four products: delivery or usage charges, licence fees, and any one-time setup charge? Smart Stream appears to be priced "as low as $0.50/GB plus applicable ILA fees" ([page](https://www.cmegroup.com/market-data/real-time-futures-and-options-data-api.html)).
-> 5. **(Q4)** Please answer this question **separately for each direct product**, the Market Data over WebSocket API and Smart Stream on GCP. Are 1-minute bars or only trades published? Are exchange timestamps included, and are bars stamped at the open or the close? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later? **If only trades are published:** does each trade message carry the exchange-reported **contract quantity**? How are corrected, busted or cancelled trades signalled, and how should they change a bar's volume?
+> 5. **(Q4)** Please answer this question **separately for each direct product**, the Market Data over WebSocket API and Smart Stream on GCP. Are 1-minute bars or only trades published? Are exchange timestamps included, and are bars stamped at the open or the close? **For bars and for trades separately**, which time zone, UTC offset or epoch unit do the timestamps use (for example UTC epoch milliseconds or nanoseconds, or exchange-local wall-clock time)? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later? **If only trades are published:** does each trade message carry the exchange-reported **contract quantity**? How are corrected, busted or cancelled trades signalled, and how should they change a bar's volume?
 > 6. **(Q5)** Can authentication run unattended for weeks without interactive login or MFA? What session, connection and concurrent-subscription limits apply, and can one connection receive all four products at once?
 > 7. **(Q6)** May derived bars and the original messages be stored privately for audit, on a cloud server?
 > 8. **(Q7)** How are corrections and replays after a reconnect delivered? Are sequence numbers provided?
 > 9. **(Q8)** Are bars (if any) published for intervals with no trades? If so, how is such a bar marked, so that a client can tell it apart from a trade-evidenced bar? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts identified, and is a continuous or front-month symbol offered? What is its roll rule?
-> 11. **(Q10)** What is the typical delivery latency, and what maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session?
+> 11. **(Q10)** What is the typical delivery latency, and what maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session? **Hard deadline:** does every completed bar (or, if only trades are published, every trade belonging to that bar) reach the client **within 30 seconds after the bar closes**? What share of bars miss that, and what is the worst case you document? "Typical" latency alone is not enough for this use.
 > 12. **(Q11)** What historical depth is available for these products, and at what cost?
 > 13. **(Q12)** How are DST changes and holiday early closes reflected in the session data?
 
@@ -115,7 +115,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 8. **(Q7)** After a disconnect and reconnect, are missed minute bars replayed? Are corrections flagged? Do messages carry sequence numbers?
 > 9. **(Q8)** Is a minute aggregate published for a minute with **no trades**? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts named (for example, the March MNQ contract)? Do you offer a continuous or front-month symbol, and what is its roll rule?
-> 11. **(Q10)** How long after the minute closes is the aggregate typically delivered? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session?
+> 11. **(Q10)** How long after the minute closes is the aggregate typically delivered? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session? **Hard deadline:** does every completed bar (or, if only trades are published, every trade belonging to that bar) reach the client **within 30 seconds after the bar closes**? What share of bars miss that, and what is the worst case you document? "Typical" latency alone is not enough for this use.
 > 12. **(Q11)** Please confirm the historical depth on Futures Advanced for these four products.
 > 13. **(Q12)** How do the aggregates and session data handle DST changes and holiday early closes?
 
@@ -145,7 +145,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 8. **(Q7)** After a reconnect, can missed candles be backfilled? Are revised candles flagged? Are there sequence identifiers?
 > 9. **(Q8)** Is a candle published for an interval with **no trades**? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** What symbol format identifies dated futures contracts (for example the March MNQ)? Is a continuous symbol offered, and with what roll rule?
-> 11. **(Q10)** What is the typical delay from period end to candle delivery? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session?
+> 11. **(Q10)** What is the typical delay from period end to candle delivery? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session? **Hard deadline:** does every completed bar (or, if only trades are published, every trade belonging to that bar) reach the client **within 30 seconds after the bar closes**? What share of bars miss that, and what is the worst case you document? "Typical" latency alone is not enough for this use.
 > 12. **(Q11)** How much historical candle data is available through the API for these products, and at what cost?
 > 13. **(Q12)** How are DST changes and holiday early closes reflected in candle and session data?
 
@@ -176,7 +176,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
 > 9. **(Q8)** Is a bar published for an interval with no trades? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated futures contracts identified in the API, and is a continuous contract offered, with what roll rule?
-> 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance or reset windows fall inside the Sunday–Friday 18:00–17:00 ET session?
+> 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance or reset windows fall inside the Sunday–Friday 18:00–17:00 ET session? **Hard deadline:** does every completed bar (or, if only trades are published, every trade belonging to that bar) reach the client **within 30 seconds after the bar closes**? What share of bars miss that, and what is the worst case you document? "Typical" latency alone is not enough for this use.
 > 12. **(Q11)** What historical bar depth is available through the API for these products, and with what pacing limits?
 > 13. **(Q12)** How are DST changes and holiday early closes reflected in trading-hours and bar data?
 
@@ -204,7 +204,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
 > 9. **(Q8)** Is a time bar emitted for an interval with no trades? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts identified, and is a continuous symbol offered, with what roll rule?
-> 11. **(Q10)** What is the typical delay from bar end to delivery? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session?
+> 11. **(Q10)** What is the typical delay from bar end to delivery? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session? **Hard deadline:** does every completed bar (or, if only trades are published, every trade belonging to that bar) reach the client **within 30 seconds after the bar closes**? What share of bars miss that, and what is the worst case you document? "Typical" latency alone is not enough for this use.
 > 12. **(Q11)** What historical bar depth is available through the API, and at what cost?
 > 13. **(Q12)** How are DST changes and holiday early closes reflected in session and bar data?
 
@@ -236,7 +236,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence numbers provided?
 > 9. **(Q8)** Is a time bar emitted for an interval with no trades? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts identified, and is a continuous or front-month symbol offered, with what roll rule?
-> 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session?
+> 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session? **Hard deadline:** does every completed bar (or, if only trades are published, every trade belonging to that bar) reach the client **within 30 seconds after the bar closes**? What share of bars miss that, and what is the worst case you document? "Typical" latency alone is not enough for this use.
 > 12. **(Q11)** What historical bar depth is available through R|Protocol, and at what cost?
 > 13. **(Q12)** How are DST changes and holiday early closes reflected in session and bar data?
 
@@ -265,7 +265,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
 > 9. **(Q8)** Is a bar published for an interval with no trades? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts named, and is a continuous symbol offered, with what roll rule?
-> 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session?
+> 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session? **Hard deadline:** does every completed bar (or, if only trades are published, every trade belonging to that bar) reach the client **within 30 seconds after the bar closes**? What share of bars miss that, and what is the worst case you document? "Typical" latency alone is not enough for this use.
 > 12. **(Q11)** What historical bar depth is available through the API, and at what cost?
 > 13. **(Q12)** How are DST changes and holiday early closes reflected in session and bar data?
 
@@ -282,7 +282,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
   The split between (a1) and (a2), and the feed marking in (c), come from each provider's own statement of what every charge is for. The common context paragraph (§3) asks every provider for that statement. If a charge's purpose is unstated or ambiguous, it counts toward the ceiling until clarified (Codex review on #583).
 
   This follows Track A's decision rule, which weighs "lower capital **or** run-rate" separately (Codex review on #583).
-- **What the ceiling covers** (D-Q1, D-Q6 and D-Q7 ruled; rail GO ADR addendum, [PR #587](https://github.com/Joshua-Asante/first-passage/pull/587) at `2773c53`). A feed cost is any non-refundable charge whose purpose is receiving the market data, and it is **exempt**. That covers field (a1) and the feed charges in field (c). **Refundable deposits and minimum balances stay under the cap** until Joshua rules otherwise (D-Q5).
+- **What the ceiling covers** (D-Q1, D-Q6 and D-Q7 ruled; rail GO ADR addendum, [PR #587](https://github.com/Joshua-Asante/first-passage/pull/587) at `2773c53`). **The broader D-Q6/D-Q7 exemption takes effect only once #587 has merged into the rail GO ADR.** Until then, required API or data-access fees and one-time feed setup charges **count** toward the ceiling, under the D-Q1 addendum already on `main` (Codex review on #583). A feed cost is any non-refundable charge whose purpose is receiving the market data, and it is **exempt**. That covers field (a1) and the feed charges in field (c). **Refundable deposits and minimum balances stay under the cap** until Joshua rules otherwise (D-Q5).
 - **Ceiling check.** The three fields stay separate for ranking. The $700 check **sums every non-exempt amount** with the ceiling's existing commitments: field (a2) over the ceiling's 3-month run-rate horizon, plus (b), plus any charge in (c) that is not for the feed. Two items that each pass alone can therefore still fail together, for example a $500 deposit plus a $300 non-feed account fee (Codex review on #583).
 - Feed costs are recorded outside the ceiling tally, and every purchase stays an operator act at CP-7.
 - The answers feed **CP-7**. They select nothing, and they open no account.
