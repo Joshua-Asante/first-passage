@@ -283,8 +283,12 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 
   This follows Track A's decision rule, which weighs "lower capital **or** run-rate" separately (Codex review on #583).
 - **What the ceiling covers** (D-Q1, D-Q6 and D-Q7 ruled; rail GO ADR addendum, [PR #587](https://github.com/Joshua-Asante/first-passage/pull/587) at `2773c53`). **The broader D-Q6/D-Q7 exemption takes effect only once #587 has merged into the rail GO ADR.** Until then, required API or data-access fees and one-time feed setup charges **count** toward the ceiling, under the D-Q1 addendum already on `main` (Codex review on #583). A feed cost is any non-refundable charge whose purpose is receiving the market data, and it is **exempt**. That covers field (a1) and the feed charges in field (c). **Refundable deposits and minimum balances stay under the cap** until Joshua rules otherwise (D-Q5).
-- **Ceiling check.** The three fields stay separate for ranking. The $700 check **sums every non-exempt amount** with the ceiling's existing commitments: field (a2) over the ceiling's 3-month run-rate horizon, plus (b), plus any charge in (c) that is not for the feed. Two items that each pass alone can therefore still fail together, for example a $500 deposit plus a $300 non-feed account fee (Codex review on #583).
-- Feed costs are recorded outside the ceiling tally, and every purchase stays an operator act at CP-7.
+- **Ceiling check.** The three fields stay separate for ranking. The $700 check **sums every non-exempt amount** with the ceiling's existing commitments:
+  - **Once #587 has merged:** field (a2) over the ceiling's 3-month run-rate horizon, plus (b), plus any charge in (c) that is not for the feed.
+  - **Until #587 merges,** also add the required API or data-access fees in (a1), over the same 3-month horizon, and the one-time feed charges in (c). Only data-feed subscriptions and CME licence fees are exempt until then (D-Q1 addendum on `main`) (Codex review on #583).
+
+  Two items that each pass alone can therefore still fail together, for example a $500 deposit plus a $300 non-feed account fee (Codex review on #583).
+- Only the charges **exempt at the time of the check** are recorded outside the ceiling tally: before #587 merges, data-feed subscriptions and CME licence fees; after it merges, the full D-Q6/D-Q7 set. Every purchase stays an operator act at CP-7.
 - The answers feed **CP-7**. They select nothing, and they open no account.
 
 ## 5. Decisions needed from Joshua
