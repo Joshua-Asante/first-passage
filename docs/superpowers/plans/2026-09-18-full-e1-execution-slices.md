@@ -1767,23 +1767,43 @@ The failed run `36673465130` stays on record as the stop. This addendum's PR sta
 
 **Record:** [`stage2.json`](../../notes/2026-09-27-s5-part-a-measurement/stage2.json), produced by [`stage2.py.txt`](../../notes/2026-09-27-s5-part-a-measurement/stage2.py.txt) (arithmetic over retained evidence only). The work was done by an Opus worker seat under the C3 Linux grant's step 5, with no new dispatch.
 
-**Source.** The green full S4-plus-Part-A run `36766144433` at `606e6e0`. `s2_run_evidence.py 36766144433 --expect-head 606e6e0 --expect-scope S5_PART_A`, run through the launcher at `606e6e0`, reads `ok: true` with no refusals (27 required nodes; junit 27/0/0/0). The SR-8 export `boundary/part_a_observations.json` (SHA-256 `d4b682ce…`) comes from node (a), attempt `linux-cca27e50…`, `FULL_PASS_READY`, 2 → 2 panels. The fresh download and the local copy are byte-identical. The private evidence stays under `local_artifacts/s5-c3-evidence/`.
+**Source.** The green full S4-plus-Part-A run `36766144433` at `606e6e0`. `s2_run_evidence.py 36766144433 --expect-head 606e6e0 --expect-scope S5_PART_A`, run through the launcher at `606e6e0`, reads `ok: true` with no refusals (27 required nodes; junit 27/0/0/0). The SR-8 export `boundary/part_a_observations.json` (SHA-256 `d4b682ce…`) comes from node (a), attempt `linux-cca27e50…`, `FULL_PASS_READY`, 2 → 2 panels.
+- **Run binding.** The artifact's contents carry no GitHub run id, so the binding goes through GitHub's own records:
+  - the artifact listing for run `36766144433` names artifact `11124634769` (`workflow_run.id` `36766144433`, head `606e6e0`) with digest `sha256:362c22af…`;
+  - the retained zip hashes to that digest;
+  - every input is read from inside that zip, and every input file is pinned by SHA-256 in the helper and in `stage2.json`.
+- **Measured identities**, read from the run's journal (the attempt's admission receipt and its retained objects), with each digest recomputed from its bytes:
+  - release `qualification_execution_release/v7` `15f6fcbc…`;
+  - profile `qualification_execution_profile/v7` `31b22d2b…`;
+  - policy `qualification_policy/v1` `21251022…`.
+- The private evidence stays under `local_artifacts/s5-c3-evidence/`.
 
 **PA-5 (CPU-only for TEST_ONLY, ruling (2) above): RE-APPLY.**
-- *Service* = 9.896463 s. This is the PART_A work's settled `cpu_ns`, the whole charge because SR-8's payload/guardian split is null (step-1 ruling B6). It excludes the fixed 20 s O that the store adds to form `charge_cpu_ns`.
-- *Harness* = 7.329488 s. This is the Stage 1c prescribed-arm maximum `cpu_input_s` (combined record `024cdcdd…`, job b `prescribed-1`, cold, on an EPYC 7763).
-- **k = 9896463 / 7329488 = 1.350226 > 1.25.**
-- **Re-application, computed and not adopted:** Ĉ₁c × k = 14.376 s gives B = 28.752 s and a CPU ceiling of **120 s**. Ŵ₁c × k = 14.568 s gives a wall ceiling of **300 s**. Both equal the shared PART_A ceilings, so no new value or profile revision follows. The shared ceilings hold while k ≤ 4.696 (CPU) and k ≤ 6.488 (wall).
-- **Sensitivity:** reading the charge with O included gives k = 4.079, and still 120 s / 300 s. The service ran on an EPYC 9V74, which Stage 1b measured about 1.5× faster than the 7763. So a same-host k would be higher than 1.35, not lower.
+- *Service* = **29.896463 s**: the PART_A work's `charge_cpu_ns`, the whole settled charge with nothing deducted (r1 PA-5, kept by r2 §9). SR-8's payload/guardian split is null (step-1 ruling B6), so the charge includes the 20 s O. *[Corrected 2026-09-30 after Codex review of `826caa3`: the first version deducted O and used 9.896463 s.]*
+- *Harness* = 7.329488 s: the Stage 1c prescribed-arm maximum `cpu_input_s` (combined record `024cdcdd…`, job b `prescribed-1`, cold, on an EPYC 7763).
+- **k = 29896463 / 7329488 = 4.078929 > 1.25.**
+- **Re-application, computed and not adopted:**
+  - **CPU:** Ĉ₁c × k = 43.429 s gives B = 86.858 s, so B + O = 106.858 s and the CPU ceiling stays **120 s**. The headroom is 13.142 s: 10.95 % of the 120 s ceiling, or 12.30 % of B + O. k can rise 15.1 % (to 4.696) before the CPU ceiling moves.
+  - **Wall:** Ŵ₁c × k = 44.010 s gives 3 × (44.010 + 30) = 222.03 s, so the wall ceiling stays **300 s** (headroom 77.97 s; it holds while k ≤ 6.488).
+  - Both equal the shared PART_A ceilings, so no new value or profile revision follows.
+- **Non-governing diagnostic:** `cpu_ns` alone (9.896463 s) gives k = 1.350226, and also 120 s / 300 s.
+- **Host:** the service ran on an EPYC 9V74, which Stage 1b measured about 1.5× faster than the 7763. So a same-host k would be higher, not lower.
 
 **PA-2b (CP-1a (1)(b)(i)):** holds. `predicted_seconds` = 27.082 s and `probe_seconds` = 3.988 s. The check is 1.5 × 27.082 = 40.62 s ≤ 265.12 s, the lower bound on `budget_seconds` (the 300 s wall minus the work's 34.88 s from reservation to CAPTURED). The 1.5 × P̂ term's check is now recorded.
 
-**Memory (`upper_bound_only_not_attribution`):** `memory_peak_bytes` 256,000,000 against `maximum_memory_bytes` 256,000,000. The binding is `/v7` with the P4 tuple extended, per the attempt's budget snapshot and the executed `bind_budget`. The reading is clipped at the binding, and the work recorded 0 OOM events. It bounds the shared footprint above only. m_m headroom (PA-3b) cannot be shown from a clipped reading. It is not a Part A figure and not a PA-5 input.
+**Memory (`upper_bound_only_not_attribution`):** `memory_peak_bytes` 256,000,000 against `maximum_memory_bytes` 256,000,000.
+- The binding is the attempt's budget snapshot, together with the PART_A phase `memory_bytes` in the measured release's campaign budget profile.
+- The reading is clipped at the binding, and the work recorded 0 OOM events. It bounds the shared footprint above only.
+- m_m headroom (PA-3b) cannot be shown from a clipped reading.
+- It is not a Part A figure and not a PA-5 input.
 
 **Re-measurement triggers (r2 §9):**
 - **Trigger 6, k > 1.25, is engaged.**
-- Trigger 5 is not: CPU 9.90 s ≤ 0.8 × B₁c = 17.04 s, the 34.88 s from reservation to CAPTURED ≤ 240 s, the work COMPLETED, and there were 0 OOM events.
+- **Trigger 5's CPU limb is engaged on the governing basis:** the whole charge, 29.90 s, exceeds 0.8 × B₁c = 17.04 s. O alone (20 s) exceeds 0.8 × B₁c, so on this basis the limb engages for any PART_A work. `cpu_ns` alone (9.90 s) would not engage it.
+- Trigger 5's other limbs are not engaged: the 34.88 s from reservation to CAPTURED is ≤ 240 s, the work COMPLETED, and there were 0 OOM events.
 
-**Returned to the operator:** whether a PA-5 re-application that leaves the ceilings unchanged answers trigger 6, or whether a re-measurement is owed.
+**Returned to the operator:**
+- whether a PA-5 re-application that leaves the ceilings unchanged answers triggers 5 and 6, or whether a re-measurement is owed;
+- whether trigger 5's CPU limb is meant to compare a charge that includes O against 0.8 × B.
 
 **Not granted:** C3 acceptance, S5 acceptance, adoption of any re-applied value, any merge of `claude/s5-part-a`, and any production value.

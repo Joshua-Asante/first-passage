@@ -3,10 +3,19 @@
 Pure arithmetic over retained evidence; it dispatches nothing and downloads nothing.
 The `.py.txt` suffix keeps it out of the import-boundary gate, like the harness.
 
-    python stage2.py.txt --run-dir <local copy of run 36766144433's artifact> \
+    python stage2.py.txt --artifact-zip <run 36766144433's qualification-s2-supervision zip> \
+        --run-api <gh api .../actions/runs/36766144433> \
+        --artifacts-api <gh api .../actions/runs/36766144433/artifacts> \
         --evidence-output <s2_run_evidence.py stdout for that run> \
         --stage1c <stage1c/36647434808-combined.json> \
         --stage1c-job-b <stage1c/36647434808-b-attempt1/record.json> > stage2.json
+
+Run binding: the artifact's contents carry no GitHub run id, so the inputs are bound to
+run 36766144433 through GitHub's own records. The run listing names the run and head, the
+artifact listing ties the artifact id to that run and gives its SHA-256 digest, and the zip
+read here must hash to that digest. Every input is then read from inside that zip, and each
+is pinned below. The release, profile and policy identities come from the run's journal,
+and each is checked against the bytes that carry it.
 
 Operator rulings 2026-09-30 (ledger, "Operator rulings, 2026-09-30", item 2): for
 TEST_ONLY, PA-5 is CPU-only, and `memory_peak_bytes` is an upper bound on the shared
@@ -14,31 +23,54 @@ footprint only. It is recorded, never attributed to Part A, and never a PA-5 inp
 """
 import argparse
 import hashlib
+import io
 import json
 import math
+import sqlite3
 import sys
+import tempfile
+import zipfile
 from fractions import Fraction
 from pathlib import Path
 
-RUN_ID = "36766144433"
+RUN_ID = 36766144433
 HEAD = "606e6e083c3264e8b2ff670889dfb5234e093e82"
 SCOPE = "S5_PART_A"
+ARTIFACT_NAME = "qualification-s2-supervision"
+RECORD_ID = "20d0a964ea1645d1aa4c4b8c1b2c5c85"
+ATTEMPT = "linux-cca27e50c3694f6a903dfe1ad359c702"
 STAGE1C_RUN = "36647434808"
-STAGE1C_COMBINED_SHA256 = "024cdcdd7e3c499af49f1358f7a4a6048641badc9b0679a99999f4bb8ba1f87e"
 PART_A_EXPORT = "boundary/part_a_observations.json"
-BUDGET_SNAPSHOT = "boundary/{attempt}-n1-budget.json"
+BUDGET_SNAPSHOT = "boundary/%s-n1-budget.json" % ATTEMPT
+JOURNAL = "boundary/journal.sqlite"
+# The input pins (SHA-256 of the exact bytes read).
+PINS = {
+    "artifact_zip": "362c22af36cbd617bc4d151502619fcbbcdb51191cf9aa58b2053d2de3a8d4be",
+    "run_api.json": "b78727675e370c69342873585df2257d10288b34a9e8f3560d36ceabcce2197a",
+    "artifacts_api.json": "b56600f098ca91b7a65eada6c971dcd6263c0b0cce5be54ec672dcd67b7b16af",
+    PART_A_EXPORT: "d4b682ce2eb0c2215372e154750fcb9b87c3712d8712744c9442c8c41a5c5991",
+    RECORD_ID + "/record.json": "b4ea25cce385539a52b3995fcca3cb933acda7c228a735e4b1d293c9203cad5d",
+    RECORD_ID + "/invariants.json": "9710c06eb24257d23b50d6b61510a2c52bebfe575b293ac52a497b5e27b9d080",
+    RECORD_ID + "/junit.xml": "e408ad06d57c363b64b97376699afee33bc4ec3f664e28fd62c1b7e8b8d85aef",
+    BUDGET_SNAPSHOT: "82081330801347c4901cb79098bd638f4fe912edbfc85c009c1c5d8b6f9dc854",
+    JOURNAL: "efec03b10f30f74ec8bd29a26792b5864fc99313c69f3b51fda3a305b1f1be86",
+    "s2_run_evidence.stdout.json": "85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d",
+    "stage1c/%s-combined.json" % STAGE1C_RUN: "024cdcdd7e3c499af49f1358f7a4a6048641badc9b0679a99999f4bb8ba1f87e",
+    "stage1c/%s-b-attempt1/record.json" % STAGE1C_RUN: "45d84cd5b3af43ffcc0a33a0efd869fb0fb37f822de936937909024a1ad153e3",
+}
 # r2 §9, CP-1a decision (1); the application entry of 2026-09-28.
 M_C, M_W, L_S, O_S = Fraction(2), Fraction(3), Fraction(30), Fraction(20)
 CPU_FLOOR_S, WALL_FLOOR_S, PA5_THRESHOLD = Fraction(120), Fraction(300), Fraction(5, 4)
 PA2B_FACTOR = Fraction(3, 2)
 
 
-def sha256(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
 
 
-def load(path):
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+def pinned(name, data):
+    assert digest(data) == PINS[name], "%s does not match its pin" % name
+    return data
 
 
 def exact(value):
@@ -54,36 +86,112 @@ def num(value, places=9):
     return round(float(value), places)
 
 
+def canonical_sha256(value):
+    return digest(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode())
+
+
 def ceilings(c_hat, w_hat, p_hat):
     """PA-1 and PA-2 after Stage 1c (r2 §9), rounded up to whole 10 s."""
     b = max(M_C * c_hat, PA2B_FACTOR * p_hat)
     cpu = ceil10(max(CPU_FLOOR_S, b + O_S))
-    wall = ceil10(max(WALL_FLOOR_S, M_W * (w_hat + L_S)))
-    return {"B_s": num(b), "cpu_s": cpu, "wall_s": wall,
+    wall_raw = M_W * (w_hat + L_S)
+    wall = ceil10(max(WALL_FLOOR_S, wall_raw))
+    return {"B_s": num(b), "B_plus_O_s": num(b + O_S), "cpu_s": cpu, "wall_raw_s": num(wall_raw), "wall_s": wall,
+            "cpu_headroom_s": num(CPU_FLOOR_S - (b + O_S)), "wall_headroom_s": num(WALL_FLOOR_S - wall_raw),
             "m_w_ge_m_c_over_m_c_minus_1": M_W >= M_C / (M_C - 1)}
+
+
+def bind_run(args):
+    """The run, its artifact and the zip's bytes, from GitHub's own records."""
+    run = json.loads(pinned("run_api.json", Path(args.run_api).read_bytes()))
+    listing = json.loads(pinned("artifacts_api.json", Path(args.artifacts_api).read_bytes()))
+    assert run["id"] == RUN_ID and run["head_sha"] == HEAD, "run listing is not the claimed run"
+    assert run["status"] == "completed" and run["conclusion"] == "success"
+    matches = [a for a in listing["artifacts"] if a["name"] == ARTIFACT_NAME]
+    assert len(matches) == 1, matches
+    artifact = matches[0]
+    assert artifact["workflow_run"]["id"] == RUN_ID and artifact["workflow_run"]["head_sha"] == HEAD
+    zip_bytes = pinned("artifact_zip", Path(args.artifact_zip).read_bytes())
+    assert artifact["digest"] == "sha256:" + digest(zip_bytes), "zip differs from the run's artifact digest"
+    return run, artifact, zipfile.ZipFile(io.BytesIO(zip_bytes))
+
+
+def identities(journal_bytes, snapshot):
+    """The measured release, profile and policy, each checked against the bytes that carry it."""
+    with tempfile.TemporaryDirectory() as scratch:
+        path = Path(scratch) / "journal.sqlite"
+        path.write_bytes(journal_bytes)
+        db = sqlite3.connect("file:%s?mode=ro" % path.as_posix(), uri=True)
+        try:
+            receipt = json.loads(db.execute("SELECT receipt_bytes FROM full_campaigns WHERE attempt_id=?",
+                                            (ATTEMPT,)).fetchone()[0])
+            objects = {role: (sha, bytes(body)) for role, sha, body in db.execute(
+                "SELECT role, sha256, body FROM full_campaign_objects WHERE attempt_id=?", (ATTEMPT,))}
+        finally:
+            db.close()
+    for role, (sha, body) in objects.items():
+        assert digest(body) == sha, "journal object %s does not hash to its sha256" % role
+    release_sha, release_body = objects["context_execution_release"]
+    policy_sha, policy_body = objects["context_qualification_policy"]
+    release, policy = json.loads(release_body), json.loads(policy_body)
+    assert receipt["attempt_id"] == ATTEMPT
+    assert receipt["execution_release_sha256"] == release_sha
+    assert receipt["policy_sha256"] == policy_sha == release["qualification_policy_sha256"]
+    assert receipt["profile_sha256"] == release["profile_sha256"] == canonical_sha256(release["profile"])
+    assert snapshot["profile"]["installed_profile_sha256"] == release["profile_sha256"]
+    assert receipt["budget_profile_sha256"] == canonical_sha256(release["campaign_budget_profile"])
+    assert release["campaign_budget_profile"]["phases"]["PART_A"] == snapshot["profile"]["phases"]["PART_A"]
+    return {
+        "source": "%s: the attempt's admission receipt (full_campaigns.receipt_bytes) and its retained "
+                  "context objects (full_campaign_objects); every digest below is recomputed from the bytes" % JOURNAL,
+        "release": {"schema": release["schema"], "sha256": release_sha, "authority_class": release["authority_class"],
+                    "capability": release["capability"], "dispatch_checkpoints": release["dispatch_checkpoints"]},
+        "profile": {"schema": release["profile"]["schema"], "sha256": release["profile_sha256"],
+                    "basis": "sha256 of the release's profile in canonical JSON; equals the receipt's profile_sha256 "
+                             "and the budget snapshot's installed_profile_sha256"},
+        "policy": {"schema": policy.get("schema"), "sha256": policy_sha,
+                   "basis": "the retained qualification policy object; equals the receipt's policy_sha256 and the "
+                            "release's qualification_policy_sha256"},
+        "budget_profile_sha256": receipt["budget_profile_sha256"],
+        "budget_sha256": receipt["budget_sha256"],
+        "receipt_schema": receipt["schema"],
+        "receipt_authority_class": receipt["authority_class"],
+    }
 
 
 def main():
     parser = argparse.ArgumentParser()
-    for name in ("--run-dir", "--evidence-output", "--stage1c", "--stage1c-job-b"):
+    for name in ("--artifact-zip", "--run-api", "--artifacts-api", "--evidence-output", "--stage1c",
+                 "--stage1c-job-b"):
         parser.add_argument(name, required=True)
     args = parser.parse_args()
-    run_dir = Path(args.run_dir)
+    run, artifact, archive = bind_run(args)
 
-    # The evidence reader's verdict, as printed at the measured head.
-    reader = load(args.evidence_output)
+    def member(name):
+        return pinned(name, archive.read(name))
+
+    # The evidence reader's verdict, as printed at the measured head, for this run's artifact.
+    reader = json.loads(pinned("s2_run_evidence.stdout.json", Path(args.evidence_output).read_bytes()))
     facts = reader["facts"]
     assert reader["ok"] is True and facts["refusals"] == [], "s2_run_evidence refused the run"
-    assert reader["run"]["headSha"] == HEAD and facts["tested_commit"] == HEAD
+    assert reader["run"]["headSha"] == HEAD == facts["tested_commit"]
+    assert reader["run"]["createdAt"] == run["created_at"] and reader["run"]["event"] == run["event"]
     assert facts["acceptance_scope"] == SCOPE == facts["expected_scope"]
-    record_dir = run_dir / facts["record_id"]
+    assert facts["record_id"] == RECORD_ID
+    record = json.loads(member(RECORD_ID + "/record.json"))
+    # RECORD_ID is the record's directory in the artifact (the reader's record_id); the launcher's own
+    # internal run_id inside record.json is a different id and is recorded as it stands.
+    assert record["before"]["commit"] == HEAD and record["status"] == "completed"
+    assert record["metadata"]["acceptance_scope"] == SCOPE
+    invariants = json.loads(member(RECORD_ID + "/invariants.json"))
+    assert invariants["passed"] is True and len(invariants["required_nodeids"]) == facts["required_nodes"]
+    member(RECORD_ID + "/junit.xml")
 
-    export = load(run_dir / PART_A_EXPORT)
-    assert export == facts["part_a_observations"], "local export differs from the reader's"
-    attempt = export["attempt_id"]
-    snapshot_path = run_dir / BUDGET_SNAPSHOT.format(attempt=attempt)
-    snapshot = load(snapshot_path)
-    assert snapshot["attempt_id"] == attempt
+    export = json.loads(member(PART_A_EXPORT))
+    assert export == facts["part_a_observations"], "the zip's export differs from the reader's"
+    assert export["attempt_id"] == ATTEMPT
+    snapshot = json.loads(member(BUDGET_SNAPSHOT))
+    assert snapshot["attempt_id"] == ATTEMPT
     pawork = next(w for w in snapshot["works"] if w["work_id"] == "pawork")
     assert pawork["phase"] == "PART_A" and pawork["state"] == "COMPLETED"
     part_a_limits = pawork["limits"]
@@ -91,9 +199,9 @@ def main():
     orchestration_ns = snapshot["profile"]["orchestration_cpu_ns"]["PART_A"]
     assert pawork["charge_cpu_ns"] == export["cpu_ns"] + orchestration_ns
     binding_memory = snapshot["budget"]["maximum_memory_bytes"]
+    measured = identities(member(JOURNAL), snapshot)
 
-    assert sha256(args.stage1c) == STAGE1C_COMBINED_SHA256, "Stage 1c combined record moved"
-    combined = load(args.stage1c)
+    combined = json.loads(pinned("stage1c/%s-combined.json" % STAGE1C_RUN, Path(args.stage1c).read_bytes()))
     verdict = combined["verdict"]
     assert combined["scope"] == "combined" and combined["stage"] == "1c" and combined["mode"] == "measure"
     assert verdict["validity_ok"] and verdict["rule_applicable"] and verdict["stop_class"] == "none"
@@ -103,20 +211,28 @@ def main():
     c_hat, w_hat, p_hat = (exact(estimates[k]) for k in ("C_hat_s", "W_hat_s", "P_hat_s"))
 
     # Which repeat the harness maximum is (job b is the only job holding it).
-    job_b = load(args.stage1c_job_b)
+    job_b = json.loads(pinned("stage1c/%s-b-attempt1/record.json" % STAGE1C_RUN,
+                              Path(args.stage1c_job_b).read_bytes()))
     source = [r for r in job_b["repeats"]
               if r["arm"] == "prescribed" and exact(r["cpu_input_s"]) == harness_s]
     assert len(source) == 1, source
 
-    service_s = Fraction(export["cpu_ns"], 10**9)
+    # PA-5's service figure: the payload CPU if separated, else the whole settled charge with nothing
+    # deducted (r1 PA-5, R1M:359; kept by r2 §9). The split is null, so the governing figure is
+    # charge_cpu_ns, the observation's cpu_ns plus the PART_A orchestration charge O.
+    assert export["payload_cpu_ns"] is None and export["guardian_cpu_ns"] is None
+    service_s = Fraction(pawork["charge_cpu_ns"], 10**9)
+    observed_s = Fraction(export["cpu_ns"], 10**9)
     k = service_s / harness_s
+    k_observed = observed_s / harness_s
     verdict_pa5 = "PASS" if k <= PA5_THRESHOLD else "RE-APPLY"
     current = ceilings(c_hat, w_hat, p_hat)
     scaled = ceilings(c_hat * k, w_hat * k, p_hat)
+    changed = (scaled["cpu_s"], scaled["wall_s"]) != (current["cpu_s"], current["wall_s"])
     # The largest k that keeps each shared ceiling: 2·Ĉ·k + O ≤ 120 and m_w·(Ŵ·k + L) ≤ 300.
     k_cpu_limit = (CPU_FLOOR_S - O_S) / (M_C * c_hat)
     k_wall_limit = (WALL_FLOOR_S / M_W - L_S) / w_hat
-    charge_k = Fraction(pawork["charge_cpu_ns"], 10**9) / harness_s
+    assert M_C * c_hat * k >= PA2B_FACTOR * p_hat, "the scaled B is not the m_c term"
 
     predicted = exact(export["predicted_seconds"])
     probe = exact(export["probe_seconds"])
@@ -133,8 +249,19 @@ def main():
         "stage": "2",
         "rule": "r2 §12.5 and §9 PA-5 (threshold 1.25), CPU-only for TEST_ONLY by operator ruling 2026-09-30 (2)",
         "source_run": {
-            "run_id": RUN_ID, "head": HEAD, "branch": reader["run"]["headBranch"],
-            "event": reader["run"]["event"], "scope": SCOPE, "record_id": facts["record_id"],
+            "run_id": run["id"], "run_attempt": run["run_attempt"], "head": run["head_sha"],
+            "branch": run["head_branch"], "event": run["event"], "conclusion": run["conclusion"],
+            "created_at": run["created_at"], "scope": SCOPE, "record_id": RECORD_ID,
+            "record_internal_run_id": record["run_id"],
+            "binding": {
+                "method": "the artifact contents carry no GitHub run id; GitHub's artifact listing for the run ties "
+                          "the artifact to run_id and head, the zip read hashes to the listing's digest, and every "
+                          "input below is read from inside that zip and pinned",
+                "artifact_id": artifact["id"], "artifact_name": artifact["name"],
+                "artifact_digest": artifact["digest"], "artifact_size_bytes": artifact["size_in_bytes"],
+                "artifact_workflow_run_id": artifact["workflow_run"]["id"],
+                "zip_sha256": PINS["artifact_zip"],
+            },
             "s2_run_evidence": {
                 "command": "python scripts/s2_run_evidence.py 36766144433 --expect-head 606e6e0 --expect-scope S5_PART_A",
                 "tool_revision": HEAD, "launcher": "fp.ps1 python (ops-env CPython 3.13.2)",
@@ -144,9 +271,11 @@ def main():
                 "cleanup_ok": facts["cleanup_ok"], "tested_commit_kind": facts["tested_commit_kind"],
                 "invariants_passed": facts["invariants_passed"], "required_nodes": facts["required_nodes"],
                 "junit": facts["junit"],
+                "bound_by": "the reader's run headSha, createdAt and event equal the run listing's; its record_id "
+                            "and its part_a_observations equal the zip's",
             },
             "part_a_observation": {
-                "export_schema": export["schema"], "attempt_id": attempt,
+                "export_schema": export["schema"], "attempt_id": ATTEMPT,
                 "producer": "tests/integration/qualification_boundary/test_campaign_part_a_linux.py::"
                             "test_s5_genuine_part_a_without_expansion_reaches_full_pass_ready (SR-8)",
                 "campaign_state": snapshot["state"], "campaign_validity": snapshot["validity"],
@@ -154,15 +283,17 @@ def main():
                 "initial_panels": snapshot["checkpoints"]["PART_A"]["initial_panels"],
                 "final_panels": snapshot["checkpoints"]["PART_A"]["final_panels"],
             },
+            "measured_identities": measured,
         },
         "service_cpu": {
-            "value_s": num(service_s), "cpu_ns": export["cpu_ns"],
+            "value_s": num(service_s), "charge_cpu_ns": pawork["charge_cpu_ns"],
             "payload_cpu_ns": export["payload_cpu_ns"], "guardian_cpu_ns": export["guardian_cpu_ns"],
-            "basis": "whole settled charge: the PART_A work's settled observation cpu_ns (payload and guardian "
-                     "together), because SR-8 exports the payload/guardian split as null (C3 step-1 ruling B6)",
-            "excludes": "the fixed orchestration charge O (orchestration_charge_cpu_ns %d), which the store adds to "
-                        "form charge_cpu_ns %d; PA-1 adds O separately" % (orchestration_ns, pawork["charge_cpu_ns"]),
-            "source": "%s field cpu_ns" % PART_A_EXPORT,
+            "basis": "the whole settled charge with nothing deducted (r1 PA-5, kept by r2 §9), because SR-8 exports "
+                     "the payload/guardian split as null (C3 step-1 ruling B6): the PART_A work's charge_cpu_ns, the "
+                     "settled observation cpu_ns %d plus the orchestration charge O %d"
+                     % (export["cpu_ns"], orchestration_ns),
+            "source": "%s, work pawork, field charge_cpu_ns; the observation cpu_ns is also %s's cpu_ns"
+                      % (BUDGET_SNAPSHOT, PART_A_EXPORT),
         },
         "harness_cpu": {
             "value_s": num(harness_s),
@@ -186,17 +317,28 @@ def main():
                            "P_hat_not_scaled": "PA-5 scales C_hat_1c and W_hat_1c only"},
                 "parameters": {"m_c": 2.0, "m_w": 3.0, "L_s": 30, "O_s": 20, "cpu_floor_s": 120,
                                "wall_floor_s": 300, "rounding": "up to whole 10 s"},
-                "unscaled": current, "scaled": scaled,
-                "ceilings_changed": (scaled["cpu_s"], scaled["wall_s"]) != (current["cpu_s"], current["wall_s"]),
+                "unscaled": current, "scaled": scaled, "ceilings_changed": changed,
                 "shared_ceilings_hold_while": {"k_cpu_le": num(k_cpu_limit), "k_wall_le": num(k_wall_limit)},
+                "cpu_margin": {
+                    "B_plus_O_s": num(M_C * c_hat * k + O_S), "ceiling_s": int(CPU_FLOOR_S),
+                    "headroom_s": num(CPU_FLOOR_S - (M_C * c_hat * k + O_S)),
+                    "headroom_fraction_of_ceiling": num((CPU_FLOOR_S - (M_C * c_hat * k + O_S)) / CPU_FLOOR_S, 6),
+                    "headroom_fraction_of_B_plus_O": num((CPU_FLOOR_S - (M_C * c_hat * k + O_S))
+                                                         / (M_C * c_hat * k + O_S), 6),
+                    "k_headroom_fraction": num(k_cpu_limit / k - 1, 6),
+                },
             },
-            "sensitivity": {
-                "charge_including_O_k": num(charge_k),
-                "charge_including_O_scaled": ceilings(c_hat * charge_k, w_hat * charge_k, p_hat),
-                "host": "the harness maximum ran on %s (job b); run %s ran on AMD EPYC 9V74 80-Core (its kernel.log). "
-                        "Stage 1b measured the 9V74 about 1.5x faster than the 7763 on the same workload, so a "
-                        "same-host k would be larger than this k, not smaller" % (job_b["runtime"]["cpu_model"], RUN_ID),
+            "diagnostic_non_governing": {
+                "label": "cpu_ns_only_not_governing",
+                "service_s": num(observed_s), "k": num(k_observed, 12),
+                "k_exact": "%d/%d" % (k_observed.numerator, k_observed.denominator),
+                "scaled": ceilings(c_hat * k_observed, w_hat * k_observed, p_hat),
+                "note": "the settled observation cpu_ns without O; recorded for diagnosis only, it does not set the "
+                        "verdict",
             },
+            "host": "the harness maximum ran on %s (job b); run %s ran on AMD EPYC 9V74 80-Core (its kernel.log). "
+                    "Stage 1b measured the 9V74 about 1.5x faster than the 7763 on the same workload, so a same-host "
+                    "k would be larger than this k, not smaller" % (job_b["runtime"]["cpu_model"], RUN_ID),
         },
         "pa2b": {
             "basis": "CP-1a decision (1)(b)(i): check PA-2b on the service's PART_A probe_seconds and "
@@ -223,9 +365,10 @@ def main():
             "label": "upper_bound_only_not_attribution",
             "memory_peak_bytes": export["memory_peak_bytes"],
             "maximum_memory_bytes": binding_memory,
-            "binding": "/v7 with the P4 tuple extended: budget.maximum_memory_bytes %d in the attempt's budget "
-                       "snapshot, the PART_A phase memory_bytes %d, and the executed bind_budget (docs/notes/"
-                       "2026-09-29-s5-c3-record/)" % (binding_memory, part_a_limits["memory_bytes"]),
+            "binding": "budget.maximum_memory_bytes %d in the attempt's budget snapshot; the PART_A phase "
+                       "memory_bytes %d in the measured release's campaign budget profile (%s, %s)"
+                       % (binding_memory, part_a_limits["memory_bytes"], measured["release"]["schema"],
+                          measured["release"]["sha256"]),
             "clipped": export["memory_peak_bytes"] >= binding_memory,
             "oom_events": export["oom_events"],
             "reading": "the slice-wide, clipped, never-reset memory.peak (campaign_supervisor.py:974): an upper bound "
@@ -237,7 +380,11 @@ def main():
         },
         "remeasurement_triggers": {
             "5_cpu": {"value_s": num(service_s), "threshold_s": num(Fraction(4, 5) * b_1c),
-                      "basis": "0.8 x B from Stage 1c", "engaged": service_s > Fraction(4, 5) * b_1c},
+                      "basis": "the whole charge (the PA-5 basis) against 0.8 x B from Stage 1c; O alone (20 s) "
+                               "exceeds 0.8 x B, so on this basis the trigger engages for any PART_A work",
+                      "engaged": service_s > Fraction(4, 5) * b_1c,
+                      "cpu_ns_only_not_governing": {"value_s": num(observed_s),
+                                                    "engaged": observed_s > Fraction(4, 5) * b_1c}},
             "5_wall": {"value_s": num(reserve_to_captured_s), "threshold_s": num(Fraction(4, 5) * wall_limit_s),
                        "basis": "reservation-to-CAPTURED boottime against 0.8 x the 300 s ceiling",
                        "engaged": reserve_to_captured_s > Fraction(4, 5) * wall_limit_s},
@@ -245,20 +392,14 @@ def main():
                                  "engaged": pawork["state"] != "COMPLETED" or export["oom_events"] != 0},
             "6_k_above_1_25": {"engaged": k > PA5_THRESHOLD},
         },
-        "source_sha256": {
-            PART_A_EXPORT: sha256(run_dir / PART_A_EXPORT),
-            "%s/record.json" % facts["record_id"]: sha256(record_dir / "record.json"),
-            "%s/invariants.json" % facts["record_id"]: sha256(record_dir / "invariants.json"),
-            "%s/junit.xml" % facts["record_id"]: sha256(record_dir / "junit.xml"),
-            BUDGET_SNAPSHOT.format(attempt=attempt): sha256(snapshot_path),
-            "s2_run_evidence.stdout.json": sha256(args.evidence_output),
-            "stage1c/%s-combined.json" % STAGE1C_RUN: sha256(args.stage1c),
-            "stage1c/%s-b-attempt1/record.json" % STAGE1C_RUN: sha256(args.stage1c_job_b),
-        },
-        "private_evidence": "the run artifact and the reader's output stay under local_artifacts/s5-c3-evidence/; "
-                            "this record carries hashes, counts and labels only",
+        "source_sha256": dict(PINS),
+        "private_evidence": "the run artifact, GitHub's run and artifact listings and the reader's output stay under "
+                            "local_artifacts/s5-c3-evidence/stage2-read-36766144433/; this record carries hashes, "
+                            "counts and labels only",
         "not_granted": "C3 acceptance, S5 acceptance, adoption of any re-applied value, any production value",
     }
+    if changed:
+        doc["pa5"]["reapplication"]["stop"] = "the scaled ceilings differ from the shared ones: returned to the operator"
     json.dump(doc, sys.stdout, indent=2, sort_keys=False)
     sys.stdout.write("\n")
 
