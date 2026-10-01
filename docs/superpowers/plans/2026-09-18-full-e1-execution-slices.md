@@ -1515,7 +1515,9 @@ Private copies in `first-passage-archive`; none is acceptance evidence.
 - [#851](https://github.com/Joshua-Asante/first-passage-archive/pull/851): the full S4+Part-A run `36673465130` at `072c133` (103 files). **The run is RED:** a memory-cgroup OOM in the shared qualification slice (limit 250000 kB) killed the supervisor during S5 node (c), the 12 later nodes failed with a refused connection, and 14 of 26 failed. Load-bearing evidence, not acceptance. Manifest [`full-36673465130-archive.sha256`](../../notes/2026-09-29-s5-c3-record/full-36673465130-archive.sha256), SHA-256 `d2ac1f1050fc920c0635af0de233da2af70591acc6caecfdb7d612ce2e2a1a01`.
 - [#852](https://github.com/Joshua-Asante/first-passage-archive/pull/852): the OOM diagnosis runs. `36678879864` is the instrumented full run at `553270d` (107 files, **RED**, it reproduced the C3 memory-cgroup OOM; includes `fp-diag/memory-samples.jsonl`); manifest [`diag-36678879864-archive.sha256`](../../notes/2026-09-29-s5-c3-record/diag-36678879864-archive.sha256), SHA-256 `80e5edf904cf92401c06fa9f117ab89701da1f6ec140f053039a54ff6eac42f4`. `36677826842` is the aborted attempt at `f0fc885` (14 files, zero tests, plugin import failure); manifest [`diag-36677826842-archive.sha256`](../../notes/2026-09-29-s5-c3-record/diag-36677826842-archive.sha256), SHA-256 `b1fc2009eaecb70a9fbbd96747c24f8fae5fc519979d3336e695fbe8488e8cf4`. Diagnostic evidence, not acceptance.
 
-#846–#848 are merged; #849–#852 are open until the operator merges them. Later diagnostic subsets are archived the same way once the S5 session confirms them final.
+- [#853](https://github.com/Joshua-Asante/first-passage-archive/pull/853): the full S4+Part-A run `36766144433` at `606e6e0` (132 files; **GREEN**, 27/27 required nodes, record `20d0a964…`). Its `boundary/journal.sqlite` is 182 MB, over the archive tool's 95 MB cap, so it is archived as `journal.sqlite.gz` (SHA-256 `7ace9a9d11fbd0e79bdde119739597b9b0cf9119f269c24cba32ade226c84ef6`). That file decompresses byte for byte to the raw journal, SHA-256 `efec03b10f30f74ec8bd29a26792b5864fc99313c69f3b51fda3a305b1f1be86` (round trip verified). Manifest [`full-36766144433-archive.sha256`](../../notes/2026-09-29-s5-c3-record/full-36766144433-archive.sha256), SHA-256 `f1be0c76dc4447ae21ffcbc43dad3cc6b20633a20d9404e84cf9306dffccf52e`; it lists both the raw journal and the `.gz`. A full local copy is kept, gitignored, at `local_artifacts/s5-c3-evidence/full-36766144433/` in the primary checkout. Recorded by the coordinating session on 2026-09-30; archiving was approved by the operator.
+
+#846–#852 are merged; #853 is open until the operator merges it. Later diagnostic subsets are archived the same way once the S5 session confirms them final.
 
 ### Harness fix `b5f53da` read; fresh Stage 1c approval, 2026-09-29
 
@@ -1609,3 +1611,156 @@ Private copies in `first-passage-archive`; none is acceptance evidence.
 - one subset re-run.
 
 This is a new defect, not the Stage 1c memory issue, so the pre-committed stop rule does not apply.
+
+### Coordinator execution — re-verification after "Fix both": subsets 3–4, Windows on the fix head, C3 step-1 addendum, 2026-09-30
+
+**Fix commit `d2e00a9`** (escalation lane, on `c016c60`).
+- **Route fix:** `FULL_PASS_READY` and `PART_A_FAILED` are added to:
+  - `journal_snapshot.CAMPAIGN_BUDGET_STATES`;
+  - `journal_snapshot.CAMPAIGN_CHECKPOINT_STATES`;
+  - `campaign_funding._decode`'s state tuple. The sweep found this one; it is load-bearing, because with only the journal tuples fixed the commit still fails with "funding state differs".
+- **Not widened, deliberately:** predecessor-receipt checks that must equal `PART_A_READY`, and `PROGRESSION_PHASES`, where terminal states admit no phase.
+- **New test:** `test_campaign_n2::test_part_a_commit_advances_through_the_real_store` drives a real `CampaignStore` to both terminal states. It fails on the unfixed tuples: record `20260930T021026Z-b44a8e48f267`. The ticket set passes, 140: record `20260930T021459Z-18977f084c59`.
+- **(d) change:** assert the g5 unit is inactive, failed or absent after T1.
+
+**Subset 3: run `36660441353`** (on `d2e00a9`; `DIAGNOSTIC_SUBSET`; junit sha256 prefix `07f2e01073242863`). The route defect is fixed: (a) and (b) now reach their terminal states, and (c) passed. Two test defects that the route defect had masked surfaced:
+- **(a) and (b) failed** the exact staged-role assertion. It expected only the two S5-D1 roles, but the G5 output roles (`attempt_journal`, `runtime_load_trace`, …) are staged too. The assertion was over-narrow; the code was right.
+- **(d) failed** with `NameError: name 'kill' is not defined`. The `d2e00a9` change dropped the binding. This is the **first failed correction** of (d) under AGENTS.md's two-failure rule.
+
+**Second correction `072c133`** (Opus escalation lane, on `d2e00a9`; the Linux test module only, +39/−6).
+- **Staged-role check:** it stays **exact**, against `PART_A_STAGED_ROLES = S5-D1 roles ∪ G5 output roles`. Each role is sourced to `campaign_supervisor.py:1889-1892`/`:1951-1954`, `g5.py:748-759`, `evidence.py:2944-2960` and `policy.py:144-154`. A run-time check confirms the set equals those production constants, and a separate assertion keeps S5-D1 presence explicit. The coordinator condition was to keep the check exact, not narrow it.
+- **(d):** the kill `CompletedProcess` is bound again, and its return code is recorded as a fact.
+- **Local records:** collection 4 in `20260930T041954Z-a597a6e06a4f`; the manifest and selector tests 72 passed, 1 skipped in `20260930T042005Z-ba9bfd218ed6`.
+
+**Windows on `d2e00a9`.** `072c133` changes only the Linux-only module above.
+
+| Line | Record | Result |
+|---|---|---|
+| line 1 | `20260930T023033Z-a30f6d25dabb` | 1248 passed, **2 failed** |
+| line 2 | `20260930T032142Z-cbd001445b30` | 80 passed, 1 skipped; completed, exit 0 |
+| line 3 | `20260930T032313Z-584196cbf455` | 1839 passed, 1 skipped; completed, exit 0 |
+| `check` | `20260930T045102Z-84d632f6b610` | completed, exit 0 |
+| `git diff --check` | — | exit 0 |
+
+Line 1's two failures are the known pre-existing base failures, `test_s2_evidence_tooling_followups::test_validate_inputs_uses_the_wrappers_whitespace_test[\xa0-False]` and `[\u3000 \u2003-False]`. They are outside the S5 change. Line 1 is not a pass, and this record does not describe it as one.
+
+**Subset 4: run `36670938260`** (on `072c133`; `DIAGNOSTIC_SUBSET`; source stable, capture complete, cleanup ok; junit sha256 prefix `c75cb48e7153356c`). **All four Part A nodes passed**, 4/0/0/0. The verification exit of 2 is by design for a diagnostic run.
+
+**Harness branch** rebuilt twice:
+- `cd3623b` on `d2e00a9`;
+- then **`db748f8`** = `072c133` + the harness commit, pushed with a lease from `cd3623b` after subset 4 closed.
+
+Its harness files are byte-identical to the reviewed `b5f53da`: all 91 blobs, empty diff.
+
+**Stage 1c closure equivalence, `c7713e7` → `072c133`** (asked for by the coordinator seat). The full per-module table is in [`docs/notes/2026-09-29-s5-c3-record/stage1c-equivalence/`](../../notes/2026-09-29-s5-c3-record/stage1c-equivalence/README.md). It is computed from git blob bytes by the static import closure, using `runtime.source_closure`'s resolution rule.
+- **Measured closure.** Roots: `worker` (holding `run_part_a_body`), `compute`, `production_source`, `part_a`, `production`, `plan`, `runtime` and `test_contract`, whose `NOW` is imported inside `_repeat_mode_1c`. That is **68 modules**, including `replay`, `model`, `runner` and `test_trust_domain`, with the same membership at both commits. **All 68 are byte-identical** (SHA-256 at each commit is in the table). Codex's C3 re-review (P2) found that the first version of this table omitted `test_contract` from the measured roots and so counted 66. Codex recomputed the closure independently and got the same 68, all identical.
+- **Not in the closure:** `journal_snapshot` and `campaign_funding`, the two ops modules `d2e00a9` changed. So the route fix cannot change what Stage 1c measured.
+- **Staging closure** (outside every measured unit). Roots: the harness's fixtures, `composition_fixture`, `bundle_fixture`, `test_worker`, `test_contract` and `test_profile`. That is 63 modules, and one differs: `test_profile.py`, changed by `c016c60`. The changed definitions are test functions and `fixture_producer_module`. `document()`, the only name staging uses, is AST-identical at both commits.
+- **Result:** Stage 1c `36647434808` (VERIFIED, 1.5×M̂ = 235,739,136 B) covers the measured code at `072c133`. No re-measure decision is needed.
+
+**C3 step-1 addendum.** Two claims behind the step-1 acceptance were incomplete:
+- **§7.7's closed-set claim** (the return's statement that every state set naming the Part A states was widened) did not hold. Three closed sets omitted the new terminal states.
+- **The review did not exercise the commit path.** The Windows suite and Codex's step-1 review had no real-store `PART_A` commit test, only constant assertions. Only Linux exposed the defect.
+
+`d2e00a9` adds that test.
+
+**Codex C3 re-review, 2026-09-30** (scope `c7713e7..072c133` and harness `db748f8`; a reviewer verdict, not C3 acceptance):
+- (A) State-set sweep: no further improper omissions. The remaining narrow sets enforce checkpoint prerequisites or phase-admission boundaries.
+- (B) Staged roles: the exact ten-role union is correct against the cited production paths, for both PASS and FAIL.
+- Harness: SR-5 generation runs outside the measured units. Repeat-local copying deliberately stays inside them. A missing cache refuses with I-6. The harness files match `b5f53da`. Four existing harness checks passed against the `db748f8` source under the validated operations Python 3.13.2.
+- One P2: the closure table omitted `test_contract` from the measured roots. It is corrected above (68 modules), and the conclusion stands.
+- Codex did not re-run the Linux integration or the full suites.
+- **An independent second Codex review** (a cloud task submitted by the coordinator seat, `task_e_6abcabc95e24832c8ea05349c49ef647`): **RESOLVED, no findings**. It corroborates A, B and the harness:
+  - an AST sweep of `ops/c1_rail/qualification` plus a grep of the state literals, which found the remaining narrow tuples are checkpoint-specific guards;
+  - the ten-role set;
+  - the unchanged closure, with neither `journal_snapshot` nor `campaign_funding` in it;
+  - `db748f8`'s blobs matching `b5f53da`;
+  - the (d) assertion.
+
+  It judged the original closure roots appropriate and did not raise the `test_contract` point. The 68-module correction is the more conservative reading, and both agree the closure is unchanged. That review could not run the tests either, because its environment has no `tmp/ops-env`.
+
+The step-1 acceptance stands with this addendum.
+
+**Full S4-plus-Part-A selection: run `36673465130`** (`-f mode=s5` on `072c133`; record `e49e91ce…`, scope `S5_PART_A`, source stable, capture complete, cleanup ok, tested commit = head) is **RED, a C3 memory stop**.
+- **Result:** 14 of 26 required nodes failed; `s2_run_evidence.py` refuses the record.
+- **Passed (12):** every S2 service, S3 N1 and S4 N2 node, plus S5 (a) → `FULL_PASS_READY` and (b) → `PART_A_FAILED`.
+- **Failure:** S5 (c) failed "private transport child failed" during its n2g5 dispatch. At 05:56:41 a memory-cgroup OOM in the shared qualification slice (250,000 kB of 250,000 kB) killed the supervisor service, which ended "Failed with result 'oom-kill'". The 12 later nodes all failed on ConnectionRefused: one cause, a cascade.
+- **Stopped:** no re-dispatch and nothing widened, under step-1 item 9. The evidence is archived privately.
+
+**Diagnosis.**
+- **Operator ruling, 2026-09-30:** "Diagnose first, no runs". A read-only diagnosis followed.
+- **Operator ruling:** "go with the one instrumented run". Diagnostic branch `claude/s5-diag-memory` (not for merge): `072c133` plus a root sampler and a test-labelling pytest plugin only, at the same limit, with no ops, core, tests or tools change.
+  - The first attempt, `36677826842` at `f0fc885`, ran zero tests: `scripts/fp.py:104-105` strips `PYTHONPATH`, so the plugin could not import. That was an instrumentation defect.
+  - The corrected run `36678879864` at `553270d` reproduced the OOM exactly: 1,747 samples, 0 sampler errors.
+- **Attribution: a combination, with the leftover io tmpfs decisive.**
+  - Each work's checkpoint io tmpfs pair (`campaign_supervisor.py:2084-2104`) is stopped only by the harness's campaign cleanup (`tools/qualification_verification/campaign_host.py:155-170`).
+  - Slice shmem equals the mounts' used bytes exactly, +3.17 MB per work: the staged 135-file bundle plus the plan in `in`, and `result.frame` in `out`.
+  - At the OOM: anon 194.8 + kernel 7.1 + shmem 53.9 = 255.8 MB, with 17 pairs. Without the tmpfs, S5 (c) peaks at about 202 MB.
+  - **This is production code/lifecycle, not test debris:** no ops code releases the mounts.
+  - Only four readers use the mounts, all before `retain_checkpoint_capture` (`:2377`). Retry, g5 and recovery read the store only.
+- **Unreclaimable headroom without the tmpfs:** a 225.7 MB peak (anon 199.3 + kernel 26.4, in S4 guardian-death-mid-N2), which is **30.3 MB, 11.8 %**. THP is `enabled=[always]`, with `anon_thp` up to 48 MB. Supervisor anon grows 57.0 → 72.7 MB, then is flat: bounded.
+- **`memory_peak_bytes` = 256,000,000 for attempt `505c81c0` is clipped.** It is the whole slice's never-reset `memory.peak` (`campaign_supervisor.py:974`, `:804`), already at the cap from S3 on. PA-5 compares CPU only. The memory figure bounds only the shared footprint, through PA-3b. A per-phase figure needs a new field, because the store refuses a decreasing `memory_peak_bytes` (`campaign_store.py:3118-3119`).
+
+**Operator rulings, 2026-09-30.** Source: in the coordinating session Joshua wrote "I agree with your recommendation. Send it to the S5 agent." He confirmed all three directly in this session ("Confirmed, proceed").
+1. **io-mount release fix: GO.**
+   - The card is frozen at `docs/briefs/handoffs/2026-09-30-s5-io-mount-release-card.md` on `claude/s5-part-a` and implemented on the Opus escalation lane.
+   - Release happens after `retain_checkpoint_capture`, and after `_archive_part_a_for_inspection` before IN_DOUBT. Campaign cleanup is the backstop.
+   - Order: four fail-first tests → Windows lines 1–3, `check` and `git diff --check` → a closure re-run on the fix head → Codex → one Linux full S4-plus-Part-A selection.
+   - The new Linux mount-count assertion becomes a **required node** under `QEXEC-01`.
+2. **Stage 2 memory, option (a).**
+   - For TEST_ONLY, PA-5 is CPU-only, and PA-3b takes the whole-footprint `memory_peak_bytes` as an upper bound on the shared footprint.
+   - A **per-phase memory field** (the payload unit's own `memory.peak`) is a named item before production qualification, recorded in the CP-6 behavior inventory. It is not built in S5.
+3. **The 11.8 % unreclaimable headroom, option (a).**
+   - Accepted for TEST_ONLY, with the cap unchanged.
+   - Carried to production host sizing (T11/CP-8) as a named item, with the THP share (up to 48 MB `anon_thp`) to be separated there.
+
+The failed run `36673465130` stays on record as the stop. This addendum's PR stays held until the fix's Linux selection has been read.
+
+### Coordinator execution — io-mount release fix; full S4-plus-Part-A selection GREEN, 2026-09-30
+
+**Card and amendments** (the escalation lane is Opus; the card is `docs/briefs/handoffs/2026-09-30-s5-io-mount-release-card.md` on `claude/s5-part-a`):
+- Frozen at `50d229f` after the operator's GO. Each amendment below was committed before the work it governs.
+- **A1** (`a3c8e77`, ruling "Bind mounts to the work"): the executor returned NEEDS_CONTEXT, because the guardian cannot `StopUnit` its mounts. Its bus child admits only `StartTransientUnit` (`deploy/qualification/bootstrap.py:93`), and the polkit rule admits unit-scoped actions only for `fpq`-prefixed names (`tools/qualification_verification/campaign_host.py:88-93`). A1 therefore binds each io mount unit to the work's guardian unit with exactly `BindsTo=`/`After=`.
+- **A2** (`eff41ca`, ruling "Amend node (c) as proposed"): node (c) read `out_path` after settlement, so its host reads moved to before settlement.
+- **A3** (`e7c9826`, ruling "Freeze the guardian"): Codex found two P2s, A2's read still raced and node (4)'s sampling was insufficient. A3 held node (c)'s window with a cgroup freeze, and node (4) moved to exact journal intervals.
+- **A4** (`68a7fd7`, ruling "Archive-based on Linux"): Codex found that the freeze's acquisition raced and that deadlines run on while frozen. That was **node (c)'s second failed correction**, so the coordinator stopped under the two-failure rule and returned to the operator.
+  - Node (c) restarted with explicit criteria. It makes no host mount read, keeps every settled assertion, checks the prefix on the staged bytes, and adds the release check.
+  - Archive-to-mount fidelity is proven by fake-bus test (2), which covers both the abnormal-exit and absent-frame paths.
+  - Node (4) ends an interval only at a deactivation record and fails on any failed stop.
+  - **Removed from node (c) by operator ruling:** the host-side listing, 0444, `f_ffree`, and the on-mount absence checks.
+
+**Code.**
+- `7c97a69`: the only production change. `_io_mount_properties` gains `guardian_unit` and adds exactly `BindsTo`/`After`, +19/−2 in `campaign_supervisor.py`.
+- Tests:
+  - `d33bddf`: tests (1)–(3), fail-first on `072c133` (record `20260930T171825Z-b5f2756d3eb8`); they pass on the fix (`20260930T171850Z-6f40aacff83b`, the acceptance set, 259 passed, 1 skipped).
+  - `5268f5b`: the harness.
+  - `0ab8f6b`: the new required node `test_s5_io_mount_pairs_are_released_with_each_work_guardian` under `QEXEC-01` (41 → 42 nodes).
+  - `aeabbd4`, then `606e6e0`: the A3 and A4 test revisions.
+
+**Verification.**
+- Windows on `0ab8f6b`:
+  - line 1, `20260930T173142Z-7020a1971a25`: 1254 passed, **2 failed**. These are the known base whitespace cases in `test_s2_evidence_tooling_followups`; line 1 is not a pass.
+  - line 2, `20260930T180209Z-0c7b29f1db56`: 80 passed, 1 skipped.
+  - line 3, `20260930T180319Z-eaf81326edda`: 1845 passed, 1 skipped.
+  - `check`, `20260930T191134Z-8366de74c21c`: completed.
+  - `git diff --check` is clean.
+- Later commits change only the Linux test file.
+  - On `aeabbd4`: line 2 plus boundary-verification, `20260930T191324Z-410943c4e83c`, 106 passed, 1 skipped; collection `20260930T191502Z-17ef4e47a239`, 5 nodes.
+  - On `606e6e0`: `20260930T192328Z-616ea49366fa`, 78 passed, 1 skipped; collection `20260930T192336Z-bc60f17958e1`.
+- The Stage 1c closure re-run on `0ab8f6b` is 68 measured modules, all byte-identical to `c7713e7`, with `campaign_supervisor`, `campaign_store` and `campaign_host` outside it.
+- Codex:
+  - `eff41ca..0ab8f6b`: two P2s, both in tests. Production ordering, custody, BindsTo and Stage 1c were confirmed.
+  - `e7c9826`/`aeabbd4`: three P2s.
+  - `606e6e0`: **RESOLVED, no actionable findings.**
+
+**Linux full S4-plus-Part-A selection: run `36766144433`** (`-f mode=s5` on `606e6e0`; record `20d0a964…`) is **GREEN**, and `s2_run_evidence.py --expect-head 606e6e0 --expect-scope S5_PART_A` reads `ok: true` with no refusals.
+- `status=completed`, exit 0, verification exit 0; source stable; capture complete; cleanup ok; the tested commit is the head.
+- `invariants.json` passed, 27 required nodes; junit 27/0/0/0 (sha256 `e408ad06…`).
+- The only OOM on the host was the deliberate `test_s2_shared_memory_oom_is_retained_last`, which killed its own payload inside its work slice at the run's end. The supervisor was not killed.
+- The Part A observation's `memory_peak_bytes` is again 256,000,000. That is the clipped slice-wide peak, which by operator ruling (2) is an upper bound only.
+
+**Next under the C3 Linux grant:** Stage 2/PA-5, CPU-only for TEST_ONLY.
+
+**Not granted:** C3 acceptance, S5 acceptance, any merge of `claude/s5-part-a`, and any production authority.
+
+**Not granted:** C3 acceptance, S5 acceptance, any merge of `claude/s5-part-a`, and any production authority.
