@@ -262,7 +262,7 @@ Outcome line: `P-1-entitlement · REST entitlement confirmed (existing plan) · 
 - ☐ This row's **own CP-3** written authorization, completing the row's authorization block (§4).
 - ☐ The previous row's traces returned and their review recorded (§0).
 - ☐ CP-2 facts F-1 (entitlement), F-4 (cost treatment) and F-6 (venue permission P-1 and the session plan §2 venue-rules item) recorded.
-- ☐ The row's exact request body recorded privately and reviewed (§3.7).
+- ☐ The row's exact request body recorded privately and reviewed (§3.7). *(2026-09-30, X-1: under the accepted derivation-rule CP-3 ([X-1 packet §4](2026-09-29-x1-decision-packet.md#4-request-and-evidence-binding)), CP-3 approves the rule and the tool version first. The bytes are generated afterwards, and their validation and request hashes are recorded at generation and compared before launch. This item is satisfied by that record, not by bytes reviewed before CP-3.)*
 - ☐ §2.1 host disarm confirmed **this session**.
 - ☐ §2.2 inventory complete **this session**, every row in its required state.
 - ☐ Starting state read and recorded: **flat, no working orders, no outstanding requests**, account-wide. No preservation or other operator trade open or working (drill plan line 203; §0.1 line 133).
@@ -346,7 +346,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 | Stop | Absolute `stopLoss` in the same request; distance ≤ `<OP: max stop distance>` |
 | Take-profit | ☐ included at `<OP: take-profit distance>` (so a later X-3 exercises an OCO pair) ☐ omitted |
 | Wait / time / window / cost | `<OP: stop-activation wait>` · `<OP: max time in market>` · `<OP: session window>` · `<OP: cost ceiling>` |
-| Request body (§3.7) | ☐ exact request body (field names and non-private values) reviewed and recorded privately before send · SHA-256 ____ |
+| Request body (§3.7) | ☐ exact request body (field names and non-private values) reviewed and recorded privately before send · SHA-256 ____ *(2026-09-30, X-1: the derivation-rule CP-3 governs. The SHA-256 is the request hash recorded at generation, after CP-3, together with the validation hash; see the X-1 packet §4 and §8.)* |
 | Venue conditions (F-6(a), added 2026-09-28) | ☐ operator attests Tradeify's five conditions are met (§1.1: ownership, exclusive use, not HFT, full responsibility, no rule circumvention) |
 | Written authorization | Date ____ · text reference (private) SHA-256 ____ |
 
@@ -360,7 +360,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 5. Poll status and lifecycle per id, for the entry and the children, until the entry is `Filled` or `Rejected`. REST has no Alert History row, so polling is the only way to see a late reject (Q09; Gate A A7).
 6. After the fill, read the children's status and quantity, fills by `orderId`, and positions.
 7. **Teardown.** Recovery steps 2 (otherwise branch) to 5: attended platform flatten and cancel, then confirmation reads. No further row runs this session.
-8. **Reads on X-1's order (optional; not yet available).** These are not part of CP-3. The drill plan's known-order definition (line 156, written before §A11.3) and its session A/B sequence (lines 211–212) name X-1's order as the best R-1/R-2 source. §A11.3 and addendum §1.3 (line 443), as written, confine R-1 to the session of a preservation trade the operator places anyway, and do not cover X-1's order. These reads therefore run only if the F-3 decision (§1) admits X-1's order as a target *(Decided 2026-09-28, §1.1 F-3: an independently approved X-1 order may supply R-1/R-2 evidence when it meets their conditions. That grants no extra trade and no X-1 approval)*, and then under R-CLOSE once F-1 and F-3 are confirmed, exactly within the drill plan's tables:
+8. **Reads on X-1's order (optional; not yet available).** *(2026-09-30: under the option (b) ruling ([X-1 packet §2](2026-09-29-x1-decision-packet.md#2-a-11--gc-7-decision)), R-1 on X-1's order is **required**. It runs after terminal teardown and before the next ~17:00 ET reset, and as a read-only reconciliation it is exempt from the no-further-row rule. It ran for X-1 on 2026-09-30, per the operator (X-1 packet §8).)* These are not part of CP-3. The drill plan's known-order definition (line 156, written before §A11.3) and its session A/B sequence (lines 211–212) name X-1's order as the best R-1/R-2 source. §A11.3 and addendum §1.3 (line 443), as written, confine R-1 to the session of a preservation trade the operator places anyway, and do not cover X-1's order. These reads therefore run only if the F-3 decision (§1) admits X-1's order as a target *(Decided 2026-09-28, §1.1 F-3: an independently approved X-1 order may supply R-1/R-2 evidence when it meets their conditions. That grants no extra trade and no X-1 approval)*, and then under R-CLOSE once F-1 and F-3 are confirmed, exactly within the drill plan's tables:
    - **R-1** on X-1's order in the same session, before the ~17:00 ET reset. This is the `clOrdId` match that a platform-placed trade cannot supply (drill plan line 171).
    - **R-2** on the same order after a reset, in a later session (drill plan lines 211–212).
    - Whether they may run in a session that an incident has ended is not settled here; the fresh reads that recovery itself calls for (§3.4) are part of recovery.
