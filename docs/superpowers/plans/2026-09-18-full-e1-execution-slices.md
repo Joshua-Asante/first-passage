@@ -1799,11 +1799,17 @@ The failed run `36673465130` stays on record as the stop. This addendum's PR sta
 
 **Re-measurement triggers (r2 §9):**
 - **Trigger 6, k > 1.25, is engaged.**
-- **Trigger 5's CPU limb is engaged on the governing basis:** the whole charge, 29.90 s, exceeds 0.8 × B₁c = 17.04 s. O alone (20 s) exceeds 0.8 × B₁c, so on this basis the limb engages for any PART_A work. `cpu_ns` alone (9.90 s) would not engage it.
-- Trigger 5's other limbs are not engaged: the 34.88 s from reservation to CAPTURED is ≤ 240 s, the work COMPLETED, and there were 0 OOM events.
+- **Trigger 5 is not engaged.** By the operator's ruling of 2026-10-01 (below), its CPU limb compares compute-only CPU: `cpu_ns` 9.90 s ≤ 0.8 × B₁c = 17.04 s. The whole charge, 29.90 s, is kept as a diagnostic labelled "trigger 5 is not evaluated on this basis by ruling". Trigger 5's other limbs are not engaged either: the 34.88 s from reservation to CAPTURED is ≤ 240 s, the work COMPLETED, and there were 0 OOM events.
+
+**Operator ruling, 2026-10-01 (trigger 5 basis).** Joshua, in the coordinating session: "go with your recommendation to rule that trigger 5 compares the compute-only CPU". The coordinator relayed it to this worker seat, and Joshua confirmed it directly here.
+- r2 §9 trigger 5's CPU limb compares compute-only CPU (`cpu_ns`, O excluded), because O is fixed overhead and not workload.
+- PA-5 keeps the whole-settled-charge basis.
 
 **Returned to the operator:**
-- whether a PA-5 re-application that leaves the ceilings unchanged answers triggers 5 and 6, or whether a re-measurement is owed;
-- whether trigger 5's CPU limb is meant to compare a charge that includes O against 0.8 × B.
+- trigger 6: does a PA-5 re-application that leaves the ceilings unchanged answer it, or is a re-measurement owed?
+- the faster-host caveat;
+- the PA-3b memory headroom.
+
+The coordinator recommends accepting all three for TEST_ONLY and carrying them to T11/CP-8.
 
 **Not granted:** C3 acceptance, S5 acceptance, adoption of any re-applied value, any merge of `claude/s5-part-a`, and any production value.

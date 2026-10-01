@@ -379,12 +379,15 @@ def main():
                     % export["memory_peak_bytes"],
         },
         "remeasurement_triggers": {
-            "5_cpu": {"value_s": num(service_s), "threshold_s": num(Fraction(4, 5) * b_1c),
-                      "basis": "the whole charge (the PA-5 basis) against 0.8 x B from Stage 1c; O alone (20 s) "
-                               "exceeds 0.8 x B, so on this basis the trigger engages for any PART_A work",
-                      "engaged": service_s > Fraction(4, 5) * b_1c,
-                      "cpu_ns_only_not_governing": {"value_s": num(observed_s),
-                                                    "engaged": observed_s > Fraction(4, 5) * b_1c}},
+            "5_cpu": {"value_s": num(observed_s), "threshold_s": num(Fraction(4, 5) * b_1c),
+                      "basis": "compute-only CPU (the settled observation cpu_ns, O excluded) against 0.8 x B from "
+                               "Stage 1c, by operator ruling 2026-10-01: O is fixed overhead, not workload; PA-5 "
+                               "keeps the whole-charge basis",
+                      "engaged": observed_s > Fraction(4, 5) * b_1c,
+                      "whole_charge_diagnostic": {
+                          "label": "trigger 5 is not evaluated on this basis by ruling",
+                          "value_s": num(service_s),
+                          "exceeds_threshold": service_s > Fraction(4, 5) * b_1c}},
             "5_wall": {"value_s": num(reserve_to_captured_s), "threshold_s": num(Fraction(4, 5) * wall_limit_s),
                        "basis": "reservation-to-CAPTURED boottime against 0.8 x the 300 s ceiling",
                        "engaged": reserve_to_captured_s > Fraction(4, 5) * wall_limit_s},

@@ -210,13 +210,14 @@
   },
   "remeasurement_triggers": {
     "5_cpu": {
-      "value_s": 29.896463,
+      "value_s": 9.896463,
       "threshold_s": 17.0354848,
-      "basis": "the whole charge (the PA-5 basis) against 0.8 x B from Stage 1c; O alone (20 s) exceeds 0.8 x B, so on this basis the trigger engages for any PART_A work",
-      "engaged": true,
-      "cpu_ns_only_not_governing": {
-        "value_s": 9.896463,
-        "engaged": false
+      "basis": "compute-only CPU (the settled observation cpu_ns, O excluded) against 0.8 x B from Stage 1c, by operator ruling 2026-10-01: O is fixed overhead, not workload; PA-5 keeps the whole-charge basis",
+      "engaged": false,
+      "whole_charge_diagnostic": {
+        "label": "trigger 5 is not evaluated on this basis by ruling",
+        "value_s": 29.896463,
+        "exceeds_threshold": true
       }
     },
     "5_wall": {
