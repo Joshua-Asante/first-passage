@@ -544,6 +544,63 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
 - **The attended-input adapter** is retrospectively accepted for X-1 run-1930 only, **qualified**. Its pin/path-safety review and the reconstruction of the resolved import set are owed. **Future use stays barred** until both are accepted.
 - **Still owed after X-1:** the drill plan's "X-1 acceptance" addendum (#572), and the governance sweep for the 2026-09-30 AGENTS.md amendment. The next order-producing row needs its own CP-3.
 
+## Addendum 2026-10-01 — first-session simplification rulings (six cuts)
+
+**Source.** Joshua, in the coordinating session on 2026-10-01: "go with all six recommended cuts". He was replying to the coordinator's disposition of current work toward the first attended Tradeify eval deployment, which keeps all four strategies and full portfolio behavior.
+
+**What these rulings do.** They scope, defer or cancel work. They do **not** change accepted contracts, stop running tasks or weaken any guarantee. Each still needs its owner's text where noted. Retained everywhere:
+- confirmed broker feedback to all four ports;
+- reservation-plus-halt for an unknown request;
+- settlement of every session;
+- the baked activation gates;
+- M1.
+
+1. **Route amendment: first-release scope only.** Option B's resume machinery is **out of scope** of the bounded-exposure unknown-request amendment for the first release: rules 4′, 4a–4c, 9′ and 12, the §A3 figures, and UB-2, UB-6, UB-9 and UB-10 ([incident ADR addendum](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md)). Those wait for a later release.
+   - The first-release text is narrow. An unknown request means its reservation is held and trading halts, and the only release is a uniquely correlated outcome (T08 §7.10, PR #575). The §A2 rule-7 non-entry rule is included.
+   - T09 is specified against the unamended E3. The halt/resume §3–§4 and E3 diffs are not required for the first release.
+   - Both step-4 reviews stay, applied to the narrow text.
+   - The §A1 trace, UB-7 evidence, the close contract and X-2/X-4 stay.
+   - Owed: the route/incident coordinator writes the narrow text. The operator merges #575, then accepts the text, then gate B.
+2. **Feed: no-spend steps move earlier.**
+   - Written provider questions Q1–Q12 and reads of published terms are **allowed now**, with no account, signup, credential or spend ([feed note](../../notes/2026-09-27-feed-provider-neutral-preparation.md)). Agents may draft the questions. Sending any message stays the operator's act.
+   - The feed-equivalence spec may be **frozen now**, before any provider data.
+   - Signup and spend stay behind D-feed (a)+(b) and CP-7.
+3. **X-4: reduced build path.** GC-4's required observation is unchanged:
+   1. one resting MNQ buy-stop bracket is placed;
+   2. the parent shows `Working` with both children `Suspended`;
+   3. the parent alone is cancelled;
+   4. all three end terminal, with no fill, the account flat and nothing working.
+
+   The build is **small reviewed extensions to X-1's accepted round-7 generator and sender** (stop entry type, two children, a parent cancel bound to the parent's account path), with **R-1 v3.2** for the terminal reads and the coordinator classifying from the sealed bytes.
+   - **Cut from the drafted suite** (#572's X-4 handoff): `x4_profile`, the observer's read budget and rate machinery, the asynchronous late-response channel, `x4_attended_input`, `x4_adjudicate`, and the multi-pass reviews. One focused review replaces those reviews.
+   - **Kept:**
+     - a one-use placement claim and a one-use cancel claim, each surviving a restart, including an unknown placement (MUST-PASS, because `order_id` idempotency is disproven);
+     - raw response bytes sealed before parsing;
+     - validation of both child identities;
+     - attended cancel of every live order if the account is flat.
+   - This supersedes the drafted suite where they differ. #572's six recorded C1 items apply only where they bind the kept items.
+4. **#571: parked, whole.** It changes only the legacy c1-rail `EventLedger` path. The book route uses CC-3's durable halt and never reaches it.
+   - **Guard while parked:**
+     - `dry_run=true` stays;
+     - **no `c1_rail_arm` of any legacy leg**, including the M1 Stage-1 test leg;
+     - #571 is retained and deployed before any legacy re-arm or M1 Stage-1 ceremony.
+   - The M1 limitation is recorded in the [M1 ADR addendum of 2026-10-01](../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md).
+5. **Secondary simplifications.**
+   - **D-GO:** the signed-GO evaluation is closed, and the baked GO stays. Reopen it only if T12 timing shows the reseal does not fit B7.
+   - **D-HIST, the successor venue and the M-B idle-clock monitor:** deferred until a successor attempt is authorized.
+   - **T13:** the later-session activation machinery and backup-restore rehearsals are deferred. T13's T16 acceptance covers the first session only, which is the initial activation. Kept: disarmed fail-closed restart, no restart within a session, and the durable unknown-request block.
+   - **Automatic feed repair:** simplified to *a gap is an incident and halts the session*. Warm-up, delivered-data equivalence and gap detection stay.
+   - **D-MON:** simplified. The existing channels are checked against the halt/resume contract. Any gap is filled by a no-cost external provider, not an in-house build. **The channel choice is still the operator's.** The alternate-channel escalation stays.
+6. **T00 step 2: adopt the existing pre-registration.**
+   - The step-2 pre-registration adopts [`2026-08-26-prop-survivor-scoring-prereg-v2.md`](../../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) by citation. It adds only the expressions, pass floor, scenarios, intraday clock, NO-GO condition and the counting of R1/R2 `UNDETERMINED` days.
+   - It may be drafted now, in parallel with the S5 landing. Ratification stays the operator's act.
+   - **Still open:** how D-feed (a) treats a NO-GO T00 result whose risk the operator accepts into F1. This decision is still required.
+
+**Also recorded:**
+- **#570** (the simplification decision packet) is the vehicle for D-GO, D-HIST, D-REC and D-MON.
+- **#579** (the audit-rescope card) is **not dispatched**; no new audit starts.
+- **Qualification recovery (D3, R1–R10) is unchanged** by these rulings. Any simplification of it comes back as a separate D3 amendment, using #570 §4's interruption-cost comparison.
+
 ## Verification of this planning artifact
 
 Current status was checked through authenticated GitHub queries and fetched Git
