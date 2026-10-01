@@ -332,6 +332,16 @@ The dispatch-without-commit breach (§6.1) stays open for the coordinator. The o
 
 **Drill map by behavior and interface, not by label.** This return and the [operator session plan](../../notes/2026-09-25-t08-drills-t07-reads-operator-session.md) number drills differently and partly use different request forms. Authorization and evidence bind to the row, never to a "D*n*" label alone:
 
+**2026-09-30 evidence update (derived mirror):** the drill-plan owner's
+[X-1 acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)
+records the §A1 entry/bracket behavior as observed and accepted for one MYM REST
+attempt on the bound incumbent eval. This is REST-form evidence, not execution
+of the webhook-form D1 below. Same-session lifecycle/status and fill reads worked
+for this attempt; the full post-teardown R-1 sequence remains owed. No activation
+latency bound, competing-order coverage for the omitted P0b interval, other
+symbol, close/modify/cancel capability, or release follows. Earlier “Not
+demonstrated” cells preserve the documentary assessment at its date.
+
 | Behavior to establish | This return | Session plan | Interface in the plan | Authorized? | Gate-A status |
 |---|---|---|---|---|---|
 | §A1: one-contract entry and bracket created in one call; the stop activates on the first fill at quantity 1 | D1 | D1 | Webhook-form fields | In principle, 2026-09-25 (operator performs) | Not demonstrated |

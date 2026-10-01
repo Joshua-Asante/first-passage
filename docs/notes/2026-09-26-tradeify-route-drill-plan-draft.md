@@ -428,6 +428,100 @@ They are designed as M checks plus offline consumer tests, and observed live onl
 
 ## Owners and propagation
 
+**Current X-1 disposition:** see the [September 30 acceptance](#x-1-acceptance--2026-09-30) below. Earlier “not demonstrated” entries are historical for that observed scope only.
+
 - **Owners.** The executive-review corrections (§2.5) belong to the packet's 2026-09-26 revision (§1, §1.1, §1.1a, B-1, A-1). This file creates no second owner. The consistency-review corrections (CR-1 to CR-12, 2026-09-26) mirror coordinator decisions whose owners are the packet (§1.1, §1.2, A-1) and, as read, the incident ADR (§A1, §A6) and the UB-8 note (Corr. 2); this file owns only their effect on its rows.
 - **Operator ruling 2026-09-26.** This file's ruling block records the R-1 and R-2 authorization, its entitlement condition and the drill directions (individual decisions after documentary prerequisites; X-5 deferred; no automatic fallback to the live evaluation environment); the recording procedure there is a coordinator proposal, not part of the ruling. Incident ADR §A11.1 items 4–6 (PR #515) record the same reads-and-drills decisions beside the close direction, and its item 4 points here for the read authorization and its scope. **Single owner: OPEN for the coordinator.** The coordinator names one owner for the reads-and-drills ruling when the decisions are applied to their canonical owners after the stack lands (written ruling, coordination boundary), and labels the other record a mirror. Until then the two texts must agree, and a change to either is made in both. The session plan's §0 addendum rows point here. The packet's rulings table mirrors the full ruling set and names the other owners: incident ADR §A11 and §A11.1 and campaign §59 Ruling 5 (PR #515), and the S5 hold ledger entry 2026-09-26 (PR #517).
 - **When traces exist.** The coordinator records outcomes in CAP (R2–R5, N1) and T08 §7, as session plan §5 describes. The drill-map rows in REST §6.11 bind by behavior, so each outcome is recorded against its behavior row with its interface.
+
+## X-1 acceptance — 2026-09-30
+
+**Decision: scoped PASS for §2.1 / GC-2a; evidence accepted with limits.**
+The reviewing Codex session, acting under Joshua's direct instruction to review
+and record this run, accepts the observed one-contract MYM REST market entry and
+linked native stop on the bound incumbent evaluation environment, September 30.
+This is a coordinator evidence decision, separate from the offline adjudicator's
+`OBSERVED_COMPLETE` classification. It grants no further placement, resend,
+arming, deployment, other-row execution, or gates B–D acceptance.
+The approved 19:30–20:00 EDT window's sole placement attempt is consumed.
+
+**Governing sources.** This drill plan §2.0–§2.1 and commissioning packet §3.4 /
+§4.1 govern behavior and teardown. The later X-1 decision packet was read from
+retained commit `ccfe2338be622631bc2281e16c3f25804d1a4c94`, path
+`docs/notes/2026-09-29-x1-decision-packet.md`, on the local
+`claude/x1-decision-packet-e3503f` branch; it is absent from the inspected primary
+HEAD `028c5ce88a473942e0e792bb607fe9e85133948b`. No branch was switched or
+unmerged preparation text installed. Its §2 option-(b) and §4 derivation-rule
+rulings, private v3.3 observer contract, round-7 review rulings, and approved
+attended-input/window amendment were read together with the retained approvals.
+This review claims neither a campaign-wide coordinator transfer nor operator
+ratification of a release.
+
+| Obligation | Decision and evidence scope |
+|---|---|
+| GC-2a entry/stop identity chain | Discharged for this attempt: one placement response; one `New` carrying the recorded correlation id; entry filled in one print at quantity one; child linked by `parentId`; protective `Sell`, quantity one, type `Stop`, submitted price and `Working` validated. Final fresh P4 was issued after the other sufficient-evidence items held and returned `Working`. No GC-2a fail or correlation abort is demonstrated |
+| Same-session per-order read feasibility | Observed successfully on this entry and child, including lifecycle/status and fill lookup. This supersedes “never observed on this account” for these specific reads, not for historical orders or other requests |
+| Normal attended teardown / outstanding effects | Discharged for this attempt: Joshua's market-exit/cancel recovery at 19:44:00 EDT; fresh REST flat exposure and zero working orders; entry, stop and exit terminal; OR has no outstanding id. Browser corroboration is retained; it does not replace REST terminal evidence |
+| Host disarm | Before/after samples and retained post-recovery checks support `dry_run=true`, `armed_until=None`, daemon `emit_enabled=false` and `effective_emit=false` at their observation times. They do not prove continuous disarm or current host state in a future session |
+| Generation and attended SEND controls | Actual generation `20260930T234120Z` matched the independent private record, both actual files and sidecars, sealed binding, generator and approved adapter; preceding generation unused. Final checks satisfied ten-second freshness and both five-point movement bounds; request bytes unchanged. Exact human SEND confirmation is retained |
+| Actor / competing-order coverage | Inventory and disabled configurable senders are operator-attested; no firm intervention is recorded. **Intermediate P0b was omitted: no competing-order coverage for that interval.** Pre-send and post-action P0b exist. No claim of exclusive close ownership or absence of transient activity |
+| Post-teardown R-1 | **Not discharged.** Option-(b) requires the separate drill-plan R-1 sequence after all ids are terminal, before reset. During-row P2/P5 and terminal status confirmation do not substitute for that full post-teardown sequence. No such collector return is retained here; later reads cannot retrospectively establish same-session coverage |
+
+**Why the omitted P0b does not fail GC-2a.** The accepted tool-review Ruling 1
+explicitly says not to wait for fill + five seconds once sufficient evidence
+holds, and to record no coverage when the sample is omitted. It is retained in
+private `tools/x1-review-codex/CODEX_REVIEW.md` and its R1/R2 continuation.
+Final P4 completed at T0 + 5.147 seconds, before the sample due at first observed
+fill + five seconds (T0 + 7.146 seconds). This acceptance consumes that existing
+ruling; it neither waives a required sample after the fact nor claims complete
+competing-activity coverage. Operator margin/spend attestations are retained;
+their private ledgers were not independently audited by this review.
+
+**Limits and remaining obligations.** This trace supplies §A1's REST-form
+admission observation only for the named symbol/environment/date. It does not
+qualify a deployed consumer, another symbol, multi-contract or partial-fill
+behavior, OCO with a target, rejected modification, resting-entry cancellation,
+REST C-a closing, late rejection, activation-latency distribution/bound, incident
+recovery or a race guarantee. Platform market exit is not X-3's REST close.
+GC-1, GC-2b, GC-3–GC-8 retain their separate requirements; the observed correlation
+and normal successful reads do not close those gates wholesale. R-2 stays closed
+with limits / recovery unestablished; no new R-2 investigation is scheduled.
+CAP N1-entry/N1-b and R2 gain this scoped observation, while full N1 and R2–R5
+and settlement acceptance remain open. CP-5, T09, edition freeze, production
+qualification/feed/host/settlement readiness, T13 and CP-9 remain separately gated.
+
+**Evidence and verification.** Originals remain private in
+`local_artifacts/route-drills-2026-09/x1-session-2026-09-30/`: `run-1930`,
+`run-1930-ADJUDICATION.json`, `SESSION_CHECKS.md`,
+`CP3_INPUT_1930_APPROVED.md`, and `hash-record-20260930T234120Z.json`.
+Seal-file SHA-256: `2f71510c6a6360863fb74599b810f54ab8601375a54796fb979a95e4773c4269`;
+adjudication SHA-256: `e3f98d0ccb7700726d9f3d4cc77aa2d745545ad5f15563af11340a4109cbdff1`.
+No sealed file, existing report or approval was rewritten.
+`fp.ps1 doctor` succeeded with operations Python 3.13.2 at
+`tmp/ops-env/Scripts/python.exe`, 62 locked packages.
+Command: `./fp.ps1 python -m pytest local_artifacts/route-drills-2026-09/x1-review-2026-09-30/test_retained_evidence.py -q -s -p no:cacheprovider`.
+Result: three evidence checks passed; seal verified (89 files), report reproduced
+in memory, actual generation/tool/adapter pins and final sender controls matched.
+Record: `.cache/fp-verification/20261001T000054Z-f652464c2238/record.json`:
+completed, both exits zero, stable source, complete capture, no report/capture
+errors. Tested HEAD `028c5ce` with pre-existing staged `AGENTS.md` and untracked
+local settings; these were untouched. Git's inaccessible global-ignore warning
+persists. This is an offline evidence check, not a full repository gate-suite run
+or a new live observation.
+
+**Next bounded step / return boundary.** Prepare the X-4 documentary readiness
+packet for coordinator review, then return for Joshua's separate written CP-3.
+It must name its environment and limits, MNQ symbol binding, resting-entry and
+child-state observations, parent cancel, fill/cancel abort, recovery and terminal
+confirmation, with fresh prerequisites explicitly outstanding. The X-1-only
+A-11 exception cannot be carried to X-4: resolve its actor/session-start contract
+before execution. Review and preparation do not authorize an entry or cancel.
+X-2 also retains M2 review and fresh-position owner confirmation; X-3 retains
+its close-semantics/residual-risk and exclusivity decisions. No X-5 race is added.
+
+Joshua's hands-off objective remains a design goal. The accepted adapter removes
+UTC typing and captures prompt time before ask input; it establishes no broker
+tick timestamp or unattended authority. Preserve freshness, both movement bounds,
+human SEND, immutable validated bytes, one-attempt/no-resend rules and attended
+recovery. Further automation needs its own reviewed capability and authority
+decision; no control is relaxed by this acceptance.

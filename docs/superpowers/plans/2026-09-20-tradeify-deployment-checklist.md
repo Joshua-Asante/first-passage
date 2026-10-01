@@ -542,3 +542,23 @@ objects. No new test-pass or live-capability claim is made. Before dispatch,
 refresh the moving #436 head and ongoing owner returns. The primary checkout's
 old staged September 19 documents are not the current B0 record and were left
 untouched. This checklist is not a commit, merge, provider contact or deployment.
+
+## Addendum 2026-09-30 — sequence after X-1 review
+
+**Derived coordination update:** [campaign §61](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#61--x-1-observed-route-acceptance-2026-09-30)
+and the [drill-plan acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)
+replace earlier “no row has run / Stage 0 next” wording for this workstream.
+X-1 has a scoped GC-2a PASS on its observed MYM REST entry/native-stop trace and
+normal attended teardown. Intermediate P0b coverage is absent; post-teardown
+R-1 is not discharged. No full-route, consumer or deployment acceptance follows.
+
+Next bounded route step is **X-4 documentary readiness preparation**, returning
+before execution for coordinator review and Joshua's own CP-3. X-4 needs its
+own actor/session-start decision: X-1's mandatory-firm-control exception does
+not apply automatically. X-2 retains M2 review and fresh-position confirmation;
+X-3 retains close/residual-risk/exclusivity decisions; X-5 remains deferred.
+CP-5 / gates B–D and T09 remain held on their own requirements. Qualification,
+edition, feed, host, settlement and CP-9 obligations are unchanged. The consumed
+attempt authorizes no repeat entry, resend, arm or deployment. Preserve ten-second
+freshness, both five-point movement bounds, human SEND and validated bytes;
+hands-off operation remains a goal requiring separate review and authority.

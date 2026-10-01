@@ -4057,3 +4057,21 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 **Board write:** STATE decision index, 2026-09-25 row → this section. Pointers: §59 forbidden-list amendment above; AGENTS.md public-clone posture; `core/strategies/BOOK_SOURCES.sha256`.
 
 **Addendum 2026-09-26 — later operator direction on source access.** The operator also directed, in a separate session: "I want to allow agents to read private ports" and "I want agents to be able to read pine strategies", with other qualifications to follow. On reconciliation the operator ruled (2026-09-26) that this section's wording governs; no broader AGENTS.md permission was adopted. Historical statements about what an earlier session did or did not read remain historical evidence, not access restrictions.
+
+## §61 — X-1 observed route acceptance (2026-09-30)
+
+Joshua directed the continuation review of the completed September 30 X-1
+session. Codex recorded a **scoped GC-2a PASS**, distinct from the adjudicator's
+`OBSERVED_COMPLETE`, with the row-semantic owner:
+[drill-plan acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30).
+It accepts the observed MYM REST entry/native-stop identity and normal terminal
+teardown only. The intermediate P0b sample supplies no competing-order coverage;
+its omission follows the accepted stop-at-sufficiency ruling. Post-teardown R-1
+is not discharged. The sole placement attempt is consumed; sealed evidence is
+unchanged and private. CAP and T08 carry scoped mirrors. No deployment, arming,
+resend, next row, unattended operation or gates B–D acceptance follows.
+
+Next bounded route step: X-4 documentary readiness preparation, returning to
+the coordinator and then Joshua's separate CP-3, with its actor contract and
+fresh execution prerequisites still open. This entry records the directly
+authorized review; it transfers no other campaign coordination work.

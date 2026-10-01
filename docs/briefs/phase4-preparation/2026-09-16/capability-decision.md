@@ -6,6 +6,16 @@ the initial-pass findings where stated. R1 is qualified only as a local engineer
 property; actual settlement and route qualification remain incomplete. The
 coordinating agent owns this record. No release acceptance is issued.
 
+**2026-09-30 scoped update:** [X-1 acceptance](../../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)
+records a PASS for the observed one-contract MYM REST entry/native-stop behavior
+and normal attended terminal teardown. N1-entry/N1-b and R2 have that observed
+identity/fill/protection trace; they are not qualified wholesale or bound to a
+deployed strategy consumer. R3–R5 remain unproven for release. Same-session
+per-order reads succeeded for the observed entry/child; the separate post-teardown
+R-1 sequence is not discharged. No competing-order coverage is claimed for the
+omitted intermediate P0b interval. This dated scoped update supersedes earlier
+“no actual trace” wording only for those observations. Live release remains blocked.
+
 The executed assessment sequence is specified in the
 [self-service closure plan](../../../superpowers/plans/2026-09-16-self-service-capability-closure.md).
 It preserves this record as the sole capability verdict owner.
