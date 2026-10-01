@@ -393,7 +393,28 @@ def main():
                        "engaged": reserve_to_captured_s > Fraction(4, 5) * wall_limit_s},
             "5_overrun_or_oom": {"work_state": pawork["state"], "oom_events": export["oom_events"],
                                  "engaged": pawork["state"] != "COMPLETED" or export["oom_events"] != 0},
-            "6_k_above_1_25": {"engaged": k > PA5_THRESHOLD},
+            "6_k_above_1_25": {"engaged": k > PA5_THRESHOLD,
+                               "disposition": "answered for TEST_ONLY by operator ruling 2026-10-01 (1): the "
+                                              "re-application leaves the ceilings unchanged, so no re-measurement "
+                                              "is owed now"},
+        },
+        "operator_rulings": {
+            "date": "2026-10-01",
+            "source": "Joshua in the coordinating session (\"Go with recommendations for all 4\"), relayed by the "
+                      "coordinator and confirmed directly in this worker session",
+            "trigger_5_basis": "trigger 5's CPU limb compares compute-only CPU (cpu_ns, O excluded); PA-5 keeps the "
+                               "whole-settled-charge basis",
+            "trigger_6": "for TEST_ONLY, the re-application leaving %d s / %d s unchanged answers the trigger; no "
+                         "re-measurement is owed now" % (scaled["cpu_s"], scaled["wall_s"]),
+            "faster_host": "accepted for TEST_ONLY; k %s, the host difference (service on an EPYC 9V74, harness "
+                           "maximum on an %s) and the CPU headroom %s s (%s%% of the %d s ceiling) are carried to "
+                           "production host sizing (T11/CP-8)"
+                           % (num(k, 6), job_b["runtime"]["cpu_model"],
+                              num(CPU_FLOOR_S - (M_C * c_hat * k + O_S), 3),
+                              num(100 * (CPU_FLOOR_S - (M_C * c_hat * k + O_S)) / CPU_FLOOR_S, 2),
+                              int(CPU_FLOOR_S)),
+            "pa3b_memory_headroom": "accepted for TEST_ONLY, consistent with ruling 2026-09-30 (2); m_m headroom "
+                                    "cannot be shown from the clipped reading and is carried to T11/CP-8",
         },
         "source_sha256": dict(PINS),
         "private_evidence": "the run artifact, GitHub's run and artifact listings and the reader's output stay under "

@@ -232,8 +232,17 @@
       "engaged": false
     },
     "6_k_above_1_25": {
-      "engaged": true
+      "engaged": true,
+      "disposition": "answered for TEST_ONLY by operator ruling 2026-10-01 (1): the re-application leaves the ceilings unchanged, so no re-measurement is owed now"
     }
+  },
+  "operator_rulings": {
+    "date": "2026-10-01",
+    "source": "Joshua in the coordinating session (\"Go with recommendations for all 4\"), relayed by the coordinator and confirmed directly in this worker session",
+    "trigger_5_basis": "trigger 5's CPU limb compares compute-only CPU (cpu_ns, O excluded); PA-5 keeps the whole-settled-charge basis",
+    "trigger_6": "for TEST_ONLY, the re-application leaving 120 s / 300 s unchanged answers the trigger; no re-measurement is owed now",
+    "faster_host": "accepted for TEST_ONLY; k 4.078929, the host difference (service on an EPYC 9V74, harness maximum on an AMD EPYC 7763 64-Core Processor) and the CPU headroom 13.142 s (10.95% of the 120 s ceiling) are carried to production host sizing (T11/CP-8)",
+    "pa3b_memory_headroom": "accepted for TEST_ONLY, consistent with ruling 2026-09-30 (2); m_m headroom cannot be shown from the clipped reading and is carried to T11/CP-8"
   },
   "source_sha256": {
     "artifact_zip": "362c22af36cbd617bc4d151502619fcbbcdb51191cf9aa58b2053d2de3a8d4be",

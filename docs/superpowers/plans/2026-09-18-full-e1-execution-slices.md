@@ -1805,11 +1805,23 @@ The failed run `36673465130` stays on record as the stop. This addendum's PR sta
 - r2 §9 trigger 5's CPU limb compares compute-only CPU (`cpu_ns`, O excluded), because O is fixed overhead and not workload.
 - PA-5 keeps the whole-settled-charge basis.
 
-**Returned to the operator:**
-- trigger 6: does a PA-5 re-application that leaves the ceilings unchanged answer it, or is a re-measurement owed?
-- the faster-host caveat;
-- the PA-3b memory headroom.
-
-The coordinator recommends accepting all three for TEST_ONLY and carrying them to T11/CP-8.
+**Dispositions:** trigger 6, the faster-host caveat and the PA-3b memory headroom are ruled in the next entry, "Operator rulings, 2026-10-01 (trigger 6, host, memory)".
 
 **Not granted:** C3 acceptance, S5 acceptance, adoption of any re-applied value, any merge of `claude/s5-part-a`, and any production value.
+
+### Operator rulings, 2026-10-01 (trigger 6, host, memory)
+
+**Source.** Joshua, in the coordinating session: "Go with recommendations for all 4" (the fourth is the trigger 5 basis, recorded in the entry above). The coordinator relayed the rulings to the Stage 2 worker seat, and Joshua confirmed all three directly there ("Confirmed, record all 3"). They are recorded in [`stage2.json`](../../notes/2026-09-27-s5-part-a-measurement/stage2.json) under `operator_rulings`.
+
+1. **Trigger 6 (k = 4.078929 > 1.25).** For TEST_ONLY, the PA-5 re-application leaves the ceilings unchanged at 120 s / 300 s, and that **answers the trigger**. No re-measurement is owed now.
+2. **Faster host: accepted for TEST_ONLY.** The service ran on an EPYC 9V74, and the Stage 1c harness maximum was measured on an EPYC 7763. Three items are carried to production host sizing (T11/CP-8):
+   - k = 4.078929;
+   - the host difference;
+   - the CPU headroom of 13.142 s (10.95 % of the 120 s ceiling).
+3. **PA-3b memory headroom: accepted for TEST_ONLY.** The clipped `memory_peak_bytes` reading cannot show m_m headroom. This is consistent with the 2026-09-30 ruling (2), and the item is carried to T11/CP-8.
+
+The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeify-deployment-checklist.md)'s CP-8 row.
+
+**Next:** #569 is merge-ready once Codex is clean at its head. C3 acceptance goes to Joshua after it merges.
+
+**Not granted:** C3 acceptance, S5 acceptance, any merge, and any production value or budget.
