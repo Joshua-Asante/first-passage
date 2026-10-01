@@ -132,3 +132,52 @@ For D-GO evaluation, return the exact superseding-ADR proposal, key-authority de
 Deliberately not done: TradingView implementation or owner-contract amendment, renewed vendor contact, route-drill execution, data-feed selection, live host inspection, qualification-service migration, legacy rail restart repair, code deletion, purchases or standing-guidance changes. No numerical risk or qualification setting is changed.
 
 **Preparation verification:** source and owner-document review; relative-file links and whitespace checks. No runtime behavior has been implemented or tested by this packet. Final preparation check results are reported with delivery.
+
+## 7. October 1 brainstorming — shorten the path to a full-portfolio eval
+
+**Operator constraint:** Joshua selected “Deploy all four strategies together, preserving the full portfolio behavior.” A subset, altered sizing, disabled required strategy behavior or a different portfolio is outside this proposal. Joshua authorized adding this discussion to the PR; that authorizes recording the proposals, not adopting them or executing an eval session.
+
+**Target to evaluate:** one bounded, attended eval release with all four strategies and conservative incident termination. The current roadmap already provides one attended session; the proposed saving is a narrower maturity requirement for that session, not a new claim that attendance alone makes deployment safe. Learn delivery performance, operator workload and operational reliability during the eval where failures can be contained. Keep behavior, portfolio qualification and release authority unchanged unless their specific owners accept a change.
+
+This section challenges whether D-MON and D-GO should be first-session prerequisites at all. It does not adopt them as extra gates. D-REC concerns qualification execution, not live trading restart; the existing prohibition on same-session restart after a trading incident does not decide same-sample compute recovery.
+
+### 7.1 Candidates to remove, defer or resequence
+
+| Existing work or requirement | Candidate first-eval treatment | Evidence and owner decision needed |
+| --- | --- | --- |
+| Automatic operational recovery, reconnect and restoration | Halt on uncertainty and end automation for the session; defer automatic repair and resumption | T09/T13 and incident/halt owners establish detection, fencing, continuing protection, attended reconciliation and disarmed restart. Ordinary transport reconnection must be distinguished from resuming a halted strategy. |
+| External heartbeat, phone escalation and additional delivery infrastructure | Assess whether the accepted attended M1 channel can cover the first bounded session; add external delivery later if it is not essential to that session | M1 and T13 owners reconcile the exact first-session monitoring/escalation obligations with the accepted channel. File-based reachability alone does not prove every required response time. Do not withdraw an existing accepted capability. |
+| Cross-attempt successor machinery | Preserve existing per-attempt evidence; build additional successor controls only before a successor is separately authorized | D-HIST conformance assessment; current attempt retention and no-redraw obligations remain. |
+| Detached signed GO redesign | Finish the current release mechanism if its remaining work is cheaper than the replacement | D-GO comparison includes both implementation and recurring operator steps. No bypass of the host activation gate; any architecture change follows a superseding ADR. |
+| Feed backfill and correction automation | Evaluate a halt-only live-feed path, with no repair or replay during the incident session | T14/TB-I5 and halt owners distinguish historical warm-up, delivered-bar equivalence, detectable gaps/corrections and automatic repair. Keep sufficient warm-up and initial identity/equivalence evidence. Unobservable corrections cannot be claimed contained simply by promising a halt. |
+| Long-term operational maturity | Defer routine upgrade automation, multi-host support, automated daily settlement and broader unattended operation where they are not needed by the first session | Map actual planned work before claiming savings; these are not established current launch blockers. Retain an accepted attended settlement procedure for every authorized subsequent session. |
+| Provider selection/funding delayed behind source-independent gates | Consider an earlier bounded feed decision and adapter/shadow work alongside qualification engineering | Explicit change to the O-4/CP-7 sequencing restriction; permitted budget, provider scope and cancellation consequence. No provider selection, contact or spend is authorized here. |
+| Repeated acceptance/review ceremonies | Reuse source-bound unchanged evidence and combine overlapping review into one candidate acceptance | Coordinator identifies duplication versus checks of distinct guarantees. Retain required CI and independent review; combine records, not incompatible acceptance identities. |
+
+These are hypotheses, not verified net savings. Halt-only behavior is useful only when the failure is detectable soon enough and stopping leaves the account in an accepted state. Stopping new entries does not resolve an unknown request or guarantee protection of an existing position. If a required lifecycle depends on a deferred capability, retain it before launch or return an explicit incompatibility; do not silently suppress the behavior.
+
+### 7.2 Outcomes to retain before first orders
+
+The release must establish the following through the real supported boundaries and relevant failure traces:
+
+- Confirmed broker fills, cancels and rejects reach the ports; simulated positions are not substituted.
+- Every enabled strategy's required entry, protection, amendment and exit lifecycle works on the chosen route.
+- Unknown requests preserve reservations, fence further risk-add and cannot produce duplicate entries through retries or restart.
+- Shared capacity, takeover and cutoff behavior remain consistent across all four strategies.
+- The feed provides correctly identified and timely inputs, required warm-up and the admitted equivalence evidence.
+- Current account/settlement state, sizing authority, exact release identity and host activation checks are valid.
+- The operator can intervene through a proven procedure; incidents retain evidence and end automation, and restart begins disarmed.
+
+These are a scoping aid, not a replacement acceptance checklist. [Book policy](../../ops/c1_rail/book_policy.py) rejects absent/mismatched protection authority; the [policy registry](../../core/dd_geometry.py) requires admitted instances. Neither an eval designation nor attendance supplies that authority. No protection constants, portfolio parameters or admission defaults are changed here.
+
+### 7.3 Challenge qualification and final n3 explicitly
+
+Statistical prerequisites should also be evaluated for decision value. For each E1/n3 stage, identify the uncertainty resolved, the acceptance claim it supports, whether existing evidence covers it and what an alternative would leave unproven. Operational observations during an eval do not automatically replace regime qualification or account-state-conditioned evidence. Any removal/substitution needs a distinct operator-owned admission decision under the existing change-control route; qualification remains required until then. Preserve failed results and no-redraw rules throughout the comparison.
+
+### 7.4 Proposed next reviewable outcome
+
+Prepare one requirement audit against the current T07–T17 roadmap and remaining qualification work. For each prerequisite return: concrete first-session failure prevented; current source/evidence; retain/defer/remove/resequence recommendation; exact containment and residual exposure; affected owner; remaining engineering and operator steps; decision needed; and the later event that would require a deferred capability. Use the current accepted implementation, not a generic best-practice checklist.
+
+Prioritize (1) a halt-only operational scope, (2) earlier bounded feed integration, and (3) qualification/release evidence versus repeated ceremony. The audit returns to Joshua and the coordinator before any implementation or owner-contract change. It is not a fresh full-system redesign. Remove a requirement only when its first-session guarantee is unnecessary or has a demonstrated replacement; do not move mandatory correctness testing into live exposure and call it learning.
+
+The earlier 4–8 week launch estimate assumed the existing roadmap and was provisional. No revised delivery date or time saving is established by this discussion. The simplification packet must support the shortest defensible eval release, rather than become another project that must be completed before trading.
