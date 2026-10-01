@@ -1,0 +1,333 @@
+{
+  "schema": "s5-part-a-stage2-service-consistency/v1",
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "decision_bearing": false,
+  "stage": "2",
+  "rule": "r2 \u00a712.5 and \u00a79 PA-5 (threshold 1.25), CPU-only for TEST_ONLY by operator ruling 2026-09-30 (2)",
+  "source_run": {
+    "run_id": 36766144433,
+    "run_attempt": 1,
+    "head": "606e6e083c3264e8b2ff670889dfb5234e093e82",
+    "branch": "claude/s5-part-a",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T19:30:25Z",
+    "scope": "S5_PART_A",
+    "record_id": "20d0a964ea1645d1aa4c4b8c1b2c5c85",
+    "record_internal_run_id": "16f083281f8b470ab6b74fe9a7cd1b0e",
+    "binding": {
+      "method": "the artifact contents carry no GitHub run id; GitHub's artifact listing for the run ties the artifact to run_id and head, the zip read hashes to the listing's digest, and every input below is read from inside that zip and pinned",
+      "artifact_id": 11124634769,
+      "artifact_name": "qualification-s2-supervision",
+      "artifact_digest": "sha256:362c22af36cbd617bc4d151502619fcbbcdb51191cf9aa58b2053d2de3a8d4be",
+      "artifact_size_bytes": 50686416,
+      "artifact_workflow_run_id": 36766144433,
+      "zip_sha256": "362c22af36cbd617bc4d151502619fcbbcdb51191cf9aa58b2053d2de3a8d4be"
+    },
+    "s2_run_evidence": {
+      "command": "python scripts/s2_run_evidence.py 36766144433 --expect-head 606e6e0 --expect-scope S5_PART_A",
+      "tool_revision": "606e6e083c3264e8b2ff670889dfb5234e093e82",
+      "launcher": "fp.ps1 python (ops-env CPython 3.13.2)",
+      "ok": true,
+      "refusals": [],
+      "status": "completed",
+      "exit_code": 0,
+      "verification_exit_code": 0,
+      "source_stable": true,
+      "capture_complete": true,
+      "cleanup_ok": true,
+      "tested_commit_kind": "head",
+      "invariants_passed": true,
+      "required_nodes": 27,
+      "junit": {
+        "tests": 27,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "bound_by": "the reader's run headSha, createdAt and event equal the run listing's; its record_id and its part_a_observations equal the zip's"
+    },
+    "part_a_observation": {
+      "export_schema": "qualification_part_a_observations/v1",
+      "attempt_id": "linux-cca27e50c3694f6a903dfe1ad359c702",
+      "producer": "tests/integration/qualification_boundary/test_campaign_part_a_linux.py::test_s5_genuine_part_a_without_expansion_reaches_full_pass_ready (SR-8)",
+      "campaign_state": "FULL_PASS_READY",
+      "campaign_validity": "VALID",
+      "expansion_required": false,
+      "initial_panels": 2,
+      "final_panels": 2
+    },
+    "measured_identities": {
+      "source": "boundary/journal.sqlite: the attempt's admission receipt (full_campaigns.receipt_bytes) and its retained context objects (full_campaign_objects); every digest below is recomputed from the bytes",
+      "release": {
+        "schema": "qualification_execution_release/v7",
+        "sha256": "15f6fcbc457acf4efc7d582d8e11da2845c311b0d1568f6a4a495f90861e90ab",
+        "authority_class": "TEST_ONLY",
+        "capability": "FULL_E1",
+        "dispatch_checkpoints": [
+          "N1",
+          "N2",
+          "PART_A"
+        ]
+      },
+      "profile": {
+        "schema": "qualification_execution_profile/v7",
+        "sha256": "31b22d2b4df80afd4a73ef3bd26a644c27d4dd20b351d6bea9f17415d57a38cc",
+        "basis": "sha256 of the release's profile in canonical JSON; equals the receipt's profile_sha256 and the budget snapshot's installed_profile_sha256"
+      },
+      "policy": {
+        "schema": "qualification_policy/v1",
+        "sha256": "2125102252bcbb4319a32fdae542aac18994466b1ca29fee3840749b878e5fac",
+        "basis": "the retained qualification policy object; equals the receipt's policy_sha256 and the release's qualification_policy_sha256"
+      },
+      "budget_profile_sha256": "a8af41e0b954514d8cb5d7c4830bb5d6825d804f557ecca0c1b1699d6e7ec583",
+      "budget_sha256": "019633c18fe866c60d3d774b2d60941de8637409d96b9e9a0da015cdf87f9465",
+      "snapshot_binding": "the budget snapshot's whole profile and whole budget, in canonical JSON, hash to the receipt's budget_profile_sha256 and budget_sha256, so O and maximum_memory_bytes are the admitted values",
+      "receipt_schema": "qualification_campaign_admission_receipt/v2",
+      "receipt_authority_class": "TEST_ONLY"
+    }
+  },
+  "service_cpu": {
+    "value_s": 29.896463,
+    "charge_cpu_ns": 29896463000,
+    "payload_cpu_ns": null,
+    "guardian_cpu_ns": null,
+    "basis": "the whole settled charge with nothing deducted (r1 PA-5, kept by r2 \u00a79), because SR-8 exports the payload/guardian split as null (C3 step-1 ruling B6): the PART_A work's charge_cpu_ns, the settled observation cpu_ns 9896463000 plus the orchestration charge O 20000000000",
+    "source": "boundary/linux-cca27e50c3694f6a903dfe1ad359c702-n1-budget.json, work pawork, field charge_cpu_ns; the observation cpu_ns is also boundary/part_a_observations.json's cpu_ns"
+  },
+  "harness_cpu": {
+    "value_s": 7.329488,
+    "definition": "Stage 1c prescribed-arm maximum workload CPU over the timed repeats of both jobs, cold included: summary.arms.prescribed.cpu_input_s.all.max, each repeat's max(C_w, CPUUsageNSec - setup_excluded) (r2 \u00a76.1), derivation and real artifacts included",
+    "source": "docs/notes/2026-09-27-s5-part-a-measurement/stage1c/36647434808-combined.json",
+    "repeat": {
+      "job": "b",
+      "arm": "prescribed",
+      "repeat": 1,
+      "cold": true,
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "record": "docs/notes/2026-09-27-s5-part-a-measurement/stage1c/36647434808-b-attempt1/record.json"
+    }
+  },
+  "pa5": {
+    "k": 4.078929251266,
+    "k_exact": "29896463/7329488",
+    "threshold": 1.25,
+    "verdict": "RE-APPLY",
+    "reapplication": {
+      "adopted": false,
+      "note": "computed, not adopted: any new value is a new profile revision and returns to the operator",
+      "inputs": {
+        "C_hat_1c_s": 10.647178,
+        "W_hat_1c_s": 10.789614095,
+        "P_hat_1c_s": 7.971461731,
+        "C_hat_1c_times_k_s": 43.429085788,
+        "W_hat_1c_times_k_s": 44.010072542,
+        "P_hat_not_scaled": "PA-5 scales C_hat_1c and W_hat_1c only"
+      },
+      "parameters": {
+        "m_c": 2.0,
+        "m_w": 3.0,
+        "L_s": 30,
+        "O_s": 20,
+        "cpu_floor_s": 120,
+        "wall_floor_s": 300,
+        "rounding": "up to whole 10 s"
+      },
+      "unscaled": {
+        "B_s": 21.294356,
+        "B_plus_O_s": 41.294356,
+        "cpu_s": 120,
+        "wall_raw_s": 122.368842285,
+        "wall_s": 300,
+        "cpu_headroom_s": 78.705644,
+        "wall_headroom_s": 177.631157715,
+        "m_w_ge_m_c_over_m_c_minus_1": true
+      },
+      "scaled": {
+        "B_s": 86.858171575,
+        "B_plus_O_s": 106.858171575,
+        "cpu_s": 120,
+        "wall_raw_s": 222.030217626,
+        "wall_s": 300,
+        "cpu_headroom_s": 13.141828425,
+        "wall_headroom_s": 77.969782374,
+        "m_w_ge_m_c_over_m_c_minus_1": true
+      },
+      "ceilings_changed": false,
+      "shared_ceilings_hold_while": {
+        "k_cpu_le": 4.696080032,
+        "k_wall_le": 6.487720449
+      },
+      "cpu_margin": {
+        "B_plus_O_s": 106.858171575,
+        "ceiling_s": 120,
+        "headroom_s": 13.141828425,
+        "headroom_fraction_of_ceiling": 0.109515,
+        "headroom_fraction_of_B_plus_O": 0.122984,
+        "k_headroom_fraction": 0.151302
+      }
+    },
+    "diagnostic_non_governing": {
+      "label": "cpu_ns_only_not_governing",
+      "service_s": 9.896463,
+      "k": 1.350225691071,
+      "k_exact": "9896463/7329488",
+      "scaled": {
+        "B_s": 28.752186546,
+        "B_plus_O_s": 48.752186546,
+        "cpu_s": 120,
+        "wall_raw_s": 133.705242443,
+        "wall_s": 300,
+        "cpu_headroom_s": 71.247813454,
+        "wall_headroom_s": 166.294757557,
+        "m_w_ge_m_c_over_m_c_minus_1": true
+      },
+      "note": "the settled observation cpu_ns without O; recorded for diagnosis only, it does not set the verdict"
+    },
+    "host_normalization": {
+      "facts": {
+        "service_cpu": "AMD EPYC 9V74 80-Core Processor (family: 0x19, model: 0x11, stepping: 0x1)",
+        "service_cpu_source": "kernel.log (smpboot CPU0 line), pinned",
+        "harness_cpu": "AMD EPYC 7763 64-Core Processor",
+        "harness_cpu_source": "stage1c/36647434808-b-attempt1/record.json runtime.cpu_model",
+        "factor": 1.534443582737,
+        "factor_basis": "Stage 1b run 36364854404, same workload on both jobs: job a (AMD EPYC 7763 64-Core Processor) forced median cpu_input_s 10.773244 s / job b (AMD EPYC 9V74 80-Core Processor) 7.020945 s, equal to the combined record's host_variance.forced_median_cpu_ratio_between_jobs; a different workload from Stage 1c and Stage 2, so the factor is indicative"
+      },
+      "measured_host": {
+        "k": 4.078929,
+        "cpu_s": 120,
+        "B_plus_O_s": 106.858171575,
+        "wall_s": 300
+      },
+      "normalized_whole_charge": {
+        "basis": "k x factor: the whole charge scaled, O included",
+        "k": 6.258887,
+        "B_plus_O_s": 153.278963982,
+        "cpu_s": 160,
+        "wall_raw_s": 292.592920163,
+        "wall_s": 300
+      },
+      "normalized_compute_only": {
+        "basis": "(cpu_ns x factor + O) / harness: only the compute scaled; O is fixed overhead, as the 2026-10-01 trigger-5 ruling holds",
+        "k": 4.800549,
+        "B_plus_O_s": 122.224593164,
+        "cpu_s": 130,
+        "wall_raw_s": 245.388203982,
+        "wall_s": 300
+      },
+      "consequence": "on the harness's host the CPU ceiling would be 130 s (compute-only) to 160 s (whole charge), not 120 s: k exceeds k_cpu_le 4.696 on either basis. The wall ceiling stays 300 s. Nothing is adopted; the TEST_ONLY ceiling stays at the measured host's value"
+    }
+  },
+  "launch_allowance": {
+    "basis": "r2 \u00a79 PA-2: L = 30 s until Stage 2 measures it; measured as reservation to payload start",
+    "measured_s": 4.847654517,
+    "source": "boundary/linux-cca27e50c3694f6a903dfe1ad359c702-n1-budget.json work pawork: the reservation's clock.utc 2026-09-30T19:55:16.193394Z to the PART_A capture's started_utc 2026-09-30T19:55:21.041048517Z (the payload container's start, same host clock)",
+    "running_transition_s": 4.414096454,
+    "running_basis": "the RUNNING transition's boottime, same boot_id, as a cross-check (earlier than start)",
+    "L_s": 30,
+    "within_L": true,
+    "reapplication_with_measured_L": {
+      "wall_raw_s": 146.573181177,
+      "wall_s": 300
+    },
+    "note": "L = 30 s is kept in the re-application: it is conservative against the measured value, and the 300 s floor binds either way"
+  },
+  "pa2b": {
+    "basis": "CP-1a decision (1)(b)(i): check PA-2b on the service's PART_A probe_seconds and predicted_seconds; the 1.5 x P_hat term becomes final only when this check is recorded",
+    "probe_seconds": 3.987613859,
+    "predicted_seconds": 27.081855051,
+    "rule": "r2 \u00a79 PA-2b: P x wall / B <= wall / 1.5, i.e. 1.5 x P <= B, with P the service's predicted_seconds (a throttled figure, so the check is conservative)",
+    "lhs_s": 40.622782576,
+    "against": {
+      "applied_ceiling_minus_O": {
+        "B_s": 100.0,
+        "holds": true
+      },
+      "reapplied_B": {
+        "B_s": 86.858171575,
+        "holds": true
+      },
+      "stage1c_B_unscaled": {
+        "B_s": 21.294356,
+        "holds": false
+      }
+    },
+    "holds": true,
+    "holds_basis": "the applicable B: the applied ceiling minus O and the re-applied B; the unscaled Stage 1c B is recorded and does not govern after re-application",
+    "engine_diagnostic": {
+      "predicate": "part_a.py:185-186 refuses when predicted_seconds > budget_seconds, the guard's remaining wall at the request (compute.py:177)",
+      "budget_seconds_lower_bound": 265.122105653,
+      "budget_seconds_basis": "PART_A wall limit 300.0 s minus the work's reservation-to-CAPTURED boottime 34.877894347 s; budget_seconds itself is not exported",
+      "lhs_s": 40.622782576,
+      "holds": true
+    },
+    "throttled_prediction_note": "informational: predicted_seconds is a wall figure under the payload quota (cpu - O) / remaining wall, nominally 100.0 / 300.0; the Stage 1c prescribed maximum 7.817348009 s times 3.0 is 23.452044027 s against the service's 27.081855051 s"
+  },
+  "memory": {
+    "label": "upper_bound_only_not_attribution",
+    "memory_peak_bytes": 256000000,
+    "maximum_memory_bytes": 256000000,
+    "binding": "budget.maximum_memory_bytes 256000000 in the attempt's budget snapshot; the PART_A phase memory_bytes 256000000 in the measured release's campaign budget profile (qualification_execution_release/v7, 15f6fcbc457acf4efc7d582d8e11da2845c311b0d1568f6a4a495f90861e90ab)",
+    "clipped": true,
+    "oom_events": 0,
+    "reading": "the slice-wide, clipped, never-reset memory.peak (campaign_supervisor.py:974): an upper bound on the shared footprint only (operator ruling 2026-09-30 (2)); not a Part A attribution and not a PA-5 input",
+    "pa3b": "the shared footprint is bounded above by 256000000 = the binding value; m_m headroom cannot be shown from a clipped reading. The per-phase field is the CP-6 inventory item of ruling (2)"
+  },
+  "remeasurement_triggers": {
+    "5_cpu": {
+      "value_s": 9.896463,
+      "threshold_s": 17.0354848,
+      "basis": "compute-only CPU (the settled observation cpu_ns, O excluded) against 0.8 x B from Stage 1c, by operator ruling 2026-10-01: O is fixed overhead, not workload; PA-5 keeps the whole-charge basis",
+      "engaged": false,
+      "whole_charge_diagnostic": {
+        "label": "trigger 5 is not evaluated on this basis by ruling",
+        "value_s": 29.896463,
+        "exceeds_threshold": true
+      }
+    },
+    "5_wall": {
+      "value_s": 34.877894347,
+      "threshold_s": 240.0,
+      "basis": "reservation-to-CAPTURED boottime against 0.8 x the 300 s ceiling",
+      "engaged": false
+    },
+    "5_overrun_or_oom": {
+      "work_state": "COMPLETED",
+      "oom_events": 0,
+      "engaged": false
+    },
+    "6_k_above_1_25": {
+      "engaged": true,
+      "disposition": "answered for TEST_ONLY by operator ruling 2026-10-01 (1): the re-application leaves the ceilings unchanged, so no re-measurement is owed now"
+    }
+  },
+  "operator_rulings": {
+    "date": "2026-10-01",
+    "source": "Joshua in the coordinating session (\"Go with recommendations for all 4\"), relayed by the coordinator and confirmed directly in this worker session",
+    "trigger_5_basis": "trigger 5's CPU limb compares compute-only CPU (cpu_ns, O excluded); PA-5 keeps the whole-settled-charge basis",
+    "trigger_6": "for TEST_ONLY, the re-application leaving 120 s / 300 s unchanged answers the trigger; no re-measurement is owed now",
+    "faster_host": "accepted for TEST_ONLY; k 4.078929, the host difference (service on an EPYC 9V74, harness maximum on an AMD EPYC 7763 64-Core Processor) and the CPU headroom 13.142 s (10.95% of the 120 s ceiling) are carried to production host sizing (T11/CP-8)",
+    "faster_host_normalized": "confirmed by Joshua directly in this worker session after the host-normalized result was put to him (\"Stands: 120 s, carry 130-160 s\"): the TEST_ONLY ceiling stays 120 s on the measured host; the normalized ceilings, 130 s (compute-only, k 4.801) and 160 s (whole charge, k 6.259), are carried to T11/CP-8; nothing is adopted",
+    "pa3b_memory_headroom": "accepted for TEST_ONLY, consistent with ruling 2026-09-30 (2); m_m headroom cannot be shown from the clipped reading and is carried to T11/CP-8"
+  },
+  "source_sha256": {
+    "artifact_zip": "362c22af36cbd617bc4d151502619fcbbcdb51191cf9aa58b2053d2de3a8d4be",
+    "run_api.json": "b78727675e370c69342873585df2257d10288b34a9e8f3560d36ceabcce2197a",
+    "artifacts_api.json": "b56600f098ca91b7a65eada6c971dcd6263c0b0cce5be54ec672dcd67b7b16af",
+    "boundary/part_a_observations.json": "d4b682ce2eb0c2215372e154750fcb9b87c3712d8712744c9442c8c41a5c5991",
+    "20d0a964ea1645d1aa4c4b8c1b2c5c85/record.json": "b4ea25cce385539a52b3995fcca3cb933acda7c228a735e4b1d293c9203cad5d",
+    "20d0a964ea1645d1aa4c4b8c1b2c5c85/invariants.json": "9710c06eb24257d23b50d6b61510a2c52bebfe575b293ac52a497b5e27b9d080",
+    "20d0a964ea1645d1aa4c4b8c1b2c5c85/junit.xml": "e408ad06d57c363b64b97376699afee33bc4ec3f664e28fd62c1b7e8b8d85aef",
+    "boundary/linux-cca27e50c3694f6a903dfe1ad359c702-n1-budget.json": "82081330801347c4901cb79098bd638f4fe912edbfc85c009c1c5d8b6f9dc854",
+    "boundary/journal.sqlite": "efec03b10f30f74ec8bd29a26792b5864fc99313c69f3b51fda3a305b1f1be86",
+    "kernel.log": "b9735771c5deb8389c231a618222f34bbb331c67edaf8fd1211c960bdda462dc",
+    "s2_run_evidence.stdout.json": "85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d",
+    "stage1c/36647434808-combined.json": "024cdcdd7e3c499af49f1358f7a4a6048641badc9b0679a99999f4bb8ba1f87e",
+    "stage1c/36647434808-b-attempt1/record.json": "45d84cd5b3af43ffcc0a33a0efd869fb0fb37f822de936937909024a1ad153e3",
+    "stage1b/36364854404-combined.json": "e1efa8fd127ce24f44f0cfcb8c9d0bf15d647af4def007fc3971f791e8613d73",
+    "stage1b/36364854404-a-attempt1/record.json": "65bda0488acd9919116d29f2bc0c3af8cebf4e93b63d01fca0848130cedbbcc5",
+    "stage1b/36364854404-b-attempt1/record.json": "c67368207e145a33602749a40ef38df8abfed85bb4721b5ea8a7c4cfb4ada3d2"
+  },
+  "private_evidence": "the run artifact zip, GitHub's run and artifact listings and the reader's output are under local_artifacts/s5-c3-evidence/stage2-read-36766144433/ and archived in first-passage-archive#854 (pins: docs/notes/2026-09-29-s5-c3-record/stage2-36766144433-archive.sha256); this record carries hashes, counts and labels only",
+  "not_granted": "C3 acceptance, S5 acceptance, adoption of any re-applied value, any production value"
+}
