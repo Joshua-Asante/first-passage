@@ -1843,3 +1843,54 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 **Next:** #569 is merge-ready once Codex is clean at its head. C3 acceptance goes to Joshua after it merges.
 
 **Not granted:** C3 acceptance, S5 acceptance, any merge, and any production value or budget.
+
+### Coordinator C3 acceptance packet — S5 Part A TEST_ONLY, 2026-10-01
+
+**For the operator's decision.** This entry checks every C3 obligation the ledger names against the record on `main` at `cb5654f`, after #569 merged. The obligations come from the [stage table](#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27), the CP-1b packet's "C3 obligations stay" list and the "Still open at C3" list of the C3 step-1 entry. It grants nothing by itself.
+
+**Candidate.** `claude/s5-part-a` at **`606e6e0`**. Every execution record below names this head or one whose measured closure it keeps unchanged.
+
+**C3 obligations**
+
+| Obligation | Status | Evidence on `main` |
+|---|---|---|
+| C3 step 1 (the S5 return, Codex review, executed `bind_budget` Σ check on the built `/v7`) | **Met** | [C3 step 1 accepted](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29) on `c7713e7` and harness `0fe3e25`: Codex RESOLVED; B3 and B4 accepted with carries; B7 closed |
+| RC-2 owner-text set, with corrections 3 and 8 | **Met** | Accepted 2026-09-29. #552 merged at `37b590b` and #555 (O-10) at `6c6759f`, both cited ([RC-2 entry](#operator-acceptance-and-coordinator-application--rc-2-owner-text-set-c3-2026-09-29)). The D-2 bridging notes are gone from this plan |
+| RC-3b (i): Stage 1c through the built adapter | **Met** | Measure run `36647434808`, jobs a and b exit 0, validity OK, memory VERIFIED; the provisional status is ended ([Stage 1c entry](#coordinator-execution--stage-1c-fresh-approval-valid-memory-verified-2026-09-29)) |
+| Stage 1c still binds the final head | **Met** | The closure re-run on `0ab8f6b` found all 68 measured modules byte-identical to `c7713e7`. From `0ab8f6b` to `606e6e0` only `tests/integration/qualification_boundary/test_campaign_part_a_linux.py` and the io-mount card changed (coordinator `git diff --name-only`, 2026-10-01), so the measured closure is unchanged |
+| The two S5 build defects from the first diagnostic subset | **Met** | "Fix both, re-verify" (2026-09-30); subsets 3–4 and Windows on the fix head ([re-verification entry](#coordinator-execution--re-verification-after-fix-both-subsets-34-windows-on-the-fix-head-c3-step-1-addendum-2026-09-30)) |
+| io-mount release defect (the C3 memory stop) | **Met** | The fix `7c97a69` and card A1–A4. The full S4-plus-Part-A selection, run **36766144433** at `606e6e0`, is GREEN, with 27/27 required nodes and `s2_run_evidence` ok ([entry](#coordinator-execution--io-mount-release-fix-full-s4-plus-part-a-selection-green-2026-09-30)). The archive is first-passage-archive#853, pinned by #568 |
+| RC-3b (ii): Stage 2 / PA-5 service-route consistency | **Met (RE-APPLY, ceilings unchanged)** | k = 4.078929 > 1.25, re-applied inside the approved rule; ceilings 120 s CPU / 300 s wall ([Stage 2](#stage-2--pa-5-2026-09-30); `stage2.json`; #569 at `cb5654f`). The evidence is first-passage-archive#854 |
+| PA-1's pilot-budget term (1.5 × P̂) and PA-2b | **Met for the applied budgets; one observation carried** | PA-2b holds against the applied B (100 s) and the re-applied B (86.86 s). It fails against the unscaled Stage 1c B (21.29 s), because the service's throttled P is 3.4 × P̂₁c. Recorded as non-governing after re-application and carried to CP-8 below |
+| PA-3b memory | **Accepted for TEST_ONLY** | Ruling 2026-10-01 (3): the clipped `memory_peak_bytes` is an upper bound only and m_m headroom is not shown. Carried to T11/CP-8 |
+| Re-measurement triggers 5 and 6 | **Answered** | Trigger 5 uses the compute-only CPU (operator, 2026-10-01). Trigger 6 is answered for TEST_ONLY by ruling 2026-10-01 (1) |
+| Faster host (EPYC 9V74 against the harness's EPYC 7763) | **Accepted for TEST_ONLY** | Ruling 2026-10-01 (2): "Stands: 120 s, carry 130–160 s" |
+| **OQ-1** | **Recommend: close as not arising** | It matters only if no valid Stage 1b record exists. One exists (run `36364854404`, both jobs valid) |
+| **Q1**: whether a committed FAIL on an exhausted campaign counts as FALSIFIED under ADR §4 | **Recommend: reassign past C3** | This is campaign semantics, decided with the statistical owner. No TEST_ONLY Part A outcome depends on it. Recommended gate: before the first production statistical dispatch (S8 / T06) |
+| **Q7**: R7's production evidence standard | **Recommend: reassign past C3** | This is production evidence, decided with the statistical owner. Recommended gate: before S8 / T06 |
+| **Q9**: when a never-retried, retry-eligible IN_DOUBT counts as closed (and so when the salt is revealed) | **Recommend: reassign past C3** | Already recorded as an input to the K3/RC-4 slice and CQ-3 ([host-obligations note §D](../../notes/2026-09-27-host-obligations-assignment.md)). Recommended gate: the RC-4 slice, before F1 |
+
+**Carried, not C3 conditions** (each owner keeps it):
+- G5 independent bars verification goes to the CP-6 inventory (B3).
+- An independently observed pilot draw is due with T05, before CP-6 (B4).
+- The per-phase memory field goes to CP-6.
+- To T11/CP-8:
+  - the 11.8 % unreclaimable headroom and the THP share;
+  - k = 4.078929, the host difference, and the 10.95 % CPU headroom;
+  - the 130–160 s normalized ceiling;
+  - PA-3b;
+  - the PA-2b-against-unscaled-Stage-1c observation, as an input to the production budget.
+
+**The landing step (not covered by any record above).** `claude/s5-part-a` has **no PR**. At the time of writing it is 29 commits ahead of `main` and 188 behind. S5 acceptance means landing it, and T00's merge hold waits on that landing.
+- **Recommendation:** open the PR at `606e6e0` and leave the branch head unchanged. Run Codex at that head.
+  - If GitHub can merge it without a branch update, merge **pinned to `606e6e0`**. The accepted evidence then binds the merged head.
+  - If a branch update is required, the update commit becomes the new head. Before merging, re-run the closure-equivalence check against it and the CI required checks. A changed measured closure returns to the operator.
+- Codex findings at that head route to the S5 owner session as single writer.
+
+**Recommended decision, for the operator:**
+1. **Accept C3** for S5 Part A **TEST_ONLY** at `606e6e0`, on the table above.
+2. **Close OQ-1** as not arising.
+3. **Reassign Q1 and Q7** to the statistical owner, before S8 / T06. **Reassign Q9** to the RC-4 slice, before F1.
+4. **Accept S5 for TEST_ONLY**, effective when the landing PR merges under the landing step above. Then T05 and the T00 rebase follow. The T00 rebase re-runs P7 with a fresh source approval, because the P7 record binds its code head.
+
+**Not granted by this packet or by acceptance:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority. Each still runs through its own gate.
