@@ -658,6 +658,8 @@ This record holds hashes, counts and equality or verdict labels only. Every priv
 
   No screen was called.
 
+*Correction 2026-10-01 (refute-first review P2-1): `task4/hand_recompute.py` imports `ProductionSource`, `_seal`, `PathAssembler`, `contract` and `p7_evidence`, takes bars and the flatten instant from the engine-built source, checks the mid-bar trigger circularly (trigger = fill − slip), and labels with a 1e-6 tolerance. It is a consistency check, not an independent recompute. Independence is supplied by the refute-first review's standard-library recompute from raw CSV (primary day 2024-04-15 plus six split days, exact match).*
+
 **Protected sizes and ORB adds-off.** The accepted Step-3/Step-6 evidence is bound by exact identity through the contract's 11 historical pins. Their compiled values were checked by `validate_source_contract`. `book_adapters.py` moved (the `_resolve_domain` / `_source_domain` additions), so parity was re-run with the real accepted ports, panels and the 2026-09-03 exports, all read in place:
 - `tests/ops/test_book_adapters_parity.py`: 13 passed, 0 skipped.
 - Record `.cache/fp-verification/20261001T093134Z-93a62429390d` (completed, exit 0, stable).
@@ -675,6 +677,25 @@ No private byte is in Git: `git ls-files` shows no `local_artifacts` path and no
 3. After S5 merges and this branch is rebased, a re-check through `accept_p7_record`. A rebase changes the closure, so P7 is re-run with a fresh approval if the window has closed.
 
 No T00 step 2, screen, Monte Carlo, account, broker or rail action occurred.
+
+#### Coordinator T00 step-1 verdict — 2026-10-01: `RESOLVED` (P7 MET) at code `2baa516`
+
+- **Coordinator `accept_p7_record`: ACCEPTED** at 2026-10-01T09:38:28.571Z. It ran from a checkout detached at `2baa516`, through the launcher, with the public key read by the coordinator from the operator's key file (not the producer's registry).
+  - `code_closure_sha256` `307043d668da225a36fc1823cfda61d6df0cac5fcebe6707d6475fda0423a0c7`
+  - contract `a526b50f…8d97`, approval `862c4824…bb68`
+  - record `4704f2ff…0b4b`
+- **Separate-session refute-first review: NOT_REFUTED_WITH_FINDINGS**, no P1 (private `task4/REFUTE_REVIEW.md`, SHA-256 `fc3584ebe1f7e9551b0fe867deb3da28b79b6d9dbb7d9fde2fa511af45033618`; records `20261001T163149Z-c7aa6375914f` and `20261001T164216Z-6a65d6dd6bfa`).
+  - It found fresh engines with no cross-run leakage (R2-before-R1 reproduces both digests).
+  - All 25 artifacts are bound by exact path and SHA. The source pack was re-derived independently: 997/499/498, 40 contiguous FULL sessions, 16 consumed splits per run.
+  - Its own recompute matched exactly on 2024-04-15 and six other split days, and a mutation control failed as expected. The boundary is clean.
+- **Findings disposition:**
+  - **P2-1:** the independence claim is corrected above.
+  - **P3-1:** the `ReplayDeadlineFailure` branch is correct by reading but untested. Carried to T05.
+  - **P3-2:** the real path exercised only the held-position 15:55 ET branch; the pending-only fill/cancel branch and the 12:59 ET deadline are synthetic-only. Carried as a residual to T05/CP-6.
+  - **P3-3:** binding `code_head` is correct fail-closed behavior. Spec §2.5a's "unloaded file does not void" wording conflicts with §2.5b(2) and is to be reworded at the post-S5 rebase.
+  - **P3-4:** cosmetic double-encoded `§` in the signed `calendar_producer.json`. The bytes stay as signed.
+- **Verdict:** **T00 step 1 is `RESOLVED`: P7 MET, at code `2baa516`.**
+- **Still owed (unchanged, owed-list item 3):** after S5 lands and this branch is rebased, a fresh P7 run and a new record at the rebased head, accepted through `accept_p7_record`. That needs a fresh source approval if the window has closed (it expires 2026-10-08T08:21:08Z). The merge hold to `main` until S5 merges is unchanged.
 
 ## 10. Audit hooks
 
