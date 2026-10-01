@@ -18,8 +18,9 @@ actor ruling, numerical limits, environment decision and separate written CP-3.
 > the asynchronous late-response channel, `x4_attended_input`, `x4_adjudicate`
 > and the multi-pass reviews. Where this packet's tool, observer, adjudication or
 > review design differs, the checklist governs. The actor proposal, the §3
-> numerical selections, the environment decision and CP-3 still stand as
-> proposed and remain the operator's. GC-4's required observation is unchanged.
+> numerical selections (except the read-budget and rate values in the
+> "Attempts and evidence budget" row, which are cut), the environment decision
+> and CP-3 still stand as proposed and remain the operator's. GC-4's required observation is unchanged.
 
 ## 1. Outcome, owners and boundary
 
@@ -103,7 +104,7 @@ new gitignored X-4 evidence folder. No live payload is created by this packet.
 | Entry time in force | Propose explicit `day`, never an omitted default; bracket exits GTC per retained documentation. No GTD/scheduled-expiry or `cancelAfter` mechanism |
 | Timing | Recommend initial unfilled-state evidence within **15 s of placement T0**, normal parent-cancel handoff before **30 s from T0**, terminal cancel evidence within **10 s of cancel T0**, stop validation within **10 s of first observed unexpected fill**; invalid protection triggers immediate recovery when detected, and absent valid protection at that deadline triggers recovery immediately then. The separate **60 s** read window is for final recovery confirmation, measured from recovery entry. §3.1 defines independent clocks; approval owed |
 | Cost / headroom / calendar | Recommend **$50 planning allowance**, and the fresh MNQ stress/headroom gate in §3.1; private margin and remaining spend checks still required. Fresh 15-minute scheduled high-impact-release exclusion. X-1's MYM result does not transfer; no loss guarantee |
-| Attempts and evidence budget | Recommend one placement and one designed parent-cancel attempt, each separately tracked, no retry/resend. **60 total read attempts**, including pre-send; at most **40** before final confirmation, reserving **20**; no more than **60 reads per rolling 60 s**, **10 s** request timeout, **one HTTP request in flight**, mutations included in serialization. All are new X-4 proposals, not broker safety guarantees |
+| Attempts and evidence budget | Recommend one placement and one designed parent-cancel attempt, each separately tracked, no retry/resend. **60 total read attempts**, including pre-send; at most **40** before final confirmation, reserving **20**; no more than **60 reads per rolling 60 s**, **10 s** request timeout, **one HTTP request in flight**, mutations included in serialization. All are new X-4 proposals, not broker safety guarantees. *[2026-10-01: the read budget and rate values (60 total, 40 before final confirmation, 20 reserved; 60 reads per rolling 60 s) are **cut** by the [reduced X-4 build path](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts) and are not surviving selections. One placement, one designed parent-cancel attempt and no retry/resend survive; the request timeout and single in-flight request survive only if the reduced card adopts them.]* |
 | Cross-account no-hedge attestation | Fresh operator attestation after actor inventory and before written CP-3: no opposite or correlated-product position on any of the operator's accounts. Retain privately; account-local flatness and inventory do not establish it (X-1 packet §5 / §8) |
 | Recovery actor / owner | Joshua attended throughout, rehearsed platform exit/cancel and evidence collection; Joshua owns unresolved effects. No automation restart that session |
 
@@ -237,10 +238,12 @@ Required X-4 request specification, not an executable request:
 
 Required offline tool/rehearsal coverage includes clean cancel, child remaining
 live after parent terminal, fill before/during cancel, unknown placement/cancel,
-late response, pending/malformed reads, timeout/rate limit, exhausted read budget,
+late response, pending/malformed reads, timeout/rate limit, exhausted read budget
+*[2026-10-01: late-response and read-budget coverage are cut with those components]*,
 firm intervention, quote-buffer breach and recovery while keeping one request
 in flight. Terminal vocabulary must use reviewed vendor schemas (retained
-v3.3 uses `Canceled`; the older drill table says `Cancelled`); do not invent an
+v3.3 uses `Canceled`, matching X-1's R-1 reads; drill plan §2.3/§2.4 now say
+`Canceled` too); do not invent an
 alias or accept a raw unsupported state. Offline tests qualify tools only.
 
 ## 5. Later execution sequence — conditional on X-4 CP-3
@@ -304,7 +307,7 @@ while exposure remains. Do not claim fill/cancel or OCO races cannot reverse.
 
 **Other stops:** SC-1–SC-7, firm intervention, identity conflict, unclassified
 coverage repair, deadline/window expiry or loss of host confirmation end testing.
-If REST is unavailable or its budget is exhausted, attended platform recovery
+If REST is unavailable, attended platform recovery
 continues; missing terminal REST evidence stays outstanding. No same-session
 restart follows successful recovery, a reset or elapsed time.
 
