@@ -1,5 +1,7 @@
 # Programme audit — post-de-scope claim alignment (object + meta layers)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../../../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Dated quotations, source snapshots and completed-session evidence below retain their historical meaning and grant no current trading authority.
+
 **Status:** `Complete, two rounds. Every finding is a RECOMMENDATION pending operator ruling, except the four marked FIXED / RULED in §5 below.`
 **Audit date:** 2026-08-05 · **Repo anchor:** `e031225`, worktree clean. Round-1 artifact committed `06caf3a`; the section set was written and its hooks re-executed at HEAD `0af62ec`.
 **Layers:** **object** (the prop-portfolio / venue / deployment claim estate) and **meta** (the correction machinery and gate estate), answered separately throughout per the two-layer coupling rule.
