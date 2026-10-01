@@ -1882,15 +1882,24 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
   - the PA-2b-against-unscaled-Stage-1c observation, as an input to the production budget.
 
 **The landing step (not covered by any record above).** `claude/s5-part-a` has **no PR**. At the time of writing it is 29 commits ahead of `main` and 188 behind. S5 acceptance means landing it, and T00's merge hold waits on that landing.
-- **Recommendation:** open the PR at `606e6e0` and leave the branch head unchanged. Run Codex at that head.
-  - If GitHub can merge it without a branch update, merge **pinned to `606e6e0`**. The accepted evidence then binds the merged head.
-  - If a branch update is required, the update commit becomes the new head. Before merging, re-run the closure-equivalence check against it and the CI required checks. A changed measured closure returns to the operator.
-- Codex findings at that head route to the S5 owner session as single writer.
+- **The evidence binds `606e6e0`, not a merge result.** Any merge into a `main` that has moved produces a new tree that includes `main`'s changes, even when the branch itself is not updated. `--match-head-commit` pins the PR head, not the merged tree. So the landing must re-validate the tree that will actually land.
+- **Landing procedure:**
+  1. Update `claude/s5-part-a` from `main`. The update commit becomes the landing head **H**.
+  2. At **H**, re-run the Stage 1c closure-equivalence check against `c7713e7`, using the same 68-module measured closure and the same method as the recorded check.
+  3. At **H**, list every file `main` changed that lies in the import closure of the S5 Linux selection (`tests/integration/qualification_boundary/test_campaign_part_a_linux.py` and the S4 nodes run 36766144433 covered).
+  4. At **H**, run the CI required checks, plus the qualification execution-boundary jobs.
+  5. Run Codex at **H**, then merge **pinned to H**.
+- **Decision rule at H:**
+  - If the measured closure is byte-identical and no file in the S5 Linux selection's closure changed, the Stage 1c and run-36766144433 evidence carries to **H**. The landing proceeds on green CI and a clean Codex review.
+  - If the measured closure changed, the landing returns to the operator for a Stage 1c re-measure decision.
+  - If only the Linux selection's closure changed, a re-run of the full S4-plus-Part-A selection at **H** is required, under the existing C3 Linux grant, with retained evidence, before merge.
+  - If `main` moves again before the merge, the update makes a new **H**, and steps 2–5 and this rule apply to it again.
+- Codex findings at **H** route to the S5 owner session as single writer.
 
 **Recommended decision, for the operator:**
-1. **Accept C3** for S5 Part A **TEST_ONLY** at `606e6e0`, on the table above.
+1. **Accept C3** for S5 Part A **TEST_ONLY** on the evidence at `606e6e0` (the table above). It carries to the landing head only through the decision rule above.
 2. **Close OQ-1** as not arising.
 3. **Reassign Q1 and Q7** to the statistical owner, before S8 / T06. **Reassign Q9** to the RC-4 slice, before F1.
-4. **Accept S5 for TEST_ONLY**, effective when the landing PR merges under the landing step above. Then T05 and the T00 rebase follow. The T00 rebase re-runs P7 with a fresh source approval, because the P7 record binds its code head.
+4. **Accept S5 for TEST_ONLY**, effective when the landing PR merges at a head **H** that satisfies the landing procedure and decision rule above. Then T05 and the T00 rebase follow. The T00 rebase re-runs P7 with a fresh source approval, because the P7 record binds its code head.
 
 **Not granted by this packet or by acceptance:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority. Each still runs through its own gate.
