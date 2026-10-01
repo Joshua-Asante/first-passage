@@ -1950,6 +1950,9 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 **Effect.**
 - **D-S5-3 gates T05 integration acceptance (checkpoint R1)**, in the same way D-S5-1 and D-S5-2 do. Its fix must merge with **its own full S4-plus-Part-A Linux run read ok**, plus its own acceptance, because it changes N1/N2 store behavior. The T05 integration branch is rebuilt on a `main` that includes it.
 - S5 TEST_ONLY acceptance is unaffected; it is already in effect.
+- **Acceptance contract for the D-S5-3 slice.**
+  - **Tested revision:** the branch is updated from `main` **after #586 merges**, so that it contains both fixes. Its full S4-plus-Part-A Linux run, its closure check and its acceptance are all bound to that updated head. D-S5-2 and D-S5-3 both modify `retain_checkpoint_capture`, and this run is the combined fixes' only full Linux run, because H9 R1 runs only the result/seal node set.
+  - **Targeted regression:** a full Linux run cannot exercise an exact retry, because production captures once per worker run. So a **fail-first, store-level test** is a prerequisite of acceptance. It covers an exact retry after the family has progressed, for N1, N2 and PART_A. It shows ATTESTED and COMMITTED state, and the attestation and receipt digests, preserved with no write. Cite its red record on the unfixed code and its green record on the fixed code.
 - The clean-review exception in the defects ruling above covers D-S5-1 and D-S5-2 only.
 
 **Not granted:** T05 integration acceptance (R1) before the D-S5-3 fix lands, and no production use.
