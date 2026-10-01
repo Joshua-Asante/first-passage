@@ -1,8 +1,8 @@
-# Pre-registration — T00 step 2: the selected-book feasibility screen (adopts prereg v2)
+# Pre-registration — T00 step 2: the selected-book feasibility screen (reuses prereg v2 scoring clauses; not falsifier evidence)
 
 **Status:** `DRAFT — NOT RATIFIED.` A draft for the operator's ratification only. Nothing here binds T00 step 3 until this Status line reads `RATIFIED <date>`, every **OPERATOR TO SET** row in §3 holds a value, and the ratifying commit's SHA is recorded beside it. Once ratified, it does not change after any step-3 output is visible ([prereg v2 §5](2026-08-26-prop-survivor-scoring-prereg-v2.md#5--forbidden-moves--same-as-v1-plus-one-new-item-this-reopening-itself-creates), last v1 item; [amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) step 2: "verbatim before execution, unchanged after").
 
-**Authority:** operator ruling 2026-10-01, item 6, ["first-session simplification rulings"](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts) (recorded in PR #580, branch `claude/first-session-cuts`, not yet on `main`): "The step-2 pre-registration adopts `2026-08-26-prop-survivor-scoring-prereg-v2.md` by citation. It adds only the expressions, pass floor, scenarios, intraday clock, NO-GO condition and the counting of R1/R2 `UNDETERMINED` days. It may be drafted now … Ratification stays the operator's act."
+**Authority:** operator ruling 2026-10-01, item 6, ["first-session simplification rulings"](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts), as corrected at #580 `e627247` (Codex P1 on #580; branch `claude/first-session-cuts`, not yet on `main`): "The step-2 pre-registration reuses `2026-08-26-prop-survivor-scoring-prereg-v2.md` by citing **its reusable scoring clauses only**. It does **not** import that preregistration's falsifier disposition (G8). **A T00 screen is not four-firm §4 falsifier evidence** (operator ruling 2026-09-23, condition 4). The step-2 contract states that non-falsifier disposition itself. It adds only the expressions, pass floor, scenarios, intraday clock, NO-GO condition and the counting of R1/R2 `UNDETERMINED` days." The ruling also says it "may be drafted now … Ratification stays the operator's act."
 **Owner of T00:** [amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) and its [D-T00 row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-t00--tick-step-1-now-the-one-decision-on-the-1108-clock). This file is the step-2 artifact those owners name; it does not restate them.
 **Loop of record:** STRATEGIC (investment decision; T00 gates nothing).
 **Authored:** 2026-10-01, Claude Code worker (drafting only) for the coordinating session "Coordinating parallel Claude sessions". Joshua owns every **OPERATOR TO SET** value, every open decision in §4 and the ratification.
@@ -17,7 +17,7 @@
 |---|---|
 | [prereg v2](2026-08-26-prop-survivor-scoring-prereg-v2.md) §2–§7 | Every number this file adopts: Part A bust ceiling **5.0%**, pass floor **P(pass) ≥ 50%** with a finite median inside horizon **1500**, Run-2 (consistency-on) gating, seeds **42/123/2026**, depth **10k**, inactivity disabled, overlay OFF |
 | [`docs/load_bearing_numbers.md`](../../load_bearing_numbers.md) §1–§3 | EOD-clock bust figures are lower bounds; published figures assume inactivity OFF; 5.0% / 50% are live, owned by prereg v2 |
-| [Amendment §T00 and D-T00 row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) | Step-2 contents; GO-evidence / NO-GO-evidence / INSUFFICIENT; "adopts it or states why the selected book falls outside it"; condition 4 ruled **NO** 2026-09-23 (a T00 screen is not §4 falsifier evidence) |
+| [Amendment §T00 and D-T00 row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) | Step-2 contents; GO-evidence / NO-GO-evidence / INSUFFICIENT; "adopts it or states why the selected book falls outside it"; condition 4 ruled **NO** 2026-09-23, verbatim: "A T00 screen does not count as falsifier evidence" |
 | [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) | Condition (a): provider-specific work opens only on a T00 verdict other than INSUFFICIENT or NO-GO-evidence |
 | [T00 step-1 packet](../handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md) §7.4, §7.9 item 5 (line 312) | Candidate 3′ (`ops/c1_rail/qualification/`) is the producer; "Step 2 should say, before any run, how R1/R2 disagreement days (`UNDETERMINED`) count" |
 | [P7-closure packet](../handoffs/2026-09-24-tradeify-t00-p7-closure.md), at `origin/claude/t00-p7-tasks-3-4@6ba5e17` | Step 1 **RESOLVED (P7 MET) at code `2baa516`**; source-only contract r3c `a526b50f…8d97` (FULL 997 / H1 499 / H2 498, PRISTINE `initial_state`); approval valid until 2026-10-08T08:21:08Z; fresh P7 at the post-S5 rebased head still owed |
@@ -31,23 +31,31 @@
 
 ---
 
-## §1 — Adoption of prereg v2, by citation
+## §1 — What is reused from prereg v2, and the disposition this file states itself
 
-T00 step 2 **adopts** [prereg v2](2026-08-26-prop-survivor-scoring-prereg-v2.md) as frozen on 2026-08-26 and adds nothing to its numbers. The table maps each part onto the T00 screen. Where a part is not exercised, the reason is the one the D-T00 wording asks for ("states why the selected book falls outside it"); no part is amended.
+### §1a — Reused scoring clauses, by section
 
-| prereg v2 part | In T00 step 2 | Why |
+T00 step 2 cites [prereg v2](2026-08-26-prop-survivor-scoring-prereg-v2.md), frozen 2026-08-26, for the clauses below **only**, and changes none of their numbers. Nothing else in prereg v2 is imported.
+
+| prereg v2 clause (section) | Reused for | Mapping onto T00 |
 |---|---|---|
-| §3 Part A: headline bust **≤ 5.0%** (daily + static + trailing), **Run-2**, $100K band, paired with **P(pass) ≥ 50%** and a finite median inside the horizon | **Adopted** as the screen's thresholds (§2 A2, A6) | The ruling adopts v2; `load_bearing_numbers.md` §3 names v2 the owner of 5.0% / 50% |
-| §2 G4 run parameters: 10k sims × seeds 42/123/2026, horizon 1500, inactivity disabled, Run-2 gates | **Adopted.** Depth per population is **OPERATOR TO SET** item 1 | The qualification runner draws per population (FULL/H1/H2, `runner.py:55–59`); v2 has no population axis |
-| §2 G5 / §7 item 2: headline bust read as daily + static + trailing | **Adopted** as the bust numerator; `own_flat_deadline` is **OPERATOR TO SET** item 3 | `evaluate_replay` reports one more FAILURE reason than v2's definition names |
-| §7 item 5: Tradeify `consistency_frac` 40%, Run-2 gating | **Adopted.** Run-2 is what `evaluate_replay` runs (`consistency=.40`, `runner.py:27`). Whether a Run-1 diagnostic is owed is **OPERATOR TO SET** item 5 | The runner exposes no consistency-off mode |
-| §7 item 6: overlay OFF for scoring | **Adopted.** The kernel receives `dd_scale=1.0` (`runner.py:31`); the book's own 1% / 0.40 protection runs inside the replay, not as a second overlay (`test_runner.py::test_kernel_uses_intraday_and_no_second_scaling`) | Same posture |
-| §3 tier set: `Tradeify_Select_100K` is one of the four frozen tiers | **Adopted, one tier only** | T00 asks about the selected book on Tradeify Select alone |
-| §3 discharge rule (≥ 2 firms, ≥ 1 `trailing_locking`), §4 H-SCORE, §6 RESOLVED/FALSIFIED/AMBIGUOUS | **Not exercised** | Condition 4 was ruled **NO** on 2026-09-23: a T00 screen is not §4 falsifier evidence. Nothing in T00 can discharge or fire the 2026-11-08 falsifier |
-| §2 G0–G2 (intake, E1 reduction, cost-law kill gate), G6 routing, G8 admission | **Not exercised** | They admit a DISC-CAMP-0 survivor. T00's object is the already-selected book, fixed by identity (§2 A1); T00 admits nothing and gates nothing |
-| §3 Part B (funded ≤ 1.0%), G7 | **Not exercised** | Part B gates funded-phase scaling, not the eval; T00 is an eval-feasibility screen |
-| §7 item 7: regime-robustness caveat | Served by the independent FULL / H1 / H2 populations (§2 A2) | No new gate is added |
-| §7 item 9: non-candidate calibration reference, re-run at 5.0% before first scoring | **OPERATOR TO SET** item 6 | It feeds §4's ceiling-mis-set reject, which T00 does not feed; v2 nevertheless requires it "before first scoring" |
+| §3 Part A thresholds: headline bust **≤ 5.0%** (daily + static + trailing), **Run-2**, at the $100K band, paired with **P(pass) ≥ 50%** and a finite median inside the horizon | The screen's thresholds (§2 A2, A6) | `load_bearing_numbers.md` §3 names v2 the owner of 5.0% / 50%. Per-partition application is §2 A2 |
+| §3 frozen tier cross-section, the `Tradeify_Select_100K` row only | The scored tier | T00 asks about the selected book on Tradeify Select alone |
+| §2 G4 run parameters: 10k sims × seeds 42/123/2026, horizon 1500, inactivity disabled, run twice and score Run-2 | Depth, seeds, horizon, consistency gating | Depth per FULL/H1/H2 population is **OPERATOR TO SET** item 1, because the qualification runner draws per population (`runner.py:55–59`) and v2 has no population axis |
+| §2 G5 and §7 item 2: the headline bust is daily + static + trailing, read through the bucket-sum-checked definition | The bust numerator | `evaluate_replay` reports one more FAILURE reason (`own_flat_deadline`), **OPERATOR TO SET** item 3 |
+| §7 item 1: ceiling numbers 5.0% / P(pass) ≥ 50% / finite median inside horizon 1500 | The same thresholds, as frozen | — |
+| §7 item 5: Tradeify `consistency_frac` 40%, Run-2 gating | Consistency | Run-2 is what `evaluate_replay` runs (`consistency=.40`, `runner.py:27`). Whether a Run-1 diagnostic is owed is **OPERATOR TO SET** item 5, because the runner has no consistency-off mode |
+| §7 item 6: overlay OFF for scoring | No second protection overlay | The kernel receives `dd_scale=1.0` (`runner.py:31`). The book's own 1% / 0.40 protection runs inside the replay (`test_runner.py::test_kernel_uses_intraday_and_no_second_scaling`) |
+| §5 last v1 forbidden move: no number amended after a result is visible | The freeze discipline of this file | Applies to this file's own values once ratified |
+
+### §1b — Disposition: this screen is **not** four-firm §4 falsifier evidence
+
+Stated here as this contract's own disposition, not imported from prereg v2:
+
+- **A T00 screen does not count as falsifier evidence** (operator, 2026-09-23, condition 4, verbatim; [D-T00 row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-t00--tick-step-1-now-the-one-decision-on-the-1108-clock) "Condition 4 ruling"). Whatever step 3 returns, it neither discharges nor fires the four-firm §4 falsifier dated 2026-11-08. It does not change that falsifier's 0-of-4 clearer count, and it is not a "dated lab re-MC of a pre-registered candidate" for that clock. The falsifier needs its own dated re-MC regardless of T00.
+- **Not imported from prereg v2:** the G8 admission and falsifier disposition; §4 H-SCORE; the §6 verdict table (RESOLVED / FALSIFIED / AMBIGUOUS); the §3 discharge rule (≥ 2 firms, ≥ 1 `trailing_locking`) and F2 labels; the §4 ceiling-mis-set reject and its §7 item 9 calibration reference; §7 item 8 (all-null close); G0–G2 intake, E1 reduction and cost-law gate; G6 routing; Part B and G7 funded diagnostics. These are the falsifier and survivor-admission machinery, or funded-phase scaling, and none of them is a scoring clause the screen needs.
+- **What a T00 verdict is instead:** GO-evidence, NO-GO-evidence or INSUFFICIENT, an operator investment decision that gates nothing and admits nothing ([amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early)). No lifecycle CANDIDATE status, capital authorization or deployment follows from it. Its only named downstream reader is D-feed condition (a), whose NO-GO handling stays open (§4 OD-1).
+- **Regime caveat.** prereg v2 §7 item 7 is not imported as a gate. The independent FULL / H1 / H2 populations (§2 A2) give the half-sample view, and no regime gate is added.
 
 ---
 
@@ -130,6 +138,8 @@ The denominator is always every path in the population. `UNDETERMINED` paths are
 > **NO-GO-evidence** otherwise. It is labelled **robust** if it also fails under the optimistic assignment, else **`UNDETERMINED`-dependent**. Both labels are NO-GO-evidence.
 >
 > A NO-GO-evidence verdict is presented to the operator as an investment decision (adjust the book, or accept the risk into T15's F1), never routed automatically to a portfolio-adjustment packet ([amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) step 3). Its effect on D-feed (a) is open decision §4 OD-1.
+>
+> No verdict under this condition, GO-evidence included, is four-firm §4 falsifier evidence (§1b).
 
 ---
 
@@ -142,7 +152,7 @@ The denominator is always every path in the population. `UNDETERMINED` paths are
 | 3 | **`own_flat_deadline` FAILURE in the bust numerator** | `evaluate_replay` classifies it FAILURE (`runner.py:36–37`). The deadline is Tradeify's blanket account-level 16:45 ET rule, or 12:59 ET on D19 dates (P7-closure, operator ruling 2 of 2026-09-30) | prereg v2's headline bust is daily + static + trailing only. *Drafter's note:* counting it is the conservative reading, because it is an account rule breach |
 | 4 | **Path construction**: block family and length, RNG root namespaces derived from seeds 42/123/2026, path start | `JointFlatBlocks` exists (`blocks.py`); Track B prereg §2 leaves block family/length `OWED-BY: TB-F1`; contract r3c's `path_start_date` 2022-09-01 is PROPOSED, a label origin | No owner has frozen the block family or length |
 | 5 | **Run-1 (consistency-off) diagnostic**: owed or waived | prereg v2 §2 G4 runs twice, gating on Run-2 | `evaluate_replay` fixes `consistency=.40`. Run-1 would need a runner change; it never gates |
-| 6 | **prereg v2 §7 item 9 calibration reference**: carried into T00 or not | prereg v2 §7 item 9, §6 AMBIGUOUS row | It exists for the §4 ceiling-mis-set reject, which T00 does not feed (condition 4) |
+| 6 | *Withdrawn 2026-10-01:* prereg v2 §7 item 9 calibration reference | — | Not imported. It serves §4's ceiling-mis-set reject, which is part of the falsifier disposition the #580 `e627247` correction excludes (§1b). The row is kept so the numbering stays stable |
 | 7 | **Scenarios beyond S0** (S1 used-account, S2 cash-flow probes, or none) and whether any gates | §2 A3 table | Choosing scenarios is the operator's step-2 act. S1 needs a fresh private snapshot; S2 conflicts with T00's P1 finding |
 | 8 | **The `UNDETERMINED` counting rule**: ratify A5 as drafted, or replace it | Bracket convention (path-level verdict); CP-7 note §3 step 4 | The convention leaves gate entry to "an F1 definition"; no owner has written it |
 
@@ -182,7 +192,7 @@ Whatever is chosen should be recorded at the D-feed owner, not here, before step
 ## Audit hooks
 
 ```bash
-# The adopted numbers are prereg v2's, and the loader still resolves v2 (expect 0.05 / 0.01 / 0.50).
+# The reused numbers are prereg v2's, and the loader still resolves v2 (expect 0.05 / 0.01 / 0.50).
 python -I scripts/fp.py python -c "import sys; sys.path[:0]=['lab','core']; from discovery.prop_survivor_scoring import load_scoring_thresholds as l; t=l(); print(t.eval_bust_ceiling, t.funded_bust_ceiling, t.pass_floor)"
 
 # The kernel call this file binds to: Tradeify Select, inactivity OFF, consistency 40%, own intraday_low.
