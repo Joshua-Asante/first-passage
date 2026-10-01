@@ -87,9 +87,10 @@ new gitignored X-4 evidence folder. No live payload is created by this packet.
 | Entry distance and cancel buffer | Recommend **100 points above generation ask**, **25-point buffer**. Entry must remain strictly more than the buffer above the current ask. Numerical judgment for this drill, not calibrated no-fill assurance; approval owed |
 | Protective stop / target distances | Recommend **10-point stop**, **20-point target**, each from **entry E**; maximum actual fill-to-stop distance **20 points**. No anchoring on R; approval owed |
 | Entry time in force | Propose explicit `day`, never an omitted default; bracket exits GTC per retained documentation. No GTD/scheduled-expiry or `cancelAfter` mechanism |
-| Timing | Recommend initial unfilled-state evidence within **15 s of placement T0**, normal parent-cancel handoff before **30 s from T0**, terminal cancel evidence within **10 s of cancel T0**, stop validation within **10 s of first observed unexpected fill**, and recovery initiated immediately, at latest **60 s after that fill**. §3.1 defines independent clocks; approval owed |
+| Timing | Recommend initial unfilled-state evidence within **15 s of placement T0**, normal parent-cancel handoff before **30 s from T0**, terminal cancel evidence within **10 s of cancel T0**, stop validation within **10 s of first observed unexpected fill**; invalid protection triggers immediate recovery when detected, and absent valid protection at that deadline triggers recovery immediately then. The separate **60 s** read window is for final recovery confirmation, measured from recovery entry. §3.1 defines independent clocks; approval owed |
 | Cost / headroom / calendar | Recommend **$50 planning allowance**, and the fresh MNQ stress/headroom gate in §3.1; private margin and remaining spend checks still required. Fresh 15-minute scheduled high-impact-release exclusion. X-1's MYM result does not transfer; no loss guarantee |
 | Attempts and evidence budget | Recommend one placement and one designed parent-cancel attempt, each separately tracked, no retry/resend. **60 total read attempts**, including pre-send; at most **40** before final confirmation, reserving **20**; no more than **60 reads per rolling 60 s**, **10 s** request timeout, **one HTTP request in flight**, mutations included in serialization. All are new X-4 proposals, not broker safety guarantees |
+| Cross-account no-hedge attestation | Fresh operator attestation after actor inventory and before written CP-3: no opposite or correlated-product position on any of the operator's accounts. Retain privately; account-local flatness and inventory do not establish it (X-1 packet §5 / §8) |
 | Recovery actor / owner | Joshua attended throughout, rehearsed platform exit/cancel and evidence collection; Joshua owns unresolved effects. No automation restart that session |
 
 No CP-3 is ready while any field or execution gate remains unresolved. If an
@@ -235,6 +236,12 @@ alias or accept a raw unsupported state. Offline tests qualify tools only.
    calendar, margin/headroom/spend and recovery readiness. Obtain original
    account-scoped fill-reconciled positions, working/session orders and OR:
    flat, nothing working, nothing outstanding. Historical snapshots do not clear it.
+   After inventory, Joshua gives and privately retains the fresh **cross-account
+   no-hedge attestation**: no opposite or correlated-product position on any of
+   the operator's accounts, including other Equity Index products. Account-local
+   flatness and actor checks cannot establish this. Missing, stale or conflicting
+   attestation holds the row. Obtain written **X-4 CP-3 only after** this
+   attestation and all other fresh readiness gates pass, before step 2.
 2. Under X-4's accepted binding/rule, capture a fresh quote; derive, validate and
    record the exact entry and both child levels. Compare the independent hash
    record before observer and sender; human confirms the placement. Record time
@@ -268,8 +275,11 @@ orders. An unconfirmed effect remains outstanding even if the display is flat.
 
 **Unexpected fill:** end the intended unfilled-cancel test; inspect actual
 exposure and native stop `Working` at correct quantity and relationship under
-the approved fill/stop deadline. Excess realized distance, missing/rejected
-protection or unexpected quantity requires immediate attended recovery. Manage
+the ten-second deadline from first observed fill. Missing valid protection at
+that deadline triggers attended recovery immediately; detected invalid/rejected
+protection, excess realized distance or unexpected quantity triggers it sooner,
+without waiting for the deadline. The separate 60-second read window begins at
+recovery entry and bounds final confirmation only; it never delays intervention. Manage
 remaining entry/children under the existing recovery procedure, then confirm
 flat/no-working/all-terminal. Never blindly remove the only effective protection
 while exposure remains. Do not claim fill/cancel or OCO races cannot reverse.
@@ -302,7 +312,7 @@ their separately recorded dispositions.
 | X-4 tool and read contract | Requirements identified in §4; **build, review and offline verification owed** |
 | Bounded offline build/review handoff | [Draft card](../briefs/handoffs/2026-09-30-x4-offline-tools-build-review.md) prepared; synthetic transports only; **not dispatched or implemented** |
 | Attended rehearsal | **Owed on the exact accepted X-4 tools**, including unexpected fill and unknown cancel; X-1 rehearsal is supporting context only |
-| Fresh session gates and separate written CP-3 | **Owed; no execution authorized** |
+| Fresh session gates and separate written CP-3 | **Owed; no execution authorized**. Fresh cross-account no-hedge attestation follows inventory and precedes CP-3; account-local checks are insufficient |
 
 **Document verification:** compared the packet to the retained drill §2.0/§2.4,
 commissioning §3.2–§3.7/§4.2, X-1 acceptance and round-7 source restrictions on

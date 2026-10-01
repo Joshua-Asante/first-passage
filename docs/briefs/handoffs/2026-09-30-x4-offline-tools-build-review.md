@@ -213,8 +213,10 @@ Implement packet §3.1 literally as the named `PROPOSED` profile: quantity one;
 entry +100, buffer 25, SL −10, TP +20, realized maximum 20; tick 0.25, point value
 $2; placement freshness 10 s and two movement bounds 5; initial evidence 15 s,
 normal cancel handoff 30 s, cancel terminal evidence 10 s, unexpected-fill stop
-validation 10 s, recovery initiation no later than first-fill +60 s; confirmation
-read window 60 s, window-end precedence, no placement in final 180 s; total 60
+validation 10 s from first observed fill; missing valid protection at that
+deadline enters recovery immediately, with detected invalid/rejected protection,
+excess realized distance or unexpected quantity entering recovery sooner.
+Final recovery-confirmation read window 60 s from recovery entry, window-end precedence, no placement in final 180 s; total 60
 read attempts with at most 40 before confirmation and 20 reserved, rolling 60/60,
 request timeout 10 s and one actual HTTP request in flight, mutations included.
 No read-budget/rate/deadline reset on restart or phase transition. Read counts
@@ -308,12 +310,13 @@ evidence class with explicit no-PASS/no-authority wording.
 | `test_tampering_and_refusal_leave_no_handoff` | Mutate bytes, sidecars, metadata, quote source/time, account/parent/path or profile/binding; either integrity/semantics or final checks refuse before handoff. Operational use with PROPOSED/missing approvals and every real-network attempt refuses; frozen request bytes remain unchanged |
 | `test_two_children_cancel_trace_classified_from_sealed_bytes` | Recompute all three identities/versions/statuses, fills/positions, final terminal OR from raw sealed bytes. Child Working/Suspended after terminal parent yields `CHILD_REMAINS_LIVE`, not complete; missing/pending/unknown/unsupported state or incomplete capture yields `EVIDENCE_INCOMPLETE`; changing outcome.json alone cannot manufacture success |
 | `test_unknown_cancel_blocks_retry_across_restart` | Timeout/unclassified cancel result creates `CANCEL_UNKNOWN`; no automatic retry, new-folder retry, changed-binding retry or resend after restart; original attempt remains owned despite flat snapshots. Terminal evidence can reconcile it but never reopens the consumed attempt |
-| `test_deadlines_preempt_prompts_and_late_responses` | Buffer breach, deadline, firm/recover event or new fill interrupts a blocked human prompt and invalidates pending normal cancel. Monotonic clocks continue during I/O/Retry-After; late bytes are inert; first observed fill starts immutable fill clocks; no second HTTP request while the abandoned one is in flight |
+| `test_deadlines_preempt_prompts_and_late_responses` | Missing valid protection at first observed fill +10 s enters recovery immediately, even during blocked input/read; invalid/rejected protection enters recovery when detected. Final confirmation stops at recovery entry +60 s without delaying intervention. Buffer breach, deadline, firm/recover event or new fill interrupts a blocked human prompt and invalidates pending normal cancel. Monotonic clocks continue during I/O/Retry-After; late bytes are inert; first observed fill starts immutable fill clocks; no second HTTP request while the abandoned one is in flight |
 | `test_offline_tripwire_blocks_real_network` | In-memory transport handles every scenario; attempts to use sockets, urllib/HTTP or a host/broker subprocess fail and are counted. No bearer token is read; dummy-token echoes are withheld without erasing evidence-gap records |
 
 Also parametrize: quote ages 10 / over 10; each movement 5 / over 5; buffer 25
 / greater than 25; status receipt age 5 / over 5; realized distance 20 / over 20;
-initial deadline 15, handoff deadline 30, cancel deadline 10, market deadline 60,
+initial deadline 15, handoff deadline 30, cancel deadline 10, unexpected-fill
+stop-validation deadline 10, recovery-confirmation window 60 from recovery entry,
 window final-180 boundary; off-grid/nonfinite values; duplicate New/child ids;
 one child missing; target versus stop swapped; parent fills before confirmation,
 during the final GET and after cancel handoff; one child fills; flat with orphan;

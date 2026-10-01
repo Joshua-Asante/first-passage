@@ -554,6 +554,13 @@ untouched. This checklist is not a commit, merge, provider contact or deployment
 
 ## Addendum 2026-09-30 — sequence after X-1 review
 
+**Historical sequence; next-step text superseded by the 2026-10-01 continuation
+above.** The time-bound R-1 dispatch takes precedence over X-4: under the
+[X-1 packet §8 start-by rule](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30),
+Joshua may start accepted v3.2 reads only before **16:30 ET on 2026-10-01**;
+otherwise option C rehomes R-1 and nothing runs. Started reads retain the
+~17:00 ET reset gate. The X-4 recommendations below do not replace that duty.
+
 **Derived coordination update:** [campaign §61](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#61--x-1-observed-route-acceptance-2026-09-30)
 and the [drill-plan acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)
 replace earlier “no row has run / Stage 0 next” wording for this workstream.
