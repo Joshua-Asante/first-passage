@@ -428,11 +428,8 @@ Reads: this file @ `770413b` (sites located by `grep -n RUNBOOK`) · `deploy/c1_
 
 **Source.** Joshua, in the coordinating session on 2026-10-01: "feed costs don't count toward the $700 ceiling". This answers decision D-Q1 of the H8 feed-preparation return (PR #583).
 
-**Effect.** These do **not** count toward this ADR's $700 all-in ceiling (§2), and they are not part of the projected spend that revert trigger (b) measures (§4):
-- production data-feed costs (vendor subscription fees);
-- exchange (CME) market-data licence fees;
-- deposits and minimum balances required for data access.
+**Effect.** **Feed costs only** fall outside this ADR's $700 all-in ceiling (§2) and outside the projected spend that revert trigger (b) measures (§4). Feed costs means production data-feed subscription fees and exchange (CME) market-data licence fees. The ceiling continues to cover what it did before: the eval, the rail run-rate, and the drill costs ruled under F-4.
 
-The ceiling continues to cover what it did before: the eval, the rail run-rate, and the drill costs ruled under F-4.
+**Clarified by the operator on 2026-10-01, relayed by the merge-order session after Codex's review:** refundable **deposits and minimum balances stay under the cap** until the operator rules on them separately. For example, the A′ parked deposit remains capped. **Open operator decision:** whether refundable deposits or minimum balances needed for data access are exempt.
 
 **Unchanged.** Feed signup and spend still require D-feed (a)+(b) and CP-7. Every feed purchase stays an operator act. Feed costs are still recorded, outside the ceiling tally, wherever their owner keeps them.
