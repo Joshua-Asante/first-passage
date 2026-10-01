@@ -23,7 +23,7 @@ from c1_rail.qualification.execution.release import install_release,stage_bundle
 from c1_rail.qualification.execution.runtime import protected_path
 from c1_rail.qualification.execution.protocol import sha256
 from tools.qualification_verification import host
-from fixture_producer import fresh_keys,approve,release_document,build_real_bundle
+from fixture_producer import SCENARIOS,fresh_keys,approve,release_document,build_real_bundle
 
 
 def write(path,raw,*,uid=0,gid=None,mode=0o444):
@@ -32,7 +32,7 @@ def write(path,raw,*,uid=0,gid=None,mode=0o444):
     os.chown(path,uid,uid if gid is None else gid); path.chmod(mode)
 
 
-def install(root,manifest,image,*,diagnostic=False,dispatch=False,joint=False):
+def install(root,manifest,image,*,diagnostic=False,dispatch=False,joint=False,part_a=False):
     private,keys,registry=fresh_keys(execution_seed=(root/'keys/qexec/TEST_ONLY.key').read_bytes(),
                                    result_seed=(root/'keys/qg5/TEST_ONLY.key').read_bytes())
     roles=manifest['roles']; installation=CODE/'qualification-installation'
@@ -61,12 +61,15 @@ def install(root,manifest,image,*,diagnostic=False,dispatch=False,joint=False):
         # --s3 installs the dispatch revision (profile/v5, release/v5, N1 only)
         # and --s4 (FP_QUALIFICATION_S4=1) the joint dispatch v6 one.
         from c1_rail.qualification.execution.profile import (dispatch_diagnostic_execution_profile,
-            funded_diagnostic_execution_profile, joint_dispatch_diagnostic_execution_profile)
+            funded_diagnostic_execution_profile, joint_dispatch_diagnostic_execution_profile,
+            part_a_dispatch_diagnostic_execution_profile)
         from tools.qualification_verification import campaign_host
         # --s4 (FP_QUALIFICATION_S4=1) installs the joint dispatch revision
         # (profile/v6, release/v6, checkpoints N1+N2); --s3 installs v5, so it
-        # keeps profile/v5, and --s2 keeps profile/v4.
-        profile = (joint_dispatch_diagnostic_execution_profile(encoded(profile)) if joint
+        # keeps profile/v5, and --s2 keeps profile/v4. The S5 --part-a choice
+        # installs profile/v7 (checkpoints N1+N2+PART_A) beside them.
+        profile = (part_a_dispatch_diagnostic_execution_profile(encoded(profile)) if part_a
+                   else joint_dispatch_diagnostic_execution_profile(encoded(profile)) if joint
                    else dispatch_diagnostic_execution_profile(encoded(profile)) if dispatch
                    else funded_diagnostic_execution_profile(encoded(profile)))
         config.update(schema='qualification_execution_instance/v2', seal_probe_uid=65531)
@@ -87,7 +90,7 @@ def install(root,manifest,image,*,diagnostic=False,dispatch=False,joint=False):
     return dict(installation_root=str(installation),image_id=image)
 
 
-def prepare(root,attempt,idle,*,fault=None,depth_valid_seconds=14400):
+def prepare(root,attempt,idle,*,fault=None,depth_valid_seconds=14400,scenario=None):
     private={name:Ed25519PrivateKey.from_private_bytes(base64.b64decode(value))
         for name,value in json.loads((root/'keys/test-authority.json').read_bytes()).items()}
     keys={name:TrustedApprovalKey(name,key.public_key().public_bytes_raw(),'TEST_ONLY') for name,key in private.items()}
@@ -97,7 +100,7 @@ def prepare(root,attempt,idle,*,fault=None,depth_valid_seconds=14400):
     identity(attempt)
     source=root/'keys/retained'/attempt
     bundle=build_real_bundle(source,repo=CODE,release=release,private=private,keys=keys,attempt_id=attempt,idle=idle,
-        fault=fault,depth_valid_seconds=depth_valid_seconds)
+        fault=fault,depth_valid_seconds=depth_valid_seconds,scenario=scenario)
     # Administrator pre-dispatch diagnostics, not protected worker attestation.
     write(root/'evidence'/f'{attempt}-source-admission.json',bundle['source_admission'])
     write(root/'evidence'/f'{attempt}-legality.json',bundle['legality'])
@@ -114,9 +117,12 @@ def main():
     parser.add_argument('--diagnostic',action='store_true')
     parser.add_argument('--dispatch',action='store_true')
     parser.add_argument('--joint',action='store_true')
+    parser.add_argument('--part-a',action='store_true')
     parser.add_argument('--image'); parser.add_argument('--attempt'); parser.add_argument('--idle',action='store_true')
     parser.add_argument('--contract'); parser.add_argument('--reason')
     parser.add_argument('--fault',choices=['stop','exit_zero','cpu','memory','wall'])
+    # S5: a source scenario for the genuine PART_A_FAILED witness (fixture_producer.SCENARIOS).
+    parser.add_argument('--scenario',choices=list(SCENARIOS))
     parser.add_argument('--depth-valid-seconds',type=int,default=14400)
     args=parser.parse_args()
     path=host.protected(args.manifest); root=path.parent
@@ -131,8 +137,8 @@ def main():
         approval=approve(subject,private,'VOID_QUALIFICATION_ATTEMPT',contract_sha256=args.contract)
         result=dict(operator_approval_bytes=base64.b64encode(approval).decode())
     else:
-        result=install(root,manifest,args.image,diagnostic=args.diagnostic,dispatch=args.dispatch,joint=args.joint) if args.operation=='install' else prepare(root,args.attempt,args.idle,
-            fault=args.fault,depth_valid_seconds=args.depth_valid_seconds)
+        result=install(root,manifest,args.image,diagnostic=args.diagnostic,dispatch=args.dispatch,joint=args.joint,part_a=args.part_a) if args.operation=='install' else prepare(root,args.attempt,args.idle,
+            fault=args.fault,depth_valid_seconds=args.depth_valid_seconds,scenario=args.scenario)
     sys.stdout.buffer.write(encoded(result))
 
 

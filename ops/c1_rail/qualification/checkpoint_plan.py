@@ -90,7 +90,13 @@ def derive_checkpoint_plan(campaign_plan_bytes, checkpoint, predecessor_receipt_
     predecessor. For N2 the returned bytes are the canonical joint sub-plan bound
     to the committed N1 checkpoint receipt's digest -- a missing, foreign, stale
     or non-continuing predecessor refuses; that the receipt is the *committed*
-    one is a custody fact the store boundary checks, not this pure slice.
+    one is a custody fact the store boundary checks, not this pure slice. For
+    PART_A the returned bytes are the canonical Part A sub-plan: the campaign
+    plan's `part_a` panel vector and the PART_A probe's seed inputs, bound to the
+    committed joint N2 receipt's digest and to that receipt's `assessment_sha256`
+    (which names the capture-bound N2 assessment transitively); checking the
+    staged capture against that assessment belongs to the worker and G5, not to
+    this pure slice.
     """
     if type(campaign_plan_bytes) is not bytes or len(campaign_plan_bytes) > _CAMPAIGN_MAX_BYTES:
         raise ValueError('bounded retained campaign plan required')
@@ -146,6 +152,65 @@ def derive_checkpoint_plan(campaign_plan_bytes, checkpoint, predecessor_receipt_
         sliced = parse_canonical_json(raw, label='N2 sub-plan')
         if sliced['checkpoint'] != 'N2' or type(sliced['depths']) is not list:
             raise ValueError('campaign plan N2 sub-document differs')
+        return raw
+    if checkpoint == 'PART_A':
+        if type(predecessor_receipt_bytes) is not bytes or not predecessor_receipt_bytes:
+            raise ValueError('committed predecessor receipt required')
+        receipt = parse_canonical_json(predecessor_receipt_bytes, label='predecessor receipt')
+        if (
+            type(receipt) is not dict
+            or receipt.get('schema') != 'qualification_campaign_checkpoint_receipt/v1'
+            or receipt.get('checkpoint') != 'N2'
+            or receipt.get('attempt_id') != doc.get('attempt_id')
+        ):
+            raise ValueError('predecessor receipt binding differs')
+        assessment = receipt.get('assessment_sha256')
+        if (
+            type(assessment) is not str
+            or len(assessment) != 64
+            or any(character not in '0123456789abcdef' for character in assessment)
+        ):
+            raise ValueError('predecessor receipt binding differs')
+        if receipt.get('decision') != 'CONTINUE' or receipt.get('campaign_state') != 'PART_A_READY':
+            raise ValueError('committed predecessor decision differs')
+        part = doc.get('part_a')
+        seeds = None
+        for row in doc.get('probes') or ():
+            if type(row) is dict and row.get('checkpoint') == 'PART_A':
+                seeds = row.get('seed_inputs')
+                break
+        if type(part) is not dict or type(seeds) is not list:
+            raise ValueError('campaign plan PART_A sub-document differs')
+        n1 = doc['n1']
+        raw = canonical_json_bytes(
+            dict(
+                schema='qualification_checkpoint_plan/v3',
+                checkpoint='PART_A',
+                attempt_id=doc['attempt_id'],
+                contract_sha256=doc['contract_sha256'],
+                trust_domain_sha256=doc['trust_domain_sha256'],
+                policy_sha256=doc['policy_sha256'],
+                execution_release_sha256=doc['execution_release_sha256'],
+                exact_depth_approval_sha256=doc['exact_depth_approval_sha256'],
+                part_a=part,
+                seed_inputs=seeds,
+                thresholds=doc['cutoff']['thresholds'],
+                horizon_sessions=n1['horizon_sessions'],
+                initial_state_sha256=n1['initial_state_sha256'],
+                replay_sha256=doc['replay_sha256'],
+                budget=doc['budget'],
+                mechanics_version=n1['mechanics_version'],
+                source_proofs=n1['source_proofs'],
+                predecessor={
+                    'checkpoint': 'N2',
+                    'receipt_sha256': hashlib.sha256(predecessor_receipt_bytes).hexdigest(),
+                    'assessment_sha256': assessment,
+                },
+            )
+        )
+        sliced = parse_canonical_json(raw, label='PART_A sub-plan')
+        if sliced['checkpoint'] != 'PART_A' or type(sliced['part_a']) is not dict:
+            raise ValueError('campaign plan PART_A sub-document differs')
         return raw
     raise ValueError('unsupported checkpoint selection')
 

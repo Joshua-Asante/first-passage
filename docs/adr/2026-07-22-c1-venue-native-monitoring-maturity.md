@@ -1020,6 +1020,15 @@ Reads: this file @ `0059ca7` (six sites located by `grep -n RUNBOOK`) · `ops/c1
 
 ---
 
+## Addendum 2026-10-01 — `transport_unknown` risk-add block proven only within one process; #571 parked
+
+**Finding.** On `main`, the legacy c1-rail `EventLedger` lifts the `transport_unknown` risk-add block across a restart. This acceptance's "transport_unknown blocks risk-add" drill exercised that block only within a single process. PR #571 makes the block durable across restarts, but it is **parked** by operator ruling (deployment checklist, [first-session simplification rulings](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts), item 4). The book route does not use this path. It halts durably through CC-3 (`ops/c1_rail/book_account_owner.py`).
+
+**Limitation and guard.** M1's `RESOLVED` status stands for the record. While #571 is parked, **it does not support arming any legacy leg**:
+- `dry_run=true` stays;
+- no `c1_rail_arm` of any legacy leg, including the M1 Stage-1 test leg;
+- #571 is retained and deployed, with its pin refresh, before any legacy re-arm or M1 Stage-1 ceremony.
+
 ## Change history
 
 | Date | Change | By |
