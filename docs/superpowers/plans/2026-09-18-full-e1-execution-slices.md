@@ -1919,6 +1919,6 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 **Next.**
 - The coordinator opens the landing PR, updates `claude/s5-part-a` from `main` to **H**, and runs the closure-equivalence and Linux-closure checks at **H**.
 - At **H**: CI, then Codex, then a merge pinned to **H**.
-- After that, T05 and the T00 rebase. The rebase re-runs P7 at the rebased head, with a fresh source approval if after 2026-10-08T08:21:08Z.
+- After that, T05 and the T00 rebase. As accepted recommendation 4 states, the rebase re-runs P7 at the rebased head **with a fresh source approval**, whatever the date. The current approval's expiry, 2026-10-08T08:21:08Z, does not relax that.
 
 **Not granted:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority.
