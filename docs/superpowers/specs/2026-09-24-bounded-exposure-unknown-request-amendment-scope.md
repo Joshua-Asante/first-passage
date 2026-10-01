@@ -1,5 +1,7 @@
 # Scope — bounded-exposure amendment for unknown requests (T08 option a)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Status:** SCOPE, not an amendment. Authorized by the operator's 2026-09-24 ruling ([T08 §7.8](../../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24), part 3). It changes no contract; every owner named in §3 stays in force until an amendment is accepted and propagated. Live release is held meanwhile (§7.8 part 1).
 **Date:** 2026-09-24 · **Author:** Claude (coordinating session) · **Operator:** Joshua.
 

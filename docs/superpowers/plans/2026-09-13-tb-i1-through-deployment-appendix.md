@@ -27,7 +27,7 @@
 - Implemented configuration remains disarmed. Positive deployed allocations and verified order-symbol bindings belong to TB-V1.
 - Private bodies, exports, account evidence and qualification figures stay in approved ignored roots. Public artifacts contain permitted digests and verdicts.
 - Qualification compute is single-process. Freeze sample streams, sizes, criteria and budget before decision-bearing runs.
-- Models establish offline behavior only. No agent places trades. Live ceremonies, funding, emission, deployment and arming retain their existing gates.
+- Models establish offline behavior only. Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Live ceremonies, funding, emission, deployment and arming retain their existing gates.
 
 ## Evidence baseline and planning status
 

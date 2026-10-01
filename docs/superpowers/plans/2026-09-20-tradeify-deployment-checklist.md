@@ -483,7 +483,7 @@ Handoff IDs refer to the [handoff set](../../briefs/handoffs/2026-09-27-staged-a
 
 ### 4. Operator checkpoints — where approval is taken
 
-Each checkpoint takes the decision once, against a returned artifact. Between checkpoints the coordinator acts within the approvals already given, without re-asking. None of these lifts the standing prohibitions: no agent places a trade, no merge happens without the operator, and nothing is armed without M1 plus a session GO.
+Each checkpoint takes the decision once, against a returned artifact. Between checkpoints the coordinator acts within the approvals already given, without re-asking. Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. No merge happens without the operator, and nothing is armed without M1 plus a session GO. Owner: [surface-allocation ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b).
 
 | CP | Decision | Reviewed against | Unlocks |
 |---|---|---|---|
@@ -565,7 +565,7 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
    - Written provider questions Q1–Q12 and reads of published terms are **allowed now**, with no account, signup, credential or spend ([feed note](../../notes/2026-09-27-feed-provider-neutral-preparation.md)). Agents may draft the questions. Sending any message stays the operator's act.
    - The feed-equivalence spec may be **frozen now**, before any provider data.
    - Signup and spend stay behind D-feed (a)+(b) and CP-7.
-   - *Operator ruling, 2026-10-01 (D-Q1):* **feed costs only** (subscription and CME licence fees) **do not count toward the $700 ceiling**. Refundable deposits and minimum balances stay under the cap until the operator rules on them separately ([rail GO ADR addendum](../../adr/2026-07-17-c1-rail-build-account-registration-go.md)).
+   - *Operator ruling, 2026-10-01 (D-Q1):* **feed costs only** (subscription and CME licence fees) **do not count toward the $700 ceiling**. Refundable deposits and minimum balances stay under the cap until the operator rules on them separately ([rail GO ADR addendum](../../adr/2026-07-17-c1-rail-build-account-registration-go.md)). *Defined 2026-10-01 (D-Q6/D-Q7):* any non-refundable charge whose purpose is receiving the market data is a feed cost and is exempt; that covers required API or data-access fees and one-time setup charges.
 3. **X-4: reduced build path.** GC-4's required observation is unchanged:
    1. one resting MNQ buy-stop bracket is placed;
    2. the parent shows `Working` with both children `Suspended`;
