@@ -1903,3 +1903,22 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 4. **Accept S5 for TEST_ONLY**, effective when the landing PR merges at a head **H** that satisfies the landing procedure and decision rule above. Then T05 and the T00 rebase follow. The T00 rebase re-runs P7 with a fresh source approval, because the P7 record binds its code head.
 
 **Not granted by this packet or by acceptance:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority. Each still runs through its own gate.
+
+### Operator ruling — C3 accepted; S5 accepted for TEST_ONLY on landing, 2026-10-01
+
+**Source.** Joshua, in the coordinating session at about 17:45Z on 2026-10-01, replying to the four recommendations of the [coordinator C3 acceptance packet](#coordinator-c3-acceptance-packet--s5-part-a-test_only-2026-10-01) (merged in #576 at `2b98d22`): "accept 1–4".
+
+**Effect.**
+1. **C3 is ACCEPTED** for S5 Part A **TEST_ONLY**, on the evidence at `claude/s5-part-a@606e6e0` (the packet's table). It carries to the landing head **H** only through the packet's decision rule.
+2. **OQ-1 is closed** as not arising. A valid Stage 1b record exists (run `36364854404`).
+3. **Q1** (whether a committed FAIL on an exhausted campaign counts under ADR §4) and **Q7** (R7's production evidence standard) are **reassigned to the statistical owner**, to be decided before S8 / T06. **Q9** (closure of a never-retried, retry-eligible IN_DOUBT, and so the salt reveal) is **reassigned to the RC-4 slice**, before F1. None is a C3 condition any longer.
+4. **S5 is ACCEPTED for TEST_ONLY**, effective when the `claude/s5-part-a` landing PR merges at a head **H** that satisfies the packet's landing procedure and decision rule. If the measured closure has changed at **H**, the landing returns to the operator, and S5 acceptance does not take effect until he decides.
+
+**Carried items:** unchanged from the packet. They are G5 independent bars verification (CP-6), the independently observed pilot draw (T05, before CP-6), the per-phase memory field (CP-6), and the T11/CP-8 set.
+
+**Next.**
+- The coordinator opens the landing PR, updates `claude/s5-part-a` from `main` to **H**, and runs the closure-equivalence and Linux-closure checks at **H**.
+- At **H**: CI, then Codex, then a merge pinned to **H**.
+- After that, T05 and the T00 rebase. The rebase re-runs P7 at the rebased head, with a fresh source approval if after 2026-10-08T08:21:08Z.
+
+**Not granted:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority.
