@@ -555,18 +555,20 @@ untouched. This checklist is not a commit, merge, provider contact or deployment
 ## Addendum 2026-09-30 — sequence after X-1 review
 
 **Historical sequence; next-step text superseded by the 2026-10-01 continuation
-above.** The time-bound R-1 dispatch takes precedence over X-4: under the
-[X-1 packet §8 start-by rule](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30),
-Joshua may start accepted v3.2 reads only before **16:30 ET on 2026-10-01**;
-otherwise option C rehomes R-1 and nothing runs. Started reads retain the
-~17:00 ET reset gate. The X-4 recommendations below do not replace that duty.
+above.** The time-bound R-1 dispatch preceded X-4 under the
+[X-1 packet §8 start-by rule](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30).
+**Update 2026-10-01:** Joshua's attended read 08:22–08:59Z discharged R-1
+for X-1's order, at that time only, with `LOCATED_WITH_CLORDID`
+([dated owner result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). The start-by rule is spent; option C did
+not apply and this historical sequence supplies no new R-1 dispatch.
 
 **Derived coordination update:** [campaign §61](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#61--x-1-observed-route-acceptance-2026-09-30)
 and the [drill-plan acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)
 replace earlier “no row has run / Stage 0 next” wording for this workstream.
 X-1 has a scoped GC-2a PASS on its observed MYM REST entry/native-stop trace and
-normal attended teardown. Intermediate P0b coverage is absent; post-teardown
-R-1 is not discharged. No full-route, consumer or deployment acceptance follows.
+normal attended teardown. Intermediate P0b coverage is absent. Post-teardown
+R-1 was separately discharged on 2026-10-01, for X-1's order at that time only
+([dated owner result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). No full-route, consumer or deployment acceptance follows.
 
 Next bounded route step is **X-4 documentary readiness preparation**, returning
 before execution for coordinator review and Joshua's own CP-3. X-4 needs its

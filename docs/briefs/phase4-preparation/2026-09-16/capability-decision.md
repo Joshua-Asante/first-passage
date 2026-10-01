@@ -11,8 +11,10 @@ records a PASS for the observed one-contract MYM REST entry/native-stop behavior
 and normal attended terminal teardown. N1-entry/N1-b and R2 have that observed
 identity/fill/protection trace; they are not qualified wholesale or bound to a
 deployed strategy consumer. R3–R5 remain unproven for release. Same-session
-per-order reads succeeded for the observed entry/child; the separate post-teardown
-R-1 sequence is not discharged. No competing-order coverage is claimed for the
+per-order reads succeeded for the observed entry/child. **Update 2026-10-01:**
+the separate post-teardown R-1 read was discharged for X-1's order, at that time
+only: Joshua's attended read 08:22–08:59Z returned `LOCATED_WITH_CLORDID`
+([dated owner result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). No competing-order coverage is claimed for the
 omitted intermediate P0b interval. This dated scoped update supersedes earlier
 “no actual trace” wording only for those observations. Live release remains blocked.
 

@@ -4066,8 +4066,10 @@ session. Codex recorded a **scoped GC-2a PASS**, distinct from the adjudicator's
 [drill-plan acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30).
 It accepts the observed MYM REST entry/native-stop identity and normal terminal
 teardown only. The intermediate P0b sample supplies no competing-order coverage;
-its omission follows the accepted stop-at-sufficiency ruling. Post-teardown R-1
-is not discharged. The sole placement attempt is consumed; sealed evidence is
+its omission follows the accepted stop-at-sufficiency ruling. **Update 2026-10-01:**
+post-teardown R-1 was discharged for X-1's order, at that time only: Joshua's
+attended read 08:22–08:59Z returned `LOCATED_WITH_CLORDID`
+([dated owner result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). The sole placement attempt is consumed; sealed evidence is
 unchanged and private. CAP and T08 carry scoped mirrors. No deployment, arming,
 resend, next row, unattended operation or gates B–D acceptance follows.
 

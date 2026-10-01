@@ -337,7 +337,9 @@ The dispatch-without-commit breach (§6.1) stays open for the coordinator. The o
 records the §A1 entry/bracket behavior as observed and accepted for one MYM REST
 attempt on the bound incumbent eval. This is REST-form evidence, not execution
 of the webhook-form D1 below. Same-session lifecycle/status and fill reads worked
-for this attempt; the full post-teardown R-1 sequence remains owed. No activation
+for this attempt. **Update 2026-10-01:** the separate post-teardown R-1 read
+was discharged for X-1's order, at that time only: Joshua's attended read
+08:22–08:59Z returned `LOCATED_WITH_CLORDID` ([dated owner result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). No activation
 latency bound, competing-order coverage for the omitted P0b interval, other
 symbol, close/modify/cancel capability, or release follows. Earlier “Not
 demonstrated” cells preserve the documentary assessment at its date.

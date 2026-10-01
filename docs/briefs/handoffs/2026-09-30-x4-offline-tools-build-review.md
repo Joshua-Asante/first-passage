@@ -300,6 +300,15 @@ resends or repairs protection. An already in-flight request stays possibly
 effective; late responses are retained inert and no new request overlaps it.
 Cancellation snapshot freshness is not an atomic read/cancel guarantee.
 
+After an unknown placement or cancel, fresh account-scoped position and order
+reads govern recovery. Even when the account is flat, require Joshua to cancel
+**every positively identified live order** (including the parent and orphan
+children) through the attended platform. Record this additional actor and its
+race with any possibly effective in-flight request. Then confirm from fresh
+reads after the last intervention: flat positions, no live orders and terminal
+state for every involved id. Retain each unresolved request or missing terminal
+state as an OR obligation; a flat snapshot alone cannot discharge it.
+
 Read/record both children by actual supported fields and retained placement
 mapping; target `Limit`, stop `Stop`, each `Sell`, quantity one, level and parent
 identity bound. Record relationship fields without inventing OCO semantics.
@@ -387,7 +396,14 @@ no further REST reads; failed/late first per-order read; attempt 40 and total 60
 crash before claim, after claim before handoff and after handoff before response;
 thread completion is never inferred from a timed join. Recovery prompts are
 conditional: actual open exposure → attended intervention; already flat → no
-flatten; unknown → read first; missing terminal evidence → retain OR.
+flatten, but cancel every positively identified live order through the attended
+platform; unknown → read first; missing terminal evidence → retain OR.
+The **flat with orphan** case must assert attended cancellation of every
+identified live orphan (and any live parent). The **terminal parent with pending
+child** case must assert attended cancellation of every identified pending/live
+child even when positions are flat. Both cases must assert the additional
+actor/race record, fresh post-intervention terminal confirmation for all involved
+ids, and retained OR obligations wherever that confirmation is missing.
 
 No clean GC-4 class after any unexpected fill, buffer/deadline abort, firm
 intervention, malformed data or missing mandatory evidence. Sampled reads and

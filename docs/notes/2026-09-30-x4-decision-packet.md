@@ -27,8 +27,10 @@ consequence. Those owners govern wherever this preparation differs.
 
 X-1's [scoped acceptance](2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)
 is recorded. Its omitted intermediate P0b provides no interval coverage.
-Its separate post-teardown R-1 remains undischarged; X-4 does not repair or waive
-it, and no extra trade is proposed to do so. The X-1 placement attempt is consumed.
+**Update 2026-10-01:** its separate post-teardown R-1 was discharged for X-1's
+order, at that time only: Joshua's attended read 08:22–08:59Z returned
+`LOCATED_WITH_CLORDID` ([dated owner result](2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)).
+No extra trade follows from that result. The X-1 placement attempt is consumed.
 X-1 does not prove MNQ behavior or cancellation of two Suspended children.
 
 **Preparation return:** this packet, the actor decision text, private-binding
@@ -270,8 +272,12 @@ working orders and positively identified lifecycle/status first. No resend,
 regeneration, speculative replacement or automatic flatten. An exposed position
 gets the existing attended platform intervention only after those fresh reads
 show it needs one; record the second close-owner race where a prior unknown
-request could still act. If flat, do not flatten; inspect/reconcile remaining
-orders. An unconfirmed effect remains outstanding even if the display is flat.
+request could still act. If flat, do not flatten; cancel every positively
+identified live order, including any live parent or orphan child, through the
+attended platform. Record that additional actor and its race with the possibly
+effective unknown request. Confirm terminal state for every involved id from
+fresh reads after the last intervention. An unconfirmed effect or missing
+terminal evidence remains outstanding even if the display is flat.
 
 **Unexpected fill:** end the intended unfilled-cancel test; inspect actual
 exposure and native stop `Working` at correct quantity and relationship under
