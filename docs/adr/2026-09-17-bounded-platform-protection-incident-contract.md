@@ -13,6 +13,8 @@
 > **Addendum 2026-09-24 (Proposed):** §2's "Unknown entry, add, cancel, close or modification" row is proposed to change for narrowed-shape requests: a permanent worst-case reservation instead of an account block. See [the addendum](#addendum-2026-09-24--bounded-exposure-reservation-for-unknown-requests-proposed) (revised 2026-09-25, §A8). Not effective until accepted and propagated.
 >
 > *Pointer 2026-09-26 (callout above preserved):* by operator ruling, the first release runs today's preserve-and-block rule, not this reservation, for one attended session, then explicit review before extending ([§A11](#a11--operator-ruling-first-release-posture-2026-09-26)). Option B's implementation is deferred and the addendum stays Proposed.
+>
+> *Pointer 2026-10-01 (callouts above preserved):* a narrow first-release text is drafted as [§A12](#a12--first-release-text-narrow-2026-10-01--proposed) (PROPOSED, not accepted): an unknown request holds its reservation and halts trading; release only on a uniquely correlated outcome; §A2 rule 7 for non-entry requests. Option B's resume machinery is deferred, not deleted.
 
 ## §0 — Rule 0 reads and verification anchors
 
@@ -402,6 +404,138 @@ The floor definition, allowance formula, inputs, stale-data behavior and calibra
 
 **Not granted:** a new trade, purchase, new access, account reset or order mutation; no agent account access.
 
+### A12 — First-release text (narrow), 2026-10-01 — PROPOSED
+
+**Status.** `PROPOSED`. Drafted for the operator's 2026-10-01 ruling "go with all six recommended cuts", item 1, recorded in the deployment-checklist addendum "Addendum 2026-10-01 — first-session simplification rulings (six cuts)" ([PR #580](https://github.com/Joshua-Asante/first-passage/pull/580)). **Nothing here is effective until Joshua accepts it** (scope §5 step 5), after the two step-4 reviews of this narrow text (§A12.7). Until then the accepted contracts govern unchanged.
+
+**Scope.** First release only: the first attended release, and any commissioning session in which automation is armed (§A11 item 1; §A11.2, O-7). For that scope, where §A12 differs from §A2, §A8 or §A10, §A12 governs. Their text stays preserved and is the starting point for any later release that adopts option B. Each deferred rule is **deferred, not deleted** (§A12.3).
+
+**Relation to the accepted contracts.** On this section's reading, every first-release rule below is already carried by an accepted owner:
+- the [halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md) rev9 with its 2026-09-27 amendment (§1–§4, §4.1);
+- the rail spec's **unamended** E3 row with its §59 Ruling 7(b) marker ([rail spec](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md) §1 `pending` row and §2e E3);
+- the closure plan's Step 2 outcome table ([closure plan](../superpowers/plans/2026-09-16-self-service-capability-closure.md)).
+
+What §A12 adds is the first-release meaning of this ADR's own §2 row "Unknown entry, add, cancel, close or modification", a per-type statement for non-entry requests (scope Q2), and an explicit record of what is deferred. It changes no accepted contract. If that reading is wrong anywhere, the review should report it as a finding; this section does not silently change the owner.
+
+#### A12.1 — Rules
+
+**F1. An unknown request holds its reservation, and trading halts.** A runtime request of any type or shape has an *unknown outcome* when it was sent, or may have been sent, and no accepted outcome covers it. That includes a lost response, a timeout, a send exception after transport may have started, and a crash between send and outcome. Such a request is an incident (halt/resume §2, row "uncertain transport/order outcome"; "Unknown order identity is an incident"; §4.1). Then:
+- (a) **Ownership is retained.** The original attempt, its identity and its contracts stay owned as today. There is no resend and no speculative cancel, amend or repair. Absence, flatness, empty reads, elapsed time, a session reset, a restart and operator acknowledgment release nothing (§A2 rule 1; scope §4).
+- (b) **The reservation is held.** For an exposure-creating request, its contracts stay in `reserved` for its leg's symbol (§A2 rule 5). For a request on an existing position or order, that position's lots and that order's reservation stay owned exactly as they were before the request was sent. The held reservation is **contract capacity only**; no loss allowance is computed in the first release (§A12.2).
+- (c) **The account halts.** The account enters durable HALTED with account-wide intervention scope. INTERVENTION permits no new runtime broker mutation: no exits, amendments, emergency cancel or close, and no scheduled flatten (halt/resume §1). An alert goes out for attended intervention (§3). In the first attended release, and in commissioning with automation armed, automated trading ends for that session. No resume request and no repeated activation is valid in it (§A11.2; halt/resume §4 marker).
+- (d) **Every shape.** F1 applies to every request type and shape. The §A1 narrowed shape changes nothing in the first-release response.
+
+**F2. Release only on a uniquely correlated outcome.** A held request is released only by evidence in the first two rows of the closure plan's Step 2 outcome table: a uniquely correlated accepted request, order or execution, or a supported definitive terminal rejection or no-future-effect result for that attempt (§A2 rule 2(a)). Release is a **transfer, not a write-off** (E3: "Completion hands responsibility to observed working orders, gross lots or quarantine before releasing the request owner"; §A9.1 UB-7):
+- a correlated working order becomes a known working order that keeps its capacity reservation (E3 marker (1));
+- a correlated fill becomes confirmed exposure, with its protection obligations;
+- an accepted terminal outcome releases only the conclusively unfilled remainder of that request (UB-7; E3 marker (4));
+- the request stays unresolved while any child, sibling or coverage-repair effect is unexplained, or while the position does not reconcile with the correlated order, its children and its fills (T08 §7.10; Gate A A3(iii)).
+
+A collision, a duplicate `clOrdId` match or a contradictory identity is quarantined through the existing owner (closure row 4). Absence never releases (closure row 3). Option A's vendor-time release (§A2 rule 2(b)) is unavailable on the supplied support reply (T08 §7.9) and is not part of the first release.
+
+*Evidence classes in the first release.* Against the unamended E3, T09 implements one release class: the conservative terminal-resolution rule, an accepted postdating terminal that demonstrably covers the request (E3 marker (3)). A positive `clOrdId` lookup by the REST recipe ([REST §6.4](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#64-correlation-and-recovery-step-3)) is the candidate T08 §7.10 names for a uniquely correlated outcome. But §59 Ruling 7(b)(3) still says "positive-lookup resolution remains separately held". It becomes a release class only when UB-7's evidence is accepted and that hold is lifted (§A12.6, D2).
+
+**F3. Duration.** While a request is held, attended recovery cannot complete: halt/resume §3 ¶2 requires "no unresolved requests". No later session may resume or activate either: §4 ¶1 says "unresolved owner cannot be overridden". Automation therefore stays suspended until F2's evidence arrives, possibly indefinitely. The operator accepted that consequence on 2026-09-26 (§A11 item 2).
+
+*Consequence, stated rather than hidden.* The documented correlation lists are session-scoped and reset at about 17:00 ET (REST §6.4). Cross-session recovery is UNESTABLISHED (R-2 closed with limits, 2026-09-29). So a request that is not correlated within its own session is likely, in practice, to stay held.
+
+**F4. Unknown non-entry requests (§A2 rule 7, carried).** An unknown amend (`change`), cancel, cancel/replace, close (full or partial), attach or flatten, including the scheduled flatten, falls under this ADR's §2 row "Protection identity, quantity, ownership, platform state … uncertain/failed". That means immediate attended intervention, with no autonomous protection claimed. F1 already halts the whole account. This rule adds, for each request type, what is presumed and what attended reconciliation must establish. New risk-adds on the affected leg stay refused until attended reconciliation establishes its position and working orders from fresh evidence; F3 and halt/resume §3 already impose that account-wide. An unknown cancel of a resting entry leaves that entry's reservation held under F2 (rail spec S4).
+
+| Unknown request | Presumed while unknown | Reconciliation must establish (fresh, postdating evidence) | Evidence owner (§A12.5) |
+|---|---|---|---|
+| Amend (`change`, Tradovate modify) | The old stop may or may not be working, at either price. A version can exist for a command that is later rejected (REST §6.4, Q21) | The protective order's state and effective price, from command reports and lifecycle | M2 modify semantics; GC-2b / X-2 |
+| Cancel | The order may still be working, or partly filled | The order's terminal status and its fills by `orderId` | GC-4 / X-4 |
+| Cancel/replace | Non-atomic: either order, both or neither may be working; the route returns `reconciliation_required` on ambiguity (REST §6.4, Q28) | Both orders' states and fills | — |
+| Full close (`liquidateposition`) | The position may be unreduced, partly reduced, flat or reversed. Protection may already be cancelled | Fill-reconciled position; working orders on the contract, and on the account while the scope question S stays `CONFLICTING`; fills by `orderId` | C-a M1–M9 |
+| Partial close | An opposing market order; working orders stay in place; reversal is possible (§A4) | Position against protective quantity | C-a M1–M9 (whole-leg only; subset exits are not widened, §A11.1) |
+| Attach | Protection may or may not exist. L2(f) is unsupported on this route (§A4), and no edition uses it | Whether any protective order exists, and its quantity | — |
+| Scheduled flatten | As a full close. SCHEDULED_EXIT authority is revoked; the own-flat deadline stays an obligation for attended handling (halt/resume §2, §5) | As a full close | C-a M1–M9 |
+
+**F5. Unexplained effects.** Any position, working order or fill that no owned operation explains, on any symbol, is an incident under this ADR's §2 protection/state-failure row (§A2 rule 6). An effect that F2 uniquely correlates to a held request is that request's outcome and transfers under F2. An effect that is not uniquely correlated never releases a held request. It becomes an additional identified exposure alongside the reservation, and the double count is deliberate. §A2 rule 6's premise that "no fill can be uniquely correlated to an unknown request (T08 §7.3 blockers 1–2)" is qualified for the first release to that extent: the REST §6.4 recipe postdates T08 §7.3 (§A12.6, D3).
+
+**F6. The normal path is unchanged.** With no unknown request outstanding, admission is today's admission. The first release has no exceptional mode, no loss-room check and no worst-case charge.
+
+#### A12.2 — Reconciliation with T08 §7.10, "halt versus reservation"
+
+T08 §7.10 ([PR #575](https://github.com/Joshua-Asante/first-passage/pull/575), head `aa20360`) reads the operator's 2026-10-01 route ruling in three parts. §A12 matches each:
+
+1. *"An unresolved request keeps its worst-case reservation, which is never released without such an outcome."* F1(b) and F2. In the first release, the reservation held is **contract capacity** (§A2 rule 5; UB-2's quantity (1)). The worst-case **loss** charge (§A2 rule 3; UB-2's quantity (2)) is consumed only by the deferred room check (rules 4′/4a) and by B's resume. While F1 halts the account, nothing is admitted, so the figure would decide nothing. It is deferred with §A3, not dropped.
+2. *"'Halt' here is the current first-release posture … It is not a permanent account block."* F1(c) and F3. The block is not permanent **by construction**: F2 names how it ends. The scope note's §1 premise of "permanently" assumed that no evidence could ever resolve a request; the REST recipe now gives a candidate. But it is **indefinite in practice** whenever no F2 evidence arrives (F3), as §A11 item 2 accepted. Under the unamended E3, the unresolved request owns an account block across sessions until F2 releases it.
+3. *"Whether automation later resumes with reduced room while a reservation-held unknown remains … stays with the amendment owner."* Deferred (§A12.3: rules 4′, 4a–4c, 9′, 12; the §A5 halt/resume §3–§4 and E3 additions). §A12 neither adopts nor narrows that rule.
+
+#### A12.3 — Disposition of the existing rules for the first release
+
+**IN** = first-release text, as the named F rule. **DEFERRED** = out of the first release by the 2026-10-01 ruling, or because it depends on deferred text; preserved for a later release, **not deleted**. **INERT** = cannot bind while F1 halts the account; deferred with B. **UNRULED** = in neither the ruled IN list nor the OUT list; returned as a decision (§A12.6).
+
+| Text | First release | Note |
+|---|---|---|
+| §A1 narrowed shape | Not decision-bearing for the response (F1(d)) | Editions are still prepared in the shape (§A8; campaign §59). Its trace stays owed (§A12.5) |
+| §A2 rule 1 | **IN** as F1(a)–(b) | Its "not an account block" clause is **DEFERRED**: that is B |
+| §A2 rule 2(a) | **IN** as F2 | — |
+| §A2 rule 2(b), option A | Unavailable | T08 §7.9. Retained, so a later vendor bound could reopen it |
+| §A2 rule 3, worst-case charge | **DEFERRED** | With §A3 and UB-2 (§A12.2 item 1) |
+| §A2 rule 4 / §A10 rule 4′ | **DEFERRED** | By ruling |
+| §A2 rule 5, micro-cap accounting | **IN** as F1(b) | — |
+| §A2 rule 6 | **IN** as F5 | Premise qualified (D3) |
+| §A2 rule 7, non-entry requests | **IN** as F4 | By ruling |
+| §A2 rule 8, exhaustion | **INERT** | No admission while halted |
+| §A3 figures | **DEFERRED** | By ruling |
+| §A5 propagation | Replaced for the first release by §A12.4 | §A5 stays the later-release set |
+| §A6 falsifiers 1, 2, 4 (atomicity, quantity growth, one contract) | Kept as falsifiers of the §A1 trace | Not first-release gates (D6) |
+| §A6 falsifiers 3, 5 (no-unknowns replay; response within room) | **DEFERRED** | They test rule 4′ and the room. Attended response remains T13's to measure |
+| §A7 forbidden moves | In force as written | — |
+| §A8 rule 9 / §A10 rule 9′ | **DEFERRED** | 9′ by ruling; rule 9's loss part goes with it. Whole-intent capacity reservation stays a §59 Ruling 5 edition-preparation constraint |
+| §A8 rule 10, one unresolved request per symbol | **UNRULED** | D4 |
+| §A8 Q5, correlation by exclusivity | Not adopted | UB-7 recommended answer |
+| §A9.1 UB-1 (ruled) | Rule text **DEFERRED** (4′, 4a–4c) | The ruling stands for the later release |
+| UB-2, UB-6, UB-9, UB-10 | **DEFERRED** | By ruling |
+| UB-3 (ruled) / §A10 rule 11 | **UNRULED** as amendment text | D5. Item 3 (resume) is B machinery and is **DEFERRED** |
+| UB-4 | With the editions | Unchanged; not amendment text |
+| UB-5 | Kept | Close contract; EVIDENCE-PENDING |
+| UB-7 | Kept | Decides F2's evidence classes (D2) |
+| UB-8 (ruled) | Settled for the first release | §A11 took §A10's non-mandatory branch |
+| §A10 rules 4a, 4b, 4c, 12 | **DEFERRED** | By ruling |
+
+#### A12.4 — Reduced propagation set (on acceptance; not applied)
+
+On acceptance, only these owners receive a dated addendum or pointer. No owner text is edited before acceptance.
+
+| Owner | Place | Addition |
+|---|---|---|
+| This ADR | §2 row "Unknown entry, add, cancel, close or modification" | Dated pointer: "First release: §A12 F1–F5 (halt; contract-capacity reservation held; release only on a uniquely correlated outcome; non-entry requests by type). The reservation-instead-of-block rewrite stays Proposed for a later release." |
+| [CAP-20260916](../briefs/phase4-preparation/2026-09-16/capability-decision.md) | R3 row | Dated addendum: "R3 remains NONE as a fence finding. First-release consumer outcome for any unknown request: incident halt (halt/resume §2) and preserve-and-block (closure Step 2 row 3); release only through closure rows 1–2 under incident ADR §A12 F2. The reservation-with-continued-admission outcome in §A5 is deferred with option B." Replaces §A5's CAP row for the first release |
+| T09 bounded handoff (gate D; not yet committed) | Unknown-request behavior | "Specified against the unamended E3 and its §59 Ruling 7(b) marker. An unknown outcome commits the incident halt (the CC-3 repair: demonstrated synthetically, not accepted), holds capacity and releases only through F2's implemented class. No exceptional mode, room check or loss allowance. Acceptance cases: E3's own ('two unknown requests exist; completing one cannot unblock admission'), plus one case per F4 row." Replaces §A5's account-owner code row |
+| [Deployment checklist](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record), T09 gate B row | Acceptance record | Cite this section's accepted revision as the owning incident amendment for the unknown-request policy |
+
+**Not required for the first release** (2026-10-01 ruling): §A5's halt/resume §3 ¶2 and §4 ¶1–2 additions, its rail E3 addition, and its closure-plan row. The closure table's existing rows 1–3 already state the first-release outcome. All of these stay in §A5 for a later release.
+
+#### A12.5 — Evidence still owed
+
+| Item | What it decides for the first release | State at drafting | Owner |
+|---|---|---|---|
+| **UB-7** | Which evidence classes release a held request under F2, including whether a positive `clOrdId` lookup counts, and anything across sessions | R-1 on X-1's order **DISCHARGED** 2026-10-01, `LOCATED_WITH_CLORDID`: one order, same session, at that time only. It does not establish uniqueness, anything about an absent order, or cross-session behavior. R-2 closed with limits 2026-09-29; cross-session recovery UNESTABLISHED. Gate A A3(iii) constraint: a located entry settles only the facts it establishes | Route/incident coordinator records the evidence; gate C and T09 apply the classifier constraint; lifting §59 Ruling 7(b)(3)'s hold is Joshua's (D2) |
+| **§A1 CAP trace** | Not a first-release admission precondition (F1(d); D6). It supports F2 and F4's child correlation (`ocoId`/`parentId`/`linkedId`) and stays B's admission precondition | X-1 executed 2026-09-30: scoped GC-2a PASS, evidence accepted with limits, no release ratification. The drill plan's "X-1 acceptance" addendum ([PR #572](https://github.com/Joshua-Asante/first-passage/pull/572)) is pending. Recording in CAP is owed | Coordinator records CAP and the drill-map row; Joshua performs any further trace (D1–D4 of 2026-09-25 are individual decisions, §A11.1 item 6) |
+| **C-a M1–M9** ([close-semantics note](../notes/2026-09-26-close-semantics-c-a.md) §2.1) | What an unknown or failed whole-leg close or flatten leaves (F4 close and flatten rows), and the attended flatten after an uncertain liquidation | All nine `OPEN`; S `CONFLICTING`; the vendor question has not been sent. X-3 runs only inside the operator's residual-risk decision; a contradicting trace stops C-a | Close-semantics investigation under R-CLOSE (coordinator). Sending the vendor question and the residual-risk decision are Joshua's |
+| **M2 modify semantics** (GC-2b; X-2's precondition) | What an unknown or rejected amend leaves (F4 amend row) | Returned 2026-09-28 ([PR #541](https://github.com/Joshua-Asante/first-passage/pull/541)): Q1–Q4 `OPEN`. The coordinator's review of the return is owed | Coordinator reviews. The vendor question and the GC-2b decision for Striker and Aegis are Joshua's |
+| Halt-on-unknown implementation (F1(c)) | That the owner raises the halt this text relies on | CC-3 repair demonstrated synthetically, not accepted (halt/resume §4.1 record, 2026-09-29) | TB-I3 / T09 |
+
+Kept and not reopened here: the close contract (R-CLOSE; UB-5) and the X-2 and X-4 rows (X-4's reduced build path is in the 2026-10-01 rulings, item 3).
+
+#### A12.6 — Decisions needed from Joshua
+
+- **D1. Accept, amend or reject §A12.** After both step-4 reviews. Order per the 2026-10-01 ruling: merge #575, then accept this text, then gate B.
+- **D2. F2's evidence classes.** Either (a) keep §59 Ruling 7(b)(3)'s hold, so the conservative terminal rule is the only release class until UB-7's evidence is accepted; or (b) lift the hold for attended recovery now, for a same-session, unique `clOrdId` match whose children and fills reconcile. *Consequence of (a):* a request whose broker identity was never learned (a lost placement response) has no release path in the first release, so F3's indefinite suspension applies to it. *Recommendation:* (a) for T09's runtime classifier. Rule the attended-recovery class separately when UB-7's evidence returns, because (b) rests on one discharged read.
+- **D3. F5 qualifies §A2 rule 6's premise.** A uniquely correlated effect transfers under F2 instead of being only an additional exposure. Rule 6 is in neither ruled list, but F2 conflicts with its absolute "never". Confirm, or keep rule 6 absolute; keeping it absolute would leave F2 only the terminal class.
+- **D4. §A8 rule 10** (one unresolved request per symbol) is unruled. *Recommendation:* not first-release amendment text. Sequential submission is already a §59 Ruling 5 edition-preparation constraint, and F1 halts the account on the first unknown.
+- **D5. §A10 rule 11 (UB-3)** is unruled as text. *Recommendation:* not carried. For an unknown-caused state, F1 already stops every risk-add. For monitoring or evidence loss, halt/resume §2 and the 2026-10-01 rulings item 5 ("a gap is an incident and halts the session") govern. Its item 3 (resume) is deferred.
+- **D6. Role of the §A1 trace.** *Recommendation:* it does not gate acceptance of this first-release text (F1(d)). It remains owed as F2/F4 child-correlation evidence and as B's admission precondition.
+
+#### A12.7 — Reviews and what this section does not do
+
+**Step-4 reviews of this narrow text** (scope §5 step 4; 2026-10-01 rulings item 1, "Both step-4 reviews stay, applied to the narrow text"): (a) a separate-session refute-first review, under D-codex (a), spawned by the coordinator and not by the author; (b) a cross-vendor Codex review on the pull request. Their findings and dispositions are recorded with the pull request.
+
+**Not done here.** No accepted contract, CAP verdict, owner text or §A2/§A8/§A10 text is changed. No option-B rule is accepted, rejected or made effective. No figure is written. Nothing is granted: no T09 dispatch, gate acceptance, drill, order action, arm, deployment or spend. Live release stays held (T08 §7.8 part 1).
+
 ## Change history
 
 | Date | Change | By |
@@ -418,3 +552,4 @@ The floor definition, allowance formula, inputs, stale-data behavior and calibra
 | 2026-09-27 UTC | §A11.2: operator ruling: for commissioning and the first attended release, an incident ends automated trading for that session; no same-session restart; recovery and evidence collection continue; review before another session; incidents only, not correctly handled refusals. New ruling narrowing rev9 §4 for those contexts; halt/resume owner text via handoff H5 | Joshua (ruling) + Claude (text) |
 | 2026-09-27 UTC | §A11.3: operator ruling: a completed operator-placed preservation trade may be the R-2 and settlement-read target where it qualifies; R-1 observes a same-session trade placed anyway; entitlement and transaction identity to be confirmed; no additional trade, purchase or reset. Mirrored in the drill plan's ruling block | Joshua (ruling) + Claude (text) |
 | 2026-09-27 UTC | §A11.2 clarifications (operator, same day): a deliberate operator stop with no fault is an incident for §A11.2 (O-6); the ruling covers the first attended release and any commissioning session in which automation is armed, none defined today (O-7). Applied to the halt/resume amendment by handoff H5 step (a) | Joshua (ruling) + Claude (text) |
+| 2026-10-01 UTC | §A12 (PROPOSED): narrow first-release text under the operator's 2026-10-01 ruling (six cuts, item 1; PR #580). Rules F1–F6 (unknown request: reservation held and halt; release only on a uniquely correlated outcome; §A2 rule 7 by request type; unexplained effects; normal path unchanged); reconciliation with T08 §7.10; disposition of every §A2/§A8/§A10 rule (deferred, not deleted); reduced propagation set; evidence owed with owners; decisions D1–D6. Not accepted; no owner text changed | Joshua (ruling) + Claude (text) |
