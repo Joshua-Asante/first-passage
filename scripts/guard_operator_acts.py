@@ -120,8 +120,9 @@ Z Code sessions are not hooked). It adds a prompt where an agent session holds a
 credential that could otherwise act; it does not replace the ruleset, the repository
 setting, the arming interlock or keeping credentials off agent environments. It cannot
 see broker actions: since the 2026-09-30 amendment, ``trade.submit`` is an operator act,
-enforced by the operator's direction and by trading credentials being absent from agent
-environments unless the operator supplies them for that act.
+enforced by the operator's direction and by broker credentials staying outside agent
+environments (boundary OF-5); an agent acts only through an already-authenticated
+attended or computer-use surface.
 
 **Reading commands.** Bash and PowerShell tool commands are read with
 `scripts/_shell_tokens.py` in strict mode, judging words in command position (wrappers,
