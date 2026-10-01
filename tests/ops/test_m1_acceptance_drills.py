@@ -41,6 +41,7 @@ from c1_rail_telemetry import (
     BrokerEvidence,
     EventLedger,
     ExecutionStateStore,
+    append_broker_evidence,
     reconcile_chain,
 )
 from c1_sizing_host_reference import C1SizingHostReference, generate_constants
@@ -155,10 +156,17 @@ def test_drill_transport_unknown(host, tmp_path):
     assert retry_sender.calls == []
     assert "reconcile" in (blocked.decision.halt_reason or "").lower()
 
+    # The block is durable: a restarted process re-derives it from the stream.
+    assert EventLedger(ledger.path).risk_add_blocked is True
+
     # NEGATIVE CONTROL: the block is state, not a permanent brick — an
-    # explicit operator repair clears it and sizing resumes. Without this the
-    # assertions above would also pass on a host that halts everything.
-    ledger.clear_risk_add_block()
+    # operator resolution backed by broker evidence clears it and sizing
+    # resumes. Without this the assertions above would also pass on a host
+    # that halts everything.
+    append_broker_evidence(ledger, BrokerEvidence(
+        event_id=first.event_id, crosstrade_receive=False))
+    ledger.resolve_transport_unknown(first.event_id, resolved_by="operator",
+                                     note="planted drill: no receipt, flat")
     assert ledger.risk_add_blocked is False
     ok_sender = _CapturingSender()
     resumed = handle_signal(_payload("entry", bar_time=3), host,

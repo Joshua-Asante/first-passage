@@ -66,6 +66,10 @@ EVENT_KINDS = frozenset({
     # amendment "to be written after the fact" and neither was written until
     # 07-31. This makes that failure structurally impossible.
     "arming_deviation",
+    # Operator attestation that one transport_unknown send has been reconciled
+    # against the broker. Until one exists for an event_id, that unknown keeps
+    # risk-add blocked across restarts (EventLedger re-derives it from disk).
+    "transport_unknown_resolution",
 })
 
 TRANSPORT_STATES = frozenset({
@@ -318,6 +322,15 @@ class EventLedger:
     _unhealthy_reason: str | None = field(default=None, init=False, repr=False)
     _risk_add_blocked: bool = field(default=False, init=False, repr=False)
     _block_reason: str | None = field(default=None, init=False, repr=False)
+    # event_id -> order_id of every transport_unknown without a
+    # transport_unknown_resolution, in ledger order. Derived from the stream,
+    # so a restart cannot lift it.
+    _unresolved_unknowns: dict[str, str | None] = field(
+        default_factory=dict, init=False, repr=False)
+    # Bytes this instance last saw on disk. Another process (c1_rail_arm.py,
+    # the resolution CLI) may append between our writes; a size change makes
+    # the next read or append rescan instead of reusing a stale seq.
+    _known_size: int = field(default=0, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.path = Path(self.path)
@@ -334,38 +347,127 @@ class EventLedger:
 
     @property
     def risk_add_blocked(self) -> bool:
-        return self._risk_add_blocked or not self._healthy
+        self._refresh_if_changed()
+        return (self._risk_add_blocked or not self._healthy
+                or bool(self._unresolved_unknowns))
 
     @property
     def block_reason(self) -> str | None:
+        self._refresh_if_changed()
         if not self._healthy:
             return self._unhealthy_reason
-        return self._block_reason
+        if self._block_reason is not None:
+            return self._block_reason
+        if self._unresolved_unknowns:
+            first = next(iter(self._unresolved_unknowns))
+            return (f"transport_unknown for event_id={first} unresolved "
+                    f"({len(self._unresolved_unknowns)} total); reconcile "
+                    f"before retry")
+        return None
+
+    @property
+    def unresolved_unknowns(self) -> dict[str, str | None]:
+        """event_id -> order_id of every unreconciled transport_unknown."""
+        self._refresh_if_changed()
+        return dict(self._unresolved_unknowns)
 
     def block_risk_add(self, reason: str) -> None:
+        """In-process block. A transport_unknown is durable on its own: its
+        appended transport_result registers it and startup re-derives it."""
         self._risk_add_blocked = True
         self._block_reason = reason
 
     def clear_risk_add_block(self) -> None:
-        """Operator repair only — never auto-clear on uncertain send."""
+        """Operator repair only — never auto-clear on uncertain send.
+
+        Clears the in-process block only. A durable transport_unknown clears
+        through ``resolve_transport_unknown`` and nothing else.
+        """
+        self._refresh_if_changed()
         if not self._healthy:
             raise TelemetryUnhealthy(
                 f"cannot clear risk-add block while ledger unhealthy: "
                 f"{self._unhealthy_reason}")
+        if self._unresolved_unknowns:
+            raise TelemetryError(
+                f"cannot clear risk-add block: unresolved transport_unknown "
+                f"event_id(s) {sorted(self._unresolved_unknowns)}; record a "
+                f"resolution with resolve_transport_unknown")
         self._risk_add_blocked = False
         self._block_reason = None
 
+    def resolve_transport_unknown(self, event_id: str, *, resolved_by: str,
+                                  note: str) -> dict:
+        """Append the operator's reconciliation of one transport_unknown.
+
+        Refused unless the event is an unresolved unknown and the ledger holds
+        operator-attested ``broker_evidence`` for it: the resolution records
+        what the broker showed; it is not a way to skip looking.
+        """
+        if not isinstance(resolved_by, str) or not resolved_by.strip():
+            raise TelemetryError("resolved_by must be a non-empty string")
+        if not isinstance(note, str) or not note.strip():
+            raise TelemetryError("note must be a non-empty string")
+        self._refresh_if_changed()
+        if event_id not in self._unresolved_unknowns:
+            raise TelemetryError(
+                f"event_id={event_id} is not an unresolved transport_unknown")
+        if not any(r.get("kind") == "broker_evidence"
+                   and r.get("event_id") == event_id
+                   for r in self.iter_records()):
+            raise TelemetryError(
+                f"no broker_evidence for event_id={event_id}; attest the "
+                f"broker state before resolving")
+        return self.append(
+            "transport_unknown_resolution",
+            {"resolved_by": resolved_by, "note": note},
+            event_id=event_id,
+            order_id=self._unresolved_unknowns[event_id],
+        )
+
+    def _track(self, record: Mapping[str, Any]) -> None:
+        kind = record.get("kind")
+        eid = str(record.get("event_id"))
+        if (kind == "transport_result"
+                and record.get("transport_state") == "unknown"):
+            self._unresolved_unknowns[eid] = record.get("order_id")
+        elif kind == "transport_unknown_resolution":
+            self._unresolved_unknowns.pop(eid, None)
+
+    def _disk_size(self) -> int:
+        try:
+            return self.path.stat().st_size
+        except FileNotFoundError:
+            return 0
+
+    def _refresh_if_changed(self) -> None:
+        """Rescan when another process has appended since our last look."""
+        if self._healthy and self._disk_size() != self._known_size:
+            with self._lock:
+                with exclusive_file_lock(self.path):
+                    if self._disk_size() != self._known_size:
+                        self.validate_startup()
+
     def validate_startup(self) -> None:
-        """Full-stream validation. Truncated/malformed tails block risk-add."""
+        """Full-stream validation. Truncated/malformed tails block risk-add.
+
+        Also re-derives every unresolved transport_unknown, so the block it
+        imposed survives a process restart until an operator resolution.
+        """
+        self._unresolved_unknowns = {}
         if not self.path.exists():
             self._seq = 0
             self._healthy = True
             self._unhealthy_reason = None
+            self._known_size = 0
             return
         last_seq = 0
+        size = 0
         try:
-            with self.path.open("r", encoding="utf-8") as f:
-                for lineno, line in enumerate(f, start=1):
+            with self.path.open("rb") as f:
+                size = os.fstat(f.fileno()).st_size
+                for lineno, raw in enumerate(f, start=1):
+                    line = raw.decode("utf-8")
                     if not line.strip():
                         continue
                     try:
@@ -388,7 +490,8 @@ class EventLedger:
                             f"unknown kind {kind!r} at "
                             f"{self.path.name}:{lineno}")
                     last_seq = seq
-        except TelemetryUnhealthy as exc:
+                    self._track(obj)
+        except (TelemetryUnhealthy, UnicodeDecodeError) as exc:
             self._healthy = False
             self._unhealthy_reason = str(exc)
             self._risk_add_blocked = True
@@ -397,8 +500,12 @@ class EventLedger:
             log.critical("event ledger unhealthy — risk-add blocked: %s", exc)
             return
         self._seq = last_seq
+        self._known_size = size
         self._healthy = True
         self._unhealthy_reason = None
+        if self._unresolved_unknowns:
+            log.critical("unresolved transport_unknown in ledger — risk-add "
+                         "blocked: %s", sorted(self._unresolved_unknowns))
 
     def append(self, kind: str, payload: Mapping[str, Any], *,
                event_id: str, order_id: str | None = None) -> dict:
@@ -420,6 +527,14 @@ class EventLedger:
                 raise TelemetryUnhealthy(
                     f"ledger unhealthy: {self._unhealthy_reason}")
             with exclusive_file_lock(self.path):
+                if self._disk_size() != self._known_size:
+                    # Another process appended (arm helper, resolution CLI):
+                    # reusing our cached seq would duplicate theirs and leave
+                    # the stream non-monotonic at the next startup.
+                    self.validate_startup()
+                    if not self._healthy:
+                        raise TelemetryUnhealthy(
+                            f"ledger unhealthy: {self._unhealthy_reason}")
                 next_seq = self._seq + 1
                 record["seq"] = next_seq
                 line = json.dumps(record, separators=(",", ":"),
@@ -428,7 +543,9 @@ class EventLedger:
                     f.write(line)
                     f.flush()
                     os.fsync(f.fileno())
+                    self._known_size = os.fstat(f.fileno()).st_size
                 self._seq = next_seq
+                self._track(record)
         return record
 
     def iter_records(self) -> Iterable[dict]:
@@ -799,8 +916,9 @@ def _cli_reconcile(argv: list[str] | None = None) -> int:
             "c1 M1 reconciler (rail events + evidence overlay). Does NOT place, "
             "modify, or cancel any order — but is not read-only: it APPENDS a "
             "reconciliation event to the ledger recording the verdict. "
-            "`--deviations` is the read-only exception: it only lists "
-            "`arming_deviation` records."))
+            "`--deviations` and `--unresolved` are read-only. "
+            "`--resolve-unknown` appends the operator's resolution of one "
+            "transport_unknown, which lifts its risk-add block."))
     ap.add_argument("--events", type=Path, required=True)
     ap.add_argument("--event-id", default=None,
                     help="reconcile this event_id (required unless --deviations)")
@@ -808,6 +926,14 @@ def _cli_reconcile(argv: list[str] | None = None) -> int:
                     help="optional overlay JSONL; else use ledger broker_evidence")
     ap.add_argument("--deviations", action="store_true",
                     help="list arming_deviation records (read-only; no append)")
+    ap.add_argument("--unresolved", action="store_true",
+                    help="list unresolved transport_unknown events "
+                         "(read-only; no append)")
+    ap.add_argument("--resolve-unknown", action="store_true",
+                    help="APPEND an operator resolution for --event-id; needs "
+                         "broker_evidence for it, --resolved-by and --note")
+    ap.add_argument("--resolved-by", default=None)
+    ap.add_argument("--note", default=None)
     args = ap.parse_args(argv)
     ledger = EventLedger(args.events)
 
@@ -818,6 +944,28 @@ def _cli_reconcile(argv: list[str] | None = None) -> int:
         print(f"arming_deviations: {len(records)}")
         for record in records:
             print(format_arming_deviation(record))
+        return 0
+
+    if args.unresolved:
+        if not ledger.healthy:
+            raise SystemExit(f"ledger unhealthy: {ledger.unhealthy_reason}")
+        unresolved = ledger.unresolved_unknowns
+        print(f"unresolved_transport_unknown: {len(unresolved)}")
+        for eid, oid in unresolved.items():
+            print(f"event_id={eid} order_id={oid!r}")
+        return 0
+
+    if args.resolve_unknown:
+        if not args.event_id:
+            raise SystemExit("--resolve-unknown requires --event-id")
+        try:
+            ledger.resolve_transport_unknown(
+                args.event_id, resolved_by=args.resolved_by or "",
+                note=args.note or "")
+        except TelemetryError as exc:
+            raise SystemExit(f"refused: {exc}") from exc
+        print(f"resolved event_id={args.event_id}; "
+              f"remaining={len(ledger.unresolved_unknowns)}")
         return 0
 
     if not args.event_id:
