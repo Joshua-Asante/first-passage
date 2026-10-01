@@ -403,6 +403,12 @@ class CheckpointStoreMixin:
                 if (bytes(prior[0]), bytes(prior[1])) != (result_bytes, payload_bytes):
                     raise ValueError('immutable checkpoint capture differs')
             state = self._budget(connection, attempt_id)
+            if prior is not None and checkpoint == 'PART_A':
+                # D-S5-2: an exact PART_A retry also repeats the S5-D1 capture
+                # fields the family row retained, never only the archived bytes.
+                family = self._require_family(state, checkpoint)
+                if self._part_a_capture_row(checkpoint, family) != capture:
+                    raise ValueError('immutable checkpoint capture differs')
             work = self._work(state, work_id)
             if work['phase'] != CHECKPOINT_COMPUTE_PHASES[checkpoint]:
                 raise ValueError('checkpoint capture requires the checkpoint compute work')

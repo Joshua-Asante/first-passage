@@ -2088,3 +2088,70 @@ def test_part_a_commit_advances_through_the_real_store(
     # An exact retry after the reply returns the byte-identical receipt.
     again = json.loads(commit(instance, 'pag5', 'PART_A', candidate))
     assert again['historical'] is True and encoded(again['receipt']) == receipt
+
+
+def test_part_a_capture_retry_with_different_capture_fields_refuses(tmp_path, monkeypatch):
+    """D-S5-2 (Codex on #578): an exact retry of a PART_A capture is idempotent
+    only when the five S5-D1 capture fields equal the retained family row too.
+    A retry with the same result, payload and transition bytes but any other
+    valid capture field set refuses and leaves the family row as it was --
+    before attestation and after it."""
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    run_work(instance, 'pawork', 'part_a_worker')
+    payload = encoded(
+        {
+            'schema': 'fixture_part_a_worker_result',
+            'observations': {
+                'worker_compute_wall_ns': 1, 'worker_cpu_ns': 1, 'worker_peak_memory_bytes': 1
+            },
+        }
+    )
+    plan = part_a_plan(instance)
+    result = result_document(instance, 'pawork', 'PART_A', payload, plan)
+    transition_bytes = encoded(
+        {
+            'schema': 'qualification_campaign_work_transition/v1',
+            'attempt_id': instance.attempt,
+            'work_id': 'pawork',
+            'state': 'CAPTURED',
+            'clock': json.loads(supervisor.observe_campaign_clock()),
+            'data': {'capture_bytes_b64': base64.b64encode(result).decode('ascii')},
+        }
+    )
+    fields = _part_a_capture_fields(expanded=True)
+
+    def retain(**capture_fields):
+        return store(instance).retain_checkpoint_capture(
+            instance.attempt, 'pawork', result, payload, transition_bytes,
+            checkpoint='PART_A', **capture_fields,
+        )
+
+    retain(**fields)
+    retained = snap(instance)['checkpoints']['PART_A']
+    assert {name: retained[name] for name in fields} == fields
+    # Each alternative is a valid S5-D1 field set on its own.
+    altered = [
+        dict(fields, initial_prefix_sha256='0' * 64),
+        dict(fields, final_sha256='0' * 64),
+        dict(fields, initial_panels=1),
+        dict(fields, final_panels=4),
+        _part_a_capture_fields(expanded=False),
+    ]
+
+    def assert_refused(expected):
+        for capture_fields in altered:
+            with pytest.raises(ValueError, match='immutable checkpoint capture differs'):
+                retain(**capture_fields)
+            assert snap(instance)['checkpoints']['PART_A'] == expected
+
+    assert_refused(retained)
+    # The exact retry (same bytes, same fields) stays idempotent.
+    retain(**fields)
+    assert snap(instance)['checkpoints']['PART_A'] == retained
+    attestation = attestation_document(instance, 'pawork', 'PART_A', result, payload, plan)
+    store(instance).retain_checkpoint_attestation(
+        instance.attempt, attestation, checkpoint='PART_A', verify=lambda *a, **k: None
+    )
+    attested = snap(instance)['checkpoints']['PART_A']
+    assert attested['state'] == 'ATTESTED'
+    assert_refused(attested)
