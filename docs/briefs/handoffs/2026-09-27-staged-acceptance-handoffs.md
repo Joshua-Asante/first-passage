@@ -540,7 +540,7 @@ The card changes no production code and invents no resume interface. It is READY
   - seam row 11: the real seal principal and its host-provisioning change.
 
   No acceptance-grade run until S5 is accepted.
-- **R1:** re-base the prepared integration on the accepted S5 head *(2026-10-01: that is, on a `main` that includes both the S5 landing (#578) and the merged D-S5 fix slice)* and run the acceptance-grade Linux result/seal node set. Return it on its own.
+- **R1:** re-base the prepared integration on the accepted S5 head *(2026-10-01: that is, on a `main` that includes both the S5 landing (#578) and **both** merged D-S5 fix slices: #586 (D-S5-1/D-S5-2) and the D-S5-3 slice from `claude/capture-retry-noop`. Don't start the acceptance-grade run until both have landed)* and run the acceptance-grade Linux result/seal node set. Return it on its own.
 - **R2:** the D3 slice (R1–R10). The recovery retains every failed attempt and never renews the allowance or deadline. It allocates no attempt ID, salt, seed or plan, and makes no public reveal while recovery remains possible. Return it on its own.
 
 **Limits:**
