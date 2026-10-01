@@ -1,5 +1,7 @@
 # Seven-strategy Select configuration campaign — campaign state (orchestrator-only writes)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Dated quotations, source snapshots and completed-session evidence below retain their historical meaning and grant no current trading authority.
+
 > **2026-09-10 acceptance and closure:** The operator accepted the selected
 > configuration as satisfying STATE item 1. The configuration-selection objective
 > is closed and removed from the live queue. The

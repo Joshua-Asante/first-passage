@@ -2108,12 +2108,19 @@ def _run_n1_worker(
             guardian_unit=enrollment['scopes']['guardian_unit'],
         ),
     )
+    output_size = output_bound
+    if checkpoint == 'PART_A':
+        # D-S5-1: the two S5-D1 artifacts and result.frame sit in this tmpfs
+        # together, each under the per-file bound, so the mount takes their
+        # aggregate with the input mount's page-rounding headroom.
+        aggregate = output_bound * (1 + len(PART_A_ARTIFACT_ROLES))
+        output_size = aggregate + aggregate // 2 + 65536
     _guardian_bus_call(
         campaigns,
         io['out_unit'],
         _io_mount_properties(
             io['out_path'],
-            size_bytes=output_bound,
+            size_bytes=output_size,
             uid=context.profile.worker_uid,
             mode=0o755,
             guardian_unit=enrollment['scopes']['guardian_unit'],

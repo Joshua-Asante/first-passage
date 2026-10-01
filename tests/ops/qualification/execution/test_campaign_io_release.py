@@ -16,6 +16,7 @@ guardian's end is simulated where the real unit ends: after
 """
 
 import inspect
+import re
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -123,9 +124,23 @@ class _Campaigns(_WorkerCampaigns):
         return result
 
 
+class _WritingDocker(_ExitDocker):
+    """The fixed container whose start runs ``on_start`` -- the worker writing
+    into its output mount -- and exits with the code that returns."""
+
+    def __init__(self, body, on_start):
+        super().__init__(body)
+        self.on_start = on_start
+
+    def call(self, method, path, body=None, raw=False):
+        if method == 'POST' and path.endswith('/start'):
+            self.exit_code = self.on_start()
+        return super().call(method, path, body, raw)
+
+
 def _guardian(
     tmp_path, monkeypatch, manager, *, work_id, checkpoint, served, document,
-    progression, exit_code=0, crash_on=None,
+    progression, exit_code=0, crash_on=None, output_limit=OUTPUT_LIMIT, on_start=None,
 ):
     """One guardian unit's life: ``_run_n1_worker`` inside it, the guardian's
     own failure path on a raise (campaign_guardian_main's except), then the
@@ -143,7 +158,9 @@ def _guardian(
         'Cmd': ['c'],
         'HostConfig': {'CgroupParent': payload_slice, 'Binds': ['a:/input:ro']},
     }
-    docker = _ExitDocker(body, exit_code=exit_code)
+    docker = (
+        _ExitDocker(body, exit_code=exit_code) if on_start is None else _WritingDocker(body, on_start)
+    )
     clock_bytes = encoded(
         {
             'schema': 'qualification_campaign_clock/v1',
@@ -211,7 +228,7 @@ def _guardian(
     monkeypatch.setattr(signing, 'sign_checkpoint_attestation', lambda *a, **k: b'attestation')
     verified = SimpleNamespace(profile=SimpleNamespace(sha256='s' * 64))
     context = SimpleNamespace(
-        profile=SimpleNamespace(output_byte_limit=OUTPUT_LIMIT, worker_uid=WORKER_UID),
+        profile=SimpleNamespace(output_byte_limit=output_limit, worker_uid=WORKER_UID),
         config={'execution_credential': 'cred', 'service_uid': SERVICE_UID},
         release=encoded({'service_id': 'svc'}),
         keys=lambda: {},
@@ -246,6 +263,7 @@ def _guardian(
         manager.unit_ends(enrollment['scopes']['guardian_unit'])
     return SimpleNamespace(
         campaigns=campaigns, io=io, enrollment=enrollment, failure=failure, in_flight=in_flight,
+        checkpoint=checkpoint,
     )
 
 
@@ -266,8 +284,13 @@ def _assert_bound_pair(manager, run):
         assert properties['Where'] == where
         assert (properties['What'], properties['Type']) == ('tmpfs', 'tmpfs')
         assert properties['DefaultDependencies'] is False
+    # N1/N2 hold result.frame alone; PART_A holds it beside both S5-D1
+    # artifacts (D-S5-1), with the input mount's headroom formula.
+    output_size = OUTPUT_LIMIT
+    if run.checkpoint == 'PART_A':
+        output_size = 3 * OUTPUT_LIMIT + 3 * OUTPUT_LIMIT // 2 + 65536
     assert manager.units[run.io['out_unit']]['properties']['Options'] == (
-        'rw,size=%d,uid=%d,gid=%d,mode=0755' % (OUTPUT_LIMIT, WORKER_UID, WORKER_UID)
+        'rw,size=%d,uid=%d,gid=%d,mode=0755' % (output_size, WORKER_UID, WORKER_UID)
     )
     # Zero staged bytes (the harness stages none): the unchanged headroom formula.
     assert manager.units[run.io['in_unit']]['properties']['Options'] == (
@@ -427,3 +450,60 @@ def test_recovery_retry_and_cleanup_never_read_the_io_mounts():
         source = inspect.getsource(function)
         for token in ('checkpoint_io_paths', 'in_path', 'out_path', 'in_unit', 'out_unit'):
             assert token not in source, (function.__name__, token)
+
+
+PAGE = 4096
+
+
+def _tmpfs_writes(manager, unit, served, files):
+    """The worker's writes into a tmpfs of the out mount unit's ``size=``: each
+    file takes whole pages, and the write that does not fit fails with ENOSPC
+    (the worker then exits non-zero; the files written so far stay)."""
+    options = manager.units[unit]['properties']['Options']
+    capacity = int(re.search(r'(?:^|,)size=([0-9]+)(?:,|$)', options).group(1))
+    used = 0
+    for name, raw in files:
+        used += -(-len(raw) // PAGE) * PAGE
+        if used > capacity:
+            return 1
+        served[name] = raw
+    return 0
+
+
+def test_part_a_output_mount_holds_every_file_at_its_per_file_bound(tmp_path, monkeypatch):
+    """D-S5-1 (Codex on #578): a PART_A work's output tmpfs holds both S5-D1
+    artifacts and result.frame at once. With every file inside the per-file
+    output bound the guardian reads them under, the mount must hold all three
+    together: the work captures and completes instead of ending IN_DOUBT on
+    ENOSPC."""
+    limit = 1 << 16
+    line = b'{"panel": 1}\n'
+    final = line * (limit // len(line))
+    initial = final[: len(final) - len(line)]
+    frame = b'f' * limit
+    assert max(len(initial), len(final), len(frame)) <= limit
+    io = supervisor.checkpoint_io_paths(_enrollment('pawork'))
+    served = {}
+    manager = _Manager([])
+    run = _guardian(
+        tmp_path, monkeypatch, manager, work_id='pawork', checkpoint='PART_A',
+        served=served, document=_part_a_document(initial, final),
+        progression='PART_A_READY', output_limit=limit,
+        on_start=lambda: _tmpfs_writes(
+            manager,
+            io['out_unit'],
+            served,
+            [
+                ('part-a-initial.jsonl', initial),
+                ('part-a-final.jsonl', final),
+                ('result.frame', frame),
+            ],
+        ),
+    )
+    assert run.failure is None
+    assert run.campaigns.transitions == ['COMPLETED']
+    assert len(run.campaigns.captures) == 1
+    assert run.campaigns.staged == [
+        ('PART_A', 'part_a_initial_prefix', initial),
+        ('PART_A', 'part_a_final', final),
+    ]
