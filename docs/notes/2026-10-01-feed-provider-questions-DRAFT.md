@@ -77,11 +77,11 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 2. **(Q2a)** Does one licence cover CME, CBOT and COMEX, or is each exchange licensed separately? **For the direct feed:** do your Market Data over WebSocket API and Smart Stream on GCP each deliver **real-time** data for all four of 6J, MNQ (CME), MYM (CBOT) and MGC (COMEX), and which entitlement does each need?
 > 3. **(Q2b)** What are the current monthly fees, including the billing unit (per licensee, per exchange, per device)? Your January 2026 fee list appears to show User Non-Display Category A at $457 and Managed User Non-Display Category A at $208 ([fee list](https://www.cmegroup.com/market-data/files/january-2026-market-data-fee-list.pdf)). Please confirm which applies, and whether a "$670 per exchange" figure I have seen is current. Are there minimum terms, setup fees or annual audits?
 > 4. **(Q3, for the direct feed)** Your Market Data over WebSocket API and Smart Stream on GCP are data-only. Can an individual subscribe to either, and what are the minimum commitments? Smart Stream appears to be priced "as low as $0.50/GB plus applicable ILA fees" ([page](https://www.cmegroup.com/market-data/real-time-futures-and-options-data-api.html)).
-> 5. **(Q4)** For the WebSocket API: are 1-minute bars or only trades published? Are exchange timestamps included, and are bars stamped at the open or the close? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later? **If only trades are published:** does each trade message carry the exchange-reported **contract quantity**? How are corrected, busted or cancelled trades signalled, and how should they change a bar's volume?
+> 5. **(Q4)** Please answer this question **separately for each direct product**, the Market Data over WebSocket API and Smart Stream on GCP. Are 1-minute bars or only trades published? Are exchange timestamps included, and are bars stamped at the open or the close? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later? **If only trades are published:** does each trade message carry the exchange-reported **contract quantity**? How are corrected, busted or cancelled trades signalled, and how should they change a bar's volume?
 > 6. **(Q5)** Can authentication run unattended for weeks without interactive login or MFA? What session, connection and concurrent-subscription limits apply, and can one connection receive all four products at once?
 > 7. **(Q6)** May derived bars and the original messages be stored privately for audit, on a cloud server?
 > 8. **(Q7)** How are corrections and replays after a reconnect delivered? Are sequence numbers provided?
-> 9. **(Q8)** Are bars (if any) published for intervals with no trades? If so, how is such a bar marked, so that a client can tell it apart from a trade-evidenced bar?
+> 9. **(Q8)** Are bars (if any) published for intervals with no trades? If so, how is such a bar marked, so that a client can tell it apart from a trade-evidenced bar? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts identified, and is a continuous or front-month symbol offered? What is its roll rule?
 > 11. **(Q10)** What is the typical delivery latency, and what maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session?
 > 12. **(Q11)** What historical depth is available for these products, and at what cost?
@@ -108,10 +108,10 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 3. **(Q2b)** Is $199/month the all-in monthly cost for this use, including exchange and CME licence fees? Are there setup fees, minimum terms or cancellation terms?
 > 4. **(Q3)** Please confirm that the API key gives data access only, with no order or account capability.
 > 5. **(Q4)** For the per-minute aggregate WebSocket stream: is the timestamp the bar's **start or end**, in what zone or epoch unit, and is it exchange time or your aggregation time? Is a minute bar ever revised after it is published? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
-> 6. **(Q5)** Can one API key hold a WebSocket connection for weeks unattended, with no interactive login? How many concurrent connections and subscribed symbols does the plan allow?
+> 6. **(Q5)** Can one API key hold a WebSocket connection for weeks unattended, with no interactive login? How many concurrent connections and subscribed symbols does the plan allow? Can all four products (6J, MNQ, MYM, MGC) stream at the same time on one session?
 > 7. **(Q6)** May I run the client on a cloud server, and store the raw messages and derived bars privately for audit?
 > 8. **(Q7)** After a disconnect and reconnect, are missed minute bars replayed? Are corrections flagged? Do messages carry sequence numbers?
-> 9. **(Q8)** Is a minute aggregate published for a minute with **no trades**? If so, how is it marked?
+> 9. **(Q8)** Is a minute aggregate published for a minute with **no trades**? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts named (for example, the March MNQ contract)? Do you offer a continuous or front-month symbol, and what is its roll rule?
 > 11. **(Q10)** How long after the minute closes is the aggregate typically delivered? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session?
 > 12. **(Q11)** Please confirm the historical depth on Futures Advanced for these four products.
@@ -138,10 +138,10 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 3. **(Q2b)** What is the all-in monthly cost of API access plus that data for a non-professional? What minimum balance, deposit, inactivity fee and withdrawal terms apply, and is any activity requirement attached to API or data access?
 > 4. **(Q3)** Is there an OAuth scope or API credential that **cannot place, modify or cancel orders**? If not, can order permission be disabled at the account or API-user level?
 > 5. **(Q4)** For DXLink candle events on futures: are 1-minute candles supported live? Is the candle time the **start** of the period, in UTC milliseconds? Are exchange timestamps carried? Can a live candle be updated after its period ends? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
-> 6. **(Q5)** Access tokens appear to last 15 minutes and the quote token 24 hours. Can both be renewed **unattended for weeks** (no UI, MFA prompt or daily login)? What session or connection limits apply?
+> 6. **(Q5)** Access tokens appear to last 15 minutes and the quote token 24 hours. Can both be renewed **unattended for weeks** (no UI, MFA prompt or daily login)? What session or connection limits apply? Can all four products (6J, MNQ, MYM, MGC) stream at the same time on one session?
 > 7. **(Q6)** Are cloud or VPS use, and private storage of raw messages and derived bars for audit, permitted under the subscriber agreement?
 > 8. **(Q7)** After a reconnect, can missed candles be backfilled? Are revised candles flagged? Are there sequence identifiers?
-> 9. **(Q8)** Is a candle published for an interval with **no trades**? If so, how is it marked?
+> 9. **(Q8)** Is a candle published for an interval with **no trades**? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** What symbol format identifies dated futures contracts (for example the March MNQ)? Is a continuous symbol offered, and with what roll rule?
 > 11. **(Q10)** What is the typical delay from period end to candle delivery? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session?
 > 12. **(Q11)** How much historical candle data is available through the API for these products, and at what cost?
@@ -167,10 +167,10 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 3. **(Q2b)** What is the all-in monthly cost of those subscriptions plus any non-display or API fee, for a non-professional? Is the minimum equity for market data still $500? What inactivity, deposit and withdrawal terms apply?
 > 4. **(Q3)** Can order permission be disabled at the account or API-user level, or is there a read-only API setting that the server enforces?
 > 5. **(Q4)** Do you stream completed 1-minute bars (for example, real-time bars or keep-up-to-date historical bars) with exchange timestamps? Is the bar time the start of the bar? Can a bar be revised after delivery? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
-> 6. **(Q5)** Can the gateway authenticate and stay connected **unattended for weeks** without a daily login, MFA prompt or desktop session? What session limits apply?
+> 6. **(Q5)** Can the gateway authenticate and stay connected **unattended for weeks** without a daily login, MFA prompt or desktop session? What session, connection, market-data-line and concurrent-subscription limits apply? Can all four products (6J, MNQ, MYM, MGC) stream at the same time on one session?
 > 7. **(Q6)** Is running the gateway on a cloud server permitted, and may raw messages and derived bars be stored privately for audit?
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
-> 9. **(Q8)** Is a bar published for an interval with no trades? If so, how is it marked?
+> 9. **(Q8)** Is a bar published for an interval with no trades? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated futures contracts identified in the API, and is a continuous contract offered, with what roll rule?
 > 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance or reset windows fall inside the Sunday–Friday 18:00–17:00 ET session?
 > 12. **(Q11)** What historical bar depth is available through the API for these products, and with what pacing limits?
@@ -195,10 +195,10 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 3. **(Q2b)** Your page says API access is free with 5 or more contracts traded per month and otherwise starts at $249/month. For a data-only use with no trading at Ironbeam, what is the all-in monthly cost? Are non-professional real-time data fees free through the API too? What minimum balance, inactivity and withdrawal terms apply?
 > 4. **(Q3)** Is there an API credential that cannot place, modify or cancel orders, or can order permission be disabled at the account level?
 > 5. **(Q4)** For WebSocket time bars at 1 or 15 minutes: is the bar timestamp the start or the end, in what zone? Is the bar emitted once at close, or updated in place while it forms? Are exchange timestamps included? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
-> 6. **(Q5)** Can bearer-token authentication be renewed unattended for weeks, with no UI or MFA? What session and subscription limits apply?
+> 6. **(Q5)** Can bearer-token authentication be renewed unattended for weeks, with no UI or MFA? What session and subscription limits apply? Can all four products (6J, MNQ, MYM, MGC) stream at the same time on one session?
 > 7. **(Q6)** Are cloud or VPS use, and private storage of raw messages and derived bars for audit, permitted?
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
-> 9. **(Q8)** Is a time bar emitted for an interval with no trades? If so, how is it marked?
+> 9. **(Q8)** Is a time bar emitted for an interval with no trades? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts identified, and is a continuous symbol offered, with what roll rule?
 > 11. **(Q10)** What is the typical delay from bar end to delivery? Are there maintenance windows inside the Sunday–Friday 18:00–17:00 ET session?
 > 12. **(Q11)** What historical bar depth is available through the API, and at what cost?
@@ -208,7 +208,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 
 **Two-stage screen** (Codex review on #583). Rithmic data comes through a clearing broker (FCM), so Rithmic may properly defer licensing, entitlement, order-restriction, authentication or storage questions to the FCM.
 - **Stage 1 (this message).** Rithmic answers what it controls. Any answer that defers to the FCM is recorded as **DEFERRED-TO-FCM**, not as ambiguous, and the rejection rule is not applied to those items at stage 1.
-- **Stage 2.** The same common context and Q1–Q12 go to **one named FCM**, chosen by the operator from Rithmic's stage-1 answer about which FCMs offer data-only users.
+- **Stage 2.** The same common context and Q1–Q12 go to **one named FCM**, chosen by the operator from Rithmic's stage-1 answer about which FCMs offer data-only users. For the FCM, Q2b also asks for its **capital and liquidity terms**: required deposit, minimum account balance, inactivity fees, and withdrawal constraints. Those answers fill the held-capital field (§4) (Codex review on #583).
 - **The rejection rule (§3)** is applied to the stage-1 and stage-2 answers combined, before CP-7.
 
 **What published terms already appear to answer** (all **[excerpt]**, several from brokers rather than Rithmic):
@@ -227,10 +227,10 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 3. **(Q2b)** What is the all-in monthly cost for a data-only user: API or connection fee, per-exchange data fees and any minimum, and what does the clearing firm add?
 > 4. **(Q3)** Can a user ID be configured, on the server side, so that it cannot place, modify or cancel orders?
 > 5. **(Q4)** For server-side time bars at 1 or 15 minutes: is the bar stamped at the start or the end, in what time base? Is a bar sent once at close, or updated while it forms? Are exchange timestamps included? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
-> 6. **(Q5)** Is conformance testing required for a **market-data-only** application? Can login and session renewal run unattended for weeks? What connection and symbol limits apply?
+> 6. **(Q5)** Is conformance testing required for a **market-data-only** application? Can login and session renewal run unattended for weeks? What connection and symbol limits apply? Can all four products (6J, MNQ, MYM, MGC) stream at the same time on one session?
 > 7. **(Q6)** Are cloud or VPS use, and private storage of raw messages and derived bars for audit, permitted?
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence numbers provided?
-> 9. **(Q8)** Is a time bar emitted for an interval with no trades? If so, how is it marked?
+> 9. **(Q8)** Is a time bar emitted for an interval with no trades? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts identified, and is a continuous or front-month symbol offered, with what roll rule?
 > 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session?
 > 12. **(Q11)** What historical bar depth is available through R|Protocol, and at what cost?
@@ -256,10 +256,10 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 3. **(Q2b)** What is the all-in monthly cost: the API add-on, data subscriptions and the CME licence? What minimum balance, inactivity and withdrawal terms apply to a live account used only for data?
 > 4. **(Q3)** Can an API key or the account itself be restricted so that it cannot place, modify or cancel orders?
 > 5. **(Q4)** Does the API publish completed 1-minute bars (chart subscription) with exchange timestamps? Is the bar time the start of the bar, and in UTC? Can a bar be revised after the period ends? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
-> 6. **(Q5)** Can token renewal run unattended for weeks, with no UI, MFA prompt or daily login? What session and connection limits apply?
+> 6. **(Q5)** Can token renewal run unattended for weeks, with no UI, MFA prompt or daily login? What session and connection limits apply? Can all four products (6J, MNQ, MYM, MGC) stream at the same time on one session?
 > 7. **(Q6)** Are cloud or VPS use, and private storage of raw messages and derived bars for audit, permitted?
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
-> 9. **(Q8)** Is a bar published for an interval with no trades? If so, how is it marked?
+> 9. **(Q8)** Is a bar published for an interval with no trades? If so, how is it marked? **Exchange halts:** how is an exchange trading halt inside a session represented: as an omission, as a flagged bar, or as a status message?
 > 10. **(Q9)** How are dated contracts named, and is a continuous symbol offered, with what roll rule?
 > 11. **(Q10)** What is the typical delay from bar end to delivery? What maintenance windows fall inside the Sunday–Friday 18:00–17:00 ET session?
 > 12. **(Q11)** What historical bar depth is available through the API, and at what cost?
