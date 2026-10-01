@@ -94,7 +94,7 @@ forward-confirmation requirements beside an incompatible accelerated path.
 | Intraday-honest failure clock | EOD peak ratchets the fixed-dollar floor; synchronized intraday equity tests it. Missing timing evidence cannot qualify a book. |
 | No parameter fishing | No post-result signal edits, new template, target relaxation, filter, governor or size added to rescue a loser. |
 | D33 | One selected winner, one final validation. Any failed acceptance condition ends the attempt with no qualifying configuration. No runner-up promotion, extra paths or repeated n3. |
-| Deployment | Winner parity, M1 RESOLVED and a separate operator GO. No agent places trades. Passing an evaluation does not authorize a funded Striker book. |
+| Deployment | Winner parity, M1 RESOLVED and a separate operator GO. Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Passing an evaluation does not authorize a funded Striker book. |
 
 Venue specification was rechecked on 2026-09-05 against the
 [Select evaluation page](https://help.tradeify.co/en/articles/12853921-select-evaluation-accounts):

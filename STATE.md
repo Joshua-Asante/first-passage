@@ -83,8 +83,8 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
 
 ### Weekly — recurring (rolling; next deadline **2026-10-02**, bucket 09-28→10-02)
 
-- **Operator-placed account-preservation trade:** at least one per Mon–Fri week.
-  No agent places it; the rail stays disarmed. A missed venue week risks account
+- **Account-preservation trade, operator-placed or agent-placed at the operator's direction:** at least one per Mon–Fri week.
+  An agent requires direction for the specific trade under [ADR Addendum 2026-09-30b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b); the rail stays disarmed. A missed venue week risks account
   deletion; venue-session boundaries apply. [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)
   · [idle-clock audit](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md).
 - **Coverage evidence:** week 09-07→09-11 is operator-attested: on 2026-09-12,

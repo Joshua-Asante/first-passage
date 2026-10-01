@@ -1,5 +1,7 @@
 # Tradeify attended system — simplification review (proposals for operator ruling)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Dated quotations, source snapshots and completed-session evidence below retain their historical meaning and grant no current trading authority.
+
 **Status:** PROPOSAL PACKET · authorizes nothing · each accepted item lands as a dated
 addendum at its named owner, after which this note is a derived mirror of those owners
 ([Rule 7](../operational_rules.md)).

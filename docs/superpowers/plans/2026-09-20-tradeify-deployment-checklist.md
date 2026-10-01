@@ -483,7 +483,7 @@ Handoff IDs refer to the [handoff set](../../briefs/handoffs/2026-09-27-staged-a
 
 ### 4. Operator checkpoints — where approval is taken
 
-Each checkpoint takes the decision once, against a returned artifact. Between checkpoints the coordinator acts within the approvals already given, without re-asking. None of these lifts the standing prohibitions: no agent places a trade, no merge happens without the operator, and nothing is armed without M1 plus a session GO.
+Each checkpoint takes the decision once, against a returned artifact. Between checkpoints the coordinator acts within the approvals already given, without re-asking. Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. No merge happens without the operator, and nothing is armed without M1 plus a session GO. Owner: [surface-allocation ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b).
 
 | CP | Decision | Reviewed against | Unlocks |
 |---|---|---|---|
