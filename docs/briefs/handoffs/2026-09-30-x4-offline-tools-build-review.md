@@ -25,7 +25,11 @@ can exercise them without their live ratification. No actor ruling is delegated.
 > sequence below are the **superseded full-suite design**, retained as a record
 > of what was drafted. Do not dispatch from them. A coordinator freezing the
 > next X-4 card builds it from the checklist's kept set, reusing only the parts
-> of this draft that bind a kept item. GC-4's required observation and the X-1
+> of this draft that bind a kept item. Its return uses the four-state taxonomy
+> (`DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`), and any
+> `BLOCKED` return names its sub-case: `BLOCKED — context-problem |
+> capability-problem | scope-problem | plan-itself-wrong` (brief-authoring
+> discipline 8; `cc_handoff` §6). GC-4's required observation and the X-1
 > acceptance record are unchanged.
 
 **Selected outcome:** one independently reviewable, offline-verified X-4 tool
