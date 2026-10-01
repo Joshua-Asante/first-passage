@@ -4092,3 +4092,6 @@ remain proposed, not ratified. The [bounded offline build/review card](../../bri
 is DRAFT / NOT DISPATCHED: synthetic transports only, coordinator-owned combined
 acceptance and separate independent review. Live transport, rehearsal, private
 readiness and CP-3 remain later gates. No implementation or live action is granted.
+*[2026-10-01: the card's full tool suite is superseded by the deployment
+checklist's [reduced X-4 build path](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts),
+which owns the build scope.]*

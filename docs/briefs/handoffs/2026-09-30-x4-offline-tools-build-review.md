@@ -7,6 +7,27 @@ records the exact starting commit. An uncommitted card is not a worker dispatch.
 The recommended actor exception and limits remain PROPOSED; a synthetic build
 can exercise them without their live ratification. No actor ruling is delegated.
 
+> **Superseded in part, 2026-10-01 (operator ruling, merged in #580).** The
+> [deployment checklist's first-session simplification rulings, item 3](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts)
+> now **owns the X-4 build scope** and supersedes this draft where they differ.
+> The build is **small reviewed extensions to X-1's accepted round-7 generator
+> and sender**: a stop entry type, two children, and a parent cancel bound to the
+> parent's account path. Terminal reads use **R-1 v3.2**, with a **bounded
+> GET-only pre-cancel status reader** that seals the parent `Working` and both
+> children `Suspended` before the cancel; the coordinator classifies from sealed
+> bytes. **Kept:** one-use placement and cancel claims that survive restart,
+> including an unknown placement (MUST-PASS); raw response bytes sealed before
+> parsing; validation of both child identities; attended cancel of every live
+> order if the account is flat. **Cut:** `x4_profile`, the observer's read
+> budget and rate machinery, the asynchronous late-response channel,
+> `x4_attended_input`, `x4_adjudicate` and the multi-pass reviews; one focused
+> review replaces those reviews. The component list, interfaces, tests and
+> sequence below are the **superseded full-suite design**, retained as a record
+> of what was drafted. Do not dispatch from them. A coordinator freezing the
+> next X-4 card builds it from the checklist's kept set, reusing only the parts
+> of this draft that bind a kept item. GC-4's required observation and the X-1
+> acceptance record are unchanged.
+
 **Selected outcome:** one independently reviewable, offline-verified X-4 tool
 package: deterministic two-child resting-entry generation, separately confirmed
 single parent cancel, read-only observation, sealed evidence and a separate
@@ -86,6 +107,18 @@ interface review must resolve **each one before implementation starts**, with
 the coordinator accepting the resulting disposition. The interface snippets,
 test ownership and execution sequence below remain provisional on these points;
 their presence does not discharge this gate or authorize dispatch.
+
+**Applicability after the 2026-10-01 reduced build path.** The checklist ruling
+says these items apply only where they bind the kept items:
+
+| Item | Status against the kept set |
+| --- | --- |
+| P1 read kind and GET binding fields | **Applies.** It binds the kept GET-only pre-cancel reader and the R-1 v3.2 terminal reads. |
+| P1 unknown placement in the durable-claim/restart test | **Applies, MUST-PASS.** The kept one-use placement claim must survive restart, including an unknown placement. |
+| P2 async late-response channel | **Moot.** The asynchronous late-response channel is cut. |
+| P2 pre-mortem (brief-authoring discipline 11) | **Applies** to the reduced X-4 card, scoped to the kept extensions. |
+| P2 separate spec-compliance and quality passes (discipline 9) | **Moot.** The ruling cuts the multi-pass reviews; one focused review replaces them. |
+| P2 acceptance tests frozen by the coordinator or reviewer, not the builder | **Applies** to the tests for the kept items. |
 
 - **P1 — PRRT_kwDOT46Eac6n2QJB:** Operation needs an explicit read kind and GET binding fields. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959541).
 - **P1 — PRRT_kwDOT46Eac6n2QIw:** The durable-claim/restart test must cover unknown **PLACEMENT** as well as cancel; this is **MUST-PASS before any live X-4**, because `order_id` idempotency is disproven. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959517).

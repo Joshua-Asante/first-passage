@@ -9,6 +9,18 @@ the [bounded handoff](../briefs/handoffs/2026-09-30-x4-offline-tools-build-revie
 is a draft, not a dispatch. The deployment coordinator retains combined acceptance; Joshua retains the
 actor ruling, numerical limits, environment decision and separate written CP-3.
 
+> **Build scope superseded in part, 2026-10-01 (operator ruling, merged in #580).**
+> The tool set this packet and its handoff describe is replaced by the
+> [deployment checklist's reduced X-4 build path](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts)
+> (item 3). That path makes small reviewed extensions to X-1's round-7 generator
+> and sender, uses R-1 v3.2 terminal reads, and adds a bounded GET-only pre-cancel
+> status reader. It cuts `x4_profile`, the observer budget and rate machinery,
+> the asynchronous late-response channel, `x4_attended_input`, `x4_adjudicate`
+> and the multi-pass reviews. Where this packet's tool, observer, adjudication or
+> review design differs, the checklist governs. The actor proposal, the §3
+> numerical selections, the environment decision and CP-3 still stand as
+> proposed and remain the operator's. GC-4's required observation is unchanged.
+
 ## 1. Outcome, owners and boundary
 
 Prepare one attended REST observation of cancelling a **resting buy-stop entry

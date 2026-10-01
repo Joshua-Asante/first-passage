@@ -651,3 +651,5 @@ is prepared but not dispatched. A proposed profile may be exercised syntheticall
 before live ratification; this grants no production path. Coordinator review and
 committed dispatch precede the build; separate live transport readiness, exact-tool
 rehearsal, fresh private gates and CP-3 still precede any placement.
+*[2026-10-01: the drafted full tool suite is superseded by the
+[reduced X-4 build path](#addendum-2026-10-01--first-session-simplification-rulings-six-cuts) (item 3), which owns the build scope.]*
