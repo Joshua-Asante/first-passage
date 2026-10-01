@@ -112,6 +112,18 @@ _JOINT_DISPATCH_FIXED = MappingProxyType(
     )
 )
 
+# S5-D3: the Part A successor -- the only profile whose installation admits the
+# PART_A compute checkpoint (dispatch_checkpoints exactly ['N1','N2','PART_A']).
+_PART_A_DISPATCH_FIXED = MappingProxyType(
+    dict(
+        _JOINT_DISPATCH_FIXED,
+        schema='qualification_execution_profile/v7',
+        protocol_version=7,
+        supported_checkpoints=['N1', 'N2', 'PART_A'],
+        dispatch_checkpoints=['N1', 'N2', 'PART_A'],
+    )
+)
+
 
 def parse_profile(raw: bytes) -> ExecutionProfile:
     doc = parse_canonical_json(raw, label='execution profile')
@@ -137,6 +149,8 @@ def parse_profile(raw: bytes) -> ExecutionProfile:
         fixed = dict(_DISPATCH_FIXED)
     if doc.get('schema') == 'qualification_execution_profile/v6':
         fixed = dict(_JOINT_DISPATCH_FIXED)
+    if doc.get('schema') == 'qualification_execution_profile/v7':
+        fixed = dict(_PART_A_DISPATCH_FIXED)
     fields(doc, (*fixed, *_LIMITS))
     for name, value in fixed.items():
         if type(doc[name]) is not type(value) or doc[name] != value:
@@ -222,6 +236,7 @@ def diagnostic_budget_profile(profile_bytes):
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
         'qualification_execution_profile/v6',
+        'qualification_execution_profile/v7',
     ):
         raise ValueError('fresh diagnostic execution profile required')
     result = dict(
@@ -235,8 +250,13 @@ def diagnostic_budget_profile(profile_bytes):
     )
     # S4-R5b: the joint installation alone widens the N2 compute phase (the
     # ruling above); every other phase, profile version and statistic is the
-    # shared diagnostic ceiling, and the controller charge stays 20 s.
-    if profile.values['schema'] == 'qualification_execution_profile/v6':
+    # shared diagnostic ceiling, and the controller charge stays 20 s. The S5
+    # /v7 successor keeps the same ruled N2 ceiling (CP-1a decision (3)); every
+    # other /v7 phase, PART_A included, keeps the shared diagnostic ceiling.
+    if profile.values['schema'] in (
+        'qualification_execution_profile/v6',
+        'qualification_execution_profile/v7',
+    ):
         result['phases']['N2'] = dict(
             _JOINT_N2_DIAGNOSTIC_PHASE, memory_bytes=profile.memory_bytes
         )
@@ -244,6 +264,7 @@ def diagnostic_budget_profile(profile_bytes):
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
         'qualification_execution_profile/v6',
+        'qualification_execution_profile/v7',
     ):
         result.update(
             schema='qualification_campaign_budget_profile/v3',
@@ -305,6 +326,22 @@ def joint_dispatch_diagnostic_execution_profile(base_bytes):
         supported_checkpoints=['N1', 'N2'],
         dispatch_enabled=True,
         dispatch_checkpoints=['N1', 'N2'],
+    )
+    parse_profile(encoded(result))
+    return result
+
+
+def part_a_dispatch_diagnostic_execution_profile(base_bytes):
+    """The S5 Part A successor (S5-D3): diagnostic v7 dispatching N1, N2 and PART_A."""
+    from ..contract import canonical_json_bytes as encoded
+
+    result = diagnostic_execution_profile(base_bytes)
+    result.update(
+        schema='qualification_execution_profile/v7',
+        protocol_version=7,
+        supported_checkpoints=['N1', 'N2', 'PART_A'],
+        dispatch_enabled=True,
+        dispatch_checkpoints=['N1', 'N2', 'PART_A'],
     )
     parse_profile(encoded(result))
     return result

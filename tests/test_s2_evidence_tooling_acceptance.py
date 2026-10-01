@@ -240,7 +240,10 @@ def test_g6_inputs_are_validated_before_the_host_is_provisioned():
     ("s3", "", True), ("s2", "", True), ("s3", "downtime or deadline", True),
     ("s3", "   ", False), ("s3", "\t", False), ("s2", "downtime", False),
     # C2 ruling 1 (2026-09-24): s4 is a runnable mode (the new default) and takes subsets.
-    ("s4", "", True), ("s4", "downtime or deadline", True), ("s5", "", False),
+    ("s4", "", True), ("s4", "downtime or deadline", True),
+    # S5 (packet §2, the bounded S5 run tooling): s5 is runnable and takes
+    # subsets exactly as s3/s4 do, on the /v7 installation.
+    ("s5", "", True), ("s5", "downtime or deadline", True),
 ])
 def test_g6_the_validation_step_accepts_exactly_the_runnable_inputs(tmp_path, shell, mode, cases, ok):
     step = next(s for s in _steps() if s.get("name") == "Validate inputs")

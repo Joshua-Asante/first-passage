@@ -10,9 +10,9 @@ name: Qualification S2 supervision
 #
 # A dispatch with `cases` set is a labelled DIAGNOSTIC run (record scope
 # DIAGNOSTIC_SUBSET, refused by scripts/s2_run_evidence.py); the run-name says so
-# in `gh run list`, and it names the boundary mode ([s2], [s3] or [s4], matching
-# BOUNDARY_MODE's default below), which scripts/guard_s2_runs.py reads to exempt
-# diagnostics and to tell S2, S3 and S4 coverage apart.
+# in `gh run list`, and it names the boundary mode ([s2], [s3], [s4] or [s5],
+# matching BOUNDARY_MODE's default below), which scripts/guard_s2_runs.py reads
+# to exempt diagnostics and to tell S2, S3, S4 and S5 coverage apart.
 run-name: >-
   ${{ inputs.cases != '' && inputs.cases != null
       && format('S2 DIAGNOSTIC [{0}] ({1})', inputs.mode || 's4', inputs.cases)
@@ -21,9 +21,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 's2 (the fifteen S2 nodes), s3 (S2 plus the four N1 nodes on the dispatch/v5 installation) or s4 (S3 plus the three joint N2 nodes on the joint v6 installation; the acceptance-grade set)'
+        description: 's2 (the fifteen S2 nodes), s3 (S2 plus the four N1 nodes on the dispatch/v5 installation), s4 (S3 plus the three joint N2 nodes on the joint v6 installation; the acceptance-grade set) or s5 (the S4 set plus the Part A nodes on the joint /v7 installation; the S5 acceptance-grade set)'
         type: choice
-        options: [s2, s3, s4]
+        options: [s2, s3, s4, s5]
         default: s4
       cases:
         description: 'Diagnostic subset only: a pytest -k expression over the selected files. Empty runs the full selection. A non-empty value marks the record DIAGNOSTIC_SUBSET, which can never be acceptance evidence.'
@@ -81,7 +81,7 @@ jobs:
         run: |
           mode="$BOUNDARY_MODE"
           cases="$BOUNDARY_CASES"
-          case "$mode" in s2|s3|s4) ;; *) echo "unsupported mode: $mode (expected s2, s3 or s4)" >&2; exit 2 ;; esac
+          case "$mode" in s2|s3|s4|s5) ;; *) echo "unsupported mode: $mode (expected s2, s3, s4 or s5)" >&2; exit 2 ;; esac
           if [ -n "$cases" ]; then
             # The same whitespace test as the boundary wrapper (Python str.strip, so
             # Unicode spaces such as NBSP count); the bash class is the fallback.
@@ -95,8 +95,8 @@ jobs:
               echo "cases is whitespace-only; leave it empty to run the full selection" >&2
               exit 2
             fi
-            if [ "$mode" != "s3" ] && [ "$mode" != "s4" ]; then
-              echo "cases is a diagnostic subset for mode s3 or s4 only (mode: $mode)" >&2
+            if [ "$mode" != "s3" ] && [ "$mode" != "s4" ] && [ "$mode" != "s5" ]; then
+              echo "cases is a diagnostic subset for mode s3, s4 or s5 only (mode: $mode)" >&2
               exit 2
             fi
           fi
@@ -131,7 +131,7 @@ jobs:
           host_root="$(dirname "$manifest")"
           mode="$BOUNDARY_MODE"
           cases="$BOUNDARY_CASES"
-          case "$mode" in s2|s3|s4) ;; *) echo "unsupported mode: $mode (expected s2, s3 or s4)" >&2; exit 2 ;; esac
+          case "$mode" in s2|s3|s4|s5) ;; *) echo "unsupported mode: $mode (expected s2, s3, s4 or s5)" >&2; exit 2 ;; esac
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
           args=(--"$mode")
           if [ -n "$cases" ]; then
