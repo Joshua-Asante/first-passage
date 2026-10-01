@@ -1,6 +1,6 @@
-# SPEC: CME execution-feed equivalence test for the four-leg book (TB-I5 successor) — DRAFT
+# SPEC: CME execution-feed equivalence test for the four-leg book (TB-I5 successor)
 
-**Status:** DRAFT — NOT FROZEN. Provider-neutral. Every threshold, window length and verdict parameter below is **PROPOSED** and **OWED (operator)**; none is in force until the operator freezes this document by digest, and that freeze must precede any collection of provider data (§9). No provider is named, selected, priced or contacted here.
+**Status:** FROZEN on the operator's merge of PR #PRNUM, and not before; until that merge this file is the draft. **Frozen body:** this file with this one Status line removed, SHA-256 `307db4260c63fed2e71fcf5eee5ed81bacebae510b9b9ef1a5ae89e63a0a385a` (recompute: `grep -v '^\*\*Status:\*\*' docs/spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md | sha256sum`). **Nine parameters stay OPEN** as operator decisions (§16.2). Each is bound before any provider data by the §16.3 procedure, and collection may not start while any is OPEN. Provider-neutral: no provider is named, selected, priced or contacted here. The path keeps its `-DRAFT` suffix so that existing links resolve (§16.5).
 **Date:** 2026-09-27. **Base:** `claude/clever-wozniak-bx0u95` at `521d8f2`.
 **Assignment:** [handoff H8](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h8--feed-provider-neutral-preparation) (provider-neutral preparation only). **Sequencing owner:** [deployment-checklist addendum 2026-09-27](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step), workstream row "Feed" and checkpoints CP-6/CP-7.
 **Successor to:** the TB-I5 specification named in the [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) (row TB-I5 at `:234`, packet text at `:644`). The umbrella's placeholder path `docs/spec/2026-09-1x-cme-execution-feed-equivalence-test.md` does not exist; this file is that specification in draft. It does not edit the [locked XAUUSD feed-equivalence spec](feed_equivalence_discovery_test_LOCKED.md), which it uses as a structural template only.
@@ -165,6 +165,8 @@ The test therefore scores the book, not only each symbol. M8 counts the boundari
 
 ## §9 — Freeze procedure (before any data is seen)
 
+*Step 1 is amended at freeze by §16.3: the document is frozen with its OPEN parameters listed, and each is bound before any provider data.*
+
 1. The operator sets every OWED value, then freezes this document by digest. Status becomes `FROZEN <date> <digest>`. The OWED values are:
    - the §3 arm C rule (compared fields, units, tolerance, and 6J prefix treatment);
    - the §4.2 constituent rule for each delivery granularity;
@@ -275,3 +277,57 @@ Commands run in this session (read-only; the working tree was shared with concur
 Review and fix round (2026-09-27), commands run: `sed -n`/`grep -n` re-reads of every cited line in the review findings (execution domain `:262–:274`, `:356–:361`, `:485–:502`, `:534–:574`, `:689–:691`; amendment `:48–:52`; Step 3 `:1–:45`; template `:40–:82`; Q-DATAFIDELITY-1 `:16–:23`; umbrella `:234`, `:644`; `book_runtime.py:370–:392`; `daemon.py:55–:100`, `:129`; `evaluate_loop.py:95–:106`; `m1_stage1.py:15–:52`; `m1_stage1_control.py:112–:119`; `bar_export_loader.py:44–:58`, `:100–:110`; `6J.md:3`, `:81`; Track A plan `:170–:237`; T00 P7 closure `:5`; STATE `:58`). The seven-path `8c15f18` grep is in §0. The outcomes are in [the note's review section](../notes/2026-09-27-feed-provider-neutral-preparation.md#review-and-fix-round-2026-09-27).
 
 No test suite, no gate suite and no data comparison was run. No provider was contacted.
+
+## §16 — Freeze record (2026-10-01)
+
+### 16.1 Authority, and what the operator's merge does
+
+**Authority.** Joshua's ruling of 2026-10-01, item 2: "The feed-equivalence spec may be **frozen now**, before any provider data". It is recorded in the deployment-checklist addendum "first-session simplification rulings" ([PR #580](https://github.com/Joshua-Asante/first-passage/pull/580), branch `claude/first-session-cuts`). The same ruling keeps signup and spend behind D-feed (a)+(b) and CP-7. This record was authored by an H8 worker; the H8 card grants `governance.author` for the feed specification work.
+
+**The merge is the freeze act.** Freezing is the operator's act (Not granted line, §9). The operator's merge of the PR that adds this section:
+1. freezes the body at the digest in the Status line;
+2. adopts every value marked **ADOPTED** in §16.2. Each one is a value this draft already PROPOSED before any provider data existed, and none is new in this section;
+3. leaves every item marked **OPEN** as an operator decision, bound under §16.3.
+
+Before that merge, nothing here is in force and the document remains the draft. No provider data of any kind has been seen in preparing this freeze (§15; the H8 note §7; the 2026-10-01 provider-questions draft sent nothing and received nothing).
+
+### 16.2 Status of each §9.1 item at freeze
+
+Where the body says PROPOSED or OWED, this table governs.
+
+| §9.1 item | Status | What is frozen, or what is owed |
+|---|---|---|
+| §3 arm C rule | **ADOPTED** | Compared fields: existence and `(bar_open_utc, O, H, L, C)` in integer ticks, **0** differences on the common span. Volume is descriptive unless M4 gets a role. 6J: the 88 attested prefix bars enter only if the fresh capture reaches them, and are then compared like any row. A mismatch is `BLOCKED — canonical capture not reproducible` |
+| §4.2 constituent rule | **ADOPTED in part; OPEN-1** | Adopted: the bucket `[open, open + 15 min)`; O first open, H max high, L min low, C last close, V summed volume. **OPEN-1:** the per-granularity details: which timestamp assigns a constituent to a bucket (exchange time or provider stamp), and how a 1-minute bar stamped at its close maps to its bucket |
+| §4.3 empty-interval rule | **ADOPTED** | Rule (a)–(e) as written: absent is absent; no invented bars; zero-volume, synthetic, filled-forward or no-trade bars are not trade evidence; a halted interval is scored as absent; the daily break, weekends and DENIED days are outside coverage. Adoption at freeze is the path named in the [H8(b) acceptance](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h8--feed-provider-neutral-preparation) (Q-1) |
+| §4.5 6J adjustment basis | **OPEN-2** | The rule "no back-adjustment on either side" stands. Owed: the operator's confirmation, from the retained 6J attestation, of the 6J canonical capture's back-adjustment and trading-hours settings (§14 item 3). If the 6J canonical input is back-adjusted, the treatment of 6J is an operator decision before data |
+| R-MAP-1 live contract-selection rule | **OPEN-3** | No value proposed. Owed per leg, agreeing with the TB-V1 venue binding. A difference from the canonical `1!` roll is a behavior question that settles before CP-6 (§5) |
+| R-MAP-1 roll-exclusion band | **OPEN-4** | No width proposed. Owed: the band around each canonical roll date |
+| M1, M2 | **ADOPTED** | 0 and 0 |
+| M3a, M3b | **ADOPTED** | M3a **0** (the default; the relaxed ≤ 0.5% option is **not** adopted). M3b is therefore not binding |
+| M4 role and threshold | **OPEN-5** | No value proposed. The body says M4 is not descriptive-only by default, because ORB reads volume (§6), while §10 lets M4 enter the verdict only if a role is frozen. The operator sets both, allowing for the canonical side's re-capture volume differences |
+| M5, M6, M8 | **ADOPTED** | 0, 0 and 0. M8 includes overtaking-leg boundaries |
+| M7 | **ADOPTED in part; OPEN-6** | Adopted: **0** revisions forwarded to the consumer. **OPEN-6:** the threshold for revisions seen only in the raw stream |
+| M9 role | **OPEN-7** | No value proposed. Under §10 it stays outside the verdict unless a role is bound |
+| Window rule | **ADOPTED in part; OPEN-8** | Adopted minimum content: ten complete covered sessions for all four symbols at once, including two Sunday opens, two Friday closes and one month-end-adjacent session. DST and early closes are recorded as **not observed** if absent. **OPEN-8:** the exact start/end rule required by §9.3, fixed before collection |
+| §10 re-application rule | **ADOPTED in part; OPEN-9** | Adopted: a FAIL is final for that source identity and configuration digest. Every attempt per provider is counted and reported. A new application declares and freezes its configuration change and window rule before its window starts. **OPEN-9:** whether a change to later-binding B items only may re-apply after a FAIL, and how many times |
+| §13 re-opening vehicle | **ADOPTED** | A separate ADR "justifying why prior thresholds were misspecified, written without reference to observed data" (template `:81`) |
+
+Unchanged by this freeze: §11's default that no count moves to the public note (moving a field stays an operator decision), and the §14 UNVERIFIED register.
+
+### 16.3 Binding an OPEN item (amends §9 step 1)
+
+1. Each OPEN item is bound by a dated operator decision, recorded as a row in §16.4 in the same commit that writes the value into the body.
+2. Each binding produces a new frozen-body digest, which replaces the one in the Status line. The superseded digest stays in §16.4.
+3. A binding is admissible only **before any provider data is seen**, including trial or sample data (§9.2). After that, any change is a re-opening under §13.
+4. Shadow collection may not start while any item is OPEN. This is in addition to §9.2–§9.4 and CP-7.
+
+### 16.4 Binding log
+
+| Date | Item | Value bound | Decision record | New frozen-body digest |
+|---|---|---|---|---|
+| — | — | (none yet) | — | — |
+
+### 16.5 Path
+
+The path keeps the `-DRAFT` suffix. Renaming it would break the inbound links from the [H8 note](../notes/2026-09-27-feed-provider-neutral-preparation.md), the H8 card and the H5(b) card for no change in content. The Status line, not the filename, states the document's state.
