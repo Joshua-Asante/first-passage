@@ -4075,3 +4075,18 @@ Next bounded route step: X-4 documentary readiness preparation, returning to
 the coordinator and then Joshua's separate CP-3, with its actor contract and
 fresh execution prerequisites still open. This entry records the directly
 authorized review; it transfers no other campaign coordination work.
+
+**Preparation return, same day:** the [X-4 decision packet](../../notes/2026-09-30-x4-decision-packet.md)
+is prepared for review. Its X-4-only mandatory-firm-control exception is proposed,
+not ruled. Exact MNQ limits/environment, a separately reviewed X-4 tool set,
+attended rehearsal, fresh checks and CP-3 remain owed. Round-7's market-entry,
+single-child tools are not executable X-4 tools. No build or order is dispatched.
+
+**Recommendations and handoff drafted:** packet §3.1 now recommends one MNQ,
+entry +100 points, a 25-point abort buffer, SL −10 / TP +20, a 20-point maximum
+realized stop distance and prompt parent cancellation before 30 seconds. Its
+X-4-only firm-control exception, $50 planning allowance and fresh headroom gate
+remain proposed, not ratified. The [bounded offline build/review card](../../briefs/handoffs/2026-09-30-x4-offline-tools-build-review.md)
+is DRAFT / NOT DISPATCHED: synthetic transports only, coordinator-owned combined
+acceptance and separate independent review. Live transport, rehearsal, private
+readiness and CP-3 remain later gates. No implementation or live action is granted.

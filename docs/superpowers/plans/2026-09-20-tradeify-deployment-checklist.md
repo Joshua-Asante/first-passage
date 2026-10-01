@@ -562,3 +562,16 @@ edition, feed, host, settlement and CP-9 obligations are unchanged. The consumed
 attempt authorizes no repeat entry, resend, arm or deployment. Preserve ten-second
 freshness, both five-point movement bounds, human SEND and validated bytes;
 hands-off operation remains a goal requiring separate review and authority.
+
+**X-4 preparation returned, same day:** [decision packet](../../notes/2026-09-30-x4-decision-packet.md).
+Next decision is its §2 actor proposal and §3 operator selections, followed by
+a bounded offline tool-build/review assignment and exact-tool attended rehearsal.
+Fresh readiness and X-4's written CP-3 still precede execution. No assignment or
+execution is granted by this documentary return.
+
+**Later same-day draft:** recommendations are now included in packet §3.1, and
+the [bounded offline tools build/review handoff](../../briefs/handoffs/2026-09-30-x4-offline-tools-build-review.md)
+is prepared but not dispatched. A proposed profile may be exercised synthetically
+before live ratification; this grants no production path. Coordinator review and
+committed dispatch precede the build; separate live transport readiness, exact-tool
+rehearsal, fresh private gates and CP-3 still precede any placement.
