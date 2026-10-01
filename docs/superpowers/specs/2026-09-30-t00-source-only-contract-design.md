@@ -1,7 +1,7 @@
 # T00 source-only contract: design (Phase A)
 
 **Date:** 2026-09-30.
-**Status:** 4.3 correction accepted by the operator 2026-09-30 (implementation conflict: production_source imports runner/mc.simulation). **Design ACCEPTED 2026-09-30 by the operator (option 1), on revision 4.2.** The final Codex review, `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`, resolved the record-authentication and stale-input P1s; the pre-hook P1 is closed by the `-S` fix and A23, without a further design review.
+**Status:** A10b rebuilt 2026-10-01 (operator ruling "do the one clean rework on a simpler rule"): deny-by-default lexical scan of every `.replay`/`.replay_bracket`/`.proof` call and `.contract` load in `ops/`, each passing only by an explicit reviewed allowlist entry; dominance reasoning removed. Named residual: dynamic access (`getattr`, `operator.attrgetter`, string-built names) is outside a lexical scan; the runtime `verify_for` refusal and A10 remain the enforcing guard. 4.3 correction accepted by the operator 2026-09-30 (implementation conflict: production_source imports runner/mc.simulation). **Design ACCEPTED 2026-09-30 by the operator (option 1), on revision 4.2.** The final Codex review, `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`, resolved the record-authentication and stale-input P1s; the pre-hook P1 is closed by the `-S` fix and A23, without a further design review.
 
 This is a design only. It adds no code, and no file below is admitted for editing until a later amendment to the [dispatch card](../../briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md) admits it.
 **Authority:**

@@ -606,6 +606,10 @@ No code starts before the amendment.
 
 The spec records this in its revision 4.3 section.
 
+**A10b rebuild (2026-10-01).** On Joshua's ruling ("do the one clean rework on a simpler rule"), A10b is now a deny-by-default lexical scan. Every `.replay`/`.replay_bracket`/`.proof` call and every `.contract` load in `ops/` must be in an explicit allowlist, with a truthful reason. Dominance reasoning is gone.
+- Named residual: dynamic access (`getattr`, `operator.attrgetter`, string-built names) is outside the scan.
+- Stop rule: this is the last correction of A10b. A further Codex P1 on A10b goes back to Joshua.
+
 ## 10. Audit hooks
 
 ```powershell
