@@ -1922,3 +1922,17 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - After that, T05 and the T00 rebase. As accepted recommendation 4 states, the rebase re-runs P7 at the rebased head **with a fresh source approval**, whatever the date. The current approval's expiry, 2026-10-08T08:21:08Z, does not relax that.
 
 **Not granted:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority.
+
+### Operator ruling — land S5 with two named TEST_ONLY defects; fix before T05, 2026-10-01
+
+**Source.** Codex reviewed the landing PR #578 at **H = `1fe99fa`** and raised two P2 code findings. Both were already present at `606e6e0`; the merge of `main` did not introduce them. Put to the operator by structured question, Joshua chose "Land now, fix before T05".
+
+**The two named defects (TEST_ONLY, open):**
+- **D-S5-1, Part A output mount sizing** (`ops/c1_rail/qualification/execution/campaign_supervisor.py`, the checkpoint io mount sized from the per-file `profile.output_byte_limit`; Codex thread 4158727147). A PART_A work's output tmpfs holds `part-a-initial.jsonl`, `part-a-final.jsonl` and `result.frame` at once. Each can be within its own limit while the total exceeds the mount, so a large valid result can hit ENOSPC and end IN_DOUBT. This **fails closed**: no wrong result can be accepted.
+- **D-S5-2, Part A capture idempotency** (`ops/c1_rail/qualification/execution/campaign_store.py`, `retain_checkpoint_capture`; Codex thread 4158727154). The exact-retry check compares only the result and payload bytes. A retry with the same result, payload and transition bytes but different capture fields passes, and the family projection then overwrites `initial_prefix_sha256`, `final_sha256`, the panel counts and the expansion fact. This breaks the exact-retry contract.
+
+**Effect.**
+- #578 may merge at `1fe99fa` with these two P2 threads open, which overrides the merge train's no-open-P2 gate for these two only. It still needs the Linux run `36902447502` to read ok at H, green CI, and no further Codex finding at H.
+- The follow-up fix slice gets fail-first tests for each defect, and **must merge before any T05 dispatch**. The fixes are outside the 68-module measured closure (`campaign_supervisor` and `campaign_store` are not in it). They are inside the Linux selection's closure, so the fix needs its own full S4-plus-Part-A Linux run.
+
+**Not granted:** any T05 dispatch before the fix lands, and no production use. Everything else in the C3 ruling above stands.
