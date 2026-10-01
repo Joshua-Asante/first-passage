@@ -610,6 +610,72 @@ The spec records this in its revision 4.3 section.
 - Named residual: dynamic access (`getattr`, `operator.attrgetter`, string-built names) is outside the scan.
 - Stop rule: this is the last correction of A10b. A further Codex P1 on A10b goes back to Joshua.
 
+### Task 4 return — 2026-10-01 (executor, local Claude, Opus)
+
+#### Status: Task 4 executed. P7 scores MET on every executor-producible criterion. The separate-session refute-first review (§3 Task 4) and the coordinator's `accept_p7_record` step are still owed before §4's RESOLVED applies.
+
+This record holds hashes, counts and equality or verdict labels only. Every private value is in the T00 private root.
+
+**Inputs and authority.**
+- Contract: source-only contract r3c, `a526b50fa75e68451bdd2b5b57fa7a04e6ee08e61f96865c915ae8116a848d97`. It has 25 roles, populations FULL 997 / H1 499 / H2 498, PRISTINE `initial_state` and `path_start_date` 2022-09-01 (PROPOSED).
+- Approval: `862c4824f279f5aea2949d21dd69cdade02a0bbb9e7ceda5b303ab47e857bb68`. Joshua signed it with the dedicated key `source:1ebae5d45bc51280` (fingerprint `1ebae5d4…a4cb`, pinned by #573 at `2baa516`). It is valid until 2026-10-08T08:21:08Z, per the operator's 7-day ruling.
+- The real `validate_source_contract` accepts the contract.
+- Review companions: authored by the coordinator, reviewer-independent v2.
+
+**Real-path run: the official P7 record.**
+- Path: 40 contiguous FULL sessions, 2024-02-20 to 2024-04-16. There is no exclusion inside the block and no residual date.
+- Run through `p7_evidence.run_p7`, i.e. `python -I -S -B -c P7_BOOTSTRAP`, at code `2baa516` with a clean tree.
+- Record SHA-256 `4704f2ff4ac37af3e400688d9e487e4a69dcf6567ff5154a2e55cc46301d0b4b`, with evidence class `T00_P7_SOURCE_ONLY`.
+- `code_closure_sha256` `307043d668da225a36fc1823cfda61d6df0cac5fcebe6707d6475fda0423a0c7`; bootstrap `878f077c…032a`.
+- The loaded closure has 40 first-party modules, 416 third-party modules (numpy, pandas, python-dateutil, pytz, six, tzdata), 4 ports and one unexecuted `.pth` (`distutils-precedence.pth`).
+- Labels: `BOTH_RUNS_COMPLETE`, `CONSUMED_INTRABAR_SPLIT`, `INTRADAY_LOW_NONPOSITIVE`.
+- R1 and R2 each have 40 sessions, 148 fills and no deadline failure.
+- Consumed intrabar splits: 16 per run, on the ORB, Vanguard and Aegis legs at the 15:55 ET flatten instant. Their list is private; the record carries only the count and the SHA.
+- The R1 and R2 result digests differ (`2d1debe7…` and `38b51ebd…`), as their different flatten vertices require.
+
+**`accept_p7_record` executor pre-check.** At 2026-10-01T09:32Z, every artifact and closure file is current, the interpreter binding is equal, the approval re-validates under the pinned root, and a fresh-process reconstruction reproduces the record. Result: ACCEPTED, with `code_closure_sha256` `307043d6…a0c7`. This is not the coordinator's required acceptance, which is still owed.
+
+**Hand recompute.** The day is 2024-03-11, not a residual date: a single ORB (MNQ) round trip, a mid-bar stop entry followed by the 15:55 ET scheduled flatten through a consumed intrabar split.
+- Worksheet: `task4/worksheet.json`, `96993fbad7b4c88c68e06819bad063da4ec156e48d2908db4b9b435532675ef5`. The script is `task4/hand_recompute.py`. It recomputes from the raw bars and fill log with its own arithmetic.
+- Per-run equality labels:
+
+  | Check | R1 | R2 |
+  |---|---|---|
+  | In-process projection equals the P7 record digest | true | true |
+  | Opening equity, recomputed from the full prior fill log | exact | exact |
+  | Entry trigger within bar; entry fill rule (stop trigger plus slippage, not at the open) | true | true |
+  | Entry and exit commission equal the cost-model per-side rate | true | true |
+  | Flatten fill at the ratified vertex minus slippage | true (vertex index 2, adverse low) | true (vertex index 1, favourable high) |
+  | `intraday_low` equals the engine's (exact); the low is negative and below the day's P&L, so it is decided by the marks | true | true |
+  | Closing P&L equals the engine's | true, |Δ| ≈ 7e-12 | true, |Δ| ≈ 7e-12 |
+
+  The P&L difference is floating-point summation order: the engine accumulates cash incrementally, while the worksheet sums the round trip directly.
+- R1 and R2 day P&L differ: true.
+- `intraday_low` checks:
+  - every emitted low in both runs is ≤ 0;
+  - the horizon is exactly 40 in both runs;
+  - each run's own P&L/low pairs are emitted, and nothing is combined.
+
+  No screen was called.
+
+**Protected sizes and ORB adds-off.** The accepted Step-3/Step-6 evidence is bound by exact identity through the contract's 11 historical pins. Their compiled values were checked by `validate_source_contract`. `book_adapters.py` moved (the `_resolve_domain` / `_source_domain` additions), so parity was re-run with the real accepted ports, panels and the 2026-09-03 exports, all read in place:
+- `tests/ops/test_book_adapters_parity.py`: 13 passed, 0 skipped.
+- Record `.cache/fp-verification/20261001T093134Z-93a62429390d` (completed, exit 0, stable).
+
+**Verification of the code at `2baa516`.** The production code equals `67becc1` plus the #573 pin.
+- Full suite at `67becc1`: `20261001T002604Z-77e689faa801`, 1794 passed and 13 skipped (the baseline skips).
+- check: `20261001T012541Z-dc7dfaed797c`.
+- #573's targeted source tests: 86 passed, `20261001T060655Z-04938b0a449d`.
+
+No private byte is in Git: `git ls-files` shows no `local_artifacts` path and no private port.
+
+**Owed before RESOLVED.**
+1. A separate-session refute-first review covering the bracket contract, the real-byte bindings, the source pack, the hand recompute and the private/public boundary. Any fixes get a focused re-review.
+2. The coordinator's `accept_p7_record`, recorded with its `code_closure_sha256` and acceptance time.
+3. After S5 merges and this branch is rebased, a re-check through `accept_p7_record`. A rebase changes the closure, so P7 is re-run with a fresh approval if the window has closed.
+
+No T00 step 2, screen, Monte Carlo, account, broker or rail action occurred.
+
 ## 10. Audit hooks
 
 ```powershell
