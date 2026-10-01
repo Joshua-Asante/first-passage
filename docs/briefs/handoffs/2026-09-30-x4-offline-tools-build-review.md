@@ -21,8 +21,10 @@ still owed. The accepted X-1 sources and pins must be present and match before
 reuse. Live ratifications are not prerequisites to synthetic implementation;
 they are mandatory prerequisites to any later production path.
 
-**Ownership:** one named worker builds the package; a different reviewer inspects
-the returned bytes and exercises independent adversarial cases. The dispatching
+**Ownership:** one named worker proposes the design and builds the package;
+a different reviewer first refutes the frozen interfaces/state machine before
+implementation, then inspects the final frozen bytes and independent adversarial
+cases under a separate review dispatch. The dispatching
 deployment coordinator assigns both roles, accepts the combined offline return,
 and retains integration authority. Joshua retains live profile/actor ratification,
 private account decisions, attendance and CP-3. The builder never accepts its own
@@ -35,11 +37,16 @@ stable-source, complete-capture records and before/after source/package hashes.
 The independent reviewer rechecks actual source files and sealed fixtures,
 not summaries. No remote HTTP, host/broker commands or real credential use.
 
-**Checkpoint:** return premise findings before coding; report a contract/source
-contradiction immediately and stop dependent work. Return the candidate package
-and verification to the coordinator before independent review. The coordinator
-then freezes its hashes and issues the reviewer dispatch. Report findings against
-those exact bytes; after any repair, re-review affected traces before acceptance.
+**Checkpoint:** return premise findings and the proposed interface/state-machine
+design before implementation. The coordinator freezes that design and dispatches
+an independent **refute-first interface review (C1)** under brief-authoring
+discipline 13. No implementation or acceptance-trace production starts until the
+coordinator accepts the design review. Report contradictions immediately and stop
+dependent work. After implementation, return the candidate package and evidence;
+the coordinator freezes its hashes and issues the separate final byte review.
+After any repair, re-review affected traces before acceptance. A change to the
+accepted interfaces, clocks, ownership or terminal rules reopens C1 and invalidates
+affected evidence; retained final review does not replace the early checkpoint.
 
 **Return boundary:** successful delivery ends with the independently reviewed
 offline package and four-state return. A scope/authority/source-contract conflict
@@ -68,6 +75,7 @@ acceptance:
   - local_artifacts/route-drills-2026-09/tools/x4-v1/test_x4_contract.py::test_unknown_cancel_blocks_retry_across_restart
   - local_artifacts/route-drills-2026-09/tools/x4-v1/test_x4_contract.py::test_deadlines_preempt_prompts_and_late_responses
   - local_artifacts/route-drills-2026-09/tools/x4-v1/test_x4_contract.py::test_offline_tripwire_blocks_real_network
+  - local_artifacts/route-drills-2026-09/tools/x4-v1/test_x4_contract.py::test_raw_response_is_sealed_before_parsing
 ```
 
 ## 0. Read and premise report before coding
@@ -180,8 +188,19 @@ class Operation:
     body: bytes
     context_sha256: str    # kind + method + path + body hash + binding + session
 
+@dataclass(frozen=True)
+class TransportResponse:
+    outcome: Literal['HTTP', 'TIMEOUT', 'ERROR']
+    status: int | None
+    headers: tuple[tuple[str, str], ...]  # original values/order, duplicate fields kept
+    body: bytes                         # original body, including malformed bytes
+    started_utc: datetime
+    received_utc: datetime
+    received_monotonic: float
+    error: str | None                   # transport error, never a parsed JSON body
+
 class Transport(Protocol):
-    def request(self, operation: Operation, timeout_s: float) -> Mapping: ...
+    def request(self, operation: Operation, timeout_s: float) -> TransportResponse: ...
 
 class Clock(Protocol):
     def utc_now(self) -> datetime: ...  # timezone-aware UTC
@@ -203,6 +222,18 @@ def adjudicate(run_dir: str) -> Mapping: ...
 
 Clock supplies aware UTC plus monotonic elapsed time, and operator supplies
 honest quote samples, exact confirmation and independent recover/firm events.
+Transport never parses JSON or reconstructs response bytes. For every response,
+including malformed, failed and late ones, the recorder first writes the original
+body and status/ordered headers/times/outcome to write-once evidence, hashes them
+and seals that response record. Only then may validators parse those retained
+bytes; the final run seal incorporates the response seals. Duplicate JSON keys
+or malformed encoding remain observable and cannot be normalized into success.
+Dummy-credential withholding preserves the existing explicit evidence-gap rule;
+withheld originals cannot qualify as complete raw evidence. A timeout records the
+absence of a response; any later actual response is separately sealed and remains
+inert. Capture/seal failure stops dependent processing and cannot manufacture a
+terminal classification or permit another mutation. The offline classifier reads
+sealed originals and metadata, independently of observer summaries.
 No fixture supplies a vendor capability not specified in packet §4. All actual
 remote response schemas remain supported-or-unobserved. Transport fixtures
 describe synthetic mechanics and cannot prove broker behavior.
@@ -266,6 +297,18 @@ Execute with `superpowers:executing-plans`; use TDD for implementation. This is
 one composed outcome with a review boundary, not separate assignments per file.
 
 - [ ] Premise report and source-pin verification; report missing input or conflict.
+- [ ] Return the proposed interface/state-machine design for C1 before coding:
+  producer/consumer contracts, mutation ownership, clocks/event precedence,
+  raw-response capture/sealing and terminal/OR transitions. Coordinator freezes
+  its identity and dispatches refute-first review by someone other than builder.
+  Reviewer traces clean cancel, unexpected fill/failed stop, unknown/late response
+  and restart through concrete input/state/outcome cases; returns contradictions
+  and required invariants. Stop until coordinator accepts the reviewed design.
+- [ ] Encode every reviewed transition rule as a local invariant: mutation/restart
+  ownership in `test_unknown_cancel_blocks_retry_across_restart`, deadline and
+  recovery precedence in `test_deadlines_preempt_prompts_and_late_responses`,
+  terminal classification in `test_two_children_cancel_trace_classified_from_sealed_bytes`,
+  and capture-before-parse in `test_raw_response_is_sealed_before_parsing`.
 - [ ] Write the named failing contract tests with synthetic binding/clock/transport;
   retain meaningful red evidence for absent behavior, not merely collection errors.
 - [ ] Implement canonical profile, Decimal level rules and independent request/
@@ -311,6 +354,7 @@ evidence class with explicit no-PASS/no-authority wording.
 | `test_two_children_cancel_trace_classified_from_sealed_bytes` | Recompute all three identities/versions/statuses, fills/positions, final terminal OR from raw sealed bytes. Child Working/Suspended after terminal parent yields `CHILD_REMAINS_LIVE`, not complete; missing/pending/unknown/unsupported state or incomplete capture yields `EVIDENCE_INCOMPLETE`; changing outcome.json alone cannot manufacture success |
 | `test_unknown_cancel_blocks_retry_across_restart` | Timeout/unclassified cancel result creates `CANCEL_UNKNOWN`; no automatic retry, new-folder retry, changed-binding retry or resend after restart; original attempt remains owned despite flat snapshots. Terminal evidence can reconcile it but never reopens the consumed attempt |
 | `test_deadlines_preempt_prompts_and_late_responses` | Missing valid protection at first observed fill +10 s enters recovery immediately, even during blocked input/read; invalid/rejected protection enters recovery when detected. Final confirmation stops at recovery entry +60 s without delaying intervention. Buffer breach, deadline, firm/recover event or new fill interrupts a blocked human prompt and invalidates pending normal cancel. Monotonic clocks continue during I/O/Retry-After; late bytes are inert; first observed fill starts immutable fill clocks; no second HTTP request while the abandoned one is in flight |
+| `test_raw_response_is_sealed_before_parsing` | Exact malformed/non-UTF8/duplicate-key body bytes and status/ordered duplicate headers are write-once captured and response-sealed before any parse. Failed and late responses retain originals; late processing is inert. Capture/seal failure refuses dependent processing; changed raw bytes/metadata or a credential-withholding gap cannot yield a complete class |
 | `test_offline_tripwire_blocks_real_network` | In-memory transport handles every scenario; attempts to use sockets, urllib/HTTP or a host/broker subprocess fail and are counted. No bearer token is read; dummy-token echoes are withheld without erasing evidence-gap records |
 
 Also parametrize: quote ages 10 / over 10; each movement 5 / over 5; buffer 25
@@ -368,7 +412,9 @@ command, fixture provenance, no-network count and results.
 
 ## 6. Output, independent review and four-state return
 
-Deliver private source/test hashes, write-once package seal, resolved synthetic
+Deliver the accepted C1 design identity, independent refute-first findings and
+coordinator disposition, with each reviewed transition mapped to its local
+invariant test. Deliver private source/test hashes, write-once package seal, resolved synthetic
 profile digest, original fixture runs including failures, launcher records,
 red/green evidence and CLI/restart traces. Public return references hashes and
 scoped outcomes only. Coordinator must retain the complete private package in
@@ -379,8 +425,8 @@ reproducers/records. Independent review is a required later dispatch within the
 overall outcome, not authority conferred by the builder's report.
 
 Use exactly one of `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`.
-The offline acceptance verdict is `RESOLVED` only after independent review
-closes all required cases; it is `AMBIGUOUS` while evidence or review is missing,
+The offline acceptance verdict is `RESOLVED` only after the accepted C1 review
+and separate final frozen-byte review close all required cases; it is `AMBIGUOUS` while evidence or review is missing,
 and `FALSIFIED` when a required control fails. These are offline verdicts only.
 `DONE` requires all selected offline acceptance evidence and no unresolved
 in-scope findings; a builder return pending independent review is
