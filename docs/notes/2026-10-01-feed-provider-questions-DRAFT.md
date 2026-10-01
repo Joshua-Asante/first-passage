@@ -35,7 +35,7 @@ Q1 is not only a vendor question. The symbols are CME Group products, and CME li
 
 **Consequence.** For any candidate, the all-in monthly cost may be the vendor's price **plus** a CME non-display licence that the subscriber holds directly. One CME licence could cover all of the vendor's routes, or each vendor could require its own. Only CME can say. So the shortlist adds one **licensor** message (§3.0) to the vendor messages. That message is the cheapest single question, because its answer changes the cost of every candidate.
 
-The non-display question also interacts with where the orders go. The orders would be placed in a third-party prop-firm evaluation account at a different broker, through the rail. Whether that changes non-professional status or the licence category is a fact only CME and each vendor can answer. Whether to disclose it is the operator's choice (decision D-Q2, §5).
+The non-display question also interacts with where the orders go. The orders would be placed in a third-party prop-firm evaluation account at a different broker, through the rail. Whether that changes non-professional status or the licence category is a fact only CME and each vendor can answer. Whether to disclose it is the operator's choice (decision D-Q2, §5). If it is omitted, Q1 stays unresolved until CME and the provider confirm the actual use (§5, D-Q2).
 
 ## 2. Shortlist
 
@@ -77,7 +77,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 2. **(Q2a)** Does one licence cover CME, CBOT and COMEX, or is each exchange licensed separately?
 > 3. **(Q2b)** What are the current monthly fees, including the billing unit (per licensee, per exchange, per device)? Your January 2026 fee list appears to show User Non-Display Category A at $457 and Managed User Non-Display Category A at $208 ([fee list](https://www.cmegroup.com/market-data/files/january-2026-market-data-fee-list.pdf)). Please confirm which applies, and whether a "$670 per exchange" figure I have seen is current. Are there minimum terms, setup fees or annual audits?
 > 4. **(Q3, for the direct feed)** Your Market Data over WebSocket API and Smart Stream on GCP are data-only. Can an individual subscribe to either, and what are the minimum commitments? Smart Stream appears to be priced "as low as $0.50/GB plus applicable ILA fees" ([page](https://www.cmegroup.com/market-data/real-time-futures-and-options-data-api.html)).
-> 5. **(Q4)** For the WebSocket API: are 1-minute bars or only trades published? Are exchange timestamps included, and are bars stamped at the open or the close?
+> 5. **(Q4)** For the WebSocket API: are 1-minute bars or only trades published? Are exchange timestamps included, and are bars stamped at the open or the close? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
 > 6. **(Q5)** Can authentication run unattended for weeks without interactive login or MFA?
 > 7. **(Q6)** May derived bars and the original messages be stored privately for audit, on a cloud server?
 > 8. **(Q7)** How are corrections and replays after a reconnect delivered? Are sequence numbers provided?
@@ -107,7 +107,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 2. **(Q2a)** Does Futures Advanced include **real-time** data for all four of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX), with no further exchange entitlement?
 > 3. **(Q2b)** Is $199/month the all-in monthly cost for this use, including exchange and CME licence fees? Are there setup fees, minimum terms or cancellation terms?
 > 4. **(Q3)** Please confirm that the API key gives data access only, with no order or account capability.
-> 5. **(Q4)** For the per-minute aggregate WebSocket stream: is the timestamp the bar's **start or end**, in what zone or epoch unit, and is it exchange time or your aggregation time? Is a minute bar ever revised after it is published?
+> 5. **(Q4)** For the per-minute aggregate WebSocket stream: is the timestamp the bar's **start or end**, in what zone or epoch unit, and is it exchange time or your aggregation time? Is a minute bar ever revised after it is published? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
 > 6. **(Q5)** Can one API key hold a WebSocket connection for weeks unattended, with no interactive login? How many concurrent connections and subscribed symbols does the plan allow?
 > 7. **(Q6)** May I run the client on a cloud server, and store the raw messages and derived bars privately for audit?
 > 8. **(Q7)** After a disconnect and reconnect, are missed minute bars replayed? Are corrections flagged? Do messages carry sequence numbers?
@@ -137,7 +137,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 2. **(Q2a)** Does the non-professional futures data entitlement include **real-time** CME, CBOT and COMEX data for all four products through the API, not only in your platforms?
 > 3. **(Q2b)** What is the all-in monthly cost of API access plus that data for a non-professional? What minimum balance, deposit, inactivity fee and withdrawal terms apply, and is any activity requirement attached to API or data access?
 > 4. **(Q3)** Is there an OAuth scope or API credential that **cannot place, modify or cancel orders**? If not, can order permission be disabled at the account or API-user level?
-> 5. **(Q4)** For DXLink candle events on futures: are 1-minute candles supported live? Is the candle time the **start** of the period, in UTC milliseconds? Are exchange timestamps carried? Can a live candle be updated after its period ends?
+> 5. **(Q4)** For DXLink candle events on futures: are 1-minute candles supported live? Is the candle time the **start** of the period, in UTC milliseconds? Are exchange timestamps carried? Can a live candle be updated after its period ends? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
 > 6. **(Q5)** Access tokens appear to last 15 minutes and the quote token 24 hours. Can both be renewed **unattended for weeks** (no UI, MFA prompt or daily login)? What session or connection limits apply?
 > 7. **(Q6)** Are cloud or VPS use, and private storage of raw messages and derived bars for audit, permitted under the subscriber agreement?
 > 8. **(Q7)** After a reconnect, can missed candles be backfilled? Are revised candles flagged? Are there sequence identifiers?
@@ -166,7 +166,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 2. **(Q2a)** Which exact subscriptions give real-time API data for CME (6J, MNQ), CBOT (MYM) and COMEX (MGC)?
 > 3. **(Q2b)** What is the all-in monthly cost of those subscriptions plus any non-display or API fee, for a non-professional? Is the minimum equity for market data still $500? What inactivity, deposit and withdrawal terms apply?
 > 4. **(Q3)** Can order permission be disabled at the account or API-user level, or is there a read-only API setting that the server enforces?
-> 5. **(Q4)** Do you stream completed 1-minute bars (for example, real-time bars or keep-up-to-date historical bars) with exchange timestamps? Is the bar time the start of the bar? Can a bar be revised after delivery?
+> 5. **(Q4)** Do you stream completed 1-minute bars (for example, real-time bars or keep-up-to-date historical bars) with exchange timestamps? Is the bar time the start of the bar? Can a bar be revised after delivery? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
 > 6. **(Q5)** Can the gateway authenticate and stay connected **unattended for weeks** without a daily login, MFA prompt or desktop session? What session limits apply?
 > 7. **(Q6)** Is running the gateway on a cloud server permitted, and may raw messages and derived bars be stored privately for audit?
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
@@ -194,7 +194,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 2. **(Q2a)** Does API data include **real-time** CME (6J, MNQ), CBOT (MYM) and COMEX (MGC) for a non-professional?
 > 3. **(Q2b)** Your page says API access is free with 5 or more contracts traded per month and otherwise starts at $249/month. For a data-only use with no trading at Ironbeam, what is the all-in monthly cost? Are non-professional real-time data fees free through the API too? What minimum balance, inactivity and withdrawal terms apply?
 > 4. **(Q3)** Is there an API credential that cannot place, modify or cancel orders, or can order permission be disabled at the account level?
-> 5. **(Q4)** For WebSocket time bars at 1 or 15 minutes: is the bar timestamp the start or the end, in what zone? Is the bar emitted once at close, or updated in place while it forms? Are exchange timestamps included?
+> 5. **(Q4)** For WebSocket time bars at 1 or 15 minutes: is the bar timestamp the start or the end, in what zone? Is the bar emitted once at close, or updated in place while it forms? Are exchange timestamps included? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
 > 6. **(Q5)** Can bearer-token authentication be renewed unattended for weeks, with no UI or MFA? What session and subscription limits apply?
 > 7. **(Q6)** Are cloud or VPS use, and private storage of raw messages and derived bars for audit, permitted?
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
@@ -221,7 +221,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 2. **(Q2a)** Can one user ID receive real-time CME, CBOT and COMEX data for all four products? Which clearing firms offer a **data-only** R|Protocol user?
 > 3. **(Q2b)** What is the all-in monthly cost for a data-only user: API or connection fee, per-exchange data fees and any minimum, and what does the clearing firm add?
 > 4. **(Q3)** Can a user ID be configured, on the server side, so that it cannot place, modify or cancel orders?
-> 5. **(Q4)** For server-side time bars at 1 or 15 minutes: is the bar stamped at the start or the end, in what time base? Is a bar sent once at close, or updated while it forms? Are exchange timestamps included?
+> 5. **(Q4)** For server-side time bars at 1 or 15 minutes: is the bar stamped at the start or the end, in what time base? Is a bar sent once at close, or updated while it forms? Are exchange timestamps included? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
 > 6. **(Q5)** Is conformance testing required for a **market-data-only** application? Can login and session renewal run unattended for weeks? What connection and symbol limits apply?
 > 7. **(Q6)** Are cloud or VPS use, and private storage of raw messages and derived bars for audit, permitted?
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence numbers provided?
@@ -250,7 +250,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 > 2. **(Q2a)** Does API data cover real-time CME, CBOT and COMEX for all four products, once the CME licence is in place?
 > 3. **(Q2b)** What is the all-in monthly cost: the API add-on, data subscriptions and the CME licence? What minimum balance, inactivity and withdrawal terms apply to a live account used only for data?
 > 4. **(Q3)** Can an API key or the account itself be restricted so that it cannot place, modify or cancel orders?
-> 5. **(Q4)** Does the API publish completed 1-minute bars (chart subscription) with exchange timestamps? Is the bar time the start of the bar, and in UTC? Can a bar be revised after the period ends?
+> 5. **(Q4)** Does the API publish completed 1-minute bars (chart subscription) with exchange timestamps? Is the bar time the start of the bar, and in UTC? Can a bar be revised after the period ends? **Volume:** does each bar carry exchange-reported **trade volume** (contracts traded in the bar)? Is that volume ever synthetic, estimated or quote-derived, and is it final when the bar is delivered, or revised later?
 > 6. **(Q5)** Can token renewal run unattended for weeks, with no UI, MFA prompt or daily login? What session and connection limits apply?
 > 7. **(Q6)** Are cloud or VPS use, and private storage of raw messages and derived bars for audit, permitted?
 > 8. **(Q7)** After a reconnect, are missed bars replayed? Are corrections flagged? Are sequence identifiers provided?
@@ -273,7 +273,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 | # | Decision | Why it matters now | Options |
 |---|---|---|---|
 | **D-Q1** | **RULED 2026-10-01:** feed costs do **not** count toward the $700 ceiling | Joshua, 2026-10-01: "feed costs don't count toward the $700 ceiling". It is recorded as the rail GO ADR addendum "production data-feed costs are outside the $700 ceiling" in [PR #580](https://github.com/Joshua-Asante/first-passage/pull/580) at `473533c`. The ruling excludes vendor subscription fees, CME market-data licence fees, and deposits and minimum balances required for data access. They are not part of the projected spend that revert trigger (b) measures. *Superseded question (kept for the record):* this row asked whether those costs counted, because the ceiling is "$700 all-in to first live fill (eval + 3 months run-rate)" and F-4 had ruled drill costs only. Feed signup and spend still need D-feed (a)+(b) and CP-7 | Ruled: does not count |
-| **D-Q2** | Disclose, in the questions, that the orders go to a prop-firm evaluation account at another broker? | Licence category and non-professional status may depend on it (§1). An answer obtained without that fact may not hold | Disclose (recommended: an answer that holds) · omit · ask CME first, then decide |
+| **D-Q2** | Disclose, in the questions, that the orders go to a prop-firm evaluation account at another broker? | Licence category and non-professional status may depend on it (§1). An answer obtained without that fact may not hold. **If the destination is omitted, Q1 stays unresolved** for every candidate, however clear the reply reads. It cannot satisfy the rejection rule's licensing condition (§3) or reach CP-7 until CME and the provider confirm the actual use (Codex review on #583) | Disclose (recommended: an answer that holds) · omit · ask CME first, then decide |
 | **D-Q3** | Which messages to send, and in what order? | Every vendor's cost depends on the CME licensing answer (§1) | Recommended: §3.0 (CME) first, then P1–P6 together. Or all at once |
 | **D-Q4** | The Track A plan says to send the questions "near the actual feed gate so answers and prices are current" | The 2026-10-01 ruling moves the questions earlier. Answers may be stale by CP-7 | Accept re-confirmation of prices at CP-7 (recommended), or hold sending |
 
