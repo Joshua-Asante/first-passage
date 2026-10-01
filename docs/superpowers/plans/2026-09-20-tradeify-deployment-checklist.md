@@ -571,7 +571,7 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
    3. the parent alone is cancelled;
    4. all three end terminal, with no fill, the account flat and nothing working.
 
-   The build is **small reviewed extensions to X-1's accepted round-7 generator and sender** (stop entry type, two children, a parent cancel bound to the parent's account path), with **R-1 v3.2** for the terminal reads and the coordinator classifying from the sealed bytes.
+   The build is **small reviewed extensions to X-1's accepted round-7 generator and sender** (stop entry type, two children, a parent cancel bound to the parent's account path), with **R-1 v3.2** for the terminal reads and the coordinator classifying from the sealed bytes. **A bounded pre-cancel status reader is kept.** This is a reviewed, GET-only extension of R-1 v3.2, or an equivalent reviewed reader. It captures and seals the parent as `Working` and both children as `Suspended` **before** the cancel, because terminal reads cannot reconstruct that intermediate state. Without that sealed pre-cancel read, the drill does not establish GC-4.
    - **Cut from the drafted suite** (#572's X-4 handoff): `x4_profile`, the observer's read budget and rate machinery, the asynchronous late-response channel, `x4_attended_input`, `x4_adjudicate`, and the multi-pass reviews. One focused review replaces those reviews.
    - **Kept:**
      - a one-use placement claim and a one-use cancel claim, each surviving a restart, including an unknown placement (MUST-PASS, because `order_id` idempotency is disproven);
@@ -591,8 +591,8 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
    - **T13:** the later-session activation machinery and backup-restore rehearsals are deferred. T13's T16 acceptance covers the first session only, which is the initial activation. Kept: disarmed fail-closed restart, no restart within a session, and the durable unknown-request block.
    - **Automatic feed repair:** simplified to *a gap is an incident and halts the session*. Warm-up, delivered-data equivalence and gap detection stay.
    - **D-MON:** simplified. The existing channels are checked against the halt/resume contract. Any gap is filled by a no-cost external provider, not an in-house build. **The channel choice is still the operator's.** The alternate-channel escalation stays.
-6. **T00 step 2: adopt the existing pre-registration.**
-   - The step-2 pre-registration adopts [`2026-08-26-prop-survivor-scoring-prereg-v2.md`](../../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) by citation. It adds only the expressions, pass floor, scenarios, intraday clock, NO-GO condition and the counting of R1/R2 `UNDETERMINED` days.
+6. **T00 step 2: reuse the existing pre-registration's scoring clauses.**
+   - The step-2 pre-registration reuses [`2026-08-26-prop-survivor-scoring-prereg-v2.md`](../../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) by citing **its reusable scoring clauses only**. It does **not** import that preregistration's falsifier disposition (G8). **A T00 screen is not four-firm §4 falsifier evidence** (operator ruling 2026-09-23, condition 4). The step-2 contract states that non-falsifier disposition itself. It adds only the expressions, pass floor, scenarios, intraday clock, NO-GO condition and the counting of R1/R2 `UNDETERMINED` days.
    - It may be drafted now, in parallel with the S5 landing. Ratification stays the operator's act.
    - **Still open:** how D-feed (a) treats a NO-GO T00 result whose risk the operator accepts into F1. This decision is still required.
 
