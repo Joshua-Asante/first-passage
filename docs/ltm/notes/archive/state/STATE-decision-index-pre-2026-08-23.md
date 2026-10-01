@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Twentieth roll, 2026-10-01** (one entry, pushed off by the route-path ruling):
+
+- **2026-09-11** — Stage 1 input source ruled: operator-attended controlled input (option D); no live feed; A1b implementation owed; no arm. [Addendum](../../../../../docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d) · [M1 addendum](../../../../../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-09-11--item-5-input-for-stage-1-operator-attended-controlled-input-express)
+
 **Nineteenth roll, 2026-09-27** (one entry, pushed off by the staged-acceptance direction):
 
 - **2026-09-10** — Operator accepted the selected Tradeify configuration as satisfying queue item 1; configuration-selection work closed and removed from the live queue. Deployment remains separate. [Acceptance](../../../../../docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure)
