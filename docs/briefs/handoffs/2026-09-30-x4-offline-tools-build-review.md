@@ -78,6 +78,22 @@ acceptance:
   - local_artifacts/route-drills-2026-09/tools/x4-v1/test_x4_contract.py::test_raw_response_is_sealed_before_parsing
 ```
 
+## Open items, binding on the C1 interface review
+
+Under the operator's stopping rule after the finding count rose from five to
+seven, these six findings are **recorded, not folded** into this draft. The C1
+interface review must resolve **each one before implementation starts**, with
+the coordinator accepting the resulting disposition. The interface snippets,
+test ownership and execution sequence below remain provisional on these points;
+their presence does not discharge this gate or authorize dispatch.
+
+- **P1 — PRRT_kwDOT46Eac6n2QJB:** Operation needs an explicit read kind and GET binding fields. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959541).
+- **P1 — PRRT_kwDOT46Eac6n2QIw:** The durable-claim/restart test must cover unknown **PLACEMENT** as well as cancel; this is **MUST-PASS before any live X-4**, because `order_id` idempotency is disproven. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959517).
+- **P2 — PRRT_kwDOT46Eac6n2QIc:** Provide a late-response channel by modelling a request as an owned async operation. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959492).
+- **P2 — PRRT_kwDOT46Eac6n2QIn:** Add a pre-mortem per brief-authoring discipline 11. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959506).
+- **P2 — PRRT_kwDOT46Eac6n2QI3:** Separate spec-compliance and quality review passes per brief-authoring discipline 9. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959524).
+- **P2 — PRRT_kwDOT46Eac6n2QJN:** Acceptance tests are frozen by the coordinator or C1 reviewer, not by the builder, per `cc_handoff` §6.0. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959551).
+
 ## 0. Read and premise report before coding
 
 Identify HEAD and dirty state, frozen card/packet hashes, read-only source roots,

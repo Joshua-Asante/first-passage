@@ -479,7 +479,21 @@ ruling; it neither waives a required sample after the fact nor claims complete
 competing-activity coverage. Operator margin/spend attestations are retained;
 their private ledgers were not independently audited by this review.
 
-**Limits and remaining obligations.** This trace supplies §A1's REST-form
+**Limits and remaining obligations.** The scoped GC-2a result is retained with
+the merged qualifications from [X-1 packet §8](2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30):
+
+- The run used the operator-amended **23:30–00:00Z** window, outside the original
+  Codex R7 **22:00–22:30Z** acceptance window.
+- The adapter's retrospective acceptance for run-1930 is **qualified**: reconstruction
+  and pinning of its resolved import set and the pin/path-safety review remain
+  owed. Current file pins and rerun tests do not establish which dependency bytes
+  that historical run actually loaded. Future adapter use remains barred until
+  both parts of that gate are accepted.
+- No completion evidence for the required operator rehearsal is retained.
+  Whether it completed remains unrecorded and open; the scoped GC-2a evidence
+  acceptance does not establish rehearsal completion.
+
+This trace supplies §A1's REST-form
 admission observation only for the named symbol/environment/date. It does not
 qualify a deployed consumer, another symbol, multi-contract or partial-fill
 behavior, OCO with a target, rejected modification, resting-entry cancellation,
