@@ -82,6 +82,7 @@
       },
       "budget_profile_sha256": "a8af41e0b954514d8cb5d7c4830bb5d6825d804f557ecca0c1b1699d6e7ec583",
       "budget_sha256": "019633c18fe866c60d3d774b2d60941de8637409d96b9e9a0da015cdf87f9465",
+      "snapshot_binding": "the budget snapshot's whole profile and whole budget, in canonical JSON, hash to the receipt's budget_profile_sha256 and budget_sha256, so O and maximum_memory_bytes are the admitted values",
       "receipt_schema": "qualification_campaign_admission_receipt/v2",
       "receipt_authority_class": "TEST_ONLY"
     }
@@ -183,19 +184,83 @@
       },
       "note": "the settled observation cpu_ns without O; recorded for diagnosis only, it does not set the verdict"
     },
-    "host": "the harness maximum ran on AMD EPYC 7763 64-Core Processor (job b); run 36766144433 ran on AMD EPYC 9V74 80-Core (its kernel.log). Stage 1b measured the 9V74 about 1.5x faster than the 7763 on the same workload, so a same-host k would be larger than this k, not smaller"
+    "host_normalization": {
+      "facts": {
+        "service_cpu": "AMD EPYC 9V74 80-Core Processor (family: 0x19, model: 0x11, stepping: 0x1)",
+        "service_cpu_source": "kernel.log (smpboot CPU0 line), pinned",
+        "harness_cpu": "AMD EPYC 7763 64-Core Processor",
+        "harness_cpu_source": "stage1c/36647434808-b-attempt1/record.json runtime.cpu_model",
+        "factor": 1.534443582737,
+        "factor_basis": "Stage 1b run 36364854404, same workload on both jobs: job a (AMD EPYC 7763 64-Core Processor) forced median cpu_input_s 10.773244 s / job b (AMD EPYC 9V74 80-Core Processor) 7.020945 s, equal to the combined record's host_variance.forced_median_cpu_ratio_between_jobs; a different workload from Stage 1c and Stage 2, so the factor is indicative"
+      },
+      "measured_host": {
+        "k": 4.078929,
+        "cpu_s": 120,
+        "B_plus_O_s": 106.858171575,
+        "wall_s": 300
+      },
+      "normalized_whole_charge": {
+        "basis": "k x factor: the whole charge scaled, O included",
+        "k": 6.258887,
+        "B_plus_O_s": 153.278963982,
+        "cpu_s": 160,
+        "wall_raw_s": 292.592920163,
+        "wall_s": 300
+      },
+      "normalized_compute_only": {
+        "basis": "(cpu_ns x factor + O) / harness: only the compute scaled; O is fixed overhead, as the 2026-10-01 trigger-5 ruling holds",
+        "k": 4.800549,
+        "B_plus_O_s": 122.224593164,
+        "cpu_s": 130,
+        "wall_raw_s": 245.388203982,
+        "wall_s": 300
+      },
+      "consequence": "on the harness's host the CPU ceiling would be 130 s (compute-only) to 160 s (whole charge), not 120 s: k exceeds k_cpu_le 4.696 on either basis. The wall ceiling stays 300 s. Nothing is adopted; the TEST_ONLY ceiling stays at the measured host's value"
+    }
+  },
+  "launch_allowance": {
+    "basis": "r2 \u00a79 PA-2: L = 30 s until Stage 2 measures it; measured as reservation to payload start",
+    "measured_s": 4.847654517,
+    "source": "boundary/linux-cca27e50c3694f6a903dfe1ad359c702-n1-budget.json work pawork: the reservation's clock.utc 2026-09-30T19:55:16.193394Z to the PART_A capture's started_utc 2026-09-30T19:55:21.041048517Z (the payload container's start, same host clock)",
+    "running_transition_s": 4.414096454,
+    "running_basis": "the RUNNING transition's boottime, same boot_id, as a cross-check (earlier than start)",
+    "L_s": 30,
+    "within_L": true,
+    "reapplication_with_measured_L": {
+      "wall_raw_s": 146.573181177,
+      "wall_s": 300
+    },
+    "note": "L = 30 s is kept in the re-application: it is conservative against the measured value, and the 300 s floor binds either way"
   },
   "pa2b": {
     "basis": "CP-1a decision (1)(b)(i): check PA-2b on the service's PART_A probe_seconds and predicted_seconds; the 1.5 x P_hat term becomes final only when this check is recorded",
     "probe_seconds": 3.987613859,
     "predicted_seconds": 27.081855051,
-    "engine_predicate": "part_a.py:185-186 refuses when predicted_seconds > budget_seconds, the guard's remaining wall at the request (compute.py:177)",
-    "budget_seconds_lower_bound": 265.122105653,
-    "budget_seconds_basis": "PART_A wall limit 300.0 s minus the work's reservation-to-CAPTURED boottime 34.877894347 s; budget_seconds itself is not exported",
-    "check": "1.5 x predicted_seconds <= budget_seconds lower bound",
+    "rule": "r2 \u00a79 PA-2b: P x wall / B <= wall / 1.5, i.e. 1.5 x P <= B, with P the service's predicted_seconds (a throttled figure, so the check is conservative)",
     "lhs_s": 40.622782576,
-    "rhs_s": 265.122105653,
+    "against": {
+      "applied_ceiling_minus_O": {
+        "B_s": 100.0,
+        "holds": true
+      },
+      "reapplied_B": {
+        "B_s": 86.858171575,
+        "holds": true
+      },
+      "stage1c_B_unscaled": {
+        "B_s": 21.294356,
+        "holds": false
+      }
+    },
     "holds": true,
+    "holds_basis": "the applicable B: the applied ceiling minus O and the re-applied B; the unscaled Stage 1c B is recorded and does not govern after re-application",
+    "engine_diagnostic": {
+      "predicate": "part_a.py:185-186 refuses when predicted_seconds > budget_seconds, the guard's remaining wall at the request (compute.py:177)",
+      "budget_seconds_lower_bound": 265.122105653,
+      "budget_seconds_basis": "PART_A wall limit 300.0 s minus the work's reservation-to-CAPTURED boottime 34.877894347 s; budget_seconds itself is not exported",
+      "lhs_s": 40.622782576,
+      "holds": true
+    },
     "throttled_prediction_note": "informational: predicted_seconds is a wall figure under the payload quota (cpu - O) / remaining wall, nominally 100.0 / 300.0; the Stage 1c prescribed maximum 7.817348009 s times 3.0 is 23.452044027 s against the service's 27.081855051 s"
   },
   "memory": {
@@ -242,6 +307,7 @@
     "trigger_5_basis": "trigger 5's CPU limb compares compute-only CPU (cpu_ns, O excluded); PA-5 keeps the whole-settled-charge basis",
     "trigger_6": "for TEST_ONLY, the re-application leaving 120 s / 300 s unchanged answers the trigger; no re-measurement is owed now",
     "faster_host": "accepted for TEST_ONLY; k 4.078929, the host difference (service on an EPYC 9V74, harness maximum on an AMD EPYC 7763 64-Core Processor) and the CPU headroom 13.142 s (10.95% of the 120 s ceiling) are carried to production host sizing (T11/CP-8)",
+    "faster_host_normalized": "confirmed by Joshua directly in this worker session after the host-normalized result was put to him (\"Stands: 120 s, carry 130-160 s\"): the TEST_ONLY ceiling stays 120 s on the measured host; the normalized ceilings, 130 s (compute-only, k 4.801) and 160 s (whole charge, k 6.259), are carried to T11/CP-8; nothing is adopted",
     "pa3b_memory_headroom": "accepted for TEST_ONLY, consistent with ruling 2026-09-30 (2); m_m headroom cannot be shown from the clipped reading and is carried to T11/CP-8"
   },
   "source_sha256": {
@@ -254,10 +320,14 @@
     "20d0a964ea1645d1aa4c4b8c1b2c5c85/junit.xml": "e408ad06d57c363b64b97376699afee33bc4ec3f664e28fd62c1b7e8b8d85aef",
     "boundary/linux-cca27e50c3694f6a903dfe1ad359c702-n1-budget.json": "82081330801347c4901cb79098bd638f4fe912edbfc85c009c1c5d8b6f9dc854",
     "boundary/journal.sqlite": "efec03b10f30f74ec8bd29a26792b5864fc99313c69f3b51fda3a305b1f1be86",
+    "kernel.log": "b9735771c5deb8389c231a618222f34bbb331c67edaf8fd1211c960bdda462dc",
     "s2_run_evidence.stdout.json": "85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d",
     "stage1c/36647434808-combined.json": "024cdcdd7e3c499af49f1358f7a4a6048641badc9b0679a99999f4bb8ba1f87e",
-    "stage1c/36647434808-b-attempt1/record.json": "45d84cd5b3af43ffcc0a33a0efd869fb0fb37f822de936937909024a1ad153e3"
+    "stage1c/36647434808-b-attempt1/record.json": "45d84cd5b3af43ffcc0a33a0efd869fb0fb37f822de936937909024a1ad153e3",
+    "stage1b/36364854404-combined.json": "e1efa8fd127ce24f44f0cfcb8c9d0bf15d647af4def007fc3971f791e8613d73",
+    "stage1b/36364854404-a-attempt1/record.json": "65bda0488acd9919116d29f2bc0c3af8cebf4e93b63d01fca0848130cedbbcc5",
+    "stage1b/36364854404-b-attempt1/record.json": "c67368207e145a33602749a40ef38df8abfed85bb4721b5ea8a7c4cfb4ada3d2"
   },
-  "private_evidence": "the run artifact, GitHub's run and artifact listings and the reader's output stay under local_artifacts/s5-c3-evidence/stage2-read-36766144433/; this record carries hashes, counts and labels only",
+  "private_evidence": "the run artifact zip, GitHub's run and artifact listings and the reader's output are under local_artifacts/s5-c3-evidence/stage2-read-36766144433/ and archived in first-passage-archive#854 (pins: docs/notes/2026-09-29-s5-c3-record/stage2-36766144433-archive.sha256); this record carries hashes, counts and labels only",
   "not_granted": "C3 acceptance, S5 acceptance, adoption of any re-applied value, any production value"
 }

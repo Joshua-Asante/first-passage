@@ -1776,7 +1776,8 @@ The failed run `36673465130` stays on record as the stop. This addendum's PR sta
   - release `qualification_execution_release/v7` `15f6fcbc…`;
   - profile `qualification_execution_profile/v7` `31b22d2b…`;
   - policy `qualification_policy/v1` `21251022…`.
-- The private evidence stays under `local_artifacts/s5-c3-evidence/`.
+- The budget snapshot's whole profile and whole budget hash to the receipt's `budget_profile_sha256` and `budget_sha256`, so O and `maximum_memory_bytes` are the admitted values.
+- **Archive:** the private inputs are the artifact zip (50.7 MB), the run and artifact listings, and the reader's output. They are under `local_artifacts/s5-c3-evidence/stage2-read-36766144433/` and archived in [first-passage-archive#854](https://github.com/Joshua-Asante/first-passage-archive/pull/854), with each blob verified to hash to its content address. Pin manifest: [`stage2-36766144433-archive.sha256`](../../notes/2026-09-29-s5-c3-record/stage2-36766144433-archive.sha256). The run's unpacked files are in #853 (merged).
 
 **PA-5 (CPU-only for TEST_ONLY, ruling (2) above): RE-APPLY.**
 - *Service* = **29.896463 s**: the PART_A work's `charge_cpu_ns`, the whole settled charge with nothing deducted (r1 PA-5, kept by r2 §9). SR-8's payload/guardian split is null (step-1 ruling B6), so the charge includes the 20 s O. *[Corrected 2026-09-30 after Codex review of `826caa3`: the first version deducted O and used 9.896463 s.]*
@@ -1787,9 +1788,18 @@ The failed run `36673465130` stays on record as the stop. This addendum's PR sta
   - **Wall:** Ŵ₁c × k = 44.010 s gives 3 × (44.010 + 30) = 222.03 s, so the wall ceiling stays **300 s** (headroom 77.97 s; it holds while k ≤ 6.488).
   - Both equal the shared PART_A ceilings, so no new value or profile revision follows.
 - **Non-governing diagnostic:** `cpu_ns` alone (9.896463 s) gives k = 1.350226, and also 120 s / 300 s.
-- **Host:** the service ran on an EPYC 9V74, which Stage 1b measured about 1.5× faster than the 7763. So a same-host k would be higher, not lower.
+- **Host normalization** (Codex P2, 2026-10-01). Both host facts are read from pinned evidence: the run's `kernel.log` names an EPYC 9V74, and the Stage 1c maximum ran on an EPYC 7763. Stage 1b (`36364854404`) gives a factor of 1.5344 (7763 / 9V74 forced median, same workload). That workload differs from Stage 1c and Stage 2, so the factor is indicative only.
+  - **Measured host:** k = 4.0789, CPU ceiling **120 s**.
+  - **Normalized to the 7763, compute only** (O is fixed overhead): k = 4.8005, B + O = 122.22 s, so the CPU ceiling would be **130 s**.
+  - **Normalized to the 7763, whole charge scaled:** k = 6.2589, B + O = 153.28 s, so the CPU ceiling would be **160 s**.
+  - The wall ceiling stays 300 s on every basis. Nothing is adopted.
+- **Launch allowance L (PA-2):** measured at **4.848 s**, from the reservation's UTC to the PART_A capture's `started_utc`; the RUNNING transition is at 4.414 s. That is within L = 30 s. The re-application keeps L = 30 s, which is conservative, and the 300 s wall floor binds either way.
 
-**PA-2b (CP-1a (1)(b)(i)):** holds. `predicted_seconds` = 27.082 s and `probe_seconds` = 3.988 s. The check is 1.5 × 27.082 = 40.62 s ≤ 265.12 s, the lower bound on `budget_seconds` (the 300 s wall minus the work's 34.88 s from reservation to CAPTURED). The 1.5 × P̂ term's check is now recorded.
+**PA-2b (CP-1a (1)(b)(i)):** holds against the applicable B. `predicted_seconds` = 27.082 s and `probe_seconds` = 3.988 s.
+- The approved predicate, 1.5 × P ≤ B, gives 40.62 s ≤ 100 s (the applied ceiling minus O) and ≤ 86.86 s (the re-applied B).
+- It **fails against the unscaled Stage 1c B** (21.29 s), because the service's throttled P is 3.4× the harness's P̂₁c. That B no longer governs after re-application, and this is recorded, not hidden.
+- Engine diagnostic: 40.62 s ≤ 265.12 s, the lower bound on `budget_seconds`.
+- The 1.5 × P̂ term's check is now recorded.
 
 **Memory (`upper_bound_only_not_attribution`):** `memory_peak_bytes` 256,000,000 against `maximum_memory_bytes` 256,000,000.
 - The binding is the attempt's budget snapshot, together with the PART_A phase `memory_bytes` in the measured release's campaign budget profile.
@@ -1818,6 +1828,12 @@ The failed run `36673465130` stays on record as the stop. This addendum's PR sta
    - k = 4.078929;
    - the host difference;
    - the CPU headroom of 13.142 s (10.95 % of the 120 s ceiling).
+
+   **Confirmed after the normalized result was put to Joshua directly** ("Stands: 120 s, carry 130–160 s"):
+   - normalized to the 7763, the CPU ceiling would be 130 s (compute only) to 160 s (whole charge scaled);
+   - the ruling keeps the TEST_ONLY ceiling at 120 s on the measured host;
+   - the 130–160 s figures are carried to T11/CP-8;
+   - a slower runner could hit the 120 s cap.
 3. **PA-3b memory headroom: accepted for TEST_ONLY.** The clipped `memory_peak_bytes` reading cannot show m_m headroom. This is consistent with the 2026-09-30 ruling (2), and the item is carried to T11/CP-8.
 
 The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeify-deployment-checklist.md)'s CP-8 row.

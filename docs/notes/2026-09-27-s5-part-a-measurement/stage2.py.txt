@@ -8,7 +8,11 @@ The `.py.txt` suffix keeps it out of the import-boundary gate, like the harness.
         --artifacts-api <gh api .../actions/runs/36766144433/artifacts> \
         --evidence-output <s2_run_evidence.py stdout for that run> \
         --stage1c <stage1c/36647434808-combined.json> \
-        --stage1c-job-b <stage1c/36647434808-b-attempt1/record.json> > stage2.json
+        --stage1c-job-b <stage1c/36647434808-b-attempt1/record.json>         --stage1b <stage1b/36364854404-combined.json>         --stage1b-job-a <stage1b/36364854404-a-attempt1/record.json>         --stage1b-job-b <stage1b/36364854404-b-attempt1/record.json> > stage2.json
+
+The private inputs (the zip, both listings and the reader's output) are archived in
+first-passage-archive#854; their pins are docs/notes/2026-09-29-s5-c3-record/
+stage2-36766144433-archive.sha256.
 
 Run binding: the artifact's contents carry no GitHub run id, so the inputs are bound to
 run 36766144433 through GitHub's own records. The run listing names the run and head, the
@@ -22,6 +26,7 @@ TEST_ONLY, PA-5 is CPU-only, and `memory_peak_bytes` is an upper bound on the sh
 footprint only. It is recorded, never attributed to Part A, and never a PA-5 input.
 """
 import argparse
+import base64
 import hashlib
 import io
 import json
@@ -30,6 +35,7 @@ import sqlite3
 import sys
 import tempfile
 import zipfile
+from datetime import datetime, timezone
 from fractions import Fraction
 from pathlib import Path
 
@@ -40,6 +46,8 @@ ARTIFACT_NAME = "qualification-s2-supervision"
 RECORD_ID = "20d0a964ea1645d1aa4c4b8c1b2c5c85"
 ATTEMPT = "linux-cca27e50c3694f6a903dfe1ad359c702"
 STAGE1C_RUN = "36647434808"
+STAGE1B_RUN = "36364854404"
+KERNEL_LOG = "kernel.log"
 PART_A_EXPORT = "boundary/part_a_observations.json"
 BUDGET_SNAPSHOT = "boundary/%s-n1-budget.json" % ATTEMPT
 JOURNAL = "boundary/journal.sqlite"
@@ -54,9 +62,13 @@ PINS = {
     RECORD_ID + "/junit.xml": "e408ad06d57c363b64b97376699afee33bc4ec3f664e28fd62c1b7e8b8d85aef",
     BUDGET_SNAPSHOT: "82081330801347c4901cb79098bd638f4fe912edbfc85c009c1c5d8b6f9dc854",
     JOURNAL: "efec03b10f30f74ec8bd29a26792b5864fc99313c69f3b51fda3a305b1f1be86",
+    KERNEL_LOG: "b9735771c5deb8389c231a618222f34bbb331c67edaf8fd1211c960bdda462dc",
     "s2_run_evidence.stdout.json": "85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d",
     "stage1c/%s-combined.json" % STAGE1C_RUN: "024cdcdd7e3c499af49f1358f7a4a6048641badc9b0679a99999f4bb8ba1f87e",
     "stage1c/%s-b-attempt1/record.json" % STAGE1C_RUN: "45d84cd5b3af43ffcc0a33a0efd869fb0fb37f822de936937909024a1ad153e3",
+    "stage1b/%s-combined.json" % STAGE1B_RUN: "e1efa8fd127ce24f44f0cfcb8c9d0bf15d647af4def007fc3971f791e8613d73",
+    "stage1b/%s-a-attempt1/record.json" % STAGE1B_RUN: "65bda0488acd9919116d29f2bc0c3af8cebf4e93b63d01fca0848130cedbbcc5",
+    "stage1b/%s-b-attempt1/record.json" % STAGE1B_RUN: "c67368207e145a33602749a40ef38df8abfed85bb4721b5ea8a7c4cfb4ada3d2",
 }
 # r2 §9, CP-1a decision (1); the application entry of 2026-09-28.
 M_C, M_W, L_S, O_S = Fraction(2), Fraction(3), Fraction(30), Fraction(20)
@@ -86,15 +98,23 @@ def num(value, places=9):
     return round(float(value), places)
 
 
+def utc_seconds(stamp):
+    """An ISO UTC stamp with up to nanosecond digits, as exact seconds since the epoch."""
+    assert stamp.endswith("Z"), stamp
+    whole, _, fraction = stamp[:-1].partition(".")
+    base = datetime.strptime(whole, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+    return Fraction(int(base.timestamp())) + (Fraction(int(fraction), 10 ** len(fraction)) if fraction else 0)
+
+
 def canonical_sha256(value):
     return digest(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode())
 
 
-def ceilings(c_hat, w_hat, p_hat):
+def ceilings(c_hat, w_hat, p_hat, launch_s=L_S):
     """PA-1 and PA-2 after Stage 1c (r2 §9), rounded up to whole 10 s."""
     b = max(M_C * c_hat, PA2B_FACTOR * p_hat)
     cpu = ceil10(max(CPU_FLOOR_S, b + O_S))
-    wall_raw = M_W * (w_hat + L_S)
+    wall_raw = M_W * (w_hat + launch_s)
     wall = ceil10(max(WALL_FLOOR_S, wall_raw))
     return {"B_s": num(b), "B_plus_O_s": num(b + O_S), "cpu_s": cpu, "wall_raw_s": num(wall_raw), "wall_s": wall,
             "cpu_headroom_s": num(CPU_FLOOR_S - (b + O_S)), "wall_headroom_s": num(WALL_FLOOR_S - wall_raw),
@@ -140,6 +160,10 @@ def identities(journal_bytes, snapshot):
     assert receipt["profile_sha256"] == release["profile_sha256"] == canonical_sha256(release["profile"])
     assert snapshot["profile"]["installed_profile_sha256"] == release["profile_sha256"]
     assert receipt["budget_profile_sha256"] == canonical_sha256(release["campaign_budget_profile"])
+    # The snapshot whose values set the PA-5 charge (O) and the memory binding is the admitted one:
+    # its whole profile and whole budget hash to the receipt's digests.
+    assert canonical_sha256(snapshot["profile"]) == receipt["budget_profile_sha256"], "snapshot profile"
+    assert canonical_sha256(snapshot["budget"]) == receipt["budget_sha256"], "snapshot budget"
     assert release["campaign_budget_profile"]["phases"]["PART_A"] == snapshot["profile"]["phases"]["PART_A"]
     return {
         "source": "%s: the attempt's admission receipt (full_campaigns.receipt_bytes) and its retained "
@@ -154,6 +178,9 @@ def identities(journal_bytes, snapshot):
                             "release's qualification_policy_sha256"},
         "budget_profile_sha256": receipt["budget_profile_sha256"],
         "budget_sha256": receipt["budget_sha256"],
+        "snapshot_binding": "the budget snapshot's whole profile and whole budget, in canonical JSON, hash to the "
+                            "receipt's budget_profile_sha256 and budget_sha256, so O and maximum_memory_bytes are the "
+                            "admitted values",
         "receipt_schema": receipt["schema"],
         "receipt_authority_class": receipt["authority_class"],
     }
@@ -162,7 +189,7 @@ def identities(journal_bytes, snapshot):
 def main():
     parser = argparse.ArgumentParser()
     for name in ("--artifact-zip", "--run-api", "--artifacts-api", "--evidence-output", "--stage1c",
-                 "--stage1c-job-b"):
+                 "--stage1c-job-b", "--stage1b", "--stage1b-job-a", "--stage1b-job-b"):
         parser.add_argument(name, required=True)
     args = parser.parse_args()
     run, artifact, archive = bind_run(args)
@@ -241,6 +268,51 @@ def main():
     cpu_limit_s = Fraction(part_a_limits["cpu_ns"], 10**9)
     budget_lower_s = wall_limit_s - reserve_to_captured_s
     b_1c = max(M_C * c_hat, PA2B_FACTOR * p_hat)
+
+    # PA-2's launch allowance L, measured (r2 §9: L = 30 s until Stage 2 measures it): reservation to
+    # payload start. The payload start is the PART_A capture's started_utc (the payload container's own
+    # start); the reservation's utc is on the same host clock. RUNNING is the boottime cross-check.
+    reservation = json.loads(base64.b64decode(pawork["reservation_bytes_b64"]))
+    transitions = {t["state"]: t for t in (json.loads(base64.b64decode(x)) for x in pawork["transitions"])}
+    capture_doc = json.loads(base64.b64decode(transitions["CAPTURED"]["data"]["capture_bytes_b64"]))
+    assert capture_doc["work_id"] == "pawork" and capture_doc["checkpoint"] == "PART_A"
+    capture = capture_doc["capture"]
+    launch_s = utc_seconds(capture["started_utc"]) - utc_seconds(reservation["clock"]["utc"])
+    running_s = Fraction(transitions["RUNNING"]["clock"]["boottime_ns"] - reservation["clock"]["boottime_ns"],
+                         10**9)
+    assert reservation["clock"]["boot_id"] == transitions["RUNNING"]["clock"]["boot_id"]
+    assert 0 < running_s <= launch_s, (running_s, launch_s)
+    launch_within_l = launch_s <= L_S
+    scaled_measured_l = ceilings(c_hat * k, w_hat * k, p_hat, launch_s)
+
+    # Host facts behind the 2026-10-01 host ruling, read from pinned evidence.
+    kernel_lines = [line for line in member(KERNEL_LOG).decode("utf-8", "replace").splitlines()
+                    if "smpboot: CPU0:" in line]
+    assert len(kernel_lines) == 1 and "AMD EPYC 9V74" in kernel_lines[0], kernel_lines
+    service_cpu_line = kernel_lines[0].split("smpboot: CPU0: ", 1)[1]
+    harness_model = job_b["runtime"]["cpu_model"]
+    s1b = json.loads(pinned("stage1b/%s-combined.json" % STAGE1B_RUN, Path(args.stage1b).read_bytes()))
+    s1b_jobs = {j: json.loads(pinned("stage1b/%s-%s-attempt1/record.json" % (STAGE1B_RUN, j),
+                                     Path(getattr(args, "stage1b_job_" + j)).read_bytes())) for j in "ab"}
+    medians = {j: exact(r["summary"]["arms"]["forced"]["cpu_input_s"]["all"]["median"]) for j, r in s1b_jobs.items()}
+    models = {j: r["runtime"]["cpu_model"] for j, r in s1b_jobs.items()}
+    assert models["a"] == harness_model and "AMD EPYC 9V74" in models["b"], models
+    host_factor = medians["a"] / medians["b"]
+    assert abs(float(host_factor) - s1b["summary"]["host_variance"]["forced_median_cpu_ratio_between_jobs"]) < 1e-12
+    assert host_factor > 1
+    # Two normalizations of the service to the harness host: scaling the whole charge (O included), and
+    # scaling only the compute (O is fixed overhead, as the 2026-10-01 trigger-5 ruling holds).
+    k_norm_whole = k * host_factor
+    k_norm_compute = (observed_s * host_factor + O_S) / harness_s
+    norm_whole = ceilings(c_hat * k_norm_whole, w_hat * k_norm_whole, p_hat)
+    norm_compute = ceilings(c_hat * k_norm_compute, w_hat * k_norm_compute, p_hat)
+
+    # PA-2b as approved (r2 §9: P × wall / B <= wall / 1.5, i.e. 1.5 × P <= B), on the service's own P.
+    applied_b = Fraction(scaled["cpu_s"]) - O_S
+    pa2b_rows = {name: {"B_s": num(b), "holds": PA2B_FACTOR * predicted <= b}
+                 for name, b in (("applied_ceiling_minus_O", applied_b),
+                                 ("reapplied_B", max(M_C * c_hat * k, PA2B_FACTOR * p_hat)),
+                                 ("stage1c_B_unscaled", b_1c))}
 
     doc = {
         "schema": "s5-part-a-stage2-service-consistency/v1",
@@ -336,22 +408,71 @@ def main():
                 "note": "the settled observation cpu_ns without O; recorded for diagnosis only, it does not set the "
                         "verdict",
             },
-            "host": "the harness maximum ran on %s (job b); run %s ran on AMD EPYC 9V74 80-Core (its kernel.log). "
-                    "Stage 1b measured the 9V74 about 1.5x faster than the 7763 on the same workload, so a same-host "
-                    "k would be larger than this k, not smaller" % (job_b["runtime"]["cpu_model"], RUN_ID),
+            "host_normalization": {
+                "facts": {
+                    "service_cpu": service_cpu_line,
+                    "service_cpu_source": "%s (smpboot CPU0 line), pinned" % KERNEL_LOG,
+                    "harness_cpu": harness_model,
+                    "harness_cpu_source": "stage1c/%s-b-attempt1/record.json runtime.cpu_model" % STAGE1C_RUN,
+                    "factor": num(host_factor, 12),
+                    "factor_basis": "Stage 1b run %s, same workload on both jobs: job a (%s) forced median "
+                                    "cpu_input_s %s s / job b (%s) %s s, equal to the combined record's "
+                                    "host_variance.forced_median_cpu_ratio_between_jobs; a different workload from "
+                                    "Stage 1c and Stage 2, so the factor is indicative"
+                                    % (STAGE1B_RUN, models["a"], num(medians["a"]), models["b"], num(medians["b"])),
+                },
+                "measured_host": {"k": num(k, 6), "cpu_s": scaled["cpu_s"], "B_plus_O_s": scaled["B_plus_O_s"],
+                                  "wall_s": scaled["wall_s"]},
+                "normalized_whole_charge": {
+                    "basis": "k x factor: the whole charge scaled, O included",
+                    "k": num(k_norm_whole, 6), "B_plus_O_s": norm_whole["B_plus_O_s"], "cpu_s": norm_whole["cpu_s"],
+                    "wall_raw_s": norm_whole["wall_raw_s"], "wall_s": norm_whole["wall_s"]},
+                "normalized_compute_only": {
+                    "basis": "(cpu_ns x factor + O) / harness: only the compute scaled; O is fixed overhead, as the "
+                             "2026-10-01 trigger-5 ruling holds",
+                    "k": num(k_norm_compute, 6), "B_plus_O_s": norm_compute["B_plus_O_s"],
+                    "cpu_s": norm_compute["cpu_s"], "wall_raw_s": norm_compute["wall_raw_s"],
+                    "wall_s": norm_compute["wall_s"]},
+                "consequence": "on the harness's host the CPU ceiling would be %d s (compute-only) to %d s (whole "
+                               "charge), not %d s: k exceeds k_cpu_le %s on either basis. The wall ceiling stays %d s. "
+                               "Nothing is adopted; the TEST_ONLY ceiling stays at the measured host's value"
+                               % (norm_compute["cpu_s"], norm_whole["cpu_s"], scaled["cpu_s"], num(k_cpu_limit, 3),
+                                  norm_whole["wall_s"]),
+            },
+        },
+        "launch_allowance": {
+            "basis": "r2 §9 PA-2: L = 30 s until Stage 2 measures it; measured as reservation to payload start",
+            "measured_s": num(launch_s),
+            "source": "%s work pawork: the reservation's clock.utc %s to the PART_A capture's started_utc %s (the "
+                      "payload container's start, same host clock)" % (BUDGET_SNAPSHOT, reservation["clock"]["utc"],
+                                                                         capture["started_utc"]),
+            "running_transition_s": num(running_s),
+            "running_basis": "the RUNNING transition's boottime, same boot_id, as a cross-check (earlier than start)",
+            "L_s": int(L_S), "within_L": launch_within_l,
+            "reapplication_with_measured_L": {"wall_raw_s": scaled_measured_l["wall_raw_s"],
+                                              "wall_s": scaled_measured_l["wall_s"]},
+            "note": "L = 30 s is kept in the re-application: it is conservative against the measured value, and the "
+                    "300 s floor binds either way",
         },
         "pa2b": {
             "basis": "CP-1a decision (1)(b)(i): check PA-2b on the service's PART_A probe_seconds and "
                      "predicted_seconds; the 1.5 x P_hat term becomes final only when this check is recorded",
             "probe_seconds": num(probe), "predicted_seconds": num(predicted),
-            "engine_predicate": "part_a.py:185-186 refuses when predicted_seconds > budget_seconds, the guard's "
-                                "remaining wall at the request (compute.py:177)",
-            "budget_seconds_lower_bound": num(budget_lower_s),
-            "budget_seconds_basis": "PART_A wall limit %s s minus the work's reservation-to-CAPTURED boottime %s s; "
-                                    "budget_seconds itself is not exported" % (num(wall_limit_s), num(reserve_to_captured_s)),
-            "check": "1.5 x predicted_seconds <= budget_seconds lower bound",
-            "lhs_s": num(PA2B_FACTOR * predicted), "rhs_s": num(budget_lower_s),
-            "holds": PA2B_FACTOR * predicted <= budget_lower_s,
+            "rule": "r2 §9 PA-2b: P x wall / B <= wall / 1.5, i.e. 1.5 x P <= B, with P the service's "
+                    "predicted_seconds (a throttled figure, so the check is conservative)",
+            "lhs_s": num(PA2B_FACTOR * predicted),
+            "against": pa2b_rows,
+            "holds": pa2b_rows["applied_ceiling_minus_O"]["holds"] and pa2b_rows["reapplied_B"]["holds"],
+            "holds_basis": "the applicable B: the applied ceiling minus O and the re-applied B; the unscaled Stage 1c "
+                           "B is recorded and does not govern after re-application",
+            "engine_diagnostic": {
+                "predicate": "part_a.py:185-186 refuses when predicted_seconds > budget_seconds, the guard's "
+                             "remaining wall at the request (compute.py:177)",
+                "budget_seconds_lower_bound": num(budget_lower_s),
+                "budget_seconds_basis": "PART_A wall limit %s s minus the work's reservation-to-CAPTURED boottime "
+                                        "%s s; budget_seconds itself is not exported"
+                                        % (num(wall_limit_s), num(reserve_to_captured_s)),
+                "lhs_s": num(PA2B_FACTOR * predicted), "holds": PA2B_FACTOR * predicted <= budget_lower_s},
             "throttled_prediction_note": "informational: predicted_seconds is a wall figure under the payload quota "
                                          "(cpu - O) / remaining wall, nominally %s / %s; the Stage 1c prescribed "
                                          "maximum %s s times %s is %s s against the service's %s s"
@@ -409,19 +530,29 @@ def main():
             "faster_host": "accepted for TEST_ONLY; k %s, the host difference (service on an EPYC 9V74, harness "
                            "maximum on an %s) and the CPU headroom %s s (%s%% of the %d s ceiling) are carried to "
                            "production host sizing (T11/CP-8)"
-                           % (num(k, 6), job_b["runtime"]["cpu_model"],
+                           % (num(k, 6), harness_model,
                               num(CPU_FLOOR_S - (M_C * c_hat * k + O_S), 3),
                               num(100 * (CPU_FLOOR_S - (M_C * c_hat * k + O_S)) / CPU_FLOOR_S, 2),
                               int(CPU_FLOOR_S)),
+            "faster_host_normalized": "confirmed by Joshua directly in this worker session after the host-normalized "
+                                      "result was put to him (\"Stands: 120 s, carry 130-160 s\"): the TEST_ONLY "
+                                      "ceiling stays %d s on the measured host; the normalized ceilings, %d s "
+                                      "(compute-only, k %s) and %d s (whole charge, k %s), are carried to T11/CP-8; "
+                                      "nothing is adopted"
+                                      % (scaled["cpu_s"], norm_compute["cpu_s"], num(k_norm_compute, 3),
+                                         norm_whole["cpu_s"], num(k_norm_whole, 3)),
             "pa3b_memory_headroom": "accepted for TEST_ONLY, consistent with ruling 2026-09-30 (2); m_m headroom "
                                     "cannot be shown from the clipped reading and is carried to T11/CP-8",
         },
         "source_sha256": dict(PINS),
-        "private_evidence": "the run artifact, GitHub's run and artifact listings and the reader's output stay under "
-                            "local_artifacts/s5-c3-evidence/stage2-read-36766144433/; this record carries hashes, "
-                            "counts and labels only",
+        "private_evidence": "the run artifact zip, GitHub's run and artifact listings and the reader's output are "
+                            "under local_artifacts/s5-c3-evidence/stage2-read-36766144433/ and archived in "
+                            "first-passage-archive#854 (pins: docs/notes/2026-09-29-s5-c3-record/"
+                            "stage2-36766144433-archive.sha256); this record carries hashes, counts and labels only",
         "not_granted": "C3 acceptance, S5 acceptance, adoption of any re-applied value, any production value",
     }
+    if not launch_within_l:
+        doc["launch_allowance"]["stop"] = "the measured launch exceeds L: returned to the operator, nothing adopted"
     if changed:
         doc["pa5"]["reapplication"]["stop"] = "the scaled ceilings differ from the shared ones: returned to the operator"
     json.dump(doc, sys.stdout, indent=2, sort_keys=False)
