@@ -125,7 +125,8 @@ def run_synthetic_part_a(request, source_sessions, *, adjacent, covered_until,
 
 
 def _run_part_a(request,source_sessions,*,adjacent,covered_until,proof_provider,replay_provider,
-                initial_state,full_pass_rate,synthetic,tail_covered=False,timer=perf_counter):
+                initial_state,full_pass_rate,synthetic,tail_covered=False,timer=perf_counter,
+                on_initial_prefix=None):
     """Shared mechanics; ProductionExecutor owns all production authority checks."""
     if type(synthetic) is not bool:
         raise TypeError('explicit evidence domain required')
@@ -204,6 +205,11 @@ def _run_part_a(request,source_sessions,*,adjacent,covered_until,proof_provider,
             panels.append(SyntheticPanelResult(index, tuple(s.session_id for s in panel), tuple(outcomes)))
 
     extend(request.initial_panels)
+    # Store-free prefix custody (S5-D1): the initial panels are complete; the
+    # expansion decision and any panel at index >= initial_panels have not run.
+    # A raise from the hook ends the run with no expansion and no final result.
+    if on_initial_prefix is not None:
+        on_initial_prefix(tuple(panels))
     initial_p5 = _percentile(panels, request.percentile, request.percentile_method)
     close = abs(Decimal(str(initial_p5))-Decimal(str(request.floor))) <= Decimal(str(request.within_pp))
     expanded = close and request.max_panels > request.initial_panels
