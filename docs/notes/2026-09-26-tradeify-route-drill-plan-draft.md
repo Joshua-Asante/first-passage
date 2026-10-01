@@ -203,6 +203,22 @@ Reads cannot place, change or cancel anything. They still use the operator's RES
 | Consequence (GC-6) | If the order is readable, the packet §3 row "Establish whether and when a block can end, using D4/D5 (A-1)" can use this read for requests whose id was learned (BE-4). **[CR-11]** It is a readability fact about that order only: it does not show coverage of the unknown classes, reach requests whose id was never learned, or bound a recovery time τ (BE-4 as corrected, UB-8 Corr. 2). If it is not, cross-session recovery stays unestablished and unresolved attempts stay held (§6.4). Neither result releases a reservation or permits a resend. |
 | OPEN | The REST return does not settle which identifier the read accepts: the broker order id learned in session, or the caller's tracking id, which CrossTrade remembers for seven days and forwards as `clOrdId` (Q05). R-2 uses the id the operator retained and records which one it was. If the read accepts the caller's id, R-2 would also bear on lost-response requests; that is not assumed. |
 
+### R-1 result on X-1's order — 2026-10-01
+
+**Result: `LOCATED_WITH_CLORDID`. R-1 is DISCHARGED for X-1's order, at this time only.** The run was operator-performed, read-only, and in X-1's own session (before the ~17:00 ET reset of 2026-10-01). It ran under the [X-1 packet §8](2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30) R-1 tooling ruling (option A) and its start-by rule.
+
+- **Tool:** R-1 v3.2 (the v3.1 rules, plus R-2 v1.3.1's host stage, plus the step-2 `clOrdId` search). Package `PACKAGE_SHA256SUMS` `3bf9ace1a2d29c6c81b74a0efa7a6d4752b80f97217274a98f988a197db8d0a5`. Local Codex ACCEPTED_WITH_CONDITIONS on 2026-10-01 (private `tools/r1-v3_2/CODEX_R1_V3_2_REVIEW.md`), with no P1.
+- **Run:** private `reads/R1-X1-20261001T082255Z`. Every stage exited 0: init, retain, host, collect, seal, adjudicate.
+  - init 08:22:55Z;
+  - inventory retained 08:55:46Z: one account in scope, with the CrossTrade linked-accounts capture and the actor inventory A-1 to A-13 recorded (Stage 0: recorded, not gating);
+  - HOST_CONFIRMED 08:56:04Z: rail `dry_run=True`, `armed_until=None`; daemon emission off on disk and in process; the captured 2026-09-29 boot is the newest start, with no intervening machine event;
+  - collected 08:58:45Z: 9 reads; sealed 08:59:33Z.
+- **Reads:** no working orders; 3 session orders, all explained and terminal; lifecycles Filled / Canceled / Filled; fills by `orderId` 1 / 0 / 1; account-scoped fill-reconciled positions flat.
+- **Step 2:** exactly one candidate carries the bound `clOrdId`, and it is the bound entry. The stop child is linked to the entry (`linkedId` / `parentId`), and an entry fill was observed.
+- **Evidence:** run `SHA256SUMS` `2fa5d5246c90601b649df29885b92b724679fcbf8902e793e6d2f9a1176f4ce8`; adjudication `R1-X1-20261001T082255Z-ADJUDICATION.json` `56f8c23d72bd75cb2937130d18301574f4c1d6cf317ea4ccb242b7f22b28bbee`. Rows are appended to `MANIFEST.tsv`. The coordinator re-verified every seal member against `SHA256SUMS` and read the adjudicated class. The evidence is private and never committed.
+- **Would NOT establish** (this table's row, unchanged): uniqueness, since a repeated `clOrdId` is accepted (Q05); anything about an absent order; fill completeness (Q23, Q24); a recovery rate or a recovery-time bound; cross-session behavior (R-2); REST placement classification (X-1). The result establishes only this order at this time. No read result releases a reservation or permits a resend (commissioning packet §2.6).
+- **Residual (non-blocking, owed to any future v3.3):** Codex's P2 that some offline tests omit a call-count or reason assertion. The accepted bytes were not changed.
+
 ### R-2 closure with limits — operator decision 2026-09-29
 
 **CLOSED WITH LIMITS / INCONCLUSIVE**, for the 2026-09-28 preservation-trade target only. Joshua selected “let's close the investigation with limits” after the coordinator proposed accepting the incomplete investigation while preserving failed runs and leaving recovery unestablished. Codex recorded the disposition on 2026-09-29. This ends the investigation's administrative HOLD; it does not certify completion of the prescribed read sequence or change its acceptance rules.
