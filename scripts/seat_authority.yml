@@ -23,6 +23,9 @@
 #             CI run, a cloud dispatch). The highest class any agent seat may be granted.
 #   high    — an operator act. Never grantable in a card: the operator performs it through
 #             an act they already perform (GitHub merge, arming GO, ratification, spend).
+#             One performer exception: trade.submit stays an operator act, but an agent may
+#             perform it when the operator directs that specific order, exit or cancel
+#             (see its entry below).
 #   forbidden (the `forbidden:` map, not a level) — un-grantable to any seat, and no
 #             approval unlocks it for an agent. Some have a separate governed route for the
 #             operator (named in `route`); none has an agent route.
@@ -49,6 +52,10 @@ capabilities:
   rail.deploy:          {risk: high}     # operator act — fly deploy of c1-rail
   rail.arm:             {risk: high}     # operator act — M1 RESOLVED + a GO per armed session
   trade.submit:         {risk: high}     # operator act; an order, exit or cancel only when the operator directs it;
+                                       # performer exception: the operator, or an agent at the operator's
+                                       # direction for that specific act, acting only through an
+                                       # already-authenticated attended or computer-use surface; broker
+                                       # credentials are never given to an agent (boundary OF-5);
                                        # AGENTS.md amendment 2026-09-30; ADR Addendum 2026-09-30b;
                                        # never grantable in a card.
 
