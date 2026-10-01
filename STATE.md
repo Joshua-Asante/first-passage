@@ -116,7 +116,9 @@ rows rather than retaining completion narratives. A gated row does not grant GO.
   a buy at 19:05:52Z, with fills in the native export (operator, 2026-09-30,
   relayed by the X-1 packet session). **Operator ruling 2026-09-30:** X-1's
   trade, if it executes, also counts toward the weekly preservation
-  obligation. The
+  obligation. It applies to X-1's trade (week 09-28→10-02); its owner is the
+  [X-1 decision packet, #551](https://github.com/Joshua-Asante/first-passage/pull/551)
+  (`docs/notes/2026-09-29-x1-decision-packet.md`), where the ruling is recorded. The
   private compliance record was not independently verified. The 09-28→10-02
   obligation is covered; the roller advances the deadline after 10-02.
 - **Earlier record still owed:** week 08-31→09-04 was operator-attested on
