@@ -988,9 +988,14 @@ class SourceKeyPin:
     revoked_at: datetime | None = None
 
 
-# The trust root. Ships EMPTY: every source contract is refused until the
-# operator enrolls a dedicated key through an operator-merged PR (spec §2.3).
-SOURCE_SIGNING_KEYS: Mapping[str, SourceKeyPin] = MappingProxyType({})
+# The trust root (spec §2.3). Each entry is an operator source-signing key
+# enrolled through an operator-merged PR: key ID "source:" + the first 16 hex
+# of the SHA-256 of the raw 32-byte Ed25519 public key, pinned to that digest.
+SOURCE_SIGNING_KEYS: Mapping[str, SourceKeyPin] = MappingProxyType({
+    # Enrolled 2026-10-01: Joshua's dedicated source-signing key (generated locally).
+    "source:1ebae5d45bc51280": SourceKeyPin(
+        sha256="1ebae5d45bc512801e5217006ad84e188e5862d82b18f3be8a5094ea6332a4cb"),
+})
 
 
 def _refuse_source_key_ids(key_ids) -> None:

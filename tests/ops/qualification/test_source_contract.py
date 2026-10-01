@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import re
 from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -189,16 +190,29 @@ def refused(code, call):
 
 # ---- shipped constants --------------------------------------------------------
 
-def test_shipped_source_signing_pin_is_empty_and_constants_are_compiled():
+OPERATOR_SOURCE_KEY_SHA256 = '1ebae5d45bc512801e5217006ad84e188e5862d82b18f3be8a5094ea6332a4cb'
+OPERATOR_SOURCE_PUBLIC_KEY_HEX = 'edf84922db9d92db7036969aef9178448da2ca7f7e884bf3d663420a0cc72e43'
+
+
+def test_shipped_source_signing_pin_is_the_enrolled_operator_key_and_constants_are_compiled():
     from c1_signal_daemon.book_adapters import ADAPTERS, RUNTIME_EFFECTIVE_INPUTS_SHA256
-    assert dict(contract_module.SOURCE_SIGNING_KEYS) == {}
-    text = (Path(contract_module.__file__)).read_text(encoding='utf-8')
-    assert 'SOURCE_SIGNING_KEYS: Mapping[str, SourceKeyPin] = MappingProxyType({})' in text
+    # Exactly one operator-enrolled key (2026-10-01); its ID derives from its pinned digest.
+    assert dict(contract_module.SOURCE_SIGNING_KEYS) == {
+        'source:' + OPERATOR_SOURCE_KEY_SHA256[:16]: contract_module.SourceKeyPin(OPERATOR_SOURCE_KEY_SHA256, None)}
+    for key_id, pin in contract_module.SOURCE_SIGNING_KEYS.items():
+        assert key_id == contract_module.SOURCE_KEY_PREFIX + pin.sha256[:16]
+        assert re.fullmatch(r'[0-9a-f]{64}', pin.sha256) and pin.revoked_at is None
     constants = trust_module.SOURCE_TRUST_CONSTANTS
     assert dict(constants.accepted_historical_pins) == dict(ACCEPTED_HISTORICAL_PINS)
     assert {leg: pin.runtime_sha256 for leg, pin in constants.port_runtime_pins.items()} == \
         {spec.leg_id: spec.runtime_sha256 for spec in ADAPTERS}
     assert constants.effective_settings_sha256 == RUNTIME_EFFECTIVE_INPUTS_SHA256
+
+
+def test_enrolled_operator_pin_is_a_strong_ed25519_public_key():
+    raw = bytes.fromhex(OPERATOR_SOURCE_PUBLIC_KEY_HEX)
+    assert len(raw) == 32 and sha(raw) == OPERATOR_SOURCE_KEY_SHA256
+    assert contract_module.is_strong_public_key(raw)
 
 
 def test_empty_pin_refuses_every_source_contract(case, monkeypatch):
