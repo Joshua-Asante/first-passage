@@ -175,3 +175,149 @@ f79c76236120b49a81f2fcb2ccca0ebaa8e499e7119e5661fa2b412e462796e0  .cache/fp-veri
 9b00b8c163f7514015256283a61998b60b1afa0fa5bd3dfc5c804ef573deee29  h1b-stage1b-measurement-evidence-2026-09-28.tar.gz
 90ce9b52eb7e45eb3b516a58cfb5ca23a1d1b63542deff2af11e06823644fc56  .cache/fp-verification/20260928T002434Z-18669aab5ba0/record.json
 c7246306e9cc8f1ae0a01074a62eb125e38423252e3952b6fa6bec2e5fadad64  .cache/fp-verification/20260928T012306Z-7f00a0069a0b/record.json
+#
+# 2026-09-28 — S4 run logs of 2026-09-25 (runs 36180568493 and 36181780676, artifact
+# qualification-s2-supervision), preserved in the primary checkout's ignored local_artifacts/: the 222 files
+# listed in its SHA256SUMS (sha256 e2c14228…189a7) plus SHA256SUMS itself. The two
+# run-*/boundary/journal.sqlite files exceed evidence_archive.py's 95 MB limit and are pinned here by
+# their xz blobs in the sibling .packed/ directory; PACKED_SHA256SUMS.tsv maps each xz digest to its
+# original: 6b83b7ea…8b15 -> 0102ec14…6968 (run-36180568493), 83b07817…851a -> d67b5d77…d2a6
+# (run-36181780676). Restore: docs/notes/2026-09-27-s4-run-logs-archive-retention-proposal.md §4.
+# Archived in first-passage-archive (88b24580, first-passage-archive#845); ruling in the full-E1 ledger.
+# Each distinct digest is pinned once, under its first path in path order; 104 of the 224 inputs
+# are byte-identical to another input. The archived SHA256SUMS (e2c14228…189a7) maps every path.
+cb978a838365a4dcf6cb6054a9a6a893a428852495e9a57750cd5779d9335068  local_artifacts/s4-linux-run-logs-2026-09-25.packed/PACKED_SHA256SUMS.tsv
+6b83b7ea0166388010699db8c067c16d7ed3cc15a56eaa0e3e5d1cbea0c88b15  local_artifacts/s4-linux-run-logs-2026-09-25.packed/run-36180568493/boundary/journal.sqlite.xz
+83b07817bfbcdb4de6f5ce7bbb4f45b8eeff9972c0759106d4998cb3b878851a  local_artifacts/s4-linux-run-logs-2026-09-25.packed/run-36181780676/boundary/journal.sqlite.xz
+e2c142281d819e071d15f99a242358f93389a479dcc5e6b5c1f6a20d5db189a7  local_artifacts/s4-linux-run-logs-2026-09-25/SHA256SUMS
+052d1a06aebfe2c0bc6037a54669ad58275d7cde5f955791a8f8d00235db43c1  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/5afc482b85f64da3afe4f07dd3d37d58/collected.json
+9e6984fb1fb1c69d1c0da0ac7ece20acafd9d8778f174af55ae3aae71aff6819  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/5afc482b85f64da3afe4f07dd3d37d58/invariants.json
+f3e165d3037608275b9fe906ad38b382a90454bc14cfc8d9fefd4be19eaa1eda  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/5afc482b85f64da3afe4f07dd3d37d58/junit.xml
+9cc8c44aedec42cee4118a6ccb41f1f6f97bff2bc8a13404cb4e5784a9920366  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/5afc482b85f64da3afe4f07dd3d37d58/record.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/5afc482b85f64da3afe4f07dd3d37d58/stderr.txt
+c5b9b6915fc5ce9951cb9a408e32916102b98d5c1c2062d43b276cebf6a02f08  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/5afc482b85f64da3afe4f07dd3d37d58/stdout.txt
+ce7063b0ada45435f15060caa2ba078815c19a7fbaf62ac89bf2e1bd36829638  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/environment.json
+eb3c3d1f1c8516c8b6a7ec925447913999225fbef548e535fa0ed1f031b09968  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/export-scope.json
+29699773893ddca8f4736f1ce218fc2a0a28fbf15195216fee6cfc421ebeda1d  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-0c02f73a1d8d4f26a65f1338096c50df-budget.json
+73de5755ba61578b82a5b1efc661fc7a3d5a362d89d0a4c3b71095c1154e14b9  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-0c02f73a1d8d4f26a65f1338096c50df-deadline-before-bootstrap.json
+9e0833be4d99c67a277d42aee6fda67abaad08c9254aba91f2c5e9bcf64de457  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-0fbfea148abe4f5cb54abeb487ff1873-budget.json
+bc0bf9c11d47ca641f9e27829ec49cddd0de54ad152355e85d1415487a6b6155  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-33599d378ce94e5582605a3b71027829-budget.json
+ca667374c63e76b6fbb4bd97acd653b873725e626c560c2a0dd8eda2cc5c679b  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-3c1c2d45685e40df8245c30f04ff68f5-n1-budget.json
+0f86df16552231bcb44be8db123da878fb2dfe52811b96552b14febba4d60fd5  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-3d4ea104d87b41cbb056f699389cd22a-budget.json
+ed7121e3338efb6f2c5f8da698ae9d0b391bb7aee65998acc4b1f86ac9bd2c73  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-3d4ea104d87b41cbb056f699389cd22a-private-route-refusals.json
+499d3ca348ef8660ca5ee0c63aeb33c81c955aee6023b52342b1a8e8d162cea1  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-64c8df7e9b2e40e09fa1dd385460f9c7-budget.json
+da8e73fdfdf8d183d667b28b85050812065c218ce703143d7ed22a02ab04291a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-6e9ae43bf317402db85dacc4554b48f0-budget.json
+cf3b7555f33436b4acd7fa4546bb39ebb1af057b5f99fbef967c158b427ac4e1  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-6e9ae43bf317402db85dacc4554b48f0-descendants-facts.json
+395cd6d23b74d97d3e2cb8a40b634f5a054404b2ca2d488a6522f4ec21e731ae  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-72ffcd358d1e41ab968a1060675b2cdd-budget.json
+843419f1228f1ccb529b783796bd3e51fc01e58f42df6358c31e56f89c97521a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-72ffcd358d1e41ab968a1060675b2cdd-warm-route.json
+850c9477caf8af823291ff423da57d33b91ec6957404ada0e0a3625605396efe  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-7a821ef1655f4739b2ae8594f459845c-budget.json
+1824a7beff7d17fc55d11bff81aabe8961781124fd6d6f1441a69910138469bd  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-7a821ef1655f4739b2ae8594f459845c-void-metering.json
+74756cc8708785b340d709f6fddf513f2b1cb87ece4b6c8f7a1f3ae81801d30c  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-8588d37f37114d299c6941ad836f9b81-budget.json
+100ade4097f628bce6e1f9f01d844f0848dfee0990a1f1a4421858d645107eaa  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-8f67fc4859ea424a8dc734245e3a91a4-n1-budget.json
+b5382d4a143d57c0216149d7ea7845cfcf847ce77ecc2fc7b446baaaf210da9f  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-93817a73b5354883a9393ec17a79108b-n1-budget.json
+d79c82c0275123087fdea82ad2e3813cb400796efab864907de5833684220ebe  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-9bb09e9d22e744a68d81663994333850-budget.json
+af99d93cc277fe012b326b98327873aee57727a90a39a988bc13c4e31c164b1a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-9bb09e9d22e744a68d81663994333850-guardian-limit.json
+98f55869b061e007bf89c78edf22ad70603dc0a13cab7a81dcbf7ca1e402ab39  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-9ddf40a988c14860bc889cc49e7771c7-budget.json
+fa1f32965aa8eed50078a28e838989d80cebf8792af5c40eb84ceb1036d22988  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-9ddf40a988c14860bc889cc49e7771c7-payload-bound.json
+51e39c20575ac8a043a40fbca4672ac2b6e40741d60db469e0c07f06a717e6b4  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-a630998714134230b122c266028c5812-budget.json
+fa297f9c654c7f51a7521d85e19da1a5fcafa9fdc297649f29d00efafbe056c9  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-b782f51b2a304a069a575b3c12d1476d-n1-budget.json
+2398295fb436a47b1ba05c74cf37f415c05809ded988404967770dd7f618f8dc  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-b7d39750b47b46d882486b65eec7e1aa-budget.json
+cb0d13618a55dcae68ea5ae1245bceb54e32e2829c6ba78f66ae2964a9f9ae7b  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-ba88cd0c832841f997157f327acc142f-budget.json
+3e4d602261bfdda2b32a8d1853cc91ca614304e6b70eb232a24aaadc6f9c1879  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-ba88cd0c832841f997157f327acc142f-unobserved-exit.json
+65c94cc6215faf6c5ef04be166b037026a9f47eaacff700736b34688b694bc4e  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-bec6e938d6424d0ab12df8d4fd6096f1-budget.json
+164a91430e490600ec8d3d548270f493a064a388ea81fd90ae2a1072b8002563  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-bec6e938d6424d0ab12df8d4fd6096f1-payload-images.json
+32690636b2adc84949e962b780286024584c0573b354885e0aaca72ce10e0ecb  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-cb033281e24546d78e4492dcbffbe4c7-budget.json
+d7ded87c7f4f3e372bdf50a6c27dd39bd8cb27b501b600fc0bc2d4ab8627ae1e  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-d1d08db03dfa46819eb811b89af1d722-n1-budget.json
+0c027fb08de609264add284e3194dc13b339a02c3cc852d14bc4e15ad14d68e8  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-d9992c8e6f994db0bc06b4e474b31491-budget.json
+e8774b08e0397d03b4355f5bf6b1195d3d30ac6c11d244d4a0d9f20e4e545316  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-de79d713b1ef4a908ed4e768212122ec-n1-budget.json
+a1f6c91d04bd3c179a6cf87c2fc19971e4d593eba120f84384f5e990fc2646ed  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-e16fb18ae9db4ce99b8c5439b07eb161-budget.json
+249c92ed778c7d3a9c4f30860a62f36843d8199de0aeda5c264a8fed2b8f8e48  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-e3fb919f6573474f913245bad2a9979c-budget.json
+add4e17bf6f405c963a73fb7c19ed21102a0c7a9f7298ac29289478c99641f50  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/linux-eb1b239b5fd14dfc85fcdb5ccd073b1f-n1-budget.json
+b20f17928a4a6bef5c7e9b78f6591aa81cf2d0614091ac8d5a4e80b615f17650  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/public-keys.json
+d762f07241883be5f68b027f02c2a1478dd4ef0adb062d7ae1fdd3c3c7a1d401  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/s2-admission-retry-samples.json
+14a0efee5ed935ebb3f499a2b2fce519c07666fcb80fa1c9d07a7a3ccd0b18b4  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/s2-memory-facts.json
+31180498ee491ff921dc51620c395479784d58c6de91542fbaf1bbc8602a4580  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/boundary/s2-queued-cancellation.json
+07f171d122f10e4800722642eb25b2e6a3389543e79fe31a80d15d424a4c1426  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/campaign-cleanup.json
+e870aac500533dd4b3e1d3986b18a75eb87b016281f0f0455a3f04b47fbce07e  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/cleanup-1cba6101d9084052a0a3c1a10a33bcea.json
+399641d5bf74e793ad431bf5bbe29a8cf28a1c69759e01803c11cfe5e9764c21  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/cleanup-545b43081f694f7ab6a43e05bf632650.json
+8406730c8702faa9bf0853346ca7a15b47fabaf5fd1c6f726c93e73e79fad6de  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/host-observations.json
+ba0bb4ca440473928708fdee4ef100d73133db1d89997096faf52b1dcbc96ba0  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/journal.log
+eccb0e7765f587d4bf44a939881f23562db0ec1b091724ab3957e5ea2bccf6fd  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/kernel.log
+1782d4d3bc507f81d975bba58e53da2728ef0c4d3b3f044d240f18bac6815b15  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/linux-0c02f73a1d8d4f26a65f1338096c50df-legality.json
+dde0a370d943bf6bc4df14fdbb648566a12a7cb00531481a5bb1d0a8639cf2c4  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/linux-0c02f73a1d8d4f26a65f1338096c50df-source-admission.json
+0aea0e6ba01830daa7d02d1214856291a0dc4cd8e0f547c6ddbaf28dbb028377  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/linux-3c1c2d45685e40df8245c30f04ff68f5-legality.json
+c7cb01bae935c9b66e6c14120d9dfa22ca2b0129e9649840bb4d82b8eb794b98  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/linux-3c1c2d45685e40df8245c30f04ff68f5-source-admission.json
+19c4e28b2f54ea8f217db4e622b0a5c758efa7b77ce2dc0394b6d159568c0b2e  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/oomd.log
+ae5cb2aa1de7e12c2576043ac70698c80fa16e8875000cd8af630e404392250b  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/release.json
+684455631fdf73338f557ff86735ca4b973617b35d5bfbd280c6be3a60bf7c80  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/s2-host-facts.txt
+79aaa82aefa566e2566a34aa499e1e8ab293e4447f0768b69d1192417287d51f  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/systemd-units.log
+b92a3e934d650605fbbd7c19cc9c58da90bf4df1e4282f674269d7dbfe3500e7  local_artifacts/s4-linux-run-logs-2026-09-25/run-36180568493/worker-image.json
+2fe54c642d2f8016070599e5021cf21c509b281ad238c4cd78f8824a47c186ff  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/environment.json
+e3c3a6f4fb16bd5154f8e302778a4d51c31bc6cd82c384552eafb858e15b5aeb  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-002f73c0535f4383b5dab69cd99f6b57-budget.json
+9ea9fbd8cf1c4f26b783ad39384aabd25c00bc799c31476005f1fe6c1589b4c8  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-002f73c0535f4383b5dab69cd99f6b57-payload-bound.json
+97e51bc952f8f0471ec3f3e336d381fd7b86c2b95ddfb86da76325086e36679d  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-1c6ebe67b9e149fba7050bfc46b39f67-n1-budget.json
+dfd19faacedc50a12eeff37dc7fa7f7924e4e8f1e78a44f8b798dc6c34f2616f  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-1ea98b5dce474fefb2601a0288169196-n1-budget.json
+18470456f11c8ebf144a954c9665426ed8866d6d747e949c7af19db67cbf739e  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-3e24011c32384623ac9af0b6a73ae7f5-budget.json
+8c4a90e34f06351e9c3248fa669d47523eaa8d3870c8a9f7ff5b8e0f01b11701  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-4c616bc5d528444aada2dfbcb0808323-budget.json
+40fa1116035de709125bea91bdeb1015db2b7861883b1ca4ba300a1a4e03960e  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-531ce90b1a5d4e509085b7874001b2e7-budget.json
+751882c5cc984ca7a96d94eae03ce52dc0b7f46e9bfb55a8ba3eb16d494246ea  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-531ce90b1a5d4e509085b7874001b2e7-guardian-limit.json
+6902e7717b8bd7c8425c52c6c8557a74514be0f22d26d4b5cd53c28e2223adb0  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-5e0a7375714d413c8d16fadedf030c61-budget.json
+adf25806cdb7f0a202c4d40c396036342f446a929eaea6f0fcf21f97a5934099  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-5e0a7375714d413c8d16fadedf030c61-deadline-before-bootstrap.json
+8b9be25dbdf9b92113537ede688f7c0de4e3008c333b17fae6d128a1a59f430a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-64ae5f9acb75411598dfc3acefc5fd06-n1-budget.json
+d64d6ae27eb5ee6e34ae027d76c87cbee68f95eb22cac6492a42a0d1b8f2fb08  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-6a59376f94fd4d5e9502ce77c0331fb1-budget.json
+7df580bd4fc241c03bfa4729c563e9845b124fbde1f7d8f7194a7ff53c87918a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-7064ac3e3ecb4c3b9792b4d69f8a9bde-budget.json
+cfcf8044b69dea04cd11d30660d8e134cbf1bd55428a9fc3a8570556551f2b21  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-72fadcece7714bae96e946fe287880f9-budget.json
+6f5c295ccc21889caf00fb09c748bf5ebdc5714d0af766e927c1ca2fc6d0b096  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-72fadcece7714bae96e946fe287880f9-void-metering.json
+2361b01f14ef8b03451b05c6510226a49ab80a241ec56a4c169e963c1db1697c  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-84a5552cf00946caa90249eca03236e4-budget.json
+f28521645546742beddf578ffee790b12712c6dbacc719f9b65215687bbe8a64  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-8e618dbfb67e428782381ac93f40a6cf-budget.json
+66e8a15511c1bf699a37276738768c9dacb5e1c16b07c6d2ab4c092d1258debd  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-96d722a416d14449a97fcac186668122-budget.json
+7c2e2e2bd9dcdab6929cb3ac784fe175435ae994b7ec7a243c2b251ac795b0aa  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-974318fecd3d4c308195c42a9cf63a63-n1-budget.json
+1e5de1b67e179714506888cbfcaeeac79c256342a5068c8cc88568cc5e6fae30  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-98ed68e5d3c74c1b96ceea064fc7e76f-budget.json
+d5bc98af3ed5c38fdb9f9524ed5b9cb1e1a4841feefcde0e12a52a82a0ee9a39  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-98ed68e5d3c74c1b96ceea064fc7e76f-unobserved-exit.json
+a456127e01f65e509f0c522c4397f37097b72bb959d90ec14e99032ff2773bc2  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-b4cac6be9171420aaf6e866e6784ff67-n1-budget.json
+0e744471c80443d293e0c0844bc4c3569e035a232d3efc701061e8d4a32b2790  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-b60fe22db5c149cc8c410891ff6431aa-n1-budget.json
+a320c248c1c3115de544bee95d93def0ab75e87dd9ee71db00e914605a2c6790  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-b61f8de9252f4e2388d167e595df03df-budget.json
+5d40ece4d9324f50b3a24332761a9e930b20554b84cdd696b3ff1af3255440fe  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-b61f8de9252f4e2388d167e595df03df-warm-route.json
+2ac015685f33a299c97cb0867097ddb087c5ea13e2af72598646f84d4ecfc557  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-bae83836daf04ab1812105bc8113875b-budget.json
+e9c20b86f00b995738b99900d6d0ab9d247a2ef2c207717fdf2b60c24541e048  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-c069acbed1bf49de861693810cdab3be-budget.json
+64ecb37e92c06f9c71298c13e0c2adcbfe008a2fba7ffd74c261429f5c92b168  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-c069acbed1bf49de861693810cdab3be-payload-images.json
+09d09fe24418d8cef8a6c08cf66136aef60b13826c68ffbcbb61cad56708503f  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-c210a193bc814526acf58a589e1e2ada-budget.json
+5905b3f6db3b264416e6c0df582b65616fd998350c0e72c4041b89be84fc87d3  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-c3b06719520849eeb071ce485d08f4fb-n1-budget.json
+bdc1e2f8be9b95e2b8948fb72cfbdf6edf510f441ed61fc83bec98aa37ca24f9  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-dd59713e444e4b95a3030d9b9ce0dbf4-budget.json
+ee7906adafef6b610309b65cc3cfb266d2bf789d7b33771d93b86f00c143193a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-e015f2225744460693e2d4a4be38ed6d-budget.json
+3a49197e02250b329ea456a24e6f425f0569484e063e6d932d85567c8f4ae47e  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/linux-f3a032cad55d407b8a6ffc0fe85549ea-budget.json
+c0a68d48e130b4955fc71efc686dae4a004c6e2c1291402a4a380cc4d54a1128  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/public-keys.json
+7e49c010c43bb732cf9d15d54f2d5f023e6fc10751b5b9c40ec1e287fd20f31a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/s2-admission-retry-samples.json
+6563bdc1a568000a6177c5504b1901b6101718fb06cf964579475d9c12b4c1e4  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/s2-memory-facts.json
+03726948dd3f6a69339a80837e76a3e0641c63c2b3efc57d41f4e260e683529a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/boundary/s2-queued-cancellation.json
+f6fd336475c0b8d96d2e1a3dd55005183edb071d1d15bd5e4e826f9c8b267d4c  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/campaign-cleanup.json
+e61be497eb2c0cff38855a87821faf6157cea28e526486e825dafa13964a8692  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/cleanup-4a198a8c39264caba1a01d45a4533937.json
+9fc2b26e7b3b0c815da6986d45006958abf306c975a345fdafbc096f32818521  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/cleanup-dc9c41f1d4d748bab1948bbed651e23b.json
+8aab30bf3b7eaad545a2b0a111e1b9c25341b6256811f511c477ecf0f0cbc4ce  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/feab184ba5e14a0cb799dd57c9b45ef2/junit.xml
+0a4c752764367d8dd53f98ca75dcc9bb0ed22ef284cf196a4f02e63d24f3204c  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/feab184ba5e14a0cb799dd57c9b45ef2/record.json
+dcd99e547a00ff9fb6a5d8a23385c4f037101728d959d647fd7b3ddbcd402dbf  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/feab184ba5e14a0cb799dd57c9b45ef2/stdout.txt
+7cf02b4761f8ff7085ea65e47fdc049af436255ce36b4ed8324ac6f1440705c3  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/host-observations.json
+816e61c04fad3fc7ae52aeb0fc49789209edf6ba37b108ee7a03ada5595d88f3  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/journal.log
+3aef61452ed9e94274460bf009c96d16f618892c9bdc0d07a7b718a5d8327039  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/kernel.log
+ed29718a07780e069fb4a67b31ddbfc6908b57ec0cd7423258e45c63c0a01942  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/linux-002f73c0535f4383b5dab69cd99f6b57-legality.json
+421647ca29f0532f044b566d9db1421be7ba026651ee7cddde136809aafbba6e  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/linux-002f73c0535f4383b5dab69cd99f6b57-source-admission.json
+3b316cc5a341fbedc3573801c0f0924ba9f1dbc294e7fa47b4ff8fcc0139c593  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/linux-1c6ebe67b9e149fba7050bfc46b39f67-legality.json
+d89babdf2a5a4a1f8fce35396192fd0e2e4a2ba9a42a58fd497343fc7b22efb1  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/linux-1c6ebe67b9e149fba7050bfc46b39f67-source-admission.json
+dae283f19483cd1ac482dc4a0cce6bd3d0b1dfe85f79de402c701f2c629ccb34  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/release.json
+ed89d4984bcf55a131f41373d3ffddb09b31ab2baa91aa49008efca0d83b0599  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/systemd-units.log
+32e509c98758ddb62de920b11a18ec73eba0b19ab79bd871c747a2bacf2d512a  local_artifacts/s4-linux-run-logs-2026-09-25/run-36181780676/worker-image.json
+
+# CP-1b (ledger: "Operator ruling — CP-1b: S5 hold released for the TEST_ONLY build, 2026-09-28"): the launcher check
+# records cited by #537 at its pushed heads 0a84674, fadfc29 and 1dae754 (the last is the final cited record);
+# archived in first-passage-archive#844 (merged at e3672489).
+d9afecf4cd98464ab7212b1d0892969730c6e1e45b981aa5f87ac64e07d6383a  .cache/fp-verification/20260928T013657Z-0f0b5ae0df6b/record.json
+38c4db6678929b9dbc70d6790c4039e96186f0a8a7ccc9f7d934b3caff0b1412  .cache/fp-verification/20260928T015253Z-8d29efff45e1/record.json
+26b21a0431da19d791a795357a5d8d042d57890768c34665b8b46d93993f3a82  .cache/fp-verification/20260928T144557Z-6db9391ec782/record.json
+#
+# 2026-10-01 — S5 Stage 2 / PA-5 inputs for run 36766144433
+# (docs/notes/2026-09-27-s5-part-a-measurement/stage2.json; first-passage-archive#854;
+# manifest docs/notes/2026-09-29-s5-c3-record/stage2-36766144433-archive.sha256).
+362c22af36cbd617bc4d151502619fcbbcdb51191cf9aa58b2053d2de3a8d4be  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/qualification-s2-supervision.zip
+b78727675e370c69342873585df2257d10288b34a9e8f3560d36ceabcce2197a  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/run.json
+b56600f098ca91b7a65eada6c971dcd6263c0b0cce5be54ec672dcd67b7b16af  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/artifacts.json
+85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d  local_artifacts/s5-c3-evidence/stage2-read-36766144433/s2_run_evidence.stdout.json

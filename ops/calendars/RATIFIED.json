@@ -15,6 +15,20 @@
       "instruction": "ratify calendar 650e8aab",
       "record": "docs/notes/2026-09-15-packet1-step4-session-calendar.md",
       "scope": "Book permission rows for the first attended release only. Grants no activation, deployment, resumption or historical legality; the volume config pin at activation is a separate Packet 6 step."
+    },
+    {
+      "calendar_id": "tradeify-select-100k/forward/2026-10",
+      "calendar_file": "ops/calendars/book_session_calendar_2026-10.json",
+      "calendar_sha256": "16e322b1b7c9c7e2b1e8a5fdebb6eaba34e7a509630677f7ac389df54e211b3b",
+      "closure_overlay_file": "ops/calendars/book_closure_overlay.json",
+      "closure_overlay_sha256": "483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b",
+      "coverage_start_utc": "2026-09-28T22:00:00Z",
+      "coverage_end_utc": "2026-10-30T21:00:00Z",
+      "ratified_by": "operator",
+      "ratified_utc": "2026-09-30T00:05:00Z",
+      "instruction": "ratify the calendar; corrected row for the re-authored digest 16e322b1 (overlap rows 2026-09-29 and 2026-09-30), written by the agent on the operator's explicit instruction of 2026-09-30",
+      "record": "https://github.com/Joshua-Asante/first-passage/pull/560",
+      "scope": "Book permission rows for the October 2026 monthly extension, including the 2026-09-29 and 2026-09-30 rollover overlap rows, as authored, with 2026-10-12 DENIED (MISSING_SOURCE). Grants no activation, deployment, resumption or historical legality."
     }
   ]
 }

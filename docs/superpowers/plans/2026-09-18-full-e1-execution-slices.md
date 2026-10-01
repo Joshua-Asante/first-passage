@@ -85,10 +85,10 @@ Write behavior tests first, observe the intended missing behavior, implement the
 
 1. **Fresh executable attempts.** Task 1b's dormant campaigns have no lifetime charge history. Retain their plans/receipts as historical admission-only objects. Do not upgrade them, fabricate past usage or activate them later. S2 introduces a new closed execution-capable release/profile revision and fresh attempts. N1_ONLY attempts likewise never migrate into FULL_E1.
 2. **Accounting starts before campaign work.** S1/S2 persist a bounded provisional admission intent before the campaign-specific validation/planning process. The installed profile supplies its maximum reservation before the frozen contract is trusted. Once validated, bind the frozen cap and compute the deadline from the original start; include already consumed admission time/CPU, and reject if it cannot fit. No reset when admission succeeds or retries. Authentication failure produces no qualification authority. Keep cheap transport/role checks and bounded historical inspection outside stochastic work; do not smuggle reconstruction/signing through an uncharged status endpoint.
-3. **Reservations cover the rest of the route.** Canonical installed configuration names admission, checkpoint/source proof/probe, capture/attestation, each G5 assessment, aggregate validation/commit and sealing/finalization ceilings. Validate feasibility against the frozen cap, including prescribed maximum expansion. Actual CPU counters settle reservations once; unknown usage consumes its full reservation. Remaining wall time includes queues and downtime. Memory is an enforced shared concurrent footprint, not independent full-size allowances per process.
+3. **Reservations cover the rest of the route.** Canonical installed configuration names admission, checkpoint/source proof/probe, capture/attestation, each G5 assessment, aggregate validation/commit and sealing/finalization ceilings. Validate feasibility against the frozen cap, including prescribed maximum expansion. Actual CPU counters settle reservations once; unknown usage consumes its full reservation. Remaining wall time includes queues and downtime. Memory is an enforced shared concurrent footprint, not independent full-size allowances per process. In this design the cumulative bound is per work and kernel-enforced: payload quota × guardian `RuntimeMaxUSec` + the guardian's `LimitCPU` allowance + the bounded control-helper CPU never exceeds that work's reservation (the allowances include the existing enforcement-granularity margins, counted once), and settled charges plus open reservations never exceed the frozen cap (AUDIT-2026-09-25-qualification-assurance-contract-delta#N1). A campaign-level rate quota is not a substitute. Every phase, PART_A, RESULT and SEAL included, reserves its installed phase ceiling; PART_A's is measured at maximum expansion. No per-phase CPU figure enters a statistical decision. The operator fixes a measurement-and-margin rule (the measurement standard and the margin) by ruling. The coordinator may set TEST_ONLY diagnostic ceilings only by applying that rule (a cited measurement, the rule's margin, a ledger entry); anything outside it needs an operator ruling. Production ceilings and caps are frozen with F1 by their owners and are never set under that rule. The approved rule's scope is PART_A only, TEST_ONLY (operator rulings 2026-09-26 and 2026-09-27; CP-1a 2026-09-27). Every other TEST_ONLY diagnostic phase ceiling comes from an operator ruling: `/v7`'s N2 compute phase takes 360 s CPU / 900 s wall, the M13 values extended by CP-1a decision (3) to the `/v7` TEST_ONLY diagnostic profile only.
 4. **Staged development does not change admitted releases.** Before all stages exist, test signed diagnostic releases can expose only implemented checkpoints; reaching the end of their allowed prefix stops without final PASS or seal. A later code/profile revision uses a fresh attempt. Final acceptance uses a release enabling all three compute checkpoints and the complete G5/result/seal route.
 5. **Snapshots and transport have one owner.** Extend `qualification/journal_snapshot.py`, `qualification/checkpoint_plan.py`, policy/evidence owners and existing versioned campaign protocol. Plans remain non-authoritative inputs; the service's recorded dispatch intent authorizes work. Keep 1 MiB bounded chunks and explicit total-size limits. G5 needs authenticated access to retained inputs/captures and private candidate staging; a digest with no authorized producer/fetch route is not an interface.
-6. **Signing recovery is durable.** Fixed payload, key, signing time and intent identity precede signing. Recover exact signed candidate/receipt on retry. Missing capture never licenses another draw; a spec §2.6 bounded same-sample re-execution is not a draw (AUDIT-2026-09-25-qualification-assurance-contract-delta#N2); *[Applied 2026-09-27 at S5 build entry. The full-E1 spec §2.6 rule cited here is RC-2 owner text, applied at Checkpoint C3; until then its source is the operator's D3 direction (ledger, 2026-09-26) and S5 draft §3.3. This note is removed when the §2.6 text lands at C3.]* missing deterministic G5 validation may be repeated only under the original remaining budget. VOID/expiry/revocation bar new authority while exact historical receipts remain inspectable with current validity.
+6. **Signing recovery is durable.** Fixed payload, key, signing time and intent identity precede signing. Recover exact signed candidate/receipt on retry. Missing capture never licenses another draw; a spec §2.6 bounded same-sample re-execution is not a draw (AUDIT-2026-09-25-qualification-assurance-contract-delta#N2); missing deterministic G5 validation may be repeated only under the original remaining budget. VOID/expiry/revocation bar new authority while exact historical receipts remain inspectable with current validity.
 
 ## S1 — Durable budget and recovery state without launch
 
@@ -230,7 +230,7 @@ Here `contract` is produced by the existing signed bundle fixture, not a caller-
 
 **Interfaces:** Add `run_part_a_compute(contract, source, budget, *, n2_full_outcomes)` that adapts the existing `_run_part_a` loop and its request/provider/proof inputs. Extend `derive_checkpoint_plan` for `PART_A`, binding the exact joint predecessor and N2 capture. Extend `validate_campaign_checkpoint` to reconstruct panel-major source-session occurrence inventories, path outcomes, initial-prefix artifact and expansion decision using canonical installed adjudicators.
 
-**Behavior:** Worker and G5 independently derive the same N2 FULL pass rate from captured outcomes. Preserve the disjoint Part A pilot addresses, outer panel seeds, path addresses and source occurrence order, including legitimate duplicate occurrences. Retain the exact original prefix before extending indices `[initial_panels, expanded_panels)`; the final prefix must be byte-identical. Conditional expansion uses inclusive tolerance equality. Apply the final floor and FULL sanity comparison after required expansion. A crash during panels without complete durable capture is IN_DOUBT: no panel resume, replacement pilot or checkpoint rerun. S5 builds this terminal subset; the §2.6 re-execution is a later slice after S5 and before S8, and S5-D1's retained initial prefix is the retained complete record that full-E1 spec §2.6's comparison schema compares. *[Applied 2026-09-27 at S5 build entry. The full-E1 spec §2.6 rule cited here is RC-2 owner text, applied at Checkpoint C3; until then its source is the operator's D3 direction (ledger, 2026-09-26) and S5 draft §3.3. This note is removed when the §2.6 text lands at C3.]*
+**Behavior:** Worker and G5 independently derive the same N2 FULL pass rate from captured outcomes. Preserve the disjoint Part A pilot addresses, outer panel seeds, path addresses and source occurrence order, including legitimate duplicate occurrences. Retain the exact original prefix before extending indices `[initial_panels, expanded_panels)`; the final prefix must be byte-identical. Conditional expansion uses inclusive tolerance equality. Apply the final floor and FULL sanity comparison after required expansion. A crash during panels without complete durable capture is IN_DOUBT: no panel resume, replacement pilot or checkpoint rerun. S5 builds this terminal subset; the §2.6 re-execution is a later slice after S5 and before S8, and S5-D1's retained initial prefix is the retained complete record that full-E1 spec §2.6's comparison schema compares.
 
 - [ ] Add engine-adapter boundary tests before wiring: no expansion, required expansion, exact tolerance equality, below-floor failure and above-FULL failure, plus unchanged initial prefix.
 - [ ] Trace actual `_run_part_a` inputs and reuse its sampling/append loop; capture the prefix from that computation rather than reconstructing it by another replay.
@@ -1244,3 +1244,662 @@ The complete downloaded artifacts, including the journals, are private. So are t
 - The four `/v7` preconditions land with the S5 build.
 
 **Not granted:** the hold release (the operator's, at CP-1b); S5 build, freeze or dispatch; Stage 1c or Stage 2; production, activation or live authority. S5 stays **HELD**.
+
+### Operator ruling and execution — S4 run logs second copy (M-41), 2026-09-28
+
+**Source.** The operator relayed a suggested ruling on #538 (the [retention proposal](../../notes/2026-09-27-s4-run-logs-archive-retention-proposal.md)) and, asked by structured question whether he adopted it, answered "Yes, adopt it". This entry records it as his decision.
+
+**Ruling.** Option A is approved, with GO for the bounded preservation task:
+- compress the two `journal.sqlite` files;
+- archive and push the specified artifacts to first-passage-archive;
+- open the registry/ledger PR through normal repository controls.
+
+**Completion requires:**
+1. verify the manifest and all 222 source files before packing, and leave the originals unchanged;
+2. account for all 224 archive inputs; deduplicated blobs are acceptable, skipped or missing inputs are not;
+3. fetch and verify against the archive's `origin/main` after the archive change lands, confirming every new registry entry ARCHIVED; an exit-zero audit alone is insufficient;
+4. restore the complete 222-file set into a separate directory from archived blobs, decompress the two databases, and pass the original `SHA256SUMS`;
+5. record the archive commit and verification evidence here; public changes are limited to approved metadata.
+
+**Excluded:** deletion of the originals, changes to `evidence_archive.py`, and future S5 retention work.
+
+**Execution, 2026-09-28** (primary checkout, ops interpreter CPython 3.13.2):
+1. `SHA256SUMS` hashes to `e2c14228…189a7`, and `sha256sum -c` passes for all 222 files. A path, size and mtime snapshot of the 223 files, taken before packing and again after archiving, is identical.
+2. Packed into the sibling directory `local_artifacts/s4-linux-run-logs-2026-09-25.packed/`, never inside the originals:
+   - run 36180568493: 110,350,336 B → `6b83b7ea…8b15`, 1,723,740 B;
+   - run 36181780676: 110,469,120 B → `83b07817…851a`, 1,728,948 B;
+   - `PACKED_SHA256SUMS.tsv` is `cb978a83…5068`.
+
+   Each `.xz` decompresses to its pinned original.
+3. `evidence_archive.py put` over 224 inputs returned 0 with empty stderr: 114 archived and 110 already archived. The inputs are 120 distinct digests: 114 new blobs, and 6 already on the archive's `main`. No input was skipped. Every staged blob id equals `git hash-object --no-filters`. Archive commit `88b24580` is on branch `claude/evidence-s4-run-logs-2026-09-25`, first-passage-archive#845.
+4. Registry: 120 pins were added to `docs/evidence/PRIVATE_EVIDENCE.sha256`, one per distinct digest, each under its first path in path order. *[Corrected 2026-09-28: the first registry commit added 224 lines, one per input, which duplicated 104 digests and failed `test_registry_digests_are_well_formed_and_unique`. The archived `SHA256SUMS` maps every path.]* The raw `journal.sqlite` digests are recorded in the comment, not pinned.
+5. Pre-merge checks against the pushed archive branch:
+   - `audit --verify` (with the 224-line registry, since corrected) reports 395 pins: 307 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. None of the 120 new digests is listed as non-ARCHIVED.
+   - A restore from archived blobs alone (`git cat-file blob`, both databases decompressed) into a scratch directory passes `sha256sum -c` for all 222 files.
+
+**Post-merge verification, 2026-09-28.** The operator directed the merge of first-passage-archive#845. It merged as `2ec6f6c9`, and `88b24580` is an ancestor of the archive's `main`. After `git fetch`, the clone's `main` tracks `origin/main` at `2ec6f6c9`.
+- **Check 3.** With the corrected 120-pin registry, `audit --verify` reports 291 pins: 203 ARCHIVED, 0 UNPUSHED, 88 MISSING (pre-existing), 0 CORRUPT. The 224-line registry had reported 395 pins, 307 of them ARCHIVED. None of the 120 new digests is listed as non-ARCHIVED. All 120 are present under `evidence/sha256/` on `origin/main`, and each committed blob (`git cat-file blob`) hashes to its address.
+- **Check 4.** A restore from `origin/main` blobs alone rebuilt 222 files into a scratch directory, 2 of them by decompression. The restored `SHA256SUMS` hashes to `e2c14228…189a7`, and `sha256sum -c` passes for all 222 files. The scratch copy was then deleted.
+- **Originals.** The path, size and mtime snapshot still matches the pre-packing snapshot.
+
+All five completion checks are met. The originals and the `.packed/` sibling stay in the primary checkout; nothing was deleted.
+
+### Operator ruling — CP-1b: S5 hold released for the TEST_ONLY build, 2026-09-28
+
+**Source.** In session on 2026-09-28, the operator wrote: "I approve CP-1b for the S5 TEST_ONLY build, effective once the final cited verification record is retained and pinned, archive #844 is merged and its post-merge audit is recorded, and #537 is merged with passing checks. Record the actual #537 merge SHA as the accepted revision before dispatching the build. Include all four documented /v7 preconditions. Accept the memory result as provisional, with its narrow margin explicitly carried forward. RC-2, RC-3b and all listed C3 obligations remain open. This approval grants no production, activation or live authority."
+
+The operator then set the order: merge #844, merge #537 once CI passed, run the audit against this entry's pin registry, and merge this entry after review and checks.
+
+**Accepted revision (the release head).** `05f3788d9e4895308d6734e650a42875c59f669c` is the merge of [#537](https://github.com/Joshua-Asante/first-passage/pull/537) at 2026-09-28T16:27:11Z. Its PR head `6f1da0b3` is the operator's merge of `main` (#539, #540 and a `tests.yml` fetch-depth change) into the packet head `1dae754`.
+- The S5 packet's "release head named in the CP-1b hold-release entry" is this SHA.
+- Anchor re-check against it: between `7675c088` (the measured and re-checked revision) and `05f3788`, no anchored code changed, and neither did the S5 packet or the slices-plan anchor lines (`:17`, `:91`, `:233`, `:238`). The only other changes the packet could reach are #536's dated markers. In the S5 decision draft they are in place, at lines 374, 402 and 404. In the owner-text note they add two lines near the top. The packet cites neither document by line, and the acceptance entry above pins the note's blob.
+
+**Conditions, each met before this entry.**
+1. **The final cited verification record is retained and pinned.** #537's cited `check` records are:
+   - `20260928T013657Z-0f0b5ae0df6b` (head `0a84674`);
+   - `20260928T015253Z-8d29efff45e1` (head `fadfc29`);
+   - `20260928T144557Z-6db9391ec782` (head `1dae754`, the final cited record; SHA-256 `26b21a0431da19d791a795357a5d8d042d57890768c34665b8b46d93993f3a82`). It shows status completed, exit 0, `source_stable: true` and complete capture.
+
+   They are retained in first-passage-archive#844 and pinned in `docs/evidence/PRIVATE_EVIDENCE.sha256` by this entry's commit. The merged head's own checks are GitHub's (item 3).
+2. **Archive #844 is merged, and its post-merge audit is recorded.** [first-passage-archive#844](https://github.com/Joshua-Asante/first-passage-archive/pull/844) merged at `e3672489`. `scripts/evidence_archive.py audit --verify` ran from this entry's tree, whose registry includes the three pins above, against the archive's `main` at `e3672489`. It reports **177 pins: 89 ARCHIVED, 0 UNPUSHED, 88 MISSING, 0 CORRUPT**. Every pin the H1 step (b) execution added is ARCHIVED and re-hashes correctly: the package `9b00b8c1…ee29` and the five check records (`90ce9b52…`, `c7246306…`, `d9afecf4…`, `38c4db66…`, `26b21a04…`). The 88 MISSING predate this work.
+3. **#537 is merged with passing checks.** Every check on head `6f1da0b3` passed: `skills (3.12)`, `build (3.11)`, `pytest (3.11)`, both `Qualification execution boundary` jobs, CodeRabbit and semgrep. In addition, `.\fp.ps1 check` on `05f3788` itself (Windows ops env, CPython 3.13.2) gives status completed, exit 0, `source_stable: true` and complete capture (record `20260928T170538Z-6bf1970cc12d`, SHA-256 `c6baea9f2f0f8e411afc557cfb94a0f83de5afd7ceb90b22ec2e2b5598464625`, cited, not pinned).
+
+**Effect: the S5 hold is RELEASED for the TEST_ONLY build only, effective when this entry is on `main`.**
+- **Build preconditions.** All four `/v7` preconditions land with the S5 build:
+  1. add `/v7` to the P4 tuple at `tests/integration/qualification_boundary/fixture_producer.py:154-155`;
+  2. add `/v7` at `ops/c1_rail/qualification/execution/profile.py:219-226`;
+  3. add `/v7` at `profile.py:243-252`;
+  4. extend `profile.py:239` to `/v7` with 360 s CPU / 900 s wall (CP-1a (3)).
+
+  The PART_A diagnostic ceilings stay at the shared 120 s / 300 s. The application entry above triggers no PART_A constant.
+- **Memory: accepted as provisional, with the narrow margin carried forward.**
+  - PA-3a gives 1.5 × M̂ = 252,549,120 ≤ 256,000,000, a margin of 3,450,880 B (1.35%).
+  - Over every timed repeat of both arms it is 254,005,248, a margin of 0.78%.
+  - Both hold only against the P4-extended binding of 256,000,000. The unextended binding of 230,400,000 would fail, which is why precondition 1 matters.
+  - The margin is carried into C3: Stage 1c's M̂₁c and Stage 2's PA-3b are read against it. A figure that erodes it goes to an operator ruling (r2 §9 PA-3).
+- **Still open (C3 and later).**
+  - RC-2: the owner-text set, with corrections 3 and 8.
+  - RC-3b:
+    - Stage 1c through the built adapter, with SR-1..SR-9, P-1..P-7 and P-3/P-4/P-5 hard;
+    - the coordinator's recorded read of the `--stage 1c` harness diff;
+    - the executed `bind_budget` Σ check on the built `/v7`;
+    - Stage 2/PA-5 with the named worker-side residual;
+    - PA-3b, with its additive assumption UNVERIFIED;
+    - the pilot-budget term's validation through SR-8.
+  - OQ-1, Q1, Q7 and Q9.
+  - The RC-4 implementation and OF attestations at their assigned gates.
+- **Next.** The next coordinator issues the bounded S5 build handoff from this release head. This entry dispatches nothing.
+
+**Not granted:**
+- any production value, budget or cap;
+- production qualification, activation or live authority;
+- any arm, deployment or trade;
+- S5 acceptance or a C3 decision;
+- Stage 1c or Stage 2 execution without its C3 preconditions;
+- any change to a locked or frozen control.
+
+### Coordinator — S5 TEST_ONLY build dispatch card drafted, 2026-09-28
+
+The CP-1b ruling's "Next" line (the bounded S5 build handoff from the release head) is now drafted as [the S5 build dispatch card](../../briefs/handoffs/2026-09-28-s5-test-only-build-dispatch.md), for review and the operator's merge.
+- **What it does:** it freezes the S5 packet at the release head `05f3788` and dispatches it to the packet's named executor, GLM, through `glm_agent`. It adds no build requirement.
+- **Where the build stops:** at the packet's §5 push-and-return, before any Linux or CI run.
+- **Scope:** the packet's §2 files only. `fixture_producer.py`, which `/v7` precondition 1 edits, is one of §2's installed fixtures.
+- **Drift check at drafting:** `origin/main` `d86f6ff` changes no code against `05f3788`, and the packet is byte-identical (SHA-256 `058c265e…d68c9`).
+
+**Not granted:** dispatch before the merge; Stage 1c; any Linux or CI run; C3; S5 acceptance; any production value. RC-2, RC-3b and every C3 obligation in the CP-1b ruling stay open.
+
+**Review folded, 2026-09-28.** One focused reviewer's four fixes and three minor findings on the draft (`6bf194d`) are folded into the card (its §9 records them). The corrections: `fixture_producer.py` is inside §2; the CP-1b ruling is read at the dispatch revision, not at the release head; the return names the `/v8` snapshot diff and the E-case ownership and defers the Linux-only items; the acceptance list carries every Windows-run §2 test file; and each `s5` dispatch, the subset iteration first, needs its own grant at C3, distinct from the C3 step 2 grant for the acceptance-grade run. A second focused review of the fold, on `f178c17`, found no blocker, and its five minor corrections are applied.
+
+**Merged, and dispatch SHA recorded, 2026-09-28.** Codex accepted the card as a drafting outcome at `f98380d`, and the operator merged #547 at `eef77836473f7bc304018217f452fb68daa40f17`. That merge is the frozen dispatch revision in the card's §9, and the §9 premise items hold against it. This dispatches nothing: the GLM build dispatch needs the coordinator's grant, and every item under "Not granted" above still stands.
+
+### Operator acceptance and coordinator application — RC-2 owner-text set (C3), 2026-09-29
+
+**Source.** In session on 2026-09-29 the operator wrote: "accept corrections 3 and 8, and use the optional O-10 landing". Earlier the same day the operator gave GO to prepare the RC-2 owner text. Corrections 3 and 8 are the C3 evidence corrections in the register of `docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md`; correction 8's block replaces correction 3's and is the operative C3 check.
+
+**Applied by this entry's commit**, against the pinned application head `origin/main` `3ce500e`:
+- the accepted note's §3.1–§3.10 PROPOSED passages, verbatim, at their anchors, except for the four amendments recorded below. Every anchor is unchanged between `875ecf29` and `3ce500e`, and every "Current" quote matched its owner line before writing:
+  - boundary spec §3.1;
+  - full-E1 spec §2.2a, §2.4 (first and last paragraphs), §2.5, §2.6 (the two table rows and the new paragraph) and §5;
+  - slices plan contract decision 3;
+  - S5 draft §2.3.
+- the two D-2 bridging notes ("This note is removed when the §2.6 text lands at C3"): contract decision 6 and S5 Behavior.
+
+**Amendments after Codex review of this PR (2026-09-29).** Four passages differ from the accepted note's text:
+- §2.2a seed digest (note §3.2). The note says each seed is replaced by "its digest", which leaves the construction undefined. The applied text specifies HMAC-SHA256 keyed by the attempt salt over the seed record's canonical bytes, with the client recomputing after reveal. The operator chose this wording in session on 2026-09-29. It is the wording proposed in `docs/notes/2026-09-27-host-obligations-assignment.md`.
+- §2.6 re-execution limits (note §3.6). The note says "once, and at most twice per campaign". The applied text restates accepted rule R9 of `docs/notes/2026-09-26-s5-decision-draft.md`: once per interruption, at most twice per campaign, and an interruption of the second re-execution is terminal. This restates R9 and adds no new limit. The operator accepted this wording in session on 2026-09-29.
+- §4 release falsifier (outside the note's passages). "Repeats a started draw" now carries the same exemption the accepted §5 text has: a §2.6 bounded same-sample re-execution is not a repeat. Without it, exercising the §2.6 path would trip the falsifier. The operator accepted this wording in session on 2026-09-29.
+- Contract decision 3, cumulative bound (note §3.8). The note's inequality omits the control-helper CPU. The applied text adds it: payload quota × guardian runtime + guardian CPU allowance + bounded control-helper CPU ≤ the work's reservation, and settled charges + open reservations ≤ the frozen campaign cap, with the existing enforcement-granularity margins included in the allowances and counted once. This corrects an incomplete bound and restores the existing accounting. `guardian_unit_spec` subtracts `control_calls × (control_cpu_seconds + cpu_granularity_seconds)` before setting the guardian's `LimitCPU` (`ops/c1_rail/qualification/execution/campaign_supervisor.py`, lines 284–298), `_guardian_bus_call` documents the helpers as bounded separately (same file, lines 1574–1580), and the source analysis states the bound with the helper term (`docs/notes/2026-09-26-s5-decision-draft.md:211`). It is not a new ceiling, retry allowance or recovery authorization. The operator chose this in session on 2026-09-29. K3/recovery verifies that the complete bound remains enforced.
+
+**Evidence** (on the applied tree):
+- correction 8's block passes on the CRLF tree and an LF mirror, and fails on the unapplied tree as the note predicts;
+- correction 3's block passes (for the record);
+- the delta's §10 hook prints no `UNROUTED` for the boundary, K3, N1 or N2 rows. The full hook still prints `UNROUTED` for 13 rows outside RC-2 (K1, K2, K4–K8, N3–N5, E1–E3), which are not this set's.
+
+**O-10: not applied.** The accepted note carries no O-10 passage: OQ-5 ruled it "Not used", and the note says the row is not drafted. The only earlier draft (S5 draft §1.5(b)) conflicts with:
+- CP-1a (5)'s owner;
+- D-8's admission-crash wording;
+- §3.3's no-salt-hash rule.
+
+Applying it would mean choosing wording. The coordinator drafted a reconciled O-10 row for the umbrella §0.8. The operator accepted it on 2026-09-29, and it lands in PR #555 after this commit merges, so that its routing reference to full-E1 spec §2.4 resolves.
+
+**Effect.** RC-2 is met when this commit and the O-10 landing (PR #555, the optional RC-2 landing place the operator chose) are both merged and reviewed, and the C3 record cites both. Until then RC-2 stays open.
+
+*[Updated 2026-09-30: both landings are merged. #552 merged at `37b590b` and #555 at `6c6759f`; this record cites both. The condition above is met on the merged, reviewed landings; the forward-looking text is the state at the time of writing.]*
+
+**Not granted:** C3; S5 acceptance; Stage 1c; any Linux or CI run; any production value; the O-10 text.
+
+### Operator rulings and recorded harness read — S5 C3 step 1, 2026-09-29
+
+**Source.** The operator confirmed these in the "Coordinate parallel sessions" session on 2026-09-29 ("confirmed. send the read"). That session relayed them to this one, and the operator confirmed the relay directly here the same day ("Yes, record A–C").
+
+**Reviewed heads.**
+- S5 executor return: `claude/s5-part-a` at `c7713e7`, status DONE_WITH_CONCERNS (packet §7).
+- Stage 1c harness: `claude/s5-stage1c-harness` at `0fe3e25`, which is `c7713e7` plus one harness commit.
+
+**A. Recorded read of the Stage 1c harness diff** (r2 §12.4: "Without that record the dispatch is not made").
+- **Scope:** two files only, `measure_part_a_max.py.txt` and its README under `docs/notes/2026-09-27-s5-part-a-measurement/`. Nothing under `ops/`, `core/`, `tests/` or the workflow changed.
+- **The eight harness decisions are read and accepted:**
+  1. the SR-5 capture is staged once per job and copied into each repeat;
+  2. staging runs in a child process;
+  3. the boundary opens before the receipt and assessment reads, which is conservative;
+  4. admission is the whole `admit_source` call;
+  5. the guard's memory limit is 64 GiB, so it measures and never trips;
+  6. an S5-D1 prefix failure is I-4;
+  7. the parent check is I-7 at summarize, for both jobs;
+  8. P-7 is checked through `run_worker.__globals__` and `co_names`, before and after the call.
+- **Checked:** the 1c path's post-call `dataclasses.replace(request, within_pp=...)` only rebuilds the record's workload description, outside the boundary. The adapter builds its own request, so the seam is not bypassed.
+- **Condition before dispatch.** Run `tests/test_s5_part_a_measurement_harness.py` on `0fe3e25` through the launcher and record the result.
+  - **Result (2026-09-29, from a detached LF worktree, ops-env CPython 3.13.2):** 138 collected, **129 passed, 8 skipped, 1 failed**. Record `20260929T184959Z-397992611a69` (SHA-256 `3047df3a…c6ce3a`), `source_stable` true, capture complete.
+  - The one failure, `test_cli_unreadable_start_head_is_i7[ÿþ]`, **reproduces identically on the base `c7713e7`**: record `20260929T185050Z-5209d398750b` (SHA-256 `1d69db75…f0fd1`), with the same counts. No additional failures were observed in the executed Windows cases; the eight POSIX-only cases remain unexecuted there.
+  - The 8 skips are the POSIX-stub workflow-step tests, which do not run on Windows.
+  - The condition's word "passing" is **not literally met**, because of that one base-reproduced Windows failure. The operator decides whether this satisfies it before any Stage 1c dispatch.
+  - **Operator ruling, 2026-09-29:** "met, and include the harness regression module in the first Linux subset". The condition is **met**. `tests/test_s5_part_a_measurement_harness.py` runs on Linux alongside the first C3 Linux subset, where its 8 POSIX-stub cases execute. The S5 subset selector (`-f mode=s5 -f cases=…`) selects only the boundary-integration files, so this module needs a companion Linux run bound to the same head. Retain the companion run's launcher record and cite it beside the first subset's record, with both records identifying the same tested commit and the companion results showing all eight POSIX-stub cases executed. Neither run is granted by this entry.
+
+**B. Rulings on the §7 concerns of `c7713e7`.**
+1. The four out-of-§2 test files (`test_campaign_funding.py`, `test_campaign_snapshot_versions.py`, `test_checkpoint_widening.py`, `test_checkpoint_validation.py`) are **ADMITTED**, test-only.
+2. The G5 completion-state tuple gaining `FULL_PASS_READY` and `PART_A_FAILED` is **ACCEPTED**.
+3. G5 dropping full source admission for PART_A is **ACCEPTED for TEST_ONLY**, on condition that Codex's C3 review confirms the G5 closure rule requires it. G5 relies on the contract-pinned calendar digest and the frozen FULL population.
+4. Pilot identity checked against the plan is **ACCEPTED for TEST_ONLY**. **Carried forward:** before the acceptance-grade or production run it must be strengthened to an independently observed pilot draw.
+5. The P-4 by-construction limitation is **ACCEPTED**: byte equality with the frozen derivation is at least as strong as a parser refusal.
+6. The SR-8 CPU split exported as null is **ACCEPTED** as disclosed.
+7. The hook-workaround writes are **ACCEPTED**: they were in scope and reviewed before each commit, and no new rule is added. Codex's C3 review is asked to look closely at the escalation-lane commits `e38b308`, `c2f834a`, `3362b43` and `d4afa5b`.
+8. The Linux cases were not executed. There is no ruling; the C3 Linux grant covers them.
+9. Memory at zero headroom from `bind_budget`: **PROCEED**. Stage 1c measures it. A measured excess is a stop at C3, and no budget is widened beforehand.
+
+**C. The executed `bind_budget` evidence is now durable.** It is in [`docs/notes/2026-09-29-s5-c3-record/`](../../notes/2026-09-29-s5-c3-record/README.md): the script and its output, with SHA-256 pins.
+- Σ CPU 1,680 ≤ 10,000; Σ wall 4,200 ≤ 10,000; max phase memory 256,000,000 = 256,000,000; state `BOUND`.
+- The unextended control is `BUDGET_EXHAUSTED`.
+- **RC-3b's executed budget-binding check is done; RC-3b remains open overall.** Stage 1c, measured memory feasibility, and Stage 2/PA-5 remain outstanding.
+
+**Codex C3 step-1 review, 2026-09-29: RESOLVED** (a reviewer verdict, not C3 or S5 acceptance). Scope: `05f3788..c7713e7`, the four escalation-lane commits and the rulings above.
+- **B3: yes.** The unchanged closure test (`tests/ops/qualification/execution/test_runtime.py:20`) excludes `production_source` from G5, so full source admission would violate it. The calendar-based replacement satisfies the rule and refuses all four re-minted mutations: nonexistent session, wrong-position session, substituted prefix and reordered prefix. The rule requires the loader's exclusion; it does not uniquely prescribe this implementation.
+- **B7: yes.** `e38b308`, `c2f834a`, `3362b43` and `d4afa5b` match their declared scope. There are no weakened tolerances, suppressed assertions or production forcing paths. `537cb17` corrects `d4afa5b`'s wording to "before artifact creation".
+- **Conformance.** Every SR-1..SR-9 and P-1..P-7 node exists, exercises its stated behavior and passes; P-3, P-4 and P-5 hold. The `/v7` roles, `/v8` snapshot, two-artifact custody and transitively bound N2 baseline are consistent with the packet. SR-8's Linux export production and P-7's Stage 1c execution remain unexecuted.
+- **Disclosures.** All six are confirmed: pilot identity proves plan agreement only; P-4 holds by construction for the plans; G5 completion gains both states; the CPU split is null; above-FULL is unreachable at N2 depth 60; the inode case proves neither SIGKILL nor power-loss behavior.
+- **Linux: yes, conditionally.** Green execution of the four Part A nodes would establish the four required witnesses. Discharging packet §4's full Linux line also needs the full S4-plus-Part-A selection with valid retained evidence.
+- **Verification:** a fresh Windows launcher run of nine reviewed modules on the unchanged `c7713e7` (ops-env CPython 3.13.2): `python -m pytest tests/ops/qualification/execution/test_campaign_part_a.py tests/ops/qualification/execution/test_worker.py tests/ops/qualification/execution/test_runtime.py tests/ops/qualification/execution/test_release.py tests/ops/qualification/execution/test_profile.py tests/ops/qualification/test_journal_snapshot.py tests/ops/qualification/test_checkpoint_validation.py tests/ops/qualification/test_result_adjudication.py tests/test_s2_run_evidence.py -q` (the record's `requested_command`). The harness regression module is not among them; it ran separately on Linux (below). **340 passed, 0 skipped**; record `20260929T192731Z-28f8c6e20559` (SHA-256 `f22359a9122235f530d0af1d05cdecaf3cb973ede93d6d6e1363c7175f549d9c`). The record shows completed, exit 0, `source_stable` true, complete capture and no report errors; the coordinator re-read it.
+
+**Still open at C3:**
+- the operator's C3 step-1 decision;
+- Stage 1c: Linux dispatch after the operator's C3 Linux grant;
+- RC-2's merge (#552) and O-10's merge (#555);
+- Stage 2/PA-5 after the acceptance-grade run;
+- OQ-1, Q1, Q7 and Q9.
+
+**Not granted:** the C3 Linux grant, any dispatch, C3 acceptance, any merge, and any production authority.
+
+### Operator acceptance — S5 C3 step 1 accepted; C3 Linux grant, 2026-09-29
+
+**Source.** In session on 2026-09-29 the operator wrote: "Accept C3 step 1. B3 accepted, with "G5 independent bars verification" carried to the CP-6 inventory as a residual. B4 accepted for TEST_ONLY; strengthening to an independently observed pilot draw is due with T05, before CP-6. B7 closed per Codex. C3 Linux grant: open a draft do-not-merge PR for claude/s5-stage1c-harness to get the harness module's Linux run at 0fe3e25, cited beside the first subset. Then Stage 1c (dry run, then measure), the first diagnostic subset, the full S4-plus-Part-A selection with retained evidence, then Stage 2/PA-5. No pushes to claude/s5-part-a or claude/s5-stage1c-harness while any run is in flight."
+
+**Effect.**
+- **C3 step 1 is ACCEPTED** on the S5 return `c7713e7` and the harness `0fe3e25`. The basis is the entry above: Codex RESOLVED, and the executed `bind_budget` check.
+- **B3 is accepted.** The residual **"G5 independent bars verification"** is carried to the **CP-6 inventory**. For PART_A, G5 does not re-verify the calendar ↔ population-index ↔ bars consistency.
+- **B4 is accepted for TEST_ONLY.** Strengthening pilot identity to an independently observed pilot draw is **due with T05, before CP-6**.
+- **B7 is closed** per Codex's review.
+- **C3 Linux grant, in this order:**
+  1. The harness module's Linux run for `0fe3e25`, through a draft, do-not-merge PR of `claude/s5-stage1c-harness`. It is cited beside the first subset. `pull_request` CI checks out the PR merge ref, so the coordinator binds the run to `0fe3e25` by showing that the harness module, the harness and the measurement workflow are byte-identical there.
+  2. Stage 1c: the dry run, then the measurement, under r2 §12.4 and the §12.7 caps.
+  3. The first S5 diagnostic subset.
+  4. The full S4-plus-Part-A selection (`mode=s5`), with retained evidence.
+  5. Stage 2/PA-5 from that run.
+- **Standing constraint:** no pushes to `claude/s5-part-a` or `claude/s5-stage1c-harness` while any run is in flight.
+
+**Not granted:** S5 acceptance (it follows Stage 2/PA-5), any merge of the draft PR, any production value, and any activation or live authority. RC-2 still becomes met only when #552 merges and is reviewed. *[Updated 2026-09-30: #552 and #555 are merged (`37b590b`, `6c6759f`); RC-2 is met.]*
+
+### Coordinator execution — C3 Linux grant steps 1–2; Stage 1c stopped PA3_FAILURE; operator ruling: fix the harness and re-measure, 2026-09-29
+
+**Step 1: the harness regression module on Linux.**
+- **Run:** draft do-not-merge [#557](https://github.com/Joshua-Asante/first-passage/pull/557), `pytest (3.11)` run `36624580401` (`pull_request`). It tested merge `0b5732ae` = `main` `37b590b` + `0fe3e25`.
+- **Binding to `0fe3e25`:** at that merge, `tests/test_s5_part_a_measurement_harness.py`, the harness, its README and `.github/workflows/qualification-s5-part-a-measurement.yml` are byte-identical to `0fe3e25`.
+- **Result:** **138 passed, 0 failed, 0 skipped**, including the 8 POSIX-stub cases that Windows skips. The run's junit SHA-256 is `080b4f0a4f883d2fcedcd05f149763380ad67067e8efd9b9953dee3dc2c0e796`. The JUnit file (1.33 MB, over the public tree's 1 MB file cap) is archived privately in [first-passage-archive#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846); the second #557 run (`36641530220`, `b5f53da`) JUnit `4b2cb9ae4109196579a22e4fb61efa2c1ea29d6bb88544c74a14ca1254fdcea` is archived with it.
+- It is cited beside the first diagnostic subset, as the operator ruled.
+
+**Step 2: Stage 1c** (the r2 §12.3 block in its Stage 1c form, from the C3 record worktree; `BRANCH=claude/s5-stage1c-harness`, `BASELINE=2026-09-29T00:00:00Z`, `S5_HEAD=c7713e7`).
+- **Dry run `36634115845`:** ran on `0fe3e25`, exit 0, `stop_class` none, cleanup clean, `dispatched_parent` = `c7713e7`.
+- **Measure run `36634465166`:** ran on `0fe3e25`. Jobs a and b each had exit 0 and validity OK, clean cleanup receipts and `dispatched_parent` = `c7713e7`. No re-run was used.
+- **CPU and wall screens:** feasible.
+- **Combined record** `stage1c/36634465166-combined.json`: `memory_feasibility` **FAILED**, `stop_class` **`PA3_FAILURE`**. The PA-3a screen gives 1.5 × M̂ = **346,773,504 B > 256,000,000 B**, where M̂ is job a's `forced-1` peak of 231,182,336 B. Job b alone read VERIFIED (235,991,040 B).
+- **The block stopped** on the stop class, as §12.7 requires.
+- **Evidence retained** under `docs/notes/2026-09-27-s5-part-a-measurement/stage1c/`, with the manifest `downloads-s5-1c-20260929T213343Z.sha256`.
+  - Following the Stage 1b precedent, `journal.log`, `summarize.log`, `probe.json` and `git-head.txt` are held back from the public tree. **Their private archive to first-passage-archive is done (2026-09-30, [first-passage-archive#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846), awaiting the operator's merge): the held-back files of the dry runs `36634115845` and `36647169582` and the measurement runs `36634465166` and `36647434808`, checked by the archive tool's content-address verification.**
+  - The public-clone review found only runner work-tree paths.
+
+**Diagnosis (coordinator).** The excess is the **first repeat of each job's first arm**, whichever arm that is:
+
+| Repeat | Peak | CPU |
+|---|---|---|
+| job a `forced-1` | 231,182,336 B | 111.6 s |
+| job b `prescribed-1` | 232,239,104 B | 76.5 s |
+| other arm's cold repeat | about 157–158 MB | normal |
+| warm repeats | 87–91 MB | 5–11 s |
+
+That repeat is the one where harness decision 1 builds the SR-5 staged N2 capture: a genuine depth-60 N2 worker, run in a child process inside the repeat's own unit. Its CPU is excluded as setup, but its memory lands in the unit's `memory.peak` (r2 §8.2). The PART_A payload footprint is the cold and warm figures, consistent with Stage 1b's cold maximum of 169 MB.
+
+**Operator ruling (2026-09-29), chosen over two alternatives:** "Fix harness, re-measure". The alternatives were to rule the staging repeat out of this record, or to treat 346.8 MB as binding and hold S5. Under B9 this record stays a stop: no budget is widened, and it is not reinterpreted.
+
+**Next:**
+- the harness fix moves the SR-5 staging outside every measured unit, and a repeat refuses without the staged cache;
+- the measurement branch is rebuilt as `c7713e7` plus one harness commit;
+- the operator records a read of the new diff;
+- the operator gives a fresh Stage 1c approval with a new `BASELINE`, for one dry run and one measure (this approval's §12.7 measure dispatch is spent).
+
+The first diagnostic subset and everything after it wait for a valid Stage 1c.
+
+### Archive record for the S5 C3 evidence (2026-09-30)
+Private copies in `first-passage-archive`; none is acceptance evidence.
+- [#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846) (merged): the held-back Stage 1c files for dry runs `36634115845`, `36647169582` and measurement runs `36634465166`, `36647434808`, plus the #557 Linux JUnit files (`080b4f0a…`, `4b2cb9ae…`).
+- [#847](https://github.com/Joshua-Asante/first-passage-archive/pull/847): the executed harness delta `c7713e7..b5f53da` (README, `measure_part_a_max.py.txt`, the harness test) as a tar, SHA-256 `004f69a27009fb6b1b4406e1a5f122466b1433ad31d9f8339268bd70367d1693`. `b5f53da` is no longer reachable from `claude/s5-stage1c-harness`.
+- [#848](https://github.com/Joshua-Asante/first-passage-archive/pull/848): the diagnostic subset artifacts `36648289195` and `36652211355` (49 files); per-file hashes in [`subsets-archive.sha256`](../../notes/2026-09-29-s5-c3-record/subsets-archive.sha256) (manifest SHA-256 `1f2ab5bade742e065990c528538389cb1d100a37e540ee1285f513ac2c538e62`). - [#849](https://github.com/Joshua-Asante/first-passage-archive/pull/849): diagnostic subset `36660441353` (34 files, the re-run on `d2e00a9`); manifest [`subset-36660441353-archive.sha256`](../../notes/2026-09-29-s5-c3-record/subset-36660441353-archive.sha256), SHA-256 `4558561501efcb2bb6589b9d522bce01d1812fb371955ee797d8d256a740cb86`.
+- [#850](https://github.com/Joshua-Asante/first-passage-archive/pull/850): diagnostic subset `36670938260` (37 files, run at `072c133`, JUnit `c75cb48e…`); manifest [`subset-36670938260-archive.sha256`](../../notes/2026-09-29-s5-c3-record/subset-36670938260-archive.sha256), SHA-256 `dbfdd7f9316a2b65c3ddcd0eb6a4887c5f3478da68bb4f5c57c285e100901009`.
+- [#851](https://github.com/Joshua-Asante/first-passage-archive/pull/851): the full S4+Part-A run `36673465130` at `072c133` (103 files). **The run is RED:** a memory-cgroup OOM in the shared qualification slice (limit 250000 kB) killed the supervisor during S5 node (c), the 12 later nodes failed with a refused connection, and 14 of 26 failed. Load-bearing evidence, not acceptance. Manifest [`full-36673465130-archive.sha256`](../../notes/2026-09-29-s5-c3-record/full-36673465130-archive.sha256), SHA-256 `d2ac1f1050fc920c0635af0de233da2af70591acc6caecfdb7d612ce2e2a1a01`.
+- [#852](https://github.com/Joshua-Asante/first-passage-archive/pull/852): the OOM diagnosis runs. `36678879864` is the instrumented full run at `553270d` (107 files, **RED**, it reproduced the C3 memory-cgroup OOM; includes `fp-diag/memory-samples.jsonl`); manifest [`diag-36678879864-archive.sha256`](../../notes/2026-09-29-s5-c3-record/diag-36678879864-archive.sha256), SHA-256 `80e5edf904cf92401c06fa9f117ab89701da1f6ec140f053039a54ff6eac42f4`. `36677826842` is the aborted attempt at `f0fc885` (14 files, zero tests, plugin import failure); manifest [`diag-36677826842-archive.sha256`](../../notes/2026-09-29-s5-c3-record/diag-36677826842-archive.sha256), SHA-256 `b1fc2009eaecb70a9fbbd96747c24f8fae5fc519979d3336e695fbe8488e8cf4`. Diagnostic evidence, not acceptance.
+
+- [#853](https://github.com/Joshua-Asante/first-passage-archive/pull/853): the full S4+Part-A run `36766144433` at `606e6e0` (132 files; **GREEN**, 27/27 required nodes, record `20d0a964…`). Its `boundary/journal.sqlite` is 182 MB, over the archive tool's 95 MB cap, so it is archived as `journal.sqlite.gz` (SHA-256 `7ace9a9d11fbd0e79bdde119739597b9b0cf9119f269c24cba32ade226c84ef6`). That file decompresses byte for byte to the raw journal, SHA-256 `efec03b10f30f74ec8bd29a26792b5864fc99313c69f3b51fda3a305b1f1be86` (round trip verified). Manifest [`full-36766144433-archive.sha256`](../../notes/2026-09-29-s5-c3-record/full-36766144433-archive.sha256), SHA-256 `f1be0c76dc4447ae21ffcbc43dad3cc6b20633a20d9404e84cf9306dffccf52e`; it lists both the raw journal and the `.gz`. A full local copy is kept, gitignored, at `local_artifacts/s5-c3-evidence/full-36766144433/` in the primary checkout. Recorded by the coordinating session on 2026-09-30; archiving was approved by the operator.
+
+#846–#852 are merged; #853 is open until the operator merges it. Later diagnostic subsets are archived the same way once the S5 session confirms them final.
+
+### Harness fix `b5f53da` read; fresh Stage 1c approval, 2026-09-29
+
+**Harness fix.** `claude/s5-stage1c-harness` was rebuilt as **`b5f53da44ea9ce4e75c17501ec8051836f5b2edf`** = `c7713e7` + one harness commit. It supersedes `0fe3e25` (force-with-lease; no run was in flight).
+- **Scope:** three files only: `measure_part_a_max.py.txt`, its README, and `tests/test_s5_part_a_measurement_harness.py` (7 new tests, 14 cases). `.github`, `ops` and `core` are unchanged.
+- **Staging:** SR-5 staging runs in the probe step's `--probe-verdict`, after the probe unit stops and before any `fp-s5pa-1c-*` unit starts. Its own peak is recorded as `setup_excluded` (`n2_staging`). Each repeat still copies and verifies the staged mount inside its unit. A repeat without the cache refuses (I-6).
+- **README:** decision 1's old text is shown struck through as SUPERSEDED.
+- **Windows regression at `b5f53da`:** record `20260929T224520Z-b94174d9d790` shows 143 passed, 8 skipped (POSIX-stub) and 1 failed, the base-reproduced `test_cli_unreadable_start_head_is_i7[ÿþ]`. `--check-stage 1c` exits 0.
+
+**Coordinator read** (the "Coordinating parallel Claude sessions" session, 2026-09-29): **all six conditions MET, with two notes and no blocker.** The operator recorded it here on 2026-09-29.
+- **Note 1 (file ownership):** the stager runs under `sudo`. The repeat units also run as root: `sudo systemd-run` with no `--uid`, workflow `:226`. A dry-run refusal is checked explicitly before the measure dispatch.
+- **Note 2 (side effect in a verdict helper):** SR-5 staging now happens inside `--probe-verdict`, a helper whose name says it only judges. This is accepted because it keeps the workflow frozen, and `--check-stage 1c` pins the dependency. **By operator choice it is recorded here rather than in the README**, so the reviewed head stays `b5f53da`. The README takes it with the next harness change, if any.
+
+**Operator approval, 2026-09-29:** "Record read + approve".
+- A **fresh Stage 1c approval** for **one dry run and one measure** on `b5f53da`, under r2 §12.7's caps, with **`BASELINE=2026-09-29T23:07:49Z`**.
+- It is a new measurement, not a re-run of `36634465166`. That run stays the recorded stop.
+- It is dispatched only after #557's Linux regression of the harness module is bound to `b5f53da` by byte-identity and passes.
+
+**Pre-committed stop rule:** if this measurement also fails PA-3 on memory, it is a real result. The stage stops at C3 and returns to the operator with the numbers. There is no second harness fix for the same issue, and nothing is widened.
+
+**Owed from the operator:**
+- the private archive of the held-back Stage 1c files;
+- the #556 merge.
+
+### Coordinator execution — Stage 1c (fresh approval) VALID, memory VERIFIED, 2026-09-29
+
+**Linux regression of the harness module at `b5f53da`** (the approval's precondition):
+- **Run:** #557 `pytest (3.11)` run `36641530220` tested merge `9acfc804` = `028c5ce` + `b5f53da`. At that merge the module, harness, README and measurement workflow are byte-identical to `b5f53da`.
+- **Result:** **152 passed, 0 failed, 0 skipped**, including the 14 new cases and the 8 POSIX-stub cases. The run's junit SHA-256 is `4b2cb9aee4109196579a22e4fb61efa2c1ea29d6bb88544c74a14ca1254fdcea`.
+
+**Stage 1c** (the r2 §12.3 block in its Stage 1c form; `BASELINE=2026-09-29T23:07:49Z`; `MEAS_HEAD=b5f53da`; `S5_HEAD=c7713e7`):
+
+| Check | Dry run `36647169582` | Measure run `36647434808` |
+|---|---|---|
+| Head | `b5f53da` | `b5f53da` |
+| Exit / validity | exit 0 | jobs a and b exit 0, validity OK |
+| Cleanup receipts | clean | clean |
+| `dispatched_parent` = `measured_parent` = `c7713e7` | yes | yes |
+| Re-run used | — | none |
+
+- **Staging placement.** Every record shows `n2_staging.placement = probe_verdict_before_measurement_loop` and `stager_in_measured_unit = false`, with the stager's cgroup `/system.slice/hosted-compute-agent.service`. The stager's own peak RSS, about 120 MB, is recorded as `setup_excluded`.
+- **Coordinator note 1 is checked:** no repeat refused, and the dry run's exit is 0.
+- **Combined record** `stage1c/36647434808-combined.json` (SHA-256 `024cdcdd7e3c499af49f1358f7a4a6048641badc9b0679a99999f4bb8ba1f87e`): `memory_feasibility` **VERIFIED**, `stop_class` **none**, validity OK.
+  - **PA-3a:** 1.5 × M̂ = **235,739,136 B ≤ 256,000,000 B**, a margin of 20,260,864 B (7.9%).
+  - **Σ screen:** feasible (CPU input 120 s ≤ 8,440 s; wall input 300 s ≤ 6,100 s).
+- **Per-repeat peaks, both jobs:** cold repeats 155.8–157.3 MB; warm repeats 87.7–91.1 MB.
+- **The stopped record** `36634465166` (PA3_FAILURE) stays retained as the stop, and nothing was widened.
+- **Held back** as before: `summarize.log`, `probe.json` and `git-head.txt` (and `journal.log`, never copied). **Archived with the run above ([first-passage-archive#846](https://github.com/Joshua-Asante/first-passage-archive/pull/846), awaiting merge).**
+
+**Effect.** Stage 1c through the built adapter is valid and **ends the PART_A ceiling's provisional status** (r2 §12.4 output; r2 §13 step 6), with the named worker-side residual still carried by PA-5.
+
+**Next under the C3 Linux grant:**
+1. The first diagnostic subset: `-f mode=s5 -f cases='test_s5_'` on `claude/s5-part-a`, which selects the four Part A Linux nodes. The harness module's Linux runs above are cited beside it.
+2. The full S4-plus-Part-A selection, with retained evidence.
+3. Stage 2/PA-5 from that run.
+
+### Coordinator execution — first diagnostic subset: two S5 build defects found; operator rulings, 2026-09-30
+
+**Subset 1: run `36648289195`** (`-f mode=s5 -f cases='test_s5_'` on `claude/s5-part-a` at `c7713e7`; `DIAGNOSTIC_SUBSET`; cleanup ok).
+- **Result:** all four Part A nodes **errored at setup**. The `/v7` boundary install failed with `parse_release`: "funding profile is persistence-only; runtime release not enabled".
+- **Root cause:** `tests/integration/qualification_boundary/fixture_producer.py` `release_document` mapped profiles v3–v6 only, so a `/v7` profile kept release schema v1. Precondition 1 had extended the cap tuple in the same file but not this mapping. The precondition-1 unit test masked the gap by overwriting the schema by hand.
+- **Operator ruling:** "Fix on S5 branch". The fix is **`c016c60`** (escalation lane): `/v7` maps to release `/v7` with dispatch set `['N1','N2','PART_A']`. The unit test now takes `release_document`'s output as-is, and it fails on the unfixed fixture with `release/v1`. The change touches installed test fixtures only; `ops`, `core`, `.github`, `scripts`, `tools` and `docs` are unchanged since `c7713e7`.
+- **Stage 1c equivalence.** Stage 1c's staging path imports `test_profile` only for `document()`. Between `c7713e7` and `c016c60`, `document()` and every module-level statement of `test_profile.py` are AST-identical, so the Stage 1c result (`36647434808`) stands for the measured code.
+- **Harness branch** rebuilt as **`c3bec2f`** = `c016c60` + the same harness commit. Its harness files are byte-identical to the reviewed `b5f53da`.
+
+**Subset 2: run `36652211355`** (the same subset on `c016c60`; `DIAGNOSTIC_SUBSET`; cleanup ok). The `/v7` install now succeeds.
+
+| Node | Result |
+|---|---|
+| (c) payload death between the Part A writes | **passed** |
+| (a) genuine Part A without expansion | **failed**: "bounded N1 campaign wait expired" (1,080 s) |
+| (b) genuine below-floor Part A | **failed**: same |
+| (d) g5 unit death and exact retry | **failed**: the kill returned 1, "unit not loaded" |
+
+**Artifact diagnosis** (s2-linux-run §3; read-only, from `journal.sqlite`, `journal.log` and the units):
+- **(a) and (b) are a ROUTE DEFECT.** Every attempt reached `PART_A_READY` in about 300 s, and the Part A worker completed. Then the `part_a_g5` commit failed inside its own transaction with `ValueError: campaign budget state differs`, so there was no receipt and the campaign stayed `PART_A_READY`.
+  - **Root cause:** `CAMPAIGN_BUDGET_STATES` (`ops/c1_rail/qualification/journal_snapshot.py:118-129`) and `CAMPAIGN_CHECKPOINT_STATES` (`:491-502`) were never widened for `FULL_PASS_READY`/`PART_A_FAILED`. `d6ea766` added them to `CHECKPOINT_ADVANCES` only, so the T2 snapshot re-parse refuses the new state and the transaction rolls back.
+  - **Windows missed it** because no test drives a real-store `commit_checkpoint_assessment(checkpoint='PART_A')`: the widening test asserts constants only. Codex's C3 step-1 review and the §7 conformance table did not reach it either.
+- **(d) is a TEST DEFECT.** By the service's hold semantics (`service.py:725-728`), the g5 unit exits by itself right after T1. The S3/S4 cases run the same kill with `check=False`, but S5's `assert kill.returncode == 0` (added in 3c for Codex's P2) cannot pass.
+- **(c)'s evidence** reads sound. It is cosmetic that the retained failure reason carries raw docker stream frame headers.
+
+**Operator ruling, 2026-09-30:** "Fix both, re-verify". The fix, on the escalation lane on `claude/s5-part-a`:
+- widen both tuples, and sweep every closed state set for the same omission;
+- add a real-store PART_A commit test that fails on the unfixed code;
+- make (d) assert that the unit is inactive or absent after T1, keeping every load-bearing check.
+
+**Re-verification before the Linux grant continues:**
+- Windows lines 1–3, `check` and `git diff --check` on the new head;
+- a **C3 step-1 addendum**, with Codex re-reviewing the commit path;
+- the harness branch rebuilt, with a Stage 1c byte-equivalence record;
+- one subset re-run.
+
+This is a new defect, not the Stage 1c memory issue, so the pre-committed stop rule does not apply.
+
+### Coordinator execution — re-verification after "Fix both": subsets 3–4, Windows on the fix head, C3 step-1 addendum, 2026-09-30
+
+**Fix commit `d2e00a9`** (escalation lane, on `c016c60`).
+- **Route fix:** `FULL_PASS_READY` and `PART_A_FAILED` are added to:
+  - `journal_snapshot.CAMPAIGN_BUDGET_STATES`;
+  - `journal_snapshot.CAMPAIGN_CHECKPOINT_STATES`;
+  - `campaign_funding._decode`'s state tuple. The sweep found this one; it is load-bearing, because with only the journal tuples fixed the commit still fails with "funding state differs".
+- **Not widened, deliberately:** predecessor-receipt checks that must equal `PART_A_READY`, and `PROGRESSION_PHASES`, where terminal states admit no phase.
+- **New test:** `test_campaign_n2::test_part_a_commit_advances_through_the_real_store` drives a real `CampaignStore` to both terminal states. It fails on the unfixed tuples: record `20260930T021026Z-b44a8e48f267`. The ticket set passes, 140: record `20260930T021459Z-18977f084c59`.
+- **(d) change:** assert the g5 unit is inactive, failed or absent after T1.
+
+**Subset 3: run `36660441353`** (on `d2e00a9`; `DIAGNOSTIC_SUBSET`; junit sha256 prefix `07f2e01073242863`). The route defect is fixed: (a) and (b) now reach their terminal states, and (c) passed. Two test defects that the route defect had masked surfaced:
+- **(a) and (b) failed** the exact staged-role assertion. It expected only the two S5-D1 roles, but the G5 output roles (`attempt_journal`, `runtime_load_trace`, …) are staged too. The assertion was over-narrow; the code was right.
+- **(d) failed** with `NameError: name 'kill' is not defined`. The `d2e00a9` change dropped the binding. This is the **first failed correction** of (d) under AGENTS.md's two-failure rule.
+
+**Second correction `072c133`** (Opus escalation lane, on `d2e00a9`; the Linux test module only, +39/−6).
+- **Staged-role check:** it stays **exact**, against `PART_A_STAGED_ROLES = S5-D1 roles ∪ G5 output roles`. Each role is sourced to `campaign_supervisor.py:1889-1892`/`:1951-1954`, `g5.py:748-759`, `evidence.py:2944-2960` and `policy.py:144-154`. A run-time check confirms the set equals those production constants, and a separate assertion keeps S5-D1 presence explicit. The coordinator condition was to keep the check exact, not narrow it.
+- **(d):** the kill `CompletedProcess` is bound again, and its return code is recorded as a fact.
+- **Local records:** collection 4 in `20260930T041954Z-a597a6e06a4f`; the manifest and selector tests 72 passed, 1 skipped in `20260930T042005Z-ba9bfd218ed6`.
+
+**Windows on `d2e00a9`.** `072c133` changes only the Linux-only module above.
+
+| Line | Record | Result |
+|---|---|---|
+| line 1 | `20260930T023033Z-a30f6d25dabb` | 1248 passed, **2 failed** |
+| line 2 | `20260930T032142Z-cbd001445b30` | 80 passed, 1 skipped; completed, exit 0 |
+| line 3 | `20260930T032313Z-584196cbf455` | 1839 passed, 1 skipped; completed, exit 0 |
+| `check` | `20260930T045102Z-84d632f6b610` | completed, exit 0 |
+| `git diff --check` | — | exit 0 |
+
+Line 1's two failures are the known pre-existing base failures, `test_s2_evidence_tooling_followups::test_validate_inputs_uses_the_wrappers_whitespace_test[\xa0-False]` and `[\u3000 \u2003-False]`. They are outside the S5 change. Line 1 is not a pass, and this record does not describe it as one.
+
+**Subset 4: run `36670938260`** (on `072c133`; `DIAGNOSTIC_SUBSET`; source stable, capture complete, cleanup ok; junit sha256 prefix `c75cb48e7153356c`). **All four Part A nodes passed**, 4/0/0/0. The verification exit of 2 is by design for a diagnostic run.
+
+**Harness branch** rebuilt twice:
+- `cd3623b` on `d2e00a9`;
+- then **`db748f8`** = `072c133` + the harness commit, pushed with a lease from `cd3623b` after subset 4 closed.
+
+Its harness files are byte-identical to the reviewed `b5f53da`: all 91 blobs, empty diff.
+
+**Stage 1c closure equivalence, `c7713e7` → `072c133`** (asked for by the coordinator seat). The full per-module table is in [`docs/notes/2026-09-29-s5-c3-record/stage1c-equivalence/`](../../notes/2026-09-29-s5-c3-record/stage1c-equivalence/README.md). It is computed from git blob bytes by the static import closure, using `runtime.source_closure`'s resolution rule.
+- **Measured closure.** Roots: `worker` (holding `run_part_a_body`), `compute`, `production_source`, `part_a`, `production`, `plan`, `runtime` and `test_contract`, whose `NOW` is imported inside `_repeat_mode_1c`. That is **68 modules**, including `replay`, `model`, `runner` and `test_trust_domain`, with the same membership at both commits. **All 68 are byte-identical** (SHA-256 at each commit is in the table). Codex's C3 re-review (P2) found that the first version of this table omitted `test_contract` from the measured roots and so counted 66. Codex recomputed the closure independently and got the same 68, all identical.
+- **Not in the closure:** `journal_snapshot` and `campaign_funding`, the two ops modules `d2e00a9` changed. So the route fix cannot change what Stage 1c measured.
+- **Staging closure** (outside every measured unit). Roots: the harness's fixtures, `composition_fixture`, `bundle_fixture`, `test_worker`, `test_contract` and `test_profile`. That is 63 modules, and one differs: `test_profile.py`, changed by `c016c60`. The changed definitions are test functions and `fixture_producer_module`. `document()`, the only name staging uses, is AST-identical at both commits.
+- **Result:** Stage 1c `36647434808` (VERIFIED, 1.5×M̂ = 235,739,136 B) covers the measured code at `072c133`. No re-measure decision is needed.
+
+**C3 step-1 addendum.** Two claims behind the step-1 acceptance were incomplete:
+- **§7.7's closed-set claim** (the return's statement that every state set naming the Part A states was widened) did not hold. Three closed sets omitted the new terminal states.
+- **The review did not exercise the commit path.** The Windows suite and Codex's step-1 review had no real-store `PART_A` commit test, only constant assertions. Only Linux exposed the defect.
+
+`d2e00a9` adds that test.
+
+**Codex C3 re-review, 2026-09-30** (scope `c7713e7..072c133` and harness `db748f8`; a reviewer verdict, not C3 acceptance):
+- (A) State-set sweep: no further improper omissions. The remaining narrow sets enforce checkpoint prerequisites or phase-admission boundaries.
+- (B) Staged roles: the exact ten-role union is correct against the cited production paths, for both PASS and FAIL.
+- Harness: SR-5 generation runs outside the measured units. Repeat-local copying deliberately stays inside them. A missing cache refuses with I-6. The harness files match `b5f53da`. Four existing harness checks passed against the `db748f8` source under the validated operations Python 3.13.2.
+- One P2: the closure table omitted `test_contract` from the measured roots. It is corrected above (68 modules), and the conclusion stands.
+- Codex did not re-run the Linux integration or the full suites.
+- **An independent second Codex review** (a cloud task submitted by the coordinator seat, `task_e_6abcabc95e24832c8ea05349c49ef647`): **RESOLVED, no findings**. It corroborates A, B and the harness:
+  - an AST sweep of `ops/c1_rail/qualification` plus a grep of the state literals, which found the remaining narrow tuples are checkpoint-specific guards;
+  - the ten-role set;
+  - the unchanged closure, with neither `journal_snapshot` nor `campaign_funding` in it;
+  - `db748f8`'s blobs matching `b5f53da`;
+  - the (d) assertion.
+
+  It judged the original closure roots appropriate and did not raise the `test_contract` point. The 68-module correction is the more conservative reading, and both agree the closure is unchanged. That review could not run the tests either, because its environment has no `tmp/ops-env`.
+
+The step-1 acceptance stands with this addendum.
+
+**Full S4-plus-Part-A selection: run `36673465130`** (`-f mode=s5` on `072c133`; record `e49e91ce…`, scope `S5_PART_A`, source stable, capture complete, cleanup ok, tested commit = head) is **RED, a C3 memory stop**.
+- **Result:** 14 of 26 required nodes failed; `s2_run_evidence.py` refuses the record.
+- **Passed (12):** every S2 service, S3 N1 and S4 N2 node, plus S5 (a) → `FULL_PASS_READY` and (b) → `PART_A_FAILED`.
+- **Failure:** S5 (c) failed "private transport child failed" during its n2g5 dispatch. At 05:56:41 a memory-cgroup OOM in the shared qualification slice (250,000 kB of 250,000 kB) killed the supervisor service, which ended "Failed with result 'oom-kill'". The 12 later nodes all failed on ConnectionRefused: one cause, a cascade.
+- **Stopped:** no re-dispatch and nothing widened, under step-1 item 9. The evidence is archived privately.
+
+**Diagnosis.**
+- **Operator ruling, 2026-09-30:** "Diagnose first, no runs". A read-only diagnosis followed.
+- **Operator ruling:** "go with the one instrumented run". Diagnostic branch `claude/s5-diag-memory` (not for merge): `072c133` plus a root sampler and a test-labelling pytest plugin only, at the same limit, with no ops, core, tests or tools change.
+  - The first attempt, `36677826842` at `f0fc885`, ran zero tests: `scripts/fp.py:104-105` strips `PYTHONPATH`, so the plugin could not import. That was an instrumentation defect.
+  - The corrected run `36678879864` at `553270d` reproduced the OOM exactly: 1,747 samples, 0 sampler errors.
+- **Attribution: a combination, with the leftover io tmpfs decisive.**
+  - Each work's checkpoint io tmpfs pair (`campaign_supervisor.py:2084-2104`) is stopped only by the harness's campaign cleanup (`tools/qualification_verification/campaign_host.py:155-170`).
+  - Slice shmem equals the mounts' used bytes exactly, +3.17 MB per work: the staged 135-file bundle plus the plan in `in`, and `result.frame` in `out`.
+  - At the OOM: anon 194.8 + kernel 7.1 + shmem 53.9 = 255.8 MB, with 17 pairs. Without the tmpfs, S5 (c) peaks at about 202 MB.
+  - **This is production code/lifecycle, not test debris:** no ops code releases the mounts.
+  - Only four readers use the mounts, all before `retain_checkpoint_capture` (`:2377`). Retry, g5 and recovery read the store only.
+- **Unreclaimable headroom without the tmpfs:** a 225.7 MB peak (anon 199.3 + kernel 26.4, in S4 guardian-death-mid-N2), which is **30.3 MB, 11.8 %**. THP is `enabled=[always]`, with `anon_thp` up to 48 MB. Supervisor anon grows 57.0 → 72.7 MB, then is flat: bounded.
+- **`memory_peak_bytes` = 256,000,000 for attempt `505c81c0` is clipped.** It is the whole slice's never-reset `memory.peak` (`campaign_supervisor.py:974`, `:804`), already at the cap from S3 on. PA-5 compares CPU only. The memory figure bounds only the shared footprint, through PA-3b. A per-phase figure needs a new field, because the store refuses a decreasing `memory_peak_bytes` (`campaign_store.py:3118-3119`).
+
+**Operator rulings, 2026-09-30.** Source: in the coordinating session Joshua wrote "I agree with your recommendation. Send it to the S5 agent." He confirmed all three directly in this session ("Confirmed, proceed").
+1. **io-mount release fix: GO.**
+   - The card is frozen at `docs/briefs/handoffs/2026-09-30-s5-io-mount-release-card.md` on `claude/s5-part-a` and implemented on the Opus escalation lane.
+   - Release happens after `retain_checkpoint_capture`, and after `_archive_part_a_for_inspection` before IN_DOUBT. Campaign cleanup is the backstop.
+   - Order: four fail-first tests → Windows lines 1–3, `check` and `git diff --check` → a closure re-run on the fix head → Codex → one Linux full S4-plus-Part-A selection.
+   - The new Linux mount-count assertion becomes a **required node** under `QEXEC-01`.
+2. **Stage 2 memory, option (a).**
+   - For TEST_ONLY, PA-5 is CPU-only, and PA-3b takes the whole-footprint `memory_peak_bytes` as an upper bound on the shared footprint.
+   - A **per-phase memory field** (the payload unit's own `memory.peak`) is a named item before production qualification, recorded in the CP-6 behavior inventory. It is not built in S5.
+3. **The 11.8 % unreclaimable headroom, option (a).**
+   - Accepted for TEST_ONLY, with the cap unchanged.
+   - Carried to production host sizing (T11/CP-8) as a named item, with the THP share (up to 48 MB `anon_thp`) to be separated there.
+
+The failed run `36673465130` stays on record as the stop. This addendum's PR stays held until the fix's Linux selection has been read.
+
+### Coordinator execution — io-mount release fix; full S4-plus-Part-A selection GREEN, 2026-09-30
+
+**Card and amendments** (the escalation lane is Opus; the card is `docs/briefs/handoffs/2026-09-30-s5-io-mount-release-card.md` on `claude/s5-part-a`):
+- Frozen at `50d229f` after the operator's GO. Each amendment below was committed before the work it governs.
+- **A1** (`a3c8e77`, ruling "Bind mounts to the work"): the executor returned NEEDS_CONTEXT, because the guardian cannot `StopUnit` its mounts. Its bus child admits only `StartTransientUnit` (`deploy/qualification/bootstrap.py:93`), and the polkit rule admits unit-scoped actions only for `fpq`-prefixed names (`tools/qualification_verification/campaign_host.py:88-93`). A1 therefore binds each io mount unit to the work's guardian unit with exactly `BindsTo=`/`After=`.
+- **A2** (`eff41ca`, ruling "Amend node (c) as proposed"): node (c) read `out_path` after settlement, so its host reads moved to before settlement.
+- **A3** (`e7c9826`, ruling "Freeze the guardian"): Codex found two P2s, A2's read still raced and node (4)'s sampling was insufficient. A3 held node (c)'s window with a cgroup freeze, and node (4) moved to exact journal intervals.
+- **A4** (`68a7fd7`, ruling "Archive-based on Linux"): Codex found that the freeze's acquisition raced and that deadlines run on while frozen. That was **node (c)'s second failed correction**, so the coordinator stopped under the two-failure rule and returned to the operator.
+  - Node (c) restarted with explicit criteria. It makes no host mount read, keeps every settled assertion, checks the prefix on the staged bytes, and adds the release check.
+  - Archive-to-mount fidelity is proven by fake-bus test (2), which covers both the abnormal-exit and absent-frame paths.
+  - Node (4) ends an interval only at a deactivation record and fails on any failed stop.
+  - **Removed from node (c) by operator ruling:** the host-side listing, 0444, `f_ffree`, and the on-mount absence checks.
+
+**Code.**
+- `7c97a69`: the only production change. `_io_mount_properties` gains `guardian_unit` and adds exactly `BindsTo`/`After`, +19/−2 in `campaign_supervisor.py`.
+- Tests:
+  - `d33bddf`: tests (1)–(3), fail-first on `072c133` (record `20260930T171825Z-b5f2756d3eb8`); they pass on the fix (`20260930T171850Z-6f40aacff83b`, the acceptance set, 259 passed, 1 skipped).
+  - `5268f5b`: the harness.
+  - `0ab8f6b`: the new required node `test_s5_io_mount_pairs_are_released_with_each_work_guardian` under `QEXEC-01` (41 → 42 nodes).
+  - `aeabbd4`, then `606e6e0`: the A3 and A4 test revisions.
+
+**Verification.**
+- Windows on `0ab8f6b`:
+  - line 1, `20260930T173142Z-7020a1971a25`: 1254 passed, **2 failed**. These are the known base whitespace cases in `test_s2_evidence_tooling_followups`; line 1 is not a pass.
+  - line 2, `20260930T180209Z-0c7b29f1db56`: 80 passed, 1 skipped.
+  - line 3, `20260930T180319Z-eaf81326edda`: 1845 passed, 1 skipped.
+  - `check`, `20260930T191134Z-8366de74c21c`: completed.
+  - `git diff --check` is clean.
+- Later commits change only the Linux test file.
+  - On `aeabbd4`: line 2 plus boundary-verification, `20260930T191324Z-410943c4e83c`, 106 passed, 1 skipped; collection `20260930T191502Z-17ef4e47a239`, 5 nodes.
+  - On `606e6e0`: `20260930T192328Z-616ea49366fa`, 78 passed, 1 skipped; collection `20260930T192336Z-bc60f17958e1`.
+- The Stage 1c closure re-run on `0ab8f6b` is 68 measured modules, all byte-identical to `c7713e7`, with `campaign_supervisor`, `campaign_store` and `campaign_host` outside it.
+- Codex:
+  - `eff41ca..0ab8f6b`: two P2s, both in tests. Production ordering, custody, BindsTo and Stage 1c were confirmed.
+  - `e7c9826`/`aeabbd4`: three P2s.
+  - `606e6e0`: **RESOLVED, no actionable findings.**
+
+**Linux full S4-plus-Part-A selection: run `36766144433`** (`-f mode=s5` on `606e6e0`; record `20d0a964…`) is **GREEN**, and `s2_run_evidence.py --expect-head 606e6e0 --expect-scope S5_PART_A` reads `ok: true` with no refusals.
+- `status=completed`, exit 0, verification exit 0; source stable; capture complete; cleanup ok; the tested commit is the head.
+- `invariants.json` passed, 27 required nodes; junit 27/0/0/0 (sha256 `e408ad06…`).
+- The only OOM on the host was the deliberate `test_s2_shared_memory_oom_is_retained_last`, which killed its own payload inside its work slice at the run's end. The supervisor was not killed.
+- The Part A observation's `memory_peak_bytes` is again 256,000,000. That is the clipped slice-wide peak, which by operator ruling (2) is an upper bound only.
+
+**Next under the C3 Linux grant:** Stage 2/PA-5, CPU-only for TEST_ONLY.
+
+**Not granted:** C3 acceptance, S5 acceptance, any merge of `claude/s5-part-a`, and any production authority.
+
+**Not granted:** C3 acceptance, S5 acceptance, any merge of `claude/s5-part-a`, and any production authority.
+
+### Stage 2 / PA-5 (2026-09-30)
+
+**Record:** [`stage2.json`](../../notes/2026-09-27-s5-part-a-measurement/stage2.json), produced by [`stage2.py.txt`](../../notes/2026-09-27-s5-part-a-measurement/stage2.py.txt) (arithmetic over retained evidence only). The work was done by an Opus worker seat under the C3 Linux grant's step 5, with no new dispatch.
+
+**Source.** The green full S4-plus-Part-A run `36766144433` at `606e6e0`. `s2_run_evidence.py 36766144433 --expect-head 606e6e0 --expect-scope S5_PART_A`, run through the launcher at `606e6e0`, reads `ok: true` with no refusals (27 required nodes; junit 27/0/0/0). The SR-8 export `boundary/part_a_observations.json` (SHA-256 `d4b682ce…`) comes from node (a), attempt `linux-cca27e50…`, `FULL_PASS_READY`, 2 → 2 panels.
+- **Run binding.** The artifact's contents carry no GitHub run id, so the binding goes through GitHub's own records:
+  - the artifact listing for run `36766144433` names artifact `11124634769` (`workflow_run.id` `36766144433`, head `606e6e0`) with digest `sha256:362c22af…`;
+  - the retained zip hashes to that digest;
+  - every input is read from inside that zip, and every input file is pinned by SHA-256 in the helper and in `stage2.json`.
+- **Measured identities**, read from the run's journal (the attempt's admission receipt and its retained objects), with each digest recomputed from its bytes:
+  - release `qualification_execution_release/v7` `15f6fcbc…`;
+  - profile `qualification_execution_profile/v7` `31b22d2b…`;
+  - policy `qualification_policy/v1` `21251022…`.
+- The budget snapshot's whole profile and whole budget hash to the receipt's `budget_profile_sha256` and `budget_sha256`, so O and `maximum_memory_bytes` are the admitted values.
+- **Archive:** the private inputs are the artifact zip (50.7 MB), the run and artifact listings, and the reader's output. They are under `local_artifacts/s5-c3-evidence/stage2-read-36766144433/` and archived in [first-passage-archive#854](https://github.com/Joshua-Asante/first-passage-archive/pull/854), with each blob verified to hash to its content address. Pin manifest: [`stage2-36766144433-archive.sha256`](../../notes/2026-09-29-s5-c3-record/stage2-36766144433-archive.sha256). The run's unpacked files are in #853 (merged).
+
+**PA-5 (CPU-only for TEST_ONLY, ruling (2) above): RE-APPLY.**
+- *Service* = **29.896463 s**: the PART_A work's `charge_cpu_ns`, the whole settled charge with nothing deducted (r1 PA-5, kept by r2 §9). SR-8's payload/guardian split is null (step-1 ruling B6), so the charge includes the 20 s O. *[Corrected 2026-09-30 after Codex review of `826caa3`: the first version deducted O and used 9.896463 s.]*
+- *Harness* = 7.329488 s: the Stage 1c prescribed-arm maximum `cpu_input_s` (combined record `024cdcdd…`, job b `prescribed-1`, cold, on an EPYC 7763).
+- **k = 29896463 / 7329488 = 4.078929 > 1.25.**
+- **Re-application, computed and not adopted:**
+  - **CPU:** Ĉ₁c × k = 43.429 s gives B = 86.858 s, so B + O = 106.858 s and the CPU ceiling stays **120 s**. The headroom is 13.142 s: 10.95 % of the 120 s ceiling, or 12.30 % of B + O. k can rise 15.1 % (to 4.696) before the CPU ceiling moves.
+  - **Wall:** Ŵ₁c × k = 44.010 s gives 3 × (44.010 + 30) = 222.03 s, so the wall ceiling stays **300 s** (headroom 77.97 s; it holds while k ≤ 6.488).
+  - Both equal the shared PART_A ceilings, so no new value or profile revision follows.
+- **Non-governing diagnostic:** `cpu_ns` alone (9.896463 s) gives k = 1.350226, and also 120 s / 300 s.
+- **Host normalization** (Codex P2, 2026-10-01). Both host facts are read from pinned evidence: the run's `kernel.log` names an EPYC 9V74, and the Stage 1c maximum ran on an EPYC 7763. Stage 1b (`36364854404`) gives a factor of 1.5344 (7763 / 9V74 forced median, same workload). That workload differs from Stage 1c and Stage 2, so the factor is indicative only.
+  - **Measured host:** k = 4.0789, CPU ceiling **120 s**.
+  - **Normalized to the 7763, compute only** (O is fixed overhead): k = 4.8005, B + O = 122.22 s, so the CPU ceiling would be **130 s**.
+  - **Normalized to the 7763, whole charge scaled:** k = 6.2589, B + O = 153.28 s, so the CPU ceiling would be **160 s**.
+  - The wall ceiling stays 300 s on every basis. Nothing is adopted.
+- **Launch allowance L (PA-2):** measured at **4.848 s**, from the reservation's UTC to the PART_A capture's `started_utc`; the RUNNING transition is at 4.414 s. That is within L = 30 s. The re-application keeps L = 30 s, which is conservative, and the 300 s wall floor binds either way.
+
+**PA-2b (CP-1a (1)(b)(i)):** holds against the applicable B. `predicted_seconds` = 27.082 s and `probe_seconds` = 3.988 s.
+- The approved predicate, 1.5 × P ≤ B, gives 40.62 s ≤ 100 s (the applied ceiling minus O) and ≤ 86.86 s (the re-applied B).
+- It **fails against the unscaled Stage 1c B** (21.29 s), because the service's throttled P is 3.4× the harness's P̂₁c. That B no longer governs after re-application, and this is recorded, not hidden.
+- Engine diagnostic: 40.62 s ≤ 265.12 s, the lower bound on `budget_seconds`.
+- The 1.5 × P̂ term's check is now recorded.
+
+**Memory (`upper_bound_only_not_attribution`):** `memory_peak_bytes` 256,000,000 against `maximum_memory_bytes` 256,000,000.
+- The binding is the attempt's budget snapshot, together with the PART_A phase `memory_bytes` in the measured release's campaign budget profile.
+- The reading is clipped at the binding, and the work recorded 0 OOM events. It bounds the shared footprint above only.
+- m_m headroom (PA-3b) cannot be shown from a clipped reading.
+- It is not a Part A figure and not a PA-5 input.
+
+**Re-measurement triggers (r2 §9):**
+- **Trigger 6, k > 1.25, is engaged.**
+- **Trigger 5 is not engaged.** By the operator's ruling of 2026-10-01 (below), its CPU limb compares compute-only CPU: `cpu_ns` 9.90 s ≤ 0.8 × B₁c = 17.04 s. The whole charge, 29.90 s, is kept as a diagnostic labelled "trigger 5 is not evaluated on this basis by ruling". Trigger 5's other limbs are not engaged either: the 34.88 s from reservation to CAPTURED is ≤ 240 s, the work COMPLETED, and there were 0 OOM events.
+
+**Operator ruling, 2026-10-01 (trigger 5 basis).** Joshua, in the coordinating session: "go with your recommendation to rule that trigger 5 compares the compute-only CPU". The coordinator relayed it to this worker seat, and Joshua confirmed it directly here.
+- r2 §9 trigger 5's CPU limb compares compute-only CPU (`cpu_ns`, O excluded), because O is fixed overhead and not workload.
+- PA-5 keeps the whole-settled-charge basis.
+
+**Dispositions:** trigger 6, the faster-host caveat and the PA-3b memory headroom are ruled in the next entry, "Operator rulings, 2026-10-01 (trigger 6, host, memory)".
+
+**Not granted:** C3 acceptance, S5 acceptance, adoption of any re-applied value, any merge of `claude/s5-part-a`, and any production value.
+
+### Operator rulings, 2026-10-01 (trigger 6, host, memory)
+
+**Source.** Joshua, in the coordinating session: "Go with recommendations for all 4" (the fourth is the trigger 5 basis, recorded in the entry above). The coordinator relayed the rulings to the Stage 2 worker seat, and Joshua confirmed all three directly there ("Confirmed, record all 3"). They are recorded in [`stage2.json`](../../notes/2026-09-27-s5-part-a-measurement/stage2.json) under `operator_rulings`.
+
+1. **Trigger 6 (k = 4.078929 > 1.25).** For TEST_ONLY, the PA-5 re-application leaves the ceilings unchanged at 120 s / 300 s, and that **answers the trigger**. No re-measurement is owed now.
+2. **Faster host: accepted for TEST_ONLY.** The service ran on an EPYC 9V74, and the Stage 1c harness maximum was measured on an EPYC 7763. Three items are carried to production host sizing (T11/CP-8):
+   - k = 4.078929;
+   - the host difference;
+   - the CPU headroom of 13.142 s (10.95 % of the 120 s ceiling).
+
+   **Confirmed after the normalized result was put to Joshua directly** ("Stands: 120 s, carry 130–160 s"):
+   - normalized to the 7763, the CPU ceiling would be 130 s (compute only) to 160 s (whole charge scaled);
+   - the ruling keeps the TEST_ONLY ceiling at 120 s on the measured host;
+   - the 130–160 s figures are carried to T11/CP-8;
+   - a slower runner could hit the 120 s cap.
+3. **PA-3b memory headroom: accepted for TEST_ONLY.** The clipped `memory_peak_bytes` reading cannot show m_m headroom. This is consistent with the 2026-09-30 ruling (2), and the item is carried to T11/CP-8.
+
+The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeify-deployment-checklist.md)'s CP-8 row.
+
+**Next:** #569 is merge-ready once Codex is clean at its head. C3 acceptance goes to Joshua after it merges.
+
+**Not granted:** C3 acceptance, S5 acceptance, any merge, and any production value or budget.
+
+### Coordinator C3 acceptance packet — S5 Part A TEST_ONLY, 2026-10-01
+
+**For the operator's decision.** This entry checks every C3 obligation the ledger names against the record on `main` at `cb5654f`, after #569 merged. The obligations come from the [stage table](#operator-direction--s5-build-entry-separated-from-checkpoint-c3-acceptance-2026-09-27), the CP-1b packet's "C3 obligations stay" list and the "Still open at C3" list of the C3 step-1 entry. It grants nothing by itself.
+
+**Candidate.** `claude/s5-part-a` at **`606e6e0`**. Every execution record below names this head or one whose measured closure it keeps unchanged.
+
+**C3 obligations**
+
+| Obligation | Status | Evidence on `main` |
+|---|---|---|
+| C3 step 1 (the S5 return, Codex review, executed `bind_budget` Σ check on the built `/v7`) | **Met** | [C3 step 1 accepted](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29) on `c7713e7` and harness `0fe3e25`: Codex RESOLVED; B3 and B4 accepted with carries; B7 closed |
+| RC-2 owner-text set, with corrections 3 and 8 | **Met** | Accepted 2026-09-29. #552 merged at `37b590b` and #555 (O-10) at `6c6759f`, both cited ([RC-2 entry](#operator-acceptance-and-coordinator-application--rc-2-owner-text-set-c3-2026-09-29)). The D-2 bridging notes are gone from this plan |
+| RC-3b (i): Stage 1c through the built adapter | **Met** | Measure run `36647434808`, jobs a and b exit 0, validity OK, memory VERIFIED; the provisional status is ended ([Stage 1c entry](#coordinator-execution--stage-1c-fresh-approval-valid-memory-verified-2026-09-29)) |
+| Stage 1c still binds the final head | **Met** | The closure re-run on `0ab8f6b` found all 68 measured modules byte-identical to `c7713e7`. From `0ab8f6b` to `606e6e0` only `tests/integration/qualification_boundary/test_campaign_part_a_linux.py` and the io-mount card changed (coordinator `git diff --name-only`, 2026-10-01), so the measured closure is unchanged |
+| The two S5 build defects from the first diagnostic subset | **Met** | "Fix both, re-verify" (2026-09-30); subsets 3–4 and Windows on the fix head ([re-verification entry](#coordinator-execution--re-verification-after-fix-both-subsets-34-windows-on-the-fix-head-c3-step-1-addendum-2026-09-30)) |
+| io-mount release defect (the C3 memory stop) | **Met** | The fix `7c97a69` and card A1–A4. The full S4-plus-Part-A selection, run **36766144433** at `606e6e0`, is GREEN, with 27/27 required nodes and `s2_run_evidence` ok ([entry](#coordinator-execution--io-mount-release-fix-full-s4-plus-part-a-selection-green-2026-09-30)). The archive is first-passage-archive#853, pinned by #568 |
+| RC-3b (ii): Stage 2 / PA-5 service-route consistency | **Met (RE-APPLY, ceilings unchanged)** | k = 4.078929 > 1.25, re-applied inside the approved rule; ceilings 120 s CPU / 300 s wall ([Stage 2](#stage-2--pa-5-2026-09-30); `stage2.json`; #569 at `cb5654f`). The evidence is first-passage-archive#854 |
+| PA-1's pilot-budget term (1.5 × P̂) and PA-2b | **Met for the applied budgets; one observation carried** | PA-2b holds against the applied B (100 s) and the re-applied B (86.86 s). It fails against the unscaled Stage 1c B (21.29 s), because the service's throttled P is 3.4 × P̂₁c. Recorded as non-governing after re-application and carried to CP-8 below |
+| PA-3b memory | **Accepted for TEST_ONLY** | Ruling 2026-10-01 (3): the clipped `memory_peak_bytes` is an upper bound only and m_m headroom is not shown. Carried to T11/CP-8 |
+| Re-measurement triggers 5 and 6 | **Answered** | Trigger 5 uses the compute-only CPU (operator, 2026-10-01). Trigger 6 is answered for TEST_ONLY by ruling 2026-10-01 (1) |
+| Faster host (EPYC 9V74 against the harness's EPYC 7763) | **Accepted for TEST_ONLY** | Ruling 2026-10-01 (2): "Stands: 120 s, carry 130–160 s" |
+| **OQ-1** | **Recommend: close as not arising** | It matters only if no valid Stage 1b record exists. One exists (run `36364854404`, both jobs valid) |
+| **Q1**: whether a committed FAIL on an exhausted campaign counts as FALSIFIED under ADR §4 | **Recommend: reassign past C3** | This is campaign semantics, decided with the statistical owner. No TEST_ONLY Part A outcome depends on it. Recommended gate: before the first production statistical dispatch (S8 / T06) |
+| **Q7**: R7's production evidence standard | **Recommend: reassign past C3** | This is production evidence, decided with the statistical owner. Recommended gate: before S8 / T06 |
+| **Q9**: when a never-retried, retry-eligible IN_DOUBT counts as closed (and so when the salt is revealed) | **Recommend: reassign past C3** | Already recorded as an input to the K3/RC-4 slice and CQ-3 ([host-obligations note §D](../../notes/2026-09-27-host-obligations-assignment.md)). Recommended gate: the RC-4 slice, before F1 |
+
+**Carried, not C3 conditions** (each owner keeps it):
+- G5 independent bars verification goes to the CP-6 inventory (B3).
+- An independently observed pilot draw is due with T05, before CP-6 (B4).
+- The per-phase memory field goes to CP-6.
+- To T11/CP-8:
+  - the 11.8 % unreclaimable headroom and the THP share;
+  - k = 4.078929, the host difference, and the 10.95 % CPU headroom;
+  - the 130–160 s normalized ceiling;
+  - PA-3b;
+  - the PA-2b-against-unscaled-Stage-1c observation, as an input to the production budget.
+
+**The landing step (not covered by any record above).** `claude/s5-part-a` has **no PR**. At the time of writing it is 29 commits ahead of `main` and 188 behind. S5 acceptance means landing it, and T00's merge hold waits on that landing.
+- **The evidence binds `606e6e0`, not a merge result.** Any merge into a `main` that has moved produces a new tree that includes `main`'s changes, even when the branch itself is not updated. `--match-head-commit` pins the PR head, not the merged tree. So the landing must re-validate the tree that will actually land.
+- **Landing procedure:**
+  1. Update `claude/s5-part-a` from `main`. The update commit becomes the landing head **H**.
+  2. At **H**, re-run the Stage 1c closure-equivalence check against `c7713e7`, using the same 68-module measured closure and the same method as the recorded check.
+  3. At **H**, list every file `main` changed that lies in the import closure of the S5 Linux selection (`tests/integration/qualification_boundary/test_campaign_part_a_linux.py` and the S4 nodes run 36766144433 covered).
+  4. At **H**, run the CI required checks, plus the qualification execution-boundary jobs.
+  5. Run Codex at **H**, then merge **pinned to H**.
+- **Decision rule at H:**
+  - If the measured closure is byte-identical and no file in the S5 Linux selection's closure changed, the Stage 1c and run-36766144433 evidence carries to **H**. The landing proceeds on green CI and a clean Codex review.
+  - If the measured closure changed, the landing returns to the operator for a Stage 1c re-measure decision.
+  - If only the Linux selection's closure changed, a re-run of the full S4-plus-Part-A selection at **H** is required, under the existing C3 Linux grant, with retained evidence, before merge.
+  - If `main` moves again before the merge, the update makes a new **H**, and steps 2–5 and this rule apply to it again.
+- Codex findings at **H** route to the S5 owner session as single writer.
+
+**Recommended decision, for the operator:**
+1. **Accept C3** for S5 Part A **TEST_ONLY** on the evidence at `606e6e0` (the table above). It carries to the landing head only through the decision rule above.
+2. **Close OQ-1** as not arising.
+3. **Reassign Q1 and Q7** to the statistical owner, before S8 / T06. **Reassign Q9** to the RC-4 slice, before F1.
+4. **Accept S5 for TEST_ONLY**, effective when the landing PR merges at a head **H** that satisfies the landing procedure and decision rule above. Then T05 and the T00 rebase follow. The T00 rebase re-runs P7 with a fresh source approval, because the P7 record binds its code head.
+
+**Not granted by this packet or by acceptance:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority. Each still runs through its own gate.

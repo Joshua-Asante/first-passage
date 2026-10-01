@@ -300,11 +300,15 @@ def test_ambiguous_cutoff_cancel_is_retained_and_deadline_revokes_all_sends(tmp_
     assert route.commands[-1].kind == "cancel"
     assert route.commands[-1].target_operation_id == "base"
     assert account.exposure("dj30_mym_p250") == (0, 3)
+    # CC-3: the unknown cancel is itself the incident, so the halt lands at the cutoff.
+    assert account.authority == "INTERVENTION"
+    assert [row["reason"] for row in account.incidents] == ["execution"]
+    assert account.incidents[0]["incident_id"].startswith("ordinary-unknown:")
 
     before = len(route.commands)
     account.advance_schedule(now=SESSION.own_flat_deadline)
     assert account.authority == "INTERVENTION"
-    assert account.incidents[-1]["reason"] == "schedule"
+    assert [row["reason"] for row in account.incidents] == ["execution"]  # no second, schedule incident
     account.advance_schedule(now=SESSION.own_flat_deadline + timedelta(seconds=1))
     assert len(route.commands) == before
 

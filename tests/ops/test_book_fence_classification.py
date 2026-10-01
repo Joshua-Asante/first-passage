@@ -430,7 +430,9 @@ def test_unknown_dispatch_blocks_immediately(tmp_path):
     assert result.transport_state == 'unknown'
     assert acct.fenced(NOW) == ('base',)
     refused = acct.send(other_leg('other', acct.at(NOW + timedelta(seconds=1))))
-    assert refused.refusal_reason == 'unknown_order'
+    # CC-3: the unknown halts into INTERVENTION at once, ahead of the ordinary unknown fence.
+    assert refused.refusal_reason == 'intervention_fence'
+    assert (acct.owner.permission, acct.owner.authority) == ('HALTED', 'INTERVENTION')
 
 
 @pytest.mark.parametrize('input_case', [
@@ -452,12 +454,16 @@ def test_unknown_dispatch_clears_only_on_accepted_postdating_terminal(tmp_path, 
             assert acct.evidence(STRIKER, [working(result, action, 3)], at=at) == 'qualified'
     at = acct.at(NOW + timedelta(minutes=2))
     assert acct.fenced(at) == ('base',)
-    assert acct.send(other_leg('blocked', at)).refusal_reason == 'unknown_order'
+    assert acct.send(other_leg('blocked', at)).refusal_reason == 'intervention_fence'
     if input_case == 'equal_time_terminal':
         return  # the reducer retains the equal-time terminal; the request stays unresolved
     acct.owner.observe(BrokerFact.terminal('base', 'cancelled', 0, at), now=at)
     assert acct.fenced(at) == ()
-    assert acct.send(other_leg('after', at)).transport_state == 'accepted'
+    # The accepted postdating terminal reconciles the request; it does not resume automation.
+    resumed = acct.send(other_leg('after', at))
+    assert resumed.refusal_reason == 'intervention_fence' and resumed.transport_state == 'not_attempted'
+    assert len(acct.broker.commands) == 1
+    assert (acct.owner.permission, acct.owner.authority) == ('HALTED', 'INTERVENTION')
 
 
 # --- Case 7: (b4) a terminal resolves only the request it covers.
@@ -467,14 +473,18 @@ def test_terminal_resolves_only_the_request_it_covers(tmp_path):
     resting_entry(acct)
     acct.at(NOW + timedelta(seconds=1))
     assert acct.send(other_leg('orb-unknown', acct.now), outcome='unknown').transport_state == 'unknown'
+    sent = len(acct.broker.commands)
     at = acct.at(NOW + timedelta(minutes=20))
     assert acct.fenced(at) == ('base', 'orb-unknown')
     acct.owner.observe(BrokerFact.terminal('base', 'cancelled', 0, at), now=at)
     assert acct.fenced(at) == ('orb-unknown',)
-    assert acct.send(replace(intent('still-blocked'), bar_time=at)).refusal_reason == 'unknown_order'
+    # CC-3: the unknown orb request halted the account, so every later send meets the fence.
+    assert acct.send(replace(intent('still-blocked'), bar_time=at)).refusal_reason == 'intervention_fence'
     acct.owner.observe(BrokerFact.terminal('orb-unknown', 'cancelled', 0, at), now=at)
     assert acct.fenced(at) == ()
-    assert acct.send(other_leg('after', at)).transport_state == 'accepted'
+    assert acct.send(other_leg('after', at)).refusal_reason == 'intervention_fence'
+    assert len(acct.broker.commands) == sent
+    assert (acct.owner.permission, acct.owner.authority) == ('HALTED', 'INTERVENTION')
 
 
 # --- Case 8: takeover quiescence counts (ii), (iii) and displaced-leg orders only.
@@ -597,8 +607,18 @@ def test_deadline_breach_with_known_working_stale_or_unknown_request(tmp_path, s
     result = acct.send(action, outcome='unknown' if state == 'unknown' else 'accepted')
     acct.at(SESSION.risk_add_cutoff)
     acct.owner.advance_schedule(now=acct.now)
-    assert acct.broker.commands[-1].kind == 'cancel'
     deadline = SESSION.own_flat_deadline
+    if state == 'unknown':
+        # CC-3: the unknown entry halted the account at dispatch, so no automatic cutoff cancel
+        # and no deadline incident follow; the request stays classified unknown.
+        assert [c.kind for c in acct.broker.commands] == ['entry']
+        acct.at(deadline)
+        acct.owner.advance_schedule(now=deadline)
+        assert acct.owner.authority == 'INTERVENTION'
+        assert [i['incident_id'] for i in acct.owner.incidents] == ['ordinary-unknown:' + result.attempt_id]
+        assert acct.classify('base', deadline) == 'unknown'
+        return
+    assert acct.broker.commands[-1].kind == 'cancel'
     if state == 'known_working':
         assert acct.evidence(STRIKER, [working(result, action, 3)],
                              at=acct.at(deadline - timedelta(minutes=1))) == 'qualified'

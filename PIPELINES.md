@@ -31,7 +31,7 @@ owns scope, authority and governing gates; the
 [Protected Full E1 execution-slices plan](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md)
 owns qualification engineering requirements and the acceptance ledger; bounded
 handoffs own individual assignments. The [campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#55--track-b-release--d-b1d-b15-recorded-2026-09-11)
-(§55–§58) owns rulings, evidence and
+(§55–§60) owns rulings, evidence and
 [ownership](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#58--campaign-ownership-the-current-coordinating-task-2026-09-20).
 Consult those for prerequisites and stopping rules; neither synthetic E1
 evidence nor host readiness constitutes a qualified book.
@@ -136,10 +136,11 @@ independent G5 verification, signing) that implements the protected execution
 boundary for staged TEST_ONLY qualification on Linux; complete E1 remains under
 development. `deploy/qualification/bootstrap.py` is its isolated-Python role
 launcher and [`tools/qualification_verification/`](tools/qualification_verification/README.md)
-the disposable Ubuntu host. The three `.github/workflows/qualification-*.yml`
-workflows collect boundary, S2 supervision and host evidence for the
-coordinator's acceptance; they are evidence, never acceptance, and leave the
-required merge status unchanged. The [B0 decision](docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)
+the disposable Ubuntu host. The `.github/workflows/qualification-*.yml`
+workflows collect boundary, S2 supervision, host and dispatch-only S5 Part A
+measurement evidence for the coordinator's acceptance, and run the
+platform-independent qualification suite on Windows; they are evidence, never
+acceptance, and leave the required merge status unchanged. The [B0 decision](docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)
 retained this service over an operator-launched batch. Track B's book owner,
 protection, halt, settlement and takeover modules (`book_*`, `account_close_*`)
 also live in `ops/c1_rail/`; they are offline until a deployment GO.
