@@ -161,7 +161,10 @@ def test_committed_n2_recovery_cleanup_clock_ends_authority(
     })
     campaigns.retain_supervision_event(cleanup)
     supervisor._complete_recovery(campaigns, instance.attempt, 'n2g5', cleanup, token)
-    assert snap(instance)['state'] == ('PART_A_READY' if completed else 'BUDGET_UNCERTAIN')
+    # S5: PART_A_READY admits the PART_A phases, so a watchdog clock fault ends
+    # authority from it as from N2_READY (campaign_store._terminal; operator
+    # ruling 2026-09-28, disclosed at C3).
+    assert snap(instance)['state'] == 'BUDGET_UNCERTAIN'
     assert campaigns.checkpoint_receipt(instance.attempt, 'N2') == receipt
     if not completed:
         with pytest.raises(ValueError, match='terminal campaign budget'):
