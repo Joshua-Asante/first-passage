@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-09-28
+**Last curated:** 2026-10-01
 
 Current priorities, dormant cross-session work, and outstanding obligations.
 Read the queue first, then the linked executable plan; campaign records own
