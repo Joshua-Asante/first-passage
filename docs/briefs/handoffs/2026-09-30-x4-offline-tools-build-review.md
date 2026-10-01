@@ -106,7 +106,8 @@ acceptance:
 ## Open items, binding on the C1 interface review
 
 Under the operator's stopping rule after the finding count rose from five to
-seven, these six findings are **recorded, not folded** into this draft. The C1
+seven, these six findings are **recorded, not folded** into this draft. A seventh
+binding item was added by operator ruling on 2026-10-01 (item 7 below). The C1
 interface review must resolve **each one before implementation starts**, with
 the coordinator accepting the resulting disposition. The interface snippets,
 test ownership and execution sequence below remain provisional on these points;
@@ -123,6 +124,7 @@ says these items apply only where they bind the kept items:
 | P2 pre-mortem (brief-authoring discipline 11) | **Applies** to the reduced X-4 card, scoped to the kept extensions. |
 | P2 separate spec-compliance and quality passes (discipline 9) | **Moot.** The ruling cuts the multi-pass reviews; one focused review replaces them. |
 | P2 acceptance tests frozen by the coordinator or reviewer, not the builder | **Applies** to the tests for the kept items. |
+| Item 7 post-cancel status read (added 2026-10-01 by operator ruling) | **Applies, MUST-RESOLVE before dispatch.** It closes the gap between the kept pre-cancel reader and R-1 v3.2's all-terminal precondition. |
 
 - **P1 — PRRT_kwDOT46Eac6n2QJB:** Operation needs an explicit read kind and GET binding fields. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959541).
 - **P1 — PRRT_kwDOT46Eac6n2QIw:** The durable-claim/restart test must cover unknown **PLACEMENT** as well as cancel; this is **MUST-PASS before any live X-4**, because `order_id` idempotency is disproven. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959517).
@@ -130,6 +132,7 @@ says these items apply only where they bind the kept items:
 - **P2 — PRRT_kwDOT46Eac6n2QIn:** Add a pre-mortem per brief-authoring discipline 11. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959506).
 - **P2 — PRRT_kwDOT46Eac6n2QI3:** Separate spec-compliance and quality review passes per brief-authoring discipline 9. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959524).
 - **P2 — PRRT_kwDOT46Eac6n2QJN:** Acceptance tests are frozen by the coordinator or C1 reviewer, not by the builder, per `cc_handoff` §6.0. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959551).
+- **Item 7 — post-cancel status read (operator ruling 2026-10-01, option c; MUST-RESOLVE before dispatch).** After the parent cancel is acknowledged, a child may still be `Suspended` or `Working`, and no reviewed tool reads it. The kept pre-cancel reader runs only before the cancel. R-1 v3.2's accepted contract runs only once every involved id is terminal ([X-1 packet](../../notes/2026-09-29-x1-decision-packet.md), observer procedure). A cancel acknowledgment does not establish terminal state. Before any build or live X-4, C1 decides between a reviewed GET-only post-cancel reader that permits and reports live parent/child states, and an extended, reviewed R-1 contract. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4161616775).
 
 ## 0. Read and premise report before coding
 
