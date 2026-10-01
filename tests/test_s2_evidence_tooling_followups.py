@@ -62,7 +62,11 @@ def test_wrapper_accepts_a_leading_dash_expression_in_equals_form(linux_root, ca
     assert "--manifest" in err and "--cases" not in err
 
 
-@pytest.mark.parametrize("mode,scope", [("s2", " --expect-scope S2_DIAGNOSTIC_SUPERVISION"), ("s3", "")])
+@pytest.mark.parametrize("mode,scope", [
+    ("s2", " --expect-scope S2_DIAGNOSTIC_SUPERVISION"),
+    ("s3", ""),
+    ("s5", " --expect-scope S5_PART_A"),
+])
 def test_guard_advice_reads_a_passed_run_with_its_own_scope(mode, scope):
     """The reader's default scope is S3; a passed s2 run must be read as s2."""
     run = {"databaseId": 21, "headSha": "a" * 40, "status": "completed", "conclusion": "success",
@@ -70,3 +74,12 @@ def test_guard_advice_reads_a_passed_run_with_its_own_scope(mode, scope):
            "workflowName": "Qualification S2 supervision", "createdAt": "2026-09-23T00:00:00Z"}
     reason = guard.dispatch_redundancy_refusal("a" * 40, [run], mode=mode)
     assert f"scripts/s2_run_evidence.py 21{scope})" in reason
+
+
+def test_guard_advice_iterates_a_failed_s5_run_on_the_s5_selection():
+    """Only the s5 file set carries the Part A case, so its diagnostic names s5."""
+    run = {"databaseId": 22, "headSha": "a" * 40, "status": "completed", "conclusion": "failure",
+           "event": "workflow_dispatch", "displayTitle": "Qualification S2 supervision [s5] (feat)",
+           "workflowName": "Qualification S2 supervision", "createdAt": "2026-09-23T00:00:00Z"}
+    reason = guard.dispatch_redundancy_refusal("a" * 40, [run], mode="s5")
+    assert "-f mode=s5 -f cases=" in reason and "-f mode=s3 -f cases=" not in reason

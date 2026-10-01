@@ -195,3 +195,76 @@ def test_joint_release_refuses_open_dispatch_facts(tmp_path, field, value):
 
     with pytest.raises(ValueError):
         parse_release(joint_release(tmp_path, **{field: value}))
+
+# ---- S5 v7 part-a vectors (S5-D3; beside the v6 pins, never replacing them) -
+
+
+def part_a_release(tmp_path, **changes):
+    import json
+    from bundle_fixture import build_bundle
+    case = build_bundle(tmp_path / 'staged', capability='FULL_E1', part_a=True)
+    document = json.loads(case['release'])
+    document.update(changes)
+    return encoded(document)
+
+
+def test_part_a_release_pairs_v7_profile_with_the_closed_n1_n2_part_a_set(tmp_path):
+    from c1_rail.qualification.execution.release_schema import (
+        PART_A_DISPATCH_DIAGNOSTIC_RELEASE,
+        parse_release,
+    )
+
+    release = parse_release(part_a_release(tmp_path))
+    assert (
+        release['schema']
+        == PART_A_DISPATCH_DIAGNOSTIC_RELEASE
+        == 'qualification_execution_release/v7'
+    )
+    assert release['profile']['schema'] == 'qualification_execution_profile/v7'
+    assert release['dispatch_enabled'] is True
+    assert release['dispatch_checkpoints'] == ['N1', 'N2', 'PART_A']
+    assert release['campaign_budget_profile']['schema'] == (
+        'qualification_campaign_budget_profile/v3'
+    )
+    assert release['production_execution'] is False
+    from c1_rail.qualification.execution.service import (
+        dispatch_eligibility,
+        joint_dispatch_eligibility,
+        schedule_eligibility,
+    )
+    from c1_rail.qualification.execution.profile import parse_profile
+
+    profile = parse_profile(encoded(release['profile']))
+    assert schedule_eligibility(release, profile)
+    assert dispatch_eligibility(release, profile)
+    assert joint_dispatch_eligibility(release, profile)
+    # The v6 pins beside it keep their closed N1+N2 set.
+    v6 = parse_release(joint_release(tmp_path))
+    assert v6['dispatch_checkpoints'] == ['N1', 'N2']
+
+
+@pytest.mark.parametrize('field,value', [
+    ('dispatch_checkpoints', ['N1']), ('dispatch_checkpoints', ['N1', 'N2']),
+    ('dispatch_checkpoints', ['N1', 'N2', 'PART_A', 'N3']), ('dispatch_checkpoints', []),
+    ('dispatch_enabled', False)])
+def test_part_a_release_refuses_open_or_added_dispatch_facts(tmp_path, field, value):
+    from c1_rail.qualification.execution.release_schema import parse_release
+
+    with pytest.raises(ValueError):
+        parse_release(part_a_release(tmp_path, **{field: value}))
+
+
+def test_part_a_release_key_set_stays_closed_to_measurement_keys(tmp_path):
+    """P-4: the v7 release and its profile admit no measurement_override or
+    within_pp key; the closed key sets stay pinned exactly as v6's are."""
+    import json
+    from c1_rail.qualification.execution.release_schema import parse_release
+
+    doc = json.loads(part_a_release(tmp_path))
+    for key, value in (
+        ('measurement_override', dict(within_pp=1.0)),
+        ('within_pp', 1.0),
+        ('profile', dict(doc['profile'], measurement_override=dict(within_pp=1.0))),
+    ):
+        with pytest.raises(ValueError):
+            parse_release(encoded(dict(doc, **{key: value})))

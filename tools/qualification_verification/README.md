@@ -163,7 +163,9 @@ on the joint dispatch/v6 installation; s3 and s2 stay selectable with
 `S3_N1_CAPTURE`, on the dispatch/v5 installation, and `-f mode=s2` the subset
 named by `S2_CASES`, scope `S2_DIAGNOSTIC_SUPERVISION`). `--s3` keeps its
 accepted S3 meaning on the dispatch/v5 installation, so the selections are
-separate runs of one wrapper, never one combined mode. The required nodes are
+separate runs of one wrapper, never one combined mode. `-f mode=s5` runs the S4
+set plus the Part A file on the joint `/v7` installation (record scope
+`S5_PART_A`), so an S5 read names that scope. The required nodes are
 the registered nodes of
 `tests/ops/qualification/invariant_manifest.json` inside the selected files,
 recorded as `invariants.json`'s `required_nodeids`. An s3 run is about
@@ -191,7 +193,11 @@ Order of operations for an executor (the two clocks are independent; the
    dispatch and its `displayTitle` names your mode), rather than waiting a fixed
    `sleep`. Never take the newest run of a branch listing (`--limit 1`): the
    pull-request run on the same SHA is sometimes the newer one. Confirm the
-   listed `headSha` is the head you pushed.
+   listed `headSha` is the head you pushed. An S5 dispatch names its mode
+   explicitly: `gh workflow run qualification-s2-supervision.yml --ref <branch>
+   -f mode=s5` (the S4 set plus the Part A file on the `/v7` installation), and
+   `-f mode=s5 -f cases='<pytest -k expr>'` runs a diagnostic subset of that
+   selection.
 3. Keep the tree frozen until the last local record closes: the recorder hashes
    the checkout before and after its command and voids the record if any byte
    changed. The `guard_open_verification_record.py` PreToolUse hook refuses
@@ -206,6 +212,12 @@ Order of operations for an executor (the two clocks are independent; the
    ```bash
    python scripts/s2_run_evidence.py <run-id> --expect-head <sha>
    ```
+
+   An S5 run is read with its own scope: `python scripts/s2_run_evidence.py
+   <run-id> --expect-head <sha> --expect-scope S5_PART_A`. That read also
+   requires the SR-8 export `boundary/part_a_observations.json` (the PART_A
+   settled observation, the payload/guardian CPU split where available, and the
+   result's `probe_seconds` and `predicted_seconds`).
 
    It downloads the artifact outside the repository and exits 0 only when
    `record.json` (completed, exit 0/0, `source_stable`, `capture_complete`,

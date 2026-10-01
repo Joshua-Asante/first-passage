@@ -366,3 +366,58 @@ def test_cases_is_a_diagnostic_subset_for_s3_and_s4_not_s2(monkeypatch):
     assert guard.refusal_for_command(command % "s4") is None
     assert guard.refusal_for_command(command % "s3") is None
     assert guard.S2_CASES_NOTE in guard.refusal_for_command(command % "s2")
+
+
+# --- S5: the Part A mode on the /v7 installation (packet §2) -------------------
+
+def test_a_titles_s5_tag_parses_as_mode_s5():
+    assert guard._run_mode(run(mode="s5")) == "s5"
+    assert guard._run_mode(run(mode="s4")) == "s4"
+    assert guard._run_mode(run(mode="s3")) == "s3"
+    assert guard._run_mode(run(mode="s2")) == "s2"
+
+
+def test_an_s5_run_decides_s5_coverage_and_each_other_mode_does_not():
+    # s5 installs the joint /v7 bytes, s4 the v6, s3 the v5 and s2 the v4
+    # funded ones, so s5 is incomparable with every earlier mode.
+    for other in ("s2", "s3", "s4"):
+        assert guard.dispatch_redundancy_refusal(SHA, [run(mode=other)], mode="s5") is None
+        assert guard.dispatch_redundancy_refusal(SHA, [run(mode="s5")], mode=other) is None
+    assert guard.dispatch_redundancy_refusal(SHA, [run(mode="s5")], mode="s5")
+
+
+def test_a_live_s5_dispatch_run_cancels_a_new_s5_dispatch(monkeypatch):
+    live = [run(mode="s5", status="in_progress", conclusion=None)]
+    monkeypatch.setattr(guard, "_gh_runs", lambda repo, *, branch, event, cwd=None: live)
+    reason = guard.refusal_for_command(
+        "gh workflow run qualification-s2-supervision.yml --ref feat -f mode=s5")
+    assert reason and "cancel" in reason
+
+
+def test_a_passed_s5_run_is_refused_with_the_s5_read_command(monkeypatch):
+    monkeypatch.setattr(guard, "_gh_runs",
+                        lambda repo, *, branch, event, cwd=None: [run(mode="s5")])
+    monkeypatch.setattr(guard, "_remote_sha", lambda repo, ref, cwd=None: SHA)
+    reason = guard.refusal_for_command(
+        "gh workflow run qualification-s2-supervision.yml --ref feat -f mode=s5")
+    assert reason and "passed" in reason
+    # The reader's default scope is S4_JOINT_N2, so the advice must name the S5 scope.
+    assert "scripts/s2_run_evidence.py 1 --expect-scope S5_PART_A" in reason
+
+
+def test_a_failed_s5_run_points_at_an_s5_diagnostic(monkeypatch):
+    prior = run(mode="s5", conclusion="failure", databaseId=9)
+    reason = guard.dispatch_redundancy_refusal(SHA, [prior], mode="s5")
+    assert "re-roll" in reason
+    # Only the s5 selection's file set carries the Part A case to iterate on.
+    assert "-f mode=s5 -f cases=" in reason
+    assert "-f mode=s3 -f cases=" not in reason
+    assert f"{guard.OVERRIDE} gh workflow run" in reason
+
+
+def test_cases_is_a_diagnostic_subset_for_s5_as_for_s3_and_s4(monkeypatch):
+    monkeypatch.setattr(guard, "_gh_runs", lambda repo, *, branch, event, cwd=None: [])
+    monkeypatch.setattr(guard, "_remote_sha", lambda repo, ref, cwd=None: SHA)
+    command = ("gh workflow run qualification-s2-supervision.yml --ref feat "
+               "-f mode=s5 -f cases=deadline")
+    assert guard.refusal_for_command(command) is None
