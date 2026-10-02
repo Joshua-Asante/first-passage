@@ -175,6 +175,8 @@ resolved identity at qualification and activation.
 **Verification:** Full PASS/failure, duplicate/conflicting requests, invalidation races, crash cuts and historical receipt identity.
 **Checkpoint:** S6 result commit is an explicit internal acceptance boundary; split S7 into its own task if needed.
 **Return boundary:** Result and seal accepted; no production authority.
+**R1 gate (operator rulings, 2026-10-02):** T05's R1 also requires the C′ environment-identity obligation, and every R1 packet cites the accepted residual **T05 C′ first-release host environment drift** ([execution-slices ruling](2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02)).
+
 **Carried obligation (operator, 2026-09-29):** an independently observed pilot draw, replacing the TEST_ONLY plan-agreement pilot identity (S5 B4), is due with T05 and before CP-6; see H9 in [staged acceptance](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md).
 
 ### T06 — Full synthetic E1 acceptance / S8 (500k–750k)
