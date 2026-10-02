@@ -2047,7 +2047,11 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 | Stage 1c measured closure unchanged | #586 recorded `1fe99fa` vs `160a5c6`: 68 measured and 63 staging modules, same membership, no changed bytes. Re-run 2026-10-02 with `stage1c_closure_table.py.txt`: `c7713e7` → `981eb12` measured 68, same membership, 0 changed; `1fe99fa` → `981eb12` measured and staging 0 changed |
 | Private archive | `local_artifacts/d-s5-runs-2026-10/`: `SHA256SUMS` SHA-256 `5406252a…ac803`, 270 entries (138 for this run), `sha256sum -c` clean. Its `record.json` (`856240d3…`) equals the fresh download |
 
-**Caveat.** The D-S5-1 red ran an earlier revision of `test_campaign_io_release.py` (SHA-256 `81963842…`) than the one that landed (`4850d5d7…`). The landed D-S5-1 test has no red record on unfixed code. The D-S5-2 red ran the landed test bytes. *Closed 2026-10-02 by the coordinator:* the landed `test_campaign_io_release.py`, run at `981eb12` with `campaign_supervisor.py` reverted to `1fe99fa`, fails **4 of 7**: `test_io_pairs_are_bound_to_the_guardian_and_bounded_by_the_works_in_flight`, both `test_in_doubt_inspection_copy_is_staged_before_the_pair_is_released` cases, and `test_part_a_output_mount_holds_every_file_at_its_per_file_bound`. With the fixed file it passes **7 of 7** (launcher, ops-env Python 3.13.2; failed run exit 1 and passing run exit 0, both `source_stable`).
+**Caveat.** The D-S5-1 red ran an earlier revision of `test_campaign_io_release.py` (SHA-256 `81963842…`) than the one that landed (`4850d5d7…`). The landed D-S5-1 test has no red record on unfixed code. The D-S5-2 red ran the landed test bytes.
+  - **Closed 2026-10-02 by the coordinator.** The landed `test_campaign_io_release.py` (SHA-256 `4850d5d7…`) was run through the launcher (ops-env Python 3.13.2) on a tree detached at `981eb12`. The first run reverted only `campaign_supervisor.py` to `1fe99fa` (SHA-256 `5312e2ef…`). The second used the fixed file (`7da6f979…`).
+    - **Red** record `20261002T230549Z-2bc2bf0d1bf6`: **4 failed, 3 passed**, exit 1, `source_stable`. The failures were `test_io_pairs_are_bound_to_the_guardian_and_bounded_by_the_works_in_flight`, both `test_in_doubt_inspection_copy_is_staged_before_the_pair_is_released` cases, and `test_part_a_output_mount_holds_every_file_at_its_per_file_bound`.
+    - **Green** record `20261002T230842Z-08ad310c68dd`: **7 passed**, exit 0, `source_stable`.
+    - Both records, the JUnit XML and the unfixed-file hash are retained privately at `local_artifacts/d-s5-runs-2026-10/ds51-failfirst-2026-10-02/` (`SHA256SUMS` `7e4ff140…a6b1`). An earlier coordinator run produced the same 4/7 and 7/7 result, but its records were lost when its worktree was removed, so it is not cited.
 
 **Verdict (draft): ACCEPT.** D-S5-1 and D-S5-2 are fixed for TEST_ONLY, and #586's part of the R1 gate is met. The caveat is recorded. If the coordinator wants it closed, run the landed io-release test against `1fe99fa`'s `campaign_supervisor.py`.
 
@@ -2105,11 +2109,11 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - real N1/N2/PART_A aggregation;
 - the result/seal protocol, service and guardian seams;
 - the seal principal and its provisioning (seam row 11);
-- the B4 observed pilot, before CP-6;
+- the B4 observed pilot, before T06 dispatch (operator ruling 2026-10-02, sitting 1: B4 does not block R1);
 - the C′ build;
-- **term 8.** The S8 harness preparation (#609, draft) found that E03 conflicts with the frozen T05 validators, which allow a failure only at the last stage. Term 8 is the proposed resolution, pending Joshua, and its fix is owed in H9 lane D step 3 of the acceleration plan.
+- **term 8.** The S8 harness preparation (#609, draft) found that E03 conflicts with the frozen T05 validators, which allow a failure only at the last stage. Joshua **approved** term 8 on 2026-10-02 ("yes to … term 8"). Its documentary record is in PR #610, pending merge. The fix is owed in H9 lane D step 3.
 
-**Verdict (draft): ACCEPT** the preparation return for DB10 and context compatibility at `f237178`. R1 keeps its own gates.
+**Verdict: ACCEPT** the preparation return for DB10 and context compatibility at `f237178`. R1 keeps its own gates.
 
 ### Coordinator finding — T00 fired S5 re-measurement trigger 1, 2026-10-02
 
