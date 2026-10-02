@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (bounded producer completion + real-input verification; no screen or Monte Carlo)
 **Date:** 2026-09-24
-**Status:** **AUTHORIZED FOR T00 STEP 1b; TASK 1 INTERFACE/FACTS FROZEN.** General step-1b authority already exists. The coordinator accepted the Task-1 checkpoint and exact interface in §7 on 2026-09-24. Continue only through Tasks 2–4 under this packet. T00 step 2 remains excluded; publication or merge supplies no additional authority. *2026-10-01, current return: Tasks 2–4 are done on `claude/t00-p7-tasks-3-4` (head `6ba5e17`), and the coordinator's verdict there is **T00 step 1 RESOLVED (P7 MET) at code `2baa516`**. **Rebase rule:** the P7 record binds its code head. After S5 lands (and, recommended, after both D-S5 fix slices: #586, merged, and the D-S5-3 fix, #589), the branch is rebased, and P7 is re-run, accepted through `accept_p7_record`, and given a **fresh source approval whatever the date**, all **at the head the branch merges at**. If `main` moves before that merge, the run is repeated ([C3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01); [defects ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--land-s5-with-two-named-test_only-defects-fix-before-t05-2026-10-01) · [D-S5-3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--d-s5-3-capture-exact-retry-demotion-also-gates-t05-r1-2026-10-01)).*
+**Status:** **AUTHORIZED FOR T00 STEP 1b; TASK 1 INTERFACE/FACTS FROZEN.** General step-1b authority already exists. The coordinator accepted the Task-1 checkpoint and exact interface in §7 on 2026-09-24. Continue only through Tasks 2–4 under this packet. T00 step 2 remains excluded; publication or merge supplies no additional authority. *2026-10-02, current return: **step 1b is complete.** T00 step 1 was RESOLVED (P7 MET) at code `2baa516` on 2026-10-01. Under the rebase rule, the branch was brought up to post-S5 `main`, given a fresh source approval (`r3c-a2`) and re-run at the head it merged at. Four Codex review rounds were folded first. **#594 merged as `c3ab0cc`, pinned to `b2c9f9c`.** The coordinator independently accepted the P7 record at `b2c9f9c` (2026-10-02T15:08:09Z), and the landed tree equals that head's tree (§7, step-1b re-run return). T00 step 2 remains excluded. ([C3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01); [defects ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--land-s5-with-two-named-test_only-defects-fix-before-t05-2026-10-01) · [D-S5-3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--d-s5-3-capture-exact-retry-demotion-also-gates-t05-r1-2026-10-01))..*
 **Parent roadmap:** [deployment-checklist amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early). This is one bounded execution handoff inside T00 step 1, not T00 step 2.
 **Executor:** one qualification/source executor on an isolated worktree, with read access to the primary checkout's ignored private inputs. **Coordinator:** owns scope, accepts the return and updates the T00 step-1 disposition. **Operator:** authorizes this packet, retains private-source custody, signs the exact reviewed OPERATOR contract, and alone may later ratify T00 step 2. **Combined acceptance remains with the coordinator.**
 **Authority:** modify only the tracked files and private-root surfaces named in §3; run source-independent and private-input verification; stage the already-retained corrected Striker bytes only beneath the approved private output root after exact hash verification. No write to the primary active port root; no account, host, provider, broker, deployment, arm or order action. A `DONE` return supplies no permission for T00 step 2.
@@ -671,10 +671,9 @@ This record holds hashes, counts and equality or verdict labels only. Every priv
 
 No private byte is in Git: `git ls-files` shows no `local_artifacts` path and no private port.
 
-**Owed before RESOLVED.**
-1. A separate-session refute-first review covering the bracket contract, the real-byte bindings, the source pack, the hand recompute and the private/public boundary. Any fixes get a focused re-review.
-2. The coordinator's `accept_p7_record`, recorded with its `code_closure_sha256` and acceptance time.
-3. After S5 merges and this branch is rebased, a re-check through `accept_p7_record`. A rebase changes the closure, so P7 is re-run with a fresh approval if the window has closed.
+**Owed before RESOLVED: all discharged.** *Updated 2026-10-02.*
+- Items 1 and 2, the refute-first review and the coordinator's `accept_p7_record`: discharged 2026-10-01 (verdict below).
+- Item 3, the post-S5 rebase re-check: discharged 2026-10-02 at the merge head `b2c9f9c`, with a fresh approval, as required by the C3 ruling whatever the date (step-1b re-run return below).
 
 No T00 step 2, screen, Monte Carlo, account, broker or rail action occurred.
 
@@ -695,7 +694,82 @@ No T00 step 2, screen, Monte Carlo, account, broker or rail action occurred.
   - **P3-3:** binding `code_head` is correct fail-closed behavior. Spec §2.5a's "unloaded file does not void" wording conflicts with §2.5b(2) and is to be reworded at the post-S5 rebase.
   - **P3-4:** cosmetic double-encoded `§` in the signed `calendar_producer.json`. The bytes stay as signed.
 - **Verdict:** **T00 step 1 is `RESOLVED`: P7 MET, at code `2baa516`.**
-- **Still owed (unchanged, owed-list item 3):** after S5 lands and this branch is rebased, a fresh P7 run and a new record at the rebased head, accepted through `accept_p7_record`. That needs a fresh source approval if the window has closed (it expires 2026-10-08T08:21:08Z). The merge hold to `main` until S5 merges is unchanged.
+- **Owed-list item 3:** discharged 2026-10-02 (step-1b re-run return below). The S5 merge hold ended when #594 merged after S5 and both D-S5 fix slices.
+
+### Step-1b re-run return — 2026-10-02 (executor, local Claude, Opus)
+
+#### Status: `DONE`. P7 was re-run and independently accepted at the merge head `b2c9f9c`, and #594 merged as `c3ab0cc`, whose tree equals `b2c9f9c`'s.
+
+This record holds hashes, counts and verdict labels only. Every private value stays in the T00 private root.
+
+**Authority.**
+- The C3 ruling (recommendation 4), the D-S5 defects ruling and the D-S5-3 ruling require P7 to be re-run at the head T00 merges at, under a fresh source approval whatever the date.
+- The run came after both D-S5 fix slices (#586 at `981eb12`, #589 at `77cd715`).
+
+**Contract and approval.**
+- Contract: **r3c, unchanged** (`a526b50f…8d97`). All 25 bound artifacts re-hash equal, and the contract carries no repo-code pins.
+- Fresh approval `r3c-a2`:
+  - payload `442323d5…a34c`, issued 2026-10-02T01:52:19Z, expires 2026-10-09T01:52:19Z;
+  - Joshua signed it with the dedicated key `source:1ebae5d45bc51280`;
+  - envelope `8358f924…4842`, validated by the real `validate_source_contract` under the pinned root.
+
+**Rebase.**
+- Merges of `origin/main` with no conflicts and no force-push: `0e93618` (`77cd715`), `77688ac` (`721be61`), `c9c17f9` (`584340a`).
+- The final merge was `b2c9f9c`, onto `9349d5b`, which the merge-order agent froze for #594. Every delta after S5 was `.md`-only, except one `.gitattributes` eol pin from #585.
+- Integration fix `d3ad125` (test only): main's 13 new S5 `ProductionSource` capability sites were each reviewed into the A10b allowlist.
+
+**Codex rounds folded** (coordinator adjudication; each new test fails against the pre-fix code):
+- **Round 1, at `c9c17f9`.** `d424bc2` folded three findings:
+  - third-party bytecode bound by a fresh `sys.pycache_prefix`, so no cached `.pyc` runs in place of the hashed source. A planted, timestamp-valid `.pyc` did run inside P7 before the fix;
+  - the source-key fingerprint retained in the receipt (`SOURCE_KEY_CHANGED`);
+  - the `calendar_producer` record validated at the build boundary.
+
+  `9368c6f` was a follow-up: an installed module compiling its own exact bytes is not first-party.
+- **Round 2, at `d424bc2`.** `19863dd`: forbidden modules refused by path, module aliases refused (`P7_MODULE_ALIAS`), and stubs bound by realpath. The native and tzdata closure finding was scoped by operator ruling (owed list below).
+- **Round 3, at `19863dd`.** `4c1af90`:
+  - `source_truncated` refused on the qualification path;
+  - canonical, duplicate-free P7 record bytes plus strict base64;
+  - the reviewer bound to the review companion's signed producer;
+  - reconstruction requires exit 0.
+- **Round 4, at `4c1af90`.** `fa41382`, per Joshua's ruling of 2026-10-02 to fix rather than defer: `run_p7` resolves paths before the cwd change, and a source-only `replay()`/`proof()` never leaks a raw deadline-failure result.
+
+**Gate-found defect (root cause).** `808661c` fixed it.
+- The round-1 constant `RULED_DEADLINES_ET` held `datetime.time` values.
+- The frozen drift verifier `result_adjudication._same_executable_value` compares reconstructed module globals by value only for primitive and date types; anything else falls back to identity. So the constant never matched its reconstruction.
+- Effect: 33 seal/composition failures from `d424bc2` onward, caught by the bridge-child gate at `4c1af90` and by CI.
+- Fix: the constant is now `'HH:MM'` text, and the comparator is unchanged.
+- The executor's targeted selection had not included `test_seal`/composition. That gap is the lesson.
+
+**P7 at `b2c9f9c`.**
+- Run through `p7_evidence.run_p7` (`python -I -S -B -c P7_BOOTSTRAP`, bootstrap `35859dc5…2145`) on a clean tree.
+- Record (private root `step1b-final-b2c9f9c/p7-record.json`): SHA-256 `c14aa9cc24abdd5686d640a0e4831b970bbfb4d84ab244c2ab4b606c6ecb75c3`, evidence class `T00_P7_SOURCE_ONLY`.
+- `code_closure_sha256` `48bdc10460441a572f157bcf1bb5e696d343b6fc250b09458aa558ab7b709139`.
+- Labels: `BOTH_RUNS_COMPLETE`, `CONSUMED_INTRABAR_SPLIT`, `INTRADAY_LOW_NONPOSITIVE`.
+- R1 and R2: 40 sessions, 148 fills, no deadline failure and 16 consumed splits each. The digests (`2d1debe7…`, `38b51ebd…`) are **unchanged from the `2baa516` run**.
+- Executor self-check: `accept_p7_record` from a checkout detached at `b2c9f9c` gave ACCEPTED at 2026-10-02T15:02:28Z.
+- **Coordinator independent `accept_p7_record`: ACCEPTED** at 2026-10-02T15:08:09Z.
+  - It ran from the coordinator's own clean detached checkout at `b2c9f9c`, with the coordinator's own key copy (fingerprint `1ebae5d4…`).
+  - Record and closure: MATCH. Contract and approval: unchanged.
+- **Tree identity:** `c3ab0cc^{tree}` == `b2c9f9c^{tree}` == `7591416312506d6c94904c566e25b42c3869e15c` (parents `9349d5b`, `b2c9f9c`). The accepted record authenticates exactly the landed tree.
+
+**Verification at `b2c9f9c`.** Launcher records are under `.cache/fp-verification/`; each is completed, exit 0 and stable, with before and after commit `b2c9f9c`.
+- Coordinator-accepted split gate:
+  - `test_book_ordinary_unknown_halt.py` alone: `20261002T150724Z-6edd62daf544`, 18 passed.
+  - Bridge child selection: `20261002T150758Z-1b39038a4eba`, 2002 passed and 1 skipped. The bridge's `_SIGNED_CASES`/`_PROVENANCE_CASES` junit assertions all pass.
+  - `tests/ops` with both paths ignored: `20261002T150803Z-3fac47c6650c`, 2951 passed.
+- Targeted set at `fa41382`: `20261002T143135Z-b22828defb26`, 347 passed. `check`: `20261002T145553Z-e53969f9f68e`.
+- CI on `b2c9f9c` is green, including `pytest (3.11)`, S2 supervision and `qualification-windows`. Codex is clean at `b2c9f9c`.
+
+**Owed, with owners.**
+- **T05, before the R1 grant:**
+  - Environment hermeticity under C′ (operator rulings 2026-10-02, recorded in #597, open). `code_closure_sha256` identifies the Python-source closure plus the interpreter binding, not runtime-opened data files (for example tzdata) or OS-loaded native dependencies. The `p7_evidence` docstring states this scope.
+  - Qualification-path `source_truncated` validation. It is currently refused outright on the frozen-contract path.
+  - Calendar-role binding on the qualification path. `CALENDAR_FACT_ROLE` and `validate_calendar_producer` run only for source-only contracts.
+  - Qualification review identity. The v1 qualification review gate carries no reviewer identity.
+- **Carried from the 2026-10-01 refute-first review:** P3-1 (no real-run coverage of `replay_bracket`'s deadline-failure branch) to T05, and P3-2 (pending-only and 12:59 ET branches synthetic-only) to T05/CP-6.
+- **Discharged by this docs PR:** this return, the packet status line, the P3-3 rewording of spec §2.5a, and the stale owed lines above.
+
+No T00 step 2, screen, Monte Carlo, account, broker or rail action occurred.
 
 ## 10. Audit hooks
 
