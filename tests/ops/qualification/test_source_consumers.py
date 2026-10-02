@@ -43,6 +43,9 @@ _EXECUTION_CONTEXT = ('`context` is an admission.ExecutionContext built by verif
                       '(admission.py:101-215); `.contract` is its validated frozen contract record, read for '
                       'digests/fields only. Where the function does not type-check `context`, this holds by its current '
                       'callers only. No ProductionSource is the receiver and no replay/proof is called here.')
+_PARSE_HELPER = (' Private helper reached only from parse_worker_result (directly, or through '
+                 '_parse_part_a_worker_result, whose only caller is parse_worker_result), so `context` is that '
+                 'function\'s ExecutionContext.')
 
 ALLOWLIST = {
     # --- ProductionSource capability uses ---
@@ -53,6 +56,12 @@ ALLOWLIST = {
     'c1_rail/qualification/execution/compute.py:_run_checkpoint_compute.replay':
         'Nested closure over `source`; the enclosing function requires type(source) is ProductionSource and '
         'calls source.verify_for(contract) before the closure is defined, so a source-only source raises first.',
+    'c1_rail/qualification/execution/compute.py:run_part_a_compute.proof':
+        'Nested closure over `source`; run_part_a_compute requires type(source) is ProductionSource and calls '
+        'source.verify_for(contract) before the closure is defined, so a source-only source raises first.',
+    'c1_rail/qualification/execution/compute.py:run_part_a_compute.replay':
+        'Nested closure over `source`; run_part_a_compute requires type(source) is ProductionSource and calls '
+        'source.verify_for(contract) before the closure is defined, so a source-only source raises first.',
     'c1_rail/qualification/production.py:ProductionExecutor._replay':
         'Directly callable without _admit (no checkpoint-dispatch check). Protected only by the issued executor: '
         '_initialize required a validated frozen contract, a permits_synthetic domain, type ProductionSource and '
@@ -101,7 +110,10 @@ ALLOWLIST = {
         'and calls source.verify_for(contract) itself. No replay/proof here.',
     'c1_rail/qualification/execution/evidence.py:encode_worker_result':
         _EXECUTION_CONTEXT + ' The function calls admitted.source.verify_for(context.contract) first.',
-    'c1_rail/qualification/execution/evidence.py:parse_worker_result': _EXECUTION_CONTEXT,
+    'c1_rail/qualification/execution/evidence.py:_captured_outcome': _EXECUTION_CONTEXT + _PARSE_HELPER,
+    'c1_rail/qualification/execution/evidence.py:_verify_worker_bindings': _EXECUTION_CONTEXT + _PARSE_HELPER,
+    'c1_rail/qualification/execution/evidence.py:_verify_worker_observations': _EXECUTION_CONTEXT + _PARSE_HELPER,
+    'c1_rail/qualification/execution/evidence.py:_parse_part_a_worker_result': _EXECUTION_CONTEXT + _PARSE_HELPER,
     'c1_rail/qualification/execution/g5.py:_inspect_capture':
         '`current` is an ExecutionContext (verify_bundle at both callers); `.contract` is passed to evidence '
         'builders as a record. No ProductionSource receiver.',
@@ -123,6 +135,10 @@ ALLOWLIST = {
     'c1_rail/qualification/execution/worker.py:run_worker':
         _EXECUTION_CONTEXT + ' The ProductionSource is obtained via admit_source (verify_for inside) and '
         'replayed only through compute.run_n1/n2_compute.',
+    'c1_rail/qualification/execution/worker.py:run_part_a_body':
+        _EXECUTION_CONTEXT + ' Its only caller in ops/ is run_worker, whose `context` is verify_bundle\'s; the '
+        'ProductionSource is admitted.source (admit_source, verify_for inside) and is replayed only through '
+        'compute.run_part_a_compute.',
 }
 
 
