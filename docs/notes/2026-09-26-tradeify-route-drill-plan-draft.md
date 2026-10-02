@@ -256,6 +256,34 @@ Each row supplies the CAP procedure's fields, either in its own table (action/sc
 | Recovery (all rows) | 1. Stop sending REST requests. 2. **If any request's outcome is unknown** (for example an unknown `close`), the operator first reads positions, working orders and that request's lifecycle and status. A platform flatten happens only if these fresh reads show exposure that needs it. It is then a second close owner whose race with the in-flight request is unresolved: record it as such and carry it to the §2.5 fault cases and residual-risk statement (rail spec `CLOSE`: an unknown outcome is reconciled from postdating evidence before resubmission; halt/resume §1: no claim that manual action is race-free). **Otherwise**, the operator flattens and cancels working orders on the symbol through the trading platform (attended intervention, not a new REST request). 3. Confirm from fresh reads taken after the last action: positions flat, no working orders, and every id involved terminal by lifecycle or status. A flat snapshot alone is insufficient (CAP teardown; halt/resume §3). 4. Reconcile each request: it has terminal evidence, or it is retained as outstanding with a named owner. 5. Record the outcome. Run no further row that session. |
 | Evidence (all rows) | Original bytes of every response and read, plus local send times, hashed into `MANIFEST.tsv` under `local_artifacts/route-drills-2026-09/drills/`. A trace qualifies only the behavior it observed (session plan §5). |
 
+**Addendum 2026-10-02 — X-3 only: two-symbol exposure for the scope-extended X-3.**
+
+- **Authority.** Joshua said "yes, amend it for X-3" on 2026-10-02, in the coordinating session. Earlier the same day he ruled that the CrossTrade cancel-scope question (Q6) is settled by a two-symbol check folded into X-3, and that the X-3 trace settles Q9. Those rulings are recorded in the C-a selection register (PR #593) and in checklist item 7.3.
+- **Scope.** This applies only to the scope-extended X-3 cancel-scope observation, on the incumbent Tradovate Demo evaluation account, within the accepted X-3 card's abort and attended-recovery bounds.
+- **What changes.** For this X-3 row only, the *Exposure limit* above ("one contract per request and in total") is replaced:
+  - **Limit.** One contract per placement and per symbol, on two distinct symbols, so at most two contracts in total.
+  - **Protection.** Each placement carries its own native stop and target.
+  - **Intended state before the close.** One protected one-contract position on symbol A and one on symbol B.
+  - **The action.** One quantity-less REST full close of A, while B stays bracketed. Timestamped observations of both symbols follow, then attended cleanup.
+- **Abort.**
+  - These abort the row: more than one contract on either symbol, more than two in total, or any position outside A and B.
+  - Expected-position checks use the bound two-symbol state.
+  - There is no exception for unexpected positions, invalid or missing protection, uncertainty, identity conflicts, other actors or missed deadlines.
+- **Other rows unchanged.** Every other row keeps one contract per request and in total. This grants no multi-account exception and no exception for any other row.
+- **On abort.**
+  1. Stop automated mutations. Retain every request that may have taken effect.
+  2. Only read-only reconciliation is permitted.
+  3. Joshua manages exposure and live orders on the platform, keeping protection in place until flat.
+  4. No REST recovery close, remainder close or retry. Flatness does not clear outstanding requests or orphans.
+  5. No further row and no restart in that session.
+- **What this does not do.** It amends exposure only. Still owed, each separately:
+  - the exact contracts, directions, levels, timing, cost and headroom;
+  - readiness, and reviewed tools (the shared reader, and the X-3 close producer from the build card);
+  - fresh session prerequisites;
+  - Joshua's session GO.
+
+  It grants no execution, arming or deployment authority.
+
 **Addendum 2026-09-28 — request-shape corrections from the public CrossTrade documentation.** Source: the commissioning packet's [§3.7 closure](2026-09-27-route-commissioning-session-packet.md#37-closure-2026-09-28--request-shapes-from-the-current-public-crosstrade-documentation) (pages CT-OV, CT-PL, CT-CH, CT-CX, CT-OT read 2026-09-28 and pinned there by SHA-256). These are documentary corrections within the accepted row behavior; they authorize no row, read or contact, and the retained-capture cross-check (packet R-3.7a) is still owed.
 - **Exposure limit, extended allow-list.** Besides `atm*` and `cancel_after`, no row sends `flattenFirst`, `requireMarketPosition`, `maxPositions`, any Strategy Sync field (`syncStrategy`, `marketPosition`, `prevMarketPosition`, `outOfSync`, `targetQuantity`, `strategyExitBlock`), `maxShow`, `trailOffset`, `pegDifference`, `expireTime` or `text`. Each either closes, suppresses or re-shapes the request instead of producing the row's observation (packet C.2 gives the reason per field).
 - **Identity.** The fresh per-attempt id is sent as `orderId`; `clOrdId` is not sent separately, so CrossTrade forwards the same value as `clOrdId` and the R-1 match reads the id the operator recorded (CT-OV). Where a row says "assign a fresh `clOrdId`", this is how it is sent.
