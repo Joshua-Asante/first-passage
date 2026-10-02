@@ -2053,7 +2053,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
     - **Green** record `20261002T230842Z-08ad310c68dd`: **7 passed**, exit 0, `source_stable`.
     - Both records, the JUnit XML and the unfixed-file hash are retained privately at `local_artifacts/d-s5-runs-2026-10/ds51-failfirst-2026-10-02/` (`SHA256SUMS` `7e4ff140…a6b1`). An earlier coordinator run produced the same 4/7 and 7/7 result, but its records were lost when its worktree was removed, so it is not cited.
 
-**Verdict (draft): ACCEPT.** D-S5-1 and D-S5-2 are fixed for TEST_ONLY, and #586's part of the R1 gate is met. The caveat is recorded. If the coordinator wants it closed, run the landed io-release test against `1fe99fa`'s `campaign_supervisor.py`.
+**Verdict: ACCEPT.** D-S5-1 and D-S5-2 are fixed for TEST_ONLY, and #586's part of the R1 gate is met. The caveat is closed by the coordinator's retained red/green records above.
 
 ### Coordinator acceptance — D-S5-3 fix slice (#589), 2026-10-02
 
@@ -2070,7 +2070,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 | Closure check at the tested head | #589 recorded `1fe99fa` vs `3438ba8`: 68 and 63 modules, no change. Re-run 2026-10-02: `1fe99fa` → `77cd715` and `c7713e7` → `77cd715` measured 68, same membership, 0 changed |
 | Private archive | The same `SHA256SUMS`, 132 entries for this run. Its `record.json` (`6f6483b1…`) equals the fresh download |
 
-**Verdict (draft): ACCEPT.** D-S5-3 is fixed for TEST_ONLY. With the entry above, both D-S5 fix slices have merged, each with its own Linux run read ok and its own acceptance. That part of the R1 gate is met; R1's other conditions stand.
+**Verdict: ACCEPT.** D-S5-3 is fixed for TEST_ONLY. With the entry above, both D-S5 fix slices have merged, each with its own Linux run read ok and its own acceptance. That part of the R1 gate is met; R1's other conditions stand.
 
 ### Coordinator acceptance — H8(c) omitted-slot incident tests (#530), 2026-10-02
 
@@ -2088,7 +2088,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - **Concern 2, the `check` form feed,** was fixed in `768f9b3`. The #530 thread cites `check` exit 0 on `25866c4` (record `20260927T193138Z-4c8e4744b2df`, Linux; not re-read here). CI on `25866c4` succeeded.
 - **Scope.** Synthetic and owner-level only (card §5). It does not cover live feed behavior, a re-arming policy, a resume mechanism or the cause of the H8(b) MGC omission.
 
-**Verdict (draft): ACCEPT** H8(c) in synthetic scope. Both disclosed concerns are closed on `main`.
+**Verdict: ACCEPT** H8(c) in synthetic scope. Both disclosed concerns are closed on `main`.
 
 ### Coordinator acceptance — H9 preparation return (DB10 and context compatibility), 2026-10-02
 
