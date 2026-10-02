@@ -338,8 +338,7 @@ Not used: GitHub code search (it needs sign-in), CrossTrade's Discord, logged-in
 - the draft at PR #590 commit `53d32f2`;
 - every Codex finding against that draft (§R.6 maps each one to a row).
 
-**Read base.** origin/main `721be61`; every `path:line` below is on that commit and was read when this was written. Three proposed texts were also read but are not merged, so they are cited by section, not by line:
-- PR #590 head `10823f8` (checklist addendum item 7);
+**Read base.** origin/main `721be61`; every `path:line` below is on that commit and was read when this was written. The cited files are unchanged at `584340a`, where PR #590 merged; only the checklist gained item 7, below every line cited here. Item 7 is cited by number, at PR #590 head `10823f8`. Two proposed texts were also read but are not merged, so they are cited by section, not by line:
 - PR #584 head `e57bd98` (incident ADR §A12);
 - PR #591 head `67846b3` (successor pre-registrations).
 
@@ -353,7 +352,7 @@ Not used: GitHub code search (it needs sign-in), CrossTrade's Discord, logged-in
 - DP: the [drill plan](2026-09-26-tradeify-route-drill-plan-draft.md).
 - REST: the [REST route assessment](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md).
 - BAO: `ops/c1_rail/book_account_owner.py`.
-- CL: the [deployment checklist](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md). Its item 7 is cited at the PR #590 head.
+- CL: the [deployment checklist](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md). Its first-release addendum item 7 is cited by number (merged in PR #590).
 
 ### R.1 Two gates
 
@@ -409,7 +408,7 @@ S-C1, S-C2 and R-T1 to R-T8 must implement this table. "Sent" means a transport 
 
 | ID | Kind | Owner | Discharge evidence | Source | Fail-closed default |
 |---|---|---|---|---|---|
-| S-V0 | TECHNICAL | Operator sends; coordinator accepts the reply | VQ §1 is sent by the operator and recorded by a dated line in VQ. The written reply is retained as original bytes and hashed, and the coordinator accepts it as a vendor statement | VQ :3, :53, :55, :58 | Every question stays OPEN (VQ :55) |
+| S-V0 | TECHNICAL | Operator sends; coordinator accepts the reply | VQ §1 is sent by the operator and recorded by a dated line in VQ. The written reply is retained as original bytes and hashed, and the coordinator accepts it as a vendor statement. On 2026-10-01 the CrossTrade support chat's AI assistant answered a shortened question. It said a full close is one liquidate request with no separate cancel, and that it cancels only that contract's orders. That answer is **corroboration only**: it is unsourced, it disclaims guarantees, it is not a vendor statement, and it is not a send of §1. So it discharges no row, and Q6 and Q9 stay OPEN. It is recorded in VQ §4 by PR #592, which is pending at this writing | VQ :3, :53, :55, :58; PR #592 (pending) | Every question stays OPEN (VQ :55) |
 | S-V1 | TECHNICAL | Vendor, through S-V0 | **Q9.** An authoritative statement that a REST full close sends `contract/find` and then one `liquidateposition`, with no separate cancel, plus what "typical" can add. A trace only corroborates it (DP :248) | CS :5, :294, :305 | **Not selectable.** No residual-risk route: every §3 statement describes `liquidateposition`, and without Q9 the REST close's broker requests are an inference |
 | S-V2a | TECHNICAL | Vendor, through S-V0 | **Q6.** An authoritative **contract-scoped** answer: a full close sends no cancel beyond the contract-scoped liquidation. This alone discharges Q6 | CS :133, :165, :291 | S-V2b **and** S-V2c are both required |
 | S-V2b | POLICY | Operator | Needed only if Q6 is answered account-wide, or stays OPEN or CONFLICTING. A ruling accepting §3's row "(a)/(c): cancellation scope (S)", naming the other legs' exposure | CS :165; BD :112 | Not selectable |
