@@ -690,6 +690,7 @@ Merged to `main` at `abb3914` (03:51Z). Merge-gate evidence on the merge head `a
    - **Preserved:** exact historical retry, the original budgets and deadlines, frozen v1 RESULT/SEAL, and the two-table DB10 layout. Binding goes through the existing `release_sha256`.
    - **Fail-closed:** a missing pin, a failed tuple check, an image mismatch, a timeout or exhaustion refuses authority.
    - **Residuals cited:** the operator-accepted residual "T05 C′ first-release host environment drift", which covers unmediated descendants and OS helpers.
+8. **Joint-batch validator reconciliation** (operator ruling 2026-10-02, 'yes to … term 8'). The canonical joint-batch policy governs (S4 joint N2/PART_B ruling; `policy.required_output_roles`; campaign spec E03). In the H9 integration, all three T05 result validation seams — `campaign_result.parse_receipt_row`, `_row_outcome`, `parse_campaign_result` — accept every authentic complete prefix the policy allows (PASS,PASS,FAIL,PASS; PASS,PASS,FAIL,FAIL; PASS,PASS,PASS,FAIL). Wire shape, stage order, membership, families/operations and every prior-checkpoint failure constraint (a FAIL before the joint batch ends the campaign) are unchanged. Owned by H9 lane D step 3, with the result-role (result_g5/seal) funding and TEST_ONLY result-fault cases.
 
 **What this does not grant:** any build, any R1 or R2 acceptance, or any merge. The C′ implementation still needs the coordinator's separate dispatch.
 
@@ -1442,7 +1443,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 1. The four out-of-§2 test files (`test_campaign_funding.py`, `test_campaign_snapshot_versions.py`, `test_checkpoint_widening.py`, `test_checkpoint_validation.py`) are **ADMITTED**, test-only.
 2. The G5 completion-state tuple gaining `FULL_PASS_READY` and `PART_A_FAILED` is **ACCEPTED**.
 3. G5 dropping full source admission for PART_A is **ACCEPTED for TEST_ONLY**, on condition that Codex's C3 review confirms the G5 closure rule requires it. G5 relies on the contract-pinned calendar digest and the frozen FULL population.
-4. Pilot identity checked against the plan is **ACCEPTED for TEST_ONLY**. **Carried forward:** before the acceptance-grade or production run it must be strengthened to an independently observed pilot draw.
+4. Pilot identity checked against the plan is **ACCEPTED for TEST_ONLY**. **Carried forward:** before the acceptance-grade or production run it must be strengthened to an independently observed pilot draw. *[2026-10-02: timing reconciled by operator ruling; see [B4 in the C3 step-1 acceptance](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29).]*
 5. The P-4 by-construction limitation is **ACCEPTED**: byte equality with the frozen derivation is at least as strong as a parser refusal.
 6. The SR-8 CPU split exported as null is **ACCEPTED** as disclosed.
 7. The hook-workaround writes are **ACCEPTED**: they were in scope and reviewed before each commit, and no new rule is added. Codex's C3 review is asked to look closely at the escalation-lane commits `e38b308`, `c2f834a`, `3362b43` and `d4afa5b`.
@@ -1479,6 +1480,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 - **C3 step 1 is ACCEPTED** on the S5 return `c7713e7` and the harness `0fe3e25`. The basis is the entry above: Codex RESOLVED, and the executed `bind_budget` check.
 - **B3 is accepted.** The residual **"G5 independent bars verification"** is carried to the **CP-6 inventory**. For PART_A, G5 does not re-verify the calendar ↔ population-index ↔ bars consistency.
 - **B4 is accepted for TEST_ONLY.** Strengthening pilot identity to an independently observed pilot draw is **due with T05, before CP-6**.
+  - *Operator ruling 2026-10-02 (sitting 1), given directly to the deployment coordinator ("all recommended"), reconciling this bullet with item B.4 above:* the observed pilot draw lands **before T06 dispatch** and does **not** block T05 R1. "Acceptance-grade" in B.4 reads as T06/S8 and production.
 - **B7 is closed** per Codex's review.
 - **C3 Linux grant, in this order:**
   1. The harness module's Linux run for `0fe3e25`, through a draft, do-not-merge PR of `claude/s5-stage1c-harness`. It is cited beside the first subset. `pull_request` CI checks out the PR merge ref, so the coordinator binds the run to `0fe3e25` by showing that the harness module, the harness and the measurement workflow are byte-identical there.
