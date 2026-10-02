@@ -597,15 +597,28 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
    - It may be drafted now, in parallel with the S5 landing. Ratification stays the operator's act.
    - **Still open:** how D-feed (a) treats a NO-GO T00 result whose risk the operator accepts into F1. This decision is still required.
 
-7. **Partial-leg (subset) closes: unsupported for the first release** *(operator ruling, 2026-10-01, given in the coordinating session: "partial-leg closes are unsupported for the first release"; scope clarified the same day on the coordinator's recommendation, "go with your recommendation", after a Codex review found a conflict with the route-native editions pre-registration's ORB-6/STR-7)*.
+7. **Partial-leg closes and the first-release close form** *(operator rulings, 2026-10-01, in the coordinating session:)*
+   - *"partial-leg closes are unsupported for the first release";*
+   - *the scope was first clarified on the coordinator's recommendation;*
+   - *after Codex's reviews found conflicts with the C-a close direction and with gate C, it was revised to the coordinator's (a′), which Joshua agreed directly.*
    1. **Unsupported in the first release:** any *intentional* partial exit, meaning a strategy or the operator choosing to close only part of a leg (a scale-out).
-   2. **Supported, and counted as whole-leg:** a whole-leg close **executed** as ORB-6/STR-7's sequential one-contract closes. The intent is the whole leg, and the one-contract sequence is the route's execution form. First-release leg sizing is unchanged; legs are **not** capped at one contract.
-   3. **States in the middle of the sequence need no new subset-close machinery.** Each one-contract close is its own request under the existing rules. An unknown or failed close mid-sequence is an incident: halt and attended reconciliation, with the reservation held (§A12 F1 and the rule-7 non-entry rule per request type, as proposed in PR #584). A clean sequence ends with that leg flat.
-   4. **Evidence:** the exit-split replay that the editions pre-registration's §6 already requires before edition freeze. It is specified there. **No separate subset-close evidence step** is built under UB-5 / gate C.
-   5. **Prerequisite, a Rule-0 source check.** The "exit-side partials moot" statements in T08 and the session plan are withdrawn by the incident contract, so this ruling does **not** rest on them. Before the first release, a source check must establish that every exit of the four legs, and every recovery path, closes the **whole leg by intent**. That includes **STR-5**, which still lists as unknown whether Striker's crossed-level exit can apply to a subset. The check reads the locked Pine and the accepted ports in place, under the private read surface.
-   - **If the source check finds any intentional subset exit,** the question returns to the operator before the first release. It is not handled by improvisation.
-   - For §A12's F4 partial-close row (PR #584), the first-release disposition is item 1 "unsupported" and item 2 "supported as whole-leg". This feeds the operator's acceptance of §A12; this entry doesn't amend §A12's text.
-   - The ruling changes no strategy, sizing or protection rule.
+   2. **The first-release close form is C-a:** one whole-leg broker liquidation, a quantity-less REST close mapped to one `liquidateposition` ([C-a](../../notes/2026-09-26-close-semantics-c-a.md); [incident ADR §A11.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)).
+      - It is used for **every** strategy close, scheduled flatten and attended recovery close.
+      - The editions pre-registration's owed rows **ORB-6 and STR-7 are answered** for the first release as "follow the accepted close realization (C-a)". There are **no N-sequential one-contract exits**.
+      - **Entries keep §2's one-contract-per-request rule.** Sizing is unchanged, and legs are not capped.
+      - For the first release, the §6 exit-split replay item is moot, because a C-a close is one request. The entry-split replay stays.
+   3. **Gate C is kept.**
+      - C-a stays investigation-only until its M1–M9 are answered and **X-3** traces exactly this execution form. That includes protection cleanup after liquidation, no reversal, and the remainder if the liquidation fills only partly.
+      - UB-5 and the rail contract's L2(d)/L2(e) obligations stay at gate C.
+      - A single liquidation whose outcome is unknown or partial is an incident: halt and attended reconciliation, with the reservation held (§A12 F1 as proposed in PR #584).
+   4. **If C-a fails its investigation or X-3,** the close form returns to the operator before the first release. Sequential one-contract exits would then need their own gate-C evidence: orphan-protection cleanup, reversal prevention and durable remainder recovery.
+   5. **Prerequisite, a Rule-0 source check.** The "exit-side partials moot" statements in T08 and the session plan are withdrawn by the incident contract, so this ruling does not rest on them. Before the first release, a source check must establish that every close path is **whole-leg by intent**. It covers:
+      - the four legs' Pine and accepted ports, including **STR-5** (whether Striker's crossed-level exit can apply to a subset);
+      - the rail- and attended-owned paths: the multi-leg rail spec, halt/resume, and T13's fill-scoped and queued recovery CLOSE.
+
+      Private sources are read in place, under the private read surface. **Any intentional subset exit found returns to the operator** before the first release.
+   - For §A12's F4 partial-close row (PR #584), the first-release disposition is: intentional partial exits unsupported, and every close via C-a. That is an input to the operator's acceptance of §A12; this entry does not amend §A12's text.
+   - Nothing here changes a strategy, sizing or protection rule.
 
 **Also recorded:**
 - **#570** (the simplification decision packet) is the vehicle for D-GO, D-HIST, D-REC and D-MON.
