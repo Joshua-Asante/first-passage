@@ -87,12 +87,17 @@ Nothing beyond the operator sending the text above. It authorizes no agent conta
 
 **How it is treated (§2 rules 2–3; unchanged):**
 - It is **corroboration only, not a vendor statement**. It is an unsourced AI answer that disclaims guarantees itself.
-- **Q6 (S) and Q9 stay OPEN** for C-a selection, and every other question stays at its prior status. Its contract-scope claim is the answer the selection prerequisites need, so it is evidence to verify, not acceptance.
+- **Q6 and Q9 stay unresolved for C-a selection.** Their canonical statuses in the [close-semantics record](2026-09-26-close-semantics-c-a.md) are unchanged: Q6 **CONFLICTING** (D-1 stands), Q9 **PARTLY_DOCUMENTED**. Every other question also keeps its prior status. Its contract-scope claim is the answer the selection prerequisites need, so it is evidence to verify, not acceptance.
 - Under the C-a selection rule that the selection register will own, only an authoritative contract-scoped answer discharges Q6.
 
 **Still owed:** the operator emails §1 verbatim to support@crosstrade.io, as the reply itself directs. The prepared file is `unsent-human-support-inquiry.eml`. The dated **Sent:** line is added when he reports sending it.
 
-**Retained privately** at `local_artifacts/crosstrade-close-semantics-reply-2026-09/` (gitignored). These are DOM transcriptions, not server exports:
+**Retained privately** at `local_artifacts/crosstrade-close-semantics-reply-2026-09/` (gitignored):
 - the sent message, `sent-shortened-chat-message-2026-10-01.txt`, SHA-256 `6abf6013…3849`;
 - the reply, `ai-reply-to-shortened-message-2026-10-01.txt`, SHA-256 `9e92010f…8f3f6`;
 - the manifest `SHA256SUMS-preparation.txt`, SHA-256 `de65b779…65b1`.
+- the operator's own screenshot of the reply, Windows capture at 23:35 ET, copied byte-for-byte as `operator-screenshot-ai-reply-2026-10-01-233511.png`, SHA-256 `219f5749…e0d1`.
+
+The two `.txt` files above are DOM transcriptions, not server exports.
+
+**Retention defect, OPEN (§2 rule 1).** CrossTrade's support UI offers no export control, so the reply's original bytes were never retained. The screenshot is the best capture available. It is still a rendering, not the server's bytes, and a transcription is not sufficient (commissioning packet :537). This changes no status, because this reply is not evidence for any question. **The human-support reply must be retained as original bytes**: the received email saved as `.eml`, then hashed.
