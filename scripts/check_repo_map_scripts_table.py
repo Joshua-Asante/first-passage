@@ -5,7 +5,9 @@ Row set: ``git ls-files 'scripts/*.py'``.
 Layer: ``scripts/repo_map_layers.yml`` ``scripts_layer`` (fallback governance) —
 the same single definition ``check_boundaries.py`` loads, read through its
 loader so this table can never disagree with the scanner.
-Gate wiring: ``scripts/gates.yml`` (id, tier, load-bearing flags).
+Gate wiring: ``scripts/gates.yml`` (id, tier, load-bearing flags). A gate whose cmd
+names no script (a module run) is credited to the tracked scripts its
+``when.staged_regex`` selects.
 
 This is a documentation generator. It does **not** change gate composition
 (``gates.yml`` remains the sole owner). ``--check`` is wired into ``gates.yml``
@@ -21,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -61,11 +64,12 @@ reads this table. Regenerate with
 
 FALLBACK_MARK = "†"
 NO_GATE = "—"
-# Direct invocation only: unlisted scripts may run inside another gate, as hooks or in CI.
+# Direct invocation or module-run trigger only: unlisted scripts may run inside
+# another gate's script, as hooks or in CI.
 LEGEND = (
     f"{FALLBACK_MARK} = layer fallback (not in `scripts_layer`); "
-    f"Gate {NO_GATE} = no `gates.yml` command invokes the file directly "
-    "(it may still run inside another gate)."
+    f"Gate {NO_GATE} = no `gates.yml` command runs the file and no module-run gate "
+    "triggers on it (it may still run inside another gate's script)."
 )
 
 
@@ -97,8 +101,14 @@ def list_scripts(repo: Path) -> list[str]:
     return sorted(ln.strip() for ln in out.splitlines() if ln.strip())
 
 
+# A cmd token carrying any of these is a pattern (unittest's test_*.py), not a path.
+_GLOB_CHARS = ("*", "?", "[")
+
+
 def _script_from_cmd(cmd: list[str]) -> str | None:
     for part in cmd:
+        if any(ch in part for ch in _GLOB_CHARS):
+            continue
         if part.startswith("scripts/") and part.endswith(".py"):
             return part
         if part.endswith(".py") and "/" not in part and not part.startswith("-"):
@@ -106,13 +116,22 @@ def _script_from_cmd(cmd: list[str]) -> str | None:
     return None
 
 
-def gates_by_script(gates: list[dict]) -> dict[str, list[dict]]:
+def gates_by_script(gates: list[dict], scripts: list[str]) -> dict[str, list[dict]]:
+    """Direct invocation wins; a module-run gate (no script in cmd) is credited to
+    every tracked script its ``when.staged_regex`` selects."""
     by: dict[str, list[dict]] = {}
     for gate in gates:
         rel = _script_from_cmd(list(gate.get("cmd") or []))
-        if rel is None:
+        if rel is not None:
+            by.setdefault(rel, []).append(gate)
             continue
-        by.setdefault(rel, []).append(gate)
+        pattern = (gate.get("when") or {}).get("staged_regex")
+        if not pattern:
+            continue
+        rx = re.compile(pattern)
+        for path in scripts:
+            if rx.match(path):
+                by.setdefault(path, []).append(gate)
     return by
 
 
@@ -200,8 +219,8 @@ def collect(
     scripts_layer = _load_scripts_layer(layers)
     gm = _load_gate_manifest()
     data = gm.load_manifest(gates_yml)
-    by_script = gates_by_script(list(data.get("gates") or []))
     scripts = list_scripts(repo)
+    by_script = gates_by_script(list(data.get("gates") or []), scripts)
     return build_rows(scripts, scripts_layer, by_script)
 
 

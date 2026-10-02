@@ -91,6 +91,69 @@ def test_wired_gate_ids_exist_in_gates_yml():
             assert gid in known, f"{rel} cites unknown gate id {gid}"
 
 
+def test_script_from_cmd_ignores_glob_tokens():
+    """A unittest pattern (test_*.py) is a token, never a script path."""
+    inv = _load()
+    module_run = [
+        "python", "-m", "unittest", "discover",
+        "-s", "tests/evidence_store", "-p", "test_*.py",
+    ]
+    assert inv._script_from_cmd(module_run) is None
+    assert inv._script_from_cmd(["python", "run_[0-9].py"]) is None
+    assert inv._script_from_cmd(["python", "scripts/a.py", "test_?.py"]) == "scripts/a.py"
+
+
+def test_module_run_gate_attributed_via_staged_regex():
+    """A gate whose cmd names no script is credited only through its staged_regex."""
+    inv = _load()
+    gates = [
+        # module run: no script token in cmd
+        {
+            "id": "evidence-store",
+            "tier": "path-conditional",
+            "when": {"staged_regex": r"^(scripts/evidence_store/|tests/evidence_store/)"},
+            "cmd": ["python", "-m", "unittest", "discover", "-s", "tests/evidence_store",
+                    "-p", "test_*.py"],
+        },
+        # names a script: staged_regex must NOT spread it to matching scripts
+        {
+            "id": "boundaries",
+            "tier": "path-conditional",
+            "when": {"staged_regex": r"^scripts/"},
+            "cmd": ["python", "scripts/check_boundaries.py"],
+        },
+        # module run without when.staged_regex: stays unattributed
+        {
+            "id": "bare-module-run",
+            "tier": "always",
+            "cmd": ["python", "-m", "pytest", "-q"],
+        },
+    ]
+    scripts = [
+        "scripts/evidence_store/store.py",
+        "scripts/check_boundaries.py",
+        "scripts/pine_lint.py",
+    ]
+    by = inv.gates_by_script(gates, scripts)
+    assert [g["id"] for g in by["scripts/evidence_store/store.py"]] == ["evidence-store"]
+    assert [g["id"] for g in by["scripts/check_boundaries.py"]] == ["boundaries"]
+    assert "scripts/pine_lint.py" not in by
+    assert all(g["id"] != "bare-module-run" for wired in by.values() for g in wired)
+
+
+def test_evidence_store_rows_carry_the_evidence_store_gate():
+    inv = _load()
+    rows = inv.collect(
+        repo=REPO,
+        layers=REPO / "scripts" / "repo_map_layers.yml",
+        gates_yml=REPO / "scripts" / "gates.yml",
+    )
+    evidence = [r for r in rows if r[0].startswith("scripts/evidence_store/")]
+    assert evidence, "no tracked scripts/evidence_store/*.py rows found"
+    for rel, _layer, gate_cell, _notes in evidence:
+        assert "evidence-store" in gate_cell, rel
+
+
 def test_exit_zero_and_stats_notes():
     inv = _load()
     by_rel = {
