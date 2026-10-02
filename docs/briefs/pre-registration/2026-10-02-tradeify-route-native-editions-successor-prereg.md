@@ -18,7 +18,7 @@ Recorded under [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590
 
 This list is item 7.6.1's account. It names what was seen, not who saw it; the operator may add to it before ratification.
 
-**Answerer exposure statement (added 2026-10-02, coordinator direction on #591):** whoever answers ORB-3 (and VAN-3 in the sibling successor), the rows that name what replaces the trail as an exit, must state with the answer whether they have seen the counts listed above.
+**Answerer exposure statement (added 2026-10-02, coordinator direction on #591):** whoever answers ORB-3 (and VAN-3 in the sibling successor), the rows that name what replaces the trail as an exit, must state with the answer whether they have seen the counts listed above. The statement is the marker `Answerer exposure: seen` or `Answerer exposure: not seen`, written in that row's status cell with the answerer's name; §7 makes it a freeze item and §10 checks it.
 
 ## §R — Standing rule: no candidate-configurable replay before freeze
 
@@ -29,14 +29,14 @@ This list is item 7.6.1's account. It names what was seen, not who saw it; the o
 Every table row carries a marker: *(CF)* means carried forward verbatim from the closed original, and *(CH)* means changed here. Every section, paragraph and bullet not listed below is carried forward verbatim, including all OWED statuses, dated rulings and direction markers.
 
 1. **Header.** The title names the successor. The Status line keeps its text and adds the successor/ratification sentence. A **Supersedes** line, an Owner pointer to PR #590 item 7.6.1 and an Authored note are added. *Reason:* the original is closed (item 7.6.1).
-2. **§D Disclosure and §R standing rule** added. *Reason:* item 7.6.1 requires both. §D also requires answerers of the trail-replacement rows to state whether they have seen the counts (coordinator direction on #591).
+2. **§D Disclosure and §R standing rule** added. *Reason:* item 7.6.1 requires both. §D also requires answerers of the trail-replacement rows to state whether they have seen the counts (coordinator direction on #591), as a fixed marker in the ORB-3 status cell; §7 makes it a freeze item and §10 greps for it (Codex P2 on #591).
 3. **§0** gains a successor-reads note; the original table and text are unchanged. *Reason:* Rule 0 for this draft.
-4. **§7** gains two bullets: a proposed reading of the no-amendment-after-output bullet for this successor, and the standing rule. *Reason:* the disclosed outputs predate this file, and read literally they would forbid ever completing it. The reading is proposed, not ruled. It is an explicit freeze blocker (the §7 **Successor validity** bullet, marked OWED for the operator's ratification), with a matching §8 step and a dedicated §10 grep (Codex P1 on #591).
+4. **§7** gains three bullets (the third is the answerer-exposure freeze item, see item 2): a proposed reading of the no-amendment-after-output bullet for this successor, and the standing rule. *Reason:* the disclosed outputs predate this file, and read literally they would forbid ever completing it. The reading is proposed, not ruled. It is an explicit freeze blocker (the §7 **Successor validity** bullet, marked OWED for the operator's ratification), with a matching §8 step and a dedicated §10 grep (Codex P1 on #591).
 5. **§10** audit hooks point at this file instead of the closed original. *Reason:* otherwise they would check a closed record.
 6. **§1** Vanguard link points to the Vanguard successor. *Reason:* the original is closed.
 7. **ORB-6** and **STR-7** *(CH)*: the C-a proposed answer is added, the original question is quoted, the status becomes OWED for the operator's ratification, and the 2026-09-26 note is kept verbatim. STR-7's answer is conditional on STR-5 being established whole-leg; a subset case returns to the operator and is never widened. *Reason:* item 7.2; items 7.5 and §59 Ruling 5 (Codex P1 on #591).
 8. **§6** exit-split replay item is moot for the first release; the entry-split item is unchanged. *Reason:* item 7.2.
-9. **§8** step 1 drops ORB-6/STR-7 from "answers" and asks for ratification of the proposed answers instead; the sequential-exit sentence is removed. Step 4 (new) asks for the ruling on the §7 successor-validity item, and step 5 adds the trailing-removed confirmation at freeze. *Reason:* items 7.2 and 7.6.1 (disposition 1).
+9. **§8** step 1 drops ORB-6/STR-7 from "answers" and asks for ratification of the proposed answers instead; the sequential-exit sentence is removed. Step 3 (new) asks for the ruling on the §7 successor-validity item before step 4's §10 audit, and step 5 adds the trailing-removed confirmation at freeze. *Reason:* items 7.2 and 7.6.1 (disposition 1).
 
 Nothing here freezes or ratifies anything. Every proposed answer is owed for the operator's ratification.
 
@@ -134,6 +134,7 @@ The public repository receives identities and behavior shapes only, never privat
 - Publishing Pine source, parameter values or port code in this or any public file.
 - Amending this file after any replay or E1 output on either edition exists (Known Trap #12: close it and open a fresh one instead).
 - **Successor validity — OWED (operator ratification).** *Added 2026-10-02 (successor; a proposed reading):* for this successor, the bullet above is triggered by replay or E1 output produced after this file's first commit. The outputs disclosed in §D came first and are why the original was closed. Read literally, they would forbid completing this file at all. This is a **freeze blocker**: the file cannot freeze until the operator ratifies or rejects this reading (§8). If it is rejected, this successor cannot be completed and returns to the operator.
+- **Answerer exposure — freeze item.** *Added 2026-10-02 (successor; Codex P2 on #591):* this file cannot freeze unless the answered ORB-3 row's status cell carries `Answerer exposure: seen` or `Answerer exposure: not seen`, with the answerer's name (§D). An answer without it leaves ORB-3 unanswered for freeze. §10 checks it.
 - *Added 2026-10-02 (successor; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1, standing rule §R):* running any candidate-configurable replay against an edition pre-registered here, including an accepted port with input overrides, before this file is FROZEN.
 - Treating the editions as qualified, selected or deployable before the E1 verdict.
 
@@ -141,13 +142,15 @@ The public repository receives identities and behavior shapes only, never privat
 
 1. The operator answers ORB-2..ORB-4, STR-2..STR-6 and the §6 replay-modelling choice, in words (no parameter values), and ratifies or rejects the proposed answers to ORB-6 and STR-7 and the §6 exit-split mootness ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2; *changed in the successor, 2026-10-02*). *Operator ruling 2026-09-26 (in session; [§59 Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-2026-09-26)): before freeze, the integrated ORB-1/RC-9/rail S2/qualification replay change and its verification are returned to the operator for acceptance; ORB-1's final wording is OWED until then.*
 2. Once the capability allocation is accepted (checklist T09 gate D; operator ruling 2026-09-26, [production handoff](../handoffs/2026-09-26-orb-striker-edition-production.md) G2b), the private edition Pine and ports are produced (operator, or a separately authorized session on the primary checkout) and their SHA-256s supplied.
-3. Claude fills §3–§6, runs the §10 hooks, and the operator reviews the full text.
-4. The operator ratifies or rejects the successor-validity reading (the §7 **Successor validity** bullet). If it is rejected, stop: this successor cannot freeze and returns to the operator. *(Added in the successor, 2026-10-02.)*
+3. The operator ratifies or rejects the successor-validity reading (the §7 **Successor validity** bullet). If it is rejected, stop: this successor cannot freeze and returns to the operator. It is ruled before the §10 audit below, so the audit runs on the ratified text. *(Added in the successor, 2026-10-02; moved before the audit, Codex P2 on #591.)*
+4. Claude fills §3–§6, runs the §10 hooks, and the operator reviews the full text. *(Successor, 2026-10-02: the hooks run after the successor-validity ruling and include the answerer-exposure check; if any text changes after this step, run §10 again before freeze.)*
 5. The operator confirms that the ORB edition freezes with trailing removed (ORB-1; §59 Ruling 3). [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1's per-fill trailing-subset disposition clears only on that confirmation (*added in the successor, 2026-10-02*). The operator says "freeze". The Status line becomes `FROZEN <date>`, and the commit SHA goes into campaign record §59.
 
 ## §10 — Audit hooks
 
 ```bash
+# Answerer-exposure freeze item (§D, §7): at freeze, expect exactly one line, the answered ORB-3 row
+grep -nE '^\| ORB-3 .*Answerer exposure: (seen|not seen)' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
 # Successor-validity freeze blocker (§7, §8): expect no output at freeze
 grep -n '^- \*\*Successor validity — OW[E]D' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
 # Status must read FROZEN before any edition replay or E1 run exists
