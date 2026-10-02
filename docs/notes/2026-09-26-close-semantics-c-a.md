@@ -373,7 +373,7 @@ Abbreviations:
   - L-2 and its test list (:149), R-D (:152).
 - D2. **Halt/resume**: classes 13–15; §1 :28, provider-side actors; §7 :145, required tests.
 - D3. **Incident ADR**: §A11.1 is investigation-only (:368, :376), so selection needs a dated addendum. UB-5 needs a written answer or D7 approval (:302).
-- D4. **Successor pre-registrations** (PR #591): ORB-6, STR-7 and VAN-8 answered; VAN-8's close "replay treatment" (PRv :63); §6.
+- D4. **Successor pre-registrations** (PR #591): ORB-6, STR-7 and VAN-8 answered; VAN-8's close "replay treatment" (PRv :63); §6; **Vanguard §3a's exit-split dependency** (PRv :82) replaced by the same C-a answer, so the successor holds one execution contract.
 - D5. **Production handoffs**:
   - G1/G2 still require the §6 sequential-exit replay model;
   - G3/G4 bind the closed originals' "no replay output" gate;
