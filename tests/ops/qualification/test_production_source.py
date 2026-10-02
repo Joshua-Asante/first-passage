@@ -691,3 +691,112 @@ def test_t2_item7_replay_bracket_builds_two_fresh_engines_with_separate_results(
     assert all(row.fills == 2 and row.flat_before_deadline and row.end_edge.is_flat for row in result.r1.sessions)
     # Flat retained bars: the bracket adds no signal, cost or price event.
     assert result.r1 == result.r2 == source.replay(path)
+
+
+# ---- T05 owed qualification-path items (T00 P7 closure §7, step-1b return) ----
+# A gated qualification build runs the source-only gates. The TEST_ONLY composition
+# fixture is pinned by the S5 harness, so these cases rewrite its payloads before
+# signing and select the gates for its domain; every guard itself runs unpatched.
+
+REVIEWER = 'synthetic-composition-reviewer'
+
+
+def _refused(code, call):
+    with pytest.raises(ValueError) as error:
+        call()
+    assert code in str(error.value), str(error.value)
+
+
+def _gated_composition(root, monkeypatch, *, transform=None, calendar_producer=None,
+                       review_producer=REVIEWER, review_edit=None, port_transform=None):
+    """Signed TEST_ONLY composition whose source artifacts satisfy the source gates.
+
+    Returns a call that signs the contract and builds the source through the real
+    ``_build_composition`` route (``build_verified_composition`` minus inventory)."""
+    import composition_fixture as fixture_module
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.contract import ObservedBindings, canonical_json_bytes, validate_frozen_contract
+    from test_contract import NOW
+    from test_source_contract import REVIEW_SCOPES, SYNTHETIC_CALENDAR_PRODUCER, v2_review
+    encoded, digest = fixture_module.encoded, fixture_module.digest
+
+    def build(path):
+        fixture = fixture_module.build_artifacts(path, port_transform=port_transform)
+        payloads = fixture.payloads
+        payloads['calendar_producer'] = (canonical_json_bytes(SYNTHETIC_CALENDAR_PRODUCER)
+                                         if calendar_producer is None else calendar_producer)
+        fact = {'role': 'calendar_producer', 'sha256': digest(payloads['calendar_producer'])}
+        calendar, index = json.loads(payloads['source_calendar']), json.loads(payloads['population_index'])
+        for row in calendar['sessions']:
+            row['facts'] = [fact]
+            for item in row['venue_deadlines'].values():
+                item['fact'] = fact
+        if transform is not None:
+            transform(payloads, calendar, index, fixture.populations)
+        payloads['source_calendar'] = encoded(calendar)
+        index['source_binding']['source_calendar_sha256'] = digest(payloads['source_calendar'])
+        payloads['population_index'] = encoded(index)
+        binding = digest(encoded(index['source_binding']))
+        for role in REVIEW_SCOPES:
+            doc = json.loads(v2_review(role, digest(payloads[role]), reviewer=REVIEWER,
+                                       binding_sha256=binding if role == 'population_index' else None))
+            payloads[role + '_review'] = canonical_json_bytes(review_edit(role, doc) if review_edit else doc)
+        for role in ('calendar_producer', 'source_calendar', 'population_index', *(r + '_review' for r in REVIEW_SCOPES)):
+            (path / fixture.paths[role]).write_bytes(payloads[role])
+        return fixture
+
+    def signed():
+        fixture = build(root).with_runtime_artifacts(root)
+        domain, private, keys = fixture_module.verified_domain(fixture)
+        doc = fixture_module.contract_document(fixture, domain)
+        for row in (*doc['artifacts'], *doc['role_owners']):
+            if row['role'].endswith('_review'):
+                row['producer' if 'producer' in row else 'owner'] = review_producer
+        raw = encoded(doc)
+        approval = fixture_module.signed_approval(raw, private['test-freeze'], key_id='test-freeze', scope='FREEZE_F1')
+        retained = {role: (root / path).read_bytes() for role, path in fixture.paths.items()}
+        observed = ObservedBindings(artifact_sha256={fixture.paths[r]: digest(b) for r, b in retained.items()},
+                                    runtime_load_sha256={r: digest(b) for r, b in retained.items()},
+                                    effective_settings_sha256=digest(retained['effective_settings_successor']),
+                                    orb_normal_base=1)
+        contract = validate_frozen_contract(raw, approval, keys, observed, now=NOW, trust_domain=domain)
+        return contract, production_source.ProductionSource._build_composition(contract, artifact_root=root)
+
+    monkeypatch.setattr(production_source, '_source_gates_apply', lambda domain: True)
+    return signed
+
+
+def test_t05_source_gates_apply_to_every_domain_but_the_test_only_composition_profile():
+    from types import SimpleNamespace
+    import test_contract
+    from test_trust_domain import case, validate
+    from c1_rail.qualification.production_source import _source_gates_apply
+    operator, _, _ = test_contract._operator_domain(test_contract._document())
+    composition = validate(*case())
+    assert (operator.authority_class, operator.permits_synthetic, _source_gates_apply(operator)) == ('OPERATOR', False, True)
+    assert (composition.authority_class, composition.permits_synthetic, _source_gates_apply(composition)) == ('TEST_ONLY', True, False)
+    assert _source_gates_apply(SimpleNamespace(authority_class='UNKNOWN', permits_synthetic=True))
+
+
+def test_t05_gated_qualification_review_binds_an_independent_reviewer(tmp_path, monkeypatch):
+    contract, source = _gated_composition(tmp_path, monkeypatch)()
+    source.verify_for(contract)
+    assert source.evidence_class == 'QUALIFICATION'
+    producers = {row.role: row.producer for row in contract.artifacts}
+    assert producers['source_calendar_review'] == REVIEWER != producers['source_calendar']
+
+
+@pytest.mark.parametrize('defect,code', [
+    ('self_certified', 'REVIEW_NOT_INDEPENDENT'),     # the reviewed artifact's producer signs the companion
+    ('v1', 'scope/reviewer'),                         # a v1 companion carries no reviewer identity
+])
+def test_t05_gated_qualification_review_refuses_unidentified_or_self_review(tmp_path, monkeypatch, defect, code):
+    def v1(role, doc):
+        if role != 'source_calendar':
+            return doc
+        return {'schema': 'qualification-source-review/v1',
+                **{key: doc[key] for key in ('artifact_role', 'artifact_sha256', 'scope', 'decision')}}
+    build = _gated_composition(tmp_path, monkeypatch, review_producer=(
+        'synthetic-composition-fixture' if defect == 'self_certified' else REVIEWER),
+        review_edit=v1 if defect == 'v1' else None)
+    _refused(code, build)

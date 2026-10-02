@@ -63,6 +63,17 @@ def _is_source_only(contract):
     return type(contract) is ValidatedSourceContract
 
 
+def _source_gates_apply(domain):
+    """Whether a qualification build runs the source-only source gates (T05 owed items).
+
+    Every domain does except the TEST_ONLY synthetic composition profile, whose
+    fixture (v1 companions, generic calendar facts) is pinned by the S5 measurement
+    harness; that profile keeps the v1 review gate and the source_truncated refusal.
+    Any other authority class is gated, so the default fails closed.
+    """
+    return not (domain.authority_class == 'TEST_ONLY' and domain.permits_synthetic is True)
+
+
 def port_active_window(leg, instant, params):
     """RC7 session windows from the accepted corrected ports, not entry signals."""
     aware(instant)
@@ -831,7 +842,9 @@ def validate_calendar_producer(producer_raw, *, calendar_raw):
 
 
 def _review_source(raw, *, role, digest, scope, contract, source_binding_sha256=None):
-    """Reviewer-authored v2 companion (spec §2.6b); a producer never reviews itself."""
+    """Reviewer-authored v2 companion (spec §2.6b); a producer never reviews itself.
+
+    Source-only and gated qualification builds (``_source_gates_apply``) both use it."""
     doc = _json(raw)
     fields = {'schema', 'artifact_role', 'artifact_sha256', 'scope', 'decision', 'reviewer', 'reviewed_at', 'notes'}
     if source_binding_sha256 is not None:
@@ -1088,7 +1101,8 @@ class ProductionSource:
                          for role in sorted(missing))
             raise ProductionSourceNeedsContext(gaps, prepared=prepared)
         source_only = _is_source_only(contract)
-        review = (lambda raw, **kw: _review_source(raw, contract=contract, **kw)) if source_only else _review
+        gated = source_only or _source_gates_apply(domain)
+        review = (lambda raw, **kw: _review_source(raw, contract=contract, **kw)) if gated else _review
         for role, scope in (('source_calendar', 'SOURCE_CALENDAR'), ('schedule_execution_evidence', 'SCHEDULE_EXECUTION')):
             review(snapshots[role+'_review'], role=role, digest=digests[role], scope=scope)
         startup = parse_startup_policy(snapshots['source_startup_policy'])
