@@ -1,6 +1,6 @@
 # D9 recommendation: operator-recorded VOID for identity-recheck mismatches
 
-**Status: PROPOSED design for the C′ card's D9; rulings R-1–R-8 are owed by the operator.** It was produced on 2026-10-02 by a coordinator design panel: three independent approaches (A: signed acknowledgement of a retained event; B: a VOID /v3 protocol; C: a store-chokepoint token), each scored by three judges. All three judges picked A. Their fixes are folded in: stickiness, store-derived boundness, and an uncharged queue pre-check. Source: `origin/codex/h9-t05-integration@f237178`. Nothing here is implemented.
+**Status: design ADOPTED for the C′ card's D9. Operator rulings R-1–R-8 are all YES** *(Joshua, directly to the deployment coordinator, 2026-10-02: "yes to all eight")*. Implementation follows the C′ card under its review gate. It was produced on 2026-10-02 by a coordinator design panel: three independent approaches (A: signed acknowledgement of a retained event; B: a VOID /v3 protocol; C: a store-chokepoint token), each scored by three judges. All three judges picked A. Their fixes are folded in: stickiness, store-derived boundness, and an uncharged queue pre-check. Source: `origin/codex/h9-t05-integration@f237178`. Nothing here is implemented.
 
 
 Design only. No source was edited and no tests were run. I re-checked the VOID writer and barrier anchors at `f237178`:
