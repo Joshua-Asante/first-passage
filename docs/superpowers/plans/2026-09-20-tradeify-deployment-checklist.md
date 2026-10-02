@@ -29,7 +29,7 @@ External packets as of the [2026-09-24 handoff entry](2026-09-18-full-e1-executi
 T07 blocked on three S2 source facts ([packet](../../briefs/handoffs/2026-09-21-tradeify-t07-manual-settlement-procedure.md));
 T08 R3 = NONE, live release held pending the vendor question ([packet](../../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md));
 T10 step 4 budget term awaits a synthetic probe ([packet](../../briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet.md));
-~~T00 INSUFFICIENT on P7(b)~~ *2026-10-01:* the **T00 step-1 return is complete: P7 MET (RESOLVED) at code `2baa516`** (this does not satisfy D-feed (a), which needs step-3 GO-evidence) on `claude/t00-p7-tasks-3-4` ([closure](../../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md)). **Pending gate:** P7 re-run, `accept_p7_record` and a fresh source approval at the head T00 merges at, after S5 and, as recommended, after both D-S5 fix slices (#586, merged; and the D-S5-3 fix, #589) ([C3 ruling](2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01)).
+~~T00 INSUFFICIENT on P7(b)~~ *2026-10-01:* the **T00 step-1 return is complete: P7 MET (RESOLVED) at code `2baa516`** (this does not satisfy D-feed (a), which needs step-3 GO-evidence) on `claude/t00-p7-tasks-3-4` ([closure](../../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md)). **Pending gate:** P7 re-run, `accept_p7_record` and a fresh source approval at the head T00 merges at, after S5 and, as recommended, after both D-S5 fix slices (#586, merged; and the D-S5-3 fix, #589) ([C3 ruling](2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01)). *2026-10-02: pending gate discharged: step-1b P7 re-run done and accepted (`b2c9f9c`; landed `c3ab0cc`, tree-identical); see the [closure doc §7](../../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus).*
 **Sequencing from 2026-09-27:** the [staged-acceptance addendum](#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step) governs the order of next actions, the S5 build-entry/C3 split and the operator checkpoints; the rows above still own outcomes.
 **Current sequence from 2026-09-28:** the [continuation addendum](#addendum-2026-09-28--current-sequence-after-the-route-commissioning-documentary-closeout) states which step is next in each workstream after the route-commissioning documentary closeout. It changes no packet outcome, gate, authority or checkpoint, and the 2026-09-27 addendum still governs sequencing wherever the two meet.
 Campaign ownership: the Claude Code coordinator under the [2026-09-25 transfer](2026-09-18-full-e1-execution-slices.md#coordinator-transfer--claude-code-continuation-2026-09-25). No production, activation, arm or trade authority follows from any row.
@@ -175,6 +175,8 @@ resolved identity at qualification and activation.
 **Verification:** Full PASS/failure, duplicate/conflicting requests, invalidation races, crash cuts and historical receipt identity.
 **Checkpoint:** S6 result commit is an explicit internal acceptance boundary; split S7 into its own task if needed.
 **Return boundary:** Result and seal accepted; no production authority.
+**R1 gate (operator rulings, 2026-10-02):** T05's R1 also requires the C′ environment-identity obligation, and every R1 packet cites the accepted residual **T05 C′ first-release host environment drift** ([execution-slices ruling](2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02)).
+
 **Carried obligation (operator, 2026-09-29):** an independently observed pilot draw, replacing the TEST_ONLY plan-agreement pilot identity (S5 B4), is due with T05 and before CP-6; see H9 in [staged acceptance](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md).
 
 ### T06 — Full synthetic E1 acceptance / S8 (500k–750k)
@@ -638,7 +640,7 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
 **Also recorded:**
 - **#570** (the simplification decision packet) is the vehicle for D-GO, D-HIST, D-REC and D-MON.
 - **#579** (the audit-rescope card) is **not dispatched**; no new audit starts.
-- **Qualification recovery (D3, R1–R10) is unchanged** by these rulings. Any simplification of it comes back as a separate D3 amendment, using #570 §4's interruption-cost comparison.
+- **Qualification recovery (D3, R1–R10) is unchanged** by these rulings. Any simplification of it comes back as a separate D3 amendment covering [H9 checkpoint R2](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h9--resultseal-integration-and-bounded-same-sample-recovery-two-checkpoints), the D3 recovery slice; see [#570's record](../../notes/2026-09-30-tradeify-simplification-decision-packet.md) (its pre-ruling §4 interruption-cost comparison is retrievable at `564b239`).
 
 ## Verification of this planning artifact
 
