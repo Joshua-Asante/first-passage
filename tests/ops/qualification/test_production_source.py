@@ -854,3 +854,80 @@ def test_t05_gated_qualification_validates_source_truncated(tmp_path, monkeypatc
     source.verify_for(contract)
     assert [(e.session_date.isoformat(), e.reason, e.detail) for e in source.exclusions] == [(TAIL, 'source_truncated', TRUNCATED)]
     assert TAIL not in contract.populations['FULL'] and TAIL not in {s.session_id for s in source.sessions}
+
+
+# ---- P3-1 (2026-10-01 refute-first review): replay_bracket's deadline-failure branch ----
+
+def _hold_orb_through_flatten(monkeypatch):
+    """TEST_ONLY port: the fixture ORB keeps its entry into the 15:55 ET intrabar flatten."""
+    import composition_fixture as fixture_module
+    original = fixture_module.build_artifacts
+
+    def holding(root, *, idle=False, port_transform=None):
+        def hold(leg, raw):
+            return raw if leg != 'orb_mnq_v7' else raw.replace(
+                b'local.minute == 15 and self.position', b'local.minute == 59 and self.position')
+        return original(root, idle=idle, port_transform=hold)
+    monkeypatch.setattr(fixture_module, 'build_artifacts', holding)
+
+
+def _withhold_r1_flatten(monkeypatch):
+    """TEST_ONLY venue refusal: the R1 engine's brokers never confirm the scheduled flatten,
+    so the real engine's own-flat deadline check raises; R2's brokers are honest."""
+    from c1_signal_daemon import tv_broker_emulator
+    from c1_rail.qualification.model import LEG_IDS
+    built = []
+
+    class Withholding(tv_broker_emulator.TVBrokerEmulator):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.withhold = len(built) < len(LEG_IDS)     # the first engine built is R1's
+            built.append(self)
+
+        def submit(self, actions, bar):
+            if self.withhold and any(getattr(a, 'reason', '') == 'scheduled_flatten' for a in actions):
+                return []
+            return super().submit(actions, bar)
+    monkeypatch.setattr(tv_broker_emulator, 'TVBrokerEmulator', Withholding)
+    return built
+
+
+def test_p3_1_qualification_replay_bracket_keeps_a_real_deadline_failure_as_that_runs_result(tmp_path, monkeypatch):
+    import composition_fixture as fixture_module
+    from c1_rail.qualification.model import LEG_IDS, BracketReplayResult, ReplayResult
+    from c1_rail.qualification.paths import PathAssembler
+    _hold_orb_through_flatten(monkeypatch)
+    source = fixture_module.build_verified_composition(tmp_path).source
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    built = _withhold_r1_flatten(monkeypatch)
+    result = source.replay_bracket(path)
+    assert len(built) == 2 * len(LEG_IDS)
+    assert type(result) is BracketReplayResult and type(result.r1) is ReplayResult and result.r1 is not result.r2
+    # R1 is T=infinity at its first session: a partial record, not a raised failure.
+    assert [row.flat_before_deadline for row in result.r1.sessions] == [False]
+    assert not result.r1.sessions[0].end_edge.is_flat
+    assert [e.kind for e in result.r1.events].count('deadline_failure') == 1
+    assert len(result.r2.sessions) == 3 and all(row.flat_before_deadline and row.end_edge.is_flat for row in result.r2.sessions)
+    assert 'deadline_failure' not in {e.kind for e in result.r2.events}
+
+
+def test_p3_1_source_only_replay_bracket_seals_a_real_deadline_failure(tmp_path, monkeypatch):
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.model import ReplayResult
+    from c1_rail.qualification.paths import PathAssembler
+    from test_source_contract import NOW, build_source_case
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    _hold_orb_through_flatten(monkeypatch)
+    case = build_source_case(tmp_path, monkeypatch)
+    source = production_source.ProductionSource.build(case.validate(), artifact_root=case.root)
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    _withhold_r1_flatten(monkeypatch)
+    result = source.replay_bracket(path)
+    assert type(result) is production_source.SourceOnlyBracket
+    assert not isinstance(result.r1, ReplayResult) and not isinstance(result.r2, ReplayResult)
+    assert (result.r1.deadline_failure, result.r2.deadline_failure) == (True, False)
+    assert [(row.flat_before_deadline, row.end_flat) for row in result.r1.sessions] == [(False, False)]
+    assert len(result.r2.sessions) == 3 and all(row.flat_before_deadline and row.end_flat for row in result.r2.sessions)
+    # R1 consumed its first 15:55 ET split before the failure; R2 consumed one per session.
+    assert len(result.r2.consumed_intrabar_splits) == 3
+    assert result.r1.consumed_intrabar_splits == result.r2.consumed_intrabar_splits[:1]
