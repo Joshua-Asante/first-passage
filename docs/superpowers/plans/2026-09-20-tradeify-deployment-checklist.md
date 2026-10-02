@@ -573,14 +573,15 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
    4. all three end terminal, with no fill, the account flat and nothing working.
 
    The build is **small reviewed extensions to X-1's accepted round-7 generator and sender** (stop entry type, two children, a parent cancel bound to the parent's account path), with **R-1 v3.2** for the terminal reads and the coordinator classifying from the sealed bytes. **A bounded pre-cancel status reader is kept.** This is a reviewed, GET-only extension of R-1 v3.2, or an equivalent reviewed reader. It captures and seals the parent as `Working` and both children as `Suspended` **before** the cancel, because terminal reads cannot reconstruct that intermediate state. Without that sealed pre-cancel read, the drill does not establish GC-4.
-   - **Cut from the drafted suite** (#572's X-4 handoff): `x4_profile`, the observer's read budget and rate machinery, the asynchronous late-response channel, `x4_attended_input`, `x4_adjudicate`, and the multi-pass reviews. One focused review replaces those reviews.
+   - **Cut from the drafted suite** (#572's X-4 handoff): `x4_profile`, the observer's read budget and rate machinery, the asynchronous late-response channel, `x4_attended_input`, `x4_adjudicate`, and the multi-pass reviews. One focused review replaces those reviews. *(The `x4_attended_input` cut is **under review**: C1 item 10, the quote-input path, decides whether a reviewed quote-input component is needed.)*
    - **Kept:**
      - a one-use placement claim and a one-use cancel claim, each surviving a restart, including an unknown placement (MUST-PASS, because `order_id` idempotency is disproven);
      - raw response bytes sealed before parsing;
      - validation of both child identities;
      - attended cancel of every live order if the account is flat.
      - **Post-cancel status read: OPEN, C1 item 7** (operator, 2026-10-01). After any cancel attempt, including one with an unknown outcome (timeout or lost response, so no acknowledgment), a reviewed GET-only reader must capture any parent or child still `Suspended`/`Working`. Today no reviewed tool covers this: the pre-cancel reader runs only before the cancel, and R-1 v3.2 runs only once all ids are terminal. It's resolved at the C1 interface review (a post-cancel reader vs an extended, reviewed R-1) before any build or live X-4. The same review settles an owned completion/polling primitive for cancel operations and the sealing of a late cancel response, before the post-cancel reader is dispatched. This covers cancel operations only and does not reinstate the cut general late-response channel.
-   - This supersedes the drafted suite where they differ. #572's seven recorded C1 items apply only where they bind the kept items.
+     - **C1 items 8–11, OPEN, MUST-RESOLVE before any build or live X-4** (operator, 2026-10-01): unknown-placement recovery; a bounded recovery read when cancel completion stays unknown; the quote-input path; the full response envelope. Resolved at the C1 interface review.
+   - This supersedes the drafted suite where they differ. #572's eleven recorded C1 items apply only where they bind the kept items.
 4. **#571: parked, whole.** It changes only the legacy c1-rail `EventLedger` path. The book route uses CC-3's durable halt and never reaches it.
    - **Guard while parked:**
      - `dry_run=true` stays;

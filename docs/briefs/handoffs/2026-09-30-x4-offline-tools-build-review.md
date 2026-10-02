@@ -20,8 +20,8 @@ can exercise them without their live ratification. No actor ruling is delegated.
 > parsing; validation of both child identities; attended cancel of every live
 > order if the account is flat. **Cut:** `x4_profile`, the observer's read
 > budget and rate machinery, the asynchronous late-response channel,
-> `x4_attended_input`, `x4_adjudicate` and the multi-pass reviews; one focused
-> review replaces those reviews. The component list, interfaces, tests and
+> `x4_attended_input` (under review: C1 item 10), `x4_adjudicate` and the
+> multi-pass reviews; one focused review replaces those reviews. The component list, interfaces, tests and
 > sequence below are the **superseded full-suite design**, retained as a record
 > of what was drafted. Do not dispatch from them. A coordinator freezing the
 > next X-4 card builds it from the checklist's kept set, reusing only the parts
@@ -106,8 +106,9 @@ acceptance:
 ## Open items, binding on the C1 interface review
 
 Under the operator's stopping rule after the finding count rose from five to
-seven, these six findings are **recorded, not folded** into this draft. A seventh
-binding item was added by operator ruling on 2026-10-01 (item 7 below). The C1
+seven, these six findings are **recorded, not folded** into this draft. Binding
+items 7–11 were added by operator ruling on 2026-10-01 (below); #572 merges
+with items 1–11 open. The C1
 interface review must resolve **each one before implementation starts**, with
 the coordinator accepting the resulting disposition. The interface snippets,
 test ownership and execution sequence below remain provisional on these points;
@@ -125,6 +126,10 @@ says these items apply only where they bind the kept items:
 | P2 separate spec-compliance and quality passes (discipline 9) | **Moot.** The ruling cuts the multi-pass reviews; one focused review replaces them. |
 | P2 acceptance tests frozen by the coordinator or reviewer, not the builder | **Applies** to the tests for the kept items. |
 | Item 7 post-cancel status read (added 2026-10-01 by operator ruling) | **Applies, MUST-RESOLVE before dispatch.** It closes the gap between the kept pre-cancel reader and R-1 v3.2's all-terminal precondition, after any cancel attempt, including an unknown outcome. |
+| Item 8 unknown placement before ids return | **Applies, MUST-RESOLVE before dispatch.** Placement-specific completion channel and live-state `clOrdId` reconciliation reader; no full async observer. |
+| Item 9 unknown cancel completion (refines item 7) | **Applies, MUST-RESOLVE before dispatch.** Bound or abandon transport ownership; the recovery read proceeds with the race recorded. |
+| Item 10 quote-input path | **Applies, MUST-RESOLVE before dispatch; operator decides at C1** (minimal reviewed X-4 adapter, or close the existing adapter's two-part gate). |
+| Item 11 full response envelope | **Applies, MUST-RESOLVE before dispatch.** Status, ordered duplicate-preserving headers, transport outcome, receipt timestamps and body. |
 
 - **P1 — PRRT_kwDOT46Eac6n2QJB:** Operation needs an explicit read kind and GET binding fields. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959541).
 - **P1 — PRRT_kwDOT46Eac6n2QIw:** The durable-claim/restart test must cover unknown **PLACEMENT** as well as cancel; this is **MUST-PASS before any live X-4**, because `order_id` idempotency is disproven. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959517).
@@ -133,6 +138,10 @@ says these items apply only where they bind the kept items:
 - **P2 — PRRT_kwDOT46Eac6n2QI3:** Separate spec-compliance and quality review passes per brief-authoring discipline 9. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959524).
 - **P2 — PRRT_kwDOT46Eac6n2QJN:** Acceptance tests are frozen by the coordinator or C1 reviewer, not by the builder, per `cc_handoff` §6.0. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4152959551).
 - **Item 7 — post-cancel status read (operator ruling 2026-10-01, option c; MUST-RESOLVE before dispatch).** After any parent cancel attempt, acknowledged or with an unknown outcome (a timed-out or lost response gives no acknowledgment), the parent or a child may still be `Suspended` or `Working`, and no reviewed tool reads it. The kept pre-cancel reader runs only before the cancel. R-1 v3.2's accepted contract runs only once every involved id is terminal ([X-1 packet](../../notes/2026-09-29-x1-decision-packet.md), observer procedure). Neither a cancel acknowledgment nor an unknown cancel outcome establishes terminal state. Before any build or live X-4, C1 decides between a reviewed GET-only post-cancel reader that permits and reports live parent/child states, and an extended, reviewed R-1 contract. C1 must also settle an owned completion/polling primitive for cancel operations, which tells when a cancel request has actually completed so that no post-cancel GET overlaps an in-flight cancel, and the sealing of a late cancel response. Both are settled before the post-cancel reader is dispatched. This is scoped to cancel operations only and does not reinstate the cut general late-response channel; if C1 finds that it needs more than that, the question returns to the operator. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4161616775) · [completion thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4161777694).
+- **Item 8 — unknown placement before ids return (operator ruling 2026-10-01; MUST-RESOLVE before dispatch).** If the placement POST times out before returning parent/child ids, nothing settles whether the order exists. C1 must settle a placement-specific completion channel and a live-state `clOrdId` reconciliation reader that can locate a `Working` or filled placement, recover it, and seal a late placement response, without restoring the full cut asynchronous observer. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4161829451).
+- **Item 9 — unknown cancel completion (refines item 7; operator ruling 2026-10-01; MUST-RESOLVE before dispatch).** When cancel completion stays unknown, C1 must bound or abandon local transport ownership and permit the recovery read with the race recorded, per the drill plan's Recovery row (all rows). Proof of cancel completion is not a prerequisite for that read. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4161829456).
+- **Item 10 — accepted quote-input path (operator ruling 2026-10-01; MUST-RESOLVE before dispatch; the decision is the operator's at C1).** Manual entry missed the 10 s freshness gate twice in X-1, and the X-1 attended-input adapter stays barred until its two-part gate (pin/path-safety review and import-set reconstruction) closes. At C1 the operator decides between a minimal reviewed X-4 quote adapter and closing the existing adapter's two-part gate before X-4. This challenges the `x4_attended_input` cut; it is not decided here. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4161829466).
+- **Item 11 — full response envelope (operator ruling 2026-10-01; MUST-RESOLVE before dispatch).** The reduced transport must keep the full response envelope: status, ordered duplicate-preserving headers, transport outcome and receipt timestamps, plus body bytes. Body bytes alone are not enough. [Thread](https://github.com/Joshua-Asante/first-passage/pull/572#discussion_r4161829470).
 
 ## 0. Read and premise report before coding
 
