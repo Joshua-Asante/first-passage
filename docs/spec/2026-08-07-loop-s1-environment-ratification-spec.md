@@ -1,5 +1,7 @@
 # SPEC S1: environment ratification (F2 + F3)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 Status: RESOLVED · 2026-08-07 · ADR Accepted [`2026-08-07-loop-s1-environment-ratification.md`](../adr/2026-08-07-loop-s1-environment-ratification.md) · authorizes nothing ($0 · K=0) · depends: —
 Objective: Rule forks F2/F3 (due 2026-08-08) by ADR: the environment is the live incumbent
 `Tradeify_Select_100K` eval for **new** strategies, and the rail stays built + disarmed,

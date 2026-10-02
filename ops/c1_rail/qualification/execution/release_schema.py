@@ -22,9 +22,12 @@ EXECUTABLE_DIAGNOSTIC_RELEASE = 'qualification_execution_release/v4'
 # dispatch_enabled may be True only for the closed N1 checkpoint set named by
 # dispatch_checkpoints. v3/v4 keep refusing every dispatch. S4-D3: /v6 is the
 # joint dispatch revision beside it (profile/v6, dispatch_checkpoints exactly
-# ['N1','N2']); v5 bytes keep their closed N1-only set.
+# ['N1','N2']); v5 bytes keep their closed N1-only set. S5-D3: /v7 extends the
+# joint set with the PART_A compute checkpoint (profile/v7, dispatch_checkpoints
+# exactly ['N1','N2','PART_A']); the result/seal route stays closed.
 DISPATCH_DIAGNOSTIC_RELEASE = 'qualification_execution_release/v5'
 JOINT_DISPATCH_DIAGNOSTIC_RELEASE = 'qualification_execution_release/v6'
+PART_A_DISPATCH_DIAGNOSTIC_RELEASE = 'qualification_execution_release/v7'
 PROCESS_ROLES = ('supervisor', 'worker', 'g5')
 KEY_ROLES = ('freeze', 'result', 'seal', 'execution')
 WORKER_ENTRYPOINT = ('/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'worker')
@@ -49,7 +52,10 @@ def parse_release(raw):
         raise ValueError('closed schema object required')
     executable = doc.get('schema') == EXECUTABLE_DIAGNOSTIC_RELEASE
     joint_dispatching = doc.get('schema') == JOINT_DISPATCH_DIAGNOSTIC_RELEASE
-    dispatching = doc.get('schema') == DISPATCH_DIAGNOSTIC_RELEASE or joint_dispatching
+    part_a_dispatching = doc.get('schema') == PART_A_DISPATCH_DIAGNOSTIC_RELEASE
+    dispatching = (
+        doc.get('schema') == DISPATCH_DIAGNOSTIC_RELEASE or joint_dispatching or part_a_dispatching
+    )
     diagnostic = executable or dispatching or doc.get('schema') == DIAGNOSTIC_RELEASE
     campaign = diagnostic or doc.get('schema') == 'qualification_execution_release/v2'
     fields(
@@ -85,9 +91,15 @@ def parse_release(raw):
         ):
             raise ValueError('unsupported admission-only campaign release')
         if dispatching:
-            # The closed D4 fact pair and its S4-D3 successor: each dispatch
-            # revision names exactly its own closed checkpoint set.
-            expected = ['N1', 'N2'] if joint_dispatching else ['N1']
+            # The closed D4 fact pair and its successors: each dispatch revision
+            # names exactly its own closed checkpoint set.
+            expected = (
+                ['N1', 'N2', 'PART_A']
+                if part_a_dispatching
+                else ['N1', 'N2']
+                if joint_dispatching
+                else ['N1']
+            )
             if doc['dispatch_enabled'] is not True or doc['dispatch_checkpoints'] != expected:
                 raise ValueError('dispatch release must enable exactly its checkpoint set')
         elif doc['dispatch_enabled'] is not False:
@@ -110,6 +122,7 @@ def parse_release(raw):
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
         'qualification_execution_profile/v6',
+        'qualification_execution_profile/v7',
     ) and not (executable or dispatching):
         raise ValueError('funding profile is persistence-only; runtime release not enabled')
     if diagnostic:
@@ -126,6 +139,11 @@ def parse_release(raw):
         elif joint_dispatching:
             expected = (
                 'qualification_execution_profile/v6',
+                'qualification_campaign_budget_profile/v3',
+            )
+        elif part_a_dispatching:
+            expected = (
+                'qualification_execution_profile/v7',
                 'qualification_campaign_budget_profile/v3',
             )
         elif dispatching:

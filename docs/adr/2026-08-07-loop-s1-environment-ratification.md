@@ -1,5 +1,7 @@
 # ADR 2026-08-07 — Loop S1: environment ratification (F2 + F3)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Status:** `Accepted` — implements [SPEC S1](../spec/2026-08-07-loop-s1-environment-ratification-spec.md); operator direction recorded 2026-08-07 (*"this is going to be our environment, as soon as we solidify a strategy for it"*) + plan-execution GO 2026-08-07
 **Decision date:** 2026-08-07
 **Authors:** Joshua (direction + plan GO) + Cursor (drafter)

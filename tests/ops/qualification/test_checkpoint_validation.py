@@ -205,7 +205,7 @@ def test_checkpoint_plan_is_the_retained_n1_subdocument(tmp_path):
         derive_checkpoint_plan(plan, 'N1', b'receipt')
     with pytest.raises(ValueError, match='committed predecessor receipt required'):
         derive_checkpoint_plan(plan, 'N2', None)
-    with pytest.raises(ValueError, match='unsupported checkpoint selection'):
+    with pytest.raises(ValueError, match='committed predecessor receipt required'):
         derive_checkpoint_plan(plan, 'PART_A', None)
     with pytest.raises(ValueError, match='retained canonical campaign plan'):
         derive_checkpoint_plan(encoded({'schema': 'other'}), 'N1', None)
@@ -244,6 +244,125 @@ def test_checkpoint_plan_is_the_retained_n1_subdocument(tmp_path):
         )
 
 
+def test_part_a_checkpoint_plan_slice_is_pure_and_bound_to_the_n2_receipt(tmp_path):
+    """S5 2b-i: the PART_A slice is closed, byte-stable and receipt-bound."""
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent / 'execution'))
+    from bundle_fixture import build_bundle
+    from c1_rail.qualification.contract import canonical_json_bytes as encoded
+    from c1_rail.qualification.checkpoint_plan import (
+        derive_campaign_plan,
+        derive_checkpoint_plan,
+    )
+    from c1_rail.qualification.execution.admission import verify_bundle
+    from test_contract import NOW
+
+    case = build_bundle(tmp_path / 'staged', capability='FULL_E1', dispatch=True)
+    context = verify_bundle(case['root'], case['release'], case['keys'], NOW)
+    plan = derive_campaign_plan(
+        context.contract,
+        policy=context.policy,
+        execution_release_sha256=context.domain.execution_release_sha256,
+        source_bundle_sha256=_sha256_hex(case['index']),
+        attempt_id=context.attempt_id,
+        exact_depth_approval_sha256=context.exact_depth_approval.approval_sha256,
+    )
+    campaign = json.loads(plan)
+    receipt = encoded(
+        {
+            'schema': 'qualification_campaign_checkpoint_receipt/v1',
+            'attempt_id': context.attempt_id,
+            'checkpoint': 'N2',
+            'work_id': 'g5work',
+            'campaign_id': 'c1',
+            'assessment_sha256': '3' * 64,
+            'cutoff_sha256': '4' * 64,
+            'decision': 'CONTINUE',
+            'campaign_state': 'PART_A_READY',
+            'signing_at_utc': '2026-09-26T00:00:00Z',
+            'committed_at_utc': '2026-09-26T00:00:01Z',
+            'intent_sha256': '5' * 64,
+            'stage_decisions': {'N2': 'PASS', 'PART_B': 'PASS'},
+            'predecessor_receipt_sha256': '6' * 64,
+        }
+    )
+    raw = derive_checkpoint_plan(plan, 'PART_A', receipt)
+    assert raw == derive_checkpoint_plan(plan, 'PART_A', receipt)
+    assert raw == derive_checkpoint_plan(encoded(campaign), 'PART_A', receipt)
+    doc = json.loads(raw)
+    assert doc['schema'] == 'qualification_checkpoint_plan/v3'
+    assert doc['checkpoint'] == 'PART_A'
+    assert doc['part_a'] == campaign['part_a']
+    probe = next(row for row in campaign['probes'] if row['checkpoint'] == 'PART_A')
+    assert doc['seed_inputs'] == probe['seed_inputs']
+    assert doc['thresholds'] == campaign['cutoff']['thresholds']
+    for name, expected in (
+        ('attempt_id', campaign['attempt_id']),
+        ('contract_sha256', campaign['contract_sha256']),
+        ('trust_domain_sha256', campaign['trust_domain_sha256']),
+        ('policy_sha256', campaign['policy_sha256']),
+        ('execution_release_sha256', campaign['execution_release_sha256']),
+        ('exact_depth_approval_sha256', campaign['exact_depth_approval_sha256']),
+        ('horizon_sessions', campaign['n1']['horizon_sessions']),
+        ('initial_state_sha256', campaign['n1']['initial_state_sha256']),
+        ('replay_sha256', campaign['replay_sha256']),
+        ('budget', campaign['budget']),
+        ('mechanics_version', campaign['n1']['mechanics_version']),
+        ('source_proofs', campaign['n1']['source_proofs']),
+    ):
+        assert doc[name] == expected
+    assert set(doc) == {
+        'schema',
+        'checkpoint',
+        'attempt_id',
+        'contract_sha256',
+        'trust_domain_sha256',
+        'policy_sha256',
+        'execution_release_sha256',
+        'exact_depth_approval_sha256',
+        'part_a',
+        'seed_inputs',
+        'thresholds',
+        'horizon_sessions',
+        'initial_state_sha256',
+        'replay_sha256',
+        'budget',
+        'mechanics_version',
+        'source_proofs',
+        'predecessor',
+    }
+    assert 'measurement_override' not in doc and 'within_pp' not in doc
+    assert doc['predecessor'] == {
+        'checkpoint': 'N2',
+        'receipt_sha256': hashlib.sha256(receipt).hexdigest(),
+        'assessment_sha256': '3' * 64,
+    }
+    with pytest.raises(ValueError, match='committed predecessor receipt required'):
+        derive_checkpoint_plan(plan, 'PART_A', None)
+    body = json.loads(receipt)
+    for mutation, pattern in (
+        ({'checkpoint': 'N1'}, 'predecessor receipt binding differs'),
+        ({'attempt_id': 'other'}, 'predecessor receipt binding differs'),
+        ({'decision': 'FAILURE'}, 'committed predecessor decision differs'),
+        ({'campaign_state': 'N2_FAILED'}, 'committed predecessor decision differs'),
+    ):
+        broken = dict(body)
+        broken.update(mutation)
+        with pytest.raises(ValueError, match=pattern):
+            derive_checkpoint_plan(plan, 'PART_A', encoded(broken))
+    for broken in (
+        {name: value for name, value in body.items() if name != 'assessment_sha256'},
+        dict(body, assessment_sha256='0' * 63),
+        dict(body, assessment_sha256='A' * 64),
+    ):
+        with pytest.raises(ValueError, match='predecessor receipt binding differs'):
+            derive_checkpoint_plan(plan, 'PART_A', encoded(broken))
+    # The N1 slice is still the campaign plan's own n1 sub-document, unchanged.
+    assert derive_checkpoint_plan(plan, 'N1', None) == encoded(campaign['n1'])
+
+
 def test_checkpoint_operations_are_g5_only_with_closed_fields():
     from c1_rail.qualification.contract import canonical_json_bytes as encoded
     from c1_rail.qualification.execution import campaign_protocol as protocol
@@ -252,19 +371,18 @@ def test_checkpoint_operations_are_g5_only_with_closed_fields():
         assert protocol.permitted('g5', operation)
         assert not protocol.permitted('client', operation)
         assert not protocol.permitted('operator', operation)
-    base = {'schema': 'qualification_campaign_request/v2', 'attempt_id': 'a1', 'checkpoint': 'PART_A'}
+    base = {
+        'schema': 'qualification_campaign_request/v2',
+        'attempt_id': 'a1',
+        'checkpoint': 'CUTOFF',
+    }
     with pytest.raises(ValueError, match='installed checkpoint required'):
         protocol.parse_campaign_request(encoded(dict(base, operation='CHECKPOINT_SNAPSHOT')))
-    accepted = protocol.parse_campaign_request(
-        encoded(
-            dict(
-                base,
-                checkpoint='N2',
-                operation='CHECKPOINT_SNAPSHOT',
-            )
+    for checkpoint in ('N1', 'N2', 'PART_A'):
+        accepted = protocol.parse_campaign_request(
+            encoded(dict(base, checkpoint=checkpoint, operation='CHECKPOINT_SNAPSHOT'))
         )
-    )
-    assert accepted['checkpoint'] == 'N2'
+        assert accepted['checkpoint'] == checkpoint
     bad = dict(
         base,
         checkpoint='N1',
@@ -351,7 +469,9 @@ def test_checkpoint_snapshot_parser_refuses_open_shapes():
 
     doc = json.loads(raw)
     for mutation, pattern in (
-        ({'checkpoint': 'PART_A'}, 'schema required'),
+        # S5: PART_A is a valid checkpoint now; this N1-shaped document
+        # still refuses, on its missing predecessor binding.
+        ({'checkpoint': 'PART_A'}, 'fields differ'),
         ({'campaign_state': 'N3_READY'}, 'state differs'),
         ({'validity': 'MAYBE'}, 'state differs'),
         ({'members': doc['members'][:4]}, 'incomplete'),
