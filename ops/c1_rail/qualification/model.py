@@ -184,6 +184,56 @@ class ReplayResult:
             raise ValueError('immutable typed replay events required')
 
 
+@dataclass(frozen=True, slots=True)
+class ScheduleExposure:
+    """One leg's immutable exposure at a schedule instant (T00 step-1b §7).
+
+    ``position`` is signed broker-confirmed contracts, ``pending`` whether the
+    native broker has any working order, and ``reserved`` the nonnegative
+    ledger contract count (never micro equivalents).
+    """
+    position: int
+    pending: bool
+    reserved: int
+
+    def __post_init__(self):
+        if type(self.position) is not int or type(self.pending) is not bool or type(self.reserved) is not int:
+            raise ValueError('exposure requires int position, bool pending and int reserved')
+        if self.reserved < 0:
+            raise ValueError('reserved contracts must be nonnegative')
+
+
+@dataclass(frozen=True, slots=True)
+class ScheduleSplit:
+    """A validated split of one leg's current interval at a schedule instant.
+
+    ``prefix_executes`` is the provider's explicit statement; the replay never
+    infers it from timestamps, prices, volume or bar flatness.
+    """
+    prefix: Bar
+    suffix: Bar
+    prefix_executes: bool
+
+    def __post_init__(self):
+        if type(self.prefix) is not Bar or type(self.suffix) is not Bar:
+            raise ValueError('schedule split segments must be exact Bar instances')
+        if type(self.prefix_executes) is not bool:
+            raise ValueError('prefix_executes must be a bool')
+
+
+@dataclass(frozen=True, slots=True)
+class BracketReplayResult:
+    """R1 and R2 results from separate fresh engines; never combined."""
+    r1: ReplayResult
+    r2: ReplayResult
+
+    def __post_init__(self):
+        if type(self.r1) is not ReplayResult or type(self.r2) is not ReplayResult:
+            raise ValueError('bracket result requires one ReplayResult per run')
+        if self.r1 is self.r2:
+            raise ValueError('R1 and R2 must be separate run results')
+
+
 @dataclass(frozen=True)
 class PathOutcome:
     status: str
