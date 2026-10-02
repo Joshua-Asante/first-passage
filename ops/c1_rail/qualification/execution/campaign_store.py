@@ -284,7 +284,8 @@ class CheckpointStoreMixin:
         (S4-D1, once) widens the three tables to the composite checkpoint key --
         rows are copied, never re-derived; N1 bytes are immutable."""
         version = connection.execute('PRAGMA user_version').fetchone()[0]
-        if version == 9:
+        if version in (9, 10):
+            self.store.validate_layout(connection, version)
             return
         if version == 8:
             widen_checkpoint_layout(connection)
@@ -2621,7 +2622,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 "UPDATE full_campaigns SET validity='VOID',void_request=?,void_receipt=? WHERE attempt_id=?",
                 (request_bytes, receipt, request['attempt_id']),
             )
-            if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7, 8, 9):
+            if connection.execute('PRAGMA user_version').fetchone()[0] in (6, 7, 8, 9, 10):
                 exists = connection.execute(
                     'SELECT 1 FROM full_campaign_budgets WHERE attempt_id=?',
                     (request['attempt_id'],),
@@ -2637,7 +2638,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         identity(attempt)
         from ..journal_snapshot import parse_campaign_budget_snapshot
 
-        if connection.execute('PRAGMA user_version').fetchone()[0] not in (6, 7, 8, 9):
+        if connection.execute('PRAGMA user_version').fetchone()[0] not in (6, 7, 8, 9, 10):
             raise ValueError('no metered campaign')
         row = connection.execute(
             'SELECT snapshot_bytes FROM full_campaign_budgets WHERE attempt_id=?', (attempt,)
@@ -3423,6 +3424,7 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
                 7,
                 8,
                 9,
+                10,
             ):
                 raise ValueError('funding profile requires database v7')
             owner = self.row(row['attempt_id'])
@@ -3593,11 +3595,16 @@ class CampaignStore(FundingStoreMixin, CheckpointStoreMixin):
         version = connection.execute('PRAGMA user_version').fetchone()[0]
         # S4 moves every checkpointed journal to v9 (S4-D1); every walk that ran
         # at v8 runs at v9 too, or custody corruption would go unseen (C2 D1-02).
-        if version in (6, 7, 8, 9):
+        if version in (6, 7, 8, 9, 10):
             self._budget_integrity(connection)
             self._funding_integrity(connection)
-        if version in (8, 9):
+        if version in (8, 9, 10):
             self._checkpoint_integrity(connection)
+        if version == 10:
+            from .campaign_seal import SealStore
+            results = SealStore(self)
+            results.result_integrity(connection)
+            results.seal_integrity(connection)
         for row in connection.execute('SELECT * FROM full_campaigns'):
             if connection.execute(
                 'SELECT 1 FROM campaigns WHERE attempt_id=?', (row['attempt_id'],)

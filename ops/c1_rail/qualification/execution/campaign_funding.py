@@ -317,7 +317,7 @@ class FundingStoreMixin:
 
     def _funding(self, c, attempt):
         identity(attempt)
-        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9):
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9, 10):
             return None
         row = c.execute(
             'SELECT substr(body,1,8193) FROM full_campaign_funding WHERE attempt_id=?', (attempt,)
@@ -475,7 +475,7 @@ class FundingStoreMixin:
     def _validate_funding_predecessor(self, c, state):
         if state['profile']['schema'] != PROFILE:
             return
-        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9):
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9, 10):
             raise ValueError('funding profile requires database v7')
         attempt = state['attempt_id']
         previous = self._funding(c, attempt)
@@ -578,7 +578,7 @@ class FundingStoreMixin:
         observed = clock(clock_bytes)
         attempt, work = request['attempt_id'], request['work_id']
         with self.store.transaction() as c:
-            if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9):
+            if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9, 10):
                 raise ValueError('fresh funding enrollment required')
             existing = self._bootstrap(c, attempt, work)
             if existing is not None:
@@ -844,7 +844,7 @@ class FundingStoreMixin:
             return encoded(state)
 
     def _funding_integrity(self, c, *, attempt_id=None):
-        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9):
+        if c.execute('PRAGMA user_version').fetchone()[0] not in (7, 8, 9, 10):
             return
         attempts = (
             [(attempt_id,)]
