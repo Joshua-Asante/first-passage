@@ -141,6 +141,23 @@ def test_module_run_gate_attributed_via_staged_regex():
     assert all(g["id"] != "bare-module-run" for wired in by.values() for g in wired)
 
 
+def test_staged_regex_credit_matches_runner_semantics():
+    """Unanchored patterns credit like gate_manifest's re.search; an untracked bare
+    .py argument does not block the staged_regex fallback."""
+    inv = _load()
+    gates = [
+        {"id": "unanchored", "tier": "path-conditional",
+         "when": {"staged_regex": "evidence_store/"},
+         "cmd": ["python", "-m", "pytest", "tests/evidence_store"]},
+        {"id": "bare-arg", "tier": "path-conditional",
+         "when": {"staged_regex": "^scripts/evidence_store/"},
+         "cmd": ["python", "-m", "unittest", "discover", "-p", "test_store.py"]},
+    ]
+    by = inv.gates_by_script(gates, ["scripts/evidence_store/store.py"])
+    assert [g["id"] for g in by["scripts/evidence_store/store.py"]] == ["unanchored", "bare-arg"]
+    assert "scripts/test_store.py" not in by
+
+
 def test_evidence_store_rows_carry_the_evidence_store_gate():
     inv = _load()
     rows = inv.collect(

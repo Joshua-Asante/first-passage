@@ -117,12 +117,14 @@ def _script_from_cmd(cmd: list[str]) -> str | None:
 
 
 def gates_by_script(gates: list[dict], scripts: list[str]) -> dict[str, list[dict]]:
-    """Direct invocation wins; a module-run gate (no script in cmd) is credited to
-    every tracked script its ``when.staged_regex`` selects."""
+    """Direct invocation of a tracked script wins; any other gate is credited to
+    every tracked script its ``when.staged_regex`` selects (``re.search``, as
+    ``gate_manifest`` fires it)."""
+    tracked = set(scripts)
     by: dict[str, list[dict]] = {}
     for gate in gates:
         rel = _script_from_cmd(list(gate.get("cmd") or []))
-        if rel is not None:
+        if rel in tracked:
             by.setdefault(rel, []).append(gate)
             continue
         pattern = (gate.get("when") or {}).get("staged_regex")
@@ -130,7 +132,7 @@ def gates_by_script(gates: list[dict], scripts: list[str]) -> dict[str, list[dic
             continue
         rx = re.compile(pattern)
         for path in scripts:
-            if rx.match(path):
+            if rx.search(path):
                 by.setdefault(path, []).append(gate)
     return by
 
