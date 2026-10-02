@@ -112,7 +112,7 @@ If the pre-registration rules an override-only realization for ORB (trailing rem
 
 **Owed follow-ups (not this packet):**
 1. A reviewed pin change that adds both editions beside the existing pins.
-2. Filling pre-registration §5 with this return's hashes, followed by the operator freeze (pre-registration §8 step 4).
+2. Filling pre-registration §5 with this return's hashes, followed by the operator freeze (pre-registration §8 step 4). *[2026-10-02, on the successor: the steps after production are the successor-validity ruling (§8 step 3), the §10 audit with §5 filled (step 4), and the trailing-removal confirmation and operator freeze (step 5).]*
 3. `CANDIDATE` rows in the venue-edition ledger for both edition ids.
 4. Requalification through the book's production E1.
 

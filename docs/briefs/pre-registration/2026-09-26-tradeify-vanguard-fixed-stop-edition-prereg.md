@@ -2,7 +2,7 @@
 
 **CLOSED — replay-output exposure 2026-10-02;** superseded by [`docs/briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md`](2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md); see [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1.
 
-**Status:** `DRAFT — NOT FROZEN.` Fields marked **OWED (operator)** must be answered before freeze. Nothing here binds a replay, E1 run or verdict until the Status line reads `FROZEN <date>` and the freeze commit's SHA is recorded in [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). No replay, E1 dispatch or screen may run on this edition before then.
+**Status:** `CLOSED — replay-output exposure 2026-10-02 (superseded by 2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md)`; see the [successor](2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md) and [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1. *Historical and inert, the status before closure:* `DRAFT — NOT FROZEN.` Fields marked **OWED (operator)** must be answered before freeze. Nothing here binds a replay, E1 run or verdict until the Status line reads `FROZEN <date>` and the freeze commit's SHA is recorded in [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). No replay, E1 dispatch or screen may run on this edition before then.
 
 **Precondition — decided 2026-09-26: option A** ([campaign §59 Ruling 4](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-4--vanguard-mgc-fixed-stop-edition-on-this-route-2026-09-26)). *Original text:* the [Vanguard trailing determination](../handoffs/2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returned `TRAILING ACTIVE`, which leaves two options:
 - (A) a route-native fixed-stop Vanguard edition under the §59 K = 1 pattern;
@@ -130,6 +130,8 @@ The public repository receives identities and behavior shapes only, never source
 - Treating the edition as qualified, selected or deployable before the E1 verdict.
 
 ## §8 — Freeze procedure
+
+*Historical and inert since 2026-10-02: this file is CLOSED (replay-output exposure; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1) and can never be frozen. Step 5's change of the Status line to `FROZEN`, and the §10 hooks, no longer apply. The [successor](2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md)'s §8 and §10 govern.*
 
 1. The operator rules option A (edition) over option B (reject). Without that ruling, nothing below proceeds. **Done 2026-09-26** (§59 Ruling 4).
 2. The operator answers VAN-2 to VAN-6 and VAN-8, the §4 effective-inputs row and the §6 replay choice, in words and without parameter values. The §6 sequential-exit replay model is specified by the pre-registration owner and accepted by the operator.

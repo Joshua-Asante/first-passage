@@ -90,7 +90,7 @@ Before writing anything, confirm with `git check-ignore -v` that every output pa
 ## 5. Owed follow-ups (not this packet)
 
 1. A reviewed change adding the edition pins beside the existing ones (`book_adapters.py` and `ops/c1_rail/book_policy.py`, which must carry the same Pine pin as the port's embedded identity (`tests/ops/test_book_adapters_parity.py:69`), and `BOOK_SOURCES.sha256` or `PORT_MANIFEST.sha256` per convention). For any successor effective inputs, it also adds the source and runtime digests.
-2. Filling the pre-registration §4 pin rows with this return's hashes, then the operator freeze (pre-registration §8 steps 4–5).
+2. Filling the pre-registration §4 pin rows with this return's hashes, then the operator freeze (pre-registration §8 steps 4–5). *[2026-10-02, on the successor: the steps after production are the successor-validity ruling (§8 step 4), the §10 audit with §4 filled (step 5), and the trailing-removal confirmation and operator freeze (step 6).]*
 3. Adding a venue-edition ledger row `vanguard_mgc_fixed_stop_oso` as `CANDIDATE`.
 4. Requalification through the book's production E1 (pre-registration §6).
 
