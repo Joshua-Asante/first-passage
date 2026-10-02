@@ -358,7 +358,7 @@ Abbreviations:
 - B6. CP-3, P-1 and a fresh X-1 position (DP :268, :553).
 - B7. A trace with other legs' working orders present **corroborates S only**.
 
-**C. Outcome classes** (owners: the rail-spec amendment, halt/resume, T09 code). **No automatic retry of any non-success outcome.**
+**C. Outcome classes** (owners: the rail-spec amendment, halt/resume, T09 code). **No automatic retry of any attempted non-success outcome.** A close that was **never sent** (queued as `close_pending` behind attachment or another serialized operation) keeps its automatic **first** dispatch (BAO :1434–1453; `test_unresolved_attachment_queues_close_until_confirmation`); otherwise a strategy exit is stranded and the leg stays open.
 - C1. **Success.** Completion requires postdating, coherent P/W/K1 reads covering the former children, the liquidation's own terminal status, and **every symbol's** working orders while S is CONFLICTING. Late failures are polled (BD :104; §A12 :473; RS :58).
 - C2. **Partial (known).** An incident, with no resend. It needs a carrier: HR :34 (protection fault) or the rail spec. That carrier replaces RS :63 "resumes… remainder only".
 - C3. **Unknown.** An incident under §A12 F1/F4, with no resend. The outcome window is one bar, but a scheduled flatten reaches deadline D first (HR :119; BD :105, OPEN).
@@ -373,7 +373,7 @@ Abbreviations:
   - I7 (:67), S3(d) (:75), S7 "preserve protective orders" (:83), S10 (:89);
   - L-2 and its test list (:149), R-D (:152).
 - D2. **Halt/resume**: classes 13–15; §1 :28, provider-side actors; §7 :145, required tests.
-- D3. **Incident ADR**: §A11.1 is investigation-only (:368, :376), so selection needs a dated addendum. UB-5 needs a written answer or D7 approval (:302).
+- D3. **Incident ADR**: §A11.1 is investigation-only (:368, :376), so selection needs a dated addendum. UB-5 is EVIDENCE-PENDING and resolves through gate-C evidence (the primitive choice waits for gate C, D3 / L2(d); :302): its discharge is the accepted gate-C UB-5 evidence plus the dated addendum recording it, not an approval.
 - D4. **Successor pre-registrations** (PR #591): ORB-6, STR-7 and VAN-8 answered; VAN-8's close "replay treatment" (PRv :63); §6; **Vanguard §3a's exit-split dependency** (PRv :82) replaced by the same C-a answer, so the successor holds one execution contract.
 - D5. **Production handoffs**:
   - G1/G2 still require the §6 sequential-exit replay model;
@@ -387,7 +387,7 @@ Abbreviations:
 - E3. Broker rejection becomes an incident, not a terminal outcome (BAO :1875).
 - E4. A close past its one-bar timeout must halt. Today the fence covers entries and adds only (:827–830), and an open close only refuses risk-adds (`close_unreconciled`, :1792).
 - E5. Close completion is scoped to `scope_legs` (:1407). The liquidation order must be identified without a response id.
-- E6. `resume_closes` must not automatically re-dispatch queued closes (:1434).
+- E6. `resume_closes` (:1434) must not automatically **re-dispatch** a close that was already sent with a non-success outcome. It keeps the first dispatch of a never-sent queued close, and the rail-spec amendment (D1) states the same split.
 - E7. Reverse the rail-spec tests `test_close_partial_fill_preserves_residual_protection` and `…restart_resumes_same_operation` (:149).
 - E8. Refuse any sub-whole-leg close on the C-a transport (first-session addendum 7.6.2).
 
