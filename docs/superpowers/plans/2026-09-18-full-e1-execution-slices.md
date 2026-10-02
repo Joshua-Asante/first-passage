@@ -670,6 +670,29 @@ Merged to `main` at `abb3914` (03:51Z). Merge-gate evidence on the merge head `a
 
 **Rulings carried:** seams 15–19 accepted as listed (19 = the S3 `receipt_bytes`/`status()` defect, being folded by the S3 session; T05's `result_context` workaround removed at integration); post-seam `_advance` writes `RESULT_COMMITTED_*`/`SEALED_PASS` into the canonical budget `state`, the family projection is a mirror; the synthetic-predecessor overlay (`synthetic_predecessor=True` in every record; non-synthetic later-checkpoint rows refused at this revision) accepted; the fixture's re-signing of the S3 builders' placeholder signatures accepted as disclosed; **no seal principal exists at 71732aa** (role_policy roles = qclient/qexec/qg5; `seal_probe_uid` is a validated-but-never-created instance field) — the real principal + credential root is seam row 11 and a host-provisioning change at integration. **S7 GO:** commit the tests-first draft (ten §3 S7 cases) and build `campaign_seal.py`/`seal_service.py` against the frozen §1 shapes; `SealStore.reserve_seal_work` mirrors `reserve_result_work`; the Windows-injectable credential loader (`_loader=`) is accepted. Lines 2/3 + `check` once on the final tree; return per §4/§7; no Linux run; no PR.
 
+**S6 freeze amendment: DB10 and C′ runtime identity (operator ruling 2026-10-02, "yes, accept all seven").** The seven terms below amend the S6 freeze above. They were drafted in the H9 return (prepared `0a966c3`; rebased `f237178` on `c3ab0cc`) and in the coordinator-narrowed C′ design.
+1. **DB10 replaces F2's DB9 RESULT/SEAL mount.** DB10 is the exact accepted, widened DB9 plus `RESULT_SCHEMA` and `SEAL_SCHEMA`. Every frozen wire-family schema is unchanged.
+2. **Migration from 9 to 10** adds those two tables only. Existing S4/S5 rows and custody bytes keep their identity. No plan, salt, seed, attempt, allowance or deadline is renewed.
+3. **Layout checks.** `ResultStore` accepts only 9 or 10, and checks the actual schemas instead of inferring a mount from the version number. ExecutionStore, CampaignStore, the funding gates and the fixtures move together. A false-mounted 9, an incomplete 10 and unknown versions are refused. Historical upstream compatibility is retained.
+4. **Acceptance evidence** must include:
+   - fail-first refusal evidence;
+   - preservation and reopen of a real retained DB9;
+   - an exact retry that writes nothing.
+
+   Windows preparation evidence does not count as qualification Linux evidence.
+5. **R1 coverage.** Shared store and funding modules changed inside the S4/S5 Linux closure, so R1 runs the combined selection under its own grant. This is already ruled as "broaden R1" (see the T05 C′ rulings entry). Result/seal-only nodes can't stand in for it.
+6. **T00 isolation.** No T00 producer or test file changes. *Satisfied 2026-10-02:* T00 landed at `c3ab0cc`, and H9 rebased to `f237178`. The H9 diff doesn't touch the T00 P7 first-party closure (40 modules), so no P7 re-run is owed. That is re-checked at the C′ build dispatch.
+7. **C′ runtime identity contract.**
+   - **Worker base:** a standing, operator-approved worker base digest (`python@sha256:afc139a0…5a63`). It is kept separate from the built worker image identity.
+   - **Entrypoint binding:** a signed release/runtime revision binds the finite set of known R1 host entrypoints.
+   - **Checks:** each mapped launch is checked when it actually starts. The relevant identity is rechecked at the checkpoint, result and seal commits and at every VALID→VOID transition. The VOID recheck is uncharged.
+   - **Evidence kept:** versioned launch, exit and recheck evidence.
+   - **Preserved:** exact historical retry, the original budgets and deadlines, frozen v1 RESULT/SEAL, and the two-table DB10 layout. Binding goes through the existing `release_sha256`.
+   - **Fail-closed:** a missing pin, a failed tuple check, an image mismatch, a timeout or exhaustion refuses authority.
+   - **Residuals cited:** the operator-accepted residual "T05 C′ first-release host environment drift", which covers unmediated descendants and OS helpers.
+
+**What this does not grant:** any build, any R1 or R2 acceptance, or any merge. The C′ implementation still needs the coordinator's separate dispatch.
+
 ### S4/T03 packet drafted and its four decisions ruled, 2026-09-21
 
 `docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md` (02c6b51) — authored in parallel with S3's Linux iteration so no packet-authoring gap sits between S3's acceptance and S4's dispatch. Operator rulings (all recommended options): **S4-D1** custody widened once to `PRIMARY KEY(attempt_id, checkpoint)` + `CHECK IN ('N1','N2','PART_A')` at DB `user_version` 9 (S5 needs no layout change; T05's tables become v10 at integration, one-line seam; column names unchanged for T05's accessor); **S4-D2** one capture, one attestation, one assessment with `stage_decisions {N2, PART_B}` and the campaign decision, one receipt bound to the committed N1 receipt — family `/v1` with checkpoint-keyed closed field sets, snapshot `/v7`; **S4-D3** release `/v6` + profile `/v6` with `['N1','N2']`, v5 stays exactly `['N1']`; **S4-D4** the joint `(PARTIAL, NONE)` continuation legal only under a versioned FULL_E1 policy identity, producers/consumers re-pinned together, N1_ONLY keeps rejecting. Freeze on S3's merge (anchors re-taken at the merge head).
