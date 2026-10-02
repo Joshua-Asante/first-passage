@@ -8,6 +8,14 @@ site-packages itself (no ``site``, ``.pth`` or customization module runs), then
 runs ``p7_driver`` through ``runpy``. A record is accepted only when a fresh
 re-execution over the current bytes reproduces it outside the volatile fields.
 
+Scope of ``code_closure_sha256`` (operator ruling 2026-10-02, Codex P1 4163033692 on
+#594): it identifies the Python-source closure (first-party sources, and third-party
+module origins including extension modules) together with the recorded interpreter
+binding. It does NOT hash data files opened at runtime (for example tzdata zone files)
+or native dependencies the OS loader pulls in for extension modules. Environment
+hermeticity (RECORD-verified distribution contents plus audit-hooked hashing of opened
+files) is a tracked follow-up owned by T05, due before the R1 grant.
+
 P7 output is never fed to MC, the screen or any qualification stage (P7-closure
 packet §6); that rule is procedural, not claimed to be enforced here.
 """
@@ -178,6 +186,22 @@ def _p7_bootstrap():
     def under(path, root):
         return (path + _os.sep).startswith(root.rstrip(_os.sep) + _os.sep)
 
+    # Every sys.path root the run inserts can name the same file under another
+    # module name, so forbidden modules are refused by resolved path as well as
+    # by name, and one first-party file may load under one module name only
+    # (Codex P1 on #594).
+    import_roots = [_os.path.join(code_root, *part.split('/'))
+                    for part in ('core', 'lab', 'ops', 'ops/c1_rail', 'ops/c1_signal_daemon')] + [code_root]
+    forbidden_files, forbidden_dirs = set(), set()
+    for module_name in forbidden:
+        for import_root in import_roots:
+            base_path = _os.path.join(import_root, *module_name.split('.'))
+            if _os.path.isfile(base_path + '.py'):
+                forbidden_files.add(_os.path.realpath(base_path + '.py'))
+            if _os.path.isdir(base_path):
+                forbidden_dirs.add(_os.path.realpath(base_path))
+    state.first_party_paths = {}
+
     class FirstPartyLoader:
         def __init__(self, name, path, package):
             self.name, self.path, self.package = name, path, package
@@ -263,6 +287,11 @@ def _p7_bootstrap():
                 state.stdlib.add(name)
                 return spec
             if under(real, code_root) and real.endswith('.py'):
+                if real in forbidden_files or any(under(real, d) for d in forbidden_dirs):
+                    raise refuse('P7_FORBIDDEN_IMPORT', name + ' resolves to a forbidden module file')
+                canonical = state.first_party_paths.setdefault(real, name)
+                if canonical != name:
+                    raise refuse('P7_MODULE_ALIAS', name + ' is a second module name for ' + canonical)
                 package = spec.submodule_search_locations is not None
                 loader = FirstPartyLoader(name, real, package)
                 new = _machinery.ModuleSpec(name, loader, origin=real, is_package=package)
@@ -281,8 +310,7 @@ def _p7_bootstrap():
         state.stdlib.add(name)
     sys.meta_path.insert(0, RecordingFinder())
     sys.dont_write_bytecode = True
-    roots = [_os.path.join(code_root, *part.split('/')) for part in ('core', 'lab', 'ops', 'ops/c1_rail', 'ops/c1_signal_daemon')]
-    sys.path[:0] = roots + [code_root]
+    sys.path[:0] = import_roots
     sys.path.append(site)
     sys.p7_recorder = state
     # Revision 4.3 (b): runner and mc.simulation load for their types; their kernel
@@ -301,6 +329,8 @@ def _p7_bootstrap():
         stub = make_stub(module.__name__ + '.' + attr)
         setattr(module, attr, stub)
         state.stubs.append((module, attr, stub))
+    # The stubs bind the module object loaded from each file (Codex P1 on #594).
+    state.stub_origins = {_os.path.realpath(module.__file__): module for module in (runner, simulation)}
     import runpy
     runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__', alter_sys=False)
 
@@ -442,6 +472,11 @@ def finish_record(state, fields, out_path):
     for module, attr, stub in state.stubs:
         if getattr(module, attr, None) is not stub:
             raise P7Refusal(f'P7_FORBIDDEN_CALL: {module.__name__}.{attr} was rebound after stubbing')
+    for module in list(sys.modules.values()):
+        path = getattr(module, '__file__', None)
+        stubbed = state.stub_origins.get(os.path.realpath(path)) if isinstance(path, str) else None
+        if stubbed is not None and module is not stubbed:
+            raise P7Refusal(f'P7_MODULE_ALIAS: {module.__name__} is an unstubbed second module for a stubbed file')
     if sys.pycache_prefix != state.pycache_prefix or os.path.exists(state.pycache_prefix):
         raise P7Refusal('P7_UNBOUND_BYTECODE: the fresh bytecode cache prefix was changed or populated during the run')
     code_root = Path(state.code_root)

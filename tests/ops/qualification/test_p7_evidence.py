@@ -183,6 +183,11 @@ OUTSIDE = 'evil_outside_module'
     ('forbidden_call_evaluate', 'P7_FORBIDDEN_CALL'),
     ('forbidden_call_simulate', 'P7_FORBIDDEN_CALL'),
     ('restored_original', 'P7_FORBIDDEN_CALL'),
+    # Codex P1 on #594: aliases of forbidden modules and of the stubbed runner.
+    ('alias_forbidden_by_path', 'P7_FORBIDDEN_IMPORT'),
+    ('alias_forbidden_package', 'P7_MODULE_ALIAS'),
+    ('alias_forbidden_root', 'P7_MODULE_ALIAS'),
+    ('alias_runner', 'P7_MODULE_ALIAS'),
 ])
 def test_p7_loaded_set_negatives(env, variant, code):  # A16c
     twin = env.code_root('twin')
@@ -207,6 +212,11 @@ def test_p7_loaded_set_negatives(env, variant, code):  # A16c
                                     'try:\n    _s.simulate_path()\nexcept Exception:\n    pass\n'),
         'restored_original': ('from c1_rail.qualification import runner as _r\n'
                               '_r.evaluate_replay = (lambda *a, **k: None)\n'),
+        # A top-level name for the forbidden file itself: only the path check sees it.
+        'alias_forbidden_by_path': ('import os as _o, sys as _s\n_s.path.insert(0, _o.path.dirname(__file__))\n' 'import part_a\n'),
+        'alias_forbidden_package': 'import qualification.part_a\n',
+        'alias_forbidden_root': 'import ops.c1_rail.qualification.part_a\n',
+        'alias_runner': ('import os as _o, sys as _s\n_s.path.insert(0, _o.path.dirname(__file__))\n' 'import runner as _r\n_r.evaluate_replay(None, initial_state=None)\n'),
     }
     root = env.code_root(variant, edits={'ops/c1_rail/qualification/production_source.py':
                                          lambda text: text + '\n' + snippets[variant]})
