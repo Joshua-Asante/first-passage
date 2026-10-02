@@ -234,6 +234,32 @@ Recorded so the step-2 freeze does not absorb it. Dispatch waits for term 8's me
 - **D9 Operator-recorded VOID path.** If finding (c) shows it absent or needing a new record family, who designs it and whether the operator rules first.
 - **D10 PR authority.** This draft withholds `pr.open` (the H9 card lists it at `:584`); the coordinator opens PRs.
 
+## Coordinator resolutions, 2026-10-02
+
+These resolve D1–D10 for dispatch. Joshua's direct go for lane D was given in the Codex chat on 2026-10-02. **D5 is still pending his ruling, so the build does not start before it.**
+
+- **D1 Base.** H9 pushes `f237178` as a `codex/*` branch (lane D step 1). It then **merges current `main`** at build start and reports the range-diff and the Stage 1c 68/63 result before any C′ code. `main` now includes T00 (`c3ab0cc`), #600, #601, #584 and later merges.
+- **D2 Release binding.** A new release revision, **`/v8`**, beside `/v7` in `release_schema.py`. It binds the base-pin hash, the built worker image ID, the finite entrypoint mapping and the expected identity tuples. Historical parsers `/v1`–`/v7` stay as they are, and the binding flows through the existing `release_sha256`.
+- **D3 Pin file.** `tools/qualification_verification/worker-base-image.json`. It has a closed schema: platform `linux/amd64`, Python `3.12.3`, base `python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63`, the selected child `sha256:fd3817f3a855f6c2ada16ac9468e5ee93e361005bd226fd5a5ee1a504e038c84`, the config `sha256:cf001c2f8af7214144935ae5b37c9e626ccf789117c10c1f691766d4658f1b1e`, and an approval-provenance pointer to the ledger's C′ rulings entry.
+- **D4 Allowed files.** The card's list, plus the D3 pin file. The measured-closure files listed under D5 are allowed only if Joshua admits them.
+- **D5 Measured-closure edits — PENDING OPERATOR.** The proposal is to admit C′ edits to `release_schema.py`, `runtime.py`, `worker.py`, `campaign_probe.py` and `protocol.py`. Trigger 1 has already fired from T00, so the cost is **one** fresh S5 Part A measurement, run before the combined R1 once all closure-changing work has landed (C′, term 8, #611, K3/RC-4) (ledger finding of 2026-10-02, #613).
+- **D6 R1 tooling.** The R1 workflow mode, evidence scope and selector are built by a **separate coordinator-dispatched worker**, not this lane, after C′ lands. A `.github/workflows` change needs Joshua's CI-configuration approval.
+- **D7 Step 3.** Runs **after** step 2, on the same branch. Its case list is term 8 (all three validators accept PASS,PASS,FAIL,PASS; PASS,PASS,FAIL,FAIL; PASS,PASS,PASS,FAIL; plus the authentic all-four-prefix commit, receipt and reopen; and a corrected `result_fixture`), plus the `result_g5`/seal funding roles and the TEST_ONLY result-fault cases. Those cases cover:
+  - a bootstrap-frozen immutable fault;
+  - a durable T1 pre-sign hold;
+  - the fault absent in normal runs;
+  - an exact retry with no renewed key, time, payload or budget;
+  - the real T1 consumer;
+  - startup, funded hold and recovery, exhaustion, and VOID.
+- **D8 P7 closure (40 first-party paths; none may change).**
+  - `core/`: `dd_geometry.py`, `dd_protection.py`, `firm_rules.py`, `historical_challenge.py`, `lib/atomic_io.py`, `lib/mvd.py`, `lib/validation.py`, `lifecycle.py`, `mc/__init__.py`, `mc/ingest.py`, `mc/modes.py`, `mc/preflight.py`, `mc/simulation.py`, `tv_schema.py`.
+  - The namespace `lib`.
+  - `ops/c1_rail/`: `__init__.py`, `book_policy.py`, `book_schedule.py`, `ed25519_verify.py`.
+  - `ops/c1_rail/qualification/`: `__init__.py`, `blocks.py`, `clock.py`, `contract.py`, `model.py`, `p7_driver.py`, `p7_evidence.py`, `panel.py`, `paths.py`, `production_source.py`, `regime.py`, `replay.py`, `runner.py`, `sessions.py`, `trust_domain.py`.
+  - `ops/c1_signal_daemon/`: `__init__.py`, `book_adapters.py`, `book_protocol.py`, `feed.py`, `pine_ta.py`, `tv_broker_emulator.py`.
+- **D9 Operator-recorded VOID path.** The Phase-0 check comes first. If the path is absent, or needs a new record family, **stop and return** to the coordinator. The coordinator designs it and Joshua rules before any build.
+- **D10 PRs.** The coordinator opens them. The worker pushes the `codex/*` branch only.
+
 ## Pre-mortem (README rule)
 
 - **Loop cost:** one Windows build loop and its records; no Linux run.
