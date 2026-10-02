@@ -32,7 +32,9 @@ No preamble, recap, filler or restated context; link the owner instead. Never tr
 away correctness, required confirmations or honest verification reporting.
 
 A ruling, GO, acceptance or record grants only what it states; anything unstated is
-not granted. Do not append "no X granted" disclaimers. Operator direction 2026-10-02.
+not granted. Do not append "no X granted" disclaimers. This does not cover limits on
+how a verdict may be read (e.g. a closure's negative-scope section); keep those.
+Operator direction 2026-10-02.
 
 ## Live-execution posture
 

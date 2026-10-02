@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (bounded producer completion + real-input verification; no screen or Monte Carlo)
 **Date:** 2026-09-24
-**Status:** **AUTHORIZED FOR T00 STEP 1b; TASK 1 INTERFACE/FACTS FROZEN.** General step-1b authority already exists. The coordinator accepted the Task-1 checkpoint and exact interface in §7 on 2026-09-24. Continue only through Tasks 2–4 under this packet. T00 step 2 remains excluded; publication or merge supplies no additional authority. *2026-10-01, current return: Tasks 2–4 are done on `claude/t00-p7-tasks-3-4` (head `6ba5e17`), and the coordinator's verdict there is **T00 step 1 RESOLVED (P7 MET) at code `2baa516`**. **Rebase rule:** the P7 record binds its code head. After S5 lands (and, recommended, after both D-S5 fix slices: #586, merged, and the D-S5-3 fix, #589), the branch is rebased, and P7 is re-run, accepted through `accept_p7_record`, and given a **fresh source approval whatever the date**, all **at the head the branch merges at**. If `main` moves before that merge, the run is repeated ([C3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01); [defects ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--land-s5-with-two-named-test_only-defects-fix-before-t05-2026-10-01) · [D-S5-3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--d-s5-3-capture-exact-retry-demotion-also-gates-t05-r1-2026-10-01)).*
+**Status:** **AUTHORIZED FOR T00 STEP 1b; TASK 1 INTERFACE/FACTS FROZEN.** General step-1b authority already exists. The coordinator accepted the Task-1 checkpoint and exact interface in §7 on 2026-09-24. Continue only through Tasks 2–4 under this packet. T00 step 2 remains excluded; publication or merge supplies no additional authority. *2026-10-02, current return: **step 1b is complete.** T00 step 1 was RESOLVED (P7 MET) at code `2baa516` on 2026-10-01. Under the rebase rule, the branch was brought up to post-S5 `main`, given a fresh source approval (`r3c-a2`) and re-run at the head it merged at. Four Codex review rounds were folded first. **#594 merged as `c3ab0cc`, pinned to `b2c9f9c`.** The coordinator independently accepted the P7 record at `b2c9f9c` (2026-10-02T15:08:09Z), and the landed tree equals that head's tree (§7, step-1b re-run return). T00 step 2 remains excluded. ([C3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01); [defects ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--land-s5-with-two-named-test_only-defects-fix-before-t05-2026-10-01) · [D-S5-3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--d-s5-3-capture-exact-retry-demotion-also-gates-t05-r1-2026-10-01))..*
 **Parent roadmap:** [deployment-checklist amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early). This is one bounded execution handoff inside T00 step 1, not T00 step 2.
 **Executor:** one qualification/source executor on an isolated worktree, with read access to the primary checkout's ignored private inputs. **Coordinator:** owns scope, accepts the return and updates the T00 step-1 disposition. **Operator:** authorizes this packet, retains private-source custody, signs the exact reviewed OPERATOR contract, and alone may later ratify T00 step 2. **Combined acceptance remains with the coordinator.**
 **Authority:** modify only the tracked files and private-root surfaces named in §3; run source-independent and private-input verification; stage the already-retained corrected Striker bytes only beneath the approved private output root after exact hash verification. No write to the primary active port root; no account, host, provider, broker, deployment, arm or order action. A `DONE` return supplies no permission for T00 step 2.
@@ -358,6 +358,418 @@ to close candidate 3-prime P7 under this step-1b packet. Return at the existing
 identity/scope checkpoints and at final P7 scoring. No T00 step 2, screen, Monte
 Carlo, provider/account action, deployment, activation, arm or order action is
 authorized or occurred in Task 1.
+
+### Task 2 return — 2026-09-29 (escalation lane, Claude)
+
+#### Status: `DONE` for Task 2 — implementation returned for coordinator review; candidate 3-prime P7 remains NOT MET
+
+GLM hit its iteration cap twice on this ticket, so it moved to the escalation lane and restarted
+clean. GLM's draft was treated as unreviewed input. Its legacy-tuple compatibility shim and its
+`observe_exposure` call were dropped.
+
+The first return was `NEEDS_CONTEXT`: the frozen refusal of tuples and side channels broke
+`bracket.py` and `benchmark.py`, and a `production_source → bracket` import broke the execution
+closure. The coordinator's ruling of 2026-09-29 was (a) PORT, don't retire, with the constraints
+applied below.
+
+**Merge hold:** `execution/compute.py` and `part_a.py` on S5's branch import these modules. This
+branch is not proposed for merge until S5 merges. It then rebases onto post-S5 main and
+re-verifies. No PR has been opened.
+
+- **Branch:** `claude/t00-task2-bracket`.
+  - Base: `028c5ce`.
+  - Red-test commit: `b98e0c1`.
+  - Implementation commit: `92d9ecd`.
+  - This §7 entry follows as a docs-only commit.
+- **Files** (`git diff --stat 028c5ce..92d9ecd`):
+
+  | File | Change |
+  |---|---|
+  | `model.py` | +50 |
+  | `production_source.py` | 188 lines changed |
+  | `replay.py` | 76 lines changed |
+  | `bracket.py` | 113 lines changed |
+  | `benchmark.py` | 5 lines changed |
+  | `test_replay.py` | +456 |
+  | `test_production_source.py` | +235 |
+  | `test_bracket.py` | 18 lines changed |
+
+  The first five are under `ops/c1_rail/qualification/`; the test files are under
+  `tests/ops/qualification/`. `git diff --check` is clean. No private byte, port or artifact was
+  touched.
+- **Interpreter:** `C:/Users/joshu/multi_firm_operations/tmp/ops-env/Scripts/python.exe`,
+  CPython 3.13.2. `fp.py doctor` passed with 62 locked packages.
+- **Red record** (base production code at `028c5ce` plus the new tests; two test files):
+  `.cache/fp-verification/20260930T011841Z-d2507d353f00/record.json`, rerun as
+  `20260930T012039Z-b63179b87c4b`.
+  - `status: failed`, exit 1, `source_stable: true`. 86 failed and 63 passed; there were no
+    collection errors.
+  - New tests failed on ImportError of the frozen names, or on `TypeError` from the legacy
+    `_split`/`split_bar` signatures. Base code cannot pass an exposure at all.
+  - Existing tests failed only where their fixtures were migrated to `ScheduleSplit` plus
+    `exposure`.
+- **Green, focused:** `20260930T011407Z-d2a62cec4f25`. Completed, exit 0, stable; 149 passed.
+- **Green, full suite** (`tests/ops/qualification` plus `tests/ops/test_book_adapters_parity.py`,
+  `--workers 2`): `20260930T023603Z-e3f0ef4f5d7b`.
+  - Completed, exit 0, stable. 1707 passed and 13 skipped.
+  - Skip reasons: 1 Linux-only SIGSTOP ordering case; 4 private ports absent from the worktree;
+    8 `effective_inputs.json` absent from the port root.
+  - This run covers the runner, panel and cost/schedule suites.
+- **`fp.py check`:** `20260930T034404Z-3c0801d691ae`. Completed, exit 0, stable.
+
+**Test → §7 "Required test update" item** (case names carry the item number):
+
+| Item | Tests |
+|---|---|
+| 1 | `test_production_source.py`: `test_t2_item1_frozen_types_have_exact_fields_immutability_and_validation`, `…_for_run_accepts_only_exact_ids_and_issues_fresh_providers`, `…_retained_evidence_returns_executing_schedule_split`; `test_replay.py`: `test_t2_item1_split_refuses_legacy_two_bar_tuple`, `…_refuses_positional_legacy_provider`, `…_refuses_side_channel_providers[×2]`, `…_requires_a_captured_exposure_for_every_leg[×3]`, `…_returns_one_schedule_split_per_leg` |
+| 2 | `test_t2_item2_provider_places_the_ratified_two_run_table`; `test_t2_item2_held_long_and_short_flatten_at_each_runs_vertex[×2]`; `test_t2_item2_position_plus_pending_follows_position_rule_and_prefix_reach` |
+| 3 | `test_t2_item3_r2_pending_only_cancels_before_gap_open_fill_on_ordinary_bar`; `…_cancels_on_flat_zero_volume_bar`; `…_non_executing_prefix_is_refused_for_a_position_leg` |
+| 4 | `test_t2_item4_frozen_splits_of_20000_generated_bars_pass_split_unchanged` (20,008 bars × 6 run/exposure cases, including tie, flat and zero-volume degeneracies); `test_t2_item4_split_rejections_unchanged_even_when_prefix_does_not_execute[True/False]` |
+| 5 | `test_t2_item5_second_same_bar_boundary_splits_retained_suffix_with_fresh_exposure`; `test_t2_item5_provider_splits_the_current_suffix_and_stays_occurrence_local` |
+| 6 | `test_t2_item6_native_states_satisfy_reservation_invariants_at_schedule_callbacks[×10]` (THIS_CLOSE, NEXT_OPEN, two resting stops and position plus add, under R1 and R2); `test_t2_item6_reservation_only_state_is_refused_before_any_split[×2]`; `test_t2_item6_provider_refuses_missing_inactive_and_reservation_only_exposure` |
+| 7 | `test_t2_item7_one_bar_call_unchanged_costs_and_occurrence_local_quotes`; `test_t2_item7_replay_bracket_builds_two_fresh_engines_with_separate_results` (TEST_ONLY composition fixture holding ORB through the 15:55 intrabar flatten) |
+
+**Order-sum: enforced at capture (coordinator ruling 2026-09-29).** The ruling reads "it" in
+"The implementation must therefore check it at exposure capture" as the whole invariant:
+"`reserved[leg]` equals the still-outstanding admitted entry/add quantity, and a positive
+reservation has a corresponding broker-pending order". Native evidence is "not a guarantee for
+arbitrary injected brokers", so both halves are checked at capture.
+
+- **Commit `83b82d2`** (new; `92d9ecd` and `b42510c` are not rewritten). The existing
+  reservation-only refusal is kept. `_capture_exposure` also raises `ReplayNeedsContext` naming
+  the leg and both values when the ledger reservation differs from the outstanding admitted
+  entry/add quantity.
+- **Test:** `test_replay.py::test_t2_item6_reservation_order_sum_mismatch_is_refused_before_any_split[+1/-1]`.
+  A resting ORB entry keeps its pending order while the ledger reservation is moved above or
+  below its outstanding quantity. In both R1 and R2 the run is refused before any split. The
+  provider records no split call and no placement, so neither run selects a branch.
+- **Red on `92d9ecd` code:** `.cache/fp-verification/20260930T034858Z-9c3a527f991e/record.json`.
+  Failed, exit 1, stable; 2 failed.
+  - For +1, base code split the leg, and a later capture then raised the reservation-only
+    refusal.
+  - For −1, the cutoff cancel raised `CapacityError: release 1 exceeds reservation 0`.
+- **Green, two test files:** `20260930T034951Z-0104597a0fcf`. Completed, exit 0, stable;
+  151 passed.
+- **Green, full suite** (`tests/ops/qualification` plus `tests/ops/test_book_adapters_parity.py`,
+  `--workers 2`, at `83b82d2`): `20260930T035237Z-2052d59debde`. Completed, exit 0, stable;
+  1709 passed and 13 skipped, with the same skip reasons as above.
+- **`fp.py check` at `83b82d2`:** `20260930T050532Z-8eea6d6c7076`. Completed, exit 0, stable.
+
+Item 6 in the test table above also covers this new test.
+
+**Additions and review items:**
+
+- **Accepted addition (ruling 4):** a fail-closed guard. The replay refuses a non-executing
+  prefix unless the leg is pending-only and the prefix has one price.
+- **Task 4 review item (ruling 5):** `replay_bracket` records a run's `ReplayDeadlineFailure` as
+  that run's `ReplayResult`, following `run_bracket`.
+- **Task 3 open item (ruling 6):** run-local providers ignore reviewed intrabar split rows.
+  Provider precedence is placement, then reviewed quote, then ratified reading 3.
+
+**Verbatim move (ruling 3).** `vertex_split` and `placement` moved from `bracket.py` into
+`production_source.py`, and `bracket.py` re-exports them. SHA-256 of each `ast` source segment,
+for base `bracket.py@028c5ce` and head `production_source.py`:
+
+| Function | SHA-256 |
+|---|---|
+| `vertex_split` | `ffd9a5fda55aa086c08e33bc176c09a281e66aaa6016f5503e5ae796c3f24fba` (both) |
+| `placement` | `432a65a510bf7c77a0f029e7d10affab5f83cfbd0986a674e33041abc40df52a` (both) |
+
+`production_source` gains no new import edge: it already imported `.replay`, and `.bracket` is
+not imported. `test_execution_closure.py` passes unchanged, and the policy was not edited.
+
+**`bracket.py` port (ruling 1).** `BracketScheduleQuotes` delegates splits and prices to a fresh
+`ScheduleExecutionBracket.for_run` provider over empty reviewed evidence. It adds only its
+`Placement` record, and fails closed if the record disagrees with the provider. It no longer has
+`observe_exposure` or `prefix_is_empty`. `run_bracket` is unchanged.
+
+In `test_bracket.py` only interface shape changed; no expected value changed:
+
+| Node | Old call shape | New call shape |
+|---|---|---|
+| module import | `PathOutcome, SessionSchedule` | adds `ScheduleExposure, ScheduleSplit` |
+| `test_every_vertex_split_passes_the_engine_validator_unchanged` (via `_validate`) | stub `split_bar = lambda *args: (prefix, suffix)`; `left, right = BookReplay._split(stub, None, pb, bars, INSTANT)`; assert `(left['leg'], right['leg'])` | stub `lambda *args, exposure: ScheduleSplit(prefix, suffix, True)`; `BookReplay._split(..., INSTANT, {'leg': ScheduleExposure(1, False, 0)})['leg']`; assert `(split.prefix, split.suffix)` |
+| `test_placement_refuses_without_observed_exposure` | `split_bar(session, pb, INSTANT, 'leg')` twice, with `observe_exposure(session, INSTANT - 1 min, {'leg': 1})` between | `split_bar(session, pb, INSTANT, 'leg', exposure=None)` twice; `observe_exposure` removed. The stale-instant sub-case has no analogue once no observer state exists, so the second block now repeats the missing-exposure refusal. |
+| `test_interval_split_places_on_the_remaining_path` | `observe_exposure(session, INSTANT, {'leg': 1})`; `prefix, suffix = split_interval(session, None, remaining, INSTANT, 'leg')` | `split = split_interval(..., exposure=ScheduleExposure(1, False, 0))`; `prefix, suffix = split.prefix, split.suffix` |
+
+All other `test_bracket.py` nodes, including every engine-level R1/R2 case, are unchanged and
+pass on the ported class.
+
+**`benchmark.py` equivalence (ruling 2).** `SyntheticQuotes.split_bar` now takes keyword-only
+`exposure` and returns `ScheduleSplit(original, flat suffix, True)`. A pytest plugin captured
+every call's prefix and suffix while running `test_benchmark`, `test_benchmark_part_a`,
+`test_provider` and `test_seed_probability_vectors`. Each bar was encoded as `ts.isoformat()`
+plus `float.hex` OHLCV.
+
+| Tree | Tests | Calls | Log SHA-256 |
+|---|---|---|---|
+| Base: `028c5ce` production files | 76 passed | 1135 (9 nodes) | `5b8accbfac8b4bb2f9a5d95881de6f91762c9b6cbfbe1a42cc28b7267f9b9b17` |
+| Head | 76 passed | 1135 (9 nodes) | `5b8accbfac8b4bb2f9a5d95881de6f91762c9b6cbfbe1a42cc28b7267f9b9b17` |
+
+The two logs are byte-identical (`cmp`). The only difference is the flag: head records
+`prefix_executes=True`, base records a legacy tuple. The capture script and both logs are in the
+executor scratchpad and are not committed.
+
+**Remaining:** Tasks 3–4 (retained source pack, signed OPERATOR contract, real-input R1/R2 replay,
+hand recompute, independent review). No T00 step 2, screen, MC, real replay or private-input run
+occurred.
+
+### Tasks 3–4 Checkpoint 1 return — 2026-09-30 (local Claude, Opus)
+
+#### Status: `NEEDS_CONTEXT`. Task 3 did not start and nothing was written.
+
+**Setup.** The executor worktree is `.claude/worktrees/t00-p7-tasks-3-4`, on `claude/t00-p7-tasks-3-4` at `34f5b12` with a clean tree.
+- `fp.ps1 doctor` passed on CPython 3.13.2 with 62 locked packages.
+- `check_brief --type handoff` on the [dispatch card](2026-09-30-t00-p7-tasks-3-4-dispatch.md) reported 0 HARD and 0 WARN violations.
+
+**§0.1 reverified; all MATCH.**
+- The six `SHA256SUMS` panel rows pass, and the Aegis attested-prefix panel is `8ae083d0…`.
+- The Aegis, Vanguard and ORB ports are at their pins.
+- The corrected Striker `efd479b6…` matches in both the Step 3 root and the staged copy. The active Striker is still the refused `c81aa59c…`.
+- The historical settings are `66406dee…`, and D19 is `2698f268…`.
+
+**Blocker 1 (plan conflict).** `ProductionSource.build` accepts only a `ValidatedFrozenContract` from `validate_frozen_contract` under a signed production trust domain.
+- That contract's role set is fixed at the full `REQUIRED_ARTIFACT_ROLES` plus every production code role (`contract.py:509`).
+- It also requires the complete F1 qualification freeze: horizons, six stage specs, budget, decision rules and result plan.
+- Several of those values amount to T00 step-2 pre-registration, which §6 forbids. A narrower route needs files outside §3.
+
+**Blocker 2 (missing fact).** OPEN `source_calendar` rows need per-leg venue deadlines bound to a retained role. D19 was accepted for early-close membership only.
+
+#### Operator rulings 2026-09-30
+
+Joshua gave these on 2026-09-30 by structured answer in the coordinating session. The coordinator relayed them, and they are recorded verbatim:
+
+> **Ruling 1, the contract. Option (b) chosen: "Source-only contract".** Design a separately signed source-only contract class that `ProductionSource.build` accepts. It is new trust-domain / authority code, so it is designed and reviewed before any of it is implemented. T00 stays in parallel with S5 → T06.
+>
+> **Ruling 2, the deadlines. The candidate reading is accepted, with residuals named.**
+> - Date membership is panel-derived (R2).
+> - A D19 `venue_flat_dates` date gets V = 12:59 ET for all legs. Every other date gets V = 16:45 ET (Tradeify's blanket account-level rule).
+> - The facts are bound through the `calendar_producer` role.
+> - Two residuals are carried by name: the 2025-11-28 Globex outage, and possible ad-hoc closures after 2026-05-28. The second is the non-conservative one.
+> - If the P7 hand-recompute day is chosen, it must not be a residual date.
+
+The coordinator's sequencing is [card §8.1](2026-09-30-t00-p7-tasks-3-4-dispatch.md#81--coordinator-sequencing-after-the-checkpoint-1-return-2026-09-30). The source-only design (Phase A) and the Task 3 source pack proceed in parallel. Signing, implementation and Task 4 wait for the accepted design.
+
+#### Coordinator review 2026-09-30
+
+The coordinator reviewed the first Task 3 source pack and ruled as follows. The executor recorded these rulings.
+
+**Truncated tail, 2026-09-03: option (a) now, option (b) in the design.**
+- The date is marked `policy_denied` with the reason "panel truncated at interval end: 9 slots 18:00–20:00 ET, no active-window bar; data truncation, not a venue denial". This is a stand-in for a missing typed disposition, not a venue fact.
+- Option (c), a no-RTH pseudo-day kept in FULL, is rejected.
+- The design adds a typed truncation disposition, which retires the stand-in.
+- The 2022-09-01 head session keeps its intact RTH, and its missing 18:00–19:45 ET slots are named.
+
+**Executor decisions:**
+
+| Decision | Ruling |
+|---|---|
+| Paper capital | ACCEPTED as bound. Aegis, Striker and Vanguard use their constructor values, equal to the Step 3 emulator initial. ORB uses the hash-bound O-N emulator initial, and O-N equals O-P. |
+| `path_start_date` | ACCEPTED as a PROPOSED path-label origin. It appears as an explicit field in the signed contract bytes. |
+| Zero schedule rows | ACCEPTED. The Task 2 carry-forward is closed as moot. Task 4 names the real path and instant of a consumed vertex-placed split. |
+| Review companions | CORRECTION: producer-written `ACCEPTED` companions are self-certification, so they are UNREVIEWED drafts and must not be cited as reviews. Companions are reviewer-authored after review, and the producer emits templates only. The coordinator reviews the regenerated bytes and produces the companions. |
+
+**Regenerated pack.** The first pack (`task3-source-pack/`, inventory in place) stays immutable and is superseded. The r2 pack is in `task3-source-pack-r2/` under the private root; hashes only are given here.
+- Its `inventory.json` SHA-256 is `190f8dd96a3399efd468b23989753292c4882a34a0b7c7a2dc3c5020dbab9d01`, and its producer SHA-256 is `a9a5c262…4a87`, run at code `48bf30a`.
+- Every parser passed, with the templates checked for shape only.
+- Counts: 1,036 source dates, of which 40 have V 12:59 ET, 995 have V 16:45 ET and one is `policy_denied`; none is UNKNOWN. FULL has 997 sessions (H1 499, H2 498), with 39 exclusions: 38 `missing_active_bar` and one `policy_denied`.
+
+**Conflict noted.** The v1 review companion schema is closed, so the required statements cannot live inside v1 companion bytes. They are in the r2 `reviewer-notes.json`. The design's v2 companion adds `reviewer`, `reviewed_at` and `notes`.
+
+#### Source-only contract design: review path and acceptance (2026-09-30)
+
+The design is [`docs/superpowers/specs/2026-09-30-t00-source-only-contract-design.md`](../../superpowers/specs/2026-09-30-t00-source-only-contract-design.md). Each revision is additive and carries its own changes table.
+
+| Revision | Commit | Review and outcome |
+|---|---|---|
+| 1 | `48bf30a` | Coordinator: REVISE, with two BLOCKING (a caller-supplied trust root; P7 not bound to code) and four required changes |
+| 1 → typed truncation, reviewer-authored companions | `c9742f0` | The coordinator's Task 3 review rulings |
+| 2 | `7e0c49c` | Codex (local): seven findings |
+| 3 | `e6fad26` | Codex cloud `task_e_6abd361aed38832c9c9f2b847e08c267`: NOT RESOLVED, with two new P1s |
+| 4 | `f1cfa4f`, `a6ab1e2` | Operator-approved scope simplification. Codex `task_e_6abd41a3f030832cb583866d33d63406`: cuts 1 and 4 resolved, three new P1s |
+| 4.1 | `35f233e` | Three binding requirements (operator "yes"). Codex `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`: record authentication and stale inputs RESOLVED; the pre-hook P1 remained because `-I` does not imply `-S` |
+| 4.2 | this revision | The `-S` correction and test A23 |
+
+**Operator acceptance, 2026-09-30 ("option 1").** Design ACCEPTED 2026-09-30 by the operator (option 1), on revision 4.2. The final Codex review, `task_e_6abd4caf4cb0832c9b6d12ea9b58d3a4`, resolved the record-authentication and stale-input P1s, and the pre-hook P1 is closed by the `-S` fix and A23 without a further design review. This is an explicit operator exception to the pre-committed stop rule, taken because the finding was a factual error with a one-flag correction.
+
+**Next.**
+1. A coordinator card amendment admits the implementation files.
+2. The implementation proceeds with fail-first tests.
+3. Codex reviews the code before any merge.
+4. The merge hold until S5 merges still stands.
+
+No code starts before the amendment.
+
+**Revision 4.3.** 4.3 correction accepted by the operator 2026-09-30 (implementation conflict: production_source imports runner/mc.simulation).
+- The refusal list is `part_a`, `bracket`, `benchmark`, `benchmark_part_a`, `production`, `orchestration`, `result_adjudication`, `seal` and `execution.*`, matched by exact name or package prefix.
+- `runner` and `mc.simulation` load with their kernel entry points stubbed (`P7_FORBIDDEN_CALL`), with an identity check at record time.
+
+The spec records this in its revision 4.3 section.
+
+**A10b rebuild (2026-10-01).** On Joshua's ruling ("do the one clean rework on a simpler rule"), A10b is now a deny-by-default lexical scan. Every `.replay`/`.replay_bracket`/`.proof` call and every `.contract` load in `ops/` must be in an explicit allowlist, with a truthful reason. Dominance reasoning is gone.
+- Named residual: dynamic access (`getattr`, `operator.attrgetter`, string-built names) is outside the scan.
+- Stop rule: this is the last correction of A10b. A further Codex P1 on A10b goes back to Joshua.
+
+### Task 4 return — 2026-10-01 (executor, local Claude, Opus)
+
+#### Status: Task 4 executed. P7 scores MET on every executor-producible criterion. The separate-session refute-first review (§3 Task 4) and the coordinator's `accept_p7_record` step are still owed before §4's RESOLVED applies.
+
+This record holds hashes, counts and equality or verdict labels only. Every private value is in the T00 private root.
+
+**Inputs and authority.**
+- Contract: source-only contract r3c, `a526b50fa75e68451bdd2b5b57fa7a04e6ee08e61f96865c915ae8116a848d97`. It has 25 roles, populations FULL 997 / H1 499 / H2 498, PRISTINE `initial_state` and `path_start_date` 2022-09-01 (PROPOSED).
+- Approval: `862c4824f279f5aea2949d21dd69cdade02a0bbb9e7ceda5b303ab47e857bb68`. Joshua signed it with the dedicated key `source:1ebae5d45bc51280` (fingerprint `1ebae5d4…a4cb`, pinned by #573 at `2baa516`). It is valid until 2026-10-08T08:21:08Z, per the operator's 7-day ruling.
+- The real `validate_source_contract` accepts the contract.
+- Review companions: authored by the coordinator, reviewer-independent v2.
+
+**Real-path run: the official P7 record.**
+- Path: 40 contiguous FULL sessions, 2024-02-20 to 2024-04-16. There is no exclusion inside the block and no residual date.
+- Run through `p7_evidence.run_p7`, i.e. `python -I -S -B -c P7_BOOTSTRAP`, at code `2baa516` with a clean tree.
+- Record SHA-256 `4704f2ff4ac37af3e400688d9e487e4a69dcf6567ff5154a2e55cc46301d0b4b`, with evidence class `T00_P7_SOURCE_ONLY`.
+- `code_closure_sha256` `307043d668da225a36fc1823cfda61d6df0cac5fcebe6707d6475fda0423a0c7`; bootstrap `878f077c…032a`.
+- The loaded closure has 40 first-party modules, 416 third-party modules (numpy, pandas, python-dateutil, pytz, six, tzdata), 4 ports and one unexecuted `.pth` (`distutils-precedence.pth`).
+- Labels: `BOTH_RUNS_COMPLETE`, `CONSUMED_INTRABAR_SPLIT`, `INTRADAY_LOW_NONPOSITIVE`.
+- R1 and R2 each have 40 sessions, 148 fills and no deadline failure.
+- Consumed intrabar splits: 16 per run, on the ORB, Vanguard and Aegis legs at the 15:55 ET flatten instant. Their list is private; the record carries only the count and the SHA.
+- The R1 and R2 result digests differ (`2d1debe7…` and `38b51ebd…`), as their different flatten vertices require.
+
+**`accept_p7_record` executor pre-check.** At 2026-10-01T09:32Z, every artifact and closure file is current, the interpreter binding is equal, the approval re-validates under the pinned root, and a fresh-process reconstruction reproduces the record. Result: ACCEPTED, with `code_closure_sha256` `307043d6…a0c7`. This is not the coordinator's required acceptance, which is still owed.
+
+**Hand recompute.** The day is 2024-03-11, not a residual date: a single ORB (MNQ) round trip, a mid-bar stop entry followed by the 15:55 ET scheduled flatten through a consumed intrabar split.
+- Worksheet: `task4/worksheet.json`, `96993fbad7b4c88c68e06819bad063da4ec156e48d2908db4b9b435532675ef5`. The script is `task4/hand_recompute.py`. It recomputes from the raw bars and fill log with its own arithmetic.
+- Per-run equality labels:
+
+  | Check | R1 | R2 |
+  |---|---|---|
+  | In-process projection equals the P7 record digest | true | true |
+  | Opening equity, recomputed from the full prior fill log | exact | exact |
+  | Entry trigger within bar; entry fill rule (stop trigger plus slippage, not at the open) | true | true |
+  | Entry and exit commission equal the cost-model per-side rate | true | true |
+  | Flatten fill at the ratified vertex minus slippage | true (vertex index 2, adverse low) | true (vertex index 1, favourable high) |
+  | `intraday_low` equals the engine's (exact); the low is negative and below the day's P&L, so it is decided by the marks | true | true |
+  | Closing P&L equals the engine's | true, |Δ| ≈ 7e-12 | true, |Δ| ≈ 7e-12 |
+
+  The P&L difference is floating-point summation order: the engine accumulates cash incrementally, while the worksheet sums the round trip directly.
+- R1 and R2 day P&L differ: true.
+- `intraday_low` checks:
+  - every emitted low in both runs is ≤ 0;
+  - the horizon is exactly 40 in both runs;
+  - each run's own P&L/low pairs are emitted, and nothing is combined.
+
+  No screen was called.
+
+*Correction 2026-10-01 (refute-first review P2-1): `task4/hand_recompute.py` imports `ProductionSource`, `_seal`, `PathAssembler`, `contract` and `p7_evidence`, takes bars and the flatten instant from the engine-built source, checks the mid-bar trigger circularly (trigger = fill − slip), and labels with a 1e-6 tolerance. It is a consistency check, not an independent recompute. Independence is supplied by the refute-first review's standard-library recompute from raw CSV (primary day 2024-04-15 plus six split days, exact match).*
+
+**Protected sizes and ORB adds-off.** The accepted Step-3/Step-6 evidence is bound by exact identity through the contract's 11 historical pins. Their compiled values were checked by `validate_source_contract`. `book_adapters.py` moved (the `_resolve_domain` / `_source_domain` additions), so parity was re-run with the real accepted ports, panels and the 2026-09-03 exports, all read in place:
+- `tests/ops/test_book_adapters_parity.py`: 13 passed, 0 skipped.
+- Record `.cache/fp-verification/20261001T093134Z-93a62429390d` (completed, exit 0, stable).
+
+**Verification of the code at `2baa516`.** The production code equals `67becc1` plus the #573 pin.
+- Full suite at `67becc1`: `20261001T002604Z-77e689faa801`, 1794 passed and 13 skipped (the baseline skips).
+- check: `20261001T012541Z-dc7dfaed797c`.
+- #573's targeted source tests: 86 passed, `20261001T060655Z-04938b0a449d`.
+
+No private byte is in Git: `git ls-files` shows no `local_artifacts` path and no private port.
+
+**Owed before RESOLVED: all discharged.** *Updated 2026-10-02.*
+- Items 1 and 2, the refute-first review and the coordinator's `accept_p7_record`: discharged 2026-10-01 (verdict below).
+- Item 3, the post-S5 rebase re-check: discharged 2026-10-02 at the merge head `b2c9f9c`, with a fresh approval, as required by the C3 ruling whatever the date (step-1b re-run return below).
+
+No T00 step 2, screen, Monte Carlo, account, broker or rail action occurred.
+
+#### Coordinator T00 step-1 verdict — 2026-10-01: `RESOLVED` (P7 MET) at code `2baa516`
+
+- **Coordinator `accept_p7_record`: ACCEPTED** at 2026-10-01T09:38:28.571Z. It ran from a checkout detached at `2baa516`, through the launcher, with the public key read by the coordinator from the operator's key file (not the producer's registry).
+  - `code_closure_sha256` `307043d668da225a36fc1823cfda61d6df0cac5fcebe6707d6475fda0423a0c7`
+  - contract `a526b50f…8d97`, approval `862c4824…bb68`
+  - record `4704f2ff…0b4b`
+- **Separate-session refute-first review: NOT_REFUTED_WITH_FINDINGS**, no P1 (private `task4/REFUTE_REVIEW.md`, SHA-256 `fc3584ebe1f7e9551b0fe867deb3da28b79b6d9dbb7d9fde2fa511af45033618`; records `20261001T163149Z-c7aa6375914f` and `20261001T164216Z-6a65d6dd6bfa`).
+  - It found fresh engines with no cross-run leakage (R2-before-R1 reproduces both digests).
+  - All 25 artifacts are bound by exact path and SHA. The source pack was re-derived independently: 997/499/498, 40 contiguous FULL sessions, 16 consumed splits per run.
+  - Its own recompute matched exactly on 2024-04-15 and six other split days, and a mutation control failed as expected. The boundary is clean.
+- **Findings disposition:**
+  - **P2-1:** the independence claim is corrected above.
+  - **P3-1:** the `ReplayDeadlineFailure` branch is correct by reading but untested. Carried to T05.
+  - **P3-2:** the real path exercised only the held-position 15:55 ET branch; the pending-only fill/cancel branch and the 12:59 ET deadline are synthetic-only. Carried as a residual to T05/CP-6.
+  - **P3-3:** binding `code_head` is correct fail-closed behavior. Spec §2.5a's "unloaded file does not void" wording conflicts with §2.5b(2) and is to be reworded at the post-S5 rebase.
+  - **P3-4:** cosmetic double-encoded `§` in the signed `calendar_producer.json`. The bytes stay as signed.
+- **Verdict:** **T00 step 1 is `RESOLVED`: P7 MET, at code `2baa516`.**
+- **Owed-list item 3:** discharged 2026-10-02 (step-1b re-run return below). The S5 merge hold ended when #594 merged after S5 and both D-S5 fix slices.
+
+### Step-1b re-run return — 2026-10-02 (executor, local Claude, Opus)
+
+#### Status: `DONE`. P7 was re-run and independently accepted at the merge head `b2c9f9c`, and #594 merged as `c3ab0cc`, whose tree equals `b2c9f9c`'s.
+
+This record holds hashes, counts and verdict labels only. Every private value stays in the T00 private root.
+
+**Authority.**
+- The C3 ruling (recommendation 4), the D-S5 defects ruling and the D-S5-3 ruling require P7 to be re-run at the head T00 merges at, under a fresh source approval whatever the date.
+- The run came after both D-S5 fix slices (#586 at `981eb12`, #589 at `77cd715`).
+
+**Contract and approval.**
+- Contract: **r3c, unchanged** (`a526b50f…8d97`). All 25 bound artifacts re-hash equal, and the contract carries no repo-code pins.
+- Fresh approval `r3c-a2`:
+  - payload `442323d5…a34c`, issued 2026-10-02T01:52:19Z, expires 2026-10-09T01:52:19Z;
+  - Joshua signed it with the dedicated key `source:1ebae5d45bc51280`;
+  - envelope `8358f924…4842`, validated by the real `validate_source_contract` under the pinned root.
+
+**Rebase.**
+- Merges of `origin/main` with no conflicts and no force-push: `0e93618` (`77cd715`), `77688ac` (`721be61`), `c9c17f9` (`584340a`).
+- The final merge was `b2c9f9c`, onto `9349d5b`, which the merge-order agent froze for #594. Every delta after S5 was `.md`-only, except one `.gitattributes` eol pin from #585.
+- Integration fix `d3ad125` (test only): main's 13 new S5 `ProductionSource` capability sites were each reviewed into the A10b allowlist.
+
+**Codex rounds folded** (coordinator adjudication; each new test fails against the pre-fix code):
+- **Round 1, at `c9c17f9`.** `d424bc2` folded three findings:
+  - third-party bytecode bound by a fresh `sys.pycache_prefix`, so no cached `.pyc` runs in place of the hashed source. A planted, timestamp-valid `.pyc` did run inside P7 before the fix;
+  - the source-key fingerprint retained in the receipt (`SOURCE_KEY_CHANGED`);
+  - the `calendar_producer` record validated at the build boundary.
+
+  `9368c6f` was a follow-up: an installed module compiling its own exact bytes is not first-party.
+- **Round 2, at `d424bc2`.** `19863dd`: forbidden modules refused by path, module aliases refused (`P7_MODULE_ALIAS`), and stubs bound by realpath. The native and tzdata closure finding was scoped by operator ruling (owed list below).
+- **Round 3, at `19863dd`.** `4c1af90`:
+  - `source_truncated` refused on the qualification path;
+  - canonical, duplicate-free P7 record bytes plus strict base64;
+  - the reviewer bound to the review companion's signed producer;
+  - reconstruction requires exit 0.
+- **Round 4, at `4c1af90`.** `fa41382`, per Joshua's ruling of 2026-10-02 to fix rather than defer: `run_p7` resolves paths before the cwd change, and a source-only `replay()`/`proof()` never leaks a raw deadline-failure result.
+
+**Gate-found defect (root cause).** `808661c` fixed it.
+- The round-1 constant `RULED_DEADLINES_ET` held `datetime.time` values.
+- The frozen drift verifier `result_adjudication._same_executable_value` compares reconstructed module globals by value only for primitive and date types; anything else falls back to identity. So the constant never matched its reconstruction.
+- Effect: 33 seal/composition failures from `d424bc2` onward, caught by the bridge-child gate at `4c1af90` and by CI.
+- Fix: the constant is now `'HH:MM'` text, and the comparator is unchanged.
+- The executor's targeted selection had not included `test_seal`/composition. That gap is the lesson.
+
+**P7 at `b2c9f9c`.**
+- Run through `p7_evidence.run_p7` (`python -I -S -B -c P7_BOOTSTRAP`, bootstrap `35859dc5…2145`) on a clean tree.
+- Record (private root `step1b-final-b2c9f9c/p7-record.json`): SHA-256 `c14aa9cc24abdd5686d640a0e4831b970bbfb4d84ab244c2ab4b606c6ecb75c3`, evidence class `T00_P7_SOURCE_ONLY`.
+- `code_closure_sha256` `48bdc10460441a572f157bcf1bb5e696d343b6fc250b09458aa558ab7b709139`.
+- Labels: `BOTH_RUNS_COMPLETE`, `CONSUMED_INTRABAR_SPLIT`, `INTRADAY_LOW_NONPOSITIVE`.
+- R1 and R2: 40 sessions, 148 fills, no deadline failure and 16 consumed splits each. The digests (`2d1debe7…`, `38b51ebd…`) are **unchanged from the `2baa516` run**.
+- Executor self-check: `accept_p7_record` from a checkout detached at `b2c9f9c` gave ACCEPTED at 2026-10-02T15:02:28Z.
+- **Coordinator independent `accept_p7_record`: ACCEPTED** at 2026-10-02T15:08:09Z.
+  - It ran from the coordinator's own clean detached checkout at `b2c9f9c`, with the coordinator's own key copy (fingerprint `1ebae5d4…`).
+  - Record and closure: MATCH. Contract and approval: unchanged.
+- **Tree identity:** `c3ab0cc^{tree}` == `b2c9f9c^{tree}` == `7591416312506d6c94904c566e25b42c3869e15c` (parents `9349d5b`, `b2c9f9c`). The accepted record authenticates exactly the landed tree.
+
+**Verification at `b2c9f9c`.** Launcher records are under `.cache/fp-verification/`; each is completed, exit 0 and stable, with before and after commit `b2c9f9c`.
+- Coordinator-accepted split gate:
+  - `test_book_ordinary_unknown_halt.py` alone: `20261002T150724Z-6edd62daf544`, 18 passed.
+  - Bridge child selection: `20261002T150758Z-1b39038a4eba`, 2002 passed and 1 skipped. The bridge's `_SIGNED_CASES`/`_PROVENANCE_CASES` junit assertions all pass.
+  - `tests/ops` with both paths ignored: `20261002T150803Z-3fac47c6650c`, 2951 passed.
+- Targeted set at `fa41382`: `20261002T143135Z-b22828defb26`, 347 passed. `check`: `20261002T145553Z-e53969f9f68e`.
+- CI on `b2c9f9c` is green, including `pytest (3.11)`, S2 supervision and `qualification-windows`. Codex is clean at `b2c9f9c`.
+
+**Owed, with owners.**
+- **T05, before the R1 grant:**
+  - Environment hermeticity under C′ (operator rulings 2026-10-02, recorded in #597, open). `code_closure_sha256` identifies the Python-source closure plus the interpreter binding, not runtime-opened data files (for example tzdata) or OS-loaded native dependencies. The `p7_evidence` docstring states this scope.
+  - Qualification-path `source_truncated` validation. It is currently refused outright on the frozen-contract path.
+  - Calendar-role binding on the qualification path. `CALENDAR_FACT_ROLE` and `validate_calendar_producer` run only for source-only contracts.
+  - Qualification review identity. The v1 qualification review gate carries no reviewer identity.
+- **Carried from the 2026-10-01 refute-first review:** P3-1 (no real-run coverage of `replay_bracket`'s deadline-failure branch) to T05, and P3-2 (pending-only and 12:59 ET branches synthetic-only) to T05/CP-6.
+- **Discharged by this docs PR:** this return, the packet status line, the P3-3 rewording of spec §2.5a, and the stale owed lines above.
+
+No T00 step 2, screen, Monte Carlo, account, broker or rail action occurred.
 
 ## 10. Audit hooks
 

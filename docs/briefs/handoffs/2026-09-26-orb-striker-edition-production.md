@@ -2,7 +2,7 @@
 
 **Status:** DRAFT. **Not dispatchable** until every §0 gate holds. It runs only on the operator's primary checkout, because the private Pine and ports exist nowhere else. Commit this packet before dispatch and record the dispatch revision in §7.
 
-**Selected outcome:** the private files for the two editions pre-registered in [the ORB/Striker editions pre-registration](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md), built exactly as its answered rules state:
+**Selected outcome:** the private files for the two editions pre-registered in [the ORB/Striker editions pre-registration](../pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md), built exactly as its answered rules state *[Retargeted 2026-10-02 ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1): the original pre-registration is CLOSED — replay-output exposure; this points to its successor, pending the operator's ratification.]*:
 - `orb_mnq_fixed_stop_oso@Tradeify_Select_100K`: a new edition Pine and a new edition port;
 - `striker_dj30_mym_entry_with_stop@Tradeify_Select_100K`: a new edition Pine and a new edition port;
 - the SHA-256 of each file.
@@ -24,11 +24,11 @@ This is step 2 of that pre-registration's §8 freeze procedure. The editions imp
 | Gate | Condition | Where it is recorded |
 |---|---|---|
 | G0 | Campaign §59 ruling 3 adopted both editions (already satisfied, 2026-09-25). Confirm it has not been withdrawn since. | Campaign record §59 |
-| G1 | Pre-registration items answered in words: ORB-2 to ORB-4, STR-2 to STR-6, the §6 replay-modelling choice and the §6 sequential-exit replay model. No `OWED` remains in §3, §4 or §6; the §5 pin rows are exempt, because this packet fills them. | The pre-registration at a named commit |
+| G1 | Pre-registration items answered in words: ORB-2 to ORB-4, STR-2 to STR-6, the §6 replay-modelling choice and the §6 sequential-exit replay model. No `OWED` remains in §3, §4 or §6; the §5 pin rows are exempt, because this packet fills them. *2026-10-02: on the successor, the §6 sequential-exit replay model is moot for the first release under C-a (successor §6 and its exit-split row, pending ratification; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2). Its successor-validity item (§7, **OWED (operator ratification)**) is a freeze blocker.* | The pre-registration at a named commit |
 | G1a | Realization and identity-binding scheme under pre-registration §5 are explicit: reused pins fixed; new output digests supplied by this packet; embedded Pine identity compatible with proposed registration. | G1 commit; separately reviewed identity contract if needed |
 | G2 | The operator explicitly authorizes an agent to **create** new private edition files under the paths in §2. §60 grants read access only. | Dispatch message or campaign record |
 | G2b | **Allocation gate (operator ruling 2026-09-26: "Yes, gate on allocation").** Producing these edition files waits until the TradingView/CrossTrade [capability allocation and deletion map](2026-09-25-tradeify-capability-allocation-deletion-map.md) is **ACCEPTED** under gate D of the checklist's [T09 gate acceptance record](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record), and the accepted map keeps these legs' runtime ports as the controller boundary. A committed or merged map is not acceptance. If the accepted allocation delegates the behavior these ports implement, this packet is withdrawn, not run. | Checklist T09 gate D acceptance record (named revision); allocation map disposition |
-| G3 | The pre-registration is **not frozen**, and no replay or E1 output exists for either edition | Pre-registration Status line; campaign record |
+| G3 | The pre-registration is **not frozen**, and no replay or E1 output exists for either edition *2026-10-02: this gate now binds the successor and is scoped in time. It means no replay or E1 output on either edition produced after the successor's first commit (`e85d321`). Output produced before that commit is disclosed in successor §D and governed there and by its §7 successor-validity item (OWED for the operator's ratification); it does not fail this gate. The successor's standing rule §R forbids any candidate-configurable replay before freeze.* | Pre-registration Status line; campaign record |
 
 Record the pre-registration commit you build against. If the pre-registration changes after that commit, stop and return; do not reconcile.
 
@@ -36,7 +36,7 @@ Record the pre-registration commit you build against. If the pre-registration ch
 
 ## 1. Read first
 
-- The [pre-registration](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md) at the G1 commit. It is the **only** specification.
+- The [pre-registration](../pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md) at the G1 commit. It is the **only** specification.
 - [Rail spec 2026-09-12](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md) S2 and S3 (a)/(b)/(d)/(e): what the declared expressions do on each leg. The declared ORB uses native trailing, L2(g). The declared Striker enters bare and attaches its stop a bar later, L2(f).
 - [REST route assessment §6.5](2026-09-25-crosstrade-rest-route-assessment.md#65-per-leg-primitive-map-step-4): the per-leg primitive map. Any post-entry amend depends on L2(c), which is K here (drill D2).
 - Campaign record §59 and §60, and AGENTS.md "Public-clone posture": the handling rules.
@@ -112,7 +112,7 @@ If the pre-registration rules an override-only realization for ORB (trailing rem
 
 **Owed follow-ups (not this packet):**
 1. A reviewed pin change that adds both editions beside the existing pins.
-2. Filling pre-registration §5 with this return's hashes, followed by the operator freeze (pre-registration §8 step 4).
+2. Filling pre-registration §5 with this return's hashes, followed by the operator freeze (pre-registration §8 step 4). *[2026-10-02, on the successor: the steps after production are the successor-validity ruling (§8 step 3), the §10 audit with §5 filled (step 4), the trailing-removal confirmation and operator freeze (step 5), and the full §10 re-audit in the freeze commit (step 6).]*
 3. `CANDIDATE` rows in the venue-edition ledger for both edition ids.
 4. Requalification through the book's production E1.
 
