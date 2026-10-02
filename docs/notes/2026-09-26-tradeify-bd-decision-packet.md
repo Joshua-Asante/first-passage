@@ -128,6 +128,51 @@ The amendment must specify each element below. Nothing here states vendor behavi
 
 *GC-7 addendum, operator ruling 2026-09-29:* the X-1 A-11 exception is now written into the GC-7 row above, which is its canonical text. The [X-1 decision packet §2](2026-09-29-x1-decision-packet.md#2-a-11--gc-7-decision) records the decision; drill plan §0.1 and commissioning §2.2 carry labelled mirrors.
 
+**GC-7 addendum 2026-10-02 — actors that cannot be disabled, under C-a; a per-session inventory (PROPOSED: options for operator decision, nothing ruled).** The GC-7 row and its X-1 exception are unchanged and govern. This addendum answers row S-X1 of the C-a selection register, which is itself PROPOSED and **unmerged** ([PR #593](https://github.com/Joshua-Asante/first-passage/pull/593), branch `claude/ca-selection-register`, head `8d253c9`). S-X1 says each identified actor that cannot be disabled "needs a new dated GC-7 amendment that names it and extends an exception to C-a runtime operation". It adds: "The inventory is repeated at each session start." This addendum grants no CP-3, row, send, spend, arm or GO, and it selects nothing.
+
+- **The actors.** These are published Tradeify policies, not verified on the account ([drill plan §0.1](2026-09-26-tradeify-route-drill-plan-draft.md#01-exclusivity-and-actor-inventory-gc-7), candidate table):
+  - the end-of-session auto-close: all positions are closed by 4:45 PM ET, or 12:59 PM ET on early-close days;
+  - the trailing-drawdown breach auto-liquidation, after which the account is failed and liquidation-only.
+
+  The captures show no way to disable either; that is an inference from silence, to be confirmed at the inventory. Manual (Trader) Lockout is operator-initiated; its proposed required state is "not enabled".
+- **Existing exceptions.** The X-1 exception above is X-1 only. X-4's proposed exception ([X-4 packet §2](2026-09-30-x4-decision-packet.md#2-actor-decision--proposed-x-4-only-exception); ruling owed) is X-4 only. Both leave ROUTE STOPS standing for C-a and X-3.
+
+*Decision G7-X3: the scope-extended X-3 (two symbols; [drill plan X-3 addendum](2026-09-26-tradeify-route-drill-plan-draft.md#20-rules-common-to-x-1--x-5)).*
+
+| Option | Terms | Consequence |
+|---|---|---|
+| **X3-A.** Extend the X-1 exception to X-3 | The X-1 terms, applied to X-3. The two firm controls are recorded as external risk-control actors and need not be disabled. Every operator-configurable sender stays disabled. The operator records the timed and threshold controls privately, picks a window clear of the scheduled close, confirms drawdown headroom at CP-3 for both positions (no figure here), and accepts that threshold liquidation may still occur. Any firm-side intervention ends X-3 with no PASS: attended recovery follows, every possibly effective request is reconciled, and unknowns stay held | X-3 can run, so register rows S-T1, S-V1 and S-V2a become dischargeable. **A choice inside X3-A:** an orphan or reversal seen after a firm-side intervention is either a **contradicting trace**, which stops C-a with no residual route (§1.1, second failure bullet), or a **contaminated trace**, with no PASS and no finding, after which X-3 is re-authorized. Without broker timestamps the two causes may not be separable (GC-3) |
+| **X3-B.** ROUTE STOPS stands for X-3 | No X-3 while the inventory reads "configured, not disableable" for either control | S-T1, S-V1 and S-V2a cannot be discharged, so C-a cannot be selected. The close form returns to the operator (checklist 2026-10-01 item 7.4) |
+
+*Decision G7-RA: armed C-a operation (runtime sessions).*
+
+| Option | Terms | Consequence |
+|---|---|---|
+| **RA-A.** Named-actor exception for armed C-a operation | For armed C-a sessions only, the two named firm controls are external risk-control actors and need not be disabled. Five conditions apply:<br>(1) every operator-configurable actor is in its required state at the per-session inventory below;<br>(2) the session's calendar row binds the venue deadline V to the firm's published close. The own-flat deadline D ≤ V − 15 minutes then precedes the timed close ([halt/resume §5](../spec/2026-09-14-tb-s3-halt-resume-contract.md#5-exact-schedule-rule)), so the timed actor meets a position only after a deadline breach, which is already an incident;<br>(3) drawdown headroom is confirmed privately before each arm (no figure here);<br>(4) any order, fill or position change not attributable to the runtime, a firm action included, is an incident ("Unknown order identity is an incident", halt/resume §2) and ends automation for the session (§A11.2);<br>(5) the exception claims no exclusive close ownership against these actors and no freedom from races. A firm close racing a C-a in flight (close-semantics note §3, row (c), variant (ii)) is a residual that the operator accepts by name | C-a stays possible on this account, at the cost of the named residual in (5). Whether the 2026-10-02 acceptance of vendor Q7 (register S-V3) already covers a firm-side second close owner is the operator's call. This addendum does not assume it does |
+| **RA-B.** ROUTE STOPS stands for armed C-a operation | No armed C-a while either control is configured and cannot be disabled | Both controls are firm policy, so S-X1 cannot be discharged on this account. C-a cannot be selected, and the close form returns to the operator (checklist item 7.4): C-b by its own expression decision, a different close contract, or rejecting the route |
+
+- **Dependency, not a recommendation.** G7-X3 and G7-RA can be ruled together. Under RA-B, the evidence X3-A gathers is for a close form that could not be used on this account.
+
+*Per-session actor-inventory step (proposed for armed sessions).* It runs before each arm, at the per-session GO (G-ARM in the [host-obligations note](2026-09-27-host-obligations-assignment.md)).
+1. The operator takes the inventory of [commissioning §2.2](2026-09-27-route-commissioning-session-packet.md), rows A-1 to A-11, and records it privately. For an armed session:
+   - A-12 is absent: there is no operator REST sender;
+   - A-13 is the runtime, armed as authorized, and is the sole automated sender;
+   - A-9 records no operator platform session on the book's symbols, except under the treatment S-X2 decides;
+   - Manual Lockout is not enabled;
+   - A-7 (coverage repair) is recorded as a vendor actor;
+   - A-10 and A-11 are recorded against the option ruled in G7-RA.
+2. If any actor is outside its required state, or a non-disableable actor has no ruled exception, the session is not armed.
+3. The record's SHA-256 goes into that session's arm evidence, beside the OF-5 attestation. Nothing private is written in the repository.
+4. An inventory attests one moment only. It is repeated at every arm and after any change to account access.
+5. The same step takes the cross-account no-hedge attestation that the X-1 and X-4 packets use. A reversal beside an opposite or correlated position could be a prohibited hedge (drill plan §0.1 candidate table).
+
+*F-5 and S-X2 (cited; not decided).* The operator's 2026-09-28 CP-2 ruling F-5 ([commissioning packet §1.1](2026-09-27-route-commissioning-session-packet.md#11-cp-2-record-2026-09-28)) reads: "Preservation trades on the book's symbols: **automation fenced, then reconciled.** Moving to another symbol does not remove account-wide effects or establish exclusive control". It answers the choice that this row's pass criterion still marks "OPEN (operator)", and drill-plan open question 9 (drill plan ruling block, CP-2 mirror). Register row S-X2 still asks three things that F-5 does not settle:
+- whether "fenced" in an armed session means an operator stop, which is an incident ending automation for the session (halt/resume §4.1, O-6), or a preservation trade placed only while the runtime is disarmed;
+- how halt/resume §4.1 O-5 classifies an operator platform action that comes without an operator stop;
+- the C-a interaction: a quantity-less close on that symbol would liquidate the operator's position together with the runtime's.
+
+No option is proposed for S-X2 here, and the register row is unchanged.
+
 **Priority order.** GC-1 first (it decides whether any safe exit exists), then GC-2a, GC-7, GC-3, GC-2b, GC-4 and GC-5, with GC-6 and GC-8 in parallel. Vendor-semantics work for GC-1 (drill-plan M) and for GC-2b (drill-plan M2) needs no drill and can start now under a coordinator dispatch; vendor contact is the operator's alone **[CC-6]**. The drill-map rows D1–D3 and D6 (REST-return labels; session plan D1–D4) were authorized in principle on 2026-09-25 in **webhook form only**. That authorization was not formally revoked, but it is superseded in practice by the operator's 2026-09-26 requirement that normal-case drill decisions be prepared individually after their documentary prerequisites: D1–D4 are not treated as cleared for execution, and each returns as an individual decision (session-plan §0 addendum; drill-plan open question 2). REST-form traces for GC-1, GC-2a, GC-2b, GC-3 and GC-4 (drill-plan X-1 to X-4) are order-producing: each is prepared as an individual decision after its documentary prerequisites, with the exact environment, actions, exposure limits and abort/recovery procedure returned before execution approval is requested, and with no automatic fallback to the live evaluation environment. The deliberate protective-fill race drill (X-5) is **deferred** by the ruling. This packet asks no approval to execute any drill, including any GC-1 fault or race case. The D4/D5 reads (drill-plan R-1, R-2) are requested separately under A-1. *Operator ruling 2026-09-26 (R-CLOSE):* R-1 and R-2 only are authorized, operator-performed, within the drill-plan draft's exact read-only scope, after existing CrossTrade REST entitlement is confirmed; no purchase, new access, route change or order mutation is authorized, and no order-producing trace is authorized.
 
 ---
