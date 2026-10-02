@@ -81,7 +81,7 @@ second queue here. Registry backfill debt is enumerated by
 Owners retain canonical criteria; rows below are pointers. Delete discharged
 rows rather than retaining completion narratives. A gated row does not grant GO.
 
-### Weekly — recurring (rolling; next deadline **2026-10-02**, bucket 09-28→10-02)
+### Weekly — recurring (rolling; next deadline **2026-10-09**, bucket 10-05→10-09)
 
 - **Account-preservation trade, operator-placed or agent-placed at the operator's direction:** at least one per Mon–Fri week.
   An agent requires direction for the specific trade under [ADR Addendum 2026-09-30b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b); the rail stays disarmed. A missed venue week risks account
