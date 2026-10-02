@@ -1956,3 +1956,42 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - The clean-review exception in the defects ruling above covers D-S5-1 and D-S5-2 only.
 
 **Not granted:** T05 integration acceptance (R1) before the D-S5-3 fix lands, and no production use.
+
+### Operator rulings — T05 environment sealing (C′) and the first-release host environment drift residual, 2026-10-02
+
+*Joshua, directly in the coordinating session, on 2026-10-02. These rulings are owned here. H9, R1 and the deployment checklist link to this entry.*
+
+**Rulings, in order:**
+1. **"scoping is fine, defer the sealing to T05".** T00's P7 `code_closure_sha256` identifies the Python-source closure plus the recorded interpreter binding. Environment sealing is owed by T05 before the R1 grant.
+2. **"C for the T05 sealing"**, revised to **C′** after the H9 source check found that host-side code decides outcomes. That host-side code includes Part-A adjudication, calendar and deadline logic in Eastern time, budget exhaustion, VOID, and aggregate result and seal checks.
+3. **"yes"** to the coordinator's narrowed C′. Identity checks cover only the finite, known R1 host entrypoints. Unmediated descendants and OS helpers join the residual.
+
+**C′ obligation, owed by T05 before the R1 grant. It is a design: no build is dispatched by this entry.**
+- **Worker base image.** It must be a **standing, operator-approved digest**, not a tag resolved at build time. A missing, tag-only or mismatched pin refuses. The initial digest and any later update need Joshua's approval and a reviewed change.
+- **Host identity checks.** A signed release/runtime revision binds a finite mapping of the known R1 host entrypoints:
+  - the runner/pytest admin fixture;
+  - the service supervisor;
+  - the campaign guardian, control and probes;
+  - the N1, N2, PART_A and RESULT G5 roles;
+  - qseal;
+  - the Python bootstrap/owned-command wrapper.
+
+  Each mapped launch is checked before it spawns, by the child itself, and by the controller through `/proc`. Each is rechecked at the checkpoint, result and seal authority transitions, inside the original CPU/wall reservation and absolute deadline, with no refresh or retry.
+- **Evidence and failures.** Launch and exit evidence is retained in versioned supervision events. A mismatch, a failed check, a timeout or exhaustion refuses authority.
+- **Unchanged.** Frozen v1 RESULT/SEAL and the DB10 two-table layout stay as they are, bound through the existing `release_sha256`. The design term is proposed as term 7 of the S6 DB10 draft, which stays DRAFT.
+
+**Residual accepted by Joshua for the first release: "T05 C′ first-release host environment drift."**
+- **Not covered by the checks:** an unchanged interpreter and lock identity does not seal installed distribution contents, tzdata or other data files, external mounts, late-loaded native or transitive libraries, or OS and kernel services. **Unmediated descendant processes and OS helper binaries (systemctl, busctl, docker), and OS daemons and the kernel, are not identity-covered either.**
+- **Effect:** drift in any of these can change adjudication, calendar, deadline and VOID outcomes.
+- **Size:** its magnitude is **unmeasured**.
+- **No hermeticity claim** is made. Every R1 packet cites this residual, the expected identity contract and the observed coverage.
+
+**Unchanged:**
+- Full S5 custody.
+- The full, expressly granted S4 + Part A + result/seal Linux R1.
+- Independent review.
+- T00-first integration.
+- Three qualification-path items still owed before R1:
+  - truncated-calendar validation;
+  - calendar-role binding;
+  - reviewer identity and independence.
