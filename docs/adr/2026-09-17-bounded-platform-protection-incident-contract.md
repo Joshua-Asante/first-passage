@@ -1,5 +1,7 @@
 # ADR — Bounded platform protection during signal/control incidents
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Status:** `Proposed` — operator-directed contract amendment, pending governing-contract propagation and route qualification. No implementation or live acceptance.
 **Decision date:** 2026-09-17
 **Supersedes:** none

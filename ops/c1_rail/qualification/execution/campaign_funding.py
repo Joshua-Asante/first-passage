@@ -38,11 +38,17 @@ WORK_PHASES = {
     # Admitted only under the /v6 joint dispatch release.
     'n2_worker': 'N2',
     'n2_g5': 'N2_G5',
+    # S5 dispatch roles: the genuine Part A work and its metered G5 assessment
+    # work. Admitted only under the /v7 dispatch release, with the campaign at
+    # PART_A_READY/VALID (the service's startup-fixed gate).
+    'part_a_worker': 'PART_A',
+    'part_a_g5': 'PART_A_G5',
 }
 WORK_ROLES = tuple(WORK_PHASES)
 PROBES = ('noop', 'cpu', 'descendants', 'memory', 'wall', 'intent', 'controller_cpu')
-DISPATCH_ROLES = ('n1_worker', 'n1_g5', 'n2_worker', 'n2_g5')
+DISPATCH_ROLES = ('n1_worker', 'n1_g5', 'n2_worker', 'n2_g5', 'part_a_worker', 'part_a_g5')
 JOINT_DISPATCH_ROLES = ('n2_worker', 'n2_g5')
+PART_A_DISPATCH_ROLES = ('part_a_worker', 'part_a_g5')
 PHASE_BY_ROLE = {role: phase for role, phase in WORK_PHASES.items() if role != 'admission'}
 
 
@@ -81,7 +87,7 @@ def parse_request(raw):
     # Refused for every role but the g5 dispatch work; absent means absent.
     if doc['fault'] not in (None, 'hold_after_intent'):
         raise ValueError('installed diagnostic fault required')
-    if doc['fault'] is not None and doc['role'] not in ('n1_g5', 'n2_g5'):
+    if doc['fault'] is not None and doc['role'] not in ('n1_g5', 'n2_g5', 'part_a_g5'):
         raise ValueError('diagnostic fault requires the g5 dispatch role')
     return doc
 
@@ -134,6 +140,8 @@ def _decode(raw, limit):
             'N1_FAILED',
             'PART_A_READY',
             'N2_FAILED',
+            'FULL_PASS_READY',
+            'PART_A_FAILED',
         ) or doc['validity'] not in ('VALID', 'VOID'):
             raise ValueError('funding state differs')
         profile = parse_campaign_budget_profile(encoded(doc['profile']))

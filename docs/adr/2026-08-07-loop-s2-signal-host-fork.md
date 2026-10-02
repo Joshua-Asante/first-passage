@@ -1,5 +1,7 @@
 # ADR 2026-08-07 — Loop S2: signal-host fork (Python-native)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Status:** `Accepted` — implements [SPEC S2](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s2-signal-host-fork-spec.md); plan default Python-native + operator plan-execution GO 2026-08-07
 **Decision date:** 2026-08-07
 **Authors:** Joshua (plan GO) + Cursor (drafter)

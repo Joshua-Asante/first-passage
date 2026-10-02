@@ -1,5 +1,7 @@
 # 05 — COSMETIC tier (both rounds)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../../../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Dated quotations, source snapshots and completed-session evidence below retain their historical meaning and grant no current trading authority.
+
 **What this file is.** Every COSMETIC finding from the two-round post-de-scope claim-alignment audit that is **not** agent-facing — 45 rows over 71 findings, grouped so that remediation is **one pass per target file**. Round 1 contributes 48 findings / 31 rows (ported from the round-1 artifact's §5.6 and §5.7); round 2 contributes 23 findings / 14 rows. Index and combined counts: [`README.md`](README.md).
 
 **COSMETIC means low consequence, not low precision.** Nothing in this file can cause a wrong deployment, a wrong clearance, or a real-money action — that is the whole content of the label, and it is the entire reason this tier is **deferrable to the 2026-11-08 checkpoint**. Every row is still specified to the exact edit, because an unspecified cosmetic item is what becomes a MISLEADING one at the next sweep.

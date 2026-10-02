@@ -682,3 +682,108 @@ def test_recovery_mid_n2_work_ends_authority_from_the_progression(tmp_path, monk
     checkpoints = state.get('checkpoints') or {}
     assert checkpoints.get('N1', {}).get('state') == 'COMMITTED'
     assert 'N2' not in checkpoints
+
+
+def _part_a_observation(instance, work, cpu=20):
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from test_campaign_n1 import snap
+
+    scopes = supervisor.work_enrollment('host1', instance.attempt, work)
+    profile = snap(instance)['profile']
+    return encoded(
+        {
+            'schema': 'qualification_campaign_observation/v2',
+            'attempt_id': instance.attempt,
+            'work_id': work,
+            'clock': json.loads(supervisor.observe_campaign_clock()),
+            'campaign_scope_id': scopes['campaign_slice'],
+            'work_scope_id': scopes['payload_slice'],
+            'cpu_ns': cpu,
+            'memory_peak_bytes': 50,
+            'oom_events': 0,
+            'termination_known': True,
+            'orchestration_charge_cpu_ns': profile['orchestration_cpu_ns']['PART_A'],
+        }
+    )
+
+
+def test_recovery_mid_part_a_work_is_in_doubt_with_no_relaunch(tmp_path, monkeypatch):
+    """S5 (packet section 3, S5-D1): a restart observing an interrupted PART_A
+    work -- the expansion may have been under way -- settles it IN_DOUBT and
+    ends authority from PART_A_READY. The committed N1 and N2 receipts survive
+    as history, no PART_A family exists, and a fresh PART_A reservation is
+    refused: there is no relaunch, no panel resume and no checkpoint rerun."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from test_campaign_n1 import schedule_document
+    from test_campaign_n2 import _part_a_ready, run_work
+
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    run_work(instance, 'pawork', 'part_a_worker')
+    reopened = CampaignStore(ExecutionStore(instance.store.path))
+    reopened.recover_work(instance.attempt, 'pawork', _part_a_observation(instance, 'pawork'))
+    state = json.loads(reopened.budget_snapshot(instance.attempt))
+    assert state['state'] == 'IN_DOUBT'
+    assert next(w for w in state['works'] if w['work_id'] == 'pawork')['state'] == 'IN_DOUBT'
+    checkpoints = state.get('checkpoints') or {}
+    assert checkpoints.get('N1', {}).get('state') == 'COMMITTED'
+    assert checkpoints.get('N2', {}).get('state') == 'COMMITTED'
+    assert 'PART_A' not in checkpoints
+    assert reopened.checkpoint_receipt(instance.attempt, 'PART_A') is None
+    token, status = reopened.claim_scheduler_bootstrap(
+        schedule_document(instance, role='part_a_worker', work='pawork2'),
+        supervisor.observe_campaign_clock(),
+    )
+    assert token is None
+    after = json.loads(reopened.budget_snapshot(instance.attempt))
+    assert after['state'] == 'IN_DOUBT'
+    assert not any(w['work_id'] == 'pawork2' for w in after['works'])
+
+
+def test_part_a_remaining_budget_exhaustion_blocks_completion_without_a_fail(
+    tmp_path, monkeypatch
+):
+    """S5 (packet section 3): when the remaining campaign budget cannot fund
+    the PART_A compute work, the reservation is refused the terminal way --
+    BUDGET_EXHAUSTED, no PART_A work -- and nothing fabricates a PART_A
+    decision: no PART_A family, no receipt, never PART_A_FAILED."""
+    from c1_rail.qualification.execution import campaign_supervisor as supervisor
+    from test_campaign_n1 import snap
+
+    from test_campaign_n2 import _part_a_ready
+
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    campaigns = CampaignStore(instance.store)
+    state = snap(instance)
+    assert state['state'] == 'PART_A_READY'
+    phases = state['profile']['phases']
+    # The store's one allowance view (S2-G4 A7): the remaining after charges.
+    # Pin it just below the installed PART_A phase so the reservation cannot
+    # fit -- the same seam a drained campaign reaches.
+    monkeypatch.setattr(
+        CampaignStore,
+        '_remaining_after_charges',
+        lambda self, connection, state: phases['PART_A']['cpu_ns'] - 1,
+    )
+    campaigns.reserve_work(
+        instance.attempt,
+        'pawork',
+        'PART_A',
+        encoded(
+            dict(
+                limits=phases['PART_A'],
+                clock=json.loads(supervisor.observe_campaign_clock()),
+                input_sha256='d' * 64,
+            )
+        ),
+        expected_revision=state['authority_revision'],
+    )
+    result = json.loads(CampaignStore(ExecutionStore(instance.store.path)).budget_snapshot(
+        instance.attempt
+    ))
+    assert result['state'] == 'BUDGET_EXHAUSTED'
+    assert not any(w['work_id'] == 'pawork' for w in result['works'])
+    assert not any(w['state'] == 'COMPLETED' and w['phase'] == 'PART_A' for w in result['works'])
+    checkpoints = result.get('checkpoints') or {}
+    assert 'PART_A' not in checkpoints
+    assert campaigns.checkpoint_receipt(instance.attempt, 'PART_A') is None
+    assert result['state'] != 'PART_A_FAILED'

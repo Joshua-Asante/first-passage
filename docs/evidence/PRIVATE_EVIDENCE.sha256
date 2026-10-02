@@ -313,3 +313,11 @@ ed89d4984bcf55a131f41373d3ffddb09b31ab2baa91aa49008efca0d83b0599  local_artifact
 d9afecf4cd98464ab7212b1d0892969730c6e1e45b981aa5f87ac64e07d6383a  .cache/fp-verification/20260928T013657Z-0f0b5ae0df6b/record.json
 38c4db6678929b9dbc70d6790c4039e96186f0a8a7ccc9f7d934b3caff0b1412  .cache/fp-verification/20260928T015253Z-8d29efff45e1/record.json
 26b21a0431da19d791a795357a5d8d042d57890768c34665b8b46d93993f3a82  .cache/fp-verification/20260928T144557Z-6db9391ec782/record.json
+#
+# 2026-10-01 — S5 Stage 2 / PA-5 inputs for run 36766144433
+# (docs/notes/2026-09-27-s5-part-a-measurement/stage2.json; first-passage-archive#854;
+# manifest docs/notes/2026-09-29-s5-c3-record/stage2-36766144433-archive.sha256).
+362c22af36cbd617bc4d151502619fcbbcdb51191cf9aa58b2053d2de3a8d4be  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/qualification-s2-supervision.zip
+b78727675e370c69342873585df2257d10288b34a9e8f3560d36ceabcce2197a  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/run.json
+b56600f098ca91b7a65eada6c971dcd6263c0b0cce5be54ec672dcd67b7b16af  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/artifacts.json
+85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d  local_artifacts/s5-c3-evidence/stage2-read-36766144433/s2_run_evidence.stdout.json

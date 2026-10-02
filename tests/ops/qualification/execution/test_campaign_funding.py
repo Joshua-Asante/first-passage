@@ -794,3 +794,34 @@ def test_scheduler_request_refuses_identities_that_collide_with_object_roles(tmp
     raw = schedule(attempt_id=ATTEMPT, work_id=work_id)
     with pytest.raises(ValueError, match='supervision object role|fixed work identity'):
         parse_request(raw)
+
+
+def test_part_a_dispatch_roles_and_phases():
+    """S5: the two PART_A dispatch roles, their phases, the PART_A role tuple,
+    and the diagnostic fault admitted for the PART_A g5 role; the N1/N2 maps
+    are unchanged."""
+    from c1_rail.qualification.execution.campaign_funding import (
+        DISPATCH_ROLES,
+        JOINT_DISPATCH_ROLES,
+        PART_A_DISPATCH_ROLES,
+        PHASE_BY_ROLE,
+        WORK_PHASES,
+        WORK_ROLES,
+    )
+
+    assert WORK_PHASES['part_a_worker'] == 'PART_A'
+    assert WORK_PHASES['part_a_g5'] == 'PART_A_G5'
+    assert PART_A_DISPATCH_ROLES == ('part_a_worker', 'part_a_g5')
+    assert JOINT_DISPATCH_ROLES == ('n2_worker', 'n2_g5')
+    assert DISPATCH_ROLES == (
+        'n1_worker', 'n1_g5', 'n2_worker', 'n2_g5', 'part_a_worker', 'part_a_g5'
+    )
+    assert all(role in WORK_ROLES and PHASE_BY_ROLE[role] == WORK_PHASES[role]
+               for role in PART_A_DISPATCH_ROLES)
+    for role in PART_A_DISPATCH_ROLES:
+        assert parse_request(schedule(role=role))['role'] == role
+    assert parse_request(schedule(role='part_a_g5', fault='hold_after_intent'))['fault'] == (
+        'hold_after_intent'
+    )
+    with pytest.raises(ValueError, match='diagnostic fault requires the g5 dispatch role'):
+        parse_request(schedule(role='part_a_worker', fault='hold_after_intent'))

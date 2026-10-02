@@ -1,5 +1,7 @@
 # Tradeify route drill plan (DRAFT; reads R-1 and R-2 authorized 2026-09-26 on condition; no order-producing row authorized)
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Status:** DRAFT, 2026-09-26, for operator review. Drafted by an agent session for the coordinator. ~~**Nothing in this file is authorized, ruled or accepted.**~~ **Operator ruling 2026-09-26 (R-CLOSE; [below](#operator-ruling-2026-09-26-recorded)): only the read-only rows R-1 and R-2 are AUTHORIZED, operator-performed, within their exact read-only scope, after existing CrossTrade REST entitlement is confirmed. No purchase, new access, route change or order mutation is authorized. Every order-producing row stays NOT authorized: normal-case drill decisions (X-1 to X-4) are prepared individually after their documentary prerequisites, the deliberate protective-fill race drill (X-5) is DEFERRED, and there is no automatic fallback to the live evaluation environment. Nothing else in this file is authorized, ruled or accepted.** It is the concrete plan that the operator's 2026-09-26 executive review recommends (executive review 2026-09-26; operator ruling pending) before any order-producing drill on the CrossTrade REST route is authorized ([B–D packet](2026-09-26-tradeify-bd-decision-packet.md) §2 item A-1 and §6 decision 2). It also proposes two read-only REST reads for authorization now (authorized 2026-09-26 on condition; see the ruling). Every direction attributed to the executive review is *recommended (executive review 2026-09-26); operator ruling pending*. Gates B, C and D stay pending on the [T09 gate table](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record). This file grants no drill, access, spend, release or GO. The consistency-review corrections of 2026-09-26 (table below the inputs) govern where they conflict with the text.
 
 **Inputs:**
@@ -203,6 +205,22 @@ Reads cannot place, change or cancel anything. They still use the operator's RES
 | Consequence (GC-6) | If the order is readable, the packet §3 row "Establish whether and when a block can end, using D4/D5 (A-1)" can use this read for requests whose id was learned (BE-4). **[CR-11]** It is a readability fact about that order only: it does not show coverage of the unknown classes, reach requests whose id was never learned, or bound a recovery time τ (BE-4 as corrected, UB-8 Corr. 2). If it is not, cross-session recovery stays unestablished and unresolved attempts stay held (§6.4). Neither result releases a reservation or permits a resend. |
 | OPEN | The REST return does not settle which identifier the read accepts: the broker order id learned in session, or the caller's tracking id, which CrossTrade remembers for seven days and forwards as `clOrdId` (Q05). R-2 uses the id the operator retained and records which one it was. If the read accepts the caller's id, R-2 would also bear on lost-response requests; that is not assumed. |
 
+### R-1 result on X-1's order — 2026-10-01
+
+**Result: `LOCATED_WITH_CLORDID`. R-1 is DISCHARGED for X-1's order, at this time only.** The run was operator-performed, read-only, and in X-1's own session (before the ~17:00 ET reset of 2026-10-01). It ran under the [X-1 packet §8](2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30) R-1 tooling ruling (option A) and its start-by rule.
+
+- **Tool:** R-1 v3.2 (the v3.1 rules, plus R-2 v1.3.1's host stage, plus the step-2 `clOrdId` search). Package `PACKAGE_SHA256SUMS` `3bf9ace1a2d29c6c81b74a0efa7a6d4752b80f97217274a98f988a197db8d0a5`. Local Codex ACCEPTED_WITH_CONDITIONS on 2026-10-01 (private `tools/r1-v3_2/CODEX_R1_V3_2_REVIEW.md`), with no P1.
+- **Run:** private `reads/R1-X1-20261001T082255Z`. Every stage exited 0: init, retain, host, collect, seal, adjudicate.
+  - init 08:22:55Z;
+  - inventory retained 08:55:46Z: one account in scope, with the CrossTrade linked-accounts capture and the actor inventory A-1 to A-13 recorded (Stage 0: recorded, not gating);
+  - HOST_CONFIRMED 08:56:04Z: rail `dry_run=True`, `armed_until=None`; daemon emission off on disk and in process; the captured 2026-09-29 boot is the newest start, with no intervening machine event;
+  - collected 08:58:45Z: 9 reads; sealed 08:59:33Z.
+- **Reads:** no working orders; 3 session orders, all explained and terminal; lifecycles Filled / Canceled / Filled; fills by `orderId` 1 / 0 / 1; account-scoped fill-reconciled positions flat.
+- **Step 2:** exactly one candidate carries the bound `clOrdId`, and it is the bound entry. The stop child is linked to the entry (`linkedId` / `parentId`), and an entry fill was observed.
+- **Evidence:** run `SHA256SUMS` `2fa5d5246c90601b649df29885b92b724679fcbf8902e793e6d2f9a1176f4ce8`; adjudication `R1-X1-20261001T082255Z-ADJUDICATION.json` `56f8c23d72bd75cb2937130d18301574f4c1d6cf317ea4ccb242b7f22b28bbee`. Rows are appended to `MANIFEST.tsv`. The coordinator re-verified every seal member against `SHA256SUMS` and read the adjudicated class. The evidence is private and never committed.
+- **Would NOT establish** (this table's row, unchanged): uniqueness, since a repeated `clOrdId` is accepted (Q05); anything about an absent order; fill completeness (Q23, Q24); a recovery rate or a recovery-time bound; cross-session behavior (R-2); REST placement classification (X-1). The result establishes only this order at this time. No read result releases a reservation or permits a resend (commissioning packet §2.6).
+- **Residual (non-blocking, owed to any future v3.3):** Codex's P2 that some offline tests omit a call-count or reason assertion. The accepted bytes were not changed.
+
 ### R-2 closure with limits — operator decision 2026-09-29
 
 **CLOSED WITH LIMITS / INCONCLUSIVE**, for the 2026-09-28 preservation-trade target only. Joshua selected “let's close the investigation with limits” after the coordinator proposed accepting the incomplete investigation while preserving failed runs and leaving recovery unestablished. Codex recorded the disposition on 2026-09-29. This ends the investigation's administrative HOLD; it does not certify completion of the prescribed read sequence or change its acceptance rules.
@@ -295,7 +313,7 @@ Each row supplies the CAP procedure's fields, either in its own table (action/sc
 | Preconditions | **Required:** M (§2.5) has returned, with each question marked DOCUMENTED, CONFLICTING or OPEN, so the reads can check the documented order of cancel and flatten. X-3 validates the mechanism M documents; it does not establish it. **[CR-3]** If M leaves any question bearing on (a)–(c) OPEN or CONFLICTING, X-3 may be authorized only as part of the operator's decision on the residual-risk statement (packet §1.1, first failure bullet). X-1's position is open, with both children `Working` far from the market; this row is not a race test. |
 | Expected identity | The `close` request → the liquidation order, identified from session orders → the X-1 children's ids → fills (the liquidation fill; no protective fill). Whether the `close` response carries an order id is OPEN. |
 | Actions, in order | 1. Read positions, working orders, and both children's status. 2. Record the local time. Send one REST `close` for the symbol. 3. Retain the response. 4. Read positions, working orders, lifecycle and status per id for both children, the session orders (to identify the liquidation order), and fills, including any protective fill. What fields the `close` response carries is not described in the REST return (OPEN). |
-| Pass | On reads postdating the send: position zero; both children terminal (`Cancelled`); no `Working` remainder on the symbol; no protective fill; and the liquidation order, identified from session orders, terminal. The reads are shown to describe one coherent state, or else the coherence limit is recorded as OPEN (GC-3) and qualifies the pass. **[CR-5]** A pass qualified that way cannot discharge GC-3 or §1.1a (d); it carries the GC-3 OPEN item forward. |
+| Pass | On reads postdating the send: position zero; both children terminal (`Canceled`, the vendor spelling X-1's R-1 reads returned; corrected 2026-10-01); no `Working` remainder on the symbol; no protective fill; and the liquidation order, identified from session orders, terminal. The reads are shown to describe one coherent state, or else the coherence limit is recorded as OPEN (GC-3) and qualifies the pass. **[CR-5]** A pass qualified that way cannot discharge GC-3 or §1.1a (d); it carries the GC-3 OPEN item forward. |
 | Fail | A child is `Working` after flat (an orphan). The position has reversed. |
 | Fault outcome | The close is rejected with the position open, or its outcome is unknown. This is neither a pass nor, by itself, a route stop: run abort and recovery, and record it as fault-case evidence for §1.1a (b) and (e). Its consequence is decided under the packet's §1.1 failure rule and B-1, not asserted here. A partly completed close is not reachable at one contract. |
 | Abort | Orphan: the operator cancels it through the platform, then recovery. Reversal: recovery at once. Rejected with the position open: no retry; recovery. Unknown outcome: no retry; recovery's unknown-outcome branch (§2.0 step 2: read first; flatten only if fresh reads show exposure; record any flatten as a second close owner). |
@@ -309,7 +327,7 @@ Each row supplies the CAP procedure's fields, either in its own table (action/sc
 | Instrument | One MNQ micro contract (ORB's leg). |
 | Expected identity | The fresh `clOrdId` → one REST `orders/place` → the resting entry's order id and child ids (Q02) → the `cancel` request → the parent and both children terminal; no fill. |
 | Actions, in order | 1. Assign a fresh `clOrdId`. 2. Send one REST `orders/place` for a resting buy stop entry above the market, at an operator-fixed distance chosen so it will not trigger during the row, with `stopLoss` and `takeProfit`. The REST return does not name the order-type fields, and none are specified here. *(2026-09-28: named from public documentation — `"orderType": "stop"` with `stopPrice` = the entry level, computed before the send from a recorded reference price plus the operator-fixed distance, and `stopLoss` and `takeProfit` anchored on that entry level, explicit `tif`; packet §3.7 closure C.2–C.3. The `cancel` in step 4 is `POST …/orders/{id}/cancel` with body `{}`, C.4.)* 3. Read: the entry `Working`, the children `Suspended`. 4. Send one REST `cancel` of the parent. 5. Read the lifecycle and status of the parent and both children, the positions and the fills. |
-| Pass | On reads after the cancel: parent `Cancelled`, both children terminal, no fill, nothing `Working` or `Suspended` left. |
+| Pass | On reads after the cancel: parent `Canceled` (vendor spelling, as X-1's R-1 reads returned; corrected 2026-10-01), both children terminal, no fill, nothing `Working` or `Suspended` left. |
 | Fail | A child stays `Suspended` or `Working` after the parent is terminal. |
 | Abort | If the market comes within an operator-fixed buffer of the entry level, cancel at once. If the entry fills anyway, handle the position as in X-1 (confirm the stop is `Working`), then run recovery. |
 | Consequence (packet GC-4) | **Fail: OPERATOR DECISION for ORB.** The alternatives are: an attended session-end procedure; a different end-of-life rule, which is an edition change (packet B-13); or a cleanup read that closes the orphans before the next session. Not route-wide. |
@@ -430,6 +448,114 @@ They are designed as M checks plus offline consumer tests, and observed live onl
 
 ## Owners and propagation
 
+**Current X-1 disposition:** see the [September 30 acceptance](#x-1-acceptance--2026-09-30) below. Earlier “not demonstrated” entries are historical for that observed scope only.
+
 - **Owners.** The executive-review corrections (§2.5) belong to the packet's 2026-09-26 revision (§1, §1.1, §1.1a, B-1, A-1). This file creates no second owner. The consistency-review corrections (CR-1 to CR-12, 2026-09-26) mirror coordinator decisions whose owners are the packet (§1.1, §1.2, A-1) and, as read, the incident ADR (§A1, §A6) and the UB-8 note (Corr. 2); this file owns only their effect on its rows.
 - **Operator ruling 2026-09-26.** This file's ruling block records the R-1 and R-2 authorization, its entitlement condition and the drill directions (individual decisions after documentary prerequisites; X-5 deferred; no automatic fallback to the live evaluation environment); the recording procedure there is a coordinator proposal, not part of the ruling. Incident ADR §A11.1 items 4–6 (PR #515) record the same reads-and-drills decisions beside the close direction, and its item 4 points here for the read authorization and its scope. **Single owner: OPEN for the coordinator.** The coordinator names one owner for the reads-and-drills ruling when the decisions are applied to their canonical owners after the stack lands (written ruling, coordination boundary), and labels the other record a mirror. Until then the two texts must agree, and a change to either is made in both. The session plan's §0 addendum rows point here. The packet's rulings table mirrors the full ruling set and names the other owners: incident ADR §A11 and §A11.1 and campaign §59 Ruling 5 (PR #515), and the S5 hold ledger entry 2026-09-26 (PR #517).
 - **When traces exist.** The coordinator records outcomes in CAP (R2–R5, N1) and T08 §7, as session plan §5 describes. The drill-map rows in REST §6.11 bind by behavior, so each outcome is recorded against its behavior row with its interface.
+
+## X-1 acceptance — 2026-09-30
+
+**Decision: scoped PASS for §2.1 / GC-2a; evidence accepted with limits.**
+The reviewing Codex session, acting under Joshua's direct instruction to review
+and record this run, accepts the observed one-contract MYM REST market entry and
+linked native stop on the bound incumbent evaluation environment, September 30.
+This is a coordinator evidence decision, separate from the offline adjudicator's
+`OBSERVED_COMPLETE` classification. It grants no further placement, resend,
+arming, deployment, other-row execution, or gates B–D acceptance.
+The approved 19:30–20:00 EDT window's sole placement attempt is consumed.
+
+**Governing sources.** This drill plan §2.0–§2.1 and commissioning packet §3.4 /
+§4.1 govern behavior and teardown. The later X-1 decision packet was read from
+retained commit `ccfe2338be622631bc2281e16c3f25804d1a4c94`, path
+`docs/notes/2026-09-29-x1-decision-packet.md`, on the local
+`claude/x1-decision-packet-e3503f` branch; it is absent from the inspected primary
+HEAD `028c5ce88a473942e0e792bb607fe9e85133948b`. No branch was switched or
+unmerged preparation text installed. Its §2 option-(b) and §4 derivation-rule
+rulings, private v3.3 observer contract, round-7 review rulings, and approved
+attended-input/window amendment were read together with the retained approvals.
+This review claims neither a campaign-wide coordinator transfer nor operator
+ratification of a release.
+
+| Obligation | Decision and evidence scope |
+|---|---|
+| GC-2a entry/stop identity chain | Discharged for this attempt: one placement response; one `New` carrying the recorded correlation id; entry filled in one print at quantity one; child linked by `parentId`; protective `Sell`, quantity one, type `Stop`, submitted price and `Working` validated. Final fresh P4 was issued after the other sufficient-evidence items held and returned `Working`. No GC-2a fail or correlation abort is demonstrated |
+| Same-session per-order read feasibility | Observed successfully on this entry and child, including lifecycle/status and fill lookup. This supersedes “never observed on this account” for these specific reads, not for historical orders or other requests |
+| Normal attended teardown / outstanding effects | Discharged for this attempt: Joshua's market-exit/cancel recovery at 19:44:00 EDT; fresh REST flat exposure and zero working orders; entry, stop and exit terminal; OR has no outstanding id. Browser corroboration is retained; it does not replace REST terminal evidence |
+| Host disarm | Before/after samples and retained post-recovery checks support `dry_run=true`, `armed_until=None`, daemon `emit_enabled=false` and `effective_emit=false` at their observation times. They do not prove continuous disarm or current host state in a future session |
+| Generation and attended SEND controls | Actual generation `20260930T234120Z` matched the independent private record, both actual files and sidecars, sealed binding, generator and approved adapter; preceding generation unused. Final checks satisfied ten-second freshness and both five-point movement bounds; request bytes unchanged. Exact human SEND confirmation is retained |
+| Actor / competing-order coverage | Inventory and disabled configurable senders are operator-attested; no firm intervention is recorded. **Intermediate P0b was omitted: no competing-order coverage for that interval.** Pre-send and post-action P0b exist. No claim of exclusive close ownership or absence of transient activity |
+| Post-teardown R-1 | **Discharged for X-1's order on 2026-10-01, at that time only.** Joshua's attended read ran 08:22–08:59Z before the session reset and returned `LOCATED_WITH_CLORDID`; see the [R-1 discharge owner](#r-1-result-on-x-1s-order--2026-10-01), recorded in [PR #574](https://github.com/Joshua-Asante/first-passage/pull/574). This later, separately recorded read discharges R-1; during-row P2/P5 and terminal status confirmation were not substitutes. The owner's “would NOT establish” limits remain unchanged |
+
+**Why the omitted P0b does not fail GC-2a.** The accepted tool-review Ruling 1
+explicitly says not to wait for fill + five seconds once sufficient evidence
+holds, and to record no coverage when the sample is omitted. It is retained in
+private `tools/x1-review-codex/CODEX_REVIEW.md` and its R1/R2 continuation.
+Final P4 completed at T0 + 5.147 seconds, before the sample due at first observed
+fill + five seconds (T0 + 7.146 seconds). This acceptance consumes that existing
+ruling; it neither waives a required sample after the fact nor claims complete
+competing-activity coverage. Operator margin/spend attestations are retained;
+their private ledgers were not independently audited by this review.
+
+**Limits and remaining obligations.** The scoped GC-2a result is retained with
+the merged qualifications from [X-1 packet §8](2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30):
+
+- The run used the operator-amended **23:30–00:00Z** window, outside the original
+  Codex R7 **22:00–22:30Z** acceptance window.
+- The adapter's retrospective acceptance for run-1930 is **qualified**: reconstruction
+  and pinning of its resolved import set and the pin/path-safety review remain
+  owed. Current file pins and rerun tests do not establish which dependency bytes
+  that historical run actually loaded. Future adapter use remains barred until
+  both parts of that gate are accepted.
+- No completion evidence for the required operator rehearsal is retained.
+  Whether it completed remains unrecorded and open; the scoped GC-2a evidence
+  acceptance does not establish rehearsal completion.
+
+This trace supplies §A1's REST-form
+admission observation only for the named symbol/environment/date. It does not
+qualify a deployed consumer, another symbol, multi-contract or partial-fill
+behavior, OCO with a target, rejected modification, resting-entry cancellation,
+REST C-a closing, late rejection, activation-latency distribution/bound, incident
+recovery or a race guarantee. Platform market exit is not X-3's REST close.
+GC-1, GC-2b, GC-3–GC-8 retain their separate requirements; the observed correlation
+and normal successful reads do not close those gates wholesale. R-2 stays closed
+with limits / recovery unestablished; no new R-2 investigation is scheduled.
+CAP N1-entry/N1-b and R2 gain this scoped observation, while full N1 and R2–R5
+and settlement acceptance remain open. CP-5, T09, edition freeze, production
+qualification/feed/host/settlement readiness, T13 and CP-9 remain separately gated.
+
+**Evidence and verification.** Originals remain private in
+`local_artifacts/route-drills-2026-09/x1-session-2026-09-30/`: `run-1930`,
+`run-1930-ADJUDICATION.json`, `SESSION_CHECKS.md`,
+`CP3_INPUT_1930_APPROVED.md`, and `hash-record-20260930T234120Z.json`.
+Seal-file SHA-256: `2f71510c6a6360863fb74599b810f54ab8601375a54796fb979a95e4773c4269`;
+adjudication SHA-256: `e3f98d0ccb7700726d9f3d4cc77aa2d745545ad5f15563af11340a4109cbdff1`.
+No sealed file, existing report or approval was rewritten.
+`fp.ps1 doctor` succeeded with operations Python 3.13.2 at
+`tmp/ops-env/Scripts/python.exe`, 62 locked packages.
+Command: `./fp.ps1 python -m pytest local_artifacts/route-drills-2026-09/x1-review-2026-09-30/test_retained_evidence.py -q -s -p no:cacheprovider`.
+Result: three evidence checks passed; seal verified (89 files), report reproduced
+in memory, actual generation/tool/adapter pins and final sender controls matched.
+Record: `.cache/fp-verification/20261001T000054Z-f652464c2238/record.json`:
+completed, both exits zero, stable source, complete capture, no report/capture
+errors. Tested HEAD `028c5ce` with pre-existing staged `AGENTS.md` and untracked
+local settings; these were untouched. Git's inaccessible global-ignore warning
+persists. This is an offline evidence check, not a full repository gate-suite run
+or a new live observation.
+
+**Next bounded step / return boundary.** Prepare the X-4 documentary readiness
+packet for coordinator review, then return for Joshua's separate written CP-3.
+It must name its environment and limits, MNQ symbol binding, resting-entry and
+child-state observations, parent cancel, fill/cancel abort, recovery and terminal
+confirmation, with fresh prerequisites explicitly outstanding. The X-1-only
+A-11 exception cannot be carried to X-4: resolve its actor/session-start contract
+before execution. Review and preparation do not authorize an entry or cancel.
+X-2 also retains M2 review and fresh-position owner confirmation; X-3 retains
+its close-semantics/residual-risk and exclusivity decisions. No X-5 race is added.
+
+Joshua's hands-off objective remains a design goal. The accepted adapter removes
+UTC typing and captures prompt time before ask input; it establishes no broker
+tick timestamp or unattended authority. Preserve freshness, both movement bounds,
+human SEND, immutable validated bytes, one-attempt/no-resend rules and attended
+recovery. Further automation needs its own reviewed capability and authority
+decision; no control is relaxed by this acceptance.

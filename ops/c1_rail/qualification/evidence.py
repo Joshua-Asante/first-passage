@@ -1,7 +1,9 @@
 """Pure reconstruction of retained evidence; no signer or persistent authority."""
 
 from dataclasses import dataclass
+from datetime import date, timedelta
 import hashlib
+import json
 import re
 from typing import Mapping
 from types import MappingProxyType
@@ -9,6 +11,7 @@ from types import MappingProxyType
 from .contract import (
     canonical_json_bytes,
     parse_canonical_json,
+    _decimal,
     _fields,
     _sha256,
     _instant,
@@ -887,7 +890,8 @@ def build_checkpoint_evidence(
     predecessor_receipt_bytes=None,
     predecessor_assessment_bytes=None,
     predecessor_plan_bytes=None,
-    predecessor_payload_bytes=None,
+    predecessor_payload_bytes=None, n1_plan_bytes=None, n1_payload_bytes=None,
+    source=None,
 ) -> InspectedEvidence:
     """Check the FULL_E1 checkpoint family's captured-byte relationships (D1).
 
@@ -900,6 +904,23 @@ def build_checkpoint_evidence(
     joint LEGALITY/N1/N2/PART_B assessment from one captured batch and the
     committed N1 predecessor family.
     """
+    if checkpoint == 'PART_A':
+        return build_part_a_checkpoint_evidence(
+            contract=contract,
+            policy=policy,
+            worker_result_bytes=worker_result_bytes,
+            plan_bytes=plan_bytes,
+            checkpoint_attestation_bytes=checkpoint_attestation_bytes,
+            checkpoint_snapshot_bytes=checkpoint_snapshot_bytes,
+            installed_release_bytes=installed_release_bytes,
+            predecessor_receipt_bytes=predecessor_receipt_bytes,
+            predecessor_assessment_bytes=predecessor_assessment_bytes,
+            predecessor_plan_bytes=predecessor_plan_bytes,
+            predecessor_payload_bytes=predecessor_payload_bytes,
+            n1_plan_bytes=n1_plan_bytes,
+            n1_payload_bytes=n1_payload_bytes,
+            source=source,
+        )
     if checkpoint == 'N2':
         return build_joint_checkpoint_evidence(
             contract=contract,
@@ -946,11 +967,13 @@ def build_checkpoint_evidence(
         not in (
             'qualification_execution_release/v5',
             'qualification_execution_release/v6',
+            'qualification_execution_release/v7',
         )
         or release.get('capability') != 'FULL_E1'
         or release.get('production_execution') is not False
         or release.get('dispatch_enabled') is not True
-        or release.get('dispatch_checkpoints') not in (['N1'], ['N1', 'N2'])
+        or release.get('dispatch_checkpoints')
+        not in (['N1'], ['N1', 'N2'], ['N1', 'N2', 'PART_A'])
         or release.get('qualification_policy_sha256') != policy.sha256
         or release.get('source_owner_sha256') != resolved['source_owner_sha256']
         or plan.get('schema') != 'qualification_checkpoint_plan/v2'
@@ -1235,6 +1258,44 @@ def _joint_thresholds(value):
             _positive_int(cap, label='threshold cap', allow_zero=True)
 
 
+_PART_A_COMPARISONS = (
+    ('tolerance_comparison', 'within', ('initial_p5', 'center', 'tolerance')),
+    ('floor_comparison', 'at_or_above', ('final_p5', 'floor')),
+    ('full_sanity_comparison', 'at_or_below', ('final_p5', 'full_pass_rate')),
+)
+
+
+def _part_a_assessment_block(value):
+    """The S5-D1 part_a block: panel counts, prefix digests, closed comparisons."""
+    block = _fields(
+        value,
+        {
+            'initial_panels',
+            'final_panels',
+            'expansion_required',
+            'initial_prefix_sha256',
+            'final_sha256',
+            'tolerance_comparison',
+            'floor_comparison',
+            'full_sanity_comparison',
+        },
+        label='part a assessment block',
+    )
+    initial = _positive_int(block['initial_panels'], label='initial panels')
+    final = _positive_int(block['final_panels'], label='final panels')
+    if initial > final or type(block['expansion_required']) is not bool:
+        raise ValueError('invalid part a panel counts or expansion fact')
+    for name in ('initial_prefix_sha256', 'final_sha256'):
+        _sha256(block[name], label=name)
+    for name, flag, values in _PART_A_COMPARISONS:
+        comparison = _fields(block[name], set(values) | {flag}, label='part a ' + name)
+        if type(comparison[flag]) is not bool:
+            raise ValueError('invalid part a comparison')
+        for field in values:
+            _decimal(comparison[field], label='part a comparison value')
+    return block
+
+
 def build_joint_checkpoint_evidence(
     *,
     contract,
@@ -1285,11 +1346,12 @@ def build_joint_checkpoint_evidence(
         type(release) is not dict
         or type(plan) is not dict
         or type(payload) is not dict
-        or release.get('schema') != 'qualification_execution_release/v6'
+        or release.get('schema')
+        not in ('qualification_execution_release/v6', 'qualification_execution_release/v7')
         or release.get('capability') != 'FULL_E1'
         or release.get('production_execution') is not False
         or release.get('dispatch_enabled') is not True
-        or release.get('dispatch_checkpoints') != ['N1', 'N2']
+        or release.get('dispatch_checkpoints') not in (['N1', 'N2'], ['N1', 'N2', 'PART_A'])
         or release.get('qualification_policy_sha256') != policy.sha256
         or release.get('source_owner_sha256') != resolved['source_owner_sha256']
         or plan.get('schema') != 'qualification_checkpoint_plan/v3'
@@ -1603,6 +1665,7 @@ def _inspect_checkpoint_assessment(value):
     """Closed-shape check of one proposed/expected assessment core (no signature)."""
     parsed = parse_canonical_json(value.envelope_bytes, label='checkpoint assessment')
     joint = type(parsed) is dict and parsed.get('checkpoint') == 'N2'
+    part_a = type(parsed) is dict and parsed.get('checkpoint') == 'PART_A'
     doc = _fields(
         parsed,
         {
@@ -1620,13 +1683,14 @@ def _inspect_checkpoint_assessment(value):
             'n2_thresholds',
             'artifacts',
         }
-        - ({'n1_decision', 'n2_thresholds'} if joint else set())
-        | ({'stage_decisions', 'predecessor'} if joint else set()),
+        - ({'n1_decision', 'n2_thresholds'} if joint or part_a else set())
+        | ({'stage_decisions', 'predecessor'} if joint else set())
+        | ({'part_a', 'predecessor'} if part_a else set()),
         label='checkpoint assessment',
     )
     if (
         doc['schema'] != 'qualification_campaign_checkpoint_assessment/v1'
-        or doc['checkpoint'] not in ('N1', 'N2')
+        or doc['checkpoint'] not in ('N1', 'N2', 'PART_A')
         or type(doc['attempt_id']) is not str
         or not doc['attempt_id']
         or type(doc['work_id']) is not str
@@ -1653,7 +1717,13 @@ def _inspect_checkpoint_assessment(value):
         for key in group:
             if key != 'campaign_revision':
                 _sha256(group[key], label=key)
-    expected_stages = ['LEGALITY', 'N1', 'N2', 'PART_B'] if joint else ['LEGALITY', 'N1']
+    expected_stages = (
+        ['LEGALITY', 'N1', 'N2', 'PART_B', 'PART_A']
+        if part_a
+        else ['LEGALITY', 'N1', 'N2', 'PART_B']
+        if joint
+        else ['LEGALITY', 'N1']
+    )
     if type(doc['stages']) is not list or [row.get('stage') for row in doc['stages']] != (
         expected_stages
     ):
@@ -1695,6 +1765,27 @@ def _inspect_checkpoint_assessment(value):
         if cutoff['checkpoint'] != 'N2' or type(cutoff['stage_thresholds']) is not dict:
             raise ValueError('invalid joint cutoff')
         _joint_thresholds(cutoff['stage_thresholds'])
+    elif part_a:
+        # The four committed rows ride the N2 CONTINUE predecessor: all PASS.
+        if (
+            doc['decision'] not in ('CONTINUE', 'FAILURE')
+            or (doc['decision'] == 'CONTINUE') != (doc['stages'][4]['status'] == 'PASS')
+            or any(doc['stages'][index]['status'] != 'PASS' for index in range(4))
+        ):
+            raise ValueError('invalid assessment decision')
+        _part_a_assessment_block(doc['part_a'])
+        predecessor = _fields(
+            doc['predecessor'],
+            {'checkpoint', 'assessment_sha256', 'receipt_sha256'},
+            label='part a predecessor',
+        )
+        if predecessor['checkpoint'] != 'N2':
+            raise ValueError('invalid part a predecessor')
+        _sha256(predecessor['assessment_sha256'], label='predecessor assessment')
+        _sha256(predecessor['receipt_sha256'], label='predecessor receipt')
+        cutoff = _fields(doc['cutoff'], {'checkpoint', 'stage_thresholds'}, label='cutoff')
+        if cutoff['checkpoint'] != 'PART_A' or cutoff['stage_thresholds'] != {}:
+            raise ValueError('invalid part a cutoff')
     else:
         failed = doc['n1_decision'] == 'FAIL'
         if (
@@ -1771,10 +1862,9 @@ def _stage_row(stage):
     from .execution.protocol import fields
 
     fields(stage, {'stage', 'status', 'input_sha256', 'output_sha256', 'population_counts'})
-    if stage['stage'] not in ('LEGALITY', 'N1', 'N2', 'PART_B') or stage['status'] not in (
-        'PASS',
-        'FAIL',
-    ):
+    if stage['stage'] not in ('LEGALITY', 'N1', 'N2', 'PART_B', 'PART_A') or stage[
+        'status'
+    ] not in ('PASS', 'FAIL'):
         raise ValueError('checkpoint assessment stage differs')
     if type(stage['population_counts']) is not dict or any(
         type(value) is not int or value < 0 for value in stage['population_counts'].values()
@@ -1798,6 +1888,7 @@ def parse_checkpoint_assessment(raw, *, attempt_id):
 
     parsed = parse_canonical_json(raw, label='checkpoint assessment')
     joint = type(parsed) is dict and parsed.get('checkpoint') == 'N2'
+    part_a = type(parsed) is dict and parsed.get('checkpoint') == 'PART_A'
     doc = fields(
         parsed,
         {
@@ -1816,13 +1907,14 @@ def parse_checkpoint_assessment(raw, *, attempt_id):
             'artifacts',
             'signature',
         }
-        - ({'n1_decision', 'n2_thresholds'} if joint else set())
-        | ({'stage_decisions', 'predecessor'} if joint else set()),
+        - ({'n1_decision', 'n2_thresholds'} if joint or part_a else set())
+        | ({'stage_decisions', 'predecessor'} if joint else set())
+        | ({'part_a', 'predecessor'} if part_a else set()),
     )
     if (
         doc['schema'] != CHECKPOINT_ASSESSMENT_SCHEMA
         or doc['attempt_id'] != attempt_id
-        or doc['checkpoint'] not in ('N1', 'N2')
+        or doc['checkpoint'] not in ('N1', 'N2', 'PART_A')
     ):
         raise ValueError('checkpoint assessment binding differs')
     identity(doc['work_id'])
@@ -1873,6 +1965,36 @@ def parse_checkpoint_assessment(raw, *, attempt_id):
         if cutoff['checkpoint'] != 'N2' or type(cutoff['stage_thresholds']) is not dict:
             raise ValueError('joint cutoff binding required')
         _joint_thresholds(cutoff['stage_thresholds'])
+    elif part_a:
+        if type(doc['stages']) is not list or len(doc['stages']) != 5:
+            raise ValueError('LEGALITY/N1/N2/PART_B/PART_A stage results required')
+        [_stage_row(stage) for stage in doc['stages']]
+        if [stage['stage'] for stage in doc['stages']] != [
+            'LEGALITY',
+            'N1',
+            'N2',
+            'PART_B',
+            'PART_A',
+        ]:
+            raise ValueError('checkpoint assessment stage order differs')
+        if doc['decision'] not in ('CONTINUE', 'FAILURE') or (
+            doc['decision'] == 'CONTINUE'
+        ) != (doc['stages'][4]['status'] == 'PASS'):
+            raise ValueError('checkpoint assessment decision differs')
+        # The four committed rows ride the N2 CONTINUE predecessor: all PASS.
+        if any(doc['stages'][index]['status'] != 'PASS' for index in range(4)):
+            raise ValueError('checkpoint assessment stage decisions differ')
+        _part_a_assessment_block(doc['part_a'])
+        predecessor = fields(
+            doc['predecessor'], {'checkpoint', 'assessment_sha256', 'receipt_sha256'}
+        )
+        if predecessor['checkpoint'] != 'N2':
+            raise ValueError('part a predecessor binding required')
+        digest(predecessor['assessment_sha256'])
+        digest(predecessor['receipt_sha256'])
+        cutoff = fields(doc['cutoff'], {'checkpoint', 'stage_thresholds'})
+        if cutoff['checkpoint'] != 'PART_A' or cutoff['stage_thresholds'] != {}:
+            raise ValueError('part a cutoff binding required')
     else:
         if type(doc['stages']) is not list or len(doc['stages']) != 2:
             raise ValueError('LEGALITY and N1 stage results required')
@@ -1920,6 +2042,7 @@ def parse_checkpoint_cutoff(raw, *, attempt_id):
 
     parsed = parse_canonical_json(raw, label='checkpoint cutoff receipt')
     joint = type(parsed) is dict and parsed.get('checkpoint') == 'N2'
+    part_a = type(parsed) is dict and parsed.get('checkpoint') == 'PART_A'
     doc = fields(
         parsed,
         {
@@ -1933,17 +2056,18 @@ def parse_checkpoint_cutoff(raw, *, attempt_id):
             'n2_bound_to',
             'created_utc',
         }
-        - ({'n1_cutoffs', 'n2_thresholds', 'n2_bound_to'} if joint else set())
+        - ({'n1_cutoffs', 'n2_thresholds', 'n2_bound_to'} if joint or part_a else set())
         | (
             {'stage_decisions', 'stage_thresholds', 'predecessor_receipt_sha256'}
             if joint
             else set()
-        ),
+        )
+        | ({'stage_thresholds', 'predecessor_receipt_sha256'} if part_a else set()),
     )
     if (
         doc['schema'] != CHECKPOINT_CUTOFF_SCHEMA
         or doc['attempt_id'] != attempt_id
-        or doc['checkpoint'] not in ('N1', 'N2')
+        or doc['checkpoint'] not in ('N1', 'N2', 'PART_A')
         or doc['decision'] not in ('CONTINUE', 'FAILURE')
     ):
         raise ValueError('checkpoint cutoff binding differs')
@@ -1957,6 +2081,12 @@ def parse_checkpoint_cutoff(raw, *, attempt_id):
         if type(doc['stage_thresholds']) is not dict:
             raise ValueError('joint cutoff thresholds required')
         _joint_thresholds(doc['stage_thresholds'])
+        digest(doc['predecessor_receipt_sha256'])
+    elif part_a:
+        # No stage_decisions: the PART_A cutoff carries an empty threshold map
+        # and the N2 predecessor receipt digest (campaign_store custody reader).
+        if doc['stage_thresholds'] != {}:
+            raise ValueError('part a cutoff thresholds differ')
         digest(doc['predecessor_receipt_sha256'])
     else:
         digest(doc['n2_bound_to'])
@@ -2018,7 +2148,7 @@ def parse_checkpoint_attestation(raw, *, attempt_id):
         payload['schema'] != 'qualification_campaign_checkpoint_attestation_payload/v1'
         or payload['scope'] != 'ATTEST_CAMPAIGN_CHECKPOINT'
         or payload['attempt_id'] != attempt_id
-        or payload['checkpoint'] not in ('N1', 'N2')
+        or payload['checkpoint'] not in ('N1', 'N2', 'PART_A')
     ):
         raise ValueError('checkpoint attestation binding differs')
     import re
@@ -2090,7 +2220,7 @@ def parse_checkpoint_result(raw, *, attempt_id):
     if (
         doc['schema'] != CHECKPOINT_RESULT_SCHEMA
         or doc['attempt_id'] != attempt_id
-        or doc['checkpoint'] not in ('N1', 'N2')
+        or doc['checkpoint'] not in ('N1', 'N2', 'PART_A')
     ):
         raise ValueError('checkpoint result binding differs')
     import re
@@ -2143,3 +2273,751 @@ def parse_checkpoint_result(raw, *, attempt_id):
 
     _utc(doc['created_utc'])
     return doc
+
+
+@dataclass(frozen=True)
+class PartASourceSession:
+    """One source session as ``regime.sample_outer_panel`` reads it."""
+
+    session_id: str
+    source_session_date: date
+
+
+@dataclass(frozen=True)
+class PartASourceCalendar:
+    """Loader-free session metadata for the Part A occurrence re-derivation."""
+
+    sessions: tuple
+    adjacent: tuple
+    covered_until: date
+    tail_covered: bool
+
+
+def derive_part_a_source_calendar(contract, retained_bytes) -> PartASourceCalendar:
+    """Exactly what ``regime.sample_outer_panel`` consumes, without the loader (P1).
+
+    Two inputs G5 already holds: the frozen FULL population (the ordered
+    session ids; each id is its source date, ``panel.build_panel``) and the
+    retained ``source_calendar`` bytes, bound to the contract's pinned digest.
+    Adjacency is what ``build_panel`` reports for the admitted source: two
+    accepted sessions are adjacent exactly when they are consecutive calendar
+    rows (admission pins the calendar rows to the expected-date index and the
+    accepted ids to FULL). ``covered_until`` and ``tail_covered`` are the
+    calendar's coverage end (exclusive) and tail attestation. No provider
+    bar, port or adapter is loaded.
+    """
+    pinned = [item.sha256 for item in contract.artifacts if item.role == 'source_calendar']
+    raw = retained_bytes.get('source_calendar') if isinstance(retained_bytes, Mapping) else None
+    if len(pinned) != 1 or type(raw) is not bytes or _hash(raw) != pinned[0]:
+        raise ValueError('contract-bound retained source calendar required')
+    doc = json.loads(raw.decode('utf-8'))
+    if (
+        type(doc) is not dict
+        or set(doc) != {'schema', 'coverage_start', 'coverage_end', 'tail_covered', 'sessions'}
+        or doc['schema'] != 'qualification-source-calendar/v1'
+        or type(doc['tail_covered']) is not bool
+        or type(doc['sessions']) is not list
+        or not doc['sessions']
+        or any(type(row) is not dict or type(row.get('date')) is not str for row in doc['sessions'])
+    ):
+        raise ValueError('explicit qualification source-calendar schema required')
+    calendar = tuple(date.fromisoformat(row['date']) for row in doc['sessions'])
+    coverage_start = date.fromisoformat(doc['coverage_start'])
+    coverage_end = date.fromisoformat(doc['coverage_end'])
+    if (
+        any(a >= b for a, b in zip(calendar, calendar[1:]))
+        or coverage_start > coverage_end
+        or not coverage_start <= calendar[0]
+        or not calendar[-1] <= coverage_end
+    ):
+        raise ValueError('unique ordered source calendar rows inside coverage required')
+    position = {day: index for index, day in enumerate(calendar)}
+    sessions, positions = [], []
+    for session_id in contract.populations['FULL']:
+        try:
+            day = date.fromisoformat(session_id)
+        except ValueError as exc:
+            raise ValueError('FULL population session ids must be source dates') from exc
+        if day.isoformat() != session_id or day not in position:
+            raise ValueError('FULL population session outside the retained source calendar')
+        sessions.append(PartASourceSession(session_id, day))
+        positions.append(position[day])
+    if not sessions or any(a >= b for a, b in zip(positions, positions[1:])):
+        raise ValueError('FULL population must follow the source calendar order')
+    return PartASourceCalendar(
+        tuple(sessions),
+        tuple(b == a + 1 for a, b in zip(positions, positions[1:])),
+        coverage_end + timedelta(days=1),
+        doc['tail_covered'],
+    )
+
+
+def build_part_a_checkpoint_evidence(
+    *,
+    contract,
+    policy,
+    worker_result_bytes,
+    plan_bytes,
+    checkpoint_attestation_bytes,
+    checkpoint_snapshot_bytes,
+    installed_release_bytes,
+    predecessor_receipt_bytes,
+    predecessor_assessment_bytes,
+    predecessor_plan_bytes,
+    predecessor_payload_bytes,
+    n1_plan_bytes,
+    n1_payload_bytes,
+    source,
+) -> InspectedEvidence:
+    """S5: one captured Part A batch, one PART_A assessment.
+
+    Modeled line by line on ``build_joint_checkpoint_evidence``: the committed
+    N2 checkpoint family is the predecessor, the retained N1 custody supplies
+    the frozen adjudicator's N1 prior, and the PART_A stage artifact is rebuilt
+    from the captured panel-major batch through the unchanged frozen
+    adjudication. The /v7 release, the PART_A plan slice and the panel-major
+    worker document are the only accepted shapes; never trusts a worker
+    verdict; never re-draws. G5 fetches the N1 and N2 custody through the
+    member protocol (coordinator ruling G1); the campaign plan itself is not a
+    served member, so the plan vector is checked field by field against the
+    contract's own derivation instead of byte-comparing a
+    ``derive_checkpoint_plan`` slice. ``source`` is the loader-free
+    ``PartASourceCalendar`` G5 derives from the frozen FULL population and the
+    contract-bound retained calendar bytes of the bundle the worker used (P1):
+    each panel's source-session occurrences are re-derived by re-running the
+    engine's outer-panel sampling over that session metadata -- no source is
+    loaded, no path is replayed -- and a captured occurrence that differs
+    refuses.
+    """
+    from decimal import Decimal, ROUND_CEILING
+    from math import isfinite
+
+    from .execution.evidence import (
+        CapturedPartAPanel,
+        _part_a_panel_row,
+        _part_a_pilot,
+        _part_a_plan_shape,
+        part_a_panel_bytes,
+        part_a_path_inventory,
+    )
+    from .journal_snapshot import parse_campaign_checkpoint_snapshot
+
+    resolved = _document(policy)
+    release = parse_release(installed_release_bytes)
+    plan = parse_canonical_json(plan_bytes, label='PART_A plan')
+    worker = _fields(
+        parse_canonical_json(worker_result_bytes, label='worker result'),
+        {
+            'schema',
+            'execution_id',
+            'plan_sha256',
+            'source_admission',
+            'legality',
+            'part_a',
+            'path_inventory',
+            'runtime_load_manifest',
+            'observations',
+        },
+        label='worker result',
+    )
+    snapshot = parse_campaign_checkpoint_snapshot(checkpoint_snapshot_bytes)
+    attempt_id = snapshot['attempt_id']
+    attestation = parse_checkpoint_attestation(checkpoint_attestation_bytes, attempt_id=attempt_id)
+    payload = attestation['payload']
+    if (
+        type(release) is not dict
+        or type(plan) is not dict
+        or type(payload) is not dict
+        or release.get('schema') != 'qualification_execution_release/v7'
+        or release.get('capability') != 'FULL_E1'
+        or release.get('production_execution') is not False
+        or release.get('dispatch_enabled') is not True
+        or release.get('dispatch_checkpoints') != ['N1', 'N2', 'PART_A']
+        or release.get('qualification_policy_sha256') != policy.sha256
+        or release.get('source_owner_sha256') != resolved['source_owner_sha256']
+        or plan.get('schema') != 'qualification_checkpoint_plan/v3'
+        or plan.get('checkpoint') != 'PART_A'
+        or worker['schema'] != 'qualification_worker_result/v1'
+        or payload['work_id'] != worker['execution_id']
+        or snapshot['checkpoint'] != 'PART_A'
+    ):
+        raise ValueError('EVIDENCE_SCHEMA_MISMATCH')
+    for name, expected in {
+        'contract_sha256': contract.contract_sha256,
+        'trust_domain_sha256': contract.trust_domain_sha256,
+        'execution_release_sha256': _hash(installed_release_bytes),
+    }.items():
+        if plan.get(name) != expected:
+            raise ValueError('EVIDENCE_CONTEXT_MISMATCH')
+    original = parse_canonical_json(contract.canonical_bytes, label='contract')
+    thresholds = _joint_plan_vector(contract, policy)[2]
+    spec = contract.replay.part_a
+
+    def panel_seed(panel, index, purpose):
+        return parse_canonical_json(
+            seed_input(
+                contract,
+                stage='n2',
+                population='FULL',
+                panel_index=panel,
+                path_index=index,
+                synthetic=contract.trust_domain.permits_synthetic,
+                purpose=purpose,
+            ).canonical_bytes,
+            label='seed',
+        )
+
+    expected_part_a = {
+        'parameters': original['replay']['part_a'],
+        'initial_panel_range': [0, spec.initial_panels],
+        'potential_appended_panel_range': [spec.initial_panels, spec.expanded_panels],
+        'potential_panels': [
+            {
+                'panel_index': panel,
+                'outer_seed': panel_seed(panel, 0, 'outer'),
+                'path_seeds': [
+                    panel_seed(panel, index, 'path')
+                    for index in range(spec.paths_per_population_per_panel)
+                ],
+            }
+            for panel in range(spec.expanded_panels)
+        ],
+    }
+    expected_probe = [
+        parse_canonical_json(
+            seed_input(
+                contract,
+                stage='probe',
+                population='FULL',
+                panel_index=0,
+                path_index=index,
+                synthetic=contract.trust_domain.permits_synthetic,
+                purpose='probe',
+            ).canonical_bytes,
+            label='seed',
+        )
+        for index in (0, 1)
+    ]
+    if (
+        plan.get('policy_sha256') != policy.sha256
+        or plan.get('attempt_id') != attempt_id
+        or plan.get('part_a') != expected_part_a
+        or plan.get('seed_inputs') != expected_probe
+        or plan.get('thresholds') != thresholds
+        or plan.get('horizon_sessions') != contract.replay.horizon_sessions
+        or plan.get('initial_state_sha256')
+        != _hash(canonical_json_bytes(original['initial_state']))
+        or plan.get('replay_sha256') != _hash(canonical_json_bytes(original['replay']))
+        or plan.get('budget') != original['replay']['budget']
+        or plan.get('mechanics_version') != 'tb-s2-rng-v2'
+        or worker['plan_sha256'] != _hash(plan_bytes)
+        or payload['plan_sha256'] != _hash(plan_bytes)
+    ):
+        raise ValueError('EVIDENCE_PLAN_MISMATCH')
+    receipt = parse_canonical_json(predecessor_receipt_bytes, label='predecessor receipt')
+    if (
+        type(receipt) is not dict
+        or receipt.get('schema') != CHECKPOINT_RECEIPT_SCHEMA
+        or receipt.get('checkpoint') != 'N2'
+        or receipt.get('attempt_id') != attempt_id
+        or receipt.get('decision') != 'CONTINUE'
+        or receipt.get('campaign_state') != 'PART_A_READY'
+        or receipt.get('assessment_sha256') != _hash(predecessor_assessment_bytes)
+        or plan.get('predecessor') != {
+            'checkpoint': 'N2',
+            'receipt_sha256': _hash(predecessor_receipt_bytes),
+            'assessment_sha256': _hash(predecessor_assessment_bytes),
+        }
+        or snapshot['predecessor'] != {
+            'checkpoint': 'N2',
+            'assessment_sha256': _hash(predecessor_assessment_bytes),
+            'receipt_sha256': _hash(predecessor_receipt_bytes),
+        }
+    ):
+        raise ValueError('predecessor receipt binding differs')
+    predecessor = parse_checkpoint_assessment(
+        predecessor_assessment_bytes, attempt_id=attempt_id
+    )
+    if predecessor['decision'] != 'CONTINUE' or predecessor['checkpoint'] != 'N2':
+        raise ValueError('committed predecessor decision differs')
+    predecessor_plan = parse_canonical_json(predecessor_plan_bytes, label='N2 plan')
+    predecessor_payload = parse_canonical_json(predecessor_payload_bytes, label='N2 payload')
+    if (
+        type(predecessor_plan) is not dict
+        or predecessor_plan.get('schema') != 'qualification_checkpoint_plan/v3'
+        or predecessor_plan.get('checkpoint') != 'N2'
+        or type(predecessor_payload) is not dict
+        or type(predecessor_payload.get('populations')) is not list
+        or _hash(predecessor_payload_bytes) != predecessor['capture']['payload_sha256']
+    ):
+        raise ValueError('committed predecessor custody differs')
+    n1_plan = parse_canonical_json(n1_plan_bytes, label='N1 plan')
+    n1_payload = parse_canonical_json(n1_payload_bytes, label='N1 payload')
+    if (
+        type(n1_plan) is not dict
+        or n1_plan.get('schema') != 'qualification_checkpoint_plan/v2'
+        or n1_plan.get('checkpoint') != 'N1'
+        or type(n1_payload) is not dict
+        or type(n1_payload.get('populations')) is not list
+    ):
+        raise ValueError('committed N1 custody differs')
+    admission_bytes = canonical_json_bytes(worker['source_admission'])
+    admission = parse_source_admission(
+        admission_bytes,
+        contract_sha256=contract.contract_sha256,
+        domain_sha256=contract.trust_domain_sha256,
+        policy=policy,
+    )
+    expected_roles = [
+        {'role': item.role, 'sha256': item.sha256}
+        for item in sorted(contract.artifacts, key=lambda item: item.role)
+    ]
+    if (
+        admission['retained_roles'] != expected_roles
+        or admission['effective_settings_sha256'] != contract.effective_settings_sha256
+        or admission['population_sha256']
+        != {
+            pop: _hash(canonical_json_bytes(list(contract.populations[pop])))
+            for pop in ('FULL', 'H1', 'H2')
+        }
+    ):
+        raise ValueError('EVIDENCE_SOURCE_ADMISSION_MISMATCH')
+    geometry = geometry_role(contract.trust_domain.runtime_code_roles)
+    geometry_digest = next(item.sha256 for item in contract.artifacts if item.role == geometry)
+    legality = {
+        'schema': 'qualification_legality_result/v1',
+        'contract_sha256': contract.contract_sha256,
+        'trust_domain_sha256': contract.trust_domain_sha256,
+        'policy_sha256': policy.sha256,
+        'geometry_source_sha256': geometry_digest,
+        'source_admission_sha256': _hash(admission_bytes),
+        'check_id': 'PRE_ADMISSION_REGISTRY_EMPTY',
+        'status': 'PASS',
+    }
+    if canonical_json_bytes(worker['legality']) != canonical_json_bytes(legality):
+        raise ValueError('EVIDENCE_LEGALITY_MISMATCH')
+    for name in ('service_id', 'profile_sha256', 'worker_image_digest'):
+        if payload.get(name) != release.get(name):
+            raise ValueError('EVIDENCE_RUNTIME_MISMATCH')
+    worker_runtime = _hash(canonical_json_bytes(release['runtime_manifests']['worker']))
+    if payload.get('runtime_manifest_sha256') != worker_runtime or worker[
+        'runtime_load_manifest'
+    ] != [
+        {'role': role, 'sha256': digest}
+        for role, digest in sorted(contract.runtime_load_sha256.items())
+    ]:
+        raise ValueError('EVIDENCE_RUNTIME_MISMATCH')
+    observations = _fields(
+        worker['observations'],
+        {'worker_compute_wall_ns', 'worker_cpu_ns', 'worker_peak_memory_bytes'},
+        label='worker observations',
+    )
+    for name, value in observations.items():
+        if (
+            type(value) is not int
+            or value < 0
+            or payload.get('observations', {}).get(name) != value
+        ):
+            raise ValueError('EVIDENCE_OBSERVATIONS_MISMATCH')
+    if (
+        payload['observations'].get('exit_code') != 0
+        or payload['observations'].get('oom_killed') is not False
+    ):
+        raise ValueError('EVIDENCE_ABNORMAL_EXIT')
+    if _instant(payload['completed_utc'], label='completed') < _instant(
+        payload['started_utc'], label='started'
+    ):
+        raise ValueError('EVIDENCE_TIME_MISMATCH')
+    for name, expected in {
+        'attempt_id': attempt_id,
+        'contract_sha256': contract.contract_sha256,
+        'trust_domain_sha256': contract.trust_domain_sha256,
+        'policy_sha256': policy.sha256,
+    }.items():
+        if snapshot[name] != expected:
+            raise ValueError('EVIDENCE_SNAPSHOT_MISMATCH')
+    if (
+        snapshot['capture']['payload_sha256'] != _hash(worker_result_bytes)
+        or snapshot['capture']['result_sha256'] != payload['result_sha256']
+        or snapshot['capture']['attestation_sha256'] != _hash(checkpoint_attestation_bytes)
+    ):
+        raise ValueError('EVIDENCE_SNAPSHOT_MEMBERSHIP_MISMATCH')
+
+    record = _fields(
+        worker['part_a'],
+        {
+            'initial_panels',
+            'final_panels',
+            'expansion_required',
+            'initial_prefix_sha256',
+            'final_sha256',
+            'initial_p5',
+            'final_p5',
+            'probe_seconds',
+            'predicted_seconds',
+            'pilot',
+            'n2_full_baseline',
+            'panels',
+        },
+        label='part a record',
+    )
+    initial, depth, _potential = _part_a_plan_shape(plan)
+    rows = record['panels']
+    if type(rows) is not list or not rows:
+        raise ValueError('complete ordered part a panels required')
+    for expected_index, row in enumerate(rows):
+        _part_a_panel_row(row)
+        sessions = row['source_session_ids']
+        if (
+            type(row['index']) is not int
+            or row['index'] != expected_index
+            or type(sessions) is not list
+            or not sessions
+            or any(type(session) is not str or not session for session in sessions)
+        ):
+            raise ValueError('part a panel order or source occurrences differ')
+        if type(row['outcomes']) is not list or len(row['outcomes']) != depth:
+            raise ValueError('part a panel depth differs from the plan')
+    from random import Random
+
+    from .regime import domain_seed, sample_outer_panel
+
+    if type(source) is not PartASourceCalendar:
+        raise ValueError('derived retained source required for part a occurrences')
+    for index, row in enumerate(rows):
+        # Exactly part_a._run_part_a's panel_blocks for a non-pilot panel: the
+        # plan's outer seed at this index over the retained source calendar.
+        expected_sessions = tuple(
+            session.session_id
+            for session in sample_outer_panel(
+                source.sessions,
+                Random(
+                    domain_seed(
+                        root=contract.replay.root_rng_namespace,
+                        stage='n2',
+                        population='FULL',
+                        panel_index=index,
+                        path_index=0,
+                        purpose='outer',
+                        synthetic=contract.trust_domain.permits_synthetic,
+                    )
+                ),
+                months=contract.replay.outer_months,
+                adjacent=source.adjacent,
+                covered_until=source.covered_until,
+                tail_covered=source.tail_covered,
+            )
+        )
+        if tuple(row['source_session_ids']) != expected_sessions:
+            raise ValueError('altered source occurrences')
+    initial_panels = record['initial_panels']
+    final_panels = record['final_panels']
+    if (
+        type(initial_panels) is not int
+        or type(final_panels) is not int
+        or initial_panels != initial
+        or final_panels != len(rows)
+        or not 0 < initial_panels <= final_panels
+        or type(record['expansion_required']) is not bool
+        or record['expansion_required'] != (final_panels > initial_panels)
+    ):
+        raise ValueError('part a panel counts or expansion fact differ')
+    for name in ('initial_p5', 'final_p5', 'probe_seconds', 'predicted_seconds'):
+        if type(record[name]) is not float or not isfinite(record[name]):
+            raise ValueError('finite part a measurement floats required')
+    if canonical_json_bytes(record['pilot']) != canonical_json_bytes(_part_a_pilot(plan)):
+        raise ValueError('missing pilot identity')
+    baseline = _fields(
+        record['n2_full_baseline'], {'passes', 'paths'}, label='n2 full baseline'
+    )
+    if (
+        type(baseline['passes']) is not int
+        or type(baseline['paths']) is not int
+        or baseline['paths'] <= 0
+        or not 0 <= baseline['passes'] <= baseline['paths']
+    ):
+        raise ValueError('part a n2 full baseline out of range')
+    for name in ('initial_prefix_sha256', 'final_sha256'):
+        _sha256(record[name], label=name)
+    outcome_bytes = canonical_json_bytes(
+        [
+            {
+                'population': 'REGIME',
+                'outcomes': [row for panel in rows for row in panel['outcomes']],
+            }
+        ]
+    )
+    _, part_a_rows = _outcomes(outcome_bytes, contract=contract, policy=policy, stage='PART_A')
+    typed = part_a_rows['REGIME']
+    captured_panels = [
+        CapturedPartAPanel(
+            index,
+            tuple(panel['source_session_ids']),
+            tuple(typed[index * depth : (index + 1) * depth]),
+        )
+        for index, panel in enumerate(rows)
+    ]
+    if (
+        _hash(part_a_panel_bytes(captured_panels[:initial_panels]))
+        != record['initial_prefix_sha256']
+    ):
+        raise ValueError('part a initial prefix digest differs')
+    if _hash(part_a_panel_bytes(captured_panels)) != record['final_sha256']:
+        raise ValueError('part a final digest differs')
+    if canonical_json_bytes(worker['path_inventory']) != canonical_json_bytes(
+        part_a_path_inventory(plan, captured_panels)
+    ):
+        raise ValueError('captured path inventory differs')
+
+    prior = {'N1': canonical_json_bytes(n1_payload['populations'])}
+    n1_bytes = build_stage_artifact(
+        contract=contract,
+        policy=policy,
+        stage='N1',
+        input_plan_sha256=_hash(n1_plan_bytes),
+        outcome_bytes=prior['N1'],
+        path_inventory_bytes=canonical_json_bytes(n1_payload['path_inventory']),
+        prior_stage_outcomes={},
+    )
+    committed = predecessor['stages']
+    n1_stage = parse_canonical_json(n1_bytes, label='N1 result')
+    if (
+        n1_stage['decision'] != committed[1]['status']
+        or n1_stage['population_counts'] != committed[1]['population_counts']
+        or _hash(n1_bytes) != committed[1]['output_sha256']
+        or _hash(n1_plan_bytes) != committed[1]['input_sha256']
+    ):
+        raise ValueError('committed N1 evidence differs')
+
+    def section(index):
+        row = predecessor_payload['populations'][index]
+        return {'population': row['population'], 'outcomes': row['outcomes']}
+
+    def inventory(stage):
+        return canonical_json_bytes(
+            dict(
+                schema='qualification_path_inventory/v1',
+                trust_domain_sha256=predecessor_payload['path_inventory']['trust_domain_sha256'],
+                records=[
+                    record_row
+                    for record_row in predecessor_payload['path_inventory']['records']
+                    if record_row['stage'] == stage
+                ],
+            )
+        )
+
+    n2_outcomes = canonical_json_bytes([section(0)])
+    n2_bytes = build_stage_artifact(
+        contract=contract,
+        policy=policy,
+        stage='N2',
+        input_plan_sha256=_hash(predecessor_plan_bytes),
+        outcome_bytes=n2_outcomes,
+        path_inventory_bytes=inventory('N2'),
+        prior_stage_outcomes=dict(prior),
+    )
+    part_b_outcomes = canonical_json_bytes([section(1), section(2)])
+    part_b_bytes = build_stage_artifact(
+        contract=contract,
+        policy=policy,
+        stage='PART_B',
+        input_plan_sha256=_hash(predecessor_plan_bytes),
+        outcome_bytes=part_b_outcomes,
+        path_inventory_bytes=inventory('PART_B'),
+        prior_stage_outcomes={**prior, 'N2': n2_outcomes},
+    )
+    n2_stage = parse_canonical_json(n2_bytes, label='N2 result')
+    part_b_stage = parse_canonical_json(part_b_bytes, label='PART_B result')
+    if (
+        n2_stage['decision'] != committed[2]['status']
+        or n2_stage['population_counts'] != committed[2]['population_counts']
+        or _hash(n2_bytes) != committed[2]['output_sha256']
+        or part_b_stage['decision'] != committed[3]['status']
+        or part_b_stage['population_counts'] != committed[3]['population_counts']
+        or _hash(part_b_bytes) != committed[3]['output_sha256']
+        or _hash(predecessor_plan_bytes) != committed[2]['input_sha256']
+        or _hash(predecessor_plan_bytes) != committed[3]['input_sha256']
+    ):
+        raise ValueError('committed N2 evidence differs')
+
+    part_a_inventory_bytes = canonical_json_bytes(worker['path_inventory'])
+    projected_inventory_bytes = canonical_json_bytes(
+        dict(
+            schema=worker['path_inventory']['schema'],
+            trust_domain_sha256=worker['path_inventory']['trust_domain_sha256'],
+            records=[
+                {
+                    name: record_row[name]
+                    for name in (
+                        'stage',
+                        'population',
+                        'path_index',
+                        'panel_id',
+                        'seed_input_sha256',
+                        'outcome_sha256',
+                    )
+                }
+                for record_row in worker['path_inventory']['records']
+            ],
+        )
+    )
+    try:
+        part_a_bytes = build_stage_artifact(
+            contract=contract,
+            policy=policy,
+            stage='PART_A',
+            input_plan_sha256=_hash(plan_bytes),
+            outcome_bytes=outcome_bytes,
+            path_inventory_bytes=projected_inventory_bytes,
+            prior_stage_outcomes={**prior, 'N2': n2_outcomes, 'PART_B': part_b_outcomes},
+        )
+    except ValueError as error:
+        if 'panel count differs from initial-prefix expansion decision' in str(error):
+            if final_panels == spec.expanded_panels:
+                raise ValueError('unnecessary expansion') from None
+            if final_panels == spec.initial_panels:
+                raise ValueError('omitted expansion') from None
+        raise
+    part_a_stage = parse_canonical_json(part_a_bytes, label='PART_A result')
+
+    n2_full = predecessor_payload['populations'][0]
+    if type(n2_full) is not dict or n2_full.get('population') != 'FULL':
+        raise ValueError('mismatched N2 FULL baseline')
+    passes = sum(row['status'] == 'PASS' for row in n2_full['outcomes'])
+    paths = len(n2_full['outcomes'])
+    if paths <= 0 or record['n2_full_baseline'] != {'passes': passes, 'paths': paths}:
+        raise ValueError('mismatched N2 FULL baseline')
+    rates = [
+        Decimal(
+            sum(row.status == 'PASS' for row in typed[panel * depth : (panel + 1) * depth])
+        )
+        / depth
+        for panel in range(final_panels)
+    ]
+
+    def percentile(values):
+        rank = int(
+            (spec.percentile * len(values)).to_integral_value(rounding=ROUND_CEILING)
+        )
+        return sorted(values)[max(0, rank - 1)]
+
+    initial_p5 = percentile(rates[: spec.initial_panels])
+    final_p5 = percentile(rates)
+    if record['initial_p5'] != float(initial_p5) or record['final_p5'] != float(final_p5):
+        raise ValueError('part a reported statistic differs')
+    within = abs(initial_p5 - spec.expansion_center_p5) <= spec.expansion_tolerance
+    at_or_above = final_p5 >= spec.expansion_center_p5
+    full_rate = Decimal(passes) / Decimal(paths)
+    at_or_below = final_p5 <= full_rate
+    tolerance_comparison = {
+        'initial_p5': str(initial_p5),
+        'center': str(spec.expansion_center_p5),
+        'tolerance': str(spec.expansion_tolerance),
+        'within': within,
+    }
+    floor_comparison = {
+        'final_p5': str(final_p5),
+        'floor': str(spec.expansion_center_p5),
+        'at_or_above': at_or_above,
+    }
+    full_sanity_comparison = {
+        'final_p5': str(final_p5),
+        'full_pass_rate': str(full_rate),
+        'at_or_below': at_or_below,
+    }
+    if (part_a_stage['decision'] == 'PASS') != (at_or_above and at_or_below) or record[
+        'expansion_required'
+    ] != (within and spec.expanded_panels > spec.initial_panels):
+        raise ValueError('part a comparison disagrees with the installed adjudicator')
+    runtime_bytes = canonical_json_bytes(
+        {
+            'schema': 'qualification_runtime_trace/v2',
+            'execution_release_sha256': _hash(installed_release_bytes),
+            'profile_sha256': release['profile_sha256'],
+            'worker_image_digest': release['worker_image_digest'],
+            'runtime_manifest_sha256': worker_runtime,
+            'execution_id': worker['execution_id'],
+            'execution_attestation_sha256': _hash(checkpoint_attestation_bytes),
+            'worker_load_manifest': worker['runtime_load_manifest'],
+        }
+    )
+    outputs = {
+        'attempt_journal': checkpoint_snapshot_bytes,
+        'legality_result': canonical_json_bytes(legality),
+        'n1_result': n1_bytes,
+        'n2_result': n2_bytes,
+        'part_b_result': part_b_bytes,
+        'part_a_result': part_a_bytes,
+        'path_inventory': part_a_inventory_bytes,
+        'runtime_load_trace': runtime_bytes,
+    }
+    validate_output_roles(
+        policy,
+        list(outputs),
+        stages=('LEGALITY', 'N1', 'N2', 'PART_B', 'PART_A'),
+        completion='COMPLETE',
+        verdict='FAIL' if part_a_stage['decision'] == 'FAIL' else 'PASS',
+    )
+    assessment = {
+        'schema': CHECKPOINT_ASSESSMENT_SCHEMA,
+        'attempt_id': attempt_id,
+        'checkpoint': 'PART_A',
+        'work_id': worker['execution_id'],
+        'binding': {
+            'contract_sha256': contract.contract_sha256,
+            'trust_domain_sha256': contract.trust_domain_sha256,
+            'policy_sha256': policy.sha256,
+            'execution_release_sha256': _hash(installed_release_bytes),
+        },
+        'snapshot': {
+            'campaign_revision': snapshot['campaign_revision'],
+            'authority_head': snapshot['authority_head'],
+            'snapshot_sha256': _hash(checkpoint_snapshot_bytes),
+        },
+        'capture': {
+            'result_sha256': payload['result_sha256'],
+            'payload_sha256': payload['payload_sha256'],
+            'attestation_sha256': _hash(checkpoint_attestation_bytes),
+        },
+        'stages': [
+            {
+                'stage': 'LEGALITY',
+                'status': 'PASS',
+                'input_sha256': _hash(admission_bytes),
+                'output_sha256': _hash(outputs['legality_result']),
+                'population_counts': {},
+            },
+            committed[1],
+            committed[2],
+            committed[3],
+            {
+                'stage': 'PART_A',
+                'status': part_a_stage['decision'],
+                'input_sha256': _hash(plan_bytes),
+                'output_sha256': _hash(part_a_bytes),
+                'population_counts': part_a_stage['population_counts'],
+            },
+        ],
+        'decision': 'CONTINUE' if part_a_stage['decision'] == 'PASS' else 'FAILURE',
+        'part_a': {
+            'initial_panels': initial_panels,
+            'final_panels': final_panels,
+            'expansion_required': record['expansion_required'],
+            'initial_prefix_sha256': record['initial_prefix_sha256'],
+            'final_sha256': record['final_sha256'],
+            'tolerance_comparison': tolerance_comparison,
+            'floor_comparison': floor_comparison,
+            'full_sanity_comparison': full_sanity_comparison,
+        },
+        'cutoff': {'checkpoint': 'PART_A', 'stage_thresholds': {}},
+        'predecessor': {
+            'checkpoint': 'N2',
+            'assessment_sha256': _hash(predecessor_assessment_bytes),
+            'receipt_sha256': _hash(predecessor_receipt_bytes),
+        },
+        'artifacts': [
+            {'role': role, 'sha256': _hash(raw), 'byte_length': len(raw)}
+            for role, raw in sorted(outputs.items())
+        ],
+    }
+    return InspectedEvidence(canonical_json_bytes(assessment), MappingProxyType(outputs))

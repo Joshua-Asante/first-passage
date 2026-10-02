@@ -18,7 +18,7 @@
 | B4 | Per-card G0 GO (freeze pre-registration; the only step that turns a card into a candidate) | P3.x | per card |
 | B5 | TV runbook execution + CSV export (S2: no login automation; Downloads→local copy). **Chokepoint rule: the runbook must link the step 2–5 artifacts (dedup block · door-check record · screens table · G0 PR#) — refuse the TV seat if any is missing** (this is how the charter's FALSIFIED(process) condition gets detected) | P3.x step 7 | per candidate |
 | B6 | Verdict ratification per candidate: kill→registry / survive→TNEC intake | P3.x → P5 | per candidate |
-| B7 | Weekly review: manifest walk + SESSIONS scan + clock check (standing: weekly token trade stays operator-placed, unrelated to MSL) | program health | weekly |
+| B7 | Weekly review: manifest walk + SESSIONS scan + clock check (standing: weekly token trade may be operator-placed or agent-placed at the operator's direction for that specific trade under surface-allocation ADR Addendum 2026-09-30b; no card grants it, and arming, live-spend and per-session GO requirements remain unchanged; unrelated to MSL) | program health | weekly |
 | B8 | ✅ **Occupancy release** — [ADR](../../adr/2026-08-12-msl-mym-occupancy-release.md): `MYM1!`/`MNQ1!` headroom released for new non-Striker MSL research/G0; S1 keep-warm + Striker redeploy bar untouched; no `LEG_MAP` code edit | unblocks MSL-C1 G0 path | before C1 B4 |
 
 ## §2 Manager layer (CC sessions — each row is one chat; hand it this file + its row; it authors its own handoffs per `handoff-verify`)
