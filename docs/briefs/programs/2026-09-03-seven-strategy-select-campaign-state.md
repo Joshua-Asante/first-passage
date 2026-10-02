@@ -4060,6 +4060,8 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 
 **Addendum 2026-09-26 — later operator direction on source access.** The operator also directed, in a separate session: "I want to allow agents to read private ports" and "I want agents to be able to read pine strategies", with other qualifications to follow. On reconciliation the operator ruled (2026-09-26) that this section's wording governs; no broader AGENTS.md permission was adopted. Historical statements about what an earlier session did or did not read remain historical evidence, not access restrictions.
 
+**Addendum 2026-10-02 — the effective-input file.** *Operator ruling 2026-10-02 (sitting 1), given directly to the deployment coordinator ("all recommended"):* agents may also read `ops/c1_signal_daemon/ports/effective_inputs.json`, the accepted book's effective-input file (digest-pinned in `book_adapters.py`), read-only and in place in the primary checkout, under rules 1–4 above: never copied, quoted, committed, or passed to GLM or any external service.
+
 ## §61 — X-1 observed route acceptance (2026-09-30)
 
 Joshua directed the continuation review of the completed September 30 X-1
