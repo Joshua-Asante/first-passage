@@ -1,5 +1,7 @@
 # Pre-registration — route-native editions of ORB MNQ and Striker MYM for the Tradeify book
 
+**CLOSED — replay-output exposure 2026-10-02;** superseded by [`docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md`](2026-10-02-tradeify-route-native-editions-successor-prereg.md); see [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1.
+
 **Status:** `DRAFT — NOT FROZEN.` Fields marked **OWED (operator)** must be answered before freeze. Nothing in this file binds a replay, E1 run or verdict until the Status line reads `FROZEN <date>` and the freeze commit's SHA is recorded in [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). No replay, E1 dispatch or screen may run on either edition before that.
 **Owner:** campaign record §59, ruling 3, step 1 ("pre-register the two editions … written before any replay or E1 run on the editions and is not changed after").
 **Loop of record:** STRATEGIC (expression change forced by route capability; K = 1 per leg, not a search).

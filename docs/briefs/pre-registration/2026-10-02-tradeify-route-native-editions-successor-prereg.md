@@ -1,0 +1,157 @@
+# Pre-registration (successor, 2026-10-02) — route-native editions of ORB MNQ and Striker MYM for the Tradeify book
+
+**Status:** `DRAFT — NOT FROZEN.` Fields marked **OWED (operator)** must be answered before freeze. Nothing in this file binds a replay, E1 run or verdict until the Status line reads `FROZEN <date>` and the freeze commit's SHA is recorded in [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). No replay, E1 dispatch or screen may run on either edition before that. *Successor draft (2026-10-02): the operator ratifies it ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1); the standing rule in §R applies.*
+**Supersedes:** [`2026-09-25-tradeify-route-native-editions-prereg.md`](2026-09-25-tradeify-route-native-editions-prereg.md), CLOSED — replay-output exposure 2026-10-02 and kept as a record ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) deployment-checklist addendum item 7.6.1; operator ruling 2026-10-02, "I agree").
+**Owner:** campaign record §59, ruling 3, step 1 ("pre-register the two editions … written before any replay or E1 run on the editions and is not changed after"). This successor: [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1.
+**Loop of record:** STRATEGIC (expression change forced by route capability; K = 1 per leg, not a search).
+**Authored:** 2026-09-25, Claude Code (drafting); operator (Joshua) owns every rule marked OWED and the freeze. Successor drafted 2026-10-02 by Claude Code (drafting only); the operator ratifies it.
+
+## §D — Disclosure: what was seen before this successor was written
+
+Recorded under [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) deployment-checklist addendum item 7.6.1 (operator ruling 2026-10-02, "I agree"). Before this successor was written:
+
+- **Candidate-configurable replays were run against the closed originals.** The source-check worker ran the accepted ORB and Vanguard ports with the port's own trailing flag off; ORB was also run in protection mode. Item 7.6.1 classifies those runs as candidate replays, not legacy diagnostics: ORB's fixed-stop edition can be realized as that port with trailing disabled by input override.
+- **Structural trade counts were inspected:** episode totals, multi-lot counts, partial reductions and first-exit reasons.
+- **No P&L, equity, drawdown, bust/pass, profit-factor or win-rate output** was printed or viewed (item 7.6.1).
+- **Historical performance figures in the legacy ORB and Striker Pine comments** were seen during source reading.
+- **This successor was written without reference to those counts.** The drafting session (Claude Code, 2026-10-02) read the closed original, PR #590's checklist addendum item 7 as a diff (not the PR comments that hold the counts), and campaign §59 Rulings 3–5. It did not read any private Pine or port, and ran no replay, emulator, port or backtest.
+
+This list is item 7.6.1's account. It names what was seen, not who saw it; the operator may add to it before ratification.
+
+## §R — Standing rule: no candidate-configurable replay before freeze
+
+*Operator ruling 2026-10-02 ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1):* no agent runs any candidate-configurable replay against a pre-registered edition before that pre-registration is frozen. That includes an accepted port with input overrides. This file is not frozen; the rule applies to every edition it pre-registers.
+
+## §S — What this successor changes from the closed original
+
+Every table row carries a marker: *(CF)* means carried forward verbatim from the closed original, and *(CH)* means changed here. Every section, paragraph and bullet not listed below is carried forward verbatim, including all OWED statuses, dated rulings and direction markers.
+
+1. **Header.** The title names the successor. The Status line keeps its text and adds the successor/ratification sentence. A **Supersedes** line, an Owner pointer to PR #590 item 7.6.1 and an Authored note are added. *Reason:* the original is closed (item 7.6.1).
+2. **§D Disclosure and §R standing rule** added. *Reason:* item 7.6.1 requires both.
+3. **§0** gains a successor-reads note; the original table and text are unchanged. *Reason:* Rule 0 for this draft.
+4. **§7** gains two bullets: a proposed reading of the no-amendment-after-output bullet for this successor, and the standing rule. *Reason:* the disclosed outputs predate this file, and read literally they would forbid ever completing it. The reading is proposed, not ruled.
+5. **§10** audit hooks point at this file instead of the closed original. *Reason:* otherwise they would check a closed record.
+6. **§1** Vanguard link points to the Vanguard successor. *Reason:* the original is closed.
+7. **ORB-6** and **STR-7** *(CH)*: the C-a proposed answer is added, the original question is quoted, the status becomes OWED for the operator's ratification, and the 2026-09-26 note is kept verbatim. *Reason:* item 7.2.
+8. **§6** exit-split replay item is moot for the first release; the entry-split item is unchanged. *Reason:* item 7.2.
+9. **§8** step 1 drops ORB-6/STR-7 from "answers" and asks for ratification of the proposed answers instead; the sequential-exit sentence is removed. Step 4 adds the trailing-removed confirmation at freeze. *Reason:* items 7.2 and 7.6.1 (disposition 1).
+
+Nothing here freezes or ratifies anything. Every proposed answer is owed for the operator's ratification.
+
+---
+
+## §0 — Rule-0 reads (anchors at `main@7d78970`, 2026-09-25)
+
+| Source | What it fixes for this file |
+|---|---|
+| `docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md` §55 (D-B4 (a)), §59 *(CF)* | The accepted four-leg book, K = 1; §59 amends D-B4 (a) only to admit these two editions once frozen here. |
+| `docs/notes/2026-09-10-tradeify-protection-selection.md` "Selected book", "Protection behavior selected" *(CF)* | Leg settings (ORB: one micro per base/add, up to two adds; Striker MYM: 30-max-contract setting), 1% combined trigger, 40% scale, ORB base unreduced, ORB adds off under protection, 80-micro capacity, Aegis-priority takeover. |
+| `docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md` Addendum 2026-09-24 §A1, §A4 (+ 2026-09-25 correction) *(CF)* | The narrowed request shape both editions must satisfy; the per-primitive route table (L2(e)/(f)/(g) U). |
+| `docs/spec/2026-09-12-c1-multi-leg-rail-extension-spec.md` S2, S3 (a)/(b)/(d)/(e), R-B3 L-2 *(CF)* | Why the declared expressions fail on this route: ORB needs L2(g) native trailing; Striker needs L2(f) attach and multi-contract residual cover. I8: a substitute expression is a different strategy until requalified. |
+| `core/strategies/PORT_MANIFEST.sha256`, `ops/c1_signal_daemon/book_adapters.py` (port pins) *(CF)* | How private Pine editions and Python ports are bound by digest without publishing their contents. |
+| `AGENTS.md` "Public-clone posture"; "Strategy Reference" *(CF)* | No Pine source, parameter values or executable ports of locked logic in this public file. Rules below are stated as shapes; values live only in the pinned private files. |
+
+The declared ORB and Striker Pine and ports were **not read** by the drafting session (private). Every behavioral statement about them below is either from a public owner cited above or marked OWED.
+
+*Successor reads (2026-10-02 drafting, `origin/main@3cbaa04`; PR #590 head `3ec7bb3`):* the closed original (carried forward below); [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) deployment-checklist addendum item 7 (the diff only; not the PR comments that hold the replay counts); campaign §59 Rulings 3–5. No private Pine or port was read and no replay was run.
+
+## §1 — What is pre-registered
+
+Exactly two new venue-edition expressions, one per leg, each K = 1:
+
+| Leg | Edition id (venue-edition ledger, `CANDIDATE`) | Replaces, on this route only |
+|---|---|---|
+| ORB MNQ *(CF)* | `orb_mnq_fixed_stop_oso@Tradeify_Select_100K` | The declared ORB expression whose bracket carries trailing parameters |
+| Striker MYM *(CF)* | `striker_dj30_mym_entry_with_stop@Tradeify_Select_100K` | The declared Striker MYM expression that enters bare and attaches protection a bar later |
+
+Aegis 6J keeps its declared expression (operator-attested to fit the narrowed shape, §59 ruling 1). **Vanguard MGC is qualified:** the [trailing determination](../handoffs/2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returned `TRAILING ACTIVE`, so its §59 ruling 1 fit attestation is not current evidence, and it depends on L2(g). Vanguard is handled by its own [edition pre-registration](2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md) or by the operator rejecting the leg on this route. This file's freeze inventory must carry that pending decision; it must not treat Vanguard as fitting.
+
+**Unchanged for the whole book (inherited, not re-selected):** legs and allocations; the 1% combined-peak trigger, 40% scale, ORB base unreduced and ORB adds off under protection; 80-micro shared capacity; Aegis-priority takeover ordering; every signal/entry condition of both legs. Only the **order expression** (how protection rides with exposure, and how quantity is split into requests) changes.
+
+## §2 — Shape constraints both editions must meet (from incident ADR §A1)
+
+Every exposure-creating request (entry or add) is:
+1. a single market or stop entry for **exactly one contract**;
+2. carrying its **own native fixed stop in the same request** (CrossTrade `place` with `stop_loss` → one Tradovate `placeoso`);
+3. sent **without** `delay=`, ATM fields, trailing fields, `cancel_after`, or copier / multi-account fan-out.
+
+A multi-contract intent is sent as that many one-contract requests, each with its own stop.
+
+## §3 — ORB MNQ edition
+
+| # | Rule | Status |
+|---|---|---|
+| ORB-1 *(CF)* | Entry: resting stop entry (as declared, S2), one contract per base or add, carrying its fixed protective stop in the same request. No trailing parameters are sent or modelled.<br>*Operator ruling 2026-09-27 (reaffirming Ruling 6 of 2026-09-26; [§59 Ruling 7(a)](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27), lifecycle L1), stated in words: the base entry is placed once and remains working until it fills or an applicable cancellation ends it. There is no one-bar expiry and no periodic reissue. The earlier operational cutoff still applies (halt/resume §5). "As declared, S2" reads on rail spec S2 as amended 2026-09-27. This marker records the ruled lifecycle only: it freezes nothing, changes no other row and answers no OWED item.* | Fixed by §59<br>*Operator ruling 2026-09-26 (in session; [§59 Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-2026-09-26), which carries the full terms): the resting-entry lifecycle is ruled **L1**: one placement, no age-based expiry and no periodic reissue; the rail's earlier scheduled entry cutoff and the existing qualified takeover/cancellation behavior are retained. Incident handling still follows the attended halt contract; the ruling does not authorize automatic incident cancellation. A bounded amendment to this row's "as declared, S2" is to be prepared, with RC-9, rail S2 and the qualification replay (affected tests and freeze identities updated; rail AC-3's market-add description corrected), and returned for acceptance before freeze; final wording OWED at freeze.*<br>**— OWED (operator acceptance of the integrated L1 change and its verification, §59 Ruling 6)** |
+| ORB-2 *(CF)* | **Fixed stop level at entry.** State the rule: is it the declared bracket's existing fixed-stop component, unchanged? | **OWED (operator)**<br>*Operator direction 2026-09-26 (§59 Ruling 5, preparation constraint): the existing fixed-stop component; final wording OWED at freeze.* |
+| ORB-3 *(CF)* | **What replaces the trail as an exit.** The declared trail closed some trades. State which existing exit now closes them: the fixed stop, an existing target, the scheduled flatten, or another existing rule. No new exit rule is invented here; if none of the existing exits applies, say so, and the edition is a different strategy that needs a fresh decision (§7). | **OWED (operator)**<br>*Operator direction 2026-09-26 (§59 Ruling 5, preparation constraint): explicitly specified remaining exits; this row's rule that no new exit rule is invented is unchanged; final wording OWED at freeze.* |
+| ORB-4 *(CF)* | **Stop modification after entry.** Does the edition ever amend the fixed stop (per-bar re-issue, breakeven)? If yes, that needs L2(c) native modify, which is K on this route (drill D2). If no, write "none". | **OWED (operator)**<br>*Operator direction 2026-09-26 (§59 Ruling 5): if the edition needs a modify, a failed modify capability returns with alternatives, with no automatic replacement edition. The packet's recommendation to verify that the successor settings make the intended amendments no-ops (decision 8) is not ruled. Final wording OWED at freeze.* |
+| ORB-5 *(CF)* | Adds: each add is one contract with its own stop; adds remain off under protection (inherited). | Fixed by §59 |
+| ORB-6 *(CH)* | **Exit split.** *Proposed answer (successor, 2026-10-02; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2):* for the first release, follow the accepted close realization (C-a whole-leg liquidation); no N-sequential one-contract exits. Any multi-contract ORB close (base plus adds, scheduled flatten) is one whole-leg broker liquidation. Intentional partial (subset) exits are unsupported in the first release (item 7.1). Entries keep §2's one-contract-per-request rule. Replay treatment: §6 (the exit-split item is moot).<br>*Original question (closed original, verbatim):* "As STR-7, for any multi-contract ORB close (base plus adds, scheduled flatten)." | **OWED (operator ratification of the proposed answer)**<br>*Successor marker 2026-10-02:* the answer is proposed under [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2 and is not ratified. C-a stays investigation-only until gate C: its M1–M9 answered, X-3 tracing exactly this execution form, and cross-leg cancellation scope (supplementary question S) resolved by vendor semantics (item 7.3). A single liquidation whose outcome is unknown or partial is an incident (item 7.3). If C-a fails its investigation or X-3, the close form returns to the operator before the first release (item 7.4), and this answer does not stand. Attended incident recovery stays on the attended-platform path (item 7.2).<br>*Carried-forward note (verbatim from the closed original):* *Note 2026-09-26: packet decision 11 (a recommendation, not ruled) would have this row follow the accepted close realization; none is accepted. The separate close ruling of 2026-09-26 ([incident ADR §A11.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)) pursues C-a (whole-leg broker liquidation) as the first candidate to investigate, investigation only, and accepts neither the close-contract amendment nor an unspecified residual risk. Not an edition direction; final wording OWED at freeze.* |
+
+*Open before freeze (§59 Ruling 5, operator direction 2026-09-26):* the ORB resting-entry lifecycle decision stays **OPEN**: the rail's one-bar cancel of a resting entry versus the port's session-end cancel (B–D decision packet B-13, draft, [PR #518](https://github.com/Joshua-Asante/first-passage/pull/518)). It is resolved from source and replay before the lifecycle ruling is requested, and kept separate from the four-state account-fence correctness trace. Direction markers in §3 and §4 cite [campaign §59 Ruling 5](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-5--edition-directions-2026-09-26); they record preparation constraints, not answers. *Ruled 2026-09-26 (operator ruling in session; [§59 Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-2026-09-26)): the lifecycle is **L1**, so the OPEN status above no longer applies to the lifecycle choice. The rail's earlier scheduled entry cutoff and the existing qualified takeover/cancellation behavior are retained; incident handling stays under the attended halt contract, with no automatic incident cancellation; Ruling 6 carries the full terms. The amendments (ORB-1, RC-9, rail S2, the qualification replay) are to be prepared and returned for acceptance before freeze; ORB-1's final wording stays OWED at freeze. The account-fence repair stays separate.* *[Updated 2026-09-27: the lifecycle ruled L1 on 2026-09-26 is reaffirmed by [§59 Ruling 7(a)](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27) and stated in ORB-1. The fence classification was ruled separately (Ruling 7(b)), as Ruling 5 required. The text above is kept as the record of the pre-ruling state.]*
+
+## §4 — Striker MYM edition
+
+| # | Rule | Status |
+|---|---|---|
+| STR-1 *(CF)* | Entry: market entry carrying its fixed protective stop in the same request; no bare entry and no later `ATTACH`. | Fixed by §59 |
+| STR-2 *(CF)* | **Stop level at entry.** The declared port issues its first stop a bar after entry. State the rule for the level sent with the entry: (a) the level the declared port would issue, computed on the entry bar (say whether that is computable there), or (b) another rule you specify. This is the decision most likely to change results. | **OWED (operator)**<br>*Operator direction 2026-09-26 (§59 Ruling 5, preparation constraint): the signal-bar-computable level, as a pre-registered behavior change requiring qualification; final wording OWED at freeze.* |
+| STR-3 *(CF)* | **One-contract split.** A signal for N contracts is sent as N one-contract requests. State the maximum N per signal on this account (the selection records a 30-max-contract setting) and whether any cap below that applies. | **OWED (operator)**<br>*Operator direction 2026-09-26 (§59 Ruling 5, preparation constraint): whole-intent capacity reservation and sequential submission; the maximum N and any cap are not ruled; final wording OWED at freeze.* |
+| STR-4 *(CF)* | **Partial acknowledgement of a split.** Position quantity is established only by confirmed fills, never acknowledgements. Track accepted-but-unfilled requests as working orders with required reservations, conclusively rejected requests under the accepted release rule, and unknown requests with held reservations under the incident ADR. Confirm the edition consumes fill events and does **not** re-send an unresolved request merely because no fill is observed. | **OWED (operator; fill-based position semantics required by book_protocol.py)**<br>*Operator direction 2026-09-26 (§59 Ruling 5, preparation constraint): abandon the unsent remainder on an exceptional outcome. "No retry or top-up of unknown children" is UB-4's recommendation (incident ADR §A9.1), not ruled; this row's no-resend text is unchanged. Final wording OWED at freeze.* |
+| STR-5 *(CF)* | **Close-time crossed-level exits (S3 (d)).** State how they are realized: a market exit of the scope (as declared), unchanged. | **OWED (operator)**<br>*Operator constraint 2026-09-26 (§59 Ruling 5): never widen a subset exit into whole-leg liquidation. Whether the crossed-level condition can apply to a subset of lots is not yet established; the realization stays OWED.* |
+| STR-6 *(CF)* | **Stop modification after entry.** Per-bar re-issue of the stop needs L2(c) (drill D2). State whether the edition modifies the stop after entry. | **OWED (operator)**<br>*Operator direction 2026-09-26 (§59 Ruling 5): a failed modify capability returns with alternatives, with no automatic replacement edition; final wording OWED at freeze.* |
+| STR-7 *(CH)* | **Exit split.** *Proposed answer (successor, 2026-10-02; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2):* for the first release, follow the accepted close realization (C-a whole-leg liquidation); no N-sequential one-contract exits. A multi-contract Striker close (including close-time crossed-level exits, STR-5, and scheduled flatten) is one whole-leg broker liquidation. STR-5's realization row is carried forward unchanged. Intentional partial (subset) exits are unsupported in the first release (item 7.1). Entries keep §2's one-contract-per-request rule. Replay treatment: §6 (the exit-split item is moot).<br>*Original question (closed original, verbatim):* "A multi-contract close (including close-time crossed-level exits, STR-5, and scheduled flatten) must become one-contract closes under the one-contract rule. State how the rail generates them after admission (not the port), their order and resolution, and the replay treatment." | **OWED (operator ratification of the proposed answer)**<br>*Successor marker 2026-10-02:* the answer is proposed under [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2 and is not ratified. C-a stays investigation-only until gate C: its M1–M9 answered, X-3 tracing exactly this execution form, and cross-leg cancellation scope (supplementary question S) resolved by vendor semantics (item 7.3); for Striker, also the triggered-protection transition qualified at gate C before C-a applies (item 7.6.1 disposition 4). A single liquidation whose outcome is unknown or partial is an incident (item 7.3). If C-a fails its investigation or X-3, the close form returns to the operator before the first release (item 7.4), and this answer does not stand. Attended incident recovery stays on the attended-platform path (item 7.2).<br>*Carried-forward note (verbatim from the closed original):* *Note 2026-09-26: packet decision 11 (a recommendation, not ruled) would have this row follow the accepted close realization; none is accepted. The separate close ruling of 2026-09-26 ([incident ADR §A11.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)) pursues C-a (whole-leg broker liquidation) as the first candidate to investigate, investigation only, and accepts neither the close-contract amendment nor an unspecified residual risk. Not an edition direction; final wording OWED at freeze.* |
+
+## §5 — Identity binding (fills at freeze)
+
+| Artifact | Binding | Status |
+|---|---|---|
+| ORB edition Pine (private) *(CF)* | SHA-256 recorded in `core/strategies/PORT_MANIFEST.sha256` and here | **OWED** |
+| Striker edition Pine (private) *(CF)* | SHA-256 recorded in `core/strategies/PORT_MANIFEST.sha256` and here | **OWED** |
+| ORB and Striker edition Python ports (private) *(CF)* | SHA-256 pins added beside the existing pins in `ops/c1_signal_daemon/book_adapters.py` (a separate, reviewed change) | **OWED** |
+| Effective inputs for each edition *(CF)* | Explicit source/runtime digests and Pine/port setting binding; reused or successor as ruled | **OWED (operator)** |
+| This file at freeze *(CF)* | Commit SHA recorded in campaign record §59 | At freeze |
+
+Before file production, specify each realization and its identity-binding scheme; fix reused pins and leave only new output digests for production before freeze. The current loader requires the port-embedded PINE_SHA256 to match the registry Pine identity. A changed Pine needs a matching new port identity under that contract. An ORB override-only realization may retain compatible Pine/port identities only with explicit effective settings bound for both; otherwise return to the operator for a code edition or separately reviewed identity contract. Do not weaken the loader checks.
+
+The public repository receives identities and behavior shapes only, never private source or parameter values. The Pine and the ports stay in the private roots (AGENTS.md "Public-clone posture").
+
+## §6 — How the editions requalify, and what counts as a result
+
+- **No new screen is bought.** The editions requalify through the production E1 that was already owed for the book (deployment checklist T10 → T15), under the criteria frozen by their existing owners ([Track B umbrella](../handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) and the full-E1 specification). This file adds no statistic, threshold, depth or seed.
+- **Replay modelling of the split (OWED, operator + coordinator).** Before freeze, state how the qualification replay prices N sequential one-contract requests. Options: (a) all N at the same fill as today's single order (optimistic); (b) a concrete replay algorithm stated here in full: the per-request price and fill rule for request k of N, any delay model, and its frozen inputs. The rail spec's I8 classifies live latency deviation but defines no replay pricing, so naming I8 alone does not satisfy this; (c) another rule stated now. The choice must be written here before any run; it cannot be tuned after.
+- **Replay model for N sequential exit requests: moot for the first release** *(successor, 2026-10-02; proposed under [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2; owed for the operator's ratification with ORB-6 and STR-7).* Under the proposed ORB-6 and STR-7 answers, a first-release close is one C-a request, so no N sequential one-contract exit requests exist to price. Item 7.2 states this item is moot for the first release and that the successor clears the exit-split freeze block; the entry-split item above is unchanged and still OWED. If C-a fails its investigation or X-3, the close form returns to the operator before the first release (item 7.4); this successor does not pre-decide that case. The closed original's item, with the operator's 2026-09-26 ruling "Mark OWED; block freeze", is kept there as the record.
+- **Verdict per leg.** PASS: the leg's route-native edition is qualified as part of the book's E1 result. NO-GO: the route is rejected for that leg; **no second expression is tried** under this pre-registration. What happens to the book then (drop the leg, or requalify the book without it) is a new operator decision, not decided here.
+
+## §7 — Forbidden moves
+
+- Screening more than one expression per leg (alternative stop levels, trail substitutes, entry timings).
+- Changing any signal or entry condition, allocation, protection cell, capacity rule or takeover order.
+- Inventing a new exit to replace the trail (ORB-3). If no existing exit covers the case, stop and return to the operator.
+- Editing locked Pine or `core/strategies` artifacts in place. The editions use new private files with new pins where bytes change; an explicitly ruled ORB override-only realization retains compatible source identities and binds new effective settings.
+- Publishing Pine source, parameter values or port code in this or any public file.
+- Amending this file after any replay or E1 output on either edition exists (Known Trap #12: close it and open a fresh one instead).
+- *Added 2026-10-02 (successor; a proposed reading, owed for the operator's ratification):* for this successor, the bullet above is triggered by replay or E1 output produced after this file's first commit. The outputs disclosed in §D came first and are why the original was closed. Read literally, they would forbid completing this file at all.
+- *Added 2026-10-02 (successor; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1, standing rule §R):* running any candidate-configurable replay against an edition pre-registered here, including an accepted port with input overrides, before this file is FROZEN.
+- Treating the editions as qualified, selected or deployable before the E1 verdict.
+
+## §8 — Freeze procedure
+
+1. The operator answers ORB-2..ORB-4, STR-2..STR-6 and the §6 replay-modelling choice, in words (no parameter values), and ratifies or rejects the proposed answers to ORB-6 and STR-7 and the §6 exit-split mootness ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2; *changed in the successor, 2026-10-02*). *Operator ruling 2026-09-26 (in session; [§59 Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-2026-09-26)): before freeze, the integrated ORB-1/RC-9/rail S2/qualification replay change and its verification are returned to the operator for acceptance; ORB-1's final wording is OWED until then.*
+2. Once the capability allocation is accepted (checklist T09 gate D; operator ruling 2026-09-26, [production handoff](../handoffs/2026-09-26-orb-striker-edition-production.md) G2b), the private edition Pine and ports are produced (operator, or a separately authorized session on the primary checkout) and their SHA-256s supplied.
+3. Claude fills §3–§6, runs the §10 hooks, and the operator reviews the full text.
+4. The operator confirms that the ORB edition freezes with trailing removed (ORB-1; §59 Ruling 3). [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1's per-fill trailing-subset disposition clears only on that confirmation (*added in the successor, 2026-10-02*). The operator says "freeze". The Status line becomes `FROZEN <date>`, and the commit SHA goes into campaign record §59.
+
+## §10 — Audit hooks
+
+```bash
+# Status must read FROZEN before any edition replay or E1 run exists
+grep -n '^\*\*Status:\*\*' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
+# No unresolved status may remain at freeze; expect no output.
+# The pattern matches status cells and the replay-choice marker only, not explanatory prose.
+grep -nE '\| \*\*OW[E]D|\(OW[E]D,|— OW[E]D \(' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
+# Both edition ids present in the venue-edition ledger as CANDIDATE
+grep -n 'orb_mnq_fixed_stop_oso\|striker_dj30_mym_entry_with_stop' ops/venue_editions/Tradeify_Select_100K.md
+# No edition Pine or port bodies committed; expect no output
+git ls-files 'ops/c1_signal_daemon/ports/*.py' ':(icase)*orb*fixed*stop*' ':(icase)*striker*entry*with*stop*' | grep -v '\.md$'
+```

@@ -1,5 +1,7 @@
 # Pre-registration: route-native fixed-stop edition of Vanguard MGC for the Tradeify book
 
+**CLOSED — replay-output exposure 2026-10-02;** superseded by [`docs/briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md`](2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md); see [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1.
+
 **Status:** `DRAFT — NOT FROZEN.` Fields marked **OWED (operator)** must be answered before freeze. Nothing here binds a replay, E1 run or verdict until the Status line reads `FROZEN <date>` and the freeze commit's SHA is recorded in [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). No replay, E1 dispatch or screen may run on this edition before then.
 
 **Precondition — decided 2026-09-26: option A** ([campaign §59 Ruling 4](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-4--vanguard-mgc-fixed-stop-edition-on-this-route-2026-09-26)). *Original text:* the [Vanguard trailing determination](../handoffs/2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return) returned `TRAILING ACTIVE`, which leaves two options:
