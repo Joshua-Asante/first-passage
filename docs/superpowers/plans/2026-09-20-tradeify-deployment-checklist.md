@@ -542,7 +542,7 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
 - **X-1 executed on 2026-09-30** (T0 23:42:32Z, in the operator-amended 23:30–00:00Z window). A **scoped GC-2a PASS, evidence accepted with limits**, with no release ratification. Codex's X-1 acceptance is [PR #572](https://github.com/Joshua-Asante/first-passage/pull/572); the record and its limits are in the [X-1 decision packet §8](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30).
 - *Mirror; the owner is the [X-1 packet §8 R-1 tooling ruling](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30), which defines options A, B and C and the fallback:* ~~**R-1 on X-1's order is owed.**~~ *(Historical: discharged 2026-10-01; see the update at the end of this bullet.)* The same-session window closes **2026-10-01 at ~17:00 ET**, the next reset (drill plan R-1 table, precondition 3). **Option A is selected** (operator, 2026-10-01): the builder is dispatched to build a reviewed R-1 v3.2 collector with the `clOrdId` step, for build and offline testing only. The read is Joshua's, after local-Codex acceptance only. **Start-by rule: start by 16:30 ET or C; started reads run to the ~17:00 gate.** If the read has not started by 16:30 ET, for any reason, C applies: R-1 is rehomed under the R-1 table, and nothing runs ([§8 start-by rule](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30)). **Update 2026-10-01 08:59Z: R-1 DISCHARGED** for X-1's order (`LOCATED_WITH_CLORDID`; operator-run, option A, before 16:30 ET; the start-by rule is spent and C did not apply). Mirror of the [drill plan's R-1 result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01).
 - **The attended-input adapter** is retrospectively accepted for X-1 run-1930 only, **qualified**. Its pin/path-safety review and the reconstruction of the resolved import set are owed. **Future use stays barred** until both are accepted.
-- **Still owed after X-1:** the drill plan's "X-1 acceptance" addendum (#572), and the governance sweep for the 2026-09-30 AGENTS.md amendment. The next order-producing row needs its own CP-3.
+- **Still owed after X-1:** the attended-input adapter's pin/path-safety review and import-set reconstruction (bullet above), and a record of whether the required operator rehearsal completed (open in the [X-1 acceptance limits](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)). *[The governance sweep for the 2026-09-30 AGENTS.md amendment landed with [#566](https://github.com/Joshua-Asante/first-passage/pull/566). The drill plan's [X-1 acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30) addendum landed with #572.]* The next order-producing row needs its own CP-3.
 
 ## Addendum 2026-10-01 — first-session simplification rulings (six cuts)
 
@@ -573,13 +573,15 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
    4. all three end terminal, with no fill, the account flat and nothing working.
 
    The build is **small reviewed extensions to X-1's accepted round-7 generator and sender** (stop entry type, two children, a parent cancel bound to the parent's account path), with **R-1 v3.2** for the terminal reads and the coordinator classifying from the sealed bytes. **A bounded pre-cancel status reader is kept.** This is a reviewed, GET-only extension of R-1 v3.2, or an equivalent reviewed reader. It captures and seals the parent as `Working` and both children as `Suspended` **before** the cancel, because terminal reads cannot reconstruct that intermediate state. Without that sealed pre-cancel read, the drill does not establish GC-4.
-   - **Cut from the drafted suite** (#572's X-4 handoff): `x4_profile`, the observer's read budget and rate machinery, the asynchronous late-response channel, `x4_attended_input`, `x4_adjudicate`, and the multi-pass reviews. One focused review replaces those reviews.
+   - **Cut from the drafted suite** (#572's X-4 handoff): `x4_profile`, the observer's read budget and rate machinery, the asynchronous late-response channel, `x4_attended_input`, `x4_adjudicate`, and the multi-pass reviews. One focused review replaces those reviews. *(The `x4_attended_input` cut is **under review**: C1 item 10, the quote-input path, decides whether a reviewed quote-input component is needed.)*
    - **Kept:**
      - a one-use placement claim and a one-use cancel claim, each surviving a restart, including an unknown placement (MUST-PASS, because `order_id` idempotency is disproven);
      - raw response bytes sealed before parsing;
      - validation of both child identities;
      - attended cancel of every live order if the account is flat.
-   - This supersedes the drafted suite where they differ. #572's six recorded C1 items apply only where they bind the kept items.
+     - **Post-cancel status read: OPEN, C1 item 7** (operator, 2026-10-01). After any cancel attempt, including one with an unknown outcome (timeout or lost response, so no acknowledgment), a reviewed GET-only reader must capture any parent or child still `Suspended`/`Working`. Today no reviewed tool covers this: the pre-cancel reader runs only before the cancel, and R-1 v3.2 runs only once all ids are terminal. It's resolved at the C1 interface review (a post-cancel reader vs an extended, reviewed R-1) before any build or live X-4. The same review settles an owned completion/polling primitive for cancel operations and the sealing of a late cancel response, before the post-cancel reader is dispatched. This covers cancel operations only and does not reinstate the cut general late-response channel.
+     - **C1 items 8–11, OPEN, MUST-RESOLVE before any build or live X-4** (operator, 2026-10-01): unknown-placement recovery; a bounded recovery read when cancel completion stays unknown; the quote-input path; the full response envelope. Resolved at the C1 interface review.
+   - This supersedes the drafted suite where they differ. #572's eleven recorded C1 items apply only where they bind the kept items.
 4. **#571: parked, whole.** It changes only the legacy c1-rail `EventLedger` path. The book route uses CC-3's durable halt and never reaches it.
    - **Guard while parked:**
      - `dry_run=true` stays;
@@ -644,3 +646,47 @@ objects. No new test-pass or live-capability claim is made. Before dispatch,
 refresh the moving #436 head and ongoing owner returns. The primary checkout's
 old staged September 19 documents are not the current B0 record and were left
 untouched. This checklist is not a commit, merge, provider contact or deployment.
+
+## Addendum 2026-09-30 — sequence after X-1 review
+
+**Historical sequence; next-step text superseded by the 2026-10-01 continuation
+above.** The time-bound R-1 dispatch preceded X-4 under the
+[X-1 packet §8 start-by rule](../../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30).
+**Update 2026-10-01:** Joshua's attended read 08:22–08:59Z discharged R-1
+for X-1's order, at that time only, with `LOCATED_WITH_CLORDID`
+([dated owner result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). The start-by rule is spent; option C did
+not apply and this historical sequence supplies no new R-1 dispatch.
+
+**Derived coordination update:** [campaign §61](../../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#61--x-1-observed-route-acceptance-2026-09-30)
+and the [drill-plan acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)
+replace earlier “no row has run / Stage 0 next” wording for this workstream.
+X-1 has a scoped GC-2a PASS on its observed MYM REST entry/native-stop trace and
+normal attended teardown. Intermediate P0b coverage is absent. Post-teardown
+R-1 was separately discharged on 2026-10-01, for X-1's order at that time only
+([dated owner result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). No full-route, consumer or deployment acceptance follows.
+
+Next bounded route step is **X-4 documentary readiness preparation**, returning
+before execution for coordinator review and Joshua's own CP-3. X-4 needs its
+own actor/session-start decision: X-1's mandatory-firm-control exception does
+not apply automatically. X-2 retains M2 review and fresh-position confirmation;
+X-3 retains close/residual-risk/exclusivity decisions; X-5 remains deferred.
+CP-5 / gates B–D and T09 remain held on their own requirements. Qualification,
+edition, feed, host, settlement and CP-9 obligations are unchanged. The consumed
+attempt authorizes no repeat entry, resend, arm or deployment. Preserve ten-second
+freshness, both five-point movement bounds, human SEND and validated bytes;
+hands-off operation remains a goal requiring separate review and authority.
+
+**X-4 preparation returned, same day:** [decision packet](../../notes/2026-09-30-x4-decision-packet.md).
+Next decision is its §2 actor proposal and §3 operator selections, followed by
+a bounded offline tool-build/review assignment and exact-tool attended rehearsal.
+Fresh readiness and X-4's written CP-3 still precede execution. No assignment or
+execution is granted by this documentary return.
+
+**Later same-day draft:** recommendations are now included in packet §3.1, and
+the [bounded offline tools build/review handoff](../../briefs/handoffs/2026-09-30-x4-offline-tools-build-review.md)
+is prepared but not dispatched. A proposed profile may be exercised synthetically
+before live ratification; this grants no production path. Coordinator review and
+committed dispatch precede the build; separate live transport readiness, exact-tool
+rehearsal, fresh private gates and CP-3 still precede any placement.
+*[2026-10-01: the drafted full tool suite is superseded by the
+[reduced X-4 build path](#addendum-2026-10-01--first-session-simplification-rulings-six-cuts) (item 3), which owns the build scope.]*

@@ -53,6 +53,12 @@ lab/analysis/aegis_6j_prop_reconstruction_2026-07/*.csv text eol=lf
 # invocation 2026-08-22, zero content difference confirmed via git show HEAD).
 discovery_manifests/grow0_grammar.json text eol=lf
 
+# Frozen feed-equivalence spec (TB-I5 successor, freeze PR #585): its Status line
+# carries the SHA-256 of the file's other lines, computed from LF bytes. Without
+# this pin, a Windows checkout with core.autocrlf=true hashes CRLF bytes and the
+# recorded digest cannot be verified (Codex review on #585).
+docs/spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md text eol=lf
+
 # Append-only logs (reverse-chron / additions-only). Every branch inserts a new
 # entry at the SAME top anchor, so the default merge conflicts on parallel
 # worktrees (e.g. the 2026-06-07 3-way SESSIONS.md collision across PRs
