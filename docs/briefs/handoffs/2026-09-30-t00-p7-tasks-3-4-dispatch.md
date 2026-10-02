@@ -1,7 +1,7 @@
 # CC handoff — T00 step-1b Tasks 3–4: retained source pack and P7 verification
 
 **Date:** 2026-09-30.
-**Status:** DISPATCHED to one local Claude Code session (Opus, high effort) by the coordinating session. Task 3 stops at the operator-signature checkpoint. Task 4 continues only after the operator has signed.
+**Status:** DISPATCHED to one local Claude Code session (Opus, high effort) by the coordinating session. Task 3 stops at the operator-signature checkpoint. Task 4 continues only after the operator has signed. *2026-10-02: Tasks 3–4 returned (closure doc §7), and the step-1b P7 re-run done and accepted (`b2c9f9c`; landed `c3ab0cc`, tree-identical); see the [closure doc §7](2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus).*
 **Parent session:** "Coordinating parallel Claude sessions" (coordinator for this dispatch; Joshua assigned the coordinating role in session on 2026-09-29).
 **Spawn target:** a local Claude Code session with an isolated worktree on branch `claude/t00-p7-tasks-3-4`, plus read access to the primary checkout's ignored private inputs.
 **Brief type:** CC handoff, bounded continuation of an authorized packet.
