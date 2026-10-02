@@ -1959,7 +1959,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 
 ### Operator rulings — T05 environment sealing (C′) and the first-release host environment drift residual, 2026-10-02
 
-*Joshua, directly in the coordinating session, on 2026-10-02. These rulings are owned here. H9, R1 and the deployment checklist link to this entry.*
+*Joshua, directly in the coordinating session, on 2026-10-02. These rulings are owned here. H9 checkpoint R1 ([staged acceptance](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md)) and the deployment checklist's T05 row link to this entry and carry it as an R1 gate.*
 
 **Rulings, in order:**
 1. **"scoping is fine, defer the sealing to T05".** T00's P7 `code_closure_sha256` identifies the Python-source closure plus the recorded interpreter binding. Environment sealing is owed by T05 before the R1 grant.
@@ -1976,7 +1976,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
   - qseal;
   - the Python bootstrap/owned-command wrapper.
 
-  Each mapped launch is checked before it spawns, by the child itself, and by the controller through `/proc`. Each is rechecked at the checkpoint, result and seal authority transitions, inside the original CPU/wall reservation and absolute deadline, with no refresh or retry.
+  Each mapped launch is checked before it spawns, by the child itself, and by the controller through `/proc`. Each is rechecked at the checkpoint, result and seal authority transitions, and at **every VALID→VOID transition** (campaign spec :90 makes VOID its own irreversible authority transition), inside the original CPU/wall reservation and absolute deadline, with no refresh or retry.
 - **Evidence and failures.** Launch and exit evidence is retained in versioned supervision events. A mismatch, a failed check, a timeout or exhaustion refuses authority.
 - **Unchanged.** Frozen v1 RESULT/SEAL and the DB10 two-table layout stay as they are, bound through the existing `release_sha256`. The design term is proposed as term 7 of the S6 DB10 draft, which stays DRAFT.
 
@@ -1988,7 +1988,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 
 **Unchanged:**
 - Full S5 custody.
-- The full, expressly granted S4 + Part A + result/seal Linux R1.
+- R1's Linux node set as its owner defines it (H9 checkpoint R1), under its own express grant. This entry does not change that set.
 - Independent review.
 - T00-first integration.
 - Three qualification-path items still owed before R1:
