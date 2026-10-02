@@ -597,14 +597,15 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
    - It may be drafted now, in parallel with the S5 landing. Ratification stays the operator's act.
    - **Still open:** how D-feed (a) treats a NO-GO T00 result whose risk the operator accepts into F1. This decision is still required.
 
-7. **Partial-leg (subset) closes: unsupported for the first release** *(operator ruling, 2026-10-01, given in the coordinating session: "partial-leg closes are unsupported for the first release")*.
-   - The first attended release closes a leg **whole only**, using the whole-leg exit route that C-a investigates.
-   - **No subset-close evidence step is built under UB-5 / gate C** for the first release.
-   - Where the incident amendment's proposed §A12 (PR #584) names a subset-exit evidence owner for its F4 partial-close row, the first-release disposition is "unsupported". That is an input to the operator's acceptance of §A12. This entry doesn't amend §A12's text.
-   - **Prerequisite, a source check.** The "exit-side partials moot" statements in T08 and the session plan are withdrawn by the incident contract, so this ruling does **not** rest on them. Before the first release, a Rule-0 source check must establish that every exit of the four legs, and every recovery path, closes the **whole leg**. That includes **STR-5** in the route-native editions pre-registration, which still lists as unknown whether Striker's crossed-level exit can apply to a subset. The check reads the locked Pine and accepted ports in place, under the private read surface.
-   - **If the source check finds any exit or recovery path that closes a subset,** the question returns to the operator before the first release. It is not handled by improvisation.
-   - The ruling changes no strategy or protection rule.
-   - Supporting partial closes later needs its own evidence and ruling.
+7. **Partial-leg (subset) closes: unsupported for the first release** *(operator ruling, 2026-10-01, given in the coordinating session: "partial-leg closes are unsupported for the first release"; scope clarified the same day on the coordinator's recommendation, "go with your recommendation", after a Codex review found a conflict with the route-native editions pre-registration's ORB-6/STR-7)*.
+   1. **Unsupported in the first release:** any *intentional* partial exit, meaning a strategy or the operator choosing to close only part of a leg (a scale-out).
+   2. **Supported, and counted as whole-leg:** a whole-leg close **executed** as ORB-6/STR-7's sequential one-contract closes. The intent is the whole leg, and the one-contract sequence is the route's execution form. First-release leg sizing is unchanged; legs are **not** capped at one contract.
+   3. **States in the middle of the sequence need no new subset-close machinery.** Each one-contract close is its own request under the existing rules. An unknown or failed close mid-sequence is an incident: halt and attended reconciliation, with the reservation held (§A12 F1 and the rule-7 non-entry rule per request type, as proposed in PR #584). A clean sequence ends with that leg flat.
+   4. **Evidence:** the exit-split replay that the editions pre-registration's §6 already requires before edition freeze. It is specified there. **No separate subset-close evidence step** is built under UB-5 / gate C.
+   5. **Prerequisite, a Rule-0 source check.** The "exit-side partials moot" statements in T08 and the session plan are withdrawn by the incident contract, so this ruling does **not** rest on them. Before the first release, a source check must establish that every exit of the four legs, and every recovery path, closes the **whole leg by intent**. That includes **STR-5**, which still lists as unknown whether Striker's crossed-level exit can apply to a subset. The check reads the locked Pine and the accepted ports in place, under the private read surface.
+   - **If the source check finds any intentional subset exit,** the question returns to the operator before the first release. It is not handled by improvisation.
+   - For §A12's F4 partial-close row (PR #584), the first-release disposition is item 1 "unsupported" and item 2 "supported as whole-leg". This feeds the operator's acceptance of §A12; this entry doesn't amend §A12's text.
+   - The ruling changes no strategy, sizing or protection rule.
 
 **Also recorded:**
 - **#570** (the simplification decision packet) is the vehicle for D-GO, D-HIST, D-REC and D-MON.
