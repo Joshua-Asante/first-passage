@@ -28,7 +28,7 @@ Recorded under [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590
 
 This list is item 7.6.1's account. It names what was seen, not who saw it; the operator may add to it before ratification.
 
-**Answerer exposure statement (added 2026-10-02, coordinator direction on #591):** whoever answers VAN-3 (and ORB-3 in the sibling successor), the rows that name what replaces the trail as an exit, must state with the answer whether they have seen the counts listed above. The statement is the marker `Answerer exposure: seen` or `Answerer exposure: not seen`, written in that row's status cell with the answerer's name; §7 makes it a freeze item and §10 checks it.
+**Answerer exposure statement (added 2026-10-02, coordinator direction on #591):** whoever answers VAN-3 (and ORB-3 in the sibling successor), the rows that name what replaces the trail as an exit, must state with the answer whether they have seen the counts listed above. The statement is written in that row's status cell (the last cell) in exactly this form: `Answerer exposure: seen — <answerer name>` or `Answerer exposure: not seen — <answerer name>`. The em dash is followed by the answerer's name, which must not be empty. §7 makes it a freeze item and §10 checks it.
 
 ## §R — Standing rule: no candidate-configurable replay before freeze
 
@@ -165,7 +165,7 @@ The public repository receives identities and behavior shapes only, never source
 - Publishing Pine source, parameter values or port code in this or any public file.
 - Amending this file after any replay or E1 output on the edition exists. Close it and open a fresh one instead.
 - **Successor validity — OWED (operator ratification).** *Added 2026-10-02 (successor; a proposed reading):* for this successor, the bullet above is triggered by replay or E1 output produced after this file's first commit. The outputs disclosed in §D came first and are why the original was closed. Read literally, they would forbid completing this file at all. This is a **freeze blocker**: the file cannot freeze until the operator ratifies or rejects this reading (§8). If it is rejected, this successor cannot be completed and returns to the operator.
-- **Answerer exposure — freeze item.** *Added 2026-10-02 (successor; Codex P2 on #591):* this file cannot freeze unless the answered VAN-3 row's status cell carries `Answerer exposure: seen` or `Answerer exposure: not seen`, with the answerer's name (§D). An answer without it leaves VAN-3 unanswered for freeze. §10 checks it.
+- **Answerer exposure — freeze item.** *Added 2026-10-02 (successor; Codex P2 on #591):* this file cannot freeze unless the answered VAN-3 row's status cell (its last cell) carries `Answerer exposure: seen — <answerer name>` or `Answerer exposure: not seen — <answerer name>`, with a nonempty name after the em dash (§D). An answer without it leaves VAN-3 unanswered for freeze. §10 checks it.
 - *Added 2026-10-02 (successor; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1, standing rule §R):* running any candidate-configurable replay against an edition pre-registered here, including an accepted port with input overrides, before this file is FROZEN.
 - Treating the edition as qualified, selected or deployable before the E1 verdict.
 
@@ -181,8 +181,9 @@ The public repository receives identities and behavior shapes only, never source
 ## §10 — Audit hooks
 
 ```bash
-# Answerer-exposure freeze item (§D, §7): at freeze, expect exactly one line, the answered VAN-3 row
-grep -nE '^\| VAN-3 .*Answerer exposure: (seen|not seen)' docs/briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md
+# Answerer-exposure freeze item (§D, §7): at freeze, expect exactly one line, the answered VAN-3 row,
+# with the marker and a nonempty answerer name in its status (last) cell; that line must be the §3 row, not the §3a mapping row
+grep -nE '^\| VAN-3 [^|]*\| [^|]*\| [^|]*Answerer exposure: (seen|not seen) — [A-Za-z][^|]* \|$' docs/briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md
 # Successor-validity freeze blocker (§7, §8): expect no output at freeze
 grep -n '^- \*\*Successor validity — OW[E]D' docs/briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md
 # Status must read FROZEN before any edition replay or E1 run exists
