@@ -327,3 +327,77 @@ A written answer would be a vendor statement, subject to coordinator acceptance.
 Not used: GitHub code search (it needs sign-in), CrossTrade's Discord, logged-in CrossTrade pages and the API Playground. Previously blocked and now read: the Tradovate help-centre articles, help.tradeify.co and the apextraderfunding.com help centre.
 
 **A.7 Vendor question.** Every item still has an unanswered part, so none is dropped. By the operator's ruling of 2026-09-27 (in session), the revised message is the text to send. It is in the [vendor-question note](2026-09-26-crosstrade-close-semantics-vendor-question.md) §1, with the 2026-09-26 text preserved there as superseded for sending. It has not been sent. The operator sends it himself, and the reply-handling rules are unchanged. §6 above stays as drafted.
+
+## Addendum 2026-10-02 — C-a selection register (prerequisites before C-a is selected as the first-release close form)
+
+**Why this exists.** On 2026-10-01 the operator directed that the first release close every leg by C-a. Exceptions: attended incident recovery stays on the attended-platform path, and entries stay one-contract-per-request (deployment checklist, first-session addendum item 7). Successive reviews kept finding one more prerequisite at a time, so this register lists them **all in one place**. C-a stays **investigation-only and is not selected** until every row below is discharged. A row is discharged by its named owner's evidence or by an operator ruling. Item 7 points here; this register is the owner.
+
+The register comes from one read-only pass, made by a coordinator-dispatched reader on 2026-10-02 (main `3cbaa04`, PR #590 `3ec7bb3`, §A12 from PR #584). It covered this note, the vendor question, the B–D packet, the rail spec, halt/resume, the incident ADR, the drill plan, both production handoffs and both pre-registrations.
+
+Abbreviations:
+- **VQ**: vendor question (revised §1).
+- **BD**: B–D packet.
+- **RS**: multi-leg rail spec.
+- **HR**: halt/resume contract.
+- **DP**: drill plan.
+- **BAO**: `ops/c1_rail/book_account_owner.py`.
+
+**A. Vendor semantics** (owner: the operator sends; the reply is an authoritative vendor statement).
+- A1. Send VQ revised §1. **Not yet sent** (VQ :3).
+- A2. Load-bearing answers, needed for selection: Q1 (order of steps), Q2, Q3 (failure classes), Q4, Q5, **Q6 (scope, which decides S; a trace cannot substitute)**, Q7 (identity and second close owner), Q8 (coverage repair), **Q9 (whether the REST full close maps to `liquidateposition`; today this is an inference, CS §3 and the A.2 addendum)**. Q10 and the D-2 part of Q9 only corroborate.
+- A3. If any of (a)–(c) stays OPEN, the operator must make a **residual-risk decision** on §3. X-3 can be authorized only inside that decision (§3 :155; BD :112; DP :248).
+- A4. Accept the BD §1.1a amendment, elements (a)–(e) (BD :85, :95–105). Owner: the operator, then the rail spec.
+
+**B. X-3 trace coverage** (owner: the X-3 drill; the operator for authorization).
+- B1. **X-3 cannot show a partial remainder or no-reversal** (DP :318, :320, :370). Those come from vendor semantics or an accepted residual risk, not from X-3.
+- B2. A multi-lot leg (N OSO pairs) is untraced, because X-3 is one contract (DP :251, :446; OQ8).
+- B3. Transfer to other symbols and environments: MNQ and MGC need an argument, and 6J is a separate decision (DP :250, :439, :445).
+- B4. A coherence-qualified pass discharges neither GC-3 nor (d). GC-3 for close completion is ROUTE STOPS (DP :316; BD :122).
+- B5. Lifecycle reads, with timestamps, of the liquidation order and both former children (§ :220).
+- B6. CP-3, P-1 and a fresh X-1 position (DP :268, :553).
+- B7. A trace with other legs' working orders present **corroborates S only**.
+
+**C. Outcome classes** (owners: the rail-spec amendment, halt/resume, T09 code). **No automatic retry of any non-success outcome.**
+- C1. **Success.** Completion requires postdating, coherent P/W/K1 reads covering the former children, the liquidation's own terminal status, and **every symbol's** working orders while S is CONFLICTING. Late failures are polled (BD :104; §A12 :473; RS :58).
+- C2. **Partial (known).** An incident, with no resend. It needs a carrier: HR :34 (protection fault) or the rail spec. That carrier replaces RS :63 "resumes… remainder only".
+- C3. **Unknown.** An incident under §A12 F1/F4, with no resend. The outcome window is one bar, but a scheduled flatten reaches deadline D first (HR :119; BD :105, OPEN).
+- C4. **Rejected.** An incident, with **no automatic resubmission**. This replaces RS :63 "resubmitted at most once per bar", which rests on M4 (OPEN). A refusal may be remote and uncertain (Gate A A3(ii)), and C-a sends no client tag (§ :292). HR §4.1 :93 must classify it.
+- C5. **Failed** (HTTP 200 with failureReason, 400, 500 or 502). The mapping is undocumented (VQ Q3). It is an incident until mapped.
+- C6. **Flat at send** (no position, children still working). Send no C-a. Use the S4 orphan cancel or treat it as an incident (RS :63, :77; § :164).
+
+**D. Owner amendments.**
+- D1. **Rail spec**:
+  - :63 and :79 (scoped `CLOSE(fill scope)`; resume-for-remainder; auto-resubmit);
+  - S1(5) L2(c)(d)(e) for every leg (:71);
+  - I7 (:67), S3(d) (:75), S7 "preserve protective orders" (:83), S10 (:89);
+  - L-2 and its test list (:149), R-D (:152).
+- D2. **Halt/resume**: classes 13–15; §1 :28, provider-side actors; §7 :145, required tests.
+- D3. **Incident ADR**: §A11.1 is investigation-only (:368, :376), so selection needs a dated addendum. UB-5 needs a written answer or D7 approval (:302).
+- D4. **Successor pre-registrations** (PR #591): ORB-6, STR-7 and VAN-8 answered; VAN-8's close "replay treatment" (PRv :63); §6.
+- D5. **Production handoffs**:
+  - G1/G2 still require the §6 sequential-exit replay model;
+  - G3/G4 bind the closed originals' "no replay output" gate;
+  - both must retarget to the successors (HO :27, :31; HV :25, :29).
+- D6. **Sequencing.** BD :144 rewrites the exit rows "once a close realization is accepted". A successor cannot be amended after any replay output (PRo :98), so the rows are answered before any successor replay.
+
+**E. T09 code.**
+- E1. A quantity-less REST close producer. `_flatten_action` builds a flat intent that carries a quantity (BAO :1917), and the route is absent (:1866).
+- E2. Remove the `:remainder:N` auto-remainder (BAO :1909) and halt instead.
+- E3. Broker rejection becomes an incident, not a terminal outcome (BAO :1875).
+- E4. A close past its one-bar timeout must halt. Today the fence covers entries and adds only (:827–830), and an open close only refuses risk-adds (`close_unreconciled`, :1792).
+- E5. Close completion is scoped to `scope_legs` (:1407). The liquidation order must be identified without a response id.
+- E6. `resume_closes` must not automatically re-dispatch queued closes (:1434).
+- E7. Reverse the rail-spec tests `test_close_partial_fill_preserves_residual_protection` and `…restart_resumes_same_operation` (:149).
+- E8. Refuse any sub-whole-leg close on the C-a transport (first-session addendum 7.6.2).
+
+**F. Other** (operator rulings unless stated).
+- F1. **GC-7 exclusivity.** Without it, C-a is ROUTE STOPS. The firm-liquidation exception currently covers X-1 only (BD :126; DP :553).
+- F2. **OQ9.** A liquidation also closes any preservation trade on a book symbol (DP :447).
+- F3. **GC-5 Aegis takeover through C-a** (BD :124, :153).
+- F4. **The T13 attended-platform procedure**, including the firm fallback (§ :302).
+- F5. **The B07 gate-D condition** (BD :231).
+- F6. **OQ8.** Whether the M step plus offline tests suffice for the fault cases (DP :446).
+- F7. **Striker's triggered-protection transition** is qualified at gate C. STR-5's whole-leg intent does not settle it (§1.1a; BD :107–109).
+- F8. **The Rule-0 whole-leg source check** (first-session addendum 7.5 and 7.6), including the per-fill trailing items, which clear only when the editions freeze trailing-free.
+
+**If any row cannot be discharged,** the close form returns to the operator before the first release (first-session addendum 7.4).
