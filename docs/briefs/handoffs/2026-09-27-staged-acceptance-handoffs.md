@@ -533,7 +533,22 @@ The card changes no production code and invents no resume interface. It is READY
 - **Integration preparation:** S5 Checkpoint C3 accepted (the PART_A field sets, the `/v8` snapshot and the capture contract are stable), and the existing T05 build acceptance.
 - **Carried obligation (operator, S5 C3 step 1, 2026-09-29):** B4 was accepted for TEST_ONLY only. Strengthening pilot identity from plan agreement to an independently observed pilot draw is **due with T05, before CP-6**. The T05 integration owner tracks it ([ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md)).
 - **Checkpoint R1, integration acceptance:** full S5 acceptance. *2026-10-01:* also **both D-S5 fix slices merged, each with its own full S4-plus-Part-A Linux run read ok and its own acceptance: #586 (D-S5-1/D-S5-2; merged `981eb12`), then the D-S5-3 slice, #589 (from `claude/capture-retry-noop`)**, and the integration branch rebuilt on a `main` that includes it ([defects ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--land-s5-with-two-named-test_only-defects-fix-before-t05-2026-10-01) · [D-S5-3 ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--d-s5-3-capture-exact-retry-demotion-also-gates-t05-r1-2026-10-01)). This is the existing dependency ("Integrate the frozen head `6cf2732` after S5 acceptance"); it is not replaced.
-- *2026-10-02 (operator rulings):* **R1 also requires the T05 C′ environment-identity obligation** (an approved worker base digest, plus identity checks on the known R1 host entrypoints at launch and at checkpoint, result, seal and VALID→VOID transitions). Every R1 packet cites the accepted residual, **T05 C′ first-release host environment drift**. See the [execution-slices ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02).
+- *2026-10-02 (operator rulings):* **R1 also requires the T05 C′ environment-identity obligation** (an approved worker base digest, plus identity checks on the known R1 host entrypoints at launch and at checkpoint, result, seal and VALID→VOID transitions). **The C′ build is OWED before R1.**
+  - **Owner:** an H9 executor, under a separate coordinator implementation dispatch.
+  - **Prerequisites:** Joshua's approval of the base pin, his acceptance of the S6 DB10 amendment's term 7, and T00 merged followed by an H9 rebase.
+  - **Acceptance cases, each fail-first:**
+    - a missing, tag-only or mismatched base pin;
+    - a built-image mismatch at launch or commit;
+    - a mapped entrypoint whose executable, base interpreter, lock, wrapper or UID mismatches;
+    - a missing or failed startup or controller check;
+    - missing exit evidence;
+    - drift at checkpoint, result, seal and VALID→VOID (the VOID recheck uncharged);
+    - a versioned supervision event for every recheck;
+    - timeout or exhaustion;
+    - exact historical retry with no refresh;
+    - coverage labels that don't overclaim (native/tzdata changes and unmediated descendants reported as not covered).
+  - **Merge rule:** these join R1's node set at dispatch.
+  - Every R1 packet cites the accepted residual, **T05 C′ first-release host environment drift**. See the [execution-slices ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02).
 - **Checkpoint R2, recovery-slice acceptance:** the D3 owner text (S5 draft §3.4) accepted, and R1 accepted.
 
 **Work:**
