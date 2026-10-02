@@ -330,7 +330,7 @@ Not used: GitHub code search (it needs sign-in), CrossTrade's Discord, logged-in
 
 ## Addendum 2026-10-02 — C-a selection register (prerequisites before C-a is selected as the first-release close form)
 
-**Why this exists.** On 2026-10-01 the operator directed that the first release close every leg by C-a. Exceptions: attended incident recovery stays on the attended-platform path, and entries stay one-contract-per-request (deployment checklist, first-session addendum item 7). Successive reviews kept finding one more prerequisite at a time, so this register lists them **all in one place**. C-a stays **investigation-only and is not selected** until every row below is discharged. A row is discharged by its named owner's evidence or by an operator ruling. Item 7 points here; this register is the owner.
+**Why this exists.** On 2026-10-01 the operator directed that the first release close every leg by C-a. Exceptions: attended incident recovery stays on the attended-platform path, and entries stay one-contract-per-request (deployment checklist, first-session addendum item 7). Successive reviews kept finding one more prerequisite at a time, so this register lists them **all in one place**. C-a stays **investigation-only and is not selected** until every row below is discharged. **Technical rows** (B, C, D and E, plus F7 and F8) are discharged only by the named owner's amendment, code, test or evidence. Missing evidence cannot be waived (halt/resume :67). **Policy and residual-risk rows** (A3, A4, F1, F2, F5, F6, and any A2 answer left OPEN) may be discharged by an explicit operator ruling. Item 7 points here; this register is the owner.
 
 The register comes from one read-only pass, made by a coordinator-dispatched reader on 2026-10-02 (main `3cbaa04`, PR #590 `3ec7bb3`, §A12 from PR #584). It covered this note, the vendor question, the B–D packet, the rail spec, halt/resume, the incident ADR, the drill plan, both production handoffs and both pre-registrations.
 
@@ -344,7 +344,7 @@ Abbreviations:
 
 **A. Vendor semantics** (owner: the operator sends; the reply is an authoritative vendor statement).
 - A1. Send VQ revised §1. **Not yet sent** (VQ :3).
-- A2. Load-bearing answers, needed for selection: Q1 (order of steps), Q2, Q3 (failure classes), Q4, Q5, **Q6 (scope, which decides S; a trace cannot substitute)**, Q7 (identity and second close owner), Q8 (coverage repair), **Q9 (whether the REST full close maps to `liquidateposition`; today this is an inference, CS §3 and the A.2 addendum)**. Q10 and the D-2 part of Q9 only corroborate.
+- A2. Load-bearing answers, needed for selection: Q1 (order of steps), Q2, Q3 (failure classes), Q4, Q5, **Q6 (scope, which decides S; a trace cannot substitute)**, Q7 (identity and second close owner), Q8 (coverage repair), **Q9 (whether the REST full close maps to `liquidateposition`; today this is an inference, CS §3 and the A.2 addendum)**. The D-2 part of Q9 only corroborates. **Q10** (Demo and prop-simulation integration: the admin value, simulation-specific liquidation) needs **authoritative coverage or an explicit operator residual-risk decision**.
 - A3. If any of (a)–(c) stays OPEN, the operator must make a **residual-risk decision** on §3. X-3 can be authorized only inside that decision (§3 :155; BD :112; DP :248).
 - A4. Accept the BD §1.1a amendment, elements (a)–(e) (BD :85, :95–105). Owner: the operator, then the rail spec.
 
@@ -362,7 +362,7 @@ Abbreviations:
 - C2. **Partial (known).** An incident, with no resend. It needs a carrier: HR :34 (protection fault) or the rail spec. That carrier replaces RS :63 "resumes… remainder only".
 - C3. **Unknown.** An incident under §A12 F1/F4, with no resend. The outcome window is one bar, but a scheduled flatten reaches deadline D first (HR :119; BD :105, OPEN).
 - C4. **Rejected.** An incident, with **no automatic resubmission**. This replaces RS :63 "resubmitted at most once per bar", which rests on M4 (OPEN). A refusal may be remote and uncertain (Gate A A3(ii)), and C-a sends no client tag (§ :292). HR §4.1 :93 must classify it.
-- C5. **Failed** (HTTP 200 with failureReason, 400, 500 or 502). The mapping is undocumented (VQ Q3). It is an incident until mapped.
+- C5. **Failed or refused.** That covers HTTP 200 with failureReason, 400, **401, 403, 409, both 429 forms** (including the ambiguous `broker_rate_limited`), 500 and 502. The CrossTrade REST assessment gives none of these a no-send guarantee (:123–125, :133). **Every documented route error class is an incident until it is authoritatively mapped**, with no retry.
 - C6. **Flat at send** (no position, children still working). Send no C-a. Use the S4 orphan cancel or treat it as an incident (RS :63, :77; § :164).
 
 **D. Owner amendments.**
@@ -393,7 +393,7 @@ Abbreviations:
 **F. Other** (operator rulings unless stated).
 - F1. **GC-7 exclusivity.** Without it, C-a is ROUTE STOPS. The firm-liquidation exception currently covers X-1 only (BD :126; DP :553).
 - F2. **OQ9.** A liquidation also closes any preservation trade on a book symbol (DP :447).
-- F3. **GC-5 Aegis takeover through C-a** (BD :124, :153).
+- F3. **GC-5 Aegis takeover through C-a** (BD :124, :153). It is **not** a selection prerequisite, because that would be circular: GC-5's takeover trace needs an accepted close realization (BD :124; DP :433). It is a **post-selection release condition**. C-a may be used for GC-5 qualification once every other row is discharged, and the first release still requires GC-5 to pass before it starts.
 - F4. **The T13 attended-platform procedure**, including the firm fallback (§ :302).
 - F5. **The B07 gate-D condition** (BD :231).
 - F6. **OQ8.** Whether the M step plus offline tests suffice for the fault cases (DP :446).
