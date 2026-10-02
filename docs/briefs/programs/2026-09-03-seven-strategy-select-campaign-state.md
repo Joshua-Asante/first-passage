@@ -4059,3 +4059,41 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 **Board write:** STATE decision index, 2026-09-25 row → this section. Pointers: §59 forbidden-list amendment above; AGENTS.md public-clone posture; `core/strategies/BOOK_SOURCES.sha256`.
 
 **Addendum 2026-09-26 — later operator direction on source access.** The operator also directed, in a separate session: "I want to allow agents to read private ports" and "I want agents to be able to read pine strategies", with other qualifications to follow. On reconciliation the operator ruled (2026-09-26) that this section's wording governs; no broader AGENTS.md permission was adopted. Historical statements about what an earlier session did or did not read remain historical evidence, not access restrictions.
+
+## §61 — X-1 observed route acceptance (2026-09-30)
+
+Joshua directed the continuation review of the completed September 30 X-1
+session. Codex recorded a **scoped GC-2a PASS**, distinct from the adjudicator's
+`OBSERVED_COMPLETE`, with the row-semantic owner:
+[drill-plan acceptance](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30).
+It accepts the observed MYM REST entry/native-stop identity and normal terminal
+teardown only. The intermediate P0b sample supplies no competing-order coverage;
+its omission follows the accepted stop-at-sufficiency ruling. **Update 2026-10-01:**
+post-teardown R-1 was discharged for X-1's order, at that time only: Joshua's
+attended read 08:22–08:59Z returned `LOCATED_WITH_CLORDID`
+([dated owner result](../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). The sole placement attempt is consumed; sealed evidence is
+unchanged and private. CAP and T08 carry scoped mirrors. No deployment, arming,
+resend, next row, unattended operation or gates B–D acceptance follows.
+
+Next bounded route step: X-4 documentary readiness preparation, returning to
+the coordinator and then Joshua's separate CP-3, with its actor contract and
+fresh execution prerequisites still open. This entry records the directly
+authorized review; it transfers no other campaign coordination work.
+
+**Preparation return, same day:** the [X-4 decision packet](../../notes/2026-09-30-x4-decision-packet.md)
+is prepared for review. Its X-4-only mandatory-firm-control exception is proposed,
+not ruled. Exact MNQ limits/environment, a separately reviewed X-4 tool set,
+attended rehearsal, fresh checks and CP-3 remain owed. Round-7's market-entry,
+single-child tools are not executable X-4 tools. No build or order is dispatched.
+
+**Recommendations and handoff drafted:** packet §3.1 now recommends one MNQ,
+entry +100 points, a 25-point abort buffer, SL −10 / TP +20, a 20-point maximum
+realized stop distance and prompt parent cancellation before 30 seconds. Its
+X-4-only firm-control exception, $50 planning allowance and fresh headroom gate
+remain proposed, not ratified. The [bounded offline build/review card](../../briefs/handoffs/2026-09-30-x4-offline-tools-build-review.md)
+is DRAFT / NOT DISPATCHED: synthetic transports only, coordinator-owned combined
+acceptance and separate independent review. Live transport, rehearsal, private
+readiness and CP-3 remain later gates. No implementation or live action is granted.
+*[2026-10-01: the card's full tool suite is superseded by the deployment
+checklist's [reduced X-4 build path](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts),
+which owns the build scope.]*
