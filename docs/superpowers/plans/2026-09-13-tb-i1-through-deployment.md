@@ -64,7 +64,7 @@ Seven-export specifications, private storage paths and intake obligations remain
 - Preserve operation/fact identities, terminal-only releases, durable reserve-before-send, gross accounting, evidence freshness/completeness, retained uncertainty blocks and restart/concurrency safety.
 - Preserve fixed K=1, the accepted sizing laws, disarmed configuration and historical risk-code bytes. Registry admission follows E1/TB-D0. No alternative candidate or additional outcome-bearing samples.
 - Freeze qualification sizes, streams, criteria and compute budget before decision-bearing runs; keep qualification single-process. Final n3 is sole, Part A is not repeated there, and failure/void/expiry follows the accepted disposition with operator involvement, never automatic replacement draws.
-- Preserve the full B7 -> n3 -> GO/reseal -> attended initial-arm sequence, fresh activation attestations and durable acknowledgement. No agent places trades. Private evidence stays in approved ignored roots; public outputs remain permitted digests/verdicts.
+- Preserve the full B7 -> n3 -> GO/reseal -> attended initial-arm sequence, fresh activation attestations and durable acknowledgement. Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Private evidence stays in approved ignored roots; public outputs remain permitted digests/verdicts.
 
 ## Execution record
 

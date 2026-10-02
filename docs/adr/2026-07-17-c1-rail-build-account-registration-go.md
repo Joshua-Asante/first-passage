@@ -432,4 +432,14 @@ Reads: this file @ `770413b` (sites located by `grep -n RUNBOOK`) · `deploy/c1_
 
 **Clarified by the operator on 2026-10-01, relayed by the merge-order session after Codex's review:** refundable **deposits and minimum balances stay under the cap** until the operator rules on them separately. For example, the A′ parked deposit remains capped. **Open operator decision:** whether refundable deposits or minimum balances needed for data access are exempt.
 
+**Definition of "feed costs", operator ruling 2026-10-01 (structured question; decides D-Q6 and D-Q7 of the H8 questions draft, PR #583).** A feed cost is **any non-refundable charge whose purpose is receiving the market data**, and it is exempt. That includes:
+- data-feed subscription fees;
+- exchange (CME) licence fees;
+- recurring API or data-access fees required to receive the data, for example a broker API add-on or a monthly API fee;
+- one-time, non-refundable setup, activation or onboarding charges for the feed.
+
+Refundable deposits and minimum balances **stay under the cap**, as clarified above.
+
+**Still counted under the cap:** any charge whose purpose is not receiving the market data. That includes account, inactivity, platform or trading fees that are not required for data access, and the eval and rail costs.
+
 **Unchanged.** Feed signup and spend still require D-feed (a)+(b) and CP-7. Every feed purchase stays an operator act. Feed costs are still recorded, outside the ceiling tally, wherever their owner keeps them.

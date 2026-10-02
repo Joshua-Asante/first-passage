@@ -1,5 +1,7 @@
 # SSOT / Data-Lineage Remediation Program — Implementation Plan
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
 > **Governance note (repo-specific):** this repo requires ADR ratification for any decision that "creates or amends doctrine — a rule, gate, falsifier threshold, or convention that binds future work" (limb-4 tier test, `docs/adr/2026-08-08-adr-ceremony-tiering.md`). Phase 0 of this plan therefore ends in an ADR, authored per the `brief-authoring` skill's `adr.md` template, not a bare code diff. Do not skip straight to Phase 1 code without an operator GO on the Phase 0 ADR — that GO is this program's ratification gate.
