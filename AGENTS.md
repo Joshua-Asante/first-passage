@@ -3,43 +3,48 @@
 ## Purpose
 
 Research and operations for automated futures strategies at
-`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`. The mission is
+`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`. Mission:
 **generate → evaluate → deploy → measure → update**.
 
 Start with [STATE.md](STATE.md) for priorities and obligations, then the owning
-campaign plan for executable steps and its record for evidence. Use
-[PIPELINES.md](PIPELINES.md) for handoffs and [REPO_MAP.md](REPO_MAP.md) for code.
-[SESSIONS.md](docs/SESSIONS.md) is history. Direct operator instructions govern
-the current task; do not infer new work or authorization from historical dispatches.
+campaign plan (steps) and record (evidence); [PIPELINES.md](PIPELINES.md) covers
+handoffs, [REPO_MAP.md](REPO_MAP.md) code, [SESSIONS.md](docs/SESSIONS.md) history.
+Direct operator instructions govern the current task; do not infer new work or
+authorization from historical dispatches.
 
-This is the single instruction file for every agent harness (Claude Code, Codex, or
-any other); there is no `CLAUDE.md`. A `CLAUDE.md §X` citation in a dated record
-reads as `AGENTS.md §X` ([root-doc charter addendum](docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-20--the-agent-constraints-root-is-agentsmd-claudemd-retired)).
-Seats (executive / coordinator / worker / escalation / operator), the committed-handoff rule,
-and the escalation-lane triggers are owned by the
-[surface-allocation ADR](docs/adr/2026-07-14-cc-cursor-surface-allocation.md); dated failure
-evidence behind them is [M-26 … M-48](docs/methodology/lessons/methodology_lessons.md).
+This is the only agent instruction file; a dated record's `CLAUDE.md §X` means
+`AGENTS.md §X` ([charter addendum](docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-20--the-agent-constraints-root-is-agentsmd-claudemd-retired)).
+The [surface-allocation ADR](docs/adr/2026-07-14-cc-cursor-surface-allocation.md) owns
+seats, the committed-handoff rule and escalation-lane triggers
+([M-26 … M-48](docs/methodology/lessons/methodology_lessons.md) hold the evidence).
 
-Decisions belong with their owning specification, campaign, plan or PR. Create an
-ADR only for durable architecture/governance rationale or authority that needs a
-distinct record under the [admission rule](docs/adr/2026-08-08-adr-ceremony-tiering.md).
-ADRs are not a universal decision log. Other documents link to the owner or label a derived mirror
-([Rule 7](docs/operational_rules.md)). Documentation must serve the pipeline
-and pass the [retention test](docs/operational_rules.md#16-retention--an-artifact-must-earn-its-place-and-deletion-is-classified-by-execution-not-by-folder).
-Removed evidence remains retrievable through [archive guidance](docs/ltm/README.md)
-and [lab/ARCHIVED.json](lab/ARCHIVED.json).
+Decisions live with their owning specification, campaign, plan or PR; ADRs follow the
+[admission rule](docs/adr/2026-08-08-adr-ceremony-tiering.md); other documents link the
+owner or label a derived mirror ([Rule 7](docs/operational_rules.md)). Documents must
+serve the pipeline and pass the [retention test](docs/operational_rules.md#16-retention--an-artifact-must-earn-its-place-and-deletion-is-classified-by-execution-not-by-folder);
+removed evidence is retrievable via [archive guidance](docs/ltm/README.md) and
+[lab/ARCHIVED.json](lab/ARCHIVED.json).
+
+## Output efficiency
+
+Use the fewest words that meet the objective in text, code, tool calls and records.
+No preamble, recap, filler or restated context; link the owner instead. Never trade
+away correctness, required confirmations or honest verification reporting.
+
+A ruling, GO, acceptance or record grants only what it states; anything unstated is
+not granted. Do not append "no X granted" disclaimers. Operator direction 2026-10-02.
 
 ## Live-execution posture
 
-**Recorded posture:** the incumbent `Tradeify_Select_100K` eval exists; c1 is warm and **disarmed** (`dry_run=true`), with no deployed book. Daemon `emit_enabled=false`. Confirm actual host state before operational work.
+**Recorded posture:** the incumbent `Tradeify_Select_100K` eval exists; c1 is warm and **disarmed** (`dry_run=true`) with no deployed book; daemon `emit_enabled=false`. Confirm actual host state before operational work.
 
-**Data source disposition (operator report 2026-09-10):** Databento is retired and unsubscribed. No replacement is approved; daemon emission remains blocked. Prior source selections are historical. See the [retirement record](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento).
+**Data source (operator report 2026-09-10):** Databento is [retired](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento) and unsubscribed; no replacement is approved; daemon emission stays blocked.
 
 - `dry_run=false` requires M1 `RESOLVED`: the gate's object is the **arm**, not the send.
 - Disarm **before** absolute `armed_until` expiry; lapse-while-armed previously caused a host crash-loop.
-- Live spend requires M1 `RESOLVED` **and** separate operator GO. Every armed session needs its own GO.
-- **Agents may place orders, exit positions, and cancel orders when directed by the operator**, including through computer use. This operator amendment (2026-09-30) supersedes the categorical prohibition on agent-placed trades; existing arming, live-spend, and session-specific operator GO requirements still apply. Weekly account-preservation trades may be operator-placed or agent-placed at the operator's direction; deadline in [STATE](STATE.md#scheduled-forward-triggers).
-- The arming interlock in `ops/c1_rail/c1_rail_arm.py` calls `validate_c1_monitoring_acceptance.validate(require_resolved=True)`, which checks the artifact's structure and `RESOLVED` status and `operator_signoff` for presence only, not a signature: a status-only file fails, a complete forged `RESOLVED` file passes. It gates only the arm helper; the rail host's boot gate (`c1_rail_http_server.load_config`) does not check M1, so editing the `/data` config bypasses it. The host-side activation gate is owed at TB-I3 ([admission](docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md)). `--acknowledge-m1-unresolved` overrides a structurally valid unresolved artifact (operator-ratified discretion; writes an `arming_deviation` record); agents may invoke it only through the operator-act prompt ([ruling 2026-09-26](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26)).
+- Live spend requires M1 `RESOLVED` **and** separate operator GO; every armed session needs its own GO.
+- **Agents may place orders, exit positions and cancel orders when directed by the operator**, including through computer use ([operator amendment 2026-09-30](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b)); arming, live-spend and per-session operator GO requirements still apply. Weekly account-preservation trades may be operator- or agent-placed at the operator's direction; deadline in [STATE](STATE.md#scheduled-forward-triggers).
+- The arming interlock (`ops/c1_rail/c1_rail_arm.py` calling `validate_c1_monitoring_acceptance.validate(require_resolved=True)`) gates only the arm helper. It checks structure, `RESOLVED` status and `operator_signoff` presence, not a signature: a status-only file fails; a complete forged `RESOLVED` file passes. The rail host's boot gate (`c1_rail_http_server.load_config`) does not check M1, so editing the `/data` config bypasses it; the host-side activation gate is owed at TB-I3 ([admission](docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md)). `--acknowledge-m1-unresolved` overrides a structurally valid unresolved artifact (operator-ratified discretion; writes an `arming_deviation` record); agents may invoke it only through the operator-act prompt ([ruling 2026-09-26](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26)).
 
 **Account:** used, not pristine; canned-payload and weekly token trades have filled, but no strategy-signal fill has occurred. `order_id` idempotency is **DISPROVEN**; every payload gets a fresh tag. Private account figures stay private.
 
@@ -47,66 +52,62 @@ and [lab/ARCHIVED.json](lab/ARCHIVED.json).
 |---|---|
 | Incumbent environment retained; no successor migration | [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
 | Python daemon → listener; TV login automation prohibited | [S2](docs/adr/2026-08-07-loop-s2-signal-host-fork.md), [daemon build](docs/adr/2026-08-08-s2b-signal-daemon-build.md) |
-| Withdrawn Striker editions stay barred; separate campaign expressions have conditional eval eligibility, not funded/deployment authority | [withdrawal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md), [readmission](docs/adr/2026-09-05-tradeify-select-striker-expression-readmission.md) |
+| Withdrawn Striker editions stay barred; separate campaign expressions are conditionally eval-eligible | [withdrawal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md), [readmission](docs/adr/2026-09-05-tradeify-select-striker-expression-readmission.md) |
 | Rail build/account registration GO; spend ceiling $700 | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
-| Licensed test strategy can discharge M1 item 5 / B7 Stage 1 independently of strategy selection; no arm | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) |
+| Licensed test strategy can discharge M1 item 5 / B7 Stage 1 independently of strategy selection | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) |
 | Four-firm program falsifier remains dated 2026-11-08; Tradeify counts again | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md), [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) |
 
 ## Architecture
 
-`core/` owns shared engines and frozen controls; `lab/` owns research; `ops/`
-owns operational services. Governance remains at the root. `lab↔ops` imports
-are forbidden; `core` imports nothing from other internal layers.
-[REPO_MAP.md](REPO_MAP.md) names the code owners and enforced boundary maps.
+`core/` owns shared engines and frozen controls, `lab/` research, `ops/` operational
+services; governance stays at the root. `lab↔ops` imports are forbidden; `core`
+imports no other internal layer. [REPO_MAP.md](REPO_MAP.md) maps code owners and
+enforced boundaries.
 
 Before opening research, read [lab/CATALOG.md](lab/CATALOG.md) **In flight**,
-[docs/briefs/INDEX.md](docs/briefs/INDEX.md), and the relevant instrument ledger
-and rejection bar. An empty `rg` result is not evidence of no prior work:
-cold stores are search-excluded, removed bodies are in history, and private
-inputs are gitignored. Use catalog paths and [retrieval guidance](docs/ltm/README.md).
+[docs/briefs/INDEX.md](docs/briefs/INDEX.md), and the relevant instrument ledger and
+rejection bar. An empty `rg` result is not evidence of no prior work: cold stores are
+search-excluded, removed bodies are in history, private inputs are gitignored. Use
+catalog paths and [retrieval guidance](docs/ltm/README.md).
 
 ## Load-bearing numbers
 
-Read [docs/load_bearing_numbers.md](docs/load_bearing_numbers.md) before quoting
-prop-tier figures. Eval bust claims are EOD-clock lower bounds unless backed by
-an intraday-honest RESULTS artifact; published bust/pass claims assume the
-inactivity barrier is OFF. The owner records scope, exceptions, and historical
-values; do not reopen the degenerate barrier-ON re-MC as a fresh finding.
+Read [docs/load_bearing_numbers.md](docs/load_bearing_numbers.md) before quoting prop-tier figures.
+Eval bust claims are EOD-clock lower bounds unless backed by an intraday-honest RESULTS artifact.
+Published bust/pass claims assume the inactivity barrier is OFF. The owner records scope,
+exceptions and historical values; do not reopen the degenerate barrier-ON re-MC as a fresh finding.
 
 ## Strategy Reference (LOCKED legacy book — do not modify)
 
-Record moved 2026-09-04 to
-[`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) §Locked parameter record — risk%,
-pyramid, version, `contractValue`, and the Guardian/Aegis disposition. **No live venue, not a live
-book;** live sizing authority is `dd_protection.BASE_RISK` / `firm_rules._BASE_RISK`, and every
-other strategy parameter lives in **Pine only**.
+Locked parameters: [`core/strategies/CATALOG.md`](core/strategies/CATALOG.md) §Locked
+parameter record. **No live venue, not a live book;** live sizing authority is
+`dd_protection.BASE_RISK` / `firm_rules._BASE_RISK`; every other strategy parameter
+lives in **Pine only**.
 
-Historical MC calibration — **99.83% pass / 0.17% bust, p99 DD 4.37%** — is **historical record, not a
-live claim** ([`docs/mc_anchor_history.md`](docs/mc_anchor_history.md)). ⚠ Those three literals stay
-**here**: `ops/recall/guard.py` regex-reads them from this file to build the recall-sidecar denylist,
-and the first anchor-shaped match in `mc_anchor_history.md` is a *different* triple (the Q-SWAP
-figures), so moving them would silently denylist the wrong numbers. Reword only alongside that parser.
-Engine regression is vendor-free (`tests/core/test_mc_synthetic_engine.py`). Canonical feed = CME
+MC calibration — **99.83% pass / 0.17% bust, p99 DD 4.37%** — is **historical record, not a
+live claim** ([`docs/mc_anchor_history.md`](docs/mc_anchor_history.md)). ⚠ Keep these literals **here**:
+`ops/recall/guard.py` regex-reads them from this file for its denylist; `mc_anchor_history.md`'s
+first match is a *different* (Q-SWAP) triple, so moving them denylists the wrong numbers.
+Reword only alongside that parser.
+Engine regression is vendor-free (`tests/core/test_mc_synthetic_engine.py`). Canonical feed: CME
 futures TV exports (`core/data/tv_exports/cme/`); OANDA and Pepperstone are retired.
-
 
 ## Strategy Authorization Lifecycle
 
-Parameter lock, capital authorization, and venue deployment are separate axes.
-[strategy_lifecycle.md](docs/methodology/strategy_lifecycle.md) owns the lifecycle;
-[venue editions](ops/venue_editions/Tradeify_Select_100K.md) owns venue binding.
-The legacy book's authorization does not imply a deployed strategy.
+Parameter lock, capital authorization and venue deployment are separate axes;
+[strategy_lifecycle.md](docs/methodology/strategy_lifecycle.md) owns the lifecycle,
+[venue editions](ops/venue_editions/Tradeify_Select_100K.md) the venue binding.
 
 Locked parameters are immutable. Decay permits pre-registered de-risking, never
 re-optimization. Automation moves authorization down only, except the
 [bounded sandbox-up lane](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md).
-Retirement and full beta shutdown require operator GO/NO-GO. Read
-`core/lifecycle.py` and its state for effective multipliers; do not infer a live
-haircut from historical rail operation.
+Retirement and full beta shutdown require operator GO/NO-GO. Read effective
+multipliers from `core/lifecycle.py` and its state; do not infer a live haircut from
+historical rail operation.
 
 ## Protection
 
-Single rule in `dd_protection.py`, consumed by the rail's sizing path. **Unused today** — no
+Single rule in `dd_protection.py`, consumed by the rail's sizing path. **Unused today**: no
 strategy is deployed.
 
 * **DD tier:** if `(equity − peak) / peak ≤ −0.015`, multiply the day's sizing by **0.40×**.
@@ -117,147 +118,124 @@ strategy is deployed.
   Lock provenance: [C2 relock](docs/adr/2026-05-08-dd-trigger-c2-relock.md) ·
   [ULP rounding](docs/adr/2026-05-10-dd-protection-ulp-rounding.md).
 * **Concept-not-constant:** the mechanism is invariant; `(trigger, scale, reference_mode)` are
-  per-(portfolio, firm-tier) variables —
-  [ADR](docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
+  per-(portfolio, firm-tier) variables ([ADR](docs/adr/2026-07-13-dd-protection-concept-not-constant.md)).
 * ⚠ The prior equity tier was deleted 2026-04-17 and **its revert triggers are LOST**.
   Reintroducing a second tier needs **fresh pre-registration**, not a lookup.
 
-
 ## Firm Expansion
 
-Define firm rules in `core/firm_rules.py`, then run the
-`core/mc/preflight.py` engine-support pre-flight: configuration alone does not
-prove support for a drawdown clock or firm class. Every prop tier requires
-`starting_balance`. New firms require an ADR, pre-flight, and re-MC when used;
-a new execution feed also requires the [feed-equivalence pre-flight](docs/spec/feed_equivalence_discovery_test_LOCKED.md).
+Define firm rules in `core/firm_rules.py`, then run the `core/mc/preflight.py`
+engine-support pre-flight: configuration alone does not prove support for a drawdown
+clock or firm class. Every prop tier requires `starting_balance`. New firms require an
+ADR, pre-flight, and re-MC when used; a new execution feed also requires the
+[feed-equivalence pre-flight](docs/spec/feed_equivalence_discovery_test_LOCKED.md).
 
 ## Methodology references
 
-- [Rule 0](docs/rule_0.md): read production sources before authoring risk-control or locked-Pine claims.
-- [INQHIORI canon](docs/methodology/inqhiori-canon.md): three-loop authority and Rule 2, budget before acting.
-- [Evaluation order](docs/adr/2026-08-30-evaluation-order.md): standing candidate sequence; campaign-specific amendments remain with their owners.
-- [Regime robustness](docs/methodology/regime_robustness_gate.md): mandatory gate for qualifying risk-control lock changes.
-- [Methodology index](docs/methodology/README.md): lifecycle, harvest, observation routing, estimation, and lessons.
-- [Operational rules](docs/operational_rules.md): instrument-ledger discipline, provenance, corrections, retention, and change control.
-- [Rejected candidates](docs/rejected_candidates.md): re-proposal requires new mechanism evidence, not parameter changes.
+[Rule 0](docs/rule_0.md): read production sources before risk-control or locked-Pine
+claims. [Rejected candidates](docs/rejected_candidates.md): re-proposal needs new
+mechanism evidence, not parameter changes. Also: [INQHIORI canon](docs/methodology/inqhiori-canon.md)
+(three-loop authority; Rule 2, budget before acting) · [evaluation order](docs/adr/2026-08-30-evaluation-order.md)
+(standing sequence; campaign-specific amendments stay with their owners) ·
+[regime robustness gate](docs/methodology/regime_robustness_gate.md) (mandatory for
+qualifying risk-control lock changes) · [methodology index](docs/methodology/README.md) · [operational rules](docs/operational_rules.md).
 
 ## Continuous improvement
 
 During authorized work, actively notice concrete plan flaws, preventable mistakes,
-recurring failures and evidenced waste. At planning, correction and completion
-moments, use [agent-improvement](.claude/skills/agent-improvement/SKILL.md) when such
-an opportunity appears. Read that repository source directly if the harness does
-not list the skill. No opportunity means no extra reflection artifact or task.
+recurring failures and evidenced waste; at planning, correction and completion moments
+use [agent-improvement](.claude/skills/agent-improvement/SKILL.md) when such an
+opportunity appears (read its source if the harness does not list it); no opportunity
+means no extra reflection artifact or task. Implement and verify a local, reversible,
+evidence-supported improvement that fits the current task and seat without changing
+outcome or acceptance criteria; existing authorization carries forward, so do not ask
+again merely because it is an improvement. This includes repairing an agent-owned
+execution sequence before it fails. Bounds:
 
-Implement and verify a local, reversible improvement when its mechanism is supported
-by evidence and it fits the current task and seat without changing the intended
-outcome or acceptance criteria. Existing authorization carries forward; do not ask
-again merely because the action is an improvement. That authorization is bounded by
-the seat's grants in [`scripts/seat_authority.yml`](scripts/seat_authority.yml) and any
-authority block on the current card, under the surface-allocation ADR's
-[action classes](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#action-classes-and-the-authority-block);
-an improvement is never an operator act or a forbidden capability. This includes
-repairing an agent-owned execution sequence before it fails. A frozen worker card
-remains frozen: a worker returns contradictions, scope changes and reusable
-improvement evidence to its coordinator rather than writing owner records itself;
-other seats route a change beyond their scope by seat under that ADR, as the skill sets out.
-
-1. Establish the observable or anticipated failure/waste from source evidence,
-   not a general preference or self-reported confidence.
-2. Search existing tests, hooks, skills, lessons and relevant history before
-   adding protection. Reuse the owning improvement record where one exists.
-3. Choose at most one durable intervention at the cheapest reliable layer:
-   source fix or test → hook → skill → AGENTS.md → ADR/lesson, as appropriate.
-   Registering or changing a harness hook in `.claude/settings.json` is a
-   standing-configuration change under item 6: unasked, propose it rather than
-   wiring it; when the user requests it, implement it within the seat's grants
-   and any authority block on the current card.
-4. State the expected behavior change, verify it against the original mechanism,
-   and retain evidence with the existing task/plan/PR/campaign owner. Write into an
-   owner record only when the current card's authority block grants
-   `governance.author` (with no card, only where the direct operator instruction
-   puts that owner in scope); otherwise route the evidence through the task return
-   (a worker's to its coordinator).
+1. Authority is the task's existing authorization, bounded by the seat's grants in
+   [`scripts/seat_authority.yml`](scripts/seat_authority.yml) and any authority block on
+   the current card, under the surface-allocation ADR's
+   [action classes](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#action-classes-and-the-authority-block).
+   An improvement is never an operator act or a forbidden capability.
+2. A frozen worker card stays frozen: a worker returns contradictions, scope changes
+   and improvement evidence to its coordinator; other seats route out-of-scope changes
+   by seat under that ADR.
+3. At most one durable intervention per failure mechanism, at the cheapest reliable layer:
+   source fix or test (`tests/`) → hook ([`scripts/gates.yml`](scripts/gates.yml),
+   `scripts/githooks/`, `.claude/hookify.*.local.md`, harness hooks in
+   [`.claude/settings.json`](.claude/settings.json)) → skill (`.claude/skills/`) →
+   AGENTS.md → ADR/lesson ([`docs/adr/`](docs/adr/),
+   [`docs/methodology/lessons/`](docs/methodology/lessons/), indexed in
+   `docs/methodology/LESSONS_INDEX.jsonl`).
+4. Retain evidence with the existing task/plan/PR/campaign owner, writing into an owner
+   record only when the current card's authority block grants `governance.author` (no
+   card: only an owner the direct operator instruction puts in scope); otherwise route
+   evidence through the task return.
 5. Promote one-off feedback into standing guidance only when high-severity or
-   independently recurring. Routine fixes need no new rule or separate record.
-6. Do not edit standing instructions unless the user requests it. Improvements
-   confer no new scope, budget, permissions, acceptance changes or operational GO.
-7. Replace or consolidate superseded wording; improvement is not measured by
-   instruction count. Link evidence from later campaigns to the same improvement;
-   intended applicability is not demonstrated transfer.
+   independently recurring.
+6. Do not edit standing instructions unless the user requests it. Registering or
+   changing a harness hook in `.claude/settings.json` counts: unasked, propose it;
+   requested, implement it within item 1's authority.
 
-After two failed corrections of the same issue, stop, summarize what was
-learned, and restart with a cleaner prompt and explicit verification criteria —
-on the escalation lane the surface-allocation ADR names, not as a third retry.
-
-Where each layer lives here: tests = `tests/` · hooks = [`scripts/gates.yml`](scripts/gates.yml) +
-`scripts/githooks/` + `.claude/hookify.*.local.md` + harness hooks in [`.claude/settings.json`](.claude/settings.json) ·
-skills = `.claude/skills/` · this file ·
-ADR/lesson = [`docs/adr/`](docs/adr/) + [`docs/methodology/lessons/`](docs/methodology/lessons/)
-(indexed in `docs/methodology/LESSONS_INDEX.jsonl`).
+After two failed corrections of the same issue, stop, summarize what was learned,
+and restart with a cleaner prompt and explicit verification criteria — on the
+escalation lane the surface-allocation ADR names, not as a third retry.
 
 ## Public-clone posture
 
-This repository is public ([transition ADR](docs/adr/2026-08-14-repo-public-visibility-transition.md)).
-Private history lives in `first-passage-archive`; follow [retrieval guidance](docs/ltm/README.md).
+This repository is public ([transition ADR](docs/adr/2026-08-14-repo-public-visibility-transition.md));
+private history is in `first-passage-archive` ([retrieval guidance](docs/ltm/README.md)).
 Do not commit account identifiers/P&L, vendor-licensed CSVs, Pine source, or
-executable Python ports of locked strategy logic. Private sources are pinned by
-`SHA256SUMS`, `core/strategies/MANIFEST.sha256`, and
-`core/strategies/PORT_MANIFEST.sha256`; new locked ports follow the same policy.
-Vendor-dependent tests skip when inputs are absent. `core/data/bar_data/` is
-retained but frozen: usable panels, no regenerable producer.
+executable Python ports of locked strategy logic. `SHA256SUMS`,
+`core/strategies/MANIFEST.sha256` and `core/strategies/PORT_MANIFEST.sha256` pin
+private sources; new locked ports follow the same policy. Vendor-dependent tests skip
+when inputs are absent. `core/data/bar_data/` is retained but frozen: usable panels,
+no regenerable producer.
 
 **Private read surface.** Agents may read the accepted book's four Pine sources and
 accepted runtime ports listed in `core/strategies/BOOK_SOURCES.sha256`, in place in
-the operator's primary checkout. Worktree agents read them by that checkout's
-absolute path. Never copy them into a worktree, commit or quote their bodies or
-values, edit them, or pass them to `glm_agent` or any external service
+the operator's primary checkout (from a worktree, by that checkout's absolute path).
+Never copy them into a worktree, commit or quote their bodies or values, edit them,
+or pass them to `glm_agent` or any external service
 ([campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
 
 ### Vendor-data integrity gate
 
-[Manifest integrity ADR](docs/adr/2026-05-10-manifest-integrity-gate.md) owns the
-commands. Commit each re-export's SHA256SUMS delta with the corresponding change;
-the checker hashes working-tree bytes. Install hooks once per clone:
-`scripts/install_hooks.sh` under Git Bash/POSIX, or `scripts\install_hooks.bat`
-on Windows. CI cannot hash absent private data. `git commit --no-verify` is not
-the standing path.
+The [manifest integrity ADR](docs/adr/2026-05-10-manifest-integrity-gate.md) owns the
+commands. Commit each re-export's SHA256SUMS delta with its change; the checker hashes
+working-tree bytes. Install hooks once per clone: `scripts/install_hooks.sh`
+(Git Bash/POSIX) or `scripts\install_hooks.bat` (Windows). `git commit --no-verify` is
+not the standing path.
 
 ### Gate composition authority
 
-[scripts/gates.yml](scripts/gates.yml) and its runner own gate composition;
-[scripts/README.md](scripts/README.md) owns the command entry points.
-`make check` runs blocking checks; `make audit` runs report-only diagnostics.
-Do not maintain a parallel gate list. `main` requires a PR and the
-`skills (3.12)` status; [Q-GATESTACK-1's addendum](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md)
-records the ruleset. Other path-filtered checks are not required merge checks.
+[scripts/gates.yml](scripts/gates.yml) and its runner own gate composition,
+[scripts/README.md](scripts/README.md) the command entry points; do not maintain a
+parallel gate list. `main` requires a PR and the `skills (3.12)` status ([Q-GATESTACK-1's addendum](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md)
+records the ruleset); other path-filtered checks are not required merge checks.
 
 ## Python environment and local checks
 
-- Before project Python work, run `.\fp.ps1 doctor` from the checkout being tested.
-- Run operations Python commands through `.\fp.ps1 python ...`.
-- Use `.\fp.ps1 test`, `.\fp.ps1 test-ops`, and `.\fp.ps1 check` for the standard suites and gates. For selected tests, use `.\fp.ps1 python -m pytest <paths>`.
-- Without PowerShell 7.3+, use `python -I scripts/fp.py <command>`. This bootstrap selects and validates the operations environment before running the task.
-- Use the launcher belonging to the checkout being tested; it runs commands from its own checkout root.
-- If validation fails, diagnose the reported environment problem. Do not silently fall back to system Python or bypass validation. Follow [launcher setup and usage](scripts/README.md#local-operations-launcher) to create or select the required environment.
-- Keep the separately pinned research environment separate. The operations launcher does not replace it.
-- When project Python starts another Python process, use `sys.executable` rather than a bare `python` command, especially on Windows.
-- Report the command, interpreter, tested revision or working-tree state, and actual results. A pre-existing gate failure must be disclosed; do not describe the complete gate suite as passing.
-- Launcher pytest and `check` commands automatically retain evidence under `.cache/fp-verification/`; cite the printed `record.json` when reporting verification. Check `verification_exit_code`, `source_stable`, and actual test/gate results. Keep source and Git state unchanged while a recorded check runs.
-- A verification claim requires `status: completed`, exit zero, stable source, complete capture, valid expected reports, and successful Docker cleanup where applicable. `not_started`, `running`, `failed`, and `interrupted` are not acceptance; a hard-killed run may remain `running`. Never infer a pass from a record merely existing.
-- For independent pytest cases, opt into the installed xdist runner with `--workers 2` before the launcher command. Select the affected tests first; worker count is not a substitute for related-case coverage. Docker sequence checks use `tools/local_verification/run.ps1` and record evidence automatically too.
+- Use the launcher of the checkout being tested: `.\fp.ps1 doctor` before project Python work; `.\fp.ps1 python ...` for operations Python; `.\fp.ps1 test`, `test-ops` and `check` for the standard suites and gates; `.\fp.ps1 python -m pytest <paths>` for selected tests. Without PowerShell 7.3+: `python -I scripts/fp.py <command>`.
+- If validation fails, diagnose it ([launcher setup](scripts/README.md#local-operations-launcher)); never silently fall back to system Python or bypass validation. Keep the separately pinned research environment separate.
+- When project Python starts another Python process, use `sys.executable`, not bare `python`.
+- Report the command, interpreter, tested revision or working-tree state, and actual results. Disclose any pre-existing gate failure; do not describe the complete gate suite as passing.
+- Cite the printed `record.json` and keep source and Git state unchanged while a recorded check runs. A verification claim needs `status: completed`, exit zero, stable source, complete capture, valid expected reports and, where applicable, successful Docker cleanup ([record format](scripts/README.md#automatic-verification-evidence)); `not_started`, `running`, `failed` and `interrupted` are not acceptance. Never infer a pass from a record merely existing.
+- For independent pytest cases, select the affected tests first, then add workers: `.\fp.ps1 --workers 2 python -m pytest <paths>`; worker count does not replace related-case coverage. Docker sequence checks use `tools/local_verification/run.ps1` and are recorded too.
 
 ## Configuration as code
 
-- Default to configuration as code for new or changed configuration, especially configuration used more than once.
-- Define reusable configuration objects once in a canonical source; consumers reference or compose those objects rather than repeat their values or maintain copied configurations.
-- Separate shared configuration, product or environment variants, and instance-specific bindings. Make overrides explicit and validate the resolved configuration at its consumption boundary.
-- Keep secrets outside versioned configuration; configuration objects should reference credentials rather than embed them.
-- For deployment configurations, preserve the identity/version of the resolved configuration so validation and activation refer to the same configuration.
-- Apply this default as work touches configuration; it does not by itself authorize a repository-wide migration or changes to accepted policy behavior.
+Default to configuration as code for new or changed configuration, especially when
+reused; apply it only to configuration the work already touches, preserving accepted
+policy behavior. Define reusable objects once in a canonical source that consumers reference or
+compose, never copy. Separate shared configuration, product/environment variants and
+instance bindings; make overrides explicit; validate the resolved configuration where it
+is consumed. Reference credentials; never embed secrets in versioned configuration.
+Deployments preserve the resolved configuration's identity/version so validation and
+activation refer to the same configuration.
 
 ## Key Principle
 
 **Locked artifacts retain immutable parameters; research follows its own approved
-campaign contract.** Capital authorization is revocable, and venue/deployment
-authority is separate. Neither a parameter lock nor a research result grants capital.
+campaign contract.** Capital authorization is revocable. Neither a parameter lock nor a
+research result grants capital.

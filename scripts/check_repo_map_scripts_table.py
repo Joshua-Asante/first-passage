@@ -14,7 +14,8 @@ with ``--write``.
 
 Sibling of ``check_repo_map_layers.py`` (the layer-map schema gate); this
 script owns the human-readable §2.1 table so the section cannot drift into
-hand-maintained prose again.
+hand-maintained prose again. The two common defaults (layer fallback; no gate)
+are marked once in a legend, not repeated in every row's Notes.
 """
 from __future__ import annotations
 
@@ -49,18 +50,23 @@ _SPECIAL_NOTES = {
 _SECTION_HEADING = "### §2.1 — `scripts/` per-file layer (root-resident; recorded for the scanner)"
 
 _INTRO = """\
-`scripts/` stays at root but its files are classified. Layer comes from
-`scripts_layer` in [`repo_map_layers.yml`](scripts/repo_map_layers.yml) — the
-single definition `check_boundaries.py` loads as `SCRIPTS_LAYER`; anything not
-listed there falls back to **governance** via `layer_of_file()`. The scanner
-does **not** load this table. The layer gate
-([`check_repo_map_layers.py`](scripts/check_repo_map_layers.py)) validates that
-file's schema, not this table. Gate composition is owned by
-[`gates.yml`](scripts/gates.yml) and is not changed by regenerating this section.
-
-Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
-`--check` exits 1 on drift; it is **not** wired into `gates.yml`.
+Generated from `scripts_layer` in
+[`repo_map_layers.yml`](scripts/repo_map_layers.yml) (loaded by
+`check_boundaries.py` as `SCRIPTS_LAYER`; unlisted files fall back to
+**governance** via `layer_of_file()`) and [`gates.yml`](scripts/gates.yml).
+Neither the scanner nor [`check_repo_map_layers.py`](scripts/check_repo_map_layers.py)
+reads this table. Regenerate with
+`python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 """
+
+FALLBACK_MARK = "†"
+NO_GATE = "—"
+# Direct invocation only: unlisted scripts may run inside another gate, as hooks or in CI.
+LEGEND = (
+    f"{FALLBACK_MARK} = layer fallback (not in `scripts_layer`); "
+    f"Gate {NO_GATE} = no `gates.yml` command invokes the file directly "
+    "(it may still run inside another gate)."
+)
 
 
 def _load_scripts_layer(layers_yml: Path) -> dict[str, str]:
@@ -110,13 +116,12 @@ def gates_by_script(gates: list[dict]) -> dict[str, list[dict]]:
     return by
 
 
-def _notes_for(rel: str, wired: list[dict], *, in_layer_dict: bool) -> str:
+def _notes_for(rel: str, wired: list[dict]) -> str:
+    """Exceptional notes only; the no-gate and layer-fallback defaults are in LEGEND."""
     bits: list[str] = []
     name = Path(rel).name
     if name in _SPECIAL_NOTES:
         bits.append(_SPECIAL_NOTES[name])
-    elif not wired:
-        bits.append("manual/local only, not in gates.yml")
     seen: set[str] = set()
     for gate in wired:
         for part in gate.get("cmd") or []:
@@ -124,14 +129,12 @@ def _notes_for(rel: str, wired: list[dict], *, in_layer_dict: bool) -> str:
                 if part == flag and flag not in seen:
                     bits.append(label)
                     seen.add(flag)
-    if not in_layer_dict:
-        bits.append("layer fallback (not in SCRIPTS_LAYER)")
     return "; ".join(bits)
 
 
 def _gate_cell(wired: list[dict]) -> str:
     if not wired:
-        return "—"
+        return NO_GATE
     parts = []
     for gate in wired:
         gid = gate.get("id") or "?"
@@ -148,10 +151,9 @@ def build_rows(
     rows: list[tuple[str, str, str, str]] = []
     for rel in scripts:
         stem = Path(rel).stem
-        in_dict = stem in scripts_layer
-        layer = scripts_layer.get(stem, "governance")
+        layer = scripts_layer.get(stem, "governance" + FALLBACK_MARK)
         wired = by_script.get(rel, [])
-        notes = _notes_for(rel, wired, in_layer_dict=in_dict) or "—"
+        notes = _notes_for(rel, wired) or "—"
         rows.append((rel, layer, _gate_cell(wired), notes))
     return rows
 
@@ -176,6 +178,8 @@ def render_generated_block(rows: list[tuple[str, str, str, str]]) -> str:
         [
             BEGIN,
             caption,
+            "",
+            LEGEND,
             "",
             render_table(rows),
             END,

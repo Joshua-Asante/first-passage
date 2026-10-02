@@ -49,12 +49,27 @@ def test_layer_matches_scripts_layer_fallback():
     )
     for rel, got, _gate, notes in rows:
         stem = Path(rel).stem
-        expected = layer.get(stem, "governance")
+        expected = layer.get(stem, "governance" + inv.FALLBACK_MARK)
         assert got == expected, rel
-        if stem in layer:
-            assert "layer fallback" not in notes, rel
-        else:
-            assert "layer fallback (not in SCRIPTS_LAYER)" in notes, rel
+        assert "layer fallback" not in notes, rel
+
+
+def test_defaults_live_in_legend_not_notes():
+    """No-gate and layer-fallback defaults appear once, in the legend above the table."""
+    inv = _load()
+    rows = inv.collect(
+        repo=REPO,
+        layers=REPO / "scripts" / "repo_map_layers.yml",
+        gates_yml=REPO / "scripts" / "gates.yml",
+    )
+    block = inv.render_generated_block(rows)
+    assert inv.LEGEND in block
+    assert block.index(inv.LEGEND) < block.index("| Script |")
+    # Some Gate-— scripts run as harness hooks or in CI, so nothing may call them manual/local.
+    assert "manual/local" not in block
+    table = inv.render_table(rows)
+    assert "layer fallback" not in table
+    assert any(r[1] == "governance" + inv.FALLBACK_MARK for r in rows)
 
 
 def test_wired_gate_ids_exist_in_gates_yml():
@@ -68,11 +83,8 @@ def test_wired_gate_ids_exist_in_gates_yml():
         gates_yml=REPO / "scripts" / "gates.yml",
     )
     for rel, _layer, gate_cell, notes in rows:
-        if gate_cell == "—":
-            assert (
-                "manual/local only, not in gates.yml" in notes
-                or rel.endswith("gate_manifest.py")
-            ), rel
+        if gate_cell == inv.NO_GATE:
+            assert notes == "—" or rel.endswith("gate_manifest.py"), rel
             continue
         for part in gate_cell.split("; "):
             gid = part.split(" (", 1)[0].strip("`")
