@@ -601,7 +601,9 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
    - The first attended release closes a leg **whole only**, using the whole-leg exit route that C-a investigates.
    - **No subset-close evidence step is built under UB-5 / gate C** for the first release.
    - Where the incident amendment's proposed §A12 (PR #584) names a subset-exit evidence owner for its F4 partial-close row, the first-release disposition is "unsupported". That is an input to the operator's acceptance of §A12. This entry doesn't amend §A12's text.
-   - This relies on the recorded reading that the book's exits are whole-leg (T08 and the session plan's "exit-side partials moot" lines). It changes no strategy or protection rule. If any leg or recovery path is found to need a partial close, the question returns to the operator. It is not handled by improvisation.
+   - **Prerequisite, a source check.** The "exit-side partials moot" statements in T08 and the session plan are withdrawn by the incident contract, so this ruling does **not** rest on them. Before the first release, a Rule-0 source check must establish that every exit of the four legs, and every recovery path, closes the **whole leg**. That includes **STR-5** in the route-native editions pre-registration, which still lists as unknown whether Striker's crossed-level exit can apply to a subset. The check reads the locked Pine and accepted ports in place, under the private read surface.
+   - **If the source check finds any exit or recovery path that closes a subset,** the question returns to the operator before the first release. It is not handled by improvisation.
+   - The ruling changes no strategy or protection rule.
    - Supporting partial closes later needs its own evidence and ruling.
 
 **Also recorded:**
