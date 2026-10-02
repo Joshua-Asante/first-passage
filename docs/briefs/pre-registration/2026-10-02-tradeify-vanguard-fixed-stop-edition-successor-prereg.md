@@ -28,6 +28,8 @@ Recorded under [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590
 
 This list is item 7.6.1's account. It names what was seen, not who saw it; the operator may add to it before ratification.
 
+**Answerer exposure statement (added 2026-10-02, coordinator direction on #591):** whoever answers VAN-3 (and ORB-3 in the sibling successor), the rows that name what replaces the trail as an exit, must state with the answer whether they have seen the counts listed above.
+
 ## §R — Standing rule: no candidate-configurable replay before freeze
 
 *Operator ruling 2026-10-02 ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1):* no agent runs any candidate-configurable replay against a pre-registered edition before that pre-registration is frozen. That includes an accepted port with input overrides. This file is not frozen; the rule applies to every edition it pre-registers.
@@ -37,15 +39,15 @@ This list is item 7.6.1's account. It names what was seen, not who saw it; the o
 Every table row carries a marker: *(CF)* means carried forward verbatim from the closed original, and *(CH)* means changed here. Every section, paragraph and bullet not listed below is carried forward verbatim, including all OWED statuses, dated rulings and direction markers.
 
 1. **Header.** The title names the successor. The Status line keeps its text and adds the successor/ratification sentence. A **Supersedes** line, an Owner pointer to PR #590 item 7.6.1 and an Authored note are added. *Reason:* the original is closed (item 7.6.1).
-2. **§D Disclosure and §R standing rule** added. *Reason:* item 7.6.1 requires both.
+2. **§D Disclosure and §R standing rule** added. *Reason:* item 7.6.1 requires both. §D also requires answerers of the trail-replacement rows to state whether they have seen the counts (coordinator direction on #591).
 3. **§0** gains a successor-reads note; the original table and text are unchanged. *Reason:* Rule 0 for this draft.
-4. **§7** gains two bullets: a proposed reading of the no-amendment-after-output bullet for this successor, and the standing rule. *Reason:* the disclosed outputs predate this file, and read literally they would forbid ever completing it. The reading is proposed, not ruled.
+4. **§7** gains two bullets: a proposed reading of the no-amendment-after-output bullet for this successor, and the standing rule. *Reason:* the disclosed outputs predate this file, and read literally they would forbid ever completing it. The reading is proposed, not ruled. It is an explicit freeze blocker (the §7 **Successor validity** bullet, marked OWED for the operator's ratification), with a matching §8 step and a dedicated §10 grep (Codex P1 on #591).
 5. **§10** audit hooks point at this file instead of the closed original. *Reason:* otherwise they would check a closed record.
 6. **Sibling** link points to the ORB/Striker successor. *Reason:* the original is closed.
 7. **VAN-8** *(CH)*: the C-a proposed answer is added, the original question is quoted, the status becomes OWED for the operator's ratification, and the 2026-09-26 note is kept verbatim. *Reason:* item 7.2.
 8. **§3a** exit-split dependency bullet: its text is unchanged, with a dated successor marker appended. *Reason:* item 7.2.
 9. **§6** exit-split replay item is moot for the first release; the entry-split item is unchanged. *Reason:* item 7.2.
-10. **§8** step 2 drops VAN-8 from "answers" and asks for ratification of the proposed answer instead; the sequential-exit sentence is removed. Step 5 adds the trailing-removed confirmation at freeze. *Reason:* items 7.2 and 7.6.1 (disposition 1).
+10. **§8** step 2 drops VAN-8 from "answers" and asks for ratification of the proposed answer instead; the sequential-exit sentence is removed. Step 5 (new) asks for the ruling on the §7 successor-validity item, and step 6 adds the trailing-removed confirmation at freeze. *Reason:* items 7.2 and 7.6.1 (disposition 1).
 
 Nothing here freezes or ratifies anything. Every proposed answer is owed for the operator's ratification.
 
@@ -162,7 +164,7 @@ The public repository receives identities and behavior shapes only, never source
 - Editing the locked Vanguard Pine, the current port, or `core/strategies` artifacts in place. The edition uses new private files and pins where the ruled realization changes bytes; an override-only realization reuses the explicitly compatible source identities and binds new effective settings.
 - Publishing Pine source, parameter values or port code in this or any public file.
 - Amending this file after any replay or E1 output on the edition exists. Close it and open a fresh one instead.
-- *Added 2026-10-02 (successor; a proposed reading, owed for the operator's ratification):* for this successor, the bullet above is triggered by replay or E1 output produced after this file's first commit. The outputs disclosed in §D came first and are why the original was closed. Read literally, they would forbid completing this file at all.
+- **Successor validity — OWED (operator ratification).** *Added 2026-10-02 (successor; a proposed reading):* for this successor, the bullet above is triggered by replay or E1 output produced after this file's first commit. The outputs disclosed in §D came first and are why the original was closed. Read literally, they would forbid completing this file at all. This is a **freeze blocker**: the file cannot freeze until the operator ratifies or rejects this reading (§8). If it is rejected, this successor cannot be completed and returns to the operator.
 - *Added 2026-10-02 (successor; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1, standing rule §R):* running any candidate-configurable replay against an edition pre-registered here, including an accepted port with input overrides, before this file is FROZEN.
 - Treating the edition as qualified, selected or deployable before the E1 verdict.
 
@@ -172,11 +174,14 @@ The public repository receives identities and behavior shapes only, never source
 2. The operator answers VAN-2 to VAN-6, the §4 effective-inputs row and the §6 replay choice, in words and without parameter values, and ratifies or rejects the proposed VAN-8 answer and the §6 exit-split mootness ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2; *changed in the successor, 2026-10-02*).
 3. Once the capability allocation is accepted (checklist T09 gate D; operator ruling 2026-09-26, [production handoff](../handoffs/2026-09-26-vanguard-fixed-stop-edition-production.md) G3b), the operator, or a separately authorized session in the primary checkout, produces the files required by the ruled realization and supplies the complete source/effective-input identity tuple. §60 alone grants reads, not file creation. An override-only realization explicitly records reused compatible Pine/port pins.
 4. Claude fills §3–§6, runs the §10 hooks, and the operator reviews the full text.
-5. The operator confirms that the Vanguard edition freezes with trailing removed (VAN-1; §59 Ruling 4). [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1's per-fill trailing-subset disposition clears only on that confirmation (*added in the successor, 2026-10-02*). The operator says "freeze". The Status line becomes `FROZEN <date>`, and the commit SHA goes into campaign record §59.
+5. The operator ratifies or rejects the successor-validity reading (the §7 **Successor validity** bullet). If it is rejected, stop: this successor cannot freeze and returns to the operator. *(Added in the successor, 2026-10-02.)*
+6. The operator confirms that the Vanguard edition freezes with trailing removed (VAN-1; §59 Ruling 4). [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1's per-fill trailing-subset disposition clears only on that confirmation (*added in the successor, 2026-10-02*). The operator says "freeze". The Status line becomes `FROZEN <date>`, and the commit SHA goes into campaign record §59.
 
 ## §10 — Audit hooks
 
 ```bash
+# Successor-validity freeze blocker (§7, §8): expect no output at freeze
+grep -n '^- \*\*Successor validity — OW[E]D' docs/briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md
 # Status must read FROZEN before any edition replay or E1 run exists
 grep -n '^\*\*Status:\*\*' docs/briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md
 # No unresolved status may remain at freeze; expect no output.
