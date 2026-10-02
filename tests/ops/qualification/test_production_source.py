@@ -148,8 +148,8 @@ def test_schedule_segments_reuse_replay_path_validation_and_require_exact_price(
                            SessionSchedule(ts, split, ts+timedelta(minutes=15)))
     from c1_rail.qualification.paths import PathAssembler
     path = PathAssembler(date(2030, 1, 7)).assemble(((source,),), horizon_sessions=1)
-    left, right = evidence.validate_split(path[0], path[0].bars[0], {'aegis_6j': bar}, split)
-    assert right['aegis_6j'].ts == split
+    splits = evidence.validate_split(path[0], path[0].bars[0], {'aegis_6j': bar}, split)
+    assert splits['aegis_6j'].suffix.ts == split and splits['aegis_6j'].prefix_executes is True
     row['price'] = 101.
     bad = parse_schedule_execution_evidence(json.dumps({'schema': 'qualification-schedule-execution/v1', 'rows': [row]}).encode())
     with pytest.raises(ReplayNeedsContext, match='price'):
@@ -406,7 +406,7 @@ def test_source_verify_rejects_unissued_object_before_reading_contract():
         reconstructed.verify_for(object())
 
 
-@pytest.mark.parametrize('name',('replay','verify_for','proof'))
+@pytest.mark.parametrize('name',('replay','replay_bracket','verify_for','proof'))
 def test_source_does_not_allow_instance_execution_callback_overrides(name):
     source=object.__new__(ProductionSource)
     with pytest.raises(AttributeError):
@@ -462,3 +462,232 @@ def test_issued_source_rejects_derived_state_mutation_and_reconstruction(tmp_pat
         source=clone
     with pytest.raises(ValueError,match='issued|changed|integrity'):
         source.verify_for(source.contract)
+
+
+# ---- T00 step-1b Task 2: frozen bracket interface (packet §7) ----
+# Case names carry the §7 "Required test update" item number (item1..item7).
+
+def _evidence(rows=()):
+    return parse_schedule_execution_evidence(json.dumps(
+        {'schema': 'qualification-schedule-execution/v1', 'rows': list(rows)}).encode())
+
+
+def _bracket(run):
+    from c1_rail.qualification.production_source import ScheduleExecutionBracket
+    return ScheduleExecutionBracket(_evidence()).for_run(run)
+
+
+def _t2_bar_context(bar):
+    from datetime import date
+    from types import SimpleNamespace
+    session = SimpleNamespace(occurrence=0, bars=(), source=SimpleNamespace(source_session_date=date(2024, 1, 2)))
+    return session, SimpleNamespace(source_bar_time=bar.ts, bars=(('aegis_6j', bar),))
+
+
+def test_t2_item1_frozen_types_have_exact_fields_immutability_and_validation():
+    from dataclasses import FrozenInstanceError, fields
+    from datetime import datetime, timezone
+    from c1_signal_daemon.feed import Bar
+    from c1_rail.qualification.model import BracketReplayResult, ReplayResult, ScheduleExposure, ScheduleSplit
+    for kind, names in ((ScheduleExposure, ('position', 'pending', 'reserved')),
+                        (ScheduleSplit, ('prefix', 'suffix', 'prefix_executes')),
+                        (BracketReplayResult, ('r1', 'r2'))):
+        assert tuple(f.name for f in fields(kind)) == names
+        assert kind.__dataclass_params__.frozen is True and kind.__slots__ == names
+    exposure = ScheduleExposure(-2, True, 3)
+    with pytest.raises(FrozenInstanceError):
+        exposure.position = 1
+    for bad in ((True, False, 0), (1, 0, 0), (1, False, True), (1, False, -1), (1.0, False, 0),
+                (1, None, 0), (1, False, None), (1, 'yes', 0)):
+        with pytest.raises(ValueError):
+            ScheduleExposure(*bad)
+    bar = Bar(datetime(2024, 1, 2, 20, 45, tzinfo=timezone.utc), 100, 100, 100, 100)
+    class DerivedBar(Bar):
+        pass
+    split = ScheduleSplit(bar, bar, False)
+    with pytest.raises(FrozenInstanceError):
+        split.prefix_executes = True
+    for bad in (((bar, bar), bar, True), (bar, None, True), (bar, bar, 0), (bar, bar, None),
+                (DerivedBar(*vars(bar).values()), bar, True)):
+        with pytest.raises(ValueError):
+            ScheduleSplit(*bad)
+    r1, r2 = ReplayResult((), ()), ReplayResult((), ())
+    result = BracketReplayResult(r1, r2)
+    assert (result.r1, result.r2) == (r1, r2) and result.r1 is r1 and result.r2 is r2
+    with pytest.raises(FrozenInstanceError):
+        result.r1 = r2
+    for bad in ((r1, r1), (r1, None), ((), r2), (r1, ((), ()))):
+        with pytest.raises(ValueError):
+            BracketReplayResult(*bad)
+
+
+def test_t2_item1_for_run_accepts_only_exact_ids_and_issues_fresh_providers():
+    import inspect
+    from datetime import datetime, timedelta, timezone
+    from c1_signal_daemon.feed import Bar
+    from c1_rail.qualification.model import ScheduleExposure, ScheduleSplit
+    from c1_rail.qualification.production_source import ScheduleExecutionBracket, ScheduleExecutionEvidence
+    bracket = ScheduleExecutionBracket(_evidence())
+    first, again, other = bracket.for_run('R1'), bracket.for_run('R1'), bracket.for_run('R2')
+    assert all(type(p) is ScheduleExecutionEvidence for p in (first, again, other))
+    assert len({id(first), id(again), id(other)}) == 3
+    class Named(str):
+        pass
+    for bad in ('r1', 'R3', 'R1 ', ' R2', 'R12', '', None, 1, b'R1', Named('R1')):
+        with pytest.raises(ValueError):
+            bracket.for_run(bad)
+    with pytest.raises(ValueError):
+        ScheduleExecutionBracket(first)          # a run-local provider is not reviewed evidence
+    for provider in (first, other, _evidence()):
+        assert not hasattr(provider, 'observe_exposure') and not hasattr(provider, 'prefix_is_empty')
+        for method in (provider.split_bar, provider.split_interval):
+            parameter = inspect.signature(method).parameters['exposure']
+            assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+    # Every call is fresh: a placement in one provider is invisible to another.
+    bar = Bar(datetime(2024, 1, 2, 20, 45, tzinfo=timezone.utc), 100, 120, 90, 110, 7)
+    session, pb = _t2_bar_context(bar)
+    instant = bar.ts + timedelta(minutes=10)
+    for provider in (first, again):
+        split = provider.split_bar(session, pb, instant, 'aegis_6j', exposure=ScheduleExposure(1, False, 0))
+        assert type(split) is ScheduleSplit and provider(session, instant, 'aegis_6j') == 90
+    with pytest.raises(TypeError):
+        other.split_bar(session, pb, instant, 'aegis_6j')                 # legacy call shape
+    from c1_rail.qualification.replay import ReplayNeedsContext
+    with pytest.raises(ReplayNeedsContext, match='schedule instant'):
+        other(session, instant, 'aegis_6j')
+
+
+def test_t2_item1_retained_evidence_returns_executing_schedule_split():
+    from datetime import datetime, timedelta, timezone
+    from c1_signal_daemon.feed import Bar
+    from c1_rail.qualification.model import ScheduleExposure, ScheduleSplit
+    start = datetime(2024, 1, 2, 20, 45, tzinfo=timezone.utc)
+    instant = start + timedelta(minutes=10)
+    values = {'open': 100., 'high': 100., 'low': 100., 'close': 100., 'volume': 0.}
+    evidence = _evidence([{'source_session_date': '2024-01-02', 'leg_id': 'aegis_6j',
+                           'source_bar_time': start.isoformat(), 'interval_start': start.isoformat(),
+                           'instant': instant.isoformat(), 'price': 100., 'prefix': values, 'suffix': values}])
+    session, pb = _t2_bar_context(Bar(start, **values))
+    split = evidence.split_bar(session, pb, instant, 'aegis_6j', exposure=ScheduleExposure(0, True, 0))
+    assert type(split) is ScheduleSplit and split.prefix_executes is True
+    assert (split.prefix, split.suffix) == (Bar(start, **values), Bar(instant, **values))
+    interval = evidence.split_interval(session, pb, Bar(start, **values), instant, 'aegis_6j',
+                                       exposure=ScheduleExposure(1, False, 0))
+    assert interval == split
+
+
+def test_t2_item2_provider_places_the_ratified_two_run_table():
+    from datetime import datetime, timedelta, timezone
+    from c1_signal_daemon.feed import Bar
+    from c1_rail.qualification.model import ScheduleExposure
+    bar = Bar(datetime(2024, 1, 2, 20, 45, tzinfo=timezone.utc), 100, 120, 90, 110, 7)  # 100 -> 90 -> 120 -> 110
+    instant = bar.ts + timedelta(minutes=10)
+    session, pb = _t2_bar_context(bar)
+    table = [  # (run, exposure, boundary vertex price, prefix executes)
+        ('R1', (1, False, 0), 90, True), ('R2', (1, False, 0), 120, True),        # long: adverse / favourable
+        ('R1', (-3, False, 0), 120, True), ('R2', (-3, False, 0), 90, True),      # short
+        ('R1', (0, True, 1), 110, True), ('R2', (0, True, 1), 100, False),        # pending only: fill / cancel
+        ('R1', (0, True, 0), 110, True), ('R2', (0, True, 0), 100, False),
+        ('R1', (2, True, 1), 90, True), ('R2', (2, True, 1), 120, True),          # position rule wins
+        ('R1', (-1, True, 1), 120, True), ('R2', (-1, True, 1), 90, True),
+    ]
+    for run, exposure, price, executes in table:
+        provider = _bracket(run)
+        split = provider.split_bar(session, pb, instant, 'aegis_6j', exposure=ScheduleExposure(*exposure))
+        assert (split.prefix.close, split.suffix.open, split.prefix_executes) == (price, price, executes)
+        assert (split.prefix.ts, split.suffix.ts) == (bar.ts, instant)
+        assert provider(session, instant, 'aegis_6j') == price
+
+
+def test_t2_item5_provider_splits_the_current_suffix_and_stays_occurrence_local():
+    from datetime import datetime, timedelta, timezone
+    from types import SimpleNamespace
+    from c1_signal_daemon.feed import Bar
+    from c1_rail.qualification.model import ScheduleExposure
+    from c1_rail.qualification.replay import ReplayNeedsContext
+    start = datetime(2024, 1, 2, 20, 45, tzinfo=timezone.utc)
+    first, second = start + timedelta(minutes=5), start + timedelta(minutes=12)
+    session, pb = _t2_bar_context(Bar(start, 100, 130, 90, 110, 3))
+    provider = _bracket('R1')
+    suffix = Bar(first, 95, 130, 95, 110, 0)              # retained suffix: 95 -> 130 -> 110
+    split = provider.split_interval(session, pb, suffix, second, 'aegis_6j', exposure=ScheduleExposure(1, False, 0))
+    assert (split.prefix.ts, split.prefix.open, split.prefix.close, split.suffix.close) == (first, 95, 95, 110)
+    with pytest.raises(ReplayNeedsContext, match='already placed'):
+        provider.split_interval(session, pb, suffix, second, 'aegis_6j', exposure=ScheduleExposure(1, False, 0))
+    repeat = SimpleNamespace(occurrence=1, bars=(), source=session.source)
+    again = provider.split_interval(repeat, pb, suffix, second, 'aegis_6j', exposure=ScheduleExposure(-1, False, 0))
+    assert again.prefix.close == 130
+    assert (provider(session, second, 'aegis_6j'), provider(repeat, second, 'aegis_6j')) == (95, 130)
+
+
+def test_t2_item6_provider_refuses_missing_inactive_and_reservation_only_exposure():
+    from datetime import datetime, timedelta, timezone
+    from c1_signal_daemon.feed import Bar
+    from c1_rail.qualification.model import ScheduleExposure
+    from c1_rail.qualification.replay import ReplayNeedsContext
+    bar = Bar(datetime(2024, 1, 2, 20, 45, tzinfo=timezone.utc), 100, 120, 90, 110, 7)
+    instant = bar.ts + timedelta(minutes=10)
+    session, pb = _t2_bar_context(bar)
+    for provider in (_bracket('R1'), _bracket('R2'), _evidence()):
+        for exposure, message in ((ScheduleExposure(0, False, 1), 'broker-pending'),
+                                  (ScheduleExposure(2, False, 1), 'broker-pending'),
+                                  (ScheduleExposure(0, False, 0), 'inactive'),
+                                  (None, 'exposure'), ((0, True, 1), 'exposure')):
+            with pytest.raises(ReplayNeedsContext, match=message):
+                provider.split_bar(session, pb, instant, 'aegis_6j', exposure=exposure)
+        if provider.run is not None:
+            # No refused call reserved the placement key.
+            provider.split_bar(session, pb, instant, 'aegis_6j', exposure=ScheduleExposure(0, True, 1))
+
+
+def test_t2_item7_replay_bracket_builds_two_fresh_engines_with_separate_results(tmp_path, monkeypatch):
+    import inspect
+    import composition_fixture as fixture_module
+    from c1_signal_daemon import book_adapters
+    from c1_rail.qualification import replay as replay_module
+    from c1_rail.qualification.model import BracketReplayResult, ReplayResult
+    from c1_rail.qualification.paths import PathAssembler
+    assert list(inspect.signature(ProductionSource.replay_bracket).parameters) == ['self', 'path']
+    original_build = fixture_module.build_artifacts
+    def holding(root, *, idle=False, port_transform=None):
+        # TEST_ONLY: the fixture ORB holds its entry through the 15:55 intrabar flatten.
+        def hold(leg, raw):
+            if leg != 'orb_mnq_v7':
+                return raw
+            held = raw.replace(b'local.minute == 15 and self.position', b'local.minute == 59 and self.position')
+            assert held != raw
+            return held
+        return original_build(root, idle=idle, port_transform=hold)
+    monkeypatch.setattr(fixture_module, 'build_artifacts', holding)
+    source = fixture_module.build_verified_composition(tmp_path).source
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    loads, engines = [], []
+    load = book_adapters._load_domain_adapters
+    def counting(contract, *, retained_bytes, domain):
+        loads.append(load(contract, retained_bytes=retained_bytes, domain=domain))
+        return loads[-1]
+    class Recorded(replay_module.BookReplay):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            engines.append(self)
+    monkeypatch.setattr(book_adapters, '_load_domain_adapters', counting)
+    monkeypatch.setattr(replay_module, 'BookReplay', Recorded)
+    result = source.replay_bracket(path)
+    assert type(result) is BracketReplayResult
+    assert type(result.r1) is ReplayResult and type(result.r2) is ReplayResult and result.r1 is not result.r2
+    assert len(loads) == len(engines) == 2
+    first, second = engines
+    assert [e.schedule_quotes.run for e in engines] == ['R1', 'R2']
+    assert first.schedule_quotes is not second.schedule_quotes and first.schedule_quotes is not source._quotes
+    assert not set(map(id, first.adapters.values())) & set(map(id, second.adapters.values()))
+    assert not set(map(id, first.brokers.values())) & set(map(id, second.brokers.values()))
+    assert first.ledger is not second.ledger and first.clock is not second.clock
+    assert first.events is not second.events and first._used and second._used
+    # Each run consumed its own intrabar placement for every session's flatten.
+    for engine in engines:
+        placements = [key for key in engine.schedule_quotes._placed]
+        assert [(occurrence, leg) for occurrence, leg, _ in placements] == [(0, 'orb_mnq_v7'), (1, 'orb_mnq_v7'), (2, 'orb_mnq_v7')]
+        assert all(instant.minute == 55 for _, _, instant in placements)
+    assert all(row.fills == 2 and row.flat_before_deadline and row.end_edge.is_flat for row in result.r1.sessions)
+    # Flat retained bars: the bracket adds no signal, cost or price event.
+    assert result.r1 == result.r2 == source.replay(path)

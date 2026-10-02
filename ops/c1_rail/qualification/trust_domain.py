@@ -315,6 +315,8 @@ def validate_qualification_trust_domain(domain_bytes,approval_bytes,trusted_keys
     domain_id=_text(doc['domain_id'])
     key_roles=('freeze_key_ids','result_key_ids','seal_key_ids')+(('execution_key_ids',) if active else ())
     keys_by_scope={name:_names(doc[name]) for name in key_roles}
+    from .contract import _refuse_source_key_ids
+    for names in keys_by_scope.values():_refuse_source_key_ids(names)
     if active:
         from .policy import ATTESTED_CHECKPOINTS
         _text(doc['execution_service_id']);_hash(doc['execution_release_sha256']);_hash(doc['policy_sha256'])
@@ -403,3 +405,36 @@ def validate_qualification_trust_domain(domain_bytes,approval_bytes,trusted_keys
 def production_trust_domain(domain_bytes,approval_bytes,trusted_keys,*,now):
     return validate_qualification_trust_domain(domain_bytes,approval_bytes,trusted_keys,
         policy=PRODUCTION_TRUST_POLICY,now=now)
+
+
+# T00 source-only contract (design rev 4.2 §2.4–§2.5): compiled constants and
+# a domain built from them. It carries no freeze/result/seal/execution keys and
+# no workload policy; it authorizes source verification only.
+@dataclass(frozen=True)
+class SourceTrustConstants:
+    accepted_historical_pins: object
+    port_runtime_pins: object
+    effective_settings_sha256: str
+
+
+def _compiled_source_constants():
+    from c1_signal_daemon.book_adapters import RUNTIME_EFFECTIVE_INPUTS_SHA256
+    return SourceTrustConstants(
+        accepted_historical_pins=MappingProxyType(dict(ACCEPTED_HISTORICAL_PINS)),
+        port_runtime_pins=MappingProxyType({spec.leg_id: PortRuntimePin(spec.leg_id, spec.runtime_sha256, spec.pine_sha256)
+                                            for spec in ADAPTERS}),
+        effective_settings_sha256=RUNTIME_EFFECTIVE_INPUTS_SHA256)
+
+
+SOURCE_TRUST_CONSTANTS = _compiled_source_constants()
+
+
+@dataclass(frozen=True)
+class SourceTrustDomain:
+    authority_class: str
+    permits_synthetic: bool
+    accepted_historical_pins: object
+    port_runtime_pins: object
+    effective_settings_sha256: str
+    required_artifact_roles: tuple[str, ...]
+    contract_sha256: str

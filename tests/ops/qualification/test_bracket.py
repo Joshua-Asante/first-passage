@@ -11,7 +11,7 @@ from c1_signal_daemon.feed import Bar
 from c1_rail.qualification.bracket import (
     BracketScheduleQuotes, BracketVerdict, BracketRun, placement, run_bracket, vertex_split,
 )
-from c1_rail.qualification.model import PathOutcome, SessionSchedule
+from c1_rail.qualification.model import PathOutcome, ScheduleExposure, ScheduleSplit, SessionSchedule
 from c1_rail.qualification.replay import BookReplay, ReplayNeedsContext, accepted_path
 from mc.simulation import EvaluationState
 
@@ -26,12 +26,13 @@ def _validate(bar, index):
     """Run one vertex split through the engine's own split validator."""
     prefix, suffix = vertex_split(bar, index, INSTANT)
     class Stub:
-        split_bar = staticmethod(lambda *args: (prefix, suffix))
+        split_bar = staticmethod(lambda *args, exposure: ScheduleSplit(prefix, suffix, True))
         def __call__(self, *args):
             return prefix.close
     pb = SimpleNamespace(source_bar_time=bar.ts)
-    left, right = BookReplay._split(SimpleNamespace(schedule_quotes=Stub()), None, pb, {'leg': bar}, INSTANT)
-    assert (left['leg'], right['leg']) == (prefix, suffix)
+    split = BookReplay._split(SimpleNamespace(schedule_quotes=Stub()), None, pb, {'leg': bar}, INSTANT,
+                              {'leg': ScheduleExposure(1, False, 0)})['leg']
+    assert (split.prefix, split.suffix) == (prefix, suffix)
     assert prefix.close == accepted_path(bar)[index]
 
 
@@ -70,18 +71,17 @@ def test_placement_refuses_without_observed_exposure():
     session = SimpleNamespace(occurrence=0, source=SimpleNamespace(source_session_date=T0.date()))
     pb = SimpleNamespace(source_bar_time=T0, bars=(('leg', Bar(T0, 100, 110, 90, 100)),))
     with pytest.raises(ReplayNeedsContext, match='exposure'):
-        quotes.split_bar(session, pb, INSTANT, 'leg')
-    quotes.observe_exposure(session, INSTANT - timedelta(minutes=1), {'leg': 1})
+        quotes.split_bar(session, pb, INSTANT, 'leg', exposure=None)
     with pytest.raises(ReplayNeedsContext, match='exposure'):
-        quotes.split_bar(session, pb, INSTANT, 'leg')
+        quotes.split_bar(session, pb, INSTANT, 'leg', exposure=None)
 
 
 def test_interval_split_places_on_the_remaining_path():
     quotes = BracketScheduleQuotes('R1')
     session = SimpleNamespace(occurrence=0, source=SimpleNamespace(source_session_date=T0.date()))
     remaining = Bar(T0 + timedelta(minutes=5), 110, 110, 90, 105)  # 110 -> 90 -> 105
-    quotes.observe_exposure(session, INSTANT, {'leg': 1})
-    prefix, suffix = quotes.split_interval(session, None, remaining, INSTANT, 'leg')
+    split = quotes.split_interval(session, None, remaining, INSTANT, 'leg', exposure=ScheduleExposure(1, False, 0))
+    prefix, suffix = split.prefix, split.suffix
     assert (prefix.close, suffix.open, suffix.close) == (90, 90, 105)
     assert quotes(session, INSTANT, 'leg') == 90
 
