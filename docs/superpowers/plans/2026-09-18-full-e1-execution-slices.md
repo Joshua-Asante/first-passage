@@ -1965,6 +1965,20 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 1. **"scoping is fine, defer the sealing to T05".** T00's P7 `code_closure_sha256` identifies the Python-source closure plus the recorded interpreter binding. Environment sealing is owed by T05 before the R1 grant.
 2. **"C for the T05 sealing"**, revised to **C′** after the H9 source check found that host-side code decides outcomes. That host-side code includes Part-A adjudication, calendar and deadline logic in Eastern time, budget exhaustion, VOID, and aggregate result and seal checks.
 3. **"yes"** to the coordinator's narrowed C′. Identity checks cover only the finite, known R1 host entrypoints. Unmediated descendants and OS helpers join the residual.
+4. **"yes to the pin".** The standing, approved worker base image is **`python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63`**: the `python:3.12.3-slim-bookworm` manifest list, the base used by the S5 and S4 Linux evidence.
+   - **Required selection:** the linux/amd64 child `sha256:fd3817f3a855f6c2ada16ac9468e5ee93e361005bd226fd5a5ee1a504e038c84`, whose config `sha256:cf001c2f8af7214144935ae5b37c9e626ccf789117c10c1f691766d4658f1b1e` declares `architecture=amd64`, `os=linux` and `PYTHON_VERSION=3.12.3` (created 2024-04-09).
+   - **Provenance:** an anonymous, read-only public registry read by the coordinator on 2026-10-02. The index, child-manifest and config bytes each hash to their own digest. They are retained privately, with `SHA256SUMS`, under `local_artifacts/h9-t05-base-pin-afc139a0/coordinator-fetch/`. Nothing was pulled, built or run.
+   - **Known trade-off, accepted:** the image predates later Python and OS security patches. Workers run offline.
+   - **Changes:** any later pin change needs Joshua's ruling and a reviewed change. The canonical pin file itself is created by the C′ build.
+5. **"broaden R1".** R1 runs the **combined** Linux node set, in this order:
+   1. service;
+   2. N1;
+   3. N2;
+   4. Part A;
+   5. result/seal;
+   6. supervision, last.
+
+   R1 also includes the C′ and VALID→VOID acceptance cases. The reason: H9's prepared changes modify shared store code on the S4 and Part-A paths, and a result/seal-only run cannot catch a regression there. The exact collected IDs and count are frozen at the R1 dispatch. This supersedes the "result/seal node set only" wording in H9 checkpoint R1 and in the D-S5-3 entry above, which stays as a dated record.
 
 **C′ obligation, owed by T05 before the R1 grant. It is a design: no build is dispatched by this entry.**
 - **Worker base image.** It must be a **standing, operator-approved digest**, not a tag resolved at build time. A missing, tag-only or mismatched pin refuses. The initial digest and any later update need Joshua's approval and a reviewed change.
@@ -1988,7 +2002,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 
 **Unchanged:**
 - Full S5 custody.
-- R1's Linux node set as its owner defines it (H9 checkpoint R1), under its own express grant. This entry does not change that set.
+- R1's express Linux grant, now for the combined node set (ruling 5), recorded in H9 checkpoint R1.
 - Independent review.
 - T00-first integration.
 - Three qualification-path items still owed before R1:

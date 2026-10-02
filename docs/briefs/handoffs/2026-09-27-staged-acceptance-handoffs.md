@@ -575,6 +575,7 @@ In each case return to the coordinator.
 **Recovery:** branch-level only. Retained attempts are never deleted.
 
 **Evidence retained:**
+- *2026-10-02 (operator ruling, "broaden R1"):* R1 is the **combined** Linux node set, run in this order: service, N1, N2, Part A, result/seal, then supervision last. It also carries the C′ and VALID→VOID acceptance cases. The exact IDs and count are frozen at dispatch. This supersedes "result/seal node set" here ([ruling](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02)).
 - R1: Linux qseal and result-G5 cases, and exhaustion and receipt-history cases (a receipt is history, not authority), plus Windows lines and `check`.
 - R2: interruption and retry cases, retained-attempt history, and the no-renewal assertions.
 
