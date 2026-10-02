@@ -37,8 +37,10 @@ is **not** the same as "no figure". Only `BluSky_Premium_50K` genuinely carries 
 (`firm_kwargs(inactivity_off=True)`) unless its own file says otherwise — the Part A figures, the
 A2 feasibility map and the ORB campaign cells included.
 
-That is the intended operational model, not an oversight: the **operator-placed weekly venue-idle
-token trade** satisfies the venue rule when the strategy itself has not fired, which makes the
+That is the intended operational model, not an oversight: the **weekly venue-idle token trade**
+(operator-placed, or agent-placed at the operator's direction for that specific trade under
+[surface-allocation ADR Addendum 2026-09-30b](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b))
+satisfies the venue rule when the strategy itself has not fired, which makes the
 mitigation load-bearing rather than optional.
 
 The barrier-**ON** re-MC has been run twice and is degenerate:

@@ -6,6 +6,18 @@ the initial-pass findings where stated. R1 is qualified only as a local engineer
 property; actual settlement and route qualification remain incomplete. The
 coordinating agent owns this record. No release acceptance is issued.
 
+**2026-09-30 scoped update:** [X-1 acceptance](../../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30)
+records a PASS for the observed one-contract MYM REST entry/native-stop behavior
+and normal attended terminal teardown. N1-entry/N1-b and R2 have that observed
+identity/fill/protection trace; they are not qualified wholesale or bound to a
+deployed strategy consumer. R3–R5 remain unproven for release. Same-session
+per-order reads succeeded for the observed entry/child. **Update 2026-10-01:**
+the separate post-teardown R-1 read was discharged for X-1's order, at that time
+only: Joshua's attended read 08:22–08:59Z returned `LOCATED_WITH_CLORDID`
+([dated owner result](../../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)). No competing-order coverage is claimed for the
+omitted intermediate P0b interval. This dated scoped update supersedes earlier
+“no actual trace” wording only for those observations. Live release remains blocked.
+
 The executed assessment sequence is specified in the
 [self-service closure plan](../../../superpowers/plans/2026-09-16-self-service-capability-closure.md).
 It preserves this record as the sole capability verdict owner.
@@ -42,7 +54,7 @@ fields not established below remain explicitly unknown as recorded there.
 | S4 | UNPROVEN | No complete fresh finished-close package or authenticated actual submission | Joshua reviews/signs the exact admissible package once S1–S3 are established |
 | S5 | UNPROVEN | No owner/settlement module at inspected host paths and no database artifact found in inspected data trees; global accepted-chain status remains unknown | Joshua confirms whether any other production owner/B7 acceptance location exists, with its retained receipt reference |
 | R1 | QUALIFIED — local engineering only | Accepted code at `7c31770`; crash/transport uncertainty tests and signed consumer integration executed successfully below | Coordinator re-runs affected durability cases if the later real transport changes dispatch/persistence boundaries |
-| R2 | UNPROVEN | Four actual historical order rows observed; no original report bytes or runtime-attempt/protection linkage accepted by a consumer | Coordinator acquires the original nonempty order/fill export through a working download path |
+| R2 | UNPROVEN | *[Updated 2026-10-01 per the scoped update above.]* The [X-1 acceptance](../../../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30) supplies an accepted original-byte identity/fill/protection trace for the observed one-contract MYM entry and native stop. It is not bound to a deployed strategy consumer, and no runtime-attempt/protection linkage is accepted by a consumer | Coordinator binds the accepted trace to the deployed consumer (runtime-attempt and protection linkage) in the owning integration work; no re-capture of the export is needed |
 | R3 | UNPROVEN | Documented positive-correlation recipe found; absent-match terminal closure and all-actor delayed-effect fence remain unsupported by examined evidence | Coordinator obtains a source-backed terminal/no-future-effect protocol for the original request scope before any resend logic |
 | R4 | UNPROVEN | Current-session reads and periodic history do not supply accepted complete causal history | Coordinator identifies one entitled producer with complete history and common causal acquisition/dispatch bounds |
 | R5 | UNPROVEN | Local config flags observed; current external managers/copiers/manual/queued requests not fully inventoried | Joshua supplies the enabled external-actor and outstanding-request inventory |

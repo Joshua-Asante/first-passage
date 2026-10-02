@@ -345,8 +345,12 @@ is owed before any armed session relies on adds.
 
 ## §8 — Preservation obligation
 
-The operator-placed account-preservation trade (at least one per venue week) is **not** part of
-this procedure and is never agent-placed; the rail stays disarmed for it. The current deadline and
+The account-preservation trade (at least one per venue week) is **not** part of this procedure;
+the rail stays disarmed for it. It is operator-placed, or agent-placed only at the operator's
+direction for that specific trade: `trade.submit` is an operator act (`high`), never grantable in a
+card ([ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b)).
+Broker credentials stay outside the agent environment; an agent acts only through an
+already-authenticated attended or computer-use surface. The current deadline and
 attestation state live on [STATE's forward board](../../../STATE.md#scheduled-forward-triggers) —
 read it there; this reusable procedure carries no date.
 

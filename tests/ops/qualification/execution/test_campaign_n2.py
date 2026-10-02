@@ -2088,3 +2088,203 @@ def test_part_a_commit_advances_through_the_real_store(
     # An exact retry after the reply returns the byte-identical receipt.
     again = json.loads(commit(instance, 'pag5', 'PART_A', candidate))
     assert again['historical'] is True and encoded(again['receipt']) == receipt
+
+
+def test_part_a_capture_retry_with_different_capture_fields_refuses(tmp_path, monkeypatch):
+    """D-S5-2 (Codex on #578): an exact retry of a PART_A capture is idempotent
+    only when the five S5-D1 capture fields equal the retained family row too.
+    A retry with the same result, payload and transition bytes but any other
+    valid capture field set refuses and leaves the family row as it was --
+    before attestation and after it."""
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    run_work(instance, 'pawork', 'part_a_worker')
+    payload = encoded(
+        {
+            'schema': 'fixture_part_a_worker_result',
+            'observations': {
+                'worker_compute_wall_ns': 1, 'worker_cpu_ns': 1, 'worker_peak_memory_bytes': 1
+            },
+        }
+    )
+    plan = part_a_plan(instance)
+    result = result_document(instance, 'pawork', 'PART_A', payload, plan)
+    transition_bytes = encoded(
+        {
+            'schema': 'qualification_campaign_work_transition/v1',
+            'attempt_id': instance.attempt,
+            'work_id': 'pawork',
+            'state': 'CAPTURED',
+            'clock': json.loads(supervisor.observe_campaign_clock()),
+            'data': {'capture_bytes_b64': base64.b64encode(result).decode('ascii')},
+        }
+    )
+    fields = _part_a_capture_fields(expanded=True)
+
+    def retain(**capture_fields):
+        return store(instance).retain_checkpoint_capture(
+            instance.attempt, 'pawork', result, payload, transition_bytes,
+            checkpoint='PART_A', **capture_fields,
+        )
+
+    retain(**fields)
+    retained = snap(instance)['checkpoints']['PART_A']
+    assert {name: retained[name] for name in fields} == fields
+    # Each alternative is a valid S5-D1 field set on its own.
+    altered = [
+        dict(fields, initial_prefix_sha256='0' * 64),
+        dict(fields, final_sha256='0' * 64),
+        dict(fields, initial_panels=1),
+        dict(fields, final_panels=4),
+        _part_a_capture_fields(expanded=False),
+    ]
+
+    def assert_refused(expected):
+        for capture_fields in altered:
+            with pytest.raises(ValueError, match='immutable checkpoint capture differs'):
+                retain(**capture_fields)
+            assert snap(instance)['checkpoints']['PART_A'] == expected
+
+    assert_refused(retained)
+    # The exact retry (same bytes, same fields) stays idempotent.
+    retain(**fields)
+    assert snap(instance)['checkpoints']['PART_A'] == retained
+    attestation = attestation_document(instance, 'pawork', 'PART_A', result, payload, plan)
+    store(instance).retain_checkpoint_attestation(
+        instance.attempt, attestation, checkpoint='PART_A', verify=lambda *a, **k: None
+    )
+    attested = snap(instance)['checkpoints']['PART_A']
+    assert attested['state'] == 'ATTESTED'
+    assert_refused(attested)
+
+
+# ---- D-S5-3: an exact capture retry after the family has progressed --------
+#
+# Operator ruling 2026-10-01 (#588): D-S5-3 gates T05 R1. One scene per
+# (checkpoint, family state) over the real store; each replays the exact
+# retained capture and must write nothing.
+
+_PART_A_PAYLOAD = encoded(
+    {
+        'schema': 'fixture_part_a_worker_result',
+        'observations': {
+            'worker_compute_wall_ns': 1, 'worker_cpu_ns': 1, 'worker_peak_memory_bytes': 1
+        },
+    }
+)
+
+
+def _n1_attested(tmp_path, monkeypatch):
+    from test_campaign_n1 import enrolled_capture
+
+    return enrolled_capture(tmp_path, monkeypatch)[0], 'n1work', 'N1'
+
+
+def _n1_committed(tmp_path, monkeypatch):
+    return committed_n1(tmp_path, monkeypatch), 'n1work', 'N1'
+
+
+def _n2_attested(tmp_path, monkeypatch):
+    instance = committed_n1(tmp_path, monkeypatch)
+    run_work(instance, 'n2work', 'n2_worker')
+    payload = worker_payload(
+        instance, plan=n2_plan(instance, committed_receipt(instance)),
+        checkpoint='N2', work='n2work',
+    )
+    capture_checkpoint(instance, 'n2work', 'N2', payload)
+    return instance, 'n2work', 'N2'
+
+
+def _n2_committed(tmp_path, monkeypatch):
+    return committed_n2(tmp_path, monkeypatch)[0], 'n2work', 'N2'
+
+
+def _part_a_attested(tmp_path, monkeypatch):
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    run_work(instance, 'pawork', 'part_a_worker')
+    capture_checkpoint(
+        instance, 'pawork', 'PART_A', _PART_A_PAYLOAD, **_part_a_capture_fields(expanded=True)
+    )
+    return instance, 'pawork', 'PART_A'
+
+
+def _part_a_committed(tmp_path, monkeypatch):
+    return committed_part_a(tmp_path, monkeypatch, passed=True)[0], 'pawork', 'PART_A'
+
+
+_COMMITTED_DIGESTS = (
+    'result_sha256', 'attestation_sha256', 'assessment_sha256', 'receipt_sha256'
+)
+
+
+def _budget_event_count(instance):
+    with store(instance).store.transaction() as connection:
+        return connection.execute(
+            'SELECT COUNT(*) FROM full_campaign_budget_events WHERE attempt_id=?',
+            (instance.attempt,),
+        ).fetchone()[0]
+
+
+@pytest.mark.parametrize(
+    'scene, family_state, digests',
+    [
+        (_n1_attested, 'ATTESTED', ('result_sha256', 'attestation_sha256')),
+        (_n1_committed, 'COMMITTED', _COMMITTED_DIGESTS),
+        (_n2_attested, 'ATTESTED', ('result_sha256', 'attestation_sha256')),
+        (_n2_committed, 'COMMITTED', _COMMITTED_DIGESTS),
+        (_part_a_attested, 'ATTESTED', ('result_sha256', 'attestation_sha256')),
+        (_part_a_committed, 'COMMITTED', _COMMITTED_DIGESTS),
+    ],
+    ids=[
+        'N1-attested', 'N1-committed', 'N2-attested', 'N2-committed',
+        'PART_A-attested', 'PART_A-committed',
+    ],
+)
+def test_exact_capture_retry_after_progress_writes_nothing(
+    tmp_path, monkeypatch, scene, family_state, digests
+):
+    """D-S5-3: an exact retry of a checkpoint capture -- the retained result
+    and payload bytes, the retained CAPTURED transition and (PART_A) the
+    retained S5-D1 fields -- once the family has moved past CAPTURED writes
+    nothing: the ATTESTED or COMMITTED family row keeps its state and its
+    attestation and receipt digests, the budget snapshot bytes and its event
+    chain are unchanged, and the retained capture row (attestation included)
+    is as it was."""
+    from c1_rail.qualification.execution.campaign_store import PART_A_CAPTURE_FIELDS
+    from c1_rail.qualification.execution.protocol import decode_base64
+
+    instance, work_id, checkpoint = scene(tmp_path, monkeypatch)
+    campaigns = store(instance)
+    budget = campaigns.budget_snapshot(instance.attempt)
+    events = _budget_event_count(instance)
+    state = json.loads(budget)
+    family = state['checkpoints'][checkpoint]
+    assert family['state'] == family_state
+    assert all(family.get(name) for name in digests), family
+    work = next(w for w in state['works'] if w['work_id'] == work_id)
+    captured = [
+        raw
+        for raw in (decode_base64(t) for t in work['transitions'])
+        if json.loads(raw)['state'] == 'CAPTURED'
+    ]
+    assert len(captured) == 1
+    retained = campaigns.checkpoint_capture(instance.attempt, checkpoint)
+    fields = (
+        {name: family[name] for name in PART_A_CAPTURE_FIELDS}
+        if checkpoint == 'PART_A'
+        else {}
+    )
+    campaigns.retain_checkpoint_capture(
+        instance.attempt,
+        work_id,
+        retained['result_bytes'],
+        retained['payload_bytes'],
+        captured[0],
+        checkpoint=checkpoint,
+        **fields,
+    )
+    assert campaigns.budget_snapshot(instance.attempt) == budget
+    assert _budget_event_count(instance) == events
+    assert store(instance).checkpoint_capture(instance.attempt, checkpoint) == retained
+    assert json.loads(campaigns.budget_snapshot(instance.attempt))['checkpoints'][
+        checkpoint
+    ] == family
