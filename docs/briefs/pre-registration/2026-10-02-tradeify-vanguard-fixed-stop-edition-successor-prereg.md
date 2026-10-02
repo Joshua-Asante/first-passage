@@ -45,7 +45,7 @@ Every table row carries a marker: *(CF)* means carried forward verbatim from the
 5. **§10** audit hooks point at this file instead of the closed original. *Reason:* otherwise they would check a closed record.
 6. **Sibling** link points to the ORB/Striker successor. *Reason:* the original is closed.
 7. **VAN-8** *(CH)*: the C-a proposed answer is added, the original question is quoted, the status becomes OWED for the operator's ratification, and the 2026-09-26 note is kept verbatim. *Reason:* item 7.2.
-8. **§3a** exit-split dependency bullet: its text is unchanged, with a dated successor marker appended. *Reason:* item 7.2.
+8. **§3a** exit-split dependency bullet *(CH)*: replaced with the first-release C-a text, conditional exactly as VAN-8 is. The original text is quoted. *Reason:* item 7.2; otherwise the successor would hold two conflicting exit contracts (Codex P2 4162481272 on #590).
 9. **§6** exit-split replay item is moot for the first release; the entry-split item is unchanged. *Reason:* item 7.2.
 10. **§8** step 2 drops VAN-8 from "answers" and asks for ratification of the proposed answer instead; the sequential-exit sentence is removed. Step 5 (new) asks for the ruling on the §7 successor-validity item, and step 6 adds the trailing-removed confirmation at freeze. *Reason:* items 7.2 and 7.6.1 (disposition 1).
 
@@ -118,7 +118,7 @@ A local session read the pinned Vanguard port (`e6a03d04…`) and Pine (`af26899
 
 **Rail dependencies this edition shares with the ORB/Striker editions (not port work):**
 - **Entry and add split.** Nothing yet turns an N-contract intent into N one-contract requests. The owner is T09 / TB-I3 scope under incident ADR §A8 rules 9–10.
-- **Exit split.** The port's close is one market exit for the whole position (`port:183-185`). Incident ADR §A8 assumes an exit is for one contract under the one-contract rule, so a multi-contract close also needs splitting at the rail. Recorded as freeze item VAN-8 here and STR-7 / ORB-6 in the sibling. *[Successor marker 2026-10-02: for the first release, VAN-8, STR-7 and ORB-6 carry the proposed C-a answer ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2), so no rail exit split is proposed; the entry split above stands.]*
+- *(CH)* **Exit split.** *Successor text (2026-10-02; proposed under [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2, owed for the operator's ratification and conditional exactly as VAN-8 is):* first release: C-a whole-leg liquidation; no N-sequential exits. The port's close is one market exit for the whole position (`port:183-185`). For the first release it is realized as one whole-leg broker liquidation, so no rail exit split is required. The condition is VAN-8's: C-a stays investigation-only until gate C (item 7.3), and if C-a fails its investigation or X-3, the close form returns to the operator before the first release (item 7.4) and this text does not stand. The entry and add split above is unchanged. *Original text (closed original, verbatim):* "The port's close is one market exit for the whole position (`port:183-185`). Incident ADR §A8 assumes an exit is for one contract under the one-contract rule, so a multi-contract close also needs splitting at the rail. Recorded as freeze item VAN-8 here and STR-7 / ORB-6 in the sibling."
 
 ## §4 — Identity binding (filled at freeze)
 
