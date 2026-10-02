@@ -85,7 +85,7 @@ reads this table. Regenerate with
 <!-- BEGIN generated: scripts-table -->
 _98 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
-† = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command invokes the file directly (it may still run inside another gate).
+† = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
 | Script | Layer | Gate id (tier) | Notes |
 |---|---|---|---|
@@ -139,13 +139,13 @@ _98 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/docker_verification.py` | governance† | — | — |
 | `scripts/event_study_read.py` | lab | — | — |
 | `scripts/evidence_archive.py` | governance† | `evidence-archive` (audit) | — |
-| `scripts/evidence_store/__init__.py` | governance† | — | — |
-| `scripts/evidence_store/__main__.py` | governance† | — | — |
-| `scripts/evidence_store/audit.py` | governance† | — | — |
-| `scripts/evidence_store/beliefs.py` | governance† | — | — |
-| `scripts/evidence_store/model.py` | governance† | — | — |
-| `scripts/evidence_store/retrieval.py` | governance† | — | — |
-| `scripts/evidence_store/store.py` | governance† | — | — |
+| `scripts/evidence_store/__init__.py` | governance† | `evidence-store` (path-conditional) | — |
+| `scripts/evidence_store/__main__.py` | governance† | `evidence-store` (path-conditional) | — |
+| `scripts/evidence_store/audit.py` | governance† | `evidence-store` (path-conditional) | — |
+| `scripts/evidence_store/beliefs.py` | governance† | `evidence-store` (path-conditional) | — |
+| `scripts/evidence_store/model.py` | governance† | `evidence-store` (path-conditional) | — |
+| `scripts/evidence_store/retrieval.py` | governance† | `evidence-store` (path-conditional) | — |
+| `scripts/evidence_store/store.py` | governance† | `evidence-store` (path-conditional) | — |
 | `scripts/find_owner.py` | governance† | — | — |
 | `scripts/fp.py` | governance† | — | — |
 | `scripts/gate_fire_log.py` | governance† | — | — |
