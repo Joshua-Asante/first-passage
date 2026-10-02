@@ -14,6 +14,7 @@ class SourceDayStatus(str,Enum):
     EXCHANGE_CLOSED='exchange_closed'
     POLICY_DENIED='policy_denied'
     UNKNOWN='unknown'
+    SOURCE_TRUNCATED='source_truncated'
 
 
 @dataclass(frozen=True)

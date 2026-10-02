@@ -670,6 +670,30 @@ Merged to `main` at `abb3914` (03:51Z). Merge-gate evidence on the merge head `a
 
 **Rulings carried:** seams 15–19 accepted as listed (19 = the S3 `receipt_bytes`/`status()` defect, being folded by the S3 session; T05's `result_context` workaround removed at integration); post-seam `_advance` writes `RESULT_COMMITTED_*`/`SEALED_PASS` into the canonical budget `state`, the family projection is a mirror; the synthetic-predecessor overlay (`synthetic_predecessor=True` in every record; non-synthetic later-checkpoint rows refused at this revision) accepted; the fixture's re-signing of the S3 builders' placeholder signatures accepted as disclosed; **no seal principal exists at 71732aa** (role_policy roles = qclient/qexec/qg5; `seal_probe_uid` is a validated-but-never-created instance field) — the real principal + credential root is seam row 11 and a host-provisioning change at integration. **S7 GO:** commit the tests-first draft (ten §3 S7 cases) and build `campaign_seal.py`/`seal_service.py` against the frozen §1 shapes; `SealStore.reserve_seal_work` mirrors `reserve_result_work`; the Windows-injectable credential loader (`_loader=`) is accepted. Lines 2/3 + `check` once on the final tree; return per §4/§7; no Linux run; no PR.
 
+**S6 freeze amendment: DB10 and C′ runtime identity (operator ruling 2026-10-02, "yes, accept all seven").** The seven terms below amend the S6 freeze above. They were drafted in the H9 return (prepared `0a966c3`; rebased `f237178` on `c3ab0cc`) and in the coordinator-narrowed C′ design.
+1. **DB10 replaces F2's DB9 RESULT/SEAL mount.** DB10 is the exact accepted, widened DB9 plus `RESULT_SCHEMA` and `SEAL_SCHEMA`. Every frozen wire-family schema is unchanged.
+2. **Migration from 9 to 10** adds those two tables only. Existing S4/S5 rows and custody bytes keep their identity. No plan, salt, seed, attempt, allowance or deadline is renewed.
+3. **Layout checks.** `ResultStore` accepts only 9 or 10, and checks the actual schemas instead of inferring a mount from the version number. ExecutionStore, CampaignStore, the funding gates and the fixtures move together. A false-mounted 9, an incomplete 10 and unknown versions are refused. Historical upstream compatibility is retained.
+4. **Acceptance evidence** must include:
+   - fail-first refusal evidence;
+   - preservation and reopen of a real retained DB9;
+   - an exact retry that writes nothing.
+
+   Windows preparation evidence does not count as qualification Linux evidence.
+5. **R1 coverage.** Shared store and funding modules changed inside the S4/S5 Linux closure, so R1 runs the combined selection under its own grant. This is already ruled as "broaden R1" (see the T05 C′ rulings entry). Result/seal-only nodes can't stand in for it.
+6. **T00 isolation.** No T00 producer or test file changes. *Satisfied 2026-10-02:* T00 landed at `c3ab0cc`, and H9 rebased to `f237178`. The H9 diff doesn't touch the T00 P7 first-party closure (40 modules), so no P7 re-run is owed. That is re-checked at the C′ build dispatch.
+7. **C′ runtime identity contract.**
+   - **Worker base:** a standing, operator-approved worker base digest (`python@sha256:afc139a0…5a63`). It is kept separate from the built worker image identity.
+   - **Entrypoint binding:** a signed release/runtime revision binds the finite set of known R1 host entrypoints.
+   - **Checks:** each mapped launch is checked when it actually starts. The relevant identity is rechecked at the checkpoint, result and seal commits and at every VALID→VOID transition. The VOID recheck is uncharged.
+   - **Evidence kept:** versioned launch, exit and recheck evidence.
+   - **Preserved:** exact historical retry, the original budgets and deadlines, frozen v1 RESULT/SEAL, and the two-table DB10 layout. Binding goes through the existing `release_sha256`.
+   - **Fail-closed:** a missing pin, a failed tuple check, an image mismatch, a timeout or exhaustion refuses authority.
+   - **Residuals cited:** the operator-accepted residual "T05 C′ first-release host environment drift", which covers unmediated descendants and OS helpers.
+8. **Joint-batch validator reconciliation** (operator ruling 2026-10-02, 'yes to … term 8'). The canonical joint-batch policy governs (S4 joint N2/PART_B ruling; `policy.required_output_roles`; campaign spec E03). In the H9 integration, all three T05 result validation seams — `campaign_result.parse_receipt_row`, `_row_outcome`, `parse_campaign_result` — accept every authentic complete prefix the policy allows (PASS,PASS,FAIL,PASS; PASS,PASS,FAIL,FAIL; PASS,PASS,PASS,FAIL). Wire shape, stage order, membership, families/operations and every prior-checkpoint failure constraint (a FAIL before the joint batch ends the campaign) are unchanged. Owned by H9 lane D step 3, with the result-role (result_g5/seal) funding and TEST_ONLY result-fault cases.
+
+**What this does not grant:** any build, any R1 or R2 acceptance, or any merge. The C′ implementation still needs the coordinator's separate dispatch.
+
 ### S4/T03 packet drafted and its four decisions ruled, 2026-09-21
 
 `docs/briefs/handoffs/2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md` (02c6b51) — authored in parallel with S3's Linux iteration so no packet-authoring gap sits between S3's acceptance and S4's dispatch. Operator rulings (all recommended options): **S4-D1** custody widened once to `PRIMARY KEY(attempt_id, checkpoint)` + `CHECK IN ('N1','N2','PART_A')` at DB `user_version` 9 (S5 needs no layout change; T05's tables become v10 at integration, one-line seam; column names unchanged for T05's accessor); **S4-D2** one capture, one attestation, one assessment with `stage_decisions {N2, PART_B}` and the campaign decision, one receipt bound to the committed N1 receipt — family `/v1` with checkpoint-keyed closed field sets, snapshot `/v7`; **S4-D3** release `/v6` + profile `/v6` with `['N1','N2']`, v5 stays exactly `['N1']`; **S4-D4** the joint `(PARTIAL, NONE)` continuation legal only under a versioned FULL_E1 policy identity, producers/consumers re-pinned together, N1_ONLY keeps rejecting. Freeze on S3's merge (anchors re-taken at the merge head).
@@ -1419,7 +1443,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 1. The four out-of-§2 test files (`test_campaign_funding.py`, `test_campaign_snapshot_versions.py`, `test_checkpoint_widening.py`, `test_checkpoint_validation.py`) are **ADMITTED**, test-only.
 2. The G5 completion-state tuple gaining `FULL_PASS_READY` and `PART_A_FAILED` is **ACCEPTED**.
 3. G5 dropping full source admission for PART_A is **ACCEPTED for TEST_ONLY**, on condition that Codex's C3 review confirms the G5 closure rule requires it. G5 relies on the contract-pinned calendar digest and the frozen FULL population.
-4. Pilot identity checked against the plan is **ACCEPTED for TEST_ONLY**. **Carried forward:** before the acceptance-grade or production run it must be strengthened to an independently observed pilot draw.
+4. Pilot identity checked against the plan is **ACCEPTED for TEST_ONLY**. **Carried forward:** before the acceptance-grade or production run it must be strengthened to an independently observed pilot draw. *[2026-10-02: timing reconciled by operator ruling; see [B4 in the C3 step-1 acceptance](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29).]*
 5. The P-4 by-construction limitation is **ACCEPTED**: byte equality with the frozen derivation is at least as strong as a parser refusal.
 6. The SR-8 CPU split exported as null is **ACCEPTED** as disclosed.
 7. The hook-workaround writes are **ACCEPTED**: they were in scope and reviewed before each commit, and no new rule is added. Codex's C3 review is asked to look closely at the escalation-lane commits `e38b308`, `c2f834a`, `3362b43` and `d4afa5b`.
@@ -1456,6 +1480,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 - **C3 step 1 is ACCEPTED** on the S5 return `c7713e7` and the harness `0fe3e25`. The basis is the entry above: Codex RESOLVED, and the executed `bind_budget` check.
 - **B3 is accepted.** The residual **"G5 independent bars verification"** is carried to the **CP-6 inventory**. For PART_A, G5 does not re-verify the calendar ↔ population-index ↔ bars consistency.
 - **B4 is accepted for TEST_ONLY.** Strengthening pilot identity to an independently observed pilot draw is **due with T05, before CP-6**.
+  - *Operator ruling 2026-10-02 (sitting 1), given directly to the deployment coordinator ("all recommended"), reconciling this bullet with item B.4 above:* the observed pilot draw lands **before T06 dispatch** and does **not** block T05 R1. "Acceptance-grade" in B.4 reads as T06/S8 and production.
 - **B7 is closed** per Codex's review.
 - **C3 Linux grant, in this order:**
   1. The harness module's Linux run for `0fe3e25`, through a draft, do-not-merge PR of `claude/s5-stage1c-harness`. It is cited beside the first subset. `pull_request` CI checks out the PR merge ref, so the coordinator binds the run to `0fe3e25` by showing that the harness module, the harness and the measurement workflow are byte-identical there.
@@ -1937,7 +1962,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - #578 may merge at `1fe99fa` with these two P2 threads open, which overrides the merge train's no-open-P2 gate for these two only. **#578 lands before this ledger entry merges.** If anything else moves `main` past `2b98d22` first, including this entry, the packet's main-movement rule applies: a new H, with steps 2–5 again. It still needs the Linux run `36902447502` to read ok at H, green CI, and no further Codex finding at H.
 - The follow-up fix slice (#586, for D-S5-1/D-S5-2) gets fail-first tests for each defect *(D-S5-3 adds a second, separate slice with its own run and acceptance; see the D-S5-3 ruling below)*, and **must merge before T05 integration acceptance** (checkpoint R1 in the deployment checklist's result/seal row; T05 is already built and frozen at `6cf2732`). T05 integration *preparation* (H9) may proceed meanwhile, but its integration branch is rebuilt on a `main` that includes the fix before R1. *(This names the event the operator's "fix before T05" gates.)* The fixes are outside the 68-module measured closure (`campaign_supervisor` and `campaign_store` are not in it). They are inside the Linux selection's closure, so the fix needs its own full S4-plus-Part-A Linux run.
 
-- **T00 P7 ordering.** The P7 record binds its code head, so T00's P7 is re-run, freshly approved and accepted **at the head T00 actually merges at**. If `main` moves before T00 merges, for example by the D-S5 fix slice landing, that P7 run is repeated at the new head with a fresh approval. **Recommended order:** #578, then the D-S5 fix slice (#586), then the D-S5-3 fix, then the T00 rebase, P7 re-run, fresh approval and merge. That way P7 runs once. *(D-S5-3 added 2026-10-01; see the D-S5-3 ruling below.)*
+- **T00 P7 ordering.** The P7 record binds its code head, so T00's P7 is re-run, freshly approved and accepted **at the head T00 actually merges at**. If `main` moves before T00 merges, for example by the D-S5 fix slice landing, that P7 run is repeated at the new head with a fresh approval. **Recommended order:** #578, then the D-S5 fix slice (#586), then the D-S5-3 fix, then the T00 rebase, P7 re-run, fresh approval and merge. That way P7 runs once. *(D-S5-3 added 2026-10-01; see the D-S5-3 ruling below.)* *2026-10-02: step-1b P7 re-run done and accepted (`b2c9f9c`; landed `c3ab0cc`, tree-identical); see the [closure doc §7](../../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus).*
 
 **Not granted:** T05 integration acceptance (R1) before the fix lands, and no production use. Everything else in the C3 ruling above stands.
 
@@ -1956,3 +1981,56 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - The clean-review exception in the defects ruling above covers D-S5-1 and D-S5-2 only.
 
 **Not granted:** T05 integration acceptance (R1) before the D-S5-3 fix lands, and no production use.
+
+### Operator rulings — T05 environment sealing (C′) and the first-release host environment drift residual, 2026-10-02
+
+*Joshua, directly in the coordinating session, on 2026-10-02. These rulings are owned here. H9 checkpoint R1 ([staged acceptance](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md)) and the deployment checklist's T05 row link to this entry and carry it as an R1 gate.*
+
+**Rulings, in order:**
+1. **"scoping is fine, defer the sealing to T05".** T00's P7 `code_closure_sha256` identifies the Python-source closure plus the recorded interpreter binding. Environment sealing is owed by T05 before the R1 grant.
+2. **"C for the T05 sealing"**, revised to **C′** after the H9 source check found that host-side code decides outcomes. That host-side code includes Part-A adjudication, calendar and deadline logic in Eastern time, budget exhaustion, VOID, and aggregate result and seal checks.
+3. **"yes"** to the coordinator's narrowed C′. Identity checks cover only the finite, known R1 host entrypoints. Unmediated descendants and OS helpers join the residual.
+4. **"yes to the pin".** The standing, approved worker base image is **`python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63`**: the `python:3.12.3-slim-bookworm` manifest list, the base used by the S5 and S4 Linux evidence.
+   - **Required selection:** the linux/amd64 child `sha256:fd3817f3a855f6c2ada16ac9468e5ee93e361005bd226fd5a5ee1a504e038c84`, whose config `sha256:cf001c2f8af7214144935ae5b37c9e626ccf789117c10c1f691766d4658f1b1e` declares `architecture=amd64`, `os=linux` and `PYTHON_VERSION=3.12.3` (created 2024-04-09).
+   - **Provenance:** an anonymous, read-only public registry read by the coordinator on 2026-10-02. The index, child-manifest and config bytes each hash to their own digest. They are retained privately, with `SHA256SUMS`, under `local_artifacts/h9-t05-base-pin-afc139a0/coordinator-fetch/`. Nothing was pulled, built or run.
+   - **Known trade-off, accepted:** the image predates later Python and OS security patches. Workers run offline.
+   - **Changes:** any later pin change needs Joshua's ruling and a reviewed change. The canonical pin file itself is created by the C′ build.
+5. **"broaden R1".** R1 runs the **combined** Linux node set, in this order:
+   1. service;
+   2. N1;
+   3. N2;
+   4. Part A;
+   5. result/seal;
+   6. supervision, last.
+
+   R1 also includes the C′ and VALID→VOID acceptance cases. The reason: H9's prepared changes modify shared store code on the S4 and Part-A paths, and a result/seal-only run cannot catch a regression there. The exact collected IDs and count are frozen at the R1 dispatch. This supersedes the "result/seal node set only" wording in H9 checkpoint R1 and in the D-S5-3 entry above, which stays as a dated record.
+
+**C′ obligation, owed by T05 before the R1 grant. It is a design: no build is dispatched by this entry.**
+- **Worker base image.** It must be a **standing, operator-approved digest**, not a tag resolved at build time. A missing, tag-only or mismatched pin refuses. The initial digest and any later update need Joshua's approval and a reviewed change.
+- **Host identity checks.** A signed release/runtime revision binds a finite mapping of the known R1 host entrypoints:
+  - the runner/pytest admin fixture;
+  - the service supervisor;
+  - the campaign guardian, control and probes;
+  - the N1, N2, PART_A and RESULT G5 roles;
+  - qseal;
+  - the Python bootstrap/owned-command wrapper.
+
+  Each mapped launch is checked before it spawns, by the child itself, and by the controller through `/proc`. Each is rechecked at the checkpoint, result and seal authority transitions, and at **every VALID→VOID transition** (campaign spec :90 makes VOID its own irreversible authority transition). The checkpoint, result and seal rechecks run inside the original CPU/wall reservation and absolute deadline, with no refresh or retry. **The VOID recheck is uncharged.** It does not depend on remaining allowance or the deadline, matching the accepted uncharged VOID path (`claim_void_authentication`, sequence 0), so VOID stays possible for campaigns in BUDGET_UNCERTAIN, IN_DOUBT or past their deadline. A VOID recheck mismatch refuses an *automatic* VOID commit and leaves the campaign for the operator-recorded VOID path, which records the mismatch. It never leaves the campaign with authority to PASS.
+- **Evidence and failures.** Launch and exit evidence is retained in versioned supervision events. **So is every transition-time recheck**: its expected identity, observed identity, transition and verdict, so that R1 can verify coverage. A mismatch, a failed check, a timeout or exhaustion refuses authority.
+- **Unchanged.** Frozen v1 RESULT/SEAL and the DB10 two-table layout stay as they are, bound through the existing `release_sha256`. The design term is proposed as term 7 of the S6 DB10 draft, which stays DRAFT.
+
+**Residual accepted by Joshua for the first release: "T05 C′ first-release host environment drift."**
+- **Not covered by the checks:** an unchanged interpreter and lock identity does not seal installed distribution contents, tzdata or other data files, external mounts, late-loaded native or transitive libraries, or OS and kernel services. **Unmediated descendant processes and OS helper binaries (systemctl, busctl, docker), and OS daemons and the kernel, are not identity-covered either.**
+- **Effect:** drift in any of these can change adjudication, calendar, deadline and VOID outcomes.
+- **Size:** its magnitude is **unmeasured**.
+- **No hermeticity claim** is made. Every R1 packet cites this residual, the expected identity contract and the observed coverage.
+
+**Unchanged:**
+- Full S5 custody.
+- R1's express Linux grant, now for the combined node set (ruling 5), recorded in H9 checkpoint R1.
+- Independent review.
+- T00-first integration.
+- Three qualification-path items still owed before R1:
+  - truncated-calendar validation;
+  - calendar-role binding;
+  - reviewer identity and independence.
