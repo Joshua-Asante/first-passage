@@ -258,9 +258,26 @@ Each row supplies the CAP procedure's fields, either in its own table (action/sc
 
 **Addendum 2026-10-02 — X-3 only: two-symbol exposure for the scope-extended X-3.**
 
-- **Authority.** Joshua said "yes, amend it for X-3" on 2026-10-02, in the coordinating session. Earlier the same day he ruled that the CrossTrade cancel-scope question (Q6) is settled by a two-symbol check folded into X-3, and that the X-3 trace settles Q9. Those rulings are recorded in the C-a selection register (PR #593) and in checklist item 7.3.
+- **Authority.** Joshua said "yes, amend it for X-3" on 2026-10-02, in the coordinating session. The same day, also directly, he ruled the following for the first release:
+  - CrossTrade's vendor answers are **not a gate** for selecting C-a.
+  - **Q6 (cancel scope)** is to be settled by a two-symbol check folded into X-3.
+  - **Q9** is discharged **operationally** by the X-3 trace, and "stricter proof is not necessary". The criteria are four:
+    1. exactly one closing order, uniquely identified through a supported lifecycle or fill chain, whose fills reconcile A's exit;
+    2. A's original children are Canceled;
+    3. no other order is created on either symbol;
+    4. B's original children are still Working with unchanged identities.
+  - **Residual risk accepted under that ruling.** These stay unproven: whether the broker primitive is `liquidateposition` or an opposing market order with cancels, hidden requests, and atomicity.
+  - **Where the rulings are recorded.** They are being recorded in the C-a selection register and in a dated sub-entry to checklist item 7.3, both in PR #593, which is pending. Until #593 lands, checklist item 7.3 on `main` still shows the earlier rule (an authoritative answer, or a residual-risk decision). That earlier rule is the record these rulings supersede for the first release.
+  - **What this addendum does and doesn't do.** It records the exposure change that the check needs. It doesn't itself discharge Q6 or Q9; the X-3 evidence does that, under the register's rows.
 - **Scope.** This applies only to the scope-extended X-3 cancel-scope observation, on the incumbent Tradovate Demo evaluation account, within the accepted X-3 card's abort and attended-recovery bounds.
-- **What changes.** For this X-3 row only, the *Exposure limit* above ("one contract per request and in total") is replaced:
+- **What changes.** For this X-3 row only, two rules above are replaced.
+  - **The *Instrument* rule** ("one micro symbol from the book; MYM keeps X-1 → X-3 on one position") is replaced as follows:
+    - Symbol A stays the existing X-3 symbol, MYM, so X-1 → X-3 continuity is kept.
+    - Symbol B is a **second, distinct micro symbol from the book**: MNQ or MGC, chosen in the authorization.
+    - Each is the front-month contract, away from roll, under the existing roll rule.
+    - 6J (Aegis) is excluded, because it is not a micro contract; any Aegis trace stays a separate operator decision.
+    - The X-3 result is not transferred to other symbols beyond A and B without an accepted argument (C-a register S-T3a).
+  - **The *Exposure limit*** ("one contract per request and in total") is replaced:
   - **Limit.** One contract per placement and per symbol, on two distinct symbols, so at most two contracts in total.
   - **Protection.** Each placement carries its own native stop and target.
   - **Intended state before the close.** One protected one-contract position on symbol A and one on symbol B.
