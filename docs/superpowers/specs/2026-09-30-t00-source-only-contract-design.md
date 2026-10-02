@@ -241,7 +241,7 @@ Any refusal writes no P7 record. The shared `runtime.source_closure` AST travers
 
 The Task 4 return names `code_closure_sha256`.
 
-**Scope of a P7 result.** P7 MET holds **only for that loaded closure**. Any later change to a recorded first-party file or third-party distribution, including the rebase onto post-S5 `main` required by the merge hold, requires re-verification. Reuse is not allowed. A change to a file that was never loaded does not void it.
+**Scope of a P7 result.** P7 MET holds **only for that loaded closure**. Any later change to a recorded first-party file or third-party distribution, including the rebase onto post-S5 `main` required by the merge hold, requires re-verification. Reuse is not allowed. *P3-3 rewording, 2026-10-02:* the record also binds the git `code_head` (§2.5b(2)), and reconstruction compares every non-volatile field. So **any** new commit voids the record for acceptance, even one that changes no loaded file. The closure may reproduce, but the head does not. A P7 result is therefore valid only at the exact commit it was produced at; for merge, that means the head the branch merges at.
 
 **Acceptance from bytes (revision 4; superseded where it conflicts by §2.5b).** `p7_evidence.accept_p7_record(record_bytes, *, code_root, now) -> AcceptedP7Record` is a standalone check. It uses no in-process receipt or issuance registry.
 1. It re-validates the embedded contract and approval bytes with `validate_source_contract` against the pinned `SOURCE_SIGNING_KEYS` at `now`, including expiry and pin revocation. Observed artifact digests come from the record's inventory; retained bytes are not re-read.
