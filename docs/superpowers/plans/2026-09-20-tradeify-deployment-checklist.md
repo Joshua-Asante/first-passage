@@ -637,7 +637,7 @@ Dated and additive. The 2026-09-28 continuation above is unchanged as the record
 **Also recorded:**
 - **#570** (the simplification decision packet) is the vehicle for D-GO, D-HIST, D-REC and D-MON.
 - **#579** (the audit-rescope card) is **not dispatched**; no new audit starts.
-- **Qualification recovery (D3, R1–R10) is unchanged** by these rulings. Any simplification of it comes back as a separate D3 amendment, using #570 §4's interruption-cost comparison.
+- **Qualification recovery (D3, R1–R10) is unchanged** by these rulings. Any simplification of it comes back as a separate D3 amendment covering [H9 checkpoint R2](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h9--resultseal-integration-and-bounded-same-sample-recovery-two-checkpoints), the D3 recovery slice; see [#570's record](../../notes/2026-09-30-tradeify-simplification-decision-packet.md) (its pre-ruling §4 interruption-cost comparison is retrievable at `564b239`).
 
 ## Verification of this planning artifact
 
