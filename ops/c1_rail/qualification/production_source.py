@@ -1201,8 +1201,16 @@ class ProductionSource:
         return self._engine(self._quotes).run(path)
 
     def replay(self, path):
-        result = self._replay_raw(path)
-        return _seal(self.contract, result) if _is_source_only(self.contract) else result
+        if not _is_source_only(self.contract):
+            return self._replay_raw(path)
+        from .replay import ReplayDeadlineFailure
+        # Source-only: a confirmed deadline violation is sealed like replay_bracket's
+        # T=infinity run, so no raw ReplayResult escapes on .result (Codex P2 on #594).
+        try:
+            result, failed = self._replay_raw(path), False
+        except ReplayDeadlineFailure as exc:
+            result, failed = exc.result, True
+        return _seal(self.contract, result, deadline_failure=failed)
 
     def replay_bracket(self, path):
         """R1 and R2 on separate freshly loaded engines; each keeps its own result.
@@ -1256,8 +1264,21 @@ class ProductionSource:
 
     def proof(self, panel):
         from .paths import PathAssembler
+        from .replay import ReplayDeadlineFailure
         path = PathAssembler(self.path_start_date).assemble(tuple((s,) for s in panel), horizon_sessions=len(panel))
-        result = self._replay_raw(path)
+        if not _is_source_only(self.contract):
+            result = self._replay_raw(path)
+        else:
+            # A source-only proof refuses a deadline violation without carrying the raw
+            # result: the refusal is raised outside the handler, so neither .result nor
+            # __context__ reaches the caller (Codex P2 on #594).
+            result = None
+            try:
+                result = self._replay_raw(path)
+            except ReplayDeadlineFailure:
+                pass
+            if result is None:
+                raise ValueError('SOURCE_ONLY_PROOF_DEADLINE_FAILURE: the continuous proof replay violated its own-flat deadline')
         rows = result.sessions
         if len(rows) != len(panel) or any(a.end_edge != b.start_edge for a, b in zip(rows, rows[1:])):
             raise ValueError('continuous proof replay has incomplete or discontinuous ledger edges')

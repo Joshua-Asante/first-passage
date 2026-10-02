@@ -358,11 +358,18 @@ def sha256_bytes(raw):
 
 def run_p7(*, code_root, contract_path, approval_path, registry_path, artifact_root, path_spec_path, out_path,
            bootstrap=None, python=None, timeout=1800):
-    """The only launcher: ``python -I -S -B -c P7_BOOTSTRAP`` in a fresh process."""
+    """The only launcher: ``python -I -S -B -c P7_BOOTSTRAP`` in a fresh process.
+
+    Every path is resolved before the child's working directory becomes the output's
+    directory, so relative arguments keep meaning the caller's paths (Codex P2 on #594).
+    """
+    code_root, contract_path, approval_path, registry_path, artifact_root, path_spec_path, out_path = (
+        Path(value).resolve() for value in (code_root, contract_path, approval_path, registry_path, artifact_root,
+                                            path_spec_path, out_path))
     command = [str(python or sys.executable), '-I', '-S', '-B', '-c', P7_BOOTSTRAP if bootstrap is None else bootstrap,
-               str(Path(code_root).resolve()), str(contract_path), str(approval_path), str(registry_path),
-               str(Path(artifact_root).resolve()), str(path_spec_path), str(out_path)]
-    workdir = Path(out_path).resolve().parent
+               str(code_root), str(contract_path), str(approval_path), str(registry_path),
+               str(artifact_root), str(path_spec_path), str(out_path)]
+    workdir = out_path.parent
     return subprocess.run(command, capture_output=True, text=True, cwd=workdir, timeout=timeout)
 
 

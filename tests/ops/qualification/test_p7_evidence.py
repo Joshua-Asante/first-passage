@@ -270,6 +270,20 @@ def test_accept_refuses_a_failed_reconstruction_child_even_with_matching_output(
         env.accept(record, root)
 
 
+def test_run_p7_resolves_relative_paths_before_changing_cwd(env, monkeypatch):  # Codex P2 on #594
+    from c1_rail.qualification import p7_evidence
+    root = env.code_root()
+    (env.tmp / 'records').mkdir()
+    monkeypatch.chdir(env.tmp)
+    relative = lambda path: os.path.relpath(path, env.tmp)
+    done = p7_evidence.run_p7(code_root=relative(root), contract_path=relative(env.contract_path),
+                              approval_path=relative(env.approval_path), registry_path=relative(env.registry_path),
+                              artifact_root=relative(env.case.root), path_spec_path=relative(env.path_spec),
+                              out_path=os.path.join('records', 'p7.json'))
+    assert done.returncode == 0, done.stderr[-3000:]
+    assert (env.tmp / 'records' / 'p7.json').is_file()
+
+
 def test_forbidden_matching_is_exact_or_package_prefix(env):  # rev 4.3 (a)
     from c1_rail.qualification import p7_evidence
     forbidden = p7_evidence.forbidden_module

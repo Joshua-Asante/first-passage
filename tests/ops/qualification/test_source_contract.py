@@ -511,6 +511,29 @@ def _held_orb(monkeypatch):
     monkeypatch.setattr(fixture_module, 'build_artifacts', holding)
 
 
+def test_source_only_replay_and_proof_never_leak_a_raw_deadline_result(tmp_path, monkeypatch):  # Codex P2 on #594
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.paths import PathAssembler
+    from c1_rail.qualification.replay import ReplayDeadlineFailure
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    case = build_source_case(tmp_path, monkeypatch)
+    source = production_source.ProductionSource.build(case.validate(), artifact_root=case.root)
+    panel = source.sessions[:2]
+    path = PathAssembler(source.path_start_date).assemble((panel,), horizon_sessions=2)
+    raw = source._replay_raw(path)
+
+    def violated(self, path):
+        raise ReplayDeadlineFailure(raw)
+    monkeypatch.setattr(production_source.ProductionSource, '_replay_raw', violated)
+    sealed = source.replay(path)
+    assert type(sealed) is production_source.SourceOnlyReplay and sealed.deadline_failure is True
+    assert [row.source_session_id for row in sealed.sessions] == [row.source_session_id for row in raw.sessions]
+    with pytest.raises(ValueError, match='SOURCE_ONLY_PROOF_DEADLINE_FAILURE') as refusal:
+        source.proof(panel)
+    assert refusal.value.__context__ is None and refusal.value.__cause__ is None
+    assert not hasattr(refusal.value, 'result')
+
+
 def test_source_only_replay_bracket_fresh_engines_and_label(tmp_path, monkeypatch):  # A12
     """End to end with every guard intact; only keys/constants are pinned in-process."""
     from c1_signal_daemon import book_adapters
