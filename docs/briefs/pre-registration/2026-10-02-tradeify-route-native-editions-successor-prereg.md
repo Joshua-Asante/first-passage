@@ -32,7 +32,7 @@ Every table row carries a marker: *(CF)* means carried forward verbatim from the
 2. **§D Disclosure and §R standing rule** added. *Reason:* item 7.6.1 requires both. §D also requires answerers of the trail-replacement rows to state whether they have seen the counts (coordinator direction on #591), as a fixed marker in the ORB-3 status cell; §7 makes it a freeze item and §10 greps for it (Codex P2 on #591).
 3. **§0** gains a successor-reads note; the original table and text are unchanged. *Reason:* Rule 0 for this draft.
 4. **§7** gains three bullets (the third is the answerer-exposure freeze item, see item 2): a proposed reading of the no-amendment-after-output bullet for this successor, and the standing rule. *Reason:* the disclosed outputs predate this file, and read literally they would forbid ever completing it. The reading is proposed, not ruled. It is an explicit freeze blocker (the §7 **Successor validity** bullet, marked OWED for the operator's ratification), with a matching §8 step and a dedicated §10 grep (Codex P1 on #591).
-5. **§10** audit hooks point at this file instead of the closed original. *Reason:* otherwise they would check a closed record.
+5. **§10** audit hooks point at this file instead of the closed original. *Reason:* otherwise they would check a closed record. The Status hook is anchored on the frozen form (``**Status:** `FROZEN <YYYY-MM-DD>` ``), so it fails while the file is not frozen (Codex P2 on #591).
 6. **§1** Vanguard link points to the Vanguard successor. *Reason:* the original is closed.
 7. **ORB-6** and **STR-7** *(CH)*: the C-a proposed answer is added, the original question is quoted, the status becomes OWED for the operator's ratification, and the 2026-09-26 note is kept verbatim. STR-7's answer is conditional on STR-5 being established whole-leg; a subset case returns to the operator and is never widened. *Reason:* item 7.2; items 7.5 and §59 Ruling 5 (Codex P1 on #591).
 8. **§6** exit-split replay item is moot for the first release, marked OWED for the operator's ratification so the §10 grep blocks freeze until it is ruled (Codex P2 on #591); the entry-split item is unchanged. *Reason:* item 7.2.
@@ -154,8 +154,9 @@ The public repository receives identities and behavior shapes only, never privat
 grep -nE '^\| ORB-3 [^|]*\| [^|]*\| [^|]*Answerer exposure: (seen|not seen) — [A-Za-z][^|]* \|$' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
 # Successor-validity freeze blocker (§7, §8): expect no output at freeze
 grep -n '^- \*\*Successor validity — OW[E]D' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
-# Status must read FROZEN before any edition replay or E1 run exists
-grep -n '^\*\*Status:\*\*' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
+# Status must read FROZEN before any edition replay or E1 run exists: expect exactly one line;
+# no output means the file is not frozen (successor: anchored on the frozen form, Codex P2 on #591)
+grep -nE '^\*\*Status:\*\* `FROZEN [0-9]{4}-[0-9]{2}-[0-9]{2}`' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
 # No unresolved status may remain at freeze; expect no output.
 # The pattern matches status cells and the replay-choice marker only, not explanatory prose.
 grep -nE '\| \*\*OW[E]D|\(OW[E]D,|— OW[E]D \(' docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md
