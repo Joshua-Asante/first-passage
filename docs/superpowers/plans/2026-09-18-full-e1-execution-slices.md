@@ -2035,7 +2035,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 
 ### Coordinator acceptance — D-S5-1/D-S5-2 fix slice (#586), 2026-10-02
 
-**DRAFT FOR COORDINATOR SIGN-OFF.** A worker drafted this from the records below. It takes effect when the coordinator signs it.
+**ACCEPTED by the coordinator, 2026-10-02.** Drafted by a worker from the records below; the coordinator re-checked the evidence and signed it.
 
 **Item.** #586 (`claude/s5-defects-d1-d2`), merged 2026-10-01 as `981eb12` from head `c087fc8`; the merge tree equals the head tree. Gate: the [defects ruling](#operator-ruling--land-s5-with-two-named-test_only-defects-fix-before-t05-2026-10-01).
 
@@ -2047,13 +2047,13 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 | Stage 1c measured closure unchanged | #586 recorded `1fe99fa` vs `160a5c6`: 68 measured and 63 staging modules, same membership, no changed bytes. Re-run 2026-10-02 with `stage1c_closure_table.py.txt`: `c7713e7` → `981eb12` measured 68, same membership, 0 changed; `1fe99fa` → `981eb12` measured and staging 0 changed |
 | Private archive | `local_artifacts/d-s5-runs-2026-10/`: `SHA256SUMS` SHA-256 `5406252a…ac803`, 270 entries (138 for this run), `sha256sum -c` clean. Its `record.json` (`856240d3…`) equals the fresh download |
 
-**Caveat.** The D-S5-1 red ran an earlier revision of `test_campaign_io_release.py` (SHA-256 `81963842…`) than the one that landed (`4850d5d7…`). The landed D-S5-1 test has no red record on unfixed code. The D-S5-2 red ran the landed test bytes.
+**Caveat.** The D-S5-1 red ran an earlier revision of `test_campaign_io_release.py` (SHA-256 `81963842…`) than the one that landed (`4850d5d7…`). The landed D-S5-1 test has no red record on unfixed code. The D-S5-2 red ran the landed test bytes. *Closed 2026-10-02 by the coordinator:* the landed `test_campaign_io_release.py`, run at `981eb12` with `campaign_supervisor.py` reverted to `1fe99fa`, fails **4 of 7**: `test_io_pairs_are_bound_to_the_guardian_and_bounded_by_the_works_in_flight`, both `test_in_doubt_inspection_copy_is_staged_before_the_pair_is_released` cases, and `test_part_a_output_mount_holds_every_file_at_its_per_file_bound`. With the fixed file it passes **7 of 7** (launcher, ops-env Python 3.13.2; failed run exit 1 and passing run exit 0, both `source_stable`).
 
 **Verdict (draft): ACCEPT.** D-S5-1 and D-S5-2 are fixed for TEST_ONLY, and #586's part of the R1 gate is met. The caveat is recorded. If the coordinator wants it closed, run the landed io-release test against `1fe99fa`'s `campaign_supervisor.py`.
 
 ### Coordinator acceptance — D-S5-3 fix slice (#589), 2026-10-02
 
-**DRAFT FOR COORDINATOR SIGN-OFF.**
+**ACCEPTED by the coordinator, 2026-10-02.**
 
 **Item.** #589 (`claude/capture-retry-noop`), merged 2026-10-02 as `77cd715` from head `65f91ab`; the merge tree equals the head tree. Gate and acceptance contract: the [D-S5-3 ruling](#operator-ruling--d-s5-3-capture-exact-retry-demotion-also-gates-t05-r1-2026-10-01).
 
@@ -2070,7 +2070,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 
 ### Coordinator acceptance — H8(c) omitted-slot incident tests (#530), 2026-10-02
 
-**DRAFT FOR COORDINATOR SIGN-OFF.**
+**ACCEPTED by the coordinator, 2026-10-02.**
 
 **Item.** The [H8(c) card](../../briefs/handoffs/2026-09-27-h8c-omission-incident-session-end.md), executor return DONE_WITH_CONCERNS at test commit `19bf582`. #530 merged 2026-09-27 as `7e7a043` from `25866c4`. Acceptance stays with the coordinator (card §8).
 
@@ -2088,7 +2088,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 
 ### Coordinator acceptance — H9 preparation return (DB10 and context compatibility), 2026-10-02
 
-**DRAFT FOR COORDINATOR SIGN-OFF.** Scope: the H9 preparation return as the coordinator narrowed it, to DB10 plus existing-context compatibility. It is not R1.
+**ACCEPTED by the coordinator, 2026-10-02.** Scope: the H9 preparation return as the coordinator narrowed it, to DB10 plus existing-context compatibility. It is not R1.
 
 **Item.** A Codex-lane return. Branch `codex/h9-t05-integration` (local, not pushed) at **`f237178`**: one commit on `c3ab0cc`, where T00 landed. The prior head was `0a966c3` on `3cbaa04`; `git range-diff 3cbaa04..0a966c3 c3ab0cc..f237178` shows that one patch unchanged (`=`). The return files are `.cache/h9/RETURN.md` and `REBASE_RETURN.md` in that Codex worktree. The diff touches 13 files: seven in `ops/c1_rail/qualification/execution/` (four new frozen T05 modules, plus `store.py`, `campaign_store.py` and `campaign_funding.py`) and six test files.
 
@@ -2110,3 +2110,9 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - **term 8.** The S8 harness preparation (#609, draft) found that E03 conflicts with the frozen T05 validators, which allow a failure only at the last stage. Term 8 is the proposed resolution, pending Joshua, and its fix is owed in H9 lane D step 3 of the acceleration plan.
 
 **Verdict (draft): ACCEPT** the preparation return for DB10 and context compatibility at `f237178`. R1 keeps its own gates.
+
+### Coordinator finding — T00 fired S5 re-measurement trigger 1, 2026-10-02
+
+T00's merge (`c3ab0cc`) changed seven modules in the S5 Part A measured closure: `clock`, `contract`, `model`, `production_source`, `replay`, `trust_domain` and `book_adapters`. This fires **re-measurement trigger 1** (a change to the worker runtime closure digest; [r1 proposal §9](../../notes/2026-09-26-s5-part-a-measurement-proposal.md)). So the accepted S5 Part A ceiling application does not carry to the next release.
+
+More closure changes are queued: #611 (`production_source`), the C′ build, term 8 (lane D step 3) and K3/RC-4. **Recommendation:** run one fresh measurement after all of these land, immediately before the combined R1. R1 runs Part A, so it must not rely on the old application. This needs the operator's ruling under the C3 rule. It is entered here as an owed R1 prerequisite.
