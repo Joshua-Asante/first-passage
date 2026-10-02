@@ -781,7 +781,9 @@ def refuse_source_truncated_on_qualification(calendar_raw, index_raw):
 CALENDAR_PRODUCER_SCHEMA = 't00-p7-calendar-deadline-facts/v1'
 CALENDAR_PRODUCER_LABEL = 'RULED_MODEL_DEADLINES_NOT_OBSERVED_VENUE_HISTORY'
 # Operator Ruling 2 (2026-09-30): one account-level deadline for all four legs.
-RULED_DEADLINES_ET = {'venue_flat_date_et': time(12, 59), 'regular_et': time(16, 45)}
+# Kept as 'HH:MM' text: frozen-module drift verification compares reconstructed
+# globals by value only for primitive and date types (result_adjudication).
+RULED_DEADLINES_ET = {'venue_flat_date_et': '12:59', 'regular_et': '16:45'}
 
 
 def validate_calendar_producer(producer_raw, *, calendar_raw):
@@ -800,7 +802,7 @@ def validate_calendar_producer(producer_raw, *, calendar_raw):
     if doc.get('label') != CALENDAR_PRODUCER_LABEL:
         raise ValueError('CALENDAR_PRODUCER_INVALID: calendar_producer does not carry the ruled-model label')
     rule = doc.get('deadline_rule')
-    if type(rule) is not dict or any(rule.get(key) != value.strftime('%H:%M') for key, value in RULED_DEADLINES_ET.items()):
+    if type(rule) is not dict or any(rule.get(key) != value for key, value in RULED_DEADLINES_ET.items()):
         raise ValueError('CALENDAR_PRODUCER_INVALID: deadline_rule differs from the Ruling-2 deadlines')
     flat_values = doc.get('venue_flat_dates_in_interval')
     if type(flat_values) is not list or any(type(value) is not str for value in flat_values):
@@ -816,7 +818,7 @@ def validate_calendar_producer(producer_raw, *, calendar_raw):
     for row in calendar.get('sessions') or ():
         day = date.fromisoformat(row['date'])
         if row.get('status') == 'OPEN':
-            wanted = datetime.combine(day, RULED_DEADLINES_ET['venue_flat_date_et' if day in flat else 'regular_et'], ET)
+            wanted = datetime.combine(day, time.fromisoformat(RULED_DEADLINES_ET['venue_flat_date_et' if day in flat else 'regular_et']), ET)
             deadlines = row.get('venue_deadlines') or {}
             if set(deadlines) != set(LEG_IDS) or any(
                     type(item) is not dict or type(item.get('instant')) is not str
