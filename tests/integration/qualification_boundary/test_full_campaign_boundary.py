@@ -2,48 +2,44 @@
 before the integrated candidate exists (ticket G; plan
 2026-09-18-full-e1-execution-slices.md section S8).
 
-Selection: ``--s8`` only (FP_QUALIFICATION_S8=1 on top of the S5 environment,
-which the integrated installation seam must honour); ``--test-only`` ignores
-this file. Location: beside the boundary harness, because the installed-route
-cases share its session-scoped ``real_boundary`` (one install per host); the
-plan named tests/ops/qualification/execution/.
+Selection: ``--s8`` only (FP_QUALIFICATION_S8=1 on the S5 environment, which the
+integrated installation seam must honour); ``--test-only`` ignores this file. It
+sits beside the boundary harness to share its session ``real_boundary``, and it
+holds its route helpers itself: S2-R2b removed the standalone per-request
+harness driver (``test_s2_warm_service_starts_one_guardian_per_work_with_no_
+scheduler_unit``). The helpers schedule only through ``Boundary.schedule`` (the
+R2b forked transport child into the warm service), submit through the client
+and act as the uid-0 operator; they never construct ExecutionService or reserve
+work, and workers, G5 units and qseal produce every outcome and receipt.
 
 Declarations precede any admission and never change after a campaign is
-observed: ``EXPECTED_VERDICTS`` (per actual synthetic source scenario: stage
-statuses in result-aggregate vocabulary, Part A facts and the admitted ORB
-port identity) and ``COVERAGE`` (one proposed invariant-manifest row per
-E01-E12; not registered until these cases exist and pass on the integrated
-candidate).
+observed: ``EXPECTED_VERDICTS`` (stage statuses, Part A facts and the admitted
+ORB port identity per synthetic source) and ``COVERAGE`` (one proposed manifest
+row per E01-E12, unregistered until these cases pass on the integrated
+candidate). A case needing an interface absent here (T05 result/seal modules,
+operations, the result_g5 role) is ``xfail(strict=True, raises=
+IntegrationAbsent, reason='awaits integrated candidate')``, decided before any
+host fixture on every platform. Host cases need the disposable Linux host; no
+mock substitutes. Result/seal shapes are T05's frozen 6cf2732 ones.
 
-Interface policy: a case whose route needs an interface absent from this
-checkout (the T05 result/seal modules, operations and the result_g5 role) is
-``xfail(strict=True, raises=IntegrationAbsent, reason='awaits integrated
-candidate')``. The absence check runs first, before any host fixture, so the
-xfail is decided on every platform and an unexpected pass fails. Installed-
-route and OS-property cases need the disposable Linux host; no mock substitutes.
-
-Disclosures carried from S5: on the (2, 4, 2) depth-60 fixture prescribed
-expansion and p5-above-FULL are unreachable, so E04's above-FULL leg and E05's
-expansion/tolerance legs stand on the named arithmetic boundary nodes, which
-are never called full-route witnesses. The frozen-engine establishment runs
-only in the S8 selection (the N2 compute is minutes per scenario). No qseal
-diagnostic hold exists, so E10/E12's seal-side windows are not barrier-exact.
-
-Known conflict (E03, n2_full_fails): the frozen T05 aggregate (6cf2732
-``_row_outcome``/``parse_receipt_row``) admits a failure only on the last stage
-of a prefix and puts the joint batch's decision on PART_B, while the canonical
-policy (``required_output_roles``: LEGALITY..PART_B COMPLETE/FAIL) and spec E03
-admit FULL failing with both halves passing. This file asserts the canonical
-split; the integrated candidate fails it until that is ruled.
+Disclosures: on the (2, 4, 2) depth-60 fixture prescribed expansion and
+p5-above-FULL are unreachable, so those E04/E05 legs stand on named arithmetic
+nodes, never full-route witnesses; the frozen-engine establishment runs only in
+the S8 selection; with no qseal diagnostic hold, E10/E12's seal windows are not
+barrier-exact. E03 n2_full_fails asserts the canonical split (policy
+``required_output_roles``: LEGALITY..PART_B COMPLETE/FAIL), which the frozen
+T05 aggregate (``_row_outcome``/``parse_receipt_row``) refuses until ruled.
 """
 # Linux-only route helpers and the engine load at call time; the T05 interface
 # probe reads the protocol's closed operation table.
 # pylint: disable=import-outside-toplevel,protected-access
+from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 import pytest
 
@@ -52,14 +48,331 @@ if _QUALIFICATION not in sys.path:
     sys.path.insert(0, _QUALIFICATION)
 
 import campaign_sources  # noqa: E402  pylint: disable=wrong-import-position
-from campaign_driver import (  # noqa: E402  pylint: disable=wrong-import-position
-    RESULT_RECEIPT_FIELDS, RESULT_RECEIPT_SCHEMA, RESULT_WORK, SEAL_RECEIPT_FIELDS,
-    SEAL_RECEIPT_SCHEMA, SEAL_WORK, CampaignDriver, accepted_prefix, expected_launch_counts,
-    launch_counts, plan, result_outcome, terminal_state)
 
 REPO = Path(__file__).resolve().parents[3]
 HERE = 'tests/integration/qualification_boundary/test_full_campaign_boundary.py'
 AWAITING = 'awaits integrated candidate'
+
+
+# ---- Route helpers (see the module docstring) -------------------------------
+
+STAGE_ORDER = ('LEGALITY', 'N1', 'N2', 'PART_B', 'PART_A')
+RESULT_RECEIPT_SCHEMA = 'qualification_campaign_result_receipt/v1'
+SEAL_RECEIPT_SCHEMA = 'qualification_campaign_seal_receipt/v1'
+SEAL_INSPECTION_SCHEMA = 'qualification_campaign_seal_inspection/v1'
+RESULT_RECEIPT_FIELDS = frozenset({
+    'schema', 'attempt_id', 'work_id', 'campaign_id', 'aggregate_sha256',
+    'authentication_sha256', 'outcome', 'campaign_state', 'accepted_prefix',
+    'campaign_revision', 'authority_head', 'budget', 'checkpoints', 'signing_at_utc',
+    'committed_at_utc', 'intent_sha256'})
+SEAL_RECEIPT_FIELDS = frozenset({
+    'schema', 'attempt_id', 'work_id', 'campaign_id', 'intent_id', 'seal_sha256',
+    'result_sha256', 'result_receipt_sha256', 'campaign_state', 'campaign_revision',
+    'authority_head', 'signing_at_utc', 'committed_at_utc', 'intent_sha256'})
+RESULT_WORK = ('rwork', 'result_g5')
+SEAL_WORK = 'swork'
+RESOURCE_TERMINAL = ('IN_DOUBT', 'ABORTED', 'BUDGET_EXHAUSTED', 'BUDGET_UNCERTAIN')
+V2 = 'qualification_campaign_request/v2'
+
+
+@dataclass(frozen=True)
+class Step:
+    """One checkpoint: its compute work, its committing G5 work, the stages its
+    assessment decides, and the progression state each decision produces."""
+    checkpoint: str
+    compute: tuple[str, str]
+    g5: tuple[str, str]
+    stages: tuple[str, ...]
+    passed: str
+    failed: str
+
+
+STEPS = (
+    Step('N1', ('n1work', 'n1_worker'), ('g5work', 'n1_g5'), ('LEGALITY', 'N1'),
+         'N2_READY', 'N1_FAILED'),
+    Step('N2', ('n2work', 'n2_worker'), ('n2g5', 'n2_g5'), ('N2', 'PART_B'),
+         'PART_A_READY', 'N2_FAILED'),
+    Step('PART_A', ('pawork', 'part_a_worker'), ('pag5', 'part_a_g5'), ('PART_A',),
+         'FULL_PASS_READY', 'PART_A_FAILED'),
+)
+
+
+def plan(stages):
+    """The checkpoint steps a declared verdict runs, in order.
+
+    The verdict must be a canonical legal prefix (policy.required_output_roles):
+    LEGALITY/N1 failing at N1, LEGALITY..PART_B failing in the joint batch, or
+    all five stages. LEGALITY is pass-only, nothing follows a failed checkpoint
+    and nothing stops after a passing one.
+    """
+    if not isinstance(stages, dict) or any(v not in ('PASS', 'FAIL') for v in stages.values()):
+        raise ValueError('closed PASS/FAIL stage statuses required')
+    names = tuple(stages)
+    if (names not in (STAGE_ORDER[:2], STAGE_ORDER[:4], STAGE_ORDER)
+            or stages['LEGALITY'] != 'PASS'):
+        raise ValueError('declared verdict is not a legal stage prefix')
+    steps = tuple(step for step in STEPS if set(step.stages) <= set(names))
+    if any('FAIL' in (stages[name] for name in step.stages) for step in steps[:-1]):
+        raise ValueError('declared verdict continues after a failed checkpoint')
+    if names != STAGE_ORDER and 'FAIL' not in (stages[name] for name in steps[-1].stages):
+        raise ValueError('declared verdict stops after a passing checkpoint')
+    return steps
+
+
+def terminal_state(stages):
+    """The progression state the route ends in."""
+    last = plan(stages)[-1]
+    return last.failed if 'FAIL' in (stages[name] for name in last.stages) else last.passed
+
+
+def result_outcome(stages):
+    """The authenticated result outcome the declared verdict commits."""
+    plan(stages)
+    return 'FAIL' if 'FAIL' in stages.values() else 'PASS'
+
+
+def accepted_prefix(stages):
+    """The result receipt's accepted stage prefix."""
+    plan(stages)
+    return list(stages)
+
+
+def launch_counts(state):
+    """Compute works per checkpoint phase in the durable ledger -- the launch
+    history: a redraw would be a second work of the same phase."""
+    counts = {step.checkpoint: 0 for step in STEPS}
+    for row in state['works']:
+        if row['phase'] in counts:
+            counts[row['phase']] += 1
+    return counts
+
+
+def expected_launch_counts(stages):
+    """One compute work per checkpoint the verdict runs, none after it stops."""
+    ran = {step.checkpoint for step in plan(stages)}
+    return {step.checkpoint: int(step.checkpoint in ran) for step in STEPS}
+
+
+def work_row(state, work_id):
+    """One work row of a ledger snapshot."""
+    return next(row for row in state['works'] if row['work_id'] == work_id)
+
+
+def _route_options(options):
+    """The private route's two optional inputs; anything else is a caller error."""
+    unknown = set(options) - {'fault', 'signing_retry_of'}
+    if unknown:
+        raise TypeError('unknown route options: ' + ', '.join(sorted(unknown)))
+    return options.get('fault'), options.get('signing_retry_of')
+
+
+class CampaignDriver:
+    """The installed route on one disposable host (``real_boundary``)."""
+
+    def __init__(self, boundary):
+        self.boundary = boundary
+        self.bundles = {}
+
+    # ---- admission ---------------------------------------------------------
+
+    def prepare(self, name, *, depth_valid_seconds=14400):
+        """Stage one signed TEST_ONLY bundle for a declared source scenario."""
+        from uuid import uuid4
+        from tools.qualification_verification import host
+        row = campaign_sources.scenario(name)
+        boundary = self.boundary
+        script = 'fixture_install_s8.py' if row.producer == 'derived' else 'fixture_install.py'
+        command = [boundary.python, '-I',
+                   str(boundary.code / 'tests/integration/qualification_boundary' / script),
+                   'prepare', '--manifest', str(boundary.path), '--attempt', 'linux-' + uuid4().hex,
+                   '--depth-valid-seconds', str(depth_valid_seconds)]
+        if row.idle:
+            command.append('--idle')
+        elif row.idle_dates:
+            command += ['--scenario', name]
+        raw = host.run_owned(boundary.group, command, interpreter=boundary.python, timeout=180)
+        return json.loads(raw)
+
+    def admit(self, name, **kwargs):
+        """SUBMIT_E1 through the client role, then the charged admission work."""
+        bundle = self.prepare(name, **kwargs)
+        attempt = bundle['attempt_id']
+        first = json.loads(self.boundary.request('SUBMIT_E1', schema=V2, request_id='dispatch',
+                                                 attempt_id=attempt,
+                                                 bundle_sha256=bundle['bundle_sha256']))
+        assert first['schema'] == 'qualification_campaign_status/v2', first
+        state = self.until(attempt, lambda s: work_row(s, 'admission')['state'] == 'COMPLETED')
+        assert state['state'] == 'BOUND', state
+        self.bundles[attempt] = dict(bundle, scenario=name)
+        self.save(attempt, 'bundle', self.bundles[attempt])
+        return attempt
+
+    def source_identity(self, attempt):
+        """sha256 of the admitted ORB port, from the staged retained index."""
+        index = self.boundary.root / 'keys/retained' / attempt / 'index.json'
+        entries = json.loads(index.read_bytes())['entries']
+        return next(row['sha256'] for row in entries if row['role'] == 'orb_runtime_port')
+
+    # ---- reads -------------------------------------------------------------
+
+    def status(self, attempt, *, role='qclient'):
+        """STATUS through the authenticated client."""
+        return json.loads(self.boundary.request('STATUS', role=role, schema=V2,
+                                                attempt_id=attempt))
+
+    def ledger(self, attempt):
+        """The durable budget snapshot (read-only)."""
+        from test_campaign_n1_linux import budget
+        return budget(self.boundary, attempt)
+
+    def until(self, attempt, predicate, seconds=330):
+        """The ledger once ``predicate`` holds or the campaign is resource-terminal."""
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            state = self.ledger(attempt)
+            if predicate(state) or state['state'] in RESOURCE_TERMINAL:
+                return state
+            time.sleep(0.1)
+        raise AssertionError('bounded S8 campaign wait expired')
+
+    def settled(self, attempt, seconds=330):
+        """The ledger once every work carries its settlement observation."""
+        return self.until(attempt, lambda s: all(row['observation_bytes_b64'] is not None
+                                                 for row in s['works']), seconds=seconds)
+
+    def _select(self, statement, parameters):
+        import sqlite3
+        journal = (self.boundary.root / 'data/journal.sqlite').as_uri() + '?mode=ro'
+        with sqlite3.connect(journal, uri=True) as connection:
+            row = connection.execute(statement, parameters).fetchone()
+        return None if row is None else tuple(None if v is None else bytes(v) for v in row)
+
+    def result_row(self, attempt):
+        """(intent, candidate, authentication, receipt) bytes of the result family, or None."""
+        return self._select('SELECT intent_bytes,candidate_bytes,authentication_bytes,'
+                            'receipt_bytes FROM full_campaign_result_intents WHERE attempt_id=?',
+                            (attempt,))
+
+    def seal_row(self, attempt):
+        """(intent, signature, receipt) bytes of the seal family, or None."""
+        return self._select('SELECT intent_bytes,signature_bytes,receipt_bytes '
+                            'FROM full_campaign_seal_intents WHERE attempt_id=?', (attempt,))
+
+    def checkpoint_row(self, attempt, checkpoint):
+        """(intent, candidate, receipt) bytes of one checkpoint assessment, or None."""
+        return self._select('SELECT intent_bytes,candidate_bytes,receipt_bytes '
+                            'FROM full_campaign_checkpoint_intents '
+                            'WHERE attempt_id=? AND checkpoint=?', (attempt, checkpoint))
+
+    def stage_decisions(self, attempt, checkpoint):
+        """The committed checkpoint assessment's stage split (the joint batch carries two)."""
+        row = self.checkpoint_row(attempt, checkpoint)
+        return None if row is None else json.loads(row[1]).get('stage_decisions')
+
+    def save(self, attempt, name, value):
+        """Retain one evidence document beside the boundary's own exports."""
+        from tools.qualification_verification import host
+        host.save(self.boundary.output / f'{attempt}-s8-{name}.json', value)
+
+    # ---- route -------------------------------------------------------------
+
+    def schedule(self, attempt, work_id, role, **options):
+        """The raw private-route reply; a refusal is the caller's to interpret.
+
+        ``options`` are the route's optional ``fault`` and ``signing_retry_of``.
+        """
+        fault, signing_retry_of = _route_options(options)
+        return self.boundary.schedule({
+            'schema': 'qualification_campaign_schedule_request/v1', 'attempt_id': attempt,
+            'work_id': work_id, 'role': role, 'probe': 'noop',
+            'signing_retry_of': signing_retry_of, 'fault': fault})
+
+    def dispatch(self, attempt, work_id, role, **options):
+        """A scheduled work that must durably exist before anyone waits on it."""
+        reply = self.schedule(attempt, work_id, role, **options)
+        assert reply['ok'], reply
+        state = self.until(attempt, lambda s: any(row['work_id'] == work_id
+                                                  for row in s['works']), seconds=30)
+        assert any(row['work_id'] == work_id for row in state['works']), 'refused ' + work_id
+        return reply
+
+    def run_step(self, attempt, step, seconds=1080):
+        """One checkpoint: the compute work to ATTESTED/COMPLETED, then its G5
+        work to the committed progression and the settled committing work."""
+        from test_campaign_n1_linux import committing_g5_completed
+        work_id, role = step.compute
+        self.dispatch(attempt, work_id, role)
+
+        def attested(state):
+            family = (state.get('checkpoints') or {}).get(step.checkpoint) or {}
+            return family.get('state') == 'ATTESTED' and \
+                work_row(state, work_id)['state'] == 'COMPLETED'
+        state = self.until(attempt, attested, seconds=seconds)
+        assert work_row(state, work_id)['state'] == 'COMPLETED', state
+        g5_id, g5_role = step.g5
+        self.dispatch(attempt, g5_id, g5_role)
+        state = self.until(attempt, lambda s: s['state'] in (step.passed, step.failed),
+                           seconds=seconds)
+        assert state['state'] in (step.passed, step.failed), state
+        return committing_g5_completed(self.boundary, attempt, state['state'], work_id=g5_id)
+
+    def run_to_terminal(self, attempt, stages):
+        """Every checkpoint the declared verdict runs, stopping where the route stops."""
+        state = None
+        for step in plan(stages):
+            state = self.run_step(attempt, step)
+            if state['state'] == step.failed:
+                break
+        self.save(attempt, 'terminal-ledger', state)
+        return state
+
+    def commit_result(self, attempt, work_id=RESULT_WORK[0], seconds=330, **options):
+        """One result_g5 unit; the committed receipt, or None if none committed.
+
+        With a ``fault`` (route option) the unit is only dispatched; the caller
+        owns the held window."""
+        self.dispatch(attempt, work_id, RESULT_WORK[1], **options)
+        if options.get('fault') is not None:
+            return None
+
+        def finished(state):
+            row = self.result_row(attempt)
+            return (row is not None and row[3] is not None) or \
+                work_row(state, work_id)['state'] in ('COMPLETED', 'IN_DOUBT', 'ABORTED')
+        self.until(attempt, finished, seconds=seconds)
+        row = self.result_row(attempt)
+        receipt = None if row is None or row[3] is None else json.loads(row[3])
+        self.save(attempt, 'result-receipt', receipt)
+        return receipt
+
+    def _operator(self, operation, attempt, **fields):
+        """(reply, None) or (None, refusal text) from the uid-0 operator peer."""
+        try:
+            return json.loads(self.boundary.request(operation, role='administrator', schema=V2,
+                                                    attempt_id=attempt, **fields)), None
+        except subprocess.CalledProcessError as exc:
+            return None, exc.stderr or ''
+
+    def request_seal(self, attempt, *, label='seal-request'):
+        """REQUEST_SEAL as the operator; ``label`` keeps concurrent evidence apart."""
+        reply, error = self._operator('REQUEST_SEAL', attempt)
+        self.save(attempt, label, {'reply': reply, 'error': error})
+        return reply, error
+
+    def inspect_seal(self, attempt):
+        """INSPECT_SEAL: the historical receipt plus current validity/eligibility."""
+        reply, error = self._operator('INSPECT_SEAL', attempt)
+        assert error is None, error
+        assert reply['schema'] == SEAL_INSPECTION_SCHEMA, reply
+        self.save(attempt, 'seal-inspection', reply)
+        return reply
+
+    def void(self, attempt, reason):
+        """An operator-approved VOID through the uid-0 peer: (reply, refusal)."""
+        approval = self.boundary.admin('void-approval', '--attempt', attempt, '--contract',
+                                       self.bundles[attempt]['contract_sha256'],
+                                       '--reason', reason)
+        return self._operator('VOID', attempt, reason=reason, **approval)
 
 
 # ---- Declarations (before any admission) -----------------------------------
@@ -634,7 +947,6 @@ def test_e10_void_orderings_against_result_and_seal(request, ordering):
 def test_e11_expired_approval_blocks_new_authority_but_not_history(request):
     """The exact-depth approval expires between the committed N1 receipt and the
     result commit: no result authority is minted and the N1 receipt stays exact."""
-    import time
     from datetime import datetime, timezone
     driver = s8_driver(request)
     stages = EXPECTED_VERDICTS['idle']['stages']
