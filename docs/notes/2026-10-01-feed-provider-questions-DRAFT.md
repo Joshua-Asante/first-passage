@@ -92,7 +92,7 @@ The canonical set is written once, so every provider is asked the same questions
 >
 > **(Q3) Order containment.** Is there an API credential, key or user that the server prevents from placing, modifying or cancelling orders? If not, can order permission be disabled at the account or API-user level? If [the product] is data-only, please confirm that its credentials give no order or account capability.
 >
-> **(Q4) Bars and trades.** Do you stream completed 1-minute bars? Do you also deliver finer bars (for example 1-second or 5-second bars) or individual trades? For each stream you offer, please give:
+> **(Q4) Bars and trades.** Do you stream completed 1-minute bars, or native completed 15-minute bars? Do you also deliver finer bars (for example 1-second or 5-second bars) or individual trades? For each stream you offer, please give:
 > - whether the timestamp marks the **start or the end** of the bar or interval, and the interval;
 > - the time zone, UTC offset or epoch unit (for example UTC epoch milliseconds or nanoseconds, or exchange-local or account-local wall-clock time), for bars and for trades separately;
 > - whether exchange timestamps are included, and whether the time is exchange time or your own aggregation time;
@@ -250,7 +250,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 
 **Two-stage screen** (Codex review on #583). Rithmic data comes through a clearing broker (FCM), so Rithmic may properly defer licensing, entitlement, order-restriction, authentication or storage questions to the FCM.
 - **Stage 1 (this message).** Rithmic answers what it controls. Any answer that defers to the FCM is recorded as **DEFERRED-TO-FCM**, not as ambiguous, and the rejection rule is not applied to those items at stage 1.
-- **Stage 2.** The same common context and canonical Q1–Q12 go to **one named FCM**, chosen by the operator from Rithmic's stage-1 answer about which FCMs offer data-only users. Canonical Q2b already asks the FCM for its **capital and liquidity terms**: required deposit, minimum account balance, inactivity fees and withdrawal constraints. Those answers fill the held-capital field (§4) (Codex review on #583).
+- **Stage 2.** The same common context and canonical Q1–Q12 go to **one named FCM**, chosen by the operator from Rithmic's stage-1 answer about which FCMs offer either a **data-only** user or an otherwise order-capable user whose order actions are **disabled and enforced on the server side**. Either form of containment is accepted, as in §2 and canonical Q3 (Codex review on #583). Canonical Q2b already asks the FCM for its **capital and liquidity terms**: required deposit, minimum account balance, inactivity fees and withdrawal constraints. Those answers fill the held-capital field (§4) (Codex review on #583).
 - **The rejection rule (§3)** is applied to the stage-1 and stage-2 answers combined, before CP-7.
 
 **What published terms already appear to answer** (all **[excerpt]**, several from brokers rather than Rithmic):
@@ -268,7 +268,7 @@ Send to CME Group's market data licensing contact (the Data Services portal, or 
 
 > **(Q1, addition)** No orders would be sent through Rithmic.
 >
-> **(Q2a, addition)** Can one user ID receive real-time CME, CBOT and COMEX data for all four products? Which clearing firms offer a **data-only** R|Protocol user?
+> **(Q2a, addition)** Can one user ID receive real-time CME, CBOT and COMEX data for all four products? Which clearing firms offer a **data-only** R|Protocol user, or a user whose order actions can be disabled and enforced on the server side?
 >
 > **(Q2b, addition)** What does the clearing firm add to the cost?
 >
