@@ -1956,3 +1956,56 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - The clean-review exception in the defects ruling above covers D-S5-1 and D-S5-2 only.
 
 **Not granted:** T05 integration acceptance (R1) before the D-S5-3 fix lands, and no production use.
+
+### Operator rulings — T05 environment sealing (C′) and the first-release host environment drift residual, 2026-10-02
+
+*Joshua, directly in the coordinating session, on 2026-10-02. These rulings are owned here. H9 checkpoint R1 ([staged acceptance](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md)) and the deployment checklist's T05 row link to this entry and carry it as an R1 gate.*
+
+**Rulings, in order:**
+1. **"scoping is fine, defer the sealing to T05".** T00's P7 `code_closure_sha256` identifies the Python-source closure plus the recorded interpreter binding. Environment sealing is owed by T05 before the R1 grant.
+2. **"C for the T05 sealing"**, revised to **C′** after the H9 source check found that host-side code decides outcomes. That host-side code includes Part-A adjudication, calendar and deadline logic in Eastern time, budget exhaustion, VOID, and aggregate result and seal checks.
+3. **"yes"** to the coordinator's narrowed C′. Identity checks cover only the finite, known R1 host entrypoints. Unmediated descendants and OS helpers join the residual.
+4. **"yes to the pin".** The standing, approved worker base image is **`python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63`**: the `python:3.12.3-slim-bookworm` manifest list, the base used by the S5 and S4 Linux evidence.
+   - **Required selection:** the linux/amd64 child `sha256:fd3817f3a855f6c2ada16ac9468e5ee93e361005bd226fd5a5ee1a504e038c84`, whose config `sha256:cf001c2f8af7214144935ae5b37c9e626ccf789117c10c1f691766d4658f1b1e` declares `architecture=amd64`, `os=linux` and `PYTHON_VERSION=3.12.3` (created 2024-04-09).
+   - **Provenance:** an anonymous, read-only public registry read by the coordinator on 2026-10-02. The index, child-manifest and config bytes each hash to their own digest. They are retained privately, with `SHA256SUMS`, under `local_artifacts/h9-t05-base-pin-afc139a0/coordinator-fetch/`. Nothing was pulled, built or run.
+   - **Known trade-off, accepted:** the image predates later Python and OS security patches. Workers run offline.
+   - **Changes:** any later pin change needs Joshua's ruling and a reviewed change. The canonical pin file itself is created by the C′ build.
+5. **"broaden R1".** R1 runs the **combined** Linux node set, in this order:
+   1. service;
+   2. N1;
+   3. N2;
+   4. Part A;
+   5. result/seal;
+   6. supervision, last.
+
+   R1 also includes the C′ and VALID→VOID acceptance cases. The reason: H9's prepared changes modify shared store code on the S4 and Part-A paths, and a result/seal-only run cannot catch a regression there. The exact collected IDs and count are frozen at the R1 dispatch. This supersedes the "result/seal node set only" wording in H9 checkpoint R1 and in the D-S5-3 entry above, which stays as a dated record.
+
+**C′ obligation, owed by T05 before the R1 grant. It is a design: no build is dispatched by this entry.**
+- **Worker base image.** It must be a **standing, operator-approved digest**, not a tag resolved at build time. A missing, tag-only or mismatched pin refuses. The initial digest and any later update need Joshua's approval and a reviewed change.
+- **Host identity checks.** A signed release/runtime revision binds a finite mapping of the known R1 host entrypoints:
+  - the runner/pytest admin fixture;
+  - the service supervisor;
+  - the campaign guardian, control and probes;
+  - the N1, N2, PART_A and RESULT G5 roles;
+  - qseal;
+  - the Python bootstrap/owned-command wrapper.
+
+  Each mapped launch is checked before it spawns, by the child itself, and by the controller through `/proc`. Each is rechecked at the checkpoint, result and seal authority transitions, and at **every VALID→VOID transition** (campaign spec :90 makes VOID its own irreversible authority transition). The checkpoint, result and seal rechecks run inside the original CPU/wall reservation and absolute deadline, with no refresh or retry. **The VOID recheck is uncharged.** It does not depend on remaining allowance or the deadline, matching the accepted uncharged VOID path (`claim_void_authentication`, sequence 0), so VOID stays possible for campaigns in BUDGET_UNCERTAIN, IN_DOUBT or past their deadline. A VOID recheck mismatch refuses an *automatic* VOID commit and leaves the campaign for the operator-recorded VOID path, which records the mismatch. It never leaves the campaign with authority to PASS.
+- **Evidence and failures.** Launch and exit evidence is retained in versioned supervision events. **So is every transition-time recheck**: its expected identity, observed identity, transition and verdict, so that R1 can verify coverage. A mismatch, a failed check, a timeout or exhaustion refuses authority.
+- **Unchanged.** Frozen v1 RESULT/SEAL and the DB10 two-table layout stay as they are, bound through the existing `release_sha256`. The design term is proposed as term 7 of the S6 DB10 draft, which stays DRAFT.
+
+**Residual accepted by Joshua for the first release: "T05 C′ first-release host environment drift."**
+- **Not covered by the checks:** an unchanged interpreter and lock identity does not seal installed distribution contents, tzdata or other data files, external mounts, late-loaded native or transitive libraries, or OS and kernel services. **Unmediated descendant processes and OS helper binaries (systemctl, busctl, docker), and OS daemons and the kernel, are not identity-covered either.**
+- **Effect:** drift in any of these can change adjudication, calendar, deadline and VOID outcomes.
+- **Size:** its magnitude is **unmeasured**.
+- **No hermeticity claim** is made. Every R1 packet cites this residual, the expected identity contract and the observed coverage.
+
+**Unchanged:**
+- Full S5 custody.
+- R1's express Linux grant, now for the combined node set (ruling 5), recorded in H9 checkpoint R1.
+- Independent review.
+- T00-first integration.
+- Three qualification-path items still owed before R1:
+  - truncated-calendar validation;
+  - calendar-role binding;
+  - reviewer identity and independence.
