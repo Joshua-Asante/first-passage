@@ -239,7 +239,7 @@ Required X-4 request specification, not an executable request:
 Required offline tool/rehearsal coverage includes clean cancel, child remaining
 live after parent terminal, fill before/during cancel, unknown placement/cancel,
 late response, pending/malformed reads, timeout/rate limit, exhausted read budget
-*[2026-10-01: late-response and read-budget coverage are cut with those components]*,
+*[2026-10-01: read-budget coverage and the general asynchronous observer channel are cut with those components. Scoped late-response capture stays mandatory for placements (C1 item 8) and cancels (C1 item 7) in the [X-4 handoff](../briefs/handoffs/2026-09-30-x4-offline-tools-build-review.md)]*,
 firm intervention, quote-buffer breach and recovery while keeping one request
 in flight. Terminal vocabulary must use reviewed vendor schemas (retained
 v3.3 uses `Canceled`, matching X-1's R-1 reads; drill plan §2.3/§2.4 now say
