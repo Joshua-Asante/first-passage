@@ -756,7 +756,9 @@ def truncated_slot_ranges(index_raw):
 
 
 def validate_source_only_calendar(raw, *, contract, truncated_slots):
-    """Source-only calendar rules the generic parser does not enforce (spec §2.6a)."""
+    """Calendar rules the generic parser does not enforce (spec §2.6a).
+
+    Run for source-only contracts and gated qualification builds (``_source_gates_apply``)."""
     doc = _json(raw)
     producer = {row.role: row.sha256 for row in contract.artifacts}.get('calendar_producer')
     expected = {'role': 'calendar_producer', 'sha256': producer}
@@ -1106,16 +1108,16 @@ class ProductionSource:
         for role, scope in (('source_calendar', 'SOURCE_CALENDAR'), ('schedule_execution_evidence', 'SCHEDULE_EXECUTION')):
             review(snapshots[role+'_review'], role=role, digest=digests[role], scope=scope)
         startup = parse_startup_policy(snapshots['source_startup_policy'])
-        if source_only:
-            if startup.path_start_date != contract.path_start_date:
-                raise ValueError('path_start_date differs between the signed contract and the startup policy')
+        if source_only and startup.path_start_date != contract.path_start_date:
+            raise ValueError('path_start_date differs between the signed contract and the startup policy')
+        if not source_only:
+            refuse_source_truncated_on_qualification(snapshots['source_calendar'], snapshots['population_index'])
+        if gated:
             validate_source_only_calendar(snapshots['source_calendar'], contract=contract,
                                           truncated_slots=truncated_slot_ranges(snapshots['population_index']))
             if 'calendar_producer' not in snapshots:
                 raise ValueError('CALENDAR_PRODUCER_INVALID: the calendar_producer bytes are not retained')
             validate_calendar_producer(snapshots['calendar_producer'], calendar_raw=snapshots['source_calendar'])
-        else:
-            refuse_source_truncated_on_qualification(snapshots['source_calendar'], snapshots['population_index'])
         clock, tail = parse_source_calendar(snapshots['source_calendar'], artifact_digests=digests)
         population_index = parse_population_index(snapshots['population_index'], populations=contract.populations)
         review(snapshots['population_index_review'], role='population_index', digest=digests['population_index'], scope='SOURCE_POPULATION_INDEX',

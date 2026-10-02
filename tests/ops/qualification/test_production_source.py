@@ -800,3 +800,19 @@ def test_t05_gated_qualification_review_refuses_unidentified_or_self_review(tmp_
         'synthetic-composition-fixture' if defect == 'self_certified' else REVIEWER),
         review_edit=v1 if defect == 'v1' else None)
     _refused(code, build)
+
+
+@pytest.mark.parametrize('defect,code', [
+    ('fact_role', 'CALENDAR_FACT_ROLE'),               # another retained role at its true digest
+    ('deadline_fact', 'CALENDAR_PRODUCER_MISMATCH'),   # the record states a 12:59 day the calendar omits
+])
+def test_t05_gated_qualification_calendar_binds_the_calendar_producer(tmp_path, monkeypatch, defect, code):
+    from composition_fixture import digest
+    from c1_rail.qualification.contract import canonical_json_bytes
+    from test_source_contract import SYNTHETIC_CALENDAR_PRODUCER
+
+    def other_role(payloads, calendar, index, populations):
+        calendar['sessions'][0]['facts'] = [{'role': 'cost_model', 'sha256': digest(payloads['cost_model'])}]
+    producer = canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, venue_flat_dates_in_interval=['2024-01-02']))
+    _refused(code, _gated_composition(tmp_path, monkeypatch, transform=other_role if defect == 'fact_role' else None,
+                                      calendar_producer=producer if defect == 'deadline_fact' else None))
