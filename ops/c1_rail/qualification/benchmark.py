@@ -68,12 +68,13 @@ class SyntheticQuotes:
     def __call__(self,session,instant,leg):
         return .006 if leg=='aegis_6j' else 100.
 
-    def split_bar(self,session,pb,instant,leg):
+    def split_bar(self,session,pb,instant,leg,*,exposure):
+        from .model import ScheduleSplit
         original=dict(pb.bars)[leg]
         price=self(session,instant,leg)
         if not original.open==original.high==original.low==original.close==price:
             raise ValueError('planted schedule bar must be flat')
-        return original,Bar(instant,price,price,price,price)
+        return ScheduleSplit(original,Bar(instant,price,price,price,price),True)
 
 
 def synthetic_source(day):
