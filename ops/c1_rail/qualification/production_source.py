@@ -781,9 +781,10 @@ def validate_source_only_calendar(raw, *, contract, truncated_slots):
 
 
 def refuse_source_truncated_on_qualification(calendar_raw, index_raw):
-    """``source_truncated`` is a source-only disposition (spec §2.6a). Its endpoint and
-    reason checks run only for source-only contracts, so a qualification contract may
-    not use it until T05 defines equivalent validation (Codex P1 on #594)."""
+    """Ungated (TEST_ONLY composition) builds refuse ``source_truncated`` (Codex P1 on #594).
+
+    Its endpoint, reason and tail-disposition checks (spec §2.6a) need the calendar_producer
+    binding, which only source-only and gated qualification builds enforce (T05 owed item)."""
     truncated = SourceDayStatus.SOURCE_TRUNCATED.value
     calendar, index = _json(calendar_raw), _json(index_raw)
     if any(type(row) is dict and row.get('status') == truncated for row in calendar.get('sessions') or ()) or any(
@@ -1110,7 +1111,7 @@ class ProductionSource:
         startup = parse_startup_policy(snapshots['source_startup_policy'])
         if source_only and startup.path_start_date != contract.path_start_date:
             raise ValueError('path_start_date differs between the signed contract and the startup policy')
-        if not source_only:
+        if not gated:
             refuse_source_truncated_on_qualification(snapshots['source_calendar'], snapshots['population_index'])
         if gated:
             validate_source_only_calendar(snapshots['source_calendar'], contract=contract,

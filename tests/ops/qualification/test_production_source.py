@@ -816,3 +816,41 @@ def test_t05_gated_qualification_calendar_binds_the_calendar_producer(tmp_path, 
     producer = canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, venue_flat_dates_in_interval=['2024-01-02']))
     _refused(code, _gated_composition(tmp_path, monkeypatch, transform=other_role if defect == 'fact_role' else None,
                                       calendar_producer=producer if defect == 'deadline_fact' else None))
+
+
+TAIL = '2024-08-30'                                              # the fixture's last source date
+TRUNCATED = 'panel truncated at interval end: slots 09:00-16:00 ET'   # its indexed ET slot range
+
+
+@pytest.mark.parametrize('case,code', [
+    ('admitted', None),
+    ('interior', 'SOURCE_TRUNCATION_INTERIOR'),
+    ('unnamed_slots', 'SOURCE_TRUNCATION_REASON'),
+    ('unrecorded_tail', 'CALENDAR_PRODUCER_MISMATCH'),
+    ('stand_in', 'TRUNCATION_STAND_IN_RETIRED'),
+])
+def test_t05_gated_qualification_validates_source_truncated(tmp_path, monkeypatch, case, code):
+    from c1_rail.qualification.contract import canonical_json_bytes
+    from test_source_contract import SYNTHETIC_CALENDAR_PRODUCER
+    reason = 'panel ended early' if case == 'unnamed_slots' else TRUNCATED
+    status = 'policy_denied' if case == 'stand_in' else 'source_truncated'
+
+    def truncate(payloads, calendar, index, populations):
+        position = 5 if case == 'interior' else -1
+        row = calendar['sessions'][position]
+        assert case == 'interior' or row['date'] == TAIL
+        calendar['sessions'][position] = dict(row, status=status, reason=reason, venue_deadlines={})
+        index['expected_exclusions'] = [{'source_date': row['date'], 'reason': status, 'detail': reason}]
+        full = [day for day in populations['FULL'] if day != row['date']]
+        populations.update(FULL=full, H1=full[:(len(full) + 1) // 2], H2=full[(len(full) + 1) // 2:])
+        index['populations'] = {name: list(values) for name, values in populations.items()}
+    tail = {} if case == 'unrecorded_tail' else {'tail_disposition': {'date': TAIL, 'status': 'source_truncated'}}
+    build = _gated_composition(tmp_path, monkeypatch, transform=truncate,
+                               calendar_producer=canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, **tail)))
+    if code is not None:
+        _refused(code, build)
+        return
+    contract, source = build()
+    source.verify_for(contract)
+    assert [(e.session_date.isoformat(), e.reason, e.detail) for e in source.exclusions] == [(TAIL, 'source_truncated', TRUNCATED)]
+    assert TAIL not in contract.populations['FULL'] and TAIL not in {s.session_id for s in source.sessions}
