@@ -1,5 +1,7 @@
 # Coordinator handoff — Tradeify contract and PR closeout
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Status:** Draft for dispatch. This document has not launched an agent.
 **Repository:** `Joshua-Asante/first-passage`
 **Primary checkout:** `C:\Users\joshu\multi_firm_operations`
