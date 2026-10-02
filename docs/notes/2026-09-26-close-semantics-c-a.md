@@ -327,3 +327,175 @@ A written answer would be a vendor statement, subject to coordinator acceptance.
 Not used: GitHub code search (it needs sign-in), CrossTrade's Discord, logged-in CrossTrade pages and the API Playground. Previously blocked and now read: the Tradovate help-centre articles, help.tradeify.co and the apextraderfunding.com help centre.
 
 **A.7 Vendor question.** Every item still has an unanswered part, so none is dropped. By the operator's ruling of 2026-09-27 (in session), the revised message is the text to send. It is in the [vendor-question note](2026-09-26-crosstrade-close-semantics-vendor-question.md) §1, with the 2026-09-26 text preserved there as superseded for sending. It has not been sent. The operator sends it himself, and the reply-handling rules are unchanged. §6 above stays as drafted.
+
+## Addendum 2026-10-02 — C-a selection register (PROPOSED, for operator acceptance)
+
+**Status.** `PROPOSED`. Nothing here is accepted until the operator accepts this register. It changes no class in §2 or in the 2026-09-27 addendum. It accepts no amendment and no residual risk, and it authorizes no drill, order action, vendor contact, arm, spend or GO. Until selection, C-a stays **investigation only** under R-CLOSE ([incident ADR §A11.1](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)).
+
+**Why it exists.** On 2026-10-01 the operator directed that the first release close every leg by C-a. Attended incident recovery is the exception and stays on the attended-platform path. That direction is recorded in deployment-checklist addendum item 7.2 ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590), head `10823f8`). Item 7.2 makes C-a **directed but not selected** until an operator-accepted selection register exists and is discharged. It names this register as owed in its own PR. This register is that one.
+
+**How it was built.** It was rebuilt from the owners' current text, not patched from the earlier draft. The inputs were:
+- the draft at PR #590 commit `53d32f2`;
+- every Codex finding against that draft (§R.6 maps each one to a row).
+
+**Read base.** origin/main `721be61`; every `path:line` below is on that commit and was read when this was written. Three proposed texts were also read but are not merged, so they are cited by section, not by line:
+- PR #590 head `10823f8` (checklist addendum item 7);
+- PR #584 head `e57bd98` (incident ADR §A12);
+- PR #591 head `67846b3` (successor pre-registrations).
+
+**Abbreviations.**
+- CS: this note.
+- VQ: the [vendor question](2026-09-26-crosstrade-close-semantics-vendor-question.md).
+- BD: the [B–D packet](2026-09-26-tradeify-bd-decision-packet.md).
+- RS: the [multi-leg rail spec](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md).
+- HR: the [halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md).
+- ADR: the [incident ADR](../adr/2026-09-17-bounded-platform-protection-incident-contract.md).
+- DP: the [drill plan](2026-09-26-tradeify-route-drill-plan-draft.md).
+- REST: the [REST route assessment](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md).
+- BAO: `ops/c1_rail/book_account_owner.py`.
+- CL: the [deployment checklist](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md). Its item 7 is cited at the PR #590 head.
+
+### R.1 Two gates
+
+- **Selection.** The operator rules C-a the first-release close realization (BD :143, row B-1). That ruling is allowed only once every **S** row (§R.4) is discharged. It is recorded in two places:
+  - a dated addendum to ADR §A11.1, which today records investigation only (ADR :368, :378);
+  - the B-1 row.
+- **Release.** The first release uses C-a only once every **R** row (§R.5) is also discharged. R rows depend on selection, so none of them can be a selection prerequisite:
+  - GC-5's takeover trace needs an accepted close realization (BD :124; DP :433).
+  - The exit-split rows are rewritten "once a close realization is accepted" (BD :144).
+  - T09 code follows the accepted amendment (CL item 7.6.3).
+- **No circular prerequisites.** No S row depends on an R row or on selection. Every S row is discharged by one of these, all of which can exist before selection:
+  - vendor evidence;
+  - a trace;
+  - an owner amendment;
+  - an operator ruling.
+- **A row that cannot be discharged** returns the close form to the operator before the first release (CL item 7.4). C-a is not used meanwhile.
+
+### R.2 Row schema
+
+Every row has six fields:
+- **ID.**
+- **Kind** (defined below).
+- **Owner:** who writes the discharge.
+- **Discharge evidence:** exactly what closes the row.
+- **Source:** `path:line` on `721be61`, read when this was written.
+- **Fail-closed default:** what holds until the row is discharged, or if it cannot be.
+
+The kinds:
+- **TECHNICAL.** Discharged only by the owner's amendment, code, a test or accepted evidence. An operator ruling cannot discharge it: a different evidence or route protocol needs a reviewed amendment, "never an operator waiver checkbox" (HR :67). Some owner text needs an operator ruling before it is adopted, for example the rail-spec close contract (BD :95) and GC-7 (BD :126). There the ruling is necessary but not sufficient.
+- **POLICY.** Discharged by an explicit, dated operator ruling recorded in the named owner.
+- **Alternatives.** Some owners themselves offer a residual-risk choice in place of an established mechanism (BD :112; CS :155). A row for one of those lists both routes: TECHNICAL (the mechanism is established) or POLICY (the residual is accepted). The record names the route that discharged it.
+- **Lapse.** A residual-risk ruling for C-a is unavailable after a trace contradicts the mechanism, and any earlier one lapses then (BD :113; DP :320).
+
+### R.3 Outcome model for one C-a close
+
+S-C1, S-C2 and R-T1 to R-T8 must implement this table. "Sent" means a transport attempt began for this close, or cannot be ruled out. An attempt journaled before transport, followed by a crash, counts as sent: the journal records it `UNKNOWN` before the send (BAO :1856), and a missing acknowledgement never proves no execution (RS :87). "Never sent" means no attempt was journaled. **No outcome of a sent close is retried automatically. A never-sent close keeps its first dispatch, except in INTERVENTION.**
+
+| # | Outcome | Never sent | Sent | Source |
+|---|---|---|---|---|
+| O1 | Queued behind attachment or another serialized operation (`close_pending`) | Keeps its first automatic dispatch while NORMAL or SCHEDULED_EXIT. Nothing is dispatched in INTERVENTION. A queued close from an earlier boot is not dispatched after a restart; it goes to attended recovery | — | BAO :1434–1453 (:1439 INTERVENTION, :1442 boot filter); `tests/ops/test_book_close_review_edges.py:112`; HR :24, :41 |
+| O2 | Scope already flat when prepared | `CONFIRMED(0)` with no attached order on postdating evidence: completes as a no-op with no send. Flat with an order still working: no C-a is sent (M8 OPEN). S-C1 states which applies: S4 orphan removal on postdating `CONFIRMED(0)`, or an incident | — | RS :63 (last sentence), :77; CS :164 |
+| O3 | Pending (inside the outcome window) | — | Not yet unknown. Risk-adds are refused. For a scheduled flatten, an unconfirmed close at the own-flat deadline D is a deadline breach and an incident, whatever remains of its window. When it turns uncertain before D is OPEN, and S-C2 states it | RS :67 (I1); HR :42, :119; BD :105 (e); §A12 F1 (PR #584) |
+| O4 | Success | — | Complete only on postdating, coherent position, working-order and lot (P/W/K1) reads showing: position zero; the former children and any remainder terminal; the liquidation's own terminal status. Until S-V2a is discharged, also every symbol's working orders, with S-V2c's check that each other leg is protected or flat. A `Success` result or HTTP acceptance never completes the close | BD :104; RS :58; CS :142; §A12 F4 table (PR #584) |
+| O5 | Unknown. Any of: the outcome window expired; transport unknown; a crash between send and outcome; 500; 502; 503; client timeout; 429 `broker_rate_limited` | — | An incident: durable halt into INTERVENTION, the reservation held, no resend, attended recovery | HR :34; REST :125, :127–131 |
+| O6 | Partial (residual exposure on postdating evidence) | — | An incident, with no resend of the remainder. This replaces "resumes … for the remainder only" | RS :63; BAO :1911 |
+| O7 | Rejected (400 `tradovate_rejected`; HTTP 200 with a `failureReason` other than `Success`) | — | An incident, with no resubmission. The brackets may already be cancelled (M4 OPEN). This replaces "resubmitted at most once per bar" | RS :63; REST :126; CS :105, :127, :162 |
+| O8 | Refused, with no documented no-send (400 validation or account lock; 401, 403 or 409; 429 `rate_limited`) | — | An incident until the class is authoritatively mapped to no-send. No retry | REST :122–124, :133 |
+| O9 | A second close demand on the symbol while a close is unresolved | Queued behind the first. A second C-a is never sent while one is unresolved. In an incident, only the attended-platform path is used | — | RS :63; CL item 7.2; DP :256 |
+
+### R.4 Selection rows (S): all must be discharged before C-a is selected
+
+**Vendor semantics.**
+
+| ID | Kind | Owner | Discharge evidence | Source | Fail-closed default |
+|---|---|---|---|---|---|
+| S-V0 | TECHNICAL | Operator sends; coordinator accepts the reply | VQ §1 is sent by the operator and recorded by a dated line in VQ. The written reply is retained as original bytes and hashed, and the coordinator accepts it as a vendor statement | VQ :3, :53, :55, :58 | Every question stays OPEN (VQ :55) |
+| S-V1 | TECHNICAL | Vendor, through S-V0 | **Q9.** An authoritative statement that a REST full close sends `contract/find` and then one `liquidateposition`, with no separate cancel, plus what "typical" can add. A trace only corroborates it (DP :248) | CS :5, :294, :305 | **Not selectable.** No residual-risk route: every §3 statement describes `liquidateposition`, and without Q9 the REST close's broker requests are an inference |
+| S-V2a | TECHNICAL | Vendor, through S-V0 | **Q6.** An authoritative **contract-scoped** answer: a full close sends no cancel beyond the contract-scoped liquidation. This alone discharges Q6 | CS :133, :165, :291 | S-V2b **and** S-V2c are both required |
+| S-V2b | POLICY | Operator | Needed only if Q6 is answered account-wide, or stays OPEN or CONFLICTING. A ruling accepting §3's row "(a)/(c): cancellation scope (S)", naming the other legs' exposure | CS :165; BD :112 | Not selectable |
+| S-V2c | TECHNICAL | Rail spec and halt/resume owners | Needed with S-V2b. Owner text that does one of these:<br>(i) sends no C-a while another leg has exposure or working protection, and says what happens to the blocked close;<br>(ii) re-establishes the other legs' protection, and keeps the close incomplete until each other leg is shown protected or flat on postdating evidence. Re-attaching protection is L2(f), which is unsupported on this route (ADR :208), so (ii) needs its own qualification.<br>Either way, completion reads cover every symbol (O4). S-V2b cannot discharge this row. A trace with other legs' working orders present corroborates S only | ADR :208; CS :165, :189; RS :58 | Not selectable |
+| S-V3 | Alternatives, per question | Vendor through S-V0, or the operator | For each of Q1, Q2, Q3, Q4, Q5, Q7 and Q8, one of two routes:<br>• TECHNICAL: an authoritative answer that establishes the mechanism;<br>• POLICY: a ruling accepting the matching §3 row.<br>The mapping is: Q1 → (a); Q2 → (c); Q3 → (b) and (e); Q4 → (b), partial; Q5 → "close on a flat position"; Q7 → (c)(ii), (d) and (e); Q8 → (c)(iii).<br>While any of (a)–(c) stays OPEN or CONFLICTING, X-3 may be authorized only inside that ruling | CS :161–167, :286–293; BD :112; DP :248 | Not selectable. ROUTE STOPS until the operator decides (BD :112) |
+| S-V4 | Alternatives | Vendor through S-V0, or the operator | **Q10.** One of two routes:<br>• TECHNICAL: authoritative coverage of the prop-simulation integration, the `admin` value CrossTrade sends, and any simulation-specific liquidation behavior;<br>• POLICY: a ruling accepting each of those items that stays open | CS :257, :295, :308 | Not selectable |
+
+**Traces and evidence (gate C).**
+
+| ID | Kind | Owner | Discharge evidence | Source | Fail-closed default |
+|---|---|---|---|---|---|
+| S-T1 | TECHNICAL | Operator performs; coordinator records | A passed X-3, under its own written authorization and the drill plan's preconditions. It includes lifecycle reads of the liquidation order and both former children, recording whether their rows carry broker timestamps. X-3 cannot show a partial remainder or no-reversal (DP :318, :370; CS :218); those come only from S-V3 or S-T4 | DP :312–320; CS :220; ADR :372 | Not selectable. An orphan or a reversal stops C-a, with no residual-risk route (DP :320; BD :113). A fault outcome is fault-case evidence, not a pass (DP :318) |
+| S-T2 | TECHNICAL | Coordinator designs; operator traces | **GC-3 for close completion.** Reads shown to postdate `prepared_at` and to describe one coherent state. A coherence-qualified X-3 pass does not discharge it | BD :104, :122; DP :316 | ROUTE STOPS (BD :122). No ruling route (HR :67) |
+| S-T3a | TECHNICAL | Coordinator accepts | A written argument that carries the X-3 result from its symbol and environment to each book symbol C-a will close and to the live evaluation environment. A trace on the target symbol or environment also discharges it | DP :250, :439; CS :112, :218 | Not selectable for any symbol or environment not covered |
+| S-T3b | POLICY | Operator | An answer to drill-plan open question 7: is a 6J-specific trace wanted? | DP :250, :445 | 6J is not covered |
+| S-T4 | POLICY | Operator | An answer to drill-plan open question 8: do the M checks plus offline consumer tests suffice for the fault cases? That includes a multi-lot partial liquidation, which a one-contract X-3 cannot reach | DP :251, :370, :446; BD :85 | Not selectable |
+
+**Close contract (owner amendments).**
+
+| ID | Kind | Owner | Discharge evidence | Source | Fail-closed default |
+|---|---|---|---|---|---|
+| S-C1 | TECHNICAL | Rail spec owner; the operator adopts it (BD :95) | The §1.1a amendment, written for elements (a)–(e), implementing §R.3, and accepted into the rail spec. It replaces or qualifies:<br>• in `CLOSE(scope)`, the L2(d)/(e) requirement, "Rejection retains the existing protection", the once-per-bar resubmission and the remainder resumption (RS :63);<br>• I7's "`CLOSE` reduces position and protection together" (RS :67);<br>• S1(5)'s requirement of L2 (c), (d) and (e) for every leg (RS :71);<br>• S5's `CLOSE(fill scope)` (RS :79);<br>• S7's "preserve protective orders" (RS :83);<br>• S10's `CLOSE(symbol)` (RS :89);<br>• L-2 (d) and (e), and their test list (RS :149);<br>• R-D (RS :152).<br>Scope: whole-leg or full-symbol closes on an exclusively owned symbol. Scoped closes stay unsupported. Element (b) states that a partial liquidation is an incident (O6), so the B07 partial-fill cover stays unbuilt | BD :95–105, :231 | Not selectable |
+| S-C2 | TECHNICAL | Halt/resume owner | §2 and §4.1 name, by trigger text, the incident row for O5–O8 and for a cross-leg protection loss (S-V2c). They state when a scheduled-flatten C-a turns from unconfirmed to uncertain relative to D. §7's required tests gain the C-a cases | HR :34, :83, :93, :119, :145; BD :105 | Not selectable. Today a definitive rejection of a close that leaves protection in place matches no §2 trigger: it is neither an uncertain outcome nor a protection fault (HR :34), and it is not the ordinary sizing or capacity refusal of HR :43 |
+| S-C3 | TECHNICAL | Rail spec owner | Every line that still dispatches a runtime close in an incident points to rev9, so that no incident path sends C-a:<br>• S1(7): protection gap → `CLOSE(fill)` (RS :71);<br>• S8 kill (RS :85); R-F, whose test list includes `test_seq_s8_kill_block_first_then_cancel_close_confirm_disarm` (RS :155); AC-10 (RS :116);<br>• S9 restart: protection gap → recovery `CLOSE(symbol)` (RS :87); R-H (RS :157).<br>The rev9 callout replaces "the retained S6–S9, R-G/R-H/R-K and protection-gap/AC branches" (RS :20), but it does not name R-F. An operator stop is an incident (HR :84), and INTERVENTION permits no runtime mutation (HR :24, :49) | RS :20, :71, :85, :87, :116, :155, :157 | Not selectable |
+| S-C4 | TECHNICAL | Incident ADR owner | UB-5 is answered for whole-leg exits by a dated addendum. That addendum records the accepted gate-C evidence as its basis: S-T1, S-T2 and the S-V rows. An approval does not answer it. The addendum may be the same one that records selection | ADR :302, :349 | Not selectable. UB-5 stays EVIDENCE-PENDING |
+
+**Actors and attended recovery.**
+
+| ID | Kind | Owner | Discharge evidence | Source | Fail-closed default |
+|---|---|---|---|---|---|
+| S-X1 | TECHNICAL | Operator (inventory); BD owner (GC-7 row) | The GC-7 inventory, plus evidence that every operator-configurable actor on the book's symbols is disabled. Some identified actors cannot be disabled, for example firm risk liquidation. Each of those needs a dated GC-7 amendment that names it and extends an exception to C-a runtime operation, as the X-1 exception does. The operator's ruling adopts that amendment but does not discharge the row by itself. The inventory is repeated at each session start | BD :126, :154; DP :139; CS :163 | ROUTE STOPS for C-a (BD :126; DP :139) |
+| S-X2 | POLICY | Operator | An answer to drill-plan open question 9 and halt/resume O-5: how an operator-placed trade on a book symbol, such as the weekly preservation trade, is handled. A C-a close liquidates the whole position on that symbol | DP :447; HR :110; ADR :358 | Not selectable |
+| S-X3 | TECHNICAL | T13 (attended operations) | An accepted attended-recovery procedure, with evidence, for an incident during or after a C-a close. It covers three things:<br>• quiescence and residual request accounting;<br>• the second-close race against an unresolved liquidation;<br>• the firm fallback when the platform cannot be used.<br>Every §3 residual row names attended handling as its only bound, so a residual ruling cannot stand in for this procedure | HR :28; CS :161–167, :302; DP :256; CL :263 | Not selectable |
+
+### R.5 Release rows (R): all must be discharged before the first release uses C-a
+
+**T09 code.** For every row below:
+- **Kind:** TECHNICAL.
+- **Owner:** T09.
+- **Discharge evidence:** the code plus its tests, built against the accepted S-C1 to S-C3.
+- **Fail-closed default:** T09 is not accepted for the first release, and C-a is not used.
+
+| ID | Required change | Source |
+|---|---|---|
+| R-T1 | A quantity-less REST close producer. Today `_flatten_action` builds a `flat` intent carrying a computed quantity, and there is no production route | BAO :1925, :1866 |
+| R-T2 | Remove the automatic `:remainder:N` close; O6 halts instead | BAO :1911 |
+| R-T3 | A broker rejection is an incident (O7, O8), not a terminal outcome | BAO :1876 |
+| R-T4 | A close past its outcome window halts (O5). Today the unknown-request fence classifies only entry and add requests, and an open close only refuses risk-adds. A transport-unknown result already halts (CC-3); that has been demonstrated synthetically but is not accepted | BAO :828–829, :1794, :1879–1889; HR :115 |
+| R-T5 | Completion follows O4. Today close-feedback reconciliation is scoped to `scope_legs`. The liquidation order must be identified without relying on a response id (Q7) | BAO :1407; CS :292 |
+| R-T6 | `resume_closes` never re-dispatches a sent close, and keeps O1's first dispatch | BAO :1434–1453; `tests/ops/test_book_close_review_edges.py:112` |
+| R-T7 | Reverse or replace the tests that assert replaced behavior:<br>• `test_close_partial_fill_preserves_residual_protection` and `test_close_unknown_outcome_restart_resumes_same_operation` (RS :149);<br>• R-F's kill-close test (RS :155);<br>• R-H's recovery-close test (RS :157) | RS :149, :155, :157 |
+| R-T8 | Refuse any close smaller than the whole leg on the C-a transport | CL item 7.6.2 |
+
+**Other release rows.**
+
+| ID | Kind | Owner | Discharge evidence | Source | Fail-closed default |
+|---|---|---|---|---|---|
+| R-1 | TECHNICAL | Coordinator (documentary sequence); operator (trace) | **GC-5.** The Aegis takeover sequence through C-a, then its trace: the displaced leg is flat, with no residual orders, before Aegis is admitted | BD :124, :153; DP :433; RS :89 | The takeover is not used in the first release. If the trace fails, an OPERATOR DECISION follows, for example no takeover (BD :124) |
+| R-2 | TECHNICAL | Gate C; rail spec owner | **Striker's crossed-level exit.** Qualification that one whole-leg liquidation may realize the S3(d) `triggered_protection` transition for every protection owner | BD :107–108; RS :60, :63, :75 | Striker's close-time exit is `BLOCKED — capability-problem` (RS :60), and Striker returns to the operator |
+| R-3 | POLICY | Operator; successor pre-registrations (PR #591) | The operator ratifies the successors' C-a answers: ORB-6, STR-7, VAN-8, Vanguard §3a's exit split and the §6 exit-split mootness. Each edition then freezes with trailing removed. Freezing follows selection, because the answers follow "the accepted close realization". No candidate-configurable replay runs before freeze. PR #591 also retargets both production handoffs to the successors | BD :144; CL items 7.2 and 7.6.1; PR #591 successor §3, §3a, §6, §8 | No edition freezes on C-a, and the first release waits |
+| R-4 | TECHNICAL | The Rule-0 source check (CL item 7.6) | Every close path is whole-leg by intent, shown by three things:<br>• STR-5 = No and the dispositions recorded in CL item 7.6, once PR #590 merges;<br>• the per-fill trailing subset, cleared by R-3's trailing-removed freeze;<br>• sub-leg closes refused by R-T8 | CL items 7.5 and 7.6; ADR :376 | Any subset exit returns to the operator (CL item 7.5) |
+
+### R.6 Codex findings on the draft, and where each is folded
+
+| Round | Finding | Row |
+|---|---|---|
+| `13ea39e` | Technical rows cannot be waived by a ruling | §R.2 TECHNICAL; S-T2; S-X3 |
+| `13ea39e` | Q10 needs coverage or a residual-risk decision | S-V4 |
+| `13ea39e` | Every route error class is an incident until mapped | O5, O7, O8 |
+| `13ea39e`, `53d32f2` | GC-5 is circular as a selection row | §R.1; R-1 |
+| `ae8357d` | GC-7 is technical | S-X1 |
+| `ae8357d` | S8, R-F and AC-10 kill path | S-C3; R-T7 |
+| `c02c667` | Q6: only a contract-scoped answer discharges | S-V2a, S-V2b, S-V2c |
+| `c02c667` | T13 is technical | S-X3 |
+| `286e2af` | Never-sent queued closes keep their first dispatch | O1; R-T6 |
+| `286e2af` | UB-5 is discharged by gate-C evidence | S-C4 |
+| `53d32f2` | Halt/resume classes named by trigger text | S-C2 |
+| `53d32f2` | Cross-symbol evidence until protection is shown repaired | O4; S-V2c |
+| `53d32f2` | Residual-risk routes for partial remainders and multi-lot legs | S-V3 (Q4); S-T4 |
+| `53d32f2` | S9 and R-H restart recovery close | S-C3; R-T7 |
+| Checklist rounds | Q9 resolution; rejected-close incident; rail amendment before T09; Striker transition; Vanguard §3a | S-V1; O7; S-C1; R-2; R-3 |
+
+### R.7 Differences from the `53d32f2` draft beyond the findings
+
+- **Two gates.** The draft had one. GC-5, the successor editions, T09 code, Striker's transition and whole-leg intent now sit in R, because each depends on selection.
+- **Q9 has no residual-risk route** (S-V1). This is narrower than CL item 7.3, which allows a residual ruling for Q9. Item 7.3 says this register governs where the two differ, so the operator should rule on this point when accepting the register.
+- **X-3's own preconditions stay in the drill plan** and are not repeated here: CP-3, P-1 and a fresh X-1 position (DP :268, :547–553).
+- **B07** is folded into S-C1 element (b).
+- **BAO line numbers** are re-pinned at `721be61`.
