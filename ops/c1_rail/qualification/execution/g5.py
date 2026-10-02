@@ -6,7 +6,8 @@ This library does not establish process isolation or commit journal state.
 from datetime import datetime, timezone
 from dataclasses import replace
 from ..contract import parse_canonical_json, canonical_json_bytes as encoded
-from ..evidence import InspectedEvidence, build_n1_evidence, compare_n1_evidence
+from ..evidence import (InspectedEvidence, build_n1_evidence, compare_n1_evidence,
+    derive_part_a_source_calendar)
 from ..journal_snapshot import parse_assessment_snapshot
 from .admission import verify_bundle
 from .evidence import parse_worker_result
@@ -403,7 +404,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--attempt-id', required=True)
     parser.add_argument('--campaign-work')
-    parser.add_argument('--checkpoint', choices=['N1', 'N2'], default='N1')
+    parser.add_argument('--checkpoint', choices=['N1', 'N2', 'PART_A'], default='N1')
     args = parser.parse_args()
     config = load_instance(installed_code_root() / 'qualification-installation/g5.json')
     release = read_regular(
@@ -502,7 +503,7 @@ def validate_campaign_checkpoint(
     """
     from ..evidence import build_checkpoint_evidence
 
-    if checkpoint not in ('N1', 'N2'):
+    if checkpoint not in ('N1', 'N2', 'PART_A'):
         raise ValueError('installed checkpoint required')
     verified = verify_checkpoint_attestation(
         attestation_bytes, context=context, current_keys=current_keys
@@ -530,9 +531,22 @@ def validate_campaign_checkpoint(
             'predecessor_plan_bytes': artifacts['predecessor_plan'],
             'predecessor_payload_bytes': artifacts['predecessor_payload'],
         }
-        if checkpoint == 'N2'
+        if checkpoint in ('N2', 'PART_A')
         else {}
     )
+    if checkpoint == 'PART_A':
+        # Coordinator ruling G1: the frozen adjudicator's N1 prior rides the N1
+        # checkpoint's own served plan and payload members.
+        predecessor.update(
+            n1_plan_bytes=artifacts['n1_plan'], n1_payload_bytes=artifacts['n1_payload']
+        )
+        # P1: the panel source occurrences are re-derived from the frozen FULL
+        # population and the contract-bound retained calendar bytes of the
+        # verified bundle (session metadata only: no source loader, no
+        # replay).
+        predecessor['source'] = derive_part_a_source_calendar(
+            context.contract, context.retained_bytes
+        )
     inspected = build_checkpoint_evidence(
         contract=context.contract,
         policy=context.policy,
@@ -620,7 +634,7 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id, checkpoint='
     snapshot = call('CHECKPOINT_SNAPSHOT', checkpoint=checkpoint)
     parsed_snapshot = parse_canonical_json(snapshot, label='checkpoint snapshot')
 
-    def fetch(digest_value):
+    def fetch(digest_value, member_checkpoint=checkpoint):
         from .campaign_protocol import CHECKPOINT_CHUNK_LIMIT
         from .protocol import decode_base64
 
@@ -635,7 +649,7 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id, checkpoint='
             chunk_doc = parse_canonical_json(
                 call(
                     'FETCH_CHECKPOINT_MEMBER',
-                    checkpoint=checkpoint,
+                    checkpoint=member_checkpoint,
                     object_sha256=digest_value,
                     offset=len(result),
                     length=length,
@@ -661,12 +675,25 @@ def accept_campaign_checkpoint(socket_path, *, attempt_id, work_id, checkpoint='
         'worker_result': fetch(members['payload']),
         'attestation': fetch(members['attestation']),
     }
-    if checkpoint == 'N2':
+    if checkpoint in ('N2', 'PART_A'):
         artifacts.update(
             predecessor_receipt=fetch(members['predecessor_receipt']),
             predecessor_assessment=fetch(members['predecessor_assessment']),
             predecessor_plan=fetch(members['predecessor_plan']),
             predecessor_payload=fetch(members['predecessor_payload']),
+        )
+    if checkpoint == 'PART_A':
+        # Coordinator ruling G1: the N1 custody comes from the N1 checkpoint's
+        # own served members (its plan and payload) by the same protocol.
+        n1_members = {
+            member['role']: member['sha256']
+            for member in parse_canonical_json(
+                call('CHECKPOINT_SNAPSHOT', checkpoint='N1'), label='N1 checkpoint snapshot'
+            )['members']
+        }
+        artifacts.update(
+            n1_plan=fetch(n1_members['plan'], 'N1'),
+            n1_payload=fetch(n1_members['payload'], 'N1'),
         )
     plan_bytes = fetch(members['plan'])
     with tempfile.TemporaryDirectory(dir=config['scratch_root']) as directory:

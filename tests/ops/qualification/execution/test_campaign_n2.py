@@ -49,18 +49,22 @@ def keys_map(case):
     }
 
 
-def n2_campaign(tmp_path, monkeypatch, *, t=21):
+def n2_campaign(tmp_path, monkeypatch, *, t=21, part_a=False):
     """A warm joint-dispatch service (release/v6, budget profile/v3) with a
-    fully admitted campaign: the S3 scene over the /v6 installation."""
+    fully admitted campaign: the S3 scene over the /v6 installation. S5:
+    ``part_a=True`` installs the /v7 PART_A dispatch release instead."""
     from contextlib import nullcontext
     from test_campaign_n1 import Runtime, submit, verified_context
 
-    instance, case = running(tmp_path, monkeypatch, dispatch=True, joint=True)
+    instance, case = running(
+        tmp_path, monkeypatch, dispatch=True, joint=True, part_a=part_a
+    )
     instance.config = {'host_run_id': 'host1', 'service_uid': SERVICE_UID}
     instance.recovery_issues = {}
     instance.schedule_eligible = True
     instance.dispatch_eligible = True
     instance.joint_dispatch_eligible = True
+    instance.part_a_dispatch_eligible = part_a
     monkeypatch.setattr(supervisor, 'controller_cpu_guard', nullcontext)
     monkeypatch.setattr(supervisor, 'LinuxCampaignRuntime', Runtime)
     state = {'t': t}
@@ -96,6 +100,12 @@ def n1_plan(instance):
 
 def n2_plan(instance, receipt):
     return derive_checkpoint_plan(instance.campaign_plan, 'N2', receipt)
+
+
+def part_a_plan(instance):
+    return derive_checkpoint_plan(
+        instance.campaign_plan, 'PART_A', committed_receipt(instance, 'N2')
+    )
 
 
 def committed_receipt(instance, checkpoint='N1'):
@@ -170,7 +180,7 @@ def _work_phase(instance, work):
 
 
 def result_document(instance, work, checkpoint, payload, plan):
-    phase = 'N1' if checkpoint == 'N1' else 'N2'
+    phase = checkpoint  # the compute phase is named after its checkpoint
     scopes = supervisor.work_enrollment('host1', instance.attempt, work)
     state = snap(instance)
     release = json.loads(instance.release)
@@ -265,11 +275,15 @@ def attestation_document(instance, work, checkpoint, result, payload, plan):
     )
 
 
-def capture_checkpoint(instance, work, checkpoint, payload):
+def capture_checkpoint(instance, work, checkpoint, payload, **capture_fields):
+    """Archive one checkpoint capture and its attestation through the real
+    store; ``capture_fields`` are the S5-D1 PART_A capture fields (R4)."""
     plan = (
         n1_plan(instance)
         if checkpoint == 'N1'
         else n2_plan(instance, committed_receipt(instance))
+        if checkpoint == 'N2'
+        else part_a_plan(instance)
     )
     result = result_document(instance, work, checkpoint, payload, plan)
     transition_bytes = encoded(
@@ -283,7 +297,8 @@ def capture_checkpoint(instance, work, checkpoint, payload):
         }
     )
     store(instance).retain_checkpoint_capture(
-        instance.attempt, work, result, payload, transition_bytes, checkpoint=checkpoint
+        instance.attempt, work, result, payload, transition_bytes, checkpoint=checkpoint,
+        **capture_fields,
     )
     attestation = attestation_document(instance, work, checkpoint, result, payload, plan)
     store(instance).retain_checkpoint_attestation(
@@ -299,10 +314,10 @@ def run_work(instance, work, role):
     dispatched(instance, work)
 
 
-def committed_n1(tmp_path, monkeypatch):
+def committed_n1(tmp_path, monkeypatch, *, part_a=False):
     """The genuine N1 prefix: real reconstruction, real signatures, committed
     receipt, campaign N2_READY -- the S4 scene's predecessor state."""
-    instance, case = n2_campaign(tmp_path, monkeypatch)
+    instance, case = n2_campaign(tmp_path, monkeypatch, part_a=part_a)
     run_work(instance, 'n1work', 'n1_worker')
     payload = worker_payload(
         instance, plan=n1_plan(instance), checkpoint='N1', work='n1work'
@@ -429,6 +444,19 @@ def cutoff_document(instance, checkpoint, candidate):
                 'created_utc': '2026-09-22T02:00:00Z',
             }
         )
+    if checkpoint == 'PART_A':
+        return encoded(
+            {
+                'schema': 'qualification_campaign_cutoff_receipt/v1',
+                'attempt_id': instance.attempt,
+                'checkpoint': 'PART_A',
+                'assessment_sha256': sha256(candidate),
+                'decision': core['decision'],
+                'stage_thresholds': {},
+                'predecessor_receipt_sha256': sha256(committed_receipt(instance, 'N2')),
+                'created_utc': '2026-09-22T02:00:00Z',
+            }
+        )
     return encoded(
         {
             'schema': 'qualification_campaign_cutoff_receipt/v1',
@@ -456,10 +484,12 @@ def commit(instance, work, checkpoint, candidate):
     )
 
 
-def committed_n2(tmp_path, monkeypatch, *, full_fail=False, halves_fail=False):
+def committed_n2(
+    tmp_path, monkeypatch, *, full_fail=False, halves_fail=False, part_a=False
+):
     """The joint batch scene: one n2_worker capture, one assessment carrying
     both stage decisions, committed by the n2 g5 work."""
-    instance = committed_n1(tmp_path, monkeypatch)
+    instance = committed_n1(tmp_path, monkeypatch, part_a=part_a)
     run_work(instance, 'n2work', 'n2_worker')
     payload = worker_payload(
         instance,
@@ -1331,3 +1361,930 @@ def test_n1_g5_commit_detection_unchanged_by_the_n2_fix(
     )
     assert ('PROCESS' in events) is supervised
     assert bool(signals) is supervised
+
+
+# ---- S5 PART_A route (ticket 2e) ----------------------------------------------
+#
+# The genuine PART_A worker payload needs the compute-side panel chain
+# (test_campaign_part_a's _g5_chain over an admitted source), so the full
+# PART_A route is not driven end to end here; the S5 pieces are covered
+# directly against the real /v7 journal where the store is involved (the
+# role gate, the admission at PART_A_READY, the staged inputs, the recovery)
+# and against the S4 worker-supervision harness for the guardian's capture
+# (S5-D1 binding, ruling A1 on an abnormal exit, no relaunch).
+
+
+def _part_a_ready(tmp_path, monkeypatch):
+    """The committed joint prefix over the /v7 install: PART_A_READY/VALID,
+    with the committing n2 g5 work settled and completed (as committed_n1
+    settles its g5 work) so the signing serialization has released."""
+    instance = committed_n2(tmp_path, monkeypatch, part_a=True)[0]
+    settle(instance, 'n2g5')
+    transition(instance, 'n2g5', 'COMPLETED')
+    state = snap(instance)
+    assert (state['state'], state['validity']) == ('PART_A_READY', 'VALID')
+    return instance
+
+
+def _part_a_request(role, work='pawork'):
+    return encoded(
+        {
+            'schema': 'qualification_campaign_schedule_request/v1',
+            'attempt_id': 'a1',
+            'work_id': work,
+            'role': role,
+            'probe': 'noop',
+            'signing_retry_of': None,
+            'fault': None,
+        }
+    )
+
+
+@pytest.mark.parametrize('role', ['part_a_worker', 'part_a_g5'])
+def test_v6_route_refuses_the_part_a_dispatch_roles(tmp_path, monkeypatch, role):
+    """Fail-on-base: part_a_worker refused on /v6 -- on the joint N2 dispatch
+    installation the PART_A roles refuse with the PART_A-release gate, ahead
+    of any journal access (the roles do not parse on the S4 base)."""
+    import threading
+    from contextlib import nullcontext
+
+    from c1_rail.qualification.execution.service import ExecutionService
+    from c1_rail.qualification.execution.store import ExecutionStore
+
+    service = object.__new__(ExecutionService)
+    service.store = ExecutionStore(tmp_path / 'journal.sqlite')
+    service.config = {'host_run_id': 'host1', 'service_uid': SERVICE_UID}
+    service.dispatch_lock = threading.Lock()
+    service.recovery_issues = {}
+    service.schedule_eligible = True
+    service.dispatch_eligible = True
+    service.joint_dispatch_eligible = True
+    service.part_a_dispatch_eligible = False
+    monkeypatch.setattr(supervisor, 'controller_cpu_guard', nullcontext)
+    with pytest.raises(ValueError, match='installed PART_A dispatch release required'):
+        service._schedule_request(SERVICE_UID, _part_a_request(role))
+    # The joint roles keep their own /v6 gate, untouched by the PART_A one.
+    service.joint_dispatch_eligible = False
+    with pytest.raises(ValueError, match='installed N2 dispatch release required'):
+        service._schedule_request(SERVICE_UID, _part_a_request('n2_worker', 'n2work'))
+
+
+def test_part_a_dispatch_eligibility_is_fixed_by_the_v7_release(tmp_path):
+    """The startup-fixed fact: only the /v7 PART_A dispatch release (profile
+    /v7, dispatch checkpoints N1/N2/PART_A) admits the PART_A roles; the /v6
+    joint release does not, while it still satisfies the joint fact."""
+    from c1_rail.qualification.execution.profile import parse_profile
+    from c1_rail.qualification.execution.service import (
+        joint_dispatch_eligibility,
+        part_a_dispatch_eligibility,
+    )
+
+    for part_a in (False, True):
+        case = build_bundle(
+            tmp_path / ('v7' if part_a else 'v6'),
+            capability='FULL_E1',
+            dispatch=True,
+            joint=True,
+            part_a=part_a,
+        )
+        release = json.loads(case['release'])
+        profile = parse_profile(encoded(release['profile']))
+        assert part_a_dispatch_eligibility(release, profile) is part_a
+        assert joint_dispatch_eligibility(release, profile) is True
+        if part_a:
+            assert release['dispatch_checkpoints'] == ['N1', 'N2', 'PART_A']
+            assert profile.values['schema'] == 'qualification_execution_profile/v7'
+
+
+def test_part_a_roles_are_admitted_on_v7_at_part_a_ready(tmp_path, monkeypatch):
+    """On the /v7 install the PART_A roles pass the service gate and the store
+    claims and materializes them from PART_A_READY/VALID (the progression the
+    N2 commit produced), each in its own phase; the launch tail is the S4 one."""
+    from c1_rail.qualification.execution.campaign_funding import PART_A_DISPATCH_ROLES
+
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    launched = []
+
+    def launch(service, reservation, enrollment):
+        # The S4 launch tail receives the store's canonical bytes.
+        work_id = json.loads(enrollment)['work_id']
+        launched.append(work_id)
+        return encoded({'launched': work_id})
+
+    monkeypatch.setattr(supervisor, 'launch_prepared_campaign_work', launch)
+    assert PART_A_DISPATCH_ROLES == ('part_a_worker', 'part_a_g5')
+    for role, work in (('part_a_worker', 'pawork'), ('part_a_g5', 'pag5')):
+        reply = json.loads(
+            instance._schedule_request(
+                SERVICE_UID, schedule_document(instance, role=role, work=work)
+            )
+        )
+        assert reply == {'launched': work}
+    state = snap(instance)
+    assert (state['state'], state['validity']) == ('PART_A_READY', 'VALID')
+    phases = {w['work_id']: w['phase'] for w in state['works']}
+    assert phases['pawork'] == 'PART_A' and phases['pag5'] == 'PART_A_G5'
+    assert launched == ['pawork', 'pag5']
+    # The guardian's own authority check treats PART_A_READY as live for the
+    # PART_A phases only.
+    supervisor._assert_authority(state, 'PART_A')
+    supervisor._assert_authority(state, 'PART_A_G5')
+    with pytest.raises(ValueError, match='campaign is terminal or invalidated'):
+        supervisor._assert_authority(state, 'N2')
+
+
+def test_part_a_worker_command_and_uids(tmp_path):
+    """The PART_A worker container runs the worker uid with --checkpoint PART_A
+    and the output mount; the PART_A g5 probe body runs the g5 uid. The N1 and
+    N2 commands are unchanged."""
+    context = _supervision_context()
+    body = supervisor.worker_container_body(
+        context, _enrollment('pawork'),
+        {'work_id': 'pawork', 'role': 'part_a_worker', 'probe': 'noop'},
+        checkpoint='PART_A',
+    )
+    assert body['Labels']['fp.s2.role'] == 'part_a_worker'
+    assert body['User'] == str(WORKER_UID) + ':' + str(WORKER_UID)
+    assert body['Cmd'][-2:] == ['--checkpoint', 'PART_A']
+    assert body['Cmd'][:8] == [
+        '--execution-id', 'pawork', '--input', '/input', '--output', '/output',
+        '--campaign-limits', 'campaign-limits.json',
+    ]
+    assert body['HostConfig']['Binds'][1].endswith('/out:/output:rw')
+    g5 = supervisor.probe_container_body(
+        context, _enrollment('pag5'), {'work_id': 'pag5', 'role': 'part_a_g5', 'probe': 'noop'}
+    )
+    assert g5['User'] == str(G5) + ':' + str(G5)
+    n1 = supervisor.worker_container_body(
+        context, _enrollment('n1work'),
+        {'work_id': 'n1work', 'role': 'n1_worker', 'probe': 'noop'},
+    )
+    assert '--checkpoint' not in n1['Cmd']
+    n2 = supervisor.worker_container_body(
+        context, _enrollment('n2work'),
+        {'work_id': 'n2work', 'role': 'n2_worker', 'probe': 'noop'},
+        checkpoint='N2',
+    )
+    assert n2['Cmd'][-2:] == ['--checkpoint', 'N2']
+
+
+def _installation(tmp_path):
+    root = tmp_path / 'installation'
+    root.mkdir()
+    (root / 'release.json').write_bytes(b'{"release": true}')
+    (root / 'keys.json').write_bytes(b'{"keys": true}')
+    return SimpleNamespace(config={'installation_root': str(root)})
+
+
+def test_part_a_worker_stages_the_committed_n2_custody(tmp_path, monkeypatch):
+    """The PART_A input mount carries, read-only, exactly the three predecessor
+    files execution/worker.py's PART_A branch reads: the committed N2 receipt,
+    the committed N2 assessment bytes and the N2 capture payload, beside the
+    PART_A plan bound to that receipt; the limits name the PART_A phase."""
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    run_work(instance, 'pawork', 'part_a_worker')
+    state = snap(instance)
+    work = next(w for w in state['works'] if w['work_id'] == 'pawork')
+    files, plan_bytes = supervisor._worker_input_files(
+        _installation(tmp_path), store(instance), state, work, checkpoint='PART_A'
+    )
+    top = {name: raw for directory, name, raw in files if directory == ''}
+    receipt = committed_receipt(instance, 'N2')
+    with instance.store.transaction() as connection:
+        committed = connection.execute(
+            'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+            "WHERE attempt_id=? AND checkpoint='N2'",
+            (instance.attempt,),
+        ).fetchone()
+    assert top['predecessor-receipt.json'] == receipt
+    assert top['predecessor-assessment.json'] == bytes(committed[0])
+    assert top['predecessor-payload.json'] == (
+        store(instance).checkpoint_capture(instance.attempt, 'N2')['payload_bytes']
+    )
+    assert top['plan.json'] == plan_bytes == derive_checkpoint_plan(
+        instance.campaign_plan, 'PART_A', receipt
+    )
+    assert json.loads(top['campaign-limits.json'])['phase'] == 'PART_A'
+    assert set(top) == {
+        'plan.json', 'campaign-limits.json', 'predecessor-receipt.json',
+        'predecessor-assessment.json', 'predecessor-payload.json',
+    }
+
+
+def test_n2_worker_staging_is_unchanged_by_part_a(tmp_path, monkeypatch):
+    """Guard: the joint N2 work still stages only the committed N1 receipt."""
+    instance = committed_n1(tmp_path, monkeypatch)
+    run_work(instance, 'n2work', 'n2_worker')
+    state = snap(instance)
+    work = next(w for w in state['works'] if w['work_id'] == 'n2work')
+    files, _ = supervisor._worker_input_files(
+        _installation(tmp_path), store(instance), state, work, checkpoint='N2'
+    )
+    top = {name: raw for directory, name, raw in files if directory == ''}
+    assert set(top) == {'plan.json', 'campaign-limits.json', 'predecessor-receipt.json'}
+    assert top['predecessor-receipt.json'] == committed_receipt(instance, 'N1')
+
+
+class _PartACampaigns(_WorkerCampaigns):
+    """The S4 worker-supervision store surface over a PART_A work, recording
+    the archived artifacts and the retained capture."""
+
+    def __init__(self, progression, *, phase='PART_A', archive_raises=False):
+        super().__init__(progression)
+        self.phase = phase
+        self.archive_raises = archive_raises
+        self.staged = []
+        self.captures = []
+
+    def state(self):
+        state = super().state()
+        state['profile'] = {'orchestration_cpu_ns': {self.phase: 20 * 10**9}}
+        state['works'][0]['work_id'] = 'pawork'
+        state['works'][0]['phase'] = self.phase
+        return state
+
+    def stage_checkpoint_artifact(self, attempt, role, raw, *, checkpoint='N1'):
+        if self.archive_raises:
+            raise ValueError('archive refused')
+        self.staged.append((checkpoint, role, raw))
+        return sha256(raw)
+
+    def retain_checkpoint_capture(self, *args, **kwargs):
+        self.captures.append(kwargs)
+
+
+class _ExitDocker(_WorkerDocker):
+    """The S4 fixed container with a chosen exit code and a create counter."""
+
+    def __init__(self, body, *, exit_code=0):
+        super().__init__(body)
+        self.exit_code = exit_code
+        self.creates = 0
+
+    def call(self, method, path, body=None, raw=False):
+        if path.startswith('/containers/create'):
+            self.creates += 1
+        if '/logs?' in path:
+            return b'worker refused'
+        row = super().call(method, path, body, raw)
+        if path.endswith('/json'):
+            row['State']['ExitCode'] = self.exit_code
+        return row
+
+
+INITIAL = b'{"panel": 1}\n{"panel": 2}\n'
+FINAL = INITIAL + b'{"panel": 3}\n'
+
+
+def _part_a_document(initial=INITIAL, final=FINAL):
+    return {
+        'observations': {},
+        'part_a': {
+            'initial_prefix_sha256': sha256(initial),
+            'final_sha256': sha256(final),
+            'initial_panels': 2,
+            'final_panels': 3,
+            'expansion_required': True,
+        },
+    }
+
+
+def _run_part_a_worker(
+    tmp_path, monkeypatch, *, served, document, progression='PART_A_READY',
+    exit_code=0, checkpoint='PART_A', archive_raises=False, campaigns=None,
+):
+    """Drive ``_run_n1_worker`` for a PART_A work over the S4 harness; ``served``
+    maps output-mount names to bytes (absent means the file does not exist)."""
+    from c1_rail.qualification.execution import files, protocol, signing
+
+    enrollment = _enrollment('pawork')
+    payload_slice = enrollment['scopes']['payload_slice']
+    body = {
+        'Image': 'img',
+        'User': str(WORKER_UID) + ':' + str(WORKER_UID),
+        'Entrypoint': ['e'],
+        'Cmd': ['c'],
+        'HostConfig': {'CgroupParent': payload_slice, 'Binds': ['a:/input:ro']},
+    }
+    docker = _ExitDocker(body, exit_code=exit_code)
+    clock_bytes = encoded(
+        {
+            'schema': 'qualification_campaign_clock/v1',
+            'boot_id': 'b',
+            'boottime_ns': 10**12,
+            'utc': '2026-09-23T00:00:00Z',
+        }
+    )
+    reads = []
+
+    def read_regular(root, name, *, limit):
+        reads.append((name, limit))
+        if name not in served:
+            raise FileNotFoundError(name)
+        return served[name]
+
+    monkeypatch.setattr(supervisor, 'observe_campaign_clock', lambda: clock_bytes)
+    monkeypatch.setattr(supervisor, 'DockerControl', lambda: docker)
+    monkeypatch.setattr(supervisor, '_worker_input_files', lambda *a, **k: ([], b'plan'))
+    monkeypatch.setattr(supervisor, '_guardian_bus_call', lambda *a, **k: None)
+    monkeypatch.setattr(supervisor, '_write_worker_input', lambda *a, **k: 0)
+    monkeypatch.setattr(supervisor, 'worker_container_body', lambda *a, **k: body)
+    monkeypatch.setattr(
+        supervisor, '_process_cgroup', lambda pid='self': '/' + payload_slice + '/c'
+    )
+    monkeypatch.setattr(supervisor, '_payload_processes', lambda group: ['4242'])
+    monkeypatch.setattr(
+        supervisor,
+        '_process_identity',
+        lambda pid: (99, WORKER_UID, '/' + payload_slice + '/c', 'python3', '/x'),
+    )
+    monkeypatch.setattr(supervisor, '_pre_exec_init', lambda comm: False)
+    monkeypatch.setattr(supervisor, '_interpreter_image', lambda *a: False)
+    monkeypatch.setattr(
+        supervisor,
+        '_read_counter',
+        lambda path: (b'usage_usec 0\n' if path.name == 'cpu.stat' else b'oom 0\noom_kill 0\n'),
+    )
+    monkeypatch.setattr(supervisor.time, 'sleep', lambda seconds: None)
+    monkeypatch.setattr(files, 'read_regular', read_regular)
+    monkeypatch.setattr(protocol, 'decode_frame', lambda raw, limit: b'payload')
+    result = encoded(
+        {
+            'payload_sha256': 'p' * 64,
+            'payload_byte_length': 7,
+            'plan_sha256': 'q' * 64,
+            'worker_image_digest': 'img',
+            'runtime_manifest_sha256': 'r' * 64,
+            'container_id': 'c' * 64,
+        }
+    )
+    monkeypatch.setattr(
+        supervisor,
+        '_capture_result_document',
+        lambda *a, **k: (result, SimpleNamespace(document=document)),
+    )
+    monkeypatch.setattr(signing, 'sign_checkpoint_attestation', lambda *a, **k: b'attestation')
+    verified = SimpleNamespace(profile=SimpleNamespace(sha256='s' * 64))
+    context = SimpleNamespace(
+        profile=SimpleNamespace(output_byte_limit=10**7, worker_uid=WORKER_UID),
+        config={'execution_credential': 'cred', 'service_uid': SERVICE_UID},
+        release=encoded({'service_id': 'svc'}),
+        keys=lambda: {},
+        _context=lambda digest, at: verified,
+    )
+    runtime = SimpleNamespace(
+        parent=tmp_path / (payload_slice[:-6].split('-')[0] + '.slice'),
+        observation=lambda *a: b'{}',
+    )
+    if campaigns is None:
+        campaigns = _PartACampaigns(
+            progression,
+            phase='N2' if checkpoint == 'N2' else 'PART_A',
+            archive_raises=archive_raises,
+        )
+    state = campaigns.state()
+    role = 'n2_worker' if checkpoint == 'N2' else 'part_a_worker'
+    supervisor._run_n1_worker(
+        context,
+        campaigns,
+        runtime,
+        state,
+        state['works'][0],
+        enrollment,
+        {'work_id': 'pawork', 'role': role},
+        checkpoint=checkpoint,
+    )
+    return campaigns, docker, reads
+
+
+def _served(initial=INITIAL, final=FINAL, frame=b'frame'):
+    served = {}
+    if initial is not None:
+        served['part-a-initial.jsonl'] = initial
+    if final is not None:
+        served['part-a-final.jsonl'] = final
+    if frame is not None:
+        served['result.frame'] = frame
+    return served
+
+
+def test_part_a_capture_archives_both_artifacts_and_retains_the_s5_d1_fields(
+    tmp_path, monkeypatch
+):
+    """S5-D1: after a normal exit the guardian reads both artifacts under the
+    result.frame bound, archives them byte-for-byte (ruling A1 roles, the
+    PART_A checkpoint) and retains the capture with the payload's five fields;
+    the work completes from PART_A_READY."""
+    campaigns, docker, reads = _run_part_a_worker(
+        tmp_path, monkeypatch, served=_served(), document=_part_a_document()
+    )
+    assert campaigns.staged == [
+        ('PART_A', 'part_a_initial_prefix', INITIAL),
+        ('PART_A', 'part_a_final', FINAL),
+    ]
+    assert campaigns.captures == [
+        {
+            'checkpoint': 'PART_A',
+            'initial_prefix_sha256': sha256(INITIAL),
+            'final_sha256': sha256(FINAL),
+            'initial_panels': 2,
+            'final_panels': 3,
+            'expansion_required': True,
+        }
+    ]
+    assert {name for name, _ in reads} == {
+        'part-a-initial.jsonl', 'part-a-final.jsonl', 'result.frame'
+    }
+    assert {limit for _, limit in reads} == {10**7}
+    assert campaigns.transitions == ['COMPLETED']
+    assert 'FAILURE' not in campaigns.events and docker.creates == 1
+
+
+@pytest.mark.parametrize(
+    'served,document',
+    [
+        (_served(initial=None), _part_a_document()),
+        (_served(final=None), _part_a_document()),
+        (_served(initial=b'{"panel": 9}\n'), _part_a_document()),
+        (_served(final=INITIAL + b'{"panel": 4}\n'), _part_a_document()),
+        (
+            _served(final=b'{"panel": 2}\n{"panel": 1}\n{"panel": 3}\n'),
+            _part_a_document(final=b'{"panel": 2}\n{"panel": 1}\n{"panel": 3}\n'),
+        ),
+        (_served(), {'observations': {}}),
+    ],
+    ids=['missing-initial', 'missing-final', 'initial-digest', 'final-digest',
+         'not-a-prefix', 'no-part-a-binding'],
+)
+def test_part_a_capture_refuses_missing_mismatched_or_non_prefix_artifacts(
+    tmp_path, monkeypatch, served, document
+):
+    """A missing artifact, a digest that differs from the payload's own part_a
+    binding, or a final that does not extend the initial prefix refuses the
+    capture: nothing is archived, nothing is retained."""
+    with pytest.raises(ValueError, match='part a artifact custody differs'):
+        _run_part_a_worker(tmp_path, monkeypatch, served=served, document=document)
+
+
+def test_part_a_capture_refusal_retains_nothing(tmp_path, monkeypatch):
+    """The refusal precedes both the archive and the capture: no staged row,
+    no retained capture, no COMPLETED."""
+    campaigns = _PartACampaigns('PART_A_READY')
+    with pytest.raises(ValueError, match='part a artifact custody differs'):
+        _run_part_a_worker(
+            tmp_path, monkeypatch, served=_served(final=INITIAL + b'x'),
+            document=_part_a_document(), campaigns=campaigns,
+        )
+    assert campaigns.staged == [] and campaigns.captures == []
+    assert campaigns.transitions == []
+
+
+def test_part_a_abnormal_exit_archives_for_inspection_then_in_doubt_no_relaunch(
+    tmp_path, monkeypatch
+):
+    """Ruling A1: the worker crashed after the initial file and before the
+    final one -- the saved initial bytes are archived for inspection, the work
+    goes IN_DOUBT through the existing exit-code path with the retained
+    reason, no capture is retained, and no second container is created."""
+    campaigns, docker, _ = _run_part_a_worker(
+        tmp_path, monkeypatch, served=_served(final=None, frame=None),
+        document=_part_a_document(), exit_code=137,
+    )
+    assert campaigns.staged == [('PART_A', 'part_a_initial_prefix', INITIAL)]
+    assert campaigns.transitions == ['IN_DOUBT']
+    assert campaigns.captures == []
+    assert campaigns.events[-1] == 'FAILURE' and 'PAYLOAD_EXIT' in campaigns.events
+    assert docker.creates == 1
+
+
+def test_part_a_abnormal_exit_archive_failure_never_blocks_in_doubt(tmp_path, monkeypatch):
+    """A1: the inspection archive is best-effort; a refusing store still sees
+    the IN_DOUBT transition and the settlement."""
+    campaigns, docker, _ = _run_part_a_worker(
+        tmp_path, monkeypatch, served=_served(frame=None), document=_part_a_document(),
+        exit_code=1, archive_raises=True,
+    )
+    assert campaigns.staged == [] and campaigns.captures == []
+    assert campaigns.transitions == ['IN_DOUBT'] and docker.creates == 1
+
+
+def test_part_a_absent_frame_after_zero_exit_archives_then_in_doubt_via_the_guardian_path(
+    tmp_path, monkeypatch
+):
+    """A zero exit with no result.frame: both saved artifacts are archived for
+    inspection, the read failure re-raises, and the guardian's own failure
+    path (the existing S3/S4 one) marks the RUNNING work IN_DOUBT with the
+    retained cause -- no capture, no relaunch."""
+    campaigns = _PartACampaigns('PART_A_READY')
+    with pytest.raises(FileNotFoundError):
+        _run_part_a_worker(
+            tmp_path, monkeypatch, served=_served(frame=None), document=_part_a_document(),
+            campaigns=campaigns,
+        )
+    assert campaigns.staged == [
+        ('PART_A', 'part_a_initial_prefix', INITIAL),
+        ('PART_A', 'part_a_final', FINAL),
+    ]
+    assert campaigns.captures == [] and campaigns.transitions == []
+    monkeypatch.setattr(
+        supervisor, 'DockerControl', lambda: SimpleNamespace(call=lambda *a, **k: {})
+    )
+    supervisor._guardian_self_failure(
+        None, campaigns, _enrollment('pawork'), 'a1', 'pawork', FileNotFoundError('result.frame')
+    )
+    assert campaigns.transitions == ['IN_DOUBT']
+    assert campaigns.events[-1] == 'FAILURE' and campaigns.captures == []
+
+
+def test_part_a_budget_exhaustion_gives_no_completion_and_no_fabricated_fail(
+    tmp_path, monkeypatch
+):
+    """Packet section 3: a PART_A capture whose settlement finds the campaign
+    budget terminal completes nothing and fabricates no failure -- no
+    COMPLETED transition, no FAILURE event, the capture retained as is."""
+    campaigns, _, _ = _run_part_a_worker(
+        tmp_path, monkeypatch, served=_served(), document=_part_a_document(),
+        progression='BUDGET_EXHAUSTED',
+    )
+    assert campaigns.transitions == []
+    assert 'FAILURE' not in campaigns.events
+    assert len(campaigns.captures) == 1
+
+
+def test_n2_capture_is_unchanged_by_the_part_a_binding(tmp_path, monkeypatch):
+    """Guard: the joint N2 capture never reads the PART_A artifacts, archives
+    nothing extra and retains no S5-D1 field."""
+    campaigns, _, reads = _run_part_a_worker(
+        tmp_path, monkeypatch, served={'result.frame': b'frame'},
+        document={'observations': {}}, progression='N2_READY', checkpoint='N2',
+    )
+    assert [name for name, _ in reads] == ['result.frame']
+    assert campaigns.staged == []
+    assert campaigns.captures == [{'checkpoint': 'N2'}]
+    assert campaigns.transitions == ['COMPLETED']
+
+
+# ---- PART_A T2 through the real store (escalation fix, operator ruling ------
+# 2026-09-30 "Fix both, re-verify"). The Linux subset run 36652211355 rolled
+# every PART_A commit back with "campaign budget state differs": the store
+# advanced to FULL_PASS_READY / PART_A_FAILED (CHECKPOINT_ADVANCES) but the
+# budget/checkpoint snapshot parsers' closed state tuples lacked both names.
+# These cases drive the real CampaignStore through the PART_A T1/T2 boundary
+# and re-parse every snapshot the commit and the settling g5 work produce.
+
+
+def _part_a_capture_fields(*, expanded):
+    final = FINAL if expanded else INITIAL
+    return {
+        'initial_prefix_sha256': sha256(INITIAL),
+        'final_sha256': sha256(final),
+        'initial_panels': 2,
+        'final_panels': 3 if expanded else 2,
+        'expansion_required': expanded,
+    }
+
+
+def part_a_candidate(instance, work, *, passed, capture_fields):
+    """A structurally complete PART_A assessment over the retained PART_A family
+    and the committed N2 predecessor. The store's T1/T2 boundary is structural
+    (``parse_checkpoint_assessment`` plus the custody bindings); the genuine
+    PART_A reconstruction through G5's builder is test_campaign_part_a.py's
+    ``g5_chain``, not repeated here."""
+    campaigns = store(instance)
+    snapshot_bytes = campaigns.checkpoint_snapshot(instance.attempt, 'PART_A')
+    snapshot = json.loads(snapshot_bytes)
+    capture = campaigns.checkpoint_capture(instance.attempt, 'PART_A')
+    predecessor = committed_receipt(instance, 'N2')
+    release = json.loads(instance.release)
+    status = 'PASS' if passed else 'FAIL'
+
+    def stage(name, verdict):
+        return {
+            'stage': name,
+            'status': verdict,
+            'input_sha256': sha256(name.encode('ascii')),
+            'output_sha256': sha256((name + verdict).encode('ascii')),
+            'population_counts': {'FULL': 1},
+        }
+
+    core = {
+        'schema': 'qualification_campaign_checkpoint_assessment/v1',
+        'attempt_id': instance.attempt,
+        'checkpoint': 'PART_A',
+        'work_id': work,
+        'binding': {
+            'contract_sha256': instance.verified.contract.contract_sha256,
+            'trust_domain_sha256': instance.verified.contract.trust_domain_sha256,
+            'policy_sha256': instance.verified.policy.sha256,
+            'execution_release_sha256': sha256(instance.release),
+        },
+        'snapshot': {
+            'campaign_revision': snapshot['campaign_revision'],
+            'authority_head': snapshot['authority_head'],
+            'snapshot_sha256': sha256(snapshot_bytes),
+        },
+        'capture': {
+            'result_sha256': sha256(capture['result_bytes']),
+            'payload_sha256': sha256(capture['payload_bytes']),
+            'attestation_sha256': sha256(capture['attestation_bytes']),
+        },
+        'stages': [
+            stage('LEGALITY', 'PASS'),
+            stage('N1', 'PASS'),
+            stage('N2', 'PASS'),
+            stage('PART_B', 'PASS'),
+            stage('PART_A', status),
+        ],
+        'decision': 'CONTINUE' if passed else 'FAILURE',
+        'part_a': dict(
+            capture_fields,
+            tolerance_comparison={
+                'within': True, 'initial_p5': '0.90', 'center': '0.90', 'tolerance': '0.05'
+            },
+            floor_comparison={'at_or_above': passed, 'final_p5': '0.90', 'floor': '0.85'},
+            full_sanity_comparison={
+                'at_or_below': True, 'final_p5': '0.90', 'full_pass_rate': '0.95'
+            },
+        ),
+        'predecessor': {
+            'checkpoint': 'N2',
+            'assessment_sha256': json.loads(predecessor)['assessment_sha256'],
+            'receipt_sha256': sha256(predecessor),
+        },
+        'cutoff': {'checkpoint': 'PART_A', 'stage_thresholds': {}},
+        'artifacts': [],
+    }
+    assert release['dispatch_checkpoints'] == ['N1', 'N2', 'PART_A']
+    return sign_candidate(instance, SimpleNamespace(assessment_bytes=encoded(core)))
+
+
+def committed_part_a(tmp_path, monkeypatch, *, passed):
+    """The S5 scene: PART_A_READY -> part_a_worker capture (S5-D1 fields) ->
+    part_a_g5 intent -> the real store's PART_A T2 commit."""
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    capture_fields = _part_a_capture_fields(expanded=True)
+    run_work(instance, 'pawork', 'part_a_worker')
+    payload = encoded(
+        {
+            'schema': 'fixture_part_a_worker_result',
+            'observations': {
+                'worker_compute_wall_ns': 1, 'worker_cpu_ns': 1, 'worker_peak_memory_bytes': 1
+            },
+        }
+    )
+    capture_checkpoint(instance, 'pawork', 'PART_A', payload, **capture_fields)
+    settle(instance, 'pawork')
+    transition(instance, 'pawork', 'COMPLETED')
+    run_work(instance, 'pag5', 'part_a_g5')
+    candidate = part_a_candidate(
+        instance, 'pawork', passed=passed, capture_fields=capture_fields
+    )
+    persist_intent(instance, 'pag5', 'PART_A', candidate)
+    reply = json.loads(commit(instance, 'pag5', 'PART_A', candidate))
+    return instance, candidate, reply
+
+
+@pytest.mark.parametrize(
+    'passed, decision, campaign_state',
+    [(True, 'CONTINUE', 'FULL_PASS_READY'), (False, 'FAILURE', 'PART_A_FAILED')],
+)
+def test_part_a_commit_advances_through_the_real_store(
+    tmp_path, monkeypatch, passed, decision, campaign_state
+):
+    """The PART_A T2 commit writes the receipt, the budget snapshot and the
+    PART_A checkpoint snapshot re-parse in the advanced state, and the
+    committing part_a_g5 work settles and completes in that state (each step
+    re-encodes and re-parses the budget snapshot and the funding record)."""
+    from c1_rail.qualification.journal_snapshot import (
+        parse_campaign_budget_snapshot,
+        parse_campaign_checkpoint_snapshot,
+    )
+
+    instance, candidate, reply = committed_part_a(tmp_path, monkeypatch, passed=passed)
+    assert reply['historical'] is False
+    assert reply['receipt']['checkpoint'] == 'PART_A'
+    assert reply['receipt']['decision'] == decision
+    assert reply['receipt']['campaign_state'] == campaign_state
+    receipt = committed_receipt(instance, 'PART_A')
+    assert encoded(reply['receipt']) == receipt
+    assert json.loads(receipt)['assessment_sha256'] == sha256(candidate)
+    budget = parse_campaign_budget_snapshot(store(instance).budget_snapshot(instance.attempt))
+    assert (budget['state'], budget['validity']) == (campaign_state, 'VALID')
+    assert budget['schema'] == 'qualification_campaign_budget_snapshot/v8'
+    family = budget['checkpoints']['PART_A']
+    assert (family['state'], family['decision']) == ('COMMITTED', decision)
+    assert family['receipt_sha256'] == sha256(receipt)
+    assert budget['checkpoints']['N2']['state'] == 'COMMITTED'
+    checkpoint = parse_campaign_checkpoint_snapshot(
+        store(instance).checkpoint_snapshot(instance.attempt, 'PART_A')
+    )
+    assert checkpoint['campaign_state'] == campaign_state
+    assert checkpoint['predecessor']['checkpoint'] == 'N2'
+    settle(instance, 'pag5')
+    transition(instance, 'pag5', 'COMPLETED')
+    state = parse_campaign_budget_snapshot(store(instance).budget_snapshot(instance.attempt))
+    assert state['state'] == campaign_state
+    assert next(w for w in state['works'] if w['work_id'] == 'pag5')['state'] == 'COMPLETED'
+    # An exact retry after the reply returns the byte-identical receipt.
+    again = json.loads(commit(instance, 'pag5', 'PART_A', candidate))
+    assert again['historical'] is True and encoded(again['receipt']) == receipt
+
+
+def test_part_a_capture_retry_with_different_capture_fields_refuses(tmp_path, monkeypatch):
+    """D-S5-2 (Codex on #578): an exact retry of a PART_A capture is idempotent
+    only when the five S5-D1 capture fields equal the retained family row too.
+    A retry with the same result, payload and transition bytes but any other
+    valid capture field set refuses and leaves the family row as it was --
+    before attestation and after it."""
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    run_work(instance, 'pawork', 'part_a_worker')
+    payload = encoded(
+        {
+            'schema': 'fixture_part_a_worker_result',
+            'observations': {
+                'worker_compute_wall_ns': 1, 'worker_cpu_ns': 1, 'worker_peak_memory_bytes': 1
+            },
+        }
+    )
+    plan = part_a_plan(instance)
+    result = result_document(instance, 'pawork', 'PART_A', payload, plan)
+    transition_bytes = encoded(
+        {
+            'schema': 'qualification_campaign_work_transition/v1',
+            'attempt_id': instance.attempt,
+            'work_id': 'pawork',
+            'state': 'CAPTURED',
+            'clock': json.loads(supervisor.observe_campaign_clock()),
+            'data': {'capture_bytes_b64': base64.b64encode(result).decode('ascii')},
+        }
+    )
+    fields = _part_a_capture_fields(expanded=True)
+
+    def retain(**capture_fields):
+        return store(instance).retain_checkpoint_capture(
+            instance.attempt, 'pawork', result, payload, transition_bytes,
+            checkpoint='PART_A', **capture_fields,
+        )
+
+    retain(**fields)
+    retained = snap(instance)['checkpoints']['PART_A']
+    assert {name: retained[name] for name in fields} == fields
+    # Each alternative is a valid S5-D1 field set on its own.
+    altered = [
+        dict(fields, initial_prefix_sha256='0' * 64),
+        dict(fields, final_sha256='0' * 64),
+        dict(fields, initial_panels=1),
+        dict(fields, final_panels=4),
+        _part_a_capture_fields(expanded=False),
+    ]
+
+    def assert_refused(expected):
+        for capture_fields in altered:
+            with pytest.raises(ValueError, match='immutable checkpoint capture differs'):
+                retain(**capture_fields)
+            assert snap(instance)['checkpoints']['PART_A'] == expected
+
+    assert_refused(retained)
+    # The exact retry (same bytes, same fields) stays idempotent.
+    retain(**fields)
+    assert snap(instance)['checkpoints']['PART_A'] == retained
+    attestation = attestation_document(instance, 'pawork', 'PART_A', result, payload, plan)
+    store(instance).retain_checkpoint_attestation(
+        instance.attempt, attestation, checkpoint='PART_A', verify=lambda *a, **k: None
+    )
+    attested = snap(instance)['checkpoints']['PART_A']
+    assert attested['state'] == 'ATTESTED'
+    assert_refused(attested)
+
+
+# ---- D-S5-3: an exact capture retry after the family has progressed --------
+#
+# Operator ruling 2026-10-01 (#588): D-S5-3 gates T05 R1. One scene per
+# (checkpoint, family state) over the real store; each replays the exact
+# retained capture and must write nothing.
+
+_PART_A_PAYLOAD = encoded(
+    {
+        'schema': 'fixture_part_a_worker_result',
+        'observations': {
+            'worker_compute_wall_ns': 1, 'worker_cpu_ns': 1, 'worker_peak_memory_bytes': 1
+        },
+    }
+)
+
+
+def _n1_attested(tmp_path, monkeypatch):
+    from test_campaign_n1 import enrolled_capture
+
+    return enrolled_capture(tmp_path, monkeypatch)[0], 'n1work', 'N1'
+
+
+def _n1_committed(tmp_path, monkeypatch):
+    return committed_n1(tmp_path, monkeypatch), 'n1work', 'N1'
+
+
+def _n2_attested(tmp_path, monkeypatch):
+    instance = committed_n1(tmp_path, monkeypatch)
+    run_work(instance, 'n2work', 'n2_worker')
+    payload = worker_payload(
+        instance, plan=n2_plan(instance, committed_receipt(instance)),
+        checkpoint='N2', work='n2work',
+    )
+    capture_checkpoint(instance, 'n2work', 'N2', payload)
+    return instance, 'n2work', 'N2'
+
+
+def _n2_committed(tmp_path, monkeypatch):
+    return committed_n2(tmp_path, monkeypatch)[0], 'n2work', 'N2'
+
+
+def _part_a_attested(tmp_path, monkeypatch):
+    instance = _part_a_ready(tmp_path, monkeypatch)
+    run_work(instance, 'pawork', 'part_a_worker')
+    capture_checkpoint(
+        instance, 'pawork', 'PART_A', _PART_A_PAYLOAD, **_part_a_capture_fields(expanded=True)
+    )
+    return instance, 'pawork', 'PART_A'
+
+
+def _part_a_committed(tmp_path, monkeypatch):
+    return committed_part_a(tmp_path, monkeypatch, passed=True)[0], 'pawork', 'PART_A'
+
+
+_COMMITTED_DIGESTS = (
+    'result_sha256', 'attestation_sha256', 'assessment_sha256', 'receipt_sha256'
+)
+
+
+def _budget_event_count(instance):
+    with store(instance).store.transaction() as connection:
+        return connection.execute(
+            'SELECT COUNT(*) FROM full_campaign_budget_events WHERE attempt_id=?',
+            (instance.attempt,),
+        ).fetchone()[0]
+
+
+@pytest.mark.parametrize(
+    'scene, family_state, digests',
+    [
+        (_n1_attested, 'ATTESTED', ('result_sha256', 'attestation_sha256')),
+        (_n1_committed, 'COMMITTED', _COMMITTED_DIGESTS),
+        (_n2_attested, 'ATTESTED', ('result_sha256', 'attestation_sha256')),
+        (_n2_committed, 'COMMITTED', _COMMITTED_DIGESTS),
+        (_part_a_attested, 'ATTESTED', ('result_sha256', 'attestation_sha256')),
+        (_part_a_committed, 'COMMITTED', _COMMITTED_DIGESTS),
+    ],
+    ids=[
+        'N1-attested', 'N1-committed', 'N2-attested', 'N2-committed',
+        'PART_A-attested', 'PART_A-committed',
+    ],
+)
+def test_exact_capture_retry_after_progress_writes_nothing(
+    tmp_path, monkeypatch, scene, family_state, digests
+):
+    """D-S5-3: an exact retry of a checkpoint capture -- the retained result
+    and payload bytes, the retained CAPTURED transition and (PART_A) the
+    retained S5-D1 fields -- once the family has moved past CAPTURED writes
+    nothing: the ATTESTED or COMMITTED family row keeps its state and its
+    attestation and receipt digests, the budget snapshot bytes and its event
+    chain are unchanged, and the retained capture row (attestation included)
+    is as it was."""
+    from c1_rail.qualification.execution.campaign_store import PART_A_CAPTURE_FIELDS
+    from c1_rail.qualification.execution.protocol import decode_base64
+
+    instance, work_id, checkpoint = scene(tmp_path, monkeypatch)
+    campaigns = store(instance)
+    budget = campaigns.budget_snapshot(instance.attempt)
+    events = _budget_event_count(instance)
+    state = json.loads(budget)
+    family = state['checkpoints'][checkpoint]
+    assert family['state'] == family_state
+    assert all(family.get(name) for name in digests), family
+    work = next(w for w in state['works'] if w['work_id'] == work_id)
+    captured = [
+        raw
+        for raw in (decode_base64(t) for t in work['transitions'])
+        if json.loads(raw)['state'] == 'CAPTURED'
+    ]
+    assert len(captured) == 1
+    retained = campaigns.checkpoint_capture(instance.attempt, checkpoint)
+    fields = (
+        {name: family[name] for name in PART_A_CAPTURE_FIELDS}
+        if checkpoint == 'PART_A'
+        else {}
+    )
+    campaigns.retain_checkpoint_capture(
+        instance.attempt,
+        work_id,
+        retained['result_bytes'],
+        retained['payload_bytes'],
+        captured[0],
+        checkpoint=checkpoint,
+        **fields,
+    )
+    assert campaigns.budget_snapshot(instance.attempt) == budget
+    assert _budget_event_count(instance) == events
+    assert store(instance).checkpoint_capture(instance.attempt, checkpoint) == retained
+    assert json.loads(campaigns.budget_snapshot(instance.attempt))['checkpoints'][
+        checkpoint
+    ] == family

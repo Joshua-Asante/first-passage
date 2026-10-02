@@ -1,0 +1,84 @@
+{
+  "binding": {
+    "maximum_cpu_seconds": 10000,
+    "maximum_memory_bytes": 256000000,
+    "maximum_wall_seconds": 10000
+  },
+  "budget_profile_schema": "qualification_campaign_budget_profile/v3",
+  "extended_bind_budget_recorded": true,
+  "extended_bind_state": "BOUND",
+  "max_phase_memory_bytes": 256000000,
+  "phases": {
+    "ADMISSION": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "N1": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "N1_CAPTURE": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "N1_G5": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "N2": {
+      "cpu_s": 360.0,
+      "memory_bytes": 256000000,
+      "wall_s": 900.0
+    },
+    "N2_CAPTURE": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "N2_G5": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "PART_A": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "PART_A_CAPTURE": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "PART_A_G5": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "RESULT": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    },
+    "SEAL": {
+      "cpu_s": 120.0,
+      "memory_bytes": 256000000,
+      "wall_s": 300.0
+    }
+  },
+  "profile_schema": "qualification_execution_profile/v7",
+  "schema": "c3_bind_budget_check/v1",
+  "sigma_cpu_s": 1680.0,
+  "sigma_wall_s": 4200.0,
+  "unextended_control": {
+    "maximum_cpu_seconds": 120,
+    "maximum_memory_bytes": 230400000,
+    "maximum_wall_seconds": 180
+  },
+  "unextended_control_state": "BUDGET_EXHAUSTED"
+}
+RESULT: FEASIBLE (control refused as predicted)

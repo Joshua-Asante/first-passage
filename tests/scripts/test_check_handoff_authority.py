@@ -110,7 +110,7 @@ def test_card_without_block_is_not_checked(tmp_path):
 
 @pytest.mark.parametrize("cap", sorted(REG.forbidden))
 def test_forbidden_capability_is_ungrantable(tmp_path, cap):
-    # Fails if any forbidden capability (trade.submit, pr.auto_merge, ...) can be granted.
+    # Fails if any forbidden capability (pr.auto_merge, tv.login_automation, ...) can be granted.
     body = WORKER_OK.replace("pr.open]", f"pr.open, {cap}]")
     assert any(e.startswith("A2") for e in _errs(_card(tmp_path, body), tmp_path))
 
@@ -129,10 +129,10 @@ def test_hook_denials_are_registered_forbidden():
     assert {cap for _, cap in hook._FALLBACK} <= set(hook.DECISION)
 
 
-def test_trade_submit_is_in_the_forbidden_set():
-    # Fails if the registry ever demotes trade placement to an approvable class.
-    assert "trade.submit" in REG.forbidden
-    assert "trade.submit" not in REG.capabilities
+def test_trade_submit_is_an_operator_act_never_grantable_in_a_card():
+    # AGENTS.md amendment 2026-09-30 / ADR Addendum 2026-09-30b: operator act only.
+    assert "trade.submit" not in REG.forbidden
+    assert REG.capabilities.get("trade.submit") == "high"
 
 
 @pytest.mark.parametrize("cap", sorted(c for c, r in REG.capabilities.items() if r == "high"))

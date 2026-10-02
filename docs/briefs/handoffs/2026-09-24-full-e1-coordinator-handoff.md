@@ -1,5 +1,7 @@
 # Coordinator handoff — Protected Full E1 and the Tradeify deployment track, end of 2026-09-24
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Type:** coordinator handoff (session boundary; the successor coordinator continues the Full E1 roadmap and the deployment-checklist workstreams)
 **From:** the coordinating work of 2026-09-23/24 (Claude sessions), assessed and packaged by a cloud session on 2026-09-24. **To:** the next coordinator session. **Operator:** Joshua.
 **Authority:** this handoff routes work; it grants nothing. Rulings, acceptance and merges stay with the coordinator and operator as the [execution-slices plan](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md) assigns them. It supersedes the [2026-09-22 coordinator handoff](2026-09-22-full-e1-coordinator-handoff.md) as the latest specifically assigned coordinator handoff; that file's §3 acceptance bar and §4 toolkit still apply and are not repeated here.
@@ -75,7 +77,7 @@
 
 | Item | State | Owed |
 |---|---|---|
-| **T00** (feasibility; gates nothing) | INSUFFICIENT. P7(a) MET per #486. **P7(b) NOT MET:** no reviewed source calendar, population index, startup policy or cost model exists; they are T10 phase-2 / step-4 products. Recovery: RECOVERED for one override map only. | Operator: rule recovery §7.1 and decide §7.7 items 1–3 (item 4 was closed by #484). Coordinator: review #486's four readings, then merge. No step 2 is granted. |
+| **T00** (feasibility; gates nothing) | INSUFFICIENT. P7(a) MET per #486. **P7(b) NOT MET:** no reviewed source calendar, population index, startup policy or cost model exists yet. *Route ruled 2026-09-29 (option 1):* T00's own step-1b Task 3 produces them, and the session-index producer is shared with T10 by exact identity; T00 no longer waits on S4 → S5 → T05 → T06. CP-7 still needs the T10 phase-2 F1 packet. Recovery: RECOVERED for one override map only; accepted 2026-09-24 ([T00 §7.9](2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24)). | Recovery ruling closed 2026-09-24 (recorded on main 2026-09-29; §5 item 2). #486 merged 2026-09-25. **Executor:** dispatch against the P7-closure packet for Tasks 2–4; the operator signs the successor contract between Tasks 3 and 4. No step 2 is granted. |
 | **T07** (settlement) | Blocked (#480). | **Coordinator decision:** how the three S2 facts get evidenced (`Timestamp` offset via an entitled `cashBalanceLog` read per DST regime; the `Date` meaning; query-bound semantics). Each needs an account-side read the operator must authorize. The missing assemble → sign → submit entry point is a named gap, outside T07 authority. |
 | **T08** (broker protection) | R3 = NONE (#482); operator ruled item 1 (#488). | **Operator:** send the vendor question (`docs/notes/2026-09-24-t08-vendor-question-draft.md`, on #488). Only a retained written answer counts. **Coordinator:** carry the bounded-exposure amendment scope (Q1–Q4; Q3 needs T08's unrun N1 map and blocks acceptance; Q4 routes to the load-bearing-numbers owner) toward a dated addendum to the Proposed incident ADR. T09 stays unspecifiable. |
 | **T10** (source and freeze) | Phase 1 merged. F10 (i) closed. Step 4 first pass merged. Phase 2 pending (it consumes T06 and the T07/T08 verdicts). | **Route the §2 finding to the qualification owner as a design question, not a measurement to scale:** per-path `verify_for` (the `_execution_snapshot` whole-object-graph hash) extrapolates to ~89 s per call on the real source. That is ~580 h for the draft 23,510-path workload, about 9× replay. It is an extrapolation 19× beyond the largest measured size. The cheap confirming probe comes first: one `verify_for` on a synthetic ~1,000-session × 92-bar × 4-leg source, which needs no private data. Also owed: signed composition at horizon 500 (needs a fixture extension), and execution-service / G5 costs. Private-port replay cost is outcome-bearing and needs its own authorization. The snapshot is an integrity control, so any change goes through its owner. |
@@ -87,6 +89,8 @@
 - Rail: disarmed, `emit_enabled=false`, no deployed book, production feed deferred (O-4). Nothing above changes that.
 
 ## 3. Conditional merge order (operator-approved)
+*Refreshed 2026-09-29: this is the 2026-09-24 order and is historical. #486 merged on 2026-09-25 at `1f564ab`, so item 4 is complete, not HOLD. Read the current merge state of #482, #488 and #490 on GitHub before acting on items 1–3.*
+
 1. **#490**: merge after this correction, preserving #483's complete ruling entry followed by this handoff entry.
 2. **#482**: resolve the #480 conflict append-only, verify the refreshed head, then merge.
 3. **#488**: only after #482; retarget to `main`, reconcile its expanded scope and stale description, rerun checks, and keep the incident-ADR amendment **Proposed—not accepted**.
@@ -107,8 +111,8 @@
 Never pass the main checkout (`C:\Users\joshu\multi_firm_operations`, which has a `.env`) as a `glm_agent` workdir. Stale remote branches from merged PRs (`claude/t00-*`, `claude/t10-phase1-merge-*`, `claude/t10-step4-*`, `claude/s4-g5-settlement-wait`, `claude/t05-settlement-wait`, `claude/t08-step1-broker-gono-go-*`) can be pruned under `repo-hygiene` (report first).
 
 ## 5. Open operator items (one batch)
-1. Merge per §3.
-2. T00 recovery §7.1 reading, and §7.7 items 1–3.
+1. ~~Merge per §3.~~ Historical (2026-09-24); superseded 2026-09-29 by the actual merge state on GitHub. #486 is merged.
+2. **Closed 2026-09-24:** T00 recovery accepted for one override map; candidate 1 not reopened and further recovery parked. Candidate 3′ plus P7 inputs is the forward route; see [recovery ruling](2026-09-24-seven-strategy-evidence-recovery.md#78-operator-acceptance-and-recovery-disposition-2026-09-24) and [T00 continuation](2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24).
 3. T08: send the vendor question. Decide whether the bounded-exposure amendment proceeds to an addendum draft.
 4. T07: authorize (or decline) the account-side reads the S2 facts need.
 5. T10: acknowledge the step-4 finding. Decide whether the confirming `verify_for` probe and the horizon-500 fixture extension run next (both synthetic, no private data).

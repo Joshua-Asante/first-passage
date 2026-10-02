@@ -150,3 +150,21 @@ def test_deadline_exception_cannot_contain_rows_after_failed_session():
         run_synthetic_part_a(request(),source(),adjacent=(True,)*11,covered_until=date(2025,1,1),
             proof_provider=lambda panel:((EDGE,)*(len(panel)+1),(True,)*(len(panel)-1)),
             replay_provider=replay,initial_state=STATE,full_pass_rate=1.,timer=lambda:0.)
+
+
+def test_part_a_default_prefix_hook_returns_todays_result():
+    """The S5-D1 custody seam with its default None is behavior-identical: the
+    explicit ``_run_part_a(..., on_initial_prefix=None)`` call returns exactly
+    today's public-entry result on the same fixture."""
+    from c1_rail.qualification.part_a import _run_part_a
+    def prove(panel):
+        return (EDGE,)*(len(panel)+1),(True,)*(len(panel)-1)
+    def replay(path):
+        return ReplayResult(tuple(SessionRecord(s.occurrence,s.path_session_date,s.source.session_id,
+                                               1200.,0.,1,True,EDGE,EDGE) for s in path),())
+    kwargs=dict(adjacent=(True,)*11,covered_until=date(2025,1,1),proof_provider=prove,
+                replay_provider=replay,initial_state=STATE,full_pass_rate=1.,timer=lambda:0.)
+    today=run_synthetic_part_a(request(),source(),**kwargs)
+    explicit=_run_part_a(request(),source(),synthetic=True,on_initial_prefix=None,**kwargs)
+    assert explicit==today
+    assert today.expanded and today.passed and len(today.panels)==4

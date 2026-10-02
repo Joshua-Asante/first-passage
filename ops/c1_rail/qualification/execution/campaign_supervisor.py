@@ -1366,6 +1366,7 @@ def guardian_main():
         'qualification_execution_profile/v4',
         'qualification_execution_profile/v5',
         'qualification_execution_profile/v6',
+        'qualification_execution_profile/v7',
     ):
         raise ValueError('diagnostic guardian requires fresh installed revision')
     campaigns = CampaignStore(context.store)
@@ -1522,11 +1523,20 @@ def guardian_main():
             _run_n1_worker(
                 context, campaigns, runtime, state, work, enrollment, manifest, checkpoint='N2'
             )
+        elif manifest['role'] == 'part_a_worker':
+            _verify_payload_quota(runtime, enrollment, state, work, deadline)
+            _run_n1_worker(
+                context, campaigns, runtime, state, work, enrollment, manifest, checkpoint='PART_A'
+            )
         elif manifest['role'] == 'n1_g5':
             _run_n1_g5(context, campaigns, runtime, state, work, enrollment, manifest)
         elif manifest['role'] == 'n2_g5':
             _run_n1_g5(
                 context, campaigns, runtime, state, work, enrollment, manifest, checkpoint='N2'
+            )
+        elif manifest['role'] == 'part_a_g5':
+            _run_n1_g5(
+                context, campaigns, runtime, state, work, enrollment, manifest, checkpoint='PART_A'
             )
         else:
             _verify_payload_quota(runtime, enrollment, state, work, deadline)
@@ -1621,13 +1631,25 @@ def _guardian_bus_call(campaigns, unit, properties):
     return stdout
 
 
-def _io_mount_properties(where, *, size_bytes, uid, mode):
+def _io_mount_properties(where, *, size_bytes, uid, mode, guardian_unit):
+    """One checkpoint io tmpfs mount unit, bound to the work's guardian unit.
+
+    BindsTo/After on the guardian unit (the payload slice's and the qg5 unit's
+    own interlock) make the manager stop the pair when the guardian ends: the
+    guardian cannot StopUnit a var-lib-fpq-* unit itself (campaign_control
+    admits StartTransientUnit only; the polkit rule binds unit-scoped actions to
+    the run prefix). The guardian's process is its unit's main process, so the
+    unit ends only after _run_n1_worker has retained the capture or archived
+    the Part A artifacts for inspection; campaign cleanup stays the backstop.
+    """
     return {
         'What': 'tmpfs',
         'Where': where,
         'Type': 'tmpfs',
         'Options': 'rw,size=%d,uid=%d,gid=%d,mode=0%o' % (size_bytes, uid, uid, mode),
         'DefaultDependencies': False,
+        'BindsTo': [guardian_unit],
+        'After': [guardian_unit],
     }
 
 
@@ -1762,8 +1784,10 @@ def worker_container_body(context, enrollment, manifest, *, checkpoint='N1'):
         '--campaign-limits',
         'campaign-limits.json',
     ]
-    if checkpoint == 'N2':
-        command += ['--checkpoint', 'N2']
+    if checkpoint in ('N2', 'PART_A'):
+        # S5: the PART_A worker takes the same output mount (its two S5-D1
+        # artifacts and result.frame land under /output).
+        command += ['--checkpoint', checkpoint]
     return dict(
         body,
         Entrypoint=['/opt/ops/bin/python', '-I', '/opt/qualification/bootstrap.py', 'worker'],
@@ -1829,6 +1853,24 @@ def _worker_input_files(context, campaigns, state, work, *, checkpoint='N1'):
         files.append(
             ('', 'predecessor-receipt.json', campaigns.checkpoint_receipt(attempt, 'N1'))
         )
+    elif checkpoint == 'PART_A':
+        # S5 (W1): the PART_A worker binds the committed joint N2 custody --
+        # the N2 receipt, the committed N2 assessment (the candidate bytes that
+        # receipt commits) and the N2 capture payload -- read-only, under
+        # exactly the names execution/worker.py's PART_A branch reads.
+        receipt = campaigns.checkpoint_receipt(attempt, 'N2')
+        assessment = _committed_checkpoint_candidate(campaigns, attempt, 'N2')
+        if receipt is None or assessment is None:
+            raise ValueError('committed N2 predecessor required')
+        files += [
+            ('', 'predecessor-receipt.json', receipt),
+            ('', 'predecessor-assessment.json', assessment),
+            (
+                '',
+                'predecessor-payload.json',
+                campaigns.checkpoint_capture(attempt, 'N2')['payload_bytes'],
+            ),
+        ]
     # Every retained bundle member lands at the path its own index declares, so
     # the worker's verify_bundle reads exactly the admitted original layout.
     index = parse_canonical_json(objects['bundle_index'], label='bundle index')
@@ -1838,6 +1880,91 @@ def _worker_input_files(context, campaigns, state, work, *, checkpoint='N1'):
             raise ValueError('retained bundle member absent: ' + entry['role'])
         files.append(('bundle', entry['path'], raw))
     return files, plan_bytes
+
+
+def _committed_checkpoint_candidate(campaigns, attempt, checkpoint):
+    """The committed assessment (candidate) bytes of one checkpoint, or None
+    before its receipt exists."""
+    with campaigns.store.transaction() as connection:
+        row = connection.execute(
+            'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+            'WHERE attempt_id=? AND checkpoint=? AND receipt_bytes IS NOT NULL',
+            (attempt, checkpoint),
+        ).fetchone()
+    return None if row is None else bytes(row[0])
+
+
+# S5-D1: the two PART_A artifacts the worker writes beside result.frame, and
+# the content-addressed store roles the guardian archives them under
+# (coordinator ruling A1: campaigns.stage_checkpoint_artifact, checkpoint
+# PART_A; no layout change).
+PART_A_ARTIFACT_ROLES = {
+    'part-a-initial.jsonl': 'part_a_initial_prefix',
+    'part-a-final.jsonl': 'part_a_final',
+}
+PART_A_CAPTURE_FIELDS = (
+    'initial_prefix_sha256',
+    'final_sha256',
+    'initial_panels',
+    'final_panels',
+    'expansion_required',
+)
+
+
+def _read_part_a_artifacts(output_root, limit):
+    """The two S5-D1 artifacts as the output mount holds them, under the
+    result.frame bound: the bytes, or None where the file is absent or
+    unreadable (the normal capture then refuses; the abnormal exit archives
+    whatever was read)."""
+    from .files import read_regular
+
+    artifacts = {}
+    for name in PART_A_ARTIFACT_ROLES:
+        try:
+            artifacts[name] = read_regular(output_root, name, limit=limit)
+        except (OSError, ValueError):
+            artifacts[name] = None
+    return artifacts
+
+
+def _archive_part_a_for_inspection(campaigns, attempt, artifacts):
+    """Ruling A1: on an abnormal exit whichever S5-D1 artifact exists is
+    archived byte-for-byte for inspection only -- before the IN_DOUBT
+    transition and never blocking it. Nothing here resumes a panel, replaces
+    the pilot or reruns the checkpoint."""
+    for name, raw in artifacts.items():
+        if raw is None:
+            continue
+        try:
+            campaigns.stage_checkpoint_artifact(
+                attempt, PART_A_ARTIFACT_ROLES[name], raw, checkpoint='PART_A'
+            )
+        except (OSError, ValueError, RuntimeError, sqlite3.Error):
+            pass
+
+
+def _bind_part_a_artifacts(campaigns, attempt, artifacts, document):
+    """S5-D1 on a normal exit: both artifacts present, each equal by digest to
+    the payload's own part_a binding, the final a byte-extension of the initial
+    prefix; both archived byte-for-byte; the five capture fields are the
+    payload's own."""
+    initial = artifacts['part-a-initial.jsonl']
+    final = artifacts['part-a-final.jsonl']
+    part_a = document.get('part_a') if type(document) is dict else None
+    if (
+        initial is None
+        or final is None
+        or type(part_a) is not dict
+        or sha256(initial) != part_a.get('initial_prefix_sha256')
+        or sha256(final) != part_a.get('final_sha256')
+        or final[: len(initial)] != initial
+    ):
+        raise ValueError('part a artifact custody differs')
+    for name, raw in artifacts.items():
+        campaigns.stage_checkpoint_artifact(
+            attempt, PART_A_ARTIFACT_ROLES[name], raw, checkpoint='PART_A'
+        )
+    return {name: part_a[name] for name in PART_A_CAPTURE_FIELDS}
 
 
 def _write_worker_input(enrollment, files):
@@ -1978,13 +2105,25 @@ def _run_n1_worker(
             size_bytes=staged_bytes + staged_bytes // 2 + 65536,
             uid=context.config['service_uid'],
             mode=0o755,
+            guardian_unit=enrollment['scopes']['guardian_unit'],
         ),
     )
+    output_size = output_bound
+    if checkpoint == 'PART_A':
+        # D-S5-1: the two S5-D1 artifacts and result.frame sit in this tmpfs
+        # together, each under the per-file bound, so the mount takes their
+        # aggregate with the input mount's page-rounding headroom.
+        aggregate = output_bound * (1 + len(PART_A_ARTIFACT_ROLES))
+        output_size = aggregate + aggregate // 2 + 65536
     _guardian_bus_call(
         campaigns,
         io['out_unit'],
         _io_mount_properties(
-            io['out_path'], size_bytes=output_bound, uid=context.profile.worker_uid, mode=0o755
+            io['out_path'],
+            size_bytes=output_size,
+            uid=context.profile.worker_uid,
+            mode=0o755,
+            guardian_unit=enrollment['scopes']['guardian_unit'],
         ),
     )
     _write_worker_input(enrollment, files)
@@ -2167,7 +2306,16 @@ def _run_n1_worker(
         campaigns.budget_snapshot(state['attempt_id']), label='worker final state'
     )
     work = campaigns._work(state, work['work_id'])
+    part_a = None
+    if checkpoint == 'PART_A':
+        # S5-D1 / ruling A1: the two PART_A artifacts are read once here. On
+        # an abnormal exit (or an absent result.frame) whichever exists is
+        # archived for inspection only ahead of the existing IN_DOUBT path;
+        # on a normal exit both are required and bound to the payload below.
+        part_a = _read_part_a_artifacts(Path(io['out_path']), output_bound)
     if exit_code != 0:
+        if part_a is not None:
+            _archive_part_a_for_inspection(campaigns, state['attempt_id'], part_a)
         # The bounded worker log is the only attribution for a refusal the
         # output mount cannot carry; it is retained as the failure reason.
         tail = ''
@@ -2207,7 +2355,15 @@ def _run_n1_worker(
     from .files import read_regular
     from .protocol import decode_frame
 
-    raw_frame = read_regular(Path(io['out_path']), 'result.frame', limit=output_bound)
+    try:
+        raw_frame = read_regular(Path(io['out_path']), 'result.frame', limit=output_bound)
+    except (OSError, ValueError):
+        # An absent or unreadable frame after a zero exit: the guardian's own
+        # failure path (IN_DOUBT, the retained cause, no relaunch) follows the
+        # re-raise; the saved PART_A bytes are kept for inspection only.
+        if part_a is not None:
+            _archive_part_a_for_inspection(campaigns, state['attempt_id'], part_a)
+        raise
     # The archived payload is the worker's canonical document exactly as framed
     # (the frame is transport, like the N1_ONLY stdout capture).
     payload_bytes = decode_frame(raw_frame, limit=max(1, len(raw_frame)))
@@ -2227,6 +2383,11 @@ def _run_n1_worker(
         authorized,
         checkpoint=checkpoint,
     )
+    part_a_capture = {}
+    if checkpoint == 'PART_A':
+        part_a_capture = _bind_part_a_artifacts(
+            campaigns, state['attempt_id'], part_a, captured.document
+        )
     capture_transition = encoded(
         {
             'schema': 'qualification_campaign_work_transition/v1',
@@ -2244,6 +2405,7 @@ def _run_n1_worker(
         payload_bytes,
         capture_transition,
         checkpoint=checkpoint,
+        **part_a_capture,
     )
     # The attestation signs exactly the archived capture, with the service's
     # enrolled execution credential; the store verifies custody on retain.
@@ -2501,7 +2663,15 @@ def _run_n1_g5(
         work['state'] == 'SIGNED'
         and state['validity'] == 'VALID'
         and state['state']
-        in ('BOUND', 'N2_READY', 'N1_FAILED', 'PART_A_READY', 'N2_FAILED')
+        in (
+            'BOUND',
+            'N2_READY',
+            'N1_FAILED',
+            'PART_A_READY',
+            'N2_FAILED',
+            'FULL_PASS_READY',
+            'PART_A_FAILED',
+        )
     ):
         _transition(campaigns, state['attempt_id'], work['work_id'], 'COMPLETED', {})
     if parent is not None and _live(state, work['phase']):
@@ -2552,6 +2722,8 @@ def probe_container_body(context, enrollment, manifest):
         'n1_g5': config['g5_uid'],
         'n2_worker': context.profile.worker_uid,
         'n2_g5': config['g5_uid'],
+        'part_a_worker': context.profile.worker_uid,
+        'part_a_g5': config['g5_uid'],
     }[role]
     from .profile import CAMPAIGN_RESOURCE_SCOPE
 

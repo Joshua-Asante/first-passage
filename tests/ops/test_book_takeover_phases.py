@@ -180,15 +180,52 @@ def test_old_inventory_cannot_qualify_after_new_cancel_attempt(tmp_path):
     assert [c.kind for c in s.broker.commands] == ['entry', 'cancel']
 
 
+def _assert_one_halt_for_child(s, outcome, generation):
+    """A failed takeover child is ONE incident, ONE generation step and ONE plan HALT event.
+
+    An unknown result is halted by the dispatch owner (CC-3: ordinary-unknown:<attempt_id>) and
+    the takeover path must not add a second incident for the same transport outcome; a rejected
+    result has no CC-3 halt, so the takeover-child incident stays its only halt.
+    """
+    import sqlite3
+    with sqlite3.connect(s.owner.path) as db:
+        attempt = db.execute('SELECT attempt_id FROM attempts ORDER BY rowid DESC LIMIT 1').fetchone()[0]
+        halts = db.execute("SELECT operation_id FROM takeover_events WHERE kind='HALT'").fetchall()
+    ids = [row['incident_id'] for row in s.owner.incidents]
+    if outcome == 'unknown':
+        assert ids == ['ordinary-unknown:' + attempt]
+    else:
+        assert len(ids) == 1 and ids[0].startswith('takeover-child:')
+    assert s.owner.status()['generation'] == generation + 1
+    assert halts == [(s.root.order_id,)]
+
+
 @pytest.mark.parametrize('outcome', ['unknown', 'rejected'])
 def test_cancel_failure_fences_and_retains_exposure(tmp_path, outcome):
     s = TakeoverScenario(tmp_path)
     s.broker._results[:] = [BrokerResult(outcome)]
+    generation = s.owner.status()['generation']
     s.poll()
     assert s.owner.authority == 'INTERVENTION'
     assert s.owner.exposure(s.leg) == (1, 1)
+    _assert_one_halt_for_child(s, outcome, generation)
     s.owner.resume_takeover(now=s.tick())
     assert not any(c.kind == 'flat' for c in s.broker.commands)
+
+
+@pytest.mark.parametrize('outcome', ['unknown', 'rejected'])
+def test_flat_failure_fences_and_retains_exposure(tmp_path, outcome):
+    s = TakeoverScenario(tmp_path, fill=2)  # already filled: the first poll sends the flat
+    s.broker._results[:] = [BrokerResult(outcome)]
+    generation = s.owner.status()['generation']
+    exposure = s.owner.exposure(s.leg)
+    s.poll()
+    assert [c.kind for c in s.broker.commands] == ['entry', 'flat']
+    assert s.owner.authority == 'INTERVENTION'
+    assert s.owner.exposure(s.leg) == exposure
+    _assert_one_halt_for_child(s, outcome, generation)
+    s.owner.resume_takeover(now=s.tick())
+    assert [c.kind for c in s.broker.commands] == ['entry', 'flat']
 
 
 def test_missing_phase_table_fails_without_repair(tmp_path):
@@ -620,7 +657,9 @@ def test_producer_cancel_removes_remainder_and_retains_late_fill(tmp_path):
     from c1_rail import book_takeover as t
     account = owner(tmp_path, [])
     occurrence = account.make_occurrence('direct', 'base')
-    broker = SyntheticProtectionBroker(account=occurrence.account, account_epoch=occurrence.account_epoch, at=NOW)
+    # The entry and the cancel are both accepted (an empty queue would make each an unknown).
+    broker = SyntheticProtectionBroker([BrokerResult('accepted'), BrokerResult('accepted')],
+                                       account=occurrence.account, account_epoch=occurrence.account_epoch, at=NOW)
     account.synthetic_broker = broker
     account.dispatch(entry('vanguard_mgc', 2), occurrence=occurrence, now=NOW)
     broker.execute_entry('entry:vanguard_mgc', fill_id='f1', quantity=1, price=100, at=NOW)

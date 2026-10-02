@@ -1,5 +1,7 @@
 # Q-MONSURF-1 — Which monitoring surfaces are buildable venue-free now, and on what acceptance evidence? (MONITORING)
 
+**Trade-authority clarification (2026-10-01).** The operator-only token-trade wording below is historical, superseded by [surface-allocation ADR Addendum 2026-09-30b](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b). Agents may place orders, exit positions and cancel orders at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements remain unchanged. This monitor assignment grants no order action.
+
 **Status:** `CLOSED-RESOLVED 2026-08-23` — M-B acceptance battery passes (0 missed / 0 spurious, all 312 real historical weeks, mutation-verified); triage written to the board. Closure: [`closures/Q-MONSURF-1-closure-resolved.md`](closures/Q-MONSURF-1-closure-resolved.md).
 **Authored:** 2026-08-04
 **Intaken:** 2026-08-05 (handoff-verify PASS; anchors re-verified at `origin/main` `21e09c8`; DP2-dependency + M1-spine-risk notes added — see Amendment log)

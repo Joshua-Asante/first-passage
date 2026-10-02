@@ -94,11 +94,13 @@ def schedule_eligibility(release, profile):
     funded route for harmless probe work. The /v5 dispatch revision is a
     superset of /v4: it keeps every v4 restriction for probes and additionally
     admits the two dispatch roles through its own gate; /v6 (S4-D3) supersedes
-    it again for the joint N2 roles."""
+    it again for the joint N2 roles, and /v7 (S5-D3) adds the PART_A compute
+    checkpoint beside them."""
     pairs = (
         (EXECUTABLE_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v4'),
         (release_schema.DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v5'),
         (release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v6'),
+        (release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE, 'qualification_execution_profile/v7'),
     )
     return (
         type(release) is dict
@@ -108,30 +110,57 @@ def schedule_eligibility(release, profile):
 
 
 def dispatch_eligibility(release, profile):
-    """Fixed at startup: only the dispatch revisions (D4/D3) admit N1 dispatch
-    roles -- each names exactly its own closed checkpoint set."""
+    """Fixed at startup: only the dispatch revisions (D4/D3/S5-D3) admit N1
+    dispatch roles -- each names exactly its own closed checkpoint set."""
     return (
         type(release) is dict
         and release.get('schema')
-        in (release_schema.DISPATCH_DIAGNOSTIC_RELEASE, release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE)
+        in (
+            release_schema.DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE,
+        )
         and release.get('capability') == 'FULL_E1'
         and release.get('dispatch_enabled') is True
-        and release.get('dispatch_checkpoints') in (['N1'], ['N1', 'N2'])
+        and release.get('dispatch_checkpoints')
+        in (['N1'], ['N1', 'N2'], ['N1', 'N2', 'PART_A'])
         and profile.values['schema']
-        in ('qualification_execution_profile/v5', 'qualification_execution_profile/v6')
+        in (
+            'qualification_execution_profile/v5',
+            'qualification_execution_profile/v6',
+            'qualification_execution_profile/v7',
+        )
     )
 
 
 def joint_dispatch_eligibility(release, profile):
-    """Fixed at startup: only the S4 joint dispatch revision (D3) admits the
-    N2 dispatch roles."""
+    """Fixed at startup: only the joint dispatch revisions (D3, plus its S5-D3
+    /v7 successor) admit the N2 dispatch roles."""
     return (
         type(release) is dict
-        and release.get('schema') == release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE
+        and release.get('schema')
+        in (
+            release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE,
+        )
         and release.get('capability') == 'FULL_E1'
         and release.get('dispatch_enabled') is True
-        and release.get('dispatch_checkpoints') == ['N1', 'N2']
-        and profile.values['schema'] == 'qualification_execution_profile/v6'
+        and release.get('dispatch_checkpoints') in (['N1', 'N2'], ['N1', 'N2', 'PART_A'])
+        and profile.values['schema']
+        in ('qualification_execution_profile/v6', 'qualification_execution_profile/v7')
+    )
+
+
+def part_a_dispatch_eligibility(release, profile):
+    """Fixed at startup: only the S5 dispatch revision (S5-D3) admits the
+    PART_A dispatch roles."""
+    return (
+        type(release) is dict
+        and release.get('schema') == release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE
+        and release.get('capability') == 'FULL_E1'
+        and release.get('dispatch_enabled') is True
+        and release.get('dispatch_checkpoints') == ['N1', 'N2', 'PART_A']
+        and profile.values['schema'] == 'qualification_execution_profile/v7'
     )
 
 
@@ -186,6 +215,7 @@ class ExecutionService:
         self.schedule_eligible = schedule_eligibility(release, self.profile)
         self.dispatch_eligible = dispatch_eligibility(release, self.profile)
         self.joint_dispatch_eligible = joint_dispatch_eligibility(release, self.profile)
+        self.part_a_dispatch_eligible = part_a_dispatch_eligibility(release, self.profile)
         self.store = ExecutionStore(
             self.root / 'journal.sqlite', installation_dir=self.installation
         )
@@ -349,6 +379,7 @@ class ExecutionService:
             EXECUTABLE_DIAGNOSTIC_RELEASE,
             release_schema.DISPATCH_DIAGNOSTIC_RELEASE,
             release_schema.JOINT_DISPATCH_DIAGNOSTIC_RELEASE,
+            release_schema.PART_A_DISPATCH_DIAGNOSTIC_RELEASE,
         ):
             if (
                 operation == 'SUBMIT_E1'
@@ -742,6 +773,33 @@ class ExecutionService:
                 verify_checkpoint_assessment(
                     artifacts['predecessor_assessment'], context=context, current_keys=keys
                 )
+            elif checkpoint == 'PART_A':
+                # S5: PART_A's predecessor custody is N2's committed family --
+                # the receipt, the committed candidate, the plan and the payload
+                # -- plus N1's own plan and payload members (coordinator ruling
+                # G1: the frozen adjudicator's N1 prior rides N1's served
+                # members), all re-verified exactly as N2 verifies its own
+                # predecessor.
+                predecessor = campaigns.checkpoint_capture(attempt, 'N2')
+                with self.store.transaction() as connection:
+                    committed = connection.execute(
+                        'SELECT candidate_bytes FROM full_campaign_checkpoint_intents '
+                        "WHERE attempt_id=? AND checkpoint='N2'",
+                        (attempt,),
+                    ).fetchone()
+                if committed is None:
+                    raise ValueError('part a predecessor checkpoint custody required')
+                artifacts.update(
+                    predecessor_receipt=campaigns.checkpoint_receipt(attempt, 'N2'),
+                    predecessor_assessment=bytes(committed[0]),
+                    predecessor_plan=campaigns._checkpoint_plan(attempt, 'N2'),
+                    predecessor_payload=predecessor['payload_bytes'],
+                    n1_plan=campaigns._checkpoint_plan(attempt, 'N1'),
+                    n1_payload=campaigns.checkpoint_capture(attempt, 'N1')['payload_bytes'],
+                )
+                verify_checkpoint_assessment(
+                    artifacts['predecessor_assessment'], context=context, current_keys=keys
+                )
             evidence = validate_campaign_checkpoint(
                 context,
                 checkpoint=checkpoint,
@@ -791,6 +849,19 @@ class ExecutionService:
                         'created_utc': instant(now()),
                     }
                 )
+            elif checkpoint == 'PART_A':
+                cutoff_bytes = encoded(
+                    {
+                        'schema': 'qualification_campaign_cutoff_receipt/v1',
+                        'attempt_id': attempt,
+                        'checkpoint': 'PART_A',
+                        'assessment_sha256': sha256(candidate_bytes),
+                        'decision': core['decision'],
+                        'stage_thresholds': core['cutoff']['stage_thresholds'],
+                        'predecessor_receipt_sha256': core['predecessor']['receipt_sha256'],
+                        'created_utc': instant(now()),
+                    }
+                )
             else:
                 cutoff_bytes = encoded(
                     {
@@ -829,7 +900,11 @@ class ExecutionService:
         if peer_uid != self.config['service_uid']:
             raise ValueError('PEER_NOT_AUTHORIZED')
         request = campaign_funding.parse_request(raw)
-        if request['role'] in campaign_funding.JOINT_DISPATCH_ROLES:
+        if request['role'] in campaign_funding.PART_A_DISPATCH_ROLES:
+            # S5-D3: the PART_A roles need the installed /v7 dispatch release.
+            if not self.part_a_dispatch_eligible:
+                raise ValueError('installed PART_A dispatch release required')
+        elif request['role'] in campaign_funding.JOINT_DISPATCH_ROLES:
             # S4-D3: the joint roles need the installed /v6 release.
             if not self.joint_dispatch_eligible:
                 raise ValueError('installed N2 dispatch release required')
@@ -1076,6 +1151,7 @@ class ExecutionService:
             'qualification_execution_profile/v4',
             'qualification_execution_profile/v5',
             'qualification_execution_profile/v6',
+            'qualification_execution_profile/v7',
         ):
             campaigns = campaign_store.CampaignStore(self.store)
             with self.store.transaction() as connection:

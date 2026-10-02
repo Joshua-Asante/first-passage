@@ -1,5 +1,7 @@
 # H5(b) — Attended operations: synthetic incident rehearsal — worker card
 
+**Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
+
 **Status:** PREPARED 2026-09-27 by [handoff H5 step (a)](2026-09-27-staged-acceptance-handoffs.md#h5--attended-operations-apply-the-resumption-ruling-then-synthetic-incident-rehearsal). **Not dispatched.** The card can be dispatched only after the coordinator accepts step (a):
 - the dated 2026-09-27 amendment to the [halt/resume contract](../../spec/2026-09-14-tb-s3-halt-resume-contract.md): its header callout, the §4 marker and [§4.1](../../spec/2026-09-14-tb-s3-halt-resume-contract.md#41-amendment-2026-09-27-incident-versus-correctly-handled-refusal);
 - the dated pointer in the [Phase 5 plan](../../superpowers/plans/2026-09-16-phase5-attended-operations.md);

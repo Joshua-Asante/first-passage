@@ -34,7 +34,7 @@ Global constraints:
 - Preserve accepted per-leg quantity, lifecycle, capacity and protection laws. Reuse `entry_quantities`, `add_quantity`, `size_book_request` and `apply_event`; do not independently reimplement them in replay/UI/daemon.
 - Candidate policy remains separate from historical `dd_protection.py`; policy registry admission remains TB-D0 after TB-E1. Positive production bindings follow TB-V1.
 - Preserve single-process qualification, frozen streams/sizes/criteria, both required P2 decisions and the sole final n3. No opportunistic replacement samples.
-- No agent places trades. Joshua retains merge decisions, funding/provider selection, separately authorized live ceremonies, deployment GO and each armed-session GO.
+- Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. Joshua retains merge decisions, funding/provider selection, separately authorized live ceremonies, deployment GO and each armed-session GO.
 - Private Pine/ports, vendor exports, credentials and account evidence remain in approved ignored roots. Public artifacts contain permitted identities/digests/verdicts only.
 - Preserve the recorded support-free continuation: use documented capabilities and authorized observations; no provider contact is part of this plan.
 - One runtime integration owner: the coordinating agent. Independent review is required at material integration boundaries; separate contributor work does not prove combined acceptance.
@@ -273,7 +273,7 @@ Provider-neutral test preparation and documented route analysis start earlier. P
 
 - [ ] Present one concrete provider choice, cost and qualification protocol at the funding checkpoint; implement only the selected source adapter.
 - [ ] Apply frozen TB-I5 overlap/session/roll/correction/backfill/timing criteria for all four symbols. Run with emission disabled; failure blocks live use.
-- [ ] Verify actual order-symbol formats and each used entry/bracket/modify/attach/trail/close/takeover behavior. Use separately authorized operator-executed tests where documentation is insufficient; no agent-generated trades.
+- [ ] Verify actual order-symbol formats and each used entry/bracket/modify/attach/trail/close/takeover behavior. Use separately authorized operator-executed tests where documentation is insufficient; any agent-performed order, exit or cancel requires the operator's direction for that specific act under ADR Addendum 2026-09-30b; this checklist grants none.
 - [ ] Qualify real feedback identity, partial fills, terminal cancellation, protection ownership and the evidence required by Packet 0. Do not infer them from a successful transport response.
 - [ ] Implement/accept TB-I4 dedupe under its existing gates and bind the exact four-leg set under TB-V1 after E1/D0/D1 and symbol prerequisites.
 
