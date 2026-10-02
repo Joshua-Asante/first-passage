@@ -81,6 +81,20 @@ def _p7_bootstrap():
             return real
         return None
 
+    def own_installed_source(filename, raw):
+        # A site-package or stdlib module compiling exactly its own file's bytes.
+        # Under the fresh bytecode prefix every source module compiles, and an
+        # empty installed __init__.py shares its digest with any empty tracked
+        # first-party file; it is not first-party code.
+        if not isinstance(filename, str) or not _os.path.isabs(filename):
+            return False
+        real = _os.path.realpath(filename)
+        if not _os.path.isfile(real) or not any(
+                (real + _os.sep).startswith(root.rstrip(_os.sep) + _os.sep) for root in state.installed_roots):
+            return False
+        with open(real, 'rb') as handle:
+            return handle.read() == raw
+
     def audit(event, args):
         if event == 'import':
             state.audited_imports.append(args[0])
@@ -89,8 +103,10 @@ def _p7_bootstrap():
             if state.code_root is None or (isinstance(filename, str) and filename in state.compiling):
                 return
             raw = source.encode('utf-8') if isinstance(source, str) else bytes(source)                 if isinstance(source, (bytes, bytearray)) else None
-            if raw is not None and _hashlib.sha256(raw).hexdigest() in state.first_party_hashes:
-                raise refuse('P7_UNAUDITED_EXEC', 'compile of first-party file bytes outside the recording loader')
+            if raw is not None and _hashlib.sha256(raw).hexdigest() in state.first_party_hashes \
+                    and not own_installed_source(filename, raw):
+                raise refuse('P7_UNAUDITED_EXEC', 'compile of first-party file bytes outside the recording loader: '
+                             + repr(filename))
             real = resolve(filename)
             if real is not None:
                 raise refuse('P7_UNAUDITED_EXEC', 'compile of first-party bytes outside the recording loader: ' + real)
@@ -137,6 +153,7 @@ def _p7_bootstrap():
         stdlib_dirs = [_os.path.join(base, 'lib', version), _os.path.join(base, 'lib', version, 'lib-dynload')]
     stdlib_dirs = [_os.path.realpath(d) for d in stdlib_dirs]
     state.site_packages_path = site
+    state.installed_roots = [site] + stdlib_dirs
     state.unexecuted_pth = sorted(
         (name, _hashlib.sha256(open(_os.path.join(site, name), 'rb').read()).hexdigest())
         for name in (_os.listdir(site) if _os.path.isdir(site) else ()) if name.endswith('.pth'))

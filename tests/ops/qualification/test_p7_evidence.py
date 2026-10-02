@@ -179,6 +179,7 @@ OUTSIDE = 'evil_outside_module'
     ('forbidden_import', 'P7_FORBIDDEN_IMPORT'),
     ('edited_mid_run', 'P7_SOURCE_CHANGED_DURING_RUN'),
     ('unaudited_exec', 'P7_UNAUDITED_EXEC'),
+    ('disguised_exec', 'P7_UNAUDITED_EXEC'),
     ('forbidden_call_evaluate', 'P7_FORBIDDEN_CALL'),
     ('forbidden_call_simulate', 'P7_FORBIDDEN_CALL'),
     ('restored_original', 'P7_FORBIDDEN_CALL'),
@@ -196,6 +197,9 @@ def test_p7_loaded_set_negatives(env, variant, code):  # A16c
                            '_f.write_bytes(_f.read_bytes() + b"\\n# edited mid-run\\n")\n'),
         'unaudited_exec': ('from pathlib import Path as _P\n_f = _P(__file__).with_name("clock.py").resolve()\n'
                            'exec(compile(_f.read_bytes(), str(_f), "exec"), {})\n'),
+        # First-party bytes under a non-path name: only the content digest can see them.
+        'disguised_exec': ('from pathlib import Path as _P\n_f = _P(__file__).with_name("clock.py").resolve()\n'
+                           'exec(compile(_f.read_bytes(), "<disguised>", "exec"), {})\n'),
         # Revision 4.3: a caught stub call still leaves no record.
         'forbidden_call_evaluate': ('from c1_rail.qualification import runner as _r\n'
                                     'try:\n    _r.evaluate_replay(None, initial_state=None)\nexcept Exception:\n    pass\n'),
@@ -207,6 +211,17 @@ def test_p7_loaded_set_negatives(env, variant, code):  # A16c
     root = env.code_root(variant, edits={'ops/c1_rail/qualification/production_source.py':
                                          lambda text: text + '\n' + snippets[variant]})
     refusal(code, *env.run(root))
+
+
+def test_empty_tracked_file_does_not_refuse_empty_third_party_modules(env):  # #594 fold follow-up
+    """Third-party sources compile from source under the fresh prefix; an empty site-package
+    __init__.py shares its digest with any empty tracked first-party file and is not first-party."""
+    root = env.code_root(extra={'ops/p7_empty_tracked_marker.py': ''})
+    assert 'ops/p7_empty_tracked_marker.py' in _git(root, 'ls-files')
+    done, record = env.run(root)
+    assert record is not None, done.stderr[-3000:]
+    third = json.loads(record)['loaded_closure']['third_party']
+    assert any(row['sha256'] == sha(b'') for row in third.values() if row['sha256']), 'an empty module was loaded'
 
 
 def test_forbidden_matching_is_exact_or_package_prefix(env):  # rev 4.3 (a)
