@@ -29,13 +29,15 @@ _PRODUCER_TRANSFORM = fixture_producer.scenario_port_transform
 
 
 def scenario_port_transform(scenario):
+    """The S8 derived scenarios' transform; every other scenario is the producer's."""
     if scenario in campaign_sources.DERIVED:
         return campaign_sources.port_transform(scenario)
     return _PRODUCER_TRANSFORM(scenario)
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    """``prepare`` one derived-scenario bundle; prints fixture_install's result."""
+    parser =argparse.ArgumentParser()
     parser.add_argument('operation', choices=['prepare'])
     parser.add_argument('--manifest', type=Path, required=True)
     parser.add_argument('--attempt', required=True)

@@ -38,6 +38,7 @@ from dataclasses import dataclass
 import hashlib
 import itertools
 from pathlib import Path
+from types import SimpleNamespace
 
 ORB_LEG = 'orb_mnq_v7'
 ORB_ROLE = 'orb_runtime_port'
@@ -100,46 +101,57 @@ def port_transform(name):
 
 def source_identity(name, root):
     """sha256 of the scenario's ORB runtime port: the admitted source identity."""
-    from composition_fixture import build_artifacts
+    from composition_fixture import build_artifacts  # pylint: disable=import-error
     row = scenario(name)
     fixture = build_artifacts(Path(root), idle=row.idle, port_transform=port_transform(name))
     return hashlib.sha256(fixture.payloads[ORB_ROLE]).hexdigest()
 
 
-def build_scenario_composition(root, name):
-    """composition_fixture.build_verified_composition with the scenario's port."""
-    import sys
-    from test_contract import NOW
-    from composition_fixture import (PORT_ROLES, VerifiedComposition, build_artifacts,
-                                     contract_document, digest, encoded, signed_approval,
-                                     verified_domain)
-    from c1_rail.qualification.contract import ObservedBindings, validate_frozen_contract
-    from c1_rail.qualification.production_source import ProductionSource
-    from c1_rail.qualification.runtime_inventory import collect_runtime_inventory
-    row = scenario(name)
-    root = Path(root)
-    fixture = build_artifacts(root, idle=row.idle, port_transform=port_transform(name))
-    fixture = fixture.with_runtime_artifacts(root)
-    domain, private, keys = verified_domain(fixture)
-    raw = encoded(contract_document(fixture, domain))
-    approval = signed_approval(raw, private['test-freeze'], key_id='test-freeze',
-                               scope='FREEZE_F1')
+def _frozen_contract(root, fixture):
+    """The signed TEST_ONLY domain and frozen contract for one retained fixture,
+    exactly as composition_fixture.build_verified_composition signs them."""
+    import composition_fixture as composition  # pylint: disable=import-error
+    import test_contract  # pylint: disable=import-error
+    from c1_rail.qualification import contract as frozen
+    domain, private, keys = composition.verified_domain(fixture)
+    raw = composition.encoded(composition.contract_document(fixture, domain))
+    approval = composition.signed_approval(raw, private['test-freeze'], key_id='test-freeze',
+                                           scope='FREEZE_F1')
     retained = {role: (root / path).read_bytes() for role, path in fixture.paths.items()}
-    observed = ObservedBindings(
+    digest = composition.digest
+    observed = frozen.ObservedBindings(
         artifact_sha256={fixture.paths[r]: digest(b) for r, b in retained.items()},
         runtime_load_sha256={r: digest(b) for r, b in retained.items()},
         effective_settings_sha256=digest(retained['effective_settings_successor']),
         orb_normal_base=1)
-    contract = validate_frozen_contract(raw, approval, keys, observed, now=NOW,
-                                        trust_domain=domain)
-    source = ProductionSource._build_composition(contract, artifact_root=root)
+    contract = frozen.validate_frozen_contract(raw, approval, keys, observed,
+                                               now=test_contract.NOW, trust_domain=domain)
+    return SimpleNamespace(domain=domain, private=private, keys=keys, raw=raw,
+                           approval=approval, retained=retained, contract=contract)
+
+
+def build_scenario_composition(root, name):
+    """composition_fixture.build_verified_composition with the scenario's port."""
+    import sys
+    import composition_fixture as composition  # pylint: disable=import-error
+    from c1_rail.qualification.production_source import ProductionSource
+    from c1_rail.qualification.runtime_inventory import collect_runtime_inventory
+    row = scenario(name)
+    root = Path(root)
+    fixture = composition.build_artifacts(root, idle=row.idle,
+                                          port_transform=port_transform(name))
+    fixture = fixture.with_runtime_artifacts(root)
+    signed = _frozen_contract(root, fixture)
+    source = ProductionSource._build_composition(signed.contract, artifact_root=root)
     modules = {module.role: module.module for module in fixture.ordinary_modules}
     modules.update({role: sys.modules['fp_qualification_port_' + leg]
-                    for leg, role in PORT_ROLES.items()})
-    inventory = collect_runtime_inventory(contract, loaded_modules=modules,
-                                          retained_source_bytes=retained, artifact_root=root)
-    return VerifiedComposition(fixture, domain, contract, source, private, keys, modules,
-                               retained, raw, approval, inventory)
+                    for leg, role in composition.PORT_ROLES.items()})
+    inventory = collect_runtime_inventory(signed.contract, loaded_modules=modules,
+                                          retained_source_bytes=signed.retained,
+                                          artifact_root=root)
+    return composition.VerifiedComposition(
+        fixture, signed.domain, signed.contract, source, signed.private, signed.keys, modules,
+        signed.retained, signed.raw, signed.approval, inventory)
 
 
 def path_inventory(contract, source):
@@ -190,6 +202,17 @@ def isolated_pairs(inventory, *, inside, outside):
     return sorted(pairs(inside) - pairs(outside))
 
 
+def _part_a_facts(run):
+    """The Part A status and custody facts of one compute-adapter run."""
+    initial = run.initial_panel_bytes
+    # PartACompute.result is the engine's Part A result, typed ``object`` on the adapter.
+    passed, reason = run.result.passed, run.result.failure_reason  # pylint: disable=no-member
+    return ('PASS' if passed else 'FAIL'), {
+        'expansion_required': run.expansion_required, 'final_panels': run.final_panels,
+        'failure_reason': reason,
+        'prefix_preserved': run.final_panel_bytes[:len(initial)] == initial}
+
+
 def establish_verdict(root, name):
     """Replay one scenario through the frozen engine: the checkpoint compute
     adapters (run_n1/n2/part_a_compute) and the canonical replay adjudicator.
@@ -213,14 +236,7 @@ def establish_verdict(root, name):
         outcomes.update(N2={'FULL': joint['FULL']}, PART_B={'H1': joint['H1'], 'H2': joint['H2']})
         stages = {'LEGALITY': 'PASS', **adjudicate_replay_outcomes(contract, outcomes, None)}
         if stages['N2'] == 'PASS' and stages['PART_B'] == 'PASS':
-            run = compute.run_part_a_compute(
+            stages['PART_A'], part_a = _part_a_facts(compute.run_part_a_compute(
                 contract, source, guard(),
-                n2_full_outcomes=tuple(row.status for row in joint['FULL']))
-            result = run.result
-            stages['PART_A'] = 'PASS' if result.passed else 'FAIL'
-            initial = run.initial_panel_bytes
-            part_a = {'expansion_required': run.expansion_required,
-                      'final_panels': run.final_panels,
-                      'failure_reason': result.failure_reason,
-                      'prefix_preserved': run.final_panel_bytes[:len(initial)] == initial}
+                n2_full_outcomes=tuple(row.status for row in joint['FULL'])))
     return {'stages': stages, 'part_a': part_a}

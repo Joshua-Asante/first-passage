@@ -100,13 +100,18 @@ IDLE_PAIR_PLACEMENT = {
 }
 
 
-def _row(identity, requirement, producer, consumer, evidence, nodes):
-    return {'id': identity, 'requirement': requirement,
-            'owner': 'full-E1 S8 (coordinator acceptance)', 'producer': producer,
-            'consumer': consumer, 'evidence_kind': evidence, 'test_nodeids': list(nodes)}
+_ROW_FIELDS = ('id', 'requirement', 'producer', 'consumer', 'evidence_kind', 'test_nodeids')
+
+
+def _row(*fields):
+    """One proposed manifest row from its fields in ``_ROW_FIELDS`` order."""
+    row = dict(zip(_ROW_FIELDS, fields, strict=True))
+    return {**row, 'owner': 'full-E1 S8 (coordinator acceptance)',
+            'test_nodeids': list(row['test_nodeids'])}
 
 
 def _here(*names):
+    """Exact node IDs of this file."""
     return [HERE + '::' + name for name in names]
 
 
@@ -217,6 +222,7 @@ def s8_driver(request):
 # ---- Portable harness checks ------------------------------------------------
 
 def test_declared_verdicts_are_legal_and_cover_the_source_registry():
+    """Every registered scenario has one legal declared verdict and its Part A facts."""
     assert set(EXPECTED_VERDICTS) == set(campaign_sources.SCENARIOS)
     for name, declared in EXPECTED_VERDICTS.items():
         assert set(declared) == {'stages', 'part_a', 'orb_port_sha256'}, name
@@ -228,13 +234,15 @@ def test_declared_verdicts_are_legal_and_cover_the_source_registry():
 
 @pytest.mark.parametrize('name', sorted(campaign_sources.SCENARIOS))
 def test_declared_source_identity_is_the_scenario_port(tmp_path, name):
+    """The declared ORB port digest is the scenario source's actual port bytes."""
     identity = campaign_sources.source_identity(name, tmp_path)
     assert identity == EXPECTED_VERDICTS[name]['orb_port_sha256']
 
 
 def test_shared_scenario_is_byte_identical_to_the_s5_producer(tmp_path):
+    """The shared below-floor scenario is byte-identical to the S5 producer's port."""
     import fixture_producer
-    from composition_fixture import build_artifacts, PORT_ROLES
+    from composition_fixture import build_artifacts, PORT_ROLES  # pylint: disable=import-error
     shared = campaign_sources.SCENARIOS['part_a_below_floor']
     assert shared.idle_dates == fixture_producer.PART_A_BELOW_FLOOR_IDLE_DATES
     ours = build_artifacts(tmp_path / 'ours',
@@ -264,6 +272,7 @@ def test_idle_pairs_land_only_where_declared(tmp_path):
 
 
 def test_driver_plan_follows_each_declared_verdict():
+    """Terminal state, outcome and launch counts follow each declared verdict."""
     expected = {
         'trading': ('FULL_PASS_READY', 'PASS', {'N1': 1, 'N2': 1, 'PART_A': 1}),
         'idle': ('N1_FAILED', 'FAIL', {'N1': 1, 'N2': 0, 'PART_A': 0}),
@@ -294,11 +303,13 @@ _ILLEGAL = {
 
 @pytest.mark.parametrize('kind', list(_ILLEGAL))
 def test_illegal_declared_verdicts_refuse(kind):
+    """A verdict outside the canonical legal prefixes is refused."""
     with pytest.raises(ValueError):
         plan(_ILLEGAL[kind])
 
 
 def test_coverage_map_is_one_row_per_e_case(tmp_path):
+    """Each E-case maps to one row over actually collected nodes."""
     from scripts.check_qualification_invariants import validate_coverage_map
     files = sorted({node.split('::')[0] for row in COVERAGE for node in row['test_nodeids']})
     collection = tmp_path / 'collected.json'
@@ -338,6 +349,7 @@ def test_awaiting_cases_name_only_absent_interfaces():
 
 @pytest.mark.parametrize('name', list(campaign_sources.SCENARIOS))
 def test_frozen_engine_establishes_the_declared_verdict(request, tmp_path, name):
+    """The frozen engine reproduces the declared verdict before any admission."""
     if os.environ.get('FP_QUALIFICATION_S8') != '1':
         pytest.skip('frozen-engine establishment runs in the S8 selection (FP_QUALIFICATION_S8=1)')
     established = campaign_sources.establish_verdict(tmp_path / 'engine', name)
@@ -378,6 +390,7 @@ def _route(driver, name):
 
 
 def _committed_result(driver, attempt, stages):
+    """One result_g5 commit with the frozen receipt shape and the declared stages."""
     receipt = driver.commit_result(attempt)
     assert receipt is not None, 'no committed campaign result'
     assert set(receipt) == RESULT_RECEIPT_FIELDS, receipt
@@ -392,6 +405,7 @@ def _committed_result(driver, attempt, stages):
 
 
 def _sealed(driver, attempt, label='seal-request'):
+    """One qseal publication with the frozen seal receipt shape."""
     reply, error = driver.request_seal(attempt, label=label)
     assert error is None and reply is not None, error
     seal = json.loads(driver.seal_row(attempt)[2])
@@ -401,6 +415,7 @@ def _sealed(driver, attempt, label='seal-request'):
 
 
 def _no_seal(driver, attempt, reason):
+    """A refused seal request: no seal family row and an ineligible inspection."""
     reply, error = driver.request_seal(attempt)
     assert reply is None and reason in error, error
     assert driver.seal_row(attempt) is None
@@ -410,6 +425,7 @@ def _no_seal(driver, attempt, reason):
 
 
 def _failure_prefix(request, name):
+    """E02-E04: a statistical failure commits FAIL and never gains a seal."""
     driver = s8_driver(request)
     attempt, _ = _route(driver, name)
     _committed_result(driver, attempt, EXPECTED_VERDICTS[name]['stages'])
@@ -450,6 +466,7 @@ def _held_result_intent(driver, attempt):
 
 @AWAITS
 def test_e01_genuine_pass_commits_and_is_sealed_separately(request):
+    """E01: the genuine PASS commits one result and gains one separate TEST_ONLY seal."""
     from c1_rail.qualification.execution.protocol import sha256
     driver = s8_driver(request)
     release = json.loads((driver.boundary.installation / 'release.json').read_bytes())
@@ -466,17 +483,20 @@ def test_e01_genuine_pass_commits_and_is_sealed_separately(request):
 
 @AWAITS
 def test_e02_n1_failure_commits_fail_without_successors(request):
+    """E02: a genuine N1 failure commits FAIL with no later worker and no seal."""
     _failure_prefix(request, 'idle')
 
 
 @AWAITS
 @pytest.mark.parametrize('name', ['n2_full_fails', 'n2_halves_fail'])
 def test_e03_asymmetric_joint_failure_is_one_batch(request, name):
+    """E03: each asymmetric joint failure is one batch, both decisions, FAIL, no seal."""
     _failure_prefix(request, name)
 
 
 @AWAITS
 def test_e04_part_a_below_floor_commits_fail(request):
+    """E04: the genuine below-floor Part A commits FAIL and never gains a seal."""
     _failure_prefix(request, 'part_a_below_floor')
 
 
@@ -500,6 +520,7 @@ def test_e06_result_signing_crash_recovers_exact_bytes_without_redraw(request):
 
 @AWAITS
 def test_e07_duplicate_seal_requests_publish_one_receipt(request):
+    """E07: concurrent and repeated seal requests publish exactly one receipt."""
     from concurrent.futures import ThreadPoolExecutor
     driver = s8_driver(request)
     attempt, _ = _route(driver, 'trading')
@@ -545,6 +566,7 @@ def test_e08_restarts_between_stages_never_reset_the_allowance(request):
 
 @AWAITS
 def test_e09_fabricated_or_unauthorized_finalization_rejects(request):
+    """E09: fabricated results and unauthorized finalization callers are refused."""
     import base64
     from tools.qualification_verification import host
     driver = s8_driver(request)

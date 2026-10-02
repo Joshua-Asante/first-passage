@@ -124,6 +124,19 @@ def expected_launch_counts(stages):
     return {step.checkpoint: int(step.checkpoint in ran) for step in STEPS}
 
 
+def work_row(state, work_id):
+    """One work row of a ledger snapshot."""
+    return next(row for row in state['works'] if row['work_id'] == work_id)
+
+
+def _route_options(options):
+    """The private route's two optional inputs; anything else is a caller error."""
+    unknown = set(options) - {'fault', 'signing_retry_of'}
+    if unknown:
+        raise TypeError('unknown route options: ' + ', '.join(sorted(unknown)))
+    return options.get('fault'), options.get('signing_retry_of')
+
+
 class CampaignDriver:
     """The installed route on one disposable host (``real_boundary``)."""
 
@@ -160,7 +173,7 @@ class CampaignDriver:
                                                  attempt_id=attempt,
                                                  bundle_sha256=bundle['bundle_sha256']))
         assert first['schema'] == 'qualification_campaign_status/v2', first
-        state = self.until(attempt, lambda s: self.work(s, 'admission')['state'] == 'COMPLETED')
+        state = self.until(attempt, lambda s: work_row(s, 'admission')['state'] == 'COMPLETED')
         assert state['state'] == 'BOUND', state
         self.bundles[attempt] = dict(bundle, scenario=name)
         self.save(attempt, 'bundle', self.bundles[attempt])
@@ -173,11 +186,6 @@ class CampaignDriver:
         return next(row['sha256'] for row in entries if row['role'] == 'orb_runtime_port')
 
     # ---- reads -------------------------------------------------------------
-
-    @staticmethod
-    def work(state, work_id):
-        """One work row of a ledger snapshot."""
-        return next(row for row in state['works'] if row['work_id'] == work_id)
 
     def status(self, attempt, *, role='qclient'):
         """STATUS through the authenticated client."""
@@ -240,17 +248,20 @@ class CampaignDriver:
 
     # ---- route -------------------------------------------------------------
 
-    def schedule(self, attempt, work_id, role, *, fault=None, signing_retry_of=None):
-        """The raw private-route reply; a refusal is the caller's to interpret."""
+    def schedule(self, attempt, work_id, role, **options):
+        """The raw private-route reply; a refusal is the caller's to interpret.
+
+        ``options`` are the route's optional ``fault`` and ``signing_retry_of``.
+        """
+        fault, signing_retry_of = _route_options(options)
         return self.boundary.schedule({
             'schema': 'qualification_campaign_schedule_request/v1', 'attempt_id': attempt,
             'work_id': work_id, 'role': role, 'probe': 'noop',
             'signing_retry_of': signing_retry_of, 'fault': fault})
 
-    def dispatch(self, attempt, work_id, role, *, fault=None, signing_retry_of=None):
+    def dispatch(self, attempt, work_id, role, **options):
         """A scheduled work that must durably exist before anyone waits on it."""
-        reply = self.schedule(attempt, work_id, role, fault=fault,
-                              signing_retry_of=signing_retry_of)
+        reply = self.schedule(attempt, work_id, role, **options)
         assert reply['ok'], reply
         state = self.until(attempt, lambda s: any(row['work_id'] == work_id
                                                   for row in s['works']), seconds=30)
@@ -267,9 +278,9 @@ class CampaignDriver:
         def attested(state):
             family = (state.get('checkpoints') or {}).get(step.checkpoint) or {}
             return family.get('state') == 'ATTESTED' and \
-                self.work(state, work_id)['state'] == 'COMPLETED'
+                work_row(state, work_id)['state'] == 'COMPLETED'
         state = self.until(attempt, attested, seconds=seconds)
-        assert self.work(state, work_id)['state'] == 'COMPLETED', state
+        assert work_row(state, work_id)['state'] == 'COMPLETED', state
         g5_id, g5_role = step.g5
         self.dispatch(attempt, g5_id, g5_role)
         state = self.until(attempt, lambda s: s['state'] in (step.passed, step.failed),
@@ -287,25 +298,26 @@ class CampaignDriver:
         self.save(attempt, 'terminal-ledger', state)
         return state
 
-    def commit_result(self, attempt, *, fault=None, work_id=RESULT_WORK[0],
-                      signing_retry_of=None, seconds=330):
-        """One result_g5 unit; the committed receipt, or None if none committed."""
-        self.dispatch(attempt, work_id, RESULT_WORK[1], fault=fault,
-                      signing_retry_of=signing_retry_of)
-        if fault is not None:
+    def commit_result(self, attempt, work_id=RESULT_WORK[0], seconds=330, **options):
+        """One result_g5 unit; the committed receipt, or None if none committed.
+
+        With a ``fault`` (route option) the unit is only dispatched; the caller
+        owns the held window."""
+        self.dispatch(attempt, work_id, RESULT_WORK[1], **options)
+        if options.get('fault') is not None:
             return None
 
         def finished(state):
             row = self.result_row(attempt)
             return (row is not None and row[3] is not None) or \
-                self.work(state, work_id)['state'] in ('COMPLETED', 'IN_DOUBT', 'ABORTED')
+                work_row(state, work_id)['state'] in ('COMPLETED', 'IN_DOUBT', 'ABORTED')
         self.until(attempt, finished, seconds=seconds)
         row = self.result_row(attempt)
         receipt = None if row is None or row[3] is None else json.loads(row[3])
         self.save(attempt, 'result-receipt', receipt)
         return receipt
 
-    def operator(self, operation, attempt, **fields):
+    def _operator(self, operation, attempt, **fields):
         """(reply, None) or (None, refusal text) from the uid-0 operator peer."""
         import subprocess
         try:
@@ -316,13 +328,13 @@ class CampaignDriver:
 
     def request_seal(self, attempt, *, label='seal-request'):
         """REQUEST_SEAL as the operator; ``label`` keeps concurrent evidence apart."""
-        reply, error = self.operator('REQUEST_SEAL', attempt)
+        reply, error = self._operator('REQUEST_SEAL', attempt)
         self.save(attempt, label, {'reply': reply, 'error': error})
         return reply, error
 
     def inspect_seal(self, attempt):
         """INSPECT_SEAL: the historical receipt plus current validity/eligibility."""
-        reply, error = self.operator('INSPECT_SEAL', attempt)
+        reply, error = self._operator('INSPECT_SEAL', attempt)
         assert error is None, error
         assert reply['schema'] == SEAL_INSPECTION_SCHEMA, reply
         self.save(attempt, 'seal-inspection', reply)
@@ -333,4 +345,4 @@ class CampaignDriver:
         approval = self.boundary.admin('void-approval', '--attempt', attempt, '--contract',
                                        self.bundles[attempt]['contract_sha256'],
                                        '--reason', reason)
-        return self.operator('VOID', attempt, reason=reason, **approval)
+        return self._operator('VOID', attempt, reason=reason, **approval)

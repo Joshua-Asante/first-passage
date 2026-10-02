@@ -2,9 +2,13 @@
 
 Report and argument fixtures only; real campaigns run on the disposable host.
 """
+# The manifest's exact-node parser is private to the checker and pinned here
+# directly, as tests/test_qualification_boundary_verification.py does.
+# pylint: disable=protected-access
 from contextlib import contextmanager
 import json
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 import pytest
 
@@ -16,6 +20,7 @@ FULL = boundary.FULL_CAMPAIGN_CASE
 
 
 def e_rows(nodes=None):
+    """Twelve manifest-shaped E rows, one exact node each unless given."""
     identities = sorted(checker.E_CASE_IDS)
     nodes = nodes or {identity: [f'{FULL}::test_{identity.lower()}'] for identity in identities}
     return [{'id': identity, 'requirement': 'E-case observation', 'owner': 'S8',
@@ -25,15 +30,18 @@ def e_rows(nodes=None):
 
 
 def registered(rows=None):
+    """The canonical manifest bytes plus the E rows (or the given rows)."""
     extension = e_rows() if rows is None else rows
     return json.dumps(json.loads(CANONICAL.read_bytes()) + extension).encode()
 
 
 def test_canonical_manifest_is_unchanged_and_unregistered():
+    """The checked-in manifest registers no E-case yet."""
     assert not checker.registered_e_cases(CANONICAL.read_bytes())
 
 
 def test_complete_e_registration_extends_the_one_manifest():
+    """A complete E registration keeps every canonical node and adds the E nodes."""
     required = checker._manifest(registered())
     assert checker.registered_e_cases(registered())
     assert required[f'{FULL}::test_e01'] == {'E01'}
@@ -42,34 +50,46 @@ def test_complete_e_registration_extends_the_one_manifest():
 
 @pytest.mark.parametrize('drop', ['E01', 'E12'])
 def test_partial_e_registration_refuses(drop):
+    """Dropping any one E row refuses the whole manifest."""
     rows = [row for row in e_rows() if row['id'] != drop]
     with pytest.raises(ValueError, match='partial E01-E12 registration'):
         checker._manifest(registered(rows))
 
 
 def test_unknown_e_identity_refuses():
+    """An identity outside E01-E12 refuses."""
     rows = e_rows()
     rows[0]['id'] = 'E13'
     with pytest.raises(ValueError, match='unknown or duplicate'):
         checker._manifest(registered(rows))
 
 
+def junit(path, node, outcome=None):
+    """A one-case JUnit report for ``node``, optionally with a non-pass outcome tag."""
+    suite = ET.Element('testsuite', tests='1', failures='0', errors='0',
+                       skipped='1' if outcome == 'skipped' else '0')
+    case = ET.SubElement(suite, 'testcase', classname=node.split('::')[0][:-3].replace('/', '.'),
+                         name=node.split('::')[1])
+    if outcome:
+        ET.SubElement(case, outcome)
+    outer = ET.Element('testsuites')
+    outer.append(suite)
+    path.write_bytes(ET.tostring(outer))
+    return path
+
+
 def test_registered_e_node_is_critical_like_any_invariant(tmp_path):
-    import sys
-    sys.path.insert(0, str(Path(__file__).parent))
-    from test_qualification_invariant_manifest import case, report
+    """A registered E node must complete: a skipped E node fails the gate."""
     node = f'{FULL}::test_e01'
-    classname = FULL[:-3].replace('/', '.')
-    passing = [case(name=node.split('::')[1], classname=classname)]
-    skipped = [case(name=node.split('::')[1], classname=classname, outcome='skipped')]
-    for cases, passed in ((passing, True), (skipped, False)):
+    for outcome, passed in ((None, True), ('skipped', False)):
         result = checker.validate_manifest(registered(), collected_nodeids={node},
-            junit_paths=(report(tmp_path, f'{passed}.xml', cases),), evidence_root=tmp_path,
-            required_nodeids={node})
+            junit_paths=(junit(tmp_path / f'{passed}.xml', node, outcome),),
+            evidence_root=tmp_path, required_nodeids={node})
         assert result['passed'] is passed, result
 
 
 def test_coverage_map_maps_each_e_case_to_one_row():
+    """A complete coverage map returns node -> E-case for all twelve cases."""
     owner = checker.validate_coverage_map(e_rows(), collected_nodeids={f'{FULL}::test_{i.lower()}'
                                                                        for i in checker.E_CASE_IDS})
     assert sorted(owner.values()) == sorted(checker.E_CASE_IDS)
@@ -78,6 +98,7 @@ def test_coverage_map_maps_each_e_case_to_one_row():
 @pytest.mark.parametrize('kind', ['missing', 'duplicate', 'shared_node', 'wildcard', 'extra_field',
                                   'uncollected', 'collection_list'])
 def test_coverage_map_refuses_ambiguity(kind):
+    """Missing, duplicated, shared, wildcard, open or uncollected rows refuse."""
     rows = e_rows()
     collected = {node for row in rows for node in row['test_nodeids']}
     if kind == 'missing':
@@ -99,17 +120,20 @@ def test_coverage_map_refuses_ambiguity(kind):
 
 
 def test_s8_set_is_s5_plus_the_full_campaign_file_before_the_oom_case():
+    """S8 is the S5 set with the full-campaign file before the OOM case."""
     assert boundary.S8_CASES == (*boundary.S5_CASES[:-1], FULL, boundary.S5_CASES[-1])
     assert set(boundary.S5_CASES) < set(boundary.S8_CASES)
 
 
 def test_s8_acceptance_refuses_before_any_host_prerequisite_while_unregistered(capsys):
+    """Unregistered E01-E12 refuse --s8 before any host prerequisite."""
     assert boundary.main(['--s8']) == 2
     err = capsys.readouterr().err
     assert 'E01-E12 registered' in err and 'Linux' not in err and '--manifest' not in err
 
 
 def run(tmp_path, monkeypatch, argv, manifest_bytes=None):
+    """main() with the host, recorder and invariant gate replaced; what it executed."""
     seen = {}
     manifest_path = tmp_path / 'run' / 'ownership.json'
     manifest_path.parent.mkdir()
@@ -121,6 +145,7 @@ def run(tmp_path, monkeypatch, argv, manifest_bytes=None):
         monkeypatch.setattr(boundary, 'INVARIANT_MANIFEST', invariant)
 
     class Record:
+        """A RunRecord stand-in that reports one passing test."""
         def __init__(self, *_args):
             self.data = {'before': {'commit': 'candidate'}, 'metadata': {}}
             seen['record'] = self
@@ -132,9 +157,10 @@ def run(tmp_path, monkeypatch, argv, manifest_bytes=None):
             return False
 
         def begin(self):
-            pass
+            """No-op recorder start."""
 
         def execute(self, command, **kwargs):
+            """Capture the command and environment and report one pass."""
             seen.update(command=list(command), env=kwargs.get('env'))
             self.data['test_summary'] = {'collected': 1, 'passed': 1, 'failed': 0, 'errors': 0,
                                          'skipped': 0}
@@ -163,6 +189,7 @@ def run(tmp_path, monkeypatch, argv, manifest_bytes=None):
 
 def test_registered_s8_runs_the_s8_set_in_order_on_the_integrated_environment(tmp_path,
                                                                              monkeypatch):
+    """Registered --s8 runs the S8 set in order with the integrated environment."""
     raw = registered()
     seen = run(tmp_path, monkeypatch, ['--s8'], raw)
     assert seen['code'] == 0
@@ -181,6 +208,7 @@ def test_registered_s8_runs_the_s8_set_in_order_on_the_integrated_environment(tm
 
 
 def test_s8_diagnostic_subset_needs_no_registration_and_is_never_acceptance(tmp_path, monkeypatch):
+    """A --s8 --cases subset runs without registration and is never acceptance."""
     seen = run(tmp_path, monkeypatch, ['--s8', '--cases', 'e01'])
     assert seen['code'] == 2
     assert seen['command'][3:5] == ['-k', 'e01'] and FULL in seen['command']
@@ -189,6 +217,7 @@ def test_s8_diagnostic_subset_needs_no_registration_and_is_never_acceptance(tmp_
 
 @pytest.mark.parametrize('mode', ['--test-only', '--s5'])
 def test_earlier_modes_never_select_or_require_the_full_campaign_file(tmp_path, monkeypatch, mode):
+    """--test-only and --s5 neither select nor require the full-campaign file."""
     monkeypatch.setenv('FP_QUALIFICATION_S8', '1')
     raw = registered()
     seen = run(tmp_path, monkeypatch, [mode], raw)
