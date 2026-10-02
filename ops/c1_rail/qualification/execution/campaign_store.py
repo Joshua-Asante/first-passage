@@ -424,16 +424,20 @@ class CheckpointStoreMixin:
                 capture_transition_bytes,
                 expected_revision=state['authority_revision'],
             )
+            if prior is not None:
+                # An exact retry: the capture row, its byte-identical CAPTURED
+                # transition and the family row already exist. The family may
+                # have moved on (ATTESTED, COMMITTED); it is never rewritten.
+                return self._negative_budget_response(connection, state)
             state = self._budget(connection, attempt_id)
             self._family(
                 state, checkpoint, work_id=work_id, state='CAPTURED',
                 payload_sha256=result['payload_sha256'], **capture,
             )
-            if prior is None:
-                connection.execute(
-                    'INSERT INTO full_campaign_checkpoint_captures VALUES(?,?,?,?,?,?)',
-                    (attempt_id, checkpoint, work_id, result_bytes, payload_bytes, None),
-                )
+            connection.execute(
+                'INSERT INTO full_campaign_checkpoint_captures VALUES(?,?,?,?,?,?)',
+                (attempt_id, checkpoint, work_id, result_bytes, payload_bytes, None),
+            )
             return self._save_budget(connection, state, 'CHECKPOINT_CAPTURED', authority=False)
 
     def retain_checkpoint_attestation(self, attempt_id, attestation_bytes, *, verify, checkpoint='N1'):
