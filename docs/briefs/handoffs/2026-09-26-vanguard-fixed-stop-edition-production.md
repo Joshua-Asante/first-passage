@@ -2,7 +2,7 @@
 
 **Status:** DRAFT. **Not dispatchable** until every §0 gate holds. It runs only on the operator's primary checkout, because the private Pine, port and effective inputs exist nowhere else. Commit this packet before dispatch and record the dispatch revision in §6.
 
-**Selected outcome:** the private files that realize [`vanguard_mgc_fixed_stop_oso@Tradeify_Select_100K`](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md), exactly as the pre-registration's answered rules state:
+**Selected outcome:** the private files that realize [`vanguard_mgc_fixed_stop_oso@Tradeify_Select_100K`](../pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md), exactly as the pre-registration's answered rules state *[Retargeted 2026-10-02 ([PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1): the original pre-registration is CLOSED — replay-output exposure; this points to its successor, pending the operator's ratification.]*:
 - a new edition Pine for a code edition, or the explicitly retained compatible Pine identity for an override-only edition;
 - a new edition runtime port, or an effective-input successor if the ruled realization is override-only;
 - their SHA-256 digests.
@@ -22,20 +22,20 @@ This is step 3 of the pre-registration's §8 freeze procedure. The edition imple
 | Gate | Condition | Where it is recorded |
 |---|---|---|
 | G1 | Operator ruled **option A** (fixed-stop edition), not B (reject the leg) | Campaign record §59, or a dated operator ruling linked from it |
-| G2 | Pre-registration VAN-2 to VAN-6, the §4 effective-inputs row, the §6 replay choice and the §6 sequential-exit replay model are answered in words. No `OWED` remains in §3, §4 or §6, apart from the pin rows this packet fills. | The pre-registration file at a named commit |
+| G2 | Pre-registration VAN-2 to VAN-6, the §4 effective-inputs row, the §6 replay choice and the §6 sequential-exit replay model are answered in words. No `OWED` remains in §3, §4 or §6, apart from the pin rows this packet fills. *2026-10-02: on the successor, the §6 sequential-exit replay model is moot for the first release under C-a (successor §6 and its exit-split row, pending ratification; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.2). Its successor-validity item (§7, **OWED (operator ratification)**) is a freeze blocker.* | The pre-registration file at a named commit |
 | G2a | Realization and identity-binding scheme are specified (reused pins fixed; new output digests supplied by this packet) under pre-registration §4, including compatibility of the port-embedded Pine identity with the registry. Any required identity-contract change is separately reviewed before dispatch. | Pre-registration at G2 commit; separate identity review if needed |
 | G3 | Operator explicitly authorizes an agent to **create** new private edition files under the paths in §2. §60 grants read access only. | Dispatch message or campaign record |
 | G3b | **Allocation gate (operator ruling 2026-09-26: "Yes, gate on allocation").** Producing the edition files waits until the TradingView/CrossTrade [capability allocation and deletion map](2026-09-25-tradeify-capability-allocation-deletion-map.md) is **ACCEPTED** under gate D of the checklist's [T09 gate acceptance record](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record), and the accepted map keeps Vanguard's runtime port as the controller boundary. A committed or merged map is not acceptance. If the accepted allocation delegates this behavior, this packet is withdrawn, not run. | Checklist T09 gate D acceptance record (named revision); allocation map disposition |
-| G4 | The pre-registration is **not frozen**, and no replay or E1 output exists for the edition | Pre-registration Status line; campaign record |
+| G4 | The pre-registration is **not frozen**, and no replay or E1 output exists for the edition *2026-10-02: this gate now binds the successor and is scoped in time. It means no replay or E1 output on the edition produced after the successor's first commit (`e85d321`). Output produced before that commit is disclosed in successor §D and governed there and by its §7 successor-validity item (OWED for the operator's ratification); it does not fail this gate. The successor's standing rule §R forbids any candidate-configurable replay before freeze.* | Pre-registration Status line; campaign record |
 
 Record the pre-registration commit the executor builds against. If the pre-registration changes after that commit, stop and return; do not reconcile the two.
 
 ## 1. Read first
 
-- The [pre-registration](../pre-registration/2026-09-26-tradeify-vanguard-fixed-stop-edition-prereg.md) at the G2 commit. It is the **only** specification.
+- The [pre-registration](../pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md) at the G2 commit. It is the **only** specification.
 - [Trailing determination §5](2026-09-26-vanguard-mgc-trailing-determination.md#5-executor-return), for the port and Pine locations of the trailing, breakeven and grace branches. It recorded `file:line` anchors only; re-read the source, don't trust those anchors blindly.
 - Campaign record §59 and §60, and AGENTS.md "Public-clone posture": the handling rules.
-- The sibling [ORB/Striker pre-registration](../pre-registration/2026-09-25-tradeify-route-native-editions-prereg.md), for the file and pin conventions its editions use. If both are being produced, use the same convention.
+- The sibling [ORB/Striker pre-registration](../pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md), for the file and pin conventions its editions use. If both are being produced, use the same convention.
 
 ## 2. Inputs, outputs and handling
 
@@ -90,7 +90,7 @@ Before writing anything, confirm with `git check-ignore -v` that every output pa
 ## 5. Owed follow-ups (not this packet)
 
 1. A reviewed change adding the edition pins beside the existing ones (`book_adapters.py` and `ops/c1_rail/book_policy.py`, which must carry the same Pine pin as the port's embedded identity (`tests/ops/test_book_adapters_parity.py:69`), and `BOOK_SOURCES.sha256` or `PORT_MANIFEST.sha256` per convention). For any successor effective inputs, it also adds the source and runtime digests.
-2. Filling the pre-registration §4 pin rows with this return's hashes, then the operator freeze (pre-registration §8 steps 4–5).
+2. Filling the pre-registration §4 pin rows with this return's hashes, then the operator freeze (pre-registration §8 steps 4–5). *[2026-10-02, on the successor: the steps after production are the successor-validity ruling (§8 step 4), the §10 audit with §4 filled (step 5), the trailing-removal confirmation and operator freeze (step 6), and the full §10 re-audit in the freeze commit (step 7).]*
 3. Adding a venue-edition ledger row `vanguard_mgc_fixed_stop_oso` as `CANDIDATE`.
 4. Requalification through the book's production E1 (pre-registration §6).
 

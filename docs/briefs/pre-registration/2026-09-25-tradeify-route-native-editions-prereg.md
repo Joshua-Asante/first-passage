@@ -1,6 +1,8 @@
 # Pre-registration — route-native editions of ORB MNQ and Striker MYM for the Tradeify book
 
-**Status:** `DRAFT — NOT FROZEN.` Fields marked **OWED (operator)** must be answered before freeze. Nothing in this file binds a replay, E1 run or verdict until the Status line reads `FROZEN <date>` and the freeze commit's SHA is recorded in [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). No replay, E1 dispatch or screen may run on either edition before that.
+**CLOSED — replay-output exposure 2026-10-02;** superseded by [`docs/briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md`](2026-10-02-tradeify-route-native-editions-successor-prereg.md); see [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1.
+
+**Status:** `CLOSED — replay-output exposure 2026-10-02 (superseded by 2026-10-02-tradeify-route-native-editions-successor-prereg.md)`; see the [successor](2026-10-02-tradeify-route-native-editions-successor-prereg.md) and [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1. *Historical and inert, the status before closure:* `DRAFT — NOT FROZEN.` Fields marked **OWED (operator)** must be answered before freeze. Nothing in this file binds a replay, E1 run or verdict until the Status line reads `FROZEN <date>` and the freeze commit's SHA is recorded in [campaign record §59](../programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25). No replay, E1 dispatch or screen may run on either edition before that.
 **Owner:** campaign record §59, ruling 3, step 1 ("pre-register the two editions … written before any replay or E1 run on the editions and is not changed after").
 **Loop of record:** STRATEGIC (expression change forced by route capability; K = 1 per leg, not a search).
 **Authored:** 2026-09-25, Claude Code (drafting); operator (Joshua) owns every rule marked OWED and the freeze.
@@ -99,6 +101,8 @@ The public repository receives identities and behavior shapes only, never privat
 - Treating the editions as qualified, selected or deployable before the E1 verdict.
 
 ## §8 — Freeze procedure
+
+*Historical and inert since 2026-10-02: this file is CLOSED (replay-output exposure; [PR #590](https://github.com/Joshua-Asante/first-passage/pull/590) item 7.6.1) and can never be frozen. Step 4's change of the Status line to `FROZEN`, and the §10 hooks, no longer apply. The [successor](2026-10-02-tradeify-route-native-editions-successor-prereg.md)'s §8 and §10 govern.*
 
 1. The operator answers ORB-2..ORB-4, ORB-6, STR-2..STR-7 and the §6 replay-modelling choice, in words (no parameter values). The §6 sequential-exit replay model is specified by the pre-registration owner and accepted by the operator. *Operator ruling 2026-09-26 (in session; [§59 Ruling 6](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-6--orb-resting-entry-lifecycle-l1-2026-09-26)): before freeze, the integrated ORB-1/RC-9/rail S2/qualification replay change and its verification are returned to the operator for acceptance; ORB-1's final wording is OWED until then.*
 2. Once the capability allocation is accepted (checklist T09 gate D; operator ruling 2026-09-26, [production handoff](../handoffs/2026-09-26-orb-striker-edition-production.md) G2b), the private edition Pine and ports are produced (operator, or a separately authorized session on the primary checkout) and their SHA-256s supplied.

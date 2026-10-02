@@ -50,6 +50,12 @@ def path_session(occurrence=0, prices=None, start_hour=14, source_day=5):
     return PathSession(occurrence, date(2026, 2, 2+occurrence), source, bars, True, True)
 
 
+def schedule_split(prefix, suffix, executes=True):
+    """The frozen T00 step-1b split return; legacy two-Bar tuples are refused."""
+    from c1_rail.qualification.model import ScheduleSplit
+    return ScheduleSplit(prefix, suffix, executes)
+
+
 def engine(emitters=None, quotes=None, sizing=None, instruments=None, state=None, broker_factory=None):
     emitters = emitters or {}
     adapters = {s.leg_id: Adapter(s.leg_id, emitters.get(s.leg_id)) for s in BOOK_LEGS}
@@ -58,12 +64,12 @@ def engine(emitters=None, quotes=None, sizing=None, instruments=None, state=None
         def __call__(self, *args):
             return quotes(*args) if quotes else 100
 
-        def split_bar(self, session, pb, instant, k):
+        def split_bar(self, session, pb, instant, k, *, exposure):
             original = dict(pb.bars)[k]
             price = self(session, instant, k)
             if not original.open == original.high == original.low == original.close == price:
                 raise ReplayNeedsContext("synthetic fixture lacks split OHLC")
-            return original, Bar(instant, price, price, price, price)
+            return schedule_split(original, Bar(instant, price, price, price, price))
     provider = quotes if hasattr(quotes, "split_bar") else FlatTailQuotes()
     replay = BookReplay(adapters, inst, policy=candidate_book_protection_policy(),
         initial_state=state or EvaluationState(100000, 100000, 100000, 0, 0),
@@ -175,10 +181,10 @@ class SplitQuotes:
     def __call__(self, session, instant, k):
         return 100
 
-    def split_bar(self, session, pb, instant, k):
+    def split_bar(self, session, pb, instant, k, *, exposure):
         original = dict(pb.bars)[k]
-        return (Bar(original.ts, 100, 100, 100, 100),
-                Bar(instant, 100, 110, 10, 100))
+        return schedule_split(Bar(original.ts, 100, 100, 100, 100),
+                              Bar(instant, 100, 110, 10, 100))
 
 
 def closing_session():
@@ -204,8 +210,8 @@ def test_intrabar_exposure_without_split_fails_closed():
 
 def test_split_must_reaggregate_original_ohlc():
     class Bad(SplitQuotes):
-        def split_bar(self, session, pb, instant, k):
-            return Bar(pb.source_bar_time, 100, 100, 100, 100), Bar(instant, 100, 100, 100, 100)
+        def split_bar(self, session, pb, instant, k, *, exposure):
+            return schedule_split(Bar(pb.source_bar_time, 100, 100, 100, 100), Bar(instant, 100, 100, 100, 100))
     replay, _ = engine({"orb_mnq_v7": first_entry}, quotes=Bad())
     with pytest.raises(ReplayNeedsContext, match="aggregate"):
         replay.run((closing_session(),))
@@ -430,9 +436,9 @@ def test_schedule_cannot_invent_path_time_after_retained_bars():
 
 def test_split_cannot_reorder_tv_extrema_even_if_ohlc_aggregation_matches():
     class Reordered(SplitQuotes):
-        def split_bar(self, session, pb, instant, k):
+        def split_bar(self, session, pb, instant, k, *, exposure):
             # Original O-H-L-C is replaced with O-L-H-L-C, which is not parity.
-            return Bar(pb.source_bar_time,100,100,90,100), Bar(instant,100,110,10,100)
+            return schedule_split(Bar(pb.source_bar_time,100,100,90,100), Bar(instant,100,110,10,100))
     replay, _ = engine({"orb_mnq_v7": first_entry}, quotes=Reordered())
     with pytest.raises(ReplayNeedsContext, match="accepted emulator path"):
         replay.run((closing_session(),))
@@ -514,8 +520,8 @@ def test_stop_before_flatten_boundary_is_not_delayed_to_schedule_quote():
     class Quotes:
         def __call__(self,*args):
             return 80
-        def split_bar(self,session,pb,instant,k):
-            return Bar(pb.source_bar_time,100,100,80,80), Bar(instant,80,80,10,80)
+        def split_bar(self,session,pb,instant,k,*,exposure):
+            return schedule_split(Bar(pb.source_bar_time,100,100,80,80), Bar(instant,80,80,10,80))
     prices = [(100,100,100,100)]*3 + [(100,100,10,80)]
     def emit(a,b):
         return entry(a,b,bracket=Bracket(stop=95)) if len(a.bars)==1 else []
@@ -873,10 +879,10 @@ class OrbOnlySplitQuotes(SplitQuotes):
         self.calls.append(('quote',k,instant))
         if k!='orb_mnq_v7':raise AssertionError('inert leg requested quote')
         return super().__call__(session,instant,k)
-    def split_bar(self,session,pb,instant,k):
+    def split_bar(self,session,pb,instant,k,*,exposure):
         self.calls.append(('split',k,instant))
         if k!='orb_mnq_v7':raise AssertionError('inert leg requested split')
-        return super().split_bar(session,pb,instant,k)
+        return super().split_bar(session,pb,instant,k,exposure=exposure)
 
 
 def test_only_exposed_leg_requires_intrabar_split_and_flatten_quote():
@@ -893,7 +899,7 @@ def test_only_exposed_leg_requires_intrabar_split_and_flatten_quote():
 def test_flat_path_needs_no_schedule_prices_or_splits_including_deadline():
     class NoEvidence:
         def __call__(self,*args):raise AssertionError('flat path requested quote')
-        def split_bar(self,*args):raise AssertionError('flat path requested split')
+        def split_bar(self,*args,**kwargs):raise AssertionError('flat path requested split')
     replay,adapters=engine(quotes=NoEvidence())
     result=replay.run((closing_session(),))
     assert result.sessions[0].fills==0 and result.sessions[0].flat_before_deadline
@@ -910,7 +916,7 @@ def test_zero_position_pending_order_requires_pre_cutoff_interval_evidence():
         return [OrderIntent('pending',a.leg_id,'entry',Side.BUY,1,'stop',200)] if len(a.bars)==1 else []
     class Missing:
         def __call__(self,*args):return 100
-        def split_bar(self,*args):raise ReplayNeedsContext('pending exposure missing split')
+        def split_bar(self,*args,exposure):raise ReplayNeedsContext('pending exposure missing split')
     replay,_=engine({'orb_mnq_v7':resting},quotes=Missing())
     with pytest.raises(ReplayNeedsContext,match='pending exposure missing split'):
         replay.run((session,))
@@ -924,14 +930,453 @@ def test_pending_only_leg_consumes_its_split_then_cancels_without_later_quotes()
     def resting(a,b):
         return [OrderIntent('pending',a.leg_id,'entry',Side.BUY,1,'stop',200)] if len(a.bars)==1 else []
     class PendingQuotes(OrbOnlySplitQuotes):
-        def split_bar(self,session,pb,instant,k):
+        def split_bar(self,session,pb,instant,k,*,exposure):
             self.calls.append(('split',k,instant))
             assert k=='orb_mnq_v7'
             original=dict(pb.bars)[k]
-            return original,Bar(instant,100,100,100,100)
+            return schedule_split(original,Bar(instant,100,100,100,100))
     quotes=PendingQuotes();replay,adapters=engine({'orb_mnq_v7':resting},quotes=quotes)
     result=replay.run((session,))
     assert result.sessions[0].fills==0 and result.sessions[0].end_edge.is_flat
     assert all(instant==cutoff for _,_,instant in quotes.calls)
     assert len([e for e in adapters['orb_mnq_v7'].feedback if e.event=='cancel'])==1
     assert all(len(a.bars)==4 for a in adapters.values())
+
+
+# ---- T00 step-1b Task 2: frozen bracket split interface (packet §7) ----
+# Case names carry the §7 "Required test update" item number (item1..item7).
+
+def bracket_provider(run):
+    """A fresh run-local provider over reviewed (here empty) evidence rows."""
+    import json
+    from c1_rail.qualification.production_source import (
+        ScheduleExecutionBracket, parse_schedule_execution_evidence)
+    raw = json.dumps({'schema': 'qualification-schedule-execution/v1', 'rows': []}).encode()
+    return ScheduleExecutionBracket(parse_schedule_execution_evidence(raw)).for_run(run)
+
+
+def exposure_of(position, pending, reserved):
+    from c1_rail.qualification.model import ScheduleExposure
+    return ScheduleExposure(position, pending, reserved)
+
+
+class Recording:
+    """Delegates to a frozen provider; records each split and the engine state."""
+
+    def __init__(self, inner):
+        self.inner, self.calls, self.replay = inner, [], None
+
+    def __call__(self, session, instant, k):
+        return self.inner(session, instant, k)
+
+    def _state(self, k):
+        r = self.replay
+        return (r.brokers[k].position(), tuple(r.brokers[k].pending_order_ids()),
+                r.ledger.reserved.get(k, 0),
+                sum(i.qty for (leg, _), (i, _) in r.orders.items() if leg == k))
+
+    def split_bar(self, session, pb, instant, k, *, exposure):
+        state = self._state(k)
+        split = self.inner.split_bar(session, pb, instant, k, exposure=exposure)
+        self.calls.append(('bar', session.occurrence, k, instant, dict(pb.bars)[k], exposure, split, state))
+        return split
+
+    def split_interval(self, session, pb, original, instant, k, *, exposure):
+        state = self._state(k)
+        split = self.inner.split_interval(session, pb, original, instant, k, exposure=exposure)
+        self.calls.append(('interval', session.occurrence, k, instant, original, exposure, split, state))
+        return split
+
+
+def bracket_engine(run, emitters, **kwargs):
+    quotes = Recording(bracket_provider(run))
+    replay, adapters = engine(emitters, quotes=quotes, **kwargs)
+    quotes.replay = replay
+    return replay, adapters, quotes
+
+
+def cutoff_session(prices, *, occurrence=0, bar=1, offset=5, source_day=5):
+    """Four M15 bars; cutoff ``offset`` minutes into ``bar``, flatten +10, deadline +15."""
+    session = path_session(occurrence, start_hour=20, prices=prices, source_day=source_day)
+    cutoff = session.source.bars[bar].source_bar_time + timedelta(minutes=offset)
+    return replace(session, source=replace(session.source, schedule=SessionSchedule(
+        cutoff, cutoff + timedelta(minutes=10), cutoff + timedelta(minutes=15))))
+
+
+def stub_split(prefix, suffix, executes, quote=None):
+    class Stub:
+        def __call__(self, session, instant, k):
+            return prefix.close if quote is None else quote
+
+        def split_bar(self, session, pb, instant, k, *, exposure):
+            return schedule_split(prefix, suffix, executes)
+    return Stub()
+
+
+T2_START = datetime(2026, 3, 2, 20, 45, tzinfo=timezone.utc)
+T2_INSTANT = T2_START + timedelta(minutes=7)
+
+
+def split_direct(provider, bar, exposures, *, session=None):
+    from types import SimpleNamespace
+    session = session or SimpleNamespace(occurrence=0, bars=(),
+                                         source=SimpleNamespace(source_session_date=bar.ts.date()))
+    pb = SimpleNamespace(source_bar_time=bar.ts, bars=(('leg', bar),))
+    return BookReplay._split(SimpleNamespace(schedule_quotes=provider), session, pb,
+                             {'leg': bar}, T2_INSTANT, exposures)
+
+
+def test_t2_item1_split_refuses_legacy_two_bar_tuple():
+    original = Bar(T2_START, 100, 100, 100, 100)
+
+    class TupleProvider:
+        def __call__(self, *args):
+            return 100
+
+        def split_bar(self, session, pb, instant, k, *, exposure):
+            return original, Bar(instant, 100, 100, 100, 100)
+    with pytest.raises(ReplayNeedsContext, match='ScheduleSplit'):
+        split_direct(TupleProvider(), original, {'leg': exposure_of(1, False, 0)})
+
+
+def test_t2_item1_split_refuses_positional_legacy_provider():
+    original = Bar(T2_START, 100, 100, 100, 100)
+
+    class Legacy:
+        def __call__(self, *args):
+            return 100
+
+        def split_bar(self, session, pb, instant, k):
+            return original, Bar(instant, 100, 100, 100, 100)
+    with pytest.raises(TypeError, match='exposure'):
+        split_direct(Legacy(), original, {'leg': exposure_of(1, False, 0)})
+
+
+@pytest.mark.parametrize('channel', ['observe_exposure', 'prefix_is_empty'])
+def test_t2_item1_split_refuses_side_channel_providers(channel):
+    original = Bar(T2_START, 100, 100, 100, 100)
+    provider = stub_split(original, Bar(T2_INSTANT, 100, 100, 100, 100), True)
+    setattr(type(provider), channel, lambda self, *args: pytest.fail('side channel consulted'))
+    with pytest.raises(ReplayNeedsContext, match='side channel'):
+        split_direct(provider, original, {'leg': exposure_of(1, False, 0)})
+
+
+@pytest.mark.parametrize('exposures', [{}, {'leg': None}, {'leg': (1, False, 0)}])
+def test_t2_item1_split_requires_a_captured_exposure_for_every_leg(exposures):
+    original = Bar(T2_START, 100, 100, 100, 100)
+    provider = stub_split(original, Bar(T2_INSTANT, 100, 100, 100, 100), True)
+    with pytest.raises(ReplayNeedsContext, match='exposure'):
+        split_direct(provider, original, exposures)
+
+
+def test_t2_item1_split_returns_one_schedule_split_per_leg():
+    from c1_rail.qualification.model import ScheduleSplit
+    original = Bar(T2_START, 100, 120, 90, 110, 7)
+    splits = split_direct(bracket_provider('R1'), original, {'leg': exposure_of(1, False, 0)})
+    assert type(splits) is dict and list(splits) == ['leg']
+    assert type(splits['leg']) is ScheduleSplit
+
+
+# Path 100 -> 110 -> 90 -> 105: a short's favourable vertex (90) is reached
+# only after the high, so its R2 lifetime low still carries the high.
+@pytest.mark.parametrize('leg_id,side,qty', [('orb_mnq_v7', Side.BUY, 1), ('aegis_6j', Side.SELL, 8)])
+def test_t2_item2_held_long_and_short_flatten_at_each_runs_vertex(leg_id, side, qty):
+    session = path_session(start_hour=20, prices=[(100, 100, 100, 100)] * 3 + [(100, 110, 90, 105)])
+    def emit(a, b):
+        return entry(a, b, side=side) if len(a.bars) == 1 else []
+    long = side is Side.BUY
+    expected = {'R1': (90 if long else 110, -10 * qty, -10 * qty),
+                'R2': (110 if long else 90, 10 * qty, 0 if long else -10 * qty)}
+    for run in ('R1', 'R2'):
+        replay, adapters, quotes = bracket_engine(run, {leg_id: emit})
+        record = replay.run((session,)).sessions[0]
+        flats = [e.fill for e in adapters[leg_id].feedback if e.fill and e.fill.kind == 'flat']
+        (call,) = quotes.calls
+        assert call[5] == exposure_of(qty if long else -qty, False, 0)
+        assert call[6].prefix_executes is True
+        assert (flats[0].price, record.pnl, record.intraday_low) == expected[run]
+        assert all(len(a.bars) == 4 for a in adapters.values())
+
+
+def test_t2_item2_position_plus_pending_follows_position_rule_and_prefix_reach():
+    # Schedule bar path 100 -> 90 -> 115 -> 100. The long's R1 adverse vertex
+    # (90) never reaches the pending add's 105 stop; R2's favourable vertex
+    # (115) does, so only R2's executed prefix fills the add.
+    session = cutoff_session([(100, 100, 100, 100), (100, 100, 100, 100),
+                              (100, 115, 90, 100), (100, 100, 100, 100)], bar=2)
+    def emit(a, b):
+        if len(a.bars) == 1:
+            return entry(a, b)
+        if len(a.bars) == 2:
+            return [OrderIntent('add', a.leg_id, 'add', Side.BUY, 1, 'stop', 105)]
+        return []
+    adds = {}
+    for run in ('R1', 'R2'):
+        replay, adapters, quotes = bracket_engine(run, {'orb_mnq_v7': emit})
+        record = replay.run((session,)).sessions[0]
+        (call,) = quotes.calls
+        exposure, split = call[5], call[6]
+        assert exposure.position == 1 and exposure.pending is True and exposure.reserved > 0
+        assert split.prefix_executes is True
+        assert split.prefix.close == (90 if run == 'R1' else 115)
+        adds[run] = [e.fill.price for e in adapters['orb_mnq_v7'].feedback if e.fill and e.fill.kind == 'add']
+        assert record.end_edge.is_flat
+    assert adds == {'R1': [], 'R2': [105]}
+
+
+def test_t2_item3_r2_pending_only_cancels_before_gap_open_fill_on_ordinary_bar():
+    session = cutoff_session([(100, 100, 100, 100), (110, 115, 85, 100),
+                              (100, 100, 100, 100), (100, 100, 100, 100)])
+    def resting(a, b):
+        return [OrderIntent('pending', a.leg_id, 'entry', Side.BUY, 1, 'stop', 105)] if len(a.bars) == 1 else []
+    outcome = {}
+    for run in ('R1', 'R2'):
+        replay, adapters, quotes = bracket_engine(run, {'orb_mnq_v7': resting})
+        record = replay.run((session,)).sessions[0]
+        (call,) = quotes.calls
+        assert call[5] == exposure_of(0, True, 1)
+        assert (call[6].prefix_executes, call[6].prefix.close) == ((True, 100) if run == 'R1' else (False, 110))
+        feedback = adapters['orb_mnq_v7'].feedback
+        outcome[run] = ([e.fill.price for e in feedback if e.fill],
+                        any(e.event == 'cancel' and e.order_id == 'pending' for e in feedback),
+                        record.pnl, record.intraday_low)
+        assert record.end_edge.is_flat and all(len(a.bars) == 4 for a in adapters.values())
+    assert outcome['R1'][:3] == ([110, 100], False, -10)
+    assert outcome['R2'] == ([], True, 0, 0)
+
+
+def test_t2_item3_r2_pending_only_cancels_on_flat_zero_volume_bar():
+    # Prefix and suffix have identical flat OHLC and zero volume, so no bar
+    # shape can reveal the empty execution prefix; only prefix_executes can.
+    session = cutoff_session([(100, 100, 100, 100)] * 4)
+    def queued(a, b):
+        return [OrderIntent('pending', a.leg_id, 'entry', Side.BUY, 1, timing=FillTiming.NEXT_OPEN)] if len(a.bars) == 1 else []
+    for run in ('R1', 'R2'):
+        replay, adapters, quotes = bracket_engine(run, {'orb_mnq_v7': queued})
+        record = replay.run((session,)).sessions[0]
+        (call,) = quotes.calls
+        split = call[6]
+        assert call[5] == exposure_of(0, True, 1)
+        shape = lambda bar: (bar.open, bar.high, bar.low, bar.close, bar.volume)
+        assert shape(split.prefix) == shape(split.suffix) == (100, 100, 100, 100, 0)
+        assert split.prefix_executes is (run == 'R1')
+        fills = [e.fill for e in adapters['orb_mnq_v7'].feedback if e.fill]
+        if run == 'R1':
+            assert [f.kind for f in fills] == ['entry', 'flat'] and record.fills == 2
+        else:
+            assert fills == [] and record.fills == 0
+            assert any(e.event == 'cancel' and e.order_id == 'pending'
+                       for e in adapters['orb_mnq_v7'].feedback)
+        assert record.end_edge.is_flat
+
+
+def test_t2_item3_non_executing_prefix_is_refused_for_a_position_leg():
+    session = path_session(start_hour=20, prices=[(100, 100, 100, 100)] * 4)
+    class SkipsPrefix:
+        def __call__(self, session, instant, k):
+            return 100
+
+        def split_bar(self, session, pb, instant, k, *, exposure):
+            original = dict(pb.bars)[k]
+            return schedule_split(original, Bar(instant, 100, 100, 100, 100), False)
+    replay, _ = engine({'orb_mnq_v7': first_entry}, quotes=SkipsPrefix())
+    with pytest.raises(ReplayNeedsContext, match='non-executing prefix'):
+        replay.run((session,))
+
+
+def t2_generated_bars():
+    import random
+    rng = random.Random(20260929)
+    bars = [Bar(T2_START, 100, 120, 90, 110, 7), Bar(T2_START, 100, 110, 90, 95, 1),  # H-O = O-L tie
+            Bar(T2_START, 100, 100, 90, 100, 1), Bar(T2_START, 100, 110, 100, 100, 1),  # flat open/close
+            Bar(T2_START, 100, 110, 90, 110, 2), Bar(T2_START, 100, 110, 90, 90, 2),    # close at an extreme
+            Bar(T2_START, 100, 100, 100, 100, 1), Bar(T2_START, 100, 100, 100, 100, 0)]  # flat, zero volume
+    for _ in range(20000):
+        o, c = rng.randint(50, 150), rng.randint(50, 150)
+        bars.append(Bar(T2_START, o, max(o, c) + rng.randint(0, 20), min(o, c) - rng.randint(0, 20), c,
+                        rng.randint(0, 9)))
+    return bars
+
+
+def test_t2_item4_frozen_splits_of_20000_generated_bars_pass_split_unchanged():
+    from types import SimpleNamespace
+    from c1_rail.qualification.model import ScheduleSplit
+    from c1_rail.qualification.replay import accepted_path
+    cases = [('R1', (1, False, 0), min, True), ('R2', (1, False, 0), max, True),
+             ('R1', (-2, True, 1), max, True), ('R2', (-2, True, 1), min, True),
+             ('R1', (0, True, 1), lambda p: p[-1], True), ('R2', (0, True, 1), lambda p: p[0], False)]
+    providers = {run: bracket_provider(run) for run in ('R1', 'R2')}
+    checked = 0
+    for n, bar in enumerate(t2_generated_bars()):
+        path = accepted_path(bar)
+        for j, (run, exposure, vertex, executes) in enumerate(cases):
+            session = SimpleNamespace(occurrence=n * len(cases) + j, bars=(),
+                                      source=SimpleNamespace(source_session_date=bar.ts.date()))
+            splits = split_direct(providers[run], bar, {'leg': exposure_of(*exposure)}, session=session)
+            split = splits['leg']
+            assert type(split) is ScheduleSplit and split.prefix_executes is executes
+            assert split.prefix.close == vertex(path) == providers[run](session, T2_INSTANT, 'leg')
+            checked += 1
+    assert checked >= 20000 * len(cases)
+
+
+@pytest.mark.parametrize('executes', [True, False])
+def test_t2_item4_split_rejections_unchanged_even_when_prefix_does_not_execute(executes):
+    from c1_rail.qualification.bracket import vertex_split
+    original = Bar(T2_START, 100, 120, 90, 110, 7)  # accepted path 100 -> 90 -> 120 -> 110
+    prefix, suffix = vertex_split(original, 1, T2_INSTANT)
+    exposures = {'leg': exposure_of(0, True, 1)}
+    assert split_direct(stub_split(prefix, suffix, executes), original, exposures)['leg'].prefix == prefix
+    rejected = [
+        ('aggregate', replace(prefix, high=121), suffix, None),
+        ('aggregate', prefix, replace(suffix, volume=1), None),
+        ('aggregate', replace(prefix, open=99, low=90), suffix, None),
+        ('aggregate', replace(prefix, ts=T2_INSTANT), suffix, None),
+        ('aggregate', prefix, replace(suffix, ts=T2_START), None),
+        ('aggregate', prefix, replace(suffix, open=91), None),
+        ('invalid split OHLC', Bar(T2_START, 100, 100, 100, 90, 7), Bar(T2_INSTANT, 90, 120, 90, 110, 0), None),
+        ('schedule price', prefix, suffix, prefix.close + 1),
+        ('accepted emulator path', Bar(T2_START, 100, 120, 90, 120, 7), Bar(T2_INSTANT, 120, 120, 90, 110, 0), None),
+    ]
+    for message, bad_prefix, bad_suffix, quote in rejected:
+        with pytest.raises(ReplayNeedsContext, match=message):
+            split_direct(stub_split(bad_prefix, bad_suffix, executes, quote), original, exposures)
+
+
+def test_t2_item5_second_same_bar_boundary_splits_retained_suffix_with_fresh_exposure():
+    # Cutoff 2 and flatten 12 minutes into one source bar whose path is
+    # 100 -> 95 -> 130 -> 110; a pending add stop at 105 rests at the cutoff.
+    session = cutoff_session([(100, 100, 100, 100), (100, 100, 100, 100),
+                              (100, 130, 95, 110), (100, 100, 100, 100)], bar=2, offset=2)
+    cutoff, flatten = session.source.schedule.cutoff, session.source.schedule.flatten_start
+    def emit(a, b):
+        if len(a.bars) == 1:
+            return entry(a, b)
+        if len(a.bars) == 2:
+            return [OrderIntent('add', a.leg_id, 'add', Side.BUY, 1, 'stop', 105)]
+        return []
+    for run, first_close, flat_price in (('R1', 95, 95), ('R2', 130, 130)):
+        replay, adapters, quotes = bracket_engine(run, {'orb_mnq_v7': emit})
+        record = replay.run((session,)).sessions[0]
+        first, second = quotes.calls
+        assert (first[0], first[3], first[4]) == ('bar', cutoff, dict(session.bars[2].bars)['orb_mnq_v7'])
+        assert first[5].position == 1 and first[5].pending is True and first[5].reserved > 0
+        assert first[6].prefix.close == first_close
+        # The second split receives the first split's suffix, not the source bar.
+        assert (second[0], second[3], second[4]) == ('interval', flatten, first[6].suffix)
+        assert second[5].pending is False and second[5].reserved == 0
+        assert second[5].position == (1 if run == 'R1' else 1 + first[5].reserved)
+        for call in (first, second):
+            position, pending, reserved, outstanding = call[7]
+            assert call[5] == exposure_of(position, bool(pending), reserved)
+            assert reserved == outstanding
+        flats = [e.fill for e in adapters['orb_mnq_v7'].feedback if e.fill and e.fill.kind == 'flat']
+        assert flats and all(f.price == flat_price for f in flats)
+        assert record.end_edge.is_flat and all(len(a.bars) == 4 for a in adapters.values())
+
+
+def t2_resting(price, kind='entry'):
+    def emit(a, b):
+        if kind == 'add':
+            if len(a.bars) == 1:
+                return entry(a, b)
+            return [OrderIntent('add', a.leg_id, 'add', Side.BUY, 1, 'stop', price)] if len(a.bars) == 2 else []
+        return [OrderIntent('rest', a.leg_id, 'entry', Side.BUY, 1, 'stop', price)] if len(a.bars) == 1 else []
+    return emit
+
+
+@pytest.mark.parametrize('leg_id,emit,bar,expected', [
+    ('orb_mnq_v7', first_entry, 1, (1, False, 0)),                                    # THIS_CLOSE position
+    ('vanguard_mgc', lambda a, b: entry(a, b, timing=FillTiming.NEXT_OPEN) if len(a.bars) == 1 else [],
+     1, (0, True, 1)),                                                                 # queued NEXT_OPEN entry
+    ('dj30_mym_p250', t2_resting(200), 1, (0, True, 20)),                              # resting stop entry
+    ('orb_mnq_v7', t2_resting(200), 1, (0, True, 1)),                                  # L1 resting base entry
+    ('orb_mnq_v7', t2_resting(200, 'add'), 2, None),                                   # position + resting add
+])
+@pytest.mark.parametrize('run', ['R1', 'R2'])
+def test_t2_item6_native_states_satisfy_reservation_invariants_at_schedule_callbacks(run, leg_id, emit, bar, expected):
+    session = cutoff_session([(100, 100, 100, 100)] * 4, bar=bar)
+    replay, _, quotes = bracket_engine(run, {leg_id: emit})
+    record = replay.run((session,)).sessions[0]
+    assert quotes.calls and record.end_edge.is_flat
+    for call in quotes.calls:
+        position, pending, reserved, outstanding = call[7]
+        assert call[5] == exposure_of(position, bool(pending), reserved)
+        assert reserved == outstanding                 # reservation equals the order sum
+        assert reserved == 0 or pending                # a reservation implies a pending order
+    first = quotes.calls[0][5]
+    if expected is None:
+        assert first.position == 1 and first.pending is True and first.reserved > 0
+    else:
+        assert first == exposure_of(*expected)
+
+
+@pytest.mark.parametrize('held', [False, True])
+def test_t2_item6_reservation_only_state_is_refused_before_any_split(held):
+    session = cutoff_session([(100, 100, 100, 100)] * 4)
+    seen = []
+    def inject(a, b):
+        if len(a.bars) == 1:
+            seen[0].ledger.reserved['orb_mnq_v7'] = seen[0].ledger.reserved.get('orb_mnq_v7', 0) + 1
+            return entry(a, b) if held else []
+        return []
+    for run in ('R1', 'R2'):
+        replay, _, quotes = bracket_engine(run, {'orb_mnq_v7': inject})
+        seen[:] = [replay]
+        with pytest.raises(ReplayNeedsContext, match='broker-pending'):
+            replay.run((session,))
+        assert quotes.calls == []
+
+
+def test_t2_item7_one_bar_call_unchanged_costs_and_occurrence_local_quotes():
+    # One source session replayed twice: the first occurrence holds a long at
+    # the cutoff, the second only a pending stop. The same source (date, leg,
+    # instant) gets each occurrence's own exposure-dependent placement.
+    prices = [(100, 100, 100, 100), (100, 115, 90, 100), (100, 100, 100, 100), (100, 100, 100, 100)]
+    sessions = (cutoff_session(prices), cutoff_session(prices, occurrence=1))
+    assert sessions[0].source == sessions[1].source
+    cutoff = sessions[0].source.schedule.cutoff
+    def emit(a, b):
+        if len(a.bars) == 1:
+            return entry(a, b)
+        if len(a.bars) == 5:
+            return [OrderIntent('pending', a.leg_id, 'entry', Side.BUY, 1, 'stop', 120)]
+        return []
+    inst = {s.leg_id: Instrument(1, 1, 0, .91) for s in BOOK_LEGS}
+    placed = {}
+    for run in ('R1', 'R2'):
+        replay, adapters, quotes = bracket_engine(run, {'orb_mnq_v7': emit}, instruments=inst)
+        result = replay.run(sessions)
+        assert [(c[1], c[3], c[5]) for c in quotes.calls] == [
+            (0, cutoff, exposure_of(1, False, 0)), (1, cutoff, exposure_of(0, True, 1))]
+        placed[run] = tuple(quotes(s, cutoff, 'orb_mnq_v7') for s in sessions)
+        assert [c[6].prefix.close for c in quotes.calls] == list(placed[run])
+        assert [s.fills for s in result.sessions] == [2, 0]
+        assert [s.pnl for s in result.sessions] == pytest.approx([-1.82, 0])
+        source_bars = [dict(pb.bars)['orb_mnq_v7'] for s in sessions for pb in s.bars]
+        assert adapters['orb_mnq_v7'].bars == source_bars      # original bars once; no segments
+        assert all(len(a.bars) == 8 for a in adapters.values())
+    assert placed == {'R1': (90, 100), 'R2': (115, 100)}
+
+
+@pytest.mark.parametrize('delta', [1, -1])
+def test_t2_item6_reservation_order_sum_mismatch_is_refused_before_any_split(delta):
+    # Coordinator ruling 2026-09-29: both halves of the reservation invariant
+    # are enforced at capture. A resting ORB entry keeps its pending order while
+    # the ledger reservation is moved above or below its outstanding quantity.
+    session = cutoff_session([(100, 100, 100, 100)] * 4, bar=2)
+    seen = []
+    def emit(a, b):
+        if len(a.bars) == 1:
+            return [OrderIntent('rest', a.leg_id, 'entry', Side.BUY, 1, 'stop', 200)]
+        if len(a.bars) == 2:
+            replay = seen[0]
+            assert replay.brokers['orb_mnq_v7'].pending_order_ids() == ['rest']
+            replay.ledger.reserved['orb_mnq_v7'] = replay.ledger.reserved.get('orb_mnq_v7', 0) + delta
+        return []
+    for run in ('R1', 'R2'):
+        replay, _, quotes = bracket_engine(run, {'orb_mnq_v7': emit})
+        seen[:] = [replay]
+        with pytest.raises(ReplayNeedsContext, match=r'orb_mnq_v7.*reserved %d.*outstanding 1' % (1 + delta)):
+            replay.run((session,))
+        assert quotes.calls == [] and quotes.inner._placed == {}

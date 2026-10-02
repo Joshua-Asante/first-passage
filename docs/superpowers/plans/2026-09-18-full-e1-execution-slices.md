@@ -849,8 +849,8 @@ The sequencing record is the [deployment-checklist addendum 2026-09-27](2026-09-
 | Stage | Conditions | Status 2026-09-27 |
 |---|---|---|
 | **Build entry** (releases the hold for the TEST_ONLY build only) | **RC-1**: D1–D3 ruled. **The §3.4(d) text** applied (S5 draft §4, consistency correction). **RC-4/RC-5 assignment**: the seed-view owner and slice, with the F1 admission-check text, and an owner, gate and record location for each of OF-1..OF-7, resolving S5 draft §6 Q12. **RC-6**: the packet re-anchored at the release head, including #519's findings that the (2, 4, 2) fixture cannot expand and the three `/v7` profile pitfalls. **RC-3a**:<br>– an operator-approved measurement-and-margin rule;<br>– a valid (PA-4) record from an operator-approved forced-expansion measurement of the **existing** `_run_part_a` on the reference runtime (#519 Stage 1b);<br>– the rule applied as a **provisional** PART_A TEST_ONLY ceiling, with D̂ uncovered;<br>– Σ-feasibility shown as **arithmetic on the proposed `/v7` values** (#519 proposal §5).<br>Then an operator hold-release entry here | **RC-1 met** on `main` (#517 merged at `5ad04cf`). The others are open. The measurement dispatch is prepared under [handoff H1](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h1--s5-measurement-correct-the-519-proposal-return-a-measurement-dispatch) and executed only after the operator approves it. *[2026-09-28: superseded. The [CP-1a ruling](#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27) approved the bounded dispatch (decision (2)) and met the RC-4/RC-5 assignment for build entry (decision (5)). The [H1(c) acceptance](#operator-acceptance--h1c-full-text-accepted-build-entry-sections-to-be-applied-2026-09-27) applied the §3.4(d) text and the RC-6 re-anchor, and RC-6 is met when CP-1b records the reviewed revision. RC-3a stays open.]* *[Status 2026-09-28, after the measurement: see the [CP-1b packet entry](#coordinator-cp-1b-packet--build-entry-status-2026-09-28). RC-1, the §3.4(d) text, the RC-4/RC-5 assignment and RC-3a are met there, and RC-6 is met subject to CP-1b naming the revision.]* |
-| **Checkpoint C3 and S5 acceptance** | The S5 packet's C3 items. **RC-3b**:<br>– the adapter-specific measurement (#519 Stage 1c), which covers D̂ and ends the provisional status;<br>– the **executed** `bind_budget` Σ-feasibility check on the built `/v7` profile;<br>– the Stage 2 service-route consistency check (PA-5).<br>Inside the approved rule the coordinator re-applies with an entry here; outside it, an operator ruling. The full RC-2 owner-text set accepted and applied | Open |
-| **Before F1** (expanding authority) | The RC-4 seed-view change landed, with its F1 admission check; OF-1..OF-7 attested by attended reads; K3 built. *[Corrected 2026-09-27: the OF attestations fall due at the gates the RC-5 entry below assigns; before F1 that is OF-7 (G-F1), and the full set is read at CP-8.]* | Open |
+| **Checkpoint C3 and S5 acceptance** | The S5 packet's C3 items. **RC-3b**:<br>– the adapter-specific measurement (#519 Stage 1c), which covers D̂ and ends the provisional status;<br>– the **executed** `bind_budget` Σ-feasibility check on the built `/v7` profile;<br>– the Stage 2 service-route consistency check (PA-5).<br>Inside the approved rule the coordinator re-applies with an entry here; outside it, an operator ruling. The full RC-2 owner-text set accepted and applied | ~~Open~~ *2026-10-01:* **C3 ACCEPTED**, and **S5 ACCEPTED for TEST_ONLY** on #578's merge at `1fe99fa` ([ruling](#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01)). D-S5-1/D-S5-2/D-S5-3 are open until both fix slices merge (#586, merged `981eb12`; then the D-S5-3 slice, #589), before T05 R1 |
+| **Before F1** (expanding authority) | The RC-4 seed-view change landed, with its F1 admission check, and S5 Q9 decided in that slice (C3 ruling, 2026-10-01); OF-1..OF-7 attested by attended reads; K3 built. *[Corrected 2026-09-27: the OF attestations fall due at the gates the RC-5 entry below assigns; before F1 that is OF-7 (G-F1), and the full set is read at CP-8.]* | Open |
 
 **Relation to the 2026-09-26 conditional ruling (recorded 2026-09-27, when #519's records reached this branch).** The [2026-09-26 entry](#operator-ruling--part-a-measurement-rule-conditionally-approved-s5-held-2026-09-26) asked the coordinator for three returns. This direction and the 2026-09-27 ruling below are its return (3), the staged gate amendment. The CP-1a packet ([H1 r2](../../notes/2026-09-27-s5-part-a-measurement-proposal-r2.md)) carries returns (1), the corrected harness/workflow and its dispatch scope, and (2), the `/v7` N2 disposition. Its two H1 acceptance conditions restate that entry's first two applicability conditions. The 2026-09-26 entry's other conditions still apply to the packet: separation of outcomes, the worker image where practicable, and validation of the pilot-budget formula. The 2026-09-26 entry conditionally approved the numerical defaults for PART_A TEST_ONLY, applicable only after the defects are corrected and reviewed. The 2026-09-27 ruling keeps them as candidates until the packet is ready. The two readings agree: no default applies before CP-1a. That entry also records the S4 run logs preserved on 2026-09-26 in the primary checkout. Whether that set covers Stage 0's inputs, which would lift the 2026-10-09 expiry from Stage 0, is for the coordinator to confirm at CP-1a.
 
@@ -892,7 +892,7 @@ The sequencing record is the [deployment-checklist addendum 2026-09-27](2026-09-
 
 An unverified OF is reported as "enforcement not established". The OF definitions' owner is boundary spec §3.1 once RC-2 applies S5 draft §1.5(a). Contract questions CQ-1..CQ-3 are open.
 
-**RC-4 (client plan-view seed change).** Owner: the qualification coordinator, through this ledger. Slice (proposed; the operator names it): "K3/RC-4 — service salt and client plan view", covering the digests-only client view, the receipt's `client_view_sha256`/`client_view_byte_length`, `tb-s2-rng-v3` with service-generated salt, commitment and reveal, the S5 draft §1.6 tests and the service-side refusal of condition 1 below. It moves K3 out of TB-F1, where S5 draft §4 placed it. It is dispatched after S5 acceptance and lands before S8/T06 dispatch; its order against the D3 slice is set at dispatch. That S8/T06 precondition is sequencing, which the [checklist addendum 2026-09-27](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step) governs; this entry does not change the addendum, which must record it separately once the operator accepts the slice. It depends on the full-E1 spec §2.2a amendment of S5 draft §1.5(d), applied under RC-2 at Checkpoint C3 and not by this entry.
+**RC-4 (client plan-view seed change).** *2026-10-01: this slice also decides S5 open question **Q9** (when a never-retried, retry-eligible IN_DOUBT counts as closed, and so when the salt is revealed), before F1 ([C3 ruling](#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01)).* Owner: the qualification coordinator, through this ledger. Slice (proposed; the operator names it): "K3/RC-4 — service salt and client plan view", covering the digests-only client view, the receipt's `client_view_sha256`/`client_view_byte_length`, `tb-s2-rng-v3` with service-generated salt, commitment and reveal, the S5 draft §1.6 tests and the service-side refusal of condition 1 below. It moves K3 out of TB-F1, where S5 draft §4 placed it. It is dispatched after S5 acceptance and lands before S8/T06 dispatch; its order against the D3 slice is set at dispatch. That S8/T06 precondition is sequencing, which the [checklist addendum 2026-09-27](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step) governs; this entry does not change the addendum, which must record it separately once the operator accepts the slice. It depends on the full-E1 spec §2.2a amendment of S5 draft §1.5(d), applied under RC-2 at Checkpoint C3 and not by this entry.
 
 **F1 admission check (RC-4; AUDIT-2026-09-25-qualification-assurance-contract-delta#K3).** The production attempt is not admitted while the `client` role can fetch a seed value or the salt. Admission refuses unless every condition holds, and it evaluates them **before** the transaction that binds the F1 budget and generates the salt, so that a refusal generates no salt and consumes no attempt:
 1. The contract's RNG recipe is `tb-s2-rng-v3`, and the installed release's plan-view mode for the `client` role is `client_view_digests_only`. The service refuses a `tb-s2-rng-v3` admission on any release without that mode.
@@ -1903,3 +1903,109 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 4. **Accept S5 for TEST_ONLY**, effective when the landing PR merges at a head **H** that satisfies the landing procedure and decision rule above. Then T05 and the T00 rebase follow. The T00 rebase re-runs P7 with a fresh source approval, because the P7 record binds its code head.
 
 **Not granted by this packet or by acceptance:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority. Each still runs through its own gate.
+
+### Operator ruling — C3 accepted; S5 accepted for TEST_ONLY on landing, 2026-10-01
+
+**Source.** Joshua, in the coordinating session at about 17:45Z on 2026-10-01, replying to the four recommendations of the [coordinator C3 acceptance packet](#coordinator-c3-acceptance-packet--s5-part-a-test_only-2026-10-01) (merged in #576 at `2b98d22`): "accept 1–4".
+
+**Effect.**
+1. **C3 is ACCEPTED** for S5 Part A **TEST_ONLY**, on the evidence at `claude/s5-part-a@606e6e0` (the packet's table). It carries to the landing head **H** only through the packet's decision rule.
+2. **OQ-1 is closed** as not arising. A valid Stage 1b record exists (run `36364854404`).
+3. **Q1** (whether a committed FAIL on an exhausted campaign counts under ADR §4) and **Q7** (R7's production evidence standard) are **reassigned to the statistical owner**, to be decided before S8 / T06. **Q9** (closure of a never-retried, retry-eligible IN_DOUBT, and so the salt reveal) is **reassigned to the RC-4 slice**, before F1. None is a C3 condition any longer.
+4. **S5 is ACCEPTED for TEST_ONLY**, effective when the `claude/s5-part-a` landing PR merges at a head **H** that satisfies the packet's landing procedure and decision rule. If the measured closure has changed at **H**, the landing returns to the operator, and S5 acceptance does not take effect until he decides.
+
+**Carried items:** unchanged from the packet. They are G5 independent bars verification (CP-6), the independently observed pilot draw (T05, before CP-6), the per-phase memory field (CP-6), and the T11/CP-8 set.
+
+**Next.**
+- The coordinator opens the landing PR, updates `claude/s5-part-a` from `main` to **H**, and runs the closure-equivalence and Linux-closure checks at **H**.
+- At **H**: CI, then Codex, then a merge pinned to **H**.
+- After that, T05 and the T00 rebase. As accepted recommendation 4 states, the rebase re-runs P7 at the rebased head **with a fresh source approval**, whatever the date. The current approval's expiry, 2026-10-08T08:21:08Z, does not relax that. *(Ordering refined in the defects ruling below: P7 is accepted at the head T00 actually merges at.)*
+
+**Not granted:** any production value, budget, ceiling or host sizing; release activation on a non-disposable host; F1; S8 or any statistical dispatch; deployment, arming or live authority.
+
+### Operator ruling — land S5 with two named TEST_ONLY defects; fix before T05, 2026-10-01
+
+**Source.** Codex reviewed the landing PR #578 at **H = `1fe99fa`** and raised two P2 code findings. Both were already present at `606e6e0`; the merge of `main` did not introduce them. Put to the operator by structured question, Joshua chose "Land now, fix before T05".
+
+**The two named defects (TEST_ONLY, open):**
+- **D-S5-1, Part A output mount sizing** (`ops/c1_rail/qualification/execution/campaign_supervisor.py`, the checkpoint io mount sized from the per-file `profile.output_byte_limit`; Codex thread 4158727147). A PART_A work's output tmpfs holds `part-a-initial.jsonl`, `part-a-final.jsonl` and `result.frame` at once. Each can be within its own limit while the total exceeds the mount, so a large valid result can hit ENOSPC and end IN_DOUBT. This **fails closed**: no wrong result can be accepted.
+- **D-S5-2, Part A capture idempotency** (`ops/c1_rail/qualification/execution/campaign_store.py`, `retain_checkpoint_capture`; Codex thread 4158727154). The exact-retry check compares only the result and payload bytes. A retry with the same result, payload and transition bytes but different capture fields passes, and the family projection then overwrites `initial_prefix_sha256`, `final_sha256`, the panel counts and the expansion fact. This breaks the exact-retry contract.
+
+**Effect.**
+- **This replaces, for D-S5-1 and D-S5-2 only, the clean-Codex-review condition of the C3 landing procedure.** For the C3 ruling's item 4 (S5 acceptance), "Codex clean at H" means no Codex finding at H other than these two.
+- **S5 acceptance for TEST_ONLY takes effect when #578 merges at `1fe99fa`** with the procedure otherwise met: the Linux run `36902447502` reads ok at H, CI is green, and Codex raises no other finding at H. It does not wait for the fix slice. The fix slice is a separate gate on T05, not a condition of S5 acceptance.
+- #578 may merge at `1fe99fa` with these two P2 threads open, which overrides the merge train's no-open-P2 gate for these two only. **#578 lands before this ledger entry merges.** If anything else moves `main` past `2b98d22` first, including this entry, the packet's main-movement rule applies: a new H, with steps 2–5 again. It still needs the Linux run `36902447502` to read ok at H, green CI, and no further Codex finding at H.
+- The follow-up fix slice (#586, for D-S5-1/D-S5-2) gets fail-first tests for each defect *(D-S5-3 adds a second, separate slice with its own run and acceptance; see the D-S5-3 ruling below)*, and **must merge before T05 integration acceptance** (checkpoint R1 in the deployment checklist's result/seal row; T05 is already built and frozen at `6cf2732`). T05 integration *preparation* (H9) may proceed meanwhile, but its integration branch is rebuilt on a `main` that includes the fix before R1. *(This names the event the operator's "fix before T05" gates.)* The fixes are outside the 68-module measured closure (`campaign_supervisor` and `campaign_store` are not in it). They are inside the Linux selection's closure, so the fix needs its own full S4-plus-Part-A Linux run.
+
+- **T00 P7 ordering.** The P7 record binds its code head, so T00's P7 is re-run, freshly approved and accepted **at the head T00 actually merges at**. If `main` moves before T00 merges, for example by the D-S5 fix slice landing, that P7 run is repeated at the new head with a fresh approval. **Recommended order:** #578, then the D-S5 fix slice (#586), then the D-S5-3 fix, then the T00 rebase, P7 re-run, fresh approval and merge. That way P7 runs once. *(D-S5-3 added 2026-10-01; see the D-S5-3 ruling below.)* *2026-10-02: step-1b P7 re-run done and accepted (`b2c9f9c`; landed `c3ab0cc`, tree-identical); see the [closure doc §7](../../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus).*
+
+**Not granted:** T05 integration acceptance (R1) before the fix lands, and no production use. Everything else in the C3 ruling above stands.
+
+### Operator ruling — D-S5-3 (capture exact-retry demotion) also gates T05 R1, 2026-10-01
+
+**Source.** Joshua, in the coordinating session on 2026-10-01: "yes, D-S5-3 gates R1 too".
+
+**The defect, D-S5-3** (latent; found by the D-S5 fix-slice worker). In `ops/c1_rail/qualification/execution/campaign_store.py`, an *exact* `retain_checkpoint_capture` retry rewrites the checkpoint's family row as CAPTURED. Once the family has moved on, that demotes ATTESTED and COMMITTED rows and drops their attestation and receipt digests. It affects N1, N2 and PART_A. Today it is unreachable, because the only caller captures once per worker run. The fix makes an exact retry return without writing once all of its checks pass. It is held on a separate branch, `claude/capture-retry-noop`, to be opened after #586 merges. *(#586 merged at `981eb12`; the fix was opened as #589.)*
+
+**Effect.**
+- **D-S5-3 gates T05 integration acceptance (checkpoint R1)**, in the same way D-S5-1 and D-S5-2 do. Its fix must merge with **its own full S4-plus-Part-A Linux run read ok**, plus its own acceptance, because it changes N1/N2 store behavior. The T05 integration branch is rebuilt on a `main` that includes it.
+- S5 TEST_ONLY acceptance is unaffected; it is already in effect.
+- **Acceptance contract for the D-S5-3 slice.**
+  - **Tested revision:** the branch is updated from `main` **after #586 merges**, so that it contains both fixes. Its full S4-plus-Part-A Linux run, its closure check and its acceptance are all bound to that updated head. D-S5-2 and D-S5-3 both modify `retain_checkpoint_capture`, and this run is the combined fixes' only full Linux run, because H9 R1 runs only the result/seal node set.
+  - **Targeted regression:** a full Linux run cannot exercise an exact retry, because production captures once per worker run. So a **fail-first, store-level test** is a prerequisite of acceptance. It covers an exact retry after the family has progressed, for N1, N2 and PART_A. It shows ATTESTED and COMMITTED state, and the attestation and receipt digests, preserved with no write. Cite its red record on the unfixed code and its green record on the fixed code.
+- The clean-review exception in the defects ruling above covers D-S5-1 and D-S5-2 only.
+
+**Not granted:** T05 integration acceptance (R1) before the D-S5-3 fix lands, and no production use.
+
+### Operator rulings — T05 environment sealing (C′) and the first-release host environment drift residual, 2026-10-02
+
+*Joshua, directly in the coordinating session, on 2026-10-02. These rulings are owned here. H9 checkpoint R1 ([staged acceptance](../../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md)) and the deployment checklist's T05 row link to this entry and carry it as an R1 gate.*
+
+**Rulings, in order:**
+1. **"scoping is fine, defer the sealing to T05".** T00's P7 `code_closure_sha256` identifies the Python-source closure plus the recorded interpreter binding. Environment sealing is owed by T05 before the R1 grant.
+2. **"C for the T05 sealing"**, revised to **C′** after the H9 source check found that host-side code decides outcomes. That host-side code includes Part-A adjudication, calendar and deadline logic in Eastern time, budget exhaustion, VOID, and aggregate result and seal checks.
+3. **"yes"** to the coordinator's narrowed C′. Identity checks cover only the finite, known R1 host entrypoints. Unmediated descendants and OS helpers join the residual.
+4. **"yes to the pin".** The standing, approved worker base image is **`python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63`**: the `python:3.12.3-slim-bookworm` manifest list, the base used by the S5 and S4 Linux evidence.
+   - **Required selection:** the linux/amd64 child `sha256:fd3817f3a855f6c2ada16ac9468e5ee93e361005bd226fd5a5ee1a504e038c84`, whose config `sha256:cf001c2f8af7214144935ae5b37c9e626ccf789117c10c1f691766d4658f1b1e` declares `architecture=amd64`, `os=linux` and `PYTHON_VERSION=3.12.3` (created 2024-04-09).
+   - **Provenance:** an anonymous, read-only public registry read by the coordinator on 2026-10-02. The index, child-manifest and config bytes each hash to their own digest. They are retained privately, with `SHA256SUMS`, under `local_artifacts/h9-t05-base-pin-afc139a0/coordinator-fetch/`. Nothing was pulled, built or run.
+   - **Known trade-off, accepted:** the image predates later Python and OS security patches. Workers run offline.
+   - **Changes:** any later pin change needs Joshua's ruling and a reviewed change. The canonical pin file itself is created by the C′ build.
+5. **"broaden R1".** R1 runs the **combined** Linux node set, in this order:
+   1. service;
+   2. N1;
+   3. N2;
+   4. Part A;
+   5. result/seal;
+   6. supervision, last.
+
+   R1 also includes the C′ and VALID→VOID acceptance cases. The reason: H9's prepared changes modify shared store code on the S4 and Part-A paths, and a result/seal-only run cannot catch a regression there. The exact collected IDs and count are frozen at the R1 dispatch. This supersedes the "result/seal node set only" wording in H9 checkpoint R1 and in the D-S5-3 entry above, which stays as a dated record.
+
+**C′ obligation, owed by T05 before the R1 grant. It is a design: no build is dispatched by this entry.**
+- **Worker base image.** It must be a **standing, operator-approved digest**, not a tag resolved at build time. A missing, tag-only or mismatched pin refuses. The initial digest and any later update need Joshua's approval and a reviewed change.
+- **Host identity checks.** A signed release/runtime revision binds a finite mapping of the known R1 host entrypoints:
+  - the runner/pytest admin fixture;
+  - the service supervisor;
+  - the campaign guardian, control and probes;
+  - the N1, N2, PART_A and RESULT G5 roles;
+  - qseal;
+  - the Python bootstrap/owned-command wrapper.
+
+  Each mapped launch is checked before it spawns, by the child itself, and by the controller through `/proc`. Each is rechecked at the checkpoint, result and seal authority transitions, and at **every VALID→VOID transition** (campaign spec :90 makes VOID its own irreversible authority transition). The checkpoint, result and seal rechecks run inside the original CPU/wall reservation and absolute deadline, with no refresh or retry. **The VOID recheck is uncharged.** It does not depend on remaining allowance or the deadline, matching the accepted uncharged VOID path (`claim_void_authentication`, sequence 0), so VOID stays possible for campaigns in BUDGET_UNCERTAIN, IN_DOUBT or past their deadline. A VOID recheck mismatch refuses an *automatic* VOID commit and leaves the campaign for the operator-recorded VOID path, which records the mismatch. It never leaves the campaign with authority to PASS.
+- **Evidence and failures.** Launch and exit evidence is retained in versioned supervision events. **So is every transition-time recheck**: its expected identity, observed identity, transition and verdict, so that R1 can verify coverage. A mismatch, a failed check, a timeout or exhaustion refuses authority.
+- **Unchanged.** Frozen v1 RESULT/SEAL and the DB10 two-table layout stay as they are, bound through the existing `release_sha256`. The design term is proposed as term 7 of the S6 DB10 draft, which stays DRAFT.
+
+**Residual accepted by Joshua for the first release: "T05 C′ first-release host environment drift."**
+- **Not covered by the checks:** an unchanged interpreter and lock identity does not seal installed distribution contents, tzdata or other data files, external mounts, late-loaded native or transitive libraries, or OS and kernel services. **Unmediated descendant processes and OS helper binaries (systemctl, busctl, docker), and OS daemons and the kernel, are not identity-covered either.**
+- **Effect:** drift in any of these can change adjudication, calendar, deadline and VOID outcomes.
+- **Size:** its magnitude is **unmeasured**.
+- **No hermeticity claim** is made. Every R1 packet cites this residual, the expected identity contract and the observed coverage.
+
+**Unchanged:**
+- Full S5 custody.
+- R1's express Linux grant, now for the combined node set (ruling 5), recorded in H9 checkpoint R1.
+- Independent review.
+- T00-first integration.
+- Three qualification-path items still owed before R1:
+  - truncated-calendar validation;
+  - calendar-role binding;
+  - reviewer identity and independence.

@@ -8,7 +8,7 @@ No missing production fact is supplied by the synthetic implementation.
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, field, fields, is_dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal, DecimalException
 from enum import Enum
@@ -25,6 +25,7 @@ from c1_signal_daemon.feed import Bar
 from .model import ET, LEG_IDS, SessionSchedule, SourceBar, aware
 from .clock import AccountClock, SourceDayDisposition, SourceDayStatus
 from .runner import NeedsContext
+from .replay import accepted_path
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,16 @@ class ProductionSourceNeedsContext(NeedsContext):
         self.gaps = tuple(gaps)
         self.prepared = prepared
         super().__init__('concrete production source capabilities missing: ' + '; '.join(g.code for g in self.gaps))
+
+
+def _now():
+    """Single time seam for source-only receipt lifecycle checks (spec §2.3)."""
+    return datetime.now(timezone.utc)
+
+
+def _is_source_only(contract):
+    from .contract import ValidatedSourceContract
+    return type(contract) is ValidatedSourceContract
 
 
 def port_active_window(leg, instant, params):
@@ -342,7 +353,7 @@ def parse_population_index(raw, *, populations):
     if not full or len(set(full)) != len(full) or pools['H1'] != full[:middle] or pools['H2'] != full[middle:]:
         raise ValueError('source population halves must be the disjoint chronological ceil partition')
     exclusions = []
-    allowed = {'missing_active_bar','missing_entire_session','exchange_closed','policy_denied'}
+    allowed = {'missing_active_bar','missing_entire_session','exchange_closed','policy_denied','source_truncated'}
     for row in doc['expected_exclusions']:
         if set(row) != {'source_date','reason','detail'} or row['reason'] not in allowed or type(row['detail']) is not str or not row['detail']:
             raise ValueError('explicit supported source exclusion required; deadline failure is not an exclusion')
@@ -354,11 +365,75 @@ def parse_population_index(raw, *, populations):
     return SourcePopulationIndex(dates, tuple(slot_rows), tuple((name,pools[name]) for name in ('FULL','H1','H2')), tuple(exclusions), binding_bytes, tuple(provenance))
 
 
+RUNS = ('R1', 'R2')
+BRACKET_RUNS = RUNS
+
+
+def vertex_split(original, index, instant):
+    """Prefix is the accepted path up to vertex ``index``; suffix is the rest.
+
+    Volume carries no price and is kept whole on the prefix so the split
+    aggregates to the source bar.
+    """
+    path = accepted_path(original)
+    if type(index) is not int or not 0 <= index < len(path):
+        raise ValueError('vertex index outside the accepted path')
+    head, tail = path[:index+1], path[index:]
+    return (Bar(original.ts, path[0], max(head), min(head), path[index], original.volume),
+            Bar(instant, path[index], max(tail), min(tail), path[-1], 0.0))
+
+
+def placement(run, position, path):
+    """(rule, vertex index) for one leg: the addendum's two-run table.
+
+    A signed position places the instant at its adverse (R1) or favourable
+    (R2) extreme, first reached along the path. Without a position the
+    endpoints are used: close (R1, fill) and open (R2, cancel).
+    """
+    if run not in RUNS:
+        raise ValueError('bracket run must be R1 or R2')
+    if type(position) is not int:
+        raise ValueError('signed integer position required')
+    if position == 0:
+        return ('fill', len(path)-1) if run == 'R1' else ('cancel', 0)
+    low, high = path.index(min(path)), path.index(max(path))
+    adverse, favourable = (low, high) if position > 0 else (high, low)
+    return ('adverse', adverse) if run == 'R1' else ('favourable', favourable)
+
+
+
+
+def _require_exposure(exposure):
+    """Fail closed on a missing, inactive or reservation-only exposure."""
+    from .model import ScheduleExposure
+    from .replay import ReplayNeedsContext
+    if type(exposure) is not ScheduleExposure:
+        raise ReplayNeedsContext('schedule split requires a captured exposure snapshot')
+    if exposure.reserved > 0 and not exposure.pending:
+        raise ReplayNeedsContext('reservation without a broker-pending order has no ratified branch')
+    if exposure.position == 0 and not exposure.pending:
+        raise ReplayNeedsContext('inactive leg exposure has no schedule placement')
+    return exposure
+
+
 @dataclass(frozen=True)
 class ScheduleExecutionEvidence:
+    """Reviewed schedule evidence, or one run's bracket provider.
+
+    With ``run`` None, splits are the reviewed retained rows and every prefix
+    executes. A provider issued by ``ScheduleExecutionBracket.for_run`` places
+    each intrabar instant at the ratified vertex of the accepted path for its
+    own run; its placed prices are local to that provider and path occurrence.
+    """
     quotes: object
     splits: object
     source_rows: tuple
+    run: str | None = None
+    _placed: dict = field(default_factory=dict, compare=False, repr=False)
+
+    def __post_init__(self):
+        if self.run is not None and (type(self.run) is not str or self.run not in BRACKET_RUNS):
+            raise ValueError('bracket run must be exactly R1 or R2')
 
     @property
     def schedule_quotes(self):
@@ -366,28 +441,61 @@ class ScheduleExecutionEvidence:
 
     def __call__(self, session, instant, leg):
         from .replay import ReplayNeedsContext
+        if self.run is not None:
+            placed = self._placed.get((session.occurrence, leg, instant))
+            if placed is not None:
+                return placed
         try:
             return self.quotes[(session.source.source_session_date, leg, instant)]
         except KeyError as exc:
-            raise ReplayNeedsContext('missing reviewed source-instant schedule price') from exc
+            if self.run is None:
+                raise ReplayNeedsContext('missing reviewed source-instant schedule price') from exc
+        # Ratified reading 3: a grid-boundary instant is the open of the leg's
+        # bar starting there, else the close of its bar ending there.
+        bars = [(pb.source_bar_time, dict(pb.bars).get(leg)) for pb in session.bars]
+        for start, bar in bars:
+            if bar is not None and start == instant:
+                return bar.open
+        for start, bar in bars:
+            if bar is not None and start + timedelta(minutes=15) == instant:
+                return bar.close
+        raise ReplayNeedsContext('no placement or retained source price at the schedule instant')
 
-    def split_bar(self, session, pb, instant, leg):
-        return self._split_at(session, pb, pb.source_bar_time, instant, leg)
+    def split_bar(self, session, pb, instant, leg, *, exposure):
+        return self._split_at(session, pb, dict(pb.bars)[leg] if self.run else None,
+                              pb.source_bar_time, instant, leg, exposure)
 
-    def split_interval(self, session, pb, original, instant, leg):
-        return self._split_at(session, pb, original.ts, instant, leg)
+    def split_interval(self, session, pb, original, instant, leg, *, exposure):
+        return self._split_at(session, pb, original, original.ts, instant, leg, exposure)
 
-    def _split_at(self, session, pb, start, instant, leg):
+    def _split_at(self, session, pb, original, start, instant, leg, exposure):
+        from .model import ScheduleSplit
         from .replay import ReplayNeedsContext
-        try:
-            return self.splits[(session.source.source_session_date, leg, pb.source_bar_time, start, instant)]
-        except KeyError as exc:
-            raise ReplayNeedsContext('missing reviewed source interval split evidence') from exc
+        _require_exposure(exposure)
+        if self.run is None:
+            try:
+                prefix, suffix = self.splits[(session.source.source_session_date, leg, pb.source_bar_time, start, instant)]
+            except KeyError as exc:
+                raise ReplayNeedsContext('missing reviewed source interval split evidence') from exc
+            return ScheduleSplit(prefix, suffix, True)
+        key = (session.occurrence, leg, instant)
+        if key in self._placed:
+            raise ReplayNeedsContext('bracket instant already placed for this leg and occurrence')
+        rule, vertex = placement(self.run, exposure.position, accepted_path(original))
+        prefix, suffix = vertex_split(original, vertex, instant)
+        self._placed[key] = prefix.close
+        return ScheduleSplit(prefix, suffix, rule != 'cancel')
 
     def validate_split(self, session, pb, bars, instant):
+        from .model import ScheduleExposure
         from .replay import BookReplay
+        if self.run is not None:
+            raise ValueError('retained evidence validation uses the reviewed provider only')
         # The exact engine validator owns OHLC aggregation and TV path law.
-        return BookReplay._split(self, session, pb, bars, instant)
+        # Reviewed rows do not depend on exposure; an active pending-only
+        # snapshot only satisfies the frozen split interface.
+        return BookReplay._split(self, session, pb, bars, instant,
+                                 {leg: ScheduleExposure(0, True, 0) for leg in bars})
 
     def validate_supplied(self, panels):
         """Check supplied claims against retained bars without requiring claims.
@@ -416,11 +524,26 @@ class ScheduleExecutionEvidence:
                 raise ValueError('source subinterval split has no validated prefix anchor')
             session = SimpleNamespace(source=SimpleNamespace(source_session_date=day))
             pb = SimpleNamespace(source_bar_time=bar_time)
-            _, right = self.validate_split(session, pb, {leg: anchor}, instant)
+            suffix = self.validate_split(session, pb, {leg: anchor}, instant)[leg].suffix
             suffix_key = (day, leg, bar_time, instant)
-            if suffix_key in suffixes and suffixes[suffix_key] != right[leg]:
+            if suffix_key in suffixes and suffixes[suffix_key] != suffix:
                 raise ValueError('conflicting retained source subinterval evidence')
-            suffixes[suffix_key] = right[leg]
+            suffixes[suffix_key] = suffix
+
+
+class ScheduleExecutionBracket:
+    """Issues one fresh run-local provider per bracket run; holds no run state."""
+
+    def __init__(self, evidence):
+        if type(evidence) is not ScheduleExecutionEvidence or evidence.run is not None:
+            raise ValueError('reviewed schedule execution evidence required')
+        self._evidence = evidence
+
+    def for_run(self, run_id: str) -> ScheduleExecutionEvidence:
+        if type(run_id) is not str or run_id not in BRACKET_RUNS:
+            raise ValueError('bracket run must be exactly R1 or R2')
+        evidence = self._evidence
+        return ScheduleExecutionEvidence(evidence.quotes, evidence.splits, evidence.source_rows, run_id)
 
 
 def parse_schedule_execution_evidence(raw):
@@ -578,8 +701,8 @@ def _prepare_domain_inputs(contract, *, artifact_root, domain):
 
 def _derive_retained_inputs(contract, *, retained, domain):
     """Derive all source inputs from one verified retained byte snapshot."""
-    from c1_signal_daemon.book_adapters import _qualification_domain
-    if _qualification_domain(contract) is not domain:
+    from c1_signal_daemon.book_adapters import _resolve_domain
+    if _resolve_domain(contract) is not domain:
         raise ValueError('source preparation domain differs from exact contract domain')
     snapshots, _, trace = _qualification_snapshots(contract, retained)
     by_role = {row.role: row for row in contract.artifacts}
@@ -610,6 +733,130 @@ def _derive_retained_inputs(contract, *, retained, domain):
     return PreparedProductionInputs(contract.contract_sha256, tuple(retained.items()), trace, admission, tuple(panels), startup, gaps)
 
 
+def truncated_slot_ranges(index_raw):
+    """ET first-last slot range per indexed date, as a truncation reason must name it."""
+    doc = _json(index_raw)
+    ranges = {}
+    for day, values in doc.get('expected_source_slots', {}).items():
+        if values:
+            first, last = (_instant(v).astimezone(ET).strftime('%H:%M') for v in (values[0], values[-1]))
+            ranges[day] = f'{first}-{last}'
+    return ranges
+
+
+def validate_source_only_calendar(raw, *, contract, truncated_slots):
+    """Source-only calendar rules the generic parser does not enforce (spec §2.6a)."""
+    doc = _json(raw)
+    producer = {row.role: row.sha256 for row in contract.artifacts}.get('calendar_producer')
+    expected = {'role': 'calendar_producer', 'sha256': producer}
+    ends = {doc.get('coverage_start'), doc.get('coverage_end')}
+    for row in doc.get('sessions') or ():
+        deadlines = row.get('venue_deadlines') or {}
+        facts = list(row.get('facts') or ()) + [item.get('fact') for item in deadlines.values()
+                                                if isinstance(item, dict)]
+        if producer is None or any(fact != expected for fact in facts):
+            raise ValueError('CALENDAR_FACT_ROLE: every calendar fact must bind the calendar_producer role')
+        status, reason = row.get('status'), row.get('reason') or ''
+        if status == 'policy_denied' and reason.startswith('panel truncated'):
+            raise ValueError('TRUNCATION_STAND_IN_RETIRED: use the typed source_truncated disposition')
+        if status == SourceDayStatus.SOURCE_TRUNCATED.value:
+            if deadlines or row.get('date') not in ends:
+                raise ValueError('SOURCE_TRUNCATION_INTERIOR: truncation is allowed only at an interval end')
+            slots = truncated_slots.get(row.get('date'))
+            if not slots or slots not in reason.replace('\u2013', '-'):
+                raise ValueError('SOURCE_TRUNCATION_REASON: the reason must name the truncated slots')
+
+
+def refuse_source_truncated_on_qualification(calendar_raw, index_raw):
+    """``source_truncated`` is a source-only disposition (spec §2.6a). Its endpoint and
+    reason checks run only for source-only contracts, so a qualification contract may
+    not use it until T05 defines equivalent validation (Codex P1 on #594)."""
+    truncated = SourceDayStatus.SOURCE_TRUNCATED.value
+    calendar, index = _json(calendar_raw), _json(index_raw)
+    if any(type(row) is dict and row.get('status') == truncated for row in calendar.get('sessions') or ()) or any(
+            type(row) is dict and row.get('reason') == truncated for row in index.get('expected_exclusions') or ()):
+        raise ValueError('SOURCE_TRUNCATED_QUALIFICATION_REFUSED: source_truncated is a source-only disposition')
+
+
+CALENDAR_PRODUCER_SCHEMA = 't00-p7-calendar-deadline-facts/v1'
+CALENDAR_PRODUCER_LABEL = 'RULED_MODEL_DEADLINES_NOT_OBSERVED_VENUE_HISTORY'
+# Operator Ruling 2 (2026-09-30): one account-level deadline for all four legs.
+# Kept as 'HH:MM' text: frozen-module drift verification compares reconstructed
+# globals by value only for primitive and date types (result_adjudication).
+RULED_DEADLINES_ET = {'venue_flat_date_et': '12:59', 'regular_et': '16:45'}
+
+
+def validate_calendar_producer(producer_raw, *, calendar_raw):
+    """The retained deadline-fact record must carry every fact the calendar uses (Codex P2 on #594).
+
+    A calendar fact binds the ``calendar_producer`` digest; this checks that those
+    bytes are the Ruling-2 record and that each OPEN row's four leg deadlines and
+    each ``source_truncated`` row are the ones that record states.
+    """
+    try:
+        doc = _json(producer_raw)
+    except (TypeError, ValueError, UnicodeDecodeError) as exc:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: the calendar_producer bytes are not a JSON record') from exc
+    if type(doc) is not dict or doc.get('schema') != CALENDAR_PRODUCER_SCHEMA:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: calendar_producer is not a ' + CALENDAR_PRODUCER_SCHEMA + ' record')
+    if doc.get('label') != CALENDAR_PRODUCER_LABEL:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: calendar_producer does not carry the ruled-model label')
+    rule = doc.get('deadline_rule')
+    if type(rule) is not dict or any(rule.get(key) != value for key, value in RULED_DEADLINES_ET.items()):
+        raise ValueError('CALENDAR_PRODUCER_INVALID: deadline_rule differs from the Ruling-2 deadlines')
+    flat_values = doc.get('venue_flat_dates_in_interval')
+    if type(flat_values) is not list or any(type(value) is not str for value in flat_values):
+        raise ValueError('CALENDAR_PRODUCER_INVALID: venue_flat_dates_in_interval must be a list of ISO dates')
+    try:
+        flat = {date.fromisoformat(value) for value in flat_values}
+    except ValueError as exc:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: venue_flat_dates_in_interval must be a list of ISO dates') from exc
+    if len(flat) != len(flat_values) or sorted(d.isoformat() for d in flat) != flat_values:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: venue_flat_dates_in_interval must be sorted and unique')
+    tail = doc.get('tail_disposition')
+    calendar = _json(calendar_raw)
+    for row in calendar.get('sessions') or ():
+        day = date.fromisoformat(row['date'])
+        if row.get('status') == 'OPEN':
+            wanted = datetime.combine(day, time.fromisoformat(RULED_DEADLINES_ET['venue_flat_date_et' if day in flat else 'regular_et']), ET)
+            deadlines = row.get('venue_deadlines') or {}
+            if set(deadlines) != set(LEG_IDS) or any(
+                    type(item) is not dict or type(item.get('instant')) is not str
+                    or _instant(item['instant']) != wanted for item in deadlines.values()):
+                raise ValueError(f'CALENDAR_PRODUCER_MISMATCH: {day.isoformat()} deadlines differ from the deadline facts')
+        elif row.get('status') == SourceDayStatus.SOURCE_TRUNCATED.value:
+            if (type(tail) is not dict or tail.get('date') != row['date']
+                    or tail.get('status') != SourceDayStatus.SOURCE_TRUNCATED.value):
+                raise ValueError(f'CALENDAR_PRODUCER_MISMATCH: {day.isoformat()} truncation is not the recorded tail disposition')
+
+
+def _review_source(raw, *, role, digest, scope, contract, source_binding_sha256=None):
+    """Reviewer-authored v2 companion (spec §2.6b); a producer never reviews itself."""
+    doc = _json(raw)
+    fields = {'schema', 'artifact_role', 'artifact_sha256', 'scope', 'decision', 'reviewer', 'reviewed_at', 'notes'}
+    if source_binding_sha256 is not None:
+        fields.add('source_binding_sha256')
+    if (type(doc) is not dict or set(doc) != fields or doc['schema'] != 'qualification-source-review/v2'
+            or doc['artifact_role'] != role or doc['artifact_sha256'] != digest or doc['scope'] != scope
+            or doc['decision'] != 'ACCEPTED'
+            or (source_binding_sha256 is not None and doc['source_binding_sha256'] != source_binding_sha256)
+            or type(doc['reviewer']) is not str or not doc['reviewer'].strip()
+            or type(doc['notes']) is not list or not doc['notes']
+            or any(type(note) is not str or not note.strip() for note in doc['notes'])):
+        raise ValueError('review companion does not bind exact source artifact/scope/reviewer')
+    try:
+        _instant(doc['reviewed_at'])
+    except (TypeError, ValueError, AttributeError) as exc:
+        raise ValueError('review companion reviewed_at must be an aware instant') from exc
+    producers = {row.role: row.producer for row in contract.artifacts}
+    if doc['reviewer'] == producers.get(role):
+        raise ValueError('REVIEW_NOT_INDEPENDENT: the reviewer produced the reviewed artifact')
+    # The claim is bound to the signed producer of the companion itself, so a
+    # producer cannot self-certify under another name (Codex P1 on #594).
+    if doc['reviewer'] != producers.get(role + '_review'):
+        raise ValueError('REVIEW_NOT_INDEPENDENT: the claimed reviewer is not the signed producer of the review companion')
+
+
 def _review(raw, *, role, digest, scope, source_binding_sha256=None):
     doc = _json(raw)
     expected = {'schema': 'qualification-source-review/v1', 'artifact_role': role,
@@ -618,6 +865,59 @@ def _review(raw, *, role, digest, scope, source_binding_sha256=None):
         expected['source_binding_sha256'] = source_binding_sha256
     if doc != expected:
         raise ValueError('review companion does not bind exact source artifact/scope')
+
+
+@dataclass(frozen=True)
+class SourceOnlySession:
+    """Primitive per-session projection for the P7 hand recompute (spec §2.6c)."""
+    source_session_id: str
+    occurrence: int
+    pnl: float
+    intraday_low: float
+    fills: int
+    flat_before_deadline: bool
+    start_flat: bool
+    end_flat: bool
+
+
+@dataclass(frozen=True)
+class SourceOnlyReplay:
+    """Sealed source-only run result; deliberately not a ReplayResult."""
+    evidence_class: str
+    contract_sha256: str
+    approval_sha256: str
+    sessions: tuple
+    events_sha256: str
+    consumed_intrabar_splits: tuple
+    deadline_failure: bool
+
+
+@dataclass(frozen=True)
+class SourceOnlyBracket:
+    r1: SourceOnlyReplay
+    r2: SourceOnlyReplay
+
+
+@dataclass(frozen=True)
+class SourceOnlyProof:
+    evidence_class: str
+    contract_sha256: str
+    approval_sha256: str
+    edges: tuple
+    joins: tuple
+
+
+def _seal(contract, result, *, provider=None, deadline_failure=False):
+    events = json.dumps([[e.path_time.isoformat(), e.kind, e.leg_id, e.detail] for e in result.events],
+                        separators=(',', ':')).encode()
+    placed = () if provider is None else tuple(sorted(
+        (occurrence, leg, instant.isoformat()) for occurrence, leg, instant in provider._placed
+        if instant.minute % 15 or instant.second or instant.microsecond))
+    rows = tuple(SourceOnlySession(row.source_session_id, row.occurrence, float(row.pnl), float(row.intraday_low),
+                                   row.fills, row.flat_before_deadline, row.start_edge.is_flat, row.end_edge.is_flat)
+                 for row in result.sessions)
+    return SourceOnlyReplay(contract.evidence_class, contract.contract_sha256, contract.approval.approval_sha256,
+                            rows, hashlib.sha256(events).hexdigest(), placed, deadline_failure)
 
 
 _SOURCE_TOKEN = object()
@@ -728,13 +1028,18 @@ class ProductionSource:
     _instruments: tuple
     _token: object
     _domain: object
+    evidence_class: str
 
     def __new__(cls, *args, **kwargs):
         raise ProductionSourceNeedsContext()
 
     @classmethod
     def build(cls, contract, *, artifact_root):
-        from c1_signal_daemon.book_adapters import _qualification_domain
+        from c1_signal_daemon.book_adapters import _qualification_domain, _source_domain
+        if _is_source_only(contract):
+            from .contract import require_validated_source_contract
+            require_validated_source_contract(contract, now=_now())
+            return cls._build_domain(contract, artifact_root=artifact_root, domain=_source_domain(contract))
         domain = _qualification_domain(contract)
         if domain.authority_class != 'OPERATOR' or domain.permits_synthetic:
             raise ValueError('exact production OPERATOR contract required')
@@ -756,13 +1061,13 @@ class ProductionSource:
     @classmethod
     def _build_from_prepared(cls, contract, prepared, *, domain):
         """Internal reuse of the exact retained snapshot checked by admission."""
-        from c1_signal_daemon.book_adapters import _qualification_domain
+        from c1_signal_daemon.book_adapters import _resolve_domain
         from c1_signal_daemon.book_adapters import _load_domain_adapters
         from .panel import build_panel, CoverageReport, Exclusion
         from .replay import Instrument
         if (type(prepared) is not PreparedProductionInputs
                 or prepared.contract_sha256 != contract.contract_sha256
-                or _qualification_domain(contract) is not domain):
+                or _resolve_domain(contract) is not domain):
             raise ValueError('prepared source contract/domain mismatch')
         retained = dict(prepared.retained_bytes)
         derived = _derive_retained_inputs(contract, retained=retained, domain=domain)
@@ -782,13 +1087,25 @@ class ProductionSource:
                                     'Concrete source capability and review bytes must be retained in the signed closed artifact inventory.')
                          for role in sorted(missing))
             raise ProductionSourceNeedsContext(gaps, prepared=prepared)
+        source_only = _is_source_only(contract)
+        review = (lambda raw, **kw: _review_source(raw, contract=contract, **kw)) if source_only else _review
         for role, scope in (('source_calendar', 'SOURCE_CALENDAR'), ('schedule_execution_evidence', 'SCHEDULE_EXECUTION')):
-            _review(snapshots[role+'_review'], role=role, digest=digests[role], scope=scope)
+            review(snapshots[role+'_review'], role=role, digest=digests[role], scope=scope)
         startup = parse_startup_policy(snapshots['source_startup_policy'])
+        if source_only:
+            if startup.path_start_date != contract.path_start_date:
+                raise ValueError('path_start_date differs between the signed contract and the startup policy')
+            validate_source_only_calendar(snapshots['source_calendar'], contract=contract,
+                                          truncated_slots=truncated_slot_ranges(snapshots['population_index']))
+            if 'calendar_producer' not in snapshots:
+                raise ValueError('CALENDAR_PRODUCER_INVALID: the calendar_producer bytes are not retained')
+            validate_calendar_producer(snapshots['calendar_producer'], calendar_raw=snapshots['source_calendar'])
+        else:
+            refuse_source_truncated_on_qualification(snapshots['source_calendar'], snapshots['population_index'])
         clock, tail = parse_source_calendar(snapshots['source_calendar'], artifact_digests=digests)
         population_index = parse_population_index(snapshots['population_index'], populations=contract.populations)
-        _review(snapshots['population_index_review'], role='population_index', digest=digests['population_index'], scope='SOURCE_POPULATION_INDEX',
-                source_binding_sha256=hashlib.sha256(population_index.source_binding_bytes).hexdigest())
+        review(snapshots['population_index_review'], role='population_index', digest=digests['population_index'], scope='SOURCE_POPULATION_INDEX',
+               source_binding_sha256=hashlib.sha256(population_index.source_binding_bytes).hexdigest())
         population_index.validate_calendar(clock)
         population_index.validate_provider_generation(prepared.panels, expected_binding={
             'panel_sha256':dict(prepared.historical_admission.panels), 'port_sha256':dict(prepared.historical_admission.ports),
@@ -837,7 +1154,8 @@ class ProductionSource:
                       path_start_date=startup.path_start_date, exclusions=exclusions, _quotes=quotes,
                       shared_provider_gaps=tuple((day,instant) for day,instant,state,_ in population_index.slot_provenance
                                                  if state=='PROVIDER_SHARED_ABSENCE'),
-                      _instruments=tuple(instruments), _token=_SOURCE_TOKEN, _domain=domain)
+                      _instruments=tuple(instruments), _token=_SOURCE_TOKEN, _domain=domain,
+                      evidence_class=contract.evidence_class if source_only else 'QUALIFICATION')
         for name, value in fields.items():
             object.__setattr__(result, name, value)
         identity = id(result)
@@ -845,29 +1163,86 @@ class ProductionSource:
                                     _source_execution_snapshot(result))
         return result
 
-    def verify_for(self, contract):
-        from c1_signal_daemon.book_adapters import _qualification_domain
+    def _verify_integrity(self):
+        """Issuance, snapshot, domain and retained bytes; authorizes nothing (spec §2.6)."""
+        from c1_signal_daemon.book_adapters import _resolve_domain
         issued = _SOURCE_ISSUED.get(id(self))
         if issued is None or issued[0]() is not self:
             raise ValueError('factory-issued source object required')
         if _source_execution_snapshot(self) != issued[1]:
             raise ValueError('issued source execution state changed')
-        if (type(self) is not ProductionSource or self._token is not _SOURCE_TOKEN or self.contract is not contract
-                or _qualification_domain(contract) is not self._domain
+        contract = self.contract
+        if (type(self) is not ProductionSource or self._token is not _SOURCE_TOKEN
+                or _resolve_domain(contract) is not self._domain
                 or self.prepared.contract_sha256 != contract.contract_sha256):
             raise ValueError('source factory identity does not bind the exact production G1 contract')
         _qualification_snapshots(contract, dict(self.prepared.retained_bytes))
+        if _is_source_only(contract):
+            from .contract import require_validated_source_contract
+            require_validated_source_contract(contract, now=_now())
+
+    def verify_for(self, contract):
+        """Integrity plus qualification authorization; source-only sources are refused."""
+        from .contract import ValidatedFrozenContract
+        self._verify_integrity()
+        if type(self.contract) is not ValidatedFrozenContract:
+            raise ValueError('SOURCE_ONLY_NOT_QUALIFICATION: a source-only source never serves qualification')
+        if self.contract is not contract:
+            raise ValueError('source factory identity does not bind the exact production G1 contract')
+
+    def _check_path(self, path):
+        self._verify_integrity()
+        by_id = {s.session_id: s for s in self.sessions}
+        if not path or any(by_id.get(s.source.session_id) != s.source for s in path):
+            raise ValueError('path contains a source session outside retained covered panel')
+
+    def _replay_raw(self, path):
+        self._check_path(path)
+        return self._engine(self._quotes).run(path)
 
     def replay(self, path):
+        if not _is_source_only(self.contract):
+            return self._replay_raw(path)
+        from .replay import ReplayDeadlineFailure
+        # Source-only: a confirmed deadline violation is sealed like replay_bracket's
+        # T=infinity run, so no raw ReplayResult escapes on .result (Codex P2 on #594).
+        try:
+            result, failed = self._replay_raw(path), False
+        except ReplayDeadlineFailure as exc:
+            result, failed = exc.result, True
+        return _seal(self.contract, result, deadline_failure=failed)
+
+    def replay_bracket(self, path):
+        """R1 and R2 on separate freshly loaded engines; each keeps its own result.
+
+        A confirmed deadline violation is that run's T=infinity result, as in
+        ``bracket.run_bracket``. No hybrid, default run or screen is formed.
+        """
+        from .model import BracketReplayResult
+        from .replay import ReplayDeadlineFailure
+        self._check_path(path)
+        bracket = ScheduleExecutionBracket(self._quotes)
+        results, sealed = [], []
+        for run_id in BRACKET_RUNS:
+            provider = bracket.for_run(run_id)
+            engine = self._engine(provider)
+            failed = False
+            try:
+                result = engine.run(path)
+            except ReplayDeadlineFailure as exc:
+                result, failed = exc.result, True
+            results.append(result)
+            if _is_source_only(self.contract):
+                sealed.append(_seal(self.contract, result, provider=provider, deadline_failure=failed))
+        return SourceOnlyBracket(*sealed) if sealed else BracketReplayResult(*results)
+
+    def _engine(self, schedule_quotes):
+        """One fresh engine: reloaded ports, brokers, ledger, cash and clock."""
         from c1_signal_daemon.book_adapters import _load_domain_adapters
         from c1_signal_daemon.tv_broker_emulator import TVBrokerEmulator
         from c1_rail.book_policy import candidate_book_protection_policy
         from mc.simulation import EvaluationState
         from .replay import BookReplay
-        self.verify_for(self.contract)
-        by_id = {s.session_id: s for s in self.sessions}
-        if not path or any(by_id.get(s.source.session_id) != s.source for s in path):
-            raise ValueError('path contains a source session outside retained covered panel')
         loaded = _load_domain_adapters(self.contract, retained_bytes=dict(self.prepared.retained_bytes), domain=self._domain)
         startup = self.prepared.startup
         if startup is None:
@@ -884,14 +1259,26 @@ class ProductionSource:
         state = self.contract.initial_state
         initial = EvaluationState(float(state.original_basis), float(state.current_equity), float(state.historical_eod_peak),
                                   state.prior_trade_days, float(state.prior_max_day_profit))
-        engine = BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy(),
-                            initial_state=initial, sizing_inputs=sizing, schedule_quotes=self._quotes, broker_factory=brokers)
-        return engine.run(path)
+        return BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy(),
+                          initial_state=initial, sizing_inputs=sizing, schedule_quotes=schedule_quotes, broker_factory=brokers)
 
     def proof(self, panel):
         from .paths import PathAssembler
+        from .replay import ReplayDeadlineFailure
         path = PathAssembler(self.path_start_date).assemble(tuple((s,) for s in panel), horizon_sessions=len(panel))
-        result = self.replay(path)
+        if not _is_source_only(self.contract):
+            result = self._replay_raw(path)
+        else:
+            # A source-only proof refuses a deadline violation without carrying the raw
+            # result: the refusal is raised outside the handler, so neither .result nor
+            # __context__ reaches the caller (Codex P2 on #594).
+            result = None
+            try:
+                result = self._replay_raw(path)
+            except ReplayDeadlineFailure:
+                pass
+            if result is None:
+                raise ValueError('SOURCE_ONLY_PROOF_DEADLINE_FAILURE: the continuous proof replay violated its own-flat deadline')
         rows = result.sessions
         if len(rows) != len(panel) or any(a.end_edge != b.start_edge for a, b in zip(rows, rows[1:])):
             raise ValueError('continuous proof replay has incomplete or discontinuous ledger edges')
@@ -901,4 +1288,7 @@ class ProductionSource:
         for left, right in zip(panel, panel[1:]):
             a, b = source_index[left.session_id], source_index[right.session_id]
             joins.append(self.adjacent[a] if b == a+1 else True)
+        if _is_source_only(self.contract):
+            return SourceOnlyProof(self.contract.evidence_class, self.contract.contract_sha256,
+                                   self.contract.approval.approval_sha256, edges, tuple(joins))
         return edges, tuple(joins)
