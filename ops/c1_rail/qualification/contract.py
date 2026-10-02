@@ -1019,6 +1019,8 @@ class ValidatedSourceContract:
     approval: ApprovalRecord
     approval_bytes: bytes
     trust_domain: object
+    # The pinned public-key SHA-256 the approval was verified under (Codex P2 on #594).
+    source_key_sha256: str
     evidence_class: str = SOURCE_EVIDENCE_CLASS
 
 
@@ -1039,8 +1041,12 @@ def _source_trust_document(pins: Mapping[str, SourceKeyPin]) -> dict:
             for key_id, pin in pins.items()}
 
 
-def _check_source_key_lifecycle(approval: ApprovalRecord, now: datetime) -> None:
-    """Re-check expiry, pin membership and revocation for every use (§2.3)."""
+def _check_source_key_lifecycle(approval: ApprovalRecord, now: datetime, key_sha256: str) -> None:
+    """Re-check expiry, pin membership, pin fingerprint and revocation for every use (§2.3).
+
+    ``key_sha256`` is the pinned fingerprint the approval was verified under. A
+    pin replaced under the same key ID is a changed key, never a still-trusted one.
+    """
     if now.tzinfo is None or now.utcoffset() is None:
         raise ContractValidationError("source approval check time must be timezone-aware")
     now_utc = now.astimezone(timezone.utc)
@@ -1049,6 +1055,9 @@ def _check_source_key_lifecycle(approval: ApprovalRecord, now: datetime) -> None
     pin = SOURCE_SIGNING_KEYS.get(approval.key_id)
     if pin is None:
         raise ContractValidationError("SOURCE_KEY_REMOVED: signing key is no longer pinned")
+    if pin.sha256 != key_sha256:
+        raise ContractValidationError("SOURCE_KEY_CHANGED: the pinned key fingerprint differs from the one "
+                                      "the approval was verified under")
     if pin.revoked_at is not None and pin.revoked_at.astimezone(timezone.utc) <= now_utc:
         raise ContractValidationError("SOURCE_KEY_REVOKED: signing key is revoked in the pinned root")
 
@@ -1182,7 +1191,8 @@ def validate_source_contract(
         allow_test_authority=False)
     if approval.key_id != signer or approval.authority_class != "OPERATOR":
         raise ContractValidationError("SOURCE_KEY_ID: approval signer differs")
-    _check_source_key_lifecycle(approval, now)
+    key_sha256 = hashlib.sha256(public_keys[signer]).hexdigest()
+    _check_source_key_lifecycle(approval, now, key_sha256)
 
     from .trust_domain import SourceTrustDomain
     domain = SourceTrustDomain(
@@ -1196,7 +1206,8 @@ def validate_source_contract(
         artifacts=tuple(artifacts), runtime_load_sha256=MappingProxyType(dict(by_role)),
         populations=MappingProxyType(normalized), initial_state=state,
         effective_settings_sha256=constants.effective_settings_sha256, path_start_date=path_start,
-        approval=approval, approval_bytes=bytes(approval_bytes), trust_domain=domain)
+        approval=approval, approval_bytes=bytes(approval_bytes), trust_domain=domain,
+        source_key_sha256=key_sha256)
     identity = id(result)
     _ISSUED_SOURCE_CONTRACTS[identity] = (
         weakref.ref(result, lambda ref: _ISSUED_SOURCE_CONTRACTS.pop(identity, None)),
@@ -1218,7 +1229,7 @@ def require_issued_source_contract(contract: Any) -> ValidatedSourceContract:
 def require_validated_source_contract(contract: Any, *, now: datetime) -> ValidatedSourceContract:
     """The exact unchanged issued receipt, re-checked for expiry and pin state."""
     require_issued_source_contract(contract)
-    _check_source_key_lifecycle(contract.approval, now)
+    _check_source_key_lifecycle(contract.approval, now, contract.source_key_sha256)
     return contract
 
 

@@ -377,6 +377,51 @@ def test_bootstrap_runs_no_site_pth_or_sitecustomize(env):  # A23
         name.startswith('numpy') for name in doc['loaded_closure']['third_party'])
 
 
+def _copied_venv(env):
+    """A venv whose bound site-packages is a private copy the test may plant into."""
+    import sysconfig
+    from c1_rail.qualification import p7_evidence
+    venv = env.tmp / 'venv'
+    base = getattr(sys, '_base_executable', sys.executable)
+    subprocess.run([base, '-m', 'venv', '--without-pip', str(venv)], check=True, capture_output=True)
+    python = venv / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
+    target = venv / p7_evidence.site_packages_relative()
+    shutil.rmtree(target, ignore_errors=True)
+    _copy_site_packages(Path(sysconfig.get_paths()['purelib']), target)
+    return python, target
+
+
+def test_timestamp_valid_planted_pyc_never_runs_in_place_of_hashed_source(env):  # Codex P1 on #594
+    import importlib._bootstrap_external as external
+    python, target = _copied_venv(env)
+    source = target / 'six.py'
+    marker = env.tmp / 'planted-bytecode-ran'
+    planted = source.read_text(encoding='utf-8') + f'\nopen({str(marker)!r}, "w").close()\n'
+    stat = source.stat()
+    cache = target / '__pycache__' / f'six.{sys.implementation.cache_tag}.pyc'
+    cache.parent.mkdir(exist_ok=True)
+    cache.write_bytes(external._code_to_timestamp_pyc(
+        compile(planted, str(source), 'exec'), int(stat.st_mtime), stat.st_size))
+    control = subprocess.run([str(python), '-I', '-B', '-c', 'import six'], capture_output=True, text=True,
+                             cwd=env.tmp)
+    assert control.returncode == 0, control.stderr
+    assert marker.exists(), 'the planted bytecode is timestamp-valid and live outside P7'
+    marker.unlink()
+    done, record = env.run(env.code_root(), python=python)
+    assert record is not None, done.stderr[-3000:]
+    assert not marker.exists(), 'P7 executed cached bytecode instead of the hashed source'
+    six = json.loads(record)['loaded_closure']['third_party']['six']
+    assert six == {'path': 'six.py', 'sha256': sha(source.read_bytes())}
+
+
+def test_third_party_reset_of_the_bytecode_prefix_is_refused(env):  # Codex P1 on #594
+    python, target = _copied_venv(env)
+    source = target / 'six.py'
+    source.write_text(source.read_text(encoding='utf-8') + '\nimport sys as _sys\n_sys.pycache_prefix = None\n',
+                      encoding='utf-8')
+    refusal('P7_UNBOUND_BYTECODE', *env.run(env.code_root(), python=python))
+
+
 # ---- Codex code review P2s --------------------------------------------------------
 
 LEG_ID_TEXT = LEG_IDS

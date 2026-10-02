@@ -107,6 +107,15 @@ def _p7_bootstrap():
 
     sys.addaudithook(audit)
     import os as _os
+    # -B stops cache writes, not cache reads: a timestamp-valid or unchecked
+    # __pycache__ .pyc beside a hashed .py would run instead of the hashed bytes.
+    # A fresh, never-created prefix makes every source module compile from the
+    # source the finder hashes (Codex P1 on #594).
+    state.pycache_prefix = _os.path.join(
+        _os.environ.get('TEMP') or _os.environ.get('TMPDIR') or '/tmp', 'p7-no-pycache-' + _os.urandom(16).hex())
+    if _os.path.exists(state.pycache_prefix):
+        raise SystemExit('P7_BOOTSTRAP_MISMATCH: bytecode cache prefix is not fresh')
+    sys.pycache_prefix = state.pycache_prefix
     import hashlib as _hashlib
     import subprocess as _subprocess
     import importlib.machinery as _machinery
@@ -224,6 +233,12 @@ def _p7_bootstrap():
                 raise refuse('P7_ORIGIN_OUTSIDE_ROOT', name + ' namespace outside allowed roots')
             real = _os.path.realpath(origin)
             if under(real, site):
+                # A sourceless .pyc/.pyd origin is hashed as the executed bytes; a
+                # source origin must not resolve to a cache outside the fresh prefix.
+                cached = getattr(spec, 'cached', None)
+                if cached and (sys.pycache_prefix != state.pycache_prefix
+                               or not under(_os.path.abspath(cached), state.pycache_prefix)):
+                    raise refuse('P7_UNBOUND_BYTECODE', name + ' would load cached bytecode ' + cached)
                 state.third_party[name] = {'path': _os.path.relpath(real, site).replace(_os.sep, '/'),
                                            'sha256': _hashlib.sha256(open(real, 'rb').read()).hexdigest()}
                 return spec
@@ -410,6 +425,8 @@ def finish_record(state, fields, out_path):
     for module, attr, stub in state.stubs:
         if getattr(module, attr, None) is not stub:
             raise P7Refusal(f'P7_FORBIDDEN_CALL: {module.__name__}.{attr} was rebound after stubbing')
+    if sys.pycache_prefix != state.pycache_prefix or os.path.exists(state.pycache_prefix):
+        raise P7Refusal('P7_UNBOUND_BYTECODE: the fresh bytecode cache prefix was changed or populated during the run')
     code_root = Path(state.code_root)
     for name, row in sorted(state.first_party.items()):
         if row['path'] is not None and sha256_bytes((code_root / row['path']).read_bytes()) != row['sha256']:

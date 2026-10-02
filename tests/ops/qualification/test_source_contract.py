@@ -58,7 +58,17 @@ def v2_review(role, artifact_sha256, *, binding_sha256=None, reviewer='test-revi
     return canonical_json_bytes(doc)
 
 
-def source_payloads(root: Path, *, transform=None):
+# A Ruling-2 deadline-fact record for the synthetic calendar: every synthetic OPEN
+# row carries the 16:45 ET regular deadline, so no venue-flat date is listed.
+SYNTHETIC_CALENDAR_PRODUCER = {
+    'schema': 't00-p7-calendar-deadline-facts/v1',
+    'label': 'RULED_MODEL_DEADLINES_NOT_OBSERVED_VENUE_HISTORY',
+    'deadline_rule': {'scope': 'TEST_ONLY all four legs', 'venue_flat_date_et': '12:59', 'regular_et': '16:45'},
+    'venue_flat_dates_in_interval': [],
+}
+
+
+def source_payloads(root: Path, *, transform=None, calendar_producer=None):
     """Synthetic source-only role payloads derived from the composition fixture."""
     from composition_fixture import build_artifacts, encoded
     fixture = build_artifacts(root / 'composition')
@@ -67,8 +77,9 @@ def source_payloads(root: Path, *, transform=None):
     for leg in LEG_IDS:
         payloads['panel_' + leg] = base[leg + '_panel']
     payloads['effective_settings_successor'] = base['effective_settings_successor']
-    payloads['calendar_producer'] = base['hours']
-    fact = {'role': 'calendar_producer', 'sha256': sha(base['hours'])}
+    payloads['calendar_producer'] = (canonical_json_bytes(SYNTHETIC_CALENDAR_PRODUCER)
+                                     if calendar_producer is None else calendar_producer)
+    fact = {'role': 'calendar_producer', 'sha256': sha(payloads['calendar_producer'])}
     calendar = json.loads(base['source_calendar'])
     for row in calendar['sessions']:
         row['facts'] = [fact]
@@ -145,8 +156,9 @@ def pin_source_constants(monkeypatch, payloads, fixture, key_fingerprints):
         {key_id: contract_module.SourceKeyPin(fp, revoked) for key_id, (fp, revoked) in key_fingerprints.items()}))
 
 
-def build_source_case(root: Path, monkeypatch, *, transform=None, producer='test-producer') -> SourceCase:
-    payloads, fixture = source_payloads(root, transform=transform)
+def build_source_case(root: Path, monkeypatch, *, transform=None, producer='test-producer',
+                      calendar_producer=None) -> SourceCase:
+    payloads, fixture = source_payloads(root, transform=transform, calendar_producer=calendar_producer)
     paths = {role: f'retained/{role}.bin' for role in payloads}
     for role, raw in payloads.items():
         path = root / paths[role]
@@ -332,6 +344,15 @@ def test_revoked_or_removed_pin_key_refused(case, monkeypatch):  # A6c
     refused('SOURCE_KEY_REVOKED', lambda: contract_module.require_validated_source_contract(receipt, now=NOW))
     monkeypatch.setattr(contract_module, 'SOURCE_SIGNING_KEYS', MappingProxyType({}))
     refused('SOURCE_KEY_REMOVED', lambda: contract_module.require_validated_source_contract(receipt, now=NOW))
+
+
+def test_replaced_pin_fingerprint_under_the_same_key_id_refuses_issued_receipt(case, monkeypatch):  # Codex P2 #594
+    receipt = case.validate()
+    assert receipt.source_key_sha256 == sha(case.public_keys[KEY_ID])
+    contract_module.require_validated_source_contract(receipt, now=NOW)
+    replaced = MappingProxyType({KEY_ID: contract_module.SourceKeyPin(sha(b'a different enrolled key'), None)})
+    monkeypatch.setattr(contract_module, 'SOURCE_SIGNING_KEYS', replaced)
+    refused('SOURCE_KEY_CHANGED', lambda: contract_module.require_validated_source_contract(receipt, now=NOW))
 
 
 # ---- A7, A7b: qualification validators refuse source keys and approvals ----------
@@ -634,3 +655,33 @@ def test_calendar_fact_must_bind_calendar_producer(case):  # A18
     digests = {row['role']: row['sha256'] for row in case.document['artifacts']}
     parse_source_calendar(raw, artifact_digests=digests)  # the generic _fact alone accepts it
     refused('CALENDAR_FACT_ROLE', lambda: validate_source_only_calendar(raw, contract=receipt, truncated_slots={}))
+
+
+@pytest.mark.parametrize('defect,producer_bytes', [
+    ('empty', b''),
+    ('malformed', b'{"schema": "t00-p7-calendar-deadline-facts/v1", '),
+    ('wrong_label', canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, label='OBSERVED_VENUE_HISTORY'))),
+    ('wrong_schema', canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, schema='t00-p7-calendar-deadline-facts/v0'))),
+    ('wrong_rule', canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, deadline_rule={
+        'venue_flat_date_et': '13:00', 'regular_et': '16:45'}))),
+    ('hours_text', b'Explicit synthetic calendar facts, never market evidence.'),
+])
+def test_build_refuses_a_calendar_producer_that_is_not_the_deadline_fact_record(
+        tmp_path, monkeypatch, defect, producer_bytes):  # Codex P2 on #594
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.production_source import ProductionSource
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    twin = build_source_case(tmp_path / 'twin', monkeypatch)
+    ProductionSource.build(twin.validate(), artifact_root=twin.root)
+    bad = build_source_case(tmp_path / 'bad', monkeypatch, calendar_producer=producer_bytes)
+    refused('CALENDAR_PRODUCER_INVALID', lambda: ProductionSource.build(bad.validate(), artifact_root=bad.root))
+
+
+def test_build_refuses_calendar_deadlines_the_producer_record_does_not_state(tmp_path, monkeypatch):  # Codex P2 #594
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.production_source import ProductionSource
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    first_open = json.loads(source_payloads(tmp_path / 'probe')[0]['source_calendar'])['sessions'][0]['date']
+    lying = canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, venue_flat_dates_in_interval=[first_open]))
+    bad = build_source_case(tmp_path / 'bad', monkeypatch, calendar_producer=lying)
+    refused('CALENDAR_PRODUCER_MISMATCH', lambda: ProductionSource.build(bad.validate(), artifact_root=bad.root))

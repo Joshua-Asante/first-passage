@@ -767,6 +767,56 @@ def validate_source_only_calendar(raw, *, contract, truncated_slots):
                 raise ValueError('SOURCE_TRUNCATION_REASON: the reason must name the truncated slots')
 
 
+CALENDAR_PRODUCER_SCHEMA = 't00-p7-calendar-deadline-facts/v1'
+CALENDAR_PRODUCER_LABEL = 'RULED_MODEL_DEADLINES_NOT_OBSERVED_VENUE_HISTORY'
+# Operator Ruling 2 (2026-09-30): one account-level deadline for all four legs.
+RULED_DEADLINES_ET = {'venue_flat_date_et': time(12, 59), 'regular_et': time(16, 45)}
+
+
+def validate_calendar_producer(producer_raw, *, calendar_raw):
+    """The retained deadline-fact record must carry every fact the calendar uses (Codex P2 on #594).
+
+    A calendar fact binds the ``calendar_producer`` digest; this checks that those
+    bytes are the Ruling-2 record and that each OPEN row's four leg deadlines and
+    each ``source_truncated`` row are the ones that record states.
+    """
+    try:
+        doc = _json(producer_raw)
+    except (TypeError, ValueError, UnicodeDecodeError) as exc:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: the calendar_producer bytes are not a JSON record') from exc
+    if type(doc) is not dict or doc.get('schema') != CALENDAR_PRODUCER_SCHEMA:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: calendar_producer is not a ' + CALENDAR_PRODUCER_SCHEMA + ' record')
+    if doc.get('label') != CALENDAR_PRODUCER_LABEL:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: calendar_producer does not carry the ruled-model label')
+    rule = doc.get('deadline_rule')
+    if type(rule) is not dict or any(rule.get(key) != value.strftime('%H:%M') for key, value in RULED_DEADLINES_ET.items()):
+        raise ValueError('CALENDAR_PRODUCER_INVALID: deadline_rule differs from the Ruling-2 deadlines')
+    flat_values = doc.get('venue_flat_dates_in_interval')
+    if type(flat_values) is not list or any(type(value) is not str for value in flat_values):
+        raise ValueError('CALENDAR_PRODUCER_INVALID: venue_flat_dates_in_interval must be a list of ISO dates')
+    try:
+        flat = {date.fromisoformat(value) for value in flat_values}
+    except ValueError as exc:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: venue_flat_dates_in_interval must be a list of ISO dates') from exc
+    if len(flat) != len(flat_values) or sorted(d.isoformat() for d in flat) != flat_values:
+        raise ValueError('CALENDAR_PRODUCER_INVALID: venue_flat_dates_in_interval must be sorted and unique')
+    tail = doc.get('tail_disposition')
+    calendar = _json(calendar_raw)
+    for row in calendar.get('sessions') or ():
+        day = date.fromisoformat(row['date'])
+        if row.get('status') == 'OPEN':
+            wanted = datetime.combine(day, RULED_DEADLINES_ET['venue_flat_date_et' if day in flat else 'regular_et'], ET)
+            deadlines = row.get('venue_deadlines') or {}
+            if set(deadlines) != set(LEG_IDS) or any(
+                    type(item) is not dict or type(item.get('instant')) is not str
+                    or _instant(item['instant']) != wanted for item in deadlines.values()):
+                raise ValueError(f'CALENDAR_PRODUCER_MISMATCH: {day.isoformat()} deadlines differ from the deadline facts')
+        elif row.get('status') == SourceDayStatus.SOURCE_TRUNCATED.value:
+            if (type(tail) is not dict or tail.get('date') != row['date']
+                    or tail.get('status') != SourceDayStatus.SOURCE_TRUNCATED.value):
+                raise ValueError(f'CALENDAR_PRODUCER_MISMATCH: {day.isoformat()} truncation is not the recorded tail disposition')
+
+
 def _review_source(raw, *, role, digest, scope, contract, source_binding_sha256=None):
     """Reviewer-authored v2 companion (spec §2.6b); a producer never reviews itself."""
     doc = _json(raw)
@@ -1030,6 +1080,9 @@ class ProductionSource:
                 raise ValueError('path_start_date differs between the signed contract and the startup policy')
             validate_source_only_calendar(snapshots['source_calendar'], contract=contract,
                                           truncated_slots=truncated_slot_ranges(snapshots['population_index']))
+            if 'calendar_producer' not in snapshots:
+                raise ValueError('CALENDAR_PRODUCER_INVALID: the calendar_producer bytes are not retained')
+            validate_calendar_producer(snapshots['calendar_producer'], calendar_raw=snapshots['source_calendar'])
         clock, tail = parse_source_calendar(snapshots['source_calendar'], artifact_digests=digests)
         population_index = parse_population_index(snapshots['population_index'], populations=contract.populations)
         review(snapshots['population_index_review'], role='population_index', digest=digests['population_index'], scope='SOURCE_POPULATION_INDEX',
