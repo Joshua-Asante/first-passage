@@ -767,6 +767,17 @@ def validate_source_only_calendar(raw, *, contract, truncated_slots):
                 raise ValueError('SOURCE_TRUNCATION_REASON: the reason must name the truncated slots')
 
 
+def refuse_source_truncated_on_qualification(calendar_raw, index_raw):
+    """``source_truncated`` is a source-only disposition (spec §2.6a). Its endpoint and
+    reason checks run only for source-only contracts, so a qualification contract may
+    not use it until T05 defines equivalent validation (Codex P1 on #594)."""
+    truncated = SourceDayStatus.SOURCE_TRUNCATED.value
+    calendar, index = _json(calendar_raw), _json(index_raw)
+    if any(type(row) is dict and row.get('status') == truncated for row in calendar.get('sessions') or ()) or any(
+            type(row) is dict and row.get('reason') == truncated for row in index.get('expected_exclusions') or ()):
+        raise ValueError('SOURCE_TRUNCATED_QUALIFICATION_REFUSED: source_truncated is a source-only disposition')
+
+
 CALENDAR_PRODUCER_SCHEMA = 't00-p7-calendar-deadline-facts/v1'
 CALENDAR_PRODUCER_LABEL = 'RULED_MODEL_DEADLINES_NOT_OBSERVED_VENUE_HISTORY'
 # Operator Ruling 2 (2026-09-30): one account-level deadline for all four legs.
@@ -838,6 +849,10 @@ def _review_source(raw, *, role, digest, scope, contract, source_binding_sha256=
     producers = {row.role: row.producer for row in contract.artifacts}
     if doc['reviewer'] == producers.get(role):
         raise ValueError('REVIEW_NOT_INDEPENDENT: the reviewer produced the reviewed artifact')
+    # The claim is bound to the signed producer of the companion itself, so a
+    # producer cannot self-certify under another name (Codex P1 on #594).
+    if doc['reviewer'] != producers.get(role + '_review'):
+        raise ValueError('REVIEW_NOT_INDEPENDENT: the claimed reviewer is not the signed producer of the review companion')
 
 
 def _review(raw, *, role, digest, scope, source_binding_sha256=None):
@@ -1083,6 +1098,8 @@ class ProductionSource:
             if 'calendar_producer' not in snapshots:
                 raise ValueError('CALENDAR_PRODUCER_INVALID: the calendar_producer bytes are not retained')
             validate_calendar_producer(snapshots['calendar_producer'], calendar_raw=snapshots['source_calendar'])
+        else:
+            refuse_source_truncated_on_qualification(snapshots['source_calendar'], snapshots['population_index'])
         clock, tail = parse_source_calendar(snapshots['source_calendar'], artifact_digests=digests)
         population_index = parse_population_index(snapshots['population_index'], populations=contract.populations)
         review(snapshots['population_index_review'], role='population_index', digest=digests['population_index'], scope='SOURCE_POPULATION_INDEX',

@@ -157,7 +157,7 @@ def pin_source_constants(monkeypatch, payloads, fixture, key_fingerprints):
 
 
 def build_source_case(root: Path, monkeypatch, *, transform=None, producer='test-producer',
-                      calendar_producer=None) -> SourceCase:
+                      calendar_producer=None, review_producer='test-reviewer') -> SourceCase:
     payloads, fixture = source_payloads(root, transform=transform, calendar_producer=calendar_producer)
     paths = {role: f'retained/{role}.bin' for role in payloads}
     for role, raw in payloads.items():
@@ -171,7 +171,8 @@ def build_source_case(root: Path, monkeypatch, *, transform=None, producer='test
     document = {
         'schema': 't00_source_contract/v1', 'contract_id': 'TEST_ONLY-source-contract',
         'purpose': 'T00_P7_SOURCE_VERIFICATION',
-        'artifacts': [{'role': role, 'path': paths[role], 'sha256': sha(payloads[role]), 'producer': producer,
+        'artifacts': [{'role': role, 'path': paths[role], 'sha256': sha(payloads[role]),
+                       'producer': review_producer if role.endswith('_review') else producer,
                        'authority_class': 'PRODUCTION_REVIEWED'} for role in sorted(payloads)],
         'historical_pins': {role: sha(payloads[role]) for role in ACCEPTED_HISTORICAL_PINS},
         'port_runtime_pins': {leg: {'runtime_sha256': sha(payloads[PORT_ROLES[leg]]),
@@ -628,6 +629,48 @@ def test_review_companion_v2_reviewer_authored(tmp_path, monkeypatch, defect):  
         row['sha256'] = sha(bad.payloads[row['role']])
     code = 'REVIEW_NOT_INDEPENDENT' if defect == 'self_review' else 'review companion'
     refused(code, lambda: ProductionSource.build(bad.validate(), artifact_root=bad.root))
+
+
+def test_qualification_path_refuses_source_truncated(tmp_path, monkeypatch):  # Codex P1 on #594
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.production_source import refuse_source_truncated_on_qualification
+    from composition_fixture import build_artifacts, build_verified_composition
+    base = build_artifacts(tmp_path / 'plain').payloads
+    refuse_source_truncated_on_qualification(base['source_calendar'], base['population_index'])
+    calendar, index = json.loads(base['source_calendar']), json.loads(base['population_index'])
+    last = calendar['sessions'][-1]
+    calendar['sessions'][-1] = dict(last, status='source_truncated', reason='panel truncated: slots 18:00-20:00 ET',
+                                    venue_deadlines={})
+    refused('SOURCE_TRUNCATED_QUALIFICATION_REFUSED', lambda: refuse_source_truncated_on_qualification(
+        canonical_json_bytes(calendar), base['population_index']))
+    index['expected_exclusions'] = [{'source_date': last['date'], 'reason': 'source_truncated', 'detail': 'x'}]
+    refused('SOURCE_TRUNCATED_QUALIFICATION_REFUSED', lambda: refuse_source_truncated_on_qualification(
+        base['source_calendar'], canonical_json_bytes(index)))
+    # Wiring: the qualification (frozen-contract) build runs the guard; the source-only build does not.
+    calls = []
+
+    def guard(calendar_raw, index_raw):
+        calls.append(len(calendar_raw))
+        raise ValueError('SOURCE_TRUNCATED_QUALIFICATION_REFUSED: guard reached')
+    monkeypatch.setattr(production_source, 'refuse_source_truncated_on_qualification', guard)
+    refused('SOURCE_TRUNCATED_QUALIFICATION_REFUSED', lambda: build_verified_composition(tmp_path / 'qualification'))
+    assert calls, 'the qualification build must run the source_truncated guard'
+    calls.clear()
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    case = build_source_case(tmp_path / 'source', monkeypatch)
+    production_source.ProductionSource.build(case.validate(), artifact_root=case.root)
+    assert not calls, 'the source-only build keeps its own truncation rules'
+
+
+def test_producer_cannot_self_certify_a_review_under_another_name(tmp_path, monkeypatch):  # Codex P1 on #594
+    """The companion claims reviewer "test-reviewer", but the signed contract says the
+    reviewed artifact's own producer produced the companion: self-certification."""
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.production_source import ProductionSource
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    bad = build_source_case(tmp_path / 'bad', monkeypatch, review_producer='test-producer')
+    assert json.loads(bad.payloads['source_calendar_review'])['reviewer'] == 'test-reviewer'
+    refused('REVIEW_NOT_INDEPENDENT', lambda: ProductionSource.build(bad.validate(), artifact_root=bad.root))
 
 
 @pytest.mark.parametrize('value', ['2030-01-08', '2030-01-05'])

@@ -366,8 +366,42 @@ def run_p7(*, code_root, contract_path, approval_path, registry_path, artifact_r
     return subprocess.run(command, capture_output=True, text=True, cwd=workdir, timeout=timeout)
 
 
+def parse_record(record_bytes):
+    """A P7 record as presented: duplicate keys and non-finite numbers refused, and the
+    bytes must be their own canonical serialization (Codex P1 on #594)."""
+    def unique(pairs):
+        keys = [key for key, _ in pairs]
+        if len(keys) != len(set(keys)):
+            raise P7Refusal('P7_RECORD_NOT_CANONICAL: duplicate key in the record')
+        return dict(pairs)
+
+    def reject_constant(value):
+        raise P7Refusal(f'P7_RECORD_NOT_CANONICAL: non-finite number {value}')
+    if type(record_bytes) is not bytes:
+        raise P7Refusal('P7_RECORD_NOT_CANONICAL: record bytes required')
+    try:
+        doc = json.loads(record_bytes.decode('utf-8'), object_pairs_hook=unique, parse_constant=reject_constant)
+    except (UnicodeDecodeError, ValueError) as exc:
+        if isinstance(exc, P7Refusal):
+            raise
+        raise P7Refusal('P7_RECORD_NOT_CANONICAL: the record is not UTF-8 JSON') from exc
+    if type(doc) is not dict or canonical(doc) != record_bytes:
+        raise P7Refusal('P7_RECORD_NOT_CANONICAL: the presented bytes are not the canonical serialization')
+    return doc
+
+
+def _strict_b64(value, label):
+    try:
+        raw = base64.b64decode(value, validate=True) if type(value) is str else None
+    except ValueError:
+        raw = None
+    if raw is None or base64.b64encode(raw).decode('ascii') != value:
+        raise P7Refusal(f'P7_RECORD_NOT_CANONICAL: {label} is not canonical base64')
+    return raw
+
+
 def comparable(record_bytes):
-    doc = json.loads(record_bytes)
+    doc = parse_record(record_bytes)
     for field in VOLATILE_FIELDS:
         doc.pop(field, None)
     return canonical(doc)
@@ -401,7 +435,7 @@ class AcceptedP7Record:
 
 def _current_bytes_check(doc, *, code_root, artifact_root):
     """§2.5b(3): re-hash every contract artifact and closure file before any launch."""
-    contract = json.loads(base64.b64decode(doc['contract_b64']))
+    contract = json.loads(_strict_b64(doc['contract_b64'], 'contract_b64'))
     root = Path(artifact_root).resolve()
     for row in contract['artifacts']:
         path = (root / row['path']).resolve()
@@ -433,14 +467,14 @@ def _current_bytes_check(doc, *, code_root, artifact_root):
 def accept_p7_record(record_bytes, *, code_root, artifact_root, now, public_keys, python=None):
     """Standalone acceptance: current bytes, re-validation, re-execution, byte comparison."""
     from .contract import ObservedBindings, validate_source_contract
-    doc = json.loads(record_bytes)
+    doc = parse_record(record_bytes)
     if doc.get('schema') != RECORD_SCHEMA:
         raise P7Refusal('P7_RECORD_NOT_REPRODUCED: unsupported record schema')
     if python is not None and Path(python).resolve() != Path(sys.executable).resolve():
         raise P7Refusal('P7_INTERPRETER_MISMATCH: acceptance runs only under the acceptor interpreter itself')
     contract = _current_bytes_check(doc, code_root=code_root, artifact_root=artifact_root)
-    contract_bytes = base64.b64decode(doc['contract_b64'])
-    approval_bytes = base64.b64decode(doc['approval_b64'])
+    contract_bytes = _strict_b64(doc['contract_b64'], 'contract_b64')
+    approval_bytes = _strict_b64(doc['approval_b64'], 'approval_b64')
     observed = ObservedBindings({row['path']: row['sha256'] for row in contract['artifacts']},
                                 {row['role']: row['sha256'] for row in contract['artifacts']},
                                 contract['effective_settings']['settings_sha256'],
@@ -459,6 +493,8 @@ def accept_p7_record(record_bytes, *, code_root, artifact_root, now, public_keys
                       path_spec_path=tmp / 'path.json', out_path=out, python=python)
         if not out.exists():
             raise P7Refusal('P7_RECORD_NOT_REPRODUCED: re-execution produced no record: ' + done.stderr[-2000:])
+        if done.returncode != 0:  # Codex P2 on #594: a written record from a failed child is not a run
+            raise P7Refusal(f'P7_RECORD_NOT_REPRODUCED: re-execution exited {done.returncode}: ' + done.stderr[-2000:])
         if comparable(out.read_bytes()) != comparable(record_bytes):
             raise P7Refusal('P7_RECORD_NOT_REPRODUCED: the presented record differs from a real run')
     return AcceptedP7Record(doc['code_closure_sha256'], doc['contract_sha256'], doc['approval_sha256'],

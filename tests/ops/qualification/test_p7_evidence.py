@@ -234,6 +234,42 @@ def test_empty_tracked_file_does_not_refuse_empty_third_party_modules(env):  # #
     assert any(row['sha256'] == sha(b'') for row in third.values() if row['sha256']), 'an empty module was loaded'
 
 
+def test_accept_requires_the_presented_bytes_to_be_canonical(env):  # Codex P1 on #594
+    from c1_rail.qualification import p7_evidence
+    root = env.code_root()
+    done, record = env.run(root)
+    assert record is not None, done.stderr[-3000:]
+    assert p7_evidence.parse_record(record) == json.loads(record)
+    doc = json.loads(record)
+    reordered = json.dumps(dict(reversed(list(doc.items()))), separators=(',', ':'), ensure_ascii=False).encode()
+    spaced = json.dumps(doc, sort_keys=True, indent=1, ensure_ascii=False).encode()
+    duplicate = record[:-1] + b',"schema":' + json.dumps(doc['schema']).encode() + b'}'
+    loose = dict(doc, contract_b64=doc['contract_b64'][:8] + '\n' + doc['contract_b64'][8:])
+    for presented in (reordered, spaced, duplicate):
+        assert presented != record and json.loads(presented)['schema'] == doc['schema']
+        with pytest.raises(p7_evidence.P7Refusal, match='P7_RECORD_NOT_CANONICAL'):
+            env.accept(presented, root)
+    with pytest.raises(p7_evidence.P7Refusal, match='P7_RECORD_NOT_CANONICAL: contract_b64'):
+        env.accept(p7_evidence.canonical(loose), root)
+
+
+def test_accept_refuses_a_failed_reconstruction_child_even_with_matching_output(env, monkeypatch):  # Codex P2 #594
+    import subprocess as _subprocess
+    from c1_rail.qualification import p7_evidence
+    root = env.code_root()
+    done, record = env.run(root)
+    assert record is not None, done.stderr[-3000:]
+    real = p7_evidence.run_p7
+
+    def failing_after_write(**kwargs):
+        completed = real(**kwargs)
+        assert completed.returncode == 0 and Path(kwargs['out_path']).exists()
+        return _subprocess.CompletedProcess(completed.args, 1, completed.stdout, completed.stderr)
+    monkeypatch.setattr(p7_evidence, 'run_p7', failing_after_write)
+    with pytest.raises(p7_evidence.P7Refusal, match='re-execution exited 1'):
+        env.accept(record, root)
+
+
 def test_forbidden_matching_is_exact_or_package_prefix(env):  # rev 4.3 (a)
     from c1_rail.qualification import p7_evidence
     forbidden = p7_evidence.forbidden_module
