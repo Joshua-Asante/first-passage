@@ -83,3 +83,14 @@ def test_guard_advice_iterates_a_failed_s5_run_on_the_s5_selection():
            "workflowName": "Qualification S2 supervision", "createdAt": "2026-09-23T00:00:00Z"}
     reason = guard.dispatch_redundancy_refusal("a" * 40, [run], mode="s5")
     assert "-f mode=s5 -f cases=" in reason and "-f mode=s3 -f cases=" not in reason
+
+
+def test_guard_advice_reads_a_passed_r1_run_with_its_scope_and_selection():
+    """R1 (card 2026-10-02 §3): a passed r1 run is read with its own scope and
+    the frozen dispatch selection, never the default S4 read."""
+    run = {"databaseId": 23, "headSha": "a" * 40, "status": "completed", "conclusion": "success",
+           "event": "workflow_dispatch", "displayTitle": "Qualification S2 supervision [r1] (feat)",
+           "workflowName": "Qualification S2 supervision", "createdAt": "2026-09-23T00:00:00Z"}
+    reason = guard.dispatch_redundancy_refusal("a" * 40, [run], mode="r1")
+    assert ("scripts/s2_run_evidence.py 23 --expect-scope T05_R1_COMBINED "
+            "--expect-selection <frozen-selection.json>)") in reason
