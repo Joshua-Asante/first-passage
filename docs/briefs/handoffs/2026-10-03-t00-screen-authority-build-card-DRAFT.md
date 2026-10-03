@@ -266,6 +266,8 @@ Derived from design §3–§5. Items marked (K-4) are card proposals where the d
 | HEARTBEAT | `wall_s`, `job_cpu_s` |
 | SEGMENT_END | `class`, `cause`, `workers: [{worker, reason}]`, `wall_s`, `job_cpu_s`, `path_cpu_s`, `overhead_cpu_s`, `peak_memory_bytes` |
 | SEGMENT_CRASHED | `k`, `charge: Cost`, `losses: [Key]` |
+
+*Clarification 2026-10-03 (coordinator (3), from the T00 depth packet `90e2587`, consistent with design §5.4):* a crashed segment's `charge` is the last heartbeat's `job_cpu_s` plus one interval, **minus the `path_cpu_s` already recorded in that segment's PATH records**, booked to overhead. Path CPU is charged once, to the path budget, never twice. Without this, one late crash in a day-long segment would exhaust any reserve in the packet and HALT the run. P-F test `test_B5` covers it.
 | HALT; TERMINAL | `code`, `from`; `code` |
 | ACT | `act_sha256`, `act` (`TERMINATE` or `CONTINUE`) |
 | AGGREGATED; REPORTED; FINAL | `results_sha256`; `report_sha256`; `attestation_sha256` |
