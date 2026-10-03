@@ -1,8 +1,8 @@
 """T00 screen run state and journal: rows S1, S3, S9, S10, S13, S14, S16 and B1.
 
 Design 2026-10-02 §4 (persistence, the §4.2 transition table, the §4.3 stop classes) and
-build card §3.4-§3.6a (packet P-D): the O-6 ACT case table under ``test_S1``, the O-8 closure,
-O-11 gap and X3 act clauses of ``check_record``, and the coordinator freeze F1-F6. Synthetic
+build card §3.4-§3.6a at 3503f8a (packet P-D): the O-6 ACT case table under ``test_S1``, the
+O-8 closure, O-11 gap and X3 act clauses of ``check_record``, and the freeze F1-F6. Synthetic
 records only: no source, key, probe or Monte Carlo. Each test imports the modules under test
 in its own body, so each row fails on its own before they exist (card §2.2, F7).
 """
@@ -198,17 +198,17 @@ class Seg:
     w: int
     stop: int | None = None         # keys each worker completes before it stops; None: all
     end: object = 'COMPLETE'        # 'COMPLETE', 'CRASHED', 'OPEN' (not resumed) or (class, cause)
-    name_inflight: bool = False     # WORKER_STOP names the in-flight key (not a loss)
+    name_inflight: str | None = None  # WORKER_STOP reason naming the in-flight key (no loss)
     reasons: tuple | None = None    # SEGMENT_END workers[].reason
     witnesses: tuple | None = None  # SEGMENT_START witness_keys override
     rerun: bool = True              # worker i re-executes witness i first (F2)
+    cap: str | None = None          # the cap its SEGMENT_CRASHED records (F1)
 
 
 @dataclass(frozen=True)
-class Halt:
-    """HALT{code, from: IDLE} at resume, then (unless ``act`` is None) its signed act (F1)."""
-    code: str
-    act: str | None = 'CONTINUE'
+class Act:
+    """Joshua's signed act, appended at resume and bound to the ledger head (X3)."""
+    act: str = 'CONTINUE'
 
 
 def run_segment(k, seg, done, *, keys, outcome, inject, skip):
@@ -233,7 +233,7 @@ def run_segment(k, seg, done, *, keys, outcome, inject, skip):
             journal.add('WORKER_STOP', {'reason': 'DONE', 'key': None})
         elif seg.name_inflight:
             journal.add('KEY_START', {'key': list(todo[n])})
-            journal.add('WORKER_STOP', {'reason': seg.end[1], 'key': list(todo[n])})
+            journal.add('WORKER_STOP', {'reason': seg.name_inflight, 'key': list(todo[n])})
         else:
             journal.add('KEY_START', {'key': list(todo[n])})
             lost.append(list(todo[n]))
@@ -244,25 +244,26 @@ def run_segment(k, seg, done, *, keys, outcome, inject, skip):
 def simulate(steps, *, keys=PLAN, outcome=None, inject=None, skip=(), seed=0):
     """A driver stand-in: (ledger, journals, manifest, acts). Each segment re-partitions
     K - completed round-robin (F3), worker i first re-executes witness i (F2, row S13), and every
-    PATH follows its fsync'd KEY_START (row S10). A crashed segment's SEGMENT_CRASHED is written
-    at resume, before the next step."""
+    PATH follows its fsync'd KEY_START (row S10). A crashed segment's SEGMENT_CRASHED, with the
+    segment's ``cap`` (F1), is written at resume: before the next step, or at the end."""
     rng = random.Random(seed)
     outcome = outcome or (lambda key, k: path_body(key, cpu=rng.uniform(100, 200),
                                                    wall=rng.uniform(100, 300)))
     m = manifest()
     ledger, journals, acts = idle_ledger(m), {'c1-w0.jsonl': candidate_journal(m)}, {}
-    done, crashed, k = [], None, 0
+    done, crashed, k = [], [], 0
+
+    def resume():
+        for number, lost, cap in crashed:
+            ledger.add('SEGMENT_CRASHED', {'k': number, 'charge': cost(50.0, 60.0),
+                                           'losses': lost, 'cap': cap})
+        crashed.clear()
     for step in steps:
-        if crashed is not None:
-            ledger.add('SEGMENT_CRASHED', {'k': crashed[0], 'charge': cost(50.0, 60.0),
-                                           'losses': crashed[1]})
-            crashed = None
-        if isinstance(step, Halt):
-            ledger.add('HALT', {'code': step.code, 'from': 'IDLE'})
-            if step.act is not None:
-                act_sha, files = act_file(sha(canonical(ledger.records[-1])), step.act)
-                ledger.add('ACT', {'act_sha256': act_sha, 'act': step.act})
-                acts.update(files)
+        resume()
+        if isinstance(step, Act):
+            act_sha, files = act_file(sha(canonical(ledger.records[-1])), step.act)
+            ledger.add('ACT', {'act_sha256': act_sha, 'act': step.act})
+            acts.update(files)
             continue
         k += 1
         start, segment, lost = run_segment(k, step, done, keys=keys, outcome=outcome,
@@ -270,11 +271,30 @@ def simulate(steps, *, keys=PLAN, outcome=None, inject=None, skip=(), seed=0):
         ledger.add('SEGMENT_START', start)
         journals.update(segment)
         if step.end == 'CRASHED':
-            crashed = (k, lost)
+            crashed.append((k, lost, step.cap))
         elif step.end != 'OPEN':
             cls, cause = ('COMPLETE', 'COMPLETE') if step.end == 'COMPLETE' else step.end
             ledger.add('SEGMENT_END', segment_end(k, step.w, cls, cause, step.reasons))
+    resume()
     return ledger.records, journals, m, acts
+
+
+def verified_run(listed, ran):
+    """A finalized W = 2 run with ``verify`` 1 listing ``listed`` and its worker 0 re-running
+    ``ran``: (ledger, journals with c1-w0, s1-w0, s1-w1 and v1-w0, manifest, acts)."""
+    ledger, journals, m, acts = simulate([Seg(2)])
+    final = Chain(ledger)
+    for type_ in ('AGGREGATED', 'REPORTED', 'FINAL'):
+        final.add(type_, bodies()[type_])
+    keys = [list(key) for key in listed]
+    final.add('VERIFY_START', {'n': 1, 'keys': keys})
+    final.add('VERIFY', {'n': 1, 'keys': keys, 'match': True})
+    journal = Chain().add('EPOCH_OPEN', epoch_open())
+    for key in ran:
+        journal.add('KEY_START', {'key': list(key)}).add('PATH', path_body(key, cpu=9.0))
+    journal.add('EPOCH_CLOSE', epoch_close())
+    journal.add('WORKER_STOP', {'reason': 'DONE', 'key': None})
+    return final.records, {**journals, 'v1-w0.jsonl': journal.records}, m, acts
 
 
 def check(ledger, journals, m, acts=None, keys=PLAN):
@@ -346,7 +366,8 @@ def bodies():
         'PROBE_START': {}, 'PROBE': {'path_cpu_s': 1.0, 'path_wall_s': 1.0, 'peak_memory_bytes': 1},
         'SEGMENT_START': segment_start(1, 2), 'HEARTBEAT': {'wall_s': 60.0, 'job_cpu_s': 400.0},
         'SEGMENT_END': segment_end(1, 2, 'STOPPED', 'WORKER_LOST'),
-        'SEGMENT_CRASHED': {'k': 1, 'charge': cost(), 'losses': []}, 'ALL_DONE': {},
+        'SEGMENT_CRASHED': {'k': 1, 'charge': cost(), 'losses': [], 'cap': None},
+        'ALL_DONE': {},
         'TERMINAL': {'code': 'BUDGET_EXHAUSTED'}, 'AGGREGATED': {'results_sha256': hexd('results')},
         'REPORTED': {'report_sha256': hexd('report')},
         'FINAL': {'attestation_sha256': hexd('attestation')},
@@ -415,7 +436,7 @@ def test_S1(tmp_path):
     # Twin: the same event is allowed from IDLE.
     start = event('SEGMENT_START', segment_start(1, 2))
     assert state.advance(state.State('IDLE'), start) == state.State('RUNNING')
-    assert_design_table(state)
+    assert_design_table(state, journal)
     for (name, halted_from), act, expected in ACT_CASES:
         record = event('ACT', {'act_sha256': hexd('act'), 'act': act})
         if expected is None:
@@ -430,7 +451,7 @@ def test_S1(tmp_path):
                           event('TERMINAL', {'code': 'OPERATOR_TERMINATED'}))
 
 
-def assert_design_table(state):
+def assert_design_table(state, journal):
     """Every state x event of design §4.2 (HALTED here halted from IDLE)."""
     for name in STATES:
         current = state.State(name, 'IDLE' if name == 'HALTED' else None)
@@ -454,6 +475,14 @@ def assert_design_table(state):
                                  ('STOPPED', 'IO_ERROR', ('IDLE', None))):
         end = event('SEGMENT_END', segment_end(1, 1, cls, cause))
         assert state.advance(running, end) == state.State(*expected)
+    for cap in ('RESOURCE_EXHAUSTED', 'IO_EXHAUSTED'):  # F1: one record, HALTED from IDLE
+        crashed = event('SEGMENT_CRASHED', {'k': 1, 'charge': cost(), 'losses': [], 'cap': cap})
+        assert state.advance(running, crashed) == state.State('HALTED', 'IDLE')
+        with pytest.raises(state.IllegalTransition):
+            state.advance(state.State('IDLE'), crashed)
+    with pytest.raises(journal.JournalCorrupt):  # a cap outside row S10's two
+        state.advance(running, event('SEGMENT_CRASHED', {'k': 1, 'charge': cost(), 'losses': [],
+                                                         'cap': 'OVERHEAD_EXHAUSTED'}))
     refused = ((running, 'SEGMENT_END', segment_end(1, 1, 'STOPPED', 'BUDGET_EXHAUSTED')),  # §4.3
                (state.State('IDLE'), 'HALT', {'code': 'OVERHEAD_EXHAUSTED', 'from': 'BOUND'}),
                (state.State('IDLE'), 'HALT', {'code': 'CORRUPTION', 'from': 'IDLE'}),
@@ -573,17 +602,18 @@ def test_S10():
     result = check(*simulate([kill, interrupted, Seg(1, stop=0, end='OPEN')]))
     assert result.code is None and dict(result.losses) == {key: 2}
     # I/O branch: a third consecutive I/O-error segment with no new completed key HALTs.
-    io = Seg(1, stop=0, end=IO_ERROR, name_inflight=True)
+    io = Seg(1, stop=0, end=IO_ERROR, name_inflight='IO_ERROR')
     result = check(*simulate([io, io, io]))
     assert result.code == 'IO_EXHAUSTED' and not result.losses
     # Twin: a new completed key resets the run (two I/O segments, progress, one more).
-    progress = Seg(1, stop=1, end=IO_ERROR, name_inflight=True)
+    progress = Seg(1, stop=1, end=IO_ERROR, name_inflight='IO_ERROR')
     result = check(*simulate([io, io, progress, io]))
     assert result.code is None and result.completed == frozenset({key})
     # One worker's IO_ERROR counts when another worker's cause is the one recorded.
-    mixed = Seg(2, stop=0, end=WORKER_LOST, name_inflight=True, reasons=('IO_ERROR', 'WORKER_LOST'))
+    mixed = Seg(2, stop=0, end=WORKER_LOST, name_inflight='WORKER_LOST',
+                reasons=('IO_ERROR', 'WORKER_LOST'))
     assert check(*simulate([mixed, mixed, mixed])).code == 'IO_EXHAUSTED'
-    lost = Seg(2, stop=0, end=WORKER_LOST, name_inflight=True)
+    lost = Seg(2, stop=0, end=WORKER_LOST, name_inflight='WORKER_LOST')
     assert check(*simulate([lost, lost, lost])).code is None
 
 
@@ -738,34 +768,41 @@ def test_check_record_act_binding():
     assert check(ledger, journals, m, {}).code == 'CORRUPTION'  # no act file
 
 
-def test_check_record_cap_needs_halt_and_continue():
-    """F1: SEGMENT_CRASHED moves to IDLE; at a cap the next SEGMENT_START or ALL_DONE needs
-    HALT then CONTINUE first, and CONTINUE resets the cap that halted the run (§4.5)."""
+def test_check_record_crash_cap():
+    """F1: SEGMENT_CRASHED carries the cap its crash reaches, in one record: null goes to IDLE, a
+    cap to HALTED from IDLE. check_record recomputes it by row S10; CONTINUE resets it (§4.5)."""
     state, _ = modules()
-    kill, resumed, key = Seg(1, stop=0, end='CRASHED'), Seg(1, stop=0, end='OPEN'), PLAN[0]
-    ledger, journals, m, acts = simulate([kill, kill, kill, resumed])
-    assert state.fold(ledger) == state.State('RUNNING')  # §4.2 alone admits it
-    assert check(ledger, journals, m, acts).code == 'CORRUPTION'
-    # A CONTINUE answering another HALT leaves the loss cap in place.
-    other = simulate([kill, kill, kill, Halt('OVERHEAD_EXHAUSTED'), resumed])
-    assert check(*other).code == 'CORRUPTION'
-    # Halted and not continued: the cap is the finding.
-    assert check(*simulate([kill, kill, kill, Halt('RESOURCE_EXHAUSTED', act=None)])).code == \
-        'RESOURCE_EXHAUSTED'
-    # Twin: HALT{RESOURCE_EXHAUSTED, from IDLE} right after the crash, then CONTINUE.
-    ledger, journals, m, acts = simulate([kill, kill, kill, Halt('RESOURCE_EXHAUSTED'), resumed])
-    assert [r['type'] for r in ledger[-4:]] == ['SEGMENT_CRASHED', 'HALT', 'ACT', 'SEGMENT_START']
+    kill, opened, key = Seg(1, stop=0, end='CRASHED'), Seg(1, stop=0, end='OPEN'), PLAN[0]
+    third = Seg(1, stop=0, end='CRASHED', cap='RESOURCE_EXHAUSTED')
+    ledger, journals, m, acts = simulate([kill, kill, third])
+    caps = [r['body']['cap'] for r in ledger if r['type'] == 'SEGMENT_CRASHED']
+    assert caps == [None, None, 'RESOURCE_EXHAUSTED']
+    assert state.fold(ledger) == state.State('HALTED', 'IDLE')
+    result = check(ledger, journals, m, acts)
+    assert result.code == 'RESOURCE_EXHAUSTED' and dict(result.losses) == {key: 3}
+    assert check(*simulate([kill, kill, kill])).code == 'CORRUPTION'  # null at the cap
+    assert check(*simulate([kill, third])).code == 'CORRUPTION'  # a cap below it
+    ledger, journals, m, acts = simulate([kill, kill, third, Act(), opened])  # recovery
+    assert state.fold(ledger) == state.State('RUNNING')
     result = check(ledger, journals, m, acts)
     assert result.code is None and dict(result.losses) == {key: 1}
-    # ALL_DONE at the I/O cap: every key done, then three I/O segments re-running a witness.
-    finish, io = Seg(1, end=WORKER_LOST), Seg(1, stop=0, end=IO_ERROR, name_inflight=True)
-    ledger, journals, m, acts = simulate([finish, io, io, io])
-    done = Chain(ledger).add('ALL_DONE', {}).records
-    assert check(done, journals, m, acts).code == 'CORRUPTION'
-    for steps in ([finish, io, io], [finish, io, io, io, Halt('IO_EXHAUSTED')]):  # twins
+
+    # The I/O run: crashed segments whose worker stopped on IO_ERROR without a new key.
+    io_kill = Seg(1, stop=0, end='CRASHED', name_inflight='IO_ERROR')
+    io_third = Seg(1, stop=0, end='CRASHED', name_inflight='IO_ERROR', cap='IO_EXHAUSTED')
+    io_end = Seg(1, stop=0, end=IO_ERROR, name_inflight='IO_ERROR')
+    for steps in ([io_kill, io_kill, io_third], [io_end, io_end, io_third]):
         ledger, journals, m, acts = simulate(steps)
-        result = check(Chain(ledger).add('ALL_DONE', {}).records, journals, m, acts)
-        assert result.code is None and result.completed == frozenset(PLAN)
+        assert state.fold(ledger) == state.State('HALTED', 'IDLE')
+        result = check(ledger, journals, m, acts)
+        assert result.code == 'IO_EXHAUSTED' and not result.losses
+    other = Seg(1, stop=0, end='CRASHED', name_inflight='IO_ERROR', cap='RESOURCE_EXHAUSTED')
+    for broken in ([io_kill, io_kill, io_kill],   # null at the cap
+                   [io_kill, io_third],           # a cap below it
+                   [io_kill, io_kill, other]):    # the other cap
+        assert check(*simulate(broken)).code == 'CORRUPTION', broken
+    ledger, journals, m, acts = simulate([io_kill, io_kill, io_third, Act(), opened])
+    assert check(ledger, journals, m, acts).code is None  # recovery
 
 
 def test_check_record_witnesses():
@@ -801,18 +838,20 @@ def test_check_record_assignment():
 
 
 def test_check_record_journal_names():
-    """F6: a journal name is exactly f'{prefix}{n}-w{i}.jsonl', unpadded, so no two files share a
-    (number, worker) pair."""
+    """F6: a journal name is exactly f'{prefix}{n}-w{i}.jsonl', unpadded, and its identity is
+    (prefix, n, i): c1-w0, s1-w0 and v1-w0 are distinct; a duplicate identity is CORRUPTION."""
     state, journal = modules()
-    ledger, journals, m, acts = simulate([Seg(2)])
-    assert check(ledger, journals, m, acts).code is None
+    ledger, journals, m, acts = verified_run([PLAN[0]], [PLAN[0]])
+    assert {'c1-w0.jsonl', 's1-w0.jsonl', 'v1-w0.jsonl'} <= set(journals)
+    assert check(ledger, journals, m, acts).code is None  # twin: they coexist
     for bad in ('s1-w01.jsonl', 's01-w1.jsonl', 's0-w1.jsonl', 's1-w1.json', 'x1-w1.jsonl'):
         renamed = {**{n: r for n, r in journals.items() if n != 's1-w1.jsonl'},
                    bad: journals['s1-w1.jsonl']}
         assert check(ledger, renamed, m, acts).code == 'CORRUPTION', bad
-    duplicate = {**journals, 's1-w01.jsonl': journals['s1-w1.jsonl']}
+    duplicate = {**journals, 's1-w01.jsonl': journals['s1-w1.jsonl']}  # (s, 1, 1) twice
     assert state.check_record(ledger, duplicate, m, acts, keys=PLAN).code == 'CORRUPTION'
-    assert journal.journal_name('v12-w10.jsonl') == ('v', 12, 10)
+    assert [journal.journal_name(n) for n in ('c1-w0.jsonl', 's1-w0.jsonl', 'v12-w10.jsonl')] == [
+        ('c', 1, 0), ('s', 1, 0), ('v', 12, 10)]
     assert journal.journal_name('s1-w01.jsonl') is None
 
 
@@ -956,29 +995,11 @@ def test_check_record_structural_corruption(clause, broken, twin):
 def test_check_record_verify_journals():
     """``verify`` journals: each needs its VERIFY_START, runs only its listed keys, and lists
     only plan keys."""
-    ledger, journals, m, acts = simulate([Seg(2)])
-    final = Chain(ledger)
-    for type_ in ('AGGREGATED', 'REPORTED', 'FINAL'):
-        final.add(type_, bodies()[type_])
-
-    def verify_run(listed, ran):
-        keys = [list(key) for key in listed]
-        records = Chain(final.records).add('VERIFY_START', {'n': 1, 'keys': keys})
-        records.add('VERIFY', {'n': 1, 'keys': keys, 'match': True})
-        journal = Chain().add('EPOCH_OPEN', epoch_open())
-        for key in ran:
-            journal.add('KEY_START', {'key': list(key)}).add('PATH', path_body(key, cpu=9.0))
-        journal.add('EPOCH_CLOSE', epoch_close())
-        journal.add('WORKER_STOP', {'reason': 'DONE', 'key': None})
-        return records.records, {**journals, 'v1-w0.jsonl': journal.records}
-    ledger, verified = verify_run([PLAN[0]], [PLAN[0]])
-    assert check(ledger, verified, m, acts).code is None  # twin
-    ledger, verified = verify_run([PLAN[0]], [PLAN[0], PLAN[1]])
-    assert check(ledger, verified, m, acts).code == 'CORRUPTION'  # a key not listed
-    ledger, verified = verify_run([PLAN[0], OUTSIDE], [PLAN[0]])
-    assert check(ledger, verified, m, acts).code == 'CORRUPTION'  # a listed key outside the plan
-    ledger, verified = verify_run([PLAN[0]], [PLAN[0]])
-    unstarted = {**verified, 'v2-w0.jsonl': verified['v1-w0.jsonl']}
+    assert check(*verified_run([PLAN[0]], [PLAN[0]])).code is None  # twin
+    assert check(*verified_run([PLAN[0]], [PLAN[0], PLAN[1]])).code == 'CORRUPTION'  # not listed
+    assert check(*verified_run([PLAN[0], OUTSIDE], [PLAN[0]])).code == 'CORRUPTION'  # off-plan
+    ledger, journals, m, acts = verified_run([PLAN[0]], [PLAN[0]])
+    unstarted = {**journals, 'v2-w0.jsonl': journals['v1-w0.jsonl']}
     assert check(ledger, unstarted, m, acts).code == 'CORRUPTION'  # no VERIFY_START n=2
 
 
