@@ -213,6 +213,20 @@ gates:
       - python
       - scripts/check_state_currency.py
 
+  # Track B status register (pilot, derived mirror): schema, ids/aliases, blocked_by
+  # graph, owner anchors, and coverage -- every dated heading from covers_from on in a
+  # watched owner must be cited by a row. Content-only (no clock), so a lapsed expiry
+  # never turns the required status red; the regex names the register, its checker
+  # and every watched owner.
+  - id: track-b-register
+    tier: path-conditional
+    when:
+      staged_regex: '^(docs/governance/track_b_register[.]yml$|scripts/track_b_register[.]py$|docs/superpowers/plans/2026-09-18-full-e1-execution-slices[.]md$|docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist[.]md$|docs/notes/2026-09-26-tradeify-route-drill-plan-draft[.]md$|docs/notes/2026-09-29-x1-decision-packet[.]md$|docs/notes/2026-09-30-x4-decision-packet[.]md$|docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure[.]md$)'
+    cmd:
+      - python
+      - scripts/track_b_register.py
+      - check
+
   # Trigger must match check_supersession_placement.py's own in_scope() -- the
   # checker never scans docs/adr/ (see its SCOPE docstring), so a docs/adr/
   # trigger let this gate run on edits it could never find anything in, while
