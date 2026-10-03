@@ -272,6 +272,7 @@ The steps below are the current implementation baseline; the coordinator must re
 - [ ] Verify real notification delivery, failure/escalation, external heartbeat and durable acknowledgment.
 - [ ] Restore records without stale authority; reconcile unknown orders before fresh later-session permission.
 - [ ] Rehearse manual intervention and disarm; acknowledgment never equals permission to resume.
+- [ ] Preflight before any armed session: CrossTrade connection and authentication health checked (read only; no reauthorization or trading follows; a failure blocks arming). *Added 2026-10-03 after CrossTrade's 2026-09-25 authentication-outage notice; owner: [T13 card](../../briefs/handoffs/2026-10-02-t13-first-session-attended-procedure-DRAFT.md) P1.*
 **Verification:** Actual delivery/intervention traces; restart/backup, missed alert, stale evidence and ambiguous protection cases.
 **Checkpoint:** Freeze-affecting behavior must finish before F1 or have an explicit permitted binding rule.
 **Return boundary:** Accepted attended operating procedure and implementation; no live GO.
