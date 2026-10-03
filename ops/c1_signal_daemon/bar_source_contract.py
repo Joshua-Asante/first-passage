@@ -13,8 +13,10 @@ satisfies ``feed.BarSource`` and owns every rule below, so no adapter can weaken
 * aware timestamps only: naive and DST gap/fold wall times are refused; nothing in
   the America/New_York daily break or weekend, or outside the bound product session;
 * no empty, synthetic, revised, out-of-order or other-contract bar is forwarded
-  (§4.3, M7, R-MAP-2); conflicting finals for a pending slot withdraw it, so neither
-  value is forwarded; each refusal is counted and recorded in ``events``;
+  (§4.3, M7, R-MAP-2); each refusal is counted and recorded in ``events``;
+* a revision of a pending (not yet forwarded) bar withdraws the slot: neither value
+  is forwarded and the consumer halts on the absent slot; a revision of an already
+  forwarded bar latches ``REFUSED`` (operator ruling on A9-PREP Q1);
 * bars are forwarded only while connected; the source is unhealthy while
   disconnected or stale (``2 x bar_period + 30 s``) and reconnects with capped backoff;
 * a rejected credential (at authentication, renewal or mid-stream) or an expired
@@ -320,8 +322,11 @@ class ContractBarSource:  # pylint: disable=too-many-instance-attributes
         if known is not None:
             if known == bar:
                 return "duplicate"
-            if self._pending.pop(ts, None) is not None:
-                self._withdrawn.add(ts)  # conflicting finals: forward neither (absent is absent)
+            if ts in self._delivered:
+                self._refuse("revision_after_delivery", now)
+            else:  # conflicting pending finals: forward neither (absent is absent)
+                self._pending.pop(ts)
+                self._withdrawn.add(ts)
             return "revision"
         if self.last_bar_ts is not None and ts < self.last_bar_ts:
             return "out_of_order"

@@ -115,12 +115,19 @@ def test_bar_after_m5_deadline_not_forwarded():
     assert source.poll() is None and source.counts["late"] == 1
 
 
-def test_revision_of_delivered_bar_never_forwarded_and_counted():
+def test_revision_after_delivery_latches_refusal():
     clock = Clock(DONE)
     source, transport = make(clock)
-    transport.script["receive"] = [[delivered(T0)], [delivered(T0, close=100.5)]]
+    transport.script["receive"] = [[delivered(T0)],
+                                   [delivered(T0, close=100.5), delivered(T0 + timedelta(minutes=15))]]
     assert source.poll().close == 100.0
     assert source.poll() is None and source.counts["revision"] == 1
+    assert (source.state, source.refusal) == ("REFUSED", "revision_after_delivery")
+    for _ in range(3):
+        clock.advance(minutes=15)
+        transport.script["receive"] = [[delivered(clock.now - timedelta(minutes=15, seconds=5))]]
+        assert source.poll() is None and not source.healthy()
+    assert transport.calls.count("receive") == 2 and source.last_bar_ts == T0
 
 
 def test_out_of_order_bar_not_forwarded():
