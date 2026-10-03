@@ -45,6 +45,18 @@ S4_CASES = (S2_CASES[0], 'tests/integration/qualification_boundary/test_campaign
 # excludes the whole S5 file set (S5 includes the S4, S3 and S2 files).
 PART_A_CASE = 'tests/integration/qualification_boundary/test_campaign_part_a_linux.py'
 S5_CASES = (*S4_CASES[:-1], PART_A_CASE, S4_CASES[-1])
+# R1: the S5 file set plus the result/seal Linux file (H9) and the C' runtime
+# identity Linux file, both inserted immediately before the supervision file --
+# D1 places C' after result/seal and directly before supervision, so the
+# supervision file still stays LAST and its OOM case still runs last (the same
+# ordering constraint that already puts the service-metering file first). D5:
+# the C' entry is a placeholder -- the C' build writes that file, so a full --r1
+# refuses in seconds while any R1 file is absent or contributes no registered
+# node (see r1_refusal). --test-only excludes the whole R1 file set (R1 is a
+# strict superset of S5, which already includes the S4, S3 and S2 files).
+RESULT_SEAL_CASE = 'tests/integration/qualification_boundary/test_campaign_result_seal_linux.py'
+CPRIME_CASE = 'tests/integration/qualification_boundary/test_runtime_identity_linux.py'
+R1_CASES = (*S5_CASES[:-1], RESULT_SEAL_CASE, CPRIME_CASE, S5_CASES[-1])
 
 
 def require_cleanup(result):
@@ -83,7 +95,7 @@ def cases_refusal(args):
     """
     if args.cases is None:
         return None
-    if not (args.s3 or args.s4 or args.s5):
+    if not (args.s3 or args.s4 or args.s5 or args.r1):
         return '--cases is a diagnostic-subset selector for --s3/--s4/--s5 iteration only'
     if not args.cases.strip():
         return '--cases is empty or whitespace-only; omit it to run the full selection'
@@ -100,6 +112,34 @@ def cases_refusal(args):
     return None
 
 
+def r1_refusal(args):
+    """Why a full or subset `--r1` cannot run yet, or None; checked before any
+    host prerequisite, so the refusal costs seconds rather than a provisioned
+    host. R1 needs every file of R1_CASES present in the tree and every one of
+    them contributing at least one registered node to the invariant manifest:
+    the result/seal file lands with H9 and the C' file with the C' build, and
+    neither is on main yet. The message names every missing file and every
+    zero-row file, so the coordinator can see exactly what is still owed.
+    """
+    if not args.r1:
+        return None
+    try:
+        registered = _manifest(INVARIANT_MANIFEST.read_bytes())
+    except (OSError, ValueError, UnicodeError, RecursionError):
+        # The manifest gate below owns and reports this; nothing to add here.
+        return None
+    missing = [case for case in R1_CASES if not (ROOT / case).is_file()]
+    empty = [case for case in R1_CASES if case not in missing
+             and not any(node.startswith(case + '::') for node in registered)]
+    problems = [f'{case} is absent from the tree' for case in missing]
+    problems += [f'{case} contributes no registered node to the invariant manifest'
+                 for case in empty]
+    if not problems:
+        return None
+    return ('the R1 selection is not built yet (H9 brings the result/seal file, the '
+            "C' build the runtime identity one): " + '; '.join(problems))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -108,6 +148,7 @@ def main(argv=None):
     mode.add_argument('--s3', action='store_true', help='S2 supervision plus genuine N1 capture/G5, never full E1 acceptance')
     mode.add_argument('--s4', action='store_true', help='S3 plus the joint N2/Part B file on the joint dispatch/v6 installation, never full E1 acceptance')
     mode.add_argument('--s5', action='store_true', help='S4 plus the Part A Linux file, never full E1 acceptance')
+    mode.add_argument('--r1', action='store_true', help='S5 plus the result/seal and C′ Linux files (H9 checkpoint R1), never full E1 acceptance by itself')
     mode.add_argument('--host-only', action='store_true', help='host readiness, never boundary acceptance')
     parser.add_argument('--cases', help='diagnostic subset: a -k expression; the record is marked DIAGNOSTIC_SUBSET and can never be acceptance evidence')
     parser.add_argument('--manifest', type=Path)
@@ -115,6 +156,12 @@ def main(argv=None):
     parser.add_argument('--profile', type=Path)
     args = parser.parse_args(argv)
     refusal = cases_refusal(args)
+    if refusal is not None:
+        print(f'Failed prerequisite: {refusal}', file=sys.stderr)
+        return 2
+    # Before the Linux/root check: an incomplete R1 selection refuses here, so
+    # it can never cost a provisioned host (D5).
+    refusal = r1_refusal(args)
     if refusal is not None:
         print(f'Failed prerequisite: {refusal}', file=sys.stderr)
         return 2
@@ -139,25 +186,27 @@ def main(argv=None):
                     record.begin()
                     if record.data['before'] != manifest['source']:
                         raise ValueError('Candidate source differs from provisioned snapshot')
-                    if args.test_only or args.s2 or args.s3 or args.s4 or args.s5:
-                        selected_cases = S5_CASES if args.s5 else S4_CASES if args.s4 else S3_CASES if args.s3 else S2_CASES
+                    if args.test_only or args.s2 or args.s3 or args.s4 or args.s5 or args.r1:
+                        selected_cases = (R1_CASES if args.r1 else S5_CASES if args.s5 else
+                                          S4_CASES if args.s4 else S3_CASES if args.s3 else S2_CASES)
                         invariant_bytes = INVARIANT_MANIFEST.read_bytes()
                         all_required = _manifest(invariant_bytes)
-                        if args.s3 or args.s4 or args.s5:
+                        if args.s3 or args.s4 or args.s5 or args.r1:
                             required = {node for node in all_required
                                         if node.startswith(tuple(case+'::' for case in selected_cases))}
                         elif args.s2:
                             required = {node for node in all_required
                                         if node.startswith(tuple(case+'::' for case in S2_CASES))}
                         else:
-                            # N1_ONLY (--test-only): every registered node outside the S5
-                            # file set (S5_CASES includes the S4, S3 and S2 files). Those
+                            # N1_ONLY (--test-only): every registered node outside the R1
+                            # file set (R1_CASES includes the S5, S4, S3 and S2 files). Those
                             # nodes skip here by design, and the manifest validator refuses
                             # a required node that is skipped or never collected.
                             required = {node for node in all_required
-                                        if not node.startswith(tuple(case+'::' for case in S5_CASES))}
+                                        if not node.startswith(tuple(case+'::' for case in R1_CASES))}
                         record.data['metadata'].update(
-                            acceptance_scope=('S5_PART_A' if args.s5 else
+                            acceptance_scope=('T05_R1_COMBINED' if args.r1 else
+                                              'S5_PART_A' if args.s5 else
                                               'S4_JOINT_N2' if args.s4 else
                                               'S3_N1_CAPTURE' if args.s3 else
                                               'S2_DIAGNOSTIC_SUPERVISION' if args.s2 else
@@ -165,7 +214,7 @@ def main(argv=None):
                             qualification_acceptance='coordinator_review_required',
                             invariant_manifest_sha256=hashlib.sha256(invariant_bytes).hexdigest())
                         if args.cases is not None:
-                            if not (args.s3 or args.s4 or args.s5):
+                            if not (args.s3 or args.s4 or args.s5 or args.r1):
                                 raise ValueError('--cases is a diagnostic-subset selector for S3/S4/S5 iteration only')
                             record.data['metadata'].update(acceptance_scope='DIAGNOSTIC_SUBSET',
                                 diagnostic_expression=args.cases)
@@ -174,30 +223,35 @@ def main(argv=None):
                     report = output / 'junit.xml'
                     env = os.environ.copy()
                     env['FP_QUALIFICATION_HOST_MANIFEST'] = str(manifest_path)
-                    if args.s2 or args.s3 or args.s4 or args.s5: env['FP_QUALIFICATION_S2'] = '1'
+                    if args.s2 or args.s3 or args.s4 or args.s5 or args.r1: env['FP_QUALIFICATION_S2'] = '1'
                     else: env.pop('FP_QUALIFICATION_S2', None)
-                    if args.s3 or args.s4 or args.s5: env['FP_QUALIFICATION_S3'] = '1'
+                    if args.s3 or args.s4 or args.s5 or args.r1: env['FP_QUALIFICATION_S3'] = '1'
                     else: env.pop('FP_QUALIFICATION_S3', None)
                     # --s3 keeps the v5 installation: --s4 sets the joint v6 one, and
                     # --s5 sets it too (coordinator ruling E1: --s5 is --s4's
                     # environment plus FP_QUALIFICATION_S5, which selects the Part A
                     # /v7 installation); every other mode pops the S5 variable.
-                    if args.s4 or args.s5: env['FP_QUALIFICATION_S4'] = '1'
+                    if args.s4 or args.s5 or args.r1: env['FP_QUALIFICATION_S4'] = '1'
                     else: env.pop('FP_QUALIFICATION_S4', None)
-                    if args.s5: env['FP_QUALIFICATION_S5'] = '1'
+                    if args.s5 or args.r1: env['FP_QUALIFICATION_S5'] = '1'
                     else: env.pop('FP_QUALIFICATION_S5', None)
+                    # --r1 keeps --s5's whole environment (S2, S3, S4 and S5 set) and
+                    # adds FP_QUALIFICATION_R1, the seam H9's fixture reads (OWED);
+                    # every other mode pops it rather than trusting the caller.
+                    if args.r1: env['FP_QUALIFICATION_R1'] = '1'
+                    else: env.pop('FP_QUALIFICATION_R1', None)
                     selection=['tests/integration/qualification_host']
-                    if args.test_only or args.s2 or args.s3 or args.s4 or args.s5:
+                    if args.test_only or args.s2 or args.s3 or args.s4 or args.s5 or args.r1:
                         # Run boundary files in full so new lifecycle cases also run.
                         # Exact manifest cases remain mandatory even if renamed/deleted.
-                        selection = ([*selected_cases] if (args.s2 or args.s3 or args.s4 or args.s5) else
-                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in S5_CASES)] + sorted(
+                        selection = ([*selected_cases] if (args.s2 or args.s3 or args.s4 or args.s5 or args.r1) else
+                            ['tests/integration/qualification_boundary', *('--ignore='+case for case in R1_CASES)] + sorted(
                             node for node in required if not node.startswith('tests/integration/qualification_boundary/')))
                         if args.cases is not None:
                             selection = ['-k', args.cases, *selection]
                     command=[sys.executable, '-m', 'pytest', *selection, '-n', '0',
                              '-q', '--tb=short', f'--junitxml={report}']
-                    if args.test_only or args.s2 or args.s3 or args.s4 or args.s5:
+                    if args.test_only or args.s2 or args.s3 or args.s4 or args.s5 or args.r1:
                         collection = output / 'collected.json'
                         command += ['-p', 'scripts.pytest_qualification_collection',
                                     f'--qualification-collection={collection}']
@@ -205,7 +259,7 @@ def main(argv=None):
                     record.execute(command, env=env, reports=[report])
                     if args.cases is not None:
                         raise ValueError('diagnostic-subset runs can never be acceptance evidence')
-                    if args.test_only or args.s2 or args.s3 or args.s4 or args.s5:
+                    if args.test_only or args.s2 or args.s3 or args.s4 or args.s5 or args.r1:
                         record.data['invariants'] = require_invariants(invariant_bytes, collection, report, output, required_nodeids=required)
                     require_tests(record.data['test_summary'])
             finally:
