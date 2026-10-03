@@ -5,8 +5,10 @@ test body so each row test fails on its own before the module exists.
 """
 from __future__ import annotations
 
+import ast
 from dataclasses import replace
 from datetime import date, timedelta
+from pathlib import Path
 import hashlib
 import json
 from types import SimpleNamespace
@@ -96,12 +98,17 @@ def test_R1():
     assert len(set(w1.values())) == len(keys)
 
 
-def test_R1_seed_never_calls_domain_seed(monkeypatch):
+def test_R1_seed_independent_of_domain_seed():
     from c1_rail.qualification.t00_screen import plan
-
-    def refused(**_):
-        raise AssertionError('plan.seed must not use regime.domain_seed')
-    monkeypatch.setattr(regime, 'domain_seed', refused)
+    # Structural: plan.py neither imports regime nor names domain_seed; test_R1 pins the exact seed.
+    tree = ast.parse(Path(plan.__file__).read_bytes())
+    imported = {alias.name.rsplit('.', 1)[-1] for node in ast.walk(tree)
+                if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
+    imported |= {node.module.rsplit('.', 1)[-1] for node in ast.walk(tree)
+                 if isinstance(node, ast.ImportFrom) and node.module}
+    names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
+    names |= {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)}
+    assert not {'regime', 'domain_seed'} & (imported | names)
     assert type(plan.seed(purpose=PURPOSE, root='r', population='FULL', path_index=0)) is int
     for bad in ({'root': ''}, {'population': 'H3'}, {'path_index': -1}, {'path_index': True}, {'purpose': ''}):
         args = dict(purpose=PURPOSE, root='r', population='FULL', path_index=0) | bad
@@ -135,6 +142,33 @@ def test_R2():
     assert exc.value.code == 'CANDIDATES_UNAVAILABLE'
 
 
+def test_R2_malformed_manifest_is_corruption():
+    from c1_rail.qualification.t00_screen import plan
+    sessions = _pool(9)
+    good = plan.candidates(sessions, (True,) * 8, _brackets(sessions, lambda name, n: (True,) * (n + 1)),
+                           block_sessions=2)
+    full = good['FULL']
+    malformed = {
+        'populations_not_dict': list(good.items()),
+        'populations_missing': {k: v for k, v in good.items() if k != 'H2'},
+        'entry_not_dict': good | {'FULL': list(full.items())},
+        'indices_missing': good | {'FULL': {'candidates_sha256': full['candidates_sha256']}},
+        'indices_not_list': good | {'FULL': full | {'indices': tuple(full['indices'])}},
+        'indices_empty': good | {'FULL': full | {'indices': []}},
+        'index_text': good | {'FULL': full | {'indices': [0, 'a']}},
+        'index_unhashable': good | {'FULL': full | {'indices': [0, [1]]}},
+        'index_bool': good | {'FULL': full | {'indices': [False, 1]}},
+        'index_out_of_range': good | {'FULL': full | {'indices': [0, 8]}},
+        'indices_unsorted': good | {'FULL': full | {'indices': full['indices'][::-1]}},
+        'digest_missing': good | {'FULL': {'indices': full['indices']}},
+    }
+    for name, populations in malformed.items():
+        with pytest.raises(plan.PlanRefusal) as exc:
+            plan.rebuild_candidates(sessions, populations, block_sessions=2)
+        assert exc.value.code == 'CORRUPTION', name
+    assert plan.rebuild_candidates(sessions, good, block_sessions=2)['FULL'][0] == sessions[0:2]  # twin
+
+
 def test_R2_chronological_failures_are_unavailable():
     from c1_rail.qualification.t00_screen import plan
     sessions, adjacent = _pool(6), (True,) * 5
@@ -146,7 +180,10 @@ def test_R2_chronological_failures_are_unavailable():
     broken = flat | {'FULL': SimpleNamespace(**vars(flat['FULL']) | {'bracket': BracketReplayResult(
         flat['FULL'].bracket.r1, replace(flat['FULL'].bracket.r2, sessions=(
             rows[:2] + (replace(rows[2], start_edge=_edge(False)),) + rows[3:])))})}
-    for case in (deadline, short, broken):
+    late = flat | {'H1': SimpleNamespace(**vars(flat['H1']) | {'bracket': BracketReplayResult(
+        flat['H1'].bracket.r1, replace(flat['H1'].bracket.r2, sessions=flat['H1'].bracket.r2.sessions[:-1] + (
+            replace(flat['H1'].bracket.r2.sessions[-1], flat_before_deadline=False),)))})}
+    for case in (deadline, short, broken, late):
         with pytest.raises(plan.PlanRefusal) as exc:
             plan.candidates(sessions, adjacent, case, block_sessions=2)
         assert exc.value.code == 'CANDIDATES_UNAVAILABLE'
