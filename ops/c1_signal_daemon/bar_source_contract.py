@@ -15,8 +15,14 @@ satisfies ``feed.BarSource`` and owns every rule below, so no adapter can weaken
 * no empty, synthetic, revised, out-of-order or other-contract bar is forwarded
   (§4.3, M7, R-MAP-2); each refusal is counted and recorded in ``events``;
 * a revision of a pending (not yet forwarded) bar withdraws the slot: neither value
-  is forwarded and the consumer halts on the absent slot; a revision of an already
-  forwarded bar latches ``REFUSED`` (operator ruling on A9-PREP Q1);
+  is forwarded and the consumer halts on the absent slot;
+* forwarded bars are remembered for one day (``_RETAIN``). An identical redelivery
+  inside that memory is a counted duplicate; a different value latches ``REFUSED``
+  (``revision_after_delivery``); any bar at or before the last forwarded ``ts`` but
+  outside the memory latches ``REFUSED`` (``late_bar_unverifiable``), because a
+  revision cannot be told from a late original (coordinator (3) Track B disposition
+  2026-10-02, implementing Q1 fail-closed). A bar inside the memory that was never
+  forwarded is a late original: recorded as ``out_of_order``, never forwarded;
 * bars are forwarded only while connected; the source is unhealthy while
   disconnected or stale (``2 x bar_period + 30 s``) and reconnects with capped backoff;
 * a rejected credential (at authentication, renewal or mid-stream) or an expired
@@ -328,6 +334,9 @@ class ContractBarSource:  # pylint: disable=too-many-instance-attributes
                 self._pending.pop(ts)
                 self._withdrawn.add(ts)
             return "revision"
+        if self.last_bar_ts is not None and ts <= self.last_bar_ts - _RETAIN:
+            self._refuse("late_bar_unverifiable", now)
+            return "late_bar_unverifiable"
         if self.last_bar_ts is not None and ts < self.last_bar_ts:
             return "out_of_order"
         if not item.final or now < ts + BAR_PERIOD:

@@ -136,6 +136,41 @@ def test_out_of_order_bar_not_forwarded():
     transport.script["receive"] = [[delivered(T0 + timedelta(minutes=15))], [delivered(T0)]]
     assert source.poll().ts == T0 + timedelta(minutes=15)
     assert source.poll() is None and source.counts["out_of_order"] == 1
+    assert source.connected and source.refusal is None
+
+
+def test_identical_redelivery_inside_memory_does_not_latch():
+    clock = Clock(DONE)
+    source, transport = make(clock)
+    transport.script["receive"] = [[delivered(T0)], [delivered(T0)]]
+    assert source.poll().ts == T0
+    clock.advance(minutes=10)
+    assert source.poll() is None and source.counts["duplicate"] == 1
+    clock.advance(minutes=5)
+    transport.script["receive"] = [[delivered(T0 + timedelta(minutes=15))]]
+    assert source.poll().ts == T0 + timedelta(minutes=15)  # in-order new bar unaffected
+    assert source.refusal is None and source.healthy()
+
+
+@pytest.mark.parametrize("age, close, refusal, kind", [
+    (timedelta(days=1), 100.0, "late_bar_unverifiable", "late_bar_unverifiable"),
+    (timedelta(days=1), 100.5, "late_bar_unverifiable", "late_bar_unverifiable"),
+    (timedelta(days=1, minutes=15), 100.0, "late_bar_unverifiable", "late_bar_unverifiable"),
+    (timedelta(days=1) - timedelta(minutes=15), 100.0, None, "out_of_order"),
+])
+def test_bar_before_last_forwarded_outside_memory_latches(age, close, refusal, kind):
+    def one_slot(ts):
+        return SimpleNamespace(opens_at=ts, closes_at=ts + timedelta(minutes=15))
+    clock = Clock(DONE)
+    source, transport = make(clock, window=one_slot)
+    t1 = T0 + timedelta(days=1)  # Wednesday 10:00 EDT
+    transport.script["receive"] = [[delivered(T0)], [delivered(t1)],
+                                   [delivered(t1 - age, close=close)]]
+    assert source.poll().ts == T0
+    clock.now = t1 + timedelta(minutes=15, seconds=5)
+    assert source.poll().ts == t1  # in-order new bar after a gap is unaffected
+    assert source.poll() is None and source.counts[kind] == 1
+    assert source.refusal == refusal and source.healthy() is (refusal is None)
 
 
 @pytest.mark.parametrize("flags", [{"volume": 0.0}, {"trade_evidence": False}])
