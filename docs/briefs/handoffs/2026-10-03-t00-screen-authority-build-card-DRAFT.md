@@ -371,7 +371,7 @@ The screen-authority signature (design §8 step 11) uses the same template with 
 
 ## §8 — Approval, prerequisites and H record
 
-- Card approval (design §8 step 5): **pending**.
+- Card approval (design §8 step 5): **APPROVED** by Joshua at `079b1b6`, 2026-10-03, directly to coordinator (3): "I approve of the recommendations, let's make it happen" (sheet 5; recorded at https://github.com/Joshua-Asante/first-passage/pull/634#issuecomment-5965354454). Coordinator (3) clarification at `143836d` (crash-segment charge; consistent with design §5.4). Depth N (design §12 item 9): **1,000 per population** (sheet 5). A precision packet (`claude/t00-depth-decision-packet`) is with Joshua for possible revision before §7 step 1.
 - PR-1 #629 merged at: —
 - PR-2 #581 merged (DRAFT, A5/A6 frozen) at: — ; A5/A6 section hashes at that commit (expect §2.6): —
 - PR-3 #611 merged at: —
