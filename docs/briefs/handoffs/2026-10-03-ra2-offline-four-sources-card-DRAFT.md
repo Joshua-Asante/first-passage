@@ -65,7 +65,7 @@ acceptance:
    - `ops/c1_signal_daemon/book_runtime.py`: `LEG_ORDER` (`:27`), and the bound session `self.owner.binding["session"]` with `opens_at`, `closes_at` and `session_id` (`:349`).
    - `ops/c1_rail/book_account_owner.py`: `check_source_silence` (`:1029-1048`), which already owns in-session silence, and `halt(incident_id, reason, *, now)` (`:1294`). Reasons are a closed set that includes `feed`. Calling it again with the same id at a different `now` raises "conflicting incident identity" (`:1304`).
    - `ops/c1_rail/book_session_calendar.py`: `load_ratified_calendar` (`:583`), `SessionCalendar.rows`, `.products` and `.ratified_at`, plus the `SessionSchedule` fields `permission`, `overlay_blocked`, `opens_at` and `closes_at`. The loaded rows keep neither each product's `matching_open_utc` nor its `matching_close_utc`, and `v` folds in the venue deadline, so neither stands in for a product bound.
-   - `ops/calendars/book_session_calendar_2026-09.json`, `book_session_calendar_2026-10.json`, `RATIFIED.json` and `book_closure_overlay.json`, read only.
+   - `ops/calendars/RATIFIED.json`, every calendar file it names (at drafting, `book_session_calendar_2026-09.json` and `-10.json`; `-11.json` from #622 is on `main` but not yet ratified), and `book_closure_overlay.json`, read only.
    - `tests/ops/test_c1_signal_daemon_image_manifest.py`: `_ENTRYPOINTS` includes `book_evaluate_loop.py`, so the loop's import closure must stay inside the daemon image.
 3. **Findings returned before code.** The coordinator acknowledges each one.
    - (a) Whether #619 merged with exactly the `state`/`refusal` vocabulary above. Any difference is a **stop**.
@@ -143,7 +143,7 @@ Make R-A2 true offline. The book has exactly one contract-enforcing source per o
    - `None` for a DENIED row, an overlay-blocked row, and before and after coverage;
    - the row (`opens_at`, `closes_at`) for a PERMITTED row, with `closes_at` and not `risk_add_cutoff` as the upper bound;
    - a refusal for an unratified calendar and for an unknown product.
-4. **Calendar tripwire:** the test reads the **raw JSON** of `book_session_calendar_2026-09.json` and `book_session_calendar_2026-10.json`. On every PERMITTED row, every product's `matching_close_utc` must equal `closes_utc` and its `matching_open_utc` must equal `opens_utc`. Both held at drafting: 18 and 23 PERMITTED rows, no mismatch. This test pins the assumption that the calendar's loaded rows cannot express. A future early-close PERMITTED row fails the test and does not pass silently.
+4. **Calendar tripwire:** the test reads the **raw JSON** of every calendar file named in `RATIFIED.json`, so a newly ratified month is covered without a test edit. On every PERMITTED row, every product's `matching_close_utc` must equal `closes_utc` and its `matching_open_utc` must equal `opens_utc`. At drafting this held for 2026-09 (18 PERMITTED rows) and 2026-10 (23), and also for the unratified 2026-11 (20), with no mismatch. This test pins the assumption that the calendar's loaded rows cannot express. A future early-close PERMITTED row fails the test and does not pass silently.
 
 **Fail-first cases** (`test_book_loop_source_health.py`):
 
