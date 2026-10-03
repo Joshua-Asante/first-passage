@@ -5,6 +5,7 @@
 **Changelog:**
 - Revision 2, 2026-10-02: folds review of 101cf1b.
 - Revision 3, 2026-10-02: folds the round-2 review of 09486ef (1 P1, 10 P2, 6 P3). Rebuilds §3, §4 and §5.5–§5.6 on the §2.2 invariant table, with one transition function for run state and one cross-field check per record. Hoists the integrity check to per-worker epochs, records the second timing probe and replaces every cost figure, records the relayed sitting-2 rulings on #581 OD-1 and OD-2, compresses §12 to 11 decisions, and adds Appendix A (finding → invariant).
+- Revision 3.1, 2026-10-02: applies the round-3 judge's 10 edits (final round under the stopping rule); no further review round.
 
 This document adds no code and admits no file for editing. §9 lists the files a later, operator-approved build card may admit.
 
@@ -133,7 +134,7 @@ Durable run state changes only through `t00_screen.state.advance` (row S1). Ever
 | A5 | Reality is read, never supplied: HEAD, a clean tree (`--untracked-files=all`, `core.autocrlf=false`) and the interpreter come from the validator's fixed repository root | `SCREEN_P7_MISMATCH` | `test_A5`: one untracked file | `_check_bindings` |
 | A6 | Source and run root: `source.contract_sha256` equals the compiled r3c digest and the issued, unexpired receipt's; `run_root_sha256` equals the SHA-256 of the resolved `<private_root>/t00-step3` path | `SCREEN_SOURCE_MISMATCH`, `SCREEN_RUN_ROOT_MISMATCH` | `test_A6`: the same authority presented with a copied private root | `_check_bindings` |
 | A7 | P7 binding: the record bytes hash to `p7.record_sha256`; its `schema` is P7's and its `contract_sha256` is r3c's; `code_head` = HEAD; `bootstrap_sha256` = the compiled `P7_BOOTSTRAP_SHA256`; `code_closure_sha256` = SHA-256 of canonical `loaded_closure` (`p7_evidence.py:558-560`); `_current_bytes_check` passes (`:443-471`); the authority's `p7.*` fields equal the record's | `SCREEN_P7_MISMATCH` | `test_A7`: a record listing the true current file hashes under a different `bootstrap_sha256` | `_check_bindings` |
-| A8 | #581 binding: `prereg.path` is the compiled chain's last entry; C is an ancestor of C′, and C′ is reachable from `origin/main`; `git diff C C′` changes only the §6 "Ratifying commit SHA" line, which reads C; at C the Status reads `RATIFIED <date>`, the §6 Ruling and OD-1/OD-2 fields are non-blank, the values block is present and equals `parameters`, and each active §3 *Ratified value* cell names only its block keys | `SCREEN_PREREG_MISMATCH` | `test_A8`: C′ also edits one §3 cell | `_check_bindings` |
+| A8 | #581 binding: `prereg.path` is the compiled chain's last entry; C is an ancestor of C′, and C′ is reachable from `origin/main`; `git diff C C′` changes only the §6 "Ratifying commit SHA" line, which reads C; at C the Status reads `RATIFIED <date>`, the §6 Ruling and OD-1/OD-2 fields are non-blank, the values block is present and equals `parameters`, and each active §3 *Ratified value* cell names only its block keys, and C is the oldest commit reachable from `origin/main` at which #581's Status reads `RATIFIED` | `SCREEN_PREREG_MISMATCH` | `test_A8`: C′ also edits one §3 cell | `_check_bindings` |
 | A9 | A5/A6 text is frozen: the section hashes recomputed from the blob equal the compiled `A5_TEXT_SHA256` and `A6_TEXT_SHA256` | `SCREEN_PREREG_MISMATCH` | `test_A9`: one byte changed inside A6 | `_check_bindings` |
 | A10 | A3 is answered: compiled successor paths; commits reachable from `origin/main`; in each blob, the first `\| ORB-3 ` (resp. `\| VAN-3 `) row, which is the §3 row, is the only line that successor's compiled answerer-exposure regex matches, and that successor's compiled OWED pattern does not match it | `SCREEN_A3_UNANSWERED` | `test_A10`: the §3a mapping row carries the exposure marker while the §3 row still reads `\| **OWED (operator)**` | `_check_bindings` |
 | A11 | Parameters are supported: `scenarios = ["S0"]`; `run1_diagnostic = "WAIVED"`; `expressions = "DECLARED_BOOK"`; `horizon_sessions` = the compiled `A6_HORIZON_SESSIONS`; three distinct RNG roots and a distinct `probe_root`; `horizon % L == 0` and `L ≤` the smallest pool; the compiled `a5_rule` and `median_rule`; finite positive budgets with a non-empty basis | `SCREEN_PARAMETER_UNSUPPORTED` | `test_A11`: `scenarios = ["S0","S1"]` | `screen_authority` step 1 |
@@ -147,7 +148,7 @@ Durable run state changes only through `t00_screen.state.advance` (row S1). Ever
 | K3 | Only a screen-bootstrap process serves the screen: `_STATE.bootstrap_sha256 == SCREEN_BOOTSTRAP_SHA256`, as P7 checks its own (`p7_driver.py:91-92`) | `SCREEN_BOOTSTRAP_MISMATCH` | `test_K3`: a valid authority in a plain interpreter | `require_validated_screen_authority` |
 | K4 | Only a ledgered run serves the screen: the process's write-once run binding names `<private_root>/t00-step3/<authority_sha256>/`, whose ledger opens with a durable AUTHORITY_BOUND for this authority and whose run lock is held by the process's parent | `SCREEN_RUN_UNBOUND` | `test_K4`: the right bootstrap, a run directory without AUTHORITY_BOUND | `require_validated_screen_authority`, `t00_screen.worker` |
 | K5 | Every refusal fires before any engine is built | refusal order | `test_K5`: each K1–K4 and K6 refusal, with a spy on `_engine` that sees no call | `screen_bracket` |
-| K6 | Integrity per epoch: a full `_verify_integrity` and a loaded-closure check open and close each worker epoch; every call runs the identity, lifecycle and path checks and a stat guard; all epochs record the same closure | `SCREEN_EPOCH_REQUIRED`; `SCREEN_EPOCH_STALE` (STOPPED); a failed close or a closure mismatch is `CODE_OR_ARTIFACT_DRIFT` (TERMINAL) | `test_K6`: an r3c artifact file's mtime changes mid-epoch | `screen_epoch`, `screen_bracket`, `state.check_record` |
+| K6 | Integrity per epoch: a full `_verify_integrity` and a loaded-closure check open and close each worker epoch; every call runs the identity, lifecycle and path checks and a stat guard; all epochs record the same closure | `SCREEN_EPOCH_REQUIRED`; `SCREEN_EPOCH_STALE` (STOPPED); a failed full check at close, a loaded module whose bytes recorded at load differ from its blob at H, or a closure mismatch is `CODE_OR_ARTIFACT_DRIFT` (TERMINAL); a file that differs only on disk is STOPPED `TREE_CHANGED` | `test_K6`: an r3c artifact file's mtime changes mid-epoch | `screen_epoch`, `screen_bracket`, `state.check_record` |
 | K7 | The fence is unchanged: `replay`, `replay_bracket`, `proof`, `_seal`, `_check_path`, `_verify_integrity` and `verify_for` keep their source text, still return sealed types and still refuse qualification | `SOURCE_ONLY_NOT_QUALIFICATION` | `test_K7`: with a valid authority, `verify_for` and `replay_bracket` on r3c; the seven functions' source hashes equal those recorded before the build | `production_source.py` |
 | K8 | The wrapper's flags equal the sealed ones: per run, `deadline_failure` and `consumed_splits` equal `SourceOnlyReplay.deadline_failure` and `consumed_intrabar_splits` on the same path | equality | `test_K8`: a fake path with a deadline in R2 only | `screen_bracket`, `_consumed_splits` |
 | K9 | No unreviewed static consumer: every call or attribute load of `screen_bracket`, `screen_epoch`, `_replay_raw` or `_engine` outside `production_source.py` has an allowlist entry keyed by (owner, capability) | A10b failure | `test_K9`: a planted `screen_bracket` call in `scripts/` under an owner allowlisted only for `replay_bracket` | `test_source_consumers.py` |
@@ -158,7 +159,7 @@ Durable run state changes only through `t00_screen.state.advance` (row S1). Ever
 | ID | Invariant | Enforced by | Test that violates only this row | Owner |
 |---|---|---|---|---|
 | R1 | A seed is a function of (`t00-screen-rng/v1`, purpose, root, population, path index) only, and never equals `domain_seed` for the same indices | determinism | `test_R1`: seeds under W = 1 and W = 4; a collision scan against `domain_seed` | `plan.seed` |
-| R2 | Candidates come once, from chronological `screen_bracket` runs in the candidate pass: the intersection of the R1 and R2 flat edges, stored as indices with a digest that every worker rebuilds and matches | `CANDIDATES_UNAVAILABLE` (TERMINAL); a mismatch is `CORRUPTION` | `test_R2`: a block flat in R1 only | `plan.candidates` |
+| R2 | Candidates come once, from chronological `screen_bracket` runs in the candidate pass: the intersection of the R1 and R2 flat edges, stored as indices with a digest that every worker rebuilds and matches; the candidate worker's epoch closes (EPOCH_CLOSE, match) before `manifest.json` and PREPARED are written; the probe opens a new epoch in the same process | `CANDIDATES_UNAVAILABLE` (TERMINAL); a mismatch is `CORRUPTION` | `test_R2`: a block flat in R1 only | `plan.candidates` |
 | R3 | A run is scored only if it has full length and no deadline flag, or the flag with a terminal failed prefix; every replayed session has a finite `intraday_low ≤ 0`; occurrence and source-session ids equal the path prefix | `CONTEXT_REFUSAL`, `INTRADAY_LOW_MISSING` (TERMINAL) | `test_R3`: a short run without the flag | `plan.shape_check` |
 
 **S. Run state and durability** (`t00_screen.state`, `t00_screen.journal`, `t00_screen.coordinator`; §4)
@@ -189,7 +190,7 @@ Durable run state changes only through `t00_screen.state.advance` (row S1). Ever
 | B1 | Costs are ledgered apart: BUILD and INTEGRITY per worker epoch, path CPU and wall per path record, probe path CPU and wall, job CPU per heartbeat | record schema | `test_B1`: an epoch record without its INTEGRITY time | `journal` |
 | B2 | The probe is timed once: after the authority and r3c checks, PROBE_START is durable; then one `probe_root` path runs in an already-built worker; an interrupted probe HALTs and is re-timed only after a CONTINUE act; it is never scored | `PROBE_INTERRUPTED` (HALTED) | `test_B2`: a crash between PROBE_START and PROBE | `coordinator` |
 | B3 | Probe refusals are #581 A6's: a probe that ends in a deadline failure or cannot complete, or `probe path CPU × total paths > path_cpu_seconds`, is TERMINAL | `PROBE_INCOMPLETE`, `PROBE_OVER_BUDGET` | `test_B3`: a projection one second over budget | `coordinator` |
-| B4 | The dispatch gate charges path CPU only, and no key is dispatched once it reaches `path_cpu_seconds`; a refusal with keys left is TERMINAL; a run whose gate never refused a key is scored, and its overrun recorded | `BUDGET_EXHAUSTED` | `test_B4`: a budget equal to the sum of every path but the last | `coordinator` |
+| B4 | The dispatch gate charges path CPU only, and no key is dispatched once it reaches `path_cpu_seconds`; a refusal with keys left is TERMINAL; a run whose gate never refused a key is scored, and its overrun recorded; the gate sums `cpu_s` over the first PATH record of each plan key only; witness and duplicate records are overhead (row B5) | `BUDGET_EXHAUSTED` | `test_B4`: a budget equal to the sum of every path but the last | `coordinator` |
 | B5 | Overhead (builds, integrity checks, the candidate pass, the probe and the crash charge) is checked against `overhead_cpu_seconds` before each segment; exhaustion HALTs and is never TERMINAL by itself | `OVERHEAD_EXHAUSTED` (HALTED) | `test_B5`: repeated kills exhaust the reserve | `coordinator` |
 
 **V. Verdict** (`t00_screen.verdict`, pure; §5.5)
@@ -207,7 +208,7 @@ Durable run state changes only through `t00_screen.state.advance` (row S1). Ever
 |---|---|---|---|---|
 | X1 | Each subcommand prints only its fixed lines (§5.6), and stderr carries one refusal code only: no count, rate, key, progress or timing | exact output | `test_X1`: each subcommand on fakes; any extra output fails | `t00_screen.__main__` |
 | X2 | Exposure is any read of the run directory or any console output beyond the fixed lines; every act lists every reader as `seen` or `not seen`; a renewal request carries only the expiry code | `SCREEN_ACT_FIELDS` | `test_X2`: an act with an empty `readers` list | `screen_authority.validate_screen_act` |
-| X3 | Acts are Joshua's: canonical `t00_screen_act/v1`, signed under `APPROVE_T00_SCREEN_ACT`, binding the authority SHA-256 and the ledger head at signing; written with O_EXCL to `acts/` and fsync'd before its ledger record; an act whose ledger head is stale is refused | `SCREEN_ACT_UNSIGNED`, `SCREEN_ACT_STALE` | `test_X3`: a valid act presented after a later record | `validate_screen_act`, `state.advance` |
+| X3 | Acts are Joshua's: canonical `t00_screen_act/v1`, signed under `APPROVE_T00_SCREEN_ACT`, binding the authority SHA-256 and the ledger head at signing; written with O_EXCL to `acts/` and fsync'd before its ledger record; an act whose ledger head is stale is refused; `validate_screen_act` takes the authority bytes, checks their SHA-256 against the run's AUTHORITY_BOUND, and checks only the act approval's own window and the key lifecycle, never the authority's or r3c's window; `act` and `resume` first append the ACT record of any unrecorded act file whose ledger head is current | `SCREEN_ACT_UNSIGNED`, `SCREEN_ACT_STALE` | `test_X3`: a valid act presented after a later record | `validate_screen_act`, `state.advance` |
 | X4 | `verify` re-executes k hash-derived keys inside the same gate (rows K3, K4), under the run lock, and journals them; an expired approval gives `VERIFY_BLOCKED_APPROVAL_EXPIRED`, never VERIFIED | `VERIFY_BLOCKED_APPROVAL_EXPIRED` | `test_X4`: an expired screen approval | `coordinator.verify` |
 | X5 | The label recompute imports nothing from `t00_screen.verdict` and is committed before Joshua signs | import scan | `test_X5`: the script imports the verdict module | `scripts/t00_screen_label_check.py` |
 | X6 | P7 enters only as a precondition: the screen reads the record's binding fields, never its result fields; the acceptance evidence's SHA-256 is in the signing packet and the attestation | key-access scan | `test_X6`: a planted read of the record's `result` field in the screen package | `screen_authority`, `t00_screen` |
@@ -360,23 +361,21 @@ The run directory is `<private_root>/t00-step3/<authority_sha256>/`; the authori
 |---|---|---|
 | none | AUTHORITY_BOUND{authority SHA-256, `prereg.path`, approvals} | BOUND |
 | BOUND | PREPARED{manifest SHA-256, BUILD, INTEGRITY} | PREPARED |
-| BOUND | TERMINAL{`CANDIDATES_UNAVAILABLE`} | TERMINAL |
+| Any state except RUNNING and FINAL | TERMINAL{code}, code in the TERMINAL class by `classify` (§4.3), including a `check_record` failure found at `resume` or at `finalize` (`finalize` appends it before AGGREGATED, so V1 receives the reason) | TERMINAL |
 | PREPARED | PROBE_START | PROBING |
 | PROBING | PROBE{path CPU, path wall, peak memory} | IDLE |
-| PROBING | TERMINAL{`PROBE_INCOMPLETE` or `PROBE_OVER_BUDGET`} | TERMINAL |
-| PROBING, when the probe did not finish or PROBING is found unlocked at resume | HALT{`PROBE_INTERRUPTED`} | HALTED |
+| BOUND, PREPARED, PROBING, IDLE | HALT{code, from}, code in the HALTED class by `classify` (§4.3) | HALTED |
 | IDLE | SEGMENT_START{k, W, assignment SHA-256, witness keys, approvals}, heartbeat 0 | RUNNING |
-| IDLE | HALT{`OVERHEAD_EXHAUSTED`} | HALTED |
 | IDLE, no key left | ALL_DONE | COMPLETE |
 | RUNNING | HEARTBEAT{wall, job CPU} every 60 s | RUNNING |
 | RUNNING | SEGMENT_END{class, cause, workers[{worker, reason}], wall, job CPU, path CPU, overhead CPU, peak memory} | IDLE (STOPPED), HALTED, COMPLETE or TERMINAL, by the highest class (§4.3) |
 | RUNNING, found unlocked at resume | SEGMENT_CRASHED{k, charge, losses} | IDLE, or HALTED if a cap is reached (row S10) |
 | BOUND, PREPARED, IDLE, HALTED | ACT{TERMINATE} | TERMINAL{`OPERATOR_TERMINATED`} |
-| HALTED | ACT{CONTINUE} | PREPARED if halted while PROBING, else IDLE |
+| HALTED | ACT{CONTINUE} | the HALT's from state; PROBING resumes as PREPARED |
 | COMPLETE, TERMINAL | AGGREGATED → REPORTED → FINAL | FINAL |
 | FINAL | VERIFY_START, VERIFY{keys, match} | FINAL |
 
-A stop inside BOUND or PREPARED (a lapse, a crash) writes nothing and leaves the state as it was. The candidate pass is then repeated; it is deterministic, and its losses count under key `CANDIDATES` (row S10).
+A lapse inside BOUND or PREPARED writes nothing. Any other non-terminal stop there appends HALT{code, from} (at `resume` if the coordinator died); the candidate pass repeats only after CONTINUE. There is no `CANDIDATES` loss key.
 
 ### 4.3 Stop classes (closed; row S9)
 
@@ -411,7 +410,7 @@ Revision 2's window numbers are kept for traceability.
 
 | # | Window or event | Outcome | Rows |
 |---|---|---|---|
-| W0 | Crash in BOUND, before the manifest is durable | Step-3 output exists (row S4). Resume repeats the candidate pass; a loss counts under `CANDIDATES` | S1, S10 |
+| W0 | Crash in BOUND, before the manifest is durable | Step-3 output exists (row S4). HALTED; after CONTINUE, `resume` repeats the candidate pass | S1, X3 |
 | W1 | Crash in PREPARED, before PROBE_START | Resume times the probe | S1 |
 | W2 | Worker lost mid-path | STOPPED `WORKER_LOST`; the key is a loss and is recomputed identically | S10 |
 | W3 | Torn final line | That line is dropped; the key is recomputed | S3 |
@@ -750,6 +749,15 @@ Answer "all recommended except …".
 - **Relabelling.** Screen output could be relabelled. This is mitigated by `evidence_class`, its own schemas and an unchanged `verify_for`. Any other use is a procedural violation.
 - **Peeking.** Run directories are readable in the private root before `finalize`. A run ends early only on a deterministic #581 A6 cause, evidence of corruption, a key-lifecycle event or Joshua's signed act, which states every reader's exposure (rows S9, X2, X3). Any re-attempt needs a successor pre-registration (row S4).
 - **Consumed-split count.** "A path with a consumed split" is read as either run having consumed one. The count is descriptive only.
+
+**Residual risks** (the round-3 judge's list, copied):
+- **CONTINUE acts:** every crash in BOUND, PREPARED or PROBING, every cap hit and every exhausted overhead reserve needs his signed CONTINUE, listing every reader's exposure. Over a run of days to weeks, expect several.
+- **Single use is local:** the only thing stopping a relaunch is the run root (row A6) plus procedure. Deleting the run directory, or an identical-values authority under another root, is a procedural breach that code does not prevent. Results are deterministic, so neither can bias the verdict.
+- **Killed path-worker epochs** rest on the opening check, the per-call checks, duplicate equality, witnesses and `verify`'s k = 9 re-executions, not on a closing check (§3.3).
+- **P7 acceptance is attested to the validator, not proven,** unless Joshua runs `accept-p7` himself (§12 item 11).
+- **Linearity is untested beyond 40 sessions.** The in-run probe runs after the freeze, so a cost above budget consumes #581. Set both budgets from the §6.4 upper column.
+- **Mid-run worktree edits:** after edit 6 (row K6), an edit to the H worktree during a run STOPs it, and `resume` refuses until the tree is restored. Loaded-byte drift and a failed integrity check stay terminal (INSUFFICIENT).
+- **#581 OD-1 and OD-2** are relayed and still need his direct confirmation (§12 item 3). Choosing the editions voids r3c and this design.
 
 ---
 
