@@ -44,7 +44,7 @@
 schema: track_b_register/v1
 role: owner
 as_of: 2026-10-03
-reconciled_at: d5d559b
+reconciled_at: d27c7a1
 covers_from: 2026-10-01
 watch:
   - docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
@@ -181,8 +181,9 @@ items:
     status: IN_PROGRESS
     since: 2026-10-02
     owner: ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
-    blocked_by: [t00.step-3-screen]
-    next: Land after the T00 step-3 screen (operator order 2026-10-02)
+    evidence:
+      - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    next: Complete and land; the merge hold is lifted (operator decision sheet A1, 2026-10-02)
     next_actor: worker
     refs: ["#611 (draft)"]
 
@@ -192,9 +193,12 @@ items:
     status: OPEN
     since: 2026-10-02
     owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--h9-preparation-return-db10-and-context-compatibility-2026-10-02
-    next: Fix in H9 lane D step 3
+    evidence:
+      - ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--lane-d-step-3-may-edit-the-measured-closure-result_g5-and-qseal-provisioning-2026-10-02
+    next: Fix in H9 lane D step 3 (its own card, after step 2)
     next_actor: worker
-    refs: ["approved 2026-10-02; documentary record #610", "#609 (draft) found it"]
+    note: Step 3 may edit runtime.py, release_schema.py and campaign_protocol.py for result_g5/qseal provisioning; the one fresh S5 measurement before R1 covers it.
+    refs: ["term 8 merged in #610 (f8a03c2)", "#609 (draft) found it"]
 
   - id: work.S5-remeasure-trigger-1
     kind: work
@@ -235,7 +239,7 @@ items:
     since: 2026-09-20
     owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t06--full-synthetic-e1-acceptance--s8-500k750k
     blocked_by: [gate.T05-R1, work.K3-RC-4]
-    next: Dispatch after T05 integration; S5 open questions Q1 and Q7 decided by the statistical owner first
+    next: Dispatch after T05 integration; first the B4 observed pilot draw and S5 open questions Q1 and Q7 (statistical owner)
     next_actor: coordinator
     refs: ["#609 (draft harness preparation)"]
 
@@ -272,24 +276,59 @@ items:
     next_actor: none
     refs: ["b2c9f9c", "landed c3ab0cc"]
 
-  - id: t00.step-3-screen
+  - id: t00.screen-authority-design
     kind: t00
-    title: T00 step-3 screen on current code
+    title: T00 screen authority design (new signed contract class) with the A2 spec amendment text
     status: OPEN
     since: 2026-10-02
-    owner: ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
-    next: Run the step-3 screen before approval r3c-a2 lapses
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    next: "Design a contract class bound to r3c's 25 inputs and the ratified #581, still refusing stages, seal, admission and deployment; operator approves before any code"
     next_actor: coordinator
-    expires: "2026-10-09T01:52:19Z"
-    note: Operator order 2026-10-02 (sitting 1); a later P7 re-run needs a fresh operator-signed approval.
+    note: r3c refuses SCREEN and main has no step-3 runner, so step 3 cannot run on the current code (decision sheet A1–A2).
+
+  - id: t00.screen-authority-build
+    kind: t00
+    title: Build the T00 screen authority (driver, A5 counting, A6 verdict)
+    status: NOT_STARTED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    blocked_by: [t00.screen-authority-design]
+    next: Build after the design is approved
+    next_actor: worker
+
+  - id: t00.screen-authority-sign
+    kind: t00
+    title: Operator signs the T00 screen authority
+    status: NOT_STARTED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    blocked_by: [t00.screen-authority-build, t00.step-2-prereg]
+    next: Sign the screen authority
+    next_actor: operator
+
+  - id: t00.step-3-screen
+    kind: t00
+    title: T00 step-3 screen, run once under the signed screen authority
+    status: BLOCKED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    evidence:
+      - ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
+    blocked_by: [t00.screen-authority-sign]
+    next: Run step 3 once
+    next_actor: coordinator
+    note: "Approval r3c-a2 lapses unused on 2026-10-09 (A1); ORB-3 and VAN-3 are answered in #581 §5 before any step-3 output exists (A3)."
 
   - id: t00.step-2-prereg
     kind: t00
     title: T00 step-2 pre-registration (reuses prereg v2 scoring clauses)
-    status: AWAITING_OPERATOR
-    since: 2026-10-01
-    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts
-    next: Ratify the draft pre-registration
+    status: BLOCKED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    evidence:
+      - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts
+    blocked_by: [t00.p7-rerun-after-fixes]
+    next: "Set and ratify #581 §3 (one timing-only real-source probe may set item 1 first, A4)"
     next_actor: operator
     refs: ["#581 (draft)"]
 
@@ -299,8 +338,10 @@ items:
     status: NOT_STARTED
     since: 2026-10-02
     owner: ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
-    blocked_by: [t00.step-3-screen, work.T05-qualpath-fixes]
-    next: Re-run P7 under a fresh operator-signed source approval
+    evidence:
+      - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    blocked_by: [work.T05-qualpath-fixes, t00.screen-authority-build]
+    next: One P7 re-run at the merged head under a fresh operator-signed source approval
     next_actor: coordinator
 
   - id: gate.D-feed-a-NO-GO
@@ -508,7 +549,7 @@ items:
     owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken
     next: May open after T00 GO-evidence, a bound equivalence spec and A9-PREP
     next_actor: operator
-    note: Provider-neutral preparation is authorized now (operator 2026-10-02).
+    note: Provider-neutral preparation is authorized now. CP-7's grant covers only the provider adapter and shadow collection with emission off; trading use keeps its own gates (decision sheet C).
 
   - id: checkpoint.CP-8
     kind: checkpoint
