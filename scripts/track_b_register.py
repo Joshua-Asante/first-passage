@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
-"""track_b_register.py — Track B status register: check, digest, table.
+"""track_b_register.py — Track B status register: check, write, digest, table.
 
 The register (`docs/governance/track_b_register.yml`) holds one row per Track B
 item: a gate, packet, slice, checkpoint, drill or defect. Each row gives the
 item's status now, the next permitted action and who takes it. It cites the dated
 ruling or acceptance that set that status. The ledgers keep the reasoning and
-evidence; a row only routes to them. During the pilot the register is a derived
-mirror under Rule 7 (`role: derived-mirror`), and its owners govern wherever the
-two differ.
+evidence; a row only routes to them. Under Rule 7 the register is the canonical
+owner of each item's current status, next action, actor, blockers and expiry
+(`role: owner`, operator ruling 2026-10-03); the rulings' text, reasoning and
+evidence stay with the record each row cites. The row is written by whoever
+records the ruling or acceptance, in the same change.
 
 Subcommands:
   check   (default) exit 0 when the register is well formed and in step with its
           watched owner documents; exit 1 with one line per finding otherwise.
+  write   regenerate every block listed under `generated` in place, between
+          `<!-- BEGIN generated: track-b-register ... -->` and its END marker.
   digest  a short plain-text summary for a session start: next actions by actor,
-          blocked items and approvals expiring within --days (default 7). Read-only;
-          always exits 0 when the register parses.
-  table   a Markdown table of the open rows (no fixed-file output; the pilot
-          generates no mirror in place).
+          blocked items and approvals expiring within --days (default 7). With
+          --hook it never fails: any error becomes one line and exit 0.
+  table   print the Markdown table view of the open rows.
 
 `check` is content-deterministic: it never compares against the clock, so the
 required CI status cannot turn red on a date alone. Expiry appears only in
@@ -33,12 +36,15 @@ required CI status cannot turn red on a date alone. Expiry appears only in
   R6  `reconciled_at` and `as_of` are present and well formed.
   R7  no inline comment after a value: YAML reads an unquoted ` #` as the start of a
       comment and silently cuts the value there (quote any text holding `#`).
+  R8  every `generated` block exists exactly once in its file and equals what
+      `write` would produce (run `write` after editing the register).
 
-Owner: the register itself (pilot); proposal and rationale are in its PR.
+Owner of the rule: docs/operational_rules.md Rule 7 owner table.
 """
 from __future__ import annotations
 
 import argparse
+import posixpath
 import datetime as dt
 import re
 import sys
@@ -46,7 +52,10 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
-import yaml
+try:
+    import yaml
+except ImportError:  # the SessionStart hook may run on a bare system Python
+    yaml = None
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REGISTER = ROOT / "docs" / "governance" / "track_b_register.yml"
@@ -80,7 +89,10 @@ HTML_ANCHOR_RE = re.compile(r"""<a\s+(?:id|name)=["']([^"']+)["']""")
 ROW_KEYS = {"id", "kind", "title", "status", "since", "owner", "next", "next_actor"}
 ROW_OPTIONAL = {"aliases", "blocked_by", "checkpoint", "expires", "evidence", "refs", "note"}
 TOP_KEYS = {"schema", "role", "as_of", "reconciled_at", "covers_from", "watch", "items"}
-TOP_OPTIONAL = {"noted"}
+TOP_OPTIONAL = {"noted", "generated"}
+VIEWS = ("summary", "table")
+BEGIN_RE = re.compile(r"^<!-- BEGIN generated: track-b-register \((summary|table)\) -->$", re.M)
+END_MARK = "<!-- END generated: track-b-register -->"
 
 
 # ---------------------------------------------------------------- anchors
@@ -141,6 +153,8 @@ class Finding(Exception):
 
 
 def load(path: Path) -> dict[str, Any]:
+    if yaml is None:
+        raise Finding("R1 PyYAML is not installed for this interpreter")
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as exc:
@@ -206,8 +220,8 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
         out.append(f"R1 missing top-level key {key!r}")
     for key in sorted(data.keys() - TOP_KEYS - TOP_OPTIONAL):
         out.append(f"R1 unknown top-level key {key!r}")
-    if data.get("role") != "derived-mirror":
-        out.append("R1 role must be 'derived-mirror' during the pilot")
+    if data.get("role") != "owner":
+        out.append("R1 role must be 'owner' (Rule 7 owner of Track B item status)")
     if _date(data.get("as_of")) is None:
         out.append("R6 as_of must be YYYY-MM-DD")
     if not (isinstance(data.get("reconciled_at"), str) and SHA_RE.match(data["reconciled_at"])):
@@ -219,6 +233,7 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
     if not (isinstance(watch, list) and all(isinstance(w, str) for w in watch)):
         out.append("R1 watch must be a list of repository paths")
         watch = []
+    out.extend(_targets_ok(data))
     items = data.get("items")
     if not isinstance(items, list) or not items:
         out.append("R1 items must be a non-empty list")
@@ -390,7 +405,75 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
                         f"R5 {rel}:{n}: dated heading not cited by any row or noted entry: "
                         f"#{anchor}"
                     )
+
+    # R8 generated blocks
+    if not any(f.startswith("R1") for f in out):
+        for target in data.get("generated") or []:
+            out.extend(_check_block(data, target, root))
     return out
+
+
+def _targets_ok(data: dict[str, Any]) -> list[str]:
+    gen = data.get("generated")
+    if gen is None:
+        return []
+    if not isinstance(gen, list):
+        return ["R1 generated must be a list of {path, view} mappings"]
+    out = []
+    for g in gen:
+        if not (isinstance(g, dict) and isinstance(g.get("path"), str) and g.get("view") in VIEWS):
+            out.append(f"R1 generated entry {g!r} needs a path and a view in {VIEWS}")
+    return out
+
+
+def _split_block(text: str) -> tuple[str, str, str, str] | str:
+    """(before, view, body, after) for the one block in text, or a reason."""
+    begins = list(BEGIN_RE.finditer(text))
+    ends = text.count(END_MARK)
+    if len(begins) != 1 or ends != 1:
+        return f"needs exactly one BEGIN/END track-b-register pair (found {len(begins)}/{ends})"
+    b = begins[0]
+    end = text.index(END_MARK)
+    if end < b.end():
+        return "END marker precedes BEGIN"
+    return text[: b.end()], b.group(1), text[b.end():end], text[end:]
+
+
+def _check_block(data: dict[str, Any], target: dict[str, Any], root: Path) -> list[str]:
+    rel = target["path"]
+    try:
+        text = (root / rel).read_text(encoding="utf-8")
+    except OSError:
+        return [f"R8 {rel}: file not found"]
+    parts = _split_block(text)
+    if isinstance(parts, str):
+        return [f"R8 {rel}: {parts}"]
+    _, view, body, _ = parts
+    if view != target["view"]:
+        return [f"R8 {rel}: block view is {view!r}, register says {target['view']!r}"]
+    if body != "\n" + render(data, view, rel) + "\n":
+        return [f"R8 {rel}: generated block is stale; run `python scripts/track_b_register.py write`"]
+    return []
+
+
+def write(data: dict[str, Any], root: Path = ROOT) -> list[str]:
+    """Regenerate each target's block in place; returns the paths rewritten."""
+    changed = []
+    for target in data.get("generated") or []:
+        path = root / target["path"]
+        text = path.read_text(encoding="utf-8")
+        parts = _split_block(text)
+        if isinstance(parts, str):
+            raise Finding(f"R8 {target['path']}: {parts}")
+        before, _, _, after = parts
+        before = BEGIN_RE.sub(
+            f"<!-- BEGIN generated: track-b-register ({target['view']}) -->", before
+        )
+        new = before + "\n" + render(data, target["view"], target["path"]) + "\n" + after
+        if new != text:
+            path.write_text(new, encoding="utf-8")
+            changed.append(target["path"])
+    return changed
 
 
 # ---------------------------------------------------------------- views
@@ -399,11 +482,64 @@ def _open(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [r for r in rows if r.get("status") not in TERMINAL and r.get("status") != "PARKED"]
 
 
+def _groups(rows: list[dict[str, Any]]) -> tuple[dict[str, list], list]:
+    """Unblocked next actions by actor, and blocked rows with what they wait on."""
+    by_id = {r["id"]: r for r in rows}
+
+    def waiting(r):
+        return [d for d in r.get("blocked_by") or [] if by_id.get(d, {}).get("status") not in TERMINAL]
+
+    nexts = {
+        actor: [r for r in _open(rows) if r.get("next_actor") == actor and r.get("next") and not waiting(r)]
+        for actor in ("operator", "coordinator", "worker")
+    }
+    blocked = [(r, waiting(r)) for r in _open(rows) if waiting(r)]
+    return nexts, blocked
+
+
+def _relink(link: str, target_rel: str) -> str:
+    """A register link (relative to docs/governance) re-expressed from target_rel."""
+    path_part, hash_, frag = link.partition("#")
+    absolute = posixpath.normpath(posixpath.join("docs/governance", path_part))
+    rel = posixpath.relpath(absolute, posixpath.dirname(target_rel) or ".")
+    return rel + (hash_ + frag if hash_ else "")
+
+
+def render(data: dict[str, Any], view: str, target_rel: str) -> str:
+    register = _relink("track_b_register.yml", target_rel)
+    head = (
+        f"_Generated from the [Track B register]({register}) (as of {data['as_of']} @ "
+        f"`{data['reconciled_at']}`); the register owns item status. Edit it, then run "
+        f"`python scripts/track_b_register.py write`._"
+    )
+    if view == "table":
+        return head + "\n\n" + table(data, target_rel)
+    nexts, blocked = _groups(data["items"])
+    lines = [head, ""]
+    expiring = sorted(
+        (r for r in _open(data["items"]) if _expiry(r.get("expires"))),
+        key=lambda r: _expiry(r["expires"]),
+    )
+    for r in expiring:
+        lines.append(
+            f"- **Expires {_expiry(r['expires']):%Y-%m-%dT%H:%MZ}:** `{r['id']}` — {r['title']}"
+        )
+    for actor, label in (("operator", "Operator"), ("coordinator", "Coordinator"), ("worker", "Worker")):
+        if nexts[actor]:
+            lines.append(f"- **Next — {label}:**")
+            lines.extend(
+                f"  - `{r['id']}` — {r['next']}"
+                for r in nexts[actor]
+            )
+    if blocked:
+        lines.append("- **Blocked:** " + "; ".join(f"`{r['id']}` ← {', '.join(w)}" for r, w in blocked))
+    return "\n".join(lines)
+
+
 def digest(data: dict[str, Any], today: dt.datetime, days: int) -> str:
     rows = data["items"]
-    by_id = {r["id"]: r for r in rows}
     lines = [
-        f"Track B register (derived mirror; owners govern) as_of {data['as_of']} "
+        f"Track B register (owner of item status) as_of {data['as_of']} "
         f"@ {data['reconciled_at']}"
     ]
     horizon = today + dt.timedelta(days=days)
@@ -420,29 +556,19 @@ def digest(data: dict[str, Any], today: dt.datetime, days: int) -> str:
     if expiring:
         lines.append(f"Expiring within {days}d:")
         lines.extend(expiring)
+    nexts, blocked = _groups(rows)
     for actor in ("operator", "coordinator", "worker"):
-        todo = [
-            r for r in _open(rows)
-            if r.get("next_actor") == actor and r.get("next")
-            and all(by_id.get(d, {}).get("status") in TERMINAL for d in r.get("blocked_by") or [])
-        ]
-        if todo:
+        if nexts[actor]:
             lines.append(f"Next ({actor}):")
-            lines.extend(f"  {r['id']}: {r['next']}" for r in todo)
-    blocked = [
-        r for r in _open(rows)
-        if any(by_id.get(d, {}).get("status") not in TERMINAL for d in r.get("blocked_by") or [])
-    ]
+            lines.extend(f"  {r['id']}: {r['next']}" for r in nexts[actor])
     if blocked:
         lines.append("Blocked:")
-        for r in blocked:
-            waiting = [d for d in r["blocked_by"] if by_id.get(d, {}).get("status") not in TERMINAL]
-            lines.append(f"  {r['id']} <- {', '.join(waiting)}")
+        lines.extend(f"  {r['id']} <- {', '.join(w)}" for r, w in blocked)
     lines.append(f"Register: docs/governance/track_b_register.yml ({len(rows)} rows)")
     return "\n".join(lines)
 
 
-def table(data: dict[str, Any]) -> str:
+def table(data: dict[str, Any], target_rel: str = "docs/governance/x") -> str:
     def cell(text: Any) -> str:
         return str(text or "—").replace("|", "\\|").replace("\n", " ")
 
@@ -451,7 +577,7 @@ def table(data: dict[str, Any]) -> str:
         name = r["id"] + (f" ({', '.join(r['aliases'])})" if r.get("aliases") else "")
         lines.append(
             f"| {cell(name)} | {r['status']} | {cell(r.get('next'))} | {r['next_actor']} | "
-            f"{cell(', '.join(r.get('blocked_by') or []))} | [owner]({r['owner']}) |"
+            f"{cell(', '.join(r.get('blocked_by') or []))} | [owner]({_relink(r['owner'], target_rel)}) |"
         )
     return "\n".join(lines)
 
@@ -460,18 +586,32 @@ def table(data: dict[str, Any]) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n", 1)[0])
-    parser.add_argument("command", nargs="?", default="check", choices=("check", "digest", "table"))
+    parser.add_argument(
+        "command", nargs="?", default="check", choices=("check", "write", "digest", "table")
+    )
     parser.add_argument("--register", type=Path, default=DEFAULT_REGISTER)
     parser.add_argument("--days", type=int, default=7)
+    parser.add_argument(
+        "--hook", action="store_true", help="digest only: report any failure as one line, exit 0"
+    )
     args = parser.parse_args(argv)
+    if args.hook:
+        if args.command != "digest":
+            parser.error("--hook applies to digest only")
+        try:
+            data = load(args.register)
+            print(digest(data, dt.datetime.now(dt.timezone.utc), args.days))
+        except Exception as exc:  # a session must start whatever the register's state
+            print(f"track-b register digest unavailable: {type(exc).__name__}: {exc}"[:300])
+        return 0
     try:
         data = load(args.register)
     except Finding as exc:
         print(exc)
         return 1
     text = args.register.read_text(encoding="utf-8")
+    findings = check(data, text=text)
     if args.command == "check":
-        findings = check(data, text=text)
         for f in findings:
             print(f)
         if findings:
@@ -479,11 +619,23 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(f"track_b_register: OK ({len(data['items'])} rows)")
         return 0
-    findings = check(data, text=text)
+    blocking = [f for f in findings if not f.startswith("R8")]
+    if args.command == "write" and blocking:
+        for f in blocking:
+            print(f)
+        print("track_b_register: fix the findings above before writing")
+        return 1
     if any(f.startswith(("R1", "R7")) for f in findings):
         print("track_b_register: register is malformed; run `check`")
         return 1
-    if args.command == "digest":
+    if args.command == "write":
+        try:
+            changed = write(data)
+        except Finding as exc:
+            print(exc)
+            return 1
+        print("track_b_register: wrote " + (", ".join(changed) if changed else "nothing (up to date)"))
+    elif args.command == "digest":
         print(digest(data, dt.datetime.now(dt.timezone.utc), args.days))
     else:
         print(table(data))

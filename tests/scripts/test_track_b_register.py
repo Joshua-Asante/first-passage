@@ -67,7 +67,7 @@ def _row(**over):
 def _register(**over):
     data = {
         "schema": "track_b_register/v1",
-        "role": "derived-mirror",
+        "role": "owner",
         "as_of": "2026-10-03",
         "reconciled_at": "d5d559b",
         "covers_from": "2026-10-01",
@@ -263,3 +263,101 @@ def test_committed_register_parses_values_whole():
     text = (REPO / "docs" / "governance" / "track_b_register.yml").read_text(encoding="utf-8")
     assert tbr.lint(text) == []
     assert yaml.safe_load(text)["schema"] == "track_b_register/v1"
+
+
+def test_r1_role_must_be_owner(root):
+    assert _codes(tbr.check(_register(role="derived-mirror"), root)) == ["R1"]
+
+
+def _with_target(root, view="table", body="\n"):
+    target = root / "docs" / "plan.md"
+    target.write_text(
+        "# Plan\n\n"
+        f"<!-- BEGIN generated: track-b-register ({view}) -->{body}"
+        "<!-- END generated: track-b-register -->\n\nafter\n",
+        encoding="utf-8",
+    )
+    data = _register(generated=[{"path": "docs/plan.md", "view": view}])
+    data["items"][0] = _row(status="OPEN", next="run it", next_actor="coordinator")
+    return target, data
+
+
+@pytest.mark.parametrize("view", ["table", "summary"])
+def test_r8_stale_block_then_write_makes_it_current(root, view):
+    target, data = _with_target(root, view)
+    assert _codes(tbr.check(data, root)) == ["R8"]
+    assert tbr.write(data, root) == ["docs/plan.md"]
+    assert tbr.check(data, root) == []
+    text = target.read_text(encoding="utf-8")
+    assert text.startswith("# Plan\n") and text.endswith("\n\nafter\n")
+    assert "slice.S5" in text and "defect.D-S5-1" not in text  # open rows only
+    assert tbr.write(data, root) == []  # idempotent
+
+
+def test_r8_register_edit_makes_block_stale(root):
+    _, data = _with_target(root)
+    tbr.write(data, root)
+    data["items"][0]["next"] = "something else"
+    assert _codes(tbr.check(data, root)) == ["R8"]
+
+
+def test_r8_markers_must_appear_once(root):
+    target, data = _with_target(root)
+    target.write_text("no markers here\n", encoding="utf-8")
+    findings = tbr.check(data, root)
+    assert _codes(findings) == ["R8"] and "exactly one" in findings[0]
+    with pytest.raises(tbr.Finding):
+        tbr.write(data, root)
+
+
+def test_r8_view_mismatch(root):
+    _, data = _with_target(root, view="summary")
+    data["generated"][0]["view"] = "table"
+    assert any("view" in f for f in tbr.check(data, root))
+
+
+def test_r1_generated_entry_shape(root):
+    data = _register(generated=[{"path": "STATE.md", "view": "pie"}])
+    assert "R1" in _codes(tbr.check(data, root))
+
+
+@pytest.mark.parametrize(
+    "target, expected",
+    [
+        ("STATE.md", "docs/ledger.md#a"),
+        ("docs/superpowers/plans/x.md", "../../ledger.md#a"),
+        ("docs/governance/y.md", "../ledger.md#a"),
+    ],
+)
+def test_links_are_rewritten_relative_to_the_target(target, expected):
+    assert tbr._relink("../ledger.md#a", target) == expected
+
+
+def test_summary_lists_expiry_and_hides_blocked_next(root):
+    data = _register()
+    data["items"] = [
+        _row(status="OPEN", next="run the screen", next_actor="coordinator",
+             expires="2026-10-09T01:52:19Z"),
+        _row(id="gate.R1", kind="gate", aliases=[], status="BLOCKED", next="grant",
+             next_actor="coordinator", blocked_by=["slice.S5"]),
+    ]
+    text = tbr.render(data, "summary", "STATE.md")
+    assert "**Expires 2026-10-09T01:52Z:** `slice.S5`" in text
+    assert "`gate.R1` ← slice.S5" in text
+    assert "grant" not in text
+
+
+def test_hook_digest_never_fails(tmp_path):
+    bad = tmp_path / "bad.yml"
+    bad.write_text("items: [\n", encoding="utf-8")
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "digest", "--hook", "--register", str(bad)],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0
+    assert result.stdout.startswith("track-b register digest unavailable:")
+
+
+def test_committed_generated_blocks_are_current():
+    data = tbr.load(tbr.DEFAULT_REGISTER)
+    assert [f for f in tbr.check(data) if f.startswith("R8")] == []

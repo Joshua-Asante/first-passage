@@ -9,6 +9,9 @@ Research and operations for automated futures strategies at
 Start with [STATE.md](STATE.md) for priorities and obligations, then the owning
 campaign plan (steps) and record (evidence); [PIPELINES.md](PIPELINES.md) covers
 handoffs, [REPO_MAP.md](REPO_MAP.md) code, [SESSIONS.md](docs/SESSIONS.md) history.
+For Track B status and the next permitted action, read the
+[Track B register](docs/governance/track_b_register.yml) (`python scripts/track_b_register.py digest`)
+before the ledgers it cites.
 Direct operator instructions govern the current task; do not infer new work or
 authorization from historical dispatches.
 
