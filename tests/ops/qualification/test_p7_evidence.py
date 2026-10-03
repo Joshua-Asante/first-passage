@@ -604,6 +604,12 @@ elif kind == 'journal_os_open':
     fd = os.open(journal, os.O_WRONLY | os.O_APPEND | os.O_CREAT | getattr(os, 'O_BINARY', 0))
     os.write(fd, b'record\\n')
     os.close(fd)
+elif kind == 'devnull':  # card 3.3 note 2026-10-03: the null device holds no data
+    import platform
+    fd = os.open(os.devnull, os.O_RDWR)
+    os.close(fd)
+    open(os.devnull, 'wb').close()
+    platform._syscmd_ver()  # subprocess.DEVNULL's os.open(os.devnull, os.O_RDWR), without depending on WMI
 else:
     raise SystemExit('unknown case ' + kind)
 print('WORKER_DONE ' + kind)
@@ -661,19 +667,21 @@ def test_K10(env):
 
 
 def test_S2(env):
-    """A screen worker write-opens only realpath(join(run_dir, 'journal', journal_name)) (SCREEN_WRITE_REFUSED)."""
+    """A screen worker write-opens only realpath(join(run_dir, 'journal', journal_name)) or the null device
+    (SCREEN_WRITE_REFUSED)."""
     root = env.code_root('s2', extra=_screen_tree())
     failures = []
 
     def check(label, ok, detail):
         if not ok:
             failures.append(f'{label}: {detail[-1500:]}')
-    for case in ('journal_open', 'journal_os_open', *LEDGER_READ_OPENS):  # twins
+    for case in ('journal_open', 'journal_os_open', 'devnull', *LEDGER_READ_OPENS):  # twins
         done, run_dir = run_screen(env, root, case)
         check(case, done.returncode == 0 and 'WORKER_DONE' in done.stdout, done.stderr)
         if case.startswith('journal'):
             check(case, (run_dir / 'journal' / JOURNAL_NAME).read_bytes() == b'record\n', 'journal bytes')
         check(case, (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES, 'ledger bytes changed')
+        check(case, not (run_dir / 'ledger' / '0002.jsonl').exists(), 'a new non-journal file was created')
     for case in LEDGER_WRITE_OPENS:
         done, run_dir = run_screen(env, root, case)
         check(case, done.returncode != 0 and 'WORKER_DONE' not in done.stdout, done.stdout)
