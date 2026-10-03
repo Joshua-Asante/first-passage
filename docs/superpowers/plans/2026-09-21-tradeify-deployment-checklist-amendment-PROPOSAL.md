@@ -145,6 +145,8 @@ Each row: recommended disposition · grounds · exact wording to adopt on ratifi
 
 *Operator ruling 2026-10-02 (sitting 1), given directly to the deployment coordinator ("all recommended"):* condition **(b)** is re-ruled. CP-7 may open after T00 GO-evidence, a bound equivalence spec and A9-PREP, instead of after T10 phase 2. Owner: the [deployment checklist §4 CP-7](2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken).
 
+*Operator ruling 2026-10-02 (sitting 2), #581 OD-1, reading (c):* condition **(a)** is label-sensitive. A NO-GO-evidence verdict labelled `UNDETERMINED`-dependent (PR #581 §2 A6) meets (a) once the operator records a dated acceptance of its risk into T15's F1 (amendment §T00 step 3). A **robust** NO-GO-evidence verdict does not meet (a), and provider-specific work after one needs a dated amendment of (a). INSUFFICIENT is unchanged. This was ruled before #581's ratification, which step 3 requires (#581 §5 item 1). The matching CP-7 line is in [checklist §4](2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken).
+
 #### D-broker — **DEFER; make it conditional on T08's R3 verdict.**
 
 **Grounds.** T08's first step is a hard early go/no-go: whether any mechanism yields the unknown-request terminal fence the contract requires; if none, "T09 cannot be specified" (T08 §2). Nothing in T08 waits on D-broker — its R2/R4 evidence comes from the operator's own exports (T08 §5), not agent access. No 11-08 dependency (§1). AGENTS.md: "No agent may place a trade."
