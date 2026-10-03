@@ -38,7 +38,7 @@ S5 draft §6 Q12 (`:404`) records that the §1.3 **When** column and the §1.5(a
 - **G-PROV** — provisioning of the production qualification host, taken at **CP-8** ([checklist addendum §4](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step), `2026-09-20-tradeify-deployment-checklist.md:496`), before any `OPERATOR`-class enrollment on it.
 - **G-REL** — before any production-authority release. That means before installing or activating any release, instance document, trust domain or key enrollment whose `authority_class` is `OPERATOR` on that host. The code already knows exactly two classes, `TEST_ONLY` and `OPERATOR` (`ops/c1_rail/qualification/execution/release.py:25`, `keys.py:16`, `credentials.py:28`, `admission.py:51`). G-REL also covers CP-8's second half, "admit the production attempt after OF attestation" (`checklist:496`).
 - **G-ACC** — after any access change (triggers in §A.2), before the next use of any production authority on the affected host or environment.
-- **G-ARM** (OF-5 only) — before any `c1_rail_arm.py --arm`, and at each per-session GO. The per-session GO is standing posture: "Every armed session needs its own GO" (AGENTS.md, Live-execution posture), so each session gets its own OF-5 read. Supporting, for commissioning and the first attended release only: under [incident ADR §A11.2](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27), "during commissioning and the first attended release, an incident ends automated trading for that session" (`:381`); its scope for later releases "is not ruled" (`:384`).
+- **G-ARM** (OF-5 only) — before any `c1_rail_arm.py --arm`, and at each per-session GO. The per-session GO is standing posture: "Every armed session needs its own GO" (AGENTS.md, Live-execution posture), so each session gets its own OF-5 read. Supporting, for commissioning and the first attended release only: under [incident ADR §A11.2](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27), "during commissioning and the first attended release, an incident ends automated trading for that session" (`:381`); its scope for later releases "is not ruled" (`:384`). *Added 2026-10-02 (sitting 2), pointer:* the B–D GC-7 per-session actor inventory (RA-A, operator ruling 2026-10-02 (sitting 2)) is also taken at G-ARM. Its record's SHA-256 joins that session's arm evidence beside the OF-5 attestation.
 - **G-TBI3** (OF-6 only) — at TB-I3, the build and acceptance of the GO validator and arm interlock ([admission ADR §2b](../adr/2026-09-12-tradeify-book-protection-instance-admission.md), `:105`).
 - **G-F1** (OF-7 only) — before F1 admission of the production attempt, which means before the transaction that binds the budget and generates the salt (S5 draft §1.4, `:117-118`).
 
@@ -286,6 +286,8 @@ D1, in the ruling's words: "Service-generated salt; private worker/G5 access; no
 
 Whether host spend counts against the rail's $700 spend ceiling (AGENTS.md, standing-consequence table, "Rail build/account registration GO; spend ceiling $700") is **an operator decision** (Q-8).
 
+*[2026-10-02: candidate host classes are priced, and the ADR's ceiling text is quoted, in the [cost-line addendum](#addendum-2026-10-02-production-host-cost-line-documentary). No provider is selected and the spend decision stays at CP-8.]*
+
 ### C.9 Host bill of materials (PROPOSED; no provider, no sizing)
 
 | Item | Specification | Source in this note |
@@ -327,7 +329,7 @@ Whether host spend counts against the rail's $700 spend ceiling (AGENTS.md, stan
 - **Q-5:** Whether an attestation goes stale by age alone, in addition to triggers.
 - **Q-6:** Whether TB-I3's `--arm` consumes the OF-5 attestation digest as a typed input.
 - **Q-7:** systemd-oomd on the production class.
-- **Q-8:** Whether host spend counts against the $700 rail ceiling.
+- **Q-8:** Whether host spend counts against the $700 rail ceiling. *[2026-10-02: Q-8 ruled, operator ruling 2026-10-02 (sitting 2): exempt, with a separate cap the operator states. The cap is $500 (operator follow-up 2026-10-03T03:16Z). See the rail GO ADR addendum of 2026-10-02.]*
 - **S5 draft Q8** (G5 private salt route) and **Q9** (closure of a never-retried retry-eligible IN_DOUBT) stay open. They are inputs to the K3/RC-4 slice and to CQ-3.
 
 ### D.3 Operator decisions surfaced by this note
@@ -488,3 +490,105 @@ No finding was rejected. Beyond the findings, one statement was corrected: the e
 - **Operator questions carried forward:** CQ-1..CQ-3, Q-1..Q-7 (§D). None blocks the assignment.
 
 **Not granted:** unchanged from the Status line.
+
+---
+
+## Addendum 2026-10-02: production host cost line (documentary)
+
+**Status:** documentary return of coordinator ticket Q ("H7 host cost line", NOW part), for the CP-8 spend decision. It prices candidate host classes from public pricing sources and quotes the rail GO ADR's ceiling text. It selects no provider, sizes nothing, spends nothing, provisions nothing, takes no account action and touches no qualification code. It does not answer Q-8. Host sizing stays UNVERIFIED pending checklist T11's measured envelope, and spend stays an **operator decision at CP-8** (§C.8). Repository anchors in this addendum are at `bd30646`. "Ledger" means [`2026-09-18-full-e1-execution-slices.md`](../superpowers/plans/2026-09-18-full-e1-execution-slices.md); "checklist" means [`2026-09-20-tradeify-deployment-checklist.md`](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md).
+
+### Q.1 What the price has to cover
+
+| Item | Value | Source (verified at `bd30646`) |
+|---|---|---|
+| Host class | One dedicated, persistent, administrator-provisioned Ubuntu 24.04 x86_64 host of the accepted class; no unattended reboot or package upgrade while a campaign can run; swap off | §C.1, §C.9 above |
+| Measured TEST_ONLY hosts | `nproc=4`, `SwapTotal: 0 kB`, kernel `6.17.0-1022-azure`, `systemd 255 (255.4-1ubuntu8.17)`, cgroup2. CPU `AMD EPYC 7763` on job a and `AMD EPYC 9V74` on job b. Host RAM is not recorded there; the runner's 4 vCPU / 16 GB is vendor documentation and UNVERIFIED (§C.1) | `docs/notes/2026-09-27-s5-part-a-measurement/stage1b/36364854404-a-attempt1/host-facts.txt:1-8` and `…-b-attempt1/host-facts.txt:1-8` |
+| TEST_ONLY PART_A ceilings | **120 s CPU / 300 s wall.** The shared floors were approved "for PART_A TEST_ONLY measurement only … **Not** for other phases and **not** for production" (ledger `:820`; confirmed `:1137`). Application gave X = 120 s and Y = 300 s (`:1162`, `:1165`). The PA-5 re-application leaves both unchanged (`:1789-1790`), and that answers trigger 6 for TEST_ONLY (`:1828`) | ledger |
+| PA-5 k | **k = 29896463 / 7329488 = 4.078929 > 1.25** (`:1787`). Carried to T11/CP-8 (`:1830`, `:1879`) | ledger |
+| CPU headroom | 13.142 s, "10.95 % of the 120 s ceiling" (`:1789`, `:1832`) | ledger |
+| Host difference | The service ran on an EPYC 9V74 and the Stage 1c maximum on an EPYC 7763. Stage 1b gives a factor of 1.5344, "indicative only" (`:1793`) | ledger |
+| Normalized ceiling | **130 s** (compute only) to **160 s** (whole charge scaled) if normalized to the 7763 (`:1795-1796`). Ruling: "Stands: 120 s, carry 130–160 s". The TEST_ONLY ceiling stays 120 s on the measured host, the 130–160 s figures are carried to T11/CP-8, and "a slower runner could hit the 120 s cap" (`:1834-1838`; carry list `:1880`) | ledger |
+| PA-3b | Composition `m_m × (P₂ + max(0, M̂ − M̂ₚ))`, provisional C3 check, additive assumption UNVERIFIED (`:951`, `:1175`). The clipped reading cannot show m_m headroom (`:1809`). Accepted for TEST_ONLY and carried to T11/CP-8 (`:1839`, `:1865`, `:1881`) | ledger |
+| Unreclaimable memory headroom | **11.8 %**: a 225.7 MB anon + kernel peak, 30.3 MB under the cap (`:1701`); the cap is `maximum_memory_bytes` 256,000,000 (`:1806`). Accepted for TEST_ONLY, with the THP share (up to 48 MB `anon_thp`) to be separated at T11/CP-8 (`:1713-1715`, `:1878`) | ledger; checklist CP-8 row `:500` |
+| Production values | Not set. C3 grants no "production value, budget, ceiling or host sizing" (`:1924`). Checklist T11 owes the "realistic measured resource envelope" (`:249`) | ledger; checklist |
+
+**What this means for pricing (derived here, not ruled):**
+1. **The CPU model matters, not only the vCPU count.** The 120 s ceiling was kept on the faster part, and the carried figures say a slower CPU could hit it. A class whose CPU model is not pinned therefore needs the T11 envelope measured on the instance actually provisioned.
+2. **The 11.8 % and PA-3b items concern the qualification slice's 256,000,000-byte cap, not host RAM.** Host RAM is a T11 sizing item.
+3. **The priced shape is 4 dedicated vCPU / 16 GiB, x86_64.** It equals the recorded `nproc=4` and the runner's vendor figure. It is a like-for-like price point, **not a sizing**.
+4. **Spot and low-priority pricing is excluded.** Eviction would be an unplanned stop, which §C.1 rules out while a campaign can run.
+
+### Q.2 Candidate host classes (list prices read 2026-10-02)
+
+| Class | Shape | CPU as the vendor states it | List price | Source (accessed 2026-10-02) | Status |
+|---|---|---|---|---|---|
+| **A1. Azure `Standard_D4as_v6` (Dasv6)**, East US, Linux pay-as-you-go | 4 vCPU / 16 GiB, no local disk | "AMD EPYC 9004 (Genoa) [x86-64]"; the series "will only work on OS images that support NVMe" | **$0.182 / hour** (meter "D4as v6", product "Virtual Machines Dasv6 Series", effective 2024-09-01) | Azure Retail Prices API: `https://prices.azure.com/api/retail/prices?$filter=serviceName eq 'Virtual Machines' and armRegionName eq 'eastus' and armSkuName eq 'Standard_D4as_v6' and priceType eq 'Consumption'`; specs: https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/general-purpose/dasv6-series | VERIFIED |
+| **A2. Azure `Standard_D4as_v5` (Dasv5)**, East US, Linux pay-as-you-go | 4 vCPU / 16 GiB, no local disk | "AMD EPYC 7763v (Milan) [x86-64] AMD EPYC 9004 (Genoa) [x86-64]": **either part, not pinned** | **$0.172 / hour** (meter "D4as v5", product "Virtual Machines Dasv5 Series", effective 2021-12-01) | Same API, `armSkuName eq 'Standard_D4as_v5'`; specs: https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/general-purpose/dasv5-series | VERIFIED |
+| Azure add-ons (A1 and A2) | OS disk Premium SSD P10, 128 GiB (size from https://learn.microsoft.com/en-us/azure/virtual-machines/disks-types); Standard static public IPv4 | — | P10 LRS: **$19.71 / month**. Static public IPv4: **$0.005 / hour** | Same API, East US: `productName eq 'Premium SSD Managed Disks' and skuName eq 'P10 LRS'`, meter "P10 LRS Disk"; `serviceName eq 'Virtual Network' and productName eq 'IP Addresses' and skuName eq 'Standard'`, meter "Standard IPv4 Static Public IP" | VERIFIED |
+| **B. DigitalOcean General Purpose Droplet** ("Regular" CPU option) | 4 dedicated vCPU / 16 GiB / 50 GiB SSD / 5,000 GiB transfer | Not stated on the pricing page | **$126.00 / month; $0.18750 / hour.** Backups: "20% (Weekly) or 30% (Daily) of Droplet cost" | https://www.digitalocean.com/pricing/droplets | VERIFIED (price). Public IPv4 inclusion for this plan: UNVERIFIED (the page's FAQ says "For Bundled Plans, a public IPv4 is included at no extra cost"; whether this plan is a Bundled Plan was not confirmed) |
+| **C. Hetzner Cloud CCX23** (General Purpose, dedicated vCPU) | 4 dedicated vCPU / 16 GB / 160 GB NVMe; 20 TB traffic (EU), 2 TB (US) | "AMD" (model not stated) | **UNVERIFIED.** The page rendered no amounts ("from /month", "/hour"), and every CCX plan showed "This product is currently unavailable. Please check back later." | https://www.hetzner.com/cloud/general-purpose/ (static fetch and a rendered browser read) | UNVERIFIED (price and availability) |
+
+**Monthly arithmetic** (730 hours per month is the convention used here; USD list prices; excludes tax, egress beyond allowances, snapshots or backups, off-host key devices (§C.8), monitoring and remote-access services, and any reserved or savings-plan discount):
+
+| Class | Compute | Disk | IPv4 | **Per month** | 3 months (arithmetic only) |
+|---|---|---|---|---|---|
+| A1 Azure D4as_v6 | 0.182 × 730 = $132.86 | $19.71 | 0.005 × 730 = $3.65 | **$156.22** | $468.66 |
+| A2 Azure D4as_v5 | 0.172 × 730 = $125.56 | $19.71 | $3.65 | **$148.92** | $446.76 |
+| B DigitalOcean GP 4/16 | $126.00 (50 GiB disk included) | included | UNVERIFIED | **$126.00** | $378.00 |
+| C Hetzner CCX23 | UNVERIFIED | included (160 GB) | UNVERIFIED | **UNVERIFIED** | — |
+
+The 3-month column uses the ADR §2's run-rate horizon only as an arithmetic horizon. No owner states how long the host runs, from provisioning through checklist T11 acceptance, the production E1 window and T15 retention (UNVERIFIED). Retention may need only storage, not a running VM. Provider backups are listed for price only. Any backup of the `data` tree must be administrator-only and not agent-reachable (Q-3, §C.5).
+
+**Class notes (facts, not a recommendation):**
+- **A1** is the only priced class whose vendor text names a single CPU family (EPYC 9004, Genoa). That the service's measured EPYC 9V74 belongs to that family is read from its model number only (UNVERIFIED), and whether A1 presents a 9V74 is UNVERIFIED. If it does, it is the faster part on the ledger's figures, and the carried 130–160 s question stays open on it.
+- **A2** can land on either an EPYC 7763-class part or a Genoa part. The ledger's host difference could therefore appear between two instances of the same SKU.
+- **B** and **C** do not state the CPU model on the pages read.
+- **Inventory match:** whether any candidate's Ubuntu 24.04 image matches the recorded kernel and systemd versions is UNVERIFIED. If it does not, §C.1 already requires its own S2-equivalent Linux evidence before G-REL.
+
+### Q.3 The $700 ceiling: what the rail GO ADR says (quoted, not ruled)
+
+Source: [`docs/adr/2026-07-17-c1-rail-build-account-registration-go.md`](../adr/2026-07-17-c1-rail-build-account-registration-go.md) at `bd30646`.
+- **§2 (`:58`):** "Spend ceiling **$700 all-in to first live fill** (eval + 3 months run-rate; one reset headroom)."
+- **§4 revert trigger (b) (`:75`):** "projected or actual all-in spend to first live fill exceeds **$700**".
+- **Addendum 2026-10-01 (`:431`):** "**Feed costs only** fall outside this ADR's $700 all-in ceiling (§2) and outside the projected spend that revert trigger (b) measures (§4). … The ceiling continues to cover what it did before: the eval, the rail run-rate, and the drill costs ruled under F-4."
+- **Same addendum (`:443`):** "**Still counted under the cap:** any charge whose purpose is not receiving the market data. That includes account, inactivity, platform or trading fees that are not required for data access, and the eval and rail costs."
+- **What the ADR does not say:** the word "qualification" does not occur in it (`grep -n -i qualification` returns nothing). Its "host" mentions concern the rail's signal and sizing path, for example §7 B2's "always-on host+TLS standup" (`:113`). None names this host.
+- **Status of the question:**
+  - Q-8 is open in this note (§D.2).
+  - At acceptance it was folded into CP-2 question F-4 ("Coordinator acceptance" above; [commissioning packet](2026-09-27-route-commissioning-session-packet.md) `:680`, X-13: "production-host spend (H7)").
+  - The recorded CP-2 ruling on F-4 covers "Drill commissions and adverse slippage" only (commissioning packet `:88`).
+  - No record read for this addendum rules on host spend. Whether the 2026-10-01 sentence at `:443` reaches host spend is a reading for the operator. **Q-8 stays open.** *[2026-10-02: Q-8 ruled, operator ruling 2026-10-02 (sitting 2): exempt, with a separate cap the operator states. The cap is $500 (operator follow-up 2026-10-03T03:16Z). See the rail GO ADR addendum of 2026-10-02.]*
+- **Tally:** the ADR's last public figure is "$208 committed" (`:351`). Later commitments and the remaining headroom are private ("confirmed privately at CP-3", [X-1 packet](2026-09-29-x1-decision-packet.md) `:99`) and were not read.
+
+### Q.4 UNVERIFIED (this addendum)
+
+- Hetzner CCX23 price and availability.
+- The CPU model actually delivered on any candidate (A2 is not pinned; B and C are not stated), and whether A1 presents an EPYC 9V74.
+- Whether any candidate's Ubuntu 24.04 image reproduces the recorded kernel and systemd inventory.
+- Public IPv4 inclusion on B.
+- Host duration, RAM and disk sizing (checklist T11's envelope, `:249`).
+- Prices are list prices read on 2026-10-02: Azure for East US only, before tax. A later read can differ.
+
+### Verification (this addendum)
+
+Commands run in worktree `agent-a9c926207dc9eeae2`, branch `claude/host-cost-line` from `origin/main` at `bd30646`. Read-only apart from this file:
+
+```bash
+git fetch origin main && git checkout -b claude/host-cost-line origin/main          # bd30646
+rg -n "4\.0789|4\.079|11\.8|PA-3b|130.{0,3}160|300 s|120 s" docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
+# ledger read: :1690-1889 (diagnosis, Stage 2/PA-5, rulings 2026-10-01, C3 packet), :1907-2011
+sed -n 243,253p docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md        # T11, envelope at :249
+grep -n "CP-8" docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md          # carry row :500
+cat docs/notes/2026-09-27-s5-part-a-measurement/stage1b/36364854404-{a,b}-attempt1/host-facts.txt
+grep -n "^#\|700\|ceiling\|feed" docs/adr/2026-07-17-c1-rail-build-account-registration-go.md   # §2 :58, §4 :75, :351, :431, :443
+grep -n -i "host\|qualification" docs/adr/2026-07-17-c1-rail-build-account-registration-go.md   # no "qualification"
+sed -n 60,95p docs/notes/2026-09-27-route-commissioning-session-packet.md; sed -n 676,684p …       # F-4 :64, ruling :88, X-13 :680
+curl -s -G https://prices.azure.com/api/retail/prices --data-urlencode "\$filter=…"           # D4as_v5, D4as_v6, P10 LRS, Standard IPv4 (eastus, Consumption)
+curl -sL https://www.digitalocean.com/pricing/droplets                                         # GP 4 vCPU / 16 GiB row
+# WebFetch: learn.microsoft.com dasv5-series, dasv6-series, disks-types; hetzner.com/cloud/general-purpose (no amounts)
+# Browser read of hetzner.com/cloud/general-purpose: price containers empty; "currently unavailable" on each CCX plan
+```
+
+Not run: `make check`, any test, any Linux dispatch, any account, console or quote request. No spend.
+
+**Not granted:** a provider choice, sizing, budget or production value; spend; provisioning; any account action; an answer to Q-8; any CP-8 decision.
