@@ -19,6 +19,11 @@ or corrupt journal is rebuilt from the owner's committed ``incidents`` rows, and
 one is moved aside, never deleted. (4) ``liveness()`` lets the external missed-heartbeat
 monitor cover this notifier; the notifier sends no heartbeat itself.
 
+Bounded publish (relay review P2 on #628): a publish that outlives its timeout keeps running on
+its daemon thread, never killed. A (job, channel) pair holds at most one live publish, and all
+pairs together at most ``MAX_OUTSTANDING_PUBLISHES``. A refused channel fails for the round.
+A late outcome is appended as evidence under the same closing guard as ``record_delivery``.
+
 Out of this build (card §8): any concrete provider binding, the 60 s alternate-channel
 escalation, acting on ``ALL_CHANNELS_LOST``, the external heartbeat and attendance.
 """
@@ -49,6 +54,10 @@ PUBLISH_STATES = ("accepted", "rejected", "unknown")
 # HR :59 escalates 60 s after the first attempt without acknowledgment; the retry backoff
 # cap stays below it so every escalation interval holds a retry (owner ruling 2026-10-03).
 ESCALATION_STEP_S = 60.0
+# Live publishes across all (job, channel) pairs. Each channel without a live publish keeps
+# one slot reserved, so a hung channel cannot starve a healthy one; the config therefore
+# refuses more channels than this. Card §0.7 justifies the value.
+MAX_OUTSTANDING_PUBLISHES = 8
 # kind -> (needs a secret reference, delivers). Concrete providers are OWED to D-MON.
 # A non-delivering kind (local_file) is evidence only: its acceptance never ends a round,
 # never counts against ALL_CHANNELS_LOST and never closes a job (card §3.3).
@@ -202,6 +211,8 @@ class NotifierConfig:
             raise NotifierConfigError("at least one channel spec required")
         if len({spec.name for spec in self.channels}) != len(self.channels):
             raise NotifierConfigError("channel names must be unique")
+        if len(self.channels) > MAX_OUTSTANDING_PUBLISHES:
+            raise NotifierConfigError("more channels than MAX_OUTSTANDING_PUBLISHES")
         if not any(CHANNEL_KINDS[spec.kind][1] for spec in self.channels):
             raise NotifierConfigError("at least one delivering channel required")
         for name in ("publish_timeout_s", "retry_initial_s", "retry_max_s"):
@@ -261,6 +272,8 @@ class IncidentNotifier:
         self.config = config
         self._clock = clock
         self._last_loop_at = None
+        self._publish_lock = threading.Lock()
+        self._publishes = {}  # (incident key, channel name) -> Event set when the publish ends
         fault = self._journal_fault()
         now = self._now() if fault else None
         moved = self._move_aside(now) if fault else None
@@ -439,9 +452,15 @@ class IncidentNotifier:
         assert_no_secrets(payload)
         accepted = delivered = False
         for position, channel in enumerate(self._channels, 1):
-            with self._journal() as db:
-                self._event(db, key, "attempt", channel.name, now)
-            result, failure = self._bounded_publish(channel, key, payload)
+            # A refused channel sends nothing, so it records its refusal instead of an attempt
+            # and fails for this round (ALL_CHANNELS_LOST counts it) without waiting.
+            refused = self._refusal(key, channel)
+            if refused is None:
+                with self._journal() as db:
+                    self._event(db, key, "attempt", channel.name, now)
+                result, failure = self._bounded_publish(channel, key, payload)
+            else:
+                result, failure = None, refused
             delivers = CHANNEL_KINDS[channel.kind][1]
             # The outcome that ends the round commits with the job update, so a crash can never
             # leave a durable delivered event on a job still due for republish. A job closed by
@@ -451,7 +470,9 @@ class IncidentNotifier:
                 state, lost = db.execute(
                     "SELECT state, channels_lost FROM jobs WHERE incident_key=?", (key,)).fetchone()
                 closed = state == "delivered"
-                if result is None or result.state != "accepted":
+                if refused:
+                    self._event(db, key, refused, channel.name, now)
+                elif result is None or result.state != "accepted":
                     self._event(db, key, "delivery_failed", channel.name, now,
                                 outcome=failure or result.state)
                 elif not delivers:
@@ -481,25 +502,90 @@ class IncidentNotifier:
                     (now + timedelta(seconds=delay)).isoformat(), rounds,
                     0 if accepted else 1, key))
 
+    def _refusal(self, key, channel):
+        """Why ``channel`` may not start a publish for ``key`` now, or None.
+
+        A pair whose publish is still live is ``publish_in_flight``. Otherwise the publish must
+        fit under ``MAX_OUTSTANDING_PUBLISHES`` beside one reserved slot for every other channel
+        with no live publish, or it is ``publish_capacity_exhausted``.
+        """
+        with self._publish_lock:
+            self._publishes = {pair: done for pair, done in self._publishes.items()
+                               if not done.is_set()}
+            if (key, channel.name) in self._publishes:
+                return "publish_in_flight"
+            busy = {name for _key, name in self._publishes}
+            reserved = sum(other.name not in busy for other in self._channels if other is not channel)
+            if len(self._publishes) + 1 + reserved > MAX_OUTSTANDING_PUBLISHES:
+                return "publish_capacity_exhausted"
+        return None
+
     def _bounded_publish(self, channel, key, payload):
-        box = {}
+        box, done = {}, threading.Event()
 
         def call():
             try:
-                box["result"] = channel.publish(key, dict(payload))
+                outcome = channel.publish(key, dict(payload)), None
             except BaseException as exc:  # noqa: BLE001 - any channel failure is a failed attempt
-                box["error"] = exc
+                outcome = None, exc
+            try:
+                with self._publish_lock:  # exactly one of the round and this thread records it
+                    box["outcome"] = outcome
+                    late = "abandoned" in box
+                if late:
+                    self._record_late(channel, key, *self._classify(*outcome))
+            finally:
+                done.set()
 
         worker = threading.Thread(target=call, name="book-incident-publish", daemon=True)
         worker.start()
+        with self._publish_lock:
+            self._publishes[(key, channel.name)] = done
         worker.join(self.config.publish_timeout_s)
-        if worker.is_alive():
-            return None, "timeout"
-        if "error" in box:
-            return None, type(box["error"]).__name__
-        if not isinstance(box.get("result"), PublishResult):
+        with self._publish_lock:
+            if "outcome" not in box:
+                box["abandoned"] = True
+                return None, "timeout"
+        return self._classify(*box["outcome"])
+
+    @staticmethod
+    def _classify(result, error):
+        if error is not None:
+            return None, type(error).__name__
+        if not isinstance(result, PublishResult):
             return None, "invalid_result"
-        return box["result"], None
+        return result, None
+
+    def _record_late(self, channel, key, result, failure):
+        """Append the outcome of a publish that outlived its timeout, as evidence only.
+
+        Rounds, backoff and channel loss stay the round's. Delivery evidence closes a pending
+        job through ``_deliver``; a closed job gets no second ``delivered``. A journal failure
+        is swallowed, since a daemon thread must not raise: the job stays as it was and the
+        next round republishes under the same key.
+        """
+        try:
+            now = self._now()
+            with self._journal() as db:
+                if db.execute("SELECT 1 FROM jobs WHERE incident_key=?", (key,)).fetchone():
+                    self._event(db, key, "late_outcome", channel.name, now,
+                                outcome=failure or result.state,
+                                delivered=result is not None and result.delivered,
+                                evidence_digest=None if result is None else result.evidence_digest)
+                    if result is not None and result.delivered and CHANNEL_KINDS[channel.kind][1]:
+                        self._deliver(db, key, channel.name, now, result.evidence_digest)
+        except Exception:  # noqa: BLE001 - see the docstring
+            pass
+
+    def _deliver(self, db, key, channel, now, evidence_digest):
+        """The closing guard, in the caller's transaction: one ``delivered`` event per job and
+        never a reopen. Returns the job's prior state, or None for an unknown key."""
+        row = db.execute("SELECT state FROM jobs WHERE incident_key=?", (key,)).fetchone()
+        if row is not None and row[0] != "delivered":
+            db.execute("UPDATE jobs SET state='delivered' WHERE incident_key=? AND state='pending'",
+                       (key,))
+            self._event(db, key, "delivered", channel, now, evidence_digest=evidence_digest)
+        return None if row is None else row[0]
 
     def record_delivery(self, key, channel, evidence_digest):
         """Append out-of-band delivery evidence (e.g. a provider receipt) and close the job.
@@ -512,13 +598,8 @@ class IncidentNotifier:
             raise ValueError("evidence digest must be a sha256 hex digest")
         now = self._now()
         with self._journal() as db:
-            row = db.execute("SELECT state FROM jobs WHERE incident_key=?", (key,)).fetchone()
-            if row is None:
+            if self._deliver(db, key, channel, now, evidence_digest) is None:
                 raise ValueError("unknown incident key")
-            if row[0] == "delivered":
-                return
-            db.execute("UPDATE jobs SET state='delivered' WHERE incident_key=?", (key,))
-            self._event(db, key, "delivered", channel, now, evidence_digest=evidence_digest)
 
     # -- reads -----------------------------------------------------------------------------
 

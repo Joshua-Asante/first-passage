@@ -841,9 +841,10 @@ def test_malformed_incident_row_still_notifies(tmp_path):
 
 class _Receipting(FakeChannel):
     """Records a provider receipt through ``record_delivery`` while its publish is in flight."""
-    notifier = None
+    notifier = thread = None
 
     def publish(self, idempotency_key, payload):
+        self.thread = threading.current_thread()
         self.notifier.record_delivery(idempotency_key, self.name, "d" * 64)
         return super().publish(idempotency_key, payload)
 
@@ -864,8 +865,10 @@ def test_record_delivery_during_round_is_not_downgraded(tmp_path, outcome, kind)
         notifier.run_once()
     finally:
         channel.release()
+        channel.thread.join(10)  # settle a timed-out publish's late outcome before reading
+    late = [("late_outcome", "primary")] if outcome is FakeChannel.HANG else []
     assert _kinds(notifier, key) == [("detected", None), ("attempt", "primary"),
-                                     ("delivered", "primary"), (kind, "primary")]
+                                     ("delivered", "primary"), (kind, "primary")] + late
     (job,) = notifier.jobs()
     assert (job["state"], job["channels_lost"], job["rounds"]) == ("delivered", False, 0)
     assert notifier.channels_lost() == ()
@@ -1161,3 +1164,185 @@ def test_retry_max_is_below_the_60_s_escalation_step():
     for value in (60, 60.0, 300):
         with pytest.raises(NotifierConfigError):
             NotifierConfig.from_mapping({"channels": [good], "retry_max_s": value})
+
+
+# -- Relay review P2 on #628 (2026-10-03): bounded outstanding publishes ---------------------
+
+# Publish timeout for these cases: short enough to keep hung rounds quick, long enough that a
+# healthy fake's publish is never misread as a timeout on a loaded runner.
+_PUBLISH_S = 0.25
+
+
+class _Hanging(FakeChannel):
+    """Every publish blocks until ``release``; records each publishing thread (review probe)."""
+
+    def __init__(self, name, result=ACCEPTED):
+        super().__init__(name)
+        self.result, self.started = result, []
+
+    def publish(self, idempotency_key, payload):
+        self.calls.append((idempotency_key, dict(payload)))
+        self.started.append((idempotency_key, threading.current_thread()))
+        self._released.wait(60)
+        return self.result
+
+    def live(self, key=None):
+        return sum(thread.is_alive() for call_key, thread in self.started if key in (None, call_key))
+
+    def settle(self):
+        self.release()
+        for _key, thread in self.started:
+            thread.join(10)
+
+
+@pytest.fixture
+def hanging():
+    """Never-returning channels; teardown releases and joins every probe thread."""
+    made = []
+
+    def make(name, result=ACCEPTED):
+        made.append(_Hanging(name, result))
+        return made[-1]
+
+    yield make
+    for channel in made:
+        channel.settle()
+    assert not [channel.name for channel in made if channel.live()]
+
+
+def _due_rounds(notifier, clock, count):
+    notifier.poll()
+    for _ in range(count):
+        clock.at = max(datetime.fromisoformat(job["next_attempt_at"]) for job in notifier.jobs())
+        notifier.run_once()
+
+
+def test_permanent_hang_keeps_one_live_publish_per_job_channel(tmp_path, hanging):
+    """A channel that never returns holds one live publish for the job; each later round
+    records ``publish_in_flight`` and still publishes on the healthy channel."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    primary, secondary = hanging("primary"), FakeChannel("secondary", [ACCEPTED] * 6)
+    clock = Clock()
+    notifier = _notifier(tmp_path, account, primary, secondary, clock=clock, config=_config(
+        "primary", "secondary", timeout=_PUBLISH_S, initial=1, maximum=1))
+    _due_rounds(notifier, clock, 6)
+    assert (len(primary.calls), primary.live(key)) == (1, 1)
+    assert [call[0] for call in secondary.calls] == [key] * 6
+    kinds = [kind for kind, _ in _kinds(notifier, key)]
+    assert [kinds.count(kind) for kind in ("attempt", "publish_in_flight", "provider_accepted")] == [
+        7, 5, 6]
+    assert "all_channels_lost" not in kinds and notifier.jobs()[0]["state"] == "pending"
+
+
+def test_review_probe_twelve_retries_leave_one_live_publish_thread(tmp_path, hanging):
+    """The relay reviewer's probe: at 0bd5867, 12 publish rounds on a hung channel left 12
+    live publishing threads. One remains, and the hung channel fails every round."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    channel = hanging("primary")
+    clock = Clock()
+    notifier = _notifier(tmp_path, account, channel, clock=clock,
+                         config=_config("primary", timeout=_PUBLISH_S, initial=1, maximum=1))
+    _due_rounds(notifier, clock, 12)
+    assert channel.live() == 1 and notifier.liveness() == clock()
+    kinds = [kind for kind, _ in _kinds(notifier, key)]
+    assert [kinds.count(kind) for kind in ("attempt", "publish_in_flight", "all_channels_lost")] == [
+        1, 11, 1]
+    assert notifier.channels_lost() == (key,) and notifier.jobs()[0]["rounds"] == 12
+
+
+def test_outstanding_publishes_stay_under_the_global_cap(tmp_path, hanging):
+    """Two channels that never return: live publishes stop at the cap, and every channel the
+    cap refuses records ``publish_capacity_exhausted`` and counts as lost for the round."""
+    cap = 8
+    account, _keys = _incidents(tmp_path, 6)
+    first, second = hanging("primary"), hanging("secondary")
+    clock = Clock(NOW + timedelta(minutes=1))
+    notifier = _notifier(tmp_path, account, first, second, clock=clock,
+                         config=_config("primary", "secondary", timeout=_PUBLISH_S))
+    notifier.run_once()
+    order = [job["incident_key"] for job in notifier.jobs()]
+    assert first.live() + second.live() == cap
+    exhausted = [(row["incident_key"], row["channel"]) for row in notifier.events()
+                 if row["kind"] == "publish_capacity_exhausted"]
+    assert exhausted == [(key, name) for key in order[4:] for name in ("primary", "secondary")]
+    assert notifier.channels_lost() == tuple(order)
+    clock.advance(5)
+    notifier.run_once()
+    assert first.live() + second.live() == len(first.calls) + len(second.calls) == cap
+    with pytest.raises(NotifierConfigError):
+        _config(*("channel%d" % number for number in range(cap + 1)))
+    assert notifier_module.MAX_OUTSTANDING_PUBLISHES == cap
+
+
+def test_a_hung_channel_cannot_take_the_healthy_channels_slot(tmp_path, hanging):
+    """Each channel without a live publish keeps one reserved slot, so a channel that never
+    returns is refused before it can starve a healthy one."""
+    cap = 8
+    account, _keys = _incidents(tmp_path, cap + 2)
+    hung, healthy = hanging("primary"), FakeChannel("secondary")
+    notifier = _notifier(tmp_path, account, hung, healthy, clock=Clock(NOW + timedelta(minutes=1)),
+                         config=_config("primary", "secondary", timeout=_PUBLISH_S))
+    notifier.run_once()
+    order = [job["incident_key"] for job in notifier.jobs()]
+    assert hung.live() == cap - 1
+    assert [call[0] for call in healthy.calls] == order
+    assert {job["state"] for job in notifier.jobs()} == {"delivered"}
+    assert [row["incident_key"] for row in notifier.events()
+            if row["kind"] == "publish_capacity_exhausted"] == order[cap - 1:]
+    assert notifier.channels_lost() == ()
+
+
+def test_late_completion_never_duplicates_delivery_or_regresses_a_job(tmp_path, hanging):
+    """A hung publish that returns later appends ``late_outcome`` evidence under the closing
+    guard: it closes a pending job on delivery evidence once, adds no second ``delivered`` to
+    a closed job, and never changes rounds, backoff or channel loss."""
+    late = PublishResult("accepted", delivered=True, evidence_digest="c" * 64)
+    detail = {"outcome": "accepted", "delivered": True, "evidence_digest": "c" * 64}
+
+    # Delivered on another channel first: the late delivery is evidence only.
+    account = _operator(tmp_path / "closed")
+    key = incident_key(account.incidents[0]["incident_id"])
+    hung = hanging("primary", late)
+    notifier = _notifier(tmp_path / "closed", account, hung, FakeChannel("secondary", [DELIVERED]),
+                         config=_config("primary", "secondary", timeout=_PUBLISH_S))
+    notifier.run_once()
+    before = notifier.jobs()
+    hung.settle()
+    assert notifier.jobs() == before
+    assert _kinds(notifier, key)[-2:] == [("delivered", "secondary"), ("late_outcome", "primary")]
+    assert notifier.events(key)[-1]["detail"] == detail
+
+    # Still pending: the late delivery evidence closes the job once and changes nothing else.
+    account = _operator(tmp_path / "pending")
+    key = incident_key(account.incidents[0]["incident_id"])
+    hung, clock = hanging("primary", late), Clock()
+    notifier = _notifier(tmp_path / "pending", account, hung, clock=clock,
+                         config=_config("primary", timeout=_PUBLISH_S))
+    notifier.run_once()
+    (before,) = notifier.jobs()
+    hung.settle()
+    assert notifier.jobs() == (dict(before, state="delivered"),)
+    assert _kinds(notifier, key)[-2:] == [("late_outcome", "primary"), ("delivered", "primary")]
+    clock.advance(3600)
+    notifier.run_once()
+    assert len(hung.calls) == 1
+    assert [kind for kind, _ in _kinds(notifier, key)].count("delivered") == 1
+
+    # A late rejection is evidence only; once it returns, the pair may publish again.
+    account = _operator(tmp_path / "rejected")
+    key = incident_key(account.incidents[0]["incident_id"])
+    hung, clock = hanging("primary", REJECTED), Clock()
+    notifier = _notifier(tmp_path / "rejected", account, hung, clock=clock,
+                         config=_config("primary", timeout=_PUBLISH_S))
+    notifier.run_once()
+    before = notifier.jobs()
+    hung.settle()
+    assert notifier.jobs() == before
+    assert notifier.events(key)[-1]["detail"] == {
+        "outcome": "rejected", "delivered": False, "evidence_digest": None}
+    clock.at = datetime.fromisoformat(before[0]["next_attempt_at"])
+    notifier.run_once()
+    assert len(hung.calls) == 2 and _kinds(notifier, key)[-2:] == [
+        ("attempt", "primary"), ("delivery_failed", "primary")]

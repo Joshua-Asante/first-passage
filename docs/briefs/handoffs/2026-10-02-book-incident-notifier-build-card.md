@@ -89,6 +89,25 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 - **Residual.** Each incident delivered before the loss is re-published once after a rebuild, under its original key. A provider that groups by key folds it into a still-open alert, but an already-resolved alert (for example in Grafana) can re-page once per incident, at most once for each `incidents` row.
 - **Limits.** A missing journal is indistinguishable from a first start, so it records no `journal_rebuilt` event; only a corrupt one does. A journal written before this fold has `events.incident_key NOT NULL`, so it reads as a schema mismatch and is moved aside; none is deployed. When TB-I3 lands a durable attendance record in the owner store, a rebuild can exclude acknowledged incidents.
 
+## §0.7 — Bounded outstanding publishes (relay review P2 on #628), 2026-10-03
+
+Amended 2026-10-03 by coordinator (3) for relay review P2 on #628 (Codex coordinator (2)'s reviewer, base `a5ca41e`).
+
+**Finding.** At `0bd5867` every retry started a new daemon thread while publishes that had timed out kept running. A permanently hung channel therefore accumulated threads without bound while `liveness()` kept refreshing, which threatened the healthy channels. The reviewer's probe: 12 retries left 12 live publishing threads.
+
+**Rule** (`ops/c1_rail/book_incident_notifier.py`, `_refusal`, `_bounded_publish`, `_record_late`, `_deliver`):
+- **Per pair.** A (job, channel) pair holds at most one live publish. While it runs, that channel records `publish_in_flight` instead of an `attempt`, without waiting, and the round moves to the next channel.
+- **Global.** At most `MAX_OUTSTANDING_PUBLISHES = 8` live publishes in total, with one slot reserved for each other channel that has no live publish. A publish that does not fit records `publish_capacity_exhausted`. When all 8 slots are live, no channel is idle, so every remaining channel in the round is refused.
+- **Round outcome.** Both refusals count as a failed channel, so a round with no delivering acceptance records `ALL_CHANNELS_LOST` as before.
+- **Threads.** No thread is killed. Each stays a daemon thread, so the process can exit, and it ends when its channel returns. A late return appends `late_outcome` {`outcome`, `delivered`, `evidence_digest`}. Delivery evidence on a delivering channel closes a still-pending job through the closing guard that `record_delivery` also uses (`_deliver`: one `delivered` per job, `UPDATE … AND state='pending'`). A closed job gets no second `delivered`. Rounds, backoff and `channels_lost` stay the round's.
+
+**Why 8.**
+- **Floor.** The reservation needs one slot per configured channel, so `NotifierConfig` refuses more than 8 channels. The D-MON shapes (PR #606) bind a primary and an alternate, plus an optional local evidence channel: two or three channels.
+- **Headroom.** With two channels, a hung channel can hold publishes for up to 7 jobs before it is refused (with three channels, 6). A slow but live provider therefore keeps working across a short backlog.
+- **Ceiling.** Eight parked daemon threads are a fixed and negligible cost. At `0bd5867`, a single hung pair grew by one thread per round: up to 120 an hour at the 30 s backoff cap.
+
+**Reservation (for acceptance).** The dispatch asked for "a small global cap". A plain cap would let one hung channel take all 8 slots across 8 incidents, for example after a journal rebuild re-owes every incident. It would then refuse the healthy channel for every later incident while those threads live, which is the starvation this P2 names. The reservation prevents that (T22). Dropping it is a one-term change in `_refusal`.
+
 ## §1 — Goal, scope, prerequisites
 
 **Goal.** When the book owner commits an incident, Joshua is notified through whichever channels D-MON binds. The local records then show detection, each attempt, provider acceptance, any delivery evidence and the outcome separately. None of this can change permission, generation, incidents or dispatch.
@@ -209,8 +228,15 @@ Tests live in `tests/ops/test_book_incident_notifier.py`. Each uses a real `Book
 | T16 | `test_lost_journal_mid_backlog_republishes_each_owed_incident_once[deleted, corrupt]` (each owed incident publishes exactly once); `test_corrupt_journal_is_moved_aside_and_rebuilt[unreadable, schema, integrity]`; `test_unavailable_journal_is_not_moved_aside` | Outbox condition 3 |
 | T17 | `test_liveness_reports_the_last_completed_loop_and_sends_nothing` | Outbox condition 4 |
 | T18 | `test_retry_max_is_below_the_60_s_escalation_step` | HR `:59`; §0.6 |
+| T19 | `test_permanent_hang_keeps_one_live_publish_per_job_channel`: a channel that never returns, plus 5 retries, keeps one live publish for that (job, channel); each later round records `publish_in_flight`, and the healthy channel is published every round | §0.7 |
+| T20 | `test_review_probe_twelve_retries_leave_one_live_publish_thread`: the reviewer's probe (12 rounds, 12 live threads at `0bd5867`) leaves one; the hung channel fails each round and `ALL_CHANNELS_LOST` is recorded once | §0.7 |
+| T21 | `test_outstanding_publishes_stay_under_the_global_cap`: two hung channels and 6 jobs stop at 8 live publishes, refused channels record `publish_capacity_exhausted` and count as lost, a later round adds none, and a config with more than 8 channels is refused | §0.7 |
+| T22 | `test_a_hung_channel_cannot_take_the_healthy_channels_slot`: one hung channel holds at most 7; the healthy channel delivers all 10 jobs | §0.7 |
+| T23 | `test_late_completion_never_duplicates_delivery_or_regresses_a_job`: a late return appends `late_outcome` only to a delivered job, closes a pending job once on delivery evidence, and leaves a late rejection as evidence; rounds, backoff and channel loss are unchanged | §0.7 |
 
 Amended 2026-10-03 by coordinator (3) for the :61 outbox ruling: T14–T18 added. T15, T16 `[deleted]` and `test_unavailable_journal_is_not_moved_aside` already pass at 60ba482: they pin a property the base had, or guard the new move-aside. T15's red is a planted on-disk mutant, recorded in the executor return.
+
+Amended 2026-10-03 by coordinator (3) for relay review P2 on #628: T19–T23 added, each red at `0bd5867`. `test_record_delivery_during_round_is_not_downgraded[timeout]` now joins its timed-out publish before reading and expects its `late_outcome`.
 
 **Return taxonomy.**
 - DONE: every red-first test recorded red at base and green at head; §7 regression, `test-ops` and `check` green with records cited; diff inside §5.
