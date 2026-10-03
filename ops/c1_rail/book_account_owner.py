@@ -800,6 +800,23 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                               "SELECT incident_id, reason, at, generation FROM incidents "
                               "ORDER BY rowid"))
 
+    @staticmethod
+    def read_incidents(path):
+        """Committed incident rows for the notifier, read without the owner's write lock.
+
+        Card 2026-10-02 C-1 (a): the DB opens ``?mode=ro`` for one SELECT, outside the
+        serializer and every owner transaction, so a reader can delay but never fail a halt.
+        """
+        try:
+            with closing(sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True,
+                                         timeout=5, isolation_level=None)) as db:
+                return tuple({"incident_id": row[0], "reason": row[1], "at": row[2],
+                              "generation": row[3]} for row in db.execute(
+                                  "SELECT incident_id, reason, at, generation FROM incidents "
+                                  "ORDER BY rowid").fetchall())
+        except (sqlite3.Error, OSError) as exc:
+            raise AccountOwnerError("account owner state unavailable") from exc
+
     @property
     def retained_sessions(self):
         """Session clocks bound to the retained runtime history."""
