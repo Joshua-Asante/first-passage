@@ -11,15 +11,23 @@ Isolation (card §3.7): the notifier reads incidents only through an injected re
 writes the owner DB and imports no broker, dispatch, arm or config-write module. A channel
 or journal failure surfaces here and cannot change or block the owner's halt.
 
+Outbox (card §0.5 item 4): the halt/resume owner ruled on 2026-10-03 that this journal plus
+the bounded publish is HR :61's notification outbox, under four conditions. (1) The
+idempotency key derives only from the committed ``incident_id``. (2) No import path reaches
+a broker, order, rail-command or C-a close module. (3) Durability is not assumed: a missing
+or corrupt journal is rebuilt from the owner's committed ``incidents`` rows, and a corrupt
+one is moved aside, never deleted. (4) ``liveness()`` lets the external missed-heartbeat
+monitor cover this notifier; the notifier sends no heartbeat itself.
+
 Out of this build (card §8): any concrete provider binding, the 60 s alternate-channel
 escalation, acting on ``ALL_CHANNELS_LOST``, the external heartbeat and attendance.
 """
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import math
@@ -38,6 +46,9 @@ except ImportError:  # pragma: no cover - exercised only outside the rail's path
 
 INCIDENT_KEY_DOMAIN = b"first-passage/book-incident-notification/v1\x00"
 PUBLISH_STATES = ("accepted", "rejected", "unknown")
+# HR :59 escalates 60 s after the first attempt without acknowledgment; the retry backoff
+# cap stays below it so every escalation interval holds a retry (owner ruling 2026-10-03).
+ESCALATION_STEP_S = 60.0
 # kind -> (needs a secret reference, delivers). Concrete providers are OWED to D-MON.
 # A non-delivering kind (local_file) is evidence only: its acceptance never ends a round,
 # never counts against ALL_CHANNELS_LOST and never closes a job (card §3.3).
@@ -53,9 +64,27 @@ _JOURNAL = (
     "state TEXT NOT NULL, next_attempt_at TEXT NOT NULL, rounds INTEGER NOT NULL, "
     "channels_lost INTEGER NOT NULL)",
     "CREATE TABLE IF NOT EXISTS events (sequence INTEGER PRIMARY KEY AUTOINCREMENT, "
-    "incident_key TEXT NOT NULL, kind TEXT NOT NULL, channel TEXT, at TEXT NOT NULL, "
+    "incident_key TEXT, kind TEXT NOT NULL, channel TEXT, at TEXT NOT NULL, "
     "detail TEXT NOT NULL)",
 )
+_SIDECARS = ("-journal", "-wal", "-shm")
+
+
+def _journal_schema(db):
+    """Table name -> column definitions, without SQLite's internal tables."""
+    return {name: tuple(db.execute("SELECT * FROM pragma_table_info(?)", (name,)).fetchall())
+            for (name,) in db.execute("SELECT name FROM sqlite_master WHERE type='table' "
+                                      "AND name NOT LIKE 'sqlite_%'").fetchall()}
+
+
+def _expected_schema():
+    with closing(sqlite3.connect(":memory:")) as db:
+        for statement in _JOURNAL:
+            db.execute(statement)
+        return _journal_schema(db)
+
+
+_JOURNAL_SCHEMA = _expected_schema()
 
 
 class NotifierStoreError(RuntimeError):
@@ -164,7 +193,7 @@ class NotifierConfig:
     channels: tuple[ChannelSpec, ...]
     publish_timeout_s: float = 10.0
     retry_initial_s: float = 5.0
-    retry_max_s: float = 300.0
+    retry_max_s: float = 30.0
     digest: str = field(init=False, compare=False)
 
     def __post_init__(self):
@@ -182,6 +211,8 @@ class NotifierConfig:
                 raise NotifierConfigError(name + " must be a positive finite number")
         if self.retry_initial_s > self.retry_max_s:
             raise NotifierConfigError("retry_initial_s exceeds retry_max_s")
+        if self.retry_max_s >= ESCALATION_STEP_S:
+            raise NotifierConfigError("retry_max_s must be below the 60 s escalation step")
         canonical = json.dumps(self.resolved(), sort_keys=True, separators=(",", ":"))
         object.__setattr__(self, "digest", hashlib.sha256(canonical.encode("utf-8")).hexdigest())
 
@@ -229,9 +260,15 @@ class IncidentNotifier:
         self._channels = tuple(channels[spec.name] for spec in config.channels)
         self.config = config
         self._clock = clock
+        self._last_loop_at = None
+        fault = self._journal_fault()
+        now = self._now() if fault else None
+        moved = self._move_aside(now) if fault else None
         with self._journal() as db:
             for statement in _JOURNAL:
                 db.execute(statement)
+            if fault:
+                self._event(db, None, "journal_rebuilt", None, now, cause=fault, moved_to=moved)
 
     # -- journal ---------------------------------------------------------------------------
 
@@ -260,6 +297,48 @@ class IncidentNotifier:
                     db.execute("ROLLBACK")
             finally:
                 db.close()
+
+    def _journal_fault(self):
+        """Why an existing journal cannot be trusted, or None (condition 3).
+
+        A missing or empty file is a fresh journal. Unreadable bytes, a schema other than
+        ``_JOURNAL`` or a failed ``integrity_check`` is a fault. A journal that cannot be
+        opened at all (a directory, a lock, a permission) is unavailable and raises, so a
+        transient error never moves a journal aside.
+        """
+        if not self.store_path.is_file():
+            return None
+        try:
+            with closing(sqlite3.connect(self.store_path, timeout=5, isolation_level=None)) as db:
+                db.execute("PRAGMA synchronous=FULL")  # writable: a hot journal may roll back
+                if db.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
+                    return "integrity"
+                schema = _journal_schema(db)
+        except sqlite3.OperationalError as exc:
+            raise NotifierStoreError("notifier journal unavailable") from exc
+        except sqlite3.DatabaseError:
+            return "unreadable"
+        return None if schema in ({}, _JOURNAL_SCHEMA) else "schema"
+
+    def _move_aside(self, now):
+        """Rename a faulty journal and its SQLite sidecars to a timestamped name; never delete.
+
+        The jobs are then re-derived from the owner's committed ``incidents`` rows by the next
+        poll, and the stable incident key lets a provider group any republish (condition 3).
+        """
+        stamp = now.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        name, attempt = "%s.corrupt-%s" % (self.store_path.name, stamp), 0
+        while any(self.store_path.with_name(name + suffix).exists() for suffix in ("",) + _SIDECARS):
+            attempt += 1
+            name = "%s.corrupt-%s-%d" % (self.store_path.name, stamp, attempt)
+        try:
+            for suffix in ("",) + _SIDECARS:
+                source = self.store_path.with_name(self.store_path.name + suffix)
+                if source.exists():
+                    os.rename(source, self.store_path.with_name(name + suffix))
+        except OSError as exc:
+            raise NotifierStoreError("notifier journal could not be moved aside") from exc
+        return name
 
     def _now(self):
         now = self._clock()
@@ -324,13 +403,26 @@ class IncidentNotifier:
     # -- publication -----------------------------------------------------------------------
 
     def run_once(self):
-        """Poll, then always publish due jobs; a poll failure re-raises after publishing."""
+        """Poll, then always publish due jobs; a poll failure re-raises after publishing.
+
+        Only a loop that completes without raising refreshes ``liveness()``.
+        """
         try:
             self.poll()
         except Exception as exc:  # noqa: BLE001 - re-raised below once due jobs are published
             self.publish_due()
             raise exc
         self.publish_due()
+        self._last_loop_at = self._now()
+
+    def liveness(self):
+        """Clock time of the last ``run_once`` that completed without raising, or None.
+
+        Condition 4: a read-only hook for the external missed-heartbeat monitor, which must
+        cover this notifier as well as the runtime. Reading it runs no loop and sends nothing;
+        the notifier never sends a heartbeat itself.
+        """
+        return self._last_loop_at
 
     def publish_due(self):
         now = self._now()

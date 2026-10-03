@@ -11,15 +11,16 @@ from __future__ import annotations
 import ast
 from contextlib import closing, contextmanager
 from dataclasses import replace
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import functools
 import hashlib
 import inspect
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import sqlite3
 import threading
 import time
+import tomllib
 
 import pytest
 
@@ -66,7 +67,7 @@ class Clock:
         self.at += timedelta(seconds=seconds)
 
 
-def _config(*names, timeout=1.0, initial=5.0, maximum=300.0):
+def _config(*names, timeout=1.0, initial=5.0, maximum=30.0):
     return NotifierConfig.from_mapping({
         "channels": [{"name": name, "kind": "fake", "secret_ref": "env:" + name.upper() + "_REF"}
                      for name in names or ("primary",)],
@@ -350,7 +351,7 @@ def test_retry_reuses_dedup_key_and_appends_attempt(tmp_path):
     clock = Clock()
     channel = FakeChannel("primary", [REJECTED, UNKNOWN, DELIVERED])
     notifier = _notifier(tmp_path, account, channel, clock=clock,
-                         config=_config("primary", initial=5, maximum=300))
+                         config=_config("primary", initial=5, maximum=30))
     notifier.run_once()
     notifier.run_once()  # not yet due: no new attempt
     assert len(channel.calls) == 1
@@ -886,3 +887,277 @@ def test_record_delivery_is_idempotent_and_ends_the_round(tmp_path):
                                      ("delivered", "primary"), ("delivery_failed", "primary")]
     with pytest.raises(ValueError):
         notifier.record_delivery("0" * 64, "primary", "f" * 64)
+
+
+# -- Halt/resume owner ruling 2026-10-03 on HR :61 "notification outbox": conditions 1-4 -----
+
+class _Grouping(FakeChannel):
+    """A provider that groups publishes by idempotency key into one alert, as a deduplicating
+    pager does. ``alerts`` may be shared across notifier instances (restart, rebuild)."""
+
+    def __init__(self, name, outcomes=(), alerts=None):
+        super().__init__(name, outcomes)
+        self.alerts = {} if alerts is None else alerts
+
+    def publish(self, idempotency_key, payload):
+        self.alerts.setdefault(idempotency_key, []).append(dict(payload))
+        return super().publish(idempotency_key, payload)
+
+
+def _incidents(tmp_path, count):
+    account = _operator(tmp_path)
+    for number in range(1, count):
+        account.halt("operator-stop:%d" % number, "operator",
+                     now=NOW + timedelta(seconds=10 + number))
+    keys = [incident_key(row["incident_id"]) for row in account.incidents]
+    assert len(keys) == count
+    return account, keys
+
+
+def _unreadable(store):
+    store.write_bytes(b"not a notifier journal\n" * 64)
+
+
+def _foreign_schema(store):
+    with closing(sqlite3.connect(store)) as db:
+        db.execute("CREATE TABLE jobs (incident_key TEXT PRIMARY KEY)")
+        db.commit()
+
+
+def _null_reason(store):
+    """The journal's own schema, holding a row that fails ``PRAGMA integrity_check``."""
+    with closing(sqlite3.connect(store, isolation_level=None)) as db:
+        db.execute("PRAGMA writable_schema=ON")
+        db.execute("UPDATE sqlite_master SET sql=replace(sql, 'reason TEXT NOT NULL', "
+                   "'reason TEXT') WHERE name='jobs'")
+    with closing(sqlite3.connect(store, isolation_level=None)) as db:
+        db.execute("INSERT INTO jobs VALUES ('k', NULL, 'at', 0, 'd', 'pending', 'at', 0, 0)")
+        db.execute("PRAGMA writable_schema=ON")
+        db.execute("UPDATE sqlite_master SET sql=replace(sql, 'reason TEXT', "
+                   "'reason TEXT NOT NULL') WHERE name='jobs'")
+
+
+def _moved_aside(directory):
+    return sorted(path for path in directory.iterdir() if ".corrupt-" in path.name)
+
+
+def test_idempotency_key_survives_retry_restart_and_rebuild_as_one_alert(tmp_path):
+    """Condition 1: the key derives only from the committed incident_id, so a retry and a
+    publish after a journal rebuild under a changed config carry one key and one alert."""
+    assert list(inspect.signature(incident_key).parameters) == ["incident_id"]
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    alerts, clock = {}, Clock()
+    first = _notifier(tmp_path, account, _Grouping("primary", [REJECTED, ACCEPTED], alerts),
+                      clock=clock)
+    first.run_once()
+    clock.advance(5)
+    first.run_once()  # the retry is accepted but not delivered, so the incident stays owed
+    _unreadable(tmp_path / "journal.sqlite")
+    clock.advance(60)
+    rebuilt = _notifier(tmp_path, account, _Grouping("primary", [DELIVERED], alerts),
+                        clock=clock, config=_config("primary", timeout=2.0))
+    rebuilt.run_once()
+    assert list(alerts) == [key]
+    assert [payload["idempotency_key"] for payload in alerts[key]] == [key] * 3
+    (job,) = rebuilt.jobs()
+    assert job["state"] == "delivered" and job["config_digest"] != first.config.digest
+
+
+# Condition 2: the notifier's first-party import closure reaches no broker, order,
+# rail-command or C-a close module. Roots are pyproject's pytest pythonpath (config as code).
+_REPO = Path(__file__).resolve().parents[2]
+_DENIED_WORDS = ("order", "broker", "route", "close", "liquidat", "crosstrade", "dispatch")
+_RAIL_REVIEWED = {"ops/c1_rail/__init__.py", "ops/c1_rail/book_incident_notifier.py",
+                  "ops/c1_rail/c1_rail_telemetry.py"}
+
+
+def _import_roots():
+    config = tomllib.loads((_REPO / "pyproject.toml").read_text(encoding="utf-8"))
+    return tuple(_REPO / entry for entry in config["tool"]["pytest"]["ini_options"]["pythonpath"])
+
+
+def _resolve(name, roots):
+    """Files a first-party import of ``name`` executes (package inits, then the module)."""
+    parts = name.split(".")
+    for root in roots:
+        base = root.joinpath(*parts)
+        for candidate in (base.parent / (parts[-1] + ".py"), base / "__init__.py"):
+            if candidate.is_file():
+                inits = (root.joinpath(*parts[:index], "__init__.py")
+                         for index in range(1, len(parts)))
+                return [init for init in inits if init.is_file()] + [candidate]
+    return []
+
+
+def _import_closure(start, roots):
+    """Repo-relative files reached from ``start`` through first-party imports, transitively.
+
+    Every import statement counts, including ones inside functions and ``try`` blocks.
+    """
+    seen, stack = set(), [Path(start).resolve()]
+    while stack:
+        path = stack.pop()
+        if path in seen:
+            continue
+        seen.add(path)
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Import):
+                targets = [(alias.name, roots) for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                search = (path.parents[node.level - 1],) if node.level else roots
+                module = node.module or ""
+                targets = [(module, search)] + [
+                    ((module + "." if module else "") + alias.name, search) for alias in node.names]
+                if node.level:
+                    targets.append(("__init__", search))
+            else:
+                continue
+            for name, search in targets:
+                if name:
+                    stack.extend(found.resolve() for found in _resolve(name, search))
+    return {path.relative_to(_REPO).as_posix() if path.is_relative_to(_REPO) else path.as_posix()
+            for path in seen}
+
+
+def _broker_command_reason(relative):
+    if not relative.startswith(("ops/c1_rail/", "ops/c1_signal_daemon/")):
+        return None
+    stem = PurePosixPath(relative).stem
+    for word in _DENIED_WORDS:
+        if word in stem:
+            return "named *%s*" % word
+    if relative.startswith("ops/c1_signal_daemon/"):
+        return "signal daemon (runtime dispatch)"
+    if stem.startswith("c1_rail_") and relative not in _RAIL_REVIEWED:
+        return "rail send/route/command module"
+    if stem == "book_policy":
+        return "book_policy order paths"
+    return None if relative in _RAIL_REVIEWED else "unreviewed rail module (fail closed)"
+
+
+def test_notifier_import_closure_reaches_no_broker_command_module(tmp_path):
+    roots = _import_roots()
+    closure = _import_closure(notifier_module.__file__, roots)
+    assert {"ops/c1_rail/c1_rail_telemetry.py", "core/lib/atomic_io.py"} <= closure  # transitive
+    assert {path: _broker_command_reason(path) for path in closure
+            if _broker_command_reason(path)} == {}
+
+    for named in ("order_client", "broker_session", "route_table", "c_a_close", "liquidate"):
+        assert _broker_command_reason("ops/c1_rail/%s.py" % named), named
+    # Planted mutants: the check flags a forbidden import made directly or one hop away.
+    source = Path(notifier_module.__file__).read_text(encoding="utf-8")
+    (tmp_path / "hop.py").write_text("import crosstrade_payload\n", encoding="utf-8")
+    mutants = {
+        "from c1_rail import crosstrade_payload": "ops/c1_rail/crosstrade_payload.py",
+        "import c1_rail_listener": "ops/c1_rail/c1_rail_listener.py",
+        "from c1_rail.book_policy import leg": "ops/c1_rail/book_policy.py",
+        "from c1_rail import account_close_ledger": "ops/c1_rail/account_close_ledger.py",
+        "import book_runtime": "ops/c1_signal_daemon/book_runtime.py",
+        "import hop": "ops/c1_rail/crosstrade_payload.py",
+    }
+    for line, expected in mutants.items():
+        mutant = tmp_path / "mutant.py"
+        mutant.write_text(source + "\n\ndef _mutant():\n    " + line + "\n", encoding="utf-8")
+        flagged = {path for path in _import_closure(mutant, roots + (tmp_path,))
+                   if _broker_command_reason(path)}
+        assert expected in flagged, line
+
+
+@pytest.mark.parametrize("loss", ["deleted", "corrupt"])
+def test_lost_journal_mid_backlog_republishes_each_owed_incident_once(tmp_path, loss):
+    """Condition 3: the owner's incidents rows rebuild the journal. The owner store records no
+    attendance acknowledgment, so every committed incident is owed again: each publishes
+    exactly once, and the one delivered before the loss re-publishes once under its old key
+    (the card's stated residual), grouping with its alert."""
+    account, keys = _incidents(tmp_path, 3)
+    alerts, clock = {}, Clock(NOW + timedelta(minutes=1))
+    first = _notifier(tmp_path, account,
+                      _Grouping("primary", [DELIVERED, REJECTED, REJECTED], alerts), clock=clock)
+    first.run_once()
+    assert [job["state"] for job in first.jobs()] == ["delivered", "pending", "pending"]
+    store = tmp_path / "journal.sqlite"
+    if loss == "deleted":
+        store.unlink()
+    else:
+        _unreadable(store)
+    clock.advance(1)
+    channel = _Grouping("primary", alerts=alerts)
+    restarted = _notifier(tmp_path, account, channel, clock=clock)
+    restarted.run_once()
+    clock.advance(3600)
+    restarted.run_once()
+    assert [call[0] for call in channel.calls] == keys
+    assert {job["state"] for job in restarted.jobs()} == {"delivered"}
+    assert list(alerts) == keys and [len(alerts[key]) for key in keys] == [2, 2, 2]
+    assert [row["kind"] for row in restarted.events() if row["incident_key"] is None] == (
+        ["journal_rebuilt"] if loss == "corrupt" else [])
+
+
+@pytest.mark.parametrize("cause, damage", [
+    ("unreadable", _unreadable), ("schema", _foreign_schema), ("integrity", _null_reason)])
+def test_corrupt_journal_is_moved_aside_and_rebuilt(tmp_path, cause, damage):
+    account = _operator(tmp_path)
+    store = tmp_path / "journal.sqlite"
+    if cause == "integrity":
+        _notifier(tmp_path, account)  # a healthy journal to damage
+    damage(store)
+    original = store.read_bytes()
+    clock = Clock(NOW + timedelta(minutes=1))
+    rebuilt = _notifier(tmp_path, account, clock=clock)
+    (moved,) = _moved_aside(tmp_path)
+    assert moved.read_bytes() == original  # moved aside, never deleted
+    stamp = clock().astimezone(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    assert moved.name == "journal.sqlite.corrupt-" + stamp
+    (event,) = rebuilt.events()
+    assert (event["kind"], event["incident_key"], event["channel"], event["at"]) == (
+        "journal_rebuilt", None, None, clock().isoformat())
+    assert event["detail"] == {"cause": cause, "moved_to": moved.name}
+    rebuilt.run_once()
+    assert [job["state"] for job in rebuilt.jobs()] == ["delivered"]
+
+    # A second loss at the same instant never overwrites the first moved-aside journal.
+    store.write_bytes(b"second loss\n" * 64)
+    _notifier(tmp_path, account, clock=clock)
+    assert sorted(path.read_bytes() for path in _moved_aside(tmp_path)) == sorted(
+        [original, b"second loss\n" * 64])
+
+
+def test_unavailable_journal_is_not_moved_aside(tmp_path):
+    """An unopenable journal (here a directory) is unavailable, not corrupt: nothing moves."""
+    account = _operator(tmp_path)
+    (tmp_path / "journal.sqlite").mkdir()
+    with pytest.raises(NotifierStoreError):
+        _notifier(tmp_path, account)
+    assert (tmp_path / "journal.sqlite").is_dir() and _moved_aside(tmp_path) == []
+
+
+def test_liveness_reports_the_last_completed_loop_and_sends_nothing(tmp_path):
+    """Condition 4: a read-only hook for the missed-heartbeat monitor; the notifier sends no
+    heartbeat. A loop that raises does not refresh it, so a failing notifier looks silent."""
+    account = _operator(tmp_path)
+    clock = Clock()
+    channel = FakeChannel("primary", [REJECTED])
+    notifier = _notifier(tmp_path, account, channel, clock=clock)
+    assert notifier.liveness() is None
+    notifier.run_once()
+    assert notifier.liveness() == NOW
+    clock.advance(1)
+    assert notifier.liveness() == NOW  # reading it runs no loop
+    notifier.run_once()  # nothing due, but the loop completed
+    assert notifier.liveness() == NOW + timedelta(seconds=1) and len(channel.calls) == 1
+    (tmp_path / "journal.sqlite").unlink()
+    (tmp_path / "journal.sqlite").mkdir()
+    clock.advance(1)
+    with pytest.raises(NotifierStoreError):
+        notifier.run_once()
+    assert notifier.liveness() == NOW + timedelta(seconds=1)
+
+
+def test_retry_max_is_below_the_60_s_escalation_step():
+    good = {"name": "pager", "kind": "fake", "secret_ref": "env:PAGER_REF"}
+    assert NotifierConfig.from_mapping({"channels": [good]}).retry_max_s < 60  # the default
+    NotifierConfig.from_mapping({"channels": [good], "retry_max_s": 59.5})
+    for value in (60, 60.0, 300):
+        with pytest.raises(NotifierConfigError):
+            NotifierConfig.from_mapping({"channels": [good], "retry_max_s": value})

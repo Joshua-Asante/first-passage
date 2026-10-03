@@ -1,7 +1,7 @@
 # Book-route incident notification (H5(b) ABSENT row) — build card
 
 **Date:** 2026-10-02.
-**Status:** FROZEN for build by coordinator (3). The coordinator's resolutions of C-1 to C-3 and the halt/resume question P3 (deployment coordinator (3), 2026-10-02), and Joshua's operator defaults (direct, 2026-10-02, "all recommended") are recorded in §0.5 and §9. The dispatch record is §12.
+**Status:** FROZEN for build by coordinator (3). The coordinator's resolutions of C-1 to C-3 and the halt/resume question P3 (deployment coordinator (3), 2026-10-02), and Joshua's operator defaults (direct, 2026-10-02, "all recommended") are recorded in §0.5 and §9. The halt/resume owner's outbox ruling (P3, 2026-10-03) and its four conditions are recorded in §0.6. The dispatch record is §12.
 **Base:** dispatch revision origin/main `d716106`. The draft was read at `6ead3df`; `git diff 6ead3df d716106` touches one unrelated vendor-question note, so every `file:line` below holds at both. Draft inputs were read with `git show` at PR #606 (`origin/claude/t13-dmon-prep`, head `7b5cb52`) and PR #615 (`origin/claude/t13-first-session-card`, head `06efb2e`). At dispatch both are unmerged, still at those heads, and PROPOSED.
 **Brief type:** CC handoff, code build (TDD) behind a named file boundary.
 **Parent:** deployment checklist T13 (`docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md:266-276`), bullet "Verify real notification delivery, failure/escalation, external heartbeat and durable acknowledgment" (`:271`). The T13 first-session card draft names this gap as uncarded: "the publisher, the attendance record and binding the heartbeat to rail progress are TB-I3 / Phase 5 WP2 build work, not yet carded" (PR #615 `06efb2e`, `2026-10-02-t13-first-session-attended-procedure-DRAFT.md:95`). This card covers the publisher only.
@@ -64,12 +64,30 @@ Recorded at freeze. They bind the build; §9 gives the provenance and what stays
 1. **Seam (C-1 = a).** One additive read-only accessor on `BookAccountOwner`. It opens the owner DB with `?mode=ro`, takes no `BEGIN IMMEDIATE` and no serializer, and changes no existing method, transaction or schema. Test T3 proves a halt commits while the notifier reads.
 2. **Escalation (C-2 = out).** The 60 s alternate-channel escalation is OUT of this build. It belongs to the channel binding after Joshua's D-MON choice. The core records detection, each attempt, provider acceptance and delivery as separate durable records. Delivery-failure routing to the next channel at once (HR `:59`) stays in-repo, because it reacts to the local publish result.
 3. **Dedup / idempotency key (C-3 = plain digest).** Plain SHA-256 over a domain-separated `incident_id`, with no new secret. The payload carries the opaque key and never the raw id.
-4. **Outbox.** The notifier keeps its own durable journal keyed by the incident key, and every publish is bounded (timeout) and carries the idempotency key. **Whether this satisfies HR `:61`'s "notification outbox" wording stays OPEN for the halt/resume owner** (P3). This build does not claim it does.
+4. **Outbox.** The notifier keeps its own durable journal keyed by the incident key, and every publish is bounded (timeout) and carries the idempotency key. **Ruled 2026-10-03: this is HR `:61`'s "notification outbox", under conditions 1–4** (P3; §0.6).
 5. **Operator defaults (Joshua, direct, 2026-10-02, "all recommended").** (OQ-1) Correctly handled refusals do NOT notify. (OQ-3) Losing every channel while armed is an operator-stop condition; this build only detects and durably records an `ALL_CHANNELS_LOST` condition and takes no rail action. (OQ-2) Retries continue with backoff until delivered, with no retry cap.
 6. **Channels shipped.** The `Channel` protocol, a test fake and a local-file channel only. Secrets are referenced, never inline: config validation rejects inline values.
 7. **Forbidden files** are §5's list.
 
 A contradicted default, a missing producer or a necessary edit outside §5 returns NEEDS_CONTEXT. Frozen behavior is not permission to resolve a new contract choice.
+
+## §0.6 — Outbox ruling (P3), 2026-10-03: conditions as acceptance cases
+
+**Authority.** Halt/resume owner ruling 2026-10-03 (coordinator (2), owner of :61): YES with conditions 1–4; recorded as a dated owner note under :61 in coordinator (2)'s batch. Relayed by coordinator (3), who directed this fold. The notifier's journal plus the bounded publish is HR `:61`'s "notification outbox" while each condition holds. Each is an acceptance case in §6.
+
+| # | Condition | Code (`ops/c1_rail/book_incident_notifier.py`) | Test |
+|---|---|---|---|
+| 1 | Same incident identity: the idempotency key derives only from the committed `incident_id`, stable across retries, restarts and a journal rebuild | `incident_key(incident_id)` is the only key source (unchanged); every job and publish carries it | T14 |
+| 2 | Cannot dispatch broker commands | Structural, no new code: the module imports only `assert_no_secrets` from `c1_rail_telemetry`. `scripts/check_boundaries.py` is untouched | T15 |
+| 3 | Durability not assumed: the journal is rebuildable from the owner's committed `incidents` rows | At start, `_journal_fault()` classifies the journal. Unreadable (`sqlite3.DatabaseError`), a schema other than `_JOURNAL`, or a failed `PRAGMA integrity_check` is a fault: `_move_aside()` renames the file and any `-journal`/`-wal`/`-shm` sidecar to `<name>.corrupt-<UTC stamp>[-n]`, never deleting, and the new journal records `journal_rebuilt` {`cause`, `moved_to`}. A journal that cannot be opened (a directory, a lock, a permission) raises `NotifierStoreError`, and nothing moves. The next `poll()` re-derives the jobs | T16 |
+| 4 | Silent-runtime complement: the missed-heartbeat monitor covers the notifier as well as the runtime | `liveness()` returns the clock time of the last `run_once` that completed without raising (None before the first). It is read-only, and the notifier sends no heartbeat | T17; P5 (§1) |
+| — | Backoff cap below the 60 s escalation step (HR `:59`) | `ESCALATION_STEP_S = 60.0`; `NotifierConfig` refuses `retry_max_s >= 60`; the default drops from 300 s to 30 s | T18 |
+
+**Condition 3: which incidents are owed after a rebuild.**
+- **Choice.** The owner store records no attendance acknowledgment at this head. `incidents` holds only `incident_id, reason, at, generation` (`book_account_owner.py:296-297`). No owner table records HR `:61`'s "Acknowledge only appends attendance identity/time"; authenticated attendance is TB-I3's and OWED (§8). No code path deletes an `incidents` row. The notifier cannot tell an acknowledged incident from an owed one, so **a rebuilt journal treats every committed incident in the owner store as owed** (N = every session the store retains).
+- **Why not a watermark or a window.** A watermark would live in the journal that was lost. Any finite window could drop an undelivered incident older than the window, which is the lost page the ruling forbids.
+- **Residual.** Each incident delivered before the loss is re-published once after a rebuild, under its original key. A provider that groups by key folds it into a still-open alert, but an already-resolved alert (for example in Grafana) can re-page once per incident, at most once for each `incidents` row.
+- **Limits.** A missing journal is indistinguishable from a first start, so it records no `journal_rebuilt` event; only a corrupt one does. A journal written before this fold has `events.incident_key NOT NULL`, so it reads as a schema mismatch and is moved aside; none is deployed. When TB-I3 lands a durable attendance record in the owner store, a rebuild can exclude acknowledged incidents.
 
 ## §1 — Goal, scope, prerequisites
 
@@ -89,8 +107,11 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 |---|---|---|---|
 | P1 | Coordinator decisions C-1 (seam), C-2 (escalation home), C-3 (dedup key) | **Recorded** (§0.5, §9) | Nothing |
 | P2 | Operator D-MON D-1 (provider and media) | Open; "The channel choice is still the operator's" (checklist `:599`) | Only the channel binding (OWED). The core is built and accepted without it |
-| P3 | HR owner reading of D-MON OQ-1: does a bounded publish with the idempotency key meet HR `:61`'s "notification outbox"? | **OPEN** for the halt/resume owner (§0.5 item 4) | Only the final form of §4 G8. This card builds a local durable journal either way |
+| P3 | HR owner reading of D-MON OQ-1: does a bounded publish with the idempotency key meet HR `:61`'s "notification outbox"? | **Ruled YES with conditions 1–4** (owner ruling 2026-10-03; §0.6) | Nothing further. The conditions are acceptance cases T14–T18 |
 | P4 | CC-3 acceptance | Accepted in synthetic scope (CC-3 card §7) | Nothing here. The `ordinary-unknown` row already exists on main (`b9b72f9`), and the card consumes rows without classifying them |
+| P5 | The missed-heartbeat monitor covers the notifier's liveness (`IncidentNotifier.liveness()`) as well as the runtime's (outbox condition 4) | Open. Drafted separately on `claude/dmon-heartbeat-card` | **Any armed session.** Not this build's acceptance |
+
+Amended 2026-10-03 by coordinator (3) for the :61 outbox ruling: P3 ruled; P5 added.
 
 ## §2 — Which incidents must notify (from the owners, nothing invented)
 
@@ -117,11 +138,11 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 
 1. **Source of jobs (C-1 a).** The owner's `incidents` table, read through one new read-only accessor on `BookAccountOwner` that opens the DB with `?mode=ro`, takes no `BEGIN IMMEDIATE` and no serializer. It is additive in `book_account_owner.py` and changes no existing method, transaction or schema. The notifier receives only a read callable bound to the owner's path, never an owner instance (T9).
    - **Journal-mode caveat.** The owner DB uses the default rollback journal (no `journal_mode` pragma in the owner), so even a read-only reader briefly holds SHARED. T3 shows that a halt committing during notifier reads still commits.
-2. **Journal (outbox, §0.5 item 4).** A separate SQLite file owned by the notifier, never the owner DB. One `jobs` row per incident key (reason, detected-at copied from the owner's `incidents.at` rather than re-stamped, generation, resolved-config digest, state, next attempt time) and an append-only `events` table whose kinds keep detection, each attempt, provider acceptance, delivery, delivery failure and the `ALL_CHANNELS_LOST` condition separate. Basis: WP2 "Persist notification work separately from dispatch authority" (`:71`) and HR "Persist detection, notification attempts/provider acceptance, available delivery evidence and authenticated attendance separately" (`:59`).
+2. **Journal (outbox, §0.5 item 4).** A separate SQLite file owned by the notifier, never the owner DB. One `jobs` row per incident key (reason, detected-at copied from the owner's `incidents.at` rather than re-stamped, generation, resolved-config digest, state, next attempt time) and an append-only `events` table whose kinds keep detection, each attempt, provider acceptance, delivery, delivery failure and the `ALL_CHANNELS_LOST` condition separate. Basis: WP2 "Persist notification work separately from dispatch authority" (`:71`) and HR "Persist detection, notification attempts/provider acceptance, available delivery evidence and authenticated attendance separately" (`:59`). The journal is rebuildable and never assumed durable (outbox condition 3; §0.6).
 3. **Channel protocol.** `Channel.publish(idempotency_key, payload)` returns accepted, rejected or unknown, optionally with delivery evidence, and is bounded by the configured timeout (a timeout or a raise records as a delivery failure). The card ships only `FakeChannel` (tests) and `LocalFileChannel`, which is local evidence only and **not delivery** (H5(b) note `:64`). Concrete providers (Grafana IRM, PagerDuty, Healthchecks, ntfy, Telegram; PR #606 §4) are **OWED** to D-MON.
 4. **Payload (C-3).** It carries the opaque idempotency key, a plain SHA-256 over a domain-separated `incident_id`, plus `reason` and `detected_at`. It carries no `incident_id` text, because ids embed internal attempt and fact identifiers such as `"ordinary-unknown:" + attempt_id` (`:1889`) and `"unknown-fact:" + fact.fact_id` (`:2129`). It carries no account, order, strategy or figure. Every payload passes `assert_no_secrets` (`c1_rail_telemetry.py:127`). Basis: D-MON packet constraint "incident id and minimal status only, with no account, order or strategy detail" (PR #606 `:102`; PROPOSED) and the public-repo posture (AGENTS.md).
 5. **Config as code** (AGENTS.md `:229-238`). One frozen `NotifierConfig`: shared settings (publish timeout, retry backoff) and an ordered channel list where each entry is `{name, kind, secret_ref}`. `secret_ref` names an environment variable or secret store entry, never a value. The config is validated where it is loaded and rejects inline secret-shaped values and unknown keys. The resolved config's digest is recorded on each job. **No instance binding is committed** (`no_concrete_channel_binding`).
-6. **Delivery routing and retry (C-2, OQ-2).** In a round, channels are tried in order and a delivery failure routes to the next channel at once. Retries keep the same idempotency key and continue with capped exponential backoff until delivery evidence is recorded, with no retry cap. A round in which every channel fails records `ALL_CHANNELS_LOST` once per transition, and takes no rail action. No 60 s escalation timer is built.
+6. **Delivery routing and retry (C-2, OQ-2).** In a round, channels are tried in order and a delivery failure routes to the next channel at once. Retries keep the same idempotency key and continue with capped exponential backoff until delivery evidence is recorded, with no retry cap. The backoff cap `retry_max_s` stays below the 60 s escalation step (default 30 s; §0.6). A round in which every channel fails records `ALL_CHANNELS_LOST` once per transition, and takes no rail action. No 60 s escalation timer is built.
 7. **Isolation.** The notifier runs outside the owner's serializer and transaction, holds no writable owner reference, and imports no broker, dispatch, arm or config-write module. Basis: HR `:61` "cannot dispatch broker commands"; Phase 5 `:34` "Notification and UI components cannot change permission"; H5(b) note `:64`.
 
 ## §4 — Hypothesis, falsifier and delivery guarantees
@@ -138,9 +159,9 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 | G5 | No acknowledgment never restores send authority; acknowledgment only appends attendance | **CITED** (accepted) | HR `:59`, `:61` |
 | G6 | Original identities are retained across redelivery and restart | **CITED** (accepted, for incidents) | HR `:49`; applied here to jobs (T12) |
 | G7 | Retry terminal condition | **Operator default** (OQ-2): retry with backoff until delivered, no cap. "At-least-once" as a formal guarantee is still stated by no owner | §0.5 item 5; WP2 `:72` freezes provider-specific thresholds only after drills |
-| G8 | Deduplication | **Partly cited.** A duplicate incident report creates no duplicate recovery operation (HR `:20`), and the owner's `INSERT OR IGNORE` yields one row; the journal keys jobs by the incident key. Whether a bounded publish with the idempotency key is HR `:61`'s "notification outbox" is **OPEN** (P3) | P3 |
+| G8 | Deduplication | **Cited and ruled.** A duplicate incident report creates no duplicate recovery operation (HR `:20`), and the owner's `INSERT OR IGNORE` yields one row; the journal keys jobs by the incident key. The journal plus a bounded publish with the idempotency key is HR `:61`'s "notification outbox" under conditions 1–4 (§0.6) | Owner ruling 2026-10-03 (P3) |
 | G9 | Loss of every channel | **Operator default** (OQ-3): an operator-stop condition while armed. This build records `ALL_CHANNELS_LOST` only; acting on it is D-MON/T13 | §0.5 item 5; F3 draft W6 |
-| G10 | Local storage failure | **CITED as out of scope here**: independent monitoring, not the local journal | HR `:34`, `:61` |
+| G10 | Local storage failure | **CITED as out of scope here**: independent monitoring, not the local journal (P5). A lost or corrupt notifier journal is rebuilt from the owner's `incidents` rows (outbox condition 3) | HR `:34`, `:61` |
 | G11 | Authenticated attendance (acknowledgment record) | **CITED requirement, OWED elsewhere**: TB-I3 owns authenticated attendance (HR `:143`). Two acknowledgments (provider vs rail) are OPEN (PR #606 OQ-2 `:128`) | OQ-4 |
 
 ## §5 — Files
@@ -183,6 +204,13 @@ Tests live in `tests/ops/test_book_incident_notifier.py`. Each uses a real `Book
 | T11 | `test_config_requires_secret_refs_and_rejects_inline_values`; `test_job_records_resolved_config_digest` | AGENTS.md `:236-238` |
 | T12 | `test_restart_resumes_pending_jobs_with_same_identity` | G6 |
 | T13 | `test_notifier_store_unavailable_does_not_touch_owner`: the journal path is unwritable; the owner halts normally; the notifier error surfaces locally | G1, G10 |
+| T14 | `test_idempotency_key_survives_retry_restart_and_rebuild_as_one_alert`: a publish, a retry, and a publish after a corrupt-journal rebuild under a changed config carry one key; a fake provider grouping by key shows one alert | Outbox condition 1 (§0.6) |
+| T15 | `test_notifier_import_closure_reaches_no_broker_command_module`: the module's transitive first-party import closure (roots: the `pyproject.toml` pytest `pythonpath`) reaches no `ops/c1_rail` module named `*order*`, `*broker*`, `*route*`, `*close*`, `*liquidat*`, `*crosstrade*` or `*dispatch*`. It also reaches no other `c1_rail_*` module, no `book_policy`, nothing in `ops/c1_signal_daemon`, and no unreviewed rail module (fail closed). Planted mutants, direct and one hop away, are flagged | Outbox condition 2 |
+| T16 | `test_lost_journal_mid_backlog_republishes_each_owed_incident_once[deleted, corrupt]` (each owed incident publishes exactly once); `test_corrupt_journal_is_moved_aside_and_rebuilt[unreadable, schema, integrity]`; `test_unavailable_journal_is_not_moved_aside` | Outbox condition 3 |
+| T17 | `test_liveness_reports_the_last_completed_loop_and_sends_nothing` | Outbox condition 4 |
+| T18 | `test_retry_max_is_below_the_60_s_escalation_step` | HR `:59`; §0.6 |
+
+Amended 2026-10-03 by coordinator (3) for the :61 outbox ruling: T14–T18 added. T15, T16 `[deleted]` and `test_unavailable_journal_is_not_moved_aside` already pass at 60ba482: they pin a property the base had, or guard the new move-aside. T15's red is a planted on-disk mutant, recorded in the executor return.
 
 **Return taxonomy.**
 - DONE: every red-first test recorded red at base and green at head; §7 regression, `test-ops` and `check` green with records cited; diff inside §5.
@@ -210,7 +238,7 @@ Report the command, interpreter, head, and each printed `record.json` (`status: 
 - **Channel binding.** No provider module, account, credential, API call or test message (D-MON D-1/D-2 are the operator's; PR #606 `:123-124`). Real delivery, acknowledgment timing and the D-MON §7 qualification list are T13 operator rehearsals (PR #615 RH2/RH3).
 - **60 s alternate-channel escalation** (C-2): the channel binding's.
 - **Acting on `ALL_CHANNELS_LOST`** (operator stop while armed): D-MON/T13. This build records it only.
-- **External heartbeat** and binding it to rail progress (HR `:61`; PR #606 `:104`). A separate card.
+- **External heartbeat** and binding it to rail progress (HR `:61`; PR #606 `:104`). A separate card (`claude/dmon-heartbeat-card`). This build only exposes the read-only `liveness()` hook (outbox condition 4).
 - **Authenticated attendance** and the acknowledgment API (TB-I3, HR `:143`), the incident view (WP2 `:65-67`), and the F3 held-request watch detector (§A12 `:460`).
 - **Host wiring.** Starting the dispatcher in any process, `deploy/**`, `fly deploy`, arming, `dry_run` changes, or any legacy-path change (#571 parked).
 - Any account, broker, vendor, firm or provider traffic; spend; any message to an external party; any MC, replay, screen or candidate code.
@@ -229,10 +257,11 @@ Report the command, interpreter, head, and each printed `record.json` (`status: 
 - **OQ-2:** retries continue with backoff until delivered; no cap.
 - **OQ-3:** losing every channel while armed is an operator-stop condition. This build only detects and durably records `ALL_CHANNELS_LOST`; no rail action.
 
+**Halt/resume owner (P3), 2026-10-03 — recorded.** Halt/resume owner ruling 2026-10-03 (coordinator (2), owner of :61): YES with conditions 1–4; recorded as a dated owner note under :61 in coordinator (2)'s batch. Relayed by coordinator (3); the conditions are in §0.6.
+
 **Still OPEN.**
 - **D-MON D-1 / D-2.** Provider and media; account opening is Joshua's act (checklist `:599`; PR #606 `:123-124`).
 - **OQ-4.** Provider acknowledgment vs rail attendance (PR #606 OQ-2 `:128`).
-- **Halt/resume owner, P3.** Does the notifier's own journal plus a bounded publish with the idempotency key satisfy HR `:61`'s "notification outbox" (PR #606 OQ-1 `:127`)? Left to that owner; this card does not claim it.
 
 ## §10 — Audit hooks
 
@@ -255,7 +284,7 @@ Amended 2026-10-02 by coordinator (3): the hook "no `BEGIN IMMEDIATE` in `book_i
 ## §12 — Dispatch record
 
 - **Frozen revision:** this file as committed on `claude/book-incident-notifier` (cut from origin/main `d716106`).
-- **Decisions:** C-1 (a); C-2 out (channel binding); C-3 plain SHA-256; outbox wording OPEN for the halt/resume owner (§9).
+- **Decisions:** C-1 (a); C-2 out (channel binding); C-3 plain SHA-256; outbox wording OPEN for the halt/resume owner at dispatch (§9; ruled 2026-10-03, §0.6).
 - **Executor:** one Claude Code (Opus) worker session, seat worker, worktree `.claude/worktrees/incident-notifier`.
 - **Branch:** `claude/book-incident-notifier`, pushed; **no PR** unless the coordinator records one.
 - **Pre-dispatch checks:** `check_brief.py --type handoff` and `check_handoff_authority.py` on this file; results are in the executor return.
