@@ -17,6 +17,9 @@ from scripts.record_verification import junit_summary
 
 INVARIANT_IDS = frozenset(f'{family}-01' for family in
     ('QPOL', 'QLEG', 'QART', 'QPLAN', 'QEXEC', 'QKEY', 'QSTATE', 'QISOL', 'QGATE'))
+# S8: the full-E1 acceptance cases (spec §6). They extend this one manifest and are
+# registered all together or not at all; a partial registration never passes.
+E_CASE_IDS = frozenset(f'E{number:02d}' for number in range(1, 13))
 MANIFEST_FIELDS = frozenset({'id', 'requirement', 'owner', 'producer', 'consumer',
                              'test_nodeids', 'evidence_kind'})
 NODE_PROPERTIES = frozenset({'nodeid', 'pytest_nodeid', 'qualification_nodeid'})
@@ -49,14 +52,11 @@ def _nodeid(value):
     return value
 
 
-def _manifest(raw):
-    if type(raw) is not bytes:
-        raise ValueError('manifest must be immutable UTF-8 bytes')
-    document = json.loads(raw.decode('utf-8'), object_pairs_hook=_closed_pairs)
+def _rows(document, known):
+    """Closed rows of one manifest-shaped array: identity -> exact node IDs."""
     if type(document) is not list or not document:
         raise ValueError('manifest must be a nonempty closed array')
-    identifiers = set()
-    required = {}
+    rows = {}
     for row in document:
         if type(row) is not dict or set(row) != MANIFEST_FIELDS:
             raise ValueError('manifest fields differ from the closed schema')
@@ -64,20 +64,64 @@ def _manifest(raw):
             if type(row[field]) is not str or not row[field].strip():
                 raise ValueError(f'manifest {field} must be a nonempty string')
         identity = row['id']
-        if identity not in INVARIANT_IDS or identity in identifiers:
+        if identity not in known or identity in rows:
             raise ValueError(f'unknown or duplicate invariant ID: {identity}')
-        identifiers.add(identity)
         nodes = row['test_nodeids']
         if type(nodes) is not list or not nodes:
             raise ValueError(f'{identity}: nonempty exact test_nodeids required')
         normalized = [_nodeid(node) for node in nodes]
         if len(set(normalized)) != len(normalized):
             raise ValueError(f'{identity}: duplicate test node ID')
-        for node in normalized:
+        rows[identity] = normalized
+    return rows
+
+
+def _manifest(raw):
+    if type(raw) is not bytes:
+        raise ValueError('manifest must be immutable UTF-8 bytes')
+    rows = _rows(json.loads(raw.decode('utf-8'), object_pairs_hook=_closed_pairs),
+                 INVARIANT_IDS | E_CASE_IDS)
+    if INVARIANT_IDS - rows.keys():
+        raise ValueError('missing invariant IDs: ' + ', '.join(sorted(INVARIANT_IDS - rows.keys())))
+    if E_CASE_IDS & rows.keys() and E_CASE_IDS - rows.keys():
+        absent = ', '.join(sorted(E_CASE_IDS - rows.keys()))
+        raise ValueError('partial E01-E12 registration: ' + absent)
+    required = {}
+    for identity, nodes in rows.items():
+        for node in nodes:
             required.setdefault(node, set()).add(identity)
-    if identifiers != INVARIANT_IDS:
-        raise ValueError('missing invariant IDs: ' + ', '.join(sorted(INVARIANT_IDS - identifiers)))
     return required
+
+
+def registered_e_cases(raw):
+    """True when the manifest registers E01-E12 (all of them; partial refuses)."""
+    registered = set().union(*_manifest(raw).values())
+    return bool(E_CASE_IDS & registered)
+
+
+def validate_coverage_map(rows, *, collected_nodeids=None):
+    """Check a proposed S8 coverage map before its rows join the manifest.
+
+    The rows use the manifest's closed schema. Every E-case maps to exactly one
+    row, every node to exactly one E-case, and (when an actual collection is
+    given) every node was collected. Returns node -> E-case.
+    """
+    mapped = _rows(rows, E_CASE_IDS)
+    if E_CASE_IDS - mapped.keys():
+        raise ValueError('coverage map lacks: ' + ', '.join(sorted(E_CASE_IDS - mapped.keys())))
+    owner = {}
+    for identity, nodes in sorted(mapped.items()):
+        for node in nodes:
+            if node in owner:
+                raise ValueError(f'{node} maps to both {owner[node]} and {identity}')
+            owner[node] = identity
+    if collected_nodeids is not None:
+        if type(collected_nodeids) is not set:
+            raise ValueError('collected_nodeids must be an explicit set')
+        absent = sorted(set(owner) - collected_nodeids)
+        if absent:
+            raise ValueError('coverage nodes not collected: ' + ', '.join(absent))
+    return owner
 
 
 def _properties(element):
