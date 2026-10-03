@@ -63,7 +63,7 @@ acceptance:
    - `ops/c1_signal_daemon/bar_source_contract.py` (after #619): `LEG_FEEDS` (`:53`), `SymbolBinding.__post_init__`, and `ContractBarSource.__init__` (`:192`), which takes typed `binding` and `policy` and a `session_window(ts)` returning an object with `opens_at`/`closes_at`, or `None`. Also `state`/`refusal` (`:199`), `healthy()` (`:214`), `poll()` (`:220`) and `_refuse` (`:306`). The refusal reasons are `auth_rejected`, `binding_expired`, `revision_after_delivery` and `late_bar_unverifiable`. The state vocabulary is `CONNECTED`, `DISCONNECTED` and `REFUSED`.
    - `ops/c1_signal_daemon/book_evaluate_loop.py` `FourLegEvaluateLoop.step`: today it polls each leg and feeds that leg's bar before polling the next.
    - `ops/c1_signal_daemon/book_runtime.py`: `LEG_ORDER` (`:27`), and the bound session `self.owner.binding["session"]` with `opens_at`, `closes_at` and `session_id` (`:349`).
-   - `ops/c1_rail/book_account_owner.py`: `check_source_silence` (`:1029-1048`), which already owns in-session silence, and `halt(incident_id, reason, *, now)` (`:1294`). Reasons are a closed set that includes `feed`. Calling it again with the same id at a different `now` raises "conflicting incident identity" (`:1304`).
+   - `ops/c1_rail/book_account_owner.py`: `check_source_silence` (`:1029-1048`), which already owns in-session silence, and `halt(incident_id, reason, *, now)` (`:1294`). Reasons are a closed set that includes `feed`. Calling it again with the same id at a different `now` raises "conflicting incident identity" (`:1303-1304`), and that check runs before `_halt_db`. `check_source_silence` already makes its id unique per occurrence: `feed-silence:<session_id>:<anchor>` (`:1046`).
    - `ops/c1_rail/book_session_calendar.py`: `load_ratified_calendar` (`:583`), `SessionCalendar.rows`, `.products` and `.ratified_at`, plus the `SessionSchedule` fields `permission`, `overlay_blocked`, `opens_at` and `closes_at`. The loaded rows keep neither each product's `matching_open_utc` nor its `matching_close_utc`, and `v` folds in the venue deadline, so neither stands in for a product bound.
    - `ops/calendars/RATIFIED.json`, every calendar file it names (at drafting, `book_session_calendar_2026-09.json` and `-10.json`; `-11.json` from #622 is on `main` but not yet ratified), and `book_closure_overlay.json`, read only.
    - `tests/ops/test_c1_signal_daemon_image_manifest.py`: `_ENTRYPOINTS` includes `book_evaluate_loop.py`, so the loop's import closure must stay inside the daemon image.
@@ -108,7 +108,7 @@ Make R-A2 true offline. The book has exactly one contract-enforcing source per o
 - Everything before the leg loop is unchanged: deadlines, `check_source_silence`, schedule, barrier expiry, the INTERVENTION returns and prepared-boundary redelivery.
 - **Then, in this order:**
   1. **Poll** all four sources in `LEG_ORDER` and hold the results. Feed nothing yet.
-  2. **Check health.** Let `session = runtime.owner.binding["session"]`. If `session.opens_at <= now < session.closes_at`, take the first leg in `LEG_ORDER` whose `getattr(source, "state", None)` is `"REFUSED"` or `"DISCONNECTED"`. Call `runtime.owner.halt("source-unhealthy:<leg>:<detail>", "feed", now=now)` and return `completed` without feeding any polled bar. `<detail>` is the state, followed by `:<refusal>` when `refusal` is a non-empty `str`. For example, `source-unhealthy:aegis_6j:REFUSED:revision_after_delivery`.
+  2. **Check health.** Let `session = runtime.owner.binding["session"]`. If `session.opens_at <= now < session.closes_at`, take the first leg in `LEG_ORDER` whose `getattr(source, "state", None)` is `"REFUSED"` or `"DISCONNECTED"`. Call `runtime.owner.halt("source-unhealthy:<session_id>:<leg>:<detail>:<now.isoformat()>", "feed", now=now)` and return `completed` without feeding any polled bar. `<session_id>` is `session.session_id`. `<detail>` is the state, followed by `:<refusal>` when `refusal` is a non-empty `str`. For example, `source-unhealthy:<session_id>:aegis_6j:REFUSED:revision_after_delivery:<now.isoformat()>`. The id is unique per occurrence (D-2, ruled), following `feed-silence:<session_id>:<anchor>` (`book_account_owner.py:1046`). A repeat of the same leg and detail, in a later session or after an attended resume in the same session, therefore records a new halt and never raises "conflicting incident identity".
   3. **Feed** the held bars in `LEG_ORDER` through `runtime.on_completed_bar`, exactly as today, then run the trailing `expire_barrier` pass.
 - The loop reads the `state` and `refusal` attributes only. It never calls `healthy()` and never imports `bar_source_contract` or `book_sources`. A fake without `state` counts as healthy, so existing fakes keep their behavior.
 - **Staleness at session open never halts.** A connected source with no bar yet is not `REFUSED` or `DISCONNECTED`, and silence stays with `check_source_silence`. Outside the bound session, no source state halts.
@@ -120,7 +120,8 @@ Make R-A2 true offline. The book has exactly one contract-enforcing source per o
 
 ## 3. Method
 
-- **Tests first.** Write each §4 case and show it failing on the freeze base, with a launcher record, before writing code. On the base, the `book_sources` cases fail at import because the module is absent. That counts as red only because the missing module is the target. The loop cases must fail on an assertion. Preservation suites stay green on both base and build, and no red evidence is fabricated for them.
+- **Tests first.** Write each §4 fail-first case and show it failing on the freeze base, with a launcher record, before writing code. On the base, the `book_sources` cases (1-4, including the case-4 tripwire) fail at import because the module is absent. That counts as red only because the missing module is the target. The loop fail-first cases must fail on an assertion.
+- **Guard cases** (§4 G1-G3) hold on the base by design. Show each one green on the base, red against its named over-halting mutant, then green on the build. Each mutant is a scratch edit of the built `step`, made in the worktree, run once through the launcher, and reverted before commit. It is never committed, and the return's `git diff --stat` must not show it. Preservation suites stay green on both base and build, and no red evidence is fabricated for them.
 - **Fail-closed.** A refused composition builds no source. An exception from `owner.halt` propagates out of `step` with no bar fed.
 - **Synthetic sources.** Health cases use real `ContractBarSource`s over a scripted fake `BarTransport` wherever the case concerns the contract's own latches. That covers the Q1 cases (delivered revision, late unverifiable bar), auth rejection and binding expiry. Duck-typed fakes are used only for ordering and spy cases.
 
@@ -129,7 +130,8 @@ Make R-A2 true offline. The book has exactly one contract-enforcing source per o
 **H:** with this slice built, no synthetic trace lets the four-leg loop feed a bar, complete a barrier or dispatch in a step where any source is `REFUSED` or `DISCONNECTED` inside the bound session. Every such step records exactly one `feed` halt. A source at session open with no bar yet never halts. The composition admits only four distinct, calendar-bounded, contract-enforcing sources.
 
 **Reject if:**
-- a case below cannot be made to fail on the base;
+- a fail-first case below cannot be made to fail on the base (cases 1-4 count as red by missing module, as §3 says);
+- a guard case (G1-G3) is not green on the base, is not red against its named mutant, or is not green on the build;
 - a case fails on the build;
 - any preservation suite changes outcome;
 - the loop's import closure leaves the daemon image.
@@ -147,14 +149,19 @@ Make R-A2 true offline. The book has exactly one contract-enforcing source per o
 
 **Fail-first cases** (`test_book_loop_source_health.py`):
 
-5. An in-session `REFUSED` source halts at once with reason `feed`, parametrized over `auth_rejected`, `binding_expired`, `revision_after_delivery` (Q1) and `late_bar_unverifiable` (Q1). Each case drives a real `ContractBarSource` into the latch and checks that the incident id is `source-unhealthy:<leg>:REFUSED:<refusal>`.
-6. An in-session `DISCONNECTED` source, after a failed connect or a transport error, halts with reason `feed`.
-7. The same states with `now` outside the bound session do not halt.
-8. A connected source with no bar at `session.opens_at` does not halt (its `healthy()` would be False). Silence is still fenced by `check_source_silence`, unchanged.
+5. An in-session `REFUSED` source halts at once with reason `feed`, parametrized over `auth_rejected`, `binding_expired`, `revision_after_delivery` (Q1) and `late_bar_unverifiable` (Q1). Each case drives a real `ContractBarSource` into the latch and checks that the incident id is `source-unhealthy:<session_id>:<leg>:REFUSED:<refusal>:<now.isoformat()>`.
+6. An in-session `DISCONNECTED` source, after a failed connect or a transport error, halts with reason `feed` (D-1, ruled).
 9. **Poll all, then check.** Legs 2–4 delivered boundary `B` in an earlier step. In this step, leg 1 delivers `B` and leg 4 is `DISCONNECTED`. The result is one halt, no dispatch, no `on_completed_bar` call and no completed barrier. Today's code dispatches.
 10. With several unhealthy legs, exactly one halt is recorded, for the first in `LEG_ORDER`. The next `step` returns at the INTERVENTION guard and never reaches the health check again, so there is no conflicting-identity raise.
-11. The loop never calls `healthy()` (a spy raises if it is called). An AST read of `book_evaluate_loop.py` shows no import of `bar_source_contract` or `book_sources`, and `test_c1_signal_daemon_image_manifest.py` stays green.
-12. *Only if D-2 is adopted:* incident ids for the same leg and detail differ across two bound sessions.
+12. Incident ids for the same leg and detail differ across two bound sessions, and each session records its own `feed` halt with no raise.
+13. **Halt, resume, halt again.** In one bound session, a leg goes unhealthy and one `feed` halt is recorded. A synthetic resume follows: the test fixture returns the owner's authority to NORMAL, and this card adds no resume API and no owner edit. The same leg is then unhealthy again with the same detail at a later `now`. The result is a second recorded `feed` halt with a different id, no "conflicting incident identity" raise, and no bar fed.
+
+Cases 7, 8 and 11 moved to the guard group below (G1-G3); the numbers are not reused.
+
+**Guard cases** (`test_book_loop_source_health.py`; green on the base by design, so they are not fail-first). Each is shown red against a scratch over-halting mutant, as §3 says:
+- G1 (was 7). The same states with `now` outside the bound session do not halt. *Mutant:* the health check ignores the session bounds.
+- G2 (was 8). A connected source with no bar at `session.opens_at` does not halt (its `healthy()` would be False). Silence is still fenced by `check_source_silence`, unchanged. *Mutant:* a source with no bar yet counts as unhealthy.
+- G3 (was 11). The loop never calls `healthy()` (a spy raises if it is called). An AST read of `book_evaluate_loop.py` shows no import of `bar_source_contract` or `book_sources`, and `test_c1_signal_daemon_image_manifest.py` stays green. *Mutants:* `step` calls `healthy()`; `book_evaluate_loop.py` imports `bar_source_contract`. Each must turn G3 red on its own.
 
 **Preservation** (green before and after, unchanged): `test_bar_source_contract.py`, `test_four_leg_runtime.py`, `test_feed_omission_session_end.py`, `test_c1_signal_daemon_image_manifest.py`, `test_book_session_calendar.py`.
 
@@ -183,7 +190,7 @@ Disclose any gate failure that already exists on the base; never describe it as 
 Return DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. The coordinator's verdict is RESOLVED (every §4 item holds) or FALSIFIED (the named items fail and the card goes back to the executor). The return holds:
 - branch, head SHA, base SHA, `git diff --stat` and the name list;
 - Phase-0 findings (a)–(d);
-- for each case, the fail-on-base and pass-on-build launcher record IDs;
+- for each fail-first case, the fail-on-base and pass-on-build launcher record IDs; for each guard case, the green-on-base, red-on-mutant and green-on-build record IDs, plus each mutant's diff, shown and then reverted;
 - preservation results, `test-ops`, `check` and `git diff --check`;
 - concerns.
 
@@ -229,17 +236,17 @@ git diff --name-only "$BASE"...HEAD | grep -v -e '^ops/c1_signal_daemon/book_sou
 
 ## 12. Open decisions (for coordinator (3) at freeze)
 
-- **D-1 Immediate halt on in-session `DISCONNECTED`.** As frozen, one failed connect or transport error inside the session halts the book, so #619's capped-backoff reconnect can never recover a source in session. The alternative is a grace window bounded by M5 (`BAR_SLACK`). That needs #619 to expose when the source disconnected, and it is a contract change outside this card. **Recommended: the immediate halt, as frozen.** It is the fail-closed reading of S2b's fail-closed row, and a reconnect still serves the next session.
-- **D-2 Incident-id uniqueness.** `source-unhealthy:<leg>:<detail>` repeats across sessions, and `halt` raises "conflicting incident identity" for the same id at a different `now` (`:1304`). In a later session the halt would then raise before recording, which still fails closed because no bar is fed, but the incident is lost. **Recommended:** `source-unhealthy:<session_id>:<leg>:<detail>`, with case 12 in scope.
-- **D-3 Spec owner file.** The spec names `daemon.py` for R-A2, and this slice uses a new module plus the loop. Annotating the spec is the coordinator's job (governance author).
+- **D-1 Immediate halt on in-session `DISCONNECTED`. RULED (coordinator (3)): keep the immediate halt.** This is the strict reading of the frozen spec §7, which the operator confirmed. One failed connect or transport error inside the session halts the book, so #619's capped-backoff reconnect can never recover a source in session. **Cost, stated explicitly:** #619's routine renewal path (`_maintain` → `renewal_failed`) sets `DISCONNECTED`. So any lease or renewal blip inside the session becomes a session-ending `feed` halt that needs an attended resume. The rejected alternative was a grace window bounded by M5 (`BAR_SLACK`). It would need #619 to expose when the source disconnected, which is a contract change outside this card. A reconnect still serves the next session.
+- **D-2 Incident-id uniqueness. RULED (coordinator (3)): mandatory.** The id is unique per occurrence: `source-unhealthy:<session_id>:<leg>:<detail>:<now.isoformat()>`, following `feed-silence:<session_id>:<anchor>` (`:1046`). Without it, the id repeats in every later session and after any attended resume in the same session. `halt` then raises "conflicting incident identity" (`:1303-1304`) before `_halt_db`. `step` would raise on every poll, authority would stay NORMAL, no `feed` incident would be recorded, and the book would resume silently when the source reconnected. A daemon exit on the uncaught exception would also clear the in-memory REFUSED latch on restart. Cases 12 and 13 are unconditional.
+- **D-3 Spec owner file. RULED (coordinator (3)):** the spec names `daemon.py` for R-A2, and this slice uses a new module plus the loop. The spec R-A2 owner-file annotation is coordinator (3)-reserved. It lands in coordinator (3)'s ledger batch after coordinator (2)'s rail-spec entries (conflict C3). The executor never edits the spec (§5).
 - **D-4 Duck-typed health read.** The loop reads `state` without a type check. That keeps the existing fakes valid and the contract module out of the image. The alternative, an `isinstance` check against `ContractBarSource`, would pull the contract into the daemon closure. **Recommended: duck-typed, as frozen.**
-- **D-5 Tripwire breadth.** Case 4 checks product opens as well as closes, because the runtime seeds only from `session.opens_at` (`book_runtime.py`, the first-bar check after `:349`). The coordinator may narrow it to closes only, as in the earlier draft.
+- **D-5 Tripwire breadth. RULED (coordinator (3)): keep.** Case 4 reads every calendar named in `RATIFIED.json` and checks product opens as well as closes, because the runtime seeds only from `session.opens_at` (`book_runtime.py`, the first-bar check after `:349`). The composition's transport-reuse refusal (case 2) is also kept.
 - **D-6 Freeze base.** **Recommended:** `main` immediately after #619 merges. Earlier bases fail Phase 0 (a).
 
 ## Pre-mortem (README rule)
 
 - **Loop cost:** one Windows build loop with launcher records. No Docker, no Linux run, no host.
-- **Decisions the executor will hit:** D-1 and D-2. Both are ruled at freeze.
+- **Decisions the executor will hit:** D-1 and D-2. Both are ruled (§12).
 - **What makes it moot:**
   - #619 is withdrawn or reworked with a different state vocabulary;
   - an operator ruling moves source health to the listener (R-N) instead of the loop;
