@@ -690,7 +690,7 @@ Merged to `main` at `abb3914` (03:51Z). Merge-gate evidence on the merge head `a
    - **Preserved:** exact historical retry, the original budgets and deadlines, frozen v1 RESULT/SEAL, and the two-table DB10 layout. Binding goes through the existing `release_sha256`.
    - **Fail-closed:** a missing pin, a failed tuple check, an image mismatch, a timeout or exhaustion refuses authority.
    - **Residuals cited:** the operator-accepted residual "T05 C′ first-release host environment drift", which covers unmediated descendants and OS helpers.
-8. **Joint-batch validator reconciliation** (operator ruling 2026-10-02, 'yes to … term 8'). The canonical joint-batch policy governs (S4 joint N2/PART_B ruling; `policy.required_output_roles`; campaign spec E03). In the H9 integration, all three T05 result validation seams — `campaign_result.parse_receipt_row`, `_row_outcome`, `parse_campaign_result` — accept every authentic complete prefix the policy allows (PASS,PASS,FAIL,PASS; PASS,PASS,FAIL,FAIL; PASS,PASS,PASS,FAIL). Wire shape, stage order, membership, families/operations and every prior-checkpoint failure constraint (a FAIL before the joint batch ends the campaign) are unchanged. Owned by H9 lane D step 3, with the result-role (result_g5/seal) funding and TEST_ONLY result-fault cases.
+8. **Joint-batch validator reconciliation** (operator ruling 2026-10-02, 'yes to … term 8'). The canonical joint-batch policy governs (S4 joint N2/PART_B ruling; `policy.required_output_roles`; campaign spec E03). In the H9 integration, all three T05 result validation seams — `campaign_result.parse_receipt_row`, `_row_outcome`, `parse_campaign_result` — accept every authentic complete prefix the policy allows (PASS,PASS,FAIL,PASS; PASS,PASS,FAIL,FAIL; PASS,PASS,PASS,FAIL). Wire shape, stage order, membership, families/operations and every prior-checkpoint failure constraint (a FAIL before the joint batch ends the campaign) are unchanged. Owned by H9 lane D step 3, with the result-role (result_g5/seal) funding and TEST_ONLY result-fault cases. *2026-10-02:* step 3's measured-closure edits for `result_g5`/qseal provisioning are admitted ([ruling](#operator-ruling--lane-d-step-3-may-edit-the-measured-closure-result_g5-and-qseal-provisioning-2026-10-02)).
 
 **What this does not grant:** any build, any R1 or R2 acceptance, or any merge. The C′ implementation still needs the coordinator's separate dispatch.
 
@@ -1897,7 +1897,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 
 **Carried, not C3 conditions** (each owner keeps it):
 - G5 independent bars verification goes to the CP-6 inventory (B3).
-- An independently observed pilot draw is due with T05, before CP-6 (B4).
+- An independently observed pilot draw is due with T05, before CP-6 (B4). *2026-10-02 (mirror sweep):* timing reconciled by operator ruling 2026-10-02 (sitting 1): before T06 dispatch, not blocking R1 ([B4](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29)).
 - The per-phase memory field goes to CP-6.
 - To T11/CP-8:
   - the 11.8 % unreclaimable headroom and the THP share;
@@ -1939,7 +1939,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 3. **Q1** (whether a committed FAIL on an exhausted campaign counts under ADR §4) and **Q7** (R7's production evidence standard) are **reassigned to the statistical owner**, to be decided before S8 / T06. **Q9** (closure of a never-retried, retry-eligible IN_DOUBT, and so the salt reveal) is **reassigned to the RC-4 slice**, before F1. None is a C3 condition any longer.
 4. **S5 is ACCEPTED for TEST_ONLY**, effective when the `claude/s5-part-a` landing PR merges at a head **H** that satisfies the packet's landing procedure and decision rule. If the measured closure has changed at **H**, the landing returns to the operator, and S5 acceptance does not take effect until he decides.
 
-**Carried items:** unchanged from the packet. They are G5 independent bars verification (CP-6), the independently observed pilot draw (T05, before CP-6), the per-phase memory field (CP-6), and the T11/CP-8 set.
+**Carried items:** unchanged from the packet. They are G5 independent bars verification (CP-6), the independently observed pilot draw (T05, before CP-6), the per-phase memory field (CP-6), and the T11/CP-8 set. *2026-10-02 (mirror sweep):* timing reconciled by operator ruling 2026-10-02 (sitting 1): before T06 dispatch, not blocking R1 ([B4](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29)).
 
 **Next.**
 - The coordinator opens the landing PR, updates `claude/s5-part-a` from `main` to **H**, and runs the closure-equivalence and Linux-closure checks at **H**.
@@ -2113,7 +2113,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - the seal principal and its provisioning (seam row 11);
 - the B4 observed pilot, before T06 dispatch (operator ruling 2026-10-02, sitting 1: B4 does not block R1);
 - the C′ build;
-- **term 8.** The S8 harness preparation (#609, draft) found that E03 conflicts with the frozen T05 validators, which allow a failure only at the last stage. Joshua **approved** term 8 on 2026-10-02 ("yes to … term 8"). Its documentary record is in PR #610, pending merge. The fix is owed in H9 lane D step 3.
+- **term 8.** The S8 harness preparation (#609, draft) found that E03 conflicts with the frozen T05 validators, which allow a failure only at the last stage. Joshua **approved** term 8 on 2026-10-02 ("yes to … term 8"). Its documentary record is in PR #610, ~~pending merge~~ *2026-10-02 (mirror sweep):* merged at `f8a03c2` (term 8 in the [S6 freeze amendment](#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21)). The fix is owed in H9 lane D step 3. *2026-10-02:* step 3's measured-closure edits for `result_g5`/qseal provisioning are admitted ([ruling](#operator-ruling--lane-d-step-3-may-edit-the-measured-closure-result_g5-and-qseal-provisioning-2026-10-02)).
 
 **Verdict: ACCEPT** the preparation return for DB10 and context compatibility at `f237178`. R1 keeps its own gates.
 
@@ -2122,3 +2122,11 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 T00's merge (`c3ab0cc`) changed seven modules in the S5 Part A measured closure: `clock`, `contract`, `model`, `production_source`, `replay`, `trust_domain` and `book_adapters`. This fires **re-measurement trigger 1** (a change to the worker runtime closure digest; [r1 proposal §9](../../notes/2026-09-26-s5-part-a-measurement-proposal.md)). So the accepted S5 Part A ceiling application does not carry to the next release.
 
 More closure changes are queued: #611 (`production_source`), the C′ build, term 8 (lane D step 3) and K3/RC-4. **Recommendation:** run one fresh measurement after all of these land, immediately before the combined R1. R1 runs Part A, so it must not rely on the old application. This needs the operator's ruling under the C3 rule. It is entered here as an owed R1 prerequisite.
+
+### Operator ruling — lane D step 3 may edit the measured closure (result_g5 and qseal provisioning), 2026-10-02
+
+*Joshua, directly in the deployment coordinator (3)'s chat (session "Coordinating parallel Claude sessions (3)"), 2026-10-02 local (about 2026-10-03T01:50Z), replying to the coordinator's decision sheet: "all recommended". This ruling is owned here; [term 8](#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21) and the H9 preparation [owed list](#coordinator-acceptance--h9-preparation-return-db10-and-context-compatibility-2026-10-02) point to it.*
+
+**Ruling (the recommendation adopted).** Under the [C3 decision rule](#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01), H9 lane D step 3 may edit the measured-closure modules `runtime.py`, `release_schema.py` and `campaign_protocol.py` to provision `result_g5` and qseal. The one fresh S5 Part A measurement before R1 ([finding above](#coordinator-finding--t00-fired-s5-re-measurement-trigger-1-2026-10-02)) covers these edits, on the same basis as D5 for the C′ build ([C′ card, coordinator resolutions](../../briefs/handoffs/2026-10-02-h9-cprime-runtime-identity-build-DRAFT.md#coordinator-resolutions-2026-10-02)): the governing evidence is the measured acceptance taken after the last closure change, and nothing carries before it.
+
+**Not granted:** the step-3 dispatch (its own card, after step 2), any other measured-closure edit, any R1 grant or any merge.
