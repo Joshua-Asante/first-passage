@@ -135,9 +135,9 @@ Same-session resumption after an incident is allowed when every condition passes
 **The gap.** A definitive rejection of a close that leaves protection in place matches no §2 trigger today. It is neither an uncertain outcome nor a protection fault (`:34`), and it is not `:43`'s ordinary refusal (register S-C2). The merged rule is that "Every non-success outcome of a sent liquidation is an incident" (checklist item 7.3). The operator's 2026-10-02 ruling adds a read of every symbol's working orders after every C-a close, and it is recorded only in the register (§R.2a) and its checklist sub-entry, both on main.
 
 **Proposed §2 text.** On acceptance, add these triggers to row 1 (`:34`). The row's action is unchanged: durable halt, intervention scope, fence, alert, and sent or unknown requests retained.
-- "A sent whole-leg close (C-a) that does not complete as a success on postdating, coherent evidence: unknown, partial or reversed, rejected (at once or later), refused, or finding the symbol already flat."
+- "A sent whole-leg close (C-a) that does not complete as a success on postdating, coherent evidence: unknown, partial, reversed, or an unexplained fill (at once), rejected (at once or later), refused, or finding the symbol already flat."
 - "After any C-a close, a read of every symbol's working orders that finds an open leg without its working stop, or a working order on the closed symbol after completion, or that cannot be taken."
-- "A close smaller than the whole leg that the C-a transport refuses (R-T8 sub-leg refusal)." It sends nothing, but it is not `:43`'s ordinary refusal: every non-success close is an incident (register §R.2a; R-T8).
+- "A close smaller than the whole leg, refused by the runtime on the C-a transport (R-T8 sub-leg refusal)." It sends nothing, but it is not `:43`'s ordinary refusal: every non-success close is an incident (register §R.2a; R-T8).
 
 No outcome below is resent, resubmitted or followed by a remainder close (register §R.3: "No outcome of a sent close is retried automatically").
 
@@ -146,11 +146,11 @@ No outcome below is resent, resubmitted or followed by a remainder close (regist
 | Outcome (register row) | Includes | §2 trigger it already meets | Proposed class |
 |---|---|---|---|
 | **O2b.** A sent close finds the symbol already flat | A protective fill won the race. The response may carry no liquidation order (vendor Q5 OPEN) | "uncertain transport/order outcome" (`:34`), because the close's own terminal status cannot be identified | Incident |
-| **O5.** Unknown | Outcome window expired; transport unknown; crash between send and outcome; HTTP 500, 502 or 503; client timeout; 429 `broker_rate_limited`; a close-side 429 `snapshot_refresh_pending` or `egress_limited` (Codex item 1, #593 issuecomment-5961963397) | "uncertain transport/order outcome" (`:34`). The CC-3 repair covers transport-unknown in synthetic scope only (§4.1) | Incident. A close-side 429 grants no read-side retry |
+| **O5.** Unknown | Outcome window expired; transport unknown; crash between send and outcome; HTTP 500, 502 or 503; client timeout; 429 `broker_rate_limited`; a close-side 429 `snapshot_refresh_pending` or `egress_limited` (Codex item 1, #593 issuecomment-5961963397) | "uncertain transport/order outcome" (`:34`). The CC-3 repair covers transport-unknown in synthetic scope only (§4.1) | Incident. The read-side retry rule does not apply: the close is not retried. |
 | **O6.** Partial or reversed | Residual same-side exposure, an opposite position, or a fill not explained by the liquidation order or the former children, on postdating evidence | "protection fault" (`:34`), only when the remainder lacks protection; "Unknown order identity is an incident" (`:45`) for an unexplained fill | Incident, whatever the remainder's protection. An opposite position or an unexplained fill is an incident as soon as it is seen, without waiting for the outcome window. No remainder close |
 | **O7.** Rejected | At once: 400 `tradovate_rejected`, or HTTP 200 with a `failureReason` other than `Success`. Later: `RiskRejected` or `ExecutionRejected` on the liquidation order, found by polling | "protection fault" (`:34`), only if the brackets were already cancelled (vendor M4 OPEN). Otherwise none: this is the S-C2 gap | Incident when first seen, not at window expiry |
 | **O8.** Refused, with no documented no-send | 400 validation or account lock; 401, 403 or 409; 429 `rate_limited` | None. It is not `:43`, which covers the runtime's own valid refusal of a strategy request, not a route refusing a sent close | Incident. A later authoritative no-send mapping changes only what reconciliation expects (register O8) |
-| **R-T8.** Sub-leg close refused | A close smaller than the whole leg, refused on the C-a transport; nothing is sent | None. It is not `:43`, as for O8 | Incident: durable halt, alert, and attended reconciliation of the unexecuted exit (register R-T8) |
+| **R-T8.** Sub-leg close refused | A close smaller than the whole leg, refused on the C-a transport; nothing is sent | None. It is an incident because §R.2a rules every non-success close an incident and the exit stays unexecuted, so the state is not 'otherwise healthy' (§4.1). | Incident: durable halt, alert, and attended reconciliation of the unexecuted exit (register R-T8) |
 | **R-T9.** Cross-leg protection loss, or an order left on the closed symbol | The read of every symbol after every C-a close | "protection fault" (`:34`). "loss of required broker/account evidence" (`:34`) when the read cannot be taken | Incident. The read stays after S-V2 is discharged |
 
 **Unchanged.** The rail close contract keeps O0, O1, O2 and O9: never sent, queued, already flat at preparation, and a second close demand (register S-C1). A restart after O0 already halts (`:41`). A success (O4) completes only on postdating, coherent position, working-order and lot evidence ([B–D packet §1.1a (d)](../notes/2026-09-26-tradeify-bd-decision-packet.md)). An HTTP acceptance or a `Success` result never completes it. `:43` is unchanged.
@@ -163,7 +163,7 @@ No outcome below is resent, resubmitted or followed by a remainder close (regist
 
 **§A11.2 effect.** In both contexts, each incident above ends automated trading for the session (§4.1). Attended recovery uses the attended-platform path, never a runtime or REST C-a (§1 `:24`; §3; checklist item 7.2).
 
-**Proposed §7 cases.** Each case asserts five things: a durable halt into INTERVENTION; the reservation held; no resend, resubmission or remainder close; no runtime mutation after the halt; and no resume request accepted for that session.
+**Proposed §7 cases.** Each case asserts five things: a durable halt into INTERVENTION; the reservation held (for case 9 there is no reservation; the case asserts instead that the unexecuted exit stays surfaced for attended reconciliation); no resend, resubmission or remainder close; no runtime mutation after the halt; and no resume request accepted for that session.
 1. O2b: a close sent on a symbol already flat, with and without a liquidation order in the response.
 2. O5: each listed class, including a crash cut between send and outcome, and window expiry with no response.
 3. O6: a partial liquidation, with the remainder protected and unprotected; an opposite position and an unexplained fill, each halting before the outcome window expires.
@@ -174,7 +174,7 @@ No outcome below is resent, resubmitted or followed by a remainder close (regist
 8. A `Success` result alone does not complete a close; postdating, coherent evidence does.
 9. R-T8: a sub-leg close on the C-a transport, refused with nothing sent, and its halt.
 
-Offline consumer tests stay required (register S-T4). These are test obligations. T09 release rows R-T3, R-T4 and R-T9 own the code (register §R.5).
+Offline consumer tests stay required (register S-T4). These are test obligations. T09 release rows R-T2, R-T3, R-T4, R-T8 and R-T9 own the code (register §R.5).
 
 **Not granted.** No C-a selection, register acceptance, rail-spec or incident-ADR change, drill, session, arm, deployment or GO. S-C2 is discharged only when the owner applies accepted text into §2, §4.1 and §7.
 
