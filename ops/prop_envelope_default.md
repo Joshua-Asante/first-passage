@@ -80,6 +80,8 @@ Mini/micro pairs always share a group. **Volatility is cross-linked to Equity In
 
 Overlay discipline: one row per firm/program-tier; every cell carries a verified date + source link; a row older than 90 days is stale and must be re-verified before use. Where an overlay is *looser* than the default (e.g., EOD-trailing DD, funded-tier overnight holds), the looser rule may unlock candidates the default blocked — that unlock is a deployment-fork decision, recorded against the specific row.
 
+*Re-verification scope (operator default 2026-10-02, sheet E, "all recommended"; first applied by [PR #621](https://github.com/Joshua-Asante/first-passage/pull/621), 2026-10-02/03):* the 90-day re-verification covers the four friendly firms of `core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`: Tradeify, Bulenox, MyFundedFutures and BluSky. The Earn2Trade, Apex, Topstep and TradeDay rows stay stale and unused, and any later use re-verifies them first under the rule above.
+
 ## §5 — Ratification record (all v0.1 open items RESOLVED 2026-07-13)
 
 All five v0.1 open items closed by the 2026-07-13 primary-source research pass (10-agent workflow: 5 researchers + 5 adversarial citation-verifiers; zero load-bearing facts refuted). Decision record: [`docs/adr/2026-07-13-prop-envelope-v1-ratification.md`](../docs/adr/2026-07-13-prop-envelope-v1-ratification.md).
