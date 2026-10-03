@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT, 2026-10-03, drafted by a worker for coordinator (3). Revision 2 folded the review of `b6069da` (1 P1, 5 P2, 6 P3) under coordinator (3)'s rulings on D5 and DH2; revision 3 folds the review of `32e5905` (1 P2, 3 P3) under its rulings on DH2's conditions A and B (§10, §12). **NOT DISPATCHABLE:** the §11 prerequisites are open. They include DH4, which is Joshua's, and gate G-C3 (§2.6) if the freeze closure run names a measured member outside D5. Coordinator (3) answers §12 (DH2 by its own freeze checks of A and B), re-anchors every code line on the DH1 base, commits the frozen revision under the committed-handoff rule and records its SHA in the ledger before any worker starts.
+**Status:** DRAFT, 2026-10-03, drafted by a worker for coordinator (3). Revision 2 folded the review of `b6069da` (1 P1, 5 P2, 6 P3) under coordinator (3)'s rulings on D5 and DH2; revision 3 folds the review of `32e5905` (1 P2, 3 P3) under its rulings on DH2's conditions A and B (§10, §12); revision 4 folds the review of `d2c8124` (0 P1, 0 P2, 2 P3: the condition-A probe and B.3's search scope) and re-cites D11 = (a) and D3 = B against their ledger PRs. **NOT DISPATCHABLE:** the §11 prerequisites are open. They include DH4, which is Joshua's, and gate G-C3 (§2.6) if the freeze closure run names a measured member outside D5. Coordinator (3) answers §12 (DH2 by its own freeze checks of A and B), re-anchors every code line on the DH1 base, commits the frozen revision under the committed-handoff rule and records its SHA in the ledger before any worker starts.
 
 **Citation basis.** Code and documents at `origin/main@7e409df` (#624 merged there; Amendment A1 pinned at `f179c0b`; #627 merged at `e9fade0`). Files that exist only on the H9 branch (`campaign_result.py`, `campaign_seal.py`, `g5_result.py`, `seal_service.py`) were checked at `origin/codex/h9-t05-integration@f237178`. Steps 2 and 3 edit several of the same files, so code line numbers are **OWED** re-anchoring at freeze.
 
@@ -16,7 +16,7 @@
 - **C′ D5, RULED YES** (Joshua, directly to the coordinator, 2026-10-02 ~23:20Z: "yes"; C′ card `:249`). It admits C′ edits to `release_schema.py`, `runtime.py`, `worker.py`, `campaign_probe.py` and `protocol.py`. C′-final is part of the C′ build (A1 `:306`; ledger `:2146`, "D5 for the C′ build"), so D5 is this card's measured-closure admission (§2.6).
 - H9 checkpoint R1: [staged acceptance](2026-09-27-staged-acceptance-handoffs.md) `:534-:551`, `:563`.
 - R1 tooling: [card](2026-10-02-r1-tooling-build-card.md) and #627 (`scripts/qualification_boundary_verification.py`: `R1_CASES` and `CPRIME_CASE` `:48-:59`, `r1_refusal` `:115-:140`, the `--test-only` exclusion `:201-:206` and `:248`, `FP_QUALIFICATION_R1` set and popped `:241-:242`).
-- **D11 = (a), RULED** (Joshua through coordinator (2), 2026-10-03 05:10Z): "the first runner and admin launches are checked against the host provisioning record (interpreter identity recorded by host.py provisioning), labelled PRE_RELEASE. Later launches are checked against the signed final revision." This supersedes "D11 reopened" (C′ card `:355`). Its ledger record is owed by coordinator (3): it is not on `main` at `7e409df`, and no ledger PR carries it yet.
+- **D11 = (a), RULED** (Joshua, coordinator (2) chat, 2026-10-03T05:09:53Z, verbatim: "done for the grafana phone connection. D11: a", on the corrected options; recorded by coordinator (4) in ledger PR [#658](https://github.com/Joshua-Asante/first-passage/pull/658)): the first runner and admin launches are checked against the host provisioning record (the interpreter identity recorded by `host.py` provisioning), labelled `PRE_RELEASE`; later launches are checked against the signed final revision. This supersedes "D11 reopened" (C′ card `:355`). The record is owed on `main` until #658 merges.
 
 ```yaml authority
 seat: worker
@@ -171,7 +171,7 @@ Under R1 the supervisor starts through `campaign_host.restart` (`:107-:115`, `sy
 
 **Measured-closure admission: D5, and G-C3 only outside it.**
 - `ops/c1_rail/qualification/execution/release_schema.py` is in the 68-module Stage 1c measured closure (Appendix). **D5 admits it.** Joshua ruled D5 YES directly (2026-10-02 ~23:20Z, "yes"; C′ card `:249`) for C′ edits to `release_schema.py`, `runtime.py`, `worker.py`, `campaign_probe.py` and `protocol.py`, and C′-final is part of the C′ build (A1 `:306`; ledger `:2146`, "D5 for the C′ build"). Under DH2 (ii) no `release_schema.py` edit is expected; under (i), D5 covers the new revision.
-- **Gate G-C3 (PENDING Joshua, only if it has members):** any measured-closure member this card edits outside D5's five files. At `7e409df`, and at the H9 head `f237178` (closure table run for this fold: 68 measured, 63 staging), no §2.10 file outside D5's five is a member; that includes the listed DH2 (i) gate sites. The candidates on the DH1 base are `runtime_identity.py` (absent on every ref; it joins if step 2 or 3 makes a measured module import it) any §2.10 file that step 2 or 3 pulls into the closure, and, under DH2 (i), any gate site finding (e) adds outside D5's five files.
+- **Gate G-C3 (PENDING Joshua, only if it has members):** any measured-closure member this card edits outside D5's five files. At `7e409df`, and at the H9 head `f237178` (closure table run for this fold: 68 measured, 63 staging), no §2.10 file outside D5's five is a member; that includes the listed DH2 (i) gate sites. The candidates on the DH1 base are `runtime_identity.py` (absent on every ref; it joins if step 2 or 3 makes a measured module import it), any §2.10 file that step 2 or 3 pulls into the closure, and, under DH2 (i), any gate site finding (e) adds outside D5's five files.
 - Coordinator (3) runs the closure table on the DH1 base at freeze (§10). Each member outside D5 goes to Joshua under the [C3 decision rule](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01), and the card is not dispatchable until he admits it. With no such member, G-C3 is void. Finding (f) re-confirms; a new member is a stop (§7). Coordinator (3) presents the gate. A relayed yes does not count.
 
 **Re-measurement (ENG-2 option C, ledger `:983`).** An admitted edit joins the closure changes covered by the one PART_A re-measurement on the integrated pre-S8 head, which coordinator (3) owns. R1 carries the unmeasured-closure caveat.
@@ -359,7 +359,7 @@ Return DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. The coordinator's ver
    - **Lane D step 3** (`claude/lane-d-step3-card@3aefa6d`, DRAFT, unmerged) provisions `result_g5` and qseal. C′-final binds both, so this card freezes only after step 3 is RESOLVED. The two cards share `bootstrap.py`, `campaign_host.py`, `conftest.py`, `fixture_install.py`, `fixture_producer.py`, `runtime_identity.py`, `release_schema.py`, `service.py`, `campaign_store.py` and `invariant_manifest.json`, so they run sequentially with a single writer. The step-3 draft predates A1 revision 4: it still calls `test_runtime_identity_linux.py` "step 2's" and registers "the D8 C′ identity Linux nodes" (its `:68`, `:193`, `:200`). Its D3 also leaves "whether the `seal` process role enters `/v8` or a later release revision" OWED (`3aefa6d:412`). That conflicts with A1 `:306` (step 3 ships no revision) and with this card's single C′-final. DH7 reconciles both at step 3's freeze.
    - **B4** (#655, merged at `dfe673a`; the B4 card it added is DRAFT): its release is allocated after C′-final (B4 card `:31`, `:85-:86`), and `/v7`, `/v8` and C′-final keep plan-only behaviour. This card allocates C′-final first (`/v8` itself under DH2 (ii)), and B4 takes the next revision. This card does not wait for B4.
    - **#627** (merged): this card fills `CPRIME_CASE` and its rows and changes no tooling semantics. **#609** (S8 harness, DRAFT) also edits `scripts/qualification_boundary_verification.py`; whichever lands second rebases (item 16 carves this file out).
-4. **D3 = B** (Joshua, directly to coordinator (3), 2026-10-03 20:19Z: "D3 = B"). Its ledger record is coordinator (3)'s ledger PR #656, open at this fold, so it is owed on `main` until #656 merges. H9 R2 compute recovery is deferred for first production. This card adds **no** recovery, relaunch, retry or replacement path. Every identity mismatch, timeout or exhaustion is a single refusal.
+4. **D3 = B** (Joshua, directly to coordinator (3), 2026-10-03 20:19Z: "D3 = B"). Its ledger record is coordinator (3)'s ledger PR #656, merged at `822c3ea` (2026-10-03T22:13Z). H9 R2 compute recovery is deferred for first production. This card adds **no** recovery, relaunch, retry or replacement path. Every identity mismatch, timeout or exhaustion is a single refusal.
 5. **R1 independence.** R1 stays independent of B4 (operator ruling 2026-10-02, sitting 1; staged acceptance `:534`) and of D3/R2 (the #655 recovery note leaves R1 independent under either D3 branch). Nothing in this card makes B4 or R2 an R1 prerequisite.
 
 ## 10. Audit hooks (runnable)
@@ -376,15 +376,20 @@ grep -n "manifest\['runtime'\]" tools/qualification_verification/host.py
 # Closure membership on the base (68 measured / 63 staging at 7e409df); D5 admits release_schema.py; G-C3 covers any other allowed member.
 python -I scripts/fp.py python <scratch>/stage1c_closure_table.py . "$BASE" HEAD
 # DH2 condition A: coordinator (3), at freeze, on the DH1 base; DH2 is decided here, before dispatch.
-# Expected: step 2's /v8 vectors keep their outcomes, and a TEST_ONLY /v8 built through fixture_producer's
-# release-revision parameter, binding all eleven ruled entries (the wrapper with a venv and a base tuple),
-# passes parse_release and the pure pairing/tuple validator. Any refusal or changed vector fails A.
+# Expected: step 2's /v8 vectors keep their outcomes, and a full-map probe passes parse_release and the pure
+# pairing/tuple validator. The probe takes fixture_producer's /v8 output (the step-2 entries plus NOT_COVERED
+# labels for the five names), replaces the five NOT_COVERED labels with bound tuples (the wrapper with a venv
+# and a base tuple), and re-signs it with the TEST_ONLY keys. Any refusal or changed vector fails A. The probe is
+# a pytest file under the worktree's gitignored local_artifacts/, run through the launcher; the A1 revision cites
+# its record.json and the probe's SHA-256, both copied to the primary checkout's local_artifacts/ before the
+# worktree is retired.
 python -I scripts/fp.py python -m pytest tests/ops/qualification/execution/test_release.py -q
-python -I scripts/fp.py python <scratch>/cprime_final_v8_probe.py   # the coordinator's full-map probe; not committed
+python -I scripts/fp.py python -m pytest local_artifacts/cprime-probe/test_cprime_final_v8_probe.py -q
 # DH2 condition B: coordinator (3), at freeze, after `git fetch origin`. B holds when no SIGNED /v8 release
 # document (a release.json with schema qualification_execution_release/v8 and its approval) exists in run
 # evidence or the ledger. Allowed matches: this card (and copies or reviews of it); step 2's release_schema.py
-# /v8 entry, the allow-lists and checks that admit /v8 (§0 item 2) and its pinned /v8 vectors; the C′ card.
+# /v8 entry, the allow-lists and checks that admit /v8 (§0 item 2) and its pinned /v8 vectors; the C′ card; and any
+# document whose approval is signed only with the TEST_ONLY keys (local pytest output, never a release).
 # Any other match is inspected; only a signed /v8 release document fails B. The pattern must not start
 # with "/": Git Bash converts such arguments to paths.
 P='execution_release/v8'
@@ -394,8 +399,9 @@ git grep -nF "$P" "$BASE" -- docs/superpowers/plans/2026-09-18-full-e1-execution
 # checkout, lane D's and the H9 Codex worktree C:/Users/joshu/.codex/worktrees/h9-t05-integration included.
 # Expected: no file.
 for wt in $(git worktree list --porcelain | sed -n 's/^worktree //p'); do grep -rlF "$P" "$wt/.cache" 2>/dev/null; done
-# B.3 Retained run artifacts downloaded locally (s2_run_evidence.py downloads under the temp root). Expected: no file.
-find "$(python -c 'import tempfile; print(tempfile.gettempdir())')" -type f -name release.json -print0 2>/dev/null | xargs -0 grep -lF "$P"
+# B.3 Retained run artifacts downloaded locally: s2_run_evidence.py's download folders (s2-* under the temp root,
+# and any --dest used). Local pytest temp folders are not run evidence. Expected: no file.
+find "$(python -c 'import tempfile; print(tempfile.gettempdir())')" -maxdepth 1 -type d -name 's2-*' -print0 2>/dev/null | xargs -0 -r grep -rlF --include=release.json "$P"
 # B.4 Unexpired GitHub qualification and S5 artifacts: download and search each one whose run head's
 # release_schema.py admits /v8 (parse_release refuses any other revision). Expected: no file.
 gh api "repos/Joshua-Asante/first-passage/actions/artifacts?per_page=100" --paginate \
@@ -417,7 +423,7 @@ git diff --name-only "$BASE"...HEAD | grep -E '^(\.github/|scripts/(s2_run_evide
 2. **DH4:** Joshua's ruling on the supervisor-parent event route (§12), presented by coordinator (3). **PENDING.**
 3. Lane D steps 2 and 3 RESOLVED and integrated. That head is DH1.
 4. This card frozen: §12 answered, DH2 by coordinator (3)'s freeze checks of conditions A and B on the DH1 base (§10) and recorded on the C′ card as an Amendment A1 revision (owners, above); citations re-anchored; the card committed and its SHA in the ledger; DH7 reconciled with the step-3 freeze.
-5. The rulings recorded on `main` by coordinator (3): D3 = B through its ledger PR #656 (open at this fold; owed until it merges), and D11 = (a), whose ledger record is owed (no PR yet).
+5. The rulings recorded on `main`: D3 = B through coordinator (3)'s ledger PR #656 (merged at `822c3ea`), and D11 = (a) through coordinator (4)'s ledger PR #658 (owed on `main` until it merges).
 
 ## 12. Open decisions (for coordinator (3) at freeze)
 
@@ -427,7 +433,7 @@ git diff --name-only "$BASE"...HEAD | grep -E '^(\.github/|scripts/(s2_run_evide
   - (B) No **signed** `/v8` release document (a `release.json` with schema `qualification_execution_release/v8` and its approval) exists in run evidence or the ledger, checked against the evidence (§10). **Holds at this head** (the §10 check, run for this fold on 2026-10-03 at `32e5905`):
     - the ledger (`main@dfe673a`): no `execution_release/v8` line; its `/v8` lines `:711`, `:1382`, `:1468` are the S5 *snapshot* `/v8`, a different family;
     - run evidence: no match in `.cache/` of any worktree registered to the primary checkout (104 of the 250 have one), the H9 Codex worktree `h9-t05-integration`, where lane D runs, included;
-    - retained run artifacts: the 1,066 `release.json` files downloaded under the temp root name only `/v1`–`/v7`. The 2,463 unexpired GitHub qualification and S5 artifacts come from 1,147 run heads. No head's release schema admits `/v8` (`parse_release` refuses any other revision, `release_schema.py:113`), so none was downloaded; the only head whose tree contains the literal is `32e5905`, in this card alone;
+    - retained run artifacts: the 1,066 `release.json` files under the temp root name only `/v1`–`/v7`; 9 of them are in `s2_run_evidence` download folders and the rest are local pytest output (most beside a TEST_ONLY approval), which B.3 no longer searches. The 2,463 unexpired GitHub qualification and S5 artifacts come from 1,147 run heads. No head's release schema admits `/v8` (`parse_release` refuses any other revision, `release_schema.py:113`), so none was downloaded; the only head whose tree contains the literal is `32e5905`, in this card alone;
     - history: `git log --all -S` finds one commit, `32e5905`, this card's own fold. The card itself contains the literal, an allowed match.
 
     Coordinator (3) re-runs B at freeze. At the DH1 base, step 2's `/v8` sources and vectors are expected matches too.
