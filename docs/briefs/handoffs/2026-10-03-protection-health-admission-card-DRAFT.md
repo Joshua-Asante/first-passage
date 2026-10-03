@@ -68,9 +68,12 @@ acceptance:
   - tests/ops/test_c1_rail_image_manifest.py
   - tests/ops/qualification/test_trust_domain.py
   - tests/ops/qualification/test_seal.py
+  - tests/ops/qualification/test_composition_fixture.py
+  - tests/ops/qualification/test_composition_route.py
+  - tests/ops/qualification/test_runtime_inventory.py
 ```
 
-`test_book_protection_source_health.py` is new. The other sixteen exist and must stay green unchanged. The last two are there because two edited files are bound qualification code (§11 G-1). A module global that was not value-comparable once broke 33 seal and composition tests (`docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md:736-739`), so the targeted run includes the seal and trust-domain suites.
+`test_book_protection_source_health.py` is new. The other nineteen exist and must stay green unchanged. The last five are there because two edited files are bound qualification code (§11 G-1): the trust-domain and seal suites, and the three composition suites, since `tests/ops/qualification/composition_fixture.py:83` binds `c1_rail.book_account_owner` as `listener_account_owner`. A module global that was not value-comparable once broke 33 seal and composition tests (`docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md:736-739`), so the targeted run includes all five, and the revert trigger (§4) covers them.
 
 ## 0. Phase 0: premise, Rule-0 reads and findings returned before code
 
@@ -96,7 +99,9 @@ acceptance:
    - `ops/c1_rail/book_protection.py`: `is_loosening` (`:140-149`). Against `None` it compares with an empty `Bracket()`, so a limit change reads as loosening (`:141-143`).
    - `ops/c1_rail/book_account_owner.py`:
      - `dispatch` (`:1654-1660`);
-     - `_dispatch_locked` (`:1662-1731`): the continuation test (`:1694-1696`), the protection branch (`:1707-1708`) and the occurrence disposition (`:1728-1730`);
+     - `_dispatch_locked` (`:1662-1731`): the send-suppression raise (`:1664-1665`), the continuation test (`:1694-1696`) and the stored-result replay when it fails (`:1697-1698`), the protection branch (`:1707-1708`) and the occurrence disposition (`:1728-1730`);
+     - `_halt_db` (`:2088-`): an inserted incident raises the owner generation (`:2093-2094`), so after any halt every prepared continuation fails the continuation test;
+     - `request_classification` (`:853-858`), `FENCED_STATES` (`:279`), and STALE one bar after an entry with no accepted terminal (`:893-896`), which the loosening admission reads at `book_protection_owner.py:492`;
      - `occurrence_state` (`:1628-1637`) and `_validate_occurrence_state_db` (`:1590-1611`).
    - `ops/c1_signal_daemon/book_runtime.py`:
      - `FourLegRuntime.__init__` (`:97-99`, owner type check);
@@ -106,8 +111,8 @@ acceptance:
    - `ops/c1_rail/c1_rail_listener.py` `handle_book_action` (`:81-91`): a type check and a forward, nothing else.
    - `ops/c1_signal_daemon/book_evaluate_loop.py` `step` (`:29-58`), read only. Redelivery is at `:43-46`, and #631 owns this file.
    - `ops/c1_rail/qualification/trust_domain.py` `_PRODUCTION_CODE` (`:140-181`): `'listener_account_owner':'c1_rail.book_account_owner'` (`:146`) and the runtime dependency `'c1_rail.book_protection_owner'` (`:162`).
-   - #631's card at `a38d89a`: §2.2 (`:112-124`), cases 14-16 (`:168-174`), §12 D-7 (`:265-271`).
-   - Test fixtures: `waiting_runtime` (`tests/ops/test_book_runtime_occurrences.py:40-64`, a first-time attach); the binding extension in `tests/ops/test_book_loop_continuation.py:51-57`; `ProtectionScenario` (`tests/ops/book_protection_fixtures.py:12`, `establish` `:73`).
+   - #631's card at `49f1b69` (`origin/claude/ra2-offline-card`): §2.2 (`:115-135`), cases 14-18 (`:178-184`), its premise rule (`:186`), §12 D-7 (`:280-286`).
+   - Test fixtures: `waiting_runtime` (`tests/ops/test_book_runtime_occurrences.py:40-64`, a first-time attach; it hard-codes `Bracket(stop=98)` at `:53`); the synthetic broker's `drop_reads` (`ops/c1_rail/book_synthetic_protection.py:52`); the binding extension in `tests/ops/test_book_loop_continuation.py:51-57`; `ProtectionScenario` (`tests/ops/book_protection_fixtures.py:12`, `establish` `:73`).
 3. **Findings returned before code.** The coordinator acknowledges each one.
    - (a) **Closures and pins.** Report whether any §2.6 file is in the 68-module Stage 1c measured closure or the T00 P7 40-module first-party closure (C′ card D8, `docs/briefs/handoffs/2026-10-02-h9-cprime-runtime-identity-build-DRAFT.md:259-264`). Report whether it is in the import closure of the S5 Linux selection (ledger `docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md:1921`). Report whether any committed file pins its SHA-256.
      - **The drafter's reading at `04a86ac`:**
@@ -125,7 +130,7 @@ acceptance:
      - `test_book_runtime_occurrences.py:73`, `:78`, `:86`, `:103`;
      - the direct `dispatch`/`handle_book_action` calls in the owner and runtime tests.
    - (e) **Module globals.** Confirm the build adds no module-level global to `book_protection_owner.py` or `book_account_owner.py` (bound modules; see the seal note under the authority block). The new reason string is a literal inside functions.
-   - (f) **Recovery.** Confirm that a new runtime or a new boot never redelivers a held member, exactly as for an evidence wait. The runtime's ownership check is `:436-437`, and the owner's generation and boot check is `:1694-1696`.
+   - (f) **Recovery and halts.** Confirm that a new runtime, a new boot or any halt never lets a held member be redelivered, exactly as for an evidence wait. The runtime's ownership check is `:436-437`. The owner's generation and boot check is `:1694-1696`; a halt raises the generation (`:2093-2094`), so the owner replays the stored result with no command (`:1697-1698`).
 
 ## 0.5. Routing and clarifying questions
 
@@ -136,10 +141,11 @@ This is a Claude worker, not GLM. It is offline and synthetic: synthetic brokers
 ## 1. Goal
 
 Add a source-health input to prepared-continuation redelivery: `redeliver_prepared_boundary(bar_time, *, now, sources_healthy=True)`.
-- **When `sources_healthy` is False,** the owner's admission still sends first-time attaches and non-loosening amends (tightening, or equal, which stays a no-op). It judges each one by its **own** fresh dispatch-time read and its own loosening test (`:568-572`, `:594-596`). A loosening that the owner would otherwise send is **held**: a new non-terminal waiting result, `held_unhealthy`. It is never refused or terminal, so a later healthy step of the same runtime can still send it, inside its continuation window and before its protection deadline.
+- **When `sources_healthy` is False,** the owner's admission still sends first-time attaches and non-loosening amends (tightening, or equal, which stays a no-op). It judges each one by its **own** fresh dispatch-time read and its own loosening test (`:568-572`, `:594-596`). A loosening that the owner would otherwise send is **held**: a new non-terminal waiting result, `held_unhealthy`. It is never refused or terminal, so a later healthy step of the same runtime can still send it, inside its continuation window and before its protection deadline, **but only when no incident intervenes**.
+- **After any halt, a held loosening is never redelivered** (coordinator (3) R2, 2026-10-03; ACCEPTED as the B behaviour, in the safe direction). The halt raises the owner generation (`book_account_owner.py:2093-2094`). The continuation test then fails (`:1694-1696`), and the owner replays the stored `held_unhealthy` result with no command (`:1697-1698`). The loosening ends in the protection-deadline fault (G8), with the position still on its existing, tighter protection. In #631's flow the `feed` halt follows every unhealthy redelivery in the same step, so there a held loosening always ends this way.
 - **When the input is True or omitted,** behaviour is exactly as today.
 
-**B's residual.** An attach with no fresh evidence still returns `awaiting_evidence` (`:583-586`), and the feed halt that follows fences it. B narrows A's unprotected-fill exposure; it does not close it (#631 `:271`).
+**B's residual.** An attach with no fresh evidence still returns `awaiting_evidence` (`:583-586`), and after the feed halt that follows it is never redelivered either (the same replay; G3). B narrows A's unprotected-fill exposure; it does not close it (#631 `:271`).
 
 **Boundary:** nothing is wired. This card adds the input and its owner semantics. #631's loop passes it (§2.7), under #631's own re-scoped card.
 
@@ -187,7 +193,10 @@ At `:1729`, a `held_unhealthy` result stores occurrence **state** `awaiting_evid
 ### 2.5 What does not change
 
 - **Healthy steps** (True or omitted): byte-identical, including evidence timing and terminal rules.
-- **Halt fences** (`:477-478`, `:525-526`, `:577-578`): the fence is checked before the hold, so under INTERVENTION everything is fenced, a loosening included.
+- **After a halt nothing is sent, through two existing mechanisms.**
+  - *A prepared continuation* (every redelivery) never reaches protection dispatch. The halt raises the owner generation (`book_account_owner.py:2093-2094`), the continuation test fails (`:1694-1696`), and the owner replays the stored result with no command (`:1697-1698`). So a redelivery after a halt returns the stored reason (`awaiting_evidence` or `held_unhealthy`), not `intervention_fence` (G3, G8).
+  - *A fresh dispatch* under INTERVENTION returns `intervention_fence` at `book_protection_owner.py:525-526` (or `:577-578`), before the admission call, so the hold is never reached (G4). After an input-incident storage failure, `_dispatch_locked` raises first (`book_account_owner.py:1664-1665`).
+  - The admission's own fence (`:477-478`) stays ahead of the hold, so a hold never replaces a fence.
 - **Every loosening refusal** (`:486-495`, including outside-session `:487`): still refused and terminal.
 - **The evidence waits** (`:583-586`) and `amend_deferred`/`consumed_protection` (`:589-593`): unchanged, and still ahead of admission.
 - **Protection deadline** (`:177-182`): a held member keeps the deadline it was prepared with (`prepared + PROTECTION_PERIOD`, `:559`). A hold never clears or extends it.
@@ -204,13 +213,28 @@ At `:1729`, a `held_unhealthy` result stores occurrence **state** `awaiting_evid
   - `tests/ops/test_book_protection_source_health.py` (new). Its synthetic fixtures live in that file.
 - **Everything else is out of scope (§5).** That includes `book_evaluate_loop.py`.
 
-### 2.7 The interface #631 consumes (coordinator (3)'s re-scope; not built here)
+### 2.7 The interface #631 consumes (canonical here; #631 builds the loop side)
 
-Under B, #631 §2.2 step 2 changes.
-- When a source is unhealthy in session, the loop calls `runtime.redeliver_prepared_boundary(bar_time, now=now, sources_healthy=False)` for each pending boundary **before** `owner.halt(..., "feed", now=now)`, and then returns. `book_runtime.py` stays forbidden to #631.
-- #631's case 14 holds: the loosening returns `held_unhealthy`, `B` stays incomplete, and nothing is sent for it.
-- Cases 15 and 16 invert: the tightening, and the attach with fresh evidence, are sent before the halt.
-- #631's B build starts from `main` after this card merges.
+This card's API is canonical (coordinator (3) R1, 2026-10-03). #631 is at `49f1b69` (`origin/claude/ra2-offline-card`), which carries the folds this card's review found owed to it (below).
+- **The exact call.** When a source is unhealthy in session, #631's loop calls `runtime.redeliver_prepared_boundary(bar_time, now=now, sources_healthy=False)` for each pending boundary, then `owner.halt(..., "feed", now=now)`, and returns. The method is `FourLegRuntime.redeliver_prepared_boundary(bar_time, *, now, sources_healthy=True)` (§2.1): keyword-only, exact `bool`, default `True`. A healthy step omits the keyword. `book_runtime.py` stays forbidden to #631.
+- **What #631 relies on:**
+  - a loosening that would be sent returns reason `held_unhealthy`, never a refusal or `terminal`: its child stays `awaiting_evidence` with no `operations` row, and the protection row keeps `pending_operation` and `deadline` (§2.2);
+  - the stored occurrence state for `held_unhealthy` is `awaiting_evidence` (§2.3), so the occurrence stays a continuation and stays visible to the redelivery filter (`book_runtime.py:453`);
+  - barrier semantics: the runtime counts `held_unhealthy` as waiting (`:458`), so `B` stays in `pending_bar_times`, its retained barrier is not completed (`:464-467`), and no local refusal is recorded (`:273`). A redelivery with no member still waiting completes the barrier, as today;
+  - tightenings, equal brackets and attaches with fresh evidence behave exactly as with `True` (G1, G2).
+- **After the halt (R2).** The `feed` halt follows the hold in the same step, so a held loosening is never redelivered. The halt raises the owner generation (`book_account_owner.py:2093-2094`), and any later redelivery replays the stored result with no command (`:1694-1698`). The loosening ends in the protection-deadline fault (G8), with the position still on its existing, tighter protection. The "later healthy step" (§1) exists only when no incident intervenes. Coordinator (3) ruled this ACCEPTED as the B behaviour (safe direction).
+- **Ordering when redelivery raises.** Redelivery can raise: at the window check (`book_runtime.py:438-440`), the occurrence-replay halt (`:447-449`) or the undispatched-member check (`:451-452`). In B's order a raise would skip the `feed` halt, so #631 owes a halt that runs even when redelivery raises (a `finally`).
+- **Folds owed to #631 from this card's review, carried at `49f1b69`:**
+  - step 2 names this API (at `7dc1ebc` it named `BookAccountOwner.redeliver_prepared_boundary`, which does not exist);
+  - finding (f) checks this API and the `:458` waiting rule, and its §10 grep includes `book_runtime.py`;
+  - case 14 observes the entry's accepted terminal and asserts no fenced state (F1's premise, §3);
+  - case 15 cites the replay (`:1694-1698`, `:2093-2094`), not the `:525-526` fence;
+  - the halt runs in a `finally` (case 18);
+  - R2 is stated in its §2.2 and §12 D-7.
+
+  Coordinator (3) confirms these at #631's freeze.
+- #631's case 14 holds: the loosening returns `held_unhealthy`, `B` stays incomplete, and nothing is sent for it. Cases 15 and 16 invert: the tightening, and the attach with fresh evidence, are sent before the halt.
+- #631's B build starts from `main` after this card's build merges.
 
 ## 3. Method
 
@@ -221,14 +245,18 @@ Under B, #631 §2.2 step 2 changes.
   - A mutant is a scratch edit made in the worktree, run once through the launcher, and reverted before commit. It is never committed, and `git diff --stat` at return must not show it.
 - **Preservation** suites stay green on base and build, unchanged. No red evidence is fabricated for them.
 - **Fixtures.** Import, never edit:
-  - `waiting_runtime` for a first-time attach;
-  - the binding extension pattern of `test_book_loop_continuation.py:51-57`, monkeypatched inside the new file, so that a loosening passes today's admission;
-  - `ProtectionScenario.establish` for an established bracket and for multi-fill scope.
-- **Premise assertions.** Cases that rely on a loosening or a tightening assert their premise with the owner's own test on the refreshed row (`ever_protected`, `observed` not `None`, and `is_loosening(observed, effective, side)` True or False), as #631 `:174` does. Attach cases assert the target is not `ever_protected` and its `observed` is `None`.
+  - `waiting_runtime` for a first-time attach. It hard-codes `Bracket(stop=98)` (`test_book_runtime_occurrences.py:53`), so G2's limit variant uses a local copy of its body (`:40-64`) in the new file, with the bracket as a parameter. The original stays unedited;
+  - the binding extension pattern of `test_book_loop_continuation.py:51-57`, monkeypatched inside the new file, **plus the entry's accepted terminal**, so that a loosening passes today's admission:
+    - the terminal is `account.observe(BrokerFact.terminal(<entry operation id>, "filled", 1, t))`, with `t` inside the entry's first bar and before `B` is prepared;
+    - without it, the entry request is STALE one bar after entry (`book_account_owner.py:893-896`), and the loosening admission refuses it as `risk_add_not_authorized` (`book_protection_owner.py:492`) before any hold;
+    - if D-4 orders this card after TB-I3 S2, S2's latch also closes admission once it observes STALE (TB-I3 card §2.6), so the terminal must come before any classification read made one bar or more after entry;
+  - `ProtectionScenario.establish` for an established bracket and for multi-fill scope;
+  - the synthetic broker's `drop_reads` for a member with no fresh evidence.
+- **Premise assertions.** Cases that rely on a loosening or a tightening assert their premise with the owner's own test on the refreshed row (`ever_protected`, `observed` not `None`, and `is_loosening(observed, effective, side)` True or False), as #631 `:186` does. Attach cases assert the target is not `ever_protected` and its `observed` is `None`. Every case that sends or holds a loosening also asserts that no value of `account.request_classification(now=<dispatch now>)` is in `FENCED_STATES` (`book_account_owner.py:279`).
 
 ## 4. Acceptance checks (falsifier-first)
 
-**H:** with this slice built, no synthetic trace lets a prepared continuation dispatched with `sources_healthy=False` send a loosening, as the owner classifies it after its dispatch-time read. No such trace holds or refuses anything that the same trace with `sources_healthy=True` would send, unless it loosens. A held loosening is never terminal: a later step of the same runtime with `sources_healthy=True`, inside the continuation window and before the protection deadline, sends it exactly as today. With the input True or omitted, every outcome equals the base.
+**H:** with this slice built, no synthetic trace lets a prepared continuation dispatched with `sources_healthy=False` send a loosening, as the owner classifies it after its dispatch-time read. No such trace holds or refuses anything that the same trace with `sources_healthy=True` would send, unless it loosens. A held loosening is never terminal: when no halt intervenes, a later step of the same runtime with `sources_healthy=True`, inside the continuation window and before the protection deadline, sends it exactly as today. After a halt it is never redelivered: the owner replays its stored result with no command, and it ends in the protection-deadline fault (R2; G8). With the input True or omitted, every outcome equals the base.
 
 **Reject if:**
 - a fail-first case is not red on an assertion against each of its named mutants;
@@ -242,7 +270,7 @@ Under B, #631 §2.2 step 2 changes.
 
 **Fail-first cases** (`test_book_protection_source_health.py`):
 1. **F1: an unhealthy loosening is held, then sent on a healthy step.**
-   - *Set-up:* a fill with established protection, then a later prepared boundary `B` whose `BracketAmend` loosens. The amend is `awaiting_evidence` and unattempted, admitting evidence has arrived, and the binding is extended.
+   - *Set-up:* a fill with established protection and the entry's accepted terminal (§3), then a later prepared boundary `B` whose `BracketAmend` loosens. The amend is `awaiting_evidence` and unattempted, admitting evidence has arrived, and the binding is extended. *Premise:* no value of `request_classification(now=t1)` is in `FENCED_STATES` (§3).
    - *Step 1:* `redeliver_prepared_boundary(B, now=t1, sources_healthy=False)` gives:
      - reason `held_unhealthy` and no broker command;
      - occurrence state `awaiting_evidence`, not attempted;
@@ -250,23 +278,26 @@ Under B, #631 §2.2 step 2 changes.
      - the protection row keeps `pending_operation` and `deadline`;
      - `B` still in `pending_bar_times`, and the retained barrier not completed;
      - `pending_feedback` unchanged (no local refusal).
-   - *Step 2:* the same runtime, at `t2` inside the window and before the deadline, with the input omitted, sends exactly one bracket command with the loosened bracket, and `B` completes.
+   - *Step 2:* the same runtime, at `t2` inside the window and before the deadline, with the input omitted and no halt or other incident in between, sends exactly one bracket command with the loosened bracket, and `B` completes.
    - *Mutants, each red on its own:*
      - (i) the hold branch removed, so the keyword is accepted and ignored (step 1 sends);
      - (ii) the `:500` tuple not extended (the children are refused, and step 2 sends nothing);
      - (iii) `:1729` not mapped (the occurrence is `complete`, and step 2 skips it);
      - (iv) `:458` not counting the hold (`B` completes at step 1);
      - (v) `:273` not excluding it (a local refusal is recorded).
-2. **F2: exact-bool input.** `sources_healthy` set to `0`, `None`, `"False"` or an object raises `TypeError` at `redeliver_prepared_boundary` and at `BookAccountOwner.dispatch`, before any dispatch. There is no broker command and no row change. *Mutant:* a truthiness test (`"False"` is then treated as healthy).
+2. **F2: exact-bool input.** `sources_healthy` set to `0`, `None`, `"False"` or an object raises `TypeError` at `redeliver_prepared_boundary` and at `BookAccountOwner.dispatch`, before any dispatch. There is no broker command and no row change.
+   - It includes an unowned call: `redeliver_prepared_boundary(<a bar_time not prepared in this runtime>, now=..., sources_healthy="False")` raises `TypeError` at the runtime. On an owned `bar_time` the owner's check would raise anyway, so only the unowned call shows the runtime check, which runs before the ownership return at `:436-437`.
+   - *Mutants, each red on its own:* (i) a truthiness test (`"False"` is then treated as healthy); (ii) the runtime check removed (the unowned call returns `()`).
 
 **Guard cases** (`test_book_protection_source_health.py`):
 - **G1: an unhealthy tightening is sent.** This is F1's set-up with a tightening amend. With `False` it sends the same command as with `True`, and `B` completes. A parametrized equal bracket returns `unchanged_protection` with no command, in both modes. *Mutant:* hold every amend when unhealthy.
-- **G2: an unhealthy first-time attach with fresh evidence is sent.** Use `waiting_runtime`, with evidence arriving as in `test_book_protection_evidence.py:16-20`. With `False` the attach command is sent and `B` completes. Parametrize the attach with a bracket carrying a limit: the owner never treats an attach as weakening (`old is None`, `:595`), although `is_loosening(None, ...)` alone reads the limit as loosening. *Mutant:* drop the `old is not None` guard at `:595`.
-- **G3: B's residual.** Use `waiting_runtime` with no fresh evidence. With `False` the result is `awaiting_evidence`, with no command and `B` incomplete. Then `owner.halt(<unique id>, "feed", now=...)`, then a healthy redelivery inside the window: no command, reason `intervention_fence`. *Mutant:* the evidence checks (`:583-586`) skipped when the input is False.
-- **G4: the halt fences everything.** The owner is halted before the continuation. With `False`, a tightening, a first-time attach with evidence, and a loosening each return `intervention_fence` and send nothing; the loosening does not return `held_unhealthy`. *Mutant:* the hold check placed ahead of the fence (`:477-478`).
-- **G5: an outside-session loosening is still refused.** Use a binding variant whose `session.risk_add_cutoff` falls inside the continuation window, with a loosening whose evidence has arrived, and `now >= risk_add_cutoff`. The test does not run `advance_schedule`, so authority stays NORMAL and the session bound (`:487`) is what refuses. With `False`:
+- **G2: an unhealthy first-time attach with fresh evidence is sent.** Use `waiting_runtime`, with evidence arriving as in `test_book_protection_evidence.py:16-20`. With `False` the attach command is sent and `B` completes. Parametrize the attach with a bracket carrying a limit, using the local copy of `waiting_runtime` (§3): the owner never treats an attach as weakening (`old is None`, `:595`), although `is_loosening(None, ...)` alone reads the limit as loosening. *Mutant:* drop the `old is not None` guard at `:595`.
+- **G3: B's residual.** Use `waiting_runtime` with no fresh evidence (`broker.drop_reads = True`). With `False` the result is `awaiting_evidence`, with no command and `B` incomplete. Then `owner.halt(<unique id>, "feed", now=...)`, then a healthy redelivery inside the window. The owner generation is one higher (`book_account_owner.py:2093-2094`), the continuation test fails (`:1694-1696`), and the owner replays the stored result (`:1697-1698`). So the reason is `awaiting_evidence`, not `intervention_fence`; there is no command; and `B` stays in `pending_bar_times`. *Mutant:* the evidence checks (`:583-586`) skipped when the input is False.
+- **G4: a hold never replaces the fence on a fresh dispatch.** Halt the owner (`owner.halt(<unique id>, "feed", now=...)`). Then dispatch new occurrences directly with `BookAccountOwner.dispatch(..., sources_healthy=False)`, each on its own fixture: a tightening, a first-time attach with evidence, and a loosening, each with its premise asserted before the halt (§3). Each returns `intervention_fence` at `book_protection_owner.py:525-526` and sends nothing; the loosening does not return `held_unhealthy`. A continuation after a halt never reaches this fence (§2.5); G3 and G8 cover that route. *Mutant:* under `False`, `held_unhealthy` returned ahead of the `:525-526` fence.
+- **G5: an outside-session loosening is still refused.** Use a binding variant whose `session.risk_add_cutoff` falls inside the continuation window, with a loosening whose evidence has arrived, the entry's accepted terminal (§3), and `now >= risk_add_cutoff`. The test does not run `advance_schedule`, so authority stays NORMAL. With the premise asserted (no fenced state, §3), the session bound (`:487`) is what refuses. With `False`:
   - the reason is `risk_add_not_authorized`;
-  - the children are `refused` and the operation is `terminal` (`:500-516`);
+  - the child's `protection_operations` status is `refused`, and the protection row's `pending_operation` and `deadline` are cleared (`:509-514`);
+  - the child was never attempted, so it has no `operations` row (rows are inserted only at `:611-615`), and the `UPDATE` at `:515-516` changes nothing. Assert that no `operations` row exists for it;
   - a later healthy redelivery sends nothing.
 
   *Mutant:* the hold check placed ahead of the loosening refusal (`:484-495`).
@@ -277,7 +308,11 @@ Under B, #631 §2.2 step 2 changes.
   - `action_occurrences`, `protection_operations` and protection row bodies.
 
   In both runs F1's loosening is sent at step 1, as on the base. *Mutant:* the default flipped to `False`.
-- **G8: a hold keeps its deadline.** After F1's step 1, with no healthy redelivery, a step at `prepared + PROTECTION_PERIOD` records the protection deadline fault (`protection:deadline:<op>`, `:177-182`), exactly as an evidence wait does. *Mutant:* the hold clears the row's `pending_operation` and `deadline`.
+- **G8: a hold keeps its deadline, with or without a halt (R2).**
+  - (a) After F1's step 1, with no healthy redelivery, a step at `prepared + PROTECTION_PERIOD` records the protection deadline fault (`protection:deadline:<op>`, `:177-182`), exactly as an evidence wait does.
+  - (b) #631's flow. After F1's step 1, `owner.halt(<unique id>, "feed", now=...)`, then a redelivery with the input omitted inside the window. The owner replays the stored `held_unhealthy` result (`book_account_owner.py:1694-1698`; generation raised at `:2093-2094`), with no command and `B` still pending. Then the step at `prepared + PROTECTION_PERIOD` records the same deadline fault, and the protection row's `observed` bracket is still the pre-amend one.
+
+  *Mutant:* the hold clears the row's `pending_operation` and `deadline` (both parts red).
 
 **Preservation** (green before and after, unchanged): every other suite in the authority block.
 
@@ -324,6 +359,7 @@ Return exactly one status, as umbrella §6 defines them: DONE, DONE_WITH_CONCERN
 - A §9 predecessor is unmerged, or D-3 is unruled while `c1_rail_listener.py` is still in §2.6.
 - Any change outside §2.6 is needed, including an edit to an existing test, a new state or a schema change.
 - A held member cannot be made redeliverable inside §2.6.
+- A loosening case's premise (no fenced state, §3) cannot be met on the build base, for example because TB-I3 S2's latch closes admission.
 - Two failed corrections of the same issue (AGENTS.md).
 - **Operator review-round rule (2026-10-02):** after more than three review rounds that each return two or more P1/P2 findings, stop folding; the coordinator adjudicates a rewrite or a narrower scope.
 - A second writer appears on the branch.
@@ -346,7 +382,7 @@ Return exactly one status, as umbrella §6 defines them: DONE, DONE_WITH_CONCERN
   - This card's hunks are `dispatch` (`:1654-1660`) and `_dispatch_locked` (`:1662`, `:1708`, `:1729`).
   - They are disjoint from GC-5's: the `__init__`/`boot` keyword, `_decode_reserve` at `_capacity` (`:748`), `Reserve` stamping (`:1804`), the D4 refusal branch and the D5 halt.
   - They are disjoint from TB-I3 S2's latch: `_request_classification_db`, `observe_synthetic_order_evidence`, the entry/add and takeover risk-add branches, and latch path 3 in the terminal branch of `_observe_locked`.
-  - The umbrella's single-writer rule (`:245`) still applies. **Proposed: fourth, after TB-I3 S2** (D-4).
+  - The umbrella's single-writer rule (`:245`) still applies. **Proposed: fourth, after TB-I3 S2** (D-4). On that base, the loosening cases must observe the entry terminal before any classification read made one bar or more after entry (§3; S2's latch).
 - **`book_protection_owner.py`:** no open card edits it. #631 §5 forbids it, and the GC-5 and TB-I3 cards do not list it.
 - **`book_runtime.py`:** no open card edits it. #631 §5, GC-5 §2.5, #651 (TB-I3-HOST) and the D-MON cards (#635, #637) forbid it.
 - **`c1_rail_listener.py`:** open draft PR #571 (`claude/c1-unknown-block-durable`, parked) edits `handle_signal` (hunks at `:222` and `:415-429`), not `handle_book_action` (`:81-91`). See D-3.
