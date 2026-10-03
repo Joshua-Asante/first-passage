@@ -296,7 +296,7 @@ Derived from design §3–§5. Items marked (K-4) are card proposals where the d
 
 Coordinator (3), as card owner, freezes these points so that P-D and P-F build against one reading. Each keeps design §4 unchanged and closes an encoding the design left open.
 
-- **F1 Crash at a cap.** SEGMENT_CRASHED always moves to IDLE. When the crash makes a loss or I/O cap reached (rows S10, B5), the coordinator appends `HALT{code, from: "IDLE"}` immediately after, with `code` taken from `classify`. `check_record` returns CORRUPTION if a SEGMENT_START or ALL_DONE follows a cap finding that a HALT and a CONTINUE have not reset.
+- **F1 Crash at a cap (preserves design §4.2: SEGMENT_CRASHED → "IDLE, or HALTED if a cap is reached").** One record, no second write. SEGMENT_CRASHED carries a `cap` field: `null`, or the HALTED-class code `classify` gives when this crash makes a loss or I/O cap reached (rows S10, B5). `advance`: SEGMENT_CRASHED{cap: null} → IDLE; SEGMENT_CRASHED{cap: code} → HALTED with `halted_from = "IDLE"`. The coordinator computes `cap` at resume from the durable ledger before writing the record, so no crash window leaves a durable IDLE at an exhausted cap. `check_record` recomputes the cap finding and returns CORRUPTION if `cap` disagrees. Recovery is the ordinary HALTED path: CONTINUE (Joshua's signed act) returns to IDLE with the cap reset (rows S10, X3).
 - **F2 Witnesses.** SEGMENT_START's `witness_keys` holds exactly `min(W, |completed|)` keys, each one in `completed` and tagged. Worker `i` (0-based) runs `witness_keys[i]` as its first KEY_START whenever `i < len(witness_keys)`. `check_record` enforces both rules; a witness mismatch is NONDETERMINISM (W5).
 - **F3 Assignment.** Worker `i` receives `sorted(K − completed)[i::W]`, with K in the plan's canonical key order. `assignment_sha256 = sha256(canonical_json_bytes([[i, [key, …]] for i in range(W)]))`. `check_record` recomputes it and compares.
 - **F4 Append failure.** After `journal.append` raises, the writer appends nothing more to that file. A worker exits without WORKER_STOP and reports `IO_ERROR` on stdout. The coordinator treats the segment as crashed (SEGMENT_CRASHED at resume). P-D may also poison the file inside the process, keyed by `(st_dev, st_ino)`.
@@ -305,7 +305,7 @@ Coordinator (3), as card owner, freezes these points so that P-D and P-F build a
   - The bytes of `manifest.json` are `canonical_json_bytes(manifest)`.
   - The act file is canonical JSON `{act_b64, approval_b64}`.
   - A lock rewrite truncates the file to the content length.
-- **F6 Journal names.** A name must equal `f"{prefix}{n}-w{i}.jsonl"`, with `n` and `i` decimal and without leading zeros. A duplicate (number, worker) pair is CORRUPTION.
+- **F6 Journal names.** A name must equal `f"{prefix}{n}-w{i}.jsonl"`, with `n` and `i` decimal and without leading zeros. Uniqueness is on the full identity `(prefix, n, i)`: `c1-w0`, `s1-w0` and `v1-w0` are distinct. A duplicate `(prefix, n, i)` is CORRUPTION.
 - **F7 Red record.** For a new module, RED evidence means `status: failed`, a non-zero `verification_exit_code`, `source_stable: true`, and every row FAILED with no ERROR. `completed` with exit 0 is required only for GREEN (`scripts/record_verification.py:299-300`).
 
 ### §3.7 `t00_screen.verdict` (P-C; names other than the three design constants are K-4)
