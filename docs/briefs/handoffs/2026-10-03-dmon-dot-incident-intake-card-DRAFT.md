@@ -198,14 +198,13 @@ Paging changes (BC owns push, SMS, call and OQ-2/OQ-3); any rail, host or core c
 
 ## §9 — Decisions and open questions
 
-**Recorded:** operator direction for dot intake (2026-10-03, via coordinator (2)); option (a) recommended (this card); coordinator (3) rulings on review r03 (2026-10-03): fix work is drafted and released (§3.6 item 4), no public artifact before Joshua approves (§3.6 item 7), OA-D4 = Issues read/write, BC anchors at `4f41667`.
+**Recorded:** operator direction for dot intake (2026-10-03, via coordinator (2)); option (a) recommended (this card); coordinator (3) rulings on review r03 (2026-10-03): fix work is drafted and released (§3.6 item 4), no public artifact before Joshua approves (§3.6 item 7), OA-D4 = Issues read/write, BC anchors at `4f41667`; **BC OQ-1 RULED (CLI) 2026-10-03** (Joshua, directly to coordinator (3): the BC §3.7 `record-delivery` CLI; BC §9 `6a0618e:253`), which governs §3.2 (ii).
 **Residual (stated):** an intake lost to token expiry or a non-timeout 4xx (IRM retries only on a timeout [G2]) is not retried and not detected; paging is unaffected.
 **OPEN:**
 - **OQ-D1** (Joshua). Intake location. **Lean: a new private repository** used only for intake. Alternatives: the existing private archive repository (larger token blast radius), or this public repository (publishes incident timing; not recommended).
 - **OQ-D2** (coordinator (2) with hyper). Event monitoring or saved schedule (§3.4); verify on hyper's surface at activation.
 - **OQ-D3** (live drill). Whether IRM's execution history displays the stored authorization header. If it does, the exposure is the stack's own UI (Joshua only); mitigations are the minimal scope and expiry (OA-D2, OA-D7).
 - **OQ-D4** (live drill). The fine-grained permission for create-issue and label setting, the IRM "Alert group created" once-per-group behavior, and whether GitHub accepts IRM's default request headers.
-- **BC OQ-1** governs §3.2 (ii).
 - **OD-dot-1** (Joshua): optionally grant a standing draft-only fix-PR permission for incident intakes (no merge/ready/approve); not granted by this card.
 
 ## §10 — Audit hooks
