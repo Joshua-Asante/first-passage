@@ -5,7 +5,9 @@ Row set: ``git ls-files 'scripts/*.py'``.
 Layer: ``scripts/repo_map_layers.yml`` ``scripts_layer`` (fallback governance) —
 the same single definition ``check_boundaries.py`` loads, read through its
 loader so this table can never disagree with the scanner.
-Gate wiring: ``scripts/gates.yml`` (id, tier, load-bearing flags).
+Gate wiring: ``scripts/gates.yml`` (id, tier, load-bearing flags). A gate whose cmd
+names no script (a module run) is credited to the tracked scripts its
+``when.staged_regex`` selects.
 
 This is a documentation generator. It does **not** change gate composition
 (``gates.yml`` remains the sole owner). ``--check`` is wired into ``gates.yml``
@@ -14,12 +16,14 @@ with ``--write``.
 
 Sibling of ``check_repo_map_layers.py`` (the layer-map schema gate); this
 script owns the human-readable §2.1 table so the section cannot drift into
-hand-maintained prose again.
+hand-maintained prose again. The two common defaults (layer fallback; no gate)
+are marked once in a legend, not repeated in every row's Notes.
 """
 from __future__ import annotations
 
 import argparse
 import importlib.util
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -49,18 +53,24 @@ _SPECIAL_NOTES = {
 _SECTION_HEADING = "### §2.1 — `scripts/` per-file layer (root-resident; recorded for the scanner)"
 
 _INTRO = """\
-`scripts/` stays at root but its files are classified. Layer comes from
-`scripts_layer` in [`repo_map_layers.yml`](scripts/repo_map_layers.yml) — the
-single definition `check_boundaries.py` loads as `SCRIPTS_LAYER`; anything not
-listed there falls back to **governance** via `layer_of_file()`. The scanner
-does **not** load this table. The layer gate
-([`check_repo_map_layers.py`](scripts/check_repo_map_layers.py)) validates that
-file's schema, not this table. Gate composition is owned by
-[`gates.yml`](scripts/gates.yml) and is not changed by regenerating this section.
-
-Regenerate: `python scripts/check_repo_map_scripts_table.py --write`.
-`--check` exits 1 on drift; it is **not** wired into `gates.yml`.
+Generated from `scripts_layer` in
+[`repo_map_layers.yml`](scripts/repo_map_layers.yml) (loaded by
+`check_boundaries.py` as `SCRIPTS_LAYER`; unlisted files fall back to
+**governance** via `layer_of_file()`) and [`gates.yml`](scripts/gates.yml).
+Neither the scanner nor [`check_repo_map_layers.py`](scripts/check_repo_map_layers.py)
+reads this table. Regenerate with
+`python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 """
+
+FALLBACK_MARK = "†"
+NO_GATE = "—"
+# Direct invocation or module-run trigger only: unlisted scripts may run inside
+# another gate's script, as hooks or in CI.
+LEGEND = (
+    f"{FALLBACK_MARK} = layer fallback (not in `scripts_layer`); "
+    f"Gate {NO_GATE} = no `gates.yml` command runs the file and no module-run gate "
+    "triggers on it (it may still run inside another gate's script)."
+)
 
 
 def _load_scripts_layer(layers_yml: Path) -> dict[str, str]:
@@ -91,8 +101,14 @@ def list_scripts(repo: Path) -> list[str]:
     return sorted(ln.strip() for ln in out.splitlines() if ln.strip())
 
 
+# A cmd token carrying any of these is a pattern (unittest's test_*.py), not a path.
+_GLOB_CHARS = ("*", "?", "[")
+
+
 def _script_from_cmd(cmd: list[str]) -> str | None:
     for part in cmd:
+        if any(ch in part for ch in _GLOB_CHARS):
+            continue
         if part.startswith("scripts/") and part.endswith(".py"):
             return part
         if part.endswith(".py") and "/" not in part and not part.startswith("-"):
@@ -100,23 +116,33 @@ def _script_from_cmd(cmd: list[str]) -> str | None:
     return None
 
 
-def gates_by_script(gates: list[dict]) -> dict[str, list[dict]]:
+def gates_by_script(gates: list[dict], scripts: list[str]) -> dict[str, list[dict]]:
+    """Direct invocation of a tracked script wins; any other gate is credited to
+    every tracked script its ``when.staged_regex`` selects (``re.search``, as
+    ``gate_manifest`` fires it)."""
+    tracked = set(scripts)
     by: dict[str, list[dict]] = {}
     for gate in gates:
         rel = _script_from_cmd(list(gate.get("cmd") or []))
-        if rel is None:
+        if rel in tracked:
+            by.setdefault(rel, []).append(gate)
             continue
-        by.setdefault(rel, []).append(gate)
+        pattern = (gate.get("when") or {}).get("staged_regex")
+        if not pattern:
+            continue
+        rx = re.compile(pattern)
+        for path in scripts:
+            if rx.search(path):
+                by.setdefault(path, []).append(gate)
     return by
 
 
-def _notes_for(rel: str, wired: list[dict], *, in_layer_dict: bool) -> str:
+def _notes_for(rel: str, wired: list[dict]) -> str:
+    """Exceptional notes only; the no-gate and layer-fallback defaults are in LEGEND."""
     bits: list[str] = []
     name = Path(rel).name
     if name in _SPECIAL_NOTES:
         bits.append(_SPECIAL_NOTES[name])
-    elif not wired:
-        bits.append("manual/local only, not in gates.yml")
     seen: set[str] = set()
     for gate in wired:
         for part in gate.get("cmd") or []:
@@ -124,14 +150,12 @@ def _notes_for(rel: str, wired: list[dict], *, in_layer_dict: bool) -> str:
                 if part == flag and flag not in seen:
                     bits.append(label)
                     seen.add(flag)
-    if not in_layer_dict:
-        bits.append("layer fallback (not in SCRIPTS_LAYER)")
     return "; ".join(bits)
 
 
 def _gate_cell(wired: list[dict]) -> str:
     if not wired:
-        return "—"
+        return NO_GATE
     parts = []
     for gate in wired:
         gid = gate.get("id") or "?"
@@ -148,10 +172,9 @@ def build_rows(
     rows: list[tuple[str, str, str, str]] = []
     for rel in scripts:
         stem = Path(rel).stem
-        in_dict = stem in scripts_layer
-        layer = scripts_layer.get(stem, "governance")
+        layer = scripts_layer.get(stem, "governance" + FALLBACK_MARK)
         wired = by_script.get(rel, [])
-        notes = _notes_for(rel, wired, in_layer_dict=in_dict) or "—"
+        notes = _notes_for(rel, wired) or "—"
         rows.append((rel, layer, _gate_cell(wired), notes))
     return rows
 
@@ -177,6 +200,8 @@ def render_generated_block(rows: list[tuple[str, str, str, str]]) -> str:
             BEGIN,
             caption,
             "",
+            LEGEND,
+            "",
             render_table(rows),
             END,
         ]
@@ -196,8 +221,8 @@ def collect(
     scripts_layer = _load_scripts_layer(layers)
     gm = _load_gate_manifest()
     data = gm.load_manifest(gates_yml)
-    by_script = gates_by_script(list(data.get("gates") or []))
     scripts = list_scripts(repo)
+    by_script = gates_by_script(list(data.get("gates") or []), scripts)
     return build_rows(scripts, scripts_layer, by_script)
 
 
