@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""guard_worktree_evidence.py — copy launcher verification records out of a worktree
-before `git worktree remove` deletes the only copy.
+r"""guard_worktree_evidence.py — copy launcher verification records out of linked
+worktrees before `git worktree remove` deletes the only copy.
 
 Why. `scripts/fp.py` writes every `test` / `test-ops` / `python -m pytest` / `check`
 run's evidence into the *checkout's own* ignored `.cache/fp-verification/<run-id>/`
@@ -22,66 +22,83 @@ matcher in `.claude/settings.json` (the entry mirrors `guard_shell_command.py`'s
                 "command": "python \\"$CLAUDE_PROJECT_DIR/scripts/guard_worktree_evidence.py\\""}]}
 
 It reads the tool payload on stdin (`tool_input.command`, with the payload's `cwd`
-for relative paths). Commands are tokenized with `scripts/_shell_tokens.py` in strict
-mode, as `guard_shell_command.py` reads them, and judged in command position, so data
-(an `echo "git worktree remove"`, a grep pattern) never triggers a copy. Detected:
-`git worktree remove [-f|--force] <path>`, with git global options (`git -C <dir>
-worktree remove ...`), wrappers (`sudo`/`env`/`bash -c`), and a leading `cd <dir> &&
-...` resolving a relative `<path>`.
+as the base directory). The trigger is deliberately dumb: the case-insensitive
+regex `\bworktree\b[\s\S]*\bremove\b` over the whole command text, with no
+tokenising and no path parsing. Which worktree the command names never matters,
+because every linked worktree's records are equally disposable and the archive is
+idempotent — so over-triggering (an `echo` that merely mentions both words, a
+`worktree`/`remove` pair in unrelated data) only costs a redundant copy check,
+while under-triggering on a spelling the parser missed would lose evidence. When
+the trigger fires the hook never trusts the command's paths at all; it asks git
+what the worktrees are:
 
-For each removal whose `<path>/.cache/fp-verification/` holds record directories, it
-copies every file to
+    git -C <base> worktree list --porcelain
 
-    <primary>/local_artifacts/fp-verification-archive/<worktree-basename>/<record-id>/
+The first entry is the primary checkout; every later entry that still exists on
+disk is a linked worktree whose `.cache/fp-verification/<run-id>/` records are
+copied into that worktree's own shelf — the worktree's basename — so a retained
+record always says which tree it came from:
 
-and appends `<sha256>  <worktree-basename>/<record-id>/<file>` lines to the archive's
-`SHA256SUMS` (paths relative to `fp-verification-archive/`, so `sha256sum -c` works
-from there). `<primary>` is the parent of `git rev-parse --path-format=absolute
---git-common-dir` run in `<path>` — the main checkout for a linked worktree, whose
-`local_artifacts/` is already gitignored and local-only by design. A second run is
-idempotent: byte-identical copies are left alone and already-recorded sum lines are
-not appended again.
+    <primary>/local_artifacts/fp-verification-archive/<worktree>/<run-id>/     first copy
+    <primary>/local_artifacts/fp-verification-archive/<worktree>/<run-id>~2/   a second,
+    ...                                                                        different
+                                                                               record with
+                                                                               the same id
 
-The hook never deletes anything and never writes outside the archive directory; the
-source worktree is only ever read.
+The `<run-id>` / `<run-id>~k` naming applies *within* one worktree's shelf: two
+trees may hold the same id without colliding, while a record rewritten in place
+in one tree gets the next `~k` beside its earlier self.
+
+`<primary>` is git's first porcelain entry — the main checkout, whose
+`local_artifacts/` is already gitignored and local-only by design, so the archive
+survives every later `git worktree remove` too.
+
+Every version directory is immutable. Which suffix a record gets is decided by its
+content digest: if the record's bytes already sit in `<run-id>` (or `<run-id>~k`),
+nothing is touched; otherwise the copy is staged in a temporary directory inside
+the archive, every file is re-hashed and compared with its source, and only then is
+the whole directory `os.rename`d into the first free name. Nothing outside the
+temp dir is ever created twice, overwritten, or deleted (the staged temp dir on
+failure is the one exception). `<sha256>  <worktree>/<run-id>[/~k]/<file>` lines
+are appended to the archive root's `SHA256SUMS` (paths relative to
+`fp-verification-archive/`, so `sha256sum -c` run there verifies every line).
+Appending is idempotent, and a manifest that would end up recording two different
+hashes for one path is refused — exit 2 — rather than papered over.
 
 Exit contract:
 
-  * **0, silent** when the command does not match or the worktree holds no records
-    (printing an `allow` decision would bypass the operator's permission rules, and
-    a summary with nothing archived is noise);
-  * **0, one stdout line** summarizing the record count and the archive location —
+  * **0, silent** when the command does not match, when no linked worktree holds
+    records, or when everything is already archived;
+  * **0, one stdout line** summarising the record count and the archive location —
     stdout, not a permission decision, because the removal itself is not judged
     here (`guard_shell_command.py` owns destructive-command asking);
-  * **2, reason on stderr** when records exist but could not be copied — a blocking
-    exit, so the tool call is refused *before* the records are destroyed. Losing the
-    evidence is not recoverable after the fact; asking the operator to clear the
-    failure (or archive by hand) is the cheap direction to fail.
+  * **2, reason on stderr** when records exist but could not be retained, when
+    worktree enumeration fails (fail closed: the hook cannot know what is at
+    risk), or when the manifest contradicts the archive — a blocking exit, so the
+    tool call is refused *before* records are destroyed. Losing the evidence is
+    not recoverable after the fact; failing closed is the cheap direction to fail.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
-
-try:  # imported as `scripts.guard_worktree_evidence` (tests, repo root on sys.path)
-    from scripts._shell_tokens import ShellSyntaxError, expand, program, segments
-except ImportError:  # run as `python scripts/guard_worktree_evidence.py`
-    from _shell_tokens import ShellSyntaxError, expand, program, segments
 
 # Where scripts/fp.py writes launcher verification records (scripts/README.md).
 RECORDS_DIR = Path(".cache") / "fp-verification"
 # Where this hook retains them: under the primary checkout's gitignored local root.
 ARCHIVE_REL = Path("local_artifacts") / "fp-verification-archive"
 SUMS_NAME = "SHA256SUMS"
-# git global options that take the next word as their value — the same table
-# scripts/guard_shell_command.py walks to find the subcommand.
-GIT_GLOBAL_VALUES = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace",
-                               "--config-env", "--super-prefix", "--attr-source",
-                               "--shallow-file"})
+# The trigger: "worktree" ... "remove", case-insensitive, anywhere in the command.
+TRIGGER = re.compile(r"\bworktree\b[\s\S]*\bremove\b", re.IGNORECASE)
+# The manifest line format sha256sum writes and reads: "<64 hex>  <path>".
+HEX64 = re.compile(r"[0-9a-f]{64}")
 
 
 class ArchiveError(RuntimeError):
@@ -109,74 +126,9 @@ def command_of(data: dict) -> str:
     return ""
 
 
-def _worktree_removal(words: list[str]) -> tuple[str, str | None] | None:
-    """(`<path>`, `-C <dir>` value or None) when `words` run `git worktree remove`,
-    else None.
-
-    git global options are skipped to find the subcommand; every `-`-prefixed word
-    after `remove` (``-f``, ``--force``, ...) is skipped to find the path operand.
-    """
-    if program(words[0], strict=True) != "git":
-        return None
-    index, chdir = 1, None
-    while index < len(words) and words[index].startswith("-"):
-        word = words[index]
-        if word in GIT_GLOBAL_VALUES and index + 1 < len(words):
-            if word == "-C":
-                chdir = words[index + 1]
-            index += 2
-            continue
-        index += 1  # a valueless global option, or one with an attached `=value`
-    if index >= len(words) or words[index] != "worktree":
-        return None
-    index += 1
-    while index < len(words) and words[index].startswith("-"):
-        index += 1
-    if index >= len(words) or words[index] != "remove":
-        return None
-    index += 1
-    while index < len(words) and words[index].startswith("-"):
-        index += 1
-    if index >= len(words):
-        return None
-    return words[index], chdir
-
-
-def removals(command: str, base: Path) -> list[tuple[Path, Path]]:
-    """(worktree path, the directory it resolves from) for every `git worktree
-    remove` in `command`, in the order the shell runs them.
-
-    A `cd <dir>` command moves the base for everything after it, as in bash;
-    `git -C <dir>` moves it for that git invocation alone. A command the strict
-    reader cannot parse yields nothing — bash would reject it before running any
-    removal, so there is nothing to retain for.
-    """
-    try:
-        parsed = segments(command, strict=True)
-    except (ShellSyntaxError, IndexError, RecursionError):
-        return []
-    found: list[tuple[Path, Path]] = []
-    running = base
-    for segment in parsed:
-        try:
-            commands = expand(segment, strict=True)
-        except (ShellSyntaxError, IndexError, RecursionError):
-            continue  # this segment is unreadable; the next may still remove a worktree
-        for words in commands:
-            if not words:
-                continue
-            if program(words[0], strict=True) == "cd":
-                operands = [word for word in words[1:] if not word.startswith("-")]
-                if len(operands) == 1:
-                    running = (running / operands[0]).resolve()
-                continue
-            hit = _worktree_removal(words)
-            if hit is None:
-                continue
-            path_text, chdir = hit
-            origin = (running / chdir).resolve() if chdir else running
-            found.append(((origin / path_text).resolve(), origin))
-    return found
+def triggers(command: str) -> bool:
+    """Does the command mention removing a worktree? Textual, by design."""
+    return bool(command) and TRIGGER.search(command) is not None
 
 
 def sha256_file(path: Path) -> str:
@@ -188,78 +140,135 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def primary_checkout(where: Path) -> Path:
-    """The main checkout `where` belongs to: the parent of the common git directory.
+def record_digest(record: Path) -> str:
+    """Content digest of a record directory: every file's relative path and bytes.
 
-    `git rev-parse --path-format=absolute --git-common-dir` reports the shared
-    `<primary>/.git` from inside any linked worktree and `.git` itself from the
-    primary, so the parent is the primary either way.
+    Two directories with equal digests hold the same files with the same bytes,
+    which is exactly the "already archived" test the version-dir naming needs.
+    """
+    digest = hashlib.sha256()
+    for source in sorted(path for path in record.rglob("*") if path.is_file()):
+        relative = source.relative_to(record).as_posix().encode("utf-8")
+        digest.update(len(relative).to_bytes(8, "big"))
+        digest.update(relative)
+        digest.update(bytes.fromhex(sha256_file(source)))
+    return digest.hexdigest()
+
+
+def worktrees(base: Path) -> list[Path]:
+    """Every worktree of `base`'s repository, the primary checkout first.
+
+    `git worktree list --porcelain` always prints the main worktree as the first
+    entry, so `trees[0]` is the primary and every later entry a linked worktree.
+    A failure to enumerate is fatal (fail closed): the hook must not guess what
+    is at risk.
     """
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
-            cwd=str(where), capture_output=True, text=True, encoding="utf-8",
-            errors="replace", timeout=30, check=False)
+            ["git", "-C", str(base), "worktree", "list", "--porcelain"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=30, check=False)
     except (OSError, subprocess.TimeoutExpired) as exc:
-        raise ArchiveError(f"cannot locate the primary checkout from {where}: {exc}") from exc
-    common = result.stdout.strip()
-    if result.returncode or not common:
-        raise ArchiveError(f"cannot locate the primary checkout from {where}: "
-                           f"{(result.stderr or 'git rev-parse --git-common-dir failed').strip()}")
-    path = Path(common)
-    if not path.is_absolute():
-        path = where / path
-    return path.resolve().parent
+        raise ArchiveError(f"cannot enumerate worktrees of {base}: {exc}") from exc
+    if result.returncode:
+        raise ArchiveError(f"cannot enumerate worktrees of {base}: "
+                           f"{(result.stderr or 'git worktree list failed').strip()}")
+    found: list[Path] = []
+    for line in result.stdout.splitlines():
+        if line.startswith("worktree "):
+            found.append(Path(line[len("worktree "):].strip()))
+    if not found:
+        raise ArchiveError(f"git listed no worktrees for {base}")
+    return found
+
+
+def version_dir(archive: Path, identity: str, digest: str) -> tuple[Path, bool]:
+    """(``<identity>`` or the first free ``<identity>~k``, newly created?).
+
+    A directory whose content digest equals `digest` means the record is already
+    retained — return it with False so the caller changes nothing. Existing
+    directories are only ever read, never rewritten or deleted.
+    """
+    candidate = archive / identity
+    suffix = 1
+    while candidate.exists() or candidate.is_symlink():
+        if candidate.is_dir() and not candidate.is_symlink() \
+                and record_digest(candidate) == digest:
+            return candidate, False
+        suffix += 1
+        candidate = archive / f"{identity}~{suffix}"
+    return candidate, True
+
+
+def retain_record(archive: Path, record: Path) -> tuple[bool, list[str]]:
+    """Copy one record directory into the archive immutably.
+
+    `archive` is the record's worktree shelf (`.../<archive-root>/<worktree>/`),
+    so the version dirs `<id>`, `<id>~2`, ... live beside their siblings from the
+    same tree. Returns (wrote a new version dir?, manifest lines for the archived
+    files). Manifest paths are relative to the *archive root* — they are prefixed
+    with the shelf's name, which is the worktree's basename — so one `SHA256SUMS`
+    at the archive root covers every shelf.
+    The copy is staged inside the archive, verified by re-hashing every file, and
+    only then `os.rename`d into place — so an interrupted copy can never leave a
+    half-written version dir behind, and nothing existing is ever touched.
+    """
+    identity = record.name
+    digest = record_digest(record)
+    destination, fresh = version_dir(archive, identity, digest)
+    if fresh:
+        staged: Path | None = None
+        try:
+            archive.mkdir(parents=True, exist_ok=True)
+            staged = Path(tempfile.mkdtemp(dir=archive, prefix=f".staging-{identity}-"))
+            for source in sorted(path for path in record.rglob("*") if path.is_file()):
+                target = staged / source.relative_to(record)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                source_hash = sha256_file(source)
+                shutil.copyfile(source, target)
+                if sha256_file(target) != source_hash:
+                    raise ArchiveError(f"copy of {source} did not verify")
+            os.rename(staged, destination)
+        except OSError as exc:
+            raise ArchiveError(f"cannot retain {record} into {archive}: {exc}") from exc
+        finally:
+            if staged is not None and (staged.exists() or staged.is_symlink()):
+                shutil.rmtree(staged, ignore_errors=True)  # a no-op after the rename
+    lines = [f"{sha256_file(source)}  {destination.parent.name}/{destination.name}/"
+             f"{source.relative_to(destination).as_posix()}"
+             for source in sorted(destination.rglob("*")) if source.is_file()]
+    return fresh, lines
 
 
 def _append_sums(sums: Path, lines: list[str]) -> None:
-    """Append the sha256 lines that are not recorded yet (idempotent)."""
-    try:
-        known = set(sums.read_text(encoding="utf-8").splitlines()) if sums.is_file() else set()
-    except ValueError as exc:  # a corrupt manifest: fail loudly, never double-append
-        raise ArchiveError(f"cannot read {sums}: {exc}") from exc
-    fresh = [line for line in dict.fromkeys(lines) if line not in known]
+    """Append the sum lines that are not recorded yet (idempotent).
+
+    A path that already has a different hash — in the manifest on disk or among
+    the new lines — is an error: the manifest would be lying about the archive,
+    so the removal is blocked instead.
+    """
+    recorded: dict[str, str] = {}
+    if sums.exists():
+        for raw in sums.read_text(encoding="utf-8").splitlines():
+            digest, separator, name = raw.partition("  ")
+            if not separator or not name or not HEX64.fullmatch(digest):
+                raise ArchiveError(f"cannot read {sums}: unparsable line {raw!r}")
+            if recorded.setdefault(name, digest) != digest:
+                raise ArchiveError(f"{sums} records two hashes for {name}")
+    fresh: list[str] = []
+    for line in dict.fromkeys(lines):
+        digest, _, name = line.partition("  ")
+        if recorded.get(name) == digest:
+            continue
+        if name in recorded:
+            raise ArchiveError(f"{sums} already records a different hash for {name}")
+        recorded[name] = digest
+        fresh.append(line)
     if not fresh:
         return
     with sums.open("a", encoding="utf-8", newline="\n") as handle:
         for line in fresh:
             handle.write(line + "\n")
-
-
-def archive_records(target: Path, cwd: Path) -> tuple[int, Path]:
-    """Copy every verification record under `target` into the primary's archive.
-
-    Returns (record count, archive directory). A worktree with no records is a
-    no-op and returns (0, ...) — the caller stays silent. Never deletes anything
-    and never writes outside `archive`.
-    """
-    records = target / RECORDS_DIR
-    identities = sorted(path for path in records.iterdir() if path.is_dir()) \
-        if records.is_dir() else []
-    if not identities:
-        return 0, target
-    primary = primary_checkout(target if target.is_dir() else cwd)
-    archive = primary / ARCHIVE_REL
-    name = target.name
-    lines: list[str] = []
-    try:
-        for record in identities:
-            for source in sorted(record.rglob("*")):
-                if source.is_dir():
-                    continue
-                digest = sha256_file(source)
-                relative = Path(name) / record.name / source.relative_to(record)
-                destination = archive / relative
-                if not (destination.is_file() and sha256_file(destination) == digest):
-                    destination.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(source, destination)
-                    if sha256_file(destination) != digest:
-                        raise ArchiveError(f"copy of {source} did not verify")
-                lines.append(f"{digest}  {relative.as_posix()}")
-        _append_sums(archive / SUMS_NAME, lines)
-    except OSError as exc:
-        raise ArchiveError(f"cannot retain verification records from {target}: {exc}") from exc
-    return len(identities), archive
 
 
 def main() -> int:
@@ -269,25 +278,35 @@ def main() -> int:
         data = json.load(sys.stdin)
     except Exception:
         return 0
-    command = command_of(data)
-    if not command:
+    if not triggers(command_of(data)):
         return 0
     stated = data.get("cwd") if isinstance(data, dict) else None
-    base = Path(stated) if isinstance(stated, str) and stated else Path.cwd()
     try:
-        base = base.resolve()
+        base = Path(stated).resolve() if isinstance(stated, str) and stated else Path.cwd()
     except OSError:
         base = Path.cwd()
     try:
-        targets: list[Path] = []
-        for target, _origin in removals(command, base):
-            if target not in targets:
-                targets.append(target)
-        for target in targets:
-            count, archive = archive_records(target, base)
-            if count:
-                print(f"guard_worktree_evidence: archived {count} verification "
-                      f"record(s) from {target} to {archive}")
+        trees = worktrees(base)
+        archive = trees[0] / ARCHIVE_REL  # git's first entry is the primary checkout
+        written, holders, lines = 0, 0, []
+        for tree in trees[1:]:
+            records = tree / RECORDS_DIR
+            if not tree.is_dir() or not records.is_dir():
+                continue  # a listed worktree that no longer exists holds no records
+            identities = sorted(path for path in records.iterdir() if path.is_dir())
+            if identities:
+                holders += 1
+            for record in identities:
+                # each worktree keeps its own shelf, so the record says which
+                # tree it came from and identical ids in two trees never collide
+                fresh, record_lines = retain_record(archive / tree.name, record)
+                written += int(fresh)
+                lines.extend(record_lines)
+        if lines:
+            _append_sums(archive / SUMS_NAME, lines)
+        if written:
+            print(f"guard_worktree_evidence: archived {written} verification "
+                  f"record(s) from {holders} linked worktree(s) to {archive}")
     except (ArchiveError, OSError) as exc:
         print(f"guard_worktree_evidence: {exc}", file=sys.stderr)
         return 2
