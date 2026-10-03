@@ -47,7 +47,6 @@ acceptance:
   - tests/ops/qualification/execution/test_campaign_seal.py
   - tests/ops/qualification/execution/test_result_seal_guardian_loop.py
   - tests/test_qualification_invariant_manifest.py
-  - tests/test_qualification_campaign_host.py
   - tests/ops/qualification/execution/test_boundary_fixture.py
 ```
 
@@ -113,7 +112,7 @@ Exactly the ruling's set (ledger `:2010-2016`; all of it is bound and checked be
 
 **Allowed** (frozen at D4, as amended by Amendment A1 on 2026-10-03):
 - New: the pin file; `ops/c1_rail/qualification/execution/runtime_identity.py` (map, expected-identity derivation, checks, coverage labels); the three acceptance test files; ~~`tests/integration/qualification_boundary/test_runtime_identity_linux.py`~~ (moved to the C′ host-integration card by Amendment A1).
-- Edit: `ops/c1_rail/qualification/execution/image.py`; `campaign_supervisor.py`; `campaign_store.py`; `service.py`; `launcher.py`; the base's `campaign_result.py`, `campaign_seal.py`, `seal_service.py` and `g5_result.py` (result/seal rechecks only); `deploy/qualification/bootstrap.py` (the child self-check); ~~`tests/ops/qualification/invariant_manifest.json` (Linux node registration)~~ (moved to D6 by Amendment A1).
+- Edit: `ops/c1_rail/qualification/execution/image.py`; `campaign_supervisor.py`; `campaign_store.py`; `service.py`; `launcher.py`; the base's `campaign_result.py`, `campaign_seal.py`, `seal_service.py` and `g5_result.py` (result/seal rechecks only); `deploy/qualification/bootstrap.py` (the child self-check); ~~`tests/ops/qualification/invariant_manifest.json` (Linux node registration)~~ (moved to the C′ host-integration card by Amendment A1).
 - Extend in place, never replace: `tests/test_qualification_worker_image.py`, `test_release.py`, `test_campaign_supervision.py`, `test_campaign_cancellation.py` (and, per Amendment A1, `test_boundary_fixture.py`).
 
 **Checkpoint first (return before editing):** any module of the 68-module Stage 1c measured closure. On `main` it includes `release_schema.py`, `runtime.py`, `worker.py`, `campaign_probe.py` and `protocol.py` (closure table `docs/notes/2026-09-29-s5-c3-record/stage1c-equivalence/stage1c_closure_table.py.txt`, run 2026-10-02 against `origin/main` and `f237178`: 68 rows, 0 differences). A measured-closure change returns to the operator under the C3 decision rule (ledger `:1938`). D2 and D5.
@@ -244,7 +243,7 @@ Recorded so the step-2 freeze does not absorb it. Term 8's record is merged (#61
 These resolve D1–D10 for dispatch. Joshua's direct go for lane D was given in the Codex chat on 2026-10-02. D5 is ruled yes, so the build may be dispatched once step 1 (push and archive) is done.
 
 - **D1 Base.** H9 pushes `f237178` as a `codex/*` branch (lane D step 1). It then **merges current `main`** at build start and reports the range-diff and the Stage 1c 68/63 result before any C′ code. `main` now includes T00 (`c3ab0cc`), #600, #601, #584 and later merges.
-- **D2 Release binding.** A new release revision, **`/v8`**, beside `/v7` in `release_schema.py`. It binds the base-pin hash, the built worker image ID, the finite entrypoint mapping and the expected identity tuples. Historical parsers `/v1`–`/v7` stay as they are, and the binding flows through the existing `release_sha256`.
+- **D2 Release binding.** A new release revision, **`/v8`**, beside `/v7` in `release_schema.py`. It binds the base-pin hash, the built worker image ID, the finite entrypoint mapping and the expected identity tuples. *(Amended by Amendment A1: `/v8` binds the step-2 entries and labels the rest `NOT_COVERED`; the whole map is bound by the final revision the C′ host-integration card ships before R1.)* Historical parsers `/v1`–`/v7` stay as they are, and the binding flows through the existing `release_sha256`.
 - **D3 Pin file.** `tools/qualification_verification/worker-base-image.json`. It has a closed schema: platform `linux/amd64`, Python `3.12.3`, base `python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63`, the selected child `sha256:fd3817f3a855f6c2ada16ac9468e5ee93e361005bd226fd5a5ee1a504e038c84`, the config `sha256:cf001c2f8af7214144935ae5b37c9e626ccf789117c10c1f691766d4658f1b1e`, and an approval-provenance pointer to the ledger's C′ rulings entry.
 - **D4 Allowed files.** The card's list, plus the D3 pin file, as amended by Amendment A1 (2026-10-03). The measured-closure files listed under D5 are allowed only if Joshua admits them.
 - **D5 Measured-closure edits — RULED YES** *(Joshua, directly to the coordinator, 2026-10-02 ~23:20Z: "yes")*. The edits are admitted on the terms below. The re-measurement is a **proposed plan** only: the governing evidence is the actual measured acceptance taken after the last closure change, and nothing carries before it. The proposal is to admit C′ edits to `release_schema.py`, `runtime.py`, `worker.py`, `campaign_probe.py` and `protocol.py`. Trigger 1 has already fired from T00, so the cost is **one** fresh S5 Part A measurement, run before the combined R1 once all closure-changing work has landed (C′, term 8, #611, K3/RC-4) (ledger finding of 2026-10-02, #613).
@@ -257,7 +256,7 @@ These resolve D1–D10 for dispatch. Joshua's direct go for lane D was given in 
   - **Interpreter identity producers are in scope.** The pre-spawn, child-reported and post-exec producers for interpreter bytes, base interpreter, `pyvenv.cfg` and the `.pth` inventory are in scope. Today `runtime.py` checks only version, platform, locks and source.
   - **Pin linkage.** The pin-metadata producer verifies index → selected linux/amd64 child → config digest linkage, and the declared platform and patch, separately from the built image ID. `image.py`'s tag/RepoDigest path is not accepted as proof. This is an added acceptance check.
   - **D9 is resolved.** No protected operator-recorded mismatch VOID path exists: VOID `/v1` and `/v2` carry only a reason plus approval bytes. The proposed design is [`docs/notes/2026-10-02-d9-identity-mismatch-void-design.md`](../../notes/2026-10-02-d9-identity-mismatch-void-design.md): a `CampaignStore.void` chokepoint, store-built content-addressed mismatch events, a signed-reason acknowledgement, stickiness, and the no-PASS fence. It needs no protocol, receipt or key-policy change, and no measured-closure edit. **Joshua ruled R-1–R-8 YES on 2026-10-02 ("yes to all eight"), so D9 is resolved by that design.** Its files (`campaign_store.py`, `service.py`, `campaign_supervisor.py`, new `runtime_identity.py` and the named tests) and its fail-first list T1–T16 join this card's §2 file list and §4 acceptance checks. The build may start once this card at its new head is re-reviewed CLEAN.
-  - **Re-measurement.** A fresh S5 Part A measurement runs after the FINAL closure change, with no carry.
+  - **Re-measurement.** A fresh S5 Part A measurement runs after the FINAL closure change, with no carry. *(Timing superseded by operator ruling 2026-10-02 (sitting 2), ENG-2 option C, recorded in #638: one PART_A re-measure on the integrated pre-S8 head; interim TEST_ONLY runs, R1 included, carry the unmeasured-closure caveat.)*
 - **D8 P7 closure (40 first-party paths; none may change).**
   - `core/`: `dd_geometry.py`, `dd_protection.py`, `firm_rules.py`, `historical_challenge.py`, `lib/atomic_io.py`, `lib/mvd.py`, `lib/validation.py`, `lifecycle.py`, `mc/__init__.py`, `mc/ingest.py`, `mc/modes.py`, `mc/preflight.py`, `mc/simulation.py`, `tv_schema.py`.
   - The namespace `lib`.
@@ -269,7 +268,7 @@ These resolve D1–D10 for dispatch. Joshua's direct go for lane D was given in 
 
 ## Amendment A1, 2026-10-03: producer/consumer completion of §2.5 (coordinator)
 
-**Revision 4 (narrowed scope, round-limit rule).** Revisions 1–3 (`c8c95e7`, `dcf79a0`, `f8494f1`) each drew more than one verified P1 or P2 from the coordinator's adversarial reviews. Under the standing round-limit rule, the coordinator therefore **narrows** A1 instead of patching it again.
+**Revision 5** (2026-10-03) folds the review of revision 4 (`612e3a5`), which found four P2s: the exact entry list, the shared G5 launch path, the `/v7` gating, and the owner of the final revision. Its text follows. **Revision 4 (narrowed scope, round-limit rule).** Revisions 1–3 (`c8c95e7`, `dcf79a0`, `f8494f1`) each drew more than one verified P1 or P2 from the coordinator's adversarial reviews. Under the standing round-limit rule, the coordinator therefore **narrows** A1 instead of patching it again.
 
 Step 2 keeps only the ops-side work that can be built and tested on Windows. Every host-side and pre-installation launch site moves to a separate **C′ host-integration card**, owed before R1, along with the Linux file and the binding of not-yet-provisioned entries.
 
@@ -291,13 +290,26 @@ All of this must hold **before R1**. A1 sequences the build across step 2, the C
 
 **Step 2 now builds:**
 - the pin and pin linkage (D3, Phase-0);
-- `/v8`, binding the pin hash, the built image ID and **the step-2 entries**: the service supervisor's ops-side launches of guardian, control and probes, and the N1, N2 and PART_A G5 launches, each with its identity tuple;
+- `/v8`, binding the pin hash, the built image ID and **exactly these step-2 entries**, each with its identity tuple: the campaign guardian, control and probes (launched by `campaign_supervisor.py`/`launcher.py`), and the N1, N2 and PART_A G5 launches (a `g5_unit_spec` launch carrying a `--checkpoint` in {N1, N2, PART_A});
 - the ops-side launch checks in `campaign_supervisor.py` and `launcher.py`;
-- the bootstrap self-check;
+- the bootstrap self-check for the step-2 roles only (guardian, control, probes, and `g5` with a checkpoint in {N1, N2, PART_A}). On Windows it is tested through injected fakes with the check placed before `bootstrap.py`'s off-Linux exit (`:9–:10`);
 - the checkpoint, result, seal and VALID→VOID rechecks;
 - the coverage labels.
 
-`/v8` records every other ruled entry as `NOT_COVERED (owed: C′ host-integration card, before R1)`, or `(owed: step 3)` for `result_g5` and qseal. A later signed revision binds those entries once their producers exist. The R1 grant waits for that revision (§8, §9).
+`/v8` records every other ruled entry, by name, as `NOT_COVERED` with its owner:
+- the runner/pytest admin fixture: owed by the C′ host-integration card;
+- the service supervisor and its bootstrap role: owed by the C′ host-integration card;
+- the owned-command wrapper: owed by the C′ host-integration card;
+- the RESULT G5 role: owed by step 3;
+- qseal: owed by step 3.
+
+**One final revision.** Step 3 provisions the `result_g5` and qseal producers but ships no release revision. The C′ host-integration card ships the single final signed revision binding the whole map, once step 3's producers exist. The R1 grant waits for that revision (§8, §9).
+
+**Gating (all C′ checks).** Every C′ launch check, bootstrap self-check and recheck is active **only when the installed release is `/v8`**. `bootstrap.py` reads the installed release's schema with the standard library before any import. On `/v1`–`/v7` and N1_ONLY routes, behaviour and bytes are unchanged.
+
+**Shared G5 launch path.** RESULT G5 (`campaign_result.py:1341`) and the seal unit (`campaign_seal.py:510`) reuse `campaign_supervisor.g5_unit_spec`, which has no `--checkpoint`. Step 2 derives the role inside `g5_unit_spec`, an already allowed file: a G5 launch without a `--checkpoint` in {N1, N2, PART_A} is the not-covered RESULT or seal launch. It gets no step-2 tuple check, carries the `NOT_COVERED (owed: step 3)` label, and is never claimed as covered. `campaign_result.py` and `campaign_seal.py` are not edited for launch roles.
+
+**Case 6 at result and seal.** "The relevant identity" means the pin, the image ID and the step-2 tuples of the launches that produced the evidence being committed. The RESULT G5 and qseal identities are rechecked from the final revision on.
 
 **Added to §2.5 Edit.** Each file is limited to the stated purpose.
 
@@ -329,12 +341,12 @@ No test calls `install_release`, and step 2 writes no Linux file.
 - `tools/qualification_verification/campaign_host.py`, the systemd supervisor parent, together with the supervisor's own launch and exit events;
 - the runner/pytest admin fixture: `scripts/qualification_boundary_verification.py:198–:205`, with the Popen at `scripts/record_verification.py:211`;
 - the owned-command wrapper: `tools/qualification_verification/host.py:307–:340`, plus the provisioning identity record at `:638–:676`;
-- `fixture_install.py` and the conftest `/v8` wiring, with the selector popped in the runner env (`:175–:188`);
+- `fixture_install.py` and the conftest `/v8` wiring, with the selector popped in the runner env (`scripts/qualification_boundary_verification.py:175–:188`);
 - `test_runtime_identity_linux.py` and its runner selection, so that `--test-only` never collects skip-only nodes;
 - the Linux node registration in `invariant_manifest.json`;
 - the first-launch expected identity (**D11**).
 
-That card has the full check set for these entries: pre-spawn, child self-check, post-exec `/proc`, exit evidence, versioned events and the applicable rechecks. Governance-layer sites use the standard library only (`check_boundaries`). It is coordinator-dispatched; coordinator (3)'s R1-tooling slice 2 may carry it. Step 3 (§11) provisions `result_g5` and qseal and binds them.
+That card has the full check set for these entries: pre-spawn, child self-check, post-exec `/proc`, exit evidence, versioned events and the applicable rechecks. Governance-layer sites use the standard library only (`check_boundaries`). It is coordinator-dispatched; a coordinator-dispatched worker carries it. Step 3 (§11) provisions `result_g5` and qseal and binds them.
 
 **D11 reopened.** On 2026-10-03 at 03:16Z Joshua ruled (a), "pin file plus provisioning record", but on an inaccurate framing. The pin file is the Docker worker base image (§2.1, D3), and the runner and admin fixture run on the host's Python, so the pin cannot speak to their interpreter. D11 is re-presented with the C′ host-integration card, with corrected options.
 
@@ -356,7 +368,8 @@ For those lines only, this overrides §2.5's and §3's "extend, never replace" a
 **Added fail-first cases (extend §4).** The red half fails on the base.
 - **A1-1.** The pure validator accepts a valid `/v8` + instance `/v2` (red at the base, which has no `/v8`). Preservation: `/v8` + instance `/v1` and a `/v8` release with invalid tuples both refuse.
 - **A1-2.** The G5 evidence builders accept a valid `/v8` for N1, N2 and PART_A (red at the base). Preservation: an unknown revision still refuses.
-- **A1-3.** A `/v8` release lists every non-step-2 ruled entry as `NOT_COVERED` with its owner, and the coverage report never claims those entries (red at the base).
+- **A1-3.** A `/v8` release lists exactly the five entries named above as `NOT_COVERED` with their owners. The coverage report never claims them, and a G5 launch without an N1/N2/PART_A checkpoint is reported `NOT_COVERED (owed: step 3)` and is not checked. This is red at the base.
+- **A1-4.** On a `/v7` installation, no C′ check runs and existing behaviour is byte-identical. This is a preservation case.
 
 **Unchanged.**
 - No `.github/workflows` or CI-configuration change, and no R1 mode, evidence scope, selector, runner flag or runner env change.
@@ -366,7 +379,7 @@ For those lines only, this overrides §2.5's and §3's "extend, never replace" a
 - No P7-closure file, and no measured-closure file beyond D5.
 - The authority constraints stand. `card_section2_files_only` reads "§2.5 plus Amendment A1".
 
-**Re-measurement.** The `release.py` and `ops/c1_rail/qualification/evidence.py` changes alter the bound runtime manifests, so they reach `release_sha256` as intended. Neither is a measured-closure edit. Re-measurement timing is set by operator ruling: ENG-2 option C, sitting 2.
+**Re-measurement.** The `release.py` and `ops/c1_rail/qualification/evidence.py` changes alter the bound runtime manifests, so they reach `release_sha256` as intended. Neither is a measured-closure edit. Re-measurement timing is set by operator ruling 2026-10-02 (sitting 2), ENG-2 option C, recorded in #638.
 
 **D8 citation.**
 - The accepted P7 record is the `b2c9f9c` run (`2026-09-24-tradeify-t00-p7-closure.md:743–:753`, code closure `48bdc104…`). It states no module count; the count at `:630` belongs to the superseded `2baa516` run.
