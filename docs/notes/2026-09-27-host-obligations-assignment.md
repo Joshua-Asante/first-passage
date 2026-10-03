@@ -38,7 +38,7 @@ S5 draft §6 Q12 (`:404`) records that the §1.3 **When** column and the §1.5(a
 - **G-PROV** — provisioning of the production qualification host, taken at **CP-8** ([checklist addendum §4](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step), `2026-09-20-tradeify-deployment-checklist.md:496`), before any `OPERATOR`-class enrollment on it.
 - **G-REL** — before any production-authority release. That means before installing or activating any release, instance document, trust domain or key enrollment whose `authority_class` is `OPERATOR` on that host. The code already knows exactly two classes, `TEST_ONLY` and `OPERATOR` (`ops/c1_rail/qualification/execution/release.py:25`, `keys.py:16`, `credentials.py:28`, `admission.py:51`). G-REL also covers CP-8's second half, "admit the production attempt after OF attestation" (`checklist:496`).
 - **G-ACC** — after any access change (triggers in §A.2), before the next use of any production authority on the affected host or environment.
-- **G-ARM** (OF-5 only) — before any `c1_rail_arm.py --arm`, and at each per-session GO. The per-session GO is standing posture: "Every armed session needs its own GO" (AGENTS.md, Live-execution posture), so each session gets its own OF-5 read. Supporting, for commissioning and the first attended release only: under [incident ADR §A11.2](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27), "during commissioning and the first attended release, an incident ends automated trading for that session" (`:381`); its scope for later releases "is not ruled" (`:384`).
+- **G-ARM** (OF-5 only) — before any `c1_rail_arm.py --arm`, and at each per-session GO. The per-session GO is standing posture: "Every armed session needs its own GO" (AGENTS.md, Live-execution posture), so each session gets its own OF-5 read. Supporting, for commissioning and the first attended release only: under [incident ADR §A11.2](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27), "during commissioning and the first attended release, an incident ends automated trading for that session" (`:381`); its scope for later releases "is not ruled" (`:384`). *Added 2026-10-02 (sitting 2), pointer:* the B–D GC-7 per-session actor inventory (RA-A, operator ruling 2026-10-02 (sitting 2)) is also taken at G-ARM. Its record's SHA-256 joins that session's arm evidence beside the OF-5 attestation.
 - **G-TBI3** (OF-6 only) — at TB-I3, the build and acceptance of the GO validator and arm interlock ([admission ADR §2b](../adr/2026-09-12-tradeify-book-protection-instance-admission.md), `:105`).
 - **G-F1** (OF-7 only) — before F1 admission of the production attempt, which means before the transaction that binds the budget and generates the salt (S5 draft §1.4, `:117-118`).
 
@@ -329,7 +329,7 @@ Whether host spend counts against the rail's $700 spend ceiling (AGENTS.md, stan
 - **Q-5:** Whether an attestation goes stale by age alone, in addition to triggers.
 - **Q-6:** Whether TB-I3's `--arm` consumes the OF-5 attestation digest as a typed input.
 - **Q-7:** systemd-oomd on the production class.
-- **Q-8:** Whether host spend counts against the $700 rail ceiling.
+- **Q-8:** Whether host spend counts against the $700 rail ceiling. *[2026-10-02: Q-8 ruled, operator ruling 2026-10-02 (sitting 2): exempt, with a separate cap the operator states. The cap is $500 (operator follow-up 2026-10-03T03:16Z). See the rail GO ADR addendum of 2026-10-02.]*
 - **S5 draft Q8** (G5 private salt route) and **Q9** (closure of a never-retried retry-eligible IN_DOUBT) stay open. They are inputs to the K3/RC-4 slice and to CQ-3.
 
 ### D.3 Operator decisions surfaced by this note
@@ -557,7 +557,7 @@ Source: [`docs/adr/2026-07-17-c1-rail-build-account-registration-go.md`](../adr/
   - Q-8 is open in this note (§D.2).
   - At acceptance it was folded into CP-2 question F-4 ("Coordinator acceptance" above; [commissioning packet](2026-09-27-route-commissioning-session-packet.md) `:680`, X-13: "production-host spend (H7)").
   - The recorded CP-2 ruling on F-4 covers "Drill commissions and adverse slippage" only (commissioning packet `:88`).
-  - No record read for this addendum rules on host spend. Whether the 2026-10-01 sentence at `:443` reaches host spend is a reading for the operator. **Q-8 stays open.**
+  - No record read for this addendum rules on host spend. Whether the 2026-10-01 sentence at `:443` reaches host spend is a reading for the operator. **Q-8 stays open.** *[2026-10-02: Q-8 ruled, operator ruling 2026-10-02 (sitting 2): exempt, with a separate cap the operator states. The cap is $500 (operator follow-up 2026-10-03T03:16Z). See the rail GO ADR addendum of 2026-10-02.]*
 - **Tally:** the ADR's last public figure is "$208 committed" (`:351`). Later commitments and the remaining headroom are private ("confirmed privately at CP-3", [X-1 packet](2026-09-29-x1-decision-packet.md) `:99`) and were not read.
 
 ### Q.4 UNVERIFIED (this addendum)
