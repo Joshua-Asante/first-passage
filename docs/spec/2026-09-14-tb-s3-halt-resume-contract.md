@@ -68,6 +68,8 @@ Acknowledge only appends attendance identity/time; duplicate identical acknowled
 
 The retry backoff cap stays below the 60 s escalation step.
 
+*Operator defaults 2026-10-02 (Joshua, sheet E, "all recommended"; recorded 2026-10-03, coordinator (3) batch 2b, D-MON-6):* correctly handled refusals do not notify; losing every channel while armed is an operator-stop condition; retries continue until delivered (backoff cap < 60 s per the owner reading above). The notifier that applies them is [PR #628](https://github.com/Joshua-Asante/first-passage/pull/628) (its build card, `docs/briefs/handoffs/2026-10-02-book-incident-notifier-build-card.md`, is on that PR). These defaults do not reclassify refusals: whether a sub-leg refusal is an incident stays with HR-ADOPT (#604/#605).
+
 ## 4. Resume decision
 
 Resume is a new authenticated operator action, never a standing consent. It is valid only after flat/reconciled recovery, healthy qualified sources and route, complete warm-up/current synchronized bar, settled policy/lifecycle state, valid calendar coverage and the existing identity/admission/deployment checks. A still-active fault or unresolved owner cannot be overridden.
