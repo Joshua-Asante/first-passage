@@ -553,21 +553,29 @@ SCREEN_PACKAGE = 'ops/c1_rail/qualification/t00_screen/'
 PRODUCTION_SOURCE = 'ops/c1_rail/qualification/production_source.py'
 JOURNAL_NAME = 's1-w0.jsonl'
 LEDGER_BYTES = b'{"body":{},"prev_sha256":null,"type":"AUTHORITY_BOUND"}\n'
-# A TEST_ONLY stand-in for t00_screen.worker; the case is read from <run_dir>/case.
+# A TEST_ONLY stand-in for t00_screen.worker; the case ("<kind> [<arg>]") is read from <run_dir>/case.
 SCREEN_WORKER = """import os
 import sys
 
 run_dir, journal_name = sys.argv[2], sys.argv[4]
 with open(os.path.join(run_dir, 'case'), encoding='utf-8') as handle:
-    case = handle.read()
+    kind, _, arg = handle.read().partition(' ')
 journal = os.path.join(run_dir, 'journal', journal_name)
 ledger = os.path.join(run_dir, 'ledger', '0001.jsonl')
-if case == 'forbidden_import':
+if kind == 'forbidden_import':
     import c1_rail.qualification.p7_driver
-elif case == 'allowed_import':
+elif kind == 'allowed_import':
+    import importlib
     import c1_rail.qualification.bracket
     from c1_rail.qualification import runner
-    assert runner.evaluate_replay.__module__ == 'c1_rail.qualification.runner', 'evaluate_replay loads live'
+    simulation = importlib.import_module('mc.simulation')
+    expected = [('c1_rail.qualification.runner', '_run_stage'), ('c1_rail.qualification.runner', 'run_synthetic_stage')]
+    recorded = sorted((module.__name__, attr) for module, attr, _ in sys.p7_recorder.stubs)
+    assert recorded == expected, recorded
+    # Independently of the recorder: bootstrap-compiled ('<string>') callables bound in runner and mc.simulation.
+    planted = sorted((module.__name__, attr) for module in (runner, simulation) for attr, value in vars(module).items()
+                     if getattr(getattr(value, '__code__', None), 'co_filename', None) == '<string>')
+    assert planted == expected, planted
     for name in ('_run_stage', 'run_synthetic_stage'):
         try:
             getattr(runner, name)()
@@ -575,22 +583,38 @@ elif case == 'allowed_import':
             assert str(exc).startswith('SCREEN_FORBIDDEN_CALL'), exc
         else:
             raise AssertionError(name + ' is not stubbed')
-elif case == 'ledger_open':
-    with open(ledger, 'ab') as handle:
-        handle.write(b'forged\n')
-elif case == 'ledger_os_open':
-    os.close(os.open(ledger, os.O_WRONLY | os.O_APPEND))
-elif case == 'journal_open':
+    assert runner.evaluate_replay.__module__ == 'c1_rail.qualification.runner', 'evaluate_replay loads live'
+    assert runner.simulate_path is simulation.simulate_path, 'runner.simulate_path loads live'
+    assert simulation.simulate_path.__module__ == 'mc.simulation', 'simulate_path loads live'
+elif kind == 'open':
+    with open(ledger if arg != 'xb' else os.path.join(run_dir, 'ledger', '0002.jsonl'), arg) as handle:
+        if arg == 'rb':
+            assert handle.read() == LEDGER_BYTES
+        else:
+            handle.write(b'forged\\n')
+elif kind == 'os_open':
+    fd = os.open(ledger, int(arg))
+    if int(arg) & (os.O_WRONLY | os.O_RDWR):
+        os.write(fd, b'forged\\n')
+    os.close(fd)
+elif kind == 'journal_open':
     with open(journal, 'ab') as handle:
-        handle.write(b'record\n')
-elif case == 'journal_os_open':
+        handle.write(b'record\\n')
+elif kind == 'journal_os_open':
     fd = os.open(journal, os.O_WRONLY | os.O_APPEND | os.O_CREAT | getattr(os, 'O_BINARY', 0))
-    os.write(fd, b'record\n')
+    os.write(fd, b'record\\n')
     os.close(fd)
 else:
-    raise SystemExit('unknown case ' + case)
-print('WORKER_DONE ' + case)
-"""
+    raise SystemExit('unknown case ' + kind)
+print('WORKER_DONE ' + kind)
+""".replace('LEDGER_BYTES', repr(LEDGER_BYTES))
+_BINARY = getattr(os, 'O_BINARY', 0)
+# Card §3.3: every write-open mode and os.open write, append or create flag is refused outside the journal.
+LEDGER_WRITE_OPENS = ('open wb', 'open xb', 'open r+b', 'open ab',
+                      *(f'os_open {flags | _BINARY}' for flags in (
+                          os.O_WRONLY | os.O_TRUNC, os.O_RDWR, os.O_WRONLY | os.O_CREAT, os.O_APPEND)))
+LEDGER_READ_OPENS = ('open rb', f'os_open {os.O_RDONLY | _BINARY}')
+BAD_JOURNAL_NAMES = ('../ledger/0001.jsonl', 's0-w0.jsonl', 's1-w0.jsonl\n', 'S1-w0.jsonl')
 
 
 def _screen_tree(extra=None):
@@ -627,7 +651,8 @@ def test_K10(env):
     root = env.code_root('k10', edits={PRODUCTION_SOURCE: lambda text: text +
                                        '\nimport c1_rail.qualification.t00_screen.plan\n'}, extra=_screen_tree())
     refusal('P7_FORBIDDEN_IMPORT', *env.run(root))
-    # The screen side: an execution-list import (design §5.1) is refused; bracket and the live kernel load.
+    # The screen side: an execution-list import (design §5.1) is refused; bracket and the live kernel load, and
+    # the stub set is exactly runner._run_stage and runner.run_synthetic_stage (card §2.4).
     done, _ = run_screen(env, twin, 'allowed_import')
     assert done.returncode == 0 and 'WORKER_DONE allowed_import' in done.stdout, done.stderr[-3000:]
     done, _ = run_screen(env, twin, 'forbidden_import')
@@ -638,29 +663,38 @@ def test_K10(env):
 def test_S2(env):
     """A screen worker write-opens only realpath(join(run_dir, 'journal', journal_name)) (SCREEN_WRITE_REFUSED)."""
     root = env.code_root('s2', extra=_screen_tree())
-    for case in ('journal_open', 'journal_os_open'):
+    failures = []
+
+    def check(label, ok, detail):
+        if not ok:
+            failures.append(f'{label}: {detail[-1500:]}')
+    for case in ('journal_open', 'journal_os_open', *LEDGER_READ_OPENS):  # twins
         done, run_dir = run_screen(env, root, case)
-        assert done.returncode == 0 and f'WORKER_DONE {case}' in done.stdout, done.stderr[-3000:]
-        assert (run_dir / 'journal' / JOURNAL_NAME).read_bytes() == b'record\n'
-        assert (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES
-    for case in ('ledger_open', 'ledger_os_open'):
+        check(case, done.returncode == 0 and 'WORKER_DONE' in done.stdout, done.stderr)
+        if case.startswith('journal'):
+            check(case, (run_dir / 'journal' / JOURNAL_NAME).read_bytes() == b'record\n', 'journal bytes')
+        check(case, (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES, 'ledger bytes changed')
+    for case in LEDGER_WRITE_OPENS:
         done, run_dir = run_screen(env, root, case)
-        assert done.returncode != 0 and 'WORKER_DONE' not in done.stdout, done.stdout[-3000:]
-        assert 'SCREEN_WRITE_REFUSED' in done.stderr, done.stderr[-3000:]
-        assert (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES
+        check(case, done.returncode != 0 and 'WORKER_DONE' not in done.stdout, done.stdout)
+        check(case, 'SCREEN_WRITE_REFUSED' in done.stderr, done.stderr)
+        check(case, (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES, 'ledger bytes changed')
+        check(case, not (run_dir / 'ledger' / '0002.jsonl').exists(), 'a new non-journal file was created')
     # A journal name outside ^[csv][1-9][0-9]*-w[0-9]+[.]jsonl$ is refused by the bootstrap itself.
-    done, run_dir = run_screen(env, root, 'journal_open', journal_name='../ledger/0001.jsonl')
-    assert done.returncode != 0 and 'WORKER_DONE' not in done.stdout, done.stdout[-3000:]
-    assert 'SCREEN_WRITE_REFUSED' in done.stderr, done.stderr[-3000:]
-    assert (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES
-    assert list((run_dir / 'journal').iterdir()) == []
+    for name in BAD_JOURNAL_NAMES:
+        done, run_dir = run_screen(env, root, 'journal_open', journal_name=name)
+        check(repr(name), done.returncode != 0 and 'WORKER_DONE' not in done.stdout, done.stdout)
+        check(repr(name), 'SCREEN_WRITE_REFUSED' in done.stderr, done.stderr)
+        check(repr(name), (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES, 'ledger bytes changed')
+        check(repr(name), list((run_dir / 'journal').iterdir()) == [], 'journal written')
+    assert not failures, '\n'.join(failures)
 
 
 def test_render_bootstrap_generates_both_bootstraps():  # design C8; card §3.1 (non-row)
     from c1_rail.qualification import p7_evidence
     q = 'c1_rail.qualification.'
-    assert p7_evidence.P7_BOOTSTRAP == p7_evidence.render_bootstrap(p7_evidence.P7_BOOTSTRAP_PARAMS)
-    assert p7_evidence.SCREEN_BOOTSTRAP == p7_evidence.render_bootstrap(p7_evidence.SCREEN_BOOTSTRAP_PARAMS)
+    assert p7_evidence.P7_BOOTSTRAP == p7_evidence.render_bootstrap(p7_evidence._P7_BOOTSTRAP_PARAMS)
+    assert p7_evidence.SCREEN_BOOTSTRAP == p7_evidence.render_bootstrap(p7_evidence._SCREEN_BOOTSTRAP_PARAMS)
     assert sha(p7_evidence.SCREEN_BOOTSTRAP.encode('utf-8')) == p7_evidence.SCREEN_BOOTSTRAP_SHA256
     assert p7_evidence.SCREEN_BOOTSTRAP_SHA256 != p7_evidence.P7_BOOTSTRAP_SHA256
     assert set(p7_evidence.P7_FORBIDDEN_MODULES) == {q + name for name in (
@@ -671,4 +705,4 @@ def test_render_bootstrap_generates_both_bootstraps():  # design C8; card §3.1 
         'benchmark_part_a', 'p7_driver')}
     assert repr(p7_evidence.SCREEN_FORBIDDEN_MODULES) in p7_evidence.SCREEN_BOOTSTRAP
     with pytest.raises(ValueError):
-        p7_evidence.render_bootstrap(dict(p7_evidence.P7_BOOTSTRAP_PARAMS, unknown=1))
+        p7_evidence.render_bootstrap(dict(p7_evidence._P7_BOOTSTRAP_PARAMS, unknown=1))
