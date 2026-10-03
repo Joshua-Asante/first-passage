@@ -152,7 +152,7 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 - This card (`docs/briefs/handoffs/2026-10-02-book-incident-notifier-build-card.md`), for the freeze commit and the executor return only.
 - `scripts/check_durable_store_pragmas.py`: **only** the one-line `DURABLE_STORES` entry `"ops/c1_rail/book_incident_notifier.py"`.
 
-Amended 2026-10-02 by coordinator (3): the notifier's own journal is a durable outbox store, so it is registered in `DURABLE_STORES` and issues `synchronous=FULL` and `BEGIN IMMEDIATE` on that journal only, never on the owner DB (review P3, ruling ACCEPT).
+Amended 2026-10-02 by coordinator (3): the notifier's own journal is a durable outbox store, so it is registered in `DURABLE_STORES` and issues `synchronous=FULL` and `BEGIN IMMEDIATE` on that journal only, never on the owner DB (review P3, ruling ACCEPT) (directed by coordinator (3) in the fold dispatch).
 
 **Forbidden (stop and return if a change seems needed):**
 - T00/P7 closure: `docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md`; `ops/c1_rail/qualification/p7_driver.py`, `p7_evidence.py`; `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/**`.
@@ -246,7 +246,7 @@ rg -n 'book_incident_notifier' scripts/check_durable_store_pragmas.py   # Expect
 git diff --stat origin/main...HEAD
 ```
 
-Amended 2026-10-02 by coordinator (3): the hook "no `BEGIN IMMEDIATE` in `book_incident_notifier.py`" is replaced. The owner accessor `BookAccountOwner.read_incidents` opens `?mode=ro` and issues no `BEGIN` (pinned by T3's binding test `test_notifier_never_opens_owner_with_begin_immediate`, which asserts both on the accessor source and by SQL trace), and the notifier journal is registered in `scripts/check_durable_store_pragmas.py` `DURABLE_STORES`.
+Amended 2026-10-02 by coordinator (3): the hook "no `BEGIN IMMEDIATE` in `book_incident_notifier.py`" is replaced. The owner accessor `BookAccountOwner.read_incidents` opens `?mode=ro` and issues no `BEGIN` (pinned by T3's binding test `test_notifier_never_opens_owner_with_begin_immediate`, which asserts both on the accessor source and by SQL trace), and the notifier journal is registered in `scripts/check_durable_store_pragmas.py` `DURABLE_STORES` (directed by coordinator (3) in the fold dispatch).
 
 ## §11 — GLM eligibility
 

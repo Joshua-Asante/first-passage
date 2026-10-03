@@ -287,7 +287,7 @@ class IncidentNotifier:
 
     @staticmethod
     def _malformed_key(row):
-        """Opaque key for a skipped row: its incident key if the id is usable, else a digest."""
+        """Opaque key for a malformed row: its incident key if the id is usable, else a digest."""
         try:
             return incident_key(row["incident_id"])
         except (KeyError, TypeError, ValueError):
@@ -297,27 +297,26 @@ class IncidentNotifier:
     def poll(self):
         """Create one job per committed incident not yet journaled; return the new keys.
 
-        A malformed row is skipped and recorded once as ``malformed_incident``; it never
-        stops the other rows from being journaled.
+        A malformed row still gets a job (reason ``malformed``, detected at the journal time,
+        generation 0) so the operator is notified, plus one ``malformed_incident`` evidence
+        event; its raw id is never journaled or sent, and it never blocks the other rows.
         """
         now = self._now()
-        rows, malformed = [], []
+        entries = []
         for row in self._read_incidents():
             try:
-                rows.append(self._parse(row))
+                entries.append(self._parse(row) + (False,))
             except (KeyError, TypeError, ValueError):
-                malformed.append(self._malformed_key(row))
+                entries.append((self._malformed_key(row), "malformed", now.isoformat(), 0, True))
         created = []
         with self._journal() as db:
-            for key in malformed:
-                if not db.execute("SELECT 1 FROM events WHERE incident_key=? AND "
-                                  "kind='malformed_incident'", (key,)).fetchone():
-                    self._event(db, key, "malformed_incident", None, now,
-                                condition="malformed incident row skipped")
-            for key, reason, at, generation in rows:
+            for key, reason, at, generation, malformed in entries:
                 if db.execute("INSERT OR IGNORE INTO jobs VALUES (?, ?, ?, ?, ?, 'pending', ?, 0, 0)",
                               (key, reason, at, generation, self.config.digest,
                                now.isoformat())).rowcount:
+                    if malformed:
+                        self._event(db, key, "malformed_incident", None, now,
+                                    condition="malformed incident row")
                     self._event(db, key, "detected", None, at, journaled_at=now.isoformat())
                     created.append(key)
         return tuple(created)
@@ -336,14 +335,13 @@ class IncidentNotifier:
     def publish_due(self):
         now = self._now()
         with self._journal() as db:
-            due = db.execute("SELECT incident_key, reason, detected_at, rounds, channels_lost, "
-                             "next_attempt_at FROM jobs WHERE state='pending' ORDER BY rowid"
-                             ).fetchall()
-        for key, reason, detected_at, rounds, lost, next_at in due:
+            due = db.execute("SELECT incident_key, reason, detected_at, rounds, next_attempt_at "
+                             "FROM jobs WHERE state='pending' ORDER BY rowid").fetchall()
+        for key, reason, detected_at, rounds, next_at in due:
             if datetime.fromisoformat(next_at) <= now:
-                self._publish_round(key, reason, detected_at, rounds, lost, now)
+                self._publish_round(key, reason, detected_at, rounds, now)
 
-    def _publish_round(self, key, reason, detected_at, rounds, lost, now):
+    def _publish_round(self, key, reason, detected_at, rounds, now):
         payload = {"kind": "book_incident", "idempotency_key": key, "reason": reason,
                    "detected_at": detected_at}
         assert_no_secrets(payload)
@@ -354,8 +352,13 @@ class IncidentNotifier:
             result, failure = self._bounded_publish(channel, key, payload)
             delivers = CHANNEL_KINDS[channel.kind][1]
             # The outcome that ends the round commits with the job update, so a crash can never
-            # leave a durable delivered event on a job still due for republish.
+            # leave a durable delivered event on a job still due for republish. A job closed by
+            # record_delivery while the publish was in flight keeps its state: the outcome is
+            # appended as evidence only and the round ends.
             with self._journal() as db:
+                state, lost = db.execute(
+                    "SELECT state, channels_lost FROM jobs WHERE incident_key=?", (key,)).fetchone()
+                closed = state == "delivered"
                 if result is None or result.state != "accepted":
                     self._event(db, key, "delivery_failed", channel.name, now,
                                 outcome=failure or result.state)
@@ -366,12 +369,12 @@ class IncidentNotifier:
                     self._event(db, key, "provider_accepted", channel.name, now,
                                 evidence_digest=result.evidence_digest)
                     accepted, delivered = True, result.delivered
-                    if delivered:
+                    if delivered and not closed:
                         self._event(db, key, "delivered", channel.name, now,
                                     evidence_digest=result.evidence_digest)
-                if accepted or position == len(self._channels):
+                if not closed and (accepted or position == len(self._channels)):
                     self._close_round(db, key, rounds + 1, lost, accepted, delivered, now)
-            if accepted:
+            if accepted or closed:
                 break
 
     def _close_round(self, db, key, rounds, lost, accepted, delivered, now):
@@ -381,7 +384,7 @@ class IncidentNotifier:
         elif accepted and lost:
             self._event(db, key, "channels_restored", None, now)
         db.execute("UPDATE jobs SET state=?, next_attempt_at=?, rounds=?, channels_lost=? "
-                   "WHERE incident_key=?",
+                   "WHERE incident_key=? AND state='pending'",
                    ("delivered" if delivered else "pending",
                     (now + timedelta(seconds=delay)).isoformat(), rounds,
                     0 if accepted else 1, key))
@@ -407,16 +410,22 @@ class IncidentNotifier:
         return box["result"], None
 
     def record_delivery(self, key, channel, evidence_digest):
-        """Append out-of-band delivery evidence (e.g. a provider receipt) and close the job."""
+        """Append out-of-band delivery evidence (e.g. a provider receipt) and close the job.
+
+        Idempotent: a job that is already delivered gets no second ``delivered`` event.
+        """
         if channel not in {item.name for item in self._channels if CHANNEL_KINDS[item.kind][1]}:
             raise ValueError("unknown or non-delivering channel")
         if not isinstance(evidence_digest, str) or not _DIGEST.match(evidence_digest):
             raise ValueError("evidence digest must be a sha256 hex digest")
         now = self._now()
         with self._journal() as db:
-            if db.execute("UPDATE jobs SET state='delivered' WHERE incident_key=?",
-                          (key,)).rowcount != 1:
+            row = db.execute("SELECT state FROM jobs WHERE incident_key=?", (key,)).fetchone()
+            if row is None:
                 raise ValueError("unknown incident key")
+            if row[0] == "delivered":
+                return
+            db.execute("UPDATE jobs SET state='delivered' WHERE incident_key=?", (key,))
             self._event(db, key, "delivered", channel, now, evidence_digest=evidence_digest)
 
     # -- reads -----------------------------------------------------------------------------

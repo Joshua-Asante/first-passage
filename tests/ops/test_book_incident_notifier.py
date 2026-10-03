@@ -798,7 +798,9 @@ def test_run_once_publishes_due_jobs_when_poll_fails(tmp_path):
     assert notifier.jobs()[0]["state"] == "delivered"
 
 
-def test_malformed_incident_row_is_skipped_and_recorded(tmp_path):
+def test_malformed_incident_row_still_notifies(tmp_path):
+    """Re-review P3 (coordinator (3) ruling): a malformed row gets a job with the fixed reason
+    ``malformed`` and the journal time, plus one evidence event; its raw id is never sent."""
     account = _operator(tmp_path)
     (good,) = BookAccountOwner.read_incidents(account.path)
     at = NOW.isoformat()
@@ -809,16 +811,78 @@ def test_malformed_incident_row_is_skipped_and_recorded(tmp_path):
            {"incident_id": "", "reason": "operator", "at": at, "generation": 1},
            None]
     rows = bad[:3] + [good] + bad[3:]
+    clock = Clock(NOW + timedelta(minutes=1))
+    channel = FakeChannel("primary")
     notifier = IncidentNotifier(tmp_path / "journal.sqlite", read_incidents=lambda: rows,
-                                channels={"primary": FakeChannel("primary")},
-                                config=_config("primary"), clock=Clock())
-    assert notifier.poll() == (incident_key(good["incident_id"]),)
+                                channels={"primary": channel}, config=_config("primary"),
+                                clock=clock)
+    created = notifier.poll()
+    assert len(set(created)) == len(rows)  # one job per row, malformed or not
+    assert created[0] == incident_key("bad:reason")
+    assert created[3] == incident_key(good["incident_id"])
     assert notifier.poll() == ()
-    assert [job["incident_key"] for job in notifier.jobs()] == [incident_key(good["incident_id"])]
-    malformed = [row for row in notifier.events() if row["kind"] == "malformed_incident"]
-    assert len(malformed) == len(bad)  # recorded once each, not once per poll
-    assert len({row["incident_key"] for row in malformed}) == len(bad)
-    assert malformed[0]["incident_key"] == incident_key("bad:reason")
-    text = json.dumps(notifier.events())
+    jobs = {job["incident_key"]: job for job in notifier.jobs()}
+    malformed = [row["incident_key"] for row in notifier.events()
+                 if row["kind"] == "malformed_incident"]
+    assert malformed == list(created[:3] + created[4:])  # recorded once each, not once per poll
+    assert {(jobs[key]["reason"], jobs[key]["detected_at"]) for key in malformed} == {
+        ("malformed", clock().isoformat())}
+    notifier.run_once()
+    assert sorted(call[0] for call in channel.calls) == sorted(created)
+    assert {call[1]["reason"] for call in channel.calls} == {"malformed", good["reason"]}
+    assert {job["state"] for job in notifier.jobs()} == {"delivered"}
+    text = json.dumps([notifier.events(), notifier.jobs(), channel.calls])
     assert not [incident_id for incident_id in ("bad:reason", "bad:at", "bad:generation")
                 if incident_id in text]
+
+
+# -- Re-review fold 2026-10-03 (notifier-rereview P2) ------------------------------------------
+
+class _Receipting(FakeChannel):
+    """Records a provider receipt through ``record_delivery`` while its publish is in flight."""
+    notifier = None
+
+    def publish(self, idempotency_key, payload):
+        self.notifier.record_delivery(idempotency_key, self.name, "d" * 64)
+        return super().publish(idempotency_key, payload)
+
+
+@pytest.mark.parametrize("outcome, kind", [
+    (ACCEPTED, "provider_accepted"), (DELIVERED, "provider_accepted"),
+    (REJECTED, "delivery_failed"), (RuntimeError("down"), "delivery_failed"),
+    (FakeChannel.HANG, "delivery_failed")],
+    ids=["accepted", "delivered", "rejected", "raises", "timeout"])
+def test_record_delivery_during_round_is_not_downgraded(tmp_path, outcome, kind):
+    """Re-review P2 (probe port): an in-flight round never reopens a job record_delivery closed."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    clock = Clock()
+    channel = _Receipting("primary", [outcome])
+    channel.notifier = notifier = _notifier(tmp_path, account, channel, clock=clock)
+    try:
+        notifier.run_once()
+    finally:
+        channel.release()
+    assert _kinds(notifier, key) == [("detected", None), ("attempt", "primary"),
+                                     ("delivered", "primary"), (kind, "primary")]
+    (job,) = notifier.jobs()
+    assert (job["state"], job["channels_lost"], job["rounds"]) == ("delivered", False, 0)
+    assert notifier.channels_lost() == ()
+    clock.advance(3600)
+    notifier.run_once()
+    assert len(channel.calls) == 1  # never republished
+
+
+def test_record_delivery_is_idempotent_and_ends_the_round(tmp_path):
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    primary = _Receipting("primary", [REJECTED])
+    secondary = FakeChannel("secondary", [DELIVERED])
+    primary.notifier = notifier = _notifier(tmp_path, account, primary, secondary)
+    notifier.run_once()
+    assert secondary.calls == []  # a delivered job is not published on the next channel
+    notifier.record_delivery(key, "secondary", "f" * 64)  # a late second receipt
+    assert _kinds(notifier, key) == [("detected", None), ("attempt", "primary"),
+                                     ("delivered", "primary"), ("delivery_failed", "primary")]
+    with pytest.raises(ValueError):
+        notifier.record_delivery("0" * 64, "primary", "f" * 64)
