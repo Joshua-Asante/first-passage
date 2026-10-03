@@ -15,6 +15,7 @@ import math
 import os
 import re
 from pathlib import Path
+from types import MappingProxyType
 from typing import Mapping, Sequence
 
 try:
@@ -33,7 +34,6 @@ LOCK_SCHEMA = 't00_screen_lock/v1'
 RESULTS_SCHEMA = 't00_screen_results/v1'
 POPULATIONS = ('FULL', 'H1', 'H2')
 JOURNAL_NAME = re.compile(r'([csv])([0-9]+)-w([0-9]+)[.]jsonl')
-_REFUSED = set()  # (st_dev, st_ino) of every file an append raised on, in this process (F4)
 
 Record = Mapping[str, object]
 Key = tuple[str, str, int]
@@ -100,6 +100,7 @@ def _list(check):
 
 
 def _object(fields):
+    fields = MappingProxyType(fields)
     return lambda value: (type(value) is dict and set(value) == set(fields)
                           and all(check(value[name]) for name, check in fields.items()))
 
@@ -110,6 +111,13 @@ _RUN_FIELDS = _object({  # P7's projection names (p7_driver.py:55-65) plus the k
     'consumed_intrabar_splits_sha256': _hex, 'status': _one_of('PASS', 'FAILURE', 'UNRESOLVED'),
     'sessions_to_pass': _optional(_count), 'failure_reason': _optional(_text),
     'kernel_outcome': _text})
+
+
+def _frozen(table):
+    """A record-type table as read-only mappings (no module global is ever mutated)."""
+    return MappingProxyType({name: MappingProxyType(fields) for name, fields in table.items()})
+
+
 _POPULATION = _object({'indices': _list(_count), 'candidates_sha256': _hex})
 
 
@@ -133,7 +141,7 @@ def _bracket_agrees(body):
     return body['bracket_status'] == (first if first == second else 'UNDETERMINED')
 
 
-LEDGER_BODIES = {
+LEDGER_BODIES = _frozen({
     'AUTHORITY_BOUND': {'authority_sha256': _hex, 'prereg_path': _text, 'approvals': _list(_hex),
                         'reused_directory': _bool},
     'PREPARED': {'manifest_sha256': _hex, 'build': _cost, 'integrity': _cost},
@@ -155,8 +163,8 @@ LEDGER_BODIES = {
     'FINAL': {'attestation_sha256': _hex},
     'VERIFY_START': {'n': _positive, 'keys': _list(is_key)},
     'VERIFY': {'n': _positive, 'keys': _list(is_key), 'match': _bool},
-}
-JOURNAL_BODIES = {
+})
+JOURNAL_BODIES = _frozen({
     'EPOCH_OPEN': {'build': _cost, 'integrity': _cost, 'closure_sha256': _hex,
                    'guard_sha256': _hex},
     'KEY_START': {'key': is_key},
@@ -167,10 +175,10 @@ JOURNAL_BODIES = {
     'PROBE_RESULT': {'path_cpu_s': _num, 'path_wall_s': _num, 'peak_memory_bytes': _count},
     'EPOCH_CLOSE': {'integrity': _cost, 'closure_match': _bool},
     'WORKER_STOP': {'reason': _text, 'key': _optional(is_key)},
-}
-_AGREES = {'PATH': _bracket_agrees}  # cross-field rules, applied once every field is valid
-_TABLES = {'ledger': (LEDGER_BODIES,), 'journal': (JOURNAL_BODIES,),
-           None: (LEDGER_BODIES, JOURNAL_BODIES)}
+})
+_AGREES = MappingProxyType({'PATH': _bracket_agrees})  # cross-field rules, once fields are valid
+_TABLES = MappingProxyType({'ledger': (LEDGER_BODIES,), 'journal': (JOURNAL_BODIES,),
+                            None: (LEDGER_BODIES, JOURNAL_BODIES)})
 
 
 def validate_body(record_type, body, *, kind=None):
@@ -208,9 +216,8 @@ def append(fd: int, type: str, body: Mapping[str, object], *,  # pylint: disable
     After ``append`` raises, the writer appends nothing more to that file (card F4): the line
     may be on disk while the writer holds no SHA-256 for it, so a further record would chain
     from a stale ``prev_sha256`` and read as CORRUPTION. A worker then exits without
-    WORKER_STOP and reports IO_ERROR; the coordinator's segment reads as crashed. This process
-    enforces the rule itself: once a write or ``fsync`` raises, every later append to the same
-    file (by ``st_dev`` and ``st_ino``), through any fd, raises ``OSError`` before writing.
+    WORKER_STOP and reports IO_ERROR; the coordinator names it ``IO_ERROR`` in SEGMENT_END.
+    The rule is the writer's (P-F); this module keeps no state between calls.
     """
     if prev_sha256 is not None and not _hex(prev_sha256):
         raise JournalCorrupt('prev_sha256 must be null or a SHA-256')
@@ -220,20 +227,12 @@ def append(fd: int, type: str, body: Mapping[str, object], *,  # pylint: disable
     except ContractValidationError as exc:
         raise JournalCorrupt(str(exc)) from None
     line = raw + b'\n'
-    status = os.fstat(fd)
-    identity = (status.st_dev, status.st_ino)
-    if identity in _REFUSED:
-        raise OSError(errno.EIO, 'an earlier append to this file raised; it takes no more records')
     if _setmode is not None:
         _setmode(fd, os.O_BINARY)
-    try:
-        written = os.write(fd, line)
-        if written != len(line):
-            raise OSError(errno.EIO, f'short record write: {written} of {len(line)} bytes')
-        os.fsync(fd)
-    except BaseException:
-        _REFUSED.add(identity)
-        raise
+    written = os.write(fd, line)
+    if written != len(line):
+        raise OSError(errno.EIO, f'short record write: {written} of {len(line)} bytes')
+    os.fsync(fd)
     return hashlib.sha256(raw).hexdigest()
 
 

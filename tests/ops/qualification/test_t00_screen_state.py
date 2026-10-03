@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import base64
 from dataclasses import dataclass
-import errno
 import functools
 import hashlib
 import importlib
@@ -1079,52 +1078,6 @@ def test_check_record_journal_names():
     assert [journal.journal_name(n) for n in ('c1-w0.jsonl', 's1-w0.jsonl', 'v12-w10.jsonl')] == [
         ('c', 1, 0), ('s', 1, 0), ('v', 12, 10)]
     assert journal.journal_name('s1-w01.jsonl') is None
-
-
-def test_append_refuses_after_a_raise(tmp_path):
-    """F4: after ``append`` raises, the file takes no more records in this process, through any
-    fd, so a retry cannot chain from a stale prev: STOPPED IO_ERROR, not TERMINAL CORRUPTION."""
-    state, journal = modules()
-    # The reviewer's probe: the null device accepts the write and refuses the fsync.
-    fd = os.open(os.devnull, os.O_WRONLY | os.O_APPEND | BINARY)
-    try:
-        with pytest.raises(OSError) as failed:
-            journal.append(fd, 'EPOCH_OPEN', epoch_open(), prev_sha256=None)
-        assert failed.value.errno != errno.EIO  # the device's own fsync error
-        with pytest.raises(OSError) as refused:
-            journal.append(fd, 'WORKER_STOP', {'reason': 'IO_ERROR', 'key': None}, prev_sha256=None)
-        assert refused.value.errno == errno.EIO and 'no more records' in str(refused.value)
-        assert state.classify(refused.value) == ('STOPPED', 'IO_ERROR')
-    finally:
-        os.close(fd)
-    # On a journal file: one fd's failed write refuses the writer's next record, and the file
-    # keeps a valid chain.
-    path = tmp_path / 'journal' / 's1-w0.jsonl'
-    path.parent.mkdir()
-    writer, reader = os.open(path, APPEND, 0o644), None
-    try:
-        head = journal.append(writer, 'EPOCH_OPEN', epoch_open(), prev_sha256=None)
-        reader = os.open(path, os.O_RDONLY | BINARY)
-        with pytest.raises(OSError):
-            journal.append(reader, 'KEY_START', {'key': list(PLAN[0])}, prev_sha256=head)
-        with pytest.raises(OSError) as refused:
-            journal.append(writer, 'WORKER_STOP', {'reason': 'IO_ERROR', 'key': None},
-                           prev_sha256=head)
-        assert refused.value.errno == errno.EIO
-    finally:
-        os.close(writer)
-        if reader is not None:
-            os.close(reader)
-    assert [r['type'] for r in journal.read(path, prev_sha256=None)] == ['EPOCH_OPEN']
-    # Twin: another file still takes records.
-    other = tmp_path / 'journal' / 's1-w1.jsonl'
-    fd = os.open(other, APPEND, 0o644)
-    try:
-        head = journal.append(fd, 'EPOCH_OPEN', epoch_open(), prev_sha256=None)
-        journal.append(fd, 'WORKER_STOP', {'reason': 'DONE', 'key': None}, prev_sha256=head)
-    finally:
-        os.close(fd)
-    assert len(journal.read(other, prev_sha256=None)) == 2
 
 
 def test_path_cross_fields(tmp_path):
