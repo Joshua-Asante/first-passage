@@ -145,7 +145,7 @@ Add a source-health input to prepared-continuation redelivery: `redeliver_prepar
 - **After any halt, a held loosening is never redelivered** (coordinator (3) R2, 2026-10-03; ACCEPTED as the B behaviour, in the safe direction). The halt raises the owner generation (`book_account_owner.py:2093-2094`). The continuation test then fails (`:1694-1696`), and the owner replays the stored `held_unhealthy` result with no command (`:1697-1698`). The loosening ends in the protection-deadline fault (G8), with the position still on its existing, tighter protection. In #631's flow the `feed` halt follows every unhealthy redelivery in the same step, so there a held loosening always ends this way.
 - **When the input is True or omitted,** behaviour is exactly as today.
 
-**B's residual.** An attach with no fresh evidence still returns `awaiting_evidence` (`:583-586`), and after the feed halt that follows it is never redelivered either (the same replay; G3). B narrows A's unprotected-fill exposure; it does not close it (#631 `:271`).
+**B's residual.** An attach with no fresh evidence still returns `awaiting_evidence` (`:583-586`), and after the feed halt that follows it is never redelivered either (the same replay; G3). B narrows A's unprotected-fill exposure; it does not close it (#631 at `49f1b69`, `:132` and `:284`).
 
 **Boundary:** nothing is wired. This card adds the input and its owner semantics. #631's loop passes it (§2.7), under #631's own re-scoped card.
 
