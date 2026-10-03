@@ -1,6 +1,6 @@
 # CrossTrade close-semantics vendor question: final text for the operator (2026-09-26)
 
-**Status:** **FINAL — to be sent by the operator.** Not sent by any agent; no agent contacts the vendor. **Sent:** not yet recorded (a dated line is added here when the operator reports sending it).
+**Status:** **FINAL — to be sent by the operator.** Not sent by any agent; no agent contacts the vendor. **Sent:** §1 **not yet sent** to human support. Two chat attempts on 2026-10-01 are recorded in [§4](#4-chat-attempts-2026-10-01-not-a-send-of-1); neither is a send of §1, and the reply was the support chat's AI assistant, not a vendor statement.
 **Authority:** operator ruling 2026-09-26, given in session by Joshua through a structured question. He selected "Finalize it for me to send", whose text was Astra's recommendation; it is recorded here as his decision (R-VENDORQ).
 **Source:** the draft in the [close-semantics determination](2026-09-26-close-semantics-c-a.md) §6, which stays as drafted. The ruling keeps its nine questions and adds one short request, item 10 below. Nothing else is changed.
 **Context:** the investigation of C-a (whole-leg broker liquidation) under the operator's close ruling of 2026-09-26 (R-CLOSE, [incident ADR §A11.1](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)), investigation only. This is a separate question from the T08 vendor question sent on 2026-09-25 ([campaign §59 Ruling 2](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-2--the-t08-vendor-question-has-been-sent)).
@@ -64,3 +64,40 @@ As the close-semantics determination (§6) records, a written answer would be a 
 Nothing beyond the operator sending the text above. It authorizes no agent contact with the vendor, no drill (including X-3 and the deferred X-5), no order action, account access, purchase or route change, and no acceptance of the close-contract amendment or of any residual risk.
 
 *Addendum 2026-09-27:* from 2026-09-27, "the text above" means the revised §1 text only. §1a is preserved as ratified and is not to be sent. What this section authorizes is otherwise unchanged.
+
+## 4. Chat attempts, 2026-10-01 (not a send of §1)
+
+*Recorded 2026-10-02 by the coordinator. Joshua reported the exchange directly, sharing a screenshot of the reply, and the Codex coordinator relayed the worker's provenance.*
+
+**What was sent:**
+- **First attempt.** The operator pasted §1 into the CrossTrade support chat. The composer has a 2,000-character limit, so the message was cut off partway through Q3, and Q4–Q10 were not sent.
+- **Second attempt.** At the operator's direction, a worker prepared a 1,912-character shortened version of Q1–Q10, which the operator sent at about **23:05 America/New_York on 2026-10-01**. The UI shows "11:05 PM"; the time zone is not independently verified. The coordinator checked this text against §1 on 2026-10-02:
+  - Q6 (scope) and Q9 (REST path) keep their meaning exactly.
+  - Q1's citations, Q8's final question and Q10's explicit Demo identification are weakened.
+  - It is a derivative, not the ratified text.
+
+**The reply** came from the support chat, which labels itself an AI assistant.
+- **What it claims:**
+  - A full close (no `qty` or `percent`) resolves the contract and sends one Tradovate liquidate request, with no separate cancel step.
+  - It cancels **only that contract's** resting orders, not other contracts' working orders.
+  - A partial close sends an opposing market order and leaves the contract's working orders resting.
+- **What it disclaims as unpublished:** the order of steps, whether the quantity is fixed at acceptance or at execution, partial fills, what a rejection or late response does to the brackets, and prop-eval/liquidate specifics.
+- **What it directs:** a full written, sourced answer to all ten questions from support@crosstrade.io.
+- **Sources:** it gives none.
+
+**How it is treated (§2 rules 2–3; unchanged):**
+- It is **corroboration only, not a vendor statement**. It is an unsourced AI answer that disclaims guarantees itself.
+- **Q6 and Q9 stay unresolved for C-a selection.** Their canonical statuses in the [close-semantics record](2026-09-26-close-semantics-c-a.md) are unchanged: Q6 **CONFLICTING** (D-1 stands), Q9 **PARTLY_DOCUMENTED**. Every other question also keeps its prior status. Its contract-scope claim agrees with what X-3 is expected to show, but it is evidence to verify, not acceptance.
+- **Vendor answers are not a C-a selection gate** (operator ruling 2026-10-02, quoted in the [C-a selection register §R.2a](2026-09-26-close-semantics-c-a.md)). The scope-extended X-3 discharges both questions: Q6 through its second-symbol evidence (register row S-V2a), and Q9 through its trace (S-V1). Vendor and AI answers are corroboration only (register row N-V0). Q6 and Q9 stay unresolved until X-3 runs.
+
+**Still owed:** the operator emails §1 verbatim to support@crosstrade.io, as the reply itself directs. The prepared file is `unsent-human-support-inquiry.eml`. The dated **Sent:** line is added when he reports sending it.
+
+**Retained privately** at `local_artifacts/crosstrade-close-semantics-reply-2026-09/` (gitignored):
+- the sent message, `sent-shortened-chat-message-2026-10-01.txt`, SHA-256 `6abf6013…3849`;
+- the reply, `ai-reply-to-shortened-message-2026-10-01.txt`, SHA-256 `9e92010f…8f3f6`;
+- the manifest `SHA256SUMS-preparation.txt`, SHA-256 `de65b779…65b1`.
+- the operator's own screenshot of the reply, Windows capture at 23:35 ET, copied byte-for-byte as `operator-screenshot-ai-reply-2026-10-01-233511.png`, SHA-256 `219f5749…e0d1`.
+
+The two `.txt` files above are DOM transcriptions, not server exports.
+
+**Retention defect, OPEN (§2 rule 1).** CrossTrade's support UI offers no export control, so the reply's original bytes were never retained. The screenshot is the best capture available. It is still a rendering, not the server's bytes, and a transcription is not sufficient (commissioning packet :537). This changes no status, because this reply is not evidence for any question. **The human-support reply must be retained as original bytes**: the received email saved as `.eml`, then hashed.
