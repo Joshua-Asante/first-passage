@@ -99,8 +99,8 @@ jobs:
           ) + ["tests/ops/test_phase3_provenance_acceptance.py"]
           files = sorted(files)
           mine = files[shard::4]
-          pathlib.Path(sys.argv[2]).write_text(
-              "".join(name + "\n" for name in mine), encoding="utf-8")
+          pathlib.Path(sys.argv[2]).write_bytes(
+              "".join(name + "\n" for name in mine).encode("utf-8"))
           print(f"shard {shard}: {len(mine)} of {len(files)} selection files")
           for name in mine:
               print(f"  {name}")
@@ -118,12 +118,12 @@ jobs:
             echo "selection dispatch: no shard coverage evidence (aggregate comparison skipped)"
             exit 0
           fi
-          mapfile -t targets < "$out/shard-$SHARD.txt"
-          python -m pytest "${targets[@]}" --collect-only -q -n 0 > "$out/collect-$SHARD.log" 2>&1 \n            || { tail -n 40 "$out/collect-$SHARD.log"; exit 1; }
+          mapfile -t targets < <(tr -d '\r' < "$out/shard-$SHARD.txt")
+          python -m pytest "${targets[@]}" --collect-only -q -n 0 > "$out/collect-$SHARD.log" 2>&1 || { tail -n 40 "$out/collect-$SHARD.log"; exit 1; }
           if [ "$SHARD" = "0" ]; then
             python -m pytest tests/ops/qualification \
               tests/ops/test_phase3_provenance_acceptance.py \
-              --collect-only -q -n 0 > "$out/collect-full.log" 2>&1 \n              || { tail -n 40 "$out/collect-full.log"; exit 1; }
+              --collect-only -q -n 0 > "$out/collect-full.log" 2>&1 || { tail -n 40 "$out/collect-full.log"; exit 1; }
           fi
           python - "$out" "$SHARD" <<'PY'
           import pathlib
@@ -149,11 +149,11 @@ jobs:
               return int(numbers[-1])
 
           count = collected(out / f"collect-{shard}.log")
-          (out / f"count-{shard}.txt").write_text(f"{count}\n", encoding="utf-8")
+          (out / f"count-{shard}.txt").write_bytes(f"{count}\n".encode("utf-8"))
           print(f"shard {shard}: {count} tests collected")
           if shard == "0":
               whole = collected(out / "collect-full.log")
-              (out / "count-full.txt").write_text(f"{whole}\n", encoding="utf-8")
+              (out / "count-full.txt").write_bytes(f"{whole}\n".encode("utf-8"))
               print(f"whole selection: {whole} tests collected")
           PY
       # The same selection the full-suite bridge runs in its clean child
@@ -172,7 +172,7 @@ jobs:
             fi
             read -r -a targets <<< "$SELECTION"
           else
-            mapfile -t targets < "$out/shard-$SHARD.txt"
+            mapfile -t targets < <(tr -d '\r' < "$out/shard-$SHARD.txt")
           fi
           python -m pytest "${targets[@]}" -n 0 -rs \
             --junitxml="$out/junit-$SHARD.xml"
