@@ -102,7 +102,7 @@ Coordinator acts (after OA-D5, never before acceptance): coordinator (2) relays 
 ## §3 — Design
 
 1. **Trigger.** "Alert group created", integrations filter = the BC integration. It fires per alert group, not per payload: BC retries join the open group (BC §0.5 item 5) and create no new intake.
-2. **Duplicates that remain** (handled by hyper's dedup rule, §3.6 item 2): (i) IRM retries on a timeout although GitHub may already have created the issue [G2]; (ii) BC §3.6: once Joshua resolves the group, the next rail retry opens a **new** group and so a second intake with the same key prefix (BC OQ-1 governs; lean (a) "acknowledge, do not resolve" removes most of it).
+2. **Duplicates that remain** (handled by hyper's dedup rule, §3.6 item 2): (i) IRM retries on a timeout although GitHub may already have created the issue [G2]; (ii) BC §3.6: once Joshua resolves the group, the next rail retry opens a **new** group and so a second intake with the same key prefix (BC §9 OQ-1 governs; pending Joshua).
 3. **Data template** (new file `ops/c1_rail/book_incident_dot_intake_template.json.j2`, pasted verbatim by Joshua into OA-D3). It forwards only BC's `title` and `message`, which BC already restricts to the reason class, `detected_at` and the first 12 hex digits of the key, and which BC U1 tests against `assert_no_secrets`. One redaction boundary, owned by BC.
 
    ```
