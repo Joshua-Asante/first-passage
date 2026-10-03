@@ -109,6 +109,8 @@ The addendum §1.4 (`:447–:449`) requires this rule to be accepted with the F1
 > - a different provider or a changed B item is a new binding that must meet C in full. It inherits no earlier PASS;
 > - every attempt is counted and reported per provider, and a re-application follows the spec §10 re-application rule. Whether a change to B items only may re-apply after a FAIL is an operator rule, OWED.
 
+*Operator ruling 2026-10-02 (sitting 2), FEED-16:* the warm-up history for live sessions comes from the funded provider's history API (Q11), and the history-to-live seam is checked in the shadow-collection window (§4). The fallback is live-only collection that spans the longest warm-up boundary (TB-W1). The coordinator owns the design, as provider-neutral preparation under the 2026-10-02 CP-7 grant; it dispatches no implementation and funds nothing. The rule text above is unchanged and is still accepted only at CP-6. History bars are not yet in the equivalence verdict (M9, OPEN-7).
+
 ## 4. Shadow-collection design (emission disabled)
 
 **When:** only after CP-7 authorizes a provider and its adapter (addendum §4, `:495`), and after the equivalence spec is frozen (spec §9). This section is a design, not an authorization.
