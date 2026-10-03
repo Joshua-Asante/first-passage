@@ -147,6 +147,13 @@ class ScoringReport:
     regime_robustness_gate: str = (
         "TODO — deferred per handoff §0.5(D); run before trusting a real-candidate ceiling"
     )
+    # O-4 Slice A (operator ruling 2026-10-02, prereg I-12): which breach clock the
+    # tier reads used, and whether the read may GATE a clear. EOD-clock reads are
+    # reportable, never gating; an intraday-honest read gates only when no gating
+    # tier's channel was vacuous. Set on every return path of ``score_candidate``.
+    breach_clock: str = "eod"
+    gate_grade: bool = False
+    gate_grade_reasons: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -160,6 +167,9 @@ class ScoringReport:
             "halted_at": self.halted_at,
             "thresholds_source": self.thresholds_source,
             "regime_robustness_gate": self.regime_robustness_gate,
+            "breach_clock": self.breach_clock,
+            "gate_grade": self.gate_grade,
+            "gate_grade_reasons": list(self.gate_grade_reasons),
         }
 
     def write_json(self, path: Path | str) -> None:
@@ -405,6 +415,11 @@ def paired_blocks_from_daily(
 
     INVARIANT (frozen Phase-4 §1): the intraday channel is never re-derived or
     re-drawn independently of the P&L channel.
+
+    Invalid input (length mismatch, <5 days, any ``low > 0``, or a non-finite
+    value in EITHER channel) raises ``ValueError``. NaN/±inf are rejected
+    explicitly because ``NaN > 0`` compares False, so the sign check cannot see
+    them (O-4 Slice A §2.1).
     """
     pnl = np.asarray(daily_pnl, dtype=float).reshape(-1)
     low = np.asarray(intraday_low, dtype=float).reshape(-1)
@@ -419,6 +434,11 @@ def paired_blocks_from_daily(
     if np.any(low > 0.0):
         raise ValueError(
             "intraday_low entries must be ≤ 0.0 (excursion from day's opening equity)"
+        )
+    if not np.isfinite(pnl).all() or not np.isfinite(low).all():
+        raise ValueError(
+            "daily_pnl and intraday_low must both be finite "
+            "(NaN or ±inf rejected in either channel)"
         )
     idx = pd.bdate_range("2020-01-06", periods=pnl.size)
     panel = pd.DataFrame({"candidate": pnl, "intraday_low": low}, index=idx)
@@ -639,15 +659,38 @@ def score_candidate(
     n_sims: int | None = None,
     gross_edge_usd: float | None = None,
     tiers: Sequence[str] | None = None,
+    intraday_low: np.ndarray | None = None,
 ) -> ScoringReport:
     """Run G0–G8 for one candidate across the frozen (or overridden) tier set.
 
     ``n_sims`` defaults to the pre-reg 10k; tests pass a smaller value for speed.
     ``tiers`` defaults to the frozen four; override only in unit tests that isolate
     a geometry (never for a live scoring claim).
+
+    ``intraday_low`` — optional per-day equity-excursion series (≤ 0, same length
+    as ``candidate_daily_pnl``; O-4 Slice A). Given, it is paired into week-blocks
+    BEFORE G1 (invalid input raises even when G1 would halt) and threaded into
+    every G4 run on every tier that reaches G4, so each tier read tests the
+    barrier against the intraday excursion (the mandatory intraday-honest clock,
+    operator ruling 2026-10-02 / prereg I-12). The frozen non-vacuity guard runs
+    once per gating tier at the gating depth; a vacuous tier records a reason and
+    the report is labelled ``gate_grade=False`` (INSUFFICIENT), never silently
+    gate-grade. ``None`` keeps the legacy EOD-clock path byte-identical, which is
+    reportable and never gates a clear.
     """
     thr = thresholds if thresholds is not None else load_scoring_thresholds()
     tier_keys = tuple(tiers) if tiers is not None else thr.tier_keys
+    # Guard depth is the gating depth (card §0.5(A)); no new depth parameter (O-6).
+    sims = n_sims if n_sims is not None else thr.sims_per_seed
+
+    # Pair + validate the channel BEFORE G1 so an invalid channel raises even
+    # when G1 would halt. The returned P&L blocks share the Monday-anchor rule
+    # with blocks_from_daily_pnl, so the tier reads are index-identical.
+    intraday_blocks: np.ndarray | None = None
+    if intraday_low is not None:
+        blocks, intraday_blocks = paired_blocks_from_daily(
+            candidate_daily_pnl, intraday_low
+        )
 
     g1 = reduce_to_deployable(
         full_res_trades,
@@ -659,8 +702,19 @@ def score_candidate(
         g1=g1,
         thresholds_source=thr.source_path,
     )
+    gate_reasons: list[str] = []
+    if intraday_low is None:
+        report.breach_clock = "eod"
+        report.gate_grade_reasons = [
+            "no intraday_low supplied: EOD-clock read is reportable, never gating (prereg I-12)"
+        ]
+    else:
+        report.breach_clock = "intraday_honest"
+        report.gate_grade_reasons = gate_reasons
     if g1.halted:
         report.halted_at = "G1"
+        # No tier reached G4, so no breach-clock read exists to fail (§0.5(C)).
+        report.gate_grade = intraday_low is not None and not gate_reasons
         return report
 
     edge = (
@@ -668,7 +722,8 @@ def score_candidate(
         if gross_edge_usd is not None
         else float(np.sum(full_res_trades))
     )
-    blocks = blocks_from_daily_pnl(candidate_daily_pnl)
+    if intraday_blocks is None:
+        blocks = blocks_from_daily_pnl(candidate_daily_pnl)
 
     for firm_key in tier_keys:
         g2 = cost_law_kill(
@@ -696,9 +751,33 @@ def score_candidate(
         # G3
         assert_engine_ready(firm_key)
 
-        # G4 Run-1 (consistency off) + Run-2 (consistency on where present)
+        # Mandatory non-vacuity guard (frozen Phase-4 §1) at the gating depth.
+        # Only a "non-vacuity FAIL" AssertionError is a vacuity finding — any
+        # other AssertionError (e.g. the summarize_outcomes bucket-sum
+        # invariant) is an engine fault and must propagate.
+        if intraday_blocks is not None:
+            try:
+                assert_intraday_channel_nonvacuous(
+                    blocks,
+                    intraday_blocks,
+                    thresholds=thr,
+                    firm_key=firm_key,
+                    n_sims=sims,
+                )
+            except AssertionError as exc:
+                if not str(exc).startswith("non-vacuity FAIL"):
+                    raise
+                gate_reasons.append(f"{firm_key}: non-vacuity failed: {exc}")
+
+        # G4 Run-1 (consistency off) + Run-2 (consistency on where present).
+        # The honest clock runs regardless of the guard outcome: figures stay
+        # reportable even when the channel is vacuous. intraday_blocks stays
+        # off the kwargs entirely on the EOD path (byte-identical call).
+        remc_kwargs: dict = {}
+        if intraday_blocks is not None:
+            remc_kwargs["intraday_blocks"] = intraday_blocks
         run1 = run_tier_remc(
-            firm_key, blocks, thr, n_sims=n_sims, consistency=None
+            firm_key, blocks, thr, n_sims=n_sims, consistency=None, **remc_kwargs
         )
         cons = _consistency_frac(firm_key)
         if cons is None:
@@ -706,7 +785,7 @@ def score_candidate(
             gated_on = "run1_degenerate"
         else:
             run2 = run_tier_remc(
-                firm_key, blocks, thr, n_sims=n_sims, consistency=cons
+                firm_key, blocks, thr, n_sims=n_sims, consistency=cons, **remc_kwargs
             )
             gated_on = "run2"
 
@@ -740,6 +819,10 @@ def score_candidate(
     )
     # G8
     report.discharges_falsifier = discharges_falsifier(report.tiers, thr)
+    # Gate grade is report-level (one vacuous tier ⇒ the whole read is
+    # INSUFFICIENT); it is reported beside — never combined with — the
+    # discharge. A gate-grade discharge reads both (I-12).
+    report.gate_grade = intraday_low is not None and not gate_reasons
     return report
 
 
@@ -811,6 +894,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=None,
         help="override sims/seed (default: pre-reg 10k; use smaller for smoke tests)",
     )
+    ap.add_argument(
+        "--intraday-low-csv",
+        default=None,
+        help=(
+            "CSV of per-day intraday equity excursions (column 'intraday_low' or "
+            "the first column); row count must match --daily-pnl-csv, else "
+            "paired_blocks_from_daily raises"
+        ),
+    )
     args = ap.parse_args(list(argv) if argv is not None else None)
 
     daily_df = pd.read_csv(args.daily_pnl_csv)
@@ -822,6 +914,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 return df[name].to_numpy(dtype=float)
         return df.iloc[:, 0].to_numpy(dtype=float)
 
+    intraday_low_arg: np.ndarray | None = None
+    if args.intraday_low_csv is not None:
+        low_df = pd.read_csv(args.intraday_low_csv)
+        if "intraday_low" in low_df.columns:
+            intraday_low_arg = low_df["intraday_low"].to_numpy(dtype=float)
+        else:
+            intraday_low_arg = low_df.iloc[:, 0].to_numpy(dtype=float)
+
     thr = load_scoring_thresholds(args.prereg)
     report = score_candidate(
         strategy_label=args.label,
@@ -830,12 +930,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         envelope_verdict=args.envelope,  # type: ignore[arg-type]
         thresholds=thr,
         n_sims=args.n_sims,
+        intraday_low=intraday_low_arg,
     )
     report.write_json(args.out)
     print(
         f"[prop-survivor-scoring] label={args.label} "
         f"discharges_falsifier={report.discharges_falsifier} "
-        f"halted_at={report.halted_at} -> {args.out}"
+        f"halted_at={report.halted_at} "
+        f"breach_clock={report.breach_clock} gate_grade={report.gate_grade} "
+        f"-> {args.out}"
     )
     return 0
 

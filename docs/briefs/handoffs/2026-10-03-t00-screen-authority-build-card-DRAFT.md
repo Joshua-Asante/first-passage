@@ -393,14 +393,14 @@ The screen-authority signature (design §8 step 11) uses the same template with 
 ## §8 — Approval, prerequisites and H record
 
 - Card approval (design §8 step 5): **APPROVED** by Joshua at `079b1b6`, 2026-10-03, directly to coordinator (3): "I approve of the recommendations, let's make it happen" (sheet 5; recorded at https://github.com/Joshua-Asante/first-passage/pull/634#issuecomment-5965354454). Coordinator (3) clarification at `143836d` (crash-segment charge; consistent with design §5.4). Depth N (design §12 item 9): **1,000 per population** (sheet 5). A precision packet (`claude/t00-depth-decision-packet`) is with Joshua for possible revision before §7 step 1.
-- PR-1 #629 merged at: —
-- PR-2 #581 merged (DRAFT, A5/A6 frozen) at: — ; A5/A6 section hashes at that commit (expect §2.6): —
+- PR-1 #629 merged at: `ad48cd5b059680f08f65a8e401c56a4ac66de609` (2026-10-03; relay CLEAN at `3742a95`, carried to `4f781a0`).
+- PR-2 #581 merged (DRAFT, A5/A6 frozen) at: `b996803eb598bc5723652aafe12098782069f07b` (2026-10-03; relay CLEAN at `3b706c9`, pinned head `6ff2fb3`; pre-registration blob `6e6e5894b499fea8e16352415bab2f468488e91d`). A5/A6 section hashes recomputed by coordinator (3) at that merge commit: A5 `a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b`, A6 `b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9` — both MATCH §2.6.
 - PR-3 #611 merged at: —
 - PR-4 docs PR merged at: —
 - Packet heads (P-A, P-B1, P-B2, P-C, P-D, P-E, P-F): —
 - H: —
 - Design §12 item 9 (depth N) answered by Joshua (precondition for §7 step 1): —
-- Still open outside this card: #581 OD-1/OD-2 direct confirmation (design §12 item 3).
+- ~~Still open outside this card: #581 OD-1/OD-2 direct confirmation (design §12 item 3).~~ *2026-10-03:* confirmed directly by Joshua (sheet 4 item 3, "all recommended"; #629 approval comment 5965049542). This card merged as #634 at `cdbf597b2ef2c7b4e32ae4af476e3a392f75ca79`.
 
 ## §10 — Audit hooks
 
