@@ -695,6 +695,16 @@ def test_cases_is_a_diagnostic_subset_for_s3_and_s4(sh):
     assert "s3" in decide(f"{DISPATCH} -f mode=s2 -f cases=deadline")
 
 
+# --- R1: the H9 checkpoint combined mode (card 2026-10-02) ----------------------
+
+def test_an_r1_run_decides_r1_coverage_and_an_r1_diagnostic_is_not_a_full_run(sh):
+    # r1 is its own mode (the /v7 selection plus result/seal and C'), so a passed
+    # r1 run is r1 coverage only, and a `cases` subset never runs the full R1 set.
+    sh.runs["feat"] = [dispatch_run(mode="r1", conclusion="success")]
+    assert "passed" in decide(f"{DISPATCH} -f mode=r1")
+    assert decide(f"{DISPATCH} -f mode=r1 -f cases=deadline") is None
+
+
 @pytest.mark.parametrize("command", [
     f"{DISPATCH} -fcases=deadline",
     f"{DISPATCH} --raw-field=cases=deadline",
