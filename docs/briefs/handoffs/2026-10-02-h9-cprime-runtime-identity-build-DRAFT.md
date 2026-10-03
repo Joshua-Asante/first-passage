@@ -354,6 +354,8 @@ That card has the full check set for these entries: pre-spawn, child self-check,
 
 **D11 reopened.** On 2026-10-03 at 03:16Z Joshua ruled (a), "pin file plus provisioning record", but on an inaccurate framing. The pin file is the Docker worker base image (§2.1, D3), and the runner and admin fixture run on the host's Python, so the pin cannot speak to their interpreter. D11 is re-presented with the C′ host-integration card, with corrected options.
 
+*Ruled 2026-10-03T05:09:53Z (Joshua, coordinator (2) chat, verbatim: "done for the grafana phone connection. D11: a"; recorded by coordinator (4)):* **D11 = (a)** on the corrected options. The first runner and admin launches are checked against the host provisioning record (the interpreter identity `host.py:638–:676` records at provisioning), labelled `PRE_RELEASE`; later launches are checked against the signed final revision. Rejected: (b) `NOT_COVERED`; (c) a separately signed host-runtime identity document. This governs over the 03:16Z ruling above. The producer and the check belong to the C′ host-integration card ([#657](https://github.com/Joshua-Asante/first-passage/pull/657)).
+
 **Not added (return at the checkpoint if needed):**
 - `tests/ops/qualification/execution/bundle_fixture.py` (staging 63);
 - `ops/c1_rail/qualification/execution/profile.py` (measured 68, not admitted by D5).
