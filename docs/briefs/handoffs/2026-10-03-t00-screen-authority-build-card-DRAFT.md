@@ -174,7 +174,7 @@ Total 60 = design §2.2. `t00_screen/` is `ops/c1_rail/qualification/t00_screen/
 - **Builds:** #581 A5 (1)–(3) and A6 by reference, exact integer comparisons (`20·bust ≤ n`, `2·pass ≥ n`), `UNDETERMINED` in every denominator, pessimistic assignment decides GO and optimistic labels NO-GO; returns `INSUFFICIENT(reasons)` or the labels, never both (V1); constants `A5_TEXT_SHA256`, `A6_TEXT_SHA256`, `A6_HORIZON_SESSIONS`, the `"T00_A5/v1"` rule ID and `"LOWER_NEAREST_RANK_INF_INCLUDED"`; `section_text` (§3.7).
 - **Pinned values** (#581 at `438b659`, blob `545a2f55366e22cc92fcc35ff9282ef89866a360`; both sections byte-identical at `f0208f3`):
   - `A5_TEXT_SHA256 = "a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b"`: the bytes from the start of the `### A5` line to the start of the `### A6` line;
-  - `A6_TEXT_SHA256 = "8f6ade02984ca6200418829a297eff8e76d885c71a113238dc7dd901f3df558c"`: the bytes from the start of the `### A6` line to the start of the `## §3` line, less the one LF just before it.
+  - `A6_TEXT_SHA256 = "b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9"`: the bytes from the start of the `### A6` line to the start of the `## §3` line (one rule for both sections: from the section's heading line up to, not including, the next heading line; coordinator (3) ruling 2026-10-02, computed on #581 blob `545a2f55…a360`).
   `section_text` implements exactly these spans. P-C stops (§6) if PR-2's merged blob gives other values.
 - **Red-first tests:** `test_V1` (reasons plus GO-shaped tallies), `test_V2` (bust count exactly 5%), `test_V3` (one constant changed), `test_V4` (hybrid row).
 - **Lane:** GLM-eligible, synthetic rows only. `workdir` = a fresh worktree under `.claude/worktrees/` with no `.env`; the ticket carries no private value, no Pine or port path, no account data. The coordinator reads the full diff before acceptance (operator GLM rule). CC if GLM fails twice.
@@ -398,8 +398,8 @@ git diff -U0 "$(git merge-base origin/main HEAD)" HEAD -- tests/ops/qualificatio
 # P-F: the generated scripts table is current (expect exit 0); REPO_MAP.md changes only inside it.
 python -I scripts/fp.py python scripts/check_repo_map_scripts_table.py --check
 
-# The A5/A6 values P-C pins (expect a8f6f25e...391b then 8f6ade02...558c).
-git show 438b659:docs/briefs/pre-registration/2026-10-01-tradeify-t00-step2-screen-prereg.md | python -c "import sys,hashlib;b=sys.stdin.buffer.read();i=lambda m:b.index(m)+1;a5,a6,s3=i(b'\n### A5'),i(b'\n### A6'),i(b'\n## \xc2\xa73');print(hashlib.sha256(b[a5:a6]).hexdigest(),hashlib.sha256(b[a6:s3-1]).hexdigest())"
+# The A5/A6 values P-C pins (expect a8f6f25e...391b then b3bdc77b...17d9).
+git show 438b659:docs/briefs/pre-registration/2026-10-01-tradeify-t00-step2-screen-prereg.md | python -c "import sys,hashlib;b=sys.stdin.buffer.read();i=lambda m:b.index(m)+1;a5,a6,s3=i(b'\n### A5'),i(b'\n### A6'),i(b'\n## \xc2\xa73');print(hashlib.sha256(b[a5:a6]).hexdigest(),hashlib.sha256(b[a6:s3]).hexdigest())"
 
 # At H: forbidden files untouched by the build (expect no output). BASE = the pre-build origin/main SHA in §8.
 git diff --name-only "$BASE" "$H" -- ops/c1_rail/qualification/{contract,trust_domain,runner,provider,blocks,paths,regime,bracket,model,replay}.py ops/c1_rail/book_policy.py ops/c1_signal_daemon/book_adapters.py core/
