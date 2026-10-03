@@ -282,6 +282,7 @@ def test_g7_pull_requests_touching_run_inputs_fire_the_workflow(path):
 
 
 # --- G8: the skill and README name the dispatch run and the real facts ---------------
+
 @pytest.mark.parametrize("doc", [SKILL, README])
 def test_g8_the_dispatch_lookup_cannot_return_a_pull_request_run(doc):
     text = doc.read_text(encoding="utf-8")

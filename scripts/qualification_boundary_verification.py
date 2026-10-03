@@ -88,7 +88,7 @@ def require_tests(counts):
 def cases_refusal(args):
     """Why `--cases` cannot run, or None; checked before any host prerequisite.
 
-    A diagnostic subset exists for S3/S4/S5 iteration only. A whitespace-only value is
+    A diagnostic subset exists for S3/S4/S5/R1 iteration only. A whitespace-only value is
     no selection at all (pytest's -k ignores it and runs everything), and an
     expression pytest cannot compile would otherwise fail only after the host
     ran; both are refused here, in seconds.
@@ -96,7 +96,7 @@ def cases_refusal(args):
     if args.cases is None:
         return None
     if not (args.s3 or args.s4 or args.s5 or args.r1):
-        return '--cases is a diagnostic-subset selector for --s3/--s4/--s5 iteration only'
+        return '--cases is a diagnostic-subset selector for --s3/--s4/--s5/--r1 iteration only'
     if not args.cases.strip():
         return '--cases is empty or whitespace-only; omit it to run the full selection'
     try:
@@ -123,17 +123,17 @@ def r1_refusal(args):
     """
     if not args.r1:
         return None
+    missing = [case for case in R1_CASES if not (ROOT / case).is_file()]
+    problems = [f'{case} is absent from the tree' for case in missing]
     try:
         registered = _manifest(INVARIANT_MANIFEST.read_bytes())
-    except (OSError, ValueError, UnicodeError, RecursionError):
-        # The manifest gate below owns and reports this; nothing to add here.
-        return None
-    missing = [case for case in R1_CASES if not (ROOT / case).is_file()]
-    empty = [case for case in R1_CASES if case not in missing
-             and not any(node.startswith(case + '::') for node in registered)]
-    problems = [f'{case} is absent from the tree' for case in missing]
-    problems += [f'{case} contributes no registered node to the invariant manifest'
-                 for case in empty]
+    except (OSError, ValueError, UnicodeError, RecursionError) as exc:
+        # Fail closed: an unreadable manifest cannot show any R1 row.
+        problems.append(f'the invariant manifest cannot be read ({exc})')
+    else:
+        problems += [f'{case} contributes no registered node to the invariant manifest'
+                     for case in R1_CASES if case not in missing
+                     and not any(node.startswith(case + '::') for node in registered)]
     if not problems:
         return None
     return ('the R1 selection is not built yet (H9 brings the result/seal file, the '
@@ -215,7 +215,7 @@ def main(argv=None):
                             invariant_manifest_sha256=hashlib.sha256(invariant_bytes).hexdigest())
                         if args.cases is not None:
                             if not (args.s3 or args.s4 or args.s5 or args.r1):
-                                raise ValueError('--cases is a diagnostic-subset selector for S3/S4/S5 iteration only')
+                                raise ValueError('--cases is a diagnostic-subset selector for S3/S4/S5/R1 iteration only')
                             record.data['metadata'].update(acceptance_scope='DIAGNOSTIC_SUBSET',
                                 diagnostic_expression=args.cases)
                     if args.instance or args.profile:

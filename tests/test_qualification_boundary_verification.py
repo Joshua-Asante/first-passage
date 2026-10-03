@@ -690,3 +690,15 @@ def test_test_only_ignores_every_r1_file_including_files_5_and_6(tmp_path, monke
     # The spelled set the fixture used is exactly the selector's own tuple.
     assert module.R1_CASES == R1_FILES
 
+
+
+def test_a_full_r1_refuses_fail_closed_when_the_manifest_cannot_be_read(
+        tmp_path, monkeypatch, capsys):
+    """G4: an unreadable invariant manifest is a refusal before the Linux/root
+    check, never a pass-through to the host."""
+    module, _registered, manifest_path = r1_tree(tmp_path, monkeypatch)
+    manifest_path.write_text('{not json', encoding='utf-8')
+    assert module.main(['--r1', '--manifest', str(tmp_path / 'run' / 'ownership.json')]) == 2
+    err = capsys.readouterr().err
+    assert 'Failed prerequisite' in err and 'invariant manifest cannot be read' in err
+    assert 'Linux administrator' not in err
