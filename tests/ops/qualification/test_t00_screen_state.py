@@ -1,8 +1,8 @@
 """T00 screen run state and journal: rows S1, S3, S9, S10, S13, S14, S16 and B1.
 
 Design 2026-10-02 §4 (persistence, the §4.2 transition table, the §4.3 stop classes) and
-build card §3.4-§3.6a at 3503f8a (packet P-D): the O-6 ACT case table under ``test_S1``, the
-O-8 closure, O-11 gap and X3 act clauses of ``check_record``, and the freeze F1-F6. Synthetic
+build card §3.4-§3.6a at 40080aa (packet P-D): the O-6 ACT case table under ``test_S1``, the
+O-8 closure, O-11 gap and X3 act clauses of ``check_record``, and the freeze F1-F8. Synthetic
 records only: no source, key, probe or Monte Carlo. Each test imports the modules under test
 in its own body, so each row fails on its own before they exist (card §2.2, F7).
 """
@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 from dataclasses import dataclass
 import errno
+import functools
 import hashlib
 import importlib
 import json
@@ -198,7 +199,8 @@ class Seg:
     w: int
     stop: int | None = None         # keys each worker completes before it stops; None: all
     end: object = 'COMPLETE'        # 'COMPLETE', 'CRASHED', 'OPEN' (not resumed) or (class, cause)
-    name_inflight: str | None = None  # WORKER_STOP reason naming the in-flight key (no loss)
+    name_inflight: object = None    # WORKER_STOP reason naming the in-flight key (no loss);
+                                    # a tuple gives one per worker, None leaving it in flight
     reasons: tuple | None = None    # SEGMENT_END workers[].reason
     witnesses: tuple | None = None  # SEGMENT_START witness_keys override
     rerun: bool = True              # worker i re-executes witness i first (F2)
@@ -209,6 +211,12 @@ class Seg:
 class Act:
     """Joshua's signed act, appended at resume and bound to the ledger head (X3)."""
     act: str = 'CONTINUE'
+
+
+@dataclass(frozen=True)
+class Halt:
+    """HALT{code, from: IDLE}, appended at resume (F8's second cap)."""
+    code: str
 
 
 def run_segment(k, seg, done, *, keys, outcome, inject, skip):
@@ -231,9 +239,10 @@ def run_segment(k, seg, done, *, keys, outcome, inject, skip):
         if n == len(todo):
             journal.add('EPOCH_CLOSE', epoch_close())
             journal.add('WORKER_STOP', {'reason': 'DONE', 'key': None})
-        elif seg.name_inflight:
+        elif named := (seg.name_inflight[i] if isinstance(seg.name_inflight, tuple)
+                       else seg.name_inflight):
             journal.add('KEY_START', {'key': list(todo[n])})
-            journal.add('WORKER_STOP', {'reason': seg.name_inflight, 'key': list(todo[n])})
+            journal.add('WORKER_STOP', {'reason': named, 'key': list(todo[n])})
         else:
             journal.add('KEY_START', {'key': list(todo[n])})
             lost.append(list(todo[n]))
@@ -264,6 +273,9 @@ def simulate(steps, *, keys=PLAN, outcome=None, inject=None, skip=(), seed=0):
             act_sha, files = act_file(sha(canonical(ledger.records[-1])), step.act)
             ledger.add('ACT', {'act_sha256': act_sha, 'act': step.act})
             acts.update(files)
+            continue
+        if isinstance(step, Halt):
+            ledger.add('HALT', {'code': step.code, 'from': 'IDLE'})
             continue
         k += 1
         start, segment, lost = run_segment(k, step, done, keys=keys, outcome=outcome,
@@ -603,7 +615,8 @@ def test_S10():
     assert result.code is None and dict(result.losses) == {key: 2}
     # I/O branch: a third consecutive I/O-error segment with no new completed key HALTs.
     io = Seg(1, stop=0, end=IO_ERROR, name_inflight='IO_ERROR')
-    result = check(*simulate([io, io, io]))
+    io_cap = Seg(1, stop=0, end=('HALTED', 'IO_EXHAUSTED'), name_inflight='IO_ERROR')
+    result = check(*simulate([io, io, io_cap]))
     assert result.code == 'IO_EXHAUSTED' and not result.losses
     # Twin: a new completed key resets the run (two I/O segments, progress, one more).
     progress = Seg(1, stop=1, end=IO_ERROR, name_inflight='IO_ERROR')
@@ -612,7 +625,9 @@ def test_S10():
     # One worker's IO_ERROR counts when another worker's cause is the one recorded.
     mixed = Seg(2, stop=0, end=WORKER_LOST, name_inflight='WORKER_LOST',
                 reasons=('IO_ERROR', 'WORKER_LOST'))
-    assert check(*simulate([mixed, mixed, mixed])).code == 'IO_EXHAUSTED'
+    mixed_cap = Seg(2, stop=0, end=('HALTED', 'IO_EXHAUSTED'), name_inflight='WORKER_LOST',
+                    reasons=('IO_ERROR', 'WORKER_LOST'))
+    assert check(*simulate([mixed, mixed, mixed_cap])).code == 'IO_EXHAUSTED'
     lost = Seg(2, stop=0, end=WORKER_LOST, name_inflight='WORKER_LOST')
     assert check(*simulate([lost, lost, lost])).code is None
 
@@ -805,6 +820,120 @@ def test_check_record_crash_cap():
     assert check(ledger, journals, m, acts).code is None  # recovery
 
 
+def started_before(journals, k):
+    """The journals a resume at segment ``k`` can see: every segment journal up to ``k``."""
+    return {name: records for name, records in journals.items()
+            if name[0] != 's' or int(name[1:name.index('-')]) <= k}
+
+
+def test_cap_finding():
+    """F8: ``cap_finding`` is the row S10 cap at a boundary (RESOURCE_EXHAUSTED first); a
+    trailing open segment closes with ``cause`` and ``reasons``, ``cause=None`` reading as a
+    crash; check_record agrees with it at every SEGMENT_END and SEGMENT_CRASHED."""
+    state, _ = modules()
+    kill, lost = Seg(1, stop=0, end='CRASHED'), Seg(1, stop=0, end=WORKER_LOST)
+    ledger, journals, _, _ = simulate([kill, lost, Seg(1, stop=0, end='OPEN')])
+    find = functools.partial(state.cap_finding, ledger, journals, keys=PLAN)
+    assert find() == find(cause='WORKER_LOST') == 'RESOURCE_EXHAUSTED'  # a third loss
+    assert find(cause='INTERRUPTED') is None
+    io = Seg(1, stop=0, end=IO_ERROR, name_inflight='IO_ERROR')
+    ledger, journals, _, _ = simulate([io, io, Seg(1, stop=0, end='OPEN',
+                                                   name_inflight='WORKER_LOST')])
+    find = functools.partial(state.cap_finding, ledger, journals, keys=PLAN)
+    assert find() is None and find(cause='WORKER_LOST') is None
+    assert find(cause='IO_ERROR') == find(cause='WORKER_LOST', reasons=('IO_ERROR',)) == \
+        'IO_EXHAUSTED'
+    assert find(cause='IO_EXHAUSTED') is None  # a recorded cap code is not its own evidence
+    f4 = Seg(1, stop=0, end=IO_ERROR)  # both caps: the in-flight key is lost, the segment is I/O
+    ledger, journals, _, _ = simulate([f4, f4, Seg(1, stop=0, end='OPEN')])
+    assert state.cap_finding(ledger, journals, keys=PLAN, cause='IO_ERROR') == 'RESOURCE_EXHAUSTED'
+    # check_record's boundaries are cap_finding's.
+    io_cap = Seg(1, stop=0, end=('HALTED', 'IO_EXHAUSTED'), name_inflight='IO_ERROR')
+    runs = ([kill, kill, Seg(1, stop=0, end='CRASHED', cap='RESOURCE_EXHAUSTED')], [io, io, io_cap],
+            [f4, f4, Seg(1, stop=0, end=('HALTED', 'RESOURCE_EXHAUSTED'), reasons=('IO_ERROR',))])
+    for steps in runs:
+        ledger, journals, m, acts = simulate(steps)
+        assert check(ledger, journals, m, acts).code in ('RESOURCE_EXHAUSTED', 'IO_EXHAUSTED')
+        k = 0
+        for i, record in enumerate(ledger):
+            body = record['body']
+            k = body['k'] if record['type'] == 'SEGMENT_START' else k
+            if record['type'] not in ('SEGMENT_END', 'SEGMENT_CRASHED'):
+                continue
+            ended = record['type'] == 'SEGMENT_END'
+            got = state.cap_finding(ledger[:i], started_before(journals, k), keys=PLAN,
+                                    cause=body['cause'] if ended else None,
+                                    reasons=[w['reason'] for w in body['workers']] if ended else ())
+            recorded = body['cap'] if not ended else (
+                body['cause'] if body['class'] == 'HALTED' else None)
+            assert got == recorded, (steps, i)
+
+
+def test_check_record_caps_at_every_boundary():
+    """F8: at a cap a SEGMENT_END stops on the cap code (a TERMINAL cause stands); a cap code is
+    recorded only when it is the cap reached, by SEGMENT_END or HALT; SEGMENT_START and ALL_DONE
+    wait until every reached cap has its own CONTINUE."""
+    state, _ = modules()
+    lost = Seg(1, stop=0, end=WORKER_LOST)
+    capped = Seg(1, stop=0, end=('HALTED', 'RESOURCE_EXHAUSTED'))
+    ledger, journals, m, acts = simulate([lost, lost, capped])
+    assert state.fold(ledger) == state.State('HALTED', 'IDLE')
+    assert check(ledger, journals, m, acts).code == 'RESOURCE_EXHAUSTED'  # twin
+    terminal = Seg(1, stop=0, end=('TERMINAL', 'BUDGET_EXHAUSTED'))
+    assert check(*simulate([lost, lost, terminal])).code == 'RESOURCE_EXHAUSTED'  # it stands
+    assert check(*simulate([lost, Halt('OVERHEAD_EXHAUSTED')])).code is None  # not a cap code
+    io = Seg(1, stop=0, end=IO_ERROR, name_inflight='IO_ERROR')
+    unbacked = Seg(1, stop=0, end=('HALTED', 'IO_EXHAUSTED'), name_inflight='WORKER_LOST')
+    for broken in ([lost, lost, lost],                                  # STOPPED at the cap
+                   [lost, lost, Seg(1, stop=0, end=('HALTED', 'IO_EXHAUSTED'))],  # another cap
+                   [capped],                                            # a cap not reached
+                   [io, io, unbacked],                                  # no I/O evidence
+                   [lost, Halt('RESOURCE_EXHAUSTED')]):                 # a HALT before its cap
+        assert check(*simulate(broken)).code == 'CORRUPTION', broken
+
+    # Both caps on one crash: the record carries RESOURCE_EXHAUSTED and its CONTINUE resets only
+    # that; HALT{IO_EXHAUSTED} and a second CONTINUE come before any SEGMENT_START.
+    both = Seg(2, stop=0, end='CRASHED', name_inflight=('IO_ERROR', None))
+    third = Seg(2, stop=0, end='CRASHED', name_inflight=('IO_ERROR', None),
+                cap='RESOURCE_EXHAUSTED')
+    opened = Seg(2, stop=0, end='OPEN')
+    ledger, journals, m, acts = simulate([both, both, third, Act(), Halt('IO_EXHAUSTED'), Act(),
+                                          opened])
+    assert state.fold(ledger) == state.State('RUNNING')
+    assert check(ledger, journals, m, acts).code is None
+    assert check(*simulate([both, both, third, Act(), opened])).code == 'CORRUPTION'
+    io_third = Seg(2, stop=0, end='CRASHED', name_inflight=('IO_ERROR', None), cap='IO_EXHAUSTED')
+    assert check(*simulate([both, both, io_third])).code == 'CORRUPTION'
+    # The same at ALL_DONE: every key done, then three witness re-runs lost to worker I/O errors.
+    finish, f4 = Seg(1, end=WORKER_LOST), Seg(1, stop=0, end=IO_ERROR)
+    f4_cap = Seg(1, stop=0, end=('HALTED', 'RESOURCE_EXHAUSTED'), reasons=('IO_ERROR',))
+    ledger, journals, m, acts = simulate([finish, f4, f4, f4_cap, Act()])
+    assert check(Chain(ledger).add('ALL_DONE', {}).records, journals, m, acts).code == 'CORRUPTION'
+    ledger, journals, m, acts = simulate([finish, f4, f4, f4_cap, Act(), Halt('IO_EXHAUSTED'),
+                                          Act()])
+    result = check(Chain(ledger).add('ALL_DONE', {}).records, journals, m, acts)
+    assert result.code is None and result.completed == frozenset(PLAN)
+
+
+def test_check_record_worker_append_failure():
+    """F4: a worker whose append raised is named IO_ERROR in SEGMENT_END: that is an I/O-error
+    segment for row S10, and its in-flight key is one loss."""
+    f4 = Seg(1, stop=0, end=IO_ERROR)  # no WORKER_STOP: the key stays in flight
+    result = check(*simulate([f4, f4]))
+    assert result.code is None and dict(result.losses) == {PLAN[0]: 2}
+    named = Seg(1, stop=0, end=('HALTED', 'IO_EXHAUSTED'), name_inflight='WORKER_LOST',
+                reasons=('IO_ERROR',))  # the reason alone is the I/O evidence
+    result = check(*simulate([f4, f4, named]))
+    assert result.code == 'IO_EXHAUSTED' and dict(result.losses) == {PLAN[0]: 2}
+    no_reason = Seg(1, stop=0, end=('HALTED', 'IO_EXHAUSTED'), name_inflight='WORKER_LOST',
+                    reasons=('WORKER_LOST',))
+    assert check(*simulate([f4, f4, no_reason])).code == 'CORRUPTION'
+    f4_cap = Seg(1, stop=0, end=('HALTED', 'RESOURCE_EXHAUSTED'), reasons=('IO_ERROR',))
+    result = check(*simulate([f4, f4, f4_cap]))  # a third loss with the I/O run: loss cap first
+    assert result.code == 'RESOURCE_EXHAUSTED' and dict(result.losses) == {PLAN[0]: 3}
+    assert check(*simulate([f4, f4, f4])).code == 'CORRUPTION'
+
+
 def test_check_record_witnesses():
     """F2: a resume tags exactly min(W, |completed|) distinct completed keys, and worker i runs
     witness i as its first KEY_START."""
@@ -835,6 +964,18 @@ def test_check_record_assignment():
         changed = edit(ledger, 'SEGMENT_START', lambda body, k=k: body['k'] == k,
                        assignment_sha256=digest)
         assert check(changed, journals, m, acts).code == 'CORRUPTION'
+    # The order is Python sorted() over Key tuples: path index 2 before 10 (not JSON bytes).
+    numeric = (('root-a', 'FULL', 10), ('root-a', 'FULL', 2), ('root-a', 'H1', 10),
+               ('root-a', 'H1', 2))
+    ledger, journals, m, acts = simulate([Seg(2)], keys=numeric)
+    first = [tuple(r['body']['key']) for r in journals['s1-w0.jsonl'] if r['type'] == 'KEY_START']
+    assert first == [('root-a', 'FULL', 2), ('root-a', 'H1', 2)]
+    assert check(ledger, journals, m, acts, keys=numeric).code is None
+    by_bytes = sorted(numeric, key=lambda key: canonical(list(key)))
+    assert by_bytes[0] == ('root-a', 'FULL', 10)
+    changed = edit(ledger, 'SEGMENT_START', assignment_sha256=assignment_sha256(
+        shares_of(by_bytes, 2)))
+    assert check(changed, journals, m, acts, keys=numeric).code == 'CORRUPTION'
 
 
 def test_check_record_journal_names():
