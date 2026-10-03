@@ -65,11 +65,11 @@ None of these is established by an official source. Each is a residual question 
 - **P3 IBKR (both variants):** that the "Non-Display (API trading applications)" subscription covers this use without the subscriber's own CME licence; that orders at another broker are permitted; that a prop destination keeps non-pro status under the personal-investment-purposes test; the non-display fee; cloud hosting and storage; that a no-trading username can hold real-time data.
 - **P4 Ironbeam:** whether its CME licence covers the use; that a prop destination changes nothing; real-time data on the read-only tier; the API data fee class; that the $1,000 is withdrawable; server-side order blocking; cloud and storage; no conformance for a data-only client.
 - **P5 Rithmic:** the unpublished Market Data Subscription Agreement's treatment of headless automated use; who reports CME non-display (subscriber, Rithmic or FCM); non-pro status for a data-only or no-trading account and with a prop destination; a server-enforced data-only user id; conformance for a data-only app; cloud and storage under the agreement and the FCM's terms.
-- **P6 Tradovate:** that the ILA requirement (excerpt) is current and complete; which CME category and unit apply; that an ILA-licensed subscriber may drive orders in a separate prop-evaluation Tradovate account; non-pro status; the 2026 CME updates; cloud and storage; that a key with reduced order permission blocks every order action and still gets data; that $1,000 applies only at key generation.
+- **P6 Tradovate:** that the ILA requirement (excerpt) is current and complete; which CME category and unit apply; that an ILA-licensed subscriber may drive orders in a separate prop-evaluation Tradovate account; non-pro status; the 2026 CME updates; cloud and storage; that a key with reduced order permission blocks every order action and still gets data; whether the $1,000 must be held after the API key is created; which entitlements the existing account already has (unverified).
 
 ## 3. What the drafts drop and keep
 
-**Dropped from every draft:** the bar-stamping convention, the fee-classification mechanics ((a1)/(a2)/(b)/(c)) and the deposit-versus-minimum arithmetic, the equivalence-test and rejection-rule wording, and any name of the firm, the rail or a program. Questions that a source already answers are not asked. One sentence keeps what §4 recording needs: "for each fee, say whether it is for the market data or the account, how often it is billed, and what is due at signup".
+**Dropped from every draft:** the bar-stamping convention, the fee-classification mechanics ((a1)/(a2)/(b)/(c)) and the deposit-versus-minimum arithmetic, the equivalence-test and rejection-rule wording, and any name of the firm, the rail or a program. Questions that a source already answers are not asked. #583's "before opening any account" premise is dropped everywhere: it is false for Tradovate (below), and no record here establishes it for the other providers, while no licensing answer depends on it. Joshua may add "I have not opened an account" to a draft where he knows it is true. One sentence keeps what §4 recording needs: "for each fee, say whether it is for the market data or the account, how often it is billed, and what is due at signup".
 
 **Kept, where a source shows it matters:** individual non-professional status; automated non-display use; orders at a prop-firm evaluation account at another broker (D-Q2: disclose, in one plain sentence); the four symbols; and a cloud host only for P2 and P5 (and inside P1/P4/P6 Q6, which asks the cloud question itself). Each draft ends with a one-line reason for each kept sentence. Order follows D-Q3: CME first, then P1–P6. P6 keeps the same-broker wording.
 
@@ -120,7 +120,7 @@ None of these is established by an official source. Each is a residual question 
 >
 > Hello,
 >
-> I am an individual, non-professional trader considering Futures Advanced for real-time data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program would use the data, with no display, to make automated trading decisions. Its orders would go to a proprietary-trading-firm evaluation account at another broker. I have not opened an account. Could you answer in writing, with links to the governing terms?
+> I am an individual, non-professional trader considering Futures Advanced for real-time data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program would use the data, with no display, to make automated trading decisions. Its orders would go to a proprietary-trading-firm evaluation account at another broker. Could you answer in writing, with links to the governing terms?
 >
 > 1. Your Market Data Terms (§2 and §5(d)) limit use to display unless I am licensed for non-display use. Does Futures Advanced, or another agreement you offer individuals, license automated non-display trading decisions? If not, must I hold a CME licence myself?
 > 2. With my orders going to a prop-firm evaluation account, am I still non-professional under your criteria and CME's? Are all four products in the real-time Futures Advanced stream?
@@ -145,7 +145,7 @@ None of these is established by an official source. Each is a residual question 
 >
 > Hello,
 >
-> I am an individual, non-professional trader considering the Open API with DXLink for real-time data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program on a cloud server would use the data, with no display, to make automated trading decisions. Its orders would go to a proprietary-trading-firm evaluation account at another broker, not to a tastytrade account. I have not opened an account. Could you answer in writing, with links to the governing terms?
+> I am an individual, non-professional trader considering the Open API with DXLink for real-time data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program on a cloud server would use the data, with no display, to make automated trading decisions. Its orders would go to a proprietary-trading-firm evaluation account at another broker, not to a tastytrade account. Could you answer in writing, with links to the governing terms?
 >
 > 1. Your API Terms tie data use to transactions with tastytrade (Permitted Purpose; §8(3)). May DXLink data drive automated orders in a prop-firm evaluation account at another broker? Does that destination affect my non-professional status under the CME subscriber agreement's own-assets test (§1)? Does your CME licence cover this automated non-display use, or must I hold a CME licence myself?
 > 2. For a funded non-professional account, does DXLink deliver real-time 6J, MNQ, MYM and MGC through the API? Which account permission is needed, and what are the streamer symbols for MYM and MGC?
@@ -198,7 +198,7 @@ None of these is established by an official source. Each is a residual question 
 >
 > Hello,
 >
-> I am an individual, non-professional trader considering your API for real-time data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program would use the data, with no display, to make automated trading decisions. Its orders would go to a proprietary-trading-firm evaluation account at another broker, so I would not trade at Ironbeam. I have not opened an account. Could you answer in writing, with links to the governing terms? Please write "none" for any fee or requirement that does not apply.
+> I am an individual, non-professional trader considering your API for real-time data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program would use the data, with no display, to make automated trading decisions. Its orders would go to a proprietary-trading-firm evaluation account at another broker, so I would not trade at Ironbeam. Could you answer in writing, with links to the governing terms? Please write "none" for any fee or requirement that does not apply.
 >
 > 1. Does your CME licence cover this automated non-display use, with orders at another broker, or must I hold a CME Category A licence myself?
 > 2. On the read-only/development tier, does the API stream real-time data for all four products? Which entitlements are needed, and what are the CBOT and COMEX symbol prefixes?
@@ -252,15 +252,17 @@ None of these is established by an official source. Each is a residual question 
 
 ### 4.6 P6 Tradovate API, personal data-only account
 
-> **Subject:** API market data on a personal account used only for data
+**Operator fact (relayed 2026-10-03 by coordinator (3)):** an existing, approved personal account; current entitlements unverified. The draft therefore asks only about data entitlements, licence and cost on that account, plus the technical residuals.
+
+> **Subject:** Real-time API market data on my existing personal account
 >
 > Hello,
 >
-> I am an individual, non-professional trader considering a personal live Tradovate account used only for API market data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program would use the data, with no display, to make automated trading decisions. The resulting orders go to a separate Tradovate account that belongs to a proprietary-trading firm's evaluation and is never linked to the personal Tradovate account I would open for this data. Could you answer in writing, with links to the governing terms? Please write "none" for any fee or requirement that does not apply.
+> I am an individual, non-professional trader with an existing, approved personal Tradovate account. I would like to use it only for real-time API market data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program would use the data, with no display, to make automated trading decisions. The resulting orders go to a separate Tradovate account that belongs to a proprietary-trading firm's evaluation and is never linked to the personal Tradovate account I would use for this data. Could you answer in writing, with links to the governing terms? Please write "none" for any fee or requirement that does not apply.
 >
 > 1. Your API access article says real-time API data requires me to sign the CME Information License Agreement. Once I sign it, may I use the data for automated non-display decisions whose orders go to that separate evaluation account? Which CME category and fee apply (User or Managed User Non-Display, Category A), and is the fee per exchange? Does the evaluation-account destination change the ILA or sub-vendor answer?
-> 2. With the CME licence in place, does API data cover all four products in real time? Is a Tradovate data subscription, or the free Level 1, also required?
-> 3. For a live account used only for API data: must the $1,000 balance be kept, or only reached when the key is created? Does the $35 inactivity fee apply when no trades are placed? Are there any one-time fees? For each fee, please say what it is for and how often it is billed.
+> 2. With the CME licence in place, does API data on my account cover all four products in real time? What must be enabled on the account for that: the API Access add-on, a Tradovate data subscription, or the free Level 1?
+> 3. For my account used only for API data: must it hold $1,000 to create the API key, and must that balance be kept afterwards? Does the $35 inactivity fee apply when no trades are placed? Are there one-time fees for API access or data? For each fee, please say what it is for and how often it is billed.
 > 4. Can I create an API key whose order permission makes your servers reject placing, modifying and cancelling orders, while it still receives market data?
 > 5. Can token renewal keep one session alive for weeks with no re-login? Do API users' passwords expire? Is conformance testing required for a data-only app?
 > 6. May the client run unattended on a cloud server, and may raw messages and derived bars be stored privately for audit, under your terms and the CME ILA?
@@ -274,7 +276,8 @@ None of these is established by an official source. Each is a residual question 
 *Why each disclosure stays:*
 - *Individual, non-professional:* Tradovate's data rates depend on status, and CME's non-display rates are for a natural person (non-pro data rates KB; CME fee list [excerpt]).
 - *No display, automated decisions:* decides the CME category the ILA must carry (non-display FAQ [excerpt]).
-- *Same-broker destination, never linked:* D-Q2 with #583's P6 same-broker wording. Tradovate says prop and evaluation accounts cannot get API access [excerpt], so the separate personal account must be explicit.
+- *Existing, approved personal account:* true per the relayed operator fact, and it scopes the questions to entitlements on that account rather than opening one. No identifier or date goes in the message.
+- *Same-broker destination, never linked:* D-Q2 with #583's §3.6 same-broker wording; only "I would open" becomes "I would use", because the account exists. Tradovate says prop and evaluation accounts cannot get API access [excerpt], so the separate personal account must be explicit.
 - *Four symbols:* entitlement scope; CME fees appear to be per exchange.
 - *Cloud host:* only in question 6 (Q6); Tradovate's IP and device limits imply servers are expected, and no source shows it changes the plan.
 
