@@ -195,7 +195,8 @@ when inputs are absent. `core/data/bar_data/` is retained but frozen: usable pan
 no regenerable producer.
 
 **Private read surface.** Agents may read the accepted book's four Pine sources and
-accepted runtime ports listed in `core/strategies/BOOK_SOURCES.sha256`, in place in
+accepted runtime ports listed in `core/strategies/BOOK_SOURCES.sha256`, and the effective-input
+file `ops/c1_signal_daemon/ports/effective_inputs.json` (§60 addendum 2026-10-02), in place in
 the operator's primary checkout (from a worktree, by that checkout's absolute path).
 Never copy them into a worktree, commit or quote their bodies or values, edit them,
 or pass them to `glm_agent` or any external service
