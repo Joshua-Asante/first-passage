@@ -4,7 +4,8 @@ cross-field record check (design 2026-10-02 §4.2-§4.5; build card §3.6, §3.6
 ``advance`` is the only code that changes durable run state; the coordinator appends an event
 only after ``advance`` accepts it, so a refused event writes nothing (row S1). ``classify`` is
 the closed §4.3 table (row S9). ``check_record`` holds the ledger, journals, manifest and acts
-together (rows K6, S10, S13, S14, the S15 gap clause and X3; card F1-F3, F6).
+together (rows K6, S10, S13, S14, the S15 gap clause and X3; card F1-F3, F6, F8), and
+``cap_finding`` is the one row S10 cap computation that it and the coordinator share (F8).
 """
 from __future__ import annotations
 
@@ -48,7 +49,8 @@ CAUSES = MappingProxyType({
 _CODE = re.compile(r'([A-Z][A-Z0-9_]*)(?::|$)')
 _TYPED_CAUSES = ((MemoryError, 'WORKER_LOST'), (KeyboardInterrupt, 'INTERRUPTED'),
                  (OSError, 'IO_ERROR'))
-_IO_CAUSES = frozenset({'IO_ERROR', 'IO_EXHAUSTED'})
+_IO_EVIDENCE = 'IO_ERROR'  # a recorded cap code is never its own evidence (F8)
+_CAPS = ('RESOURCE_EXHAUSTED', 'IO_EXHAUSTED')  # row S10, in precedence order
 _TIMING = ('wall_s', 'cpu_s')
 
 
@@ -322,15 +324,16 @@ def _assignment(remaining, w):
 
 class _Walk:
     """Rows S10, S13 and S14 over the ledger in order: assignments and witnesses, losses, I/O
-    runs and the crash caps (card F1-F3)."""
+    runs and the caps at every boundary (card F1-F3, F8)."""
 
     def __init__(self, plan, segments):
         self.plan, self.segments = plan, segments
         self.completed, self.losses, self.io_run = set(), {}, 0
         self.halt_code, self.complete, self.started, self.current = None, False, 0, None
 
-    def run(self, ledger):
-        """Walk every ledger record; a trailing segment without SEGMENT_END reads as crashed."""
+    def run(self, ledger, cause=None, reasons=()):
+        """Walk every ledger record. A trailing segment without SEGMENT_END or SEGMENT_CRASHED
+        is closed with ``cause`` and the worker ``reasons``; ``cause=None`` reads as a crash."""
         handlers = {'SEGMENT_START': self._start, 'SEGMENT_END': self._end,
                     'SEGMENT_CRASHED': self._crashed, 'HALT': self._halt, 'ACT': self._act,
                     'ALL_DONE': self._all_done}
@@ -338,23 +341,26 @@ class _Walk:
             handler = handlers.get(record['type'])
             if handler is not None:
                 handler(record['body'])
-        if self.current is not None:  # no SEGMENT_END: found crashed at resume (design §4.2)
-            self._close()
+        if self.current is not None:  # no SEGMENT_END: crashed unless a cause is given (§4.2)
+            self._close(cause=cause, reasons=reasons)
         _corrupt(set(self.segments) - set(range(1, self.started + 1)))
         return self
 
+    def reached(self, cap):
+        """Row S10: a third loss of one key, or a third I/O segment without a new completed key,
+        since the CONTINUE that reset that cap."""
+        if cap == 'RESOURCE_EXHAUSTED':
+            return any(count >= LOSS_CAP for count in self.losses.values())
+        return self.io_run >= LOSS_CAP
+
     def cap(self):
-        """The row S10 cap reached and not reset by CONTINUE: ``RESOURCE_EXHAUSTED`` (a third
-        loss of one key), else ``IO_EXHAUSTED`` (a third I/O segment without a new key), else
-        ``None``."""
-        if any(count >= LOSS_CAP for count in self.losses.values()):
-            return 'RESOURCE_EXHAUSTED'
-        return 'IO_EXHAUSTED' if self.io_run >= LOSS_CAP else None
+        """The cap reached and not reset, ``RESOURCE_EXHAUSTED`` first (F8), else ``None``."""
+        return next((cap for cap in _CAPS if self.reached(cap)), None)
 
     def _start(self, body):
         k, w = body['k'], body['w']
         witnesses = [tuple(key) for key in body['witness_keys']]
-        _corrupt(k != self.started + 1
+        _corrupt(k != self.started + 1 or self.cap() is not None  # F8
                  or len(witnesses) != min(w, len(self.completed))  # F2
                  or len(set(witnesses)) != len(witnesses) or not set(witnesses) <= self.completed)
         shares, digest = _assignment(sorted(self.plan - self.completed), w)  # F3
@@ -375,15 +381,21 @@ class _Walk:
         if cause != 'INTERRUPTED':
             for key in lost:
                 self.losses[key] = self.losses.get(key, 0) + 1
-        io_segment = ({cause, *reasons, *stops} & _IO_CAUSES) and not done - self.completed
+        io_segment = _IO_EVIDENCE in {cause, *reasons, *stops} and not done - self.completed
         self.io_run = self.io_run + 1 if io_segment else 0
         self.completed.update(done)
         self.current = None
 
     def _end(self, body):
-        self._close(cause=body['cause'], reasons=[worker['reason'] for worker in body['workers']])
-        self.halt_code = body['cause'] if body['class'] == HALTED else self.halt_code
-        self.complete = self.complete or body['class'] == COMPLETE
+        cls, cause = body['class'], body['cause']
+        self._close(cause=cause, reasons=[worker['reason'] for worker in body['workers']])
+        cap = self.cap()
+        # F8: at a cap the segment stops on the cap code unless a TERMINAL cause stands, and a
+        # cap code is recorded only when it is the cap reached.
+        _corrupt((cap is not None and cls != TERMINAL and cause != cap)
+                 or (cause in _CAPS and cause != cap))
+        self.halt_code = cause if cls == HALTED else self.halt_code
+        self.complete = self.complete or cls == COMPLETE
 
     def _crashed(self, body):  # F1: the recorded cap is the one this crash reaches
         _corrupt(body['k'] != self.current)
@@ -391,10 +403,11 @@ class _Walk:
         _corrupt(body['cap'] != self.cap())
         self.halt_code = body['cap'] or self.halt_code
 
-    def _halt(self, body):
+    def _halt(self, body):  # F8: a cap code needs its cap reached
+        _corrupt(body['code'] in _CAPS and not self.reached(body['code']))
         self.halt_code = body['code']
 
-    def _act(self, body):  # CONTINUE resets the cap that halted the run (design §4.5)
+    def _act(self, body):  # CONTINUE resets only the cap that halted the run (§4.5, F8)
         if body['act'] != 'CONTINUE':
             return
         if self.halt_code == 'RESOURCE_EXHAUSTED':
@@ -404,6 +417,7 @@ class _Walk:
         self.halt_code = None
 
     def _all_done(self, _body):
+        _corrupt(self.cap() is not None)  # F8
         self.complete = True
 
 
@@ -456,6 +470,40 @@ def _check(ledger, journals, manifest, acts, plan):
                        MappingProxyType(dict(walk.losses)))
 
 
+def _plan(keys):
+    plan = frozenset(tuple(key) for key in keys)
+    if not all(journal.is_key(list(key)) for key in plan):
+        raise ValueError('plan keys must be (root, population, path index)')
+    return plan
+
+
+def cap_finding(ledger: Sequence[journal.Record], journals: Mapping[str, Sequence[journal.Record]],
+                *, keys: Sequence[journal.Key], cause: str | None = None,
+                reasons: Sequence[str] = ()) -> str | None:
+    """The row S10 cap reached and not reset by CONTINUE (card F8): ``RESOURCE_EXHAUSTED`` if a
+    key has three losses, else ``IO_EXHAUSTED`` after three I/O-error segments with no new
+    completed key, else ``None``.
+
+    A trailing open segment is closed with ``cause`` and the worker ``reasons``; ``cause=None``
+    reads as a crash. An in-flight KEY_START is a loss unless a WORKER_STOP names it or the
+    cause is ``INTERRUPTED``. I/O evidence is ``IO_ERROR`` as the cause, a worker reason or a
+    journal WORKER_STOP reason; a recorded cap code is never its own evidence. ``check_record``
+    applies this computation at every SEGMENT_END and SEGMENT_CRASHED; the coordinator calls it
+    to fill ``SEGMENT_CRASHED.cap`` and to choose a SEGMENT_END cause. A record that fails
+    ``check_record``'s structure raises ``journal.JournalCorrupt``.
+    """
+    plan = _plan(keys)
+    try:
+        ledger = tuple(ledger)
+        _chain(ledger, kind='ledger')
+        found = _Journals()
+        for name, records in dict(journals).items():
+            found.add(name, records)
+        return _Walk(plan, found.segments).run(ledger, cause, tuple(reasons)).cap()
+    except _Failed:
+        raise journal.JournalCorrupt('the run record fails its structural checks') from None
+
+
 def check_record(ledger: Sequence[journal.Record], journals: Mapping[str, Sequence[journal.Record]],
                  manifest: Mapping[str, object] | None, acts: Mapping[str, bytes], *,
                  keys: Sequence[journal.Key]) -> RecordCheck:
@@ -465,20 +513,19 @@ def check_record(ledger: Sequence[journal.Record], journals: Mapping[str, Sequen
     key outside the plan or its worker's assignment and not a tagged witness, an assignment
     digest other than ``sorted(K - completed)[i::W]``'s (F3), witnesses other than
     ``min(W, |completed|)`` distinct completed keys each run first by its worker (F2), a
-    SEGMENT_CRASHED whose ``cap`` differs from the cap its crash reaches (F1), manifest and
-    candidates, act bindings, a gap after COMPLETE), ``CODE_OR_ARTIFACT_DRIFT`` (epoch
-    closures), ``NONDETERMINISM`` (duplicates and witnesses); then HALTED ``RESOURCE_EXHAUSTED``
-    or ``IO_EXHAUSTED`` (row S10: a cap reached and not reset by CONTINUE). An I/O-error segment
-    is one whose SEGMENT_END cause, any SEGMENT_END worker reason or any WORKER_STOP reason in
-    its journals is an I/O error. ``completed`` holds the plan keys with a PATH in a segment
+    SEGMENT_CRASHED whose ``cap`` differs from ``cap_finding`` there (F1), a SEGMENT_END whose
+    cause is not that cap when one is reached (unless TERMINAL) or names a cap not reached, a
+    HALT naming a cap not reached, a SEGMENT_START or ALL_DONE while a cap is reached (F8),
+    manifest and candidates, act bindings, a gap after COMPLETE), ``CODE_OR_ARTIFACT_DRIFT``
+    (epoch closures), ``NONDETERMINISM`` (duplicates and witnesses); then HALTED
+    ``RESOURCE_EXHAUSTED`` or ``IO_EXHAUSTED`` (``cap_finding`` at the end of the ledger).
+    ``completed`` holds the plan keys with a PATH in a segment
     journal; ``losses`` counts each key's losses since the CONTINUE that reset its cap. A
     trailing segment without SEGMENT_END or SEGMENT_CRASHED reads as crashed (found at resume),
     so a HALTED ``code`` then names the ``cap`` its SEGMENT_CRASHED must carry. A structural
     ``CORRUPTION`` found before the ledger walk ends returns empty ``completed`` and ``losses``.
     """
-    plan = frozenset(tuple(key) for key in keys)
-    if not all(journal.is_key(list(key)) for key in plan):
-        raise ValueError('plan keys must be (root, population, path index)')
+    plan = _plan(keys)
     try:
         return _check(tuple(ledger), dict(journals), manifest, dict(acts), plan)
     except _Failed as failed:
