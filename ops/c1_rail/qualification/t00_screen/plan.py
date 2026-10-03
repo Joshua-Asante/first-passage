@@ -77,7 +77,7 @@ def _candidates_sha256(population, pool, indices, block_sessions):
 def _flat_starts(pool, run, joins, block_sessions):
     """Block-start indices flat at both edges in one chronological run, as ``proof`` derives edges."""
     rows = run.sessions if type(run) is ReplayResult else None
-    if (rows is None or len(rows) != len(pool)
+    if (rows is None or len(rows) != len(pool) or any(not row.flat_before_deadline for row in rows)
             or any((row.occurrence, row.source_session_id) != (i, s.session_id)
                    for i, (row, s) in enumerate(zip(rows, pool)))
             or any(a.end_edge != b.start_edge for a, b in zip(rows, rows[1:]))):
@@ -118,16 +118,18 @@ def candidates(sessions, adjacent, brackets, *, block_sessions: int) -> dict[str
 
 
 def rebuild_candidates(sessions, populations, *, block_sessions: int) -> dict[str, tuple[tuple, ...]]:
-    """Rebuild each population's candidate blocks from stored indices; a digest mismatch is CORRUPTION."""
+    """Rebuild each population's candidate blocks from stored indices; any malformed entry or digest
+    mismatch is CORRUPTION (closed stop classes, design section 4.3)."""
     pools = partition_populations(tuple(sessions))
-    if set(populations) != set(POPULATIONS):
+    if type(populations) is not dict or set(populations) != set(POPULATIONS):
         raise PlanRefusal('CORRUPTION')
     result = {}
     for population, pool in pools.items():
         entry = populations[population]
-        indices = entry.get('indices')
-        if (type(indices) is not list or not indices or indices != sorted(set(indices))
+        indices = entry.get('indices') if type(entry) is dict else None
+        if (type(indices) is not list or not indices
                 or any(type(i) is not int or not 0 <= i <= len(pool) - block_sessions for i in indices)
+                or indices != sorted(set(indices))
                 or entry.get('candidates_sha256') != _candidates_sha256(population, pool, indices, block_sessions)):
             raise PlanRefusal('CORRUPTION')
         result[population] = tuple(pool[i:i + block_sessions] for i in indices)
