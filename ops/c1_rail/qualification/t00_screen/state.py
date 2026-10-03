@@ -390,9 +390,10 @@ class _Walk:
         cls, cause = body['class'], body['cause']
         self._close(cause=cause, reasons=[worker['reason'] for worker in body['workers']])
         cap = self.cap()
-        # F8: at a cap the segment stops on the cap code unless a TERMINAL cause stands, and a
+        # F8: at a cap a cause below HALTED is replaced by the cap code; a HALTED or TERMINAL
+        # cause stands, and the cap stays reached until a HALT on it and its own CONTINUE. A
         # cap code is recorded only when it is the cap reached.
-        _corrupt((cap is not None and cls != TERMINAL and cause != cap)
+        _corrupt((cap is not None and cls in (STOPPED, COMPLETE))
                  or (cause in _CAPS and cause != cap))
         self.halt_code = cause if cls == HALTED else self.halt_code
         self.complete = self.complete or cls == COMPLETE
@@ -514,7 +515,7 @@ def check_record(ledger: Sequence[journal.Record], journals: Mapping[str, Sequen
     digest other than ``sorted(K - completed)[i::W]``'s (F3), witnesses other than
     ``min(W, |completed|)`` distinct completed keys each run first by its worker (F2), a
     SEGMENT_CRASHED whose ``cap`` differs from ``cap_finding`` there (F1), a SEGMENT_END whose
-    cause is not that cap when one is reached (unless TERMINAL) or names a cap not reached, a
+    cause is below HALTED when a cap is reached or names a cap other than the one reached, a
     HALT naming a cap not reached, a SEGMENT_START or ALL_DONE while a cap is reached (F8),
     manifest and candidates, act bindings, a gap after COMPLETE), ``CODE_OR_ARTIFACT_DRIFT``
     (epoch closures), ``NONDETERMINISM`` (duplicates and witnesses); then HALTED
