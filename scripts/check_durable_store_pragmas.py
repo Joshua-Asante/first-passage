@@ -51,6 +51,7 @@ REPO = Path(__file__).resolve().parent.parent
 DURABLE_STORES: tuple[str, ...] = (
     "ops/c1_rail/book_account_owner.py",
     "ops/c1_rail/book_halt.py",
+    "ops/c1_rail/book_incident_notifier.py",
     "ops/c1_rail/book_migration.py",
     "ops/c1_rail/book_settlement.py",
     "ops/c1_rail/qualification/attempt.py",
