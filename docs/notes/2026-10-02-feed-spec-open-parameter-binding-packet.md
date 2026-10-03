@@ -7,7 +7,9 @@
 - "spec" is the frozen spec.
 - "H8 note" is [the H8 preparation note](2026-09-27-feed-provider-neutral-preparation.md).
 - "h8b" is [the H8(b) gap classification](2026-09-27-h8b-feed-gap-classification.md).
-- "#583 note" is `docs/notes/2026-10-01-feed-provider-questions-DRAFT.md` at the head of [PR #583](https://github.com/Joshua-Asante/first-passage/pull/583), `8387e66`. That PR is open and not on main.
+- "#583 note" is `docs/notes/2026-10-01-feed-provider-questions-DRAFT.md` at commit `8387e66` of [PR #583](https://github.com/Joshua-Asante/first-passage/pull/583), which is open and not on main. Since then the PR has added a "Quiet intervals" clause to Q10 (`e14ff77`); the citations below are pinned to `8387e66`.
+- "Step 3" is [the Packet 1 Step 3 acceptance](2026-09-15-packet1-step3-acceptance.md); "execution domain" is [the Packet 1 execution domain](2026-09-15-packet1-execution-domain.md).
+- "template" is [the locked template](../spec/feed_equivalence_discovery_test_LOCKED.md); "umbrella" is [the Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md); "Track A" is [the Track A plan](../superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md); "halt/resume contract" is [the TB-S3 halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md).
 
 **Web sources.** The TradingView support page was opened on 2026-10-02. Every cmegroup.com fetch timed out, so each CME fact below comes from a search excerpt and is marked **[excerpt]**. Treat those as UNVERIFIED until they are read on cmegroup.com, the same standard as #583 note `:16–:21`.
 
@@ -29,7 +31,7 @@ Four items need a non-provider input before they bind, shown in the right-hand c
 
 | # | Controls | Recommended value | Basis | Input needed before binding (operator binds all) |
 |---|---|---|---|---|
-| OPEN-1 | §4.2 detail: which time places a constituent in a bucket; close-stamped bars; when a bucket counts as complete | Exchange time where delivered, else the provider's stamp, never receipt time. A bar's start is its interval start. A constituent that straddles a boundary is inadmissible. Bars are built from trade prices only. Completeness is proved in-stream | spec `:95`, `:147`; `book_runtime.py:369` | None |
+| OPEN-1 | §4.2 detail: which time places a constituent in a bucket; close-stamped bars | Exchange time where delivered, else the provider's stamp, never receipt time. A bar's start is its interval start. A constituent that straddles a boundary is inadmissible | spec `:95`, `:303`; `book_runtime.py:369` | None for (i)–(iii), (v), (vi). Clause (iv) (trade prices only) needs an operator ruling that it is within `:95`. §7 completeness is not an OPEN-1 binding (§4, question 6) |
 | OPEN-2 | 6J canonical adjustment and trading hours | Electronic trading hours and back-adjustment off, like the other three legs | Hours derived from h8b `:63`, `:103`; adjustment unresolved | The operator's 6J attestation, or a private roll-gap read |
 | OPEN-3 | Live dated-contract selection per leg | The contract that the canonical rule (OPEN-11) selects, defined once and shared by the feed and TB-V1 | spec `:118`; AGENTS.md `:233` | TB-V1 confirms the venue can trade each selected contract up to the switch |
 | OPEN-4 | Roll-exclusion band | The switch session ± 3 sessions, per leg | RESULTS.md `:145–:147` | OPEN-11 |
@@ -62,17 +64,18 @@ Four items need a non-provider input before they bind, shown in the right-hand c
 | Close-stamped bar | **Place the bar by its interval start, `stamp − d` (rec.)** | A 1-minute bar stamped 10:15 belongs to the 10:00 bucket |
 | | Place it by its stamp | Every bucket would be shifted by one constituent |
 | Straddling constituent | **Make that stream inadmissible (rec.)** | Splitting it would invent data, which §7 forbids ("never interpolate", `:147`) |
-| Completeness | **In-stream proof (rec.)** | §7 asks for completeness to be *established*; a wall-clock grace period would emit a bar without proof, and a trade arriving later would become an M7 revision |
+| Completeness | *Not an OPEN-1 choice* | §7 (`:147`) requires completeness to be *established* but does not define how. Defining it is a body change, not a binding; see §4, question 6 |
 
 **Recommended binding text.**
 > **§4.2 per-granularity rule.**
 > (i) *Clock.* A constituent is placed by the exchange transaction time when the provider delivers it, and otherwise by the provider's stamp. Receipt time never places a constituent. The clock used for each stream is recorded in the adapter configuration (later-binding item B.5).
 > (ii) *Bars of any duration d up to 15 minutes.* A constituent covers `[t0, t0 + d)`. Here `t0` is its stamp if the provider stamps bars at their open, or its stamp minus `d` if it stamps them at their close. The constituent belongs to the bucket that contains `t0`, and is admissible only if its whole interval lies inside that bucket. A stream whose constituents straddle bucket boundaries is inadmissible; constituents are never split.
 > (iii) *Trades.* A trade belongs to the bucket that contains its time. A trade at exactly `open + 15 min` belongs to the next bucket. V is the sum of exchange-reported quantities. A busted or cancelled trade that is known before emission is excluded. One learned after emission is a post-delivery revision (M7).
-> (iv) *Prices.* O, H, L and C come from executed trade prices only. A stream whose bars are built from bid/ask, midpoint, settlement or indicative prices is inadmissible.
+> (iv) *Prices.* O, H, L and C come from executed trade prices only. A stream whose bars are built from bid/ask, midpoint, settlement or indicative prices is inadmissible. **[Operator ruling needed: this clause is within `:95`'s "exact constituent rule". If not, drop it from the binding and route it with question 6.]**
 > (v) *Ordering.* "First" and "last" follow the clock in (i). Ties are broken by the provider's sequence identifier, where one is given.
-> (vi) *Completeness.* A bucket is complete when the stream delivers, timed at or after `open + 15 min`, any of: a constituent, a provider no-trade marker, or a sequenced status message. For a bar stream, the bucket is also complete when the constituent ending at `open + 15 min` arrives. A no-trade marker proves completeness only: it adds nothing to OHLCV and is not trade evidence (§4.3(c), `:103`).
-> (vii) *Native 15-minute bars* are compared as delivered, after the B.5 stamp translation.
+> (vi) *Native 15-minute bars* are compared as delivered, after the B.5 stamp translation.
+
+**Not part of the OPEN-1 binding: §7 completeness.** A candidate definition, for the body change in §4 question 6, is: a bucket is complete when the stream delivers, timed at or after `open + 15 min`, any of a constituent, a provider no-trade marker or a sequenced status message; for a bar stream, also when the constituent ending at `open + 15 min` arrives. A no-trade marker proves completeness only and is not trade evidence (§4.3(c), `:103`). Like the "capture incomplete" definition, this goes beyond §16.3 because §7 leaves "established" undefined.
 
 **Sources.**
 - The consumer's bar-open `Bar.ts` (`ops/c1_signal_daemon/book_runtime.py:369`) and the delivery deadline `bar.ts + BAR_PERIOD + BAR_SLACK` (`:351–:353`; `book_protocol.py:39–:40`).
@@ -80,7 +83,7 @@ Four items need a non-provider input before they bind, shown in the right-hand c
 
 **Provider dependence.** This item binds now. The provider's own conventions are asked in #583 Q4 (`:95–:103`), Q8 (`:111`) and Q10 (`:115`): open or close stamps, time zone, exchange time, trade or quote prices, and no-trade markers. A provider's answer selects a branch of this rule and the B.5 translation (H8 note `:90`). A stream that fits no branch is inadmissible; that is not a reason to re-bind the rule.
 
-**Consequence.** In thin intervals, such as 6J or MGC overnight, a stream may send no marker, heartbeat or sequenced message after a boundary. It then cannot prove completeness within 30 s, the bucket is not emitted, and the book halts (M5, M8). Completeness signalling is therefore an eligibility fact, and the current questions do not ask about it directly (§4, question 1).
+**Consequence.** In thin intervals, such as 6J or MGC overnight, a stream may send no marker, heartbeat or sequenced message after a boundary. It then cannot prove completeness within 30 s, the bucket is not emitted, and the book halts (M5, M8). If the body change in §4 question 6 adopts in-stream proof, completeness signalling becomes an eligibility fact. PR #583 now asks about it directly (Q10 "Quiet intervals", `e14ff77`).
 
 **Binds:** operator.
 
@@ -91,7 +94,7 @@ Four items need a non-provider input before they bind, shown in the right-hand c
 **Evidence.**
 - **Trading hours: derived, electronic hours.**
   - The 6J panel has no absent slot inside any permitted 18:00–17:00 ET session (h8b `:63`, `:74`).
-  - Across all four legs, the 952 fully observed permitted sessions had every slot filled, except six MGC slots (h8b `:103`, `:106`).
+  - Across all four legs, the 952 fully observed permitted sessions had every slot filled, except six MGC slots (h8b `:64`, `:68`; one leg, `:103`, `:106`).
   - A panel exported for regular trading hours only would leave most of each 23-hour session empty.
   - This is an inference from the data, not an attestation.
 - **Back-adjustment: unresolved.**
@@ -151,7 +154,7 @@ This follows AGENTS.md's configuration-as-code rule (`:233`).
 | Width | Consequence |
 |---|---|
 | ±1 session (3 sessions) | Excludes the least. If the platform moves N_s by 2 sessions or more, sessions with mismatched contracts enter the verdict. The result is an M3a FAIL, which is final for that configuration |
-| **±3 sessions (7 sessions) (rec.)** | Covers the measured spread of the platform's switch around expiry: ±4 calendar days, about ±3 business days, across 17 quarters (RESULTS.md `:145–:147`). The four legs' bands exclude more sessions, so the window (OPEN-8) runs longer |
+| **±3 sessions (7 sessions) (rec.)** | Covers the measured spread of the platform's switch for NQ/MNQ: 17 quarterly gaps cluster within ±4 days of the third-Friday expiry (RESULTS.md `:145–:147`). Reading that as about ±3 business days, and extending it to 6J and MGC, whose last-trading-day rules differ, is this note's inference. The four legs' bands exclude more sessions, so the window (OPEN-8) runs longer |
 | ±5 sessions (11 sessions) | More margin. MGC rolls six times a year (listed in even months only **[excerpt]**), so windows grow materially longer |
 
 **Recommended binding text.**
@@ -343,12 +346,12 @@ Whether the switch takes effect at the session open or at another boundary is no
 
 ## 4. Open questions
 
-1. **Completeness signalling (OPEN-1).** Before #583 is sent, should Q4 or Q10 also ask the following? "After each interval, does the stream carry a heartbeat, a sequenced status message or a no-trade marker, so that a client can prove the interval complete within seconds?" PR #583 is open, so this is the coordinator's call.
+1. **Completeness signalling.** Resolved: PR #583 added the question to Q10 ("Quiet intervals", `e14ff77`).
 2. **OPEN-2.** Is there a retained record of the 6J chart's adjustment setting, or is the roll-gap read needed?
 3. **OPEN-11.** Can the operator read the dated contract behind the `1!` chart on the platform? The page does not say whether or when the platform revises N_s. Under the frozen text, a revision made between binding and the window would surface as an M3a FAIL outside the band, not as BLOCKED. Making it BLOCKED would change §10 (`:200`), which is a body change, not a binding.
 4. **TB-V1.** Can each leg be traded in its selected contract up to the switch, particularly physically delivered 6J and MGC? The answer decides between the first and second rows of the OPEN-3 table.
 5. **OPEN-5.** Authorize the yes/no volume read (private read surface), or accept the all-four-legs fallback?
-6. **BLOCKED versus FAIL.** "Capture incomplete" (§10, `:200`) is not objectively defined. Under the OPEN-9 recommendation a BLOCKED run uses up no re-application, so a definition is needed: for example, a gap in the collector's own liveness record, independent of provider messages. That is a body change beyond a binding.
+6. **BLOCKED versus FAIL.** "Capture incomplete" (§10, `:200`) is not objectively defined. Under the OPEN-9 recommendation a BLOCKED run uses up no re-application, so a definition is needed: for example, a gap in the collector's own liveness record, independent of provider messages. That is a body change beyond a binding. §7's "established" completeness (`:147`) is the same class; a candidate definition is in OPEN-1. Both need an operator decision on whether to amend the body before CP-6, under §13.
 7. **Meaning of "raise health."** If the §7 correction row's "raise health" (`:150`) means the source reports itself unhealthy, then every raw revision halts the book and is already scored by M6 or M8. OPEN-6 is unaffected, but the adapter contract (A9-PREP, Track A `:236`) has to say which reading applies.
 8. **Calendar coverage (R-MAP-3).** Calendar rows must cover the whole window before collection starts. `ops/calendars/book_session_calendar_2026-10.json` exists, but its ratification was not read here. This is a prerequisite, not an OPEN item.
 
