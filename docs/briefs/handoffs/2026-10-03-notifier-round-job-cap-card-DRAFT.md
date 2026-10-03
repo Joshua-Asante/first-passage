@@ -2,6 +2,7 @@
 
 **Date:** 2026-10-03.
 **Status:** **DRAFT.** Written under coordinator (3)'s #628 build authority. Coordinator (3) dispatched this docs-only rewrite on 2026-10-03 and owns the invariant table NF1-NF9 (§3). Other cards cite those names, so they are fixed. Coordinator (3) freezes this card (§12). Nothing here is dispatched.
+**Fold (2026-10-03):** the review of `7da0288` (two P2, three P3) is folded, and coordinator (3)'s card-owner rulings on D1, D2 and the `rebuild=False` empty-journal refusal are recorded (§0.5 items 4-6).
 **Base:** origin/main `04a86ac`. `git diff 6e679cc 04a86ac` is empty for `ops/c1_rail/`, `tests/ops/test_book_incident_notifier.py`, the #628 card and the HR spec, so anchors at `6e679cc` (the #628 merge) hold. Other heads read: #651 `af14556`, #637 `828ddda` and #635 `f4d1589`, all DRAFT. Their anchors hold only at those heads.
 **Brief type:** CC handoff, code build (TDD) behind a named file boundary.
 **Parent:** the #628 build card (`docs/briefs/handoffs/2026-10-02-book-incident-notifier-build-card.md`). Dependants:
@@ -73,7 +74,8 @@ acceptance:
 1. **Terms.**
    - A *pass* is one `publish_due` call. A *job round* is one `_publish_round`.
    - k is `max_jobs_per_round`, M is `max_retained_incidents`, n is the number of rows `read_incidents` returns, c is the channel count, and τ is `publish_timeout_s`.
-   - L is #651's `max_notifier_loop_interval` (`af14556:113`): the longest gap between `run_once` starts.
+   - L is #651's `max_notifier_loop_interval` (`af14556:113`): the longest gap between `run_once` starts. This card keeps that definition rather than redefining L between `publish_due` times, because L is #651's declared binding value.
+   - poll_bound = W_o + T_parse(M) + W_j (NF8's terms): the longest `poll`, which separates a `run_once` start from its `publish_due` `now`. Attempts carry that `now`, so m consecutive passes span at most m·L + poll_bound of journal time.
 2. **The "ever accepted" signal (checked against the code).** No `jobs` column records acceptance (`:77-80`).
    - After `poll`, `_transition` is the only writer of `rounds` and `channels_lost` (`:508-534`). It sets `channels_lost = 0` only when a round closes accepted by a delivering channel (`:482`, `:493-497`, `:530`). That close writes `provider_accepted` in the same transaction (`:491-492`).
    - So `rounds > 0 AND channels_lost = 0` holds exactly when the latest closed round was accepted. That is class A. Class U is `rounds = 0 OR channels_lost = 1`.
@@ -84,19 +86,22 @@ acceptance:
    - k = 10: 59 passed.
    - k = 9: T22 (`test_a_hung_channel_cannot_take_the_healthy_channels_slot`, 10 due jobs in one pass) fails.
    - k = 1: 7 failed.
-4. **D1 — NF5 cannot be done as written. Proposed change; coordinator (3) rules at freeze.**
+4. **D1 — NF5 reads every pending job, with no SQL `LIMIT`. RULED by coordinator (3), card owner, 2026-10-03.**
    - The problem: if "at most `max_retained_incidents`" is an SQL `LIMIT M`, every pass drops the pending jobs above M by `rowid`, which are the newest incidents. They are never attempted and never counted as deferred, so the pass is not loud. That contradicts NF4's "nothing is dropped".
-   - The change: this card reads every pending job.
+   - The ruling: read every pending job. RC6(d) guards it.
    - The count still stays at most M while NF4's bound holds. Jobs come only from owner rows, one per key (`:413`), and the owner never deletes incidents, so pending ≤ jobs ≤ n ≤ M. Above M, NF4's event has already fired.
-5. **D2 — how NF7 meets "creates nothing" (scope widening; coordinator (3) rules at freeze).**
+5. **D2 — how NF7 meets "creates nothing". RULED by coordinator (3), card owner, 2026-10-03.**
    - `sqlite3.connect` creates a missing file (checked: a 0-byte file appears), and `_journal` creates the parent directory (`:303`).
    - An `is_file()` check alone leaves a race. A journal removed between that check and `_journal_fault`'s open (`:332`) would be created empty, then initialized.
-   - The change: a `rebuild=False` instance opens every connection with the SQLite URI `Path(...).resolve().as_uri() + "?mode=rw"`, as `read_incidents` does with `mode=ro` (`book_account_owner.py:811`), and skips the `mkdir`. That open refuses a missing file (checked: `sqlite3.OperationalError`, which `_journal_fault` maps to `NotifierStoreError` at `:337-338`).
-   - This touches the connect lines of `_journal` and `_journal_fault` (§5).
-6. **An empty journal under `rebuild=False` follows NF7 as written.** A 0-byte file is not a `_journal_fault` fault (`:329-341`). The constructor initializes it, and `record_delivery` then refuses the key as unknown. #635 relies on this behavior (`f4d1589:141`).
-7. **OQ-NF-1: owner reading, RULED.** The halt/resume owner, coordinator (2), wrote to coordinator (3) in a cross-session message on 2026-10-03: "OQ-NF-1: YES, with two conditions". This card records it from coordinator (3)'s dispatch. Its author has not seen the message, and coordinator (3) confirms the record at freeze.
+   - The ruling: a `rebuild=False` instance opens every connection with the SQLite URI `Path(...).resolve().as_uri() + "?mode=rw"`, as `read_incidents` does with `mode=ro` (`book_account_owner.py:811`), and skips the `mkdir`. That open refuses a missing file (checked: `sqlite3.OperationalError`, which `_journal_fault` maps to `NotifierStoreError` at `:337-338`).
+   - §5's allowed parts widen to the `_journal` connect lines (`:302-304`) and the `_journal_fault` connect (`:332`).
+6. **Empty, table-less or foreign-schema journal under `rebuild=False`: REFUSE. RULED by coordinator (3), card owner, 2026-10-03.** This supersedes this card's earlier "initialize an empty journal".
+   - Any schema other than `_JOURNAL_SCHEMA` (`:88-102`), including an empty or table-less file, raises `NotifierStoreError`, and nothing is initialized (NF7).
+   - Why: a journal removed under a running notifier is re-created with no tables by that notifier's next open (`:303-304`). If another open then initialized it, the running instance's known-keys set (NF4) would skip every owed key; the review's probe saw 3 pending jobs become 0 while `progress()` advanced. Refused, the running instance keeps raising, which is loud (RC8(f), R2).
+   - #635 is unaffected. Its CLI pre-check already refuses an empty file (`f4d1589:141`, C3 item 3), and a constructor refusal exits non-zero like any `NotifierStoreError`. Its `:141` sentence that the constructor initializes an empty file describes the superseded behavior but does not say the CLI relies on it, so its wording needs no change here.
+7. **OQ-NF-1: owner reading, RULED.** The halt/resume owner, coordinator (2), wrote to coordinator (3) in a cross-session message on 2026-10-03: "OQ-NF-1: YES, with two conditions". **Confirmed by coordinator (3):** the message is genuine and is recorded in coordinator (3)'s log (AUTH: coordinator (3)'s 2026-10-03 fold dispatch).
    - The 60 s ruling (`ESCALATION_STEP_S`, `:60-62`; HR `:73`) binds class U only.
-   - Class A may be deferred, because IRM already holds the alert and its own chain escalates.
+   - Class A may be deferred, because IRM already holds the alert and its own chain escalates. While class-U load fills the cap, that deferral has no bound and is not loud (NF2, NF3); this reading permits it.
    - Condition (1): a deferral is loud (NF3). Condition (2): class U is ordered by earliest due time (NF2).
 8. **OQ-2 is unchanged.** It is a "no retry cap" rule (#628 card `:68`) and limits nothing per job. k limits jobs per pass.
 9. **Digest.** `resolved()` gains two fields, so every configuration's digest changes.
@@ -119,7 +124,7 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 | ID | Item | State at draft | Blocks |
 |---|---|---|---|
 | P1 | #628 merged | **Done** (`6e679cc`) | Nothing |
-| P2 | Coordinator (3) rules on D1 and D2 (§0.5 items 4-5) and confirms the OQ-NF-1 record (item 7) | OPEN | Freeze |
+| P2 | Coordinator (3) rules on D1, D2 and the empty-journal refusal (§0.5 items 4-6) and confirms the OQ-NF-1 record (item 7) | **Done** (2026-10-03) | Nothing |
 | P3 | Sequencing with #635's D-MON-1 build (§5) | OPEN; recorded at dispatch | Dispatch |
 
 ## §2 — Measured-closure check
@@ -144,18 +149,21 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 - **Class U** is `rounds = 0 OR channels_lost = 1` (§0.5 item 2). It is ordered by `next_attempt_at` ascending, compared as parsed instants, then by `rowid` ascending.
 - **Class A** is `rounds > 0 AND channels_lost = 0`: accepted, still pending, awaiting record-delivery (#635 `:134`). It uses the same order and comes after all of class U.
 - The order is never newest-first. Newest-first can starve an older unaccepted incident while new ones keep arriving.
-- **Normal-case guarantee.** Suppose every pass has at most k due class-U jobs. Then each due U job runs in the first pass in which it is due. Its attempts are at most `retry_max_s` + L apart by the journal's clock. With `retry_max_s` + L < 60 s, every 60 s escalation interval holds a retry. A pass with more than k due U jobs is loud (NF3), and owner condition (1) covers it.
-- **Effective retry spacing** of a pending job X: at most `retry_max_s` + (⌊(A + N)/k⌋ + 1)·L.
-  - A is the number of due jobs ahead of X in the NF2 order when X falls due. N is the number of incidents that sort ahead of X while it waits.
-  - Class U, clock not stepping back: A counts the due U jobs ahead of X, and N = 0. A new job's due time is its poll time, never earlier than X's; on a tie, its larger `rowid` puts it behind X.
-  - Class A: A counts every due U job plus the due A jobs ahead of X, and N counts every new incident (each starts in class U).
-- **Starvation-freedom.** A round that ends without raising either finds the job closed (J2 or J3, where `_transition` writes nothing) or sets `next_attempt_at` = now_P + delay > now_P (`:522-530`). Here now_P is the time of the pass in which X was due and deferred.
-  - A job that ran therefore sorts behind every job it overtook, and a deferred job is not written.
-  - In each pass, X runs or k jobs ahead of it run, so X's rank falls by k each pass. Each new incident can pass X at most once.
-  - Incidents are finite (one job per key), so every pending job runs.
-- **A backward clock loosens the bound.** The caller supplies the clock; `_now` checks only that it is timezone-aware (`:363-367`), and #651 anticipates a backward step (`af14556:78`). A step back of B does two things:
+- **Normal-case guarantee (class U).** Suppose every pass has at most k due class-U jobs and the clock does not step back. Then each due U job runs in the first pass in which it is due, and its attempts are at most `retry_max_s` + L + poll_bound apart by the journal's clock (§0.5 item 1).
+  - **Precondition:** `retry_max_s` + L + poll_bound < `ESCALATION_STEP_S` (60 s, `:60-62`). Then every 60 s escalation interval holds a retry. It is a #651 binding check (OQ-CAP-3, §9).
+  - A pass with more than k due U jobs is loud (NF3), and owner condition (1) covers it. A loud pass is not by itself a page (R6).
+- **Effective retry spacing of a class-U job X** (clock not stepping back): at most `retry_max_s` + (⌊A/k⌋ + 1)·L + poll_bound.
+  - A is the number of due class-U jobs ahead of X in the NF2 order when X falls due.
+  - No job joins ahead of X while it waits. A new job's due time is its poll time, never earlier than X's; on a tie, its larger `rowid` puts it behind X. A job that ran, including a class-A job whose round lost every channel, gets a due time after its pass's `now` (next bullet).
+- **Starvation-freedom (class U, clock not stepping back).** A round that ends without raising either finds the job closed (J2 or J3, where `_transition` writes nothing) or sets `next_attempt_at` = now_P + delay > now_P (`:522-530`). Here now_P is the time of the pass in which X was due and deferred.
+  - A U job that ran therefore sorts behind every U job it overtook, and a deferred job is not written.
+  - In each pass, X runs or k U jobs ahead of it run, so X runs within ⌊A/k⌋ + 1 passes of falling due.
+- **Class A has no bound.** A class-A job sorts behind every due class-U job, and a failing U job stays in class U each time it falls due again. While class-U load fills the cap, a due class-A job may never run. Each such pass defers only class A, so it is not loud (NF3) and `progress()` advances. The owner reading OQ-NF-1 permits this (§0.5 item 7).
+  - Example (review of `7da0288`): k = 1, `retry_initial_s` = `retry_max_s` = 2 s, passes 1 s apart, two class-U jobs that always fail and one due class-A job. Over 40 passes the class-A job ran 0 times, and 39 passes were not loud.
+  - With no class-U load, class A rotates like class U (RC3(b)).
+- **A backward clock loosens the class-U bound.** The caller supplies the clock; `_now` checks only that it is timezone-aware (`:363-367`), and #651 anticipates a backward step (`af14556:78`). A step back of B does two things:
   - X is not due until the clock again reaches its due time, which adds up to B.
-  - An incident polled meanwhile can get a due time before X's. For class U, N then counts in the bound: ⌊(A + N)/k⌋.
+  - An incident polled meanwhile can get a due time before X's. N such incidents then count in the bound: ⌊(A + N)/k⌋.
   - Rotation still holds, because a re-run job and X are compared at the same now_P.
 - **Wall-clock note.** Every event in a pass carries that pass's `now`. A job's publish can start up to `max_round_duration` after it, so publish starts can be that much further apart than the journal shows. Routed with OQ-CAP-3 (§9).
 
@@ -163,21 +171,24 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 - When the snapshot defers at least one due job, the pass writes one evidence event, `cap_deferred`. Its `incident_key` and `channel` are NULL, `at` is the pass's `now`, and its detail is `{unaccepted, accepted}`: counts of deferred due jobs per class, nothing else.
 - The event is written in the snapshot transaction, so NF8's transaction count does not change.
 - `publish_due` returns True when it deferred a due class-U job, and False otherwise.
-- On True, `run_once` does not refresh `liveness()` and does not increment `progress()`, even though it completed. #637's notifier heartbeat stops marking, and the dead-man check pages after T_n (HR `:71`, condition 4).
-- A pass that defers only class-A jobs still writes `cap_deferred`, but `liveness()` and `progress()` advance.
+- On True, `run_once` does not refresh `liveness()` and does not increment `progress()`, even though it completed. #637's notifier heartbeat stops marking, and the dead-man check pages once no mark has arrived for T_n (HR `:71`, condition 4). A loud run shorter than T_n pages nobody (R6).
+- A pass that defers only class-A jobs still writes `cap_deferred`, but `liveness()` and `progress()` advance (NF2: class A has no bound).
 - **Post-rebuild backlog.** After a rebuild or first start, every retained incident becomes a `rounds = 0` job with the same due time (#628 card `:86-90`). A new incident waits behind them for up to ⌊A/k⌋ passes, and each of those passes is loud. For example, with 120 re-owed jobs, k = 10, and a new incident arriving before pass 2, the new incident's first attempt is in pass 13; passes 1-12 are loud.
 
 **NF4 — Ingestion bound.**
-- **Known keys.** A per-instance set is loaded once in the constructor's transaction, after the schema statements, with `SELECT incident_key FROM jobs` (every state). `poll` INSERTs only keys not in the set, still with `INSERT OR IGNORE`, so J1 is unchanged.
+- **Known keys.** A per-instance set is loaded once in the constructor's transaction, after the schema statements, with `SELECT incident_key FROM jobs` (every state). `poll` INSERTs only keys not in the set, still with `INSERT OR IGNORE`, so J1 is unchanged. `poll` opens its one transaction on every call, even when every key is known (as at `:411`); NF8 counts it.
 - The set is updated only after `poll`'s transaction commits, with the keys it inserted or found already present. A key added before `COMMIT` would be lost if the commit failed.
 - Reading and parsing all n rows stays O(n). An owner-side incremental read is OQ-NF-2, out of scope (an owner packet).
 - **Bound.** New field `max_retained_incidents: int = 1000`, validated like NF1, with the same exposure.
 - When n (rows read this poll, malformed ones included) crosses from at-or-below M to above it, `poll` writes one evidence event, `retained_incidents_over_bound` `{count: n}`, in its transaction. The crossing state is per instance, starts at-or-below, and changes only after the commit.
 - Processing continues, and nothing is dropped. NF8's bound assumes n ≤ M.
-- **Residual R2.** The set assumes that only this instance fills and rebuilds the journal. If a second `rebuild=True` instance moved the journal aside, this instance would skip the re-owed keys; #628 would have re-inserted them. NF7 keeps #635's CLI from rebuilding. J0 serializes rounds per notifier only (#628 card `:126`); two notifier instances on one journal stay out of scope.
+- **Residual R2.** The set assumes that only this instance fills and initializes the journal. Two paths would make it skip owed keys that #628 would have re-inserted:
+  - a second `rebuild=True` instance moves the journal aside, or initializes a missing or emptied one;
+  - the journal is removed under this instance, its next open re-creates the file with no tables (`:303-304`), and another open initializes it.
+  - NF7 closes the second path for #635's CLI: a `rebuild=False` open refuses a missing, empty, table-less or foreign-schema journal and initializes nothing (§0.5 item 6), so this instance keeps raising, which is loud (RC8(f)). The first path remains: J0 serializes rounds per notifier only (#628 card `:126`), and two notifier instances on one journal stay out of scope.
 
 **NF5 — Pending fetch.**
-- In the snapshot transaction, `publish_due` reads `rowid`, `incident_key`, `reason`, `detected_at`, `next_attempt_at`, `rounds` and `channels_lost` for every pending job (D1: no `LIMIT`; at most M while n ≤ M).
+- In the snapshot transaction, `publish_due` reads `rowid`, `incident_key`, `reason`, `detected_at`, `next_attempt_at`, `rounds` and `channels_lost` for every pending job (D1, RULED: no `LIMIT`; at most M while n ≤ M).
 - "Due" is unchanged: `datetime.fromisoformat(next_attempt_at) <= now`, as at `:459`.
 - The due jobs are sorted by (class, parsed `next_attempt_at`, `rowid`), and the first k are taken.
 - Timestamps are never compared as SQL strings. ISO strings with different UTC offsets do not sort as instants, and a local-time clock produces both across a DST change.
@@ -192,8 +203,9 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 - `IncidentNotifier.__init__` gains the keyword-only `rebuild=True`. True keeps today's behavior.
 - With `rebuild=False`, a missing journal raises `NotifierStoreError` and creates no file or directory.
 - With `rebuild=False`, a `_journal_fault` fault raises `NotifierStoreError`, with no `_move_aside` and no `journal_rebuilt` event.
-- Every connection of a `rebuild=False` instance opens with `mode=rw` and skips the `mkdir` (D2). A journal removed after construction then fails instead of being created.
-- An empty file is initialized as a fresh journal (§0.5 item 6). A hot rollback journal is rolled back by the writable open, as at `:333`, and nothing is moved.
+- Every connection of a `rebuild=False` instance opens with `mode=rw` and skips the `mkdir` (D2, RULED). A journal removed after construction then fails instead of being created.
+- With `rebuild=False`, any schema other than `_JOURNAL_SCHEMA` is refused, including an empty or table-less file (§0.5 item 6, RULED). The constructor's transaction reads `_journal_schema(db)` before any schema statement and raises `NotifierStoreError` unless it equals `_JOURNAL_SCHEMA`; nothing is initialized. The check sits in that transaction, so a journal emptied or replaced after `_journal_fault` is refused too. `_journal_fault`'s `{}` acceptance (`:341`) is unchanged and still serves `rebuild=True`.
+- A hot rollback journal is rolled back by the writable open, as at `:333`, and nothing is moved.
 - #635's CLI constructs with `rebuild=False` (`f4d1589:145`), which closes its pre-check-versus-constructor race (`:141`).
 
 **NF8 — Whole-invocation bound.**
@@ -202,7 +214,7 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 
 - W_o is the owner read's busy wait: 5 s (`book_account_owner.py:811-812`).
 - T_parse(n) is the CPU time to read and parse n rows, then fetch, filter and sort at most n pending jobs.
-- **2 + 2·k·c journal transactions** run on the pass thread: the poll, the snapshot (which holds `cap_deferred`), and one admission (`:470`) plus one close (`:486`) per (job, channel). A refused channel skips its close, and a closed job ends its round early; both only lower the count.
+- **2 + 2·k·c journal transactions** run on the pass thread: the poll (opened on every call, NF4), the snapshot (which holds `cap_deferred`), and one admission (`:470`) plus one close (`:486`) per (job, channel). A refused channel skips its close, and a closed job ends its round early; both only lower the count.
 - W_j is each transaction's lock wait. `BEGIN IMMEDIATE` waits up to 5 s (`:304`). In the default rollback journal, `COMMIT` can wait another 5 s behind a reader, such as #635's read-only checks (`f4d1589:141`, `:146`), so W_j can reach 10 s.
 - A run makes at most k·c bounded publishes, each waiting at most τ (`join`, `:575`).
 - ε is fsync and other CPU time, which no declared bound covers. HH7 measures it (`af14556:198`).
@@ -224,22 +236,22 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 - a pass that defers a due class-U job is loud;
 - `poll` inserts only new keys;
 - `progress()` counts only clean, non-loud loops;
-- `rebuild=False` never creates a journal or moves one aside;
+- `rebuild=False` never creates, initializes or moves aside a journal;
 - one `run_once` stays within NF8's counts;
 - and NF9 holds.
 
 **Falsifier.** Any one of these refutes H:
 - a pass that runs more than k jobs, or that refills the slot of a closed nominated job;
 - a class-A job running before a due class-U job, or class U out of (due time, `rowid`) order;
-- under persistent failure, a due job that does not run within NF2's bound;
+- under persistent failure and a clock that does not step back, a due class-U job that does not run within NF2's class-U bound (class A has none);
 - a pass that defers a due class-U job yet refreshes `liveness()` or advances `progress()`;
 - a class-A-only deferral that stops `liveness()` or `progress()`;
 - more than one `cap_deferred` in a pass, or counts that differ from the deferred jobs;
 - an INSERT for a known key, or a key lost after a failed `poll` commit;
-- `retained_incidents_over_bound` written other than once per crossing;
+- `retained_incidents_over_bound` written other than once per crossing, or a crossing lost after a failed `poll` commit;
 - a pending job above M that is never attempted;
 - `progress()` decreasing, or changing on a `run_once` that raises or is loud;
-- `rebuild=False` creating a file or directory, moving a journal aside or writing `journal_rebuilt`;
+- `rebuild=False` creating a file, directory or table, accepting a journal whose schema is not `_JOURNAL_SCHEMA`, moving a journal aside or writing `journal_rebuilt`;
 - a `run_once` with more than 2 + 2·k·c journal transactions, more than k·c publishes, or more than one owner read;
 - any #628 test failing, or a change to an NF9 item;
 - a configuration that accepts 0, a negative value, a `bool` or a non-`int` for either new field, or that fails the `resolved()`/`from_mapping` round trip.
@@ -250,8 +262,8 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 - `ops/c1_rail/book_incident_notifier.py`, **only** these parts:
   - `_CONFIG_KEYS` (`:74`);
   - the two `NotifierConfig` fields, their validation and their `resolved()` entries (`:205-256`);
-  - `__init__` (`:266-291`): the `rebuild` keyword, the known-keys load, and the progress and crossing state;
-  - the connect lines of `_journal` (`:302-304`) and `_journal_fault` (`:332`), through one new private helper (D2);
+  - `__init__` (`:266-291`): the `rebuild` keyword, the `rebuild=False` schema refusal (NF7), the known-keys load, and the progress and crossing state;
+  - the connect lines of `_journal` (`:302-304`) and `_journal_fault` (`:332`), through one new private helper (D2, RULED by coordinator (3));
   - `poll` (`:396-421`): the known-keys filter and the over-bound event;
   - `run_once` (`:425-436`), the `liveness` docstring (`:438-445`), and a new `progress()` beside them;
   - `publish_due` and its docstring (`:447-461`);
@@ -293,10 +305,10 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 | RC3 | `test_rotation_within_a_class_under_persistent_failure`. (a) Class U: five jobs, k = 2, a channel that always rejects, and the clock advanced 60 s (more than `retry_max_s`) before each pass. The attempted sets are {1,2}, {3,4}, {5,1}, {2,3}, {4,5}, {1,2}, and every job runs in any three consecutive passes. (b) Class A: three jobs, k = 1, a channel that accepts without delivery, and the same clock. Passes 4-9 run jobs 1, 2, 3, 1, 2, 3 | NF2 |
 | RC4 | `test_post_rebuild_backlog_is_loud_and_earliest_due_first`. A journal of unreadable bytes and `rebuild=True` (`journal_rebuilt` written). `read_incidents` returns 120 rows, k = 10, a delivering channel, and the clock advances 1 s per pass. Pass 1 attempts the 10 lowest `rowid`s and writes `cap_deferred` `{110, 0}`; afterwards `progress() == 0` and `liveness() is None`. A 121st incident is committed before pass 2, and its first attempt is in pass 13, after every re-owed job. Passes 1-12 are each loud, with one `cap_deferred` each (`unaccepted` 110, 101, 91, …, 1). Pass 13 is not loud: `progress() == 1`, and `liveness()` equals pass 13's clock. The test asserts state and order, not elapsed time | NF2, NF3 |
 | RC5 | `test_cap_deferred_once_per_pass_with_counts_and_loudness`. (a) Seeded due jobs, 3 in class U and 2 in class A, k = 2: exactly one `cap_deferred`, `{unaccepted: 1, accepted: 2}`, with exactly those two detail keys. The `run_once` is loud: `progress()` and `liveness()` are unchanged. (b) Only 3 due class-A jobs, k = 2: `{unaccepted: 0, accepted: 1}`, and the pass is not loud (`progress()` + 1, `liveness()` = the clock). (c) A pass with at most k due jobs writes no `cap_deferred` | NF3 |
-| RC6 | `test_known_keys_and_retained_bound`. Statements are traced by a wrapper around `_journal` that calls `set_trace_callback` on the yielded connection. (a) A second `poll` over the same rows executes no INSERT into `jobs`; a new row adds exactly one; a fresh instance on the same journal inserts none. (b) A `poll` whose transaction fails (a patched `_event` raises `sqlite3.OperationalError` on `detected`) raises `NotifierStoreError`, and the next `poll` inserts that key. (c) With M = 3, polls over 2, 4, 5, 3 and 4 rows write `retained_incidents_over_bound` exactly twice, `{count: 4}` each time, and every row has a job. (d) With M = 3, k = 5 and five due pending jobs, all five are attempted in one pass | NF4, NF5 (D1) |
+| RC6 | `test_known_keys_and_retained_bound`. Statements are traced by a wrapper around `_journal` that calls `set_trace_callback` on the yielded connection. (a) A second `poll` over the same rows executes no INSERT into `jobs`; a new row adds exactly one; a fresh instance on the same journal inserts none. (b) A `poll` whose transaction fails (a patched `_event` raises `sqlite3.OperationalError` on `detected`) raises `NotifierStoreError`, and the next `poll` inserts that key. (c) With M = 3, polls over 2, 4, 5, 3 and 4 rows write `retained_incidents_over_bound` exactly twice, `{count: 4}` each time, and every row has a job. (d) With M = 3, k = 5 and five due pending jobs, all five are attempted in one pass. (e) With M = 3, a `poll` over 4 new rows whose `COMMIT` fails (for example, a second connection holds a read transaction on the journal past the 5 s busy wait) raises `NotifierStoreError` and leaves no job and no event. After the reader ends, the next `poll` over the same rows inserts all 4 keys and writes `retained_incidents_over_bound` `{count: 4}` exactly once | NF4, NF5 (D1) |
 | RC7 | `test_progress_counts_clean_non_loud_loops_only`. `progress()` is 0 at construction and rises by 1 per clean `run_once`. It does not change on a `run_once` that raises (a raising `read_incidents`; a journal replaced by a directory, as T17 does) or on a loud pass. With the clock stepped back 1 h between clean loops, `liveness()` moves back while `progress()` still rises by 1 | NF6 |
-| RC8 | `test_rebuild_false_refuses_missing_and_faulty_journals`. (a) A missing path inside a missing directory: `NotifierStoreError`, and the listing of `tmp_path` is unchanged. (b) The race: `Path.is_file` patched to report True for a missing path still raises and creates nothing. (c) Unreadable bytes, a failed integrity check and a foreign schema: each raises; the file bytes, any sidecars and the listing are unchanged; no `*.corrupt-*` file and no `journal_rebuilt`. (d) A valid journal constructs, and `record_delivery` closes a job. With `rebuild=True`, the faulty files of (c) are still moved aside | NF7 |
-| RC9 | `test_run_once_stays_within_nf8_counts`. `read_incidents` returns M = 50 rows, all already journaled: 45 seeded delivered and 5 due pending. k = 2, and c = 2 channels that both reject at once. On the pass thread: `read_incidents` is called once; INSERTs into `jobs` = 0; `_journal` is entered exactly 2 + 2·k·c = 10 times, with `cap_deferred` inside the snapshot transaction; `_bounded_publish` is called exactly k·c = 4 times. The parse time for M rows is printed for the return, not asserted | NF8 |
+| RC8 | `test_rebuild_false_refuses_missing_faulty_and_uninitialized_journals`. (a) A missing path inside a missing directory: `NotifierStoreError`, and the listing of `tmp_path` is unchanged. (b) The race: `Path.is_file` patched to report True for a missing path still raises and creates nothing. (c) Unreadable bytes, a failed integrity check and a foreign schema: each raises; the file bytes, any sidecars and the listing are unchanged; no `*.corrupt-*` file and no `journal_rebuilt`. (d) A valid journal constructs, and `record_delivery` closes a job. With `rebuild=True`, the faulty files of (c) are still moved aside. (e) A 0-byte file and a table-less SQLite file: each raises `NotifierStoreError`; no table is created, nothing is moved aside and no `journal_rebuilt` is written. With `rebuild=True`, both are still initialized as fresh journals (`:324`). (f) The table-less file re-created under a running notifier: a `rebuild=True` instance N has three pending jobs, and the test renames the journal away. N's next `run_once` raises and leaves a file with no tables at the path. A `rebuild=False` construction there raises and creates no table. N's next `run_once` still raises, and N's `progress()` has not advanced since the rename | NF7, NF4 (R2) |
+| RC9 | `test_run_once_stays_within_nf8_counts`. `read_incidents` returns M = 50 rows, all already journaled: 45 seeded delivered and 5 due pending. k = 2, and c = 2 channels that both reject at once. On the pass thread: `read_incidents` is called once; INSERTs into `jobs` = 0; `_journal` is entered exactly 2 + 2·k·c = 10 times, with `cap_deferred` inside the snapshot transaction; `_bounded_publish` is called exactly k·c = 4 times. This setup attains NF8's counts, so "exactly" is the bound: `poll` opens its transaction with nothing to insert (NF4), neither channel is refused, and no nominated job closes early. The parse time for M rows is printed for the return, not asserted | NF8 |
 | RC10 | `test_new_fields_validated_and_round_trip[max_jobs_per_round, max_retained_incidents]`. Each of 0, -1, True, False, 1.0, 2.5, "2" and None raises `NotifierConfigError` naming the field, through `NotifierConfig(...)` and through `from_mapping`. The defaults 10 and 1000 appear in `resolved()`. For the defaults and for (3, 7), `from_mapping(c.resolved()) == c` with equal digests. Changing either field changes the digest | NF1, NF4 |
 | — | Regression: `tests/ops/test_book_incident_notifier.py` passes unchanged (59) | NF9 |
 
@@ -315,17 +327,20 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 | A class-A-only deferral is loud | RC5(b) |
 | `cap_deferred` in its own transaction | RC9 |
 | Known keys ignored | RC6(a), RC9 |
-| Known set updated before `COMMIT` | RC6(b) |
+| Known set updated before `COMMIT` | RC6(b), RC6(e) |
+| Crossing state updated before `COMMIT` | RC6(e) |
+| `poll` opens no transaction when every key is known | RC9 |
 | `retained_incidents_over_bound` on every poll above M | RC6(c) |
 | `LIMIT M` on the pending fetch | RC6(d) |
 | `progress()` derived from the clock | RC7 |
 | `rebuild` ignored; an `is_file` check without `mode=rw` | RC8(a)-(c); RC8(b) |
+| An empty or table-less journal initialized under `rebuild=False` | RC8(e), RC8(f) |
 | An `incident_key` tiebreak | The #628 regression |
 
 **Return taxonomy.**
 - **DONE:** every RC test recorded red at base and green at head; every mutant red; the regression, `test-ops`, `check` and the full suite green, with records cited; the diff inside §5.
 - **DONE_WITH_CONCERNS:** the selected outcome holds, with a disclosed baseline limitation unrelated to this patch that reproduces on unmodified origin/main.
-- **NEEDS_CONTEXT:** a missing input, a contradicted default, D1 or D2 ruled against, or a #635 landing that overlaps §5's parts.
+- **NEEDS_CONTEXT:** a missing input, a contradicted default, or a #635 landing that overlaps §5's parts.
 - **BLOCKED:** a necessary edit outside §5, or an environment failure the launcher cannot repair.
 
 A failed required acceptance criterion is not DONE_WITH_CONCERNS.
@@ -347,7 +362,7 @@ git diff --stat origin/main...HEAD                                              
 
 For each check, report the command, the interpreter, the head, and the printed `record.json` (`status: completed`, exit 0, `source_stable`). Disclose any pre-existing failure with its reproduction on unmodified origin/main (AGENTS.md `:220-227`).
 
-**Full suite.** Joshua confirmed on 2026-10-03, directly to coordinator (3), that a code PR needing coordinator (3)'s acceptance waits for the full suite. This card records that from coordinator (3)'s dispatch; its author has not seen the confirmation.
+**Full suite.** Joshua confirmed on 2026-10-03 at 18:22Z, directly to coordinator (3) ("sounds good"), that a code PR needing coordinator (3)'s acceptance waits for the full suite. **Confirmed by coordinator (3)** (AUTH: coordinator (3)'s 2026-10-03 fold dispatch).
 
 ## §8 — Out of scope
 
@@ -364,24 +379,32 @@ For each check, report the command, the interpreter, the head, and the printed `
 
 **Recorded.**
 - **Authority.** Coordinator (3) dispatched this rewrite under its #628 build authority on 2026-10-03.
-- **OQ-NF-1:** owner reading, RULED (§0.5 item 7).
-- **Full-suite rule** (§7).
+- **D1, RULED** by coordinator (3), card owner, 2026-10-03: NF5 reads every pending job with no SQL `LIMIT` (§0.5 item 4).
+- **D2, RULED** by coordinator (3), 2026-10-03: `mode=rw` and no `mkdir` under `rebuild=False`; §5 widened (§0.5 item 5).
+- **Empty-journal refusal, RULED** by coordinator (3), 2026-10-03: `rebuild=False` refuses any schema other than `_JOURNAL_SCHEMA` (§0.5 item 6).
+- **OQ-NF-1:** owner reading, RULED; the record is confirmed by coordinator (3) (§0.5 item 7).
+- **Full-suite rule:** confirmed by coordinator (3) (§7).
 
 **Residuals.**
 - **R1. A deterministic raise in a round.** An example is `assert_no_secrets` rejecting a job's reason (`:464`; `c1_rail_telemetry.py:127-144`).
   - The job stays at `rounds = 0` with its due time unchanged, so it remains the earliest-due class-U job. It heads every pass and blocks every job behind it. Under `rowid` order it blocked only later rows.
   - It is loud: `run_once` raises, so `liveness()` and `progress()` stop.
   - It is latent: owner reasons are codes or canonical JSON.
-- **R2. Known keys versus an outside rebuild** (NF4).
-- **R3. A backward clock** loosens NF2's bound (NF2).
+- **R2. Known keys versus a second instance** (NF4).
+- **R3. A backward clock** loosens NF2's class-U bound (NF2).
 - **R4. pending ≤ n.** D1's bound assumes one owner DB feeds the journal and never deletes incidents. Replacing the owner DB under an existing journal breaks it.
 - **R5. Wall-clock spacing** can exceed the journal's spacing by up to `max_round_duration` (NF2).
+- **R6. A loud pass is not a page** (NF3). The heartbeat resumes marking on the next clean pass, so a class-U backlog that clears in less than T_n pages nobody, although a retry gap exceeds 60 s.
+  - Example: L = 5 s, `retry_max_s` = 30 s, k = 10 and 60 due U jobs ahead of X, ignoring poll_bound. Six loud passes (30 s, under T_n = 60 s) put X's attempts 30 + 7·5 = 65 s apart, and only `cap_deferred` rows record it.
+  - Sent to coordinator (2), the halt/resume owner, for confirmation (OQ-NF-3, PENDING).
 
 **OPEN.**
-- **D1** (coordinator (3)). NF5 without `LIMIT` (§0.5 item 4). Lean: accept.
-- **D2** (coordinator (3)). NF7's `mode=rw` open, which widens §5 to the connect lines (§0.5 item 5). Lean: accept.
 - **OQ-NF-2** (the `book_account_owner.py` owner). An incremental `read_incidents`. Out of scope.
-- **OQ-CAP-3** (coordinator (3), for #651's freeze). Choose τ, W_j, k or T_n so that NF8 stays below 30 s, and account for R5. Once this card lands, #651 §0.5 item 6 (`af14556:79`, "has no job cap") is stale.
+- **OQ-CAP-3** (coordinator (3), for #651's freeze).
+  - Choose τ, W_j, k or T_n so that NF8 stays below 30 s, and account for R5.
+  - **BINDING CHECK (extension, routed to #651).** #651's binding validator (`validate_binding`, `af14556:132`) refuses a binding unless `retry_max_s` + `max_notifier_loop_interval` + poll_bound < `ESCALATION_STEP_S`. It reads `retry_max_s` from the notifier's configuration and imports `ESCALATION_STEP_S` from `book_incident_notifier.py` (`:60-62`) rather than restating it. This is NF2's class-U precondition. #651's (b) does not imply it: NF8 = 10 s and L = 35 s can pass (b), but 30 + 35 > 60 s. #651 at `af14556` does not carry it yet; until it does, NF2's normal-case guarantee is unenforced.
+  - Once this card lands, #651 §0.5 item 6 (`af14556:79`, "has no job cap") is stale.
+- **OQ-NF-3** (coordinator (2), halt/resume owner). Whether R6 is accepted: a class-U backlog shorter than T_n is loud but pages nobody. Sent for confirmation; PENDING.
 
 ## §10 — Audit hooks
 
@@ -403,7 +426,7 @@ git diff origin/main...HEAD -- ops/c1_rail/book_incident_notifier.py | rg -n 'CH
 
 - **Status:** DRAFT. At freeze, coordinator (3) records:
   - the frozen revision;
-  - the rulings on D1 and D2, and confirmation of the OQ-NF-1 record;
+  - OQ-NF-3's state (§9);
   - the #635 sequencing;
   - every moved anchor.
 - **Executor (planned):** one Claude Code (Opus) worker session, seat worker, in a worktree under `.claude/worktrees/`. It works on a pushed `claude/*` branch, with no PR unless the coordinator records one.
