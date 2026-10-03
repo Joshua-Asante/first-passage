@@ -8,6 +8,10 @@ site-packages itself (no ``site``, ``.pth`` or customization module runs), then
 runs ``p7_driver`` through ``runpy``. A record is accepted only when a fresh
 re-execution over the current bytes reproduces it outside the volatile fields.
 
+The T00 screen worker's ``SCREEN_BOOTSTRAP`` is rendered from the same template
+with the screen's parameters (design 2026-10-02 C8, §5.1; build card 2026-10-03
+§3.3), so the audit hook and recording finder have one implementation.
+
 Scope of ``code_closure_sha256`` (operator ruling 2026-10-02, Codex P1 4163033692 on
 #594): it identifies the Python-source closure (first-party sources, and third-party
 module origins including extension modules) together with the recorded interpreter
@@ -31,6 +35,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from types import MappingProxyType
 
 RECORD_SCHEMA = 't00-p7-evidence/v1'
 EVIDENCE_LABEL = 'P7 producer-faithfulness evidence; not qualification, screen, GO/NO-GO or F1 evidence'
@@ -45,6 +50,16 @@ P7_FORBIDDEN_MODULES = (
     'c1_rail.qualification.benchmark_part_a', 'c1_rail.qualification.production',
     'c1_rail.qualification.orchestration', 'c1_rail.qualification.result_adjudication',
     'c1_rail.qualification.seal', 'c1_rail.qualification.execution',
+    # Design 2026-10-02 §5.1 (row K10): P7 never imports the screen; t00_screen is a package.
+    'c1_rail.qualification.screen_authority', 'c1_rail.qualification.t00_screen',
+)
+# The screen worker never imports execution (design 2026-10-02 §5.1, row K10);
+# bracket, runner.evaluate_replay and simulate_path load live.
+SCREEN_FORBIDDEN_MODULES = (
+    'c1_rail.qualification.production', 'c1_rail.qualification.orchestration',
+    'c1_rail.qualification.result_adjudication', 'c1_rail.qualification.seal', 'c1_rail.qualification.execution',
+    'c1_rail.qualification.part_a', 'c1_rail.qualification.benchmark', 'c1_rail.qualification.benchmark_part_a',
+    'c1_rail.qualification.p7_driver',
 )
 
 
@@ -52,19 +67,23 @@ def forbidden_module(name):
     return any(name == module or name.startswith(module + '.') for module in P7_FORBIDDEN_MODULES)
 
 
-# The inline bootstrap. Everything before ``runpy`` uses only builtins, ``sys``
-# and stdlib modules recorded as stdlib; nothing first-party runs unrecorded.
-P7_BOOTSTRAP = r'''
+# The inline bootstrap template (design 2026-10-02 C8). ``render_bootstrap``
+# substitutes each ``__NAME__`` token with the repr of one parameter. Everything
+# before ``runpy`` uses only builtins, ``sys`` and stdlib modules recorded as
+# stdlib; nothing first-party runs unrecorded.
+_BOOTSTRAP_TEMPLATE = r'''
 import sys
 
 
 def _p7_bootstrap():
+    refusal_prefix, forbidden, stub_targets = __PREFIX__, __FORBIDDEN_MODULES__, __STUBS__
+    journal_name_pattern = __JOURNAL_NAME_PATTERN__
     argv = list(getattr(sys, 'orig_argv', ()))
-    if '-c' not in argv or len(sys.argv) < 8:
-        raise SystemExit('P7_BOOTSTRAP_MISMATCH: launch only through p7_evidence.run_p7')
+    if '-c' not in argv or len(sys.argv) < __MIN_ARGV__:
+        raise SystemExit(refusal_prefix + '_BOOTSTRAP_MISMATCH: launch only through ' + __LAUNCHER__)
     bootstrap_text = argv[argv.index('-c') + 1]
     if not (sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode):
-        raise SystemExit('P7_BOOTSTRAP_MISMATCH: -I -S -B are required')
+        raise SystemExit(refusal_prefix + '_BOOTSTRAP_MISMATCH: -I -S -B are required')
 
     class State:
         pass
@@ -74,6 +93,7 @@ def _p7_bootstrap():
     state.first_party, state.third_party, state.stdlib, state.ports = {}, {}, set(), {}
     state.loader_codes, state.compiling = set(), set()
     state.code_root = None
+    state.journal_rule, state.journal_path = False, None
 
     def refuse(code, detail):
         state.refusals.append(code + ': ' + detail)
@@ -113,11 +133,12 @@ def _p7_bootstrap():
             raw = source.encode('utf-8') if isinstance(source, str) else bytes(source)                 if isinstance(source, (bytes, bytearray)) else None
             if raw is not None and _hashlib.sha256(raw).hexdigest() in state.first_party_hashes \
                     and not own_installed_source(filename, raw):
-                raise refuse('P7_UNAUDITED_EXEC', 'compile of first-party file bytes outside the recording loader: '
-                             + repr(filename))
+                raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                             'compile of first-party file bytes outside the recording loader: ' + repr(filename))
             real = resolve(filename)
             if real is not None:
-                raise refuse('P7_UNAUDITED_EXEC', 'compile of first-party bytes outside the recording loader: ' + real)
+                raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                             'compile of first-party bytes outside the recording loader: ' + real)
             if real is None and isinstance(source, (bytes, bytearray)) and isinstance(filename, str) \
                     and not _os.path.isabs(filename) and not filename.startswith('<'):
                 state.ports[filename.replace('\\', '/')] = _hashlib.sha256(bytes(source)).hexdigest()
@@ -127,10 +148,35 @@ def _p7_bootstrap():
                 return
             real = resolve(code.co_filename)
             if real is not None and id(code) not in state.loader_codes:
-                raise refuse('P7_UNAUDITED_EXEC', 'exec of first-party code outside the recording loader: ' + real)
+                raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                             'exec of first-party code outside the recording loader: ' + real)
+        elif event == 'open' and state.journal_rule:
+            # Card 2026-10-03 §3.3 (row S2): a write-open (mode with w, a, x or +, or a write,
+            # append or create flag) is allowed only of this worker's own journal. A descriptor
+            # (int) opens no file; its own open was checked here.
+            path, mode, flags = args
+            if not ((isinstance(mode, str) and any(c in mode for c in 'wax+')) or (flags or 0) & state.write_flags):
+                return
+            if isinstance(path, int):
+                return
+            try:
+                target = _os.path.normcase(_os.path.realpath(_os.fsdecode(_os.fspath(path))))
+            except Exception:
+                target = None
+            if state.journal_path is None or target != state.journal_path:
+                raise refuse(refusal_prefix + '_WRITE_REFUSED', 'write-open outside the worker journal: ' + repr(path))
 
     sys.addaudithook(audit)
     import os as _os
+    if journal_name_pattern is not None:
+        # Card 2026-10-03 §3.3: argv is code_root, run_dir, authority_sha256, journal_name.
+        state.write_flags = _os.O_WRONLY | _os.O_RDWR | _os.O_APPEND | _os.O_CREAT | _os.O_TRUNC | _os.O_EXCL
+        state.journal_rule = True
+        import re as _re
+        if _re.fullmatch(journal_name_pattern, sys.argv[4]) is None:
+            raise SystemExit(refusal_prefix + '_WRITE_REFUSED: journal name ' + repr(sys.argv[4]))
+        state.journal_path = _os.path.normcase(
+            _os.path.realpath(_os.path.join(sys.argv[2], 'journal', sys.argv[4])))
     # -B stops cache writes, not cache reads: a timestamp-valid or unchecked
     # __pycache__ .pyc beside a hashed .py would run instead of the hashed bytes.
     # A fresh, never-created prefix makes every source module compile from the
@@ -138,7 +184,7 @@ def _p7_bootstrap():
     state.pycache_prefix = _os.path.join(
         _os.environ.get('TEMP') or _os.environ.get('TMPDIR') or '/tmp', 'p7-no-pycache-' + _os.urandom(16).hex())
     if _os.path.exists(state.pycache_prefix):
-        raise SystemExit('P7_BOOTSTRAP_MISMATCH: bytecode cache prefix is not fresh')
+        raise SystemExit(refusal_prefix + '_BOOTSTRAP_MISMATCH: bytecode cache prefix is not fresh')
     sys.pycache_prefix = state.pycache_prefix
     import hashlib as _hashlib
     import subprocess as _subprocess
@@ -172,15 +218,14 @@ def _p7_bootstrap():
         state.code_head = git('rev-parse', 'HEAD').strip()
         dirty = git('status', '--porcelain', '--untracked-files=no').strip()
     except Exception as exc:
-        raise SystemExit('P7_TREE_DIRTY: code root is not a readable git checkout: ' + repr(exc))
+        raise SystemExit(refusal_prefix + '_TREE_DIRTY: code root is not a readable git checkout: ' + repr(exc))
     if dirty:
-        raise SystemExit('P7_TREE_DIRTY: tracked changes in the code root at start')
+        raise SystemExit(refusal_prefix + '_TREE_DIRTY: tracked changes in the code root at start')
     state.git = git
     state.first_party_hashes = {
         _hashlib.sha256(open(_os.path.join(code_root, rel), 'rb').read()).hexdigest()
         for rel in git('ls-files', '-z', '--', '*.py').split(chr(0)) if rel}
 
-    forbidden = FORBIDDEN_MODULES
     state.code_root = code_root
 
     def under(path, root):
@@ -221,7 +266,7 @@ def _p7_bootstrap():
             rel = _os.path.relpath(self.path, code_root).replace(_os.sep, '/')
             seen = state.first_party.get(self.name)
             if seen is not None and seen['sha256'] != digest:
-                raise refuse('P7_SOURCE_CHANGED_DURING_RUN', rel)
+                raise refuse(refusal_prefix + '_SOURCE_CHANGED_DURING_RUN', rel)
             state.first_party[self.name] = {'path': rel, 'sha256': digest}
             state.compiling.add(self.path)
             try:
@@ -239,7 +284,7 @@ def _p7_bootstrap():
     class RecordingFinder:
         def find_spec(self, name, path=None, target=None):
             if name in forbidden or any(name.startswith(prefix + '.') for prefix in forbidden):
-                raise refuse('P7_FORBIDDEN_IMPORT', name)
+                raise refuse(refusal_prefix + '_FORBIDDEN_IMPORT', name)
             spec, source = None, None
             for finder in sys.meta_path:
                 if finder is self or not hasattr(finder, 'find_spec'):
@@ -262,7 +307,8 @@ def _p7_bootstrap():
                 if owner_file and under(owner_file, site):
                     state.third_party.setdefault(name, {'path': None, 'sha256': None})
                     return spec
-                raise refuse('P7_ORIGIN_OUTSIDE_ROOT', name + ' virtual module from an unrecorded importer')
+                raise refuse(refusal_prefix + '_ORIGIN_OUTSIDE_ROOT',
+                             name + ' virtual module from an unrecorded importer')
             if origin is None:  # namespace package
                 locations = [_os.path.realpath(p) for p in (spec.submodule_search_locations or ())]
                 if locations and all(under(p, code_root) for p in locations):
@@ -271,7 +317,7 @@ def _p7_bootstrap():
                 if locations and all(under(p, site) for p in locations):
                     state.third_party.setdefault(name, {'path': None, 'sha256': None})
                     return spec
-                raise refuse('P7_ORIGIN_OUTSIDE_ROOT', name + ' namespace outside allowed roots')
+                raise refuse(refusal_prefix + '_ORIGIN_OUTSIDE_ROOT', name + ' namespace outside allowed roots')
             real = _os.path.realpath(origin)
             if under(real, site):
                 # A sourceless .pyc/.pyd origin is hashed as the executed bytes; a
@@ -279,7 +325,7 @@ def _p7_bootstrap():
                 cached = getattr(spec, 'cached', None)
                 if cached and (sys.pycache_prefix != state.pycache_prefix
                                or not under(_os.path.abspath(cached), state.pycache_prefix)):
-                    raise refuse('P7_UNBOUND_BYTECODE', name + ' would load cached bytecode ' + cached)
+                    raise refuse(refusal_prefix + '_UNBOUND_BYTECODE', name + ' would load cached bytecode ' + cached)
                 state.third_party[name] = {'path': _os.path.relpath(real, site).replace(_os.sep, '/'),
                                            'sha256': _hashlib.sha256(open(real, 'rb').read()).hexdigest()}
                 return spec
@@ -288,10 +334,10 @@ def _p7_bootstrap():
                 return spec
             if under(real, code_root) and real.endswith('.py'):
                 if real in forbidden_files or any(under(real, d) for d in forbidden_dirs):
-                    raise refuse('P7_FORBIDDEN_IMPORT', name + ' resolves to a forbidden module file')
+                    raise refuse(refusal_prefix + '_FORBIDDEN_IMPORT', name + ' resolves to a forbidden module file')
                 canonical = state.first_party_paths.setdefault(real, name)
                 if canonical != name:
-                    raise refuse('P7_MODULE_ALIAS', name + ' is a second module name for ' + canonical)
+                    raise refuse(refusal_prefix + '_MODULE_ALIAS', name + ' is a second module name for ' + canonical)
                 package = spec.submodule_search_locations is not None
                 loader = FirstPartyLoader(name, real, package)
                 new = _machinery.ModuleSpec(name, loader, origin=real, is_package=package)
@@ -299,45 +345,82 @@ def _p7_bootstrap():
                     new.submodule_search_locations = list(spec.submodule_search_locations)
                 new.has_location = True
                 return new
-            raise refuse('P7_ORIGIN_OUTSIDE_ROOT', name + ' from ' + real)
+            raise refuse(refusal_prefix + '_ORIGIN_OUTSIDE_ROOT', name + ' from ' + real)
 
     for name in list(state.audited_imports):
         module = sys.modules.get(name)
         origin = getattr(getattr(module, '__spec__', None), 'origin', None)
         if origin not in (None, 'built-in', 'frozen') and not any(
                 under(_os.path.realpath(origin), d) for d in stdlib_dirs):
-            raise SystemExit('P7_ORIGIN_OUTSIDE_ROOT: pre-finder import ' + name)
+            raise SystemExit(refusal_prefix + '_ORIGIN_OUTSIDE_ROOT: pre-finder import ' + name)
         state.stdlib.add(name)
     sys.meta_path.insert(0, RecordingFinder())
     sys.dont_write_bytecode = True
     sys.path[:0] = import_roots
     sys.path.append(site)
     sys.p7_recorder = state
-    # Revision 4.3 (b): runner and mc.simulation load for their types; their kernel
-    # entry points are stubbed in this process only and checked again at record time.
+    # Revision 4.3 (b): the stubbed modules load for their types; the listed entry
+    # points are stubbed in this process only and checked again at record time.
     import importlib as _importlib
-    runner = _importlib.import_module('c1_rail.qualification.runner')
-    simulation = _importlib.import_module('mc.simulation')
+    stub_modules = {}
+    for module_name, _attr in stub_targets:
+        stub_modules.setdefault(module_name, _importlib.import_module(module_name))
     state.stubs = []
 
     def make_stub(label):
         def stub(*args, **kwargs):
-            raise refuse('P7_FORBIDDEN_CALL', label)
+            raise refuse(refusal_prefix + '_FORBIDDEN_CALL', label)
         return stub
-    for module, attr in ((runner, 'evaluate_replay'), (runner, 'run_synthetic_stage'), (runner, '_run_stage'),
-                         (runner, 'simulate_path'), (simulation, 'simulate_path')):
+    for module_name, attr in stub_targets:
+        module = stub_modules[module_name]
         stub = make_stub(module.__name__ + '.' + attr)
         setattr(module, attr, stub)
         state.stubs.append((module, attr, stub))
     # The stubs bind the module object loaded from each file (Codex P1 on #594).
-    state.stub_origins = {_os.path.realpath(module.__file__): module for module in (runner, simulation)}
+    state.stub_origins = {_os.path.realpath(module.__file__): module for module in stub_modules.values()}
     import runpy
-    runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__', alter_sys=False)
+    runpy.run_module(__ENTRY_MODULE__, run_name='__main__', alter_sys=False)
 
 
 _p7_bootstrap()
-'''.replace('FORBIDDEN_MODULES', repr(P7_FORBIDDEN_MODULES))
+'''
+_BOOTSTRAP_PARAM_KEYS = ('prefix', 'forbidden_modules', 'stubs', 'entry_module', 'min_argv', 'launcher',
+                         'journal_name_pattern')
+
+
+def render_bootstrap(params):
+    """The bootstrap text for one process kind (design 2026-10-02 C8); every key is required, no other."""
+    if set(params) != set(_BOOTSTRAP_PARAM_KEYS):
+        raise ValueError('bootstrap parameters must be exactly: ' + ', '.join(_BOOTSTRAP_PARAM_KEYS))
+    text = _BOOTSTRAP_TEMPLATE
+    for key in _BOOTSTRAP_PARAM_KEYS:
+        token = '__' + key.upper() + '__'
+        if text.count(token) != 1:
+            raise ValueError('bootstrap template token ' + token + ' must occur once')
+        text = text.replace(token, repr(params[key]))
+    return text
+
+
+_RUNNER = 'c1_rail.qualification.runner'
+_P7_BOOTSTRAP_PARAMS = MappingProxyType({
+    'prefix': 'P7', 'forbidden_modules': P7_FORBIDDEN_MODULES,
+    'stubs': ((_RUNNER, 'evaluate_replay'), (_RUNNER, 'run_synthetic_stage'), (_RUNNER, '_run_stage'),
+              (_RUNNER, 'simulate_path'), ('mc.simulation', 'simulate_path')),
+    'entry_module': 'c1_rail.qualification.p7_driver', 'min_argv': 8, 'launcher': 'p7_evidence.run_p7',
+    'journal_name_pattern': None,
+})
+# Card 2026-10-03 §3.3: [python, -I, -S, -B, -c, SCREEN_BOOTSTRAP, code_root, run_dir, authority_sha256,
+# journal_name]; runpy runs t00_screen.worker; the recorder stays sys.p7_recorder.
+_SCREEN_BOOTSTRAP_PARAMS = MappingProxyType({
+    'prefix': 'SCREEN', 'forbidden_modules': SCREEN_FORBIDDEN_MODULES,
+    'stubs': ((_RUNNER, '_run_stage'), (_RUNNER, 'run_synthetic_stage')),
+    'entry_module': 'c1_rail.qualification.t00_screen.worker', 'min_argv': 5,
+    'launcher': 'the t00_screen coordinator', 'journal_name_pattern': '^[csv][1-9][0-9]*-w[0-9]+[.]jsonl$',
+})
+P7_BOOTSTRAP = render_bootstrap(_P7_BOOTSTRAP_PARAMS)
 P7_BOOTSTRAP_SHA256 = hashlib.sha256(P7_BOOTSTRAP.encode('utf-8')).hexdigest()
+SCREEN_BOOTSTRAP = render_bootstrap(_SCREEN_BOOTSTRAP_PARAMS)
+SCREEN_BOOTSTRAP_SHA256 = hashlib.sha256(SCREEN_BOOTSTRAP.encode('utf-8')).hexdigest()
 
 
 class P7Refusal(ValueError):
