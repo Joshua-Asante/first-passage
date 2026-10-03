@@ -10,6 +10,8 @@ Accept the five parts below as the integrated L1 change of §59 Ruling 6, as rea
 
 Acceptance would discharge Ruling 6's *Return* and the successor pre-registration's §8 step 1 condition (["before freeze, the integrated ORB-1/RC-9/rail S2/qualification replay change and its verification are returned to the operator for acceptance"](../briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md), `:143`). It would adopt the AC-3 correction (part 5). It would **not** freeze an edition, word ORB-1's final text (OWED at freeze), run a replay or E1, or accept the fence obligation of Ruling 7(b).
 
+*Accepted, operator ruling 2026-10-02 (sitting 2):* all five parts, with part 5 extended to S4 :77. This discharges §59 Ruling 6's Return and the successor pre-registration's §8 step 1 L1 condition. It does not freeze an edition or word ORB-1's final text.
+
 ## The five parts
 
 | # | Part | Where | Authority | Applied by, and status | Verification evidence |
@@ -36,7 +38,7 @@ Only AC-3 needed more than a lifecycle edit. Its problem was the add's order typ
 
 | Item | Owner | Status |
 |---|---|---|
-| S4's example "ORB adds at a mode change through `set_mode`" (rail spec `:77`). Under the corrected AC-3 there is no resting ORB add for a mode change to cancel. Ruling 6 does not name S4's example | Rail spec | Not amended here. Returned for the operator to say whether part 5 should also cover it |
+| S4's example "ORB adds at a mode change through `set_mode`" (rail spec `:77`). Under the corrected AC-3 there is no resting ORB add for a mode change to cancel. Ruling 6 does not name S4's example | Rail spec | Not amended here. Returned for the operator to say whether part 5 should also cover it. *Accepted, operator ruling 2026-10-02 (sitting 2):* all five parts, with part 5 extended to S4 :77. This discharges §59 Ruling 6's Return and the successor pre-registration's §8 step 1 L1 condition. It does not freeze an edition or word ORB-1's final text. |
 | ORB-1 says "one contract per base or add" but does not say the add is a market order | Successor pre-registration | Final wording OWED at freeze |
 | The takeover-cancel and incident-handling ends of a resting ORB base entry in the replay. H4's named tests cover the port's cancel and the cutoff; whether other replay tests cover a takeover cancel of a resting ORB base entry was not checked here | Coordinator | Not checked |
 | RC-9's duplicate key `(leg, kind, bar_time)` against the replay's `path_time` | Replay spec | STILL OPEN (disposition §2; not a lifecycle item) |
