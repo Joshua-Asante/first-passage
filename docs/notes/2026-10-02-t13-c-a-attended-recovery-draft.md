@@ -1,6 +1,6 @@
 # Draft: attended recovery after a C-a close incident (T13 preparation, register row S-X3) — 2026-10-02
 
-**Status: DRAFT. PROPOSED as T13 owner text.** It discharges nothing until the coordinator accepts it as owner text, which is S-X3's discharge evidence. It authorizes no drill, read, order action, vendor or firm contact, arm or GO. The operator performs every step. The runtime performs none.
+**Status: DRAFT. PROPOSED as T13 owner text.** It discharges nothing until the coordinator accepts it as owner text **and** the owner disposes of the §7 step-3 GAP; together those are S-X3's discharge evidence. It authorizes no drill, read, order action, vendor or firm contact, arm or GO. The operator performs every step. The runtime performs none.
 
 **Traces to.** C-a selection register row **S-X3** ([`docs/notes/2026-09-26-close-semantics-c-a.md`](2026-09-26-close-semantics-c-a.md#addendum-2026-10-02--c-a-selection-register-proposed-for-operator-acceptance) on main, as merged from PR #593 at `550bc74`, §R.4 *Actors and attended recovery*; accepted as written by operator ruling 2026-10-02 (sitting 2)). S-X3 asks for a written procedure for an incident during or after a C-a close, covering:
 - quiescence and residual request accounting (§3, §4 below);
@@ -111,7 +111,7 @@ The firm's 4:45 PM ET auto-close and its drawdown liquidation are further close 
 
 1. **Tradovate is not a fallback.** Its Emergency Trade Desk does not act on evaluation accounts, and Tradovate Support does not resolve evaluation rejections (CS :302; DP :149).
 2. **CrossTrade is not a closing fallback.** REST C-a is excluded in an incident (CL item 7.2).
-3. **Contact Tradeify** through the P4 path. Whether, and how fast, Tradeify can flatten an evaluation position is not documented (CS :302; DP :149). Tradeify also says it does not repair accounts for third-party platform problems or stop-loss failures (DP :149; applying that to CrossTrade is an inference). Contacting Tradeify is a message, so it is the operator's act.
+3. **GAP: technical fallback when Tradovate itself is unavailable, login fails or actions are blocked.** The Tradeify contact path is not used (D-MON-3, superseded 2026-10-03: Joshua flattens directly on Tradovate; #615 RH7, §7 G4/G5). No fallback for a Tradovate outage is defined; **S-X3 stays held** until the owner disposes of this GAP. *Earlier text, kept as the record:* "Contact Tradeify through the P4 path … Contacting Tradeify is a message, so it is the operator's act."
 4. **Keep reading** if reads work (read-only collection continues: HR :49). Record every contact and its time.
 5. A liquidation-only account still allows exits on the platform (CS :288, platform help text).
 

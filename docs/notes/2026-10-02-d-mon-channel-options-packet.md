@@ -4,7 +4,7 @@
 
 **Ticket.** Coordinator ticket M, item 1 (T13 preparation). Line numbers are on origin/main `bd30646` unless a PR head is named. The ticket's "about :596" for the D-MON ruling is :599 (on main 10b3929) (:596 is the T13 bullet).
 
-**Ruling being applied** (checklist :599): check the existing channels against the halt/resume contract; fill any gap with a no-cost external provider, not an in-house build; the alternate-channel escalation stays.
+**Ruling being applied** (checklist :598 at `bd30646`): check the existing channels against the halt/resume contract; fill any gap with a no-cost external provider, not an in-house build; the alternate-channel escalation stays.
 
 ## 1. What the contract requires
 
@@ -52,7 +52,7 @@ The two notifier classes serve the legacy c1 listener ([`c1_rail_listener.py`](.
 
 **Result: the existing channels do not meet the contract.** Push (N2), timed alternate escalation (N3, N5, N6), delivery evidence (N4) and an external heartbeat (N9) are missing. Under the ruling, a no-cost external provider fills them.
 
-**What a provider cannot fill.** Detection, the incident identity, the authenticated attendance record (N4, N7) and the bounded call that hands an incident to the provider stay in the rail (TB-I3; [Phase 5 plan](../superpowers/plans/2026-09-16-phase5-attended-operations.md) work package 2, :62–76). With no outbox, that call is a bounded publish that carries the incident id as the provider's deduplication key, and a retry repeats the same key. Whether that meets HR :61's "notification outbox" sentence is the halt/resume owner's reading (OQ-1).
+**What a provider cannot fill.** Detection, the incident identity, the authenticated attendance record (N4, N7) and the bounded call that hands an incident to the provider stay in the rail (TB-I3; [Phase 5 plan](../superpowers/plans/2026-09-16-phase5-attended-operations.md) work package 2, :62–76). That call is a bounded publish that carries the incident id as the provider's deduplication key, and a retry repeats the same key. *Resolved 2026-10-03 (halt/resume owner reading, HR :61 on main):* the notifier's durable journal plus bounded publish (#628) is HR :61's "notification outbox", under four conditions: an idempotency key derived only from the incident id; a structural no-broker-import test; a journal rebuildable from committed `incidents`; and a heartbeat covering notifier liveness as well as runtime liveness, before any armed session.
 
 ## 4. Options (all $0 tiers)
 
@@ -101,7 +101,7 @@ Carried from #570's pre-ruling D-MON analysis (retrievable at `564b239`, §2), w
 - The publish call is bounded and stays off the order and protection path. A provider timeout cannot delay a protective action.
 - The payload carries the incident id and minimal status only, with no account, order or strategy detail. This is also the public-repo posture.
 - Credentials stay outside version control. Provider settings are configuration as code with secret references (AGENTS.md, *Configuration as code*).
-- The heartbeat is tied to observed rail and daemon progress, not a free-running timer, so a live timer cannot mask a dead component. A failed durable incident write stops the heartbeat or sends a failure signal (HR :34, :61).
+- The heartbeat is tied to observed rail and daemon progress, not a free-running timer, so a live timer cannot mask a dead component. A failed durable incident write stops the heartbeat or sends a failure signal (HR :34, :61). The heartbeat also covers the **notifier's** liveness, not only the runtime's (HR :61 owner reading, condition 4).
 - Heartbeat recovery never clears a latched incident. Provider acknowledgment never clears an incident or restores authority (N7).
 - A silent host is detected only after the heartbeat threshold: period plus grace, at least 2 minutes on Healthchecks. That threshold is separate from the 60 s escalation, which runs from the first notification attempt. Both are qualified (N10).
 
@@ -109,7 +109,7 @@ Carried from #570's pre-ruling D-MON analysis (retrievable at `564b239`, §2), w
 
 Checklist T13 (:270) owes real delivery, failure and escalation, an external heartbeat and durable acknowledgment. With synthetic incident data only, before any armed session:
 
-1. A killed publisher alerts the primary channel within the qualified heartbeat threshold.
+1. A killed publisher, or a killed notifier beside a live runtime, alerts the primary channel within the qualified heartbeat threshold.
 2. A synthetic rail incident reaches the primary channel, and the time to acknowledgment is measured.
 3. With no acknowledgment, the alternate channel fires 60 s after the first attempt (the measured offset is recorded).
 4. A primary delivery failure routes to the remaining channel at once.
@@ -121,11 +121,11 @@ Checklist T13 (:270) owes real delivery, failure and escalation, an external hea
 
 **For Joshua:**
 - **D-1.** Choose A, B or C (or another no-cost provider), and the primary and alternate media.
-  *Ruled, operator ruling 2026-10-02 (sitting 2):* A, with media as A describes (push, SMS at 1 minute, then a phone call), subject to qualification. B is the fallback if A's free tier lacks SMS or phone delivery or the 1-minute step. D-2 (opening the account) stays Joshua's act and is not done as of this record.
+  *Ruled, operator ruling 2026-10-02 (sitting 2):* A, with media as A describes (push, SMS at 1 minute, then a phone call), subject to qualification. B is the fallback if A's free tier lacks SMS or phone delivery or the 1-minute step. D-2 (opening the account) stays Joshua's act. *Done 2026-10-03:* Joshua opened the account; the configured chain is push and SMS at t=0, then a phone call at 1 minute (OQ-3).
 - **D-2.** If he chooses, open the provider account or accounts himself. Account creation is his act.
 
 **Open:**
-- **OQ-1** (halt/resume owner). Does a bounded publish with provider-side deduplication meet HR :61's "notification outbox"?
+- **OQ-1** (halt/resume owner). *Resolved 2026-10-03:* yes, under the four conditions recorded at HR :61 on main (see the paragraph above).
 - **OQ-2** (T13). There are two acknowledgments: the provider's, which stops paging, and the rail's authenticated attendance (HR :61). Proposal: keep both, with the provider's only silencing pages. Feeding one into the other needs an inbound webhook, which is an in-house build.
 - **OQ-3** (halt/resume owner; option C only). Does simultaneous fan-out meet N5?
 - **OQ-4** (qualification). Grafana free-tier SMS and phone delivery; Grafana's minimum heartbeat interval; PagerDuty Free's Events API; Healthchecks' PagerDuty integration; acknowledgment stopping notifications on A and B.

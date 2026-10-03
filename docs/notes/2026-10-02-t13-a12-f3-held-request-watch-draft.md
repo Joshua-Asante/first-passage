@@ -2,7 +2,7 @@
 
 **Status: DRAFT. PROPOSED as attended-operations (T13) owner text.** §A12 is itself PROPOSED ([`docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md`](../adr/2026-09-17-bounded-platform-protection-incident-contract.md) on main, as merged from PR #584 at `368f366`). *Citations refreshed 2026-10-02 from PR #584 `e57bd98` and PR #593 `8d253c9` to main (operator ruling 2026-10-02 (sitting 2), A12-D1).* Nothing here takes effect until §A12 and this text are both accepted. This note does not edit the incident ADR or the halt/resume contract. Its cadence and policy rows are proposals for the operator.
 
-**Traces to** (incident ADR on main, unchanged since `368f366`; ADR and acceptance-packet line numbers on main `1a350ec`):
+**Traces to** (incident ADR and acceptance-packet line numbers on main `1a350ec`; the ADR changed later on main, so cite by text):
 
 | §A12 text | What it asks | Here |
 |---|---|---|
@@ -57,7 +57,7 @@ Read authority is the same open question as S-X3's P3 (OQ-2).
 | Nothing new | "No unexplained effect observed at time T with reads R." **Not a release:** absence never releases (F2; closure plan row 3) | Record; schedule the next check |
 | An effect that an accepted F2 class uniquely correlates to a held request | Transfer under F2. This needs the operator's D2 and D3 dispositions (§A12.6, now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md)) | Hand to attended recovery (S-X3 draft §4–§8). The halt stays (F3) |
 | An effect not uniquely correlated | Incident (F5). It is an additional identified exposure, and the held request stays held; the double count is deliberate | Alert on the D-MON channels (W5). The operator manages exposure on the platform (HR :49; S-X3 draft §5) |
-| Reads fail, or the platform is unavailable | Check **missed**, not passed | Retry. If exposure is suspected, use the firm fallback (S-X3 draft §7) |
+| Reads fail, or the platform is unavailable | Check **missed**, not passed | Retry. If exposure is suspected, Joshua flattens directly on Tradovate (D-MON-3); if Tradovate itself is unavailable, see the S-X3 draft §7 step-3 GAP |
 
 ## W5 — Channels (D-MON)
 
