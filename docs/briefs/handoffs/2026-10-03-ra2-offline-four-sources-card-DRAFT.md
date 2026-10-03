@@ -1,0 +1,247 @@
+# R-A2 offline four-source slice (worker build card)
+
+**Type:** cc_handoff (worker build card)
+
+**Status:** DRAFT. Coordinator (3) freezes. Drafted 2026-10-03 by a coordinator-(3) worker and not dispatched. Coordinator (3) answers §12, commits the frozen revision under the committed-handoff rule, and records its SHA in the ledger before any executor starts. Dispatch is a separate decision.
+
+**Authority:**
+- **Track B owner disposition, coordinator (3), A9-PREP Q3/Q5, 2026-10-02.** R-A2 is a separate offline card. Track B owns the per-product session window, the four-source composition and the loop's source-health halt. None of these goes into the #619 contract or into the TB-I3 interlock card.
+- **Operator ruling A9-PREP Q1, 2026-10-02** (coordinator (3) sheet 2, item 3). If a bar has already been forwarded and a revised version arrives, the source latches `REFUSED` (`revision_after_delivery`). A late bar that cannot be verified also latches `REFUSED` (`late_bar_unverifiable`). #619 implements both at reviewed head `77373bd` (Codex relay CLEAN, 2026-10-03T03:17Z). This card consumes those latches. It does not implement them.
+
+**Executor:** a Claude worker, single writer of `claude/ra2-four-sources` (proposed), cut from the freeze base. **Not GLM.** This slice writes a halt path into the book loop, and AGENTS.md keeps risk-control code off the GLM lane.
+
+**Coordinator:** coordinator (3). It owns the freeze, diff review, integration, the Codex relay, PRs and the ledger.
+
+**Owners this card narrows (it changes none of them):**
+- [Multi-leg rail extension spec](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md) R-A2 (`:145`). The spec names `daemon.py` as the owner file and `test_four_sources_one_per_symbol` as the test.
+- [Track B umbrella](2026-09-10-track-b-qualify-accepted-book-umbrella.md): Track B builds everything offline-testable (D-B5, `:76`) and never chooses the feed (O-4, `:108`).
+- [S2b build ADR](../../adr/2026-08-08-s2b-signal-daemon-build.md) §2 Reconnect / Staleness / Fail-closed rows. #619 implements them for one source; this card adds the book-wide consequence.
+
+```yaml authority
+seat: worker
+parent: docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md
+max_risk: medium
+capabilities: [repository.read, tests.run, worktree.write, branch.push]
+constraints:
+  - offline_synthetic_only
+  - prerequisite_pr_619_merged
+  - no_wiring_build_loop_cli_or_daemon
+  - no_dockerfile_or_image_manifest_edit
+  - no_listener_health_report
+  - no_live_or_route_wiring
+  - no_provider_code_or_credentials
+  - no_calendar_code_or_data_edit
+  - no_bar_source_contract_edit
+  - no_book_account_owner_edit
+  - no_dd_protection_or_frozen_constant_edit
+  - no_pine_or_port_access
+  - no_private_bytes_committed
+  - no_host_or_fly_command
+  - no_main_write
+  - no_merge
+  - no_pr_open
+  - no_glm
+  - card_section2_files_only
+  - single_writer
+  - stop_at_coordinator_return
+acceptance:
+  - tests/ops/test_book_sources.py
+  - tests/ops/test_book_loop_source_health.py
+  - tests/ops/test_bar_source_contract.py
+  - tests/ops/test_four_leg_runtime.py
+  - tests/ops/test_feed_omission_session_end.py
+  - tests/ops/test_c1_signal_daemon_image_manifest.py
+  - tests/ops/test_book_session_calendar.py
+```
+
+`test_book_sources.py` and `test_book_loop_source_health.py` are new. The other five already exist and must stay green unchanged (§4).
+
+## 0. Phase 0: premise, Rule-0 reads and findings returned before code
+
+1. **Premise.** PR #619 (`claude/a9-prep-barsource`, reviewed head `77373bd`) is **MERGED**, and HEAD descends from that merge. When this card was drafted, #619 was **OPEN** and `origin/main` was `1a350ec`. No `.env` exists in the worktree.
+2. **Rule-0 reads.** Read each one; do not infer it.
+   - `ops/c1_signal_daemon/bar_source_contract.py` (after #619): `LEG_FEEDS` (`:53`), `SymbolBinding.__post_init__`, and `ContractBarSource.__init__` (`:192`), which takes typed `binding` and `policy` and a `session_window(ts)` returning an object with `opens_at`/`closes_at`, or `None`. Also `state`/`refusal` (`:199`), `healthy()` (`:214`), `poll()` (`:220`) and `_refuse` (`:306`). The refusal reasons are `auth_rejected`, `binding_expired`, `revision_after_delivery` and `late_bar_unverifiable`. The state vocabulary is `CONNECTED`, `DISCONNECTED` and `REFUSED`.
+   - `ops/c1_signal_daemon/book_evaluate_loop.py` `FourLegEvaluateLoop.step`: today it polls each leg and feeds that leg's bar before polling the next.
+   - `ops/c1_signal_daemon/book_runtime.py`: `LEG_ORDER` (`:27`), and the bound session `self.owner.binding["session"]` with `opens_at`, `closes_at` and `session_id` (`:349`).
+   - `ops/c1_rail/book_account_owner.py`: `check_source_silence` (`:1029-1048`), which already owns in-session silence, and `halt(incident_id, reason, *, now)` (`:1294`). Reasons are a closed set that includes `feed`. Calling it again with the same id at a different `now` raises "conflicting incident identity" (`:1304`).
+   - `ops/c1_rail/book_session_calendar.py`: `load_ratified_calendar` (`:583`), `SessionCalendar.rows`, `.products` and `.ratified_at`, plus the `SessionSchedule` fields `permission`, `overlay_blocked`, `opens_at` and `closes_at`. The loaded rows keep neither each product's `matching_open_utc` nor its `matching_close_utc`, and `v` folds in the venue deadline, so neither stands in for a product bound.
+   - `ops/calendars/book_session_calendar_2026-09.json`, `book_session_calendar_2026-10.json`, `RATIFIED.json` and `book_closure_overlay.json`, read only.
+   - `tests/ops/test_c1_signal_daemon_image_manifest.py`: `_ENTRYPOINTS` includes `book_evaluate_loop.py`, so the loop's import closure must stay inside the daemon image.
+3. **Findings returned before code.** The coordinator acknowledges each one.
+   - (a) Whether #619 merged with exactly the `state`/`refusal` vocabulary above. Any difference is a **stop**.
+   - (b) Whether `LEG_FEEDS` roots equal `SessionCalendar.products` on both ratified calendars, and `set(LEG_FEEDS) == set(LEG_ORDER)`. Any difference is a **stop**.
+   - (c) Whether any existing loop test's fake source carries a `state` attribute equal to `REFUSED` or `DISCONNECTED` (`file:line`). Any such fake would change outcome under §2.2; report it, never edit the test.
+   - (d) Whether `book_evaluate_loop.py` is in the T00 P7 40-module first-party closure or the 68-module Stage 1c measured closure, and whether any qualification manifest pins its digest. Any yes is a **stop**.
+
+## 0.5. Routing and clarifying questions
+
+This is a Claude worker, not GLM. It is offline and synthetic: fake transports, clocks injected by tests, and the two committed ratified calendars read in place. No secrets, `.env`, Pine, ports, account data, provider code or network are involved. The coordinator answers §12 at freeze. Any open decision that Phase 0 needs is returned as NEEDS_CONTEXT and never assumed.
+
+## 1. Goal
+
+Make R-A2 true offline. The book has exactly one contract-enforcing source per order symbol, and each source is bounded by the operator-ratified session calendar. The four-leg loop halts the whole book (reason `feed`) as soon as any source is refused or disconnected inside the bound session. That includes the two Q1 latches.
+
+**Boundary:** nothing is wired. The slice adds no daemon constructor, CLI, image change, listener report or live source, so it cannot run outside tests until a later live packet wires it.
+
+## 2. Scope
+
+### 2.1 New `ops/c1_signal_daemon/book_sources.py`
+
+- **`session_window(calendar, product) -> Callable[[datetime], SessionSchedule | None]`.**
+  - It refuses (`ValueError`) a calendar whose `ratified_at` is `None` (that is, not loaded through `load_ratified_calendar`), and a `product` that is not in `calendar.products`.
+  - The returned callable takes an aware `ts`. It returns the row with `opens_at <= ts < closes_at` only if `row.permission == "PERMITTED"` and `not row.overlay_blocked`. Otherwise, and outside coverage, it returns `None`. The returned row has `opens_at`/`closes_at`, which is the duck type `ContractBarSource` reads.
+  - It uses `closes_at`, not `risk_add_cutoff`, because exits and the scheduled flatten need bars after the cutoff.
+  - The callable is the same for every product. The §4 calendar tripwire is what makes "per product" true: on every PERMITTED row, each product's raw matching bounds equal the row's.
+- **`compose_book_sources(*, transports, bindings, policy, calendar, clock) -> dict[str, ContractBarSource]`.**
+  - It returns exactly four `ContractBarSource`s, keyed and ordered by `LEG_ORDER`, with one `TransportPolicy` shared by all four.
+  - Each source's `session_window` is `session_window(calendar, LEG_FEEDS[leg][0])`.
+  - **It refuses (`ValueError`, building nothing) on any of these:**
+    - the key set of `transports` or `bindings` is not exactly `LEG_ORDER`;
+    - `bindings[leg].leg_id != leg`, which covers a duplicated leg;
+    - two bindings share a `provider_code` or a `venue_contract`;
+    - one transport object is reused across legs.
+  - Root and exchange checks stay in `SymbolBinding` and are not re-implemented.
+- **Imports:** `bar_source_contract`, `book_runtime.LEG_ORDER` and `c1_rail.book_session_calendar`. This module is not in the daemon image closure, and §2.2 must not import it.
+
+### 2.2 Edit `ops/c1_signal_daemon/book_evaluate_loop.py` `FourLegEvaluateLoop.step`
+
+- Everything before the leg loop is unchanged: deadlines, `check_source_silence`, schedule, barrier expiry, the INTERVENTION returns and prepared-boundary redelivery.
+- **Then, in this order:**
+  1. **Poll** all four sources in `LEG_ORDER` and hold the results. Feed nothing yet.
+  2. **Check health.** Let `session = runtime.owner.binding["session"]`. If `session.opens_at <= now < session.closes_at`, take the first leg in `LEG_ORDER` whose `getattr(source, "state", None)` is `"REFUSED"` or `"DISCONNECTED"`. Call `runtime.owner.halt("source-unhealthy:<leg>:<detail>", "feed", now=now)` and return `completed` without feeding any polled bar. `<detail>` is the state, followed by `:<refusal>` when `refusal` is a non-empty `str`. For example, `source-unhealthy:aegis_6j:REFUSED:revision_after_delivery`.
+  3. **Feed** the held bars in `LEG_ORDER` through `runtime.on_completed_bar`, exactly as today, then run the trailing `expire_barrier` pass.
+- The loop reads the `state` and `refusal` attributes only. It never calls `healthy()` and never imports `bar_source_contract` or `book_sources`. A fake without `state` counts as healthy, so existing fakes keep their behavior.
+- **Staleness at session open never halts.** A connected source with no bar yet is not `REFUSED` or `DISCONNECTED`, and silence stays with `check_source_silence`. Outside the bound session, no source state halts.
+
+### 2.3 Files
+
+- **Allowed:** `ops/c1_signal_daemon/book_sources.py` (new), `ops/c1_signal_daemon/book_evaluate_loop.py` (§2.2 only), `tests/ops/test_book_sources.py` (new), `tests/ops/test_book_loop_source_health.py` (new). Synthetic fixtures go in those test files only.
+- **Everything else is out of scope (§5).**
+
+## 3. Method
+
+- **Tests first.** Write each §4 case and show it failing on the freeze base, with a launcher record, before writing code. On the base, the `book_sources` cases fail at import because the module is absent. That counts as red only because the missing module is the target. The loop cases must fail on an assertion. Preservation suites stay green on both base and build, and no red evidence is fabricated for them.
+- **Fail-closed.** A refused composition builds no source. An exception from `owner.halt` propagates out of `step` with no bar fed.
+- **Synthetic sources.** Health cases use real `ContractBarSource`s over a scripted fake `BarTransport` wherever the case concerns the contract's own latches. That covers the Q1 cases (delivered revision, late unverifiable bar), auth rejection and binding expiry. Duck-typed fakes are used only for ordering and spy cases.
+
+## 4. Acceptance checks (falsifier-first)
+
+**H:** with this slice built, no synthetic trace lets the four-leg loop feed a bar, complete a barrier or dispatch in a step where any source is `REFUSED` or `DISCONNECTED` inside the bound session. Every such step records exactly one `feed` halt. A source at session open with no bar yet never halts. The composition admits only four distinct, calendar-bounded, contract-enforcing sources.
+
+**Reject if:**
+- a case below cannot be made to fail on the base;
+- a case fails on the build;
+- any preservation suite changes outcome;
+- the loop's import closure leaves the daemon image.
+
+**Revert trigger:** any outcome change in `test_four_leg_runtime.py`, `test_feed_omission_session_end.py` or `test_c1_signal_daemon_image_manifest.py`.
+
+**Fail-first cases** (`test_book_sources.py`):
+1. `test_four_sources_one_per_symbol` (the spec-named test): the result has four sources keyed in `LEG_ORDER`, each a `ContractBarSource` whose binding's leg, root and exchange match `LEG_FEEDS`.
+2. Composition refuses: a missing or extra leg, a binding whose `leg_id` differs from its key (a duplicated leg), a duplicate `provider_code`, a duplicate `venue_contract`, and a reused transport object. Each refusal builds nothing.
+3. The session window returns:
+   - `None` for a DENIED row, an overlay-blocked row, and before and after coverage;
+   - the row (`opens_at`, `closes_at`) for a PERMITTED row, with `closes_at` and not `risk_add_cutoff` as the upper bound;
+   - a refusal for an unratified calendar and for an unknown product.
+4. **Calendar tripwire:** the test reads the **raw JSON** of `book_session_calendar_2026-09.json` and `book_session_calendar_2026-10.json`. On every PERMITTED row, every product's `matching_close_utc` must equal `closes_utc` and its `matching_open_utc` must equal `opens_utc`. Both held at drafting: 18 and 23 PERMITTED rows, no mismatch. This test pins the assumption that the calendar's loaded rows cannot express. A future early-close PERMITTED row fails the test and does not pass silently.
+
+**Fail-first cases** (`test_book_loop_source_health.py`):
+
+5. An in-session `REFUSED` source halts at once with reason `feed`, parametrized over `auth_rejected`, `binding_expired`, `revision_after_delivery` (Q1) and `late_bar_unverifiable` (Q1). Each case drives a real `ContractBarSource` into the latch and checks that the incident id is `source-unhealthy:<leg>:REFUSED:<refusal>`.
+6. An in-session `DISCONNECTED` source, after a failed connect or a transport error, halts with reason `feed`.
+7. The same states with `now` outside the bound session do not halt.
+8. A connected source with no bar at `session.opens_at` does not halt (its `healthy()` would be False). Silence is still fenced by `check_source_silence`, unchanged.
+9. **Poll all, then check.** Legs 2–4 delivered boundary `B` in an earlier step. In this step, leg 1 delivers `B` and leg 4 is `DISCONNECTED`. The result is one halt, no dispatch, no `on_completed_bar` call and no completed barrier. Today's code dispatches.
+10. With several unhealthy legs, exactly one halt is recorded, for the first in `LEG_ORDER`. The next `step` returns at the INTERVENTION guard and never reaches the health check again, so there is no conflicting-identity raise.
+11. The loop never calls `healthy()` (a spy raises if it is called). An AST read of `book_evaluate_loop.py` shows no import of `bar_source_contract` or `book_sources`, and `test_c1_signal_daemon_image_manifest.py` stays green.
+12. *Only if D-2 is adopted:* incident ids for the same leg and detail differ across two bound sessions.
+
+**Preservation** (green before and after, unchanged): `test_bar_source_contract.py`, `test_four_leg_runtime.py`, `test_feed_omission_session_end.py`, `test_c1_signal_daemon_image_manifest.py`, `test_book_session_calendar.py`.
+
+**Runs.** Run each through the launcher and cite `record.json`, `verification_exit_code` and `source_stable`:
+- `python -I scripts/fp.py doctor`
+- `python -I scripts/fp.py python -m pytest <the authority-block acceptance list>`, red on the base, then green on the build
+- `python -I scripts/fp.py test-ops`
+- `python -I scripts/fp.py check`
+- `git diff --check`
+
+Disclose any gate failure that already exists on the base; never describe it as a pass.
+
+## 5. Forbidden
+
+- Wiring: `daemon.py`, `build_loop`, the daemon CLI and `__main__.py`, any config constructor, and any HTTP endpoint.
+- `deploy/**`, the Dockerfile, `.dockerignore`, `tests/ops/test_c1_signal_daemon_image_manifest.py` and every other image-manifest test or script.
+- Listener health reports (R-N), `listener_client.py`, `c1_rail_http_server.py`, telemetry and any route code.
+- `bar_source_contract.py`, `feed.py`, `book_runtime.py`, `ops/c1_rail/book_account_owner.py`, `book_halt.py`, and calendar code and data (`book_session_calendar.py`, `ops/calendars/**`).
+- Provider code, credentials, transports beyond test fakes, any network call, and choosing a feed (O-4).
+- `core/**`, `book_policy.py`, Pine sources, runtime ports, `PORT_MANIFEST.sha256`, `BOOK_SOURCES.sha256`, and any private value.
+- The spec, the umbrella, ADRs, STATE and the ledger (coordinator-reserved).
+- GLM. Opening a PR, merging, or pushing to `main`.
+
+## 6. Return (status taxonomy)
+
+Return DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. The coordinator's verdict is RESOLVED (every §4 item holds) or FALSIFIED (the named items fail and the card goes back to the executor). The return holds:
+- branch, head SHA, base SHA, `git diff --stat` and the name list;
+- Phase-0 findings (a)–(d);
+- for each case, the fail-on-base and pass-on-build launcher record IDs;
+- preservation results, `test-ops`, `check` and `git diff --check`;
+- concerns.
+
+## 7. Stop conditions (return to the coordinator; do not work around)
+
+- #619 is not merged, or it merged with a `state`/`refusal` vocabulary other than the one in §0 (finding (a)).
+- Finding (b) or (d) is yes.
+- Any change outside §2.3 is needed, including any edit to an existing test.
+- Two failed corrections of the same issue (AGENTS.md).
+- **Operator review-round rule (2026-10-02):** after more than three review rounds that each return two or more P1/P2 findings, stop folding; the coordinator adjudicates a rewrite or a narrower scope.
+- A second writer appears on the branch.
+
+## 8. Out of scope and decision unlocked
+
+**Out of scope:**
+- `build_loop`, the CLI, the Dockerfile, the image manifest, listener health reports (R-N), and live and route wiring.
+- Building 15-minute bars from finer bars (OPEN-1, #617).
+- Ratifying the backoff cap.
+- The Track A `:236` checkbox.
+- The TB-I3 interlock and A12-STALE latch.
+- The production feed (O-4).
+
+**Unlocked:** with this slice RESOLVED and the Codex relay clean, R-A2's offline (mock) tag is met in source. The coordinator records that at the spec and umbrella owners. The live (source) tag still waits on O-4, TB-I5 and the live packet that wires `book_sources` into the daemon and its image.
+
+## 10. Audit hooks (runnable)
+
+```bash
+# Card form and authority. Expected: well-formed; 0 violations.
+python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-10-03-ra2-offline-four-sources-card-DRAFT.md
+python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-10-03-ra2-offline-four-sources-card-DRAFT.md
+# Premise (Git Bash), in the executor worktree.
+gh pr view 619 --json state -q .state                                   # expected: MERGED
+git rev-parse HEAD; test ! -e .env && echo "no .env" || echo "FAIL: .env present"
+grep -n '"REFUSED"\|"DISCONNECTED"\|"CONNECTED"' ops/c1_signal_daemon/bar_source_contract.py   # finding (a)
+grep -n "^LEG_FEEDS" ops/c1_signal_daemon/bar_source_contract.py         # finding (b)
+grep -n "import" ops/c1_signal_daemon/book_evaluate_loop.py              # after build: no bar_source_contract / book_sources
+# Scope at return.
+git diff --stat "$BASE"...HEAD
+git diff --name-only "$BASE"...HEAD | grep -v -e '^ops/c1_signal_daemon/book_sources.py$' \
+  -e '^ops/c1_signal_daemon/book_evaluate_loop.py$' -e '^tests/ops/test_book_sources.py$' \
+  -e '^tests/ops/test_book_loop_source_health.py$' && echo "FAIL: scope"
+```
+
+## 12. Open decisions (for coordinator (3) at freeze)
+
+- **D-1 Immediate halt on in-session `DISCONNECTED`.** As frozen, one failed connect or transport error inside the session halts the book, so #619's capped-backoff reconnect can never recover a source in session. The alternative is a grace window bounded by M5 (`BAR_SLACK`). That needs #619 to expose when the source disconnected, and it is a contract change outside this card. **Recommended: the immediate halt, as frozen.** It is the fail-closed reading of S2b's fail-closed row, and a reconnect still serves the next session.
+- **D-2 Incident-id uniqueness.** `source-unhealthy:<leg>:<detail>` repeats across sessions, and `halt` raises "conflicting incident identity" for the same id at a different `now` (`:1304`). In a later session the halt would then raise before recording, which still fails closed because no bar is fed, but the incident is lost. **Recommended:** `source-unhealthy:<session_id>:<leg>:<detail>`, with case 12 in scope.
+- **D-3 Spec owner file.** The spec names `daemon.py` for R-A2, and this slice uses a new module plus the loop. Annotating the spec is the coordinator's job (governance author).
+- **D-4 Duck-typed health read.** The loop reads `state` without a type check. That keeps the existing fakes valid and the contract module out of the image. The alternative, an `isinstance` check against `ContractBarSource`, would pull the contract into the daemon closure. **Recommended: duck-typed, as frozen.**
+- **D-5 Tripwire breadth.** Case 4 checks product opens as well as closes, because the runtime seeds only from `session.opens_at` (`book_runtime.py`, the first-bar check after `:349`). The coordinator may narrow it to closes only, as in the earlier draft.
+- **D-6 Freeze base.** **Recommended:** `main` immediately after #619 merges. Earlier bases fail Phase 0 (a).
+
+## Pre-mortem (README rule)
+
+- **Loop cost:** one Windows build loop with launcher records. No Docker, no Linux run, no host.
+- **Decisions the executor will hit:** D-1 and D-2. Both are ruled at freeze.
+- **What makes it moot:**
+  - #619 is withdrawn or reworked with a different state vocabulary;
+  - an operator ruling moves source health to the listener (R-N) instead of the loop;
+  - the attempt ends before a live source matters.
+- **Measurements the return fills in:** Phase-0 findings (a)–(d), and the red and green record IDs for each case.
