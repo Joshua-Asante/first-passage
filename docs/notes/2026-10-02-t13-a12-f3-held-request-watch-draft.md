@@ -1,20 +1,20 @@
 # Draft: held-request watch for incident ADR §A12 F3 (T13 preparation) — 2026-10-02
 
-**Status: DRAFT. PROPOSED as attended-operations (T13) owner text.** §A12 is itself PROPOSED ([PR #584](https://github.com/Joshua-Asante/first-passage/pull/584), head `e57bd98`). Nothing here takes effect until §A12 and this text are both accepted. This note does not edit the incident ADR or the halt/resume contract. Its cadence and policy rows are proposals for the operator.
+**Status: DRAFT. PROPOSED as attended-operations (T13) owner text.** §A12 is itself PROPOSED ([`docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md`](../adr/2026-09-17-bounded-platform-protection-incident-contract.md) on main, as merged from PR #584 at `368f366`). *Citations refreshed 2026-10-02 from PR #584 `e57bd98` and PR #593 `8d253c9` to main (operator ruling 2026-10-02 (sitting 2), A12-D1).* Nothing here takes effect until §A12 and this text are both accepted. This note does not edit the incident ADR or the halt/resume contract. Its cadence and policy rows are proposals for the operator.
 
-**Traces to** (incident ADR on PR #584 head `e57bd98`; line numbers on that head):
+**Traces to** (incident ADR on main, unchanged since `368f366`; ADR and acceptance-packet line numbers on main `1a350ec`):
 
 | §A12 text | What it asks | Here |
 |---|---|---|
 | F3, *Watching a held request* (:460) | While any request is held, a check for unexplained effects at each session open or at another cadence the owner names. Disarm does not satisfy it. Owner: attended operations (checklist T13), with the D-MON channels | W1–W5 |
-| §A12.4 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); removed from the ADR by the 2026-10-02 narrowing), row *Attended-operations contract (checklist T13) and D-MON* (:540) | Cadence, channels and binding owner, plus alert-channel loss with no incident (D5). Required before §A12's acceptance or in the same act | W2, W5–W7 |
-| §A12.5, row *Held-request watch and monitoring loss* (:554) | HR :57's attendance sentence is ambiguous for a disarmed account with a live unknown | W1 |
-| §A12.6 D1, third bullet (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); D1's prerequisite list is in ADR §A12.5) | The attended-operations owner adopts the watch before or with acceptance | *Adoption* |
+| §A12.4 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); removed from the ADR by the 2026-10-02 narrowing), row *Attended-operations contract (checklist T13) and D-MON* (packet :30) | Cadence, channels and binding owner, plus alert-channel loss with no incident (D5). Required before §A12's acceptance or in the same act | W2, W5–W7 |
+| §A12.5, row *Held-request watch and monitoring loss* (:534) | HR :57's attendance sentence is ambiguous for a disarmed account with a live unknown | W1 |
+| §A12.6 D1, third bullet (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); D1's prerequisite list is in ADR §A12.5, :540–549) | The attended-operations owner adopts the watch before or with acceptance | *Adoption* |
 | §A12.6 D5 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md)) | Alert-channel loss with no incident and the late-effect watch go to D-MON and T13 | W5, W6 |
 
-It also takes the hand-off from the C-a selection register ([PR #593](https://github.com/Joshua-Asante/first-passage/pull/593), head `8d253c9`): outcomes O0 and O5–O8 hold the reservation (REG §R.3), and row S-X3's recovery hands any request still retained to this watch ([S-X3 draft](2026-10-02-t13-c-a-attended-recovery-draft.md) §8).
+It also takes the hand-off from the C-a selection register ([`docs/notes/2026-09-26-close-semantics-c-a.md`](2026-09-26-close-semantics-c-a.md#addendum-2026-10-02--c-a-selection-register-proposed-for-operator-acceptance) on main, as merged from PR #593 at `550bc74`; accepted as written by operator ruling 2026-10-02 (sitting 2)): outcomes O0 and O5–O8 hold the reservation (REG §R.3), and row S-X3's recovery hands any request still retained to this watch ([S-X3 draft](2026-10-02-t13-c-a-attended-recovery-draft.md) §8).
 
-**Abbreviations.** HR: the [halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md). DP: the [drill plan](2026-09-26-tradeify-route-drill-plan-draft.md). REST: the [REST route assessment](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md). REG: the register addendum on PR #593. Main-branch line numbers are on origin/main `bd30646`.
+**Abbreviations.** HR: the [halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md). DP: the [drill plan](2026-09-26-tradeify-route-drill-plan-draft.md). REST: the [REST route assessment](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md). REG: the C-a selection register addendum in the close-semantics note (on main). Main-branch line numbers are on origin/main `bd30646`.
 
 ## Definitions
 
@@ -28,6 +28,8 @@ It also takes the hand-off from the C-a selection register ([PR #593](https://gi
 - The account stays HALTED. No later session may activate while any request is held (F3; HR :65, "unresolved owner cannot be overridden").
 
 ## W2 — Cadence (proposal; the operator decides)
+
+*Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-5:* the W2 cadence as drafted. Broker-platform fill notifications are added only if free and they pass qualification (UNVERIFIED). A missed check pings the D-MON dead-man check (W5 item 1).
 
 1. **Closing check** in the incident's own session, before the ~17:00 ET list reset. It is the last chance for same-session correlation (REST §6.4; §A12 :462).
 2. **A check at each session open** while any request is held, before any other activity on the account, including the weekly preservation trade (W5, item 3).
@@ -46,6 +48,7 @@ Fresh reads, each with its local time, on the same read set as the [S-X3 draft](
 - for each held request whose order id was learned, its lifecycle and status by id. Cross-session reads have returned HTTP 400 (R-2 closure, DP :226–236), and a failed read is recorded as failed, never as absence.
 
 Read authority is the same open question as S-X3's P3 (OQ-2).
+*Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-2:* the watch reads use the same read-only, operator-performed scope as the S-X3 recovery read set.
 
 ## W4 — Classifying a check
 
@@ -61,10 +64,11 @@ Read authority is the same open question as S-X3's P3 (OQ-2).
 1. **A missed check alerts.** Proposal: a dead-man check at the chosen D-MON provider ([options packet](2026-10-02-d-mon-channel-options-packet.md) §4), scheduled to match W2 with a grace the operator sets. The operator, or the read tool, pings it when a check completes. A missing ping alerts both channels. This uses the provider's heartbeat feature at no cost and builds nothing in-house.
 2. **An F5 finding** goes out on the primary channel, with the 60 s alternate escalation (HR :59).
 3. **Operator trades on book symbols confound W4.** F5 does not classify operator platform actions; HR §4.1 O-5 leaves them OPEN (HR :110). Proposal: while any request is held, the weekly preservation trade uses a symbol outside the four. DP :137 already offers that treatment. Operator decision (OQ-4).
+   *Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-7:* W5 item 3 is adopted as a narrow exception: outside the four while any request is held. F-5 stays the general rule (B–D packet GC-7 addendum).
 
 ## W6 — Alert-channel loss with no incident (§A12 D5)
 
-This is not a halt/resume §2 trigger (§A12 :572). Proposal, by state:
+This is not a halt/resume §2 trigger (acceptance packet §A12.6 D5, :48). Proposal, by state:
 
 | State | Loss | Proposed response |
 |---|---|---|
@@ -74,6 +78,8 @@ This is not a halt/resume §2 trigger (§A12 :572). Proposal, by state:
 | Disarmed, request held | Any | No session effect. The watch continues on its calendar, and a missed W5 ping is itself the signal. Record it |
 
 These rows are policy, so the operator rules on them (OQ-3).
+
+*Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-6:* the W6 table as drafted. The cell 'Armed / all channels lost, or the monitoring provider lost → operator stop' was ruled earlier on 2026-10-02 (coordinator (3) sheet, item E). Neither ruling reclassifies refusals: HR-ADOPT decides which refusals are incidents, and every incident notifies.
 
 ## W7 — Binding owner and records
 
@@ -89,6 +95,10 @@ These rows are policy, so the operator rules on them (OQ-3).
 
 - **OQ-1** (halt/resume owner). W1's reading of HR :57.
 - **OQ-2** (operator). Read authority for watch reads (DP :174).
+  *Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-2:* the watch reads use the same read-only, operator-performed scope as the S-X3 recovery read set.
 - **OQ-3** (operator). W6's policy rows, especially "all channels lost while armed means an operator stop".
+  *Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-6:* the W6 table as drafted. The cell 'Armed / all channels lost, or the monitoring provider lost → operator stop' was ruled earlier on 2026-10-02 (coordinator (3) sheet, item E). Neither ruling reclassifies refusals: HR-ADOPT decides which refusals are incidents, and every incident notifies.
 - **OQ-4** (operator). Preservation trades on a symbol outside the four while a request is held. *Coordinator note, 2026-10-02:* this proposal conflicts with the F-5 ruling ("automation fenced, then reconciled"), which the operator confirmed on 2026-10-02 as discharging S-X2. F-5 reasons that moving symbols removes no account-wide effect. **F-5 is the default.** This item stays only in case the operator chooses to revisit it.
+  *Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-7:* W5 item 3 is adopted as a narrow exception: outside the four while any request is held. F-5 stays the general rule (B–D packet GC-7 addendum).
 - **OQ-5** (operator). The W2 cadence, and whether a broker-platform fill notification is wanted as a detector between checks.
+  *Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-5:* the W2 cadence as drafted. Broker-platform fill notifications are added only if free and they pass qualification (UNVERIFIED). A missed check pings the D-MON dead-man check (W5 item 1).

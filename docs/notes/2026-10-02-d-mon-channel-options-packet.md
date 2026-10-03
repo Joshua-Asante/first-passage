@@ -1,6 +1,6 @@
 # D-MON options packet: alert channels against the halt/resume contract (2026-10-02)
 
-**Status: PROPOSED. Options for the operator; nothing is selected.** The channel choice is Joshua's ([deployment checklist, six cuts item 5, D-MON bullet](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts), :598). This note creates no account, contacts no provider, stores no credential, spends nothing, changes no code and edits no owner. Every option below uses a $0 tier. Opening any provider account is still the operator's act.
+**Status: PROPOSED. Options for the operator; nothing is selected.** *Dated 2026-10-02: D-1 has since been ruled (operator ruling 2026-10-02 (sitting 2), D-MON-1; §8).* The channel choice is Joshua's ([deployment checklist, six cuts item 5, D-MON bullet](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts), :598). This note creates no account, contacts no provider, stores no credential, spends nothing, changes no code and edits no owner. Every option below uses a $0 tier. Opening any provider account is still the operator's act.
 
 **Ticket.** Coordinator ticket M, item 1 (T13 preparation). Line numbers are on origin/main `bd30646` unless a PR head is named. The ticket's "about :596" for the D-MON ruling is :599 (on main 10b3929) (:596 is the T13 bullet).
 
@@ -23,7 +23,7 @@ Halt/resume contract ([HR](../spec/2026-09-14-tb-s3-halt-resume-contract.md)), �
 | N9 | Independent missed-heartbeat monitoring covers a silent runtime. A local outbox is not assumed durable when storage fails; storage failure is exposed through independent monitoring | HR :61, :34 |
 | N10 | Provider channels and heartbeat thresholds are qualified before live use. Better Stack remains unselected | HR :59 |
 
-Incident ADR §A12 ([PR #584](https://github.com/Joshua-Asante/first-passage/pull/584), head `e57bd98`, PROPOSED) also sends two items to D-MON: the channels for the held-request watch (F3) and alert-channel loss with no incident (D5). The companion [F3 watch draft](2026-10-02-t13-a12-f3-held-request-watch-draft.md) covers both.
+Incident ADR §A12 ([`docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md`](../adr/2026-09-17-bounded-platform-protection-incident-contract.md) on main, as merged from PR #584 at `368f366`; PROPOSED) also sends two items to D-MON: the channels for the held-request watch (F3) and alert-channel loss with no incident (D5). The companion [F3 watch draft](2026-10-02-t13-a12-f3-held-request-watch-draft.md) covers both.
 
 ## 2. Existing channels (read on `bd30646`)
 
@@ -121,6 +121,7 @@ Checklist T13 (:270) owes real delivery, failure and escalation, an external hea
 
 **For Joshua:**
 - **D-1.** Choose A, B or C (or another no-cost provider), and the primary and alternate media.
+  *Ruled, operator ruling 2026-10-02 (sitting 2):* A, with media as A describes (push, SMS at 1 minute, then a phone call), subject to qualification. B is the fallback if A's free tier lacks SMS or phone delivery or the 1-minute step. D-2 (opening the account) stays Joshua's act and is not done as of this record.
 - **D-2.** If he chooses, open the provider account or accounts himself. Account creation is his act.
 
 **Open:**
