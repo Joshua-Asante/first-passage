@@ -2,8 +2,8 @@
 
 Every outcome row is synthetic: invented statuses, pass days and split counts in
 the shape of the journal PATH body (card section 3.5), with no account, P&L or
-market value. The only tracked bytes read are the #581 pre-registration's A6
-section (row V3), never the real source. Each test imports the module inside
+market value. The only tracked bytes read are the #581 pre-registration's A5 and
+A6 sections (row V3), never the real source. Each test imports the module inside
 its own body, so each row fails on its own while the module is absent.
 """
 from __future__ import annotations
@@ -71,6 +71,29 @@ def _go_book(full_busts=2):
     return _halves(rows.add('FULL', _open(), _open(), 20 - full_busts))
 
 
+def _deadline_only(kernel='pass', splits=0):
+    """A5 (1) FAILURE ``own_flat_deadline`` run: a bust if the kernel is a ``bust_*`` status, else deadline-only."""
+    return _run('FAILURE', reason='own_flat_deadline', kernel=kernel, splits=splits)
+
+
+def _agree(rows, population, busts=0, passes=0, open_paths=0):
+    """Agreed paths only: ``busts`` busts, ``passes`` passes and ``open_paths`` open, in that order."""
+    rows.add(population, _bust(), _bust(), busts).add(population, _pass(), _pass(), passes)
+    return rows.add(population, _open(), _open(), open_paths)
+
+
+def _shaped_book(full=(2, 20, 18), h1=(0, 10, 10), h2=(0, 10, 10), full_extra=()):
+    """A 40-path FULL and two 20-path halves from (busts, passes, open) counts per population.
+
+    ``full_extra`` appends one FULL path per (r1, r2) pair; the caller lowers FULL's open count by
+    that many, so FULL stays at 40 paths and every population a case does not isolate stays GO-shaped.
+    """
+    rows = _agree(_Rows(), 'FULL', *full)
+    for r1, r2 in full_extra:
+        rows.add('FULL', r1, r2)
+    return _agree(_agree(rows, 'H1', *h1), 'H2', *h2)
+
+
 def test_V1():
     verdict = importlib.import_module(_MODULE)
     rows = _go_book().rows
@@ -110,6 +133,100 @@ def test_V2():
     assert dependent.label == 'NO-GO-evidence-UNDETERMINED-dependent'
 
 
+def test_V2_pass_floor_full():
+    verdict = importlib.import_module(_MODULE)
+    # (a) FULL 0 busts, 19 passes and 21 open paths out of 40: no bust and no UNDETERMINED, so the
+    # pass floor alone (2 * 19 < 40, and a median at rank 19 with only 19 pass days) decides.
+    out = verdict.evaluate(_shaped_book(full=(0, 19, 21)).rows, _parameters(), [])
+    full = out.tallies['pessimistic']['FULL']
+    assert (full['bust_numerator'], full['pass_numerator'], full['undetermined'],
+            full['denominator']) == (0, 19, 0, 40)
+    assert out.label == 'NO-GO-evidence-robust'
+    # Twin: the 20th pass puts FULL exactly on the floor again.
+    assert verdict.evaluate(_shaped_book(full=(0, 20, 20)).rows, _parameters(), []).label == 'GO-evidence'
+
+
+def test_V2_half_bust_ceiling():
+    verdict = importlib.import_module(_MODULE)
+    # (b) Every population carries the bust ceiling. H1: 2 busts out of 20 (20 * 2 > 20), pass floor REPORTED.
+    over = verdict.evaluate(_shaped_book(h1=(2, 10, 8)).rows, _parameters(), [])
+    h1 = over.tallies['pessimistic']['H1']
+    assert (h1['bust_numerator'], h1['pass_numerator'], h1['undetermined'], h1['denominator']) == (2, 10, 0, 20)
+    assert over.label == 'NO-GO-evidence-robust'
+    # Twin: 1 bust out of 20 sits exactly on the 5% ceiling and GO stands.
+    assert verdict.evaluate(_shaped_book(h1=(1, 10, 9)).rows, _parameters(), []).label == 'GO-evidence'
+
+
+def test_V2_binding_halves_floor():
+    verdict = importlib.import_module(_MODULE)
+    # (c) H1: 9 passes out of 20. Only the pass-floor setting separates the labels; the bust ceiling holds.
+    rows = _shaped_book(h1=(0, 9, 11)).rows
+    reported = verdict.evaluate(rows, _parameters(), [])
+    assert reported.tallies['pessimistic']['H1']['pass_numerator'] == 9
+    assert reported.label == 'GO-evidence'
+    binding = verdict.evaluate(rows, _parameters(pass_floor_halves='BINDING'), [])
+    assert binding.tallies['pessimistic']['H1']['pass_numerator'] == 9
+    assert binding.label == 'NO-GO-evidence-robust'
+
+
+def test_V2_deadline_only_flag():
+    verdict = importlib.import_module(_MODULE)
+    # (d) FULL: 2 busts, 20 passes, 17 open and one agreed deadline-only path (kernel 'pass') at 40 paths.
+    deadline = _deadline_only('pass')
+    rows = _shaped_book(full=(2, 20, 17), full_extra=((deadline, deadline),)).rows
+    bust = verdict.evaluate(rows, _parameters(deadline_only_is_bust=True), [])
+    counted = bust.tallies['pessimistic']['FULL']
+    assert (counted['bust_numerator'], counted['denominator']) == (3, 40)
+    assert bust.label == 'NO-GO-evidence-robust'      # 20 * 3 > 40
+    # Twin: with the flag off the path is in neither numerator, so FULL is back on both thresholds.
+    neither = verdict.evaluate(rows, _parameters(deadline_only_is_bust=False), [])
+    full = neither.tallies['pessimistic']['FULL']
+    assert (full['bust_numerator'], full['pass_numerator'], full['undetermined'],
+            full['denominator']) == (2, 20, 0, 40)
+    assert neither.label == 'GO-evidence'
+
+
+def test_V2_deadline_kernel_bust():
+    verdict = importlib.import_module(_MODULE)
+    # (e) A `bust_*` kernel_outcome is a bust whatever the flag decides about the deadline-only case.
+    deadline = _deadline_only('bust_static')
+    rows = _shaped_book(full=(2, 20, 17), full_extra=((deadline, deadline),)).rows
+    out = verdict.evaluate(rows, _parameters(deadline_only_is_bust=False), [])
+    assert out.tallies['pessimistic']['FULL']['bust_numerator'] == 3
+    assert out.label == 'NO-GO-evidence-robust'
+
+
+def test_V2_agreed_bust_with_deadline_run():
+    verdict = importlib.import_module(_MODULE)
+    # (f) An agreed FAILURE path is a bust if *either* run is a bust: the deadline-only twin run does
+    # not dilute it, whatever the flag, and the path stays out of the pass numerator (T = inf).
+    rows = _shaped_book(full=(2, 20, 17), full_extra=((_bust(), _deadline_only('pass')),)).rows
+    out = verdict.evaluate(rows, _parameters(deadline_only_is_bust=False), [])
+    full = out.tallies['pessimistic']['FULL']
+    assert (full['bust_numerator'], full['pass_numerator'], full['undetermined'],
+            full['denominator']) == (3, 20, 0, 40)
+    assert out.label == 'NO-GO-evidence-robust'
+
+
+def test_V2_bust_ceiling_denominator(monkeypatch):
+    verdict = importlib.import_module(_MODULE)
+    rows = _go_book(full_busts=2).rows      # FULL: 2 busts out of 40, i.e. exactly 5%
+    assert verdict.evaluate(rows, _parameters(), []).label == 'GO-evidence'
+    # A ceiling of 2.5% reads the same rows as a robust NO-GO; the halves stay at 0 busts.
+    monkeypatch.setattr(verdict, '_BUST_CEILING_DENOMINATOR', 40)
+    tighter = verdict.evaluate(rows, _parameters(), [])
+    assert tighter.label == 'NO-GO-evidence-robust'
+    assert tighter.tallies['pessimistic']['FULL']['bust_numerator'] == 2
+
+
+def test_evaluate_reads_an_outcomes_iterable_once():
+    verdict = importlib.import_module(_MODULE)
+    rows = _go_book().rows
+    from_generator = verdict.evaluate((row for row in rows), _parameters(), [])
+    assert from_generator.label == 'GO-evidence'
+    assert verdict.as_json(from_generator) == verdict.as_json(verdict.evaluate(rows, _parameters(), []))
+
+
 def _token_failures(verdict, a6_text):
     """Names of compiled verdict constants that do not occur as a token in the A6 text."""
     integers = set(re.findall(r'(?<![\d.])\d+(?![\d.%])', a6_text))
@@ -123,8 +240,10 @@ def _token_failures(verdict, a6_text):
 
 def test_V3(monkeypatch):
     verdict = importlib.import_module(_MODULE)
-    a6 = verdict.section_text(_PREREG.read_bytes(), 'A6')
+    blob = _PREREG.read_bytes().replace(b'\r\n', b'\n')
+    a6 = verdict.section_text(blob, 'A6')
     assert hashlib.sha256(a6).hexdigest() == verdict.A6_TEXT_SHA256
+    assert hashlib.sha256(verdict.section_text(blob, 'A5')).hexdigest() == verdict.A5_TEXT_SHA256
     assert (verdict._BUST_CEILING_DENOMINATOR, verdict._PASS_FLOOR_DENOMINATOR) == (20, 2)
     assert _token_failures(verdict, a6.decode('utf-8')) == []
     # Violating case: one constant changed fails the token check.

@@ -200,6 +200,7 @@ def _go(counts, days, floor):
 
 def evaluate(outcomes: Sequence[Mapping[str, object]], parameters: Mapping[str, object],
              reasons: Sequence[str]) -> Verdict:
+    outcomes = tuple(outcomes)   # read twice below (keys first, then scoring); a one-pass iterable is fine
     if isinstance(reasons, (str, bytes)):
         raise ValueError('reasons must be a sequence of codes')
     seen, completed = set(), dict.fromkeys(_POPULATIONS, 0)
