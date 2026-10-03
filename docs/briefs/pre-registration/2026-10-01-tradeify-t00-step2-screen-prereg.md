@@ -211,7 +211,7 @@ Whatever is chosen should be recorded at the D-feed owner, not here, before step
 The §3 values are recorded in §3's *Ratified value* column.
 
 - **Ruling:** —
-- **OD-1 / OD-2:** —
+- **OD-1 / OD-2:** Operator ruling 2026-10-02 (sitting 2) (Joshua, "all recommended", 2026-10-03T01:42Z). **OD-1:** reading (c), label-sensitive, recorded at its owners, the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) and [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken). **OD-2: the declared book.** A1 stands as drafted, and T00 screens the four declared expressions. A GO-evidence result speaks to them only. Evidence on the route-native editions comes from their own pre-registration §6 requalification, not from T00.
 - **Ratifying commit SHA:** —
 
 ---
