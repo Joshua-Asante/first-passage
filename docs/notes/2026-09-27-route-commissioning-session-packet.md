@@ -454,7 +454,7 @@ Until the documentary step returns, X-1 and X-4 are ready except for this one it
 | Outcome | Establishes | Behavior row |
 |---|---|---|
 | Pass | For this symbol, environment and date: one rejected modify left the old stop `Working` at its original price. It validates what M2 documents and does not establish the mechanism; if M2 leaves the mechanism undocumented, a pass shows only that one attempt did not fail (line 198). It also records whether the command report and lifecycle reads carry broker timestamps or versions that postdate the send (GC-3, line 248) | REST §6.11 drill map row "L2(c)" (line 338), REST interface; packet GC-2b, GC-3; CAP N1-c (proposed; CAP line 404); CAP R4 for the GC-3 record (proposed; GC-3's coherence gap is CAP R4 per the B–D packet line 120 and drill plan line 299) |
-| Fail | **OPERATOR DECISION for Striker and Aegis**, with the alternatives at line 247. None is adopted automatically | Same |
+| Fail | **OPERATOR DECISION for Striker and Aegis**, with the alternatives at line 247. None is adopted automatically *2026-10-03 (coordinator (3) batch 2b):* GC-2b is decided (operator ruling 2026-10-02 (sitting 2), [B–D packet GC-2b addendum](2026-09-26-tradeify-bd-decision-packet.md#12-other-decisive-capabilities)): no-modify editions for Striker and Aegis, so X-2 leaves the first-release critical path. | Same |
 
 **Does NOT establish:** survival after an **unknown** modify; atomicity of an accepted modify; other rejection reasons (line 249).
 
@@ -562,7 +562,7 @@ The T08 ruling authorized "One question, one follow-up at most", operator-sent, 
 |---|---|---|
 | X-5, the protective-fill race drill | DEFERRED by R-CLOSE | Drill plan line 28; §A11.1 item 5 |
 | C-b rows | Not planned. They need an operator expression decision and qualification; never automatic | Drill plan line 375; §A11.1 item 3 |
-| GC-5 takeover composite (Aegis) | Not planned (CR-8). It waits on an accepted close realization | Drill plan lines 57, 376 |
+| GC-5 takeover composite (Aegis) | Not planned (CR-8). It waits on an accepted close realization *2026-10-03 (coordinator (3) batch 2b):* not needed for the first release: the Aegis takeover is off (operator ruling 2026-10-02 (sitting 1), [B–D packet GC-5 addendum](2026-09-26-tradeify-bd-decision-packet.md#12-other-decisive-capabilities)), and an Aegis entry that does not fit is refused at admission as `capacity_refused` (operator ruling 2026-10-02 (sitting 2)). | Drill plan lines 57, 376 |
 | Any Aegis/6J trace, multi-contract design, or row wider than one contract | Outside the one-contract limit; separate decisions. *2026-10-02: drill-plan open question 7 answered (operator ruling 2026-10-02 (sitting 2)): no 6J trace unless the post-X-3 transfer argument needs 6J-specific behavior.* | Drill plan lines 200, 388–389 |
 | Webhook-form D1–D4 | Not treated as cleared; each is an individual decision | Session plan §0 addendum (line 20) |
 
