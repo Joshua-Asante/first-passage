@@ -443,3 +443,15 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
 **Still counted under the cap:** any charge whose purpose is not receiving the market data. That includes account, inactivity, platform or trading fees that are not required for data access, and the eval and rail costs.
 
 **Unchanged.** Feed signup and spend still require D-feed (a)+(b) and CP-7. Every feed purchase stays an operator act. Feed costs are still recorded, outside the ceiling tally, wherever their owner keeps them.
+
+## Addendum — 2026-10-02: production qualification-host spend is outside the $700 ceiling, under its own $500 cap
+
+**Source.** Operator ruling 2026-10-02 (sitting 2), Q-8 (Joshua, "all recommended"). The cap was set by Joshua's follow-up at 2026-10-03T03:16Z ("go with your best recommendations").
+
+**Effect.** Production qualification-host spend does not count toward this ADR's $700 ceiling (§2). It is subject to its own separate cap of **$500**, revisited at CP-8. The $700 continues to cover the eval, the rail run-rate and F-4 drill costs. Host provisioning and any spend stay at CP-8.
+
+## Addendum — 2026-10-02: refundable data-access deposits and minimum balances, exempt up to $500
+
+**Source.** Operator ruling 2026-10-02 (sitting 2), D-Q5 (Joshua, "all recommended"); the amount was set by Joshua's follow-up at 2026-10-03T03:16Z ("go with your best recommendations"). It answers the open decision in the 2026-10-01 addendum.
+
+**Effect.** Refundable deposits and minimum balances required for data access are exempt from the $700 ceiling, up to **$500**. Anything above $500 stays under the cap. This exemption is separate from the qualification-host cap above. Feed signup and spend still require D-feed (a)+(b) and CP-7.

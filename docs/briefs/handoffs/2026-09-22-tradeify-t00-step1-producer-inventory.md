@@ -302,7 +302,7 @@ P7 (a) is **MET** on the primary checkout. P7 (b), the reviewed source calendar,
 **Route ruling, operator, 2026-09-29, in the coordinating session ("option 1").** P7 (b) is produced by T00's own step-1b **Task 3** under the [P7-closure packet](2026-09-24-tradeify-t00-p7-closure.md), not "through T10 under its existing phase gates". P7 (b) covers the reviewed source calendar, population index, startup policy and cost model.
 - **Shared producer.** The session-index producer is built once and shared, by exact identity, with T10's phase-1 step 4 and phase 2.
 - **What it replaces.** This supersedes the 2026-09-24 roadmap's "through T10" clause.
-- **Consequence.** T00 no longer waits on S4 → S5 → T05 → T06. CP-7 still requires the T10 phase-2 F1 packet, under D-feed.
+- **Consequence.** T00 no longer waits on S4 → S5 → T05 → T06. CP-7 still requires the T10 phase-2 F1 packet, under D-feed. *2026-10-02 (mirror sweep):* superseded by the 2026-10-02 D-feed (b) re-rule: CP-7 may open after T00 GO-evidence, a bound equivalence spec and A9-PREP, instead of after T10 phase 2 ([checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken)).
 
 **Roadmap (refreshed 2026-09-29):**
 1. The bracket convention: **done.** #486 merged at `1f564ab` on 2026-09-25, with all head checks green, including both S2 supervision Linux runs.
