@@ -558,6 +558,8 @@ The card changes no production code and invents no resume interface. It is READY
   - seam row 11: the real seal principal and its host-provisioning change.
 
   No acceptance-grade run until S5 is accepted.
+
+  *2026-10-03 (mirror sweep):* the preparation return is **ACCEPTED** for DB10 and context compatibility at `f237178` (coordinator, 2026-10-02; [ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--h9-preparation-return-db10-and-context-compatibility-2026-10-02)). R1 keeps its own gates.
 - **R1:** re-base the prepared integration on the accepted S5 head *(2026-10-01: that is, on a `main` that includes both the S5 landing (#578) and **both** merged D-S5 fix slices: #586 (D-S5-1/D-S5-2; merged `981eb12`) and the D-S5-3 slice from `claude/capture-retry-noop`. Don't start the acceptance-grade run until both have landed)* and run the acceptance-grade **combined** Linux node set *(operator ruling 2026-10-02, "broaden R1")*. In order, that is service, N1, N2, Part A, result/seal, then supervision last, plus the C′ and VALID→VOID acceptance cases. The exact collected IDs and count are frozen at dispatch. Return it on its own.
 - **R2:** the D3 slice (R1–R10). The recovery retains every failed attempt and never renews the allowance or deadline. It allocates no attempt ID, salt, seed or plan, and makes no public reveal while recovery remains possible. Return it on its own.
 

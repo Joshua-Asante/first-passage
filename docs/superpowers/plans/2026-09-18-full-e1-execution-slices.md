@@ -1897,7 +1897,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 
 **Carried, not C3 conditions** (each owner keeps it):
 - G5 independent bars verification goes to the CP-6 inventory (B3).
-- An independently observed pilot draw is due with T05, before CP-6 (B4).
+- An independently observed pilot draw is due with T05, before CP-6 (B4). *2026-10-03 (mirror sweep):* timing reconciled by operator ruling 2026-10-02 (sitting 1): before T06 dispatch, not blocking R1 ([B4](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29)).
 - The per-phase memory field goes to CP-6.
 - To T11/CP-8:
   - the 11.8 % unreclaimable headroom and the THP share;
@@ -1939,7 +1939,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 3. **Q1** (whether a committed FAIL on an exhausted campaign counts under ADR §4) and **Q7** (R7's production evidence standard) are **reassigned to the statistical owner**, to be decided before S8 / T06. **Q9** (closure of a never-retried, retry-eligible IN_DOUBT, and so the salt reveal) is **reassigned to the RC-4 slice**, before F1. None is a C3 condition any longer.
 4. **S5 is ACCEPTED for TEST_ONLY**, effective when the `claude/s5-part-a` landing PR merges at a head **H** that satisfies the packet's landing procedure and decision rule. If the measured closure has changed at **H**, the landing returns to the operator, and S5 acceptance does not take effect until he decides.
 
-**Carried items:** unchanged from the packet. They are G5 independent bars verification (CP-6), the independently observed pilot draw (T05, before CP-6), the per-phase memory field (CP-6), and the T11/CP-8 set.
+**Carried items:** unchanged from the packet. They are G5 independent bars verification (CP-6), the independently observed pilot draw (T05, before CP-6), the per-phase memory field (CP-6), and the T11/CP-8 set. *2026-10-03 (mirror sweep):* timing reconciled by operator ruling 2026-10-02 (sitting 1): before T06 dispatch, not blocking R1 ([B4](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29)).
 
 **Next.**
 - The coordinator opens the landing PR, updates `claude/s5-part-a` from `main` to **H**, and runs the closure-equivalence and Linux-closure checks at **H**.
@@ -2113,7 +2113,7 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
 - the seal principal and its provisioning (seam row 11);
 - the B4 observed pilot, before T06 dispatch (operator ruling 2026-10-02, sitting 1: B4 does not block R1);
 - the C′ build;
-- **term 8.** The S8 harness preparation (#609, draft) found that E03 conflicts with the frozen T05 validators, which allow a failure only at the last stage. Joshua **approved** term 8 on 2026-10-02 ("yes to … term 8"). Its documentary record is in PR #610, pending merge. The fix is owed in H9 lane D step 3.
+- **term 8.** The S8 harness preparation (#609, draft) found that E03 conflicts with the frozen T05 validators, which allow a failure only at the last stage. Joshua **approved** term 8 on 2026-10-02 ("yes to … term 8"). Its documentary record is in PR #610, ~~pending merge~~ *2026-10-03 (mirror sweep):* merged at `f8a03c2` (term 8 in the [S6 freeze amendment](#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21)). The fix is owed in H9 lane D step 3.
 
 **Verdict: ACCEPT** the preparation return for DB10 and context compatibility at `f237178`. R1 keeps its own gates.
 
