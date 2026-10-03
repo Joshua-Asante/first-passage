@@ -265,7 +265,7 @@ Derived from design §3–§5. Items marked (K-4) are card proposals where the d
 | SEGMENT_START (heartbeat 0) | `k`, `w`, `assignment_sha256`, `witness_keys`, `approvals` |
 | HEARTBEAT | `wall_s`, `job_cpu_s` |
 | SEGMENT_END | `class`, `cause`, `workers: [{worker, reason}]`, `wall_s`, `job_cpu_s`, `path_cpu_s`, `overhead_cpu_s`, `peak_memory_bytes` |
-| SEGMENT_CRASHED | `k`, `charge: Cost`, `losses: [Key]` |
+| SEGMENT_CRASHED | `k`, `charge: Cost`, `losses: [Key]`, `cap` (`null`, `RESOURCE_EXHAUSTED` or `IO_EXHAUSTED`; §3.6a F1) |
 
 *Clarification 2026-10-03 (coordinator (3), card owner; reconciled to design §5.4 at `3742a95` :509):* a crashed segment's `charge` follows design §5.4 — the last heartbeat (SEGMENT_START is heartbeat 0) plus one interval of wall, and that heartbeat's `job_cpu_s` **plus one interval × W**, all as overhead — **less the `path_cpu_s` already booked to the path budget by that segment's PATH records** (row B4 books it once). The subtraction removes only the double count; unrecorded worker CPU and the interval × W margin stay charged, so a crash still only overcharges (design :509). Without it, one late crash in a day-long segment would charge a day of path CPU to the overhead reserve and HALT the run. P-F owns the computation (rows S11, B5; `test_B5`); P-D's `SEGMENT_CRASHED{charge: Cost}` schema is unchanged.
 | HALT; TERMINAL | `code`, `from`; `code` |
@@ -291,6 +291,27 @@ Derived from design §3–§5. Items marked (K-4) are card proposals where the d
 - `advance(state: State, event: Record) -> State`; an event not allowed raises `IllegalTransition` with code `ILLEGAL_TRANSITION` (row S1). `fold(ledger: Sequence[Record]) -> State` applies `advance` from the initial state (K-4; I3).
 - `classify(cause: str | BaseException) -> tuple[str, str]`: (class, code), class `STOPPED`, `HALTED` or `TERMINAL` per design §4.3; an unlisted cause gives (`HALTED`, `UNCLASSIFIED_ERROR`) (row S9).
 - `check_record(ledger: Sequence[Record], journals: Mapping[str, Sequence[Record]], manifest: Mapping[str, object] | None, acts: Mapping[str, bytes], *, keys: Sequence[Key]) -> RecordCheck` (K-4 parameters), `journals` keyed by journal name and `acts` by file name. `RecordCheck(code: str | None, completed: frozenset[Key], losses: Mapping[Key, int])` (K-4): `code` is `None` or the first failure, TERMINAL `CORRUPTION`, `NONDETERMINISM` or `CODE_OR_ARTIFACT_DRIFT`, or HALTED `RESOURCE_EXHAUSTED` or `IO_EXHAUSTED` (rows K6, S10, S13, S14, the S15 gap clause, X3).
+
+### §3.6a Coordinator interface freeze, 2026-10-03 (from the P-D review of `3dc5819`)
+
+Coordinator (3), as card owner, freezes these points so that P-D and P-F build against one reading. Each keeps design §4 unchanged and closes an encoding the design left open.
+
+- **F1 Crash at a cap (preserves design §4.2: SEGMENT_CRASHED → "IDLE, or HALTED if a cap is reached").** One record, no second write. SEGMENT_CRASHED carries a `cap` field: `null`, or the HALTED-class code `classify` gives when this crash makes a loss or I/O cap reached (row S10). `advance`: SEGMENT_CRASHED{cap: null} → IDLE; SEGMENT_CRASHED{cap: code} → HALTED with `halted_from = "IDLE"`. The coordinator computes `cap` at resume from the durable ledger and journals before writing the record, so no crash window leaves a durable IDLE at an exhausted cap. `check_record` recomputes the cap finding and returns CORRUPTION if `cap` disagrees. Recovery is the ordinary HALTED path: CONTINUE (Joshua's signed act) returns to IDLE with the cap reset (design §4.2 :374; rows S8, X3).
+- **F2 Witnesses.** SEGMENT_START's `witness_keys` holds exactly `min(W, |completed|)` keys, each one in `completed` and tagged. Worker `i` (0-based) runs `witness_keys[i]` as its first KEY_START whenever `i < len(witness_keys)`. `check_record` enforces both rules; a witness mismatch is NONDETERMINISM (W5).
+- **F3 Assignment.** Worker `i` receives `sorted(K − completed)[i::W]`, with K in the plan's canonical key order. `assignment_sha256 = sha256(canonical_json_bytes([[i, [key, …]] for i in range(W)]))`. `check_record` recomputes it and compares. The plan's canonical key order (design §7 "sorted canonically") is Python `sorted()` over `Key` tuples: by `root`, then `population` as strings, then `path_index` as an integer. It is not canonical-JSON byte order. P-E's `plan` emits K in this order, and the plan digest hashes `canonical_json_bytes` of K in this order.
+- **F4 Append failure.** After `journal.append` raises, the writer appends nothing more to that file. A worker whose append raised exits without WORKER_STOP and reports `IO_ERROR` on stdout. The coordinator, still running, ends the segment with SEGMENT_END naming that worker with `reason: IO_ERROR` (design :397, W13). That is an I/O-error segment for row S10, and the worker's in-flight key also counts one loss. Only the coordinator's own ledger write error leaves the segment crashed (design :397). A crashed segment counts losses (design :399), and its only I/O evidence is a journal WORKER_STOP reason. P-D may also poison the file inside the process, keyed by `(st_dev, st_ino)`.
+- **F5 Encodings.**
+  - `ACT{TERMINATE}` alone moves the run to TERMINAL, with no extra TERMINAL record.
+  - The bytes of `manifest.json` are `canonical_json_bytes(manifest)`.
+  - The act file is canonical JSON `{act_b64, approval_b64}`.
+  - A lock rewrite truncates the file to the content length.
+- **F6 Journal names.** A name must equal `f"{prefix}{n}-w{i}.jsonl"`, with `n` and `i` decimal and without leading zeros. Uniqueness is on the full identity `(prefix, n, i)`: `c1-w0`, `s1-w0` and `v1-w0` are distinct. A duplicate `(prefix, n, i)` is CORRUPTION.
+- **F7 Red record.** For a new module, RED evidence means `status: failed`, a non-zero `verification_exit_code`, `source_stable: true`, and every row FAILED with no ERROR. `completed` with exit 0 is required only for GREEN (`scripts/record_verification.py:299-300`).
+- **F8 Caps at every boundary (row S10; design §4.2 SEGMENT_END "by the highest class").**
+  - P-D exports `cap_finding(ledger, journals, *, keys, cause=None, reasons=()) -> str | None`. It returns the row S10 cap that is reached and not reset by CONTINUE: `RESOURCE_EXHAUSTED` if any key has three losses, else `IO_EXHAUSTED` if there have been three I/O-error segments with no new completed key, else `None`. A trailing open segment is closed with `cause` and the worker `reasons`; `cause=None` reads as a crash. `check_record` applies the same function at every SEGMENT_END and SEGMENT_CRASHED. P-F calls it to fill `SEGMENT_CRASHED.cap` at resume and to choose a SEGMENT_END cause.
+  - SEGMENT_END: when a cap is reached, a cause whose class is below HALTED must be replaced by the cap code, so that segment stops HALTED. A cap-code cause with no matching cap reached is CORRUPTION.
+  - A HALT whose code is a cap code requires that cap to be reached. A SEGMENT_START or ALL_DONE while a cap is reached is CORRUPTION.
+  - **Both caps on one record:** the record carries `RESOURCE_EXHAUSTED`, and CONTINUE resets only that cap (design §4.5). Before any SEGMENT_START, the coordinator then appends `HALT{IO_EXHAUSTED, from: "IDLE"}`, and a second CONTINUE is needed. No cap is reset without its own act.
 
 ### §3.7 `t00_screen.verdict` (P-C; names other than the three design constants are K-4)
 
