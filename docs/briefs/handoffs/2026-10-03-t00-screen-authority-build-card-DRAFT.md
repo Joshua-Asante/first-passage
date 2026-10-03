@@ -236,6 +236,20 @@ Derived from design §3–§5. Items marked (K-4) are card proposals where the d
 - **Command**, built by the coordinator and started suspended in the Job Object: `[sys.executable, '-I', '-S', '-B', '-c', p7_evidence.SCREEN_BOOTSTRAP, code_root, run_dir, authority_sha256, journal_name]`, every path absolute and resolved, `code_root` the checkout at H (K-4).
 - **Entry point:** after installing its audit hook, recording finder and stubs, the bootstrap runs `runpy.run_module('c1_rail.qualification.t00_screen.worker', run_name='__main__', alter_sys=False)`, as P7 runs `p7_driver`. The recorder stays `sys.p7_recorder`; K3 compares its `bootstrap_sha256` with `SCREEN_BOOTSTRAP_SHA256` (K-4).
 - **Journal path:** `journal_name` matches `^[csv][1-9][0-9]*-w[0-9]+[.]jsonl$`: `cN-w0` is the candidate-and-probe worker's N-th start, `sK-wI` segment K's worker I, `vN-wI` the N-th `verify`'s worker I (K-4). The bootstrap refuses any other name. The S2 audit hook allows a write-open (an `open` whose mode has `w`, `a`, `x` or `+`, or an `os.open` with a write, append or create flag) only of `realpath(join(run_dir, 'journal', journal_name))`; any other raises `SCREEN_WRITE_REFUSED`.
+
+*Coordinator note 2026-10-03 (coordinator (3), card owner; P-B1 review r05 P1, and P-B1 concerns 1–3).* These freeze points close encodings that §3.3 left open. Design §5.1 is unchanged.
+- **Null device.** A write-open whose target is the null device (`os.devnull`, normalised as the hook normalises the journal path) is allowed. It holds no data, so the ledger stays protected. CPython's `platform._syscmd_ver` opens it read-write through `subprocess.DEVNULL`; it is reached from the worker import chain (`runner` → `core/mc/ingest.py` → `pandas` → `platform.machine()`) when a WMI query fails. Refusing it killed workers at random. Every other target is still refused.
+- **Hook as built (P-B1).**
+  - The rule is active from straight after `import os` in the bootstrap.
+  - Targets are compared by `normcase(realpath(...))`.
+  - A write-mode `open` of an int descriptor is allowed: that descriptor's own open was already checked.
+  - A journal name that fails `re.fullmatch` on the pattern above exits `SCREEN_WRITE_REFUSED`.
+  - The screen argv check is `len(sys.argv) < 5`.
+- **Names and codes as built (P-B1).**
+  - Public `SCREEN_FORBIDDEN_MODULES`.
+  - `render_bootstrap` refuses any parameter set other than exactly {prefix, forbidden_modules, stubs, entry_module, min_argv, launcher, journal_name_pattern}.
+  - The screen's refusal codes are P7's codes with the prefix `SCREEN`: `SCREEN_FORBIDDEN_IMPORT`, `SCREEN_WRITE_REFUSED`, `SCREEN_FORBIDDEN_CALL`, `SCREEN_BOOTSTRAP_MISMATCH`, `SCREEN_TREE_DIRTY`, `SCREEN_UNAUDITED_EXEC`, `SCREEN_ORIGIN_OUTSIDE_ROOT`, `SCREEN_UNBOUND_BYTECODE`, `SCREEN_MODULE_ALIAS` and `SCREEN_SOURCE_CHANGED_DURING_RUN`.
+- **Refusals inside library code.** Refusals also collect in `sys.p7_recorder.refusals`, because library code can swallow the exception. How `worker.py` checks them (before each PATH append and at exit), and the remaining write-path gaps (rename, link, truncate, third-party writers), are P-F obligations. The coordinator's P-F card note freezes them before P-F is dispatched.
 - Coordinator–worker messages over stdin/stdout are internal to P-F and not frozen.
 
 ### §3.4 Run-directory formats (design §4.1)
