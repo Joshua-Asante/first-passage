@@ -31,7 +31,7 @@ Four items need a non-provider input before they bind, shown in the right-hand c
 
 | # | Controls | Recommended value | Basis | Input needed before binding (operator binds all) |
 |---|---|---|---|---|
-| OPEN-1 | §4.2 detail: which time places a constituent in a bucket; close-stamped bars | Exchange time where delivered, else the provider's stamp, never receipt time. A bar's start is its interval start. A constituent that straddles a boundary is inadmissible | spec `:95`, `:303`; `book_runtime.py:369` | None for (i)–(iii), (v), (vi). Clause (iv) (trade prices only) needs an operator ruling that it is within `:95`. §7 completeness is not an OPEN-1 binding (§4, question 6) |
+| OPEN-1 | §4.2 detail: which time places a constituent in a bucket; close-stamped bars | Exchange time where delivered, else the provider's stamp, never receipt time. A bar's start is its interval start. A constituent that straddles a boundary is inadmissible | spec `:95`, `:303`; `book_runtime.py:369` | None for (i), (ii), the placement part of (iii), (v) and (vi). The bust/cancel exclusion in (iii) and clause (iv) (trade prices only) each need an operator ruling that they are within `:95`. §7 completeness is not an OPEN-1 binding (§4, question 6) |
 | OPEN-2 | 6J canonical adjustment and trading hours | Electronic trading hours and back-adjustment off, like the other three legs | Hours derived from h8b `:63`, `:103`; adjustment unresolved | The operator's 6J attestation, or a private roll-gap read |
 | OPEN-3 | Live dated-contract selection per leg | The contract that the canonical rule (OPEN-11) selects, defined once and shared by the feed and TB-V1 | spec `:118`; AGENTS.md `:233` | TB-V1 confirms the venue can trade each selected contract up to the switch |
 | OPEN-4 | Roll-exclusion band | The switch session ± 3 sessions, per leg | RESULTS.md `:145–:147` | OPEN-11 |
@@ -70,7 +70,7 @@ Four items need a non-provider input before they bind, shown in the right-hand c
 > **§4.2 per-granularity rule.**
 > (i) *Clock.* A constituent is placed by the exchange transaction time when the provider delivers it, and otherwise by the provider's stamp. Receipt time never places a constituent. The clock used for each stream is recorded in the adapter configuration (later-binding item B.5).
 > (ii) *Bars of any duration d up to 15 minutes.* A constituent covers `[t0, t0 + d)`. Here `t0` is its stamp if the provider stamps bars at their open, or its stamp minus `d` if it stamps them at their close. The constituent belongs to the bucket that contains `t0`, and is admissible only if its whole interval lies inside that bucket. A stream whose constituents straddle bucket boundaries is inadmissible; constituents are never split.
-> (iii) *Trades.* A trade belongs to the bucket that contains its time. A trade at exactly `open + 15 min` belongs to the next bucket. V is the sum of exchange-reported quantities. A busted or cancelled trade that is known before emission is excluded. One learned after emission is a post-delivery revision (M7).
+> (iii) *Trades.* A trade belongs to the bucket that contains its time. A trade at exactly `open + 15 min` belongs to the next bucket. V is the sum of exchange-reported quantities. A busted or cancelled trade that is known before emission is excluded. **[Operator ruling needed: this exclusion is within `:95`, as for (iv).]** How a bust learned after emission is scored is not part of this binding; it goes with OPEN-6 and §4 question 7, because spec M7 (`:135`) covers revised delivered bars only.
 > (iv) *Prices.* O, H, L and C come from executed trade prices only. A stream whose bars are built from bid/ask, midpoint, settlement or indicative prices is inadmissible. **[Operator ruling needed: this clause is within `:95`'s "exact constituent rule". If not, drop it from the binding and route it with question 6.]**
 > (v) *Ordering.* "First" and "last" follow the clock in (i). Ties are broken by the provider's sequence identifier, where one is given.
 > (vi) *Native 15-minute bars* are compared as delivered, after the B.5 stamp translation.
@@ -329,7 +329,7 @@ This agrees with the repo's own measurement: NQ and MNQ gaps fall within ±4 day
 |---|---|
 | **The platform rule, with each N_s attested (rec.)** | The form of the rule comes from a primary source. The values are attested by the operator and checked against the panels |
 | Daily volume crossover, reconstructed | The page says the rule is a fixed offset set from averages, so a day-by-day crossover would disagree on some rolls |
-| Switch on the expiry day | Contradicted by both the page and RESULTS.md `:145–:147` |
+| Switch on the expiry day | Contradicted by the page. RESULTS.md `:145–:147` (±4 days around expiry, NQ/MNQ) neither supports nor rules it out |
 
 **Recommended binding text.**
 > **Canonical roll.** For each leg, the canonical `1!` series switches to the next listed contract at the 18:00 ET open of the session whose account date is the N_s-th CME business day before the current contract's last trading day. The values N_6J, N_MNQ, N_MYM and N_MGC are integers, recorded here.
