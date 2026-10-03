@@ -141,7 +141,7 @@ def simulate(segments, *, keys=PLAN, outcome=None, inject=None, skip=(), seed=0)
     rng = random.Random(seed)
     outcome = outcome or (lambda key, k: path_body(key, cpu=rng.uniform(100, 200), wall=rng.uniform(100, 300)))
     m = manifest()
-    ledger, journals, done, crashed = idle_ledger(m), {'c1-w0': candidate_journal(m)}, [], None
+    ledger, journals, done, crashed = idle_ledger(m), {'c1-w0.jsonl': candidate_journal(m)}, [], None
     for k, seg in enumerate(segments, 1):
         if crashed is not None:
             ledger.add('SEGMENT_CRASHED', {'k': crashed[0], 'charge': cost(50.0, 60.0), 'losses': crashed[1]})
@@ -151,7 +151,7 @@ def simulate(segments, *, keys=PLAN, outcome=None, inject=None, skip=(), seed=0)
         ledger.add('SEGMENT_START', segment_start(k, seg.w, witnesses))
         lost = []
         for i in range(seg.w):
-            name = f's{k}-w{i}'
+            name = f's{k}-w{i}.jsonl'
             todo = [key for key in witnesses[i:i + 1] + remaining[i::seg.w] + list((inject or {}).get(name, ()))
                     if key not in skip]
             n = len(todo) if seg.stop is None else min(seg.stop, len(todo))
@@ -465,9 +465,9 @@ def test_S13():
 
 def test_S14():
     outside = ('root-z', 'FULL', 0)
-    assert check(*simulate([Seg(2)], inject={'s1-w0': [outside]})).code == 'CORRUPTION'
+    assert check(*simulate([Seg(2)], inject={'s1-w0.jsonl': [outside]})).code == 'CORRUPTION'
     # A plan key in another worker's assignment, not a tagged witness, is the same.
-    assert check(*simulate([Seg(2)], inject={'s1-w0': [PLAN[1]]})).code == 'CORRUPTION'
+    assert check(*simulate([Seg(2)], inject={'s1-w0.jsonl': [PLAN[1]]})).code == 'CORRUPTION'
     # Twin: plan keys in their own assignment, and tagged witnesses.
     result = check(*simulate([Seg(2, stop=1, end=('STOPPED', 'WORKER_LOST')), Seg(2)]))
     assert result.code is None and result.completed == frozenset(PLAN)
@@ -557,14 +557,14 @@ def test_check_record_closure_agreement():  # O-8: K6's closure clause
     ledger, journals, m = simulate([Seg(2)])
     assert check(ledger, journals, m).code is None
     for index, field, value in ((0, 'closure_sha256', hexd('other closure')), (-2, 'closure_match', False)):
-        records = [dict(r) for r in journals['s1-w1']]
+        records = [dict(r) for r in journals['s1-w1.jsonl']]
         records[index] = {**records[index], 'body': {**records[index]['body'], field: value}}
-        assert check(ledger, {**journals, 's1-w1': Chain(records).records}, m).code == 'CODE_OR_ARTIFACT_DRIFT'
+        assert check(ledger, {**journals, 's1-w1.jsonl': Chain(records).records}, m).code == 'CODE_OR_ARTIFACT_DRIFT'
 
 
 def test_check_record_act_binding():  # X3: an act binds the authority and the ledger head it answers
     m = manifest()
-    journals = {'c1-w0': candidate_journal(m)}
+    journals = {'c1-w0.jsonl': candidate_journal(m)}
     halted = idle_ledger(m).add('HALT', {'code': 'OVERHEAD_EXHAUSTED', 'from': 'IDLE'})
 
     def act_file(head, act='CONTINUE', authority=AUTH):
