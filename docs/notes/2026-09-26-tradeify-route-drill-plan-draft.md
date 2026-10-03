@@ -43,7 +43,7 @@ Drills are performed by the operator only (Authority table). The ruling answers 
 
 *Entitlement confirmation record (proposed procedure):* ~~none yet.~~ **2026-09-28: existing REST entitlement confirmed** (vendor-reported: the operator's account shows the Pro plan, active; CrossTrade states Pro includes REST). The `P-1-entitlement` capture and its manifest SHA-256 are owed; the outcome line is added when they are supplied. Owner record: [commissioning packet §1.1](2026-09-27-route-commissioning-session-packet.md#11-cp-2-record-2026-09-28).
 
-*CP-2 operator rulings 2026-09-28 (owner: commissioning packet §1.1; mirrored here so the OPEN markers above and below are not read as live):* the **known-order definition is confirmed**, with this week's preservation trade as R-1's target in its own session and then R-2's; **open question 6** is answered (drill costs count against the $700 ceiling, without double-counting); **open question 9** is answered (automation fenced, then reconciled). Venue permission for this route (P-1, §0.2): **answered 2026-09-28 by Tradeify, conditionally** (a personal, low-frequency strategy is allowed; a third-party router is not prohibited but unsupported and at the operator's risk). Each order-producing row's CP-3 carries the operator's attestation of Tradeify's conditions (packet §1.1).
+*CP-2 operator rulings 2026-09-28 (owner: commissioning packet §1.1; mirrored here so the OPEN markers above and below are not read as live):* the **known-order definition is confirmed**, with this week's preservation trade as R-1's target in its own session and then R-2's; **open question 6** is answered (drill costs count against the $700 ceiling, without double-counting); **open question 9** is answered (automation fenced, then reconciled). *2026-10-02 (mirror sweep):* on 2026-10-02 (sitting 1) the operator confirmed that this answer discharges the C-a register's row S-X2 ([B–D packet GC-7 addendum](2026-09-26-tradeify-bd-decision-packet.md#12-other-decisive-capabilities)), and that an X-3 or X-4 fill counts toward the weekly preservation obligation ([§2.0](#20-rules-common-to-x-1--x-5)). Venue permission for this route (P-1, §0.2): **answered 2026-09-28 by Tradeify, conditionally** (a personal, low-frequency strategy is allowed; a third-party router is not prohibited but unsupported and at the operator's risk). Each order-producing row's CP-3 carries the operator's attestation of Tradeify's conditions (packet §1.1).
 
 ## Consistency-review corrections (2026-09-26, after the executive review) — these govern
 
@@ -273,7 +273,7 @@ Each row supplies the CAP procedure's fields, either in its own table (action/sc
 - **What changes.** For this X-3 row only, two rules above are replaced.
   - **The *Instrument* rule** ("one micro symbol from the book; MYM keeps X-1 → X-3 on one position") is replaced as follows:
     - Symbol A stays the existing X-3 symbol, MYM, so X-1 → X-3 continuity is kept.
-    - Symbol B is a **second, distinct micro symbol from the book**: MNQ or MGC, chosen in the authorization.
+    - Symbol B is a **second, distinct micro symbol from the book**: ~~MNQ or MGC, chosen in the authorization.~~ **MNQ** (*operator ruling 2026-10-02 (sitting 1), given directly to the deployment coordinator ("all recommended")*).
     - Each is the front-month contract, away from roll, under the existing roll rule.
     - 6J (Aegis) is excluded, because it is not a micro contract; any Aegis trace stays a separate operator decision.
     - The X-3 result is not transferred to other symbols beyond A and B without an accepted argument (C-a register S-T3a).
@@ -300,6 +300,8 @@ Each row supplies the CAP procedure's fields, either in its own table (action/sc
   - Joshua's session GO.
 
   It grants no execution, arming or deployment authority.
+
+*Operator ruling 2026-10-02 (sitting 1), given directly to the deployment coordinator ("all recommended"):* an X-3 or X-4 fill counts toward the weekly account-preservation obligation in the week it fills, as X-1's did ([ruling 2026-09-30](2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30)).
 
 **Addendum 2026-09-28 — request-shape corrections from the public CrossTrade documentation.** Source: the commissioning packet's [§3.7 closure](2026-09-27-route-commissioning-session-packet.md#37-closure-2026-09-28--request-shapes-from-the-current-public-crosstrade-documentation) (pages CT-OV, CT-PL, CT-CH, CT-CX, CT-OT read 2026-09-28 and pinned there by SHA-256). These are documentary corrections within the accepted row behavior; they authorize no row, read or contact, and the retained-capture cross-check (packet R-3.7a) is still owed.
 - **Exposure limit, extended allow-list.** Besides `atm*` and `cancel_after`, no row sends `flattenFirst`, `requireMarketPosition`, `maxPositions`, any Strategy Sync field (`syncStrategy`, `marketPosition`, `prevMarketPosition`, `outOfSync`, `targetQuantity`, `strategyExitBlock`), `maxShow`, `trailOffset`, `pegDifference`, `expireTime` or `text`. Each either closes, suppresses or re-shapes the request instead of producing the row's observation (packet C.2 gives the reason per field).

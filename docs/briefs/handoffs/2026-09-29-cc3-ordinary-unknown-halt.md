@@ -1,7 +1,7 @@
 # CC handoff — CC-3 ordinary unknown outcome durably ends automation
 
 **Date:** 2026-09-29.
-**Status:** ~~PREPARED; implementation not dispatched.~~ FROZEN 2026-09-29 at `b77b6f4`, after the implementation had already run. The coordinator record (§8) states that order and assigns review and commit. Implementation returned; **not accepted**.
+**Status:** ~~PREPARED; implementation not dispatched.~~ FROZEN 2026-09-29 at `b77b6f4`, after the implementation had already run. The coordinator record (§8) states that order and assigns review and commit. Implementation returned; ~~**not accepted**~~ **RESOLVED in synthetic scope only** (§7; accepted 2026-09-30 at `cc08f05`). *2026-10-02:* #554 merged 2026-09-30 as `7444aed` from `5612173`. After `cc08f05` only docs and four S5 archive pins changed, and `qualification-windows`, still pending when §7 was written, passed on `5612173`.
 **Parent session:** X-1 decision and CC-3 handoff preparation.
 **Spawn target:** Codex local, isolated checkout; no private inputs.
 **Brief type:** CC handoff, bounded repair.

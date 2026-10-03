@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Disposition note:** §4/§5 **overridden 2026-09-03** by the operator ruling in the addendum below — candidate #1 re-admitted, §4 discharge restored, EOD-clock only. The ADR itself stands.
+**Disposition note 2026-10-02:** the 2026-09-03 discharge is **WITHDRAWN**; §4 is undischarged until a pre-registered re-MC clears on the intraday-honest clock ([Addendum 2026-10-02](#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)).
 **Superseded-by:** none
 **Retain-until:** superseded by a fresh discharge under corrected geometry, or by the §4 hard date 2026-11-08
 **Decision date:** 2026-07-22
@@ -10,6 +11,10 @@
 **Superseded-in-part-by:** none
 **Related:** [`2026-07-14-prop-portfolio-existing-strategy-candidates.md`](2026-07-14-prop-portfolio-existing-strategy-candidates.md) (Class-S route) · [`2026-07-17-c1-rail-build-account-registration-go.md`](2026-07-17-c1-rail-build-account-registration-go.md) (**not** overturned — see §6) · measurement [`lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md`](../../lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md) · superseded scoring [`class_s_candidate1_scoring_2026-07-15/RESULTS.md`](../../lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/RESULTS.md)
 **Layer:** research-gate status. **No locked parameter, allocation, `dd_protection` constant, or Pine file is touched.**
+
+> ## ⚠ Reader-intercept 2026-10-02 — the 2026-09-03 restoration below is WITHDRAWN
+>
+> Operator ruling 2026-10-02: a clear that gates §4 must hold on the intraday-honest clock, and §4 is undischarged. See [Addendum 2026-10-02](#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted). The 2026-09-03 intercept below is kept unedited as history.
 
 > ## ⚠ Reader-intercept 2026-09-03 — every "3.0%" below is the **superseded** ceiling, and candidate #1's own figures now sit under the live one
 >
@@ -343,6 +348,32 @@ grep -n "Moving the 3.0% ceiling" docs/adr/2026-07-22-prop-portfolio-s4-discharg
 grep -n "overridden but unedited" docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md
 ```
 
+## Addendum 2026-10-02 — the 2026-09-03 discharge WITHDRAWN; an intraday-honest clear is required (`Accepted`)
+
+**Status:** `Accepted` — **operator ruling, 2026-10-02**. Joshua, directly in the deployment coordinator (3)'s chat (session "Coordinating parallel Claude sessions (3)"), 2026-10-02 local (about 2026-10-03T01:50Z), replying to the coordinator's decision sheet: "all recommended". The recommendation adopted is recorded below. Recorded, not decided, by the author. It moves no number, touches no `core/`, Pine, allocation, `dd_protection` or rail surface, and opens no re-MC. $0 / K=0.
+
+### Ruling (operator, 2026-10-02)
+
+> 1. A clear that gates §4 must hold on the **intraday-honest clock**.
+> 2. The 2026-09-03 EOD-clock discharge ([Addendum 2026-09-03](#addendum-2026-09-03--candidate-1-re-admitted-at-the-50-ceiling-accepted)) is **WITHDRAWN**.
+> 3. §4 is **undischarged** until a pre-registered, dated re-MC clears ≥2 of the four $100K tiers (`Bulenox_100K`, `Tradeify_Select_100K`, `MFFU_Rapid_100K`, `BluSky_Premium_100K`), including ≥1 `trailing_locking`, on the honest clock, by 2026-11-08.
+> 4. A clear on exactly one tier is not a discharge; Joshua decides at 2026-11-08.
+
+### Why
+
+- **The 09-03 discharge rested on EOD-clock lower bounds.** Every §2 figure is one ([`load_bearing_numbers.md` §1](../load_bearing_numbers.md#1-standing-rule--eval-bust-figures-are-eod-clock-lower-bounds)), and the 09-03 addendum named the gate-grade honest-clock re-score as the measurement still owed.
+- **The only 1.00× honest-clock evidence is adverse.** Candidate #1's real bust is **32.33%** ([`RESULTS_INTRADAY_W1`](../../lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/RESULTS_INTRADAY_W1.md) §Non-vacuity), a failure at 3.0% and 5.0% alike. It is not gate-grade, so it neither discharges nor fires §4.
+- **Three surfaces disagreed.** The 09-03 addendum read §4 as discharged (EOD-clock only); the 2026-09-22 checklist amendment gave the measured state as 0-of-4 clearers ([§1](../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#1-the-finding-that-reorders-4-the-2026-11-08-clock-is-a-lab-re-mc-clock-not-a-live-session-clock), [§5](../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#5-provisional-timeline)); and STATE's 2026-11-08 row read §4 as undischarged. This ruling resolves the conflict: §4 is undischarged.
+
+### Reading this correctly
+
+- The 09-03 addendum, §4's restore-trigger table and §5's forbidden move stay in the file **unedited**, as history. Read this addendum for the live disposition.
+- The ruling names no new ceiling, seed, simulation count or horizon. The qualifying re-MC is read against its own pre-registration.
+- A T00 screen is still not §4 falsifier evidence ([2026-09-23 condition 4](../briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)).
+- **Not decided here:** candidate #1's standing beyond this discharge; the four-firm ADR's [Addendum 2026-08-22](2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-08-22--4s-successrevert-dichotomy-does-not-cover-an-exactly-one-tier-clear-proposed) (the `PARTIAL` disposition), which stays `Proposed`: ruling 4 reserves the exactly-one-tier call to Joshua at 2026-11-08 and does not ratify it.
+
+**Mirrors** (each links here and restates nothing): STATE.md's 2026-11-08 row and 2026-09-23 decision-index row; the checklist amendment's §1 and §5; the campaign state's ceiling row, D5 row and 2026-09-03 D5 log row; the four-firm ADR's change history.
+
 ## Change history
 
 | Date | Change | By |
@@ -351,3 +382,4 @@ grep -n "overridden but unedited" docs/adr/2026-07-22-prop-portfolio-s4-discharg
 | 2026-08-04 | Addendum appended: the constant §10 hook 3 asserted was "NOT hand-edited" is now fixed at the source by [`ADR 2026-08-04`](2026-08-04-firm-rules-eval-lock-fix-applied.md). §1–§10 above (including hook 3, as historical record) left byte-unchanged; no decision in this ADR is altered. | Joshua (directive) + Claude Code (draft + apply) |
 | 2026-09-03 | Head reader-intercept + **Addendum 2026-09-03 (`Proposed`)**: names the collision between §5's forbidden move and prereg v2's 5.0% ceiling — candidate #1's own §2 figures (4.74% / 4.25%, both `trailing_locking`) clear 5.0%, so the raise would re-admit it by arithmetic. Proposes prospective-only. §1–§10 byte-unchanged; no discharge, no re-MC, no number moved. $0/K=0. | Claude Code (Opus 5) |
 | 2026-09-03 | **Addendum ratified as `Accepted`, in the OPPOSITE disposition to the one it proposed** — operator ruling: candidate #1 **re-admitted** at the 5.0% ceiling, §4 discharge **restored** on the §2 corrected-geometry figures, superseding-ADR requirement **waived** by operator direction. §1–§10 still byte-unchanged; §4's restore-trigger table and §5's forbidden move overridden but unedited. No re-MC, no number moved, no `core/`/Pine/allocation/`dd_protection`/rail surface touched. Discharge is **EOD-clock only** — the 32.33% honest-clock guard run stands unrepealed. $0/K=0. | Joshua (ruling) + Claude Code (record) |
+| 2026-10-02 | **Addendum 2026-10-02 (`Accepted`)**, operator ruling ("all recommended"): the 2026-09-03 EOD-clock discharge is **withdrawn**; a clear that gates §4 must hold on the intraday-honest clock; §4 is undischarged until a pre-registered, dated re-MC clears ≥2 of the four $100K tiers, including ≥1 `trailing_locking`, by 2026-11-08; an exactly-one-tier clear is not a discharge (Joshua decides at 2026-11-08). Header disposition note and reader-intercept added; §1–§10 and the 09-03 addendum unedited. No re-MC, no number moved. $0/K=0. | Joshua (ruling) + Claude Code (record) |
