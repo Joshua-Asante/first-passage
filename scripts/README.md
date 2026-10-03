@@ -615,5 +615,13 @@ are treated as outputs too, with the same source-overlap rejection.
 provides administrator-owned TEST_ONLY installations, real role-access probes and
 manifest-scoped cleanup. `qualification_boundary_environment.py` owns prerequisite
 inspection; `qualification_boundary_verification.py` reuses RunRecord and rejects
-critical skips. Host readiness is separate from launch-to-G5 acceptance, which
-remains blocked on the boundary implementation and its approved fixture producer.
+critical skips. Its mutually exclusive mode flags select the boundary file set:
+`--s2`, `--s3`, `--s4`, `--s5` and `--r1` (the H9 checkpoint R1 combined selection,
+S5 plus the result/seal and C′ Linux files, which refuses within seconds while any
+R1 file or its manifest row is still missing). `s2_run_evidence.py` reads a run's
+artifact back under the matching `--expect-scope`, `T05_R1_COMBINED` for an `r1`
+run, which also requires the frozen `--expect-selection` document;
+`guard_s2_runs.py` reads the `[s2]`–`[s5]` and `[r1]` run-name tags to keep a
+definitive same-mode dispatch from re-rolling. Host readiness is separate from
+launch-to-G5 acceptance, which remains blocked on the boundary implementation and
+its approved fixture producer.
