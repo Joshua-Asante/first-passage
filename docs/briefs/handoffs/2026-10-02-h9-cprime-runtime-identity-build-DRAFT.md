@@ -265,6 +265,67 @@ These resolve D1–D10 for dispatch. Joshua's direct go for lane D was given in 
 - **D9 Operator-recorded VOID path.** The Phase-0 check comes first. If the path is absent, or needs a new record family, **stop and return** to the coordinator. The coordinator designs it and Joshua rules before any build.
 - **D10 PRs.** The coordinator opens them. The worker pushes the `codex/*` branch only.
 
+## Amendment A1, 2026-10-03: producer/consumer completion of §2.5 (coordinator)
+
+**Why.** Lane D stopped NEEDS_CONTEXT before any code, at `262ffe48` (`f237178` + `d5d559b`, pre-code checkpoint accepted by the Codex root). Under §2.5 the real `/v8` route could not be installed, assessed or launched:
+- `release.py:64` rejects `/v8` + instance `/v2`.
+- The G5 evidence builders allow-list `/v5`–`/v7`.
+- The actual runner, admin and supervisor parents sit outside the list.
+
+A coordinator read at `d5d559b` confirmed this. The added files are all outside the Stage 1c measured closure (68), the staging closure (63) and the T00 P7 closure (D8). That was checked by running `stage1c_closure_table.py.txt` (origin/main vs `262ffe48`: 68/63 rows, 0 differences) and against the D8 list. So A1 amends this coordinator's D4 resolution only. It changes no operator ruling: D5's admission covers only measured-closure modules, and none is added here.
+
+**Added to §2.5 Edit.** Each file below may change only for the stated purpose.
+
+| File | Owner role | Allowed change |
+|---|---|---|
+| `ops/c1_rail/qualification/execution/release.py` | installer | Make `/v8` pair only with instance `/v2`; `/v8` with instance `/v1` must refuse (today it passes `:64`). Add `/v8`-only expected-tuple validation before the writes at `:78–:80`. The `/v1`–`/v7` pairing, `parse_instance` and `stage_bundle` stay unchanged. |
+| `ops/c1_rail/qualification/evidence.py` | G5 evidence builders | Admit `/v8` beside `/v7` at the release allow-lists (`:966–:971` N1, `:1349–:1350` N2, `:2431` PART_A), using `/v7`'s checkpoint sets. Nothing else. |
+| `tests/integration/qualification_boundary/fixture_producer.py` | TEST_ONLY release producer | Add an explicit `/v8` selector, off by default. It binds the pin-file hash, the image ID, the entrypoint map and the tuples, and the `:209–:212` budget branch admits `/v8`. `/v1`–`/v7` output bytes stay unchanged. |
+| `tests/integration/qualification_boundary/fixture_install.py` | admin installer | Carry the selector through construct → sign → install (`:75–:78`). |
+| `tests/integration/qualification_boundary/conftest.py` | runner/admin fixture | Forward the selector from an environment variable that no runner mode sets under this card. Add post-exec checks at the admin launch (`:78–:81`). S2–S5 flag meanings stay unchanged. |
+| `tools/qualification_verification/host.py` | owned wrapper and copied venv | Record the expected interpreter identity at provisioning (`:638–:676`). Add checks at `owned_command`, `start_owned` and `run_owned` (`:307–:340`); their signatures stay backward-compatible. |
+| `tools/qualification_verification/campaign_host.py` | systemd supervisor parent (R1 route) | Add pre-spawn and post-exec checks around `restart()` (`:107–:115`). |
+| `scripts/qualification_boundary_verification.py` | runner/pytest parent | Add a pre-spawn identity check at the existing pytest launch (`:198–:205`) only. Modes, env flags (`:175–:188`), case lists, required nodes and `acceptance_scope` stay unchanged; those are D6's. |
+
+**Extend in place:**
+- `tests/test_qualification_host.py`;
+- `tests/test_qualification_campaign_host.py`;
+- `tests/ops/qualification/execution/test_boundary_fixture.py`.
+
+**Already allowed; they must accept `/v8`:**
+- `campaign_store.py` (`:2371–:2380` tuple);
+- `service.py` (`:99–:163`, `:373–:382` release/profile pairing).
+
+**Pairing.**
+- `/v8` pairs with profile `/v7`, budget profile `/v3` and `dispatch_checkpoints` [N1, N2, PART_A]. There is no profile `/v8`.
+- The C′ launch checks and the bootstrap self-check apply only to a `/v8` installation. The `/v1`–`/v7` routes keep their behaviour and bytes, including the N1_ONLY paths at `conftest.py:155–:157` and `:215–:221` and `supervisor_checkpoint.py`.
+
+**Not added: return at the checkpoint if either is needed.**
+- `tests/ops/qualification/execution/bundle_fixture.py` is in the staging closure (63).
+- `ops/c1_rail/qualification/execution/profile.py` is in the measured closure (68) and is not admitted by D5.
+
+Build the `/v8` parser vectors through `test_release.py`'s `part_a_release(**changes)` instead.
+
+**Builder test, narrow reading.** The approved pin (ruling 4, D3) supersedes the tag-only fake and assertions at `tests/test_qualification_worker_image.py:56–:58` and `:65–:66`. They are replaced by assertions for:
+- a digest-only pull;
+- index → child → config verification against the pin file;
+- a base identity recorded separately from `image_id`.
+
+The ownership and registered-child protections stay: `:11–:34`, `:44–:55`, `:59` and `:64` are unchanged. The case-1 refusals are added beside them.
+
+**Unchanged.**
+- No `.github/workflows` or other CI-configuration change.
+- No R1 mode, evidence scope, selector wiring or runner flag (D6).
+- No Linux run, dispatch or grant.
+- No step-3 files or cases (§11, D7).
+- No P7-closure file, and no measured-closure file beyond D5.
+
+The authority constraints stand. `card_section2_files_only` now reads "§2.5 plus Amendment A1".
+
+**Re-measurement.** The `evidence.py` and `release.py` changes alter the bound runtime manifests, so they reach `release_sha256` as intended. They are not measured-closure edits. The single fresh S5 Part A measurement still follows the final closure change (D5, Phase-0 dispositions).
+
+**Citation fix.** D8's pointer `2026-09-24-tradeify-t00-p7-closure.md:742–749` holds only the record and closure hashes; the count is at `:630`. The authoritative path list for item 13 is D8 above.
+
 ## Pre-mortem (README rule)
 
 - **Loop cost:** one Windows build loop and its records; no Linux run.
