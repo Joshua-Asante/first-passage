@@ -11,13 +11,13 @@ Of 13 questions per variant (Q1, Q2a, Q2b, Q3–Q12), public primary sources ful
 
 | Variant | D | N | F | Residual | Rejection-rule questions (Q1 licensing · Q2a coverage · Q3 order containment · Q5 unattended auth) |
 |---|---|---|---|---|---|
-| CME-LIC (licensor: Q1, Q2a, Q2b, plus Q1b) | 0 | 3 (+Q1b) | 0 | 3 (+Q1b) | Q1 open |
+| CME-LIC (licensor: Q1, Q2a, Q2b, plus Q1b) | 1 (Q2a) | 2 (+Q1b) | 0 | 2 (+Q1b) | Q1 open |
 | P7a CME WebSocket API | 1 (Q11, negative) | 11 | 1 | 12 | all four open |
 | P7b CME Smart Stream on Google Cloud | 2 (Q9; Q11, negative) | 10 | 1 | 11 | all four open |
 | P1 Massive, Futures Advanced | 2 (Q3, Q11) | 11 | 0 | 11 | Q3 **met** by source; Q1, Q2a, Q5 open |
 | P2 tastytrade Open API / DXLink | 0 | 13 | 0 | 13 | all four open |
-| P3a IBKR TWS API / IB Gateway | 1 (Q5, negative) | 12 | 0 | 12 | Q5 **failed** by source; Q1, Q2a, Q3 open |
-| P3b IBKR Client Portal Web API | 1 (Q5, negative, excerpt only) | 10 | 2 | 12 | Q5 **failed** by source (excerpt); Q1, Q2a, Q3 open |
+| P3a IBKR TWS API / IB Gateway | 1 (Q5, negative) | 12 | 0 | 12 | **Skipped by Joshua 2026-10-03.** Q5 **failed** by source; Q1, Q2a, Q3 open |
+| P3b IBKR Client Portal Web API | 1 (Q5, negative, excerpt only) | 10 | 2 | 12 | **Skipped by Joshua 2026-10-03.** Q5 **failed** by source (excerpt); Q1, Q2a, Q3 open |
 | P4 Ironbeam API | 0 | 9 | 4 | 13 | all four open |
 | P5 Rithmic R\|Protocol (stage 1) | 0 | 9 | 4 | 13 (7 with an FCM part) | all four open; Q3 and Q5 partly deferred to the FCM |
 | P6 Tradovate API, personal data-only account | 0 | 11 | 2 | 13 | all four open |
@@ -26,28 +26,28 @@ The drafts in §4 are much shorter than #583's messages because each asks only t
 
 **What the sources change (all inferences unless an official source states it):**
 
-1. **CME licensing reaches every provider.** CME's fee lists [excerpt] charge non-display fees **per exchange (DCM)**, so 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX) pay three times. The individual rate (User Non-Display, "A8") is $457 per DCM per month in 2026, rising to $472 in January 2027: about **$1,371/month** for three DCMs. The cheaper managed rate ("A9", $208 per DCM) appears to require the data source to also route the subscriber's automated orders to CME markets. Here the orders go to another broker, so **A9 may be unavailable through any data source that does not route them**, which would push every candidate to A8. Only CME can confirm. That is why the CME message goes first (D-Q3).
-2. **CME's 2026 licence updates (effective 2026-09-17)** ban "Synthetic Feeds" and, in a machine-learning/AI clause, list the automated generation of trade signals among prohibited uses [excerpt]. The context suggests the AI clause targets data shown on websites, and that internal, undistributed bars are not a Synthetic Feed. Neither reading is established, and a literal reading of the AI clause would reach this use. The CME draft asks both.
+1. **CME's own documents, read on the page, change the licensing picture.** Non-display fees are monthly and charged per exchange (DCM): User Non-Display (A8) is $457 a month per exchange ($472 from January 2027) and Category A1 Basic $609, so a direct licence for these three exchanges costs about $1,371–$1,827 a month. But Schedule 5 §3.3 lets a data distributor supply data for automated trading to a **non-professional** subscriber without the subscriber's own CME licence; only other subscribers must license directly. The decisive questions therefore become (a) whether the prop-firm destination keeps Joshua non-professional (§8.2 limits non-professional use to one's own assets) and (b) each vendor's own terms; Tradovate's own policy still requires the subscriber's ILA. The managed-user rate (A9, $208) requires the data source to route the subscriber's orders (§11.2), so it looks unavailable here. New: if the evaluation account is a simulated trading environment, the orders never reach a CME exchange, and CME's category for that case is open. The CME message goes first (D-Q3).
+2. **CME's 2026 licence updates (effective 2026-09-17)** forbid using the data to create a Synthetic Feed and add a duty to purge data on termination, while still allowing limited internal derivative works (ILA §2.1(c), §3.7). The machine-learning/AI prohibition, including its trade-signal item, is wording CME requires in the terms of use of **public websites** that display its data (Schedule 5 website display §1.1(c)); on its face it does not reach non-display use. Whether internal 15-minute bars could count as a Synthetic Feed is still open, and the CME draft asks.
 3. **Two providers' own terms point against this use.** Massive's Market Data Terms (§2, §5(d)) limit data to display use unless separately licensed. tastytrade's API Terms tie data use to transactions with tastytrade (Permitted Purpose, §8(3)). Both also apply CME's non-professional test that use must be limited to one's own assets, which a prop-firm evaluation account may fail.
-4. **IBKR's unattended login fails by source** (IB Gateway from IBKR's own pages; the Client Portal Gateway from excerpts only). IB Gateway needs a manual two-factor login through a screen each week, and the Client Portal Gateway needs one daily. Individual accounts cannot use IBKR's OAuth. Under the §3 rejection rule that excludes both variants if a reply confirms it. The IBKR draft is therefore a single gate question.
+4. **IBKR's unattended login fails by source** (IB Gateway from IBKR's own pages; the Client Portal Gateway from excerpts only). IB Gateway needs a manual two-factor login through a screen each week, and the Client Portal Gateway needs one daily. Individual accounts cannot use IBKR's OAuth. **Joshua skipped IBKR on 2026-10-03**, so no IBKR message will be sent; its rows stay as evidence.
 5. **Capital that the #583 tables missed:** Ironbeam requires a live funded account with a $1,000 minimum balance for any API access. Tradovate requires $1,000 to create an API key and charges $35 per 30 days without a live trade on its free plan. An FCM offering Rithmic (Ironbeam) requires $500.
-6. **Evidence quality.** `cmegroup.com` timed out on every fetch (12 of 12), so every CME licensing and fee fact is a search excerpt. `interactivebrokers.com` returned HTTP 403, and the Tradovate, NinjaTrader and tastytrade knowledge-base pages rendered empty. Excerpts can be stale or paraphrased, so these facts stay UNVERIFIED until Joshua reads them on the page or in a reply.
+6. **Evidence quality.** WebFetch timed out on `cmegroup.com`, so the eight CME licensing PDFs (non-display FAQ, Schedule 5, the January 2026, June 2026 and January 2027 fee lists, the 2026 update notice, the ILA and the Information Policies) were read in full in the built-in browser and are page-verified. CME's product web pages remain excerpts. `interactivebrokers.com` returned HTTP 403, and the Tradovate, NinjaTrader and tastytrade knowledge-base pages rendered empty. Excerpts can be stale or paraphrased, so those facts stay UNVERIFIED until Joshua reads them on the page or in a reply.
 
 ## 1. Conflicts
 
 **With the #583 note's published-terms tables:**
-- **CME fee unit and amount.** #583 left the unit open and could not reconcile "$670 per exchange". The excerpts give $457 (A8) and $208 (A9) **per licensee, per DCM**. $670 is the **2014** Category A fee [3p]. A January 2027 list (A8 $472, A9 $215) and a June 2026 list (unread) also exist.
-- **CME rule cited.** #583 §1 quotes the semi-automated rule. This use is fully automated (Category A), so the A8/A9 routes govern.
+- **CME fee unit and amount.** #583 left the unit open and could not reconcile "$670 per exchange". CME's fee lists [pdf] put A8 at $457 and A9 at $208 a month per exchange (June 2026 unchanged; January 2027: $472 and $215), and A1 Basic at $609. $670 is the 2014 Category A fee [3p].
+- **CME rule cited.** #583 §1 quotes the semi-automated rule. This use is fully automated (Category A). The governing contract terms are Schedule 5 §3.3 (the non-professional exception), §8 (non-professional criteria) and §11 (managed user) [pdf].
 - **CME $0.50/GB.** #583 attributes it to Smart Stream. The excerpts tie it to the WebSocket API page and repeat it for Smart Stream, so it is ambiguous.
 - **Massive.** The KB line #583 relied on (individual plans cover your own scripts and trading) conflicts with Massive's own Market Data Terms §2/§5(d). The personal, non-professional licence wording #583 quoted comes from Massive's stocks page. History is 7+ years (pricing) or since 2017-04-03 (docs), not 5 years (the Developer tier).
-- **tastytrade.** The $4.65/month non-professional CME bundle and the "CME Group bundle" are on no tastytrade source. Current tastytrade excerpts say non-professionals pay no data fees.
-- **IBKR.** CME non-pro L1 is $1.25 or $1.55 in different excerpts, and the bundle waiver is $20 or $30 of commissions. #583's "$5 streaming" line was not seen. One line covers CME, CBOT, COMEX and NYMEX.
+- **tastytrade.** The $4.65/month in #583 is CME's own non-professional top-of-book fee for all four exchanges (CME fee list [pdf]), not a tastytrade price. The "CME Group bundle" is on no tastytrade source. Current tastytrade excerpts say non-professionals pay no data fees.
+- **IBKR.** CME non-pro L1 is $1.25 or $1.55 in different excerpts; CME's own fee is $1.55 per exchange [pdf]. The bundle waiver is $20 or $30 of commissions. #583's "$5 streaming" line was not seen. One line covers CME, CBOT, COMEX and NYMEX.
 - **Ironbeam.** #583 omitted the $1,000 minimum balance. $249/month is a floor; the page says pricing varies by use case. The free non-professional data applies to Ironbeam's own platform; "other platforms" pay $3.00 per exchange.
 - **Rithmic.** The "$100 monthly minimum per API user" is a 2013 forum post. FCM API fees now range from $20 to $100+, and L1 data from $2.55 to $3.00 per exchange.
 - **Tradovate.** #583's $290–$500 CME figure is forum-sourced. The CME excerpts give $457 or $208 per DCM, so about $1,371 or $624 for three DCMs. #583 omitted the $1,000 balance and the $35 inactivity fee.
 
 **Between or within official sources:**
-- CME (paraphrased): the FAQ's rule that all non-display use is licensed directly with CME vs Schedule 5's A9 managed route through a provider; and the FAQ's rule that non-professionals license through their data provider vs its rule that semi-automated users license directly with CME. Excerpts give different wording for the AI clause's trade-signal item and different A1 tier amounts.
+- CME: the non-display FAQ says all non-display use is licensed directly with CME, while Schedule 5 §3.3 exempts non-professionals who use a distributor's data in automated systems [pdf]. The FAQ is guidance; Schedule 5 is the contract.
 - CME direct products: WebSocket sequence numbers are per topic and weekly (overview) vs per session (message pages). The trade correction action is "update" (WebSocket) vs "change" (Pub/Sub).
 - IBKR: real-time bar time is the bar start (current docs excerpt) vs the bar end (a summary of the deprecated page). Nightly reset is 00:15–01:45 ET vs 23:45–00:45 ET. The tick-by-tick limit is 3 vs 5% of market-data lines.
 - Ironbeam: professional data $119.80 vs $135 per exchange. Its llms.txt says the API is free; its KB prices non-traders from $249. Two extractions of its API reference disagree on a REST history endpoint.
@@ -59,7 +59,7 @@ The drafts in §4 are much shorter than #583's messages because each asks only t
 
 None of these is established by an official source. Each is a residual question in §4.
 
-- **CME (all routes):** which route applies when the data source does not route the orders (A8 or A9); whether CME will sign an ILA, or Smart Stream's cloud agreement, with an individual; whether one ILA covers CME, CBOT and COMEX; the fee cadence, base ILA fee, setup, minimum term, audits and deposits; whether trading a prop firm's evaluation account removes non-professional status under the own-assets test; whether non-pro status changes the Category A fee; the scope of the 2026 AI/ML clause and the Synthetic Feed ban; whether raw messages and derived bars may be stored for audit without a derived-data licence; whether the funded-trader consent clause reaches a data subscriber.
+- **CME (all routes):** whether a non-professional needs a direct licence, or pays any non-display fee, when a distributor supplies data for automated trading (Schedule 5 §3.3 suggests not); which category applies if the evaluation account is simulated; whether the prop destination removes non-professional status (§8.2), and whether a data-only vendor meets §8.1's order-routing-device condition; whether CME will sign an ILA, or Smart Stream's cloud agreement, with an individual; base ILA fee, setup, minimum term, audits and deposits; whether internal 15-minute bars are a permitted internal derivative work rather than a Synthetic Feed; audit retention after termination (§3.7); that the website-display AI/ML wording does not reach non-display use; whether the funded-trader consent clause (Information Policies §7.3) reaches a data subscriber.
 - **P1 Massive:** that Futures Advanced licenses automated non-display decisions at all; that no separate CME licence is due from the individual; that the subscriber stays non-professional with a prop-firm destination; that the CME condition of an active futures trading account is met; cloud hosting; retention after the subscription ends (§8 requires deletion); that $199 is all-in.
 - **P2 tastytrade:** that DXLink data may drive orders at another broker; that a prop evaluation account counts as the subscriber's own assets; that tastytrade's licence covers automated non-display use; that a read-only server meets the subscriber agreement's order-terminal condition; that a cloud server is an acceptable designated location; real-time API delivery for a funded non-pro account; private storage and retention.
 - **P3 IBKR (both variants):** that the "Non-Display (API trading applications)" subscription covers this use without the subscriber's own CME licence; that orders at another broker are permitted; that a prop destination keeps non-pro status under the personal-investment-purposes test; the non-display fee; cloud hosting and storage; that a no-trading username can hold real-time data.
@@ -85,11 +85,12 @@ None of these is established by an official source. Each is a residual question 
 >
 > Could you answer in writing, with links to the governing terms? Please write "none" for any fee or requirement that does not apply.
 >
-> 1. **Licence route.** Which licence applies: User Non-Display (A8) under my own ILA, Managed User Non-Display (A9) through the data source, or another category? Schedule 5 appears to require an A9 licensee to provide the subscriber's automated order routing to CME markets. Is A9 available when the data source does not route my orders?
-> 2. **Status.** Does placing the orders in a third-party prop firm's evaluation account count as managing third-party assets, so that I am not non-professional? Does non-professional status change the Category A fee?
-> 3. **Fees.** Please confirm that A8 is $457 per month per DCM in 2026 and $472 from January 2027 (A9: $208 and $215), so three times for CME, CBOT and COMEX. Is one ILA enough for all three? Is there a base ILA fee, setup fee, minimum term, deposit or audit obligation for an individual?
-> 4. **2026 licence updates.** Does the ML/AI/LLM prohibition in the 2026 updates, including its item on automated generation of trade signals, apply to real-time data licensed for Category A non-display use, or only to data displayed on websites? Are 15-minute bars that my program computes internally, and never distributes, a Synthetic Feed? May I store the raw messages and those bars privately for audit without a derived-data licence?
-> 5. **Direct products.** Please answer separately for (a) the real-time futures and options WebSocket API and (b) Smart Stream on Google Cloud:
+> 1. **Licence route.** Schedule 5 §3.3 appears to let a data distributor supply data for automated trading to a non-professional subscriber without the subscriber's own CME licence, while your non-display FAQ says all non-display use is licensed directly with CME. As a non-professional, do I need my own licence for this use, and does any non-display fee apply when the data comes through a distributor? If I need my own licence, is it User Non-Display (A8) or Category A1? Managed User (A9) requires the distributor to route my orders (§11.2); is it unavailable when the distributor does not?
+> 2. **Evaluation accounts.** If the evaluation account is a simulated trading environment, in which orders do not reach the exchange, which category applies: A1, A3 or another?
+> 3. **Status.** Does placing the orders in a third-party prop firm's evaluation account count as managing third-party assets under Schedule 5 §8.2, so that I am not non-professional? Can I count as non-professional when my data source provides no order routing device (§8.1)?
+> 4. **Fees and terms.** Your fee lists show A8 at $457 a month per exchange ($472 from January 2027) and A1 Basic at $609. Is there also a base ILA fee, setup fee, minimum term, deposit or audit obligation for an individual licensee?
+> 5. **2026 licence updates.** Are 15-minute bars that my program computes internally, and never distributes, a permitted internal derivative work under ILA §2.1(c) rather than a Synthetic Feed? May I keep the raw messages and those bars for audit after the licence ends (§3.7)? Please confirm that the ML/AI/LLM wording in the website-display terms does not apply to non-display use.
+> 6. **Direct products.** Please answer separately for (a) the real-time futures and options WebSocket API and (b) Smart Stream on Google Cloud:
 >    1. May an individual sign the agreements each one requires?
 >    2. Which entitlements or topics give real-time data for these four products?
 >    3. What is the per-GB tier schedule, what exactly is metered, and is there a minimum or setup fee? Which product does the $0.50/GB starting price belong to? Please give a bounded monthly estimate, in GB and dollars, for trades only (and for top of book) on these four front months.
@@ -105,13 +106,14 @@ None of these is established by an official source. Each is a residual question 
 > Thank you.
 
 *Why each disclosure stays (for Joshua):*
-- *Individual (natural person):* A8 and A9 are rates for a single natural person (CME fee list, Schedule 5 [excerpt]).
-- *Non-professional:* CME's definition limits non-professional use to one's own assets (Information Policies [excerpt]); question 2 depends on it.
-- *No display, automated orders:* this places the use in Category A non-display (non-display FAQ [excerpt]), which decides the licence.
-- *Data from a vendor, broker or CME:* A8 and A9 differ by how the data is received (fee list, 2014 policies update [excerpt]).
-- *Orders at a prop-firm evaluation account at a different broker:* D-Q2 ruled to disclose. A9 appears to require the data source to route the orders (Schedule 5 §11 [excerpt]), so this sentence decides the route and price.
-- *Four symbols, three exchanges:* fees are per DCM (fee list [excerpt]), so it sets the multiplier.
-- *Nothing redistributed:* keeps the Synthetic Feed question to internal use (ILA v5.02 [excerpt]).
+- *Individual (natural person):* A8 is for a licensee who is a single natural user, and Managed User for an individual natural person (fee list note 8; Schedule 5 definitions [pdf]).
+- *Non-professional:* Schedule 5 §3.3 exempts non-professionals from the direct-licence rule, and §8.2 limits non-professional use to one's own assets [pdf]; questions 1 and 3 depend on it.
+- *No display, automated orders:* this places the use in Category A non-display (non-display FAQ; Schedule 5 definitions [pdf]), which decides the licence.
+- *Data from a vendor, broker or CME:* Schedule 5 §3.3 and §11 turn on how the data is supplied [pdf].
+- *Orders at a prop-firm evaluation account at a different broker:* D-Q2 ruled to disclose. A9 needs the distributor to route the orders (Schedule 5 §11.2 [pdf]), and the own-assets test (§8.2) may turn on the destination.
+- *Simulated evaluation (not stated; Joshua's call):* question 2 asks conditionally. Information Policies §7.1 [pdf] defines simulated environments, and the category may differ (A1 vs A3). State it plainly only if Joshua confirms the evaluation account is simulated.
+- *Four symbols, three exchanges:* fees are per exchange (fee list header; FAQ Q14 [pdf]), so it sets the multiplier.
+- *Nothing redistributed:* keeps question 5 to internal derivative works (ILA §2.1(c) [pdf]).
 - *Cloud host: omitted.* No CME source shows it changes the category; Smart Stream runs on Google Cloud by design.
 
 ### 4.1 P1 Massive, Futures Advanced
@@ -169,7 +171,7 @@ None of these is established by an official source. Each is a residual question 
 
 ### 4.3 P3 Interactive Brokers (TWS API / IB Gateway and Client Portal Web API)
 
-**Send the gate question alone.** Public sources answer Q5 negatively for both variants (§1 above; matrix P3a/P3b Q5). Whether to send at all is Joshua's call. If the reply confirms, the §3 rejection rule excludes both variants and nothing more needs asking.
+**Skipped by Joshua (2026-10-03): not to be sent.** The gate question and follow-up below are kept only as a record. Public sources answer Q5 negatively for both variants (§1 above; matrix P3a/P3b Q5).
 
 > **Subject:** Unattended API login for an individual account
 >
@@ -278,7 +280,7 @@ None of these is established by an official source. Each is a residual question 
 - *No display, automated decisions:* decides the CME category the ILA must carry (non-display FAQ [excerpt]).
 - *Existing, approved personal account:* true per the relayed operator fact, and it scopes the questions to entitlements on that account rather than opening one. No identifier or date goes in the message.
 - *Same-broker destination, never linked:* D-Q2 with #583's §3.6 same-broker wording; only "I would open" becomes "I would use", because the account exists. Tradovate says prop and evaluation accounts cannot get API access [excerpt], so the separate personal account must be explicit.
-- *Four symbols:* entitlement scope; CME fees appear to be per exchange.
+- *Four symbols:* entitlement scope; CME fees are per exchange (CME fee list [pdf]).
 - *Cloud host:* only in question 6 (Q6); Tradovate's IP and device limits imply servers are expected, and no source shows it changes the plan.
 
 ## 5. Recording
@@ -289,5 +291,6 @@ Replies are recorded under the [#583 note §4](2026-10-01-feed-provider-question
 
 - Base: `origin/main` at `e9fade0`; branch `claude/feed-questions-narrowed`; worktree under `.claude/worktrees/`.
 - Research: seven parallel WebSearch/WebFetch passes, one per provider, on 2026-10-03. No vendor contact, form, login, account, trial, cookie acceptance or mailbox access. Fetch failures are listed per provider in the matrix.
+- CME licensing PDFs: WebFetch timed out, so the eight PDFs were fetched from inside a cmegroup.com page in the built-in browser and text-extracted with pdf.js (no login; the cookie banner was left unanswered). Fee-list columns were checked by text position: the non-display fees sit in the Monthly column.
 - Owner reads: the #583 note (all), the H8 note §5, Track A plan §3.2, and the frozen equivalence spec §3, §4.3, §6 and §7. The locked feed-equivalence spec was read and not edited; its technical content concerns an earlier MT5/TV comparison.
 - Link check and gates: see the PR body.
