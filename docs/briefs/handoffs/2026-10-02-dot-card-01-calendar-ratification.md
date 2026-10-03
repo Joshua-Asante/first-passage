@@ -1,22 +1,27 @@
 # Dot card 01: November 2026 calendar ratification follow-through
 
-**Type:** cc_handoff (dot release card; the first released assignment under the dot charter)
+**Type:** cc_handoff (dot release card; the first released assignment under the dot charter), revision 2.
 
-**Status:** RELEASE-READY (frozen) — released when startup bindings §0 are complete and #622 is merged.
-- Released by: Claude coordinator (3) ("Coordinating parallel Claude sessions (3)"), subject to every §0 row reading BOUND.
-- Committed before any execution under the committed-handoff rule. The release record (who released it, at which commit of this card, with which §0 values) is a `[coordinator (3) → dot]` comment on the PR or the coordinator's own owner record; this file is not edited to record the release. A change to any frozen section is a new card.
+**Status:** RELEASE-READY (frozen, revision 2) — HELD: released by a `[coordinator (3) → hyper]` comment on #622 after #622 merges with digest b89562a5. Not released until then.
+- Revision 1 (`3c1655fc9dff02b9edabd774e806a46cc39563ca`) was never released. Revision 2 replaces it before release. It folds the refute review of revision 1 (0 P1, 5 P2, 5 P3) and the binding structure coordinator (3) and Coordinator 2 accepted on 2026-10-03, which replaces revision 1's "the dot is the executor".
+- Committed before any execution under the committed-handoff rule. The release record is a `[coordinator (3) → hyper]` comment on #622, posted by coordinator (3) after #622 merges. It cites this card's revision-2 commit SHA (40 characters), the §0.1 B-row values and the executive-review verdict (B3). This file is not edited to record the release. After release, a change to any frozen section is a new card.
 
-**Executor:** the OpenAI dot named in §0 row B2, acting directly as the single writer (charter: "Direct implementation is permitted only when the dot is assigned that executor role and its card allows the change"). It dispatches no worker and no subagent.
+**Who does what.**
 
-**Accepting coordinator:** Claude coordinator (3). It owns the specification, conflict adjudication, acceptance of the return and the decision packet's delivery to Joshua.
-
-**Coordination contact:** Codex Coordinator 2 (Codex chat ID `01a0ff59-ac63-76a1-ab49-f9cd5515ff24`). The dot cannot message Claude sessions directly. Its durable channel to coordinator (3) is a GitHub comment on the PR it opens, prefixed `[dot → coordinator (3)]`; the contact relays when a chat message is needed.
+| Role | Holder | Seat, grants and limits |
+|---|---|---|
+| Dispatching coordinator | **hyper**: OpenAI dot, conversation `01a0ff79-c8a3-77b4-b0eb-83b11cce90f4`, durable host | `coordinator` seat (`scripts/seat_authority.yml:96-100`), narrowed by this card to `repository.read` (`:37`, low) and `handoff.dispatch` (`:46`, medium), the latter for the one worker named below only. Hyper does not execute: no worktree write, test run, push or PR. |
+| Executor | Worker "Check First Passage readiness", `01a0ff7c-9b6e-70f7-96a8-8ea3f8a4b0d0`, explicitly rebound to this card | `worker` seat (`:105-108`) with the grants in the authority block below. Hyper confirmed the worker is reusable; no duplicate executor is created. |
+| Accepting owner | Claude coordinator (3), "Coordinating parallel Claude sessions (3)" | Specification, conflict adjudication, the release record, acceptance of the return and combined acceptance. It does not take campaign ownership from the recorded campaign coordinator. |
+| Relay and contact | Codex Coordinator 2, `01a0ff59-ac63-76a1-ab49-f9cd5515ff24` (desktop) | Relay and contact only; it accepts nothing. It performs the executive review (B3). |
+| Operator | Joshua | The ratification reply (B14) and the merge go on the ratification PR, through the merge-order agent. |
 
 **Owners this card narrows (it changes none of them):**
 - Dot charter: [`docs/notes/2026-10-02-dot-deployment-responsibility.md`](../../notes/2026-10-02-dot-deployment-responsibility.md) at `main@152716dd90a995c2d5e533c9d41f38d42db31748` (#623).
 - Seats, action classes, `IN_DOUBT`, committed-handoff rule: [surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#action-classes-and-the-authority-block), Addenda 2026-09-26b and 2026-09-30b; registry [`scripts/seat_authority.yml`](../../../scripts/seat_authority.yml).
 - Calendar ratification precedent: [`ops/calendars/README.md`](../../../ops/calendars/README.md) `:145-200`; [`ops/calendars/RATIFIED.json`](../../../ops/calendars/RATIFIED.json) (append-only rows); loader `ops/c1_rail/book_session_calendar.py` `load_ratifications` `:548-581` and `load_ratified_calendar` `:583-601`; October precedent PR #560.
 - Trade-date gap owner: `docs/notes/2026-09-15-packet1-step4-session-calendar.md` `:122-131`.
+- Commit gates: [`scripts/gates.yml`](../../../scripts/gates.yml) and `scripts/githooks/pre-commit`.
 
 ```yaml authority
 seat: worker
@@ -37,10 +42,15 @@ constraints:
   - no_schedule_or_monitor_creation
   - no_spend_arm_deploy_or_trade
   - no_private_data_pine_or_ports
+  - hook_proof_before_any_push
+  - hook_proof_worktree_kept_and_never_pushed
+  - b14_values_only_from_hyper_dispatch
+  - record_url_read_from_opened_pr_never_predicted
+  - independent_reviewer_only
   - comments_only_on_own_pr
   - in_doubt_inspect_before_retry
   - two_failed_corrections_escalate
-  - stop_at_coordinator_return
+  - return_to_hyper_until_coordinator_3_acknowledges
 acceptance:
   - tests/ops/test_book_session_calendar.py::test_november_is_ratified_and_admits
   - tests/ops/test_book_session_calendar.py::test_checked_in_ratification_binds_exactly_the_checked_in_bytes
@@ -49,63 +59,76 @@ acceptance:
   - tests/ops/test_book_session_calendar.py::test_november_calendar_and_evidence_are_byte_pinned_and_v2
   - tests/ops/test_book_session_calendar.py::test_november_reproduces_from_the_authoring_tool
   - tests/ops/test_book_session_calendar.py
+  - tests/ops/test_account_close_assembler.py
+  - tests/ops/test_book_settlement.py
+  - tests/ops/test_account_close_calculation.py
 ```
 
-**Seat choice.** `worker` is the narrowest registry seat whose grant covers the five capabilities this assignment needs (`scripts/seat_authority.yml:105-108`: `max_risk: medium`, `grantable: [repository.read, tests.run, worktree.write, research.run, branch.push, pr.open, ci.dispatch]`). `escalation` (`:101-104`) and `coordinator` (`:96-100`) grant more; `executive` (`:93-95`) lacks `worktree.write`, `branch.push` and `pr.open`. The card grants exactly five (`:37` `repository.read` low, `:38` `tests.run` low, `:39` `worktree.write` low, `:41` `branch.push` medium, `:42` `pr.open` medium) and withholds the seat's `research.run` and `ci.dispatch`. The registry's name is `pr.open`; there is no `pr.create`. `worktree.write` puts the card under `acceptance_required_for` (`:88`), so it names its acceptance tests above. `check_handoff_authority.py` binds these grants to the declared seat only; binding the seat to the dot is coordinator (3)'s pre-dispatch read plus the executive review (ADR Addendum 2026-09-26b). The parent is the charter, which carries no authority block: it records provenance and narrows nothing beyond the seat (checker rule A7).
+**Seat choice (executor).** `worker` is the narrowest registry seat whose grant covers the five capabilities this assignment needs (`scripts/seat_authority.yml:105-108`: `max_risk: medium`, `grantable: [repository.read, tests.run, worktree.write, research.run, branch.push, pr.open, ci.dispatch]`). `escalation` (`:101-104`) and `coordinator` (`:96-100`) grant more; `executive` (`:93-95`) lacks `worktree.write`, `branch.push` and `pr.open`. The block grants exactly five: `repository.read` (`:37`, low), `tests.run` (`:38`, low), `worktree.write` (`:39`, low), `branch.push` (`:41`, medium; `codex/*` here, never `main`) and `pr.open` (`:42`, medium). It withholds the seat's `research.run` and `ci.dispatch`. The registry's name is `pr.open`; there is no `pr.create`. `worktree.write` is in `acceptance_required_for` (`:88`), so the block names its acceptance tests. The parent is the charter, which carries no authority block: it records provenance and narrows nothing beyond the seat (checker rule A7).
 
-**Grant gap, recorded rather than widened.** The registry has no comment capability. This card reads the `[dot → coordinator (3)]` return comments and the Codex review request (`@codex review`) on **the PR the dot opened** as part of `pr.open`. Review comments on any other PR (`pr.review`) are not granted. Coordinator (3) confirms this reading at release (§0 row B6) or narrows delivery to the PR body.
+**Seat choice (hyper).** A card carries exactly one authority block (checker rule A1), and this one is the executor's. Hyper's narrowed grant is recorded in the table above and in B3, and was checked by hand against the same rules: both capabilities are registered, neither is `high`, both are grantable to `coordinator` (`:98-99`), and the ceiling is medium. `check_handoff_authority.py` binds grants to the declared seat only. Binding hyper to `coordinator` and the worker to `worker` is coordinator (3)'s pre-dispatch read plus the executive review (ADR Addendum 2026-09-26b).
+
+**Grant gap, recorded rather than widened.** The registry has no comment capability. Under the contact routes accepted on 2026-10-03 (B5):
+- The worker posts `[worker → coordinator (3)]` comments and the review request (`@codex review`) on **the ratification PR it opened**. These are read as part of `pr.open`.
+- Hyper posts `[hyper → coordinator (3)]` comments on that PR as internal coordination under the charter's communication clause ("Communicate internally with the named coordinator and workers assigned to the released work"). This grants hyper no push, PR, review or approval.
+- Neither reading covers review comments on any other PR (`pr.review`), an approval, or a comment anywhere else. Coordinator (3)'s release record on #622 is coordinator (3)'s own act.
+
+**Residual (merge).** If the worker acts with Joshua's `gh` credential, which can merge, then "no merge" holds only by instruction. The `main` ruleset requires a PR and `skills (3.12)` but does not stop that credential from merging a green PR, and `scripts/guard_operator_acts.py` is a Claude Code hook that does not run on OpenAI surfaces.
 
 ## 0. Startup bindings (§0) and Phase-0 reads
 
-§0.1 lists the startup bindings the charter (`docs/notes/2026-10-02-dot-deployment-responsibility.md`) requires before release; §0.2 lists the Phase-0 reads the dot reports before any edit.
+§0.1 lists the startup bindings the charter (`docs/notes/2026-10-02-dot-deployment-responsibility.md`) requires before the first autonomous dispatch; §0.2 lists the Phase-0 reads the worker reports before any edit.
 
 ### 0.1 Startup bindings
 
-The charter's *Activation and evidence of fitness* section requires these before the first autonomous dispatch. The card is released only when every row reads BOUND. Values were observed on 2026-10-02 (America/New_York) from `origin/main@152716d`, GitHub and the coordinator's relay. Nothing here was verified from the dot's own surface.
+The charter's *Activation and evidence of fitness* section requires these before the first autonomous dispatch. Values were observed on 2026-10-02 (America/New_York; 2026-10-03 UTC) from `origin/main@1a350ec3a60789eeebc8b8cc3d2eae5ab4f98c4d`, GitHub, and coordinator (3)'s relay of the 2026-10-03 binding acceptance. Nothing here was verified from hyper's or the worker's own surface. The card is released only when B15 reads BOUND and the B3 executive-review verdict exists.
 
-| # | Binding | Current value | State |
+| # | Binding | Value | State |
 |---|---|---|---|
-| B1 | Adopted charter revision | `docs/notes/2026-10-02-dot-deployment-responsibility.md` at `152716dd90a995c2d5e533c9d41f38d42db31748`. GitHub shows #623 merged by `Joshua-Asante` at 2026-10-03T01:57:11Z. Joshua's words, as relayed by Codex Coordinator 2 from chat `01a0ff36-f114-7653-ab9f-2e63b0652872`: "merge it, i will start up the dot". The document's own Status line still reads "proposed responsibility wording". | **PARTIAL — owner: coordinator (3).** Record Joshua's adoption directly, not through the relay alone: either his confirmation that the merge adopts the charter for this dot, or his words read in the source chat. |
-| B2 | Dot identity | Not yet created. Joshua said he will start it. | **MISSING — owner: Joshua** (name and ID of the dot, recorded by coordinator (3)). |
-| B3 | Seat | `worker`, with the five grants in the authority block (see *Seat choice*). | **PROPOSED — owner: coordinator (3)** (pre-dispatch read binding the seat to B2; executive review per Addendum 2026-09-26b). |
-| B4 | Accepting owner | Claude coordinator (3), "Coordinating parallel Claude sessions (3)". It does not take campaign ownership from the recorded campaign coordinator. | BOUND by this card. |
-| B5 | Coordination contact and recipient binding | Proposed: Codex Coordinator 2, `01a0ff59-ac63-76a1-ab49-f9cd5515ff24`, because Joshua routed the dot notice through it. The charter names "Codex coordinator" `01a0fa4b-8a76-7201-9c2f-98297042475a`, now Coordinator 1. A renamed chat is not a transfer of campaign ownership. | **MISSING — owner: coordinator (3), with Joshua if he wants Coordinator 1.** Record which chat is the dot's contact, and that Coordinator 1 keeps its existing role. |
-| B6 | Recipients and access | (a) Repository: `Joshua-Asante/first-passage` (public), with push to `codex/*` branches and permission to open PRs. (b) GitHub identity the dot acts as: unknown. (c) Surface: local host or cloud, unknown. This card needs the local operations launcher (`python -I scripts/fp.py`) and the installed git hooks, so a local surface is required unless the dot shows both working elsewhere. (d) Reaching coordinator (3): through PR comments and Codex Coordinator 2 only. (e) The *Grant gap* reading of comments. | **MISSING — owner: Joshua** for (b) and (c); **coordinator (3)** for (e). |
-| B7 | Card | This file, at the commit that adds it on `claude/dot-card-calendar-ratification`. That commit is the dispatch revision. | BOUND on commit; coordinator (3) records the SHA in its release record. |
-| B8 | Budget and concurrency | One executor, the dot itself. No worker, subagent, scheduled task or cloud run. No new compute or spend budget: ordinary task usage within the existing allowance. CI runs only because of the dot's own pushes; `ci.dispatch` is not granted. | BOUND by this card. |
-| B9 | Write footprint | Branch `codex/dot-2026-11-calendar-ratification` (new, from `main` after #622 merges). Files: `ops/calendars/RATIFIED.json`, `ops/calendars/README.md`, `tests/ops/test_book_session_calendar.py`. Disjoint from every other released card **only after #622 merges**, because #622 writes the same README and test file. | BOUND by this card; serialised behind #622 (§9 case 6). |
-| B10 | Evidence destination | PR comments prefixed `[dot → coordinator (3)]`. Each carries full 40-character SHAs and, for each launcher run, the `record.json` path plus its `status`, `verification_exit_code`, `source_stable` and the test counts. The return packet (§6) is also a PR comment. | BOUND by this card. |
-| B11 | Notification owner | Proposed: coordinator (3) owns every notification to Joshua for this card, including the decision packet. The dot notifies only coordinator (3), through B10 and B5. | **PROPOSED — owner: coordinator (3)** to confirm. |
-| B12 | Monitor reconciliation | Coordinator 1's heartbeat covers Claude (2). No monitor covers coordinator (3). This card creates no schedule or subscription. The dot uses its own supported wake behaviour without promising timing, and coordinator (3) checks the PR when the return arrives. No existing monitor is cancelled or duplicated. | BOUND for this card. Whether (3) needs a standing monitor is outside this card (owner: coordinator (3)). |
-| B13 | Surface controls | Verified on the host checkout only: `core.hooksPath` = `C:\Users\joshu\multi_firm_operations\.git\hooks` (shared by worktrees). The pre-commit gates from `scripts/install_hooks.sh` / `install_hooks.bat`, including the vendor-data integrity gate and `handoff-brief-form`, run on Claude Code commits. They are unverified on the dot's surface: the charter warns that cloud orchestration can limit local agent hooks. `scripts/guard_operator_acts.py` is a Claude Code hook and does **not** run for the dot. If the dot uses Joshua's `gh` credential, which can merge, then "no merge" holds only by instruction: the `main` ruleset requires a PR and `skills (3.12)`, but does not stop that credential from merging a green PR. | **MISSING — owners: the dot** (show its first commit's hook output in the first PR comment; `--no-verify` is forbidden), **and Joshua** (which credential the dot holds, and whether a non-merge-capable identity is used). |
-| B14 | Ratification row values `RATIFIED_UTC` and `INSTRUCTION` | The loader requires `ratified_utc` ≥ the November file's `generated_utc` `2026-10-03T01:03:53Z`, and before its coverage end `2026-11-30T22:00:00Z`. Admission starts at that instant (README `:148`, loader `:599-600`). Both precedents (September `ratify calendar 650e8aab`; October, PR #560) recorded Joshua's instruction first, and the agent then wrote the row with that instant. A row written before he acts cannot honestly carry the instant of his act. Options: **(a) instruction first (recommended; matches both precedents):** Joshua says "ratify calendar b89562a5"; coordinator (3) records the UTC second and his exact words as the two values; his later merge of the clean head carries it. **(b)** Coordinator (3) already holds Joshua's 2026-10-02 sheet-2 words with a UTC timestamp ≥ `2026-10-03T01:03:53Z` that ratify this digest: use those. **(c) single touch:** `RATIFIED_UTC` = `2026-10-28T22:00:00Z` (the November coverage start, as an effective-from instant), with `INSTRUCTION` naming the go on the PR. This departs from precedent, puts agent words in the `instruction` field, and is honest only if the merge comes before that instant. | **MISSING — owner: coordinator (3)** (Joshua if (c) is chosen, since it changes the precedent). |
-| B15 | Prerequisite | PR #622 (`claude/calendar-2026-11`, head `74255561f168b7bf77ca08d0fdec1eeb0cd1be6c`) is **OPEN, not merged**. Digest `b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7` was recomputed from that head's `ops/calendars/book_session_calendar_2026-11.json` bytes. Relay-CLEAN is reported by the coordinator; no Codex review is visible on the PR. | **MISSING — owner: Joshua** (his go / merge of #622). |
+| B1 | Adopted charter revision | `docs/notes/2026-10-02-dot-deployment-responsibility.md` at `152716dd90a995c2d5e533c9d41f38d42db31748` (#623, merged 2026-10-03T01:57:11Z). Joshua told Coordinator 2 directly: "I have adopted the deployment follow-through charter for hyper". The document's own Status line still reads "proposed responsibility wording"; adoption rests on his statement. | **BOUND.** Settled; do not ask again. |
+| B2 | Dot identity | **hyper**, OpenAI dot, conversation `01a0ff79-c8a3-77b4-b0eb-83b11cce90f4`, durable host. | **BOUND.** |
+| B3 | Seats and executive review | (a) hyper: `coordinator`, narrowed to `repository.read` plus `handoff.dispatch` for the one worker in (b); no direct execution. (b) Executor: worker `01a0ff7c-9b6e-70f7-96a8-8ea3f8a4b0d0` under `worker` with the five grants in the authority block. (c) Executive-review performer: **Codex Coordinator 2 (relay), independent of the drafter.** | **BOUND** (seats and performer, accepted 2026-10-03). The executive-review verdict is cited in the release record; without it the card is not released. |
+| B4 | Accepting owner | Claude coordinator (3) owns acceptance and combined acceptance. Coordinator 2 is relay and contact only. | **BOUND.** |
+| B5 | Contact routes | (a) hyper ↔ Coordinator 2: hyper posts `[hyper → Coordinator 2]` in its own chat; desktop Coordinator 2 (`01a0ff59-ac63-76a1-ab49-f9cd5515ff24`) reads it and replies with supported tools. A direct return to local Coordinator 2 failed with `CloudThreadNotFoundError`. (b) Decision updates for Joshua go in his existing hyper chat. (c) Coordinator (3) is reached through Coordinator 2, or through durable `[hyper → coordinator (3)]` / `[worker → coordinator (3)]` comments on the ratification PR once it exists. (d) The release record is a `[coordinator (3) → hyper]` comment on #622. (e) Hyper ↔ worker: hyper's dispatch and follow-up messages in the worker's task; the worker's returns to hyper there. | **BOUND.** |
+| B6 | Recipients and access | (a) Repository `Joshua-Asante/first-passage` (public): the worker pushes `codex/*` branches and opens PRs. (b) The GitHub identity the worker acts as is reported at Phase 0 (item 6), login only; the merge residual above applies if it is Joshua's credential. (c) Surface: the worker's local host, because the card needs the operations launcher (`python -I scripts/fp.py`) and the installed git hooks; B13 proves the hooks there. (d) Hyper reaches coordinator (3) only through B5. (e) The *Grant gap* reading of comments. | **BOUND**; (b) is reported, not chosen. |
+| B7 | Card | This file at its revision-2 commit on `claude/dot-card-calendar-ratification`. That commit is the dispatch revision. | BOUND on commit; the release record cites the SHA. |
+| B8 | Budget and concurrency | One active worker, the one named in B3(b). Hyper dispatches it once. No second worker, subagent, scheduled task or cloud run; no new compute or spend: ordinary task usage within the existing allowance. CI runs only because of the worker's own pushes; `ci.dispatch` is not granted. | **BOUND.** |
+| B9 | Write footprint | Branch `codex/dot-2026-11-calendar-ratification` (new, from `main` after #622 merges). Files: `ops/calendars/RATIFIED.json`, `ops/calendars/README.md`, `tests/ops/test_book_session_calendar.py`. Disjoint from every other released card **only after #622 merges**, because #622 writes the same README and test file. The B13 disposable worktree and its throwaway local branch are outside the PR, never pushed and kept. | **BOUND**; serialised behind #622 (§9). |
+| B10 | Evidence destination | `[worker → coordinator (3)]` comments on the ratification PR. Each carries the PR, the exact head (full 40-character SHA) and, for each launcher run, the `record.json` path with its `status`, `verification_exit_code`, `source_stable` and test counts. Before the PR exists, the Phase-0 report and the hook proof go to hyper in the worker's task and are repeated in the first PR comment. | **BOUND.** |
+| B11 | Notification owner | Hyper, to Joshua's existing hyper chat, for decisions (B14, the final decision packet) and outcomes, in the charter's update format. Coordination goes to Coordinator 2, then coordinator (3). | **BOUND.** |
+| B12 | Monitoring | Coordinator 1's active 15-minute heartbeat targets Claude (2) only. No new monitor or schedule; none is cancelled or duplicated. Hyper owns follow-through on this card through its supported wake behaviour, without a timing guarantee. | **BOUND.** |
+| B13 | Hook proof (surface controls) | `git commit --dry-run` does not run hooks and is not evidence. Before any push, the worker validates the actually configured hooks in a fresh, uniquely named disposable worktree on a throwaway local branch that is never pushed (§3, worker step 2): (1) `git config core.hooksPath` and the hook files; (2) a real commit the pre-commit `staged-debris` gate refuses, with its refusal output; (3) a clean real commit, with the hook's pass output. The disposable worktree and branch are not deleted; their path is reported. Revision 1's host-side observation stands: `core.hooksPath` = `C:\Users\joshu\multi_firm_operations\.git\hooks`, shared by worktrees. | **BOUND** (procedure); evidence owed by the worker before any push. Hooks not running on the worker's surface is a STOP: `NEEDS_CONTEXT`. |
+| B14 | Ratification row values `NOV_INSTRUCTION` and `NOV_RATIFIED_UTC` | Joshua has **not** ratified November. Coordinator (3)'s sheet 2 said "You ratify the digest when #622 is clean"; that describes his future act, not a ratification, so asking now is a new act, not a repeated question. After #622 merges and the release record is posted, hyper sends Joshua, in his existing hyper chat, this one-line decision packet: "Ratify the November 2026 book session calendar, digest b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7 (merged in #622 at <merge sha>)? Reply: ratify calendar b89562a5". Joshua's reply supplies `NOV_INSTRUCTION` verbatim. `NOV_RATIFIED_UTC` is the reply's timestamp, read in UTC to the second from the hyper chat by hyper or Coordinator 2. It must be ≥ `generated_utc` `2026-10-03T01:03:53Z` and before coverage end `2026-11-30T22:00:00Z` (README `:148`, loader `:599-600`). Both precedents (September `ratify calendar 650e8aab`; October, PR #560) recorded Joshua's instruction first. | **BOUND** (procedure; owners hyper for the packet, Joshua for the reply). Values are supplied at flow step 3. A reply that does not ratify digest `b89562a5` is not B14: hyper holds and reports to coordinator (3). |
+| B15 | Prerequisite | PR #622 (`claude/calendar-2026-11`) is **OPEN, not merged**. Head `b74de387544c53a7369b11f31d406fa067d2efc7` is a merge of `main` into the branch, touching no #622 file since the reviewed head `74255561f168b7bf77ca08d0fdec1eeb0cd1be6c`. The relay CLEAN at `74255561…` is posted at https://github.com/Joshua-Asante/first-passage/pull/622#issuecomment-5964508807 (2026-10-03T02:16:50Z). Digest `b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7` recomputes at both heads; overlay `483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b` on `main`. | **MISSING — owner: Joshua** (his merge of #622). |
 
 ### 0.2 Phase-0 reads (read-report-before-code)
 
-Report these reads in the first PR comment, or before the PR exists in a `[dot → coordinator (3)]` relay through B5, before any edit. Bounce `NEEDS_CONTEXT` on any contradiction.
+The worker reports these to hyper before any edit, and repeats them in the first PR comment. Bounce `NEEDS_CONTEXT` to hyper on any contradiction.
 
 1. **Premise.** #622 is MERGED. Its merge commit is an ancestor of `origin/main`. On `origin/main`, `sha256(ops/calendars/book_session_calendar_2026-11.json)` = `b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7` and `NOV_CALENDAR_SHA256` in the test file equals it. If either differs, the prerequisite has changed (§7).
-2. **Release.** Coordinator (3)'s release record exists, cites this card's commit and gives B2, B3, B5, B6, B11, B13 and B14 values. Without it, stop.
+2. **Release and dispatch.** The `[coordinator (3) → hyper]` release record exists on #622, cites this card's revision-2 SHA and gives B-row values matching §0.1. Hyper's dispatch gives `NOV_INSTRUCTION`, `NOV_RATIFIED_UTC` and the reference of Joshua's reply in the hyper chat. `NOV_RATIFIED_UTC` is ≥ `2026-10-03T01:03:53Z`, before `2026-11-30T22:00:00Z` and after #622's `mergedAt`. Without all of these, stop.
 3. **Reads.** Read these in full: `ops/calendars/RATIFIED.json`; `ops/calendars/README.md` `:145-200`; `ops/c1_rail/book_session_calendar.py` `:548-601`; and in `tests/ops/test_book_session_calendar.py`, `test_checked_in_ratification_binds_exactly_the_checked_in_bytes`, `test_october_is_ratified_and_admits`, `test_defective_ratification_files_are_refused` and the November block added by #622. Also read PR #560's diff as the precedent.
 4. **Existing work.** Search GitHub for an existing branch or PR for this ratification (`gh pr list --state all --search "b89562a5"`, `git ls-remote origin 'refs/heads/codex/dot-*'`). Reuse what exists; never create a duplicate (§8).
-5. **Test 0, vendor bytes and secrets.** This card reads no gitignored vendor-data path, no `.env`, no secret, no Pine and no runtime port. None is staged for this dispatch, and none is needed. Account identifiers and private figures stay out of every comment.
+5. **Test 0, vendor bytes and secrets.** This card reads no gitignored vendor-data path, no `.env`, no secret, no Pine and no runtime port. None is staged for this dispatch, and none is needed. Account identifiers and private figures stay out of every message and comment.
+6. **Identity.** Report `gh api user -q .login` and `git config user.name`, never a token. If the login can merge on this repository, the merge residual applies and is restated in the return.
 
 ## 0.5. Clarifying questions and routing
 
-- **Routing.** This is a frozen, precedented, three-file follow-through, so the worker seat suffices (routing test 2). It authors no doctrine and touches no locked or `core/` anchor surface (test 1). Ratification itself is an operator act (`governance.ratify`, `pr.merge`, both `high`), which this card leaves to Joshua.
-- **Questions owed before release, not during execution:** B1, B2, B5, B6, B11, B13, B14, B15. A question that comes up during execution is returned as `NEEDS_CONTEXT`; the dot never resolves it on its own.
-- **Scope note for coordinator (3).** The relayed assignment said "any other file" is out of scope. Appending the November row, however, makes #622's `test_november_is_not_ratified` fail, and `test_checked_in_ratification_binds_exactly_the_checked_in_bytes` pins the ratified set. PR #560 edited the test file for the same reason. This card therefore includes `tests/ops/test_book_session_calendar.py` in the footprint, limited to the §2 edits.
+- **Routing.** This is a frozen, precedented, three-file follow-through, so the worker seat suffices for the executor (routing test 2). It authors no doctrine and touches no locked or `core/` anchor surface (test 1). Hyper routes the released card to its assigned executor (charter: "Otherwise route the work to its assigned executor"). Ratification and merge are operator acts (`governance.ratify`, `pr.merge`, both `high`), left to Joshua.
+- **Owed before release:** B15 (#622 merged with digest `b89562a5`) and the B3 executive-review verdict. B14 is obtained after release (flow step 3), by its own procedure. A question that comes up during execution goes to hyper as `NEEDS_CONTEXT`; neither hyper nor the worker resolves it alone, and hyper takes it to coordinator (3) through B5.
+- **Scope note.** Appending the November row makes #622's `test_november_is_not_ratified` fail, and `test_checked_in_ratification_binds_exactly_the_checked_in_bytes` pins the ratified set. PR #560 edited the test file for the same reason. The footprint therefore includes `tests/ops/test_book_session_calendar.py`, limited to the §2 edits.
 
 ## 1. Selected outcome
 
-A PR from `codex/dot-2026-11-calendar-ratification` against `main` appends the operator ratification row for November digest `b89562a5…` to `RATIFIED.json`. It changes the README's November row to "ratified" and records Joshua's sheet-2 acceptances, and it swaps the test's not-ratified assertion for a ratified-and-admits assertion. The PR is carried to Codex or relay CLEAN at one exact head and returned to coordinator (3) with a one-line decision packet for Joshua. The PR is not merged; ratification happens only by Joshua's act.
+A PR from `codex/dot-2026-11-calendar-ratification` against `main` appends the operator ratification row for November digest `b89562a5…` to `RATIFIED.json`, using the values from Joshua's B14 reply. It changes the README's November row to "ratified" and records Joshua's sheet-2 acceptances, and it swaps the test's not-ratified assertion for a ratified-and-admits assertion. An independent reviewer reports CLEAN at one exact head, the worker returns to hyper, and hyper returns to coordinator (3). The PR is not merged by any agent; Joshua's merge go is his operator act.
 
 Joshua's sheet-2 acceptances to record, as given by the operator directly to coordinator (3) on 2026-10-02 ("all recommended" on sheet 2 item 2):
 - The 2026-11-26 row's `cme_trade_date` 2026-11-26 is accepted explicitly as-is. CME puts that session in trade date 2026-11-27, and the authoring tool has no trade-date input. He accepted September's Labor Day row the same way.
 - 2026-11-11 DENIED `MISSING_SOURCE` is accepted.
 - 2026-11-25 and 2026-11-30 PERMITTED are accepted.
-- A Thanksgiving re-check on or after 2026-11-12 is owed. A changed byte means a new digest and a new decision.
+- A Thanksgiving re-check on or after 2026-11-12 is owed (**owner: coordinator (3)**; outside this card). A changed byte means a new digest and a new decision.
+
+Sheet 2's "You ratify the digest when #622 is clean" described Joshua's future act. It is not a ratification and supplies no row values; B14 obtains the act.
 
 ## 2. Scope (exact edits; nothing else)
 
@@ -117,42 +140,77 @@ Joshua's sheet-2 acceptances to record, as given by the operator directly to coo
    - `closure_overlay_sha256`: `483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b`. Recompute it from `main` and stop if it differs.
    - `coverage_start_utc`: `2026-10-28T22:00:00Z`; `coverage_end_utc`: `2026-11-30T22:00:00Z`. Both come from the calendar's `coverage` block.
    - `ratified_by`: `operator`
-   - `ratified_utc`: B14 `RATIFIED_UTC`; `instruction`: B14 `INSTRUCTION`
-   - `record`: the URL of the PR this card opens
+   - `ratified_utc`: B14 `NOV_RATIFIED_UTC`; `instruction`: B14 `NOV_INSTRUCTION`, verbatim
+   - `record`: the URL of the ratification PR, read from GitHub after the PR is opened (§3 worker step 6). Never predicted, never a placeholder: rows are append-only, so a wrong URL is permanent once merged.
    - `scope`: "Book permission rows for the November 2026 monthly extension, including the 2026-10-29 and 2026-10-30 rollover overlap rows, as authored: 2026-11-11 DENIED (MISSING_SOURCE), 2026-11-26 DENIED (HOLIDAY), 2026-11-27 DENIED (SHORTENED); 2026-11-25 and 2026-11-30 PERMITTED accepted; the 2026-11-26 row's cme_trade_date 2026-11-26 accepted by the operator as-is (CME trade date 2026-11-27; authoring tool has no trade-date input); Thanksgiving halts provisional, re-check on or after 2026-11-12 owed and any changed byte is a new digest and a new decision. Grants no activation, deployment, resumption or historical legality."
-2. **`ops/calendars/README.md`:** in the November table row added by #622 only, replace the lead "**Candidate, not ratified (digest `b89562a5…`).**" with "**Ratified by the operator (<date of `RATIFIED_UTC`>, digest `b89562a5…`).**". At the end of the row, append one sentence recording the four §1 acceptances and "Admission starts at the row's `ratified_utc`." Keep the ⚠ trade-date sentence. No other README line changes; the "Monthly extension" paragraph and December text stay as they are.
+2. **`ops/calendars/README.md`:** in the November table row added by #622 only, replace the lead "**Candidate, not ratified (digest `b89562a5…`).**" with "**Ratified by the operator (<UTC date of `NOV_RATIFIED_UTC`>, digest `b89562a5…`).**". At the end of the row, append one sentence recording the four §1 acceptances and "Admission starts at the row's `ratified_utc`." Keep the ⚠ trade-date sentence. No other README line changes; the "Monthly extension" paragraph and December text stay as they are.
 3. **`tests/ops/test_book_session_calendar.py`:**
+   - Inside the November block, beside `NOV_CALENDAR_SHA256`, add two module-level literals: `NOV_INSTRUCTION` (B14's text, verbatim) and `NOV_RATIFIED_UTC` (B14's instant, `YYYY-MM-DDTHH:MM:SSZ`).
    - In `test_checked_in_ratification_binds_exactly_the_checked_in_bytes`, change the set to `{CALENDAR_SHA256, OCT_CALENDAR_SHA256, NOV_CALENDAR_SHA256}`. The docstring sentence becomes: the October and November rows are the only other ratifications, checked in their own tests.
    - Replace `test_november_is_not_ratified` with `test_november_is_ratified_and_admits`, asserting exactly:
      - (i) the raw load `load_november().session_for(et(2026, 11, 16, 9)).refusal == "calendar_not_ratified"`;
-     - (ii) the row for `NOV_CALENDAR_SHA256` has `closure_overlay_sha256 == OVERLAY_SHA256`, `ratified_by == "operator"`, `instruction == INSTRUCTION`, `ratified_utc == RATIFIED_UTC`, and coverage `("2026-10-28T22:00:00Z", "2026-11-30T22:00:00Z")`;
-     - (iii) `load_ratified_calendar(NOV_CALENDAR, …)` has `calendar_digest == NOV_CALENDAR_SHA256`, and `ratified_at` equals `RATIFIED_UTC` parsed as UTC;
+     - (ii) the row read as `load_ratifications(RATIFIED)[NOV_CALENDAR_SHA256]` has `closure_overlay_sha256 == OVERLAY_SHA256`, `ratified_by == "operator"`, `instruction == NOV_INSTRUCTION`, `ratified_utc == NOV_RATIFIED_UTC`, and coverage `("2026-10-28T22:00:00Z", "2026-11-30T22:00:00Z")`;
+     - (iii) `load_ratified_calendar(NOV_CALENDAR, …)` has `calendar_digest == NOV_CALENDAR_SHA256`, and `ratified_at` equals `NOV_RATIFIED_UTC` parsed as UTC;
      - (iv) `session_for(et(2026, 11, 16, 9), expected_digest=NOV_CALENDAR_SHA256).permitted`, and the same for 2026-11-25 and 2026-11-30 at 09:00 ET;
      - (v) the refusals for 11-11, 11-26 and 11-27 at 09:00 ET are `session_denied:MISSING_SOURCE`, `session_denied:HOLIDAY` and `session_denied:SHORTENED`;
      - (vi) in the raw file, the 2026-11-26 row's `cme_trade_date` is `2026-11-26` for all four products, which pins the accepted defect so that a re-author is visible.
    - No other test changes. A further test that fails because of the appended row is a §7 stop, not a licence to edit it.
+   - The executor writes this primary acceptance test itself, so it is not the acceptance basis alone (ADR handoff-contract item 5): coordinator (3) checks its body against (i)–(vi) and the row and literals against B14 at acceptance, and the pre-existing named tests carry the rest.
 
-## 3. Method
+## 3. Flow and method
 
-Cut a worktree from `origin/main` after Phase 0. Make the §2 edits with LF bytes. Run the §4 checks through the launcher (`python -I scripts/fp.py python -m pytest tests/ops/test_book_session_calendar.py`, then `python -I scripts/fp.py check`). Run `git diff --stat`, then commit with the hooks active. Push the branch and open the PR, whose body states it is **not ratified until Joshua's act**. Request `@codex review`, or the relay review that coordinator (3) names through B5. Fix in-scope findings within §2 and re-run the affected checks. Repeat until CLEAN at one exact head, then deliver §6.
+**Flow (in order; each step waits for the one before it).**
+
+| Step | Act | Owner |
+|---|---|---|
+| 1 | #622 merges with digest `b89562a5` (prerequisite, B15) | Joshua |
+| 2 | Release record: `[coordinator (3) → hyper]` comment on #622 citing this card's revision-2 SHA, the B-row values and the executive-review verdict | coordinator (3) |
+| 3 | B14 ratify packet to Joshua in his hyper chat; wait for his reply; read `NOV_INSTRUCTION` and `NOV_RATIFIED_UTC` | hyper (Coordinator 2 may read the timestamp) |
+| 4 | Dispatch the named worker once, with this card's revision-2 SHA, the release-record URL, the B14 values and the reply reference | hyper |
+| 5 | Phase 0, hook proof, commit 1, push, PR, commit 2, green runs (worker steps 1–8 below) | worker |
+| 6 | Independent review: `@codex review` or a relay reviewer independent of coordinator (3) and of this card's drafter, with the verdict posted on the PR naming the full head SHA | reviewer; requested by the worker |
+| 7 | Worker returns to hyper; hyper inspects the evidence and returns to coordinator (3); coordinator (3) acknowledges | worker, hyper, coordinator (3) |
+| 8 | Joshua's merge go on the ratification PR, through the merge-order agent | Joshua (operator act, outside this card) |
+
+After coordinator (3) records RESOLVED, hyper sends Joshua the decision packet (§6) in his hyper chat.
+
+**Worker method.**
+1. **Phase 0** (§0.2), reported to hyper.
+2. **Hook proof (B13), before any push.** Create a fresh, uniquely named disposable worktree on a throwaway local branch from `origin/main`, for example `git worktree add -b hookproof/dot-card-01-<UTC stamp> <new path>/hookproof-dot-card-01-<UTC stamp> origin/main`. Inside it:
+   - (1) Report `git config core.hooksPath` and list the hook files in that directory (if unset, `git rev-parse --git-path hooks`).
+   - (2) **Expected refusal.** Write a one-line root file `tmp-hook-proof.txt`, `git add tmp-hook-proof.txt`, then `git commit -m "hook proof: expected refusal"`. The pre-commit hook (`scripts/githooks/pre-commit:7`, `gate_manifest.py --tier pre-commit`) runs the `staged-debris` gate (`scripts/gates.yml:458-462`, tier `always`), which refuses any staged root-level `tmp-*` path (`scripts/check_staged_debris.py` docstring). Record the full refusal output and show that `git log -1` is unchanged. Then `git restore --staged tmp-hook-proof.txt`; the file stays.
+   - (3) **Expected pass.** Write a one-line root file `hook-proof-clean.txt`, `git add hook-proof-clean.txt`, then `git commit -m "hook proof: clean"`. Record the hook's pass output and the new commit SHA.
+   - Do not delete the disposable worktree, its branch or its files; never push the branch. Report the path and branch name.
+   - If step (2) creates a commit, or no hook output appears in (2) or (3), hooks do not run on this surface: STOP, push nothing and return `NEEDS_CONTEXT`. If (3) is refused by a gate that also fails on unmodified `origin/main`, return `BLOCKED` with the output; committing without hooks is forbidden.
+3. **Worktree.** Cut a new, uniquely named worktree on `codex/dot-2026-11-calendar-ratification` from `origin/main`.
+4. **Commit 1, the fail-first record.** Make the §2.2 README edit and the §2.3 test edits (literals included). Run `python -I scripts/fp.py python -m pytest tests/ops/test_book_session_calendar.py::test_november_is_ratified_and_admits`: it must fail with `KeyError` at the row lookup in (ii), with `status: completed` and a non-zero `verification_exit_code` in the launcher record. Run `git diff --stat`, then commit with the hooks active.
+5. **Push and open the PR.** Push the branch. Open the PR; its body states it is **not ratified until Joshua's act**, cites this card's revision-2 SHA and the B14 reply reference, and says a second commit appends the row.
+6. **Read the PR number from GitHub** (`gh pr view codex/dot-2026-11-calendar-ratification --json number,url`). Never predict it.
+7. **Commit 2.** Append the §2.1 row with `record` set to that URL. Run the launcher on `tests/ops/test_book_session_calendar.py`, then on `tests/ops/test_account_close_assembler.py tests/ops/test_book_settlement.py tests/ops/test_account_close_calculation.py`, then `python -I scripts/fp.py check`. Run `git diff --stat`, commit with the hooks active, and push.
+8. **Evidence and review.** Post the first `[worker → coordinator (3)]` PR comment: Phase-0 report, hook proof, both commits' SHAs and every launcher record. Request `@codex review`, or the relay reviewer coordinator (3) names through Coordinator 2, who must be independent of coordinator (3) and of this card's drafter. Fix in-scope findings within §2, re-run the affected checks and re-request review, until CLEAN at one exact head. Then return to hyper (§6).
+
+**Hyper method.** Steps 3, 4 and 7 of the flow. Before step 7's return, inspect the actual diff and launcher records (charter step 5): tested revision, `status`, exit result, `source_stable` and the reviewed head. A worker DONE without that evidence is not promoted. Return through a `[hyper → coordinator (3)]` comment on the PR and a `[hyper → Coordinator 2]` message in hyper's own chat.
 
 ## 4. Verification (falsifier-first)
 
-**H:** appending exactly this row, with these three file edits, makes the November digest admissible from `RATIFIED_UTC` and leaves September and October admission and every other calendar test unchanged.
+**H:** appending exactly this row, with these three file edits, makes the November digest admissible from `NOV_RATIFIED_UTC` and leaves September and October admission and every other calendar and account-close test unchanged.
 
 **Reject if** (falsifier):
 - any named acceptance test fails at the return head;
 - `fp check` exits non-zero, apart from a pre-existing failure shown to fail identically on `main`, disclosed and not counted as a pass;
 - the diff touches a file or line outside §2;
 - an existing `RATIFIED.json` row's bytes change;
-- the calendar or evidence digests differ from §0.2 item 1.
+- the calendar or evidence digests differ from §0.2 item 1;
+- the row's `instruction` or `ratified_utc` differs from B14, or `record` is not the PR's own URL;
+- the hook proof (B13) is missing or was not made before the first push.
 
-**Fail-first evidence.** On the branch before the RATIFIED row is appended, `test_november_is_ratified_and_admits` must fail with `calendar_not_ratified`, as a launcher record. After the append it must pass. A test that cannot be made to fail before the append is a §7 stop.
+**Fail-first evidence.** Before the RATIFIED row is appended, `test_november_is_ratified_and_admits` fails with `KeyError` at the row lookup in (ii), recorded by the launcher. After the append it passes. A test that cannot be made to fail before the append is a §7 stop.
 
-**Revert trigger:** any admission decision for a September or October instant differs from `main`.
+**Revert trigger:** any admission decision for a September or October instant differs from `main`. The return-head runs of `tests/ops/test_book_session_calendar.py` and the three account-close test files cover it.
 
 Return-head evidence:
-- the full `tests/ops/test_book_session_calendar.py` launcher record (expect #622's 153 plus or minus the swapped test, all passing);
+- the full `tests/ops/test_book_session_calendar.py` launcher record (the same count as `main` after #622, since the swap is one-for-one, all passing);
+- the launcher record for `tests/ops/test_account_close_assembler.py`, `tests/ops/test_book_settlement.py` and `tests/ops/test_account_close_calculation.py`;
 - the `fp check` record;
 - `git diff --check`;
 - `git diff --stat origin/main...HEAD` showing exactly three files;
@@ -164,31 +222,35 @@ Return-head evidence:
 - Editing `book_session_calendar_2026-11.json`, any evidence file, the overlay, the October or September files, or any existing `RATIFIED.json` row.
 - Re-authoring the calendar, the Thanksgiving re-check, December authoring, or any trade-date-input build.
 - `core/`, `lab/`, Pine, runtime ports, `ops/c1_rail/**` code, `scripts/**`, `.claude/**`, `AGENTS.md`, `STATE.md`, ledgers, ADRs and campaign records.
-- Dispatching workers, subagents, CI workflows or cloud runs; creating schedules or monitors; any spend, arm, deploy or trade action.
-- `git commit --no-verify`, `git stash`, force-push to a branch the dot did not create, and deleting any branch, PR, comment or worktree.
+- **Hyper:** any worktree write, test run, push, PR or review; dispatching any worker other than `01a0ff7c-9b6e-70f7-96a8-8ea3f8a4b0d0`, or that worker twice; obtaining B14 values from anything but Joshua's reply.
+- **Worker:** dispatching workers, subagents, CI workflows or cloud runs; inventing, back-dating or paraphrasing B14 values.
+- Creating schedules or monitors; any spend, arm, deploy or trade action.
+- `git commit --no-verify`, `git commit --dry-run` as hook evidence, `git stash`, pushing the hook-proof branch, force-push to a branch the worker did not create, and deleting any branch, PR, comment or worktree (the hook-proof worktree included).
 - Committing or quoting account identifiers, P&L, vendor CSVs, Pine or ports.
-- Contacting anyone other than coordinator (3), through B10 and B5, and the named reviewer.
+- Contacting anyone outside the B5 routes and the named reviewer.
 
 ## 6. Output and return (status taxonomy)
 
-Return **DONE**, **DONE_WITH_CONCERNS**, **NEEDS_CONTEXT** or **BLOCKED** as a `[dot → coordinator (3)]` PR comment, relayed through B5. Coordinator (3)'s verdict is **RESOLVED** (every §4 item holds at the return head) or **FALSIFIED** (a named item fails, returned to the dot). The return contains:
+The worker returns **DONE**, **DONE_WITH_CONCERNS**, **NEEDS_CONTEXT** or **BLOCKED** to hyper in its task and as a `[worker → coordinator (3)]` PR comment once the PR exists. Hyper returns it to coordinator (3) through B5. Coordinator (3)'s verdict is **RESOLVED** (every §4 item holds at the return head) or **FALSIFIED** (a named item fails; returned to hyper for the worker). The return contains:
 - the PR number and URL, the exact head SHA (40 characters) and the base SHA;
 - `git diff --stat` plus the full diff;
 - the launcher `record.json` paths with `status`, `verification_exit_code`, `source_stable` and the counts (fail-first and return-head);
 - the CI status at the head;
-- the Codex or relay verdict and the head it reviewed;
-- the Phase-0 report;
+- the reviewer's identity, its verdict URL and the full head SHA it reviewed;
+- the Phase-0 report, including the GitHub login and, if it can merge, the merge residual;
+- the hook proof: `core.hooksPath`, the hook files, the refusal output, the pass output with its commit SHA, and the disposable worktree path and branch;
+- `NOV_INSTRUCTION`, `NOV_RATIFIED_UTC` and the reference of Joshua's reply;
 - every `IN_DOUBT` event and how it was reconciled;
-- the hook-run evidence for B13;
 - concerns;
-- the decision packet, one line: `ratify b89562a5 by go on PR #<N> at <head-sha>`. Under B14 (a) or (b) it reads `merge PR #<N> at <head-sha> (carries your "<INSTRUCTION>" of <RATIFIED_UTC>)`.
+- the decision packet hyper sends Joshua after RESOLVED, one line: `merge PR #<N> at <head-sha> (carries your "<NOV_INSTRUCTION>" of <NOV_RATIFIED_UTC>), through the merge-order agent`.
 
-**Return boundary:** the PR is CLEAN at one exact head, and the return has been posted and acknowledged by coordinator (3) or its contact. The dot then stops. It does not advance to the 11-12 re-check or any other assignment unless one is separately released.
+**Return boundary:** the PR is CLEAN at one exact head, and the return has been posted and **acknowledged by coordinator (3)**. Coordinator 2's acknowledgement is relay, not delivery. Hyper and the worker then start nothing new; they do not advance to the 11-12 re-check or any other assignment unless one is separately released. Inside this card until Joshua merges: a FALSIFIED verdict, and a branch update from `main` that changes no §2 file when coordinator (3) or the merge-order agent asks for one (strict `skills (3.12)`). A change to a §2 file on `main` after the PR opens is a §7 stop.
 
-## 7. Stop conditions (return to coordinator (3); do not work around)
+## 7. Stop conditions (return to coordinator (3) through hyper; do not work around)
 
-- #622 is not merged, its merged digest differs from `b89562a5…`, or `main` gains a later change to any §2 file before the PR opens. This is a prerequisite change (charter case 3): hold, and return.
-- Any §0 row is not BOUND at release, or B14's values violate the loader's ordering rules.
+- #622 is not merged, its merged digest differs from `b89562a5…`, or `main` gains a later change to any §2 file. This is a prerequisite change (charter case 3): hold, and return.
+- The release record is missing or its B-row values differ from §0.1, or Joshua's reply does not ratify digest `b89562a5`, or `NOV_RATIFIED_UTC` violates the loader's ordering rules.
+- Hooks do not run on the worker's surface (B13): `NEEDS_CONTEXT`.
 - A test outside §2's named edits fails because of the change, or a fix would need a file outside §2.
 - The reviewer's finding needs a behaviour or scope change rather than an in-scope correction.
 - Two failed corrections of the same issue. Renaming or re-opening does not reset the count. Return the evidence for the escalation lane.
@@ -196,32 +258,32 @@ Return **DONE**, **DONE_WITH_CONCERNS**, **NEEDS_CONTEXT** or **BLOCKED** as a `
 
 ## 8. Side effects, restart and stop procedure
 
-- **`IN_DOUBT`.** A branch push, PR creation, review request or comment whose outcome was not observed is in doubt. Before any retry, inspect GitHub (`git ls-remote`, `gh pr list --head codex/dot-2026-11-calendar-ratification --state all`, `gh pr view <N> --comments`) and reuse what exists. Never retry automatically. A failed response does not prove that nothing happened.
-- **Continuity.** The dot's working notes, kept outside the repository, persist the PR number, branch, every pushed SHA, comment URLs, launcher record paths and the correction count. On restart it re-reads this card's commit, `origin/main` and the PR state before acting.
-- **Stop.** If Joshua or coordinator (3) says stop, the dot:
-  - starts nothing new;
-  - confirms separately that no push, comment or review request is pending, and that it created no child task and no schedule;
-  - posts one `[dot → coordinator (3)]` stop report naming the branch, PR, head and anything uncertain.
+- **`IN_DOUBT`.** Hyper's packet to Joshua, hyper's dispatch, a branch push, PR creation, a review request or a comment whose outcome was not observed is in doubt. Before any retry, inspect the destination (the hyper chat, the worker's task, `git ls-remote`, `gh pr list --head codex/dot-2026-11-calendar-ratification --state all`, `gh pr view <N> --comments`) and reuse what exists. Never retry automatically. A failed response does not prove that nothing happened.
+- **Continuity.** Hyper's working notes persist the worker task ID `01a0ff7c-9b6e-70f7-96a8-8ea3f8a4b0d0`, the release-record URL, the reference of Joshua's reply and the B14 values, and the pending action. The worker's notes, kept outside the repository, persist the PR number, branch, every pushed SHA, comment URLs, launcher record paths, the hook-proof worktree path and the correction count. On restart each re-reads this card's commit, `origin/main` and the PR state before acting, and hyper inspects the worker's task before any new message.
+- **Stop.** If Joshua or coordinator (3) says stop, hyper:
+  - starts nothing new and asks the worker for a safe stop;
+  - confirms separately that no push, comment, review request or message is pending, and that no child task beyond the named worker and no schedule exists;
+  - posts one `[hyper → coordinator (3)]` stop report naming the branch, PR, head and anything uncertain.
 
-  It does not delete the branch, PR or comments. Stopping orchestration places, cancels and exits nothing at any broker.
+  Nothing deletes the branch, PR, comments or the hook-proof worktree. Stopping orchestration places, cancels and exits nothing at any broker.
 
 ## 9. Charter cases exercised by this card
 
 | Charter case | How this card exercises it | Evidence level |
 |---|---|---|
-| Valid released assignment | One dispatch from this frozen card; return without routine permission questions | **Exercised** |
+| Valid released assignment | Hyper dispatches the named worker once from this frozen card; return without routine permission questions | **Exercised** |
 | Ordinary in-scope defect | A reviewer finding or test failure inside §2 is corrected and the affected checks re-run | Exercised if one occurs; not induced |
 | Frozen card or prerequisite changes | #622's head or digest may change before merge, or `main` may move on a §2 file (§7 first bullet) | Exercised if it occurs; the check runs at Phase 0 regardless |
-| Uncertain task creation or message delivery | Push, PR creation, review request and comments follow §8 `IN_DOUBT` | Exercised if it occurs |
-| Restart with unfinished work | §8 continuity notes and re-inspection | Exercised only if the dot restarts mid-card; not induced |
-| Concurrent assignments | The footprint collides with #622 (README, test file), so the card is **serialised** behind it, not run in parallel | **Exercised by construction** (serialise branch). The parallel branch is not exercised |
-| Local computer unavailable | Launcher records need the local operations environment. If it is unavailable, mark local evidence unavailable, continue GitHub-side preparation and return `BLOCKED` or `DONE_WITH_CONCERNS`, never DONE | Exercised if it occurs |
-| Worker reports success without required evidence | The dot is its own executor: no DONE without records and the exact reviewed head; a reviewer "clean" on a different head is not CLEAN | **Exercised** as a self-check at return |
+| Uncertain task creation or message delivery | The B14 packet, the dispatch, push, PR creation, review request and comments follow §8 `IN_DOUBT` | Exercised if it occurs |
+| Restart with unfinished work | §8 continuity: hyper holds the saved worker task ID and pending action | Exercised only if hyper or the worker restarts mid-card; not induced |
+| Concurrent assignments | The footprint collides with #622 (README, test file), so the card is **serialised** behind it; one active worker | **Exercised by construction** (serialise branch). The parallel branch is not exercised |
+| Local computer unavailable | Launcher records and B13 need the worker's local host. If it is unavailable, mark local evidence unavailable, continue only GitHub-side preparation and return `BLOCKED` or `DONE_WITH_CONCERNS`, never DONE | Exercised if it occurs |
+| Worker reports success without required evidence | Hyper inspects the records and the reviewed head before returning; a "clean" on a different head is not CLEAN | **Exercised** at return |
 | Specification conflict or repeated failed corrections | §7 stops and the two-correction rule | Exercised if it occurs |
 | Stop request | §8 stop procedure | Not exercised unless a stop is issued |
-| Attempt to exceed authority | The assignment ends where Joshua's acts begin (merge, ratification). The dot prepares the decision packet and defers the act | **Exercised by construction** |
+| Attempt to exceed authority | The assignment ends where Joshua's acts begin (ratification reply, merge). Hyper prepares the packets and defers the acts | **Exercised by construction** |
 
-Not exercised by design: routing released work to a worker (no `handoff.dispatch`), parallel allocation, schedules and subscriptions, attended-session preparation and closeout.
+Not exercised by design: parallel allocation, schedules and subscriptions, attended-session preparation and closeout.
 
 ## 10. Audit hooks (runnable)
 
@@ -229,10 +291,16 @@ Not exercised by design: routing released work to a worker (no `handoff.dispatch
 # Card form and authority, through the launcher. Expected: RESULT: well-formed; 0 violation(s).
 python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-10-02-dot-card-01-calendar-ratification.md
 python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-10-02-dot-card-01-calendar-ratification.md
-# Prerequisite (Phase 0). Expected: MERGED, then the November digest.
-gh pr view 622 --json state,mergeCommit -q '.state + " " + .mergeCommit.oid'
+# Prerequisite (Phase 0). Expected: MERGED and a merge SHA, then the November digest and the overlay digest.
+gh pr view 622 --json state,mergeCommit,mergedAt -q '.state + " " + .mergeCommit.oid + " " + .mergedAt'
 git show origin/main:ops/calendars/book_session_calendar_2026-11.json | sha256sum   # b89562a5...0aad7
 git show origin/main:ops/calendars/book_closure_overlay.json | sha256sum            # 483f2324...def5b
+# Release record. Expected: one [coordinator (3) → hyper] comment citing the revision-2 SHA.
+gh pr view 622 --comments | grep -n "coordinator (3) → hyper"
+# Hook proof (B13), inside the disposable worktree. Expected: refusal by staged-debris, then a pass.
+git config core.hooksPath
+git commit -m "hook proof: expected refusal"   # after staging root tmp-hook-proof.txt
+git commit -m "hook proof: clean"              # after unstaging it and staging hook-proof-clean.txt
 # No duplicate work (IN_DOUBT). Expected: empty before first creation.
 gh pr list --state all --search "b89562a5 in:title,body"
 git ls-remote origin 'refs/heads/codex/dot-2026-11-calendar-ratification'
@@ -241,5 +309,6 @@ git diff --stat origin/main...HEAD
 git diff --check origin/main...HEAD
 # Acceptance at the return head.
 python -I scripts/fp.py python -m pytest tests/ops/test_book_session_calendar.py
+python -I scripts/fp.py python -m pytest tests/ops/test_account_close_assembler.py tests/ops/test_book_settlement.py tests/ops/test_account_close_calculation.py
 python -I scripts/fp.py check
 ```
