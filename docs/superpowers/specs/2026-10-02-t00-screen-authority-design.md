@@ -661,5 +661,5 @@ rg -n "CAPABILITY_CALLS = " tests/ops/qualification/test_source_consumers.py
 git diff --name-only origin/main...HEAD -- ops/c1_rail/qualification/{contract,trust_domain,runner,provider,blocks,paths,regime,bracket,model,replay}.py ops/c1_signal_daemon/book_adapters.py core/
 
 # No private value or count in this file (expect no output).
-rg -n "P&L =|\\$[0-9]{2,}|account [0-9]" docs/superpowers/specs/2026-10-02-t00-screen-authority-design.md
+rg -n "P&L =|\\$[0-9]{2,}|account [0-9]" docs/superpowers/specs/2026-10-02-t00-screen-authority-design.md | grep -v 'rg -n'
 ```
