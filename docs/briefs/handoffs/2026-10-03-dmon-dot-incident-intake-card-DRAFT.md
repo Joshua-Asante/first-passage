@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-03.
 **Status:** **DRAFT — coordinator (3) freezes after #628 merges and the Grafana IRM binding card is frozen.** Nothing here is dispatched, installed in a dot, or configured in any provider. At freeze, coordinator (3) re-reads every anchor and records the freeze in §12.
-**Base:** origin/main `a5ca41e`. #628 is read at `origin/claude/book-incident-notifier` head `60ba482` (OPEN, unmerged). The Grafana IRM binding card ("BC") is read at `origin/claude/dmon-grafana-binding-card` head `4f41667` (`docs/briefs/handoffs/2026-10-03-dmon-grafana-irm-binding-card-DRAFT.md`, DRAFT). Line anchors on those branches hold only at those heads.
+**Base:** origin/main `a5ca41e`. #628 is read at `origin/claude/book-incident-notifier` head `6e57fda` (OPEN, unmerged; re-anchored from `60ba482` on 2026-10-03). The Grafana IRM binding card ("BC") is read at `origin/claude/dmon-grafana-binding-card` head `6a0618e` (re-anchored from `4f41667` on 2026-10-03; `docs/briefs/handoffs/2026-10-03-dmon-grafana-irm-binding-card-DRAFT.md`, DRAFT). Line anchors on those branches hold only at those heads.
 **Brief type:** CC handoff: a small config-as-code build (TDD) behind a named file boundary, a dot responsibility addendum for the coordinator to relay, operator acts, and one attended live drill.
 **Operator direction (relayed by coordinator (2), 2026-10-03; stated as direction, not a gate change):** "broad autonomy, robust error handling and alerts … in addition to notifying me, it can notify my dot and it can start working on it so that we get to a solution faster, i merely need to review and approve." The dot is **hyper** (OpenAI dot, conversation `01a0ff79-c8a3-77b4-b0eb-83b11cce90f4`), acting under the dot charter (`docs/notes/2026-10-02-dot-deployment-responsibility.md`, on main) in a scoped coordinator seat.
 **Selected outcome (recommended, §3):** **Option (a).** A Grafana IRM **outgoing webhook** on the **Alert group created** trigger, restricted to the book integration, creates one GitHub issue labelled `incident` in a **private intake repository** using a fine-grained token Joshua creates (one repository, Issues read/write only). hyper picks the issue up and starts a diagnosis within its charter. The page to Joshua (BC) is unchanged and never depends on this path.
@@ -43,9 +43,9 @@ acceptance:
 
 | Input | Where | Read |
 |---|---|---|
-| #628 code | `ops/c1_rail/book_incident_notifier.py` | `INCIDENT_KEY_DOMAIN` `:39`, `incident_key` `:69-73`, `Channel` `:92-96`, payload `:345-346` (keys `kind`, `idempotency_key`, `reason`, `detected_at`) |
+| #628 code | `ops/c1_rail/book_incident_notifier.py` | `INCIDENT_KEY_DOMAIN` `:58`, `incident_key` `:113-117`, `Channel` `:136-140`, payload `:460-461` (keys `kind`, `idempotency_key`, `reason`, `detected_at`) |
 | Incident reasons | `ops/c1_rail/book_account_owner.py` | `halt` `:1294-1299`: the closed reason set `operator, feed, control, barrier, execution, protection, identity, schedule, expiry`; #628 adds `malformed` |
-| BC (DRAFT) | branch `claude/dmon-grafana-binding-card`, `4f41667` | §0.5 items 2-5 `:62-65`; §3.2 body `:118`; §3.6 retry-after-resolve `:133`; §6.3 Q7 `:195-205`; OQ-1 `:247` |
+| BC (DRAFT) | branch `claude/dmon-grafana-binding-card`, `6a0618e` | §0.5 items 2-5 `:62-65`; §3.2 body `:118`; §3.6 retry-after-resolve `:133`; §6.3 Q7 `:203-213`; OQ-1 RULED `:253` |
 | Halt/resume contract (HR; accepted) | `docs/spec/2026-09-14-tb-s3-halt-resume-contract.md` | `:59` (escalation), `:61` (outbox; "Independent missed-heartbeat monitoring covers a silent runtime") |
 | Dot charter (on main) | `docs/notes/2026-10-02-dot-deployment-responsibility.md` | coordination contact `:17`; draft-then-release `:19`; actions table `:23-36`; internal communication `:38`; direct implementation `:40`; `IN_DOUBT` `:51`; owner returns `:55-61`; no standing authority `:61`; notify `:71`; schedules/event monitoring `:80`; stop `:82`; activation `:84-106` |
 | Public sources | §13 | G1-G2, GH1-GH2, D1-D3 |
@@ -82,8 +82,8 @@ Coordinator acts (after OA-D5, never before acceptance): coordinator (2) relays 
 
 | ID | Prerequisite | State at draft | Blocks |
 |---|---|---|---|
-| P1 | #628 merged | **OPEN** (`60ba482`) | Freeze |
-| P2 | BC frozen | **OPEN** (DRAFT `4f41667`) | Freeze |
+| P1 | #628 merged | **OPEN** (`6e57fda`) | Freeze |
+| P2 | BC frozen | **OPEN** (DRAFT `6a0618e`) | Freeze |
 | P3 | BC build merged (`GrafanaIRMChannel` exists) | OPEN | Build (I3-I7) |
 | P4 | OA-D1 to OA-D5 done | OPEN | Live drill |
 | P5 | §3.6 addendum relayed to hyper and the watch bound (§3.4) | OPEN | Live drill (hyper part) |
@@ -102,7 +102,7 @@ Coordinator acts (after OA-D5, never before acceptance): coordinator (2) relays 
 ## §3 — Design
 
 1. **Trigger.** "Alert group created", integrations filter = the BC integration. It fires per alert group, not per payload: BC retries join the open group (BC §0.5 item 5) and create no new intake.
-2. **Duplicates that remain** (handled by hyper's dedup rule, §3.6 item 2): (i) IRM retries on a timeout although GitHub may already have created the issue [G2]; (ii) BC §3.6: once Joshua resolves the group, the next rail retry opens a **new** group and so a second intake with the same key prefix (BC §9 OQ-1 governs; pending Joshua).
+2. **Duplicates that remain** (handled by hyper's dedup rule, §3.6 item 2): (i) IRM retries on a timeout although GitHub may already have created the issue [G2]; (ii) BC §3.6: once Joshua resolves the group, the next rail retry opens a **new** group and so a second intake with the same key prefix (BC §9 OQ-1 RULED: the BC §3.7 `record-delivery` CLI).
 3. **Data template** (new file `ops/c1_rail/book_incident_dot_intake_template.json.j2`, pasted verbatim by Joshua into OA-D3). It forwards only BC's `title` and `message`, which BC already restricts to the reason class, `detected_at` and the first 12 hex digits of the key, and which BC U1 tests against `assert_no_secrets`. One redaction boundary, owned by BC.
 
    ```
