@@ -6,9 +6,10 @@
 
 **What "no-re-pin" means here:** the declared Aegis port moves its stop to breakeven and re-pins its target once, after entry. Each move is a `BracketAmend`, an L2(c) native modify, which is `K` on this route ([capability map C10d](../../notes/2026-09-25-tradeify-capability-allocation-deletion-map.md); [REST route assessment §6.5](../handoffs/2026-09-25-crosstrade-rest-route-assessment.md#65-per-leg-primitive-map-step-4)). A no-re-pin edition is one whose protective levels do not change after entry. Whether that holds, and what replaces the moves, is OWED (AEG-3, AEG-4).
 
-- **Precondition — OWED (operator).** No operator ruling creates an Aegis edition. The operator's direction of 2026-09-26 (B–D packet B-8, R-EDITIONS) keeps Aegis's breakeven and re-pin as declared, dependent on GC-2b and GC-3. If either fails, the leg returns to the operator with alternatives, and **no replacement edition is created automatically**. Those alternatives are named in [packet GC-2b](../../notes/2026-09-26-tradeify-bd-decision-packet.md#12-other-decisive-capabilities): a fixed-stop edition, a different amend realization under a contract change, or excluding the leg. The GC-2b decision for Striker and Aegis is still owed (checklist M2 row). This skeleton prepares **one** of those alternatives on coordinator dispatch (Ticket O). It is not an operator direction and adopts nothing. If the operator does not choose this edition, close the file unfrozen with a one-line note and open nothing else.
+- **Precondition — RULED 2026-10-02.** *Operator ruling 2026-10-02 (sitting 2):* GC-2b is decided as no-modify editions, and this no-re-pin edition is adopted as Aegis's GC-2b alternative. The §3a source mapping is ordered first (§8 step 2). Nothing is answered or frozen; AEG-1..AEG-8 stay OWED. *(Earlier text kept below as the record.)*
+  - *Earlier text:* No operator ruling creates an Aegis edition. The operator's direction of 2026-09-26 (B–D packet B-8, R-EDITIONS) keeps Aegis's breakeven and re-pin as declared, dependent on GC-2b and GC-3. If either fails, the leg returns to the operator with alternatives, and **no replacement edition is created automatically**. Those alternatives are named in [packet GC-2b](../../notes/2026-09-26-tradeify-bd-decision-packet.md#12-other-decisive-capabilities): a fixed-stop edition, a different amend realization under a contract change, or excluding the leg. The GC-2b decision for Striker and Aegis is still owed (checklist M2 row). This skeleton prepares **one** of those alternatives on coordinator dispatch (Ticket O). It is not an operator direction and adopts nothing. If the operator does not choose this edition, close the file unfrozen with a one-line note and open nothing else.
 
-**Owner:** OWED. If the operator adopts this edition, the owning record is the one the operator names, expected to be campaign record §59 by analogy with [Ruling 4](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-4--vanguard-mgc-fixed-stop-edition-on-this-route-2026-09-26).
+**Owner:** campaign record §59 Ruling 8 (operator ruling 2026-10-02 (sitting 2)).
 **Loop of record:** STRATEGIC. If adopted, the expression change is forced by the route's capability: K = 1, not a search.
 **Authored:** 2026-10-02 by Claude Code (cloud worker, drafting only), on the deployment coordinator's Ticket O. The operator owns every OWED item, the precondition and the freeze.
 
@@ -65,9 +66,9 @@ Exactly one new venue-edition expression, K = 1, if the precondition is ruled:
 |---|---|---|
 | Aegis 6J | `aegis_6j_no_repin_oso@Tradeify_Select_100K` (working name) | The declared Aegis expression, whose brackets are amended after entry (breakeven and target re-pin) |
 
-**Edition id and ledger row — OWED (operator).** The ledger has no Aegis row today.
+**Edition id and ledger row — OWED (operator).** The ledger has no Aegis row today. *2026-10-02: operator ruling 2026-10-02 (sitting 2) (campaign §59 Ruling 8) adds the ledger `CANDIDATE` row under the working name. The final edition id stays OWED (§8 step 3).*
 
-**Inherited, not re-selected:** the book's legs and allocations; the protection cell; capacity; Aegis-priority takeover ordering, with Aegis as the taker; the WATCH-tier rule; and every Aegis signal, setup, entry and filter condition. Only the **order expression** changes: how protection travels with exposure, whether it moves after entry, and how quantity is split into requests.
+**Inherited, not re-selected:** the book's legs and allocations; the protection cell; capacity; Aegis-priority takeover ordering, with Aegis as the taker; the WATCH-tier rule; and every Aegis signal, setup, entry and filter condition. Only the **order expression** changes: how protection travels with exposure, whether it moves after entry, and how quantity is split into requests. *[Dated note 2026-10-02: for the first release Aegis is not a takeover taker. The takeover is off (operator ruling 2026-10-02 (sitting 1)), and an Aegis entry that does not fit under the 80-micro cap is refused at admission as `capacity_refused` (operator ruling 2026-10-02 (sitting 2)).]*
 
 ## §2 — Shape constraints (from incident ADR §A1)
 
@@ -93,7 +94,7 @@ A multi-contract intent is sent as that many one-contract requests, each carryin
 
 ## §3a — Source mapping (owed; not done)
 
-**OWED (operator):** a local session in the primary checkout reads the pinned Aegis port and Pine in place under §60, and maps what the source already constrains for each AEG row, as Vanguard's §3a did. It records behaviour only, with no parameter values and no execution, and it never runs the port (§R). This cloud session could not do it, because no private inputs exist here. The mapping suggests; it answers nothing. If the operator does not request it (§8 step 2), this marker is replaced with "not requested" and the date.
+**OWED (operator):** a local session in the primary checkout reads the pinned Aegis port and Pine in place under §60, and maps what the source already constrains for each AEG row, as Vanguard's §3a did. It records behaviour only, with no parameter values and no execution, and it never runs the port (§R). This cloud session could not do it, because no private inputs exist here. The mapping suggests; it answers nothing. If the operator does not request it (§8 step 2), this marker is replaced with "not requested" and the date. *Requested by operator ruling 2026-10-02 (sitting 2): the §3a mapping is done before AEG-1..AEG-8 are answered (read in place under §60; behavior only; never run).*
 
 ## §4 — Identity binding (filled at freeze)
 
@@ -122,21 +123,16 @@ The public repository receives identities and behaviour shapes only, never sourc
 
 - K accounting is per leg. This file would add one expression for Aegis; the siblings' three expressions are unchanged.
 - If all three files freeze, the book's E1 runs with four route-native editions.
-- The §6 split replay rule **should match** the siblings' choice. State here whether it does; a different rule must be justified. One concrete option (b) is in [ED-10](../../notes/2026-10-02-ed10-sequential-split-replay-pricing.md). Aegis is the short leg, so any rule must be side-aware.
+- The §6 split replay rule **should match** the siblings' choice. State here whether it does; a different rule must be justified. One concrete option (b) is in [ED-10](../../notes/2026-10-02-ed10-sequential-split-replay-pricing.md). Aegis is the short leg, so any rule must be side-aware. *It does: operator ruling 2026-10-02 (sitting 2).*
 
 ## §6 — How the edition requalifies, and what counts as a result
 
 - **No new screen is bought.** The edition requalifies through the production E1 already owed for the book (deployment checklist T10 → T15), under the criteria frozen by the existing owners (the Track B umbrella and the full-E1 specification). This file adds no statistic, threshold, depth or seed.
-- **Replay modelling of the split — OWED (operator and coordinator).** Before freeze, state how the qualification replay prices N sequential one-contract requests:
-  - (a) all N at the same fill as today's single order;
-  - (b) a concrete replay algorithm stated here in full: the per-request price and fill rule for request k of N, any delay model, and its frozen inputs. The rail spec's I8 defines no replay pricing, so naming I8 alone does not satisfy this;
-  - (c) another rule stated now.
-
-  It cannot be tuned afterwards.
+- **Replay modelling of the split: (b), the ED-10 ladder.** *Operator ruling 2026-10-02 (sitting 2).* Each admitted entry or add of N ≥ 2 contracts is priced as N one-contract fills. Child k (k = 1 … N, in submission order) fills at P₁ + σ·(k − 1)·δ·t, where P₁ is today's emulator price for the whole intent, σ is +1 for a buy and −1 for a sell, t is the leg's minimum tick, and δ = max(1, s), with s the leg's base-run emulator slippage ticks in the frozen effective settings. Every child fills in full, at the bar and timing event of today's single order, with no delay in bars. The next child is sent on acknowledgement, so a stop entry resting past its generating bar is not laddered and each such child fills at P₁. Bracket levels are absolute and unchanged. Commission is per child. Exits, closes and flattens are priced as today. A non-finite or non-positive child price refuses. Stress cells leave δ unchanged. The same rule applies in every edition file. The rule is side-aware through σ.
 - **Replay model for exit-side requests — OWED (operator).** This follows the AEG-8 answer. If a close is one request, state that this item is moot and why.
 - **Verdict:**
   - PASS: the Aegis route-native edition is qualified as part of the book's E1 result.
-  - NO-GO: the route is rejected for Aegis. **No second expression is tried** under this pre-registration. What happens to the book then is a new operator decision; Aegis is the takeover taker, so the takeover ordering is part of that decision.
+  - NO-GO: the route is rejected for Aegis. **No second expression is tried** under this pre-registration. What happens to the book then is a new operator decision; Aegis is the takeover taker, so the takeover ordering is part of that decision. *[Dated note 2026-10-02: for the first release Aegis is not a takeover taker. The takeover is off (operator ruling 2026-10-02 (sitting 1)), and an Aegis entry that does not fit under the 80-micro cap is refused at admission as `capacity_refused` (operator ruling 2026-10-02 (sitting 2)).]*
 
 ## §7 — Forbidden moves
 
@@ -154,8 +150,8 @@ The public repository receives identities and behaviour shapes only, never sourc
 
 ## §8 — Freeze procedure
 
-1. **Precondition.** The operator rules on adopting this edition among the GC-2b alternatives and names the owning record. Without that ruling nothing below proceeds. If the operator declines, close this file unfrozen with a one-line note.
-2. **Source mapping (optional).** If the operator wants it before answering, a local §60 session produces the §3a mapping.
+1. **Precondition.** The operator rules on adopting this edition among the GC-2b alternatives and names the owning record. Without that ruling nothing below proceeds. If the operator declines, close this file unfrozen with a one-line note. *Done 2026-10-02 (operator ruling 2026-10-02 (sitting 2); campaign §59 Ruling 8).*
+2. **Source mapping (optional).** If the operator wants it before answering, a local §60 session produces the §3a mapping. *Requested by operator ruling 2026-10-02 (sitting 2): the §3a mapping is done before AEG-1..AEG-8 are answered (read in place under §60; behavior only; never run).*
 3. **Answers.** The operator answers AEG-1 to AEG-8, the §4 realization and effective-inputs rows, and the two §6 items, in words and without parameter values. The operator completes the §D disclosure.
 4. **Files.** The ledger `CANDIDATE` row is added. A production handoff shaped like its siblings is drafted; none exists yet. After the capability allocation is accepted (checklist T09 gate D), the files required by the ruled realization are produced and the complete identity tuple is supplied. §60 grants reads, not file creation.
 5. **Audit.** Claude fills §3–§6 and runs every §10 hook **except the Status hook**, and the operator reviews the full text. If any text changes after this step, run §10 again before freeze.

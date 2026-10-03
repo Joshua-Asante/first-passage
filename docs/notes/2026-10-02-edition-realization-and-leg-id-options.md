@@ -1,6 +1,6 @@
 # Edition realization and leg identity: options and their cascade (2026-10-02)
 
-**Status:** OPTIONS ONLY. This note proposes **no scheme** and recommends no option. It traces what each choice touches in the public code, so the operator can answer the edition identity rows in one sitting. Ticket O (coordinator dispatch, 2026-10-02), deliverable 2.
+**Status:** OPTIONS ONLY. This note proposes **no scheme** and recommends no option. It traces what each choice touches in the public code, so the operator can answer the edition identity rows in one sitting. Ticket O (coordinator dispatch, 2026-10-02), deliverable 2. *2026-10-02: the operator ruled A1 + B1 for ORB and Vanguard (one shared successor settings file), A2a + B1 for Striker, and rejected A2b (operator ruling 2026-10-02 (sitting 2)). This note remains the options record.*
 
 **Serves:** the identity-binding rows and the realization paragraph in the [ORB/Striker successor §5](../briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md#5--identity-binding-fills-at-freeze) and the [Vanguard successor §4](../briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md#4--identity-binding-filled-at-freeze), the [Aegis skeleton](../briefs/pre-registration/2026-10-02-tradeify-aegis-no-repin-edition-successor-prereg.md) §4, and gates G1a / G2a of the two [production](../briefs/handoffs/2026-09-26-orb-striker-edition-production.md) [handoffs](../briefs/handoffs/2026-09-26-vanguard-fixed-stop-edition-production.md).
 

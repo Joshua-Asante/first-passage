@@ -1,6 +1,6 @@
 # ED-10 — a §6 option (b) pricing algorithm for sequential one-contract splits (2026-10-02)
 
-**Status:** DRAFT for the operator's §6 choice. This note specifies one concrete option (b). It selects nothing, amends neither successor pre-registration, and authorizes no code change, replay, E1 run or freeze. Ticket O (coordinator dispatch, 2026-10-02), deliverable ED-10.
+**Status:** DRAFT for the operator's §6 choice. This note specifies one concrete option (b). It selects nothing, amends neither successor pre-registration, and authorizes no code change, replay, E1 run or freeze. Ticket O (coordinator dispatch, 2026-10-02), deliverable ED-10. *Ruled 2026-10-02 (operator ruling 2026-10-02 (sitting 2)): option (b) as written in §2, δ = max(1, s), stress cells leave δ unchanged (B7's 'only if the battery owner says so' does not apply), the acknowledgement condition is acknowledgement (B3's resting-stop exception stands), and the same text goes in every edition file. The §6 paste text is adopted with its stress-cell sentence replaced by 'Stress cells leave δ unchanged.'*
 
 **Serves:** the §6 item "Replay modelling of the split — OWED (operator and coordinator)" in the [ORB/Striker successor](../briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md#6--how-the-editions-requalify-and-what-counts-as-a-result) and the [Vanguard successor](../briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md#6--how-the-edition-requalifies-and-what-counts-as-a-result), and the same item in the [Aegis skeleton](../briefs/pre-registration/2026-10-02-tradeify-aegis-no-repin-edition-successor-prereg.md). Option (b) there requires "the per-request price and fill rule for request k of N, any delay model, and its frozen inputs", stated in the pre-registration in full. Naming I8 alone does not satisfy it.
 
@@ -79,9 +79,13 @@ This section names consequences; it does not design the change.
 
 > **Replay modelling of the split: (b).** Each admitted entry or add of N ≥ 2 contracts is priced as N one-contract fills. Child k (k = 1 … N, in submission order) fills at P₁ + σ·(k − 1)·δ·t, where P₁ is the price the emulator assigns today to the whole intent, σ is +1 for a buy and −1 for a sell, t is the leg's minimum tick, and δ = max(1, s), with s the leg's base-run emulator slippage ticks in the frozen effective settings. Every child fills in full, at the bar and timing event of today's single order, with no delay in bars. The ladder does not apply to a stop entry that rests past its generating bar; each such child fills at P₁. Bracket levels are absolute and unchanged. Commission is per child. Exits, closes and flattens are priced as today. A non-finite or non-positive child price refuses. A stress cell changes δ only if its owner says so before freeze. The same rule applies in every edition file.
 
+*Ruled 2026-10-02 (operator ruling 2026-10-02 (sitting 2)): option (b) as written in §2, δ = max(1, s), stress cells leave δ unchanged (B7's 'only if the battery owner says so' does not apply), the acknowledgement condition is acknowledgement (B3's resting-stop exception stands), and the same text goes in every edition file. The §6 paste text is adopted with its stress-cell sentence replaced by 'Stress cells leave δ unchanged.'*
+
 ## 7. Choices left to the operator
 
 Each choice is fixed before freeze and never after.
 1. Adopt (a), this (b), or (c).
 2. If (b), the δ binding: max(1, s) as written, or a separate per-symbol constant stated now.
 3. If (b), whether D20 stress cells scale δ (B7).
+
+*Ruled 2026-10-02 (operator ruling 2026-10-02 (sitting 2)): option (b) as written in §2, δ = max(1, s), stress cells leave δ unchanged (B7's 'only if the battery owner says so' does not apply), the acknowledgement condition is acknowledgement (B3's resting-stop exception stands), and the same text goes in every edition file. The §6 paste text is adopted with its stress-cell sentence replaced by 'Stress cells leave δ unchanged.'*
