@@ -2,15 +2,15 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT, 2026-10-02. Drafted by a coordinator worker for the deployment coordinator to freeze; not dispatched. The coordinator answers §12's open decisions, commits the frozen revision under the committed-handoff rule and records its SHA in the ledger before any worker starts.
+**Status:** DRAFT, 2026-10-02. Drafted by a coordinator worker for the deployment coordinator to freeze. Dispatched to lane D on 2026-10-02; amended 2026-10-03 by Amendment A1 (below) after lane D's NEEDS_CONTEXT return at `262ffe48`. The coordinator answers §12's open decisions, commits the frozen revision under the committed-handoff rule and records its SHA in the ledger before any worker starts.
 
 **Executor:** the H9 Codex executor, routed through the Codex coordinator. It is the single writer of its identity branch (`codex/h9-cprime-identity`, proposed), cut from the frozen base (D1).
 
 **Coordinator:** the deployment coordinator ("Coordinating parallel Claude sessions (2)"). It owns the freeze, the diff review, integration into the H9 branch, every Linux dispatch, the Codex relay, PRs and the ledger.
 
 **Owners this card narrows (it changes none of them):**
-- C′ obligation, rulings 1–5 and the residual: [ledger, T05 C′ rulings](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02) (`:1983-2034`).
-- S6 freeze amendment terms 1–7 ("yes, accept all seven", merged in #600 at `fbfd0c9`): [ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21) `:673-694`. Term 8 is **pending** in open PR #610 (`claude/operator-rulings-2026-10-02-sitting1@497b937`) and belongs to §11, not to this step.
+- C′ obligation, rulings 1–5 and the residual: [ledger, T05 C′ rulings](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02) (`:1985-2036`).
+- S6 freeze amendment terms 1–7 ("yes, accept all seven", merged in #600 at `fbfd0c9`): [ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21) `:673-694`. Term 8 is ruled (ledger `:693`; #610 merged at `f8a03c2`) and belongs to §11, not to this step.
 - H9 checkpoint R1 and its fail-first C′ case list: [staged acceptance H9](2026-09-27-staged-acceptance-handoffs.md#h9--resultseal-integration-and-bounded-same-sample-recovery-two-checkpoints) `:536-550`.
 
 ```yaml authority
@@ -47,6 +47,9 @@ acceptance:
   - tests/ops/qualification/execution/test_campaign_seal.py
   - tests/ops/qualification/execution/test_result_seal_guardian_loop.py
   - tests/test_qualification_invariant_manifest.py
+  - tests/test_qualification_host.py
+  - tests/test_qualification_campaign_host.py
+  - tests/ops/qualification/execution/test_boundary_fixture.py
 ```
 
 The three `test_runtime_identity_*.py` files are new (§2.5). The Linux file `tests/integration/qualification_boundary/test_runtime_identity_linux.py` is written here and run only inside R1 (§9).
@@ -54,7 +57,7 @@ The three `test_runtime_identity_*.py` files are new (§2.5). The Linux file `te
 ## 0. Phase 0: premise, Rule-0 reads and the findings returned before code
 
 1. **Premise.** HEAD is the frozen base (D1). As of 2026-10-02, `origin/main@6de7bf9` differs from `c3ab0cc` under `ops/`, `tools/` and `deploy/` by nothing; under `tests/` only `tests/test_repo_map_scripts_table.py` differs. The H9 head `f237178` is one commit on `c3ab0cc` (13 files) and is not on `origin`. No `.env` in the worktree.
-2. **Prerequisites the H9 card names, as recorded:** the pin approved (ledger ruling 4, `:1991-1995`); term 7 accepted (S6 amendment, `:685-692`); T00 merged at `c3ab0cc` and H9 rebased to `f237178` (term 6, `:684`). The D-S5 fix slices are merged (#586 `981eb12`, #589 `77cd715`).
+2. **Prerequisites the H9 card names, as recorded:** the pin approved (ledger ruling 4, `:1993-1997`); term 7 accepted (S6 amendment, `:685-692`); T00 merged at `c3ab0cc` and H9 rebased to `f237178` (term 6, `:684`). The D-S5 fix slices are merged (#586 `981eb12`, #589 `77cd715`).
 3. **Rule-0 reads** (read them; do not infer them):
    - `ops/c1_rail/qualification/execution/image.py:43-75`: `build_worker` pulls the tag `python:<version>-slim-bookworm` at build time (`:56-57`) and accepts its single RepoDigest (`:59-62`). This is what the pin replaces. `prepare_context` (`:13-40`) already refuses a non-digest base.
    - `ops/c1_rail/qualification/execution/release_schema.py`: releases `/v1`–`/v7`, and `worker_image_digest` (`:72`, `:170`), the built image identity term 7 keeps separate from the base.
@@ -93,7 +96,7 @@ Build T05's C′ obligation so that R1 can run: a canonical, operator-approved w
 
 ### 2.2 The finite R1 host-entrypoint map
 
-Exactly the ruling's set (ledger `:2008-2014`): the runner/pytest admin fixture; the service supervisor; the campaign guardian, control and probes; the N1, N2, PART_A and RESULT G5 roles; qseal; the Python bootstrap/owned-command wrapper. Each entry's identity tuple is executable, base interpreter, lock, wrapper and UID (the H9 case list). Unmediated descendants, OS helper binaries (systemctl, busctl, docker), OS daemons and the kernel are outside the map and are labelled NOT_COVERED.
+Exactly the ruling's set (ledger `:2010-2016`): the runner/pytest admin fixture; the service supervisor; the campaign guardian, control and probes; the N1, N2, PART_A and RESULT G5 roles; qseal; the Python bootstrap/owned-command wrapper. Each entry's identity tuple is executable, base interpreter, lock, wrapper and UID (the H9 case list). Unmediated descendants, OS helper binaries (systemctl, busctl, docker), OS daemons and the kernel are outside the map and are labelled NOT_COVERED.
 
 ### 2.3 Checks and rechecks
 
@@ -109,9 +112,9 @@ Exactly the ruling's set (ledger `:2008-2014`): the runner/pytest admin fixture;
 
 ### 2.5 Files
 
-**Allowed** (the final list is frozen at D4):
+**Allowed** (frozen at D4, as amended by Amendment A1 on 2026-10-03):
 - New: the pin file; `ops/c1_rail/qualification/execution/runtime_identity.py` (map, expected-identity derivation, checks, coverage labels); the three acceptance test files; `tests/integration/qualification_boundary/test_runtime_identity_linux.py` (written, not run).
-- Edit: `ops/c1_rail/qualification/execution/image.py`; `campaign_supervisor.py`; `campaign_store.py`; `service.py`; `launcher.py`; the base's `campaign_result.py`, `campaign_seal.py`, `seal_service.py` and `g5_result.py` (result/seal rechecks only); `deploy/qualification/bootstrap.py` (the child self-check); `tests/ops/qualification/invariant_manifest.json` (Linux node registration).
+- Edit: `ops/c1_rail/qualification/execution/image.py`; `campaign_supervisor.py`; `campaign_store.py`; `service.py`; `launcher.py`; the base's `campaign_result.py`, `campaign_seal.py`, `seal_service.py` and `g5_result.py` (result/seal rechecks only); `deploy/qualification/bootstrap.py` (the child self-check); `tests/ops/qualification/invariant_manifest.json` (Linux node registration; moved to D6 by Amendment A1).
 - Extend in place, never replace: `tests/test_qualification_worker_image.py`, `test_release.py`, `test_campaign_supervision.py`, `test_campaign_cancellation.py`, and `tests/test_qualification_invariant_manifest.py` if registration needs it.
 
 **Checkpoint first (return before editing):** any module of the 68-module Stage 1c measured closure. On `main` it includes `release_schema.py`, `runtime.py`, `worker.py`, `campaign_probe.py` and `protocol.py` (closure table `docs/notes/2026-09-29-s5-c3-record/stage1c-equivalence/stage1c_closure_table.py.txt`, run 2026-10-02 against `origin/main` and `f237178`: 68 rows, 0 differences). A measured-closure change returns to the operator under the C3 decision rule (ledger `:1938`). D2 and D5.
@@ -182,16 +185,16 @@ Return DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. The coordinator's ver
 
 ## 8. Out of scope and decision unlocked
 
-**Out of scope:** the R1 Linux run (§9); lane D step 3 (§11); B4 (before T06 dispatch, not R1: PR #610); the three qualification-path items (#611, merge-held); R2; any production use.
+**Out of scope:** the R1 Linux run (§9); lane D step 3 (§11); B4 (before T06 dispatch, not R1: PR #610); the three qualification-path items (#611; merge hold lifted 2026-10-03); R2; any production use.
 
 **Unlocked:** with Windows evidence RESOLVED and the Codex relay clean, the coordinator folds the C′ and VALID→VOID cases into R1's node set and asks the operator for the R1 grant.
 
 ## 9. R1 Linux combined node set (separate grant; coordinator-held)
 
 Not this card's work. Recorded so the freeze and the R1 dispatch agree:
-- **Order (ruling 5, `:1996-2004`):** service → N1 → N2 → Part A → result/seal → supervision last, plus the C′ and VALID→VOID cases. Exact collected IDs and count are frozen at the R1 dispatch.
+- **Order (ruling 5, `:1998-2006`):** service → N1 → N2 → Part A → result/seal → supervision last, plus the C′ and VALID→VOID cases. Exact collected IDs and count are frozen at the R1 dispatch.
 - **Grant:** R1's express Linux grant (operator), executed by the coordinator under its `ci.dispatch`.
-- **Before R1:** C′ RESOLVED; the three qualification-path items (truncated-calendar validation, calendar-role binding, reviewer identity; ledger `:2031-2034`); T00-first integration; independent review.
+- **Before R1:** C′ RESOLVED; the three qualification-path items (truncated-calendar validation, calendar-role binding, reviewer identity; ledger `:2033-2036`); T00-first integration; independent review.
 - **Tooling gap (D6):** the workflow's modes are `s2`–`s5` (`.github/workflows/qualification-s2-supervision.yml:26`) and `scripts/s2_run_evidence.py` reads only S2–S5 scopes (`:101-102`). R1 needs a mode and a scope: a CI-configuration change.
 - Every R1 packet cites the residual, the expected identity contract and the observed coverage.
 
@@ -215,8 +218,8 @@ git diff --stat "$BASE"...HEAD
 
 ## 11. Lane D step 3 (separate card; this block does not dispatch it)
 
-Recorded so the step-2 freeze does not absorb it. Dispatch waits for term 8's merge (PR #610) and a card of its own.
-- **Term 8, joint-batch validator reconciliation (pending #610).** The canonical joint-batch policy governs: the S4 joint N2/PART_B ruling, `policy.required_output_roles`, and campaign spec E03 (`docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md:212`). The three T05 seams on `f237178` (`campaign_result.parse_receipt_row` `:161`, `_row_outcome` `:204`, `parse_campaign_result` `:298`) accept every authentic complete prefix the policy allows: PASS,PASS,FAIL,PASS; PASS,PASS,FAIL,FAIL; PASS,PASS,PASS,FAIL. Unchanged: wire shape, stage order, membership, families and operations, and every prior-checkpoint failure constraint (a FAIL before the joint batch ends the campaign). Test split (corrected 2026-10-02 after the Codex source review of #614):
+Recorded so the step-2 freeze does not absorb it. Term 8's record is merged (#610, `f8a03c2`); dispatch waits for a card of its own.
+- **Term 8, joint-batch validator reconciliation (ruled; ledger `:693`).** The canonical joint-batch policy governs: the S4 joint N2/PART_B ruling, `policy.required_output_roles`, and campaign spec E03 (`docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md:212`). The three T05 seams on `f237178` (`campaign_result.parse_receipt_row` `:161`, `_row_outcome` `:204`, `parse_campaign_result` `:298`) accept every authentic complete prefix the policy allows: PASS,PASS,FAIL,PASS; PASS,PASS,FAIL,FAIL; PASS,PASS,PASS,FAIL. Unchanged: wire shape, stage order, membership, families and operations, and every prior-checkpoint failure constraint (a FAIL before the joint batch ends the campaign). Test split (corrected 2026-10-02 after the Codex source review of #614):
   - **New red→green regressions:** PASS,PASS,FAIL,PASS and PASS,PASS,FAIL,FAIL. Each is refused at `f237178` and accepted after the fix.
   - **Preservation cases, which must stay green before and after:** PASS,PASS,PASS,FAIL, already accepted, since `parse_receipt_row` permits earlier PASSes plus a final FAIL and `_row_outcome` permits exactly a last FAIL. Also every other existing legal shape, and every pre-joint-batch FAIL, which still ends the campaign. No red evidence is fabricated for a preservation case.
   - **Downstream seam to check:** if the authentic all-four-prefix commit, receipt and reopen exposes a further defect past the three validators, name that seam specifically (for example `parse_campaign_result`'s repeated constraint at `:330-347`, or the receipt reconstruction on reopen) and return it to the coordinator. Don't widen scope silently.
@@ -244,7 +247,7 @@ These resolve D1–D10 for dispatch. Joshua's direct go for lane D was given in 
 - **D1 Base.** H9 pushes `f237178` as a `codex/*` branch (lane D step 1). It then **merges current `main`** at build start and reports the range-diff and the Stage 1c 68/63 result before any C′ code. `main` now includes T00 (`c3ab0cc`), #600, #601, #584 and later merges.
 - **D2 Release binding.** A new release revision, **`/v8`**, beside `/v7` in `release_schema.py`. It binds the base-pin hash, the built worker image ID, the finite entrypoint mapping and the expected identity tuples. Historical parsers `/v1`–`/v7` stay as they are, and the binding flows through the existing `release_sha256`.
 - **D3 Pin file.** `tools/qualification_verification/worker-base-image.json`. It has a closed schema: platform `linux/amd64`, Python `3.12.3`, base `python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63`, the selected child `sha256:fd3817f3a855f6c2ada16ac9468e5ee93e361005bd226fd5a5ee1a504e038c84`, the config `sha256:cf001c2f8af7214144935ae5b37c9e626ccf789117c10c1f691766d4658f1b1e`, and an approval-provenance pointer to the ledger's C′ rulings entry.
-- **D4 Allowed files.** The card's list, plus the D3 pin file. The measured-closure files listed under D5 are allowed only if Joshua admits them.
+- **D4 Allowed files.** The card's list, plus the D3 pin file, as amended by Amendment A1 (2026-10-03). The measured-closure files listed under D5 are allowed only if Joshua admits them.
 - **D5 Measured-closure edits — RULED YES** *(Joshua, directly to the coordinator, 2026-10-02 ~23:20Z: "yes")*. The edits are admitted on the terms below. The re-measurement is a **proposed plan** only: the governing evidence is the actual measured acceptance taken after the last closure change, and nothing carries before it. The proposal is to admit C′ edits to `release_schema.py`, `runtime.py`, `worker.py`, `campaign_probe.py` and `protocol.py`. Trigger 1 has already fired from T00, so the cost is **one** fresh S5 Part A measurement, run before the combined R1 once all closure-changing work has landed (C′, term 8, #611, K3/RC-4) (ledger finding of 2026-10-02, #613).
 - **D6 R1 tooling.** The R1 workflow mode, evidence scope and selector are built by a **separate coordinator-dispatched worker**, not this lane, after C′ lands. A `.github/workflows` change needs Joshua's CI-configuration approval.
 - **D7 Step 3.** Runs **after** step 2, on the same branch, **under its own separately frozen step-3 card** (§11). This card's §2 file list and out-of-scope limits still govern step 2, so nothing here authorizes step-3 files. The funding module, for example, isn't in §2. The step-3 card will carry term 8's test split (§11), the `result_g5`/seal funding roles, and the TEST_ONLY result-fault cases. Those cases are: a bootstrap-frozen immutable fault; a durable T1 pre-sign hold; the fault absent in normal runs; an exact retry with no renewed key, time, payload or budget; the real T1 consumer; and startup, funded hold and recovery, exhaustion, and VOID. Dispatch waits for #610 to merge and for that card to be frozen.
@@ -267,64 +270,95 @@ These resolve D1–D10 for dispatch. Joshua's direct go for lane D was given in 
 
 ## Amendment A1, 2026-10-03: producer/consumer completion of §2.5 (coordinator)
 
-**Why.** Lane D stopped NEEDS_CONTEXT before any code, at `262ffe48` (`f237178` + `d5d559b`, pre-code checkpoint accepted by the Codex root). Under §2.5 the real `/v8` route could not be installed, assessed or launched:
-- `release.py:64` rejects `/v8` + instance `/v2`.
-- The G5 evidence builders allow-list `/v5`–`/v7`.
-- The actual runner, admin and supervisor parents sit outside the list.
+**Revision 2** (2026-10-03). Folds the coordinator's adversarial review of revision 1 (`c8c95e7`), which found four verified P2s:
+- The runner cannot tell which route a run takes. It spawns pytest before any `/v8` release exists, so a step-2 runner check had nothing to trigger on and no signed tuple to check against.
+- The runner's post-exec site lies in an unlisted file.
+- A selector env var would leak past the runner's S2–S5 pop discipline.
+- The selector wiring is D6's.
 
-A coordinator read at `d5d559b` confirmed this. The added files are all outside the Stage 1c measured closure (68), the staging closure (63) and the T00 P7 closure (D8). That was checked by running `stage1c_closure_table.py.txt` (origin/main vs `262ffe48`: 68/63 rows, 0 differences) and against the D8 list. So A1 amends this coordinator's D4 resolution only. It changes no operator ruling: D5's admission covers only measured-closure modules, and none is added here.
+**Why.** Lane D stopped NEEDS_CONTEXT before any code, at `262ffe48` (`f237178` + `d5d559b`; pre-code checkpoint accepted by the Codex root). Under §2.5 the real `/v8` route could not be installed, assessed or launched:
+- `ops/c1_rail/qualification/execution/release.py:64` rejects `/v8` + instance `/v2`.
+- The G5 evidence builders in `ops/c1_rail/qualification/evidence.py` allow-list `/v5`–`/v7`.
+- The supervisor parent sits outside the list.
 
-**Added to §2.5 Edit.** Each file below may change only for the stated purpose.
+A1 amends this coordinator's D4 resolution only. It changes no operator ruling: D5's admission covers measured-closure modules, and A1 adds none. Every file A1 adds is outside the Stage 1c measured closure (68) and staging closure (63), checked by running `stage1c_closure_table.py.txt` at origin/main vs `262ffe48` (68/63 rows, 0 differences), and outside the D8 P7 list.
+
+**Added to §2.5 Edit.** Each file may change only for the stated purpose.
 
 | File | Owner role | Allowed change |
 |---|---|---|
-| `ops/c1_rail/qualification/execution/release.py` | installer | Make `/v8` pair only with instance `/v2`; `/v8` with instance `/v1` must refuse (today it passes `:64`). Add `/v8`-only expected-tuple validation before the writes at `:78–:80`. The `/v1`–`/v7` pairing, `parse_instance` and `stage_bundle` stay unchanged. |
-| `ops/c1_rail/qualification/evidence.py` | G5 evidence builders | Admit `/v8` beside `/v7` at the release allow-lists (`:966–:971` N1, `:1349–:1350` N2, `:2431` PART_A), using `/v7`'s checkpoint sets. Nothing else. |
-| `tests/integration/qualification_boundary/fixture_producer.py` | TEST_ONLY release producer | Add an explicit `/v8` selector, off by default. It binds the pin-file hash, the image ID, the entrypoint map and the tuples, and the `:209–:212` budget branch admits `/v8`. `/v1`–`/v7` output bytes stay unchanged. |
-| `tests/integration/qualification_boundary/fixture_install.py` | admin installer | Carry the selector through construct → sign → install (`:75–:78`). |
-| `tests/integration/qualification_boundary/conftest.py` | runner/admin fixture | Forward the selector from an environment variable that no runner mode sets under this card. Add post-exec checks at the admin launch (`:78–:81`). S2–S5 flag meanings stay unchanged. |
-| `tools/qualification_verification/host.py` | owned wrapper and copied venv | Record the expected interpreter identity at provisioning (`:638–:676`). Add checks at `owned_command`, `start_owned` and `run_owned` (`:307–:340`); their signatures stay backward-compatible. |
-| `tools/qualification_verification/campaign_host.py` | systemd supervisor parent (R1 route) | Add pre-spawn and post-exec checks around `restart()` (`:107–:115`). |
-| `scripts/qualification_boundary_verification.py` | runner/pytest parent | Add a pre-spawn identity check at the existing pytest launch (`:198–:205`) only. Modes, env flags (`:175–:188`), case lists, required nodes and `acceptance_scope` stay unchanged; those are D6's. |
+| `ops/c1_rail/qualification/execution/release.py` | installer | Make `/v8` pair only with instance `/v2`. `/v8` + instance `/v1` must refuse; today it passes `:64` because both sides are False. Add `/v8`-only expected-tuple validation before the writes at `:78–:80`. The `/v1`–`/v7` pairing, `parse_instance` and `stage_bundle` stay unchanged. |
+| `ops/c1_rail/qualification/evidence.py` (not `execution/evidence.py`, which is in the 68) | G5 evidence builders | Admit `/v8` beside `/v7` at the release allow-lists (`:966–:971` N1, `:1349–:1350` N2, `:2431` PART_A), with `/v7`'s checkpoint sets. Nothing else. |
+| `tests/integration/qualification_boundary/fixture_producer.py` | TEST_ONLY release producer | Add a keyword **release-revision parameter** (not the D6 selector), defaulting to today's behaviour. When it is `/v8`, it binds the pin-file hash, image ID, entrypoint map and tuples, and the `:209–:212` budget branch admits `/v8`. `/v1`–`/v7` output bytes stay unchanged. |
+| `tests/integration/qualification_boundary/fixture_install.py` | admin installer | Carry the same parameter through `install()` (`:35`), its argparse flags (`:113–:120`) and the dispatch call (`:140`) into construct → sign → install (`:75–:78`). It defaults to today's behaviour and reads no environment variable. |
+| `tools/qualification_verification/host.py` | provisioning producer | At provisioning (`:638–:676`), record the expected interpreter identity (interpreter bytes, base interpreter, `pyvenv.cfg`, `.pth` inventory) beside `manifest['runtime']`. This is a producer only: `owned_command`, `start_owned` and `run_owned` (`:307–:340`) stay unchanged in step 2. |
+| `tools/qualification_verification/campaign_host.py` | systemd supervisor parent (R1 route) | Add pre-spawn and post-exec checks around `restart()` (`:107–:115`). They are active only when the installed release is `/v8`, against its signed tuples. `/v1`–`/v7` behaviour stays unchanged. |
 
-**Extend in place:**
+**Extend in place** (also added to the acceptance list):
 - `tests/test_qualification_host.py`;
 - `tests/test_qualification_campaign_host.py`;
 - `tests/ops/qualification/execution/test_boundary_fixture.py`.
 
-**Already allowed; they must accept `/v8`:**
-- `campaign_store.py` (`:2371–:2380` tuple);
-- `service.py` (`:99–:163`, `:373–:382` release/profile pairing).
+**Already allowed; must accept `/v8`:**
+- `campaign_store.py`, the tuple at `:2372–:2381` on `262ffe48`;
+- `service.py`, the release/profile pairing at `:99–:163` and `:373–:382`.
 
 **Pairing.**
 - `/v8` pairs with profile `/v7`, budget profile `/v3` and `dispatch_checkpoints` [N1, N2, PART_A]. There is no profile `/v8`.
-- The C′ launch checks and the bootstrap self-check apply only to a `/v8` installation. The `/v1`–`/v7` routes keep their behaviour and bytes, including the N1_ONLY paths at `conftest.py:155–:157` and `:215–:221` and `supervisor_checkpoint.py`.
+- The C′ launch checks and the bootstrap self-check apply only to launches made after a `/v8` installation, against that release's signed tuples.
+- The `/v1`–`/v7` routes keep their behaviour and bytes, including the N1_ONLY paths at `conftest.py:155–:157` and `:215–:221` and `supervisor_checkpoint.py`.
+- In step 2, `/v8` is exercised by tests that call the producer and installer with the parameter directly. No runner mode, env var or conftest path selects it.
 
-**Not added: return at the checkpoint if either is needed.**
-- `tests/ops/qualification/execution/bundle_fixture.py` is in the staging closure (63).
-- `ops/c1_rail/qualification/execution/profile.py` is in the measured closure (68) and is not admitted by D5.
+**Pre-installation entries: owed before R1, through D6.** Two map entries (§2.2, ledger `:2010–:2016`) launch before any `/v8` release exists, so no signed tuple can bind them:
+- the runner/pytest admin fixture;
+- the owned-command wrapper's runner and admin launches.
 
-Build the `/v8` parser vectors through `test_release.py`'s `part_a_release(**changes)` instead.
+Their controller checks need the run's route and an expected-identity source, and only the R1 mode supplies those. So the D6 worker builds them, since it owns the R1 mode and selector, and they must be reviewed and merged **before R1 is granted**. This is the Phase-0 precedent for `result_g5` and qseal; the R1 finite-map obligation is not narrowed.
 
-**Builder test, narrow reading.** The approved pin (ruling 4, D3) supersedes the tag-only fake and assertions at `tests/test_qualification_worker_image.py:56–:58` and `:65–:66`. They are replaced by assertions for:
+D6's footprint for this:
+- the runner pre-spawn check (`scripts/qualification_boundary_verification.py:198–:205`) and its post-exec site (`scripts/record_verification.py:211`);
+- the `owned_command`, `start_owned` and `run_owned` checks;
+- the conftest `/v8` wiring, with the selector popped in the runner's env discipline (`:175–:188`);
+- the Linux node registration in `invariant_manifest.json`.
+
+The expected identity comes from the pin file plus this card's provisioning record. Step 2's coverage labels report these entries as `NOT_COVERED (owed: D6, before R1)`, and case 10's no-overclaim rule applies to them.
+
+**Not added (return at the checkpoint if needed):**
+- `tests/ops/qualification/execution/bundle_fixture.py`, which is in the staging closure (63);
+- `ops/c1_rail/qualification/execution/profile.py`, which is in the measured closure (68) and not admitted by D5.
+
+Build `/v8` parser vectors with `test_release.py`'s `part_a_release(tmp_path, **changes)` (`:202–:208`). It calls `bundle_fixture` without editing it.
+
+**Builder test, narrow reading.** The approved pin (ruling 4, D3) supersedes the tag-only fake and assertions at `tests/test_qualification_worker_image.py:56–:58` and `:65–:66`. Replace them with assertions for:
 - a digest-only pull;
 - index → child → config verification against the pin file;
 - a base identity recorded separately from `image_id`.
 
-The ownership and registered-child protections stay: `:11–:34`, `:44–:55`, `:59` and `:64` are unchanged. The case-1 refusals are added beside them.
+For those lines only, this overrides "extend, never replace" in §2.5 and §3, and §4's rule on existing acceptance tests. The ownership and registered-child protections stay unchanged: `:11–:34`, `:44–:55`, `:59` and `:64`. The case-1 refusals are added beside them.
+
+**§5 reading.** The `host.py` and `campaign_host.py` changes above are identity producers and checks. They are not the "key policy, provisioning or host-side change" that §5 forbids: no key, account, unit policy or provisioning step changes.
+
+**Added fail-first cases (extend §4):**
+- A1-1. `/v8` + instance `/v1` refuses at install. A `/v8` release whose expected tuples fail validation refuses before any write.
+- A1-2. The G5 evidence builders admit `/v8` for N1, N2 and PART_A, and still refuse an unknown revision.
+- A1-3. `campaign_host.restart` refuses a `/v8` pre-spawn or post-exec mismatch, and is unchanged for `/v7`.
+- A1-4. The provisioning record carries the interpreter identity; a provisioning run without it fails.
 
 **Unchanged.**
 - No `.github/workflows` or other CI-configuration change.
-- No R1 mode, evidence scope, selector wiring or runner flag (D6).
+- No R1 mode, evidence scope, selector, runner flag or runner env change (D6).
 - No Linux run, dispatch or grant.
 - No step-3 files or cases (§11, D7).
 - No P7-closure file, and no measured-closure file beyond D5.
 
 The authority constraints stand. `card_section2_files_only` now reads "§2.5 plus Amendment A1".
 
-**Re-measurement.** The `evidence.py` and `release.py` changes alter the bound runtime manifests, so they reach `release_sha256` as intended. They are not measured-closure edits. The single fresh S5 Part A measurement still follows the final closure change (D5, Phase-0 dispositions).
+**Re-measurement.** The `ops/c1_rail/qualification/evidence.py` and `release.py` changes alter the bound runtime manifests, so they reach `release_sha256` as intended. They are not measured-closure edits. The single fresh S5 Part A measurement still follows the final closure change (D5, Phase-0 dispositions).
 
-**Citation fix.** D8's pointer `2026-09-24-tradeify-t00-p7-closure.md:742–749` holds only the record and closure hashes; the count is at `:630`. The authoritative path list for item 13 is D8 above.
+**D8 citation.**
+- The accepted P7 record is the `b2c9f9c` run (`2026-09-24-tradeify-t00-p7-closure.md:743–:753`, code closure `48bdc104…`). It states no module count; the `:630` count belongs to the superseded `2baa516` run.
+- D8 above mirrors the loaded closure that the accepted private record authenticates.
+- At `d5d559b`, the static import closure of `p7_driver` + `p7_evidence` also reaches `ops/c1_rail/policy_fingerprint.py`, `ops/c1_rail/qualification/policy.py` and `ops/c1_rail/qualification/policy_sources.py`. Item 13 treats those three as P7-closure files too. This card touches none of them.
 
 ## Pre-mortem (README rule)
 
