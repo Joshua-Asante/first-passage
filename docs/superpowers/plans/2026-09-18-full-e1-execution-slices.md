@@ -690,6 +690,7 @@ Merged to `main` at `abb3914` (03:51Z). Merge-gate evidence on the merge head `a
    - **Preserved:** exact historical retry, the original budgets and deadlines, frozen v1 RESULT/SEAL, and the two-table DB10 layout. Binding goes through the existing `release_sha256`.
    - **Fail-closed:** a missing pin, a failed tuple check, an image mismatch, a timeout or exhaustion refuses authority.
    - **Residuals cited:** the operator-accepted residual "T05 C′ first-release host environment drift", which covers unmediated descendants and OS helpers.
+8. **Joint-batch validator reconciliation** (operator ruling 2026-10-02, 'yes to … term 8'). The canonical joint-batch policy governs (S4 joint N2/PART_B ruling; `policy.required_output_roles`; campaign spec E03). In the H9 integration, all three T05 result validation seams — `campaign_result.parse_receipt_row`, `_row_outcome`, `parse_campaign_result` — accept every authentic complete prefix the policy allows (PASS,PASS,FAIL,PASS; PASS,PASS,FAIL,FAIL; PASS,PASS,PASS,FAIL). Wire shape, stage order, membership, families/operations and every prior-checkpoint failure constraint (a FAIL before the joint batch ends the campaign) are unchanged. Owned by H9 lane D step 3, with the result-role (result_g5/seal) funding and TEST_ONLY result-fault cases.
 
 **What this does not grant:** any build, any R1 or R2 acceptance, or any merge. The C′ implementation still needs the coordinator's separate dispatch.
 
@@ -1442,7 +1443,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 1. The four out-of-§2 test files (`test_campaign_funding.py`, `test_campaign_snapshot_versions.py`, `test_checkpoint_widening.py`, `test_checkpoint_validation.py`) are **ADMITTED**, test-only.
 2. The G5 completion-state tuple gaining `FULL_PASS_READY` and `PART_A_FAILED` is **ACCEPTED**.
 3. G5 dropping full source admission for PART_A is **ACCEPTED for TEST_ONLY**, on condition that Codex's C3 review confirms the G5 closure rule requires it. G5 relies on the contract-pinned calendar digest and the frozen FULL population.
-4. Pilot identity checked against the plan is **ACCEPTED for TEST_ONLY**. **Carried forward:** before the acceptance-grade or production run it must be strengthened to an independently observed pilot draw.
+4. Pilot identity checked against the plan is **ACCEPTED for TEST_ONLY**. **Carried forward:** before the acceptance-grade or production run it must be strengthened to an independently observed pilot draw. *[2026-10-02: timing reconciled by operator ruling; see [B4 in the C3 step-1 acceptance](#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29).]*
 5. The P-4 by-construction limitation is **ACCEPTED**: byte equality with the frozen derivation is at least as strong as a parser refusal.
 6. The SR-8 CPU split exported as null is **ACCEPTED** as disclosed.
 7. The hook-workaround writes are **ACCEPTED**: they were in scope and reviewed before each commit, and no new rule is added. Codex's C3 review is asked to look closely at the escalation-lane commits `e38b308`, `c2f834a`, `3362b43` and `d4afa5b`.
@@ -1479,6 +1480,7 @@ Applying it would mean choosing wording. The coordinator drafted a reconciled O-
 - **C3 step 1 is ACCEPTED** on the S5 return `c7713e7` and the harness `0fe3e25`. The basis is the entry above: Codex RESOLVED, and the executed `bind_budget` check.
 - **B3 is accepted.** The residual **"G5 independent bars verification"** is carried to the **CP-6 inventory**. For PART_A, G5 does not re-verify the calendar ↔ population-index ↔ bars consistency.
 - **B4 is accepted for TEST_ONLY.** Strengthening pilot identity to an independently observed pilot draw is **due with T05, before CP-6**.
+  - *Operator ruling 2026-10-02 (sitting 1), given directly to the deployment coordinator ("all recommended"), reconciling this bullet with item B.4 above:* the observed pilot draw lands **before T06 dispatch** and does **not** block T05 R1. "Acceptance-grade" in B.4 reads as T06/S8 and production.
 - **B7 is closed** per Codex's review.
 - **C3 Linux grant, in this order:**
   1. The harness module's Linux run for `0fe3e25`, through a draft, do-not-merge PR of `claude/s5-stage1c-harness`. It is cited beside the first subset. `pull_request` CI checks out the PR merge ref, so the coordinator binds the run to `0fe3e25` by showing that the harness module, the harness and the measurement workflow are byte-identical there.
@@ -2032,3 +2034,91 @@ The T11/CP-8 carries are listed in the [deployment checklist](2026-09-20-tradeif
   - truncated-calendar validation;
   - calendar-role binding;
   - reviewer identity and independence.
+
+### Coordinator acceptance — D-S5-1/D-S5-2 fix slice (#586), 2026-10-02
+
+**ACCEPTED by the coordinator, 2026-10-02.** Drafted by a worker from the records below; the coordinator re-checked the evidence and signed it.
+
+**Item.** #586 (`claude/s5-defects-d1-d2`), merged 2026-10-01 as `981eb12` from head `c087fc8`; the merge tree equals the head tree. Gate: the [defects ruling](#operator-ruling--land-s5-with-two-named-test_only-defects-fix-before-t05-2026-10-01).
+
+| Condition | Evidence |
+|---|---|
+| Own full S4-plus-Part-A Linux run, read ok | Run `36914860810` at **`e93ee21`**. Re-read 2026-10-02 with `python -I scripts/fp.py python scripts/s2_run_evidence.py 36914860810 --expect-head e93ee21 --expect-scope S5_PART_A`: exit 0, `ok: true`. Record `06b705aa…52ca`: completed, exit 0, source stable, capture complete, cleanup ok, `tested_commit` = head; invariants passed with 27 required nodes; junit 27 tests, 0 failures, errors or skips; no refusals; Part A 0 OOM events. `--expect-head c087fc8` refuses (exit 2), because the run binds `e93ee21` |
+| The run carries to the merged head | `e93ee21` → `c087fc8` merges `main` `7e43dd6` and changes 12 `.md` files only. CI on `c087fc8`: every check run succeeded. Codex: no major issues at `e93ee21` or `c087fc8` |
+| Fail-first test for each defect | Red `20261001T185249Z-2e925396bb11`: failed, 2 of 2, at `1fe99fa` with the unfixed `campaign_store.py` and `campaign_supervisor.py` (record hashes equal `1fe99fa`'s blobs). Green `20261001T185402Z-c8c4afad47c3`: completed, exit 0, source stable, 150 passed; its working-diff hash equals `git diff --binary 1fe99fa 160a5c6`, and `160a5c6` has `e93ee21`'s tree. Both are under `.claude/worktrees/s5-defects-d1-d2/.cache/fp-verification/` in the primary checkout |
+| Stage 1c measured closure unchanged | #586 recorded `1fe99fa` vs `160a5c6`: 68 measured and 63 staging modules, same membership, no changed bytes. Re-run 2026-10-02 with `stage1c_closure_table.py.txt`: `c7713e7` → `981eb12` measured 68, same membership, 0 changed; `1fe99fa` → `981eb12` measured and staging 0 changed |
+| Private archive | `local_artifacts/d-s5-runs-2026-10/`: `SHA256SUMS` SHA-256 `5406252a…ac803`, 270 entries (138 for this run), `sha256sum -c` clean. Its `record.json` (`856240d3…`) equals the fresh download |
+
+**Caveat.** The D-S5-1 red ran an earlier revision of `test_campaign_io_release.py` (SHA-256 `81963842…`) than the one that landed (`4850d5d7…`). The landed D-S5-1 test has no red record on unfixed code. The D-S5-2 red ran the landed test bytes.
+  - **Closed 2026-10-02 by the coordinator.** The landed `test_campaign_io_release.py` (SHA-256 `4850d5d7…`) was run through the launcher (ops-env Python 3.13.2) on a tree detached at `981eb12`. The first run reverted only `campaign_supervisor.py` to `1fe99fa` (SHA-256 `5312e2ef…`). The second used the fixed file (`7da6f979…`).
+    - **Red** record `20261002T230549Z-2bc2bf0d1bf6`: **4 failed, 3 passed**, exit 1, `source_stable`. The failures were `test_io_pairs_are_bound_to_the_guardian_and_bounded_by_the_works_in_flight`, both `test_in_doubt_inspection_copy_is_staged_before_the_pair_is_released` cases, and `test_part_a_output_mount_holds_every_file_at_its_per_file_bound`.
+    - **Green** record `20261002T230842Z-08ad310c68dd`: **7 passed**, exit 0, `source_stable`.
+    - Both records, the JUnit XML and the unfixed-file hash are retained privately at `local_artifacts/d-s5-runs-2026-10/ds51-failfirst-2026-10-02/` (`SHA256SUMS` `7e4ff140…a6b1`). An earlier coordinator run produced the same 4/7 and 7/7 result, but its records were lost when its worktree was removed, so it is not cited.
+
+**Verdict: ACCEPT.** D-S5-1 and D-S5-2 are fixed for TEST_ONLY, and #586's part of the R1 gate is met. The caveat is closed by the coordinator's retained red/green records above.
+
+### Coordinator acceptance — D-S5-3 fix slice (#589), 2026-10-02
+
+**ACCEPTED by the coordinator, 2026-10-02.**
+
+**Item.** #589 (`claude/capture-retry-noop`), merged 2026-10-02 as `77cd715` from head `65f91ab`; the merge tree equals the head tree. Gate and acceptance contract: the [D-S5-3 ruling](#operator-ruling--d-s5-3-capture-exact-retry-demotion-also-gates-t05-r1-2026-10-01).
+
+| Contract term | Evidence |
+|---|---|
+| Tested revision updated from `main` after #586 | `3438ba8`, whose parent is `981eb12` |
+| Own full S4-plus-Part-A Linux run, read ok | Run `36936558798` at `3438ba8`. Re-read 2026-10-02 with `--expect-head 3438ba8 --expect-scope S5_PART_A`: exit 0, `ok: true`. Record `a3873196…5ad59`: completed, exit 0, source stable, capture complete, cleanup ok, `tested_commit` = head; 27 required nodes; junit 27 tests, 0 failures, errors or skips; no refusals; Part A 0 OOM events |
+| The run carries to the merged head | `3438ba8` → `65f91ab` merges `main` `cdfb379`. The only non-`.md` changes are #566's `scripts/guard_operator_acts.py`, `scripts/seat_authority.yml` and `tests/scripts/test_check_handoff_authority.py`; nothing under `ops/`, `tests/ops/` or `tests/integration/` imports them. CI on `65f91ab`: every check run succeeded. Codex: no major issues at `3438ba8` or `65f91ab` |
+| Fail-first store-level test | `test_campaign_n2.py::test_exact_capture_retry_after_progress_writes_nothing`, six scenes: N1, N2 and PART_A, each ATTESTED and COMMITTED. Red **`20261001T222045Z-6d0fdf57b686`**: failed, 6 of 6, each at the budget-snapshot bytes assertion. Its record pairs the landed test bytes (`ec7c3d33…`) with the unfixed `campaign_store.py` (`01e939b3…`, which is `e93ee21`'s blob). Green **`20261001T222234Z-309a79e54fd6`**: completed, exit 0, source stable, capture complete, 149 passed across n1, n2, part_a, checkpoint widening and snapshot versions. Its working-diff hash `72550eb7…` equals `git diff --binary dafd3b7 b52c37d`, so it ran `b52c37d`'s tree, which differs from `3438ba8` only in `.md` files. `record.json` SHA-256: red `4a910f05…`, green `c161f804…`. Both are under `.claude/worktrees/capture-retry-noop/.cache/fp-verification/` in the primary checkout |
+| Closure check at the tested head | #589 recorded `1fe99fa` vs `3438ba8`: 68 and 63 modules, no change. Re-run 2026-10-02: `1fe99fa` → `77cd715` and `c7713e7` → `77cd715` measured 68, same membership, 0 changed |
+| Private archive | The same `SHA256SUMS`, 132 entries for this run. Its `record.json` (`6f6483b1…`) equals the fresh download |
+
+**Verdict: ACCEPT.** D-S5-3 is fixed for TEST_ONLY. With the entry above, both D-S5 fix slices have merged, each with its own Linux run read ok and its own acceptance. That part of the R1 gate is met; R1's other conditions stand.
+
+### Coordinator acceptance — H8(c) omitted-slot incident tests (#530), 2026-10-02
+
+**ACCEPTED by the coordinator, 2026-10-02.**
+
+**Item.** The [H8(c) card](../../briefs/handoffs/2026-09-27-h8c-omission-incident-session-end.md), executor return DONE_WITH_CONCERNS at test commit `19bf582`. #530 merged 2026-09-27 as `7e7a043` from `25866c4`. Acceptance stays with the coordinator (card §8).
+
+- **Acceptance nodes.** All 11 pass in the executor's record `20260927T185850Z-5dcd2ca62d82`. The H8(c) module is byte-unchanged on `main` since `19bf582`. The card §4 command re-run on `main` `6de7bf9` on 2026-10-02 (`python -I scripts/fp.py --workers 2 python -m pytest tests/ops/test_feed_omission_session_end.py tests/ops/test_attended_incident_rehearsal.py tests/ops/test_four_leg_runtime.py -q`) gave record `20261002T223313Z-7c6e7b732078`: completed, exit 0, source stable, 52 passed, 0 failed, 3 skipped. The skips are private runtime inputs absent from a worktree.
+- **Concern 1, the Windows ack filename, is fixed on `main`.** `FileAckNotifier` names ack files through `ack_filename` (`ops/c1_rail/c1_rail_telemetry.py:178-219`):
+  - every character outside `[a-z0-9_-]` is percent-encoded from UTF-8, so `:` never reaches the filesystem;
+  - Windows device stems are escaped;
+  - names over 255 bytes refuse.
+
+  `acknowledge` (:265) and `is_acknowledged` (:306) both use it. #529 landed it (`039662f`, merged as `4634819` on 2026-09-27, after #530). The node that failed, `test_attended_incident_rehearsal.py::test_missed_acknowledgment_never_changes_halt_or_permission`, passes on Windows in the record above.
+- **Concern 2, the `check` form feed,** was fixed in `768f9b3`. The #530 thread cites `check` exit 0 on `25866c4` (record `20260927T193138Z-4c8e4744b2df`, Linux; not re-read here). CI on `25866c4` succeeded.
+- **Scope.** Synthetic and owner-level only (card §5). It does not cover live feed behavior, a re-arming policy, a resume mechanism or the cause of the H8(b) MGC omission.
+
+**Verdict: ACCEPT** H8(c) in synthetic scope. Both disclosed concerns are closed on `main`.
+
+### Coordinator acceptance — H9 preparation return (DB10 and context compatibility), 2026-10-02
+
+**ACCEPTED by the coordinator, 2026-10-02.** Scope: the H9 preparation return as the coordinator narrowed it, to DB10 plus existing-context compatibility. It is not R1.
+
+**Item.** A Codex-lane return. Branch `codex/h9-t05-integration` (local, not pushed) at **`f237178`**: one commit on `c3ab0cc`, where T00 landed. The prior head was `0a966c3` on `3cbaa04`; `git range-diff 3cbaa04..0a966c3 c3ab0cc..f237178` shows that one patch unchanged (`=`). The return files are `.cache/h9/RETURN.md` and `REBASE_RETURN.md` in that Codex worktree. The diff touches 13 files: seven in `ops/c1_rail/qualification/execution/` (four new frozen T05 modules, plus `store.py`, `campaign_store.py` and `campaign_funding.py`) and six test files.
+
+| Check | Evidence |
+|---|---|
+| DB10 and context, against S6 freeze amendment terms 1–4 ([amendment](#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21)) | Per the return: `ResultStore` accepts only exact 9 or 10 and validates the actual schemas; ExecutionStore, CampaignStore and the funding gates admit 10; context comes from `CampaignStore.context`, and the fixture bypass is removed. Re-checked: the `RESULT_SCHEMA` and `SEAL_SCHEMA` literals at `f237178` hash equal to `6cf2732`'s (`0ed039a3…`, `c45fb895…`) |
+| Fail-first | `20261002T022750Z-edb48c89d15c` (frozen-import baseline): failed, 6 of 6 missing-result-table cases. `20261002T023218Z-88eaf1195914` (DB10 regression on the old mount): failed, 8 of 8. Both are at `3cbaa04` with the preparation tree, source stable |
+| Baseline at `f237178` (13 + 41) | `20261002T164438Z-701b7612efe0`: completed, exit 0, source stable, 13 passed, 0 skipped. This includes the retained S5 DB9 preserve-and-reopen case against the archived run-`36766144433` journal. `20261002T164439Z-42be634c2a92`: 41 passed, 0 skipped. `20261002T164440Z-4973be88b457`: `check` exit 0. All three record `f237178` before and after with a clean status, and `report_errors` is empty |
+| Stage 1c closure (68/63) | Re-run 2026-10-02, `c3ab0cc` → `f237178`: measured 68 and staging 63, same membership, 0 changed in either. `journal_snapshot` and `campaign_funding` are outside the measured roots. The shared store and funding changes are inside the Linux selection's closure, so R1's combined coverage applies (term 5) |
+| T00 P7 closure (term 6) | The accepted P7 record (`c14aa9cc…`, code head `b2c9f9c`) lists 40 first-party modules. None is among the 13 changed files, and none is under `qualification/execution/`. No P7 re-run is owed for this diff |
+
+**Owed, outside this return:**
+- `_settlement_terminal` unification;
+- real N1/N2/PART_A aggregation;
+- the result/seal protocol, service and guardian seams;
+- the seal principal and its provisioning (seam row 11);
+- the B4 observed pilot, before T06 dispatch (operator ruling 2026-10-02, sitting 1: B4 does not block R1);
+- the C′ build;
+- **term 8.** The S8 harness preparation (#609, draft) found that E03 conflicts with the frozen T05 validators, which allow a failure only at the last stage. Joshua **approved** term 8 on 2026-10-02 ("yes to … term 8"). Its documentary record is in PR #610, pending merge. The fix is owed in H9 lane D step 3.
+
+**Verdict: ACCEPT** the preparation return for DB10 and context compatibility at `f237178`. R1 keeps its own gates.
+
+### Coordinator finding — T00 fired S5 re-measurement trigger 1, 2026-10-02
+
+T00's merge (`c3ab0cc`) changed seven modules in the S5 Part A measured closure: `clock`, `contract`, `model`, `production_source`, `replay`, `trust_domain` and `book_adapters`. This fires **re-measurement trigger 1** (a change to the worker runtime closure digest; [r1 proposal §9](../../notes/2026-09-26-s5-part-a-measurement-proposal.md)). So the accepted S5 Part A ceiling application does not carry to the next release.
+
+More closure changes are queued: #611 (`production_source`), the C′ build, term 8 (lane D step 3) and K3/RC-4. **Recommendation:** run one fresh measurement after all of these land, immediately before the combined R1. R1 runs Part A, so it must not rely on the old application. This needs the operator's ruling under the C3 rule. It is entered here as an owed R1 prerequisite.
