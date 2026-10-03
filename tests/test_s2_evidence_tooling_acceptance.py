@@ -306,3 +306,14 @@ def test_g8_docs_say_a_diagnostic_run_always_ends_red():
         lines = doc.read_text(encoding="utf-8").lower().splitlines()
         assert any("diagnostic" in line and "always" in line and ("red" in line or "fail" in line)
                    for line in lines), doc
+
+
+# --- R1: the H9 checkpoint combined read (card 2026-10-02, §3 D3) ------------------
+
+def test_r1_scope_never_reads_without_the_frozen_selection(gh, capsys):
+    """D3: the T05_R1_COMBINED scope is refused at the command line until the
+    coordinator's frozen dispatch selection is named with --expect-selection."""
+    with pytest.raises(SystemExit) as exc:
+        evidence.main(["35800000000", "--dest", str(gh["dest"]),
+                       "--expect-scope", "T05_R1_COMBINED"])
+    assert exc.value.code == 2
