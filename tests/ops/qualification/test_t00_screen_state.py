@@ -870,9 +870,9 @@ def test_cap_finding():
 
 
 def test_check_record_caps_at_every_boundary():
-    """F8: at a cap a SEGMENT_END stops on the cap code (a TERMINAL cause stands); a cap code is
-    recorded only when it is the cap reached, by SEGMENT_END or HALT; SEGMENT_START and ALL_DONE
-    wait until every reached cap has its own CONTINUE."""
+    """F8: at a cap a SEGMENT_END cause below HALTED must be the cap code (HALTED and TERMINAL
+    causes stand); a cap code is recorded only when it is the cap reached, by SEGMENT_END or
+    HALT; SEGMENT_START and ALL_DONE wait until every reached cap has its own CONTINUE."""
     state, _ = modules()
     lost = Seg(1, stop=0, end=WORKER_LOST)
     capped = Seg(1, stop=0, end=('HALTED', 'RESOURCE_EXHAUSTED'))
@@ -913,6 +913,35 @@ def test_check_record_caps_at_every_boundary():
                                           Act()])
     result = check(Chain(ledger).add('ALL_DONE', {}).records, journals, m, acts)
     assert result.code is None and result.completed == frozenset(PLAN)
+
+
+HALTED_AT_CAP = {  # a HALTED-class cause other than the cap code, at a reached cap (F8)
+    'loss': ([Seg(1, stop=0, end=WORKER_LOST)] * 2
+             + [Seg(1, stop=0, end=('HALTED', 'UNCLASSIFIED_ERROR'))], 'RESOURCE_EXHAUSTED'),
+    'io': ([Seg(1, stop=0, end=IO_ERROR, name_inflight='IO_ERROR')] * 2
+           + [Seg(1, stop=0, end=('HALTED', 'UNCLASSIFIED_ERROR'), name_inflight='IO_ERROR')],
+           'IO_EXHAUSTED'),
+}
+
+
+@pytest.mark.parametrize('form', sorted(HALTED_AT_CAP))
+def test_check_record_halted_cause_at_a_cap(form):
+    """F8 (card text): at a reached cap only a cause below HALTED must become the cap code. A
+    HALTED cause such as UNCLASSIFIED_ERROR stands; the cap stays reached, the CONTINUE that
+    answers it resets nothing, and HALT{cap, from IDLE} with its own CONTINUE precedes any
+    SEGMENT_START (violating twin: that HALT omitted)."""
+    state, _ = modules()
+    steps, cap = HALTED_AT_CAP[form]
+    opened = Seg(1, stop=0, end='OPEN')
+    ledger, journals, m, acts = simulate(steps)
+    assert state.fold(ledger) == state.State('HALTED', 'IDLE')
+    assert check(ledger, journals, m, acts).code == cap
+    ledger, journals, m, acts = simulate(steps + [Act()])
+    assert state.cap_finding(ledger, journals, keys=PLAN) == cap  # the CONTINUE reset nothing
+    ledger, journals, m, acts = simulate(steps + [Act(), Halt(cap), Act(), opened])
+    assert state.fold(ledger) == state.State('RUNNING')
+    assert check(ledger, journals, m, acts).code is None
+    assert check(*simulate(steps + [Act(), opened])).code == 'CORRUPTION'
 
 
 BOTH_CAPS = {  # one record reaches the loss cap and the I/O cap at once (F8)
