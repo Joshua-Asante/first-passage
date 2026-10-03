@@ -9,6 +9,8 @@
 >
 > **Applied by** a dated marker after §4's same-session sentence (that sentence and the cutoff/closure sentence after it are kept) and by §4.1. This contract has no change-history section, so this callout is the dated record. No revision number changes. The amendment implements nothing: TB-I3 owns implementation (§7), and [handoff H5 step (b)](../briefs/handoffs/2026-09-27-h5b-attended-incident-rehearsal.md) rehearses it synthetically. Applied by [handoff H5 step (a)](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h5--attended-operations-apply-the-resumption-ruling-then-synthetic-incident-rehearsal). **Not granted:** any session, drill, arm, deployment, GO or later-release policy.
 
+> **Amendment 2026-10-02 — ADOPTED by operator ruling 2026-10-02 (sitting 2).** The text below records what was proposed; §4.2 and §4.3 now govern. [§4.2](#42-proposed-amendment-2026-10-02-c-a-close-outcomes-and-the-flatten-deadline) drafts the incident triggers for C-a close outcomes, the flatten-deadline rule and the C-a cases for §7, as row S-C2 of the [C-a selection register](../notes/2026-09-26-close-semantics-c-a.md#addendum-2026-10-02--c-a-selection-register-proposed-for-operator-acceptance) asks. [§4.3](#43-proposed-2026-10-02-commissioning-packet-reconciliation-and-the-durable-resume-owner) reconciles the commissioning packet's §0 with §4 and names the durable resume owner. Until the owner accepts them, §2, §4, §4.1 and §7 are unchanged and govern. **Not granted:** C-a selection, register acceptance, any drill, session, arm, deployment or GO.
+
 > **Ratified 2026-09-14 UTC:** Joshua approved rev8 execution and schedule plus the separate first P2 decision. See the [exact revision/approval record](../briefs/handoffs/2026-09-14-track-b-ratifications.md) and dated S2b/P2 addenda. Pre-approval wording below describes the reviewed design; those first-decision gates are now satisfied. Implementation, calendar/route evidence, exact-depth approval and live gates remain distinct.
 
 Status: ATTENDED AMENDMENT APPROVED FOR PACKET 0 — Joshua directed “execute the first slice” after reviewing the [attended-release plan](../superpowers/plans/2026-09-14-tradeify-attended-release.md). Recorded 2026-09-15 UTC (2026-09-14 America/New_York). This authorizes the contract freeze and feasibility work, not later implementation, merge, live operation or a weaker evidence standard. [Packet 0 evidence and review](../notes/2026-09-14-tradeify-attended-feasibility.md).
@@ -43,6 +45,8 @@ Provider-side protection managers, queued work, scheduled cancels and copiers ar
 | Valid sizing/capacity refusal, duplicate signal, or stale individual signal with otherwise healthy state | Refuse that request only. Do not invent an account incident for an ordinary valid refusal. |
 
 The listener must receive authenticated source-health reports and validate their source/session identity and sequence. A recovered report updates health only; it grants no trading permission. Control GET proves daemon contact, not source health. Unknown order identity is an incident, unlike a recognized duplicate signal.
+
+*Adopted 2026-10-02 (operator ruling 2026-10-02 (sitting 2)): the trigger text for C-a close outcomes and cross-leg protection loss in [§4.2](#42-proposed-amendment-2026-10-02-c-a-close-outcomes-and-the-flatten-deadline). amends this table and governs.*
 
 ## 3. Attended incident recovery
 
@@ -124,6 +128,82 @@ Same-session resumption after an incident is allowed when every condition passes
 
 **CC-3 implementation status (a record, 2026-09-29).** Synthetic repair demonstrated, not accepted: an ordinary unknown transport result or caught send exception now commits an `ordinary-unknown:<attempt_id>` incident (HALTED/INTERVENTION, bootstrap invalidated) with the attempt update, inside the dispatch serializer, before the result returns; later or attached facts settle the order but do not restore authority. Evidence: [CC-3 note](../notes/2026-09-29-cc3-ordinary-unknown-halt-evidence.md). The paragraph above describes the pre-repair owner. The real evidence producer, route recovery, resume design and commissioning stay owed.
 
+### 4.2 Proposed amendment 2026-10-02: C-a close outcomes and the flatten deadline
+
+**Status: ADOPTED, by operator ruling 2026-10-02 (sitting 2), at refreshed head 92d857b.** It cites the accepted register on main. It adds the R-T8 sub-leg refusal trigger, makes O6's reversal or unexplained fill an incident at once, and adds the 429 classes to O5 (Codex item 1). The §4.2 amendments to §2, §4.1 and §7 govern from this PR's merge, and S-C2 discharges then. This is the owner text that row S-C2 of the C-a selection register asks of this contract. The register is on main: [`docs/notes/2026-09-26-close-semantics-c-a.md`, addendum 2026-10-02](../notes/2026-09-26-close-semantics-c-a.md#addendum-2026-10-02--c-a-selection-register-proposed-for-operator-acceptance) (cited below as *register*, by section and row). Until the owner accepts this subsection, §2, §4.1 and §7 are unchanged and govern, and C-a stays investigation only ([incident ADR §A11.1](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)). Line numbers below are at `bd30646`, before the 2026-10-02 text was inserted.
+
+**Scope.** Whole-leg closes sent by C-a, the first-release close form that is directed but not selected ([checklist 2026-10-01 item 7.2](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts)). The contexts are §4.1's: armed commissioning and the first attended release. Nothing is proposed for later releases.
+
+**The gap.** A definitive rejection of a close that leaves protection in place matches no §2 trigger today. It is neither an uncertain outcome nor a protection fault (`:34`), and it is not `:43`'s ordinary refusal (register S-C2). The merged rule is that "Every non-success outcome of a sent liquidation is an incident" (checklist item 7.3). The operator's 2026-10-02 ruling adds a read of every symbol's working orders after every C-a close, and it is recorded only in the register (§R.2a) and its checklist sub-entry, both on main.
+
+**Proposed §2 text.** On acceptance, add these triggers to row 1 (`:34`). The row's action is unchanged: durable halt, intervention scope, fence, alert, and sent or unknown requests retained.
+- "A sent whole-leg close (C-a) that does not complete as a success on postdating, coherent evidence: unknown, partial, reversed, or an unexplained fill (at once), rejected (at once or later), refused, or finding the symbol already flat."
+- "After any C-a close, a read of every symbol's working orders that finds an open leg without its working stop, or a working order on the closed symbol after completion, or that cannot be taken."
+- "A close smaller than the whole leg, refused by the runtime on the C-a transport (R-T8 sub-leg refusal)." It sends nothing, but it is not `:43`'s ordinary refusal: every non-success close is an incident (register §R.2a; R-T8).
+
+No outcome below is resent, resubmitted or followed by a remainder close (register §R.3: "No outcome of a sent close is retried automatically").
+
+**Classification (proposed rows for §4.1's table).**
+
+| Outcome (register row) | Includes | §2 trigger it already meets | Proposed class |
+|---|---|---|---|
+| **O2b.** A sent close finds the symbol already flat | A protective fill won the race. The response may carry no liquidation order (vendor Q5 OPEN) | "uncertain transport/order outcome" (`:34`), because the close's own terminal status cannot be identified | Incident |
+| **O5.** Unknown | Outcome window expired; transport unknown; crash between send and outcome; HTTP 500, 502 or 503; client timeout; 429 `broker_rate_limited`; a close-side 429 `snapshot_refresh_pending` or `egress_limited` (Codex item 1, #593 issuecomment-5961963397) | "uncertain transport/order outcome" (`:34`). The CC-3 repair covers transport-unknown in synthetic scope only (§4.1) | Incident. The read-side retry rule does not apply: the close is not retried. |
+| **O6.** Partial or reversed | Residual same-side exposure, an opposite position, or a fill not explained by the liquidation order or the former children, on postdating evidence | "protection fault" (`:34`), only when the remainder lacks protection; "Unknown order identity is an incident" (`:45`) for an unexplained fill | Incident, whatever the remainder's protection. An opposite position or an unexplained fill is an incident as soon as it is seen, without waiting for the outcome window. No remainder close |
+| **O7.** Rejected | At once: 400 `tradovate_rejected`, or HTTP 200 with a `failureReason` other than `Success`. Later: `RiskRejected` or `ExecutionRejected` on the liquidation order, found by polling | "protection fault" (`:34`), only if the brackets were already cancelled (vendor M4 OPEN). Otherwise none: this is the S-C2 gap | Incident when first seen, not at window expiry |
+| **O8.** Refused, with no documented no-send | 400 validation or account lock; 401, 403 or 409; 429 `rate_limited` | None. It is not `:43`, which covers the runtime's own valid refusal of a strategy request, not a route refusing a sent close | Incident. A later authoritative no-send mapping changes only what reconciliation expects (register O8) |
+| **R-T8.** Sub-leg close refused | A close smaller than the whole leg, refused on the C-a transport; nothing is sent | None. It is an incident because §R.2a rules every non-success close an incident and the exit stays unexecuted, so the state is not 'otherwise healthy' (§4.1). | Incident: durable halt, alert, and attended reconciliation of the unexecuted exit (register R-T8) |
+| **R-T9.** Cross-leg protection loss, or an order left on the closed symbol | The read of every symbol after every C-a close | "protection fault" (`:34`). "loss of required broker/account evidence" (`:34`) when the read cannot be taken | Incident. The read stays after S-V2 is discharged |
+
+**Unchanged.** The rail close contract keeps O0, O1, O2 and O9: never sent, queued, already flat at preparation, and a second close demand (register S-C1). A restart after O0 already halts (`:41`). A success (O4) completes only on postdating, coherent position, working-order and lot evidence ([B–D packet §1.1a (d)](../notes/2026-09-26-tradeify-bd-decision-packet.md)). An HTTP acceptance or a `Success` result never completes it. `:43` is unchanged.
+
+**Flatten-deadline uncertainty (proposed).**
+- A scheduled-flatten C-a is pending (register O3) from its send until the earlier of (i) the expiry of its outcome window and (ii) the own-flat deadline D (§5, `:119`). At (i) it is unknown (O5), which is an incident. At D, `:42` applies (deadline breach), whatever remains of the window.
+- The window's length belongs to the rail close-contract amendment (register S-C1), and its figure binds at T16. None is set here.
+- **FD-1, decided by operator ruling 2026-10-02 (sitting 2): (b).** D stays the bound, and the window is not capped at the time left to D. An uncertain close may first surface at D as a deadline breach (`:42`), which is already an incident. Because D ≤ V − 15 min (§5), attended flatten time remains before the venue deadline.
+- **The other legs (existing text, restated).** An incident on any leg revokes the book's NORMAL and SCHEDULED_EXIT authority (§1, `:24`). A leg whose scheduled close was not yet sent is not dispatched in INTERVENTION (register O1). Its flatten moves to the attended-platform path before D (checklist item 7.2).
+
+**§A11.2 effect.** In both contexts, each incident above ends automated trading for the session (§4.1). Attended recovery uses the attended-platform path, never a runtime or REST C-a (§1 `:24`; §3; checklist item 7.2).
+
+**Proposed §7 cases.** Each case asserts five things: a durable halt into INTERVENTION; the reservation held (for case 9 there is no reservation; the case asserts instead that the unexecuted exit stays surfaced for attended reconciliation); no resend, resubmission or remainder close; no runtime mutation after the halt; and no resume request accepted for that session.
+1. O2b: a close sent on a symbol already flat, with and without a liquidation order in the response.
+2. O5: each listed class, including a crash cut between send and outcome, and window expiry with no response.
+3. O6: a partial liquidation, with the remainder protected and unprotected; an opposite position and an unexplained fill, each halting before the outcome window expires.
+4. O7: each synchronous rejection, and a later `RiskRejected` or `ExecutionRejected` found by polling after a `Success` result.
+5. O8: each listed refusal class.
+6. R-T9: a missing stop on another open leg; a working order on the closed symbol after completion; the cross-symbol read unavailable or stale.
+7. Scheduled flatten: window expiry before D; unconfirmed at D (`:42`); an incident on one leg while the other legs' scheduled closes are queued or unsent.
+8. A `Success` result alone does not complete a close; postdating, coherent evidence does.
+9. R-T8: a sub-leg close on the C-a transport, refused with nothing sent, and its halt.
+
+Offline consumer tests stay required (register S-T4). These are test obligations. T09 release rows R-T2, R-T3, R-T4, R-T8 and R-T9 own the code (register §R.5).
+
+**Not granted.** No C-a selection, register acceptance, rail-spec or incident-ADR change, drill, session, arm, deployment or GO. S-C2 is discharged only when the owner applies accepted text into §2, §4.1 and §7.
+
+### 4.3 Proposed 2026-10-02: commissioning-packet reconciliation and the durable resume owner
+
+**Status: ADOPTED, by operator ruling 2026-10-02 (sitting 2), HR-ADOPT, at refreshed head 92d857b.** This section's commissioning-packet reconciliation and durable resume owner govern from this PR's merge; the commissioning packet's §0 "Concurrent owner text" points here.
+
+**Reconciliation with [commissioning packet §0](../notes/2026-09-27-route-commissioning-session-packet.md#0-rules-for-every-session-under-this-packet).**
+
+| Point | Commissioning §0 (operator-run, automation disarmed) | §4 and §4.1 (armed commissioning; first attended release) | Reconciled reading (proposed) |
+|---|---|---|---|
+| Scope | Disarmed sessions | Armed commissioning (O-7) and the first attended release | Disjoint, by O-7. Neither text's incident list applies in the other's sessions |
+| Incident | Any §3.3 stop condition, row abort or fault outcome; an unexpected refusal | §2 rows as §4.1 classifies them, with §4.2 once accepted | Both stand. §0's broader set fits a session with no armed runtime, where most §2 listener triggers cannot arise |
+| Not an incident | A refusal that is a row's designed outcome (X-2) | A correctly handled refusal (`:43`) | The same principle. No conflict |
+| What ends | Further rows; any REST order request; nothing is armed or resumed | Automated trading; no resume request for the session is valid | The same effect. If an armed commissioning session is ever defined, an incident under either text ends both automation and further rows in it |
+| Recovery | The five steps of its §3.4, with an attended platform flatten or cancel | §3; the attended-platform path (checklist item 7.2) | The same. Neither uses a REST or runtime recovery close ([drill plan X-3 addendum](../notes/2026-09-26-tradeify-route-drill-plan-draft.md#20-rules-common-to-x-1--x-5), "No REST recovery close") |
+| Review | The coordinator records a review before any further CP-3 or session | "review before another session" (§A11.2), with no reviewer named | Proposed: the coordinator records the review, and the operator decides whether another session starts (R-POSTURE: explicit review before extension) |
+
+Once this is accepted, the packet owner points the §0 "Concurrent owner text" paragraph ("H5's acceptance must reconcile the two") here. That edit is not made here.
+
+**Durable resume owner (proposed).**
+- **Permission state.** The listener/account owner's durable store (§1) is the only writer of `HALTED` and `RUNNING`. Today `ops/c1_rail/book_halt.py:1-5` is halt-only and rejects RUNNING.
+- **Decision.** The operator, by a new authenticated, one-use action (§4).
+- **Implementation and acceptance.** TB-I3, which §7 already gives "authenticated attendance/resume". It is delivered by [Phase 5 work package 4](../superpowers/plans/2026-09-16-phase5-attended-operations.md#work-package-4-accept-later-session-activation-and-the-attended-rehearsal) (later-session activation) and accepted at T13. That is the owner the [H5 step (b) note](../notes/2026-09-27-h5b-attended-incident-rehearsal.md) §6 records as owed.
+- **First release: no resume.** Same-session restart is none (§A11.2). The later-session activation machinery is deferred, and T13's T16 acceptance covers the first session only (checklist 2026-10-01 item 5, T13). The only HALTED→RUNNING transition in code is the one-use bootstrap activation (`ops/c1_rail/book_bootstrap.py:106`, `:174` at `bd30646`). It refuses once any history row exists, incidents included (`:137-141`), so it cannot act as a resume. It is the initial activation, under Phase 6's gates.
+- **Operator ruling 2026-10-02 (sitting 2):** decided at the post-first-session review (§A11.2), leaning toward un-deferring work package 4, because reusing the bootstrap would lose the held-request records the F3 watch depends on. No second session starts until the review decides.
+
 ## 5. Exact schedule rule
 
 All times use `America/New_York` with source-backed, per-session and per-symbol calendar rows. Let `V` be the earliest mandatory flat deadline across the selected venue/symbols for that session. Define own-flat deadline `D = min(16:00 ET, V - 15 minutes)`, entry cutoff `D - 15 minutes`, and mandatory flatten start/operator evidence check `D - 5 minutes`. No entries or resting risk-add orders at/after cutoff; cancellation is initiated at cutoff and late fills remain recovery-owned. At/after D, any exposure, working order or unconfirmed state is a deadline breach with a retained halt and attended alert, never permission to extend holding.
@@ -155,3 +235,5 @@ TB-I3 owns durable permission, serialized normal/scheduled dispatch, the all-mut
 Replace old automatic-session-clear tests. Required cases: each trigger; ordinary refusal without halt; cutoff/flatten/deadline ordering; early-close/DST/missing coverage; feed recovery without resume; day rollover without resume; every crash cut; in-flight send at halt; cancellation racing a fill; uncertain/partial close and orphan protection; conflicting/duplicate fault reports; unavailable listener/storage; stale/replayed approval; halt racing approval/dispatch; expiry; no buffered-signal replay; confirmed flatness with failed disarm write; dry-run never sending; replay/rail schedule equality. Carry retained primitive/producer/account tests forward. Design checks are not runtime acceptance.
 
 Rev9 acceptance mapping: incident-triggered automatic close/attach/amend outcome assertions are deferred for this release, not passed or deleted as historical model evidence. Replace their production obligations with durable intervention, no further runtime mutations, retained uncertainty and resume rejection. Keep normal/scheduled CLOSE, partial-fill/protection, cancellation-race, takeover and capacity invariants. Add notification/attendance idempotency, failed delivery, silent host, incident during scheduled close, unconfirmed fence during hung transport, delayed provider-side effect after local fencing, manual-action evidence changes, and restore without rearming. See the four concrete Packet 0 traces in the feasibility record.
+
+*Adopted 2026-10-02 (operator ruling 2026-10-02 (sitting 2)): the C-a close cases in [§4.2](#42-proposed-amendment-2026-10-02-c-a-close-outcomes-and-the-flatten-deadline) extend this list and govern.*

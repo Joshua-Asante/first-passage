@@ -48,7 +48,7 @@
 
 §A11.2 excludes "ordinary, correctly handled signal or capacity refusals". By the same logic, a refusal that is a row's **designed** outcome (X-2's rejected modify) is not an incident. An unexpected refusal, or any effect that cannot be explained, **ends testing** (session plan §2 stop rule, line 45); this packet treats it as an incident for §A11.2 purposes (packet reading).
 
-**Concurrent owner text.** Handoff H5 step (a) is preparing a dated halt/resume §4 amendment that applies §A11.2 and classifies incidents by the contract's §2 trigger rows. It was not published at this packet's acceptance revision and is not relied on here. This packet's incident reading (any stop condition, abort or fault) is its own and is conservative: it arms nothing and additionally stops further rows. H5's acceptance must reconcile the two (§7).
+**Concurrent owner text.** Handoff H5 step (a) is preparing a dated halt/resume §4 amendment that applies §A11.2 and classifies incidents by the contract's §2 trigger rows. It was not published at this packet's acceptance revision and is not relied on here. This packet's incident reading (any stop condition, abort or fault) is its own and is conservative: it arms nothing and additionally stops further rows. H5's acceptance must reconcile the two (§7). *2026-10-03: the reconciliation is [halt/resume §4.3](../spec/2026-09-14-tb-s3-halt-resume-contract.md#43-proposed-2026-10-02-commissioning-packet-reconciliation-and-the-durable-resume-owner), adopted by operator ruling 2026-10-02 (sitting 2).*
 
 ---
 
