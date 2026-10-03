@@ -150,6 +150,9 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 - `tests/ops/test_book_incident_notifier.py`.
 - `ops/c1_rail/book_account_owner.py`: **only** the C-1 (a) accessor. Additive, one read-only accessor (`?mode=ro`, no `BEGIN IMMEDIATE`, no serializer). No change to `_transaction`, `_halt_db`, `halt`, the schema, dispatch or any existing method.
 - This card (`docs/briefs/handoffs/2026-10-02-book-incident-notifier-build-card.md`), for the freeze commit and the executor return only.
+- `scripts/check_durable_store_pragmas.py`: **only** the one-line `DURABLE_STORES` entry `"ops/c1_rail/book_incident_notifier.py"`.
+
+Amended 2026-10-02 by coordinator (3): the notifier's own journal is a durable outbox store, so it is registered in `DURABLE_STORES` and issues `synchronous=FULL` and `BEGIN IMMEDIATE` on that journal only, never on the owner DB (review P3, ruling ACCEPT).
 
 **Forbidden (stop and return if a change seems needed):**
 - T00/P7 closure: `docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md`; `ops/c1_rail/qualification/p7_driver.py`, `p7_evidence.py`; `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/**`.
@@ -169,7 +172,7 @@ Tests live in `tests/ops/test_book_incident_notifier.py`. Each uses a real `Book
 |---|---|---|
 | T1 | `test_each_committed_incident_yields_one_job_keyed_by_incident_id`: operator, protection (`:331` pattern), feed-silence (`:200`), ordinary-unknown (`test_book_ordinary_unknown_halt.py:87`), barrier expiry | HR `:34`, `:49`; §2 |
 | T2 | `test_scheduled_cutoff_and_refusals_yield_no_job`: capacity, zero-size, duplicate, incomplete barrier before expiry (`test_attended_incident_rehearsal.py:463-519`), cutoff (`:1950`) | HR `:43`, `:89`, `:93`; OQ-1 default |
-| T3 | `test_halt_commits_while_notifier_reads`: notifier reads interleaved with `_halt_db` (threaded); every halt commits and the generation increments. Plus `test_notifier_never_opens_owner_with_begin_immediate` | G1; seam hazard §1 |
+| T3 | `test_halt_commits_while_notifier_reads`: notifier reads interleaved with `_halt_db` (threaded); every halt commits and the generation increments. Plus `test_notifier_never_opens_owner_with_begin_immediate`, which is the **binding guard**; the threaded test is supplementary (review 2026-10-02: a reader holding a read transaction still passes the threaded test and fails the trace test) | G1; seam hazard §1 |
 | T4 | `test_channel_failure_leaves_owner_status_and_incidents_equal`: `status()` and `incidents` compare equal before and after raise, timeout, reject and unknown | G1; H5(b) note `:64` method |
 | T5 | `test_duplicate_incident_report_yields_no_second_job` | G8; owner `:2074-2077` |
 | T6 | `test_retry_reuses_dedup_key_and_appends_attempt` (retries continue with capped backoff, no cap on count) | G2; G7 default |
@@ -238,9 +241,12 @@ python -I scripts/fp.py python scripts/check_handoff_brief_form.py
 python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-10-02-book-incident-notifier-build-card.md
 git ls-remote origin refs/heads/claude/t13-dmon-prep refs/heads/claude/t13-first-session-card   # 7b5cb52… / 06efb2e…
 rg -n 'BookAccountOwner\(' ops            # Expected at dispatch: class definition only (no host wiring)
-rg -n 'BEGIN IMMEDIATE' ops/c1_rail/book_incident_notifier.py   # Expected at return: empty
+python -I scripts/fp.py python -m pytest tests/ops/test_book_incident_notifier.py -k never_opens_owner   # Expected: pass (owner accessor mode=ro, no BEGIN)
+rg -n 'book_incident_notifier' scripts/check_durable_store_pragmas.py   # Expected: one DURABLE_STORES entry
 git diff --stat origin/main...HEAD
 ```
+
+Amended 2026-10-02 by coordinator (3): the hook "no `BEGIN IMMEDIATE` in `book_incident_notifier.py`" is replaced. The owner accessor `BookAccountOwner.read_incidents` opens `?mode=ro` and issues no `BEGIN` (pinned by T3's binding test `test_notifier_never_opens_owner_with_begin_immediate`, which asserts both on the accessor source and by SQL trace), and the notifier journal is registered in `scripts/check_durable_store_pragmas.py` `DURABLE_STORES`.
 
 ## §11 — GLM eligibility
 

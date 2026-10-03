@@ -9,6 +9,7 @@ acknowledgment and the external heartbeat stay owed to D-MON/T13 (card §8).
 from __future__ import annotations
 
 import ast
+from contextlib import closing, contextmanager
 from dataclasses import replace
 from datetime import datetime, timedelta
 import functools
@@ -23,7 +24,7 @@ import time
 import pytest
 
 from c1_rail import book_incident_notifier as notifier_module
-from c1_rail.book_account_owner import BookAccountOwner, BrokerResult
+from c1_rail.book_account_owner import AccountOwnerError, BookAccountOwner, BrokerResult
 from c1_rail.book_incident_notifier import (
     FakeChannel,
     IncidentNotifier,
@@ -202,6 +203,12 @@ def test_scheduled_cutoff_and_refusals_yield_no_job(tmp_path):
 # -- T3: the notifier never takes the owner's write lock ---------------------------------------
 
 def test_halt_commits_while_notifier_reads(tmp_path):
+    """Supplementary to the binding guard below; it does not pin the seam on its own.
+
+    Review 2026-10-02 (P3): a reader mutated to hold a read transaction for 50 ms still
+    passes this test. ``test_notifier_never_opens_owner_with_begin_immediate`` is the test
+    that fails under that mutation; do not delete it as redundant with this one.
+    """
     account, _ = _rehearsal_owner(tmp_path, [])
     notifier = _notifier(tmp_path, account)
     generation = account.status()["generation"]
@@ -262,6 +269,8 @@ def test_halt_commits_while_notifier_reads(tmp_path):
 
 
 def test_notifier_never_opens_owner_with_begin_immediate(tmp_path, monkeypatch):
+    """BINDING guard for the C-1 seam (card §6 T3, §10): every owner connection is
+    ``?mode=ro`` and issues no BEGIN or write; the accessor source names no BEGIN."""
     account = _operator(tmp_path)
     opened, statements = [], []
     real_connect = sqlite3.connect
@@ -532,14 +541,15 @@ def test_payload_has_no_incident_id_text_account_or_secret(tmp_path):
             assert private not in text
     assert_no_secrets(payload)
 
-    local_only = _notifier(tmp_path / "local", account, local,
-                           config=NotifierConfig.from_mapping({"channels": [
-                               {"name": "local", "kind": "local_file"}]}))
-    local_only.run_once()
+    local_first = _notifier(tmp_path / "local", account, local, FakeChannel("pager", [ACCEPTED]),
+                            config=NotifierConfig.from_mapping({"channels": [
+                                {"name": "local", "kind": "local_file"},
+                                {"name": "pager", "kind": "fake", "secret_ref": "env:PAGER_REF"}]}))
+    local_first.run_once()
     (record,) = (tmp_path / "alerts").iterdir()
     body = json.loads(record.read_text(encoding="utf-8"))
     assert body == payload and record.name == key + ".json"
-    assert local_only.jobs()[0]["state"] == "pending"  # local evidence is not delivery
+    assert local_first.jobs()[0]["state"] == "pending"  # local evidence is not delivery
 
 
 # -- T11: config as code -----------------------------------------------------------------------
@@ -639,3 +649,176 @@ def test_notifier_store_unavailable_does_not_touch_owner(tmp_path):
     with pytest.raises(NotifierStoreError):
         notifier.run_once()
     assert _owner_view(account) == halted
+
+
+# -- Review folds 2026-10-02 (notifier-review P2-1, P2-2, P3-1) --------------------------------
+
+def _crash_when_delivered_update_runs(monkeypatch, store):
+    """Fail between the delivered event and the job update when they share a transaction."""
+    real_connect = sqlite3.connect
+
+    class Crashing:
+        def __init__(self, db):
+            self._db, self._delivered = db, False
+
+        def __getattr__(self, name):
+            return getattr(self._db, name)
+
+        def execute(self, sql, *args):
+            if sql.startswith("INSERT INTO events") and args and args[0][1] == "delivered":
+                self._delivered = True
+            if sql.startswith("UPDATE jobs") and self._delivered:
+                raise SystemExit("crash between the delivered event and the job update")
+            return self._db.execute(sql, *args)
+
+    def connect(database, *args, **kwargs):
+        db = real_connect(database, *args, **kwargs)
+        return Crashing(db) if Path(str(database)) == store else db
+
+    monkeypatch.setattr(sqlite3, "connect", connect)
+
+
+def test_delivered_outcome_and_job_update_commit_together(tmp_path, monkeypatch):
+    """P2-1: the outcome events and the job update are one transaction (review probe)."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    store = tmp_path / "journal.sqlite"
+    channel = FakeChannel("primary", [DELIVERED, DELIVERED])
+    first = _notifier(tmp_path, account, channel)
+    journal = first._journal
+
+    @contextmanager
+    def crash_after_delivered_commit():
+        with journal() as db:
+            yield db
+        with closing(sqlite3.connect(store)) as raw:
+            if raw.execute("SELECT COUNT(*) FROM events WHERE kind='delivered'").fetchone()[0]:
+                raise SystemExit("crash after the delivered transaction committed")
+
+    first._journal = crash_after_delivered_commit
+    with pytest.raises(SystemExit):
+        first.run_once()
+    restarted = _notifier(tmp_path, account, channel)
+    restarted.run_once()
+    assert len(channel.calls) == 1  # no duplicate publish after restart
+    assert restarted.jobs()[0]["state"] == "delivered"
+    assert [kind for kind, _ in _kinds(restarted, key)].count("delivered") == 1
+
+    # A failure after the event write but before the job update rolls both back: the journal
+    # never shows delivered on a pending job, and the restart's one republish (the inherent
+    # at-least-once window) reuses the same idempotency key.
+    account = _operator(tmp_path / "rollback")
+    key = incident_key(account.incidents[0]["incident_id"])
+    store = tmp_path / "rollback" / "journal.sqlite"
+    channel = FakeChannel("primary", [DELIVERED, DELIVERED])
+    crashing = _notifier(tmp_path / "rollback", account, channel)
+    _crash_when_delivered_update_runs(monkeypatch, store)
+    with pytest.raises(SystemExit):
+        crashing.run_once()
+    monkeypatch.undo()
+    restarted = _notifier(tmp_path / "rollback", account, channel)
+    assert restarted.jobs()[0]["state"] == "pending"
+    assert _kinds(restarted, key) == [("detected", None), ("attempt", "primary")]
+    restarted.run_once()
+    assert [call[0] for call in channel.calls] == [key, key]
+    assert restarted.jobs()[0]["state"] == "delivered"
+    assert [kind for kind, _ in _kinds(restarted, key)].count("delivered") == 1
+
+
+def _local_config(*entries):
+    return NotifierConfig.from_mapping({"channels": [
+        {"name": name, "kind": "local_file"} if name.startswith("local")
+        else {"name": name, "kind": "fake", "secret_ref": "env:" + name.upper() + "_REF"}
+        for name in entries]})
+
+
+def test_local_file_first_does_not_starve_delivering_channel(tmp_path):
+    """P2-2: local-file acceptance is evidence only; the round continues (review probe)."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    local = LocalFileChannel("local", tmp_path / "alerts")
+    primary = FakeChannel("primary", [DELIVERED])
+    notifier = _notifier(tmp_path, account, local, primary, config=_local_config("local", "primary"))
+    notifier.run_once()
+    assert [call[0] for call in primary.calls] == [key]
+    assert _kinds(notifier, key) == [
+        ("detected", None), ("attempt", "local"), ("local_evidence", "local"),
+        ("attempt", "primary"), ("provider_accepted", "primary"), ("delivered", "primary")]
+    assert notifier.jobs()[0]["state"] == "delivered"
+    assert (tmp_path / "alerts" / (key + ".json")).exists()
+    with pytest.raises(ValueError):
+        notifier.record_delivery(key, "local", "f" * 64)  # local evidence is never delivery
+
+
+def test_config_without_a_delivering_channel_is_refused():
+    for names in (("local",), ("local", "local_b")):
+        with pytest.raises(NotifierConfigError):
+            _local_config(*names)
+    _local_config("local", "primary")
+
+
+def test_all_delivering_channels_failing_records_lost_with_local_channel(tmp_path):
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    primary = FakeChannel("primary", [REJECTED])
+    secondary = FakeChannel("secondary", [RuntimeError("down")])
+    notifier = _notifier(tmp_path, account, primary, LocalFileChannel("local", tmp_path / "alerts"),
+                         secondary, config=_local_config("primary", "local", "secondary"))
+    notifier.run_once()
+    assert notifier.channels_lost() == (key,)
+    assert _kinds(notifier, key) == [
+        ("detected", None), ("attempt", "primary"), ("delivery_failed", "primary"),
+        ("attempt", "local"), ("local_evidence", "local"),
+        ("attempt", "secondary"), ("delivery_failed", "secondary"), ("all_channels_lost", None)]
+    assert notifier.jobs()[0]["state"] == "pending"
+
+
+def test_run_once_publishes_due_jobs_when_poll_fails(tmp_path):
+    """P3-1: an unreadable owner store does not stop publishing; the error still surfaces."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    owner_unreadable = [False]
+
+    def read_incidents():
+        if owner_unreadable[0]:
+            raise AccountOwnerError("account owner state unavailable")
+        return BookAccountOwner.read_incidents(account.path)
+
+    clock = Clock()
+    channel = FakeChannel("primary", [REJECTED, DELIVERED])
+    notifier = IncidentNotifier(tmp_path / "journal.sqlite", read_incidents=read_incidents,
+                                channels={"primary": channel}, config=_config("primary", initial=5),
+                                clock=clock)
+    notifier.run_once()
+    owner_unreadable[0] = True
+    clock.advance(5)
+    with pytest.raises(AccountOwnerError):
+        notifier.run_once()
+    assert [call[0] for call in channel.calls] == [key, key]
+    assert notifier.jobs()[0]["state"] == "delivered"
+
+
+def test_malformed_incident_row_is_skipped_and_recorded(tmp_path):
+    account = _operator(tmp_path)
+    (good,) = BookAccountOwner.read_incidents(account.path)
+    at = NOW.isoformat()
+    bad = [{"incident_id": "bad:reason", "reason": "", "at": at, "generation": 1},
+           {"incident_id": "bad:at", "reason": "operator", "at": "not-a-time", "generation": 1},
+           {"incident_id": "bad:generation", "reason": "operator", "at": at, "generation": True},
+           {"reason": "operator", "at": at, "generation": 1},
+           {"incident_id": "", "reason": "operator", "at": at, "generation": 1},
+           None]
+    rows = bad[:3] + [good] + bad[3:]
+    notifier = IncidentNotifier(tmp_path / "journal.sqlite", read_incidents=lambda: rows,
+                                channels={"primary": FakeChannel("primary")},
+                                config=_config("primary"), clock=Clock())
+    assert notifier.poll() == (incident_key(good["incident_id"]),)
+    assert notifier.poll() == ()
+    assert [job["incident_key"] for job in notifier.jobs()] == [incident_key(good["incident_id"])]
+    malformed = [row for row in notifier.events() if row["kind"] == "malformed_incident"]
+    assert len(malformed) == len(bad)  # recorded once each, not once per poll
+    assert len({row["incident_key"] for row in malformed}) == len(bad)
+    assert malformed[0]["incident_key"] == incident_key("bad:reason")
+    text = json.dumps(notifier.events())
+    assert not [incident_id for incident_id in ("bad:reason", "bad:at", "bad:generation")
+                if incident_id in text]
