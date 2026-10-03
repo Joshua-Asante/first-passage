@@ -163,6 +163,8 @@ def _p7_bootstrap():
                 target = _os.path.normcase(_os.path.realpath(_os.fsdecode(_os.fspath(path))))
             except Exception:
                 target = None
+            if target == state.devnull_path:  # card §3.3 note 2026-10-03: the null device holds no data
+                return
             if state.journal_path is None or target != state.journal_path:
                 raise refuse(refusal_prefix + '_WRITE_REFUSED', 'write-open outside the worker journal: ' + repr(path))
 
@@ -171,6 +173,7 @@ def _p7_bootstrap():
     if journal_name_pattern is not None:
         # Card 2026-10-03 §3.3: argv is code_root, run_dir, authority_sha256, journal_name.
         state.write_flags = _os.O_WRONLY | _os.O_RDWR | _os.O_APPEND | _os.O_CREAT | _os.O_TRUNC | _os.O_EXCL
+        state.devnull_path = _os.path.normcase(_os.path.realpath(_os.devnull))
         state.journal_rule = True
         import re as _re
         if _re.fullmatch(journal_name_pattern, sys.argv[4]) is None:
