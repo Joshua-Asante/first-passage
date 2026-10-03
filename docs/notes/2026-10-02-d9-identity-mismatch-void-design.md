@@ -4,7 +4,7 @@
 
 **Corrections of 2026-10-02**, after the Codex review of #614 at 7d6ef35 (one P1 and two P2). These fold in without changing the wording of R-1–R-8:
 - **P1:** the refusal commits atomically with the event, and the event records its outcome and claim, so no crash leaves the VOID permanently stuck.
-- **P2 (pre-admission):** a VOID body queued before admission is deferred, not identity-checked. Admission finishes with PASS fenced by the pending body, and the operator resends the same signed bytes after admission. **This replaces R-8's pre-admission recheck premise for bound campaigns and needs the operator's confirmation.**
+- **P2 (pre-admission):** a VOID body queued before admission is deferred, not identity-checked. Admission finishes with PASS fenced by the pending body, and the operator resends the same signed bytes after admission. This replaces R-8's pre-admission recheck premise for bound campaigns, and the operator **confirmed it** *(Joshua, directly to the deployment coordinator, 2026-10-02: "yes to R-8")*: admission finishes with PASS fenced by the pending body, and the operator resends the same signed VOID after admission. The funded v3 profile is required.
 - **P2 (tests):** the test list is split into new red→green regressions and preservation cases.
 
 The design was produced on 2026-10-02 by a coordinator design panel: three independent approaches (A: signed acknowledgement of a retained event; B: a VOID /v3 protocol; C: a store-chokepoint token), each scored by three judges. All three judges picked A. Their fixes are folded in: stickiness, store-derived boundness, and an uncharged queue pre-check. Source: `origin/codex/h9-t05-integration@f237178`. Nothing here is implemented.
@@ -338,6 +338,7 @@ Enforcement: an AST/SQL inventory test fixes the exact set of writers, including
 - **R-6:** "Yes, `ExecutionStore.void` (N1_ONLY) and `AttemptJournal.void` are exempt from the identity recheck, for the stated reasons."
 - **R-7:** "Yes, `diagnostic_status` v2 may carry an optional `identity_void_mismatch` key, present only when a mismatch row exists, without a status version bump."
 - **R-8:** "Yes, a pre-admission identity-mismatch refusal lets admission finish, with PASS fenced, mirroring the existing admission-refusal semantics."
+  - *Revised and confirmed 2026-10-02 ("yes to R-8"):* for runtime-identity-bound campaigns there is no pre-admission identity recheck. A VOID queued before admission is deferred, admission finishes with PASS fenced by the pending body, and the operator resends the same signed bytes after admission, when the recheck runs. The funded v3 profile is required.
 
 ## 8. Rejected alternatives
 
