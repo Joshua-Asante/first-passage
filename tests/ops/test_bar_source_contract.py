@@ -139,6 +139,27 @@ def test_empty_or_synthetic_bar_is_absent_not_forwarded(flags):
     assert source.poll() is None and source.counts["no_trade_evidence"] == 1
 
 
+@pytest.mark.parametrize("field", ["final", "trade_evidence"])
+@pytest.mark.parametrize("value", ["false", 0, None, 1])
+def test_non_bool_metadata_never_forwarded(field, value):
+    clock = Clock(DONE)
+    source, transport = make(clock)
+    transport.script["receive"] = [[delivered(T0, **{field: value})]]
+    assert source.poll() is None and source.counts["invalid_metadata"] == 1
+
+
+def test_conflicting_pending_finals_withdraw_the_slot():
+    clock = Clock(DONE)
+    source, transport = make(clock)
+    transport.script["receive"] = [[delivered(T0), delivered(T0, close=100.5)], [delivered(T0)]]
+    assert source.poll() is None and source.counts["revision"] == 1
+    assert source.poll() is None and source.counts["withdrawn"] == 1
+    assert source.last_bar_ts is None  # absent is absent: nothing invented or substituted
+    clock.advance(minutes=15)
+    transport.script["receive"] = [[delivered(T0 + timedelta(minutes=15))]]
+    assert source.poll().ts == T0 + timedelta(minutes=15)
+
+
 def test_other_contract_code_never_substituted():
     clock = Clock(DONE)
     source, transport = make(clock)
@@ -244,7 +265,7 @@ def test_token_renewed_before_expiry_without_reconnect():
     assert "close" not in transport.calls and source.connected and source.counts["renewed"] == 1
 
 
-def test_failed_renewal_disconnects_then_reauthenticates():
+def test_rejected_renewal_latches_refusal_without_reauthentication():
     clock = Clock(T0)
     source, transport = make(clock)
     transport.lease_s = 120
@@ -252,7 +273,22 @@ def test_failed_renewal_disconnects_then_reauthenticates():
     clock.advance(seconds=61)
     transport.script["renew"] = [AuthRejected("refresh token revoked")]
     assert source.poll() is None
-    assert source.state == "DISCONNECTED" and "close" in transport.calls and not source.healthy()
+    clock.advance(minutes=5)
+    assert source.poll() is None
+    assert (source.state, source.refusal) == ("REFUSED", "auth_rejected")
+    assert transport.calls.count("authenticate") == 1 and "close" in transport.calls
+    assert not source.healthy()
+
+
+def test_transient_renewal_failure_disconnects_then_reauthenticates():
+    clock = Clock(T0)
+    source, transport = make(clock)
+    transport.lease_s = 120
+    source.poll()
+    clock.advance(seconds=61)
+    transport.script["renew"] = [TransportError("timeout")]
+    assert source.poll() is None
+    assert source.state == "DISCONNECTED" and source.refusal is None and not source.healthy()
     clock.advance(seconds=1)
     source.poll()
     assert transport.calls.count("authenticate") == 2 and source.connected

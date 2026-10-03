@@ -13,11 +13,13 @@ satisfies ``feed.BarSource`` and owns every rule below, so no adapter can weaken
 * aware timestamps only: naive and DST gap/fold wall times are refused; nothing in
   the America/New_York daily break or weekend, or outside the bound product session;
 * no empty, synthetic, revised, out-of-order or other-contract bar is forwarded
-  (§4.3, M7, R-MAP-2); each refusal is counted and recorded in ``events``;
+  (§4.3, M7, R-MAP-2); conflicting finals for a pending slot withdraw it, so neither
+  value is forwarded; each refusal is counted and recorded in ``events``;
 * bars are forwarded only while connected; the source is unhealthy while
   disconnected or stale (``2 x bar_period + 30 s``) and reconnects with capped backoff;
-* a rejected credential or an expired symbol binding latches ``REFUSED``: no retry,
-  no fallback contract, no bar until a new source is constructed.
+* a rejected credential (at authentication, renewal or mid-stream) or an expired
+  symbol binding latches ``REFUSED``: no retry, no fallback contract, no bar until a
+  new source is constructed.
 
 Recovery grants no permission: consumer halt state is not this module's.
 Out of scope: building 15-minute bars from finer constituents (spec OPEN-1),
@@ -194,6 +196,7 @@ class ContractBarSource:  # pylint: disable=too-many-instance-attributes
         self._attempt, self._retry_at = 0, None
         self._pending: dict[datetime, Bar] = {}
         self._delivered: dict[datetime, Bar] = {}
+        self._withdrawn: set[datetime] = set()
 
     @property
     def connected(self) -> bool:
@@ -248,7 +251,10 @@ class ContractBarSource:  # pylint: disable=too-many-instance-attributes
         if self.connected and not self._lease_ok(now):
             try:
                 self._lease = self._transport.renew(self._lease)
-            except (AuthRejected, TransportError):
+            except AuthRejected:
+                self._refuse("auth_rejected", now)
+                return
+            except TransportError:
                 self._lease = None
             if not self._lease_ok(now):
                 self._disconnect("renewal_failed", now)
@@ -297,6 +303,8 @@ class ContractBarSource:  # pylint: disable=too-many-instance-attributes
         """Queue a delivered bar, or return the reason it is never forwarded."""
         if type(item) is not DeliveredBar:
             return "invalid_bar"
+        if type(item.final) is not bool or type(item.trade_evidence) is not bool:
+            return "invalid_metadata"
         if item.symbol != self.binding.provider_code:
             return "foreign_symbol"
         try:
@@ -306,9 +314,15 @@ class ContractBarSource:  # pylint: disable=too-many-instance-attributes
         bar = Bar(ts, item.open, item.high, item.low, item.close, item.volume)
         if validate_bar(bar) is not None:
             return "invalid_bar"
+        if ts in self._withdrawn:
+            return "withdrawn"
         known = self._delivered.get(ts) or self._pending.get(ts)
         if known is not None:
-            return "duplicate" if known == bar else "revision"
+            if known == bar:
+                return "duplicate"
+            if self._pending.pop(ts, None) is not None:
+                self._withdrawn.add(ts)  # conflicting finals: forward neither (absent is absent)
+            return "revision"
         if self.last_bar_ts is not None and ts < self.last_bar_ts:
             return "out_of_order"
         if not item.final or now < ts + BAR_PERIOD:
@@ -332,6 +346,7 @@ class ContractBarSource:  # pylint: disable=too-many-instance-attributes
                 self._event(now, "late", ts=ts)
                 continue
             self._delivered = {t: b for t, b in self._delivered.items() if t > ts - _RETAIN}
+            self._withdrawn = {t for t in self._withdrawn if t > ts - _RETAIN}
             self._delivered[ts] = bar
             self.last_bar_ts = ts
             return bar
