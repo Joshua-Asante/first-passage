@@ -222,7 +222,8 @@ def handle_signal(
         write failure halts the risk-add (never auto-retries).
       - exit/flat still attempt transport if decision allows; telemetry write
         failure raises CRITICAL via notifier but does not block the send.
-      - transport_unknown blocks subsequent risk-add on the ledger.
+      - transport_unknown blocks subsequent risk-add on the ledger, across
+        restarts, until an operator records its resolution.
     """
     notifier = notifier or LoggingNotifier()
     eid = event_id or new_event_id()
@@ -415,7 +416,12 @@ def handle_signal(
     _persist_transport(outcome, payload_text)
 
     if outcome.state == "unknown":
-        if ledger is not None:
+        # The persisted transport_result is itself the durable block: the
+        # ledger re-derives it at startup and lifts it only on a recorded
+        # transport_unknown_resolution. If that record did not land, fall back
+        # to an in-process block, which a restart would lose — say so.
+        durable = ledger is not None and eid in ledger.unresolved_unknowns
+        if ledger is not None and not durable:
             ledger.block_risk_add(
                 f"transport_unknown for event_id={eid}; reconcile before retry")
         notifier.notify(
@@ -423,7 +429,8 @@ def handle_signal(
             "transport_unknown after send — no auto-retry; reconcile before "
             "any operator retry",
             event_id=eid,
-            details={"order_id": order_id, "error": outcome.error},
+            details={"order_id": order_id, "error": outcome.error,
+                     "block_durable": durable},
         )
         return RailAction(
             decision=decision, sent=False, dry_run=False,
