@@ -3,10 +3,10 @@
 **Date:** 2026-10-03.
 **Status:** **DRAFT.** Written under coordinator (3)'s #628 build authority. Coordinator (3) dispatched this docs-only rewrite on 2026-10-03 and owns the invariant table NF1-NF9 (§3). Other cards cite those names, so they are fixed. Coordinator (3) freezes this card (§12). Nothing here is dispatched.
 **Fold (2026-10-03):** the review of `7da0288` (two P2, three P3) is folded, and coordinator (3)'s card-owner rulings on D1, D2 and the `rebuild=False` empty-journal refusal are recorded (§0.5 items 4-6). The review of `5d2356c` (two P3, one nit) is folded. OQ-NF-3 is RULED (a), the first-page reading, which supersedes the earlier sizing condition (§0.5 item 11); the halt-sequence key is §0.5 item 12. The review of `4990ce7` (one P2 and three P3 on this card) is resolved or retired in §0.5 item 11 and §9. The review of `0c56d35` (two P2, five P3) is folded under coordinator (3)'s card-owner rulings of 2026-10-03: (a) tiers inside class U (NF2), (b) three readings of the OQ-NF-3 ruling, recorded PENDING coordinator (2)'s confirmation (§0.5 item 11, R6), and (c) a k floor of 8.
-**Base:** origin/main `04a86ac`. `git diff 6e679cc 04a86ac` is empty for `ops/c1_rail/`, `tests/ops/test_book_incident_notifier.py`, the #628 card and the HR spec, so anchors at `6e679cc` (the #628 merge) hold. Other heads read: #651 `aa2df97`, #637 `828ddda` and #635 `f4d1589`, all DRAFT. Their anchors hold only at those heads.
+**Base:** origin/main `04a86ac`. `git diff 6e679cc 04a86ac` is empty for `ops/c1_rail/`, `tests/ops/test_book_incident_notifier.py`, the #628 card and the HR spec, so anchors at `6e679cc` (the #628 merge) hold. Other heads read: #651 `fb3c3ba`, #637 `828ddda` and #635 `f4d1589`, all DRAFT. Their anchors hold only at those heads.
 **Brief type:** CC handoff, code build (TDD) behind a named file boundary.
 **Parent:** the #628 build card (`docs/briefs/handoffs/2026-10-02-book-incident-notifier-build-card.md`). Dependants:
-- #651 P7 needs NF1, NF3, NF4, NF5, NF6 and NF8 before it freezes (`aa2df97:99`, `:113`).
+- #651 P7 needs NF1, NF3, NF4, NF5, NF6 and NF8 before it freezes (`fb3c3ba:99`, `:113`).
 - #637's notifier heartbeat marks on NF6 (`828ddda:9-10`).
 - #635's D-MON-1 build needs NF7 and NF1-NF3 (P5, `f4d1589:99`).
 
@@ -60,7 +60,7 @@ acceptance:
 | #628 tests (59) | `tests/ops/test_book_incident_notifier.py` | `Clock` `:59`; `_config` `:70`; `_notifier` `:80`; T17 (liveness) `:1138-1157`; `hanging` `:1199`; T22 `:1279` |
 | #628 card | `docs/briefs/handoffs/2026-10-02-book-incident-notifier-build-card.md` | OQ-2 `:68`, `:322`; condition 3 rebuild `:86-90`; J0-J5 `:126-131`; forbidden list `:234-242`; §11 `:345-347` |
 | HR spec | `docs/spec/2026-09-14-tb-s3-halt-resume-contract.md` | 60 s escalation `:63`; owner reading, condition (4) `:71`; backoff cap `:73`; INTERVENTION dispatch `:26`; omission detectors `:115`; C-a incident rows `:150-156`; other legs `:164`; R-T9 cases `:174`; durable resume owner and no resume `:203-204` |
-| TB-I3-HOST (#651) | `git show aa2df97:docs/briefs/handoffs/2026-10-03-tb-i3-host-heartbeat-wiring-card-DRAFT.md` | wrapper on `progress()` `:72`; §0.5 items 5-6 `:78-79`; P7 `:99`; `max_round_duration` `:113`; (b) `:119-122`; (d) `:123`; cap binding `:135`; `validate_binding` `:136`; `ESCALATION_STEP_S` restated `:137`; import ban `:150`; HH4 `:199`; HH7 `:202`; OQ-HOST-2 `:253`; OQ-CAP-3 `:258` |
+| TB-I3-HOST (#651) | `git show fb3c3ba:docs/briefs/handoffs/2026-10-03-tb-i3-host-heartbeat-wiring-card-DRAFT.md` | wrapper on `progress()` `:72`; §0.5 items 5-6 `:78-79`; P7 `:99`; `max_round_duration` `:113`; (b) `:119-122`; (d) `:123`; (e') `:124`; cap binding `:136`; `validate_binding` `:137`; `ESCALATION_STEP_S` restated `:138`; import ban `:151`; HH4 `:200`; HH7 `:203`; OQ-HOST-2 `:254`; OQ-CAP-3 `:259` |
 | D-MON heartbeat (#637) | `git show 828ddda:docs/briefs/handoffs/2026-10-03-dmon-missed-heartbeat-monitor-card-DRAFT.md` | `:9-10` (the notifier pinger marks on NF6) |
 | D-MON IRM binding (#635) | `git show f4d1589:docs/briefs/handoffs/2026-10-03-dmon-grafana-irm-binding-card-DRAFT.md` | `alert_uid` key `:65`; P5 `:99`; `CHANNEL_KINDS` entry `:117`; config file `:133`; retry interaction `:134`; CLI inputs `:137`; C3 item 3 `:141`; C4 `:145`; C5 `:146`; §5 `:160`; U15 `:198` |
 | Owner | `ops/c1_rail/book_account_owner.py` | `incidents` table `:296`; `read_incidents` `:804-816` (`mode=ro`, `timeout=5`); insert `:2091`; `barrier-expired` `:1123`; attempt- and fact-keyed incident ids `:1906`, `:2116-2283` |
@@ -75,7 +75,7 @@ acceptance:
 1. **Terms.**
    - A *pass* is one `publish_due` call. A *job round* is one `_publish_round`.
    - k is `max_jobs_per_round`, M is `max_retained_incidents`, n is the number of rows `read_incidents` returns, c is the channel count, and τ is `publish_timeout_s`.
-   - L is #651's `max_notifier_loop_interval` (`aa2df97:113`): the longest gap between `run_once` starts. This card keeps that definition rather than redefining L between `publish_due` times, because L is #651's declared binding value.
+   - L is #651's `max_notifier_loop_interval` (`fb3c3ba:113`): the longest gap between `run_once` starts. This card keeps that definition rather than redefining L between `publish_due` times, because L is #651's declared binding value.
    - poll_bound = W_o + T_parse(M) + W_j (NF8's terms): the longest `poll`, which separates a `run_once` start from its `publish_due` `now`. Attempts carry that `now`, so m consecutive passes span at most m·L + poll_bound of journal time.
 2. **The "ever accepted" signal (checked against the code).** No `jobs` column records acceptance (`:77-80`).
    - After `poll`, `_transition` is the only writer of `rounds` and `channels_lost` (`:508-534`). It sets `channels_lost = 0` only when a round closes accepted by a delivering channel (`:482`, `:493-497`, `:530`). That close writes `provider_accepted` in the same transaction (`:491-492`).
@@ -133,7 +133,7 @@ acceptance:
      - Legs, 4 × 1. `BOOK_LEGS` has four legs (`book_policy.py:179-197`). After the origin nothing is dispatched (register O1, `:411`; HR `:26`, `:164`), so further close outcomes come only from closes already sent, at most one per leg (register O9, `:420`). A close's outcome rows (O2b, O4's non-`Filled` terminal, O5-O8 and R-T8; register `:413`, `:415-419`; HR `:150-155`) are credited as mutually exclusive, so one per leg. All four legs have a close in flight together only in the scheduled flatten (`:1993-2003`).
    - **k floor = 8 (card-owner ruling (c), coordinator (3), 2026-10-03).** The ruling's formula gives k_first = 5, but the ruling states k ≈ 8-10. The floor is k_first plus margin, 8, the low end of the owner's range. It also covers a three-detector origin (HR `:115`: 3 + 4 = 7).
    - **Default k = 10**, twice k_first and inside the ruling's 8-10. The margin also covers some R-T9 findings (HR `:156`, `:174`) or per-fact rows (`:2116-2283`; `fact-time:` takes a fresh `uuid4()` per observation, `:2116`). Above k those are R6's later jobs; a representative is not deferred while at most k are due (NF2). 10 is also the smallest k that keeps the #628 suite (item 3).
-   - **#651's binding** refuses k below the floor of 8 (its (e')) and checks (d) at the frozen k. At k = 10 and c = 2, (d) fails at #628's defaults, so OQ-CAP-3 chooses τ and W_j (§9).
+   - **#651's binding** refuses k below the floor of 8 (its (e'), `fb3c3ba:124`) and checks (d) at the frozen k. At k = 10 and c = 2, (d) fails at #628's defaults, so OQ-CAP-3 chooses τ and W_j (§9).
    - **Withdrawn:** K_halt_max = 51, its default k of 64 (`4990ce7` §0.5 item 11) and #651's (e) k ≥ 51. The review of `4990ce7` found that count missed O3 (P2); that is moot, because O3 is an origin above. Its P3s on the `:2116` keying and the R-T owner list fell with the OWED paragraph they corrected: keying now affects only R6's later jobs.
 12. **Halt-sequence key.** Chosen in this fold under coordinator (3)'s dispatch; coordinator (3) confirms at freeze.
    - **Rule.** In journal `rowid` order over every job, in every state, a job continues the previous job's sequence when the previous job's generation is at least 1 and its own is exactly one more. Otherwise it starts a sequence, whose id is its first job's `rowid`.
@@ -149,7 +149,7 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 ## §1 — Goal, scope, prerequisites
 
 **Goal.**
-- #651 can declare `max_round_duration` from NF8 and refuse a notifier whose cap differs (`aa2df97:113`, `:135`), or a cap below the floor of 8 (§0.5 item 11).
+- #651 can declare `max_round_duration` from NF8 and refuse a notifier whose cap differs (`fb3c3ba:113`, `:136`), or a cap below the floor of 8 (§0.5 item 11).
 - #637's notifier heartbeat can mark on NF6 (`828ddda:10`).
 - #635's CLI can open the live journal without rebuilding it (NF7).
 - Every other #628 behavior stays as merged (NF9).
@@ -204,7 +204,7 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 - **Class A has no bound.** A class-A job sorts behind every due class-U job, and a failing U job stays in class U each time it falls due again. While class-U load fills the cap, a due class-A job may never run. Each such pass defers only class A, so it is not loud (NF3) and `progress()` advances. The owner reading OQ-NF-1 permits this (§0.5 item 7).
   - Example (review of `7da0288`): k = 1, `retry_initial_s` = `retry_max_s` = 2 s, passes 1 s apart, two class-U jobs that always fail and one due class-A job. Over 40 passes the class-A job ran 0 times, and 39 passes were not loud.
   - With no class-U load, class A rotates like class U (RC3(b)).
-- **A backward clock loosens these bounds.** The caller supplies the clock; `_now` checks only that it is timezone-aware (`:363-367`), and #651 anticipates a backward step (`aa2df97:78`). A step back of B does two things:
+- **A backward clock loosens these bounds.** The caller supplies the clock; `_now` checks only that it is timezone-aware (`:363-367`), and #651 anticipates a backward step (`fb3c3ba:78`). A step back of B does two things:
   - A waiting job is not due until the clock again reaches its due time, which adds up to B.
   - An incident polled meanwhile can get an earlier due time. N such incidents then count in A_0 or A.
   - Rotation still holds, because a re-run job and the waiting job are compared at the same now_P. Tier 0, and so condition (1), does not depend on the clock.
@@ -240,7 +240,7 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 - New `progress()` returns a per-instance int that starts at 0 and never decreases. It counts the `run_once` calls that completed without raising and without a loud pass.
 - It is incremented exactly where `_last_loop_at` is set (`:436`), and a loud pass skips both together. `publish_due` and `poll` called alone change neither.
 - `liveness()` keeps its contract apart from the NF3 skip, and its docstring says so.
-- A heartbeat wrapper marks on an increase in `progress()`, never on a clock value (#651 `aa2df97:72`; #637 `828ddda:10`). A backward clock can move `liveness()` back; `progress()` never goes back.
+- A heartbeat wrapper marks on an increase in `progress()`, never on a clock value (#651 `fb3c3ba:72`; #637 `828ddda:10`). A backward clock can move `liveness()` back; `progress()` never goes back.
 
 **NF7 — No-rebuild open.**
 - `IncidentNotifier.__init__` gains the keyword-only `rebuild=True`. True keeps today's behavior.
@@ -260,9 +260,9 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 - **2 + 2·k·c journal transactions** run on the pass thread: the poll (opened on every call, NF4), the snapshot (which holds `cap_deferred`), and one admission (`:470`) plus one close (`:486`) per (job, channel). A refused channel skips its close, and a closed job ends its round early; both only lower the count.
 - W_j is each transaction's lock wait. `BEGIN IMMEDIATE` waits up to 5 s (`:304`). In the default rollback journal, `COMMIT` can wait another 5 s behind a reader, such as #635's read-only checks (`f4d1589:141`, `:146`), so W_j can reach 10 s.
 - A run makes at most k·c bounded publishes, each waiting at most τ (`join`, `:575`).
-- ε is fsync and other CPU time, which no declared bound covers. HH7 measures it (`aa2df97:202`).
+- ε is fsync and other CPU time, which no declared bound covers. HH7 measures it (`fb3c3ba:203`).
 - Late-outcome threads contend for the same lock; that wait is inside W_j.
-- **At #628's defaults** (τ = 10 s, c = 2) and k = 1, the bound is 5 + 6·5 + 20 = 55 s, or 85 s with W_j = 10 s, before T_parse. On the notifier side, #651's condition (b) needs `max_round_duration` below 30 s at the lean T_n = 60 s (`aa2df97:119-122`, `:258`). So OQ-CAP-3 goes to #651's freeze: choose τ, the declared W_j, `retry_max_s` or T_n. k is floored at 8 (k_first = 5 plus margin) and defaults to 10 (§0.5 item 11).
+- **At #628's defaults** (τ = 10 s, c = 2) and k = 1, the bound is 5 + 6·5 + 20 = 55 s, or 85 s with W_j = 10 s, before T_parse. On the notifier side, #651's condition (b) needs `max_round_duration` below 30 s at the lean T_n = 60 s (`fb3c3ba:119-122`, `:259`). So OQ-CAP-3 goes to #651's freeze: choose τ, the declared W_j, `retry_max_s` or T_n. k is floored at 8 (k_first = 5 plus margin) and defaults to 10 (§0.5 item 11).
 
 **NF9 — Unchanged.**
 - J0-J5 (#628 card `:126-131`) and backoff (`:522-530`).
@@ -460,12 +460,12 @@ For each check, report the command, the interpreter, the head, and the printed `
 - **OQ-NF-2** (the `book_account_owner.py` owner). An incremental `read_incidents`. Out of scope.
 - **OQ-CAP-3** (coordinator (3), for #651's freeze).
   - Choose τ, W_j, `retry_max_s` or T_n so that NF8 stays below 30 s, and account for R5. k is floored at 8 (k_first = 5 plus margin) and defaults to 10 (§0.5 item 11). With W_j at the code's 5 s, the default `retry_max_s` of 30 s cannot pass the check below: L ≥ NF8 and poll_bound ≥ W_o + W_j = 10 s, so the check needs `retry_max_s` + 2·poll_bound + (1 + 2kc)·W_j + kcτ < 60 s, and 30 + 20 + 15 > 60 at k = c = 1 (review of `5d2356c`, P3-F). It passes only with a declared W_j well below 5 s, as in the feasible point below.
-  - **BINDING CHECK (extension, routed to #651).** #651's binding validator (`validate_binding`, `aa2df97:136`) refuses a binding unless `retry_max_s` + `max_notifier_loop_interval` + poll_bound < `ESCALATION_STEP_S`: #651's constraint (d) (`aa2df97:123`). This is NF2's class-U precondition. The binding's `retry_max_s` must equal the notifier's configured value (`aa2df97:135`). #651's import rule bans `book_incident_notifier` (`aa2df97:150`), so `book_host` restates `ESCALATION_STEP_S` (`:60-62`) as 60.0, and HH4 pins it to this module's constant (`aa2df97:137`, `:199`). #651's (b) does not imply (d): NF8 = 10 s and L = 35 s can pass (b), but 30 + 35 > 60 s.
+  - **BINDING CHECK (extension, routed to #651).** #651's binding validator (`validate_binding`, `fb3c3ba:137`) refuses a binding unless `retry_max_s` + `max_notifier_loop_interval` + poll_bound < `ESCALATION_STEP_S`: #651's constraint (d) (`fb3c3ba:123`). This is NF2's class-U precondition. The binding's `retry_max_s` must equal the notifier's configured value (`fb3c3ba:136`). #651's import rule bans `book_incident_notifier` (`fb3c3ba:151`), so `book_host` restates `ESCALATION_STEP_S` (`:60-62`) as 60.0, and HH4 pins it to this module's constant (`fb3c3ba:138`, `:200`). #651's (b) does not imply (d): NF8 = 10 s and L = 35 s can pass (b), but 30 + 35 > 60 s.
   - **(d) at the default k = 10, c = 2.** Since L ≥ NF8, (d) needs `retry_max_s` + 2·W_o + 2·T_parse + (3 + 2kc)·W_j + kcτ < 60 s, before ε and slack. With W_o = 5 s, that is `retry_max_s` + 2·T_parse + 43·W_j + 20·τ < 50 s.
     - #628's defaults fail: 30 + 43·5 + 20·10 = 445 s. W_j = 5 s alone gives 215 s, so no τ passes. Each term alone needs τ < 2.5 s and W_j < 50/43 ≈ 1.16 s. OQ-CAP-3 must choose τ and the declared W_j.
     - Feasible: τ = 0.5 s, W_j = 0.1 s and T_parse = 0.25 s at the default `retry_max_s` of 30 s give 30 + 0.5 + 4.3 + 10 = 44.8 s, leaving 5.2 s for ε and slack. NF8 is then 5 + 0.25 + 4.2 + 10 = 19.45 s, under (b)'s 30 s at T_n = 60 s. τ = 1 s also passes (d) with `retry_max_s` = 20 s (44.8 s), but NF8 = 29.45 s then needs T_n above 73.9 s, about 75 s, for (b), with L = NF8, P_n = 10 s and `ping_timeout` = 5 s (10 + 29.45 + 29.45 + 5).
     - **W_j = 0.1 s is a declared operating assumption, not a code bound.** The code lets each transaction wait 5 s for the lock (`:304`), or 10 s with a `COMMIT` wait (NF8), and HH7 measures without contention. Every competing journal holder (late-outcome threads, #635's CLI and its read-only checks) must release the lock within the declared W_j. OQ-CAP-3 must establish that, as it must establish that the provider answers within τ.
-  - Once this card lands, #651 §0.5 item 6 (`aa2df97:79`, "Merged #628 has no job cap") is stale.
+  - Once this card lands, #651 §0.5 item 6 (`fb3c3ba:79`, "Merged #628 has no job cap") is stale.
 
 ## §10 — Audit hooks
 
