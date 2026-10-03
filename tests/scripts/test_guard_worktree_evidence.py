@@ -20,8 +20,17 @@ Design under test:
   * immutability — version dirs chosen by record digest, staged in a temp dir,
     verified, then `os.rename`d into place; nothing existing is ever overwritten
     or deleted;
-  * manifest — `SHA256SUMS` appends are idempotent and a path with two hashes is
-    an exit-2 error;
+  * traversal — `_files`: an `os.walk` with a re-raising `onerror`,
+    `followlinks=False`, and refusal of non-regular entries (symlinks — and
+    junctions on Windows, which `os.walk` would otherwise descend into): a link
+    inside a record blocks (exit 2) instead of being followed outside it, and an
+    unlistable subtree is an error, never a silently missing file;
+  * stability — a record that changes while it is copied (`fp.py` may still be
+    writing it) is re-read for up to three attempts; one that never settles
+    blocks (exit 2) rather than being archived at an intermediate state;
+  * manifest — `SHA256SUMS` lines are appended per record, as soon as that
+    record is archived; appends are idempotent and a path with two hashes is an
+    exit-2 error;
   * exit codes — 0 silent, 0 with one stdout line, or 2 with one stderr line.
 
 These tests build real git repositories and real linked worktrees
@@ -563,6 +572,216 @@ def test_a_copy_failure_blocks_and_leaves_no_staging_dir(monkeypatch, mod, site)
     assert not list(archive.rglob("*~*"))
     assert not (archive / "SHA256SUMS").exists()
     assert snapshot(worktree) == before, "the source records must be unchanged"
+
+
+# --- (n) the file walk refuses links and unlistable subtrees --------------------
+
+def test_a_record_containing_a_link_is_refused_not_followed(site):
+    """A link inside a record cannot be faithfully archived by a plain copy:
+    the hook refuses it — exit 2 — instead of silently skipping it or following
+    it to bytes outside the record. A symlink where the OS allows one; on
+    Windows without the symlink privilege, a junction (which needs none, and
+    which `os.walk` descends into even with `followlinks=False`)."""
+    primary, worktree = site
+    record = worktree / ".cache" / "fp-verification" / RECORD_IDS[0]
+    link = record / "outside-link"
+    try:
+        target = worktree / "outside-target.txt"
+        target.write_text("outside the record\n", encoding="utf-8")
+        link.symlink_to(target)
+    except OSError:
+        if os.name != "nt" or not hasattr(link, "is_junction"):
+            raise
+        target = worktree / "outside-target-dir"
+        target.mkdir()
+        (target / "outside.txt").write_text("outside the record\n", encoding="utf-8")
+        import _winapi
+        _winapi.CreateJunction(str(target), str(link))
+
+    result = run_hook(remove_command(worktree), primary)
+    assert result.returncode == 2
+    assert len(result.stderr.strip().splitlines()) == 1, "one reason line"
+    assert "guard_worktree_evidence" in result.stderr
+    assert "outside-link" in result.stderr, "the refused entry must be named"
+    # the refused record is the first one processed: nothing was archived at
+    # all, and the sources (link included) are untouched for a retry
+    assert not (primary / "local_artifacts").exists()
+    assert link.exists() and (record / "stdout.txt").is_file()
+
+
+def test_an_unlistable_subtree_blocks_with_exit_2(monkeypatch, mod, capsys, site):
+    """A subtree that cannot be listed is an error, never a file silently
+    missing from the archive: the walk's `onerror` re-raises, the retention
+    fails, and the removal is blocked before any record is destroyed."""
+    primary, worktree = site
+    secret = worktree / ".cache" / "fp-verification" / RECORD_IDS[0] / "unlistable"
+    secret.mkdir()
+    (secret / "hidden.txt").write_text("must not be missed\n", encoding="utf-8")
+    real_scandir = os.scandir
+
+    def scandir(path):
+        if Path(path) == secret:
+            raise PermissionError(f"cannot list {path}")
+        return real_scandir(path)
+
+    monkeypatch.setattr(mod.os, "scandir", scandir)
+    assert run_main(monkeypatch, mod, remove_command(worktree), primary) == 2
+    err = capsys.readouterr().err
+    assert len(err.strip().splitlines()) == 1, "one reason line"
+    assert "guard_worktree_evidence" in err and "unlistable" in err
+    # the failure happened before anything was written
+    assert not (primary / "local_artifacts").exists()
+    assert (secret / "hidden.txt").is_file()
+
+
+# --- (o) a source that moves while it is copied ---------------------------------
+
+def test_a_source_that_moves_mid_copy_is_reread_into_a_fresh_version(
+        monkeypatch, mod, site):
+    """A record whose bytes move while they are being copied — `fp.py` still
+    writing it — is caught by the staged re-digest, re-read on a second
+    attempt, and archived at its settled bytes beside the frozen version the
+    earlier run archived."""
+    primary, worktree = site
+    archive, shelf = archive_of(primary), shelf_of(primary, worktree)
+    record = worktree / ".cache" / "fp-verification" / RECORD_IDS[0] / "record.json"
+
+    def status(value: str) -> None:
+        record.write_text(json.dumps({"run_id": RECORD_IDS[0], "status": value}),
+                          encoding="utf-8")
+
+    status("running")
+    assert run_hook(remove_command(worktree), primary).returncode == 0
+    frozen = (shelf / RECORD_IDS[0] / "record.json").read_bytes()
+
+    status("completed")
+    real_copyfile = shutil.copyfile
+    copies = 0
+
+    def moves_once(src, dst, **kwargs):
+        nonlocal copies
+        copies += 1
+        if copies == 1:  # the source moves underneath the first attempt's copy
+            status("settled")
+        return real_copyfile(src, dst, **kwargs)
+
+    monkeypatch.setattr(mod.shutil, "copyfile", moves_once)
+    assert run_main(monkeypatch, mod, remove_command(worktree), primary) == 0
+    assert copies == 2 * 3, "the first attempt (3 files) was abandoned and retried"
+
+    assert {p.name for p in shelf.iterdir()} == \
+        {RECORD_IDS[0], f"{RECORD_IDS[0]}~2", RECORD_IDS[1]}
+    assert (shelf / RECORD_IDS[0] / "record.json").read_bytes() == frozen, \
+        "the first version must stay frozen"
+    assert json.loads((shelf / f"{RECORD_IDS[0]}~2" / "record.json")
+                      .read_text(encoding="utf-8"))["status"] == "settled"
+    assert not list(shelf.glob(".staging-*")), "the abandoned attempt was cleaned up"
+
+    lines = (archive / "SHA256SUMS").read_text(encoding="utf-8").splitlines()
+    names = [line.partition("  ")[2] for line in lines]
+    assert len(names) == len(set(names)) == 9, "each path listed exactly once"
+    for line in lines:  # what `sha256sum -c SHA256SUMS` does, recomputed here
+        digest, separator, name = line.partition("  ")
+        assert separator and re.fullmatch(r"[0-9a-f]{64}", digest), line
+        assert (archive / name).is_file(), line
+        assert sha256_file(archive / name) == digest, line
+
+
+def test_a_record_finalised_after_dedup_is_not_left_stale(monkeypatch, mod, site):
+    """Codex P2 on #618 at a4d1300: the running bytes were archived earlier, and
+    the record finalises after this run's digest is taken. That digest matches
+    the archived running version (no copy), so without a post-dedup re-read the
+    removal would proceed with only the stale copy retained. The re-read must
+    catch it and archive the completed bytes as `<id>~2`."""
+    primary, worktree = site
+    archive, shelf = archive_of(primary), shelf_of(primary, worktree)
+    record = worktree / ".cache" / "fp-verification" / RECORD_IDS[0] / "record.json"
+
+    def status(value: str) -> None:
+        record.write_text(json.dumps({"run_id": RECORD_IDS[0], "status": value}),
+                          encoding="utf-8")
+
+    status("running")
+    assert run_hook(remove_command(worktree), primary).returncode == 0
+    stale = mod.record_digest(record.parent)
+    status("completed")
+    real_digest, calls = mod.record_digest, {"n": 0}
+
+    def stale_first_read(path):
+        if path == record.parent:
+            calls["n"] += 1
+            if calls["n"] == 1:  # the read that selects the (deduplicated) version
+                return stale
+        return real_digest(path)
+
+    monkeypatch.setattr(mod, "record_digest", stale_first_read)
+    assert run_main(monkeypatch, mod, remove_command(worktree), primary) == 0
+    assert json.loads((shelf / RECORD_IDS[0] / "record.json")
+                      .read_text(encoding="utf-8"))["status"] == "running"
+    assert json.loads((shelf / f"{RECORD_IDS[0]}~2" / "record.json")
+                      .read_text(encoding="utf-8"))["status"] == "completed"
+    names = [line.partition("  ")[2] for line in
+             (archive / "SHA256SUMS").read_text(encoding="utf-8").splitlines()]
+    assert len(names) == len(set(names))
+    assert f"{worktree.name}/{RECORD_IDS[0]}~2/record.json" in names
+
+
+def test_a_record_changed_after_its_copy_lands_is_reread(monkeypatch, mod, site):
+    """The source changes after the staged copy is renamed into place but before
+    the post-copy re-read: the first version stays (immutable, listed) and the
+    changed bytes are archived as the next version."""
+    primary, worktree = site
+    archive, shelf = archive_of(primary), shelf_of(primary, worktree)
+    record = worktree / ".cache" / "fp-verification" / RECORD_IDS[0] / "record.json"
+    real_rename, renames = os.rename, {"n": 0}
+
+    def rename_then_change(src, dst):
+        real_rename(src, dst)
+        renames["n"] += 1
+        if renames["n"] == 1 and Path(dst).name == RECORD_IDS[0]:
+            record.write_text(json.dumps({"run_id": RECORD_IDS[0], "status": "late"}),
+                              encoding="utf-8")
+
+    monkeypatch.setattr(mod.os, "rename", rename_then_change)
+    assert run_main(monkeypatch, mod, remove_command(worktree), primary) == 0
+    assert json.loads((shelf / f"{RECORD_IDS[0]}~2" / "record.json")
+                      .read_text(encoding="utf-8"))["status"] == "late"
+    names = [line.partition("  ")[2] for line in
+             (archive / "SHA256SUMS").read_text(encoding="utf-8").splitlines()]
+    assert f"{worktree.name}/{RECORD_IDS[0]}/record.json" in names
+    assert f"{worktree.name}/{RECORD_IDS[0]}~2/record.json" in names
+    assert len(names) == len(set(names))
+
+
+def test_a_source_that_never_settles_blocks_with_exit_2(monkeypatch, mod, capsys, site):
+    """A record that is still being rewritten after three attempts cannot be
+    archived at any honest state: the hook blocks (exit 2), leaves no version
+    dir, no manifest and no staging dir behind, and the source is untouched."""
+    primary, worktree = site
+    archive, shelf = archive_of(primary), shelf_of(primary, worktree)
+    record = worktree / ".cache" / "fp-verification" / RECORD_IDS[0] / "record.json"
+    real_copyfile = shutil.copyfile
+    ticks = 0
+
+    def always_moving(src, dst, **kwargs):
+        nonlocal ticks
+        ticks += 1  # the source is rewritten before every single copy
+        record.write_text(json.dumps({"run_id": RECORD_IDS[0], "status": f"tick {ticks}"}),
+                          encoding="utf-8")
+        return real_copyfile(src, dst, **kwargs)
+
+    monkeypatch.setattr(mod.shutil, "copyfile", always_moving)
+    assert run_main(monkeypatch, mod, remove_command(worktree), primary) == 2
+    err = capsys.readouterr().err
+    assert len(err.strip().splitlines()) == 1, "one reason line"
+    assert "guard_worktree_evidence" in err and "3 attempts" in err
+    assert ticks == 3 * 3, "three full attempts (3 files each), then give up"
+    assert list(shelf.iterdir()) == [], "no version dir may survive"
+    assert not list(archive.rglob(".staging-*")), "staging dirs were left behind"
+    assert not (archive / "SHA256SUMS").exists()
+    for identity in RECORD_IDS:  # the sources are still there for a retry
+        for name in ("record.json", "stdout.txt", "junit.xml"):
+            assert (worktree / ".cache" / "fp-verification" / identity / name).is_file()
 
 
 # --- the hook must stay wired into Claude Code ----------------------------------

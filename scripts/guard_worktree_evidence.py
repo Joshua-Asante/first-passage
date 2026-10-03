@@ -56,14 +56,24 @@ survives every later `git worktree remove` too.
 Every version directory is immutable. Which suffix a record gets is decided by its
 content digest: if the record's bytes already sit in `<run-id>` (or `<run-id>~k`),
 nothing is touched; otherwise the copy is staged in a temporary directory inside
-the archive, every file is re-hashed and compared with its source, and only then is
-the whole directory `os.rename`d into the first free name. Nothing outside the
-temp dir is ever created twice, overwritten, or deleted (the staged temp dir on
-failure is the one exception). `<sha256>  <worktree>/<run-id>[/~k]/<file>` lines
-are appended to the archive root's `SHA256SUMS` (paths relative to
-`fp-verification-archive/`, so `sha256sum -c` run there verifies every line).
-Appending is idempotent, and a manifest that would end up recording two different
-hashes for one path is refused — exit 2 — rather than papered over.
+the archive, the staged copy's whole-directory digest is recomputed and compared
+with the source's, and only then is the whole directory `os.rename`d into the
+first free name. Nothing outside the temp dir is ever created twice, overwritten,
+or deleted (the staged temp dir on failure is the one exception). A digest
+mismatch means the record was still being written while it was copied — `fp.py`
+finalises a record at exactly the moment an operator tidies up — so the digest →
+stage → re-check sequence is retried on a fresh read up to three times before the
+source is declared too unstable to retain (exit 2, rather than archiving some
+random intermediate state). Which files exist is decided by an `os.walk` that
+never follows links and refuses non-regular entries: a symlink, junction, fifo,
+or unlistable subtree inside a record blocks (exit 2) instead of being silently
+skipped or followed outside the record. `<sha256>  <worktree>/<run-id>[/~k]/<file>`
+lines are appended to the archive root's `SHA256SUMS` (paths relative to
+`fp-verification-archive/`, so `sha256sum -c` run there verifies every line) —
+each record's lines as soon as that record is archived, so a failure on a later
+record never leaves an earlier one archived but undescribed. Appending is
+idempotent, and a manifest that would end up recording two different hashes for
+one path is refused — exit 2 — rather than papered over.
 
 Exit contract:
 
@@ -72,11 +82,14 @@ Exit contract:
   * **0, one stdout line** summarising the record count and the archive location —
     stdout, not a permission decision, because the removal itself is not judged
     here (`guard_shell_command.py` owns destructive-command asking);
-  * **2, reason on stderr** when records exist but could not be retained, when
-    worktree enumeration fails (fail closed: the hook cannot know what is at
-    risk), or when the manifest contradicts the archive — a blocking exit, so the
-    tool call is refused *before* records are destroyed. Losing the evidence is
-    not recoverable after the fact; failing closed is the cheap direction to fail.
+  * **2, reason on stderr** when records exist but could not be retained — an
+    unusable archive path, a copy that does not verify, a source that never
+    settles, an entry that is not a regular file, a subtree that cannot be
+    listed — when worktree enumeration fails (fail closed: the hook cannot know
+    what is at risk), or when the manifest contradicts the archive; a blocking
+    exit, so the tool call is refused *before* records are destroyed. Losing the
+    evidence is not recoverable after the fact; failing closed is the cheap
+    direction to fail.
 """
 from __future__ import annotations
 
@@ -140,14 +153,52 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _files(root: Path) -> list[Path]:
+    """Every regular file under `root`, sorted by relative path.
+
+    The traversal is `os.walk` with `followlinks=False` and an `onerror` that
+    re-raises, so a subtree that cannot be listed is an error the caller fails
+    on — never a file that is silently missing from the archive. Entries that
+    are not regular files are refused: a symlink (or, on Windows, a junction —
+    which `os.walk` would otherwise descend into even with `followlinks=False`)
+    cannot be faithfully archived by a plain copy, and skipping it would
+    quietly under-report the record, so the retention fails loudly instead.
+    `root` itself is never inspected; whether it is a directory is the caller's
+    business.
+    """
+    def is_link(entry: Path) -> bool:
+        junction = getattr(entry, "is_junction", None)  # Python 3.12+, Windows
+        return entry.is_symlink() or (junction is not None and junction())
+
+    found: list[Path] = []
+
+    def onerror(error: OSError) -> None:
+        raise error
+
+    for dirpath, dirnames, filenames in os.walk(root, onerror=onerror,
+                                                followlinks=False):
+        here = Path(dirpath)
+        for name in dirnames:
+            if is_link(here / name):  # otherwise silently skipped by the walk
+                raise ArchiveError(f"refusing link inside {root}: {here / name}")
+        for name in filenames:
+            entry = here / name
+            if is_link(entry) or not entry.is_file():
+                raise ArchiveError(f"refusing non-regular entry inside {root}: {entry}")
+            found.append(entry)
+    return sorted(found)
+
+
 def record_digest(record: Path) -> str:
     """Content digest of a record directory: every file's relative path and bytes.
 
     Two directories with equal digests hold the same files with the same bytes,
     which is exactly the "already archived" test the version-dir naming needs.
+    Traversal rules (and their failures) are `_files`': a record holding a link
+    or an unlistable subtree raises rather than digesting a subset of itself.
     """
     digest = hashlib.sha256()
-    for source in sorted(path for path in record.rglob("*") if path.is_file()):
+    for source in _files(record):
         relative = source.relative_to(record).as_posix().encode("utf-8")
         digest.update(len(relative).to_bytes(8, "big"))
         digest.update(relative)
@@ -200,6 +251,53 @@ def version_dir(archive: Path, identity: str, digest: str) -> tuple[Path, bool]:
     return candidate, True
 
 
+class _UnstableSource(ArchiveError):
+    """The record's bytes changed while they were being staged; re-read it."""
+
+
+def _stage_copy(archive: Path, identity: str, record: Path, digest: str) -> Path:
+    """Copy `record` into a fresh temp dir inside `archive`; verify; return it.
+
+    Verification is a re-digest of the whole staged directory compared with
+    `digest` — the source digest that chose the destination — so a source that
+    moved underneath the copy is caught as a whole: altered bytes, a file added,
+    a file vanished all mismatch alike, and the caller gets `_UnstableSource`
+    to re-read from scratch. Any other failure cleans the staged temp dir up
+    and becomes an `ArchiveError`, so nothing half-written ever survives.
+    """
+    staged: Path | None = None
+    try:
+        archive.mkdir(parents=True, exist_ok=True)
+        staged = Path(tempfile.mkdtemp(dir=archive, prefix=f".staging-{identity}-"))
+        for source in _files(record):
+            target = staged / source.relative_to(record)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+        if record_digest(staged) != digest:
+            raise _UnstableSource(f"{record} changed while being copied")
+    except _UnstableSource:
+        if staged is not None:
+            shutil.rmtree(staged, ignore_errors=True)
+        raise
+    except OSError as exc:
+        if staged is not None:
+            shutil.rmtree(staged, ignore_errors=True)
+        raise ArchiveError(f"cannot retain {record} into {archive}: {exc}") from exc
+    return staged
+
+
+def _manifest_lines(destination: Path) -> list[str]:
+    """`<sha256>  <shelf>/<version-dir>/<file>` for every file under `destination`.
+
+    Paths are relative to the *archive root* — `destination.parent.name` is the
+    shelf, named after the worktree — so one `SHA256SUMS` at the archive root
+    covers every shelf.
+    """
+    return [f"{sha256_file(source)}  {destination.parent.name}/{destination.name}/"
+            f"{source.relative_to(destination).as_posix()}"
+            for source in _files(destination)]
+
+
 def retain_record(archive: Path, record: Path) -> tuple[bool, list[str]]:
     """Copy one record directory into the archive immutably.
 
@@ -209,35 +307,42 @@ def retain_record(archive: Path, record: Path) -> tuple[bool, list[str]]:
     files). Manifest paths are relative to the *archive root* — they are prefixed
     with the shelf's name, which is the worktree's basename — so one `SHA256SUMS`
     at the archive root covers every shelf.
-    The copy is staged inside the archive, verified by re-hashing every file, and
-    only then `os.rename`d into place — so an interrupted copy can never leave a
-    half-written version dir behind, and nothing existing is ever touched.
+
+    Because `scripts/fp.py` may still be writing the record while this hook
+    runs, the digest → stage → re-digest sequence sits in a stability loop of at
+    most three attempts: a staged copy whose digest no longer matches the one
+    its destination was chosen by only means the source moved underneath the
+    copy, and the next attempt re-reads it from scratch. A source that has not
+    settled after three attempts is refused — the caller exits 2 — rather than
+    archived at some random intermediate state.
     """
     identity = record.name
-    digest = record_digest(record)
-    destination, fresh = version_dir(archive, identity, digest)
-    if fresh:
-        staged: Path | None = None
-        try:
-            archive.mkdir(parents=True, exist_ok=True)
-            staged = Path(tempfile.mkdtemp(dir=archive, prefix=f".staging-{identity}-"))
-            for source in sorted(path for path in record.rglob("*") if path.is_file()):
-                target = staged / source.relative_to(record)
-                target.parent.mkdir(parents=True, exist_ok=True)
-                source_hash = sha256_file(source)
-                shutil.copyfile(source, target)
-                if sha256_file(target) != source_hash:
-                    raise ArchiveError(f"copy of {source} did not verify")
-            os.rename(staged, destination)
-        except OSError as exc:
-            raise ArchiveError(f"cannot retain {record} into {archive}: {exc}") from exc
-        finally:
-            if staged is not None and (staged.exists() or staged.is_symlink()):
-                shutil.rmtree(staged, ignore_errors=True)  # a no-op after the rename
-    lines = [f"{sha256_file(source)}  {destination.parent.name}/{destination.name}/"
-             f"{source.relative_to(destination).as_posix()}"
-             for source in sorted(destination.rglob("*")) if source.is_file()]
-    return fresh, lines
+    written: list[Path] = []
+    for _attempt in range(1, 4):
+        digest = record_digest(record)
+        destination, fresh = version_dir(archive, identity, digest)
+        if fresh:
+            try:
+                staged = _stage_copy(archive, identity, record, digest)
+            except _UnstableSource:
+                continue
+            try:
+                os.rename(staged, destination)
+            except OSError as exc:
+                shutil.rmtree(staged, ignore_errors=True)
+                raise ArchiveError(f"cannot retain {record} into {archive}: {exc}") from exc
+            written.append(destination)
+        # Re-read the source after dedup or copy: a record that finalised after
+        # `digest` was taken must not leave only the stale version retained.
+        if record_digest(record) == digest:
+            versions = written if destination in written else [*written, destination]
+            return bool(written), [line for version in versions
+                                   for line in _manifest_lines(version)]
+    stranded = [line for version in written for line in _manifest_lines(version)]
+    if stranded:  # every version written must be listed, even on refusal
+        _append_sums(archive.parent / SUMS_NAME, stranded)
+    raise ArchiveError(f"cannot retain {record} into {archive}: the source kept "
+                       f"changing through 3 attempts")
 
 
 def _append_sums(sums: Path, lines: list[str]) -> None:
@@ -288,7 +393,7 @@ def main() -> int:
     try:
         trees = worktrees(base)
         archive = trees[0] / ARCHIVE_REL  # git's first entry is the primary checkout
-        written, holders, lines = 0, 0, []
+        written, holders = 0, 0
         for tree in trees[1:]:
             records = tree / RECORDS_DIR
             if not tree.is_dir() or not records.is_dir():
@@ -300,10 +405,10 @@ def main() -> int:
                 # each worktree keeps its own shelf, so the record says which
                 # tree it came from and identical ids in two trees never collide
                 fresh, record_lines = retain_record(archive / tree.name, record)
+                # appended per record: an already-archived record is never left
+                # undescribed in the manifest because a later record failed
+                _append_sums(archive / SUMS_NAME, record_lines)
                 written += int(fresh)
-                lines.extend(record_lines)
-        if lines:
-            _append_sums(archive / SUMS_NAME, lines)
         if written:
             print(f"guard_worktree_evidence: archived {written} verification "
                   f"record(s) from {holders} linked worktree(s) to {archive}")
