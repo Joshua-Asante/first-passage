@@ -1,6 +1,6 @@
 # CrossTrade close-semantics vendor question: final text for the operator (2026-09-26)
 
-**Status:** **FINAL — to be sent by the operator.** Not sent by any agent; no agent contacts the vendor. **Sent:** §1 **not yet sent** to human support. Two chat attempts on 2026-10-01 are recorded in [§4](#4-chat-attempts-2026-10-01-not-a-send-of-1); neither is a send of §1, and the reply was the support chat's AI assistant, not a vendor statement..
+**Status:** **FINAL — to be sent by the operator.** Not sent by any agent; no agent contacts the vendor. **Sent:** §1 **not yet sent** to human support. Two chat attempts on 2026-10-01 are recorded in [§4](#4-chat-attempts-2026-10-01-not-a-send-of-1); neither is a send of §1, and the reply was the support chat's AI assistant, not a vendor statement.
 **Authority:** operator ruling 2026-09-26, given in session by Joshua through a structured question. He selected "Finalize it for me to send", whose text was Astra's recommendation; it is recorded here as his decision (R-VENDORQ).
 **Source:** the draft in the [close-semantics determination](2026-09-26-close-semantics-c-a.md) §6, which stays as drafted. The ruling keeps its nine questions and adds one short request, item 10 below. Nothing else is changed.
 **Context:** the investigation of C-a (whole-leg broker liquidation) under the operator's close ruling of 2026-09-26 (R-CLOSE, [incident ADR §A11.1](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)), investigation only. This is a separate question from the T08 vendor question sent on 2026-09-25 ([campaign §59 Ruling 2](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-2--the-t08-vendor-question-has-been-sent)).
@@ -87,8 +87,8 @@ Nothing beyond the operator sending the text above. It authorizes no agent conta
 
 **How it is treated (§2 rules 2–3; unchanged):**
 - It is **corroboration only, not a vendor statement**. It is an unsourced AI answer that disclaims guarantees itself.
-- **Q6 and Q9 stay unresolved for C-a selection.** Their canonical statuses in the [close-semantics record](2026-09-26-close-semantics-c-a.md) are unchanged: Q6 **CONFLICTING** (D-1 stands), Q9 **PARTLY_DOCUMENTED**. Every other question also keeps its prior status. Its contract-scope claim is the answer the selection prerequisites need, so it is evidence to verify, not acceptance.
-- Under the C-a selection rule that the selection register will own, only an authoritative contract-scoped answer discharges Q6.
+- **Q6 and Q9 stay unresolved for C-a selection.** Their canonical statuses in the [close-semantics record](2026-09-26-close-semantics-c-a.md) are unchanged: Q6 **CONFLICTING** (D-1 stands), Q9 **PARTLY_DOCUMENTED**. Every other question also keeps its prior status. Its contract-scope claim agrees with what X-3 is expected to show, but it is evidence to verify, not acceptance.
+- **Vendor answers are not a C-a selection gate** (operator ruling 2026-10-02, quoted in the [C-a selection register §R.2a](2026-09-26-close-semantics-c-a.md)). The scope-extended X-3 discharges both questions: Q6 through its second-symbol evidence (register row S-V2a), and Q9 through its trace (S-V1). Vendor and AI answers are corroboration only (register row N-V0). Q6 and Q9 stay unresolved until X-3 runs.
 
 **Still owed:** the operator emails §1 verbatim to support@crosstrade.io, as the reply itself directs. The prepared file is `unsent-human-support-inquiry.eml`. The dated **Sent:** line is added when he reports sending it.
 
