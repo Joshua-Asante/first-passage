@@ -7,10 +7,10 @@
 | §A12 text | What it asks | Here |
 |---|---|---|
 | F3, *Watching a held request* (:460) | While any request is held, a check for unexplained effects at each session open or at another cadence the owner names. Disarm does not satisfy it. Owner: attended operations (checklist T13), with the D-MON channels | W1–W5 |
-| §A12.4, row *Attended-operations contract (checklist T13) and D-MON* (:540) | Cadence, channels and binding owner, plus alert-channel loss with no incident (D5). Required before §A12's acceptance or in the same act | W2, W5–W7 |
+| §A12.4 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); removed from the ADR by the 2026-10-02 narrowing), row *Attended-operations contract (checklist T13) and D-MON* (:540) | Cadence, channels and binding owner, plus alert-channel loss with no incident (D5). Required before §A12's acceptance or in the same act | W2, W5–W7 |
 | §A12.5, row *Held-request watch and monitoring loss* (:554) | HR :57's attendance sentence is ambiguous for a disarmed account with a live unknown | W1 |
-| §A12.6 D1, third bullet (:564) | The attended-operations owner adopts the watch before or with acceptance | *Adoption* |
-| §A12.6 D5 (:572) | Alert-channel loss with no incident and the late-effect watch go to D-MON and T13 | W5, W6 |
+| §A12.6 D1, third bullet (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); D1's prerequisite list is in ADR §A12.5) | The attended-operations owner adopts the watch before or with acceptance | *Adoption* |
+| §A12.6 D5 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md)) | Alert-channel loss with no incident and the late-effect watch go to D-MON and T13 | W5, W6 |
 
 It also takes the hand-off from the C-a selection register ([PR #593](https://github.com/Joshua-Asante/first-passage/pull/593), head `8d253c9`): outcomes O0 and O5–O8 hold the reservation (REG §R.3), and row S-X3's recovery hands any request still retained to this watch ([S-X3 draft](2026-10-02-t13-c-a-attended-recovery-draft.md) §8).
 
@@ -52,7 +52,7 @@ Read authority is the same open question as S-X3's P3 (OQ-2).
 | Finding | Class | Action |
 |---|---|---|
 | Nothing new | "No unexplained effect observed at time T with reads R." **Not a release:** absence never releases (F2; closure plan row 3) | Record; schedule the next check |
-| An effect that an accepted F2 class uniquely correlates to a held request | Transfer under F2. This needs the operator's D2 and D3 dispositions (§A12.6) | Hand to attended recovery (S-X3 draft §4–§8). The halt stays (F3) |
+| An effect that an accepted F2 class uniquely correlates to a held request | Transfer under F2. This needs the operator's D2 and D3 dispositions (§A12.6, now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md)) | Hand to attended recovery (S-X3 draft §4–§8). The halt stays (F3) |
 | An effect not uniquely correlated | Incident (F5). It is an additional identified exposure, and the held request stays held; the double count is deliberate | Alert on the D-MON channels (W5). The operator manages exposure on the platform (HR :49; S-X3 draft §5) |
 | Reads fail, or the platform is unavailable | Check **missed**, not passed | Retry. If exposure is suspected, use the firm fallback (S-X3 draft §7) |
 
@@ -90,5 +90,5 @@ These rows are policy, so the operator rules on them (OQ-3).
 - **OQ-1** (halt/resume owner). W1's reading of HR :57.
 - **OQ-2** (operator). Read authority for watch reads (DP :174).
 - **OQ-3** (operator). W6's policy rows, especially "all channels lost while armed means an operator stop".
-- **OQ-4** (operator). Preservation trades on a symbol outside the four while a request is held.
+- **OQ-4** (operator). Preservation trades on a symbol outside the four while a request is held. *Coordinator note, 2026-10-02:* this proposal conflicts with the F-5 ruling ("automation fenced, then reconciled"), which the operator confirmed on 2026-10-02 as discharging S-X2. F-5 reasons that moving symbols removes no account-wide effect. **F-5 is the default.** This item stays only in case the operator chooses to revisit it.
 - **OQ-5** (operator). The W2 cadence, and whether a broker-platform fill notification is wanted as a detector between checks.

@@ -2,9 +2,9 @@
 
 **Status: PROPOSED. Options for the operator; nothing is selected.** The channel choice is Joshua's ([deployment checklist, six cuts item 5, D-MON bullet](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts), :598). This note creates no account, contacts no provider, stores no credential, spends nothing, changes no code and edits no owner. Every option below uses a $0 tier. Opening any provider account is still the operator's act.
 
-**Ticket.** Coordinator ticket M, item 1 (T13 preparation). Line numbers are on origin/main `bd30646` unless a PR head is named. The ticket's "about :596" for the D-MON ruling is :598 (:596 is the T13 bullet).
+**Ticket.** Coordinator ticket M, item 1 (T13 preparation). Line numbers are on origin/main `bd30646` unless a PR head is named. The ticket's "about :596" for the D-MON ruling is :599 (on main 10b3929) (:596 is the T13 bullet).
 
-**Ruling being applied** (checklist :598): check the existing channels against the halt/resume contract; fill any gap with a no-cost external provider, not an in-house build; the alternate-channel escalation stays.
+**Ruling being applied** (checklist :599): check the existing channels against the halt/resume contract; fill any gap with a no-cost external provider, not an in-house build; the alternate-channel escalation stays.
 
 ## 1. What the contract requires
 
