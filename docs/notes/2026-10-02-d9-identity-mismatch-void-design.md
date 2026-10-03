@@ -98,7 +98,9 @@ No request, receipt or approval family changes. The DB10 layout is unchanged. Th
   - **Boundness source.** Boundness is taken from `context.release`. The guardian verified that release against the installed release and its signed approval (`admission._verify_bundle` 157–159). This same transaction retains it as `context_*` (2533) and binds it into the receipt (2519). It is therefore the authenticated, immutable binding that §2.D step 2 and §2.B later read. Nothing reads a caller-supplied `expected`.
   - **Funded only.** A bound context whose `campaign_budget_profile` schema is not `qualification_campaign_budget_profile/v3` raises before any write. A deferred body can be resolved only through a funding projection (`claim_void_authentication` 2030).
   - **Bound, bad signature or unenrolled key (2431–2454).** Unchanged: `_refuse_admission_void` under the admission work, and the body is cleared. There is no observation, no event and no fence.
-  - **Bound, valid signature, reason matches the §2.C acknowledgement grammar.** Refused the same way with `VOID_IDENTITY_ACK_DANGLING`, and the body is cleared. No event can exist before the receipt, so the acknowledgement necessarily dangles. There is no observation.
+  - **Bound, valid signature, reason starts with the reserved prefix `IDENTITY_MISMATCH_ACK:`.** It is refused the same way with `VOID_IDENTITY_ACK_DANGLING`, and the body is cleared, **whether or not the rest matches the §2.C grammar**. This covers malformed forms such as `IDENTITY_MISMATCH_ACK:not-a-digest`, which pass the frozen request parser but fail the closed acknowledgement grammar. No event can exist before the receipt, so any acknowledgement dangles. There is no observation.
+    - *Why the prefix test, not the grammar (Codex P1 on #614 at f1b8622).* Otherwise a malformed prefixed body would be deferred as a plain pending body. After admission, the queue pre-check rejects it as a malformed acknowledgement, and a corrected body then conflicts with the immutable pending bytes (`campaign_store` 1812–1817), which stalls the VOID. Refusing at admission clears the body, so a fresh valid VOID can be queued after admission.
+    - Unbound campaigns (v3–v7) are unchanged: the prefix is read only on bound campaigns, so historical reasons still reopen.
   - **Bound, valid signature, plain reason.**
     - There is no observation, no event and no `void()`. The body stays as `pending_void`.
     - Admission binds, settles and writes its receipt as today. The general barrier is scoped to admitted campaigns (1871–1885), and the receipt is inserted after 2486, so 2742 passes.
@@ -255,11 +257,11 @@ Enforcement: an AST/SQL inventory test fixes the exact set of writers, including
 - **Misclassification:** a list (a) case that passes at `f237178` is misclassified and moves to list (b).
 
 **(a) Red→green regressions** (fail at `f237178`, pass on the build):
-- **T2 (absent):** bound MATCH on each path (charged, seq-0, pre-admission).
+- **T2 (absent):** bound MATCH on the charged and seq-0 paths. There is no bound pre-admission variant: bound pre-admission defers with zero observations (T17).
   - VOID commits and retains exactly one `void_recheck_match_*` row bound to `sha256(request)`.
   - The v1 receipt and the budget VOID bytes equal the build's unbound baseline for the same request and clock.
   - Base reference: `void` 2602–2633 writes only the row update, the receipt and the budget.
-- **T3 (absent):** MISMATCH, one case per tuple field, on charged, seq-0 (BUDGET_UNCERTAIN, IN_DOUBT, past deadline) and pre-admission paths.
+- **T3 (absent):** MISMATCH, one case per tuple field, on the charged and seq-0 paths (BUDGET_UNCERTAIN, IN_DOUBT, past deadline). The pre-admission MISMATCH variant is superseded by deferral (T17).
   - Refused with the digest.
   - The event is retained after the raise.
   - The charge is unchanged, and the recheck leaves `remaining_cpu_ns` unchanged.
@@ -305,9 +307,9 @@ Enforcement: an AST/SQL inventory test fixes the exact set of writers, including
   - an event whose outcome is inconsistent with its verdict and acknowledgement.
 - T13e: two charged claims on the same body with an identical observation produce distinct void_recheck_* roles; a TERMINAL PROCEED crash then exact retry with an identical observation reuses the byte-equal role and completes. No PRIMARY KEY error in either case.
 **P2 pre-admission case (new red→green; replaces the earlier pre-admission MISMATCH case, since bound pre-admission runs no identity recheck and the VOID is deferred to after admission):**
-- T17 (fail-first), real bound pre-admission through the campaign_supervisor admission branch (1464-1517) with a counting observe spy. (a) A bad-signature body and (b) a validly signed body with an ACK-grammar reason are each refused inside admission: void_admission_refusal_* row, body cleared, zero observations, zero void_recheck_* rows, receipt written unfenced. (c) A validly signed plain body: the receipt is written with zero observations, pending_void is retained, void_pending is true and the T4 barriers refuse. Reopen between admission and resend passes the walk with the body still pending. The exact bytes are resent through the service: one charged claim and exactly one observation after verification; MATCH completes; MISMATCH is refused with the digest, the charge is retained and the fence stays. Fails at f237178 (2374-2381 binding; body consumed at 2416-2464).
+- T17 (fail-first), real bound pre-admission through the campaign_supervisor admission branch (1464-1517) with a counting observe spy. (a) A bad-signature body and (b) a validly signed body with an ACK-grammar reason are each refused inside admission: void_admission_refusal_* row, body cleared, zero observations, zero void_recheck_* rows, receipt written unfenced. (c) A validly signed plain body: the receipt is written with zero observations, pending_void is retained, void_pending is true and the T4 barriers refuse. Reopen between admission and resend passes the walk with the body still pending. The exact bytes are resent through the service: one charged claim and exactly one observation after verification; MATCH completes; MISMATCH is refused with the digest, the charge is retained and the fence stays. Fails at f237178 (2374-2381 binding; body consumed at 2416-2464). (d) Added after the Codex P1 on #614: a validly signed body whose reason is a **malformed** reserved prefix (`IDENTITY_MISMATCH_ACK:not-a-digest`) is refused at admission with `VOID_IDENTITY_ACK_DANGLING` and the body is cleared. Then admission → reopen → a fresh valid VOID is queued and accepted, and proceeds through the service sequence. The VOID does not stall.
 
-**(b) Preservation cases** (v1–v7 fixtures; pass at `f237178` and on the build):
+**(b) Preservation cases** (v1–v7 fixtures; pass at `f237178` and on the build; bound-only cases are in (a) or T18b):
 - **T1:** changing the reason, including an acknowledgement-shaped digest, under the same approval → subject mismatch, refused, no VOID.
   - Base: the reason is in the signed subject (service 336–344 for N1, 583–590 for diagnostic; `campaign_store` 2436–2445 for pre-admission).
   - Build-only bound variant: the changed digest names a second retained mismatch row of the same attempt, so the queue pre-check passes. The subject check then refuses with a charged refusal and no VOID.
@@ -324,7 +326,8 @@ Enforcement: an AST/SQL inventory test fixes the exact set of writers, including
 - **T15b:** the VOID writer set is exactly `campaign_store` 2622 and 2632, `store.py` 437 and `attempt.py` 1013.
 - **T16:** comparing the closure table at `f237178` with the build shows zero D9-contributed rows.
 - **T20:** existing test `test_campaign_cancellation.py` 466–488 is unchanged: an interruption with no event keeps the body and the charge, and the retry is charged again.
-- T18 (preservation, P2), three cases. (1) Unbound v3-v7: pre-admission 2416-2464 bytes are identical to f237178, including the bad-signature void_admission_refusal_* row. (2) A bound context whose campaign_budget_profile is not v3 raises in finish_diagnostic_admission with no row written. (3) A bound admission that returns before the receipt leaves a valid body queued; claim_void_authentication refuses it (2020-2023); zero observations.
+- **T18a (preservation, P2):** unbound v3–v7 pre-admission at 2416–2464 is byte-identical to `f237178`, including the bad-signature `void_admission_refusal_*` row.
+- **T18b (new regression, build-only; not preservation):** a bound fixture exists only on the build, so these cases can't pass at the base. (i) A bound context whose `campaign_budget_profile` isn't v3 raises in `finish_diagnostic_admission` with no row written. (ii) A bound admission that returns before the receipt leaves a valid body queued; `claim_void_authentication` refuses it (2020–2023), with zero observations.
 - **Reworded by P2:** T10 now covers zero observations and zero `void_recheck_*` rows on both the post-admission and bound pre-admission paths. T15 adds that 2464 is the only no-receipt `void()` caller and is unreachable once the finish context is bound.
 
 ## 7. Rulings Joshua must give (each answer is yes or no)
