@@ -24,6 +24,8 @@ facts remain with the linked owners; this page does not restate locked values.
 - [`../adr/INDEX.md`](../adr/INDEX.md) — derived ADR lifecycle index.
 - [`../../STATE.md`](../../STATE.md) — cross-session open threads and forward
   obligations.
+- [`track_b_register.yml`](track_b_register.yml) — Track B status per item (pilot,
+  derived mirror; `scripts/track_b_register.py check|digest|table`).
 
 ## Workflows
 

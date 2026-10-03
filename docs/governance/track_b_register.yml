@@ -1,0 +1,572 @@
+# Track B status register — the Rule 7 owner of each Track B item's current status.
+#
+# One row per Track B item: status now, the next permitted action and who takes it,
+# blockers, expiry, and the dated record that set the status. The rulings' text,
+# reasoning and evidence stay with the record each row cites (operator ruling
+# 2026-10-03; docs/operational_rules.md Rule 7 owner table).
+#
+# Who writes a row: whoever records the ruling or acceptance, in the same change
+# (the gate refuses a new dated heading in a watched owner without a citing row).
+# After editing, run `python scripts/track_b_register.py write` to regenerate the
+# blocks listed under `generated`, then `... check` (gate `track-b-register`).
+# `... digest` is the session-start summary (SessionStart hook).
+#
+# Falsifier (STATE forward trigger 2026-10-17): if Track B mirror/propagation
+# commits have not fallen by at least half from the 2026-09-27..10-02 baseline (17),
+# or STATE/checklist status drifts from the ledger again, retire the register
+# rather than add rules to it.
+#
+# Row fields
+#   id          <kind>.<name>; kind is one of packet, slice, gate, work, checkpoint,
+#               drill, defect, t00, adapter, parked. Namespaced so the overloaded
+#               names (R1 vs R-1, D1, S1, C1 ...) cannot collide.
+#   aliases     other names the owner documents use for the same item (T04 = S5).
+#   status      NOT_STARTED | OPEN | IN_PROGRESS | AWAITING_OPERATOR | BLOCKED |
+#               ACCEPTED | ACCEPTED_LIMITED | CLOSED | PARKED.
+#   since       date the current status was set (YYYY-MM-DD).
+#   owner       repository-relative link (from this directory) to the heading that
+#               set the status; must resolve.
+#   next        the next permitted action, or null when nothing is owed.
+#   next_actor  operator | coordinator | worker | none.
+#   blocked_by  register ids that must reach a terminal status first.
+#   checkpoint  the checkpoint.* row that authorizes the next action, if any.
+#   expires     ISO datetime with zone for an approval or window that lapses.
+#   evidence    further owner links (each counts as citing that heading).
+#   refs        free text: PRs, commits, branches (not checked).
+#   note        one line, only where the status needs a scope limit to be read right.
+#
+# Coverage (rule R5): every heading dated on or after `covers_from` in a `watch` file
+# must be cited by some row's owner/evidence or listed under `noted`. Add or update a
+# row in the same change that adds a dated ruling or acceptance.
+#
+# Grants nothing: no row authorizes an act; the owners and the operator do.
+
+schema: track_b_register/v1
+role: owner
+as_of: 2026-10-03
+reconciled_at: d27c7a1
+covers_from: 2026-10-01
+watch:
+  - docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
+  - docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md
+  - docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md
+  - docs/notes/2026-09-29-x1-decision-packet.md
+  - docs/notes/2026-09-30-x4-decision-packet.md
+  - docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md
+generated:
+  - path: STATE.md
+    view: summary
+  - path: docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md
+    view: table
+
+items:
+  # ---------------------------------------------------------------- qualification
+  - id: slice.S2
+    kind: slice
+    aliases: [T01]
+    title: Enforced work boundary and real Linux worker supervision
+    status: ACCEPTED
+    since: 2026-09-21
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-budgeted-admission-and-real-linux-work-supervision-2026-09-21
+    next: null
+    next_actor: none
+    refs: ["#436"]
+
+  - id: slice.S3
+    kind: slice
+    aliases: [T02]
+    title: Protected N1 capture and independent G5 decision
+    status: ACCEPTED
+    since: 2026-09-22
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s3-genuine-protected-n1-capture-and-committed-independent-g5-decision-2026-09-22
+    next: null
+    next_actor: none
+    refs: ["#455", "a8a983e"]
+
+  - id: slice.S4
+    kind: slice
+    aliases: [T03]
+    title: Joint N2 / Part B
+    status: ACCEPTED
+    since: 2026-09-25
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c2-close--s4-accepted-2026-09-25-claude-code
+    next: null
+    next_actor: none
+    refs: ["#501", "228447c"]
+
+  - id: slice.S5
+    kind: slice
+    aliases: [T04]
+    title: Part A with prescribed expansion
+    status: ACCEPTED_LIMITED
+    since: 2026-10-01
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01
+    evidence:
+      - ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-c3-acceptance-packet--s5-part-a-test_only-2026-10-01
+      - ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings-2026-10-01-trigger-6-host-memory
+    next: null
+    next_actor: none
+    note: TEST_ONLY scope; the accepted Part A ceiling application does not carry past T00's closure change (see remeasure row).
+    refs: ["#578", "1fe99fa"]
+
+  - id: defect.D-S5-1
+    kind: defect
+    title: S5 TEST_ONLY defect D-S5-1 (io release)
+    status: CLOSED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--d-s5-1d-s5-2-fix-slice-586-2026-10-02
+    evidence:
+      - ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--land-s5-with-two-named-test_only-defects-fix-before-t05-2026-10-01
+    next: null
+    next_actor: none
+    refs: ["#586", "981eb12"]
+
+  - id: defect.D-S5-2
+    kind: defect
+    title: S5 TEST_ONLY defect D-S5-2 (supervisor)
+    status: CLOSED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--d-s5-1d-s5-2-fix-slice-586-2026-10-02
+    next: null
+    next_actor: none
+    refs: ["#586", "981eb12"]
+
+  - id: defect.D-S5-3
+    kind: defect
+    title: Capture exact-retry demotion
+    status: CLOSED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--d-s5-3-fix-slice-589-2026-10-02
+    evidence:
+      - ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--d-s5-3-capture-exact-retry-demotion-also-gates-t05-r1-2026-10-01
+    next: null
+    next_actor: none
+    refs: ["#589", "77cd715"]
+
+  - id: packet.T05
+    kind: packet
+    aliases: [S6, S7]
+    title: Complete result and separate seal
+    status: IN_PROGRESS
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--h9-preparation-return-db10-and-context-compatibility-2026-10-02
+    next: Integrate the frozen T05 head (6cf2732) on main through H9; acceptance proper waits on gate.T05-R1
+    next_actor: coordinator
+    refs: ["build frozen at claude/t05-result-seal@6cf2732"]
+
+  - id: gate.T05-R1
+    kind: gate
+    aliases: [H9 R1]
+    title: T05 integration acceptance (combined Linux node set)
+    status: BLOCKED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02
+    blocked_by: [work.C-prime-build, work.T05-qualpath-fixes, work.term-8, work.S5-remeasure-trigger-1]
+    next: Grant R1 once its prerequisites land
+    next_actor: coordinator
+    note: Both D-S5 fix slices are met; B4 observed pilot does not block R1 (operator 2026-10-02).
+
+  - id: work.C-prime-build
+    kind: work
+    title: T05 environment sealing (C′) and the canonical base-image pin file
+    status: OPEN
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02
+    next: Build C′ against the approved base-image pin
+    next_actor: worker
+
+  - id: work.T05-qualpath-fixes
+    kind: work
+    title: T05-owed qualification-path checks (source_truncated, calendar role, review identity)
+    status: IN_PROGRESS
+    since: 2026-10-02
+    owner: ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
+    evidence:
+      - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    next: Complete and land; the merge hold is lifted (operator decision sheet A1, 2026-10-02)
+    next_actor: worker
+    refs: ["#611 (draft)"]
+
+  - id: work.term-8
+    kind: work
+    title: S8 E03 conflict with frozen T05 validators (term 8)
+    status: OPEN
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--h9-preparation-return-db10-and-context-compatibility-2026-10-02
+    evidence:
+      - ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--lane-d-step-3-may-edit-the-measured-closure-result_g5-and-qseal-provisioning-2026-10-02
+    next: Fix in H9 lane D step 3 (its own card, after step 2)
+    next_actor: worker
+    note: Step 3 may edit runtime.py, release_schema.py and campaign_protocol.py for result_g5/qseal provisioning; the one fresh S5 measurement before R1 covers it.
+    refs: ["term 8 merged in #610 (f8a03c2)", "#609 (draft) found it"]
+
+  - id: work.S5-remeasure-trigger-1
+    kind: work
+    title: Fresh S5 Part A measurement after T00 fired re-measurement trigger 1
+    status: AWAITING_OPERATOR
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-finding--t00-fired-s5-re-measurement-trigger-1-2026-10-02
+    next: "Rule on one fresh measurement after #611, C′, term 8 and K3/RC-4 land, immediately before R1"
+    next_actor: operator
+
+  - id: work.H8c
+    kind: work
+    title: H8(c) omitted-slot incident tests
+    status: ACCEPTED_LIMITED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--h8c-omitted-slot-incident-tests-530-2026-10-02
+    next: null
+    next_actor: none
+    note: Synthetic scope only.
+    refs: ["#530"]
+
+  - id: work.H9-prep
+    kind: work
+    title: H9 preparation return (DB10 and context compatibility)
+    status: ACCEPTED_LIMITED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--h9-preparation-return-db10-and-context-compatibility-2026-10-02
+    next: null
+    next_actor: none
+    note: Not R1.
+    refs: ["codex/h9-t05-integration@f237178"]
+
+  - id: packet.T06
+    kind: packet
+    aliases: [S8]
+    title: Full synthetic E1 acceptance
+    status: NOT_STARTED
+    since: 2026-09-20
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t06--full-synthetic-e1-acceptance--s8-500k750k
+    blocked_by: [gate.T05-R1, work.K3-RC-4]
+    next: Dispatch after T05 integration; first the B4 observed pilot draw and S5 open questions Q1 and Q7 (statistical owner)
+    next_actor: coordinator
+    refs: ["#609 (draft harness preparation)"]
+
+  - id: work.K3-RC-4
+    kind: work
+    title: K3 / RC-4 slice (includes S5 open question Q9)
+    status: OPEN
+    since: 2026-10-01
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--c3-accepted-s5-accepted-for-test_only-on-landing-2026-10-01
+    checkpoint: checkpoint.CP-6
+    next: Dispatch the K3/RC-4 slice after S5 acceptance; it lands before S8/T06
+    next_actor: coordinator
+    refs: ["#608 (draft dispatch card)"]
+
+  # ---------------------------------------------------------------- T00
+  - id: t00.step-1
+    kind: t00
+    title: T00 step 1 (P7)
+    status: CLOSED
+    since: 2026-10-01
+    owner: ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#coordinator-t00-step-1-verdict--2026-10-01-resolved-p7-met-at-code-2baa516
+    evidence:
+      - ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#task-4-return--2026-10-01-executor-local-claude-opus
+    next: null
+    next_actor: none
+
+  - id: t00.step-1b
+    kind: t00
+    title: T00 step-1b P7 re-run at the merge head
+    status: ACCEPTED
+    since: 2026-10-02
+    owner: ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
+    next: null
+    next_actor: none
+    refs: ["b2c9f9c", "landed c3ab0cc"]
+
+  - id: t00.screen-authority-design
+    kind: t00
+    title: T00 screen authority design (new signed contract class) with the A2 spec amendment text
+    status: OPEN
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    next: "Design a contract class bound to r3c's 25 inputs and the ratified #581, still refusing stages, seal, admission and deployment; operator approves before any code"
+    next_actor: coordinator
+    note: r3c refuses SCREEN and main has no step-3 runner, so step 3 cannot run on the current code (decision sheet A1–A2).
+
+  - id: t00.screen-authority-build
+    kind: t00
+    title: Build the T00 screen authority (driver, A5 counting, A6 verdict)
+    status: NOT_STARTED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    blocked_by: [t00.screen-authority-design]
+    next: Build after the design is approved
+    next_actor: worker
+
+  - id: t00.screen-authority-sign
+    kind: t00
+    title: Operator signs the T00 screen authority
+    status: NOT_STARTED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    blocked_by: [t00.screen-authority-build, t00.step-2-prereg]
+    next: Sign the screen authority
+    next_actor: operator
+
+  - id: t00.step-3-screen
+    kind: t00
+    title: T00 step-3 screen, run once under the signed screen authority
+    status: BLOCKED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    evidence:
+      - ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
+    blocked_by: [t00.screen-authority-sign]
+    next: Run step 3 once
+    next_actor: coordinator
+    note: "Approval r3c-a2 lapses unused on 2026-10-09 (A1); ORB-3 and VAN-3 are answered in #581 §5 before any step-3 output exists (A3)."
+
+  - id: t00.step-2-prereg
+    kind: t00
+    title: T00 step-2 pre-registration (reuses prereg v2 scoring clauses)
+    status: BLOCKED
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    evidence:
+      - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts
+    blocked_by: [t00.p7-rerun-after-fixes]
+    next: "Set and ratify #581 §3 (one timing-only real-source probe may set item 1 first, A4)"
+    next_actor: operator
+    refs: ["#581 (draft)"]
+
+  - id: t00.p7-rerun-after-fixes
+    kind: t00
+    title: P7 re-run after the T05 qualification-path fixes
+    status: NOT_STARTED
+    since: 2026-10-02
+    owner: ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
+    evidence:
+      - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
+    blocked_by: [work.T05-qualpath-fixes, t00.screen-authority-build]
+    next: One P7 re-run at the merged head under a fresh operator-signed source approval
+    next_actor: coordinator
+
+  - id: gate.D-feed-a-NO-GO
+    kind: gate
+    title: D-feed (a) treatment of a NO-GO T00 result whose risk the operator accepts into F1
+    status: AWAITING_OPERATOR
+    since: 2026-10-01
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts
+    checkpoint: checkpoint.CP-6
+    next: Decide how D-feed (a) treats an operator-accepted NO-GO T00 result into F1
+    next_actor: operator
+
+  # ---------------------------------------------------------------- route
+  - id: drill.X-1
+    kind: drill
+    title: One-contract REST OSO entry with its stop (GC-2a)
+    status: ACCEPTED_LIMITED
+    since: 2026-09-30
+    owner: ../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30
+    evidence:
+      - ../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30
+    next: null
+    next_actor: none
+    note: Scoped GC-2a PASS with limits; no release ratification.
+    refs: ["#572"]
+
+  - id: drill.X-1-rehearsal-record
+    kind: drill
+    title: Record whether X-1's required operator rehearsal completed
+    status: OPEN
+    since: 2026-09-30
+    owner: ../notes/2026-09-26-tradeify-route-drill-plan-draft.md#x-1-acceptance--2026-09-30
+    next: Record whether the required operator rehearsal completed
+    next_actor: coordinator
+
+  - id: drill.R-1
+    kind: drill
+    title: R-1 read on X-1's order
+    status: CLOSED
+    since: 2026-10-01
+    owner: ../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01
+    next: null
+    next_actor: none
+    note: LOCATED_WITH_CLORDID for this order at this time only.
+
+  - id: drill.R-2
+    kind: drill
+    title: R-2 prior-session lifecycle lookup
+    status: CLOSED
+    since: 2026-09-29
+    owner: ../notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-2-closure-with-limits--operator-decision-2026-09-29
+    next: null
+    next_actor: none
+    note: Closed with limits.
+
+  - id: adapter.attended-input
+    kind: adapter
+    title: Attended-input adapter
+    status: BLOCKED
+    since: 2026-10-01
+    owner: ../notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30
+    evidence:
+      - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--continuation-after-x-1
+    next: Pin/path-safety review and reconstruction of run-1930's import set
+    next_actor: worker
+    note: Accepted for X-1 run-1930 only; future use barred until both are accepted.
+
+  - id: drill.X-4
+    kind: drill
+    title: Cancel of a resting stop entry ends its Suspended children (GC-4)
+    status: AWAITING_OPERATOR
+    since: 2026-10-01
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts
+    evidence:
+      - ../notes/2026-09-30-x4-decision-packet.md#6-acceptance-and-remaining-gate-ledger
+    checkpoint: checkpoint.CP-3
+    next: Actor ruling, numerical limits and environment decision; then the reduced build path, rehearsal and a written CP-3
+    next_actor: operator
+    note: Build scope reduced by six-cuts item 3; not cleared to execute.
+
+  - id: packet.T07
+    kind: packet
+    title: Manual settlement procedure accepted end to end
+    status: BLOCKED
+    since: 2026-09-24
+    owner: ../briefs/handoffs/2026-09-21-tradeify-t07-manual-settlement-procedure.md
+    next: Supply the three S2 source facts
+    next_actor: coordinator
+    note: Status as of the 2026-09-24 coordinator handoff; reconcile on next T07 record.
+
+  - id: packet.T08
+    kind: packet
+    title: Broker and protection feasibility
+    status: BLOCKED
+    since: 2026-09-24
+    owner: ../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24
+    next: "Rule on the CrossTrade vendor reply once recorded (#575); live release stays held (R3 = NONE)"
+    next_actor: operator
+
+  - id: packet.T09
+    kind: packet
+    title: Actual broker adapter and reconciliation
+    status: BLOCKED
+    since: 2026-09-26
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record
+    checkpoint: checkpoint.CP-5
+    blocked_by: [checkpoint.CP-5]
+    next: Bounded T09 dispatch after gates B–D are accepted
+    next_actor: coordinator
+
+  - id: packet.T10
+    kind: packet
+    title: Actual source and freeze packet
+    status: OPEN
+    since: 2026-09-24
+    owner: ../briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet.md
+    next: Step 4 budget term awaits a synthetic probe
+    next_actor: coordinator
+    note: Status as of the 2026-09-24 coordinator handoff; reconcile on next T10 record.
+
+  - id: parked.PR-571
+    kind: parked
+    title: Legacy c1-rail transport_unknown risk-add block across restart
+    status: PARKED
+    since: 2026-10-01
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts
+    next: null
+    next_actor: none
+    note: Parked whole; no legacy arm while parked.
+    refs: ["#571 (draft)"]
+
+  # ---------------------------------------------------------------- operator checkpoints
+  - id: checkpoint.CP-1a
+    kind: checkpoint
+    title: Measurement decisions (1)–(6)
+    status: CLOSED
+    since: 2026-09-27
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27
+    next: null
+    next_actor: none
+
+  - id: checkpoint.CP-1b
+    kind: checkpoint
+    title: Release the S5 hold for the build
+    status: CLOSED
+    since: 2026-09-28
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1b-s5-hold-released-for-the-test_only-build-2026-09-28
+    next: null
+    next_actor: none
+
+  - id: checkpoint.CP-2
+    kind: checkpoint
+    title: Route facts
+    status: CLOSED
+    since: 2026-09-28
+    owner: ../notes/2026-09-27-route-commissioning-session-packet.md#11-cp-2-record-2026-09-28
+    next: null
+    next_actor: none
+
+  - id: checkpoint.CP-3
+    kind: checkpoint
+    title: Written authorization of each order-producing commissioning row
+    status: OPEN
+    since: 2026-09-27
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken
+    next: Authorize the next order-producing row (X-4) in writing, with environment and exposure limits
+    next_actor: operator
+    blocked_by: [drill.X-4]
+    note: Standing per-row checkpoint; one authorization covers one row.
+
+  - id: checkpoint.CP-4
+    kind: checkpoint
+    title: ORB lifecycle B-13 and state-classification contract
+    status: CLOSED
+    since: 2026-09-27
+    owner: ../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27
+    next: null
+    next_actor: none
+
+  - id: checkpoint.CP-5
+    kind: checkpoint
+    title: Accept T09 gates B–D
+    status: OPEN
+    since: 2026-09-27
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken
+    next: Accept gates B–D using commissioning traces, H3/H4 and the allocation map
+    next_actor: operator
+
+  - id: checkpoint.CP-6
+    kind: checkpoint
+    aliases: [F1]
+    title: Freeze / F1
+    status: OPEN
+    since: 2026-10-01
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken
+    next: Freeze once the feed later-binding rule, RC-4, K3, Q9 and the full behavior inventory are in
+    next_actor: operator
+
+  - id: checkpoint.CP-7
+    kind: checkpoint
+    aliases: [O-4]
+    title: Feed funding
+    status: OPEN
+    since: 2026-10-02
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken
+    next: May open after T00 GO-evidence, a bound equivalence spec and A9-PREP
+    next_actor: operator
+    note: Provider-neutral preparation is authorized now. CP-7's grant covers only the provider adapter and shadow collection with emission off; trading use keeps its own gates (decision sheet C).
+
+  - id: checkpoint.CP-8
+    kind: checkpoint
+    title: Production host provisioning and spend
+    status: OPEN
+    since: 2026-09-27
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken
+    next: null
+    next_actor: none
+    note: Not yet reachable; carries T11 host-sizing items from S5.
+
+  - id: checkpoint.CP-9
+    kind: checkpoint
+    title: Deployment GO and one attended session
+    status: OPEN
+    since: 2026-09-27
+    owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken
+    next: null
+    next_actor: none
+    note: Not yet reachable; needs the T16 candidate, H10 rehearsal and fresh B7/n3.

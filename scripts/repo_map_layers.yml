@@ -38,6 +38,7 @@ scripts_layer:
   verify_lock_anchors: governance
   sync_pine_to_worktree: governance
   sync_skills: governance
+  track_b_register: governance
   # lab — research
   mc_user_guardian: lab
   beta_cohesion_read: lab
