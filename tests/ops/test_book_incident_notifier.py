@@ -1346,3 +1346,175 @@ def test_late_completion_never_duplicates_delivery_or_regresses_a_job(tmp_path, 
     notifier.run_once()
     assert len(hung.calls) == 2 and _kinds(notifier, key)[-2:] == [
         ("attempt", "primary"), ("delivery_failed", "primary")]
+
+
+# -- Relay re-review P2 on #628 (2026-10-03): job-state invariants J0-J5 (card §0.8) ---------
+
+_LATE_DELIVERED = PublishResult("accepted", delivered=True, evidence_digest="c" * 64)
+
+
+def _wait_for(predicate, seconds=10.0):
+    deadline = time.monotonic() + seconds
+    while not predicate() and time.monotonic() < deadline:
+        time.sleep(0.01)
+    return predicate()
+
+
+class _ReceiptFor(FakeChannel):
+    """Publishing ``source`` first records a provider receipt for ``target``: another queued
+    job is delivered while this publish is in flight."""
+
+    def __init__(self, name, source, target, outcomes=()):
+        super().__init__(name, outcomes)
+        self.source, self.target, self.notifier = source, target, None
+
+    def publish(self, idempotency_key, payload):
+        if idempotency_key == self.source:
+            self.notifier.record_delivery(self.target, self.name, "d" * 64)
+        return super().publish(idempotency_key, payload)
+
+
+class _LateDuringOther(FakeChannel):
+    """The relay reviewer's probe. ``late``'s first publish hangs past its timeout and returns
+    delivery evidence; ``other``'s next publish releases it and waits until that late outcome
+    is recorded, so the late completion lands while ``other`` is publishing."""
+
+    def __init__(self, name, other, late):
+        super().__init__(name)
+        self.other, self.late, self.late_thread = other, late, None
+
+    def publish(self, idempotency_key, payload):
+        self.calls.append((idempotency_key, dict(payload)))
+        if idempotency_key == self.late and self.late_thread is None:
+            self.late_thread = threading.current_thread()
+            self._released.wait(10)
+            return _LATE_DELIVERED
+        if idempotency_key == self.other and self.late_thread is not None:
+            self.release()
+            self.late_thread.join(10)
+        return REJECTED if idempotency_key == self.other else ACCEPTED
+
+
+def test_review_probe_late_completion_of_a_snapshotted_job_is_never_republished(tmp_path):
+    """Relay re-review P2 on #628. At 1d7bf96, job B, delivered by a late completion while job A
+    published, was republished from the stale ``publish_due`` snapshot: detected, attempt,
+    delivery_failed, all_channels_lost, late_outcome, delivered, attempt, provider_accepted."""
+    account, (other, late) = _incidents(tmp_path, 2)
+    clock = Clock(NOW + timedelta(minutes=1))
+    channel = _LateDuringOther("primary", other, late)
+    notifier = _notifier(tmp_path, account, channel, clock=clock,
+                         config=_config("primary", timeout=1.0, initial=5))
+    try:
+        notifier.run_once()  # A is rejected; B hangs past its timeout
+        clock.advance(5)
+        notifier.run_once()  # A's publish lands B's late delivery; B is still in the snapshot
+    finally:
+        channel.release()
+    assert [kind for kind, _ in _kinds(notifier, late)] == [
+        "detected", "attempt", "delivery_failed", "all_channels_lost", "late_outcome", "delivered"]
+    assert [call[0] for call in channel.calls] == [other, late, other]
+    assert [job["state"] for job in notifier.jobs()] == ["pending", "delivered"]
+
+
+def test_j0_one_round_runs_at_a_time(tmp_path, hanging):
+    """J0: ``publish_due`` holds the round lock across its snapshot and its rounds, so a second
+    caller cannot run a round beside one in flight. At 1d7bf96 it published the same job on
+    the next channel."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    primary, secondary = hanging("primary", DELIVERED), FakeChannel("secondary")
+    notifier = _notifier(tmp_path, account, primary, secondary,
+                         config=_config("primary", "secondary", timeout=10.0))
+    notifier.poll()
+    rounds = [threading.Thread(target=notifier.publish_due) for _ in range(2)]
+    rounds[0].start()
+    assert _wait_for(lambda: primary.calls)
+    rounds[1].start()
+    _wait_for(lambda: secondary.calls or len(primary.calls) > 1, seconds=0.5)
+    primary.release()
+    for thread in rounds:
+        thread.join(10)
+    assert [call[0] for call in primary.calls + secondary.calls] == [key]
+    assert [kind for kind, _ in _kinds(notifier, key)] == [
+        "detected", "attempt", "provider_accepted", "delivered"]
+
+
+def test_j1_poll_never_rewrites_an_existing_job(tmp_path):
+    """J1: creation is ``INSERT OR IGNORE``. A later poll neither reopens a delivered job nor
+    resets a pending job's rounds, backoff or channel loss, and records no second detection."""
+    account, _keys = _incidents(tmp_path, 2)
+    notifier = _notifier(tmp_path, account, FakeChannel("primary", [DELIVERED, REJECTED]),
+                         clock=Clock(NOW + timedelta(minutes=1)))
+    notifier.run_once()
+    jobs, events = notifier.jobs(), notifier.events()
+    assert [(job["state"], job["rounds"], job["channels_lost"]) for job in jobs] == [
+        ("delivered", 1, False), ("pending", 1, True)]
+    assert notifier.poll() == ()
+    assert (notifier.jobs(), notifier.events()) == (jobs, events)
+
+
+def test_j2_admission_skips_a_job_closed_after_the_snapshot(tmp_path):
+    """J2: a job delivered after the ``publish_due`` snapshot, here by a receipt recorded while
+    another job publishes, gets no attempt, no refusal and no publish."""
+    account, (first, second) = _incidents(tmp_path, 2)
+    channel = _ReceiptFor("primary", first, second, [REJECTED])
+    channel.notifier = notifier = _notifier(tmp_path, account, channel,
+                                            clock=Clock(NOW + timedelta(minutes=1)))
+    notifier.run_once()
+    assert [call[0] for call in channel.calls] == [first]
+    assert _kinds(notifier, second) == [("detected", None), ("delivered", "primary")]
+    assert [job["state"] for job in notifier.jobs()] == ["pending", "delivered"]
+
+
+@pytest.mark.parametrize("outcome, kind", [(REJECTED, "delivery_failed"),
+                                           (DELIVERED, "provider_accepted")],
+                         ids=["failed-round", "delivered"])
+def test_j3_round_close_writes_no_round_state_for_a_job_closed_mid_publish(tmp_path, outcome,
+                                                                          kind):
+    """J3: the round close re-reads the job. A job closed while its publish was in flight gets
+    the outcome as evidence only: no second ``delivered``, no ``all_channels_lost`` and no
+    change to rounds, backoff or channel loss."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    channel = _Receipting("primary", [outcome])
+    channel.notifier = notifier = _notifier(tmp_path, account, channel)
+    notifier.poll()
+    (before,) = notifier.jobs()
+    notifier.publish_due()
+    assert notifier.jobs() == (dict(before, state="delivered"),)
+    assert _kinds(notifier, key) == [("detected", None), ("attempt", "primary"),
+                                     ("delivered", "primary"), (kind, "primary")]
+
+
+def test_j4_late_outcome_is_evidence_and_closes_only_a_pending_job(tmp_path, hanging):
+    """J4: a late outcome appends ``late_outcome``. Its delivery evidence closes a job only
+    while the job is pending, so a job delivered meanwhile gets no second ``delivered``."""
+    account = _operator(tmp_path)
+    key = incident_key(account.incidents[0]["incident_id"])
+    hung = hanging("primary", _LATE_DELIVERED)
+    notifier = _notifier(tmp_path, account, hung, config=_config("primary", timeout=_PUBLISH_S))
+    notifier.run_once()
+    notifier.record_delivery(key, "primary", "f" * 64)
+    jobs, events = notifier.jobs(), notifier.events()
+    hung.settle()
+    assert notifier.jobs() == jobs
+    assert notifier.events()[:-1] == events
+    assert _kinds(notifier, key)[-1] == ("late_outcome", "primary")
+
+
+def test_j5_record_delivery_closes_a_pending_job_once(tmp_path):
+    """J5: out-of-band evidence closes a pending job and keeps its round state. On a delivered
+    job it writes nothing, and an unknown key raises and writes nothing."""
+    account, (closed, owed) = _incidents(tmp_path, 2)
+    notifier = _notifier(tmp_path, account, FakeChannel("primary", [DELIVERED, REJECTED]),
+                         clock=Clock(NOW + timedelta(minutes=1)))
+    notifier.run_once()
+    jobs, events = notifier.jobs(), notifier.events()
+    notifier.record_delivery(closed, "primary", "f" * 64)
+    with pytest.raises(ValueError):
+        notifier.record_delivery("0" * 64, "primary", "f" * 64)
+    assert (notifier.jobs(), notifier.events()) == (jobs, events)
+    notifier.record_delivery(owed, "primary", "f" * 64)
+    assert notifier.jobs() == (jobs[0], dict(jobs[1], state="delivered"))
+    assert [(row["incident_key"], row["kind"]) for row in notifier.events()[len(events):]] == [
+        (owed, "delivered")]

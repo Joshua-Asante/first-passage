@@ -24,6 +24,12 @@ its daemon thread, never killed. A (job, channel) pair holds at most one live pu
 pairs together at most ``MAX_OUTSTANDING_PUBLISHES``. A refused channel fails for the round.
 A late outcome is appended as evidence under the same closing guard as ``record_delivery``.
 
+Job state (card §0.8, relay re-review P2 on #628): a job is ``pending`` until delivered, and
+delivered is terminal. Every writer re-reads the job through ``_pending`` inside the transaction
+that writes; only ``_transition`` updates a job after ``poll`` creates it, and one round runs at
+a time. A job that is not pending gets nothing but evidence: no attempt, no publish, no round
+state and no second ``delivered``.
+
 Out of this build (card §8): any concrete provider binding, the 60 s alternate-channel
 escalation, acting on ``ALL_CHANNELS_LOST``, the external heartbeat and attendance.
 """
@@ -273,6 +279,7 @@ class IncidentNotifier:
         self._clock = clock
         self._last_loop_at = None
         self._publish_lock = threading.Lock()
+        self._round_lock = threading.Lock()  # J0: one round at a time
         self._publishes = {}  # (incident key, channel name) -> Event set when the publish ends
         fault = self._journal_fault()
         now = self._now() if fault else None
@@ -438,69 +445,93 @@ class IncidentNotifier:
         return self._last_loop_at
 
     def publish_due(self):
-        now = self._now()
-        with self._journal() as db:
-            due = db.execute("SELECT incident_key, reason, detected_at, rounds, next_attempt_at "
-                             "FROM jobs WHERE state='pending' ORDER BY rowid").fetchall()
-        for key, reason, detected_at, rounds, next_at in due:
-            if datetime.fromisoformat(next_at) <= now:
-                self._publish_round(key, reason, detected_at, rounds, now)
+        """One round per due pending job, one round at a time (card §0.8 J0).
 
-    def _publish_round(self, key, reason, detected_at, rounds, now):
-        payload = {"kind": "book_incident", "idempotency_key": key, "reason": reason,
-                   "detected_at": detected_at}
-        assert_no_secrets(payload)
-        accepted = delivered = False
-        for position, channel in enumerate(self._channels, 1):
-            # A refused channel sends nothing, so it records its refusal instead of an attempt
-            # and fails for this round (ALL_CHANNELS_LOST counts it) without waiting.
-            refused = self._refusal(key, channel)
-            if refused is None:
-                with self._journal() as db:
-                    self._event(db, key, "attempt", channel.name, now)
-                result, failure = self._bounded_publish(channel, key, payload)
-            else:
-                result, failure = None, refused
-            delivers = CHANNEL_KINDS[channel.kind][1]
-            # The outcome that ends the round commits with the job update, so a crash can never
-            # leave a durable delivered event on a job still due for republish. A job closed by
-            # record_delivery while the publish was in flight keeps its state: the outcome is
-            # appended as evidence only and the round ends.
+        The snapshot only nominates jobs: each channel's admission re-reads the job (J2), so a
+        job closed after the snapshot, by any writer, is skipped and never republished.
+        """
+        with self._round_lock:
+            now = self._now()
             with self._journal() as db:
-                state, lost = db.execute(
-                    "SELECT state, channels_lost FROM jobs WHERE incident_key=?", (key,)).fetchone()
-                closed = state == "delivered"
-                if refused:
-                    self._event(db, key, refused, channel.name, now)
-                elif result is None or result.state != "accepted":
+                due = db.execute("SELECT incident_key, reason, detected_at, next_attempt_at "
+                                 "FROM jobs WHERE state='pending' ORDER BY rowid").fetchall()
+            for key, reason, detected_at, next_at in due:
+                if datetime.fromisoformat(next_at) <= now:
+                    self._publish_round(key, {"kind": "book_incident", "idempotency_key": key,
+                                              "reason": reason, "detected_at": detected_at}, now)
+
+    def _publish_round(self, key, payload, now):
+        assert_no_secrets(payload)
+        for position, channel in enumerate(self._channels, 1):
+            last = position == len(self._channels)
+            # Admission (J2): the job must still be pending in the transaction that writes its
+            # attempt or refusal, or nothing is recorded and the round ends. A refused channel
+            # sends nothing and fails for the round (ALL_CHANNELS_LOST counts it).
+            with self._journal() as db:
+                job = self._pending(db, key)
+                if job is None:
+                    return
+                refused = self._refusal(key, channel)
+                self._event(db, key, refused or "attempt", channel.name, now)
+                if refused and last:
+                    self._transition(db, key, job, now, round_accepted=False)
+            if refused:
+                continue
+            result, failure = self._bounded_publish(channel, key, payload)
+            delivers = CHANNEL_KINDS[channel.kind][1]
+            accepted = delivers and result is not None and result.state == "accepted"
+            # Close (J3): the outcome is always evidence. Round state and delivery go through
+            # _transition, which writes nothing for a job closed while this publish was in
+            # flight; a crash can never leave a delivered event on a job still due.
+            with self._journal() as db:
+                if result is None or result.state != "accepted":
                     self._event(db, key, "delivery_failed", channel.name, now,
                                 outcome=failure or result.state)
-                elif not delivers:
-                    self._event(db, key, "local_evidence", channel.name, now,
-                                evidence_digest=result.evidence_digest)
                 else:
-                    self._event(db, key, "provider_accepted", channel.name, now,
-                                evidence_digest=result.evidence_digest)
-                    accepted, delivered = True, result.delivered
-                    if delivered and not closed:
-                        self._event(db, key, "delivered", channel.name, now,
-                                    evidence_digest=result.evidence_digest)
-                if not closed and (accepted or position == len(self._channels)):
-                    self._close_round(db, key, rounds + 1, lost, accepted, delivered, now)
-            if accepted or closed:
-                break
+                    self._event(db, key, "provider_accepted" if delivers else "local_evidence",
+                                channel.name, now, evidence_digest=result.evidence_digest)
+                if accepted or last:
+                    self._transition(db, key, self._pending(db, key), now,
+                                     round_accepted=accepted,
+                                     delivered=(channel.name, result.evidence_digest)
+                                     if accepted and result.delivered else None)
+            if accepted:
+                return
 
-    def _close_round(self, db, key, rounds, lost, accepted, delivered, now):
-        delay = min(self.config.retry_initial_s * 2 ** min(rounds - 1, 62), self.config.retry_max_s)
-        if not accepted and not lost:
-            self._event(db, key, "all_channels_lost", None, now, condition="ALL_CHANNELS_LOST")
-        elif accepted and lost:
-            self._event(db, key, "channels_restored", None, now)
-        db.execute("UPDATE jobs SET state=?, next_attempt_at=?, rounds=?, channels_lost=? "
+    @staticmethod
+    def _pending(db, key):
+        """The job guard (card §0.8), read in the caller's write transaction: the pending job's
+        ``(rounds, channels_lost)``, or None for a delivered or unknown job."""
+        return db.execute("SELECT rounds, channels_lost FROM jobs WHERE incident_key=? "
+                          "AND state='pending'", (key,)).fetchone()
+
+    def _transition(self, db, key, job, now, *, round_accepted=None, delivered=None):
+        """The only job update after ``poll`` creates it, in the caller's transaction.
+
+        ``job`` is ``_pending``'s row from that transaction; None writes nothing, so delivered
+        is terminal. ``delivered`` is ``(channel, evidence_digest)`` and writes the job's one
+        ``delivered`` event. ``round_accepted`` closes a round (rounds, backoff, channel loss)
+        from the re-read row; None (a late outcome, ``record_delivery``) keeps round state.
+        """
+        if job is None:
+            return
+        rounds, lost = job
+        next_at = None
+        if delivered is not None:
+            self._event(db, key, "delivered", delivered[0], now, evidence_digest=delivered[1])
+        if round_accepted is not None:
+            rounds += 1
+            delay = min(self.config.retry_initial_s * 2 ** min(rounds - 1, 62),
+                        self.config.retry_max_s)
+            if not round_accepted and not lost:
+                self._event(db, key, "all_channels_lost", None, now, condition="ALL_CHANNELS_LOST")
+            elif round_accepted and lost:
+                self._event(db, key, "channels_restored", None, now)
+            lost, next_at = int(not round_accepted), (now + timedelta(seconds=delay)).isoformat()
+        db.execute("UPDATE jobs SET state=?, rounds=?, channels_lost=?, "
+                   "next_attempt_at=COALESCE(?, next_attempt_at) "
                    "WHERE incident_key=? AND state='pending'",
-                   ("delivered" if delivered else "pending",
-                    (now + timedelta(seconds=delay)).isoformat(), rounds,
-                    0 if accepted else 1, key))
+                   ("pending" if delivered is None else "delivered", rounds, lost, next_at, key))
 
     def _refusal(self, key, channel):
         """Why ``channel`` may not start a publish for ``key`` now, or None.
@@ -560,9 +591,9 @@ class IncidentNotifier:
         """Append the outcome of a publish that outlived its timeout, as evidence only.
 
         Rounds, backoff and channel loss stay the round's. Delivery evidence closes a pending
-        job through ``_deliver``; a closed job gets no second ``delivered``. A journal failure
-        is swallowed, since a daemon thread must not raise: the job stays as it was and the
-        next round republishes under the same key.
+        job through ``_transition`` (J4); a closed job gets no second ``delivered``. A journal
+        failure is swallowed, since a daemon thread must not raise: the job stays as it was and
+        the next round republishes under the same key.
         """
         try:
             now = self._now()
@@ -573,24 +604,15 @@ class IncidentNotifier:
                                 delivered=result is not None and result.delivered,
                                 evidence_digest=None if result is None else result.evidence_digest)
                     if result is not None and result.delivered and CHANNEL_KINDS[channel.kind][1]:
-                        self._deliver(db, key, channel.name, now, result.evidence_digest)
+                        self._transition(db, key, self._pending(db, key), now,
+                                         delivered=(channel.name, result.evidence_digest))
         except Exception:  # noqa: BLE001 - see the docstring
             pass
-
-    def _deliver(self, db, key, channel, now, evidence_digest):
-        """The closing guard, in the caller's transaction: one ``delivered`` event per job and
-        never a reopen. Returns the job's prior state, or None for an unknown key."""
-        row = db.execute("SELECT state FROM jobs WHERE incident_key=?", (key,)).fetchone()
-        if row is not None and row[0] != "delivered":
-            db.execute("UPDATE jobs SET state='delivered' WHERE incident_key=? AND state='pending'",
-                       (key,))
-            self._event(db, key, "delivered", channel, now, evidence_digest=evidence_digest)
-        return None if row is None else row[0]
 
     def record_delivery(self, key, channel, evidence_digest):
         """Append out-of-band delivery evidence (e.g. a provider receipt) and close the job.
 
-        Idempotent: a job that is already delivered gets no second ``delivered`` event.
+        Idempotent (J5): a job that is already delivered gets no second ``delivered`` event.
         """
         if channel not in {item.name for item in self._channels if CHANNEL_KINDS[item.kind][1]}:
             raise ValueError("unknown or non-delivering channel")
@@ -598,8 +620,10 @@ class IncidentNotifier:
             raise ValueError("evidence digest must be a sha256 hex digest")
         now = self._now()
         with self._journal() as db:
-            if self._deliver(db, key, channel, now, evidence_digest) is None:
+            if db.execute("SELECT 1 FROM jobs WHERE incident_key=?", (key,)).fetchone() is None:
                 raise ValueError("unknown incident key")
+            self._transition(db, key, self._pending(db, key), now,
+                             delivered=(channel, evidence_digest))
 
     # -- reads -----------------------------------------------------------------------------
 

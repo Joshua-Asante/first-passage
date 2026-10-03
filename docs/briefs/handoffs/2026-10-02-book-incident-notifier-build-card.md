@@ -95,11 +95,11 @@ Amended 2026-10-03 by coordinator (3) for relay review P2 on #628 (Codex coordin
 
 **Finding.** At `0bd5867` every retry started a new daemon thread while publishes that had timed out kept running. A permanently hung channel therefore accumulated threads without bound while `liveness()` kept refreshing, which threatened the healthy channels. The reviewer's probe: 12 retries left 12 live publishing threads.
 
-**Rule** (`ops/c1_rail/book_incident_notifier.py`, `_refusal`, `_bounded_publish`, `_record_late`, `_deliver`):
+**Rule** (`ops/c1_rail/book_incident_notifier.py`, `_refusal`, `_bounded_publish`, `_record_late`, `_transition`):
 - **Per pair.** A (job, channel) pair holds at most one live publish. While it runs, that channel records `publish_in_flight` instead of an `attempt`, without waiting, and the round moves to the next channel.
 - **Global.** At most `MAX_OUTSTANDING_PUBLISHES = 8` live publishes in total, with one slot reserved for each other channel that has no live publish. A publish that does not fit records `publish_capacity_exhausted`. When all 8 slots are live, no channel is idle, so every remaining channel in the round is refused.
 - **Round outcome.** Both refusals count as a failed channel, so a round with no delivering acceptance records `ALL_CHANNELS_LOST` as before.
-- **Threads.** No thread is killed. Each stays a daemon thread, so the process can exit, and it ends when its channel returns. A late return appends `late_outcome` {`outcome`, `delivered`, `evidence_digest`}. Delivery evidence on a delivering channel closes a still-pending job through the closing guard that `record_delivery` also uses (`_deliver`: one `delivered` per job, `UPDATE … AND state='pending'`). A closed job gets no second `delivered`. Rounds, backoff and `channels_lost` stay the round's.
+- **Threads.** No thread is killed. Each stays a daemon thread, so the process can exit, and it ends when its channel returns. A late return appends `late_outcome` {`outcome`, `delivered`, `evidence_digest`}. Delivery evidence on a delivering channel closes a still-pending job through the closing guard that `record_delivery` also uses (`_transition` after `_pending`; §0.8 J4). A closed job gets no second `delivered`. Rounds, backoff and `channels_lost` stay the round's.
 
 **Why 8.**
 - **Floor.** The reservation needs one slot per configured channel, so `NotifierConfig` refuses more than 8 channels. The D-MON shapes (PR #606) bind a primary and an alternate, plus an optional local evidence channel: two or three channels.
@@ -107,6 +107,43 @@ Amended 2026-10-03 by coordinator (3) for relay review P2 on #628 (Codex coordin
 - **Ceiling.** Eight parked daemon threads are a fixed and negligible cost. At `0bd5867`, a single hung pair grew by one thread per round: up to 120 an hour at the 30 s backoff cap.
 
 **Reservation (for acceptance).** The dispatch asked for "a small global cap". A plain cap would let one hung channel take all 8 slots across 8 incidents, for example after a journal rebuild re-owes every incident. It would then refuse the healthy channel for every later incident while those threads live, which is the starvation this P2 names. The reservation prevents that (T22). Dropping it is a one-term change in `_refusal`.
+
+## §0.8 — Job-state invariants (relay re-review P2 on #628), 2026-10-03
+
+Amended 2026-10-03 for relay re-review P2 on #628, per the fold dispatch. This is the third concurrency finding on the job lifecycle, after the round-close transaction and the bounded publishes, so the job-state discipline is rebuilt from the invariants below rather than patched at the reported path.
+
+**Finding.** At `1d7bf96`, `publish_due` snapshotted the pending jobs and `_publish_round` wrote `attempt` without re-reading the job. A late completion delivered queued job B while job A was publishing, and the stale snapshot then republished B: `detected → attempt → delivery_failed → all_channels_lost → late_outcome → delivered → attempt → provider_accepted`. A resolved incident could page again.
+
+**States.** `pending` → `delivered`, and `delivered` is terminal. A failed round leaves the job `pending`. Events are evidence and may be appended in either state.
+
+**Discipline** (`ops/c1_rail/book_incident_notifier.py`).
+- **One guard.** `_pending(db, key)` returns the pending job's `(rounds, channels_lost)`, or None for a delivered or unknown job. Every job writer calls it inside the transaction that writes.
+- **One transition.** `_transition(db, key, job, now, …)` is the only job update after `poll` creates the row. With `job` None it writes nothing. Its `UPDATE … AND state='pending'` restates the guard in SQL. `_deliver` and `_close_round` are removed.
+- **Effect.** A job that is not pending gets only evidence: no attempt, publish, refusal, round state or second `delivered`.
+
+| Row | Writer | Transition | Invariant | Guarded transition | Test (violates only this row) |
+|---|---|---|---|---|---|
+| J0 | Round loop (`publish_due`) | — | One round runs at a time per notifier. The snapshot is taken inside it, so it only nominates jobs | `_round_lock`, held across the snapshot and every round | `test_j0_one_round_runs_at_a_time` |
+| J1 | Poll and rebuild | absent → `pending` | One job per committed incident key, created `pending`. Creation never rewrites a row: it does not reopen a delivered job, does not reset rounds, backoff or channel loss, and records no second `detected`. A rebuild only renames a faulty journal aside (§0.6), and the next poll re-creates each owed job `pending` | `poll`: `INSERT OR IGNORE INTO jobs` | `test_j1_poll_never_rewrites_an_existing_job` |
+| J2 | Round admission | none (evidence only) | An `attempt` (and so a publish) or a refusal is written only for a job that `_pending` reads as pending in the transaction that writes it. Otherwise nothing is recorded and that job's round ends | Admission transaction in `_publish_round`: `_pending`, then `attempt` or the refusal. A refused last channel closes through `_transition` in the same transaction | `test_j2_admission_skips_a_job_closed_after_the_snapshot`; regression `test_review_probe_late_completion_of_a_snapshotted_job_is_never_republished` |
+| J3 | Round close | `pending` → `pending` (failed round) or `pending` → `delivered` | Rounds, backoff, channel loss, `all_channels_lost`/`channels_restored` and the round's `delivered` are written only for a job that is pending in the closing transaction, from the row re-read there. Otherwise the outcome is evidence only | Close transaction: `_transition(…, _pending(…), round_accepted=…)` | `test_j3_round_close_writes_no_round_state_for_a_job_closed_mid_publish[failed-round, delivered]` |
+| J4 | Late-outcome thread | `pending` → `delivered` | A late outcome appends `late_outcome` and writes no attempt and no round state. Its delivery evidence closes the job only while the job is pending | `_record_late`: `_transition(…, _pending(…), delivered=…)` | `test_j4_late_outcome_is_evidence_and_closes_only_a_pending_job` |
+| J5 | `record_delivery` | `pending` → `delivered` | Out-of-band evidence closes a pending job once and keeps its round state. A delivered job gets nothing; an unknown key raises and writes nothing | `record_delivery`: `_transition(…, _pending(…), delivered=…)` | `test_j5_record_delivery_closes_a_pending_job_once` |
+
+`delivered` is terminal because J1 cannot rewrite a row and J2–J5 write nothing to a job that `_pending` does not return. That property has no test of its own.
+
+**Evidence.**
+- **Red at `1d7bf96`:** the probe, J0 and J2.
+- **Guards the base already had:** J1 (`INSERT OR IGNORE`), J3 (the round-close guard) and J4, J5 (`_deliver`). Each is shown red by a planted in-memory mutant at the head.
+- **Mutant isolation:** removing one row's guard reds that row's test and no other row's test.
+  - M0 (no `_round_lock`) → J0.
+  - M1 (`INSERT OR REPLACE`) → J1, plus the probe and every earlier test that polls twice.
+  - M2 (admission unguarded) → J2 and the probe.
+  - M3 (close unguarded) → J3.
+  - M4 (late outcome unguarded) → J4.
+  - M5 (`record_delivery` unguarded) → J5.
+
+**Residual.** By design, admission and the publish are separate transactions: the journal is never held across a provider call. A delivery recorded after a channel's admission commits cannot recall that one publish, and its outcome is then evidence only (J3). The window is one in-flight publish per (job, channel), not the round's whole snapshot. J0 holds within one process. Two processes on one journal are host wiring (§8).
 
 ## §1 — Goal, scope, prerequisites
 
@@ -237,6 +274,8 @@ Tests live in `tests/ops/test_book_incident_notifier.py`. Each uses a real `Book
 Amended 2026-10-03 by coordinator (3) for the :61 outbox ruling: T14–T18 added. T15, T16 `[deleted]` and `test_unavailable_journal_is_not_moved_aside` already pass at 60ba482: they pin a property the base had, or guard the new move-aside. T15's red is a planted on-disk mutant, recorded in the executor return.
 
 Amended 2026-10-03 by coordinator (3) for relay review P2 on #628: T19–T23 added, each red at `0bd5867`. `test_record_delivery_during_round_is_not_downgraded[timeout]` now joins its timed-out publish before reading and expects its `late_outcome`.
+
+Amended 2026-10-03 for relay re-review P2 on #628, per the fold dispatch: §0.8's J0–J5 tests and the probe regression are added. Each is red at `1d7bf96` or by a planted mutant (§0.8 *Evidence*). T1–T23 are unchanged.
 
 **Return taxonomy.**
 - DONE: every red-first test recorded red at base and green at head; §7 regression, `test-ops` and `check` green with records cited; diff inside §5.
