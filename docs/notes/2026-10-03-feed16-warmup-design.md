@@ -1,6 +1,6 @@
 # FEED-16: adapter warm-up from provider history, with a live-only fallback
 
-**Status:** PROPOSED design, returned to coordinator (3) for acceptance, 2026-10-03. Provider-neutral preparation under the 2026-10-02 CP-7 grant ([checklist CP-7](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) `:500`). It dispatches no implementation, binds no spec item and edits no owner. Folded 2026-10-03 for coordinator (3)'s review of `bf3c880` (three P2s and six P3s); the status stays PROPOSED.
+**Status:** PROPOSED design, returned to coordinator (3) for acceptance, 2026-10-03. Provider-neutral preparation under the 2026-10-02 CP-7 grant ([checklist CP-7](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) `:500`). It dispatches no implementation, binds no spec item and edits no owner. Folded 2026-10-03 for coordinator (3)'s review of `bf3c880` (three P2s and six P3s); the status stays PROPOSED. Folded again 2026-10-03 for the round-2 recheck (one P2 and two coordinator items, ruled by coordinator (3)); the status stays PROPOSED.
 **Authority and sequencing.** This note runs nothing. Test W-1 (§6) runs the private ports, which §60 does not grant ("Reading is not authority", rule 4). W-1 runs only after the T00 step-2 pre-registration ([#581](https://github.com/Joshua-Asante/first-passage/pull/581)) is frozen, never before, and only under a coordinator dispatch that names it. The four ports are T00's declared screened set (OD-2), so running them from the panel origin before that freeze could contaminate the pre-registration.
 **Ruling served:** operator, 2026-10-02 (sitting 2), FEED-16: warm-up comes from provider history (Q11); the history-to-live seam is checked in the shadow window; live-only is the fallback. The design is due before shadow collection, with a hard stop at T16. The ruling's record at checklist T14 Checkpoint (`:286`) travels in coordinator (2)'s batch PR and is not on `main` yet.
 **Owners (Rule 7):**
@@ -10,7 +10,7 @@
 - A9-PREP ([#619](https://github.com/Joshua-Asante/first-passage/pull/619), head `77373bd`, open) for the live `BarSource` contract;
 - the [umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) TB-S3 (H) (`:563`) and TB-W1 for restart and warm-up depth.
 
-**Citation keys.** `path:line` is `origin/main` at `1a350ec`. "Spec" is the frozen spec; "packet" is #617's note; "contract" is `ops/c1_signal_daemon/bar_source_contract.py` at #619 `77373bd`; "inventory" is the private TB-W1 inventory `ops/c1_signal_daemon/ports/TB-W1_warmup_inventory_2026-09-12.md` (primary checkout, ignored root). Its SHA-256 is already on `main` at [coordinator dispatch 1](2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md) `:31`; that pin is cited here and not repeated. **Read basis.** The inventory is neither a Pine source nor a port, so it is not one of the `BOOK_SOURCES.sha256` files, and neither §60 nor §59's no-read clause (which covers ports only) governs it. It is an agent lane's own private output (umbrella TB-W1 row, `:225`, "Astra local"). It was read in place for depth structure only, under the public-clone rules: no value is reproduced. If the coordinator rules that the read needs a grant, the depth column in §2 falls back to "W-1 sets `D_leg`" with no inventory input.
+**Citation keys.** `path:line` is `origin/main` at `1a350ec`. "Spec" is the frozen spec; "packet" is #617's note; "contract" is `ops/c1_signal_daemon/bar_source_contract.py` at #619 `77373bd`; "inventory" is the private TB-W1 warm-up inventory. **Read basis (coordinator (3) ruling, 2026-10-03).** The inventory sits under `ports/` and is not on the `BOOK_SOURCES.sha256` private read list, so this note neither reads nor relies on it. Only its SHA-256 on `main` at [coordinator dispatch 1](2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md) `:31` is cited, and not repeated.
 
 ## 1. The problem
 
@@ -21,7 +21,7 @@
 
 ## 2. Depth: what each leg's adapter needs
 
-Depth is stated as behavior. The per-leg numbers are the inventory's (private); test W-1 (§6) confirms or extends them. No value appears here.
+Depth is stated as behavior. Test W-1 (§6) sets the per-leg depth; this note takes no input from the inventory. No value appears here.
 
 | State class (from the ports' structure) | What warm-up needs | Legs |
 |---|---|---|
@@ -29,10 +29,10 @@ Depth is stated as behavior. The per-leg numbers are the inventory's (private); 
 | Recursive indicator (EMA/RMA family; `pine_ta.py:8–:9`: EMA seeded with the first value, RMA with the SMA of the first `length`) | Never exact. The seed's weight decays as (1 − α)^D, so the depth is the point where decisions stop depending on the seed (W-1) | 6J, MYM, MGC |
 | Session-count history (ORB's opening-range volume history; public at `8c15f18:docs/notes/2026-09-26-orb-lifecycle-evidence.md:22`) | A count of prior sessions, each with a completed opening range. A short or empty history changes the volume filter's decision | MNQ |
 | Per-day state (trade-per-day latches, day P&L, halt flags) | None. It resets at the trading-day roll, before the session's first bar | all four |
-| Account state (equity, day-start equity, realised P&L) | Not from bars. It comes from the checkpoint or account path (inventory note; TB-S3 (H)), outside FEED-16 | 6J, MYM, MGC |
+| Account state (equity, day-start equity, realised P&L) | Not from bars. It comes from the checkpoint or account path (TB-S3 (H)), outside FEED-16 | 6J, MYM, MGC |
 | Position state | None. Every leg is flat at each session end (umbrella `:520` (G)), so warm-up runs with no fills | all four |
 
-**Depth per leg** `D_leg` = the inventory's recommended hold for that leg, as confirmed by W-1. The **fetch depth** is `D_leg` 15-minute bars counted back from the session open over the product's trading frame, plus whole sessions to cover holidays and early closes. It is not counted in calendar time.
+**Depth per leg** `D_leg` = the depth W-1 confirms for that leg. The **fetch depth** is `D_leg` 15-minute bars counted back from the session open over the product's trading frame, plus whole sessions to cover holidays and early closes. It is not counted in calendar time.
 
 **What the warm set contains.** Every trade-evidenced 15-minute bar in the product's electronic frame (Sunday–Friday 18:00–17:00 ET, daily break excluded), **including sessions the book's account calendar DENIES**. The canonical panel the adapters were qualified on carries those bars, and the runtime's bound-session filter does not apply to warm-up. Expected absences are taken from the ratified product-hours and holiday-halt rows ([Step 4](2026-09-15-packet1-step4-session-calendar.md) `:35–:39`), not from the account calendar.
 
@@ -74,6 +74,7 @@ U1 compares against the durable retained record (the owner's retained barriers, 
 This section is the **path-level** fallback. §5.1 handles a single session that fails while the history path is selected.
 
 - **Trigger.** Q11 shows no usable history; the history path fails its §6 shadow-window criteria; or a U1 failure de-selects it after selection.
+- **Production de-selection.** A U1 de-selection after T16 happens in production, where option A of §5.1 runs no collector. The method below then needs option B's record-only collector, whose cost owner is Q-8, under the Q-8 cap per the rail GO ADR 2026-10-02 addendum (coordinator (2) batch; pending merge). Without that collector the book **holds**, recorded as a blocker for the owner, until a collector is stood up and its retained span reaches `D_leg`. Choosing option A accepts this hold.
 - **Method.** A record-only collector (H8 §4, Stage S-1: no listener client, no B1 builder) keeps the live-delivered bars for all four legs across sessions, including account-DENIED sessions. The warm set is built from those retained live bars by the same `WarmSetBuilder`; only its source changes. Because those bars were delivered live, there is no history-to-live seam.
 - **Hold.** No session runs with emission until every leg's retained span reaches `D_leg` with no U2/U3 gap. A gap restarts that leg's span after it, because state built across a missing bar differs from the canonical state. Emission stays disabled through the hold under the existing layers (H8 §4: no sender, `effective_emit` False, `dry_run=true`, no arm). The hold's start, the gap restarts and its release are recorded.
 - **Cheapest route.** If the shadow collector keeps running from the window to T16 without a gap, its store is already the warm set, so no extra collection is needed.
@@ -85,15 +86,15 @@ In production, retained live bars exist only for bound sessions. They cover neit
 
 | Option | Rule | Cost and owner |
 |---|---|---|
-| **A (recommended for the first release)** | **Session held, not traded.** That session runs with emission disabled. The next session retries the history path from its own cutoff. The hold and its cause are recorded. | No new standing component |
-| B | A continuous record-only collector (H8 §4 Stage S-1) is a **standing production requirement**. It retains every frame slot for all four legs, so a failed session warms from retained live bars by the same `WarmSetBuilder` | A second always-on host process. Its spend is owned by the host-cost decision Q-8 ([host obligations](2026-09-27-host-obligations-assignment.md) `:287`), under the $500 cap that coordinator (3) cites in its ruling on this review (the cap's owner record is not on `main` at `1a350ec`) |
+| **A (recommended for the first release)** | **Session held, not traded.** That session runs with emission disabled. The next session retries the history path from its own cutoff. The hold and its cause are recorded. | No new standing component. A production U1 de-selection then holds the book until option B's collector is stood up and spans `D_leg` (§5) |
+| B | A continuous record-only collector (H8 §4 Stage S-1) is a **standing production requirement**. It retains every frame slot for all four legs, so a failed session warms from retained live bars by the same `WarmSetBuilder` | A second always-on host process. Its spend is owned by the host-cost decision Q-8 ([host obligations](2026-09-27-host-obligations-assignment.md) `:287`), under the Q-8 cap per the rail GO ADR 2026-10-02 addendum (coordinator (2) batch; pending merge) |
 
 Under option A, U7 can repeat on consecutive sessions. The repeat count is recorded, and a run of repeats is a reason to re-open option B. It does not change the path selection.
 
 ## 6. Acceptance tests
 
 **Offline, before any provider data** (canonical panels; private run on the primary checkout; digests and pass/fail only are recorded).
-- **W-1 Depth sufficiency.** *Sequencing: only after the #581 freeze, under a coordinator dispatch (see Authority and sequencing above).* For each leg and each sampled session start `s`: run A is the adapter from the panel origin with the emulator (the qualified run). Run B is a cold adapter warmed on the panel from `s − D_leg` to `s` through the production warm path (no fills), with account-state fields copied from A at `s`. Both then run session `s` with the emulator. PASS: identical intents in every sampled session. The sample is fixed before the run and covers Mondays, post-holiday sessions, post-switch sessions and early-close sessions. On a FAIL, `D_leg` is extended and the extension is recorded privately. The extended `D_leg` is then confirmed on a **held-out** sample of session starts, fixed before the rerun and disjoint from the first sample. Without that step the depth would be fitted to the sample that failed it. A held-out FAIL extends again and draws a new held-out sample. Run B with `D_leg` = 0 also shows what a cold start costs.
+- **W-1 Depth sufficiency.** *Sequencing: only after the #581 freeze, under a coordinator dispatch (see Authority and sequencing above).* For each leg and each sampled session start `s`: run A is the adapter from the panel origin with the emulator (the qualified run). The starting `D_leg` per leg is fixed in the dispatch that runs W-1, before the run. Run B is a cold adapter warmed on the panel from `s − D_leg` to `s` through the production warm path (no fills), with account-state fields copied from A at `s`. Both then run session `s` with the emulator. PASS: identical intents in every sampled session. The sample is fixed before the run and covers Mondays, post-holiday sessions, post-switch sessions and early-close sessions. On a FAIL, `D_leg` is extended and the extension is recorded privately. The extended `D_leg` is then confirmed on a **held-out** sample of session starts, fixed before the rerun and disjoint from the first sample. Without that step the depth would be fitted to the sample that failed it. A held-out FAIL extends again and draws a new held-out sample. Run B with `D_leg` = 0 also shows what a cold start costs.
 - **W-2 Roll stitch.** With a fake history transport serving dated contracts, a warm span across a canonical switch reproduces the stitched series under the selection object, and history from the other contract is refused (U4).
 
 **Unit tests, public** (`tests/ops/`, fake transports, no private inputs).
@@ -117,24 +118,25 @@ Under option A, U7 can repeat on consecutive sessions. The repeat count is recor
 ## 7. Freeze placement (for T10 phase 2)
 
 Warm-up decides what the adapters see, so it is freeze-affecting (checklist §5, `:506`; H8 §3 D, first bullet). Proposed for the F1 packet's later-binding rule:
-- **A.6 (frozen at F1):** this warm-up rule, meaning both paths, the warm-set content and stitching, U1–U8, durable storage of the warm-set bars, the hold, the per-session fallback option chosen in §5.1, `D_leg` by reference to the inventory digest, and the path-selection and de-selection criteria. The no-waiver clause is proposed for inclusion, not ruled.
+- **A.6 (frozen at F1):** this warm-up rule, meaning both paths, the warm-set content and stitching, U1–U8, durable storage of the warm-set bars, the hold, the per-session fallback option chosen in §5.1, `D_leg` by reference to the digest of W-1's private depth record, and the path-selection and de-selection criteria. The no-waiver clause is proposed for inclusion, not ruled.
 - **B.8 (after F1, under C):** the history endpoint, pacing and `HistoryTransport` module; and the path selection made by the frozen criteria.
 
 A change to any A.6 item after CP-6 voids the freeze inventory for the feed component, as for A.1–A.5.
 
 ## 8. Open for the coordinator
 
-1. **Inventory digest.** Closed: the SHA-256 is on `main` at coordinator dispatch 1 `:31`. If W-1 extends a leg's `D_leg`, the extension's private record is pinned by its own digest in the coordinator record.
+1. **Depth record.** `D_leg` is W-1's output. Its private record, including any extension, is pinned by its own digest in the coordinator record. The inventory's SHA-256 stays cited at coordinator dispatch 1 `:31` for identity only.
 2. **Account-state source.** Copying account state from run A in W-1 assumes that TB-S3 (H) supplies account state at the session start. TB-I3 owns that.
 3. **U1 scope.** Can a U1 latch on history also latch the live source of the same provider? The Q1 ruling covers forwarded live bars only. This note latches the history source only.
 4. **Cutoff value.** It is a frozen field, set from the S-2 measurement before CP-6 and never after data, or it is fixed now with a margin. The coordinator chooses which.
-5. **Per-session fallback.** Option A (recommended) or option B of §5.1. Option B needs a Q-8 host-cost decision first.
-6. **Inventory read.** Confirm the read basis in the citation keys, or rule that the inventory read needs a grant (then §2 drops the inventory input).
+5. **Per-session fallback.** Option A (recommended) or option B of §5.1. Option B needs a Q-8 host-cost decision first. Choosing option A accepts that a production U1 de-selection holds the book, recorded as a blocker for the owner, until option B's collector is stood up and spans `D_leg` (§5).
+6. **Inventory read.** Closed (coordinator (3), 2026-10-03): the inventory is not on the `BOOK_SOURCES.sha256` read list, so the note takes no input from it and cites only the on-main SHA (citation keys).
 
 ## 9. Verification
 
 - Worktree `claude/feed16-warmup-note` from `origin/main` `1a350ec`.
 - Read: spec (all); packet (all); H8 note §3–§5; `book_runtime.py:1–:120`, `:330–:420`; `book_protocol.py:1–:80`; `pine_ta.py` (structure); contract at `77373bd` (`:1–:140` and admission names); #619 body and fold comment; #583 note at `e732fb9` (Q11 and the eligibility screen); umbrella `:225`, `:514`, `:563`; scaling read `:120–:145`; checklist `:280–:289`, `:303–:314`, `:499–:506`.
-- Private reads, in place on the primary checkout under AGENTS.md's private read surface: the four accepted ports and the inventory, for state structure only. Nothing was copied, and no value or body text is reproduced here.
+- Private reads, in place on the primary checkout under AGENTS.md's private read surface: the four accepted ports, for state structure only. The first draft also read the inventory; under the round-2 ruling nothing from that read is relied on. Nothing was copied, and no value or body text is reproduced here.
 - No provider was contacted, and no data was fetched.
 - Fold, 2026-10-03: also read coordinator dispatch 1 `:29–:33`; `BOOK_SOURCES.sha256` (file list); campaign state §59 (`:3935–:3947`) and §60 (`:4042–:4066`); umbrella `:225`; `trust_domain.py:146`, `:158–:164`; allocation map `:138`; host obligations `:287`, `:332`; #581 title and body.
+- Fold 2, 2026-10-03: round-2 recheck FEED-16 section and coordinator (3) rulings; merged `origin/main` `8de2e63`; no new private reads.
