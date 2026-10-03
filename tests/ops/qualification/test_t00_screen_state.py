@@ -915,6 +915,61 @@ def test_check_record_caps_at_every_boundary():
     assert result.code is None and result.completed == frozenset(PLAN)
 
 
+BOTH_CAPS = {  # one record reaches the loss cap and the I/O cap at once (F8)
+    'crashed': ([Seg(2, stop=0, end='CRASHED', name_inflight=('IO_ERROR', None))] * 2
+                + [Seg(2, stop=0, end='CRASHED', name_inflight=('IO_ERROR', None),
+                       cap='RESOURCE_EXHAUSTED')], Seg(2, stop=0, end='OPEN')),
+    'ended': ([Seg(1, stop=0, end=IO_ERROR)] * 2
+              + [Seg(1, stop=0, end=('HALTED', 'RESOURCE_EXHAUSTED'), reasons=('IO_ERROR',))],
+              Seg(1, stop=0, end='OPEN')),
+}
+
+
+@pytest.mark.parametrize('form', sorted(BOTH_CAPS))
+def test_check_record_simultaneous_caps(form):
+    """Simultaneous caps (F8): one SEGMENT_CRASHED, or one SEGMENT_END, reaches both caps. It
+    carries RESOURCE_EXHAUSTED and folds to HALTED(IDLE); CONTINUE resets only the loss cap, so
+    cap_finding gives IO_EXHAUSTED; HALT{IO_EXHAUSTED, from IDLE} and a second CONTINUE follow,
+    and only then is SEGMENT_START legal."""
+    state, _ = modules()
+    capped, opened = BOTH_CAPS[form]
+    ledger, journals, _, _ = simulate(capped[:2])
+    assert state.cap_finding(ledger, journals, keys=PLAN) is None  # neither before the record
+    ledger, journals, m, acts = simulate(capped)
+    body = ledger[-1]['body']
+    assert (body.get('cap') or body.get('cause')) == 'RESOURCE_EXHAUSTED'
+    assert state.fold(ledger) == state.State('HALTED', 'IDLE')
+    assert check(ledger, journals, m, acts).code == 'RESOURCE_EXHAUSTED'
+    ledger, journals, m, acts = simulate(capped + [Act()])
+    assert state.fold(ledger) == state.State('IDLE')
+    assert state.cap_finding(ledger, journals, keys=PLAN) == 'IO_EXHAUSTED'
+    ledger, journals, m, acts = simulate(capped + [Act(), Halt('IO_EXHAUSTED'), Act(), opened])
+    assert state.fold(ledger) == state.State('RUNNING')
+    assert check(ledger, journals, m, acts).code is None
+
+
+@pytest.mark.parametrize('form', sorted(BOTH_CAPS))
+def test_check_record_interruption_between_continue_acts(form):
+    """Interruption between CONTINUE acts (F8). Stopped after the first CONTINUE, the run is
+    IDLE with IO_EXHAUSTED found: SEGMENT_START there is CORRUPTION and the HALT is legal.
+    Stopped after HALT{IO_EXHAUSTED}, it is HALTED(IDLE): SEGMENT_START is an IllegalTransition,
+    and CORRUPTION in check_record."""
+    state, _ = modules()
+    capped, opened = BOTH_CAPS[form]
+    first = capped + [Act()]
+    ledger, journals, m, acts = simulate(first)
+    assert state.fold(ledger) == state.State('IDLE')
+    assert check(ledger, journals, m, acts).code == 'IO_EXHAUSTED'
+    assert check(*simulate(first + [opened])).code == 'CORRUPTION'
+    ledger, journals, m, acts = simulate(first + [Halt('IO_EXHAUSTED')])  # the HALT is legal
+    assert state.fold(ledger) == state.State('HALTED', 'IDLE')
+    assert check(ledger, journals, m, acts).code == 'IO_EXHAUSTED'
+    k = sum(record['type'] == 'SEGMENT_START' for record in ledger) + 1
+    with pytest.raises(state.IllegalTransition):
+        state.advance(state.fold(ledger), event('SEGMENT_START', segment_start(k, opened.w)))
+    assert check(*simulate(first + [Halt('IO_EXHAUSTED'), opened])).code == 'CORRUPTION'
+
+
 def test_check_record_worker_append_failure():
     """F4: a worker whose append raised is named IO_ERROR in SEGMENT_END: that is an I/O-error
     segment for row S10, and its in-flight key is one loss."""
