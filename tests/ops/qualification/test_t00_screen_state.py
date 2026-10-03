@@ -18,6 +18,7 @@ import json
 import os
 import random
 import socket
+from types import MappingProxyType
 
 import pytest
 
@@ -1273,3 +1274,21 @@ def test_read_lock_refuses_stale_bytes(tmp_path):
     finally:
         os.close(fd)
     assert journal.read_lock(path) == (7, 'h')
+
+
+def test_module_globals_are_immutable():
+    """No t00_screen module keeps a mutable module-level global. Retained-source provenance
+    (``result_adjudication._verify_retained_executable_modules``) re-executes each loaded module
+    and compares its globals, so a global that a test or a run mutates breaks it. Constants are
+    str, int, tuple, frozenset, compiled patterns or MappingProxyType over such values."""
+    state, journal = modules()
+    package = importlib.import_module('c1_rail.qualification.t00_screen')
+    mutable = (dict, list, set, bytearray)
+    found = []
+    for module in (package, state, journal):
+        for name, value in vars(module).items():
+            nested = value.values() if isinstance(value, MappingProxyType) else ()
+            if not name.startswith('__') and (isinstance(value, mutable)
+                                              or any(isinstance(v, mutable) for v in nested)):
+                found.append(f'{module.__name__}.{name}')
+    assert not found
