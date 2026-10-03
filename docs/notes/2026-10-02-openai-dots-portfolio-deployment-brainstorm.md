@@ -2,6 +2,8 @@
 
 **Date:** 2026-10-02 (America/New_York). **Status:** brainstorming proposal for Joshua and the Codex coordinator. Joshua requested a broad view across blocker tracking, engineering coordination and deployment-session assistance, followed by a commit and relay. This note records options; it is not an adopted design, dispatch card or transfer of campaign ownership.
 
+**Continuation:** Joshua subsequently requested a specification of broad autonomy within approved assignments. The [responsibility charter](2026-10-02-dot-deployment-responsibility.md) develops that direction and supersedes this note's advisory-only first-step recommendation for the proposal. Activation remains separate.
+
 The strongest opportunity is to give a dot continuing responsibility for keeping deployment work ready for its next decision. It could reduce the operator's repeated context gathering while the existing coordinator retains combined acceptance. Explore all three areas together, then grant execution privileges in bounded steps based on observed usefulness.
 
 ## Documented capabilities and access limits
