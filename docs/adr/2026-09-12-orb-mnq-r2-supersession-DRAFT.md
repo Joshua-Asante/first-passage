@@ -7,7 +7,7 @@
 **Supersedes:** `2026-08-03-orb-mnq-repark-payability-falsified.md` in part — §4 R2 for the fixed-book ORB recon v7 scope below only; pending TB-D1 evidence and the operator's dated GO, ineffective until then
 **Superseded-by:** none
 **Superseded-in-part-by:** none
-**Proposed scope:** [`2026-08-03-orb-mnq-repark-payability-falsified.md`](2026-08-03-orb-mnq-repark-payability-falsified.md) §4 **R2** only, and only for ORB-MNQ recon v7 as the fourth leg of the Tradeify portfolio at one micro (base) with at most two one-micro adds, adds disabled while protected — **not** for the standalone ORB-MNQ-1 book, whose `SCREEN-DEAD` ledger row and pursuit stay untouched
+**Proposed scope:** [`2026-08-03-orb-mnq-repark-payability-falsified.md`](2026-08-03-orb-mnq-repark-payability-falsified.md) §4 **R2** only, and only for ORB-MNQ recon v7 as the fourth leg of the Tradeify portfolio at one micro (base) with at most two one-micro adds, adds disabled while protected — **not** for the standalone ORB-MNQ-1 book, whose `SCREEN-DEAD` ledger row and pursuit stay untouched *Scope addendum 2026-10-03 ([below](#addendum-2026-10-03--scope-the-trail-free-edition-orb_mnq_fixed_stop_oso-ed-realiz-legid)): this scope covers the trail-free edition `orb_mnq_fixed_stop_oso@Tradeify_Select_100K`.*
 **Retain-until:** the Tradeify portfolio's registry row is retired
 **Related:** [campaign record D20-c](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · [acceptance record](../notes/2026-09-10-tradeify-protection-selection.md) · [TB-P2 admission ADR](2026-09-12-tradeify-book-protection-instance-admission.md) · [TB-R2 read](../notes/2026-09-12-track-b-scaling-faithfulness-read.md)
 **Tier:** full (it re-points a FALSIFIED venue target for a live leg; the light tier is not available)
@@ -104,3 +104,34 @@ python scripts/check_adr_graph.py
 - 2026-09-13 — reconcile complete Part A evidence, parser-visible pending supersession and D1-before-V1/B7 ordering. Decision slot and operator GO remain empty.
 
 - 2026-09-12 — skeleton authored (TB-P1); Decision slot empty; GO owed.
+
+## Addendum 2026-10-03 — scope: the trail-free edition orb_mnq_fixed_stop_oso (ED-REALIZ-LEGID)
+
+*Line citations below are at `origin/main @ 9de0925`; bare `:N` means this file.*
+
+**Operator acceptance.** Joshua answered ED-REALIZ-LEGID **"Yes"** on 2026-10-03, in coordinator (2)'s chat; coordinator (3) wrote it up. The question as put: *"Does the ORB R2 ADR cover the trail-free edition `orb_mnq_fixed_stop_oso` (A1), through a dated scope addendum before freeze that points its §0 export pin and O-N/O-P parity grounds to that edition's settings and reference exports?"* This answers the request at [successor pre-registration](../briefs/pre-registration/2026-10-02-tradeify-route-native-editions-successor-prereg.md) §5 `:119`.
+
+**Scope.** The scope at `:7` and `:10` (ORB recon v7 as the fourth leg, one micro base, at most two one-micro adds, adds off while protected) covers `orb_mnq_fixed_stop_oso@Tradeify_Select_100K` (successor §1 `:66`), realized override-only as A1 (successor §5 `:119`).
+- Leg, size and protection cells are inherited unchanged ([campaign](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §59 Ruling 3 `:3928`, `:3937`; successor §1 `:71`).
+- Pine and port identity are unchanged (A1, successor §5 `:119`); the §0 identity row's `pine_sha256 176c4f70…` (`:26`) stands.
+- The decision point is the same. The edition requalifies through the production E1 already owed (campaign `:3942`; successor §6 `:125`), and TB-D1 fills §2 after the TB-E1 seal ([umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) `:639`; [checklist](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) T15 `:292`, `:299`).
+- Unchanged: the Decision slot's two outcomes (`:38`), §4's reject and accept conditions (`:61`–`:62`) and the operator's fresh GO as a dated addendum (`:3`, `:5`).
+
+**Re-pointing (this scope only).**
+- **§0 export pin.** `export_sha256 bff235ea…` (`:26`) is the O-0 capture of the declared expression ([TB-R2 read](../notes/2026-09-12-track-b-scaling-faithfulness-read.md) `:108`), whose bracket carries trailing parameters (campaign `:3932`). For this scope it is replaced by the trail-free edition's reference export, **O-0'**. SHA-256 **OWED** until captured. The grounds' "O-0 captured" (`:40`) reads on O-0'.
+- **Parity grounds.** The Decision grounds (`:40`) and the §4 prerequisite (`:59`) read on **O-N'** and **O-P'**. These are the same tests as O-N and O-P (normal mode with adds and protected mode without; TB-R2 read `:109`–`:110`, as collected under [parallel prerequisites](../briefs/handoffs/2026-09-14-track-b-parallel-prerequisites.md) `:160`–`:161`; [dispatch 1](../notes/2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md) `:91`), with the same TB-R3 intake. They run against the trail-free edition's frozen effective settings (successor §5 `:114`) and its reference exports.
+- **History.** The O-0, O-N and O-P records (parallel prerequisites `:290`–`:291`) stay as the trailing ORB's history. They do not ground this scope.
+
+**Supplier: OWED.** No committed record holds a trail-free reference export or parity basis. Searched: TB-R2 read `:108`–`:110`; parallel prerequisites `:160`–`:161`, `:290`–`:291`; the umbrella; the [venue-edition ledger](../../ops/venue_editions/Tradeify_Select_100K.md) `:20` (`CANDIDATE`, unscreened); campaign §59–§60; successor §5 (`:111`–`:114`, all OWED); the [edition production handoff](../briefs/handoffs/2026-09-26-orb-striker-edition-production.md).
+- **O-0', O-N' and O-P' exports: Joshua.** They are TradingView CSV exports, an operator act, because TV login/actuation automation is prohibited ([AGENTS.md](../../AGENTS.md) `:56`; [S2 ADR](2026-08-07-loop-s2-signal-host-fork.md) §5 `:83`).
+- **O-N'/O-P' parity: Track B parity tooling**, run by a coordinator-dispatched agent.
+- **Order.** Capture and parity follow the successor's freeze. Edition output before freeze engages successor §7 `:137`–`:138`, and successor §R `:25` bars agent-run candidate replays until then. The sitting-2 ruling already reads that way for Striker A2a: "export parity follows freeze" (successor `:119`).
+
+Until O-N'/O-P' pass, `:59` reads `BLOCKED — capability-problem` for this scope, as it does today. This addendum makes the block resolvable; it does not waive it.
+
+**Disclosure.** Successor §D `:13`–`:15` records trail-off ORB replays (the accepted port with its trailing flag off, also in protection mode) whose structural counts were seen; no P&L, equity, drawdown or bust/pass output was seen. The [08-03 ADR](2026-08-03-orb-mnq-repark-payability-falsified.md) §5 (`:107`–`:115`; `:21` here) forbids re-pointing after seeing the data. This scope change is therefore made before the successor freezes (successor Status `:3` reads `DRAFT — NOT FROZEN.`) and before any E1 on the edition, and it discloses that exposure. Its cause is the route-capability change of §59 Ruling 3, not performance (campaign `:3937`). It changes no bound, gate or outcome. Its author did not read those counts.
+
+**Out of scope.**
+- Striker A2a and Vanguard's A1 realization, which sit under the sitting-2 realization ruling (successor §5 `:119`; [Vanguard successor](../briefs/pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md)).
+- Amendments to the production handoffs' G1a ([ORB/Striker](../briefs/handoffs/2026-09-26-orb-striker-edition-production.md) `:28`) or G2a ([Vanguard](../briefs/handoffs/2026-09-26-vanguard-fixed-stop-edition-production.md) `:26`).
+- The Decision slot. This addendum neither fills nor pre-judges it; beyond the re-pointing above, §2, §4 and §5 are unchanged.
