@@ -836,3 +836,29 @@ def test_a8_finds_a_ratified_status_on_a_merged_away_side_branch(tmp_path, monke
     assert bad.side not in default  # the merge is TREESAME to its first parent: history simplified away
     refused('SCREEN_PREREG_MISMATCH', bad.validate, 'oldest')
     Screen(tmp_path / 'good', monkeypatch).validate()  # linear history: C is the oldest RATIFIED
+
+
+def test_a_large_integer_cpu_budget_is_accepted_without_overflow(screen):
+    """The design sets no budget maximum (:260), so 10**400 CPU seconds is a valid positive int;
+    it never reaches a float conversion (no OverflowError)."""
+    params = dict(screen.params, budget=dict(screen.params['budget'], path_cpu_seconds=10 ** 400))
+    sa()._check_parameters(params)  # pylint: disable=protected-access
+
+
+@WINDOWS
+def test_a_fractional_budget_authority_is_issued_used_and_acted_on(tmp_path, monkeypatch):
+    """End to end: issued with a fractional CPU budget, then required on use (snapshot of its
+    float parameters), an epoch opened and closed, and an act over its bytes validated."""
+    module = sa()
+    budget = {'path_cpu_seconds': 1000.5, 'overhead_cpu_seconds': 100.25, 'basis': 'TEST_ONLY fractional'}
+    screen = Screen(tmp_path, monkeypatch, param_changes={'budget': budget})
+    auth = screen.validate()
+    with screen.ready(auth):
+        assert require(auth) is auth
+        assert require(auth) is auth
+    recorder = SimpleNamespace(first_party={}, third_party={}, ports={}, stdlib=set())
+    monkeypatch.setattr(sys, 'p7_recorder', recorder, raising=False)
+    cover_loaded(recorder)
+    epoch = module.open_screen_epoch(SOURCE, auth)
+    assert module.close_screen_epoch(epoch).closure_match
+    assert validate_act(screen, *act(screen)).authority_sha256 == auth.authority_sha256
