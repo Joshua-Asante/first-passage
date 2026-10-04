@@ -49,6 +49,7 @@ import datetime as dt
 import re
 import sys
 import unicodedata
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -287,6 +288,9 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
     # R2 identity
     names: dict[str, str] = {}
     ids = {r["id"] for r in rows if isinstance(r.get("id"), str)}
+    for rid, n in Counter(r.get("id") for r in rows if isinstance(r.get("id"), str)).items():
+        if n > 1:
+            out.append(f"R2 {rid}: id appears in {n} rows")
     for row in rows:
         rid = row.get("id")
         for name in [rid, *(row.get("aliases") or [])]:
@@ -484,6 +488,9 @@ def _open(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def _groups(rows: list[dict[str, Any]]) -> tuple[dict[str, list], list]:
     """Unblocked next actions by actor, and blocked rows with what they wait on."""
+    dupes = sorted(rid for rid, n in Counter(r["id"] for r in rows).items() if n > 1)
+    if dupes:
+        raise Finding(f"R2 duplicate row ids: {', '.join(dupes)}")
     by_id = {r["id"]: r for r in rows}
 
     def waiting(r):
@@ -625,7 +632,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f)
         print("track_b_register: fix the findings above before writing")
         return 1
-    if any(f.startswith(("R1", "R7")) for f in findings):
+    if any(f.startswith(("R1", "R2", "R7")) for f in findings):
         print("track_b_register: register is malformed; run `check`")
         return 1
     if args.command == "write":

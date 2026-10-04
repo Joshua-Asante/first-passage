@@ -161,6 +161,17 @@ def test_r2_alias_collides_with_other_row(root):
     assert _codes(tbr.check(data, root)) == ["R2"]
 
 
+def test_r2_repeated_id_without_aliases(root):
+    data = _register()
+    dup = dict(data["items"][1], status="ACCEPTED", next=None, next_actor="none")
+    dup.pop("aliases", None)
+    data["items"].append(dup)
+    findings = tbr.check(data, root)
+    assert any(f.startswith("R2 ") and "2 rows" in f for f in findings)
+    with pytest.raises(tbr.Finding):
+        tbr._groups(data["items"])
+
+
 def test_r3_unknown_reference_and_cycle(root):
     data = _register()
     data["items"][0]["blocked_by"] = ["defect.D-S5-1"]
