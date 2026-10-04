@@ -1,5 +1,7 @@
 # H9 R2 / D3 recovery slice — keep-or-defer comparison
 
+**Status 2026-10-03: RULED B.** Joshua, directly to coordinator (3), 2026-10-03 20:19Z: "D3 = B". The recommendation below was adopted: H9 checkpoint R2's compute re-execution is deferred for the first production E1. The owner texts are amended in [PR #656](https://github.com/Joshua-Asante/first-passage/pull/656) (H9, Full-E1 spec, execution slices, deployment checklist). This note stays as the pre-ruling comparison on record; where it says "until Joshua rules", that is now resolved.
+
 **PROPOSED comparison for campaign-owner review, then Joshua and the statistical owner.** Prepared 2026-10-03 by Codex Coordinator 3 from `d8e641f20e394b28897c79892ab80d402ab07c75`; current-source pin `ebe5c0ba846d2d7b75227d7b8302a818945974f5`. No recovery build or decision is authorized by this note.
 
 ## Settled boundary
