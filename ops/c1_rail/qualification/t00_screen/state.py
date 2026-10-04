@@ -1,5 +1,6 @@
 """T00 step-3 run state: the one transition function, the closed stop classes and the
-cross-field record check (design 2026-10-02 §4.2-§4.5; build card §3.6, §3.6a, packet P-D).
+cross-field record check (design 2026-10-02 §4.2-§4.5; build card §3.6, §3.6a, packet P-D; the
+P-D follow-up for card §8 R-INT-1 and R-INT-2, ruled 2026-10-04).
 
 ``advance`` is the only code that changes durable run state; the coordinator appends an event
 only after ``advance`` accepts it, so a refused event writes nothing (row S1). ``classify`` is
@@ -12,12 +13,14 @@ from __future__ import annotations
 import base64
 import binascii
 from dataclasses import dataclass, field
+from datetime import datetime
 import hashlib
 import re
 from types import MappingProxyType
 from typing import Mapping, Sequence
 
-from ..contract import ContractValidationError, canonical_json_bytes, parse_canonical_json
+from ..contract import (ContractValidationError, TrustedApprovalKey, canonical_json_bytes,
+                        parse_canonical_json, verify_detached_approval)
 from . import journal
 
 ILLEGAL_TRANSITION = 'ILLEGAL_TRANSITION'
@@ -52,6 +55,9 @@ _TYPED_CAUSES = ((MemoryError, 'WORKER_LOST'), (KeyboardInterrupt, 'INTERRUPTED'
 _IO_EVIDENCE = 'IO_ERROR'  # a recorded cap code is never its own evidence (F8)
 _CAPS = ('RESOURCE_EXHAUSTED', 'IO_EXHAUSTED')  # row S10, in precedence order
 _TIMING = ('wall_s', 'cpu_s')
+# R-INT-1: the scope P-A's validate_screen_act verifies an act under (screen_authority
+# SCREEN_ACT_SCOPE), with subject and contract digest both sha256(act bytes).
+ACT_SCOPE = 'APPROVE_T00_SCREEN_ACT'
 
 
 class IllegalTransition(ValueError):
@@ -206,6 +212,7 @@ class _Journals:
     verifies: dict = field(default_factory=dict)
     candidates: list = field(default_factory=list)
     closures: set = field(default_factory=set)
+    finals: list = field(default_factory=list)
     close_failed: bool = False
     paths: list = field(default_factory=list)
     identities: set = field(default_factory=set)
@@ -233,6 +240,7 @@ class _Journals:
                 self.closures.add(body['closure_sha256'])
             elif record['type'] == 'EPOCH_CLOSE':
                 self.close_failed = self.close_failed or not body['closure_match']
+                self.finals.append(body['closure'])
             elif record['type'] == 'PATH':
                 self.paths.append(body)
 
@@ -256,28 +264,38 @@ def _check_manifest(ledger, manifest, authority, candidates):
              or any(populations != manifest['populations'] for populations in candidates))
 
 
-def _act_document(name, raw):
+def _decoded(text):
+    raw = base64.b64decode(text, validate=True)
+    _corrupt(base64.b64encode(raw).decode('ascii') != text)
+    return raw
+
+
+def _act_document(name, raw, trusted_keys, now):
     """The act in ``acts/<act_sha256>.json`` = canonical ``{act_b64, approval_b64}`` (F5); the
-    act bytes hash to the file name."""
+    act bytes hash to the file name, and its detached approval verifies at ``now`` (R-INT-1)."""
     try:
         container = parse_canonical_json(raw, label='act file')
         _corrupt(not isinstance(container, dict) or set(container) != {'act_b64', 'approval_b64'}
                  or not all(isinstance(value, str) for value in container.values()))
-        act = base64.b64decode(container['act_b64'], validate=True)
-        _corrupt(base64.b64encode(act).decode('ascii') != container['act_b64']
-                 or re.fullmatch(r'[0-9a-f]{64}[.]json', name) is None
-                 or hashlib.sha256(act).hexdigest() + '.json' != name)
+        act, approval = _decoded(container['act_b64']), _decoded(container['approval_b64'])
+        subject = hashlib.sha256(act).hexdigest()
+        _corrupt(re.fullmatch(r'[0-9a-f]{64}[.]json', name) is None or subject + '.json' != name)
         doc = parse_canonical_json(act, label='act')
-    except (ContractValidationError, binascii.Error, TypeError):
+        verify_detached_approval(approval, trusted_keys=trusted_keys, expected_scope=ACT_SCOPE,
+                                 expected_subject_sha256=subject,
+                                 expected_contract_sha256=subject, now=now,
+                                 allow_test_authority=False)
+    except (ContractValidationError, binascii.Error, TypeError, ValueError):
         raise _Failed(CORRUPTION) from None
     _corrupt(not isinstance(doc, dict))
     return doc
 
 
-def _check_acts(ledger, acts, authority):
-    """X3: each ACT record names its act file, whose act binds this authority, the same act and
-    the ledger head the record follows; so a stale act is never recorded."""
-    documents = {name: _act_document(name, raw) for name, raw in acts.items()}
+def _check_acts(ledger, acts, authority, trusted_keys, now):
+    """X3: every act file's approval verifies (R-INT-1), and each ACT record names its act file,
+    whose act binds this authority, the same act and the ledger head the record follows; so a
+    stale act is never recorded."""
+    documents = {name: _act_document(name, raw, trusted_keys, now) for name, raw in acts.items()}
     for record in ledger:
         if record['type'] == 'ACT':
             doc = documents.get(record['body']['act_sha256'] + '.json')
@@ -440,17 +458,44 @@ def _divergent(paths):
     return False
 
 
+def _module_rows(closure):
+    """{identity: row bytes} for one final closure: a module's row is every (family, row) that
+    names it, a port's its digest."""
+    rows = {}
+    for family in ('first_party', 'third_party'):
+        for name, row in closure[family].items():
+            rows.setdefault(('module', name), []).append([family, row])
+    for name in closure['stdlib']:
+        rows.setdefault(('module', name), []).append(['stdlib', None])
+    found = {identity: canonical_json_bytes(sorted(row, key=canonical_json_bytes))
+             for identity, row in rows.items()}
+    found.update({('port', name): digest for name, digest in closure['ports'].items()})
+    return found
+
+
+def _module_drift(finals):
+    """K6 as amended (card §8 R-INT-2): a module or port named in the EPOCH_CLOSE closures of
+    the candidate journal (which the probe shares), the segment and the verify journals has one
+    row across them; final closures may otherwise differ."""
+    seen = {}
+    for closure in finals:
+        for identity, row in _module_rows(closure).items():
+            if seen.setdefault(identity, row) != row:
+                return True
+    return False
+
+
 def _finding(walk, found, plan):
     if walk.complete and walk.completed != plan:  # O-11: after COMPLETE every key occurs
         return CORRUPTION
-    if len(found.closures) > 1 or found.close_failed:  # O-8, row K6
+    if len(found.closures) > 1 or found.close_failed or _module_drift(found.finals):  # O-8, K6
         return 'CODE_OR_ARTIFACT_DRIFT'
     if _divergent(found.paths):  # row S13
         return 'NONDETERMINISM'
     return walk.cap()
 
 
-def _check(ledger, journals, manifest, acts, plan):
+def _check(ledger, journals, manifest, acts, plan, trusted_keys, now):  # pylint: disable=too-many-arguments
     _chain(ledger, kind='ledger')
     try:
         fold(ledger)
@@ -464,7 +509,7 @@ def _check(ledger, journals, manifest, acts, plan):
     for name, records in journals.items():
         found.add(name, records)
     _check_manifest(ledger, manifest, authority, found.candidates)
-    _check_acts(ledger, acts, authority)
+    _check_acts(ledger, acts, authority, trusted_keys, now)
     walk = _Walk(plan, found.segments).run(ledger)
     _check_verifies(ledger, found.verifies, plan)
     return RecordCheck(_finding(walk, found, plan), frozenset(walk.completed),
@@ -507,8 +552,14 @@ def cap_finding(ledger: Sequence[journal.Record], journals: Mapping[str, Sequenc
 
 def check_record(ledger: Sequence[journal.Record], journals: Mapping[str, Sequence[journal.Record]],
                  manifest: Mapping[str, object] | None, acts: Mapping[str, bytes], *,
-                 keys: Sequence[journal.Key]) -> RecordCheck:
+                 keys: Sequence[journal.Key], trusted_keys: Mapping[str, TrustedApprovalKey],
+                 now: datetime) -> RecordCheck:
     """The first failure over a whole run record, or ``None``.
+
+    ``keys`` are the screen-plan keys; ``trusted_keys`` the pinned approval keys and ``now`` the
+    real current time (timezone-aware) at which every stored act's detached approval is
+    re-verified on every check (card §8 R-INT-1, strict): no first-acceptance exception, no
+    persisted time and no post-window re-audit, so an expired act fails closed.
 
     In order: TERMINAL ``CORRUPTION`` (chains, schemas, strict and unique journal names (F6), a
     key outside the plan or its worker's assignment and not a tagged witness, an assignment
@@ -517,8 +568,12 @@ def check_record(ledger: Sequence[journal.Record], journals: Mapping[str, Sequen
     SEGMENT_CRASHED whose ``cap`` differs from ``cap_finding`` there (F1), a SEGMENT_END whose
     cause is below HALTED when a cap is reached or names a cap other than the one reached, a
     HALT naming a cap not reached, a SEGMENT_START or ALL_DONE while a cap is reached (F8),
-    manifest and candidates, act bindings, a gap after COMPLETE), ``CODE_OR_ARTIFACT_DRIFT``
-    (epoch closures), ``NONDETERMINISM`` (duplicates and witnesses); then HALTED
+    manifest and candidates, act bindings, an act approval that fails
+    ``contract.verify_detached_approval`` under ``ACT_SCOPE`` with ``allow_test_authority=False``
+    at ``now``, a gap after COMPLETE), ``CODE_OR_ARTIFACT_DRIFT`` (EPOCH_OPEN closure digests
+    that differ, a failed close, or a module or port with two different rows across the
+    EPOCH_CLOSE closures of the candidate, segment and verify journals: K6 as amended, R-INT-2),
+    ``NONDETERMINISM`` (duplicates and witnesses); then HALTED
     ``RESOURCE_EXHAUSTED`` or ``IO_EXHAUSTED`` (``cap_finding`` at the end of the ledger).
     ``completed`` holds the plan keys with a PATH in a segment
     journal; ``losses`` counts each key's losses since the CONTINUE that reset its cap. A
@@ -527,7 +582,12 @@ def check_record(ledger: Sequence[journal.Record], journals: Mapping[str, Sequen
     ``CORRUPTION`` found before the ledger walk ends returns empty ``completed`` and ``losses``.
     """
     plan = _plan(keys)
+    if not isinstance(trusted_keys, Mapping):
+        raise ValueError('trusted_keys must map key ids to contract.TrustedApprovalKey')
+    if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
+        raise ValueError('now must be a timezone-aware datetime')
     try:
-        return _check(tuple(ledger), dict(journals), manifest, dict(acts), plan)
+        return _check(tuple(ledger), dict(journals), manifest, dict(acts), plan,
+                      MappingProxyType(dict(trusted_keys)), now)
     except _Failed as failed:
         return RecordCheck(failed.code)
