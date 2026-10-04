@@ -143,7 +143,6 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | What happened, session by session | `docs/SESSIONS.md` (append-only, links out) |
 | Current priorities and outstanding obligations | `STATE.md` queue and forward board; obligation details remain with their owning decision/closure |
 | Executable campaign next steps | Campaign's current implementation plan; campaign record owns evidence, gate dispositions, and operator decisions |
-| Track B item status, next permitted action, actor, blockers and expiry | [`docs/governance/track_b_register.yml`](governance/track_b_register.yml), checked by `scripts/track_b_register.py` (gate `track-b-register`); each row cites the ruling or acceptance that set it, whose text, reasoning and evidence stay with that record. The recording change writes the row. STATE row 1's summary and the deployment checklist's current-state table are generated from it (operator ruling 2026-10-03) |
 | Session-specific "open / next" | Optional historical context in that session's entry; never a replacement for the current STATE queue or campaign plan |
 | Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
 | Durable atomic facts | Their owning specification, campaign record, plan, PR, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 or sub-rule 8/10 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
@@ -792,8 +791,6 @@ New operational rules are added here only after a specific failure or near-miss.
 Edits to existing rules must be logged with a dated entry explaining what changed and why. Rules do not silently drift.
 
 ### Edit log
-
-- **2026-10-03** — Rule 7 owner table: the Track B register owns Track B item status, next action, actor, blockers and expiry; STATE row 1's summary and the checklist current-state table become generated mirrors. Operator ruling 2026-10-03 ("go with all four").
 
 - **2026-09-08** — Clarified decision ownership: specifications, campaigns, plans
   and PRs can own decisions; a distinct ADR must meet the admission rule. Neither

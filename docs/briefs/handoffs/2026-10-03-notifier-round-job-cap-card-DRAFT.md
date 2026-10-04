@@ -1,7 +1,7 @@
 # Notifier follow-up: bounded rounds, ingestion, progress and no-rebuild open (TB-I3-HOST P7; #637, #651, #635 dependencies)
 
 **Date:** 2026-10-03.
-**Status:** **DRAFT.** Written under coordinator (3)'s #628 build authority. Coordinator (3) dispatched this docs-only rewrite on 2026-10-03 and owns the invariant table NF1-NF9 (§3). Other cards cite those names, so they are fixed. Coordinator (3) freezes this card (§12). Nothing here is dispatched.
+**Status:** **FROZEN 2026-10-04** by coordinator (4), card owner since the 2026-10-03 handoff from coordinator (3) (Joshua's direct instruction), at the commit that adds this line; base origin/main `c73d616`. Dispatch follows separately (§12). *As drafted:* **DRAFT.** Written under coordinator (3)'s #628 build authority. Coordinator (3) dispatched this docs-only rewrite on 2026-10-03 and owns the invariant table NF1-NF9 (§3). Other cards cite those names, so they are fixed. Coordinator (3) freezes this card (§12). Nothing here is dispatched.
 **Fold (2026-10-03):** the review of `7da0288` (two P2, three P3) is folded, and coordinator (3)'s card-owner rulings on D1, D2 and the `rebuild=False` empty-journal refusal are recorded (§0.5 items 4-6). The review of `5d2356c` (two P3, one nit) is folded. OQ-NF-3 is RULED (a), the first-page reading, which supersedes the earlier sizing condition (§0.5 item 11); the halt-sequence key is §0.5 item 12. The review of `4990ce7` (one P2 and three P3 on this card) is resolved or retired in §0.5 item 11 and §9. The review of `0c56d35` (two P2, five P3) is folded under coordinator (3)'s card-owner rulings of 2026-10-03: (a) tiers inside class U (NF2), (b) three readings of the OQ-NF-3 ruling, recorded PENDING coordinator (2)'s confirmation (§0.5 item 11, R6), and (c) a k floor of 8.
 **Base:** origin/main `04a86ac`. `git diff 6e679cc 04a86ac` is empty for `ops/c1_rail/`, `tests/ops/test_book_incident_notifier.py`, the #628 card and the HR spec, so anchors at `6e679cc` (the #628 merge) hold. Other heads read: #651 `fb3c3ba`, #637 `828ddda` and #635 `f4d1589`, all DRAFT. Their anchors hold only at those heads.
 **Brief type:** CC handoff, code build (TDD) behind a named file boundary.
@@ -17,7 +17,7 @@
 4. The constructor always rebuilds a faulty journal (`:284-291`). #635's record-delivery CLI therefore cannot open the live journal without risking a move-aside beside a running notifier (`f4d1589:141`).
 
 **Selected outcome:** NF1-NF8 are built in `book_incident_notifier.py` and tested in a new file. NF9 stays unchanged.
-**Ownership:** One Opus/CC worker builds it (§11). Coordinator (3) accepts it. Joshua merges.
+**Ownership:** One Opus/CC worker builds it (§11). Coordinator (4) accepts it (owner since 2026-10-03; originally coordinator (3)). Joshua merges.
 **Return boundary:** A pushed `claude/*` branch that touches only §5's allowed files, or a precise blocker.
 
 ```yaml authority
@@ -49,7 +49,7 @@ acceptance:
   - "tests/ops/test_book_incident_notifier.py passes unchanged (59 tests at 6e679cc)"
   - "git diff --stat origin/main...HEAD lists only §5 allowed files, and the notifier diff stays inside §5's parts"
   - "python -I scripts/fp.py test-ops and python -I scripts/fp.py check: status completed, exit 0, source stable; or a pre-existing failure disclosed with its reproduction on unmodified origin/main"
-  - "python -I scripts/fp.py test (full suite): recorded before coordinator (3) acceptance"
+  - "python -I scripts/fp.py test (full suite): recorded before coordinator (4) acceptance"
 ```
 
 ## §0 — Read first (report before writing code; otherwise `NEEDS_CONTEXT`)
@@ -115,7 +115,7 @@ acceptance:
 10. **Forbidden files** are §5's.
 11. **OQ-NF-3: RULED (a), the first-page reading,** by the halt/resume owner, coordinator (2), 2026-10-03 (AUTH: coordinator (3)'s 2026-10-03 fold dispatch). It supersedes the same day's sizing condition, "Size k >= the maximum number of unaccepted jobs one halt can produce" (`4990ce7` §0.5 item 11). The ruling:
    > "The 60 s retry guarantee binds: the oldest due class-U job of each halt sequence; any job whose halt sequence does not yet have an accepted page. The purpose ... is that Joshua is engaged within the escalation window for every halt. Once one page per halt sequence is accepted, IRM's own chain carries the escalation, and later incidents add context to a halt that is already attended."
-   - **Readings (coordinator (3)'s, PENDING coordinator (2)'s confirmation, which coordinator (3) has requested; P4, §1).** NF2's 60 s scope rests on them until confirmed.
+   - **Readings (coordinator (3)'s), CONFIRMED** by Joshua, directly to coordinator (4), 2026-10-03T22:08:19Z: "yes to P4 readings" (put to him with the tier-1 representative reading below, because coordinator (2), the halt/resume owner, had retired; P4, §1). NF2's 60 s scope rests on them.
      - (i) "Oldest due" is the earliest `next_attempt_at`.
      - (ii) Clause (i) applies only to sequences without an accepted page.
      - (iii) Clause (ii) is read per sequence: one representative retry per unpaged sequence in each 60 s window. In a burst above k, an unpaged sequence's non-representative jobs fall under the residual's "(and any sequence without an accepted page)" (R6).
@@ -135,7 +135,7 @@ acceptance:
    - **Default k = 10**, twice k_first and inside the ruling's 8-10. The margin also covers some R-T9 findings (HR `:156`, `:174`) or per-fact rows (`:2116-2283`; `fact-time:` takes a fresh `uuid4()` per observation, `:2116`). Above k those are R6's later jobs; a representative is not deferred while at most k are due (NF2). 10 is also the smallest k that keeps the #628 suite (item 3).
    - **#651's binding** refuses k below the floor of 8 (its (e'), `fb3c3ba:124`) and checks (d) at the frozen k. At k = 10 and c = 2, (d) fails at #628's defaults, so OQ-CAP-3 chooses τ and W_j (§9).
    - **Withdrawn:** K_halt_max = 51, its default k of 64 (`4990ce7` §0.5 item 11) and #651's (e) k ≥ 51. The review of `4990ce7` found that count missed O3 (P2); that is moot, because O3 is an origin above. Its P3s on the `:2116` keying and the R-T owner list fell with the OWED paragraph they corrected: keying now affects only R6's later jobs.
-12. **Halt-sequence key.** Chosen in this fold under coordinator (3)'s dispatch; coordinator (3) confirms at freeze.
+12. **Halt-sequence key.** Chosen in this fold under coordinator (3)'s dispatch. **CONFIRMED at freeze by coordinator (4), card owner, 2026-10-04:** the generation-run rule below fails only toward over-splitting (safe), and its one under-split case stays OWED to TB-I3 (R7).
    - **Rule.** In journal `rowid` order over every job, in every state, a job continues the previous job's sequence when the previous job's generation is at least 1 and its own is exactly one more. Otherwise it starts a sequence, whose id is its first job's `rowid`.
    - **Why generation runs.** `_halt_db` is the only writer of `incidents`. It stores the owner's current generation and then raises it by one (`book_account_owner.py:2091-2094`). Inside a halt, only a restart (`:445`) or a migration (`book_migration.py:412`) also raises it; the scheduled-exit raise needs NORMAL authority (`:1963-1969`), which INTERVENTION has revoked. Owner transactions are serialized, `read_incidents` returns rows in `rowid` order (`:815-816`), and `poll` inserts them in that order (`:405-420`). A halt's incidents are therefore consecutive generations in journal order.
    - **The other candidates.** Generation equality groups nothing, since no two incidents share a generation. `session_id` is not in an incident row (`_SCHEMA`, `:296-297`; `read_incidents`, `:812-815`), and adding it is an owner edit (§5). The halt record is the singleton `owner_state` row (`:718-720`), which the read-only seam does not read.
@@ -160,8 +160,8 @@ A contradicted default, a missing producer or a necessary edit outside §5 retur
 |---|---|---|---|
 | P1 | #628 merged | **Done** (`6e679cc`) | Nothing |
 | P2 | Coordinator (3) rules on D1, D2 and the empty-journal refusal (§0.5 items 4-6) and confirms the OQ-NF-1 record (item 7) | **Done** (2026-10-03) | Nothing |
-| P3 | Sequencing with #635's D-MON-1 build (§5) | OPEN; recorded at dispatch | Dispatch |
-| P4 | Coordinator (2) confirms coordinator (3)'s readings (i)-(iii) of the OQ-NF-3 ruling (§0.5 item 11) | OPEN; requested by coordinator (3) | Freeze |
+| P3 | Sequencing with #635's D-MON-1 build (§5) | **Recorded at freeze:** this build lands first; D-MON-1's build dispatches after it merges and #635 freezes | Nothing |
+| P4 | Confirmation of coordinator (3)'s readings (i)-(iii) of the OQ-NF-3 ruling (§0.5 item 11) | **Done**: Joshua, 2026-10-03T22:08:19Z (coordinator (2) had retired) | Nothing |
 
 ## §2 — Measured-closure check
 
@@ -368,7 +368,7 @@ The worker re-runs the table from `origin/main` to `HEAD` (§7).
 | `next_attempt_at` compared as text | RC2 |
 | Plain `rowid` order under the cap | RC3(a) |
 | Representatives ignored: class U by (due, `rowid`) only | RC2(a), RC2(d), RC3(a), RC3(c), RC4(b) |
-| A first job not ahead of a later-job representative (one representative tier by due, this card's previous order) | RC2(a), RC2(d), RC3(a), RC3(c) |
+| A first job not ahead of a later-job representative (one representative tier by due, this card's previous order) | RC2(a), RC2(d) (RC3(a)/(c) cannot distinguish this mutant: each pass's only representative there is a due first job; review thread 4175241662, applied at freeze) |
 | Representatives across sequences ordered by `rowid`, not due time | RC2(a) |
 | Every job its own sequence (generation equality) | RC2(a), RC2(b), RC3(c) |
 | One sequence per journal (no generation-gap split) | RC2(a), RC2(b), RC4(b) |
@@ -400,7 +400,7 @@ A failed required acceptance criterion is not DONE_WITH_CONCERNS.
 
 **Verdict on H (§4):** RESOLVED when RC1-RC10 and the regression pass at the head and every listed mutant goes red. Any §4 falsifier observed makes H FALSIFIED.
 
-## §7 — Acceptance checks (worker runs; coordinator (3) re-runs at the returned head)
+## §7 — Acceptance checks (worker runs; coordinator (4) re-runs at the returned head)
 
 ```
 python -I scripts/fp.py doctor
@@ -408,7 +408,7 @@ python -I scripts/fp.py python -m pytest tests/ops/test_book_incident_notifier_f
 python -I scripts/fp.py python -m pytest tests/ops/test_book_incident_notifier.py            # unchanged: 59 passed
 python -I scripts/fp.py test-ops
 python -I scripts/fp.py check
-python -I scripts/fp.py test                                                                 # full suite, before coordinator (3) acceptance
+python -I scripts/fp.py test                                                                 # full suite, before coordinator (4) acceptance
 python -I scripts/fp.py python docs/notes/2026-09-29-s5-c3-record/stage1c-equivalence/stage1c_closure_table.py.txt . origin/main HEAD   # measured and staging: "changed": []
 git diff --stat origin/main...HEAD                                                           # §5 files only
 ```
@@ -437,8 +437,8 @@ For each check, report the command, the interpreter, the head, and the printed `
 - **Empty-journal refusal, RULED** by coordinator (3), 2026-10-03: `rebuild=False` refuses any schema other than `_JOURNAL_SCHEMA` (§0.5 item 6).
 - **OQ-NF-1:** owner reading, RULED; the record is confirmed by coordinator (3) (§0.5 item 7).
 - **OQ-NF-3, RULED (a), the first-page reading,** by coordinator (2), halt/resume owner, 2026-10-03: tiered representatives first (NF2), k_first = 5, a k floor of 8, default k = 10, and (d) checked at that k by #651's binding (§0.5 item 11). It supersedes the earlier sizing condition (K_halt_max = 51, default 64).
-- **Card-owner rulings (a)-(c),** coordinator (3), 2026-10-03: (a) tiers inside class U (NF2); (b) readings (i)-(iii) of OQ-NF-3, PENDING coordinator (2)'s confirmation (P4); (c) the k floor of 8 (§0.5 item 11).
-- **Halt-sequence key:** generation runs (§0.5 item 12), chosen in this fold; coordinator (3) confirms at freeze.
+- **Card-owner rulings (a)-(c),** coordinator (3), 2026-10-03: (a) tiers inside class U (NF2); (b) readings (i)-(iii) of OQ-NF-3, CONFIRMED by Joshua 2026-10-03T22:08:19Z (P4); (c) the k floor of 8 (§0.5 item 11).
+- **Halt-sequence key:** generation runs (§0.5 item 12), CONFIRMED at freeze by coordinator (4), 2026-10-04.
 - **Full-suite rule:** confirmed by coordinator (3) (§7).
 
 **Residuals.**
@@ -453,12 +453,12 @@ For each check, report the command, the interpreter, the head, and the printed `
 - **R6. A loud pass is not a page** (NF3). The heartbeat resumes marking on the next clean pass, so a class-U backlog that clears in less than T_n pages nobody, although a later job's retry gap exceeds 60 s.
   - Example: L = 5 s, `retry_max_s` = 30 s, k = 10 and 60 due class-U jobs ahead of a later job X of a sequence with an accepted page, ignoring poll_bound. Six loud passes (30 s, under T_n = 60 s) put X's attempts 30 + 7·5 = 65 s apart, and only `cap_deferred` rows record it. A representative is not deferred while at most k are due (NF2).
   - Accepted residual, verbatim (OQ-NF-3, §0.5 item 11): "beyond the halt's first page (and any sequence without an accepted page), a burst above k can stretch a later unaccepted job's retry gap past 60 s without a page; recorded in cap_deferred; accepted by the halt/resume owner, 2026-10-03."
-  - **Scope under reading (iii)** (coordinator (3)'s, PENDING coordinator (2)'s confirmation; §0.5 item 11). The guarantee is one representative retry per unpaged sequence in each 60 s window. In a burst above k, an unpaged sequence's non-representative jobs, including its later jobs while its first job is due (NF2), are the residual's "(and any sequence without an accepted page)".
+  - **Scope under reading (iii)** (coordinator (3)'s, CONFIRMED by Joshua 2026-10-03T22:08:19Z; §0.5 item 11). The guarantee is one representative retry per unpaged sequence in each 60 s window. In a burst above k, an unpaged sequence's non-representative jobs, including its later jobs while its first job is due (NF2), are the residual's "(and any sequence without an accepted page)".
 - **R7. Halt-sequence key** (§0.5 item 12). It over-splits at each owner restart or migration, which adds a sequence, and at each malformed row, which adds up to two (the row and, inside a run, the remainder). Each added sequence has at most one representative (safe). It under-splits only across a replaced owner DB (R4) or under a future resume that does not raise generation, which is **OWED** to the durable resume owner (TB-I3, HR `:203`).
 
 **OPEN.**
 - **OQ-NF-2** (the `book_account_owner.py` owner). An incremental `read_incidents`. Out of scope.
-- **OQ-CAP-3** (coordinator (3), for #651's freeze).
+- **OQ-CAP-3** (coordinator (4), for #651's freeze; originally coordinator (3)).
   - Choose τ, W_j, `retry_max_s` or T_n so that NF8 stays below 30 s, and account for R5. k is floored at 8 (k_first = 5 plus margin) and defaults to 10 (§0.5 item 11). With W_j at the code's 5 s, the default `retry_max_s` of 30 s cannot pass the check below: L ≥ NF8 and poll_bound ≥ W_o + W_j = 10 s, so the check needs `retry_max_s` + 2·poll_bound + (1 + 2kc)·W_j + kcτ < 60 s, and 30 + 20 + 15 > 60 at k = c = 1 (review of `5d2356c`, P3-F). It passes only with a declared W_j well below 5 s, as in the feasible point below.
   - **BINDING CHECK (extension, routed to #651).** #651's binding validator (`validate_binding`, `fb3c3ba:137`) refuses a binding unless `retry_max_s` + `max_notifier_loop_interval` + poll_bound < `ESCALATION_STEP_S`: #651's constraint (d) (`fb3c3ba:123`). This is NF2's class-U precondition. The binding's `retry_max_s` must equal the notifier's configured value (`fb3c3ba:136`). #651's import rule bans `book_incident_notifier` (`fb3c3ba:151`), so `book_host` restates `ESCALATION_STEP_S` (`:60-62`) as 60.0, and HH4 pins it to this module's constant (`fb3c3ba:138`, `:200`). #651's (b) does not imply (d): NF8 = 10 s and L = 35 s can pass (b), but 30 + 35 > 60 s.
   - **(d) at the default k = 10, c = 2.** Since L ≥ NF8, (d) needs `retry_max_s` + 2·W_o + 2·T_parse + (3 + 2kc)·W_j + kcτ < 60 s, before ε and slack. With W_o = 5 s, that is `retry_max_s` + 2·T_parse + 43·W_j + 20·τ < 50 s.
@@ -485,7 +485,12 @@ git diff origin/main...HEAD -- ops/c1_rail/book_incident_notifier.py | rg -n 'CH
 
 ## §12 — Dispatch record
 
-- **Status:** DRAFT. At freeze, coordinator (3) records:
+- **Freeze record (coordinator (4), 2026-10-04, base `c73d616`):**
+  - frozen revision: the commit that adds this record (its SHA is posted on the freeze PR and in the dispatch message);
+  - OQ-NF-3: RULED (a); readings (i)-(iii) CONFIRMED by Joshua 2026-10-03T22:08:19Z (P4); halt-sequence key CONFIRMED by coordinator (4) (§0.5 item 12);
+  - #635 sequencing: this build first, then D-MON-1's build (P3);
+  - moved anchors: none. `git diff 6e679cc c73d616` is empty for `book_incident_notifier.py` and its test; `ops/c1_rail/` changed only in `qualification/p7_evidence.py` and `qualification/production_source.py`, which this card does not cite; #635, #637, #651 and #652 merged as cards (DRAFT anchors at their reviewed heads).
+- **As drafted:** DRAFT. At freeze, coordinator (3) records:
   - the frozen revision;
   - OQ-NF-3's state, coordinator (2)'s confirmation of readings (i)-(iii) (P4) and the halt-sequence key's confirmation (§9);
   - the #635 sequencing;

@@ -1,17 +1,18 @@
-# Track B status register — the Rule 7 owner of each Track B item's current status.
+# Track B status register (pilot) — one row per Track B item's current status.
 #
 # One row per Track B item: status now, the next permitted action and who takes it,
 # blockers, expiry, and the dated record that set the status. The rulings' text,
-# reasoning and evidence stay with the record each row cites (operator ruling
-# 2026-10-03; docs/operational_rules.md Rule 7 owner table).
+# reasoning and evidence stay with the record each row cites. While `role: pilot`
+# the cited owners govern and nothing is generated from this file; the change that
+# wires the STATE / deployment-checklist mirrors sets `role: owner` (Rule 7).
 #
 # Who writes a row: whoever records the ruling or acceptance, in the same change
 # (the gate refuses a new dated heading in a watched owner without a citing row).
-# After editing, run `python -I scripts/fp.py python scripts/track_b_register.py write` to regenerate the
-# blocks listed under `generated`, then `... check` (gate `track-b-register`).
-# `... digest` is the session-start summary (SessionStart hook).
+# Check with `python -I scripts/fp.py python scripts/track_b_register.py check`
+# (gate `track-b-register`); `... digest` prints the session summary. The
+# invariants the check enforces are listed in scripts/track_b_register.py.
 #
-# Falsifier (STATE forward trigger 2026-10-17): if Track B mirror/propagation
+# Falsifier (to be dated when the mirrors are wired): if Track B mirror/propagation
 # commits have not fallen by at least half from the 2026-09-27..10-02 baseline (17),
 # or STATE/checklist status drifts from the ledger again, retire the register
 # rather than add rules to it.
@@ -37,16 +38,17 @@
 #   refs        free text: PRs, commits, branches (not checked).
 #   note        one line, only where the status needs a scope limit to be read right.
 #
-# Coverage (rule R5): every heading dated on or after `covers_from` in a `watch` file
-# must be cited by some row's owner/evidence or listed under `noted`. Add or update a
-# row in the same change that adds a dated ruling or acceptance.
+# Coverage (rule R5): every file a row or noted entry cites is in `watch`, and every
+# heading in a watched file carrying a date on or after `covers_from` is cited by some
+# row's owner/evidence or listed under `noted`. Add or update a row in the same change
+# that adds a dated ruling or acceptance, and advance `as_of` / `reconciled_at` (R6).
 #
 # Grants nothing: no row authorizes an act; the owners and the operator do.
 
 schema: track_b_register/v1
-role: owner
-as_of: 2026-10-03
-reconciled_at: d27c7a1
+role: pilot
+as_of: 2026-10-04
+reconciled_at: 9c2a153
 covers_from: 2026-10-01
 watch:
   - docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md
@@ -55,11 +57,11 @@ watch:
   - docs/notes/2026-09-29-x1-decision-packet.md
   - docs/notes/2026-09-30-x4-decision-packet.md
   - docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md
-generated:
-  - path: STATE.md
-    view: summary
-  - path: docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md
-    view: table
+  - docs/briefs/handoffs/2026-09-21-tradeify-t07-manual-settlement-procedure.md
+  - docs/briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md
+  - docs/briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet.md
+  - docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md
+  - docs/notes/2026-09-27-route-commissioning-session-packet.md
 
 items:
   # ---------------------------------------------------------------- qualification
@@ -180,14 +182,15 @@ items:
   - id: work.T05-qualpath-fixes
     kind: work
     title: T05-owed qualification-path checks (source_truncated, calendar role, review identity)
-    status: IN_PROGRESS
-    since: 2026-10-02
-    owner: ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
+    status: ACCEPTED_LIMITED
+    since: 2026-10-03
+    owner: ../superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02
     evidence:
-      - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
-    next: Complete and land; the merge hold is lifted (operator decision sheet A1, 2026-10-02)
-    next_actor: worker
-    refs: ["#611 (draft)"]
+      - ../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus
+    next: null
+    next_actor: none
+    refs: ["#611 merged f5b0f6a"]
+    note: "Counts as met for R1 on #611's merge (ENG-6 option C); the TEST_ONLY fixture exemption stays through R1 and its migration is owed before S8."
 
   - id: work.term-8
     kind: work
@@ -439,11 +442,15 @@ items:
   - id: packet.T08
     kind: packet
     title: Broker and protection feasibility
-    status: BLOCKED
-    since: 2026-09-24
-    owner: ../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24
-    next: "Rule on the CrossTrade vendor reply once recorded (#575); live release stays held (R3 = NONE)"
+    status: AWAITING_OPERATOR
+    since: 2026-10-01
+    owner: ../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#710-operator-ruling--route-path-after-the-support-reply-2026-10-01
+    evidence:
+      - ../briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24
+    next: "Accept the bounded-exposure amendment text (scope §5 step 5); halt and attended reconciliation answer an unknown request"
     next_actor: operator
+    refs: ["#575 merged 9c2a153"]
+    note: "Route path = bounded-exposure amendment (option a); no route change, implementation, drill, order, arm or spend is granted, and live release stays held (§7.8 part 1, R3 = NONE)."
 
   - id: packet.T09
     kind: packet

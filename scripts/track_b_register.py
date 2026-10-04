@@ -3,47 +3,63 @@
 
 The register (`docs/governance/track_b_register.yml`) holds one row per Track B
 item: a gate, packet, slice, checkpoint, drill or defect. Each row gives the
-item's status now, the next permitted action and who takes it. It cites the dated
-ruling or acceptance that set that status. The ledgers keep the reasoning and
-evidence; a row only routes to them. Under Rule 7 the register is the canonical
-owner of each item's current status, next action, actor, blockers and expiry
-(`role: owner`, operator ruling 2026-10-03); the rulings' text, reasoning and
-evidence stay with the record each row cites. The row is written by whoever
-records the ruling or acceptance, in the same change.
+item's status now, the next permitted action and who takes it, and cites the dated
+ruling or acceptance that set that status; the ledgers keep the reasoning and
+evidence. `role: pilot` means the cited owners still govern and nothing is
+generated from the register; `role: owner` (the Rule 7 owner of item status) needs
+`generated` mirrors and is set by the change that wires them into STATE and the
+deployment checklist.
 
 Subcommands:
-  check   (default) exit 0 when the register is well formed and in step with its
-          watched owner documents; exit 1 with one line per finding otherwise.
+  check   (default) exit 0 when every invariant below holds; exit 1 with one line
+          per finding otherwise.
   write   regenerate every block listed under `generated` in place, between
           `<!-- BEGIN generated: track-b-register ... -->` and its END marker.
-  digest  a short plain-text summary for a session start: next actions by actor,
-          blocked items and approvals expiring within --days (default 7). With
-          --hook it never fails: any error becomes one line and exit 0.
-  table   print the Markdown table view of the open rows.
+  digest  plain-text summary for a session start: expiries, next actions by actor,
+          blocked items. It validates first and reports itself unavailable on any
+          status-affecting finding. --hook never fails: errors become one line, exit 0.
+  table   print the Markdown table view.
 
-`check` is content-deterministic: it never compares against the clock, so the
-required CI status cannot turn red on a date alone. Expiry appears only in
-`digest`. Its findings:
-  R1  schema: required keys, types, status enum, id/alias shape.
-  R2  identity: ids and aliases unique across the register; no alias equals an id.
-  R3  references: every `blocked_by` / `checkpoint` id exists; no self-reference;
-      no cycle in `blocked_by`.
-  R4  links: every `owner` / `evidence` link resolves to a tracked file and, when it
-      carries a fragment, to a heading anchor in that file (GitHub slug rules).
-  R5  coverage: every heading dated on or after `covers_from` in a `watch` file is
-      cited by some row's `owner` or `evidence`, or listed under `noted`. A new
-      ruling or acceptance therefore lands with its register row in the same change.
-  R6  `reconciled_at` and `as_of` are present and well formed.
-  R7  no inline comment after a value: YAML reads an unquoted ` #` as the start of a
-      comment and silently cuts the value there (quote any text holding `#`).
-  R8  every `generated` block exists exactly once in its file and equals what
-      `write` would produce (run `write` after editing the register).
+Invariants (finding code; the test that proves each is named in brackets):
+  I1  R1  Shape: required keys and types, status/actor/kind/role enums, id prefix =
+          kind, ISO dates; an expiry is an ISO datetime with an explicit zone,
+          normalised to UTC [test_r1_*, test_expiry_offset_is_converted_to_utc].
+  I2  R1  Action coherence: `next` null <=> next_actor `none`; a terminal row has no
+          `next` [test_r1_next_and_actor_agree_with_status].
+  I3  R2  Identity: each id occurs once; ids and aliases unique (NFKC, casefold); the
+          YAML has no repeated mapping key [test_r2_*, test_load_rejects_duplicate_mapping_keys].
+  I4  R3  Graph: every `blocked_by` / `checkpoint` id exists; no self-reference or
+          cycle [test_r3_*].
+  I5  R4  Links: every owner/evidence/noted link is repository-relative and resolves
+          to a file and, with a fragment, a heading anchor (GitHub slugs) [test_r4_*].
+  I6  R5  Coverage: every file cited by a row or noted entry is in `watch`, and every
+          heading in a watched file carrying any date on or after `covers_from` is
+          cited or noted [test_r5_*].
+  I7  R6  Revision: `as_of` is on or after every row's `since`; `reconciled_at` names
+          a commit whose date is on or after every `since` and in whose tree every
+          cited anchor resolves (checked where git can read the commit; skipped in a
+          shallow or non-git tree) [test_r6_*].
+  I8  R7  No YAML value is cut by an unquoted ` #` [test_r7_*].
+  I9  R8  Mirrors: `role: owner` has at least one `generated` target; each block occurs
+          once and equals `write`'s output; `write` keeps the file's line endings;
+          every rendered row carries its `note` [test_r8_*, test_write_preserves_crlf,
+          test_mirrors_carry_notes].
+  I10 R9  Gate selection: the gates.yml `track-b-register` selector matches the
+          register, this script, gates.yml and every watched, cited and generated
+          file [test_r9_*].
+  I11 --  Readiness and expiry (views): a row is offered as a next action only when it
+          is open, has a next action, waits on nothing outside the register, and every
+          `blocked_by` row is terminal and, given a clock, unexpired; expiry applies
+          whatever the status, so a lapsed terminal row satisfies nothing and every
+          expiring row is listed. `check` and the generated mirrors are clock-free; the
+          digest applies the clock [test_waits_for_*, test_expiry_*, test_digest_*].
 
-Owner of the rule: docs/operational_rules.md Rule 7 owner table.
+Owner of the rule: docs/operational_rules.md Rule 7 (once `role: owner`).
 """
 from __future__ import annotations
 
 import argparse
+import subprocess
 import posixpath
 import datetime as dt
 import re
@@ -75,6 +91,7 @@ STATUSES = (
 )
 TERMINAL = frozenset({"ACCEPTED", "ACCEPTED_LIMITED", "CLOSED"})
 ACTORS = ("operator", "coordinator", "worker", "none")
+ROLES = ("pilot", "owner")
 KINDS = ("packet", "slice", "gate", "work", "checkpoint", "drill", "defect", "t00", "adapter", "parked")
 
 ID_RE = re.compile(r"^[a-z0-9]+(?:\.[A-Za-z0-9][A-Za-z0-9+-]*)+$")
@@ -244,8 +261,8 @@ def check(
         out.append(f"R1 missing top-level key {key!r}")
     for key in sorted(data.keys() - TOP_KEYS - TOP_OPTIONAL):
         out.append(f"R1 unknown top-level key {key!r}")
-    if data.get("role") != "owner":
-        out.append("R1 role must be 'owner' (Rule 7 owner of Track B item status)")
+    if data.get("role") not in ROLES:
+        out.append(f"R1 role must be one of {', '.join(ROLES)}")
     as_of = _date(data.get("as_of"))
     if as_of is None:
         out.append("R6 as_of must be YYYY-MM-DD")
@@ -259,8 +276,8 @@ def check(
         out.append("R1 watch must be a list of repository paths")
         watch = []
     out.extend(_targets_ok(data))
-    if production and not data.get("generated"):
-        out.append("R1 the production register needs a non-empty generated list")
+    if data.get("role") == "owner" and not data.get("generated"):
+        out.append("R8 role 'owner' needs at least one generated mirror")
     if production and not watch:
         out.append("R1 the production register needs a non-empty watch list")
     items = data.get("items")
@@ -321,6 +338,8 @@ def check(
             since = _date(row.get("since"))
             if since is not None and since > as_of:
                 out.append(f"R6 {row.get('id')}: since {since} is after as_of {as_of}; advance as_of")
+
+    out.extend(_revision_ok(data, rows, root))
 
     # R2 identity
     names: dict[str, str] = {}
@@ -417,7 +436,12 @@ def check(
             continue
         cited.add((path, frag))
 
-    # R5 coverage of dated headings in watched owners
+    # R5 coverage: every cited file is watched ...
+    watched = {(root / w).resolve() for w in watch}
+    for path in sorted({p for p, _ in cited} - watched):
+        out.append(f"R5 {path.relative_to(root.resolve()).as_posix()}: cited but not in watch")
+
+    # ... and every dated heading in a watched file is cited
     if covers_from is not None:
         for rel in watch:
             path = (root / rel).resolve()
@@ -453,6 +477,46 @@ def check(
     if not any(f.startswith("R1") for f in out):
         for target in data.get("generated") or []:
             out.extend(_check_block(data, target, root))
+    return out
+
+
+def _git(root: Path, *args: str) -> str | None:
+    try:
+        done = subprocess.run(
+            ["git", "-C", str(root), *args], capture_output=True, text=True, encoding="utf-8", timeout=30
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return done.stdout if done.returncode == 0 else None
+
+
+def _revision_ok(data: dict[str, Any], rows: list[dict[str, Any]], root: Path) -> list[str]:
+    """R6 (I7): reconciled_at is a commit no older than any status, holding every cited anchor."""
+    sha = data.get("reconciled_at")
+    if not (isinstance(sha, str) and SHA_RE.match(sha)):
+        return []
+    if _git(root, "rev-parse", "--is-inside-work-tree") is None:
+        return []
+    if (_git(root, "rev-parse", "--is-shallow-repository") or "").strip() == "true":
+        return []
+    if _git(root, "cat-file", "-e", f"{sha}^{{commit}}") is None:
+        return [f"R6 reconciled_at {sha} is not a commit in this repository"]
+    out = []
+    when = _date((_git(root, "show", "-s", "--format=%cs", sha) or "").strip())
+    latest = max((d for d in (_date(r.get("since")) for r in rows) if d), default=None)
+    if when and latest and when < latest:
+        out.append(f"R6 reconciled_at {sha} ({when}) predates the newest status ({latest}); reconcile against a later commit")
+    trees: dict[str, dict[str, int] | None] = {}
+    for row in rows:
+        for link in _links(row):
+            path_part, _, frag = link.partition("#")
+            rel = posixpath.normpath(posixpath.join("docs/governance", path_part))
+            if rel not in trees:
+                blob = _git(root, "show", f"{sha}:{rel}")
+                trees[rel] = anchors(blob) if blob is not None else None
+            amap = trees[rel]
+            if amap is None or (frag and frag not in amap):
+                out.append(f"R6 {row.get('id')}: {link!r} does not resolve at reconciled_at {sha}")
     return out
 
 
@@ -552,23 +616,29 @@ def _open(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _groups(
     rows: list[dict[str, Any]], now: dt.datetime | None = None
 ) -> tuple[dict[str, list], list]:
-    """Unblocked next actions by actor, and blocked rows with what they wait on.
+    """Unblocked next actions by actor, and blocked rows with what they wait on (I11).
 
-    `waits_for` (prerequisites outside the register) blocks like `blocked_by`. With
-    `now`, a row whose `expires` has passed is not offered as a next action.
+    `waits_for` blocks like `blocked_by`. With `now`, expiry applies whatever the
+    status: a lapsed row is not offered, and a lapsed terminal row satisfies nothing.
     """
     dupes = sorted(rid for rid, n in Counter(r["id"] for r in rows).items() if n > 1)
     if dupes:
         raise Finding(f"R2 duplicate row ids: {', '.join(dupes)}")
     by_id = {r["id"]: r for r in rows}
 
-    def waiting(r):
-        deps = [d for d in r.get("blocked_by") or [] if by_id.get(d, {}).get("status") not in TERMINAL]
-        return deps + list(r.get("waits_for") or [])
-
     def lapsed(r):
         exp = _expiry(r.get("expires"))
         return now is not None and exp is not None and exp <= now
+
+    def waiting(r):
+        deps = []
+        for d in r.get("blocked_by") or []:
+            dep = by_id.get(d, {})
+            if dep.get("status") not in TERMINAL:
+                deps.append(d)
+            elif lapsed(dep):
+                deps.append(f"{d} (expired)")
+        return deps + list(r.get("waits_for") or [])
 
     nexts = {
         actor: [
@@ -593,45 +663,49 @@ def render(data: dict[str, Any], view: str, target_rel: str) -> str:
     register = _relink("track_b_register.yml", target_rel)
     head = (
         f"_Generated from the [Track B register]({register}) (as of {data['as_of']} @ "
-        f"`{data['reconciled_at']}`); the register owns item status. Edit it, then run "
+        f"`{data['reconciled_at']}`); "
+        + ("the register owns item status" if data.get("role") == "owner" else "pilot view; the cited owners govern")
+        + ". Edit it, then run "
         f"`python -I scripts/fp.py python scripts/track_b_register.py write`._"
     )
     if view == "table":
         return head + "\n\n" + table(data, target_rel)
     nexts, blocked = _groups(data["items"])
     lines = [head, ""]
-    expiring = sorted(
-        (r for r in _open(data["items"]) if _expiry(r.get("expires"))),
-        key=lambda r: _expiry(r["expires"]),
-    )
-    for r in expiring:
+    for r in sorted(_expiring(data["items"]), key=lambda r: _expiry(r["expires"])):
         lines.append(
-            f"- **Expires {_expiry(r['expires']):%Y-%m-%dT%H:%MZ}:** `{r['id']}` — {r['title']}"
+            f"- **Expires {_expiry(r['expires']):%Y-%m-%dT%H:%MZ}:** `{r['id']}` ({r['status']}) — "
+            f"{r['title']}{_note_md(r)}"
         )
     for actor, label in (("operator", "Operator"), ("coordinator", "Coordinator"), ("worker", "Worker")):
         if nexts[actor]:
             lines.append(f"- **Next — {label}:**")
-            lines.extend(
-                f"  - `{r['id']}` — {r['next']}"
-                for r in nexts[actor]
-            )
+            lines.extend(f"  - `{r['id']}` — {r['next']}{_note_md(r)}" for r in nexts[actor])
     if blocked:
-        lines.append("- **Blocked:** " + "; ".join(f"`{r['id']}` ← {', '.join(w)}" for r, w in blocked))
+        lines.append("- **Blocked:**")
+        lines.extend(f"  - `{r['id']}` ← {', '.join(w)}{_note_md(r)}" for r, w in blocked)
     return "\n".join(lines)
+
+
+def _expiring(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Every non-parked row carrying an expiry, terminal or not (I11)."""
+    return [r for r in rows if _expiry(r.get("expires")) and r.get("status") != "PARKED"]
+
+
+def _note_md(r: dict[str, Any]) -> str:
+    return f" _(Note: {r['note']})_" if r.get("note") else ""
 
 
 def digest(data: dict[str, Any], today: dt.datetime, days: int) -> str:
     rows = data["items"]
     lines = [
-        f"Track B register (owner of item status) as_of {data['as_of']} "
+        f"Track B register (role {data.get('role')}) as_of {data['as_of']} "
         f"@ {data['reconciled_at']}"
     ]
     horizon = today + dt.timedelta(days=days)
     expiring = []
-    for r in rows:
-        exp = _expiry(r.get("expires"))
-        if exp is None or r.get("status") in TERMINAL:
-            continue
+    for r in _expiring(rows):
+        exp = _expiry(r["expires"])
         if exp <= today:
             expiring.append(f"  EXPIRED {exp:%Y-%m-%dT%H:%MZ} {r['id']}: {r['title']}")
         elif exp <= horizon:
@@ -661,12 +735,19 @@ def table(data: dict[str, Any], target_rel: str = "docs/governance/x") -> str:
     def cell(text: Any) -> str:
         return str(text or "—").replace("|", "\\|").replace("\n", " ")
 
-    lines = ["| Item | Status | Next | Actor | Blocked by | Owner |", "|---|---|---|---|---|---|"]
-    for r in _open(data["items"]):
+    lines = [
+        "| Item | Status | Next | Actor | Blocked by | Expires | Note | Owner |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    shown = _open(data["items"]) + [r for r in _expiring(data["items"]) if r.get("status") in TERMINAL]
+    for r in shown:
         name = r["id"] + (f" ({', '.join(r['aliases'])})" if r.get("aliases") else "")
+        exp = _expiry(r.get("expires"))
+        waits = ", ".join([*(r.get("blocked_by") or []), *(r.get("waits_for") or [])])
         lines.append(
             f"| {cell(name)} | {r['status']} | {cell(r.get('next'))} | {r['next_actor']} | "
-            f"{cell(', '.join([*(r.get('blocked_by') or []), *(r.get('waits_for') or [])]))} | [owner]({_relink(r['owner'], target_rel)}) |"
+            f"{cell(waits)} | {cell(exp and f'{exp:%Y-%m-%dT%H:%MZ}')} | {cell(r.get('note'))} | "
+            f"[owner]({_relink(r['owner'], target_rel)}) |"
         )
     return "\n".join(lines)
 
@@ -693,6 +774,8 @@ def main(argv: list[str] | None = None) -> int:
         "--hook", action="store_true", help="digest only: report any failure as one line, exit 0"
     )
     args = parser.parse_args(argv)
+    if hasattr(sys.stdout, "reconfigure"):  # a cp1252 console must not kill the digest on "C′"
+        sys.stdout.reconfigure(errors="replace")
     if args.hook:
         if args.command != "digest":
             parser.error("--hook applies to digest only")

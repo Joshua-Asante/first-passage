@@ -213,17 +213,16 @@ gates:
       - python
       - scripts/check_state_currency.py
 
-  # Track B status register (Rule 7 owner of Track B item status): schema, ids/aliases, blocked_by
-  # graph, owner anchors, and coverage -- every dated heading from covers_from on in a
-  # watched owner must be cited by a row; generated blocks (STATE row 1 summary, checklist
-  # current-state table) must match the register. Content-only (no clock), so a lapsed expiry
-  # never turns the required status red; the regex names the register, its checker,
-  # every watched owner, every generated target and every file a row's owner/evidence
-  # cites (rule R9 fails the check when a cited file is missing from it).
+  # Track B status register (pilot; invariants I1-I10 in scripts/track_b_register.py):
+  # schema, identity, blocked_by graph, owner anchors, coverage of every cited and watched
+  # owner, the reconciliation revision, and any generated mirrors. Content-only (no clock),
+  # so a lapsed expiry never turns the required status red. The regex names the register,
+  # its checker, gates.yml and every watched, cited or generated file (R9 fails the check
+  # when one is missing).
   - id: track-b-register
     tier: path-conditional
     when:
-      staged_regex: '^(STATE[.]md$|docs/governance/track_b_register[.]yml$|scripts/track_b_register[.]py$|scripts/gates[.]yml$|docs/superpowers/plans/2026-09-18-full-e1-execution-slices[.]md$|docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist[.]md$|docs/notes/2026-09-26-tradeify-route-drill-plan-draft[.]md$|docs/notes/2026-09-29-x1-decision-packet[.]md$|docs/notes/2026-09-30-x4-decision-packet[.]md$|docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure[.]md$|docs/briefs/handoffs/2026-09-21-tradeify-t0(7-manual-settlement-procedure|8-broker-protection-feasibility)[.]md$|docs/briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet[.]md$|docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state[.]md$|docs/notes/2026-09-27-route-commissioning-session-packet[.]md$)'
+      staged_regex: '^(docs/governance/track_b_register[.]yml$|scripts/track_b_register[.]py$|scripts/gates[.]yml$|docs/superpowers/plans/2026-09-18-full-e1-execution-slices[.]md$|docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist[.]md$|docs/notes/2026-09-26-tradeify-route-drill-plan-draft[.]md$|docs/notes/2026-09-29-x1-decision-packet[.]md$|docs/notes/2026-09-30-x4-decision-packet[.]md$|docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure[.]md$|docs/briefs/handoffs/2026-09-21-tradeify-t0(7-manual-settlement-procedure|8-broker-protection-feasibility)[.]md$|docs/briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet[.]md$|docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state[.]md$|docs/notes/2026-09-27-route-commissioning-session-packet[.]md$)'
     cmd:
       - python
       - scripts/track_b_register.py

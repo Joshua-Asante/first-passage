@@ -67,7 +67,7 @@ def _row(**over):
 def _register(**over):
     data = {
         "schema": "track_b_register/v1",
-        "role": "owner",
+        "role": "pilot",
         "as_of": "2026-10-03",
         "reconciled_at": "d5d559b",
         "covers_from": "2026-10-01",
@@ -445,9 +445,79 @@ def test_expiry_offset_is_converted_to_utc():
     assert tbr._expiry(aware).hour == 5
 
 
-def test_production_register_requires_generated(root):
-    assert tbr.check(_register(), root) == []
-    assert "R1" in _codes(tbr.check(_register(), root, production=True))
+def test_r8_role_owner_requires_a_generated_mirror(root):
+    assert tbr.check(_register(), root) == []  # pilot: no mirrors needed
+    assert _codes(tbr.check(_register(role="owner"), root)) == ["R8"]
+    _, data = _with_target(root, "table")
+    data["role"] = "owner"
+    tbr.write(data, root)
+    assert tbr.check(data, root) == []
+
+
+def test_r5_cited_file_must_be_watched(root):
+    (root / "docs" / "other.md").write_text("# Other\n\n## Ruling, 2026-09-01\n", encoding="utf-8")
+    data = _register()
+    data["items"][0]["evidence"] = ["../other.md#ruling-2026-09-01"]
+    findings = tbr.check(data, root)
+    assert _codes(findings) == ["R5"] and any("docs/other.md: cited but not in watch" in f for f in findings)
+    data["watch"].append("docs/other.md")
+    assert tbr.check(data, root) == []
+
+
+def _git(root, *args):
+    subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+
+
+def _git_root(root):
+    _git(root, "init", "-q")
+    _git(root, "-c", "user.email=t@t", "-c", "user.name=t", "add", "-A")
+    env_date = {"GIT_COMMITTER_DATE": "2026-10-02T12:00:00+00:00", "GIT_AUTHOR_DATE": "2026-10-02T12:00:00+00:00"}
+    subprocess.run(
+        ["git", "-C", str(root), "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "base"],
+        check=True, capture_output=True, env={**__import__("os").environ, **env_date},
+    )
+    return subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+
+
+def test_r6_reconciled_at_must_hold_cited_anchors_and_postdate_since(root):
+    sha = _git_root(root)
+    data = _register(reconciled_at=sha)
+    assert tbr.check(data, root) == []
+    data["items"][0]["since"] = "2026-10-03"  # status newer than the revision
+    assert any("predates the newest status" in f for f in tbr.check(data, root))
+    data["items"][0]["since"] = "2026-10-01"
+    (root / "docs" / "ledger.md").write_text(OWNER_MD + "\n### Later ruling, 2026-09-30\n", encoding="utf-8")
+    data["items"][0]["evidence"] = ["../ledger.md#later-ruling-2026-09-30"]  # heading added after sha
+    assert any("does not resolve at reconciled_at" in f for f in tbr.check(data, root))
+    assert any("is not a commit" in f for f in tbr.check(_register(reconciled_at="abcdef1"), root))
+
+
+def test_expiry_lapsed_terminal_row_satisfies_nothing(root):
+    data = _register()
+    data["items"] = [
+        _row(status="ACCEPTED", expires="2026-10-09T01:52:19Z"),
+        _row(id="gate.R1", kind="gate", aliases=[], status="OPEN", next="grant",
+             next_actor="coordinator", blocked_by=["slice.S5"]),
+    ]
+    before = tbr.digest(data, dt.datetime(2026, 10, 8, tzinfo=dt.timezone.utc), 7)
+    assert "slice.S5" in before.split("Next")[0] and "gate.R1: grant" in before  # listed though terminal
+    after = tbr.digest(data, dt.datetime(2026, 10, 10, tzinfo=dt.timezone.utc), 7)
+    assert "EXPIRED" in after and "gate.R1 <- slice.S5 (expired)" in after and "gate.R1: grant" not in after
+    assert "Expires 2026-10-09T01:52Z" in tbr.render(data, "summary", "docs/plan.md")
+    assert "2026-10-09T01:52Z" in tbr.table(data)
+
+
+def test_mirrors_carry_notes(root):
+    data = _register()
+    data["items"] = [
+        _row(status="OPEN", next="run it", next_actor="coordinator", note="not cleared to execute"),
+        _row(id="gate.R1", kind="gate", aliases=[], status="BLOCKED", next="grant",
+             next_actor="coordinator", blocked_by=["slice.S5"], note="barred until accepted"),
+    ]
+    summary = tbr.render(data, "summary", "docs/plan.md")
+    assert "not cleared to execute" in summary and "barred until accepted" in summary
+    table = tbr.table(data)
+    assert "not cleared to execute" in table and "barred until accepted" in table
 
 
 @pytest.mark.parametrize("over", [
