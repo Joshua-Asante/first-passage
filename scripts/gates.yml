@@ -214,11 +214,10 @@ gates:
       - scripts/check_state_currency.py
 
   # Track B status register (pilot; invariants I1-I10 in scripts/track_b_register.py):
-  # schema, identity, blocked_by graph, owner anchors, coverage of every cited and watched
-  # owner, the reconciliation revision, and any generated mirrors. Content-only (no clock),
-  # so a lapsed expiry never turns the required status red. The regex names the register,
-  # its checker, gates.yml and every watched, cited or generated file (R9 fails the check
-  # when one is missing).
+  # schema and strict dates, identity, blocked_by graph, linked files, the reconciliation
+  # revision, and the fixed mirrors once role is owner. Content-only (no clock), so a
+  # lapsed expiry never turns the required status red. The regex names the register, its
+  # checker, gates.yml and every linked file (R9 fails the check when one is missing).
   - id: track-b-register
     tier: path-conditional
     when:
