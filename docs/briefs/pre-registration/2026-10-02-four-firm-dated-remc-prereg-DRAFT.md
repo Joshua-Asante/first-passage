@@ -104,7 +104,7 @@ No candidate named or proposed here is run through any frozen tier, replay or MC
 | **AMBIGUOUS** | Calibration reference (I-20) clears 5.0% on ≥ 2 tiers | Gate cannot discriminate: close v2 and re-derive in a fresh brief (v2 §6); this result is quarantined |
 | **INSUFFICIENT** *(proposed)* | Missing producer context, missing synchronized `intraday_low` for a gating tier, run incomplete at frozen depth, or any §2 item unset | No verdict from this run; how the falsifier reads at 11-08 is O-13 |
 
-**Program level (checked at 2026-11-08, separate from the per-run verdict above):** the program demotes to research-only only if no pre-registered candidate clears Part A on any tier by 2026-11-08 (four-firm ADR §4; v2 §6 FALSIFIED). No verdict by then reads as O-13 records; exactly one tier is O-12.
+**Program level (checked at 2026-11-08, separate from the per-run verdict above):** the revert trigger fires (demote to research-only) if no pre-registered candidate clears Part A on any tier by 2026-11-08 (four-firm ADR §4; v2 §6 FALSIFIED). No verdict by then reads as O-13 records; exactly one tier is O-12 (operator decides); ≥ 2 clears with no `trailing_locking` tier is the O-12 residual (not ruled).
 
 ## §5 — Forbidden moves
 
