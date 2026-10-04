@@ -35,7 +35,7 @@ HALTED, the activation block (HR:79; ADR:453) and the watch carry the held reque
 | E5 | A scheduled check is missed and nobody notices | Unbounded | E1–E4 run on with no end | Ruled: "A missed check pings the D-MON dead-man check (W5 item 1)" (W:32). **GAP**: no card binds that check (§2) |
 | E6 | A check's reads fail, or the platform is unavailable | Until a retry succeeds | Exposure unknown | "Check **missed**, not passed. Retry. If exposure is suspected, Joshua flattens directly on Tradovate (D-MON-3)" (W:60). Existing **GAP**: Tradovate itself unavailable (S-X3 draft:114) |
 | E7 | A cross-session read misses a late fill | Until a later read finds it | A fill that goes unseen | Fills-history completeness is unverified, and "a miss there is not evidence of no fill" (W:47). Cross-session recovery UNESTABLISHED (ADR:462). Mitigated only by the order-state and position reads (W:45–46) |
-| E8 | An operator preservation trade is mistaken for a late effect | Only while that trade is open | Misclassification | Outside the four while any request is held (D-MON-7, W:67). An unrecorded operator action is an incident (ADR:480). **GAP**: the record form is routed, not defined (A-3, §3); owner T13 / O-5 (HR:124) |
+| E8 | An operator preservation trade is mistaken for a late effect | Until the trade is recorded and its fills are reconciled. Closing it does not end this: the next check reads fills since the previous check (W:47), so a completed round trip still appears | Misclassification | Outside the four while any request is held (D-MON-7, W:67). An unrecorded operator action is an incident (ADR:480). **GAP**: the record form is routed, not defined (A-3, §3); owner T13 / O-5 (HR:124) |
 
 ## §2 Watch mechanics
 
@@ -72,6 +72,7 @@ HALTED, the activation block (HR:79; ADR:453) and the watch carry the held reque
 | G7 | Tradovate unavailable during a check (S-X3 draft:114) | T13 (existing GAP) |
 | G8 | Grafana IRM itself down: "**nothing**" detects it (HB:124) | D-MON (OPT OQ-5); out of HB scope |
 | G9 | OQ-1 owner reading unruled (W:96); §1 proposes one | coordinator (4) as halt/resume owner, with Joshua's confirmation |
+| G10 | No qualification exercises the watch's dead-man check: an end-to-end run that deliberately omits a scheduled watch ping and records that the page arrives. Q7 qualifies the incident integration (GB:113); HB-L1/L2 qualify the runtime and notifier heartbeats (HB:9). Owed before the first armed session, where D-MON qualification sits (deployment checklist:601). §5 Q4's proviso names Q7 and HB-L1/L2, not this | coordinator (4) specifies it with G1; Joshua runs it |
 
 ## §3 Exact-text reconciliation
 
@@ -98,7 +99,7 @@ D1 ruling (ADR:542): accept "in one act once all of these hold". List items are 
 | 4 | Stale-evidence choice recorded | ADR:556–557 | **Met.** The TB-I3 latch implementation is owed but is not a D1 precondition | TB-I3 |
 | 5 | A-1–A-4 folded | ADR:542 | **Met** as folds (§3). A-3's record form stays owed to T13 | T13 |
 | 6 | T13 adopts the F3 watch, before or in the same act | ADR:542, :555; PK:30 | **Owed.** Inputs: OQ-1 (§1, unruled); G1–G3 unbound; coordinator acceptance of W as T13 owner text (W:92); STATE row (G6) | coordinator (4); Joshua confirms OQ-1 and the grace |
-| 7 | D-MON channels for the watch | ADR:534; PK:30 | **Partial.** The channel choice is ruled (OPT:124). GB, HB and DOT are DRAFT; Q7 and HB-L1/L2 are unqualified. Watch dead-man unbound (G1) | coordinator (4); Joshua (OA acts, Q7) |
+| 7 | D-MON channels for the watch | ADR:534; PK:30 | **Partial.** The channel choice is ruled and the Grafana chain configured (OPT:124), the input adoption names (W:92). Watch dead-man unbound (G1). Arming readiness, not a D1 gate: provider qualification runs before any armed session (deployment checklist:601), including Q7 and G10. HB (runtime and notifier liveness, HB:9) and DOT (issue intake, DOT:8) do not supply the watch's channels | coordinator (4); Joshua (OA acts, Q7) |
 | 8 | D8 | ADR:559 | Not a precondition; deferred (ADR:561) | — |
 | — | Context, not a D1 gate | ADR:567 | D1 grants no dispatch, drill, arm, deployment or spend. Live release stays held | — |
 
