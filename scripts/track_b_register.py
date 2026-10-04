@@ -177,13 +177,13 @@ def _date(value: Any) -> dt.date | None:
 
 def _expiry(value: Any) -> dt.datetime | None:
     if isinstance(value, dt.datetime):
-        return value if value.tzinfo else None
+        return value.astimezone(dt.timezone.utc) if value.tzinfo else None
     if isinstance(value, str):
         try:
             parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
         except ValueError:
             return None
-        return parsed if parsed.tzinfo else None
+        return parsed.astimezone(dt.timezone.utc) if parsed.tzinfo else None
     return None
 
 
@@ -211,7 +211,9 @@ def lint(text: str) -> list[str]:
     return out
 
 
-def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> list[str]:
+def check(
+    data: dict[str, Any], root: Path = ROOT, text: str | None = None, production: bool = False
+) -> list[str]:
     out: list[str] = lint(text) if text is not None else []
 
     # R1/R6 top level
@@ -236,6 +238,8 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
         out.append("R1 watch must be a list of repository paths")
         watch = []
     out.extend(_targets_ok(data))
+    if production and not data.get("generated"):
+        out.append("R1 the production register needs a non-empty generated list")
     items = data.get("items")
     if not isinstance(items, list) or not items:
         out.append("R1 items must be a non-empty list")
@@ -271,8 +275,10 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
         nxt = row.get("next")
         if nxt is not None and not (isinstance(nxt, str) and nxt.strip()):
             out.append(f"R1 {where}: next must be text or null")
-        if row.get("status") in TERMINAL and nxt is None and row.get("next_actor") != "none":
+        if nxt is None and row.get("next_actor") != "none":
             out.append(f"R1 {where}: a row with no next action takes next_actor 'none'")
+        if row.get("status") in TERMINAL and nxt is not None:
+            out.append(f"R1 {where}: a terminal row has no next action")
         if nxt is not None and row.get("next_actor") == "none":
             out.append(f"R1 {where}: a next action needs an actor")
         for key in ("aliases", "blocked_by", "waits_for", "evidence", "refs"):
@@ -403,14 +409,13 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
                 count = seen.get(base, 0)
                 seen[base] = count + 1
                 anchor = base if count == 0 else f"{base}-{count}"
-                m = DATED_RE.search(title)
-                if not m:
-                    continue
-                try:
-                    when = dt.date.fromisoformat(m.group(1))
-                except ValueError:
-                    continue
-                if when < covers_from:
+                dates = []
+                for m in DATED_RE.finditer(title):
+                    try:
+                        dates.append(dt.date.fromisoformat(m.group(1)))
+                    except ValueError:
+                        pass
+                if not any(when >= covers_from for when in dates):
                     continue
                 if (path, anchor) not in cited:
                     out.append(
@@ -443,7 +448,7 @@ def _gate_selects(data: dict[str, Any], rows: list[dict[str, Any]], root: Path) 
     links += [n["link"] for n in data.get("noted") or [] if isinstance(n, dict) and isinstance(n.get("link"), str)]
     paths = {posixpath.normpath(posixpath.join("docs/governance", l.partition("#")[0])) for l in links}
     paths |= set(data.get("watch") or []) | {t.get("path") for t in data.get("generated") or [] if isinstance(t, dict)}
-    paths |= {"docs/governance/track_b_register.yml", "scripts/track_b_register.py"}
+    paths |= {"docs/governance/track_b_register.yml", "scripts/track_b_register.py", "scripts/gates.yml"}
     return [
         f"R9 scripts/gates.yml: track-b-register staged_regex does not select {p}"
         for p in sorted(p for p in paths if isinstance(p, str) and not p.startswith("..") and not selector.search(p))
@@ -640,6 +645,15 @@ def table(data: dict[str, Any], target_rel: str = "docs/governance/x") -> str:
 
 # ---------------------------------------------------------------- cli
 
+def _status_affecting(findings: list[str]) -> list[str]:
+    """Findings that can make the digest's status wrong (stale views and the gate selector cannot)."""
+    return [f for f in findings if not f.startswith(("R8", "R9"))]
+
+
+def _is_production(register: Path) -> bool:
+    return register.resolve() == DEFAULT_REGISTER.resolve()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n", 1)[0])
     parser.add_argument(
@@ -656,7 +670,12 @@ def main(argv: list[str] | None = None) -> int:
             parser.error("--hook applies to digest only")
         try:
             data = load(args.register)
-            print(digest(data, dt.datetime.now(dt.timezone.utc), args.days))
+            text = args.register.read_text(encoding="utf-8")
+            bad = _status_affecting(check(data, text=text, production=_is_production(args.register)))
+            if bad:
+                print(f"track-b register digest unavailable: {len(bad)} finding(s), first: {bad[0]}"[:300])
+            else:
+                print(digest(data, dt.datetime.now(dt.timezone.utc), args.days))
         except Exception as exc:  # a session must start whatever the register's state
             print(f"track-b register digest unavailable: {type(exc).__name__}: {exc}"[:300])
         return 0
@@ -666,7 +685,7 @@ def main(argv: list[str] | None = None) -> int:
         print(exc)
         return 1
     text = args.register.read_text(encoding="utf-8")
-    findings = check(data, text=text)
+    findings = check(data, text=text, production=_is_production(args.register))
     if args.command == "check":
         for f in findings:
             print(f)
@@ -680,6 +699,11 @@ def main(argv: list[str] | None = None) -> int:
         for f in blocking:
             print(f)
         print("track_b_register: fix the findings above before writing")
+        return 1
+    if args.command == "digest" and _status_affecting(findings):
+        for f in _status_affecting(findings):
+            print(f)
+        print("track_b_register: digest unavailable until the findings above are fixed")
         return 1
     if any(f.startswith(("R1", "R2", "R7")) for f in findings):
         print("track_b_register: register is malformed; run `check`")

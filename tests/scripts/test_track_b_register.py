@@ -420,6 +420,50 @@ def test_r9_gate_selector_covers_cited_files(root):
     gates.write_text(yaml.safe_dump({"gates": [gate]}), encoding="utf-8")
     findings = tbr.check(_register(), root)
     assert _codes(findings) == ["R9"] and any("docs/ledger.md" in f for f in findings)
-    gate["when"]["staged_regex"] = "^(docs/ledger[.]md|docs/governance/track_b_register[.]yml|scripts/track_b_register[.]py)$"
+    gate["when"]["staged_regex"] = "^(docs/ledger[.]md|docs/governance/track_b_register[.]yml|scripts/track_b_register[.]py|scripts/gates[.]yml)$"
     gates.write_text(yaml.safe_dump({"gates": [gate]}), encoding="utf-8")
     assert tbr.check(_register(), root) == []
+
+
+def test_r9_gate_selector_must_select_gates_yml(root):
+    (root / "scripts").mkdir()
+    regex = "^(docs/ledger[.]md|docs/governance/track_b_register[.]yml|scripts/track_b_register[.]py)$"
+    gate = {"id": "track-b-register", "when": {"staged_regex": regex}}
+    (root / "scripts" / "gates.yml").write_text(yaml.safe_dump({"gates": [gate]}), encoding="utf-8")
+    assert any("scripts/gates.yml" in f for f in tbr.check(_register(), root))
+
+
+def test_r5_any_heading_date_on_or_after_covers_from_needs_a_row(root):
+    ledger = root / "docs" / "ledger.md"
+    ledger.write_text(OWNER_MD + "\n### Superseded 2026-09-20 ruling, re-ruled 2026-10-04\n", encoding="utf-8")
+    assert "R5" in _codes(tbr.check(_register(), root))
+
+
+def test_expiry_offset_is_converted_to_utc():
+    assert tbr._expiry("2026-10-09T01:00:00-04:00") == dt.datetime(2026, 10, 9, 5, tzinfo=dt.timezone.utc)
+    aware = dt.datetime(2026, 10, 9, 1, tzinfo=dt.timezone(dt.timedelta(hours=-4)))
+    assert tbr._expiry(aware).hour == 5
+
+
+def test_production_register_requires_generated(root):
+    assert tbr.check(_register(), root) == []
+    assert "R1" in _codes(tbr.check(_register(), root, production=True))
+
+
+@pytest.mark.parametrize("over", [
+    {"status": "OPEN", "next": None, "next_actor": "coordinator"},
+    {"status": "ACCEPTED", "next": "do more", "next_actor": "coordinator"},
+])
+def test_r1_next_and_actor_agree_with_status(root, over):
+    data = _register()
+    data["items"][0] = _row(**over)
+    assert _codes(tbr.check(data, root)) == ["R1"]
+
+
+def test_hook_digest_unavailable_on_status_finding(tmp_path, capsys):
+    reg = tmp_path / "r.yml"
+    bad = _register()
+    bad["items"][0] = _row(status="OPEN", next=None, next_actor="coordinator")
+    reg.write_text(yaml.safe_dump(bad), encoding="utf-8")
+    assert tbr.main(["digest", "--hook", "--register", str(reg)]) == 0
+    assert "unavailable" in capsys.readouterr().out

@@ -223,7 +223,7 @@ gates:
   - id: track-b-register
     tier: path-conditional
     when:
-      staged_regex: '^(STATE[.]md$|docs/governance/track_b_register[.]yml$|scripts/track_b_register[.]py$|docs/superpowers/plans/2026-09-18-full-e1-execution-slices[.]md$|docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist[.]md$|docs/notes/2026-09-26-tradeify-route-drill-plan-draft[.]md$|docs/notes/2026-09-29-x1-decision-packet[.]md$|docs/notes/2026-09-30-x4-decision-packet[.]md$|docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure[.]md$|docs/briefs/handoffs/2026-09-21-tradeify-t0(7-manual-settlement-procedure|8-broker-protection-feasibility)[.]md$|docs/briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet[.]md$|docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state[.]md$|docs/notes/2026-09-27-route-commissioning-session-packet[.]md$)'
+      staged_regex: '^(STATE[.]md$|docs/governance/track_b_register[.]yml$|scripts/track_b_register[.]py$|scripts/gates[.]yml$|docs/superpowers/plans/2026-09-18-full-e1-execution-slices[.]md$|docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist[.]md$|docs/notes/2026-09-26-tradeify-route-drill-plan-draft[.]md$|docs/notes/2026-09-29-x1-decision-packet[.]md$|docs/notes/2026-09-30-x4-decision-packet[.]md$|docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure[.]md$|docs/briefs/handoffs/2026-09-21-tradeify-t0(7-manual-settlement-procedure|8-broker-protection-feasibility)[.]md$|docs/briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet[.]md$|docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state[.]md$|docs/notes/2026-09-27-route-commissioning-session-packet[.]md$)'
     cmd:
       - python
       - scripts/track_b_register.py
