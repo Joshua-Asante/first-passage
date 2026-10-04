@@ -409,9 +409,17 @@ The screen-authority signature (design §8 step 11) uses the same template with 
 - Card approval (design §8 step 5): **APPROVED** by Joshua at `079b1b6`, 2026-10-03, directly to coordinator (3): "I approve of the recommendations, let's make it happen" (sheet 5; recorded at https://github.com/Joshua-Asante/first-passage/pull/634#issuecomment-5965354454). Coordinator (3) clarification at `143836d` (crash-segment charge; consistent with design §5.4). Depth N (design §12 item 9): ~~1,000 per population (sheet 5)~~. **Revised to 5,001 per population (1,667 per root)** by Joshua 2026-10-03, about 17:19Z, directly to coordinator (3): "I approve your recommendations", in reply to "Depth N: 5,001 recommended, against your 1,002". This follows the precision packet (`claude/t00-depth-decision-packet`, `90e2587`). At 1,002 (334 per root, the three-root layout's rounding of 1,000), the wrong-side risk at ±0.5 pp was about 24%; at 5,001 it is about 5%. The budgets (§5.4) and approval windows (§12 item 10) are set at design §8 step 8 for this N.
 - PR-1 #629 merged at: `ad48cd5b059680f08f65a8e401c56a4ac66de609` (2026-10-03; relay CLEAN at `3742a95`, carried to `4f781a0`).
 - PR-2 #581 merged (DRAFT, A5/A6 frozen) at: `b996803eb598bc5723652aafe12098782069f07b` (2026-10-03; relay CLEAN at `3b706c9`, pinned head `6ff2fb3`; pre-registration blob `6e6e5894b499fea8e16352415bab2f468488e91d`). A5/A6 section hashes recomputed by coordinator (3) at that merge commit: A5 `a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b`, A6 `b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9` — both MATCH §2.6.
-- PR-3 #611 merged at: —
+- PR-3 #611 merged at: `f5b0f6ae4b615275b430f300080345949aa2e802` (2026-10-03; pinned `0d72f00`; recorded by coordinator (4), 2026-10-04).
 - PR-4 docs PR merged at: —
-- Packet heads (P-A, P-B1, P-B2, P-C, P-D, P-E, P-F): —
+- Packet heads (recorded by coordinator (4), 2026-10-04):
+  - P-B1 (#650): accepted at `0b4b560` (coordinator (3)); merged `6e2ece62af2f6059cf37afa82728ff9068dacfd5` (pinned `43b09f6`).
+  - P-D (#643): K-5 re-taken on `740f392` (includes #611); accepted at `0866dff`; merged `f7a4e53042042d7a8d44b0b69ce458f47e43e805` (pinned `a6cb6a5`).
+  - P-C (#646): K-5 re-taken on the future base `740f392` + P-D (tree `4b48cad6`); accepted at `e473c5f`; merged `f9099a2bdea9b7833b85a9fc706ff7a86a192000` (pinned `e473c5f`).
+  - P-A, P-B2, P-E, P-F: —.
+- **K-4 ruling, row A8 values-block format (coordinator (4), card owner, 2026-10-04; raised by the P-A build as NEEDS_CONTEXT, since neither the design, this card nor #581 froze it):**
+  - #581 §6 holds exactly one fenced block whose opening line is three backticks immediately followed by the info string `t00-step2-values/v1`, containing one line equal to `canonical_json_bytes(parameters)`.
+  - Each active #581 §3 item's last cell reads exactly ``values block: `k1`, `k2` `` with this key map: item 1 → `depth_per_root`, `budget`; 2 → `pass_floor_halves`; 3 → `deadline_only_is_bust`; 4 → `rng`, `block`, `path_start_date`; 5 → `run1_diagnostic`; 7 → `scenarios`; 8 → `a5_rule`.
+  - **PR-4 and #581's step-5 ratification follow this format.** They are the operator-visible surfaces, and Joshua ratifies #581 at step 5. P-A's §2.3 dependencies (PR-1, PR-2, PR-5, P-B1, P-C, P-D) are now all met; P-A is dispatched from `f9099a2` or later.
 - H: —
 - Design §12 item 9 (depth N) answered by Joshua (precondition for §7 step 1): —
 - ~~Still open outside this card: #581 OD-1/OD-2 direct confirmation (design §12 item 3).~~ *2026-10-03:* confirmed directly by Joshua (sheet 4 item 3, "all recommended"; #629 approval comment 5965049542). This card merged as #634 at `cdbf597b2ef2c7b4e32ae4af476e3a392f75ca79`.
