@@ -100,9 +100,11 @@ No candidate named or proposed here is run through any frozen tier, replay or MC
 | **RESOLVED** | Discharge rule I-4 met | §4 falsifier discharged (measured); G8 intake; recorded at the withdrawal ADR (dated addendum), the §4 status owner |
 | **ONE-TIER** | Exactly one firm clears | Not a discharge; §4 stays undischarged; the operator decides at 11-08 (O-12, ruling 2026-10-02) |
 | **FALSIFIED — partial** | ≥ 2 firms clear but I-4 is unmet (no `trailing_locking`) | Not a discharge (I-4); candidate closes; the 11-08 program reading is not covered by the 2026-10-02 ruling (O-12 residual) |
-| **FALSIFIED** | No tier clears | Program demotes to research-only (four-firm ADR §4); §4 enters the run undischarged (O-1); early-fail branch arms for Class-S (existing-strategy ADR §4) |
+| **FALSIFIED — early-fail** | No tier clears | Not a discharge; §4 stays undischarged (O-1); candidate closes; early-fail branch arms: any subsequent candidate requires fresh operator authorization (existing-strategy ADR §4; candidate #1 §6). Does not by itself demote the program (below) |
 | **AMBIGUOUS** | Calibration reference (I-20) clears 5.0% on ≥ 2 tiers | Gate cannot discriminate: close v2 and re-derive in a fresh brief (v2 §6); this result is quarantined |
 | **INSUFFICIENT** *(proposed)* | Missing producer context, missing synchronized `intraday_low` for a gating tier, run incomplete at frozen depth, or any §2 item unset | No verdict from this run; how the falsifier reads at 11-08 is O-13 |
+
+**Program level (checked at 2026-11-08, separate from the per-run verdict above):** the program demotes to research-only only if no pre-registered candidate clears Part A on any tier by 2026-11-08 (four-firm ADR §4; v2 §6 FALSIFIED). No verdict by then reads as O-13 records; exactly one tier is O-12.
 
 ## §5 — Forbidden moves
 
