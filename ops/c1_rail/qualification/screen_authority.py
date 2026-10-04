@@ -621,9 +621,24 @@ class ScreenEpochClose:
 _EPOCHS: dict[int, dict[str, Any]] = {}
 
 
+# Every dependency family the recorder keeps, as P7's loaded_closure records them
+# (p7_evidence.finish_record): module rows keyed by name, ports keyed by artifact path, stdlib
+# names. ``distributions`` is derived from third_party at P7 record time, not recorded.
+CLOSURE_FAMILIES = ('first_party', 'third_party', 'ports', 'stdlib')
+
+
 def _closure() -> dict:
+    """The recorder's full loaded closure: every family, copied, in a canonical order."""
     recorder = getattr(sys, 'p7_recorder', None)
-    return {name: dict(row) for name, row in sorted(dict(getattr(recorder, 'first_party', None) or {}).items())}
+
+    def rows(family):
+        return dict(getattr(recorder, family, None) or {})
+    return {
+        'first_party': {name: dict(row) for name, row in sorted(rows('first_party').items())},
+        'third_party': {name: dict(row) for name, row in sorted(rows('third_party').items())},
+        'ports': dict(sorted(rows('ports').items())),
+        'stdlib': sorted(getattr(recorder, 'stdlib', None) or ()),
+    }
 
 
 def _guard(auth: ValidatedScreenAuthority) -> tuple:
@@ -651,12 +666,13 @@ def open_screen_epoch(source, authority) -> ScreenEpoch:
     ``ProductionSource.screen_epoch`` after its full integrity check."""
     _require_issued(authority)
     guard = _guard(authority)
+    closure = _closure()
     epoch = ScreenEpoch(authority.authority_sha256, _sha(canonical_json_bytes(guard)),
-                        _sha(canonical_json_bytes(_closure())))
+                        _sha(canonical_json_bytes(closure)))
     identity = id(epoch)
     _EPOCHS[identity] = {'epoch': weakref.ref(epoch, lambda ref: _EPOCHS.pop(identity, None)),
                          'source': weakref.ref(source), 'authority': weakref.ref(authority),
-                         'guard': guard, 'open': True}
+                         'guard': guard, 'closure': closure, 'open': True}
     return epoch
 
 
@@ -675,16 +691,76 @@ def require_open_screen_epoch(epoch, *, source, authority) -> None:
     _refuse('SCREEN_EPOCH_STALE', _guard(authority) != entry['guard'], 'a guarded file changed since the epoch opened')
 
 
-def _closure_holds(closure: dict, head: str) -> bool:
-    """Every loaded first-party module's file equals its bytes at load and its blob at H."""
-    for row in closure.values():
+def _file_is(path: Path, digest) -> bool:
+    return path.is_file() and _sha(path.read_bytes()) == digest
+
+
+def _closure_holds(opened: dict, closure: dict, authority) -> bool:
+    """Byte-exact over every family: no dependency recorded at open is gone at close; every
+    first-party module equals its bytes at load and its blob at H; every third-party module its
+    bytes at load under the recorded site-packages; every port its bytes at load under the
+    artifact root (its compile filename); and every loaded module has a recorded load digest.
+    A lazy import recorded after open is valid when it meets the same checks; agreement across
+    epochs stays row K6's (``state.check_record``)."""
+    for family in CLOSURE_FAMILIES:
+        if set(opened[family]) - set(closure[family]):
+            return False
+    # The recorder overwrites a third-party or port entry when it is found or compiled again
+    # (p7_evidence bootstrap); a digest recorded at open must still be the one at close.
+    for family in ('first_party', 'third_party', 'ports'):
+        if any(closure[family][name] != row for name, row in opened[family].items()):
+            return False
+    for row in closure['first_party'].values():
         if row.get('path') is None:
             continue
-        path, blob = REPOSITORY_ROOT / row['path'], _blob(head, row['path'])
-        if (not path.is_file() or _sha(path.read_bytes()) != row['sha256']
-                or blob is None or _sha(blob) != row['sha256']):
+        blob = _blob(authority.code_head, row['path'])
+        if not _file_is(REPOSITORY_ROOT / row['path'], row['sha256']) or blob is None or _sha(blob) != row['sha256']:
             return False
-    return True
+    site = getattr(getattr(sys, 'p7_recorder', None), 'site_packages_path', None)
+    for row in closure['third_party'].values():
+        if row.get('path') is not None and (site is None or not _file_is(Path(site) / row['path'], row['sha256'])):
+            return False
+    if not all(_file_is(Path(authority.artifact_root) / name, digest) for name, digest in closure['ports'].items()):
+        return False
+    return not _unrecorded(closure)
+
+
+def _under(path: str, root: str) -> bool:
+    return (path + os.sep).startswith(root.rstrip(os.sep) + os.sep)
+
+
+def _unrecorded(closure: dict) -> tuple[str, ...]:
+    """Loaded modules with a file origin and no recorded load digest. A module is recorded when
+    its name is a hashed first- or third-party row or a recorded stdlib name, its origin is a
+    port's compile filename, or its origin file is the file of a hashed row (an extension that
+    registers a second sys.modules name, e.g. pandas' ``_cyutility``, executes the recorded
+    file). Modules the interpreter loads before the audit hook is installed are never in the
+    recorder's stdlib set; under the recorder's interpreter roots they are, like recorded stdlib
+    names, bytes-free and bound through the pinned interpreter."""
+    recorder = getattr(sys, 'p7_recorder', None)
+    site = getattr(recorder, 'site_packages_path', None)
+    roots = [_norm(root) for root in (getattr(recorder, 'installed_roots', None) or ()) if root != site]
+    code_root = getattr(recorder, 'code_root', None) or REPOSITORY_ROOT
+    hashed = {name for family in ('first_party', 'third_party') for name, row in closure[family].items()
+              if row.get('sha256') is not None}
+    files = {_norm(Path(code_root) / row['path']) for row in closure['first_party'].values()
+             if row.get('path') is not None and row.get('sha256') is not None}
+    files |= {_norm(Path(site) / row['path']) for row in closure['third_party'].values()
+              if site is not None and row.get('path') is not None and row.get('sha256') is not None}
+    stdlib, ports = set(closure['stdlib']), set(closure['ports'])
+    found = []
+    for name, module in list(sys.modules.items()):
+        origin = getattr(getattr(module, '__spec__', None), 'origin', None) or getattr(module, '__file__', None)
+        if (not isinstance(origin, str) or origin in ('built-in', 'frozen') or name in hashed or name in stdlib
+                or origin.replace('\\', '/') in ports):
+            continue
+        real = _norm(origin)
+        # Site-first, as the RecordingFinder classifies: a file under site-packages is never
+        # interpreter-rooted, even when a stdlib root is its ancestor (POSIX lib/pythonX.Y).
+        if real not in files and (site is not None and _under(real, _norm(site))
+                                  or not any(_under(real, root) for root in roots)):
+            found.append(name)
+    return tuple(sorted(found))
 
 
 def close_screen_epoch(epoch) -> ScreenEpochClose:
@@ -700,7 +776,7 @@ def close_screen_epoch(epoch) -> ScreenEpochClose:
             source._verify_integrity()  # pylint: disable=protected-access
         except Exception:  # pylint: disable=broad-exception-caught  # any failure here is drift
             match = False
-    match = match and _closure_holds(closure, authority.code_head)
+    match = match and _closure_holds(entry['closure'], closure, authority)
     return ScreenEpochClose(_sha(canonical_json_bytes(closure)), match)
 
 
