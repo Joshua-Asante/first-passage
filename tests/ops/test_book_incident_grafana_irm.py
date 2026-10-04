@@ -446,7 +446,7 @@ def test_secret_ref_resolution_and_url_never_exposed(tmp_path, fake, monkeypatch
 @pytest.mark.parametrize("url,rule", [
     ("http://127.0.0.1:9" + WEBHOOK, "scheme"),
     ("http://" + PROVIDER_HOST + WEBHOOK, "scheme"),
-    ("https://user:pw@" + PROVIDER_HOST + WEBHOOK, "userinfo"),
+    ("https://alice:pw9@" + PROVIDER_HOST + WEBHOOK, "userinfo"),
     ("https://example.com" + WEBHOOK, "host"),
     ("https://" + PROVIDER_HOST + "/integrations/v1/webhook/" + TOKEN + "/", "path"),
     ("https://" + PROVIDER_HOST + ":bad" + WEBHOOK, "unparseable"),
@@ -458,7 +458,7 @@ def test_url_validation_refuses_without_echo(monkeypatch, url, rule):
         irm_module.GrafanaIRMChannel("irm", REF, publish_timeout_s=2.0)
     message = str(refused.value)
     assert rule in message
-    for part in (TOKEN, "user", "pw@", "example.com", "stack.", "127.0.0.1", ":bad"):
+    for part in (TOKEN, "alice", "pw9", "example.com", "stack.", "127.0.0.1", ":bad"):
         assert part not in message
 
 
@@ -761,12 +761,14 @@ def test_record_delivery_cli_waits_for_the_late_close(tmp_path, fake, monkeypatc
                          clock=_real_clock)
     journal, config_path = notifier.store_path, _write_config(tmp_path, config)
     key = incident_key("synthetic:1")
+    abandoned = threading.Event()
     if order == "late_first":
         bounded = notifier._bounded_publish
 
         def close_after_late(channel, job_key, payload):
             result = bounded(channel, job_key, payload)
             if channel.name == "irm" and result == (None, "timeout"):
+                abandoned.set()  # the round gave up; its close now waits for late_outcome
                 _wait_for(lambda: _late_closed(journal, job_key), 60)
             return result
 
@@ -782,7 +784,10 @@ def test_record_delivery_cli_waits_for_the_late_close(tmp_path, fake, monkeypatc
                                wait_s=3 if order == "wait_expires" else 60)
         try:
             _wait_for(lambda: "delivered" in _kinds(journal, key))
-            if order == "timeout_first":
+            if order == "late_first":
+                assert abandoned.wait(30)
+                assert not any(kind == "delivery_failed" for _, kind, _, _ in _events(journal, key))
+            else:
                 _wait_for(lambda: any(kind == "delivery_failed" and detail == {"outcome": "timeout"}
                                       for _, kind, _, detail in _events(journal, key)))
                 time.sleep(1.0)  # the CLI polls past the timeout row and must not call it safe
