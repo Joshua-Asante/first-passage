@@ -49,6 +49,13 @@ def flipped(raw):
     return canonical(doc)
 
 
+def test_rint1_act_scope_pinned():
+    """The act scope check_record verifies under."""
+    state, _ = modules()
+    # must equal screen_authority.SCREEN_ACT_SCOPE (P-A); switch to import after #672 merges
+    assert state.ACT_SCOPE == 'APPROVE_T00_SCREEN_ACT' == ACT_SCOPE
+
+
 def test_rint1_valid_act_passes():
     """Twin: an OPERATOR approval under the act scope over sha256(act) passes at ``now``."""
     assert check(*halted_run()).code is None
