@@ -421,3 +421,15 @@ def test_cases_is_a_diagnostic_subset_for_s5_as_for_s3_and_s4(monkeypatch):
     command = ("gh workflow run qualification-s2-supervision.yml --ref feat "
                "-f mode=s5 -f cases=deadline")
     assert guard.refusal_for_command(command) is None
+
+
+# --- R1: the H9 checkpoint combined mode (card 2026-10-02, §3 guard) ------------
+
+def test_a_titles_r1_tag_parses_as_mode_r1():
+    """R3 (falsifier-first) and G7: the guard recognises [r1], and an r1 run is
+    incomparable with every earlier mode (it installs the /v7 profile plus the
+    result/seal and C' files, so nothing else covers it)."""
+    assert guard._run_mode(run(mode="r1")) == "r1"
+    assert guard.dispatch_redundancy_refusal(SHA, [run(mode="r1")], mode="r1")
+    assert guard.dispatch_redundancy_refusal(SHA, [run(mode="s5")], mode="r1") is None
+    assert guard.dispatch_redundancy_refusal(SHA, [run(mode="r1")], mode="s5") is None
