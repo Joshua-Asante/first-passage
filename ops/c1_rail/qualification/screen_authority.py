@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import datetime
+from datetime import date
+import errno
 import hashlib
 import os
 from pathlib import Path
@@ -93,7 +95,8 @@ VALUES_SCHEMA = 't00-step2-values/v1'
 SECTION3_KEYS = MappingProxyType({
     1: ('depth_per_root', 'budget'), 2: ('pass_floor_halves',), 3: ('deadline_only_is_bust',),
     4: ('rng', 'block', 'path_start_date'), 5: ('run1_diagnostic',), 7: ('scenarios',), 8: ('a5_rule',)})
-_RATIFIED = re.compile(r'\*\*Status:\*\* `RATIFIED [0-9]{4}-[0-9]{2}-[0-9]{2}')
+# The whole Status field: one backticked RATIFIED <date> (an optional final period), then free text.
+_RATIFIED = re.compile(r'\*\*Status:\*\* `RATIFIED ([0-9]{4}-[0-9]{2}-[0-9]{2})\.?`(?: .*)?')
 _RATIFYING_LINE = '- **Ratifying commit SHA:**'
 _SECTION6_FIELDS = ('- **Ruling:**', '- **OD-1 / OD-2:**')
 _ORIGIN_MAIN = 'refs/remotes/origin/main'
@@ -348,8 +351,17 @@ def _section(lines, heading):
 
 
 def _ratified(blob: bytes) -> bool:
-    status = next((line for line in blob.split(b'\n') if line.startswith(b'**Status:**')), b'')
-    return _RATIFIED.match(status.decode('utf-8', errors='replace')) is not None
+    """Exactly one Status field, in its canonical place (title, blank line, Status line), whose
+    complete field is RATIFIED with a valid ISO date."""
+    lines = blob.decode('utf-8', errors='replace').split('\n')
+    if (len(lines) < 3 or not lines[0].startswith('# ') or lines[1] != ''
+            or [i for i, line in enumerate(lines) if line.startswith('**Status:**')] != [2]):
+        return False
+    found = _RATIFIED.fullmatch(lines[2])
+    try:
+        return found is not None and date.fromisoformat(found.group(1)).isoformat() == found.group(1)
+    except ValueError:
+        return False
 
 
 def _values_and_cells(text: str, params) -> bool:
@@ -526,8 +538,10 @@ def _lock_held(path: Path) -> bool:
         os.lseek(fd, journal.LOCK_OFFSET, os.SEEK_SET)
         try:
             msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-        except OSError:
-            return True
+        except OSError as exc:  # a conflict is EACCES (CRT _locking: "Locking violation")
+            if exc.errno == errno.EACCES:
+                return True
+            raise ScreenAuthorityError('SCREEN_RUN_UNBOUND', f'the run lock cannot be tested ({exc})') from None
         os.lseek(fd, journal.LOCK_OFFSET, os.SEEK_SET)
         msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
         return False
@@ -776,7 +790,10 @@ def close_screen_epoch(epoch) -> ScreenEpochClose:
             source._verify_integrity()  # pylint: disable=protected-access
         except Exception:  # pylint: disable=broad-exception-caught  # any failure here is drift
             match = False
-    match = match and _closure_holds(entry['closure'], closure, authority)
+    try:
+        match = match and _closure_holds(entry['closure'], closure, authority)
+    except Exception:  # pylint: disable=broad-exception-caught  # an unreadable dependency is drift
+        match = False
     return ScreenEpochClose(_sha(canonical_json_bytes(closure)), match)
 
 
