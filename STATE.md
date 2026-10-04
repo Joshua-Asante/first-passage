@@ -34,13 +34,10 @@ directed.
 _Generated from the [Track B register](docs/governance/track_b_register.yml) (as of 2026-10-03 @ `d27c7a1`); the register owns item status. Edit it, then run `python scripts/track_b_register.py write`._
 
 - **Next — Operator:**
-  - `work.S5-remeasure-trigger-1` — Rule on one fresh measurement after #611, C′, term 8 and K3/RC-4 land, immediately before R1
   - `gate.D-feed-a-NO-GO` — Decide how D-feed (a) treats an operator-accepted NO-GO T00 result into F1
   - `drill.X-4` — Actor ruling, numerical limits and environment decision; then the reduced build path, rehearsal and a written CP-3
   - `packet.T08` — Rule on the CrossTrade vendor reply once recorded (#575); live release stays held (R3 = NONE)
   - `checkpoint.CP-5` — Accept gates B–D using commissioning traces, H3/H4 and the allocation map
-  - `checkpoint.CP-6` — Freeze once the feed later-binding rule, RC-4, K3, Q9 and the full behavior inventory are in
-  - `checkpoint.CP-7` — May open after T00 GO-evidence, a bound equivalence spec and A9-PREP
 - **Next — Coordinator:**
   - `packet.T05` — Integrate the frozen T05 head (6cf2732) on main through H9; acceptance proper waits on gate.T05-R1
   - `work.K3-RC-4` — Dispatch the K3/RC-4 slice after S5 acceptance; it lands before S8/T06
@@ -53,7 +50,7 @@ _Generated from the [Track B register](docs/governance/track_b_register.yml) (as
   - `work.term-8` — Fix in H9 lane D step 3 (its own card, after step 2)
   - `t00.screen-authority-build` — Complete the build under the approved build card #634 (K-5)
   - `adapter.attended-input` — Pin/path-safety review and reconstruction of run-1930's import set
-- **Blocked:** `gate.T05-R1` ← work.C-prime-build, work.T05-qualpath-fixes, work.term-8, work.S5-remeasure-trigger-1; `packet.T06` ← gate.T05-R1, work.K3-RC-4; `t00.screen-authority-sign` ← t00.screen-authority-build, t00.step-2-prereg; `t00.step-3-screen` ← t00.screen-authority-sign; `t00.step-2-prereg` ← t00.p7-rerun-after-fixes; `t00.p7-rerun-after-fixes` ← work.T05-qualpath-fixes, t00.screen-authority-build; `packet.T09` ← checkpoint.CP-5; `checkpoint.CP-3` ← drill.X-4
+- **Blocked:** `gate.T05-R1` ← work.C-prime-build, work.T05-qualpath-fixes, work.term-8, work.S5-remeasure-trigger-1; `work.S5-remeasure-trigger-1` ← work.T05-qualpath-fixes, work.C-prime-build, work.term-8, work.K3-RC-4; `packet.T06` ← gate.T05-R1, work.K3-RC-4; `t00.screen-authority-sign` ← t00.screen-authority-build, t00.step-2-prereg; `t00.step-3-screen` ← t00.screen-authority-sign; `t00.step-2-prereg` ← t00.p7-rerun-after-fixes; `t00.p7-rerun-after-fixes` ← work.T05-qualpath-fixes, t00.screen-authority-build; `packet.T09` ← checkpoint.CP-5; `checkpoint.CP-3` ← drill.X-4; `checkpoint.CP-6` ← work.K3-RC-4, feed later-binding rule, full behavior inventory; `checkpoint.CP-7` ← T00 GO-evidence, bound equivalence spec, A9-PREP
 <!-- END generated: track-b-register -->
 
 **Campaign owner (2026-09-20):** the Claude coordinator session for Protected Full E1 ([§58](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#58--campaign-ownership-the-current-coordinating-task-2026-09-20)). **Handoff obligation:** ownership passes only by a handoff entry in the [execution-slices ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#progress-ledger-and-present-disposition) naming the successor; a coordinating session that ends without one leaves the role with the operator. The S2 delegation (GLM, [acceptance continuation](https://github.com/Joshua-Asante/first-passage/blob/12d6a6f/docs/briefs/handoffs/2026-09-20-glm-s2-acceptance-continuation.md)/[T01](docs/briefs/handoffs/2026-09-20-glm-t01-s2-closeout-g3-worker-launch.md)) was discharged by the 2026-09-21 acceptance and #436's merge. **Scoped transfer (2026-09-28):** H1 step (b) only (r2 §12–§13 measurement and application, CP-1b packet) to the "Post-H1 measurement execution handoff" session ([entry](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-transfer-and-execution-dispatch--h1-step-b-measurement-2026-09-28)). The executive's bounded [delegation](docs/superpowers/plans/2026-09-28-tradeify-next-step-delegation.md) (returned in #540) was not a campaign transfer. The operator retains ratifications, merges and operational GOs.

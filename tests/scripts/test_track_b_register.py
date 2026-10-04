@@ -372,3 +372,54 @@ def test_hook_digest_never_fails(tmp_path):
 def test_committed_generated_blocks_are_current():
     data = tbr.load(tbr.DEFAULT_REGISTER)
     assert [f for f in tbr.check(data) if f.startswith("R8")] == []
+
+
+def test_digest_drops_expired_rows_from_next(root):
+    data = _register()
+    data["items"] = [_row(status="OPEN", next="run the screen", next_actor="coordinator",
+                          expires="2026-10-09T01:52:19Z")]
+    later = tbr.digest(data, dt.datetime(2026, 10, 10, tzinfo=dt.timezone.utc), 7)
+    assert "EXPIRED" in later and "Next (coordinator)" not in later
+
+
+def test_waits_for_blocks_next_and_shows_in_views(root):
+    data = _register()
+    data["items"][0] = _row(status="OPEN", next="freeze", next_actor="operator",
+                            waits_for=["full behavior inventory"])
+    assert tbr.check(data, root) == []
+    nexts, blocked = tbr._groups(data["items"])
+    assert nexts["operator"] == [] and blocked[0][1] == ["full behavior inventory"]
+    assert "full behavior inventory" in tbr.table(data)
+
+
+def test_r1_naive_yaml_datetime_expiry_rejected(root):
+    data = _register()
+    data["items"][0] = _row(expires=yaml.safe_load("x: 2026-10-09T01:52:19")["x"])
+    assert _codes(tbr.check(data, root)) == ["R1"]
+
+
+def test_r6_as_of_must_cover_every_since(root):
+    data = _register()
+    data["items"][0] = _row(since="2026-10-04")
+    assert _codes(tbr.check(data, root)) == ["R6"]
+
+
+def test_write_preserves_crlf(root):
+    target, data = _with_target(root, "table")
+    target.write_bytes(target.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+    assert tbr.write(data, root) == ["docs/plan.md"]
+    raw = target.read_bytes()
+    assert raw.count(b"\n") == raw.count(b"\r\n")
+    assert tbr.check(data, root) == []
+
+
+def test_r9_gate_selector_covers_cited_files(root):
+    (root / "scripts").mkdir()
+    gates = root / "scripts" / "gates.yml"
+    gate = {"id": "track-b-register", "when": {"staged_regex": "^docs/governance/track_b_register[.]yml$"}}
+    gates.write_text(yaml.safe_dump({"gates": [gate]}), encoding="utf-8")
+    findings = tbr.check(_register(), root)
+    assert _codes(findings) == ["R9"] and any("docs/ledger.md" in f for f in findings)
+    gate["when"]["staged_regex"] = "^(docs/ledger[.]md|docs/governance/track_b_register[.]yml|scripts/track_b_register[.]py)$"
+    gates.write_text(yaml.safe_dump({"gates": [gate]}), encoding="utf-8")
+    assert tbr.check(_register(), root) == []

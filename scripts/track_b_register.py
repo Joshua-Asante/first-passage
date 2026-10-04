@@ -88,7 +88,7 @@ MD_LINK_RE = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
 HTML_ANCHOR_RE = re.compile(r"""<a\s+(?:id|name)=["']([^"']+)["']""")
 
 ROW_KEYS = {"id", "kind", "title", "status", "since", "owner", "next", "next_actor"}
-ROW_OPTIONAL = {"aliases", "blocked_by", "checkpoint", "expires", "evidence", "refs", "note"}
+ROW_OPTIONAL = {"aliases", "blocked_by", "waits_for", "checkpoint", "expires", "evidence", "refs", "note"}
 TOP_KEYS = {"schema", "role", "as_of", "reconciled_at", "covers_from", "watch", "items"}
 TOP_OPTIONAL = {"noted", "generated"}
 VIEWS = ("summary", "table")
@@ -177,7 +177,7 @@ def _date(value: Any) -> dt.date | None:
 
 def _expiry(value: Any) -> dt.datetime | None:
     if isinstance(value, dt.datetime):
-        return value if value.tzinfo else value.replace(tzinfo=dt.timezone.utc)
+        return value if value.tzinfo else None
     if isinstance(value, str):
         try:
             parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -223,7 +223,8 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
         out.append(f"R1 unknown top-level key {key!r}")
     if data.get("role") != "owner":
         out.append("R1 role must be 'owner' (Rule 7 owner of Track B item status)")
-    if _date(data.get("as_of")) is None:
+    as_of = _date(data.get("as_of"))
+    if as_of is None:
         out.append("R6 as_of must be YYYY-MM-DD")
     if not (isinstance(data.get("reconciled_at"), str) and SHA_RE.match(data["reconciled_at"])):
         out.append("R6 reconciled_at must be a commit sha (7-40 hex)")
@@ -274,7 +275,7 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
             out.append(f"R1 {where}: a row with no next action takes next_actor 'none'")
         if nxt is not None and row.get("next_actor") == "none":
             out.append(f"R1 {where}: a next action needs an actor")
-        for key in ("aliases", "blocked_by", "evidence", "refs"):
+        for key in ("aliases", "blocked_by", "waits_for", "evidence", "refs"):
             val = row.get(key)
             if val is not None and not (isinstance(val, list) and all(isinstance(v, str) for v in val)):
                 out.append(f"R1 {where}: {key} must be a list of strings")
@@ -284,6 +285,13 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
         if "expires" in row and _expiry(row["expires"]) is None:
             out.append(f"R1 {where}: expires must be an ISO datetime with a zone, e.g. 2026-10-09T01:52:19Z")
         rows.append(row)
+
+    # R6 as_of covers every row's status date
+    if as_of is not None:
+        for row in rows:
+            since = _date(row.get("since"))
+            if since is not None and since > as_of:
+                out.append(f"R6 {row.get('id')}: since {since} is after as_of {as_of}; advance as_of")
 
     # R2 identity
     names: dict[str, str] = {}
@@ -410,11 +418,36 @@ def check(data: dict[str, Any], root: Path = ROOT, text: str | None = None) -> l
                         f"#{anchor}"
                     )
 
+    # R9 the track-b-register gate selects every file the register depends on
+    out.extend(_gate_selects(data, rows, root))
+
     # R8 generated blocks
     if not any(f.startswith("R1") for f in out):
         for target in data.get("generated") or []:
             out.extend(_check_block(data, target, root))
     return out
+
+
+def _gate_selects(data: dict[str, Any], rows: list[dict[str, Any]], root: Path) -> list[str]:
+    """R9: gates.yml's track-b-register staged_regex must match each dependency path."""
+    gates = root / "scripts" / "gates.yml"
+    if yaml is None or not gates.is_file():
+        return []
+    try:
+        spec = next(g for g in yaml.safe_load(gates.read_text(encoding="utf-8"))["gates"]
+                    if g.get("id") == "track-b-register")
+        selector = re.compile(spec["when"]["staged_regex"])
+    except (StopIteration, KeyError, TypeError, re.error, yaml.YAMLError):
+        return ["R9 scripts/gates.yml: no track-b-register gate with a staged_regex"]
+    links = [link for row in rows for link in _links(row)]
+    links += [n["link"] for n in data.get("noted") or [] if isinstance(n, dict) and isinstance(n.get("link"), str)]
+    paths = {posixpath.normpath(posixpath.join("docs/governance", l.partition("#")[0])) for l in links}
+    paths |= set(data.get("watch") or []) | {t.get("path") for t in data.get("generated") or [] if isinstance(t, dict)}
+    paths |= {"docs/governance/track_b_register.yml", "scripts/track_b_register.py"}
+    return [
+        f"R9 scripts/gates.yml: track-b-register staged_regex does not select {p}"
+        for p in sorted(p for p in paths if isinstance(p, str) and not p.startswith("..") and not selector.search(p))
+    ]
 
 
 def _targets_ok(data: dict[str, Any]) -> list[str]:
@@ -465,7 +498,9 @@ def write(data: dict[str, Any], root: Path = ROOT) -> list[str]:
     changed = []
     for target in data.get("generated") or []:
         path = root / target["path"]
-        text = path.read_text(encoding="utf-8")
+        raw = path.read_bytes().decode("utf-8")
+        eol = "\r\n" if "\r\n" in raw else "\n"
+        text = raw.replace("\r\n", "\n")
         parts = _split_block(text)
         if isinstance(parts, str):
             raise Finding(f"R8 {target['path']}: {parts}")
@@ -475,7 +510,7 @@ def write(data: dict[str, Any], root: Path = ROOT) -> list[str]:
         )
         new = before + "\n" + render(data, target["view"], target["path"]) + "\n" + after
         if new != text:
-            path.write_text(new, encoding="utf-8")
+            path.write_bytes(new.replace("\n", eol).encode("utf-8"))
             changed.append(target["path"])
     return changed
 
@@ -486,18 +521,32 @@ def _open(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [r for r in rows if r.get("status") not in TERMINAL and r.get("status") != "PARKED"]
 
 
-def _groups(rows: list[dict[str, Any]]) -> tuple[dict[str, list], list]:
-    """Unblocked next actions by actor, and blocked rows with what they wait on."""
+def _groups(
+    rows: list[dict[str, Any]], now: dt.datetime | None = None
+) -> tuple[dict[str, list], list]:
+    """Unblocked next actions by actor, and blocked rows with what they wait on.
+
+    `waits_for` (prerequisites outside the register) blocks like `blocked_by`. With
+    `now`, a row whose `expires` has passed is not offered as a next action.
+    """
     dupes = sorted(rid for rid, n in Counter(r["id"] for r in rows).items() if n > 1)
     if dupes:
         raise Finding(f"R2 duplicate row ids: {', '.join(dupes)}")
     by_id = {r["id"]: r for r in rows}
 
     def waiting(r):
-        return [d for d in r.get("blocked_by") or [] if by_id.get(d, {}).get("status") not in TERMINAL]
+        deps = [d for d in r.get("blocked_by") or [] if by_id.get(d, {}).get("status") not in TERMINAL]
+        return deps + list(r.get("waits_for") or [])
+
+    def lapsed(r):
+        exp = _expiry(r.get("expires"))
+        return now is not None and exp is not None and exp <= now
 
     nexts = {
-        actor: [r for r in _open(rows) if r.get("next_actor") == actor and r.get("next") and not waiting(r)]
+        actor: [
+            r for r in _open(rows)
+            if r.get("next_actor") == actor and r.get("next") and not waiting(r) and not lapsed(r)
+        ]
         for actor in ("operator", "coordinator", "worker")
     }
     blocked = [(r, waiting(r)) for r in _open(rows) if waiting(r)]
@@ -563,7 +612,7 @@ def digest(data: dict[str, Any], today: dt.datetime, days: int) -> str:
     if expiring:
         lines.append(f"Expiring within {days}d:")
         lines.extend(expiring)
-    nexts, blocked = _groups(rows)
+    nexts, blocked = _groups(rows, today)
     for actor in ("operator", "coordinator", "worker"):
         if nexts[actor]:
             lines.append(f"Next ({actor}):")
@@ -584,7 +633,7 @@ def table(data: dict[str, Any], target_rel: str = "docs/governance/x") -> str:
         name = r["id"] + (f" ({', '.join(r['aliases'])})" if r.get("aliases") else "")
         lines.append(
             f"| {cell(name)} | {r['status']} | {cell(r.get('next'))} | {r['next_actor']} | "
-            f"{cell(', '.join(r.get('blocked_by') or []))} | [owner]({_relink(r['owner'], target_rel)}) |"
+            f"{cell(', '.join([*(r.get('blocked_by') or []), *(r.get('waits_for') or [])]))} | [owner]({_relink(r['owner'], target_rel)}) |"
         )
     return "\n".join(lines)
 
