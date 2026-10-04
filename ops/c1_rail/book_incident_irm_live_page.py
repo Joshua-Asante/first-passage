@@ -23,6 +23,7 @@ import argparse
 from datetime import datetime, timedelta, timezone
 import functools
 import json
+import math
 from pathlib import Path
 import sys
 import time
@@ -80,6 +81,12 @@ def _print_events(notifier, key):
 def run(directory, *, secret_ref=SECRET_REF, republish_after_s=90.0):
     directory = Path(directory)
     config = _config(secret_ref)
+    # The first retry is due retry_initial_s after the t0 round (book_incident_notifier
+    # _transition: min(retry_initial_s * 2**0, retry_max_s)); an earlier republish finds no
+    # due job. The card's nominal value is about t0 + 90 s, after the call step (§6.3).
+    if not (math.isfinite(republish_after_s) and republish_after_s >= config.retry_initial_s):
+        raise NotifierConfigError("--republish-after-s must be finite and at least %.0f s "
+                                  "(retry_initial_s)" % config.retry_initial_s)
     irm = GrafanaIRMChannel("irm", secret_ref, publish_timeout_s=config.publish_timeout_s,
                             qualification_test=True)  # resolves the reference; no request yet
     if any((directory / name).exists() for name in (JOURNAL, CONFIG, OWNER)):
