@@ -60,10 +60,11 @@ def sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def git(root, *args):
+def git(root, *args, env=None):
     return subprocess.run(['git', '-C', str(root), '-c', 'user.email=pa@test', '-c', 'user.name=pa-test',
                            '-c', 'core.autocrlf=false', '-c', 'commit.gpgsign=false', *args],
-                          check=True, capture_output=True).stdout.decode('utf-8').strip()
+                          check=True, capture_output=True, env=None if env is None else {**os.environ, **env},
+                          ).stdout.decode('utf-8').strip()
 
 
 def tracked_blob(relative: str, root: Path = REPO, rev: str = 'HEAD') -> bytes:
@@ -126,7 +127,7 @@ class Screen:  # pylint: disable=too-many-instance-attributes
     """One synthetic source case, repository, P7 record and screen authority."""
 
     def __init__(self, root: Path, monkeypatch, *, a6_byte=False, cprime_cell=False,  # pylint: disable=too-many-arguments
-                 a3_unanswered=False, crlf=False):
+                 a3_unanswered=False, crlf=False, param_changes=None, side_ratified=None):
         self.monkeypatch = monkeypatch
         self.ledger = None
         self.artifact_root = root / 'private'
@@ -145,6 +146,7 @@ class Screen:  # pylint: disable=too-many-instance-attributes
             'median_rule': 'LOWER_NEAREST_RANK_INF_INCLUDED',
             'budget': {'path_cpu_seconds': 1000, 'overhead_cpu_seconds': 100, 'basis': 'TEST_ONLY basis'},
         }
+        self.params.update(param_changes or {})
         sections = pinned_sections()
         if crlf:
             sections = sections.replace('\n', '\r\n')
@@ -160,9 +162,21 @@ class Screen:  # pylint: disable=too-many-instance-attributes
         write(repo, PREREG, prereg_text(sections, self.params, status='DRAFT — NOT RATIFIED'))
         git(repo, 'add', '-A')
         git(repo, 'commit', '-q', '-m', 'TEST_ONLY draft')
+        self.side = None
+        if side_ratified is not None:
+            # A side branch ratifies first (env: its commit dates), main ratifies with the same
+            # bytes, and the merge is TREESAME to both parents, so path-limited history drops it.
+            main = git(repo, 'rev-parse', '--abbrev-ref', 'HEAD')
+            git(repo, 'checkout', '-q', '-b', 'side')
+            write(repo, PREREG, prereg_text(sections, self.params))
+            git(repo, 'commit', '-q', '-am', 'TEST_ONLY side ratify', env=side_ratified)
+            self.side = git(repo, 'rev-parse', 'HEAD')
+            git(repo, 'checkout', '-q', main)
         write(repo, PREREG, prereg_text(sections, self.params))
         git(repo, 'commit', '-q', '-am', 'TEST_ONLY ratify')
         self.ratifying = git(repo, 'rev-parse', 'HEAD')
+        if self.side is not None:
+            git(repo, 'merge', '-q', '--no-ff', '-m', 'TEST_ONLY merge side', 'side')
         later = cells({2: 'values block: `pass_floor_halves` (edited)'}) if cprime_cell else None
         write(repo, PREREG, prereg_text(sections, self.params, ratifying=f'`{self.ratifying}`', row_cells=later))
         git(repo, 'commit', '-q', '-am', 'TEST_ONLY record the ratifying SHA')
@@ -767,3 +781,58 @@ def test_epoch_close_final_closure_digest_is_deterministic(screen, tmp_path):
     second = closes(module, auth, recorder)
     assert first.closure_match and second.closure_match
     assert first.closure_sha256 == second.closure_sha256
+
+
+# ---- review at ac7681e (round 3) -------------------------------------------------------------
+
+def test_cpu_budgets_accept_finite_positive_fractions(tmp_path, monkeypatch):
+    """r4179039941: budget fields are CPU seconds, "finite and positive" (design :260)."""
+    budget = {'path_cpu_seconds': 1000.5, 'overhead_cpu_seconds': 100.25, 'basis': 'TEST_ONLY fractional'}
+    screen = Screen(tmp_path, monkeypatch, param_changes={'budget': budget})
+    assert dict(screen.validate().parameters['budget']) == budget
+
+
+def test_budget_and_count_predicates_stay_separate(screen):
+    """Budgets: finite positive int or float, never bool, NaN, +-inf or <= 0. Counts
+    (depth_per_root, design :252; block length, :253): positive integers only."""
+    module = sa()
+
+    def params(**budget):
+        return dict(screen.params, budget=dict(screen.params['budget'], **budget))
+    for bad in (float('nan'), float('inf'), float('-inf'), 0, 0.0, -1.5, True):
+        refused('SCREEN_PARAMETER_UNSUPPORTED', lambda b=bad: module._check_parameters(  # pylint: disable=protected-access
+            params(path_cpu_seconds=b)), 'budget')
+    module._check_parameters(params(path_cpu_seconds=0.5))  # pylint: disable=protected-access
+    for counts in ({'depth_per_root': dict(screen.params['depth_per_root'], FULL=2.5)},
+                   {'block': dict(screen.params['block'], length_sessions=1.0)}):
+        name = next(iter(counts))
+        refused('SCREEN_PARAMETER_UNSUPPORTED', lambda c=counts: module._check_parameters(  # pylint: disable=protected-access
+            dict(screen.params, **c)), name)
+
+
+@pytest.mark.parametrize('bad', [None, ['a'], {'p': 1}, 1])
+def test_a3_answer_paths_are_typed_before_sorting_and_before_git(screen, bad):
+    """r4179039945: a non-string a3 path refuses with SCREEN_AUTHORITY_FIELDS, never TypeError,
+    and no git call runs."""
+    answers = [dict(screen.authority['a3_answers'][0], path=bad), screen.authority['a3_answers'][1]]
+    calls = spy_git(screen)
+    refused('SCREEN_AUTHORITY_FIELDS', lambda: screen.validate(doc=dict(screen.authority, a3_answers=answers)),
+            'path')
+    assert not calls
+    screen.validate()
+
+
+SKEWED = {'GIT_AUTHOR_DATE': '2030-01-01T00:00:00+0000', 'GIT_COMMITTER_DATE': '2030-01-01T00:00:00+0000'}
+
+
+@pytest.mark.parametrize('side_dates', [{}, SKEWED], ids=['in-order', 'skewed-dates'])
+def test_a8_finds_a_ratified_status_on_a_merged_away_side_branch(tmp_path, monkeypatch, side_dates):
+    """r4179039949, design :137 ("C is the oldest commit reachable from origin/main at which
+    #581's Status reads RATIFIED"): a side-branch RATIFIED commit that is not a descendant of C,
+    merged so that default path-limited history drops it, refuses; the order is topological,
+    so dates that put the side commit after C change nothing."""
+    bad = Screen(tmp_path / 'bad', monkeypatch, side_ratified=side_dates)
+    default = git(bad.repo, 'rev-list', 'refs/remotes/origin/main', '--', PREREG).split()
+    assert bad.side not in default  # the merge is TREESAME to its first parent: history simplified away
+    refused('SCREEN_PREREG_MISMATCH', bad.validate, 'oldest')
+    Screen(tmp_path / 'good', monkeypatch).validate()  # linear history: C is the oldest RATIFIED
