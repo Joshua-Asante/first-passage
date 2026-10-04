@@ -1309,3 +1309,68 @@ class ProductionSource:
             return SourceOnlyProof(self.contract.evidence_class, self.contract.contract_sha256,
                                    self.contract.approval.approval_sha256, edges, tuple(joins))
         return edges, tuple(joins)
+
+    # ---- T00 screen capability (design 2026-10-02 section 3.3; rows K5-K8) ----
+    # Gated by a ValidatedScreenAuthority and an open screen epoch. The sealed methods above
+    # keep their source text (row K7): screen_bracket copies replay_bracket's loop, and
+    # _consumed_splits copies _seal's placement expression.
+
+    def _verify_identity(self):
+        """The O(1) checks of _verify_integrity: issuance, factory identity and the r3c lifecycle."""
+        from c1_signal_daemon.book_adapters import _resolve_domain
+        from .contract import require_validated_source_contract
+        issued = _SOURCE_ISSUED.get(id(self))
+        if issued is None or issued[0]() is not self:
+            raise ValueError('factory-issued source object required')
+        contract = self.contract
+        if (type(self) is not ProductionSource or self._token is not _SOURCE_TOKEN
+                or _resolve_domain(contract) is not self._domain
+                or self.prepared.contract_sha256 != contract.contract_sha256):
+            raise ValueError('source factory identity does not bind the exact production G1 contract')
+        require_validated_source_contract(contract, now=_now())
+
+    def screen_epoch(self, *, authority):
+        """Open one worker epoch: the authority gate, then the full integrity check (row K6)."""
+        if not _is_source_only(self.contract):
+            raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
+        from .screen_authority import open_screen_epoch, require_validated_screen_authority
+        require_validated_screen_authority(authority, source_contract=self.contract, now=_now())
+        self._verify_integrity()
+        return open_screen_epoch(self, authority)
+
+    def screen_bracket(self, path, *, authority, epoch):
+        """R1 and R2 on fresh engines, unsealed, with each run's deadline flag and consumed splits.
+
+        Every refusal fires before any engine is built (row K5)."""
+        if not _is_source_only(self.contract):
+            raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
+        from .model import BracketReplayResult
+        from .replay import ReplayDeadlineFailure
+        from .screen_authority import ScreenBracket, require_open_screen_epoch, require_validated_screen_authority
+        require_validated_screen_authority(authority, source_contract=self.contract, now=_now())
+        require_open_screen_epoch(epoch, source=self, authority=authority)
+        self._verify_identity()
+        by_id = {s.session_id: s for s in self.sessions}
+        if not path or any(by_id.get(s.source.session_id) != s.source for s in path):
+            raise ValueError('path contains a source session outside retained covered panel')
+        bracket = ScheduleExecutionBracket(self._quotes)
+        results, failed, splits = [], [], []
+        for run_id in BRACKET_RUNS:
+            provider = bracket.for_run(run_id)
+            engine = self._engine(provider)
+            flag = False
+            try:
+                result = engine.run(path)
+            except ReplayDeadlineFailure as exc:
+                result, flag = exc.result, True
+            results.append(result)
+            failed.append(flag)
+            splits.append(_consumed_splits(provider))
+        return ScreenBracket(BracketReplayResult(*results), tuple(failed), tuple(splits))
+
+
+def _consumed_splits(provider):
+    """_seal's placement expression for one bracket provider (row K8)."""
+    return tuple(sorted(
+        (occurrence, leg, instant.isoformat()) for occurrence, leg, instant in provider._placed
+        if instant.minute % 15 or instant.second or instant.microsecond))
