@@ -1,5 +1,8 @@
 import hashlib
 import json
+import os
+import shutil
+import sys
 
 import pytest
 
@@ -931,3 +934,176 @@ def test_p3_1_source_only_replay_bracket_seals_a_real_deadline_failure(tmp_path,
     # R1 consumed its first 15:55 ET split before the failure; R2 consumed one per session.
     assert len(result.r2.consumed_intrabar_splits) == 3
     assert result.r1.consumed_intrabar_splits == result.r2.consumed_intrabar_splits[:1]
+
+
+# ---- P-B2: the gated screen capability (design 2026-10-02 §3.3; card §2.5, rows K5-K8) ----
+# A synthetic source case, repository and screen authority from test_screen_authority.Screen;
+# TEST_ONLY keys and fixtures only. The run lock is a msvcrt byte-range lock (card §3.4).
+
+SCREEN = pytest.mark.skipif(os.name != 'nt' or shutil.which('git') is None,
+                            reason='the screen gate needs git and the msvcrt run lock')
+SCREEN_EXPIRES = '2026-09-15T21:00:00Z'   # one hour after NOW; r3c's own window is wider (row K2)
+
+# inspect.getsource SHA-256 of the seven sealed functions at the P-B2 base 6629627, recorded
+# before the build (row K7).
+SEALED_SOURCE_SHA256 = {
+    'replay': '33ec2fb7a2d19abcc52049d580d70e0b1af0e7d6ebc36d659c3ffcf739f9e4ba',
+    'replay_bracket': '220c80607c58f360f6f3d9422970fc0f52d933e178bb50b6cceb986872e7d9e3',
+    'proof': '853baa51b2f8f8e97b052081487b36f067d01d3e91b9378c2675f27a0ee8f2d1',
+    '_seal': 'ca187f0cf29bce9942c42b9fd7ab9d2692c57fac6565d71149b58652f2add6a4',
+    '_check_path': '494292efbc57ffe7ee7214ca4a51aa2060fbcb1b30ccd2db4bf991f2eb1cae2b',
+    '_verify_integrity': '236201d4a555098a097b3b9c892d32caa5d92f9f03bed129dfdfeac461cd7b43',
+    'verify_for': '50eebc21adfec880ead92687e4a1f09767bc0d3faaf630337e379d8b26ad96da',
+}
+
+
+def _sealed_source_sha256():
+    import inspect
+    from c1_rail.qualification import production_source
+    owner = {'_seal': production_source}
+    return {name: hashlib.sha256(inspect.getsource(getattr(owner.get(name, ProductionSource), name)).encode()).hexdigest()
+            for name in SEALED_SOURCE_SHA256}
+
+
+def _screen(tmp_path, monkeypatch):
+    """A validated screen authority whose approval ends at SCREEN_EXPIRES, a source-only source
+    built from its exact receipt, and a three-session path."""
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.contract import canonical_json_bytes
+    from c1_rail.qualification.paths import PathAssembler
+    from test_screen_authority import Screen
+    from test_source_contract import NOW
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    screen = Screen(tmp_path, monkeypatch)
+    raw = canonical_json_bytes(screen.authority)
+    auth = screen.validate(approval=screen.approval(raw, expires_at=SCREEN_EXPIRES))
+    source = ProductionSource.build(screen.receipt, artifact_root=screen.artifact_root)
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    return screen, auth, source, path
+
+
+def _spy_engine(monkeypatch):
+    calls, real = [], ProductionSource._engine
+
+    def spy(self, schedule_quotes):
+        calls.append(schedule_quotes)
+        return real(self, schedule_quotes)
+    monkeypatch.setattr(ProductionSource, '_engine', spy)
+    return calls
+
+
+def _touch(path, delta_ns):
+    stat = path.stat()
+    os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns + delta_ns))
+
+
+@SCREEN
+def test_K5(tmp_path, monkeypatch):
+    """Each K1-K4 and K6 refusal fires before any engine is built: a spy on _engine sees no call."""
+    from datetime import timedelta
+    import composition_fixture
+    from c1_rail.qualification import production_source
+    from test_source_contract import NOW
+    screen, auth, source, path = _screen(tmp_path / 'screen', monkeypatch)
+    other = ProductionSource.build(screen.case.validate(), artifact_root=screen.artifact_root)
+    qualification = composition_fixture.build_verified_composition(tmp_path / 'f1').source
+    artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
+    calls = _spy_engine(monkeypatch)
+    with screen.ready(auth):
+        epoch = source.screen_epoch(authority=auth)
+
+        def call(src=source, ep=epoch):
+            return src.screen_bracket(path, authority=auth, epoch=ep)
+        _refused('SCREEN_REQUIRES_SOURCE_RECEIPT', lambda: call(qualification))         # K1
+        _refused('SCREEN_SOURCE_MISMATCH', lambda: call(other))                         # K1
+        monkeypatch.setattr(production_source, '_now', lambda: NOW + timedelta(minutes=90))
+        _refused('SCREEN_APPROVAL_EXPIRED', call)                                       # K2
+        monkeypatch.setattr(production_source, '_now', lambda: NOW)
+        recorder = sys.p7_recorder
+        monkeypatch.delattr(sys, 'p7_recorder')
+        _refused('SCREEN_BOOTSTRAP_MISMATCH', call)                                     # K3
+        monkeypatch.setattr(sys, 'p7_recorder', recorder, raising=False)
+        ledger = screen.ledger.read_bytes()
+        screen.ledger.write_bytes(b'')
+        _refused('SCREEN_RUN_UNBOUND', call)                                            # K4
+        screen.ledger.write_bytes(ledger)
+        _refused('SCREEN_EPOCH_REQUIRED', lambda: call(source, None))                   # K6
+        _touch(artifact, 1_000_000_000)
+        _refused('SCREEN_EPOCH_STALE', call)                                            # K6
+        assert calls == []
+        _touch(artifact, -1_000_000_000)
+        assert type(call()).__name__ == 'ScreenBracket' and len(calls) == 2             # twin
+
+
+@SCREEN
+def test_K6(tmp_path, monkeypatch):
+    """An r3c artifact file's mtime changes mid-epoch: the next call is stale; the epoch closes with
+    the full check; a closed epoch serves nothing; a new epoch opens and serves again."""
+    from test_screen_authority import cover_loaded, sa
+    screen, auth, source, path = _screen(tmp_path, monkeypatch)
+    artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
+    with screen.ready(auth):
+        epoch = source.screen_epoch(authority=auth)
+        assert source.screen_bracket(path, authority=auth, epoch=epoch).deadline_failure == (False, False)
+        _touch(artifact, 1_000_000_000)
+        _refused('SCREEN_EPOCH_STALE', lambda: source.screen_bracket(path, authority=auth, epoch=epoch))
+        recorder = sys.p7_recorder
+        recorder.first_party, recorder.third_party, recorder.ports, recorder.stdlib = {}, {}, {}, set()
+        cover_loaded(recorder)
+        assert sa().close_screen_epoch(epoch).closure_match
+        _refused('SCREEN_EPOCH_REQUIRED', lambda: source.screen_bracket(path, authority=auth, epoch=epoch))
+        reopened = source.screen_epoch(authority=auth)
+        assert source.screen_bracket(path, authority=auth, epoch=reopened).deadline_failure == (False, False)
+
+
+@SCREEN
+def test_K7(tmp_path, monkeypatch):
+    """With a valid authority and an open epoch, verify_for and replay_bracket on r3c still refuse
+    qualification and return sealed types; the seven sealed functions keep their source text."""
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.model import BracketReplayResult
+    screen, auth, source, path = _screen(tmp_path, monkeypatch)
+    with screen.ready(auth):
+        epoch = source.screen_epoch(authority=auth)
+        _refused('SOURCE_ONLY_NOT_QUALIFICATION', lambda: source.verify_for(source.contract))
+        assert type(source.replay_bracket(path)) is production_source.SourceOnlyBracket
+        assert type(source.replay(path)) is production_source.SourceOnlyReplay
+        assert type(source.screen_bracket(path, authority=auth, epoch=epoch).bracket) is BracketReplayResult
+    hashes = _sealed_source_sha256()
+    assert hashes == SEALED_SOURCE_SHA256
+    assert hashlib.sha256(b'def replay(self, path): ...\n').hexdigest() not in hashes.values()   # twin
+
+
+@SCREEN
+def test_K8(tmp_path, monkeypatch):
+    """A path with a deadline in R2 only: per run, the wrapper's deadline flag and consumed splits
+    equal the sealed SourceOnlyReplay's on the same path (twin: no deadline)."""
+    from c1_signal_daemon import tv_broker_emulator
+    from c1_rail.qualification.model import LEG_IDS
+    _hold_orb_through_flatten(monkeypatch)
+    screen, auth, source, path = _screen(tmp_path, monkeypatch)
+    built, state = [], {'withhold_r2': False}
+
+    class WithholdingR2(tv_broker_emulator.TVBrokerEmulator):
+        """TEST_ONLY venue refusal: each bracket's second (R2) engine never confirms the flatten."""
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.withhold = state['withhold_r2'] and (len(built) // len(LEG_IDS)) % 2 == 1
+            built.append(self)
+
+        def submit(self, actions, bar):
+            if self.withhold and any(getattr(a, 'reason', '') == 'scheduled_flatten' for a in actions):
+                return []
+            return super().submit(actions, bar)
+    monkeypatch.setattr(tv_broker_emulator, 'TVBrokerEmulator', WithholdingR2)
+    with screen.ready(auth):
+        epoch = source.screen_epoch(authority=auth)
+        for withhold, expected in ((False, (False, False)), (True, (False, True))):
+            state['withhold_r2'] = withhold
+            wrapped = source.screen_bracket(path, authority=auth, epoch=epoch)
+            sealed = source.replay_bracket(path)
+            runs = (sealed.r1, sealed.r2)
+            assert wrapped.deadline_failure == tuple(run.deadline_failure for run in runs) == expected
+            assert wrapped.consumed_splits == tuple(run.consumed_intrabar_splits for run in runs)
+            assert len(wrapped.consumed_splits[0]) == 3
+            assert [len(r.sessions) for r in (wrapped.bracket.r1, wrapped.bracket.r2)] == [3, 1 if withhold else 3]

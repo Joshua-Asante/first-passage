@@ -253,3 +253,23 @@ def test_source_only_source_is_refused_by_qualification_consumers(tmp_path, monk
     refused('SOURCE_ONLY_NOT_QUALIFICATION', lambda: evidence.encode_worker_result(
         SimpleNamespace(contract=composition.contract), 'execution', b'{}', None, (),
         admitted=SimpleNamespace(source=source)))
+
+
+K9_PLANTED = ('def f(source, path, authority, epoch):
+'
+              '    source.replay_bracket(path)
+'
+              '    return source.{name}
+')
+
+
+@pytest.mark.parametrize('name', ('_engine', '_replay_raw', 'screen_bracket', 'screen_epoch'))
+def test_K9(tmp_path, name):
+    """A planted screen capability use in scripts/, under an owner allowlisted only for
+    replay_bracket, is a finding keyed by (owner, capability); its own entry clears it."""
+    (tmp_path / 'scripts').mkdir()
+    (tmp_path / 'scripts' / 'planted.py').write_text(K9_PLANTED.format(name=name), encoding='utf-8')
+    owner = 'scripts/planted.py:f'
+    reviewed = {(owner, 'replay_bracket'): 'reviewed'}
+    assert unreviewed_uses(tmp_path, reviewed) == [(owner, name, 3)]
+    assert unreviewed_uses(tmp_path, {**reviewed, (owner, name): 'reviewed'}) == []
