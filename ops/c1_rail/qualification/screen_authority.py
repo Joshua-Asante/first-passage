@@ -133,8 +133,11 @@ def _positive(value):
 
 
 def _budget(value):
-    """A CPU-seconds budget (design §3 ``budget``: finite and positive): int or float, never bool."""
-    return type(value) in (int, float) and math.isfinite(value) and value > 0
+    """A CPU-seconds budget (design §3 ``budget``: finite and positive; no maximum): a positive
+    int (finite as it stands, never converted to float) or a finite positive float; never bool."""
+    if type(value) is int:
+        return value > 0
+    return type(value) is float and math.isfinite(value) and value > 0
 
 
 def _sha(raw: bytes) -> str:
