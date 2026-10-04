@@ -255,12 +255,9 @@ def test_source_only_source_is_refused_by_qualification_consumers(tmp_path, monk
         admitted=SimpleNamespace(source=source)))
 
 
-K9_PLANTED = ('def f(source, path, authority, epoch):
-'
-              '    source.replay_bracket(path)
-'
-              '    return source.{name}
-')
+K9_PLANTED = ('def f(source, path, authority, epoch):\n'
+              '    source.replay_bracket(path)\n'
+              '    return source.{name}\n')
 
 
 @pytest.mark.parametrize('name', ('_engine', '_replay_raw', 'screen_bracket', 'screen_epoch'))
