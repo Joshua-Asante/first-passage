@@ -277,7 +277,7 @@ def test_client_verifies_the_reassembled_client_view_not_the_canonical_plan(monk
         return transport
 
     monkeypatch.setattr(client, 'request', serving())
-    assert client.fetch_campaign_plan('unused', attempt_id='test') == view
+    assert _sha(client.fetch_campaign_plan('unused', attempt_id='test')) == _sha(view)  # digests: no MiB-sized assertion diff
     assert set(requested) == {_sha(view)}
     # Same-length bytes under the client-view identity fail the client-view digest check.
     monkeypatch.setattr(client, 'request', serving(substitute=b'w' * len(view)))
