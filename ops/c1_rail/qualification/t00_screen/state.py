@@ -559,7 +559,8 @@ def check_record(ledger: Sequence[journal.Record], journals: Mapping[str, Sequen
     ``keys`` are the screen-plan keys; ``trusted_keys`` the pinned approval keys and ``now`` the
     real current time (timezone-aware) at which every stored act's detached approval is
     re-verified on every check (card §8 R-INT-1, strict): no first-acceptance exception, no
-    persisted time and no post-window re-audit, so an expired act fails closed.
+    persisted time and no post-window re-audit, so an expired act fails closed. The caller (P-F)
+    passes the pinned, lifecycle-checked ``source:`` key set; this check does not pin it.
 
     In order: TERMINAL ``CORRUPTION`` (chains, schemas, strict and unique journal names (F6), a
     key outside the plan or its worker's assignment and not a tagged witness, an assignment
