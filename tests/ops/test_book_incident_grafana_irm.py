@@ -655,8 +655,9 @@ def test_record_delivery_cli_refusals_idempotency_and_no_effect(tmp_path, fake, 
     capsys.readouterr()
     before = _events(journal)
     for argv, check in (
-            (("--journal", journal, "--config", two, "0" * 64), "key-unknown"),
-            (("--journal", journal, "--config", two, "not-a-key"), "key-unknown"),
+            (("--journal", journal, "--config", two, "--channel", "irm", "0" * 64), "key-unknown"),
+            (("--journal", journal, "--config", two, "--channel", "irm", "not-a-key"),
+             "key-unknown"),
             (("--journal", journal, "--config", two, "--channel", "local", key), "channel"),
             (("--journal", journal, "--config", two, "--channel", "nope", key), "channel"),
             (("--journal", journal, "--config", two, key), "channel"),
@@ -1097,7 +1098,7 @@ def test_record_delivery_refuses_a_non_finite_or_non_positive_wait(tmp_path, fak
     notifier, key, config_path = _published(tmp_path, fake)
     before = _events(notifier.store_path)
     capsys.readouterr()
-    assert _cli("--journal", notifier.store_path, "--config", config_path, "--wait-s", wait,
+    assert _cli("--journal", notifier.store_path, "--config", config_path, "--wait-s=" + wait,
                 key) == 2
     assert "record-delivery refused: wait-s" in capsys.readouterr().err
     assert _events(notifier.store_path) == before

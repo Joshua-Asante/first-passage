@@ -18,6 +18,7 @@ from contextlib import closing
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import sqlite3
@@ -94,8 +95,12 @@ def _load_config(path, channel):
     return config, channel
 
 
-def _precheck(journal, key, channel):
-    """C3 items 2-5 on a read-only open; returns the job's state."""
+def _precheck(journal, key, channel, config_digest):
+    """C3 items 2-5 on a read-only open; returns the job's state.
+
+    The supplied config must be the one the job was journaled under (its digest), so its
+    channel roles are the notifier's (review r4179168634).
+    """
     path = Path(journal)
     if not path.is_file():
         raise Refusal("journal-missing")
@@ -106,9 +111,12 @@ def _precheck(journal, key, channel):
                 raise Refusal("journal-faulty")
             if not _KEY.match(key):
                 raise Refusal("key-unknown", "not 64 lowercase hex")
-            job = db.execute("SELECT state FROM jobs WHERE incident_key=?", (key,)).fetchone()
+            job = db.execute("SELECT state, config_digest FROM jobs WHERE incident_key=?",
+                             (key,)).fetchone()
             if job is None:
                 raise Refusal("key-unknown")
+            if job[1] != config_digest:
+                raise Refusal("config-mismatch", "not the config this job was journaled under")
             if db.execute("SELECT 1 FROM events WHERE incident_key=? AND channel=? "
                           "AND kind='attempt'", (key, channel)).fetchone() is None:
                 raise Refusal("no-attempt", "no page went out on this channel")
@@ -144,10 +152,24 @@ def _closed(journal, key, channel):
     return False
 
 
+def _delivered_digest(journal, key):
+    """The evidence digest of the job's one delivered event, or None."""
+    try:
+        with closing(_read_only(journal)) as db:
+            row = db.execute("SELECT detail FROM events WHERE incident_key=? AND kind='delivered'"
+                             " ORDER BY sequence LIMIT 1", (key,)).fetchone()
+    except sqlite3.Error:
+        return None
+    return None if row is None else json.loads(row[0]).get("evidence_digest")
+
+
 def record_delivery(journal, config_path, key, *, channel=None, wait_s=120.0, out=print):
     """Record, then wait for the rail-side close (C2-C5). Returns the exit status."""
+    if isinstance(wait_s, bool) or not isinstance(wait_s, (int, float)) or not (
+            math.isfinite(wait_s) and wait_s > 0):
+        raise Refusal("wait-s", "must be a finite number of seconds above 0")
     config, channel = _load_config(config_path, channel)
-    state = _precheck(journal, key, channel)
+    state = _precheck(journal, key, channel, config.digest)
     if state == "delivered":
         out(ALREADY)
     else:
@@ -164,7 +186,10 @@ def record_delivery(journal, config_path, key, *, channel=None, wait_s=120.0, ou
             notifier.record_delivery(key, channel, digest)
         except NotifierStoreError as exc:
             raise Refusal(_store_check(exc.__cause__ or exc), "journal unavailable") from None
-        out("recorded delivered (operator-reported acknowledgment)")
+        # Another writer may have closed the job after the pre-check; record_delivery then
+        # wrote nothing (J5), so report what the journal holds (review r4179168638).
+        out("recorded delivered (operator-reported acknowledgment)"
+            if _delivered_digest(journal, key) == digest else ALREADY)
     deadline = time.monotonic() + wait_s
     while True:
         if _closed(journal, key, channel):

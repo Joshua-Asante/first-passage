@@ -139,6 +139,7 @@ class GrafanaIRMChannel:
             raise ValueError("incident key must be a sha256 hex digest")
         message = body(idempotency_key, payload, qualification_test=self.qualification_test)
         assert_no_secrets(message)
+        self.last_status = None  # a transport failure must not report an earlier status
         status, content = self._post(json.dumps(message, sort_keys=True).encode("utf-8"))
         self.last_status = status
         if 200 <= status < 300:
