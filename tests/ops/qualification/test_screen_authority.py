@@ -127,7 +127,7 @@ class Screen:  # pylint: disable=too-many-instance-attributes
     """One synthetic source case, repository, P7 record and screen authority."""
 
     def __init__(self, root: Path, monkeypatch, *, a6_byte=False, cprime_cell=False,  # pylint: disable=too-many-arguments
-                 a3_unanswered=False, crlf=False, param_changes=None, side_ratified=None):
+                 a3_unanswered=False, crlf=False, param_changes=None, side_ratified=None, extra_files=None):
         self.monkeypatch = monkeypatch
         self.ledger = None
         self.artifact_root = root / 'private'
@@ -157,6 +157,8 @@ class Screen:  # pylint: disable=too-many-instance-attributes
         repo.mkdir()
         git(repo, 'init', '-q')
         write(repo, MODULE, '"""TEST_ONLY loaded module."""\n')
+        for relative, content in (extra_files or {}).items():
+            write(repo, relative, content)
         write(repo, ORB, successor('| ORB-3 ', answered=not a3_unanswered, mapping_marker=a3_unanswered))
         write(repo, VAN, successor('| VAN-3 '))
         write(repo, PREREG, prereg_text(sections, self.params, status='DRAFT — NOT RATIFIED'))
@@ -862,3 +864,27 @@ def test_a_fractional_budget_authority_is_issued_used_and_acted_on(tmp_path, mon
     epoch = module.open_screen_epoch(SOURCE, auth)
     assert module.close_screen_epoch(epoch).closure_match
     assert validate_act(screen, *act(screen)).authority_sha256 == auth.authority_sha256
+
+
+OUTSIDE_OPS_CORE = {'lab/t00_lab_fixture.py': 'LAB = 1\n', 't00_root_fixture.py': 'ROOT = 1\n'}
+
+
+@pytest.mark.parametrize('relative', sorted(OUTSIDE_OPS_CORE))
+def test_stat_guard_covers_first_party_import_roots_outside_ops_and_core(tmp_path, monkeypatch, relative):
+    """r4179201913: the bootstrap permits first-party imports from core, lab, ops, ops/c1_rail,
+    ops/c1_signal_daemon and the code root (p7_evidence.py:241-242; any tracked *.py under the
+    code root, :228-230, :338). A recorded module there that changes after open stops the next
+    guarded call (SCREEN_EPOCH_STALE) and fails the close; unchanged, both pass."""
+    screen = Screen(tmp_path, monkeypatch, extra_files=OUTSIDE_OPS_CORE)
+    module, auth, recorder, _ = closure_case(screen, tmp_path)
+    target = screen.repo / relative
+    recorder.first_party['t00_outside_fixture'] = {'path': relative, 'sha256': sha(target.read_bytes())}
+    assert closes(module, auth, recorder).closure_match
+    epoch = module.open_screen_epoch(SOURCE, auth)
+    module.require_open_screen_epoch(epoch, source=SOURCE, authority=auth)
+    target.write_bytes(target.read_bytes() + b'# changed\n')
+    stat = target.stat()
+    os.utime(target, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))
+    refused('SCREEN_EPOCH_STALE', lambda: module.require_open_screen_epoch(epoch, source=SOURCE, authority=auth))
+    cover_loaded(recorder)
+    assert not module.close_screen_epoch(epoch).closure_match
