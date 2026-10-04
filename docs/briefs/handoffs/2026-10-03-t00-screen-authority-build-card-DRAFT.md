@@ -415,7 +415,11 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - P-B1 (#650): accepted at `0b4b560` (coordinator (3)); merged `6e2ece62af2f6059cf37afa82728ff9068dacfd5` (pinned `43b09f6`).
   - P-D (#643): K-5 re-taken on `740f392` (includes #611); accepted at `0866dff`; merged `f7a4e53042042d7a8d44b0b69ce458f47e43e805` (pinned `a6cb6a5`).
   - P-C (#646): K-5 re-taken on the future base `740f392` + P-D (tree `4b48cad6`); accepted at `e473c5f`; merged `f9099a2bdea9b7833b85a9fc706ff7a86a192000` (pinned `e473c5f`).
-  - P-A, P-B2, P-E, P-F: —. P-A's §2.3 dependencies (PR-1, PR-2, PR-5, P-B1, P-C, P-D) are now all met; P-A is dispatched from `f9099a2` or later.
+  - P-A, P-B2, P-E, P-F: —.
+- **K-4 ruling, row A8 values-block format (coordinator (4), card owner, 2026-10-04; raised by the P-A build as NEEDS_CONTEXT, since neither the design, this card nor #581 froze it):**
+  - #581 §6 holds exactly one fenced block whose opening line is three backticks immediately followed by the info string `t00-step2-values/v1`, containing one line equal to `canonical_json_bytes(parameters)`.
+  - Each active #581 §3 item's last cell reads exactly ``values block: `k1`, `k2` `` with this key map: item 1 → `depth_per_root`, `budget`; 2 → `pass_floor_halves`; 3 → `deadline_only_is_bust`; 4 → `rng`, `block`, `path_start_date`; 5 → `run1_diagnostic`; 7 → `scenarios`; 8 → `a5_rule`.
+  - **PR-4 and #581's step-5 ratification follow this format.** They are the operator-visible surfaces, and Joshua ratifies #581 at step 5. P-A's §2.3 dependencies (PR-1, PR-2, PR-5, P-B1, P-C, P-D) are now all met; P-A is dispatched from `f9099a2` or later.
 - H: —
 - Design §12 item 9 (depth N) answered by Joshua (precondition for §7 step 1): —
 - ~~Still open outside this card: #581 OD-1/OD-2 direct confirmation (design §12 item 3).~~ *2026-10-03:* confirmed directly by Joshua (sheet 4 item 3, "all recommended"; #629 approval comment 5965049542). This card merged as #634 at `cdbf597b2ef2c7b4e32ae4af476e3a392f75ca79`.
