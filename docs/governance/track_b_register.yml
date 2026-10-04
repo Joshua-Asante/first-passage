@@ -239,7 +239,7 @@ items:
     since: 2026-09-20
     owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t06--full-synthetic-e1-acceptance--s8-500k750k
     blocked_by: [gate.T05-R1, work.K3-RC-4]
-    next: Dispatch after T05 integration; first the B4 observed pilot draw and S5 open questions Q1 and Q7 (statistical owner)
+    next: Dispatch after T05 integration; first the B4 observed pilot draw (S5 Q1 and Q7 decided, operator ruling 2026-10-02 sitting 2, ENG-3/ENG-4)
     next_actor: coordinator
     refs: ["#609 (draft harness preparation)"]
 
@@ -279,22 +279,23 @@ items:
   - id: t00.screen-authority-design
     kind: t00
     title: T00 screen authority design (new signed contract class) with the A2 spec amendment text
-    status: OPEN
-    since: 2026-10-02
+    status: ACCEPTED
+    since: 2026-10-03
     owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
-    next: "Design a contract class bound to r3c's 25 inputs and the ratified #581, still refusing stages, seal, admission and deployment; operator approves before any code"
-    next_actor: coordinator
+    next: null
+    next_actor: none
+    refs: ["#629 (sheet 4: design approved)"]
     note: r3c refuses SCREEN and main has no step-3 runner, so step 3 cannot run on the current code (decision sheet A1–A2).
 
   - id: t00.screen-authority-build
     kind: t00
     title: Build the T00 screen authority (driver, A5 counting, A6 verdict)
-    status: NOT_STARTED
-    since: 2026-10-02
+    status: IN_PROGRESS
+    since: 2026-10-03
     owner: ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger
-    blocked_by: [t00.screen-authority-design]
-    next: Build after the design is approved
+    next: "Complete the build under the approved build card #634 (K-5)"
     next_actor: worker
+    refs: ["#634 (sheet 5: build card approved)"]
 
   - id: t00.screen-authority-sign
     kind: t00
@@ -328,7 +329,7 @@ items:
     evidence:
       - ../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts
     blocked_by: [t00.p7-rerun-after-fixes]
-    next: "Set and ratify #581 §3 (one timing-only real-source probe may set item 1 first, A4)"
+    next: "Set and ratify #581 §3 at A1 step 5"
     next_actor: operator
     refs: ["#581 (draft)"]
 
