@@ -120,9 +120,24 @@ def _precheck(journal, key, channel, config_digest):
             if db.execute("SELECT 1 FROM events WHERE incident_key=? AND channel=? "
                           "AND kind='attempt'", (key, channel)).fetchone() is None:
                 raise Refusal("no-attempt", "no page went out on this channel")
+            if any(_failure_outcome(detail) is None for (detail,) in db.execute(
+                    "SELECT detail FROM events WHERE incident_key=? AND channel=? "
+                    "AND kind='delivery_failed'", (key, channel))):
+                raise Refusal("journal-faulty", "malformed delivery_failed detail")
             return job[0]
     except sqlite3.Error as exc:
         raise Refusal(_store_check(exc), type(exc).__name__) from None
+
+
+def _failure_outcome(detail):
+    """A delivery_failed detail's ``outcome``, or None unless it is a JSON object holding a
+    string outcome, as the notifier journals it (``_publish_round``)."""
+    try:
+        parsed = json.loads(detail)
+    except (TypeError, ValueError):
+        return None
+    outcome = parsed.get("outcome") if isinstance(parsed, dict) else None
+    return outcome if isinstance(outcome, str) else None
 
 
 def _closed(journal, key, channel):
@@ -147,7 +162,8 @@ def _closed(journal, key, channel):
     for kind, detail in rows[last + 1:]:
         if kind in ("provider_accepted", "late_outcome"):
             return True
-        if kind == "delivery_failed" and json.loads(detail).get("outcome") != "timeout":
+        outcome = _failure_outcome(detail) if kind == "delivery_failed" else None
+        if outcome is not None and outcome != "timeout":  # a malformed row is never a close
             return True
     return False
 

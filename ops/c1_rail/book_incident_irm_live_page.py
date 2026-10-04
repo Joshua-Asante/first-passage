@@ -78,7 +78,12 @@ def _print_events(notifier, key):
         print("  %s %-18s %s" % (event["at"], event["kind"], event["channel"] or "-"), flush=True)
 
 
+def _irm_attempts(notifier, key):
+    return [event["kind"] for event in notifier.events(key) if event["channel"] == "irm"]
+
+
 def run(directory, *, secret_ref=SECRET_REF, republish_after_s=90.0):
+    """Returns ``(key, admitted)``: whether the republish was admitted and journaled."""
     directory = Path(directory)
     config = _config(secret_ref)
     # The first retry is due retry_initial_s after the t0 round (book_incident_notifier
@@ -109,12 +114,21 @@ def run(directory, *, secret_ref=SECRET_REF, republish_after_s=90.0):
     print("t0 publish: provider status %s" % irm.last_status, flush=True)
     print("waiting %.0f s; do not acknowledge until the call rings" % republish_after_s, flush=True)
     time.sleep(republish_after_s)
+    attempts = _irm_attempts(notifier, key).count("attempt")
     notifier.run_once()
-    print("republish: provider status %s" % irm.last_status, flush=True)
+    # Card §3.5 and §6.3 (d)-(e) need the republish admitted and journaled. A first POST still
+    # live past publish_timeout_s makes the round record publish_in_flight and send nothing.
+    after = _irm_attempts(notifier, key)
+    admitted = after.count("attempt") > attempts
+    if admitted:
+        print("republish: provider status %s" % irm.last_status, flush=True)
+    else:
+        print("republish not admitted (%s); this run cannot score card §6.3 (d)-(e)"
+              % (after[-1] if after else "no event"), flush=True)
     print("incident key (alert_uid): " + key)
     _print_events(notifier, key)
     print("journal: %s\nconfig: %s" % (directory / JOURNAL, directory / CONFIG), flush=True)
-    return key
+    return key, admitted
 
 
 def main(argv=None):
@@ -129,11 +143,12 @@ def main(argv=None):
         print("refused: --confirm-live-page is required (this sends a real page)", file=sys.stderr)
         return 2
     try:
-        run(args.dir, secret_ref=args.secret_ref, republish_after_s=args.republish_after_s)
+        _key, admitted = run(args.dir, secret_ref=args.secret_ref,
+                             republish_after_s=args.republish_after_s)
     except NotifierConfigError as exc:
         print("refused: " + str(exc), file=sys.stderr)
         return 2
-    return 0
+    return 0 if admitted else 3
 
 
 if __name__ == "__main__":
