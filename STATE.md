@@ -125,11 +125,6 @@ Owners hold canonical criteria; rows are pointers.
   operator initiative or 2026-11-08; alternate supply routes do not depend on it.
   [S2B status](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)/[charter](docs/adr/2026-08-16-deep-iteration-lane-charter.md)/[superseding K](docs/adr/2026-08-22-grow0-two-ledger-k-question.md).
 
-### 2026-10-11 (approx.)
-
-- **Prop-envelope overlay:** reverify the 90-day venue facts.
-  [Envelope §4](ops/prop_envelope_default.md)/[ratification](docs/adr/2026-07-13-prop-envelope-v1-ratification.md).
-
 ### 2026-11-08
 
 - **Queue attention/order review:** first check of the ≤5 cap (two-consecutive-quarter
@@ -165,6 +160,11 @@ Owners hold canonical criteria; rows are pointers.
   Full enforcement and the rejection parser/ladder stay incomplete;
   [owner](docs/adr/2026-08-30-evaluation-order.md#current-owner)/[rejection patterns](docs/adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)
   hold the limits under [D3 routing](docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md#2--decision).
+
+### 2026-12-31 (approx.)
+
+- **Prop-envelope overlay:** reverify the 90-day venue facts for the four friendly firms only (operator default 2026-10-02, sheet E). The other four rows stay stale and unused.
+  Last done 2026-10-02/03 by [#621](https://github.com/Joshua-Asante/first-passage/pull/621). [Envelope §4](ops/prop_envelope_default.md)/[ratification](docs/adr/2026-07-13-prop-envelope-v1-ratification.md).
 
 ### 2027-02-08
 
