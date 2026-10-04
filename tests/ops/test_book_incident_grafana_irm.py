@@ -1184,3 +1184,19 @@ def test_operator_cli_connects_are_read_only_uris():
     )
     for mutated in mutations:
         assert mutated != source and _writable_connects(mutated), mutated[-80:]
+
+
+@pytest.mark.parametrize("after", ["nan", "inf", "-inf", "-1", "0", "4.9"])
+def test_live_page_driver_refuses_a_republish_before_the_retry_backoff(tmp_path, fake,
+                                                                     monkeypatch, capsys, after):
+    """#676 round 2 r4179252611: --republish-after-s must be finite and at least the first
+    retry backoff (retry_initial_s of the driver's config; _transition :635-636), or the
+    republish finds no due job. Refused before any reference, request or directory. The twin
+    is test_live_page_driver_runs_the_q7_sequence_against_loopback (5.2 s)."""
+    monkeypatch.setattr(driver_module, "GrafanaIRMChannel", functools.partial(
+        irm_module.GrafanaIRMChannel, allow_loopback_http=True))
+    assert driver_module.main(["--dir", str(tmp_path / "run"), "--confirm-live-page",
+                               "--republish-after-s=" + after]) == 2
+    assert "republish-after-s" in capsys.readouterr().err
+    assert fake.requests == [] and not (tmp_path / "run").exists()
+    assert driver_module._config(driver_module.SECRET_REF).retry_initial_s == 5.0
