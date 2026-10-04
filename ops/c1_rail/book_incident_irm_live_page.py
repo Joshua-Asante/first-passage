@@ -83,7 +83,8 @@ def _irm_attempts(notifier, key):
 
 
 def run(directory, *, secret_ref=SECRET_REF, republish_after_s=90.0):
-    """Returns ``(key, admitted)``: whether the republish was admitted and journaled."""
+    """Returns ``(key, scorable)``: card §6.3 can score the run only when the t0 publish
+    and the republish were each admitted and accepted by the provider (§6.3 (c)-(e))."""
     directory = Path(directory)
     config = _config(secret_ref)
     # The first retry is due retry_initial_s after the t0 round (book_incident_notifier
@@ -111,7 +112,13 @@ def run(directory, *, secret_ref=SECRET_REF, republish_after_s=90.0):
         config=config, clock=clock)
     notifier.run_once()
     key = notifier.jobs()[0]["incident_key"]
-    print("t0 publish: provider status %s" % irm.last_status, flush=True)
+    first = _irm_attempts(notifier, key)
+    t0_accepted = first == ["attempt", "provider_accepted"]
+    if t0_accepted:
+        print("t0 publish: provider status %s" % irm.last_status, flush=True)
+    else:  # (c) and (d) are timed from the t0 page, so a later page cannot stand in for it
+        print("t0 publish not accepted by the provider (%s, status %s); this run cannot score "
+              "card §6.3" % (first[-1] if first else "no event", irm.last_status), flush=True)
     print("waiting %.0f s; do not acknowledge until the call rings" % republish_after_s, flush=True)
     time.sleep(republish_after_s)
     attempts = _irm_attempts(notifier, key).count("attempt")
@@ -120,15 +127,19 @@ def run(directory, *, secret_ref=SECRET_REF, republish_after_s=90.0):
     # live past publish_timeout_s makes the round record publish_in_flight and send nothing.
     after = _irm_attempts(notifier, key)
     admitted = after.count("attempt") > attempts
-    if admitted:
+    accepted = admitted and after[-1] == "provider_accepted"
+    if accepted:
         print("republish: provider status %s" % irm.last_status, flush=True)
+    elif admitted:
+        print("republish not accepted by the provider (%s, status %s); this run cannot score "
+              "card §6.3" % (after[-1], irm.last_status), flush=True)
     else:
         print("republish not admitted (%s); this run cannot score card §6.3 (d)-(e)"
               % (after[-1] if after else "no event"), flush=True)
     print("incident key (alert_uid): " + key)
     _print_events(notifier, key)
     print("journal: %s\nconfig: %s" % (directory / JOURNAL, directory / CONFIG), flush=True)
-    return key, admitted
+    return key, t0_accepted and accepted
 
 
 def main(argv=None):
@@ -143,12 +154,12 @@ def main(argv=None):
         print("refused: --confirm-live-page is required (this sends a real page)", file=sys.stderr)
         return 2
     try:
-        _key, admitted = run(args.dir, secret_ref=args.secret_ref,
+        _key, scorable = run(args.dir, secret_ref=args.secret_ref,
                              republish_after_s=args.republish_after_s)
     except NotifierConfigError as exc:
         print("refused: " + str(exc), file=sys.stderr)
         return 2
-    return 0 if admitted else 3
+    return 0 if scorable else 3
 
 
 if __name__ == "__main__":
