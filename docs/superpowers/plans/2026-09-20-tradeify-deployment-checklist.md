@@ -16,7 +16,7 @@
 The [Track B register](../../governance/track_b_register.yml) owns each item's current status, next action, actor, blockers and expiry (Rule 7; operator ruling 2026-10-03). The table below is generated from it and replaces the hand-maintained September 26 packet table (retrievable at `d5d559b`). The dated notes and rulings after the table are records of their dates; where they differ from the table on current status, the register governs.
 
 <!-- BEGIN generated: track-b-register (table) -->
-_Generated from the [Track B register](../../governance/track_b_register.yml) (as of 2026-10-03 @ `d27c7a1`); the register owns item status. Edit it, then run `python scripts/track_b_register.py write`._
+_Generated from the [Track B register](../../governance/track_b_register.yml) (as of 2026-10-03 @ `d27c7a1`); the register owns item status. Edit it, then run `python -I scripts/fp.py python scripts/track_b_register.py write`._
 
 | Item | Status | Next | Actor | Blocked by | Owner |
 |---|---|---|---|---|---|
@@ -42,7 +42,7 @@ _Generated from the [Track B register](../../governance/track_b_register.yml) (a
 | packet.T09 | BLOCKED | Bounded T09 dispatch after gates B–D are accepted | coordinator | checkpoint.CP-5 | [owner](2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record) |
 | packet.T10 | OPEN | Step 4 budget term awaits a synthetic probe | coordinator | — | [owner](../../briefs/handoffs/2026-09-21-tradeify-t10-source-and-freeze-packet.md) |
 | checkpoint.CP-3 | OPEN | Authorize the next order-producing row (X-4) in writing, with environment and exposure limits | operator | drill.X-4 | [owner](2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken) |
-| checkpoint.CP-5 | OPEN | Accept gates B–D using commissioning traces, H3/H4 and the allocation map | operator | — | [owner](2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken) |
+| checkpoint.CP-5 | OPEN | Accept gates B–D using commissioning traces, H3/H4 and the allocation map | operator | commissioning traces | [owner](2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken) |
 | checkpoint.CP-6 (F1) | OPEN | Freeze once the feed later-binding rule, RC-4, K3, Q9 and the full behavior inventory are in | operator | work.K3-RC-4, feed later-binding rule, full behavior inventory | [owner](2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken) |
 | checkpoint.CP-7 (O-4) | OPEN | May open after T00 GO-evidence, a bound equivalence spec and A9-PREP | operator | T00 GO-evidence, bound equivalence spec, A9-PREP | [owner](2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken) |
 | checkpoint.CP-8 | OPEN | — | none | — | [owner](2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken) |

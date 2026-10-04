@@ -467,3 +467,28 @@ def test_hook_digest_unavailable_on_status_finding(tmp_path, capsys):
     reg.write_text(yaml.safe_dump(bad), encoding="utf-8")
     assert tbr.main(["digest", "--hook", "--register", str(reg)]) == 0
     assert "unavailable" in capsys.readouterr().out
+
+
+def test_load_rejects_duplicate_mapping_keys(tmp_path):
+    reg = tmp_path / "r.yml"
+    reg.write_text("schema: a\nschema: b\n", encoding="utf-8")
+    with pytest.raises(tbr.Finding, match="duplicate key"):
+        tbr.load(reg)
+
+
+def test_production_register_requires_watch(root):
+    data = _register(watch=[], generated=[{"path": "docs/ledger.md", "view": "table"}])
+    assert any("watch" in f for f in tbr.check(data, root, production=True))
+
+
+def test_digest_carries_row_notes(root):
+    data = _register()
+    data["items"][0] = _row(status="OPEN", next="run it", next_actor="coordinator", note="scope limit")
+    text = tbr.digest(data, dt.datetime(2026, 10, 3, tzinfo=dt.timezone.utc), 7)
+    assert "note: scope limit" in text
+
+
+def test_generated_header_routes_write_through_launcher(root):
+    assert "python -I scripts/fp.py python scripts/track_b_register.py write" in tbr.render(
+        _register(), "table", "docs/plan.md"
+    )

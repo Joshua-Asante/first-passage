@@ -153,11 +153,32 @@ class Finding(Exception):
     pass
 
 
+def _strict_loader():
+    """A SafeLoader that refuses a repeated mapping key (safe_load keeps the last)."""
+
+    class Strict(yaml.SafeLoader):
+        pass
+
+    def mapping(loader, node, deep=False):
+        keys = set()
+        for key_node, _ in node.value:
+            key = loader.construct_object(key_node, deep=deep)
+            if key in keys:
+                raise yaml.constructor.ConstructorError(
+                    None, None, f"duplicate key {key!r}", key_node.start_mark
+                )
+            keys.add(key)
+        return loader.construct_mapping(node, deep=deep)
+
+    Strict.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, mapping)
+    return Strict
+
+
 def load(path: Path) -> dict[str, Any]:
     if yaml is None:
         raise Finding("R1 PyYAML is not installed for this interpreter")
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data = yaml.load(path.read_text(encoding="utf-8"), Loader=_strict_loader())
     except (OSError, yaml.YAMLError) as exc:
         raise Finding(f"R1 {path.name}: unreadable: {exc}") from exc
     if not isinstance(data, dict):
@@ -240,6 +261,8 @@ def check(
     out.extend(_targets_ok(data))
     if production and not data.get("generated"):
         out.append("R1 the production register needs a non-empty generated list")
+    if production and not watch:
+        out.append("R1 the production register needs a non-empty watch list")
     items = data.get("items")
     if not isinstance(items, list) or not items:
         out.append("R1 items must be a non-empty list")
@@ -494,7 +517,7 @@ def _check_block(data: dict[str, Any], target: dict[str, Any], root: Path) -> li
     if view != target["view"]:
         return [f"R8 {rel}: block view is {view!r}, register says {target['view']!r}"]
     if body != "\n" + render(data, view, rel) + "\n":
-        return [f"R8 {rel}: generated block is stale; run `python scripts/track_b_register.py write`"]
+        return [f"R8 {rel}: generated block is stale; run `python -I scripts/fp.py python scripts/track_b_register.py write`"]
     return []
 
 
@@ -571,7 +594,7 @@ def render(data: dict[str, Any], view: str, target_rel: str) -> str:
     head = (
         f"_Generated from the [Track B register]({register}) (as of {data['as_of']} @ "
         f"`{data['reconciled_at']}`); the register owns item status. Edit it, then run "
-        f"`python scripts/track_b_register.py write`._"
+        f"`python -I scripts/fp.py python scripts/track_b_register.py write`._"
     )
     if view == "table":
         return head + "\n\n" + table(data, target_rel)
@@ -617,14 +640,19 @@ def digest(data: dict[str, Any], today: dt.datetime, days: int) -> str:
     if expiring:
         lines.append(f"Expiring within {days}d:")
         lines.extend(expiring)
+    def noted(line, r):
+        return [line] + ([f"    note: {r['note']}"] if r.get("note") else [])
+
     nexts, blocked = _groups(rows, today)
     for actor in ("operator", "coordinator", "worker"):
         if nexts[actor]:
             lines.append(f"Next ({actor}):")
-            lines.extend(f"  {r['id']}: {r['next']}" for r in nexts[actor])
+            for r in nexts[actor]:
+                lines.extend(noted(f"  {r['id']}: {r['next']}", r))
     if blocked:
         lines.append("Blocked:")
-        lines.extend(f"  {r['id']} <- {', '.join(w)}" for r, w in blocked)
+        for r, w in blocked:
+            lines.extend(noted(f"  {r['id']} <- {', '.join(w)}", r))
     lines.append(f"Register: docs/governance/track_b_register.yml ({len(rows)} rows)")
     return "\n".join(lines)
 
