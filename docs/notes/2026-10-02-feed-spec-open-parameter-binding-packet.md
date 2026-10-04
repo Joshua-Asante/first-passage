@@ -376,3 +376,13 @@ Whether the switch takes effect at the session open or at another boundary is no
   - #583 note (all) at `8387e66`.
 - Web: WebFetch of the TradingView support page 43000691027. WebSearch excerpts for CME 6J, MNQ, MGC and MYM. Three WebFetch calls to cmegroup.com timed out.
 - No private data, Pine source or port was read. No provider was contacted.
+
+## Addendum 2026-10-04 — hyper's requirements-simplification proposals: operator dispositions
+
+**Decision:** Joshua, 2026-10-04T00:17:19Z, to coordinator (4): "go on the proposal dispositions and open-3/4 as recommended". The proposals came from hyper's scrutiny worker at main `822c3ea`, relayed by Codex Coordinator 2 on 2026-10-03. They were recommendations only; this records which are adopted.
+
+1. **Live month-end-adjacent session: rejected.** The adopted window minimum stays as frozen (spec §16.2). Removing it would need a §13 re-opening, and the saving may be zero.
+2. **Window start: adopted for the OPEN-8 binding.** The window may open at the first complete permitted session after collection starts, not only at a Sunday 18:00 ET open. Every adopted minimum is kept, including two Sunday opens inside the window. The text is written when OPEN-8 is bound. **OPEN-4 per-leg evidence:** supplied by the coordinator's panel read and cited in the OPEN-4 binding.
+3. **Provider late/missing data versus collector evidence loss: adopted as a separate pre-data §13 body amendment,** drafted together with the "capture incomplete" definition and §7 completeness (§4 question 6). It must use independent liveness and transport-completion evidence; a generic heartbeat is not completion proof. It is not part of any OPEN binding. The coordinator owes the draft before CP-6.
+4. **Funded, emission-disabled collection overlap: deferred.** T00 is not shown to be the final CP-7 blocker. Revisit only if it is.
+5. **FEED-16 shadow reuse for live-only warm-up: accepted as already permitted;** no change.
