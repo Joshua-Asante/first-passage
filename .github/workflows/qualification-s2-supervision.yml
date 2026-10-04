@@ -21,9 +21,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 's2 (the fifteen S2 nodes), s3 (S2 plus the four N1 nodes on the dispatch/v5 installation), s4 (S3 plus the three joint N2 nodes on the joint v6 installation; the acceptance-grade set) or s5 (the S4 set plus the Part A nodes on the joint /v7 installation; the S5 acceptance-grade set)'
+        description: 's2 (the fifteen S2 nodes), s3 (S2 plus the four N1 nodes on the dispatch/v5 installation), s4 (S3 plus the three joint N2 nodes on the joint v6 installation; the acceptance-grade set), s5 (the S4 set plus the Part A nodes on the joint /v7 installation; the S5 acceptance-grade set) or r1 (the S5 set plus the result/seal and C-prime Linux files; the H9 checkpoint R1 combined set, never full E1 acceptance by itself)'
         type: choice
-        options: [s2, s3, s4, s5]
+        options: [s2, s3, s4, s5, r1]
         default: s4
       cases:
         description: 'Diagnostic subset only: a pytest -k expression over the selected files. Empty runs the full selection. A non-empty value marks the record DIAGNOSTIC_SUBSET, which can never be acceptance evidence.'
@@ -66,9 +66,10 @@ jobs:
   s2-supervision:
     name: Qualification S2 supervision (single fresh host)
     runs-on: ubuntu-24.04
-    # Nine admissions plus the 305 s downtime case and bounded waits; well under
-    # this ceiling on a hosted runner, but never a fast check.
-    timeout-minutes: 120
+    # The s5 run 36936558798 takes ~90 min on a hosted runner; 180 min also
+    # covers r1, which adds the result/seal (file 5) and C-prime (file 6)
+    # Linux files on top of the s5 set. Never a fast check.
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Validate inputs
@@ -81,7 +82,7 @@ jobs:
         run: |
           mode="$BOUNDARY_MODE"
           cases="$BOUNDARY_CASES"
-          case "$mode" in s2|s3|s4|s5) ;; *) echo "unsupported mode: $mode (expected s2, s3, s4 or s5)" >&2; exit 2 ;; esac
+          case "$mode" in s2|s3|s4|s5|r1) ;; *) echo "unsupported mode: $mode (expected s2, s3, s4, s5 or r1)" >&2; exit 2 ;; esac
           if [ -n "$cases" ]; then
             # The same whitespace test as the boundary wrapper (Python str.strip, so
             # Unicode spaces such as NBSP count); the bash class is the fallback.
@@ -95,8 +96,8 @@ jobs:
               echo "cases is whitespace-only; leave it empty to run the full selection" >&2
               exit 2
             fi
-            if [ "$mode" != "s3" ] && [ "$mode" != "s4" ] && [ "$mode" != "s5" ]; then
-              echo "cases is a diagnostic subset for mode s3, s4 or s5 only (mode: $mode)" >&2
+            if [ "$mode" != "s3" ] && [ "$mode" != "s4" ] && [ "$mode" != "s5" ] && [ "$mode" != "r1" ]; then
+              echo "cases is a diagnostic subset for mode s3, s4, s5 or r1 only (mode: $mode)" >&2
               exit 2
             fi
           fi
@@ -131,7 +132,7 @@ jobs:
           host_root="$(dirname "$manifest")"
           mode="$BOUNDARY_MODE"
           cases="$BOUNDARY_CASES"
-          case "$mode" in s2|s3|s4|s5) ;; *) echo "unsupported mode: $mode (expected s2, s3, s4 or s5)" >&2; exit 2 ;; esac
+          case "$mode" in s2|s3|s4|s5|r1) ;; *) echo "unsupported mode: $mode (expected s2, s3, s4, s5 or r1)" >&2; exit 2 ;; esac
           sudo "$host_root/env/bin/python" -I scripts/fp.py --env "$host_root/env" doctor
           args=(--"$mode")
           if [ -n "$cases" ]; then
