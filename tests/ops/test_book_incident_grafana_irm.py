@@ -650,17 +650,15 @@ def test_record_delivery_cli_refusals_idempotency_and_no_effect(tmp_path, fake, 
     key = notifier.jobs()[0]["incident_key"]
     journal = notifier.store_path
     two = _write_config(tmp_path, config)
-    one = tmp_path / "one.json"
-    one.write_text(json.dumps(_config().resolved()), encoding="utf-8")
     garbage = tmp_path / "garbage.json"
     garbage.write_text("{not json", encoding="utf-8")
     capsys.readouterr()
     before = _events(journal)
     for argv, check in (
-            (("--journal", journal, "--config", one, "0" * 64), "key-unknown"),
-            (("--journal", journal, "--config", one, "not-a-key"), "key-unknown"),
-            (("--journal", journal, "--config", one, "--channel", "local", key), "channel"),
-            (("--journal", journal, "--config", one, "--channel", "nope", key), "channel"),
+            (("--journal", journal, "--config", two, "0" * 64), "key-unknown"),
+            (("--journal", journal, "--config", two, "not-a-key"), "key-unknown"),
+            (("--journal", journal, "--config", two, "--channel", "local", key), "channel"),
+            (("--journal", journal, "--config", two, "--channel", "nope", key), "channel"),
             (("--journal", journal, "--config", two, key), "channel"),
             (("--journal", journal, "--config", two, "--channel", "backup", key), "no-attempt"),
             (("--journal", journal, "--config", garbage, key), "config")):
@@ -678,9 +676,9 @@ def test_record_delivery_cli_refusals_idempotency_and_no_effect(tmp_path, fake, 
         guard.setattr(socket.socket, "connect", refuse_connect)
         guard.setattr(socket.socket, "connect_ex", refuse_connect)
         guard.setattr(os, "environ", _Environ(os.environ, trips))
-        assert _cli("--journal", journal, "--config", one, key) == 0
+        assert _cli("--journal", journal, "--config", two, "--channel", "irm", key) == 0
         first = capsys.readouterr().out
-        assert _cli("--journal", journal, "--config", one, key) == 0
+        assert _cli("--journal", journal, "--config", two, "--channel", "irm", key) == 0
         second = capsys.readouterr().out
     assert trips == [] and connects == []
     added = _events(journal)[len(before):]
@@ -1076,3 +1074,112 @@ def test_q6_restart_keeps_identity_and_hides_url(tmp_path, fake, caplog, capsys)
                     json.dumps(restarted.events()), json.dumps(posts), caplog.text,
                     captured.out, captured.err, json.dumps(config.resolved())):
         assert TOKEN not in surface and "127.0.0.1:" not in surface
+
+
+# -- review folds on #676 (Codex at 6b24df0) and #677 ------------------------------------------
+
+def test_last_status_is_cleared_before_each_post(fake):
+    """r4179168630: a transport failure after an HTTP answer reports no stale status."""
+    config = _config(timeout=2.0)
+    channel = _irm(config, transport=0.5)
+    payload = {"reason": "operator", "detected_at": NOW.isoformat()}
+    fake.script.extend([202, HANG])
+    assert channel.publish("a" * 64, payload).state == "accepted"
+    assert channel.last_status == 202  # twin: an answered post records its status
+    with pytest.raises(irm_module.GrafanaIRMTransportError):
+        channel.publish("a" * 64, payload)
+    assert channel.last_status is None
+
+
+@pytest.mark.parametrize("wait", ["nan", "inf", "-inf", "0", "-1"])
+def test_record_delivery_refuses_a_non_finite_or_non_positive_wait(tmp_path, fake, capsys, wait):
+    """r4179168633: --wait-s must be finite and positive; refused before any event."""
+    notifier, key, config_path = _published(tmp_path, fake)
+    before = _events(notifier.store_path)
+    capsys.readouterr()
+    assert _cli("--journal", notifier.store_path, "--config", config_path, "--wait-s", wait,
+                key) == 2
+    assert "record-delivery refused: wait-s" in capsys.readouterr().err
+    assert _events(notifier.store_path) == before
+
+
+def test_record_delivery_accepts_a_finite_positive_wait(tmp_path, fake, capsys):
+    """Twin of the --wait-s refusal: a finite positive bound records and reports safe."""
+    notifier, key, config_path = _published(tmp_path, fake)
+    assert _cli("--journal", notifier.store_path, "--config", config_path, "--wait-s", "0.5",
+                key) == 0
+    assert SAFE in capsys.readouterr().out
+
+
+def test_record_delivery_refuses_a_config_other_than_the_journaled_one(tmp_path, fake, capsys):
+    """r4179168634: the supplied config's digest must equal the job's config_digest, so its
+    channel roles are the ones the notifier ran with; the twin is the journal's own config."""
+    notifier, key, config_path = _published(tmp_path, fake)
+    other = tmp_path / "other.json"
+    other.write_text(json.dumps(_config(timeout=3.0).resolved()), encoding="utf-8")
+    before = _events(notifier.store_path)
+    capsys.readouterr()
+    assert _cli("--journal", notifier.store_path, "--config", other, key) == 2
+    assert "record-delivery refused: config-mismatch" in capsys.readouterr().err
+    assert _events(notifier.store_path) == before
+    assert _cli("--journal", notifier.store_path, "--config", config_path, key) == 0
+    assert SAFE in capsys.readouterr().out
+
+
+def test_record_delivery_reports_a_concurrent_delivery_as_already_delivered(tmp_path, fake,
+                                                                          monkeypatch, capsys):
+    """r4179168638: a job delivered by another writer between the pre-check and the record
+    gets no second event, and the CLI says so; the twin records and says recorded."""
+    notifier, key, config_path = _published(tmp_path, fake)
+    precheck = cli_module._precheck
+
+    def deliver_concurrently(*args):
+        state = precheck(*args)
+        notifier.record_delivery(key, "irm", "c" * 64)
+        return state
+
+    monkeypatch.setattr(cli_module, "_precheck", deliver_concurrently)
+    capsys.readouterr()
+    assert _cli("--journal", notifier.store_path, "--config", config_path, key) == 0
+    out = capsys.readouterr().out
+    assert ALREADY in out and "recorded delivered" not in out and SAFE in out
+    assert _kinds(notifier.store_path, key).count("delivered") == 1
+    monkeypatch.setattr(cli_module, "_precheck", precheck)
+    (tmp_path / "twin").mkdir()
+    twin, twin_key, twin_config = _published(tmp_path / "twin", fake)
+    assert _cli("--journal", twin.store_path, "--config", twin_config, twin_key) == 0
+    out = capsys.readouterr().out
+    assert "recorded delivered" in out and ALREADY not in out
+
+
+def _writable_connects(source):
+    """Every sqlite3 connect in ``source`` that is not a literal mode=ro URI with uri=True."""
+    found = []
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.ImportFrom) and node.module == "sqlite3":
+            found.append(("from-import", node.lineno))
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "connect"):
+            continue
+        literals = [item.value for item in ast.walk(node.args[0]) if isinstance(item, ast.Constant)
+                    and isinstance(item.value, str)] if node.args else []
+        uri = [keyword.value for keyword in node.keywords if keyword.arg == "uri"]
+        if not (any("mode=ro" in value for value in literals) and len(uri) == 1
+                and isinstance(uri[0], ast.Constant) and uri[0].value is True):
+            found.append(("connect", node.lineno))
+    return found
+
+
+def test_operator_cli_connects_are_read_only_uris():
+    """#677 r4179166723: the gate's EXCLUDED entry skips this whole module, so this test pins
+    every sqlite3 connect in it to a literal mode=ro URI with uri=True."""
+    source = CLI.read_text(encoding="utf-8")
+    assert "sqlite3.connect(" in source and _writable_connects(source) == []
+    mutations = (
+        source + "\n\ndef _writer(path):\n    return sqlite3.connect(path)\n",
+        source.replace('"?mode=ro", uri=True', '"?mode=rw", uri=True'),
+        source.replace('"?mode=ro", uri=True', '"?mode=ro", uri=False'),
+        source + "\n\nfrom sqlite3 import connect as _open\n",
+    )
+    for mutated in mutations:
+        assert mutated != source and _writable_connects(mutated), mutated[-80:]
