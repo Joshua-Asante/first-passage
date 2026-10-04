@@ -27,7 +27,8 @@ cite for a run and exits non-zero unless every one of them holds:
 Usage (from any checkout with `gh` authenticated):
 
     python scripts/s2_run_evidence.py <run-id> [--dest DIR] [--expect-head SHA]
-        [--expect-scope {S4_JOINT_N2,S3_N1_CAPTURE,S2_DIAGNOSTIC_SUPERVISION,S5_PART_A}]
+        [--expect-scope {S4_JOINT_N2,S3_N1_CAPTURE,S2_DIAGNOSTIC_SUPERVISION,S5_PART_A,
+                        T05_R1_COMBINED}] [--expect-selection PATH]
 
 `--expect-scope` names the one scope that can read ok. The default is
 S4_JOINT_N2, the workflow's default `s4` mode and its acceptance-grade joint
@@ -40,6 +41,17 @@ required-node list that misses a file of that set, or carries a node from any
 other file, is refused. DIAGNOSTIC_SUBSET (a `cases` run) and N1_ONLY_TEST_ONLY
 are never ok.
 
+T05_R1_COMBINED (an `r1` run) is the H9 checkpoint R1 combined read: the S5 set
+plus the result/seal and C' Linux files, bound to the selector's R1_CASES. It
+also requires `--expect-selection PATH`, a committed
+`r1-dispatch-selection/1` document the coordinator freezes at the R1 dispatch
+(`schema`, `acceptance_scope`, `node_count`, `node_ids`): the reader refuses it
+unless its node IDs are unique, `node_count` equals the list length, and the set
+and the count match the record's own `collected.json`. `--expect-selection` is
+refused with any other scope, and an R1 record that passes every other check is
+still refused with the single reason `cprime_coverage_export_check_owed` until
+the C' coverage-export check (whose schema the C' build owes) lands.
+
 An S5_PART_A read also requires the SR-8 export `boundary/part_a_observations.json`
 in the downloaded artifact (the Part A Linux file produces it): a
 `qualification_part_a_observations/v1` document whose closed fields are `schema`,
@@ -50,7 +62,8 @@ reservation to CAPTURED took), the split `payload_cpu_ns` and `guardian_cpu_ns`
 `probe_seconds` and `predicted_seconds`. The counters and the boottime are
 nonnegative integers, the split values are nonnegative integers or null, and the
 two seconds are finite nonnegative floats (the worker-result document's own
-type). The export is never read under any other scope.
+type). The export is never read under a scope whose file set does not carry the
+Part A case.
 
 `--expect-head` refuses a run whose head is not the bytes you are claiming for:
 7 to 40 hexadecimal characters, compared case-insensitively as a prefix of the
@@ -70,6 +83,7 @@ nothing is written into the repository. Pure read; no acceptance decision.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import re
@@ -84,7 +98,8 @@ ROOT = Path(__file__).resolve().parents[1]
 # selector that owns each scope's file set lives one level up.
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from scripts.qualification_boundary_verification import S2_CASES, S3_CASES, S4_CASES
+from scripts.qualification_boundary_verification import (R1_CASES, S2_CASES, S3_CASES,
+                                                          S4_CASES)
 
 ARTIFACT = "qualification-s2-supervision"
 # The S5 selection: S4's set plus the Part A Linux file, inserted before the
@@ -99,9 +114,14 @@ S5_CASES = (*S4_CASES[:-1], PART_A_CASE, S4_CASES[-1])
 # A diagnostic subset (the workflow's `cases` input) records DIAGNOSTIC_SUBSET
 # and --test-only records N1_ONLY_TEST_ONLY; neither can ever be requested.
 ACCEPTANCE_SCOPES = ("S4_JOINT_N2", "S3_N1_CAPTURE", "S2_DIAGNOSTIC_SUPERVISION",
-                     "S5_PART_A")
+                     "S5_PART_A", "T05_R1_COMBINED")
 DEFAULT_SCOPE = ACCEPTANCE_SCOPES[0]
 S5_SCOPE = "S5_PART_A"
+# The H9 checkpoint R1 combined read (ruling 5's broaden-R1 selection): the S5
+# set plus the result/seal and C' Linux files, never full E1 acceptance by
+# itself. Fail-closed today: no R1 run can read ok until the C' coverage-export
+# check lands (see CPRIME_COVERAGE_OWED).
+R1_SCOPE = "T05_R1_COMBINED"
 # Each acceptance scope reads ok only for its own file set (C2 ruling 1): the
 # selector's tuples, imported rather than duplicated, so the reader cannot drift
 # from the selection it is asked to accept.
@@ -110,7 +130,15 @@ SCOPE_FILES = {
     "S3_N1_CAPTURE": S3_CASES,
     "S2_DIAGNOSTIC_SUPERVISION": S2_CASES,
     S5_SCOPE: S5_CASES,
+    R1_SCOPE: R1_CASES,
 }
+# D3: the dispatch-frozen node-ID list the coordinator commits at the R1
+# dispatch. One closed document, read (never written) by --expect-selection.
+SELECTION_SCHEMA = "r1-dispatch-selection/1"
+SELECTION_EXPORT = "collected.json"
+# The C' coverage export (card §3 D6): its schema is owed by the C' build, so an
+# R1 record that passes every other check is still refused, by this one name.
+CPRIME_COVERAGE_OWED = "cprime_coverage_export_check_owed"
 # The SR-8 export (packet §1a): one closed document in the artifact's boundary
 # evidence tree, produced by the Part A Linux file, read only under S5_SCOPE.
 # `boundary/` is where the boundary tests' evidence lands in the uploaded
@@ -214,6 +242,86 @@ def _file_set_refusals(scope: str, required: list[str]) -> list[str]:
     return refusals
 
 
+def _selection_refusals(record_dir: Path, expect_selection, facts: dict) -> list[str]:
+    """Why the frozen dispatch selection cannot back an R1 read (empty when it can).
+
+    D3: `--expect-selection` names the committed `r1-dispatch-selection/1`
+    document the coordinator froze at the R1 dispatch. The key set is closed, the
+    scope is R1's own, no node ID may repeat, `node_count` must equal the list
+    length, the set must equal the record's `collected.json`, and that file must
+    carry exactly `node_count` nodes. Nothing here ever writes a selection file.
+    """
+    facts["expected_selection_sha256"] = None
+    facts["expected_selection_count"] = None
+    if expect_selection is None:
+        return ["--expect-selection is required for the T05_R1_COMBINED scope: the "
+                "frozen dispatch node-ID list the coordinator committed at the R1 dispatch"]
+    try:
+        raw = Path(expect_selection).read_bytes()
+    except OSError as exc:
+        return [f"the expected selection {expect_selection} cannot be read: {exc}"]
+    facts["expected_selection_sha256"] = hashlib.sha256(raw).hexdigest()
+    try:
+        doc = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        return [f"the expected selection {expect_selection} cannot be read as JSON: {exc}"]
+    closed = {"schema", "acceptance_scope", "node_count", "node_ids"}
+    if not isinstance(doc, dict) or set(doc) != closed:
+        return [f"the expected selection {expect_selection} fields differ from the closed "
+                f"set ({', '.join(sorted(closed))})"]
+    refusals = []
+    if doc["schema"] != SELECTION_SCHEMA:
+        refusals.append(f"the expected selection schema is {doc['schema']!r}, expected "
+                        f"{SELECTION_SCHEMA!r}")
+    if doc["acceptance_scope"] != R1_SCOPE:
+        refusals.append(f"the expected selection acceptance_scope is "
+                        f"{doc['acceptance_scope']!r}, expected {R1_SCOPE!r}")
+    count = doc["node_count"]
+    if isinstance(count, bool) or not isinstance(count, int) or count <= 0:
+        refusals.append(f"the expected selection node_count is not a positive integer: {count!r}")
+    else:
+        facts["expected_selection_count"] = count
+    node_ids = doc["node_ids"]
+    if not isinstance(node_ids, list) or not all(isinstance(node, str) for node in node_ids):
+        refusals.append("the expected selection node_ids is not a list of strings")
+        return refusals
+    duplicates = sorted({node for node in node_ids if node_ids.count(node) > 1})
+    if duplicates:
+        refusals.append(f"the expected selection repeats node IDs: {', '.join(duplicates)}")
+    if isinstance(count, bool) or not isinstance(count, int):
+        return refusals
+    if count != len(node_ids):
+        refusals.append(f"the expected selection node_count is {count} but it lists "
+                        f"{len(node_ids)} node IDs")
+    collected_path = record_dir / SELECTION_EXPORT
+    if not collected_path.exists():
+        refusals.append(f"{SELECTION_EXPORT} is missing from the record, so the frozen "
+                        "selection cannot be compared with what the host collected")
+        return refusals
+    try:
+        collected = json.loads(collected_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        refusals.append(f"{SELECTION_EXPORT} cannot be read as JSON: {exc}")
+        return refusals
+    if not isinstance(collected, list) or not all(isinstance(node, str) for node in collected):
+        refusals.append(f"{SELECTION_EXPORT} is not a list of node IDs")
+        return refusals
+    if set(collected) != set(node_ids):
+        only_selection = sorted(set(node_ids) - set(collected))
+        only_record = sorted(set(collected) - set(node_ids))
+        detail = []
+        if only_selection:
+            detail.append(f"not collected: {', '.join(only_selection)}")
+        if only_record:
+            detail.append(f"not in the selection: {', '.join(only_record)}")
+        refusals.append(f"the frozen selection differs from {SELECTION_EXPORT} "
+                        f"({'; '.join(detail)})")
+    if len(collected) != count:
+        refusals.append(f"{SELECTION_EXPORT} lists {len(collected)} nodes, the frozen "
+                        f"selection declares {count}")
+    return refusals
+
+
 def _part_a_export_refusals(dest: Path, facts: dict) -> list[str]:
     """Why the SR-8 export cannot back an S5 read (empty when it can).
 
@@ -268,12 +376,14 @@ def _part_a_export_refusals(dest: Path, facts: dict) -> list[str]:
 
 
 def evaluate(dest: Path, *, expect_scope: str = DEFAULT_SCOPE,
-             head: dict | None = None) -> tuple[bool, dict]:
+             head: dict | None = None,
+             expect_selection=None) -> tuple[bool, dict]:
     """Read one downloaded artifact; return (ok, facts).
 
     `head` is the run as `run_head` returns it. With it, a non-pull_request run
     must have measured its headSha; without it the measured commit is required
-    and reported but not bound to a run.
+    and reported but not bound to a run. `expect_selection` is the frozen
+    dispatch selection, required for (and only meaningful for) the R1 scope.
     """
     if expect_scope not in ACCEPTANCE_SCOPES:
         raise ValueError(f"expect_scope must be one of {ACCEPTANCE_SCOPES}, got {expect_scope!r}")
@@ -330,8 +440,16 @@ def evaluate(dest: Path, *, expect_scope: str = DEFAULT_SCOPE,
                      for key in ("failures", "errors", "skipped") if junit[key] != 0]
     if valid_required and required:
         refusals += _file_set_refusals(expect_scope, required)
-    if expect_scope == S5_SCOPE:
+    # The SR-8 export belongs to every scope whose file set carries the Part A
+    # case (S5 and R1): R1 runs the S5 selection too, so it must export it.
+    if PART_A_CASE in SCOPE_FILES[expect_scope]:
         refusals += _part_a_export_refusals(dest, facts)
+    if expect_scope == R1_SCOPE:
+        # D3 first, so a mismatched selection is named before the owed check.
+        refusals += _selection_refusals(record_dir, expect_selection, facts)
+        # Fail-closed (card §3 D6): the C' coverage-export schema is owed by the
+        # C' build, so no R1 record can read ok until that check lands.
+        refusals.append(CPRIME_COVERAGE_OWED)
     refusals += _bind_commit(facts, head)
     facts["refusals"] = refusals
     return not refusals, facts
@@ -348,7 +466,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--expect-scope", choices=ACCEPTANCE_SCOPES, default=DEFAULT_SCOPE,
                         help="the only record scope that reads ok, and the file set its "
                              "required nodes must cover exactly (default: %(default)s)")
+    parser.add_argument("--expect-selection", type=Path,
+                        help="the frozen r1-dispatch-selection/1 JSON committed at the "
+                             "R1 dispatch; required with --expect-scope T05_R1_COMBINED "
+                             "and refused with any other scope")
     args = parser.parse_args(argv)
+    if args.expect_scope == R1_SCOPE and args.expect_selection is None:
+        parser.error("--expect-selection is required when --expect-scope is "
+                     f"{R1_SCOPE} (the frozen dispatch node-ID list)")
+    if args.expect_selection is not None and args.expect_scope != R1_SCOPE:
+        parser.error(f"--expect-selection applies to {R1_SCOPE} only, not "
+                     f"{args.expect_scope}")
     head = run_head(args.run_id)
     head_sha = head.get("headSha") if isinstance(head.get("headSha"), str) else ""
     if args.expect_head is not None and not head_sha.lower().startswith(args.expect_head):
@@ -357,7 +485,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     dest = args.dest or Path(tempfile.mkdtemp(prefix=f"s2-{args.run_id}-"))
     download(args.run_id, dest)
-    ok, facts = evaluate(dest, expect_scope=args.expect_scope, head=head)
+    ok, facts = evaluate(dest, expect_scope=args.expect_scope, head=head,
+                         expect_selection=args.expect_selection)
     print(json.dumps({"ok": ok, "run": head, "artifact_dir": str(dest), "facts": facts}, indent=2))
     return 0 if ok else 1
 

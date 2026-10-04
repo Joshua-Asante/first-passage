@@ -23,6 +23,8 @@
 > honest-clock measurement of this candidate reads **32.33%**. See
 > [`withdrawal ADR` Addendum 2026-09-03](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-09-03--candidate-1-re-admitted-at-the-50-ceiling-accepted).
 > Frozen body unedited.
+>
+> ⚠ **2026-10-02:** discharge withdrawn ([status owner](../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)). *(Pointer added 2026-10-03, coordinator (3) batch 2a.)*
 
 # Tradeify / MFFU eval-tier drawdown-locking correction — re-MC RESULTS
 
