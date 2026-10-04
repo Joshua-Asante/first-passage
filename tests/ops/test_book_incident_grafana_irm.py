@@ -1258,3 +1258,22 @@ def test_record_delivery_accepts_a_well_formed_delivery_failed_detail(tmp_path, 
                    (key, NOW.isoformat(), json.dumps({"outcome": "unknown"})))
     assert _cli("--journal", notifier.store_path, "--config", config_path, key) == 0
     assert SAFE in capsys.readouterr().out
+
+
+def test_live_page_driver_does_not_score_when_the_t0_publish_was_not_accepted(
+        tmp_path, fake, monkeypatch, capsys):
+    """#676 round 4 r4179359096: card §6.3 (c)-(e) time the escalation from the t0 page and
+    need each attempt's provider_accepted, so a t0 500 followed by an accepted republish must
+    not score: exit 3. The twin is the end-to-end driver test (both accepted, exit 0)."""
+    monkeypatch.setattr(driver_module, "GrafanaIRMChannel", functools.partial(
+        irm_module.GrafanaIRMChannel, allow_loopback_http=True))
+    fake.script.extend([500, 202])
+    directory = tmp_path / "q7"
+    assert driver_module.main(["--dir", str(directory), "--confirm-live-page",
+                               "--republish-after-s", "5.2"]) == 3
+    printed = capsys.readouterr().out
+    assert "t0 publish not accepted" in printed
+    assert len(fake.posts()) == 2
+    irm = [kind for _, kind, channel, _ in _events(directory / "notifier-journal.sqlite")
+           if channel == "irm"]
+    assert irm == ["attempt", "delivery_failed", "attempt", "provider_accepted"]
