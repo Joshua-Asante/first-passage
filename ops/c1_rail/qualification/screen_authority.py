@@ -683,8 +683,11 @@ def _closure() -> dict:
 
 def _guard(auth: ValidatedScreenAuthority) -> tuple:
     """(path, size, mtime_ns, inode, device) of every r3c artifact, tracked first-party file,
-    the interpreter and the lock file (§3.3 stat guard)."""
-    status, out = _git('ls-files', '-z', '--', 'ops', 'core')
+    the interpreter and the lock file (§3.3 stat guard). First-party files are every tracked
+    file under ops/ and core/ plus every tracked *.py under the code root: the bootstrap's
+    permitted import roots are core, lab, ops, ops/c1_rail, ops/c1_signal_daemon and the code
+    root itself (p7_evidence.py:241-242), and it treats any *.py there as first party (:338)."""
+    status, out = _git('ls-files', '-z', '--', 'ops', 'core', '*.py')
     _refuse('SCREEN_EPOCH_STALE', status != 0, 'tracked first-party files cannot be listed')
     root = Path(auth.artifact_root)
     paths = [root / row.path for row in auth.source_receipt.artifacts]
