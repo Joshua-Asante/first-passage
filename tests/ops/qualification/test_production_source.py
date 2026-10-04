@@ -1004,9 +1004,10 @@ def test_K5(tmp_path, monkeypatch):
     import composition_fixture
     from c1_rail.qualification import production_source
     from test_source_contract import NOW
+    # Built first: the composition's runtime inventory refuses a test-module _now seam.
+    qualification = composition_fixture.build_verified_composition(tmp_path / 'f1').source
     screen, auth, source, path = _screen(tmp_path / 'screen', monkeypatch)
     other = ProductionSource.build(screen.case.validate(), artifact_root=screen.artifact_root)
-    qualification = composition_fixture.build_verified_composition(tmp_path / 'f1').source
     artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
     calls = _spy_engine(monkeypatch)
     with screen.ready(auth):
