@@ -545,3 +545,172 @@ def test_accept_prechecks_interpreter_binding_before_launch(env, monkeypatch, fi
     with pytest.raises(ValueError, match='P7_INTERPRETER_MISMATCH'):
         env.accept(canonical_json_bytes(doc), root)
     assert launches == []
+
+
+# ---- T00 screen rows K10 and S2 (design 2026-10-02 §2.2, §5.1; build card 2026-10-03 §2.4, §3.3) ----
+
+SCREEN_PACKAGE = 'ops/c1_rail/qualification/t00_screen/'
+PRODUCTION_SOURCE = 'ops/c1_rail/qualification/production_source.py'
+JOURNAL_NAME = 's1-w0.jsonl'
+LEDGER_BYTES = b'{"body":{},"prev_sha256":null,"type":"AUTHORITY_BOUND"}\n'
+# A TEST_ONLY stand-in for t00_screen.worker; the case ("<kind> [<arg>]") is read from <run_dir>/case.
+SCREEN_WORKER = """import os
+import sys
+
+run_dir, journal_name = sys.argv[2], sys.argv[4]
+with open(os.path.join(run_dir, 'case'), encoding='utf-8') as handle:
+    kind, _, arg = handle.read().partition(' ')
+journal = os.path.join(run_dir, 'journal', journal_name)
+ledger = os.path.join(run_dir, 'ledger', '0001.jsonl')
+if kind == 'forbidden_import':
+    import c1_rail.qualification.p7_driver
+elif kind == 'allowed_import':
+    import importlib
+    import c1_rail.qualification.bracket
+    from c1_rail.qualification import runner
+    simulation = importlib.import_module('mc.simulation')
+    expected = [('c1_rail.qualification.runner', '_run_stage'), ('c1_rail.qualification.runner', 'run_synthetic_stage')]
+    recorded = sorted((module.__name__, attr) for module, attr, _ in sys.p7_recorder.stubs)
+    assert recorded == expected, recorded
+    # Independently of the recorder: bootstrap-compiled ('<string>') callables bound in runner and mc.simulation.
+    planted = sorted((module.__name__, attr) for module in (runner, simulation) for attr, value in vars(module).items()
+                     if getattr(getattr(value, '__code__', None), 'co_filename', None) == '<string>')
+    assert planted == expected, planted
+    for name in ('_run_stage', 'run_synthetic_stage'):
+        try:
+            getattr(runner, name)()
+        except RuntimeError as exc:
+            assert str(exc).startswith('SCREEN_FORBIDDEN_CALL'), exc
+        else:
+            raise AssertionError(name + ' is not stubbed')
+    assert runner.evaluate_replay.__module__ == 'c1_rail.qualification.runner', 'evaluate_replay loads live'
+    assert runner.simulate_path is simulation.simulate_path, 'runner.simulate_path loads live'
+    assert simulation.simulate_path.__module__ == 'mc.simulation', 'simulate_path loads live'
+elif kind == 'open':
+    with open(ledger if arg != 'xb' else os.path.join(run_dir, 'ledger', '0002.jsonl'), arg) as handle:
+        if arg == 'rb':
+            assert handle.read() == LEDGER_BYTES
+        else:
+            handle.write(b'forged\\n')
+elif kind == 'os_open':
+    fd = os.open(ledger, int(arg))
+    if int(arg) & (os.O_WRONLY | os.O_RDWR):
+        os.write(fd, b'forged\\n')
+    os.close(fd)
+elif kind == 'journal_open':
+    with open(journal, 'ab') as handle:
+        handle.write(b'record\\n')
+elif kind == 'journal_os_open':
+    fd = os.open(journal, os.O_WRONLY | os.O_APPEND | os.O_CREAT | getattr(os, 'O_BINARY', 0))
+    os.write(fd, b'record\\n')
+    os.close(fd)
+elif kind == 'devnull':  # card 3.3 note 2026-10-03: the null device holds no data
+    import platform
+    fd = os.open(os.devnull, os.O_RDWR)
+    os.close(fd)
+    open(os.devnull, 'wb').close()
+    platform._syscmd_ver()  # subprocess.DEVNULL's os.open(os.devnull, os.O_RDWR), without depending on WMI
+else:
+    raise SystemExit('unknown case ' + kind)
+print('WORKER_DONE ' + kind)
+""".replace('LEDGER_BYTES', repr(LEDGER_BYTES))
+_BINARY = getattr(os, 'O_BINARY', 0)
+# Card §3.3: every write-open mode and os.open write, append or create flag is refused outside the journal.
+LEDGER_WRITE_OPENS = ('open wb', 'open xb', 'open r+b', 'open ab',
+                      *(f'os_open {flags | _BINARY}' for flags in (
+                          os.O_WRONLY | os.O_TRUNC, os.O_RDWR, os.O_WRONLY | os.O_CREAT, os.O_APPEND)))
+LEDGER_READ_OPENS = ('open rb', f'os_open {os.O_RDONLY | _BINARY}')
+BAD_JOURNAL_NAMES = ('../ledger/0001.jsonl', 's0-w0.jsonl', 's1-w0.jsonl\n', 'S1-w0.jsonl')
+
+
+def _screen_tree(extra=None):
+    """TEST_ONLY stubs for the t00_screen package, which does not exist on main yet."""
+    files = {SCREEN_PACKAGE + '__init__.py': '"""TEST_ONLY t00_screen stub."""\n',
+             SCREEN_PACKAGE + 'plan.py': 'VALUE = 1\n',
+             SCREEN_PACKAGE + 'worker.py': SCREEN_WORKER}
+    files.update(extra or {})
+    return files
+
+
+def run_screen(env, code_root, case, *, journal_name=JOURNAL_NAME):
+    """The card §3.3 worker command, run directly (the coordinator and Job Object are P-F's)."""
+    from c1_rail.qualification import p7_evidence
+    env.runs += 1
+    run_dir = env.tmp / f'screen-run-{env.runs}'
+    for sub in ('journal', 'ledger'):
+        (run_dir / sub).mkdir(parents=True)
+    (run_dir / 'ledger' / '0001.jsonl').write_bytes(LEDGER_BYTES)
+    (run_dir / 'case').write_bytes(case.encode('utf-8'))
+    command = [sys.executable, '-I', '-S', '-B', '-c', p7_evidence.SCREEN_BOOTSTRAP, str(Path(code_root).resolve()),
+               str(run_dir.resolve()), 'a' * 64, journal_name]
+    return subprocess.run(command, capture_output=True, text=True, cwd=env.tmp, timeout=600), run_dir
+
+
+def test_K10(env):
+    """P7 never imports the screen, and the screen never imports execution (P7_/SCREEN_FORBIDDEN_IMPORT)."""
+    allowed = 'c1_rail.qualification._k10_allowed_probe'
+    twin = env.code_root('k10-twin', edits={PRODUCTION_SOURCE: lambda text: text + f'\nimport {allowed}\n'},
+                         extra=_screen_tree({'ops/c1_rail/qualification/_k10_allowed_probe.py': 'VALUE = 1\n'}))
+    done, record = env.run(twin)
+    assert record is not None, done.stderr[-3000:]
+    assert allowed in json.loads(record)['loaded_closure']['first_party']
+    root = env.code_root('k10', edits={PRODUCTION_SOURCE: lambda text: text +
+                                       '\nimport c1_rail.qualification.t00_screen.plan\n'}, extra=_screen_tree())
+    refusal('P7_FORBIDDEN_IMPORT', *env.run(root))
+    # The screen side: an execution-list import (design §5.1) is refused; bracket and the live kernel load, and
+    # the stub set is exactly runner._run_stage and runner.run_synthetic_stage (card §2.4).
+    done, _ = run_screen(env, twin, 'allowed_import')
+    assert done.returncode == 0 and 'WORKER_DONE allowed_import' in done.stdout, done.stderr[-3000:]
+    done, _ = run_screen(env, twin, 'forbidden_import')
+    assert done.returncode != 0 and 'WORKER_DONE' not in done.stdout, done.stdout[-3000:]
+    assert 'SCREEN_FORBIDDEN_IMPORT: c1_rail.qualification.p7_driver' in done.stderr, done.stderr[-3000:]
+
+
+def test_S2(env):
+    """A screen worker write-opens only realpath(join(run_dir, 'journal', journal_name)) or the null device
+    (SCREEN_WRITE_REFUSED)."""
+    root = env.code_root('s2', extra=_screen_tree())
+    failures = []
+
+    def check(label, ok, detail):
+        if not ok:
+            failures.append(f'{label}: {detail[-1500:]}')
+    for case in ('journal_open', 'journal_os_open', 'devnull', *LEDGER_READ_OPENS):  # twins
+        done, run_dir = run_screen(env, root, case)
+        check(case, done.returncode == 0 and 'WORKER_DONE' in done.stdout, done.stderr)
+        if case.startswith('journal'):
+            check(case, (run_dir / 'journal' / JOURNAL_NAME).read_bytes() == b'record\n', 'journal bytes')
+        check(case, (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES, 'ledger bytes changed')
+        check(case, not (run_dir / 'ledger' / '0002.jsonl').exists(), 'a new non-journal file was created')
+    for case in LEDGER_WRITE_OPENS:
+        done, run_dir = run_screen(env, root, case)
+        check(case, done.returncode != 0 and 'WORKER_DONE' not in done.stdout, done.stdout)
+        check(case, 'SCREEN_WRITE_REFUSED' in done.stderr, done.stderr)
+        check(case, (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES, 'ledger bytes changed')
+        check(case, not (run_dir / 'ledger' / '0002.jsonl').exists(), 'a new non-journal file was created')
+    # A journal name outside ^[csv][1-9][0-9]*-w[0-9]+[.]jsonl$ is refused by the bootstrap itself.
+    for name in BAD_JOURNAL_NAMES:
+        done, run_dir = run_screen(env, root, 'journal_open', journal_name=name)
+        check(repr(name), done.returncode != 0 and 'WORKER_DONE' not in done.stdout, done.stdout)
+        check(repr(name), 'SCREEN_WRITE_REFUSED' in done.stderr, done.stderr)
+        check(repr(name), (run_dir / 'ledger' / '0001.jsonl').read_bytes() == LEDGER_BYTES, 'ledger bytes changed')
+        check(repr(name), list((run_dir / 'journal').iterdir()) == [], 'journal written')
+    assert not failures, '\n'.join(failures)
+
+
+def test_render_bootstrap_generates_both_bootstraps():  # design C8; card §3.1 (non-row)
+    from c1_rail.qualification import p7_evidence
+    q = 'c1_rail.qualification.'
+    assert p7_evidence.P7_BOOTSTRAP == p7_evidence.render_bootstrap(p7_evidence._P7_BOOTSTRAP_PARAMS)
+    assert p7_evidence.SCREEN_BOOTSTRAP == p7_evidence.render_bootstrap(p7_evidence._SCREEN_BOOTSTRAP_PARAMS)
+    assert sha(p7_evidence.SCREEN_BOOTSTRAP.encode('utf-8')) == p7_evidence.SCREEN_BOOTSTRAP_SHA256
+    assert p7_evidence.SCREEN_BOOTSTRAP_SHA256 != p7_evidence.P7_BOOTSTRAP_SHA256
+    assert set(p7_evidence.P7_FORBIDDEN_MODULES) == {q + name for name in (
+        'part_a', 'bracket', 'benchmark', 'benchmark_part_a', 'production', 'orchestration', 'result_adjudication',
+        'seal', 'execution', 'screen_authority', 't00_screen')}
+    assert set(p7_evidence.SCREEN_FORBIDDEN_MODULES) == {q + name for name in (
+        'production', 'orchestration', 'result_adjudication', 'seal', 'execution', 'part_a', 'benchmark',
+        'benchmark_part_a', 'p7_driver')}
+    assert repr(p7_evidence.SCREEN_FORBIDDEN_MODULES) in p7_evidence.SCREEN_BOOTSTRAP
+    with pytest.raises(ValueError):
+        p7_evidence.render_bootstrap(dict(p7_evidence._P7_BOOTSTRAP_PARAMS, unknown=1))
