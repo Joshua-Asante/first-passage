@@ -1200,3 +1200,61 @@ def test_live_page_driver_refuses_a_republish_before_the_retry_backoff(tmp_path,
     assert "republish-after-s" in capsys.readouterr().err
     assert fake.requests == [] and not (tmp_path / "run").exists()
     assert driver_module._config(driver_module.SECRET_REF).retry_initial_s == 5.0
+
+
+def test_live_page_driver_reports_a_republish_that_was_not_admitted(tmp_path, fake, monkeypatch,
+                                                                    capsys):
+    """#676 round 3 r4179305860: card §3.5 (republish once) and §6.3 (d)-(e) need the second
+    publish admitted and journaled. A first POST drip-fed past publish_timeout_s keeps its
+    pair live, so the republish round records publish_in_flight and no attempt: the driver
+    must say so and exit non-zero. The twin is the end-to-end driver test (admitted, exit 0)."""
+    monkeypatch.setattr(driver_module, "GrafanaIRMChannel", functools.partial(
+        irm_module.GrafanaIRMChannel, allow_loopback_http=True))
+    real_config = driver_module._config
+    monkeypatch.setattr(driver_module, "_config", lambda ref: NotifierConfig.from_mapping(
+        {**real_config(ref).resolved(), "publish_timeout_s": 1.0, "retry_initial_s": 1.0,
+         "retry_max_s": 2.0}))
+    drip = Drip(interval=0.1)
+    fake.script.append(drip)
+    directory = tmp_path / "q7"
+    try:
+        assert driver_module.main(["--dir", str(directory), "--confirm-live-page",
+                                   "--republish-after-s", "1.2"]) == 3
+    finally:
+        drip.release.set()
+    printed = capsys.readouterr().out
+    assert "republish not admitted" in printed and "republish: provider status" not in printed
+    irm = [kind for _, kind, channel, _ in _events(directory / "notifier-journal.sqlite")
+           if channel == "irm"]
+    assert irm.count("attempt") == 1 and "publish_in_flight" in irm
+
+
+@pytest.mark.parametrize("detail", ["[]", '"timeout"', "{}", '{"outcome": 5}', "not json"])
+def test_record_delivery_refuses_a_malformed_delivery_failed_detail(tmp_path, fake, capsys,
+                                                                   detail):
+    """#676 round 3 r4179305863: the notifier journals delivery_failed with a JSON object
+    holding a string ``outcome``; any other detail is refused before the record."""
+    notifier, key, config_path = _published(tmp_path, fake)
+    with closing(sqlite3.connect(notifier.store_path, isolation_level=None)) as db:
+        db.execute("INSERT INTO events(incident_key, kind, channel, at, detail) "
+                   "VALUES (?, 'delivery_failed', 'irm', ?, ?)", (key, NOW.isoformat(), detail))
+    before = _events(notifier.store_path) if detail != "not json" else None
+    capsys.readouterr()
+    assert _cli("--journal", notifier.store_path, "--config", config_path, key) == 2
+    assert "record-delivery refused: journal-faulty" in capsys.readouterr().err
+    with closing(_ro(notifier.store_path)) as db:
+        assert db.execute("SELECT state FROM jobs").fetchone() == ("pending",)
+        assert db.execute("SELECT COUNT(*) FROM events WHERE kind='delivered'").fetchone() == (0,)
+    if before is not None:
+        assert _events(notifier.store_path) == before
+
+
+def test_record_delivery_accepts_a_well_formed_delivery_failed_detail(tmp_path, fake, capsys):
+    """Twin: a delivery_failed {"outcome": "unknown"} row is accepted and the record proceeds."""
+    notifier, key, config_path = _published(tmp_path, fake)
+    with closing(sqlite3.connect(notifier.store_path, isolation_level=None)) as db:
+        db.execute("INSERT INTO events(incident_key, kind, channel, at, detail) "
+                   "VALUES (?, 'delivery_failed', 'irm', ?, ?)",
+                   (key, NOW.isoformat(), json.dumps({"outcome": "unknown"})))
+    assert _cli("--journal", notifier.store_path, "--config", config_path, key) == 0
+    assert SAFE in capsys.readouterr().out
