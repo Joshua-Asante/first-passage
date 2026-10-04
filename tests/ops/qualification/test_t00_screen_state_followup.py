@@ -50,10 +50,10 @@ def flipped(raw):
 
 
 def test_rint1_act_scope_pinned():
-    """The act scope check_record verifies under."""
+    """check_record verifies acts under P-A's act scope (a literal in state.py: no import cycle)."""
+    from c1_rail.qualification import screen_authority  # pylint: disable=import-outside-toplevel
     state, _ = modules()
-    # must equal screen_authority.SCREEN_ACT_SCOPE (P-A); switch to import after #672 merges
-    assert state.ACT_SCOPE == 'APPROVE_T00_SCREEN_ACT' == ACT_SCOPE
+    assert state.ACT_SCOPE == screen_authority.SCREEN_ACT_SCOPE == ACT_SCOPE
 
 
 def test_rint1_valid_act_passes():
