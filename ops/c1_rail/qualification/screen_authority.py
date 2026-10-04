@@ -17,6 +17,7 @@ from datetime import datetime
 from datetime import date
 import errno
 import hashlib
+import math
 import os
 from pathlib import Path
 import re
@@ -127,7 +128,13 @@ def _text(value):
 
 
 def _positive(value):
+    """A count: a positive integer (never bool)."""
     return type(value) is int and value > 0
+
+
+def _budget(value):
+    """A CPU-seconds budget (design §3 ``budget``: finite and positive): int or float, never bool."""
+    return type(value) in (int, float) and math.isfinite(value) and value > 0
 
 
 def _sha(raw: bytes) -> str:
@@ -182,6 +189,8 @@ def _check_document(doc) -> None:
     commits = (p7['code_head'], prereg['ratifying_commit'], prereg['commit'], *(row['commit'] for row in answers))
     _refuse(code, not all(_hex(value, _COMMIT) for value in commits),
             'every commit field must match ^[0-9a-f]{40}$')
+    _refuse(code, any(type(row['path']) is not str for row in answers),
+            'every a3_answers path must be text')
     _refuse(code, prereg['path'] not in PREREG_CHAIN
             or sorted(row['path'] for row in answers) != sorted(A3_SUCCESSORS),
             'every path must equal a compiled constant')
@@ -221,7 +230,7 @@ def _check_parameters(params) -> None:  # pylint: disable=too-many-locals
         'a5_rule': type(params['a5_rule']) is str and params['a5_rule'] in verdict.A5_RULE_IDS,
         'median_rule': params['median_rule'] == verdict.MEDIAN_RULE,
         'budget': (type(budget) is dict and set(budget) == {'path_cpu_seconds', 'overhead_cpu_seconds', 'basis'}
-                   and _positive(budget['path_cpu_seconds']) and _positive(budget['overhead_cpu_seconds'])
+                   and _budget(budget['path_cpu_seconds']) and _budget(budget['overhead_cpu_seconds'])
                    and _text(budget['basis'])),
     }
     unsupported = sorted(name for name, ok in supported.items() if not ok)
@@ -412,10 +421,14 @@ def _check_prereg(prereg, params) -> bytes:  # pylint: disable=too-many-locals
         text = ''
     _refuse(code, not _ratified(at_c) or not _values_and_cells(text, params),
             'at C the Status, §6 fields, values block or §3 cells are not ratified as bound')
-    _, history = _git('rev-list', '--reverse', '--end-of-options', _ORIGIN_MAIN, '--', path)
-    first = next((sha for sha in history.decode('ascii', errors='replace').split()
-                  if (blob := _blob(sha, path)) is not None and _ratified(blob)), None)
-    _refuse(code, first != ratifying, 'C is not the oldest RATIFIED commit reachable from origin/main')
+    # Oldest by topology, not dates: every commit reachable from origin/main that changes the
+    # file (full history, so a merged-away side branch is kept) and reads RATIFIED descends from C.
+    status, history = _git('rev-list', '--full-history', '--end-of-options', _ORIGIN_MAIN, '--', path)
+    ratified = [sha for sha in history.decode('ascii', errors='replace').split()
+                if (blob := _blob(sha, path)) is not None and _ratified(blob)]
+    _refuse(code, status != 0 or ratifying not in ratified
+            or not all(sha == ratifying or _is_ancestor(ratifying, sha) for sha in ratified),
+            'C is not the oldest RATIFIED commit reachable from origin/main')
     return at_c2
 
 
@@ -482,8 +495,18 @@ class ValidatedScreenAuthority:  # pylint: disable=too-many-instance-attributes
 _ISSUED: dict[int, tuple[weakref.ReferenceType, object, weakref.ReferenceType]] = {}
 
 
+def _thaw(value):
+    if isinstance(value, Mapping):
+        return {key: _thaw(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_thaw(item) for item in value]
+    return value
+
+
 def _snapshot(auth: ValidatedScreenAuthority):
-    return _receipt_snapshot(replace(auth, source_receipt=None))
+    # parameters may hold float budgets, which _receipt_snapshot does not take: snapshot their bytes.
+    return (_receipt_snapshot(replace(auth, source_receipt=None, parameters=None)),
+            canonical_json_bytes(_thaw(auth.parameters)))
 
 
 def validate_screen_authority(  # pylint: disable=too-many-arguments,too-many-locals
