@@ -4,8 +4,8 @@ TEST_ONLY keys are generated in-process. Only the pinned root (``SOURCE_SIGNING_
 compiled source constants through ``build_source_case``, plus the compiled r3c digest) and the
 validator's ``REPOSITORY_ROOT`` are replaced; the K rows also install a stand-in for the screen
 bootstrap's recorder (``sys.p7_recorder``), the process state the real bootstrap sets (design
-§13). The repository is a synthetic git repository whose #581 copy carries the tracked A5/A6
-section bytes (public text). No test reads the real source. Each row test asserts its row's
+§13). The repository is a synthetic git repository whose #581 copy carries the A5/A6 section
+bytes of #581's Git blob at HEAD (public text; never the checkout, whose EOLs may differ). No test reads the real source. Each row test asserts its row's
 code and has a passing twin; the module is imported inside each test, so a missing module fails
 the row rather than erroring at collection.
 """
@@ -18,6 +18,8 @@ import base64
 from contextlib import contextmanager
 import hashlib
 import importlib
+import importlib.util
+import json
 import os
 from pathlib import Path
 import shutil
@@ -61,6 +63,20 @@ def git(root, *args):
     return subprocess.run(['git', '-C', str(root), '-c', 'user.email=pa@test', '-c', 'user.name=pa-test',
                            '-c', 'core.autocrlf=false', '-c', 'commit.gpgsign=false', *args],
                           check=True, capture_output=True).stdout.decode('utf-8').strip()
+
+
+def tracked_blob(relative: str, root: Path = REPO, rev: str = 'HEAD') -> bytes:
+    """Git blob bytes, independent of the checkout's EOL conversion (a CRLF clone changes A6's digest)."""
+    return subprocess.run(['git', '-C', str(root), 'cat-file', 'blob', f'{rev}:{relative}'],
+                          check=True, capture_output=True).stdout
+
+
+def pinned_sections(root: Path = REPO) -> str:
+    """#581's A5 and A6 section bytes from its blob, checked against the compiled pins."""
+    blob = tracked_blob(PREREG, root)
+    a5, a6 = verdict.section_text(blob, 'A5'), verdict.section_text(blob, 'A6')
+    assert (sha(a5), sha(a6)) == (verdict.A5_TEXT_SHA256, verdict.A6_TEXT_SHA256)
+    return (a5 + a6).decode('utf-8')
 
 
 def write(root: Path, relative: str, text: str) -> None:
@@ -109,7 +125,7 @@ class Screen:  # pylint: disable=too-many-instance-attributes
     """One synthetic source case, repository, P7 record and screen authority."""
 
     def __init__(self, root: Path, monkeypatch, *, a6_byte=False, cprime_cell=False,  # pylint: disable=too-many-arguments
-                 a3_unanswered=False):
+                 a3_unanswered=False, crlf=False):
         self.monkeypatch = monkeypatch
         self.ledger = None
         self.artifact_root = root / 'private'
@@ -128,8 +144,9 @@ class Screen:  # pylint: disable=too-many-instance-attributes
             'median_rule': 'LOWER_NEAREST_RANK_INF_INCLUDED',
             'budget': {'path_cpu_seconds': 1000, 'overhead_cpu_seconds': 100, 'basis': 'TEST_ONLY basis'},
         }
-        tracked = (REPO / PREREG).read_bytes()
-        sections = (verdict.section_text(tracked, 'A5') + verdict.section_text(tracked, 'A6')).decode('utf-8')
+        sections = pinned_sections()
+        if crlf:
+            sections = sections.replace('\n', '\r\n')
         if a6_byte:
             head, tail = sections.split('### A6', 1)
             sections = head + '### A6' + tail.replace(' the ', ' thE ', 1)
@@ -433,9 +450,9 @@ def test_X3(screen):
 def test_compiled_constants_name_the_tracked_files_and_patterns_accept_the_tracked_successors():
     module = sa()
     assert module.PREREG_CHAIN[-1] == PREREG and set(module.A3_SUCCESSORS) == {ORB, VAN}
-    assert sha(verdict.section_text((REPO / PREREG).read_bytes(), 'A6')) == verdict.A6_TEXT_SHA256
+    pinned_sections()
     for path, (prefix, exposure, owed) in module.A3_SUCCESSORS.items():
-        lines = (REPO / path).read_text(encoding='utf-8').split('\n')
+        lines = tracked_blob(path).decode('utf-8').split('\n')
         rows = [i for i, line in enumerate(lines) if line.startswith(prefix)]
         assert rows and [i for i, line in enumerate(lines) if exposure.search(line)] == [rows[0]]
         assert owed.search(lines[rows[0]]) is None
@@ -461,6 +478,9 @@ def test_epoch_opens_guards_and_closes_once(screen):
         def _verify_integrity(self):
             Source.checks += 1
     source = Source()
+    recorder = SimpleNamespace(first_party={}, third_party={}, ports={}, stdlib=set())
+    screen.monkeypatch.setattr(sys, 'p7_recorder', recorder, raising=False)
+    cover_loaded(recorder)
     epoch = module.open_screen_epoch(source, auth)
     module.require_open_screen_epoch(epoch, source=source, authority=auth)
     refused('SCREEN_EPOCH_REQUIRED', lambda: module.require_open_screen_epoch(epoch, source=Source(), authority=auth))
@@ -476,3 +496,202 @@ def test_epoch_opens_guards_and_closes_once(screen):
 def test_screen_bracket_requires_a_bracket_result():
     with pytest.raises(ValueError, match='BracketReplayResult'):
         sa().ScreenBracket(None, (False, False), ((), ()))
+
+
+def test_crlf_checkout_keeps_the_pinned_fixture_and_validation_refuses_crlf_sections(tmp_path, monkeypatch):
+    """A CRLF working file (a Windows autocrlf clone) leaves the fixture's blob-derived A5/A6
+    digests pinned, and production validation stays byte-exact: CRLF section bytes are refused."""
+    tree = tmp_path / 'checkout'
+    tree.mkdir()
+    git(tree, 'init', '-q')
+    lf = tracked_blob(PREREG)
+    write(tree, PREREG, lf.decode('utf-8'))
+    git(tree, 'add', '-A')
+    git(tree, 'commit', '-q', '-m', 'TEST_ONLY #581 blob')
+    (tree / PREREG).write_bytes(lf.replace(b'\n', b'\r\n'))
+    assert sha(verdict.section_text((tree / PREREG).read_bytes(), 'A6')) != verdict.A6_TEXT_SHA256
+    assert pinned_sections(tree) == pinned_sections()
+    refused('SCREEN_PREREG_MISMATCH', Screen(tmp_path / 'crlf', monkeypatch, crlf=True).validate, 'A5/A6')
+
+
+# ---- epoch close over the recorder's full loaded closure (card ruling 2026-10-04) ------------
+
+class FakeSource:  # pylint: disable=too-few-public-methods
+    """Stands in for ProductionSource at close; its full integrity check passes."""
+
+    def _verify_integrity(self):
+        return None
+
+
+SOURCE = FakeSource()  # epochs hold their source weakly; the worker keeps it alive
+
+
+def cover_loaded(recorder):
+    """Synthetic only: every module already in this process counts as a stdlib name (no bytes),
+    so a test's own unrecorded module is the only one without a load digest."""
+    recorder.stdlib |= set(sys.modules) - set(recorder.first_party) - set(recorder.third_party)
+
+
+def closure_case(screen, tmp_path):
+    """A validated authority and a recorder with one stable dependency in every family."""
+    module = sa()
+    auth = screen.validate()
+    site = tmp_path / 'site'
+    site.mkdir()
+    (site / 'dep.py').write_bytes(b'VALUE = 1\n')
+    port = auth.source_receipt.artifacts[0]  # synthetic file; port keys are compile filenames (artifact paths)
+    recorder = SimpleNamespace(
+        first_party={'c1_rail.qualification.t00_screen_fixture': {
+            'path': MODULE, 'sha256': sha((screen.repo / MODULE).read_bytes())}},
+        third_party={'dep': {'path': 'dep.py', 'sha256': sha(b'VALUE = 1\n')}},
+        ports={port.path: port.sha256}, stdlib={'t00_screen_stdlib_name'}, site_packages_path=str(site))
+    screen.monkeypatch.setattr(sys, 'p7_recorder', recorder, raising=False)
+    files = {'first_party': screen.repo / MODULE, 'third_party': site / 'dep.py',
+             'ports': screen.artifact_root / port.path}
+    return module, auth, recorder, files
+
+
+def closes(module, auth, recorder, change=None):
+    epoch = module.open_screen_epoch(SOURCE, auth)
+    if change is not None:
+        change()
+    cover_loaded(recorder)
+    return module.close_screen_epoch(epoch)
+
+
+def load_unrecorded(screen, path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    loaded = importlib.util.module_from_spec(spec)
+    screen.monkeypatch.setitem(sys.modules, name, loaded)
+    spec.loader.exec_module(loaded)
+
+
+def test_epoch_close_passes_stable_dependencies_in_every_family(screen, tmp_path):
+    module, auth, recorder, _ = closure_case(screen, tmp_path)
+    closed = closes(module, auth, recorder)
+    assert closed.closure_match
+    assert closed.closure_sha256 == sha(canonical({
+        'first_party': recorder.first_party, 'third_party': recorder.third_party, 'ports': recorder.ports,
+        'stdlib': sorted(recorder.stdlib)}))
+
+
+@pytest.mark.parametrize('family', ['first_party', 'third_party', 'ports'])
+def test_epoch_close_refuses_a_changed_recorded_dependency(screen, tmp_path, family):
+    """A replaced file in a recorded family closes closure_match=False (CODE_OR_ARTIFACT_DRIFT)."""
+    module, auth, recorder, files = closure_case(screen, tmp_path)
+    assert closes(module, auth, recorder).closure_match
+    changed = closes(module, auth, recorder,
+                     lambda: files[family].write_bytes(files[family].read_bytes() + b'# replaced\n'))
+    assert not changed.closure_match
+
+
+@pytest.mark.parametrize('family', ['first_party', 'third_party', 'ports', 'stdlib', 'third_party_file'])
+def test_epoch_close_refuses_a_disappeared_recorded_dependency(screen, tmp_path, family):
+    """A dependency recorded at open that is gone at close (from the record, or from disk) is drift."""
+    module, auth, recorder, files = closure_case(screen, tmp_path)
+    assert closes(module, auth, recorder).closure_match
+    gone = {'first_party': recorder.first_party.clear, 'third_party': recorder.third_party.clear,
+            'ports': recorder.ports.clear, 'stdlib': lambda: recorder.stdlib.discard('t00_screen_stdlib_name'),
+            'third_party_file': lambda: os.replace(files['third_party'], files['third_party'].with_suffix('.gone'))}
+    assert not closes(module, auth, recorder, gone[family]).closure_match
+
+
+def test_epoch_close_accepts_a_lazy_import_recorded_mid_epoch_with_its_digest(screen, tmp_path):
+    module, auth, recorder, files = closure_case(screen, tmp_path)
+    late = files['third_party'].parent / 't00_screen_lazy_dep.py'
+    late.write_bytes(b'LATE = 1\n')
+
+    def lazy_import():
+        recorder.third_party['t00_screen_lazy_dep'] = {'path': late.name, 'sha256': sha(late.read_bytes())}
+        load_unrecorded(screen, late, 't00_screen_lazy_dep')
+    epoch = module.open_screen_epoch(SOURCE, auth)
+    lazy_import()
+    cover_loaded(recorder)
+    closed = module.close_screen_epoch(epoch)
+    assert closed.closure_match and closed.closure_sha256 != epoch.closure_sha256
+    recorder.third_party['t00_screen_lazy_dep']['sha256'] = sha(b'OTHER = 1\n')
+    assert not closes(module, auth, recorder).closure_match
+
+
+def test_epoch_close_refuses_a_loaded_but_unrecorded_executable(screen, tmp_path):
+    module, auth, recorder, files = closure_case(screen, tmp_path)
+    assert closes(module, auth, recorder).closure_match
+    stray = files['third_party'].parent / 't00_screen_unrecorded_dep.py'
+    stray.write_bytes(b'STRAY = 1\n')
+    epoch = module.open_screen_epoch(SOURCE, auth)
+    cover_loaded(recorder)
+    load_unrecorded(screen, stray, 't00_screen_unrecorded_dep')
+    assert not module.close_screen_epoch(epoch).closure_match
+
+
+@pytest.mark.parametrize('family', ['third_party', 'ports'])
+def test_epoch_close_refuses_a_recorded_digest_replaced_by_a_reload(screen, tmp_path, family):
+    """The recorder overwrites a third-party or port entry when it is found or compiled again;
+    a reload with changed bytes mid-epoch is drift, and a reload with identical bytes is not."""
+    module, auth, recorder, files = closure_case(screen, tmp_path)
+    path = files[family]
+    key = 'dep' if family == 'third_party' else next(iter(recorder.ports))
+
+    def reload(raw):
+        def change():
+            path.write_bytes(raw)
+            if family == 'third_party':
+                recorder.third_party[key] = dict(recorder.third_party[key], sha256=sha(raw))
+            else:
+                recorder.ports[key] = sha(raw)
+        return change
+    assert closes(module, auth, recorder, reload(path.read_bytes())).closure_match
+    assert not closes(module, auth, recorder, reload(path.read_bytes() + b'# reloaded\n')).closure_match
+
+
+SCREEN_WORKER = """import json
+import sys
+from c1_rail.qualification import p7_evidence, screen_authority
+closure = screen_authority._closure()
+named = {n for f in ('first_party', 'third_party') for n in closure[f]} | set(closure['stdlib'])
+rooted = sorted(n for n, m in list(sys.modules.items()) if n not in named and isinstance(
+    getattr(getattr(m, '__spec__', None), 'origin', None) or getattr(m, '__file__', None), str)
+    and (getattr(getattr(m, '__spec__', None), 'origin', None) or '') not in ('built-in', 'frozen'))
+print(json.dumps({'screen_bootstrap': sys.p7_recorder.bootstrap_sha256 == p7_evidence.SCREEN_BOOTSTRAP_SHA256,
+                  'unrecorded': list(screen_authority._unrecorded(closure)), 'unnamed_with_origin': rooted,
+                  'recorded': {family: len(rows) for family, rows in closure.items()},
+                  'refusals': list(sys.p7_recorder.refusals)}))
+"""
+
+
+def test_a_real_screen_bootstrap_process_has_no_unrecorded_loaded_module(screen, tmp_path):
+    """The real SCREEN_BOOTSTRAP and recorder, in a child interpreter over a TEST_ONLY copy of
+    ops/core with a synthetic worker: every loaded module is recorded or interpreter-rooted."""
+    from test_p7_evidence import make_code_root  # pylint: disable=import-outside-toplevel
+    root = make_code_root(tmp_path / 'code', screen.case,
+                          extra={'ops/c1_rail/qualification/t00_screen/worker.py': SCREEN_WORKER})
+    run_dir = tmp_path / 'run'
+    (run_dir / 'journal').mkdir(parents=True)
+    done = subprocess.run([sys.executable, '-I', '-S', '-B', '-c', p7_evidence.SCREEN_BOOTSTRAP, str(root),
+                           str(run_dir), 'a' * 64, 'c1-w0.jsonl'], capture_output=True, text=True, timeout=300,
+                          cwd=tmp_path, check=False)
+    assert done.returncode == 0, done.stderr[-2000:]
+    report = json.loads(done.stdout.strip().splitlines()[-1])
+    assert report['screen_bootstrap'] and not report['refusals'], report
+    assert report['recorded']['first_party'] and report['recorded']['third_party'], report
+    assert report['unrecorded'] == [], report
+    print('UNNAMED_WITH_ORIGIN', report['unnamed_with_origin'])
+
+
+def test_an_unrecorded_file_under_a_site_nested_in_a_stdlib_root_is_unrecorded(screen, tmp_path):
+    """Site-first: a stdlib root that is an ancestor of site-packages does not cover an unrecorded
+    installed executable; a true stdlib file under the same root is interpreter-rooted."""
+    module = sa()
+    stdlib_root = tmp_path / 'lib' / 'python3.x'
+    site = stdlib_root / 'site-packages'
+    site.mkdir(parents=True)
+    (site / 't00_screen_site_unrecorded.py').write_bytes(b'SITE = 1\n')
+    (stdlib_root / 't00_screen_true_stdlib.py').write_bytes(b'STDLIB = 1\n')
+    recorder = SimpleNamespace(first_party={}, third_party={}, ports={}, stdlib=set(), site_packages_path=str(site),
+                               installed_roots=[str(site), str(stdlib_root)])
+    screen.monkeypatch.setattr(sys, 'p7_recorder', recorder, raising=False)
+    cover_loaded(recorder)
+    load_unrecorded(screen, stdlib_root / 't00_screen_true_stdlib.py', 't00_screen_true_stdlib')
+    assert module._unrecorded(module._closure()) == ()  # pylint: disable=protected-access
+    load_unrecorded(screen, site / 't00_screen_site_unrecorded.py', 't00_screen_site_unrecorded')
+    assert module._unrecorded(module._closure()) == ('t00_screen_site_unrecorded',)  # pylint: disable=protected-access
