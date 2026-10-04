@@ -691,3 +691,243 @@ def test_t2_item7_replay_bracket_builds_two_fresh_engines_with_separate_results(
     assert all(row.fills == 2 and row.flat_before_deadline and row.end_edge.is_flat for row in result.r1.sessions)
     # Flat retained bars: the bracket adds no signal, cost or price event.
     assert result.r1 == result.r2 == source.replay(path)
+
+
+# ---- T05 owed qualification-path items (T00 P7 closure §7, step-1b return) ----
+# A gated qualification build runs the source-only gates. The TEST_ONLY composition
+# fixture is pinned by the S5 harness, so these cases rewrite its payloads before
+# signing and select the gates for its domain; every guard itself runs unpatched.
+
+REVIEWER = 'synthetic-composition-reviewer'
+
+
+def _refused(code, call):
+    with pytest.raises(ValueError) as error:
+        call()
+    assert code in str(error.value), str(error.value)
+
+
+def _gated_composition(root, monkeypatch, *, transform=None, calendar_producer=None,
+                       review_producer=REVIEWER, review_edit=None, port_transform=None):
+    """Signed TEST_ONLY composition whose source artifacts satisfy the source gates.
+
+    Returns a call that signs the contract and builds the source through the real
+    ``_build_composition`` route (``build_verified_composition`` minus inventory)."""
+    import composition_fixture as fixture_module
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.contract import ObservedBindings, canonical_json_bytes, validate_frozen_contract
+    from test_contract import NOW
+    from test_source_contract import REVIEW_SCOPES, SYNTHETIC_CALENDAR_PRODUCER, v2_review
+    encoded, digest = fixture_module.encoded, fixture_module.digest
+
+    def build(path):
+        fixture = fixture_module.build_artifacts(path, port_transform=port_transform)
+        payloads = fixture.payloads
+        payloads['calendar_producer'] = (canonical_json_bytes(SYNTHETIC_CALENDAR_PRODUCER)
+                                         if calendar_producer is None else calendar_producer)
+        fact = {'role': 'calendar_producer', 'sha256': digest(payloads['calendar_producer'])}
+        calendar, index = json.loads(payloads['source_calendar']), json.loads(payloads['population_index'])
+        for row in calendar['sessions']:
+            row['facts'] = [fact]
+            for item in row['venue_deadlines'].values():
+                item['fact'] = fact
+        if transform is not None:
+            transform(payloads, calendar, index, fixture.populations)
+        payloads['source_calendar'] = encoded(calendar)
+        index['source_binding']['source_calendar_sha256'] = digest(payloads['source_calendar'])
+        payloads['population_index'] = encoded(index)
+        binding = digest(encoded(index['source_binding']))
+        for role in REVIEW_SCOPES:
+            doc = json.loads(v2_review(role, digest(payloads[role]), reviewer=REVIEWER,
+                                       binding_sha256=binding if role == 'population_index' else None))
+            payloads[role + '_review'] = canonical_json_bytes(review_edit(role, doc) if review_edit else doc)
+        for role in ('calendar_producer', 'source_calendar', 'population_index', *(r + '_review' for r in REVIEW_SCOPES)):
+            (path / fixture.paths[role]).write_bytes(payloads[role])
+        return fixture
+
+    def signed():
+        fixture = build(root).with_runtime_artifacts(root)
+        domain, private, keys = fixture_module.verified_domain(fixture)
+        doc = fixture_module.contract_document(fixture, domain)
+        for row in (*doc['artifacts'], *doc['role_owners']):
+            if row['role'].endswith('_review'):
+                row['producer' if 'producer' in row else 'owner'] = review_producer
+        raw = encoded(doc)
+        approval = fixture_module.signed_approval(raw, private['test-freeze'], key_id='test-freeze', scope='FREEZE_F1')
+        retained = {role: (root / path).read_bytes() for role, path in fixture.paths.items()}
+        observed = ObservedBindings(artifact_sha256={fixture.paths[r]: digest(b) for r, b in retained.items()},
+                                    runtime_load_sha256={r: digest(b) for r, b in retained.items()},
+                                    effective_settings_sha256=digest(retained['effective_settings_successor']),
+                                    orb_normal_base=1)
+        contract = validate_frozen_contract(raw, approval, keys, observed, now=NOW, trust_domain=domain)
+        return contract, production_source.ProductionSource._build_composition(contract, artifact_root=root)
+
+    monkeypatch.setattr(production_source, '_source_gates_apply', lambda domain: True)
+    return signed
+
+
+def test_t05_source_gates_apply_to_every_domain_but_the_test_only_composition_profile():
+    from types import SimpleNamespace
+    import test_contract
+    from test_trust_domain import case, validate
+    from c1_rail.qualification.production_source import _source_gates_apply
+    operator, _, _ = test_contract._operator_domain(test_contract._document())
+    composition = validate(*case())
+    assert (operator.authority_class, operator.permits_synthetic, _source_gates_apply(operator)) == ('OPERATOR', False, True)
+    assert (composition.authority_class, composition.permits_synthetic, _source_gates_apply(composition)) == ('TEST_ONLY', True, False)
+    assert _source_gates_apply(SimpleNamespace(authority_class='UNKNOWN', permits_synthetic=True))
+
+
+def test_t05_gated_qualification_review_binds_an_independent_reviewer(tmp_path, monkeypatch):
+    contract, source = _gated_composition(tmp_path, monkeypatch)()
+    source.verify_for(contract)
+    assert source.evidence_class == 'QUALIFICATION'
+    producers = {row.role: row.producer for row in contract.artifacts}
+    assert producers['source_calendar_review'] == REVIEWER != producers['source_calendar']
+
+
+@pytest.mark.parametrize('defect,code', [
+    ('self_certified', 'REVIEW_NOT_INDEPENDENT'),     # the reviewed artifact's producer signs the companion
+    ('v1', 'scope/reviewer'),                         # a v1 companion carries no reviewer identity
+])
+def test_t05_gated_qualification_review_refuses_unidentified_or_self_review(tmp_path, monkeypatch, defect, code):
+    def v1(role, doc):
+        if role != 'source_calendar':
+            return doc
+        return {'schema': 'qualification-source-review/v1',
+                **{key: doc[key] for key in ('artifact_role', 'artifact_sha256', 'scope', 'decision')}}
+    build = _gated_composition(tmp_path, monkeypatch, review_producer=(
+        'synthetic-composition-fixture' if defect == 'self_certified' else REVIEWER),
+        review_edit=v1 if defect == 'v1' else None)
+    _refused(code, build)
+
+
+@pytest.mark.parametrize('defect,code', [
+    ('fact_role', 'CALENDAR_FACT_ROLE'),               # another retained role at its true digest
+    ('deadline_fact', 'CALENDAR_PRODUCER_MISMATCH'),   # the record states a 12:59 day the calendar omits
+])
+def test_t05_gated_qualification_calendar_binds_the_calendar_producer(tmp_path, monkeypatch, defect, code):
+    from composition_fixture import digest
+    from c1_rail.qualification.contract import canonical_json_bytes
+    from test_source_contract import SYNTHETIC_CALENDAR_PRODUCER
+
+    def other_role(payloads, calendar, index, populations):
+        calendar['sessions'][0]['facts'] = [{'role': 'cost_model', 'sha256': digest(payloads['cost_model'])}]
+    producer = canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, venue_flat_dates_in_interval=['2024-01-02']))
+    _refused(code, _gated_composition(tmp_path, monkeypatch, transform=other_role if defect == 'fact_role' else None,
+                                      calendar_producer=producer if defect == 'deadline_fact' else None))
+
+
+TAIL = '2024-08-30'                                              # the fixture's last source date
+TRUNCATED = 'panel truncated at interval end: slots 09:00-16:00 ET'   # its indexed ET slot range
+
+
+@pytest.mark.parametrize('case,code', [
+    ('admitted', None),
+    ('interior', 'SOURCE_TRUNCATION_INTERIOR'),
+    ('unnamed_slots', 'SOURCE_TRUNCATION_REASON'),
+    ('unrecorded_tail', 'CALENDAR_PRODUCER_MISMATCH'),
+    ('stand_in', 'TRUNCATION_STAND_IN_RETIRED'),
+])
+def test_t05_gated_qualification_validates_source_truncated(tmp_path, monkeypatch, case, code):
+    from c1_rail.qualification.contract import canonical_json_bytes
+    from test_source_contract import SYNTHETIC_CALENDAR_PRODUCER
+    reason = 'panel ended early' if case == 'unnamed_slots' else TRUNCATED
+    status = 'policy_denied' if case == 'stand_in' else 'source_truncated'
+
+    def truncate(payloads, calendar, index, populations):
+        position = 5 if case == 'interior' else -1
+        row = calendar['sessions'][position]
+        assert case == 'interior' or row['date'] == TAIL
+        calendar['sessions'][position] = dict(row, status=status, reason=reason, venue_deadlines={})
+        index['expected_exclusions'] = [{'source_date': row['date'], 'reason': status, 'detail': reason}]
+        full = [day for day in populations['FULL'] if day != row['date']]
+        populations.update(FULL=full, H1=full[:(len(full) + 1) // 2], H2=full[(len(full) + 1) // 2:])
+        index['populations'] = {name: list(values) for name, values in populations.items()}
+    tail = {} if case == 'unrecorded_tail' else {'tail_disposition': {'date': TAIL, 'status': 'source_truncated'}}
+    build = _gated_composition(tmp_path, monkeypatch, transform=truncate,
+                               calendar_producer=canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, **tail)))
+    if code is not None:
+        _refused(code, build)
+        return
+    contract, source = build()
+    source.verify_for(contract)
+    assert [(e.session_date.isoformat(), e.reason, e.detail) for e in source.exclusions] == [(TAIL, 'source_truncated', TRUNCATED)]
+    assert TAIL not in contract.populations['FULL'] and TAIL not in {s.session_id for s in source.sessions}
+
+
+# ---- P3-1 (2026-10-01 refute-first review): replay_bracket's deadline-failure branch ----
+
+def _hold_orb_through_flatten(monkeypatch):
+    """TEST_ONLY port: the fixture ORB keeps its entry into the 15:55 ET intrabar flatten."""
+    import composition_fixture as fixture_module
+    original = fixture_module.build_artifacts
+
+    def holding(root, *, idle=False, port_transform=None):
+        def hold(leg, raw):
+            return raw if leg != 'orb_mnq_v7' else raw.replace(
+                b'local.minute == 15 and self.position', b'local.minute == 59 and self.position')
+        return original(root, idle=idle, port_transform=hold)
+    monkeypatch.setattr(fixture_module, 'build_artifacts', holding)
+
+
+def _withhold_r1_flatten(monkeypatch):
+    """TEST_ONLY venue refusal: the R1 engine's brokers never confirm the scheduled flatten,
+    so the real engine's own-flat deadline check raises; R2's brokers are honest."""
+    from c1_signal_daemon import tv_broker_emulator
+    from c1_rail.qualification.model import LEG_IDS
+    built = []
+
+    class Withholding(tv_broker_emulator.TVBrokerEmulator):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.withhold = len(built) < len(LEG_IDS)     # the first engine built is R1's
+            built.append(self)
+
+        def submit(self, actions, bar):
+            if self.withhold and any(getattr(a, 'reason', '') == 'scheduled_flatten' for a in actions):
+                return []
+            return super().submit(actions, bar)
+    monkeypatch.setattr(tv_broker_emulator, 'TVBrokerEmulator', Withholding)
+    return built
+
+
+def test_p3_1_qualification_replay_bracket_keeps_a_real_deadline_failure_as_that_runs_result(tmp_path, monkeypatch):
+    import composition_fixture as fixture_module
+    from c1_rail.qualification.model import LEG_IDS, BracketReplayResult, ReplayResult
+    from c1_rail.qualification.paths import PathAssembler
+    _hold_orb_through_flatten(monkeypatch)
+    source = fixture_module.build_verified_composition(tmp_path).source
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    built = _withhold_r1_flatten(monkeypatch)
+    result = source.replay_bracket(path)
+    assert len(built) == 2 * len(LEG_IDS)
+    assert type(result) is BracketReplayResult and type(result.r1) is ReplayResult and result.r1 is not result.r2
+    # R1 is T=infinity at its first session: a partial record, not a raised failure.
+    assert [row.flat_before_deadline for row in result.r1.sessions] == [False]
+    assert not result.r1.sessions[0].end_edge.is_flat
+    assert [e.kind for e in result.r1.events].count('deadline_failure') == 1
+    assert len(result.r2.sessions) == 3 and all(row.flat_before_deadline and row.end_edge.is_flat for row in result.r2.sessions)
+    assert 'deadline_failure' not in {e.kind for e in result.r2.events}
+
+
+def test_p3_1_source_only_replay_bracket_seals_a_real_deadline_failure(tmp_path, monkeypatch):
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.model import ReplayResult
+    from c1_rail.qualification.paths import PathAssembler
+    from test_source_contract import NOW, build_source_case
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    _hold_orb_through_flatten(monkeypatch)
+    case = build_source_case(tmp_path, monkeypatch)
+    source = production_source.ProductionSource.build(case.validate(), artifact_root=case.root)
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    _withhold_r1_flatten(monkeypatch)
+    result = source.replay_bracket(path)
+    assert type(result) is production_source.SourceOnlyBracket
+    assert not isinstance(result.r1, ReplayResult) and not isinstance(result.r2, ReplayResult)
+    assert (result.r1.deadline_failure, result.r2.deadline_failure) == (True, False)
+    assert [(row.flat_before_deadline, row.end_flat) for row in result.r1.sessions] == [(False, False)]
+    assert len(result.r2.sessions) == 3 and all(row.flat_before_deadline and row.end_flat for row in result.r2.sessions)
+    # R1 consumed its first 15:55 ET split before the failure; R2 consumed one per session.
+    assert len(result.r2.consumed_intrabar_splits) == 3
+    assert result.r1.consumed_intrabar_splits == result.r2.consumed_intrabar_splits[:1]
