@@ -30,7 +30,7 @@ This is step 2 of that pre-registration's §8 freeze procedure. The editions imp
 | G2b | **Allocation gate (operator ruling 2026-09-26: "Yes, gate on allocation").** Producing these edition files waits until the TradingView/CrossTrade [capability allocation and deletion map](2026-09-25-tradeify-capability-allocation-deletion-map.md) is **ACCEPTED** under gate D of the checklist's [T09 gate acceptance record](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record), and the accepted map keeps these legs' runtime ports as the controller boundary. A committed or merged map is not acceptance. If the accepted allocation delegates the behavior these ports implement, this packet is withdrawn, not run. | Checklist T09 gate D acceptance record (named revision); allocation map disposition |
 | G3 | The pre-registration is **not frozen**, and no replay or E1 output exists for either edition *2026-10-02: this gate now binds the successor and is scoped in time. It means no replay or E1 output on either edition produced after the successor's first commit (`e85d321`). Output produced before that commit is disclosed in successor §D and governed there and by its ratified §7 successor-validity reading; it does not fail this gate. The successor's standing rule §R forbids any candidate-configurable replay before freeze.* | Pre-registration Status line; campaign record |
 
-Record the pre-registration commit you build against. If the pre-registration changes after that commit, stop and return; do not reconcile.
+Record the pre-registration commit you build against, and the Vanguard pre-registration commit whose ruled settings the shared successor settings carry. If either changes after its recorded commit, stop and return; do not reconcile.
 
 **Per-leg independence:** if G1 is answered for one leg only, you may produce that leg alone, and must record the other as `BLOCKED — G1 (<leg>)`. Do not guess an unanswered rule.
 
@@ -97,7 +97,7 @@ ORB is ruled override-only (A1). Follow the R1 pattern and identity-compatibilit
 
 1. Verify retained ORB Pine/port hashes are unchanged. Inspect diffs in place without retained private-source extracts; any unclassified hunk fails.
    - **Striker files:** diff each new file against its original; classify every hunk by the STR rule or accepted identity binding it implements.
-   - **Shared successor settings:** diff against the accepted settings; classify every hunk by its ruled ORB setting, its ruled Vanguard setting (the [Vanguard pre-registration](../pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md)), or an accepted identity binding. Record both pre-registration commits. Any other change fails.
+   - **Shared successor settings:** diff against the accepted settings; classify every hunk by its ruled ORB setting, its ruled Vanguard setting (the [Vanguard pre-registration](../pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md)), or an accepted identity binding. Record the Vanguard pre-registration commit as well (§7). Any other change fails.
 2. **ORB:** under the pinned effective settings, show that every reachable bracket construction emits null trailing fields and every reachable Pine exit has no active trailing arguments, including entry/add/amend paths. Retained unreachable trailing code is permitted in an override-only realization. Different or missing settings invalidate the proof.
 3. **Striker:** show that no path emits an entry without a stop in the same intent, and that no `ATTACH` or delayed-protection path remains.
 4. **Both:** list every remaining post-entry amend path by `file:line`, distinguishing a broker mutation requiring L2(c) from a statically justified rail no-op. A no-op still owes the production protection read and tick-rounded equality evidence; this static return cannot discharge those claims.
@@ -126,7 +126,7 @@ ORB is ruled override-only (A1). Follow the R1 pattern and identity-compatibilit
 |---|---|---|
 | Executor / dispatch revision | | |
 | Gates G0–G3, including G1a and G2b (evidence link each) | | |
-| Pre-registration commit built against | | |
+| Pre-registration commit built against (ORB: also the Vanguard pre-registration commit for the shared settings) | | |
 | Checkout revision, tree state, `doctor` result | | |
 | Input hashes (match/mismatch) | | |
 | Realization | A1: unchanged Pine/port | A2a: new matching Pine/port |
