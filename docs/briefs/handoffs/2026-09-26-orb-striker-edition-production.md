@@ -95,7 +95,9 @@ ORB is ruled override-only (A1). Follow the R1 pattern and identity-compatibilit
 
 ## 5. Static verification (both legs, no execution)
 
-1. Verify retained ORB Pine/port hashes are unchanged. Produce an in-place line diff of each new Striker file and the shared successor settings against their originals. Classify every hunk by the ORB/STR rule or accepted identity binding it implements; any unclassified hunk fails. Inspect in place without retained private-source extracts.
+1. Verify retained ORB Pine/port hashes are unchanged. Inspect diffs in place without retained private-source extracts; any unclassified hunk fails.
+   - **Striker files:** diff each new file against its original; classify every hunk by the STR rule or accepted identity binding it implements.
+   - **Shared successor settings:** diff against the accepted settings; classify every hunk by its ruled ORB setting, its ruled Vanguard setting (the [Vanguard pre-registration](../pre-registration/2026-10-02-tradeify-vanguard-fixed-stop-edition-successor-prereg.md)), or an accepted identity binding. Record both pre-registration commits. Any other change fails.
 2. **ORB:** under the pinned effective settings, show that every reachable bracket construction emits null trailing fields and every reachable Pine exit has no active trailing arguments, including entry/add/amend paths. Retained unreachable trailing code is permitted in an override-only realization. Different or missing settings invalidate the proof.
 3. **Striker:** show that no path emits an entry without a stop in the same intent, and that no `ATTACH` or delayed-protection path remains.
 4. **Both:** list every remaining post-entry amend path by `file:line`, distinguishing a broker mutation requiring L2(c) from a statically justified rail no-op. A no-op still owes the production protection read and tick-rounded equality evidence; this static return cannot discharge those claims.
@@ -105,7 +107,7 @@ ORB is ruled override-only (A1). Follow the R1 pattern and identity-compatibilit
 ## 6. Forbidden
 
 - Running, importing or backtesting any edition or original, in Python or TradingView.
-- Any change not traceable to an answered ORB/STR rule or accepted identity binding. That includes cleanup, refactors, renames inside a file, and comment edits that change behavior.
+- Any change not traceable to an answered ORB/STR rule, a ruled Vanguard setting in the shared successor settings, or an accepted identity binding. That includes cleanup, refactors, renames inside a file, and comment edits that change behavior.
 - Adding a CrossTrade-managed trail, a new exit, a new filter or any parameter change beyond the explicitly ruled edition settings. Changing opening-range, signal, pyramid or allocation logic.
 - Basing Striker on the rejected original port, or overwriting either Striker generation.
 - Editing the accepted files, the pre-registration or any governance document. Freezing the pre-registration. Treating either edition as qualified.
