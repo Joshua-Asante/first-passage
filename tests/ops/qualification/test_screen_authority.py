@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import base64
 from contextlib import contextmanager
+import errno
 import hashlib
 import importlib
 import importlib.util
@@ -695,3 +696,74 @@ def test_an_unrecorded_file_under_a_site_nested_in_a_stdlib_root_is_unrecorded(s
     assert module._unrecorded(module._closure()) == ()  # pylint: disable=protected-access
     load_unrecorded(screen, site / 't00_screen_site_unrecorded.py', 't00_screen_site_unrecorded')
     assert module._unrecorded(module._closure()) == ('t00_screen_site_unrecorded',)  # pylint: disable=protected-access
+
+
+# ---- review 5407704640 at ccfeba4 ------------------------------------------------------------
+
+def test_ratified_requires_one_canonical_complete_status_field():
+    """r4178909765: one Status field, in its canonical place (the line after the title and a
+    blank line), whose whole backticked field is RATIFIED <valid date>."""
+    module = sa()
+    draft = '**Status:** `DRAFT — NOT RATIFIED.` TEST_ONLY'.encode('utf-8')
+    ratified = b'**Status:** `RATIFIED 2026-10-10.` TEST_ONLY'
+    assert module._ratified(b'# Title\n\n' + ratified + b'\n\nbody\n')  # pylint: disable=protected-access
+    for blob in (ratified + b'\n# Title\n\n' + draft + b'\n',               # an earlier RATIFIED line
+                 b'# Title\n\n' + draft + b'\n\n' + ratified + b'\n',       # an embedded later one
+                 b'# Title\n\n**Status:** `RATIFIED 2026-10-10 pending` x\n',  # an incomplete field
+                 b'# Title\n\n**Status:** `RATIFIED 2026-13-40.` x\n'):       # an invalid date
+        assert not module._ratified(blob), blob  # pylint: disable=protected-access
+
+
+@WINDOWS
+def test_run_lock_is_held_only_on_the_msvcrt_lock_conflict_errno(tmp_path, monkeypatch):
+    """r4178909774: msvcrt.locking(LK_NBLCK) raises EACCES on a conflict (CRT _locking: "Locking
+    violation"; measured 2026-10-04); every other OSError is refused, never read as held."""
+    module, msvcrt = sa(), importlib.import_module('msvcrt')
+    lock = tmp_path / 'lock'
+    lock.write_bytes(b'{}')
+    assert not module._lock_held(lock)  # pylint: disable=protected-access
+    holder = os.open(lock, os.O_RDWR | BINARY)
+    try:
+        os.lseek(holder, journal.LOCK_OFFSET, os.SEEK_SET)
+        msvcrt.locking(holder, msvcrt.LK_NBLCK, 1)
+        assert module._lock_held(lock)  # pylint: disable=protected-access
+        os.lseek(holder, journal.LOCK_OFFSET, os.SEEK_SET)
+        msvcrt.locking(holder, msvcrt.LK_UNLCK, 1)
+    finally:
+        os.close(holder)
+    real = msvcrt.locking
+
+    def failing(fd, mode, count):
+        if mode == msvcrt.LK_NBLCK:
+            raise OSError(errno.EBADF, os.strerror(errno.EBADF))
+        return real(fd, mode, count)
+    monkeypatch.setattr(msvcrt, 'locking', failing)
+    refused('SCREEN_RUN_UNBOUND', lambda: module._lock_held(lock), 'lock')  # pylint: disable=protected-access
+
+
+def test_epoch_close_turns_a_failed_dependency_read_into_drift(screen, tmp_path):
+    """r4178909777: a recorded dependency unreadable between its existence check and its read
+    closes closure_match=False (CODE_OR_ARTIFACT_DRIFT); no OSError escapes."""
+    module, auth, recorder, files = closure_case(screen, tmp_path)
+    assert closes(module, auth, recorder).closure_match
+    target, real = files['third_party'], Path.read_bytes
+
+    def racing(self):
+        if self == target:
+            raise PermissionError(errno.EACCES, 'unreadable', str(self))
+        return real(self)
+    unreadable = closes(module, auth, recorder, lambda: screen.monkeypatch.setattr(Path, 'read_bytes', racing))
+    assert not unreadable.closure_match
+
+
+def test_epoch_close_final_closure_digest_is_deterministic(screen, tmp_path):
+    """Row K6 (design :151, "all epochs record the same closure"): the same loaded set gives the
+    same final closure_sha256, whatever the recorder's insertion order."""
+    module, auth, recorder, _ = closure_case(screen, tmp_path)
+    first = closes(module, auth, recorder)
+    for family in ('first_party', 'third_party', 'ports'):
+        setattr(recorder, family, dict(reversed(list(getattr(recorder, family).items()))))
+    recorder.stdlib = set(sorted(recorder.stdlib, reverse=True))
+    second = closes(module, auth, recorder)
+    assert first.closure_match and second.closure_match
+    assert first.closure_sha256 == second.closure_sha256
