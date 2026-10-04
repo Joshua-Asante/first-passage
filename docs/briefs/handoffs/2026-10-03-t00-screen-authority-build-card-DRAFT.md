@@ -430,6 +430,14 @@ The screen-authority signature (design §8 step 11) uses the same template with 
     - (c) an approved §3.5 schema extension;
     - (d) accept the gap as a named residual.
     Until he decides and the chosen fix lands, or he accepts the residual, H stays blocked.
+    - **RULED 2026-10-04T20:08:51Z: option (b), strict form.** Joshua, directly to coordinator (4): "Go with your best recommendation on R-INT-1" (the recommendation put to him was the strict form; it was also relayed through the merge agent's chat).
+      - The durable record check (`t00_screen/state.py`, `_check_acts`/`check_record`) re-verifies each stored act's detached approval (`approval_b64`) on **every** check, by calling the existing `contract.verify_detached_approval(..., now=<real current time>, allow_test_authority=False)`.
+      - There is no first-acceptance exception and no persisted acceptance time. §3.5's ACT body `{act_sha256, act}` and act file `{act_b64, approval_b64}` are unchanged, and `contract.py` is not edited.
+      - An expired act fails closed. Re-auditing a completed run after its approval window needs a renewal signature over the same bytes.
+      - **K-4 (card owner):** `check_record` gains a keyword-only `now: datetime` parameter.
+      - **Named residual, accepted:** a genuinely operator-signed act that was never recorded can still be inserted late, but only inside its own signed validity window and only at the ledger head it names.
+      - **Rejected:** (a) countersignature (a new record type), (c) schema extension (a stored time is not trusted evidence), (d) an unrestricted residual.
+      - **Fix packet:** a P-D follow-up (`state.py` plus its tests), red-first with forged-approval, expired-act and valid-act cases. Owner: coordinator (4). R-INT-1 closes when it merges.
 - H: —
 - Design §12 item 9 (depth N) answered by Joshua (precondition for §7 step 1): —
 - ~~Still open outside this card: #581 OD-1/OD-2 direct confirmation (design §12 item 3).~~ *2026-10-03:* confirmed directly by Joshua (sheet 4 item 3, "all recommended"; #629 approval comment 5965049542). This card merged as #634 at `cdbf597b2ef2c7b4e32ae4af476e3a392f75ca79`.
