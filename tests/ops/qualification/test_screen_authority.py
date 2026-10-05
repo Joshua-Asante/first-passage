@@ -127,8 +127,13 @@ class Screen:  # pylint: disable=too-many-instance-attributes
     """One synthetic source case, repository, P7 record and screen authority."""
 
     def __init__(self, root: Path, monkeypatch, *, a6_byte=False, cprime_cell=False,  # pylint: disable=too-many-arguments
-                 a3_unanswered=False, crlf=False, param_changes=None, side_ratified=None, extra_files=None):
+                 a3_unanswered=False, crlf=False, param_changes=None, side_ratified=None, extra_files=None,
+                 install_tree=None):
         self.monkeypatch = monkeypatch
+        # Card-owner ruling 2026-10-04 (4): the install-tree digest is stubbed here, as the
+        # interpreter binding is synthetic; test_p7_rrec.py computes the real digest once.
+        monkeypatch.setattr(p7_evidence, 'install_tree_sha256',
+                            install_tree or (lambda site, base=None: 'e' * 64), raising=False)
         self.ledger = None
         self.artifact_root = root / 'private'
         self.case = build_source_case(self.artifact_root, monkeypatch)
@@ -888,3 +893,68 @@ def test_stat_guard_covers_first_party_import_roots_outside_ops_and_core(tmp_pat
     refused('SCREEN_EPOCH_STALE', lambda: module.require_open_screen_epoch(epoch, source=SOURCE, authority=auth))
     cover_loaded(recorder)
     assert not module.close_screen_epoch(epoch).closure_match
+
+
+# ---- R-REC packet classes (2) and (4): the install-tree digest at launch and every close -------
+
+def install_case(tmp_path, monkeypatch, layout):
+    """A Screen whose bound install tree is a synthetic install (test_p7_rrec.fake_install) in
+    ``layout``, digested for real in that layout; the closure case's recorder is unchanged."""
+    from test_p7_rrec import fake_install, tree_digest  # pylint: disable=import-outside-toplevel
+    base, site, paths = fake_install(tmp_path / 'install', layout)
+    real = getattr(p7_evidence, 'install_tree_sha256', None)
+
+    def tree(_site, base=None):  # pylint: disable=unused-argument
+        return tree_digest(layout, site, install_base, real) if real is not None else 'e' * 64
+    install_base = base
+    (tmp_path / 'screen').mkdir()
+    screen = Screen(tmp_path / 'screen', monkeypatch, install_tree=tree)
+    return screen, paths
+
+
+INSTALL_CHANGES = {
+    'stdlib': lambda paths: paths['stdlib'].write_bytes(b'STDLIB = 2\n'),
+    'pycache': lambda paths: (paths['pycache'].parent / 'planted.cpython.pyc').write_bytes(b'pyc'),
+    'dll': lambda paths: paths['runtime'].write_bytes(b'changed'),
+    # Class (4): a site-packages file with no recorded row (never imported yet) changed after launch.
+    'venv_site_unimported': lambda paths: paths['site_dep'].write_bytes(b'DEP = 2\n'),
+}
+
+
+@pytest.mark.parametrize('layout', ['nt', 'posix'])
+@pytest.mark.parametrize('change', [None, *INSTALL_CHANGES])
+def test_rrec_install_tree_changed_after_epoch_open_fails_the_close(tmp_path, monkeypatch, change, layout):
+    """Classes (2) and (4): a stdlib, __pycache__, DLL or not-yet-imported venv site-packages
+    file changed after the epoch opens closes closure_match=False; unchanged (twin) closes True."""
+    screen, paths = install_case(tmp_path, monkeypatch, layout)
+    module, auth, recorder, _ = closure_case(screen, tmp_path)
+    closed = closes(module, auth, recorder, None if change is None else lambda: INSTALL_CHANGES[change](paths))
+    assert closed.closure_match is (change is None)
+
+
+@pytest.mark.parametrize('layout', ['nt', 'posix'])
+def test_rrec_launch_refuses_a_changed_install_tree_or_a_reachable_base_site(tmp_path, monkeypatch, layout):
+    """At launch (row A5's interpreter-binding check): the bound tree digest must hold, and the
+    base install's site-packages must be unreachable (card-owner ruling 2026-10-04 (1))."""
+    screen, paths = install_case(tmp_path, monkeypatch, layout)
+    assert screen.validate().authority_sha256  # twin
+    base_site = os.path.join(sys.base_prefix, *p7_evidence.site_packages_relative().split('/'))
+    if os.path.normcase(os.path.realpath(base_site)) != os.path.normcase(screen.interpreter['site_packages_path']):
+        with monkeypatch.context() as patch:
+            patch.setattr(sys, 'path', [*sys.path, base_site])
+            refused('SCREEN_P7_MISMATCH', screen.validate, 'interpreter')
+    INSTALL_CHANGES['stdlib'](paths)
+    refused('SCREEN_P7_MISMATCH', screen.validate, 'interpreter')
+
+
+def test_epoch_close_exposes_the_full_final_closure(screen, tmp_path):
+    """P-D follow-up ruling (K6 amendment): the close carries the full final closure for the
+    EPOCH_CLOSE writer, with closure_sha256 its canonical digest."""
+    module, auth, recorder, _ = closure_case(screen, tmp_path)
+    closed = closes(module, auth, recorder)
+    assert closed.closure_match
+    assert closed.closure == {'first_party': recorder.first_party, 'third_party': recorder.third_party,
+                              'ports': recorder.ports, 'stdlib': sorted(recorder.stdlib)}
+    assert closed.closure_sha256 == sha(canonical(closed.closure))
+    recorder.third_party['dep']['sha256'] = 'f' * 64
+    assert closed.closure['third_party']['dep']['sha256'] != 'f' * 64, 'the close holds a copy'

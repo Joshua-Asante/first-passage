@@ -297,8 +297,12 @@ def _check_reality(doc) -> str:
     _refuse(code, status != 0 or not _hex(head, _COMMIT), 'HEAD cannot be read at the repository root')
     status, out = _git('status', '--porcelain', '--untracked-files=all')
     _refuse(code, status != 0 or out.strip(), 'the repository tree is not clean (untracked files included)')
-    _refuse(code, p7_evidence.current_interpreter_binding(REPOSITORY_ROOT) != doc['p7']['interpreter'],
-            'the running interpreter differs from the bound P7 interpreter')
+    try:
+        current = p7_evidence.current_interpreter_binding(REPOSITORY_ROOT)
+    except (ValueError, OSError) as exc:  # a reachable base site-packages, an unreadable install
+        raise ScreenAuthorityError(code, f'the running interpreter cannot be bound ({exc})') from None
+    _refuse(code, current != doc['p7']['interpreter'],
+            'the running interpreter differs from the bound P7 interpreter (including its install tree)')
     return head
 
 
@@ -653,9 +657,12 @@ class ScreenEpoch:
 
 @dataclass(frozen=True)
 class ScreenEpochClose:
-    """``close_screen_epoch``'s result: the loaded closure and whether every closing check held."""
+    """``close_screen_epoch``'s result: the full final loaded closure (families first_party,
+    third_party, ports, stdlib; for the EPOCH_CLOSE writer under the K6 amendment ruled
+    2026-10-04T20:30:58Z), its canonical digest, and whether every closing check held."""
     closure_sha256: str
     closure_match: bool
+    closure: Mapping[str, Any]
 
 
 _EPOCHS: dict[int, dict[str, Any]] = {}
@@ -806,9 +813,19 @@ def _unrecorded(closure: dict) -> tuple[str, ...]:
     return tuple(sorted(found))
 
 
+def _interpreter_holds(authority) -> bool:
+    """R-REC-2 at every close: the running interpreter binding, with its install-tree digest over
+    the base install and the venv site-packages (``p7_evidence.install_tree_sha256``), still
+    equals the one the authority bound at launch. This also catches a site-packages file changed
+    after launch but before its first import (attack class 4). A file swapped and restored within
+    the epoch is the accepted residual (class 3; ``p7_evidence`` threat model)."""
+    return p7_evidence.current_interpreter_binding(REPOSITORY_ROOT) == _thaw(authority.p7['interpreter'])
+
+
 def close_screen_epoch(epoch) -> ScreenEpochClose:
-    """Close once: the full integrity check again and the loaded-closure check. A failure gives
-    ``closure_match=False``, which ``state.check_record`` reads as ``CODE_OR_ARTIFACT_DRIFT``."""
+    """Close once: the full integrity check again, the interpreter binding (R-REC-2) and the
+    loaded-closure check. A failure gives ``closure_match=False``, which ``state.check_record``
+    reads as ``CODE_OR_ARTIFACT_DRIFT``."""
     entry = _open_entry(epoch)
     entry['open'] = False
     source, authority = entry['source'](), entry['authority']()
@@ -820,10 +837,10 @@ def close_screen_epoch(epoch) -> ScreenEpochClose:
         except Exception:  # pylint: disable=broad-exception-caught  # any failure here is drift
             match = False
     try:
-        match = match and _closure_holds(entry['closure'], closure, authority)
+        match = match and _closure_holds(entry['closure'], closure, authority) and _interpreter_holds(authority)
     except Exception:  # pylint: disable=broad-exception-caught  # an unreadable dependency is drift
         match = False
-    return ScreenEpochClose(_sha(canonical_json_bytes(closure)), match)
+    return ScreenEpochClose(_sha(canonical_json_bytes(closure)), match, closure)
 
 
 # ---- acts (rows X2, X3) ----------------------------------------------------------------------
