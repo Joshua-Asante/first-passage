@@ -96,6 +96,7 @@ Owners hold canonical criteria; rows are pointers.
 
 ### No fixed date / gated
 
+- **Held-request watch (T13):** while any request is held, a check is due at each account-session open (18:00 ET Sun–Thu), paged at due + 60 min by the G1 dead-man; before the first armed session, the G1 provider binding and build, G10, Q7 (PASS) and HB-L1/L2 are arming preconditions. [Watch](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md).
 - **M-B idle-clock monitor:** built, registration-ready; wire only on F3 successor
   registration (S1 elects no migration), after re-freezing venue semantics.
   [Q-MONSURF-1](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md).

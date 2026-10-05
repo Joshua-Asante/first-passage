@@ -127,3 +127,13 @@ D1 ruling (ADR:542): accept "in one act once all of these hold". List items are 
 - **Q4: APPROVED as narrowed.** T13 may adopt the watch, and D1 may proceed, with the dead-man check (G1) specified but not built, provided the G1 build, its end-to-end qualification (G10) and the channel qualifications (Q7, HB-L1/L2) are all arming preconditions before the first armed session. At adoption this is written into the deployment checklist (CL `:601`) and STATE (G6), because the arm helper does not check it.
 - **Packet fix owed at the next touch:** the G10 row says Q4 does not name G10, but Q4 as narrowed does.
 
+## Addendum 2026-10-05 — adoption text and status (coordinator (4))
+
+- **Packet fix (owed above):** the G10 row's last sentence is superseded. Q4 as narrowed names G10.
+- **Folded:** Q1, Q3 and Q4 into the [watch](2026-10-02-t13-a12-f3-held-request-watch-draft.md) adoption text: W1 attendance reading (Q1), W5 item 1 (G1 specified: due times 18:00 ET Sun–Thu, 60-minute grace, pinger, missed-check handling, start and end), W7 (G3 record location and fields), and *Arming preconditions* (Q4: G1 provider binding and build, G10, Q7, HB-L1/L2), carried into the deployment checklist (`:601`) and STATE. HR citations in the watch are refreshed to `9c2a153`.
+- **Status by act:**
+  - *Readiness for D1 (ADR `:542`):* items 1, 3, 4 and 5 met; item 2 needs the scoped refute-first review (Q2) and the Codex review of this text; item 6 is met when this PR merges (T13 adoption); item 7 is arming readiness, not a D1 gate.
+  - *T13 adoption:* coordinator (4)'s act, effective on the merge of the PR carrying this addendum after both reviews are clean.
+  - *D1 acceptance:* Joshua's separate act, after adoption.
+- **Not a D1 or adoption blocker:** the G1 provider binding. Grafana IRM's heartbeat takes one fixed interval and has no schedule ([IRM heartbeat monitoring](https://grafana.com/docs/grafana-cloud/alerting-and-irm/irm/integrations/configure-integrations/)), so it cannot page within 60 minutes of a missed Sunday–Thursday 18:00 ET check without paging every weekend. Minimum decision (Joshua, before the G1 build): the provider for a cron-schedule dead-man that notifies the IRM integration. Recommended: Healthchecks.io Hobbyist, already named in ruled fallback B (checklist `:601`), for this narrow use. It is an arming precondition under Q4.
+- PK667 `:59` (calls #575 open) stays a correction for #667's author.
