@@ -328,8 +328,8 @@ their separately recorded dispositions.
 | Gate | Current preparation disposition |
 |---|---|
 | Prior-row review | X-1 scoped decision recorded; sealed evidence untouched |
-| X-4 actor exception | Proposed in §2; **operator ruling owed** |
-| Exact limits / environment / private binding | Field inventory in §3; **operator selections and fresh evidence owed** |
+| X-4 actor exception | Accepted with the §2 additional condition, by operator ruling 2026-10-02 (sitting 2). Canonical text is the B–D GC-7 row |
+| Exact limits / environment / private binding | Field inventory in §3; **operator selections and fresh evidence owed** · *Operator ruling 2026-10-02 (sitting 2):* approved now. Price distances: E = R + 100 points above the generation ask; 25-point cancel buffer; 10-point stop and 20-point target from E; at most 20 points fill-to-stop. Clocks: 15 s initial unfilled evidence; 30 s placement-to-cancel handoff; 10 s cancel terminal evidence; 10 s stop validation after an unexpected fill; 60 s recovery-read window. Left to CP-3 on fresh private evidence: environment and exact account, window date, and headroom, including the H ≥ 2L screen. Every other §3/§3.1 proposal stays PROPOSED. |
 | X-4 tool and read contract | Requirements identified in §4; **build, review and offline verification owed** |
 | Bounded offline build/review handoff | [Draft card](../briefs/handoffs/2026-09-30-x4-offline-tools-build-review.md) prepared; synthetic transports only; **not dispatched or implemented** |
 | Attended rehearsal | **Owed on the exact accepted X-4 tools**, including unexpected fill and unknown cancel; X-1 rehearsal is supporting context only |

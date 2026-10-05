@@ -51,6 +51,7 @@ REPO = Path(__file__).resolve().parent.parent
 DURABLE_STORES: tuple[str, ...] = (
     "ops/c1_rail/book_account_owner.py",
     "ops/c1_rail/book_halt.py",
+    "ops/c1_rail/book_incident_notifier.py",
     "ops/c1_rail/book_migration.py",
     "ops/c1_rail/book_settlement.py",
     "ops/c1_rail/qualification/attempt.py",
@@ -59,6 +60,9 @@ DURABLE_STORES: tuple[str, ...] = (
 
 # Connect sites that are deliberately not durable operational state.
 EXCLUDED: dict[str, str] = {
+    "ops/c1_rail/book_incident_operator_cli.py":
+        "read-only (mode=ro) pre-check and safe-check opens of the notifier journal "
+        "(§3.7 C3, C5); all writes go through IncidentNotifier(rebuild=False)",
     "ops/recall/index.py":
         "derived recall index; rebuildable from the corpus, not authoritative state",
 }

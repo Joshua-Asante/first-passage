@@ -352,7 +352,7 @@ Whether the switch takes effect at the session open or at another boundary is no
 4. **TB-V1.** Can each leg be traded in its selected contract up to the switch, particularly physically delivered 6J and MGC? The answer decides between the first and second rows of the OPEN-3 table.
 5. **OPEN-5.** Authorize the yes/no volume read (private read surface), or accept the all-four-legs fallback?
 6. **BLOCKED versus FAIL.** "Capture incomplete" (§10, `:200`) is not objectively defined. Under the OPEN-9 recommendation a BLOCKED run uses up no re-application, so a definition is needed: for example, a gap in the collector's own liveness record, independent of provider messages. That is a body change beyond a binding. §7's "established" completeness (`:147`) is the same class; a candidate definition is in OPEN-1. Both need an operator decision on whether to amend the body before CP-6, under §13.
-7. **Meaning of "raise health."** If the §7 correction row's "raise health" (`:150`) means the source reports itself unhealthy, then every raw revision halts the book and is already scored by M6 or M8. OPEN-6 is unaffected, but the adapter contract (A9-PREP, Track A `:236`) has to say which reading applies.
+7. **Meaning of "raise health."** If the §7 correction row's "raise health" (`:150`) means the source reports itself unhealthy, then every raw revision halts the book and is already scored by M6 or M8. OPEN-6 is unaffected, but the adapter contract (A9-PREP, Track A `:236`) has to say which reading applies. *Ruled 2026-10-02 (operator, sheet 2 item 3, "all recommended", direct to coordinator (3)); recorded here 2026-10-03:* a revision of a bar already forwarded **latches the source unhealthy** (whole-book halt, operator recovery; fail-closed). Coordinator (3) Track B disposition: an identical redelivery inside the one-day delivered memory is dropped; a late bar at or before the last forwarded `ts` but outside that memory latches as `late_bar_unverifiable`. Implemented in #619. OPEN-6 is unaffected. The frozen spec carries only a Status-line pointer to this record (its body digest is unchanged).
 8. **Calendar coverage (R-MAP-3).** Calendar rows must cover the whole window before collection starts. `ops/calendars/book_session_calendar_2026-10.json` exists, but its ratification was not read here. This is a prerequisite, not an OPEN item.
 
 ## 5. Verification
@@ -376,3 +376,13 @@ Whether the switch takes effect at the session open or at another boundary is no
   - #583 note (all) at `8387e66`.
 - Web: WebFetch of the TradingView support page 43000691027. WebSearch excerpts for CME 6J, MNQ, MGC and MYM. Three WebFetch calls to cmegroup.com timed out.
 - No private data, Pine source or port was read. No provider was contacted.
+
+## Addendum 2026-10-04 — hyper's requirements-simplification proposals: operator dispositions
+
+**Decision:** Joshua, 2026-10-04T00:17:19Z, to coordinator (4): "go on the proposal dispositions and open-3/4 as recommended". The proposals came from hyper's scrutiny worker at main `822c3ea`, relayed by Codex Coordinator 2 on 2026-10-03. They were recommendations only; this records which are adopted.
+
+1. **Live month-end-adjacent session: rejected.** The adopted window minimum stays as frozen (spec §16.2). Removing it would need a §13 re-opening, and the saving may be zero.
+2. **Window start: adopted for the OPEN-8 binding.** The window may open at the first complete permitted session after collection starts, not only at a Sunday 18:00 ET open. Every adopted minimum is kept, including two Sunday opens inside the window. The text is written when OPEN-8 is bound. **OPEN-4 per-leg evidence:** supplied by the coordinator's panel read and cited in the OPEN-4 binding.
+3. **Provider late/missing data versus collector evidence loss: adopted as a separate pre-data §13 body amendment,** drafted together with the "capture incomplete" definition and §7 completeness (§4 question 6). It must use independent liveness and transport-completion evidence; a generic heartbeat is not completion proof. It is not part of any OPEN binding. The coordinator owes the draft before CP-6.
+4. **Funded, emission-disabled collection overlap: deferred.** T00 is not shown to be the final CP-7 blocker. Revisit only if it is.
+5. **FEED-16 shadow reuse for live-only warm-up: accepted as already permitted;** no change.
