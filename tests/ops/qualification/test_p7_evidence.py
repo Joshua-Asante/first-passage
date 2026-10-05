@@ -524,7 +524,8 @@ def test_public_record_has_no_event_level_values(env):  # Codex P2: hashes, coun
 
 
 @pytest.mark.parametrize('field', ['interpreter_sha256', 'base_interpreter_sha256', 'version', 'cache_tag',
-                                   'lock_sha256', 'site_packages_path', 'unexecuted_pth', 'lock_file'])
+                                   'lock_sha256', 'site_packages_path', 'unexecuted_pth', 'lock_file',
+                                   'install_tree_sha256'])
 def test_accept_prechecks_interpreter_binding_before_launch(env, monkeypatch, field):  # Codex P2
     from c1_rail.qualification import p7_evidence
     from c1_rail.qualification.contract import canonical_json_bytes
