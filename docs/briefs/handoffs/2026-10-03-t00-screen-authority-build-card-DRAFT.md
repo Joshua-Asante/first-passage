@@ -210,6 +210,17 @@ Total 60 = design §2.2. `t00_screen/` is `ops/c1_rail/qualification/t00_screen/
 - **Lane:** CC integration.
 - **Depends on:** P-A, P-B1, P-B2, P-C, P-D, P-E merged.
 - **Return:** §6, plus the revision-2 test map (design §10) checked off.
+- **P-F card note** (coordinator (4), card owner, 2026-10-05; from coordinator (3)'s draft items 1–8 plus the §8 obligations; P-F is dispatched pinned to the card head that carries this note):
+  1. **Pinning.** The P-F ticket cites this card at the commit carrying this note and `origin/main` at dispatch. P-A, P-B1, P-B2, P-C, P-D, P-E and R-REC are merged (`164e17b`), so no stand-in modules are needed.
+  2. **Test seam.** The P7 precedent: a TEST_ONLY code root (`test_p7_evidence.py`, the TEST_ONLY root fixture) plus a real `ProductionSource` over synthetic `composition_fixture` artifacts. `worker.py` has no fake-source hook.
+  3. **Entry points (amendment PB2-1).** `worker.open_epoch` calls `screen_authority.screen_epoch(source, *, authority)` and `worker.bracket` calls `screen_authority.screen_bracket(source, path, *, authority, epoch)`; both refuse a non-`ProductionSource`. They are the only callers (§3.2). P-F's ALLOWLIST entries name those two worker owners.
+  4. **I/O causes.** When SEGMENT_END's cause is IO_EXHAUSTED, `workers[].reason` keeps the worker's IO_ERROR; a cap code is never its own I/O evidence. A worker append failure ends the segment with that worker's reason IO_ERROR; only the coordinator's own write error is a crash (F4).
+  5. **Caps.** An INTERRUPTED segment that reaches the I/O cap counts its in-flight keys as losses (accepted as conservative). P-F calls `state.cap_finding` to fill SEGMENT_CRASHED.cap and to choose SEGMENT_END's cause (F8). At finalize, a HALTED cap code that `check_record` reports on a TERMINAL run is informational; only TERMINAL-class codes are appended as failures.
+  6. **`check_record`.** P-F passes the pinned, lifecycle-checked `source:` key set as `trusted_keys`, plus `now` (#678). An expired act fails closed (R-INT-1).
+  7. **Epochs.** P-F keeps each epoch's `ProductionSource` alive until its close (P-A holds it weakly) and writes `EPOCH_CLOSE` with the full `closure` from `ScreenEpochClose.closure` (#678, #680; K6 as amended).
+  8. **A10b scan.** P-F extends the consumer scan to cover its `scripts/` label script; today it covers `ops/` only (#679).
+  9. **No mutable module state.** No `t00_screen` module (coordinator.py, worker.py and __main__.py included) holds mutable module-level state: any in-process `c1_rail.qualification.*` module is re-executed and compared by `result_adjudication` (P-D's `_REFUSED` broke 12 phase3 tests). Probe: run the new tests, then `tests/ops/test_phase3_provenance_acceptance.py`, in one `-n 0` process.
+  10. **CI budget.** New tests land in the sharded qualification children (#684); a child that nears its cap is a finding, not a reason to raise it.
 
 ## §3 — Frozen interface (the coordinator re-states it verbatim in each packet ticket)
 
