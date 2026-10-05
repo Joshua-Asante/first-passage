@@ -188,15 +188,16 @@ class HeartbeatPinger:
     # -- transport -----------------------------------------------------------------------------
 
     def _send(self):
-        """One POST under a whole-operation deadline of ``timeout_s`` (#701 review P2).
+        """One POST under a whole-operation deadline of ``timeout_s`` (#701 review P2s).
 
-        The request runs on an inner thread. The socket timeout bounds each blocking call; the
-        join bounds the whole operation, including DNS, TLS and a response that trickles bytes.
-        At the deadline the connection is shut down to unblock the inner thread, the send is
-        recorded as ``TimeoutError`` and the slot is freed; a late result is discarded.
+        The request runs on an inner thread; the join bounds the whole operation, including
+        DNS, connect, TLS and a response that trickles bytes. At the deadline the attempt is
+        cancelled: its socket is shut down, and every later step (connect, TLS, request) checks
+        the cancel flag under the attempt lock first, so nothing is transmitted after the
+        deadline. The send is recorded as ``TimeoutError`` and the slot is freed.
         """
-        box, connections = {}, []
-        worker = threading.Thread(target=self._request, args=(box, connections),
+        attempt = _Attempt(time.monotonic() + self.timeout_s)
+        worker = threading.Thread(target=self._request, args=(attempt,),
                                   name="book-heartbeat-request", daemon=True)
         try:
             worker.start()
@@ -205,43 +206,60 @@ class HeartbeatPinger:
             return
         worker.join(self.timeout_s)
         if worker.is_alive():
-            box["abandoned"] = True
-            for connection in connections:
-                _abort(connection)
+            attempt.cancel()
             with self._lock:
                 self._abandoned.append(worker)
             self._finish("TimeoutError")
             return
-        self._finish(box.get("outcome", "UnknownOutcome"))
+        self._finish(attempt.outcome or "UnknownOutcome")
 
-    def _request(self, box, connections):
-        deadline = time.monotonic() + self.timeout_s
+    def _request(self, attempt):
         scheme, host, port, _ = endpoint_identity(self.__url)
         target = urllib.parse.urlsplit(self.__url).path
         try:
+            addresses = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
+            sock, error = None, OSError("no address")
+            for family, kind, proto, _, address in addresses:
+                candidate = attempt.open(family, kind, proto)  # raises once cancelled
+                candidate.settimeout(attempt.step_timeout(self.timeout_s))
+                try:
+                    candidate.connect(address)
+                except OSError as exc:
+                    candidate.close()
+                    error = exc
+                    continue
+                sock = candidate
+                break
+            if sock is None:
+                raise error
             if scheme == "https":
-                connection = http.client.HTTPSConnection(
-                    host, port, timeout=self.timeout_s, context=ssl.create_default_context())
+                context = ssl.create_default_context()
+                sock = attempt.adopt(context.wrap_socket(sock, server_hostname=host,
+                                                         do_handshake_on_connect=False))
+                sock.settimeout(attempt.step_timeout(self.timeout_s))
+                sock.do_handshake()
+                connection = http.client.HTTPSConnection(host, port, context=context)
             else:
-                connection = http.client.HTTPConnection(host, port, timeout=self.timeout_s)
-            connections.append(connection)
+                connection = http.client.HTTPConnection(host, port)
+            connection.sock = sock
             try:
+                attempt.check()  # the last point before any byte of the request is sent
                 connection.request("POST", target, body=b"", headers={"Content-Length": "0"})
                 response = connection.getresponse()
                 remaining = MAX_RESPONSE_BYTES
                 while remaining > 0:
-                    if time.monotonic() >= deadline:
-                        raise TimeoutError()
+                    attempt.check()
                     chunk = response.read1(min(remaining, 8192))
                     if not chunk:
                         break
                     remaining -= len(chunk)
-                outcome = "ok" if 200 <= response.status < 300 else "HTTPStatus"
+                attempt.outcome = "ok" if 200 <= response.status < 300 else "HTTPStatus"
             finally:
                 connection.close()
         except Exception as exc:  # noqa: BLE001 - timeout, refusal, DNS or TLS: class name only
-            outcome = type(exc).__name__
-        box["outcome"] = outcome
+            attempt.outcome = type(exc).__name__
+        finally:
+            attempt.close()
 
     def _finish(self, outcome):
         with self._lock:
@@ -261,17 +279,67 @@ class HeartbeatPinger:
             return dict(self._stats, in_flight=not self._idle.is_set())
 
 
-def _abort(connection):
-    """Shut down a connection's socket from another thread; best effort, never raises."""
-    sock = getattr(connection, "sock", None)
-    try:
+class _Attempt:
+    """One send's cancellation state. ``cancel`` and every transmission step share the lock,
+    so once ``cancel`` returns no new socket is opened and no request byte is sent."""
+
+    def __init__(self, deadline):
+        self.deadline = deadline
+        self.outcome = None
+        self._lock = threading.Lock()
+        self._cancelled = False
+        self._sock = None
+
+    def _live_locked(self):
+        if self._cancelled or time.monotonic() >= self.deadline:
+            raise TimeoutError()
+
+    def check(self):
+        with self._lock:
+            self._live_locked()
+
+    def step_timeout(self, timeout_s):
+        return max(min(timeout_s, self.deadline - time.monotonic()), 0.001)
+
+    def open(self, family, kind, proto):
+        with self._lock:
+            self._live_locked()
+            self._sock = socket.socket(family, kind, proto)
+            return self._sock
+
+    def adopt(self, sock):
+        with self._lock:
+            self._sock = sock
+            self._live_locked()
+            return sock
+
+    def cancel(self):
+        with self._lock:
+            self._cancelled = True
+            sock = self._sock
+        _shutdown(sock)
+
+    def close(self):
+        with self._lock:
+            sock, self._sock = self._sock, None
         if sock is not None:
-            sock.shutdown(socket.SHUT_RDWR)
+            try:
+                sock.close()
+            except OSError:
+                pass
+
+
+def _shutdown(sock):
+    """Shut down a socket from another thread; best effort, never raises."""
+    if sock is None:
+        return
+    try:
+        sock.shutdown(socket.SHUT_RDWR)
     except OSError:
         pass
     try:
-        connection.close()
-    except Exception:  # noqa: BLE001 - cleanup only
+        sock.close()
+    except OSError:
         pass
 
 
