@@ -457,7 +457,7 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - It writes `EPOCH_CLOSE` with the full `closure` from `ScreenEpochClose.closure` (#678/#680).
   - It adds its `scripts/` label script to the A10b consumer scan, which today covers `ops/` only (#679).
 - H: —
-- Design §12 item 9 (depth N) answered by Joshua (precondition for §7 step 1): —
+- Design §12 item 9 (depth N) answered by Joshua (precondition for §7 step 1): **N = 3,000 per population** (design §6.4 option b; `depth_per_root` = 1,000 for each of the roots 42, 123 and 2026). Joshua, 2026-10-05, directly to coordinator (4): "N = 3,000". Frozen at ratification (#581 A6). Still owed with the payloads: the budgets (design §5.4; recommended at the option-b upper figure, about 100 CPU-hours plus the overhead reserve) and fresh approval windows (§12 item 10; recommended at least 7 days from start).
 - ~~Still open outside this card: #581 OD-1/OD-2 direct confirmation (design §12 item 3).~~ *2026-10-03:* confirmed directly by Joshua (sheet 4 item 3, "all recommended"; #629 approval comment 5965049542). This card merged as #634 at `cdbf597b2ef2c7b4e32ae4af476e3a392f75ca79`.
 
 ## §10 — Audit hooks
