@@ -20,6 +20,23 @@ or native dependencies the OS loader pulls in for extension modules. Environment
 hermeticity (RECORD-verified distribution contents plus audit-hooked hashing of opened
 files) is a tracked follow-up owned by T05, due before the R1 grant.
 
+R-REC packet (build card 2026-10-03 §8; Joshua 2026-10-04 "approve the recommendations" and
+"adopt all"; card-owner rulings 2026-10-04). The recorder refuses a re-digest of a recorded
+third-party module or port (R-REC-1, as first-party at ``_SOURCE_CHANGED_DURING_RUN``), and
+refuses installed (site-packages or stdlib) source compiled or executed outside importlib's own
+loader frames, e.g. ``runpy.run_path`` or ``exec(compile(...))`` (R-REC-3); a site-packages
+compile must also equal a recorded third-party row. Installed bytes are bound by one tree digest
+in the ``interpreter`` binding (``install_tree_sha256``, R-REC-2), which the screen checks at
+launch and at every epoch close.
+
+Threat model (RULED 2026-10-04, card §8): these checks guard against code or artifact drift
+between launch and epoch close, not against an active writer to the interpreter, the venv or the
+run directory during a run; that is excluded by operating conditions (an attended host, the
+Python install and venv read-only for the run's duration). Accepted residual (attack class 3,
+"adopt all" (ii)): a stdlib or site-packages file swapped, loaded and restored within one epoch
+closes matching. The loader-frame check is a guard against direct execution, not against code
+that calls importlib's private frames itself; such bytes are still bound by the tree digest.
+
 P7 output is never fed to MC, the screen or any qualification stage (P7-closure
 packet §6); that rule is procedural, not claimed to be enforced here.
 """
@@ -123,6 +140,28 @@ def _p7_bootstrap():
         with open(real, 'rb') as handle:
             return handle.read() == raw
 
+    def installed_file(filename):
+        # R-REC-3: ('site' or 'stdlib', realpath) for an absolute path under an installed root, site first.
+        if not isinstance(filename, str) or not _os.path.isabs(filename):
+            return None, None
+        real = _os.path.realpath(filename)
+        if (real + _os.sep).startswith(state.site_packages_path.rstrip(_os.sep) + _os.sep):
+            return 'site', real
+        if any((real + _os.sep).startswith(root.rstrip(_os.sep) + _os.sep) for root in state.installed_roots):
+            return 'stdlib', real
+        return None, None
+
+    def import_system(caller):
+        # R-REC-3: installed source compiles and executes only inside importlib's own loader
+        # (SourceLoader.source_to_code and _LoaderBasics.exec_module, each through
+        # _call_with_frames_removed); runpy.run_path and exec(compile(...)) are not loaders.
+        frame = sys._getframe(2)
+        outer = frame.f_back
+        return (frame.f_code.co_name == '_call_with_frames_removed'
+                and frame.f_code.co_filename == '<frozen importlib._bootstrap>' and outer is not None
+                and outer.f_code.co_name == caller
+                and outer.f_code.co_filename == '<frozen importlib._bootstrap_external>')
+
     def audit(event, args):
         if event == 'import':
             state.audited_imports.append(args[0])
@@ -139,9 +178,25 @@ def _p7_bootstrap():
             if real is not None:
                 raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
                              'compile of first-party bytes outside the recording loader: ' + real)
+            kind, installed = installed_file(filename)
+            if kind is not None:
+                # R-REC-3: refused unless importlib's loader compiles it; a site-packages file
+                # must also be a recorded third-party row with exactly these bytes.
+                if not import_system('source_to_code'):
+                    raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                                 'compile of installed source outside the import system: ' + installed)
+                if kind == 'site':
+                    rel = _os.path.relpath(installed, state.site_packages_path).replace(_os.sep, '/')
+                    digests = {row['sha256'] for row in state.third_party.values() if row['path'] == rel}
+                    if raw is None or digests != {_hashlib.sha256(raw).hexdigest()}:
+                        raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                                     'compile of site-packages bytes that are not a recorded module: ' + installed)
             if real is None and isinstance(source, (bytes, bytearray)) and isinstance(filename, str) \
                     and not _os.path.isabs(filename) and not filename.startswith('<'):
-                state.ports[filename.replace('\\', '/')] = _hashlib.sha256(bytes(source)).hexdigest()
+                port, digest = filename.replace('\\', '/'), _hashlib.sha256(bytes(source)).hexdigest()
+                if state.ports.get(port, digest) != digest:  # R-REC-1: no re-digest of a recorded port
+                    raise refuse(refusal_prefix + '_SOURCE_CHANGED_DURING_RUN', 'port ' + port)
+                state.ports[port] = digest
         elif event == 'exec':
             code = args[0]
             if state.code_root is None or not hasattr(code, 'co_filename'):
@@ -150,6 +205,10 @@ def _p7_bootstrap():
             if real is not None and id(code) not in state.loader_codes:
                 raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
                              'exec of first-party code outside the recording loader: ' + real)
+            kind, installed = installed_file(code.co_filename)
+            if kind is not None and not import_system('exec_module'):
+                raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                             'exec of installed code outside the import system: ' + installed)
         elif event == 'open' and state.journal_rule:
             # Card 2026-10-03 §3.3 (row S2): a write-open (mode with w, a, x or +, or a write,
             # append or create flag) is allowed only of this worker's own journal. A descriptor
@@ -329,8 +388,12 @@ def _p7_bootstrap():
                 if cached and (sys.pycache_prefix != state.pycache_prefix
                                or not under(_os.path.abspath(cached), state.pycache_prefix)):
                     raise refuse(refusal_prefix + '_UNBOUND_BYTECODE', name + ' would load cached bytecode ' + cached)
-                state.third_party[name] = {'path': _os.path.relpath(real, site).replace(_os.sep, '/'),
-                                           'sha256': _hashlib.sha256(open(real, 'rb').read()).hexdigest()}
+                row = {'path': _os.path.relpath(real, site).replace(_os.sep, '/'),
+                       'sha256': _hashlib.sha256(open(real, 'rb').read()).hexdigest()}
+                seen = state.third_party.get(name)
+                if seen is not None and seen != row:  # R-REC-1: no re-digest of a recorded module
+                    raise refuse(refusal_prefix + '_SOURCE_CHANGED_DURING_RUN', 'third-party ' + name)
+                state.third_party[name] = row
                 return spec
             if any(under(real, d) for d in stdlib_dirs):
                 state.stdlib.add(name)
@@ -500,13 +563,77 @@ def comparable(record_bytes):
     return canonical(doc)
 
 
-def current_interpreter_binding(code_root):
-    """The acceptor's own interpreter binding, derived exactly as the bootstrap derives it."""
-    venv = os.path.dirname(os.path.dirname(os.path.abspath(sys.executable)))
-    prefix = venv if os.path.isfile(os.path.join(venv, 'pyvenv.cfg')) else sys.prefix
-    site = os.path.realpath(os.path.join(prefix, *site_packages_relative().split('/')))
-    pth = sorted((name, sha256_bytes(Path(site, name).read_bytes()))
-                 for name in (os.listdir(site) if os.path.isdir(site) else ()) if name.endswith('.pth'))
+def _base_site_packages(base):
+    return os.path.join(os.path.realpath(base), *site_packages_relative().split('/'))
+
+
+def _raise(exc):
+    raise exc
+
+
+def install_tree_sha256(site, *, base=None):
+    """R-REC-2 (Joshua 2026-10-04T20:30:58Z; "adopt all" (i); card-owner ruling 2026-10-04 (1)):
+    one digest over the base install and the bound site-packages, with no per-module digests.
+
+    The set: the base install's root ``*.dll``/``*.pyd`` and ``pythonXY.zip``, ``DLLs/**`` and
+    ``Lib/**`` except ``Lib/site-packages`` (POSIX: ``lib/libpython*``, ``lib/pythonXY.zip`` and
+    ``lib/pythonX.Y/**`` except its site-packages), plus ``site/**``; ``__pycache__`` throughout.
+    The base site-packages is left out only because ``check_site_isolation`` keeps it off
+    ``sys.path``; without a venv it is the bound site and is digested as ``site``. The digest is
+    the SHA-256 of the sorted lines ``<base|site>/<relative path> NUL sha256(bytes)``; an
+    unreadable file or directory fails closed. Symlinked directories are not followed.
+    """
+    base = os.path.realpath(sys.base_prefix if base is None else base)
+    site = os.path.realpath(site)
+    major, minor = sys.version_info[:2]
+    xy = f'{major}{minor}'
+    windows = os.name == 'nt'
+    root_dir = base if windows else os.path.join(base, 'lib')
+    trees = ('DLLs', 'Lib') if windows else (f'lib/python{major}.{minor}',)
+    excluded = os.path.normcase(_base_site_packages(base))
+    rows = []
+
+    def add(label, root, path):
+        with open(path, 'rb') as handle:
+            digest = hashlib.sha256(handle.read()).hexdigest()
+        rows.append(f"{label}/{os.path.relpath(path, root).replace(os.sep, '/')}".encode('utf-8')
+                    + b'\0' + digest.encode('ascii'))
+
+    for name in os.listdir(root_dir):
+        key = name.lower() if windows else name
+        if os.path.isfile(os.path.join(root_dir, name)) and (key == f'python{xy}.zip' or (
+                key.endswith(('.dll', '.pyd')) if windows else key.startswith('libpython'))):
+            add('base', base, os.path.join(root_dir, name))
+    for label, root, top in [('base', base, os.path.join(base, *tree.split('/'))) for tree in trees] + [
+            ('site', site, site)]:
+        for current, dirs, names in os.walk(top, onerror=_raise):
+            dirs[:] = [name for name in dirs if label == 'site'
+                       or os.path.normcase(os.path.join(current, name)) != excluded]
+            for name in names:
+                add(label, root, os.path.join(current, name))
+    return hashlib.sha256(b'\n'.join(sorted(rows))).hexdigest()
+
+
+def check_site_isolation(site):
+    """Card-owner ruling 2026-10-04 (1): the base install's site-packages is outside the install
+    digest, which is sound only while nothing can import from it. A venv must not include system
+    site-packages, and the base site-packages must not be on ``sys.path`` unless it is the bound
+    (digested) site itself."""
+    cfg = Path(os.path.dirname(os.path.dirname(os.path.abspath(sys.executable)))) / 'pyvenv.cfg'
+    if cfg.is_file():
+        for line in cfg.read_text(encoding='utf-8').splitlines():
+            key, sep, value = line.partition('=')
+            if sep and key.strip().lower() == 'include-system-site-packages' and value.strip().lower() != 'false':
+                raise P7Refusal('P7_INTERPRETER_MISMATCH: pyvenv.cfg includes the system site-packages')
+    base_site = os.path.normcase(_base_site_packages(sys.base_prefix))
+    if base_site != os.path.normcase(os.path.realpath(site)) and any(
+            isinstance(entry, str) and entry and os.path.normcase(os.path.realpath(entry)) == base_site
+            for entry in sys.path):
+        raise P7Refusal('P7_INTERPRETER_MISMATCH: the base install site-packages is on sys.path')
+
+
+def _interpreter_binding(site, pth, code_root):
+    check_site_isolation(site)
     lock = Path(code_root) / 'requirements-ops.lock'
     return {
         'interpreter_sha256': sha256_bytes(Path(sys.executable).read_bytes()),
@@ -515,7 +642,18 @@ def current_interpreter_binding(code_root):
         'lock_sha256': sha256_bytes(lock.read_bytes()) if lock.is_file() else None,
         'site_packages_path': site,
         'unexecuted_pth': [{'name': name, 'sha256': digest} for name, digest in pth],
+        'install_tree_sha256': install_tree_sha256(site),
     }
+
+
+def current_interpreter_binding(code_root):
+    """The acceptor's own interpreter binding, derived exactly as the bootstrap derives it."""
+    venv = os.path.dirname(os.path.dirname(os.path.abspath(sys.executable)))
+    prefix = venv if os.path.isfile(os.path.join(venv, 'pyvenv.cfg')) else sys.prefix
+    site = os.path.realpath(os.path.join(prefix, *site_packages_relative().split('/')))
+    pth = sorted((name, sha256_bytes(Path(site, name).read_bytes()))
+                 for name in (os.listdir(site) if os.path.isdir(site) else ()) if name.endswith('.pth'))
+    return _interpreter_binding(site, pth, code_root)
 
 
 @dataclass(frozen=True)
@@ -632,15 +770,7 @@ def finish_record(state, fields, out_path):
         'stdlib': sorted(state.stdlib),
         'ports': dict(sorted(state.ports.items())),
     }
-    lock = code_root / 'requirements-ops.lock'
-    interpreter = {
-        'interpreter_sha256': sha256_bytes(Path(sys.executable).read_bytes()),
-        'base_interpreter_sha256': sha256_bytes(Path(getattr(sys, '_base_executable', sys.executable)).read_bytes()),
-        'version': sys.version, 'cache_tag': sys.implementation.cache_tag,
-        'lock_sha256': sha256_bytes(lock.read_bytes()) if lock.is_file() else None,
-        'site_packages_path': state.site_packages_path,
-        'unexecuted_pth': [{'name': name, 'sha256': digest} for name, digest in state.unexecuted_pth],
-    }
+    interpreter = _interpreter_binding(state.site_packages_path, state.unexecuted_pth, code_root)
     record = dict(fields, schema=RECORD_SCHEMA, label=EVIDENCE_LABEL, bootstrap_sha256=state.bootstrap_sha256,
                   code_head=state.code_head, code_tree_clean=True, loaded_closure=closure,
                   code_closure_sha256=sha256_bytes(canonical(closure)), interpreter=interpreter)

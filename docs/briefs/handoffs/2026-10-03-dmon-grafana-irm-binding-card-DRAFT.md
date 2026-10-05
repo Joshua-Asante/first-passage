@@ -85,6 +85,22 @@ A contradicted fact, a missing producer or a necessary edit outside §5 returns 
 | OA-7 | **Each Q7 run:** an explicit go in chat for that run. Attended, phone at hand. He runs the driver command himself and reports SMS, push and call receipt times only. Then, in order: (1) he acknowledges in IRM, only after the call has rung; (2) **after the driver has exited** (so the republish that §6.3 (d) scores has run), he runs `record-delivery --journal <journal> --config <the driver's notifier-config.json> <incident key>` (§3.7; the key the driver printed, which is the alert's `alert_uid`); (3) he waits for `safe to resolve (rail side)`; (4) only then does he resolve the alert group. On `not safe; wait and re-run` he leaves the group acknowledged and re-runs later; a key that never reaches `safe` is never resolved. Resolving while the driver runs could let its republish open a second group (§6.3 (d)). | Q7 |
 | OA-8 | **The Q7 of record runs on the post-trial free plan.** A Q7 run during the trial is NOT qualification evidence, because free-tier SMS and calls are UNVERIFIED. The trial-expiry date (estimated ~2026-10-16/17) must be verified by Joshua from his own account and recorded (date only) before the qualifying Q7 run; no agent reads the account. That run needs its own go (OA-7). | Qualifying Q7 |
 
+**Status update 2026-10-04 (coordinator (4), card owner; non-secret; screenshots stay in the operator's private setup artifacts):**
+- **OA-0a to OA-6 done**, per Joshua's setup session as relayed by C5:
+  - OA-1: Formatted webhook integration, with bearer-token requirement verified OFF.
+  - OA-2: "First Passage" Important chain to Joshua's Important notifications; the personal push, SMS, 1-minute wait and call rules are verified.
+  - OA-3: critical severity template, plus a catch-all route to the same chain.
+  - OA-4: grouping `{{ payload.get("alert_uid", "") }}` retained; auto-resolve unused.
+  - OA-5: reference `env:FP_DMON_GRAFANA_IRM_URL`; the secret is held in the operator's locked store and was not inspected.
+  - OA-6: this return.
+- **Runtime secret binding:** pending.
+- **One authorized UI demo critical alert**, 2026-10-04 (EDT): register 17:27:54, push 17:27:56, SMS 17:28:03, call 17:29:36; acknowledged and resolved. This is **preliminary setup evidence only**: not Q7, and not credential, runtime, dedup, retry or catch-all-live proof.
+- **OA-8 SUPERSEDED.** Joshua, 2026-10-04T21:40:56Z, verified by C5 in hyper's thread: "I rule that we don't have to wait until the post trial free plan to approve it. our rule will be to keep the minimum required capabilities, and if those capabilities require more than the free plan, I will upgrade".
+  - Q7 qualification no longer waits for the trial to end. It qualifies the **minimum required capabilities** (SMS, push and call at the escalation step, routes and grouping) on whatever plan provides them.
+  - If those capabilities need more than the free plan, Joshua upgrades, as a separate purchase decision.
+  - Q7 still needs his explicit go for each run (OA-7). This record implies no purchase, trading or test GO.
+- **Card amendments recorded during the build (#676):** a seventh CLI refusal, `config-mismatch` (the `--config` digest must equal the job's journaled `config_digest`; C2); and safe-to-resolve kept per (key, channel) (C5).
+
 ## §1 — Goal, scope, prerequisites
 
 **Goal.** Every committed book incident pages Joshua by SMS and important mobile push at once, and by phone call 60 s later unless he acknowledges, through Grafana IRM with the incident key as the provider's dedup key. The #628 journal keeps detection, attempts, provider acceptance and (later) delivery separate.
