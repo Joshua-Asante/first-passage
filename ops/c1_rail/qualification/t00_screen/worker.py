@@ -422,8 +422,8 @@ class _Worker:  # pylint: disable=too-many-instance-attributes
             raise
         except Exception:  # pylint: disable=broad-exception-caught  # a failed close is drift
             closed = None
-        if closed is not None and not closed[1] and reason == DONE:
-            reason = 'CODE_OR_ARTIFACT_DRIFT'
+        if closed is not None and not closed[1] and (reason == DONE or state.classify(reason)[0] != 'TERMINAL'):
+            reason = 'CODE_OR_ARTIFACT_DRIFT'  # a failed close is drift that may have run (design §3.3, W12)
         if self.refused() is not None:
             reason, key = self.refused(), None
         self.journal.append('WORKER_STOP', {'reason': reason, 'key': None if key is None else list(key)})

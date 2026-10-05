@@ -419,17 +419,18 @@ def crash_charge(ledger, journals, *, k: int, w: int) -> dict:
 
 
 def overhead_used(ledger, journals) -> float:
-    """Row B5: overhead CPU since the last CONTINUE that answered an OVERHEAD_EXHAUSTED halt."""
+    """Row B5: overhead CPU since the last CONTINUE that answered an OVERHEAD_EXHAUSTED halt. The
+    candidate-and-probe journals' share (``candidate_overhead``) is counted at the last PROBE, or at
+    the end before any PROBE."""
     total, halted_on = 0.0, None
-    probe_epochs = _probe_epoch_costs(journals)
-    probes_seen = 0
-    for record in ledger:
+    probes = [i for i, record in enumerate(ledger) if record['type'] == 'PROBE']
+    at = probes[-1] if probes else None
+    for index, record in enumerate(ledger):
         kind, body = record['type'], record['body']
         if kind == 'PREPARED':
             total += body['build']['cpu_s'] + body['integrity']['cpu_s']
         elif kind == 'PROBE':
-            total += body['path_cpu_s'] + (probe_epochs[probes_seen] if probes_seen < len(probe_epochs) else 0.0)
-            probes_seen += 1
+            total += body['path_cpu_s']
         elif kind == 'SEGMENT_END':
             total += body['overhead_cpu_s']
         elif kind == 'SEGMENT_CRASHED':
@@ -440,26 +441,49 @@ def overhead_used(ledger, journals) -> float:
             if halted_on == 'OVERHEAD_EXHAUSTED':
                 total = 0.0
             halted_on = None
+        if index == at:
+            total += candidate_overhead(ledger, journals)
+    return total + (candidate_overhead(ledger, journals) if at is None else 0.0)
+
+
+def _epochs(records) -> list:
+    """(cost CPU, holds CANDIDATES, holds PROBE_RESULT) per epoch of one journal."""
+    epochs = []
+    for record in records:
+        kind, body = record['type'], record['body']
+        if kind == 'EPOCH_OPEN':
+            epochs.append([body['build']['cpu_s'] + body['integrity']['cpu_s'], False, False])
+        elif epochs and kind == 'EPOCH_CLOSE':
+            epochs[-1][0] += body['integrity']['cpu_s']
+        elif epochs and kind == 'CANDIDATES':
+            epochs[-1][1] = True
+        elif epochs and kind == 'PROBE_RESULT':
+            epochs[-1][2] = True
+    return epochs
+
+
+def candidate_overhead(ledger, journals) -> float:
+    """The candidate and probe journals' overhead that PREPARED and PROBE do not carry (design §5.4,
+    a crash can only overcharge). The candidate attempt PREPARED records is the highest-numbered
+    candidate journal with CANDIDATES; its candidate epoch is PREPARED's. Every other candidate
+    attempt never reached PREPARED and is charged as a crash: one heartbeat interval for its one
+    worker (heartbeat 0 is its start) plus every epoch cost its journal recorded. A probe epoch is
+    charged its recorded costs, plus the interval when it ended without PROBE_RESULT."""
+    ordered = _ordered(journals, 'c')
+    prepared = any(record['type'] == 'PREPARED' for record in ledger)
+    attempts = [number for number, _, _, records in ordered if any(r['type'] == 'CANDIDATES' for r in records)]
+    accounted = attempts[-1] if prepared and attempts else None
+    total = 0.0
+    for number, _, _, records in ordered:
+        epochs = _epochs(records)
+        if accounted is None or number < accounted or not epochs:
+            total += HEARTBEAT_S + sum(cost for cost, _, _ in epochs)
+            continue
+        for cost, candidates, probed in epochs:
+            if candidates and number == accounted:
+                continue
+            total += cost + (0.0 if probed else HEARTBEAT_S)
     return total
-
-
-def _probe_epoch_costs(journals) -> list:
-    """Each probe epoch's build and integrity CPU (its EPOCH_OPEN and EPOCH_CLOSE), in order."""
-    costs = []
-    for _, _, _, records in _ordered(journals, 'c'):
-        opened = None
-        probed = False
-        for record in records:
-            kind, body = record['type'], record['body']
-            if kind == 'EPOCH_OPEN':
-                opened, probed = body['build']['cpu_s'] + body['integrity']['cpu_s'], False
-            elif kind == 'PROBE_RESULT':
-                probed = True
-            elif kind == 'EPOCH_CLOSE' and opened is not None:
-                if probed:
-                    costs.append(opened + body['integrity']['cpu_s'])
-                opened = None
-    return costs
 
 
 def probe_refusal(path_cpu_s: float, total_paths: int, path_cpu_seconds) -> str | None:
