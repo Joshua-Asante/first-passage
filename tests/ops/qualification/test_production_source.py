@@ -1058,6 +1058,28 @@ def test_K6(tmp_path, monkeypatch):
 
 
 @SCREEN
+def test_K6_open_refuses_a_mismatched_loaded_closure(tmp_path, monkeypatch):
+    """Codex r4179917167: a recorded first-party digest that differs from the loaded bytes refuses
+    the epoch at open, before any engine is built (rows K5/K6); the matching twin opens."""
+    from test_screen_authority import MODULE, cover_loaded
+    screen, auth, source, path = _screen(tmp_path, monkeypatch)
+    calls = _spy_engine(monkeypatch)
+    with screen.ready(auth):
+        recorder = sys.p7_recorder
+        recorder.first_party = {'c1_rail.qualification.t00_screen_fixture': {
+            'path': MODULE, 'sha256': hashlib.sha256(b'TEST_ONLY other bytes\n').hexdigest()}}
+        recorder.third_party, recorder.ports, recorder.stdlib = {}, {}, set()
+        cover_loaded(recorder)
+        _refused('SCREEN_EPOCH_STALE', lambda: source.screen_epoch(authority=auth))
+        assert calls == []
+        recorder.first_party['c1_rail.qualification.t00_screen_fixture']['sha256'] = hashlib.sha256(
+            (screen.repo / MODULE).read_bytes()).hexdigest()
+        epoch = source.screen_epoch(authority=auth)                                     # twin
+        assert type(source.screen_bracket(path, authority=auth, epoch=epoch)).__name__ == 'ScreenBracket'
+        assert len(calls) == 2
+
+
+@SCREEN
 def test_K7(tmp_path, monkeypatch):
     """With a valid authority and an open epoch, verify_for and replay_bracket on r3c still refuse
     qualification and return sealed types; the seven sealed functions keep their source text."""
