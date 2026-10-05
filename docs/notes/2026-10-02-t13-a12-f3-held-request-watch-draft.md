@@ -7,10 +7,10 @@
 | §A12 text | What it asks | Here |
 |---|---|---|
 | F3, *Watching a held request* (:460) | While any request is held, a check for unexplained effects at each session open or at another cadence the owner names. Disarm does not satisfy it. Owner: attended operations (checklist T13), with the D-MON channels | W1–W5 |
-| §A12.4 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); removed from the ADR by the 2026-10-02 narrowing), row *Attended-operations contract (checklist T13) and D-MON* (packet :43) | Cadence, channels and binding owner, plus alert-channel loss with no incident (D5). Required before §A12's acceptance or in the same act | W2, W5–W7 |
+| §A12.4 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); removed from the ADR by the 2026-10-02 narrowing), row *Attended-operations contract (checklist T13) and D-MON* (packet, row *Attended-operations contract (checklist T13) and D-MON*) | Cadence, channels and binding owner, plus alert-channel loss with no incident (D5). Required before §A12's acceptance or in the same act | W2, W5–W7 |
 | §A12.5, row *Held-request watch and monitoring loss* (:534) | HR :61's attendance sentence is ambiguous for a disarmed account with a live unknown | W1 |
-| §A12.6 D1 row (the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md) :54; D1's prerequisite list is in ADR §A12.5, :540–549) | The attended-operations owner adopts the watch before or with acceptance | *Adoption* |
-| §A12.6 D5 row (the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md) :57) | Alert-channel loss with no incident and the late-effect watch go to D-MON and T13 | W5, W6 |
+| §A12.6 D1 row (the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md), §A12.6 D1 row; D1's prerequisite list is in ADR §A12.5, :540–549) | The attended-operations owner adopts the watch before or with acceptance | *Adoption* |
+| §A12.6 D5 row (the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md), §A12.6 D5 row) | Alert-channel loss with no incident and the late-effect watch go to D-MON and T13 | W5, W6 |
 
 It also takes the hand-off from the C-a selection register ([`docs/notes/2026-09-26-close-semantics-c-a.md`](2026-09-26-close-semantics-c-a.md#addendum-2026-10-02--c-a-selection-register-proposed-for-operator-acceptance) on main, as merged from PR #593 at `550bc74`; accepted as written by operator ruling 2026-10-02 (sitting 2)): outcomes O0 and O5–O8 hold the reservation (REG §R.3), and row S-X3's recovery hands any request still retained to this watch ([S-X3 draft](2026-10-02-t13-c-a-attended-recovery-draft.md) §8).
 
@@ -100,7 +100,7 @@ These rows are policy, so the operator rules on them (OQ-3).
 
 ### Arming preconditions (Q4 as narrowed)
 
-Before the first armed session, all of these hold. They are not D1 gates: no request can be held before the first armed session, and D1 grants no arm (ADR `:567`). The arm helper does not check them, so they are carried in the deployment checklist (`:601`) and STATE.
+Before the first armed session, all of these hold. They are not D1 gates: no request can be held before the first armed session, and D1 grants no arm (ADR `:567`). The arm helper does not check them, so they are carried in the deployment checklist (`:603`) and STATE.
 1. The G1 build on Healthchecks.io (provider ruled 2026-10-05): the five checks, their down webhooks, and the dedicated watch IRM integration routed to the Important chain (configuration only: schedule, grace and the IRM notification).
 2. **G10**, the end-to-end qualification of the watch dead-man: in an attended run under Joshua's explicit go, starting from the W5 start state (created, start-pinged, read back up), a scheduled ping is deliberately omitted and the page is recorded arriving through the IRM chain, with the due time, the page time and the SMS-to-call offset; then a second due day is also missed and a second, separate alert group is recorded; the watch integration is qualified here, as Q7 qualified the incident integration.
 3. The channel qualifications: Q7 (PASS 2026-10-05, binding card §6.3) and HB-L1/L2 ([missed-heartbeat card](../briefs/handoffs/2026-10-03-dmon-missed-heartbeat-monitor-card-DRAFT.md)).
