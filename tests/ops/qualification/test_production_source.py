@@ -1097,6 +1097,31 @@ def test_K6_open_refuses_a_mismatched_loaded_closure(tmp_path, monkeypatch):
         assert len(calls) == 2
 
 
+def test_screen_entry_points_refuse_a_non_production_source(tmp_path, monkeypatch):
+    """As ProductionSource methods they could serve only a ProductionSource; as screen_authority
+    functions they refuse a duck-typed stand-in, even one carrying a real source-only receipt, before
+    anything else: no integrity check and no engine (spy counts stay 0)."""
+    from c1_rail.qualification import production_source
+    from test_source_contract import NOW, build_source_case
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    calls = []
+
+    class StandIn:  # pylint: disable=too-few-public-methods
+        """TEST_ONLY: a ProductionSource look-alike."""
+        contract = build_source_case(tmp_path, monkeypatch).validate()
+
+        def _verify_integrity(self):
+            calls.append('integrity')
+
+        def _engine(self, provider):
+            calls.append(provider)
+    for call in (lambda: sa().screen_epoch(StandIn(), authority=None),
+                 lambda: sa().screen_bracket(StandIn(), (), authority=None, epoch=None)):
+        with pytest.raises(TypeError, match='SCREEN_REQUIRES_PRODUCTION_SOURCE'):
+            call()
+    assert calls == []
+
+
 @SCREEN
 def test_K7(tmp_path, monkeypatch):
     """With a valid authority and an open epoch, verify_for and replay_bracket on r3c still refuse
