@@ -127,3 +127,29 @@ D1 ruling (ADR:542): accept "in one act once all of these hold". List items are 
 - **Q4: APPROVED as narrowed.** T13 may adopt the watch, and D1 may proceed, with the dead-man check (G1) specified but not built, provided the G1 build, its end-to-end qualification (G10) and the channel qualifications (Q7, HB-L1/L2) are all arming preconditions before the first armed session. At adoption this is written into the deployment checklist (CL `:601`) and STATE (G6), because the arm helper does not check it.
 - **Packet fix owed at the next touch:** the G10 row says Q4 does not name G10, but Q4 as narrowed does.
 
+## Addendum 2026-10-05 — adoption text and status (coordinator (4))
+
+- **Packet fix (owed above):** the G10 row's last sentence is superseded. Q4 as narrowed names G10.
+- **Folded:** Q1, Q3 and Q4 into the [watch](2026-10-02-t13-a12-f3-held-request-watch-draft.md) adoption text: W1 attendance reading (Q1), W5 item 1 (G1 specified: due times 18:00 ET Sun–Thu, 60-minute grace, pinger, missed-check handling, start and end), W7 (G3 record location and fields), and *Arming preconditions* (Q4: G1 provider binding and build, G10, Q7, HB-L1/L2), carried into the deployment checklist (`:601`) and STATE. HR citations in the watch are refreshed to `9c2a153`.
+- **Status by act:**
+  - *Readiness for D1 (ADR `:542`):* items 1, 3, 4 and 5 met; item 2 needs the scoped refute-first review (Q2) and the Codex review of this text; item 6 is met when this PR merges (T13 adoption); item 7 is arming readiness, not a D1 gate.
+  - *T13 adoption:* coordinator (4)'s act, effective on the merge of the PR carrying this addendum after both reviews are clean.
+  - *D1 acceptance:* Joshua's separate act, after adoption.
+- **Not a D1 or adoption blocker:** the G1 provider binding. Grafana IRM's heartbeat takes one fixed interval and has no schedule ([IRM heartbeat monitoring](https://grafana.com/docs/grafana-cloud/alerting-and-irm/irm/integrations/configure-integrations/)), so it cannot page within 60 minutes of a missed Sunday–Thursday 18:00 ET check without paging every weekend. Minimum decision (Joshua, before the G1 build): the provider for a cron-schedule dead-man that notifies the IRM integration. Recommended: Healthchecks.io Hobbyist, already named in ruled fallback B (checklist `:601`), for this narrow use. It is an arming precondition under Q4. *Ruled:* Joshua, 2026-10-05, directly to coordinator (4): "use healthchecks.io for the G1 provider".
+- PK667 `:59` (calls #575 open) stays a correction for #667's author.
+- **Scoped refute-first review (Q2), 2026-10-05:** CLEAN_WITH_ACCEPTANCE_ITEMS over the §A12 delta `7928327..a87497e` plus the #688 adoption text at `a6ab36d`; separate session, no D1 blocker. Folded into #688: the G1 start state (create or resume, start ping, read back up; G10 starts there), re-paging and resolution of watch pages (one check per due weekday, per-weekday `alert_uid`, resolved after the owed check is complete; `record-delivery` does not apply), the G1 provider now ruled, the HR :57 citation, "about two days late", and STATE and checklist wording that no longer states unbuilt or future things as present.
+- **Text drift since `9c2a153`:** §3's "`git diff a87497e 9c2a153` is empty for the ADR" still holds, but against current main one line differs (`840c3a3`: §A12.2 now links T08 §7.10, "text unchanged from `aa20360`", verified by the reviewer). Benign.
+- **At D1 acceptance (ADR author):** add a dated change-history row for the `4a2a136` sitting-2 dispositions; the 2026-10-01 row points to 2026-10-02 rows that record only the narrowing.
+- **Fold re-check, 2026-10-05:** CLEAN_WITH_ACCEPTANCE_ITEMS at `2058c03`; earlier findings resolved. Folded: a per-down-event `alert_uid` (an open group no longer hides a later miss), a dedicated watch IRM integration (the incident integration's URL is not given to a third party), and the after-18:00 watch start.
+
+## Addendum 2026-10-05 — Joshua's D1 acceptance, conditional (recorded by coordinator (4))
+
+- **Decision:** Joshua, 2026-10-05, in his hyper conversation: "I accept". It was given after D1 was explained to him as acceptance of the assembled §A12 incident policy and its residual risks, with the required reviews still pending. C5 read the original message directly, so this is not a paraphrase. The provenance is kept privately.
+- **Status: CONDITIONAL, not yet effective.** D1 takes effect when both of these hold:
+  1. **Both step-4 reviews are clean for the D1 text** (ADR `:544`, `:565`):
+     - (a) the scoped refute-first review is done: CLEAN_WITH_ACCEPTANCE_ITEMS, with every item folded (addenda above);
+     - (b) the Codex review of #688 at its final head is **pending**.
+  2. **T13 adoption:** #688 merges.
+- **Review changes after acceptance:** the folds changed only how G1 is built: five per-weekday checks, a per-event `alert_uid`, a dedicated watch integration, the start state, and a late start. G1 is an arming precondition under Q4. They change no policy or residual risk that D1 accepts, so coordinator (4) classes them as not material. Any material change from the Codex review goes back to Joshua before D1 takes effect.
+- **Grants nothing else:** no dispatch, drill, arm, trading, deployment or spend (ADR `:567`).
+- **When it takes effect:** coordinator (4) records the effective date and SHA here and, as the ADR's owner text requires, adds the change-history row for the sitting-2 dispositions (addendum above).
