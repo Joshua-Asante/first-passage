@@ -137,7 +137,7 @@ acceptance:
 - `tests/test_remc_series_quantity_parity.py`
 
 **Evidence:**
-- `.p.ps1 python -m pytest` over the two new files plus `tests/test_prop_survivor_intraday_channel.py`: 19 passed, launcher record `completed`, exit 0.
+- `.\fp.ps1 python -m pytest` over the two new files plus `tests/test_prop_survivor_intraday_channel.py`: 19 passed, launcher record `completed`, exit 0.
 - `check_boundaries` OK; the §10 grep hooks are clean.
 - Synthetic inputs only. No real export was read.
 
