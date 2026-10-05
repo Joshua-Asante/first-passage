@@ -367,6 +367,36 @@ def test_send_deadline_covers_the_whole_operation(clock, receivers, mode):  # H6
     assert pinger.drain(1.0)
 
 
+@pytest.mark.parametrize("stage", ["dns", "connect"])
+def test_timed_out_send_never_transmits_late(clock, receivers, monkeypatch, stage):  # #701 P2
+    # A send abandoned at its deadline while DNS or connect is blocked must never POST later.
+    receiver = receivers()
+    pinger = _pinger(receiver.url, clock, period=0.4, timeout=0.2)
+    release = threading.Event()
+    if stage == "dns":
+        real = socket.getaddrinfo
+
+        def held(*args, **kwargs):
+            release.wait(SETTLE)
+            return real(*args, **kwargs)
+
+        monkeypatch.setattr(socket, "getaddrinfo", held)
+    else:
+        real = socket.socket.connect
+
+        def held(self, address):
+            release.wait(SETTLE)
+            return real(self, address)
+
+        monkeypatch.setattr(socket.socket, "connect", held)
+    pinger.mark_progress()
+    assert pinger.drain(1.0)
+    assert pinger.stats()["last_outcome"] == "TimeoutError"
+    release.set()
+    time.sleep(0.5)
+    assert receiver.requests == []  # nothing was transmitted after the deadline
+
+
 def test_secret_ref_resolution_and_url_never_exposed(clock, receivers, caplog):  # H7
     receiver = receivers()
     pinger = _pinger(receiver.url, clock)
