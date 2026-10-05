@@ -1,3 +1,4 @@
+import ast
 from contextlib import contextmanager
 import hashlib
 import json
@@ -1141,3 +1142,43 @@ def test_K8(tmp_path, monkeypatch):
             assert wrapped.consumed_splits == tuple(run.consumed_intrabar_splits for run in runs)
             assert len(wrapped.consumed_splits[0]) == 3
             assert [len(r.sessions) for r in (wrapped.bracket.r1, wrapped.bracket.r2)] == [3, 1 if withhold else 3]
+
+
+SCREEN_ONLY_MODULES = ('c1_rail.qualification.screen_authority', 'c1_rail.qualification.p7_evidence',
+                       'c1_rail.qualification.t00_screen')
+
+
+def _imported_modules(tree, package='c1_rail.qualification'):
+    """Every module an Import/ImportFrom (relative resolved) or a constant import_module/__import__
+    call in ``tree`` names; each from-imported name is also taken as a submodule."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            yield from (alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            parts = package.split('.')
+            base = '.'.join(parts[:len(parts) - node.level + 1]) if node.level else ''
+            module = '.'.join(filter(None, (base, node.module)))
+            yield module
+            yield from (f'{module}.{alias.name}' for alias in node.names)
+        elif (isinstance(node, ast.Call) and node.args and isinstance(node.args[0], ast.Constant)
+              and getattr(node.func, 'attr', getattr(node.func, 'id', None)) in ('import_module', '__import__')):
+            yield str(node.args[0].value)
+
+
+def _screen_imports(tree):
+    return sorted({name for name in _imported_modules(tree)
+                   if any(name == banned or name.startswith(banned + '.') for banned in SCREEN_ONLY_MODULES)})
+
+
+def test_production_source_imports_no_screen_module():
+    """Codex r4180236028: production_source's closure is PRODUCTION_TRUST_POLICY's, so the screen
+    entry lives in screen_authority and production_source imports no screen module in any form."""
+    from c1_rail.qualification import production_source
+    with open(production_source.__file__, encoding='utf-8') as handle:
+        assert _screen_imports(ast.parse(handle.read())) == []
+    planted = ast.parse('def f():\n    from .screen_authority import x\n    from . import p7_evidence\n'
+                        'import c1_rail.qualification.t00_screen.journal\n'
+                        'importlib.import_module("c1_rail.qualification.screen_authority")\n')  # twin
+    assert _screen_imports(planted) == [
+        'c1_rail.qualification.p7_evidence', 'c1_rail.qualification.screen_authority',
+        'c1_rail.qualification.screen_authority.x', 'c1_rail.qualification.t00_screen.journal']
