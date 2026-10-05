@@ -87,6 +87,19 @@ class Receiver:
                 if receiver.mode == "hang":
                     receiver.release.wait(SETTLE)
                     return
+                if receiver.mode == "drip":  # a 200 that trickles one byte per 50 ms
+                    self.send_response(200)
+                    self.send_header("Content-Length", "1000")
+                    self.end_headers()
+                    for _ in range(1000):
+                        if receiver.release.wait(0.05):
+                            return
+                        try:
+                            self.wfile.write(b"x")
+                            self.wfile.flush()
+                        except OSError:
+                            return
+                    return
                 if receiver.mode == "redirect":
                     self.send_response(302)
                     self.send_header("Location", "/elsewhere/heartbeat/")
@@ -326,6 +339,22 @@ def test_send_failure_never_blocks_or_raises(clock, receivers, caplog, mode):  #
     assert TOKEN not in text and "127.0.0.1" not in text and PATH not in text
 
 
+def test_send_deadline_covers_the_whole_operation(clock, receivers):  # H6 (#701 review P2)
+    # A 200 that trickles a byte before every socket timeout must still end at timeout_s.
+    receiver = receivers(mode="drip")
+    pinger = _pinger(receiver.url, clock, period=0.4, timeout=0.2)
+    started = time.monotonic()
+    pinger.mark_progress()
+    assert pinger.drain(1.0)
+    assert time.monotonic() - started < 0.6
+    stats = pinger.stats()
+    assert stats["sends_failed"] == 1 and stats["sends_ok"] == 0 and not stats["in_flight"]
+    clock.advance(0.5)
+    pinger.mark_progress()  # the slot is free again: a second send starts
+    assert pinger.stats()["sends_started"] == 2
+    assert pinger.drain(1.0)
+
+
 def test_secret_ref_resolution_and_url_never_exposed(clock, receivers, caplog):  # H7
     receiver = receivers()
     pinger = _pinger(receiver.url, clock)
@@ -455,6 +484,20 @@ def test_build_pingers_refuses_shared_reference_or_url(receivers, clock):  # H12
     with pytest.raises(HeartbeatConfigError):
         build_pingers(dict(runtime, url=first.url), notifier, environ=env,
                       allow_loopback_http=True)  # an inline value is refused
+    # Equivalent spellings of one endpoint are the same integration (#701 review P2).
+    host = "example." + "grafana" + ".net"
+    for left, right in [
+            ("https://%s/fake-token/heartbeat/" % host,
+             "https://%s:443/fake-token/heartbeat/" % host.upper()),
+            ("https://%s/fake-token/heartbeat/" % host,
+             "https://%s/fake%%2Dtoken/heartbeat/" % host),
+            ("https://%s/fake-token/heartbeat/" % host,
+             "https://%s//fake-token//heartbeat/" % host),
+            (first.url, first.url.replace("/integrations/", "//integrations/"))]:
+        with pytest.raises(HeartbeatConfigError) as same:
+            build_pingers(runtime, notifier, allow_loopback_http=True, environ={
+                "FP_TEST_HEARTBEAT_URL": left, "FP_TEST_NOTIFIER_HEARTBEAT_URL": right})
+        assert "URL" in str(same.value) and "example" not in str(same.value)
 
 
 # -- §6.2 synthetic silent-runtime and silent-notifier qualification ---------------------------
