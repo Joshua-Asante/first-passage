@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (dot release card; the first released assignment under the dot charter), revision 4 (successor routing amendment; see below).
 
-**Status:** RELEASE-READY (frozen, revision 3) — HELD until the B3 focused re-review of revision 3 is CLEAN. #622 has merged (B15). Released by a `[coordinator (3) → hyper]` comment on #622 after that verdict; not released until then.
+**Status:** REVISION 4, pending its release comment (successor routing; see below). *Revision 3 status, superseded:* RELEASE-READY (frozen, revision 3) — HELD until the B3 focused re-review of revision 3 is CLEAN. #622 has merged (B15). Released by a `[coordinator (3) → hyper]` comment on #622 after that verdict; not released until then.
 - Revision 1 (`3c1655fc9dff02b9edabd774e806a46cc39563ca`) was never released. Revision 2 replaces it before release. It folds the refute review of revision 1 (0 P1, 5 P2, 5 P3) and the binding structure coordinator (3) and Coordinator 2 accepted on 2026-10-03, which replaces revision 1's "the dot is the executor".
 - Revision 2 (`524fcd12350b67528818c23751a9581098949d6e`) was never released: the B3 executive review was NOT CLEAN (2 P2, 1 P3). Revision 3 folds it and binds B15 (#622 merged).
 - Committed before any execution under the committed-handoff rule. The release record is a `[coordinator (3) → hyper]` comment on #622, posted by coordinator (3) after the B3 re-review is CLEAN. It cites this card's revision-3 commit SHA (40 characters), the §0.1 B-row values and the executive-review verdict (B3). This file is not edited to record the release. After release, a change to any frozen section is a new card.
@@ -27,6 +27,17 @@
     - `NOV_RATIFIED_UTC` = `2026-10-04T20:36:11Z`;
     - `NOV_INSTRUCTION` = his full original wording, verbatim: "ratify the calendar. i have opened grafana in the in chat browser, complete as many of the steps you mentioned as you can, ping me when you need me".
   - This is contextual binding of his existing act, not a new ratification and not an invented phrase. The executor binds the candidate's identity (digest, card revision, release comment 5965599860 on #622) before writing the row.
+- **B14 phrase rule, explicitly overridden for this act** (revision 3 `:125` "Reply: ratify calendar b89562a5", and `:287`'s stop if the reply "does not ratify digest"). Revision 4 accepts Joshua's 20:36:11Z reply as B14 by contextual binding: hyper's immediately preceding request named digest `b89562a5…`, and his reply ("ratify the calendar") is the next substantive response to it. C5 verified both turns directly, and C5 and coordinator (4) accept the reading. Under this override, `:125` and `:287` are satisfied for this act.
+- **B14 provenance:** the revision-4 B14 row above replaces "values arrive by hyper's dispatch". The authority-block constraint `b14_values_only_from_hyper_dispatch` is read as "only from the B14 values bound in this card" (the block itself is unchanged).
+- **Substitution table.** Every revision-3 line that names an old party reads as follows (for example B3, B11, §3 flow, §5, §7 and §8):
+
+  | Revision 3 | Revision 4 |
+  |---|---|
+  | hyper (as dispatcher, notifier, relay or acknowledger) | C5's relay; card questions go to coordinator (4) |
+  | worker `01a0ff7c-9b6e-70f7-96a8-8ea3f8a4b0d0` (including §5 "dispatching any worker other than …") | C5 as the local executor; no other executor is dispatched |
+  | coordinator (3), Coordinator 2 | coordinator (4) |
+  | "release record", "revision-3 SHA" (PR body and §3 steps) | the revision-4 release comment and the revision-4 SHA |
+
 - **Recipients:** returns go to C5's relay. Card questions go to coordinator (4). Retired coordinators (2) and (3) are not recipients.
 - **Release record:** a `[coordinator (4) → C5]` comment on #622 citing this revision's 40-character SHA, posted after an independent focused review of this amendment is CLEAN.
 
