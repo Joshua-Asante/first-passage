@@ -670,8 +670,8 @@ class Job:
 
     def cpu_s(self) -> float:
         """The job's accounted CPU, exited workers included (row B1)."""
-        if not self.handle:
-            return 0.0
+        if not self.handle:  # a closed job is never read as no CPU (Codex r4189920851)
+            raise OSError('the job is closed; its CPU was read before closing or is charged as a crash')
         info = self.accounting_type()
         self.kernel.QueryInformationJobObject(self.handle, 1, self.ctypes.byref(info), self.ctypes.sizeof(info), None)
         return (info.TotalUserTime + info.TotalKernelTime) / 1e7
@@ -1096,14 +1096,27 @@ class _Run:  # pylint: disable=too-many-instance-attributes
             workers[i].send({'cmd': 'stop', 'reason': 'INTERRUPTED' if interrupted else 'DONE'} if key is None
                             else {'cmd': 'key', 'key': list(key)})
 
+        last_cpu, closed = 0.0, None  # heartbeat 0 is SEGMENT_START (row S11)
+
+        def heartbeat():
+            # Checked on every iteration, whatever the inbox holds (Codex r4189920841).
+            nonlocal beat, last_cpu
+            now = time.perf_counter()
+            if now < beat:
+                return
+            cpu = _read_job(self.job)[0]
+            last_cpu = last_cpu if cpu is None else max(last_cpu, cpu)
+            self.ledger.append('HEARTBEAT', {'wall_s': now - started, 'job_cpu_s': last_cpu})
+            beat += HEARTBEAT_S
+            if beat <= now:  # fell behind: the next one an interval from now
+                beat = now + HEARTBEAT_S
+
         while alive:
             try:
+                heartbeat()
                 try:
-                    i, message = inbox.get(timeout=max(0.05, beat - time.perf_counter()))
+                    i, message = inbox.get(timeout=max(0.01, beat - time.perf_counter()))
                 except queue.Empty:
-                    self.ledger.append('HEARTBEAT', {'wall_s': time.perf_counter() - started,
-                                                     'job_cpu_s': self.job.cpu_s()})
-                    beat += HEARTBEAT_S
                     continue
                 if message is None:
                     alive.discard(i)
@@ -1121,7 +1134,8 @@ class _Run:  # pylint: disable=too-many-instance-attributes
                     dispatcher.report(message['key'], message['cpu_s'])
                     dispatch(i)
             except KeyboardInterrupt:  # run directly: SEGMENT_END INTERRUPTED (design §4.3 Ctrl-C)
-                if interrupted:
+                if interrupted:  # a second Ctrl-C: read the job's CPU, then close it (Codex r4189920851)
+                    closed = _read_job(self.job)
                     self.job.close()
                     break
                 interrupted = stopping = True
@@ -1137,14 +1151,27 @@ class _Run:  # pylint: disable=too-many-instance-attributes
                                         refused=dispatcher.refused and not complete, complete=complete)
         cls, cause = segment_cause(self.ledger.records, journals, self.keys, provisional,
                                    [reason for reason in reasons if reason != 'DONE'])
-        job_cpu, peak = self.job.cpu_s(), self.job.peak_memory()
+        job_cpu, peak = closed if closed is not None else _read_job(self.job)
         segment_booked = _segment_booked(journals, k, _keys_before(journals, k))
+        if job_cpu is None:  # unreadable: the crash charge, as overhead, never 0 (design §5.4)
+            overhead = last_cpu + HEARTBEAT_S * w
+            job_cpu = overhead + segment_booked
+        else:
+            overhead = max(0.0, job_cpu - segment_booked)
         self.ledger.append('SEGMENT_END', {
             'class': cls, 'cause': cause,
             'workers': [{'worker': worker.name, 'reason': reason} for worker, reason in zip(workers, reasons)],
             'wall_s': time.perf_counter() - started, 'job_cpu_s': job_cpu, 'path_cpu_s': segment_booked,
-            'overhead_cpu_s': max(0.0, job_cpu - segment_booked), 'peak_memory_bytes': peak})
+            'overhead_cpu_s': overhead, 'peak_memory_bytes': peak})
         return Stop(cls, None if cls == COMPLETE else cause)
+
+
+def _read_job(job) -> tuple:
+    """(CPU seconds or None when unreadable, peak process memory) of a segment's job."""
+    try:
+        return job.cpu_s(), job.peak_memory()
+    except OSError:
+        return None, 0
 
 
 def _cost(value) -> dict:
