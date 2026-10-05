@@ -33,6 +33,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import threading
 import time
 
 import pytest
@@ -55,6 +56,10 @@ STUB_TREE = "\n# TEST_ONLY code root override\ndef install_tree_sha256(site, *, 
 BLOCK = 75
 WORKERS = 2
 BINARY = getattr(os, 'O_BINARY', 0)
+PINNED = (('c1_rail.qualification.contract', 'SOURCE_SIGNING_KEYS'),
+          ('c1_rail.qualification.trust_domain', 'SOURCE_TRUST_CONSTANTS'),
+          ('c1_rail.qualification.screen_authority', 'REPOSITORY_ROOT'),
+          ('c1_rail.qualification.screen_authority', 'R3C_CONTRACT_SHA256'))
 _CACHE = {}  # the one uninterrupted run this module compares every window with
 
 
@@ -88,7 +93,7 @@ def _repo_text(relative):
 class Env:  # pylint: disable=too-many-instance-attributes
     """One TEST_ONLY code root, synthetic source case, P7 record and signed screen authority."""
 
-    def __init__(self, base: Path, monkeypatch):
+    def __init__(self, base: Path, monkeypatch, *, code_edits=None):
         self.base, self.monkeypatch = base, monkeypatch
         monkeypatch.setattr(p7_evidence, 'install_tree_sha256', lambda site, base=None: 'e' * 64, raising=False)
         self.artifact_root = base / 'private'
@@ -108,7 +113,7 @@ class Env:  # pylint: disable=too-many-instance-attributes
             'median_rule': 'LOWER_NEAREST_RANK_INF_INCLUDED',
             'budget': {'path_cpu_seconds': 1_000_000, 'overhead_cpu_seconds': 1_000_000,
                        'basis': 'TEST_ONLY basis'}}
-        self.code = self._code_root()
+        self.code = self._code_root(code_edits or {})
         monkeypatch.setattr(screen_authority, 'REPOSITORY_ROOT', self.code)
         monkeypatch.setattr(screen_authority, 'R3C_CONTRACT_SHA256', self.contract_sha256)
         self.record = self._record()
@@ -116,13 +121,22 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.approval = self.screen_approval()
         self.inputs_dir = base / 'inputs'
         self._write_inputs()
+        self.pins = {(module, name): getattr(importlib.import_module(module), name) for module, name in PINNED}
 
-    def _code_root(self):
+    def apply(self, monkeypatch):
+        """This environment's in-process pins, for one test (two environments share this module)."""
+        monkeypatch.setattr(p7_evidence, 'install_tree_sha256', lambda site, base=None: 'e' * 64, raising=False)
+        for (module, name), value in self.pins.items():
+            monkeypatch.setattr(importlib.import_module(module), name, value)
+        return self
+
+    def _code_root(self, code_edits):
         sections = pinned_sections()
         edits = {
             'ops/c1_rail/qualification/screen_authority.py':
                 lambda text: text + f'\n# TEST_ONLY code root override\nR3C_CONTRACT_SHA256 = {self.contract_sha256!r}\n',
             'ops/c1_rail/qualification/p7_evidence.py': lambda text: text + STUB_TREE,
+            **code_edits,
         }
         files = {LABEL_SCRIPT: _repo_text(LABEL_SCRIPT), ENTRY_SCRIPT: _repo_text(ENTRY_SCRIPT),
                  'scripts/layer_bootstrap.py': _repo_text('scripts/layer_bootstrap.py'),
@@ -232,9 +246,14 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
 
 @pytest.fixture(scope='module')
-def env(tmp_path_factory):
+def built_env(tmp_path_factory):
     with pytest.MonkeyPatch.context() as monkeypatch:
         yield Env(tmp_path_factory.mktemp('t00-driver'), monkeypatch)
+
+
+@pytest.fixture
+def env(built_env, monkeypatch):
+    return built_env.apply(monkeypatch)
 
 
 # ---- run-record helpers ----------------------------------------------------------------------------
@@ -983,7 +1002,11 @@ def _w0(env):
     raw, approval = env.act('CONTINUE')
     drv().act(env.inputs(), raw, approval)
     assert state.fold(ledger_records(run_dir)).name == 'BOUND'
-    return run_dir, finish(env)
+    result = finish(env)
+    crashed = drv().read_journals(run_dir)['c1-w0.jsonl'][0]['body']  # its EPOCH_OPEN, never PREPARED
+    charged = drv().HEARTBEAT_S + crashed['build']['cpu_s'] + crashed['integrity']['cpu_s']
+    assert drv().overhead_used(ledger_records(run_dir), drv().read_journals(run_dir)) >= charged
+    return run_dir, result
 
 
 def _w1(env):
@@ -1070,6 +1093,26 @@ def _w17(env):
     return run_dir, finish(env)
 
 
+def _w9(env):
+    """The dispatch gate mid-segment: the booked path CPU sits just under the budget, so each worker
+    is sent one more key and the next dispatch is refused with keys left."""
+    run_dir = _cut_segment(env, ended=True)
+    journals = drv().read_journals(run_dir)
+    others = drv().booked_path_cpu(journals, drv().plan_keys(env.params))
+    entries = items(journals['s1-w0.jsonl'])
+    first = next(i for i, (kind, _) in enumerate(entries) if kind == 'PATH')
+    body = entries[first][1]
+    budget = env.params['budget']['path_cpu_seconds']
+    entries[first] = ('PATH', dict(body, cpu_s=budget - (others - body['cpu_s']) - 0.01))
+    write_file(run_dir / 'journal' / 's1-w0.jsonl', entries)
+    stop, results = finish(env)
+    end = [r['body'] for r in ledger_records(run_dir) if r['type'] == 'SEGMENT_END'][-1]
+    assert (end['class'], end['cause']) == ('TERMINAL', 'BUDGET_EXHAUSTED')
+    done = {tuple(o['key']) for o in journal.outcomes(drv().read_journals(run_dir), drv().plan_keys(env.params))}
+    assert done != set(drv().plan_keys(env.params))  # refused with keys left: never scored
+    return run_dir, (stop, results)
+
+
 # window -> (builder, the stop class and code the run reaches, whether the results equal the reference)
 WINDOWS_I1 = {
     'W0': (_w0, ('COMPLETE', None), True),
@@ -1078,6 +1121,7 @@ WINDOWS_I1 = {
     'W5': (_w5, ('COMPLETE', None), 'NONDETERMINISM'),
     'W6': (_w6, None, True),
     'W7': (_w7, None, True),
+    'W9': (_w9, ('TERMINAL', 'BUDGET_EXHAUSTED'), 'BUDGET_EXHAUSTED'),
     'W16': (_w16, None, 'OPERATOR_TERMINATED'),
     'W17': (_w17, ('TERMINAL', 'CORRUPTION'), 'CORRUPTION'),
     'W22': (_w22, ('COMPLETE', None), True),
@@ -1200,3 +1244,197 @@ def test_I3(env):
                 (window / 'ledger' / '0001.jsonl').write_bytes(raw[:cut])
                 assert state.fold(drv().read_ledger(window)).name == expected[index], (index, cut)
     assert _expected_states(full(env)['records'])[-1] == 'FINAL'
+
+
+# ---- I1 windows injected at the coordinator/worker boundary (card-owner review of #705) ------------
+
+PLAN = 'ops/c1_rail/qualification/t00_screen/plan.py'
+FAULTS = """
+
+# TEST_ONLY fault seam (driver I1 W10, W19, W20): the fault named in <private root>/t00-fault, read at
+# call time inside a worker (its argv[2] is <private root>/t00-step3/<authority>).
+def _t00_fault():
+    import os, sys
+    run_dir = sys.argv[2] if len(sys.argv) > 2 else ''
+    path = os.path.join(os.path.dirname(os.path.dirname(run_dir)), 't00-fault')
+    if not run_dir or not os.path.isfile(path):
+        return ''
+    with open(path, encoding='utf-8') as handle:
+        return handle.read().strip()
+
+
+_t00_candidates, _t00_seed = candidates, seed
+
+
+def candidates(*args, **kwargs):
+    if _t00_fault() == 'CANDIDATES_UNAVAILABLE':
+        raise PlanRefusal('CANDIDATES_UNAVAILABLE')
+    return _t00_candidates(*args, **kwargs)
+
+
+def seed(*, purpose, **kwargs):
+    if (_t00_fault(), purpose) in (('CONTEXT_REFUSAL', 'path'), ('PROBE_INCOMPLETE', 'probe')):
+        raise PlanRefusal('CONTEXT_REFUSAL')
+    return _t00_seed(purpose=purpose, **kwargs)
+"""
+
+
+@pytest.fixture(scope='module')
+def built_fault_env(tmp_path_factory):
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        yield Env(tmp_path_factory.mktemp('t00-faults'), monkeypatch,
+                  code_edits={PLAN: lambda text: text + FAULTS})
+
+
+@pytest.fixture
+def fault_env(built_fault_env, monkeypatch):
+    return built_fault_env.apply(monkeypatch)
+
+
+# window -> (fault, the ledger's record types, the TERMINAL code)
+FAULT_WINDOWS = {
+    'W20': ('CANDIDATES_UNAVAILABLE', ['AUTHORITY_BOUND', 'TERMINAL'], 'CANDIDATES_UNAVAILABLE'),
+    'W19': ('PROBE_INCOMPLETE', ['AUTHORITY_BOUND', 'PREPARED', 'PROBE_START', 'TERMINAL'], 'PROBE_INCOMPLETE'),
+    'W10': ('CONTEXT_REFUSAL', ['AUTHORITY_BOUND', 'PREPARED', 'PROBE_START', 'PROBE', 'SEGMENT_START',
+                                'SEGMENT_END'], 'CONTEXT_REFUSAL'),
+}
+
+
+@WINDOWS
+@pytest.mark.parametrize('window', sorted(FAULT_WINDOWS))
+def test_I1_injected(fault_env, window):
+    """W10 (a context refusal on a path key), W19 (a probe that cannot complete) and W20 (candidates
+    unavailable), each injected inside the worker through the TEST_ONLY code root: the run stops
+    TERMINAL with that code, and finalize labels it INSUFFICIENT with that reason."""
+    fault, kinds_expected, code = FAULT_WINDOWS[window]
+    fault_env.fresh()
+    marker = fault_env.artifact_root / 't00-fault'
+    marker.write_text(fault, encoding='utf-8')
+    try:
+        stop = drv().run(fault_env.inputs(), workers=WORKERS)
+    finally:
+        marker.write_text('', encoding='utf-8')
+    run_dir = fault_env.run_dir
+    assert (stop.kind, stop.code) == ('TERMINAL', code)
+    assert kinds(run_dir) == kinds_expected
+    if window == 'W10':
+        end = ledger_records(run_dir)[-1]['body']
+        assert (end['class'], end['cause']) == ('TERMINAL', 'CONTEXT_REFUSAL')
+    label, _ = drv().finalize(fault_env.inputs())
+    results = json.loads((run_dir / 'results.json').read_bytes())
+    assert label == 'INSUFFICIENT' and code in results['verdict']['reasons']
+    assert state.fold(ledger_records(run_dir)).name == 'FINAL'
+
+
+def _resume_in_background(env, workers=WORKERS):
+    found = {}
+
+    def resume():
+        try:
+            found['stop'] = drv().resume(env.inputs(), workers=workers)
+        except BaseException as exc:  # pylint: disable=broad-exception-caught  # asserted by the caller
+            found['error'] = exc
+    thread = threading.Thread(target=resume)
+    thread.start()
+    return thread, found
+
+
+def _await_path(run_dir, thread, timeout=600):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        folder = run_dir / 'journal'
+        if folder.is_dir() and any(b'"PATH"' in path.read_bytes() for path in folder.glob('s*.jsonl')):
+            return
+        assert thread.is_alive(), 'the segment ended before a path completed'
+        time.sleep(0.1)
+    raise AssertionError('no path completed')
+
+
+@WINDOWS
+def test_I1_W12_tree_changed(env):
+    """W12, drift that nothing loaded: an r3c artifact's mtime changes mid-segment. The stat guard stops
+    each worker before its next KEY_START, the epoch still closes matching, and the segment ends
+    STOPPED TREE_CHANGED; restored, resume completes with the uninterrupted run's results."""
+    run_dir = _idle(env)
+    artifact = env.artifact_root / next(iter(env.case.paths.values()))
+    stat = artifact.stat()
+    thread, found = _resume_in_background(env)
+    try:
+        _await_path(run_dir, thread)
+        os.utime(artifact, ns=(stat.st_atime_ns, stat.st_mtime_ns + 5_000_000_000))
+    finally:
+        thread.join(timeout=900)
+        os.utime(artifact, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+    assert 'error' not in found, found.get('error')
+    assert (found['stop'].kind, found['stop'].code) == ('STOPPED', 'TREE_CHANGED')
+    end = ledger_records(run_dir)[-1]['body']
+    assert (end['class'], end['cause']) == ('STOPPED', 'TREE_CHANGED')
+    closes = [r['body']['closure_match'] for records in drv().read_journals(run_dir).values() for r in records
+              if r['type'] == 'EPOCH_CLOSE']
+    assert closes and all(closes)
+    stop, results = finish(env)
+    assert stop.kind == 'COMPLETE' and results == full(env)['results']
+
+
+@WINDOWS
+def test_I1_W12_drift(env):
+    """W12, drift that may have run: a loaded first-party module changes mid-segment. The stat guard
+    stops the worker, its epoch close fails, and the segment ends TERMINAL CODE_OR_ARTIFACT_DRIFT;
+    finalize labels the run INSUFFICIENT with that reason. A stop for its own reason (here the stale
+    stat guard) whose close fails is drift, not the lower-class reason."""
+    run_dir = _idle(env)
+    module = env.code / PLAN
+    original = module.read_bytes()
+    thread, found = _resume_in_background(env, workers=1)  # one worker: its own stop reason decides
+    try:
+        _await_path(run_dir, thread)
+        module.write_bytes(original + b'\n# TEST_ONLY drift\n')
+    finally:
+        thread.join(timeout=900)
+        module.write_bytes(original)
+    assert 'error' not in found, found.get('error')
+    assert (found['stop'].kind, found['stop'].code) == ('TERMINAL', 'CODE_OR_ARTIFACT_DRIFT')
+    end = ledger_records(run_dir)[-1]['body']
+    assert (end['class'], end['cause']) == ('TERMINAL', 'CODE_OR_ARTIFACT_DRIFT')
+    assert not all(r['body']['closure_match'] for records in drv().read_journals(run_dir).values() for r in records
+                   if r['type'] == 'EPOCH_CLOSE')
+    label, _ = drv().finalize(env.inputs())
+    results = json.loads((run_dir / 'results.json').read_bytes())
+    assert label == 'INSUFFICIENT' and 'CODE_OR_ARTIFACT_DRIFT' in results['verdict']['reasons']
+
+
+def _epoch(build, integrity, *, close=None):
+    opened = ('EPOCH_OPEN', {'build': {'cpu_s': build, 'wall_s': build},
+                             'integrity': {'cpu_s': integrity, 'wall_s': integrity},
+                             'closure_sha256': 'a' * 64, 'guard_sha256': 'b' * 64})
+    if close is None:
+        return [opened]
+    closure = {'first_party': {}, 'third_party': {}, 'ports': {}, 'stdlib': []}
+    return [opened, ('EPOCH_CLOSE', {'integrity': {'cpu_s': close, 'wall_s': close}, 'closure_match': True,
+                                     'closure': closure})]
+
+
+def test_B5_crashed_candidate_attempt_is_charged():
+    """Design §5.4, a crash can only overcharge: a candidate attempt that never reached PREPARED is
+    charged as a crash (one heartbeat interval for its one worker, heartbeat 0 being its start) plus
+    every epoch cost its journal recorded; the attempt PREPARED carries is not charged twice."""
+    module = drv()
+    populations = {p: {'indices': [0], 'candidates_sha256': 'c' * 64} for p in ('FULL', 'H1', 'H2')}
+    bound = ('AUTHORITY_BOUND', {'authority_sha256': 'f' * 64, 'prereg_path': PREREG, 'approvals': [],
+                                 'reused_directory': False})
+    crashed = chain(_epoch(7.0, 11.0))
+    candidate_epoch, probe_epoch = _epoch(5.0, 1.5, close=1.5), _epoch(0.0, 2.0, close=3.0)
+    accepted = chain(candidate_epoch[:1] + [('CANDIDATES', {'populations': populations})] + candidate_epoch[1:]
+                     + probe_epoch[:1]
+                     + [('PROBE_RESULT', {'path_cpu_s': 4.0, 'path_wall_s': 4.0, 'peak_memory_bytes': 1})]
+                     + probe_epoch[1:] + [('WORKER_STOP', {'reason': 'DONE', 'key': None})])
+    ledger = chain([bound, ('HALT', {'code': 'UNCLASSIFIED_ERROR', 'from': 'BOUND'}),
+                    ('ACT', {'act_sha256': 'e' * 64, 'act': 'CONTINUE'}),
+                    ('PREPARED', {'manifest_sha256': 'd' * 64, 'build': {'cpu_s': 5.0, 'wall_s': 5.0},
+                                  'integrity': {'cpu_s': 3.0, 'wall_s': 3.0}}),
+                    ('PROBE_START', {}), ('PROBE', {'path_cpu_s': 4.0, 'path_wall_s': 4.0, 'peak_memory_bytes': 1})])
+    charge = module.HEARTBEAT_S + 7.0 + 11.0
+    assert module.overhead_used(ledger, {'c1-w0.jsonl': crashed, 'c2-w0.jsonl': accepted}) == \
+        (5.0 + 3.0) + 4.0 + (2.0 + 3.0) + charge
+    assert module.overhead_used(chain([bound]), {'c1-w0.jsonl': crashed}) == charge
+    assert module.overhead_used(ledger, {'c2-w0.jsonl': accepted}) == 8.0 + 4.0 + 5.0  # twin: no crash, no charge
