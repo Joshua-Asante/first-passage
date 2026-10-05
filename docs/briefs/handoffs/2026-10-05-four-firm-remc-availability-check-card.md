@@ -103,7 +103,7 @@ acceptance:
 | P-2 | Striker S-P | `AVAILABLE` | `E/step6-admission/exports/S-P.csv` | `0373f211f5e44fe89976d7bcea2b7252724dc717541116dccb59932dfabc710a` |
 | P-3 | Vanguard protected | `DERIVED` | no entries (Track B read :101) | — |
 | P-4 | ORB O-P | `AVAILABLE` | `E/step6-admission/exports/O-P.csv` | `2cb58fb6b0ec81f5859db527821a1701675ba6305553369d9096d5ee2bd93e40` |
-| REF | full-Aegis reference | `PRESENT-NO-EXCURSION` | the Aegis ae744 leg export is present and listed in `core/data/tv_exports/cme/SHA256SUMS` (`e82a2c25…`), and carries `Adverse excursion USD`. But the assembled panel and `calibration_report.json` are not retained in `lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/`, and the archive keeps only `NOTES.md`/`RESULTS.md`. The MYM/MNQ leg exports were not pinned or checked | — |
+| REF | full-Aegis reference | `MISSING` | panel not retained. The Aegis ae744 leg export is present and listed in `core/data/tv_exports/cme/SHA256SUMS` (`e82a2c25…`), and carries `Adverse excursion USD`. But the assembled panel and `calibration_report.json` are not retained in `lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/`, and the archive keeps only `NOTES.md`/`RESULTS.md`. The MYM/MNQ leg exports were not pinned or checked | — |
 
 **Concerns:**
 
@@ -116,7 +116,7 @@ acceptance:
    The kernel's continuous `dd_scale` therefore cannot pass the O-8 parity test as ruled. Because the P-rows are available or derivable, a faithful alternative exists: a mode-switching bootstrap. Each day would carry a paired normal and protected P&L/`intraday_low`, and the path would choose the protected channel on days the prior close sits ≥ 1% below the running peak. That needs a kernel or wrapper change. Ruling owed by the operator.
 2. **No `intraday_low` is native to the exports.** The builder must derive the daily low from per-trade `Adverse excursion USD`. The conservative coincident-sum construction stays as recommended.
 3. **REF must be reassembled.** Its panel is not retained.
-4. **Location:** two of the normal exports (A-0, S-0) and V-0 live only in the operator's Downloads. The builder card should name `D/` as a read root, or the operator copies them into `E/` first.
+4. **Location:** three normal exports (A-0, S-0, V-0) live only in the operator's Downloads. The builder card should name `D/` as a read root, or the operator copies them into `E/` first.
 
 ## §10 — Audit hooks
 
