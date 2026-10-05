@@ -56,6 +56,8 @@ A one-contract MYM entry sent through the route with its own stop, placed after 
 | **D4** | Place a resting buy **stop entry** far enough above the market that it won't trigger during the session, with `stop_loss`; then cancel the parent | Does cancelling the parent end the suspended bracket leg? | Exports showing the parent and its child both terminal; no fill |
 | ~~D5~~ | none | Exit-side partial fills | **Moot by construction:** under the one-contract rule, an exit is for one contract and can't partially fill. Recorded, not drilled. |
 
+*Pointer 2026-10-05 (§A12 ACCEPTED 2026-10-05 (D1), effective at `2c71e7e`; §A12.4), D5 row:* Not moot. §A9.1 UB-5 withdrew that premise; exit-side partial completion stays EVIDENCE-PENDING (gate C; incident ADR §A12.5).
+
 ## §4 — Account reads (T07 S2)
 
 | Read | Action (Joshua) | Question it closes | Evidence |

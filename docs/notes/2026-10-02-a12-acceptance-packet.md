@@ -18,6 +18,10 @@ Codex review of #584 at `e57bd98`; under the operator's round-limit rule these b
 
 On acceptance, only these owners receive a dated addendum or pointer. No owner text is edited before acceptance.
 
+*Status 2026-10-05 (§A12 ACCEPTED 2026-10-05 (D1), effective at `2c71e7e`; coordinator (4)):*
+- **Applied:** the ADR §2-row pointer; the CAP R3 addendum; the scope-note pointer; the T08 §7.8 and session-plan D5 pointers; the checklist T09 gate-B citation. The T13/D-MON row was met by the watch adoption (#688).
+- **Owed, at their own trigger (not applied):** the edition pre-registrations (Vanguard, ORB/Striker), at freeze; the T09 bounded handoff, when it is written (gate D); the edition production handoffs, before either is dispatched. Owner: coordinator (4).
+
 | Owner | Place | Addition |
 |---|---|---|
 | This ADR | §2 row "Unknown entry, add, cancel, close or modification" | Dated pointer: "First release: §A12 F1–F5 (halt; worst-case reservation held; release only on a uniquely correlated outcome; non-entry requests by type; operator platform actions left OPEN). The reservation-instead-of-block rewrite stays Proposed for a later release." |

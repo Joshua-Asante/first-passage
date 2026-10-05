@@ -171,6 +171,8 @@ This ruling grants no broker access, route change, drill, order action, arm or s
 
 *Pointer 2026-09-26 (the paragraph above is preserved):* under the operator's written ruling of 2026-09-26 ([incident ADR §A11.1](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md), items 4–6), only the read-only REST reads R-1 and R-2 are authorized and no order mutation is authorized. Drills D1–D4 are **not treated as cleared for execution**; each returns as an individual decision after its documentary prerequisites, with its exact environment, actions, exposure limits and abort/recovery procedure. The 2026-09-25 authorization is superseded in practice, not formally revoked.
 
+*Pointer 2026-10-05 (§A12 ACCEPTED 2026-10-05 (D1), effective at `2c71e7e`; §A12.4):* Not moot. §A9.1 UB-5 withdrew that premise; exit-side partial completion stays EVIDENCE-PENDING (gate C; incident ADR §A12.5).
+
 ### 7.9 Operator-supplied support reply — 2026-09-25
 
 Joshua supplied a written reply attributed to Kate, CrossTrade Support. Retained a transcription at `local_artifacts/t08-vendor-question-2026-09/2026-09-25-support-reply-transcription.txt`, SHA-256 `0871c82ef8075d3ec0c6f6dd00caecce26432eed13dcc708921f6f489185c27f`. This hashes the transcription, **not original email bytes**; original email/ticket retention under §7.8 remains owed. The displayed header supplies a time but no date/timezone; September 25 is the receipt-in-task date. No vendor contact or account access was performed.
