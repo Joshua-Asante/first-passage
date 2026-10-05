@@ -645,3 +645,7 @@ addendum.
 options. The review recommends (T08 §7.7): hold live release, authorize one
 narrow vendor question on bounding deferred work, and scope an ADR-level
 bounded-exposure amendment in parallel.
+
+## Addendum 2026-10-05 — R3 first-release consumer outcome (incident ADR §A12.4)
+
+§A12 ACCEPTED 2026-10-05 (D1), effective at `2c71e7e`. R3 remains NONE as a fence finding. First-release consumer outcome for any unknown request: incident halt (halt/resume §2) and preserve-and-block (closure Step 2 row 3); release only through closure rows 1–2 under incident ADR §A12 F2. The reservation-with-continued-admission outcome in §A5 is deferred with option B. This replaces §A5's CAP row for the first release.

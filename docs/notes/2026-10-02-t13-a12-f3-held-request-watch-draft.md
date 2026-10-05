@@ -1,6 +1,6 @@
-# Draft: held-request watch for incident ADR §A12 F3 (T13 preparation) — 2026-10-02
+# Held-request watch for incident ADR §A12 F3 (T13 owner text) — 2026-10-02, adoption text 2026-10-05
 
-**Status: DRAFT. PROPOSED as attended-operations (T13) owner text.** §A12 is itself PROPOSED ([`docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md`](../adr/2026-09-17-bounded-platform-protection-incident-contract.md) on main, as merged from PR #584 at `368f366`). *Citations refreshed 2026-10-02 from PR #584 `e57bd98` and PR #593 `8d253c9` to main (operator ruling 2026-10-02 (sitting 2), A12-D1).* Nothing here takes effect until §A12 and this text are both accepted. This note does not edit the incident ADR or the halt/resume contract. Its cadence and policy rows are proposals for the operator.
+**Status: ADOPTION TEXT (2026-10-05).** Coordinator (4), as the attended-operations (T13) owner, adopts this text when the PR that carries it merges after the scoped refute-first review and the Codex review (Joshua's Q2 ruling, [D1/T13 packet](2026-10-04-d1-t13-evidence-packet.md) addendum). Adoption is not Joshua's §A12 D1 acceptance, which stays his separate act. *Before 2026-10-05:* DRAFT, PROPOSED as T13 owner text. §A12 is itself PROPOSED ([`docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md`](../adr/2026-09-17-bounded-platform-protection-incident-contract.md) on main, as merged from PR #584 at `368f366`). *Citations refreshed 2026-10-02 from PR #584 `e57bd98` and PR #593 `8d253c9` to main (operator ruling 2026-10-02 (sitting 2), A12-D1).* Nothing here takes effect until §A12 and this text are both accepted. This note does not edit the incident ADR or the halt/resume contract. Its cadence and policy rows are proposals for the operator.
 
 **Traces to** (incident ADR and acceptance-packet line numbers on main `1a350ec`; the ADR changed later on main, so cite by text):
 
@@ -8,13 +8,13 @@
 |---|---|---|
 | F3, *Watching a held request* (:460) | While any request is held, a check for unexplained effects at each session open or at another cadence the owner names. Disarm does not satisfy it. Owner: attended operations (checklist T13), with the D-MON channels | W1–W5 |
 | §A12.4 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); removed from the ADR by the 2026-10-02 narrowing), row *Attended-operations contract (checklist T13) and D-MON* (packet :30) | Cadence, channels and binding owner, plus alert-channel loss with no incident (D5). Required before §A12's acceptance or in the same act | W2, W5–W7 |
-| §A12.5, row *Held-request watch and monitoring loss* (:534) | HR :57's attendance sentence is ambiguous for a disarmed account with a live unknown | W1 |
+| §A12.5, row *Held-request watch and monitoring loss* (:534) | HR :61's attendance sentence is ambiguous for a disarmed account with a live unknown | W1 |
 | §A12.6 D1, third bullet (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md); D1's prerequisite list is in ADR §A12.5, :540–549) | The attended-operations owner adopts the watch before or with acceptance | *Adoption* |
 | §A12.6 D5 (now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md)) | Alert-channel loss with no incident and the late-effect watch go to D-MON and T13 | W5, W6 |
 
 It also takes the hand-off from the C-a selection register ([`docs/notes/2026-09-26-close-semantics-c-a.md`](2026-09-26-close-semantics-c-a.md#addendum-2026-10-02--c-a-selection-register-proposed-for-operator-acceptance) on main, as merged from PR #593 at `550bc74`; accepted as written by operator ruling 2026-10-02 (sitting 2)): outcomes O0 and O5–O8 hold the reservation (REG §R.3), and row S-X3's recovery hands any request still retained to this watch ([S-X3 draft](2026-10-02-t13-c-a-attended-recovery-draft.md) §8).
 
-**Abbreviations.** HR: the [halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md). DP: the [drill plan](2026-09-26-tradeify-route-drill-plan-draft.md). REST: the [REST route assessment](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md). REG: the C-a selection register addendum in the close-semantics note (on main). Main-branch line numbers are on origin/main `bd30646`.
+**Abbreviations.** HR: the [halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md). DP: the [drill plan](2026-09-26-tradeify-route-drill-plan-draft.md). REST: the [REST route assessment](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md). REG: the C-a selection register addendum in the close-semantics note (on main). Main-branch line numbers are on origin/main `bd30646`, except HR line numbers, which were refreshed to `9c2a153` at adoption (the HR owner readings at :67–75 shifted them).
 
 ## Definitions
 
@@ -24,8 +24,8 @@ It also takes the hand-off from the C-a selection register ([`docs/notes/2026-09
 ## W1 — Start, and the attendance reading
 
 - The watch starts when the incident session's recovery ends with at least one held request ([S-X3 draft](2026-10-02-t13-c-a-attended-recovery-draft.md) §8).
-- **Proposed reading of HR :57 for this case** (the halt/resume owner decides; OQ-1). Attendance for the session ends once stop, intervention and disarm are done and read back, and the watch is scheduled. The held request does not keep the session attended indefinitely: the watch carries it. HR :57 requires stop, intervention and disarm before leaving. F3 says disarm does not end the watch; it does not say disarm cannot end attendance.
-- The account stays HALTED. No later session may activate while any request is held (F3; HR :65, "unresolved owner cannot be overridden").
+- **Attendance reading of HR :61 for this case** (*ruled:* Joshua, 2026-10-04T20:30:58Z, "approve the recommendations", Q1 as revised; OQ-1). With a request held, attendance for the session ends once all of these are done and read back: (1) the operator stop (HR :98, O-6); (2) intervention: every position and working order the reads show is managed by Joshua on the platform (HR :53); (3) the disarm, persisted and read back (`dry_run=true`, `armed_until=null`), with HALTED kept (HR :57 for the form, :61 for leaving early); (4) the closing check (W2 item 1) recorded (W7), with the first G1 due time scheduled (W5 item 1). Any flatten made against a held close or flatten request falls under Joshua's C-a residual-risk decision (ADR `:532`), because a manual flatten followed by a late close can leave an opposite position (ADR `:474-479`). *Earlier proposed wording, kept for the record:* Attendance for the session ends once stop, intervention and disarm are done and read back, and the watch is scheduled. The held request does not keep the session attended indefinitely: the watch carries it. HR :61 requires stop, intervention and disarm before leaving. F3 says disarm does not end the watch; it does not say disarm cannot end attendance.
+- The account stays HALTED. No later session may activate while any request is held (F3; HR :79, "unresolved owner cannot be overridden").
 
 ## W2 — Cadence (proposal; the operator decides)
 
@@ -56,14 +56,21 @@ Read authority is the same open question as S-X3's P3 (OQ-2).
 |---|---|---|
 | Nothing new | "No unexplained effect observed at time T with reads R." **Not a release:** absence never releases (F2; closure plan row 3) | Record; schedule the next check |
 | An effect that an accepted F2 class uniquely correlates to a held request | Transfer under F2. This needs the operator's D2 and D3 dispositions (§A12.6, now in the [A12 acceptance packet](2026-10-02-a12-acceptance-packet.md)) | Hand to attended recovery (S-X3 draft §4–§8). The halt stays (F3) |
-| An effect not uniquely correlated | Incident (F5). It is an additional identified exposure, and the held request stays held; the double count is deliberate | Alert on the D-MON channels (W5). The operator manages exposure on the platform (HR :49; S-X3 draft §5) |
+| An effect not uniquely correlated | Incident (F5). It is an additional identified exposure, and the held request stays held; the double count is deliberate | Alert on the D-MON channels (W5). The operator manages exposure on the platform (HR :53; S-X3 draft §5) |
 | Reads fail, or the platform is unavailable | Check **missed**, not passed | Retry. If exposure is suspected, Joshua flattens directly on Tradovate (D-MON-3); if Tradovate itself is unavailable, see the S-X3 draft §7 step-3 GAP |
 
 ## W5 — Channels (D-MON)
 
-1. **A missed check alerts.** Proposal: a dead-man check at the chosen D-MON provider ([options packet](2026-10-02-d-mon-channel-options-packet.md) §4), scheduled to match W2 with a grace the operator sets. The operator, or the read tool, pings it when a check completes. A missing ping alerts both channels. This uses the provider's heartbeat feature at no cost and builds nothing in-house.
-2. **An F5 finding** goes out on the primary channel, with the 60 s alternate escalation (HR :59).
-3. **Operator trades on book symbols confound W4.** F5 does not classify operator platform actions; HR §4.1 O-5 leaves them OPEN (HR :110). Proposal: while any request is held, the weekly preservation trade uses a symbol outside the four. DP :137 already offers that treatment. Operator decision (OQ-4).
+1. **A missed check alerts (G1; specified 2026-10-05, not built).**
+   - **Due times.** While any request is held, a check is due at each account-session open: 18:00 America/New_York, Sunday to Thursday (the Tradeify 6 PM–5 PM ET account day; [ops/calendars](../../ops/calendars/README.md)), whatever the session's permission. This is W2 item 2 as a fixed schedule. Item 1 (closing check) and item 3 (pre-activation) happen inside attended sessions and need no dead-man. A due time on a day with no account session is still due: the schedule may over-cover, never under-cover.
+   - **Grace.** 60 minutes after each due time (*ruled:* Joshua, 2026-10-04T20:30:58Z, Q3, confirmed here now that the due time is defined). A check not recorded complete by due + 60 min pages.
+   - **Mechanism.** A schedule-based dead-man at a no-cost external provider (deployment checklist `:601`: no in-house build). It is five checks, one per due weekday (cron `0 18 * * 0` … `0 18 * * 4`, America/New_York, 60-minute grace), so a miss on one due day pages even while another day's page is open. Each check's down notification posts to a dedicated watch IRM integration (Formatted webhook, routed to the same Important chain; its URL is held only in Joshua's secret store and in Healthchecks.io), with `severity: critical` and an `alert_uid` unique per down event (`t13-watch-$NAME-$NOW`), so every down event opens its own alert group and an unresolved earlier group cannot absorb a later miss; up notifications are not sent. On a missed ping it notifies the existing Grafana IRM integration, so the page runs the configured Important chain (SMS and push, then a call at +1 min; [Grafana IRM binding card](../briefs/handoffs/2026-10-03-dmon-grafana-irm-binding-card-DRAFT.md) §0.5; Q7 PASS, §6.3). Grafana IRM's own heartbeat takes one fixed interval ([IRM integrations, heartbeat monitoring](https://grafana.com/docs/grafana-cloud/alerting-and-irm/irm/integrations/configure-integrations/)), so on its own it cannot express this schedule: a 25 h interval pages every Friday evening, and a 73 h interval detects a weekday miss about two days late. **Provider binding: Healthchecks.io** *Ruled:* Joshua, 2026-10-05, directly to coordinator (4): "use healthchecks.io for the G1 provider". Plan: the free Hobbyist tier (checklist `:601`, no cost), already named in the D-MON-1 fallback B, used only as this cron-schedule dead-man (America/New_York; 60-minute grace), with its failure notification posting to the IRM integration. This narrow use does not invoke fallback B. Joshua configures both ends; no agent sees either URL.
+   - **Pinger.** Joshua pings the check for that due day when the check is recorded complete (W7), never before. A check classed missed (W4, last row) does not ping.
+   - **Missed check.** The page is the signal. Joshua runs the check as soon as he can. The check stays owed until recorded complete, and its record names the due time it answers and marks it late. A provider check that stays down does not page again (the provider notifies on the up-to-down change), so the open IRM group is the standing signal until the check is done; every later down event, on any weekday, opens a new group and pages. A watch page is resolved in IRM when its owed check is recorded complete and the ping returns the check to up, not before; it has no rail incident key, so `record-delivery` (binding card §3.7) does not apply. A missed check is not a pass and releases nothing (W4). If exposure is suspected, D-MON-3 applies (W4, last row).
+   - **Start and end.** At watch start (W1), Joshua creates or resumes the five checks, sends each a start ping, and reads back each check's status as up with its next expected time at 18:00 ET (the provider does not alert on a new or paused check until it is pinged). If the watch starts after 18:00 ET on a due day, the closing check also stands as that day's session-open check, and its record says so. The checks are paused only when the watch ends by F2 transfer of the last held request (W4). Pausing them while any request is held is forbidden.
+   - **Arming preconditions:** see *Arming preconditions* under Adoption.
+2. **An F5 finding** goes out on the primary channel, with the 60 s alternate escalation (HR :63).
+3. **Operator trades on book symbols confound W4.** F5 does not classify operator platform actions; HR §4.1 O-5 leaves them OPEN (HR :124). Proposal: while any request is held, the weekly preservation trade uses a symbol outside the four. DP :137 already offers that treatment. Operator decision (OQ-4).
    *Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-7:* W5 item 3 is adopted as a narrow exception: outside the four while any request is held. F-5 stays the general rule (B–D packet GC-7 addendum).
 
 ## W6 — Alert-channel loss with no incident (§A12 D5)
@@ -72,9 +79,9 @@ This is not a halt/resume §2 trigger (acceptance packet §A12.6 D5, :48). Propo
 
 | State | Loss | Proposed response |
 |---|---|---|
-| Before arming | Any channel fails its test | Do not arm (HR :57) |
-| Armed | Primary lost, alternate working | Continue. Delivery failures already route to the remaining channel (HR :59). Record it |
-| Armed | All channels lost, or the monitoring provider lost | Operator stop. It is an incident and ends automation for the session (HR :84, O-6), because the 60 s acknowledgment target can no longer be met |
+| Before arming | Any channel fails its test | Do not arm (HR :61) |
+| Armed | Primary lost, alternate working | Continue. Delivery failures already route to the remaining channel (HR :63). Record it |
+| Armed | All channels lost, or the monitoring provider lost | Operator stop. It is an incident and ends automation for the session (HR :98, O-6), because the 60 s acknowledgment target can no longer be met |
 | Disarmed, request held | Any | No session effect. The watch continues on its calendar, and a missed W5 ping is itself the signal. Record it |
 
 These rows are policy, so the operator rules on them (OQ-3).
@@ -85,15 +92,23 @@ These rows are policy, so the operator rules on them (OQ-3).
 
 - **Obligation:** the attended-operations contract (checklist T13). **Performer:** Joshua, who holds platform and credential access. **Recorder:** the coordinator.
 - **On adoption,** STATE.md gains a scheduled-forward-trigger row: "held-request watch due at each session open while any request is held". STATE owns durable obligations (AGENTS.md); this note does not edit it.
-- **Each check's record:** its time, the reads, the results and the W4 class, marked complete or missed. Original read bytes stay private and are never committed (public repository).
+- **Each check's record (G3; specified 2026-10-05).** One JSON line per check in `local_artifacts/t13-watch/<watch start UTC>/checks.jsonl` in the operator's primary checkout (gitignored; never a worktree, whose files are deleted with it). Fields: `due_utc` (the G1 due time it answers, or `closing` / `pre_activation`), `started_utc`, `completed_utc`, each read's kind, local time and `ok` or `failed` with the SHA-256 of its private bytes, the W4 class, `complete` or `missed`, `late` (completed after due + 60 min) and `ping_utc`. The original read bytes are kept beside it, private, never committed (public repository). The recorder (coordinator) writes the line from Joshua's report, or Joshua writes it. The provider's ping log is the external corroboration.
 
 ## Adoption
 
-§A12 D1 makes adoption by the attended-operations owner a precondition of §A12's acceptance, or part of the same act. This draft is the candidate text. Adopting it needs the coordinator's acceptance as owner text, the operator's rulings on OQ-1 to OQ-4, and the D-MON channel choice.
+§A12 D1 makes adoption by the attended-operations owner a precondition of §A12's acceptance, or part of the same act. The inputs are in hand: OQ-1 to OQ-5 ruled (below), the D-MON channel choice (provider A, Grafana IRM, for incident pages; options packet `:124`), the G1 provider (Healthchecks.io, ruled 2026-10-05), and Joshua's 2026-10-04T20:30:58Z rulings on the packet's Q1–Q4. Coordinator (4) adopts this text as T13 owner on the merge named in the status line. STATE gains the W7 trigger row and the deployment checklist gains the arming preconditions in the same PR. G1's provider is ruled (Healthchecks.io, 2026-10-05); its build is an arming precondition under Q4 as narrowed, not an adoption or D1 gate.
+
+### Arming preconditions (Q4 as narrowed)
+
+Before the first armed session, all of these hold. They are not D1 gates: no request can be held before the first armed session, and D1 grants no arm (ADR `:567`). The arm helper does not check them, so they are carried in the deployment checklist (`:601`) and STATE.
+1. The G1 build on Healthchecks.io (provider ruled 2026-10-05): the five checks, their down webhooks, and the dedicated watch IRM integration routed to the Important chain (configuration only: schedule, grace and the IRM notification).
+2. **G10**, the end-to-end qualification of the watch dead-man: in an attended run under Joshua's explicit go, starting from the W5 start state (created, start-pinged, read back up), a scheduled ping is deliberately omitted and the page is recorded arriving through the IRM chain, with the due time, the page time and the SMS-to-call offset; then a second due day is also missed and a second, separate alert group is recorded; the watch integration is qualified here, as Q7 qualified the incident integration.
+3. The channel qualifications: Q7 (PASS 2026-10-05, binding card §6.3) and HB-L1/L2 ([missed-heartbeat card](../briefs/handoffs/2026-10-03-dmon-missed-heartbeat-monitor-card-DRAFT.md)).
 
 ## Open questions
 
-- **OQ-1** (halt/resume owner). W1's reading of HR :57.
+- **OQ-1** (halt/resume owner). W1's reading of HR :61.
+  *Ruled, Joshua 2026-10-04T20:30:58Z (packet Q1 as revised):* the W1 attendance reading above.
 - **OQ-2** (operator). Read authority for watch reads (DP :174).
   *Ruled, operator ruling 2026-10-02 (sitting 2), D-MON-2:* the watch reads use the same read-only, operator-performed scope as the S-X3 recovery read set.
 - **OQ-3** (operator). W6's policy rows, especially "all channels lost while armed means an operator stop".

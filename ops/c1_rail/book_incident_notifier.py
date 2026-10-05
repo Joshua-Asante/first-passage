@@ -16,8 +16,9 @@ the bounded publish is HR :61's notification outbox, under four conditions. (1) 
 idempotency key derives only from the committed ``incident_id``. (2) No import path reaches
 a broker, order, rail-command or C-a close module. (3) Durability is not assumed: a missing
 or corrupt journal is rebuilt from the owner's committed ``incidents`` rows, and a corrupt
-one is moved aside, never deleted. (4) ``liveness()`` lets the external missed-heartbeat
-monitor cover this notifier; the notifier sends no heartbeat itself.
+one is moved aside, never deleted. (4) ``progress()``, a count of clean loops that never goes
+back, lets the external missed-heartbeat monitor cover this notifier; the notifier sends no
+heartbeat itself.
 
 Bounded publish (relay review P2 on #628): a publish that outlives its timeout keeps running on
 its daemon thread, never killed. A (job, channel) pair holds at most one live publish, and all
@@ -64,14 +65,17 @@ ESCALATION_STEP_S = 60.0
 # one slot reserved, so a hung channel cannot starve a healthy one; the config therefore
 # refuses more channels than this. Card §0.7 justifies the value.
 MAX_OUTSTANDING_PUBLISHES = 8
-# kind -> (needs a secret reference, delivers). Concrete providers are OWED to D-MON.
+# kind -> (needs a secret reference, delivers). grafana_irm is the D-MON-1 binding
+# (ops/c1_rail/book_incident_grafana_irm.py); this module never imports it.
 # A non-delivering kind (local_file) is evidence only: its acceptance never ends a round,
 # never counts against ALL_CHANNELS_LOST and never closes a job (card §3.3).
-CHANNEL_KINDS = {"fake": (True, True), "local_file": (False, False)}
+CHANNEL_KINDS = {"fake": (True, True), "local_file": (False, False),
+                 "grafana_irm": (True, True)}
 _SECRET_REF = re.compile(r"^(env|secret):[A-Z][A-Z0-9_]{0,63}$")
 _NAME = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
-_CONFIG_KEYS = {"channels", "publish_timeout_s", "retry_initial_s", "retry_max_s"}
+_CONFIG_KEYS = {"channels", "publish_timeout_s", "retry_initial_s", "retry_max_s",
+                "max_jobs_per_round", "max_retained_incidents"}
 _CHANNEL_KEYS = {"name", "kind", "secret_ref"}
 _JOURNAL = (
     "CREATE TABLE IF NOT EXISTS jobs (incident_key TEXT PRIMARY KEY, reason TEXT NOT NULL, "
@@ -209,6 +213,10 @@ class NotifierConfig:
     publish_timeout_s: float = 10.0
     retry_initial_s: float = 5.0
     retry_max_s: float = 30.0
+    # Job rounds per pass (card NF1); the host binding floors it at 8 (OQ-NF-3 ruling (a)).
+    max_jobs_per_round: int = 10
+    # Owner rows above which poll records one over-bound event per crossing (card NF4).
+    max_retained_incidents: int = 1000
     digest: str = field(init=False, compare=False)
 
     def __post_init__(self):
@@ -230,6 +238,10 @@ class NotifierConfig:
             raise NotifierConfigError("retry_initial_s exceeds retry_max_s")
         if self.retry_max_s >= ESCALATION_STEP_S:
             raise NotifierConfigError("retry_max_s must be below the 60 s escalation step")
+        for name in ("max_jobs_per_round", "max_retained_incidents"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise NotifierConfigError(name + " must be a positive integer")
         canonical = json.dumps(self.resolved(), sort_keys=True, separators=(",", ":"))
         object.__setattr__(self, "digest", hashlib.sha256(canonical.encode("utf-8")).hexdigest())
 
@@ -253,7 +265,9 @@ class NotifierConfig:
         return {"channels": [asdict(spec) for spec in self.channels],
                 "publish_timeout_s": self.publish_timeout_s,
                 "retry_initial_s": self.retry_initial_s,
-                "retry_max_s": self.retry_max_s}
+                "retry_max_s": self.retry_max_s,
+                "max_jobs_per_round": self.max_jobs_per_round,
+                "max_retained_incidents": self.max_retained_incidents}
 
 
 class IncidentNotifier:
@@ -265,7 +279,7 @@ class IncidentNotifier:
 
     def __init__(self, store_path, *, read_incidents: Callable[[], Iterable[Mapping]],
                  channels: Mapping[str, Channel], config: NotifierConfig,
-                 clock: Callable[[], datetime]):
+                 clock: Callable[[], datetime], rebuild: bool = True):
         if not isinstance(config, NotifierConfig):
             raise NotifierConfigError("validated NotifierConfig required")
         if set(channels) != {spec.name for spec in config.channels} or any(
@@ -278,17 +292,26 @@ class IncidentNotifier:
         self.config = config
         self._clock = clock
         self._last_loop_at = None
+        self._progress = 0  # card NF6: clean, non-loud run_once calls; never decreases
+        self._rebuild = rebuild  # card NF7: False opens an existing journal only, never rebuilds
+        self._over_bound = False  # card NF4: the last committed poll read more than M rows
         self._publish_lock = threading.Lock()
         self._round_lock = threading.Lock()  # J0: one round at a time
         self._publishes = {}  # (incident key, channel name) -> Event set when the publish ends
         fault = self._journal_fault()
+        if fault and not rebuild:
+            raise NotifierStoreError("notifier journal faulty: " + fault)
         now = self._now() if fault else None
         moved = self._move_aside(now) if fault else None
         with self._journal() as db:
+            if not rebuild and _journal_schema(db) != _JOURNAL_SCHEMA:
+                raise NotifierStoreError("notifier journal is not initialized")
             for statement in _JOURNAL:
                 db.execute(statement)
             if fault:
                 self._event(db, None, "journal_rebuilt", None, now, cause=fault, moved_to=moved)
+            # Card NF4: keys already journaled, in every state; poll inserts only new keys.
+            self._known = {key for (key,) in db.execute("SELECT incident_key FROM jobs")}
 
     # -- journal ---------------------------------------------------------------------------
 
@@ -300,8 +323,7 @@ class IncidentNotifier:
         ``synchronous=FULL`` and an immediate transaction, on this file only.
         """
         try:
-            self.store_path.parent.mkdir(parents=True, exist_ok=True)
-            db = sqlite3.connect(self.store_path, timeout=5, isolation_level=None)
+            db = self._connect()
         except (sqlite3.Error, OSError) as exc:
             raise NotifierStoreError("notifier journal unavailable") from exc
         try:
@@ -318,6 +340,23 @@ class IncidentNotifier:
             finally:
                 db.close()
 
+    def _connect(self):
+        """Open the journal (card D2). ``rebuild=False`` opens an existing file only
+        (``mode=rw``), so it creates no file or directory; every connection is
+        ``synchronous=FULL``."""
+        if self._rebuild:
+            self.store_path.parent.mkdir(parents=True, exist_ok=True)
+            db = sqlite3.connect(self.store_path, timeout=5, isolation_level=None)
+        else:
+            db = sqlite3.connect(self.store_path.resolve().as_uri() + "?mode=rw", uri=True,
+                                 timeout=5, isolation_level=None)
+        try:
+            db.execute("PRAGMA synchronous=FULL")
+        except BaseException:
+            db.close()
+            raise
+        return db
+
     def _journal_fault(self):
         """Why an existing journal cannot be trusted, or None (condition 3).
 
@@ -329,7 +368,7 @@ class IncidentNotifier:
         if not self.store_path.is_file():
             return None
         try:
-            with closing(sqlite3.connect(self.store_path, timeout=5, isolation_level=None)) as db:
+            with closing(self._connect()) as db:
                 db.execute("PRAGMA synchronous=FULL")  # writable: a hot journal may roll back
                 if db.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
                     return "integrity"
@@ -407,9 +446,12 @@ class IncidentNotifier:
                 entries.append(self._parse(row) + (False,))
             except (KeyError, TypeError, ValueError):
                 entries.append((self._malformed_key(row), "malformed", now.isoformat(), 0, True))
-        created = []
-        with self._journal() as db:
+        created, present = [], []
+        over = len(entries) > self.config.max_retained_incidents
+        with self._journal() as db:  # opened on every call (card NF8 counts it)
             for key, reason, at, generation, malformed in entries:
+                if key in self._known:
+                    continue
                 if db.execute("INSERT OR IGNORE INTO jobs VALUES (?, ?, ?, ?, ?, 'pending', ?, 0, 0)",
                               (key, reason, at, generation, self.config.digest,
                                now.isoformat())).rowcount:
@@ -418,6 +460,13 @@ class IncidentNotifier:
                                     condition="malformed incident row")
                     self._event(db, key, "detected", None, at, journaled_at=now.isoformat())
                     created.append(key)
+                present.append(key)
+            if over and not self._over_bound:
+                self._event(db, None, "retained_incidents_over_bound", None, now,
+                            count=len(entries))
+        # Card NF4: known keys and the crossing state change only after the COMMIT.
+        self._known.update(present)
+        self._over_bound = over
         return tuple(created)
 
     # -- publication -----------------------------------------------------------------------
@@ -425,40 +474,104 @@ class IncidentNotifier:
     def run_once(self):
         """Poll, then always publish due jobs; a poll failure re-raises after publishing.
 
-        Only a loop that completes without raising refreshes ``liveness()``.
+        Only a loop that completes without raising and without a loud pass (card NF3)
+        refreshes ``liveness()`` and increments ``progress()``.
         """
         try:
             self.poll()
         except Exception as exc:  # noqa: BLE001 - re-raised below once due jobs are published
             self.publish_due()
             raise exc
-        self.publish_due()
+        if self.publish_due():
+            return
         self._last_loop_at = self._now()
+        self._progress += 1
 
     def liveness(self):
         """Clock time of the last ``run_once`` that completed without raising, or None.
 
-        Condition 4: a read-only hook for the external missed-heartbeat monitor, which must
-        cover this notifier as well as the runtime. Reading it runs no loop and sends nothing;
-        the notifier never sends a heartbeat itself.
+        A loud pass (card NF3) does not refresh it. It follows the caller's clock, which can
+        step back; a heartbeat marks on ``progress()`` instead. Reading it runs no loop and
+        sends nothing; the notifier never sends a heartbeat itself.
         """
         return self._last_loop_at
 
-    def publish_due(self):
-        """One round per due pending job, one round at a time (card §0.8 J0).
+    def progress(self):
+        """Count of ``run_once`` calls that completed without raising and without a loud pass.
 
-        The snapshot only nominates jobs: each channel's admission re-reads the job (J2), so a
-        job closed after the snapshot, by any writer, is skipped and never republished.
+        Card NF6 and condition 4: starts at 0 and never decreases, whatever the clock does. The
+        external missed-heartbeat monitor's wrapper marks on an increase here.
+        """
+        return self._progress
+
+    def publish_due(self):
+        """At most ``max_jobs_per_round`` rounds, one round at a time (card §0.8 J0; NF1-NF3).
+
+        The snapshot only nominates jobs, the first k due pending jobs in ``_nominate``'s
+        order: each channel's admission re-reads the job (J2), so a job closed after the
+        snapshot, by any writer, is skipped, never republished and never replaced. Deferring
+        a due job writes one ``cap_deferred`` event in the snapshot transaction. Returns True
+        when a due class-U job was deferred (a loud pass), else False.
         """
         with self._round_lock:
             now = self._now()
             with self._journal() as db:
-                due = db.execute("SELECT incident_key, reason, detected_at, next_attempt_at "
-                                 "FROM jobs WHERE state='pending' ORDER BY rowid").fetchall()
-            for key, reason, detected_at, next_at in due:
-                if datetime.fromisoformat(next_at) <= now:
-                    self._publish_round(key, {"kind": "book_incident", "idempotency_key": key,
-                                              "reason": reason, "detected_at": detected_at}, now)
+                rows = db.execute("SELECT rowid, incident_key, generation, state, reason, "
+                                  "detected_at, next_attempt_at, rounds, channels_lost "
+                                  "FROM jobs ORDER BY rowid").fetchall()
+                nominated, unaccepted, accepted = self._nominate(
+                    rows, now, self.config.max_jobs_per_round)
+                if unaccepted or accepted:
+                    self._event(db, None, "cap_deferred", None, now,
+                                unaccepted=unaccepted, accepted=accepted)
+            for key, reason, detected_at in nominated:
+                self._publish_round(key, {"kind": "book_incident", "idempotency_key": key,
+                                          "reason": reason, "detected_at": detected_at}, now)
+            return unaccepted > 0
+
+    @staticmethod
+    def _nominate(rows, now, k):
+        """Card NF2 and NF5: the first k due pending jobs and the deferred counts per class.
+
+        ``rows`` is every job in ``rowid`` order (no LIMIT). A halt sequence is a generation
+        run: a job continues the previous job's sequence when that job's generation is at least
+        1 and its own is exactly one more (card §0.5 item 12). A sequence has an accepted page
+        once any of its jobs is delivered or class A. Class U (``rounds = 0`` or the latest
+        round lost every channel) sorts by (tier, due, ``rowid``): tier 0 is the due first job
+        of a sequence with no accepted page, tier 1 such a sequence's earliest-due class-U job
+        when its first job is not due, tier 2 every other class-U job. Class A follows by
+        (due, ``rowid``). Due times compare as parsed instants, never as text.
+        """
+        sequence, paged, previous, current = {}, set(), None, None
+        for rowid, _key, generation, state, _reason, _at, _next, rounds, lost in rows:
+            if previous is None or previous < 1 or generation != previous + 1:
+                current = rowid
+            sequence[rowid], previous = current, generation
+            if state == "delivered" or (rounds > 0 and not lost):
+                paged.add(current)
+        unaccepted, accepted = [], []
+        for rowid, key, _generation, state, reason, detected_at, next_at, rounds, lost in rows:
+            if state != "pending":
+                continue
+            due = datetime.fromisoformat(next_at)
+            if due <= now:
+                item = (due, rowid, key, reason, detected_at)
+                (unaccepted if rounds == 0 or lost else accepted).append(item)
+        tiers = {}
+        for item in unaccepted:  # rowid order: a sequence's first job comes first
+            first = sequence[item[1]]
+            if first in paged:
+                continue
+            if item[1] == first:
+                tiers[first] = (0, item)
+            elif first not in tiers or (tiers[first][0] == 1 and item[:2] < tiers[first][1][:2]):
+                tiers[first] = (1, item)
+        tier = {item[1]: number for number, item in tiers.values()}
+        queue = (sorted(unaccepted, key=lambda item: (tier.get(item[1], 2), item[0], item[1]))
+                 + sorted(accepted, key=lambda item: item[:2]))
+        taken = min(len(unaccepted), k)
+        return ([item[2:] for item in queue[:k]], len(unaccepted) - taken,
+                len(accepted) - min(len(accepted), k - taken))
 
     def _publish_round(self, key, payload, now):
         assert_no_secrets(payload)
