@@ -470,7 +470,10 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - It writes `EPOCH_CLOSE` with the full `closure` from `ScreenEpochClose.closure` (#678/#680).
   - It adds its `scripts/` label script to the A10b consumer scan, which today covers `ops/` only (#679).
 - H: —
-- Design §12 item 9 (depth N) answered by Joshua (precondition for §7 step 1): —
+- Design §12 item 9 (depth N) answered by Joshua (precondition for §7 step 1): **N = 1,002 per population** (design §6.4 option a, "N = 1,000"; N = 3 × `depth_per_root`, so `depth_per_root` = 334 for each of the roots 42, 123 and 2026). Joshua, 2026-10-05, directly to coordinator (4): "you know what, I have changed my mind. let's go with N = 1000". This supersedes his earlier "N = 3,000" the same day, which was never recorded on main. Frozen at ratification (#581 A6). **Budgets and windows** (Joshua, 2026-10-05, directly to coordinator (4): "go with your budget and window recommendations"; design §5.4 at option a's upper figures):
+  - `path_cpu_seconds` = **961,920**, which is c × 3N at c = 320 s, the per-path upper bound with the integrity check hoisted (§6.3), and 3N = 3,006 paths. That is about 267 CPU-hours. The recommendation's "about 33 CPU-hours" was option a's 8-core elapsed figure (§6.4), mislabelled as CPU; Joshua was told this when he ruled.
+  - `overhead_cpu_seconds` = **11,300**, which is (b + 2i) × (W × S + R) + p with W = 8, S = 3, R = 8 and p ≈ 1,100 s, about 11,206 s rounded up.
+  - **Approval windows** (§12 item 10): each fresh r3c and screen approval has `expires_at` at least 72 h after the planned start. Option a's upper wall time is about 43 h (§6.4), which leaves room for `verify` and pauses. r3c-a2 expires 2026-10-09T01:52:19Z, so the approvals must be fresh.
 - ~~Still open outside this card: #581 OD-1/OD-2 direct confirmation (design §12 item 3).~~ *2026-10-03:* confirmed directly by Joshua (sheet 4 item 3, "all recommended"; #629 approval comment 5965049542). This card merged as #634 at `cdbf597b2ef2c7b4e32ae4af476e3a392f75ca79`.
 
 ## §10 — Audit hooks
