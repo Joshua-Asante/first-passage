@@ -1438,3 +1438,121 @@ def test_B5_crashed_candidate_attempt_is_charged():
         (5.0 + 3.0) + 4.0 + (2.0 + 3.0) + charge
     assert module.overhead_used(chain([bound]), {'c1-w0.jsonl': crashed}) == charge
     assert module.overhead_used(ledger, {'c2-w0.jsonl': accepted}) == 8.0 + 4.0 + 5.0  # twin: no crash, no charge
+
+
+# ---- the segment loop's accounting under load (Codex r4189920841, r4189920851 on #705) --------------
+# A stand-in Job and stand-in workers drive the real ``_Run.segment`` loop: no process starts, so the
+# timing of messages and interrupts is the test's own.
+
+class _Job:
+    """A stand-in Job Object: ``cpu`` CPU seconds while open; a closed job cannot be queried."""
+
+    def __init__(self, cpu=200.0, readable=True):
+        self.cpu, self.readable, self.handle = cpu, readable, 1
+
+    def cpu_s(self):
+        if not self.readable:
+            raise OSError('job accounting unreadable')
+        return self.cpu if self.handle else 0.0  # a closed job reads as no CPU at all
+
+    def peak_memory(self):
+        return 1 << 20 if self.handle else 0
+
+    def close(self):
+        self.handle = None
+
+
+class _Interrupting(dict):
+    """A worker message whose first read raises KeyboardInterrupt (a Ctrl-C inside the loop)."""
+
+    def get(self, *args):
+        raise KeyboardInterrupt
+
+
+class _Worker:
+    """A stand-in worker: ``noise`` seconds of chatter before 'ready', then one 'done' per key."""
+
+    def __init__(self, name, inbox, index, *, noise=0.0, interrupts=0):
+        self.name, self.inbox, self.index, self.noise, self.interrupts = name, inbox, index, noise, interrupts
+        self.key, self.exited, self.stopped = None, False, 'DONE'
+        self.process = type('Process', (), {'wait': staticmethod(lambda: 0)})()
+
+    def send(self, message):
+        if message.get('type') == 'init':
+            threading.Thread(target=self._start, daemon=True).start()
+        elif message.get('cmd') == 'key':
+            self.inbox.put((self.index, {'type': 'done', 'key': message['key'], 'cpu_s': 1.0}))
+        elif message.get('cmd') == 'stop':
+            self.stopped = message.get('reason') or 'DONE'
+            self.inbox.put((self.index, None))
+
+    def _start(self):
+        for _ in range(self.interrupts):
+            self.inbox.put((self.index, _Interrupting()))
+        until = time.perf_counter() + self.noise
+        while time.perf_counter() < until:  # sustained traffic: the inbox never runs dry
+            self.inbox.put((self.index, {'type': 'noise'}))
+            time.sleep(0.001)
+        self.inbox.put((self.index, {'type': 'ready'}))
+
+    def reason(self):
+        return self.stopped
+
+    def keep_stderr(self):
+        return None
+
+
+def _segment_run(tmp_path, monkeypatch, *, job, **worker):
+    """An IDLE run record and a ``_Run`` whose Job and workers are stand-ins; the segment's records."""
+    module = drv()
+    run_dir = tmp_path / 'run'
+    (run_dir / 'journal').mkdir(parents=True)
+    cost = {'cpu_s': 1.0, 'wall_s': 1.0}
+    write_file(run_dir / 'ledger' / '0001.jsonl', [
+        ('AUTHORITY_BOUND', {'authority_sha256': 'f' * 64, 'prereg_path': PREREG, 'approvals': [],
+                             'reused_directory': False}),
+        ('PREPARED', {'manifest_sha256': 'd' * 64, 'build': cost, 'integrity': cost}), ('PROBE_START', {}),
+        ('PROBE', {'path_cpu_s': 1.0, 'path_wall_s': 1.0, 'peak_memory_bytes': 1})])
+    monkeypatch.setattr(module, 'Job', lambda: job)
+    run = object.__new__(module._Run)
+    approval = type('Approval', (), {'approval_sha256': 'a' * 64})()
+    run.inputs = type('Inputs', (), {'message': staticmethod(lambda: {})})()
+    run.receipt = run.auth = type('Bound', (), {'approval': approval})()
+    run.ledger, run.lock, run.run_dir, run.requested_workers = module.Ledger(run_dir), None, run_dir, 2
+    run.params = {'budget': {'path_cpu_seconds': 1_000_000, 'overhead_cpu_seconds': 1_000_000}}
+    run.keys = tuple(('r', population, 0) for population in ('FULL', 'H1', 'H2'))
+    run.now, run.candidate, run.job = None, None, None
+    run._start = lambda name, inbox, index=0: _Worker(name, inbox, index, **worker)
+    stop = run.segment(sorted(run.keys), set(), 0.0)
+    run.ledger.close()
+    return stop, ledger_records(run_dir)
+
+
+def test_heartbeats_keep_their_cadence_under_sustained_traffic(tmp_path, monkeypatch):
+    """Codex r4189920841: the heartbeat deadline is checked on every loop iteration, so workers that
+    keep the inbox busy for 20 intervals still see a heartbeat about every interval (design §4.2: every
+    60 s while RUNNING)."""
+    monkeypatch.setattr(drv(), 'HEARTBEAT_S', 0.05)
+    stop, records = _segment_run(tmp_path, monkeypatch, job=_Job(), noise=1.0)
+    beats = [r['body']['wall_s'] for r in records if r['type'] == 'HEARTBEAT']
+    assert stop.kind == 'COMPLETE' and len(beats) >= 10, beats
+    assert all(later - earlier < 0.5 for earlier, later in zip([0.0] + beats, beats)), beats
+    assert all(r['body']['job_cpu_s'] == 200.0 for r in records if r['type'] == 'HEARTBEAT')
+
+
+def test_second_interrupt_records_the_job_cpu(tmp_path, monkeypatch):
+    """Codex r4189920851: a second Ctrl-C closes the job, and its CPU is read before the handle closes,
+    so SEGMENT_END is not undercharged (200 CPU seconds, nothing booked: 200 of overhead)."""
+    stop, records = _segment_run(tmp_path, monkeypatch, job=_Job(cpu=200.0), interrupts=2)
+    end = records[-1]['body']
+    assert (stop.kind, stop.code) == ('STOPPED', 'INTERRUPTED') and records[-1]['type'] == 'SEGMENT_END'
+    assert (end['job_cpu_s'], end['path_cpu_s'], end['overhead_cpu_s']) == (200.0, 0.0, 200.0)
+
+
+def test_unreadable_job_cpu_is_charged_conservatively(tmp_path, monkeypatch):
+    """When the job's CPU cannot be read, SEGMENT_END carries the crash charge (the last heartbeat,
+    here heartbeat 0, plus one interval per worker) as overhead, never 0."""
+    stop, records = _segment_run(tmp_path, monkeypatch, job=_Job(readable=False), interrupts=2)
+    end = records[-1]['body']
+    floor = drv().HEARTBEAT_S * 2
+    assert stop.kind == 'STOPPED' and end['job_cpu_s'] >= floor and end['overhead_cpu_s'] >= floor
