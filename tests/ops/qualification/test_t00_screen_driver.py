@@ -1105,14 +1105,12 @@ def test_I1(env, window):
 @WINDOWS
 @pytest.mark.skipif(sys.prefix == sys.base_prefix, reason='fp.py runs only a virtual environment')
 def test_I2(env):
-    """Ctrl-C through the launcher (``fp.py python scripts/t00_screen.py resume``, PF-2), then resume.
-
-    Observed (reported to the card owner): fp.py's kill 0.25 s after the interrupt reaches its own
-    child, the venv redirector, not the coordinator interpreter behind it. The coordinator receives
-    the same Ctrl-C and stops as design §4.3 says a directly run coordinator does: SEGMENT_END
-    STOPPED ``INTERRUPTED``, in-flight keys not losses. It is not the W22 crash the design expects
-    under fp.ps1; W22 itself is exercised by test_S12 and I1[W22]. Resume completes with the same
-    results either way."""
+    """Ctrl-C through the launcher (``fp.py python scripts/t00_screen.py resume``, PF-2), then resume
+    (card amendment PF-3, as refined: on a Windows venv fp.py's kill reaches the venv redirector,
+    not the coordinator interpreter, which stops on the same Ctrl-C; W22 stays with test_S12 and
+    I1[W22]). Asserts: (1) the ledger ends in SEGMENT_END STOPPED ``INTERRUPTED``; (2) once that is
+    written and the run lock released, none of the coordinator's or workers' PIDs, recorded before
+    the interrupt, is alive; (3) resume completes with the same results."""
     run_dir = _idle(env)
     venv = sys.prefix
     # A console's Ctrl-C reaches only processes that have not inherited "ignore Ctrl-C"; this
@@ -1125,6 +1123,14 @@ def test_I2(env):
     launcher = subprocess.Popen(command, cwd=REPO, env=child, creationflags=subprocess.CREATE_NEW_CONSOLE)
     try:
         _await_key_start(run_dir, launcher)
+        table = _process_table()
+        run_pids, frontier = {}, {launcher.pid}
+        while frontier:  # every process the launcher started, recorded before the interrupt
+            frontier = {pid for pid, parent in table.items() if parent in frontier and pid not in run_pids}
+            run_pids.update({pid: table[pid] for pid in frontier})
+        children = {pid: [c for c, parent in run_pids.items() if parent == pid] for pid in run_pids}
+        coordinator = max(run_pids, key=lambda pid: len(children[pid]))
+        assert len(children[coordinator]) == WORKERS  # PF-1: the workers' parent is the coordinator
         signal = ('import ctypes, sys\nk = ctypes.windll.kernel32\nk.FreeConsole()\n'
                   'assert k.AttachConsole(int(sys.argv[1]))\nk.SetConsoleCtrlHandler(None, True)\n'
                   'assert k.GenerateConsoleCtrlEvent(0, 0)\n')
@@ -1142,6 +1148,13 @@ def test_I2(env):
         except drv().ScreenRefusal:
             time.sleep(0.5)
     end = ledger_records(run_dir)[-1]
+    deadline = time.monotonic() + 10  # the coordinator releases its lock just before it exits
+    while True:
+        alive = _process_table()
+        survivors = [pid for pid, parent in run_pids.items() if alive.get(pid) == parent]
+        if not survivors or time.monotonic() > deadline:
+            break
+    assert survivors == [], f'run processes outlived SEGMENT_END and the lock: {survivors}'
     assert end['type'] == 'SEGMENT_END' and (end['body']['class'], end['body']['cause']) == ('STOPPED', 'INTERRUPTED')
     assert 'INTERRUPTED' in {w['reason'] for w in end['body']['workers']} <= {'INTERRUPTED', 'DONE'}
     stop, results = finish(env)
