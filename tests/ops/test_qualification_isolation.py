@@ -27,21 +27,34 @@ _PROVENANCE_CASES = {
     "test_authenticated_consumers_recheck_canonical_receipt_fields": 8,
 }
 
+# The former single child (tests/ops/qualification plus the provenance file)
+# split by directory into two clean children: every file outside execution/
+# lands in "core", so the union stays the whole selection as files are added.
+# Each shard asserts the signed/provenance evidence its own selection holds.
+_EXECUTION = "tests/ops/qualification/execution"
+_SHARDS = {
+    "execution": ([_EXECUTION], set(), {}),
+    "core": (["tests/ops/qualification", "--ignore=" + _EXECUTION,
+              "tests/ops/test_phase3_provenance_acceptance.py"],
+             _SIGNED_CASES, _PROVENANCE_CASES),
+}
 
-def test_qualification_suite_in_clean_process(request, record_property):
+
+@pytest.mark.parametrize("shard", sorted(_SHARDS))
+def test_qualification_suite_in_clean_process(shard, request, record_property):
     """Legacy flat imports must not contaminate signed canonical inventories."""
+    selection, signed_cases, provenance_cases = _SHARDS[shard]
     repository = Path(__file__).resolve().parents[2]
     parent_report = getattr(request.config.option, "xmlpath", None)
     report_root = (Path(parent_report).resolve().parent if parent_report else
                    repository / ".cache" / "fp-verification")
-    retained = report_root / ("qualification-child-" + uuid4().hex)
+    retained = report_root / (f"qualification-child-{shard}-" + uuid4().hex)
     retained.mkdir(parents=True)
     report = retained / "junit.xml"
     output = retained / "output.log"
     record_property("qualification_child_junit", str(report))
     record_property("qualification_child_output", str(output))
-    command = [sys.executable, "-m", "pytest", "tests/ops/qualification",
-               "tests/ops/test_phase3_provenance_acceptance.py",
+    command = [sys.executable, "-m", "pytest", *selection,
                "-n", "0", "--junitxml=" + str(report)]
     environment = os.environ.copy()
     # The selected interpreter/environment is inherited from the launcher.
@@ -52,10 +65,12 @@ def test_qualification_suite_in_clean_process(request, record_property):
     failure = None
     # Generated source fixtures must stay outside the checkout: source gates
     # deliberately inspect Python files even when Git ignores their directory.
-    # The child is a serial run of the whole qualification suite, so its
-    # timeout is a hang bound, not a performance gate. CI measured 1,079 s
-    # (2026-09-19 13:21) and 1,538 s (16:20, same tests, slower runner) under
-    # the former 1,800 s cap; runner variance alone must not fail this test.
+    # Each child is a serial run of its shard, so its timeout is a hang bound,
+    # not a performance gate; runner variance alone must not fail this test.
+    # The unsharded child's junit recorded 3,530 s of test time at 7e9bd50
+    # (CI run 37233382687) and hit this cap at 84% after T00 P-A (#672) added
+    # ~50 tests. Split, that run's test time is 1,917 s (execution) and
+    # 1,613 s (core, before #672's test_screen_authority.py).
     child_timeout = 3600
     with tempfile.TemporaryDirectory(prefix="fp-qualification-") as scratch, output.open(
             "w", encoding="utf-8") as stream:
@@ -85,16 +100,16 @@ def test_qualification_suite_in_clean_process(request, record_property):
                 record_property("qualification_child_" + name, count)
             signed = [case for case in cases
                       if case.get("classname", "").endswith("test_composition_route")
-                      and case.get("name") in _SIGNED_CASES]
+                      and case.get("name") in signed_cases]
             provenance = [case for case in cases
                           if case.get("classname", "").endswith("test_phase3_provenance_acceptance")
-                          and case.get("name", "").split("[", 1)[0] in _PROVENANCE_CASES]
+                          and case.get("name", "").split("[", 1)[0] in provenance_cases]
             provenance_counts = Counter(case.get("name", "").split("[", 1)[0]
                                         for case in provenance)
             if (not cases or counts["failure"] or counts["error"]
-                    or len(signed) != len(_SIGNED_CASES)
-                    or {case.get("name") for case in signed} != _SIGNED_CASES
-                    or dict(provenance_counts) != _PROVENANCE_CASES
+                    or len(signed) != len(signed_cases)
+                    or {case.get("name") for case in signed} != signed_cases
+                    or dict(provenance_counts) != provenance_cases
                     or any(case.find("skipped") is not None for case in signed + provenance)):
                 failure = failure or "child report lacks complete passing signed composition evidence"
         except ET.ParseError as exc:
