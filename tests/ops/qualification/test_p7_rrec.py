@@ -166,20 +166,38 @@ def test_class5_a_site_file_loaded_by_path_around_the_finder_is_refused(env):
 
 # ---- class (2): the install-tree digest (card-owner ruling 2026-10-04 (1)) ---------------------
 
-def fake_install(root: Path):
-    """A synthetic base install and venv site-packages in the ruled (Windows) layout."""
-    xy = '{0}{1}'.format(*sys.version_info[:2])
-    base, site = root / 'base', root / 'venv' / 'Lib' / 'site-packages'
-    files = {base / f'python{xy}.dll': b'dll', base / 'vcruntime140.dll': b'rt', base / f'python{xy}.zip': b'zip',
-             base / 'LICENSE.txt': b'not bound', base / 'DLLs' / '_ext.pyd': b'pyd',
-             base / 'Lib' / 'colorsys.py': b'STDLIB = 1\n',
-             base / 'Lib' / '__pycache__' / 'colorsys.cpython.pyc': b'pyc',
-             base / 'Lib' / 'site-packages' / 'unreachable.py': b'BASE_SITE = 1\n',
-             site / 'dep.py': b'DEP = 1\n', site / '__pycache__' / 'dep.cpython.pyc': b'pyc'}
-    for path, raw in files.items():
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(raw)
-    return base, site, files
+LAYOUTS = ('nt', 'posix')
+BOUND = ('runtime', 'runtime_extra', 'zip', 'ext', 'stdlib', 'pycache', 'site_dep', 'site_pyc')
+UNBOUND = ('unbound_root', 'base_site')
+
+
+def install_paths(root: Path, layout=os.name):
+    """Role -> path of a synthetic base install and venv site-packages in ``layout`` ('nt' or
+    'posix'), mirroring p7_evidence.install_tree_sha256: the BOUND roles are in its set, the
+    UNBOUND twins (a root file it does not name, the base site-packages) are not."""
+    major, minor = sys.version_info[:2]
+    base = root / 'base'
+    if layout == 'nt':
+        top, lib, site = base, base / 'Lib', root / 'venv' / 'Lib' / 'site-packages'
+        runtime, extra, ext, other = 'python{0}{1}.dll', 'vcruntime140.dll', base / 'DLLs' / '_ext.pyd', 'LICENSE.txt'
+    else:
+        top, lib = base / 'lib', base / 'lib' / f'python{major}.{minor}'
+        site = root / 'venv' / 'lib' / f'python{major}.{minor}' / 'site-packages'
+        runtime, extra, ext, other = 'libpython{0}.{1}.so', 'libpython{0}.so', lib / 'lib-dynload' / '_ext.so', 'libssl.so'
+    return {'base': base, 'site': site, 'runtime': top / runtime.format(major, minor), 'runtime_extra': top / extra,
+            'zip': top / f'python{major}{minor}.zip', 'ext': ext, 'stdlib': lib / 'colorsys.py',
+            'pycache': lib / '__pycache__' / 'colorsys.cpython.pyc', 'site_dep': site / 'dep.py',
+            'site_pyc': site / '__pycache__' / 'dep.cpython.pyc', 'unbound_root': top / other,
+            'base_site': lib / 'site-packages' / 'unreachable.py'}
+
+
+def fake_install(root: Path, layout=os.name):
+    """install_paths(root, layout) with every BOUND and UNBOUND file written; returns (base, site, paths)."""
+    paths = install_paths(root, layout)
+    for role in BOUND + UNBOUND:
+        paths[role].parent.mkdir(parents=True, exist_ok=True)
+        paths[role].write_bytes({'stdlib': b'STDLIB = 1\n', 'site_dep': b'DEP = 1\n'}.get(role, role.encode()))
+    return paths['base'], paths['site'], paths
 
 
 class _OsAs:  # pylint: disable=too-few-public-methods
@@ -202,55 +220,50 @@ def tree_digest(layout, site, base, fn=None):
         p7_evidence.os = saved
 
 
-@pytest.mark.parametrize('layout', ['nt', 'posix'])
+@pytest.mark.parametrize('layout', LAYOUTS)
 def test_class2_install_tree_digest_covers_the_ruled_set_and_nothing_else(tmp_path, layout):
-    from c1_rail.qualification import p7_evidence
-    base, site, files = fake_install(tmp_path)
+    base, site, paths = fake_install(tmp_path, layout)
     digest = tree_digest(layout, site, base)
-    assert digest == p7_evidence.install_tree_sha256(site, base=base)
-    xy = '{0}{1}'.format(*sys.version_info[:2])
-    bound = (base / f'python{xy}.dll', base / 'vcruntime140.dll', base / f'python{xy}.zip', base / 'DLLs' / '_ext.pyd',
-             base / 'Lib' / 'colorsys.py', base / 'Lib' / '__pycache__' / 'colorsys.cpython.pyc', site / 'dep.py',
-             site / '__pycache__' / 'dep.cpython.pyc')
-    for path in bound:  # red: each ruled file's bytes move the digest
-        raw = path.read_bytes()
-        path.write_bytes(raw + b'#')
-        assert p7_evidence.install_tree_sha256(site, base=base) != digest, path
-        path.write_bytes(raw)
-    added = base / 'Lib' / '__pycache__' / 'new.cpython.pyc'
+    assert digest == tree_digest(layout, site, base)
+    for role in BOUND:  # red: each ruled file's bytes move the digest
+        raw = paths[role].read_bytes()
+        paths[role].write_bytes(raw + b'#')
+        assert tree_digest(layout, site, base) != digest, role
+        paths[role].write_bytes(raw)
+    added = paths['pycache'].parent / 'new.cpython.pyc'
     added.write_bytes(b'new')
-    assert p7_evidence.install_tree_sha256(site, base=base) != digest, 'a new file is bound'
+    assert tree_digest(layout, site, base) != digest, 'a new file is bound'
     added.unlink()
-    for path in (base / 'LICENSE.txt', base / 'Lib' / 'site-packages' / 'unreachable.py'):  # twins: unbound
-        path.write_bytes(path.read_bytes() + b'#')
-    assert p7_evidence.install_tree_sha256(site, base=base) == digest
-    assert set(files) - set(bound) == {base / 'LICENSE.txt', base / 'Lib' / 'site-packages' / 'unreachable.py'}
+    for role in UNBOUND:  # twins: unbound
+        paths[role].write_bytes(paths[role].read_bytes() + b'#')
+    assert tree_digest(layout, site, base) == digest
 
 
-def test_class2_install_tree_digest_is_sorted_relative_paths_plus_bytes(tmp_path):
+@pytest.mark.parametrize('layout', LAYOUTS)
+def test_class2_install_tree_digest_is_sorted_relative_paths_plus_bytes(tmp_path, layout):
     """Deterministic: the same tree at another location, written in another order, has the same
     digest; a rename that keeps the bytes changes it."""
-    from c1_rail.qualification import p7_evidence
     trees = []
     for name, order in (('one', 1), ('two', -1)):
-        base, site = tmp_path / name / 'base', tmp_path / name / 'site'
-        rows = [(base / 'DLLs' / 'a.pyd', b'a'), (base / 'Lib' / 'b.py', b'b'), (base / 'Lib' / 'c' / 'd.py', b'd'),
-                (site / 'e.py', b'e')]
+        paths = install_paths(tmp_path / name, layout)
+        lib = paths['stdlib'].parent
+        rows = [(paths['ext'], b'a'), (lib / 'b.py', b'b'), (lib / 'c' / 'd.py', b'd'), (paths['site'] / 'e.py', b'e')]
         for path, raw in rows[::order]:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(raw)
-        trees.append((site, base))
-    first = p7_evidence.install_tree_sha256(trees[0][0], base=trees[0][1])
-    assert first == p7_evidence.install_tree_sha256(trees[1][0], base=trees[1][1])
-    os.replace(trees[1][1] / 'Lib' / 'b.py', trees[1][1] / 'Lib' / 'b2.py')
-    assert first != p7_evidence.install_tree_sha256(trees[1][0], base=trees[1][1])
+        trees.append((paths['site'], paths['base'], lib))
+    first = tree_digest(layout, trees[0][0], trees[0][1])
+    assert first == tree_digest(layout, trees[1][0], trees[1][1])
+    os.replace(trees[1][2] / 'b.py', trees[1][2] / 'b2.py')
+    assert first != tree_digest(layout, trees[1][0], trees[1][1])
 
 
-def test_class2_an_unreadable_install_tree_fails_closed(tmp_path):
-    from c1_rail.qualification import p7_evidence
-    base, site, _ = fake_install(tmp_path)
+@pytest.mark.parametrize('layout', LAYOUTS)
+def test_class2_an_unreadable_install_tree_fails_closed(tmp_path, layout):
+    base, site, _ = fake_install(tmp_path, layout)
+    assert tree_digest(layout, site, base)  # twin: the complete tree digests
     with pytest.raises(OSError):
-        p7_evidence.install_tree_sha256(site.parent / 'missing', base=base)
+        tree_digest(layout, site.parent / 'missing', base)
 
 
 def test_class2_base_site_packages_on_sys_path_is_refused(monkeypatch):

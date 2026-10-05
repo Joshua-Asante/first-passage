@@ -897,51 +897,53 @@ def test_stat_guard_covers_first_party_import_roots_outside_ops_and_core(tmp_pat
 
 # ---- R-REC packet classes (2) and (4): the install-tree digest at launch and every close -------
 
-def install_case(tmp_path, monkeypatch):
-    """A Screen whose bound install tree is a synthetic install (test_p7_rrec.fake_install),
-    digested for real; the closure case's recorder is unchanged."""
-    from test_p7_rrec import fake_install  # pylint: disable=import-outside-toplevel
-    base, site, _ = fake_install(tmp_path / 'install')
+def install_case(tmp_path, monkeypatch, layout):
+    """A Screen whose bound install tree is a synthetic install (test_p7_rrec.fake_install) in
+    ``layout``, digested for real in that layout; the closure case's recorder is unchanged."""
+    from test_p7_rrec import fake_install, tree_digest  # pylint: disable=import-outside-toplevel
+    base, site, paths = fake_install(tmp_path / 'install', layout)
     real = getattr(p7_evidence, 'install_tree_sha256', None)
 
     def tree(_site, base=None):  # pylint: disable=unused-argument
-        return real(site, base=install_base) if real is not None else 'e' * 64
+        return tree_digest(layout, site, install_base, real) if real is not None else 'e' * 64
     install_base = base
     (tmp_path / 'screen').mkdir()
     screen = Screen(tmp_path / 'screen', monkeypatch, install_tree=tree)
-    return screen, base, site
+    return screen, paths
 
 
 INSTALL_CHANGES = {
-    'stdlib': lambda base, site: (base / 'Lib' / 'colorsys.py').write_bytes(b'STDLIB = 2\n'),
-    'pycache': lambda base, site: (base / 'Lib' / '__pycache__' / 'planted.cpython.pyc').write_bytes(b'pyc'),
-    'dll': lambda base, site: (base / 'python{0}{1}.dll'.format(*sys.version_info[:2])).write_bytes(b'changed'),
+    'stdlib': lambda paths: paths['stdlib'].write_bytes(b'STDLIB = 2\n'),
+    'pycache': lambda paths: (paths['pycache'].parent / 'planted.cpython.pyc').write_bytes(b'pyc'),
+    'dll': lambda paths: paths['runtime'].write_bytes(b'changed'),
     # Class (4): a site-packages file with no recorded row (never imported yet) changed after launch.
-    'venv_site_unimported': lambda base, site: (site / 'dep.py').write_bytes(b'DEP = 2\n'),
+    'venv_site_unimported': lambda paths: paths['site_dep'].write_bytes(b'DEP = 2\n'),
 }
 
 
+@pytest.mark.parametrize('layout', ['nt', 'posix'])
 @pytest.mark.parametrize('change', [None, *INSTALL_CHANGES])
-def test_rrec_install_tree_changed_after_epoch_open_fails_the_close(tmp_path, monkeypatch, change):
+def test_rrec_install_tree_changed_after_epoch_open_fails_the_close(tmp_path, monkeypatch, change, layout):
     """Classes (2) and (4): a stdlib, __pycache__, DLL or not-yet-imported venv site-packages
     file changed after the epoch opens closes closure_match=False; unchanged (twin) closes True."""
-    screen, base, site = install_case(tmp_path, monkeypatch)
+    screen, paths = install_case(tmp_path, monkeypatch, layout)
     module, auth, recorder, _ = closure_case(screen, tmp_path)
-    closed = closes(module, auth, recorder, None if change is None else lambda: INSTALL_CHANGES[change](base, site))
+    closed = closes(module, auth, recorder, None if change is None else lambda: INSTALL_CHANGES[change](paths))
     assert closed.closure_match is (change is None)
 
 
-def test_rrec_launch_refuses_a_changed_install_tree_or_a_reachable_base_site(tmp_path, monkeypatch):
+@pytest.mark.parametrize('layout', ['nt', 'posix'])
+def test_rrec_launch_refuses_a_changed_install_tree_or_a_reachable_base_site(tmp_path, monkeypatch, layout):
     """At launch (row A5's interpreter-binding check): the bound tree digest must hold, and the
     base install's site-packages must be unreachable (card-owner ruling 2026-10-04 (1))."""
-    screen, base, site = install_case(tmp_path, monkeypatch)
+    screen, paths = install_case(tmp_path, monkeypatch, layout)
     assert screen.validate().authority_sha256  # twin
     base_site = os.path.join(sys.base_prefix, *p7_evidence.site_packages_relative().split('/'))
     if os.path.normcase(os.path.realpath(base_site)) != os.path.normcase(screen.interpreter['site_packages_path']):
         with monkeypatch.context() as patch:
             patch.setattr(sys, 'path', [*sys.path, base_site])
             refused('SCREEN_P7_MISMATCH', screen.validate, 'interpreter')
-    INSTALL_CHANGES['stdlib'](base, site)
+    INSTALL_CHANGES['stdlib'](paths)
     refused('SCREEN_P7_MISMATCH', screen.validate, 'interpreter')
 
 
