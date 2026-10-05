@@ -87,6 +87,7 @@ No candidate named or proposed here is run through any frozen tier, decision-bea
 | I-22 | G1/G2 (E1 reduction, ≥4× cost hurdle) | mandatory, in order, as in candidate #1 §8 (v2 §2, §7(4)); G1 `NO` or a G2 kill on every tier means no tier clears (§4 early-fail); a G2 kill on one tier means that tier does not clear | v2; **RULED** — O-10, operator 2026-10-05 |
 | I-23 | Results location | public `lab/analysis/<dated slug>/RESULTS.md` with per-tier aggregates only (bust, pass, median days, `breach_clock`, `gate_grade`, admissibility labels), header citing this file and v2 by path; inputs stay private in the primary checkout; verdict as a dated addendum at the withdrawal ADR plus STATE's 2026-11-08 row | **RULED** — O-11, operator 2026-10-05 |
 | I-24 | MFFU flatten admissibility | the series is built under Tradeify's rules (16:45 ET flatten; its 80-micro cap is the lowest of the four). MFFU auto-liquidates at 16:10 ET (`core/firm_rules.py:365-367`): an MFFU clear counts toward I-4 only if no series position is open past 16:10 ET on any day, checked mechanically by the series builder at run time; otherwise MFFU reads "inadmissible — 16:10 unmodeled" (no clear) | **RULED** — O-5, operator 2026-10-05 |
+| I-25 | Export timezone | the IANA timezone of the TradingView trade-list timestamps, passed as the series builder's required `export_tz` ([PR #702](https://github.com/Joshua-Asante/first-passage/pull/702)); no public owner fixes it yet (identity ledger :154) | **OWED (operator)** |
 
 ---
 
@@ -148,7 +149,7 @@ Precedence: AMBIGUOUS first, then INSUFFICIENT, then the candidate rows. A G1 `N
 
 ## §7 — Freeze blockers (the file cannot freeze while any holds)
 
-1. Any OWED value in §1–§2 or OPEN item in §6 unruled (the §10 marker grep). O-1 and O-12 were ruled 2026-10-02; O-2, O-4 and O-13 on 2026-10-03; the rest on 2026-10-05. Still OWED: §1a identity binding; I-15's timing figure.
+1. Any OWED value in §1–§2 or OPEN item in §6 unruled (the §10 marker grep). O-1 and O-12 were ruled 2026-10-02; O-2, O-4 and O-13 on 2026-10-03; the rest on 2026-10-05. Still OWED: §1a identity binding; I-15's timing figure; I-25 export timezone.
 2. Candidate identities not bound by public digests (§1a).
 3. Availability check (§8 step 2a) not passed: a TV-export trade list with a per-trade adverse-excursion column for each of the four legs at the P7 identities (returned DONE_WITH_CONCERNS, [PR #698](https://github.com/Joshua-Asante/first-passage/pull/698); the I-20 reference panel is carried by 4a).
 4. Harness work required by O-3 and O-5 (series builder incl. protected-mode channels, per-tier series and cost netting, I-24 flag) not merged, or tested on anything other than synthetic inputs. The O-8 mode-switching code is the one exception: the file may freeze before it merges, because I-17's dated fallback (2026-10-25) decides the branch mechanically before the run.
