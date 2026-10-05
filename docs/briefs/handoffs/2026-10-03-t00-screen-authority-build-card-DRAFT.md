@@ -92,7 +92,7 @@ Missing facts or a contradicted default return `NEEDS_CONTEXT`; they are never a
 
 ## §1 — Context
 
-r3c's `SOURCE_REFUSALS` include `SCREEN` and `MONTE_CARLO`; there is no step-3 runner (design §1). The design adds a second, separately signed door: a `t00_screen_authority/v1` document signed under `APPROVE_T00_SCREEN_AUTHORITY`, a gated `ProductionSource.screen_epoch`/`screen_bracket` scored by the unchanged `runner.evaluate_replay`, and a ledgered, resumable driver. This card turns design §9 and §9.1 into packets with disjoint write footprints, red-first tests per §2.2 row, and an integration order ending at head H, where A1 step 5 (one P7 re-run) happens.
+r3c's `SOURCE_REFUSALS` include `SCREEN` and `MONTE_CARLO`; there is no step-3 runner (design §1). The design adds a second, separately signed door: a `t00_screen_authority/v1` document signed under `APPROVE_T00_SCREEN_AUTHORITY`, a gated `screen_authority.screen_epoch`/`screen_bracket` scored by the unchanged `runner.evaluate_replay`, and a ledgered, resumable driver. This card turns design §9 and §9.1 into packets with disjoint write footprints, red-first tests per §2.2 row, and an integration order ending at head H, where A1 step 5 (one P7 re-run) happens.
 
 ## §2 — Claim manifest and packets
 
@@ -102,7 +102,7 @@ r3c's `SOURCE_REFUSALS` include `SCREEN` and `MONTE_CARLO`; there is no step-3 r
 |---|---|---|
 | P-A | `ops/c1_rail/qualification/screen_authority.py` (new); `tests/ops/qualification/test_screen_authority.py` (new) | A1–A11, K1–K4, X2, X3 (17) |
 | P-B1 | `ops/c1_rail/qualification/p7_evidence.py`; `tests/ops/qualification/test_p7_evidence.py` | K10, S2 (2) |
-| P-B2 | `ops/c1_rail/qualification/production_source.py`; `tests/ops/qualification/test_production_source.py`; `tests/ops/qualification/test_source_consumers.py` | K5–K9 (5) |
+| P-B2 | `ops/c1_rail/qualification/production_source.py` (`_verify_identity`, `_consumed_splits`); `ops/c1_rail/qualification/screen_authority.py` (`screen_epoch`, `screen_bracket` only; amendment PB2-1); `tests/ops/qualification/test_production_source.py`; `tests/ops/qualification/test_source_consumers.py` | K5–K9 (5) |
 | P-C | `ops/c1_rail/qualification/t00_screen/verdict.py` (new); `tests/ops/qualification/test_t00_screen_verdict.py` (new); `t00_screen/__init__.py` (K-3 bytes) | V1–V4 (4) |
 | P-D | `t00_screen/state.py`, `t00_screen/journal.py` (new); `tests/ops/qualification/test_t00_screen_state.py` (new); `t00_screen/__init__.py` (K-3 bytes) | S1, S3, S9, S10, S13, S14, S16, B1 (8) |
 | P-E | `t00_screen/plan.py` (new); `tests/ops/qualification/test_t00_screen_plan.py` (new); `t00_screen/__init__.py` (K-3 bytes); only if `plan.py` has an A10b finding, `tests/ops/qualification/test_source_consumers.py`, limited to ALLOWLIST entries for P-E's own (owner, capability) pairs and written after P-B2 merges (O-10) | R1–R3 (3) |
@@ -161,7 +161,7 @@ Total 60 = design §2.2. `t00_screen/` is `ops/c1_rail/qualification/t00_screen/
 ### §2.5 P-B2 — the gated capability and A10b
 
 - **Rows:** K5–K9.
-- **Writes:** `production_source.py` (`screen_epoch`, `screen_bracket`, `_verify_identity`, `_consumed_splits` only), `test_production_source.py`, `test_source_consumers.py` (allowlist keyed by (owner, capability); `screen_bracket`, `screen_epoch`, `_replay_raw`, `_engine` added to the scan).
+- **Writes:** `production_source.py` (`_verify_identity`, `_consumed_splits` only), `screen_authority.py` (`screen_epoch`, `screen_bracket` only; amendment PB2-1), `test_production_source.py`, `test_source_consumers.py` (allowlist keyed by (owner, capability); `screen_bracket`, `screen_epoch`, `_replay_raw`, `_engine` added to the scan).
 - **Red-first tests:** `test_K5` (spy on `_engine`), `test_K6` (mtime change mid-epoch), `test_K7` (seven sealed functions' source hashes recorded before the build equal those after), `test_K8` (deadline in R2 only), `test_K9` (planted call under an owner allowlisted only for `replay_bracket`). Regression: 2026-09-30 A1–A15 in `test_production_source.py` and `test_source_contract.py` unchanged in outcome.
 - **Lane:** CC solo. Never GLM.
 - **Depends on:** PR-3 (#611 merged; re-anchor line numbers), P-A merged (O-1).
@@ -222,14 +222,15 @@ Derived from design §3–§5. Items marked (K-4) are card proposals where the d
 - `screen_authority.validate_screen_act(act_bytes, approval_bytes, public_keys, *, authority, ledger_head, now)`
 - `screen_authority.ScreenBracket(bracket: BracketReplayResult, deadline_failure: tuple[bool, bool], consumed_splits: tuple[tuple, tuple])`
 - `screen_authority.open_screen_epoch(source, authority)`, `require_open_screen_epoch(epoch, *, source, authority)`, `close_screen_epoch(epoch)`, `bind_screen_run(run_dir, authority_sha256)`
-- `ProductionSource.screen_epoch(*, authority)`, `ProductionSource.screen_bracket(path, *, authority, epoch) -> ScreenBracket`
+- `screen_authority.screen_epoch(source, *, authority)`, `screen_authority.screen_bracket(source, path, *, authority, epoch) -> ScreenBracket` (amendment PB2-1)
 - `p7_evidence.render_bootstrap(params)`, `P7_BOOTSTRAP`, `P7_BOOTSTRAP_SHA256`, `SCREEN_BOOTSTRAP`, `SCREEN_BOOTSTRAP_SHA256`
 - `t00_screen.plan`: `seed(...)`, `candidates(...)`, `shape_check(run, failed, path)`
 
 ### §3.2 Capability consumers (A10b; O-10)
 
-- `ProductionSource.screen_epoch` has one owner, `c1_rail/qualification/t00_screen/worker.py:open_epoch`, and `ProductionSource.screen_bracket` one, `c1_rail/qualification/t00_screen/worker.py:bracket` (K-4). The candidate pass, the probe, every path key and every `verify` re-execution call `bracket`. These two pairs, plus any `.contract` load in a P-F module, are P-F's ALLOWLIST entries. `_replay_raw` and `_engine` have no consumer outside `production_source.py`.
+- `screen_authority.screen_epoch` has one owner, `c1_rail/qualification/t00_screen/worker.py:open_epoch`, and `screen_authority.screen_bracket` one, `c1_rail/qualification/t00_screen/worker.py:bracket` (K-4). The candidate pass, the probe, every path key and every `verify` re-execution call `bracket`. These two pairs, plus any `.contract` load in a P-F module, are P-F's ALLOWLIST entries. `_replay_raw` and `_engine` have no consumer outside `production_source.py`.
 - `screen_authority.py` (which receives the contract as `source_contract`), `state.py`, `journal.py` and `verdict.py` have no A10b finding. `plan.py` has none unless P-E records one under O-10; `plan.candidates` receives the candidate worker's `ScreenBracket`s and calls no capability.
+- *Amendment PB2-1 (2026-10-05, coordinator (4), card owner; Joshua's ruling "Move screen entry out", on Codex r4180236028 at #679).* `screen_epoch` and `screen_bracket` are module functions in `screen_authority.py` that take the source, not `ProductionSource` methods. `production_source.py` imports nothing from `screen_authority`, `p7_evidence` or `t00_screen` (guard `test_production_source_imports_no_screen_module`), so `PRODUCTION_TRUST_POLICY` and the operator-signed trust document are unchanged and screen code stays outside the production trust surface. The A10b allowlist names `screen_authority.py:screen_epoch` (contract) and `screen_authority.py:screen_bracket` (contract, `_engine`) as the only consumers outside `production_source.py`; this replaces, for those two owners only, the bullet above that says `_engine` has no consumer outside `production_source.py`. `screen_epoch` runs the loaded-closure check before `open_screen_epoch` (Codex r4179917167), which discharges R-INT-4 in P-B2. Sealed functions (K7) are unchanged.
 
 ### §3.3 Worker process (rows S2, K3, K4; design §5.1)
 
