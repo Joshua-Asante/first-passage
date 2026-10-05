@@ -28,7 +28,7 @@ This is step 3 of the pre-registration's §8 freeze procedure. The edition imple
 | G3b | **Allocation gate (operator ruling 2026-09-26: "Yes, gate on allocation").** Producing the edition files waits until the TradingView/CrossTrade [capability allocation and deletion map](2026-09-25-tradeify-capability-allocation-deletion-map.md) is **ACCEPTED** under gate D of the checklist's [T09 gate acceptance record](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t09-gate-acceptance-record), and the accepted map keeps Vanguard's runtime port as the controller boundary. A committed or merged map is not acceptance. If the accepted allocation delegates this behavior, this packet is withdrawn, not run. | Checklist T09 gate D acceptance record (named revision); allocation map disposition |
 | G4 | The pre-registration is **not frozen**, and no replay or E1 output exists for the edition *2026-10-02: this gate now binds the successor and is scoped in time. It means no replay or E1 output on the edition produced after the successor's first commit (`e85d321`). Output produced before that commit is disclosed in successor §D and governed there and by its ratified §7 successor-validity reading; it does not fail this gate. The successor's standing rule §R forbids any candidate-configurable replay before freeze.* | Pre-registration Status line; campaign record |
 
-Record the pre-registration commit the executor builds against. If the pre-registration changes after that commit, stop and return; do not reconcile the two.
+Record the pre-registration commit the executor builds against, and the sibling ORB/Striker pre-registration commit whose ruled ORB settings the shared successor settings carry. If either changes after its recorded commit, stop and return; do not reconcile.
 
 ## 1. Read first
 
@@ -52,7 +52,7 @@ Before writing anything, confirm with `git check-ignore -v` that every output pa
 
 ## 3. Steps
 
-- [ ] **Environment and baseline.** Run `.\fp.ps1 doctor`. Record the checkout revision, tree state and the G2 pre-registration commit. Hash the three inputs.
+- [ ] **Environment and baseline.** Run `.\fp.ps1 doctor`. Record the checkout revision, tree state, the G2 pre-registration commit and the sibling ORB/Striker pre-registration commit. Hash the three inputs.
 - [ ] **Use the ruled A1 / R1 override-only realization.** Retain the compatible Pine and port identities. Apply only the answered settings to the one shared successor file; if the sibling writer supplies it, verify its identity instead of creating another file. A changed Pine cannot satisfy the unchanged port's embedded identity: return BLOCKED for a separately ruled code edition or reviewed identity contract. Never disable the loader checks.
 - [ ] **Apply exactly the answered rules, and nothing else:**
   - **VAN-1:** no trailing fields on any bracket, whether entry, scale-in or amend.
@@ -95,7 +95,7 @@ Before writing anything, confirm with `git check-ignore -v` that every output pa
 |---|---|
 | Executor / dispatch revision | |
 | Gates G1–G4, including G2a and G3b (evidence link each) | |
-| Pre-registration commit built against | |
+| Pre-registration commit built against (and the sibling ORB/Striker pre-registration commit for the shared settings) | |
 | Checkout revision, tree state, `doctor` result | |
 | Input hashes (3 rows, match/mismatch) | |
 | Realization and governing rule | A1 / R1; successor §4 |
