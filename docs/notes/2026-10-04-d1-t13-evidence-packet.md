@@ -141,3 +141,15 @@ D1 ruling (ADR:542): accept "in one act once all of these hold". List items are 
 - **Text drift since `9c2a153`:** §3's "`git diff a87497e 9c2a153` is empty for the ADR" still holds, but against current main one line differs (`840c3a3`: §A12.2 now links T08 §7.10, "text unchanged from `aa20360`", verified by the reviewer). Benign.
 - **At D1 acceptance (ADR author):** add a dated change-history row for the `4a2a136` sitting-2 dispositions; the 2026-10-01 row points to 2026-10-02 rows that record only the narrowing.
 - **Fold re-check, 2026-10-05:** CLEAN_WITH_ACCEPTANCE_ITEMS at `2058c03`; earlier findings resolved. Folded: a per-down-event `alert_uid` (an open group no longer hides a later miss), a dedicated watch IRM integration (the incident integration's URL is not given to a third party), and the after-18:00 watch start.
+
+## Addendum 2026-10-05 — Joshua's D1 acceptance, conditional (recorded by coordinator (4))
+
+- **Decision:** Joshua, 2026-10-05, in his hyper conversation: "I accept". It was given after D1 was explained to him as acceptance of the assembled §A12 incident policy and its residual risks, with the required reviews still pending. C5 read the original message directly, so this is not a paraphrase. The provenance is kept privately.
+- **Status: CONDITIONAL, not yet effective.** D1 takes effect when both of these hold:
+  1. **Both step-4 reviews are clean for the D1 text** (ADR `:544`, `:565`):
+     - (a) the scoped refute-first review is done: CLEAN_WITH_ACCEPTANCE_ITEMS, with every item folded (addenda above);
+     - (b) the Codex review of #688 at its final head is **pending**.
+  2. **T13 adoption:** #688 merges.
+- **Review changes after acceptance:** the folds changed only how G1 is built: five per-weekday checks, a per-event `alert_uid`, a dedicated watch integration, the start state, and a late start. G1 is an arming precondition under Q4. They change no policy or residual risk that D1 accepts, so coordinator (4) classes them as not material. Any material change from the Codex review goes back to Joshua before D1 takes effect.
+- **Grants nothing else:** no dispatch, drill, arm, trading, deployment or spend (ADR `:567`).
+- **When it takes effect:** coordinator (4) records the effective date and SHA here and, as the ADR's owner text requires, adds the change-history row for the sitting-2 dispositions (addendum above).
