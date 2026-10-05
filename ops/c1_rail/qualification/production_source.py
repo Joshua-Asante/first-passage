@@ -1333,9 +1333,15 @@ class ProductionSource:
         """Open one worker epoch: the authority gate, then the full integrity check (row K6)."""
         if not _is_source_only(self.contract):
             raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
-        from .screen_authority import open_screen_epoch, require_validated_screen_authority
+        from .screen_authority import (_closure, _closure_holds, _refuse, open_screen_epoch,
+                                       require_validated_screen_authority)
         require_validated_screen_authority(authority, source_contract=self.contract, now=_now())
         self._verify_integrity()
+        # The loaded-closure check close runs, at open: no epoch issues, so no engine is built,
+        # over a closure that would close as drift (rows K5/K6; Codex r4179917167).
+        loaded = _closure()
+        _refuse('SCREEN_EPOCH_STALE', not _closure_holds(loaded, loaded, authority),
+                'the loaded closure does not hold at open')
         return open_screen_epoch(self, authority)
 
     def screen_bracket(self, path, *, authority, epoch):

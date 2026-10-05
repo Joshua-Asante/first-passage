@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -982,6 +983,18 @@ def _screen(tmp_path, monkeypatch):
     return screen, auth, source, path
 
 
+@contextmanager
+def _ready(screen, auth):
+    """screen.ready with a recorder whose loaded closure holds at open: every module already
+    loaded counts as a recorded stdlib name (synthetic, as test_screen_authority.cover_loaded)."""
+    from test_screen_authority import cover_loaded
+    with screen.ready(auth) as run_dir:
+        recorder = sys.p7_recorder
+        recorder.first_party, recorder.third_party, recorder.ports, recorder.stdlib = {}, {}, {}, set()
+        cover_loaded(recorder)
+        yield run_dir
+
+
 def _spy_engine(monkeypatch):
     calls, real = [], ProductionSource._engine
 
@@ -1010,7 +1023,7 @@ def test_K5(tmp_path, monkeypatch):
     other = ProductionSource.build(screen.case.validate(), artifact_root=screen.artifact_root)
     artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
     calls = _spy_engine(monkeypatch)
-    with screen.ready(auth):
+    with _ready(screen, auth):
         epoch = source.screen_epoch(authority=auth)
 
         def call(src=source, ep=epoch):
@@ -1043,7 +1056,7 @@ def test_K6(tmp_path, monkeypatch):
     from test_screen_authority import cover_loaded, sa
     screen, auth, source, path = _screen(tmp_path, monkeypatch)
     artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
-    with screen.ready(auth):
+    with _ready(screen, auth):
         epoch = source.screen_epoch(authority=auth)
         assert source.screen_bracket(path, authority=auth, epoch=epoch).deadline_failure == (False, False)
         _touch(artifact, 1_000_000_000)
@@ -1061,15 +1074,13 @@ def test_K6(tmp_path, monkeypatch):
 def test_K6_open_refuses_a_mismatched_loaded_closure(tmp_path, monkeypatch):
     """Codex r4179917167: a recorded first-party digest that differs from the loaded bytes refuses
     the epoch at open, before any engine is built (rows K5/K6); the matching twin opens."""
-    from test_screen_authority import MODULE, cover_loaded
+    from test_screen_authority import MODULE
     screen, auth, source, path = _screen(tmp_path, monkeypatch)
     calls = _spy_engine(monkeypatch)
-    with screen.ready(auth):
+    with _ready(screen, auth):
         recorder = sys.p7_recorder
         recorder.first_party = {'c1_rail.qualification.t00_screen_fixture': {
             'path': MODULE, 'sha256': hashlib.sha256(b'TEST_ONLY other bytes\n').hexdigest()}}
-        recorder.third_party, recorder.ports, recorder.stdlib = {}, {}, set()
-        cover_loaded(recorder)
         _refused('SCREEN_EPOCH_STALE', lambda: source.screen_epoch(authority=auth))
         assert calls == []
         recorder.first_party['c1_rail.qualification.t00_screen_fixture']['sha256'] = hashlib.sha256(
@@ -1086,7 +1097,7 @@ def test_K7(tmp_path, monkeypatch):
     from c1_rail.qualification import production_source
     from c1_rail.qualification.model import BracketReplayResult
     screen, auth, source, path = _screen(tmp_path, monkeypatch)
-    with screen.ready(auth):
+    with _ready(screen, auth):
         epoch = source.screen_epoch(authority=auth)
         _refused('SOURCE_ONLY_NOT_QUALIFICATION', lambda: source.verify_for(source.contract))
         assert type(source.replay_bracket(path)) is production_source.SourceOnlyBracket
@@ -1119,7 +1130,7 @@ def test_K8(tmp_path, monkeypatch):
                 return []
             return super().submit(actions, bar)
     monkeypatch.setattr(tv_broker_emulator, 'TVBrokerEmulator', WithholdingR2)
-    with screen.ready(auth):
+    with _ready(screen, auth):
         epoch = source.screen_epoch(authority=auth)
         for withhold, expected in ((False, (False, False)), (True, (False, True))):
             state['withhold_r2'] = withhold
