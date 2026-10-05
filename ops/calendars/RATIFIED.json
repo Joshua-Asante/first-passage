@@ -29,6 +29,20 @@
       "instruction": "ratify the calendar; corrected row for the re-authored digest 16e322b1 (overlap rows 2026-09-29 and 2026-09-30), written by the agent on the operator's explicit instruction of 2026-09-30",
       "record": "https://github.com/Joshua-Asante/first-passage/pull/560",
       "scope": "Book permission rows for the October 2026 monthly extension, including the 2026-09-29 and 2026-09-30 rollover overlap rows, as authored, with 2026-10-12 DENIED (MISSING_SOURCE). Grants no activation, deployment, resumption or historical legality."
+    },
+    {
+      "calendar_id": "tradeify-select-100k/forward/2026-11",
+      "calendar_file": "ops/calendars/book_session_calendar_2026-11.json",
+      "calendar_sha256": "b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7",
+      "closure_overlay_file": "ops/calendars/book_closure_overlay.json",
+      "closure_overlay_sha256": "483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b",
+      "coverage_start_utc": "2026-10-28T22:00:00Z",
+      "coverage_end_utc": "2026-11-30T22:00:00Z",
+      "ratified_by": "operator",
+      "ratified_utc": "2026-10-04T20:36:11Z",
+      "instruction": "ratify the calendar. i have opened grafana in the in chat browser, complete as many of the steps you mentioned as you can, ping me when you need me",
+      "record": "https://github.com/Joshua-Asante/first-passage/pull/685",
+      "scope": "Book permission rows for the November 2026 monthly extension, including the 2026-10-29 and 2026-10-30 rollover overlap rows, as authored: 2026-11-11 DENIED (MISSING_SOURCE), 2026-11-26 DENIED (HOLIDAY), 2026-11-27 DENIED (SHORTENED); 2026-11-25 and 2026-11-30 PERMITTED accepted; the 2026-11-26 row's cme_trade_date 2026-11-26 accepted by the operator as-is (CME trade date 2026-11-27; authoring tool has no trade-date input); Thanksgiving halts provisional, re-check on or after 2026-11-12 owed and any changed byte is a new digest and a new decision. Grants no activation, deployment, resumption or historical legality."
     }
   ]
 }
