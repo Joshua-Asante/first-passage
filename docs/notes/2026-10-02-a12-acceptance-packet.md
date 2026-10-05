@@ -1,6 +1,6 @@
 # §A12 acceptance packet — prerequisite reconciliation
 
-**Status:** Working acceptance packet, not an owner or a D1 acceptance. Updated 2026-10-04 against committed source `3da594975b319f55d3fe0a49c8c42b914b94de3d`. The [incident ADR §A12.5](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a125--evidence-still-owed) owns the decisions and prerequisites. §A12 remains PROPOSED; the accepted contracts govern until Joshua's D1 act.
+**Status:** Working acceptance packet, not an owner or a D1 acceptance. Updated 2026-10-04 against committed source `3da594975b319f55d3fe0a49c8c42b914b94de3d`. The [incident ADR §A12.5](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a125--evidence-still-owed) owns the decisions and prerequisites. §A12 was ACCEPTED 2026-10-05 (D1), effective at `2c71e7e` ([incident ADR §A12 Status](../adr/2026-09-17-bounded-platform-protection-incident-contract.md#a12--first-release-text-narrow-2026-10-01--accepted-2026-10-05-d1) and its 2026-10-05 change-history row own the record).
 
 **Provenance:** this note originally carried §A12.4 and §A12.6 from [#584](https://github.com/Joshua-Asante/first-passage/pull/584) at `e57bd98`. Its old D2–D7 questions and recommendations are superseded here by the recorded dispositions, effective with D1. Historical wording remains in Git history; this packet does not reopen those decisions. Documentary reconciliation is under Joshua's 2026-10-04T02:00:27Z simplification instruction and the deployment coordinator's bounded local allocation. Deployment integration and combined acceptance remain with that coordinator.
 
@@ -11,7 +11,7 @@ The [separate-session refute-first review](https://github.com/Joshua-Asante/firs
 | Item | Current owner text | Remaining boundary |
 |---|---|---|
 | A-1 | §A12.2 item 2 explicitly depends on D2(ii) = no, recorded in §A12.5 | Accepted E3 producer and UB-7 evidence still required; transfer never clears HALTED |
-| A-2 | §A12 introductory scope names the F3 watch among the added obligations | Actual T13 adoption is still a D1 prerequisite |
+| A-2 | §A12 introductory scope names the F3 watch among the added obligations | T13 adopted the watch in the D1 merge #688 (`2c71e7e`; ADR change history, 2026-10-05 row) |
 | A-3 | F5 routes the operator-action record to O-5/T13 before preservation trading while a request is held | Routing is not proof of an adopted record mechanism |
 | A-4 | The precedence paragraph names §A2/§A8/§A10; history identifies D7/D8 as later additions | No new acceptance follows from editorial corrections |
 
@@ -21,11 +21,11 @@ Historical review evidence inspected for this reconciliation:
 - [#638 whole-batch review](https://github.com/Joshua-Asante/first-passage/pull/638#issuecomment-5966073018): CLEAN at `a87497e8c97fbbe867c40bcabf0f4ae219ca33c4`, base `e9c6df66b75f94e8f751b3caa12df5a462b9c030`; documentary scope, not CI or merge authority. Its provenance states the delivered answer-sheet attachment was not recovered, so byte identity rests on reconstructed evidence.
 - [#638 carry](https://github.com/Joshua-Asante/first-passage/pull/638#issuecomment-5966169674): all 28 own-file blobs unchanged at `3303522bfb0cd949b5cba053d87c7c5e916ab67d`, conflict-free update and green CI.
 
-These receipts cover their named revisions. Current packet changes and final integrated D1/watch text still need scoped review. The old D7 rationale (Codex 4162535544) is replaced by the safeguards below; the stale-evidence premise (4162535551) is replaced by the ruled refusal latch. Neither is discharged merely by restating an old CLEAN.
+These receipts cover their named revisions. The final D1/watch text's step-4 reviews are recorded in the ADR change history (2026-10-05 row); current packet changes still need scoped review. The old D7 rationale (Codex 4162535544) is replaced by the safeguards below; the stale-evidence premise (4162535551) is replaced by the ruled refusal latch. Neither is discharged merely by restating an old CLEAN.
 
 ## §A12.4 — Reduced propagation set (on acceptance; not applied)
 
-On acceptance, only these owners receive a dated addendum or pointer. This table does not authorize propagation before D1. Separately authorized documentary corrections to draft handoffs may reconcile already-ruled requirements without making §A12 effective.
+On acceptance, only these owners receive a dated addendum or pointer. Separately authorized documentary corrections to draft handoffs may reconcile already-ruled requirements.
 
 *Status 2026-10-05 (§A12 ACCEPTED 2026-10-05 (D1), effective at `2c71e7e`; coordinator (4)):*
 - **Applied:** the ADR §2-row pointer; the CAP R3 addendum; the scope-note pointer; the T08 §7.8 and session-plan D5 pointers; the checklist T09 gate-B citation. The T13/D-MON row was met by the watch adoption (#688).
@@ -47,11 +47,11 @@ On acceptance, only these owners receive a dated addendum or pointer. This table
 
 ## §A12.6 — Recorded decisions and outstanding acceptance evidence
 
-All D2–D7 dispositions and the stale-evidence choice below are recorded in incident ADR §A12.5 under the 2026-10-02 sitting-2 ruling, **effective with D1**. They are not questions to ask again.
+All D2–D7 dispositions and the stale-evidence choice below are recorded in incident ADR §A12.5 under the 2026-10-02 sitting-2 ruling, **effective with D1** (accepted 2026-10-05, effective at `2c71e7e`). They are not questions to ask again.
 
 | Item | Recorded disposition | Evidence or action still required |
 |---|---|---|
-| D1 | One final acceptance act after its prerequisites; §A12 remains PROPOSED | #575 merge; both step-4 reviews and A-1–A-4 carry to final text; T13 watch adoption before or in the same act |
+| D1 | One final acceptance act after its prerequisites; ACCEPTED 2026-10-05, effective at `2c71e7e` (#688) | None for D1: the ADR's 2026-10-05 change-history row records the step-4 reviews and the T13 adoption; #575 merged at `9c2a153` |
 | D2–D3 | Runtime release terminal-only; attended recovery may transfer on unique correlation once an accepted E3 producer exists; F5 qualifies §A2 rule 6 and §A7 | UB-7 producer/evidence and implemented classifier remain owed. Release never clears HALTED or restores authority |
 | D4 | Rule 10 excluded from first-release amendment text | T09 must carry the case: transport loss on child k sends no child k+1. Ordered sends alone do not establish this |
 | D5 | Rule 11/UB-3 not carried as amendment text; watch and channel loss routed to D-MON/T13 | Adopt and bind the monitoring/watch mechanism; preserve the separate stale-refusal latch |
@@ -60,9 +60,9 @@ All D2–D7 dispositions and the stale-evidence choice below are recorded in inc
 | Stale evidence | Refusal, not incident; fresh evidence alone cannot reopen admission that session | TB-I3 latch implementation and verification remain owed; risk-reducing exits and scheduled flatten continue |
 | D8 | Decide if an armed commissioning session is defined; accepted contract governs meanwhile | Not a D1 prerequisite |
 
-**#575:** still open at `aa20360a972f4ad999ffbd206dc081ba8064b6df` when checked on 2026-10-04. Its existing author owns conflict resolution. Neither this packet nor another merged ruling bypasses the ADR's explicit merge prerequisite; refresh its state before D1.
+**#575:** merged at `9c2a153` (incident ADR §A12.2 cites T08 §7.10 as merged in #575).
 
-**Watch:** the [T13 candidate](2026-10-02-t13-a12-f3-held-request-watch-draft.md) remains a draft. W2 cadence (D-MON-5), W3 read authority (D-MON-2), W6 channel-loss response (D-MON-6), and the W5 outside-four preservation exception (D-MON-7) are recorded rulings, not open policy questions. Still verify OQ-1 owner disposition, the actual D-MON binding, the missed-check grace/completion mechanism, and T13 adoption. A ruled cadence does not implement a missed-check detector. Failed reads are missed checks; absent evidence releases no reservation; disarm does not end the watch. Optional broker notifications count only if free and qualified.
+**Watch:** the [T13 watch](2026-10-02-t13-a12-f3-held-request-watch-draft.md) was adopted by its owner in #688 (`2c71e7e`) and owns OQ-1 to OQ-5, the D-MON binding and the missed-check mechanism. Per the ADR's 2026-10-05 change-history row, its G1 build, G10, Q7 and HB-L1/L2 are arming preconditions. A ruled cadence does not implement a missed-check detector. Failed reads are missed checks; absent evidence releases no reservation; disarm does not end the watch. Optional broker notifications count only if free and qualified.
 
 ## Claim-specific evidence reuse
 
