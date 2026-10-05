@@ -75,6 +75,8 @@ Halt/resume §4 already anticipates this: "a different evidence/route protocol r
 
 The vendor answer (option A) can arrive at any point. It changes step 3's text, not the order of the steps.
 
+*Pointer 2026-10-05 (§A12 ACCEPTED 2026-10-05 (D1), effective at `2c71e7e`; §A12.4):* For the first release, T09 is specified against the **unamended** E3 (incident ADR §A12; 2026-10-01 rulings item 1). §1's "permanently" is read as indefinite-until-evidence (§A12.2 item 2).
+
 ## 6. Forbidden while scoping
 
 Editing any §3 owner's text; recording anything QUALIFIED under this scope; implementing reservation logic; sizing figures in this file; treating this note as acceptance of option A or B.
