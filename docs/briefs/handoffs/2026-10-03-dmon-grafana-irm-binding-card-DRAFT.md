@@ -239,6 +239,25 @@ Each runs a real `BookAccountOwner` on synthetic inputs → `IncidentNotifier` �
 
 **Owners:** HR `:59` (60 s escalation; qualification before live use); D-MON packet §7 items 2-3 (PR #606 `4d64e21:113-114`); PR #615 RH2 (`06efb2e:155`); coordinator (3), 2026-10-03 (the call step is asserted); OQ-2 and OQ-3 rulings, 2026-10-03 (lag bound; push at step 1). **Qualification of record:** the Q7 run on the post-trial free plan, after Joshua has verified and recorded the trial-expiry date (OA-8); a run during the trial is not qualification evidence.
 
+**Q7 of record: PASS (2026-10-05, coordinator (4), card owner).** One attended run under Joshua's explicit go of 2026-10-05T00:00:58Z (OA-7), scored under the OA-8 supersession (minimum required capabilities; no trial wait). Sources: the run's private journal (read-only query of sequence, kind, channel and time only, by C5); the Grafana timeline inspected by C5, whose receipt times Joshua confirmed on his handset match exactly; Joshua's direct observations (acknowledged, resolved, one group); and the original execution chat's terminal-verification report, retrieved by C5 (raw terminal output is not available). No URL, stack, region host or phone number is recorded.
+
+| Event | Time (UTC) | Source |
+|---|---|---|
+| Publish 1: attempt, `provider_accepted` | 00:46:04.898771 | journal |
+| Push / SMS / call (step 1 / step 1 / +1 min) | 00:46:06 / 00:46:11 / 00:47:21 | Grafana timeline inspected by C5; operator-corroborated on handset |
+| Publish 2 (republish, same `alert_uid`): attempt, `provider_accepted` | 00:47:35.085008 | journal |
+| Acknowledge in IRM | 00:49:18 | Grafana timeline inspected by C5 |
+| `delivered` (record-delivery; `safe to resolve (rail side)` seen before the resolve) | 00:53:30.060403 | journal; original execution chat terminal-verification report, retrieved by C5 |
+| Resolve | 00:56:41 | Grafana timeline inspected by C5 |
+
+- (a) PASS: push and SMS both arrived at step 1; publish→push about 1.1 s, publish→SMS about 6.1 s (second-resolution receipt times).
+- (b) PASS: the call fired at 00:47:21 without acknowledgment (acknowledged at 00:49:18).
+- (c) PASS: SMS→call 70 s (≤ 90 s); publish→call about 76.1 s.
+- (d) PASS: the republish joined the same alert group (Grafana inspection by C5; the older separate group was the 17:27 EDT setup demo); Joshua: one push, one text and one call, no duplicate.
+- (e) PASS: the journal shows each attempt and `provider_accepted` with times. HTTP 200 on both publishes is taken from the original execution chat terminal-verification report, retrieved by C5; the raw terminal output is not available.
+- Journal attempt and `provider_accepted` share a timestamp by journal semantics; they are not a measured network round trip.
+- OQ-6, after the resolve: Joshua reported "only one group; no further notifications". No observation window was stated, so none is recorded. Untested here: whether an acknowledgment before 60 s suppresses the call, and the C6 provider-side residual.
+
 ### Return taxonomy (worker build: U1-U15, Q1-Q6)
 
 - DONE: every red-first test recorded red at base and green at head; the §7 regression, `test-ops` and `check` green with records cited; the diff inside §5.
