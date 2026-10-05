@@ -182,11 +182,31 @@ def fake_install(root: Path):
     return base, site, files
 
 
-@pytest.mark.skipif(os.name != 'nt', reason='the ruled layout is the Windows install (card-owner ruling (1))')
-def test_class2_install_tree_digest_covers_the_ruled_set_and_nothing_else(tmp_path):
+class _OsAs:  # pylint: disable=too-few-public-methods
+    """p7_evidence's ``os`` with only ``name`` replaced, so either install layout is digested on any host."""
+
+    def __init__(self, name):
+        self.name = name
+
+    def __getattr__(self, attr):
+        return getattr(os, attr)
+
+
+def tree_digest(layout, site, base, fn=None):
+    """``install_tree_sha256(site, base=base)`` (or ``fn``) with p7_evidence seeing ``os.name == layout``."""
+    from c1_rail.qualification import p7_evidence  # pylint: disable=import-outside-toplevel
+    saved, p7_evidence.os = p7_evidence.os, _OsAs(layout)
+    try:
+        return (fn or p7_evidence.install_tree_sha256)(site, base=base)
+    finally:
+        p7_evidence.os = saved
+
+
+@pytest.mark.parametrize('layout', ['nt', 'posix'])
+def test_class2_install_tree_digest_covers_the_ruled_set_and_nothing_else(tmp_path, layout):
     from c1_rail.qualification import p7_evidence
     base, site, files = fake_install(tmp_path)
-    digest = p7_evidence.install_tree_sha256(site, base=base)
+    digest = tree_digest(layout, site, base)
     assert digest == p7_evidence.install_tree_sha256(site, base=base)
     xy = '{0}{1}'.format(*sys.version_info[:2])
     bound = (base / f'python{xy}.dll', base / 'vcruntime140.dll', base / f'python{xy}.zip', base / 'DLLs' / '_ext.pyd',
