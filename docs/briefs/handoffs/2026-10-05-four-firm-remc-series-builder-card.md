@@ -35,7 +35,7 @@ Inputs and pins come from the availability check, [PR #698](https://github.com/J
 
    A parity test under `tests/`, which may import both layers, asserts the spec equals `book_policy.entry_quantities` for those legs. That keeps one source.
 2. **Export timezone:** a required `export_tz` argument, with no default. Its value is a #616 freeze input, routed (§8). The builder also asserts at run time that no trade's exit falls after 16:45 ET on its session date; the venue-bound editions flatten earlier (campaign D11). A failure raises, and the run reads INSUFFICIENT.
-3. **Session date:** the exit timestamp's date in America/New_York. Every leg is flat each day (venue-bound editions), so no position spans two sessions; an entry and exit on different NY dates raises.
+3. **Session date:** the exit timestamp's date in America/New_York. Every leg is flat each day (venue-bound editions), so no position spans two sessions; an entry and exit on different NY dates raises. *Executor correction 2026-10-05:* "date" means the CME trade date, i.e. the NY time rolled at 18:00 ET. A calendar date would reject a legal Globex-evening entry such as 6J's. Exits in [16:45, 18:00) ET are late, and the MFFU flag covers [16:10, 18:00) ET.
 4. **Window:** the latest first-trade session to the earliest last-trade session across the six inputs, computed at run time. Every weekday inside it is a row.
 5. **`intraday_low` construction (conservative coincident sum):** for each day and mode, the low is minus the sum of `|Adverse excursion USD|` over every trade with that session date, all legs together, after the Aegis rescale. Per tier it also subtracts the day's full cost.
 6. **Costs:**
@@ -129,7 +129,22 @@ acceptance:
 
 ## §7 — Return
 
-*(Filled by the executor.)*
+**DONE_WITH_CONCERNS (2026-10-05).** Built through `glm_agent` (GLM hit its iteration cap). The coordinator-side worker reviewed the full diff and made one correction: the CME trade date (§0.5 item 3).
+
+**Files (new only):**
+- `lab/discovery/remc_series_builder.py`
+- `tests/test_remc_series_builder.py`: the 11 §6 tests plus `test_cme_trade_date_rollover`
+- `tests/test_remc_series_quantity_parity.py`
+
+**Evidence:**
+- `.p.ps1 python -m pytest` over the two new files plus `tests/test_prop_survivor_intraday_channel.py`: 19 passed, launcher record `completed`, exit 0.
+- `check_boundaries` OK; the §10 grep hooks are clean.
+- Synthetic inputs only. No real export was read.
+
+**Concerns:**
+1. `export_tz` is still a #616 freeze input (§8).
+2. The parser fails closed on any timestamp other than `YYYY-MM-DD HH:MM`. A real export in another format reads NEEDS_CONTEXT at run time, not a silent misparse.
+3. `manifest.json` stores the daily gross, sides and adverse-excursion arrays. It is written only to the gitignored private root.
 
 ## §8 — Routed, not done here
 
