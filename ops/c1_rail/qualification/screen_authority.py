@@ -833,7 +833,9 @@ def close_screen_epoch(epoch) -> ScreenEpochClose:
 
 def screen_epoch(source, *, authority) -> ScreenEpoch:
     """Open one worker epoch: the authority gate, then the full integrity check (row K6)."""
-    from .production_source import _is_source_only, _now
+    from .production_source import ProductionSource, _is_source_only, _now
+    if not isinstance(source, ProductionSource):
+        raise TypeError('SCREEN_REQUIRES_PRODUCTION_SOURCE')
     if not _is_source_only(source.contract):
         raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
     require_validated_screen_authority(authority, source_contract=source.contract, now=_now())
@@ -850,7 +852,10 @@ def screen_bracket(source, path, *, authority, epoch) -> ScreenBracket:
     """R1 and R2 on fresh engines, unsealed, with each run's deadline flag and consumed splits.
 
     Every refusal fires before any engine is built (row K5)."""
-    from .production_source import BRACKET_RUNS, ScheduleExecutionBracket, _consumed_splits, _is_source_only, _now
+    from .production_source import (BRACKET_RUNS, ProductionSource, ScheduleExecutionBracket, _consumed_splits,
+                                    _is_source_only, _now)
+    if not isinstance(source, ProductionSource):
+        raise TypeError('SCREEN_REQUIRES_PRODUCTION_SOURCE')
     if not _is_source_only(source.contract):
         raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
     from .replay import ReplayDeadlineFailure
