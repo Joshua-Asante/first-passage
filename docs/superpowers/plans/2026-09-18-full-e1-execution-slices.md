@@ -2153,3 +2153,19 @@ More closure changes are queued: #611 (`production_source`), the C′ build, ter
 *2026-10-03 (coordinator (3) batch 2b), ENG-2:* operator ruling 2026-10-02 (sitting 2), ENG-2 option C ([record](#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)), supersedes "the one fresh S5 Part A measurement before R1" above. These step-3 edits are covered by the one PART_A re-measure on the integrated pre-S8 candidate head; until then, interim TEST_ONLY runs, R1 included, carry the unmeasured-closure caveat. The basis (measured acceptance after the last closure change; nothing carries before it) is unchanged.
 
 **Not granted:** the step-3 dispatch (its own card, after step 2), any other measured-closure edit, any R1 grant or any merge.
+
+### Coordinator transfer — Codex deployment coordinator, 2026-10-05
+
+Joshua appointed a Codex chat as **deployment coordinator**, effective 2026-10-05, replacing C5 for overall coordination and combined acceptance. The new coordinator relayed the appointment to coordinator (4) on the same day; its session identity is held in the private coordinator records, not here. Under the STATE handoff obligation, this entry names that session as successor to C5's role.
+
+- **Unchanged (bounded owners):**
+  - coordinator (4) keeps card and repository authorship and acceptance for its lanes: the T00 card and P-F acceptance, the D1/T13 records, D-MON-1 and the notifier, and the feed-equivalence spec;
+  - the PR merge-order agent stays the sole merge writer;
+  - build and review workers keep their assignments.
+- **Preserved:**
+  - §A12 D1 in effect at `2c71e7e` (#690; propagation #692);
+  - November calendar ratified (#685);
+  - D-MON-1 Q7 PASS (#687);
+  - T00 depth, budgets and windows (#691).
+- No new merge or operational authority is granted.
+
