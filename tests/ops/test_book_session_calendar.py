@@ -494,11 +494,11 @@ def test_evidence_file_cannot_escape_the_repository(tmp_path):
 def test_checked_in_ratification_binds_exactly_the_checked_in_bytes():
     """The operator's 2026-09-15 ratification names the current calendar and overlay digests.
 
-    The 2026-09-29 October row is the only other ratification; it is checked in
-    test_october_is_ratified_and_admits.
+    The October and November rows are the only other ratifications, checked in
+    their own tests.
     """
     rows = load_ratifications(RATIFIED)
-    assert set(rows) == {CALENDAR_SHA256, OCT_CALENDAR_SHA256}
+    assert set(rows) == {CALENDAR_SHA256, OCT_CALENDAR_SHA256, NOV_CALENDAR_SHA256}
     row = rows[CALENDAR_SHA256]
     assert row["closure_overlay_sha256"] == OVERLAY_SHA256
     assert row["ratified_by"] == "operator" and row["instruction"] == "ratify calendar 650e8aab"
@@ -1107,6 +1107,11 @@ def test_october_alone_supports_the_september_30_settlement_and_the_october_1_ch
 NOV_CALENDAR = REPO / "ops" / "calendars" / "book_session_calendar_2026-11.json"
 NOV_EVIDENCE = REPO / "ops" / "calendars" / "evidence" / "2026-10-02-forward-session-source-captures.json"
 NOV_CALENDAR_SHA256 = "b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7"
+NOV_INSTRUCTION = (
+    "ratify the calendar. i have opened grafana in the in chat browser, complete as many of the "
+    "steps you mentioned as you can, ping me when you need me"
+)
+NOV_RATIFIED_UTC = "2026-10-04T20:36:11Z"
 NOV_EVIDENCE_SHA256 = "60f873c65fe749ff5962a882eb623df0b59dac0c74b361e26b4ffc0154906684"
 NOV_HALTS_SOURCES = ("cme-ui-november-2026", "cme-globex-2026-holiday-schedule")
 NOV_DENIALS = {
@@ -1208,7 +1213,25 @@ def test_november_thanksgiving_rows_use_the_holiday_deadline_and_cited_halts():
     assert cal.session_for(et(2026, 11, 27, 9)).refusal == "session_denied:SHORTENED"
 
 
-def test_november_is_not_ratified():
+def test_november_is_ratified_and_admits():
     raw = load_november()
     assert raw.session_for(et(2026, 11, 16, 9)).refusal == "calendar_not_ratified"
-    assert NOV_CALENDAR_SHA256 not in load_ratifications(RATIFIED)
+    row = load_ratifications(RATIFIED)[NOV_CALENDAR_SHA256]
+    assert row["closure_overlay_sha256"] == OVERLAY_SHA256
+    assert row["ratified_by"] == "operator"
+    assert row["instruction"] == NOV_INSTRUCTION
+    assert row["ratified_utc"] == NOV_RATIFIED_UTC
+    assert (row["coverage_start_utc"], row["coverage_end_utc"]) == (
+        "2026-10-28T22:00:00Z", "2026-11-30T22:00:00Z")
+    cal = load_ratified_calendar(NOV_CALENDAR, overlay_path=OVERLAY,
+                                ratified_path=RATIFIED, repo_root=REPO)
+    assert cal.calendar_digest == NOV_CALENDAR_SHA256
+    assert cal.ratified_at == datetime.fromisoformat(NOV_RATIFIED_UTC.replace("Z", "+00:00"))
+    for day in (16, 25, 30):
+        assert cal.session_for(et(2026, 11, day, 9), expected_digest=NOV_CALENDAR_SHA256).permitted
+    for day, reason in ((11, "MISSING_SOURCE"), (26, "HOLIDAY"), (27, "SHORTENED")):
+        assert cal.session_for(et(2026, 11, day, 9)).refusal == f"session_denied:{reason}"
+    payload = json.loads(NOV_CALENDAR.read_bytes())
+    thanksgiving = next(r for r in payload["sessions"] if r["account_date"] == "2026-11-26")
+    assert {product: values["cme_trade_date"] for product, values in thanksgiving["products"].items()} == {
+        "6J": "2026-11-26", "MGC": "2026-11-26", "MYM": "2026-11-26", "MNQ": "2026-11-26"}
