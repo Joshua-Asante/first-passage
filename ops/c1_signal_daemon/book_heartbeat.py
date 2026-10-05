@@ -22,15 +22,16 @@ here starts a process.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+import http.client
 import logging
 import math
 import os
+import re
+import socket
 import ssl
 import threading
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 
 
 RUNTIME_SECRET_REF = "env:FP_DMON_GRAFANA_IRM_HEARTBEAT_URL"
@@ -38,6 +39,7 @@ NOTIFIER_SECRET_REF = "env:FP_DMON_GRAFANA_IRM_NOTIFIER_HEARTBEAT_URL"
 HOST_SUFFIX = ".grafana.net"
 PATH_SUFFIX = "/heartbeat/"  # UNVERIFIED for Formatted Webhook; HB-L1 confirms (§0.5 item 1)
 MAX_RESPONSE_BYTES = 64 * 1024
+MAX_ABANDONED_SENDS = 4  # sends past their deadline whose threads have not ended yet
 BINDING_KEYS = frozenset({"secret_ref", "period_s", "timeout_s"})
 
 _LOG = logging.getLogger(__name__)
@@ -84,9 +86,13 @@ def url_refusal(url, *, allow_loopback_http=False):
     return None
 
 
-class _NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, *args, **kwargs):  # noqa: ARG002 - a redirect is never followed
-        return None
+def endpoint_identity(url):
+    """The destination a URL names: scheme, lower-case host, effective port, and the path with
+    percent-escapes decoded and repeated slashes collapsed. Equivalent spellings compare equal."""
+    parts = urllib.parse.urlsplit(url)
+    port = parts.port or {"https": 443, "http": 80}.get(parts.scheme)
+    path = re.sub(r"/{2,}", "/", urllib.parse.unquote(parts.path))
+    return parts.scheme, (parts.hostname or "").rstrip("."), port, path
 
 
 def _positive(name, value):
@@ -128,10 +134,7 @@ class HeartbeatPinger:
         self._seen_count = None
         self._stats = {"marks": 0, "sends_started": 0, "sends_ok": 0, "sends_failed": 0,
                        "last_outcome": None, "last_send_start": None}
-        self._opener = urllib.request.build_opener(
-            urllib.request.ProxyHandler({}),
-            urllib.request.HTTPSHandler(context=ssl.create_default_context()),
-            _NoRedirect())
+        self._abandoned = []  # threads of sends that missed their deadline
 
     def __repr__(self):
         return "HeartbeatPinger(secret_ref=%r, period_s=%r, timeout_s=%r)" % (
@@ -140,7 +143,8 @@ class HeartbeatPinger:
     __str__ = __repr__
 
     def _same_target(self, other):
-        return isinstance(other, HeartbeatPinger) and other.__url == self.__url
+        return (isinstance(other, HeartbeatPinger)
+                and endpoint_identity(other.__url) == endpoint_identity(self.__url))
 
     # -- progress ------------------------------------------------------------------------------
 
@@ -152,6 +156,13 @@ class HeartbeatPinger:
             self._stats["marks"] += 1
             if not self._idle.is_set() or (self._last_send_start is not None
                                            and now - self._last_send_start < self.period_s):
+                return
+            self._abandoned = [thread for thread in self._abandoned if thread.is_alive()]
+            if len(self._abandoned) >= MAX_ABANDONED_SENDS:
+                self._last_send_start = now
+                self._stats["sends_failed"] += 1
+                self._stats["last_outcome"] = "SendCapacityExhausted"
+                _LOG.warning("heartbeat send failed: %s", "SendCapacityExhausted")
                 return
             self._last_send_start = now
             self._stats["sends_started"] += 1
@@ -177,19 +188,60 @@ class HeartbeatPinger:
     # -- transport -----------------------------------------------------------------------------
 
     def _send(self):
-        outcome = "ok"
-        request = urllib.request.Request(self.__url, data=b"", method="POST")
+        """One POST under a whole-operation deadline of ``timeout_s`` (#701 review P2).
+
+        The request runs on an inner thread. The socket timeout bounds each blocking call; the
+        join bounds the whole operation, including DNS, TLS and a response that trickles bytes.
+        At the deadline the connection is shut down to unblock the inner thread, the send is
+        recorded as ``TimeoutError`` and the slot is freed; a late result is discarded.
+        """
+        box, connections = {}, []
+        worker = threading.Thread(target=self._request, args=(box, connections),
+                                  name="book-heartbeat-request", daemon=True)
         try:
-            with self._opener.open(request, timeout=self.timeout_s) as response:
-                response.read(MAX_RESPONSE_BYTES)
-                if not 200 <= response.status < 300:
-                    outcome = "HTTPStatus"
-        except urllib.error.HTTPError as exc:  # carries the URL: mapped here, never propagated
-            outcome = "HTTPError"
-            exc.close()
+            worker.start()
+        except Exception as exc:  # noqa: BLE001 - a thread that cannot start is a failed send
+            self._finish(type(exc).__name__)
+            return
+        worker.join(self.timeout_s)
+        if worker.is_alive():
+            box["abandoned"] = True
+            for connection in connections:
+                _abort(connection)
+            with self._lock:
+                self._abandoned.append(worker)
+            self._finish("TimeoutError")
+            return
+        self._finish(box.get("outcome", "UnknownOutcome"))
+
+    def _request(self, box, connections):
+        deadline = time.monotonic() + self.timeout_s
+        scheme, host, port, _ = endpoint_identity(self.__url)
+        target = urllib.parse.urlsplit(self.__url).path
+        try:
+            if scheme == "https":
+                connection = http.client.HTTPSConnection(
+                    host, port, timeout=self.timeout_s, context=ssl.create_default_context())
+            else:
+                connection = http.client.HTTPConnection(host, port, timeout=self.timeout_s)
+            connections.append(connection)
+            try:
+                connection.request("POST", target, body=b"", headers={"Content-Length": "0"})
+                response = connection.getresponse()
+                remaining = MAX_RESPONSE_BYTES
+                while remaining > 0:
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError()
+                    chunk = response.read1(min(remaining, 8192))
+                    if not chunk:
+                        break
+                    remaining -= len(chunk)
+                outcome = "ok" if 200 <= response.status < 300 else "HTTPStatus"
+            finally:
+                connection.close()
         except Exception as exc:  # noqa: BLE001 - timeout, refusal, DNS or TLS: class name only
             outcome = type(exc).__name__
-        self._finish(outcome)
+        box["outcome"] = outcome
 
     def _finish(self, outcome):
         with self._lock:
@@ -207,6 +259,20 @@ class HeartbeatPinger:
         """Counters and the last outcome class; never the URL."""
         with self._lock:
             return dict(self._stats, in_flight=not self._idle.is_set())
+
+
+def _abort(connection):
+    """Shut down a connection's socket from another thread; best effort, never raises."""
+    sock = getattr(connection, "sock", None)
+    try:
+        if sock is not None:
+            sock.shutdown(socket.SHUT_RDWR)
+    except OSError:
+        pass
+    try:
+        connection.close()
+    except Exception:  # noqa: BLE001 - cleanup only
+        pass
 
 
 def step_with_heartbeat(loop, pinger, *, now, read_status):

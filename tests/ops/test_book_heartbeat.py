@@ -87,6 +87,16 @@ class Receiver:
                 if receiver.mode == "hang":
                     receiver.release.wait(SETTLE)
                     return
+                if receiver.mode == "drip_headers":  # headers trickle one byte per 50 ms
+                    for byte in b"HTTP/1.1 200 OK\r\nX-Slow: " + b"x" * 1000:
+                        if receiver.release.wait(0.05):
+                            return
+                        try:
+                            self.wfile.write(bytes([byte]))
+                            self.wfile.flush()
+                        except OSError:
+                            return
+                    return
                 if receiver.mode == "drip":  # a 200 that trickles one byte per 50 ms
                     self.send_response(200)
                     self.send_header("Content-Length", "1000")
@@ -339,9 +349,11 @@ def test_send_failure_never_blocks_or_raises(clock, receivers, caplog, mode):  #
     assert TOKEN not in text and "127.0.0.1" not in text and PATH not in text
 
 
-def test_send_deadline_covers_the_whole_operation(clock, receivers):  # H6 (#701 review P2)
-    # A 200 that trickles a byte before every socket timeout must still end at timeout_s.
-    receiver = receivers(mode="drip")
+@pytest.mark.parametrize("mode", ["drip", "drip_headers"])
+def test_send_deadline_covers_the_whole_operation(clock, receivers, mode):  # H6 (#701 P2)
+    # A byte before every socket timeout, in the body or the headers, must still end at
+    # timeout_s.
+    receiver = receivers(mode=mode)
     pinger = _pinger(receiver.url, clock, period=0.4, timeout=0.2)
     started = time.monotonic()
     pinger.mark_progress()
@@ -398,7 +410,7 @@ def _imports(path):
 
 def test_heartbeat_modules_import_allowlist():  # H8
     allowed = {"__future__", "argparse", "collections.abc", "datetime", "http.client", "logging",
-               "math", "os", "pathlib", "ssl", "sys", "threading", "time", "urllib.error",
+               "math", "os", "pathlib", "re", "socket", "ssl", "sys", "threading", "time", "urllib.error",
                "urllib.parse", "urllib.request", "c1_signal_daemon.book_heartbeat"}
     for path in MODULES:
         names = _imports(path)
