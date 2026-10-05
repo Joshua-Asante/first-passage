@@ -116,3 +116,14 @@ D1 ruling (ADR:542): accept "in one act once all of these hold". List items are 
 - W cites HR at `bd30646` lines (:49, :57, :59, :65, :84, :110). At `9c2a153` they are :53, :61, :63, :79, :98, :124. The HR owner readings inserted at HR:67–75 shifted them. Correct at adoption.
 - T13C:72 and :175 still treat W5 item 3 versus F-5 as an open conflict, and I5/I6 as "unmerged (#606)" (T13C:90–91). D-MON-7 (W:67) ruled the conflict, and #606 has merged. Refresh at T13C freeze.
 - The OPT:124 ruling text ("push, SMS at 1 minute, then a phone call") differs from the configured chain (SMS and push at t=0, call at 1 minute; OPT:124 "Done" note; GB:62, :262). The later OQ-3 ruling governs; no action beyond noting it.
+
+## Addendum 2026-10-04 — Joshua's rulings on §5 (recorded by coordinator (4))
+
+**Decision:** Joshua, 2026-10-04T20:30:58Z, directly to coordinator (4): "approve the recommendations". The recommendations were put to him after an independent refute-first scrutiny, as revised below. This records his decisions on the questions. It is not the D1 acceptance act and not the T13 adoption.
+
+- **Q1 (OQ-1), attendance: APPROVED as revised.** The attendance reading stands, with step 2 reading "managed" (HR `:53`), not "close or cancel every position and order". Any flatten made against a held close or flatten request falls under Joshua's C-a residual-risk decision (ADR `:532`), because a manual flatten followed by a late close can leave an opposite position (E4, ADR `:474-479`).
+- **Q2, review: APPROVED as revised.** Fold the Q1, Q3 and Q4 answers into the watch adoption text first. Then run one scoped refute-first review over the §A12 changes `7928327..a87497e` plus the final adoption text, before D1. Owner: coordinator (4). Not yet run.
+- **Q3, missed-check grace: APPROVED as revised.** The grace is 60 minutes after the due time that G1 defines. It is confirmed when G1 is specified, because W2's per-session-open cadence (W `:35`) has no fixed interval until then.
+- **Q4: APPROVED as narrowed.** T13 may adopt the watch, and D1 may proceed, with the dead-man check (G1) specified but not built, provided the G1 build, its end-to-end qualification (G10) and the channel qualifications (Q7, HB-L1/L2) are all arming preconditions before the first armed session. At adoption this is written into the deployment checklist (CL `:601`) and STATE (G6), because the arm helper does not check it.
+- **Packet fix owed at the next touch:** the G10 row says Q4 does not name G10, but Q4 as narrowed does.
+

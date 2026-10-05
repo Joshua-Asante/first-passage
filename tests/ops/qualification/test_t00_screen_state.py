@@ -20,10 +20,13 @@ import socket
 from types import MappingProxyType
 
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from c1_rail.qualification.contract import ContractValidationError
+from c1_rail.qualification.contract import ContractValidationError, TrustedApprovalKey
 from c1_rail.qualification.contract import canonical_json_bytes as canonical
 from c1_rail.qualification.replay import ReplayNeedsContext
+from test_contract import NOW, _approval
 
 ROOTS = ('root-a', 'root-b')
 POPULATIONS = ('FULL', 'H1', 'H2')
@@ -57,6 +60,22 @@ def hexd(label):
 
 AUTH = hexd('authority')
 CLOSURE = hexd('closure')
+ACT_SCOPE = 'APPROVE_T00_SCREEN_ACT'  # P-A's SCREEN_ACT_SCOPE, as validate_screen_act signs
+OPERATOR = Ed25519PrivateKey.generate()  # test key material, generated in-process
+FINAL_CLOSURE = {  # an EPOCH_CLOSE closure, in P-A's ScreenEpochClose families (R-INT-2)
+    'first_party': {'ops.a': {'path': 'ops/a.py', 'sha256': hexd('ops/a.py')}},
+    'third_party': {'numpy': {'path': 'numpy/__init__.py', 'sha256': hexd('numpy')}},
+    'ports': {'ports/p.py': hexd('port')}, 'stdlib': ['json']}
+
+
+def trusted(private=OPERATOR, key_id='operator', authority_class='OPERATOR'):
+    """``check_record``'s ``trusted_keys``: one in-process key under ``authority_class``."""
+    public = private.public_key().public_bytes(serialization.Encoding.Raw,
+                                               serialization.PublicFormat.Raw)
+    return {key_id: TrustedApprovalKey(key_id, public, authority_class)}
+
+
+TRUSTED = trusted()
 
 
 def cost(cpu=1.0, wall=1.25):
@@ -70,9 +89,10 @@ def epoch_open(closure=CLOSURE):
             'guard_sha256': hexd('guard')}
 
 
-def epoch_close(match=True):
-    """An EPOCH_CLOSE body."""
-    return {'integrity': cost(71.0, 80.0), 'closure_match': match}
+def epoch_close(match=True, closure=None):
+    """An EPOCH_CLOSE body: integrity, closure_match and the final closure (K6 as amended)."""
+    return {'integrity': cost(71.0, 80.0), 'closure_match': match,
+            'closure': FINAL_CLOSURE if closure is None else closure}
 
 
 def run_body(tag, status, salt=''):
@@ -183,13 +203,15 @@ def segment_end(k, w, cls, cause, reasons=None):
             'peak_memory_bytes': 600 << 20}
 
 
-def act_file(head, act='CONTINUE', authority=AUTH):
-    """(act SHA-256, {file name: canonical {act_b64, approval_b64}}) for a signed act (F5)."""
+def act_file(head, act='CONTINUE', authority=AUTH, approval=None):
+    """(act SHA-256, {file name: canonical {act_b64, approval_b64}}) for an act signed under
+    ``ACT_SCOPE`` over ``sha256(act)`` (F5, X3); ``approval(raw)`` replaces the signature."""
     raw = canonical({'act': act, 'authority_sha256': authority, 'ledger_head_sha256': head,
                      'readers': [{'exposure': 'not seen', 'name': 'coordinator (3)'}],
                      'schema': 't00_screen_act/v1', 'statement': 'continue'})
+    signed = _approval(raw, OPERATOR, scope=ACT_SCOPE) if approval is None else approval(raw)
     container = canonical({'act_b64': base64.b64encode(raw).decode('ascii'),
-                           'approval_b64': base64.b64encode(b'{}').decode('ascii')})
+                           'approval_b64': base64.b64encode(signed).decode('ascii')})
     return sha(raw), {sha(raw) + '.json': container}
 
 
@@ -309,10 +331,12 @@ def verified_run(listed, ran):
     return final.records, {**journals, 'v1-w0.jsonl': journal.records}, m, acts
 
 
-def check(ledger, journals, m, acts=None, keys=PLAN):
-    """``state.check_record`` over a simulated run."""
+def check(ledger, journals, m, acts=None, keys=PLAN, trusted_keys=None, now=NOW):
+    """``state.check_record`` over a simulated run, its acts checked at ``now``."""
     state, _ = modules()
-    return state.check_record(ledger, journals, m, acts or {}, keys=keys)
+    return state.check_record(ledger, journals, m, acts or {}, keys=keys,
+                              trusted_keys=TRUSTED if trusted_keys is None else trusted_keys,
+                              now=now)
 
 
 def materialize(run_dir, ledger, journals):
@@ -668,7 +692,8 @@ def test_S16(tmp_path):
         ledger, journals, m, acts = simulate(segments, seed=seed)
         ledger, journals = materialize(tmp_path / label, ledger, journals)
         assert state.fold(ledger) == state.State('COMPLETE')
-        result = state.check_record(ledger, journals, m, acts, keys=PLAN)
+        result = state.check_record(ledger, journals, m, acts, keys=PLAN, trusted_keys=TRUSTED,
+                                    now=NOW)
         assert result.code is None and result.completed == frozenset(PLAN)
         rows[label] = journal.outcomes(journals, PLAN)
         produced[label] = journal.results(
@@ -1074,7 +1099,8 @@ def test_check_record_journal_names():
                    bad: journals['s1-w1.jsonl']}
         assert check(ledger, renamed, m, acts).code == 'CORRUPTION', bad
     duplicate = {**journals, 's1-w01.jsonl': journals['s1-w1.jsonl']}  # (s, 1, 1) twice
-    assert state.check_record(ledger, duplicate, m, acts, keys=PLAN).code == 'CORRUPTION'
+    assert state.check_record(ledger, duplicate, m, acts, keys=PLAN, trusted_keys=TRUSTED,
+                              now=NOW).code == 'CORRUPTION'
     assert [journal.journal_name(n) for n in ('c1-w0.jsonl', 's1-w0.jsonl', 'v12-w10.jsonl')] == [
         ('c', 1, 0), ('s', 1, 0), ('v', 12, 10)]
     assert journal.journal_name('s1-w01.jsonl') is None
