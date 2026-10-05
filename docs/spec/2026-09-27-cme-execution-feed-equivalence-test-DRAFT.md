@@ -1,6 +1,6 @@
 # SPEC: CME execution-feed equivalence test for the four-leg book (TB-I5 successor)
 
-**Status:** FROZEN 2026-10-02 3e40994325c2d27c4d47746b477ed8e9f78db349a434c29fd9f668527e6139d8 (§16.1 form; frozen on the operator's merge of PR #585, merge commit `721be61`). **Frozen body:** this file with this one Status line removed (recompute: `sed '3d' docs/spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md | sha256sum`; valid only if line 3 is this line and is the file's only line starting `**Status:**`, §16.3 step 6). **All eleven parameters are bound** (§16.2; bindings logged in §16.4). Each is bound before any provider data by the §16.3 procedure, and collection may not start while any is OPEN. Provider-neutral: no provider is named, selected, priced or contacted here. The path keeps its `-DRAFT` suffix so that existing links resolve (§16.5). *Reading recorded 2026-10-03 (status-line pointer only; body unchanged):* the §7 correction row's "raise health" (`:150`) is read as **the source latches unhealthy** on a revision of a delivered bar (operator ruling 2026-10-02, sheet 2 item 3); the owner record is [binding packet §4 item 7](../notes/2026-10-02-feed-spec-open-parameter-binding-packet.md).
+**Status:** FROZEN 2026-10-02 9fb537d393f72ee149abc035174755046b520d983722f1b29fe4b2a2892ff1d5 (§16.1 form; frozen on the operator's merge of PR #585, merge commit `721be61`). **Frozen body:** this file with this one Status line removed (recompute: `sed '3d' docs/spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md | sha256sum`; valid only if line 3 is this line and is the file's only line starting `**Status:**`, §16.3 step 6). **All eleven parameters are bound** (§16.2; bindings logged in §16.4). Each is bound before any provider data by the §16.3 procedure, and collection may not start while any is OPEN. Provider-neutral: no provider is named, selected, priced or contacted here. The path keeps its `-DRAFT` suffix so that existing links resolve (§16.5). *Reading recorded 2026-10-03 (status-line pointer only; body unchanged):* the §7 correction row's "raise health" (`:150`) is read as **the source latches unhealthy** on a revision of a delivered bar (operator ruling 2026-10-02, sheet 2 item 3); the owner record is [binding packet §4 item 7](../notes/2026-10-02-feed-spec-open-parameter-binding-packet.md). *Amended 2026-10-05 (§16.4):* §7.1 defines bucket completeness, late versus missing data, collector evidence loss and "capture incomplete".
 **Date:** 2026-09-27. **Base:** `claude/clever-wozniak-bx0u95` at `521d8f2`.
 **Assignment:** [handoff H8](../briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md#h8--feed-provider-neutral-preparation) (provider-neutral preparation only). **Sequencing owner:** [deployment-checklist addendum 2026-09-27](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step), workstream row "Feed" and checkpoints CP-6/CP-7.
 **Successor to:** the TB-I5 specification named in the [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) (row TB-I5 at `:234`, packet text at `:644`). The umbrella's placeholder path `docs/spec/2026-09-1x-cme-execution-feed-equivalence-test.md` does not exist; this file is that specification in draft. It does not edit the [locked XAUUSD feed-equivalence spec](feed_equivalence_discovery_test_LOCKED.md), which it uses as a structural template only.
@@ -144,7 +144,7 @@ Each rule states the consumer's existing behavior (the owner), how this test cou
 
 | Condition | Consumer behavior (owner) | Test treatment | Adapter requirement |
 |---|---|---|---|
-| **Gap**: a missing constituent inside a 15-minute bucket | None directly; it sees only the built bar | Built bar compared under M1–M3. Constituent gaps are logged from the raw capture | Build only from delivered constituents; never interpolate. A bucket whose completeness cannot be established by the deadline is not emitted, and M5/M8 count it |
+| **Gap**: a missing constituent inside a 15-minute bucket | None directly; it sees only the built bar | Built bar compared under M1–M3. Constituent gaps are logged from the raw capture | Build only from delivered constituents; never interpolate. A bucket whose completeness cannot be established by the deadline is not emitted, and M5/M8 count it. *Amended 2026-10-05:* "established" is defined in §7.1(b) |
 | **Gap**: a missing 15-minute slot | Non-contiguous `ts` halts (`book_runtime.py:376–:381`); silence halts (`book_account_owner.py:864–:866`) | M1 and M6 | Emit nothing; report unhealthy |
 | **Reconnect** | Unhealthy while disconnected (S2b §2 Reconnect `:49`); an unhealthy source halts the book; recovery grants no permission (halt/resume §2 `:37`; rail §5) | Each disconnect, its duration and the reconnect are recorded; affected slots are scored under M1/M5/M6 | Reconnect with backoff; after reconnect deliver only bars still within the M5 bound |
 | **Correction / backfill** | A second, different bar for a known `ts` halts (`book_runtime.py:361–:363`, `:382–:385`); a stale `ts` halts (`:350–:353`) | M7. Backfill is recorded in the raw capture and labelled; it never substitutes for the live delivery in the L arm | Never forward a revised bar for a delivered `ts`. Record it and raise health |
@@ -154,6 +154,33 @@ Each rule states the consumer's existing behavior (the owner), how this test cou
 | **Early close** | Calendar rows set `V` and the §5 schedule (halt/resume §5 `:67–:73`); product halts differ (Step 4 `:37–:38`) | Slots after the product's halt must be absent on both sides; a provider bar there is an M1 failure | Emit nothing after the product's halt |
 | **DST** | UTC instants; DST gap/fold wall times refused at calendar load (Step 4 `:53–:54`) | UTC keys only. The window's DST exposure is reported | Timestamps in UTC or an unambiguous offset; never naive local time |
 | **Daily break (17:00–18:00 ET)** | Outside session coverage; not counted as missing (halt/resume §2 `:28`) | Excluded from compared slots | Emit nothing in the break |
+
+### 7.1 Completeness, late and missing data, and collector evidence loss
+
+*Adopted 2026-10-05 as a pre-data body amendment (§16.4), owed under [binding packet](../notes/2026-10-02-feed-spec-open-parameter-binding-packet.md) addendum 2026-10-04 disposition 3 and §4 question 6. The (d) values are adopted with it.*
+
+- **(a) Live delivery.** Only bytes received on the live subscription deliver a slot. A message the provider labels as replay, backfill, snapshot or historical, or one returned by a request, is recorded and labelled (§12 item 4) and never delivers a slot (§7 correction row; §13). If replayed messages cannot be told apart from live ones, every message received after a reconnect and timed before that reconnect is treated as replay; "timed" is on the OPEN-1 (i) clock and, for a bar constituent, by its interval end.
+- **(b) Completeness of a bucket** (the "established" of the §7 gap row). A leg's bucket `[open, open + 15 min)` is complete on receipt of the first live message for that leg's stream that is a constituent, a provider no-trade marker for the leg, or a status message scoped to the leg's symbol or channel, timed at or after `open + 15 min` on the OPEN-1 (i) clock; for a bar stream, the constituent whose interval ends at `open + 15 min` also completes it. The proving message counts only if no earlier message can still arrive: either the stream carries sequence identifiers and every earlier identifier has been received, or the provider's documented contract is in-order delivery per stream (an eligibility fact; §14 item 10). Identifiers missing from a gap whose bracketing receipts span any part of a loss interval (d) count as received for this purpose. A heartbeat or keep-alive carrying neither an exchange or provider time nor a sequence identifier proves the connection, not completeness. A no-trade marker proves completeness only; it is not trade evidence (§4.3(c)). The adapter emits the bucket's bar only if completeness is reached by `open + 15 min + 30 s`. M5 scores a bar on time only if its emission time on the collector clock, plus the absolute value of the most recent recorded clock offset (d)2, is at or before that deadline.
+- **(c) Late versus missing (provider-attributable).** Each scored slot of each leg outside every loss interval (d) falls in exactly one branch. Separately, M6 counts, for every branch, each in-coverage interval longer than `2 × 15 min + 30 s` in which the leg has no emitted bar.
+  - *On time:* the bar is emitted by the deadline. M1–M4 compare it.
+  - *Late:* live constituents for the bucket were received, but completeness came after the deadline or not at all. Nothing is emitted (§7 gap row). Scored: M5 for the slot and M8 for its boundary; M1–M4 compare the bar built from every live constituent of the bucket received before the receipt horizon. Late data is never scored as missing.
+  - *Missing:* no live constituent for the bucket was received before the receipt horizon. Scored: M1 (§6 universe) and M8 for its boundary (§4.3(a)).
+  - *Latched* (takes precedence over the branches above): the slot's bar was not emitted before a latch, in the same session, of the source serving the leg. A latch occurs when a live constituent arrives for a bucket whose bar was already emitted, or on a revision of a delivered bar (Status-line reading of the §7 correction row). Nothing is emitted from the latch to the end of that session and there is no recovery inside the test. Scored: M5 for the slot and M8 for its boundary. The late constituent itself is recorded and never forwarded; if it would change the emitted bar it is counted as a raw-stream revision (M7, OPEN-6), and M1–M4 compare the emitted bar.
+  - *Receipt horizon:* the end of collection, which is no earlier than 15 minutes after the window's end (OPEN-8).
+- **(d) Collector evidence loss.** Loss intervals are half-open, `[start, end)`, and are determined from the collector's own records only, never from provider messages or their absence. Each applies to all four legs. The numeric values are operator judgment against the consumer's 30 s `BAR_SLACK` (`book_protocol.py:39–:40`); the basis for each is given with it.
+  1. *Liveness.* The collector appends a liveness tick, carrying monotonic and wall-clock time, to the same durable store as the raw capture at least once per second. A gap of more than 5 s between consecutive ticks on the monotonic clock, or a process restart, is a loss interval from the last tick before it to the first tick after it. *Basis:* a stall the record cannot see is under one sixth of the slack.
+  2. *Clock.* Clock-synchronization offset is recorded at least every 60 s. An interval with no record for more than 60 s, or with a measured offset above 250 ms, is a loss interval, from the last good record before it to the first good record after it. *Basis:* 250 ms is under 1% of the slack, and offsets within it are charged against the provider by (b), never in its favour.
+  3. *Independent reachability.* The collector probes two reference endpoints, named in its configuration before collection and operated by neither the provider nor any party in its delivery chain, at least every 10 s. An interval in which both probes fail is a loss interval, from the last success of either before it to the first success of either after it. A provider disconnect or silence while either probe succeeds is a provider event (§7 reconnect row) and is scored under (c). *Basis:* two probe periods fit inside the slack.
+  4. *Transport completion.* Every received message is persisted before it is parsed. For each connection the collector compares the bytes (or frames) that the transport library hands to the application, after TLS, decompression and framing are removed, with the bytes (or frames) persisted for that connection; the layer is named in the collector configuration before collection. A mismatch is a loss interval over the connection's span.
+  5. *Storage integrity.* The raw store is append-only in segments, each closed with a SHA-256 digest written to the liveness record. A write error, or a segment that is missing or fails its digest, is a loss interval over the segment's span.
+
+  For each leg, a loss interval extends to the open of the first bucket that opens after both its end and, if the collector reconnected, the confirmed resubscription of that leg. A sequence gap, a stall or a disconnect observed while 1–5 show no loss is provider-attributable.
+- **(e) Capture incomplete (§10 BLOCKED).** A slot is *unattributable* if `[open, open + 15 min + 30 s]` intersects a loss interval; a boundary is unattributable if any leg's slot is. After arm C passes, calendar coverage holds and the §6 canonical post-halt check passes:
+  1. *Per symbol:* FAIL if its attributable slots already fail any frozen threshold, since missing evidence cannot remove a failure; otherwise `BLOCKED — capture incomplete` if any of its scored slots is unattributable; otherwise §10.
+  2. *Book:* FAIL if any symbol is FAIL or the attributable boundaries fail M8; otherwise `BLOCKED — capture incomplete` if any symbol is BLOCKED or any scored boundary is unattributable; otherwise §10. Unattributable boundaries are judged here, not per symbol.
+  3. Every BLOCKED run is counted and reported as an attempt (§10, OPEN-9).
+
+  An unattributable slot is never filled from backfill or historical bars, and its session is never dropped and replaced with a later one (§13).
 
 ## §8 — Synchronization across the four legs
 
@@ -197,7 +224,7 @@ The test therefore scores the book, not only each symbol. M8 counts the boundari
   - follow an operator rule, OWED, on whether a change to later-binding B items only (note §3) may re-apply after a FAIL, and if so how many times.
 
   Without such a rule, a trivial setting change would reopen the test, and the zero-tolerance M5, M6 and M8 thresholds make outcomes sensitive to which window is drawn.
-- **BLOCKED** (not FAIL): arm C fails; calendar coverage is missing; the capture is incomplete; or the fresh canonical capture has a bar after an early-close halt in an in-coverage session anywhere in the verdict window (§6). The test did not run.
+- **BLOCKED** (not FAIL): arm C fails; calendar coverage is missing; the capture is incomplete (*amended 2026-10-05:* defined by §7.1(e), which also sets its precedence against FAIL); or the fresh canonical capture has a bar after an early-close halt in an in-coverage session anywhere in the verdict window (§6). The test did not run.
 - **PASS grants nothing** beyond recording the source identity and configuration digest in the B7 execution fingerprint. Emission, arming and deployment keep their own gates.
 
 ## §11 — Evidence record format
@@ -221,7 +248,8 @@ The umbrella requires "a RESULTS note with digests only" (`:234`) and that PASS 
 - the collector host identity and its clock-synchronization evidence;
 - per-boundary, per-leg arrival times;
 - the emission-disabled evidence (§12);
-- the attempt count for this provider (§10).
+- the attempt count for this provider (§10);
+- *(amended 2026-10-05)* each §7.1(d) loss interval, with its evidence, and the slots and boundaries it made unattributable; each scored slot's §7.1(c) branch and completion proof.
 
 No owner read here permits public counts. Moving any field to the public note is an operator decision, OWED.
 
@@ -233,11 +261,12 @@ The design is [note §4](../notes/2026-09-27-feed-provider-neutral-preparation.m
 3. provider sequence identifiers, if any;
 4. correction and backfill messages, labelled as such;
 5. the dated contract subscribed per symbol per session;
-6. the built 15-minute bars, with references to their constituent messages;
+6. the built 15-minute bars, with references to their constituent messages; *(amended 2026-10-05)* for each bucket, the message that proved it complete under §7.1(b) and its receipt time, and the slot's §7.1(c) branch;
 7. per-boundary, per-leg delivery times;
 8. health state transitions;
 9. the calendar rows in force;
-10. emission-disabled evidence, as specified in the note.
+10. emission-disabled evidence, as specified in the note;
+11. *(amended 2026-10-05)* the §7.1(d) collector records: liveness ticks, clock-synchronization offsets, reference-probe results, per-connection received-byte counts and raw-store segment digests.
 
 ## §13 — Forbidden moves
 
@@ -250,6 +279,7 @@ The design is [note §4](../notes/2026-09-27-feed-provider-neutral-preparation.m
 - Treating an interface or `BarSource` implementation as equivalence (umbrella `:553`).
 - Any signal emission, listener POST or order during collection.
 - Naming, selecting or funding a provider through this document.
+- *(amended 2026-10-05)* Classifying an interval as collector evidence loss from anything but the §7.1(d) collector records; or declaring a run `BLOCKED — capture incomplete` when its attributable slots already FAIL (§7.1(e)).
 
 ## §14 — Open items and UNVERIFIED register
 
@@ -262,6 +292,7 @@ The design is [note §4](../notes/2026-09-27-feed-provider-neutral-preparation.m
 7. Calendar rows for the eventual window (R-MAP-3).
 8. Whether a fresh capture can reproduce the canonical inputs exactly in `(bar_open_utc, O, H, L, C)` (arm C). The 2026-09-15 re-captures agreed on timestamps and prices (Step 3 `:31–:35`). The field of the one-row difference in the September 5 duplicates is not stated (execution domain `:359–:361`).
 9. The role of the panel sidecar `tz` value (§4.1).
+10. *(amended 2026-10-05)* Whether each provider documents in-order delivery per stream (§7.1(b)). It is a provider-documentation question for the provider-question list (owner: coordinator (4)), answerable before signup.
 
 ## §15 — Verification of this spec
 
@@ -344,6 +375,7 @@ Unchanged by this freeze: §11's default that no count moves to the public note 
 | 2026-10-04 | OPEN-8 | Window: starts at the first covered session after the recorded collection start; ends at the 17:00 ET close once ≥10 covered sessions, ≥2 Sunday opens, ≥2 Friday closes, ≥1 month-end-adjacent; non-covered sessions listed, never scored; calendar exhaustion BLOCKED | Joshua, 2026-10-04T00:36:30Z, to coordinator (4): "go as both as stated" (OPEN-8 and OPEN-10 wording as put to him; OPEN-8 start per his 2026-10-04 disposition 2) | `3ae6199a8b09b7b7da9dd9a5370e05d273816f5b6223aabd007bb969f7a0a146` |
 | 2026-10-04 | OPEN-10 | Arm C overlap per symbol: contiguous to 2026-09-03T00:00Z, from no later than the band start around the latest pre-2026-09-03 canonical switch, ≥10 complete permitted sessions | Joshua, 2026-10-04T00:36:30Z, to coordinator (4): "go as both as stated" (OPEN-8 and OPEN-10 wording as put to him; OPEN-8 start per his 2026-10-04 disposition 2) | `f89661fb736fb9c3ab172098a83b9d7e394f1f80c591efd4d8888f573720b86e` |
 | 2026-10-04 | OPEN-8 (amended) | Scoring is per leg: a session inside the window with a permitted row inside the collection is scored for every leg not in its own roll band; the covered-session definition (outside every band) now governs only the window minimum and start/end | Joshua, 2026-10-04T08:34:31Z, to coordinator (4): "yes, fold as corrected" (amended OPEN-8 wording put to him after Codex review r4176749691 on #666 found that the 2026-10-04T00:36:30Z wording excluded every leg when one leg is banded, against OPEN-4) | `55aa42d1ae90e2641e2e7910141573194881d6c3cdf280b62eccecaf01c5d13d` |
+| 2026-10-05 | Body amendment §7.1 (with pointers in §7 gap row, §10, §11, §12, §13, §14) | §7.1: live delivery only; bucket completeness proof (in-stream message timed ≥ `open + 15 min`, ordered by sequence or documented in-order contract; heartbeats are not proof); late (M5/M8; M1–M4 on the late-built bar) versus missing (M1); collector loss intervals from liveness, clock, independent reachability, transport byte-count and storage-integrity records only; capture incomplete per symbol, then book (unattributable boundaries at book level), BLOCKED only if attributable evidence does not already FAIL; latched slots scored M5/M8 | Joshua, 2026-10-05T18:24Z (session receipt time), to the worker for coordinator (4) on PR #694: "adopt §7.1 as revised, finalize the decision commit". Adopted as revised for the stand-in review on #694 (F1–F12), as a §16.4-logged pre-data amendment with no ADR (§13's ADR vehicle governs re-opening after data), under binding packet addendum 2026-10-04 disposition 3. Attested: no provider data seen (no provider approved or contacted); CP-6 not reached (checklist CP-6 row open at main `7082a08`) | `3e40994325c2d27c4d47746b477ed8e9f78db349a434c29fd9f668527e6139d8` |
 
 ### 16.5 Path
 
