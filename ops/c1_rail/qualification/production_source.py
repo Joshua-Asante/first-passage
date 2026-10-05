@@ -1309,3 +1309,30 @@ class ProductionSource:
             return SourceOnlyProof(self.contract.evidence_class, self.contract.contract_sha256,
                                    self.contract.approval.approval_sha256, edges, tuple(joins))
         return edges, tuple(joins)
+
+    # ---- T00 screen capability (design 2026-10-02 section 3.3; rows K5-K8) ----
+    # The entry points are screen_authority.screen_epoch/screen_bracket (Codex r4180236028): this
+    # module imports no screen module, so its closure stays PRODUCTION_TRUST_POLICY's. The sealed
+    # methods above keep their source text (row K7): screen_bracket copies replay_bracket's loop,
+    # and _consumed_splits copies _seal's placement expression.
+
+    def _verify_identity(self):
+        """The O(1) checks of _verify_integrity: issuance, factory identity and the r3c lifecycle."""
+        from c1_signal_daemon.book_adapters import _resolve_domain
+        from .contract import require_validated_source_contract
+        issued = _SOURCE_ISSUED.get(id(self))
+        if issued is None or issued[0]() is not self:
+            raise ValueError('factory-issued source object required')
+        contract = self.contract
+        if (type(self) is not ProductionSource or self._token is not _SOURCE_TOKEN
+                or _resolve_domain(contract) is not self._domain
+                or self.prepared.contract_sha256 != contract.contract_sha256):
+            raise ValueError('source factory identity does not bind the exact production G1 contract')
+        require_validated_source_contract(contract, now=_now())
+
+
+def _consumed_splits(provider):
+    """_seal's placement expression for one bracket provider (row K8)."""
+    return tuple(sorted(
+        (occurrence, leg, instant.isoformat()) for occurrence, leg, instant in provider._placed
+        if instant.minute % 15 or instant.second or instant.microsecond))
