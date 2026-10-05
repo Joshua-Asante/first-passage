@@ -65,10 +65,12 @@ ESCALATION_STEP_S = 60.0
 # one slot reserved, so a hung channel cannot starve a healthy one; the config therefore
 # refuses more channels than this. Card §0.7 justifies the value.
 MAX_OUTSTANDING_PUBLISHES = 8
-# kind -> (needs a secret reference, delivers). Concrete providers are OWED to D-MON.
+# kind -> (needs a secret reference, delivers). grafana_irm is the D-MON-1 binding
+# (ops/c1_rail/book_incident_grafana_irm.py); this module never imports it.
 # A non-delivering kind (local_file) is evidence only: its acceptance never ends a round,
 # never counts against ALL_CHANNELS_LOST and never closes a job (card §3.3).
-CHANNEL_KINDS = {"fake": (True, True), "local_file": (False, False)}
+CHANNEL_KINDS = {"fake": (True, True), "local_file": (False, False),
+                 "grafana_irm": (True, True)}
 _SECRET_REF = re.compile(r"^(env|secret):[A-Z][A-Z0-9_]{0,63}$")
 _NAME = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
