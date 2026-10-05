@@ -6,7 +6,7 @@ that unsigned input never reaches ``git`` (design §3.2): the bytes alone (rows 
 the signature (A2, A3), then ``_check_bindings`` with the authority, the receipt, the P7 record,
 the reality it reads and every blob in hand (A5-A10); only then is the receipt issued.
 ``require_validated_screen_authority`` re-checks it on every use (K1-K4). Screen epochs and
-their stat guard serve ``ProductionSource.screen_epoch``/``screen_bracket`` (§3.3; rows K6 and
+their stat guard serve this module's ``screen_epoch``/``screen_bracket`` (§3.3; rows K6 and
 K8 are tested by P-B2); ``validate_screen_act`` checks Joshua's signed acts (X2, X3). Build card
 2026-10-03 §2.3, §3.1. ``contract.py`` is imported, never edited.
 """
@@ -706,7 +706,7 @@ def _guard(auth: ValidatedScreenAuthority) -> tuple:
 
 def open_screen_epoch(source, authority) -> ScreenEpoch:
     """Record the stat-guard set and loaded closure for (source, authority); called by
-    ``ProductionSource.screen_epoch`` after its full integrity check."""
+    ``screen_epoch`` after its full integrity check."""
     _require_issued(authority)
     guard = _guard(authority)
     closure = _closure()
@@ -824,6 +824,59 @@ def close_screen_epoch(epoch) -> ScreenEpochClose:
     except Exception:  # pylint: disable=broad-exception-caught  # an unreadable dependency is drift
         match = False
     return ScreenEpochClose(_sha(canonical_json_bytes(closure)), match)
+
+
+# ---- the screen entry points (design §3.3; rows K5-K8). They live here, not on ProductionSource,
+# so production_source imports no screen module (Codex r4180236028). Private source access is the
+# screen capability's (A10b allowlist). -------------------------------------------------------
+# pylint: disable=protected-access
+
+def screen_epoch(source, *, authority) -> ScreenEpoch:
+    """Open one worker epoch: the authority gate, then the full integrity check (row K6)."""
+    from .production_source import _is_source_only, _now
+    if not _is_source_only(source.contract):
+        raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
+    require_validated_screen_authority(authority, source_contract=source.contract, now=_now())
+    source._verify_integrity()
+    # The loaded-closure check close runs, at open: no epoch issues, so no engine is built,
+    # over a closure that would close as drift (rows K5/K6; Codex r4179917167).
+    loaded = _closure()
+    _refuse('SCREEN_EPOCH_STALE', not _closure_holds(loaded, loaded, authority),
+            'the loaded closure does not hold at open')
+    return open_screen_epoch(source, authority)
+
+
+def screen_bracket(source, path, *, authority, epoch) -> ScreenBracket:
+    """R1 and R2 on fresh engines, unsealed, with each run's deadline flag and consumed splits.
+
+    Every refusal fires before any engine is built (row K5)."""
+    from .production_source import BRACKET_RUNS, ScheduleExecutionBracket, _consumed_splits, _is_source_only, _now
+    if not _is_source_only(source.contract):
+        raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
+    from .replay import ReplayDeadlineFailure
+    require_validated_screen_authority(authority, source_contract=source.contract, now=_now())
+    require_open_screen_epoch(epoch, source=source, authority=authority)
+    source._verify_identity()
+    by_id = {s.session_id: s for s in source.sessions}
+    if not path or any(by_id.get(s.source.session_id) != s.source for s in path):
+        raise ValueError('path contains a source session outside retained covered panel')
+    bracket = ScheduleExecutionBracket(source._quotes)
+    results, failed, splits = [], [], []
+    for run_id in BRACKET_RUNS:
+        provider = bracket.for_run(run_id)
+        engine = source._engine(provider)
+        flag = False
+        try:
+            result = engine.run(path)
+        except ReplayDeadlineFailure as exc:
+            result, flag = exc.result, True
+        results.append(result)
+        failed.append(flag)
+        splits.append(_consumed_splits(provider))
+    return ScreenBracket(BracketReplayResult(*results), tuple(failed), tuple(splits))
+
+
+# pylint: enable=protected-access
 
 
 # ---- acts (rows X2, X3) ----------------------------------------------------------------------

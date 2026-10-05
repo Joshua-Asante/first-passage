@@ -996,6 +996,12 @@ def _ready(screen, auth):
         yield run_dir
 
 
+def sa():
+    """The screen entry points' owner (screen_authority.screen_epoch/screen_bracket)."""
+    from c1_rail.qualification import screen_authority
+    return screen_authority
+
+
 def _spy_engine(monkeypatch):
     calls, real = [], ProductionSource._engine
 
@@ -1025,10 +1031,10 @@ def test_K5(tmp_path, monkeypatch):
     artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
     calls = _spy_engine(monkeypatch)
     with _ready(screen, auth):
-        epoch = source.screen_epoch(authority=auth)
+        epoch = sa().screen_epoch(source, authority=auth)
 
         def call(src=source, ep=epoch):
-            return src.screen_bracket(path, authority=auth, epoch=ep)
+            return sa().screen_bracket(src, path, authority=auth, epoch=ep)
         _refused('SCREEN_REQUIRES_SOURCE_RECEIPT', lambda: call(qualification))         # K1
         _refused('SCREEN_SOURCE_MISMATCH', lambda: call(other))                         # K1
         monkeypatch.setattr(production_source, '_now', lambda: NOW + timedelta(minutes=90))
@@ -1054,21 +1060,21 @@ def test_K5(tmp_path, monkeypatch):
 def test_K6(tmp_path, monkeypatch):
     """An r3c artifact file's mtime changes mid-epoch: the next call is stale; the epoch closes with
     the full check; a closed epoch serves nothing; a new epoch opens and serves again."""
-    from test_screen_authority import cover_loaded, sa
+    from test_screen_authority import cover_loaded
     screen, auth, source, path = _screen(tmp_path, monkeypatch)
     artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
     with _ready(screen, auth):
-        epoch = source.screen_epoch(authority=auth)
-        assert source.screen_bracket(path, authority=auth, epoch=epoch).deadline_failure == (False, False)
+        epoch = sa().screen_epoch(source, authority=auth)
+        assert sa().screen_bracket(source, path, authority=auth, epoch=epoch).deadline_failure == (False, False)
         _touch(artifact, 1_000_000_000)
-        _refused('SCREEN_EPOCH_STALE', lambda: source.screen_bracket(path, authority=auth, epoch=epoch))
+        _refused('SCREEN_EPOCH_STALE', lambda: sa().screen_bracket(source, path, authority=auth, epoch=epoch))
         recorder = sys.p7_recorder
         recorder.first_party, recorder.third_party, recorder.ports, recorder.stdlib = {}, {}, {}, set()
         cover_loaded(recorder)
         assert sa().close_screen_epoch(epoch).closure_match
-        _refused('SCREEN_EPOCH_REQUIRED', lambda: source.screen_bracket(path, authority=auth, epoch=epoch))
-        reopened = source.screen_epoch(authority=auth)
-        assert source.screen_bracket(path, authority=auth, epoch=reopened).deadline_failure == (False, False)
+        _refused('SCREEN_EPOCH_REQUIRED', lambda: sa().screen_bracket(source, path, authority=auth, epoch=epoch))
+        reopened = sa().screen_epoch(source, authority=auth)
+        assert sa().screen_bracket(source, path, authority=auth, epoch=reopened).deadline_failure == (False, False)
 
 
 @SCREEN
@@ -1082,12 +1088,12 @@ def test_K6_open_refuses_a_mismatched_loaded_closure(tmp_path, monkeypatch):
         recorder = sys.p7_recorder
         recorder.first_party = {'c1_rail.qualification.t00_screen_fixture': {
             'path': MODULE, 'sha256': hashlib.sha256(b'TEST_ONLY other bytes\n').hexdigest()}}
-        _refused('SCREEN_EPOCH_STALE', lambda: source.screen_epoch(authority=auth))
+        _refused('SCREEN_EPOCH_STALE', lambda: sa().screen_epoch(source, authority=auth))
         assert calls == []
         recorder.first_party['c1_rail.qualification.t00_screen_fixture']['sha256'] = hashlib.sha256(
             (screen.repo / MODULE).read_bytes()).hexdigest()
-        epoch = source.screen_epoch(authority=auth)                                     # twin
-        assert type(source.screen_bracket(path, authority=auth, epoch=epoch)).__name__ == 'ScreenBracket'
+        epoch = sa().screen_epoch(source, authority=auth)                                     # twin
+        assert type(sa().screen_bracket(source, path, authority=auth, epoch=epoch)).__name__ == 'ScreenBracket'
         assert len(calls) == 2
 
 
@@ -1099,11 +1105,11 @@ def test_K7(tmp_path, monkeypatch):
     from c1_rail.qualification.model import BracketReplayResult
     screen, auth, source, path = _screen(tmp_path, monkeypatch)
     with _ready(screen, auth):
-        epoch = source.screen_epoch(authority=auth)
+        epoch = sa().screen_epoch(source, authority=auth)
         _refused('SOURCE_ONLY_NOT_QUALIFICATION', lambda: source.verify_for(source.contract))
         assert type(source.replay_bracket(path)) is production_source.SourceOnlyBracket
         assert type(source.replay(path)) is production_source.SourceOnlyReplay
-        assert type(source.screen_bracket(path, authority=auth, epoch=epoch).bracket) is BracketReplayResult
+        assert type(sa().screen_bracket(source, path, authority=auth, epoch=epoch).bracket) is BracketReplayResult
     hashes = _sealed_source_sha256()
     assert hashes == SEALED_SOURCE_SHA256
     assert hashlib.sha256(b'def replay(self, path): ...\n').hexdigest() not in hashes.values()   # twin
@@ -1132,10 +1138,10 @@ def test_K8(tmp_path, monkeypatch):
             return super().submit(actions, bar)
     monkeypatch.setattr(tv_broker_emulator, 'TVBrokerEmulator', WithholdingR2)
     with _ready(screen, auth):
-        epoch = source.screen_epoch(authority=auth)
+        epoch = sa().screen_epoch(source, authority=auth)
         for withhold, expected in ((False, (False, False)), (True, (False, True))):
             state['withhold_r2'] = withhold
-            wrapped = source.screen_bracket(path, authority=auth, epoch=epoch)
+            wrapped = sa().screen_bracket(source, path, authority=auth, epoch=epoch)
             sealed = source.replay_bracket(path)
             runs = (sealed.r1, sealed.r2)
             assert wrapped.deadline_failure == tuple(run.deadline_failure for run in runs) == expected

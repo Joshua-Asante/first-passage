@@ -78,6 +78,19 @@ ALLOWLIST = {
         'ProductionSource. The provider admits nothing itself and does not check what it is given; its current '
         'construction sites in ops/ (an observation, not enforced) are compute._run_checkpoint_compute (after '
         'verify_for) and ProductionExecutor.run_stage (after _admit).',
+    # --- the T00 screen entry points (design 2026-10-02 §3.3, rows K5-K8; moved out of
+    # ProductionSource by Codex r4180236028 so production_source imports no screen module) ---
+    ('c1_rail/qualification/screen_authority.py:screen_epoch', 'contract'):
+        'Reads the source\'s contract for the source-only check (SCREEN_REQUIRES_SOURCE_RECEIPT) and as '
+        'require_validated_screen_authority\'s source_contract; then _verify_integrity and the loaded-closure '
+        'check run before any epoch is issued. No replay/proof/engine here.',
+    ('c1_rail/qualification/screen_authority.py:screen_bracket', 'contract'):
+        'Reads the source\'s contract for the source-only check and as require_validated_screen_authority\'s '
+        'source_contract; both run before require_open_screen_epoch, _verify_identity and any engine.',
+    ('c1_rail/qualification/screen_authority.py:screen_bracket', '_engine'):
+        'The screen capability itself (row K5): engines are built only after the source-only check, '
+        'require_validated_screen_authority, require_open_screen_epoch (stat guard), _verify_identity and the '
+        'retained-panel path check; results are wrapped unsealed in ScreenBracket, never qualification.',
     # --- `.contract` reads on ProductionExecutor (self.contract is the executor's validated contract slot) ---
     ('c1_rail/qualification/production.py:ProductionExecutor.initial_state', 'contract'):
         'Reads the executor\'s own contract slot after self._checked_domain(); not a ProductionSource receiver.',

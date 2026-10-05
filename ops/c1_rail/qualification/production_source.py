@@ -1311,9 +1311,10 @@ class ProductionSource:
         return edges, tuple(joins)
 
     # ---- T00 screen capability (design 2026-10-02 section 3.3; rows K5-K8) ----
-    # Gated by a ValidatedScreenAuthority and an open screen epoch. The sealed methods above
-    # keep their source text (row K7): screen_bracket copies replay_bracket's loop, and
-    # _consumed_splits copies _seal's placement expression.
+    # The entry points are screen_authority.screen_epoch/screen_bracket (Codex r4180236028): this
+    # module imports no screen module, so its closure stays PRODUCTION_TRUST_POLICY's. The sealed
+    # methods above keep their source text (row K7): screen_bracket copies replay_bracket's loop,
+    # and _consumed_splits copies _seal's placement expression.
 
     def _verify_identity(self):
         """The O(1) checks of _verify_integrity: issuance, factory identity and the r3c lifecycle."""
@@ -1328,51 +1329,6 @@ class ProductionSource:
                 or self.prepared.contract_sha256 != contract.contract_sha256):
             raise ValueError('source factory identity does not bind the exact production G1 contract')
         require_validated_source_contract(contract, now=_now())
-
-    def screen_epoch(self, *, authority):
-        """Open one worker epoch: the authority gate, then the full integrity check (row K6)."""
-        if not _is_source_only(self.contract):
-            raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
-        from .screen_authority import (_closure, _closure_holds, _refuse, open_screen_epoch,
-                                       require_validated_screen_authority)
-        require_validated_screen_authority(authority, source_contract=self.contract, now=_now())
-        self._verify_integrity()
-        # The loaded-closure check close runs, at open: no epoch issues, so no engine is built,
-        # over a closure that would close as drift (rows K5/K6; Codex r4179917167).
-        loaded = _closure()
-        _refuse('SCREEN_EPOCH_STALE', not _closure_holds(loaded, loaded, authority),
-                'the loaded closure does not hold at open')
-        return open_screen_epoch(self, authority)
-
-    def screen_bracket(self, path, *, authority, epoch):
-        """R1 and R2 on fresh engines, unsealed, with each run's deadline flag and consumed splits.
-
-        Every refusal fires before any engine is built (row K5)."""
-        if not _is_source_only(self.contract):
-            raise ValueError('SCREEN_REQUIRES_SOURCE_RECEIPT: the screen serves only a source-only source')
-        from .model import BracketReplayResult
-        from .replay import ReplayDeadlineFailure
-        from .screen_authority import ScreenBracket, require_open_screen_epoch, require_validated_screen_authority
-        require_validated_screen_authority(authority, source_contract=self.contract, now=_now())
-        require_open_screen_epoch(epoch, source=self, authority=authority)
-        self._verify_identity()
-        by_id = {s.session_id: s for s in self.sessions}
-        if not path or any(by_id.get(s.source.session_id) != s.source for s in path):
-            raise ValueError('path contains a source session outside retained covered panel')
-        bracket = ScheduleExecutionBracket(self._quotes)
-        results, failed, splits = [], [], []
-        for run_id in BRACKET_RUNS:
-            provider = bracket.for_run(run_id)
-            engine = self._engine(provider)
-            flag = False
-            try:
-                result = engine.run(path)
-            except ReplayDeadlineFailure as exc:
-                result, flag = exc.result, True
-            results.append(result)
-            failed.append(flag)
-            splits.append(_consumed_splits(provider))
-        return ScreenBracket(BracketReplayResult(*results), tuple(failed), tuple(splits))
 
 
 def _consumed_splits(provider):
