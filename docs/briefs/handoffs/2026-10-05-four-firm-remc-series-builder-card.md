@@ -148,7 +148,7 @@ acceptance:
 
 ## §8 — Routed, not done here
 
-- **`export_tz`:** the TradingView trade-list timezone is not established in a public owner (the identity ledger :154 leaves CSV timezone semantics open). #616 needs its value as a freeze input before the run; coordinator (4) routes it.
+- **`export_tz`:** *ruled 2026-10-05* (operator, directly to coordinator (4); #616 I-25): `America/New_York`, DST-aware, via `zoneinfo`, never a fixed offset. Evidence: [Q-COSTGEO-2](../pre-registration/Q-COSTGEO-2-verdict-preregistration.md) :18, :89 (New York 96.2% / 97.4%; fixed UTC-4 64.8% / 68.8%). The argument stays required, with no default.
 - **Capacity and takeover** between legs are not modeled, per the O-4 named risk.
 - **Step 3c′ (mode-switching kernel) and step 3e (reference reassembly)** have their own cards.
 
