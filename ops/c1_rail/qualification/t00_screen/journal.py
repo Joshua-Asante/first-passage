@@ -135,6 +135,22 @@ def _populations(value):
             and all(map(_POPULATION, value.values())))
 
 
+def _names(check):
+    return lambda value: type(value) is dict and all(
+        _text(name) and check(row) for name, row in value.items())
+
+
+def _distinct(value):
+    return _list(_text)(value) and len(set(value)) == len(value)
+
+
+# A final loaded closure, in P-A's ``close_screen_epoch`` families (screen_authority
+# CLOSURE_FAMILIES): module rows by name, port digests by artifact path, stdlib names.
+_MODULE_ROW = _object({'path': _optional(_text), 'sha256': _optional(_hex)})
+_CLOSURE = _object({'first_party': _names(_MODULE_ROW), 'third_party': _names(_MODULE_ROW),
+                    'ports': _names(_hex), 'stdlib': _distinct})
+
+
 def _bracket_agrees(body):
     """``bracket.BracketVerdict``'s rule: the runs' status where both agree, else UNDETERMINED."""
     first, second = body['runs']['r1']['status'], body['runs']['r2']['status']
@@ -173,7 +189,8 @@ JOURNAL_BODIES = _frozen({
              'runs': _object({'r1': _run, 'r2': _run}), 'wall_s': _num, 'cpu_s': _num},
     'CANDIDATES': {'populations': _populations},
     'PROBE_RESULT': {'path_cpu_s': _num, 'path_wall_s': _num, 'peak_memory_bytes': _count},
-    'EPOCH_CLOSE': {'integrity': _cost, 'closure_match': _bool},
+    # K6 as amended 2026-10-04 (card §8 R-INT-2): the final closure, for per-module agreement.
+    'EPOCH_CLOSE': {'integrity': _cost, 'closure_match': _bool, 'closure': _CLOSURE},
     'WORKER_STOP': {'reason': _text, 'key': _optional(is_key)},
 })
 _AGREES = MappingProxyType({'PATH': _bracket_agrees})  # cross-field rules, once fields are valid
