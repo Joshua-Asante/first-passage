@@ -1,11 +1,34 @@
 # Dot card 01: November 2026 calendar ratification follow-through
 
-**Type:** cc_handoff (dot release card; the first released assignment under the dot charter), revision 3.
+**Type:** cc_handoff (dot release card; the first released assignment under the dot charter), revision 4 (successor routing amendment; see below).
 
 **Status:** RELEASE-READY (frozen, revision 3) — HELD until the B3 focused re-review of revision 3 is CLEAN. #622 has merged (B15). Released by a `[coordinator (3) → hyper]` comment on #622 after that verdict; not released until then.
 - Revision 1 (`3c1655fc9dff02b9edabd774e806a46cc39563ca`) was never released. Revision 2 replaces it before release. It folds the refute review of revision 1 (0 P1, 5 P2, 5 P3) and the binding structure coordinator (3) and Coordinator 2 accepted on 2026-10-03, which replaces revision 1's "the dot is the executor".
 - Revision 2 (`524fcd12350b67528818c23751a9581098949d6e`) was never released: the B3 executive review was NOT CLEAN (2 P2, 1 P3). Revision 3 folds it and binds B15 (#622 merged).
 - Committed before any execution under the committed-handoff rule. The release record is a `[coordinator (3) → hyper]` comment on #622, posted by coordinator (3) after the B3 re-review is CLEAN. It cites this card's revision-3 commit SHA (40 characters), the §0.1 B-row values and the executive-review verdict (B3). This file is not edited to record the release. After release, a change to any frozen section is a new card.
+
+**Revision 4 — successor routing amendment (coordinator (4), card owner by succession from coordinator (3); 2026-10-05).** This governs over revision 3 where they differ. It is not released until C5 posts the release record (below).
+- **Why:** the bound executor, Navigator `01a0ff7c-9b6e-70f7-96a8-8ea3f8a4b0d0`, returned Phase-0 `NEEDS_CONTEXT` on its local surface: Git "dubious ownership", an inaccessible local `gh` configuration, and an unverified operations environment and real hooks. It made no edits. C5 verified that this executor was the historically bound one; its old chat title does not invalidate the binding.
+- **Successor executor:** the Codex deployment coordinator **C5** (`01a107d7-4608-7562-83e8-bbd58e14fe38`), executing **locally** on a working, validated operations environment (`fp.py doctor` passing, real hooks installed). It acts in the **executor role under this card's unchanged `worker` authority block**: the same capabilities and constraints, with no ratify, merge or main write. C5's coordinator role (relay and combined acceptance) does not widen this grant.
+- **Retirement:** Navigator's execution role is **retired when, and only when, C5 posts the revision-4 release record**. No duplicate worker and no new session.
+- **Unchanged:**
+  - B9's exact three-file footprint and branch;
+  - §2's exact edits;
+  - B13's real hook proof, made in a fresh disposable worktree before any push;
+  - red/green launcher records;
+  - the independent review (B3 lane; the reviewer is not C5);
+  - the required checks;
+  - merge authority, which stays separate: the merge-order agent merges on Joshua's standing go;
+  - §5's forbidden list, with "hyper" read as "the dispatching coordinator";
+  - no calendar-byte or evidence-byte change.
+- **B14 is BOUND** (from Joshua's own message, verified by C5 through `read_thread` of hyper's durable thread; not a paraphrase):
+  - Hyper's candidate request (turn `01a1089e-fe31-742d-a30d-9eb12dcdf075`) names digest `b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7`.
+  - Joshua's next substantive reply (turn `01a108a1-99df-73b9-a54a-41f14ae79cfc`) supplies the values:
+    - `NOV_RATIFIED_UTC` = `2026-10-04T20:36:11Z`;
+    - `NOV_INSTRUCTION` = his full original wording, verbatim: "ratify the calendar. i have opened grafana in the in chat browser, complete as many of the steps you mentioned as you can, ping me when you need me".
+  - This is contextual binding of his existing act, not a new ratification and not an invented phrase. The executor binds the candidate's identity (digest, card revision, release comment 5965599860 on #622) before writing the row.
+- **Recipients:** returns go to C5's relay. Card questions go to coordinator (4). Retired coordinators (2) and (3) are not recipients.
+- **Release record:** a `[coordinator (4) → C5]` comment on #622 citing this revision's 40-character SHA, posted after an independent focused review of this amendment is CLEAN.
 
 **Who does what.**
 
