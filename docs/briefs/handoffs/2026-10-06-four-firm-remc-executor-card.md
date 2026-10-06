@@ -39,7 +39,7 @@ Read at `main` `dd54369` on 2026-10-06. Re-read at dispatch.
    | 17–19 | reference exports ae744, 15d8b, beabf | `e82a2c25…8ca38`, `9acfa297…01b9e`, `8884e6dd…c6419` |
    | 20 | reference panel (I-20 path) | `a2e9192a…aa50a2` |
 
-   Full digests are in prereg §1a / I-20. Any mismatch is **BLOCKED** before the run: no output, no verdict.
+   Full digests: rows 1–8 in `core/strategies/BOOK_SOURCES.sha256`; rows 9–10 in prereg §1a; rows 11–16 in [PR #698](https://github.com/Joshua-Asante/first-passage/pull/698) §7; rows 17–19 in `core/data/tv_exports/cme/SHA256SUMS`; row 20 in prereg I-20. Any mismatch is **BLOCKED** before the run: no output, no verdict.
 3. **Candidate scoring:** one `score_candidate` call.
    - `tier_series`: each tier's series-builder CSV (CLI with the six inputs, `--export-tz America/New_York`, default quantity spec).
    - `mode_trigger`: `float(Fraction(book_policy.CANDIDATE_TRIGGER))`.
@@ -50,7 +50,7 @@ Read at `main` `dd54369` on 2026-10-06. Re-read at dispatch.
 4. **G1 and G2 per leg** (prereg I-22 → candidate #1 §2, §8). **Flagged mechanism:**
    - **G2:** for each leg and each tier, `cost_law_kill(tier, r_deploy=leg trades, gross_edge_usd=leg gross)`. A tier where any leg fails is **G2-killed**.
    - **G1 envelope:** `YES` if at least one tier has every leg passing; otherwise `NO`, and the call halts at G1 (early-fail).
-   - **Equivalence:** the merged `score_candidate` evaluates G2 pooled. The executor therefore passes the per-leg-derived envelope to the call, and treats a per-leg-G2-killed tier as **not clearing**. That tier's G4 figures are withheld from the verdict and from RESULTS. This gives the same verdict as not running the tier. Because a G1 `NO` means every tier is killed, the reading of "per-firm" cannot change any verdict.
+   - **Equivalence:** the merged `score_candidate` evaluates G2 pooled. The executor therefore passes the per-leg-derived envelope to the call, and treats a per-leg-G2-killed tier as **not clearing**. That tier's G4 figures are withheld from the verdict and from RESULTS. This gives the same verdict as not running the tier. The per-tier reading is selected by frozen I-22 (prereg :87), whose clause "a G2 kill on one tier means that tier does not clear" presupposes per-tier evaluation.
 5. **Reference scoring:** one call through the same harness, OFF, with `candidate_daily_pnl` = the panel's legs summed and `intraday_low` = the panel's. Prereg §4 AMBIGUOUS is bust-only, so the reference must reach a bust figure on **every** tier: it bypasses G1/G2 (`envelope_verdict="YES"`, `gross_edge_usd=float("inf")`), and that is recorded. Disclosed: the reference trades are net of costs as exported.
 6. **Verdict (prereg §4, in order):**
    - **AMBIGUOUS:** the reference's gating-run (Run-2 where consistency exists) `headline_bust` ≤ 0.05 on ≥ 2 tiers, whatever its pass rate. A missing reference bust on any tier is "run incomplete".
