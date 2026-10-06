@@ -21,7 +21,8 @@ import re
 import warnings
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Literal, Sequence
+import inspect
+from typing import Literal, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -131,6 +132,90 @@ class TierScore:
     clears_part_a: bool
     clears_funded: bool
     gated_on: str  # "run2" | "run1_degenerate"
+
+
+@dataclass(frozen=True)
+class TierSeries:
+    """One firm tier's own daily series (four-firm re-MC prereg I-19, step 2(c)).
+
+    ``daily_pnl`` is the series netted at that tier's own cost; ``intraday_low`` is
+    its paired per-day excursion (<= 0). ``protected_pnl``/``protected_low`` are the
+    optional mode-switching twins (prereg I-17), given together or not at all.
+    """
+
+    daily_pnl: np.ndarray
+    intraday_low: np.ndarray | None = None
+    protected_pnl: np.ndarray | None = None
+    protected_low: np.ndarray | None = None
+
+
+def _mode_switching_supported() -> bool:
+    """True once the kernel's mode-switching keywords exist (PR #708).
+
+    Read from ``run_seed`` (the kernel), not ``run_tier_remc``, so a wrapper or test
+    spy around ``run_tier_remc`` cannot change the answer.
+    """
+    return "protected_blocks" in inspect.signature(run_seed).parameters
+
+
+def _tier_blocks(
+    tier_series: Mapping[str, TierSeries],
+    tier_keys: Sequence[str],
+    mode_trigger: float | None,
+) -> tuple[dict[str, dict], bool]:
+    """Validate the per-tier mapping (fail closed) and pair each tier's blocks."""
+    if set(tier_series) != set(tier_keys):
+        raise ValueError(
+            "tier_series must hold every tier and only those: expected "
+            f"{sorted(tier_keys)}, got {sorted(tier_series)}"
+        )
+    entries = [tier_series[k] for k in tier_keys]
+    # Every supplied channel, on every tier, must have the same length BEFORE any
+    # week-blocking: blocking drops incomplete final weeks, so a mismatch would
+    # otherwise be silently truncated away (Codex 4190889391).
+    lengths = {
+        len(channel)
+        for e in entries
+        for channel in (e.daily_pnl, e.intraday_low, e.protected_pnl, e.protected_low)
+        if channel is not None
+    }
+    if len(lengths) != 1:
+        raise ValueError(
+            f"every tier's channels must all be the same length, got {sorted(lengths)}"
+        )
+    has_low = {e.intraday_low is not None for e in entries}
+    if len(has_low) != 1:
+        raise ValueError("intraday_low must be given for every tier or for none")
+    protected = {(e.protected_pnl is not None, e.protected_low is not None) for e in entries}
+    if len(protected) != 1:
+        raise ValueError("protected channels must be given for every tier or for none")
+    has_protected, has_protected_low = protected.pop()
+    if has_protected != has_protected_low:
+        raise ValueError("protected_pnl and protected_low are given together")
+    if has_protected and has_low != {True}:
+        raise ValueError("protected channels require intraday_low on every tier (prereg I-12)")
+    if has_protected and mode_trigger is None:
+        raise ValueError("protected channels require mode_trigger")
+    if mode_trigger is not None and not has_protected:
+        raise ValueError("mode_trigger requires protected channels for every tier")
+    if has_protected and not _mode_switching_supported():
+        raise ValueError(
+            "mode-switching inputs given but the kernel lacks mode-switching (PR #708 not "
+            "merged); per prereg I-17 the fallback runs normal-only inputs, never a silent drop"
+        )
+    out: dict[str, dict] = {}
+    for key, entry in zip(tier_keys, entries):
+        if entry.intraday_low is not None:
+            blocks, lows = paired_blocks_from_daily(entry.daily_pnl, entry.intraday_low)
+        else:
+            blocks, lows = blocks_from_daily_pnl(entry.daily_pnl), None
+        tier = {"blocks": blocks, "intraday_blocks": lows}
+        if has_protected:
+            p_blocks, p_lows = paired_blocks_from_daily(entry.protected_pnl, entry.protected_low)
+            tier.update(protected_blocks=p_blocks, protected_intraday_blocks=p_lows,
+                        mode_trigger=mode_trigger)
+        out[key] = tier
+    return out, has_low == {True}
 
 
 @dataclass
@@ -711,6 +796,8 @@ def score_candidate(
     gross_edge_usd: float | None = None,
     tiers: Sequence[str] | None = None,
     intraday_low: np.ndarray | None = None,
+    tier_series: Mapping[str, TierSeries] | None = None,
+    mode_trigger: float | None = None,
 ) -> ScoringReport:
     """Run G0–G8 for one candidate across the frozen (or overridden) tier set.
 
@@ -728,6 +815,13 @@ def score_candidate(
     the report is labelled ``gate_grade=False`` (INSUFFICIENT), never silently
     gate-grade. ``None`` keeps the legacy EOD-clock path byte-identical, which is
     reportable and never gates a clear.
+
+    ``tier_series`` — optional per-tier series (prereg I-19, step 2(c)): each tier
+    runs G4 and its guard on its own cost-netted series and excursion, in one call
+    and one report. It must hold exactly the scored tiers (fail closed); it
+    excludes the single ``intraday_low`` argument. ``candidate_daily_pnl`` still
+    feeds G1. ``mode_trigger`` with each tier's protected channels enables I-17
+    mode-switching once the kernel supports it; otherwise the call raises.
     """
     thr = thresholds if thresholds is not None else load_scoring_thresholds()
     tier_keys = tuple(tiers) if tiers is not None else thr.tier_keys
@@ -738,10 +832,18 @@ def score_candidate(
     # when G1 would halt. The returned P&L blocks share the Monday-anchor rule
     # with blocks_from_daily_pnl, so the tier reads are index-identical.
     intraday_blocks: np.ndarray | None = None
+    per_tier: dict[str, dict] | None = None
+    if tier_series is not None:
+        if intraday_low is not None:
+            raise ValueError("tier_series carries each tier's intraday_low; do not also pass intraday_low")
+        per_tier, honest = _tier_blocks(tier_series, tier_keys, mode_trigger)
+    elif mode_trigger is not None:
+        raise ValueError("mode_trigger requires tier_series with protected channels")
     if intraday_low is not None:
         blocks, intraday_blocks = paired_blocks_from_daily(
             candidate_daily_pnl, intraday_low
         )
+    channel_given = intraday_low is not None or (per_tier is not None and honest)
 
     g1 = reduce_to_deployable(
         full_res_trades,
@@ -754,7 +856,7 @@ def score_candidate(
         thresholds_source=thr.source_path,
     )
     gate_reasons: list[str] = []
-    if intraday_low is None:
+    if not channel_given:
         report.breach_clock = "eod"
         report.gate_grade_reasons = [
             "no intraday_low supplied: EOD-clock read is reportable, never gating (prereg I-12)"
@@ -765,7 +867,7 @@ def score_candidate(
     if g1.halted:
         report.halted_at = "G1"
         # No tier reached G4, so no breach-clock read exists to fail (§0.5(C)).
-        report.gate_grade = intraday_low is not None and not gate_reasons
+        report.gate_grade = channel_given and not gate_reasons
         return report
 
     edge = (
@@ -773,7 +875,7 @@ def score_candidate(
         if gross_edge_usd is not None
         else float(np.sum(full_res_trades))
     )
-    if intraday_blocks is None:
+    if intraday_blocks is None and per_tier is None:
         blocks = blocks_from_daily_pnl(candidate_daily_pnl)
 
     for firm_key in tier_keys:
@@ -802,6 +904,13 @@ def score_candidate(
         # G3
         assert_engine_ready(firm_key)
 
+        mode_kwargs: dict = {}
+        if per_tier is not None:
+            tier = per_tier[firm_key]
+            blocks, intraday_blocks = tier["blocks"], tier["intraday_blocks"]
+            mode_kwargs = {k: tier[k] for k in ("protected_blocks", "protected_intraday_blocks",
+                                                "mode_trigger") if k in tier}
+
         # Mandatory non-vacuity guard (frozen Phase-4 §1) at the gating depth.
         # Only a "non-vacuity FAIL" AssertionError is a vacuity finding — any
         # other AssertionError (e.g. the summarize_outcomes bucket-sum
@@ -814,6 +923,7 @@ def score_candidate(
                     thresholds=thr,
                     firm_key=firm_key,
                     n_sims=sims,
+                    **mode_kwargs,
                 )
             except AssertionError as exc:
                 if not str(exc).startswith("non-vacuity FAIL"):
@@ -824,7 +934,7 @@ def score_candidate(
         # The honest clock runs regardless of the guard outcome: figures stay
         # reportable even when the channel is vacuous. intraday_blocks stays
         # off the kwargs entirely on the EOD path (byte-identical call).
-        remc_kwargs: dict = {}
+        remc_kwargs: dict = dict(mode_kwargs)
         if intraday_blocks is not None:
             remc_kwargs["intraday_blocks"] = intraday_blocks
         run1 = run_tier_remc(
@@ -873,7 +983,7 @@ def score_candidate(
     # Gate grade is report-level (one vacuous tier ⇒ the whole read is
     # INSUFFICIENT); it is reported beside — never combined with — the
     # discharge. A gate-grade discharge reads both (I-12).
-    report.gate_grade = intraday_low is not None and not gate_reasons
+    report.gate_grade = channel_given and not gate_reasons
     return report
 
 
@@ -892,6 +1002,7 @@ __all__ = [
     "ScoringReport",
     "ScoringThresholds",
     "TierScore",
+    "TierSeries",
     "assert_intraday_channel_nonvacuous",
     "blocks_from_daily_pnl",
     "cost_law_kill",
