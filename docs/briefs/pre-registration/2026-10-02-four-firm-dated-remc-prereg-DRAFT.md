@@ -168,7 +168,7 @@ Owners and by-dates (mirrors the [#696 sheet](https://github.com/Joshua-Asante/f
 | 1 Rulings | operator | done 2026-10-05 |
 | 2(a) availability | coordinator (4) worker | returned DONE_WITH_CONCERNS ([#698](https://github.com/Joshua-Asante/first-passage/pull/698)) |
 | 2(b) series builder | coordinator (4) worker | done: merged `e3da7e2` ([#702](https://github.com/Joshua-Asante/first-passage/pull/702)) |
-| 2(c) per-tier series and cost netting in `score_candidate` | coordinator (4) worker | 2026-10-16; not started, card awaits the operator's go |
+| 2(c) per-tier series and cost netting in `score_candidate` | coordinator (4) worker | built 2026-10-06 on the operator's GO; merge before 2026-10-23 ([#711](https://github.com/Joshua-Asante/first-passage/pull/711), open) |
 | 2(c′) mode-switching | coordinator (4) worker | merged by 2026-10-25T23:59 ET, else I-17 OFF ([#708](https://github.com/Joshua-Asante/first-passage/pull/708)) |
 | 2(d) timing | coordinator (4) worker | done ([#709](https://github.com/Joshua-Asante/first-passage/pull/709)) |
 | 2(e) reference reassembly | coordinator (4) worker | returned DONE 2026-10-06; merge pending ([#710](https://github.com/Joshua-Asante/first-passage/pull/710), open) |
