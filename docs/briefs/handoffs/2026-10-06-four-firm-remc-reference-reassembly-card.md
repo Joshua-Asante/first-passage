@@ -79,7 +79,7 @@ acceptance:
 **H holds:**
 - Scales 0.552135 / 0.125438 / 1.029882 against archived 0.5521 / 0.1254 / 1.0299. 1R cohorts n = 8 / 19 / 11, as archived.
 - Window 2020-01-06→2026-07-01, 1,693 business days.
-- Book net $162,333, matching archive RESULTS.md :33.
+- Book net matches archive RESULTS.md :33 exactly (the figure is kept out of this public card; the private manifest records it).
 
 **Panel SHA-256 `a2e9192aec54dd081245232247f5f5306553910a2956f3601364c050f9aa50a2`**, re-hashed independently after writing. It is for #616 I-20 and the §8 step-3 re-hash list. Coordinator (4) batches that edit.
 
