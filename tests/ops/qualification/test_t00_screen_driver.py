@@ -1164,7 +1164,10 @@ def test_I2(env):
     command = [sys.executable, '-c', wrap, sys.executable, '-I', str(REPO / 'scripts' / 'fp.py'), '--env', venv,
                'python', str(env.code / ENTRY_SCRIPT), *env.argv('resume', '--workers', str(WORKERS))]
     child = {name: value for name, value in os.environ.items() if name != 'PYTHONPATH'}
-    launcher = subprocess.Popen(command, cwd=REPO, env=child, creationflags=subprocess.CREATE_NEW_CONSOLE)
+    # A hidden console: closing a visible one would send CTRL_CLOSE (STATUS_CONTROL_C_EXIT) mid-test.
+    hidden = subprocess.STARTUPINFO(dwFlags=subprocess.STARTF_USESHOWWINDOW, wShowWindow=0)
+    launcher = subprocess.Popen(command, cwd=REPO, env=child, creationflags=subprocess.CREATE_NEW_CONSOLE,
+                                startupinfo=hidden)
     try:
         _await_key_start(run_dir, launcher)
         table = _process_table()
