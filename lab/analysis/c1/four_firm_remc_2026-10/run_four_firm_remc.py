@@ -33,7 +33,7 @@ for _p in (REPO / "lab", REPO / "core"):
 
 from discovery import remc_series_builder as rsb  # noqa: E402
 from discovery.prop_survivor_scoring import (  # noqa: E402
-    TierSeries, cost_law_kill, load_scoring_thresholds, score_candidate,
+    TierSeries, _consistency_frac, cost_law_kill, load_scoring_thresholds, score_candidate,
 )
 
 PRIMARY = Path(r"C:/Users/joshu/multi_firm_operations")
@@ -82,23 +82,30 @@ def start_gate() -> dict:
     return {"main_sha": main_sha, "i17_merge_sha": I17_MERGE, "i17_branch": "ON"}
 
 
-def rehash() -> dict:
-    results = {}
-    lines = [l for l in (PRIMARY / "core/strategies/BOOK_SOURCES.sha256").read_text().splitlines()
-             if l and not l.startswith("#")]
+def rehash(primary: Path = PRIMARY, *, manifest_sha: str = MANIFEST_SHA,
+           series_inputs: dict | None = None, reference_inputs: dict | None = None,
+           book_policy_bytes: bytes | None = None, book_policy_sha: str = BOOK_POLICY_SHA) -> dict:
+    """Card §0.5 item 2: 20 digests. The manifest bytes are verified BEFORE they are
+    parsed, and the eight source pins come from those verified bytes (Codex 4199556590)."""
+    series_inputs = SERIES_INPUTS if series_inputs is None else series_inputs
+    reference_inputs = REFERENCE_INPUTS if reference_inputs is None else reference_inputs
+    manifest_bytes = (primary / "core/strategies/BOOK_SOURCES.sha256").read_bytes()
+    if hashlib.sha256(manifest_bytes).hexdigest() != manifest_sha:
+        raise Blocked("re-hash: BOOK_SOURCES.sha256 manifest bytes do not match the frozen pin")
+    results = {"BOOK_SOURCES.sha256": True}
+    lines = [l for l in manifest_bytes.decode("utf-8").splitlines() if l and not l.startswith("#")]
     for line in lines:
         digest, rel = line.split(None, 1)
-        results[rel.strip()] = _sha(PRIMARY / rel.strip()) == digest
-    bp = hashlib.sha256(subprocess.run(["git", "-C", str(REPO), "show", "origin/main:ops/c1_rail/book_policy.py"],
-                                       capture_output=True, check=True).stdout).hexdigest()
-    mf = hashlib.sha256(subprocess.run(["git", "-C", str(REPO), "show", "origin/main:core/strategies/BOOK_SOURCES.sha256"],
-                                       capture_output=True, check=True).stdout).hexdigest()
-    results["book_policy.py"] = bp == BOOK_POLICY_SHA
-    results["BOOK_SOURCES.sha256"] = mf == MANIFEST_SHA
-    for (leg, mode), (path, pin) in SERIES_INPUTS.items():
+        results[rel.strip()] = _sha(primary / rel.strip()) == digest
+    if book_policy_bytes is None:
+        book_policy_bytes = subprocess.run(
+            ["git", "-C", str(REPO), "show", "origin/main:ops/c1_rail/book_policy.py"],
+            capture_output=True, check=True).stdout
+    results["book_policy.py"] = hashlib.sha256(book_policy_bytes).hexdigest() == book_policy_sha
+    for (leg, mode), (path, pin) in series_inputs.items():
         results[f"{leg}:{mode}"] = _sha(path) == pin
-    for path, pin in REFERENCE_INPUTS.items():
-        results[path.name] = _sha(path) == pin
+    for path, pin in reference_inputs.items():
+        results[Path(path).name] = _sha(path) == pin
     bad = [k for k, v in results.items() if not v]
     if len(results) != 20 or bad:
         raise Blocked(f"re-hash: {len(results)} digests, mismatches {bad}")
@@ -207,42 +214,62 @@ def stage_reference(out: Path) -> None:
     print("[reference] report written")
 
 
-def _gating(tier: dict) -> dict:
-    return tier.get("run2") or tier.get("run1") or {}
+def _has_bust(run: dict | None) -> bool:
+    return bool(run) and run.get("headline_bust") is not None
 
 
-def stage_verdict(out: Path) -> None:
-    thr = load_scoring_thresholds()
-    prep = json.loads((out / "prep.json").read_text())
-    cand = json.loads((out / "candidate_report.json").read_text())
-    ref = json.loads((out / "reference_report.json").read_text())
-    locking = set(thr.trailing_locking_tiers)
+def required_runs(name: str, tier: str, t: dict) -> tuple[dict | None, list[str]]:
+    """Frozen I-7/I-16 + card §0.5 items 6-7: Run-1 is mandatory on every tier; on a
+    consistency tier Run-2 is mandatory and gating; on Bulenox Run-1 gates. Returns the
+    gating read (None when missing) and every completeness reason. No substitution."""
     reasons = []
-    # Completeness (card §0.5 item 7)
+    consistency = _consistency_frac(tier) is not None
+    if not _has_bust(t.get("run1")):
+        reasons.append(f"run incomplete: {name} {tier} run1 missing")
+    if consistency:
+        if not _has_bust(t.get("run2")):
+            reasons.append(f"run incomplete: {name} {tier} run2 missing")
+        if t.get("gated_on") != "run2":
+            reasons.append(f"run incomplete: {name} {tier} gated_on={t.get('gated_on')!r}, expected 'run2'")
+        gating = t.get("run2") if _has_bust(t.get("run2")) else None
+    else:
+        if t.get("gated_on") != "run1_degenerate":
+            reasons.append(f"run incomplete: {name} {tier} gated_on={t.get('gated_on')!r}, expected 'run1_degenerate'")
+        gating = t.get("run1") if _has_bust(t.get("run1")) else None
+    return gating, reasons
+
+
+def derive_verdict(prep: dict, cand: dict, ref: dict, thr) -> dict:
+    """Mechanical prereg §4 assignment (card §0.5 items 6-7). Pure: reads reports only."""
+    reasons: list[str] = []
+    if thr.sims_per_seed != 10_000 or tuple(thr.seeds) != (42, 123, 2026) or thr.horizon != 1500:
+        reasons.append("run incomplete: thresholds are not the frozen v2 depth")
+    for name, rep in (("candidate", cand), ("reference", ref)):
+        if "2026-08-26-prop-survivor-scoring-prereg-v2" not in str(rep.get("thresholds_source", "")):
+            reasons.append(f"run incomplete: {name} thresholds_source is not v2")
     killed = set(prep["g2_killed_tiers"])
-    for name, rep, skip in (("candidate", cand, killed), ("reference", ref, set())):
-        for tier in thr.tier_keys:
-            if tier in skip or cand.get("halted_at") == "G1" and name == "candidate":
-                continue
-            t = rep["tiers"].get(tier, {})
-            if not _gating(t) or "headline_bust" not in _gating(t):
-                reasons.append(f"run incomplete: {name} {tier}")
-    ref_bust = {t: _gating(ref["tiers"].get(t, {})).get("headline_bust") for t in thr.tier_keys}
-    ambiguous = sum(1 for b in ref_bust.values() if b is not None and float(b) <= thr.eval_bust_ceiling) >= 2
+    cand_halted = cand.get("halted_at") == "G1"
+    ref_bust: dict[str, float | None] = {}
+    for tier in thr.tier_keys:
+        gating, r = required_runs("reference", tier, ref["tiers"].get(tier, {}))
+        reasons += r
+        ref_bust[tier] = None if gating is None else float(gating["headline_bust"])
+        if not cand_halted and tier not in killed:
+            _, r = required_runs("candidate", tier, cand["tiers"].get(tier, {}))
+            reasons += r
+    ambiguous = sum(1 for b in ref_bust.values() if b is not None and b <= thr.eval_bust_ceiling) >= 2
     if not cand.get("gate_grade", False):
         reasons.append("candidate gate_grade=False")
     if not ref.get("gate_grade", False):
         reasons.append("reference gate_grade=False (intraday channel not gate-grade)")
     clears = []
-    if cand.get("halted_at") != "G1":
+    if not cand_halted:
         for tier in thr.tier_keys:
-            t = cand["tiers"].get(tier, {})
-            if tier in killed:
+            if tier in killed or (tier == "MFFU_Rapid_100K" and not prep["mffu_admissible"]):
                 continue
-            if tier == "MFFU_Rapid_100K" and not prep["mffu_admissible"]:
-                continue
-            if t.get("clears_part_a"):
+            if cand["tiers"].get(tier, {}).get("clears_part_a"):
                 clears.append(tier)
+    locking = set(thr.trailing_locking_tiers)
     if ambiguous:
         verdict = "AMBIGUOUS"
     elif reasons:
@@ -255,13 +282,21 @@ def stage_verdict(out: Path) -> None:
         verdict = "ONE-TIER"
     else:
         verdict = "FALSIFIED — early-fail"
-    result = {"verdict": verdict, "clears_after_i24_and_g2": clears, "insufficient_reasons": reasons,
-              "reference_bust": ref_bust, "ambiguous": ambiguous,
-              "candidate_report_sha256": _sha(out / "candidate_report.json"),
-              "reference_report_sha256": _sha(out / "reference_report.json"),
-              "prep_sha256": _sha(out / "prep.json")}
+    return {"verdict": verdict, "clears_after_i24_and_g2": clears, "insufficient_reasons": reasons,
+            "reference_bust": ref_bust, "ambiguous": ambiguous}
+
+
+def stage_verdict(out: Path) -> None:
+    thr = load_scoring_thresholds()
+    prep = json.loads((out / "prep.json").read_text())
+    cand = json.loads((out / "candidate_report.json").read_text())
+    ref = json.loads((out / "reference_report.json").read_text())
+    result = derive_verdict(prep, cand, ref, thr)
+    result.update({"candidate_report_sha256": _sha(out / "candidate_report.json"),
+                   "reference_report_sha256": _sha(out / "reference_report.json"),
+                   "prep_sha256": _sha(out / "prep.json")})
     (out / "verdict.json").write_text(json.dumps(result, indent=2) + "\n")
-    print(f"[verdict] {verdict}")
+    print(f"[verdict] {result['verdict']}")
 
 
 def main(argv=None) -> int:
