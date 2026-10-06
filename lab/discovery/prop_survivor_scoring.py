@@ -525,9 +525,22 @@ def assert_intraday_channel_nonvacuous(
         if firm_kwargs_override is not None
         else firm_kwargs(firm_key, inactivity_off=True, consistency=_consistency_frac(firm_key))
     )
-    if protected_intraday_blocks is not None and protected_blocks is None:
+    # Fail closed (Codex 4190226566): the guard always has an intraday channel, so a
+    # requested mode switch needs all three protected inputs. None is ever dropped.
+    mode_given = [
+        name
+        for name, value in (
+            ("protected_blocks", protected_blocks),
+            ("protected_intraday_blocks", protected_intraday_blocks),
+            ("mode_trigger", mode_trigger),
+        )
+        if value is not None
+    ]
+    if mode_given and len(mode_given) != 3:
         raise ValueError(
-            "protected_intraday_blocks requires protected_blocks (and mode_trigger)"
+            "incomplete mode-switching inputs for the guard: got "
+            f"{mode_given}; protected_blocks, protected_intraday_blocks and "
+            "mode_trigger are given together or not at all"
         )
     zeros = np.zeros_like(intraday_blocks)
     protected_zeros = np.zeros_like(intraday_blocks) if protected_blocks is not None else None

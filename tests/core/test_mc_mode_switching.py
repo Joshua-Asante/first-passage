@@ -570,3 +570,23 @@ def test_run_seed_rejects_orphan_mode_keywords():
     with pytest.raises(ValueError, match="requires intraday_blocks"):
         run_seed(1, 2, blocks, 10.0, 0.4, horizon=10, strats=("a",),
                  protected_blocks=blocks, protected_intraday_blocks=lows, mode_trigger=0.01)
+
+
+@pytest.mark.parametrize("kwargs", [
+    {"mode_trigger": 0.01},
+    {"protected_blocks": "BLOCKS"},
+    {"protected_blocks": "BLOCKS", "mode_trigger": 0.01},
+])
+def test_guard_rejects_incomplete_mode_inputs(kwargs):
+    """Codex 4190226566: the guard must never drop a mode keyword and score normal-only."""
+    from discovery.prop_survivor_scoring import (
+        assert_intraday_channel_nonvacuous, load_scoring_thresholds,
+    )
+    blocks = np.full((4, 5, 1), 10.0)
+    lows = np.full((4, 5, 1), -2000.0)
+    resolved = {k: (blocks if v == "BLOCKS" else v) for k, v in kwargs.items()}
+    with pytest.raises(ValueError, match="mode"):
+        assert_intraday_channel_nonvacuous(
+            blocks, lows, thresholds=load_scoring_thresholds(),
+            firm_key="Tradeify_Select_100K", n_sims=4, **resolved,
+        )
