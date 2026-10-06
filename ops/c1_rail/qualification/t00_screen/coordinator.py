@@ -403,19 +403,39 @@ def _keys_before(journals, k) -> set:
     return done
 
 
+def segment_accounting(reading, *, heartbeat_cpu: float, booked: float, interval: float, w: int) -> dict:
+    """The one segment CPU accounting (card §3.5 clarification, design §5.4); every SEGMENT_END,
+    SEGMENT_CRASHED and candidate or probe crash charge is computed here.
+
+    Invariant: ``job_cpu_s = path_cpu_s + overhead_cpu_s``, ``overhead_cpu_s >= 0``, and the booked path
+    CPU is counted once, as ``path_cpu_s``. A measured ``reading`` charges ``max(0, reading - booked)``
+    as overhead (so ``job_cpu_s`` is the reading unless the paths booked more). An unreadable one
+    (``None``), like a crash, takes the last heartbeat's job CPU plus one interval x W as the snapshot,
+    less the booked path CPU already in it: a crash can only overcharge."""
+    snapshot = reading if reading is not None else heartbeat_cpu + interval * w
+    overhead = max(0.0, snapshot - booked)
+    return {'job_cpu_s': booked + overhead, 'path_cpu_s': booked, 'overhead_cpu_s': overhead}
+
+
 def crash_charge(ledger, journals, *, k: int, w: int) -> dict:
-    """Row S11/B5 and the card §3.5 clarification: the last heartbeat (SEGMENT_START is heartbeat 0)
-    plus one interval of wall; that heartbeat's job CPU plus one interval x W, less the path CPU the
-    segment's PATH records booked; never negative."""
+    """Row S11/B5: SEGMENT_CRASHED's charge for segment ``k``: ``segment_accounting`` with no reading,
+    the segment's own last heartbeat (SEGMENT_START is heartbeat 0) and its booked path CPU; wall is that
+    heartbeat plus one interval."""
     wall = cpu = 0.0
-    started = False
+    inside = False
     for record in ledger:
-        if record['type'] == 'SEGMENT_START' and record['body']['k'] == k:
-            started, wall, cpu = True, 0.0, 0.0
-        elif started and record['type'] == 'HEARTBEAT':
-            wall, cpu = record['body']['wall_s'], record['body']['job_cpu_s']
+        kind, body = record['type'], record['body']
+        if kind == 'SEGMENT_START':
+            inside = body['k'] == k
+            if inside:
+                wall = cpu = 0.0
+        elif kind in ('SEGMENT_END', 'SEGMENT_CRASHED'):
+            inside = False
+        elif inside and kind == 'HEARTBEAT':
+            wall, cpu = body['wall_s'], body['job_cpu_s']
     booked = _segment_booked(journals, k, _keys_before(journals, k))
-    return {'cpu_s': max(0.0, cpu + HEARTBEAT_S * w - booked), 'wall_s': wall + HEARTBEAT_S}
+    charged = segment_accounting(None, heartbeat_cpu=cpu, booked=booked, interval=HEARTBEAT_S, w=w)
+    return {'cpu_s': charged['overhead_cpu_s'], 'wall_s': wall + HEARTBEAT_S}
 
 
 def overhead_used(ledger, journals) -> float:
@@ -476,13 +496,15 @@ def candidate_overhead(ledger, journals) -> float:
     total = 0.0
     for number, _, _, records in ordered:
         epochs = _epochs(records)
-        if accounted is None or number < accounted or not epochs:
-            total += HEARTBEAT_S + sum(cost for cost, _, _ in epochs)
+        if accounted is None or number < accounted or not epochs:  # a crash: its recorded costs are the snapshot
+            total += segment_accounting(None, heartbeat_cpu=sum(cost for cost, _, _ in epochs), booked=0.0,
+                                        interval=HEARTBEAT_S, w=1)['overhead_cpu_s']
             continue
         for cost, candidates, probed in epochs:
             if candidates and number == accounted:
                 continue
-            total += cost + (0.0 if probed else HEARTBEAT_S)
+            total += segment_accounting(cost if probed else None, heartbeat_cpu=cost, booked=0.0,
+                                        interval=HEARTBEAT_S, w=1)['overhead_cpu_s']
     return total
 
 
@@ -994,7 +1016,8 @@ class _Run:  # pylint: disable=too-many-instance-attributes
             charge = crash_charge(self.ledger.records, journals, k=start['k'], w=start['w'])
         except Exception:  # pylint: disable=broad-exception-caught  # state._Failed or JournalCorrupt
             lost, cap = (), None
-            charge = {'cpu_s': float(HEARTBEAT_S * start['w']), 'wall_s': float(HEARTBEAT_S)}
+            charge = {'cpu_s': segment_accounting(None, heartbeat_cpu=0.0, booked=0.0, interval=HEARTBEAT_S,
+                                                  w=start['w'])['overhead_cpu_s'], 'wall_s': float(HEARTBEAT_S)}
         self.ledger.append('SEGMENT_CRASHED', {'k': start['k'], 'charge': charge,
                                                'losses': [list(key) for key in sorted(lost)], 'cap': cap})
 
@@ -1155,18 +1178,13 @@ class _Run:  # pylint: disable=too-many-instance-attributes
                                         refused=dispatcher.refused and not complete, complete=complete)
         cls, cause = segment_cause(self.ledger.records, journals, self.keys, provisional,
                                    [reason for reason in reasons if reason != 'DONE'])
-        job_cpu, peak = closed if closed is not None else _read_job(self.job)
-        segment_booked = _segment_booked(journals, k, _keys_before(journals, k))
-        if job_cpu is None:  # unreadable: the crash charge, as overhead, never 0 (design §5.4)
-            overhead = last_cpu + HEARTBEAT_S * w
-            job_cpu = overhead + segment_booked
-        else:
-            overhead = max(0.0, job_cpu - segment_booked)
+        reading, peak = closed if closed is not None else _read_job(self.job)
+        accounting = segment_accounting(reading, heartbeat_cpu=last_cpu, interval=HEARTBEAT_S, w=w,
+                                        booked=_segment_booked(journals, k, _keys_before(journals, k)))
         self.ledger.append('SEGMENT_END', {
             'class': cls, 'cause': cause,
             'workers': [{'worker': worker.name, 'reason': reason} for worker, reason in zip(workers, reasons)],
-            'wall_s': time.perf_counter() - started, 'job_cpu_s': job_cpu, 'path_cpu_s': segment_booked,
-            'overhead_cpu_s': overhead, 'peak_memory_bytes': peak})
+            'wall_s': time.perf_counter() - started, **accounting, 'peak_memory_bytes': peak})
         return Stop(cls, None if cls == COMPLETE else cause)
 
 
