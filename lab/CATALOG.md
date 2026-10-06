@@ -56,7 +56,7 @@ documents the camp boundary for humans/tools.
 | c1_cadence_inactivity_2026-08-02 | c1 | ACTIVE | yes | token trade owed 82/312 Mon–Fri weeks (max 4 consecutive); 0.50× haircut raises inactivity exposure | lab/analysis/c1/c1_cadence_inactivity_2026-08-02/ | — |
 | c1_signal_identity_2026-07-28 | c1 | ACTIVE | yes | full-panel MEASURED** (2026-07-29); Q-SIGID-1 §6 offline limb = **FULL** (plan... | lab/analysis/c1/c1_signal_identity_2026-07-28/ | — |
 | class_s_candidate1_scoring_2026-07-15 | c1 | CLOSED | yes | G0–G8 scoring superseded; §4 discharge withdrawn | lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/ | — |
-| four_firm_remc_2026-10 | c1 | ACTIVE | yes | ACTIVE (verdict adjudicated by coordinator (4); combined acceptance and recording at the owner are pending). | lab/analysis/c1/four_firm_remc_2026-10/ | — |
+| four_firm_remc_2026-10 | c1 | ACTIVE | yes | ACTIVE (verdict reproduced with bound depth records by the 2026-10-06 depth re-run; combined acceptance and recording at the owner are pending). | lab/analysis/c1/four_firm_remc_2026-10/ | — |
 | mnq_orb_flow_depth_2026-08-18 | c1 | HOLD | yes | `HOLD 2026-08-23 (operator)` — blocked at P0 twice (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling;... | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | msl_monsurf_1_idle_clock_2026-08 | c1 | CLOSED | yes | Q-MONSURF-1 M-B RESOLVED | lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/ | — |
 | parity_gen2_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/parity_gen2_2026-08/ | — |

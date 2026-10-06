@@ -1,6 +1,6 @@
 # RESULTS — four-firm dated re-MC (§4 falsifier), candidate (A) Class-S #3
 
-**Status:** ACTIVE (verdict adjudicated by coordinator (4); combined acceptance and recording at the owner are pending).
+**Status:** ACTIVE (verdict reproduced with bound depth records by the 2026-10-06 depth re-run; combined acceptance and recording at the owner are pending).
 **Pre-registration (frozen):** [`docs/briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md`](../../../../docs/briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md) (`FROZEN 2026-10-05`, merged `bfb13f9`).
 **Gate of record:** [`docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md).
 **Executor card:** [`docs/briefs/handoffs/2026-10-06-four-firm-remc-executor-card.md`](../../../../docs/briefs/handoffs/2026-10-06-four-firm-remc-executor-card.md) (merged `196ae62`). **Script:** [`run_four_firm_remc.py`](run_four_firm_remc.py) at `81e7dcb`.
@@ -9,7 +9,7 @@
 
 ## Verdict (prereg §4, assigned mechanically)
 
-**FALSIFIED — early-fail.** No tier clears Part A, and AMBIGUOUS does not fire. The final executor reads this run as INSUFFICIENT solely because it has no bound depth records; coordinator (4) adjudicates the verdict (see [Provenance](#provenance-run-of-record-and-verdict-re-derivation)).
+**FALSIFIED — early-fail.** No tier clears Part A, AMBIGUOUS does not fire, and no INSUFFICIENT reason holds. This is the final executor's verdict on the [depth re-run](#depth-re-run-2026-10-06-operator-go), which reproduced the run of record's reports byte for byte with a bound depth record for every arm. The earlier INSUFFICIENT reading and coordinator (4)'s adjudication are kept below as dated history.
 
 - **Per-run disposition** (prereg §4): the candidate closes and the early-fail branch arms, so any subsequent candidate needs fresh operator authorization.
 - **Not a discharge:** prereg §4 stays undischarged.
@@ -69,6 +69,19 @@ AMBIGUOUS needs ≥ 2 tiers at ≤ 5.0%; there are 0, as predicted in I-20. Refe
   - (d) Coordinator (4) adjudicates the verdict as **FALSIFIED — early-fail**, standing on (b) and (c). It remains open to the deployment coordinator's combined acceptance.
 - **Guard evidence for the run of record:** both reports carry `gate_grade = true` and empty `gate_grade_reasons`. In `score_candidate`, the non-vacuity guard runs on every tier that reaches G4 (all four here, none G2-killed), and any tier that fails it adds a reason. So the guard passed on every tier.
 - **Margin:** the minimum candidate bust across every run is 25.28% against the 5.0% ceiling.
+- *Items (a)–(d) above are the record as of `c180283`, before the depth re-run. They are superseded by the re-run below, not withdrawn: (a) was correct for the run of record as it then stood, and (d) is confirmed by recorded evidence.*
+
+## Depth re-run (2026-10-06, operator GO)
+
+Joshua held #715 and chose a re-run with bound depth records over accepting the adjudication; he gave the run GO directly to the run owner and through the deployment coordinator.
+
+- **Code:** executor `c180283`, a clean checkout at that commit before and after (`--untracked-files=all`). Launched as `python -I scripts/fp.py python lab/analysis/c1/four_firm_remc_2026-10/run_four_firm_remc.py <stage> --out <dir>` (bootstrap Python 3.14.3, operations venv Python 3.13.2, as in the run of record), each stage detached, one at a time.
+- **Inputs and gate:** `main` `5d25f9c`, I-17 ON, re-hash 20/20 against the same pins. The frozen criteria are unchanged.
+- **Stages (UTC, all exit 0):** prep 22:36:59–22:37:02; candidate 22:37:11–22:58:07; reference 22:58:22–23:13:29; verdict 23:13:40–23:13:43. Each stage's command, PID, exit code and stdout/stderr SHA-256 are in its `<stage>.stage.json` and in `run.json`.
+- **Reproduction:** `prep.json`, `candidate_report.json`, `reference_report.json` and the series manifest are **byte-identical** to the run of record (same SHA-256). So the run of record's reports are the reports of a run whose depth is recorded.
+- **Depth records:** every arm the verdict reads (Bulenox Run-1; Tradeify, MFFU and BluSky Run-1 and Run-2; for both the candidate and the reference) records 10,000 sims × seeds 42/123/2026, horizon 1500. Each record is bound to its report's SHA-256, which equals the run of record's. The non-vacuity guard passed on all four tiers in both records.
+- **Verdict:** **FALSIFIED — early-fail**, with no INSUFFICIENT reason, `ambiguous = false`, and `row_verdict` FALSIFIED — early-fail. The new `verdict.json` differs from the run of record's by design: the rebuilt executor adds `arms_read` and `row_verdict`.
+- **Run of record untouched:** its four files hash the same before and after the re-run.
 
 ## Private artifacts (gitignored; cited by SHA-256)
 
@@ -83,5 +96,17 @@ Root: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/fo
 | `verdict_rederived.json` (repaired executor, re-derivation only) | `a21a2ec7e42b97148e4ce857430c38cd230eecc7c31ce7dcb6f83341626b7216` |
 | `verdict_rederived_2.json` (executor `fc96f0f`, lattice depth proof, re-derivation only) | `4230bec45de41dffb7c54f4b7913ac3a15994b22767f17d6d7c8ed120bd4f98b` |
 | `verdict_rederived_3.json` (rebuilt executor, re-derivation only; INSUFFICIENT for missing depth records) | `bd0c6a9605efd0f7aff387167140c44979a1b5fa372bc7d0c0061420fa2c0254` |
+
+Depth re-run root: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/four-firm-remc-rerun-2026-10-06-depth/`
+
+| File | SHA-256 |
+|---|---|
+| `prep.json` (identical to the run of record) | `feefa7ab28ff17d8b1a727bae0adf6656369a4ea73eafea2218cdafbd8f4c3b5` |
+| `candidate_report.json` (identical) | `4076857777e67cedd5755ba637693ce45638357a8a5b1fb17077e63ac28ec2ed` |
+| `reference_report.json` (identical) | `a8e9fd665a6f21d0620b1903d4175c1276907331bb126ff3045a9bbf5fbd333f` |
+| `candidate_report.depth.json` | `87a66d8e9d2baf3b474feb7e69e1e2cdb4138f27e911f666d9b57d0118e483f2` |
+| `reference_report.depth.json` | `92fe298f721bf91eea6ca7e7b8eca2fb4d8f3bc6d564ef22a4f453ea13aeed44` |
+| `verdict.json` | `45ea6109cc0d69c89747751c9a8103b44935e6afce1f201bf4fb6cd6622a1061` |
+| `run.json` | `5d6fb626c4e11ded0741a3327bb58f7a7ee2f6dfaa51cc8b0ff25d44808375db` |
 
 The re-hash at start was 20/20 against the prereg §1a / I-20 pins.
