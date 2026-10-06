@@ -1,9 +1,9 @@
 # CC handoff — four-firm re-MC §8 step 2(e): calibration-reference panel reassembly
 
 **Date:** 2026-10-06.
-**Status:** DRAFT, awaiting the operator's go. It was opened at coordinator (4)'s request, from the #616 pre-freeze review on 2026-10-06. It is due 2026-10-16. A failure by then goes to the operator before freeze (#616 blocker 4a).
+**Status:** FROZEN for build, 2026-10-06. Joshua directly: "go on the reference reassembly card". It was opened at coordinator (4)'s request, from the #616 pre-freeze review on 2026-10-06. It is due 2026-10-16. A failure by then goes to the operator before freeze (#616 blocker 4a).
 **Brief type:** CC handoff, bounded build (worker card).
-**Authority (on go):** a coordinator (4) worker. The requirement owner is the four-firm dated re-MC prereg ([PR #616](https://github.com/Joshua-Asante/first-passage/pull/616) at `a9ee4a6`): I-20 ("Accept, intraday", operator 2026-10-05), §7 blocker 4a and §8 step 2(e).
+**Authority:** operator go, 2026-10-06, to a coordinator (4) worker. The requirement owner is the four-firm dated re-MC prereg ([PR #616](https://github.com/Joshua-Asante/first-passage/pull/616) at `a9ee4a6`): I-20 ("Accept, intraday", operator 2026-10-05), §7 blocker 4a and §8 step 2(e).
 **Rule:** the reference is a non-candidate, but it still must not be **run** through any tier, MC or screen before #616 freezes (§R). This card only rebuilds the panel and its intraday channel, tested on synthetic inputs, and pins the panel digest.
 **Return boundary:** a pinned private panel with an `intraday_low` channel, the panel digest written into the return, and public code merged. Otherwise a precise blocker. No MC, no scoring, no prereg edit (coordinator (4) folds the digest into I-20).
 
@@ -66,12 +66,27 @@ acceptance:
 
 ## §7 — Return
 
-*(Filled by the executor after the operator's go.)*
+**DONE (2026-10-06).** The coordinator (4) worker wrote it directly: exact reproduction of an archived construction is review and integration work, so it was not dispatched to GLM.
+
+**Files:**
+- `lab/discovery/remc_reference_panel.py`: the archived `build_scaled_panel`, plus the intraday channel. It reuses `remc_series_builder`'s hash and output-path guards.
+- `tests/test_remc_reference_panel.py`: 4 synthetic tests, passed (record `20261006T004855Z-9078da458977`). `check_boundaries` OK.
+
+**Real reassembly** (no tier, MC or score; prereg §R):
+- Inputs: the three pinned exports in `core/data/tv_exports/cme/`, each hash-verified before parsing.
+- Output: a gitignored private root, `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/four-firm-remc-reference-2026-10-06/` (`reference_panel.csv` plus `manifest.json`).
+
+**H holds:**
+- Scales 0.552135 / 0.125438 / 1.029882 against archived 0.5521 / 0.1254 / 1.0299. 1R cohorts n = 8 / 19 / 11, as archived.
+- Window 2020-01-06→2026-07-01, 1,693 business days.
+- Book net $162,333, matching archive RESULTS.md :33.
+
+**Panel SHA-256 `a2e9192aec54dd081245232247f5f5306553910a2956f3601364c050f9aa50a2`**, re-hashed independently after writing. It is for #616 I-20 and the §8 step-3 re-hash list. Coordinator (4) batches that edit.
 
 ## §10 — Audit hooks
 
 ```bash
 c=docs/briefs/handoffs/2026-10-06-four-firm-remc-reference-reassembly-card.md
 # The return reports the panel digest (expect ≥ 1 after execution).
-grep -cE 'panel SHA-256 `[0-9a-f]{64}`' "$c" || true
+grep -ciE 'panel SHA-256 `[0-9a-f]{64}`' "$c" || true
 ```
