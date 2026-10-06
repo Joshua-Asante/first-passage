@@ -48,7 +48,19 @@ DEFAULT_STRATS = ("guardian", "striker", "aegis", "striker_nas100")
 # `intraday_low` — per-day minimum equity excursion, supplied alongside `path` by a
 # caller that has intraday resolution. Absent => the legacy end-of-day barrier test,
 # which is what the historical anchor was calibrated under.
-_NON_FIRM_KEYWORDS: frozenset[str] = frozenset({"initial_state", "intraday_low"})
+#
+# `protected_path` / `protected_intraday_low` / `mode_trigger` — the mode-switching
+# channel (frozen card 2026-10-05 §0.5). They describe the PATH's protected-regime
+# twin, not the firm's rules; a firm config could never supply them.
+_NON_FIRM_KEYWORDS: frozenset[str] = frozenset(
+    {
+        "initial_state",
+        "intraday_low",
+        "protected_path",
+        "protected_intraday_low",
+        "mode_trigger",
+    }
+)
 
 
 def _amount(name: str, value: Real, *, positive: bool = False) -> float:
@@ -324,6 +336,9 @@ def simulate_path(
     consistency_frac: float | None = None,
     intraday_low: np.ndarray | None = None,
     initial_state: EvaluationState | None = None,
+    protected_path: np.ndarray | None = None,
+    protected_intraday_low: np.ndarray | None = None,
+    mode_trigger: float | None = None,
 ) -> Tuple[str, int, float, int | None]:
     """Run one deterministic challenge simulation over a strategy-P&L path.
 
@@ -353,6 +368,31 @@ def simulate_path(
 
     Passing None reproduces the historical anchor byte-for-byte - the barrier
     comparison then reads `equity_new` itself, not a recomputed equal value.
+
+    `protected_path` / `protected_intraday_low` / `mode_trigger`
+    (OPTIONAL, default None -> byte-identical legacy behaviour)
+    ---------------------------------------------------------------
+    The mode-switching channel (frozen card 2026-10-05 §0.5). `mode_trigger` is
+    the equity drawdown-from-peak fraction at which the account switches to its
+    protected-regime P&L twin; `protected_path` (and, when `intraday_low` is
+    supplied, `protected_intraday_low`) is that twin, per day, in the same
+    units as the normal channel.
+
+    A day is PROTECTED when `round((equity - peak) / peak, 6) <= -mode_trigger`,
+    evaluated at day start on the same `equity`/`peak` the loop already holds -
+    i.e. the settled prior close against the end-of-day peak ratchet. This is
+    exactly `ops/c1_rail/book_policy.py::is_protected` (1%/no-latch, prior-close
+    timing); the parity is pinned by tests/test_mode_switching_book_parity.py.
+
+    On a protected day the loop reads `protected_path[day]` (and
+    `protected_intraday_low[day]`) instead of `path[day]`/`intraday_low[day]`.
+    Everything else - daily loss, barrier, inactivity, trade days, consistency,
+    pass, culprit argmin - reads the selected day's `strategy_pnls` unchanged,
+    and `max_dd` stays end-of-day denominated. There is no latch: the mode is
+    recomputed from the settled close every day.
+
+    One protection mechanism only: `protected_path` requires `dd_trigger >= 1.0`,
+    so the continuous `dd_scale` de-risking cannot also apply.
     """
     if intraday_low is not None:
         intraday_low = np.asarray(intraday_low, dtype=float)
@@ -366,6 +406,59 @@ def simulate_path(
                 "intraday_low entries are excursions BELOW the day's opening equity "
                 "and must be <= 0.0; got a positive value"
             )
+
+    # Mode-switching channel (frozen card 2026-10-05 §0.5 item 1). Opt-in, and
+    # exclusive with the continuous dd_scale mechanism: one protection only.
+    if protected_path is not None and mode_trigger is None:
+        raise ValueError(
+            "protected_path and mode_trigger are given together or not at all; "
+            "mode_trigger is missing"
+        )
+    if mode_trigger is not None and protected_path is None:
+        raise ValueError(
+            "protected_path and mode_trigger are given together or not at all; "
+            "protected_path is missing"
+        )
+    if protected_intraday_low is not None and protected_path is None:
+        raise ValueError(
+            "protected_intraday_low requires protected_path (and mode_trigger)"
+        )
+    if protected_path is not None:
+        if intraday_low is None and protected_intraday_low is not None:
+            raise ValueError(
+                "protected_intraday_low requires intraday_low: there is no intraday "
+                "channel for the protected regime to twin"
+            )
+        if intraday_low is not None and protected_intraday_low is None:
+            raise ValueError(
+                "protected_intraday_low is required when intraday_low is supplied "
+                "together with protected_path"
+            )
+        if dd_trigger < 1.0:
+            raise ValueError(
+                "one protection mechanism only: protected_path requires "
+                f"dd_trigger >= 1.0 (continuous dd_scale scaling inactive); got "
+                f"{dd_trigger}"
+            )
+        _validate_fraction("mode_trigger", mode_trigger)  # type: ignore[arg-type]
+        protected_path = np.asarray(protected_path, dtype=float)
+        if protected_path.shape[0] < horizon:
+            raise ValueError(
+                f"protected_path must cover the horizon: got "
+                f"{protected_path.shape[0]} day(s), need {horizon}"
+            )
+        if protected_intraday_low is not None:
+            protected_intraday_low = np.asarray(protected_intraday_low, dtype=float)
+            if protected_intraday_low.shape[0] < horizon:
+                raise ValueError(
+                    f"protected_intraday_low must cover the horizon: got "
+                    f"{protected_intraday_low.shape[0]} day(s), need {horizon}"
+                )
+            if np.any(protected_intraday_low > 0.0):
+                raise ValueError(
+                    "protected_intraday_low entries are excursions BELOW the day's "
+                    "opening equity and must be <= 0.0; got a positive value"
+                )
     if initial_state is None:
         equity = peak = float(starting_equity)
         trade_days = 0
@@ -404,11 +497,22 @@ def simulate_path(
             return "pass", 0, max_dd, None
 
     consecutive_idle = 0
+    # Only ever read on the mode-switching branch (protected_path is not None);
+    # initialised here so the legacy branch below stays untouched.
+    protected = False
 
     for day in range(horizon):
         dd_from_peak = (equity - peak) / peak if peak > 0 else 0.0
         scale = dd_scale if round(dd_from_peak, 6) <= -dd_trigger else 1.0
-        strategy_pnls = path[day] * scale
+        if protected_path is None:
+            strategy_pnls = path[day] * scale
+        else:
+            # §0.5 item 2: protected when the settled drawdown from peak is at or
+            # below -mode_trigger. Same equity/peak the loop already holds at day
+            # start; no latch. `scale` stays as computed (1.0, because dd_trigger
+            # was validated >= 1.0 above).
+            protected = round(dd_from_peak, 6) <= -mode_trigger
+            strategy_pnls = (protected_path[day] if protected else path[day]) * scale
         pnl = float(strategy_pnls.sum())
         equity_new = equity + pnl
 
@@ -421,6 +525,10 @@ def simulate_path(
         # arithmetic below is untouched.
         if intraday_low is None:
             equity_test = equity_new
+        elif protected:
+            equity_test = min(
+                equity_new, equity + float(protected_intraday_low[day]) * scale
+            )
         else:
             equity_test = min(equity_new, equity + float(intraday_low[day]) * scale)
 
@@ -484,6 +592,9 @@ def run_seed(
     firm_kwargs: dict | None = None,
     intraday_blocks: np.ndarray | None = None,
     initial_state: EvaluationState | None = None,
+    protected_blocks: np.ndarray | None = None,
+    protected_intraday_blocks: np.ndarray | None = None,
+    mode_trigger: float | None = None,
 ) -> dict:
     """Run deterministic block-bootstrap simulations for one RNG seed.
 
@@ -492,6 +603,13 @@ def run_seed(
     P&L path (never re-sampled independently). Shape ``(n_weeks, 5, 1)`` or
     ``(n_weeks, 5)``; assembled into a 1-D ``intraday_low`` for ``simulate_path``.
     ``None`` preserves legacy close-only behaviour byte-for-byte.
+
+    ``protected_blocks`` / ``protected_intraday_blocks`` / ``mode_trigger``
+    (OPTIONAL) — the mode-switching channel (frozen card 2026-10-05 §0.5 item 3).
+    Same block-index pairing as ``intraday_blocks``: ONE ``indices`` draw per sim
+    selects the normal day, its intraday excursion AND its protected twin, so the
+    three series can never drift apart. They reach ``simulate_path`` only when
+    ``protected_blocks`` is given, so the default call stays byte-identical.
     """
     rng = np.random.default_rng(seed)
     n_blocks = len(blocks)
@@ -505,6 +623,12 @@ def run_seed(
         raise ValueError(
             "initial_state is a path starting point, not a firm rule; pass it separately"
         )
+    for mode_keyword in ("protected_path", "protected_intraday_low", "mode_trigger"):
+        if mode_keyword in effective_firm_kwargs:
+            raise ValueError(
+                f"{mode_keyword} belongs on the path (protected_blocks= / "
+                f"protected_intraday_blocks= / mode_trigger=), not in firm_kwargs"
+            )
     if initial_state is not None:
         _validate_initial_state_start(
             initial_state,
@@ -532,6 +656,31 @@ def run_seed(
             raise ValueError(
                 f"intraday_blocks length {len(intraday_blocks)} != blocks length {n_blocks}"
             )
+    if protected_blocks is None and (
+        protected_intraday_blocks is not None or mode_trigger is not None
+    ):
+        raise ValueError(
+            "protected_intraday_blocks / mode_trigger require protected_blocks"
+        )
+    if protected_intraday_blocks is not None and intraday_blocks is None:
+        raise ValueError(
+            "protected_intraday_blocks requires intraday_blocks: there is no intraday "
+            "channel for the protected regime to twin"
+        )
+    if protected_blocks is not None:
+        protected_blocks = np.asarray(protected_blocks)
+        if len(protected_blocks) != n_blocks:
+            raise ValueError(
+                f"protected_blocks length {len(protected_blocks)} != blocks length "
+                f"{n_blocks}"
+            )
+    if protected_intraday_blocks is not None:
+        protected_intraday_blocks = np.asarray(protected_intraday_blocks)
+        if len(protected_intraday_blocks) != n_blocks:
+            raise ValueError(
+                f"protected_intraday_blocks length {len(protected_intraday_blocks)} "
+                f"!= blocks length {n_blocks}"
+            )
 
     outcomes = {
         "pass": 0,
@@ -552,6 +701,16 @@ def run_seed(
         else:
             path = np.concatenate([blocks[index] for index in indices])[:horizon]
         sim_kwargs = dict(effective_firm_kwargs)
+        if protected_blocks is not None:
+            # Same indices as `path`: the protected twin is never re-sampled.
+            if initial_state is not None and horizon == 0:
+                protected_path = np.empty((0, len(strats)), dtype=float)
+            else:
+                protected_path = np.concatenate(
+                    [protected_blocks[index] for index in indices]
+                )[:horizon]
+            sim_kwargs["protected_path"] = protected_path
+            sim_kwargs["mode_trigger"] = mode_trigger
         if intraday_blocks is not None:
             if initial_state is not None and horizon == 0:
                 low = np.empty(0, dtype=float)
@@ -561,6 +720,20 @@ def run_seed(
                     [np.asarray(b, dtype=float).reshape(-1) for b in low_blocks]
                 )[:horizon]
             sim_kwargs["intraday_low"] = low
+            if protected_intraday_blocks is not None:
+                if initial_state is not None and horizon == 0:
+                    protected_low = np.empty(0, dtype=float)
+                else:
+                    protected_low_blocks = [
+                        protected_intraday_blocks[index] for index in indices
+                    ]
+                    protected_low = np.concatenate(
+                        [
+                            np.asarray(b, dtype=float).reshape(-1)
+                            for b in protected_low_blocks
+                        ]
+                    )[:horizon]
+                sim_kwargs["protected_intraday_low"] = protected_low
         outcome, day, max_dd, culprit = simulate_path(
             path,
             dd_trigger,
