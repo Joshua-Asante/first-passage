@@ -1,6 +1,6 @@
 # RESULTS — four-firm dated re-MC (§4 falsifier), candidate (A) Class-S #3
 
-**Status:** ACTIVE (verdict assigned; recording at the owner is pending).
+**Status:** ACTIVE (verdict adjudicated by coordinator (4); combined acceptance and recording at the owner are pending).
 **Pre-registration (frozen):** [`docs/briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md`](../../../../docs/briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md) (`FROZEN 2026-10-05`, merged `bfb13f9`).
 **Gate of record:** [`docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md`](../../../../docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md).
 **Executor card:** [`docs/briefs/handoffs/2026-10-06-four-firm-remc-executor-card.md`](../../../../docs/briefs/handoffs/2026-10-06-four-firm-remc-executor-card.md) (merged `196ae62`). **Script:** [`run_four_firm_remc.py`](run_four_firm_remc.py) at `81e7dcb`.
@@ -9,7 +9,7 @@
 
 ## Verdict (prereg §4, assigned mechanically)
 
-**FALSIFIED — early-fail.** No tier clears Part A. AMBIGUOUS does not fire, and no INSUFFICIENT trigger holds.
+**FALSIFIED — early-fail.** No tier clears Part A, and AMBIGUOUS does not fire. The final executor reads this run as INSUFFICIENT solely because it has no bound depth records; coordinator (4) adjudicates the verdict (see [Provenance](#provenance-run-of-record-and-verdict-re-derivation)).
 
 - **Per-run disposition** (prereg §4): the candidate closes and the early-fail branch arms, so any subsequent candidate needs fresh operator authorization.
 - **Not a discharge:** prereg §4 stays undischarged.
@@ -60,12 +60,15 @@ AMBIGUOUS needs ≥ 2 tiers at ≤ 5.0%; there are 0, as predicted in I-20. Refe
   - The repaired `derive_verdict` was run over the **existing** reports only; the Monte Carlo was not re-run. Its output went to a separate file, `verdict_rederived.json`.
   - **Result: identical.** The verdict, clears, INSUFFICIENT reasons, reference busts and AMBIGUOUS flag all match the original. The digests of `prep.json`, both reports and `verdict.json` are unchanged by the re-derivation.
   - The re-hash fix affects the pre-run gate only. This run's start re-hash had already matched 20/20.
-- **Second correction (#715 Codex follow-up 5433745052, r4199724903):**
-  - The executor was repaired at `fc96f0f`. Future score stages write a depth-and-guard record bound to the report's SHA-256. `derive_verdict` requires that record, or, for a report without one, a **rate-lattice proof**: the LCM of every rate's reduced denominator must be a multiple of 10,000 sims × 3 seeds.
-  - Re-derived again over the **existing** reports, with no Monte Carlo, into `verdict_rederived_2.json`. The run of record has no depth record, so depth went through the lattice proof. The LCM is 30,000 for both the candidate and the reference report, exactly 10,000 × 3.
-  - **Result: identical** on every field. The run-of-record digests are unchanged.
+- **Second correction, withdrawn:** the executor at `fc96f0f` accepted a report without a depth record through a "rate-lattice proof" (the LCM of the reduced rate denominators), and `verdict_rederived_2.json` used it. That claim is withdrawn: the lattice pooled rates across tiers and runs, and it is not a depth proof for any individual arm.
+- **Third correction (#715 Codex r4200174057, r4200174064; escalation-lane rebuild):** `derive_verdict` now decides exemptions first and reads only the arms the frozen rules need. The reference reads every tier's Run-1 and gating run. The candidate reads nothing after a G1 halt, and otherwise reads Run-1 and the gating run on each tier not G2-killed. Each read arm needs its own entry in a depth record that the score stage writes and binds to the report's SHA-256. A guard is required only on read tiers. There is no pooling and no fallback.
+- **Run-of-record status under the rebuilt executor:**
+  - (a) The final executor reports **INSUFFICIENT** for the run of record, solely for "no bound depth records": the run predates the requirement. Every reason it lists is a missing-record reason. Re-derived over the **existing** reports with no Monte Carlo and no record created, into `verdict_rederived_3.json`.
+  - (b) The mechanical assignment from the reports is **FALSIFIED — early-fail**, unchanged. The candidate rows give no clearing tier, and the reference has 0 gating reads at ≤ 5.0%.
+  - (c) The depth evidence for the run of record is the owner's, from code provenance. The executor at `81e7dcb` calls `score_candidate` once per population and passes no `n_sims`, `thresholds` or horizon override, so every arm used the v2 defaults: 10,000 sims × seeds 42/123/2026, horizon 1500. The per-arm rate lattice is **not** a proof of that depth.
+  - (d) Coordinator (4) adjudicates the verdict as **FALSIFIED — early-fail**, standing on (b) and (c). It remains open to the deployment coordinator's combined acceptance.
 - **Guard evidence for the run of record:** both reports carry `gate_grade = true` and empty `gate_grade_reasons`. In `score_candidate`, the non-vacuity guard runs on every tier that reaches G4 (all four here, none G2-killed), and any tier that fails it adds a reason. So the guard passed on every tier.
-- **Residual (horizon):** the run of record has no recorded horizon field. The horizon is established only by code provenance: at `81e7dcb` both score stages call `score_candidate` with no horizon override, so G4 uses the v2 loader's horizon of 1500. This cannot change the verdict, because the minimum candidate bust across every run is 25.28% against the 5.0% ceiling.
+- **Margin:** the minimum candidate bust across every run is 25.28% against the 5.0% ceiling.
 
 ## Private artifacts (gitignored; cited by SHA-256)
 
@@ -79,5 +82,6 @@ Root: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/fo
 | `verdict.json` | `5a9b9eaf437100fb7e8a54bf5af0fefbbe12eeb3aa6af0c98720a271787adc28` |
 | `verdict_rederived.json` (repaired executor, re-derivation only) | `a21a2ec7e42b97148e4ce857430c38cd230eecc7c31ce7dcb6f83341626b7216` |
 | `verdict_rederived_2.json` (executor `fc96f0f`, lattice depth proof, re-derivation only) | `4230bec45de41dffb7c54f4b7913ac3a15994b22767f17d6d7c8ed120bd4f98b` |
+| `verdict_rederived_3.json` (rebuilt executor, re-derivation only; INSUFFICIENT for missing depth records) | `bd0c6a9605efd0f7aff387167140c44979a1b5fa372bc7d0c0061420fa2c0254` |
 
 The re-hash at start was 20/20 against the prereg §1a / I-20 pins.

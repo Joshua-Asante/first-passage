@@ -1,9 +1,10 @@
-"""#715 executor fixes (Codex 4199556582, 4199556590): synthetic inputs only."""
+"""#715 executor: verdict derivation rebuilt from invariants I1-I6 (escalation lane); synthetic inputs only."""
 from __future__ import annotations
 
 import copy
 import hashlib
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -18,96 +19,210 @@ from discovery.prop_survivor_scoring import load_scoring_thresholds  # noqa: E40
 
 THR = load_scoring_thresholds()
 CONSISTENCY = ("Tradeify_Select_100K", "MFFU_Rapid_100K", "BluSky_Premium_100K")
+BULENOX, TRADEIFY, MFFU = "Bulenox_100K", "Tradeify_Select_100K", "MFFU_Rapid_100K"
+CSHA, RSHA = "c" * 64, "r" * 64
+PREP = {"g2_killed_tiers": [], "mffu_admissible": False}
+KILLED = {"g2_killed_tiers": [TRADEIFY], "mffu_admissible": False}
 
 
-N_FROZEN = 30_000  # 10,000 sims x 3 seeds
+def _run(bust):
+    return {"headline_bust": bust, "pass_rate": 1 - bust, "rates": {"bust_trailing": bust, "pass": 1 - bust}}
 
 
-def _run(bust, n=N_FROZEN):
-    """Rates are exact count/n fractions, as summarize_outcomes produces."""
-    k = max(1, round(bust * n)) | 1  # odd count keeps the reduced denominator equal to n
-    if n % 2 == 0 and k % 5 == 0:
-        k += 2
-    b = k / n
-    return {"headline_bust": b, "pass_rate": (n - k) / n,
-            "rates": {"bust_trailing": b, "pass": (n - k) / n, "bust_daily": 0.0}}
-
-
-def _report(bust1=0.30, bust2=0.35, n=N_FROZEN):
-    _r = lambda b: _run(b, n)  # noqa: E731
+def _report(bust1=0.30, bust2=0.35):
     tiers = {}
     for t in THR.tier_keys:
         if t in CONSISTENCY:
-            tiers[t] = {"gated_on": "run2", "run1": _r(bust1), "run2": _r(bust2), "clears_part_a": False}
+            tiers[t] = {"gated_on": "run2", "run1": _run(bust1), "run2": _run(bust2), "clears_part_a": False}
         else:
-            tiers[t] = {"gated_on": "run1_degenerate", "run1": _r(bust1), "run2": _r(bust1), "clears_part_a": False}
+            tiers[t] = {"gated_on": "run1_degenerate", "run1": _run(bust1), "run2": _run(bust1), "clears_part_a": False}
     return {"tiers": tiers, "gate_grade": True, "gate_grade_reasons": [], "halted_at": None,
+            "breach_clock": "intraday_honest",
             "thresholds_source": "docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md"}
 
 
-PREP = {"g2_killed_tiers": [], "mffu_admissible": False}
+def _with(report, tier, **fields):
+    report["tiers"][tier].update(fields)
+    return report
 
 
-def _verdict(cand, ref, prep=PREP):
-    return runner.derive_verdict(prep, cand, ref, THR)
+def _g1_halted():
+    r = _report()
+    r.update(tiers={}, halted_at="G1")
+    return r
 
 
-def test_complete_reports_give_early_fail_twin():
-    v = _verdict(_report(), _report(0.55, 0.70))
-    assert v["verdict"] == "FALSIFIED — early-fail"
-    assert v["insufficient_reasons"] == []
+def _killed_tradeify_cand():
+    return _with(_report(), TRADEIFY, gated_on="g2_killed", run1={}, run2={})
 
 
-def test_missing_candidate_run1_is_insufficient():
-    cand = _report()
-    cand["tiers"]["Tradeify_Select_100K"]["run1"] = {}
-    v = _verdict(cand, _report(0.55, 0.70))
-    assert v["verdict"] == "INSUFFICIENT"
-    assert any("Tradeify_Select_100K" in r and "run1" in r for r in v["insufficient_reasons"])
+def _ref_two_clearing_gating_reads():
+    return _with(_with(_report(0.70, 0.70), TRADEIFY, run2=_run(0.01)), MFFU, run2=_run(0.01))
 
 
-def test_missing_candidate_run2_is_insufficient_not_substituted():
-    cand = _report()
-    cand["tiers"]["MFFU_Rapid_100K"]["run2"] = {}
-    v = _verdict(cand, _report(0.55, 0.70))
-    assert v["verdict"] == "INSUFFICIENT"
-    assert any("MFFU_Rapid_100K" in r and "run2" in r for r in v["insufficient_reasons"])
+def _arm(n_sims=None, seeds=None, horizon=None):
+    return {"n_sims": THR.sims_per_seed if n_sims is None else n_sims,
+            "seeds": list(THR.seeds if seeds is None else seeds),
+            "horizon": THR.horizon if horizon is None else horizon}
 
 
-def test_missing_reference_gating_reads_never_count_toward_ambiguous():
-    ref = _report(0.01, 0.70)  # Run-1 busts look clearing; Run-2 is the gating read
-    for t in ("Tradeify_Select_100K", "MFFU_Rapid_100K"):
-        ref["tiers"][t]["run2"] = {}
-    v = _verdict(_report(), ref)
+def _record(sha, tiers=THR.tier_keys):
+    arms = {t: {"run1": _arm(), **({"run2": _arm()} if t in CONSISTENCY else {})} for t in tiers}
+    return {"report_sha256": sha, "arms": arms, "guard": {t: "pass" for t in tiers}}
+
+
+def _set(rec, tier, run, **kw):
+    rec = copy.deepcopy(rec)
+    rec["arms"][tier][run] = _arm(**kw)
+    return rec
+
+
+def _drop(rec, tier, run):
+    rec = copy.deepcopy(rec)
+    del rec["arms"][tier][run]
+    return rec
+
+
+def _guard(rec, tier, value):
+    rec = copy.deepcopy(rec)
+    rec["guard"][tier] = value
+    return rec
+
+
+def _derive(cand=None, ref=None, prep=PREP, cand_rec="full", ref_rec="full"):
+    cand = _report() if cand is None else cand
+    ref = _report(0.55, 0.70) if ref is None else ref
+    cand_rec = _record(CSHA) if cand_rec == "full" else cand_rec
+    ref_rec = _record(RSHA) if ref_rec == "full" else ref_rec
+    return runner.derive_verdict(prep, cand, ref, THR, cand_sha=CSHA, ref_sha=RSHA,
+                                 cand_depth=cand_rec, ref_depth=ref_rec)
+
+
+EARLY = "FALSIFIED — early-fail"
+# (id, _derive kwargs, expected verdict, substrings each found in some reason, or None = no reasons at all)
+MATRIX = [
+    ("all_arms_full_decisive", {}, EARLY, None),
+    ("candidate_arm_n_sims_40_r4200174057", {"cand_rec": _set(_record(CSHA), TRADEIFY, "run1", n_sims=40)},
+     "INSUFFICIENT", ["candidate Tradeify_Select_100K run1", "n_sims=40"]),
+    ("candidate_arm_wrong_seeds", {"cand_rec": _set(_record(CSHA), BULENOX, "run1", seeds=(1, 2, 3))},
+     "INSUFFICIENT", ["candidate Bulenox_100K run1", "seeds"]),
+    ("candidate_arm_wrong_horizon", {"cand_rec": _set(_record(CSHA), MFFU, "run2", horizon=500)},
+     "INSUFFICIENT", ["candidate MFFU_Rapid_100K run2", "horizon"]),
+    ("reference_arm_shallow", {"ref_rec": _set(_record(RSHA), MFFU, "run2", n_sims=40)},
+     "INSUFFICIENT", ["reference MFFU_Rapid_100K run2", "n_sims=40"]),
+    ("reference_arm_entry_missing", {"ref_rec": _drop(_record(RSHA), TRADEIFY, "run1")},
+     "INSUFFICIENT", ["reference Tradeify_Select_100K run1", "no depth entry"]),
+    ("honest_g1_halt_r4200174064", {"cand": _g1_halted(), "cand_rec": {"report_sha256": CSHA, "arms": {}, "guard": {}}},
+     EARLY, None),
+    ("honest_g1_halt_without_any_record", {"cand": _g1_halted(), "cand_rec": None}, EARLY, None),
+    ("g2_killed_tier_shallow_arm", {"prep": KILLED, "cand": _killed_tradeify_cand(),
+                                    "cand_rec": _set(_record(CSHA), TRADEIFY, "run2", n_sims=40)}, EARLY, None),
+    ("g2_killed_tier_missing_arms_and_guard",
+     {"prep": KILLED, "cand": _killed_tradeify_cand(),
+      "cand_rec": _record(CSHA, tiers=[t for t in THR.tier_keys if t != TRADEIFY])}, EARLY, None),
+    ("record_sha_mismatch", {"cand_rec": _record("x" * 64)}, "INSUFFICIENT", ["candidate", "report_sha256"]),
+    ("record_missing", {"ref_rec": None}, "INSUFFICIENT", ["reference Bulenox_100K run1", "no bound depth record"]),
+    ("guard_fail_on_read_tier", {"cand_rec": _guard(_record(CSHA), TRADEIFY, "fail")},
+     "INSUFFICIENT", ["candidate Tradeify_Select_100K", "guard"]),
+    ("guard_fail_on_g2_killed_tier_not_required",
+     {"prep": KILLED, "cand": _killed_tradeify_cand(), "cand_rec": _guard(_record(CSHA), TRADEIFY, "fail")}, EARLY, None),
+    ("ambiguous_precedes_insufficient",
+     {"ref": _ref_two_clearing_gating_reads(), "cand_rec": _set(_record(CSHA), TRADEIFY, "run1", n_sims=40)},
+     "AMBIGUOUS", ["candidate Tradeify_Select_100K run1"]),
+    ("missing_reference_gating_read_not_ambiguous",
+     {"ref": _with(_with(_report(0.01, 0.70), TRADEIFY, run2={}), MFFU, run2={})},
+     "INSUFFICIENT", ["reference Tradeify_Select_100K run2 missing"]),
+    ("unevidenced_reference_gating_read_not_ambiguous",
+     {"ref": _ref_two_clearing_gating_reads(),
+      "ref_rec": _set(_set(_record(RSHA), TRADEIFY, "run2", n_sims=40), MFFU, "run2", n_sims=40)},
+     "INSUFFICIENT", ["reference Tradeify_Select_100K run2", "reference MFFU_Rapid_100K run2"]),
+    ("candidate_run1_missing", {"cand": _with(_report(), TRADEIFY, run1={})},
+     "INSUFFICIENT", ["candidate Tradeify_Select_100K run1 missing"]),
+    ("candidate_run2_missing_not_substituted", {"cand": _with(_report(), MFFU, run2={})},
+     "INSUFFICIENT", ["candidate MFFU_Rapid_100K run2 missing"]),
+    ("wrong_gated_on_label", {"cand": _with(_report(), "BluSky_Premium_100K", gated_on="run1_degenerate")},
+     "INSUFFICIENT", ["BluSky_Premium_100K gated_on"]),
+]
+
+
+@pytest.mark.parametrize("case", MATRIX, ids=[m[0] for m in MATRIX])
+def test_verdict_matrix(case):
+    _, kw, verdict, needles = case
+    v = _derive(**copy.deepcopy(kw))
+    assert v["verdict"] == verdict, v["insufficient_reasons"]
+    if needles is None:
+        assert v["insufficient_reasons"] == []
+    for n in needles or ():
+        assert any(n in r for r in v["insufficient_reasons"]), (n, v["insufficient_reasons"])
+
+
+def test_ambiguous_counts_only_evidenced_reference_gating_reads():
+    assert _derive(ref=_ref_two_clearing_gating_reads())["ambiguous"] is True
+    v = _derive(ref=_ref_two_clearing_gating_reads(), ref_rec=_set(_record(RSHA), MFFU, "run2", n_sims=40))
+    assert v["ambiguous"] is False and v["reference_bust"][MFFU] is None
+
+
+def test_gating_run_by_tier_semantics():
+    ref = _with(_with(_report(0.70, 0.70), BULENOX, run1=_run(0.01)), TRADEIFY, run1=_run(0.01))
+    v = _derive(ref=ref)
+    assert v["reference_bust"][BULENOX] == 0.01 and v["reference_bust"][TRADEIFY] == 0.70
     assert v["ambiguous"] is False
+
+
+def test_g1_halted_candidate_record_content_is_never_read():
+    for rec in (None, {"report_sha256": "x" * 64},
+                {"report_sha256": CSHA, "arms": {"junk": 1}, "guard": {"t": "fail"}}):
+        v = _derive(cand=_g1_halted(), cand_rec=rec)
+        assert v["verdict"] == EARLY and v["insufficient_reasons"] == []
+
+
+def test_lattice_fallback_removed():
+    assert not hasattr(runner, "lattice_paths")
+    v = _derive(cand_rec=None)
     assert v["verdict"] == "INSUFFICIENT"
+    assert v["insufficient_reasons"] and all("no bound depth record" in r for r in v["insufficient_reasons"])
+    assert v["row_verdict"] == EARLY
 
 
-def test_reference_ambiguous_twin_uses_run2_bust():
-    ref = _report(0.70, 0.70)
-    for t in ("Tradeify_Select_100K", "MFFU_Rapid_100K"):
-        ref["tiers"][t]["run2"] = _run(0.01)
-    v = _verdict(_report(), ref)
-    assert v["ambiguous"] is True and v["verdict"] == "AMBIGUOUS"
+def test_derive_verdict_is_pure():
+    args = (_report(), _report(0.55, 0.70), _record(CSHA), _record(RSHA))
+    snap = copy.deepcopy(args)
+    _derive(cand=args[0], ref=args[1], cand_rec=args[2], ref_rec=args[3])
+    assert args == snap
 
 
-def test_bulenox_gates_on_run1_and_consistency_tier_on_run2():
-    ref = _report(0.70, 0.70)
-    ref["tiers"]["Bulenox_100K"]["run1"] = _run(0.01)
-    ref["tiers"]["Bulenox_100K"]["run2"] = _run(0.01)
-    ref["tiers"]["Tradeify_Select_100K"]["run1"] = _run(0.01)  # diagnostic only
-    v = _verdict(_report(), ref)
-    assert v["reference_bust"]["Bulenox_100K"] == ref["tiers"]["Bulenox_100K"]["run1"]["headline_bust"]
-    assert v["reference_bust"]["Tradeify_Select_100K"] == ref["tiers"]["Tradeify_Select_100K"]["run2"]["headline_bust"]
-    assert v["reference_bust"]["Tradeify_Select_100K"] > 0.5
-    assert v["ambiguous"] is False
+# ── score-stage writer (I3, I6): what it writes is what derive_verdict accepts ──
+
+def _write(tmp_path, name, rep, n_sims):
+    p = tmp_path / f"{name}_report.json"
+    p.write_text(json.dumps(rep))
+    runner.write_depth_record(p, rep, THR, n_sims=n_sims)
+    return hashlib.sha256(p.read_bytes()).hexdigest(), json.loads((tmp_path / f"{name}_report.depth.json").read_text())
 
 
-def test_wrong_gated_on_label_is_insufficient():
-    cand = _report()
-    cand["tiers"]["BluSky_Premium_100K"]["gated_on"] = "run1_degenerate"
-    v = _verdict(cand, _report(0.55, 0.70))
-    assert v["verdict"] == "INSUFFICIENT"
+def test_write_depth_record_round_trip(tmp_path):
+    csha, crec = _write(tmp_path, "candidate", _report(), THR.sims_per_seed)
+    rsha, rrec = _write(tmp_path, "reference", _report(0.55, 0.70), THR.sims_per_seed)
+    assert set(crec["arms"][BULENOX]) == {"run1"} and set(crec["arms"][TRADEIFY]) == {"run1", "run2"}
+    v = runner.derive_verdict(PREP, _report(), _report(0.55, 0.70), THR, cand_sha=csha, ref_sha=rsha,
+                              cand_depth=crec, ref_depth=rrec)
+    assert v["verdict"] == EARLY and v["insufficient_reasons"] == []
+
+
+def test_write_depth_record_records_shallow_depth_and_guard_failures(tmp_path):
+    rep = _with(_report(), MFFU, gated_on="g2_killed", run1={}, run2={})
+    rep["gate_grade_reasons"] = [f"{TRADEIFY}: non-vacuity failed: x"]
+    _, rec = _write(tmp_path, "candidate", rep, 40)
+    assert rec["arms"][TRADEIFY]["run1"]["n_sims"] == 40
+    assert MFFU not in rec["arms"] and MFFU not in rec["guard"]
+    assert rec["guard"][TRADEIFY] == "fail" and rec["guard"][BULENOX] == "pass"
+
+
+def test_write_depth_record_eod_clock_has_no_guard_pass(tmp_path):
+    rep = _report()
+    rep["breach_clock"] = "eod"
+    _, rec = _write(tmp_path, "reference", rep, THR.sims_per_seed)
+    assert set(rec["guard"].values()) == {"not_run"}
 
 
 # ── re-hash: the manifest bytes validated are the bytes parsed (Codex 4199556590) ──
@@ -161,48 +276,3 @@ def test_rehash_blocks_when_primary_manifest_and_source_drift_together(tmp_path)
     m.write_text("\n".join(text) + "\n")
     with pytest.raises(runner.Blocked, match="manifest"):
         _rehash(root, msha, tmp_path)
-
-
-# ── depth evidence (Codex 4199724903): record when present, else the lattice proof ──
-
-def _depth(report_sha, n_sims=10_000, seeds=(42, 123, 2026), horizon=1500, guard=None):
-    return {"report_sha256": report_sha, "n_sims": n_sims, "seeds": list(seeds), "horizon": horizon,
-            "guard": guard if guard is not None else {t: "pass" for t in THR.tier_keys}}
-
-
-def _with_records(cand, ref, **kw):
-    return runner.derive_verdict(PREP, cand, ref, THR, cand_sha="c" * 64, ref_sha="r" * 64,
-                                 cand_depth=_depth("c" * 64, **kw), ref_depth=_depth("r" * 64))
-
-
-def test_depth_record_twin_passes():
-    assert _with_records(_report(), _report(0.55, 0.70))["verdict"] == "FALSIFIED — early-fail"
-
-
-def test_depth_record_with_n_sims_40_is_insufficient():
-    v = _with_records(_report(), _report(0.55, 0.70), n_sims=40)
-    assert v["verdict"] == "INSUFFICIENT" and any("n_sims" in r for r in v["insufficient_reasons"])
-
-
-def test_depth_record_must_match_report_bytes():
-    v = runner.derive_verdict(PREP, _report(), _report(0.55, 0.70), THR, cand_sha="c" * 64, ref_sha="r" * 64,
-                              cand_depth=_depth("x" * 64), ref_depth=_depth("r" * 64))
-    assert v["verdict"] == "INSUFFICIENT" and any("report_sha256" in r for r in v["insufficient_reasons"])
-
-
-def test_depth_record_guard_failure_is_insufficient():
-    guard = {t: "pass" for t in THR.tier_keys}
-    guard["Tradeify_Select_100K"] = "fail"
-    v = _with_records(_report(), _report(0.55, 0.70), guard=guard)
-    assert v["verdict"] == "INSUFFICIENT" and any("guard" in r for r in v["insufficient_reasons"])
-
-
-def test_lattice_proof_rejects_n_sims_40_reports_without_record():
-    v = _verdict(_report(n=120), _report(0.55, 0.70))
-    assert v["verdict"] == "INSUFFICIENT" and any("lattice" in r for r in v["insufficient_reasons"])
-
-
-def test_lattice_proof_twin_accepts_frozen_depth_reports_without_record():
-    v = _verdict(_report(), _report(0.55, 0.70))
-    assert v["verdict"] == "FALSIFIED — early-fail"
-    assert v["depth_evidence"] == {"candidate": "lattice", "reference": "lattice"}
