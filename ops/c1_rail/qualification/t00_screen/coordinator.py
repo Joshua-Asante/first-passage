@@ -668,20 +668,24 @@ class Job:
         finally:
             self.kernel.CloseHandle(snapshot)
 
+    def _query(self, kind, info):
+        """One QueryInformationJobObject; a closed job or a FALSE return is unreadable, never a read
+        of zero (Codex r4189920851; review 5423080976)."""
+        if not self.handle:
+            raise OSError('the job is closed; its accounting was read before closing or is charged as a crash')
+        if not self.kernel.QueryInformationJobObject(self.handle, kind, self.ctypes.byref(info),
+                                                     self.ctypes.sizeof(info), None):
+            raise OSError(self.ctypes.get_last_error() if hasattr(self.ctypes, 'get_last_error') else 0,
+                          'QueryInformationJobObject failed')
+        return info
+
     def cpu_s(self) -> float:
         """The job's accounted CPU, exited workers included (row B1)."""
-        if not self.handle:  # a closed job is never read as no CPU (Codex r4189920851)
-            raise OSError('the job is closed; its CPU was read before closing or is charged as a crash')
-        info = self.accounting_type()
-        self.kernel.QueryInformationJobObject(self.handle, 1, self.ctypes.byref(info), self.ctypes.sizeof(info), None)
+        info = self._query(1, self.accounting_type())
         return (info.TotalUserTime + info.TotalKernelTime) / 1e7
 
     def peak_memory(self) -> int:
-        if not self.handle:
-            return 0
-        info = self.extended()
-        self.kernel.QueryInformationJobObject(self.handle, 9, self.ctypes.byref(info), self.ctypes.sizeof(info), None)
-        return int(info.PeakProcessMemoryUsed)
+        return int(self._query(9, self.extended()).PeakProcessMemoryUsed)
 
     def close(self):
         if self.handle:
@@ -1167,11 +1171,17 @@ class _Run:  # pylint: disable=too-many-instance-attributes
 
 
 def _read_job(job) -> tuple:
-    """(CPU seconds or None when unreadable, peak process memory) of a segment's job."""
+    """(CPU seconds or None when unreadable, peak process memory or 0 when unreadable) of a
+    segment's job; each query is read on its own."""
     try:
-        return job.cpu_s(), job.peak_memory()
+        cpu = job.cpu_s()
     except OSError:
-        return None, 0
+        cpu = None
+    try:
+        peak = job.peak_memory()
+    except OSError:
+        peak = 0
+    return cpu, peak
 
 
 def _cost(value) -> dict:
