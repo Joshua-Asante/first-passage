@@ -89,7 +89,16 @@ acceptance:
 
 ## §7 — Return
 
-*(Filled by the executor.)*
+**DONE (2026-10-06).** Built through `glm_agent` (GLM hit its iteration cap). The coordinator-side worker reviewed the full diff and added one fix: `run_seed` now fails closed when `protected_intraday_blocks` or `mode_trigger` arrives without `protected_blocks`, or `protected_intraday_blocks` without `intraday_blocks`, instead of ignoring them silently. A test was added for that.
+
+**Files:** edits to `core/mc/simulation.py` and `lab/discovery/prop_survivor_scoring.py`; new `tests/core/test_mc_mode_switching.py` and `tests/test_mode_switching_book_parity.py`.
+
+**Evidence (launcher records `completed`, exit 0):**
+- New tests, engine suites, scoring and intraday-channel suites, and `test_seal_account_snapshot`: 248 passed (`.cache/fp-verification/20261006T000044Z-877fa287cdd9`).
+- `tests/ops/qualification/test_seal.py`, `test_seal_ordering.py`, `test_replay.py` and `test_runner.py`, run as their own batch: 133 passed.
+- `check_boundaries` OK; no lab→ops import.
+
+**Disclosed:** the qualification seal suite failed 15 tests when run in one mixed selection with the core suites, and passes when run alone. That fits the documented child-bridge isolation behaviour, not this change.
 
 ## §10 — Audit hooks
 
