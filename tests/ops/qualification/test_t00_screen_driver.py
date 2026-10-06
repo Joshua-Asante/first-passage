@@ -1556,3 +1556,37 @@ def test_unreadable_job_cpu_is_charged_conservatively(tmp_path, monkeypatch):
     end = records[-1]['body']
     floor = drv().HEARTBEAT_S * 2
     assert stop.kind == 'STOPPED' and end['job_cpu_s'] >= floor and end['overhead_cpu_s'] >= floor
+
+
+def _failing_job():
+    """A real ``Job`` whose kernel stand-in fails every QueryInformationJobObject (returns FALSE)."""
+    import ctypes
+
+    class Accounting(ctypes.Structure):
+        _fields_ = [('TotalUserTime', ctypes.c_int64), ('TotalKernelTime', ctypes.c_int64)]
+
+    class Extended(ctypes.Structure):
+        _fields_ = [('PeakProcessMemoryUsed', ctypes.c_size_t)]
+
+    class Kernel:  # pylint: disable=too-few-public-methods
+        @staticmethod
+        def QueryInformationJobObject(*_args):
+            return 0  # FALSE; the out-structure is left zeroed
+
+    job = object.__new__(drv().Job)
+    job.ctypes, job.kernel, job.accounting_type, job.extended, job.handle = ctypes, Kernel(), Accounting, Extended, 1
+    return job
+
+
+def test_failed_job_query_is_unreadable_not_zero(tmp_path, monkeypatch):
+    """Codex r2 on #705 (review 5423080976): a FALSE QueryInformationJobObject is an unreadable job,
+    never a read of 0 CPU, so SEGMENT_END takes the conservative crash charge; peak memory alike."""
+    job = _failing_job()
+    with pytest.raises(OSError):
+        job.cpu_s()
+    with pytest.raises(OSError):
+        job.peak_memory()
+    stop, records = _segment_run(tmp_path, monkeypatch, job=job, interrupts=2)
+    end = records[-1]['body']
+    floor = drv().HEARTBEAT_S * 2
+    assert stop.kind == 'STOPPED' and end['job_cpu_s'] >= floor and end['overhead_cpu_s'] >= floor
