@@ -667,3 +667,35 @@ def test_cli_refuses_tracked_out(tmp_path):
             main([*argv, "--export-tz", EXPORT_TZ, "--out", str(tracked)])
     # Nothing was written by the refused runs.
     assert not (REPO / "core" / "manifest.json").exists()
+
+
+def test_exit_at_1645_is_late(tmp_path):
+    """16:45 ET itself is inside the forbidden [16:45, 18:00) exit interval."""
+    tables = copy.deepcopy(STANDARD)
+    tables[("orb_mnq_v7", "normal")][1] = _row(
+        2, "2026-01-08 10:00", "2026-01-08 16:45", 1, 45.0, 1.00, 9.0
+    )
+    with pytest.raises(ValueError, match="16:45"):
+        build(tmp_path, tables)
+
+
+@pytest.mark.parametrize("missing", [
+    ("dj30_mym_p250", "protected"),
+    ("orb_mnq_v7", "protected"),
+    ("aegis_6j", "normal"),
+    ("vanguard_mgc", "normal"),
+])
+def test_missing_required_table_fails_closed(tmp_path, missing):
+    """Only Aegis protected and Vanguard protected are derived; every other table is required."""
+    tables = copy.deepcopy(STANDARD)
+    del tables[missing]
+    with pytest.raises(ValueError, match="required"):
+        build(tmp_path, tables)
+
+
+def test_derived_cell_supplied_as_table_is_rejected(tmp_path):
+    """A table for a derived cell (Aegis protected) is refused, not silently preferred."""
+    tables = copy.deepcopy(STANDARD)
+    tables[("aegis_6j", "protected")] = copy.deepcopy(STANDARD[("aegis_6j", "normal")])
+    with pytest.raises(ValueError, match="derived"):
+        build(tmp_path, tables)

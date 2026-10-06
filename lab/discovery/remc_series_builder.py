@@ -440,7 +440,7 @@ def _assert_session_containment(trade: Trade) -> None:
             f"and exit {trade.exit_ny.isoformat()} fall on different CME trade dates "
             "(18:00 ET roll); the venue-bound editions are flat each session"
         )
-    if LATE_EXIT_ET < trade.exit_ny.time() < CME_REOPEN_ET:
+    if LATE_EXIT_ET <= trade.exit_ny.time() < CME_REOPEN_ET:
         raise SessionBoundaryError(
             f"{trade.leg} trade {trade.trade_number}: exit {trade.exit_ny.isoformat()} "
             f"is after {LATE_EXIT_ET.strftime('%H:%M')} ET — the export does not match "
@@ -615,6 +615,16 @@ def build_series(
         leg, mode = key
         if leg not in LEGS or mode not in MODES:
             raise ValueError(f"unknown (leg, mode) table key: {leg}:{mode}")
+    # Fail closed on the source set: exactly the six file-backed tables. Only the
+    # designated DERIVED_TABLES are built from a normal table; nothing substitutes.
+    missing = [":".join(key) for key in FILE_TABLES if key not in tables]
+    if missing:
+        raise ValueError(f"missing required input tables: {missing}")
+    supplied_derived = [":".join(key) for key in DERIVED_TABLES if key in tables]
+    if supplied_derived:
+        raise ValueError(
+            f"tables {supplied_derived} are derived by rule and must not be supplied"
+        )
 
     start, end = _window(tables)
     dates = _weekday_calendar(start, end)
@@ -626,16 +636,8 @@ def build_series(
             key = (leg, mode)
             if key in tables:
                 source = list(tables[key])
-                derived = False
-            else:
-                normal = tables.get((leg, "normal"))
-                if normal is None:
-                    raise ValueError(
-                        f"table {leg}:{mode} was not supplied and the {leg}:normal "
-                        "table it would be derived from is missing"
-                    )
-                source = list(normal)
-                derived = True
+            else:  # a DERIVED_TABLES cell; its normal table is required above
+                source = list(tables[(leg, "normal")])
             in_window = [
                 trade for trade in source if start <= trade.session_date <= end
             ]
