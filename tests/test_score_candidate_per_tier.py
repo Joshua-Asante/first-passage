@@ -163,3 +163,18 @@ def test_protected_channels_reach_runs_and_guard(monkeypatch):
         assert np.array_equal(kw["protected_blocks"], exp_b), firm_key
         assert np.array_equal(kw["protected_intraday_blocks"], exp_l), firm_key
     assert len(guards) == len(thr.tier_keys)
+
+
+def test_protected_length_must_match_normal_length_before_blocking():
+    """Codex 4190889391: 60 normal days vs 64 protected days must raise, not truncate to equal weeks."""
+    thr = load_scoring_thresholds()
+    rng = np.random.default_rng(11)
+    long_p = rng.normal(100.0, 300.0, N_DAYS + 4)
+    long_l = np.minimum(0.0, long_p) - 50.0
+    mapping = {
+        t: TierSeries(daily_pnl=s.daily_pnl, intraday_low=s.intraday_low,
+                      protected_pnl=long_p, protected_low=long_l)
+        for t, s in _mapping(thr).items()
+    }
+    with pytest.raises(ValueError, match="same length"):
+        _call(tier_series=mapping, mode_trigger=0.01)

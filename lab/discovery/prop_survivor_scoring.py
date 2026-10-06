@@ -170,9 +170,19 @@ def _tier_blocks(
             f"{sorted(tier_keys)}, got {sorted(tier_series)}"
         )
     entries = [tier_series[k] for k in tier_keys]
-    lengths = {len(e.daily_pnl) for e in entries}
+    # Every supplied channel, on every tier, must have the same length BEFORE any
+    # week-blocking: blocking drops incomplete final weeks, so a mismatch would
+    # otherwise be silently truncated away (Codex 4190889391).
+    lengths = {
+        len(channel)
+        for e in entries
+        for channel in (e.daily_pnl, e.intraday_low, e.protected_pnl, e.protected_low)
+        if channel is not None
+    }
     if len(lengths) != 1:
-        raise ValueError(f"every tier's series must be the same length, got {sorted(lengths)}")
+        raise ValueError(
+            f"every tier's channels must all be the same length, got {sorted(lengths)}"
+        )
     has_low = {e.intraday_low is not None for e in entries}
     if len(has_low) != 1:
         raise ValueError("intraday_low must be given for every tier or for none")
