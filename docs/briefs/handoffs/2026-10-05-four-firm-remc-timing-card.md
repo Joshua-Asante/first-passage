@@ -22,12 +22,12 @@
    - Candidate: 4 tiers × (3 guard arms + Run-1) + 3 Run-2s = **19 arms**.
    - Reference: the same, **19 arms**.
    - Total: **38 arms**.
-   - The O-8 mode-switching code adds one channel choice per day. Budgeted at ×1.5 until measured; measured at ×1.18 ([PR #708](https://github.com/Joshua-Asante/first-passage/pull/708)) and carried as ×1.2.
+   - The O-8 mode-switching code adds one channel choice per day. Budgeted at ×1.5 until measured. Measured on [PR #708](https://github.com/Joshua-Asante/first-passage/pull/708) at `0db500e` (§7); it sits inside the run-to-run spread, and one ×1.5 margin covers both.
 2. **Shapes:**
    - *worst*: zero P&L and zero low, so no path busts or passes and every path runs the full 1,500 days. This is an upper bound.
    - *typical*: synthetic N(0, 300) daily P&L, low = min(0, P&L) − 150.
    - The real book's paths end at pass or bust, so its runtime falls between the two.
-3. **Timing harness:** a standalone script, reproduced in §10. It calls `paired_blocks_from_daily` and `run_tier_remc` with the Run-2 consistency setting and the intraday channel on. It is not committed as code.
+3. **Timing harness:** a standalone script, reproduced in §10. It calls `paired_blocks_from_daily` and `run_tier_remc` with the Run-2 consistency setting and the intraday channel on. It is not committed as code. The mode-switching variant is the same script with `protected_blocks=blocks, protected_intraday_blocks=lows, mode_trigger=0.01` added to the `run_tier_remc` call, run on a checkout of #708 at `0db500e`.
 
 ## §1 — Goal
 
@@ -80,11 +80,22 @@ acceptance:
 | worst | 500 | 48.38 s | 49.39 s | 53.50 s | 46.75 s |
 | worst | 10,000 | — | — | 1005.43 s | — |
 
-- **H holds.** The 500 → 10k ratio is 18.8–21.6 (worst MFFU 18.8; typical 17.8–21.6, inside ±25% of 20).
-- **Mode-switching overhead:** worst MFFU at 500 sims ran 41.16 s → 48.61 s with protected channels (PR #708), ×1.18, carried as ×1.2.
-- **I-15 figure.** 38 arms (§0.5 item 1) at ×1.2:
-  - Worst-case bound: 38 × 1005 s × 1.2 ≈ **12.7 h serial**. With 8 arm processes in parallel (arms are seed-deterministic and independent), 5 waves × 1206 s ≈ **1.7 h**.
-  - Typical shape: about **1.2 h serial**.
+- **H holds.** The 500 → 10k ratio is 17.8–21.6, inside ±25% of 20.
+- **Run-to-run spread** (worst MFFU, 500 sims, serial; identical deterministic workload):
+
+  | Variant | Samples (s) |
+  |---|---|
+  | normal-only | 53.50, 41.16, 66.61, 55.76, 48.65 |
+  | mode-switching (#708 `0db500e`) | 48.61, 63.13, 57.93, 53.25 |
+
+  The 53.50 s vs 41.16 s gap is this spread. The workload is seed-deterministic, so the variance is environmental: other sessions' test suites share the 8-CPU machine.
+- **Mode-switching overhead:** the paired ratios are 1.18, 0.95, 1.04 and 1.09. It is indistinguishable from the spread.
+- **Margin:** the 10k anchor (1005 s) is 50.3 s at 500-sim scale. The worst observed serial samples are 66.61 s (×1.33) normal-only and 63.13 s (×1.26) mode-switching. **×1.5** covers both.
+- **8-way contention** (eight concurrent mode-switching processes, 500 sims): wall-clock 93 s; per process 79.56–89.06 s, against 48.61–63.13 s serial (×1.4–1.7). One sample only.
+- **I-15 figure** (38 arms, §0.5 item 1):
+  - **Bound: 38 × 1005 s × 1.5 ≈ 15.9 h serial.**
+  - **Estimate, not a bound: about 2.5 h** with 8 parallel arm processes. That is 5 waves × 89.06 s × 20; the contention is measured once only.
+  - Typical shape: 38 × about 95 s × 1.5 ≈ 1.5 h serial.
 - The real book's paths end at pass or bust, so the expected time is well under the bound.
 
 ## §10 — Audit hooks
