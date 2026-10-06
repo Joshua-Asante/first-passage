@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Disposition note:** §4/§5 **overridden 2026-09-03** by the operator ruling in the addendum below — candidate #1 re-admitted, §4 discharge restored, EOD-clock only. The ADR itself stands.
 **Disposition note 2026-10-02:** the 2026-09-03 discharge is **WITHDRAWN**; §4 is undischarged until a pre-registered re-MC clears on the intraday-honest clock ([Addendum 2026-10-02](#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)).
+**Disposition note 2026-10-06:** the pre-registered dated re-MC returned **FALSIFIED — early-fail**; §4 stays undischarged ([Addendum 2026-10-06](#addendum-2026-10-06--dated-re-mc-verdict-falsified--early-fail-recorded)).
 **Superseded-by:** none
 **Retain-until:** superseded by a fresh discharge under corrected geometry, or by the §4 hard date 2026-11-08
 **Decision date:** 2026-07-22
@@ -374,6 +375,17 @@ grep -n "overridden but unedited" docs/adr/2026-07-22-prop-portfolio-s4-discharg
 
 **Mirrors** (each links here and restates nothing): STATE.md's 2026-11-08 row and 2026-09-23 decision-index row; the checklist amendment's §1 and §5; the campaign state's ceiling row, D5 row and 2026-09-03 D5 log row; the four-firm ADR's change history. *2026-10-03 (coordinator (3) batch 2a):* also the 2026-09-03 banner of the [eval-lock correction RESULTS](../../lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md).
 
+## Addendum 2026-10-06 — dated re-MC verdict: FALSIFIED — early-fail (`Recorded`)
+
+**Status:** `Recorded`. This is the verdict the frozen [four-firm dated re-MC pre-registration](../briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md) assigns mechanically under its §4. It is recorded here because §8 step 7 names this file as the §4 status owner. It adds no ruling.
+
+- **Verdict:** **FALSIFIED — early-fail.** No tier clears Part A on the intraday-honest clock, and the calibration reference does not make the gate AMBIGUOUS. [RESULTS](../../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md), merged in [#715](https://github.com/Joshua-Asante/first-passage/pull/715) at `11c6007bbf6740c5d5a433950da42527ce90d335`.
+- **Evidence of record:** the 2026-10-06 run at executor `81e7dcb`, and the operator-approved depth re-run at `c180283`. The re-run reproduced the run of record's reports byte for byte, with a bound depth record for every arm read, and returned no INSUFFICIENT reason. Combined acceptance by the deployment coordinator ([comment 6027345046](https://github.com/Joshua-Asante/first-passage/pull/715#issuecomment-6027345046)); Joshua's "Accept, merge" was confirmed directly to the merge-order agent.
+- **Disposition (prereg §4 row):** not a discharge. §4 stays **undischarged** (O-1). Candidate (A), Class-S #3, closes. The early-fail branch arms: any subsequent candidate needs fresh operator authorization. This verdict does not by itself demote the program; the program check at 2026-11-08 is separate (prereg §4, "Program level").
+- **Read with:** RESULTS' own notes. The data window starts on a Thursday, so its weekly blocks run Thursday to Wednesday, not the "Monday-anchored" blocks frozen I-14 describes. RESULTS records this (card §0.5 item 3). Coordinator (4)'s reading, not separately measured: a different block start day cannot close a miss this large. The named approximations are listed under prereg I-17 and O-4.
+
+**Mirrors** (each links here): STATE.md's 2026-11-08 row; the [2026-10-06a session entry](../SESSIONS.md).
+
 ## Change history
 
 | Date | Change | By |
@@ -384,3 +396,4 @@ grep -n "overridden but unedited" docs/adr/2026-07-22-prop-portfolio-s4-discharg
 | 2026-09-03 | **Addendum ratified as `Accepted`, in the OPPOSITE disposition to the one it proposed** — operator ruling: candidate #1 **re-admitted** at the 5.0% ceiling, §4 discharge **restored** on the §2 corrected-geometry figures, superseding-ADR requirement **waived** by operator direction. §1–§10 still byte-unchanged; §4's restore-trigger table and §5's forbidden move overridden but unedited. No re-MC, no number moved, no `core/`/Pine/allocation/`dd_protection`/rail surface touched. Discharge is **EOD-clock only** — the 32.33% honest-clock guard run stands unrepealed. $0/K=0. | Joshua (ruling) + Claude Code (record) |
 | 2026-10-02 | **Addendum 2026-10-02 (`Accepted`)**, operator ruling ("all recommended"): the 2026-09-03 EOD-clock discharge is **withdrawn**; a clear that gates §4 must hold on the intraday-honest clock; §4 is undischarged until a pre-registered, dated re-MC clears it on the intraday-honest clock by 2026-11-08 (criteria: [four-firm ADR §4](2026-07-12-prop-portfolio-four-friendly-firms.md#4--falsifier-revert-trigger) H and the governing pre-registration; text narrowed 2026-10-03 to link the owner criteria, the ruling is unchanged); an exactly-one-tier clear is not a discharge (Joshua decides at 2026-11-08). Header disposition note and reader-intercept added; §1–§10 and the 09-03 addendum unedited. No re-MC, no number moved. $0/K=0. | Joshua (ruling) + Claude Code (record) |
 | 2026-10-03 | Addendum 2026-10-02 ruling item 3 and its change-history row narrowed to link the owner criteria ([four-firm ADR §4](2026-07-12-prop-portfolio-four-friendly-firms.md#4--falsifier-revert-trigger) H and the governing pre-registration) instead of restating them (#620 review P2-2); the eval-lock correction RESULTS banner added to Mirrors. The ruling is unchanged. | Claude Code (coordinator (3) batch 2a) |
+| 2026-10-06 | **Addendum 2026-10-06 (`Recorded`)**: the dated re-MC's mechanical verdict, FALSIFIED — early-fail (#715, `11c6007`); §4 stays undischarged; candidate (A) closes; the early-fail branch arms. Head disposition note added. Prereg §8 step 7 | Coordinator (4), #616 owner |
