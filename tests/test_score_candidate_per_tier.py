@@ -1,7 +1,6 @@
 """Step 2(c): per-tier series through ``score_candidate`` (card 2026-10-06). Synthetic only."""
 from __future__ import annotations
 
-import inspect
 
 import numpy as np
 import pytest
@@ -98,7 +97,7 @@ def test_protected_channels_fail_closed_without_kernel_support_or_when_incomplet
                       protected_pnl=s.daily_pnl * 0.4, protected_low=s.intraday_low * 0.4)
         for t, s in _mapping(thr).items()
     }
-    supported = "protected_blocks" in inspect.signature(pss.run_tier_remc).parameters
+    supported = pss._mode_switching_supported()
     if not supported:
         with pytest.raises(ValueError, match="mode-switching"):
             _call(tier_series=mapping, mode_trigger=0.01)
@@ -127,3 +126,40 @@ def test_protected_channels_must_pair_and_need_intraday():
            for t, s in _mapping(thr).items()}
     with pytest.raises(ValueError, match="require intraday_low"):
         _call(tier_series=eod, mode_trigger=0.01)
+
+
+def _protected_mapping(thr):
+    return {
+        t: TierSeries(daily_pnl=s.daily_pnl, intraday_low=s.intraday_low,
+                      protected_pnl=s.daily_pnl * 0.4, protected_low=s.intraday_low * 0.4)
+        for t, s in _mapping(thr).items()
+    }
+
+
+def test_protected_channels_reach_runs_and_guard(monkeypatch):
+    """With #708 merged, each tier's protected channels and the trigger reach every G4 run and the guard."""
+    if not pss._mode_switching_supported():
+        pytest.skip("kernel mode-switching not present (pre-#708 main)")
+    thr = load_scoring_thresholds()
+    mapping = _protected_mapping(thr)
+    runs, guards = [], []
+    real_run, real_guard = pss.run_tier_remc, pss.assert_intraday_channel_nonvacuous
+
+    def run_spy(firm_key, blocks, thresholds, **kw):
+        runs.append((firm_key, kw))
+        return real_run(firm_key, blocks, thresholds, **kw)
+
+    def guard_spy(blocks, intraday_blocks, **kw):
+        guards.append(kw)
+        return real_guard(blocks, intraday_blocks, **kw)
+
+    monkeypatch.setattr(pss, "run_tier_remc", run_spy)
+    monkeypatch.setattr(pss, "assert_intraday_channel_nonvacuous", guard_spy)
+    _call(tier_series=mapping, mode_trigger=0.01)
+    assert {k for k, _ in runs} == set(thr.tier_keys)
+    for firm_key, kw in runs + [(g["firm_key"], g) for g in guards]:
+        exp_b, exp_l = pss.paired_blocks_from_daily(mapping[firm_key].protected_pnl, mapping[firm_key].protected_low)
+        assert kw["mode_trigger"] == 0.01
+        assert np.array_equal(kw["protected_blocks"], exp_b), firm_key
+        assert np.array_equal(kw["protected_intraday_blocks"], exp_l), firm_key
+    assert len(guards) == len(thr.tier_keys)

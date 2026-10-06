@@ -150,8 +150,12 @@ class TierSeries:
 
 
 def _mode_switching_supported() -> bool:
-    """True once the kernel's mode-switching keywords exist (PR #708)."""
-    return "protected_blocks" in inspect.signature(run_tier_remc).parameters
+    """True once the kernel's mode-switching keywords exist (PR #708).
+
+    Read from ``run_seed`` (the kernel), not ``run_tier_remc``, so a wrapper or test
+    spy around ``run_tier_remc`` cannot change the answer.
+    """
+    return "protected_blocks" in inspect.signature(run_seed).parameters
 
 
 def _tier_blocks(
