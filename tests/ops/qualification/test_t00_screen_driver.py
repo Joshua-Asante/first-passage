@@ -1597,3 +1597,144 @@ def test_failed_job_query_is_unreadable_not_zero(tmp_path, monkeypatch):
     end = records[-1]['body']
     floor = drv().HEARTBEAT_S * 2
     assert stop.kind == 'STOPPED' and end['job_cpu_s'] >= floor and end['overhead_cpu_s'] >= floor
+
+
+# ---- one accounting invariant over every segment path (Codex round 3, r4192768385; card §3.5) ------
+# job_cpu_s = path_cpu_s + overhead_cpu_s, overhead_cpu_s >= 0, and booked path CPU counted once. A
+# measured reading charges max(0, reading - booked); an unreadable one, or a crash, charges the last
+# heartbeat's job CPU plus one interval x W, less the booked path CPU (design §5.4: a crash can only
+# overcharge). Expected values below are computed here from that rule, not by the module.
+
+def _expected(reading, heartbeat, booked, interval, w):
+    overhead = max(0.0, (reading if reading is not None else heartbeat + interval * w) - booked)
+    return {'job_cpu_s': booked + overhead, 'path_cpu_s': booked, 'overhead_cpu_s': overhead}
+
+
+def _invariant(found, booked):
+    assert found['overhead_cpu_s'] >= 0.0
+    assert found['path_cpu_s'] == booked  # booked path CPU appears once, as path CPU
+    assert abs(found['job_cpu_s'] - (found['path_cpu_s'] + found['overhead_cpu_s'])) < 1e-9
+
+
+ACCOUNTING_ROWS = {  # name -> (reading or None, last heartbeat job CPU, booked, interval, W)
+    'measured': (50.0, 30.0, 20.0, 60.0, 2),
+    'measured below booked': (5.0, 0.0, 20.0, 60.0, 2),
+    'unreadable, no heartbeat': (None, 0.0, 0.0, 60.0, 2),
+    'unreadable after a heartbeat (Codex r4192768385)': (None, 100.0, 60.0, 60.0, 2),
+    'unreadable, booked beyond the margin': (None, 10.0, 500.0, 60.0, 2),
+}
+
+
+@pytest.mark.parametrize('row', sorted(ACCOUNTING_ROWS))
+def test_segment_accounting_invariant(row):
+    """The one accounting function, row by row: the invariant, no double count, and the rule."""
+    reading, heartbeat, booked, interval, w = ACCOUNTING_ROWS[row]
+    found = drv().segment_accounting(reading, heartbeat_cpu=heartbeat, booked=booked, interval=interval, w=w)
+    _invariant(found, booked)
+    assert found == _expected(reading, heartbeat, booked, interval, w)
+    if reading is None:  # Codex's case: 100 + 120 - 60 = 160 of overhead, never 100 + 120 again plus 60
+        assert found['overhead_cpu_s'] <= heartbeat + interval * w
+
+
+class _ScriptedJob(_Job):
+    """A stand-in Job whose reads follow a script: a number, or 'fail' (an unreadable read)."""
+
+    def __init__(self, script, then):
+        super().__init__()
+        self.script, self.then = list(script), then
+
+    def cpu_s(self):
+        step = self.script.pop(0) if self.script else self.then
+        if step == 'fail' or not self.handle:
+            raise OSError('unreadable')
+        return step
+
+
+class _JournalWorker(_Worker):
+    """A stand-in worker that also journals KEY_START and PATH (1 CPU second each) as a real one does."""
+
+    def __init__(self, run_dir, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.path, self.prev = run_dir / 'journal' / self.name, None
+
+    def send(self, message):
+        if message.get('cmd') == 'key':
+            key = message['key']
+            fd = os.open(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | BINARY, 0o644)
+            try:
+                self.prev = journal.append(fd, 'KEY_START', {'key': key}, prev_sha256=self.prev)
+                self.prev = journal.append(fd, 'PATH', _path_body(key, 1.0), prev_sha256=self.prev)
+            finally:
+                os.close(fd)
+        super().send(message)
+
+
+SEGMENT_ROWS = {  # name -> (job, worker options, interval, the expected reading or None, expected class)
+    'normal end': (lambda: _Job(cpu=50.0), {}, None, 50.0, 'COMPLETE'),
+    'single Ctrl-C': (lambda: _Job(cpu=50.0), {'interrupts': 1}, None, 50.0, 'STOPPED'),
+    'double Ctrl-C': (lambda: _Job(cpu=200.0), {'interrupts': 2}, None, 200.0, 'STOPPED'),
+    'unreadable at the end, no heartbeat': (lambda: _Job(readable=False), {}, None, None, 'COMPLETE'),
+    'unreadable at the end after a heartbeat': (lambda: _ScriptedJob([40.0], 'fail'), {'noise': 0.4}, 0.05, None,
+                                                'COMPLETE'),
+    'FALSE query': (_failing_job, {}, None, None, 'COMPLETE'),
+}
+
+
+@pytest.mark.parametrize('row', sorted(SEGMENT_ROWS))
+def test_segment_end_accounting_paths(tmp_path, monkeypatch, row):
+    """Every way the segment loop records SEGMENT_END: the invariant holds, booked path CPU (three keys,
+    one CPU second each, journaled) is counted once, and the overhead follows the rule."""
+    make_job, options, interval, reading, cls = SEGMENT_ROWS[row]
+    if interval is not None:
+        monkeypatch.setattr(drv(), 'HEARTBEAT_S', interval)
+    run_dir = tmp_path / 'run'
+    original = _Worker
+    monkeypatch.setattr(sys.modules[__name__], '_Worker',
+                        lambda name, inbox, index, **kw: _JournalWorker(run_dir, name, inbox, index, **kw))
+    try:
+        stop, records = _segment_run(tmp_path, monkeypatch, job=make_job(), **options)
+    finally:
+        monkeypatch.setattr(sys.modules[__name__], '_Worker', original)
+    end = records[-1]['body']
+    beats = [r['body']['job_cpu_s'] for r in records if r['type'] == 'HEARTBEAT']
+    booked = end['path_cpu_s']
+    assert stop.kind == cls and records[-1]['type'] == 'SEGMENT_END'
+    if cls == 'COMPLETE':
+        assert booked == 3.0
+    _invariant(end, booked)
+    expected = _expected(reading, beats[-1] if beats else 0.0, booked, drv().HEARTBEAT_S, 2)
+    assert {name: end[name] for name in expected} == expected
+
+
+def test_closed_handle_is_unreadable():
+    """A closed job reads as unreadable, never as zero CPU or memory."""
+    job = _failing_job()
+    job.close()
+    assert drv()._read_job(job) == (None, 0)
+
+
+def test_crash_charges_follow_the_same_rule():
+    """SEGMENT_CRASHED mid-segment, after a heartbeat with booked paths, and a crash before PREPARED,
+    are charged by the same rule (last snapshot + interval x W, less booked, never negative)."""
+    module = drv()
+    key = ('r', 'FULL', 0)
+    start = ('SEGMENT_START', {'k': 1, 'w': 2, 'assignment_sha256': 'a' * 64, 'witness_keys': [], 'approvals': []})
+    ledger = chain([start, ('HEARTBEAT', {'wall_s': 30.0, 'job_cpu_s': 100.0})])
+    journals = {'s1-w0.jsonl': chain([('KEY_START', {'key': list(key)}), ('PATH', _path_body(key, 60.0))])}
+    charge = module.crash_charge(ledger, journals, k=1, w=2)
+    expected = _expected(None, 100.0, 60.0, module.HEARTBEAT_S, 2)
+    assert charge == {'cpu_s': expected['overhead_cpu_s'], 'wall_s': 30.0 + module.HEARTBEAT_S}
+    later = chain([start, ('HEARTBEAT', {'wall_s': 30.0, 'job_cpu_s': 100.0}),
+                   ('SEGMENT_END', dict(_END, **{'class': 'STOPPED', 'cause': 'IO_ERROR'})),
+                   ('SEGMENT_START', dict(start[1], k=2)), ('HEARTBEAT', {'wall_s': 5.0, 'job_cpu_s': 7.0})])
+    assert module.crash_charge(later[:3], journals, k=1, w=2)['wall_s'] == 30.0 + module.HEARTBEAT_S
+    assert module.crash_charge(later, {}, k=1, w=2)['cpu_s'] == 100.0 + module.HEARTBEAT_S * 2  # not segment 2's
+    crashed = chain(_epoch(7.0, 11.0))
+    before_prepared = _expected(None, 7.0 + 11.0, 0.0, module.HEARTBEAT_S, 1)['overhead_cpu_s']
+    assert module.candidate_overhead(chain([('AUTHORITY_BOUND', {
+        'authority_sha256': 'f' * 64, 'prereg_path': PREREG, 'approvals': [], 'reused_directory': False})]),
+        {'c1-w0.jsonl': crashed}) == before_prepared
+
+
+_END = {'class': 'STOPPED', 'cause': 'IO_ERROR', 'workers': [], 'wall_s': 1.0, 'job_cpu_s': 1.0, 'path_cpu_s': 0.0,
+        'overhead_cpu_s': 1.0, 'peak_memory_bytes': 1}
