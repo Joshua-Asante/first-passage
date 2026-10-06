@@ -52,6 +52,15 @@ AMBIGUOUS needs ≥ 2 tiers at ≤ 5.0%; there are 0, as predicted in I-20. Refe
 6. **I-21 regime rider:** not run; it applies only on RESOLVED.
 7. **Named approximations** (prereg I-17, O-4): continuous daily-series construction, the coincident-sum intraday low (conservative), and no capacity or takeover modelling.
 
+## Provenance: run of record and verdict re-derivation
+
+- **Run of record:** executor `81e7dcb`; RESULTS `b2d6c93`; the reports and digests below, including the original `verdict.json`. These stay the run of record.
+- **Correction (#715 Codex review 5433545406):**
+  - The executor was repaired at `a8f21c6`. Its verdict derivation now selects each tier's gating run by tier semantics and requires both mandatory runs, `gated_on` and the v2 depth (r4199556582). Its re-hash verifies the manifest bytes before parsing them (r4199556590).
+  - The repaired `derive_verdict` was run over the **existing** reports only; the Monte Carlo was not re-run. Its output went to a separate file, `verdict_rederived.json`.
+  - **Result: identical.** The verdict, clears, INSUFFICIENT reasons, reference busts and AMBIGUOUS flag all match the original. The digests of `prep.json`, both reports and `verdict.json` are unchanged by the re-derivation.
+  - The re-hash fix affects the pre-run gate only. This run's start re-hash had already matched 20/20.
+
 ## Private artifacts (gitignored; cited by SHA-256)
 
 Root: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/four-firm-remc-run-2026-10-06/`
@@ -62,5 +71,6 @@ Root: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/fo
 | `candidate_report.json` | `4076857777e67cedd5755ba637693ce45638357a8a5b1fb17077e63ac28ec2ed` |
 | `reference_report.json` | `a8e9fd665a6f21d0620b1903d4175c1276907331bb126ff3045a9bbf5fbd333f` |
 | `verdict.json` | `5a9b9eaf437100fb7e8a54bf5af0fefbbe12eeb3aa6af0c98720a271787adc28` |
+| `verdict_rederived.json` (repaired executor, re-derivation only) | `a21a2ec7e42b97148e4ce857430c38cd230eecc7c31ce7dcb6f83341626b7216` |
 
 The re-hash at start was 20/20 against the prereg §1a / I-20 pins.
