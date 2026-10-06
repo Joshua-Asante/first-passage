@@ -1568,10 +1568,14 @@ def _failing_job():
     class Extended(ctypes.Structure):
         _fields_ = [('PeakProcessMemoryUsed', ctypes.c_size_t)]
 
-    class Kernel:  # pylint: disable=too-few-public-methods
+    class Kernel:
         @staticmethod
         def QueryInformationJobObject(*_args):
             return 0  # FALSE; the out-structure is left zeroed
+
+        @staticmethod
+        def CloseHandle(_handle):
+            return 1
 
     job = object.__new__(drv().Job)
     job.ctypes, job.kernel, job.accounting_type, job.extended, job.handle = ctypes, Kernel(), Accounting, Extended, 1
