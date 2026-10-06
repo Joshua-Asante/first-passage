@@ -350,3 +350,13 @@ def test_no_cwd_uses_the_process_directory(sh, monkeypatch):  # pylint: disable=
     sh.current["/"] = "feat"
     live_pr(sh)
     assert guard.refusal_for_command("git push origin HEAD") is not None
+
+
+# --- R1: the H9 checkpoint combined mode (card 2026-10-02) ----------------------
+
+def test_an_r1_run_never_covers_an_s5_dispatch_and_vice_versa(sh):  # pylint: disable=redefined-outer-name
+    # r1 runs the /v7 selection plus the result/seal and C' files, so its
+    # coverage is its own; an s5 run of the same bytes is not r1 coverage.
+    sh.runs["feat"] = [dispatch_run(mode="r1", conclusion="success")]
+    assert decide(f"{DISPATCH} -f mode=r1")
+    assert decide(f"{DISPATCH} -f mode=s5") is None

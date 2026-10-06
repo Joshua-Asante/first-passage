@@ -63,6 +63,17 @@ def _is_source_only(contract):
     return type(contract) is ValidatedSourceContract
 
 
+def _source_gates_apply(domain):
+    """Whether a qualification build runs the source-only source gates (T05 owed items).
+
+    Every domain does except the TEST_ONLY synthetic composition profile, whose
+    fixture (v1 companions, generic calendar facts) is pinned by the S5 measurement
+    harness; that profile keeps the v1 review gate and the source_truncated refusal.
+    Any other authority class is gated, so the default fails closed.
+    """
+    return not (domain.authority_class == 'TEST_ONLY' and domain.permits_synthetic is True)
+
+
 def port_active_window(leg, instant, params):
     """RC7 session windows from the accepted corrected ports, not entry signals."""
     aware(instant)
@@ -745,7 +756,9 @@ def truncated_slot_ranges(index_raw):
 
 
 def validate_source_only_calendar(raw, *, contract, truncated_slots):
-    """Source-only calendar rules the generic parser does not enforce (spec §2.6a)."""
+    """Calendar rules the generic parser does not enforce (spec §2.6a).
+
+    Run for source-only contracts and gated qualification builds (``_source_gates_apply``)."""
     doc = _json(raw)
     producer = {row.role: row.sha256 for row in contract.artifacts}.get('calendar_producer')
     expected = {'role': 'calendar_producer', 'sha256': producer}
@@ -768,9 +781,10 @@ def validate_source_only_calendar(raw, *, contract, truncated_slots):
 
 
 def refuse_source_truncated_on_qualification(calendar_raw, index_raw):
-    """``source_truncated`` is a source-only disposition (spec §2.6a). Its endpoint and
-    reason checks run only for source-only contracts, so a qualification contract may
-    not use it until T05 defines equivalent validation (Codex P1 on #594)."""
+    """Ungated (TEST_ONLY composition) builds refuse ``source_truncated`` (Codex P1 on #594).
+
+    Its endpoint, reason and tail-disposition checks (spec §2.6a) need the calendar_producer
+    binding, which only source-only and gated qualification builds enforce (T05 owed item)."""
     truncated = SourceDayStatus.SOURCE_TRUNCATED.value
     calendar, index = _json(calendar_raw), _json(index_raw)
     if any(type(row) is dict and row.get('status') == truncated for row in calendar.get('sessions') or ()) or any(
@@ -831,7 +845,9 @@ def validate_calendar_producer(producer_raw, *, calendar_raw):
 
 
 def _review_source(raw, *, role, digest, scope, contract, source_binding_sha256=None):
-    """Reviewer-authored v2 companion (spec §2.6b); a producer never reviews itself."""
+    """Reviewer-authored v2 companion (spec §2.6b); a producer never reviews itself.
+
+    Source-only and gated qualification builds (``_source_gates_apply``) both use it."""
     doc = _json(raw)
     fields = {'schema', 'artifact_role', 'artifact_sha256', 'scope', 'decision', 'reviewer', 'reviewed_at', 'notes'}
     if source_binding_sha256 is not None:
@@ -1088,13 +1104,14 @@ class ProductionSource:
                          for role in sorted(missing))
             raise ProductionSourceNeedsContext(gaps, prepared=prepared)
         source_only = _is_source_only(contract)
-        review = (lambda raw, **kw: _review_source(raw, contract=contract, **kw)) if source_only else _review
+        gated = source_only or _source_gates_apply(domain)
+        review = (lambda raw, **kw: _review_source(raw, contract=contract, **kw)) if gated else _review
         for role, scope in (('source_calendar', 'SOURCE_CALENDAR'), ('schedule_execution_evidence', 'SCHEDULE_EXECUTION')):
             review(snapshots[role+'_review'], role=role, digest=digests[role], scope=scope)
         startup = parse_startup_policy(snapshots['source_startup_policy'])
-        if source_only:
-            if startup.path_start_date != contract.path_start_date:
-                raise ValueError('path_start_date differs between the signed contract and the startup policy')
+        if source_only and startup.path_start_date != contract.path_start_date:
+            raise ValueError('path_start_date differs between the signed contract and the startup policy')
+        if gated:
             validate_source_only_calendar(snapshots['source_calendar'], contract=contract,
                                           truncated_slots=truncated_slot_ranges(snapshots['population_index']))
             if 'calendar_producer' not in snapshots:
@@ -1292,3 +1309,30 @@ class ProductionSource:
             return SourceOnlyProof(self.contract.evidence_class, self.contract.contract_sha256,
                                    self.contract.approval.approval_sha256, edges, tuple(joins))
         return edges, tuple(joins)
+
+    # ---- T00 screen capability (design 2026-10-02 section 3.3; rows K5-K8) ----
+    # The entry points are screen_authority.screen_epoch/screen_bracket (Codex r4180236028): this
+    # module imports no screen module, so its closure stays PRODUCTION_TRUST_POLICY's. The sealed
+    # methods above keep their source text (row K7): screen_bracket copies replay_bracket's loop,
+    # and _consumed_splits copies _seal's placement expression.
+
+    def _verify_identity(self):
+        """The O(1) checks of _verify_integrity: issuance, factory identity and the r3c lifecycle."""
+        from c1_signal_daemon.book_adapters import _resolve_domain
+        from .contract import require_validated_source_contract
+        issued = _SOURCE_ISSUED.get(id(self))
+        if issued is None or issued[0]() is not self:
+            raise ValueError('factory-issued source object required')
+        contract = self.contract
+        if (type(self) is not ProductionSource or self._token is not _SOURCE_TOKEN
+                or _resolve_domain(contract) is not self._domain
+                or self.prepared.contract_sha256 != contract.contract_sha256):
+            raise ValueError('source factory identity does not bind the exact production G1 contract')
+        require_validated_source_contract(contract, now=_now())
+
+
+def _consumed_splits(provider):
+    """_seal's placement expression for one bracket provider (row K8)."""
+    return tuple(sorted(
+        (occurrence, leg, instant.isoformat()) for occurrence, leg, instant in provider._placed
+        if instant.minute % 15 or instant.second or instant.microsecond))

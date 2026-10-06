@@ -8,6 +8,10 @@ site-packages itself (no ``site``, ``.pth`` or customization module runs), then
 runs ``p7_driver`` through ``runpy``. A record is accepted only when a fresh
 re-execution over the current bytes reproduces it outside the volatile fields.
 
+The T00 screen worker's ``SCREEN_BOOTSTRAP`` is rendered from the same template
+with the screen's parameters (design 2026-10-02 C8, §5.1; build card 2026-10-03
+§3.3), so the audit hook and recording finder have one implementation.
+
 Scope of ``code_closure_sha256`` (operator ruling 2026-10-02, Codex P1 4163033692 on
 #594): it identifies the Python-source closure (first-party sources, and third-party
 module origins including extension modules) together with the recorded interpreter
@@ -15,6 +19,23 @@ binding. It does NOT hash data files opened at runtime (for example tzdata zone 
 or native dependencies the OS loader pulls in for extension modules. Environment
 hermeticity (RECORD-verified distribution contents plus audit-hooked hashing of opened
 files) is a tracked follow-up owned by T05, due before the R1 grant.
+
+R-REC packet (build card 2026-10-03 §8; Joshua 2026-10-04 "approve the recommendations" and
+"adopt all"; card-owner rulings 2026-10-04). The recorder refuses a re-digest of a recorded
+third-party module or port (R-REC-1, as first-party at ``_SOURCE_CHANGED_DURING_RUN``), and
+refuses installed (site-packages or stdlib) source compiled or executed outside importlib's own
+loader frames, e.g. ``runpy.run_path`` or ``exec(compile(...))`` (R-REC-3); a site-packages
+compile must also equal a recorded third-party row. Installed bytes are bound by one tree digest
+in the ``interpreter`` binding (``install_tree_sha256``, R-REC-2), which the screen checks at
+launch and at every epoch close.
+
+Threat model (RULED 2026-10-04, card §8): these checks guard against code or artifact drift
+between launch and epoch close, not against an active writer to the interpreter, the venv or the
+run directory during a run; that is excluded by operating conditions (an attended host, the
+Python install and venv read-only for the run's duration). Accepted residual (attack class 3,
+"adopt all" (ii)): a stdlib or site-packages file swapped, loaded and restored within one epoch
+closes matching. The loader-frame check is a guard against direct execution, not against code
+that calls importlib's private frames itself; such bytes are still bound by the tree digest.
 
 P7 output is never fed to MC, the screen or any qualification stage (P7-closure
 packet §6); that rule is procedural, not claimed to be enforced here.
@@ -31,6 +52,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from types import MappingProxyType
 
 RECORD_SCHEMA = 't00-p7-evidence/v1'
 EVIDENCE_LABEL = 'P7 producer-faithfulness evidence; not qualification, screen, GO/NO-GO or F1 evidence'
@@ -45,6 +67,16 @@ P7_FORBIDDEN_MODULES = (
     'c1_rail.qualification.benchmark_part_a', 'c1_rail.qualification.production',
     'c1_rail.qualification.orchestration', 'c1_rail.qualification.result_adjudication',
     'c1_rail.qualification.seal', 'c1_rail.qualification.execution',
+    # Design 2026-10-02 §5.1 (row K10): P7 never imports the screen; t00_screen is a package.
+    'c1_rail.qualification.screen_authority', 'c1_rail.qualification.t00_screen',
+)
+# The screen worker never imports execution (design 2026-10-02 §5.1, row K10);
+# bracket, runner.evaluate_replay and simulate_path load live.
+SCREEN_FORBIDDEN_MODULES = (
+    'c1_rail.qualification.production', 'c1_rail.qualification.orchestration',
+    'c1_rail.qualification.result_adjudication', 'c1_rail.qualification.seal', 'c1_rail.qualification.execution',
+    'c1_rail.qualification.part_a', 'c1_rail.qualification.benchmark', 'c1_rail.qualification.benchmark_part_a',
+    'c1_rail.qualification.p7_driver',
 )
 
 
@@ -52,19 +84,23 @@ def forbidden_module(name):
     return any(name == module or name.startswith(module + '.') for module in P7_FORBIDDEN_MODULES)
 
 
-# The inline bootstrap. Everything before ``runpy`` uses only builtins, ``sys``
-# and stdlib modules recorded as stdlib; nothing first-party runs unrecorded.
-P7_BOOTSTRAP = r'''
+# The inline bootstrap template (design 2026-10-02 C8). ``render_bootstrap``
+# substitutes each ``__NAME__`` token with the repr of one parameter. Everything
+# before ``runpy`` uses only builtins, ``sys`` and stdlib modules recorded as
+# stdlib; nothing first-party runs unrecorded.
+_BOOTSTRAP_TEMPLATE = r'''
 import sys
 
 
 def _p7_bootstrap():
+    refusal_prefix, forbidden, stub_targets = __PREFIX__, __FORBIDDEN_MODULES__, __STUBS__
+    journal_name_pattern = __JOURNAL_NAME_PATTERN__
     argv = list(getattr(sys, 'orig_argv', ()))
-    if '-c' not in argv or len(sys.argv) < 8:
-        raise SystemExit('P7_BOOTSTRAP_MISMATCH: launch only through p7_evidence.run_p7')
+    if '-c' not in argv or len(sys.argv) < __MIN_ARGV__:
+        raise SystemExit(refusal_prefix + '_BOOTSTRAP_MISMATCH: launch only through ' + __LAUNCHER__)
     bootstrap_text = argv[argv.index('-c') + 1]
     if not (sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode):
-        raise SystemExit('P7_BOOTSTRAP_MISMATCH: -I -S -B are required')
+        raise SystemExit(refusal_prefix + '_BOOTSTRAP_MISMATCH: -I -S -B are required')
 
     class State:
         pass
@@ -74,6 +110,7 @@ def _p7_bootstrap():
     state.first_party, state.third_party, state.stdlib, state.ports = {}, {}, set(), {}
     state.loader_codes, state.compiling = set(), set()
     state.code_root = None
+    state.journal_rule, state.journal_path = False, None
 
     def refuse(code, detail):
         state.refusals.append(code + ': ' + detail)
@@ -103,6 +140,28 @@ def _p7_bootstrap():
         with open(real, 'rb') as handle:
             return handle.read() == raw
 
+    def installed_file(filename):
+        # R-REC-3: ('site' or 'stdlib', realpath) for an absolute path under an installed root, site first.
+        if not isinstance(filename, str) or not _os.path.isabs(filename):
+            return None, None
+        real = _os.path.realpath(filename)
+        if (real + _os.sep).startswith(state.site_packages_path.rstrip(_os.sep) + _os.sep):
+            return 'site', real
+        if any((real + _os.sep).startswith(root.rstrip(_os.sep) + _os.sep) for root in state.installed_roots):
+            return 'stdlib', real
+        return None, None
+
+    def import_system(caller):
+        # R-REC-3: installed source compiles and executes only inside importlib's own loader
+        # (SourceLoader.source_to_code and _LoaderBasics.exec_module, each through
+        # _call_with_frames_removed); runpy.run_path and exec(compile(...)) are not loaders.
+        frame = sys._getframe(2)
+        outer = frame.f_back
+        return (frame.f_code.co_name == '_call_with_frames_removed'
+                and frame.f_code.co_filename == '<frozen importlib._bootstrap>' and outer is not None
+                and outer.f_code.co_name == caller
+                and outer.f_code.co_filename == '<frozen importlib._bootstrap_external>')
+
     def audit(event, args):
         if event == 'import':
             state.audited_imports.append(args[0])
@@ -113,24 +172,73 @@ def _p7_bootstrap():
             raw = source.encode('utf-8') if isinstance(source, str) else bytes(source)                 if isinstance(source, (bytes, bytearray)) else None
             if raw is not None and _hashlib.sha256(raw).hexdigest() in state.first_party_hashes \
                     and not own_installed_source(filename, raw):
-                raise refuse('P7_UNAUDITED_EXEC', 'compile of first-party file bytes outside the recording loader: '
-                             + repr(filename))
+                raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                             'compile of first-party file bytes outside the recording loader: ' + repr(filename))
             real = resolve(filename)
             if real is not None:
-                raise refuse('P7_UNAUDITED_EXEC', 'compile of first-party bytes outside the recording loader: ' + real)
+                raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                             'compile of first-party bytes outside the recording loader: ' + real)
+            kind, installed = installed_file(filename)
+            if kind is not None:
+                # R-REC-3: refused unless importlib's loader compiles it; a site-packages file
+                # must also be a recorded third-party row with exactly these bytes.
+                if not import_system('source_to_code'):
+                    raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                                 'compile of installed source outside the import system: ' + installed)
+                if kind == 'site':
+                    rel = _os.path.relpath(installed, state.site_packages_path).replace(_os.sep, '/')
+                    digests = {row['sha256'] for row in state.third_party.values() if row['path'] == rel}
+                    if raw is None or digests != {_hashlib.sha256(raw).hexdigest()}:
+                        raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                                     'compile of site-packages bytes that are not a recorded module: ' + installed)
             if real is None and isinstance(source, (bytes, bytearray)) and isinstance(filename, str) \
                     and not _os.path.isabs(filename) and not filename.startswith('<'):
-                state.ports[filename.replace('\\', '/')] = _hashlib.sha256(bytes(source)).hexdigest()
+                port, digest = filename.replace('\\', '/'), _hashlib.sha256(bytes(source)).hexdigest()
+                if state.ports.get(port, digest) != digest:  # R-REC-1: no re-digest of a recorded port
+                    raise refuse(refusal_prefix + '_SOURCE_CHANGED_DURING_RUN', 'port ' + port)
+                state.ports[port] = digest
         elif event == 'exec':
             code = args[0]
             if state.code_root is None or not hasattr(code, 'co_filename'):
                 return
             real = resolve(code.co_filename)
             if real is not None and id(code) not in state.loader_codes:
-                raise refuse('P7_UNAUDITED_EXEC', 'exec of first-party code outside the recording loader: ' + real)
+                raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                             'exec of first-party code outside the recording loader: ' + real)
+            kind, installed = installed_file(code.co_filename)
+            if kind is not None and not import_system('exec_module'):
+                raise refuse(refusal_prefix + '_UNAUDITED_EXEC',
+                             'exec of installed code outside the import system: ' + installed)
+        elif event == 'open' and state.journal_rule:
+            # Card 2026-10-03 §3.3 (row S2): a write-open (mode with w, a, x or +, or a write,
+            # append or create flag) is allowed only of this worker's own journal. A descriptor
+            # (int) opens no file; its own open was checked here.
+            path, mode, flags = args
+            if not ((isinstance(mode, str) and any(c in mode for c in 'wax+')) or (flags or 0) & state.write_flags):
+                return
+            if isinstance(path, int):
+                return
+            try:
+                target = _os.path.normcase(_os.path.realpath(_os.fsdecode(_os.fspath(path))))
+            except Exception:
+                target = None
+            if target == state.devnull_path:  # card §3.3 note 2026-10-03: the null device holds no data
+                return
+            if state.journal_path is None or target != state.journal_path:
+                raise refuse(refusal_prefix + '_WRITE_REFUSED', 'write-open outside the worker journal: ' + repr(path))
 
     sys.addaudithook(audit)
     import os as _os
+    if journal_name_pattern is not None:
+        # Card 2026-10-03 §3.3: argv is code_root, run_dir, authority_sha256, journal_name.
+        state.write_flags = _os.O_WRONLY | _os.O_RDWR | _os.O_APPEND | _os.O_CREAT | _os.O_TRUNC | _os.O_EXCL
+        state.devnull_path = _os.path.normcase(_os.path.realpath(_os.devnull))
+        state.journal_rule = True
+        import re as _re
+        if _re.fullmatch(journal_name_pattern, sys.argv[4]) is None:
+            raise SystemExit(refusal_prefix + '_WRITE_REFUSED: journal name ' + repr(sys.argv[4]))
+        state.journal_path = _os.path.normcase(
+            _os.path.realpath(_os.path.join(sys.argv[2], 'journal', sys.argv[4])))
     # -B stops cache writes, not cache reads: a timestamp-valid or unchecked
     # __pycache__ .pyc beside a hashed .py would run instead of the hashed bytes.
     # A fresh, never-created prefix makes every source module compile from the
@@ -138,7 +246,7 @@ def _p7_bootstrap():
     state.pycache_prefix = _os.path.join(
         _os.environ.get('TEMP') or _os.environ.get('TMPDIR') or '/tmp', 'p7-no-pycache-' + _os.urandom(16).hex())
     if _os.path.exists(state.pycache_prefix):
-        raise SystemExit('P7_BOOTSTRAP_MISMATCH: bytecode cache prefix is not fresh')
+        raise SystemExit(refusal_prefix + '_BOOTSTRAP_MISMATCH: bytecode cache prefix is not fresh')
     sys.pycache_prefix = state.pycache_prefix
     import hashlib as _hashlib
     import subprocess as _subprocess
@@ -172,15 +280,14 @@ def _p7_bootstrap():
         state.code_head = git('rev-parse', 'HEAD').strip()
         dirty = git('status', '--porcelain', '--untracked-files=no').strip()
     except Exception as exc:
-        raise SystemExit('P7_TREE_DIRTY: code root is not a readable git checkout: ' + repr(exc))
+        raise SystemExit(refusal_prefix + '_TREE_DIRTY: code root is not a readable git checkout: ' + repr(exc))
     if dirty:
-        raise SystemExit('P7_TREE_DIRTY: tracked changes in the code root at start')
+        raise SystemExit(refusal_prefix + '_TREE_DIRTY: tracked changes in the code root at start')
     state.git = git
     state.first_party_hashes = {
         _hashlib.sha256(open(_os.path.join(code_root, rel), 'rb').read()).hexdigest()
         for rel in git('ls-files', '-z', '--', '*.py').split(chr(0)) if rel}
 
-    forbidden = FORBIDDEN_MODULES
     state.code_root = code_root
 
     def under(path, root):
@@ -221,7 +328,7 @@ def _p7_bootstrap():
             rel = _os.path.relpath(self.path, code_root).replace(_os.sep, '/')
             seen = state.first_party.get(self.name)
             if seen is not None and seen['sha256'] != digest:
-                raise refuse('P7_SOURCE_CHANGED_DURING_RUN', rel)
+                raise refuse(refusal_prefix + '_SOURCE_CHANGED_DURING_RUN', rel)
             state.first_party[self.name] = {'path': rel, 'sha256': digest}
             state.compiling.add(self.path)
             try:
@@ -239,7 +346,7 @@ def _p7_bootstrap():
     class RecordingFinder:
         def find_spec(self, name, path=None, target=None):
             if name in forbidden or any(name.startswith(prefix + '.') for prefix in forbidden):
-                raise refuse('P7_FORBIDDEN_IMPORT', name)
+                raise refuse(refusal_prefix + '_FORBIDDEN_IMPORT', name)
             spec, source = None, None
             for finder in sys.meta_path:
                 if finder is self or not hasattr(finder, 'find_spec'):
@@ -262,7 +369,8 @@ def _p7_bootstrap():
                 if owner_file and under(owner_file, site):
                     state.third_party.setdefault(name, {'path': None, 'sha256': None})
                     return spec
-                raise refuse('P7_ORIGIN_OUTSIDE_ROOT', name + ' virtual module from an unrecorded importer')
+                raise refuse(refusal_prefix + '_ORIGIN_OUTSIDE_ROOT',
+                             name + ' virtual module from an unrecorded importer')
             if origin is None:  # namespace package
                 locations = [_os.path.realpath(p) for p in (spec.submodule_search_locations or ())]
                 if locations and all(under(p, code_root) for p in locations):
@@ -271,7 +379,7 @@ def _p7_bootstrap():
                 if locations and all(under(p, site) for p in locations):
                     state.third_party.setdefault(name, {'path': None, 'sha256': None})
                     return spec
-                raise refuse('P7_ORIGIN_OUTSIDE_ROOT', name + ' namespace outside allowed roots')
+                raise refuse(refusal_prefix + '_ORIGIN_OUTSIDE_ROOT', name + ' namespace outside allowed roots')
             real = _os.path.realpath(origin)
             if under(real, site):
                 # A sourceless .pyc/.pyd origin is hashed as the executed bytes; a
@@ -279,19 +387,23 @@ def _p7_bootstrap():
                 cached = getattr(spec, 'cached', None)
                 if cached and (sys.pycache_prefix != state.pycache_prefix
                                or not under(_os.path.abspath(cached), state.pycache_prefix)):
-                    raise refuse('P7_UNBOUND_BYTECODE', name + ' would load cached bytecode ' + cached)
-                state.third_party[name] = {'path': _os.path.relpath(real, site).replace(_os.sep, '/'),
-                                           'sha256': _hashlib.sha256(open(real, 'rb').read()).hexdigest()}
+                    raise refuse(refusal_prefix + '_UNBOUND_BYTECODE', name + ' would load cached bytecode ' + cached)
+                row = {'path': _os.path.relpath(real, site).replace(_os.sep, '/'),
+                       'sha256': _hashlib.sha256(open(real, 'rb').read()).hexdigest()}
+                seen = state.third_party.get(name)
+                if seen is not None and seen != row:  # R-REC-1: no re-digest of a recorded module
+                    raise refuse(refusal_prefix + '_SOURCE_CHANGED_DURING_RUN', 'third-party ' + name)
+                state.third_party[name] = row
                 return spec
             if any(under(real, d) for d in stdlib_dirs):
                 state.stdlib.add(name)
                 return spec
             if under(real, code_root) and real.endswith('.py'):
                 if real in forbidden_files or any(under(real, d) for d in forbidden_dirs):
-                    raise refuse('P7_FORBIDDEN_IMPORT', name + ' resolves to a forbidden module file')
+                    raise refuse(refusal_prefix + '_FORBIDDEN_IMPORT', name + ' resolves to a forbidden module file')
                 canonical = state.first_party_paths.setdefault(real, name)
                 if canonical != name:
-                    raise refuse('P7_MODULE_ALIAS', name + ' is a second module name for ' + canonical)
+                    raise refuse(refusal_prefix + '_MODULE_ALIAS', name + ' is a second module name for ' + canonical)
                 package = spec.submodule_search_locations is not None
                 loader = FirstPartyLoader(name, real, package)
                 new = _machinery.ModuleSpec(name, loader, origin=real, is_package=package)
@@ -299,45 +411,82 @@ def _p7_bootstrap():
                     new.submodule_search_locations = list(spec.submodule_search_locations)
                 new.has_location = True
                 return new
-            raise refuse('P7_ORIGIN_OUTSIDE_ROOT', name + ' from ' + real)
+            raise refuse(refusal_prefix + '_ORIGIN_OUTSIDE_ROOT', name + ' from ' + real)
 
     for name in list(state.audited_imports):
         module = sys.modules.get(name)
         origin = getattr(getattr(module, '__spec__', None), 'origin', None)
         if origin not in (None, 'built-in', 'frozen') and not any(
                 under(_os.path.realpath(origin), d) for d in stdlib_dirs):
-            raise SystemExit('P7_ORIGIN_OUTSIDE_ROOT: pre-finder import ' + name)
+            raise SystemExit(refusal_prefix + '_ORIGIN_OUTSIDE_ROOT: pre-finder import ' + name)
         state.stdlib.add(name)
     sys.meta_path.insert(0, RecordingFinder())
     sys.dont_write_bytecode = True
     sys.path[:0] = import_roots
     sys.path.append(site)
     sys.p7_recorder = state
-    # Revision 4.3 (b): runner and mc.simulation load for their types; their kernel
-    # entry points are stubbed in this process only and checked again at record time.
+    # Revision 4.3 (b): the stubbed modules load for their types; the listed entry
+    # points are stubbed in this process only and checked again at record time.
     import importlib as _importlib
-    runner = _importlib.import_module('c1_rail.qualification.runner')
-    simulation = _importlib.import_module('mc.simulation')
+    stub_modules = {}
+    for module_name, _attr in stub_targets:
+        stub_modules.setdefault(module_name, _importlib.import_module(module_name))
     state.stubs = []
 
     def make_stub(label):
         def stub(*args, **kwargs):
-            raise refuse('P7_FORBIDDEN_CALL', label)
+            raise refuse(refusal_prefix + '_FORBIDDEN_CALL', label)
         return stub
-    for module, attr in ((runner, 'evaluate_replay'), (runner, 'run_synthetic_stage'), (runner, '_run_stage'),
-                         (runner, 'simulate_path'), (simulation, 'simulate_path')):
+    for module_name, attr in stub_targets:
+        module = stub_modules[module_name]
         stub = make_stub(module.__name__ + '.' + attr)
         setattr(module, attr, stub)
         state.stubs.append((module, attr, stub))
     # The stubs bind the module object loaded from each file (Codex P1 on #594).
-    state.stub_origins = {_os.path.realpath(module.__file__): module for module in (runner, simulation)}
+    state.stub_origins = {_os.path.realpath(module.__file__): module for module in stub_modules.values()}
     import runpy
-    runpy.run_module('c1_rail.qualification.p7_driver', run_name='__main__', alter_sys=False)
+    runpy.run_module(__ENTRY_MODULE__, run_name='__main__', alter_sys=False)
 
 
 _p7_bootstrap()
-'''.replace('FORBIDDEN_MODULES', repr(P7_FORBIDDEN_MODULES))
+'''
+_BOOTSTRAP_PARAM_KEYS = ('prefix', 'forbidden_modules', 'stubs', 'entry_module', 'min_argv', 'launcher',
+                         'journal_name_pattern')
+
+
+def render_bootstrap(params):
+    """The bootstrap text for one process kind (design 2026-10-02 C8); every key is required, no other."""
+    if set(params) != set(_BOOTSTRAP_PARAM_KEYS):
+        raise ValueError('bootstrap parameters must be exactly: ' + ', '.join(_BOOTSTRAP_PARAM_KEYS))
+    text = _BOOTSTRAP_TEMPLATE
+    for key in _BOOTSTRAP_PARAM_KEYS:
+        token = '__' + key.upper() + '__'
+        if text.count(token) != 1:
+            raise ValueError('bootstrap template token ' + token + ' must occur once')
+        text = text.replace(token, repr(params[key]))
+    return text
+
+
+_RUNNER = 'c1_rail.qualification.runner'
+_P7_BOOTSTRAP_PARAMS = MappingProxyType({
+    'prefix': 'P7', 'forbidden_modules': P7_FORBIDDEN_MODULES,
+    'stubs': ((_RUNNER, 'evaluate_replay'), (_RUNNER, 'run_synthetic_stage'), (_RUNNER, '_run_stage'),
+              (_RUNNER, 'simulate_path'), ('mc.simulation', 'simulate_path')),
+    'entry_module': 'c1_rail.qualification.p7_driver', 'min_argv': 8, 'launcher': 'p7_evidence.run_p7',
+    'journal_name_pattern': None,
+})
+# Card 2026-10-03 §3.3: [python, -I, -S, -B, -c, SCREEN_BOOTSTRAP, code_root, run_dir, authority_sha256,
+# journal_name]; runpy runs t00_screen.worker; the recorder stays sys.p7_recorder.
+_SCREEN_BOOTSTRAP_PARAMS = MappingProxyType({
+    'prefix': 'SCREEN', 'forbidden_modules': SCREEN_FORBIDDEN_MODULES,
+    'stubs': ((_RUNNER, '_run_stage'), (_RUNNER, 'run_synthetic_stage')),
+    'entry_module': 'c1_rail.qualification.t00_screen.worker', 'min_argv': 5,
+    'launcher': 'the t00_screen coordinator', 'journal_name_pattern': '^[csv][1-9][0-9]*-w[0-9]+[.]jsonl$',
+})
+P7_BOOTSTRAP = render_bootstrap(_P7_BOOTSTRAP_PARAMS)
 P7_BOOTSTRAP_SHA256 = hashlib.sha256(P7_BOOTSTRAP.encode('utf-8')).hexdigest()
+SCREEN_BOOTSTRAP = render_bootstrap(_SCREEN_BOOTSTRAP_PARAMS)
+SCREEN_BOOTSTRAP_SHA256 = hashlib.sha256(SCREEN_BOOTSTRAP.encode('utf-8')).hexdigest()
 
 
 class P7Refusal(ValueError):
@@ -414,13 +563,77 @@ def comparable(record_bytes):
     return canonical(doc)
 
 
-def current_interpreter_binding(code_root):
-    """The acceptor's own interpreter binding, derived exactly as the bootstrap derives it."""
-    venv = os.path.dirname(os.path.dirname(os.path.abspath(sys.executable)))
-    prefix = venv if os.path.isfile(os.path.join(venv, 'pyvenv.cfg')) else sys.prefix
-    site = os.path.realpath(os.path.join(prefix, *site_packages_relative().split('/')))
-    pth = sorted((name, sha256_bytes(Path(site, name).read_bytes()))
-                 for name in (os.listdir(site) if os.path.isdir(site) else ()) if name.endswith('.pth'))
+def _base_site_packages(base):
+    return os.path.join(os.path.realpath(base), *site_packages_relative().split('/'))
+
+
+def _raise(exc):
+    raise exc
+
+
+def install_tree_sha256(site, *, base=None):
+    """R-REC-2 (Joshua 2026-10-04T20:30:58Z; "adopt all" (i); card-owner ruling 2026-10-04 (1)):
+    one digest over the base install and the bound site-packages, with no per-module digests.
+
+    The set: the base install's root ``*.dll``/``*.pyd`` and ``pythonXY.zip``, ``DLLs/**`` and
+    ``Lib/**`` except ``Lib/site-packages`` (POSIX: ``lib/libpython*``, ``lib/pythonXY.zip`` and
+    ``lib/pythonX.Y/**`` except its site-packages), plus ``site/**``; ``__pycache__`` throughout.
+    The base site-packages is left out only because ``check_site_isolation`` keeps it off
+    ``sys.path``; without a venv it is the bound site and is digested as ``site``. The digest is
+    the SHA-256 of the sorted lines ``<base|site>/<relative path> NUL sha256(bytes)``; an
+    unreadable file or directory fails closed. Symlinked directories are not followed.
+    """
+    base = os.path.realpath(sys.base_prefix if base is None else base)
+    site = os.path.realpath(site)
+    major, minor = sys.version_info[:2]
+    xy = f'{major}{minor}'
+    windows = os.name == 'nt'
+    root_dir = base if windows else os.path.join(base, 'lib')
+    trees = ('DLLs', 'Lib') if windows else (f'lib/python{major}.{minor}',)
+    excluded = os.path.normcase(_base_site_packages(base))
+    rows = []
+
+    def add(label, root, path):
+        with open(path, 'rb') as handle:
+            digest = hashlib.sha256(handle.read()).hexdigest()
+        rows.append(f"{label}/{os.path.relpath(path, root).replace(os.sep, '/')}".encode('utf-8')
+                    + b'\0' + digest.encode('ascii'))
+
+    for name in os.listdir(root_dir):
+        key = name.lower() if windows else name
+        if os.path.isfile(os.path.join(root_dir, name)) and (key == f'python{xy}.zip' or (
+                key.endswith(('.dll', '.pyd')) if windows else key.startswith('libpython'))):
+            add('base', base, os.path.join(root_dir, name))
+    for label, root, top in [('base', base, os.path.join(base, *tree.split('/'))) for tree in trees] + [
+            ('site', site, site)]:
+        for current, dirs, names in os.walk(top, onerror=_raise):
+            dirs[:] = [name for name in dirs if label == 'site'
+                       or os.path.normcase(os.path.join(current, name)) != excluded]
+            for name in names:
+                add(label, root, os.path.join(current, name))
+    return hashlib.sha256(b'\n'.join(sorted(rows))).hexdigest()
+
+
+def check_site_isolation(site):
+    """Card-owner ruling 2026-10-04 (1): the base install's site-packages is outside the install
+    digest, which is sound only while nothing can import from it. A venv must not include system
+    site-packages, and the base site-packages must not be on ``sys.path`` unless it is the bound
+    (digested) site itself."""
+    cfg = Path(os.path.dirname(os.path.dirname(os.path.abspath(sys.executable)))) / 'pyvenv.cfg'
+    if cfg.is_file():
+        for line in cfg.read_text(encoding='utf-8').splitlines():
+            key, sep, value = line.partition('=')
+            if sep and key.strip().lower() == 'include-system-site-packages' and value.strip().lower() != 'false':
+                raise P7Refusal('P7_INTERPRETER_MISMATCH: pyvenv.cfg includes the system site-packages')
+    base_site = os.path.normcase(_base_site_packages(sys.base_prefix))
+    if base_site != os.path.normcase(os.path.realpath(site)) and any(
+            isinstance(entry, str) and entry and os.path.normcase(os.path.realpath(entry)) == base_site
+            for entry in sys.path):
+        raise P7Refusal('P7_INTERPRETER_MISMATCH: the base install site-packages is on sys.path')
+
+
+def _interpreter_binding(site, pth, code_root):
+    check_site_isolation(site)
     lock = Path(code_root) / 'requirements-ops.lock'
     return {
         'interpreter_sha256': sha256_bytes(Path(sys.executable).read_bytes()),
@@ -429,7 +642,18 @@ def current_interpreter_binding(code_root):
         'lock_sha256': sha256_bytes(lock.read_bytes()) if lock.is_file() else None,
         'site_packages_path': site,
         'unexecuted_pth': [{'name': name, 'sha256': digest} for name, digest in pth],
+        'install_tree_sha256': install_tree_sha256(site),
     }
+
+
+def current_interpreter_binding(code_root):
+    """The acceptor's own interpreter binding, derived exactly as the bootstrap derives it."""
+    venv = os.path.dirname(os.path.dirname(os.path.abspath(sys.executable)))
+    prefix = venv if os.path.isfile(os.path.join(venv, 'pyvenv.cfg')) else sys.prefix
+    site = os.path.realpath(os.path.join(prefix, *site_packages_relative().split('/')))
+    pth = sorted((name, sha256_bytes(Path(site, name).read_bytes()))
+                 for name in (os.listdir(site) if os.path.isdir(site) else ()) if name.endswith('.pth'))
+    return _interpreter_binding(site, pth, code_root)
 
 
 @dataclass(frozen=True)
@@ -546,15 +770,7 @@ def finish_record(state, fields, out_path):
         'stdlib': sorted(state.stdlib),
         'ports': dict(sorted(state.ports.items())),
     }
-    lock = code_root / 'requirements-ops.lock'
-    interpreter = {
-        'interpreter_sha256': sha256_bytes(Path(sys.executable).read_bytes()),
-        'base_interpreter_sha256': sha256_bytes(Path(getattr(sys, '_base_executable', sys.executable)).read_bytes()),
-        'version': sys.version, 'cache_tag': sys.implementation.cache_tag,
-        'lock_sha256': sha256_bytes(lock.read_bytes()) if lock.is_file() else None,
-        'site_packages_path': state.site_packages_path,
-        'unexecuted_pth': [{'name': name, 'sha256': digest} for name, digest in state.unexecuted_pth],
-    }
+    interpreter = _interpreter_binding(state.site_packages_path, state.unexecuted_pth, code_root)
     record = dict(fields, schema=RECORD_SCHEMA, label=EVIDENCE_LABEL, bootstrap_sha256=state.bootstrap_sha256,
                   code_head=state.code_head, code_tree_clean=True, loaded_closure=closure,
                   code_closure_sha256=sha256_bytes(canonical(closure)), interpreter=interpreter)

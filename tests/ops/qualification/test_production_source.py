@@ -1,5 +1,10 @@
+import ast
+from contextlib import contextmanager
 import hashlib
 import json
+import os
+import shutil
+import sys
 
 import pytest
 
@@ -691,3 +696,520 @@ def test_t2_item7_replay_bracket_builds_two_fresh_engines_with_separate_results(
     assert all(row.fills == 2 and row.flat_before_deadline and row.end_edge.is_flat for row in result.r1.sessions)
     # Flat retained bars: the bracket adds no signal, cost or price event.
     assert result.r1 == result.r2 == source.replay(path)
+
+
+# ---- T05 owed qualification-path items (T00 P7 closure §7, step-1b return) ----
+# A gated qualification build runs the source-only gates. The TEST_ONLY composition
+# fixture is pinned by the S5 harness, so these cases rewrite its payloads before
+# signing and select the gates for its domain; every guard itself runs unpatched.
+
+REVIEWER = 'synthetic-composition-reviewer'
+
+
+def _refused(code, call):
+    with pytest.raises(ValueError) as error:
+        call()
+    assert code in str(error.value), str(error.value)
+
+
+def _gated_composition(root, monkeypatch, *, transform=None, calendar_producer=None,
+                       review_producer=REVIEWER, review_edit=None, port_transform=None):
+    """Signed TEST_ONLY composition whose source artifacts satisfy the source gates.
+
+    Returns a call that signs the contract and builds the source through the real
+    ``_build_composition`` route (``build_verified_composition`` minus inventory)."""
+    import composition_fixture as fixture_module
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.contract import ObservedBindings, canonical_json_bytes, validate_frozen_contract
+    from test_contract import NOW
+    from test_source_contract import REVIEW_SCOPES, SYNTHETIC_CALENDAR_PRODUCER, v2_review
+    encoded, digest = fixture_module.encoded, fixture_module.digest
+
+    def build(path):
+        fixture = fixture_module.build_artifacts(path, port_transform=port_transform)
+        payloads = fixture.payloads
+        payloads['calendar_producer'] = (canonical_json_bytes(SYNTHETIC_CALENDAR_PRODUCER)
+                                         if calendar_producer is None else calendar_producer)
+        fact = {'role': 'calendar_producer', 'sha256': digest(payloads['calendar_producer'])}
+        calendar, index = json.loads(payloads['source_calendar']), json.loads(payloads['population_index'])
+        for row in calendar['sessions']:
+            row['facts'] = [fact]
+            for item in row['venue_deadlines'].values():
+                item['fact'] = fact
+        if transform is not None:
+            transform(payloads, calendar, index, fixture.populations)
+        payloads['source_calendar'] = encoded(calendar)
+        index['source_binding']['source_calendar_sha256'] = digest(payloads['source_calendar'])
+        payloads['population_index'] = encoded(index)
+        binding = digest(encoded(index['source_binding']))
+        for role in REVIEW_SCOPES:
+            doc = json.loads(v2_review(role, digest(payloads[role]), reviewer=REVIEWER,
+                                       binding_sha256=binding if role == 'population_index' else None))
+            payloads[role + '_review'] = canonical_json_bytes(review_edit(role, doc) if review_edit else doc)
+        for role in ('calendar_producer', 'source_calendar', 'population_index', *(r + '_review' for r in REVIEW_SCOPES)):
+            (path / fixture.paths[role]).write_bytes(payloads[role])
+        return fixture
+
+    def signed():
+        fixture = build(root).with_runtime_artifacts(root)
+        domain, private, keys = fixture_module.verified_domain(fixture)
+        doc = fixture_module.contract_document(fixture, domain)
+        for row in (*doc['artifacts'], *doc['role_owners']):
+            if row['role'].endswith('_review'):
+                row['producer' if 'producer' in row else 'owner'] = review_producer
+        raw = encoded(doc)
+        approval = fixture_module.signed_approval(raw, private['test-freeze'], key_id='test-freeze', scope='FREEZE_F1')
+        retained = {role: (root / path).read_bytes() for role, path in fixture.paths.items()}
+        observed = ObservedBindings(artifact_sha256={fixture.paths[r]: digest(b) for r, b in retained.items()},
+                                    runtime_load_sha256={r: digest(b) for r, b in retained.items()},
+                                    effective_settings_sha256=digest(retained['effective_settings_successor']),
+                                    orb_normal_base=1)
+        contract = validate_frozen_contract(raw, approval, keys, observed, now=NOW, trust_domain=domain)
+        return contract, production_source.ProductionSource._build_composition(contract, artifact_root=root)
+
+    monkeypatch.setattr(production_source, '_source_gates_apply', lambda domain: True)
+    return signed
+
+
+def test_t05_source_gates_apply_to_every_domain_but_the_test_only_composition_profile():
+    from types import SimpleNamespace
+    import test_contract
+    from test_trust_domain import case, validate
+    from c1_rail.qualification.production_source import _source_gates_apply
+    operator, _, _ = test_contract._operator_domain(test_contract._document())
+    composition = validate(*case())
+    assert (operator.authority_class, operator.permits_synthetic, _source_gates_apply(operator)) == ('OPERATOR', False, True)
+    assert (composition.authority_class, composition.permits_synthetic, _source_gates_apply(composition)) == ('TEST_ONLY', True, False)
+    assert _source_gates_apply(SimpleNamespace(authority_class='UNKNOWN', permits_synthetic=True))
+
+
+def test_t05_gated_qualification_review_binds_an_independent_reviewer(tmp_path, monkeypatch):
+    contract, source = _gated_composition(tmp_path, monkeypatch)()
+    source.verify_for(contract)
+    assert source.evidence_class == 'QUALIFICATION'
+    producers = {row.role: row.producer for row in contract.artifacts}
+    assert producers['source_calendar_review'] == REVIEWER != producers['source_calendar']
+
+
+@pytest.mark.parametrize('defect,code', [
+    ('self_certified', 'REVIEW_NOT_INDEPENDENT'),     # the reviewed artifact's producer signs the companion
+    ('v1', 'scope/reviewer'),                         # a v1 companion carries no reviewer identity
+])
+def test_t05_gated_qualification_review_refuses_unidentified_or_self_review(tmp_path, monkeypatch, defect, code):
+    def v1(role, doc):
+        if role != 'source_calendar':
+            return doc
+        return {'schema': 'qualification-source-review/v1',
+                **{key: doc[key] for key in ('artifact_role', 'artifact_sha256', 'scope', 'decision')}}
+    build = _gated_composition(tmp_path, monkeypatch, review_producer=(
+        'synthetic-composition-fixture' if defect == 'self_certified' else REVIEWER),
+        review_edit=v1 if defect == 'v1' else None)
+    _refused(code, build)
+
+
+@pytest.mark.parametrize('defect,code', [
+    ('fact_role', 'CALENDAR_FACT_ROLE'),               # another retained role at its true digest
+    ('deadline_fact', 'CALENDAR_PRODUCER_MISMATCH'),   # the record states a 12:59 day the calendar omits
+])
+def test_t05_gated_qualification_calendar_binds_the_calendar_producer(tmp_path, monkeypatch, defect, code):
+    from composition_fixture import digest
+    from c1_rail.qualification.contract import canonical_json_bytes
+    from test_source_contract import SYNTHETIC_CALENDAR_PRODUCER
+
+    def other_role(payloads, calendar, index, populations):
+        calendar['sessions'][0]['facts'] = [{'role': 'cost_model', 'sha256': digest(payloads['cost_model'])}]
+    producer = canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, venue_flat_dates_in_interval=['2024-01-02']))
+    _refused(code, _gated_composition(tmp_path, monkeypatch, transform=other_role if defect == 'fact_role' else None,
+                                      calendar_producer=producer if defect == 'deadline_fact' else None))
+
+
+TAIL = '2024-08-30'                                              # the fixture's last source date
+TRUNCATED = 'panel truncated at interval end: slots 09:00-16:00 ET'   # its indexed ET slot range
+
+
+@pytest.mark.parametrize('case,code', [
+    ('admitted', None),
+    ('interior', 'SOURCE_TRUNCATION_INTERIOR'),
+    ('unnamed_slots', 'SOURCE_TRUNCATION_REASON'),
+    ('unrecorded_tail', 'CALENDAR_PRODUCER_MISMATCH'),
+    ('stand_in', 'TRUNCATION_STAND_IN_RETIRED'),
+])
+def test_t05_gated_qualification_validates_source_truncated(tmp_path, monkeypatch, case, code):
+    from c1_rail.qualification.contract import canonical_json_bytes
+    from test_source_contract import SYNTHETIC_CALENDAR_PRODUCER
+    reason = 'panel ended early' if case == 'unnamed_slots' else TRUNCATED
+    status = 'policy_denied' if case == 'stand_in' else 'source_truncated'
+
+    def truncate(payloads, calendar, index, populations):
+        position = 5 if case == 'interior' else -1
+        row = calendar['sessions'][position]
+        assert case == 'interior' or row['date'] == TAIL
+        calendar['sessions'][position] = dict(row, status=status, reason=reason, venue_deadlines={})
+        index['expected_exclusions'] = [{'source_date': row['date'], 'reason': status, 'detail': reason}]
+        full = [day for day in populations['FULL'] if day != row['date']]
+        populations.update(FULL=full, H1=full[:(len(full) + 1) // 2], H2=full[(len(full) + 1) // 2:])
+        index['populations'] = {name: list(values) for name, values in populations.items()}
+    tail = {} if case == 'unrecorded_tail' else {'tail_disposition': {'date': TAIL, 'status': 'source_truncated'}}
+    build = _gated_composition(tmp_path, monkeypatch, transform=truncate,
+                               calendar_producer=canonical_json_bytes(dict(SYNTHETIC_CALENDAR_PRODUCER, **tail)))
+    if code is not None:
+        _refused(code, build)
+        return
+    contract, source = build()
+    source.verify_for(contract)
+    assert [(e.session_date.isoformat(), e.reason, e.detail) for e in source.exclusions] == [(TAIL, 'source_truncated', TRUNCATED)]
+    assert TAIL not in contract.populations['FULL'] and TAIL not in {s.session_id for s in source.sessions}
+
+
+# ---- P3-1 (2026-10-01 refute-first review): replay_bracket's deadline-failure branch ----
+
+def _hold_orb_through_flatten(monkeypatch):
+    """TEST_ONLY port: the fixture ORB keeps its entry into the 15:55 ET intrabar flatten."""
+    import composition_fixture as fixture_module
+    original = fixture_module.build_artifacts
+
+    def holding(root, *, idle=False, port_transform=None):
+        def hold(leg, raw):
+            return raw if leg != 'orb_mnq_v7' else raw.replace(
+                b'local.minute == 15 and self.position', b'local.minute == 59 and self.position')
+        return original(root, idle=idle, port_transform=hold)
+    monkeypatch.setattr(fixture_module, 'build_artifacts', holding)
+
+
+def _withhold_r1_flatten(monkeypatch):
+    """TEST_ONLY venue refusal: the R1 engine's brokers never confirm the scheduled flatten,
+    so the real engine's own-flat deadline check raises; R2's brokers are honest."""
+    from c1_signal_daemon import tv_broker_emulator
+    from c1_rail.qualification.model import LEG_IDS
+    built = []
+
+    class Withholding(tv_broker_emulator.TVBrokerEmulator):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.withhold = len(built) < len(LEG_IDS)     # the first engine built is R1's
+            built.append(self)
+
+        def submit(self, actions, bar):
+            if self.withhold and any(getattr(a, 'reason', '') == 'scheduled_flatten' for a in actions):
+                return []
+            return super().submit(actions, bar)
+    monkeypatch.setattr(tv_broker_emulator, 'TVBrokerEmulator', Withholding)
+    return built
+
+
+def test_p3_1_qualification_replay_bracket_keeps_a_real_deadline_failure_as_that_runs_result(tmp_path, monkeypatch):
+    import composition_fixture as fixture_module
+    from c1_rail.qualification.model import LEG_IDS, BracketReplayResult, ReplayResult
+    from c1_rail.qualification.paths import PathAssembler
+    _hold_orb_through_flatten(monkeypatch)
+    source = fixture_module.build_verified_composition(tmp_path).source
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    built = _withhold_r1_flatten(monkeypatch)
+    result = source.replay_bracket(path)
+    assert len(built) == 2 * len(LEG_IDS)
+    assert type(result) is BracketReplayResult and type(result.r1) is ReplayResult and result.r1 is not result.r2
+    # R1 is T=infinity at its first session: a partial record, not a raised failure.
+    assert [row.flat_before_deadline for row in result.r1.sessions] == [False]
+    assert not result.r1.sessions[0].end_edge.is_flat
+    assert [e.kind for e in result.r1.events].count('deadline_failure') == 1
+    assert len(result.r2.sessions) == 3 and all(row.flat_before_deadline and row.end_edge.is_flat for row in result.r2.sessions)
+    assert 'deadline_failure' not in {e.kind for e in result.r2.events}
+
+
+def test_p3_1_source_only_replay_bracket_seals_a_real_deadline_failure(tmp_path, monkeypatch):
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.model import ReplayResult
+    from c1_rail.qualification.paths import PathAssembler
+    from test_source_contract import NOW, build_source_case
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    _hold_orb_through_flatten(monkeypatch)
+    case = build_source_case(tmp_path, monkeypatch)
+    source = production_source.ProductionSource.build(case.validate(), artifact_root=case.root)
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    _withhold_r1_flatten(monkeypatch)
+    result = source.replay_bracket(path)
+    assert type(result) is production_source.SourceOnlyBracket
+    assert not isinstance(result.r1, ReplayResult) and not isinstance(result.r2, ReplayResult)
+    assert (result.r1.deadline_failure, result.r2.deadline_failure) == (True, False)
+    assert [(row.flat_before_deadline, row.end_flat) for row in result.r1.sessions] == [(False, False)]
+    assert len(result.r2.sessions) == 3 and all(row.flat_before_deadline and row.end_flat for row in result.r2.sessions)
+    # R1 consumed its first 15:55 ET split before the failure; R2 consumed one per session.
+    assert len(result.r2.consumed_intrabar_splits) == 3
+    assert result.r1.consumed_intrabar_splits == result.r2.consumed_intrabar_splits[:1]
+
+
+# ---- P-B2: the gated screen capability (design 2026-10-02 §3.3; card §2.5, rows K5-K8) ----
+# A synthetic source case, repository and screen authority from test_screen_authority.Screen;
+# TEST_ONLY keys and fixtures only. The run lock is a msvcrt byte-range lock (card §3.4).
+
+SCREEN = pytest.mark.skipif(os.name != 'nt' or shutil.which('git') is None,
+                            reason='the screen gate needs git and the msvcrt run lock')
+SCREEN_EXPIRES = '2026-09-15T21:00:00Z'   # one hour after NOW; r3c's own window is wider (row K2)
+
+# inspect.getsource SHA-256 of the seven sealed functions at the P-B2 base 6629627, recorded
+# before the build (row K7).
+SEALED_SOURCE_SHA256 = {
+    'replay': '33ec2fb7a2d19abcc52049d580d70e0b1af0e7d6ebc36d659c3ffcf739f9e4ba',
+    'replay_bracket': '220c80607c58f360f6f3d9422970fc0f52d933e178bb50b6cceb986872e7d9e3',
+    'proof': '853baa51b2f8f8e97b052081487b36f067d01d3e91b9378c2675f27a0ee8f2d1',
+    '_seal': 'ca187f0cf29bce9942c42b9fd7ab9d2692c57fac6565d71149b58652f2add6a4',
+    '_check_path': '494292efbc57ffe7ee7214ca4a51aa2060fbcb1b30ccd2db4bf991f2eb1cae2b',
+    '_verify_integrity': '236201d4a555098a097b3b9c892d32caa5d92f9f03bed129dfdfeac461cd7b43',
+    'verify_for': '50eebc21adfec880ead92687e4a1f09767bc0d3faaf630337e379d8b26ad96da',
+}
+
+
+def _sealed_source_sha256():
+    import inspect
+    from c1_rail.qualification import production_source
+    owner = {'_seal': production_source}
+    return {name: hashlib.sha256(inspect.getsource(getattr(owner.get(name, ProductionSource), name)).encode()).hexdigest()
+            for name in SEALED_SOURCE_SHA256}
+
+
+def _screen(tmp_path, monkeypatch):
+    """A validated screen authority whose approval ends at SCREEN_EXPIRES, a source-only source
+    built from its exact receipt, and a three-session path."""
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.contract import canonical_json_bytes
+    from c1_rail.qualification.paths import PathAssembler
+    from test_screen_authority import Screen
+    from test_source_contract import NOW
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    screen = Screen(tmp_path, monkeypatch)
+    raw = canonical_json_bytes(screen.authority)
+    auth = screen.validate(approval=screen.approval(raw, expires_at=SCREEN_EXPIRES))
+    source = ProductionSource.build(screen.receipt, artifact_root=screen.artifact_root)
+    path = PathAssembler(source.path_start_date).assemble((source.sessions[:3],), horizon_sessions=3)
+    return screen, auth, source, path
+
+
+@contextmanager
+def _ready(screen, auth):
+    """screen.ready with a recorder whose loaded closure holds at open: every module already
+    loaded counts as a recorded stdlib name (synthetic, as test_screen_authority.cover_loaded)."""
+    from test_screen_authority import cover_loaded
+    with screen.ready(auth) as run_dir:
+        recorder = sys.p7_recorder
+        recorder.first_party, recorder.third_party, recorder.ports, recorder.stdlib = {}, {}, {}, set()
+        cover_loaded(recorder)
+        yield run_dir
+
+
+def sa():
+    """The screen entry points' owner (screen_authority.screen_epoch/screen_bracket)."""
+    from c1_rail.qualification import screen_authority
+    return screen_authority
+
+
+def _spy_engine(monkeypatch):
+    calls, real = [], ProductionSource._engine
+
+    def spy(self, schedule_quotes):
+        calls.append(schedule_quotes)
+        return real(self, schedule_quotes)
+    monkeypatch.setattr(ProductionSource, '_engine', spy)
+    return calls
+
+
+def _touch(path, delta_ns):
+    stat = path.stat()
+    os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns + delta_ns))
+
+
+@SCREEN
+def test_K5(tmp_path, monkeypatch):
+    """Each K1-K4 and K6 refusal fires before any engine is built: a spy on _engine sees no call."""
+    from datetime import timedelta
+    import composition_fixture
+    from c1_rail.qualification import production_source
+    from test_source_contract import NOW
+    # Built first: the composition's runtime inventory refuses a test-module _now seam.
+    qualification = composition_fixture.build_verified_composition(tmp_path / 'f1').source
+    screen, auth, source, path = _screen(tmp_path / 'screen', monkeypatch)
+    other = ProductionSource.build(screen.case.validate(), artifact_root=screen.artifact_root)
+    artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
+    calls = _spy_engine(monkeypatch)
+    with _ready(screen, auth):
+        epoch = sa().screen_epoch(source, authority=auth)
+
+        def call(src=source, ep=epoch):
+            return sa().screen_bracket(src, path, authority=auth, epoch=ep)
+        _refused('SCREEN_REQUIRES_SOURCE_RECEIPT', lambda: call(qualification))         # K1
+        _refused('SCREEN_SOURCE_MISMATCH', lambda: call(other))                         # K1
+        monkeypatch.setattr(production_source, '_now', lambda: NOW + timedelta(minutes=90))
+        _refused('SCREEN_APPROVAL_EXPIRED', call)                                       # K2
+        monkeypatch.setattr(production_source, '_now', lambda: NOW)
+        recorder = sys.p7_recorder
+        monkeypatch.delattr(sys, 'p7_recorder')
+        _refused('SCREEN_BOOTSTRAP_MISMATCH', call)                                     # K3
+        monkeypatch.setattr(sys, 'p7_recorder', recorder, raising=False)
+        ledger = screen.ledger.read_bytes()
+        screen.ledger.write_bytes(b'')
+        _refused('SCREEN_RUN_UNBOUND', call)                                            # K4
+        screen.ledger.write_bytes(ledger)
+        _refused('SCREEN_EPOCH_REQUIRED', lambda: call(source, None))                   # K6
+        _touch(artifact, 1_000_000_000)
+        _refused('SCREEN_EPOCH_STALE', call)                                            # K6
+        assert calls == []
+        _touch(artifact, -1_000_000_000)
+        assert type(call()).__name__ == 'ScreenBracket' and len(calls) == 2             # twin
+
+
+@SCREEN
+def test_K6(tmp_path, monkeypatch):
+    """An r3c artifact file's mtime changes mid-epoch: the next call is stale; the epoch closes with
+    the full check; a closed epoch serves nothing; a new epoch opens and serves again."""
+    from test_screen_authority import cover_loaded
+    screen, auth, source, path = _screen(tmp_path, monkeypatch)
+    artifact = screen.artifact_root / auth.source_receipt.artifacts[0].path
+    with _ready(screen, auth):
+        epoch = sa().screen_epoch(source, authority=auth)
+        assert sa().screen_bracket(source, path, authority=auth, epoch=epoch).deadline_failure == (False, False)
+        _touch(artifact, 1_000_000_000)
+        _refused('SCREEN_EPOCH_STALE', lambda: sa().screen_bracket(source, path, authority=auth, epoch=epoch))
+        recorder = sys.p7_recorder
+        recorder.first_party, recorder.third_party, recorder.ports, recorder.stdlib = {}, {}, {}, set()
+        cover_loaded(recorder)
+        assert sa().close_screen_epoch(epoch).closure_match
+        _refused('SCREEN_EPOCH_REQUIRED', lambda: sa().screen_bracket(source, path, authority=auth, epoch=epoch))
+        reopened = sa().screen_epoch(source, authority=auth)
+        assert sa().screen_bracket(source, path, authority=auth, epoch=reopened).deadline_failure == (False, False)
+
+
+@SCREEN
+def test_K6_open_refuses_a_mismatched_loaded_closure(tmp_path, monkeypatch):
+    """Codex r4179917167: a recorded first-party digest that differs from the loaded bytes refuses
+    the epoch at open, before any engine is built (rows K5/K6); the matching twin opens."""
+    from test_screen_authority import MODULE
+    screen, auth, source, path = _screen(tmp_path, monkeypatch)
+    calls = _spy_engine(monkeypatch)
+    with _ready(screen, auth):
+        recorder = sys.p7_recorder
+        recorder.first_party = {'c1_rail.qualification.t00_screen_fixture': {
+            'path': MODULE, 'sha256': hashlib.sha256(b'TEST_ONLY other bytes\n').hexdigest()}}
+        _refused('SCREEN_EPOCH_STALE', lambda: sa().screen_epoch(source, authority=auth))
+        assert calls == []
+        recorder.first_party['c1_rail.qualification.t00_screen_fixture']['sha256'] = hashlib.sha256(
+            (screen.repo / MODULE).read_bytes()).hexdigest()
+        epoch = sa().screen_epoch(source, authority=auth)                                     # twin
+        assert type(sa().screen_bracket(source, path, authority=auth, epoch=epoch)).__name__ == 'ScreenBracket'
+        assert len(calls) == 2
+
+
+def test_screen_entry_points_refuse_a_non_production_source(tmp_path, monkeypatch):
+    """As ProductionSource methods they could serve only a ProductionSource; as screen_authority
+    functions they refuse a duck-typed stand-in, even one carrying a real source-only receipt, before
+    anything else: no integrity check and no engine (spy counts stay 0)."""
+    from c1_rail.qualification import production_source
+    from test_source_contract import NOW, build_source_case
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    calls = []
+
+    class StandIn:  # pylint: disable=too-few-public-methods
+        """TEST_ONLY: a ProductionSource look-alike."""
+        contract = build_source_case(tmp_path, monkeypatch).validate()
+
+        def _verify_integrity(self):
+            calls.append('integrity')
+
+        def _engine(self, provider):
+            calls.append(provider)
+    for call in (lambda: sa().screen_epoch(StandIn(), authority=None),
+                 lambda: sa().screen_bracket(StandIn(), (), authority=None, epoch=None)):
+        with pytest.raises(TypeError, match='SCREEN_REQUIRES_PRODUCTION_SOURCE'):
+            call()
+    assert calls == []
+
+
+@SCREEN
+def test_K7(tmp_path, monkeypatch):
+    """With a valid authority and an open epoch, verify_for and replay_bracket on r3c still refuse
+    qualification and return sealed types; the seven sealed functions keep their source text."""
+    from c1_rail.qualification import production_source
+    from c1_rail.qualification.model import BracketReplayResult
+    screen, auth, source, path = _screen(tmp_path, monkeypatch)
+    with _ready(screen, auth):
+        epoch = sa().screen_epoch(source, authority=auth)
+        _refused('SOURCE_ONLY_NOT_QUALIFICATION', lambda: source.verify_for(source.contract))
+        assert type(source.replay_bracket(path)) is production_source.SourceOnlyBracket
+        assert type(source.replay(path)) is production_source.SourceOnlyReplay
+        assert type(sa().screen_bracket(source, path, authority=auth, epoch=epoch).bracket) is BracketReplayResult
+    hashes = _sealed_source_sha256()
+    assert hashes == SEALED_SOURCE_SHA256
+    assert hashlib.sha256(b'def replay(self, path): ...\n').hexdigest() not in hashes.values()   # twin
+
+
+@SCREEN
+def test_K8(tmp_path, monkeypatch):
+    """A path with a deadline in R2 only: per run, the wrapper's deadline flag and consumed splits
+    equal the sealed SourceOnlyReplay's on the same path (twin: no deadline)."""
+    from c1_signal_daemon import tv_broker_emulator
+    from c1_rail.qualification.model import LEG_IDS
+    _hold_orb_through_flatten(monkeypatch)
+    screen, auth, source, path = _screen(tmp_path, monkeypatch)
+    built, state = [], {'withhold_r2': False}
+
+    class WithholdingR2(tv_broker_emulator.TVBrokerEmulator):
+        """TEST_ONLY venue refusal: each bracket's second (R2) engine never confirms the flatten."""
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.withhold = state['withhold_r2'] and (len(built) // len(LEG_IDS)) % 2 == 1
+            built.append(self)
+
+        def submit(self, actions, bar):
+            if self.withhold and any(getattr(a, 'reason', '') == 'scheduled_flatten' for a in actions):
+                return []
+            return super().submit(actions, bar)
+    monkeypatch.setattr(tv_broker_emulator, 'TVBrokerEmulator', WithholdingR2)
+    with _ready(screen, auth):
+        epoch = sa().screen_epoch(source, authority=auth)
+        for withhold, expected in ((False, (False, False)), (True, (False, True))):
+            state['withhold_r2'] = withhold
+            wrapped = sa().screen_bracket(source, path, authority=auth, epoch=epoch)
+            sealed = source.replay_bracket(path)
+            runs = (sealed.r1, sealed.r2)
+            assert wrapped.deadline_failure == tuple(run.deadline_failure for run in runs) == expected
+            assert wrapped.consumed_splits == tuple(run.consumed_intrabar_splits for run in runs)
+            assert len(wrapped.consumed_splits[0]) == 3
+            assert [len(r.sessions) for r in (wrapped.bracket.r1, wrapped.bracket.r2)] == [3, 1 if withhold else 3]
+
+
+SCREEN_ONLY_MODULES = ('c1_rail.qualification.screen_authority', 'c1_rail.qualification.p7_evidence',
+                       'c1_rail.qualification.t00_screen')
+
+
+def _imported_modules(tree, package='c1_rail.qualification'):
+    """Every module an Import/ImportFrom (relative resolved) or a constant import_module/__import__
+    call in ``tree`` names; each from-imported name is also taken as a submodule."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            yield from (alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            parts = package.split('.')
+            base = '.'.join(parts[:len(parts) - node.level + 1]) if node.level else ''
+            module = '.'.join(filter(None, (base, node.module)))
+            yield module
+            yield from (f'{module}.{alias.name}' for alias in node.names)
+        elif (isinstance(node, ast.Call) and node.args and isinstance(node.args[0], ast.Constant)
+              and getattr(node.func, 'attr', getattr(node.func, 'id', None)) in ('import_module', '__import__')):
+            yield str(node.args[0].value)
+
+
+def _screen_imports(tree):
+    return sorted({name for name in _imported_modules(tree)
+                   if any(name == banned or name.startswith(banned + '.') for banned in SCREEN_ONLY_MODULES)})
+
+
+def test_production_source_imports_no_screen_module():
+    """Codex r4180236028: production_source's closure is PRODUCTION_TRUST_POLICY's, so the screen
+    entry lives in screen_authority and production_source imports no screen module in any form."""
+    from c1_rail.qualification import production_source
+    with open(production_source.__file__, encoding='utf-8') as handle:
+        assert _screen_imports(ast.parse(handle.read())) == []
+    planted = ast.parse('def f():\n    from .screen_authority import x\n    from . import p7_evidence\n'
+                        'import c1_rail.qualification.t00_screen.journal\n'
+                        'importlib.import_module("c1_rail.qualification.screen_authority")\n')  # twin
+    assert _screen_imports(planted) == [
+        'c1_rail.qualification.p7_evidence', 'c1_rail.qualification.screen_authority',
+        'c1_rail.qualification.screen_authority.x', 'c1_rail.qualification.t00_screen.journal']
