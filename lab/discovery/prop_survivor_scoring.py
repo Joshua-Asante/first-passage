@@ -503,12 +503,21 @@ def assert_intraday_channel_nonvacuous(
     n_sims: int,
     firm_kwargs_override: dict | None = None,
     horizon: int | None = None,
+    protected_blocks: np.ndarray | None = None,
+    protected_intraday_blocks: np.ndarray | None = None,
+    mode_trigger: float | None = None,
 ) -> dict:
     """Mandatory non-vacuity guard (frozen Phase-4 §1).
 
     Zeros-channel must reproduce close-only figures byte-for-byte; the real
     channel must differ. A silently dropped ``intraday_low`` would reproduce the
     flattering EOD numbers — the M-23-shaped failure mode.
+
+    ``protected_blocks`` / ``protected_intraday_blocks`` / ``mode_trigger``
+    (OPTIONAL) — the mode-switching channel (card 2026-10-05 §0.5 item 5). Given,
+    EVERY arm runs with them (the EOD arm included), so the guard still compares
+    like-for-like channels; the zeros arm zeros BOTH intraday channels and the
+    real arm uses both. Absent, the guard is byte-identical to the legacy call.
     """
     horiz = thresholds.horizon if horizon is None else int(horizon)
     kw = (
@@ -516,9 +525,33 @@ def assert_intraday_channel_nonvacuous(
         if firm_kwargs_override is not None
         else firm_kwargs(firm_key, inactivity_off=True, consistency=_consistency_frac(firm_key))
     )
+    # Fail closed (Codex 4190226566): the guard always has an intraday channel, so a
+    # requested mode switch needs all three protected inputs. None is ever dropped.
+    mode_given = [
+        name
+        for name, value in (
+            ("protected_blocks", protected_blocks),
+            ("protected_intraday_blocks", protected_intraday_blocks),
+            ("mode_trigger", mode_trigger),
+        )
+        if value is not None
+    ]
+    if mode_given and len(mode_given) != 3:
+        raise ValueError(
+            "incomplete mode-switching inputs for the guard: got "
+            f"{mode_given}; protected_blocks, protected_intraday_blocks and "
+            "mode_trigger are given together or not at all"
+        )
     zeros = np.zeros_like(intraday_blocks)
+    protected_zeros = np.zeros_like(intraday_blocks) if protected_blocks is not None else None
 
-    def _score(intra: np.ndarray | None) -> dict:
+    def _score(intra: np.ndarray | None, protected_intra: np.ndarray | None = None) -> dict:
+        mode_kwargs: dict = {}
+        if protected_blocks is not None:
+            mode_kwargs["protected_blocks"] = protected_blocks
+            mode_kwargs["mode_trigger"] = mode_trigger
+        if protected_intra is not None:
+            mode_kwargs["protected_intraday_blocks"] = protected_intra
         seeds_results = [
             run_seed(
                 seed,
@@ -530,14 +563,15 @@ def assert_intraday_channel_nonvacuous(
                 strats=CANDIDATE_STRAT,
                 firm_kwargs=kw,
                 intraday_blocks=intra,
+                **mode_kwargs,
             )
             for seed in thresholds.seeds
         ]
         return summarize_outcomes(seeds_results, int(n_sims))
 
     eod = _score(None)
-    zero_arm = _score(zeros)
-    real_arm = _score(intraday_blocks)
+    zero_arm = _score(zeros, protected_zeros)
+    real_arm = _score(intraday_blocks, protected_intraday_blocks)
 
     if (
         float(zero_arm["headline_bust"]) != float(eod["headline_bust"])
@@ -582,15 +616,31 @@ def run_tier_remc(
     n_sims: int | None = None,
     consistency: float | None = None,
     intraday_blocks: np.ndarray | None = None,
+    protected_blocks: np.ndarray | None = None,
+    protected_intraday_blocks: np.ndarray | None = None,
+    mode_trigger: float | None = None,
 ) -> dict:
     """G4 — one run_seed loop for one (tier, consistency) setting via firm_kwargs.
 
     ``intraday_blocks`` — optional paired week-blocks of per-day equity excursions
     (same indices as ``blocks``). Threaded into ``run_seed`` → ``simulate_path``.
+
+    ``protected_blocks`` / ``protected_intraday_blocks`` / ``mode_trigger``
+    (OPTIONAL) — the mode-switching channel (card 2026-10-05 §0.5 item 4),
+    threaded into ``run_seed`` only when given, so the default call is
+    byte-identical. The trigger value is the caller's (the operator-ruling
+    book threshold), never a value chosen here.
     """
     assert_engine_ready(firm_key)  # G3 gate; raises on failure
     sims = thresholds.sims_per_seed if n_sims is None else int(n_sims)
     kw = firm_kwargs(firm_key, inactivity_off=True, consistency=consistency)
+    mode_kwargs: dict = {}
+    if protected_blocks is not None:
+        mode_kwargs["protected_blocks"] = protected_blocks
+    if protected_intraday_blocks is not None:
+        mode_kwargs["protected_intraday_blocks"] = protected_intraday_blocks
+    if mode_trigger is not None:
+        mode_kwargs["mode_trigger"] = mode_trigger
     seeds_results = [
         run_seed(
             seed,
@@ -602,6 +652,7 @@ def run_tier_remc(
             strats=CANDIDATE_STRAT,
             firm_kwargs=kw,
             intraday_blocks=intraday_blocks,
+            **mode_kwargs,
         )
         for seed in thresholds.seeds
     ]
