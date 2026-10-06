@@ -20,6 +20,7 @@ import re
 import subprocess
 import sys
 from datetime import date
+import math
 from fractions import Fraction
 from pathlib import Path
 
@@ -199,6 +200,7 @@ def stage_candidate(out: Path) -> None:
                              envelope_verdict=prep["envelope"], gross_edge_usd=float(sum(prep["full_res_trades"])),
                              tier_series=tier_series, mode_trigger=trigger)
     (out / "candidate_report.json").write_text(json.dumps(report.to_dict(), indent=2, default=str) + "\n")
+    write_depth_record(out / "candidate_report.json", report.to_dict(), thr)
     print("[candidate] report written")
 
 
@@ -211,7 +213,61 @@ def stage_reference(out: Path) -> None:
                              envelope_verdict="YES", gross_edge_usd=float("inf"),
                              intraday_low=panel["intraday_low"].to_numpy())
     (out / "reference_report.json").write_text(json.dumps(report.to_dict(), indent=2, default=str) + "\n")
+    write_depth_record(out / "reference_report.json", report.to_dict(), load_scoring_thresholds())
     print("[reference] report written")
+
+
+def write_depth_record(report_path: Path, report: dict, thr) -> None:
+    """Card §0.5 item 7: depth and guard evidence beside the report, bound by its SHA-256.
+    The score stages pass no n_sims/horizon override, so the depth is the v2 default."""
+    reasons = " ".join(report.get("gate_grade_reasons") or [])
+    guard = {t: ("fail" if f"{t}: non-vacuity failed" in reasons else "pass") for t in report.get("tiers", {})}
+    record = {"report_sha256": _sha(report_path), "n_sims": thr.sims_per_seed, "seeds": list(thr.seeds),
+              "horizon": thr.horizon, "guard": guard}
+    report_path.with_suffix(".depth.json").write_text(json.dumps(record, indent=2) + "\n")
+
+
+def _rate_values(report: dict) -> list[float]:
+    vals = []
+    for t in report.get("tiers", {}).values():
+        for run in (t.get("run1") or {}, t.get("run2") or {}):
+            for k in ("headline_bust", "pass_rate"):
+                if run.get(k) is not None:
+                    vals.append(float(run[k]))
+            vals += [float(v) for v in (run.get("rates") or {}).values() if v is not None]
+    return vals
+
+
+def lattice_paths(report: dict) -> int:
+    """LCM of the reduced denominators of every rate: each rate is count/N, so N is a
+    multiple of this value. Returns 0 if no rate is available."""
+    dens = [Fraction(v).limit_denominator(10_000_000).denominator for v in _rate_values(report)]
+    return math.lcm(*dens) if dens else 0
+
+
+def depth_reasons(name: str, report: dict, report_sha: str | None, record: dict | None, thr) -> tuple[list[str], str]:
+    """Depth/guard evidence (Codex 4199724903). A record must match the report bytes and the
+    frozen depth; without a record, depth is accepted only through the lattice proof."""
+    need = thr.sims_per_seed * len(thr.seeds)
+    if record is not None:
+        r = []
+        if report_sha is None or record.get("report_sha256") != report_sha:
+            r.append(f"run incomplete: {name} depth record report_sha256 does not match the report")
+        if record.get("n_sims") != thr.sims_per_seed:
+            r.append(f"run incomplete: {name} n_sims={record.get('n_sims')} is not the frozen {thr.sims_per_seed}")
+        if list(record.get("seeds") or []) != list(thr.seeds):
+            r.append(f"run incomplete: {name} seeds are not the frozen {list(thr.seeds)}")
+        if record.get("horizon") != thr.horizon:
+            r.append(f"run incomplete: {name} horizon is not the frozen {thr.horizon}")
+        failed = sorted(t for t, g in (record.get("guard") or {}).items() if g != "pass")
+        if failed or set(record.get("guard") or {}) != set(thr.tier_keys):
+            r.append(f"run incomplete: {name} non-vacuity guard not passed on {failed or 'every tier'}")
+        return r, "record"
+    paths = lattice_paths(report)
+    if paths == 0 or paths % need != 0:
+        return [f"run incomplete: {name} lattice proof fails (rate denominators lcm {paths}, "
+                f"need a multiple of {need})"], "lattice"
+    return [], "lattice"
 
 
 def _has_bust(run: dict | None) -> bool:
@@ -239,7 +295,9 @@ def required_runs(name: str, tier: str, t: dict) -> tuple[dict | None, list[str]
     return gating, reasons
 
 
-def derive_verdict(prep: dict, cand: dict, ref: dict, thr) -> dict:
+def derive_verdict(prep: dict, cand: dict, ref: dict, thr, *, cand_sha: str | None = None,
+                   ref_sha: str | None = None, cand_depth: dict | None = None,
+                   ref_depth: dict | None = None) -> dict:
     """Mechanical prereg §4 assignment (card §0.5 items 6-7). Pure: reads reports only."""
     reasons: list[str] = []
     if thr.sims_per_seed != 10_000 or tuple(thr.seeds) != (42, 123, 2026) or thr.horizon != 1500:
@@ -247,6 +305,11 @@ def derive_verdict(prep: dict, cand: dict, ref: dict, thr) -> dict:
     for name, rep in (("candidate", cand), ("reference", ref)):
         if "2026-08-26-prop-survivor-scoring-prereg-v2" not in str(rep.get("thresholds_source", "")):
             reasons.append(f"run incomplete: {name} thresholds_source is not v2")
+    evidence = {}
+    for name, rep_, sha, rec in (("candidate", cand, cand_sha, cand_depth), ("reference", ref, ref_sha, ref_depth)):
+        r, how = depth_reasons(name, rep_, sha, rec, thr)
+        reasons += r
+        evidence[name] = how
     killed = set(prep["g2_killed_tiers"])
     cand_halted = cand.get("halted_at") == "G1"
     ref_bust: dict[str, float | None] = {}
@@ -283,7 +346,7 @@ def derive_verdict(prep: dict, cand: dict, ref: dict, thr) -> dict:
     else:
         verdict = "FALSIFIED — early-fail"
     return {"verdict": verdict, "clears_after_i24_and_g2": clears, "insufficient_reasons": reasons,
-            "reference_bust": ref_bust, "ambiguous": ambiguous}
+            "reference_bust": ref_bust, "ambiguous": ambiguous, "depth_evidence": evidence}
 
 
 def stage_verdict(out: Path) -> None:
@@ -291,7 +354,12 @@ def stage_verdict(out: Path) -> None:
     prep = json.loads((out / "prep.json").read_text())
     cand = json.loads((out / "candidate_report.json").read_text())
     ref = json.loads((out / "reference_report.json").read_text())
-    result = derive_verdict(prep, cand, ref, thr)
+    def _record(name: str):
+        f = out / f"{name}_report.depth.json"
+        return json.loads(f.read_text()) if f.exists() else None
+    result = derive_verdict(prep, cand, ref, thr,
+                            cand_sha=_sha(out / "candidate_report.json"), ref_sha=_sha(out / "reference_report.json"),
+                            cand_depth=_record("candidate"), ref_depth=_record("reference"))
     result.update({"candidate_report_sha256": _sha(out / "candidate_report.json"),
                    "reference_report_sha256": _sha(out / "reference_report.json"),
                    "prep_sha256": _sha(out / "prep.json")})

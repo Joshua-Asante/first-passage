@@ -20,18 +20,28 @@ THR = load_scoring_thresholds()
 CONSISTENCY = ("Tradeify_Select_100K", "MFFU_Rapid_100K", "BluSky_Premium_100K")
 
 
-def _run(bust):
-    return {"headline_bust": bust, "pass_rate": 1.0 - bust, "rates": {}}
+N_FROZEN = 30_000  # 10,000 sims x 3 seeds
 
 
-def _report(bust1=0.30, bust2=0.35):
+def _run(bust, n=N_FROZEN):
+    """Rates are exact count/n fractions, as summarize_outcomes produces."""
+    k = max(1, round(bust * n)) | 1  # odd count keeps the reduced denominator equal to n
+    if n % 2 == 0 and k % 5 == 0:
+        k += 2
+    b = k / n
+    return {"headline_bust": b, "pass_rate": (n - k) / n,
+            "rates": {"bust_trailing": b, "pass": (n - k) / n, "bust_daily": 0.0}}
+
+
+def _report(bust1=0.30, bust2=0.35, n=N_FROZEN):
+    _r = lambda b: _run(b, n)  # noqa: E731
     tiers = {}
     for t in THR.tier_keys:
         if t in CONSISTENCY:
-            tiers[t] = {"gated_on": "run2", "run1": _run(bust1), "run2": _run(bust2), "clears_part_a": False}
+            tiers[t] = {"gated_on": "run2", "run1": _r(bust1), "run2": _r(bust2), "clears_part_a": False}
         else:
-            tiers[t] = {"gated_on": "run1_degenerate", "run1": _run(bust1), "run2": _run(bust1), "clears_part_a": False}
-    return {"tiers": tiers, "gate_grade": True, "halted_at": None,
+            tiers[t] = {"gated_on": "run1_degenerate", "run1": _r(bust1), "run2": _r(bust1), "clears_part_a": False}
+    return {"tiers": tiers, "gate_grade": True, "gate_grade_reasons": [], "halted_at": None,
             "thresholds_source": "docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md"}
 
 
@@ -87,8 +97,9 @@ def test_bulenox_gates_on_run1_and_consistency_tier_on_run2():
     ref["tiers"]["Bulenox_100K"]["run2"] = _run(0.01)
     ref["tiers"]["Tradeify_Select_100K"]["run1"] = _run(0.01)  # diagnostic only
     v = _verdict(_report(), ref)
-    assert v["reference_bust"]["Bulenox_100K"] == 0.01
-    assert v["reference_bust"]["Tradeify_Select_100K"] == 0.70
+    assert v["reference_bust"]["Bulenox_100K"] == ref["tiers"]["Bulenox_100K"]["run1"]["headline_bust"]
+    assert v["reference_bust"]["Tradeify_Select_100K"] == ref["tiers"]["Tradeify_Select_100K"]["run2"]["headline_bust"]
+    assert v["reference_bust"]["Tradeify_Select_100K"] > 0.5
     assert v["ambiguous"] is False
 
 
@@ -150,3 +161,48 @@ def test_rehash_blocks_when_primary_manifest_and_source_drift_together(tmp_path)
     m.write_text("\n".join(text) + "\n")
     with pytest.raises(runner.Blocked, match="manifest"):
         _rehash(root, msha, tmp_path)
+
+
+# ── depth evidence (Codex 4199724903): record when present, else the lattice proof ──
+
+def _depth(report_sha, n_sims=10_000, seeds=(42, 123, 2026), horizon=1500, guard=None):
+    return {"report_sha256": report_sha, "n_sims": n_sims, "seeds": list(seeds), "horizon": horizon,
+            "guard": guard if guard is not None else {t: "pass" for t in THR.tier_keys}}
+
+
+def _with_records(cand, ref, **kw):
+    return runner.derive_verdict(PREP, cand, ref, THR, cand_sha="c" * 64, ref_sha="r" * 64,
+                                 cand_depth=_depth("c" * 64, **kw), ref_depth=_depth("r" * 64))
+
+
+def test_depth_record_twin_passes():
+    assert _with_records(_report(), _report(0.55, 0.70))["verdict"] == "FALSIFIED — early-fail"
+
+
+def test_depth_record_with_n_sims_40_is_insufficient():
+    v = _with_records(_report(), _report(0.55, 0.70), n_sims=40)
+    assert v["verdict"] == "INSUFFICIENT" and any("n_sims" in r for r in v["insufficient_reasons"])
+
+
+def test_depth_record_must_match_report_bytes():
+    v = runner.derive_verdict(PREP, _report(), _report(0.55, 0.70), THR, cand_sha="c" * 64, ref_sha="r" * 64,
+                              cand_depth=_depth("x" * 64), ref_depth=_depth("r" * 64))
+    assert v["verdict"] == "INSUFFICIENT" and any("report_sha256" in r for r in v["insufficient_reasons"])
+
+
+def test_depth_record_guard_failure_is_insufficient():
+    guard = {t: "pass" for t in THR.tier_keys}
+    guard["Tradeify_Select_100K"] = "fail"
+    v = _with_records(_report(), _report(0.55, 0.70), guard=guard)
+    assert v["verdict"] == "INSUFFICIENT" and any("guard" in r for r in v["insufficient_reasons"])
+
+
+def test_lattice_proof_rejects_n_sims_40_reports_without_record():
+    v = _verdict(_report(n=120), _report(0.55, 0.70))
+    assert v["verdict"] == "INSUFFICIENT" and any("lattice" in r for r in v["insufficient_reasons"])
+
+
+def test_lattice_proof_twin_accepts_frozen_depth_reports_without_record():
+    v = _verdict(_report(), _report(0.55, 0.70))
+    assert v["verdict"] == "FALSIFIED — early-fail"
+    assert v["depth_evidence"] == {"candidate": "lattice", "reference": "lattice"}
