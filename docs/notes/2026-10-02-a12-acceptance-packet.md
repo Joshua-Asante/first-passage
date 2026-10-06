@@ -23,13 +23,14 @@ Historical review evidence inspected for this reconciliation:
 
 These receipts cover their named revisions. The final D1/watch text's step-4 reviews are recorded in the ADR change history (2026-10-05 row); current packet changes still need scoped review. The old D7 rationale (Codex 4162535544) is replaced by the safeguards below; the stale-evidence premise (4162535551) is replaced by the ruled refusal latch. Neither is discharged merely by restating an old CLEAN.
 
-## §A12.4 — Reduced propagation set (on acceptance; not applied)
+## §A12.4 — Reduced propagation set (on acceptance; applied where due, see the status below)
 
 On acceptance, only these owners receive a dated addendum or pointer. Separately authorized documentary corrections to draft handoffs may reconcile already-ruled requirements.
 
 *Status 2026-10-05 (§A12 ACCEPTED 2026-10-05 (D1), effective at `2c71e7e`; coordinator (4)):*
 - **Applied:** the ADR §2-row pointer; the CAP R3 addendum; the scope-note pointer; the T08 §7.8 and session-plan D5 pointers; the checklist T09 gate-B citation. The T13/D-MON row was met by the watch adoption (#688).
-- **Owed, at their own trigger (not applied):** the edition pre-registrations (Vanguard, ORB/Striker), at freeze; the T09 bounded handoff, when it is written (gate D); the edition production handoffs, before either is dispatched. Owner: coordinator (4).
+- **Applied 2026-10-05 (#667, merge `6a7bea6`):** the edition production handoffs (STR-3 and VAN-5 repointed to §59 Ruling 5 and the UB-4 freeze).
+- **Owed, at their own trigger (not applied):** the edition pre-registrations (Vanguard, ORB/Striker), at freeze; the T09 bounded handoff, when it is written (gate D). Owner: coordinator (4).
 
 | Owner | Place | Addition |
 |---|---|---|

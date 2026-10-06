@@ -428,7 +428,7 @@ The screen-authority signature (design §8 step 11) uses the same template with 
 - PR-1 #629 merged at: `ad48cd5b059680f08f65a8e401c56a4ac66de609` (2026-10-03; relay CLEAN at `3742a95`, carried to `4f781a0`).
 - PR-2 #581 merged (DRAFT, A5/A6 frozen) at: `b996803eb598bc5723652aafe12098782069f07b` (2026-10-03; relay CLEAN at `3b706c9`, pinned head `6ff2fb3`; pre-registration blob `6e6e5894b499fea8e16352415bab2f468488e91d`). A5/A6 section hashes recomputed by coordinator (3) at that merge commit: A5 `a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b`, A6 `b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9` — both MATCH §2.6.
 - PR-3 #611 merged at: `f5b0f6ae4b615275b430f300080345949aa2e802` (2026-10-03; pinned `0d72f00`; recorded by coordinator (4), 2026-10-04).
-- PR-4 docs PR merged at: —
+- PR-4 docs PR merged at: `11a20f1a0ac7ea5620e767a0c295477402f9cfb4` (#703, 2026-10-05; pinned `5660f17`; prepared by the Codex deployment coordinator's worker; independent review CLEAN 6001905693; card-owner acceptance 6001910659).
 - Packet heads (recorded by coordinator (4), 2026-10-04):
   - P-B1 (#650): accepted at `0b4b560` (coordinator (3)); merged `6e2ece62af2f6059cf37afa82728ff9068dacfd5` (pinned `43b09f6`).
   - P-D (#643): K-5 re-taken on `740f392` (includes #611); accepted at `0866dff`; merged `f7a4e53042042d7a8d44b0b69ce458f47e43e805` (pinned `a6cb6a5`).
