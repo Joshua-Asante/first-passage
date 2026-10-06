@@ -1,129 +1,155 @@
-# T12 preparation: final n3 machinery against T02's interfaces, plus the launch-timing envelope
+# T12 preparation: map final n3 onto the existing engine, list the final-stage gaps, and carry the launch-timing envelope
 
 **Type:** cc_handoff (worker preparation card)
 
-**Status:** DRAFT, 2026-10-02. Drafted by a coordinator worker for the deployment coordinator to freeze; not dispatched. The coordinator answers §12's open decisions, commits the frozen revision under the committed-handoff rule and records its SHA before any worker starts.
+**Status:** DRAFT — proposed narrowing (2026-10-06), NOT accepted. The scope change awaits the deployment coordinator's combined acceptance and Joshua's. The 2026-10-02 draft (prototype path, `final_stage.py` plus synthetic tests) is superseded by this text only if both accept; until then neither revision is frozen or dispatchable. Narrowing basis: the coordinator (4) assessment of 2026-10-05 (read-only, relayed in the coordinator's session); its evidence is carried in §2a, §2b and §4 below rather than in a separate note.
 
-**Executor:** one worker named at freeze (the coordinator's plan lists it as remote lane J: branch-only, no PR). It is the single writer of `claude/t12-n3-prep` (proposed), cut from `origin/main` at the frozen revision.
+**Executor:** any one Claude reader named at freeze. Read-only: no branch, no files, no PR. The return goes to the coordinator.
 
-**Coordinator:** the deployment coordinator ("Coordinating parallel Claude sessions (2)"). It owns freeze-impact and launch-feasibility acceptance (checklist T12 *Ownership*), the diff review, PRs and the ledger.
+**Coordinator:** Claude coordinator (4), owner of this card by succession (Joshua's direct ruling, inherited from coordinator (2)). It owns freeze-impact and launch-feasibility acceptance (checklist T12 *Ownership*), the review and the ledger.
 
-**Owner this card narrows:** the [deployment checklist T12 row](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t12--final-n3-machinery-and-launch-timing-proven-750k1m) (`:254-263`), its dependency line (`:331`: "T12 can prepare against stable interfaces earlier but needs integrated acceptance and a timing answer before F1") and the D-GO reopen trigger (`:594`: "Reopen it only if T12 timing shows the reseal does not fit B7").
+**Owner this card narrows:** the [deployment checklist T12 row](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t12--final-n3-machinery-and-launch-timing-proven-750k1m) (`:256-265`), its dependency line (`:334`: "T12 can prepare against stable interfaces earlier but needs integrated acceptance and a timing answer before F1") and the D-GO reopen trigger (`:599`: "Reopen it only if T12 timing shows the reseal does not fit B7").
+
+**Base:** every `path:line` in this card is pinned at `origin/main` = `debc13363ff3b85ed5ee41bca97a0ae9d76c5767` (`debc133`, 2026-10-05). In §2a, §2b and §4, code paths are relative to `ops/c1_rail/qualification/` and test paths to `tests/ops/qualification/`, unless a path is written in full. T05 material is not on main; it is read at `origin/codex/h9-t05-integration` @ `f237178` and labelled.
 
 ```yaml authority
 seat: worker
 parent: docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md
-max_risk: medium
-capabilities: [repository.read, tests.run, worktree.write, branch.push]
+max_risk: low
+capabilities: [repository.read]
 constraints:
+  - read_only
+  - no_file_write
+  - no_branch_push
   - no_main_write
   - no_merge
   - no_pr_open
   - no_linux_or_ci_dispatch
-  - new_files_only
   - no_existing_module_edit
   - no_t00_p7_closure_edit
   - no_stage1c_measured_closure_edit
   - no_statistical_criterion_depth_or_namespace_change
   - no_real_n3_b7_account_or_route_access
   - no_private_bytes_committed
-  - single_writer
   - stop_at_coordinator_return
 acceptance:
-  - tests/ops/qualification/execution/test_final_stage_n3.py
-  - tests/ops/qualification/test_production.py
-  - tests/ops/qualification/test_contract.py
-  - tests/ops/qualification/test_adjudication.py
-  - tests/ops/qualification/execution/test_release.py
-  - tests/ops/qualification/execution/test_profile.py
+  - "scripts/check_handoff_authority.py --all: 0 violations"
+  - "scripts/check_handoff_brief_form.py: 0 failing"
+  - "scripts/check_brief.py --type handoff on this card: RESULT well-formed"
+  - "§10 anchor hooks: every path:line in §2a, §2b and §4 resolves at the frozen base"
 ```
 
-`test_final_stage_n3.py` is new (§2). The other five are existing pins that must pass unchanged.
+No test is run or written under this card. The pins it cites are evidence read at the base, not acceptance it re-executes.
 
 ## 0. Phase 0: premise and Rule-0 reads
 
-1. **Premise.** HEAD is the frozen revision on `origin/main` (as of 2026-10-02, `6de7bf9`). No `.env`. `git status` clean.
+1. **Premise.** HEAD is the frozen revision on `origin/main` (as of 2026-10-05, `debc133`). No `.env`. Read only.
 2. **Rule-0 reads** (read them; do not infer them):
-   - The T12 row and its owners: checklist `:254-263`, `:331`, `:594`; the Phase 6 plan `docs/superpowers/plans/2026-09-16-phase6-exact-release-launch.md` (`:19`, `:58-68`, `:74`, `:80-83`, `:114-118`).
-   - n3's statistics and no-redraw rule: `docs/briefs/pre-registration/2026-09-12-track-b-final-validation-prereg.md` (`:24`, `:45`, `:49`, `:59`, `:103`); admission chain `docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md` (`:68`, `:97`, `:99`, `:120`, `:140`, `:153-154`, `:183`).
-   - B7 seal: `docs/spec/2026-09-12-tradeify-account-snapshot-seal-contract.md` (`:40`, C5 and C10 at `:46`); `scripts/seal_account_snapshot.py:30-31`, `:70-81`.
+   - The T12 row and its owners: checklist `:256-265`, `:334`, `:599`; the Phase 6 plan `docs/superpowers/plans/2026-09-16-phase6-exact-release-launch.md` (`:19`, `:32`, `:39`, `:58-68`, `:74`, `:80-83`, `:114-118`).
+   - n3's statistics and no-redraw rule: `docs/briefs/pre-registration/2026-09-12-track-b-final-validation-prereg.md` (`:24`, `:45`, `:49`, `:59`, `:103`); admission chain `docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md` (`:68`, `:97`, `:99`, `:105`, `:120`, `:140`, `:153-154`, `:183`).
+   - B7 seal: `docs/spec/2026-09-12-tradeify-account-snapshot-seal-contract.md` (`:40`; C5 and C10 at `:46`); `scripts/seal_account_snapshot.py:30-31`, `:70-81`.
    - Separation of E1 and n3: `docs/superpowers/specs/2026-09-19-attended-batch-qualification-design.md:154-158`, `:210`.
    - Cost model: `docs/briefs/phase3-preparation/2026-09-15/compute-depth.md` (`:62`, `:81`, `:93`, `:99`, `:138`, `:170-171`, `:179`).
-   - Code: `ops/c1_rail/qualification/contract.py:699-727` (N3 depth and namespace `n3`, excluded from the E1 seal), `:780`, `:797`; the n3 refusals `ops/c1_rail/qualification/execution/compute.py:20-21` and `ops/c1_rail/qualification/production.py:80-81`; `execution/profile.py:123` (dispatch stops at `['N1','N2','PART_A']`); `execution/campaign_funding.py:26-46` (`WORK_PHASES`).
-   - **T02's accepted interfaces** (S3, accepted 2026-09-22 at `a8a983e`; C1 freeze, ledger `docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md:649-660`, acceptance `:726-750`): checkpoint families `qualification_campaign_checkpoint_{result,attestation,assessment}/v1`; T1 `CampaignStore.persist_checkpoint_intent` (`campaign_store.py:879`) and T2 `commit_checkpoint_assessment` (`:1007`), re-validated by the service under `dispatch_lock`, with VOID serialized through it; `reserve_work` (`:2987`) and `settle_work` (`:3144`).
-3. **Interface finding returned before code (checkpoint):** for each T12 requirement, the T02 interface it reuses, or the seam it needs (for example an `N3` phase, a profile/release dispatch revision, or a separate final-stage authorization). Seams are listed, not applied (the T05 precedent, ledger `:661-663`).
+   - Code: every symbol in §2a. The **post-S5** interfaces govern, not the T02 freeze alone: S4-D1 parameterized T1/T2 with `checkpoint=` and widened the layout to v9 (`execution/campaign_store.py:282-298`); S5 added PART_A and snapshot `/v8` (`:300-325`); the D-S5 fixes merged (#586 `981eb12`, #589 `77cd715`). T02's freeze (ledger `docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md:649-660`, acceptance `:727-750`) remains the origin of the T1/T2 contract.
+3. **Interface finding.** §2a is the finding, pre-computed at the base. The executor re-verifies it at the frozen SHA and returns any drift; it does not extend it into code.
 
 ## 0.5. Routing and clarifying questions
 
-Claude worker lane (protected qualification authority design; not a mechanical GLM ticket). No secrets, account data, private originals or Pine. Linux is not needed for this preparation. The coordinator answers §12 T1–T9 at freeze; anything Phase 0 needs and §12 leaves open returns as NEEDS_CONTEXT.
+Claude reader lane (protected qualification authority design; not a GLM ticket). No secrets, account data, private originals or Pine. No Linux. The coordinator answers §12 at freeze; anything Phase 0 needs and §12 leaves open returns as NEEDS_CONTEXT.
 
 ## 1. Goal
 
-T12's preparation half, against T02's accepted interfaces: a protected n3 authorization and binding model with synthetic tests, behind a new-file boundary, and a launch-timing envelope note that answers, with every number cited or labelled an assumption, whether the GO reseal fits B7. Final engineering consumes T05/T06; integrated acceptance and the timing answer are owed before F1 (checklist `:256`, `:331`).
+T12's preparation half, against the stable post-S5 interfaces, **without a prototype**: (1) the map of existing engine interfaces final n3 can reuse unchanged (§2a); (2) the final-stage gaps no interface covers, each with its owner and the evidence it needs (§2b); (3) the eight checklist verification cases as a coverage matrix (§4); (4) the launch-timing envelope with every figure cited or labelled ASSUMPTION (§9). Integrated acceptance and the timing answer stay owed before F1 (checklist `:258`, `:334`); the "Define and implement" checkbox (`:260`) passes to the gap owners in §2b, who can edit the files.
 
-## 2. Scope (new files only)
+**Why narrowed.** Most of the authority model the 2026-10-02 draft would have prototyped already exists: `attempt.py:AttemptStore` has a `TB_E2_N3` stage with one reservation, a single start into `STARTED_IN_DOUBT`, VOID, terminal failure and a boot fence (§2a), and the kernel, RNG and adjudicator already accept `n3`. What is missing is wiring that changes existing files or pins (§2b, G1-G5), which a new-file prototype cannot reach. The Phase 6 plan also forbids a second runtime authority (`:32`).
 
-- **`ops/c1_rail/qualification/execution/final_stage.py`** (name proposed; T1): a model imported by no existing module, so it enters no measured closure. It binds an n3 authorization to:
-  - the B7 seal digest and its `valid_until`;
-  - the exact `release_sha256` and the execution fingerprint;
-  - the frozen N3 depth, namespace `n3` and streams, read from the contract (never chosen here);
-  - the E1 decision it follows.
+## 2. Scope and deliverable
 
-  It enforces one use (no redraw), terminal failure, expiry and VOID, IN_DOUBT on uncertain dispatch (never a replacement draw), and refusal of any E1 stage request, and it keeps a per-step timing ledger.
-- **`tests/ops/qualification/execution/test_final_stage_n3.py`:** synthetic fixtures only, at a reduced depth passed as a parameter (no depth value is asserted).
-- **`docs/notes/<return-date>-t12-n3-preparation.md`:** the interface map (§0.3) and the launch-timing envelope (§9 is its starting point; the worker reproduces each figure and adds any synthetic measurement it takes).
+- **Files:** none. No module, test, note or branch.
+- **Deliverable:** the executor's return, holding §2a re-verified at the frozen SHA, §2b with each owner's acknowledgement or NEEDS_CONTEXT, §4 completed, and §9 reproduced.
+
+### 2a. Interface map
+
+"Unchanged need" means what final n3 requires from the interface without modifying it.
+
+| Concern | module:symbol (path:line) | What it already guarantees | Tests (path:line) | Unchanged need | Fit |
+|---|---|---|---|---|---|
+| Kernel and stage compute | `runner.py:SyntheticStageRequest` (`runner.py:47-64`; `'n3'` accepted at `:56`); `runner.py:_run_stage` (`:88-123`) | Independent FULL/H1/H2 depths; probe before any path; fixed depth; `NeedsContext` on overrun, "no continuation draws authorized" (`:117`); synthetic discriminator | `test_runner.py:34`, `:43`, `:53`; `test_production_budget_boundaries.py:31`; `test_seed_probability_vectors.py:44-46` (runner over n1/n2/n3) | Run at the contract's N3 depth on the B7 initial state | Reusable. The entry adapters refuse n3 (`execution/compute.py:20-21`, `production.py:80-81`; pin `test_production.py:33-38`), so an n3 adapter is a new function (G5) |
+| RNG streams | `regime.py:domain_seed` (`regime.py:10-24`; stage label hashed at `:22-23`); `seed_identity.py:seed_input` (`seed_identity.py:29-41`) | `'n3'` valid; stream disjoint from n1/n2 under one `root_rng_namespace`; seed input bound to contract, trust domain and source session IDs | `test_regime.py:41-45`; `test_seed_probability_vectors.py:44-46`, `:101-103`; `execution/fixtures/seed_consumer_vectors.json` | The disjoint n3 stream | As is (see §13 UNVERIFIED on `rng_namespace`) |
+| Statistical decision | `adjudication.py:adjudicate_stage` (`adjudication.py:33-62`) | Accepts `'n3'`; certifying failure cutoffs per population and the speed minimum on FULL via `scripts/certification_power`; PASS or FAILURE | `test_adjudication.py:21-27` (n3 at 970) | Prereg `:49` bounds from `contract.replay.decision_rules` | Reusable. The retained-evidence adapter `result_adjudication.py:adjudicate_replay_outcomes` (`:337-341`) refuses N3 (G4) |
+| Contract shape | `contract.py:699-727` (N3 at `:721-724`); budget `:780-800` | N3 FULL/H1/H2 at one frozen depth, namespace `n3`, `included_in_e1_seal` false; `n3_paths = 3 × depth` | `test_contract.py:413`; fixture `test_contract.py:124` | Depth and namespace, read only | As is |
+| Checkpoint custody (T1/T2) | `execution/campaign_store.py:CheckpointStoreMixin.persist_checkpoint_intent` (`:879`), `.commit_checkpoint_assessment` (`:1007`); `execution/service.py:ExecutionService.dispatch_lock` (`:222`), `_commit_checkpoint` (`:614-637`) | Atomic CAPTURED + SIGNING_INTENT + candidate; exact retry idempotent, different candidate refuses; byte-identical receipt on retry; VOID serialized through the lock; predecessor COMMITTED | `execution/test_campaign_n1.py:612`; `execution/test_campaign_n2.py:652`, `:757`; `execution/test_checkpoint_widening.py:174`, `:219`; `execution/test_service_assessment.py:35`; `execution/test_atomic_assessment.py:54`, `:108` | The same T1/T2 semantics for an N3 family | Pattern reusable; symbols closed: `_family` refuses keys outside `{N1,N2,PART_A}` (`campaign_store.py:300-303`); no N3 in `CHECKPOINT_*_PHASES` (`:196-197`) or `PROGRESSION_PHASES` (`:190-193`) (G2) |
+| Reservation | `execution/campaign_store.py:reserve_work` (`:2987`) | Installed phase limits only; "compute phase already reserved; no replacement draws" for ADMISSION/N1/N2/PART_A (`:3052-3057`); signing serialized; exhaustion terminal | `execution/test_campaign_n1.py:525` (no-replacement refusal at `:543`); `execution/test_campaign_budget.py:96`, `:127` | No-redraw at reservation | Pattern reusable; phase closed: N3 absent from that tuple and from `execution/campaign_funding.py:WORK_PHASES` (`:26-46`) (G2) |
+| Settlement | `execution/campaign_store.py:settle_work` (`:3144`), `_observe_resources` | Idempotent observation, conflict refuses; wall overrun → `BUDGET_EXHAUSTED`; unknown termination → `BUDGET_UNCERTAIN` (terminal) | `execution/test_campaign_budget.py:107`; `execution/test_campaign_recovery.py:41`; `execution/test_g5_settlement_wait.py:156`, `:179` | IN_DOUBT on uncertain compute, no replacement | As is, given an N3 phase; consistent with D3 = B (2026-10-03, no compute relaunch for first production) |
+| Execution service | `execution/service.py:ExecutionService` (`:177`); `dispatch_eligibility` / `part_a_dispatch_eligibility` (`:112-175`); `serve` flock on `service.lock` (`:1282-1283`) | Sole journal and container authority; eligibility fixed at startup per release/profile; one service per root | `execution/test_service.py:10`, `:46`, `:65` | Single-writer protected dispatch | Pattern reusable; eligibility closed at `execution/profile.py:123` (`['N1','N2','PART_A']`); pins refuse N3 (`execution/test_profile.py:166-170`, `execution/test_release.py:245-249`) (G3) |
+| Release / profile | `execution/admission.py:verify_release` (`:48`); `execution/release_schema.py:parse_release` (`:49`); `execution/release.py:install_release` (`:56`) | Signed, installed, byte-verified release and profile; runtime hash per role | `execution/test_release.py:36`, `:71`; `execution/test_profile.py:47`; `execution/test_admission.py:73` | The exact `release_sha256` binding | As is for binding; an N3-capable revision is G3 |
+| Result / seal | main: `seal.py:validate_result_envelope` (`:360`), `seal_e1_pass` (`:1005`), E1 payload `grants_n3: False` (`:994`). T05 (`f237178`, not on main): `execution/campaign_seal.py` intent → signature → receipt, PASS-only, separate qseal principal | Authenticated envelopes; the E1 seal grants no n3 | `test_seal.py:654`; `test_seal_ordering.py:26`, `:46`; T05 `execution/test_campaign_seal.py` (branch only) | n3 binds to the E1 seal digest as predecessor | E1 seal reusable as input; no n3 envelope (G4). T05 is unmerged (`6cf2732`, `f237178` not ancestors of `debc133`) |
+| Attempt journal (Phase 6 `:39`) | `attempt.py:AttemptStore`: `STAGES` (`:22`); `reserve` (`:605`; TB_E1 PASS predecessor `:617-620`); `start_once` (`:675`, → `STARTED_IN_DOUBT`); `void` (`:1003`); `mark_ambiguous` (`:1018`); result verdict RESOLVED on TB_E2_N3 PASS (`:958`); boot fence (`:320-321`) | One reservation per stage bound to its bytes; single start, never reopened; VOID; terminal FAILURE/AMBIGUOUS; boot fence; hash-chained events | `test_attempt.py:82`, `:102`, `:117`, `:139`, `:162`, `:176`, `:259` | One reservation, single start, IN_DOUBT, VOID | Strong candidate with a caveat: it is the Phase 3 controller's journal (consumers `production.py`, `seal.py`, `ops/c1_rail/qualification_cli.py`); `execution/*` does not import it. Which journal carries n3 is G1 |
+| Run lock and journal (T00) | `t00_screen/journal.py:append` (`:225`), `read` (`:263`), `read_lock` (`:287`); `screen_authority.py:validate_screen_authority` (`:519`), `_lock_held` (`:560-575`), `_check_run` (`:578-599`) | Hash-chained fsynced JSONL, torn-tail tolerance, corruption refusal; a separately signed "second door" authority revalidated on every use; parent-held run lock | `test_t00_screen_state.py:532` (row S3 chain), `:1212`, `:1241`; `test_screen_authority.py:483`, `:739` | A pattern for a separately signed final-stage authorization (§12 T2, option b) | Pattern only: the lock is Windows `msvcrt` (`_lock_held` returns False on POSIX, `:563-565`) and the authority is bound to r3c; the service is Linux (`fcntl`, BOOTTIME) |
+| B7 seal tool | `scripts/seal_account_snapshot.py` (`:30-31`; `boundary` `:70-81`) | C1-C10 checks incl. the C2 `EvaluationState` construct; `valid_until` with no holiday inference | `tests/test_seal_account_snapshot.py:194`, `:199`, `:208` | `valid_until` and the snapshot digest | As is (input only) |
+
+### 2b. Final-stage gaps
+
+| # | Gap | Owner | Evidence it needs |
+|---|---|---|---|
+| G1 | **Journal of record for the sole n3.** `AttemptStore.TB_E2_N3` needs TB_E1 PASS in the same journal (`attempt.py:617-620`), but production E1 runs in `CampaignStore`. An N3 family in `CampaignStore` would instead need a predecessor bound to the E1 seal receipt | Qualification design owner (design `:154-158`: "the same protected launch/capture machinery"), then T11 | A written ruling; a test that an n3 reservation without a matching E1 seal refuses |
+| G2 | No N3 checkpoint family, work phase or no-redraw entry (`execution/campaign_store.py:300-303`, `:190-197`, `:3054`; `execution/campaign_funding.py:26-46`) | T11, following the S4/S5 widening precedent (`/v7`, `/v8`) | Snapshot widening, checkpoint key and progression rule; tests modelled on `execution/test_checkpoint_widening.py:174` and `execution/test_campaign_part_a.py`; a Linux record |
+| G3 | Dispatch refuses N3 (`execution/profile.py:123`; pins `execution/test_profile.py:166-170`, `execution/test_release.py:245-249`); the PART_A wall ceiling is 300 s per work (ledger `:1825`, `:1832`) against about 8-11 h of n3 compute (§9) | T11 (release/profile revision); B_n3 freeze (§12 T3) | A release/profile revision with N3 limits from the measured production envelope; the pins changed by their owner |
+| G4 | No n3 result envelope or retained-evidence adjudicator: `result_adjudication.py:339-341` refuses N3; G5 handles only N1/N2/PART_A (`execution/g5.py:407`, `:506`); `seal.py:994` grants no n3 | T05 family owner (result/seal), then TB-E2 | An n3 result schema bound to FBR, S, release and the E1 seal (ADR `:99`, `:120`); an adapter over the unchanged `adjudicate_stage`; PASS, FAILURE and partial/corrupt-output cases (Phase 6 `:83`) |
+| G5 | n3's initial state must be S's (prereg `:103`; ADR `:97`), but compute reads `contract.initial_state` (`execution/compute.py:13-16`; `production.py:58-61`) | TB-E2 / qualification contract owner | A seal → `EvaluationState` binding with the seal digest in the result; a mismatched or expired seal refuses at dispatch |
+| G6 | B7 `valid_until` and no-activity are not enforced at n3 start or at arm: C10's consumer obligation is not enforceable by the tool (seal contract `:46`); `ops/c1_rail/deployment_go.py` is absent at the base | TB-E2 (dispatch); TB-I3 (arm and activation gate; ADR `:105`) | Refusal tests for a stale seal and for intervening fill/order/adjustment at each consumer |
+| G7 | No EF1/FBR binding at an n3 reservation (`ops/c1_rail/policy_fingerprint.py` exists; no qualification consumer binds it to n3) | TB-E2 / T16 | A drift-refusal test: differing release, EF, seal digest or depth/namespace |
+| G8 | Unmeasured timing terms: C_adjudication, C_GO, C_reseal_build_restart, activation acknowledgment, operator availability, the seal's offset from the close | Phase 6 WP2 (`:58-68`; T17/H10 rehearsal); T13 for attended operations | Measurements on the actual build, deploy and read-back path |
+| G9 | n3 compute duration at production depth on production hardware: I8 is a single-path figure not measured on the Linux service | T10 (representative full-workload measurement) / T11 (realistic measured resource envelope) | The N2 + Part B joint batch at 970 has the same path count and kernel, so its production measurement is the n3 compute term; parallelism (§12 T5) needs an owner ruling |
 
 ## 3. Method
 
-- Tests first; each §4 case fails before the model exists and passes after it, with launcher records.
-- Canonical owners only: the statistical criteria (prereg `:49`) and adjudication (`adjudication.py`, `test_adjudication.py:27`) are consumed, never restated or changed.
-- The T02 interfaces are reused through their public methods in tests; any needed change to them is a listed seam.
+- Read only, at the frozen SHA. Canonical owners are consumed, never restated or changed: the statistical criteria (prereg `:49`) and adjudication (`adjudication.py`, `test_adjudication.py:21-27`).
+- Any needed change to an existing interface is a gap routed to its §2b owner, never applied here (the T05 precedent, ledger `:661-663`).
 
 ## 4. Acceptance checks (falsifier-first)
 
-**H:** an n3 authorization model bound to B7, release, frozen depth/namespace and the E1 decision refuses every case below, while the existing E1-side n3 refusals and the N3 contract shape stay unchanged. **Reject if** a case cannot be made to fail first, any listed existing pin changes outcome, or the diff touches an existing file outside `docs/notes/`. **Revert trigger:** any existing module or test byte changes.
+**H:** at the frozen SHA, every §2a cite resolves and states what the row says, and every verification case below is either refused by a cited existing test or names a §2b gap and owner. **Reject if** a cite fails to resolve, a row overstates what the code or test does, or a case is marked covered without a refusing test. **Revert trigger:** a cited pin changes outcome or moves before freeze; re-pin and re-read.
 
-Cases (the checklist T12 *Verification* line, `:261`, one test or more each):
-1. **Stale B7:** an authorization at or after `valid_until` refuses.
-2. **Intervening activity:** a fill, order or adjustment between the seal and the arm voids the seal and the n3 result and stops for the operator, with no replacement draw (seal C10; ADR `:154`).
-3. **Identity drift:** a differing release, execution fingerprint, seal digest or depth/namespace refuses.
-4. **Uncertain dispatch:** a lost response ends IN_DOUBT; a second draw for the same authorization refuses.
-5. **Expiry/VOID:** an expired or voided authorization refuses; a failed n3 is terminal (prereg `:59`).
-6. **Timing margin:** the envelope check refuses when the modelled duration plus the declared reserve exceeds the window.
-7. **Separation:** an n3 authorization refuses N1/N2/PART_B/PART_A requests and Part A reruns; the E1-side refusals (`compute.py:20-21`, `production.py:80-81`) and `test_production.py:38` pass unchanged.
-8. **Contract shape:** `contract.py:721-724` (namespace `n3`, `included_in_e1_seal` false) passes unchanged in `test_contract.py`.
+Coverage matrix (checklist T12 *Verification*, `:263`):
 
-Runs, each with its launcher record: the acceptance set; `tests/ops/qualification`; `python -I scripts/fp.py check`; `git diff --check`; `git diff --name-only origin/main...HEAD` (new files only).
+| # | Case | Existing test that refuses it | Gap → owner |
+|---|---|---|---|
+| 1 | Stale B7: an n3 start or arm at or after `valid_until` | Sealing at or after the boundary refuses: `tests/test_seal_account_snapshot.py:194`, `:208`. No consumer refuses a stale seal | G6 → TB-E2 (n3 start), TB-I3 (arm) |
+| 2 | Intervening activity between seal and arm voids the seal and the n3 result and stops for the operator | None | G6 → TB-E2, TB-I3 |
+| 3 | Identity drift: release, execution fingerprint, seal digest or depth/namespace | Partial: changed reservation binding conflicts (`test_attempt.py:102`); release key aliasing refuses (`execution/test_admission.py:73`); frozen depths and budgets (`test_contract.py:413`) | G7 → TB-E2 / T16 (EF, FBR, seal digest); G5 → TB-E2 (seal-bound initial state) |
+| 4 | Uncertain dispatch ends IN_DOUBT; a second draw refuses | Legacy journal: `test_attempt.py:82`, `:176`. Protected path for E1 phases: `execution/test_campaign_recovery.py:41`, `execution/test_service.py:65`, `execution/test_campaign_n1.py:525` | G1 → design owner (which journal); G2 → T11 (N3 phase in the no-redraw tuple) |
+| 5 | Expiry/VOID refuses; a failed n3 is terminal (prereg `:59`) | Failure terminal and VOID: `test_attempt.py:139`, `:162`; VOID ordering: `execution/test_atomic_assessment.py:108`, `test_seal_ordering.py:26` | Authorization expiry: G6 → TB-E2 |
+| 6 | Timing margin: modelled duration plus reserve exceeds the window | None (arithmetic only, §9) | G8 → Phase 6 WP2 / T13; G9 → T10/T11; reserve → §12 T3 |
+| 7 | Separation: E1 cannot request n3, n3 cannot request E1 stages or rerun Part A | E1 side: `test_production.py:33-38`; `execution/test_profile.py:166-170`; `execution/test_release.py:245-249`; Part A refuses n3: `test_part_a.py:80`; n3 needs E1 PASS: `test_attempt.py:117` | n3-side refusal of E1 requests: no n3 authority exists yet → G1/G2 → T11 |
+| 8 | Contract shape: N3 namespace `n3`, `included_in_e1_seal` false | `test_contract.py:413` with fixture `:124`; validator `contract.py:721-724` | None |
 
 ## 5. Forbidden
 
-- Editing any existing file: modules, tests, profiles, releases, `WORK_PHASES`, the contract, the T00 P7 closure or the 68-module measured closure.
+- Writing, creating or deleting any file; branches, pushes, PRs, merges, CI or Linux dispatch.
 - Changing or restating a statistical criterion, depth (970 is proposed and OWED-BY TB-F1, prereg `:45`), namespace or stream.
-- Any real n3, any real B7 seal, any account, route or private-root access.
-- Building the deployment-GO validator or interlock (`ops/c1_rail/deployment_go.py`, owned by TB-I3; ADR `:105`).
-- Linux runs, CI changes, PRs, merges, pushes to `main`.
+- Any real n3, real B7 seal, account, route or private-root access.
+- Building or specifying code for the deployment-GO validator or interlock (`ops/c1_rail/deployment_go.py`, owned by TB-I3; ADR `:105`), or for any §2b gap.
 - `core/`, `lab/`, Pine.
 
 ## 6. Return (status taxonomy)
 
-Return DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. The coordinator's verdict is RESOLVED or FALSIFIED (named items). The return holds: branch and head SHA; the name list (new files only); the §0.3 interface map with its seams; per case, the fail-first and pass record IDs; the note's envelope table with each figure's citation or ASSUMPTION label; the provisional D-GO reading (§9); concerns.
+Return DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. The coordinator's verdict is RESOLVED or FALSIFIED (named items). The return holds: the frozen SHA read; §2a with every drifted cite corrected or flagged; §2b with each owner's acknowledgement or NEEDS_CONTEXT; §4's matrix as verified; §9's envelope table with each figure's citation or ASSUMPTION label; the provisional D-GO reading; concerns.
 
 ## 7. Stop conditions (return to the coordinator; do not work around)
 
-- The §0.3 interface finding: return it, then wait for the coordinator before code.
-- Any case needs an existing file changed, or a seam applied.
 - A statistical owner, the contract or the seal contract disagrees with this card.
+- A §2a row cannot be verified as stated at the frozen SHA.
 - Two failed corrections of the same issue (AGENTS.md).
 - **Operator review-round rule (2026-10-02):** after more than three review rounds that each return two or more P1/P2 findings, stop folding; the coordinator adjudicates a rewrite or a narrower scope.
-- **Single writer:** only the executor writes `claude/t12-n3-prep`. A second writer appearing is a stop.
 
 ## 8. Out of scope and decision unlocked
 
-**Out of scope:** dispatch wiring into the service, profiles or releases; integrated acceptance (after T05/T06); the timed exact-candidate rehearsal (T17/H10); real route or report timing (T07/T08 facts); the deployment-GO module.
+**Out of scope:** implementing any §2b gap; dispatch wiring into the service, profiles or releases; integrated acceptance (after T05/T06); the timed exact-candidate rehearsal (T17/H10; checklist `:264`); real route or report timing (T07/T08 facts); the deployment-GO module.
 
-**Unlocked:** an accepted preparation return lets the coordinator (a) put the seams to their owners before F1 and (b) read the D-GO trigger against a cited envelope.
+**Unlocked:** an accepted return lets the coordinator (a) put each §2b gap to its owner before F1 and (b) read the D-GO trigger against a cited envelope.
 
-## 9. Launch-timing envelope: starting computation (the note reproduces and extends it)
+## 9. Launch-timing envelope: starting computation (the return reproduces and extends it)
 
 **Cited inputs.**
 
@@ -136,10 +162,12 @@ Return DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. The coordinator's ver
 | I5 | Activation | the initial arm is effectively active after restart before expiry | Phase 6 `:19` |
 | I6 | GO | GO `valid_until` = the seal's; one artifact-only redeploy between n3 and the arm inside the window | ADR `:99`, `:183` |
 | I7 | n3 size | 3 × 970 = 2,910 paths (970 proposed, OWED-BY TB-F1) | compute-depth `:62`; prereg `:45` |
-| I8 | Per-path time | 9.489 / 10.090 / 10.352 s (min/median/max, one 500-session path) | compute-depth `:81` |
+| I8 | Per-path time | 9.489 / 10.090 / 10.352 s (min/median/max, one 500-session path); a single-path figure, not measured on the Linux service | compute-depth `:81` |
 | I9 | n3 illustration | 8.16 h; component proxy 10.98 h; "illustrations, not approved budgets" | compute-depth `:93`, `:138`, `:99` |
 | I10 | Cost formula, reserve | `C_n3 = 970*(tFULL+tH1+tH2) + C_adjudication + C_GO + C_reseal_build_restart`; B_n3 in elapsed seconds, proposed 2× reserve | compute-depth `:179`, `:170-171` |
 | I11 | Holidays | the seal tool infers no holiday hours | `scripts/seal_account_snapshot.py:71` |
+| I12 | Current per-work wall ceiling | 300 s (PART_A, TEST_ONLY profile) | ledger `:1825`, `:1832` |
+| I13 | Compute-shape equivalence | the N2 + Part B joint batch is FULL at the N2 depth and H1/H2 at the Part B depth through the same `_run_stage` (`execution/compute.py:19-26`, `:57-60`); at n2 = n3 = 970 it is the n3 compute shape | ASSUMPTION A4: n2 = n3 = 970 (OWED-BY TB-F1) |
 
 **Derived (arithmetic on the inputs).**
 - Window from the close: weekday ≤ 18:00 − 17:00 = **1 h**; weekend ≤ Fri 17:00 → Sun 18:00 = **49 h** (I2, I3). The usable span starts at the seal, not the close.
@@ -147,42 +175,62 @@ Return DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED. The coordinator's ver
 - With the proposed 2× reserve (I10, not approved): 16.31 h (median) to 21.97 h (proxy).
 - **Weekday:** 8.16 h > 1 h. It fits only with at least an 8.2× speed-up of n3 alone (16.3× with the reserve), and even then leaves nothing for the other terms. ASSUMPTION A1: n3 is single-process at I8's rate; no parallel measurement exists.
 - **Weekend:** 49 h − n3 leaves **40.84 h** (median, no reserve), **32.69 h** (median, 2×) or **27.03 h** (proxy, 2×), less the seal's own offset from the close, for C_adjudication + C_GO + C_reseal_build_restart, the restart and activation, and operator availability.
+- **Profile:** n3 is about 100× the current per-work wall ceiling (I12), so production limits need a profile revision (G3).
 
-**Unmeasured (labelled; the note must not fill them by guess, Phase 6 `:64`):** C_adjudication, C_GO, C_reseal_build_restart (image build, deploy, host start, read-back), activation acknowledgment, operator availability, the seal's offset from the close. The only related measurement is the qualification worker's launch overhead, 4.848 s (ledger `:1821`), which is not the listener's restart.
+**Unmeasured (labelled; the return must not fill them by guess, Phase 6 `:64`):** C_adjudication, C_GO, C_reseal_build_restart (image build, deploy, host start, read-back), activation acknowledgment, operator availability, the seal's offset from the close (G8). The only related measurement is the qualification worker's launch allowance, 4.848 s (ledger `:1833`), which is not the listener's restart. The n3 compute term itself is owed by T10/T11's production measurement (G9, I13).
 
-**Provisional reading (for the coordinator, not a finding):** on these inputs the reseal cannot fit a weekday boundary, and can fit a Friday→Sunday boundary only if the unmeasured terms total less than about 27–41 h after the seal. The D-GO trigger (checklist `:594`) is therefore not met by this computation, but stays open until T12 measures the unmeasured terms. Restricting launch to weekend boundaries is a scheduling consequence for the operator (T6). ASSUMPTION A2: no holiday-extended boundary (I11). ASSUMPTION A3: the weekly account-preservation trade (STATE `:64-66`) is not placed between the seal and the arm, since I4 forbids any order in that span.
+**Provisional reading (for the coordinator, not a finding):** on these inputs the reseal cannot fit a weekday boundary, and can fit a Friday→Sunday boundary only if the unmeasured terms total less than about 27–41 h after the seal. The D-GO trigger (checklist `:599`) is therefore not met by this computation, but stays open until Phase 6 WP2 measures G8. Restricting launch to weekend boundaries is a scheduling consequence for the operator (T6). ASSUMPTION A2: no holiday-extended boundary (I11). ASSUMPTION A3: the weekly account-preservation trade (STATE `:67`) is not placed between the seal and the arm, since I4 forbids any order in that span.
 
 ## 10. Audit hooks (runnable)
 
 ```bash
-# Card form and authority. Expected: RESULT: well-formed; exit 0.
+# Card form and authority. Expected: RESULT: well-formed; 0 violations; 0 failing.
 python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-10-02-t12-n3-preparation-DRAFT.md
-python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-10-02-t12-n3-preparation-DRAFT.md
-# Premise (Git Bash), in the executor worktree.
+python -I scripts/fp.py python scripts/check_handoff_authority.py --all
+python -I scripts/fp.py python scripts/check_handoff_brief_form.py
+# Premise (Git Bash).
 test ! -e .env && echo "no .env" || echo "FAIL: .env present"
+git rev-parse HEAD   # expect the frozen SHA
+# Anchor spot-checks (each must print the named line).
 grep -n "n3 requires its own authorization" ops/c1_rail/qualification/execution/compute.py ops/c1_rail/qualification/production.py
 grep -n "dispatch_checkpoints=\['N1', 'N2', 'PART_A'\]" ops/c1_rail/qualification/execution/profile.py
+grep -n 'STAGES = ("TB_E1", "TB_E2_N3")' ops/c1_rail/qualification/attempt.py
+grep -n "if set(family) - {'N1', 'N2', 'PART_A'}" ops/c1_rail/qualification/execution/campaign_store.py
+grep -n "compute phase already reserved; no replacement draws" ops/c1_rail/qualification/execution/campaign_store.py
+grep -n "order = ('N1', 'N2', 'PART_B', 'PART_A')" ops/c1_rail/qualification/result_adjudication.py
+grep -n '"grants_n3": False' ops/c1_rail/qualification/seal.py
+grep -n "stage not in ('n1','n2','n3')" ops/c1_rail/qualification/runner.py
 # Envelope arithmetic (reproduce I7 x I8).
 python -c "print(2910*10.090/3600, 2910*10.352/3600, 49-2910*10.090/3600)"
-# Scope at return: only new files.
-git diff --name-status origin/main...HEAD
+# Scope at return: nothing written.
+git status --porcelain
 ```
 
 ## 11. Pre-mortem (README rule)
 
-- **Loop cost:** one Windows build loop; no Linux.
-- **Decisions the executor will hit:** T1 (module or note-only), T2 (dispatch seam shape). Ruled at freeze.
-- **What makes it moot:** a change to n3's statistical design (TB-F1) or to the seal contract's boundary rule.
-- **Measurements the return fills in:** the interface map, the per-case records and the cited envelope table.
+- **Loop cost:** reading only; no build loop, no Linux.
+- **Decisions the executor will hit:** none of its own; §12 is ruled at freeze, and G1-G9 are routed, not decided.
+- **What makes it moot:** a change to n3's statistical design (TB-F1), to the seal contract's boundary rule, or a G1 ruling that moves n3 to a journal not mapped in §2a.
+- **Measurements the return fills in:** none new; it re-verifies §2a and reproduces §9.
 
 ## 12. Open decisions (for the coordinator at freeze)
 
-- **T1 Form.** A new model module plus tests (this draft), or the interface note and envelope only.
-- **T2 Dispatch seam.** n3 through the protected service (a new `N3` phase, profile and release revision) or a separate final-stage authorization. Either is a seam for the owners, not this card.
+- **T1 Form.** Decided by this narrowing, if accepted: interface map, gaps and envelope only.
+- **T2 Dispatch seam.** n3 through the protected service (an N3 phase, profile and release revision; G2/G3) or a separate final-stage authorization (the T00 second-door pattern, §2a). Either is a seam for the owners, not this card.
 - **T3 B_n3 and reserve.** The 2× reserve is a proposal (compute-depth `:170-171`); who freezes B_n3.
-- **T4 Depth.** 970 stays OWED-BY TB-F1; the model takes depth from the contract only.
+- **T4 Depth.** 970 stays OWED-BY TB-F1; the contract supplies depth only.
 - **T5 Parallelism.** Whether n3 may be parallelized, which decides the weekday case.
 - **T6 Launch window.** Whether launch is restricted to Friday→Sunday boundaries (an operator scheduling decision).
 - **T7 Holidays.** Whether a holiday-extended boundary is ever usable (the seal tool says no today).
 - **T8 Fit threshold.** The margin at which "the reseal fits B7" is read, so the D-GO trigger is decidable.
-- **T9 Executor.** Remote lane J (branch-only) or another worker; the card is lane-neutral.
+- **T9 Executor.** Any Claude reader; the card writes nothing.
+- **T10 Journal of record (G1).** The legacy `AttemptStore` `TB_E2_N3` stage or a `CampaignStore` N3 family bound to the E1 seal.
+
+## 13. UNVERIFIED
+
+- Whether any production path consumes `StageSpec.rng_namespace` for N3, or whether the stage label alone keeps the n3 stream disjoint. The code read shows the label only (`regime.py:22-23`; `seed_identity.py:32`).
+- Whether the `CampaignStore` budget already charges `n3_paths` against the E1 campaign (`n3_paths` appears in `execution/test_campaign_budget.py:39`).
+- Whether the protected service could legally run one N3 phase as several parallel works (T5).
+- Whether n2 = n3 = 970 will be ratified (OWED-BY TB-F1); I13's timing equivalence depends on it.
+- T05's final n3-relevant seal surface: read on `codex/h9-t05-integration` only; it may change at R1.
+- Which journal the qualification design owner intends (G1). Design `:154` points to the protected machinery, but `AttemptStore.TB_E2_N3` is still live and tested on main.
