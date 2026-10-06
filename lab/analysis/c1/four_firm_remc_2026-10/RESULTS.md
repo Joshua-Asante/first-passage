@@ -60,6 +60,12 @@ AMBIGUOUS needs ≥ 2 tiers at ≤ 5.0%; there are 0, as predicted in I-20. Refe
   - The repaired `derive_verdict` was run over the **existing** reports only; the Monte Carlo was not re-run. Its output went to a separate file, `verdict_rederived.json`.
   - **Result: identical.** The verdict, clears, INSUFFICIENT reasons, reference busts and AMBIGUOUS flag all match the original. The digests of `prep.json`, both reports and `verdict.json` are unchanged by the re-derivation.
   - The re-hash fix affects the pre-run gate only. This run's start re-hash had already matched 20/20.
+- **Second correction (#715 Codex follow-up 5433745052, r4199724903):**
+  - The executor was repaired at `fc96f0f`. Future score stages write a depth-and-guard record bound to the report's SHA-256. `derive_verdict` requires that record, or, for a report without one, a **rate-lattice proof**: the LCM of every rate's reduced denominator must be a multiple of 10,000 sims × 3 seeds.
+  - Re-derived again over the **existing** reports, with no Monte Carlo, into `verdict_rederived_2.json`. The run of record has no depth record, so depth went through the lattice proof. The LCM is 30,000 for both the candidate and the reference report, exactly 10,000 × 3.
+  - **Result: identical** on every field. The run-of-record digests are unchanged.
+- **Guard evidence for the run of record:** both reports carry `gate_grade = true` and empty `gate_grade_reasons`. In `score_candidate`, the non-vacuity guard runs on every tier that reaches G4 (all four here, none G2-killed), and any tier that fails it adds a reason. So the guard passed on every tier.
+- **Residual (horizon):** the run of record has no recorded horizon field. The horizon is established only by code provenance: at `81e7dcb` both score stages call `score_candidate` with no horizon override, so G4 uses the v2 loader's horizon of 1500. This cannot change the verdict, because the minimum candidate bust across every run is 25.28% against the 5.0% ceiling.
 
 ## Private artifacts (gitignored; cited by SHA-256)
 
@@ -72,5 +78,6 @@ Root: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/fo
 | `reference_report.json` | `a8e9fd665a6f21d0620b1903d4175c1276907331bb126ff3045a9bbf5fbd333f` |
 | `verdict.json` | `5a9b9eaf437100fb7e8a54bf5af0fefbbe12eeb3aa6af0c98720a271787adc28` |
 | `verdict_rederived.json` (repaired executor, re-derivation only) | `a21a2ec7e42b97148e4ce857430c38cd230eecc7c31ce7dcb6f83341626b7216` |
+| `verdict_rederived_2.json` (executor `fc96f0f`, lattice depth proof, re-derivation only) | `4230bec45de41dffb7c54f4b7913ac3a15994b22767f17d6d7c8ed120bd4f98b` |
 
 The re-hash at start was 20/20 against the prereg §1a / I-20 pins.
