@@ -35,6 +35,9 @@ import pytest
 from test_source_contract import NOW, build_source_case, refused
 
 OPS = Path(__file__).resolve().parents[3] / 'ops'
+REPO_ROOT = OPS.parent
+# P-F card note item 8: the one file scanned outside ops/, its owners named from the repository root.
+EXTRA_SCANNED = ('scripts/t00_screen_label_check.py',)
 
 CAPABILITY_OWNER = 'c1_rail/qualification/production_source.py'
 CAPABILITY_CALLS = frozenset({'replay', 'replay_bracket', 'proof'})
@@ -91,6 +94,13 @@ ALLOWLIST = {
         'The screen capability itself (row K5): engines are built only after the source-only check, '
         'require_validated_screen_authority, require_open_screen_epoch (stat guard), _verify_identity and the '
         'retained-panel path check; results are wrapped unsealed in ScreenBracket, never qualification.',
+    # --- the screen worker, the only callers of the two entry points (card §3.2, P-F note item 3) ---
+    ('c1_rail/qualification/t00_screen/worker.py:open_epoch', 'screen_epoch'):
+        'The only screen_epoch caller: runs in a screen-bootstrap worker bound to a ledgered run (rows K3, K4); '
+        'screen_epoch itself gates the source-only receipt, the validated authority and the full integrity check.',
+    ('c1_rail/qualification/t00_screen/worker.py:bracket', 'screen_bracket'):
+        'The only screen_bracket caller (candidate pass, probe, path keys, verify): the worker checks both '
+        'lifecycles and the stat guard before KEY_START, and screen_bracket gates every call (rows K1-K6).',
     # --- `.contract` reads on ProductionExecutor (self.contract is the executor's validated contract slot) ---
     ('c1_rail/qualification/production.py:ProductionExecutor.initial_state', 'contract'):
         'Reads the executor\'s own contract slot after self._checked_domain(); not a ProductionSource receiver.',
@@ -178,27 +188,35 @@ def _capability(node):
     return None
 
 
-def capability_uses(root: Path):
-    """Every flagged node under ``root``, as sorted ``(qualified owner, capability, line)`` triples."""
+def _file_uses(path: Path, relative: str):
+    tree = ast.parse(path.read_text(encoding='utf-8'), filename=str(path))
+    parents = {child: node for node in ast.walk(tree) for child in ast.iter_child_nodes(node)}
+    return [(f'{relative}:{_owner(node, parents)}', _capability(node), node.lineno)
+            for node in ast.walk(tree) if _capability(node)]
+
+
+def capability_uses(root: Path, *, repo_root: Path | None = None):
+    """Every flagged node under ``root``, plus ``EXTRA_SCANNED`` under ``repo_root`` (named from the
+    repository root), as sorted ``(qualified owner, capability, line)`` triples."""
     found = []
     for path in sorted(Path(root).rglob('*.py')):
         relative = path.relative_to(root).as_posix()
         if relative == CAPABILITY_OWNER:
             continue
-        tree = ast.parse(path.read_text(encoding='utf-8'), filename=str(path))
-        parents = {child: node for node in ast.walk(tree) for child in ast.iter_child_nodes(node)}
-        found.extend((f'{relative}:{_owner(node, parents)}', _capability(node), node.lineno)
-                     for node in ast.walk(tree) if _capability(node))
+        found.extend(_file_uses(path, relative))
+    for relative in EXTRA_SCANNED if repo_root is not None else ():
+        if (Path(repo_root) / relative).is_file():
+            found.extend(_file_uses(Path(repo_root) / relative, relative))
     return sorted(found)
 
 
-def unreviewed_uses(root: Path, allowlist):
-    return [(name, capability, line) for name, capability, line in capability_uses(root)
+def unreviewed_uses(root: Path, allowlist, *, repo_root: Path | None = None):
+    return [(name, capability, line) for name, capability, line in capability_uses(root, repo_root=repo_root)
             if (name, capability) not in allowlist]
 
 
 def test_every_production_source_consumer_is_allowlisted():  # A10b
-    assert unreviewed_uses(OPS, ALLOWLIST) == []
+    assert unreviewed_uses(OPS, ALLOWLIST, repo_root=REPO_ROOT) == []
 
 
 def _defined_owners(path: Path):
@@ -213,11 +231,12 @@ def _defined_owners(path: Path):
 
 
 def test_allowlist_has_no_stale_entries():  # A10b meta
-    flagged = {(name, capability) for name, capability, _ in capability_uses(OPS)}
+    flagged = {(name, capability) for name, capability, _ in capability_uses(OPS, repo_root=REPO_ROOT)}
     for (name, capability), reason in ALLOWLIST.items():
         relative, owner = name.split(':', 1)
-        assert (OPS / relative).is_file(), f'allowlisted module is gone: {name}'
-        assert owner in _defined_owners(OPS / relative), f'allowlisted owner is gone: {name}'
+        base = REPO_ROOT if relative in EXTRA_SCANNED else OPS
+        assert (base / relative).is_file(), f'allowlisted module is gone: {name}'
+        assert owner in _defined_owners(base / relative), f'allowlisted owner is gone: {name}'
         assert (name, capability) in flagged, f'allowlisted owner no longer uses {capability}: {name}'
         assert reason.strip(), f'allowlist entry needs a reason: {name}'
 
@@ -290,3 +309,17 @@ def test_K9(tmp_path, name):
     reviewed = {(owner, 'replay_bracket'): 'reviewed'}
     assert unreviewed_uses(tmp_path, reviewed) == [(owner, name, 3)]
     assert unreviewed_uses(tmp_path, {**reviewed, (owner, name): 'reviewed'}) == []
+
+
+def test_label_script_is_scanned(tmp_path):  # P-F card note item 8
+    """The label script is in the scan, its owners named from the repository root: a planted
+    capability use in it is a finding."""
+    relative = EXTRA_SCANNED[0]
+    planted = tmp_path / relative
+    planted.parent.mkdir(parents=True)
+    shutil.copyfile(REPO_ROOT / relative, planted)
+    with planted.open('a', encoding='utf-8') as handle:
+        handle.write('\n\ndef leak(source, path):\n    return source.screen_bracket(path)\n')
+    (tmp_path / 'ops').mkdir()
+    line = len(planted.read_text(encoding='utf-8').splitlines())
+    assert unreviewed_uses(tmp_path / 'ops', {}, repo_root=tmp_path) == [(f'{relative}:leak', 'screen_bracket', line)]
