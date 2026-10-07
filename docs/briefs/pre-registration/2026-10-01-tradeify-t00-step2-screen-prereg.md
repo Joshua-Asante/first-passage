@@ -210,7 +210,11 @@ Whatever is chosen should be recorded at the D-feed owner, not here, before step
 
 ## §6 — Ratification (operator; blank until ruled)
 
-The §3 values are recorded in §3's *Ratified value* column.
+The §3 values are recorded once, in the `t00-step2-values/v1` block below: one line equal to `canonical_json_bytes(parameters)` ([design](../../superpowers/specs/2026-10-02-t00-screen-authority-design.md) §3, row A8; [build card](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md) §8 K-4 ruling). Each active §3 *Ratified value* cell names only its keys.
+
+```t00-step2-values/v1
+{"a5_rule":"T00_A5/v1","block":{"family":"JOINT_FLAT_BOTH_RUNS","length_sessions":5},"budget":{"basis":"design 5.4 at option a upper (card #634 8, Joshua 2026-10-05): path = c x 3N, c = 320 s, 3N = 3006; overhead = (b + 2i) x (W x S + R) + p, b = 173 s, i = 71.4 s, W = 8, S = 3, R = 8, p = 1100 s, rounded up","overhead_cpu_seconds":11300,"path_cpu_seconds":961920},"deadline_only_is_bust":true,"depth_per_root":{"FULL":334,"H1":334,"H2":334},"expressions":"DECLARED_BOOK","horizon_sessions":1500,"initial_state":{"class":"PRISTINE","current_equity":"100000","historical_eod_peak":"100000","original_basis":"100000","prior_max_day_profit":"0","prior_trade_days":0},"median_rule":"LOWER_NEAREST_RANK_INF_INCLUDED","pass_floor_halves":"REPORTED","path_start_date":"2022-09-01","rng":{"probe_root":"probe","roots":["42","123","2026"],"tag":"t00-screen-rng/v1"},"run1_diagnostic":"WAIVED","scenarios":["S0"]}
+```
 
 - **Ruling:** —
 - **OD-1 / OD-2:** Operator ruling 2026-10-02 (sitting 2) (Joshua, "all recommended", 2026-10-03T01:42Z). **OD-1:** reading (c), label-sensitive, recorded at its owners, the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) and [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken). **OD-2: the declared book.** A1 stands as drafted, and T00 screens the four declared expressions. A GO-evidence result speaks to them only. Evidence on the route-native editions comes from their own pre-registration §6 requalification, not from T00.
@@ -238,9 +242,11 @@ rg -n "'kernel_outcome'|own_flat_deadline" ops/c1_rail/qualification/runner.py
 rg -n "RESOLVED|a526b50fa75e6845|48bdc10460441a57" docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md
 
 # Ratification completeness: run after the Status line is changed. Success is the single line "OK".
-# Any other output names an unfilled or missing §6 field, an unfilled §3 "Ratified value" cell (items 1-5, 7, 8), or a Status line that is not RATIFIED <date>.
+# Any other output names an unfilled or missing §6 field, an unfilled §3 "Ratified value" cell (items 1-5, 7, 8), a missing or repeated §6 values block, or a Status line that is not RATIFIED <date>.
+# Byte equality of the block with the signed parameters is checked by screen_authority._check_prereg (row A8), not here.
 f=docs/briefs/pre-registration/2026-10-01-tradeify-t00-step2-screen-prereg.md
 { for k in 'Ruling' 'OD-1 / OD-2' 'Ratifying commit SHA'; do grep -qE "^- [*][*]$k:[*][*] +[^ —]" "$f" || echo "§6 $k: unfilled"; done
   for n in 1 2 3 4 5 7 8; do grep -qE "^[|] $n [|].*[|] +[^ |—][^|]*[|][[:space:]]*\$" "$f" || echo "§3 item $n: Ratified value unfilled"; done
+  [ "$(awk '/^## §6/{s=1;next} /^## /{s=0} s' "$f" | grep -c '^```t00-step2-values/v1$')" = 1 ] || echo '§6 values block: missing or repeated'
   grep -qE '^[*][*]Status:[*][*] `RATIFIED [0-9]{4}-[0-9]{2}-[0-9]{2}' "$f" || echo 'Status line is not RATIFIED <date>'; } | grep . || echo OK
 ```
