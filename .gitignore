@@ -304,3 +304,7 @@ workspace_outputs/
 /tmp-*.md
 /tmp-*.py
 /.zcodeignore
+
+# T00 screen private root = the primary checkout (design §3.2, row A6): hashes-only P7 acceptance and the step-3 run root.
+/p7_acceptance.json
+/t00-step3/
