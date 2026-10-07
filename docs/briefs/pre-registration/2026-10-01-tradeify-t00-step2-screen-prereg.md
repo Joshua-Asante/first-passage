@@ -218,7 +218,7 @@ The §3 values are recorded once, in the `t00-step2-values/v1` block below: one 
 
 - **Ruling:** Joshua, 2026-10-07, directly to coordinator (4), the T00 card owner: "ratify 581". This ratifies §1–§5 as written and the §6 `t00-step2-values/v1` block (SHA-256 `3432eb8107fd2b840766672b48449a262b91ee56efe9a234f5ad578de04978c2`). The block includes his 2026-10-07 rulings on §3 items 2, 3 and 4 ([#720 comment 6030116859](https://github.com/Joshua-Asante/first-passage/pull/720#issuecomment-6030116859)). The A5/A6 bytes are unchanged (A5 `a8f6f25e…391b`, A6 `b3bdc77b…17d9`).
 - **OD-1 / OD-2:** Operator ruling 2026-10-02 (sitting 2) (Joshua, "all recommended", 2026-10-03T01:42Z). **OD-1:** reading (c), label-sensitive, recorded at its owners, the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) and [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken). **OD-2: the declared book.** A1 stands as drafted, and T00 screens the four declared expressions. A GO-evidence result speaks to them only. Evidence on the route-native editions comes from their own pre-registration §6 requalification, not from T00.
-- **Ratifying commit SHA:** —
+- **Ratifying commit SHA:** `40c650cbbfd98f11eeb749922087d14602b8aace`
 
 ---
 
