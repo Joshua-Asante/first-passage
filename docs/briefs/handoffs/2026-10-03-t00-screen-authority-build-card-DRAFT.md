@@ -491,6 +491,12 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - **Approval windows** (§12 item 10): each fresh r3c and screen approval has `expires_at` at least 72 h after the planned start. Option a's upper wall time is about 43 h (§6.4), which leaves room for `verify` and pauses. r3c-a2 expires 2026-10-09T01:52:19Z, so the approvals must be fresh.
 - ~~Still open outside this card: #581 OD-1/OD-2 direct confirmation (design §12 item 3).~~ *2026-10-03:* confirmed directly by Joshua (sheet 4 item 3, "all recommended"; #629 approval comment 5965049542). This card merged as #634 at `cdbf597b2ef2c7b4e32ae4af476e3a392f75ca79`.
 
+- **Step 12 on a Windows VM (RULED: Joshua, 2026-10-07, directly to coordinator (4), the card owner).** These answer the questions coordinator (4) put to him after his cloud-host ruling ([campaign §60 addendum 2026-10-07](../programs/2026-09-03-seven-strategy-select-campaign-state.md)):
+  - **Route A, mirror.** The H clone (`core.autocrlf=false`, clean), `C:\Program Files\Python313`, the operations venv and the private inputs are placed byte- and path-identical on the VM. The signed screen authority (`241708a1…`, approval `7310fc27…`) and the r3c source approval (`2cc7195e…`) are kept. VM `preflight` is the gate.
+  - **One no-write P7 reproduction on the VM before `run`:** `p7_evidence.accept_p7_record` must reproduce record `6f142c0c…`. It is not `t00_screen accept-p7`, and it never touches `p7_acceptance.json` (`253aae43…`). A non-reproduction stops step 12. This closes the different-host residual: the VM's system DLLs and CPU are not hashed.
+  - **`--workers 24`**, inside the signed budgets (overhead 11,300 CPU-s fits about 32 workers per segment; path 961,920 CPU-s). This replaces the W = 8 run basis. The budgets are unchanged.
+  - **Licence and IP exposure accepted** by Joshua for the exports and ports on the VM.
+  - **Unchanged:** start by 2026-10-11T02:08Z; both approvals expire 2026-10-14T02:08Z; `verify` must finish inside the window.
 ## §10 — Audit hooks
 
 ```bash

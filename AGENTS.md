@@ -201,6 +201,7 @@ the operator's primary checkout (from a worktree, by that checkout's absolute pa
 Never copy them into a worktree, commit or quote their bodies or values, edit them,
 or pass them to `glm_agent` or any external service
 ([campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
+The single exception is the Joshua-controlled Windows VM for the T00 screen (§60 addendum 2026-10-07).
 
 ### Vendor-data integrity gate
 
