@@ -532,9 +532,9 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   3. **One pre-registered successor screen** (#733 skeleton) of that configuration, scored under both A5 assignments.
   - **When the stopping rule fires.** "Confirms the pessimistic anchor" means either of these:
     - **(a)** The successor screen's H2 result under the pessimistic A5 assignment (`UNDETERMINED` counted as bust) fails the A6 bust ceiling, and no accepted R1/R2 resolution shows that assignment to be unrealistic.
-    - **(b)** An accepted R1/R2 resolution shows that `UNDETERMINED` paths resolve predominantly as busts. The threshold for "predominantly" is set by Joshua when he confirms (a) and (b), and before any resolution output exists.
+    - **(b)** An accepted R1/R2 resolution shows that `UNDETERMINED` paths resolve predominantly as busts. "Predominantly" means more than half of the resolved `UNDETERMINED` paths resolve as busts, judged on H2.
 
-    These definitions are the Deployment Coordinator's reading of the ratified rule and are pending Joshua's confirmation.
+    Joshua confirmed (a) and (b) and set the (b) threshold on 2026-10-08, before any resolution output existed, in chat to the Deployment Coordinator: "go with your recommendation for 1".
   - While step 1 is pending, the new H, P7 re-run and Tier-2 source approval stay on hold (Joshua, 2026-10-08).
 
 ## §10 — Audit hooks
