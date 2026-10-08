@@ -136,7 +136,11 @@ from the caller's job when that job permits; if the breakaway is refused the
 launcher warns that the run may end with the caller. On POSIX the child starts a
 new session. The detached child reuses the reserved record identity through
 `FP_VERIFICATION_ID`, which is removed from the environment handed to the task's
-own children. Completion is still judged only from `record.json` as before: poll
+own children; a launcher run honors it only as an unused reservation (its
+`.detach.log` exists and its record directory does not), and refuses a nested
+`--detach`. The child's arguments are rebuilt from the parsed options, with a
+relative `--env`/`FP_OPS_ENV` resolved against the caller's directory; launcher
+options are never abbreviated. Completion is still judged only from `record.json` as before: poll
 it, and accept nothing but `completed` with verification exit zero.
 
 ## Gate composition and admission

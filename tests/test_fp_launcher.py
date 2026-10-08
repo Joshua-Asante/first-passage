@@ -623,11 +623,20 @@ def test_detach_identity_env_validation(checkout, ops_env):
     assert 'fp: invalid FP_VERIFICATION_ID' in malformed.stderr
     assert not list((checkout / '.cache/fp-verification').glob('*/record.json'))
     identity = '20250101T000000Z-0123456789ab'
+    unreserved = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
+                        env={'FP_VERIFICATION_ID': identity})
+    assert unreserved.returncode == 2
+    assert 'not an unused detached reservation' in unreserved.stderr
+    (checkout / '.cache/fp-verification').mkdir(parents=True, exist_ok=True)
+    (checkout / '.cache/fp-verification' / f'{identity}.detach.log').write_bytes(b'')
     accepted = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
                       env={'FP_VERIFICATION_ID': identity})
     assert accepted.returncode == 0, accepted.stdout + accepted.stderr
     record = json.loads((checkout / '.cache/fp-verification' / identity / 'record.json').read_text())
     assert record['status'] == 'completed'
+    reused = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
+                    env={'FP_VERIFICATION_ID': identity})
+    assert reused.returncode == 2 and 'not an unused detached reservation' in reused.stderr
 
 
 def test_detach_identity_not_leaked(checkout, ops_env):
@@ -641,3 +650,43 @@ def test_detach_identity_not_leaked(checkout, ops_env):
     final = await_final_record(checkout, record.name)
     assert final['status'] == 'completed' and final['verification_exit_code'] == 0
     assert final['test_summary'] == dict(collected=1, passed=1, failed=0, errors=0, skipped=0)
+
+
+def test_detach_parent_returns_before_the_suite_ends(checkout, ops_env):
+    (checkout / 'test_slow.py').write_text('import time\n\n\ndef test_slow():\n    time.sleep(20)\n',
+                                           encoding='utf-8')
+    started = time.monotonic()
+    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest', 'test_slow.py', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert time.monotonic() - started < 15, 'the parent ran the suite instead of detaching it'
+    record, _ = detached_report(result)
+    assert not (record / 'record.json').is_file() or \
+        json.loads((record / 'record.json').read_text(encoding='utf-8'))['status'] in ('not_started', 'running')
+    assert await_final_record(checkout, record.name)['status'] == 'completed'
+
+
+@pytest.mark.parametrize('flag', ['--det', '--detac'])
+def test_detach_abbreviation_is_rejected(checkout, ops_env, flag):
+    result = launch(checkout, '--env', ops_env, flag, 'python', '-m', 'pytest', 'x.py')
+    assert result.returncode == 2 and 'unrecognized arguments' in result.stderr
+    assert not list((checkout / '.cache/fp-verification').glob('*.detach.json'))
+
+
+def test_detach_child_argv_is_rebuilt_from_options(checkout, ops_env):
+    """An --env value equal to a command name, and a relative --env, still reach the child intact."""
+    (checkout / 'test_rebuilt.py').write_text('def test_ok():\n    assert True\n', encoding='utf-8')
+    relative = os.path.relpath(ops_env, checkout.parent)
+    result = launch(checkout, '--env', relative, '--workers', '0', '--detach', 'python', '-m', 'pytest',
+                    'test_rebuilt.py', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    record, _ = detached_report(result)
+    argv = json.loads((record.parent / f'{record.name}.detach.json').read_text(encoding='utf-8'))['argv']
+    assert argv[3:] == ['--env', str(Path(ops_env).resolve()), '--workers', '0', 'python', '-m', 'pytest',
+                        'test_rebuilt.py', '-q']
+    assert await_final_record(checkout, record.name)['status'] == 'completed'
+
+
+def test_detach_refused_inside_a_detached_run(checkout, ops_env):
+    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest', 'x.py',
+                    env={'FP_VERIFICATION_ID': '20250101T000000Z-0123456789ab'})
+    assert result.returncode == 2 and '--detach cannot run inside a detached run' in result.stderr

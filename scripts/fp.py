@@ -208,20 +208,27 @@ def pytest_report_selection(args: list[str]) -> tuple[list[str], dict[str, str]]
     return inputs, outputs
 
 
-def verification_identity() -> str:
-    """Reuse the detached parent's reservation, or mint a fresh record identity."""
+def verification_identity(directory: Path) -> str:
+    """Reuse an unused detached reservation, or mint a fresh record identity."""
     inherited = os.environ.get(DETACH_ENVIRONMENT)
     if inherited is None:
         return datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
     if not IDENTITY_PATTERN.fullmatch(inherited):
         raise ValueError('invalid FP_VERIFICATION_ID')
+    if not (directory / f'{inherited}.detach.log').is_file() or (directory / inherited).exists():
+        raise ValueError('FP_VERIFICATION_ID is not an unused detached reservation; unset it')
     return inherited
 
 
-def arguments_without_detach(tokens: list[str], command: str) -> list[str]:
-    """Drop launcher-level --detach only; task arguments keep their own tokens."""
-    boundary = next((i for i, token in enumerate(tokens) if token == command), len(tokens))
-    return [token for token in tokens[:boundary] if token != '--detach'] + tokens[boundary:]
+def detached_arguments(options: argparse.Namespace) -> list[str]:
+    """The child's launcher arguments, rebuilt from the parsed options without --detach.
+    A relative environment selection resolves against the caller's directory here, because
+    the child starts in the checkout root."""
+    selection = options.env if options.env is not None else os.environ.get('FP_OPS_ENV')
+    tokens = [] if selection is None else ['--env', str(Path(selection).resolve())]
+    if options.workers is not None:
+        tokens += ['--workers', str(options.workers)]
+    return [*tokens, options.command, *options.args]
 
 
 def start_detached(root: Path, tokens: list[str]) -> int:
@@ -283,7 +290,7 @@ def pytest_configuration_args(root: Path, args: list[str]) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     """Validate and run a task without changing the invoking shell's environment."""
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--env", help="operations venv directory (before the command); defaults to FP_OPS_ENV")
     parser.add_argument('--workers', type=int, choices=range(0, 9),
                         help='Opt-in pytest workers, 0 through 8; nonzero uses loadscope')
@@ -301,18 +308,19 @@ def main(argv: list[str] | None = None) -> int:
         parser.error('--workers applies only to pytest commands')
     if options.detach and not recorded:
         parser.error('--detach applies only to recorded commands (pytest tasks and check)')
+    if options.detach and DETACH_ENVIRONMENT in os.environ:
+        parser.error('--detach cannot run inside a detached run')
     root = Path(__file__).resolve().parents[1]
     try:
         if options.detach:
-            return start_detached(root, arguments_without_detach(
-                list(sys.argv[1:] if argv is None else argv), options.command))
+            return start_detached(root, detached_arguments(options))
         record = None
         if recorded:
             spec = importlib.util.spec_from_file_location('fp_recorder', root / 'scripts/record_verification.py')
             recorder = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(recorder)
-            identity = verification_identity()
-            output = root / '.cache' / 'fp-verification' / identity
+            directory = root / '.cache' / 'fp-verification'
+            output = directory / verification_identity(directory)
             record = recorder.RunRecord(root, output, [options.command, *options.args], allow_ignored=True)
         with record if record is not None else nullcontext():
             if record is not None:
