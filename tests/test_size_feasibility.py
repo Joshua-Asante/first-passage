@@ -498,11 +498,12 @@ def test_spawn_records_failure_and_kills_over_cpu_cap(tmp_path):
 
 
 def test_freeze_gate_pins_the_frozen_blob_and_blocks_git_errors():
-    for blob in ("d0ddcdeaf14c92613b74b363e09d3c7a962526ae", "cdcd60fe3b7941cf6337b2c8c8ad94f188afa038"):
-        rsf.freeze_gate(lambda *a, b=blob: b + "\n")
-    assert len(rsf.FROZEN_PREREG_BLOBS) == 2
-    with pytest.raises(rsf.Blocked, match="not one of the frozen"):
-        rsf.freeze_gate(lambda *a: "0" * 40)
+    rsf.freeze_gate(lambda *a: "1c959fc592e9c87fe620ba98f4264b1824de0f9a\n")  # §11 (#738 b059634)
+    assert set(rsf.FROZEN_PREREG_BLOBS) == {"1c959fc592e9c87fe620ba98f4264b1824de0f9a"}
+    # The pre-§11 frozen text, the superseded §11 draft and any other blob block.
+    for blob in ("d0ddcdeaf14c92613b74b363e09d3c7a962526ae", "cdcd60fe3b7941cf6337b2c8c8ad94f188afa038", "0" * 40):
+        with pytest.raises(rsf.Blocked, match="not one of the frozen"):
+            rsf.freeze_gate(lambda *a, b=blob: b)
 
     def broken(*a):
         raise subprocess.CalledProcessError(128, ["git", *a])

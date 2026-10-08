@@ -55,11 +55,10 @@ PRIMARY = ffr.PRIMARY
 PRIVATE = PRIMARY / "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts"
 BUNDLE = PRIVATE / "four-firm-remc-rerun-2026-10-06-depth"
 PREREG = "docs/briefs/pre-registration/2026-10-08-tradeify-size-feasibility-prereg-DRAFT.md"
-# The only accepted prereg bytes on origin/main: the frozen text (main 65079a7, no §11),
-# and the same file with the §11 addendum (#738 head d104e13). Any other blob blocks.
+# The only accepted prereg bytes on origin/main: the frozen text with the §11 addendum
+# (#738 head b059634). The pre-§11 text and any other blob block (§11).
 FROZEN_PREREG_BLOBS = {
-    "d0ddcdeaf14c92613b74b363e09d3c7a962526ae": "frozen, §11 absent (65079a7)",
-    "cdcd60fe3b7941cf6337b2c8c8ad94f188afa038": "frozen + §11 addendum (#738 d104e13)",
+    "1c959fc592e9c87fe620ba98f4264b1824de0f9a": "frozen + §11 addendum (#738 b059634)",
 }
 
 # §2.1 digest chain and reproduction targets (RESULTS, depth re-run root).
@@ -102,8 +101,8 @@ def _canon(obj) -> str:
 # ── freeze gate ───────────────────────────────────────────────────────────
 
 def freeze_gate(git: Callable[..., str] | None = None) -> None:
-    """§R: refuse to score unless origin/main holds one of the pinned prereg blobs
-    (FROZEN_PREREG_BLOBS). Any git failure blocks."""
+    """§R and §11: refuse to score unless origin/main holds the pinned prereg blob, the
+    frozen text with the §11 addendum (FROZEN_PREREG_BLOBS). Any git failure blocks."""
     git = git or ffr._git
     try:
         blob = git("rev-parse", f"origin/main:{PREREG}").strip()
