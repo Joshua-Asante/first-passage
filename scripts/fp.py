@@ -220,12 +220,12 @@ def verification_identity(directory: Path) -> str:
     return inherited
 
 
-def detached_arguments(options: argparse.Namespace) -> list[str]:
+def detached_arguments(root: Path, options: argparse.Namespace) -> list[str]:
     """The child's launcher arguments, rebuilt from the parsed options without --detach.
     A relative environment selection resolves against the caller's directory here, because
     the child starts in the checkout root."""
     selection = options.env if options.env is not None else os.environ.get('FP_OPS_ENV')
-    tokens = [] if selection is None else ['--env', str(Path(selection).resolve())]
+    tokens = [] if selection is None else ['--env', str(resolve_environment(root, selection))]
     if options.workers is not None:
         tokens += ['--workers', str(options.workers)]
     return [*tokens, options.command, *options.args]
@@ -313,7 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(__file__).resolve().parents[1]
     try:
         if options.detach:
-            return start_detached(root, detached_arguments(options))
+            return start_detached(root, detached_arguments(root, options))
         record = None
         if recorded:
             spec = importlib.util.spec_from_file_location('fp_recorder', root / 'scripts/record_verification.py')

@@ -675,7 +675,8 @@ def test_detach_abbreviation_is_rejected(checkout, ops_env, flag):
 
 
 def test_detach_child_argv_is_rebuilt_from_options(checkout, ops_env):
-    """An --env value equal to a command name, and a relative --env, still reach the child intact."""
+    """The child's argv is rebuilt from the parsed options: a relative --env arrives resolved
+    against the caller's directory, --workers is kept, and --detach is gone."""
     (checkout / 'test_rebuilt.py').write_text('def test_ok():\n    assert True\n', encoding='utf-8')
     relative = os.path.relpath(ops_env, checkout.parent)
     result = launch(checkout, '--env', relative, '--workers', '0', '--detach', 'python', '-m', 'pytest',
@@ -686,6 +687,32 @@ def test_detach_child_argv_is_rebuilt_from_options(checkout, ops_env):
     assert argv[3:] == ['--env', str(Path(ops_env).resolve()), '--workers', '0', 'python', '-m', 'pytest',
                         'test_rebuilt.py', '-q']
     assert await_final_record(checkout, record.name)['status'] == 'completed'
+
+
+def test_detach_empty_env_is_refused_in_the_parent(checkout, ops_env):
+    result = launch(checkout, '--env', ' ', '--detach', 'python', '-m', 'pytest', 'x.py')
+    assert result.returncode == 2 and 'Operations environment selection is empty' in result.stderr
+    assert not list((checkout / '.cache/fp-verification').glob('*.detach.json'))
+
+
+def test_record_persist_retries_a_denied_replace(tmp_path, monkeypatch):
+    """Windows denies os.replace while a poller holds record.json open; persist retries."""
+    spec = importlib.util.spec_from_file_location('recorder_retry', SOURCE / 'scripts/record_verification.py')
+    recorder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(recorder)
+    real, calls = os.replace, []
+
+    def flaky(source, target):
+        calls.append(target)
+        if len(calls) < 3:
+            raise PermissionError(5, 'Access is denied')
+        real(source, target)
+    record = object.__new__(recorder.RunRecord)
+    record.output, record.data = tmp_path, {'status': 'running'}
+    monkeypatch.setattr(recorder.os, 'replace', flaky)
+    monkeypatch.setattr(recorder.time, 'sleep', lambda _: None)
+    record.persist()
+    assert len(calls) == 3 and json.loads((tmp_path / 'record.json').read_text()) == {'status': 'running'}
 
 
 def test_detach_refused_inside_a_detached_run(checkout, ops_env):
