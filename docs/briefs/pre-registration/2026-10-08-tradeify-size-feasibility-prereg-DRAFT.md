@@ -302,36 +302,26 @@ grep -rl "2026-10-08-tradeify-size-feasibility-prereg" lab/ || true
 grep -nE '^\*\*Status:\*\* `FROZEN [0-9]{4}-[0-9]{2}-[0-9]{2}`' "$f"
 ```
 
-## §11 — Addendum 2026-10-08, before any scoring: label semantics and the decision tree
+## §11 — Addendum 2026-10-08, before any scoring: label semantics and routing
 
-**Authority.** Joshua, 2026-10-08, in chat to the Deployment Coordinator: "I agree with your recommendations". He was answering three recommendations:
-1. add this addendum before any scoring;
-2. adopt one successor decision tree with the #734 rule binding;
-3. scope the R1/R2 resolution now and build it only if this check clears.
+**Authority.** Joshua, 2026-10-08, in chat to the Deployment Coordinator: "I agree with your recommendations". He was answering three recommendations: add this addendum before any scoring; adopt one successor decision tree with the #734 rule binding; scope the R1/R2 resolution now and build it only if this check clears. This follows an independent review relayed by Codex (on `6e79354` and #734 `c139cd7`, 2 P1 inference objections and 3 P2).
 
-This follows an independent review relayed by Codex (on `6e79354` and #734 `c139cd7`): 2 P1 inference objections and 3 P2.
+**Timing.** No arm of this file has been scored. The wrapper (#737) runs only when `main` holds exactly the text with this section (item 6), so no arm can score under the superseded text. The frozen text above is unchanged; this addendum governs where it differs.
 
-**Timing.** No arm of this file has been scored. The frozen text above is unchanged. This addendum governs where it differs.
-
-**1. INFEASIBLE is renamed GRID-NO-CLEAR.** The §6 conditions are unchanged.
-- Meaning: every required sampled k completed, and none clears this retained-series approximation.
+**1. INFEASIBLE is renamed GRID-NO-CLEAR.** The §6 conditions and order are unchanged.
+- It means: every required sampled k completed, and none clears this retained-series approximation.
 - It does **not** exclude unsampled sizes between grid points. There is no monotonicity or interval guarantee, and state-dependent protection can break the inference from linear scaling.
-- It does **not** exclude executable successors. Those have integer sizing, admissions and internal state that this harness does not model.
+- It does **not** exclude executable successors, which have integer sizing, admissions and internal state that this harness does not model.
 - It is evidence for a judgment, not a mathematical exclusion.
 
 **2. GRID-GAP is descriptive only.** The midpoint arm cannot certify any interval.
 
-**3. Bias directions.** Capacity and takeover, port loss stops, and rounding have no universal sign. Removing losers can help and removing winners can hurt. The §1 table and §1.2 wording claiming "optimistic" or "close to one-sided" are read as unsigned for these three.
+**3. Bias directions.** Every omission in the §1 table is read as unsigned. That includes capacity and takeover, port loss stops, rounding, sized legs and port kills; removing losers can help and removing winners can hurt. §1's "optimistic" and "close to one-sided" claims, §1.3 and the §4 falsifier wording do not hold where they differ.
 
-**4. Interpretation note (descriptive, not a claim of equivalence).**
-- At k = 1 this harness's Tradeify bust read sits closer to T00's favourable (R2) anchor than its pessimistic (R1) one (RESULTS.md; #724).
-- So GRID-NO-CLEAR reads as "even a favourable-side approximation clears at no sampled size".
-- A clear here says nothing about the pessimistic anchor.
-- This check does not resolve R1/R2 and is not #734's successor-screen trigger.
+**4. Scope.** This check uses a daily-series approximation with no intrabar ordering. It does not resolve R1/R2, and it is not the successor-screen trigger in the #734 stopping rule. A k = 1 reproduction validates this harness against its own run of record, not against T00.
 
-**5. Stopping.** The §6 rule adopted in §9 item 6 is replaced by the successor decision tree recorded on the T00 card §8 (#734, as amended):
-- **GRID-NO-CLEAR:** the Deployment Coordinator recommends stopping uniform-cut successors of the accepted book on `Tradeify_Select_100K`. That is Joshua's discretionary investment judgment, with this model uncertainty stated. No strategy is retired.
-- **Any clear:** viability turns on R1/R2. Resolve it, or run the successor screen judged on the pessimistic anchor. If the pessimistic anchor is confirmed, stop (#734 rule). Otherwise, Tier 2 picks the legs and one successor screen follows.
-- **Every other label** is non-stopping.
+**5. Routing.** §6's stopping rule and §9 item 6 are replaced by the successor decision tree on the T00 card §8 (#734). That tree is the single record and routes every §6 label. In short:
+- GRID-NO-CLEAR leads to a recommendation that Joshua decides as a discretionary investment judgment, under stated model uncertainty. Nothing here stops automatically.
+- No label of this file retires a strategy.
 
-**6. Code.** The wrapper (#737) reports `GRID-NO-CLEAR` in place of `INFEASIBLE`, and re-pins the freeze gate to this file's blob after this addendum.
+**6. Code.** The wrapper (#737) reports `GRID-NO-CLEAR` in place of `INFEASIBLE`, prints the label only, and pins its freeze gate to this file's blob as merged with this section. Any other blob blocks.
