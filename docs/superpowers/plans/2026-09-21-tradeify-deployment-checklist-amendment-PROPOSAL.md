@@ -23,6 +23,7 @@ And one open question that predates S2: the bounded feasibility screen of 2026-0
 - [ ] **Step 2: pin and pre-register** (only after step 1 is positive and ratified): the four expressions by identity, captured sizes and allocations; the pass floor per partition; the scenarios; the intraday clock as mandatory; the NO-GO condition, verbatim before execution, unchanged after.
 - [ ] **Step 3: run and return** GO-evidence / NO-GO-evidence against the pre-registered condition only, with `results.json`/`REPORT.md` retained under the private root and every figure bound to ledger digests. A NO-GO-evidence verdict is presented to the operator as an investment decision (adjust the book, or accept the risk into T15's F1), never routed automatically to a portfolio-adjustment packet.
   - *2026-10-08, step 3 returned:* **NO-GO-evidence, robust**, VERIFIED (results `a5b985d0…`, attestation `f627e805…`). Record: [T00 build card §8](../../briefs/handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md). Owed: Joshua's investment decision. Under OD-1 (c), D-feed (a) stays unmet unless (a) is amended.
+
 **Verification:** the producer's own tests plus the screen tests; a synchronized `intraday_low` actually supplied (its provenance recorded), or the verdict is INSUFFICIENT. **Forbidden:** EOD-clock "zero bust" as survival; moving the floor after results; re-optimizing any expression; claiming a verdict the producer cannot support.
 
 ### T01 — DONE (S2 accepted 2026-09-21)
