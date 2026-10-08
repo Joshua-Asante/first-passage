@@ -74,7 +74,7 @@ No rescaled arm (k ≠ 1) is scored before this file is FROZEN and merged. The w
 4. **Scope is the uniform ray, k ≥ 0.2.** Real integer configurations lie off the ray, because legs round differently. INFEASIBLE speaks to uniform cuts on the grid's range only. Dropping, reshaping or re-sizing one leg is out of scope; per-leg questions belong to Tier 2 (rows 1–3).
 5. **Grid resolution.** A clearing interval narrower than the grid spacing can be missed. §6 GRID-GAP handles the one case that matters.
 
-**What survives.** INFEASIBLE requires every k to fail at least one bust gate on the EOD clock. That is close to one-sided; the remaining unsigned omissions are risk- or equity-sized legs and port kills. It is the only reading this file lets trigger the stopping proposal.
+**What survives.** INFEASIBLE requires every k to fail at least one bust gate on the EOD clock. That is close to one-sided; the remaining unsigned omissions are risk- or equity-sized legs and port kills. It is the only reading this file lets trigger the stopping rule.
 
 ### §1.3 — What each outcome means
 
@@ -230,7 +230,7 @@ Labels, assigned in this order (the first that holds):
 - Per (k, population), Tradeify only: 5 arms (3 guard, Run-1, Run-2) ≈ **5.5 min**.
 - Grid: 7 k × 3 populations = 21 calls ≈ **116 min**. Reproduction (a): ≈ 21 min. A GRID-GAP midpoint: ≈ 17 min. Total ≈ 2.3 h serial, ≈ 2.6 h with the midpoint.
 - **Not a bound.** Smaller k keeps paths alive longer, so arms slow toward the full-horizon figure (four-firm I-15: 1005 s per arm, ×1.5 margin). Worst case ≈ 2.1 CPU-h per (k, population), so the cap below can bind. Arms may run in parallel; seeds are fixed, so scheduling cannot change a result.
-- **Budget cap (DECIDED, §9 item 3): 12 CPU-hours total**, including the k = 1 reproduction and any midpoint arm.
+- **Budget cap (DECIDED, §9 item 3): 12 CPU-hours total**, including the k = 1 reproduction and any midpoint arm. CPU time is the summed process CPU time of every arm, recorded per arm in `run.json`. An arm counts as run within the cap only if the running sum, including that arm, is ≤ 12 h when the arm completes.
 - **Fixed run order:** reproduction (a), then (b); then k = 1 H1 and H2; then k = 0.2, 0.25, 0.33, 0.4, 0.5, 0.75 (smallest first), each k's FULL, H1 and H2 together; then the GRID-GAP midpoint if triggered. Parallel arms start in this order.
 - **Cap hit:** every unrun or incomplete arm is INSUFFICIENT, so its k is INSUFFICIENT (§6) and the label cannot be INFEASIBLE.
 
@@ -249,15 +249,27 @@ Private root: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_arti
 
 ## §9 — Operator decisions and signature
 
-All seven items: **DECIDED** — Joshua, 2026-10-08, in chat to the Deployment Coordinator, verbatim: "as recommended", answering the drafter's recommendations as relayed by the Deployment Coordinator.
+**Source of every DECIDED item.** Joshua, 2026-10-08, in chat to the Deployment Coordinator, verbatim: "as recommended". He was answering this recommendation list, sent by the Deployment Coordinator to Joshua in chat on 2026-10-08, quoted verbatim:
+
+> 1. Late-half pass floor: reported only.
+> 2. Grid gap: one midpoint run.
+> 3. Budget cap: 12 CPU-hours in total, including the reproduction and midpoint runs. Run the smallest k first (k = 1 reproduction, then 0.2, 0.25, 0.33, 0.4, 0.5, 0.75). If the cap is hit, the remaining runs count as insufficient, and the result can't be "infeasible".
+> 4. Checklist rule 7.6.1: rule that it falls outside the rule, and record the ruling.
+> 5. Who runs it, and when: a fresh Opus session, run by about 10-12.
+> 6. Stopping rule: adopt it as written. "Infeasible" stops uniform size-cut successors of this book on Select 100K. It doesn't retire any strategy, and it makes Tier 2 an optional explanation. Every other label is non-stopping.
+> 7. Build: approve it, including scoring Tradeify alone against the function's documented use; as a code PR it gets a Claude review and a Codex verdict.
+
+Each item below is DECIDED from the quoted item of the same number.
 
 1. **H2 pass floor: `REPORTED`** (§4.2).
 2. **GRID-GAP: one midpoint arm**, as fixed in §6.
 3. **Budget: 12 CPU-hours total**, including the k = 1 reproduction and any midpoint arm; fixed run order, smallest k first (§8.1). A cap hit leaves the unrun arms INSUFFICIENT, so the label cannot be INFEASIBLE (§6).
 4. **Checklist 7.6.1: outside the rule** (an MC rescale, not a replay against a pre-registered edition). Operator ruling (§7).
-5. **Executor:** a fresh Opus session; no GLM; private series read in place only. Run by about 2026-10-12, after the build passes review. Run order relative to Tier 2: independent (§7).
-6. **Stopping rule: ADOPTED as written** (§6). INFEASIBLE stops uniform-size-cut successors of the accepted book on `Tradeify_Select_100K`, retires no strategy, and makes Tier 2 an optional explanation. Every other label is non-stopping.
-7. **Build packet: AUTHORIZED** (§2.3), including `tiers=("Tradeify_Select_100K",)` against the `score_candidate` docstring. It is a code PR that needs a Claude review and a Codex verdict, with synthetic tests only before the run.
+5. **Executor:** a fresh Opus session, run by about 2026-10-12, after the build passes review. Not part of the quoted decision, but standing constraints: no GLM, and private series read in place only (AGENTS.md "Public-clone posture"; §5). Run order relative to Tier 2: independent (§7).
+6. **Stopping rule: ADOPTED** (§6). The adopted text is the `bcdeac9` wording plus the amendment in quoted item 6, which Joshua accepted.
+   - `bcdeac9` wording: "On INFEASIBLE, stop pursuing uniform-size-cut successors of the accepted book on `Tradeify_Select_100K`. It does not retire any strategy, close Tier 2, or bar per-leg or leg-composition successors."
+   - Amendment: "it makes Tier 2 an optional explanation" (replacing "close Tier 2"), and "Every other label is non-stopping."
+7. **Build packet: AUTHORIZED** (§2.3), including `tiers=("Tradeify_Select_100K",)` against the `score_candidate` docstring. A code PR with a Claude review and a Codex verdict. Synthetic tests only before the run (§R, §2.3).
 - *Closed:* per-leg vectors, dropped by coordinator ruling 2026-10-08 (§3.2).
 - **Signed:** —
 
@@ -284,7 +296,7 @@ grep -n "^| 7 | \*\*INFEASIBLE\*\*" "$f"
 ! grep -nE '\$[0-9]' "$f"
 # No result cites this file before freeze (expect no output until the run).
 grep -rl "2026-10-08-tradeify-size-feasibility-prereg" lab/ || true
-# At freeze only (each fails while DRAFT): no OWED marker, §9 signed, Status frozen.
+# At freeze only: no OWED marker (passes now), §9 signed and Status frozen (both fail while DRAFT).
 ! grep -nE "OWED [(]operat[o]r[)]" "$f"
 ! grep -nE '^- \*\*Signed:\*\* —$' "$f"
 grep -nE '^\*\*Status:\*\* `FROZEN [0-9]{4}-[0-9]{2}-[0-9]{2}`' "$f"
