@@ -62,7 +62,8 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitio
 - **Breach bar:** the bar, or the settlement step after the last bar (`replay.py:634`), where the breach session's combined intraday low is set. Each run (R1, R2) uses its own breach bar.
 - **Leg value:** cumulative realized P&L net of commission plus the open-P&L mark. Combined equity is cash plus every leg's open mark (`replay.py:621-622`), so leg values sum to the combined value at any bar.
 - **Peak-to-breach drawdown:** combined value at the breach bar minus combined value at the peak close. A leg's share is its value change over the same span divided by that drawdown. Shares sum to one by construction.
-- **Non-busting runs:** they have no breach. Q1 and Q6 use their deepest drawdown instead (deepest combined bar low against the prior end-of-session peak), reported separately and never pooled with busting runs.
+- **Non-busting runs:** they have no breach. Q1 and Q6 use their deepest drawdown instead (deepest combined bar low against the prior end-of-session peak), reported separately and never pooled with busting runs. They are the **control**: a leg's bust share means something only against its share in these drawdowns.
+- **Shock vs grind:** the breach-session share of the peak-to-breach drawdown (previous close to breach bar, over the whole span). Shock if it is at least the §2.1 threshold; grind otherwise. This sharpens the Tier-1 reading ([Tier-1 card](2026-10-08-t00-step12-diagnostic-tier1-card.md) §2), which is combined-only.
 
 | # | Question | Derived quantity |
 |---|---|---|
@@ -72,17 +73,31 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitio
 | Q4 | Does capacity crowd legs out? | Per leg: capacity refusals, takeovers as winner and as displaced. Share of a leg's refused entries caused by another leg's fixed size. |
 | Q5 | What do forced closes cost? | Count and P&L of scheduled flattens, takeover closes and deadline closes, per leg. Commissions per leg over peak-to-breach. |
 | Q6 | Is attribution ordering-sensitive? | Q1 shares under R1 vs R2, each at its own breach bar. A path where only one run busts is reported as one-sided, not compared. Consumed intrabar splits on the breach session, per leg. |
-| Q7 | Do halves differ? | Q1–Q4 contrasted between H1 and H2. |
+| Q7 | Do halves differ? | Q1–Q4 contrasted between H1 and H2. Only under sample option (b) (§4). Under option (a) each half has two paths per class, so Q7 is not reported. |
 
 **Patterns and the successor direction each points to.** These are pointers for a later pre-registration, not decisions.
 
+**Shares are accounting, not cause.** A leg's share says where the loss was booked. It does not say what removing or shrinking the leg would do: the DD protection tier is book-wide, and capacity is shared, so changing one leg changes the others' sizes and the protection state. Every direction below is a hypothesis for a counterfactual screen, never a result.
+
+### §2.1 Pattern criteria (frozen at admission)
+
+Each criterion is fixed before any Tier-2 replay, so the pattern pick is not post hoc. Recommended defaults; **OWED (operator)** to confirm or change at admission.
+- **Concentrated:** one leg's Q1 share is at least 0.5 in at least two-thirds of busting runs, and at least 1.5× its median share in the control drawdowns.
+- **Shock:** breach-session share of at least 0.5.
+- **Cap often binds:** the risk-sized leg's cap binds on at least a quarter of its entries in busting runs.
+- **Protected adds matter:** add fills placed while protected carry at least a quarter of the peak-to-breach drawdown in at least a third of busting runs.
+- **Crowding:** at least a quarter of a leg's refused entries in busting runs are caused by another leg's fixed size.
+- **Ordering flips:** the leading leg under R1 differs from R2's on more than a third of the two-sided busting paths.
+
 | Pattern | Points to |
 |---|---|
-| Q1 share concentrated in the risk-sized index leg, single-session shocks, Q3 cap often binding | Per-leg size reduction of that leg, with its reserve cap cut together |
-| Q2 shows adds filling in protected mode on busting runs, and add fills carry a large Q1 share | Turning adds off (in protected mode or always) |
-| Q1 share concentrated in one leg across halves, or Q4 shows that leg's fixed size displacing others | Dropping or reshaping that leg |
-| Q7 shows the Q1 pattern only in one half | Regime dependence; a regime question, not a sizing one |
-| Shares spread across legs, grind not shock, no Q2–Q5 signal, or Q6 flips the leading leg | No evidence-supported successor |
+| The risk-sized index leg is concentrated, busts are shocks, and its cap often binds | Per-leg size reduction of that leg, with its reserve cap cut together |
+| Protected adds matter | Turning adds off (in protected mode or always) |
+| One leg is concentrated, or crowding holds for a leg's fixed size | Dropping or reshaping that leg |
+| (Option (b) only) the concentration holds in one half and not the other | Regime dependence; a regime question, not a sizing one |
+| No leg concentrated, busts are grind, no Q2–Q5 criterion met, or ordering flips | No evidence-supported successor |
+
+More than one row may hold; the report names each, in table order.
 
 ## §3 — Capability (build)
 
@@ -90,6 +105,7 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitio
 
 - **(i) Sidecar (recommended).** `BookReplay` accumulates, per session and per leg: realized P&L net of commission and the open-P&L mark at the close and at the bar where the combined low is set, `session_mode`, requested / policy / admitted / filled quantities, capacity and forced-close events, commissions. It is held outside `self.events`, `SessionRecord` and `ReplayResult`. It enters no digest.
 - **(ii) Private raw event stream.** Return the full event list plus new per-leg mark events.
+- **(iii) Driver-side instrumentation at the current H (rejected).** It would avoid a new H and a P7 re-run. But the driver can reach `BookReplay` only through `replay_bracket`, which seals the result; reaching it any other way uses the entry points the Tier-1 card forbids (`_engine`, `_replay_raw`, `replay`) or patches code at run time. That bypasses exactly the boundary the capability review exists to control.
 
 **Why (i).** The sealed boundary (`_seal`, `replay_bracket`) stays intact. New mark events in `self.events` would change `events_sha256`; a separate stream avoids that but still exports far more than §2 needs. (i) emits exactly the §2 inputs and nothing else.
 
@@ -181,6 +197,7 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 4. Diagnostic purpose, evidence-class and scope names; keep the receipt type or extend `_is_source_only` (§3.4); a new source approval.
 5. Executor seat.
 6. Tier-1 actual per-path cost (from its return).
+7. The §2.1 pattern criteria: confirm the defaults or set others, before any replay.
 
 Acceptance scope is not owed: identity on the sampled runs plus the sidecar off/on tests (§3.3).
 
