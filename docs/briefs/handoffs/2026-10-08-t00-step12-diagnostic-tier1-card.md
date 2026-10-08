@@ -90,7 +90,7 @@ Tier 2 needs a reviewed capability that returns raw events for a diagnostic evid
 
 **H (reproduction):** a sealed `replay_bracket` re-execution at H of each selected path reproduces its retained record byte for byte. Per run, that is `digest`, `sessions`, `fills`, `events_sha256`, `deadline_failure`, and the consumed-split count and SHA-256.
 
-**Falsifier:** any one mismatch after the path's seed and `path_sha256` have matched in `selftest`, or any exception raised while replaying a selected path other than a documented source-gate refusal (a `ContractValidationError`, or the exact `_verify_integrity` and `_check_path` messages at H). Every retained PATH record came from a bracket that returned normally. The run stops at that path, with no replacement and no retry.
+**Falsifier:** any one mismatch after the path's seed and `path_sha256` have matched in `selftest`, or any exception raised while replaying a selected path other than a documented source-gate refusal (a `ContractValidationError`, or the exact `_verify_integrity` and `_check_path` messages at H). Every retained PATH record came from a bracket that returned normally. This includes a non-gate `ValueError` raised from `book_adapters` inside `_verify_integrity`, and a host fault (`MemoryError`, `OSError`) inside a replay: each is a NON_REPRODUCTION. At the pinned driver the run records the code only: `run_paths` keeps the stop code and drops the exception detail, so the exception type is **not** retained. Recording it needs a driver change, which moves the pin, and is open to the card owner. The run stops at that path, with no replacement and no retry.
 
 The mechanism reading (shock versus grind, recovery depth) is descriptive and conditional on H holding. It is not a gate and does not test a mechanism.
 
@@ -115,7 +115,7 @@ The mechanism reading (shock versus grind, recovery depth) is descriptive and co
 - **FALSIFIED:** a `NON_REPRODUCTION`: an identity mismatch, or a non-gate replay exception (§4).
 - **AMBIGUOUS:** any other stop (`PREREQUISITE`, `DRIVER_DEFECT`, `REFUSED`, `BUDGET`) before every path is replayed, with no mismatch.
 
-A `DRIVER_DEFECT` is a fault in the driver, not evidence about the run: it goes back to #728 for a fix and re-review. Any re-attempt needs a fresh ruling from Joshua; this card grants none.
+A `DRIVER_DEFECT` is a fault in the driver, not evidence about the run: it goes back to #728 for a fix and re-review. It covers the pre-replay faults (seed or `path_sha256` mismatch, an unclassified setup exception) and any driver fault after a replay has returned, for example a failed write of a path record. The driver docstring's "raised before a replay starts" is read with this addition; the driver is not changed for it. Any re-attempt needs a fresh ruling from Joshua; this card grants none.
 
 **Status (exactly one):**
 - **DONE:** H RESOLVED and the report delivered.
@@ -143,7 +143,7 @@ The step-12 run took about 80 s of wall time per path per worker, with integrity
 
 ## §8 — Exposure
 
-The diagnostic reads per-session detail for scored step-12 paths, beyond the verdict. The reader log opens with the §5 item 2 smoke run's operator: the executor session, 2026-10-08. It saw the selected keys and the per-stratum counts, and no series or report. The executor logs every reader (name, date, and what they saw: series, report or neither) with the private report. Any successor pre-registration, for example of an adjusted book, must carry an exposure statement that names these readers (design §4.5).
+The diagnostic reads per-session detail for scored step-12 paths, beyond the verdict. The reader log opens with the §5 item 2 smoke run's operator: the executor session, 2026-10-08. It saw the selected keys and the per-stratum counts, and no series or report. The second entry is the same session, 2026-10-08, about 04:57Z: a read-only real-evidence check of #728's `prerequisites` attestation pin and `retained()` on the finalized run directory. It wrote nothing, built no source and replayed nothing. It saw that the binding held, and the in-memory key-list hash, which equals the smoke hash. The executor logs every reader (name, date, and what they saw: series, report or neither) with the private report. Any successor pre-registration, for example of an adjusted book, must carry an exposure statement that names these readers (design §4.5).
 
 ## §9 — Forbidden moves
 
