@@ -509,7 +509,7 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - **Hashes.** results.json `a5b985d0abd79177fd910648ffbfaec040f6a4ac04728c8acee1f1e347a742dc`; attestation.json `f627e805ba3e92ef1bc461804cb8877494d77c9a42d5344626c4795d379d1ed5`; REPORT.md `bebceb93e6dbd80567dd4f94436df32f1892c296818d131da4eb61283a5e9984`; authority `241708a1…`.
   - **Run.** Local host; detached H `5d25f9c`, clean throughout; operations venv 3.13.2; `--workers 8`. Exactly one `run` (15:43:29Z → `T00_SCREEN_COMPLETE` 00:04:25Z), with no resume and no acts. Then `finalize` (00:47:59–00:48:01Z) and `verify` (00:48:14–01:00:08Z), all inside the approval window. The run directory was not read before `finalize` (row X2). Private tallies stay in the private run directory.
   - **What it means (#581 A6 and its §6 rulings).** The book fails the pre-registered condition even under the optimistic `UNDETERMINED` assignment. Per amendment §T00 step 3, it goes to Joshua as an **investment decision**: adjust the book, or accept the risk into T15's F1. It is never routed automatically. Under OD-1 reading (c), a **robust** NO-GO does not meet D-feed condition (a), even with risk acceptance; meeting (a) needs an amendment of (a). This is not four-firm §4 falsifier evidence.
-- **Successor stopping rule (RULED: Joshua, 2026-10-08, to the Deployment Coordinator in chat).**
+- **Successor stopping rule (RULED: Joshua, 2026-10-08).** The original ruling's venue is not recorded; Joshua does not recall it. He ratified it in chat to the Deployment Coordinator on 2026-10-08 ("I agree with your recommendations") as the binding rule within the successor decision tree below.
   - **Rule.** Successor work on this four-strategy book stops if either of these confirms the pessimistic anchor (`UNDETERMINED` resolved as bust, judged on H2):
     - resolution of the R1/R2 intrabar ordering, or
     - the pre-registered successor screen.
@@ -521,6 +521,11 @@ The screen-authority signature (design §8 step 11) uses the same template with 
     - Viability therefore turns on the R1/R2 resolution more than on k.
   - **Model implication.** The evaluation floor never locks, so an early-phase-only cut has to cover most of the path to target, which makes it a uniform cut. A genuine early-phase cut fits the funded stage, where the floor locks.
   - **Records.** Figures and the hash stay in the private checkpoint folder. Tier 2 (#729) remains the next evidence.
+- **Successor decision tree (Joshua, 2026-10-08, "I agree with your recommendations", to the Deployment Coordinator).** This is the single record; the size-feasibility prereg §11 (#738) and the successor-screen skeleton (#733) point here.
+  1. Run the size-feasibility check (#735, as amended by §11). On **GRID-NO-CLEAR**, the Deployment Coordinator recommends stopping uniform-cut successors of the accepted book on `Tradeify_Select_100K`. That is Joshua's discretionary investment judgment, with the model uncertainty stated, not a mathematical exclusion.
+  2. On any clear, viability turns on R1/R2. Resolve the ordering (scoping admitted 2026-10-08; build only on this branch), or run the pre-registered successor screen judged on the pessimistic anchor. If either confirms the pessimistic anchor, the successor stopping rule above applies.
+  3. Otherwise, Tier 2 (#729/#731) picks the legs, and one pre-registered successor screen follows.
+  - While step 1 is pending, the new H, P7 re-run and Tier-2 source approval stay on hold (Joshua, 2026-10-08).
 
 ## §10 — Audit hooks
 
