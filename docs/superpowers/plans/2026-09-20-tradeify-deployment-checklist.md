@@ -733,9 +733,10 @@ are in [#730](https://github.com/Joshua-Asante/first-passage/pull/730), merged a
 [#729](https://github.com/Joshua-Asante/first-passage/pull/729), merged at
 `afaca995`; Joshua's admission is recorded in
 [#731](https://github.com/Joshua-Asante/first-passage/pull/731) at `c280118`
-(open, awaiting merge when checked). The Claude Deployment Coordinator reports
-the sidecar capability in build. Its reviewed build, new accepted H, P7 re-run
-and new signed source approval still precede replay. The investment decision
+(merged at `0ec89ec`). The Claude Deployment Coordinator reports
+the sidecar capability in build. Replay remains gated by the Tier-2 card's §0.5 items 3–5, including
+the reviewed build, accepted H, P7 re-run, new signed source approval and signed
+diagnostic evidence class and receipt purpose (§3.4). The investment decision
 remains Joshua's; admission is not a completed attribution result.
 
 **If no supported successor emerges:** return to Joshua to decide whether to
@@ -856,6 +857,6 @@ Configuration selection, new validation, provider spend, production attempts and
 operational acts retain their subsequent handoffs and authority. No supported
 successor returns to Joshua under the decision branch above.
 
-This amendment is based on owner records inspected at main `bd07b452`, the pending #731 admission record at `c280118`, and the dated coordinator review relay.
+This amendment is based on owner records inspected at main `0ec89ec`, including the merged #731 admission record at `c280118`, and the dated coordinator review relay.
 It changes no statistical criteria, accepted gates, locked strategy artifacts,
 operational controls or standing instructions.
