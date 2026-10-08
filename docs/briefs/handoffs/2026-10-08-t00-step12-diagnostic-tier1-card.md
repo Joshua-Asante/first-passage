@@ -152,6 +152,22 @@ The step-12 run took about 80 s of wall time per path per worker, with integrity
 
 The diagnostic reads per-session detail for scored step-12 paths, beyond the verdict. The reader log opens with the §5 item 2 smoke run's operator: the executor session, 2026-10-08. It saw the selected keys and the per-stratum counts, and no series or report. The second entry is the same session, 2026-10-08, about 04:57Z: a read-only real-evidence check of #728's `prerequisites` attestation pin and `retained()` on the finalized run directory. It wrote nothing, built no source and replayed nothing. It saw that the binding held, and the in-memory key-list hash, which equals the smoke hash. The executor logs every reader (name, date, and what they saw: series, report or neither) with the private report. Any successor pre-registration, for example of an adjusted book, must carry an exposure statement that names these readers (design §4.5).
 
+### Addendum 2026-10-08 — Tier-1 return and acceptance (Deployment Coordinator, card owner)
+
+Public return: hashes and labels only (§6).
+- **Run:** `T00_TIER1 run RESOLVED OK`, exit 0. Driver `scripts/t00_tier1_diagnostic.py` from #728 merge `a3a91f3`, SHA-256 `94c8eeab…7508`; keys `60c128a7…329e`, published on #727 (comment 6053992089) before `selftest`.
+- **Verdict on H:** RESOLVED. **Status:** DONE. Every selected path reproduced its retained identities, and the kernel re-evaluation agreed with every retained outcome.
+- **Private artifacts** (`t00-step3/tier1-diagnostic-2026-10/` in the primary checkout; hashes re-computed in place by the card owner): `run/summary.json` `d21badda…e245`; `REPORT-tier1.final.md` `7ef4d7c7…f013`; `report-data.json` `b22a9f3a…8936`; `consistency-check.json` `52dce654…629d`.
+- **Report recommendation (label):** Tier 2 scoping before any repair comparison. Tier 2 is scoped in the [Tier-2 scoping card](2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) (#729, merged `afaca99`). Its admission is Joshua's.
+- **Acceptance:** accepted by the card owner on 2026-10-08, after reading the report. It changes no verdict (§1).
+
+**Reader log, continued.**
+3. The executor session, 2026-10-08, about 07:10Z: the per-path sealed series and the report.
+4. Joshua, 2026-10-08, about 07:12Z: the executor's findings summary in chat (no series, no keys).
+5. The Deployment Coordinator, 2026-10-08, about 07:40Z: the same summary, in the executor's exposure message. Then, at about 08:10Z, the report (no series), read after the Tier-2 thresholds were fixed at `34c31c4`.
+
+Any successor pre-registration names these readers (§8). The Tier-2 card records how they bear on its pattern table (§2.1, row 5 provenance).
+
 ## §9 — Forbidden moves
 
 - Any change to the book, the ports, the parameters or protection; any alternative or repair run; beginning qualification.
