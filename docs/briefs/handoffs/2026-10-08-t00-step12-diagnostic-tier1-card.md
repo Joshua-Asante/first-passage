@@ -30,7 +30,7 @@ Read at H `5d25f9c` on 2026-10-08. Re-read at dispatch.
 
 ## §0.5 — The driver and the prerequisites (each must hold before the first replay; otherwise BLOCKED)
 
-1. **Driver.** The driver is `scripts/t00_tier1_diagnostic.py` from #728. It is reviewed in its own code PR and pinned at **SHA-256 `0ded22c5ad16e19ea8046a2de7823807c0c603d2e9a60b740a3a797135651d57`** (#728 head `5a05216`). The executor re-hashes it before each mode, and a mismatch is BLOCKED. A fold of #728 that changes the file re-pins it here before execution.
+1. **Driver.** The driver is `scripts/t00_tier1_diagnostic.py` from #728. It is reviewed in its own code PR and pinned at **SHA-256 `60a629b142d1df305f4fba9b98c097deb94a339ccd3d011f711ab757f91bd63f`** (#728 head `2e34b28`). The executor re-hashes it before each mode, and a mismatch is BLOCKED. A fold of #728 that changes the file re-pins it here before execution.
    - It runs under the operations venv with no bootstrap.
    - Every module it uses is imported from `--code-root`, the clean detached H checkout; the driver refuses any other HEAD or a dirty tree.
    - The imported modules are `contract`, `paths`, `production_source`, `p7_evidence`, and `t00_screen.journal`, `plan`, `verdict` and `worker`.
@@ -79,7 +79,8 @@ Tier 2 needs a reviewed capability that returns raw events for a diagnostic evid
 ## §3 — Sample
 
 - **Record of truth:** the step-12 **segment journals** (`journal/s*.jsonl`), chain-verified by `journal.read`.
-  - `freeze` checks them against `results.json` (`a5b985d0…`): the plan digest must match, and the verdict re-derived through `verdict.evaluate` must equal the finalized one. A difference is BLOCKED.
+  - `freeze` checks them against `results.json` (`a5b985d0…`): the plan digest must match, and the verdict re-derived through `verdict.evaluate` must equal the finalized one.
+  - They are bound to the pinned `attestation.json` (`f627e805…`). Each segment journal's head must equal its attested head. The ledger must be the attested chain up to its REPORTED head, then the FINAL naming this attestation, then only `verify`'s records. A difference is BLOCKED.
   - The `verify` journals (`v*`), which duplicate 9 keys, are not read.
 - **Strata:** population (FULL, H1, H2) × retained class (agreed `FAILURE`, agreed `PASS`, `UNDETERMINED`, from `bracket_status`), in that order. FULL / agreed FAILURE comes first, so it holds the checkpoint. Any other `bracket_status` is not sampled.
 - **Rule:** within each stratum, sort the keys by `sha256(canonical_json_bytes(key))` ascending and take the first two. A stratum with fewer than two paths contributes all it has, and nothing is substituted from another stratum. The `UNDETERMINED` stratum's R1/R2 mix is taken as drawn.
@@ -159,7 +160,7 @@ The diagnostic reads per-session detail for scored step-12 paths, beyond the ver
 # Card form (expect RESULT: well-formed).
 python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-10-08-t00-step12-diagnostic-tier1-card.md
 
-# The pinned driver (expect 0ded22c5...1d57).
+# The pinned driver (expect 60a629b1...d63f).
 sha256sum scripts/t00_tier1_diagnostic.py
 
 # The sealed boundary and the admitted construction.
