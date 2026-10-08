@@ -1,6 +1,6 @@
 # Pre-registration — size-feasibility check for the accepted Tradeify book (one-sided, necessary condition)
 
-**Status:** `DRAFT — NOT FROZEN`
+**Status:** `FROZEN 2026-10-08` (Joshua in chat to the Deployment Coordinator, verbatim: "freeze and merge 735").
 **Date:** 2026-10-08. **Loop:** STRATEGIC. **Authored:** Claude Code worker (drafting only) for the Deployment Coordinator, on Joshua's request in chat 2026-10-08. Joshua owns every OWED value, the signature and the freeze.
 **Harness of record (adopted, not re-decided):** the four-firm re-MC executor [`run_four_firm_remc.py`](../../../lab/analysis/c1/four_firm_remc_2026-10/run_four_firm_remc.py) under its [frozen prereg](2026-10-02-four-firm-dated-remc-prereg-DRAFT.md) (`FROZEN 2026-10-05`), with the run of record and depth re-run in [RESULTS](../../../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md). **Gate numbers:** [prereg v2](2026-08-26-prop-survivor-scoring-prereg-v2.md) §3. **Gate shape:** [T00 screen prereg](2026-10-01-tradeify-t00-step2-screen-prereg.md) A2/A6.
 **Not:** four-firm §4 evidence; a T00 re-screen; a successor screen; qualification evidence.
@@ -271,7 +271,7 @@ Each item below is DECIDED from the quoted item of the same number.
    - Amendment: "it makes Tier 2 an optional explanation" (replacing "close Tier 2"), and "Every other label is non-stopping."
 7. **Build packet: AUTHORIZED** (§2.3), including `tiers=("Tradeify_Select_100K",)` against the `score_candidate` docstring. A code PR with a Claude review and a Codex verdict. Synthetic tests only before the run (§R, §2.3).
 - *Closed:* per-leg vectors, dropped by coordinator ruling 2026-10-08 (§3.2).
-- **Signed:** —
+- **Signed:** Joshua, 2026-10-08, "freeze and merge 735" (in chat to the Deployment Coordinator; recorded by the Deployment Coordinator).
 
 ---
 
