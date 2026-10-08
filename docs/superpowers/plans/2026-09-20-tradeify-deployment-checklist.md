@@ -727,26 +727,29 @@ completed acceptances, including G10.
    [T00 card §8 successor decision tree](../../briefs/handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md).
    The [size-feasibility preregistration §11](../../briefs/pre-registration/2026-10-08-tradeify-size-feasibility-prereg-DRAFT.md)
    governs label semantics. A promising grid result supports investigation, not
-   executable qualification. GRID-NO-CLEAR excludes neither unsampled sizes nor
-   every executable successor.
-2. **Follow that branch toward one justified successor.** Use Tier 2 where
+   executable qualification. GRID-NO-CLEAR does not exclude unsampled sizes
+   between grid points and does not exclude executable successors.
+2. **If the branch leads to a successor, investigate one justified candidate.**
+   Use Tier 2 where
    required. Translate proposed sizing into actual integer contracts and
    executable behavior before screening that candidate under unchanged
    criteria. Apply the owning decision tree's stop rules; do not turn failures
    into an open-ended search for a passing combination.
-3. **Close reusable readiness in parallel.** Prioritize qualification-engine
-   integration, settlement and reconciliation procedures, host/notifier heartbeat
-   verification, emergency fallback and provider-neutral clarification. Hold
-   candidate-dependent implementation and spending behind their governing
-   viability, behavior and funding decisions.
-4. **Qualify and release the exact candidate.** Complete actual feed and
-   broker-route qualification, freeze, production qualification, combined
-   acceptance, rehearsal and session-specific GO through the existing T00–T17 gates.
-5. **Prepare for evaluation across multiple sessions.** Before first release,
-   establish session closure, settlement, reconciliation, renewed authorization
-   and stop procedures. Bind evaluation requirements to the purchased account
-   version. First-session readiness alone does not establish readiness to
-   complete the evaluation.
+3. **Prioritize reusable readiness under milestone 2 below:** qualification-engine
+   integration, settlement, heartbeat verification, emergency fallback and
+   provider-neutral clarification. Its dependency and authority holds apply.
+4. **Qualify and release the exact candidate through milestones 3–6 below.**
+5. **Prepare for evaluation across multiple sessions through existing owners.**
+   T07 owns settlement and reconciliation; T13 owns stop and recovery procedures;
+   T17 owns renewed per-session authorization. The T17 launch coordinator assembles
+   the session-to-session closure sequence and confirms the purchased account
+   version against the T10/F1 binding. Codex checks these pointers in the T17
+   release packet before first activation, not as a separate T16 gate. Each later
+   session consumes the preceding closure evidence and its own authorization.
+   First-session readiness alone does not establish completion of the evaluation.
+
+R1/R2 intrabar resolution is an option under the owning decision tree, with its
+own build authority and timing; a size-feasibility result does not resolve it.
 
 **Evaluation and funded-stage scope:** identify funded-stage implementation
 that could be deferred, with its owner and latest required completion point.
