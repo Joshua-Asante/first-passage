@@ -8,8 +8,11 @@ written reading of the same text, which ``t00_screen verify`` compares with ``re
 
 Input (stdin): canonical JSON ``{"outcomes": [...], "parameters": {...}, "reasons": [...]}``,
 where each outcome is a PATH body without timing (``key``, ``runs.r1``/``runs.r2`` with
-``status``, ``sessions_to_pass``, ``failure_reason`` and ``kernel_outcome``), ``parameters`` is
-the signed authority's ``parameters`` and ``reasons`` the run's insufficiency codes.
+``status``, ``sessions_to_pass``, ``failure_reason`` and ``kernel_outcome``), ``parameters``
+is the signed authority's ``parameters`` and ``reasons`` the run's insufficiency codes. The
+parameters must carry the compiled rule values with the horizon pinned below, and without a
+reason code the outcomes must be exactly the plan's key universe (every root x population x
+depth); anything short of that is malformed and never a label.
 Output (stdout): exactly one label: ``INSUFFICIENT``, ``GO-evidence``,
 ``NO-GO-evidence-robust`` or ``NO-GO-evidence-UNDETERMINED-dependent``. A malformed input
 prints ``LABEL_INPUT_INVALID`` on stderr and exits 2.
@@ -23,7 +26,18 @@ import sys
 # pylint: disable=unidiomatic-typecheck
 
 POPULATIONS = ('FULL', 'H1', 'H2')
-HEADLINE_BUSTS = ('bust_daily', 'bust_static', 'bust_trailing')  # prereg v2: daily + static + trailing
+# A5 (1): the three headline busts (prereg v2) plus inactivity, which is also one of the run's
+# possible kernel outcomes alongside 'pass' and 'horizon_cap' -- read as exactly those, never
+# as a 'bust_' prefix.
+BUST_REASONS = ('bust_daily', 'bust_static', 'bust_trailing', 'bust_inactivity')
+KERNEL_OUTCOMES = BUST_REASONS + ('pass', 'horizon_cap')
+# A6's own numbers and the parameters' compiled rule values, taken from the pinned text here
+# and never from the input document: the horizon the pass day and the median are read against.
+HORIZON_SESSIONS = 1500
+A5_RULE = 'T00_A5/v1'
+MEDIAN_RULE = 'LOWER_NEAREST_RANK_INF_INCLUDED'
+SCENARIOS = ['S0']
+PASS_FLOOR_HALVES = ('BINDING', 'REPORTED')
 INFINITY = float('inf')
 
 
@@ -33,27 +47,38 @@ class LabelInputError(ValueError):
 
 def classify_run(run, deadline_only_is_bust):
     """A5 (1): ('pass', T), 'bust', or 'neither' (deadline-only uncounted, or open)."""
-    status, reason = run['status'], run['failure_reason']
+    if type(run) is not dict:
+        raise LabelInputError('a run is an object with status, sessions_to_pass, failure_reason, kernel_outcome')
+    status, day = run.get('status'), run.get('sessions_to_pass')
+    reason, kernel = run.get('failure_reason'), run.get('kernel_outcome')
+    if kernel not in KERNEL_OUTCOMES:
+        raise LabelInputError(f'kernel_outcome {kernel!r} is not one of the A5 (1) outcomes')
     if status == 'PASS':
-        if type(run['sessions_to_pass']) is not int:
-            raise LabelInputError('a passing run needs its sessions_to_pass')
-        return 'pass', run['sessions_to_pass']
+        if reason is not None or type(day) is not int or not 0 <= day <= HORIZON_SESSIONS:
+            raise LabelInputError('a passing run has no failure reason and 0 <= sessions_to_pass <= 1500')
+        return 'pass', day
+    if day is not None:
+        raise LabelInputError('only a passing run carries its sessions_to_pass')
     if status == 'UNRESOLVED':
+        if reason != 'horizon_cap':
+            raise LabelInputError('an unresolved run stopped at the horizon cap')
         return 'neither', INFINITY
-    if status != 'FAILURE':
-        raise LabelInputError(f'unknown run status {status!r}')
-    if reason in HEADLINE_BUSTS or reason == 'bust_inactivity':
-        return 'bust', INFINITY
-    if reason == 'own_flat_deadline':
-        if str(run['kernel_outcome']).startswith('bust_') or deadline_only_is_bust:
+    if status == 'FAILURE':
+        if reason in BUST_REASONS:
             return 'bust', INFINITY
-        return 'neither', INFINITY
-    raise LabelInputError(f'unclassified failure reason {reason!r}')
+        if reason == 'own_flat_deadline':
+            if kernel in BUST_REASONS or deadline_only_is_bust:
+                return 'bust', INFINITY
+            return 'neither', INFINITY
+    raise LabelInputError(f'status {status!r} with failure reason {reason!r} is not an A5 (1) class')
 
 
 def path_values(outcome, deadline_only_is_bust):
     """A5 (2)-(3): the path's (bust, T) under the pessimistic and the optimistic assignment."""
-    first, second = outcome['runs']['r1'], outcome['runs']['r2']
+    runs = outcome.get('runs')
+    if type(runs) is not dict or 'r1' not in runs or 'r2' not in runs:
+        raise LabelInputError('an outcome carries runs r1 and r2')
+    first, second = runs['r1'], runs['r2']
     one, two = (classify_run(run, deadline_only_is_bust) for run in (first, second))
     if first['status'] == second['status']:  # an agreed path: both assignments read it alike
         if one[0] == 'pass':
@@ -99,22 +124,68 @@ def _check_input(doc):
         raise LabelInputError('outcomes are a list')
 
 
-def label(outcomes, parameters, reasons):
-    """The A6 label for one complete outcome set; INSUFFICIENT when any reason exists or any
-    population is short of its frozen depth (3 roots x depth_per_root)."""
-    _check_input({'outcomes': outcomes, 'parameters': parameters, 'reasons': reasons})
-    if reasons:
-        return 'INSUFFICIENT'
-    roots = parameters['rng']['roots']
-    keys = [tuple(outcome['key']) for outcome in outcomes]
+def _outcome_keys(outcomes):
+    """The outcome rows' plan keys: each a [root, population, index], none twice."""
+    keys = []
+    for outcome in outcomes:
+        if type(outcome) is not dict:
+            raise LabelInputError('an outcome is an object with key and runs')
+        key = outcome.get('key')
+        if not _is_key(key):
+            raise LabelInputError('an outcome key is [root, population, path index]')
+        keys.append(tuple(key))
     if len(set(keys)) != len(keys):
         raise LabelInputError('an outcome key occurs twice')
+    return keys
+
+
+def _is_key(key):
+    if type(key) is not list or len(key) != 3:
+        return False
+    root, population, index = key
+    return type(root) is str and population in POPULATIONS and type(index) is int and index >= 0
+
+
+def _check_parameters(parameters):
+    """The compiled values the signed authority must carry; the horizon comes from A6, not here."""
+    if parameters.get('a5_rule') != A5_RULE or parameters.get('median_rule') != MEDIAN_RULE \
+            or parameters.get('scenarios') != SCENARIOS:
+        raise LabelInputError('a5_rule, median_rule and scenarios must be the compiled values')
+    horizon = parameters.get('horizon_sessions')
+    if type(horizon) is not int or horizon != HORIZON_SESSIONS:
+        raise LabelInputError('horizon_sessions is the A6 horizon, 1500')
+    if parameters.get('pass_floor_halves') not in PASS_FLOOR_HALVES:
+        raise LabelInputError("pass_floor_halves is 'BINDING' or 'REPORTED'")
+    if type(parameters.get('deadline_only_is_bust')) is not bool:
+        raise LabelInputError('deadline_only_is_bust is a boolean')
+    depths = parameters['depth_per_root']
+    if set(depths) != set(POPULATIONS) or any(type(depths[name]) is not int or depths[name] < 1
+                                              for name in POPULATIONS):
+        raise LabelInputError('depth_per_root is a positive depth for FULL, H1 and H2')
+    roots = parameters['rng'].get('roots')
+    if not _are_roots(roots):
+        raise LabelInputError('rng.roots are distinct non-empty strings')
+
+
+def _are_roots(roots):
+    if type(roots) is not list or not roots or len(set(roots)) != len(roots):
+        return False
+    return all(type(root) is str and root for root in roots)
+
+
+def label(outcomes, parameters, reasons):
+    """The A6 label for one complete outcome set; INSUFFICIENT only with a stated reason code."""
+    _check_input({'outcomes': outcomes, 'parameters': parameters, 'reasons': reasons})
+    keys = _outcome_keys(outcomes)
+    if reasons:
+        return 'INSUFFICIENT'
+    _check_parameters(parameters)
+    roots = parameters['rng']['roots']
     expected = {(root, population, index) for root in roots for population in POPULATIONS
                 for index in range(parameters['depth_per_root'][population])}
     if set(keys) != expected:
-        return 'INSUFFICIENT'  # not every population reached its frozen depth
+        raise LabelInputError('without a reason, the outcomes are exactly the plan key universe')
     deadline = parameters['deadline_only_is_bust']
-    horizon = parameters['horizon_sessions']
     halves = parameters['pass_floor_halves'] == 'BINDING'
     pessimistic = {population: [] for population in POPULATIONS}
     optimistic = {population: [] for population in POPULATIONS}
@@ -124,7 +195,7 @@ def label(outcomes, parameters, reasons):
         optimistic[outcome['key'][1]].append(high)
 
     def go(assignment):
-        return all(meets(assignment[population], horizon=horizon, pass_floor=population == 'FULL' or halves)
+        return all(meets(assignment[population], horizon=HORIZON_SESSIONS, pass_floor=population == 'FULL' or halves)
                    for population in POPULATIONS)
     if go(pessimistic):
         return 'GO-evidence'
