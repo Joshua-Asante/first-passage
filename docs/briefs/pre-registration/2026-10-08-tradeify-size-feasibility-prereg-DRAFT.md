@@ -285,7 +285,7 @@ grep -n "^| 7 | \*\*INFEASIBLE\*\*" "$f"
 # No result cites this file before freeze (expect no output until the run).
 grep -rl "2026-10-08-tradeify-size-feasibility-prereg" lab/ || true
 # At freeze only (each fails while DRAFT): no OWED marker, §9 signed, Status frozen.
-! grep -nE "OWED (operat[o]r)" "$f"
+! grep -nE "OWED [(]operat[o]r[)]" "$f"
 ! grep -nE '^- \*\*Signed:\*\* —$' "$f"
 grep -nE '^\*\*Status:\*\* `FROZEN [0-9]{4}-[0-9]{2}-[0-9]{2}`' "$f"
 ```
