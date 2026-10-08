@@ -536,6 +536,7 @@ The screen-authority signature (design §8 step 11) uses the same template with 
 
     Joshua confirmed (a) and (b) and set the (b) threshold on 2026-10-08, before any resolution output existed, in chat to the Deployment Coordinator: "go with your recommendation for 1".
   - While step 1 is pending, the new H, P7 re-run and Tier-2 source approval stay on hold (Joshua, 2026-10-08).
+- *2026-10-08:* size-feasibility prereg FROZEN 2026-10-08, freeze commit `103c5ea`, merged `65079a7`; §11 addendum #738.
 
 ## §10 — Audit hooks
 
