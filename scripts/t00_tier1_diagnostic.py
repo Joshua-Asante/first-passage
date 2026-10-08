@@ -30,6 +30,9 @@ Stop codes:
   PATH record came from a bracket that returned normally.
 - DRIVER_DEFECT is a driver fault, before a replay or after one has returned.
 - BUDGET is the CPU, wall or checkpoint limit.
+- EVIDENCE_WRITE_FAILED: a run that would be RESOLVED could not write ``summary.json``. A run that
+  had already stopped keeps its verdict and code; the write failure goes to stderr. Either way the
+  exit status is nonzero, and the reservation still blocks a retry.
 
 For a run, every stop's exception type and detail go to ``summary.json`` and to stderr, so a
 host fault can be told apart from a real non-reproduction.
@@ -462,16 +465,19 @@ def _parser():
     return parser
 
 
-def _run_summary(out: Path, keys_sha256, verdict, code, replayed, detail):
-    """summary.json for a reserved run, with the stop's exception type and detail."""
+def _run_summary(out: Path, keys_sha256, verdict, code, replayed, detail) -> bool:
+    """summary.json for a reserved run, with the stop's exception type and detail. Returns whether it
+    was written; a failure is reported on stderr and never swallowed silently."""
     detail = detail or {}
     try:
         _write_once(out / 'run' / 'summary.json', json.dumps(
             {'verdict': verdict, 'code': code, 'replayed': replayed, 'keys_sha256': keys_sha256,
              'exc_type': detail.get('exc_type'), 'detail': detail.get('detail'),
              'foreign_modules': detail.get('foreign_modules', [])}, sort_keys=True).encode())
+        return True
     except OSError as exc:
-        sys.stderr.write(f'SUMMARY_NOT_WRITTEN: {type(exc).__name__}: {exc}\n')
+        sys.stderr.write(f'EVIDENCE_WRITE_FAILED: {type(exc).__name__}: {exc}\n')
+        return False
 
 
 def _after_run(verdict, code, detail, foreign):
@@ -529,8 +535,11 @@ def main(argv=None) -> int:  # pylint: disable=too-many-locals,too-many-branches
                 verdict, code, detail = _after_run(verdict, code, detail, _foreign_after_run(code_root, artifacts))
                 if detail:
                     sys.stderr.write(f"{code}: {detail.get('exc_type') or '-'}: {detail.get('detail')}\n")
-                _run_summary(out, args.keys_sha256, verdict, code, done, detail)
-                reserved = False  # summary written
+                reserved = False  # the summary is attempted once, here
+                if not _run_summary(out, args.keys_sha256, verdict, code, done, detail) and code == 'OK':
+                    # A host or evidence fault, not a driver bug: an otherwise RESOLVED run is not reported
+                    # as RESOLVED without its summary. A stop already recorded keeps its verdict and code.
+                    verdict, code = 'AMBIGUOUS', 'EVIDENCE_WRITE_FAILED'
     except Stop as stop:
         verdict, code = ('AMBIGUOUS' if args.mode == 'run' else 'STOPPED'), stop.code
         sys.stderr.write(f'{stop.code}: {stop.exc_type or "-"}: {stop}\n')

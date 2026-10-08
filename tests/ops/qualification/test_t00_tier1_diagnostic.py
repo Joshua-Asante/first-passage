@@ -529,6 +529,37 @@ def test_main_runs_the_watchdog_with_the_replay_guard(driver, staged, monkeypatc
     assert isinstance(seen['watchdog'], driver.ReplayGuard) and seen['run_paths'] is seen['watchdog']
 
 
+def _summary_write_fails(driver, monkeypatch, staged):
+    original = driver._write_once
+
+    def write_once(path, data):
+        if Path(path).name == 'summary.json':
+            raise OSError(28, 'No space left on device')
+        return original(path, data)
+    monkeypatch.setattr(driver, '_write_once', write_once)
+    monkeypatch.setattr(driver, 'watchdog', lambda *a, **k: None)
+    runs = _retained(driver, 1)[1][('a', 'FULL', 0)]['runs']
+    monkeypatch.setattr(driver, 'retained', lambda m, run_dir, params: {('a', 'FULL', 0): {'runs': runs}})
+
+
+def test_a_failed_summary_write_never_reports_resolved(driver, staged, monkeypatch, capsys):
+    _summary_write_fails(driver, monkeypatch, staged)
+    assert driver.main(['run', *staged.args, '--keys-sha256', 'k']) == 3
+    captured = capsys.readouterr()
+    assert captured.out.strip() == 'T00_TIER1 run AMBIGUOUS EVIDENCE_WRITE_FAILED keys_sha256=k'
+    assert 'EVIDENCE_WRITE_FAILED: OSError' in captured.err
+    assert not (staged.out / 'run' / 'summary.json').exists() and (staged.out / 'run' / '01.json').is_file()
+
+
+def test_a_failed_summary_write_preserves_a_falsified_verdict(driver, staged, monkeypatch, capsys):
+    _summary_write_fails(driver, monkeypatch, staged)
+    staged.source.results[:] = [_sealed(pnl=1.0)]
+    assert driver.main(['run', *staged.args, '--keys-sha256', 'k']) == 3
+    captured = capsys.readouterr()
+    assert captured.out.strip() == 'T00_TIER1 run FALSIFIED NON_REPRODUCTION keys_sha256=k'
+    assert 'EVIDENCE_WRITE_FAILED: OSError' in captured.err
+
+
 def test_post_run_origin_check_never_overrides_a_stop(driver):
     falsified = driver._after_run('FALSIFIED', 'NON_REPRODUCTION', {'exc_type': None, 'detail': 'identity mismatch'},
                                   ['stray'])
