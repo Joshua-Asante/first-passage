@@ -2,8 +2,8 @@
 
 A10b is a deny-by-default lexical scan. ``ast.walk`` visits every node of every ``*.py``
 module under ``ops/`` except ``c1_rail/qualification/production_source.py`` (the
-capability's owner). It flags every call ``<any>.replay(...)``, ``<any>.replay_bracket(...)``
-and ``<any>.proof(...)``, every load of ``<any>.contract``, and every load (a call included)
+capability's owner). It flags every call ``<any>.replay(...)``, ``<any>.replay_bracket(...)``,
+``<any>.replay_bracket_with_sidecar(...)`` (T00 Tier 2) and ``<any>.proof(...)``, every load of ``<any>.contract``, and every load (a call included)
 of ``<any>.screen_epoch``, ``<any>.screen_bracket``, ``<any>._replay_raw`` and
 ``<any>._engine`` (row K9, design 2026-10-02), on any receiver: no
 receiver-name heuristics and no guard-dominance reasoning. A preceding ``verify_for`` does
@@ -37,10 +37,13 @@ from test_source_contract import NOW, build_source_case, refused
 OPS = Path(__file__).resolve().parents[3] / 'ops'
 REPO_ROOT = OPS.parent
 # P-F card note item 8: the one file scanned outside ops/, its owners named from the repository root.
-EXTRA_SCANNED = ('scripts/t00_screen_label_check.py', 'scripts/t00_tier1_diagnostic.py')
+# The Tier-2 driver (card 2026-10-08 §3.2) is scanned from the moment it exists; a scanned file that is
+# absent contributes no finding.
+EXTRA_SCANNED = ('scripts/t00_screen_label_check.py', 'scripts/t00_tier1_diagnostic.py',
+                 'scripts/t00_tier2_diagnostic.py')
 
 CAPABILITY_OWNER = 'c1_rail/qualification/production_source.py'
-CAPABILITY_CALLS = frozenset({'replay', 'replay_bracket', 'proof'})
+CAPABILITY_CALLS = frozenset({'replay', 'replay_bracket', 'replay_bracket_with_sidecar', 'proof'})
 CAPABILITY_ATTRIBUTE = 'contract'
 SCREEN_CAPABILITIES = frozenset({'screen_epoch', 'screen_bracket', '_replay_raw', '_engine'})  # row K9
 MODULE_OWNER = '<module>'
@@ -256,6 +259,8 @@ PLANTED = {
     'method_proof': ('class C:\n    def m(self, panel):\n        return self.source.proof(panel)\n', 'C.m', 'proof'),
     'class_body': ('class C:\n    value = registry.contract\n', 'C', 'contract'),
     'module_level': ('result = source.replay(path)\n', MODULE_OWNER, 'replay'),
+    'sidecar_call': ('def f(source, path):\n    return source.replay_bracket_with_sidecar(path)\n', 'f',
+                     'replay_bracket_with_sidecar'),
 }
 
 
@@ -313,6 +318,20 @@ def test_K9(tmp_path, name):
     reviewed = {(owner, 'replay_bracket'): 'reviewed'}
     assert unreviewed_uses(tmp_path, reviewed) == [(owner, name, 3)]
     assert unreviewed_uses(tmp_path, {**reviewed, (owner, name): 'reviewed'}) == []
+
+
+def test_tier2_driver_path_is_scanned(tmp_path):  # T00 Tier-2 card §3.2
+    """A sidecar call in the future Tier-2 driver is a finding until its one owner is allowlisted."""
+    relative = 'scripts/t00_tier2_diagnostic.py'
+    assert relative in EXTRA_SCANNED
+    (tmp_path / 'scripts').mkdir()
+    (tmp_path / relative).write_text('def _replay(source, path):\n'
+                                     '    return source.replay_bracket_with_sidecar(path)\n', encoding='utf-8')
+    (tmp_path / 'ops').mkdir()
+    finding = [(f'{relative}:_replay', 'replay_bracket_with_sidecar', 2)]
+    assert unreviewed_uses(tmp_path / 'ops', {}, repo_root=tmp_path) == finding
+    assert unreviewed_uses(tmp_path / 'ops', {(f'{relative}:_replay', 'replay_bracket_with_sidecar'): 'reviewed'},
+                           repo_root=tmp_path) == []
 
 
 def test_label_script_is_scanned(tmp_path):  # P-F card note item 8
