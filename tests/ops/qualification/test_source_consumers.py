@@ -37,7 +37,7 @@ from test_source_contract import NOW, build_source_case, refused
 OPS = Path(__file__).resolve().parents[3] / 'ops'
 REPO_ROOT = OPS.parent
 # P-F card note item 8: the one file scanned outside ops/, its owners named from the repository root.
-EXTRA_SCANNED = ('scripts/t00_screen_label_check.py',)
+EXTRA_SCANNED = ('scripts/t00_screen_label_check.py', 'scripts/t00_tier1_diagnostic.py')
 
 CAPABILITY_OWNER = 'c1_rail/qualification/production_source.py'
 CAPABILITY_CALLS = frozenset({'replay', 'replay_bracket', 'proof'})
@@ -81,6 +81,10 @@ ALLOWLIST = {
         'ProductionSource. The provider admits nothing itself and does not check what it is given; its current '
         'construction sites in ops/ (an observation, not enforced) are compute._run_checkpoint_compute (after '
         'verify_for) and ProductionExecutor.run_stage (after _admit).',
+    ('scripts/t00_tier1_diagnostic.py:_replay', 'replay_bracket'):
+        'T00 step-12 diagnostic Tier 1 (card 2026-10-08): the p7_driver pattern. build_source builds the '
+        'ProductionSource from a validate_source_contract receipt; replay_bracket on the source-only r3c source '
+        'returns SourceOnlyBracket (sealed, no event stream), and verify_for refuses it at every qualification consumer.',
     # --- the T00 screen entry points (design 2026-10-02 §3.3, rows K5-K8; moved out of
     # ProductionSource by Codex r4180236028 so production_source imports no screen module) ---
     ('c1_rail/qualification/screen_authority.py:screen_epoch', 'contract'):
