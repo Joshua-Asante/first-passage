@@ -107,7 +107,7 @@ The mechanism reading (shock versus grind, recovery depth) is descriptive and co
 3. **`selftest`** (no replay). A seed or `path_sha256` mismatch is `DRIVER_DEFECT`, and nothing is replayed.
 4. **`run`, detached:**
    - Launch with PowerShell `Start-Process -PassThru` from the H checkout, with stdout and stderr to files under the private output directory (§6).
-   - Watch the PID, and kill it with `Stop-Process` at **3 h wall** from launch.
+   - Watch the PID, and kill it with `Stop-Process` at **3 h 10 min wall** from launch. This is a backstop behind the driver's own 3 h wall stop, timed so the two do not race.
    - The driver's watchdog hard-stops only while a replay is in progress, using a guard flag under a lock. Outside a replay, the main thread's own checks stop the run. So a detected mismatch is never reported as BUDGET, and no record is cut mid-write.
    - Every output is written create-once and atomically (a synced temporary file, then `os.replace`).
    - The driver itself refuses to start path N+1 if that would cross **2 CPU-hours** or 3 h of wall time, measured from its own start plus the last path's cost (`BUDGET`).
