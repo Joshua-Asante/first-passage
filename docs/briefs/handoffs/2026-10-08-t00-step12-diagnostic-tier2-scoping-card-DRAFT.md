@@ -62,7 +62,7 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitio
 - **Breach bar:** the bar, or the settlement step after the last bar (`replay.py:634`), where the breach session's combined intraday low is set. Each run (R1, R2) uses its own breach bar.
 - **Leg value:** cumulative realized P&L net of commission plus the open-P&L mark. Combined equity is cash plus every leg's open mark (`replay.py:621-622`), so leg values sum to the combined value at any bar.
 - **Peak-to-breach drawdown:** combined value at the breach bar minus combined value at the peak close. A leg's share is its value change over the same span divided by that drawdown. Shares sum to one by construction.
-- **Control runs:** runs whose retained status is not `FAILURE` (`PASS` or `UNRESOLVED`). They have no breach, so Q1 and Q6 use their deepest drawdown (deepest combined bar low against the prior end-of-session peak), measured up to the pass day for `PASS` runs and over the full horizon for `UNRESOLVED` runs. A control run with no drawdown is excluded from share statistics and counted. A leg's bust share means something only against its share in these drawdowns.
+- **Control runs:** runs whose retained status is not `FAILURE` (`PASS` or `UNRESOLVED`). They have no breach, so Q1 and Q6 use their deepest drawdown (deepest combined bar low against the prior end-of-session peak), measured up to the pass day for `PASS` runs and over the full horizon for `UNRESOLVED` runs. A control run with no drawdown is excluded from share statistics and counted. The **control is usable** when at least one control run has a drawdown. A leg's bust share means something only against its share in these drawdowns.
 - **Other failures:** a `FAILURE` run whose kernel outcome is not `bust_trailing` (`runner.py:36-43`: daily, static, inactivity, own-flat deadline) is neither busting nor control. It is reported separately and never pooled.
 - **Primary share:** a leg's share of the peak-to-breach drawdown. The breach-session share is secondary and used only by the shock rule.
 - **Leading leg:** the leg with the largest primary share in a run.
@@ -84,7 +84,7 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitio
 
 ### §2.1 Pattern criteria (frozen when this card merges)
 
-The defaults below freeze when this card merges. They are blind only if that merge comes before anyone who sets or reviews them reads the Tier-1 report, which uses the same keys. If it does not, the defaults are treated as a change made at admission (below). Tier 1 already reads shock versus grind on those keys, so option (a) is not fully blind; the report says so. Joshua may change a criterion at admission, after the Tier-1 report. A change made then is recorded as exposure, and the changed criterion is evaluated only on option (b) keys that exclude the Tier-1 keys.
+The thresholds below and pattern rows 1–4 and 6 are blind because their text was fixed at `34c31c4` (2026-10-08 ~07:04Z), before anyone outside the Tier-1 executor read Tier-1 findings. They stay blind as long as that text is unchanged when the card merges, whoever has read Tier 1 by then. A later change to that text by a Tier-1 reader is a change made at admission (below). Tier 1 already reads shock versus grind on those keys, so option (a) is not fully blind; the report says so. Joshua may change a criterion at admission, after the Tier-1 report. A change made then is recorded as exposure, and the changed criterion is evaluated only on option (b) keys that exclude the Tier-1 keys.
 - **Concentrated:** one leg's primary share is at least 0.5 in at least two-thirds of busting runs, and its median busting share exceeds its median control share by at least 0.25 (a difference, so a zero or negative control median does not break it). With no usable control run, Concentrated is not evaluable; rows 1, 4 and 5 do not hold, and row 3 holds only through crowding.
 - **Busts are shocks:** at least two-thirds of busting runs are shocks, with a breach-session fraction of at least 0.5. **Busts are grind:** at least two-thirds are grind. Otherwise mixed.
 - **Cap often binds:** the risk-sized leg's cap binds on at least a quarter of its entries in busting runs.
@@ -101,7 +101,7 @@ The defaults below freeze when this card merges. They are blind only if that mer
 | (Option (b) keys excluding the Tier-1 keys only; added after Tier 1, see below) Busts are grind, no leg is concentrated, and the control is usable | Per-session risk reduction while the cushion is thin: a uniform or early-phase size cut across legs |
 | None of rows 1–5 holds | No evidence-supported successor |
 
-Rows 1–5 may hold together; the report names each, in table order. Row 6 holds only when none of them does. Mixed or shock busts with no leg concentrated still fall to row 6.
+Rows 1–5 may hold together; the report names each, in table order. Row 6 holds only when none of them does. Mixed or shock busts with no leg concentrated fall to row 6 unless row 2 or 3 holds. When row 5 was not checked (option (a), or no option (b) keys outside the Tier-1 keys), the report says so next to any row 6 result.
 
 **Row 5 provenance.** Joshua chose to add row 5 on 2026-10-08, after he and the Deployment Coordinator had read the Tier-1 findings (§7). It is an admission-time change under §2.1: it uses only the frozen thresholds above (grind, Concentrated, control), adds no threshold and changes none, is fixed now and never changed after Tier-2 data exist, and is evaluated only on option (b) keys that exclude the Tier-1 keys. Rows 1–4 and every §2.1 threshold are unchanged since `34c31c4`.
 
@@ -150,7 +150,7 @@ About 2–3 agent-days for build, tests and one or two review rounds. The govern
 
 **Sample options (OWED, operator).**
 - (a) The frozen Tier-1 keys (`keys.json` `60c128a7…329e`).
-- (b) A larger set, frozen before any replay, stratified like Tier 1 and weighted to agreed `FAILURE` and `UNDETERMINED` in H2. Where §2.1 requires it, the set excludes the Tier-1 keys.
+- (b) A larger set, frozen before any replay, stratified like Tier 1 and weighted to agreed `FAILURE` and `UNDETERMINED` in H2. When row 5 is to be read, or any criterion was changed at admission, the whole set excludes the Tier-1 keys, so every row is evaluated on the same keys.
 
 Selected cases cannot estimate rates or prove a change helps. Say so in the report.
 
@@ -193,7 +193,7 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 - **Acceptor:** the Deployment Coordinator.
 - **Decisions:** Joshua keeps admission, sample, signing and every investment decision.
 - **Exposure:** readers of Tier-2 output join the Tier-1 reader log. Any successor pre-registration names them (design §4.5). Tier-2 output is exposure for that pre-registration.
-- **Exposure before merge (2026-10-08).** Joshua saw the Tier-1 findings summary at about 07:12Z (no series, no keys), before this card merged. The §2.1 defaults were written and reviewed by readers who had not seen the Tier-1 report, and are unchanged since `34c31c4`. A merge that leaves §2.1 unchanged keeps them blind. Any edit to §2.1 by a Tier-1 reader is an admission-time change (§2.1). The Deployment Coordinator read the Tier-1 report at about 08:10Z, after `34c31c4`. Row 5 of the pattern table is the one such change (§2.1, row 5 provenance). The shock/grind reading under option (a) is partly known to Joshua; the report says so.
+- **Exposure before merge (2026-10-08).** Joshua saw the Tier-1 findings summary at about 07:12Z (no series, no keys), before this card merged. The §2.1 thresholds and rows 1–4 and 6 were written and reviewed by readers who had not seen the Tier-1 report, and their text is unchanged since `34c31c4`; that text, not the merge time, is what keeps them blind. Any later edit to that text by a Tier-1 reader is an admission-time change (§2.1). The Deployment Coordinator read the Tier-1 report at about 08:10Z, after `34c31c4`. Row 5 of the pattern table is the one such change (§2.1, row 5 provenance). The shock/grind reading under option (a) is partly known to Joshua; the report says so.
 - **Selection count.** Choosing a §2 pattern from the sampled paths is a selection. It counts as one trial (K + 1) for any successor it points to. That successor's test discloses or excludes the sampled paths.
 
 ## §8 — OWED (operator)
@@ -204,7 +204,7 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 4. Diagnostic purpose, evidence-class and scope names; keep the receipt type or extend `_is_source_only` (§3.4); a new source approval.
 5. Executor seat.
 6. Tier-1 actual per-path cost (from its return).
-7. The §2.1 pattern criteria: the defaults freeze at merge. A change at admission is exposure and runs only on option (b) keys excluding the Tier-1 keys. Row 5 is such a change (Joshua, 2026-10-08); because of it, any admission that wants row 5 read needs option (b).
+7. The §2.1 pattern criteria: the `34c31c4` text is blind and freezes at merge. A change at admission is exposure and runs only on option (b) keys excluding the Tier-1 keys. Row 5 is such a change (Joshua, 2026-10-08); because of it, any admission that wants row 5 read needs option (b) with the whole set excluding the Tier-1 keys.
 
 Acceptance scope is not owed: identity on the sampled runs plus the sidecar off/on tests (§3.3).
 
