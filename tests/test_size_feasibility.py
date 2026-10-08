@@ -260,8 +260,21 @@ def _derive(calls, **kw):
     return rsf.derive_label(calls, THR, ref_g1g2="G", h2_pass_binding=kw.pop("h2", False), **kw)
 
 
-def test_infeasible_when_every_k_fails_an_eod_bust_gate():
-    assert _derive(_grid())["label"] == rsf.INFEASIBLE
+def test_grid_no_clear_when_every_k_fails_an_eod_bust_gate():
+    r = _derive(_grid())
+    assert r["label"] == rsf.GRID_NO_CLEAR == "GRID-NO-CLEAR"
+    assert "INFEASIBLE" not in json.dumps(r)
+
+
+def test_run_prints_the_label_only(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(rsf, "freeze_gate", lambda: None)
+    monkeypatch.setattr(rsf.rsb, "assert_out_dir_allowed", lambda out, repo_root: None)
+    monkeypatch.setattr(rsf, "checkout_preflight", lambda bundle: None)
+    monkeypatch.setattr(rsf.ffr, "candidate_trigger", lambda: "0.01")
+    monkeypatch.setattr(rsf, "run_check", lambda *a, **k: {"label": rsf.GRID_NO_CLEAR})
+    assert rsf.main(["run", "--out", str(tmp_path)]) == 0
+    out = capsys.readouterr().out.strip().splitlines()
+    assert len(out) == 1 and out[0].endswith("label GRID-NO-CLEAR") and "stop" not in out[0].lower()
 
 
 def test_feasible_reports_every_clearing_k_and_the_largest():
@@ -381,7 +394,7 @@ def _run(tmp_path, table, budget_s, repro=None, seconds=1.0):
                          repro_report_sha=rs, repro_depth_sha=ds)
 
 
-def test_budget_cap_stop_reads_insufficient_never_infeasible(tmp_path):
+def test_budget_cap_stop_reads_insufficient_never_grid_no_clear(tmp_path):
     table = {**_grid(), "a": _rec(*FAIL)}
     capped = _run(tmp_path / "cap", dict(table), budget_s=8.0)
     assert capped["label"] == rsf.INCONCLUSIVE
@@ -391,7 +404,7 @@ def test_budget_cap_stop_reads_insufficient_never_infeasible(tmp_path):
     assert runs[7]["step"] == "k0.25_FULL" and runs[7]["status"] == "ok"
     assert sum(r["status"] == "skipped: budget cap" for r in runs) == 21 - 7
     assert json.loads((tmp_path / "cap" / "verdict.json").read_text())["label"] == rsf.INCONCLUSIVE
-    assert _run(tmp_path / "full", dict(table), budget_s=1e6)["label"] == rsf.INFEASIBLE
+    assert _run(tmp_path / "full", dict(table), budget_s=1e6)["label"] == rsf.GRID_NO_CLEAR
 
 
 def test_arm_completing_over_the_cap_does_not_count(tmp_path):
@@ -485,8 +498,10 @@ def test_spawn_records_failure_and_kills_over_cpu_cap(tmp_path):
 
 
 def test_freeze_gate_pins_the_frozen_blob_and_blocks_git_errors():
-    rsf.freeze_gate(lambda *a: rsf.FROZEN_PREREG_BLOB + "\n")
-    with pytest.raises(rsf.Blocked, match="not the frozen"):
+    for blob in ("d0ddcdeaf14c92613b74b363e09d3c7a962526ae", "cdcd60fe3b7941cf6337b2c8c8ad94f188afa038"):
+        rsf.freeze_gate(lambda *a, b=blob: b + "\n")
+    assert len(rsf.FROZEN_PREREG_BLOBS) == 2
+    with pytest.raises(rsf.Blocked, match="not one of the frozen"):
         rsf.freeze_gate(lambda *a: "0" * 40)
 
     def broken(*a):

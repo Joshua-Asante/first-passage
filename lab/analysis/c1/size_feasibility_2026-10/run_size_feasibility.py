@@ -55,7 +55,12 @@ PRIMARY = ffr.PRIMARY
 PRIVATE = PRIMARY / "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts"
 BUNDLE = PRIVATE / "four-firm-remc-rerun-2026-10-06-depth"
 PREREG = "docs/briefs/pre-registration/2026-10-08-tradeify-size-feasibility-prereg-DRAFT.md"
-FROZEN_PREREG_BLOB = "d0ddcdeaf14c92613b74b363e09d3c7a962526ae"  # git rev-parse 65079a7:<PREREG>
+# The only accepted prereg bytes on origin/main: the frozen text (main 65079a7, no §11),
+# and the same file with the §11 addendum (#738 head d104e13). Any other blob blocks.
+FROZEN_PREREG_BLOBS = {
+    "d0ddcdeaf14c92613b74b363e09d3c7a962526ae": "frozen, §11 absent (65079a7)",
+    "cdcd60fe3b7941cf6337b2c8c8ad94f188afa038": "frozen + §11 addendum (#738 d104e13)",
+}
 
 # §2.1 digest chain and reproduction targets (RESULTS, depth re-run root).
 PREP_SHA = "feefa7ab28ff17d8b1a727bae0adf6656369a4ea73eafea2218cdafbd8f4c3b5"
@@ -74,7 +79,8 @@ VACUITY_TEXT = "real intraday_low channel is vacuous"
 FROZEN_DEPTH = (10_000, (42, 123, 2026), 1500)
 
 INVALID, FEASIBLE, CLOCK_DEP, GRID_GAP = "INVALID", "FEASIBLE", "CLOCK-DEPENDENT", "GRID-GAP"
-PASS_LIMITED, INCONCLUSIVE, INFEASIBLE = "PASS-LIMITED", "INCONCLUSIVE", "INFEASIBLE"
+# §11 item 1: the §6 row-7 label is reported as GRID-NO-CLEAR (conditions unchanged).
+PASS_LIMITED, INCONCLUSIVE, GRID_NO_CLEAR = "PASS-LIMITED", "INCONCLUSIVE", "GRID-NO-CLEAR"
 
 
 class Invalid(RuntimeError):
@@ -96,15 +102,15 @@ def _canon(obj) -> str:
 # ── freeze gate ───────────────────────────────────────────────────────────
 
 def freeze_gate(git: Callable[..., str] | None = None) -> None:
-    """§R: refuse to score unless origin/main holds the frozen prereg bytes (blob pinned
-    at main 65079a7). Any git failure blocks."""
+    """§R: refuse to score unless origin/main holds one of the pinned prereg blobs
+    (FROZEN_PREREG_BLOBS). Any git failure blocks."""
     git = git or ffr._git
     try:
         blob = git("rev-parse", f"origin/main:{PREREG}").strip()
     except (subprocess.CalledProcessError, OSError) as exc:
         raise Blocked(f"cannot read the prereg on origin/main: {exc!r}") from exc
-    if blob != FROZEN_PREREG_BLOB:
-        raise Blocked(f"prereg on origin/main is blob {blob}, not the frozen {FROZEN_PREREG_BLOB}")
+    if blob not in FROZEN_PREREG_BLOBS:
+        raise Blocked(f"prereg on origin/main is blob {blob}, not one of the frozen {sorted(FROZEN_PREREG_BLOBS)}")
 
 
 def checkout_preflight(bundle: Path, *, expected_sha: str = REPRO_REPORT_SHA,
@@ -382,7 +388,7 @@ def derive_label(calls: dict, thr, *, ref_g1g2: str, h2_pass_binding: bool = H2_
         return {**out, "label": PASS_LIMITED}
     if any(per_k[k]["status"] == "insufficient" for k in GRID):
         return {**out, "label": INCONCLUSIVE}
-    return {**out, "label": INFEASIBLE}
+    return {**out, "label": GRID_NO_CLEAR}
 
 
 # ── orchestration ─────────────────────────────────────────────────────────
