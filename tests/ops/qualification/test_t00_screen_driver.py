@@ -30,6 +30,7 @@ import io
 import json
 import os
 from pathlib import Path
+import random
 import shutil
 import subprocess
 import sys
@@ -844,17 +845,17 @@ def verdict_imports(source: str):
 
 
 def test_X5(tmp_path):
-    """The label recompute imports nothing from ``t00_screen.verdict`` (nor any c1_rail module), and
-    labels from #581 A5/A6 alone."""
+    """The label recompute imports nothing from ``t00_screen.verdict`` (nor any c1_rail module),
+    loads no module dynamically and edits no import path, and labels from #581 A5/A6 alone."""
     source = (REPO / LABEL_SCRIPT).read_text(encoding='utf-8')
     assert verdict_imports(source) == []
+    assert not [token for token in ('importlib', 'runpy', '__import__', 'sys.path') if token in source]
     planted = source + '\nfrom c1_rail.qualification.t00_screen import verdict\n'
     assert verdict_imports(planted)
-    spec = importlib.util.spec_from_file_location('t00_label_check', REPO / LABEL_SCRIPT)
-    label = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(label)
+    label = _label_module()
     params = {'depth_per_root': {'FULL': 1, 'H1': 1, 'H2': 1}, 'rng': {'roots': ['a']}, 'horizon_sessions': 1500,
-              'deadline_only_is_bust': True, 'pass_floor_halves': 'BINDING'}
+              'deadline_only_is_bust': True, 'pass_floor_halves': 'BINDING', 'a5_rule': 'T00_A5/v1',
+              'median_rule': 'LOWER_NEAREST_RANK_INF_INCLUDED', 'scenarios': ['S0']}
 
     def run(status, stp=None, reason=None, kernel='pass'):
         return {'status': status, 'sessions_to_pass': stp, 'failure_reason': reason, 'kernel_outcome': kernel}
@@ -868,7 +869,224 @@ def test_X5(tmp_path):
     bust = run('FAILURE', None, 'bust_daily', 'bust_daily')
     assert label.label([dict(outcomes[0], runs={'r1': bust, 'r2': bust})] + outcomes[1:], params, []) == \
         'NO-GO-evidence-robust'
-    assert label.label(outcomes[:2], params, []) == 'INSUFFICIENT'  # H2 short of its depth
+    with pytest.raises(label.LabelInputError):
+        label.label(outcomes[:2], params, [])  # H2 short of its depth without a stated reason
+    assert label.label(outcomes[:2], params, ['BUDGET_EXHAUSTED']) == 'INSUFFICIENT'
+
+
+# ---- row X5: the label recompute against verdict.evaluate (differential) ---------------------------
+
+def _label_module():
+    """The label recompute loaded as its own module (row X5): never imported from the package."""
+    spec = importlib.util.spec_from_file_location('t00_label_check', REPO / LABEL_SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _verdict_module():
+    return importlib.import_module('c1_rail.qualification.t00_screen.verdict')
+
+
+def _label_params(**overrides):
+    """A parameter set the compiled screen would sign: the pinned rules, the A6 horizon and a plan."""
+    params = {'a5_rule': 'T00_A5/v1', 'median_rule': 'LOWER_NEAREST_RANK_INF_INCLUDED', 'scenarios': ['S0'],
+              'horizon_sessions': 1500, 'pass_floor_halves': 'REPORTED', 'deadline_only_is_bust': True,
+              'rng': {'roots': ['root-a']}, 'depth_per_root': {'FULL': 1, 'H1': 1, 'H2': 1}}
+    params.update(overrides)
+    return params
+
+
+def _lrun(status, day=None, reason=None, kernel='pass'):
+    """A run exactly as the label script reads it: the scored fields, without the timing ones."""
+    return {'status': status, 'sessions_to_pass': day, 'failure_reason': reason, 'kernel_outcome': kernel}
+
+
+def _lpass(day=4):
+    return _lrun('PASS', day, None, 'pass')
+
+
+def _lopen():
+    return _lrun('UNRESOLVED', None, 'horizon_cap', 'horizon_cap')
+
+
+def _lbust(reason='bust_daily'):
+    return _lrun('FAILURE', None, reason, reason)
+
+
+def _ldeadline(kernel='pass'):
+    """A5 (1) FAILURE ``own_flat_deadline``: a bust iff the kernel is one, else deadline-only."""
+    return _lrun('FAILURE', None, 'own_flat_deadline', kernel)
+
+
+def _label_rows(params, per_population, overrides=None):
+    """The label script's rows for one complete plan key universe (root x population x depth)."""
+    rows, overrides = [], overrides or {}
+    for root in params['rng']['roots']:
+        for population in ('FULL', 'H1', 'H2'):
+            for index in range(params['depth_per_root'][population]):
+                key = (root, population, index)
+                first, second = overrides[key] if key in overrides else per_population[population]
+                rows.append({'key': list(key), 'runs': {'r1': dict(first), 'r2': dict(second)}})
+    return rows
+
+
+def _verdict_rows(label_rows):
+    """The same book as PATH bodies: each run's consumed split count and the bracket status the
+    runs' agreement gives (verdict checks both; the label script never reads them)."""
+    rows = []
+    for row in label_rows:
+        runs = {name: dict(run, consumed_intrabar_split_count=0) for name, run in row['runs'].items()}
+        first, second = (row['runs'][name]['status'] for name in ('r1', 'r2'))
+        rows.append({'key': list(row['key']), 'bracket_status': first if first == second else 'UNDETERMINED',
+                     'runs': runs})
+    return rows
+
+
+def _assert_agrees(label, label_rows, params, reasons=()):
+    """The independent recompute and verdict.evaluate give the same label for one book."""
+    verdict = _verdict_module()
+    found = verdict.evaluate(_verdict_rows(label_rows), params, list(reasons))
+    expected = 'INSUFFICIENT' if isinstance(found, verdict.Insufficient) else found.label
+    assert label.label(label_rows, params, list(reasons)) == expected
+    return expected
+
+
+_AGREED_PASSES = {population: (_lpass(), _lpass()) for population in ('FULL', 'H1', 'H2')}
+_AGREED_DEADLINE = {population: (_ldeadline(), _ldeadline()) for population in ('FULL', 'H1', 'H2')}
+# case -> (parameter overrides, per-population pairs, per-key pairs, the label both must give)
+DIFFERENTIAL_BOOKS = {
+    'all agreed passes': ({}, _AGREED_PASSES, {}, 'GO-evidence'),
+    'h1 without passes, halves reported': ({'deadline_only_is_bust': False},
+                                           {'FULL': _AGREED_PASSES['FULL'], 'H1': _AGREED_DEADLINE['H1'],
+                                            'H2': _AGREED_PASSES['H2']}, {}, 'GO-evidence'),
+    'h1 without passes, halves binding': ({'deadline_only_is_bust': False, 'pass_floor_halves': 'BINDING'},
+                                          {'FULL': _AGREED_PASSES['FULL'], 'H1': _AGREED_DEADLINE['H1'],
+                                           'H2': _AGREED_PASSES['H2']}, {}, 'NO-GO-evidence-robust'),
+    'deadline-only at the horizon cap, counted': (
+        {}, {'FULL': _AGREED_PASSES['FULL'], 'H1': (_ldeadline('horizon_cap'), _ldeadline('horizon_cap')),
+             'H2': _AGREED_PASSES['H2']}, {}, 'NO-GO-evidence-robust'),
+    'deadline-only at the horizon cap, uncounted': (
+        {'deadline_only_is_bust': False},
+        {'FULL': _AGREED_PASSES['FULL'], 'H1': (_ldeadline('horizon_cap'), _ldeadline('horizon_cap')),
+         'H2': _AGREED_PASSES['H2']}, {}, 'GO-evidence'),
+    'own_flat_deadline with a bust kernel': (
+        {'deadline_only_is_bust': False}, {'FULL': _AGREED_PASSES['FULL'],
+                                           'H1': (_ldeadline('bust_daily'), _ldeadline('bust_daily')),
+                                           'H2': _AGREED_PASSES['H2']}, {},
+        'NO-GO-evidence-robust'),
+    'busts exactly five percent': (
+        {'rng': {'roots': ['root-a', 'root-b']}, 'depth_per_root': {'FULL': 10, 'H1': 1, 'H2': 1}},
+        _AGREED_PASSES, {('root-a', 'FULL', 9): (_lbust(), _lbust())}, 'GO-evidence'),
+    'busts just over five percent': (
+        {'rng': {'roots': ['root-a', 'root-b']}, 'depth_per_root': {'FULL': 10, 'H1': 1, 'H2': 1}},
+        _AGREED_PASSES, {('root-a', 'FULL', 9): (_lbust(), _lbust()), ('root-b', 'FULL', 9): (_lbust(), _lbust())},
+        'NO-GO-evidence-robust'),
+    'pass floor exactly fifty percent at the horizon': (
+        {'rng': {'roots': ['root-a', 'root-b']}, 'pass_floor_halves': 'BINDING', 'deadline_only_is_bust': False},
+        _AGREED_PASSES, {('root-a', 'FULL', 0): (_lpass(1500), _lpass(1500)),
+                         ('root-b', 'FULL', 0): _AGREED_DEADLINE['FULL']}, 'GO-evidence'),
+    'an all-undetermined population': (
+        {}, {'FULL': (_lpass(), _lopen()), 'H1': (_lbust(), _lopen()), 'H2': _AGREED_PASSES['H2']}, {},
+        'NO-GO-evidence-UNDETERMINED-dependent'),
+    'agreed passes on different days': (  # T <= 1500, so later vs earlier day never moves a label
+        {'rng': {'roots': ['root-a', 'root-b']}, 'pass_floor_halves': 'BINDING'}, _AGREED_PASSES,
+        {('root-a', 'FULL', 0): (_lpass(4), _lpass(1500)), ('root-b', 'FULL', 0): (_lpass(1500), _lpass(4))},
+        'GO-evidence'),
+}
+
+
+@pytest.mark.parametrize('case', sorted(DIFFERENTIAL_BOOKS))
+def test_label_recompute_agrees_with_verdict(case):
+    """Row X5's differential follow-up: for each hand-built book, the independent recompute gives
+    verdict.evaluate's own label, on the same rows with the timing fields stripped for it."""
+    label = _label_module()
+    overrides, per_population, key_pairs, expected = DIFFERENTIAL_BOOKS[case]
+    params = _label_params(**overrides)
+    assert _assert_agrees(label, _label_rows(params, per_population, key_pairs), params) == expected
+
+
+def test_label_recompute_agrees_with_verdict_over_random_books():
+    """A seeded random differential loop (2000 books, depths 1-4, roots a/b/c): the independent
+    recompute and verdict.evaluate never disagree, and every label occurs."""
+    label = _label_module()
+    rng = random.Random(20261002)
+    days = (0, 1, 4, 750, 1499, 1500)
+
+    def a_pass():
+        return _lrun('PASS', rng.choice(days), None, 'pass')
+
+    def a_bust():
+        reason = rng.choice(('bust_daily', 'bust_static', 'bust_trailing', 'bust_inactivity'))
+        return _lrun('FAILURE', None, reason, reason)
+
+    def an_open():
+        return _lrun('UNRESOLVED', None, 'horizon_cap', 'horizon_cap')
+
+    def a_deadline():
+        return _lrun('FAILURE', None, 'own_flat_deadline', rng.choice(('pass', 'horizon_cap', 'bust_trailing')))
+    kinds = (a_pass, a_bust, an_open, a_deadline, a_deadline)
+    weights = ((0.9, 0.0, 0.05, 0.025, 0.025), (0.6, 0.05, 0.1, 0.125, 0.125), (0.2, 0.2, 0.2, 0.2, 0.2),
+               (0.15, 0.45, 0.1, 0.15, 0.15))
+    seen = set()
+    for _ in range(2000):
+        params = _label_params(pass_floor_halves=rng.choice(('REPORTED', 'BINDING')),
+                               deadline_only_is_bust=rng.choice((True, False)), rng={'roots': ['a', 'b', 'c']},
+                               depth_per_root={p: rng.randint(1, 4) for p in ('FULL', 'H1', 'H2')})
+        table = rng.choice(weights)  # quiet, even and bust-heavy books, so every label occurs
+        pairs = {(root, population, index): (rng.choices(kinds, table)[0](), rng.choices(kinds, table)[0]())
+                 for root in ('a', 'b', 'c') for population in ('FULL', 'H1', 'H2')
+                 for index in range(params['depth_per_root'][population])}
+        reasons = ['BUDGET_EXHAUSTED'] if rng.random() < 0.05 else []
+        seen.add(_assert_agrees(label, _label_rows(params, {}, pairs), params, reasons))
+    assert seen == {'GO-evidence', 'NO-GO-evidence-robust', 'NO-GO-evidence-UNDETERMINED-dependent', 'INSUFFICIENT'}
+
+
+def _label_document():
+    """One well-formed label-check document: a complete one-depth plan of agreed passes."""
+    params = _label_params()
+    return {'outcomes': _label_rows(params, _AGREED_PASSES), 'parameters': params, 'reasons': []}
+
+
+# Each malformed input of the review: parameters off the compiled values, a key off the plan
+# universe, an incomplete universe with no reason, and runs off the A5 (1) classes.
+LABEL_REFUSALS = {
+    'a5_rule v2': lambda doc: doc['parameters'].update(a5_rule='T00_A5/v2'),
+    'median_rule upper': lambda doc: doc['parameters'].update(median_rule='UPPER'),
+    'horizon ten sessions': lambda doc: doc['parameters'].update(horizon_sessions=10),
+    'halves lowercase': lambda doc: doc['parameters'].update(pass_floor_halves='binding'),
+    'deadline flag as text': lambda doc: doc['parameters'].update(deadline_only_is_bust='false'),
+    'h2 depth zero': lambda doc: doc['parameters']['depth_per_root'].update(H2=0),
+    'full depth boolean': lambda doc: doc['parameters']['depth_per_root'].update(FULL=True),
+    'junk key root': lambda doc: doc['outcomes'][0].update(key=['junk-root', 'FULL', 0]),
+    'index beyond the depth': lambda doc: doc['outcomes'][2].update(key=['root-a', 'H2', 1]),
+    'partial depth without a reason': lambda doc: doc['outcomes'].pop(2),
+    'unresolved with a bust reason': lambda doc: doc['outcomes'][0]['runs'].update(
+        r1=_lrun('UNRESOLVED', None, 'bust_daily', 'horizon_cap')),
+    'pass with a failure reason': lambda doc: doc['outcomes'][0]['runs'].update(
+        r1=_lrun('PASS', 4, 'bust_daily', 'pass')),
+    'pass day below zero': lambda doc: doc['outcomes'][0]['runs'].update(r1=_lrun('PASS', -1, None, 'pass')),
+    'kernel outcome unknown': lambda doc: doc['outcomes'][0]['runs'].update(
+        r1=_lrun('FAILURE', None, 'own_flat_deadline', 'bust_whatever')),
+}
+
+
+@pytest.mark.parametrize('case', sorted(LABEL_REFUSALS))
+def test_label_script_refuses_malformed_input(case):
+    """Every malformed document of the review: exit 2, LABEL_INPUT_INVALID on stderr, no label."""
+    doc = _label_document()
+    LABEL_REFUSALS[case](doc)
+    out, err = io.StringIO(), io.StringIO()
+    assert _label_module().main(stdin=io.StringIO(json.dumps(doc)), stdout=out, stderr=err) == 2
+    assert out.getvalue() == '' and err.getvalue() == 'LABEL_INPUT_INVALID\n'
+
+
+def test_label_script_labels_the_well_formed_document():
+    """Twin: the same document untouched prints its label and exits 0."""
+    doc = _label_document()
+    out, err = io.StringIO(), io.StringIO()
+    assert _label_module().main(stdin=io.StringIO(json.dumps(doc)), stdout=out, stderr=err) == 0
+    assert out.getvalue() == 'GO-evidence\n' and err.getvalue() == ''
 
 
 SCREEN_SCAN = ('ops/c1_rail/qualification/screen_authority.py', 'ops/c1_rail/qualification/t00_screen')
