@@ -84,7 +84,7 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitio
 
 ### §2.1 Pattern criteria (frozen when this card merges)
 
-The thresholds below and pattern rows 1–4 and 6 are blind because their text was fixed at `34c31c4` (2026-10-08 ~07:04Z), before anyone outside the Tier-1 executor read Tier-1 findings. They stay blind as long as that text is unchanged when the card merges, whoever has read Tier 1 by then. A later change to that text by a Tier-1 reader is a change made at admission (below). Tier 1 already reads shock versus grind on those keys, so option (a) is not fully blind; the report says so. Joshua may change a criterion at admission, after the Tier-1 report. A change made then is recorded as exposure, and the changed criterion is evaluated only on option (b) keys that exclude the Tier-1 keys.
+The thresholds below and pattern rows 1–4 are blind because their text was fixed at `34c31c4` (2026-10-08 ~07:04Z), before anyone outside the Tier-1 executor read Tier-1 findings. They stay blind as long as that text is unchanged when the card merges, whoever has read Tier 1 by then. A later change to that text by a Tier-1 reader is a change made at admission (below). Row 6 and the no-control clause changed only to take in row 5, so they share row 5's exposure. Tier 1 already reads shock versus grind on those keys, so option (a) is not fully blind; the report says so. Joshua may change a criterion at admission, after the Tier-1 report. A change made then is recorded as exposure, and the changed criterion is evaluated only under option (b) with a set that excludes every Tier-1 key.
 - **Concentrated:** one leg's primary share is at least 0.5 in at least two-thirds of busting runs, and its median busting share exceeds its median control share by at least 0.25 (a difference, so a zero or negative control median does not break it). With no usable control run, Concentrated is not evaluable; rows 1, 4 and 5 do not hold, and row 3 holds only through crowding.
 - **Busts are shocks:** at least two-thirds of busting runs are shocks, with a breach-session fraction of at least 0.5. **Busts are grind:** at least two-thirds are grind. Otherwise mixed.
 - **Cap often binds:** the risk-sized leg's cap binds on at least a quarter of its entries in busting runs.
@@ -98,12 +98,12 @@ The thresholds below and pattern rows 1–4 and 6 are blind because their text w
 | Protected adds matter | Turning adds off (in protected mode or always) |
 | One leg is concentrated, or crowding holds for a leg's fixed size | Dropping or reshaping that leg |
 | (Option (b) only) the concentration holds in one half and not the other | Regime dependence; a regime question, not a sizing one |
-| (Option (b) keys excluding the Tier-1 keys only; added after Tier 1, see below) Busts are grind, no leg is concentrated, and the control is usable | Per-session risk reduction while the cushion is thin: a uniform or early-phase size cut across legs |
+| (Only under option (b) with a set that excludes every Tier-1 key; added after Tier 1, see below) Busts are grind, no leg is concentrated, and the control is usable | Per-session risk reduction while the cushion is thin: a uniform or early-phase size cut across legs |
 | None of rows 1–5 holds | No evidence-supported successor |
 
-Rows 1–5 may hold together; the report names each, in table order. Row 6 holds only when none of them does. Mixed or shock busts with no leg concentrated fall to row 6 unless row 2 or 3 holds. When row 5 was not checked (option (a), or no option (b) keys outside the Tier-1 keys), the report says so next to any row 6 result.
+Rows 1–5 may hold together; the report names each, in table order. Row 6 holds only when none of them does. Mixed or shock busts with no leg concentrated fall to row 6 unless row 2 or 3 holds. When row 5 was not checked (option (a), or an option (b) set that includes Tier-1 keys), the report says so next to any row 6 result.
 
-**Row 5 provenance.** Joshua chose to add row 5 on 2026-10-08, after he and the Deployment Coordinator had read the Tier-1 findings (§7). It is an admission-time change under §2.1: it uses only the frozen thresholds above (grind, Concentrated, control), adds no threshold and changes none, is fixed now and never changed after Tier-2 data exist, and is evaluated only on option (b) keys that exclude the Tier-1 keys. Rows 1–4 and every §2.1 threshold are unchanged since `34c31c4`.
+**Row 5 provenance.** Joshua chose to add row 5 on 2026-10-08, after he and the Deployment Coordinator had read the Tier-1 findings (§7). It is an admission-time change under §2.1: it uses only the frozen thresholds above (grind, Concentrated, control), adds no threshold and changes none, is fixed now and never changed after Tier-2 data exist, and is evaluated only under option (b) with a set that excludes every Tier-1 key. Rows 1–4 and every §2.1 threshold are unchanged since `34c31c4`; row 6 and the no-control clause changed only to take in row 5.
 
 ## §3 — Capability (build)
 
@@ -193,7 +193,7 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 - **Acceptor:** the Deployment Coordinator.
 - **Decisions:** Joshua keeps admission, sample, signing and every investment decision.
 - **Exposure:** readers of Tier-2 output join the Tier-1 reader log. Any successor pre-registration names them (design §4.5). Tier-2 output is exposure for that pre-registration.
-- **Exposure before merge (2026-10-08).** Joshua saw the Tier-1 findings summary at about 07:12Z (no series, no keys), before this card merged. The §2.1 thresholds and rows 1–4 and 6 were written and reviewed by readers who had not seen the Tier-1 report, and their text is unchanged since `34c31c4`; that text, not the merge time, is what keeps them blind. Any later edit to that text by a Tier-1 reader is an admission-time change (§2.1). The Deployment Coordinator read the Tier-1 report at about 08:10Z, after `34c31c4`. Row 5 of the pattern table is the one such change (§2.1, row 5 provenance). The shock/grind reading under option (a) is partly known to Joshua; the report says so.
+- **Exposure before merge (2026-10-08).** Joshua saw the Tier-1 findings summary at about 07:12Z (no series, no keys), before this card merged. The §2.1 thresholds and rows 1–4 were written and reviewed by readers who had not seen the Tier-1 report, and their text is unchanged since `34c31c4`; that text, not the merge time, is what keeps them blind. Any later edit to that text by a Tier-1 reader is an admission-time change (§2.1). The Deployment Coordinator read the Tier-1 report at about 08:10Z, after `34c31c4`. Row 5 of the pattern table is the one such change (§2.1, row 5 provenance); row 6 and the no-control clause changed only to take it in and share its exposure. The shock/grind reading under option (a) is partly known to Joshua; the report says so.
 - **Selection count.** Choosing a §2 pattern from the sampled paths is a selection. It counts as one trial (K + 1) for any successor it points to. That successor's test discloses or excludes the sampled paths.
 
 ## §8 — OWED (operator)
@@ -204,7 +204,7 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 4. Diagnostic purpose, evidence-class and scope names; keep the receipt type or extend `_is_source_only` (§3.4); a new source approval.
 5. Executor seat.
 6. Tier-1 actual per-path cost (from its return).
-7. The §2.1 pattern criteria: the `34c31c4` text is blind and freezes at merge. A change at admission is exposure and runs only on option (b) keys excluding the Tier-1 keys. Row 5 is such a change (Joshua, 2026-10-08); because of it, any admission that wants row 5 read needs option (b) with the whole set excluding the Tier-1 keys.
+7. The §2.1 pattern criteria: the `34c31c4` text is blind and freezes at merge. A change at admission is exposure and runs only under option (b) with a set that excludes every Tier-1 key. Row 5 is such a change (Joshua, 2026-10-08); because of it, any admission that wants row 5 read needs option (b) with a set that excludes every Tier-1 key.
 
 Acceptance scope is not owed: identity on the sampled runs plus the sidecar off/on tests (§3.3).
 
