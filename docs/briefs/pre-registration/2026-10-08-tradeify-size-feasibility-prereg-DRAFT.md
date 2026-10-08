@@ -301,3 +301,37 @@ grep -rl "2026-10-08-tradeify-size-feasibility-prereg" lab/ || true
 ! grep -nE '^- \*\*Signed:\*\* —$' "$f"
 grep -nE '^\*\*Status:\*\* `FROZEN [0-9]{4}-[0-9]{2}-[0-9]{2}`' "$f"
 ```
+
+## §11 — Addendum 2026-10-08, before any scoring: label semantics and the decision tree
+
+**Authority.** Joshua, 2026-10-08, in chat to the Deployment Coordinator: "I agree with your recommendations". He was answering three recommendations:
+1. add this addendum before any scoring;
+2. adopt one successor decision tree with the #734 rule binding;
+3. scope the R1/R2 resolution now and build it only if this check clears.
+
+This follows an independent review relayed by Codex (on `6e79354` and #734 `c139cd7`): 2 P1 inference objections and 3 P2.
+
+**Timing.** No arm of this file has been scored. The frozen text above is unchanged. This addendum governs where it differs.
+
+**1. INFEASIBLE is renamed GRID-NO-CLEAR.** The §6 conditions are unchanged.
+- Meaning: every required sampled k completed, and none clears this retained-series approximation.
+- It does **not** exclude unsampled sizes between grid points. There is no monotonicity or interval guarantee, and state-dependent protection can break the inference from linear scaling.
+- It does **not** exclude executable successors. Those have integer sizing, admissions and internal state that this harness does not model.
+- It is evidence for a judgment, not a mathematical exclusion.
+
+**2. GRID-GAP is descriptive only.** The midpoint arm cannot certify any interval.
+
+**3. Bias directions.** Capacity and takeover, port loss stops, and rounding have no universal sign. Removing losers can help and removing winners can hurt. The §1 table and §1.2 wording claiming "optimistic" or "close to one-sided" are read as unsigned for these three.
+
+**4. Interpretation note (descriptive, not a claim of equivalence).**
+- At k = 1 this harness's Tradeify bust read sits closer to T00's favourable (R2) anchor than its pessimistic (R1) one (RESULTS.md; #724).
+- So GRID-NO-CLEAR reads as "even a favourable-side approximation clears at no sampled size".
+- A clear here says nothing about the pessimistic anchor.
+- This check does not resolve R1/R2 and is not #734's successor-screen trigger.
+
+**5. Stopping.** The §6 rule adopted in §9 item 6 is replaced by the successor decision tree recorded on the T00 card §8 (#734, as amended):
+- **GRID-NO-CLEAR:** the Deployment Coordinator recommends stopping uniform-cut successors of the accepted book on `Tradeify_Select_100K`. That is Joshua's discretionary investment judgment, with this model uncertainty stated. No strategy is retired.
+- **Any clear:** viability turns on R1/R2. Resolve it, or run the successor screen judged on the pessimistic anchor. If the pessimistic anchor is confirmed, stop (#734 rule). Otherwise, Tier 2 picks the legs and one successor screen follows.
+- **Every other label** is non-stopping.
+
+**6. Code.** The wrapper (#737) reports `GRID-NO-CLEAR` in place of `INFEASIBLE`, and re-pins the freeze gate to this file's blob after this addendum.
