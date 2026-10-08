@@ -509,6 +509,18 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - **Hashes.** results.json `a5b985d0abd79177fd910648ffbfaec040f6a4ac04728c8acee1f1e347a742dc`; attestation.json `f627e805ba3e92ef1bc461804cb8877494d77c9a42d5344626c4795d379d1ed5`; REPORT.md `bebceb93e6dbd80567dd4f94436df32f1892c296818d131da4eb61283a5e9984`; authority `241708a1…`.
   - **Run.** Local host; detached H `5d25f9c`, clean throughout; operations venv 3.13.2; `--workers 8`. Exactly one `run` (15:43:29Z → `T00_SCREEN_COMPLETE` 00:04:25Z), with no resume and no acts. Then `finalize` (00:47:59–00:48:01Z) and `verify` (00:48:14–01:00:08Z), all inside the approval window. The run directory was not read before `finalize` (row X2). Private tallies stay in the private run directory.
   - **What it means (#581 A6 and its §6 rulings).** The book fails the pre-registered condition even under the optimistic `UNDETERMINED` assignment. Per amendment §T00 step 3, it goes to Joshua as an **investment decision**: adjust the book, or accept the risk into T15's F1. It is never routed automatically. Under OD-1 reading (c), a **robust** NO-GO does not meet D-feed condition (a), even with risk acceptance; meeting (a) needs an amendment of (a). This is not four-firm §4 falsifier evidence.
+- **Successor stopping rule (RULED: Joshua, 2026-10-08, to the Deployment Coordinator in chat).**
+  - **Rule.** Successor work on this four-strategy book stops if either of these confirms the pessimistic anchor (`UNDETERMINED` resolved as bust, judged on H2):
+    - resolution of the R1/R2 intrabar ordering, or
+    - the pre-registered successor screen.
+  - **Consequence.** No further size vector is proposed for this book, and the program is re-scoped.
+  - **Basis.** A private desk model of evaluation → funded → payout economics against a size multiplier k. It assumes P&L variance scales with k² and drift with k. It is an assumption, not evidence; no replay, MC or screen was run.
+    - Under that anchor, a uniform cut that meets the 5% bust ceiling falls below what the integer ladders can express: ORB is already at 1 contract and Vanguard floors to 0.
+    - At that cut, pass time stretches to years per attempt, and the venue's winning-day payout minimum leaves no payout within a year of funding.
+    - Under the favourable anchor, a mid-sized cut could clear both the 5% evaluation bust ceiling and a 1% pre-lock funded-ruin ceiling.
+    - Viability therefore turns on the R1/R2 resolution more than on k.
+  - **Model implication.** The evaluation floor never locks, so an early-phase-only cut has to cover most of the path to target, which makes it a uniform cut. A genuine early-phase cut fits the funded stage, where the floor locks.
+  - **Records.** Figures and the hash stay in the private checkpoint folder. Tier 2 (#729) remains the next evidence.
 
 ## §10 — Audit hooks
 
