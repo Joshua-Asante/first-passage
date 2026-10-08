@@ -33,14 +33,17 @@ import base64
 import hashlib
 import json
 from pathlib import Path
+import os
 import random
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 
 H = '5d25f9cfc1e8ff00bacda45478322f9858176e8b'
 RESULTS_SHA256 = 'a5b985d0abd79177fd910648ffbfaec040f6a4ac04728c8acee1f1e347a742dc'
+ATTESTATION_SHA256 = 'f627e805ba3e92ef1bc461804cb8877494d77c9a42d5344626c4795d379d1ed5'
 PINS = {  # build card §8 and the step-12 return
     'authority': '241708a197c2ce3964df77674eaa8189f4b1882b29aa650ad280e62692bc91d3',
     'source_contract': 'a526b50fa75e68451bdd2b5b57fa7a04e6ee08e61f96865c915ae8116a848d97',
@@ -191,11 +194,13 @@ def prerequisites(args):
             raise Stop('PREREQUISITE', f'{name} does not match its pin')
     if sha256_file(run_dir / 'results.json') != RESULTS_SHA256:
         raise Stop('PREREQUISITE', 'results.json does not match #724')
+    if sha256_file(run_dir / 'attestation.json') != ATTESTATION_SHA256:
+        raise Stop('PREREQUISITE', 'attestation.json does not match #724')
     return code_root, run_dir, out
 
 
-def prepared_manifest_sha256(m, run_dir: Path) -> str:
-    """PREPARED's manifest digest from the chain-verified ledger (files chain in number order)."""
+def ledger_binding(m, run_dir: Path):
+    """(PREPARED's manifest digest, ledger head) from the chain-verified ledger (files chain in number order)."""
     prev, prepared = None, None
     for path in sorted((run_dir / 'ledger').glob('*.jsonl')):
         records = m['journal'].read(path, prev_sha256=prev)
@@ -204,13 +209,21 @@ def prepared_manifest_sha256(m, run_dir: Path) -> str:
         prepared = next((r['body']['manifest_sha256'] for r in records if r['type'] == 'PREPARED'), prepared)
     if prepared is None:
         raise Stop('PREREQUISITE', 'no PREPARED record in the ledger')
-    return prepared
+    return prepared, prev
 
 
 def retained(m, run_dir: Path, params):
-    """The record of truth: the chain-verified segment journals, cross-checked against results.json."""
+    """The record of truth: the chain-verified segment journals, bound to the pinned attestation (each
+    segment journal's head and the ledger head) and cross-checked against results.json."""
     results = json.loads((run_dir / 'results.json').read_text(encoding='utf-8'))
+    attestation = json.loads((run_dir / 'attestation.json').read_text(encoding='utf-8'))
     journals = {p.name: m['journal'].read(p, prev_sha256=None) for p in sorted((run_dir / 'journal').glob('s*.jsonl'))}
+    attested = {name: head for name, head in attestation['journal_heads'].items() if name.startswith('s')}
+    heads = {name: m['journal'].record_sha256(records[-1]) if records else None for name, records in journals.items()}
+    if attestation.get('results_sha256') != RESULTS_SHA256 or not attested or heads != attested:
+        raise Stop('PREREQUISITE', 'segment journals do not match the attested heads')
+    if ledger_binding(m, run_dir)[1] != attestation.get('ledger_head_sha256'):
+        raise Stop('PREREQUISITE', 'ledger head does not match the attestation')
     keys = m['plan'].key_universe(params['rng']['roots'], params['depth_per_root'])
     if m['plan'].plan_sha256(keys) != results['plan_sha256']:
         raise Stop('PREREQUISITE', 'plan digest differs from results.json')
@@ -251,7 +264,7 @@ def build_source(m, args):
 def assemble(m, source, run_dir: Path, params, by_key, keys):
     """Self-test: every selected path's seed and path_sha256 equal the retained PATH record."""
     raw = (run_dir / 'manifest.json').read_bytes()
-    if hashlib.sha256(raw).hexdigest() != prepared_manifest_sha256(m, run_dir):
+    if hashlib.sha256(raw).hexdigest() != ledger_binding(m, run_dir)[0]:
         raise Stop('PREREQUISITE', "manifest.json does not match PREPARED's digest")
     manifest = m['parse'](raw, label='manifest')
     candidates = m['plan'].rebuild_candidates(source.sessions, manifest['populations'],
@@ -285,30 +298,70 @@ def _series(sealed):
                     r.start_flat, r.end_flat] for r in run.sessions] for name, run in (('r1', sealed.r1), ('r2', sealed.r2))}
 
 
+def budget_breached(cpu_s, elapsed_s) -> bool:
+    return cpu_s > CPU_CEILING_S or elapsed_s > WALL_CEILING_S
+
+
+def watchdog(wall_start, done, on_breach, *, interval=5.0, clock=time):
+    """In-replay enforcement: polls process CPU and wall time until ``done`` is set; on a breach
+    calls ``on_breach`` (by default ``_hard_stop``) and returns."""
+    while not done.wait(interval):
+        if budget_breached(clock.process_time(), clock.monotonic() - wall_start):
+            on_breach()
+            return
+
+
+def _hard_stop(out: Path, keys_sha256: str):
+    """A breach during a replay: record it, print the stop line and end the process at once."""
+    try:
+        _write_once(out / 'run' / 'summary.json', json.dumps(
+            {'verdict': 'AMBIGUOUS', 'code': 'BUDGET', 'replayed': None, 'in_replay': True,
+             'keys_sha256': keys_sha256}, sort_keys=True).encode())
+    except OSError:
+        pass
+    sys.stdout.write(f'T00_TIER1 run AMBIGUOUS BUDGET keys_sha256={keys_sha256}\n')
+    sys.stdout.flush()
+    os._exit(3)  # pylint: disable=protected-access
+
+
+def reserve(out: Path):
+    """Atomically reserve the one run before anything is built or replayed. The reservation is
+    never removed: a crash, a refusal or a second invocation finds it and stops."""
+    out.mkdir(parents=True, exist_ok=True)
+    try:
+        (out / 'run').mkdir()
+    except FileExistsError:
+        raise Stop('PREREQUISITE', 'the run is already reserved; run is once only') from None
+    _write_once(out / 'run' / 'RESERVED', json.dumps(
+        {'pid': os.getpid(), 'reserved_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}).encode())
+
+
 def run_paths(m, source, paths, keys, by_key, out: Path, *, wall_start: float):
     """Card §5 item 4. CPU is the process's own since start; wall is measured from ``wall_start``
-    (the top of ``main``). Returns (verdict, code, paths replayed)."""
-    last = 0.0
+    (the top of ``main``). Before each path the last path's CPU and wall costs predict the next;
+    after each path the cumulative limits are checked, so an overrun is never RESOLVED. The
+    watchdog in ``main`` enforces them during a replay. Returns (verdict, code, paths replayed)."""
+    last_cpu = last_wall = 0.0
     for ordinal, (key, path) in enumerate(zip(keys, paths), 1):
-        if time.process_time() + last > CPU_CEILING_S or time.monotonic() - wall_start + last > WALL_CEILING_S:
+        if budget_breached(time.process_time() + last_cpu, time.monotonic() - wall_start + last_wall):
             return 'AMBIGUOUS', 'BUDGET', ordinal - 1
         t_cpu, t_wall = time.process_time(), time.monotonic()
         try:
             sealed, replayed = _replay(m, source, path)
         except Stop as stop:
             return ('FALSIFIED' if stop.code == 'NON_REPRODUCTION' else 'AMBIGUOUS'), stop.code, ordinal - 1
-        cost = {'cpu_s': time.process_time() - t_cpu, 'wall_s': time.monotonic() - t_wall}
+        last_cpu, last_wall = time.process_time() - t_cpu, time.monotonic() - t_wall
         bad = mismatches(by_key[key]['runs'], replayed)
         _write_once(out / 'run' / f'{ordinal:02d}.json', json.dumps(
-            {'key': list(key), 'identities': replayed, 'mismatches': bad, 'cost': cost,
-             'series': _series(sealed)}, sort_keys=True).encode())
+            {'key': list(key), 'identities': replayed, 'mismatches': bad,
+             'cost': {'cpu_s': last_cpu, 'wall_s': last_wall}, 'series': _series(sealed)}, sort_keys=True).encode())
         if bad:
             return 'FALSIFIED', 'NON_REPRODUCTION', ordinal
-        last = cost['cpu_s']
-        if ordinal == 1 and last > CHECKPOINT_CPU_S:
+        if budget_breached(time.process_time(), time.monotonic() - wall_start):
+            return 'AMBIGUOUS', 'BUDGET', ordinal
+        if ordinal == 1 and last_cpu > CHECKPOINT_CPU_S:
             return 'AMBIGUOUS', 'BUDGET', ordinal
     return 'RESOLVED', 'OK', len(keys)
-
 
 def _parser():
     parser = argparse.ArgumentParser(prog='t00_tier1_diagnostic')
@@ -328,8 +381,8 @@ def main(argv=None) -> int:  # pylint: disable=too-many-locals
         code_root, run_dir, out = prerequisites(args)
         if args.mode != 'freeze' and not args.keys_sha256:
             raise Stop('PREREQUISITE', '--keys-sha256 is required')
-        if args.mode == 'run' and (out / 'run').exists():
-            raise Stop('PREREQUISITE', 'a run output already exists; run is once only')
+        if args.mode == 'run':
+            reserve(out)
         isolate_bytecode()
         m = _modules(code_root)
         params = json.loads(Path(args.authority).read_text(encoding='utf-8'))['parameters']
@@ -350,7 +403,13 @@ def main(argv=None) -> int:  # pylint: disable=too-many-locals
             if args.mode == 'selftest':
                 verdict = 'SELFTEST_PASSED'
             else:
-                verdict, code, done = run_paths(m, source, paths, keys, by_key, out, wall_start=wall_start)
+                done_event = threading.Event()
+                threading.Thread(target=watchdog, args=(wall_start, done_event,
+                                                        lambda: _hard_stop(out, args.keys_sha256)), daemon=True).start()
+                try:
+                    verdict, code, done = run_paths(m, source, paths, keys, by_key, out, wall_start=wall_start)
+                finally:
+                    done_event.set()
                 _check_origins(code_root)
                 _write_once(out / 'run' / 'summary.json', json.dumps(
                     {'verdict': verdict, 'code': code, 'replayed': done, 'keys_sha256': args.keys_sha256},

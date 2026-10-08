@@ -159,26 +159,27 @@ class _Source:
 
 
 class _Clock:
-    """process_time advances by ``step`` per replay (the source pops a result per call)."""
+    """Each replay advances CPU and wall by the next step (cpu, wall); a number means both."""
 
-    def __init__(self, start=0.0, step=10.0):
-        self.cpu, self.step = start, step
+    def __init__(self, start=0.0, steps=(10.0,)):
+        self.cpu = self.wall = start
+        self.steps = [s if isinstance(s, tuple) else (s, s) for s in steps]
 
     def process_time(self):
         return self.cpu
 
     def monotonic(self):
-        return self.cpu
+        return self.wall
 
     def tick(self, source):
         original = source.replay_bracket
 
         def replay(path):
-            self.cpu += self.step
+            cpu, wall = self.steps.pop(0) if len(self.steps) > 1 else self.steps[0]
+            self.cpu, self.wall = self.cpu + cpu, self.wall + wall
             return original(path)
         source.replay_bracket = replay
         return source
-
 
 def _retained(driver, n):
     runs = {name: driver.sealed_identity(getattr(_sealed(), name), p7_evidence.canonical, p7_evidence.sha256_bytes)
@@ -187,8 +188,8 @@ def _retained(driver, n):
     return keys, {k: {'runs': runs} for k in keys}
 
 
-def _run(driver, monkeypatch, tmp_path, results, *, start=0.0, step=10.0, wall_start=0.0):
-    clock = _Clock(start, step)
+def _run(driver, monkeypatch, tmp_path, results, *, start=0.0, step=10.0, wall_start=0.0, steps=None):
+    clock = _Clock(start, steps or (step,))
     monkeypatch.setattr(driver, 'time', clock)
     source = _Source(results)
     clock.tick(source)
@@ -230,6 +231,17 @@ def test_wall_budget_counts_from_main(driver, monkeypatch, tmp_path):
     (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed()], start=100.0,
                                          wall_start=100.0 - driver.WALL_CEILING_S - 1.0)
     assert (verdict, code, done, source.calls) == ('AMBIGUOUS', 'BUDGET', 0, 0)
+
+
+def test_an_overrun_on_the_last_path_is_not_resolved(driver, monkeypatch, tmp_path):
+    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()], steps=(200.0, 7201.0))
+    assert (verdict, code, done, source.calls) == ('AMBIGUOUS', 'BUDGET', 2, 2)
+
+
+def test_the_wall_prediction_uses_wall_cost(driver, monkeypatch, tmp_path):
+    wall = driver.WALL_CEILING_S / 2 + 1.0
+    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()], steps=((1.0, wall),))
+    assert (verdict, code, done, source.calls) == ('AMBIGUOUS', 'BUDGET', 1, 1)
 
 
 def test_checkpoint_stop_after_an_expensive_first_path(driver, monkeypatch, tmp_path):
@@ -322,6 +334,18 @@ def test_run_refuses_an_existing_run_output_before_building(driver, staged, caps
     assert capsys.readouterr().out.strip() == 'T00_TIER1 run AMBIGUOUS PREREQUISITE keys_sha256=k'
 
 
+def test_the_reservation_survives_a_failure_and_blocks_a_second_run(driver, staged, monkeypatch, capsys):
+    def refuse(m, args):
+        staged.calls.append('build')
+        raise driver.Stop('REFUSED', 'SOURCE_APPROVAL_EXPIRED')
+    monkeypatch.setattr(driver, 'build_source', refuse)
+    assert driver.main(['run', *staged.args, '--keys-sha256', 'k']) == 3
+    assert (staged.out / 'run' / 'RESERVED').is_file()
+    assert driver.main(['run', *staged.args, '--keys-sha256', 'k']) == 3
+    assert staged.calls == ['build'] and staged.source.calls == 0
+    assert capsys.readouterr().out.strip().splitlines()[-1] == 'T00_TIER1 run AMBIGUOUS PREREQUISITE keys_sha256=k'
+
+
 def test_main_maps_stops_and_defects(driver, staged, monkeypatch, capsys):
     assert driver.main(['selftest', *staged.args]) == 3                       # no --keys-sha256
     assert capsys.readouterr().out.strip().endswith('STOPPED PREREQUISITE keys_sha256=-')
@@ -340,8 +364,10 @@ def test_prerequisites(driver, monkeypatch, tmp_path):
     run_dir, out = tmp_path / 'run', tmp_path / 'out'
     run_dir.mkdir()
     (run_dir / 'results.json').write_bytes(b'r')
+    (run_dir / 'attestation.json').write_bytes(b'a')
     monkeypatch.setattr(driver, 'PINS', {n: hashlib.sha256(n.encode()).hexdigest() for n in driver.PINS})
     monkeypatch.setattr(driver, 'RESULTS_SHA256', hashlib.sha256(b'r').hexdigest())
+    monkeypatch.setattr(driver, 'ATTESTATION_SHA256', hashlib.sha256(b'a').hexdigest())
     state = {'HEAD': driver.H, 'dirty': ''}
     monkeypatch.setattr(driver, '_git', lambda root, *a: state['HEAD'] if a[0] == 'rev-parse' else state['dirty'])
     args = SimpleNamespace(code_root=tmp_path / 'code', run_dir=run_dir, out=out,
@@ -357,6 +383,10 @@ def test_prerequisites(driver, monkeypatch, tmp_path):
     files['registry'].write_bytes(b'changed')
     with pytest.raises(driver.Stop):
         driver.prerequisites(args)
+    files['registry'].write_bytes(b'registry')
+    (run_dir / 'attestation.json').write_bytes(b'tampered')
+    with pytest.raises(driver.Stop):
+        driver.prerequisites(args)
 
 
 def test_isolate_bytecode(driver, monkeypatch):
@@ -365,6 +395,57 @@ def test_isolate_bytecode(driver, monkeypatch):
     driver.isolate_bytecode()
     assert sys.dont_write_bytecode is True
     assert Path(sys.pycache_prefix).is_dir() and not any(Path(sys.pycache_prefix).iterdir())
+
+
+def test_watchdog_stops_on_a_breach_during_replay(driver):
+    import threading
+    breaches, done = [], threading.Event()
+    clock = SimpleNamespace(process_time=lambda: driver.CPU_CEILING_S + 1.0, monotonic=lambda: 0.0)
+    driver.watchdog(0.0, done, lambda: breaches.append(1), interval=0, clock=clock)
+    assert breaches == [1]
+    calls = []
+    quiet = SimpleNamespace(process_time=lambda: calls.append(1) or (done.set() if len(calls) > 2 else None) or 0.0,
+                            monotonic=lambda: 0.0)
+    done.clear()
+    driver.watchdog(0.0, done, lambda: breaches.append(2), interval=0, clock=quiet)
+    assert breaches == [1]
+
+
+def _retained_m(driver, heads):
+    def read(path, prev_sha256):
+        name = Path(path).name
+        return ({'type': 'PREPARED', 'body': {'manifest_sha256': 'm'}},) if name == '0001.jsonl' else (
+            {'type': 'PATH', 'body': {}, 'file': name},)
+    return {'journal': SimpleNamespace(read=read, record_sha256=lambda r: heads.get(r.get('file', 'ledger')),
+                                       outcomes=lambda journals, keys: [{'key': list(k)} for k in keys]),
+            'plan': SimpleNamespace(key_universe=lambda roots, depth: [('a', 'FULL', 0)], plan_sha256=lambda keys: 'p'),
+            'verdict': SimpleNamespace(evaluate=lambda *a: None, as_json=lambda v: {})}
+
+
+@pytest.mark.parametrize('tamper', [None, 'journal_head', 'ledger_head', 'results'])
+def test_retained_is_bound_to_the_attestation(driver, tmp_path, tamper):
+    for sub in ('journal', 'ledger'):
+        (tmp_path / sub).mkdir()
+    (tmp_path / 'journal' / 's1-w0.jsonl').write_bytes(b'')
+    (tmp_path / 'ledger' / '0001.jsonl').write_bytes(b'')
+    (tmp_path / 'results.json').write_text(json.dumps({'plan_sha256': 'p', 'verdict': {}}), encoding='utf-8')
+    attestation = {'results_sha256': driver.RESULTS_SHA256, 'ledger_head_sha256': 'L',
+                   'journal_heads': {'c1-w0.jsonl': 'c', 's1-w0.jsonl': 'J', 'v1-w0.jsonl': 'v'}}
+    heads = {'s1-w0.jsonl': 'J', 'ledger': 'L'}
+    if tamper == 'journal_head':
+        heads['s1-w0.jsonl'] = 'rechained'
+    elif tamper == 'ledger_head':
+        heads['ledger'] = 'other'
+    elif tamper == 'results':
+        attestation['results_sha256'] = '0' * 64
+    (tmp_path / 'attestation.json').write_text(json.dumps(attestation), encoding='utf-8')
+    params = {'rng': {'roots': ['a']}, 'depth_per_root': {}}
+    if tamper is None:
+        assert list(driver.retained(_retained_m(driver, heads), tmp_path, params)) == [('a', 'FULL', 0)]
+    else:
+        with pytest.raises(driver.Stop) as stop:
+            driver.retained(_retained_m(driver, heads), tmp_path, params)
+        assert stop.value.code == 'PREREQUISITE'
 
 
 def test_foreign_modules(driver, tmp_path):
