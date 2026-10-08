@@ -1,5 +1,7 @@
 # Tradeify Deployment Checklist Implementation Plan
 
+> **Proposed roadmap refresh:** [2026-10-08 viability-to-release amendment](#proposed-amendment-2026-10-08--viability-diagnosis-to-an-exact-deployable-release). Existing owner records remain authoritative; this proposal grants no execution authority.
+
 > **For agentic workers:** Execute with superpowers:executing-plans; use superpowers:subagent-driven-development when bounded delegation is useful and authorized. Preserve the behavioral contract and integration owner. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Deliver the fixed four-strategy Tradeify portfolio as an authorized attended release, with bounded execution assignments and evidence-backed acceptance.
@@ -699,3 +701,117 @@ committed dispatch precede the build; separate live transport readiness, exact-t
 rehearsal, fresh private gates and CP-3 still precede any placement.
 *[2026-10-01: the drafted full tool suite is superseded by the
 [reduced X-4 build path](#addendum-2026-10-01--first-session-simplification-rulings-six-cuts) (item 3), which owns the build scope.]*
+
+## Proposed amendment 2026-10-08 — viability diagnosis to an exact deployable release
+
+**Status: PROPOSED for acceptance.** Joshua requested this roadmap and its PR on
+2026-10-08. That authorizes drafting and review, not execution, a changed gate,
+funding, qualification, merge, activation or trading. This amendment organizes
+sequencing within T00–T17; the task owners and dated acceptance records remain
+authoritative. On acceptance, it governs the next-checkpoint sequence where
+older summary or next-step wording conflicts, without replacing task contracts.
+
+**Immediate objective:** a deployable prop portfolio with viable
+evaluation-to-funded-to-payout economics. Retail-mission discussion stays local
+and uncommitted and does not alter deployment scope.
+
+### Roadmap and decision boundaries
+
+| Milestone | Required outcome and evidence | Return boundary |
+|---|---|---|
+| **1. Diagnose book viability (immediate critical path)** | Explain T00's failed criteria, magnitude, populations/scenarios and sensitivity to assumptions. Distinguish established mechanisms from hypotheses and keep the four-firm candidate's failure separate. Return an evidence-supported recommendation before proposing a revised configuration or fresh validation. | Coordinator accepts the diagnosis; Joshua decides the investment direction. No automatic redesign or new validation. |
+| **2. Close independent readiness** | Reconcile the qualification-engine, broker/settlement, runtime/recovery and feed-preparation owners below. Reuse accepted implementation and evidence; identify each next missing acceptance outcome. | Each bounded owner returns evidence to the coordinator. Work dependent on undecided portfolio, route or feed behavior remains behind that decision. |
+| **3. Define the executable candidate and qualify its feed** | Following the investment decision, bind actual strategy editions, sizing/protection/capacity behavior, route, costs and source requirements. Under applicable selection/funding authority, qualify delivered feed bytes through actual adapters with emission disabled. Resolve behavior-changing dependencies and identify any explicitly permitted later bindings. | T10/F1 decision-ready packet, not a production qualification attempt. Historical evidence for another edition is not successor qualification. |
+| **4. Freeze and qualify (T15)** | Accept engine readiness and required pre-freeze evidence; freeze exact source, editions, configuration, runtime and statistical contract. Obtain prescribed approvals and execute the authorized production attempt. Preserve actual non-PASS/interruption dispositions; on PASS obtain required seal/admission decisions. | Accepted qualification/admission evidence or the actual non-PASS/blocker. No automatic tuning, replacement attempt or activation. |
+| **5. Accept the disarmed release (T16)** | Bind qualified portfolio, feed, route, settlement, host and monitoring to one exact identity. Prove only permitted freeze deltas, actual-consumer integration and required fault behavior. Complete the calendar-dependent R3 repeat below. | Coordinator's combined acceptance of one disarmed candidate; no live GO. |
+| **6. Rehearse, authorize and measure (T17)** | Complete exact-candidate rehearsal, prescribed final-stage/account checks and launch timing. Obtain Joshua's session-specific GO before activation. Reconcile the attended session and subsequently measure evaluation progress, execution costs, incidents, funded eligibility and payouts. | Initial activation is an operational milestone, not evidence of successful portfolio economics. Later sessions retain their own authority requirements. |
+
+The viability recommendation must address evaluation survival and the remaining
+evidence needed for funded constraints, payout eligibility/time, recurring costs
+and failure/retry costs. Record unknowns explicitly. No new economic threshold
+or assumed favorable value is established here.
+
+### Independent readiness workstreams
+
+These are outstanding **acceptance** obligations, not assertions that no
+implementation exists. Check current owner evidence before dispatch; stale
+summary rows do not reopen completed work.
+
+- **Qualification engine (T05/T06/T11/T12):** end-to-end result/seal integration,
+  full synthetic E1 acceptance, production installation/source/authority
+  boundaries and separate final-stage machinery/timing. Completed T00 is not
+  acceptance of the full qualification engine. The
+  [execution-slices ledger](2026-09-18-full-e1-execution-slices.md) owns existing
+  acceptances and remaining prerequisites.
+- **Broker and settlement (T07–T09):** accepted order handling,
+  liquidation/cancellation, ambiguous-request handling, reconciliation and
+  account-evidence procedures through actual consumers. Preserve the
+  [T09 gates](#t09-gate-acceptance-record), capability allocation and applicable
+  drill permissions before dependent implementation. Isolated traces do not
+  establish whole-route acceptance.
+- **Runtime monitoring and recovery (T13):** accepted book-host verification,
+  live runtime/notifier heartbeat evidence and attended recovery. **G10
+  notification rehearsal and cleanup are complete and are not reopened.**
+  Resolve the [Tradovate-unavailable fallback gap](../../notes/2026-10-02-t13-c-a-attended-recovery-draft.md#7-step-5-firm-fallback-when-the-platform-cannot-be-used)
+  through its owner; platform-dependent flattening alone does not close it.
+  Record the accepted disposition and residual limitations rather than infer a
+  fallback.
+- **Feed (T14):** provider-neutral requirements and entitlement/cost/freeze-impact
+  preparation may proceed where independent. Provider-specific implementation,
+  spending and collection retain their governing decisions, including D-feed.
+  Qualification covers required symbols, rolls/sessions, warm-up, equivalence,
+  reconnects, corrections/backfill, duplicates/order, missing/stale data and
+  synchronization through actual consumers. No emission or account orders
+  follow from feed acceptance.
+
+The completed robust T00 NO-GO does not meet D-feed(a) without its explicit
+amendment. This roadmap does not amend that condition or presume provider
+selection/funding permission.
+
+### Calendar-dependent release constraint
+
+The [T07 owner](../../briefs/handoffs/2026-09-21-tradeify-t07-manual-settlement-procedure.md)
+and [commissioning packet](../../notes/2026-09-27-route-commissioning-session-packet.md)
+require the **T07 R3 Timestamp-offset repeat after 2026-11-01**, for the second
+DST regime, **before T16**. This is the settlement read R3, not the broker
+capability label R3.
+
+Initial T07 acceptance may use current-regime evidence. Unless its owner
+identifies an explicit superseding decision, final combined acceptance waits
+for the qualifying repeat and its acceptance. November 1 is not a promised
+release date; all other prerequisites still apply. Use the interval to complete
+independent evidence, not to relax the calendar requirement.
+
+### Next bounded handoff and coordination
+
+**Selected outcome:** the book-failure diagnosis and investment recommendation
+in milestone 1. The retained-evidence review comes first; reconstruction, if
+needed, requires its own pinned sample, observational instrumentation,
+verification and measured/approved resource envelope. The earlier proposed
+18-path diagnostic is not admitted or executed by this amendment.
+
+**Prerequisites:** verified retained T00 evidence and current diagnostic owner
+records; identify work already completed before commissioning another analysis.
+Any missing authority, data or capture capability is returned explicitly.
+
+**Ownership:** one diagnostic executor; the deployment coordinator reviews the
+return and retains combined acceptance. Existing bounded owners remain in place;
+Joshua owns investment and operational decisions.
+
+**Verification:** bind claims to source/evidence identities; distinguish observed
+contributions from counterfactual benefits and report limitations. Any authorized
+reconstruction must reproduce original semantic evidence before interpretation.
+Do not turn an outcome-selected diagnostic sample into a bust-rate estimate.
+
+**Checkpoint:** report the retained-evidence findings, causal gaps and proposed
+next decision to the coordinator. In parallel, reconcile each readiness
+workstream's next missing acceptance without duplicating accepted work.
+
+**Return boundary:** return the diagnosis and recommendation, or the precise
+blocking dependency. A configuration proposal, new validation, provider spend,
+production attempt or operational act needs its applicable subsequent handoff
+and authority. Access to this roadmap grants none of them.
+
+This amendment is based on owner records inspected at main `afaca995`.
+It changes no statistical criteria, accepted gates, locked strategy artifacts,
+operational controls or standing instructions.
