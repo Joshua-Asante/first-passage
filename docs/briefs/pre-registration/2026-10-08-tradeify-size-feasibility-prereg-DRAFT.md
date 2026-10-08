@@ -4,7 +4,7 @@
 **Date:** 2026-10-08. **Loop:** STRATEGIC. **Authored:** Claude Code worker (drafting only) for the Deployment Coordinator, on Joshua's request in chat 2026-10-08. Joshua owns every OWED value, the signature and the freeze.
 **Harness of record (adopted, not re-decided):** the four-firm re-MC executor [`run_four_firm_remc.py`](../../../lab/analysis/c1/four_firm_remc_2026-10/run_four_firm_remc.py) under its [frozen prereg](2026-10-02-four-firm-dated-remc-prereg-DRAFT.md) (`FROZEN 2026-10-05`), with the run of record and depth re-run in [RESULTS](../../../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md). **Gate numbers:** [prereg v2](2026-08-26-prop-survivor-scoring-prereg-v2.md) §3. **Gate shape:** [T00 screen prereg](2026-10-01-tradeify-t00-step2-screen-prereg.md) A2/A6.
 **Not:** four-firm §4 evidence; a T00 re-screen; a successor screen; qualification evidence.
-**Review folded:** [#735 review 6066105704](https://github.com/Joshua-Asante/first-passage/pull/735#issuecomment-6066105704) (P1-1, P2-1 to P2-4, P3-1 to P3-5); P2-4 by coordinator ruling 2026-10-08: uniform k only.
+**Review folded:** [#735 review 6066105704](https://github.com/Joshua-Asante/first-passage/pull/735#issuecomment-6066105704) (P1-1, P2-1 to P2-4, P3-1 to P3-5); P2-4 by coordinator ruling 2026-10-08: uniform k only. [#735 re-check 6066185454](https://github.com/Joshua-Asante/first-passage/pull/735#issuecomment-6066185454) (P2-A, P3-A to P3-C).
 
 ## §D — Disclosure: what the drafter saw
 
@@ -102,9 +102,9 @@ No rescaled arm (k ≠ 1) is scored before this file is FROZEN and merged. The w
 ### §2.3 — Build needed (its own packet, review and launcher record; synthetic tests only)
 
 1. **Wrapper** `lab/analysis/c1/size_feasibility_2026-10/run_size_feasibility.py`: public code; reads the private bundle at run time by digest; writes to a gitignored private root. It builds `TierSeries` with every channel × k, slices populations (§4.1), and calls `score_candidate` once per (k, population) with the pinned G1/G2 inputs (§2.1). It writes each report plus a depth record bound to its SHA-256, as `write_depth_record` does.
-2. **EOD retention.** Opt-in retention of the guard's returned arms (the `eod` arm's `headline_bust` and `pass_rate` are what §6 reads) per tier, in a sidecar file, not in the report. Default path byte-identical.
+2. **EOD retention.** Opt-in capture of the guard's three arms (`eod`, `zeros`, `real`) **as each is computed, before the guard's assertions**, so the sidecar exists even when the guard raises. The `eod` arm's `headline_bust` and `pass_rate` are what §6 reads. Per tier, in a sidecar file, not in the report. Default path byte-identical.
 3. **Median days-to-pass.** Opt-in retention of `run_seed`'s `days_to_pass` through `run_tier_remc`, pooled over 30,000 sims with non-passers at ∞, under T00's `LOWER_NEAREST_RANK_INF_INCLUDED`. Sidecar only; default bytes unchanged.
-4. **Vacuity evidence.** The sidecar records whether the scaled `intraday_low` channel holds at least one strictly negative entry (§6 vacuity reading).
+4. **Guard reasons.** The sidecar records each tier's `gate_grade` reason text verbatim (§6 vacuity reading).
 
 **Acceptance tests (synthetic):**
 - k = 1 through the wrapper gives report bytes identical to a direct `score_candidate` call.
@@ -112,6 +112,7 @@ No rescaled arm (k ≠ 1) is scored before this file is FROZEN and merged. The w
 - A Tradeify-only call's tier entry equals that tier's entry in a four-tier call.
 - Sidecars off vs on: identical report bytes.
 - The retained EOD arm equals the guard's internal EOD arm; the median equals a direct computation.
+- Vacuity case: a synthetic series whose real and EOD arms give identical bust and pass makes the guard raise; the EOD sidecar is still present and complete, and the §6 reader labels that k `vacuity-read`. A zeros-check failure on a synthetic series reads INSUFFICIENT.
 - Population slicing gives H1 = the first ⌈N/2⌉ rows and H2 = the rest, in order; the G1/G2 inputs are identical bytes in every call.
 
 **Run-time reproduction (first arms, sidecars ON; a mismatch is INVALID and nothing else runs):**
@@ -180,9 +181,9 @@ T00's chronological ceil partition, adapted to the daily window. N is the series
 
 **Terms.** For a valid k and a clock: *bust-clear* = every gating bust cell of §4.2 holds; *pass-clear* = every gating pass cell holds. The intraday clock reads the report; the EOD clock reads the retained guard `eod` arm.
 
-**Validity of a k.** A k is **INSUFFICIENT** if any of its (population) calls is incomplete at frozen depth, lacks a depth record, lacks a valid EOD or median sidecar, or has a `gate_grade = false` reason other than the vacuity case below.
+**Validity of a k.** A k is **INSUFFICIENT** if any of its (population) calls is incomplete at frozen depth, lacks a depth record, lacks a valid EOD or median sidecar (the EOD sidecar is captured even when the guard raises, §2.3 item 2), or has a `gate_grade = false` reason other than the vacuity case below.
 
-**Vacuity reading.** At k < 1, a "non-vacuity FAIL" where the real and EOD arms give identical bust and pass is read **as is** (the honest arm stands, flagged `vacuity-read`) when all of: the guard's zeros-arm check held; the sidecar shows a strictly negative `intraday_low` entry; and k = 1 passed the guard. Identical rates then mean that no path's outcome changed between clocks, not that the channel was dropped. Otherwise the k is INSUFFICIENT.
+**Vacuity reading.** At k < 1, a call whose **only** `gate_grade` reason contains `real intraday_low channel is vacuous` is read **as is** (the honest arm stands, flagged `vacuity-read`) when k = 1 for the same population passed the guard. That reason text is raised only after the zeros-channel check held. Identical rates then mean that no path's outcome changed between clocks, not that the channel was dropped. A reason containing `zeros-channel must reproduce EOD`, any other reason, or a k = 1 guard failure for that population makes the k INSUFFICIENT. A strictly-negative-entry condition is not used: every trade day carries a cost in `intraday_low`, so it would almost always hold and adds no protection; the zeros check and the k = 1 condition do the work.
 
 Labels, assigned in this order (the first that holds):
 
@@ -197,7 +198,7 @@ Labels, assigned in this order (the first that holds):
 | 7 | **INFEASIBLE** | Else: every k is valid and fails at least one EOD bust gate | Supports stopping (below). | Proposed |
 
 **GRID-GAP midpoint (fixed now).**
-- **Pair:** the largest adjacent grid pair (k_hi > k_lo) where k_lo is bust-clear on the EOD clock and k_hi is not. That is the boundary at the smallest risk cut.
+- **Pair:** the largest adjacent grid pair (k_hi > k_lo), both valid, where k_lo is bust-clear on the EOD clock and k_hi is not. That is the boundary at the smallest risk cut.
 - **Value:** (k_hi + k_lo) / 2, rounded to 2 decimals.
 - **Runs:** all three populations; both clocks (the intraday report and the EOD sidecar), with the same sidecars and validity rules.
 - **Conclusions:** the midpoint is bust-clear and pass-clear on the intraday clock → FEASIBLE. On the EOD clock only → CLOCK-DEPENDENT. Otherwise, or if it is INSUFFICIENT → GRID-GAP stands. The midpoint can never produce INFEASIBLE.
