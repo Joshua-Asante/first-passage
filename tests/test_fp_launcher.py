@@ -4,10 +4,12 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import site
 import subprocess
 import sys
+import time
 import venv
 
 import pytest
@@ -541,3 +543,101 @@ def test_argument_file_preserves_symlink_parent_semantics(checkout, ops_env):
     (target / 'args.txt').write_text('test_ok.py\n')
     result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@link/../args.txt', '-q')
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+DETACHED_IDENTITY = re.compile(r'\d{8}T\d{6}Z-[0-9a-f]{12}')
+
+
+def detached_report(result):
+    """Read the launcher's two-line detached-run report."""
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    assert len(lines) == 2, result.stdout + result.stderr
+    assert lines[0].startswith('record: ') and lines[1].startswith('pid: '), result.stdout
+    record = Path(lines[0][len('record: '):])
+    return record, int(lines[1][len('pid: '):])
+
+
+def await_final_record(checkout, identity, timeout=120.0):
+    """Poll the detached child's record.json until it leaves its transient states."""
+    path = checkout / '.cache/fp-verification' / identity / 'record.json'
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            record = json.loads(path.read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            record = None
+        if record is not None and record['status'] not in ('not_started', 'running'):
+            return record
+        time.sleep(0.5)
+    raise AssertionError(f'detached run did not finish within {timeout:.0f}s: {path}')
+
+
+def test_detach_returns_immediately_and_records_completion(checkout, ops_env):
+    (checkout / 'test_detached.py').write_text('def test_ok():\n    assert True\n', encoding='utf-8')
+    started = time.monotonic()
+    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest', 'test_detached.py', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert time.monotonic() - started < 60, 'the parent must not wait for the detached child'
+    record, pid = detached_report(result)
+    assert record == checkout / '.cache/fp-verification' / record.name
+    assert DETACHED_IDENTITY.fullmatch(record.name)
+    descriptor = json.loads((record.parent / f'{record.name}.detach.json').read_text(encoding='utf-8'))
+    assert descriptor['pid'] == pid
+    assert descriptor['record'] == str(record)
+    assert descriptor['log'] == str(record.parent / f'{record.name}.detach.log')
+    assert descriptor['argv'][1:3] == ['-I', str(checkout / 'scripts/fp.py')]
+    assert '--detach' not in descriptor['argv'] and 'test_detached.py' in descriptor['argv']
+    assert (record.parent / f'{record.name}.detach.log').is_file()
+    final = await_final_record(checkout, record.name)
+    assert final['status'] == 'completed'
+    assert final['verification_exit_code'] == 0
+    assert final['test_summary']['passed'] == 1
+
+
+def test_detach_failing_suite_records_failed(checkout, ops_env):
+    (checkout / 'test_detached_failure.py').write_text(
+        'def test_fails():\n    assert False, "detached failure"\n', encoding='utf-8')
+    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest',
+                    'test_detached_failure.py', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    record, _ = detached_report(result)
+    final = await_final_record(checkout, record.name)
+    assert final['status'] == 'failed'
+    assert final['exit_code'] == 1 and final['verification_exit_code'] == 1
+
+
+@pytest.mark.parametrize('arguments', [['doctor'], ['python', '-c', 'pass']])
+def test_detach_rejected_for_unrecorded_commands(checkout, ops_env, arguments):
+    result = launch(checkout, '--env', ops_env, '--detach', *arguments)
+    assert result.returncode == 2
+    assert '--detach applies only to recorded commands (pytest tasks and check)' in result.stderr
+    assert 'pass' not in result.stdout
+    assert not list((checkout / '.cache/fp-verification').glob('*/record.json'))
+
+
+def test_detach_identity_env_validation(checkout, ops_env):
+    (checkout / 'test_identity.py').write_text('def test_ok():\n    assert True\n', encoding='utf-8')
+    malformed = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
+                       env={'FP_VERIFICATION_ID': 'not-an-identity'})
+    assert malformed.returncode == 2
+    assert 'fp: invalid FP_VERIFICATION_ID' in malformed.stderr
+    assert not list((checkout / '.cache/fp-verification').glob('*/record.json'))
+    identity = '20250101T000000Z-0123456789ab'
+    accepted = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
+                      env={'FP_VERIFICATION_ID': identity})
+    assert accepted.returncode == 0, accepted.stdout + accepted.stderr
+    record = json.loads((checkout / '.cache/fp-verification' / identity / 'record.json').read_text())
+    assert record['status'] == 'completed'
+
+
+def test_detach_identity_not_leaked(checkout, ops_env):
+    (checkout / 'test_no_identity_leak.py').write_text(
+        'import os\n\n\ndef test_identity_is_not_inherited():\n'
+        '    assert os.environ.get("FP_VERIFICATION_ID") is None\n', encoding='utf-8')
+    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest',
+                    'test_no_identity_leak.py', '-q')
+    assert result.returncode == 0, result.stdout + result.stderr
+    record, _ = detached_report(result)
+    final = await_final_record(checkout, record.name)
+    assert final['status'] == 'completed' and final['verification_exit_code'] == 0
+    assert final['test_summary'] == dict(collected=1, passed=1, failed=0, errors=0, skipped=0)

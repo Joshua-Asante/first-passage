@@ -44,6 +44,11 @@ print(json.dumps({'python': sys.executable, 'version': sys.version.split()[0],
 """
 
 
+DETACH_ENVIRONMENT = 'FP_VERIFICATION_ID'
+IDENTITY_PATTERN = re.compile(r'\d{8}T\d{6}Z-[0-9a-f]{12}')
+CREATE_BREAKAWAY_FROM_JOB = 0x01000000
+
+
 def resolve_environment(root: Path, explicit: str | None) -> Path:
     """Prefer an explicit or checkout-local venv; share the main venv in worktrees."""
     if explicit is not None:
@@ -101,7 +106,7 @@ def prepare(root: Path, environment: Path) -> tuple[Path, dict[str, str], dict]:
     child_env["PATH"] = str(python.parent) + os.pathsep + child_env.get("PATH", "")
     child_env["VIRTUAL_ENV"] = str(environment)
     child_env["PYTHONNOUSERSITE"] = "1"
-    for key in ("PYTHONHOME", "PYTHONPATH"):
+    for key in ("PYTHONHOME", "PYTHONPATH", DETACH_ENVIRONMENT):
         child_env.pop(key, None)
     expected = locked_requirements(root / "requirements-ops.lock")
     result = subprocess.run(
@@ -203,6 +208,55 @@ def pytest_report_selection(args: list[str]) -> tuple[list[str], dict[str, str]]
     return inputs, outputs
 
 
+def verification_identity() -> str:
+    """Reuse the detached parent's reservation, or mint a fresh record identity."""
+    inherited = os.environ.get(DETACH_ENVIRONMENT)
+    if inherited is None:
+        return datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
+    if not IDENTITY_PATTERN.fullmatch(inherited):
+        raise ValueError('invalid FP_VERIFICATION_ID')
+    return inherited
+
+
+def arguments_without_detach(tokens: list[str], command: str) -> list[str]:
+    """Drop launcher-level --detach only; task arguments keep their own tokens."""
+    boundary = next((i for i, token in enumerate(tokens) if token == command), len(tokens))
+    return [token for token in tokens[:boundary] if token != '--detach'] + tokens[boundary:]
+
+
+def start_detached(root: Path, tokens: list[str]) -> int:
+    """Start the recorded run as an independent child and return without waiting."""
+    identity = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
+    directory = root / '.cache' / 'fp-verification'
+    directory.mkdir(parents=True, exist_ok=True)
+    record, log = directory / identity, directory / f'{identity}.detach.log'
+    child_argv = [sys.executable, '-I', str(Path(__file__).resolve()), *tokens]
+    environment = os.environ.copy()
+    environment[DETACH_ENVIRONMENT] = identity
+    with log.open('wb') as sink:
+        spawn = dict(cwd=root, stdin=subprocess.DEVNULL, stdout=sink,
+                     stderr=subprocess.STDOUT, env=environment)
+        if os.name == 'nt':
+            creationflags = (subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
+                             | CREATE_BREAKAWAY_FROM_JOB)
+            try:
+                child = subprocess.Popen(child_argv, creationflags=creationflags, **spawn)
+            except OSError:
+                print("fp: warning: could not break away from the caller's job; "
+                      "the run may end with the caller", file=sys.stderr)
+                child = subprocess.Popen(child_argv, creationflags=creationflags
+                                         & ~CREATE_BREAKAWAY_FROM_JOB, **spawn)
+        else:
+            child = subprocess.Popen(child_argv, start_new_session=True, **spawn)
+    (directory / f'{identity}.detach.json').write_text(json.dumps(
+        dict(pid=child.pid, record=str(record), log=str(log), argv=child_argv,
+             started_utc=datetime.now(timezone.utc).isoformat()), indent=2)
+        + '\n', encoding='utf-8')
+    print(f'record: {record}')
+    print(f'pid: {child.pid}')
+    return 0
+
+
 def pytest_configuration_args(root: Path, args: list[str]) -> list[str]:
     """Normalize checkout selection and reject competing explicit selections."""
     result = []
@@ -233,6 +287,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--env", help="operations venv directory (before the command); defaults to FP_OPS_ENV")
     parser.add_argument('--workers', type=int, choices=range(0, 9),
                         help='Opt-in pytest workers, 0 through 8; nonzero uses loadscope')
+    parser.add_argument('--detach', action='store_true',
+                        help='start a recorded run as an independent background process and return at once')
     parser.add_argument("command", choices=("doctor", "python", "test", "test-ops", "check"))
     parser.add_argument("args", nargs=argparse.REMAINDER, help="arguments passed unchanged to the command")
     options = parser.parse_args(argv)
@@ -240,16 +296,22 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("doctor does not accept additional arguments")
     pytest_task = options.command in ('test', 'test-ops') or (
         options.command == 'python' and options.args[:2] == ['-m', 'pytest'])
+    recorded = pytest_task or options.command == 'check'
     if options.workers is not None and not pytest_task:
         parser.error('--workers applies only to pytest commands')
+    if options.detach and not recorded:
+        parser.error('--detach applies only to recorded commands (pytest tasks and check)')
     root = Path(__file__).resolve().parents[1]
     try:
+        if options.detach:
+            return start_detached(root, arguments_without_detach(
+                list(sys.argv[1:] if argv is None else argv), options.command))
         record = None
-        if pytest_task or options.command == 'check':
+        if recorded:
             spec = importlib.util.spec_from_file_location('fp_recorder', root / 'scripts/record_verification.py')
             recorder = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(recorder)
-            identity = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
+            identity = verification_identity()
             output = root / '.cache' / 'fp-verification' / identity
             record = recorder.RunRecord(root, output, [options.command, *options.args], allow_ignored=True)
         with record if record is not None else nullcontext():

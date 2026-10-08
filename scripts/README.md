@@ -112,6 +112,33 @@ module/class on one worker. Use 0 for serial execution. Startup overhead and
 imbalanced modules can outweigh parallelism; measure the same selection before
 choosing workers. Tests with shared resources may need serial execution.
 
+### Detached runs
+
+Long recorded suites (for example `tests/ops/qualification`, over 90 minutes) get
+hard-killed when they are started from an agent tool that imposes a time limit on
+its own command, which leaves the record `running` and unusable. `--detach`
+starts the same recorded run as an independent background process and returns at
+once:
+
+```powershell
+.\fp.ps1 --detach python -m pytest tests/ops/qualification -q
+```
+
+It is a launcher-level option given before the command, like `--workers`, and it
+applies only to recorded commands (a pytest task or `check`); anything else is a
+usage error. The parent creates no record of its own and never waits. It prints
+exactly two lines, `record: <absolute evidence directory>` and `pid: <child pid>`,
+and writes `<identity>.detach.json` (child pid, record directory, log path, child
+argv, UTC start time) plus `<identity>.detach.log` (the child's combined stdout
+and stderr) in `.cache/fp-verification/` beside the evidence directories. On
+Windows the child starts in a new process group without a window and breaks away
+from the caller's job when that job permits; if the breakaway is refused the
+launcher warns that the run may end with the caller. On POSIX the child starts a
+new session. The detached child reuses the reserved record identity through
+`FP_VERIFICATION_ID`, which is removed from the environment handed to the task's
+own children. Completion is still judged only from `record.json` as before: poll
+it, and accept nothing but `completed` with verification exit zero.
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via
