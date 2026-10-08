@@ -139,6 +139,7 @@ Owners hold canonical criteria; rows are pointers.
   clearance, demote to research-only. Discharge needs its own dated re-MC, not a T00 screen
   ([condition 4](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)). [four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)/[withdrawal](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md).
   *2026-10-02:* the 2026-09-03 EOD-clock discharge is withdrawn; a clear must hold on the intraday-honest clock ([ruling](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)).
+  *2026-10-06:* the dated re-MC returned FALSIFIED — early-fail; §4 stays undischarged, candidate (A) closes, and any next candidate needs fresh operator authorization. The program check above still runs on 11-08 ([record](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-06--dated-re-mc-verdict-falsified--early-fail-recorded)).
 - **Mechanism boundaries:** check clauses 2-A/2-C; 2-B discharged under
   [channel retirement](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
   [Owner](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md).

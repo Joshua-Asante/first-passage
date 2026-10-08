@@ -1,6 +1,6 @@
 # Pre-registration — T00 step 2: the selected-book feasibility screen (reuses prereg v2 scoring clauses; not falsifier evidence)
 
-**Status:** `DRAFT — NOT RATIFIED.` A draft for the operator's ratification only. Nothing here binds T00 step 3 until this Status line reads `RATIFIED <date>`, every active §3 row's *Ratified value* cell and every §6 field holds a value, and the ratifying commit's SHA is recorded beside it (checked by the last audit hook). Once ratified, it does not change after any step-3 output is visible ([prereg v2 §5](2026-08-26-prop-survivor-scoring-prereg-v2.md#5--forbidden-moves--same-as-v1-plus-one-new-item-this-reopening-itself-creates), last v1 item; [amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) step 2: "verbatim before execution, unchanged after").
+**Status:** `RATIFIED 2026-10-07` by Joshua, directly to coordinator (4): "ratify 581" (§6). *As drafted:* `DRAFT — NOT RATIFIED.` A draft for the operator's ratification only. Nothing here binds T00 step 3 until this Status line reads `RATIFIED <date>`, every active §3 row's *Ratified value* cell and every §6 field holds a value, and the ratifying commit's SHA is recorded beside it (checked by the last audit hook). Once ratified, it does not change after any step-3 output is visible ([prereg v2 §5](2026-08-26-prop-survivor-scoring-prereg-v2.md#5--forbidden-moves--same-as-v1-plus-one-new-item-this-reopening-itself-creates), last v1 item; [amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) step 2: "verbatim before execution, unchanged after").
 
 *2026-10-02: A5/A6 frozen before the T00 screen build (design #629 §12 item 5, operator-approved; design §8 step 3). Frozen bytes: identical from `f0208f37b8722d177b46a8751440a920c987377a` through this file's merge into `main`; the frozen revision of record is that merge commit, which build card #634 §8 PR-2 records. Section hashes (SHA-256, each from its `###` heading line up to, not including, the next heading line; build card #634 §2.6): A5 `a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b`; A6 `b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9`. #581 merges as DRAFT; ratification and the remaining §3 values follow under the A1 order; ratification must leave these bytes unchanged.*
 
@@ -210,11 +210,15 @@ Whatever is chosen should be recorded at the D-feed owner, not here, before step
 
 ## §6 — Ratification (operator; blank until ruled)
 
-The §3 values are recorded in §3's *Ratified value* column.
+The §3 values are recorded once, in the `t00-step2-values/v1` block below: one line equal to `canonical_json_bytes(parameters)` ([design](../../superpowers/specs/2026-10-02-t00-screen-authority-design.md) §3, row A8; [build card](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md) §8 K-4 ruling). Each active §3 *Ratified value* cell names only its keys.
 
-- **Ruling:** —
+```t00-step2-values/v1
+{"a5_rule":"T00_A5/v1","block":{"family":"JOINT_FLAT_BOTH_RUNS","length_sessions":5},"budget":{"basis":"design 5.4 at option a upper (card #634 8, Joshua 2026-10-05): path = c x 3N, c = 320 s, 3N = 3006; overhead = (b + 2i) x (W x S + R) + p, b = 173 s, i = 71.4 s, W = 8, S = 3, R = 8, p = 1100 s, rounded up","overhead_cpu_seconds":11300,"path_cpu_seconds":961920},"deadline_only_is_bust":true,"depth_per_root":{"FULL":334,"H1":334,"H2":334},"expressions":"DECLARED_BOOK","horizon_sessions":1500,"initial_state":{"class":"PRISTINE","current_equity":"100000","historical_eod_peak":"100000","original_basis":"100000","prior_max_day_profit":"0","prior_trade_days":0},"median_rule":"LOWER_NEAREST_RANK_INF_INCLUDED","pass_floor_halves":"REPORTED","path_start_date":"2022-09-01","rng":{"probe_root":"probe","roots":["42","123","2026"],"tag":"t00-screen-rng/v1"},"run1_diagnostic":"WAIVED","scenarios":["S0"]}
+```
+
+- **Ruling:** Joshua, 2026-10-07, directly to coordinator (4), the T00 card owner: "ratify 581". This ratifies §1–§5 as written and the §6 `t00-step2-values/v1` block (SHA-256 `3432eb8107fd2b840766672b48449a262b91ee56efe9a234f5ad578de04978c2`). The block includes his 2026-10-07 rulings on §3 items 2, 3 and 4 ([#720 comment 6030116859](https://github.com/Joshua-Asante/first-passage/pull/720#issuecomment-6030116859)). The A5/A6 bytes are unchanged (A5 `a8f6f25e…391b`, A6 `b3bdc77b…17d9`).
 - **OD-1 / OD-2:** Operator ruling 2026-10-02 (sitting 2) (Joshua, "all recommended", 2026-10-03T01:42Z). **OD-1:** reading (c), label-sensitive, recorded at its owners, the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) and [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken). **OD-2: the declared book.** A1 stands as drafted, and T00 screens the four declared expressions. A GO-evidence result speaks to them only. Evidence on the route-native editions comes from their own pre-registration §6 requalification, not from T00.
-- **Ratifying commit SHA:** —
+- **Ratifying commit SHA:** `40c650cbbfd98f11eeb749922087d14602b8aace`
 
 ---
 
@@ -238,9 +242,11 @@ rg -n "'kernel_outcome'|own_flat_deadline" ops/c1_rail/qualification/runner.py
 rg -n "RESOLVED|a526b50fa75e6845|48bdc10460441a57" docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md
 
 # Ratification completeness: run after the Status line is changed. Success is the single line "OK".
-# Any other output names an unfilled or missing §6 field, an unfilled §3 "Ratified value" cell (items 1-5, 7, 8), or a Status line that is not RATIFIED <date>.
+# Any other output names an unfilled or missing §6 field, an unfilled §3 "Ratified value" cell (items 1-5, 7, 8), a missing or repeated §6 values block, or a Status line that is not RATIFIED <date>.
+# Byte equality of the block with the signed parameters is checked by screen_authority._check_prereg (row A8), not here.
 f=docs/briefs/pre-registration/2026-10-01-tradeify-t00-step2-screen-prereg.md
 { for k in 'Ruling' 'OD-1 / OD-2' 'Ratifying commit SHA'; do grep -qE "^- [*][*]$k:[*][*] +[^ —]" "$f" || echo "§6 $k: unfilled"; done
   for n in 1 2 3 4 5 7 8; do grep -qE "^[|] $n [|].*[|] +[^ |—][^|]*[|][[:space:]]*\$" "$f" || echo "§3 item $n: Ratified value unfilled"; done
+  [ "$(awk '/^## §6/{s=1;next} /^## /{s=0} s' "$f" | grep -c '^```t00-step2-values/v1$')" = 1 ] || echo '§6 values block: missing or repeated'
   grep -qE '^[*][*]Status:[*][*] `RATIFIED [0-9]{4}-[0-9]{2}-[0-9]{2}' "$f" || echo 'Status line is not RATIFIED <date>'; } | grep . || echo OK
 ```

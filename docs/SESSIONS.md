@@ -45,6 +45,15 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-10-06a — Four-firm dated re-MC: FALSIFIED — early-fail, confirmed by a depth-recorded re-run
+
+- **Focus:** run the frozen [four-firm dated re-MC](briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md) (§4 falsifier, hard date 2026-11-08) against the gate of record, [`2026-08-26-prop-survivor-scoring-prereg-v2`](briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md), and record its verdict.
+- **Result:** FALSIFIED — early-fail. No tier clears Part A on the intraday-honest clock, and the calibration reference does not fire AMBIGUOUS. [RESULTS](../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md); [#715](https://github.com/Joshua-Asante/first-passage/pull/715) merged at `11c6007`. Recorded at the [withdrawal ADR](adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-06--dated-re-mc-verdict-falsified--early-fail-recorded).
+- **Judgment:** Codex review found that the executor could assign a verdict without proving each arm's simulation depth. After two folds failed on the same mechanism, the depth logic was rebuilt from invariants on the escalation lane. That made the original run read INSUFFICIENT (it had no depth records), so coordinator (4) adjudicated FALSIFIED from the reports plus code provenance. Joshua held the merge and chose a re-run with bound depth records instead. The re-run reproduced the reports byte for byte, so the verdict now rests on recorded depth. A pooled rate-lattice "proof" used along the way was withdrawn as unsound per arm.
+- **Open / next:** the 2026-11-08 program check (STATE); any next candidate needs fresh operator authorization.
+
+---
+
 ## 2026-09-22a — `file_lock` on Windows: the lock file needs no writer, and the acquire now waits instead of giving up
 
 - **Focus:** operator-direct: make the Windows bootstrap in `core/lib/file_lock.py::exclusive_file_lock` race-free (the load-timing flake that #451 worked around in the test by pre-warming the lock), then make the Windows acquire wait the way POSIX `flock` does.

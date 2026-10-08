@@ -4063,6 +4063,13 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 
 **Addendum 2026-10-02 — the effective-input file.** *Operator ruling 2026-10-02 (sitting 1), given directly to the deployment coordinator ("all recommended"):* agents may also read `ops/c1_signal_daemon/ports/effective_inputs.json`, the accepted book's effective-input file (digest-pinned in `book_adapters.py`), read-only and in place in the primary checkout, under rules 1–4 above: never copied, quoted, committed, or passed to GLM or any external service.
 
+**Addendum 2026-10-07 — one Windows cloud VM for the T00 screen.** *Operator ruling 2026-10-07, given by Joshua directly to the T00 step-12 owner session ("A Windows VM is the best option here … That is the ruling"; then "move this current run to vm") and confirmed directly to coordinator (4), the T00 card owner. Coordinator (4) asked him which runs the ruling covers, and he answered "This run too".* Joshua also accepted the TradingView/vendor-licence and IP exposure of holding the CME TradingView exports and the accepted runtime ports on a cloud host he controls.
+
+- **Admitted.** For the T00 screen only, agents may copy, byte-for-byte, the four accepted runtime ports, `effective_inputs.json`, the r3c contract's bound artifacts (including the CME TradingView exports and bar panels it binds), the screen's launch inputs and `p7_acceptance.json` to **one Windows virtual machine that Joshua provisions and controls**. Each file goes to the same absolute path it has in the primary checkout. Agents may read and use them there for T00 runs. The Pine sources are not part of this admission.
+- **Still in force:** rule 1 above, except that this one VM is a permitted destination. Transfer goes directly from the primary checkout to the VM, with no intermediate copy. It runs only through access that Joshua opens for the session; agents never read, copy or store his keys or credentials. Rules 2–4 above also stay in force. No other external service is allowed (GLM, Z.ai, any public or shared host). Joshua alone provisions the VM and its credentials; agents never handle the credentials.
+- **Threat model:** attended host, with the interpreter and venv read-only, applies to the VM for the whole run (T00 build card §8).
+- **Not changed:** the private status of every other Pine and port; any other use of a cloud host.
+
 ## §61 — X-1 observed route acceptance (2026-09-30)
 
 Joshua directed the continuation review of the completed September 30 X-1
