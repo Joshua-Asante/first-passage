@@ -78,7 +78,7 @@ No rescaled arm (k ≠ 1) is scored before this file is FROZEN and merged. The w
 
 ### §1.3 — What each outcome means
 
-- **INFEASIBLE** (§6): every k fails at least one EOD bust gate. It supports stopping uniform-size-cut successors of this book on this tier. Stopping is Joshua's decision (§6).
+- **INFEASIBLE** (§6): every k fails at least one EOD bust gate. It supports stopping uniform-size-cut successors of this book on this tier. Joshua adopted the stopping rule on 2026-10-08 (§9 item 6).
 - **FEASIBLE** is **not** a successor result. It gives a target k range for Tier 2 and for a successor screen, which needs its own frozen pre-registration and an integer-sized book.
 - Every other label is non-stopping (§6).
 
@@ -97,7 +97,7 @@ No rescaled arm (k ≠ 1) is scored before this file is FROZEN and merged. The w
 
 ### §2.2 — Venue
 
-`Tradeify_Select_100K` only, gating on Run-2 (consistency 40%). Run-1 is reported. Other tiers are out of scope and are not scored at k ≠ 1. This uses `score_candidate(tiers=…)`, which departs from its docstring; reproduction (b) (§2.3) validates it, and the build review rules on it.
+`Tradeify_Select_100K` only, gating on Run-2 (consistency 40%). Run-1 is reported. Other tiers are out of scope and are not scored at k ≠ 1. This uses `score_candidate(tiers=…)`, which departs from its docstring; reproduction (b) (§2.3) validates it, and the build packet is authorized with it (§9 item 7).
 
 ### §2.3 — Build needed (its own packet, review and launcher record; synthetic tests only)
 
@@ -150,12 +150,12 @@ T00's chronological ceil partition, adapted to the daily window. N is the series
 | Gate | FULL | H1 | H2 | Owner |
 |---|---|---|---|---|
 | Run-2 headline bust ≤ 5.0% (a **bust gate**) | **gates** | reported | **gates** | v2 §3; T00 A2 |
-| Run-2 P(pass) ≥ 50% (a **pass gate**) | **gates** | reported | **OWED (operator)** | v2 §3; T00 A2, §6 `pass_floor_halves` |
+| Run-2 P(pass) ≥ 50% (a **pass gate**) | **gates** | reported | reported (DECIDED, §9 item 1) | v2 §3; T00 A2, §6 `pass_floor_halves` |
 | Median days-to-pass finite and ≤ 1500 | reported | reported | reported | v2 §3; T00 A2 |
 | G7-style: Run-2 eval bust ≤ 1.0% (`clears_funded`) | reported | — | — | v2 §2 G7, §3 Part B |
 
 - **H1 bust.** T00 A6 also gates H1 bust. Omitting it makes this check more lenient than A6, which a necessary condition allows.
-- **H2 pass floor.** The task draft makes it binding. T00 ratified halves as `REPORTED`. A necessary condition must not be stricter than the successor's gate, so the drafter recommends `REPORTED`. Either way, pass gates never decide INFEASIBLE (§6).
+- **H2 pass floor: `REPORTED`** (DECIDED, §9 item 1). T00 ratified halves as `REPORTED`, and a necessary condition must not be stricter than the successor's gate. Pass gates never decide INFEASIBLE (§6).
 - **Median.** Under the T00 rule over 30,000 pooled sims, the median is finite exactly when P(pass) ≥ 50%. It adds no gate; it is reported for the successor's time-cost read.
 - **G7.** The harness reads eval geometry, not funded geometry, and no Tradeify funded tier row exists. Reported only; never gates.
 - **EOD clock.** The retained guard `eod` arm is the Run-2 consistency-on EOD read for that population. It never makes a k FEASIBLE; its bust gates decide INFEASIBLE (§6).
@@ -181,7 +181,7 @@ T00's chronological ceil partition, adapted to the daily window. N is the series
 
 **Terms.** For a valid k and a clock: *bust-clear* = every gating bust cell of §4.2 holds; *pass-clear* = every gating pass cell holds. The intraday clock reads the report; the EOD clock reads the retained guard `eod` arm.
 
-**Validity of a k.** A k is **INSUFFICIENT** if any of its (population) calls is incomplete at frozen depth, lacks a depth record, lacks a valid EOD or median sidecar (the EOD sidecar is captured even when the guard raises, §2.3 item 2), or has a `gate_grade = false` reason other than the vacuity case below.
+**Validity of a k.** A k is **INSUFFICIENT** if any of its (population) calls is incomplete at frozen depth, lacks a depth record, was not run before the §8.1 budget cap was hit, lacks a valid EOD or median sidecar (the EOD sidecar is captured even when the guard raises, §2.3 item 2), or has a `gate_grade = false` reason other than the vacuity case below.
 
 **Vacuity reading.** At k < 1, a call whose **only** `gate_grade` reason contains `real intraday_low channel is vacuous` is read **as is** (the honest arm stands, flagged `vacuity-read`) when k = 1 for the same population passed the guard. That reason text is raised only after the zeros-channel check held. Identical rates then mean that no path's outcome changed between clocks, not that the channel was dropped. A reason containing `zeros-channel must reproduce EOD`, any other reason, or a k = 1 guard failure for that population makes the k INSUFFICIENT. A strictly-negative-entry condition is not used: every trade day carries a cost in `intraday_low`, so it would almost always hold and adds no protection; the zeros check and the k = 1 condition do the work.
 
@@ -195,16 +195,16 @@ Labels, assigned in this order (the first that holds):
 | 4 | **GRID-GAP** | Else, the gap pair exists (below) and its larger k is pass-clear on the EOD clock | A clearing interval may lie between grid points. | No |
 | 5 | **PASS-LIMITED** | Else, some valid k is bust-clear on the EOD clock | Failures there are pass-driven, the side §1.2 calls not one-sided. | No |
 | 6 | **INCONCLUSIVE** | Else, some k is INSUFFICIENT | An unread k could be bust-clear. | No |
-| 7 | **INFEASIBLE** | Else: every k is valid and fails at least one EOD bust gate | Supports stopping (below). | Proposed |
+| 7 | **INFEASIBLE** | Else: every k is valid and fails at least one EOD bust gate | Stopping (below). | Yes |
 
 **GRID-GAP midpoint (fixed now).**
 - **Pair:** the largest adjacent grid pair (k_hi > k_lo), both valid, where k_lo is bust-clear on the EOD clock and k_hi is not. That is the boundary at the smallest risk cut.
 - **Value:** (k_hi + k_lo) / 2, rounded to 2 decimals.
 - **Runs:** all three populations; both clocks (the intraday report and the EOD sidecar), with the same sidecars and validity rules.
 - **Conclusions:** the midpoint is bust-clear and pass-clear on the intraday clock → FEASIBLE. On the EOD clock only → CLOCK-DEPENDENT. Otherwise, or if it is INSUFFICIENT → GRID-GAP stands. The midpoint can never produce INFEASIBLE.
-- Runs only if §9 item 2 authorizes it; otherwise GRID-GAP is reported as is.
+- Authorized (DECIDED, §9 item 2). It runs after the grid and counts against the §8.1 cap; if the cap is hit first, it is INSUFFICIENT and GRID-GAP stands.
 
-**Proposed stopping rule (Joshua's decision; not adopted here).** On INFEASIBLE, stop pursuing uniform-size-cut successors of the accepted book on `Tradeify_Select_100K`. It does not retire any strategy, close Tier 2, or bar per-leg or leg-composition successors.
+**Stopping rule (ADOPTED, §9 item 6).** On INFEASIBLE, stop pursuing uniform-size-cut successors of the accepted book on `Tradeify_Select_100K`. It retires no strategy. Tier 2 becomes an optional explanation. It does not bar per-leg or leg-composition successors. Every other label is non-stopping.
 
 ---
 
@@ -215,7 +215,8 @@ Labels, assigned in this order (the first that holds):
 - **Successor disclosure.** Any successor pre-registration (a size-cut book, the Tier-2 row-5 direction, or a four-firm candidate) names this run, its K, its labels and its readers as prior looks. Readers of the private outputs are logged with the run.
 - **Tier 2.** Tier-2 criteria are frozen (rows 1–4 at `34c31c4`, row 5 at admission), so this output cannot change them. It overlaps row 5's pointer: a FEASIBLE here and a row-5 hit there point the same way from different evidence. Neither confirms the other.
 - **Checklist 7.6.1.** The rule covers candidate-configurable **replays** against a **pre-registered edition**. This check replays nothing: no port, bar panel, edition or input override. It transforms an already-computed daily series inside the MC, and no size-cut edition is pre-registered. So it is outside 7.6.1 as written.
-  - **Borderline, flagged.** Tier-2 card §1 calls a rescale "a candidate replay". That sentence concerns `BookReplay`, but a reader could extend it here. In spirit, this check scores a candidate-like configuration before its successor pre-registration exists, which is the harm item 7.6.1's 2026-10-02 incident records. The mitigation is this file: freeze first, disclose to the successor. **OWED (operator):** accept this classification, or treat the check as under 7.6.1 and require the successor pre-registration to freeze first.
+  - **Borderline, flagged.** Tier-2 card §1 calls a rescale "a candidate replay". That sentence concerns `BookReplay`, but a reader could extend it here. In spirit, this check scores a candidate-like configuration before its successor pre-registration exists, which is the harm item 7.6.1's 2026-10-02 incident records. The mitigation is this file: freeze first, disclose to the successor.
+  - **Operator ruling (§9 item 4):** outside 7.6.1. It is an MC rescale, not a replay against a pre-registered edition.
 - **Four-firm §4.** Not evidence: Tradeify only, and the four-firm prereg §5 bars substituting sizes after output. The early-fail branch stands: any §4 candidate needs fresh operator authorization.
 - **T00.** Cannot change `NO-GO-evidence-robust`. T00 A1 forbids re-sizing within T00; this check sits outside it.
 
@@ -228,8 +229,10 @@ Labels, assigned in this order (the first that holds):
 - RESULTS depth re-run: the candidate stage ran 22:37:11–22:58:07Z, about 21 min for 19 arms (Bulenox 4; three tiers × 5), so **≈ 66 s per arm** (3 seeds × 10k).
 - Per (k, population), Tradeify only: 5 arms (3 guard, Run-1, Run-2) ≈ **5.5 min**.
 - Grid: 7 k × 3 populations = 21 calls ≈ **116 min**. Reproduction (a): ≈ 21 min. A GRID-GAP midpoint: ≈ 17 min. Total ≈ 2.3 h serial, ≈ 2.6 h with the midpoint.
-- **Not a bound.** Smaller k keeps paths alive longer, so arms slow toward the full-horizon figure (four-firm I-15: 1005 s per arm, ×1.5 margin). Worst case ≈ 2.1 CPU-h per (k, population). Arms may run in parallel; seeds are fixed, so scheduling cannot change a result.
-- **OWED (operator):** a wall-clock budget cap. A cap hit before every arm completes reads INSUFFICIENT for the missing k.
+- **Not a bound.** Smaller k keeps paths alive longer, so arms slow toward the full-horizon figure (four-firm I-15: 1005 s per arm, ×1.5 margin). Worst case ≈ 2.1 CPU-h per (k, population), so the cap below can bind. Arms may run in parallel; seeds are fixed, so scheduling cannot change a result.
+- **Budget cap (DECIDED, §9 item 3): 12 CPU-hours total**, including the k = 1 reproduction and any midpoint arm.
+- **Fixed run order:** reproduction (a), then (b); then k = 1 H1 and H2; then k = 0.2, 0.25, 0.33, 0.4, 0.5, 0.75 (smallest first), each k's FULL, H1 and H2 together; then the GRID-GAP midpoint if triggered. Parallel arms start in this order.
+- **Cap hit:** every unrun or incomplete arm is INSUFFICIENT, so its k is INSUFFICIENT (§6) and the label cannot be INFEASIBLE.
 
 ### §8.2 — Outputs (private)
 
@@ -244,15 +247,17 @@ Private root: `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_arti
 
 ---
 
-## §9 — OWED (operator) and signature
+## §9 — Operator decisions and signature
 
-1. H2 pass floor: binding or `REPORTED` (§4.2). Drafter: `REPORTED`.
-2. GRID-GAP: report only, or the one midpoint arm fixed in §6. Drafter: one midpoint arm.
-3. Budget cap (§8.1).
-4. 7.6.1 classification (§7).
-5. Executor and run-by date. Run order relative to Tier 2: independent (§7); the drafter sees no ordering need.
-6. Stopping rule: adopt, amend or decline, before the run (§6).
-7. Build packet authorization for §2.3, including the `tiers=` departure.
+All seven items: **DECIDED** — Joshua, 2026-10-08, in chat to the Deployment Coordinator, verbatim: "as recommended", answering the drafter's recommendations as relayed by the Deployment Coordinator.
+
+1. **H2 pass floor: `REPORTED`** (§4.2).
+2. **GRID-GAP: one midpoint arm**, as fixed in §6.
+3. **Budget: 12 CPU-hours total**, including the k = 1 reproduction and any midpoint arm; fixed run order, smallest k first (§8.1). A cap hit leaves the unrun arms INSUFFICIENT, so the label cannot be INFEASIBLE (§6).
+4. **Checklist 7.6.1: outside the rule** (an MC rescale, not a replay against a pre-registered edition). Operator ruling (§7).
+5. **Executor:** a fresh Opus session; no GLM; private series read in place only. Run by about 2026-10-12, after the build passes review. Run order relative to Tier 2: independent (§7).
+6. **Stopping rule: ADOPTED as written** (§6). INFEASIBLE stops uniform-size-cut successors of the accepted book on `Tradeify_Select_100K`, retires no strategy, and makes Tier 2 an optional explanation. Every other label is non-stopping.
+7. **Build packet: AUTHORIZED** (§2.3), including `tiers=("Tradeify_Select_100K",)` against the `score_candidate` docstring. It is a code PR that needs a Claude review and a Codex verdict, with synthetic tests only before the run.
 - *Closed:* per-leg vectors, dropped by coordinator ruling 2026-10-08 (§3.2).
 - **Signed:** —
 
@@ -280,7 +285,7 @@ grep -n "^| 7 | \*\*INFEASIBLE\*\*" "$f"
 # No result cites this file before freeze (expect no output until the run).
 grep -rl "2026-10-08-tradeify-size-feasibility-prereg" lab/ || true
 # At freeze only (each fails while DRAFT): no OWED marker, §9 signed, Status frozen.
-! grep -n "OWED (operator)" "$f"
+! grep -nE "OWED (operat[o]r)" "$f"
 ! grep -nE '^- \*\*Signed:\*\* —$' "$f"
 grep -nE '^\*\*Status:\*\* `FROZEN [0-9]{4}-[0-9]{2}-[0-9]{2}`' "$f"
 ```
