@@ -131,11 +131,32 @@ def test_sidecar_off_and_on_give_identical_replay_output(name):
     assert on.events == off.events and on.sessions == off.sessions
 
 
+def _realized_by_leg_kind(replay, events, lots):
+    """Realized P&L net of commission by (leg, lot kind), from fill events alone: an exit's P&L and
+    commission belong to the lot named by its entry_fill_id (``lots`` carries across sessions)."""
+    total = {(s.leg_id, kind): 0.0 for s in BOOK_LEGS for kind in LOT_KINDS}
+    for event in events:
+        if event.kind != 'fill':
+            continue
+        fill = json.loads(event.detail)
+        if fill['kind'] in LOT_KINDS:
+            lots[fill['fill_id']] = fill
+            total[(event.leg_id, fill['kind'])] -= fill['commission']
+            continue
+        lot = lots[fill['entry_fill_id']]
+        direction = 1 if lot['side'] == Side.BUY.value else -1
+        realized = ((fill['price'] - lot['price']) * direction * fill['qty']
+                    * replay.instruments[event.leg_id].pointvalue)
+        total[(event.leg_id, lot['kind'])] += realized - fill['commission']
+    return total
+
+
 @pytest.mark.parametrize('name', sorted(SCENARIOS))
 def test_per_leg_sums_reconcile_to_combined_record_and_fill_events(name):
     replay, result, _ = _run(name, True)
     sidecar = replay.attribution()
     assert len(sidecar) == len(result.sessions) == len(_session_events(result))
+    lots = {}
     for row, record, events in zip(sidecar, result.sessions, _session_events(result)):
         assert (row['occurrence'], row['source_session_id']) == (record.occurrence, record.source_session_id)
         assert row['session_mode'] == events[0].detail
@@ -152,6 +173,10 @@ def test_per_leg_sums_reconcile_to_combined_record_and_fill_events(name):
                 assert leg['filled'][kind] == sum(f['qty'] for leg_id, f in fills if leg_id == k and f['kind'] == kind)
             refusals = [e.detail for e in events if e.kind == 'refused' and e.leg_id == k]
             assert [r['outcome'] for r in leg['requests'] if r['outcome'] != 'admitted'] == refusals
+        expected = _realized_by_leg_kind(replay, events, lots)
+        for k in row['legs']:
+            for kind in LOT_KINDS:
+                assert row['close']['cash'][k][kind] == pytest.approx(expected[(k, kind)], abs=1e-9), (k, kind)
 
 
 def test_sidecar_records_policy_capacity_takeover_and_forced_closes():
@@ -161,7 +186,7 @@ def test_sidecar_records_policy_capacity_takeover_and_forced_closes():
     assert striker['requests'][0] | {'capacity_before': None} == {
         'kind': 'entry', 'requested': 1, 'policy': 20, 'admitted': 20, 'outcome': 'admitted',
         'lifecycle_tier': 'AUTHORIZED', 'capacity_before': None, 'capacity_reason': 'within cap',
-        'micro_requested': 20,
+        'micro_requested': 20, 'cap_only_policy': 22, 'cap_binds': False,
         'sizing_inputs': {'cap_alloc': '80', 'per_contract_risk': '35', 'risk_dollars': '700'}}
     assert aegis['requests'][0]['takeover'] | {'reason': None} == {
         'displaced': ['dj30_mym_p250'], 'cancel_acked': ['dj30_mym_p250'], 'admitted': True, 'reason': None}
@@ -175,6 +200,31 @@ def test_sidecar_records_policy_capacity_takeover_and_forced_closes():
 
     replay, _, _ = _run('close_entry', True)
     assert replay.attribution()[0]['legs']['orb_mnq_v7']['forced_closes']['scheduled_flatten']['count'] == 1
+
+
+def test_cap_term_is_recorded_from_the_production_call():
+    replay, _, _ = _run('takeover', True)            # risk term 700/35 = 20 under the cap term
+    row = replay.attribution()[0]['legs']['dj30_mym_p250']['requests'][0]
+    assert (row['policy'], row['cap_only_policy'], row['cap_binds']) == (20, 22, False)
+    replay, _, _ = _run('protected_takeover_add', True)   # risk term above the cap term
+    rows = replay.attribution()[0]['legs']['dj30_mym_p250']['requests']
+    assert (rows[0]['policy'], rows[0]['cap_only_policy'], rows[0]['cap_binds']) == (22, 22, True)
+    assert 'cap_binds' not in rows[1]                      # adds have no cap term
+    replay, _, _ = _run('close_entry', True)               # fixed-size leg: not recorded
+    assert 'cap_binds' not in replay.attribution()[0]['legs']['orb_mnq_v7']['requests'][0]
+
+
+def test_deadline_failure_records_each_legs_open_quantity():
+    replay, result, failed = _run('deadline', True)
+    rows = replay.attribution()
+    assert failed and rows[-1]['low']['where'] in ('open', 'segment', 'bar_close', 'deadline')
+    opened = rows[-1]['open_at_deadline']
+    edge = dict(result.sessions[-1].end_edge.positions)
+    assert {k: v['position'] for k, v in opened.items()} == edge and edge['orb_mnq_v7'] > 0
+    assert opened['orb_mnq_v7']['lots'] == {'entry': edge['orb_mnq_v7'], 'add': 0}
+    assert all(v['position'] == 0 for k, v in opened.items() if k != 'orb_mnq_v7')
+    replay, _, _ = _run('close_entry', True)               # twin: a settled session has none
+    assert 'open_at_deadline' not in replay.attribution()[0]
 
 
 def test_protected_adds_are_attributed_by_lot_kind():
@@ -323,6 +373,56 @@ def test_a_relabelled_diagnostic_receipt_is_not_served(case, monkeypatch):
     with pytest.raises(ValueError, match='changed'):
         source.replay_bracket_with_sidecar(_path(source))
     assert engines == []
+
+
+def test_p7_driver_refuses_a_diagnostic_receipt(tmp_path, monkeypatch):
+    import base64
+    from c1_rail.qualification import p7_driver, p7_evidence, production_source
+    monkeypatch.setattr(production_source, '_now', lambda: NOW)
+    case = build_source_case(tmp_path / 'case', monkeypatch)
+    raw = _diagnostic_bytes(case)
+    files = {'registry': json.dumps({k: base64.b64encode(v).decode() for k, v in case.public_keys.items()}),
+             'path': json.dumps({'sessions': list(case.document['populations']['FULL'][:2])})}
+    for name, text in files.items():
+        (tmp_path / name).write_text(text, encoding='utf-8')
+
+    def run(contract, approval):
+        (tmp_path / 'contract').write_bytes(contract)
+        (tmp_path / 'approval').write_bytes(approval)
+        argv = ['code', tmp_path / 'contract', tmp_path / 'approval', tmp_path / 'registry', case.root,
+                tmp_path / 'path', 'out']
+        return p7_driver._run(p7_evidence, [str(a) for a in argv])
+    with pytest.raises(p7_evidence.P7Refusal, match='P7_PURPOSE_MISMATCH'):
+        run(raw, case.approval(scope=DIAGNOSTIC_SCOPE, subject=raw))
+    # Twin: a source receipt passes the class check and reaches the replay (then the absent
+    # bootstrap recorder, which only the pinned bootstrap supplies).
+    with pytest.raises(AttributeError, match='ports'):
+        run(case.contract_bytes(), case.approval())
+
+
+@GIT
+def test_screen_authority_class_check_holds_even_if_the_r3c_pin_named_the_diagnostic_digest(
+        tmp_path, monkeypatch):
+    from test_screen_authority import Screen
+    from c1_rail.qualification import screen_authority
+    screen = Screen(tmp_path, monkeypatch)
+    auth = screen.validate()
+    diagnostic = _diagnostic(screen.case)
+    source = screen.receipt
+    # Site 1 (validation): the pin and the document both name the diagnostic digest.
+    screen.receipt = diagnostic
+    doc = {**screen.authority, 'source': {'contract_sha256': diagnostic.contract_sha256}}
+    with pytest.raises(screen_authority.ScreenAuthorityError, match='source evidence class'):
+        screen.validate(doc=doc, receipt=diagnostic)
+    # Site 2 (every use): the bound receipt relabelled in place is refused by the class term
+    # before the receipt's own snapshot check; twin: unrelabelled, the source checks pass.
+    screen.receipt = source
+    screen.patch()
+    with pytest.raises(screen_authority.ScreenAuthorityError, match='SCREEN_BOOTSTRAP_MISMATCH'):
+        screen_authority.require_validated_screen_authority(auth, source_contract=source, now=NOW)
+    object.__setattr__(source, 'evidence_class', DIAGNOSTIC_EVIDENCE_CLASS)
+    with pytest.raises(screen_authority.ScreenAuthorityError, match='SCREEN_SOURCE_MISMATCH'):
+        screen_authority.require_validated_screen_authority(auth, source_contract=source, now=NOW)
 
 
 @GIT

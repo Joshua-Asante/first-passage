@@ -10,6 +10,7 @@ import json
 import math
 from dataclasses import dataclass, replace
 from datetime import timedelta
+from fractions import Fraction
 from typing import Callable, Mapping
 
 from c1_rail.book_policy import (
@@ -125,9 +126,11 @@ class AttributionSidecar:
         self.current["last_bar_mark"] = self._by_leg(marks)
         self.observe("bar_close", bar_index, path_time, value, self.cash, marks)
 
-    def finish(self, where, bar_index, path_time, value):
+    def finish(self, where, bar_index, path_time, value, open_at_deadline=None):
         self.observe(where, bar_index, path_time, value, self.cash, dict.fromkeys(self.cash, 0.0))
         current = self.current
+        if open_at_deadline is not None:
+            current["open_at_deadline"] = open_at_deadline
         current["close"] = {"cash": self._by_leg(self._relative(self.cash)),
                             "commission": self._by_leg({key: self.commission[key] - self._open_commission[key]
                                                         for key in self.commission})}
@@ -294,6 +297,29 @@ class BookReplay:
             marks[(k, "add")] = add
             marks[(k, "entry")] = self.brokers[k].open_pnl(bar.close) - add
         return marks
+
+    def _cap_term(self, k, qty, mode, tier, values):
+        """Whether the risk-sized leg's cap term wins the policy's min, from the production call.
+
+        ``entry_quantities`` is called again with the risk term made unbounded (risk dollars a
+        billion times the per-contract risk), so it returns the cap term alone; the formula is
+        never re-implemented. The cap binds when the policy base equals it (a tie counts).
+        """
+        unbounded = dict(values, risk_dollars=Fraction(str(values["per_contract_risk"])) * 10**9)
+        cap_only = entry_quantities(k, mode=mode, policy=self.policy, lifecycle_tier=tier, **unbounded)[0]
+        return {"cap_only_policy": cap_only, "cap_binds": qty == cap_only}
+
+    def _open_at_deadline(self, edge):
+        """Each leg's open position, working orders, reservation and open lots by kind."""
+        rows = {k: {"position": q} for k, q in edge.positions}
+        for k, n in edge.working_orders:
+            rows[k]["working_orders"] = n
+        for k, n in edge.reservations:
+            rows[k]["reserved"] = n
+        for k, row in rows.items():
+            row["lots"] = {kind: sum(lot.qty for lot in self.lots.values() if lot.leg_id == k and lot.kind == kind)
+                           for kind in LOT_KINDS}
+        return rows
 
     def _log(self, kind, leg_id="", detail=""):
         from .model import ReplayEvent
@@ -580,6 +606,8 @@ class BookReplay:
                 row.update(policy=qty, lifecycle_tier=tier)
                 if intent.kind == "entry":
                     row["sizing_inputs"] = {name: str(value) for name, value in sorted(values.items())}
+                if intent.kind == "entry" and "risk_dollars" in values:
+                    row.update(self._cap_term(k, qty, mode, tier, values))
             if qty == 0:
                 self._reject(intent, bar, "zero policy quantity")
                 return
@@ -649,7 +677,8 @@ class BookReplay:
                 from .model import ReplayResult, SessionRecord
                 self._log("deadline_failure")
                 if self._attribution is not None:
-                    self._attribution.finish("deadline", self._index, self._path_time, self.cash - self._opening)
+                    self._attribution.finish("deadline", self._index, self._path_time, self.cash - self._opening,
+                                             self._open_at_deadline(edge))
                 record = SessionRecord(session.occurrence, session.path_session_date,
                     session.source.session_id, self.cash - self._opening,
                     min(self._session_low, self.cash - self._opening),
