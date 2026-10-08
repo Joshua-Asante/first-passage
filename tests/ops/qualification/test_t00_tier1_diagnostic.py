@@ -199,53 +199,83 @@ def _run(driver, monkeypatch, tmp_path, results, *, start=0.0, step=10.0, wall_s
 
 
 def test_all_match_is_resolved(driver, monkeypatch, tmp_path):
-    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed(), _sealed()])
+    (verdict, code, done, _detail), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed(), _sealed()])
     assert (verdict, code, done, source.calls) == ('RESOLVED', 'OK', 3, 3)
 
 
 def test_stops_at_the_first_mismatch(driver, monkeypatch, tmp_path):
-    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed(pnl=1.0), _sealed()])
+    (verdict, code, done, _detail), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed(pnl=1.0), _sealed()])
     assert (verdict, code, done, source.calls) == ('FALSIFIED', 'NON_REPRODUCTION', 2, 2)
 
 
 def test_a_replay_exception_is_non_reproduction(driver, monkeypatch, tmp_path):
-    (verdict, code, done), _ = _run(driver, monkeypatch, tmp_path, [_sealed(), ValueError('engine legality')])
+    (verdict, code, done, _detail), _ = _run(driver, monkeypatch, tmp_path, [_sealed(), ValueError('engine legality')])
     assert (verdict, code, done) == ('FALSIFIED', 'NON_REPRODUCTION', 1)
 
 
-@pytest.mark.parametrize('refusal', [ContractValidationError('SOURCE_APPROVAL_EXPIRED: lapsed'),
-                                     ValueError('path contains a source session outside retained covered panel')])
-def test_a_source_gate_refusal_is_refused(driver, monkeypatch, tmp_path, refusal):
-    (verdict, code, done), _ = _run(driver, monkeypatch, tmp_path, [refusal])
+def test_a_contract_validation_error_is_refused(driver, monkeypatch, tmp_path):
+    (verdict, code, done, _detail), _ = _run(driver, monkeypatch, tmp_path,
+                                             [ContractValidationError('SOURCE_APPROVAL_EXPIRED: lapsed')])
     assert (verdict, code, done) == ('AMBIGUOUS', 'REFUSED', 0)
+
+
+def _raiser(tmp_path, filename, function, message):
+    namespace = {}
+    code = f'def {function}(path):\n    raise ValueError({message!r})\n'
+    exec(compile(code, str(tmp_path / filename), 'exec'), namespace)  # pylint: disable=exec-used
+    return SimpleNamespace(replay_bracket=namespace[function])
+
+
+@pytest.mark.parametrize('message', ['immutable retained bytes required',
+                                     'exact G1-validated frozen or source contract required',
+                                     'any text at all'])
+def test_any_exception_inside_check_path_is_refused(driver, tmp_path, message):
+    with pytest.raises(driver.Stop) as stop:
+        driver._replay(_m(driver), _raiser(tmp_path, 'production_source.py', '_check_path', message), 'p')
+    assert (stop.value.code, stop.value.exc_type) == ('REFUSED', 'ValueError')
+
+
+@pytest.mark.parametrize('filename,function', [('replay.py', 'run'), ('production_source.py', 'replay_bracket'),
+                                               ('elsewhere.py', '_check_path')])
+def test_a_gate_message_raised_outside_check_path_is_non_reproduction(driver, tmp_path, filename, function):
+    raiser = _raiser(tmp_path, filename, function, 'path contains a source session outside retained covered panel')
+    with pytest.raises(driver.Stop) as stop:
+        driver._replay(_m(driver), raiser, 'p')
+    assert (stop.value.code, stop.value.exc_type) == ('NON_REPRODUCTION', 'ValueError')
+
+
+def test_a_mismatch_is_never_reported_as_budget(driver, monkeypatch, tmp_path):
+    (verdict, code, done, _detail), _ = _run(driver, monkeypatch, tmp_path, [_sealed(pnl=1.0)],
+                                             step=driver.CPU_CEILING_S + 1.0)
+    assert (verdict, code, done) == ('FALSIFIED', 'NON_REPRODUCTION', 1)
 
 
 def test_budget_is_checked_before_each_path_from_driver_start(driver, monkeypatch, tmp_path):
     """CPU already spent before run_paths (build, self-test) counts: no path may start past the ceiling."""
-    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()],
+    (verdict, code, done, _detail), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()],
                                          start=driver.CPU_CEILING_S - 15.0, step=10.0)
     assert (verdict, code, done, source.calls) == ('AMBIGUOUS', 'BUDGET', 1, 1)
 
 
 def test_wall_budget_counts_from_main(driver, monkeypatch, tmp_path):
-    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed()], start=100.0,
+    (verdict, code, done, _detail), source = _run(driver, monkeypatch, tmp_path, [_sealed()], start=100.0,
                                          wall_start=100.0 - driver.WALL_CEILING_S - 1.0)
     assert (verdict, code, done, source.calls) == ('AMBIGUOUS', 'BUDGET', 0, 0)
 
 
 def test_an_overrun_on_the_last_path_is_not_resolved(driver, monkeypatch, tmp_path):
-    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()], steps=(200.0, 7201.0))
+    (verdict, code, done, _detail), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()], steps=(200.0, 7201.0))
     assert (verdict, code, done, source.calls) == ('AMBIGUOUS', 'BUDGET', 2, 2)
 
 
 def test_the_wall_prediction_uses_wall_cost(driver, monkeypatch, tmp_path):
     wall = driver.WALL_CEILING_S / 2 + 1.0
-    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()], steps=((1.0, wall),))
+    (verdict, code, done, _detail), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()], steps=((1.0, wall),))
     assert (verdict, code, done, source.calls) == ('AMBIGUOUS', 'BUDGET', 1, 1)
 
 
 def test_checkpoint_stop_after_an_expensive_first_path(driver, monkeypatch, tmp_path):
-    (verdict, code, done), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()],
+    (verdict, code, done, _detail), source = _run(driver, monkeypatch, tmp_path, [_sealed(), _sealed()],
                                          step=driver.CHECKPOINT_CPU_S + 1.0)
     assert (verdict, code, done, source.calls) == ('AMBIGUOUS', 'BUDGET', 1, 1)
 
@@ -312,7 +342,9 @@ def _staged(driver, monkeypatch, tmp_path):
     monkeypatch.setattr(driver, 'prerequisites', lambda args: (tmp_path, tmp_path, out))
     monkeypatch.setattr(driver, 'isolate_bytecode', lambda: None)
     monkeypatch.setattr(driver, '_modules', lambda code_root: _m(driver))
-    monkeypatch.setattr(driver, '_check_origins', lambda code_root: None)
+    monkeypatch.setattr(driver, '_check_origins', lambda *a, **k: None)
+    monkeypatch.setattr(driver, '_foreign_after_run', lambda *a, **k: [], raising=False)
+    monkeypatch.setattr(driver, 'artifact_paths', lambda contract: frozenset(), raising=False)
     monkeypatch.setattr(driver, 'retained', lambda m, run_dir, params: {})
     monkeypatch.setattr(driver, 'load_keys', lambda m, out, sha, by_key: [('a', 'FULL', 0)])
     monkeypatch.setattr(driver, 'build_source', lambda m, args: calls.append('build') or source)
@@ -344,6 +376,25 @@ def test_the_reservation_survives_a_failure_and_blocks_a_second_run(driver, stag
     assert driver.main(['run', *staged.args, '--keys-sha256', 'k']) == 3
     assert staged.calls == ['build'] and staged.source.calls == 0
     assert capsys.readouterr().out.strip().splitlines()[-1] == 'T00_TIER1 run AMBIGUOUS PREREQUISITE keys_sha256=k'
+
+
+def test_a_planted_oserror_in_a_replay_is_recorded_as_non_reproduction(driver, staged, capsys):
+    staged.source.results[:] = [OSError(28, 'No space left on device')]
+    assert driver.main(['run', *staged.args, '--keys-sha256', 'k']) == 3
+    summary = json.loads((staged.out / 'run' / 'summary.json').read_text(encoding='utf-8'))
+    assert (summary['verdict'], summary['code'], summary['exc_type']) == ('FALSIFIED', 'NON_REPRODUCTION', 'OSError')
+    assert 'No space left on device' in summary['detail']
+    captured = capsys.readouterr()
+    assert captured.out.strip() == 'T00_TIER1 run FALSIFIED NON_REPRODUCTION keys_sha256=k'
+    assert 'NON_REPRODUCTION: OSError' in captured.err
+
+
+def test_a_run_driver_defect_is_recorded_with_its_type(driver, staged, monkeypatch, capsys):
+    monkeypatch.setattr(driver, 'assemble', lambda *a: (_ for _ in ()).throw(KeyError('bug')))
+    assert driver.main(['run', *staged.args, '--keys-sha256', 'k']) == 3
+    summary = json.loads((staged.out / 'run' / 'summary.json').read_text(encoding='utf-8'))
+    assert (summary['code'], summary['exc_type']) == ('DRIVER_DEFECT', 'KeyError')
+    assert 'DRIVER_DEFECT: KeyError' in capsys.readouterr().err
 
 
 def test_main_maps_stops_and_defects(driver, staged, monkeypatch, capsys):
@@ -397,18 +448,113 @@ def test_isolate_bytecode(driver, monkeypatch):
     assert Path(sys.pycache_prefix).is_dir() and not any(Path(sys.pycache_prefix).iterdir())
 
 
-def test_watchdog_stops_on_a_breach_during_replay(driver):
-    import threading
-    breaches, done = [], threading.Event()
-    clock = SimpleNamespace(process_time=lambda: driver.CPU_CEILING_S + 1.0, monotonic=lambda: 0.0)
-    driver.watchdog(0.0, done, lambda: breaches.append(1), interval=0, clock=clock)
-    assert breaches == [1]
+def _polling_clock(done, cpu, polls=3):
     calls = []
-    quiet = SimpleNamespace(process_time=lambda: calls.append(1) or (done.set() if len(calls) > 2 else None) or 0.0,
-                            monotonic=lambda: 0.0)
+
+    def process_time():
+        calls.append(1)
+        if len(calls) > polls:
+            done.set()
+        return cpu
+    return SimpleNamespace(process_time=process_time, monotonic=lambda: 0.0)
+
+
+def test_watchdog_hard_stops_only_inside_a_replay(driver):
+    import threading
+    breaches, done, guard = [], threading.Event(), driver.ReplayGuard()
+    guard.set(True)
+    driver.watchdog(0.0, done, guard, lambda: breaches.append('in'), interval=0,
+                    clock=_polling_clock(done, driver.CPU_CEILING_S + 1.0))
+    assert breaches == ['in']
     done.clear()
-    driver.watchdog(0.0, done, lambda: breaches.append(2), interval=0, clock=quiet)
-    assert breaches == [1]
+    guard.set(False)                       # breached, but the replay has returned: the main thread decides
+    driver.watchdog(0.0, done, guard, lambda: breaches.append('out'), interval=0,
+                    clock=_polling_clock(done, driver.CPU_CEILING_S + 1.0))
+    assert breaches == ['in']
+    done.clear()
+    guard.set(True)                        # in a replay, but within budget
+    driver.watchdog(0.0, done, guard, lambda: breaches.append('quiet'), interval=0,
+                    clock=_polling_clock(done, 0.0))
+    assert breaches == ['in']
+
+
+def test_the_guard_spans_exactly_the_replay(driver):
+    guard, seen = driver.ReplayGuard(), []
+
+    def replay(path):
+        seen.append(guard.active)
+        return _sealed()
+    driver._replay(_m(driver), SimpleNamespace(replay_bracket=replay), 'p', guard)
+    assert seen == [True] and guard.active is False
+    with pytest.raises(driver.Stop):
+        driver._replay(_m(driver), SimpleNamespace(replay_bracket=lambda p: 1 / 0), 'p', guard)
+    assert guard.active is False
+
+
+def test_hard_stop_records_atomically_and_exits(driver, tmp_path, capsys):
+    (tmp_path / 'run').mkdir()
+    exits = []
+    driver._hard_stop(tmp_path, 'k', exit_fn=exits.append)
+    summary = json.loads((tmp_path / 'run' / 'summary.json').read_text(encoding='utf-8'))
+    assert (summary['code'], summary['in_replay'], exits) == ('BUDGET', True, [3])
+    assert capsys.readouterr().out.strip() == 'T00_TIER1 run AMBIGUOUS BUDGET keys_sha256=k'
+    driver._hard_stop(tmp_path, 'k', exit_fn=exits.append)   # an existing summary is never overwritten
+    assert json.loads((tmp_path / 'run' / 'summary.json').read_text(encoding='utf-8')) == summary
+    assert 'SUMMARY_NOT_WRITTEN' in capsys.readouterr().err and exits == [3, 3]
+
+
+def test_a_write_interrupted_before_replace_leaves_no_target(driver, monkeypatch, tmp_path):
+    class Interrupted(BaseException):
+        pass
+
+    def interrupted(*args):
+        raise Interrupted
+    monkeypatch.setattr(driver.os, 'replace', interrupted)
+    with pytest.raises(Interrupted):
+        driver._write_once(tmp_path / 'run' / '01.json', b'{"partial": true}')
+    assert not (tmp_path / 'run' / '01.json').exists()
+
+
+def test_main_runs_the_watchdog_with_the_replay_guard(driver, staged, monkeypatch):
+    seen = {}
+    monkeypatch.setattr(driver, 'watchdog', lambda wall_start, done, guard, on_breach, **k: seen.update(watchdog=guard))
+    original = driver.run_paths
+
+    def run_paths(*args, **kwargs):
+        seen['run_paths'] = kwargs.get('guard')
+        return original(*args, **kwargs)
+    monkeypatch.setattr(driver, 'run_paths', run_paths)
+    monkeypatch.setattr(driver, 'retained', lambda m, run_dir, params: {('a', 'FULL', 0): {'runs': _retained(driver, 1)[1][('a', 'FULL', 0)]['runs']}})
+    driver.main(['run', *staged.args, '--keys-sha256', 'k'])
+    assert isinstance(seen['watchdog'], driver.ReplayGuard) and seen['run_paths'] is seen['watchdog']
+
+
+def test_post_run_origin_check_never_overrides_a_stop(driver):
+    falsified = driver._after_run('FALSIFIED', 'NON_REPRODUCTION', {'exc_type': None, 'detail': 'identity mismatch'},
+                                  ['stray'])
+    assert falsified[:2] == ('FALSIFIED', 'NON_REPRODUCTION') and falsified[2]['foreign_modules'] == ['stray']
+    resolved = driver._after_run('RESOLVED', 'OK', None, ['stray'])
+    assert resolved[:2] == ('AMBIGUOUS', 'PREREQUISITE') and resolved[2]['foreign_modules'] == ['stray']
+    assert driver._after_run('RESOLVED', 'OK', None, [])[:2] == ('RESOLVED', 'OK')
+
+
+def test_port_modules_are_allowed_by_artifact_path_from_any_working_directory(driver, monkeypatch, tmp_path):
+    code, lib = tmp_path / 'code', tmp_path / 'lib'
+    elsewhere = tmp_path / 'elsewhere'
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+    rel = 'core/strategies/ports/x_port.py'
+    modules = {'fp_qualification_port_x': SimpleNamespace(__file__=rel),
+               'fp_qualification_port_y': SimpleNamespace(__file__='core/strategies/ports/unlisted.py'),
+               'not_a_port': SimpleNamespace(__file__=rel)}
+    assert driver.foreign_modules(code, (lib,), modules, artifact_paths=frozenset({rel})) == [
+        'fp_qualification_port_y', 'not_a_port']
+
+
+def test_the_allowed_driver_root_is_the_file_not_its_directory(driver):
+    assert driver._allowed_roots()[-1] == Path(driver.__file__).resolve()
+    sibling = SimpleNamespace(__file__=str(Path(driver.__file__).resolve().parent / 'other_script.py'))
+    assert driver.foreign_modules(Path('/nonexistent-code-root'), driver._allowed_roots(), {'sib': sibling}) == ['sib']
 
 
 def _retained_m(driver, heads, ledger):
@@ -425,10 +571,12 @@ def _ledger(driver):
     return [{'type': 'PREPARED', 'sha': 'P', 'body': {'manifest_sha256': 'm'}},
             {'type': 'REPORTED', 'sha': 'L', 'body': {}},
             {'type': 'FINAL', 'sha': 'F', 'body': {'attestation_sha256': driver.ATTESTATION_SHA256}},
-            {'type': 'VERIFY_START', 'sha': 'V0', 'body': {}}, {'type': 'VERIFY', 'sha': 'V1', 'body': {}}]
+            {'type': 'VERIFY_START', 'sha': 'V0', 'body': {'n': 1, 'keys': [['a', 'FULL', 0]]}},
+            {'type': 'VERIFY', 'sha': 'V1', 'body': {'n': 1, 'keys': [['a', 'FULL', 0]], 'match': True}}]
 
 
-@pytest.mark.parametrize('tamper', [None, 'journal_head', 'ledger_head', 'final', 'trailing', 'results'])
+@pytest.mark.parametrize('tamper', [None, 'journal_head', 'ledger_head', 'final', 'trailing', 'results',
+                                    'verify_false', 'verify_n', 'no_verify'])
 def test_retained_is_bound_to_the_attestation(driver, tmp_path, tamper):
     for sub in ('journal', 'ledger'):
         (tmp_path / sub).mkdir()
@@ -448,6 +596,12 @@ def test_retained_is_bound_to_the_attestation(driver, tmp_path, tamper):
         ledger.append({'type': 'SEGMENT_START', 'sha': 'X', 'body': {}})
     elif tamper == 'results':
         attestation['results_sha256'] = '0' * 64
+    elif tamper == 'verify_false':
+        ledger[4]['body']['match'] = False
+    elif tamper == 'verify_n':
+        ledger[3]['body']['n'] = ledger[4]['body']['n'] = 2
+    elif tamper == 'no_verify':
+        del ledger[3:]
     (tmp_path / 'attestation.json').write_text(json.dumps(attestation), encoding='utf-8')
     params = {'rng': {'roots': ['a']}, 'depth_per_root': {}}
     m = _retained_m(driver, heads, ledger)

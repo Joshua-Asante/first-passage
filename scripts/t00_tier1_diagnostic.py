@@ -15,16 +15,24 @@ run once and in order:
 
 Every module except this file is imported from ``--code-root``, the clean detached checkout at
 H, with bytecode writes off and a fresh ``sys.pycache_prefix``. A module loaded from anywhere
-else is a PREREQUISITE stop. Outputs are create-once files under ``--out``, which must lie
-outside the code root and the run directory. stdout is one line, ``T00_TIER1 <mode>
-<verdict> <code> keys_sha256=<hex>``; it carries no count, rate or timing.
+else is a PREREQUISITE stop. Outputs are create-once, atomically written files under ``--out``,
+which must lie outside the code root and the run directory. stdout is one line, ``T00_TIER1
+<mode> <verdict> <code> keys_sha256=<hex>``; it carries no count, rate or timing.
 
 Stop codes:
-- PREREQUISITE, DRIVER_DEFECT and REFUSED are raised before a replay starts.
-- NON_REPRODUCTION is any identity mismatch, or any exception raised while replaying a
-  selected path other than a documented source-gate refusal. Every retained PATH record came
-  from a bracket that returned normally.
+- PREREQUISITE is raised before a replay starts.
+- REFUSED is a source refusal: at build, or during a replay when it is a
+  ``ContractValidationError`` or is raised inside ``ProductionSource._check_path`` (which runs
+  ``_verify_integrity``, ``_resolve_domain`` and ``_qualification_snapshots`` before any engine is
+  built). It is classified by where it was raised, not by its message.
+- NON_REPRODUCTION is any identity mismatch, or any other exception raised while replaying a
+  selected path (host faults such as ``MemoryError`` and ``OSError`` included). Every retained
+  PATH record came from a bracket that returned normally.
+- DRIVER_DEFECT is a driver fault, before a replay or after one has returned.
 - BUDGET is the CPU, wall or checkpoint limit.
+
+For a run, every stop's exception type and detail go to ``summary.json`` and to stderr, so a
+host fault can be told apart from a real non-reproduction.
 """
 from __future__ import annotations
 
@@ -57,22 +65,18 @@ CPU_CEILING_S, WALL_CEILING_S, CHECKPOINT_CPU_S = 7200.0, 10800.0, 225.0
 COMPARED = ('digest', 'sessions', 'fills', 'events_sha256', 'deadline_failure',
             'consumed_intrabar_split_count', 'consumed_intrabar_splits_sha256')
 KEYS_SCHEMA = 't00_tier1_keys/v1'
-# The source-gate refusals replay_bracket raises before any engine runs (production_source.py
-# _verify_integrity and _check_path at H), plus every ContractValidationError (approval lifecycle).
-GATE_MESSAGES = frozenset({
-    'factory-issued source object required',
-    'issued source execution state changed',
-    'source factory identity does not bind the exact production G1 contract',
-    'path contains a source session outside retained covered panel',
-})
+# replay_bracket's pre-replay gate (production_source.py at H): _check_path runs _verify_integrity,
+# which runs _resolve_domain and _qualification_snapshots, before any engine is built.
+GATE_FRAME = ('production_source.py', '_check_path')
+PORT_MODULE_PREFIX = 'fp_qualification_port_'  # book_adapters._load_domain_adapters
 
 
 class Stop(Exception):
     """A classified stop; ``code`` is one of the module docstring's stop codes."""
 
-    def __init__(self, code, detail=''):
+    def __init__(self, code, detail='', exc_type=None):
         super().__init__(detail)
-        self.code = code
+        self.code, self.exc_type = code, exc_type
 
 
 def sha256_file(path) -> str:
@@ -122,13 +126,30 @@ def mismatches(retained_runs, replayed):
 
 
 def is_gate_refusal(exc, contract_error) -> bool:
-    return isinstance(exc, contract_error) or (type(exc) is ValueError and str(exc) in GATE_MESSAGES)
+    """A source refusal, classified by where it was raised, not by its message."""
+    if isinstance(exc, contract_error):
+        return True
+    frame = exc.__traceback__
+    while frame is not None:
+        code = frame.tb_frame.f_code
+        if (Path(code.co_filename).name, code.co_name) == GATE_FRAME:
+            return True
+        frame = frame.tb_next
+    return False
 
 
 def _write_once(path: Path, data: bytes):
+    """Create-once and atomic: a flushed, synced temporary file, then os.replace. An interruption
+    leaves no partial target."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, 'xb') as handle:
+    if path.exists():
+        raise FileExistsError(str(path))
+    temporary = path.with_name(f'{path.name}.tmp-{os.getpid()}')
+    with open(temporary, 'xb') as handle:
         handle.write(data)
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, path)
 
 
 def _git(code_root, *args):
@@ -142,23 +163,40 @@ def isolate_bytecode():
     sys.pycache_prefix = tempfile.mkdtemp(prefix='t00-tier1-pycache-')
 
 
-def foreign_modules(code_root: Path, allowed_roots, modules=None):
-    """Loaded modules whose file is outside the code root and every allowed (stdlib, venv) root."""
+def foreign_modules(code_root: Path, allowed_roots, modules=None, *, artifact_paths=frozenset()):
+    """Loaded modules whose file is outside the code root and every allowed (stdlib, venv, driver) root.
+
+    The port modules carry ``__file__`` = their contract artifact path, relative to the artifact root
+    (book_adapters._load_domain_adapters). They are allowed by that exact path, whose bytes the
+    source build digest-checked, so the check does not depend on the working directory."""
     roots = [Path(r).resolve() for r in (code_root, *allowed_roots)]
     found = []
     for name, module in list((sys.modules if modules is None else modules).items()):
         origin = getattr(module, '__file__', None)
-        if origin and not any(Path(origin).resolve().is_relative_to(root) for root in roots):
+        if not origin:
+            continue
+        if name.startswith(PORT_MODULE_PREFIX) and str(origin).replace('\\', '/') in artifact_paths:
+            continue
+        if not any(Path(origin).resolve().is_relative_to(root) for root in roots):
             found.append(name)
     return sorted(found)
 
 
 def _allowed_roots():
-    return (sys.base_prefix, sys.prefix, sys.exec_prefix, Path(__file__).resolve().parent)
+    return (sys.base_prefix, sys.prefix, sys.exec_prefix, Path(__file__).resolve())
 
 
-def _check_origins(code_root):
-    found = foreign_modules(code_root, _allowed_roots())
+def artifact_paths(source_contract) -> frozenset:
+    doc = json.loads(Path(source_contract).read_bytes())
+    return frozenset(row['path'].replace('\\', '/') for row in doc['artifacts'])
+
+
+def _foreign_after_run(code_root, artifacts=frozenset()):
+    return foreign_modules(code_root, _allowed_roots(), artifact_paths=artifacts)
+
+
+def _check_origins(code_root, artifacts=frozenset()):
+    found = foreign_modules(code_root, _allowed_roots(), artifact_paths=artifacts)
     if found:
         raise Stop('PREREQUISITE', 'modules loaded from outside the code root: ' + ', '.join(found[:5]))
 
@@ -216,18 +254,27 @@ def ledger_binding(m, run_dir: Path):
 
 def attested_ledger(chain, attested_head) -> bool:
     """The attestation is written at REPORTED (coordinator.finalize): the attested head must be a
-    REPORTED record, the next record the FINAL naming this attestation, and only verify's records may follow."""
+    REPORTED record, the next record the FINAL naming this attestation, then one or more
+    VERIFY_START/VERIFY pairs numbered from 1, each VERIFY with its start's ``n`` and ``keys`` and
+    ``match: true``."""
     at = [i for i, (_, sha, _) in enumerate(chain) if sha == attested_head]
     if len(at) != 1 or chain[at[0]][0] != 'REPORTED' or at[0] + 1 >= len(chain):
         return False
     kind, _, body = chain[at[0] + 1]
-    return (kind == 'FINAL' and body.get('attestation_sha256') == ATTESTATION_SHA256
-            and all(k in ('VERIFY_START', 'VERIFY') for k, _, _ in chain[at[0] + 2:]))
+    tail = chain[at[0] + 2:]
+    if kind != 'FINAL' or body.get('attestation_sha256') != ATTESTATION_SHA256 or not tail or len(tail) % 2:
+        return False
+    for n, ((k1, _, start), (k2, _, done)) in enumerate(zip(tail[::2], tail[1::2]), 1):
+        if (k1, k2) != ('VERIFY_START', 'VERIFY') or start.get('n') != n or done.get('n') != n:
+            return False
+        if done.get('keys') != start.get('keys') or done.get('match') is not True:
+            return False
+    return True
 
 
 def retained(m, run_dir: Path, params):
     """The record of truth: the chain-verified segment journals, bound to the pinned attestation (each
-    segment journal's head and the ledger head) and cross-checked against results.json."""
+    segment journal's head and the ledger) and cross-checked against results.json."""
     results = json.loads((run_dir / 'results.json').read_text(encoding='utf-8'))
     attestation = json.loads((run_dir / 'attestation.json').read_text(encoding='utf-8'))
     journals = {p.name: m['journal'].read(p, prev_sha256=None) for p in sorted((run_dir / 'journal').glob('s*.jsonl'))}
@@ -236,7 +283,7 @@ def retained(m, run_dir: Path, params):
     if attestation.get('results_sha256') != RESULTS_SHA256 or not attested or heads != attested:
         raise Stop('PREREQUISITE', 'segment journals do not match the attested heads')
     if not attested_ledger(ledger_binding(m, run_dir)[1], attestation.get('ledger_head_sha256')):
-        raise Stop('PREREQUISITE', 'ledger is not the attested ledger plus FINAL and verify records')
+        raise Stop('PREREQUISITE', 'ledger is not the attested ledger plus FINAL and matching verify records')
     keys = m['plan'].key_universe(params['rng']['roots'], params['depth_per_root'])
     if m['plan'].plan_sha256(keys) != results['plan_sha256']:
         raise Stop('PREREQUISITE', 'plan digest differs from results.json')
@@ -271,7 +318,7 @@ def build_source(m, args):
         receipt = m['validate_source_contract'](contract_bytes, approval_bytes, registry, observed, now=m['now']())
         return m['ProductionSource'].build(receipt, artifact_root=root)
     except ValueError as exc:
-        raise Stop('REFUSED', str(exc).split(':', 1)[0]) from None
+        raise Stop('REFUSED', str(exc).split(':', 1)[0], exc_type=type(exc).__name__) from None
 
 
 def assemble(m, source, run_dir: Path, params, by_key, keys):
@@ -294,13 +341,30 @@ def assemble(m, source, run_dir: Path, params, by_key, keys):
     return paths
 
 
-def _replay(m, source, path):
+class ReplayGuard:
+    """Marks the span of ``replay_bracket``: the watchdog may hard-stop only inside it."""
+
+    def __init__(self):
+        self.lock, self.active = threading.Lock(), False
+
+    def set(self, active: bool):
+        with self.lock:
+            self.active = active
+
+
+def _replay(m, source, path, guard=None):
+    if guard is not None:
+        guard.set(True)
     try:
         sealed = source.replay_bracket(path)
     except Exception as exc:  # pylint: disable=broad-exception-caught  # classified below
+        kind = type(exc).__name__
         if is_gate_refusal(exc, m['ContractValidationError']):
-            raise Stop('REFUSED', str(exc).split(':', 1)[0]) from None
-        raise Stop('NON_REPRODUCTION', f'replay raised {type(exc).__name__}') from None
+            raise Stop('REFUSED', str(exc).split(':', 1)[0], exc_type=kind) from None
+        raise Stop('NON_REPRODUCTION', f'replay raised {kind}: {str(exc)[:300]}', exc_type=kind) from None
+    finally:
+        if guard is not None:
+            guard.set(False)
     ev = m['p7_evidence']
     return sealed, {name: sealed_identity(run, ev.canonical, ev.sha256_bytes)
                     for name, run in (('r1', sealed.r1), ('r2', sealed.r2))}
@@ -315,26 +379,33 @@ def budget_breached(cpu_s, elapsed_s) -> bool:
     return cpu_s > CPU_CEILING_S or elapsed_s > WALL_CEILING_S
 
 
-def watchdog(wall_start, done, on_breach, *, interval=5.0, clock=time):
-    """In-replay enforcement: polls process CPU and wall time until ``done`` is set; on a breach
-    calls ``on_breach`` (by default ``_hard_stop``) and returns."""
+def watchdog(wall_start, done, guard, on_breach, *, interval=5.0, clock=time):
+    """In-replay enforcement. Polls process CPU and wall time until ``done`` is set. On a breach it
+    acts only while ``guard`` marks a replay in progress, holding the guard's lock so the replay
+    cannot be marked finished meanwhile; outside a replay the main thread's own checks stop the run."""
     while not done.wait(interval):
         if budget_breached(clock.process_time(), clock.monotonic() - wall_start):
-            on_breach()
-            return
+            with guard.lock:
+                if guard.active:
+                    on_breach()
+                    return
 
 
-def _hard_stop(out: Path, keys_sha256: str):
-    """A breach during a replay: record it, print the stop line and end the process at once."""
+def _hard_stop(out: Path, keys_sha256: str, *, exit_fn=os._exit):  # pylint: disable=protected-access
+    """A breach during a replay: no path record is in progress, so record the stop atomically, print
+    the stop line and end the process at once."""
     try:
         _write_once(out / 'run' / 'summary.json', json.dumps(
             {'verdict': 'AMBIGUOUS', 'code': 'BUDGET', 'replayed': None, 'in_replay': True,
-             'keys_sha256': keys_sha256}, sort_keys=True).encode())
-    except OSError:
-        pass
+             'keys_sha256': keys_sha256, 'exc_type': None, 'detail': 'budget breached during a replay'},
+            sort_keys=True).encode())
+    except OSError as exc:
+        sys.stderr.write(f'SUMMARY_NOT_WRITTEN: {type(exc).__name__}: {exc}\n')
+    sys.stderr.write('BUDGET: -: budget breached during a replay\n')
     sys.stdout.write(f'T00_TIER1 run AMBIGUOUS BUDGET keys_sha256={keys_sha256}\n')
     sys.stdout.flush()
-    os._exit(3)  # pylint: disable=protected-access
+    sys.stderr.flush()
+    exit_fn(3)
 
 
 def reserve(out: Path):
@@ -349,32 +420,37 @@ def reserve(out: Path):
         {'pid': os.getpid(), 'reserved_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}).encode())
 
 
-def run_paths(m, source, paths, keys, by_key, out: Path, *, wall_start: float):
+def run_paths(m, source, paths, keys, by_key, out: Path, *, wall_start: float, guard=None):
     """Card §5 item 4. CPU is the process's own since start; wall is measured from ``wall_start``
     (the top of ``main``). Before each path the last path's CPU and wall costs predict the next;
-    after each path the cumulative limits are checked, so an overrun is never RESOLVED. The
-    watchdog in ``main`` enforces them during a replay. Returns (verdict, code, paths replayed)."""
+    after each path the cumulative limits are checked, so an overrun is never RESOLVED. A detected
+    mismatch returns before any budget check, so it is never reported as BUDGET. The watchdog in
+    ``main`` enforces the limits during a replay. Returns (verdict, code, paths replayed, detail),
+    ``detail`` None or {exc_type, detail}."""
     last_cpu = last_wall = 0.0
     for ordinal, (key, path) in enumerate(zip(keys, paths), 1):
         if budget_breached(time.process_time() + last_cpu, time.monotonic() - wall_start + last_wall):
-            return 'AMBIGUOUS', 'BUDGET', ordinal - 1
+            return 'AMBIGUOUS', 'BUDGET', ordinal - 1, None
         t_cpu, t_wall = time.process_time(), time.monotonic()
         try:
-            sealed, replayed = _replay(m, source, path)
+            sealed, replayed = _replay(m, source, path, guard)
         except Stop as stop:
-            return ('FALSIFIED' if stop.code == 'NON_REPRODUCTION' else 'AMBIGUOUS'), stop.code, ordinal - 1
+            return (('FALSIFIED' if stop.code == 'NON_REPRODUCTION' else 'AMBIGUOUS'), stop.code, ordinal - 1,
+                    {'exc_type': stop.exc_type, 'detail': str(stop)})
         last_cpu, last_wall = time.process_time() - t_cpu, time.monotonic() - t_wall
         bad = mismatches(by_key[key]['runs'], replayed)
         _write_once(out / 'run' / f'{ordinal:02d}.json', json.dumps(
             {'key': list(key), 'identities': replayed, 'mismatches': bad,
              'cost': {'cpu_s': last_cpu, 'wall_s': last_wall}, 'series': _series(sealed)}, sort_keys=True).encode())
         if bad:
-            return 'FALSIFIED', 'NON_REPRODUCTION', ordinal
+            return ('FALSIFIED', 'NON_REPRODUCTION', ordinal,
+                    {'exc_type': None, 'detail': 'identity mismatch: ' + ', '.join(bad)})
         if budget_breached(time.process_time(), time.monotonic() - wall_start):
-            return 'AMBIGUOUS', 'BUDGET', ordinal
+            return 'AMBIGUOUS', 'BUDGET', ordinal, None
         if ordinal == 1 and last_cpu > CHECKPOINT_CPU_S:
-            return 'AMBIGUOUS', 'BUDGET', ordinal
-    return 'RESOLVED', 'OK', len(keys)
+            return 'AMBIGUOUS', 'BUDGET', ordinal, None
+    return 'RESOLVED', 'OK', len(keys), None
+
 
 def _parser():
     parser = argparse.ArgumentParser(prog='t00_tier1_diagnostic')
@@ -386,23 +462,48 @@ def _parser():
     return parser
 
 
-def main(argv=None) -> int:  # pylint: disable=too-many-locals
+def _run_summary(out: Path, keys_sha256, verdict, code, replayed, detail):
+    """summary.json for a reserved run, with the stop's exception type and detail."""
+    detail = detail or {}
+    try:
+        _write_once(out / 'run' / 'summary.json', json.dumps(
+            {'verdict': verdict, 'code': code, 'replayed': replayed, 'keys_sha256': keys_sha256,
+             'exc_type': detail.get('exc_type'), 'detail': detail.get('detail'),
+             'foreign_modules': detail.get('foreign_modules', [])}, sort_keys=True).encode())
+    except OSError as exc:
+        sys.stderr.write(f'SUMMARY_NOT_WRITTEN: {type(exc).__name__}: {exc}\n')
+
+
+def _after_run(verdict, code, detail, foreign):
+    """The post-run origin check is recorded alongside; it turns only a RESOLVED run into a
+    PREREQUISITE stop and never overrides a FALSIFIED or other stop."""
+    detail = dict(detail or {})
+    if foreign:
+        detail['foreign_modules'] = foreign
+        if code == 'OK':
+            verdict, code = 'AMBIGUOUS', 'PREREQUISITE'
+            detail.setdefault('detail', 'modules loaded from outside the code root: ' + ', '.join(foreign[:5]))
+    return verdict, code, detail
+
+
+def main(argv=None) -> int:  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     wall_start = time.monotonic()
     args = _parser().parse_args(argv)
-    keys_sha256, verdict, code = args.keys_sha256 or '-', '-', 'OK'
+    keys_sha256, verdict, code, reserved, out = args.keys_sha256 or '-', '-', 'OK', False, None
     try:
         code_root, run_dir, out = prerequisites(args)
         if args.mode != 'freeze' and not args.keys_sha256:
             raise Stop('PREREQUISITE', '--keys-sha256 is required')
         if args.mode == 'run':
             reserve(out)
+            reserved = True
         isolate_bytecode()
         m = _modules(code_root)
         params = json.loads(Path(args.authority).read_text(encoding='utf-8'))['parameters']
         try:
             by_key = retained(m, run_dir, params)
         except ValueError as exc:
-            raise Stop('PREREQUISITE', f'retained evidence: {exc}') from None
+            raise Stop('PREREQUISITE', f'retained evidence: {exc}', exc_type=type(exc).__name__) from None
         if args.mode == 'freeze':
             keys, available = select_keys(by_key.values(), m['canonical'])
             raw = keys_document(keys, available, m['canonical'])
@@ -410,29 +511,37 @@ def main(argv=None) -> int:  # pylint: disable=too-many-locals
             keys_sha256, verdict = hashlib.sha256(raw).hexdigest(), 'FROZEN'
         else:
             keys = load_keys(m, out, args.keys_sha256, by_key)
+            artifacts = artifact_paths(args.source_contract)
             source = build_source(m, args)
-            _check_origins(code_root)
+            _check_origins(code_root, artifacts)
             paths = assemble(m, source, run_dir, params, by_key, keys)
             if args.mode == 'selftest':
                 verdict = 'SELFTEST_PASSED'
             else:
-                done_event = threading.Event()
-                threading.Thread(target=watchdog, args=(wall_start, done_event,
+                done_event, guard = threading.Event(), ReplayGuard()
+                threading.Thread(target=watchdog, args=(wall_start, done_event, guard,
                                                         lambda: _hard_stop(out, args.keys_sha256)), daemon=True).start()
                 try:
-                    verdict, code, done = run_paths(m, source, paths, keys, by_key, out, wall_start=wall_start)
+                    verdict, code, done, detail = run_paths(m, source, paths, keys, by_key, out,
+                                                            wall_start=wall_start, guard=guard)
                 finally:
                     done_event.set()
-                _check_origins(code_root)
-                _write_once(out / 'run' / 'summary.json', json.dumps(
-                    {'verdict': verdict, 'code': code, 'replayed': done, 'keys_sha256': args.keys_sha256},
-                    sort_keys=True).encode())
+                verdict, code, detail = _after_run(verdict, code, detail, _foreign_after_run(code_root, artifacts))
+                if detail:
+                    sys.stderr.write(f"{code}: {detail.get('exc_type') or '-'}: {detail.get('detail')}\n")
+                _run_summary(out, args.keys_sha256, verdict, code, done, detail)
+                reserved = False  # summary written
     except Stop as stop:
         verdict, code = ('AMBIGUOUS' if args.mode == 'run' else 'STOPPED'), stop.code
-        sys.stderr.write(f'{stop.code}: {stop}\n')
+        sys.stderr.write(f'{stop.code}: {stop.exc_type or "-"}: {stop}\n')
+        if reserved:
+            _run_summary(out, args.keys_sha256, verdict, code, None, {'exc_type': stop.exc_type, 'detail': str(stop)})
     except Exception as exc:  # pylint: disable=broad-exception-caught  # unclassified = a driver defect
         verdict, code = ('AMBIGUOUS' if args.mode == 'run' else 'STOPPED'), 'DRIVER_DEFECT'
         sys.stderr.write(f'DRIVER_DEFECT: {type(exc).__name__}: {exc}\n')
+        if reserved:
+            _run_summary(out, args.keys_sha256, verdict, code, None,
+                         {'exc_type': type(exc).__name__, 'detail': str(exc)[:300]})
     print(f'T00_TIER1 {args.mode} {verdict} {code} keys_sha256={keys_sha256}')
     return 0 if code == 'OK' else 3
 
