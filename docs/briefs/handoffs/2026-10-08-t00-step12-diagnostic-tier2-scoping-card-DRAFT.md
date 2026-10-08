@@ -150,7 +150,7 @@ About 2–3 agent-days for build, tests and one or two review rounds. The govern
 
 **Sample options (OWED, operator).**
 - (a) The frozen Tier-1 keys (`keys.json` `60c128a7…329e`).
-- (b) A larger set, frozen before any replay, stratified like Tier 1 and weighted to agreed `FAILURE` and `UNDETERMINED` in H2. When row 5 is to be read, or any criterion was changed at admission, the whole set excludes the Tier-1 keys, so every row is evaluated on the same keys.
+- (b) A larger set, frozen before any replay, stratified like Tier 1 and weighted to agreed `FAILURE` and `UNDETERMINED` in H2 (admission set equal counts instead; see the admission addendum, item 3). When row 5 is to be read, or any criterion was changed at admission, the whole set excludes the Tier-1 keys, so every row is evaluated on the same keys.
 
 Selected cases cannot estimate rates or prove a change helps. Say so in the report.
 
@@ -188,7 +188,7 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 ## §7 — Seats and dependencies
 
 - **Scoping:** proceeds now (this card).
-- **Admission:** waits for the Tier-1 return, now in flight.
+- **Admission:** done 2026-10-08, after the Tier-1 return was accepted (#730); see the admission addendum.
 - **Executor:** a fresh Opus session (admission addendum, item 6).
 - **Acceptor:** the Deployment Coordinator.
 - **Decisions:** Joshua keeps admission, sample, signing and every investment decision.
