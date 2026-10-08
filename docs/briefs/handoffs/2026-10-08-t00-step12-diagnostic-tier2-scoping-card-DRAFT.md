@@ -1,7 +1,7 @@
 # CC handoff — T00 step-12 diagnostic, Tier 2: per-leg attribution (scoping)
 
 **Date:** 2026-10-08.
-**Status:** `DRAFT — SCOPING, NOT ADMITTED`. Nothing in this card runs, builds or signs anything.
+**Status:** `DRAFT — SCOPING; ADMITTED 2026-10-08` (addendum before §10). Admission is §0.5 item 2 only; nothing runs until §0.5 items 3–5 hold.
 **Authority:** Joshua, 2026-10-08, to the Deployment Coordinator: "scope tier 2". That authorizes this scoping card only.
 **Brief type:** CC handoff, scoping draft (diagnostic, non-decision-bearing).
 **Parent:** [Tier-1 card](2026-10-08-t00-step12-diagnostic-tier1-card.md) §2 and "Why two tiers"; [T00 screen authority build card](2026-10-03-t00-screen-authority-build-card-DRAFT.md) §3.5 and §8.
@@ -150,11 +150,11 @@ About 2–3 agent-days for build, tests and one or two review rounds. The govern
 
 **Sample options (OWED, operator).**
 - (a) The frozen Tier-1 keys (`keys.json` `60c128a7…329e`).
-- (b) A larger set, frozen before any replay, stratified like Tier 1 and weighted to agreed `FAILURE` and `UNDETERMINED` in H2. When row 5 is to be read, or any criterion was changed at admission, the whole set excludes the Tier-1 keys, so every row is evaluated on the same keys.
+- (b) A larger set, frozen before any replay, stratified like Tier 1 and weighted to agreed `FAILURE` and `UNDETERMINED` in H2 (admission set equal counts instead; see the admission addendum, item 3). When row 5 is to be read, or any criterion was changed at admission, the whole set excludes the Tier-1 keys, so every row is evaluated on the same keys.
 
 Selected cases cannot estimate rates or prove a change helps. Say so in the report.
 
-**Size: OWED (operator).** Cost ≈ paths × ~150 CPU-s (Tier-1 card §7 estimate) + ~3 min build, plus sidecar overhead measured at acceptance. Option (a): about 50 min. Option (b): about 2.5 CPU-h per 60 paths. Tier-1 actual per-path cost: OWED, filled from its return.
+**Size: OWED (operator).** Cost ≈ paths × ~150 CPU-s (Tier-1 card §7 estimate) + ~3 min build, plus sidecar overhead measured at acceptance. Option (a): about 50 min. Option (b): about 2.5 CPU-h per 60 paths. Tier-1 actual per-path cost: not needed for admission; the build measures sidecar cost at acceptance (admission addendum, item 3).
 
 **Hypothesis N (non-interference):** with the sidecar on, each replayed path reproduces its retained sealed identities byte for byte. ("N" avoids a clash with H, the head commit.)
 
@@ -188,8 +188,8 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 ## §7 — Seats and dependencies
 
 - **Scoping:** proceeds now (this card).
-- **Admission:** waits for the Tier-1 return, now in flight.
-- **Executor:** TBD at admission.
+- **Admission:** done 2026-10-08, after the Tier-1 return was accepted (#730); see the admission addendum.
+- **Executor:** a fresh Opus session (admission addendum, item 6).
 - **Acceptor:** the Deployment Coordinator.
 - **Decisions:** Joshua keeps admission, sample, signing and every investment decision.
 - **Exposure:** readers of Tier-2 output join the Tier-1 reader log. Any successor pre-registration names them (design §4.5). Tier-2 output is exposure for that pre-registration.
@@ -203,10 +203,24 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 3. Sample option and size (§4).
 4. Diagnostic purpose, evidence-class and scope names; keep the receipt type or extend `_is_source_only` (§3.4); a new source approval.
 5. Executor seat.
-6. Tier-1 actual per-path cost (from its return).
+6. Tier-1 actual per-path cost: closed at admission; not needed (addendum, item 3).
 7. The §2.1 pattern criteria: the `34c31c4` text is blind and freezes at merge. A change at admission is exposure and runs only under option (b) with a set that excludes every Tier-1 key. Row 5 is such a change (Joshua, 2026-10-08); because of it, any admission that wants row 5 read needs option (b) with a set that excludes every Tier-1 key.
 
 Acceptance scope is not owed: identity on the sampled runs plus the sidecar off/on tests (§3.3).
+
+### Addendum 2026-10-08 — Tier 2 admitted; §8 choices (Joshua)
+
+Joshua, 2026-10-08, to the Deployment Coordinator, verbatim: "Let's go with your suggestions with 1-3. For 3, spawn a chip task". Mapping: suggestion 1 (admit, time-boxed) is item 1 below; suggestion 2 (the §8 choices) is items 2–7; suggestion 3 (parallel desk work and the #730 merge) is outside this card. Recorded by the Deployment Coordinator (card owner). The Tier-1 return is delivered and accepted (Tier-1 card §8 addendum, #730). This admission is §0.5 item 2 only. Items 3–5 still gate any replay.
+
+1. **Admitted**, time-boxed: the target is a Tier-2 result by about 2026-10-20.
+2. **Capability:** option (i), the sidecar (§3.1).
+3. **Sample:** option (b), with a set that excludes every Tier-1 key, so row 5 is read. About 60 paths, frozen before any replay. Per population (FULL, H1, H2): 8 agreed `FAILURE`, 6 `UNDETERMINED`, 6 agreed `PASS` (control). Within a stratum, the Tier-1 key-hash ordering rule applies, skipping Tier-1 keys. A key names its population (`[root, population, index]`), so no key is in two strata. **Override of §4:** the counts are equal across populations, as approved; they replace §4's "weighted to … H2". H2 is contrasted through Q7, not by extra weight. The per-path cost is measured at the build's acceptance, so §8 item 6 is closed.
+4. **Contract fit (§3.4):** keep the `ValidatedSourceContract` type (sealing, the `verify_for` refusal and the screen-authority checks stay as they are). Add a diagnostic purpose `T00_DIAGNOSTIC_ATTRIBUTION`, evidence class `T00_DIAGNOSTIC_SIDECAR` and approval scope `APPROVE_T00_DIAGNOSTIC_CONTRACT`, each accepted only with its own contract, with the §3.4 tests.
+5. **Source approval:** Joshua signs a new one after the new H and the P7 re-run, valid for 7 days.
+6. **Executor:** a fresh Opus session builds the capability (code PR, Codex review) and runs Tier 2 only after §0.5 items 3–5 hold. GLM is not used: the code sits on the sealing boundary and the run reads private paths.
+7. **§2.1 criteria:** the `34c31c4` thresholds and rows 1–4, and row 5 as recorded. No other change.
+
+Not admitted here: any counterfactual, successor screen or stopping rule.
 
 ## §10 — Audit hooks
 
