@@ -715,6 +715,51 @@ older summary or next-step wording conflicts, without replacing task contracts.
 evaluation-to-funded-to-payout economics. Retail-mission discussion stays local
 and uncommitted and does not alter deployment scope.
 
+### Scope clarification — minimum path to a viable first evaluation
+
+The immediate scope is **one account, one viable executable portfolio, one
+qualified feed and the minimum accepted operating setup**. Portfolio viability
+is the next bottleneck. Preserve adopted first-session simplifications and
+completed acceptances, including G10.
+
+1. **Complete the bounded size-feasibility check under its existing authority.**
+   Return its evidence identity, limitations and branch selected under the
+   [T00 card §8 successor decision tree](../../briefs/handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md).
+   The [size-feasibility preregistration §11](../../briefs/pre-registration/2026-10-08-tradeify-size-feasibility-prereg-DRAFT.md)
+   governs label semantics. A promising grid result supports investigation, not
+   executable qualification. GRID-NO-CLEAR excludes neither unsampled sizes nor
+   every executable successor.
+2. **Follow that branch toward one justified successor.** Use Tier 2 where
+   required. Translate proposed sizing into actual integer contracts and
+   executable behavior before screening that candidate under unchanged
+   criteria. Apply the owning decision tree's stop rules; do not turn failures
+   into an open-ended search for a passing combination.
+3. **Close reusable readiness in parallel.** Prioritize qualification-engine
+   integration, settlement and reconciliation procedures, host/notifier heartbeat
+   verification, emergency fallback and provider-neutral clarification. Hold
+   candidate-dependent implementation and spending behind their governing
+   viability, behavior and funding decisions.
+4. **Qualify and release the exact candidate.** Complete actual feed and
+   broker-route qualification, freeze, production qualification, combined
+   acceptance, rehearsal and session-specific GO through the existing T00–T17 gates.
+5. **Prepare for evaluation across multiple sessions.** Before first release,
+   establish session closure, settlement, reconciliation, renewed authorization
+   and stop procedures. Bind evaluation requirements to the purchased account
+   version. First-session readiness alone does not establish readiness to
+   complete the evaluation.
+
+**Evaluation and funded-stage scope:** identify funded-stage implementation
+that could be deferred, with its owner and latest required completion point.
+Any change to an existing release requirement needs an explicit owner decision.
+Retain funded-survival economics, payout eligibility, recurring costs and
+failure/retry costs in the viability recommendation; deferring implementation
+does not waive economic criteria. Multi-firm expansion is outside this first
+evaluation's implementation scope; its separate program obligations remain.
+
+The calendar dependency below remains: the post-November-1 T07 R3 repeat is
+required before T16 unless formally superseded. This clarification creates no
+earlier release path or new execution authority.
+
 ### Roadmap and decision boundaries
 
 | Milestone | Required outcome and evidence | Return boundary |
@@ -741,10 +786,11 @@ remains Joshua's; admission is not a completed attribution result.
 
 **If no supported successor emerges:** return to Joshua to decide whether to
 re-scope the book, commission targeted research, or re-scope/stop the program.
-Milestone 3 is conditional on that decision, not an inevitable next step. A
-stopping rule is proposed but not adopted; this amendment sets no threshold,
-retry allowance or automatic research dispatch. A successor non-PASS returns to
-the same decision boundary.
+Milestone 3 is conditional on that decision, not an inevitable next step. The
+[T00 card §8 successor decision tree](../../briefs/handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md)
+owns adopted routing and stopping rules. This amendment adds no threshold,
+retry allowance or automatic research dispatch. Route a successor non-PASS
+through that owner rather than presume another attempt.
 
 The viability recommendation must address evaluation survival and the remaining
 evidence needed for funded constraints, payout eligibility/time, recurring costs
@@ -827,14 +873,17 @@ do not treat continuing research as passing or postponing the program check.
 
 ### Next bounded handoff and coordination
 
-**Selected outcome:** consume the existing Tier-1 diagnosis and the admitted
-Tier-2 attribution return to produce the investment recommendation in milestone
-1. Continue through the diagnostic owner's current card; do not issue a duplicate
-18-path handoff. This roadmap adds no replay authority.
+**Selected outcome:** complete the size-feasibility checkpoint and return its
+accepted evidence, limitations, selected decision-tree branch and recommendation
+to investigate one successor, resolve a specific uncertainty or stop. Consume
+accepted Tier-1 evidence; do not recommission it. Tier 2 follows only when the
+owning decision tree routes to it. This roadmap adds no scoring or replay authority.
 
-**Prerequisites:** accepted Tier-1 evidence and reader log; Tier-2 admission and
-its remaining build, H, P7 and signed-approval gates. The diagnostic card owns
-sample selection, instrumentation, exposure, budgets and verification.
+**Prerequisites:** the size-feasibility preregistration, including §11, its
+reviewed implementation and applicable run authority. Its owner retains the
+budget, inputs and reproduction requirements. If routed to Tier 2, satisfy its
+reviewed-build, H, P7 and signed-approval gates before execution; the current
+hold remains until the decision tree permits lifting it.
 
 **Ownership:** Claude Deployment Coordinator owns the T00/diagnostic cards and
 accepts their reports, following the reported C4 handoff on 2026-10-08. Codex
@@ -844,11 +893,14 @@ records the seat distinction; it grants no new authority.
 
 **Verification:** bind claims to accepted evidence identities, distinguish
 observed contributions from counterfactual benefits and report limitations.
-Use the diagnostic card's reproduction and sidecar checks. Do not turn a
+Use the size-feasibility preregistration's reproduction and validity checks,
+and the diagnostic card's sidecar checks when Tier 2 is authorized. Do not turn a
 selected diagnostic sample into a bust-rate estimate.
 
-**Checkpoint:** Claude returns the accepted attribution, causal gaps and
-recommendation to Codex for combined review and Joshua's investment decision.
+**Checkpoint:** Claude returns the accepted size-feasibility evidence, causal
+gaps, selected branch and recommendation to Codex for combined review and
+Joshua's investment decision where required by the tree. A later Tier-2 return
+is a separate checkpoint when that branch is authorized.
 Meanwhile, each readiness owner identifies its next book-independent acceptance
 and labels any work held for the investment decision.
 
@@ -858,5 +910,7 @@ operational acts retain their subsequent handoffs and authority. No supported
 successor returns to Joshua under the decision branch above.
 
 This amendment is based on owner records inspected at main `0ec89ec`, including the merged #731 admission record at `c280118`, and the dated coordinator review relay.
+The scope clarification and size-first handoff were checked against main
+`0cf32a5`, including the T00 successor decision tree and size-feasibility §11.
 It changes no statistical criteria, accepted gates, locked strategy artifacts,
 operational controls or standing instructions.
