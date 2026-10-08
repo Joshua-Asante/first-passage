@@ -41,6 +41,7 @@ for _p in (REPO / "lab", REPO / "core"):
         sys.path.insert(0, str(_p))
 
 from discovery import remc_series_builder as rsb  # noqa: E402
+from discovery import prop_survivor_scoring as pss  # noqa: E402
 from discovery.prop_survivor_scoring import (  # noqa: E402
     TierSeries, load_scoring_thresholds, score_candidate,
 )
@@ -54,6 +55,7 @@ PRIMARY = ffr.PRIMARY
 PRIVATE = PRIMARY / "lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts"
 BUNDLE = PRIVATE / "four-firm-remc-rerun-2026-10-06-depth"
 PREREG = "docs/briefs/pre-registration/2026-10-08-tradeify-size-feasibility-prereg-DRAFT.md"
+FROZEN_PREREG_BLOB = "d0ddcdeaf14c92613b74b363e09d3c7a962526ae"  # git rev-parse 65079a7:<PREREG>
 
 # §2.1 digest chain and reproduction targets (RESULTS, depth re-run root).
 PREP_SHA = "feefa7ab28ff17d8b1a727bae0adf6656369a4ea73eafea2218cdafbd8f4c3b5"
@@ -93,14 +95,33 @@ def _canon(obj) -> str:
 
 # ── freeze gate ───────────────────────────────────────────────────────────
 
-def freeze_gate(text: str | None = None) -> None:
-    """§R: refuse to score unless the prereg on origin/main is FROZEN and signed."""
-    if text is None:
-        text = ffr._git("show", f"origin/main:{PREREG}")
-    if not re.search(r"^\*\*Status:\*\* `FROZEN \d{4}-\d{2}-\d{2}`", text, re.M):
-        raise Blocked("prereg Status is not FROZEN on origin/main")
-    if re.search(r"^- \*\*Signed:\*\* —$", text, re.M):
-        raise Blocked("prereg on origin/main is unsigned")
+def freeze_gate(git: Callable[..., str] | None = None) -> None:
+    """§R: refuse to score unless origin/main holds the frozen prereg bytes (blob pinned
+    at main 65079a7). Any git failure blocks."""
+    git = git or ffr._git
+    try:
+        blob = git("rev-parse", f"origin/main:{PREREG}").strip()
+    except (subprocess.CalledProcessError, OSError) as exc:
+        raise Blocked(f"cannot read the prereg on origin/main: {exc!r}") from exc
+    if blob != FROZEN_PREREG_BLOB:
+        raise Blocked(f"prereg on origin/main is blob {blob}, not the frozen {FROZEN_PREREG_BLOB}")
+
+
+def checkout_preflight(bundle: Path, *, expected_sha: str = REPRO_REPORT_SHA,
+                       here: str = str(pss.DEFAULT_PREREG)) -> None:
+    """Reproduction (a) compares report bytes, and the report embeds the absolute path of
+    the v2 prereg in the checkout that scored it. Before any arm runs, read that path
+    from the bundle's (SHA-checked) candidate_report.json and block unless this checkout
+    embeds the same one."""
+    raw = (bundle / "candidate_report.json").read_bytes()
+    if hashlib.sha256(raw).hexdigest() != expected_sha:
+        raise Invalid("digest chain: bundle candidate_report.json does not match its pin")
+    want = json.loads(raw)["thresholds_source"]
+    if want != here:
+        rel = pss.DEFAULT_PREREG.relative_to(pss.REPO_ROOT)
+        root = want[: -len(str(rel))].rstrip("\\/") if want.endswith(str(rel)) else want
+        raise Blocked(f"reproduction (a) needs the checkout at {root} (its report embeds {want}); "
+                      f"this checkout embeds {here}")
 
 
 # ── bundle, series, populations ───────────────────────────────────────────
@@ -266,6 +287,9 @@ def _reads(rd: dict) -> dict:
 
 def _invalid_reasons(calls: dict, ref_g1g2: str) -> list[str]:
     out = []
+    base = calls.get(("1.0", "FULL"))
+    pin = None if base is None else (_canon(base["report"].get("g1")),
+                                     _canon((base["report"].get("g2_by_tier") or {}).get(TRADEIFY)))
     for (k, pop), rd in calls.items():
         if rd is None:
             continue
@@ -277,6 +301,8 @@ def _invalid_reasons(calls: dict, ref_g1g2: str) -> list[str]:
         got = (rd.get("call") or {}).get("g1g2_sha256")
         if got is not None and got != ref_g1g2:
             out.append(f"k={k} {pop}: G1/G2 inputs differ from the k = 1 FULL bytes")
+        if pin is not None and (_canon(rep.get("g1")), _canon((rep.get("g2_by_tier") or {}).get(TRADEIFY))) != pin:
+            out.append(f"k={k} {pop}: report g1 or Tradeify g2 differs from the k = 1 FULL report")
     return out
 
 
@@ -383,16 +409,38 @@ def write_cpu(path: Path) -> None:
     CPU from the process it spawned; the arm reports its own."""
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps({"cpu_seconds": time.process_time()}))
-    tmp.replace(path)
+    for attempt in range(CPU_WRITE_ATTEMPTS):  # Windows: replace fails while a reader holds the file
+        try:
+            tmp.replace(path)
+            return
+        except PermissionError:
+            if attempt == CPU_WRITE_ATTEMPTS - 1:
+                raise
+            time.sleep(0.01 * (attempt + 1))
 
 
-def cpu_heartbeat(path: Path, every: float = 5.0) -> None:
-    def beat():
-        while True:
+def cpu_heartbeat(path: Path, every: float = 5.0) -> threading.Event:
+    """Report CPU now and every ``every`` seconds until the returned event is set. A
+    failed write is skipped, never fatal: the loop keeps running, so the parent's cap
+    kill keeps working."""
+    stop = threading.Event()
+
+    def safe():
+        try:
             write_cpu(path)
-            time.sleep(every)
-    write_cpu(path)
+        except OSError:
+            pass
+
+    def beat():
+        while not stop.wait(every):
+            safe()
+    safe()
     threading.Thread(target=beat, daemon=True).start()
+    return stop
+
+
+CPU_WRITE_ATTEMPTS = 20
+FINAL_CPU = re.compile(rb"^\[cpu\] ([0-9.]+)\s*$", re.M)
 
 
 def read_cpu(path: Path) -> float | None:
@@ -424,7 +472,8 @@ def spawn(cmd: list[str], cpu_left: float, logdir: Path, *, poll: float = 1.0) -
                 so, se = proc.communicate()
                 status = "over budget cap"
                 break
-    used, source = cpu()
+    final = FINAL_CPU.findall(so)  # the arm's own final report; then cpu.json; then wall time
+    used, source = (float(final[-1]), "process") if final else cpu()
     (logdir / "stdout.txt").write_bytes(so)
     (logdir / "stderr.txt").write_bytes(se)
     return {"cmd": cmd, "pid": proc.pid, "exit_code": proc.returncode, "status": status,
@@ -544,17 +593,25 @@ def main(argv=None) -> int:
     if a.cmd == "call":
         if a.k not in GRID and not re.fullmatch(r"0\.\d\d", a.k):
             raise ValueError(f"k={a.k} is neither a grid point nor a 2-decimal midpoint")
+        freeze_gate()
+        for root in (REPO, PRIMARY):
+            rsb.assert_out_dir_allowed(out, repo_root=root)
         out.mkdir(parents=True, exist_ok=True)
         cpu_heartbeat(out / CPU_FILE)
         trig = float(Fraction(a.mode_trigger))
         b = load_bundle(bundle, thr.tier_keys if a.all_tiers else (TRADEIFY,))
         score_call(b, out, k=a.k, pop=a.pop, all_tiers=a.all_tiers, thr=thr, mode_trigger=trig, label=a.label)
-        write_cpu(out / CPU_FILE)
         print(f"[call] k={a.k} {a.pop} report written")
+        print(f"[cpu] {time.process_time()!r}", flush=True)  # final CPU on stdout: no file race
+        try:
+            write_cpu(out / CPU_FILE)
+        except OSError:
+            pass
         return 0
     freeze_gate()
     for root in (REPO, PRIMARY):
         rsb.assert_out_dir_allowed(out, repo_root=root)
+    checkout_preflight(bundle)
     trigger = ffr.candidate_trigger()
     if float(Fraction(trigger)) != 0.01:
         raise Blocked(f"CANDIDATE_TRIGGER {trigger} is not the frozen 0.01")

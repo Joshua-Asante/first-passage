@@ -8,7 +8,9 @@ import hashlib
 import importlib.util
 import json
 import math
+import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -482,10 +484,97 @@ def test_spawn_records_failure_and_kills_over_cpu_cap(tmp_path):
     assert rsf.read_cpu(tmp_path / "c.json") > 0 and rsf.read_cpu(tmp_path / "none.json") is None
 
 
-def test_freeze_gate_blocks_draft_and_unsigned():
-    draft = "**Status:** `DRAFT — NOT FROZEN`\n- **Signed:** —\n"
-    with pytest.raises(rsf.Blocked):
-        rsf.freeze_gate(draft)
-    with pytest.raises(rsf.Blocked):
-        rsf.freeze_gate("**Status:** `FROZEN 2026-10-09`\n- **Signed:** —\n")
-    rsf.freeze_gate("**Status:** `FROZEN 2026-10-09`\n- **Signed:** Joshua 2026-10-09\n")
+def test_freeze_gate_pins_the_frozen_blob_and_blocks_git_errors():
+    rsf.freeze_gate(lambda *a: rsf.FROZEN_PREREG_BLOB + "\n")
+    with pytest.raises(rsf.Blocked, match="not the frozen"):
+        rsf.freeze_gate(lambda *a: "0" * 40)
+
+    def broken(*a):
+        raise subprocess.CalledProcessError(128, ["git", *a])
+    with pytest.raises(rsf.Blocked, match="cannot read"):
+        rsf.freeze_gate(broken)
+
+
+def test_call_subcommand_runs_the_freeze_gate_and_out_dir_check(tmp_path, monkeypatch):
+    seen = []
+    monkeypatch.setattr(rsf, "freeze_gate", lambda: seen.append("freeze"))
+    monkeypatch.setattr(rsf.rsb, "assert_out_dir_allowed", lambda out, repo_root: seen.append(repo_root))
+    monkeypatch.setattr(rsf, "load_bundle", lambda *a, **k: {})
+    monkeypatch.setattr(rsf, "score_call", lambda *a, **k: None)
+    assert rsf.main(["call", "--out", str(tmp_path / "o"), "--bundle", str(tmp_path), "--k", "0.5", "--pop", "H2",
+                     "--mode-trigger", "1/100", "--label", "x"]) == 0
+    assert seen == ["freeze", rsf.REPO, rsf.PRIMARY]
+
+
+# ── review 6067071065 folds ───────────────────────────────────────────────
+
+def test_cpu_write_retries_while_a_reader_holds_the_file(tmp_path):
+    target = tmp_path / "cpu.json"
+    rsf.write_cpu(target)
+    held = target.open("rb")  # on Windows this blocks os.replace until closed
+    threading.Timer(0.05, held.close).start()
+    rsf.write_cpu(target)  # must not raise
+    assert rsf.read_cpu(target) is not None
+
+
+def test_heartbeat_survives_write_failures_and_final_write_failure_keeps_exit_0(tmp_path, monkeypatch, capsys):
+    calls = []
+
+    def failing(path):
+        calls.append(path)
+        raise PermissionError("held")
+    monkeypatch.setattr(rsf, "write_cpu", failing)
+    stop = rsf.cpu_heartbeat(tmp_path / "cpu.json", every=0.02)  # must not raise
+    time.sleep(0.2)
+    stop.set()
+    assert len(calls) >= 3  # the loop kept going after failures
+    monkeypatch.setattr(rsf, "freeze_gate", lambda: None)
+    monkeypatch.setattr(rsf.rsb, "assert_out_dir_allowed", lambda out, repo_root: None)
+    monkeypatch.setattr(rsf, "load_bundle", lambda *a, **k: {})
+    monkeypatch.setattr(rsf, "score_call", lambda *a, **k: None)
+    rc = rsf.main(["call", "--out", str(tmp_path / "o"), "--bundle", str(tmp_path), "--k", "0.5", "--pop", "H2",
+                   "--mode-trigger", "1/100", "--label", "x"])
+    assert rc == 0 and "[cpu] " in capsys.readouterr().out
+
+
+def test_spawn_reads_the_final_cpu_from_stdout(tmp_path):
+    rec = rsf.spawn([sys.executable, "-c", "print('[call] done'); print('[cpu] 1.25')"], 30, tmp_path)
+    assert (rec["status"], rec["cpu_seconds"], rec["cpu_source"]) == ("ok", 1.25, "process")
+
+
+def _report_with_source(tmp_path, source):
+    (tmp_path / "candidate_report.json").write_bytes(json.dumps({"thresholds_source": source}).encode())
+    return rsf._sha(tmp_path / "candidate_report.json")
+
+
+def test_checkout_preflight_names_the_required_checkout(tmp_path):
+    rel = str(pss.DEFAULT_PREREG.relative_to(pss.REPO_ROOT))
+    other = str(Path("C:/elsewhere/checkout")) + "\\" + rel if sys.platform == "win32" else "/elsewhere/checkout/" + rel
+    sha = _report_with_source(tmp_path, other)
+    with pytest.raises(rsf.Blocked, match="elsewhere"):
+        rsf.checkout_preflight(tmp_path, expected_sha=sha)
+    sha = _report_with_source(tmp_path, str(pss.DEFAULT_PREREG))
+    rsf.checkout_preflight(tmp_path, expected_sha=sha)
+    with pytest.raises(rsf.Invalid):
+        rsf.checkout_preflight(tmp_path, expected_sha="0" * 64)
+
+
+@pytest.mark.parametrize("tamper", [None, "edge", "daily"])
+def test_k05_h2_report_g1_g2_must_equal_k1_full(tmp_path, monkeypatch, tamper):
+    b = _load(_bundle(tmp_path / "b"))
+    _score(b, tmp_path / "k1", "1.0", "FULL")
+    real = rsf.score_candidate
+
+    def regressed(**kw):  # a regression inside score_call that call.json would not see
+        if tamper == "edge":
+            kw["gross_edge_usd"] *= 0.5
+        elif tamper == "daily":
+            kw["candidate_daily_pnl"] = kw["candidate_daily_pnl"][30:]
+        return real(**kw)
+    monkeypatch.setattr(rsf, "score_candidate", regressed)
+    _score(b, tmp_path / "h2", "0.5", "H2")
+    calls = {("1.0", "FULL"): rsf.read_call(tmp_path / "k1"), ("0.5", "H2"): rsf.read_call(tmp_path / "h2")}
+    ref = calls[("1.0", "FULL")]["call"]["g1g2_sha256"]
+    assert calls[("0.5", "H2")]["call"]["g1g2_sha256"] == ref  # the digest alone cannot see it
+    reasons = rsf._invalid_reasons(calls, ref)
+    assert (reasons == []) == (tamper is None), reasons
