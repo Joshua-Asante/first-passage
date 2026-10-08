@@ -915,6 +915,17 @@ class SourceOnlyBracket:
 
 
 @dataclass(frozen=True)
+class SidecarBracket:
+    """T00 Tier-2 diagnostic: the sealed bracket plus each run's private attribution sidecar.
+
+    ``bracket`` is exactly what ``replay_bracket`` seals; ``r1``/``r2`` enter no digest."""
+    bracket: SourceOnlyBracket
+    schema: str
+    r1: tuple
+    r2: tuple
+
+
+@dataclass(frozen=True)
 class SourceOnlyProof:
     evidence_class: str
     contract_sha256: str
@@ -1252,6 +1263,34 @@ class ProductionSource:
             if _is_source_only(self.contract):
                 sealed.append(_seal(self.contract, result, provider=provider, deadline_failure=failed))
         return SourceOnlyBracket(*sealed) if sealed else BracketReplayResult(*results)
+
+    def replay_bracket_with_sidecar(self, path):
+        """T00 Tier-2 diagnostic (card 2026-10-08 §3.2): ``replay_bracket``'s loop with each fresh
+        engine's attribution sidecar on. Served only to a source-only receipt of the diagnostic
+        evidence class; every other source is refused before any engine is built. Each run is
+        sealed by ``_seal`` exactly as ``replay_bracket`` seals it, and the sidecar enters no digest.
+        """
+        from .contract import DIAGNOSTIC_EVIDENCE_CLASS
+        from .replay import ATTRIBUTION_SCHEMA, ReplayDeadlineFailure
+        if (not _is_source_only(self.contract) or self.contract.evidence_class != DIAGNOSTIC_EVIDENCE_CLASS
+                or self.evidence_class != DIAGNOSTIC_EVIDENCE_CLASS):
+            raise ValueError('DIAGNOSTIC_SIDECAR_REFUSED: the sidecar serves only a T00_DIAGNOSTIC_SIDECAR '
+                             'source receipt')
+        self._check_path(path)
+        bracket = ScheduleExecutionBracket(self._quotes)
+        sealed, sidecars = [], []
+        for run_id in BRACKET_RUNS:
+            provider = bracket.for_run(run_id)
+            engine = self._engine(provider)
+            engine.enable_attribution()
+            failed = False
+            try:
+                result = engine.run(path)
+            except ReplayDeadlineFailure as exc:
+                result, failed = exc.result, True
+            sealed.append(_seal(self.contract, result, provider=provider, deadline_failure=failed))
+            sidecars.append(engine.attribution())
+        return SidecarBracket(SourceOnlyBracket(*sealed), ATTRIBUTION_SCHEMA, *sidecars)
 
     def _engine(self, schedule_quotes):
         """One fresh engine: reloaded ports, brokers, ledger, cash and clock."""

@@ -30,7 +30,7 @@ import weakref
 
 from . import p7_evidence
 from .contract import (
-    SOURCE_KEY_PREFIX, ApprovalRecord, ContractValidationError, TrustedApprovalKey, ValidatedSourceContract,
+    SOURCE_EVIDENCE_CLASS, SOURCE_KEY_PREFIX, ApprovalRecord, ContractValidationError, TrustedApprovalKey, ValidatedSourceContract,
     _check_source_key_lifecycle, _fields, _pinned_source_keys, _receipt_snapshot, _source_trust_document,
     canonical_json_bytes, parse_canonical_json, require_validated_source_contract, verify_detached_approval,
 )
@@ -314,8 +314,9 @@ def _check_source(doc, source_receipt, artifact_root, now):
     except ContractValidationError as exc:
         raise ScreenAuthorityError(code, f'the source receipt is not issued and unexpired ({exc})') from None
     _refuse(code, receipt.contract_sha256 != R3C_CONTRACT_SHA256
-            or doc['source']['contract_sha256'] != R3C_CONTRACT_SHA256,
-            'the source receipt and the authority must both bind the compiled r3c digest')
+            or doc['source']['contract_sha256'] != R3C_CONTRACT_SHA256
+            or receipt.evidence_class != SOURCE_EVIDENCE_CLASS,
+            'the source receipt and the authority must both bind the compiled r3c digest (source evidence class)')
     run_root = (Path(artifact_root) / RUN_ROOT_NAME).resolve()
     _refuse('SCREEN_RUN_ROOT_MISMATCH', _sha(str(run_root).encode('utf-8')) != doc['run_root_sha256'],
             'run_root_sha256 differs from the resolved <private_root>/t00-step3 path')
@@ -606,7 +607,8 @@ def require_validated_screen_authority(auth, *, source_contract, now) -> Validat
     _refuse('SCREEN_REQUIRES_SOURCE_RECEIPT', type(source_contract) is not ValidatedSourceContract,
             'the screen serves only a source-only receipt')
     _refuse('SCREEN_SOURCE_MISMATCH', source_contract is not auth.source_receipt or issued[2]() is not source_contract
-            or source_contract.contract_sha256 != R3C_CONTRACT_SHA256,
+            or source_contract.contract_sha256 != R3C_CONTRACT_SHA256
+            or source_contract.evidence_class != SOURCE_EVIDENCE_CLASS,
             'the source receipt is not the object this authority binds')
     require_validated_source_contract(source_contract, now=now)          # r3c window and pin: SOURCE_* codes
     _screen_lifecycle(auth.approval, now, auth.key_sha256)               # screen window: SCREEN_APPROVAL_EXPIRED

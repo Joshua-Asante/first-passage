@@ -20,7 +20,7 @@ def _run(p7_evidence, argv):
     import base64
     import json
     from pathlib import Path
-    from c1_rail.qualification.contract import ObservedBindings, validate_source_contract
+    from c1_rail.qualification.contract import SOURCE_EVIDENCE_CLASS, ObservedBindings, validate_source_contract
     from c1_rail.qualification.paths import PathAssembler
     from c1_rail.qualification.production_source import ProductionSource, _now
 
@@ -37,6 +37,10 @@ def _run(p7_evidence, argv):
                                 contract_doc['effective_settings']['settings_sha256'],
                                 contract_doc['effective_settings']['orb_normal_base'])
     receipt = validate_source_contract(contract_bytes, approval_bytes, registry, observed, now=_now())
+    if receipt.evidence_class != SOURCE_EVIDENCE_CLASS:
+        # P7 is source verification only; a diagnostic receipt never yields a P7 record (#736 review).
+        raise p7_evidence.P7Refusal(f'P7_PURPOSE_MISMATCH: P7 runs only under {SOURCE_EVIDENCE_CLASS}, '
+                                    f'not {receipt.evidence_class}')
     source = ProductionSource.build(receipt, artifact_root=root)
     session_ids = json.loads(Path(path_spec).read_text(encoding='utf-8'))['sessions']
     by_id = {session.session_id: session for session in source.sessions}
