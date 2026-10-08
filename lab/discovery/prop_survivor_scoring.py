@@ -591,8 +591,13 @@ def assert_intraday_channel_nonvacuous(
     protected_blocks: np.ndarray | None = None,
     protected_intraday_blocks: np.ndarray | None = None,
     mode_trigger: float | None = None,
+    capture: dict | None = None,
 ) -> dict:
     """Mandatory non-vacuity guard (frozen Phase-4 §1).
+
+    ``capture`` (OPTIONAL, size-feasibility prereg §2.3 item 2) receives each arm's
+    summary under ``"eod"``, ``"zeros"`` and ``"real"`` as it is computed, before the
+    assertions, so it is complete even when the guard raises. ``None`` is a no-op.
 
     Zeros-channel must reproduce close-only figures byte-for-byte; the real
     channel must differ. A silently dropped ``intraday_low`` would reproduce the
@@ -654,9 +659,10 @@ def assert_intraday_channel_nonvacuous(
         ]
         return summarize_outcomes(seeds_results, int(n_sims))
 
-    eod = _score(None)
-    zero_arm = _score(zeros, protected_zeros)
-    real_arm = _score(intraday_blocks, protected_intraday_blocks)
+    sink = capture if capture is not None else {}
+    eod = sink["eod"] = _score(None)
+    zero_arm = sink["zeros"] = _score(zeros, protected_zeros)
+    real_arm = sink["real"] = _score(intraday_blocks, protected_intraday_blocks)
 
     if (
         float(zero_arm["headline_bust"]) != float(eod["headline_bust"])
@@ -704,8 +710,13 @@ def run_tier_remc(
     protected_blocks: np.ndarray | None = None,
     protected_intraday_blocks: np.ndarray | None = None,
     mode_trigger: float | None = None,
+    capture: dict | None = None,
 ) -> dict:
     """G4 — one run_seed loop for one (tier, consistency) setting via firm_kwargs.
+
+    ``capture`` (OPTIONAL, size-feasibility prereg §2.3 item 3) receives the pooled
+    ``days_to_pass`` of every passing sim across seeds and the pooled sim count
+    ``n``. ``None`` is a no-op; the return value is unchanged either way.
 
     ``intraday_blocks`` — optional paired week-blocks of per-day equity excursions
     (same indices as ``blocks``). Threaded into ``run_seed`` → ``simulate_path``.
@@ -742,6 +753,9 @@ def run_tier_remc(
         for seed in thresholds.seeds
     ]
     summary = summarize_outcomes(seeds_results, sims)
+    if capture is not None:
+        capture["days_to_pass"] = [int(d) for r in seeds_results for d in r["days_to_pass"]]
+        capture["n"] = sims * len(seeds_results)
     return {
         "firm_key": firm_key,
         "consistency": consistency,
@@ -798,6 +812,7 @@ def score_candidate(
     intraday_low: np.ndarray | None = None,
     tier_series: Mapping[str, TierSeries] | None = None,
     mode_trigger: float | None = None,
+    sidecar: dict | None = None,
 ) -> ScoringReport:
     """Run G0–G8 for one candidate across the frozen (or overridden) tier set.
 
@@ -822,6 +837,12 @@ def score_candidate(
     excludes the single ``intraday_low`` argument. ``candidate_daily_pnl`` still
     feeds G1. ``mode_trigger`` with each tier's protected channels enables I-17
     mode-switching once the kernel supports it; otherwise the call raises.
+
+    ``sidecar`` (OPTIONAL, size-feasibility prereg §2.3 items 2-4) is filled per tier
+    that reaches G4 with ``guard_arms`` (the guard's three arms, captured before its
+    assertions), ``gate_grade_reasons`` (that tier's reason text verbatim) and
+    ``days_to_pass`` (``run1``/``run2`` pooled captures). ``None`` passes nothing new
+    to the guard or G4, so the default call and report are byte-identical.
     """
     thr = thresholds if thresholds is not None else load_scoring_thresholds()
     tier_keys = tuple(tiers) if tiers is not None else thr.tier_keys
@@ -911,6 +932,11 @@ def score_candidate(
             mode_kwargs = {k: tier[k] for k in ("protected_blocks", "protected_intraday_blocks",
                                                 "mode_trigger") if k in tier}
 
+        # Opt-in capture: only when a sidecar is requested is anything new passed on.
+        cap = None
+        if sidecar is not None:
+            cap = sidecar[firm_key] = {"guard_arms": {}, "gate_grade_reasons": [], "days_to_pass": {}}
+
         # Mandatory non-vacuity guard (frozen Phase-4 §1) at the gating depth.
         # Only a "non-vacuity FAIL" AssertionError is a vacuity finding — any
         # other AssertionError (e.g. the summarize_outcomes bucket-sum
@@ -924,11 +950,14 @@ def score_candidate(
                     firm_key=firm_key,
                     n_sims=sims,
                     **mode_kwargs,
+                    **({} if cap is None else {"capture": cap["guard_arms"]}),
                 )
             except AssertionError as exc:
                 if not str(exc).startswith("non-vacuity FAIL"):
                     raise
                 gate_reasons.append(f"{firm_key}: non-vacuity failed: {exc}")
+                if cap is not None:
+                    cap["gate_grade_reasons"].append(gate_reasons[-1])
 
         # G4 Run-1 (consistency off) + Run-2 (consistency on where present).
         # The honest clock runs regardless of the guard outcome: figures stay
@@ -937,16 +966,22 @@ def score_candidate(
         remc_kwargs: dict = dict(mode_kwargs)
         if intraday_blocks is not None:
             remc_kwargs["intraday_blocks"] = intraday_blocks
+
+        def _dtp(run: str) -> dict:
+            return {} if cap is None else {"capture": cap["days_to_pass"].setdefault(run, {})}
+
         run1 = run_tier_remc(
-            firm_key, blocks, thr, n_sims=n_sims, consistency=None, **remc_kwargs
+            firm_key, blocks, thr, n_sims=n_sims, consistency=None, **remc_kwargs, **_dtp("run1")
         )
         cons = _consistency_frac(firm_key)
         if cons is None:
             run2 = run1
             gated_on = "run1_degenerate"
+            if cap is not None:
+                cap["days_to_pass"]["run2"] = cap["days_to_pass"]["run1"]
         else:
             run2 = run_tier_remc(
-                firm_key, blocks, thr, n_sims=n_sims, consistency=cons, **remc_kwargs
+                firm_key, blocks, thr, n_sims=n_sims, consistency=cons, **remc_kwargs, **_dtp("run2")
             )
             gated_on = "run2"
 
