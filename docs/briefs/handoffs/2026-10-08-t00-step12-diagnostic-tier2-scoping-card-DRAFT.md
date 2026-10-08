@@ -190,6 +190,7 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 - **Acceptor:** the Deployment Coordinator.
 - **Decisions:** Joshua keeps admission, sample, signing and every investment decision.
 - **Exposure:** readers of Tier-2 output join the Tier-1 reader log. Any successor pre-registration names them (design §4.5). Tier-2 output is exposure for that pre-registration.
+- **Exposure before merge (2026-10-08).** Joshua saw the Tier-1 findings summary at about 07:12Z (no series, no keys), before this card merged. The §2.1 defaults were written and reviewed by readers who had not seen the Tier-1 report, and are unchanged since `34c31c4`. A merge that leaves §2.1 unchanged keeps them blind. Any edit to §2.1 by a Tier-1 reader is an admission-time change (§2.1). The shock/grind reading under option (a) is partly known to Joshua; the report says so.
 - **Selection count.** Choosing a §2 pattern from the sampled paths is a selection. It counts as one trial (K + 1) for any successor it points to. That successor's test discloses or excludes the sampled paths.
 
 ## §8 — OWED (operator)
