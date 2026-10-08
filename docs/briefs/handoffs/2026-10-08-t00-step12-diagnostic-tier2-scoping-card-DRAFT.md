@@ -222,7 +222,7 @@ Joshua, 2026-10-08, to the Deployment Coordinator, verbatim: "Let's go with your
 
 Not admitted here: any counterfactual, successor screen or stopping rule.
 
-*2026-10-08:* Joshua holds the item 5 source approval (with the new H and the P7 re-run) until the size-feasibility check returns; the capability PR was exempt and merged (#736). Record: [T00 card §8](2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record) (#734).
+*2026-10-08:* Joshua holds the item 5 source approval (with the new H and the P7 re-run) until the decision tree routes to step 2 (T00 card §8); the capability PR was exempt and merged (#736). Record: [T00 card §8](2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record) (#734).
 
 ## §10 — Audit hooks
 
