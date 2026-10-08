@@ -106,7 +106,15 @@ Each gate's structure mirrors #581 A6; its numbers are the cited owners' unless 
 
 - **Why G2/G4.** FULL alone can hide a late-sample failure; H2 is the more recent half, and R1 is the adverse intrabar vertex (`production_source.py:400-412`). R1-alone is a run-level reading, not the A5 path verdict; it is reported beside A5, never folded into it.
 - **G5 producer.** The qualification runner evaluates the eval geometry (`Tradeify_Select_100K`). A funded geometry needs the `core/mc/preflight.py` engine-support pre-flight and a producer that supports it before G5 can bind — **OWED (operator / build owner)**.
-- **Verdict.** **GO-evidence** if every binding gate passes. **NO-GO-evidence** otherwise, labelled robust or `UNDETERMINED`-dependent as #581 A6. **INSUFFICIENT** under #581 A6's INSUFFICIENT conditions, or if a binding gate has no admissible producer. On H (§4): GO-evidence is RESOLVED, NO-GO-evidence is FALSIFIED, INSUFFICIENT is AMBIGUOUS. A GO-evidence verdict is an input to an operator investment decision; it admits nothing, authorizes no capital and deploys nothing.
+- **Assignment dependence.** Each gate is evaluated under the pessimistic (P) and optimistic (O) assignments of #581 A5 (3). G1 and G3 depend on the assignment. G2 and G4 do not: they read each path's R1 run alone, classified by A5 (1), so P = O. G5's FULL component depends on it and its H2-R1 component does not. G6 declares at freeze whether its metric reads A5 path outcomes; if not, P = O — **OWED (operator)**.
+- **Decision rule, in precedence order** (*added 2026-10-08, operator review of `6ed1e37`*):
+  1. **INSUFFICIENT** if any #581 A6 INSUFFICIENT condition holds, any binding gate has no admissible producer, or any binding gate's value is unset. This is decided before any tally is read, as `verdict.py:evaluate` does for #581 (row V1). No GO or NO-GO subtype is reported with it.
+  2. **GO-evidence** if every binding gate passes under P.
+  3. **NO-GO-evidence, `UNDETERMINED`-dependent** if not (2) and every binding gate passes under O.
+  4. **NO-GO-evidence, robust** otherwise. A failed assignment-independent binding gate therefore always yields a robust NO-GO.
+  5. A reported (non-binding) gate never enters the label.
+- **Classifier.** `ops/c1_rail/qualification/t00_screen/verdict.py:evaluate` implements this rule for G1 and G3 only. Extending it to G2, G4, G5 and G6 under the rule above is a reviewed code change before freeze — **OWED (build owner)**.
+- **Verdict mapping.** On H (§4): GO-evidence is RESOLVED, NO-GO-evidence is FALSIFIED, INSUFFICIENT is AMBIGUOUS. A GO-evidence verdict is an input to an operator investment decision; it admits nothing, authorizes no capital and deploys nothing.
 
 ## §7 — Data
 
@@ -124,7 +132,7 @@ Each gate's structure mirrors #581 A6; its numbers are the cited owners' unless 
 
 ## §9 — OWED list, stopping rule and freeze
 
-Owed (operator) at freeze: C-1..C-7; K₀ (§2); T2-* readers and §3 completeness; G4 value and binding; G5 tier, ceiling and binding; G6 metric and threshold; §7 RNG tag, roots, depth, budget and disjointness; §8 items 1, 2, 3 and 5; the stopping rule below.
+Owed (operator) at freeze: C-1..C-7; K₀ (§2); T2-* readers and §3 completeness; G4 value and binding; G5 tier, ceiling and binding; G6 metric and threshold; §7 RNG tag, roots, depth, budget and disjointness; §8 items 1, 2, 3 and 5; G6 assignment dependence and the classifier extension (§6); the stopping rule below.
 
 **Stopping rule (placeholder): OWED (operator), decided at freeze.** Options, none adopted: (a) one configuration only; any NO-GO ends the successor line on this book; (b) a stated maximum number of configurations, each its own frozen file and its own K increment; (c) stop on a named condition (for example a robust NO-GO with G2 failing).
 
