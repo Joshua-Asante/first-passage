@@ -95,15 +95,17 @@ The mechanism reading (shock versus grind, recovery depth) is descriptive and co
 
 ## §5 — Launch, sequence and stops
 
-1. **Hash the driver** against §0.5 item 1.
+1. **Hash the driver** against §0.5 item 1. The file that is hashed and run is exactly `C:\Users\joshu\multi_firm_operations\.claude\worktrees\t00-tier1-driver-merged\scripts\t00_tier1_diagnostic.py`, in a new detached worktree at #728's merge commit, clean with `--untracked-files=all`. It is re-hashed immediately before each mode, and the public return names that merge commit.
 2. **`freeze`**, then publish the key-list hash on #727.
+   - **Pre-merge smoke run.** One read-only `freeze` ran on 2026-10-08 at 03:50Z, before #728 was opened, by the executor session, to its session scratchpad. It built no source and replayed nothing. Its `keys.json` SHA-256 was `60c128a7e5ba9f030b90312b2c7792e1a55fd4c9077b42566fcb99d2971d329e`, and that `keys.json` stays private.
+   - This smoke run is exempt from item 5's "never re-run a mode". The official `freeze`'s `keys.json` must have this same SHA-256. A different hash is `DRIVER_DEFECT`: stop, and run no `selftest`.
 3. **`selftest`** (no replay). A seed or `path_sha256` mismatch is `DRIVER_DEFECT`, and nothing is replayed.
 4. **`run`, detached:**
    - Launch with PowerShell `Start-Process -PassThru` from the H checkout, with stdout and stderr to files under the private output directory (§6).
    - Watch the PID, and kill it with `Stop-Process` at **3 h wall** from launch.
    - The driver itself refuses to start path N+1 if that would cross **2 CPU-hours** or 3 h of wall time, measured from its own start plus the last path's cost (`BUDGET`).
    - It stops after the checkpoint path if that path costs more than **225 CPU-seconds** (1.5 × the 150 s estimate).
-5. **Never** replace a path, change a comparison criterion, re-run a mode, or retry after a stop. A stop returns partial evidence.
+5. **Never** replace a path, change a comparison criterion, re-run a mode (item 2's smoke run aside), or retry after a stop. A stop returns partial evidence.
 
 ## §6 — Return and verdict
 
@@ -140,7 +142,7 @@ The step-12 run took about 80 s of wall time per path per worker, with integrity
 
 ## §8 — Exposure
 
-The diagnostic reads per-session detail for scored step-12 paths, beyond the verdict. The executor logs every reader (name, date, and what they saw: series, report or neither) with the private report. Any successor pre-registration, for example of an adjusted book, must carry an exposure statement that names these readers (design §4.5).
+The diagnostic reads per-session detail for scored step-12 paths, beyond the verdict. The reader log opens with the §5 item 2 smoke run's operator: the executor session, 2026-10-08. It saw the selected keys and the per-stratum counts, and no series or report. The executor logs every reader (name, date, and what they saw: series, report or neither) with the private report. Any successor pre-registration, for example of an adjusted book, must carry an exposure statement that names these readers (design §4.5).
 
 ## §9 — Forbidden moves
 
