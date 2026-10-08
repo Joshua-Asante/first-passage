@@ -56,14 +56,14 @@ Read at `origin/main` `93118ff` on 2026-10-08. Re-read at admission.
 ## §2 — Pre-stated questions
 
 All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitions:
-- **Busting run:** retained `kernel_outcome` is `bust_trailing`.
+- **Busting run:** retained `kernel_outcome` is `bust_trailing`, whatever the run's status or failure reason. Runs are classified by kernel outcome first.
 - **Breach session:** the first session whose descriptive floor crossing occurs (Tier-1 rule).
 - **Peak:** the highest end-of-session equity before the breach session, including the starting equity. Sessions carry no intraday high, so the peak is end-of-session only.
 - **Breach bar:** the bar, or the settlement step after the last bar (`replay.py:634`), where the breach session's combined intraday low is set. Each run (R1, R2) uses its own breach bar.
 - **Leg value:** cumulative realized P&L net of commission plus the open-P&L mark. Combined equity is cash plus every leg's open mark (`replay.py:621-622`), so leg values sum to the combined value at any bar.
 - **Peak-to-breach drawdown:** combined value at the breach bar minus combined value at the peak close. A leg's share is its value change over the same span divided by that drawdown. Shares sum to one by construction.
-- **Control runs:** runs whose retained status is not `FAILURE` (`PASS` or `UNRESOLVED`). They have no breach, so Q1 and Q6 use their deepest drawdown (deepest combined bar low against the prior end-of-session peak). A control run with no drawdown is excluded from share statistics and counted. A leg's bust share means something only against its share in these drawdowns.
-- **Other failures:** a `FAILURE` run that is not `bust_trailing` (`runner.py:36-43`: daily, static, inactivity, own-flat deadline) is neither busting nor control. It is reported separately and never pooled.
+- **Control runs:** runs whose retained status is not `FAILURE` (`PASS` or `UNRESOLVED`). They have no breach, so Q1 and Q6 use their deepest drawdown (deepest combined bar low against the prior end-of-session peak), measured up to the pass day for `PASS` runs and over the full horizon for `UNRESOLVED` runs. A control run with no drawdown is excluded from share statistics and counted. A leg's bust share means something only against its share in these drawdowns.
+- **Other failures:** a `FAILURE` run whose kernel outcome is not `bust_trailing` (`runner.py:36-43`: daily, static, inactivity, own-flat deadline) is neither busting nor control. It is reported separately and never pooled.
 - **Primary share:** a leg's share of the peak-to-breach drawdown. The breach-session share is secondary and used only by the shock rule.
 - **Leading leg:** the leg with the largest primary share in a run.
 - **Shock vs grind:** a busting run's breach-session fraction is the drawdown from the previous close to the breach bar, divided by the whole peak-to-breach drawdown. A run is a shock if that fraction is at least the §2.1 threshold, else grind. This sharpens the Tier-1 reading ([Tier-1 card](2026-10-08-t00-step12-diagnostic-tier1-card.md) §2), which is combined-only.
@@ -84,8 +84,8 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitio
 
 ### §2.1 Pattern criteria (frozen when this card merges)
 
-The defaults below freeze when this card merges, before anyone reads the Tier-1 report, which uses the same keys. Tier 1 already reads shock versus grind on those keys, so option (a) is not fully blind; the report says so. Joshua may change a criterion at admission, after the Tier-1 report. A change made then is recorded as exposure, and the changed criterion is evaluated only on option (b) keys that exclude the Tier-1 keys.
-- **Concentrated:** one leg's primary share is at least 0.5 in at least two-thirds of busting runs, and its median busting share exceeds its median control share by at least 0.25 (a difference, so a zero or negative control median does not break it).
+The defaults below freeze when this card merges. They are blind only if that merge comes before anyone who sets or reviews them reads the Tier-1 report, which uses the same keys. If it does not, the defaults are treated as a change made at admission (below). Tier 1 already reads shock versus grind on those keys, so option (a) is not fully blind; the report says so. Joshua may change a criterion at admission, after the Tier-1 report. A change made then is recorded as exposure, and the changed criterion is evaluated only on option (b) keys that exclude the Tier-1 keys.
+- **Concentrated:** one leg's primary share is at least 0.5 in at least two-thirds of busting runs, and its median busting share exceeds its median control share by at least 0.25 (a difference, so a zero or negative control median does not break it). With no usable control run, Concentrated is not evaluable, and rows 1, 3 and 4 do not hold.
 - **Busts are shocks:** at least two-thirds of busting runs are shocks, with a breach-session fraction of at least 0.5. **Busts are grind:** at least two-thirds are grind. Otherwise mixed.
 - **Cap often binds:** the risk-sized leg's cap binds on at least a quarter of its entries in busting runs.
 - **Protected adds matter:** add fills placed while protected carry at least a quarter of the peak-to-breach drawdown in at least a third of busting runs.
@@ -147,7 +147,7 @@ About 2–3 agent-days for build, tests and one or two review rounds. The govern
 
 **Sample options (OWED, operator).**
 - (a) The frozen Tier-1 keys (`keys.json` `60c128a7…329e`).
-- (b) A larger set, frozen before any replay, stratified like Tier 1 and weighted to agreed `FAILURE` and `UNDETERMINED` in H2.
+- (b) A larger set, frozen before any replay, stratified like Tier 1 and weighted to agreed `FAILURE` and `UNDETERMINED` in H2. Where §2.1 requires it, the set excludes the Tier-1 keys.
 
 Selected cases cannot estimate rates or prove a change helps. Say so in the report.
 
