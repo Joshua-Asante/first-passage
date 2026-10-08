@@ -30,7 +30,7 @@ Read at H `5d25f9c` on 2026-10-08. Re-read at dispatch.
 
 ## §0.5 — The driver and the prerequisites (each must hold before the first replay; otherwise BLOCKED)
 
-1. **Driver.** The driver is `scripts/t00_tier1_diagnostic.py` from #728. It is reviewed in its own code PR and pinned at **SHA-256 `7b5062b93584ac403394baf921290a4ea91b8aa0ab6a3815719346aab2080e18`** (#728 head `c0ad50b`). The executor re-hashes it before each mode, and a mismatch is BLOCKED. A fold of #728 that changes the file re-pins it here before execution.
+1. **Driver.** The driver is `scripts/t00_tier1_diagnostic.py` from #728. It is reviewed in its own code PR and pinned at **SHA-256 `94c8eeab7b51360401f792e097cd013d89e6edd56ec57e05a7cb141e911a7508`** (#728 head `f6ef6c6`). The executor re-hashes it before each mode, and a mismatch is BLOCKED. A fold of #728 that changes the file re-pins it here before execution.
    - It runs under the operations venv with no bootstrap.
    - Every module it uses is imported from `--code-root`, the clean detached H checkout; the driver refuses any other HEAD or a dirty tree.
    - The imported modules are `contract`, `paths`, `production_source`, `p7_evidence`, and `t00_screen.journal`, `plan`, `verdict` and `worker`.
@@ -119,6 +119,7 @@ The mechanism reading (shock versus grind, recovery depth) is descriptive and co
 **Verdict on H:**
 - **RESOLVED:** every selected path replayed and matched, and the report is delivered.
 - **FALSIFIED:** a `NON_REPRODUCTION`: an identity mismatch, or a non-gate replay exception (§4).
+- **`EVIDENCE_WRITE_FAILED`** (AMBIGUOUS, exit 3): a run that would be RESOLVED could not write `summary.json`. This is a host or evidence fault, not a driver defect. A run that had already stopped keeps its verdict and code, and the write failure goes to `stderr`. The reservation still blocks any retry, and an AMBIGUOUS result goes to Joshua.
 - **AMBIGUOUS:** any other stop (`PREREQUISITE`, `DRIVER_DEFECT`, `REFUSED`, `BUDGET`) before every path is replayed, with no mismatch.
 
 A `DRIVER_DEFECT` is a fault in the driver, not evidence about the run: it goes back to #728 for a fix and re-review. It covers the pre-replay faults (seed or `path_sha256` mismatch, an unclassified setup exception) and any driver fault after a replay has returned, for example a failed write of a path record. Any re-attempt needs a fresh ruling from Joshua; this card grants none.
@@ -166,7 +167,7 @@ The diagnostic reads per-session detail for scored step-12 paths, beyond the ver
 # Card form (expect RESULT: well-formed).
 python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-10-08-t00-step12-diagnostic-tier1-card.md
 
-# The pinned driver (expect 7b5062b9...0e18).
+# The pinned driver (expect 94c8eeab...7508).
 sha256sum scripts/t00_tier1_diagnostic.py
 
 # The sealed boundary and the admitted construction.
