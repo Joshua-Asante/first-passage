@@ -719,12 +719,31 @@ and uncommitted and does not alter deployment scope.
 
 | Milestone | Required outcome and evidence | Return boundary |
 |---|---|---|
-| **1. Diagnose book viability (immediate critical path)** | Explain T00's failed criteria, magnitude, populations/scenarios and sensitivity to assumptions. Distinguish established mechanisms from hypotheses and keep the four-firm candidate's failure separate. Return an evidence-supported recommendation before proposing a revised configuration or fresh validation. | Coordinator accepts the diagnosis; Joshua decides the investment direction. No automatic redesign or new validation. |
-| **2. Close independent readiness** | Reconcile the qualification-engine, broker/settlement, runtime/recovery and feed-preparation owners below. Reuse accepted implementation and evidence; identify each next missing acceptance outcome. | Each bounded owner returns evidence to the coordinator. Work dependent on undecided portfolio, route or feed behavior remains behind that decision. |
-| **3. Define the executable candidate and qualify its feed** | Following the investment decision, bind actual strategy editions, sizing/protection/capacity behavior, route, costs and source requirements. Under applicable selection/funding authority, qualify delivered feed bytes through actual adapters with emission disabled. Resolve behavior-changing dependencies and identify any explicitly permitted later bindings. | T10/F1 decision-ready packet, not a production qualification attempt. Historical evidence for another edition is not successor qualification. |
-| **4. Freeze and qualify (T15)** | Accept engine readiness and required pre-freeze evidence; freeze exact source, editions, configuration, runtime and statistical contract. Obtain prescribed approvals and execute the authorized production attempt. Preserve actual non-PASS/interruption dispositions; on PASS obtain required seal/admission decisions. | Accepted qualification/admission evidence or the actual non-PASS/blocker. No automatic tuning, replacement attempt or activation. |
-| **5. Accept the disarmed release (T16)** | Bind qualified portfolio, feed, route, settlement, host and monitoring to one exact identity. Prove only permitted freeze deltas, actual-consumer integration and required fault behavior. Complete the calendar-dependent R3 repeat below. | Coordinator's combined acceptance of one disarmed candidate; no live GO. |
-| **6. Rehearse, authorize and measure (T17)** | Complete exact-candidate rehearsal, prescribed final-stage/account checks and launch timing. Obtain Joshua's session-specific GO before activation. Reconcile the attended session and subsequently measure evaluation progress, execution costs, incidents, funded eligibility and payouts. | Initial activation is an operational milestone, not evidence of successful portfolio economics. Later sessions retain their own authority requirements. |
+| **1. Diagnose book viability (immediate critical path)** | Explain T00's failed criteria, magnitude, populations/scenarios and sensitivity to assumptions. Distinguish established mechanisms from hypotheses and keep the four-firm candidate's failure separate. Return an evidence-supported recommendation before proposing a revised configuration or fresh validation. | Claude Deployment Coordinator accepts diagnostic reports; Codex deployment coordinator retains combined acceptance; Joshua decides the investment direction. No automatic redesign or new validation. |
+| **2. Close independent readiness** | Reconcile the qualification-engine, broker/settlement, runtime/recovery and feed-preparation owners below. Reuse accepted implementation and evidence; identify each next missing acceptance outcome. | Each bounded owner returns its accepted evidence to the Codex deployment coordinator for combined acceptance. Work dependent on undecided portfolio, route or feed behavior remains behind that decision. |
+| **3. Define the executable candidate and qualify its feed** | Following the investment decision, bind actual strategy editions, sizing/protection/capacity behavior, route, costs and source requirements. Under applicable selection/funding authority, qualify delivered feed bytes through actual adapters with emission disabled. Resolve behavior-changing dependencies and identify any explicitly permitted later bindings. | Codex deployment coordinator accepts T10/F1 packet readiness, not a production qualification attempt. Historical evidence for another edition is not successor qualification. |
+| **4. Freeze and qualify (T15)** | Accept engine readiness and required pre-freeze evidence; freeze exact source, editions, configuration, runtime and statistical contract. Obtain prescribed approvals and execute the authorized production attempt. Preserve actual non-PASS/interruption dispositions; on PASS obtain required seal/admission decisions. | Qualification owner returns evidence to the Codex deployment coordinator; Joshua supplies required admission decisions or the actual non-PASS/blocker returns. No automatic tuning, replacement attempt or activation. |
+| **5. Accept the disarmed release (T16)** | Bind qualified portfolio, feed, route, settlement, host and monitoring to one exact identity. Prove only permitted freeze deltas, actual-consumer integration and required fault behavior. Complete the calendar-dependent R3 repeat below. | Codex deployment coordinator's combined acceptance of one disarmed candidate; no live GO. |
+| **6. Rehearse, authorize and measure (T17)** | Complete exact-candidate rehearsal, prescribed final-stage/account checks and launch timing. Obtain Joshua's session-specific GO before activation. Reconcile the attended session and subsequently measure evaluation progress, execution costs, incidents, funded eligibility and payouts. | Codex deployment coordinator accepts release evidence; Joshua owns session GO. Initial activation is not evidence of successful portfolio economics. Later sessions retain their own authority requirements. |
+
+**Current diagnostic status (2026-10-08):** the retained step-12 diagnosis is
+already delivered. Tier 1 is RESOLVED/DONE and accepted; its return and reader log
+are in [#730](https://github.com/Joshua-Asante/first-passage/pull/730), merged at
+`bd07b452`. Do not recommission Tier 1. Tier 2 is scoped in
+[#729](https://github.com/Joshua-Asante/first-passage/pull/729), merged at
+`afaca995`; Joshua's admission is recorded in
+[#731](https://github.com/Joshua-Asante/first-passage/pull/731) at `c280118`
+(open, awaiting merge when checked). The Claude Deployment Coordinator reports
+the sidecar capability in build. Its reviewed build, new accepted H, P7 re-run
+and new signed source approval still precede replay. The investment decision
+remains Joshua's; admission is not a completed attribution result.
+
+**If no supported successor emerges:** return to Joshua to decide whether to
+re-scope the book, commission targeted research, or re-scope/stop the program.
+Milestone 3 is conditional on that decision, not an inevitable next step. A
+stopping rule is proposed but not adopted; this amendment sets no threshold,
+retry allowance or automatic research dispatch. A successor non-PASS returns to
+the same decision boundary.
 
 The viability recommendation must address evaluation survival and the remaining
 evidence needed for funded constraints, payout eligibility/time, recurring costs
@@ -764,6 +783,19 @@ summary rows do not reopen completed work.
   synchronization through actual consumers. No emission or account orders
   follow from feed acceptance.
 
+Before assigning readiness work, each owner labels its next step:
+
+| Workstream | May proceed when independently authorized and useful without the current book | Hold until the investment/behavior decision |
+|---|---|---|
+| Qualification engine | Generic result/seal integration, authority refusals and synthetic engine acceptance | Candidate-specific source binding, sizing/edition assumptions and production attempts |
+| Broker/settlement | T07 report semantics and settlement procedure; route-neutral evidence reconciliation | T09 changes tied to leg lifecycle, quantities, takeover or unresolved route semantics; existing T09 gates still apply |
+| Runtime/recovery | Host/notifier health verification and common attended-recovery/fallback procedures | Book-specific incident mappings, capacity behavior and exact-candidate rehearsal |
+| Feed | Provider-neutral cost/entitlement, calendar and protocol preparation | Final symbol/edition bindings and book-dependent adapter work; provider selection, collection and spend keep their separate gates |
+
+This is a dependency classification, not blanket authorization. If an ostensibly
+independent step assumes a particular book or route, return that dependency and
+hold it rather than spend effort on the assumption.
+
 The completed robust T00 NO-GO does not meet D-feed(a) without its explicit
 amendment. This roadmap does not amend that condition or presume provider
 selection/funding permission.
@@ -782,36 +814,48 @@ for the qualifying repeat and its acceptance. November 1 is not a promised
 release date; all other prerequisites still apply. Use the interval to complete
 independent evidence, not to relax the calendar requirement.
 
+**Separate program checkpoint — 2026-11-08:** the four-firm candidate re-MC is
+already FALSIFIED early-fail ([#715](https://github.com/Joshua-Asante/first-passage/pull/715),
+[#716](https://github.com/Joshua-Asante/first-passage/pull/716)). The program-level
+check and demotion disposition remain with the
+[four-firm program owner](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md)
+on November 8. Milestone 1 supplies Tradeify investment evidence; it neither
+replaces that check nor automatically changes its date or disposition. If the
+successor remains unresolved then, report that state to the program owner;
+do not treat continuing research as passing or postponing the program check.
+
 ### Next bounded handoff and coordination
 
-**Selected outcome:** the book-failure diagnosis and investment recommendation
-in milestone 1. The retained-evidence review comes first; reconstruction, if
-needed, requires its own pinned sample, observational instrumentation,
-verification and measured/approved resource envelope. The earlier proposed
-18-path diagnostic is not admitted or executed by this amendment.
+**Selected outcome:** consume the existing Tier-1 diagnosis and the admitted
+Tier-2 attribution return to produce the investment recommendation in milestone
+1. Continue through the diagnostic owner's current card; do not issue a duplicate
+18-path handoff. This roadmap adds no replay authority.
 
-**Prerequisites:** verified retained T00 evidence and current diagnostic owner
-records; identify work already completed before commissioning another analysis.
-Any missing authority, data or capture capability is returned explicitly.
+**Prerequisites:** accepted Tier-1 evidence and reader log; Tier-2 admission and
+its remaining build, H, P7 and signed-approval gates. The diagnostic card owns
+sample selection, instrumentation, exposure, budgets and verification.
 
-**Ownership:** one diagnostic executor; the deployment coordinator reviews the
-return and retains combined acceptance. Existing bounded owners remain in place;
-Joshua owns investment and operational decisions.
+**Ownership:** Claude Deployment Coordinator owns the T00/diagnostic cards and
+accepts their reports, following the reported C4 handoff on 2026-10-08. Codex
+deployment coordinator retains combined acceptance. Joshua owns investment and
+operational decisions. The [review relay](https://github.com/Joshua-Asante/first-passage/pull/732#issuecomment-6065313722)
+records the seat distinction; it grants no new authority.
 
-**Verification:** bind claims to source/evidence identities; distinguish observed
-contributions from counterfactual benefits and report limitations. Any authorized
-reconstruction must reproduce original semantic evidence before interpretation.
-Do not turn an outcome-selected diagnostic sample into a bust-rate estimate.
+**Verification:** bind claims to accepted evidence identities, distinguish
+observed contributions from counterfactual benefits and report limitations.
+Use the diagnostic card's reproduction and sidecar checks. Do not turn a
+selected diagnostic sample into a bust-rate estimate.
 
-**Checkpoint:** report the retained-evidence findings, causal gaps and proposed
-next decision to the coordinator. In parallel, reconcile each readiness
-workstream's next missing acceptance without duplicating accepted work.
+**Checkpoint:** Claude returns the accepted attribution, causal gaps and
+recommendation to Codex for combined review and Joshua's investment decision.
+Meanwhile, each readiness owner identifies its next book-independent acceptance
+and labels any work held for the investment decision.
 
-**Return boundary:** return the diagnosis and recommendation, or the precise
-blocking dependency. A configuration proposal, new validation, provider spend,
-production attempt or operational act needs its applicable subsequent handoff
-and authority. Access to this roadmap grants none of them.
+**Return boundary:** return the recommendation or precise blocking dependency.
+Configuration selection, new validation, provider spend, production attempts and
+operational acts retain their subsequent handoffs and authority. No supported
+successor returns to Joshua under the decision branch above.
 
-This amendment is based on owner records inspected at main `afaca995`.
+This amendment is based on owner records inspected at main `bd07b452`, the pending #731 admission record at `c280118`, and the dated coordinator review relay.
 It changes no statistical criteria, accepted gates, locked strategy artifacts,
 operational controls or standing instructions.
