@@ -30,7 +30,7 @@ Read at H `5d25f9c` on 2026-10-08. Re-read at dispatch.
 
 ## §0.5 — The driver and the prerequisites (each must hold before the first replay; otherwise BLOCKED)
 
-1. **Driver.** The driver is `scripts/t00_tier1_diagnostic.py` from #728. It is reviewed in its own code PR and pinned at **SHA-256 `f8508a9acee670a8884bbd045e66d9a2c4dbac19f9e5334f9715683d9d029282`** (#728 head `afd0ff9`). The executor re-hashes it before each mode, and a mismatch is BLOCKED. A fold of #728 that changes the file re-pins it here before execution.
+1. **Driver.** The driver is `scripts/t00_tier1_diagnostic.py` from #728. It is reviewed in its own code PR and pinned at **SHA-256 `0ded22c5ad16e19ea8046a2de7823807c0c603d2e9a60b740a3a797135651d57`** (#728 head `5a05216`). The executor re-hashes it before each mode, and a mismatch is BLOCKED. A fold of #728 that changes the file re-pins it here before execution.
    - It runs under the operations venv with no bootstrap.
    - Every module it uses is imported from `--code-root`, the clean detached H checkout; the driver refuses any other HEAD or a dirty tree.
    - The imported modules are `contract`, `paths`, `production_source`, `p7_evidence`, and `t00_screen.journal`, `plan`, `verdict` and `worker`.
@@ -89,7 +89,7 @@ Tier 2 needs a reviewed capability that returns raw events for a diagnostic evid
 
 **H (reproduction):** a sealed `replay_bracket` re-execution at H of each selected path reproduces its retained record byte for byte. Per run, that is `digest`, `sessions`, `fills`, `events_sha256`, `deadline_failure`, and the consumed-split count and SHA-256.
 
-**Falsifier:** any one mismatch after the path's seed and `path_sha256` have matched in `selftest`. The run stops at that path, with no replacement and no retry.
+**Falsifier:** any one mismatch after the path's seed and `path_sha256` have matched in `selftest`, or any exception raised while replaying a selected path other than a documented source-gate refusal (a `ContractValidationError`, or the exact `_verify_integrity` and `_check_path` messages at H). Every retained PATH record came from a bracket that returned normally. The run stops at that path, with no replacement and no retry.
 
 The mechanism reading (shock versus grind, recovery depth) is descriptive and conditional on H holding. It is not a gate and does not test a mechanism.
 
@@ -111,7 +111,7 @@ The mechanism reading (shock versus grind, recovery depth) is descriptive and co
 
 **Verdict on H:**
 - **RESOLVED:** every selected path replayed and matched, and the report is delivered.
-- **FALSIFIED:** a `NON_REPRODUCTION`.
+- **FALSIFIED:** a `NON_REPRODUCTION`: an identity mismatch, or a non-gate replay exception (§4).
 - **AMBIGUOUS:** any other stop (`PREREQUISITE`, `DRIVER_DEFECT`, `REFUSED`, `BUDGET`) before every path is replayed, with no mismatch.
 
 A `DRIVER_DEFECT` is a fault in the driver, not evidence about the run: it goes back to #728 for a fix and re-review. Any re-attempt needs a fresh ruling from Joshua; this card grants none.
@@ -159,7 +159,7 @@ The diagnostic reads per-session detail for scored step-12 paths, beyond the ver
 # Card form (expect RESULT: well-formed).
 python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-10-08-t00-step12-diagnostic-tier1-card.md
 
-# The pinned driver (expect f8508a9a...9282).
+# The pinned driver (expect 0ded22c5...1d57).
 sha256sum scripts/t00_tier1_diagnostic.py
 
 # The sealed boundary and the admitted construction.
