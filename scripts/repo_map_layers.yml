@@ -50,6 +50,8 @@ scripts_layer:
   diff_econ_calendar: lab
   # ops — live-ops tooling (run_ecr / preprocess_pine_ecr_logs retired 2026-07-11)
   lock_event_hook: ops
+  # imports the H checkout's c1_rail.qualification modules (T00 Tier-1 diagnostic card 2026-10-08)
+  t00_tier1_diagnostic: ops
 
 # Import roots that are flat in practice (pyproject pythonpath,
 # scripts/layer_bootstrap.py, the rail entry points, direct scripts/*.py
