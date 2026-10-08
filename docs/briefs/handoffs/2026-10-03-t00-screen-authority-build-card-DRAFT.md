@@ -504,6 +504,11 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - **Step 9.** #581 was RATIFIED 2026-10-07 (#720, merge commit `612edfa`; C `40c650c`, C′ `99e5efe`; values block `3432eb81…`).
   - **Step 10.** The label script was reviewed (#705 comment 6030648071). Its P2s were accepted as residuals (6030953085).
   - **Step 11.** Joshua signed `APPROVE_T00_SCREEN_AUTHORITY`. `validate_screen_authority` ISSUED authority `241708a1…` with approval `7310fc27…`, expiring 2026-10-14T02:08Z. Step 12 has to start by 2026-10-11T02:08Z, so that 72 h remain.
+- **T00 step 3 / design step 12 RESULT: NO-GO-evidence, robust** (2026-10-08; recorded by coordinator (4), T00 card owner, from the step-12 owner's return; hashes and labels only).
+  - **Labels.** Verdict line `T00_SCREEN_VERDICT NO-GO-evidence-robust`; `T00_SCREEN_VERIFY VERIFIED` (exit 0).
+  - **Hashes.** results.json `a5b985d0abd79177fd910648ffbfaec040f6a4ac04728c8acee1f1e347a742dc`; attestation.json `f627e805ba3e92ef1bc461804cb8877494d77c9a42d5344626c4795d379d1ed5`; REPORT.md `bebceb93e6dbd80567dd4f94436df32f1892c296818d131da4eb61283a5e9984`; authority `241708a1…`.
+  - **Run.** Local host; detached H `5d25f9c`, clean throughout; operations venv 3.13.2; `--workers 8`. Exactly one `run` (15:43:29Z → `T00_SCREEN_COMPLETE` 00:04:25Z), with no resume and no acts. Then `finalize` (00:47:59–00:48:01Z) and `verify` (00:48:14–01:00:08Z), all inside the approval window. The run directory was not read before `finalize` (row X2). Private tallies stay in the private run directory.
+  - **What it means (#581 A6 and its §6 rulings).** The book fails the pre-registered condition even under the optimistic `UNDETERMINED` assignment. Per amendment §T00 step 3, it goes to Joshua as an **investment decision**: adjust the book, or accept the risk into T15's F1. It is never routed automatically. Under OD-1 reading (c), a **robust** NO-GO does not meet D-feed condition (a), even with risk acceptance; meeting (a) needs an amendment of (a). This is not four-firm §4 falsifier evidence.
 
 ## §10 — Audit hooks
 
