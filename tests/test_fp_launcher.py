@@ -569,7 +569,9 @@ def await_final_record(checkout, identity, timeout=120.0):
         if record is not None and record['status'] not in ('not_started', 'running'):
             return record
         time.sleep(0.5)
-    raise AssertionError(f'detached run did not finish within {timeout:.0f}s: {path}')
+    log = path.parent.parent / f'{identity}.detach.log'
+    tail = log.read_text(encoding='utf-8', errors='replace')[-4000:] if log.is_file() else '<no log>'
+    raise AssertionError(f'detached run did not finish within {timeout:.0f}s: {path}\n{tail}')
 
 
 def test_detach_returns_immediately_and_records_completion(checkout, ops_env):
