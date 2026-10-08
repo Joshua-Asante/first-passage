@@ -58,8 +58,8 @@ Read at `origin/main` `93118ff` on 2026-10-08. Re-read at admission.
 All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitions:
 - **Busting run:** retained `kernel_outcome` is `bust_trailing`.
 - **Breach session:** the first session whose descriptive floor crossing occurs (Tier-1 rule).
-- **Peak:** the highest end-of-session equity before the breach session. Sessions carry no intraday high, so the peak is end-of-session only.
-- **Breach bar:** the bar where the breach session's combined intraday low is set.
+- **Peak:** the highest end-of-session equity before the breach session, including the starting equity. Sessions carry no intraday high, so the peak is end-of-session only.
+- **Breach bar:** the bar, or the settlement step after the last bar (`replay.py:634`), where the breach session's combined intraday low is set. Each run (R1, R2) uses its own breach bar.
 - **Leg value:** cumulative realized P&L net of commission plus the open-P&L mark. Combined equity is cash plus every leg's open mark (`replay.py:621-622`), so leg values sum to the combined value at any bar.
 - **Peak-to-breach drawdown:** combined value at the breach bar minus combined value at the peak close. A leg's share is its value change over the same span divided by that drawdown. Shares sum to one by construction.
 - **Non-busting runs:** they have no breach. Q1 and Q6 use their deepest drawdown instead (deepest combined bar low against the prior end-of-session peak), reported separately and never pooled with busting runs.
@@ -71,7 +71,7 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitio
 | Q3 | Do sizes match intent? | Per leg, base and add: port-requested qty, policy qty, admitted qty, filled qty. The policy qty is the value the production `entry_quantities` / `add_quantity` call returned, recorded, never re-implemented. For the risk-sized leg only: share of entries where its cap binds. N/A for fixed-size legs. |
 | Q4 | Does capacity crowd legs out? | Per leg: capacity refusals, takeovers as winner and as displaced. Share of a leg's refused entries caused by another leg's fixed size. |
 | Q5 | What do forced closes cost? | Count and P&L of scheduled flattens, takeover closes and deadline closes, per leg. Commissions per leg over peak-to-breach. |
-| Q6 | Is attribution ordering-sensitive? | Q1 shares under R1 vs R2 at the breach bar. Consumed intrabar splits on the breach session, per leg. |
+| Q6 | Is attribution ordering-sensitive? | Q1 shares under R1 vs R2, each at its own breach bar. A path where only one run busts is reported as one-sided, not compared. Consumed intrabar splits on the breach session, per leg. |
 | Q7 | Do halves differ? | Q1–Q4 contrasted between H1 and H2. |
 
 **Patterns and the successor direction each points to.** These are pointers for a later pre-registration, not decisions.
