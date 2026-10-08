@@ -971,8 +971,9 @@ DIFFERENTIAL_BOOKS = {
         {'FULL': _AGREED_PASSES['FULL'], 'H1': (_ldeadline('horizon_cap'), _ldeadline('horizon_cap')),
          'H2': _AGREED_PASSES['H2']}, {}, 'GO-evidence'),
     'own_flat_deadline with a bust kernel': (
-        {'deadline_only_is_bust': False}, {'FULL': (_ldeadline('bust_daily'), _ldeadline('bust_daily')),
-                                           'H1': _AGREED_PASSES['H1'], 'H2': _AGREED_PASSES['H2']}, {},
+        {'deadline_only_is_bust': False}, {'FULL': _AGREED_PASSES['FULL'],
+                                           'H1': (_ldeadline('bust_daily'), _ldeadline('bust_daily')),
+                                           'H2': _AGREED_PASSES['H2']}, {},
         'NO-GO-evidence-robust'),
     'busts exactly five percent': (
         {'rng': {'roots': ['root-a', 'root-b']}, 'depth_per_root': {'FULL': 10, 'H1': 1, 'H2': 1}},
@@ -988,7 +989,7 @@ DIFFERENTIAL_BOOKS = {
     'an all-undetermined population': (
         {}, {'FULL': (_lpass(), _lopen()), 'H1': (_lbust(), _lopen()), 'H2': _AGREED_PASSES['H2']}, {},
         'NO-GO-evidence-UNDETERMINED-dependent'),
-    'agreed pass takes the later day': (
+    'agreed passes on different days': (  # T <= 1500, so later vs earlier day never moves a label
         {'rng': {'roots': ['root-a', 'root-b']}, 'pass_floor_halves': 'BINDING'}, _AGREED_PASSES,
         {('root-a', 'FULL', 0): (_lpass(4), _lpass(1500)), ('root-b', 'FULL', 0): (_lpass(1500), _lpass(4))},
         'GO-evidence'),
