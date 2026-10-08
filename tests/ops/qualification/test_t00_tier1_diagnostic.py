@@ -411,18 +411,24 @@ def test_watchdog_stops_on_a_breach_during_replay(driver):
     assert breaches == [1]
 
 
-def _retained_m(driver, heads):
+def _retained_m(driver, heads, ledger):
     def read(path, prev_sha256):
         name = Path(path).name
-        return ({'type': 'PREPARED', 'body': {'manifest_sha256': 'm'}},) if name == '0001.jsonl' else (
-            {'type': 'PATH', 'body': {}, 'file': name},)
-    return {'journal': SimpleNamespace(read=read, record_sha256=lambda r: heads.get(r.get('file', 'ledger')),
+        return tuple(ledger) if name == '0001.jsonl' else ({'type': 'PATH', 'body': {}, 'file': name},)
+    return {'journal': SimpleNamespace(read=read, record_sha256=lambda r: heads.get(r.get('file')) or r['sha'],
                                        outcomes=lambda journals, keys: [{'key': list(k)} for k in keys]),
             'plan': SimpleNamespace(key_universe=lambda roots, depth: [('a', 'FULL', 0)], plan_sha256=lambda keys: 'p'),
             'verdict': SimpleNamespace(evaluate=lambda *a: None, as_json=lambda v: {})}
 
 
-@pytest.mark.parametrize('tamper', [None, 'journal_head', 'ledger_head', 'results'])
+def _ledger(driver):
+    return [{'type': 'PREPARED', 'sha': 'P', 'body': {'manifest_sha256': 'm'}},
+            {'type': 'REPORTED', 'sha': 'L', 'body': {}},
+            {'type': 'FINAL', 'sha': 'F', 'body': {'attestation_sha256': driver.ATTESTATION_SHA256}},
+            {'type': 'VERIFY_START', 'sha': 'V0', 'body': {}}, {'type': 'VERIFY', 'sha': 'V1', 'body': {}}]
+
+
+@pytest.mark.parametrize('tamper', [None, 'journal_head', 'ledger_head', 'final', 'trailing', 'results'])
 def test_retained_is_bound_to_the_attestation(driver, tmp_path, tamper):
     for sub in ('journal', 'ledger'):
         (tmp_path / sub).mkdir()
@@ -431,22 +437,26 @@ def test_retained_is_bound_to_the_attestation(driver, tmp_path, tamper):
     (tmp_path / 'results.json').write_text(json.dumps({'plan_sha256': 'p', 'verdict': {}}), encoding='utf-8')
     attestation = {'results_sha256': driver.RESULTS_SHA256, 'ledger_head_sha256': 'L',
                    'journal_heads': {'c1-w0.jsonl': 'c', 's1-w0.jsonl': 'J', 'v1-w0.jsonl': 'v'}}
-    heads = {'s1-w0.jsonl': 'J', 'ledger': 'L'}
+    heads, ledger = {'s1-w0.jsonl': 'J'}, _ledger(driver)
     if tamper == 'journal_head':
         heads['s1-w0.jsonl'] = 'rechained'
     elif tamper == 'ledger_head':
-        heads['ledger'] = 'other'
+        attestation['ledger_head_sha256'] = 'P'                  # a real record, but not REPORTED
+    elif tamper == 'final':
+        ledger[2]['body']['attestation_sha256'] = '0' * 64
+    elif tamper == 'trailing':
+        ledger.append({'type': 'SEGMENT_START', 'sha': 'X', 'body': {}})
     elif tamper == 'results':
         attestation['results_sha256'] = '0' * 64
     (tmp_path / 'attestation.json').write_text(json.dumps(attestation), encoding='utf-8')
     params = {'rng': {'roots': ['a']}, 'depth_per_root': {}}
+    m = _retained_m(driver, heads, ledger)
     if tamper is None:
-        assert list(driver.retained(_retained_m(driver, heads), tmp_path, params)) == [('a', 'FULL', 0)]
+        assert list(driver.retained(m, tmp_path, params)) == [('a', 'FULL', 0)]
     else:
         with pytest.raises(driver.Stop) as stop:
-            driver.retained(_retained_m(driver, heads), tmp_path, params)
+            driver.retained(m, tmp_path, params)
         assert stop.value.code == 'PREREQUISITE'
-
 
 def test_foreign_modules(driver, tmp_path):
     code, lib, other = tmp_path / 'code', tmp_path / 'lib', tmp_path / 'other'

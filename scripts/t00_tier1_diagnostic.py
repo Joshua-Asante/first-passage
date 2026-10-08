@@ -200,16 +200,29 @@ def prerequisites(args):
 
 
 def ledger_binding(m, run_dir: Path):
-    """(PREPARED's manifest digest, ledger head) from the chain-verified ledger (files chain in number order)."""
-    prev, prepared = None, None
+    """(PREPARED's manifest digest, [(type, record SHA-256, body)]) from the chain-verified ledger;
+    its files chain in number order."""
+    prev, prepared, chain = None, None, []
     for path in sorted((run_dir / 'ledger').glob('*.jsonl')):
-        records = m['journal'].read(path, prev_sha256=prev)
-        if records:
-            prev = m['journal'].record_sha256(records[-1])
-        prepared = next((r['body']['manifest_sha256'] for r in records if r['type'] == 'PREPARED'), prepared)
+        for record in m['journal'].read(path, prev_sha256=prev):
+            prev = m['journal'].record_sha256(record)
+            chain.append((record['type'], prev, record['body']))
+            if record['type'] == 'PREPARED':
+                prepared = record['body']['manifest_sha256']
     if prepared is None:
         raise Stop('PREREQUISITE', 'no PREPARED record in the ledger')
-    return prepared, prev
+    return prepared, chain
+
+
+def attested_ledger(chain, attested_head) -> bool:
+    """The attestation is written at REPORTED (coordinator.finalize): the attested head must be a
+    REPORTED record, the next record the FINAL naming this attestation, and only verify's records may follow."""
+    at = [i for i, (_, sha, _) in enumerate(chain) if sha == attested_head]
+    if len(at) != 1 or chain[at[0]][0] != 'REPORTED' or at[0] + 1 >= len(chain):
+        return False
+    kind, _, body = chain[at[0] + 1]
+    return (kind == 'FINAL' and body.get('attestation_sha256') == ATTESTATION_SHA256
+            and all(k in ('VERIFY_START', 'VERIFY') for k, _, _ in chain[at[0] + 2:]))
 
 
 def retained(m, run_dir: Path, params):
@@ -222,8 +235,8 @@ def retained(m, run_dir: Path, params):
     heads = {name: m['journal'].record_sha256(records[-1]) if records else None for name, records in journals.items()}
     if attestation.get('results_sha256') != RESULTS_SHA256 or not attested or heads != attested:
         raise Stop('PREREQUISITE', 'segment journals do not match the attested heads')
-    if ledger_binding(m, run_dir)[1] != attestation.get('ledger_head_sha256'):
-        raise Stop('PREREQUISITE', 'ledger head does not match the attestation')
+    if not attested_ledger(ledger_binding(m, run_dir)[1], attestation.get('ledger_head_sha256')):
+        raise Stop('PREREQUISITE', 'ledger is not the attested ledger plus FINAL and verify records')
     keys = m['plan'].key_universe(params['rng']['roots'], params['depth_per_root'])
     if m['plan'].plan_sha256(keys) != results['plan_sha256']:
         raise Stop('PREREQUISITE', 'plan digest differs from results.json')
