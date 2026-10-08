@@ -14,18 +14,21 @@ Read at `origin/main` `93118ff` on 2026-10-08. Re-read at admission.
 | Surface | Fact |
 |---|---|
 | `ops/c1_rail/qualification/replay.py:621-624` | Bar equity is `cash` plus every leg's `open_pnl`. Only the combined value is kept. |
-| `replay.py:635-639`; `model.py:148-157` | `SessionRecord` holds combined `pnl` and `intraday_low` only. No per-leg field. |
+| `replay.py:635-639`; `model.py:148-157` | `SessionRecord` holds combined `pnl` and `intraday_low` only. No per-leg field and no intraday high. |
+| `replay.py:180-182` | A fill's commission is taken from `cash`, so realized P&L reconciles only net of commission. |
 | `replay.py:164-166`, `:520` | `_log` appends to `self.events`. `session_mode` is logged once per session. |
 | `replay.py:213-219`, `:374`, `:438-446` | Fill events (with `commission`), `refused`, and `capacity_takeover_*` events carry the leg id. |
 | `replay.py:408-451` | The port's intent quantity is replaced by `entry_quantities` / `add_quantity` (override at `:451`). The pre-override quantity is not logged. |
+| `ops/c1_rail/book_policy.py:279-310` | `entry_quantities`: only the risk-sized leg has a size cap; the other legs are fixed-size. |
 | `production_source.py:926-936` | `_seal` hashes the event stream into `events_sha256` and returns sessions without events. |
 | `production_source.py:1232-1254` | `replay_bracket` returns `SourceOnlyBracket` for a source-only contract. No event stream escapes. |
+| `production_source.py:61-63`, `:1201`, `:1252` | `_is_source_only` is `type(contract) is ValidatedSourceContract`. It decides sealing (`:1252`) and the `verify_for` refusal (`:1201`). |
 | `t00_screen/worker.py:169-182` | `run_projection`: `digest` = hash of session rows plus `events_sha256`. |
 | `t00_screen/journal.py:108-113`, `:124-130` | PATH run fields are fixed; no P&L series. |
 | `runner.py:18-44` | `evaluate_replay` returns no bust session for a failure. Tier 1 derives a descriptive floor crossing from sealed `pnl` / `intraday_low`. |
-| `contract.py:963-968`, `:1086-1088` | Source contract purpose `T00_P7_SOURCE_VERIFICATION`, evidence class `T00_P7_SOURCE_ONLY`. Purpose and refusals (incl. `SCREEN`, `MONTE_CARLO`, `DECISION_RULES`) must be exact. |
-| `screen_authority.py:47-50`, `:181-184` | The screen authority's purpose, refusals and evidence class are also exact constants. |
-| `tests/ops/qualification/test_source_consumers.py:40-43`, `:84-86` | The A10b scan lists `replay_bracket` consumers; the Tier-1 driver is allowlisted. |
+| `contract.py:963-968`, `:1086-1088`, `:1189` | Source contract scope `APPROVE_T00_SOURCE_CONTRACT`, purpose `T00_P7_SOURCE_VERIFICATION`, evidence class `T00_P7_SOURCE_ONLY`. Purpose and refusals (incl. `SCREEN`, `MONTE_CARLO`, `DECISION_RULES`) must be exact; the approval scope is checked against `SOURCE_SCOPE` (`:1189`). |
+| `screen_authority.py:47-56`, `:181-184`, `:854-857`, `:874-877` | The screen authority's purpose, refusals and evidence class are exact constants. Its grant is `T00_STEP3_SCREEN_ONCE`; a re-attempt appends a successor pre-registration. Two checks require `_is_source_only`. |
+| `tests/ops/qualification/test_source_consumers.py:40-43`, `:84-86` | The A10b scan watches only `CAPABILITY_CALLS` (`replay`, `replay_bracket`, `proof`) and, outside `ops/`, only files in `EXTRA_SCANNED`. The Tier-1 driver is listed there. |
 | [Deployment checklist](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) item 7.6.1, `:634-638` | No agent runs a candidate-configurable replay before its pre-registration is frozen. |
 
 ## §0.5 — Prerequisites before admission (otherwise BLOCKED)
@@ -52,16 +55,23 @@ Read at `origin/main` `93118ff` on 2026-10-08. Re-read at admission.
 
 ## §2 — Pre-stated questions
 
-All quantities are per run (R1, R2), per path, from the sidecar (§3). "Busting run" = a run whose retained `kernel_outcome` is `bust_trailing`. "Breach session" = the first session whose descriptive floor crossing occurs (Tier-1 rule). "Peak-to-breach" = from the running equity peak before the breach to the breach session's intraday low.
+All quantities are per run (R1, R2), per path, from the sidecar (§3). Definitions:
+- **Busting run:** retained `kernel_outcome` is `bust_trailing`.
+- **Breach session:** the first session whose descriptive floor crossing occurs (Tier-1 rule).
+- **Peak:** the highest end-of-session equity before the breach session. Sessions carry no intraday high, so the peak is end-of-session only.
+- **Breach bar:** the bar where the breach session's combined intraday low is set.
+- **Leg value:** cumulative realized P&L net of commission plus the open-P&L mark. Combined equity is cash plus every leg's open mark (`replay.py:621-622`), so leg values sum to the combined value at any bar.
+- **Peak-to-breach drawdown:** combined value at the breach bar minus combined value at the peak close. A leg's share is its value change over the same span divided by that drawdown. Shares sum to one by construction.
+- **Non-busting runs:** they have no breach. Q1 and Q6 use their deepest drawdown instead (deepest combined bar low against the prior end-of-session peak), reported separately and never pooled with busting runs.
 
 | # | Question | Derived quantity |
 |---|---|---|
-| Q1 | Which legs carry the drawdown? | Per leg: realized P&L plus open-P&L change over peak-to-breach, ÷ total peak-to-breach drawdown. Same share on the breach session alone (realized plus intraday-low mark). |
+| Q1 | Which legs carry the drawdown? | Per leg: share of the peak-to-breach drawdown. Also the share over the breach session alone (previous close to breach bar). |
 | Q2 | Was protection on? | `session_mode` at breach and per session in the run-up. Count of add fills while `session_mode` is protected. |
-| Q3 | Do sizes match intent? | Per leg, base and add: port-requested qty, policy qty, admitted qty, filled qty. Share of entries where the size cap binds (policy qty < uncapped law qty). |
+| Q3 | Do sizes match intent? | Per leg, base and add: port-requested qty, policy qty, admitted qty, filled qty. The policy qty is the value the production `entry_quantities` / `add_quantity` call returned, recorded, never re-implemented. For the risk-sized leg only: share of entries where its cap binds. N/A for fixed-size legs. |
 | Q4 | Does capacity crowd legs out? | Per leg: capacity refusals, takeovers as winner and as displaced. Share of a leg's refused entries caused by another leg's fixed size. |
 | Q5 | What do forced closes cost? | Count and P&L of scheduled flattens, takeover closes and deadline closes, per leg. Commissions per leg over peak-to-breach. |
-| Q6 | Is attribution ordering-sensitive? | Q1 shares under R1 vs R2 at the breach session. Consumed intrabar splits on that session, per leg. |
+| Q6 | Is attribution ordering-sensitive? | Q1 shares under R1 vs R2 at the breach bar. Consumed intrabar splits on the breach session, per leg. |
 | Q7 | Do halves differ? | Q1–Q4 contrasted between H1 and H2. |
 
 **Patterns and the successor direction each points to.** These are pointers for a later pre-registration, not decisions.
@@ -78,7 +88,7 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). "Busting 
 
 ### §3.1 Options
 
-- **(i) Sidecar (recommended).** `BookReplay` accumulates, per session and per leg: realized P&L, open-P&L mark at close, intraday low of the leg's equity, `session_mode`, requested / policy / admitted / filled quantities, capacity and forced-close events, commissions. It is held outside `self.events`, `SessionRecord` and `ReplayResult`. It enters no digest.
+- **(i) Sidecar (recommended).** `BookReplay` accumulates, per session and per leg: realized P&L net of commission and the open-P&L mark at the close and at the bar where the combined low is set, `session_mode`, requested / policy / admitted / filled quantities, capacity and forced-close events, commissions. It is held outside `self.events`, `SessionRecord` and `ReplayResult`. It enters no digest.
 - **(ii) Private raw event stream.** Return the full event list plus new per-leg mark events.
 
 **Why (i).** The sealed boundary (`_seal`, `replay_bracket`) stays intact. New mark events in `self.events` would change `events_sha256`; a separate stream avoids that but still exports far more than §2 needs. (i) emits exactly the §2 inputs and nothing else.
@@ -87,12 +97,13 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). "Busting 
 
 - `replay.py`: an opt-in accumulator on `BookReplay`, off by default. It writes nothing to `self.events` and adds no field to `SessionRecord`.
 - `production_source.py`: a new gated method beside `replay_bracket` that returns the `SourceOnlyBracket` plus the per-run sidecar, only under the diagnostic evidence class.
-- `test_source_consumers.py`: an A10b allowlist entry for the new method's single consumer.
+- `test_source_consumers.py`: add the new method to `CAPABILITY_CALLS` and the Tier-2 driver to `EXTRA_SCANNED`, then allowlist its one owner. An allowlist entry alone is not gated, because the scan watches only listed calls and files.
 - A Tier-2 driver script under `scripts/`, built like the Tier-1 driver (pinned hash, clean detached H, create-once writes, budget stops).
 
 ### §3.3 Acceptance
 
-- Identity: re-running step-12 keys with the sidecar on gives byte-identical `digest`, `events_sha256`, `results.json` and verdict. Scope of "step-12 keys" is OWED (§8 item 4).
+- Identity: each sampled run, replayed with the sidecar on, reproduces its retained PATH record byte for byte (`digest`, `events_sha256`, consumed-split count and SHA-256, `deadline_failure`), as Tier 1 does.
+- **No full step-12 re-run.** It would compute a second verdict. The screen grant is once-only (`screen_authority.py:48`) and a re-attempt needs a successor pre-registration (`:55-56`), so it would be a back door to the T00 verdict.
 - Red/green tests: the sidecar off vs on gives equal sealed output; the sidecar is absent under any other evidence class; per-leg sums reconcile to combined `pnl` and to fill events.
 
 ### §3.4 Governance chain
@@ -104,6 +115,10 @@ All quantities are per run (R1, R2), per path, from the sidecar (§3). "Busting 
 5. A diagnostic evidence class and receipt purpose.
 
 **Contract fit.** `contract.py:1086-1088` requires the source contract's purpose and refusals to be exact. A diagnostic class therefore needs a code change: new constants (purpose, evidence class, scope) with the same refusals (`SCREEN`, `MONTE_CARLO`, `DECISION_RULES`, `QUALIFICATION_STAGES`, `SEAL`, `ADMISSION`, `DEPLOYMENT`, `BUDGET`). It fits those refusals as Tier 1 did: no verdict or tally, fixed previously drawn keys, no rate, no rule evaluated. Reusing `T00_P7_SOURCE_VERIFICATION` is weaker, because per-leg attribution is not source verification in kind.
+
+Two more code points must change with it:
+- **Contract type.** `_is_source_only` checks the exact type `ValidatedSourceContract` (`production_source.py:61-63`). A diagnostic contract of a new type would get the raw, unsealed result (`:1252`), would not be refused by `verify_for` (`:1201`), and would change both screen-authority checks (`screen_authority.py:856`, `:876`). Either keep the diagnostic receipt a `ValidatedSourceContract`, or extend `_is_source_only` to the new type. Tests: the diagnostic contract gets sealed output, is refused by `verify_for`, and is refused by the screen authority.
+- **Approval scope.** The scope is hard-coded (`contract.py:963`, checked at `:1189`). A diagnostic scope needs that check extended, with a test that each scope accepts only its own contract.
 
 ### §3.5 Effort
 
@@ -119,11 +134,11 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 
 **Size: OWED (operator).** Cost ≈ paths × ~150 CPU-s (Tier-1 card §7 estimate) + ~3 min build, plus sidecar overhead measured at acceptance. Option (a): about 50 min. Option (b): about 2.5 CPU-h per 60 paths. Tier-1 actual per-path cost: OWED, filled from its return.
 
-**H (non-interference):** with the sidecar on, each replayed path reproduces its retained sealed identities byte for byte.
+**Hypothesis N (non-interference):** with the sidecar on, each replayed path reproduces its retained sealed identities byte for byte. ("N" avoids a clash with H, the head commit.)
 
 **Falsifier:** any identity mismatch. The run stops there; no attribution is reported from a non-reproducing run.
 
-§2's answers are descriptive and conditional on H. They are not gates.
+§2's answers are descriptive and conditional on N. They are not gates.
 
 ## §5 — Forbidden moves
 
@@ -137,16 +152,16 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 
 ## §6 — Return and status
 
-**Public return** (to the Deployment Coordinator): key-list SHA-256, driver SHA-256, sidecar-schema SHA-256, the H verdict, status, report SHA-256. No counts, values, timings or keys.
+**Public return** (to the Deployment Coordinator): key-list SHA-256, driver SHA-256, sidecar-schema SHA-256, the N verdict, status, report SHA-256. No counts, values, timings or keys.
 **Private report:** under the private root, outside every worktree. It answers Q1–Q7 and names one §2 pattern or none.
 
-**Verdict on H:** RESOLVED (every selected path matched and the report is delivered); FALSIFIED (any identity mismatch or non-gate replay exception); AMBIGUOUS (any other stop before every path is replayed).
+**Verdict on N:** RESOLVED (every selected path matched and the report is delivered); FALSIFIED (any identity mismatch or non-gate replay exception); AMBIGUOUS (any other stop before every path is replayed).
 
 **Status (exactly one):**
-- **DONE:** H holds and the report is delivered.
+- **DONE:** N holds and the report is delivered.
 - **DONE_WITH_CONCERNS:** DONE plus a named concern. A mismatch is never this.
 - **NEEDS_CONTEXT:** a missing fact or ruling. Name it.
-- **BLOCKED:** a §0.5 prerequisite fails, H is falsified (integrity incident to Joshua), a refusal, a driver defect or a budget stop.
+- **BLOCKED:** a §0.5 prerequisite fails, N is falsified (integrity incident to Joshua), a refusal, a driver defect or a budget stop.
 
 ## §7 — Seats and dependencies
 
@@ -156,16 +171,18 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 - **Acceptor:** the Deployment Coordinator.
 - **Decisions:** Joshua keeps admission, sample, signing and every investment decision.
 - **Exposure:** readers of Tier-2 output join the Tier-1 reader log. Any successor pre-registration names them (design §4.5). Tier-2 output is exposure for that pre-registration.
+- **Selection count.** Choosing a §2 pattern from the sampled paths is a selection. It counts as one trial (K + 1) for any successor it points to. That successor's test discloses or excludes the sampled paths.
 
 ## §8 — OWED (operator)
 
 1. Admit Tier 2 (after the Tier-1 return).
 2. Capability option: (i) recommended.
 3. Sample option and size (§4).
-4. Acceptance scope: the full step-12 re-run (about 8.4 h wall at W = 8, per build card §8, and it needs screen authority), or identity on the sampled keys plus the sidecar-off/on tests.
-5. Diagnostic purpose and evidence-class names; a new source approval.
-6. Executor seat.
-7. Tier-1 actual per-path cost (from its return).
+4. Diagnostic purpose, evidence-class and scope names; keep the receipt type or extend `_is_source_only` (§3.4); a new source approval.
+5. Executor seat.
+6. Tier-1 actual per-path cost (from its return).
+
+Acceptance scope is not owed: identity on the sampled runs plus the sidecar off/on tests (§3.3).
 
 ## §10 — Audit hooks
 
