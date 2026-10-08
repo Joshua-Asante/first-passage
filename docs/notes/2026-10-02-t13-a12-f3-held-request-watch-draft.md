@@ -71,13 +71,14 @@ Read authority is the same open question as S-X3's P3 (OQ-2).
      - A **start ping** is an ordinary success ping (Ping Now!, a success POST), never `/start`. A `/start` with no success ping within grace marks the check down and alerts.
      - The **next-expected readback** is the *derived* form, not the provider's `next_ping`: status UP after the ping, the saved cron, timezone and grace, and the schedule preview read after the ping, with the preview's first date at that weekday 18:00 New York.
      - If a check paused with `manual_resume` on, it must be resumed by hand; a ping does not resume it.
-     If the watch starts after 18:00 ET on a due day, the closing check also stands as that day's session-open check, and its record says so. The checks are paused only when the watch ends by F2 transfer of the last held request (W4). Pausing them while any request is held is forbidden. **Rehearsal end state** (a rehearsal with no held request; 2026-10-07):
+
+     If the watch starts after 18:00 ET on a due day, the closing check also stands as that day's session-open check, and its record says so. During a watch, the checks are paused only when the watch ends by F2 transfer of the last held request (W4); a rehearsal with no held request is not a watch. Pausing them while any request is held is forbidden. **Rehearsal end state** (a rehearsal with no held request; 2026-10-07):
      1. Preserve the evidence.
      2. Confirm no held request exists.
      3. Success-ping each missed check and read it back up.
      4. Resolve each rehearsal group by hand and read it back resolved.
      5. Pause all five checks and read them back paused, before the next check falls due.
-    
+
    - **Arming preconditions:** see *Arming preconditions* under Adoption.
 2. **An F5 finding** goes out on the primary channel, with the 60 s alternate escalation (HR :63).
 3. **Operator trades on book symbols confound W4.** F5 does not classify operator platform actions; HR §4.1 O-5 leaves them OPEN (HR :124). Proposal: while any request is held, the weekly preservation trade uses a symbol outside the four. DP :137 already offers that treatment. Operator decision (OQ-4).
@@ -113,11 +114,14 @@ These rows are policy, so the operator rules on them (OQ-3).
 Before the first armed session, all of these hold. They are not D1 gates: no request can be held before the first armed session, and D1 grants no arm (ADR `:567`). The arm helper does not check them, so they are carried in the deployment checklist (`:603`) and STATE.
 1. The G1 build on Healthchecks.io (provider ruled 2026-10-05): the five checks, their down webhooks, and the dedicated watch IRM integration routed to the Important chain (configuration only: schedule, grace and the IRM notification).
 2. **G10**, the end-to-end qualification of the watch dead-man: in an attended run under Joshua's explicit go, starting from the W5 start state (created, start-pinged, read back up), a scheduled ping is deliberately omitted and the page is recorded arriving through the IRM chain, with the due time, the page time and the SMS-to-call offset; then a second due day is also missed and a second, separate alert group is recorded; the watch integration is qualified here, as Q7 qualified the incident integration.
+
    **G10: PASS 2026-10-07, with four recorded deviations** (coordinator (4), T13 owner).
-   - **Source.** The providers' retained records, read in Joshua's signed-in browser session. No secret was recorded. The run was attended, under Joshua's two-day rehearsal GO.
+   - **Source.** The run was attended, under Joshua's two-day rehearsal GO.
+     - The **baseline** was accepted from the setup owner's return, relayed by the deployment coordinator (not an independent check).
+     - The **misses and groups** come from the providers' retained records: the Tuesday and Wednesday check event logs and both IRM group timelines. Coordinator (4) read them in Joshua's signed-in browser session, and no secret was recorded.
    - **Baseline (10-06, all before 18:00 New York).** All five checks were success-pinged and read back UP with the derived next-due. The Tuesday check got five pings by repeated clicks; the last, at 13:56:12 EDT, is the anchor.
-   - **First miss (Tuesday).** The Tuesday check went down at 10-06 19:00 EDT, and its webhook and email were sent. IRM group `ITTBSTBNTISN5` (#3) was registered at 19:00:06, push went at 19:00:07 and SMS at 19:00:12 (delivered 19:00:16).
-   - **Second miss (Wednesday).** The Wednesday check had no ping after 10-06 13:59 and went down at 10-07 19:00 EDT: due time plus 60 minutes' grace.
+   - **First miss (Tuesday).** Due 10-06 18:00 EDT (22:00Z). The Tuesday check went down at 10-06 19:00 EDT, and its webhook and email were sent. IRM group `ITTBSTBNTISN5` (#3) was registered at 19:00:06, push went at 19:00:07 and SMS at 19:00:12 (delivered 19:00:16).
+   - **Second miss (Wednesday).** Due 10-07 18:00 EDT (22:00Z). The Wednesday check had no ping after 10-06 13:59 and went down at 10-07 19:00 EDT: due time plus 60 minutes' grace.
      - A separate group, `ILZF5S82AIIM8` (#4), was registered at 19:00:05 while #3 was acknowledged and unresolved; #3's timeline has no resolve or unacknowledge event until its cleanup.
      - Push went at 19:00:06, SMS at 19:00:11 (delivered 19:00:15), and the phone call at 19:01:21 (answered 19:01:32). That makes the SMS-to-call offset 70 s. #4 was acknowledged at 19:03:02.
      - The payload's `alert_uid` is `t13-watch-t13-watch-wed-2026-10-07T23:00:00+00:00`.
@@ -126,7 +130,7 @@ Before the first armed session, all of these hold. They are not D1 gates: no req
      2. Group #3 was acknowledged at 19:00:15, before the call step, so it has no call. Group #4 supplies the call evidence.
      3. The Wednesday check's provider log shows no notification entry, although both integrations were ON and IRM received its webhook.
      4. The `alert_uid` prefix is doubled (`$NAME` already starts `t13-watch-`). This is cosmetic: it is still unique per down event.
-   - **Cleanup (rehearsal end state, 10-07 about 20:02–20:15 EDT).** Joshua confirmed no held request. Tuesday and Wednesday were pinged back up. #3 was resolved at 20:14:18 and #4 at 20:14:46. All five checks read back paused. `manual_resume` was not inspected.
+   - **Cleanup (rehearsal end state, 10-07 about 20:02–20:15 EDT).** Joshua confirmed no held request. Tuesday and Wednesday were success-pinged at 20:02 EDT and read back UP. #3 was resolved at 20:14:18 and #4 at 20:14:46. All five checks read back paused. `manual_resume` was not inspected.
    - **Paging account (Joshua, 2026-10-07).** The Grafana Cloud trial ends about 2026-10-17. If the Free plan does not keep IRM SMS and phone-call notification, Joshua upgrades to a paid plan.
      - The vendor docs say there are "no additional costs for outgoing calls or SMS notifications" and that Free includes up to 3 IRM users, but they do not state Free's SMS and voice availability explicitly.
      - **Owed before the trial ends:** confirm it in the account's plan details, or with one attended test page after the change.
