@@ -214,6 +214,19 @@ def test_cap_term_is_recorded_from_the_production_call():
     assert 'cap_binds' not in replay.attribution()[0]['legs']['orb_mnq_v7']['requests'][0]
 
 
+@pytest.mark.parametrize('tier,policy,binds', [('RETIRED', 0, None), ('AUTHORIZED', 20, False)])
+def test_cap_binds_is_none_when_the_policy_quantity_is_zero(tier, policy, binds):
+    """RETIRED (lifecycle multiplier 0) gives policy 0, so no term binds; twin: AUTHORIZED."""
+    replay, _ = engine({'dj30_mym_p250': first_entry}, sizing=lambda k, a, p: dict(
+        lifecycle_tier=tier, **(dict(risk_dollars=700, per_contract_risk=35, cap_alloc=80)
+                                if k == 'dj30_mym_p250' else {})))
+    replay.enable_attribution()
+    replay.run((path_session(prices=FLAT3),))
+    row = replay.attribution()[0]['legs']['dj30_mym_p250']['requests'][0]
+    assert (row['policy'], row['cap_binds']) == (policy, binds)
+    assert row['outcome'] == ('zero policy quantity' if policy == 0 else 'admitted')
+
+
 def test_deadline_failure_records_each_legs_open_quantity():
     replay, result, failed = _run('deadline', True)
     rows = replay.attribution()

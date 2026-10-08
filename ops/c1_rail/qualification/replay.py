@@ -307,7 +307,8 @@ class BookReplay:
         """
         unbounded = dict(values, risk_dollars=Fraction(str(values["per_contract_risk"])) * 10**9)
         cap_only = entry_quantities(k, mode=mode, policy=self.policy, lifecycle_tier=tier, **unbounded)[0]
-        return {"cap_only_policy": cap_only, "cap_binds": qty == cap_only}
+        # A zero policy quantity (lifecycle multiplier 0, e.g. RETIRED) has no binding term: None.
+        return {"cap_only_policy": cap_only, "cap_binds": qty == cap_only if qty > 0 else None}
 
     def _open_at_deadline(self, edge):
         """Each leg's open position, working orders, reservation and open lots by kind."""
