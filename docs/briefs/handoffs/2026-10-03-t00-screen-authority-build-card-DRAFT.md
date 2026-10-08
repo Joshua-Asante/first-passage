@@ -524,15 +524,15 @@ The screen-authority signature (design §8 step 11) uses the same template with 
 - **Successor decision tree (Joshua, 2026-10-08, "I agree with your recommendations", to the Deployment Coordinator).** This is the single record. The size-feasibility prereg §11 (#738) points here. The successor-screen skeleton (#733) is to point here; its author owns that edit.
   1. **Size-feasibility check** (#735 as amended by #738 §11). Route by its label:
      - **FEASIBLE** or **CLOCK-DEPENDENT**: go to step 2.
-     - **GRID-NO-CLEAR**: the Deployment Coordinator recommends stopping uniform-cut successors of the accepted book on `Tradeify_Select_100K`. That is Joshua's discretionary investment judgment under stated model uncertainty, not a mathematical exclusion.
+     - **GRID-NO-CLEAR**: the Deployment Coordinator recommends stopping uniform-cut successors of the accepted book on `Tradeify_Select_100K`. That is Joshua's discretionary investment judgment under stated model uncertainty, not a mathematical exclusion. Joshua chooses a stop or step 2; a uniform-cut stop does not bar per-leg successors.
      - **GRID-GAP**, **PASS-LIMITED** or **INCONCLUSIVE**: no automatic route. The Deployment Coordinator returns the result to Joshua with a recommendation. Joshua chooses step 2 or a stop.
      - **INVALID**: fix and re-run under the prereg. No route until a valid label.
   2. **Lift the hold** (new H, P7 re-run, Tier-2 source approval). Run Tier 2 (#729/#731). Its pattern picks one successor configuration.
-     - R1/R2 resolution may be built in parallel on this branch only (scoping admitted 2026-10-08).
+     - R1/R2 resolution may be built in parallel only after a FEASIBLE or CLOCK-DEPENDENT label, as Joshua approved (scoping admitted 2026-10-08). After any other label it is built only if Joshua explicitly chooses it.
   3. **One pre-registered successor screen** (#733 skeleton) of that configuration, scored under both A5 assignments.
   - **When the stopping rule fires.** "Confirms the pessimistic anchor" means either of these:
     - **(a)** The successor screen's H2 result under the pessimistic A5 assignment (`UNDETERMINED` counted as bust) fails the A6 bust ceiling, and no accepted R1/R2 resolution shows that assignment to be unrealistic.
-    - **(b)** An accepted R1/R2 resolution shows that `UNDETERMINED` paths resolve predominantly as busts.
+    - **(b)** An accepted R1/R2 resolution shows that `UNDETERMINED` paths resolve predominantly as busts. The threshold for "predominantly" is set by Joshua when he confirms (a) and (b), and before any resolution output exists.
 
     These definitions are the Deployment Coordinator's reading of the ratified rule and are pending Joshua's confirmation.
   - While step 1 is pending, the new H, P7 re-run and Tier-2 source approval stay on hold (Joshua, 2026-10-08).
