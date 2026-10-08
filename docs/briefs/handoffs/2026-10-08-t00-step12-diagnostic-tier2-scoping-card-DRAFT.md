@@ -208,6 +208,20 @@ Selected cases cannot estimate rates or prove a change helps. Say so in the repo
 
 Acceptance scope is not owed: identity on the sampled runs plus the sidecar off/on tests (§3.3).
 
+### Addendum 2026-10-08 — Tier 2 admitted; §8 choices (Joshua)
+
+Joshua, 2026-10-08, to the Deployment Coordinator: "Let's go with your suggestions" (items 1–2 of the coordinator's suggestion list). Recorded by the Deployment Coordinator (card owner). The Tier-1 return is delivered and accepted (Tier-1 card §8 addendum, #730). This admission is §0.5 item 2 only. Items 3–5 still gate any replay.
+
+1. **Admitted**, time-boxed: the target is a Tier-2 result by about 2026-10-20.
+2. **Capability:** option (i), the sidecar (§3.1).
+3. **Sample:** option (b), with a set that excludes every Tier-1 key, so row 5 is read. About 60 paths, frozen before any replay. Per population (FULL, H1, H2): 8 agreed `FAILURE`, 6 `UNDETERMINED`, 6 agreed `PASS` (control). Within a stratum, the Tier-1 key-hash ordering rule applies, skipping Tier-1 keys.
+4. **Contract fit (§3.4):** keep the `ValidatedSourceContract` type (sealing, the `verify_for` refusal and the screen-authority checks stay as they are). Add a diagnostic purpose `T00_DIAGNOSTIC_ATTRIBUTION`, evidence class `T00_DIAGNOSTIC_SIDECAR` and approval scope `APPROVE_T00_DIAGNOSTIC_CONTRACT`, each accepted only with its own contract, with the §3.4 tests.
+5. **Source approval:** Joshua signs a new one after the new H and the P7 re-run, valid for 7 days.
+6. **Executor:** a fresh Opus session builds the capability (code PR, Codex review) and runs Tier 2. GLM is not used: the code sits on the sealing boundary and the run reads private paths.
+7. **§2.1 criteria:** the `34c31c4` thresholds and rows 1–4, and row 5 as recorded. No other change.
+
+Not admitted here: any counterfactual, successor screen or stopping rule.
+
 ## §10 — Audit hooks
 
 ```bash
