@@ -63,6 +63,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 
 ---
 
+
 ## 2026-10-06a — Four-firm dated re-MC: FALSIFIED — early-fail, confirmed by a depth-recorded re-run
 
 - **Focus:** run the frozen [four-firm dated re-MC](briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md) (§4 falsifier, hard date 2026-11-08) against the gate of record, [`2026-08-26-prop-survivor-scoring-prereg-v2`](briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md), and record its verdict.
@@ -82,6 +83,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 
 ---
 
+
 ## 2026-09-20b — `CLAUDE.md` retired; `AGENTS.md` is the single instruction file for every harness
 
 - **Focus:** operator-direct: consolidate the two instruction files. Premise check first: the files were disjoint, not duplicated — `AGENTS.md` (Codex launcher/verification rules) was invisible to Claude Code, which reads only `CLAUDE.md` when one exists, and `CLAUDE.md` was invisible to Codex. Claude Code CLI updated 2.1.263 → 2.1.278 (native `AGENTS.md` reading needs ≥ 2.1.277).
@@ -92,6 +94,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 
 ---
 
+
 ## 2026-09-20a — #423/#424 closed: configured Docker preflight, canonical tree bindings, Linux evidence on fresh hosts
 
 - **Focus:** the two defects deferred from PR #420 with the owner's approval, worked as coordinator-dispatched handoffs A–E in one worktree and merged as [first-passage#437](https://github.com/Joshua-Asante/first-passage/pull/437) (`86d5ed1`). Plan and all executor returns: [2026-09-19-qualification-issues-423-424](superpowers/plans/2026-09-19-qualification-issues-423-424.md) (+ [C](superpowers/plans/2026-09-20-qualification-423-424-linux-evidence.md), [D](superpowers/plans/2026-09-20-qualification-423-424-linux-evidence-d.md), [E](superpowers/plans/2026-09-20-qualification-423-linux-evidence-e.md)).
@@ -101,6 +104,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 - **Open / next:** kept separate and unaddressed — invoke-before-validate on `build_worker` and cleanup → `campaign_host`; README:266's "allowlist" wording versus the wholesale evidence export; `probe_access`'s literal `/usr/bin/python3`; S2 dispatch flake 35489413703 (pre-existing S2/systemd, one host). Nothing here establishes qualification acceptance or shared/reused-host support. Lesson recorded: a commit body that quotes `[skip ci]` is itself skipped.
 
 ---
+
 
 ## 2026-09-19a — S1 accepted (local semantics); B0 retains the protected service; R2b accepted as funded-scheduler integration only
 
@@ -113,6 +117,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 
 ---
 
+
 ## 2026-09-18a — Qualification build-versus-buy: retain the implementation for the N1_ONLY slice
 
 *Retrospectively recorded 2026-09-20 from the committed memo and PR record.*
@@ -124,6 +129,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 
 ---
 
+
 ## 2026-09-17a — Capability assessment CAP-20260916 executed; bounded platform-protection incident contract proposed
 
 *Retrospectively recorded 2026-09-20 from the committed records; the proposed exception did not become effective.*
@@ -134,6 +140,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 - **Open / next:** §7 bounded design work (exact ATM candidate, gap/economics table); propagation to governing contracts only on acceptance. No runtime authority or capability verdict changed.
 
 ---
+
 
 ## 2026-09-16a — Retirement landed and wired; #401 skills merged; ADR post-merge corrections
 
