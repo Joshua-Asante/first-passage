@@ -218,7 +218,10 @@ def reaper(config, session_path):
             heartbeat = None
         reason = reap_reason({**session, "deadline": session["deadline"] - SHUTDOWN_MARGIN}, heartbeat, time.time())
         if reason:
-            atomic(session_path.parent / "stop-request.json", {"reason": reason})
+            try:
+                atomic(session_path.parent / "stop-request.json", {"reason": reason})
+            except OSError:
+                pass  # State storage failure cannot veto the shutdown backstop.
             try:
                 retire(azure, ledger, expected_job=session["job_id"])
                 return

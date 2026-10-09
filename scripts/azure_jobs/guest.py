@@ -150,6 +150,15 @@ def bundle(job_dir, repo, outputs, *, partial):
     return {"sha256": sha256(archive), "bytes": archive.stat().st_size, "artifacts": len(rows), "bundle_seconds": time.monotonic() - started}
 
 
+def keep_heartbeat(job_dir, stop):
+    while not stop.is_set():
+        try:
+            atomic(job_dir / "heartbeat.json", {"time": time.time()})
+        except OSError:
+            pass  # A missed tick must not permanently disable liveness updates.
+        stop.wait(2)
+
+
 def execute(config, spec):
     validate(spec)
     root = Path(config["guest_root"])
@@ -170,11 +179,7 @@ def execute(config, spec):
         atomic(job_dir / "record.json", record)
         repo = root / "repos" / spec["job_id"]
         stop_heartbeat = threading.Event()
-        def beat():
-            while not stop_heartbeat.is_set():
-                atomic(job_dir / "heartbeat.json", {"time": time.time()})
-                stop_heartbeat.wait(2)
-        heart = threading.Thread(target=beat, daemon=True)
+        heart = threading.Thread(target=keep_heartbeat, args=(job_dir, stop_heartbeat), daemon=True)
         atomic(job_dir / "heartbeat.json", {"time": time.time()})
         heart.start()
         before = None

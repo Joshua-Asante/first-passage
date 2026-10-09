@@ -182,3 +182,25 @@ def test_bounded_source_snapshot_reads_clean_git_revision(tmp_path):
     assert result['status']==''
     with pytest.raises(TimeoutError):
         guest.bounded_snapshot(repo,tmp_path/'expired',time.time()-1)
+
+
+def test_heartbeat_recovers_after_a_failed_tick(tmp_path, monkeypatch):
+    class Stop:
+        stopped = False
+        waits = []
+        def is_set(self): return self.stopped
+        def wait(self, seconds): self.waits.append(seconds)
+    stop = Stop()
+    calls = []
+    original = guest.atomic
+    def flaky(path, value):
+        calls.append(path)
+        if len(calls) == 1:
+            raise PermissionError("reader outlasted retry window")
+        original(path, value)
+        stop.stopped = True
+    monkeypatch.setattr(guest, "atomic", flaky)
+    guest.keep_heartbeat(tmp_path, stop)
+    assert len(calls) == 2
+    assert stop.waits == [2, 2]
+    assert json.loads((tmp_path / "heartbeat.json").read_text())["time"] > 0

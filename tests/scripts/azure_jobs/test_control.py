@@ -179,7 +179,7 @@ def test_atomic_retries_while_windows_reader_holds_destination(tmp_path, monkeyp
         control.atomic(path, {"time": 2})
     finally:
         reader.close()
-    assert waits
+    assert waits == [0.05]
     assert json.loads(path.read_text(encoding="utf-8")) == {"time": 2}
     assert not list(tmp_path.glob("*.tmp"))
 
@@ -193,10 +193,12 @@ def test_atomic_persistent_permission_failure_is_bounded_and_preserves_old_state
         attempts.append(1)
         raise PermissionError("reader never releases")
     monkeypatch.setattr(control.os, "replace", denied)
-    monkeypatch.setattr(control.time, "sleep", lambda _: None)
+    waits = []
+    monkeypatch.setattr(control.time, "sleep", waits.append)
     with pytest.raises(PermissionError):
         control.atomic(path, {"active": "replacement"})
-    assert 1 < len(attempts) <= 21
+    assert len(attempts) == 21
+    assert waits == [0.05] * 20
     assert path.read_bytes() == old
     assert not list(tmp_path.glob("*.tmp"))
 
@@ -211,3 +213,14 @@ def test_atomic_does_not_retry_other_io_errors(tmp_path, monkeypatch):
         control.atomic(tmp_path / "state.json", {"status": "running"})
     assert len(attempts) == 1
     assert not list(tmp_path.glob("*.tmp"))
+
+
+def test_atomic_cleanup_failure_does_not_mask_write_failure(tmp_path, monkeypatch):
+    def failed(source, destination):
+        raise OSError("original replacement failure")
+    def cleanup_failed(*args, **kwargs):
+        raise PermissionError("cleanup failure")
+    monkeypatch.setattr(control.os, "replace", failed)
+    monkeypatch.setattr(Path, "unlink", cleanup_failed)
+    with pytest.raises(OSError, match="original replacement failure"):
+        control.atomic(tmp_path / "state.json", {"status": "running"})

@@ -285,3 +285,26 @@ def test_watchdog_bootstrap_cutoff_deallocates_even_when_recovery_lock_busy(tmp_
     monkeypatch.setattr(watchdog.time,'monotonic',lambda:100)
     monkeypatch.setattr(watchdog.time,'sleep',lambda seconds: pytest.fail('bootstrap cutoff failed to deallocate'))
     with pytest.raises(Stopped): watchdog.main(tmp_path/'config.json')
+
+
+def test_reaper_deallocates_even_when_stop_marker_cannot_be_written(tmp_path, monkeypatch):
+    import time
+    ledger = Ledger(tmp_path / "ledger.json", initial_seconds=0)
+    session = ledger.reserve("job", 100, time.time())
+    path = tmp_path / "jobs/job/session.json"
+    original = runner.atomic
+    original(path, session)
+    def denied_marker(destination, value):
+        if destination.name == "stop-request.json":
+            raise PermissionError("state storage unavailable")
+        original(destination, value)
+    monkeypatch.setattr(runner, "atomic", denied_marker)
+    monkeypatch.setattr(runner, "Azure", lambda cfg: object())
+    retired = []
+    def retire(azure, actual_ledger, **kwargs):
+        retired.append(kwargs["expected_job"])
+        actual_ledger.finish(time.time())
+    monkeypatch.setattr(runner, "retire", retire)
+    runner.reaper({"state_dir": str(tmp_path)}, path)
+    assert retired == ["job"]
+    assert ledger.read()["active"] is None

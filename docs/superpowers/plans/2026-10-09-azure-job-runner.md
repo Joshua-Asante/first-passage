@@ -235,4 +235,32 @@ No source on the running guest or its frozen controller checkout was changed.
 Green verification: `20261009T064625Z-96023a543049` (87 runner tests passed) and
 `20261009T064735Z-c82662a35524` (standard gates), both completed/exit 0/stable.
 Public-clone private-manifest skips and existing advisory notes remain disclosed.
-Independent Claude review of this repair is pending; qualification remains pending.
+Independent Claude review of the atomic repair found no blocker. Its follow-ups
+added a recoverable heartbeat cadence and made the reaper stop marker best-effort
+so a storage failure cannot veto deallocation. Red `20261009T065555Z-79a4a2d0d71b`
+and green `20261009T065628Z-b13c9a2d1420` (90 passed, completed/0/stable) bind those
+paths; exact retry timing and cleanup-error preservation also have coverage.
+A final independent review of these bounded follow-ups is pending.
+
+
+### Full pinned qualification result
+
+Full public Windows qualification completed at the requested PR #742 SHA `ed4d7c9e8283d91c01e4c470bb5091b619fc504c`.
+
+- Command: operations Python 3.13.2, `scripts/fp.py --workers 8 python -m pytest tests/ops/qualification -q`.
+- Original launcher record: `20261009T063015Z-2b680e51fa8a/record.json`.
+- **2,339 passed, 1 skipped, 7 xfailed; all 2,347 collected.** No failures or errors. The skip is the Linux thread-directed SIGSTOP test; the seven existing xfails say `awaits K3/RC-4`. This Windows result does not replace Linux-specific acceptance.
+- Launcher and runner: `status: completed`, exit code `0`, verification exit `0`, `source_stable: true`, complete capture, no report errors. Clean pinned source matched before/after.
+- Process-tree CPU: **5,118.6875 seconds (1.421858 CPU-hours)**. Workload wall: **1,350.9274312 seconds (22m 30.93s)**; original launcher duration 1,350.5126881 seconds.
+- Complete outputs retrieved after execution: **19 artifacts**, every file's SHA-256 checked against the archive manifest. ZIP: **360,170 bytes**, SHA-256 `234961cae1ff1083a600cdd2149118b3a5f3009a79fded8a82e92a510360be02`. Publication through descriptor preparation took 4.640830 seconds.
+- Azure power state independently confirmed **VM deallocated**; ledger interval closed with no active reservation. Billed-time estimate conservatively includes admission through observed deallocation: **1,582.849596 seconds, $1.2751** at $2.90/hour. Weekly ledger after this job: **$3.9063 / $125** (includes setup/safety probes and the historical seed).
+- Retrieved workload CPU report: **1.424501 hours this week and month / 5,000 monthly planning hours**; no CPU hard stop. Bootstrap-only diagnostic/failed-start sessions have no workload CPU record.
+
+Runner runtime for this job was `16639bbf1e7b453a0aa0067b7a88172c3bb209d0`. Its heartbeat thread stopped during the run; the independent guards preserved execution and idle deallocation. A Windows state-file replacement race was reproduced locally and repaired in runner PR #746, with follow-up safeguards under review. The successful pinned qualification source and artifacts were not modified. No private inputs or statistical campaigns were run.
+
+
+Final merged-base gates: `20261009T065818Z-b43be3fd224e`, completed/exit 0/stable.
+Acceptance was posted on [PR 742](https://github.com/Joshua-Asante/first-passage/pull/742#issuecomment-6076069160)
+and [runner PR 746](https://github.com/Joshua-Asante/first-passage/pull/746#issuecomment-6076069448).
+The subsequent runner smoke and final Claude follow-up remain to be closed; they do
+not change the pinned qualification result above.
