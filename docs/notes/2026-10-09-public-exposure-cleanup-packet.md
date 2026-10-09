@@ -130,7 +130,7 @@ Amendment 2 (`c208bde`) closes all eight findings from that review and the remai
 
 **P1 — the size-specific export rule doesn't define sizing for the risk-sized Striker legs (2 and 5).** §B sets "every position-size input that is a contract count" to `floor(k × accepted value)`. Per [campaign §D15](../blob/main/docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md), both Strikers size through `calcSize`: `accountSize × riskPerTrade/100` from a static `accountSize` input (default 100000), not a contract-count input. Under the text as written:
 - k does nothing for legs 2 and 5, so all five of their non-zero `k` exports are identical;
-- a fixed `E_0` initial capital moves only the day soft-stop, which becomes 10× tighter while positions stay sized for 100K.
+- a fixed `E_0` initial capital moves only the day soft-stop, which becomes many times tighter while positions stay at their reference size.
 
 One implementer would leave the inputs alone, another would scale `accountSize` by k. They would produce different trade lists, and K would overstate the distinct prospective rules for those legs. Freeze the k-mapping for risk-sized legs, for example `accountSize = k × 100000` with any floor of the resulting contract count stated. Also say whether the soft-stop capital anchor is `E_0` or scales too. Confirm against the Pine in the operator checkout which legs are risk-sized versus fixed-count.
 
@@ -325,8 +325,8 @@ Intentionally public and kept: risk%, pyramid size and `contractValue` ([CATALOG
 
 ## 5 — Operator decisions
 
-1. Merge this draft PR (sanitized changelogs, pyramid ADR line, #743 files)?
-2. Is the §E redaction note acceptable on a FROZEN pre-registration (value unchanged, symbol only), or should the pre-registration stay byte-identical with only the ADR, brief and index redacted?
+1. Merge this draft PR (sanitized changelogs, pyramid ADR line, #743 files)? **DECIDED 2026-10-09: yes** (Joshua, in chat to the merge agent).
+2. Is the §E redaction note acceptable on a FROZEN pre-registration (value unchanged, symbol only), or should the pre-registration stay byte-identical with only the ADR, brief and index redacted? **DECIDED 2026-10-09: the §E redaction note is accepted** (Joshua, in chat to the merge agent).
 3. Edit PR #743's body and the 7 operator comments with §1's text?
 4. Delete the 4 Codex bot comments (and accept that the 22 diff-hunk copies go only if those comments are deleted too)? Deletion is irreversible; originals are in the archive.
 5. Rewrite history (filter the changelogs and the figure from all commits, force-push)? This breaks every SHA cited in the repo and every open branch; recommended only if the exposure is judged material.
