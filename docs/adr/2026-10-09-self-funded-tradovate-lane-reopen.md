@@ -27,8 +27,8 @@
    is reframed from data-only to own-assets trading).
 4. **Capital clearance: maximum peak-to-trough drawdown 15%** (operator ruling
    2026-10-09: "I'd accept a 15% drop", measured peak to trough). Within that bound the
-   lane sizes for maximum growth. Proposed reading of the selection test and the live
-   stop, pending operator confirmation:
+   lane sizes for maximum growth. Selection test and live stop (operator confirmed
+   2026-10-09, "99 in 100, confirmed"):
    - *Selection:* a portfolio and its sizing clear only if the intraday-honest simulated
      p99 peak-to-trough drawdown is ≤ 15%, after Tradovate costs and whole-contract
      rounding; among clearing candidates, the highest median growth rate wins.
@@ -42,7 +42,7 @@ AGENTS.md live-execution rules (M1, arming, per-session GO); private-figure poli
 
 ## Revision
 
-- 2026-10-09 (same day): portfolio unselected and maximum-growth objective (commit `87d12a0`); 15% drawdown clearance standard recorded (this revision).
+- 2026-10-09 (same day): portfolio unselected and maximum-growth objective (commit `87d12a0`); 15% peak-to-trough clearance standard recorded (`8a5e42c`); its p99 selection test and live stop confirmed by the operator (this revision).
 
 ## Grounds
 
@@ -59,8 +59,7 @@ AGENTS.md live-execution rules (M1, arming, per-session GO); private-figure poli
 
 **Owed before first live order** (each a separate record with its owner):
 
-1. Portfolio selection and sizing that clear the 15% drawdown standard (Decision 4),
-   and operator confirmation of that standard's proposed reading.
+1. Portfolio selection and sizing that clear the 15% drawdown standard (Decision 4).
 2. Personal-account tier in `core/firm_rules.py` with `starting_balance`, then the
    `core/mc/preflight.py` engine pre-flight and a re-MC under that tier.
 3. Tradovate API access on the personal account: the $1,000 key requirement, the API
