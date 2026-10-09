@@ -94,3 +94,17 @@ def test_current_cloud_lease_replaces_previous_disk_job():
 
 def test_reaper_allows_two_maximum_cli_reads_and_poll_delay():
     assert runner.reap_reason({"start":100,"deadline":2000},100,475) is None
+
+
+def test_reconcile_refuses_to_stop_healthy_job(tmp_path, monkeypatch):
+    ledger=Ledger(tmp_path/'ledger.json',initial_seconds=0)
+    import time
+    ledger.reserve('healthy',100,time.time())
+    class Fake:
+        def __init__(self,cfg): pass
+        def power(self): return 'VM running'
+        def deallocate(self): pytest.fail('reconcile killed healthy work')
+    monkeypatch.setattr(runner,'Azure',Fake)
+    with pytest.raises(ValueError,match='cancel'):
+        runner.reconcile({'state_dir':str(tmp_path)})
+    assert ledger.read()['active']['job_id']=='healthy'

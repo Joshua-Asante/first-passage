@@ -33,8 +33,8 @@ def run_tree(command, cwd, output, *, deadline, job_name=None):
     started = time.time()
     mono = time.monotonic()
     duration = max(0, deadline - started)
-    if (output / "cancel").exists():
-        return {"status": "interrupted", "exit_code": 130, "reason": "cancelled",
+    if (output / "cancel").exists() or duration <= 0:
+        return {"status": "interrupted", "exit_code": 130, "reason": "cancelled" if (output / "cancel").exists() else "timeout",
                 "cpu_seconds": 0, "wall_seconds": 0, "started_at": started, "finished_at": time.time()}
     owned = WindowsJob.create(name="Local\\FP-Offline-" + job_name if job_name else None)
     process = None
@@ -75,7 +75,11 @@ def run_tree(command, cwd, output, *, deadline, job_name=None):
         owned.close()
 
 
-def checked(command, cwd=None, timeout=600):
+def checked(command, cwd=None, timeout=600, deadline=None):
+    if deadline is not None:
+        timeout = min(timeout, deadline - time.time())
+        if timeout <= 0:
+            raise TimeoutError("execution/publication cutoff reached")
     result = subprocess.run(list(map(str, command)), cwd=cwd, capture_output=True, text=True, timeout=timeout)
     if result.returncode:
         diagnostic = Path(__file__).resolve().parents[2] / ".cache/azure-private-error.json"
@@ -85,6 +89,8 @@ def checked(command, cwd=None, timeout=600):
 
 
 def checkout(config, commit, destination):
+    from functools import partial
+    checked = partial(globals()["checked"], deadline=config.get("execution_deadline"))
     if not destination.exists():
         destination.mkdir(parents=True)
         checked([config["git"], "init", destination])
@@ -99,6 +105,8 @@ def checkout(config, commit, destination):
 
 
 def environment(config, spec, repo):
+    from functools import partial
+    checked = partial(globals()["checked"], deadline=config.get("execution_deadline"))
     lock = repo / ("requirements-ops.lock" if spec["environment"] == "operations" else "requirements-research.lock")
     identity = sha256(lock)
     directory = Path(config["guest_root"]) / "envs" / spec["environment"] / identity
@@ -115,18 +123,20 @@ def environment(config, spec, repo):
 def bundle(job_dir, repo, outputs, *, partial):
     rows = inventory(repo, outputs, partial=partial) if repo.exists() else {}
     files = {name: repo / name for name in rows}
-    for name in ("stdout.log", "stderr.log", "progress.json", "record.json", "spec.json"):
+    for name in ("stdout.log", "stderr.log", "progress.json", "record.json", "spec.json", "bootstrap.log"):
         path = job_dir / name
         if path.exists():
             key = "runner/" + name
             files[key] = path
             rows[key] = {"sha256": sha256(path), "bytes": path.stat().st_size}
     atomic(job_dir / "manifest.json", rows)
-    archive = job_dir / "results.zip"
+    archive = job_dir / "results.zip.tmp"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as stream:
         for name, path in files.items():
             stream.write(path, name)
         stream.write(job_dir / "manifest.json", "manifest.json")
+    os.replace(archive, job_dir / "results.zip")
+    archive = job_dir / "results.zip"
     return {"sha256": sha256(archive), "bytes": archive.stat().st_size, "artifacts": len(rows)}
 
 
@@ -154,6 +164,7 @@ def execute(config, spec):
                 atomic(job_dir / "heartbeat.json", {"time": time.time()})
                 stop_heartbeat.wait(2)
         heart = threading.Thread(target=beat, daemon=True)
+        atomic(job_dir / "heartbeat.json", {"time": time.time()})
         heart.start()
         before = None
         try:
@@ -170,7 +181,7 @@ def execute(config, spec):
             command = [str(python), "-I", *spec["command"]]
             if spec["environment"] == "operations":
                 command = [str(python), "-I", "scripts/fp.py", "--env", str(env_dir), *spec["command"][1:]]
-            deadline = min(time.time() + spec["max_wall_seconds"], config["deadline"])
+            deadline = min(time.time() + spec["max_wall_seconds"], config.get("execution_deadline", config["deadline"]))
             atomic(job_dir / "state.json", {**state, "phase": "executing", "deadline": deadline})
             record.update(run_tree(command, repo, job_dir, deadline=deadline, job_name=spec["job_id"]))
             after = snapshot(repo)
@@ -205,7 +216,7 @@ def execute(config, spec):
                 published = False
             atomic(job_dir / "state.json", {**record, "job_id": spec["job_id"],
                                            "results_published": published, "archive": archive})
-            atomic(root / "idle.json", {"job_id": spec["job_id"], "time": time.time()})
+            atomic(root / "idle.json", {"job_id": config.get("session_id", spec["job_id"]), "time": time.time()})
             stop_heartbeat.set()
             heart.join(timeout=5)
 
@@ -213,19 +224,50 @@ def execute(config, spec):
 def upload(config, job_dir, job_id):
     if not config.get("storage_account") or not config.get("container"):
         raise RuntimeError("results destination is not configured")
-    for filename in ("results.zip", "archive.json", "state.json"):
+    descriptor = json.loads((job_dir / "archive.json").read_text())
+    for filename in ("results.zip", "state.json", "archive.json"):
+        blob_name = descriptor["sha256"] + ".zip" if filename == "results.zip" else filename
         checked([config["az"], "storage", "blob", "upload", "--auth-mode", "login",
                  "--account-name", config["storage_account"], "--container-name", config["container"],
-                 "--name", job_id + "/" + filename, "--file", job_dir / filename,
-                 "--overwrite", "true", "--only-show-errors", "-o", "none"], timeout=300)
+                 "--name", job_id + "/" + blob_name, "--file", job_dir / filename,
+                 "--overwrite", "true", "--only-show-errors", "-o", "none"], timeout=300, deadline=config.get("deadline"))
 
 
-def main():
+def republish(config, spec):
+    """Publish retained files only. No checkout, environment setup or execution."""
+    validate(spec)
+    root = Path(config["guest_root"])
+    job = root / "jobs" / spec["job_id"]
+    with locked(root / "guest.lock"):
+        job.mkdir(parents=True, exist_ok=True)
+        record_path = job / "record.json"
+        record = json.loads(record_path.read_text()) if record_path.exists() else {}
+        if record.get("status") not in {"completed", "failed", "interrupted"}:
+            progress_path = job / "progress.json"
+            progress = json.loads(progress_path.read_text()) if progress_path.exists() else {}
+            record.update(status="interrupted", exit_code=130, verification_exit_code=130,
+                          source_stable=False, capture_complete=False,
+                          cpu_seconds=progress.get("cpu_seconds"), cpu_measurement="partial lower bound",
+                          reason="supervisor ended without terminal evidence")
+            atomic(record_path, record)
+        if not (job / "spec.json").exists():
+            atomic(job / "spec.json", spec)
+        try:
+            archive = bundle(job, root / "repos" / spec["job_id"], spec["expected_outputs"], partial=True)
+            atomic(job / "archive.json", archive)
+            atomic(job / "state.json", {**record, "job_id": spec["job_id"], "archive": archive})
+            upload(config, job, spec["job_id"])
+        finally:
+            atomic(root / "idle.json", {"job_id": config["session_id"], "time": time.time()})
+
+
+def main(mode="execute"):
     parser = argparse.ArgumentParser()
     parser.add_argument("config", type=Path)
     parser.add_argument("spec", type=Path)
     args = parser.parse_args()
-    execute(json.loads(args.config.read_text(encoding="utf-8-sig")),
+    action = execute if mode == "execute" else republish
+    action(json.loads(args.config.read_text(encoding="utf-8-sig")),
             json.loads(args.spec.read_text(encoding="utf-8-sig")))
 
 

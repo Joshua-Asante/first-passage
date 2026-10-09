@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 import zipfile
-from .control import Azure, Ledger, OVERHEAD_SECONDS, SHUTDOWN_MARGIN, RATE, atomic, locked, retire
+from .control import Azure, Ledger, OVERHEAD_SECONDS, SHUTDOWN_MARGIN, PUBLICATION_SECONDS, RATE, atomic, locked, retire
 from .contract import validate, inside, sha256, verify_inventory, verified
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -54,14 +54,16 @@ def results(config, job_id):
     target.mkdir(parents=True, exist_ok=True)
     blob(config, "download", job_id + "/archive.json", target / "archive.json")
     expected = read(target / "archive.json")
-    blob(config, "download", job_id + "/results.zip", target / "results.zip")
+    if not re.fullmatch(r"[0-9a-f]{64}", expected.get("sha256", "")):
+        raise ValueError("invalid archive digest")
+    blob(config, "download", job_id + "/" + expected["sha256"] + ".zip", target / "results.zip")
     archive = target / "results.zip"
     if archive.stat().st_size != expected["bytes"] or sha256(archive) != expected["sha256"]:
         raise ValueError("result archive hash mismatch")
     rows = unpack(archive, target / "files")
     record = read(target / "files/runner/record.json")
     ledger = Ledger(Path(config["state_dir"]) / "ledger.json")
-    sessions = [s for s in ledger.read()["sessions"] if s["job_id"] == job_id]
+    sessions = [s for s in ledger.read()["sessions"] if s.get("source_job_id", s["job_id"]) == job_id]
     vm_seconds = sum(s["end"] - s["start"] for s in sessions)
     return {"directory": str(target), "artifacts": len(rows), "record": record,
             "verified": verified(record), "deallocation_confirmed": bool(sessions),
@@ -118,6 +120,10 @@ def status(config, job_id):
             result = json.loads(azure.script(script))
         except (ValueError, RuntimeError, OSError, subprocess.SubprocessError):
             result["guest_state_read_failed"] = True
+    local = state / "jobs" / job_id
+    for filename in ("controller-error.json", "observation.json", "stop-request.json"):
+        if (local / filename).exists():
+            result[filename.removesuffix(".json")] = read(local / filename)
     result["cpu_report"] = cpu_report(config)
     result["vm_power"] = power
     result["week_vm_seconds"] = Ledger(state / "ledger.json").week_seconds(time.time())
@@ -150,21 +156,28 @@ def launch_guardian(config_path, session_path):
     raise RuntimeError("independent guardian did not acknowledge; VM must not start")
 
 
-def run(config, config_path, spec):
+def run(config, config_path, spec, *, mode="execute"):
+    if mode not in {"execute", "republish"}:
+        raise ValueError("invalid session mode")
     validate(spec)
     source = clean_source()
     azure = Azure(config)
     state = Path(config["state_dir"])
     ledger = Ledger(state / "ledger.json")
+    import uuid
+    session_id = spec["job_id"] if mode == "execute" else "recover-" + uuid.uuid4().hex[:24]
     with locked(state / "admission.lock"):
-        job_dir = state / "jobs" / spec["job_id"]
+        if mode == "republish" and not (state / "jobs" / spec["job_id"] / "session.json").exists():
+            raise ValueError("cannot recover an unknown job")
+        job_dir = state / "jobs" / session_id
         if job_dir.exists():
             raise ValueError("job already submitted; use status/results")
         if azure.power() != "VM deallocated":
             raise ValueError("VM must be verified deallocated before admission")
-        session = ledger.reserve(spec["job_id"], spec["max_wall_seconds"] + OVERHEAD_SECONDS, time.time())
+        seconds = spec["max_wall_seconds"] + OVERHEAD_SECONDS if mode == "execute" else OVERHEAD_SECONDS
+        session = ledger.reserve(session_id, seconds, time.time(), source_job_id=spec["job_id"])
         job_dir.mkdir(parents=True)
-        session.update(spec=spec, runner_commit=source, bootstrap_deadline=time.time() + 2400)
+        session.update(spec=spec, mode=mode, runner_commit=source, bootstrap_deadline=min(time.time() + 2400, session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS))
         atomic(job_dir / "session.json", session)
         atomic(job_dir / "spec.json", spec)
         try:
@@ -176,7 +189,7 @@ def run(config, config_path, spec):
             raise
         # The independent guardian owns start + submission, closing the crash window
         # between request admission and launch. The front-end never starts the VM.
-        return {"job_id": spec["job_id"], "status": "admitted",
+        return {"job_id": spec["job_id"], "session_id": session_id, "mode": mode, "status": "admitted",
                 "reserved_seconds": session["reserved_seconds"]}
 
 
@@ -259,7 +272,9 @@ def guardian(config, session_path, config_path=None):
             if time.time() >= session["bootstrap_deadline"]:
                 raise TimeoutError("startup deadline")
             time.sleep(5)
-        guest_config = {**config, "deadline": session["deadline"] - SHUTDOWN_MARGIN}
+        guest_config = {**config, "deadline": session["deadline"] - SHUTDOWN_MARGIN,
+                        "execution_deadline": session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS,
+                        "session_id": session["job_id"], "mode": session.get("mode", "execute")}
         # Resource identity remains private and is never included in result bundles.
         request = {"config": guest_config, "spec": session["spec"], "runner_commit": session["runner_commit"]}
         script = (ROOT / "scripts/azure_jobs/bootstrap.ps1").read_text(encoding="utf-8-sig")
@@ -271,10 +286,12 @@ def guardian(config, session_path, config_path=None):
         while time.time() < session["deadline"] - SHUTDOWN_MARGIN:
             heartbeat(session_path)
             power = azure.power()
+            atomic(session_path.parent / "power.json", {"time": time.time(), "power": power})
             if power == "VM deallocated":
                 retire(azure, ledger, expected_job=session["job_id"])
                 return
             view = azure.command(name).get("instanceView", {})
+            atomic(session_path.parent / "observation.json", {"time": time.time(), "instanceView": view})
             execution = str(view.get("executionState", "")).lower()
             if execution in {"succeeded", "failed", "timedout", "canceled"}:
                 break
@@ -291,6 +308,20 @@ def guardian(config, session_path, config_path=None):
                 retire(azure, ledger, expected_job=session["job_id"])
             except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
                 time.sleep(10)
+        if (session_path.parent / "submitted.json").exists():
+            try:
+                azure.delete_command(read(session_path.parent / "submitted.json")["command"])
+            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+                atomic(session_path.parent / "cleanup-pending.json", {"time": time.time()})
+
+
+def reconcile(config):
+    state = Path(config["state_dir"])
+    with locked(state / "admission.lock"):
+        if Azure(config).power() != "VM deallocated":
+            raise ValueError("VM is not deallocated; use cancel to stop active work")
+        Ledger(state / "ledger.json").finish(time.time())
+    return {"deallocation_confirmed": True}
 
 
 def cancel(config, job_id):
@@ -311,7 +342,10 @@ def main():
     subs = parser.add_subparsers(dest="action", required=True)
     subs.add_parser("run").add_argument("spec", type=Path)
     for action in ("status", "results", "cancel"):
-        subs.add_parser(action).add_argument("job_id")
+        command = subs.add_parser(action)
+        command.add_argument("job_id")
+        if action == "results":
+            command.add_argument("--recover", action="store_true", help="admit budgeted disk-only republishing; never rerun the job")
     subs.add_parser("_guardian").add_argument("session", type=Path)
     subs.add_parser("_reaper").add_argument("session", type=Path)
     subs.add_parser("reconcile", help="verify deallocation and close a stranded reservation")
@@ -328,21 +362,18 @@ def main():
         reaper(config, args.session)
         return
     elif args.action == "reconcile":
-        ledger = Ledger(Path(config["state_dir"]) / "ledger.json")
-        active = ledger.read()["active"]
-        azure = Azure(config)
-        if active:
-            retire(azure, ledger, expected_job=active["job_id"])
-        if azure.power() != "VM deallocated":
-            raise ValueError("deallocation is not confirmed")
-        output = {"deallocation_confirmed": True}
+        output = reconcile(config)
     elif args.action == "init-ledger":
         Ledger(Path(config["state_dir"]) / "ledger.json", initial_seconds=args.historical_seconds)
         output = {"ledger_initialized": True}
     else:
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", args.job_id):
             raise ValueError("invalid job identity")
-        output = globals()[args.action](config, args.job_id)
+        if args.action == "results" and args.recover:
+            spec = read(Path(config["state_dir"]) / "jobs" / args.job_id / "spec.json")
+            output = run(config, args.config.resolve(), spec, mode="republish")
+        else:
+            output = globals()[args.action](config, args.job_id)
     print(json.dumps(output, indent=2))
 
 

@@ -28,7 +28,7 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 3. Public guest bootstrap, bounded safety probes, pinned suite collection and full acceptance.
 4. README, independent Claude review, code PR and results comment; operator merge.
 
-## Handoff 1 — admit and retire one bounded VM session
+## Handoff 1 â€” admit and retire one bounded VM session
 
 **Selected outcome:** Tested persistent admission and deallocation behavior, including controller failure.
 **Prerequisites:** Isolated branch based on `7aa2fb94ba4df87b216a881e2f261aec8ebb1971`; operations doctor passed on CPython 3.13.2 with 62 locked packages. Azure read confirms deallocated. Identity permission approved; installation still owed.
@@ -41,7 +41,7 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 - [ ] Implement atomic locked state and Azure adapter; run focused launcher tests.
 - [ ] Evaluate the outcome before guest integration.
 
-## Handoff 2 — durable guest execution and complete evidence
+## Handoff 2 â€” durable guest execution and complete evidence
 
 **Selected outcome:** Commands dispatch once, read durable status, retrieve hashed complete/partial files and cancel the owned process tree.
 **Prerequisites:** Handoff 1 accepted; clean runner revision published before guest fetch; independent shutdown identity installed before unaccompanied jobs.
@@ -55,7 +55,7 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 - [ ] Install a SYSTEM watchdog with no password and minimum identity permissions.
 - [ ] Test controller disconnect, cancellation and idle deallocation.
 
-## Handoff 3 — public acceptance and review
+## Handoff 3 â€” public acceptance and review
 
 **Selected outcome:** Exact PR #742 suite completes on Windows with evidence posted to the runner PR.
 **Prerequisites:** Safety probes pass; public GitHub fetch at exact SHA; operations lock installation and doctor; collection confirms Windows compatibility. First run maximum 8 hours plus 1 hour overhead, eight pytest workers (launcher maximum), subject to available weekly ledger.
@@ -96,3 +96,27 @@ reported their expected absent-tree skips). PR #742's exact pinned SHA collected
 collection is not execution acceptance. Final frozen-tree evidence follows below.
 
 Frozen candidate verification: `20261009T044446Z-97a1076bcf50` completed with exit 0, source stable, 132 passed and 6 skipped (CPython 3.13.2). A real detached local child survived its parent exit; no VM start was involved. The reviewed build now proceeds to public remote safety probes.
+
+
+### Frozen review corrections and public probes (2026-10-09)
+
+Claude's second independent review identified five remaining blockers: competing
+result publishers, reconcile stopping healthy work, accumulated Managed Run Commands,
+missing disk-only republishing, and no publication window before shutdown. The
+integration candidate serializes recovery with the supervisor lock, publishes immutable
+archives before descriptors, makes reconcile observation-only, deletes temporary/job
+commands, and admits budgeted republishing under a fresh lease. Preparation/execution,
+publication and shutdown have distinct cutoffs. Terminal Managed Run Command observations
+are retained privately before resource cleanup.
+
+Local affected verification `20261009T051810Z-6198360b4b18`: 140 passed, 6 skipped;
+CPython 3.13.2, completed, exit/verification exit 0, source stable, capture complete.
+Subsequent transcript finalization/documentation changes require fresh verification.
+
+The first public smoke admission failed before VM start because a tag update assumed
+an existing tags object; tag Merge fixes this. The second VM session deallocated
+without a published archive; Azure's subsequent retained view was Pending, so no
+payload outcome is asserted. These are failed acceptance attempts, not passes.
+The ledger retains both intervals plus a conservative 900-second historical seed.
+The VM was confirmed deallocated after both attempts. Full qualification execution
+and final Claude approval remain pending.

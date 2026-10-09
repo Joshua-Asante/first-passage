@@ -7,8 +7,8 @@ if __name__ == '__main__':
     if mode == 'watchdog':
         from scripts.azure_jobs.watchdog import main
         main(sys.argv[1])
-    elif mode == 'execute':
+    elif mode in {'execute', 'republish'}:
         from scripts.azure_jobs.guest import main
-        main()
+        main(mode)
     else:
         raise ValueError('invalid guest mode')

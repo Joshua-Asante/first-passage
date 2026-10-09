@@ -15,6 +15,7 @@ WEEKLY_DOLLARS = 125.0
 WEEKLY_SECONDS = WEEKLY_DOLLARS / RATE * 3600
 OVERHEAD_SECONDS = 3600
 SHUTDOWN_MARGIN = 900
+PUBLICATION_SECONDS = 900
 
 
 def atomic(path, value):
@@ -103,7 +104,7 @@ class Ledger:
     def week_seconds(self, now):
         return self.usage(self.read(), now)
 
-    def reserve(self, job_id, seconds, now):
+    def reserve(self, job_id, seconds, now, *, source_job_id=None):
         number(seconds)
         number(now)
         with locked(str(self.path) + ".lock"):
@@ -117,7 +118,7 @@ class Ledger:
             if self.usage(data, now) + seconds > WEEKLY_SECONDS:
                 raise ValueError("reservation exceeds weekly ceiling")
             data["active"] = {"job_id": job_id, "start": now, "reserved_seconds": seconds,
-                              "deadline": now + seconds}
+                              "deadline": now + seconds, "source_job_id": source_job_id or job_id}
             atomic(self.path, data)
             return data["active"]
 
@@ -193,19 +194,29 @@ class Azure:
                           "--vm-name", self.config["vm"], "--name", name,
                           "--expand", "instanceView"])
 
+    def delete_command(self, name):
+        self.call(["vm", "run-command", "delete", "--resource-group", self.config["resource_group"],
+                   "--vm-name", self.config["vm"], "--name", name, "--yes"])
+
     def script(self, script, *, timeout=180):
         name = "fp-read-" + uuid.uuid4().hex[:16]
-        self.submit(name, script, timeout=timeout)
-        deadline = time.monotonic() + timeout + 120
-        while time.monotonic() < deadline:
-            value = self.command(name).get("instanceView", {})
-            state = str(value.get("executionState", "")).lower()
-            if state in {"succeeded", "failed", "timedout", "canceled"}:
-                if state != "succeeded" or value.get("exitCode") != 0:
-                    raise RuntimeError("guest management command failed")
-                return value.get("output", "").strip()
-            time.sleep(3)
-        raise TimeoutError("guest management command did not finish")
+        try:
+            self.submit(name, script, timeout=timeout)
+            deadline = time.monotonic() + timeout + 120
+            while time.monotonic() < deadline:
+                value = self.command(name).get("instanceView", {})
+                state = str(value.get("executionState", "")).lower()
+                if state in {"succeeded", "failed", "timedout", "canceled"}:
+                    if state != "succeeded" or value.get("exitCode") != 0:
+                        raise RuntimeError("guest management command failed")
+                    return value.get("output", "").strip()
+                time.sleep(3)
+            raise TimeoutError("guest management command did not finish")
+        finally:
+            try:
+                self.delete_command(name)
+            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+                atomic(Path(self.config["state_dir"]) / "command-cleanup-pending.json", {"command": name})
 
 
 def retire(azure, ledger, *, expected_job=None, clock=time.time, sleep=time.sleep, attempts=20):

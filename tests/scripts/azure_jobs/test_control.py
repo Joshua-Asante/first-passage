@@ -147,3 +147,17 @@ def test_lease_adds_tags_on_bare_vm_without_replacing_other_tags():
     azure.set_lease("job", 1234)
     assert calls[0][1:3] == ["tag", "update"]
     assert calls[0][calls[0].index("--operation") + 1] == "Merge"
+
+
+@pytest.mark.parametrize('state,code', [('succeeded',0),('failed',1)])
+def test_temporary_managed_commands_are_retired_on_success_and_failure(tmp_path, monkeypatch,state,code):
+    azure=control.Azure({'state_dir':str(tmp_path)})
+    submitted=[]; deleted=[]
+    monkeypatch.setattr(azure,'submit',lambda name,*a,**kw: submitted.append(name))
+    monkeypatch.setattr(azure,'command',lambda name: {'instanceView':{'executionState':state,'exitCode':code,'output':'data'}})
+    monkeypatch.setattr(azure,'delete_command',deleted.append)
+    if code:
+        with pytest.raises(RuntimeError): azure.script('test')
+    else:
+        assert azure.script('test')=='data'
+    assert submitted==deleted

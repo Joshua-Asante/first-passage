@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
-from .control import Azure, atomic
+from .control import Azure, atomic, locked, PUBLICATION_SECONDS
 from .guest import bundle, upload
 
 
@@ -72,29 +72,38 @@ def terminate_tree(name):
 
 def recover(config, lease, reason):
     """Keep partial evidence; never turn missing terminal evidence into success."""
-    job_dir = Path(config["guest_root"]) / "jobs" / lease["job_id"]
+    job_id = lease.get("source_job_id", lease["job_id"])
+    job_dir = Path(config["guest_root"]) / "jobs" / job_id
     job_dir.mkdir(parents=True, exist_ok=True)
     (job_dir / "cancel").touch()
-    terminate_tree(lease["job_id"])
-    time.sleep(10)
-    record = read(job_dir / "record.json") or {}
-    if record.get("status") not in {"completed", "failed", "interrupted"}:
-        progress = read(job_dir / "progress.json") or {}
-        record.update(status="interrupted", exit_code=130, verification_exit_code=130,
-                      source_stable=False, capture_complete=False, reason=reason,
-                      cpu_seconds=progress.get("cpu_seconds"), cpu_measurement="partial lower bound")
-        atomic(job_dir / "record.json", record)
-    if not (job_dir / "archive.json").exists():
-        spec = read(job_dir / "spec.json")
-        if spec:
-            archive = bundle(job_dir, Path(config["guest_root"]) / "repos" / lease["job_id"],
-                             spec["expected_outputs"], partial=True)
-            atomic(job_dir / "archive.json", archive)
-    atomic(job_dir / "state.json", record)
+    terminate_tree(job_id)
+    lock = locked(Path(config["guest_root"]) / "guest.lock")
     try:
-        upload(config, job_dir, lease["job_id"])
-    except Exception:
-        pass  # Retain disk results; never hold paid compute indefinitely for upload.
+        lock.__enter__()
+    except OSError:
+        return False  # Live supervisor owns finalization and publication.
+    try:
+        record = read(job_dir / "record.json") or {}
+        if record.get("status") not in {"completed", "failed", "interrupted"}:
+            progress = read(job_dir / "progress.json") or {}
+            record.update(status="interrupted", exit_code=130, verification_exit_code=130,
+                          source_stable=False, capture_complete=False, reason=reason,
+                          cpu_seconds=progress.get("cpu_seconds"), cpu_measurement="partial lower bound")
+            atomic(job_dir / "record.json", record)
+        if True:  # Rebuild under exclusive ownership; an older descriptor may predate interruption.
+            spec = read(job_dir / "spec.json")
+            if spec:
+                archive = bundle(job_dir, Path(config["guest_root"]) / "repos" / job_id,
+                                 spec["expected_outputs"], partial=True)
+                atomic(job_dir / "archive.json", archive)
+        atomic(job_dir / "state.json", record)
+        try:
+            upload(config, job_dir, job_id)
+        except Exception:
+            pass  # Retain disk results; never hold paid compute indefinitely for upload.
+        return True
+    finally:
+        lock.__exit__(None, None, None)
 
 
 def main(config_path):
@@ -108,6 +117,9 @@ def main(config_path):
     while True:
         try:
             lease = cloud_lease()
+            mapping = read(root / "control" / "sessions" / (lease["job_id"] + ".json"))
+            if mapping and mapping.get("session_id") == lease["job_id"]:
+                lease["source_job_id"] = mapping["source_job_id"]
             lease_observed = time.monotonic()
         except Exception:
             if time.monotonic() - lease_observed > 120:
@@ -117,9 +129,11 @@ def main(config_path):
             time.sleep(2)
             continue
         if lease and not reason:
-            job_dir = root / "jobs" / lease["job_id"]
+            job_dir = root / "jobs" / lease.get("source_job_id", lease["job_id"])
             state = read(job_dir / "state.json") or {}
             progress = read(job_dir / "heartbeat.json") or {}
+            if time.time() >= lease["deadline"] - PUBLICATION_SECONDS:
+                reason = "execution deadline"
             if (job_dir / "cancel").exists() and state.get("status") == "running":
                 reason = "cancelled"
             if state.get("status") == "running" and time.time() - progress.get("time", state.get("started_at", time.time())) > 120:
@@ -127,7 +141,10 @@ def main(config_path):
         if reason:
             if lease and reason != "idle":
                 try:
-                    recover(config, lease, reason)
+                    recovered = recover({**config, "deadline": lease["deadline"]}, lease, reason)
+                    if not recovered and time.time() < lease["deadline"]:
+                        time.sleep(2)
+                        continue
                 except Exception:
                     pass  # A recovery/reporting failure must never prevent deallocation.
             # Keep retrying even if controller/laptop has disappeared.

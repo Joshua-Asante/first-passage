@@ -1,4 +1,4 @@
-# `scripts/` — gates and discipline CLIs
+# `scripts/` â€” gates and discipline CLIs
 
 ## Local operations launcher
 
@@ -226,7 +226,7 @@ tests use disposable repositories and do not change your shared installed hooks.
 Per-script layer classification is owned by `scripts_layer` in
 [`repo_map_layers.yml`](repo_map_layers.yml) (fallback **governance**), the
 single layer-map definition `check_boundaries.py` loads. The human-readable
-table in [`REPO_MAP.md`](../REPO_MAP.md) §2.1 is generated from that file +
+table in [`REPO_MAP.md`](../REPO_MAP.md) Â§2.1 is generated from that file +
 [`gates.yml`](gates.yml) + `git ls-files 'scripts/*.py'`:
 
 ```text
@@ -330,7 +330,7 @@ reports their actual outcomes and a pending explicit release. It never publishes
 or creates backups, including from worktrees. Missing/failing validators exit 2,
 surfaced directly by that registration while remaining fail-open for the completed
 edit. Malformed/unrelated hook input is benign. (A Cursor `afterFileEdit` adapter
-previously forwarded this for that surface; it retired with the Cursor lane —
+previously forwarded this for that surface; it retired with the Cursor lane â€”
 [worker-surface allocation](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md),
 Revision 2026-09-15.)
 
@@ -382,29 +382,29 @@ It fails closed (exit 2, nothing written, `--check` included) on anything it
 cannot roll unambiguously, and that refusal withholds **every** change of the
 invocation, including a due Weekly roll or keep-15 archive:
 
-- a past Monthly deadline dated the 28th–31st whose heading has no
-  `cadence day NN` anchor. A month-end clamp (Jan 31 → Feb 28) leaves a date
+- a past Monthly deadline dated the 28thâ€“31st whose heading has no
+  `cadence day NN` anchor. A month-end clamp (Jan 31 â†’ Feb 28) leaves a date
   that no longer records the intended day, so the roller will not guess it.
   Month-end procedure: add the intended day once, e.g.
-  `### Monthly — recurring (rolling; next deadline **2027-01-31**, cadence day 31)`,
+  `### Monthly â€” recurring (rolling; next deadline **2027-01-31**, cadence day 31)`,
   and rerun. The roller then clamps each short month (Feb 28, or Feb 29 in a
   leap year; Apr 30) and returns to the anchored day (Mar 31). Do not hand-clamp
   the date without the anchor;
 - a `cadence day` that is not exactly one lower-case `cadence day NN` with NN in
-  1–31, or that disagrees with the heading's deadline (checked on every run, due
+  1â€“31, or that disagrees with the heading's deadline (checked on every run, due
   or not);
 - a recurring heading without exactly one `next deadline **YYYY-MM-DD**` field
   (a second deadline, bolded or not, would never be rolled), or a Weekly
-  `bucket` that is not exactly one lower-case `bucket MM-DD→MM-DD` naming real
-  month-days and exactly the Monday–Friday week of its deadline, or any Weekly
+  `bucket` that is not exactly one lower-case `bucket MM-DDâ†’MM-DD` naming real
+  month-days and exactly the Mondayâ€“Friday week of its deadline, or any Weekly
   deadline that is not Friday (also checked when no bucket is present);
 - anything read as unique that is not exactly one: a Weekly/Monthly heading
-  (including a case, dash or Unicode-spacing variant — NBSP, zero-width,
-  fullwidth — or a copy outside the forward section), a
+  (including a case, dash or Unicode-spacing variant â€” NBSP, zero-width,
+  fullwidth â€” or a copy outside the forward section), a
   `Scheduled forward triggers` or `Executed operator decisions` section
   (including look-alike headings at any level);
 - a decision index out of newest-first date order, a dated bullet not in
-  `- **YYYY-MM-DD** — ` form (`* **date**`, unbolded or indented included), two
+  `- **YYYY-MM-DD** â€” ` form (`* **date**`, unbolded or indented included), two
   rows fused on one line (including an en-dash separator), a row fused to a roll
   header, a task-list or numbered decision row (also detected when fused), or an
   overflow row followed (after any blank lines)
@@ -434,7 +434,7 @@ invocation, including a due Weekly roll or keep-15 archive:
 
 The module docstring of `state_roll.py` states the invariants (I1 row
 conservation, I2 archive shape, I3 line endings, I4 one writer, I5 exactly-one
-parsing, I6 Unicode-normalised look-alikes). One validator checks I1–I3 and I5
+parsing, I6 Unicode-normalised look-alikes). One validator checks I1â€“I3 and I5
 on the pair before planning and on the composed result before writing; if the
 result fails, nothing is written. The archive is written before STATE, each
 through its own temp file, an atomic replace and an fsync of its directory
@@ -500,7 +500,7 @@ missing required Registry token, or an applicable terminal campaign claim
 without a hot/LTM closure record returns 1. Each limb acts independently.
 Historical ADR Status tokens do not configure these checks.
 
-Revision 2026-09-08 — the approved ADR-pruning migration replaces the
+Revision 2026-09-08 â€” the approved ADR-pruning migration replaces the
 former M-22 downgrade on missing/unparseable Status owners with this
 fixed code contract. The prior accepted arrangement is preserved at
 `502a8fb4717e8caaa7d183a0a010998cfd7a30c2:scripts/check_closure_disposition.py`
@@ -648,11 +648,11 @@ manifest-scoped cleanup. `qualification_boundary_environment.py` owns prerequisi
 inspection; `qualification_boundary_verification.py` reuses RunRecord and rejects
 critical skips. Its mutually exclusive mode flags select the boundary file set:
 `--s2`, `--s3`, `--s4`, `--s5` and `--r1` (the H9 checkpoint R1 combined selection,
-S5 plus the result/seal and C′ Linux files, which refuses within seconds while any
+S5 plus the result/seal and Câ€² Linux files, which refuses within seconds while any
 R1 file or its manifest row is still missing). `s2_run_evidence.py` reads a run's
 artifact back under the matching `--expect-scope`, `T05_R1_COMBINED` for an `r1`
 run, which also requires the frozen `--expect-selection` document;
-`guard_s2_runs.py` reads the `[s2]`–`[s5]` and `[r1]` run-name tags to keep a
+`guard_s2_runs.py` reads the `[s2]`â€“`[s5]` and `[r1]` run-name tags to keep a
 definitive same-mode dispatch from re-rolling. Host readiness is separate from
 launch-to-G5 acceptance, which remains blocked on the boundary implementation and
 its approved fixture producer.
@@ -728,7 +728,8 @@ Initialization refuses an existing ledger. Weeks begin Monday 00:00 UTC.
 Admission reserves the maximum job wall time plus one hour for setup, publication
 and shutdown, at $2.90 per VM-hour against $125 per week. Reservations that cross
 the week boundary or exceed the remaining allowance are refused. The final fifteen
-minutes are a shutdown margin: execution stops early enough to request deallocation.
+minutes are a shutdown margin. The preceding fifteen minutes are reserved for
+publication; execution and environment preparation stop before that window.
 Actual charged estimates run from before VM start until Azure reports
 `VM deallocated`; `VM stopped` and a successful API submission are insufficient.
 Unconfirmed shutdown leaves the interval open and blocks further admission.
@@ -750,7 +751,12 @@ per-file SHA-256 inventory, then publishes a ZIP plus its hash to the private
 container before marking itself idle. `results` downloads without restarting
 compute, checks archive size/hash, rejects unsafe or unexpected entries, and checks
 every artifact. Cancel and timeout retain partial files. An upload failure retains
-disk files, but is not evidence of successful host retrieval.
+disk files, but is not evidence of successful host retrieval. Archives use immutable
+SHA-256 blob names; the descriptor is published last. For retained disk files, run
+`results <job-id> --recover`. This admits a separate one-hour maintenance reservation
+with a fresh lease, republishes the original job without executing it, and deallocates.
+Use `results <job-id>` after it finishes to download and verify the files. Recovery
+VM time is charged to both the weekly ledger and the original job cost.
 
 Verification requires a completed runner and launcher record, zero exit and
 verification exit codes, stable source, complete capture, valid expected reports
@@ -765,8 +771,8 @@ Implementation, acceptance evidence and remaining limitations belong in
 
 
 Recovery: `reconcile` is a maintenance command for a stranded reservation. It
-requests deallocation and closes the interval only after the observed deallocated
-state; it never clears usage manually. `status` caches outside submission identities.
+closes the interval only after observing an already deallocated VM. It refuses a
+running VM and directs the caller to `cancel`; it never clears usage manually. `status` caches outside submission identities.
 The guardian publishes the new job/deadline in VM tags before start; the guest
 watchdog reads that lease from Azure instance metadata rather than trusting a prior
 job's disk lease. Shutdown is serialized with admission and fenced by job identity.

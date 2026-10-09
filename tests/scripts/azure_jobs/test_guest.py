@@ -102,3 +102,51 @@ def test_existing_named_job_is_not_adopted():
             WindowsJob.create(name='Local\\FP-Offline-collision-test')
     finally:
         first.close()
+
+
+def test_expired_deadline_never_spawns(tmp_path, monkeypatch):
+    monkeypatch.setattr(guest.WindowsJob, 'create', lambda **kw: pytest.fail('spawn after cutoff'))
+    result = guest.run_tree(['unused'], tmp_path, tmp_path, deadline=time.time()-1)
+    assert result['status'] == 'interrupted'
+    assert result['reason'] == 'timeout'
+
+
+def test_recovery_defers_to_live_finalizer(tmp_path, monkeypatch):
+    from scripts.azure_jobs import watchdog
+    from scripts.azure_jobs.control import locked, atomic
+    job = tmp_path/'jobs/job'; job.mkdir(parents=True)
+    atomic(job/'record.json', {'status':'not_started'})
+    monkeypatch.setattr(watchdog, 'terminate_tree', lambda name: True)
+    monkeypatch.setattr(watchdog.time, 'sleep', lambda seconds: None)
+    monkeypatch.setattr(watchdog, 'upload', lambda *a: pytest.fail('concurrent publisher'))
+    with locked(tmp_path/'guest.lock'):
+        assert watchdog.recover({'guest_root':str(tmp_path)}, {'job_id':'job'}, 'cancelled') is False
+        assert json.loads((job/'record.json').read_text())['status'] == 'not_started'
+
+
+def test_upload_publishes_immutable_archive_before_descriptor(tmp_path, monkeypatch):
+    from scripts.azure_jobs.control import atomic
+    (tmp_path/'results.zip').write_bytes(b'zip')
+    atomic(tmp_path/'archive.json', {'sha256':guest.sha256(tmp_path/'results.zip')})
+    atomic(tmp_path/'state.json', {'status':'completed'})
+    names=[]
+    monkeypatch.setattr(guest,'checked',lambda args,**kw: names.append(args[args.index('--name')+1]))
+    guest.upload({'az':'az','storage_account':'test','container':'test'},tmp_path,'job')
+    assert names[0] == 'job/'+guest.sha256(tmp_path/'results.zip')+'.zip'
+    assert names[-1] == 'job/archive.json'
+
+
+def test_republish_keeps_terminal_record_and_never_executes(tmp_path, monkeypatch):
+    from scripts.azure_jobs.control import atomic
+    spec=dict(job_id='original',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
+    job=tmp_path/'jobs/original'; job.mkdir(parents=True)
+    repo=tmp_path/'repos/original'; repo.mkdir(parents=True); (repo/'out').write_text('result')
+    record={'status':'completed','exit_code':0,'source_stable':True}
+    atomic(job/'record.json',record)
+    monkeypatch.setattr(guest,'execute',lambda *a: pytest.fail('replayed job'))
+    observed=[]
+    monkeypatch.setattr(guest,'upload',lambda *a: observed.append(a[2]))
+    guest.republish({'guest_root':str(tmp_path),'session_id':'recovery'},spec)
+    assert json.loads((job/'record.json').read_text()) == record
+    assert json.loads((tmp_path/'idle.json').read_text())['job_id']=='recovery'
+    assert observed==['original']
