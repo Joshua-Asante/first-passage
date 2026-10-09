@@ -1,4 +1,4 @@
-# ADR 2026-10-09 — Self-funded lane reopened: personal Tradovate account running the accepted four-strategy book, doubling as the CME data source
+# ADR 2026-10-09 — Self-funded lane reopened: personal Tradovate account, maximum-growth objective, doubling as the CME data source
 
 **Status:** Accepted (operator executive decision, chat 2026-10-09)
 **Decision date:** 2026-10-09
@@ -13,12 +13,13 @@
 1. **Lane.** The operator reopens a self-funded lane. Venue: the operator's existing
    personal Tradovate account (broker chosen 2026-10-09 over Ironbeam, a Rithmic FCM,
    tastytrade and IBKR). Planned starting capital: $10,000.
-2. **Book.** The lane runs the accepted four-strategy book pinned in
-   [`core/strategies/BOOK_SOURCES.sha256`](../../core/strategies/BOOK_SOURCES.sha256):
-   Aegis 6J, Striker DJ30 MYM pyramid, Vanguard Gold MGC, ORB MNQ. Locked parameters
-   stay immutable; personal-account sizing is a new (portfolio, venue) binding under
-   the [concept-not-constant ADR](2026-07-13-dd-protection-concept-not-constant.md),
-   not an edit of the Tradeify binding or of `dd_protection` constants.
+2. **Objective and book.** The lane's objective is **maximum growth** of the
+   account. The portfolio is **not yet selected**; it is not the Tradeify book by
+   default (operator, 2026-10-09). Selection is owed against the growth objective,
+   with candidates drawn from existing strategies under their locks; whatever is
+   chosen gets its own (portfolio, venue) sizing binding under the
+   [concept-not-constant ADR](2026-07-13-dd-protection-concept-not-constant.md),
+   never an edit of the Tradeify binding or of `dd_protection` constants.
 3. **Data.** The same personal account is the intended real-time CME source for the
    signal daemon, replacing the retired Databento path, subject to Tradovate's and
    CME's licensing answers (the P6 draft in the
@@ -48,14 +49,17 @@ AGENTS.md live-execution rules (M1, arming, per-session GO); private-figure poli
 
 **Owed before first live order** (each a separate record with its owner):
 
-1. Capital-clearance standard (operator ruling) and its evaluation against the book.
+1. Portfolio selection for the growth objective, and the capital-clearance standard
+   (operator ruling: the risk of ruin or the maximum drawdown accepted in exchange for growth)
+   evaluated against it.
 2. Personal-account tier in `core/firm_rules.py` with `starting_balance`, then the
    `core/mc/preflight.py` engine pre-flight and a re-MC under that tier.
 3. Tradovate API access on the personal account: the $1,000 key requirement, the API
    add-on and the data entitlement (fees in the feed note are excerpt-grade; verify on the page).
 4. CME data licensing answer for automated own-account use (feed-note CME and P6 drafts).
-5. Tradeify rule check: whether running the same signals in a personal account at the
-   same broker breaches any copy-trading, hedging or account-linking rule.
+5. Tradeify rule check, if the chosen portfolio shares any strategy with the Tradeify
+   book: whether the same signals in a personal account at the same broker breach any
+   copy-trading, hedging or account-linking rule.
 6. Rail binding: an account/instance binding for the personal account kept separate from
    the Tradeify instance (configuration-as-code; no shared credentials).
 

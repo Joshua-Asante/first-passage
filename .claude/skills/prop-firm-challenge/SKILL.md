@@ -34,8 +34,8 @@ both Striker legs**, so there is no deployed strategy and nothing to arm).
   (do not restate panel bust cells here).
 - ⚠ Bust/DD figures anywhere in this skill are **EOD-clock lower bounds** pending
   [`W1 ADR`](../../../docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md).
-- Self-funded lane REOPENED 2026-10-09 (personal Tradovate account, accepted four-strategy
-  book; no capital authorization until the clearance standard is ruled) —
+- Self-funded lane REOPENED 2026-10-09 (personal Tradovate account, maximum-growth objective,
+  portfolio not yet selected; no capital authorization until the clearance standard is ruled) —
   [`2026-10-09`](../../../docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md),
   superseding the [`2026-07-16`](../../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) closure;
   manual CFD + FXIFY closed; historical MC now pins via `core/historical_challenge.py`'s
