@@ -33,11 +33,11 @@ Not read: Pine, ports, effective inputs, the Tier-1 report, series or key list, 
 
 ## §1 — Purpose
 
-One pre-registered screen of **one** successor configuration of the Tradeify book: step 3 of the [T00 card §8 successor decision tree](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record) (#734). The configuration comes from the [Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §2.1 pattern (#729/#731), chosen before any successor output exists. The §6 verdict is unchanged; separately, the stopping rule's definition (a) reads this screen's H2 result under the pessimistic A5 assignment, or after a **not confirmed** (b) reading the tightened bracket's pessimistic end (§9). The configuration is a de-risking of the declared book (size cut, adds off, leg dropped or reshaped, uniform or early-phase per-session risk reduction), never a re-optimization. If the Tier-2 report names row 6 ("no evidence-supported successor"), this file is not frozen and returns to the operator.
+One pre-registered screen of **one** successor configuration of the Tradeify book: step 3 of the [T00 card §8 successor decision tree](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record) (#734). The configuration comes from the [Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §2.1 pattern (#729/#731), chosen before any successor output exists. The §6 verdict is unchanged; separately, the stopping rule's definition (a) reads this screen's H2 result under the pessimistic A5 assignment, or after a **not confirmed** (b) reading the tightened bracket's pessimistic end (§9). The configuration is a de-risking of the declared book (size cut, adds off, leg dropped or reshaped, uniform or early-phase per-session risk reduction), never a re-optimization. If the Tier-2 report names row 6 ("no evidence-supported successor") or row 4 alone (a regime question, not a configuration), this file is not frozen and returns to the operator.
 
 | # | Field | Status |
 |---|---|---|
-| C-1 | **Tier-2 pattern row(s) relied on** (rows 1–5 by number; with the Tier-2 report SHA-256) | **OWED (operator)** |
+| C-1 | **Tier-2 pattern row(s) relied on** (rows 1–3 or 5 by number; row 4 is not a configuration source; with the Tier-2 report SHA-256) | **OWED (operator)** |
 | C-2 | **Base expressions:** the declared book (r3c identities) or the route-native editions (successor preregs, once frozen) | **OWED (operator)** |
 | C-3 | **Leg set** | **OWED (operator)** |
 | C-4 | **Size vector** (per leg, base and add; the risk-sized leg's cap) | **OWED (operator)** |
