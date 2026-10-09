@@ -4,7 +4,7 @@
 
 **Originals preserved:** `first-passage-archive` branch `archive/preserve-exposure-2026-10-09` (preservation commit `950ee0f`, manifest update `e273cbb`), manifest `preservation/2026-10-09-public-exposure/MANIFEST.json`.
 
-**Substitution used:** the self-funded account's dollar starting capital becomes `E_0` (value private). No other wording changes.
+**Substitution used:** the self-funded account's dollar starting capital becomes `E_0` (value private). No other wording changes, except removing one ratio that would have derived the value (comment `6074237135`).
 
 ## 1 — Replacement text by item
 

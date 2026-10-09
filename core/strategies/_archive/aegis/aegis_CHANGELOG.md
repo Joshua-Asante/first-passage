@@ -41,10 +41,10 @@ The filter improved both net and profit factor on the 2022–2024 train split an
 Removing the month-end trades improved net, profit factor, win rate, maximum drawdown and return over maximum drawdown together while lowering the trade count — the signature of removing genuine negative-expectancy trades, not curve-fit noise.
 
 ### Rejected during same INQHIORI loop (do not revisit without new mechanism evidence)
-- **Post-holiday Wed 10:15 filter** — failed OOS (the train-split effect reversed in test).
+- **Post-holiday Wednesday time-block filter** — failed OOS (the train-split effect reversed in test).
 - **FOMC-day filter** — different mechanism (chop/BE-shaves, not impulse); near-flat aggregate.
 - **BOJ-day filter** — no session overlap in 4yr panel (BOJ announces before the session opens).
-- **Wed 10:15 blanket block** — redundant after EOM; residual is noise on top of EOM/FOMC correlation.
+- **Wednesday time-block blanket block** — redundant after EOM; residual is noise on top of EOM/FOMC correlation.
 
 ### Post-v4.3 portfolio Monte Carlo (completed 2026-04-23)
 The previously-queued post-v4.3 portfolio MC re-run executed at the joint 2026-04-23 lock and the same-day Guardian risk re-lock (0.30% → 0.34%). Aegis's share of bust probability fell sharply from the 2026-04-17 MC to roughly the original expectation at the post-relock canonical config (G 0.34% / S 1.00% / A 1.50%). See `docs/adr/2026-04-23-guardian-risk-relock-0.34.md` and [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md) for the locked MC anchors.
