@@ -533,6 +533,11 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - **When the stopping rule fires.** "Confirms the pessimistic anchor" means either of these:
     - **(a)** The successor screen's H2 result under the pessimistic A5 assignment (`UNDETERMINED` counted as bust) fails the A6 bust ceiling, and no accepted R1/R2 resolution shows that assignment to be unrealistic.
     - **(b)** An accepted R1/R2 resolution shows that `UNDETERMINED` paths resolve predominantly as busts. "Predominantly" means more than half of the resolved `UNDETERMINED` paths resolve as busts, judged on H2.
+      - *Clarification (Joshua, 2026-10-09, "add the clarification under definition (b) on the T00 card"; fixed before any resolution output exists).* The H2 bust rate after resolution equals the agreed-bust share plus the resolved-as-bust share of `UNDETERMINED` paths. "More than half" is therefore the same as a resolved H2 bust above the **midpoint**: the agreed-bust share plus half the `UNDETERMINED` share, computed exactly from the step-12 H2 tallies (results `a5b985d0…`), never rounded.
+      - If the resolution narrows the bracket without collapsing it, the result is an interval:
+        - **Confirmed:** even its favourable end is above the midpoint.
+        - **Not confirmed:** even its pessimistic end is at or below the midpoint.
+        - **Undecided:** the interval straddles the midpoint. The bracket stands, and (a) applies to any successor screen.
 
     Joshua confirmed (a) and (b) and set the (b) threshold on 2026-10-08, before any resolution output existed, in chat to the Deployment Coordinator: "go with your recommendation for 1".
   - While step 1 is pending, the new H, P7 re-run and Tier-2 source approval stay on hold (Joshua, 2026-10-08).
