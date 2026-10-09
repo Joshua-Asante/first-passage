@@ -21,7 +21,7 @@ All anchors are `git log -1 --format='%h %cs' -- <path>` on 2026-10-09.
 - `core/firm_rules.py` — anchor `7e9bd50 2026-10-04`. No self-funded tier type exists; Tradeify per-side costs (:321) and the 6J full-contract-only constraint (:236-239) are the only Tradovate-routed cost facts on file.
 - `core/strategies/BOOK_SOURCES.sha256` — anchor `7e9bd50 2026-10-04`. Pins the four accepted legs' Pine and runtime ports (private; not read, not quoted).
 - `lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md` — anchor `b31c6d4 2026-10-06`. The four-leg book FALSIFIED on the intraday-honest clock at four 100K tiers (bust 25–36%).
-- `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json` — anchor `7e9bd50 2026-10-04`. Names the fifth source with an accepted CME trade list (Striker NAS100 MNQ, DOW-excluded), not selected for Tradeify.
+- `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json` — anchor `7e9bd50 2026-10-04`. Names the fifth source with an accepted CME trade list (Striker NAS100 MNQ, DOW-excluded), not selected for Tradeify. Ruled into this pool by the operator 2026-10-09.
 - `docs/adr/2026-08-30-evaluation-order.md` — anchor `7e9bd50 2026-10-04`. Portfolio/venue fit comes last, only for already-confirmed candidates, with K opened before any Explore read.
 - `core/lifecycle.py` — anchor `7e9bd50 2026-10-04`. State file absent ⇒ every leg reads AUTHORIZED 1.0× (:56-59); locked parameters are not touched by sizing.
 
@@ -68,7 +68,7 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 - **Fractional contracts or uncompounded "scaled P&L" without floor rounding** — a $10,000 account cannot hold 0.3 contracts; the selection must match what the rail can place.
 - **Relaxing to 95 in 100 because nothing clears** — the operator confirmed 99 in 100; a change is a new ruling and a new freeze.
 - **Retuning any strategy parameter** — locked parameters are immutable; only per-leg contract multipliers vary.
-- **Adding a VENUE_WITHDRAWN or rejected edition without an operator ruling** — see the pre-lock decision on the NAS100 MNQ edition.
+- **Adding any other VENUE_WITHDRAWN or rejected edition** — only the NAS100 MNQ edition was ruled in (pre-lock checklist); rejected candidates need new mechanism evidence.
 
 ---
 
@@ -137,6 +137,6 @@ git log -1 --format='%h %cs' -- core/mc/simulation.py lab/discovery/remc_series_
 - [x] All §0 paths read and anchored
 - [x] §3 names the symptom (no fit portfolio known), not a fix
 - [x] §4 falsifiable with binary §6 triggers
-- [ ] **Operator decision:** include the Striker NAS100 MNQ (DOW-excluded) edition in the pool? It has an accepted trade list but is VENUE_WITHDRAWN at Tradeify; AGENTS.md bars withdrawn Striker editions without saying whether that bar is venue-scoped.
+- [x] **Operator decision (2026-10-09, "include it"):** the Striker NAS100 MNQ (DOW-excluded) edition is in the pool for this personal-account selection only; its Tradeify withdrawal stands.
 - [ ] **Operator decision:** freeze the pre-registration (commit hash recorded above) — Phase 0 may not start before it.
 - [ ] §10 hooks run after Phase 2

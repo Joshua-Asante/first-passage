@@ -4,7 +4,7 @@
 
 ## A — Pool
 
-Legs with an accepted CME trade list, at their locked parameters, exports pinned by hash in `lab/analysis/c1/four_firm_remc_2026-10/run_four_firm_remc.py`:
+Legs with an accepted CME trade list, at their locked parameters. Export pins: the four book legs in `lab/analysis/c1/four_firm_remc_2026-10/run_four_firm_remc.py`; the NAS100 MNQ edition at `strategies[3].export_sha256` (`striker_nas100_mnq_dow_wed_excluded`) in `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json`:
 
 | Leg | Instrument | Minimum lot |
 |---|---|---|
@@ -12,14 +12,14 @@ Legs with an accepted CME trade list, at their locked parameters, exports pinned
 | Striker DJ30 MYM p250 | MYM | 1 micro |
 | Vanguard Gold MGC v0.4 | MGC | 1 micro |
 | ORB MNQ v7 reconstruction | MNQ | 1 micro |
-| *Striker NAS100 MNQ, DOW-excluded* | MNQ | 1 micro — **in the pool only if the operator rules it in before freeze** |
+| Striker NAS100 MNQ, DOW-excluded | MNQ | 1 micro — included by operator ruling 2026-10-09 ("include it"); scoped to this personal-account selection, the Tradeify withdrawal stands |
 
 ## B — Grid and K
 
 - Each leg gets a multiplier `k_i ∈ {0, 1/8, 1/4, 1/2, 1, 2}` applied to its accepted per-trade quantity `q`.
 - Scaled quantity: `n = floor(k_i · q)`. Per-trade P&L and adverse excursion scale by `n / q`. A trade with `n = 0` is dropped with its costs.
 - A configuration is one vector `(k_1 … k_L)` with at least one non-zero leg. Configurations whose scaled trade lists are identical are deduplicated.
-- **K = the count of distinct configurations after deduplication**, computed mechanically from the exports' quantities and written to the `register_search` manifest before any Explore read. Upper bound: 6^4 − 1 = 1,295 (four legs) or 6^5 − 1 = 7,775 (five).
+- **K = the count of distinct configurations after deduplication**, computed mechanically from the exports' quantities and written to the `register_search` manifest before any Explore read. Upper bound with five legs: 6^5 − 1 = 7,775.
 
 ## C — Statistic
 
