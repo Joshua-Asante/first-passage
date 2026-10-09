@@ -1,6 +1,6 @@
 # Q-SFGROWTH-1 — Verdict pre-registration
 
-**Status:** DRAFT 2026-10-09 — not frozen. Freezing requires the operator's GO and the commit hash recorded in the [parent brief §8](../Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md#8--verdict-pre-registration). A verdict computed after any constant below moves is void; a changed constant is a new pre-registration.
+**Status:** FROZEN 2026-10-09 (operator: "freeze the plan"), before any export is read or any scorer exists. The freeze commit is recorded in the [parent brief §8](../Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md#8--verdict-pre-registration). A verdict computed after any constant below moves is void; a changed constant is a new pre-registration. Corrections from the freeze review, if any, land before Phase 0 reads data, as a dated amendment and re-freeze.
 
 ## A — Pool
 

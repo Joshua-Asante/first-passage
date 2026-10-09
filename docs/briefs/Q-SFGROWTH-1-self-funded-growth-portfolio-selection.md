@@ -1,6 +1,6 @@
 # Q-SFGROWTH-1 — Self-funded growth portfolio selection under a 15% peak-to-trough limit
 
-**Status:** `OPEN — DRAFT (pre-lock)`
+**Status:** `OPEN`
 **Authored:** 2026-10-09
 **Closed:** N/A
 **Authors:** Joshua (rulings) + Claude Code (author)
@@ -99,7 +99,9 @@ Execution runs in the operator's primary checkout (private exports); this public
 [`docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md`](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md) — ships a worked numeric example for the two-implementer test.
 
 Pre-registration commit hash: `<populated when the operator freezes it>`
-Pre-registration date: 2026-10-09 (DRAFT)
+Pre-registration date: 2026-10-09 (FROZEN)
+
+Operator rulings before freeze (2026-10-09): the Striker NAS100 MNQ (DOW-excluded) edition is in the pool for this personal-account selection only, its Tradeify withdrawal standing ("include it"); the pre-registration is frozen ("freeze the plan").
 
 ---
 
@@ -130,13 +132,3 @@ python scripts/check_brief.py docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfo
 git log -1 --format='%h %cs' -- core/mc/simulation.py lab/discovery/remc_series_builder.py core/firm_rules.py
 ```
 
----
-
-## Pre-Lock Checklist (DRAFT briefs only)
-
-- [x] All §0 paths read and anchored
-- [x] §3 names the symptom (no fit portfolio known), not a fix
-- [x] §4 falsifiable with binary §6 triggers
-- [x] **Operator decision (2026-10-09, "include it"):** the Striker NAS100 MNQ (DOW-excluded) edition is in the pool for this personal-account selection only; its Tradeify withdrawal stands.
-- [ ] **Operator decision:** freeze the pre-registration (commit hash recorded above) — Phase 0 may not start before it.
-- [ ] §10 hooks run after Phase 2
