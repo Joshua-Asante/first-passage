@@ -4,7 +4,7 @@
 **Authority:** Joshua (operator), 2026-10-08, via the First Passage Deployment Coordinator: "go with your suggestions 1-3" (item 3, parallel work). Drafting only.
 **Owner:** the T00 line ([amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) step 3: after NO-GO-evidence, "adjust the book" is an operator investment decision). The successor direction comes from the [Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §2.1 pattern table.
 **Loop of record:** STRATEGIC (investment decision on an adjusted book; K accounting in §2).
-**Authored:** 2026-10-08, Claude Code (drafting only). The operator owns every OWED field, the stopping rule and the freeze.
+**Authored:** 2026-10-08, Claude Code (drafting only). The operator owns every OWED field and the freeze; the stopping rule is adopted at its owner (§9).
 
 **This draft authorizes nothing:** no replay, screen, Monte Carlo, source build, signing, dispatch or spend. It contains no Pine, port, account identifier, private value, rate, dollar figure or count.
 
@@ -33,7 +33,7 @@ Not read: Pine, ports, effective inputs, the Tier-1 report, series or key list, 
 
 ## §1 — Purpose
 
-One pre-registered screen of **one** successor configuration of the Tradeify book: step 3 of the [T00 card §8 successor decision tree](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record) (#734). The configuration comes from the [Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §2.1 pattern (#729/#731), chosen before any successor output exists; the screen is judged on H2 under the pessimistic A5 assignment, per definition (a) (§9). The configuration is a de-risking of the declared book (size cut, adds off, leg dropped or reshaped, uniform or early-phase per-session risk reduction), never a re-optimization. If the Tier-2 report names row 6 ("no evidence-supported successor"), this file is not frozen and returns to the operator.
+One pre-registered screen of **one** successor configuration of the Tradeify book: step 3 of the [T00 card §8 successor decision tree](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record) (#734). The configuration comes from the [Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §2.1 pattern (#729/#731), chosen before any successor output exists. The §6 verdict is unchanged; separately, the stopping rule's definition (a) reads this screen's H2 result under the pessimistic A5 assignment, or after a **not confirmed** (b) reading the tightened bracket's pessimistic end (§9). The configuration is a de-risking of the declared book (size cut, adds off, leg dropped or reshaped, uniform or early-phase per-session risk reduction), never a re-optimization. If the Tier-2 report names row 6 ("no evidence-supported successor"), this file is not frozen and returns to the operator.
 
 | # | Field | Status |
 |---|---|---|
@@ -56,12 +56,12 @@ The book protection policy (1% combined-peak trigger, 0.40 scale, prior-close ti
 - Choosing a configuration from the Tier-2 pattern is one selection: **K + 1** for this successor ([Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §7, "Selection count").
 - **Each further configuration screened is another trial** (K + 2, K + 3 …), whether under this file or a sibling. A sibling needs its own frozen pre-registration (§R).
 - The size-feasibility grid (tree step 1) is **K = 7** trials ([RESULTS](../../../lab/analysis/c1/size_feasibility_2026-10/RESULTS.md) "Trial count"); this successor's lineage carries it.
-- K₀, the trial count carried by the declared book's lineage before this pick, is **OWED (operator)**, read from the K ledger (`futures-anomaly-discovery` skill) and recorded here before freeze.
+- K₀, the trial count carried by the declared book's lineage before this pick, is **OWED (operator)**, read from the K ledger (`futures-anomaly-discovery` skill) and recorded here before freeze, stating whether it already includes the grid's 7 so the grid is counted once.
 - The step-12 result on the declared book is the observation that prompted the search; it is a trial already counted, not a free look.
 
 ## §3 — Exposure statement
 
-Readers of per-session or per-leg step-12 detail, before this file was written:
+Readers of per-session or per-leg step-12 detail, or of per-k size-feasibility results, before freeze:
 
 | # | Reader | Date / time | Saw | Source |
 |---|---|---|---|---|
@@ -77,7 +77,7 @@ Readers of per-session or per-leg step-12 detail, before this file was written:
 
 Also exposed to everyone: the public step-12 verdict `NO-GO-evidence-robust` on the declared book (#724), and the Tier-2 card's admission-time row 5 (Tier-2 card §2.1, row 5 provenance).
 
-**Drafter.** This session read the Tier-1 §8 addendum (hashes, labels and the reader log only) and the Tier-2 card. The takeover session (2026-10-09) read the public size-feasibility RESULTS (labels, hashes, readers) and T00 card §8, no private artifact. It read no report, series, key list, results file or private source, and ran nothing.
+**Drafter.** The drafting session read the Tier-1 §8 addendum (hashes, labels and the reader log only) and the Tier-2 card. The takeover session (2026-10-09) read the public size-feasibility RESULTS (labels, hashes, readers) and T00 card §8. Neither read any report, series, key list, private results file or private source, and neither ran anything.
 
 **§3 completeness.** The operator adds any reader the table does not list before freeze — **OWED (operator)**.
 
@@ -142,12 +142,12 @@ Each gate's structure mirrors #581 A6; its numbers are the cited owners' unless 
 
 ## §9 — OWED list, stopping rule and freeze
 
-Owed (operator) at freeze: C-1..C-7; K₀ (§2); T2-* readers and §3 completeness; G4 value and binding; G5 tier, ceiling and binding; G6 metric and threshold; §7 RNG tag, roots, depth, budget and disjointness; §8 items 1, 2, 3 and 5; G6 assignment dependence and the classifier extension (§6).
+Owed (operator) at freeze: C-1..C-7; K₀ (§2); T2-* readers and §3 completeness; G4 value and binding; G5 tier, ceiling and binding; G6 metric and threshold; §7 RNG tag, roots, depth, budget and disjointness; §8 items 1, 2, 3 and 5; G6 assignment dependence and the classifier extension (§6); the producer of the tightened-bracket H2 reading that (a) uses after a **not confirmed** (b) reading (operator / build owner).
 
 **Stopping rule (adopted).** The successor stopping rule and decision tree on [T00 card §8](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record) (#734, clarified by #741) govern; this file is tree step 3. In short:
 - **(a)** This screen's H2 result under the pessimistic A5 assignment fails the A6 bust ceiling, and no accepted R1/R2 resolution shows that assignment to be unrealistic.
-- **(b)** An accepted R1/R2 resolution shows H2 `UNDETERMINED` paths resolve predominantly as busts, by the exact (never rounded) H2 midpoint test; its reading is **confirmed**, **not confirmed** or **undecided**. After **not confirmed**, (a) judges this screen on the pessimistic end of the tightened bracket; after **undecided**, (a) applies unchanged.
-- Either firing stops successor work on this book (card §8 "Consequence"). The card's text governs where this summary differs. The operator decides at freeze only what the tree leaves open.
+- **(b)** An accepted R1/R2 resolution shows H2 `UNDETERMINED` paths resolve predominantly as busts, by the exact (never rounded) H2 midpoint test; its reading is **confirmed**, **not confirmed** or **undecided**, and only **confirmed** fires (b). After **not confirmed**, (a) judges this screen on the pessimistic end of the tightened bracket; after **undecided**, (a) applies unchanged.
+- (a) or a confirmed (b) firing stops successor work on this book (card §8 "Consequence"). The card's text governs where this summary differs. The operator decides at freeze only what the tree leaves open.
 
 **Freeze procedure.**
 1. The Tier-2 report is delivered and accepted; its SHA-256 and the T2-* readers are recorded.
