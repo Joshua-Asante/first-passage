@@ -89,8 +89,9 @@ def test_unlocatable_candidates_are_dropped_with_a_reason():
     mismatch = [five(0, 100, 101, 90, 95), five(1, 95, 105, 94, 104), five(2, 104, 120, 103, 110, 2)]
     gap = [five(0, 100, 101, 90, 95), five(2, 104, 120, 103, 110)]
     own_path = [five(0, 100, 101, 90, 95), five(1, 95, 105, 94, 104), five(2, 104, 120, 103, 110)]  # 100->104 first
-    rows, drops = evidence_rows([(LEG, original, INSTANT, f) for f in (reversed_, off_segment, own_path, mismatch, gap)])
-    assert rows == [] and drops == {'REVERSED': 1, 'SEGMENT': 1, 'PATH': 1, 'AGGREGATE': 1, 'MISSING': 1}
+    results = [evidence_rows([(LEG, original, INSTANT, f)]) for f in (reversed_, off_segment, own_path, mismatch, gap)]
+    assert all(rows == [] for rows, _ in results)
+    assert [dict(drops) for _, drops in results] == [{'REVERSED': 1}, {'SEGMENT': 1}, {'PATH': 1}, {'AGGREGATE': 1}, {'MISSING': 1}]
     with pytest.raises(ValueError):
         evidence_row('nope', original, INSTANT, reversed_)
     with pytest.raises(ValueError):
@@ -147,11 +148,11 @@ def test_parser_refuses_marked_rows_until_the_convention_is_ratified(monkeypatch
     assert _parse([unmarked]).located == {}                   # unmarked rows are unaffected
 
 
-def test_module_default_keeps_the_convention_unratified():
+def test_module_default_is_ratified():
     from pathlib import Path
     from c1_rail.qualification import production_source
     lines = Path(production_source.__file__).read_text(encoding='utf-8').splitlines()
-    assert [line for line in lines if line.startswith('LOCATED_CONVENTION_RATIFIED')] == ['LOCATED_CONVENTION_RATIFIED = False']
+    assert [line for line in lines if line.startswith('LOCATED_CONVENTION_RATIFIED')] == ['LOCATED_CONVENTION_RATIFIED = True']
 
 
 def test_marked_row_must_start_at_the_source_bar():
@@ -246,3 +247,16 @@ def test_malformed_finer_bars_are_dropped():
     for fives in (bad_interior, naive, nan):
         assert evidence_row(LEG, original, INSTANT, fives) == (None, 'MALFORMED')
     assert evidence_row(LEG, original, INSTANT, good)[1] is None
+
+
+def test_generator_locates_only_the_first_boundary_per_leg_and_bar():
+    original, _ = _located_row()
+    fives = [Bar(T0, 100, 101, 90, 95, 1), Bar(T0 + timedelta(minutes=5), 95, 99, 94, 97, 1),
+             Bar(INSTANT, 97, 120, 96, 110, 1)]
+    first = T0 + timedelta(minutes=5)
+    other = 'dj30_mym_p250'
+    rows, drops = evidence_rows([(LEG, original, INSTANT, fives), (LEG, original, first, fives),
+                                 (other, original, INSTANT, fives)])
+    assert drops == {'LATER_BOUNDARY': 1}
+    assert sorted((r['leg_id'], r['instant']) for r in rows) == sorted(
+        [(LEG, first.isoformat()), (other, INSTANT.isoformat())])

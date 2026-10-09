@@ -582,10 +582,11 @@ class ScheduleExecutionBracket:
                                          evidence.located)
 
 
-LOCATED_CONVENTION = 'evidence-located/v1'   # DRAFT addendum 2026-10-08
-# The parser refuses marked rows until the ratifying PR flips this, so ratification
-# moves the code closure and lands with a new H.
-LOCATED_CONVENTION_RATIFIED = False
+LOCATED_CONVENTION = 'evidence-located/v1'   # addendum 2026-10-08, RATIFIED 2026-10-09
+# The parser refuses marked rows while this is False. Ratified by the operator on
+# 2026-10-09 (convention at #742 19502bd); the flip moves the code closure, so it
+# lands with a new H.
+LOCATED_CONVENTION_RATIFIED = True
 
 
 def parse_schedule_execution_evidence(raw):

@@ -1,4 +1,4 @@
-"""Evidence-located schedule placements on the accepted path (DRAFT convention).
+"""Evidence-located schedule placements on the accepted path (ratified 2026-10-09).
 
 Builds ``qualification-schedule-execution/v1`` rows (``parse_schedule_execution_evidence``)
 for an intrabar schedule instant from finer bars of the same feed (for example
@@ -27,11 +27,13 @@ stays on the bracket's R1/R2 vertex placement:
 - ``TIED``: both extremes were first reached inside the same finer bar, so their
   order is undecidable at that resolution;
 - ``SEGMENT``: ``p`` does not lie on the located segment;
+- ``LATER_BOUNDARY`` (``evidence_rows``): a second intrabar boundary of the same
+  leg and bar (only the first can be located);
 - ``PATH``: the prefix's or suffix's own emulator path would add a turning point
   (the replay's split validator would reject the row).
 
-Pure: no I/O, no private values. The parser refuses the rows it emits until
-``production_source.LOCATED_CONVENTION_RATIFIED`` is set by the ratifying change.
+Pure: no I/O, no private values. The convention was ratified 2026-10-09; the parser
+accepts marked rows while ``production_source.LOCATED_CONVENTION_RATIFIED`` is True.
 """
 from __future__ import annotations
 
@@ -106,9 +108,18 @@ def evidence_row(leg, original, instant, fine):
 
 
 def evidence_rows(candidates):
-    """Rows and drop counts for ``(leg, original M15 Bar, instant, finer bars)`` candidates."""
-    rows, drops = [], Counter()
-    for leg, original, instant, fine in candidates:
+    """Rows and drop counts for ``(leg, original M15 Bar, instant, finer bars)`` candidates.
+
+    Pass every intrabar schedule instant of a bar. Only the first per (leg, bar)
+    can be located: a later same-bar boundary drops as ``LATER_BOUNDARY``, because
+    the bracket refuses a marked row that follows an earlier same-bar split.
+    """
+    rows, drops, seen = [], Counter(), set()
+    for leg, original, instant, fine in sorted(candidates, key=lambda c: (c[0], c[1].ts, c[2])):
+        if (leg, original.ts) in seen:
+            drops['LATER_BOUNDARY'] += 1
+            continue
+        seen.add((leg, original.ts))
         row, reason = evidence_row(leg, original, instant, fine)
         if row is None:
             drops[reason] += 1
