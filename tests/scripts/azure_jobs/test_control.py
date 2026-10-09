@@ -133,3 +133,17 @@ def test_malformed_azure_response_does_not_abandon_shutdown(tmp_path):
     azure = Flaky([])
     control.retire(azure, ledger, clock=lambda: MONDAY+110, sleep=lambda _:None, attempts=2)
     assert ledger.read()["active"] is None
+
+
+def test_lease_adds_tags_on_bare_vm_without_replacing_other_tags():
+    from types import SimpleNamespace
+    calls = []
+    def execute(args, **kwargs):
+        calls.append(args)
+        if args[1:3] == ["vm", "update"]:
+            return SimpleNamespace(returncode=1, stdout="", stderr="Couldn't find tags")
+        return SimpleNamespace(returncode=0, stdout="{}", stderr="")
+    azure = control.Azure(dict(az="az.cmd", subscription="placeholder", resource_group="group", vm="vm"), execute=execute)
+    azure.set_lease("job", 1234)
+    assert calls[0][1:3] == ["tag", "update"]
+    assert calls[0][calls[0].index("--operation") + 1] == "Merge"

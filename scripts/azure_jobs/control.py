@@ -160,8 +160,13 @@ class Azure:
         return value[0] if isinstance(value, list) and len(value) == 1 else "unknown"
 
     def set_lease(self, job_id, deadline):
-        self.call(["vm", "update", *self.vm_args(), "--set",
-                   "tags.FPOfflineJob=" + job_id, "tags.FPOfflineDeadline=" + str(deadline)])
+        cfg = self.config
+        resource = ("/subscriptions/" + cfg["subscription"] + "/resourceGroups/"
+                    + cfg["resource_group"] + "/providers/Microsoft.Compute/virtualMachines/" + cfg["vm"])
+        # Generic vm update cannot set a nested key when Azure omits the tags object.
+        # Merge works for bare VMs and retains unrelated operator tags.
+        self.call(["tag", "update", "--resource-id", resource, "--operation", "Merge", "--tags",
+                   "FPOfflineJob=" + job_id, "FPOfflineDeadline=" + str(deadline)])
 
     def start(self):
         self.call(["vm", "start", *self.vm_args(), "--no-wait"])
