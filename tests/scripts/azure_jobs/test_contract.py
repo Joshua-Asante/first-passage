@@ -26,6 +26,30 @@ def test_valid_public_job():
     assert contract.validate(valid())['environment'] == 'operations'
 
 
+@pytest.mark.parametrize('name', ['.GIT/config', 'out/.gIt/config', '.ENV', 'out/.EnV.local'])
+def test_mixed_case_private_components_rejected(name):
+    spec = valid(); spec['expected_outputs'] = [name]
+    with pytest.raises(ValueError, match='forbidden'):
+        contract.validate(spec)
+
+
+@pytest.mark.parametrize('name', ['.GIT/config', '.gIt/config', '.ENV', '.EnV.local'])
+def test_collection_rejects_synthetic_windows_aliases_before_hashing(tmp_path, monkeypatch, name):
+    # Synthetic names only. On Windows these spellings alias the excluded names;
+    # Linux still exercises the inventory traversal and validation boundary.
+    alias = tmp_path / 'out' / name
+    alias.parent.mkdir(parents=True)
+    alias.write_text('synthetic fixture')
+    monkeypatch.setattr(contract, 'sha256', lambda path: pytest.fail('read forbidden artifact'))
+    with pytest.raises(ValueError, match='forbidden'):
+        contract.inventory(tmp_path, ['out'])
+
+
+def test_allowed_output_spelling_is_preserved(tmp_path):
+    (tmp_path / 'Result.TXT').write_text('synthetic result')
+    assert list(contract.inventory(tmp_path, ['Result.TXT'])) == ['Result.TXT']
+
+
 def test_artifact_inventory_excludes_env_and_refuses_links(tmp_path):
     (tmp_path / 'out').mkdir()
     (tmp_path / 'out/a.txt').write_text('hello')

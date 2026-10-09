@@ -1,10 +1,12 @@
 """Credential-free guest watchdog. Task Scheduler restarts this after a crash."""
 from __future__ import annotations
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 import time
+from scripts.agent_handoff import WindowsJob, spawn_provider
 from .control import Azure, atomic, locked, PUBLICATION_SECONDS
 from .guest import bundle, upload
 
@@ -125,6 +127,38 @@ def recover(config, lease, reason):
         lock.__exit__(None, None, None)
 
 
+def bounded_recover(config_path, lease, reason):
+    """The watchdog owns the cutoff, independently of recovery I/O or Python.
+
+    Kill-on-close owns the recovery worker and upload descendants. Never wait for
+    them at the cutoff: deallocation takes priority; retained disk files can be
+    republished under a separately admitted maintenance lease.
+    """
+    remaining = min(PUBLICATION_SECONDS, lease["deadline"] - time.time())
+    if remaining <= 0:
+        raise TimeoutError("recovery cutoff reached")
+    cutoff = time.monotonic() + remaining
+    owned = WindowsJob.create()
+    try:
+        with open(os.devnull, "wb") as output:
+            process = spawn_provider(
+                [sys.executable, "-I", str(Path(__file__).with_name("guest_entry.py")),
+                 "recover", str(config_path), json.dumps(lease), reason],
+                Path(__file__).resolve().parents[2], output, output, job=owned)
+            while True:
+                remaining = min(cutoff - time.monotonic(), lease["deadline"] - time.time())
+                if remaining <= 0:
+                    raise TimeoutError("recovery cutoff reached; disk evidence retained")
+                code = process.poll()
+                if code is not None:
+                    if code not in {0, 75}:
+                        raise RuntimeError("recovery failed; disk evidence retained")
+                    return code == 0  # 75: live supervisor owns finalization.
+                time.sleep(min(0.25, remaining))
+    finally:
+        owned.close()
+
+
 def main(config_path):
     config = read(config_path)
     azure = Azure(config)
@@ -144,7 +178,7 @@ def main(config_path):
             if time.monotonic() - lease_observed > 120:
                 lease = None
         reason = stop_reason(lease, read(root / "idle.json"), time.time())
-        if time.monotonic() < boot_grace and reason in {"deadline", "missing lease"}:
+        if time.monotonic() < boot_grace and reason == "missing lease":
             time.sleep(2)
             continue
         if lease and not reason:
@@ -153,14 +187,19 @@ def main(config_path):
             progress = read(job_dir / "heartbeat.json") or {}
             reason = job_stop_reason(lease, state, progress, (job_dir / "cancel").exists(), time.time())
         if reason:
-            if lease and reason != "idle":
+            if lease and reason not in {"idle", "deadline"}:
                 try:
-                    recovered = recover({**config, "deadline": lease["deadline"]}, lease, reason)
+                    recovered = bounded_recover(config_path, lease, reason)
                     if not recovered and reason != "bootstrap deadline" and time.time() < lease["deadline"]:
                         time.sleep(2)
                         continue
-                except Exception:
-                    pass  # A recovery/reporting failure must never prevent deallocation.
+                except Exception as exc:
+                    # No resource bindings or child diagnostics in public output.
+                    try:
+                        print("Watchdog recovery incomplete (" + type(exc).__name__
+                              + "); deallocating with disk evidence retained", file=sys.stderr)
+                    except OSError:
+                        pass  # Even an unavailable diagnostic sink cannot veto shutdown.
             # Keep retrying even if controller/laptop has disappeared.
             try:
                 azure.deallocate()

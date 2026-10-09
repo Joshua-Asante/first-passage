@@ -280,7 +280,7 @@ def test_watchdog_bootstrap_cutoff_deallocates_even_when_recovery_lock_busy(tmp_
     if state: atomic(tmp_path/'jobs/job/state.json',state)
     monkeypatch.setattr(watchdog,'Azure',Fake)
     monkeypatch.setattr(watchdog,'cloud_lease',lambda: {'job_id':'job','deadline':5000,'bootstrap_deadline':200})
-    monkeypatch.setattr(watchdog,'recover',lambda *a: False)
+    monkeypatch.setattr(watchdog,'bounded_recover',lambda *a: False)
     monkeypatch.setattr(watchdog.time,'time',lambda:201)
     monkeypatch.setattr(watchdog.time,'monotonic',lambda:100)
     monkeypatch.setattr(watchdog.time,'sleep',lambda seconds: pytest.fail('bootstrap cutoff failed to deallocate'))

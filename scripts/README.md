@@ -742,6 +742,12 @@ watchdog survives local disconnect and restarts after watchdog failure. A named
 Windows Job Object owns the executing process tree, including CPU usage and
 cancellation. Rebooted jobs never silently retry. These mechanisms retry
 `az vm deallocate`; a guest OS shutdown is never the final action.
+Watchdog recovery runs in its own kill-on-close Job Object. The watchdog enforces
+the earlier of the lease deadline and a fifteen-minute recovery window with both
+wall and monotonic clocks; stalled hashing, compression or upload cannot hold its
+deallocation loop. A known expired lease bypasses recovery and boot grace. A cutoff
+retains disk evidence for separately budgeted `results --recover`, never a success
+claim for an unfinished archive.
 Azure control-plane failure can delay actual deallocation beyond the margin:
 the ledger continues charging and reports the overrun rather than asserting that
 an unreachable Azure API enforced an absolute bill cap. Disk, IP and Blob charges
