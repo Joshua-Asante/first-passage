@@ -405,3 +405,93 @@ Linux synthetic results and runner pytest do not establish Scheduler integration
 Scoped executor inspection found no further blocker in these five repair paths.
 Independent acceptance stays with the existing coordinator/reviewer; the next two
 unchecked steps above define the return boundary.
+
+## Narrow v1 coordinator adjudication — 2026-10-09
+
+This section supersedes the earlier broad implementation/ready-for-merge claims.
+Starting head: `b16d6178b41b790411a542e7a16fb26d069ebbce`. Joshua ordered a
+state-model-first rebuild after more than three review rounds. Preserve
+`codex/azure-job-runner`; use ordinary commits and pushes, never force or delete.
+The current coordinator owns combined acceptance. Earlier passing records remain
+historical evidence and do not accept this rebuild.
+
+### v1 contract and state model (written before implementation)
+
+Scope: public repository fetched at a full pinned SHA, operations venv and launcher
+only, no private inputs, one admitted job, run/status/results/cancel, $125 weekly
+VM-time ledger, and verified deallocation on exit. Research entrypoints and
+`results --recover` disk-only maintenance admission are deferred to another PR.
+Partial evidence preservation during the current session is still required.
+
+State has three independent axes; a successful workload exit alone is never job
+completion. The controller owns admission, charge reservation and reconciliation;
+the guest owns preparation/workload/result evidence. Azure instance view owns power
+confirmation. An asynchronous start response is not proof that start has settled.
+Local guardian/reaper and the installed guest Task Scheduler watchdog enforce
+bounded deadlines; none may erase an uncertain operation to admit a successor.
+
+| Axis | Enumerated values | Allowed transition / required evidence |
+| --- | --- | --- |
+| Job | `admitted`, `starting`, `preparing`, `running`, `stopping`, `publishing`, `cleanup`, `completed`, `failed`, `cancelled`, `alarm` | Forward progress or stopping from any nonterminal state; terminal only after cleanup/reconciliation, or explicit alarm. Cancel is sticky and forbids subsequent workload launch. |
+| VM | `deallocated`, `start_pending`, `starting`, `running`, `deallocate_pending`, `unknown` | Only observed Azure `VM deallocated` confirms billing shutdown; stopped/unknown does not. A pending start fences shutdown confirmation until settled or alarmed. |
+| Ledger | `idle`, `reserve_pending`, `charged`, `reconcile_pending`, `blocked` | Atomic reserve before any start; accrue from reservation through observed deallocation; reconcile once, retain active interval on failure. No new job during any pending/blocked operation. |
+| Cleanup | `clear`, `pending`, `failed` | Register cleanup intent before submitting command; remove intent only after confirmed command removal. Failure blocks admission even if VM is deallocated. |
+| Alarm | `none`, `active` | Nonzero foreground error / stderr plus best-effort durable alarm. Disk-write failure cannot suppress stderr or deallocation. Detached controller errors must surface through status. |
+
+Ledger events are `reserve_requested`, `reserve_committed`, `start_requested`,
+`start_settled`, `stop_requested`, `deallocate_requested`, `deallocate_verified`,
+`reconcile_requested`, `reconcile_committed`, `alarm`. These name semantic events;
+the implementation may persist a compact current-state record under one lock.
+Persist irreversible intent before invoking Azure. Serialize start and cleanup
+against cancellation and admission. A pending/failed intent survives process loss.
+Do not call a failed diagnostic write a successful transition.
+
+| Sequence | Enumerated events | Required end / test oracle |
+| --- | --- | --- |
+| S1 normal | 1 validate public pinned operations spec; 2 verify idle/deallocated/cleanup clear; 3 commit charge reservation; 4 record start pending and submit start; 5 settle start; 6 prepare; 7 run; 8 verify all outputs and launcher records/hashes; 9 publish; 10 cleanup; 11 deallocate and verify; 12 reconcile | completed only with verified result and no pending start, cleanup or ledger write |
+| S2 cancel during preparation | 1 reserve/start; 2 begin owned setup; 3 persist stop intent; 4 stop owned preparation tree; 5 prohibit workload launch; 6 retain partial captures; 7 cleanup; 8 deallocate/verify; 9 reconcile | cancelled, VM deallocated; failed stop-write or guest transport still leads to deallocation or loud alarm |
+| S3 controller loss | 1 reserve/start/prepare or run; 2 controller disappears; 3 independent deadline/heartbeat expires; 4 stop owned tree; 5 bounded partial publication; 6 request deallocation; 7 verify or alarm; 8 reconcile on controller return | no new admission from stale heartbeat or merely released OS lock; VM deallocated or alarm |
+| S4 cleanup failure | 1 workload exits; 2 cleanup intent persists; 3 delete command fails; 4 continue deallocation; 5 verify power; 6 reconcile charge with cleanup fence retained | failed/alarm, new admission refused until explicit confirmed cleanup; never start a successor to hide cleanup debt |
+| S5 deallocate failure | 1 stop intent; 2 deallocate API raises/times out; 3 query power independently; 4 bounded retry if needed; 5 verify deallocated or emit alarm | API failure cannot skip power observation; unresolved interval remains charged and admission blocked |
+| S6 state write failure | 1 inject failure at reservation, session, stop, observation, cleanup or reconciliation write; 2 abort forward execution; 3 stop/deallocate if a start may exist; 4 verify independently; 5 emit alarm even if alarm storage fails | failed reservation causes zero starts; later write failure never vetoes shutdown; unreconciled interval blocks next admission |
+| S7 ceiling mid-job | 1 reserve conservative setup/work/publication/shutdown allowance; 2 elapsed charge reaches stop threshold; 3 sticky stop; 4 kill owned tree; 5 bounded publication; 6 deallocate before reserved deadline or alarm; 7 reconcile actual elapsed usage | no extension or fresh reservation; charge all actual time even if ceiling exceeded by platform failure, report breach loudly |
+| S8 cancel during start | 1 commit reservation and start intent; 2 asynchronous start requested; 3 cancellation; 4 wait boundedly for start to settle while fencing admission; 5 deallocate; 6 verify; 7 reconcile | an old deallocated observation during pending start cannot close the interval; unresolved start means alarm |
+| S9 missing/tampered completion | 1 workload exits zero; 2 expected output/launcher/capture/report absent or digest wrong; 3 refuse completed publication/retrieval; 4 retain available failed evidence; 5 cleanup/deallocate/reconcile | never completed; stale extracted files cannot satisfy the current archive manifest |
+| S10 concurrent admission | 1 first admission holds lock or persistent intent; 2 second run/status/cancel arrives; 3 serialize mutation; 4 inspect pending start/cleanup/ledger | no second start; status/results do not create admissions |
+
+Cancellation after a terminal deallocated job is idempotent and cannot affect a
+successor. Cancellation while running/publishing cannot rely exclusively on guest
+marker delivery: bounded deallocation is the fallback. Controller-wide loss before
+watchdog installation is a remaining platform boundary: a local detached process
+is not an independent cloud backstop. VM verification must establish the preinstalled
+Scheduler watchdog before admitting a new start, or report this prerequisite blocked.
+A $125 ledger is a controller ceiling, not an Azure billing guarantee during cloud
+control-plane failure; unconfirmed shutdown must alarm and retain its charge.
+
+### Roadmap and bounded handoffs
+
+1. State model and invariant-derived sequence tests.
+2. Operations-only lifecycle implementation, results verification and local checks.
+3. Bounded VM verification of Windows Job Objects, actual path normalization and
+   Task Scheduler execution/restart, with final Azure power observation.
+4. One fresh Hyper reviewer pass and Codex verdict against the identical full head.
+
+**Selected outcome:** H1 freezes the above state/event contract and adds executable
+sequence tests that fail on the old lifecycle. Completion is a reviewed model and
+retained red evidence, not implementation acceptance.
+**Prerequisites:** Current public source and prior evidence read; operations doctor
+3.13.2/62 locked packages passed. Existing Hyper dot is the designated reviewer.
+**Ownership:** This coordinator executes inline and retains combined acceptance.
+**Verification:** Tests trace S1–S10 across real controller/ledger functions with
+fault-injected Azure/storage boundaries, named event order and admission assertions.
+**Checkpoint:** Record red results here before production changes; report any
+missing independent deadline capability before VM admission.
+**Return boundary:** Return to coordinator adjudication after red evidence; no VM
+start or final review in H1. The coordinator may select H2 within Joshua's rebuild
+instruction after assessing H1. Preserve all unrelated checkout changes.
+
+- [x] Write the state axes and enumerated event sequences before implementation.
+- [ ] Derive failing tests from S1–S10 and record the original failure mechanisms.
+- [ ] Select H2 after assessing H1; narrow implementation and verify locally.
+- [ ] Select H3 with exact pinned source and VM evidence/deallocation criteria.
+- [ ] Select H4 only after H3 passes; retain both exact-head verdicts.
