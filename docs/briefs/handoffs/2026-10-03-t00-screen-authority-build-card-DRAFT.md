@@ -544,6 +544,7 @@ The screen-authority signature (design §8 step 11) uses the same template with 
     Joshua confirmed (a) and (b) and set the (b) threshold on 2026-10-08, before any resolution output existed, in chat to the Deployment Coordinator: "go with your recommendation for 1".
   - While step 1 is pending, the new H, P7 re-run and Tier-2 source approval stay on hold (Joshua, 2026-10-08).
 - *2026-10-08:* size-feasibility prereg FROZEN 2026-10-08, freeze commit `103c5ea`, merged `65079a7`; §11 addendum #738.
+- *2026-10-09:* size-feasibility result **FEASIBLE**: largest clearing k 0.5; 1.0 and 0.75 do not clear; reproductions (a) and (b) matched. The tree routes it to **step 2**. The public return record is [RESULTS](../../../lab/analysis/c1/size_feasibility_2026-10/RESULTS.md). FEASIBLE is a target range, not a successor result (§11).
 
 ## §10 — Audit hooks
 

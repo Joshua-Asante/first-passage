@@ -45,6 +45,15 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-10-09a — size-feasibility FEASIBLE; tree step 2
+
+- **Focus:** return and route the size-feasibility check (session 2026-10-08a).
+- **Result:** **FEASIBLE**, with largest clearing uniform k 0.5. Reproductions matched. See [RESULTS](../lab/analysis/c1/size_feasibility_2026-10/RESULTS.md); it carries labels and hashes only.
+- **Judgment:** this is a target range, not a successor (prereg §11). The rescale is fractional and the harness has no intrabar ordering.
+- **Open / next:** T00 card §8 step 2: new H, P7 re-run, the Tier-2 source approval (Joshua), Tier 2, and R1/R2 (#742, convention ratification pending).
+
+---
+
 ## 2026-10-08a — T00 step 12 NO-GO-evidence diagnosed; successor decision tree ruled; size-feasibility check launched
 
 - **Focus:** coordinator (4) handed off to the Deployment Coordinator at Joshua's direction; the T00 step-12 result was diagnosed and a successor route ruled.
