@@ -285,7 +285,7 @@ def test_recovery_spawn_and_diagnostic_failure_still_deallocate(tmp_path, monkey
 
 
 @pytest.mark.skipif(os.name != 'nt', reason='real Windows recovery worker Job Object')
-def test_windows_stalled_bundle_worker_is_killed_and_disk_evidence_republishable(tmp_path, monkeypatch):
+def test_windows_stalled_bundle_worker_is_killed_and_partial_disk_evidence_retained(tmp_path, monkeypatch):
     """Local synthetic worker only; every workload and upload action is replaced."""
     from scripts.azure_jobs import guest
     from scripts.azure_jobs.contract import verify_inventory
@@ -293,7 +293,7 @@ def test_windows_stalled_bundle_worker_is_killed_and_disk_evidence_republishable
     repo = tmp_path / 'repos/job'
     repo.mkdir(parents=True)
     (repo / 'out').write_text('synthetic partial output')
-    spec = dict(job_id='job', commit='a' * 40, command=['fake.py'], environment='research',
+    spec = dict(job_id='job', commit='a' * 40, command=['scripts/fp.py','test'], environment='operations',
                 max_wall_seconds=60, expected_outputs=['out'], authority='synthetic test', private_inputs=[])
     atomic(job / 'spec.json', spec)
     atomic(tmp_path / 'config.json', {'guest_root': str(tmp_path)})
@@ -339,7 +339,7 @@ def test_windows_stalled_bundle_worker_is_killed_and_disk_evidence_republishable
     monkeypatch.setattr(guest, 'upload', lambda *a: None)
     for name in ('checkout', 'environment', 'run_tree'):
         monkeypatch.setattr(guest, name, lambda *a: pytest.fail('replayed workload'))
-    guest.republish({'guest_root': str(tmp_path), 'session_id': 'maintenance'}, spec)
+    guest.bundle(job, repo, spec['expected_outputs'], partial=True)
     assert (job / 'record.json').read_bytes() == before
     assert json.loads(before)['status'] == 'interrupted'
     rows = json.loads((job / 'manifest.json').read_text())

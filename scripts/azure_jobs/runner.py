@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 import zipfile
-from .control import Azure, Ledger, OVERHEAD_SECONDS, SHUTDOWN_MARGIN, PUBLICATION_SECONDS, BOOTSTRAP_SECONDS, RATE, atomic, locked, retire
+from .control import Azure, Ledger, OVERHEAD_SECONDS, SHUTDOWN_MARGIN, PUBLICATION_SECONDS, BOOTSTRAP_SECONDS, RATE, atomic, locked, retire, alarm, cleanup_pending
 from .contract import validate, inside, sha256, verify_inventory, verified, completed_evidence
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -69,10 +69,16 @@ def results(config, job_id):
             raise ValueError('completed output missing job spec')
         completed_evidence(target / 'files', rows, record, read(target / 'files/runner/spec.json'))
     ledger = Ledger(Path(config["state_dir"]) / "ledger.json")
-    sessions = [s for s in ledger.read()["sessions"] if s.get("source_job_id", s["job_id"]) == job_id]
+    ledger_state = ledger.read()
+    sessions = [s for s in ledger_state["sessions"] if s.get("source_job_id", s["job_id"]) == job_id]
     vm_seconds = sum(s["end"] - s["start"] for s in sessions)
+    workload_verified = verified(record)
+    settled = bool(sessions) and not cleanup_pending(config["state_dir"])
+    active = ledger_state["active"]
+    if active and active.get("source_job_id", active["job_id"]) == job_id:
+        settled = False
     return {"directory": str(target), "artifacts": len(rows), "record": record,
-            "verified": verified(record), "archive": expected, "deallocation_confirmed": bool(sessions),
+            "workload_verified": workload_verified, "verified": workload_verified and settled, "archive": expected, "deallocation_confirmed": bool(sessions),
             "vm_seconds": vm_seconds, "estimated_dollars": vm_seconds * RATE / 3600,
             "cpu_report": cpu_report(config)}
 
@@ -136,15 +142,32 @@ def status(config, job_id):
                   "source_stable=$s.source_stable;progress=$p}|ConvertTo-Json -Depth 6 -Compress"
                   "} else { '{\"status\":\"preparing\"}' }")
         try:
-            result = json.loads(azure.script(script))
+            with locked(state / "admission.lock", blocking=True):
+                active = Ledger(state / "ledger.json").read()["active"]
+                if (active and active.get("source_job_id", active["job_id"]) == job_id
+                        and not active.get("start_pending") and not active.get("stop_requested")
+                        and azure.power() == "VM running"):
+                    result = json.loads(azure.script(script))
         except (ValueError, RuntimeError, OSError, subprocess.SubprocessError):
             result["guest_state_read_failed"] = True
     local = state / "jobs" / job_id
+    if (state / "alarm.json").exists():
+        result["alarm"] = read(state / "alarm.json")
+    result["cleanup_pending"] = cleanup_pending(state)
     for filename in ("controller-error.json", "observation.json", "terminal-observation.json", "stop-request.json"):
         if (local / filename).exists():
             result[filename.removesuffix(".json")] = read(local / filename)
     result["cpu_report"] = cpu_report(config)
     result["vm_power"] = power
+    if result.get("status") == "completed":
+        result["workload_status"] = "completed"
+        try:
+            proof = results(config, job_id)
+            result["status"] = "completed" if proof["verified"] else "cleanup"
+            result["verified"] = proof["verified"]
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+            result["status"] = "publishing"
+            result["verified"] = False
     result["week_vm_seconds"] = Ledger(state / "ledger.json").week_seconds(time.time())
     result["week_estimated_dollars"] = result["week_vm_seconds"] * RATE / 3600
     return result
@@ -176,35 +199,38 @@ def launch_guardian(config_path, session_path):
 
 
 def run(config, config_path, spec, *, mode="execute"):
-    if mode not in {"execute", "republish"}:
-        raise ValueError("invalid session mode")
+    if mode != "execute":
+        raise ValueError("disk recovery mode is deferred")
     validate(spec)
     source = clean_source()
     azure = Azure(config)
     state = Path(config["state_dir"])
     ledger = Ledger(state / "ledger.json")
-    import uuid
-    session_id = spec["job_id"] if mode == "execute" else "recover-" + uuid.uuid4().hex[:24]
+    session_id = spec["job_id"]
     with locked(state / "admission.lock"):
-        if mode == "republish" and not (state / "jobs" / spec["job_id"] / "session.json").exists():
-            raise ValueError("cannot recover an unknown job")
+        if cleanup_pending(state):
+            raise ValueError("pending command cleanup blocks admission")
         job_dir = state / "jobs" / session_id
         if job_dir.exists():
             raise ValueError("job already submitted; use status/results")
         if azure.power() != "VM deallocated":
             raise ValueError("VM must be verified deallocated before admission")
-        seconds = spec["max_wall_seconds"] + OVERHEAD_SECONDS if mode == "execute" else OVERHEAD_SECONDS
+        seconds = spec["max_wall_seconds"] + OVERHEAD_SECONDS
         session = ledger.reserve(session_id, seconds, time.time(), source_job_id=spec["job_id"])
-        job_dir.mkdir(parents=True)
-        session.update(spec=spec, mode=mode, runner_commit=source, bootstrap_deadline=min(time.time() + BOOTSTRAP_SECONDS, session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS))
-        atomic(job_dir / "session.json", session)
-        atomic(job_dir / "spec.json", spec)
         try:
+            job_dir.mkdir(parents=True)
+            session.update(spec=spec, mode=mode, runner_commit=source,
+                           bootstrap_deadline=min(time.time() + BOOTSTRAP_SECONDS,
+                                                  session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS))
+            atomic(job_dir / "session.json", session)
+            atomic(job_dir / "spec.json", spec)
             launch_guardian(config_path, job_dir / "session.json")
         except BaseException:
-            # No start has been issued; verify the observed state before closing.
+            # Admission lock fences a delayed guardian while closing its reservation.
             if azure.power() == "VM deallocated":
                 ledger.finish(time.time())
+            else:
+                alarm(state, 'admission failed and deallocation is unconfirmed')
             raise
         # The independent guardian owns start + submission, closing the crash window
         # between request admission and launch. The front-end never starts the VM.
@@ -280,22 +306,6 @@ def retain_and_cleanup(azure, directory, name):
     azure.cleanup(name)
 
 
-def retry_cleanup(config, azure, current_job, session_path, deadline):
-    state = Path(config["state_dir"])
-    commands = {read(p)["command"] for p in (state / "pending-command-cleanup").glob("*.json")}
-    # Include submissions from earlier runner versions, which had no retry tracker.
-    for path in (state / "jobs").glob("*/submitted.json"):
-        if path.parent.name != current_job:
-            commands.add(read(path)["command"])
-    for name in sorted(commands):
-        if not re.fullmatch(r"fp-(?:job|read)-[a-z0-9-]+", name):
-            raise ValueError("invalid retained command identity")
-        if time.time() + 240 >= deadline:
-            raise TimeoutError("bootstrap cleanup exhausted its allowance")
-        heartbeat(session_path)
-        azure.cleanup(name)
-
-
 def guardian(config, session_path, config_path=None):
     session_path = Path(session_path)
     session = read(session_path)
@@ -309,19 +319,22 @@ def guardian(config, session_path, config_path=None):
         heartbeat(session_path)
         with locked(state / "admission.lock", blocking=True):
             active = ledger.read()["active"]
-            if not active or active["job_id"] != session["job_id"]:
+            if not active or active["job_id"] != session["job_id"] or active.get("stop_requested"):
                 return
             heartbeat(session_path)
             azure.set_lease(session["job_id"], session["deadline"] - SHUTDOWN_MARGIN,
                             bootstrap_deadline=session["bootstrap_deadline"])
             heartbeat(session_path)
+            ledger.update_active(session['job_id'], start_pending=True)
             azure.start()
+            ledger.update_active(session['job_id'], start_pending=False)
         while azure.power() != "VM running":
             heartbeat(session_path)
             if time.time() >= session["bootstrap_deadline"]:
                 raise TimeoutError("startup deadline")
             time.sleep(5)
-        retry_cleanup(config, azure, session["job_id"], session_path, session["bootstrap_deadline"])
+        if cleanup_pending(state):
+            raise RuntimeError("pending cleanup blocks workload submission")
         guest_config = {**config, "deadline": session["deadline"] - SHUTDOWN_MARGIN,
                         "execution_deadline": session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS,
                         "preparation_deadline": session["bootstrap_deadline"],
@@ -331,9 +344,13 @@ def guardian(config, session_path, config_path=None):
         script = (ROOT / "scripts/azure_jobs/bootstrap.ps1").read_text(encoding="utf-8-sig")
         script = "$RequestBase64 = '" + encoded(request) + "'\n" + script
         name = "fp-job-" + session["job_id"]
-        heartbeat(session_path)
-        azure.submit(name, script, timeout=int(session["reserved_seconds"] - SHUTDOWN_MARGIN))
-        atomic(session_path.parent / "submitted.json", {"command": name})
+        with locked(state / "admission.lock", blocking=True):
+            active = ledger.read()["active"]
+            if not active or active["job_id"] != session["job_id"] or active.get("stop_requested"):
+                return
+            heartbeat(session_path)
+            atomic(session_path.parent / "submitted.json", {"command": name})
+            azure.submit(name, script, timeout=int(session["reserved_seconds"] - SHUTDOWN_MARGIN))
         while time.time() < session["deadline"] - SHUTDOWN_MARGIN:
             heartbeat(session_path)
             power = azure.power()
@@ -348,25 +365,23 @@ def guardian(config, session_path, config_path=None):
                 break
             time.sleep(15)
     except BaseException as exc:
-        atomic(session_path.parent / "controller-error.json", {"type": type(exc).__name__, "time": time.time()})
+        alarm(state, "controller failed: " + type(exc).__name__)
+        try:
+            atomic(session_path.parent / "controller-error.json", {"type": type(exc).__name__, "time": time.time()})
+        except OSError:
+            pass
     finally:
         # Azure cannot delete Run Commands while the VM is deallocated. Try before
-        # shutdown and persist each failure for the next bounded start.
+        # shutdown. Persisted failure blocks subsequent admissions.
         submitted = session_path.parent / "submitted.json"
         try:
             if submitted.exists():
                 retain_and_cleanup(azure, session_path.parent, read(submitted)["command"])
         except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
             pass  # Diagnostic storage and cleanup cannot veto deallocation.
-        # Never abandon an open billing interval because a deallocation API call failed.
-        while True:
-            try:
-                active = ledger.read()["active"]
-                if active is None or active["job_id"] != session["job_id"]:
-                    break
-                retire(azure, ledger, expected_job=session["job_id"])
-            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
-                time.sleep(10)
+        retire(azure, ledger, expected_job=session["job_id"])
+        if cleanup_pending(state):
+            alarm(state, 'command cleanup remains pending; admission blocked')
 
 
 def reconcile(config):
@@ -374,29 +389,40 @@ def reconcile(config):
     with locked(state / "admission.lock"):
         if Azure(config).power() != "VM deallocated":
             raise ValueError("VM is not deallocated; use cancel to stop active work")
-        Ledger(state / "ledger.json").finish(time.time())
+        ledger = Ledger(state / "ledger.json")
+        active = ledger.read()["active"]
+        if active and active.get("start_pending"):
+            raise ValueError("pending start requires independent settlement; cannot reconcile")
+        ledger.finish(time.time())
     return {"deallocation_confirmed": True}
 
 
 def cancel(config, job_id, *, force=False):
     state = Path(config["state_dir"])
     ledger = Ledger(state / "ledger.json")
-    with locked(state / "admission.lock", blocking=True):
-        active = ledger.read()["active"]
-        if not active or job_id not in {active["job_id"], active.get("source_job_id")}:
-            raise ValueError("job is not the active session")
-        directory = state / "jobs" / active["job_id"]
-        session = read(directory / "session.json")
-        immediate = force or session.get("mode") == "republish" or not (directory / "submitted.json").exists()
-        if immediate:
-            atomic(directory / "stop-request.json", {"reason": "cancelled"})
     azure = Azure(config)
-    if immediate:
-        retire(azure, ledger, expected_job=active["job_id"])
-        return {"job_id": job_id, "session_id": active["job_id"], "status": "interrupted"}
-    path = config["guest_root"].replace("'", "''") + "/jobs/" + job_id + "/cancel"
-    azure.script("$p='" + path + "'; New-Item -ItemType Directory -Force (Split-Path $p) | Out-Null; Set-Content -LiteralPath $p -Value cancel")
-    return {"job_id": job_id, "status": "cancellation_requested"}
+    with locked(state / "admission.lock", blocking=True):
+        data = ledger.read()
+        active = data['active']
+        if not active or job_id not in {active['job_id'], active.get('source_job_id')}:
+            if any(s['job_id'] == job_id for s in data['sessions']):
+                return {'job_id': job_id, 'status': 'already_terminal'}
+            raise ValueError('job is not the active session')
+        directory = state / 'jobs' / active['job_id']
+        try:
+            atomic(directory / 'stop-request.json', {'reason': 'cancelled'})
+            ledger.update_active(active['job_id'], stop_requested=True)
+        except OSError:
+            alarm(state, 'cancel state write failed; forcing deallocation')
+        try:
+            if not force and (directory / 'submitted.json').exists():
+                path = config['guest_root'].replace("'", "''") + '/jobs/' + job_id + '/cancel'
+                azure.script("$p='" + path + "'; New-Item -ItemType Directory -Force (Split-Path $p) | Out-Null; Set-Content -LiteralPath $p -Value cancel")
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+            alarm(state, 'guest cancellation delivery failed; forcing deallocation')
+        finally:
+            retire(azure, ledger, expected_job=active['job_id'], admission_locked=True)
+    return {'job_id': job_id, 'status': 'cancelled', 'deallocation_confirmed': True}
 
 
 def main():
@@ -409,8 +435,6 @@ def main():
         command.add_argument("job_id")
         if action == "cancel":
             command.add_argument("--force", action="store_true", help="fence controller and deallocate without waiting for guest transport")
-        if action == "results":
-            command.add_argument("--recover", action="store_true", help="admit budgeted disk-only republishing; never rerun the job")
     subs.add_parser("_guardian").add_argument("session", type=Path)
     subs.add_parser("_reaper").add_argument("session", type=Path)
     subs.add_parser("reconcile", help="verify deallocation and close a stranded reservation")
@@ -434,10 +458,7 @@ def main():
     else:
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", args.job_id):
             raise ValueError("invalid job identity")
-        if args.action == "results" and args.recover:
-            spec = read(Path(config["state_dir"]) / "jobs" / args.job_id / "spec.json")
-            output = run(config, args.config.resolve(), spec, mode="republish")
-        elif args.action == "cancel":
+        if args.action == "cancel":
             output = cancel(config, args.job_id, force=args.force)
         else:
             output = globals()[args.action](config, args.job_id)

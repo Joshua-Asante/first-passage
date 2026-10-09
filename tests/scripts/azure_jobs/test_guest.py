@@ -59,7 +59,7 @@ def test_cancel_before_spawn_does_not_execute(tmp_path):
 
 
 def test_reentry_never_reexecutes_job(tmp_path, monkeypatch):
-    spec=dict(job_id='once',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
+    spec=dict(job_id='once',commit='a'*40,command=['scripts/fp.py','test'],environment='operations',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
     job=tmp_path/'jobs/once'; job.mkdir(parents=True)
     (job/'record.json').write_text('{"status":"interrupted"}')
     monkeypatch.setattr(guest,'checkout',lambda *a: (_ for _ in ()).throw(AssertionError('replayed')))
@@ -68,9 +68,12 @@ def test_reentry_never_reexecutes_job(tmp_path, monkeypatch):
 
 
 def test_finalization_keeps_heartbeat_and_publishes_terminal_state(tmp_path, monkeypatch):
-    spec=dict(job_id='heartbeat',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
+    spec=dict(job_id='heartbeat',commit='a'*40,command=['scripts/fp.py','test'],environment='operations',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
     def checkout(config,commit,repo):
-        repo.mkdir(parents=True); (repo/'out').write_text('42'); (repo/'fake.py').write_text('pass')
+        repo.mkdir(parents=True); (repo/'out').write_text('42')
+        (repo/'scripts').mkdir(); (repo/'scripts/fp.py').write_text('pass')
+        from test_review_repairs import launcher
+        launcher(repo)
     monkeypatch.setattr(guest,'checkout',checkout)
     monkeypatch.setattr(guest,'environment',lambda *a: (Path(sys.executable),tmp_path/'env','lock'))
     monkeypatch.setattr(guest,'bounded_snapshot',lambda *a,**k: {'commit':'a'*40,'status':''})
@@ -136,22 +139,6 @@ def test_upload_publishes_immutable_archive_before_descriptor(tmp_path, monkeypa
     assert names[-1] == 'job/archive.json'
 
 
-def test_republish_keeps_terminal_record_and_never_executes(tmp_path, monkeypatch):
-    from scripts.azure_jobs.control import atomic
-    spec=dict(job_id='original',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
-    job=tmp_path/'jobs/original'; job.mkdir(parents=True)
-    repo=tmp_path/'repos/original'; repo.mkdir(parents=True); (repo/'out').write_text('result')
-    record={'status':'completed','exit_code':0,'source_stable':True}
-    atomic(job/'record.json',record)
-    for forbidden in ('checkout','environment','run_tree'):
-        monkeypatch.setattr(guest,forbidden,lambda *a,**kw: pytest.fail('replayed job'))
-    observed=[]
-    monkeypatch.setattr(guest,'upload',lambda *a: observed.append(a[2]))
-    guest.republish({'guest_root':str(tmp_path),'session_id':'recovery'},spec)
-    assert json.loads((job/'record.json').read_text()) == record
-    assert json.loads((tmp_path/'idle.json').read_text())['job_id']=='recovery'
-    assert observed==['original']
-
 
 def test_stale_heartbeat_does_not_kill_a_live_lock_owner(tmp_path,monkeypatch):
     from scripts.azure_jobs import watchdog
@@ -164,7 +151,7 @@ def test_stale_heartbeat_does_not_kill_a_live_lock_owner(tmp_path,monkeypatch):
 
 def test_reentry_marks_idle_without_replaying(tmp_path,monkeypatch):
     from scripts.azure_jobs.control import atomic
-    spec=dict(job_id='once',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
+    spec=dict(job_id='once',commit='a'*40,command=['scripts/fp.py','test'],environment='operations',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
     atomic(tmp_path/'jobs/once/record.json',{'status':'completed'})
     monkeypatch.setattr(guest,'checkout',lambda *a: pytest.fail('replayed'))
     guest.execute({'guest_root':str(tmp_path)},spec)

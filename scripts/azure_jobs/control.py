@@ -1,12 +1,13 @@
 """Persistent VM-time accounting and a deliberately small Azure CLI boundary."""
 from __future__ import annotations
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from datetime import datetime, timedelta, timezone
 import json
 import math
 import os
 from pathlib import Path
 import subprocess
+import sys
 import time
 import uuid
 
@@ -144,12 +145,37 @@ class Ledger:
             data = self.read()
             if not data["active"]:
                 return
+            if data["active"].get("start_pending"):
+                raise ValueError("pending start cannot be reconciled")
             if now < data["active"]["start"]:
                 raise ValueError("clock reversed; refusing negative usage")
             data["active"]["end"] = now
             data["sessions"].append(data["active"])
             data["active"] = None
             atomic(self.path, data)
+
+    def update_active(self, job_id, **changes):
+        with locked(str(self.path) + ".lock"):
+            data = self.read()
+            if not data['active'] or data['active']['job_id'] != job_id:
+                raise ValueError('session no longer active')
+            data['active'].update(changes)
+            atomic(self.path, data)
+
+
+def alarm(state, reason):
+    try:
+        print('ALARM: ' + reason, file=sys.stderr, flush=True)
+    except OSError:
+        pass
+    try:
+        atomic(Path(state) / 'alarm.json', {'reason': reason, 'time': time.time()})
+    except (OSError, ValueError):
+        pass
+
+
+def cleanup_pending(state):
+    return any((Path(state) / 'pending-command-cleanup').glob('*.json'))
 
 
 class Azure:
@@ -188,7 +214,7 @@ class Azure:
                    "FPOfflineBootstrapDeadline=" + str(bootstrap_deadline if bootstrap_deadline is not None else deadline - PUBLICATION_SECONDS)])
 
     def start(self):
-        self.call(["vm", "start", *self.vm_args(), "--no-wait"])
+        self.call(["vm", "start", *self.vm_args()], timeout=900)
 
     def deallocate(self):
         self.call(["vm", "deallocate", *self.vm_args(), "--no-wait"])
@@ -197,6 +223,8 @@ class Azure:
         # File-backed REST keeps complete scripts out of cmd.exe's length/quoting boundary.
         from urllib.parse import quote
         cfg = self.config
+        atomic(Path(cfg["state_dir"]) / "pending-command-cleanup" / (name + ".json"),
+               {"command": name, "time": time.time()})
         request = Path(cfg["state_dir"]) / "requests" / (name + ".json")
         atomic(request, {"location": cfg["location"], "properties": {
             "source": {"script": script}, "asyncExecution": True, "timeoutInSeconds": int(timeout)}})
@@ -248,7 +276,7 @@ class Azure:
             self.cleanup(name)
 
 
-def retire(azure, ledger, *, expected_job=None, clock=time.time, sleep=time.sleep, attempts=20):
+def retire(azure, ledger, *, expected_job=None, clock=time.time, sleep=time.sleep, attempts=20, admission_locked=False):
     """Fenced against successor admission; never release an unconfirmed interval."""
     if expected_job is None:
         active = ledger.read()["active"]
@@ -257,15 +285,25 @@ def retire(azure, ledger, *, expected_job=None, clock=time.time, sleep=time.slee
         expected_job = active["job_id"]
     for _ in range(attempts):
         try:
-            with locked(ledger.path.parent / "admission.lock"):
-                active = ledger.read()["active"]
+            with (nullcontext() if admission_locked else locked(ledger.path.parent / "admission.lock")):
+                try:
+                    active = ledger.read()["active"]
+                except (OSError, ValueError):
+                    # A corrupt ledger fences admission. A known owner must still
+                    # attempt shutdown, but cannot settle or release the charge.
+                    active = {"job_id": expected_job, "start_pending": True}
                 if active is None or active["job_id"] != expected_job:
                     return
-                azure.deallocate()
-                if azure.power() == "VM deallocated":
+                try:
+                    azure.deallocate()
+                except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+                    pass
+                power = azure.power()
+                if power == "VM deallocated" and not active.get('start_pending'):
                     ledger.finish(clock())
                     return
         except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
             pass
         sleep(5)
+    alarm(ledger.path.parent, "deallocation unconfirmed or start pending; ledger remains active")
     raise RuntimeError("deallocation unconfirmed; ledger remains active")

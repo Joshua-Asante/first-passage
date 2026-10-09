@@ -132,7 +132,9 @@ def checkout(config, commit, destination):
 def environment(config, spec, repo):
     from functools import partial
     checked = partial(globals()["checked"], deadline=config.get("preparation_deadline", config.get("execution_deadline")), preparation=config.get('preparation'))
-    lock = repo / ("requirements-ops.lock" if spec["environment"] == "operations" else "requirements-research.lock")
+    if spec["environment"] != "operations":
+        raise ValueError("v1 supports operations environment only")
+    lock = repo / "requirements-ops.lock"
     identity = sha256(lock)
     directory = Path(config["guest_root"]) / "envs" / spec["environment"] / identity
     python = directory / "Scripts/python.exe"
@@ -307,41 +309,14 @@ def upload(config, job_dir, job_id):
                  "--overwrite", "true", "--only-show-errors", "-o", "none"], timeout=300, deadline=config.get("deadline"))
 
 
-def republish(config, spec):
-    """Publish retained files only. No checkout, environment setup or execution."""
-    validate(spec)
-    root = Path(config["guest_root"])
-    job = root / "jobs" / spec["job_id"]
-    with locked(root / "guest.lock"):
-        job.mkdir(parents=True, exist_ok=True)
-        record_path = job / "record.json"
-        record = json.loads(record_path.read_text()) if record_path.exists() else {}
-        if record.get("status") not in {"completed", "failed", "interrupted"}:
-            progress_path = job / "progress.json"
-            progress = json.loads(progress_path.read_text()) if progress_path.exists() else {}
-            record.update(status="interrupted", exit_code=130, verification_exit_code=130,
-                          source_stable=False, capture_complete=False,
-                          cpu_seconds=progress.get("cpu_seconds"), wall_seconds=progress.get("wall_seconds"),
-                          finished_at=progress.get("heartbeat"), cpu_measurement="partial lower bound",
-                          reason="supervisor ended without terminal evidence")
-            atomic(record_path, record)
-        if not (job / "spec.json").exists():
-            atomic(job / "spec.json", spec)
-        try:
-            archive = bundle(job, root / "repos" / spec["job_id"], spec["expected_outputs"], partial=True)
-            atomic(job / "archive.json", archive)
-            atomic(job / "state.json", {**record, "job_id": spec["job_id"], "archive": archive})
-            upload(config, job, spec["job_id"])
-        finally:
-            atomic(root / "idle.json", {"job_id": config["session_id"], "time": time.time()})
-
-
 def main(mode="execute"):
     parser = argparse.ArgumentParser()
     parser.add_argument("config", type=Path)
     parser.add_argument("spec", type=Path)
     args = parser.parse_args()
-    action = execute if mode == "execute" else republish
+    if mode != "execute":
+        raise ValueError("disk recovery mode is deferred")
+    action = execute
     action(json.loads(args.config.read_text(encoding="utf-8-sig")),
             json.loads(args.spec.read_text(encoding="utf-8-sig")))
 

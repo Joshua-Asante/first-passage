@@ -68,7 +68,9 @@ def test_status_reads_durable_guest_state_while_running(tmp_path, monkeypatch):
             return json.dumps({'status':'running','phase':'executing'})
     monkeypatch.setattr(runner,'Azure',Fake)
     monkeypatch.setattr(runner,'blob',lambda *a: (_ for _ in ()).throw(RuntimeError('not published')))
-    Ledger(tmp_path/'ledger.json',initial_seconds=0)
+    import time
+    ledger = Ledger(tmp_path/'ledger.json',initial_seconds=0)
+    ledger.reserve('job',100,time.time())
     result=runner.status({'state_dir':str(tmp_path),'guest_root':'C:/runner'},'job')
     assert result['status']=='running'
     assert 'state.json' in calls[0]
@@ -110,29 +112,6 @@ def test_reconcile_refuses_to_stop_healthy_job(tmp_path, monkeypatch):
     assert ledger.read()['active']['job_id']=='healthy'
 
 
-def test_recovery_admission_reserves_fresh_session_without_changing_job(tmp_path, monkeypatch):
-    import time
-    from scripts.azure_jobs.control import atomic, OVERHEAD_SECONDS
-    spec=dict(job_id='original',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=600,expected_outputs=['out'],authority='public test',private_inputs=[])
-    original=tmp_path/'jobs/original'
-    atomic(original/'session.json', {'job_id':'original'})
-    atomic(original/'spec.json',spec)
-    ledger=Ledger(tmp_path/'ledger.json',initial_seconds=0)
-    class Fake:
-        def __init__(self,cfg): pass
-        def power(self): return 'VM deallocated'
-    monkeypatch.setattr(runner,'Azure',Fake)
-    monkeypatch.setattr(runner,'clean_source',lambda: 'b'*40)
-    launched=[]
-    monkeypatch.setattr(runner,'launch_guardian',lambda config,path: launched.append(runner.read(path)))
-    result=runner.run({'state_dir':str(tmp_path)},tmp_path/'config.json',spec,mode='republish')
-    assert result['session_id'] != spec['job_id']
-    assert result['reserved_seconds'] == OVERHEAD_SECONDS
-    assert launched[0]['mode'] == 'republish'
-    assert launched[0]['spec'] == spec
-    assert ledger.read()['active']['source_job_id']=='original'
-    assert runner.read(original/'session.json') == {'job_id':'original'}
-
 
 def test_retrieval_remains_consistent_when_descriptor_changes_mid_download(tmp_path, monkeypatch):
     import shutil
@@ -142,9 +121,11 @@ def test_retrieval_remains_consistent_when_descriptor_changes_mid_download(tmp_p
     job=tmp_path/'guest'; job.mkdir()
     repo=tmp_path/'repo'; repo.mkdir(); (repo/'out').write_text('first')
     record={'status':'completed','exit_code':0,'verification_exit_code':0,'source_stable':True,'capture_complete':True,'report_errors':[]}
+    from test_review_repairs import launcher
+    record['launcher_records'] = [launcher(repo)]
     atomic(job/'record.json',record)
     atomic(job/'state.json',record)
-    atomic(job/'spec.json',dict(job_id='job',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='synthetic retrieval',private_inputs=[]))
+    atomic(job/'spec.json',dict(job_id='job',commit='a'*40,command=['scripts/fp.py','test'],environment='operations',max_wall_seconds=60,expected_outputs=['out'],authority='synthetic retrieval',private_inputs=[]))
     def upload(args,**kwargs):
         name=args[args.index('--name')+1]
         dest=cloud/name; dest.parent.mkdir(parents=True,exist_ok=True)
@@ -163,7 +144,7 @@ def test_retrieval_remains_consistent_when_descriptor_changes_mid_download(tmp_p
     monkeypatch.setattr(runner,'blob',download)
     Ledger(Path(cfg['state_dir'])/'ledger.json',initial_seconds=0)
     result=runner.results(cfg,'job')
-    assert result['verified']
+    assert result['workload_verified']
     assert (Path(result['directory'])/'files/out').read_text()=='first'
 
 
@@ -191,7 +172,7 @@ def test_cancel_recovery_stops_session_without_changing_original_result(tmp_path
     monkeypatch.setattr(runner,'retire',lambda *a,**kw: calls.append(kw['expected_job']))
     result=runner.cancel({'state_dir':str(tmp_path)},'original')
     assert calls==['recover-session']
-    assert result['status']=='interrupted'
+    assert result['status']=='cancelled'
     assert runner.read(tmp_path/'jobs/recover-session/stop-request.json')['reason']=='cancelled'
 
 
@@ -223,7 +204,7 @@ def test_cancel_can_stop_before_guest_or_force_stop(tmp_path,monkeypatch,submitt
     stopped=[]
     monkeypatch.setattr(runner,'retire',lambda *a,**kw: stopped.append(kw['expected_job']))
     result=runner.cancel({'state_dir':str(tmp_path)},'job',force=force)
-    assert result['status']=='interrupted'
+    assert result['status']=='cancelled'
     assert stopped==['job']
     assert runner.read(directory/'stop-request.json')['reason']=='cancelled'
 
@@ -234,7 +215,7 @@ def test_guest_bootstrap_deadline_is_separate_from_workload_deadline():
     assert watchdog.job_stop_reason(lease,{'status':'running','phase':'executing'}, {'time':201},False,201) is None
 
 
-def test_normal_cancel_preserves_publication_instead_of_retiring(tmp_path,monkeypatch):
+def test_normal_cancel_delivers_marker_then_confirms_retirement(tmp_path,monkeypatch):
     import time
     from scripts.azure_jobs.control import atomic
     ledger=Ledger(tmp_path/'ledger.json',initial_seconds=0)
@@ -247,11 +228,13 @@ def test_normal_cancel_preserves_publication_instead_of_retiring(tmp_path,monkey
         def __init__(self,cfg): pass
         def script(self,text): scripts.append(text)
     monkeypatch.setattr(runner,'Azure',Fake)
-    monkeypatch.setattr(runner,'retire',lambda *a,**kw: pytest.fail('normal cancel retired before publication'))
+    retired=[]
+    monkeypatch.setattr(runner,'retire',lambda *a,**kw: retired.append(kw['expected_job']))
     result=runner.cancel({'state_dir':str(tmp_path),'guest_root':'C:/runner'},'job')
-    assert result['status']=='cancellation_requested'
+    assert result['status']=='cancelled'
+    assert retired == ['job']
     assert '/jobs/job/cancel' in scripts[0]
-    assert not (directory/'stop-request.json').exists()
+    assert (directory/'stop-request.json').exists()
 
 
 def test_watchdog_idle_deallocates_during_boot_grace(tmp_path,monkeypatch):

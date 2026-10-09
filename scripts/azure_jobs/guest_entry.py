@@ -17,7 +17,7 @@ if __name__ == '__main__':
         from scripts.record_verification import snapshot
         from scripts.azure_jobs.control import atomic
         atomic(Path(sys.argv[2]), snapshot(Path(sys.argv[1])))
-    elif mode in {'execute', 'republish'}:
+    elif mode == 'execute':
         from scripts.azure_jobs.guest import main
         main(mode)
     else:

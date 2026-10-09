@@ -14,9 +14,9 @@ from scripts.azure_jobs import contract, guest, runner, watchdog
 from scripts.azure_jobs.control import atomic, Ledger, locked
 
 
-def spec(environment='research'):
+def spec(environment='operations'):
     return dict(job_id='job', commit='a' * 40, command=[
-        'scripts/fp.py' if environment == 'operations' else 'entry.py'],
+        'scripts/fp.py' if environment == 'operations' else 'entry.py', 'test'],
         environment=environment, max_wall_seconds=60, expected_outputs=['out'],
         authority='synthetic review regression', private_inputs=[])
 
@@ -27,7 +27,7 @@ def completed():
                 cpu_seconds=3600, wall_seconds=1, finished_at=time.time())
 
 
-def disk_job(tmp_path, *, environment='research', status='completed'):
+def disk_job(tmp_path, *, environment='operations', status='completed'):
     job = tmp_path / 'jobs/job'; repo = tmp_path / 'repos/job'
     job.mkdir(parents=True); repo.mkdir(parents=True)
     (repo / 'out').write_text('synthetic output')
@@ -36,6 +36,7 @@ def disk_job(tmp_path, *, environment='research', status='completed'):
     entry.parent.mkdir(parents=True, exist_ok=True)
     entry.write_text('pass')
     record = completed()
+    record['launcher_records'] = [launcher(repo)]
     record['status'] = status
     if status != 'completed':
         record.update(exit_code=130, verification_exit_code=130)
@@ -45,7 +46,7 @@ def disk_job(tmp_path, *, environment='research', status='completed'):
 
 def launcher(repo):
     directory = repo / '.cache/fp-verification/run'
-    directory.mkdir(parents=True)
+    directory.mkdir(parents=True, exist_ok=True)
     files = {'stdout.txt': 'captured stdout', 'stderr.txt': '',
              'junit.xml': '<testsuite tests="1" failures="0" errors="0"/>',
              'extra.txt': 'retained extra capture'}
@@ -58,7 +59,7 @@ def launcher(repo):
     return '.cache/fp-verification/run/record.json'
 
 
-def execution(tmp_path, monkeypatch, *, environment='research'):
+def execution(tmp_path, monkeypatch, *, environment='operations'):
     job, repo, value, _ = disk_job(tmp_path, environment=environment)
     (job / 'record.json').unlink()  # Fresh execution rather than replay protection.
     calls = []
@@ -79,7 +80,7 @@ def execution(tmp_path, monkeypatch, *, environment='research'):
 
 
 @pytest.mark.parametrize('entry', ['-c', '-m', '-', '--help', './', 'nested/../entry.py'])
-def test_research_entrypoint_rejects_interpreter_or_nonfile_syntax(entry):
+def test_operations_entrypoint_rejects_nonlauncher_syntax(entry):
     value = spec(); value['command'] = [entry, 'synthetic argument']
     with pytest.raises(ValueError):
         contract.validate(value)
@@ -88,7 +89,7 @@ def test_research_entrypoint_rejects_interpreter_or_nonfile_syntax(entry):
 @pytest.mark.parametrize('kind', ['missing', 'directory', 'symlink'])
 def test_execute_refuses_entrypoint_outside_pinned_file_boundary(tmp_path, monkeypatch, kind):
     job, repo, value, config, calls = execution(tmp_path, monkeypatch)
-    entry = repo / 'entry.py'; entry.unlink()
+    entry = repo / 'scripts/fp.py'; entry.unlink()
     if kind == 'directory':
         entry.mkdir()
     elif kind == 'symlink':
@@ -102,12 +103,12 @@ def test_execute_refuses_entrypoint_outside_pinned_file_boundary(tmp_path, monke
     assert runner.read(job / 'record.json')['status'] == 'failed'
 
 
-def test_valid_research_script_keeps_arguments(tmp_path, monkeypatch):
+def test_operations_launcher_keeps_arguments(tmp_path, monkeypatch):
     job, repo, value, config, calls = execution(tmp_path, monkeypatch)
     value['command'] += ['-m', 'ordinary-script-argument']
     guest.execute(config, value)
     assert len(calls) == 1
-    assert Path(calls[0][2]).resolve() == (repo / 'entry.py').resolve()
+    assert Path(calls[0][2]).resolve() == (repo / 'scripts/fp.py').resolve()
     assert calls[0][-2:] == ['-m', 'ordinary-script-argument']
     assert contract.verified(runner.read(job / 'record.json'))
 
@@ -130,7 +131,7 @@ def test_output_removed_after_inventory_cannot_publish_completed(tmp_path, monke
     assert 'runner/record.json' in rows and 'out' not in rows
 
 
-@pytest.mark.parametrize('publisher', ['bundle', 'republish', 'recover'])
+@pytest.mark.parametrize('publisher', ['bundle', 'recover'])
 def test_completed_publishers_require_outputs(tmp_path, monkeypatch, publisher):
     job, repo, value, record = disk_job(tmp_path)
     (repo / 'out').unlink()
@@ -140,8 +141,6 @@ def test_completed_publishers_require_outputs(tmp_path, monkeypatch, publisher):
     with pytest.raises(ValueError, match='output'):
         if publisher == 'bundle':
             guest.bundle(job, repo, ['out'], partial=True)
-        elif publisher == 'republish':
-            guest.republish({'guest_root': str(tmp_path), 'session_id': 'recovery'}, value)
         else:
             watchdog.recover({'guest_root': str(tmp_path)}, {'job_id': 'job'}, 'guest supervisor lost')
     assert runner.read(job / 'record.json') == record
@@ -202,7 +201,7 @@ def test_operations_automatically_bundle_launcher_captures_and_verify_retrieval(
     path = launcher(repo)
     guest.execute(config, value)
     result = retrieve(tmp_path, monkeypatch, job)
-    assert result['verified']
+    assert result['workload_verified']
     root = Path(result['directory']) / 'files'
     for name in ('record.json', 'stdout.txt', 'stderr.txt', 'junit.xml', 'extra.txt'):
         assert (root / Path(path).parent / name).is_file()
@@ -246,7 +245,7 @@ def test_recovery_sessions_report_only_original_missing_cpu(tmp_path, known):
 @pytest.mark.parametrize('phase', ['checkout', 'environment'])
 def test_preparation_cancel_before_command_never_starts_subprocess(tmp_path, monkeypatch, phase):
     repo = tmp_path / 'repo'; repo.mkdir()
-    (repo / 'requirements-research.lock').write_text('synthetic lock')
+    (repo / 'requirements-ops.lock').write_text('synthetic lock')
     cancel = tmp_path / 'cancel'; cancel.touch()
     calls = []
     def old_run(command, **kwargs):
@@ -322,7 +321,7 @@ def test_empty_expected_directory_cannot_attest_completed_archive(tmp_path):
         guest.bundle(job, repo, ['out'], partial=True)
 
 
-@pytest.mark.parametrize('publisher', ['republish', 'recover'])
+@pytest.mark.parametrize('publisher', ['recover'])
 def test_recovery_publishers_include_launcher_directory(tmp_path, monkeypatch, publisher):
     job, repo, value, record = disk_job(tmp_path, environment='operations')
     path = launcher(repo); record['launcher_records'] = [path]
@@ -330,12 +329,9 @@ def test_recovery_publishers_include_launcher_directory(tmp_path, monkeypatch, p
     monkeypatch.setattr(guest, 'upload', lambda *a: None)
     monkeypatch.setattr(watchdog, 'upload', lambda *a: None)
     monkeypatch.setattr(watchdog, 'terminate_tree', lambda *a: True)
-    if publisher == 'republish':
-        guest.republish({'guest_root': str(tmp_path), 'session_id': 'maintenance'}, value)
-    else:
-        watchdog.recover({'guest_root': str(tmp_path)}, {'job_id': 'job'}, 'guest supervisor lost')
+    watchdog.recover({'guest_root': str(tmp_path)}, {'job_id': 'job'}, 'guest supervisor lost')
     result = retrieve(tmp_path, monkeypatch, job)
-    assert result['verified']
+    assert result['workload_verified']
     assert (Path(result['directory']) / 'files' / Path(path).parent / 'stdout.txt').read_text() == 'captured stdout'
 
 
@@ -371,7 +367,7 @@ def test_retrieval_stale_launcher_capture_does_not_prove_current_archive(tmp_pat
     capture = (Path(path).parent / 'stdout.txt').as_posix()
     alter_archive(job, remove=capture)
     stale = tmp_path / 'host/results/job/files' / capture
-    stale.parent.mkdir(parents=True); stale.write_text('captured stdout')
+    stale.parent.mkdir(parents=True, exist_ok=True); stale.write_text('captured stdout')
     with pytest.raises(ValueError, match='launcher'):
         retrieve(tmp_path, monkeypatch, job)
 

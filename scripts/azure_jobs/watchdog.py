@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 from scripts.agent_handoff import WindowsJob, spawn_provider
-from .control import Azure, atomic, locked, PUBLICATION_SECONDS
+from .control import Azure, atomic, locked, PUBLICATION_SECONDS, alarm
 from .guest import bundle, upload
 
 
@@ -132,7 +132,7 @@ def bounded_recover(config_path, lease, reason):
 
     Kill-on-close owns the recovery worker and upload descendants. Never wait for
     them at the cutoff: deallocation takes priority; retained disk files can be
-    republished under a separately admitted maintenance lease.
+    retained for later operator-directed recovery outside v1.
     """
     remaining = min(PUBLICATION_SECONDS, lease["deadline"] - time.time())
     if remaining <= 0:
@@ -167,6 +167,7 @@ def main(config_path):
     boot_grace = time.monotonic() + 180
     lease = None
     lease_observed = 0
+    deallocation_attempts = 0
     while True:
         try:
             lease = cloud_lease()
@@ -201,6 +202,9 @@ def main(config_path):
                     except OSError:
                         pass  # Even an unavailable diagnostic sink cannot veto shutdown.
             # Keep retrying even if controller/laptop has disappeared.
+            deallocation_attempts += 1
+            if deallocation_attempts >= 20:
+                alarm(root / "control", "watchdog shutdown remains unconfirmed")
             try:
                 try:
                     if lease and reason != "idle":
@@ -211,7 +215,7 @@ def main(config_path):
                     # Local stop failure must not veto deallocation or retries.
                     azure.deallocate()
             except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
-                pass
+                alarm(root / "control", "watchdog deallocation failed; retrying")
             time.sleep(5)
         else:
             time.sleep(2)

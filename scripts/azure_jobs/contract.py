@@ -27,8 +27,8 @@ def validate(spec):
         raise ValueError("invalid job identity")
     if not re.fullmatch(r"[0-9a-f]{40}", str(spec.get("commit", ""))):
         raise ValueError("commit must be a pinned 40-character SHA")
-    if spec.get("environment") not in {"operations", "research"}:
-        raise ValueError("select operations or research environment")
+    if spec.get("environment") != "operations":
+        raise ValueError("v1 supports operations environment only")
     number(spec.get("max_wall_seconds"))
     command = spec.get("command")
     if not isinstance(command, list) or not command or any(not isinstance(a, str) or not a or "\0" in a for a in command):
@@ -36,6 +36,18 @@ def validate(spec):
     entrypoint(command[0])
     if spec["environment"] == "operations" and command[0] != "scripts/fp.py":
         raise ValueError("operations commands must use scripts/fp.py")
+    args = command[1:]
+    if args[:1] == ['--workers']:
+        if len(args) < 3 or args[1] not in {str(n) for n in range(9)}:
+            raise ValueError('invalid operations launcher worker count')
+        args = args[2:]
+    elif args and args[0].startswith('--workers='):
+        if args[0].split('=', 1)[1] not in {str(n) for n in range(9)}:
+            raise ValueError('invalid operations launcher worker count')
+        args = args[1:]
+    if not args or (args[0] not in {'test', 'test-ops', 'check'}
+                    and args[:3] != ['python', '-m', 'pytest']):
+        raise ValueError('v1 requires a recorded operations launcher task')
     if not isinstance(spec.get("authority"), str) or not spec["authority"].strip():
         raise ValueError("explicit run authority is required")
     if spec.get("private_inputs") != []:

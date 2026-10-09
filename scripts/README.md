@@ -714,12 +714,12 @@ Linux-specific qualification acceptance remains on its existing Linux path.
 Only one active session is accepted; busy submissions and reused job IDs are refused.
 There is no queue in this first version. Operations commands must use `scripts/fp.py`;
 its venv is keyed by `requirements-ops.lock` and includes the repository's pinned
-verification extras. Research uses a different directory and its own
-`requirements-research.lock`; incompatible Windows pins fail preparation rather
-than falling back to operations packages. Research commands must name a regular
-file inside the pinned checkout; interpreter switches, stdin, directories and
-symlink/junction entrypoints are refused. Script arguments are passed unchanged.
-Neither environment's presence approves a run.
+verification extras. Accepted launcher tasks are test, test-ops, check and
+python -m pytest, optionally prefixed by --workers. Environment overrides, detached
+launcher execution and unrecorded Python entrypoints are refused before admission.
+Research environments and disk-only recovery admission are deferred to a later PR.
+The pinned checkout and an installed environment do not themselves authorize a run.
+
 
 Initialize the persistent ledger once with a conservative account of VM running time
 already incurred in the current week:
@@ -736,11 +736,26 @@ minutes are a shutdown margin. The preceding fifteen minutes are reserved for
 publication; execution and environment preparation stop before that window.
 Actual charged estimates run from before VM start until Azure reports
 `VM deallocated`; `VM stopped` and a successful API submission are insufficient.
-Unconfirmed shutdown leaves the interval open and blocks further admission.
+Unconfirmed shutdown leaves the interval open, emits an ALARM and blocks admission.
+Start intent is durable before Azure start and clears only on synchronous completion.
+An uncertain start cannot be reconciled from an old deallocated observation.
+Command cleanup intent is durable before submission; pending cleanup blocks admission.
+A failed diagnostic/state write never licenses a new start or bypasses deallocation.
+Actual usage, including any platform-induced overrun, is reconciled after verified
+deallocation. A hash-verified archive is reported as workload_verified; verified
+job completion additionally requires a settled ledger and no pending cleanup.
+
+**VM acceptance remains blocked:** independent shutdown protection before guest
+watchdog installation is not established. A SYSTEM startup task must already be
+verified, or an independently enforced cloud shutdown mechanism must be supplied,
+before unattended admission. Local guardian/reaper tests do not establish this.
+The 2026-10-09 read-only host check found VM deallocated, no active reservation,
+and one pending cleanup record. No paid VM was started for this rebuild.
 
 Managed Run Command uses asynchronous execution and an explicit timeout. The front-end
 returns after a separate local guardian acknowledges ownership. That guardian arms
-another independent reaper before starting the VM. The guest's SYSTEM scheduled
+a separate local reaper before starting the VM. Both share the controller host;
+they are not independent protection against total controller-host loss. The guest's SYSTEM scheduled
 watchdog survives local disconnect and restarts after watchdog failure. A named
 Windows Job Object owns each preparation command and the executing process tree.
 Normal cancellation reaches checkout, environment setup and the source-before
@@ -752,8 +767,8 @@ Watchdog recovery runs in its own kill-on-close Job Object. The watchdog enforce
 the earlier of the lease deadline and a fifteen-minute recovery window with both
 wall and monotonic clocks; stalled hashing, compression or upload cannot hold its
 deallocation loop. A known expired lease bypasses recovery and boot grace. A cutoff
-retains disk evidence for separately budgeted `results --recover`, never a success
-claim for an unfinished archive.
+retains partial disk evidence, never a success claim for an unfinished archive.
+There is no disk-only recovery command in v1.
 Before each non-idle leased shutdown attempt, the watchdog also terminates the
 lease's named workload Job Object through native calls without waiting on its
 supervisor or archive work. Deallocation runs even if that local stop fails;
@@ -777,21 +792,20 @@ stdout/stderr, JUnit and all recorded artifact hashes. Old extracted files canno
 satisfy a new archive's output or launcher-evidence contract.
 Cancel and timeout retain partial files. An upload failure retains
 disk files, but is not evidence of successful host retrieval. Archives use immutable
-SHA-256 blob names; the descriptor is published last. For retained disk files, run
-`results <job-id> --recover`. This admits a separate one-hour maintenance reservation
-with a fresh lease, republishes the original job without executing it, and deallocates.
-Use `results <job-id>` after it finishes to download and verify the files. Recovery
-VM time is charged to both the weekly ledger and the original job cost. A recovery
-session accepts `cancel` with either its session ID or the original job ID.
+SHA-256 blob names; the descriptor is published last. The watchdog may preserve
+partial evidence within the current bounded session. Disk-only recovery that starts
+another session is deferred; unavailable publication remains an explicit failure.
+Normal cancel sends the guest marker and then verifies deallocation; --force skips
+guest transport. Publication cannot delay that final stop indefinitely.
+
 
 Verification requires a completed runner and launcher record, zero exit and
 verification exit codes, stable source, complete capture, valid expected reports
 and matching artifacts. A `running`, `not_started`, failed or interrupted record
 never counts. Report CPU/wall seconds per job, estimated VM cost, weekly VM usage
 and process CPU-hours per week/month. CPU totals identify unretrieved jobs and assign
-retrieved measurements to their completion period. Republish sessions map to the
-original workload and do not add false missing CPU jobs or duplicate CPU totals;
-the monthly 5,000 CPU-hour
+retrieved measurements to their completion period. Historical maintenance sessions
+still map to their original workload for accounting only. The monthly 5,000 CPU-hour
 allowance is planning information, not a hard stop.
 
 Implementation, acceptance evidence and remaining limitations belong in

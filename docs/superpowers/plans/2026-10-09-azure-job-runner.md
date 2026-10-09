@@ -1,5 +1,9 @@
 # Azure offline job runner implementation plan
 
+> Current disposition: narrowed v1 rebuild in progress. The coordinator adjudication
+> below supersedes earlier ready-for-merge claims. VM verification and fresh reviews
+> are outstanding; independent shutdown before watchdog installation is unresolved.
+
 > **For agentic workers:** Execute with superpowers:executing-plans. The coordinator owns combined acceptance.
 
 **Status:** Earlier acceptance remains historical. Five-finding repair handoff below is active; coordinator owns combined acceptance and native Windows verification.
@@ -491,7 +495,114 @@ start or final review in H1. The coordinator may select H2 within Joshua's rebui
 instruction after assessing H1. Preserve all unrelated checkout changes.
 
 - [x] Write the state axes and enumerated event sequences before implementation.
-- [ ] Derive failing tests from S1–S10 and record the original failure mechanisms.
-- [ ] Select H2 after assessing H1; narrow implementation and verify locally.
+- [x] Derive failing tests from S1–S10 and record the original failure mechanisms.
+- [x] Select H2 after assessing H1; narrow implementation and verify locally.
 - [ ] Select H3 with exact pinned source and VM evidence/deallocation criteria.
 - [ ] Select H4 only after H3 passes; retain both exact-head verdicts.
+
+### H1 return and H2 selection — 2026-10-09
+
+Joshua retained Codex session `01a122bb-c743-74b3-a6e3-b3a34ce4f0d2` as rebuild
+executor under the current deployment coordinator; Hyper is the independent review
+route. Direct messaging to the operator-supplied Hyper thread returned `thread not
+found`; Joshua is the handoff route. Combined acceptance remains with the deployment
+coordinator, not this executor.
+
+H1 red evidence: operations Python 3.13.2, command `./fp.ps1 python -m pytest
+tests/scripts/azure_jobs/test_v1_sequences.py -q --tb=short`, record
+`20261009T222020Z-b91a309e629f`, **9 failed, 6 passed**, exit/verification 1,
+source stable. The nine failures establish the two deferred admissions, two
+cancellation shutdown gaps, cleanup admission gap, skipped power observation after
+failed deallocation, missing loud alarm, stranded pre-start session write and
+premature settlement of pending start. Six passes establish only the individual
+reservation/deadline predicates; full sequence integration remains owed.
+
+**Selected outcome:** H2 delivers operations-only v1 source and local invariant
+verification with ordinary commits on the preserved branch.
+**Prerequisites:** H1 model and red evidence present; operator retained this
+executor. Independent pre-watchdog shutdown remains unresolved for VM admission.
+**Ownership:** This Codex session executes H2; deployment coordinator owns combined
+acceptance; Hyper supplies the fresh independent review after implementation/evidence.
+**Verification:** Run invariant cases and affected runner suite through this
+checkout's validated launcher, then required gates. Retain exact source identities,
+actual failures/skips and records. No local test establishes VM Scheduler acceptance.
+**Checkpoint:** Report local implementation results and remaining VM prerequisites
+to Joshua for the deployment coordinator; preserve evidence in this plan.
+**Return boundary:** Return H2 after local source/check evidence or a concrete
+scope conflict. No VM start while the independent startup-backstop prerequisite is
+unresolved. H3 VM verification and H4 exact-head review remain separate outcomes.
+
+### H2 implementation evidence and remaining return
+
+The original nine red mechanisms are addressed locally. Research and disk recovery
+entrypoints are removed; only recorded operations launcher tasks are admitted.
+Environment override/unrecorded command rejection prevents a caller from bypassing
+the selected operations venv and expected launcher evidence. An uncertain start
+persists in the ledger and cannot be closed by retirement or reconcile; cancellation
+holds admission through shutdown and fences subsequent workload submission.
+Cleanup intent precedes Azure submission. Failed cleanup blocks a successor instead
+of starting it to perform old cleanup. Deallocation request errors do not skip power
+observation; corrupt ledger state does not veto known-session shutdown. Unsettled
+shutdown/ledger state alarms and remains admission-blocking. Results distinguish
+workload_verified from full job verified, which also requires settled shutdown and
+no cleanup debt. The guest watchdog now alarms on failed/unconfirmed deallocation.
+
+Additional red records: 20261009T223559Z-795b93a63a23 (cancellation lock boundary
+and pending-start reconcile); 20261009T224012Z-727d4fe8ca29 (corrupt ledger);
+20261009T224138Z-2dc92060bff7 (full completion and direct pending-start finish);
+20261009T224351Z-1a16c018342e (unrecorded/environment-override launcher commands);
+20261009T224635Z-2a0582dd7dc8 (silent guest shutdown failure).
+
+Most recent pre-watchdog-change full suite: 20261009T224439Z-623a3b54c0c4,
+199 passed, 2 skipped, completed/zero/stable source. This is local native Windows,
+not VM evidence. Final affected-suite and gate records follow after verification.
+
+Read-only Azure check during H2: VM deallocated, local ledger has no active
+reservation, one pending cleanup record. That command still exists: provisioning
+Succeeded, execution Pending; exitCode 0 does not mean it ran. It was not deleted
+or admitted to a new session. No VM start, private transfer or new spend occurred.
+Independent shutdown before guest watchdog installation remains unresolved; H3 is
+not accepted or dispatched by this executor. Hyper review and Codex exact-head
+verdict remain reserved until concrete implementation and VM evidence exist.
+
+The worktree checkout hook changed docs/SESSIONS.md incidentally. It remains intact,
+unstaged and excluded from task commits after automatic review rejected restoration.
+The initial edit-script stdin transport did not execute; it was corrected to a
+file-backed script through the validated launcher before any production edit.
+
+Final S10 boundary: status guest-command submission now holds admission.lock and
+rechecks active ownership, stop/start flags and VM power. Red record
+20261009T225314Z-a0e2b76cae9c reproduced both unowned submission and missing lock
+(2 failed, 34 passed; stable source). This closes a route by which diagnostic
+commands could create cleanup debt concurrently with cancellation/new admission.
+
+Prior full local gate run 20261009T224821Z-4cb66b3c7e1d completed with exit and
+verification exit 0, stable source, complete capture and no report errors.
+Private Pine/vendor/heavy inputs remain absent and unverified; report-only
+instrument/session advisories remain. Final post-S10 evidence is recorded below.
+
+### H2 return — local implementation verified; VM acceptance blocked
+
+Final affected-suite command: `./fp.ps1 --workers 2 python -m pytest
+ tests/scripts/azure_jobs -q --tb=short`, record
+`20261009T225545Z-cb6bc3526716`: **202 passed, 2 skipped**. The two skips are
+creation of an entrypoint symlink (host privilege) and the trailing-space alias
+(this filesystem/API did not normalize it). Windows Job Object tests and the
+trailing-dot alias ran locally; this is not VM/Scheduler verification.
+
+Final required command: `./fp.ps1 check`, record
+`20261009T225547Z-5784067e96a0`: applicable blocking gates passed. Its evidence-store
+suite ran 72 tests with 3 platform skips. Both final records are completed, exit 0,
+verification exit 0, source stable, capture complete, report_errors empty.
+Interpreter: `C:/Users/joshu/multi_firm_operations/tmp/ops-env/Scripts/python.exe`,
+CPython 3.13.2, 62 operations lock packages. Records attest the stable pre-commit
+working tree on the state-model commit, with the preserved incidental SESSIONS diff.
+Only this evidence return is appended afterward; production/test bytes are unchanged.
+
+Return H2 to the deployment coordinator. No combined acceptance, VM admission,
+new reviewer request or merge is claimed. Coordinator prerequisites for H3 are:
+(1) establish independent shutdown before installation of the guest watchdog;
+(2) dispose of the confirmed pending managed bootstrap command/cleanup debt without
+silently clearing it or starting a successor; then dispatch bounded VM Job Object,
+path-normalization and Task Scheduler tests, with final verified deallocation.
+H4 remains one fresh Hyper reviewer pass plus Codex verdict on the same exact head.
