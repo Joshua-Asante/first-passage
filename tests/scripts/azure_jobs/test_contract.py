@@ -62,10 +62,9 @@ def test_ambiguous_windows_components_rejected(name):
 
 
 @pytest.mark.parametrize('name', ['.git./config', '.GIT./config', '.git /config'])
-def test_collection_rejects_trailing_alias_before_hashing(tmp_path, monkeypatch, name):
-    alias = tmp_path / 'out' / name
-    alias.parent.mkdir(parents=True)
-    alias.write_text('synthetic fixture')
+def test_collection_rejects_trailing_alias_before_filesystem_access(tmp_path, monkeypatch, name):
+    # Never create an ambiguous Win32 path: reject it before any filesystem work.
+    monkeypatch.setattr(contract, 'Path', lambda *args: pytest.fail('accessed ambiguous path'))
     monkeypatch.setattr(contract, 'sha256', lambda path: pytest.fail('read ambiguous artifact'))
     with pytest.raises(ValueError, match='forbidden'):
         contract.inventory(tmp_path, ['out/' + name])
