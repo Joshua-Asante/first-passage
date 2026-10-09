@@ -76,10 +76,10 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 
 | Verdict | Trigger condition | Disposition |
 |---|---|---|
-| `RESOLVED` | Pre-registration §D RESOLVED row: ≥1 Explore clearer with median > start; the top one clears Confirm at 1× and 1.5× cost; Confirm median > start | `INTEGRATE — record the selected legs and multipliers as the lane's portfolio and sizing binding; proceed to ADR owed items 2–6` |
+| `RESOLVED` | Pre-registration §D RESOLVED row: ≥1 Explore clearer with median > start; the top one clears Confirm at 1× and 1.5× cost with Confirm median > start at both | `INTEGRATE — record the selected legs and multipliers as the lane's portfolio and sizing binding; proceed to ADR owed items 2–6` |
 | `FALSIFIED` | No grid configuration clears on Explore with median terminal equity > $10,000 | `STOP — re-proposal bar: a new confirmed strategy, or an operator change to capital or the clearance standard; not a re-grid` |
 | `AMBIGUOUS-HOLD` | The top Explore configuration fails any Confirm or 1.5× cost condition | `ITERATE — return to the operator with the full ranking; no automatic second pick` |
-| `VOID` | Integrity failure: a pinned export hash mismatches, the run's K differs from the manifest's K, or a cost input is unverified | `ITERATE — fix the input and rerun the same frozen design` |
+| `VOID` | Integrity failure per pre-registration §D VOID row (hash, K, cost, favorable-excursion column, window length) | `ITERATE — fix the input and rerun the same frozen design` |
 
 ---
 
