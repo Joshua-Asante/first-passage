@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Roll 2026-10-09** (automated keep-15 roll; `scripts/state_roll.py`):
+
+- **2026-09-11** — Production feed deferred: provider unselected; A′ shortlisted only. [ADR](../../../../../docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d)/[plan §3.2](../../../../../docs/superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md#32-a9--production-feed-verification-record-and-funding-checkpoint-added-2026-09-11)
+
 **Roll 2026-10-02** (automated keep-15 roll; `scripts/state_roll.py`):
 
 - **2026-09-11** — Stage 1 input: operator-attended controlled input (option D); no live feed; A1b implementation owed; no arm. [Addendum](../../../../../docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d)/[M1](../../../../../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-09-11--item-5-input-for-stage-1-operator-attended-controlled-input-express)
