@@ -2,7 +2,7 @@
 
 **Pre-registration:** [`2026-10-08-tradeify-size-feasibility-prereg-DRAFT.md`](../../../../docs/briefs/pre-registration/2026-10-08-tradeify-size-feasibility-prereg-DRAFT.md) (`FROZEN 2026-10-08`, freeze commit `103c5ea`; §11 addendum via #738). Return format per its §8.3: labels, hashes and readers only. No rates, medians, dollar figures or counts appear here.
 **Run:** 2026-10-08, on Joshua's GO in chat to the Deployment Coordinator. The executor was a fresh Opus session. It launched at 21:59:45Z and ended at about 02:52Z on 2026-10-09.
-**Code:** `main` `0cf32a55185913e896e8583f606f5fab78cde6ce`, which contains the wrapper (`run_size_feasibility.py`, #737). The checkout was clean before and after, and the prereg blob was `1c959fc5`.
+**Code:** `main` `0cf32a55185913e896e8583f606f5fab78cde6ce`, which contains the wrapper (`run_size_feasibility.py`, #737; wrapper commit `dc75cd97419782abc9148b277bbb458e93ad9146`, its last change at that `main`). The checkout was clean before and after, and the prereg blob was `1c959fc5`.
 
 ## Verdict
 
@@ -18,7 +18,7 @@
 | INVALID or INSUFFICIENT reasons | none |
 | Reproduction (a) | matched: report `4076857777e67cedd5755ba637693ce45638357a8a5b1fb17077e63ac28ec2ed`, depth record `87a66d8e9d2baf3b474feb7e69e1e2cdb4138f27e911f666d9b57d0118e483f2` |
 | Reproduction (b) | matched |
-| Arms | 22, run serially, all exit 0; the cap was not reached |
+| Calls | 22 (one per k and population, plus reproduction (a)), run serially, all exit 0; the cap was not reached |
 
 ## Branch selected (T00 card §8 tree, step 1)
 
