@@ -1,0 +1,98 @@
+"""Evidence-located schedule placements on the accepted path (DRAFT convention).
+
+Builds ``qualification-schedule-execution/v1`` rows (``parse_schedule_execution_evidence``)
+for an intrabar schedule instant from finer bars of the same feed (for example
+5-minute bars of the same TradingView continuous symbol) that tile the retained M15
+source bar. The accepted emulator path (``replay.accepted_path``) stays fixed, as in
+the 2026-09-23 bracket convention; the finer bars only locate the instant on it:
+
+- the instant price ``p`` is the open of the finer bar starting at the instant;
+- the segment is set by which of the path's two extremes the finer bars reached
+  before the instant (neither: open -> near extreme; near only: near -> far;
+  both: far -> close);
+- prefix = the path up to ``p`` on that segment, suffix = the rest, so the split
+  preserves the path's turning points like ``vertex_split`` (volume whole on the
+  prefix).
+
+Candidates that cannot be located are dropped with a reason, and that instant
+stays on the bracket's R1/R2 vertex placement:
+
+- ``MISSING``: the finer bars do not tile the M15 bar contiguously at one interval,
+  or none starts at the instant;
+- ``AGGREGATE``: the finer bars do not aggregate exactly to the M15 bar (OHLC, volume);
+- ``REVERSED``: the far extreme was reached before the near one (not on the path);
+- ``SEGMENT``: ``p`` does not lie on the located segment;
+- ``PATH``: the prefix's or suffix's own emulator path would add a turning point
+  (the replay's split validator would reject the row).
+
+Pure: no I/O, no private values. Use requires the convention addendum's ratification.
+"""
+from __future__ import annotations
+
+from collections import Counter
+from datetime import datetime, timedelta
+
+from c1_signal_daemon.feed import Bar
+from .model import LEG_IDS
+from .panel import source_session_date
+from .production_source import LOCATED_CONVENTION
+from .replay import accepted_path, path_turns
+
+M15 = timedelta(minutes=15)
+
+
+def _ohlcv(open_, values, close, volume):
+    return {'open': open_, 'high': max(values), 'low': min(values), 'close': close, 'volume': volume}
+
+
+def evidence_row(leg, original, instant, fine):
+    """(row, None) or (None, drop reason) for one leg's M15 bar and intrabar instant."""
+    if leg not in LEG_IDS:
+        raise ValueError('unknown schedule evidence leg')
+    if not isinstance(original, Bar) or not isinstance(instant, datetime) or instant.tzinfo is None:
+        raise ValueError('aware M15 Bar and instant required')
+    if not original.ts < instant < original.ts + M15:
+        raise ValueError('instant must be strictly inside the M15 bar')
+    fine = sorted(fine, key=lambda b: b.ts)
+    head = [b for b in fine if b.ts < instant]
+    tail = [b for b in fine if b.ts >= instant]
+    steps = {later.ts - earlier.ts for earlier, later in zip(fine, fine[1:])}
+    if (not head or not tail or head[0].ts != original.ts or tail[0].ts != instant or len(steps) != 1
+            or fine[-1].ts + steps.pop() != original.ts + M15):
+        return None, 'MISSING'
+    if (fine[0].open != original.open or fine[-1].close != original.close
+            or max(b.high for b in fine) != original.high or min(b.low for b in fine) != original.low
+            or sum(b.volume for b in fine) != original.volume):
+        return None, 'AGGREGATE'
+    path = accepted_path(original)
+    reached = lambda v: (min(b.low for b in head) <= v if v == original.low
+                         else max(b.high for b in head) >= v)
+    near, far = reached(path[1]), reached(path[2])
+    if far and not near:
+        return None, 'REVERSED'
+    segment = int(near) + int(near and far)
+    price = tail[0].open
+    if not min(path[segment], path[segment+1]) <= price <= max(path[segment], path[segment+1]):
+        return None, 'SEGMENT'
+    head_values, tail_values = path[:segment+1] + [price], [price] + path[segment+1:]
+    prefix = _ohlcv(path[0], head_values, price, original.volume)
+    suffix = _ohlcv(price, tail_values, path[-1], 0.0)
+    own = lambda ts, s: accepted_path(Bar(ts, s['open'], s['high'], s['low'], s['close'], s['volume']))
+    if path_turns(own(original.ts, prefix) + own(instant, suffix)) != path_turns(path):
+        return None, 'PATH'
+    return {'source_session_date': source_session_date(original.ts).isoformat(), 'leg_id': leg,
+            'source_bar_time': original.ts.isoformat(), 'interval_start': original.ts.isoformat(),
+            'instant': instant.isoformat(), 'price': price,
+            'prefix': prefix, 'suffix': suffix, 'convention': LOCATED_CONVENTION}, None
+
+
+def evidence_rows(candidates):
+    """Rows and drop counts for ``(leg, original M15 Bar, instant, finer bars)`` candidates."""
+    rows, drops = [], Counter()
+    for leg, original, instant, fine in candidates:
+        row, reason = evidence_row(leg, original, instant, fine)
+        if row is None:
+            drops[reason] += 1
+        else:
+            rows.append(row)
+    return rows, drops

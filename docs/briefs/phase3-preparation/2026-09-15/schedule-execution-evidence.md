@@ -66,3 +66,32 @@ Everything the accepted path reaches before the chosen vertex executes in that r
 **Not built (outside this GO).** No G1 artifact role or `ProductionSource` path consumes the convention. `ProductionSource` still requires reviewed `schedule_execution_evidence` bytes and still declares `SCHEDULE_INTRABAR_CAPABILITY_MISSING`. No stage runner, adjudication or seal counts UNDETERMINED. How UNDETERMINED paths enter the frozen pass-rate gates is an F1 definition, not engine work.
 
 **Coordinator interpretation review (2026-09-24, local repair of #486).** Reading 1 is retained: exposure is sampled before choosing the prefix, avoiding circular placement; a fill on R1's prefix changes the state used by later instants. Reading 2 is corrected above. Reading 3 is retained for this engine layer: the starting bar's open takes precedence at a shared boundary, otherwise a retained ending bar supplies its close; this grants no interpolation or missing-bar tolerance. Reading 4 is retained: the split validator checks aggregate volume and adapters receive the original bar once; split volume does not drive extra strategy calculations. `BracketScheduleQuotes.prefix_is_empty` marks only R2 pending-only placements. The replay validates that an omitted prefix belongs to a flat leg and has one price, then executes the schedule before that leg's full suffix. Existing providers retain prefix-first behavior. This review does not bind a production source or close P7.
+## Addendum 2026-10-08 — Evidence-located placement (DRAFT, not ratified)
+
+**Status:** DRAFT for operator ratification. It amends the 2026-09-23 convention only where retained evidence locates the instant. It authorizes no run: a new H, a P7 re-run and a signed source approval still apply.
+
+**Why.** Under the current replay validator, finer bars cannot resolve the bracket as plain retained chronology. A split must keep the accepted path's turning points (`replay.py`, `BookReplay._split`), and real 5-minute subdivisions almost always add turns. On synthetic random-walk bars only about 0.5% of real subdivisions were admissible.
+
+**Rule.** The scope is the 2026-09-23 scope. Where finer bars of the same feed tile the M15 source bar at one interval and aggregate to it exactly (open, high, low, close, volume), the instant is placed on the **accepted path** (`replay.accepted_path`), which is unchanged:
+
+- **Price:** the open of the finer bar that starts at the instant.
+- **Segment:** fixed by which extremes the finer bars reached before the instant: neither means open → near extreme; near only means near → far; both means far → close.
+- **Split:** the prefix is the path up to that price and the suffix is the rest, with volume whole on the prefix, as in `vertex_split`.
+
+`schedule_evidence.evidence_row` produces the row, marked `"convention": "evidence-located/v1"`, and it is retained in `schedule_execution_evidence`. A bracket provider uses only marked rows, identically in R1 and R2 (`ScheduleExecutionEvidence._split_at`), so that instant consumes no vertex placement. Unmarked rows keep their existing meaning. No row is produced or used before ratification; Joshua deferred ratification until after the size-feasibility result (2026-10-08).
+
+**Not located: R1/R2 as before.** In these cases the row is dropped with a counted reason and the instant keeps its ratified vertex placement:
+
+- `MISSING`: no contiguous tiling, or no finer bar starts at the instant.
+- `AGGREGATE`: the finer bars do not aggregate exactly to the source bar.
+- `REVERSED`: the far extreme was reached first.
+- `SEGMENT`: the price is off the located segment.
+- `PATH`: the prefix's or suffix's own emulator path would add a turn.
+
+UNDETERMINED semantics are unchanged. `consumed_intrabar_split_count` becomes the unresolved residual.
+
+**What it claims, and what it does not.**
+- The path stays TradingView's emulator path, preserving RC-4 parity. Stops and targets inside the bar keep the emulator's order. Real data only locates the instant on that path.
+- Bars whose real order contradicts the path stay bracketed.
+- On synthetic random-walk bars, about 58% of instants were located. That is not a claim about real data; the producer's drop counts on the real export are the measurement.
+- Any synthetic price construction outside these rules is excluded, and so are re-ordered extremes and unlocated interpolation.
