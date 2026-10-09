@@ -97,7 +97,7 @@ Owners hold canonical criteria; rows are pointers.
 
 ### No fixed date / gated
 
-- **Self-funded Tradovate lane:** before the first live order, the six items owed in the [ADR](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds) (portfolio clearing the 15% drawdown standard, firm-tier + pre-flight + re-MC, API access, CME licensing, Tradeify rule check, rail binding); next: score candidates against the confirmed p99 test.
+- **Self-funded Tradovate lane:** before the first live order, the six items owed in the [ADR](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds) (portfolio clearing the 15% drawdown standard, firm-tier + pre-flight + re-MC, API access, CME licensing, Tradeify rule check, rail binding); next: freeze [Q-SFGROWTH-1](docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md), then score in the operator checkout.
 - **Held-request watch (T13):** while any request is held, a check is due at each account-session open (18:00 ET Sun–Thu), paged at due + 60 min by the G1 dead-man once built; before the first armed session, the G1 build (Healthchecks.io), G10, Q7 (PASS) and HB-L1/L2 are arming preconditions. [Watch](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md).
 - **M-B idle-clock monitor:** built, registration-ready; wire only on F3 successor
   registration (S1 elects no migration), after re-freezing venue semantics.
