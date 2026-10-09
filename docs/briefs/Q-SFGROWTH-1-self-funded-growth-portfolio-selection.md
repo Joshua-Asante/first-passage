@@ -54,7 +54,7 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 
 **H-SFGROWTH-1:** If at least one configuration on the frozen grid clears the 1-in-100 limit with a median one-year return above zero on the Explore window, then the top-ranked one also clears the limit, at 1× and 1.5× cost, with a positive median return on the Confirm window; otherwise no portfolio from the current pool is fit for this account.
 
-**Accept H-SFGROWTH-1 if:** all four RESOLVED conditions in the [pre-registration §D](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#d--verdict-table) hold.
+**Accept H-SFGROWTH-1 if:** all five RESOLVED conditions in the [pre-registration §D](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#d--verdict-table) hold.
 **Reject H-SFGROWTH-1 if:** no grid configuration clears on Explore with median terminal equity above $10,000.
 **Ambiguous-hold if:** the top Explore configuration fails any Confirm or cost-stress condition.
 
@@ -76,19 +76,19 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 
 | Verdict | Trigger condition | Disposition |
 |---|---|---|
-| `RESOLVED` | Pre-registration §D RESOLVED row: ≥1 Explore clearer with median > start; the top one clears Confirm at 1× and 1.5× cost with Confirm median > start at both | `INTEGRATE — record the selected legs and multipliers as the lane's portfolio and sizing binding; proceed to ADR owed items 2–6` |
+| `RESOLVED` | Pre-registration §D RESOLVED row: ≥1 Explore clearer with median > start; the top one clears Confirm at 1× and 1.5× cost with Confirm median > start at both, and clears the roll-seam sensitivity | `INTEGRATE — record the selected legs and multipliers as the lane's portfolio and sizing binding; proceed to ADR owed items 2–6` |
 | `FALSIFIED` | No grid configuration clears on Explore with median terminal equity > $10,000 | `STOP — re-proposal bar: a new confirmed strategy, or an operator change to capital or the clearance standard; not a re-grid` |
-| `AMBIGUOUS-HOLD` | The top Explore configuration fails any Confirm or 1.5× cost condition | `ITERATE — return to the operator with the full ranking; no automatic second pick` |
+| `AMBIGUOUS-HOLD` | The top Explore configuration fails any Confirm, 1.5× cost or roll-seam condition | `ITERATE — return to the operator with the full ranking; no automatic second pick` |
 | `VOID` | Integrity failure per pre-registration §D VOID row (hash, K, cost, favorable-excursion column, window length) | `ITERATE — fix the input and rerun the same frozen design` |
 
 ---
 
 ## §7 — Execution plan
 
-- **Phase 0 — inputs (operator checkout).** Confirm the pinned exports for each pool leg are present and hash-match `run_four_firm_remc.py`'s pins; record the verified personal-Tradovate all-in cost per side for 6J, MNQ, MYM and MGC; open a `register_search` manifest with the grid's K before any Explore read.
-- **Phase 1 — scorer.** Implement the pre-registration's statistic as a new lab scorer reusing `remc_series_builder` for daily P&L and intraday lows; unit-test it against the pre-registration's worked example and a synthetic panel. Reviewed before any real export is read.
-- **Phase 2 — Explore.** Score every grid configuration on the Explore window; commit the full ranking as a hash-pinned freeze.
-- **Phase 3 — Confirm and verdict.** Score only the top configuration on Confirm at 1× and 1.5× cost; assign the §6 verdict mechanically; write the closure.
+- **Phase 0 — inputs (operator checkout), before any export is read for scoring.** Produce and hash every (leg, k) size-specific export; record the dated Tradovate rate snapshot (commission + exchange + clearing + NFA, account plan) and initial-margin snapshot, and the per-instrument roll dates; commit them in one manifest; open the `register_search` manifest with K = 2,375 (data-independent).
+- **Phase 1 — scorer.** Implement the pre-registration's statistic as a new lab scorer reusing `remc_series_builder.parse_trade_list_csv`; unit-test it against the worked example and a synthetic panel, including the bootstrap draw spec. Reviewed before any real export is scored.
+- **Phase 2 — Explore.** Score every non-excluded configuration on the Explore window; commit the full ranking as a hash-pinned freeze.
+- **Phase 3 — Confirm and verdict.** Score only the top configuration on Confirm at 1× and 1.5× cost and on the roll-seam sensitivity; assign the §6 verdict mechanically (VOID first); write the closure.
 
 Execution runs in the operator's primary checkout (private exports); this public clone cannot run Phases 0–3.
 

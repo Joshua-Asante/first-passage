@@ -17,7 +17,8 @@
    account. The portfolio is **not yet selected**; it is not the Tradeify book by
    default (operator, 2026-10-09). Selection is owed against the growth objective,
    with candidates drawn from existing strategies under their locks; whatever is
-   chosen gets its own (portfolio, venue) sizing binding under the
+   chosen gets its own (portfolio, firm-tier) protection and sizing binding, keyed to the
+   personal-account tier (owed item 2), under the
    [concept-not-constant ADR](2026-07-13-dd-protection-concept-not-constant.md),
    never an edit of the Tradeify binding or of `dd_protection` constants.
 3. **Data.** The same personal account is the intended real-time CME source for the
@@ -42,12 +43,14 @@ AGENTS.md live-execution rules (M1, arming, per-session GO); private-figure poli
 
 ## Revision
 
-- 2026-10-09 (same day): portfolio unselected and maximum-growth objective (commit `87d12a0`); 15% peak-to-trough clearance standard recorded (`8a5e42c`); its p99 selection test and live stop confirmed by the operator (this revision).
+- 2026-10-09 (same day): portfolio unselected and maximum-growth objective (commit `87d12a0`); 15% peak-to-trough clearance standard recorded (`8a5e42c`); its p99 selection test and live stop confirmed by the operator (`f63a19c`); Codex review of PR #743: venue/parity checklist reading, (portfolio, firm-tier) keying, feed gating on items 3–4, and owed item 7 (this revision).
 
 ## Grounds
 
 - The 2026-07-16 closure was an operator posture ("closed for now"), and its §4 limb 1
-  names a dated operator GO as the only re-open path. This is that GO.
+  names a dated operator GO with a fresh venue/parity checklist as the re-open path. This
+  is that GO; the checklist is the owed list below. The lane is reopened as a posture and
+  a research target now; capital authorization and any live use wait on that checklist.
 - Tradovate wins on integration cost: the account already exists, and the c1 rail already
   routes to Tradovate, so order semantics, drills and runtime ports carry over.
   IBKR fails unattended login by source (feed note §Summary item 4).
@@ -57,23 +60,30 @@ AGENTS.md live-execution rules (M1, arming, per-session GO); private-figure poli
 - Tradeoff accepted: one broker carries both the prop evaluation and the personal
   account, so a Tradovate outage or policy change hits both.
 
-**Owed before first live order** (each a separate record with its owner):
+**Owed** (each a separate record with its owner). Items 3 and 4 gate **any** activation of
+the personal account as a data feed, dry-run included, and cover every order destination
+that feed drives (the personal account and the Tradeify evaluation). All seven gate the
+first live order on the personal account:
 
 1. Portfolio selection and sizing that clear the 15% drawdown standard (Decision 4).
 2. Personal-account tier in `core/firm_rules.py` with `starting_balance`, then the
    `core/mc/preflight.py` engine pre-flight and a re-MC under that tier.
 3. Tradovate API access on the personal account: the $1,000 key requirement, the API
    add-on and the data entitlement (fees in the feed note are excerpt-grade; verify on the page).
-4. CME data licensing answer for automated own-account use (feed-note CME and P6 drafts).
+4. CME data licensing answer for automated use with orders at every destination the feed
+   drives: the personal account and the Tradeify evaluation (feed-note CME and P6 drafts).
 5. Tradeify rule check, if the chosen portfolio shares any strategy with the Tradeify
    book: whether the same signals in a personal account at the same broker breach any
    copy-trading, hedging or account-linking rule.
 6. Rail binding: an account/instance binding for the personal account kept separate from
    the Tradeify instance (configuration-as-code; no shared credentials).
+7. The 15% live halt (Decision 4): a fail-closed running-peak halt-and-flatten control for
+   the personal account, with tests and an activation check that refuses to arm without it.
+   Nothing in `ops/c1_rail` or `core` implements it today.
 
 ## Current owner
 
-This ADR owns the lane's scope until a campaign or plan owner is named for items 1–6;
+This ADR owns the lane's scope until a campaign or plan owner is named for items 1–7;
 [STATE.md](../../STATE.md) carries the forward row. Venue rules stay with
 [`core/firm_rules.py`](../../core/firm_rules.py); feed questions with the
 [feed-provider note](../notes/2026-10-03-feed-provider-questions-narrowed-DRAFT.md).
