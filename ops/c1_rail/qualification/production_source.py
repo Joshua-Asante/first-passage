@@ -443,7 +443,7 @@ class ScheduleExecutionEvidence:
     splits: object
     source_rows: tuple
     run: str | None = None
-    located: tuple = ()
+    located: object = field(default_factory=lambda: MappingProxyType({}))
     _placed: dict = field(default_factory=dict, compare=False, repr=False)
 
     def __post_init__(self):
@@ -488,8 +488,12 @@ class ScheduleExecutionEvidence:
         from .replay import ReplayNeedsContext
         _require_exposure(exposure)
         if self.run is None:
+            key = (session.source.source_session_date, leg, pb.source_bar_time, start, instant)
+            if key in self.located:
+                # A located row is a placement on the emulator path, not retained chronology.
+                raise ReplayNeedsContext('evidence-located schedule rows are bracket-only')
             try:
-                prefix, suffix = self.splits[(session.source.source_session_date, leg, pb.source_bar_time, start, instant)]
+                prefix, suffix = self.splits[key]
             except KeyError as exc:
                 raise ReplayNeedsContext('missing reviewed source interval split evidence') from exc
             return ScheduleSplit(prefix, suffix, True)
@@ -570,22 +574,29 @@ class ScheduleExecutionBracket:
                                          evidence.located)
 
 
-LOCATED_CONVENTION = 'evidence-located/v1'   # DRAFT addendum 2026-10-08; unused until ratified
+LOCATED_CONVENTION = 'evidence-located/v1'   # DRAFT addendum 2026-10-08
+# The parser refuses marked rows until the ratifying PR flips this, so ratification
+# moves the code closure and lands with a new H.
+LOCATED_CONVENTION_RATIFIED = False
 
 
 def parse_schedule_execution_evidence(raw):
     doc = _json(raw)
     if set(doc) != {'schema', 'rows'} or doc['schema'] != 'qualification-schedule-execution/v1':
         raise ValueError('explicit source execution-evidence schema required')
-    quotes, splits, source_rows, located = {}, {}, [], set()
+    quotes, splits, source_rows, located = {}, {}, [], {}
     if type(doc['rows']) is not list:
         raise ValueError('execution evidence rows must be a list')
     for row in doc['rows']:
         fields = {'source_session_date', 'leg_id', 'source_bar_time', 'interval_start', 'instant', 'price', 'prefix', 'suffix'}
         if set(row) not in (fields, fields | {'convention'}):
             raise ValueError('complete source execution evidence row required')
-        if 'convention' in row and (row['convention'] != LOCATED_CONVENTION or row['prefix'] is None):
-            raise ValueError('unknown or incomplete schedule evidence convention')
+        if 'convention' in row:
+            if not LOCATED_CONVENTION_RATIFIED:
+                raise ValueError('evidence-located convention is not ratified')
+            if (row['convention'] != LOCATED_CONVENTION or row['prefix'] is None
+                    or row['interval_start'] != row['source_bar_time']):
+                raise ValueError('unknown or incomplete schedule evidence convention')
         day, leg = date.fromisoformat(row['source_session_date']), row['leg_id']
         if leg not in LEG_IDS:
             raise ValueError('unknown schedule evidence leg')
@@ -622,9 +633,9 @@ def parse_schedule_execution_evidence(raw):
             raise ValueError('duplicate source interval evidence')
         splits[key] = tuple(values)
         if 'convention' in row:
-            located.add(key)
+            located[key] = True
     return ScheduleExecutionEvidence(MappingProxyType(quotes), MappingProxyType(splits), tuple(source_rows),
-                                     located=tuple(sorted(located)))
+                                     located=MappingProxyType(located))
 
 
 @dataclass(frozen=True)

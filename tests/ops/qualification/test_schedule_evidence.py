@@ -17,6 +17,13 @@ INSTANT = T0 + timedelta(minutes=10)                          # 15:55 ET
 LEG = 'orb_mnq_v7'
 
 
+@pytest.fixture(autouse=True)
+def ratified(monkeypatch):
+    """TEST_ONLY: parse marked rows as if the DRAFT convention were ratified."""
+    from c1_rail.qualification import production_source
+    monkeypatch.setattr(production_source, 'LOCATED_CONVENTION_RATIFIED', True)
+
+
 def _fives(ticks):
     """Three 5-minute bars and their M15 aggregate from one tick path (301 points per bar)."""
     fives = [Bar(T0 + timedelta(minutes=5 * i), *(lambda t: (t[0], max(t), min(t), t[-1]))(ticks[i * 300:(i + 1) * 300 + 1]), 1)
@@ -54,7 +61,7 @@ def test_located_rows_pass_the_engine_validator_and_resolve_both_runs_identicall
         if row is not None:
             split = _validate(original, row)
             assert split.prefix.close == split.suffix.open == fives[2].open
-    assert reasons.get(None, 0) > 160 and set(reasons) <= {None, 'REVERSED', 'SEGMENT', 'PATH'}
+    assert reasons.get(None, 0) > 100 and set(reasons) <= {None, 'REVERSED', 'TIED', 'SEGMENT', 'PATH'}
 
 
 def test_segment_follows_the_extremes_reached_before_the_instant():
@@ -113,3 +120,82 @@ def test_bracket_uses_only_located_rows_and_places_the_residual():
         with pytest.raises(ValueError):
             parse_schedule_execution_evidence(json.dumps(
                 {'schema': 'qualification-schedule-execution/v1', 'rows': [bad]}).encode())
+
+
+def _parse(rows):
+    return parse_schedule_execution_evidence(json.dumps(
+        {'schema': 'qualification-schedule-execution/v1', 'rows': rows}).encode())
+
+
+def _located_row():
+    original = Bar(T0, 100, 120, 90, 110, 3)                  # accepted path 100 -> 90 -> 120 -> 110
+    fives = [Bar(T0, 100, 101, 90, 95, 1), Bar(T0 + timedelta(minutes=5), 95, 99, 94, 97, 1),
+             Bar(INSTANT, 97, 120, 96, 110, 1)]
+    row, reason = evidence_row(LEG, original, INSTANT, fives)
+    assert reason is None
+    return original, row
+
+
+def test_parser_refuses_marked_rows_until_the_convention_is_ratified(monkeypatch):
+    from c1_rail.qualification import production_source
+    _, row = _located_row()
+    monkeypatch.setattr(production_source, 'LOCATED_CONVENTION_RATIFIED', False)
+    assert production_source.LOCATED_CONVENTION_RATIFIED is False
+    with pytest.raises(ValueError, match='not ratified'):
+        _parse([row])
+    unmarked = {k: v for k, v in row.items() if k != 'convention'}
+    assert _parse([unmarked]).located == {}                   # unmarked rows are unaffected
+
+
+def test_module_default_keeps_the_convention_unratified():
+    from pathlib import Path
+    from c1_rail.qualification import production_source
+    lines = Path(production_source.__file__).read_text(encoding='utf-8').splitlines()
+    assert [line for line in lines if line.startswith('LOCATED_CONVENTION_RATIFIED')] == ['LOCATED_CONVENTION_RATIFIED = False']
+
+
+def test_marked_row_must_start_at_the_source_bar():
+    _, row = _located_row()
+    later = {**row, 'interval_start': (T0 + timedelta(minutes=5)).isoformat()}
+    with pytest.raises(ValueError, match='convention'):
+        _parse([later])
+
+
+def test_reviewed_non_bracket_provider_refuses_a_marked_row():
+    from c1_rail.qualification.replay import ReplayNeedsContext
+    original, row = _located_row()
+    evidence = _parse([row])
+    session = SimpleNamespace(occurrence=0, bars=(), source=SimpleNamespace(source_session_date=T0.date()))
+    pb = SimpleNamespace(source_bar_time=T0, bars=((LEG, original),))
+    with pytest.raises(ReplayNeedsContext, match='bracket-only'):
+        evidence.split_bar(session, pb, INSTANT, LEG, exposure=ScheduleExposure(1, False, 0))
+    unmarked = _parse([{k: v for k, v in row.items() if k != 'convention'}])
+    assert unmarked.split_bar(session, pb, INSTANT, LEG, exposure=ScheduleExposure(1, False, 0)).prefix_executes
+
+
+def test_located_row_on_one_leg_leaves_another_legs_placement_in_the_same_bar():
+    from c1_rail.qualification.production_source import _consumed_splits
+    original, row = _located_row()
+    other = 'dj30_mym_p250'
+    session = SimpleNamespace(occurrence=0, bars=(), source=SimpleNamespace(source_session_date=T0.date()))
+    pb = SimpleNamespace(source_bar_time=T0, bars=((LEG, original), (other, original)))
+    for run, vertex in (('R1', 90), ('R2', 120)):
+        provider = ScheduleExecutionBracket(_parse([row])).for_run(run)
+        splits = BookReplay._split(SimpleNamespace(schedule_quotes=provider), session, pb,
+                                   {LEG: original, other: original}, INSTANT,
+                                   {LEG: ScheduleExposure(1, False, 0), other: ScheduleExposure(1, False, 0)})
+        assert splits[LEG].prefix.close == 97 and splits[other].prefix.close == vertex
+        assert [leg for _, leg, _ in _consumed_splits(provider)] == [other]
+
+
+def test_first_touch_order_decides_reversed_and_ties():
+    original = Bar(T0, 100, 120, 90, 110, 3)                  # accepted path 100 -> 90 -> 120 -> 110
+    def five(i, o, h, l, c):
+        return Bar(T0 + timedelta(minutes=5 * i), o, h, l, c, 1)
+    both_reversed = [five(0, 100, 120, 99, 110), five(1, 110, 111, 90, 115), five(2, 115, 116, 109, 110)]
+    both_in_order = [five(0, 100, 101, 90, 95), five(1, 95, 120, 94, 115), five(2, 115, 116, 109, 110)]
+    tied = [five(0, 100, 120, 90, 115), five(1, 115, 117, 112, 115), five(2, 115, 116, 109, 110)]
+    assert evidence_row(LEG, original, INSTANT, both_reversed) == (None, 'REVERSED')
+    assert evidence_row(LEG, original, INSTANT, tied) == (None, 'TIED')
+    row, reason = evidence_row(LEG, original, INSTANT, both_in_order)
+    assert reason is None and row['price'] == 115

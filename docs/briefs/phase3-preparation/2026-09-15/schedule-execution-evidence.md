@@ -78,13 +78,14 @@ Everything the accepted path reaches before the chosen vertex executes in that r
 - **Segment:** fixed by which extremes the finer bars reached before the instant: neither means open → near extreme; near only means near → far; both means far → close.
 - **Split:** the prefix is the path up to that price and the suffix is the rest, with volume whole on the prefix, as in `vertex_split`.
 
-`schedule_evidence.evidence_row` produces the row, marked `"convention": "evidence-located/v1"`, and it is retained in `schedule_execution_evidence`. A bracket provider uses only marked rows, identically in R1 and R2 (`ScheduleExecutionEvidence._split_at`), so that instant consumes no vertex placement. Unmarked rows keep their existing meaning. No row is produced or used before ratification; Joshua deferred ratification until after the size-feasibility result (2026-10-08).
+`schedule_evidence.evidence_row` produces the row, marked `"convention": "evidence-located/v1"`, and it is retained in `schedule_execution_evidence`. A marked row must start at the source bar (`interval_start` equal to `source_bar_time`). Only a bracket provider uses it, identically in R1 and R2 (`ScheduleExecutionEvidence._split_at`), so that instant consumes no vertex placement. The non-bracket reviewed provider (`replay`) refuses a marked row, because the row is a placement on the emulator path, not retained chronology. Unmarked rows keep their existing meaning. **Enforced gate:** the parser rejects every marked row while `production_source.LOCATED_CONVENTION_RATIFIED` is `False`. Only the ratifying change flips it, which moves the code closure and therefore lands with a new H. Joshua deferred ratification until after the size-feasibility result (2026-10-08).
 
 **Not located: R1/R2 as before.** In these cases the row is dropped with a counted reason and the instant keeps its ratified vertex placement:
 
 - `MISSING`: no contiguous tiling, or no finer bar starts at the instant.
 - `AGGREGATE`: the finer bars do not aggregate exactly to the source bar.
-- `REVERSED`: the far extreme was reached first.
+- `REVERSED`: by first touch in the finer bars, the far extreme was reached before the near one, or without it.
+- `TIED`: both extremes were first reached inside the same finer bar, so their order is undecidable at that resolution.
 - `SEGMENT`: the price is off the located segment.
 - `PATH`: the prefix's or suffix's own emulator path would add a turn.
 
@@ -92,6 +93,6 @@ UNDETERMINED semantics are unchanged. `consumed_intrabar_split_count` becomes th
 
 **What it claims, and what it does not.**
 - The path stays TradingView's emulator path, preserving RC-4 parity. Stops and targets inside the bar keep the emulator's order. Real data only locates the instant on that path.
-- Bars whose real order contradicts the path stay bracketed.
-- On synthetic random-walk bars, about 58% of instants were located. That is not a claim about real data; the producer's drop counts on the real export are the measurement.
+- Bars whose real order of first touch contradicts the path, or cannot be decided at the finer resolution, stay bracketed. Order within a single finer bar is not inferred.
+- On synthetic random-walk bars, about 54% of instants were located under these rules (5-minute tiles; drops: 17.7% `PATH`, 17.1% `REVERSED`, 6.7% `SEGMENT`, 4.3% `TIED`). That is not a claim about real data; the producer's drop counts on the real export are the measurement.
 - Any synthetic price construction outside these rules is excluded, and so are re-ordered extremes and unlocated interpolation.

@@ -20,12 +20,16 @@ stays on the bracket's R1/R2 vertex placement:
 - ``MISSING``: the finer bars do not tile the M15 bar contiguously at one interval,
   or none starts at the instant;
 - ``AGGREGATE``: the finer bars do not aggregate exactly to the M15 bar (OHLC, volume);
-- ``REVERSED``: the far extreme was reached before the near one (not on the path);
+- ``REVERSED``: by first touch in the finer bars, the far extreme was reached before
+  the near one, or without it (the real order contradicts the path);
+- ``TIED``: both extremes were first reached inside the same finer bar, so their
+  order is undecidable at that resolution;
 - ``SEGMENT``: ``p`` does not lie on the located segment;
 - ``PATH``: the prefix's or suffix's own emulator path would add a turning point
   (the replay's split validator would reject the row).
 
-Pure: no I/O, no private values. Use requires the convention addendum's ratification.
+Pure: no I/O, no private values. The parser refuses the rows it emits until
+``production_source.LOCATED_CONVENTION_RATIFIED`` is set by the ratifying change.
 """
 from __future__ import annotations
 
@@ -65,12 +69,19 @@ def evidence_row(leg, original, instant, fine):
             or sum(b.volume for b in fine) != original.volume):
         return None, 'AGGREGATE'
     path = accepted_path(original)
-    reached = lambda v: (min(b.low for b in head) <= v if v == original.low
-                         else max(b.high for b in head) >= v)
-    near, far = reached(path[1]), reached(path[2])
-    if far and not near:
+
+    def first_reached(value):
+        """Index of the first prefix bar touching ``value``; -1 when it is the open; None if never."""
+        if value == path[0]:
+            return -1
+        hits = (i for i, b in enumerate(head) if (b.low <= value if value == original.low else b.high >= value))
+        return next(hits, None)
+    near, far = first_reached(path[1]), first_reached(path[2])
+    if far is not None and (near is None or far < near):
         return None, 'REVERSED'
-    segment = int(near) + int(near and far)
+    if far is not None and far == near >= 0:
+        return None, 'TIED'
+    segment = int(near is not None) + int(far is not None)
     price = tail[0].open
     if not min(path[segment], path[segment+1]) <= price <= max(path[segment], path[segment+1]):
         return None, 'SEGMENT'
