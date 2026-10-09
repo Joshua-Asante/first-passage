@@ -202,7 +202,14 @@ def main(config_path):
                         pass  # Even an unavailable diagnostic sink cannot veto shutdown.
             # Keep retrying even if controller/laptop has disappeared.
             try:
-                azure.deallocate()
+                try:
+                    if lease and reason != "idle":
+                        # Native calls only: no recovery, disk writes, polling or
+                        # waits on the stalled supervisor. Stop only its named job.
+                        terminate_tree(lease.get("source_job_id", lease["job_id"]))
+                finally:
+                    # Local stop failure must not veto deallocation or retries.
+                    azure.deallocate()
             except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
                 pass
             time.sleep(5)

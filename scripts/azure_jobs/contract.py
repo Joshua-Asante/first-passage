@@ -10,10 +10,11 @@ def relative(value):
     if not isinstance(value, str) or not value or "\\" in value or ":" in value:
         raise ValueError("expected a safe relative path")
     path = PurePosixPath(value)
-    # Windows aliases private components regardless of case. Normalize only the
-    # comparison: accepted artifact names must retain their original spelling.
+    # Win32 aliases trailing dots/spaces and case. Refuse ambiguous components;
+    # normalize only the comparison so safe names retain their original spelling.
     parts = [p.casefold() for p in path.parts]
-    if path.is_absolute() or any(p in {"..", ".git"} or p.startswith(".env") for p in parts):
+    if path.is_absolute() or any(p.endswith((".", " ")) or p == ".git"
+                                 or p.startswith(".env") for p in parts):
         raise ValueError("forbidden output path")
     return value
 

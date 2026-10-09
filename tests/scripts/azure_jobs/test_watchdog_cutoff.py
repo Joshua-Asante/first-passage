@@ -122,8 +122,91 @@ def test_expired_lease_bypasses_recovery_and_boot_grace(tmp_path, monkeypatch):
     monkeypatch.setattr(watchdog.time, 'monotonic', lambda: 0)
     monkeypatch.setattr(watchdog.time, 'sleep', lambda _: pytest.fail('expired lease waited through boot grace'))
     monkeypatch.setattr(watchdog, 'recover', lambda *a: pytest.fail('recovery started after cutoff'))
+    monkeypatch.setattr(watchdog, 'terminate_tree', lambda *a: True)
     with pytest.raises(Stopped):
         watchdog.main(tmp_path / 'config.json')
+
+
+@pytest.mark.parametrize('stop_fails', [False, True])
+@pytest.mark.parametrize('mapping_matches', [False, True])
+def test_expired_lease_stops_only_owned_job_despite_cloud_failure(
+        tmp_path, monkeypatch, stop_fails, mapping_matches):
+    """Exercise the actual native-stop wrapper with synthetic kernel/Azure APIs.
+
+    The supervisor does no work or timeout polling. The watchdog must stop its
+    named workload even when every deallocation attempt fails, and keep retrying
+    without archive work, process enumeration or waits on workload completion.
+    """
+    import ctypes
+    atomic(tmp_path / 'config.json', {'guest_root': str(tmp_path)})
+    atomic(tmp_path / 'control/sessions/session.json', {
+        'session_id': 'session' if mapping_matches else 'other-session',
+        'source_job_id': 'original' if mapping_matches else 'unrelated',
+    })
+    lease = {'job_id': 'session', 'deadline': 100, 'bootstrap_deadline': 50}
+    owned_name = 'Local\\FP-Offline-' + ('original' if mapping_matches else 'session')
+    live = {owned_name, 'Local\\FP-Offline-unrelated'}
+    calls = []
+    attempts = []
+    clock = [101.0]
+
+    class NativeCall:
+        def __init__(self, fn):
+            self.fn = fn
+
+        def __call__(self, *args):
+            return self.fn(*args)
+
+    def open_job(access, inherit, name):
+        assert (access, inherit, name) == (8, False, owned_name)
+        calls.append('open')
+        return 123
+
+    def terminate(handle, code):
+        assert (handle, code) == (123, 130)
+        calls.append('terminate')
+        if stop_fails:
+            return False
+        live.discard(owned_name)
+        return True
+
+    def close(handle):
+        assert handle == 123
+        calls.append('close')
+
+    kernel = SimpleNamespace(OpenJobObjectW=NativeCall(open_job),
+                             TerminateJobObject=NativeCall(terminate),
+                             CloseHandle=NativeCall(close))
+    monkeypatch.setattr(ctypes, 'WinDLL', lambda *a, **k: kernel, raising=False)
+
+    class FakeAzure:
+        def __init__(self, config):
+            pass
+
+        def deallocate(self):
+            calls.append('deallocate')
+            attempts.append(clock[0])
+            if not stop_fails:
+                assert owned_name not in live, 'stalled supervisor left workload running'
+            assert 'Local\\FP-Offline-unrelated' in live
+            raise OSError('synthetic Azure outage')
+
+    def sleep(seconds):
+        assert seconds == 5
+        calls.append('sleep')
+        clock[0] += seconds
+        if len(attempts) == 3:
+            raise Stopped()
+
+    monkeypatch.setattr(watchdog, 'Azure', FakeAzure)
+    monkeypatch.setattr(watchdog, 'cloud_lease', lambda: dict(lease))
+    monkeypatch.setattr(watchdog, 'time', SimpleNamespace(
+        time=lambda: clock[0], monotonic=lambda: clock[0], sleep=sleep))
+    monkeypatch.setattr(watchdog, 'bounded_recover', lambda *a: pytest.fail('archive recovery after expiry'))
+    with pytest.raises(Stopped):
+        watchdog.main(tmp_path / 'config.json')
+    assert calls == ['open', 'terminate', 'close', 'deallocate', 'sleep'] * 3
+    assert attempts == [101, 106, 111]
 
 
 @pytest.mark.parametrize('code,expected', [(0, True), (75, False), (1, RuntimeError)])
@@ -194,6 +277,7 @@ def test_recovery_spawn_and_diagnostic_failure_still_deallocate(tmp_path, monkey
     monkeypatch.setattr(watchdog, 'Azure', FakeAzure)
     monkeypatch.setattr(watchdog, 'cloud_lease', lambda: lease)
     monkeypatch.setattr(watchdog, 'bounded_recover', fail)
+    monkeypatch.setattr(watchdog, 'terminate_tree', lambda *a: True)
     monkeypatch.setattr(watchdog, 'print', fail, raising=False)
     monkeypatch.setattr(watchdog, 'time', SimpleNamespace(time=lambda: 1000, monotonic=lambda: 0))
     with pytest.raises(Stopped):

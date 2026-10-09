@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 from pathlib import Path
 import pytest
 from scripts.azure_jobs import contract
@@ -48,6 +49,46 @@ def test_collection_rejects_synthetic_windows_aliases_before_hashing(tmp_path, m
 def test_allowed_output_spelling_is_preserved(tmp_path):
     (tmp_path / 'Result.TXT').write_text('synthetic result')
     assert list(contract.inventory(tmp_path, ['Result.TXT'])) == ['Result.TXT']
+
+
+@pytest.mark.parametrize('name', [
+    '.git./config', 'out/.GIT./config', '.git /config', 'out/.Git. /config',
+    'out/.git.../config', 'report.txt.', 'out /report.txt', 'report.txt ',
+])
+def test_ambiguous_windows_components_rejected(name):
+    spec = valid(); spec['expected_outputs'] = [name]
+    with pytest.raises(ValueError, match='forbidden'):
+        contract.validate(spec)
+
+
+@pytest.mark.parametrize('name', ['.git./config', '.GIT./config', '.git /config'])
+def test_collection_rejects_trailing_alias_before_hashing(tmp_path, monkeypatch, name):
+    alias = tmp_path / 'out' / name
+    alias.parent.mkdir(parents=True)
+    alias.write_text('synthetic fixture')
+    monkeypatch.setattr(contract, 'sha256', lambda path: pytest.fail('read ambiguous artifact'))
+    with pytest.raises(ValueError, match='forbidden'):
+        contract.inventory(tmp_path, ['out/' + name])
+
+
+@pytest.mark.parametrize('name', ['Report final.TXT', '.gitignore', 'out..name', ' leading.txt'])
+def test_unambiguous_spelling_is_preserved(tmp_path, name):
+    (tmp_path / name).write_text('synthetic result')
+    assert list(contract.inventory(tmp_path, [name])) == [name]
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='actual Windows path normalization')
+@pytest.mark.parametrize('component', ['.git.', '.git '])
+def test_windows_normalized_private_alias_is_rejected(tmp_path, monkeypatch, component):
+    target = tmp_path / 'out/.git/config'
+    target.parent.mkdir(parents=True)
+    target.write_text('synthetic fixture; not credentials')
+    alias = tmp_path / 'out' / component / 'config'
+    if not alias.exists() or not alias.samefile(target):
+        pytest.skip('this filesystem/API did not normalize the synthetic alias')
+    monkeypatch.setattr(contract, 'sha256', lambda path: pytest.fail('read Windows alias'))
+    with pytest.raises(ValueError, match='forbidden'):
+        contract.inventory(tmp_path, ['out/' + component + '/config'])
 
 
 def test_artifact_inventory_excludes_env_and_refuses_links(tmp_path):

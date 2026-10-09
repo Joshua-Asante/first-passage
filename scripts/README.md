@@ -748,6 +748,11 @@ wall and monotonic clocks; stalled hashing, compression or upload cannot hold it
 deallocation loop. A known expired lease bypasses recovery and boot grace. A cutoff
 retains disk evidence for separately budgeted `results --recover`, never a success
 claim for an unfinished archive.
+Before each non-idle leased shutdown attempt, the watchdog also terminates the
+lease's named workload Job Object through native calls without waiting on its
+supervisor or archive work. Deallocation runs even if that local stop fails;
+both are retried, so a cloud outage does not leave the local stop dependent on
+the stalled supervisor's timeout loop.
 Azure control-plane failure can delay actual deallocation beyond the margin:
 the ledger continues charging and reports the overrun rather than asserting that
 an unreachable Azure API enforced an absolute bill cap. Disk, IP and Blob charges
