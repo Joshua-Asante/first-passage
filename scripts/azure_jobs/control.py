@@ -24,11 +24,26 @@ def atomic(path, value):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
-    with temporary.open("w", encoding="utf-8") as out:
-        json.dump(value, out, indent=2, allow_nan=False)
-        out.flush()
-        os.fsync(out.fileno())
-    os.replace(temporary, path)
+    try:
+        with temporary.open("w", encoding="utf-8") as out:
+            json.dump(value, out, indent=2, allow_nan=False)
+            out.flush()
+            os.fsync(out.fileno())
+        # Windows readers briefly deny replacement. Preserve the old file until
+        # replacement succeeds; bound retries so shutdown cannot wait forever.
+        for attempt in range(21):
+            try:
+                os.replace(temporary, path)
+                return
+            except PermissionError:
+                if attempt == 20:
+                    raise
+                time.sleep(0.05)
+    finally:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass  # Cleanup must not hide the original write/replace failure.
 
 
 @contextmanager

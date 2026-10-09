@@ -161,3 +161,53 @@ def test_temporary_managed_commands_are_retired_on_success_and_failure(tmp_path,
     else:
         assert azure.script('test')=='data'
     assert submitted==deleted
+
+
+@pytest.mark.skipif(control.os.name != "nt", reason="Windows file sharing semantics")
+def test_atomic_retries_while_windows_reader_holds_destination(tmp_path, monkeypatch):
+    import json
+    path = tmp_path / "heartbeat.json"
+    control.atomic(path, {"time": 1})
+    reader = path.open("r", encoding="utf-8")
+    waits = []
+    def release_reader(delay):
+        assert json.loads(path.read_text(encoding="utf-8")) == {"time": 1}
+        waits.append(delay)
+        reader.close()
+    monkeypatch.setattr(control.time, "sleep", release_reader)
+    try:
+        control.atomic(path, {"time": 2})
+    finally:
+        reader.close()
+    assert waits
+    assert json.loads(path.read_text(encoding="utf-8")) == {"time": 2}
+    assert not list(tmp_path.glob("*.tmp"))
+
+
+def test_atomic_persistent_permission_failure_is_bounded_and_preserves_old_state(tmp_path, monkeypatch):
+    path = tmp_path / "ledger.json"
+    control.atomic(path, {"active": "original"})
+    old = path.read_bytes()
+    attempts = []
+    def denied(source, destination):
+        attempts.append(1)
+        raise PermissionError("reader never releases")
+    monkeypatch.setattr(control.os, "replace", denied)
+    monkeypatch.setattr(control.time, "sleep", lambda _: None)
+    with pytest.raises(PermissionError):
+        control.atomic(path, {"active": "replacement"})
+    assert 1 < len(attempts) <= 21
+    assert path.read_bytes() == old
+    assert not list(tmp_path.glob("*.tmp"))
+
+
+def test_atomic_does_not_retry_other_io_errors(tmp_path, monkeypatch):
+    attempts = []
+    def failed(source, destination):
+        attempts.append(1)
+        raise OSError("disk failure")
+    monkeypatch.setattr(control.os, "replace", failed)
+    with pytest.raises(OSError, match="disk failure"):
+        control.atomic(tmp_path / "state.json", {"status": "running"})
+    assert len(attempts) == 1
+    assert not list(tmp_path.glob("*.tmp"))

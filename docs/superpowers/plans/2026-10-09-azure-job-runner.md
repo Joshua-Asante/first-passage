@@ -211,3 +211,28 @@ Remote safety evidence on that runtime:
 The exact PR 742 qualification job is now admitted under a 32,400-second reservation
 (28,800-second maximum workload plus 3,600-second overhead). This paragraph records
 admission only. Final full-suite evidence and the PR comment remain owed.
+
+
+### Windows atomic-state repair during acceptance
+
+The pinned qualification workload continued while its guest heartbeat thread stopped.
+Managed Run Command exposed only the exception header, so its exact exception is
+not established. Durable evidence showed an unchanged heartbeat and a leftover
+heartbeat JSON temporary file two seconds later. Claude had already identified the
+shared writer's Windows reader/replacement race as a nonblocking concern.
+
+A local regression with an actual open Windows reader reproduced `PermissionError`
+(`WinError 5`) at `os.replace`; red record `20261009T064550Z-6df33b173896`.
+The common `atomic` writer now retries permission failures at most 20 times over
+one second, retains the previous complete target until replacement succeeds, and
+cleans its own temporary file without masking a write failure. Other I/O failures
+are not retried. This covers guest heartbeat/state, host heartbeat/observations,
+and the locked ledger through their existing shared writer. ZIP publication is
+serialized under the guest lock and is not read by a competing live-state reader;
+bootstrap PowerShell writes precede the new supervisor and are outside this fix.
+No source on the running guest or its frozen controller checkout was changed.
+
+Green verification: `20261009T064625Z-96023a543049` (87 runner tests passed) and
+`20261009T064735Z-c82662a35524` (standard gates), both completed/exit 0/stable.
+Public-clone private-manifest skips and existing advisory notes remain disclosed.
+Independent Claude review of this repair is pending; qualification remains pending.
