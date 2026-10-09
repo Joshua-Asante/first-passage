@@ -85,8 +85,8 @@ Local CME `BAR_EXPORT` / `orb_mnq_2026-07/_mnq_15m.pkl` were **absent** in this 
 Databento 1m → 15m aggregation substitutes (documented gap, not invented OHLC).
 
 Locked params from [`nas/LOCK.md`](../../../core/strategies/nas/LOCK.md) /
-[`striker/LOCK.md`](../../../core/strategies/striker/LOCK.md): lookback 15, ATR 11 / MA 85 /
-expansion 0.28, minBody 0.38, SL 1.20×ATR; session 13–17 UTC; MNQ Mon/Tue, MYM Tue/Fri.
+[`striker/LOCK.md`](../../../core/strategies/striker/LOCK.md): signal, stop, session and
+day-of-week parameters fixed by the locked Pine *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*.
 
 ---
 

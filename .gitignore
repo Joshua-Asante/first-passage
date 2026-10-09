@@ -120,6 +120,11 @@ lab/archive/identify_nas100_2026-06-20/nas100_trades_paired.csv
 # Per-file SHA256 manifest at core/strategies/MANIFEST.sha256 is tracked.
 **/*.pine
 
+# Locked Pine-only parameter values read by research scripts — removed from the public copy
+# 2026-10-09 (operator decision, option 2). Restore from first-passage-archive
+# archive/preserve-exposure-2026-10-09; the scripts skip cleanly when the file is absent.
+lab/**/locked_params.private.json
+
 # Executable Python ports of LOCKED strategy logic — same edge-protection class
 # as the Pine source above. The Guardian v5.5 parity port is a VALIDATED
 # reproduction (0.46% net over the full 52-trade window); untracked 2026-07-01

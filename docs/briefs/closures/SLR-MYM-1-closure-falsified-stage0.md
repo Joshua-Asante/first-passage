@@ -65,7 +65,7 @@ Two sub-predictions the brief made about *itself* were both wrong, in opposite d
 
 Both the incumbent Striker DJ30→MYM leg and SLR-MYM resolve to the **same order symbol `MYM1!`**, and
 the venue holds **one net position per symbol per account**. On the days the incumbent leg can fire —
-**Tuesday and Friday** — a second MYM strategy cannot hold an independent position **regardless of how
+**the incumbent's locked days** *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)* — a second MYM strategy cannot hold an independent position **regardless of how
 much contract cap is allocated to it.**
 
 This is a *position-netting* fact, not a sizing fact, and it is what defeats the cap-reallocation
@@ -131,7 +131,7 @@ That, not the dollar figure, is the material saving.
 > ⚠ **Extended 2026-08-06 (claim-alignment M38):** F1's *rule* remains conditional on its own
 > face ("on an **occupied** instrument"; "calendar-disjointness from **the incumbent** on that
 > symbol") — L2 (check symbol occupancy before cap arithmetic) is durable. **Only the factual
-> premise is dead** — *"On the days the incumbent leg can fire — **Tuesday and Friday**"* —
+> premise is dead** — *"On the days the incumbent leg can fire — **the incumbent's locked days**"* *(redacted 2026-10-09; see note above)* —
 > because no incumbent is deployed post-de-scope (symbols retained-not-released pending F2).
 > §8's "c1 book — two legs, 69/11, disarmed" row is a **no-change attestation** about what this
 > closure did and is **not** corrected here.
