@@ -97,7 +97,7 @@ values redacted — §1 note) — nearest ladder rung (ties → larger). ENV-1 v
 
 From Block-1 disclosure: **MNQ Mon+Tue · MYM [day-of-week redacted — §1 note]**; both c1 legs withdrawn;
 `LEG_MAP` retained-not-released. Bindingness deferred — disclosure only for this freeze.
-This cell's DJ30 DOW is fixed by the locked Pine (redacted — §1 note); MNQ third-leg overlay marks **Mon+Tue** — a day
+This cell's DJ30 DOW is fixed by the locked Pine (redacted — §1 note); MNQ third-leg overlay marks **Mon+Tue** — any
 overlap is named, not adjudicated as a kill here. W-CADENCE / W-REGIME remain disclosure.
 
 ---
