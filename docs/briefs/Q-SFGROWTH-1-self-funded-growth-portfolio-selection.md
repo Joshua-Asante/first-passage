@@ -98,7 +98,7 @@ Execution runs in the operator's primary checkout (private exports); this public
 
 [`docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md`](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md) — ships a worked numeric example for the two-implementer test.
 
-Pre-registration commit hash: `121e2acf` (freeze commit, PR #743; the repo merges with merge commits, so the hash survives on `main`)
+Pre-registration commit hash: `30c42f82` (re-freeze after the Codex freeze review, pre-registration §E; original freeze `121e2acf`; PR #743, merged with merge commits so both hashes survive on `main`)
 Pre-registration date: 2026-10-09 (FROZEN)
 
 Operator rulings before freeze (2026-10-09): the Striker NAS100 MNQ (DOW-excluded) edition is in the pool for this personal-account selection only, its Tradeify withdrawal standing ("include it"); the pre-registration is frozen ("freeze the plan").
