@@ -231,3 +231,57 @@ def test_guest_bootstrap_deadline_is_separate_from_workload_deadline():
     lease={'job_id':'job','deadline':2000,'bootstrap_deadline':200}
     assert watchdog.job_stop_reason(lease,{}, {},False,201)=='bootstrap deadline'
     assert watchdog.job_stop_reason(lease,{'status':'running','phase':'executing'}, {'time':201},False,201) is None
+
+
+def test_normal_cancel_preserves_publication_instead_of_retiring(tmp_path,monkeypatch):
+    import time
+    from scripts.azure_jobs.control import atomic
+    ledger=Ledger(tmp_path/'ledger.json',initial_seconds=0)
+    ledger.reserve('job',100,time.time())
+    directory=tmp_path/'jobs/job'
+    atomic(directory/'session.json',{'mode':'execute'})
+    atomic(directory/'submitted.json',{'command':'fp-job-job'})
+    scripts=[]
+    class Fake:
+        def __init__(self,cfg): pass
+        def script(self,text): scripts.append(text)
+    monkeypatch.setattr(runner,'Azure',Fake)
+    monkeypatch.setattr(runner,'retire',lambda *a,**kw: pytest.fail('normal cancel retired before publication'))
+    result=runner.cancel({'state_dir':str(tmp_path),'guest_root':'C:/runner'},'job')
+    assert result['status']=='cancellation_requested'
+    assert '/jobs/job/cancel' in scripts[0]
+    assert not (directory/'stop-request.json').exists()
+
+
+def test_watchdog_idle_deallocates_during_boot_grace(tmp_path,monkeypatch):
+    from scripts.azure_jobs.control import atomic
+    class Stopped(BaseException): pass
+    class Fake:
+        def __init__(self,cfg): pass
+        def deallocate(self): raise Stopped()
+    atomic(tmp_path/'config.json',{'guest_root':str(tmp_path)})
+    atomic(tmp_path/'idle.json',{'job_id':'job'})
+    monkeypatch.setattr(watchdog,'Azure',Fake)
+    monkeypatch.setattr(watchdog,'cloud_lease',lambda: {'job_id':'job','deadline':5000,'bootstrap_deadline':1000})
+    monkeypatch.setattr(watchdog.time,'time',lambda:100)
+    monkeypatch.setattr(watchdog.time,'monotonic',lambda:100)
+    monkeypatch.setattr(watchdog.time,'sleep',lambda seconds: pytest.fail('idle VM waited through boot grace'))
+    with pytest.raises(Stopped): watchdog.main(tmp_path/'config.json')
+
+
+@pytest.mark.parametrize('state',[None,{'status':'running','phase':'preparing','started_at':100}])
+def test_watchdog_bootstrap_cutoff_deallocates_even_when_recovery_lock_busy(tmp_path,monkeypatch,state):
+    from scripts.azure_jobs.control import atomic
+    class Stopped(BaseException): pass
+    class Fake:
+        def __init__(self,cfg): pass
+        def deallocate(self): raise Stopped()
+    atomic(tmp_path/'config.json',{'guest_root':str(tmp_path)})
+    if state: atomic(tmp_path/'jobs/job/state.json',state)
+    monkeypatch.setattr(watchdog,'Azure',Fake)
+    monkeypatch.setattr(watchdog,'cloud_lease',lambda: {'job_id':'job','deadline':5000,'bootstrap_deadline':200})
+    monkeypatch.setattr(watchdog,'recover',lambda *a: False)
+    monkeypatch.setattr(watchdog.time,'time',lambda:201)
+    monkeypatch.setattr(watchdog.time,'monotonic',lambda:100)
+    monkeypatch.setattr(watchdog.time,'sleep',lambda seconds: pytest.fail('bootstrap cutoff failed to deallocate'))
+    with pytest.raises(Stopped): watchdog.main(tmp_path/'config.json')

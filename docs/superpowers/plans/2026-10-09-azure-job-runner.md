@@ -175,3 +175,39 @@ cleanup/CPU records can fail their commands; an external boot is not a runner-ow
 ledger interval; failed guest commands prioritize deallocation and may require explicit
 disk-only recovery instead of a paid grace period. None substitutes for the pending
 cancel/disconnect/recovery probes or the full pinned qualification run.
+
+
+### Code review closed; remaining acceptance in progress
+
+Independent Claude final review of runtime commit
+`16639bbf1e7b453a0aa0067b7a88172c3bb209d0`: **no code or evidence blocker**.
+It read current-commit records in the frozen review checkout:
+`20261009T060915Z-379b549f9055` (80 passed) and
+`20261009T061005Z-705d815c5d58` (standard gates), both completed/exit 0/stable.
+Four nonblocking coverage cases were then added without runtime changes: normal
+cancel preserves publication, immediate idle bypasses boot grace, and missing/preparing
+state reaches bootstrap shutdown despite a held recovery lock. All 84 runner tests
+passed in `20261009T062444Z-51db3e5d2c08`, completed/exit 0/stable.
+
+Remote safety evidence on that runtime:
+
+- The running task reported watchdog commit `16639bb...`. Azure accepted an
+  asynchronous Managed Run Command with a 31,500-second timeout while the workload
+  was executing. The actual cancel CLI returned cancellation_requested.
+- Cancellation produced interrupted/130, 10 hash-verified partial artifacts including
+  the parent and owned-child output prefixes, CPU 1.109375 seconds and wall 21.0873809
+  seconds. Deallocation was confirmed. ZIP SHA-256
+  `a3d801c96ec9643c3b9811473907df18c3bb786dde0444899a54c46f904bdb70`.
+- Controller-crash probe: the local guardian was killed only after checking its exact
+  PID/session binding. The guest continued another 55.512897 seconds, completed/0/stable,
+  and published 11 verified artifacts. Workload CPU 1.65625 seconds, wall 123.3335822
+  seconds. VM deallocation was observed before the ledger was reconciled.
+- Disk-only recovery preserved the cancelled job's execution artifacts byte-for-byte
+  and retained interrupted/130. A fresh maintenance reservation closed after observed
+  deallocation. Recovered ZIP SHA-256
+  `b93f8e40a10c96076e1a3c7f734128d9d9c2073995f2debfec433dfe393bab89`.
+  Original cancellation plus maintenance cost about $0.33 at the configured VM rate.
+
+The exact PR 742 qualification job is now admitted under a 32,400-second reservation
+(28,800-second maximum workload plus 3,600-second overhead). This paragraph records
+admission only. Final full-suite evidence and the PR comment remain owed.
