@@ -716,7 +716,10 @@ There is no queue in this first version. Operations commands must use `scripts/f
 its venv is keyed by `requirements-ops.lock` and includes the repository's pinned
 verification extras. Research uses a different directory and its own
 `requirements-research.lock`; incompatible Windows pins fail preparation rather
-than falling back to operations packages. Neither environment's presence approves a run.
+than falling back to operations packages. Research commands must name a regular
+file inside the pinned checkout; interpreter switches, stdin, directories and
+symlink/junction entrypoints are refused. Script arguments are passed unchanged.
+Neither environment's presence approves a run.
 
 Initialize the persistent ledger once with a conservative account of VM running time
 already incurred in the current week:
@@ -739,8 +742,11 @@ Managed Run Command uses asynchronous execution and an explicit timeout. The fro
 returns after a separate local guardian acknowledges ownership. That guardian arms
 another independent reaper before starting the VM. The guest's SYSTEM scheduled
 watchdog survives local disconnect and restarts after watchdog failure. A named
-Windows Job Object owns the executing process tree, including CPU usage and
-cancellation. Rebooted jobs never silently retry. These mechanisms retry
+Windows Job Object owns each preparation command and the executing process tree.
+Normal cancellation reaches checkout, environment setup and the source-before
+snapshot through the same owned job identity; per-step preparation captures are
+retained with partial results. Workload CPU accounting remains separate from setup.
+Rebooted jobs never silently retry. These mechanisms retry
 `az vm deallocate`; a guest OS shutdown is never the final action.
 Watchdog recovery runs in its own kill-on-close Job Object. The watchdog enforces
 the earlier of the lease deadline and a fifteen-minute recovery window with both
@@ -762,7 +768,14 @@ The guest stores stdout/stderr, original launcher evidence, a runner record and
 per-file SHA-256 inventory, then publishes a ZIP plus its hash to the private
 container before marking itself idle. `results` downloads without restarting
 compute, checks archive size/hash, rejects unsafe or unexpected entries, and checks
-every artifact. Cancel and timeout retain partial files. An upload failure retains
+every artifact. Completed results require every expected output to have a file in
+the current archive manifest; empty directories do not establish completion.
+Missing expected outputs remain allowed for failed or interrupted partial results.
+Referenced launcher run directories are included automatically, even when absent
+from `expected_outputs`; publication and retrieval validate the original record,
+stdout/stderr, JUnit and all recorded artifact hashes. Old extracted files cannot
+satisfy a new archive's output or launcher-evidence contract.
+Cancel and timeout retain partial files. An upload failure retains
 disk files, but is not evidence of successful host retrieval. Archives use immutable
 SHA-256 blob names; the descriptor is published last. For retained disk files, run
 `results <job-id> --recover`. This admits a separate one-hour maintenance reservation
@@ -776,7 +789,9 @@ verification exit codes, stable source, complete capture, valid expected reports
 and matching artifacts. A `running`, `not_started`, failed or interrupted record
 never counts. Report CPU/wall seconds per job, estimated VM cost, weekly VM usage
 and process CPU-hours per week/month. CPU totals identify unretrieved jobs and assign
-retrieved measurements to their completion period; the monthly 5,000 CPU-hour
+retrieved measurements to their completion period. Republish sessions map to the
+original workload and do not add false missing CPU jobs or duplicate CPU totals;
+the monthly 5,000 CPU-hour
 allowance is planning information, not a hard stop.
 
 Implementation, acceptance evidence and remaining limitations belong in

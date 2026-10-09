@@ -298,6 +298,7 @@ def test_windows_stalled_bundle_worker_is_killed_and_disk_evidence_republishable
     atomic(job / 'spec.json', spec)
     atomic(tmp_path / 'config.json', {'guest_root': str(tmp_path)})
     marker = tmp_path / 'bundling'
+    natural_completion = tmp_path / 'natural-completion'
     wrapper = tmp_path / 'stall.py'
     wrapper.write_text(
         'import sys, runpy, time\nfrom pathlib import Path\n'
@@ -307,6 +308,7 @@ def test_windows_stalled_bundle_worker_is_killed_and_disk_evidence_republishable
         'def stall(*args, **kwargs):\n'
         f'    Path({str(marker)!r}).write_text("entered")\n'
         '    time.sleep(60)\n'
+        f'    Path({str(natural_completion)!r}).write_text("completed naturally")\n'
         'watchdog.bundle = stall\n'
         f'runpy.run_path({str(Path(watchdog.__file__).with_name("guest_entry.py"))!r}, run_name="__main__")\n')
     original_spawn = watchdog.spawn_provider
@@ -319,6 +321,7 @@ def test_windows_stalled_bundle_worker_is_killed_and_disk_evidence_republishable
         while not marker.exists() and time.monotonic() < deadline:
             time.sleep(0.01)
         assert marker.exists(), 'worker did not enter bundling'
+        assert process.poll() is None, 'worker exited before the cutoff'
         clock[0] = 2001
         return process
     clock = [1000]
@@ -327,8 +330,11 @@ def test_windows_stalled_bundle_worker_is_killed_and_disk_evidence_republishable
         time=lambda: clock[0], monotonic=time.monotonic, sleep=time.sleep))
     with pytest.raises(TimeoutError):
         watchdog.bounded_recover(tmp_path / 'config.json', {'job_id': 'job', 'deadline': 2000}, 'guest supervisor lost')
+    stopped_at = time.monotonic()
     for process in processes:
-        assert process.wait(timeout=5) != 0
+        process.wait(timeout=5)  # Kill-on-close guarantees exit, not its status code.
+    assert time.monotonic() - stopped_at < 5
+    assert not natural_completion.exists(), 'worker completed its stalled bundle naturally'
     before = (job / 'record.json').read_bytes()
     monkeypatch.setattr(guest, 'upload', lambda *a: None)
     for name in ('checkout', 'environment', 'run_tree'):

@@ -1,6 +1,7 @@
 """Public job contracts and evidence integrity. No file-upload interface exists."""
 from __future__ import annotations
 import hashlib
+import json
 from pathlib import Path, PurePosixPath
 import re
 from .control import number
@@ -32,7 +33,7 @@ def validate(spec):
     command = spec.get("command")
     if not isinstance(command, list) or not command or any(not isinstance(a, str) or not a or "\0" in a for a in command):
         raise ValueError("command must be a nonempty argument array")
-    relative(command[0])
+    entrypoint(command[0])
     if spec["environment"] == "operations" and command[0] != "scripts/fp.py":
         raise ValueError("operations commands must use scripts/fp.py")
     if not isinstance(spec.get("authority"), str) or not spec["authority"].strip():
@@ -45,6 +46,19 @@ def validate(spec):
     for output in outputs:
         relative(output)
     return spec
+
+
+def entrypoint(value, root=None):
+    """Accept a checkout script, never a Python switch, stdin or a directory."""
+    relative(value)
+    if value.startswith('-') or value.endswith('/') or not PurePosixPath(value).parts:
+        raise ValueError('entrypoint must be a checkout file')
+    if root is None:
+        return value
+    path = inside(root, value)
+    if not path.is_file():
+        raise ValueError('entrypoint must be a checkout file')
+    return path.resolve()
 
 
 def inside(root, name):
@@ -96,3 +110,61 @@ def verified(record):
             and record.get("source_stable") is True
             and record.get("capture_complete") is True
             and record.get("report_errors") == [])
+
+
+def launcher_directories(paths):
+    if not isinstance(paths, list):
+        raise ValueError('invalid launcher record list')
+    directories = []
+    for name in paths:
+        relative(name)
+        parts = PurePosixPath(name).parts
+        if len(parts) != 4 or parts[:2] != ('.cache', 'fp-verification') or parts[-1] != 'record.json':
+            raise ValueError('invalid launcher record path')
+        directories.append(PurePosixPath(name).parent.as_posix())
+    return directories
+
+
+def completed_outputs(rows, outputs):
+    """File-only archives cannot attest an empty directory or a stale disk copy."""
+    for name in outputs:
+        normalized = PurePosixPath(relative(name)).as_posix()
+        prefix = '' if normalized == '.' else normalized + '/'
+        if normalized not in rows and not any(p.startswith(prefix) and not p.startswith('runner/') for p in rows):
+            raise ValueError('required output absent from archive: ' + name)
+
+
+def launcher_evidence(root, paths, rows):
+    directories = launcher_directories(paths)
+    if not directories:
+        raise ValueError('launcher evidence missing')
+    for name, directory in zip(paths, directories):
+        if name not in rows:
+            raise ValueError('launcher record absent from archive')
+        record = json.loads(inside(root, name).read_text(encoding='utf-8'))
+        if not isinstance(record, dict) or not verified(record):
+            raise ValueError('launcher record unsuccessful')
+        artifacts = record.get('artifacts')
+        if not isinstance(artifacts, dict) or not {'stdout.txt', 'stderr.txt'} <= artifacts.keys():
+            raise ValueError('launcher captures missing')
+        reports = record.get('junit', [])
+        if not isinstance(reports, list) or any(not isinstance(r, dict) or not isinstance(r.get('file'), str)
+                                               or r['file'] not in artifacts for r in reports):
+            raise ValueError('launcher JUnit artifact missing')
+        for artifact, digest in artifacts.items():
+            relative(artifact)
+            path = (PurePosixPath(directory) / artifact).as_posix()
+            if (path not in rows or not isinstance(digest, str)
+                    or not re.fullmatch('[0-9a-f]{64}', digest)
+                    or rows[path]['sha256'] != digest or sha256(inside(root, path)) != digest):
+                raise ValueError('launcher artifact missing or hash mismatch')
+
+
+def completed_evidence(root, rows, record, spec):
+    """Common publication/retrieval boundary; current manifest owns coverage."""
+    if record.get('status') != 'completed':
+        return
+    validate(spec)
+    completed_outputs(rows, spec['expected_outputs'])
+    if spec['environment'] == 'operations':
+        launcher_evidence(root, record.get('launcher_records', []), rows)

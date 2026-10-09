@@ -11,7 +11,7 @@ import sys
 import time
 import zipfile
 from .control import Azure, Ledger, OVERHEAD_SECONDS, SHUTDOWN_MARGIN, PUBLICATION_SECONDS, BOOTSTRAP_SECONDS, RATE, atomic, locked, retire
-from .contract import validate, inside, sha256, verify_inventory, verified
+from .contract import validate, inside, sha256, verify_inventory, verified, completed_evidence
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -61,7 +61,13 @@ def results(config, job_id):
     if archive.stat().st_size != expected["bytes"] or sha256(archive) != expected["sha256"]:
         raise ValueError("result archive hash mismatch")
     rows = unpack(archive, target / "files")
+    if 'runner/record.json' not in rows:
+        raise ValueError('runner record absent from archive')
     record = read(target / "files/runner/record.json")
+    if record.get('status') == 'completed':
+        if 'runner/spec.json' not in rows:
+            raise ValueError('completed output missing job spec')
+        completed_evidence(target / 'files', rows, record, read(target / 'files/runner/spec.json'))
     ledger = Ledger(Path(config["state_dir"]) / "ledger.json")
     sessions = [s for s in ledger.read()["sessions"] if s.get("source_job_id", s["job_id"]) == job_id]
     vm_seconds = sum(s["end"] - s["start"] for s in sessions)
@@ -88,7 +94,20 @@ def cpu_report(config, *, now=None):
             weekly += record["cpu_seconds"] / 3600
         if datetime.fromtimestamp(ended, timezone.utc).strftime("%Y-%m") == month:
             monthly += record["cpu_seconds"] / 3600
-    submitted = {p.name for p in (Path(config["state_dir"]) / "jobs").glob("*") if p.is_dir()}
+    submitted = set()
+    for path in (Path(config['state_dir']) / 'jobs').glob('*'):
+        if not path.is_dir():
+            continue
+        try:
+            session = read(path / 'session.json')
+        except (OSError, ValueError):
+            session = {}  # An unreadable session remains unknown; never hide its ID.
+        source = session.get('source_job_id') if isinstance(session, dict) else None
+        if (isinstance(session, dict) and session.get('mode') == 'republish'
+                and isinstance(source, str) and re.fullmatch(r'[a-z0-9][a-z0-9-]{0,63}', source)):
+            submitted.add(source)
+        else:
+            submitted.add(path.name)
     return {"week_process_cpu_hours": weekly, "month_process_cpu_hours": monthly,
             "monthly_planning_allowance_cpu_hours": 5000,
             "basis": "retrieved process-tree measurements, assigned to completion period",

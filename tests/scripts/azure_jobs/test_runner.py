@@ -144,6 +144,7 @@ def test_retrieval_remains_consistent_when_descriptor_changes_mid_download(tmp_p
     record={'status':'completed','exit_code':0,'verification_exit_code':0,'source_stable':True,'capture_complete':True,'report_errors':[]}
     atomic(job/'record.json',record)
     atomic(job/'state.json',record)
+    atomic(job/'spec.json',dict(job_id='job',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='synthetic retrieval',private_inputs=[]))
     def upload(args,**kwargs):
         name=args[args.index('--name')+1]
         dest=cloud/name; dest.parent.mkdir(parents=True,exist_ok=True)

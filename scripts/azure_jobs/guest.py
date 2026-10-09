@@ -10,7 +10,7 @@ import time
 import threading
 import zipfile
 from scripts.agent_handoff import WindowsJob, spawn_provider
-from .contract import validate, inventory, sha256, verified
+from .contract import validate, inventory, sha256, verified, entrypoint, launcher_directories, completed_evidence
 from .control import atomic, locked, UPLOAD_RESERVE_SECONDS
 
 
@@ -25,15 +25,16 @@ def accounting(job):
     return (info.TotalUserTime + info.TotalKernelTime) / 10_000_000
 
 
-def run_tree(command, cwd, output, *, deadline, job_name=None):
+def run_tree(command, cwd, output, *, deadline, job_name=None, cancel_path=None):
     """Assign suspended process before execution; closing owner kills descendants."""
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
+    cancel_path = Path(cancel_path) if cancel_path is not None else output / "cancel"
     started = time.time()
     mono = time.monotonic()
     duration = max(0, deadline - started)
-    if (output / "cancel").exists() or duration <= 0:
-        return {"status": "interrupted", "exit_code": 130, "reason": "cancelled" if (output / "cancel").exists() else "timeout",
+    if cancel_path.exists() or duration <= 0:
+        return {"status": "interrupted", "exit_code": 130, "reason": "cancelled" if cancel_path.exists() else "timeout",
                 "cpu_seconds": 0, "wall_seconds": 0, "started_at": started, "finished_at": time.time()}
     owned = WindowsJob.create(name="Local\\FP-Offline-" + job_name if job_name else None)
     process = None
@@ -46,7 +47,7 @@ def run_tree(command, cwd, output, *, deadline, job_name=None):
                 cpu = accounting(owned)
                 atomic(output / "progress.json", {"cpu_seconds": cpu, "wall_seconds": time.monotonic() - mono,
                                                   "heartbeat": time.time(), "pid": process.pid})
-                if (output / "cancel").exists():
+                if cancel_path.exists():
                     reason = "cancelled"
                     break
                 if time.monotonic() - mono >= duration or time.time() >= deadline:
@@ -64,7 +65,7 @@ def run_tree(command, cwd, output, *, deadline, job_name=None):
                     raise RuntimeError("owned descendants did not stop")
             cpu = accounting(owned)
             code = process.poll()
-            if (output / "cancel").exists():
+            if cancel_path.exists():
                 reason = "cancelled"
             return {"status": "interrupted" if reason else ("completed" if code == 0 else "failed"),
                     "exit_code": 130 if reason else code, "reason": reason,
@@ -74,21 +75,36 @@ def run_tree(command, cwd, output, *, deadline, job_name=None):
         owned.close()
 
 
-def bounded_snapshot(repo, directory, deadline):
+def bounded_snapshot(repo, directory, deadline, *, cancel_path=None, job_name=None):
     """Keep Git and hashing inside a killable process tree with a real cutoff."""
     result_path = directory / "snapshot.json"
     result = run_tree([sys.executable, "-I", str(Path(__file__).with_name("guest_entry.py")),
-                       "snapshot", str(repo), str(result_path)], repo, directory, deadline=deadline)
+                       "snapshot", str(repo), str(result_path)], repo, directory, deadline=deadline,
+                      cancel_path=cancel_path, job_name=job_name)
+    if result.get("reason") == "cancelled":
+        raise InterruptedError("cancelled during source snapshot")
     if result["status"] != "completed" or result["exit_code"] != 0:
         raise TimeoutError("source snapshot incomplete before its cutoff")
     return json.loads(result_path.read_text(encoding="utf-8"))
 
 
-def checked(command, cwd=None, timeout=600, deadline=None):
+def checked(command, cwd=None, timeout=600, deadline=None, preparation=None):
     if deadline is not None:
         timeout = min(timeout, deadline - time.time())
         if timeout <= 0:
             raise TimeoutError("execution/publication cutoff reached")
+    if preparation is not None:
+        output = Path(preparation['output']) / str(time.monotonic_ns())
+        result = run_tree(list(map(str, command)), cwd or Path.cwd(), output,
+                          deadline=min(time.time() + timeout, deadline) if deadline is not None else time.time() + timeout,
+                          job_name=preparation['job_name'], cancel_path=preparation['cancel_path'])
+        if result['status'] == 'interrupted':
+            if result.get('reason') == 'cancelled':
+                raise InterruptedError('cancelled during preparation')
+            raise TimeoutError('preparation cutoff reached')
+        if result['exit_code'] != 0:
+            raise RuntimeError('guest preparation failed; owned-step captures retained')
+        return (output / 'stdout.log').read_text(encoding='utf-8', errors='replace').strip()
     result = subprocess.run(list(map(str, command)), cwd=cwd, capture_output=True, text=True, timeout=timeout)
     if result.returncode:
         diagnostic = Path(__file__).resolve().parents[2] / ".cache/azure-private-error.json"
@@ -99,7 +115,7 @@ def checked(command, cwd=None, timeout=600, deadline=None):
 
 def checkout(config, commit, destination):
     from functools import partial
-    checked = partial(globals()["checked"], deadline=config.get("preparation_deadline", config.get("execution_deadline")))
+    checked = partial(globals()["checked"], deadline=config.get("preparation_deadline", config.get("execution_deadline")), preparation=config.get('preparation'))
     if not destination.exists():
         destination.mkdir(parents=True)
         checked([config["git"], "init", destination])
@@ -115,7 +131,7 @@ def checkout(config, commit, destination):
 
 def environment(config, spec, repo):
     from functools import partial
-    checked = partial(globals()["checked"], deadline=config.get("preparation_deadline", config.get("execution_deadline")))
+    checked = partial(globals()["checked"], deadline=config.get("preparation_deadline", config.get("execution_deadline")), preparation=config.get('preparation'))
     lock = repo / ("requirements-ops.lock" if spec["environment"] == "operations" else "requirements-research.lock")
     identity = sha256(lock)
     directory = Path(config["guest_root"]) / "envs" / spec["environment"] / identity
@@ -131,8 +147,20 @@ def environment(config, spec, repo):
 
 def bundle(job_dir, repo, outputs, *, partial):
     started = time.monotonic()
-    rows = inventory(repo, outputs, partial=partial) if repo.exists() else {}
+    record_path = job_dir / 'record.json'
+    record = json.loads(record_path.read_text()) if record_path.exists() else {}
+    complete = record.get('status') == 'completed'
+    directories = launcher_directories(record.get('launcher_records', []))
+    rows = inventory(repo, list(dict.fromkeys([*outputs, *directories])), partial=partial and not complete) if repo.exists() else {}
+    if complete:
+        spec_path = job_dir / 'spec.json'
+        if not spec_path.exists():
+            raise ValueError('completed output missing job spec')
+        completed_evidence(repo, rows, record, json.loads(spec_path.read_text()))
     files = {name: repo / name for name in rows}
+    for name, entry in inventory(job_dir, ['preparation'], partial=True).items():
+        files['runner/' + name] = job_dir / name
+        rows['runner/' + name] = entry
     for name in ("stdout.log", "stderr.log", "progress.json", "record.json", "spec.json", "bootstrap.log"):
         path = job_dir / name
         if path.exists():
@@ -184,6 +212,10 @@ def execute(config, spec):
         heart.start()
         before = None
         publication_started = None
+        config = {**config, 'preparation': {
+            'output': job_dir / 'preparation', 'cancel_path': job_dir / 'cancel',
+            'job_name': spec['job_id']},
+            'preparation_deadline': config.get('preparation_deadline', config.get('execution_deadline', config['deadline']))}
         try:
             checkout(config, spec["commit"], repo)
             python, env_dir, lock_hash = environment(config, spec, repo)
@@ -192,13 +224,15 @@ def execute(config, spec):
             os.environ.pop("PYTHONPATH", None)
             os.environ.pop("PYTHONHOME", None)
             os.environ.pop("FP_VERIFICATION_ID", None)
-            before = bounded_snapshot(repo, job_dir / "source-before", config.get("preparation_deadline", config.get("execution_deadline", config["deadline"])))
+            before = bounded_snapshot(repo, job_dir / "source-before", config['preparation_deadline'],
+                                      cancel_path=job_dir / 'cancel', job_name=spec['job_id'])
             record["preparation_seconds"] = time.time() - state["started_at"]
             if before["commit"] != spec["commit"] or before["status"]:
                 raise ValueError("refusing dirty source")
-            command = [str(python), "-I", *spec["command"]]
+            script = str(entrypoint(spec['command'][0], repo))
+            command = [str(python), "-I", script, *spec["command"][1:]]
             if spec["environment"] == "operations":
-                command = [str(python), "-I", "scripts/fp.py", "--env", str(env_dir), *spec["command"][1:]]
+                command = [str(python), "-I", script, "--env", str(env_dir), *spec["command"][1:]]
             deadline = min(time.time() + spec["max_wall_seconds"], config.get("execution_deadline", config["deadline"]))
             atomic(job_dir / "state.json", {**state, "phase": "executing", "deadline": deadline})
             record.update(run_tree(command, repo, job_dir, deadline=deadline, job_name=spec["job_id"]))
@@ -219,26 +253,40 @@ def execute(config, spec):
             inventory(repo, spec["expected_outputs"], partial=record["status"] != "completed")
             if not verified(record) and record["status"] == "completed":
                 record["status"] = "failed"
+        except InterruptedError:
+            record.update(status='interrupted', exit_code=130, verification_exit_code=130,
+                          reason='cancelled during preparation', finished_at=time.time())
         except BaseException as exc:
             record.update(status="failed", verification_exit_code=record["verification_exit_code"] or 1,
                           error=type(exc).__name__ + ": " + str(exc))
         finally:
-            record["session_wall_seconds"] = time.time() - state["started_at"]
-            atomic(job_dir / "record.json", record)
-            archive = bundle(job_dir, repo, spec["expected_outputs"], partial=True)
-            atomic(job_dir / "archive.json", archive)
-            # Publishing precedes idle shutdown. Failure retains disk files for later recovery.
-            atomic(job_dir / "state.json", {**record, "job_id": spec["job_id"], "archive": archive})
             try:
-                upload({**config, "publication_started_at": publication_started or time.time()}, job_dir, spec["job_id"])
-                published = True
-            except Exception:
-                published = False
-            atomic(job_dir / "state.json", {**record, "job_id": spec["job_id"],
-                                           "results_published": published, "archive": archive})
-            atomic(root / "idle.json", {"job_id": config.get("session_id", spec["job_id"]), "time": time.time()})
-            stop_heartbeat.set()
-            heart.join(timeout=5)
+                record["session_wall_seconds"] = time.time() - state["started_at"]
+                atomic(job_dir / "record.json", record)
+                try:
+                    archive = bundle(job_dir, repo, spec["expected_outputs"], partial=True)
+                except (OSError, ValueError) as exc:
+                    if record['status'] != 'completed':
+                        raise
+                    # Packaging is part of completion, including a late output loss.
+                    record.update(status='failed', verification_exit_code=5)
+                    record['report_errors'].append('artifact packaging contract: ' + str(exc))
+                    atomic(job_dir / 'record.json', record)
+                    archive = bundle(job_dir, repo, spec['expected_outputs'], partial=True)
+                atomic(job_dir / "archive.json", archive)
+                # Publishing precedes idle shutdown. Failure retains disk files for later recovery.
+                atomic(job_dir / "state.json", {**record, "job_id": spec["job_id"], "archive": archive})
+                try:
+                    upload({**config, "publication_started_at": publication_started or time.time()}, job_dir, spec["job_id"])
+                    published = True
+                except Exception:
+                    published = False
+                atomic(job_dir / "state.json", {**record, "job_id": spec["job_id"],
+                                               "results_published": published, "archive": archive})
+                atomic(root / "idle.json", {"job_id": config.get("session_id", spec["job_id"]), "time": time.time()})
+            finally:
+                stop_heartbeat.set()
+                heart.join(timeout=5)
 
 
 def upload(config, job_dir, job_id):

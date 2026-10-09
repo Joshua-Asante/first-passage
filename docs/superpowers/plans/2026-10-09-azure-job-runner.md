@@ -2,7 +2,7 @@
 
 > **For agentic workers:** Execute with superpowers:executing-plans. The coordinator owns combined acceptance.
 
-**Status:** Build, public remote acceptance and independent Claude review complete; PR #746 is handed to Joshua for merge.
+**Status:** Earlier acceptance remains historical. Five-finding repair handoff below is active; coordinator owns combined acceptance and native Windows verification.
 
 **Goal:** A shared `run / status / results / cancel` interface for separately authorized offline Windows jobs.
 **Architecture:** One serialized local ledger reserves VM time before Azure start. Managed Run Command launches durable guest supervision. A separate local guardian covers bootstrap and confirms deallocation; a credential-free guest watchdog deallocates independently using a VM-scoped identity. Results persist on the OS disk and are published to the operator-approved private Blob container for retrieval after deallocation.
@@ -298,3 +298,110 @@ bindings. PR #746 includes the current main via a normal merge, without force-pu
 The implementation and evidence are ready for Joshua's merge; no further job authority
 is implied. Linux acceptance and Windows-incompatible research pins retain their
 separate paths and constraints described in the README.
+
+## Five-finding repair handoff (2026-10-09)
+
+**Selected outcome:** One bounded PR update closes review comments 4234697259,
+4234697264, 4234697270, 4234697277 and 4234697285 without changing job authority.
+**Prerequisites:** Refreshed head `a1ec9dd39f6faaa08b0f16bf5b5253c13e1dcaaa`;
+actual comments and producers/consumers read; operations doctor Python 3.12.14,
+62 locked packages. All five findings are present.
+**Ownership:** This executor implements and pushes; existing coordinator owns
+combined acceptance and independent verification. Retain the same reviewer.
+**Verification:** Red/green regressions, affected runner tests, standard launcher
+checks; every accepted record completed/zero/stable/complete. Native Windows
+execution belongs to the coordinator; runner pytest does not prove Task Scheduler.
+**Checkpoint:** Return contradictions or scope conflicts before dependent edits.
+**Return boundary:** Ordinary fast-forward push (merge concurrent work only if
+needed), replies to the five threads, exact SHA/evidence/CI return. No merge of
+PR #746, #748 edits, Azure activity, new reviewer or deployment.
+
+### Related-case map and execution steps
+
+| Rule / case | Shared producer and consumer | Required proof |
+| --- | --- | --- |
+| Pinned entrypoint | contract.validate -> execute after checkout -> run_tree | Research `-c`, `-m`, stdin/options rejected; ordinary script accepted; missing/directory/symlink escape refused before launch |
+| Completed outputs | execute / republish / watchdog.recover -> bundle -> results | Missing output at final packaging cannot remain completed; interrupted/failed partials remain retrievable; stale extracted files cannot satisfy manifest coverage |
+| Launcher evidence | execute -> bundle for all publishers -> results | Operations auto-collects full referenced run directories; capture/JUnit/artifact hashes checked at publication and retrieval; missing/malformed/tampered evidence rejected |
+| Recovery CPU identity | run(republish) session.json -> cpu_report | Maintenance aliases map to source workload; repeated recovery never adds CPU or false missing jobs; genuinely missing original remains reported |
+| Preparation cancellation | checkout / environment / source-before -> owned run_tree -> watchdog recover | Cancel before/during setup stops only the owned tree, bounds waiting, retains setup stdout/stderr and interrupted result; no launch of workload after cancellation |
+
+- [x] Write `tests/scripts/azure_jobs/test_review_repairs.py` red regressions for
+  each row, including retrieval with a forged incomplete manifest and held guest lock.
+- [x] Run focused tests via `python -I scripts/fp.py python -m pytest
+  tests/scripts/azure_jobs/test_review_repairs.py -q --tb=short`; retain failures
+  tied to the unchanged production source.
+- [x] In `contract.py`, separate entrypoint syntax from artifact paths and add
+  common completed-output/launcher-evidence validation used by guest and host.
+- [x] In `guest.py`, resolve a real entrypoint within checkout, make common bundle
+  strict for completed records and include launcher run directories automatically;
+  downgrade a failed final packaging contract before publishing partial evidence.
+- [x] In `runner.py`, validate completed archive contracts against current manifest
+  membership, and map republish sessions to their original CPU identity.
+- [x] In `guest.py`, run checkout/environment commands in cancel-aware owned trees,
+  retain per-step setup captures, and pass cancellation to the pre-execution snapshot.
+  Existing watchdog termination targets the same job identity during preparation.
+- [x] Verify all three bundle callers and their terminal/partial cases, malformed
+  inputs, entrypoint symlinks, artifact omission/hash changes and setup cancellation.
+- [ ] Run affected tests and required checks; inspect diff and related-case map;
+  commit, then run exact-head evidence checks without source edits during capture.
+- [ ] Refresh/push without force, reply with evidence and Windows limitations,
+  report current CI and return to coordinator.
+
+**Execution rulings:** Keep the roadmap in this existing plan as the coordinator
+requires. Apply writing-plans/executing-plans inline with a retained task ledger;
+existing implementation/push authority supersedes redundant plan confirmations.
+Do not dispatch the skills' suggested new reviewer: review remains with the
+existing coordinator. Resource scope remains affected tests plus required gates.
+
+### Implementation evidence and remaining handoff
+
+Root causes and repairs follow the five rows above. All publishers now enforce the
+same completed contract, and retrieval requires coverage in the current manifest
+before accepting original launcher records and their capture/JUnit/artifact hashes.
+An empty expected directory cannot prove completion in a file-only archive; failed
+and interrupted jobs still allow partial outputs. A late packaging failure changes
+an executing job's completion to failed before preserving the available archive.
+Recovery of an already terminal record refuses incomplete completion without
+rewriting the original evidence.
+
+Linux, validated operations Python **3.12.14**, 62 locked packages; records live at
+`.cache/fp-verification/<id>/record.json`:
+
+| Stage | Launcher record | Result |
+| --- | --- | --- |
+| Red, unchanged production at `a1ec9dd39f6faaa08b0f16bf5b5253c13e1dcaaa` | `20261009T214118Z-feefe0a61250` | 25 failed, 3 passed; stable source, complete capture, exit/verification 1 |
+| Initial repair | `20261009T214329Z-5de308d82d47` | 28 passed |
+| Expanded affected suite | `20261009T214850Z-e0b1c274eead` | 161 passed, 11 Windows-only skips |
+| Required `python -I scripts/fp.py check` | `20261009T214905Z-1008d986966c` | Completed, exit/verification 0 |
+
+Green records are completed, exit/verification 0, stable source, complete capture,
+and empty report errors. They capture the working patch, not a clean final commit;
+exact-head reruns and push receipts belong in the five review replies/task return.
+Standard checks retain their explicit public-clone limitations: absent private
+Pine/data/heavy artifacts and absent deployed skills bundle are not verified.
+
+The related-case sweep covers script arguments/options, missing/directory/symlink
+entrypoints, disappearing output, all three publishers, terminal versus partial
+archives, stale extracted output/capture files, malformed launcher records, internal
+artifact hash disagreement, repeated recovery CPU aliases, and cancellation before
+or during preparation while the live guest holds its lock. The watchdog can now
+stop the same named owned tree during preparation; setup logs enter partial bundles.
+Malformed JUnit metadata also follows the ordinary packaging-failure path (red
+`20261009T214810Z-8a5af482f5a3`, then the expanded green suite).
+
+Coordinator's separate native baseline reported **129 passed, 1 skipped, 1 failed**
+at `a1ec9dd39f6faaa08b0f16bf5b5253c13e1dcaaa`, record
+`20261009T213728Z-cd3d8ff92c4a`. The failed kill-on-close fixture incorrectly required
+nonzero exit status. Its authorized correction asserts live worker at the stall
+marker, bounded exit, no natural-completion sentinel, and retained disk republish
+evidence; production termination semantics are unchanged. The new native preparation
+fixture waits for a startup marker before cancellation to avoid timing assumptions.
+Native final-head Job Object/cancellation/fixture execution remains with that same
+coordinator. Baseline trailing-dot alias passed; trailing-space alias skipped because
+the filesystem/API did not normalize it. Task Scheduler execution remains unverified;
+Linux synthetic results and runner pytest do not establish Scheduler integration.
+
+Scoped executor inspection found no further blocker in these five repair paths.
+Independent acceptance stays with the existing coordinator/reviewer; the next two
+unchecked steps above define the return boundary.

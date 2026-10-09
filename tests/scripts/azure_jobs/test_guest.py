@@ -70,10 +70,10 @@ def test_reentry_never_reexecutes_job(tmp_path, monkeypatch):
 def test_finalization_keeps_heartbeat_and_publishes_terminal_state(tmp_path, monkeypatch):
     spec=dict(job_id='heartbeat',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
     def checkout(config,commit,repo):
-        repo.mkdir(parents=True); (repo/'out').write_text('42')
+        repo.mkdir(parents=True); (repo/'out').write_text('42'); (repo/'fake.py').write_text('pass')
     monkeypatch.setattr(guest,'checkout',checkout)
     monkeypatch.setattr(guest,'environment',lambda *a: (Path(sys.executable),tmp_path/'env','lock'))
-    monkeypatch.setattr(guest,'bounded_snapshot',lambda *a: {'commit':'a'*40,'status':''})
+    monkeypatch.setattr(guest,'bounded_snapshot',lambda *a,**k: {'commit':'a'*40,'status':''})
     monkeypatch.setattr(guest,'run_tree',lambda *a,**k: dict(status='completed',exit_code=0,cpu_seconds=1,wall_seconds=1,finished_at=time.time()))
     for key in ('PATH','VIRTUAL_ENV','PYTHONPATH','PYTHONHOME','FP_VERIFICATION_ID'):
         if key in os.environ:
