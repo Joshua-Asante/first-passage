@@ -108,3 +108,59 @@ def test_reconcile_refuses_to_stop_healthy_job(tmp_path, monkeypatch):
     with pytest.raises(ValueError,match='cancel'):
         runner.reconcile({'state_dir':str(tmp_path)})
     assert ledger.read()['active']['job_id']=='healthy'
+
+
+def test_recovery_admission_reserves_fresh_session_without_changing_job(tmp_path, monkeypatch):
+    import time
+    from scripts.azure_jobs.control import atomic, OVERHEAD_SECONDS
+    spec=dict(job_id='original',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=600,expected_outputs=['out'],authority='public test',private_inputs=[])
+    original=tmp_path/'jobs/original'
+    atomic(original/'session.json', {'job_id':'original'})
+    atomic(original/'spec.json',spec)
+    ledger=Ledger(tmp_path/'ledger.json',initial_seconds=0)
+    class Fake:
+        def __init__(self,cfg): pass
+        def power(self): return 'VM deallocated'
+    monkeypatch.setattr(runner,'Azure',Fake)
+    monkeypatch.setattr(runner,'clean_source',lambda: 'b'*40)
+    launched=[]
+    monkeypatch.setattr(runner,'launch_guardian',lambda config,path: launched.append(runner.read(path)))
+    result=runner.run({'state_dir':str(tmp_path)},tmp_path/'config.json',spec,mode='republish')
+    assert result['session_id'] != spec['job_id']
+    assert result['reserved_seconds'] == OVERHEAD_SECONDS
+    assert launched[0]['mode'] == 'republish'
+    assert launched[0]['spec'] == spec
+    assert ledger.read()['active']['source_job_id']=='original'
+    assert runner.read(original/'session.json') == {'job_id':'original'}
+
+
+def test_retrieval_remains_consistent_when_descriptor_changes_mid_download(tmp_path, monkeypatch):
+    import shutil
+    from scripts.azure_jobs import guest
+    from scripts.azure_jobs.control import atomic
+    cloud=tmp_path/'cloud'; cloud.mkdir()
+    job=tmp_path/'guest'; job.mkdir()
+    repo=tmp_path/'repo'; repo.mkdir(); (repo/'out').write_text('first')
+    record={'status':'completed','exit_code':0,'verification_exit_code':0,'source_stable':True,'capture_complete':True,'report_errors':[]}
+    atomic(job/'record.json',record)
+    atomic(job/'state.json',record)
+    def upload(args,**kwargs):
+        name=args[args.index('--name')+1]
+        dest=cloud/name; dest.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(args[args.index('--file')+1],dest)
+    monkeypatch.setattr(guest,'checked',upload)
+    cfg={'az':'az','storage_account':'test','container':'test','state_dir':str(tmp_path/'host')}
+    def publish():
+        atomic(job/'archive.json',guest.bundle(job,repo,['out'],partial=False))
+        guest.upload(cfg,job,'job')
+    publish()
+    def download(config,action,name,destination):
+        shutil.copyfile(cloud/name,destination)
+        if name.endswith('/archive.json'):
+            (repo/'out').write_text('second')
+            publish()
+    monkeypatch.setattr(runner,'blob',download)
+    Ledger(Path(cfg['state_dir'])/'ledger.json',initial_seconds=0)
+    result=runner.results(cfg,'job')
+    assert result['verified']
+    assert (Path(result['directory'])/'files/out').read_text()=='first'

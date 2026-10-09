@@ -33,8 +33,11 @@ $python = "$root/python/python.exe"
 if (!(Test-Path -LiteralPath $python)) {
     $installer = "$root/python-install.exe"
     Signed-Download 'https://www.python.org/ftp/python/3.13.2/python-3.13.2-amd64.exe' $installer 'Python Software Foundation'
-    $installed = Start-Process -FilePath $installer -ArgumentList @('/quiet','InstallAllUsers=1',"TargetDir=$root/python",'Include_test=0','PrependPath=0','Include_launcher=0') -Wait -PassThru -WindowStyle Hidden
-    if ($installed.ExitCode -ne 0) { throw 'Python install failed' }
+    $installed = Start-Process -FilePath $installer -ArgumentList @('/quiet','/log',"$job/python-install.log",'InstallAllUsers=1',"TargetDir=$root/python",'Include_test=0','PrependPath=0','Include_launcher=0') -Wait -PassThru -WindowStyle Hidden
+    if ($installed.ExitCode -ne 0) {
+        $detail = Get-Content -LiteralPath "$job/python-install.log" -Tail 15 -ErrorAction SilentlyContinue | Out-String
+        throw "Python install failed, exit=$($installed.ExitCode): $detail"
+    }
 }
 $version = & $python -c 'import sys; print(sys.version.split()[0])'
 if ($version -ne '3.13.2') { throw 'Unexpected bootstrap Python version' }
