@@ -543,6 +543,12 @@ The screen-authority signature (design §8 step 11) uses the same template with 
 
     Joshua confirmed (a) and (b) and set the (b) threshold on 2026-10-08, before any resolution output existed, in chat to the Deployment Coordinator: "go with your recommendation for 1".
   - While step 1 is pending, the new H, P7 re-run and Tier-2 source approval stay on hold (Joshua, 2026-10-08).
+  - *2026-10-09:* **Hold lifted (tree step 2).** Step 1 returned FEASIBLE (size-feasibility return record, #745).
+    - Joshua's ruling: "sign the approval to lift the hold", given in chat to the deployment-path session at about 04:45Z and confirmed directly to the Deployment Coordinator ("confirmed").
+    - Sequence: a new H, then the P7 re-run, then Joshua signs the Tier-2 source approval (Tier-2 card admission item 5, valid 7 days).
+    - One bundled H. It includes #742 (R1/R2 evidence-located convention), so R1/R2 shares that H, the P7 re-run and the approval chain. The coordinator recommended this and Joshua did not object.
+    - Joshua also ratified #742's evidence-located/v1 convention: "ratify 742's convention", confirmed directly with "confirmed". The convention as ratified is #742 at `19502bd`; the ratification record lands with #742.
+    - #742 still needs Codex, the full suite and Joshua's merge word.
 - *2026-10-08:* size-feasibility prereg FROZEN 2026-10-08, freeze commit `103c5ea`, merged `65079a7`; §11 addendum #738.
 
 ## §10 — Audit hooks
