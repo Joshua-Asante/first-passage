@@ -435,11 +435,15 @@ class ScheduleExecutionEvidence:
     executes. A provider issued by ``ScheduleExecutionBracket.for_run`` places
     each intrabar instant at the ratified vertex of the accepted path for its
     own run; its placed prices are local to that provider and path occurrence.
+    A bracket provider uses a reviewed split and quote instead only where the
+    evidence retains a row marked with ``LOCATED_CONVENTION`` for that source
+    date, leg, bar and instant (DRAFT convention; unmarked rows keep their meaning).
     """
     quotes: object
     splits: object
     source_rows: tuple
     run: str | None = None
+    located: object = field(default_factory=lambda: MappingProxyType({}))
     _placed: dict = field(default_factory=dict, compare=False, repr=False)
 
     def __post_init__(self):
@@ -484,11 +488,28 @@ class ScheduleExecutionEvidence:
         from .replay import ReplayNeedsContext
         _require_exposure(exposure)
         if self.run is None:
+            key = (session.source.source_session_date, leg, pb.source_bar_time, start, instant)
+            if key in self.located:
+                # A located row is a placement on the emulator path, not retained chronology.
+                raise ReplayNeedsContext('evidence-located schedule rows are bracket-only')
             try:
-                prefix, suffix = self.splits[(session.source.source_session_date, leg, pb.source_bar_time, start, instant)]
+                prefix, suffix = self.splits[key]
             except KeyError as exc:
                 raise ReplayNeedsContext('missing reviewed source interval split evidence') from exc
             return ScheduleSplit(prefix, suffix, True)
+        # A located row resolves the instant identically in both bracket runs; only
+        # instants without one get a vertex placement, so ``_placed`` (and the
+        # consumed-split count) is the unresolved residual.
+        if self.located and pb is not None:
+            # Marked rows always start at the source bar; match on bar plus instant.
+            key = (session.source.source_session_date, leg, pb.source_bar_time, pb.source_bar_time, instant)
+            if key in self.located:
+                if start != pb.source_bar_time:
+                    # It is a split of the whole bar and cannot compose with an
+                    # earlier same-bar placement that differs between runs.
+                    raise ReplayNeedsContext('evidence-located row cannot follow an earlier split in the same source bar')
+                prefix, suffix = self.splits[key]
+                return ScheduleSplit(prefix, suffix, True)
         key = (session.occurrence, leg, instant)
         if key in self._placed:
             raise ReplayNeedsContext('bracket instant already placed for this leg and occurrence')
@@ -504,8 +525,11 @@ class ScheduleExecutionEvidence:
             raise ValueError('retained evidence validation uses the reviewed provider only')
         # The exact engine validator owns OHLC aggregation and TV path law.
         # Reviewed rows do not depend on exposure; an active pending-only
-        # snapshot only satisfies the frozen split interface.
-        return BookReplay._split(self, session, pb, bars, instant,
+        # snapshot only satisfies the frozen split interface. Marked rows are
+        # validated structurally here (a view without the markers), so the
+        # runtime bracket-only refusal applies to consumption, not validation.
+        view = ScheduleExecutionEvidence(self.quotes, self.splits, self.source_rows)
+        return BookReplay._split(view, session, pb, bars, instant,
                                  {leg: ScheduleExposure(0, True, 0) for leg in bars})
 
     def validate_supplied(self, panels):
@@ -554,19 +578,34 @@ class ScheduleExecutionBracket:
         if type(run_id) is not str or run_id not in BRACKET_RUNS:
             raise ValueError('bracket run must be exactly R1 or R2')
         evidence = self._evidence
-        return ScheduleExecutionEvidence(evidence.quotes, evidence.splits, evidence.source_rows, run_id)
+        return ScheduleExecutionEvidence(evidence.quotes, evidence.splits, evidence.source_rows, run_id,
+                                         evidence.located)
+
+
+LOCATED_CONVENTION = 'evidence-located/v1'   # addendum 2026-10-08, RATIFIED 2026-10-09
+# The parser refuses marked rows while this is False. Ratified by the operator on
+# 2026-10-09 (convention at #742 19502bd); the flip moves the code closure, so it
+# lands with a new H.
+LOCATED_CONVENTION_RATIFIED = True
 
 
 def parse_schedule_execution_evidence(raw):
     doc = _json(raw)
     if set(doc) != {'schema', 'rows'} or doc['schema'] != 'qualification-schedule-execution/v1':
         raise ValueError('explicit source execution-evidence schema required')
-    quotes, splits, source_rows = {}, {}, []
+    quotes, splits, source_rows, located = {}, {}, [], {}
     if type(doc['rows']) is not list:
         raise ValueError('execution evidence rows must be a list')
     for row in doc['rows']:
-        if set(row) != {'source_session_date', 'leg_id', 'source_bar_time', 'interval_start', 'instant', 'price', 'prefix', 'suffix'}:
+        fields = {'source_session_date', 'leg_id', 'source_bar_time', 'interval_start', 'instant', 'price', 'prefix', 'suffix'}
+        if set(row) not in (fields, fields | {'convention'}):
             raise ValueError('complete source execution evidence row required')
+        if 'convention' in row:
+            if not LOCATED_CONVENTION_RATIFIED:
+                raise ValueError('evidence-located convention is not ratified')
+            if (row['convention'] != LOCATED_CONVENTION or row['prefix'] is None
+                    or row['interval_start'] != row['source_bar_time']):
+                raise ValueError('unknown or incomplete schedule evidence convention')
         day, leg = date.fromisoformat(row['source_session_date']), row['leg_id']
         if leg not in LEG_IDS:
             raise ValueError('unknown schedule evidence leg')
@@ -602,7 +641,10 @@ def parse_schedule_execution_evidence(raw):
         if key in splits:
             raise ValueError('duplicate source interval evidence')
         splits[key] = tuple(values)
-    return ScheduleExecutionEvidence(MappingProxyType(quotes), MappingProxyType(splits), tuple(source_rows))
+        if 'convention' in row:
+            located[key] = True
+    return ScheduleExecutionEvidence(MappingProxyType(quotes), MappingProxyType(splits), tuple(source_rows),
+                                     located=MappingProxyType(located))
 
 
 @dataclass(frozen=True)
