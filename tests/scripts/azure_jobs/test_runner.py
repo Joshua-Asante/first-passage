@@ -207,3 +207,27 @@ def test_retirement_still_runs_if_diagnostic_storage_fails(tmp_path,monkeypatch)
     monkeypatch.setattr(runner,'retire',lambda *a,**kw: ledger.finish(time.time()))
     runner.guardian({'state_dir':str(tmp_path)},path,tmp_path/'config.json')
     assert ledger.read()['active'] is None
+
+
+@pytest.mark.parametrize('submitted,force',[(False,False),(True,True)])
+def test_cancel_can_stop_before_guest_or_force_stop(tmp_path,monkeypatch,submitted,force):
+    import time
+    from scripts.azure_jobs.control import atomic
+    ledger=Ledger(tmp_path/'ledger.json',initial_seconds=0)
+    ledger.reserve('job',100,time.time())
+    directory=tmp_path/'jobs/job'
+    atomic(directory/'session.json',{'mode':'execute'})
+    if submitted: atomic(directory/'submitted.json',{'command':'fp-job-job'})
+    monkeypatch.setattr(runner,'Azure',lambda cfg: object())
+    stopped=[]
+    monkeypatch.setattr(runner,'retire',lambda *a,**kw: stopped.append(kw['expected_job']))
+    result=runner.cancel({'state_dir':str(tmp_path)},'job',force=force)
+    assert result['status']=='interrupted'
+    assert stopped==['job']
+    assert runner.read(directory/'stop-request.json')['reason']=='cancelled'
+
+
+def test_guest_bootstrap_deadline_is_separate_from_workload_deadline():
+    lease={'job_id':'job','deadline':2000,'bootstrap_deadline':200}
+    assert watchdog.job_stop_reason(lease,{}, {},False,201)=='bootstrap deadline'
+    assert watchdog.job_stop_reason(lease,{'status':'running','phase':'executing'}, {'time':201},False,201) is None

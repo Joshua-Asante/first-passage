@@ -17,7 +17,10 @@ def metadata_lease(compute):
     deadline = float(tags.get("FPOfflineDeadline", "nan"))
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", job_id) or not math.isfinite(deadline):
         raise ValueError("missing current Azure lease")
-    return {"job_id": job_id, "deadline": deadline}
+    bootstrap = float(tags.get("FPOfflineBootstrapDeadline", deadline - PUBLICATION_SECONDS))
+    if not math.isfinite(bootstrap) or bootstrap > deadline:
+        raise ValueError("invalid bootstrap deadline")
+    return {"job_id": job_id, "deadline": deadline, "bootstrap_deadline": bootstrap}
 
 
 def cloud_lease():
@@ -38,6 +41,18 @@ def stop_reason(lease, idle, now):
         return "deadline"
     if idle and idle.get("job_id") == lease["job_id"]:
         return "idle"
+    return None
+
+
+def job_stop_reason(lease, state, heartbeat, cancelled, now):
+    if (not state or state.get("phase") == "preparing") and now >= lease["bootstrap_deadline"]:
+        return "bootstrap deadline"
+    if now >= lease["deadline"] - PUBLICATION_SECONDS:
+        return "execution deadline"
+    if cancelled and state.get("status") == "running":
+        return "cancelled"
+    if state.get("status") == "running" and now - heartbeat.get("time", state.get("started_at", now)) > 120:
+        return "guest supervisor lost"
     return None
 
 
@@ -92,7 +107,8 @@ def recover(config, lease, reason):
             progress = read(job_dir / "progress.json") or {}
             record.update(status="interrupted", exit_code=130, verification_exit_code=130,
                           source_stable=False, capture_complete=False, reason=reason,
-                          cpu_seconds=progress.get("cpu_seconds"), cpu_measurement="partial lower bound")
+                          cpu_seconds=progress.get("cpu_seconds"), wall_seconds=progress.get("wall_seconds"),
+                          finished_at=progress.get("heartbeat"), cpu_measurement="partial lower bound")
             atomic(job_dir / "record.json", record)
         spec = read(job_dir / "spec.json")
         if spec:
@@ -128,24 +144,19 @@ def main(config_path):
             if time.monotonic() - lease_observed > 120:
                 lease = None
         reason = stop_reason(lease, read(root / "idle.json"), time.time())
-        if time.monotonic() < boot_grace and reason in {"deadline", "missing lease", "idle"}:
+        if time.monotonic() < boot_grace and reason in {"deadline", "missing lease"}:
             time.sleep(2)
             continue
         if lease and not reason:
             job_dir = root / "jobs" / lease.get("source_job_id", lease["job_id"])
             state = read(job_dir / "state.json") or {}
             progress = read(job_dir / "heartbeat.json") or {}
-            if time.time() >= lease["deadline"] - PUBLICATION_SECONDS:
-                reason = "execution deadline"
-            if (job_dir / "cancel").exists() and state.get("status") == "running":
-                reason = "cancelled"
-            if state.get("status") == "running" and time.time() - progress.get("time", state.get("started_at", time.time())) > 120:
-                reason = "guest supervisor lost"
+            reason = job_stop_reason(lease, state, progress, (job_dir / "cancel").exists(), time.time())
         if reason:
             if lease and reason != "idle":
                 try:
                     recovered = recover({**config, "deadline": lease["deadline"]}, lease, reason)
-                    if not recovered and time.time() < lease["deadline"]:
+                    if not recovered and reason != "bootstrap deadline" and time.time() < lease["deadline"]:
                         time.sleep(2)
                         continue
                 except Exception:

@@ -670,6 +670,7 @@ operations interpreter. It fetches job source from public GitHub at the exact
 .\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> status <job-id>
 .\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> results <job-id>
 .\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> cancel <job-id>
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> cancel <job-id> --force
 ```
 
 Keep configuration, the job ledger, Azure diagnostics and retrieved files in one
@@ -778,6 +779,13 @@ The guardian publishes the new job/deadline in VM tags before start; the guest
 watchdog reads that lease from Azure instance metadata rather than trusting a prior
 job's disk lease. Shutdown is serialized with admission and fenced by job identity.
 A process-wide guest heartbeat covers preparation, execution and publication.
+Bootstrap has a separate 30-minute cutoff published before VM start and enforced by
+the installed guest watchdog. Before the first unattended job, verify that watchdog
+installation succeeded. Initial provisioning depends on the local guardian/reaper
+until the guest watchdog is installed.
+`cancel --force` fences the controller and deallocates even when guest transport is
+unavailable. Pre-submission cancellation also takes this path. Retained disk files
+can then be republished with `results --recover`; force-stop is not a verified run.
 Expected outputs must be in ignored directories; new nonignored outputs count as
 source drift. `probe_workload.py` is an explicitly selected public 120-second safety
 probe, excluded from normal test discovery; it is never a statistical workload.

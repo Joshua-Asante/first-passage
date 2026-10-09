@@ -16,6 +16,8 @@ WEEKLY_SECONDS = WEEKLY_DOLLARS / RATE * 3600
 OVERHEAD_SECONDS = 3600
 SHUTDOWN_MARGIN = 900
 PUBLICATION_SECONDS = 900
+BOOTSTRAP_SECONDS = 1800
+UPLOAD_RESERVE_SECONDS = 300
 
 
 def atomic(path, value):
@@ -160,14 +162,15 @@ class Azure:
                           "--query", "instanceView.statuses[?starts_with(code, 'PowerState/')].displayStatus"])
         return value[0] if isinstance(value, list) and len(value) == 1 else "unknown"
 
-    def set_lease(self, job_id, deadline):
+    def set_lease(self, job_id, deadline, *, bootstrap_deadline=None):
         cfg = self.config
         resource = ("/subscriptions/" + cfg["subscription"] + "/resourceGroups/"
                     + cfg["resource_group"] + "/providers/Microsoft.Compute/virtualMachines/" + cfg["vm"])
         # Generic vm update cannot set a nested key when Azure omits the tags object.
         # Merge works for bare VMs and retains unrelated operator tags.
         self.call(["tag", "update", "--resource-id", resource, "--operation", "Merge", "--tags",
-                   "FPOfflineJob=" + job_id, "FPOfflineDeadline=" + str(deadline)])
+                   "FPOfflineJob=" + job_id, "FPOfflineDeadline=" + str(deadline),
+                   "FPOfflineBootstrapDeadline=" + str(bootstrap_deadline if bootstrap_deadline is not None else deadline - PUBLICATION_SECONDS)])
 
     def start(self):
         self.call(["vm", "start", *self.vm_args(), "--no-wait"])

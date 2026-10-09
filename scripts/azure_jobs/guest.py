@@ -11,7 +11,7 @@ import threading
 import zipfile
 from scripts.agent_handoff import WindowsJob, spawn_provider
 from .contract import validate, inventory, sha256, verified
-from .control import atomic, locked
+from .control import atomic, locked, UPLOAD_RESERVE_SECONDS
 
 
 def accounting(job):
@@ -99,7 +99,7 @@ def checked(command, cwd=None, timeout=600, deadline=None):
 
 def checkout(config, commit, destination):
     from functools import partial
-    checked = partial(globals()["checked"], deadline=config.get("execution_deadline"))
+    checked = partial(globals()["checked"], deadline=config.get("preparation_deadline", config.get("execution_deadline")))
     if not destination.exists():
         destination.mkdir(parents=True)
         checked([config["git"], "init", destination])
@@ -115,7 +115,7 @@ def checkout(config, commit, destination):
 
 def environment(config, spec, repo):
     from functools import partial
-    checked = partial(globals()["checked"], deadline=config.get("execution_deadline"))
+    checked = partial(globals()["checked"], deadline=config.get("preparation_deadline", config.get("execution_deadline")))
     lock = repo / ("requirements-ops.lock" if spec["environment"] == "operations" else "requirements-research.lock")
     identity = sha256(lock)
     directory = Path(config["guest_root"]) / "envs" / spec["environment"] / identity
@@ -187,7 +187,7 @@ def execute(config, spec):
             os.environ.pop("PYTHONPATH", None)
             os.environ.pop("PYTHONHOME", None)
             os.environ.pop("FP_VERIFICATION_ID", None)
-            before = bounded_snapshot(repo, job_dir / "source-before", config.get("execution_deadline", config["deadline"]))
+            before = bounded_snapshot(repo, job_dir / "source-before", config.get("preparation_deadline", config.get("execution_deadline", config["deadline"])))
             record["preparation_seconds"] = time.time() - state["started_at"]
             if before["commit"] != spec["commit"] or before["status"]:
                 raise ValueError("refusing dirty source")
@@ -198,7 +198,7 @@ def execute(config, spec):
             atomic(job_dir / "state.json", {**state, "phase": "executing", "deadline": deadline})
             record.update(run_tree(command, repo, job_dir, deadline=deadline, job_name=spec["job_id"]))
             publication_started = time.time()
-            after = bounded_snapshot(repo, job_dir / "source-after", config["deadline"])
+            after = bounded_snapshot(repo, job_dir / "source-after", config["deadline"] - UPLOAD_RESERVE_SECONDS)
             record["post_execution_snapshot_seconds"] = time.time() - publication_started
             record.update(source_stable=before == after, capture_complete=True,
                           interpreter=str(python), environment=spec["environment"], lock_sha256=lock_hash,
@@ -268,7 +268,8 @@ def republish(config, spec):
             progress = json.loads(progress_path.read_text()) if progress_path.exists() else {}
             record.update(status="interrupted", exit_code=130, verification_exit_code=130,
                           source_stable=False, capture_complete=False,
-                          cpu_seconds=progress.get("cpu_seconds"), cpu_measurement="partial lower bound",
+                          cpu_seconds=progress.get("cpu_seconds"), wall_seconds=progress.get("wall_seconds"),
+                          finished_at=progress.get("heartbeat"), cpu_measurement="partial lower bound",
                           reason="supervisor ended without terminal evidence")
             atomic(record_path, record)
         if not (job / "spec.json").exists():

@@ -145,3 +145,33 @@ bundling and publication timing is retained. Re-entry marks idle without replay;
 recovery sessions can be cancelled independently of the original job result.
 Runner verification `20261009T054200Z-0360f7497ee4`: 77 passed, completed/exit 0,
 source stable, including a real bounded Git snapshot and expiration regression.
+
+
+### Public smoke and fourth review
+
+The public smoke at runner commit `43ba78b236cf5bb3031a232268da14df7f7b6b4f`
+completed all 77 tests on the Windows guest. Original launcher record
+`20261009T055805Z-81882375bd44`: completed, exit/verification exit 0, source stable.
+The host retrieved and verified 13 artifacts: ZIP SHA-256
+`7b2a005e1d728cbbed799a2179b8645e4f9b885e85637f1cc27d0dc5e2deb730`,
+290,957 bytes. Workload CPU 6.75 seconds, wall 16.5196924 seconds; publication
+through descriptor preparation 3.999279 seconds. VM deallocation was observed
+and the ledger interval closed. This is runner smoke evidence, not PR 742 acceptance.
+Concurrent Managed Run Command status succeeded during bootstrap; Azure reported
+asyncExecution=true and timeoutInSeconds=3300. Blob downloads with overwrite worked.
+
+Claude's fourth frozen review found no new code-level blocker, but could not see
+the cited local verification records: those were generated in the separate integration
+worktree, not the frozen review checkout. The final review must receive readable
+evidence in its own checkout. Cost follow-ups add an explicit force/pre-start cancel
+path, a separately published 30-minute guest bootstrap cutoff, and a 300-second
+upload reserve after source checking. Initial provisioning still depends on local
+guardians until the guest watchdog is installed; successful smoke establishes that
+installation path. Confirm the running task during the next remote safety probe.
+Azure-side scheduled auto-shutdown remains excluded by the operator's ruling.
+
+Minor fourth-review follow-ups retained for operator visibility: corrupted local
+cleanup/CPU records can fail their commands; an external boot is not a runner-owned
+ledger interval; failed guest commands prioritize deallocation and may require explicit
+disk-only recovery instead of a paid grace period. None substitutes for the pending
+cancel/disconnect/recovery probes or the full pinned qualification run.

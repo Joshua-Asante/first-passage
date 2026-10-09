@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 import zipfile
-from .control import Azure, Ledger, OVERHEAD_SECONDS, SHUTDOWN_MARGIN, PUBLICATION_SECONDS, RATE, atomic, locked, retire
+from .control import Azure, Ledger, OVERHEAD_SECONDS, SHUTDOWN_MARGIN, PUBLICATION_SECONDS, BOOTSTRAP_SECONDS, RATE, atomic, locked, retire
 from .contract import validate, inside, sha256, verify_inventory, verified
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -177,7 +177,7 @@ def run(config, config_path, spec, *, mode="execute"):
         seconds = spec["max_wall_seconds"] + OVERHEAD_SECONDS if mode == "execute" else OVERHEAD_SECONDS
         session = ledger.reserve(session_id, seconds, time.time(), source_job_id=spec["job_id"])
         job_dir.mkdir(parents=True)
-        session.update(spec=spec, mode=mode, runner_commit=source, bootstrap_deadline=min(time.time() + 2400, session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS))
+        session.update(spec=spec, mode=mode, runner_commit=source, bootstrap_deadline=min(time.time() + BOOTSTRAP_SECONDS, session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS))
         atomic(job_dir / "session.json", session)
         atomic(job_dir / "spec.json", spec)
         try:
@@ -290,7 +290,8 @@ def guardian(config, session_path, config_path=None):
             if not active or active["job_id"] != session["job_id"]:
                 return
             heartbeat(session_path)
-            azure.set_lease(session["job_id"], session["deadline"] - SHUTDOWN_MARGIN)
+            azure.set_lease(session["job_id"], session["deadline"] - SHUTDOWN_MARGIN,
+                            bootstrap_deadline=session["bootstrap_deadline"])
             heartbeat(session_path)
             azure.start()
         while azure.power() != "VM running":
@@ -301,6 +302,7 @@ def guardian(config, session_path, config_path=None):
         retry_cleanup(config, azure, session["job_id"], session_path, session["bootstrap_deadline"])
         guest_config = {**config, "deadline": session["deadline"] - SHUTDOWN_MARGIN,
                         "execution_deadline": session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS,
+                        "preparation_deadline": session["bootstrap_deadline"],
                         "session_id": session["job_id"], "mode": session.get("mode", "execute")}
         # Resource identity remains private and is never included in result bundles.
         request = {"config": guest_config, "spec": session["spec"], "runner_commit": session["runner_commit"]}
@@ -354,17 +356,20 @@ def reconcile(config):
     return {"deallocation_confirmed": True}
 
 
-def cancel(config, job_id):
+def cancel(config, job_id, *, force=False):
     state = Path(config["state_dir"])
     ledger = Ledger(state / "ledger.json")
-    active = ledger.read()["active"]
-    if not active or job_id not in {active["job_id"], active.get("source_job_id")}:
-        raise ValueError("job is not the active session")
+    with locked(state / "admission.lock", blocking=True):
+        active = ledger.read()["active"]
+        if not active or job_id not in {active["job_id"], active.get("source_job_id")}:
+            raise ValueError("job is not the active session")
+        directory = state / "jobs" / active["job_id"]
+        session = read(directory / "session.json")
+        immediate = force or session.get("mode") == "republish" or not (directory / "submitted.json").exists()
+        if immediate:
+            atomic(directory / "stop-request.json", {"reason": "cancelled"})
     azure = Azure(config)
-    directory = state / "jobs" / active["job_id"]
-    session = read(directory / "session.json")
-    if session.get("mode") == "republish":
-        atomic(directory / "stop-request.json", {"reason": "cancelled"})
+    if immediate:
         retire(azure, ledger, expected_job=active["job_id"])
         return {"job_id": job_id, "session_id": active["job_id"], "status": "interrupted"}
     path = config["guest_root"].replace("'", "''") + "/jobs/" + job_id + "/cancel"
@@ -380,6 +385,8 @@ def main():
     for action in ("status", "results", "cancel"):
         command = subs.add_parser(action)
         command.add_argument("job_id")
+        if action == "cancel":
+            command.add_argument("--force", action="store_true", help="fence controller and deallocate without waiting for guest transport")
         if action == "results":
             command.add_argument("--recover", action="store_true", help="admit budgeted disk-only republishing; never rerun the job")
     subs.add_parser("_guardian").add_argument("session", type=Path)
@@ -408,6 +415,8 @@ def main():
         if args.action == "results" and args.recover:
             spec = read(Path(config["state_dir"]) / "jobs" / args.job_id / "spec.json")
             output = run(config, args.config.resolve(), spec, mode="republish")
+        elif args.action == "cancel":
+            output = cancel(config, args.job_id, force=args.force)
         else:
             output = globals()[args.action](config, args.job_id)
     print(json.dumps(output, indent=2))

@@ -5,7 +5,7 @@ $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($RequestB
 $config = $request.config
 $root = [IO.Path]::GetFullPath($config.guest_root)
 New-Item -ItemType Directory -Force $root | Out-Null
-$job = "$root/jobs/$($request.spec.job_id)"
+$job = Join-Path (Join-Path $root 'jobs') $request.spec.job_id
 New-Item -ItemType Directory -Force $job | Out-Null
 # Full bootstrap diagnostics remain on the guest; never print instance bindings.
 Start-Transcript -LiteralPath "$job/bootstrap.log" -Append | Out-Null
@@ -18,7 +18,7 @@ function Write-JsonAtomic($Path, $Value) {
     Move-Item -LiteralPath $temp -Destination $Path -Force
 }
 function Invoke-Checked($Executable, $Arguments) {
-    if ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() -ge $config.execution_deadline) { throw "Bootstrap execution cutoff reached" }
+    if ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() -ge $config.preparation_deadline) { throw "Bootstrap execution cutoff reached" }
     & $Executable @Arguments
     if ($LASTEXITCODE -ne 0) { throw 'Guest setup command failed' }
 }
@@ -33,10 +33,11 @@ $pythonDirectory = Join-Path $root 'python'
 $python = Join-Path $pythonDirectory 'python.exe'
 if (!(Test-Path -LiteralPath $python)) {
     $installer = "$root/python-install.exe"
+    $pythonInstallLog = Join-Path $job 'python-install.log'
     Signed-Download 'https://www.python.org/ftp/python/3.13.2/python-3.13.2-amd64.exe' $installer 'Python Software Foundation'
-    $installed = Start-Process -FilePath $installer -ArgumentList @('/quiet','/log',"$job/python-install.log",'InstallAllUsers=1',"TargetDir=$pythonDirectory",'Include_test=0','PrependPath=0','Include_launcher=0') -Wait -PassThru -WindowStyle Hidden
+    $installed = Start-Process -FilePath $installer -ArgumentList @('/quiet','/log',$pythonInstallLog,'InstallAllUsers=1',"TargetDir=$pythonDirectory",'Include_test=0','PrependPath=0','Include_launcher=0') -Wait -PassThru -WindowStyle Hidden
     if ($installed.ExitCode -ne 0) {
-        $detail = Get-Content -LiteralPath "$job/python-install.log" -Tail 15 -ErrorAction SilentlyContinue | Out-String
+        $detail = Get-Content -LiteralPath $pythonInstallLog -Tail 15 -ErrorAction SilentlyContinue | Out-String
         throw "Python install failed, exit=$($installed.ExitCode): $detail"
     }
 }
@@ -75,7 +76,7 @@ $config | Add-Member -Force git $git
 Write-JsonAtomic "$root/config.json" $config
 New-Item -ItemType Directory -Force "$root/control/sessions" | Out-Null
 Write-JsonAtomic "$root/control/sessions/$($config.session_id).json" @{session_id=$config.session_id;source_job_id=$request.spec.job_id}
-$job = "$root/jobs/$($request.spec.job_id)"
+$job = Join-Path (Join-Path $root 'jobs') $request.spec.job_id
 New-Item -ItemType Directory -Force $job | Out-Null
 Write-JsonAtomic "$job/spec.json" $request.spec
 $action = New-ScheduledTaskAction -Execute $python -Argument "-I `"$runner/scripts/azure_jobs/guest_entry.py`" watchdog `"$root/config.json`""
