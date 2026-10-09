@@ -1,0 +1,144 @@
+"""Credential-free guest watchdog. Task Scheduler restarts this after a crash."""
+from __future__ import annotations
+import json
+from pathlib import Path
+import subprocess
+import sys
+import time
+from .control import Azure, atomic
+from .guest import bundle, upload
+
+
+def metadata_lease(compute):
+    import math
+    import re
+    tags = {t["name"]: t["value"] for t in compute.get("tagsList", [])}
+    job_id = tags.get("FPOfflineJob", "")
+    deadline = float(tags.get("FPOfflineDeadline", "nan"))
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", job_id) or not math.isfinite(deadline):
+        raise ValueError("missing current Azure lease")
+    return {"job_id": job_id, "deadline": deadline}
+
+
+def cloud_lease():
+    import urllib.request
+    request = urllib.request.Request(
+        "http://169.254.169.254/metadata/instance/compute?api-version=2021-02-01",
+        headers={"Metadata": "true"})
+    # Metadata is link-local. Never forward it through an inherited proxy.
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(request, timeout=2) as response:
+        return metadata_lease(json.load(response))
+
+
+def stop_reason(lease, idle, now):
+    if not lease:
+        return "missing lease"
+    if now >= lease["deadline"]:
+        return "deadline"
+    if idle and idle.get("job_id") == lease["job_id"]:
+        return "idle"
+    return None
+
+
+def read(path):
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return None
+
+
+def terminate_tree(name):
+    import ctypes
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.OpenJobObjectW.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.LPCWSTR]
+    kernel.OpenJobObjectW.restype = wintypes.HANDLE
+    kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    kernel.TerminateJobObject.restype = wintypes.BOOL
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    handle = kernel.OpenJobObjectW(8, False, "Local\\FP-Offline-" + name)
+    if not handle:
+        if ctypes.get_last_error() == 2:
+            return False
+        raise OSError("cannot open owned job")
+    try:
+        if not kernel.TerminateJobObject(handle, 130):
+            raise OSError("cannot terminate owned job")
+        return True
+    finally:
+        kernel.CloseHandle(handle)
+
+
+def recover(config, lease, reason):
+    """Keep partial evidence; never turn missing terminal evidence into success."""
+    job_dir = Path(config["guest_root"]) / "jobs" / lease["job_id"]
+    job_dir.mkdir(parents=True, exist_ok=True)
+    (job_dir / "cancel").touch()
+    terminate_tree(lease["job_id"])
+    time.sleep(10)
+    record = read(job_dir / "record.json") or {}
+    if record.get("status") not in {"completed", "failed", "interrupted"}:
+        progress = read(job_dir / "progress.json") or {}
+        record.update(status="interrupted", exit_code=130, verification_exit_code=130,
+                      source_stable=False, capture_complete=False, reason=reason,
+                      cpu_seconds=progress.get("cpu_seconds"), cpu_measurement="partial lower bound")
+        atomic(job_dir / "record.json", record)
+    if not (job_dir / "archive.json").exists():
+        spec = read(job_dir / "spec.json")
+        if spec:
+            archive = bundle(job_dir, Path(config["guest_root"]) / "repos" / lease["job_id"],
+                             spec["expected_outputs"], partial=True)
+            atomic(job_dir / "archive.json", archive)
+    atomic(job_dir / "state.json", record)
+    try:
+        upload(config, job_dir, lease["job_id"])
+    except Exception:
+        pass  # Retain disk results; never hold paid compute indefinitely for upload.
+
+
+def main(config_path):
+    config = read(config_path)
+    azure = Azure(config)
+    root = Path(config["guest_root"])
+    # A booted host gets a short bounded window to receive a new lease.
+    boot_grace = time.monotonic() + 180
+    lease = None
+    lease_observed = 0
+    while True:
+        try:
+            lease = cloud_lease()
+            lease_observed = time.monotonic()
+        except Exception:
+            if time.monotonic() - lease_observed > 120:
+                lease = None
+        reason = stop_reason(lease, read(root / "idle.json"), time.time())
+        if time.monotonic() < boot_grace and reason in {"deadline", "missing lease", "idle"}:
+            time.sleep(2)
+            continue
+        if lease and not reason:
+            job_dir = root / "jobs" / lease["job_id"]
+            state = read(job_dir / "state.json") or {}
+            progress = read(job_dir / "heartbeat.json") or {}
+            if (job_dir / "cancel").exists() and state.get("status") == "running":
+                reason = "cancelled"
+            if state.get("status") == "running" and time.time() - progress.get("time", state.get("started_at", time.time())) > 120:
+                reason = "guest supervisor lost"
+        if reason:
+            if lease and reason != "idle":
+                try:
+                    recover(config, lease, reason)
+                except Exception:
+                    pass  # A recovery/reporting failure must never prevent deallocation.
+            # Keep retrying even if controller/laptop has disappeared.
+            try:
+                azure.deallocate()
+            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+                pass
+            time.sleep(5)
+        else:
+            time.sleep(2)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1])

@@ -1,0 +1,104 @@
+import json
+import os
+from pathlib import Path
+import sys
+import time
+import pytest
+from scripts.azure_jobs import guest
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='real Windows Job Object')
+def test_guest_tree_measures_descendants_and_retains_output(tmp_path):
+    script = tmp_path / 'work.py'
+    script.write_text("import subprocess,sys; subprocess.run([sys.executable,'-c','sum(i*i for i in range(1000000)); print(42)'])")
+    result = guest.run_tree([sys.executable, str(script)], tmp_path, tmp_path, deadline=time.time()+30)
+    assert result['exit_code'] == 0
+    assert result['cpu_seconds'] > 0
+    assert result['wall_seconds'] > 0
+    assert '42' in (tmp_path / 'stdout.log').read_text()
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='real Windows Job Object')
+def test_cancel_interrupts_tree_and_keeps_partial_stdout(tmp_path):
+    script = tmp_path / 'work.py'
+    script.write_text("import time; print('partial',flush=True); time.sleep(60)")
+    import threading
+    trigger = threading.Timer(1, lambda: (tmp_path / 'cancel').write_text('cancel'))
+    trigger.start()
+    result = guest.run_tree([sys.executable, str(script)], tmp_path, tmp_path, deadline=time.time()+30)
+    trigger.join()
+    assert result['status'] == 'interrupted'
+    assert result['exit_code'] != 0
+    assert 'partial' in (tmp_path / 'stdout.log').read_text()
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='real Windows Job Object')
+def test_timeout_kills_before_long_sleep_finishes(tmp_path):
+    result = guest.run_tree([sys.executable, '-c', 'import time; time.sleep(60)'], tmp_path, tmp_path, deadline=time.time()+1)
+    assert result['status'] == 'interrupted'
+    assert result['reason'] == 'timeout'
+    assert result['wall_seconds'] < 10
+
+@pytest.mark.skipif(os.name != 'nt', reason='real Windows Job Object')
+def test_named_job_can_be_stopped_by_independent_watchdog(tmp_path):
+    import threading
+    from scripts.azure_jobs.watchdog import terminate_tree
+    trigger = threading.Timer(1, lambda: terminate_tree('test-independent-stop'))
+    trigger.start()
+    result = guest.run_tree([sys.executable, '-c', 'import time; time.sleep(60)'], tmp_path, tmp_path, deadline=time.time()+30, job_name='test-independent-stop')
+    trigger.join()
+    assert result['exit_code'] != 0
+    assert result['wall_seconds'] < 10
+
+
+def test_cancel_before_spawn_does_not_execute(tmp_path):
+    (tmp_path / 'cancel').write_text('cancel')
+    result = guest.run_tree([sys.executable, '-c', "open('SHOULD_NOT_EXIST','w').write('bad')"], tmp_path, tmp_path, deadline=time.time()+30)
+    assert result['status'] == 'interrupted'
+    assert not (tmp_path / 'SHOULD_NOT_EXIST').exists()
+
+
+def test_reentry_never_reexecutes_job(tmp_path, monkeypatch):
+    spec=dict(job_id='once',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
+    job=tmp_path/'jobs/once'; job.mkdir(parents=True)
+    (job/'record.json').write_text('{"status":"interrupted"}')
+    monkeypatch.setattr(guest,'checkout',lambda *a: (_ for _ in ()).throw(AssertionError('replayed')))
+    guest.execute({'guest_root':str(tmp_path)},spec)
+    assert json.loads((job/'record.json').read_text())['status']=='interrupted'
+
+
+def test_finalization_keeps_heartbeat_and_publishes_terminal_state(tmp_path, monkeypatch):
+    spec=dict(job_id='heartbeat',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
+    def checkout(config,commit,repo):
+        repo.mkdir(parents=True); (repo/'out').write_text('42')
+    monkeypatch.setattr(guest,'checkout',checkout)
+    monkeypatch.setattr(guest,'environment',lambda *a: (Path(sys.executable),tmp_path/'env','lock'))
+    monkeypatch.setattr(guest,'snapshot',lambda *a: {'commit':'a'*40,'status':''})
+    monkeypatch.setattr(guest,'run_tree',lambda *a,**k: dict(status='completed',exit_code=0,cpu_seconds=1,wall_seconds=1,finished_at=time.time()))
+    for key in ('PATH','VIRTUAL_ENV','PYTHONPATH','PYTHONHOME','FP_VERIFICATION_ID'):
+        if key in os.environ:
+            monkeypatch.setenv(key,os.environ[key])
+        else:
+            monkeypatch.delenv(key,raising=False)
+    original_bundle=guest.bundle
+    observed=[]
+    def slow_bundle(job,repo,outputs,**kwargs):
+        old=json.loads((job/'heartbeat.json').read_text())['time']
+        time.sleep(2.5)
+        assert json.loads((job/'heartbeat.json').read_text())['time'] > old
+        return original_bundle(job,repo,outputs,**kwargs)
+    monkeypatch.setattr(guest,'bundle',slow_bundle)
+    monkeypatch.setattr(guest,'upload',lambda cfg,job,id: observed.append(json.loads((job/'state.json').read_text())['status']))
+    guest.execute({'guest_root':str(tmp_path),'deadline':time.time()+60,'git':'git.exe'},spec)
+    assert observed == ['completed']
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows names')
+def test_existing_named_job_is_not_adopted():
+    from scripts.agent_handoff import WindowsJob
+    first=WindowsJob.create(name='Local\\FP-Offline-collision-test')
+    try:
+        with pytest.raises(OSError,match='already exists'):
+            WindowsJob.create(name='Local\\FP-Offline-collision-test')
+    finally:
+        first.close()

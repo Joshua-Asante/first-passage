@@ -656,3 +656,121 @@ run, which also requires the frozen `--expect-selection` document;
 definitive same-mode dispatch from re-rolling. Host readiness is separate from
 launch-to-G5 acceptance, which remains blocked on the boundary implementation and
 its approved fixture producer.
+
+## Azure offline jobs
+
+The runner in [azure_jobs](azure_jobs/) provides the same interface for Codex
+and Claude Code. Run it from its own clean, committed checkout using the validated
+operations interpreter. It fetches job source from public GitHub at the exact
+40-character SHA; it never copies the primary checkout.
+
+```powershell
+.\fp.ps1 doctor
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> run <job.json>
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> status <job-id>
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> results <job-id>
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> cancel <job-id>
+```
+
+Keep configuration, the job ledger, Azure diagnostics and retrieved files in one
+shared **ignored** directory outside the runner checkout. Both harnesses must use
+the same configuration and ledger; a second ledger is not a second allowance.
+Configuration names `az`, `subscription`, `resource_group`, `vm`, `location`,
+`state_dir`, `guest_root`, `repository`, `storage_account` and `container`.
+Never put actual cloud identifiers or credentials in public examples/commits.
+No admin password is used. Configuration is trusted operator-owned input.
+
+The initial installation requires the operator-approved system-assigned VM identity,
+VM-scoped read/instance-view/deallocate permissions and a private results container.
+Use identity authentication and container-scoped Blob Data Contributor access;
+disable public blob and shared-key access. The local signed-in operator also needs
+container data access. The runner creates no access grants automatically.
+The guest installs signed CPython 3.13.2 and Git 2.51.0 installers, Azure CLI 2.91.0
+in its own management venv, then fetches the committed runner. Nothing opens RDP/SSH.
+
+A public job spec looks like:
+
+```json
+{
+  "job_id": "qualification-742",
+  "commit": "ed4d7c9e8283d91c01e4c470bb5091b619fc504c",
+  "command": ["scripts/fp.py", "--workers", "8", "python", "-m", "pytest", "tests/ops/qualification", "-q"],
+  "environment": "operations",
+  "max_wall_seconds": 28800,
+  "expected_outputs": [".cache/fp-verification"],
+  "authority": "Joshua, 2026-10-09: public PR 742 qualification acceptance",
+  "private_inputs": [],
+  "private_ruling": null
+}
+```
+
+The authority field records the actual operator direction; a caller inventing text
+does not grant permission. Every statistical run still needs its own authority.
+This version has **no private-upload path**, including for a spec naming a ruling.
+It never uploads `.env`, Git metadata, symlinks or junctions as output artifacts.
+Linux-specific qualification acceptance remains on its existing Linux path.
+
+Only one active session is accepted; busy submissions and reused job IDs are refused.
+There is no queue in this first version. Operations commands must use `scripts/fp.py`;
+its venv is keyed by `requirements-ops.lock` and includes the repository's pinned
+verification extras. Research uses a different directory and its own
+`requirements-research.lock`; incompatible Windows pins fail preparation rather
+than falling back to operations packages. Neither environment's presence approves a run.
+
+Initialize the persistent ledger once with a conservative account of VM running time
+already incurred in the current week:
+
+```powershell
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> init-ledger --historical-seconds <seconds>
+```
+
+Initialization refuses an existing ledger. Weeks begin Monday 00:00 UTC.
+Admission reserves the maximum job wall time plus one hour for setup, publication
+and shutdown, at $2.90 per VM-hour against $125 per week. Reservations that cross
+the week boundary or exceed the remaining allowance are refused. The final fifteen
+minutes are a shutdown margin: execution stops early enough to request deallocation.
+Actual charged estimates run from before VM start until Azure reports
+`VM deallocated`; `VM stopped` and a successful API submission are insufficient.
+Unconfirmed shutdown leaves the interval open and blocks further admission.
+
+Managed Run Command uses asynchronous execution and an explicit timeout. The front-end
+returns after a separate local guardian acknowledges ownership. That guardian arms
+another independent reaper before starting the VM. The guest's SYSTEM scheduled
+watchdog survives local disconnect and restarts after watchdog failure. A named
+Windows Job Object owns the executing process tree, including CPU usage and
+cancellation. Rebooted jobs never silently retry. These mechanisms retry
+`az vm deallocate`; a guest OS shutdown is never the final action.
+Azure control-plane failure can delay actual deallocation beyond the margin:
+the ledger continues charging and reports the overrun rather than asserting that
+an unreachable Azure API enforced an absolute bill cap. Disk, IP and Blob charges
+are additional to the VM-running-time estimate.
+
+The guest stores stdout/stderr, original launcher evidence, a runner record and
+per-file SHA-256 inventory, then publishes a ZIP plus its hash to the private
+container before marking itself idle. `results` downloads without restarting
+compute, checks archive size/hash, rejects unsafe or unexpected entries, and checks
+every artifact. Cancel and timeout retain partial files. An upload failure retains
+disk files, but is not evidence of successful host retrieval.
+
+Verification requires a completed runner and launcher record, zero exit and
+verification exit codes, stable source, complete capture, valid expected reports
+and matching artifacts. A `running`, `not_started`, failed or interrupted record
+never counts. Report CPU/wall seconds per job, estimated VM cost, weekly VM usage
+and process CPU-hours per week/month. CPU totals identify unretrieved jobs and assign
+retrieved measurements to their completion period; the monthly 5,000 CPU-hour
+allowance is planning information, not a hard stop.
+
+Implementation, acceptance evidence and remaining limitations belong in
+[the runner plan](../docs/superpowers/plans/2026-10-09-azure-job-runner.md).
+
+
+Recovery: `reconcile` is a maintenance command for a stranded reservation. It
+requests deallocation and closes the interval only after the observed deallocated
+state; it never clears usage manually. `status` caches outside submission identities.
+The guardian publishes the new job/deadline in VM tags before start; the guest
+watchdog reads that lease from Azure instance metadata rather than trusting a prior
+job's disk lease. Shutdown is serialized with admission and fenced by job identity.
+A process-wide guest heartbeat covers preparation, execution and publication.
+Expected outputs must be in ignored directories; new nonignored outputs count as
+source drift. `probe_workload.py` is an explicitly selected public 120-second safety
+probe, excluded from normal test discovery; it is never a statistical workload.
