@@ -44,6 +44,11 @@ print(json.dumps({'python': sys.executable, 'version': sys.version.split()[0],
 """
 
 
+DETACH_ENVIRONMENT = 'FP_VERIFICATION_ID'
+IDENTITY_PATTERN = re.compile(r'\d{8}T\d{6}Z-[0-9a-f]{12}')
+CREATE_BREAKAWAY_FROM_JOB = 0x01000000
+
+
 def resolve_environment(root: Path, explicit: str | None) -> Path:
     """Prefer an explicit or checkout-local venv; share the main venv in worktrees."""
     if explicit is not None:
@@ -101,7 +106,7 @@ def prepare(root: Path, environment: Path) -> tuple[Path, dict[str, str], dict]:
     child_env["PATH"] = str(python.parent) + os.pathsep + child_env.get("PATH", "")
     child_env["VIRTUAL_ENV"] = str(environment)
     child_env["PYTHONNOUSERSITE"] = "1"
-    for key in ("PYTHONHOME", "PYTHONPATH"):
+    for key in ("PYTHONHOME", "PYTHONPATH", DETACH_ENVIRONMENT):
         child_env.pop(key, None)
     expected = locked_requirements(root / "requirements-ops.lock")
     result = subprocess.run(
@@ -203,6 +208,62 @@ def pytest_report_selection(args: list[str]) -> tuple[list[str], dict[str, str]]
     return inputs, outputs
 
 
+def verification_identity(directory: Path) -> str:
+    """Reuse an unused detached reservation, or mint a fresh record identity."""
+    inherited = os.environ.get(DETACH_ENVIRONMENT)
+    if inherited is None:
+        return datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
+    if not IDENTITY_PATTERN.fullmatch(inherited):
+        raise ValueError('invalid FP_VERIFICATION_ID')
+    if not (directory / f'{inherited}.detach.log').is_file() or (directory / inherited).exists():
+        raise ValueError('FP_VERIFICATION_ID is not an unused detached reservation; unset it')
+    return inherited
+
+
+def detached_arguments(root: Path, options: argparse.Namespace) -> list[str]:
+    """The child's launcher arguments, rebuilt from the parsed options without --detach.
+    A relative environment selection resolves against the caller's directory here, because
+    the child starts in the checkout root."""
+    selection = options.env if options.env is not None else os.environ.get('FP_OPS_ENV')
+    tokens = [] if selection is None else ['--env', str(resolve_environment(root, selection))]
+    if options.workers is not None:
+        tokens += ['--workers', str(options.workers)]
+    return [*tokens, options.command, *options.args]
+
+
+def start_detached(root: Path, tokens: list[str]) -> int:
+    """Start the recorded run as an independent child and return without waiting."""
+    identity = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
+    directory = root / '.cache' / 'fp-verification'
+    directory.mkdir(parents=True, exist_ok=True)
+    record, log = directory / identity, directory / f'{identity}.detach.log'
+    child_argv = [sys.executable, '-I', str(Path(__file__).resolve()), *tokens]
+    environment = os.environ.copy()
+    environment[DETACH_ENVIRONMENT] = identity
+    with log.open('wb') as sink:
+        spawn = dict(cwd=root, stdin=subprocess.DEVNULL, stdout=sink,
+                     stderr=subprocess.STDOUT, env=environment)
+        if os.name == 'nt':
+            creationflags = (subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
+                             | CREATE_BREAKAWAY_FROM_JOB)
+            try:
+                child = subprocess.Popen(child_argv, creationflags=creationflags, **spawn)
+            except OSError:
+                print("fp: warning: could not break away from the caller's job; "
+                      "the run may end with the caller", file=sys.stderr)
+                child = subprocess.Popen(child_argv, creationflags=creationflags
+                                         & ~CREATE_BREAKAWAY_FROM_JOB, **spawn)
+        else:
+            child = subprocess.Popen(child_argv, start_new_session=True, **spawn)
+    (directory / f'{identity}.detach.json').write_text(json.dumps(
+        dict(pid=child.pid, record=str(record), log=str(log), argv=child_argv,
+             started_utc=datetime.now(timezone.utc).isoformat()), indent=2)
+        + '\n', encoding='utf-8')
+    print(f'record: {record}')
+    print(f'pid: {child.pid}')
+    return 0
+
+
 def pytest_configuration_args(root: Path, args: list[str]) -> list[str]:
     """Normalize checkout selection and reject competing explicit selections."""
     result = []
@@ -229,10 +290,12 @@ def pytest_configuration_args(root: Path, args: list[str]) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     """Validate and run a task without changing the invoking shell's environment."""
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--env", help="operations venv directory (before the command); defaults to FP_OPS_ENV")
     parser.add_argument('--workers', type=int, choices=range(0, 9),
                         help='Opt-in pytest workers, 0 through 8; nonzero uses loadscope')
+    parser.add_argument('--detach', action='store_true',
+                        help='start a recorded run as an independent background process and return at once')
     parser.add_argument("command", choices=("doctor", "python", "test", "test-ops", "check"))
     parser.add_argument("args", nargs=argparse.REMAINDER, help="arguments passed unchanged to the command")
     options = parser.parse_args(argv)
@@ -240,17 +303,24 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("doctor does not accept additional arguments")
     pytest_task = options.command in ('test', 'test-ops') or (
         options.command == 'python' and options.args[:2] == ['-m', 'pytest'])
+    recorded = pytest_task or options.command == 'check'
     if options.workers is not None and not pytest_task:
         parser.error('--workers applies only to pytest commands')
+    if options.detach and not recorded:
+        parser.error('--detach applies only to recorded commands (pytest tasks and check)')
+    if options.detach and DETACH_ENVIRONMENT in os.environ:
+        parser.error('--detach cannot run inside a detached run')
     root = Path(__file__).resolve().parents[1]
     try:
+        if options.detach:
+            return start_detached(root, detached_arguments(root, options))
         record = None
-        if pytest_task or options.command == 'check':
+        if recorded:
             spec = importlib.util.spec_from_file_location('fp_recorder', root / 'scripts/record_verification.py')
             recorder = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(recorder)
-            identity = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
-            output = root / '.cache' / 'fp-verification' / identity
+            directory = root / '.cache' / 'fp-verification'
+            output = directory / verification_identity(directory)
             record = recorder.RunRecord(root, output, [options.command, *options.args], allow_ignored=True)
         with record if record is not None else nullcontext():
             if record is not None:

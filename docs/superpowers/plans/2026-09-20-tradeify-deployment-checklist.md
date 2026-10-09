@@ -1,5 +1,7 @@
 # Tradeify Deployment Checklist Implementation Plan
 
+> **Proposed roadmap refresh:** [2026-10-08 viability-to-release amendment](#proposed-amendment-2026-10-08--viability-diagnosis-to-an-exact-deployable-release). Existing owner records remain authoritative; this proposal grants no execution authority.
+
 > **For agentic workers:** Execute with superpowers:executing-plans; use superpowers:subagent-driven-development when bounded delegation is useful and authorized. Preserve the behavioral contract and integration owner. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Deliver the fixed four-strategy Tradeify portfolio as an authorized attended release, with bounded execution assignments and evidence-backed acceptance.
@@ -699,3 +701,219 @@ committed dispatch precede the build; separate live transport readiness, exact-t
 rehearsal, fresh private gates and CP-3 still precede any placement.
 *[2026-10-01: the drafted full tool suite is superseded by the
 [reduced X-4 build path](#addendum-2026-10-01--first-session-simplification-rulings-six-cuts) (item 3), which owns the build scope.]*
+
+## Proposed amendment 2026-10-08 — viability diagnosis to an exact deployable release
+
+**Status: PROPOSED for acceptance.** Joshua requested this roadmap and its PR on
+2026-10-08. That authorizes drafting and review, not execution, a changed gate,
+funding, qualification, merge, activation or trading. This amendment organizes
+sequencing within T00–T17; the task owners and dated acceptance records remain
+authoritative. On acceptance, it governs the next-checkpoint sequence where
+older summary or next-step wording conflicts, without replacing task contracts.
+
+**Immediate objective:** a deployable prop portfolio with viable
+evaluation-to-funded-to-payout economics. Retail-mission discussion stays local
+and uncommitted and does not alter deployment scope.
+
+### Scope clarification — minimum path to a viable first evaluation
+
+The immediate scope is **one account, one viable executable portfolio, one
+qualified feed and the minimum accepted operating setup**. Portfolio viability
+is the next bottleneck. Preserve adopted first-session simplifications and
+completed acceptances, including G10.
+
+1. **Complete the bounded size-feasibility check under its existing authority.**
+   Return its evidence identity, limitations and branch selected under the
+   [T00 card §8 successor decision tree](../../briefs/handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md).
+   The [size-feasibility preregistration §11](../../briefs/pre-registration/2026-10-08-tradeify-size-feasibility-prereg-DRAFT.md)
+   governs label semantics. A promising grid result supports investigation, not
+   executable qualification. GRID-NO-CLEAR does not exclude unsampled sizes
+   between grid points and does not exclude executable successors.
+2. **If the branch leads to a successor, investigate one justified candidate.**
+   Use Tier 2 where
+   required. Translate proposed sizing into actual integer contracts and
+   executable behavior before screening that candidate under unchanged
+   criteria. Apply the owning decision tree's stop rules; do not turn failures
+   into an open-ended search for a passing combination.
+3. **Prioritize reusable readiness under milestone 2 below:** qualification-engine
+   integration, settlement, heartbeat verification, emergency fallback and
+   provider-neutral clarification. Its dependency and authority holds apply.
+4. **Qualify and release the exact candidate through milestones 3–6 below.**
+5. **Prepare for evaluation across multiple sessions through existing owners.**
+   T07 owns settlement and reconciliation; T13 owns stop and recovery procedures;
+   T17 owns renewed per-session authorization. The T17 launch coordinator assembles
+   the session-to-session closure sequence and confirms the purchased account
+   version against the T10/F1 binding. Codex checks these pointers in the T17
+   release packet before first activation, not as a separate T16 gate. Each later
+   session consumes the preceding closure evidence and its own authorization.
+   First-session readiness alone does not establish completion of the evaluation.
+
+R1/R2 intrabar resolution is an option under the owning decision tree, with its
+own build authority and timing; a size-feasibility result does not resolve it.
+
+**Evaluation and funded-stage scope:** identify funded-stage implementation
+that could be deferred, with its owner and latest required completion point.
+Any change to an existing release requirement needs an explicit owner decision.
+Retain funded-survival economics, payout eligibility, recurring costs and
+failure/retry costs in the viability recommendation; deferring implementation
+does not waive economic criteria. Multi-firm expansion is outside this first
+evaluation's implementation scope; its separate program obligations remain.
+
+The calendar dependency below remains: the post-November-1 T07 R3 repeat is
+required before T16 unless formally superseded. This clarification creates no
+earlier release path or new execution authority.
+
+### Roadmap and decision boundaries
+
+| Milestone | Required outcome and evidence | Return boundary |
+|---|---|---|
+| **1. Diagnose book viability (immediate critical path)** | Explain T00's failed criteria, magnitude, populations/scenarios and sensitivity to assumptions. Distinguish established mechanisms from hypotheses and keep the four-firm candidate's failure separate. Return an evidence-supported recommendation before proposing a revised configuration or fresh validation. | Claude Deployment Coordinator accepts diagnostic reports; Codex deployment coordinator retains combined acceptance; Joshua decides the investment direction. No automatic redesign or new validation. |
+| **2. Close independent readiness** | Reconcile the qualification-engine, broker/settlement, runtime/recovery and feed-preparation owners below. Reuse accepted implementation and evidence; identify each next missing acceptance outcome. | Each bounded owner returns its accepted evidence to the Codex deployment coordinator for combined acceptance. Work dependent on undecided portfolio, route or feed behavior remains behind that decision. |
+| **3. Define the executable candidate and qualify its feed** | Following the investment decision, bind actual strategy editions, sizing/protection/capacity behavior, route, costs and source requirements. Under applicable selection/funding authority, qualify delivered feed bytes through actual adapters with emission disabled. Resolve behavior-changing dependencies and identify any explicitly permitted later bindings. | Codex deployment coordinator accepts T10/F1 packet readiness, not a production qualification attempt. Historical evidence for another edition is not successor qualification. |
+| **4. Freeze and qualify (T15)** | Accept engine readiness and required pre-freeze evidence; freeze exact source, editions, configuration, runtime and statistical contract. Obtain prescribed approvals and execute the authorized production attempt. Preserve actual non-PASS/interruption dispositions; on PASS obtain required seal/admission decisions. | Qualification owner returns evidence to the Codex deployment coordinator; Joshua supplies required admission decisions or the actual non-PASS/blocker returns. No automatic tuning, replacement attempt or activation. |
+| **5. Accept the disarmed release (T16)** | Bind qualified portfolio, feed, route, settlement, host and monitoring to one exact identity. Prove only permitted freeze deltas, actual-consumer integration and required fault behavior. Complete the calendar-dependent R3 repeat below. | Codex deployment coordinator's combined acceptance of one disarmed candidate; no live GO. |
+| **6. Rehearse, authorize and measure (T17)** | Complete exact-candidate rehearsal, prescribed final-stage/account checks and launch timing. Obtain Joshua's session-specific GO before activation. Reconcile the attended session and subsequently measure evaluation progress, execution costs, incidents, funded eligibility and payouts. | Codex deployment coordinator accepts release evidence; Joshua owns session GO. Initial activation is not evidence of successful portfolio economics. Later sessions retain their own authority requirements. |
+
+**Current diagnostic status (2026-10-08):** the retained step-12 diagnosis is
+already delivered. Tier 1 is RESOLVED/DONE and accepted; its return and reader log
+are in [#730](https://github.com/Joshua-Asante/first-passage/pull/730), merged at
+`bd07b452`. Do not recommission Tier 1. Tier 2 is scoped in
+[#729](https://github.com/Joshua-Asante/first-passage/pull/729), merged at
+`afaca995`; Joshua's admission is recorded in
+[#731](https://github.com/Joshua-Asante/first-passage/pull/731) at `c280118`
+(merged at `0ec89ec`). The Claude Deployment Coordinator reports
+the sidecar capability in build. Replay remains gated by the Tier-2 card's §0.5 items 3–5, including
+the reviewed build, accepted H, P7 re-run, new signed source approval and signed
+diagnostic evidence class and receipt purpose (§3.4). The investment decision
+remains Joshua's; admission is not a completed attribution result.
+
+**If no supported successor emerges:** return to Joshua to decide whether to
+re-scope the book, commission targeted research, or re-scope/stop the program.
+Milestone 3 is conditional on that decision, not an inevitable next step. The
+[T00 card §8 successor decision tree](../../briefs/handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md)
+owns adopted routing and stopping rules. This amendment adds no threshold,
+retry allowance or automatic research dispatch. Route a successor non-PASS
+through that owner rather than presume another attempt.
+
+The viability recommendation must address evaluation survival and the remaining
+evidence needed for funded constraints, payout eligibility/time, recurring costs
+and failure/retry costs. Record unknowns explicitly. No new economic threshold
+or assumed favorable value is established here.
+
+### Independent readiness workstreams
+
+These are outstanding **acceptance** obligations, not assertions that no
+implementation exists. Check current owner evidence before dispatch; stale
+summary rows do not reopen completed work.
+
+- **Qualification engine (T05/T06/T11/T12):** end-to-end result/seal integration,
+  full synthetic E1 acceptance, production installation/source/authority
+  boundaries and separate final-stage machinery/timing. Completed T00 is not
+  acceptance of the full qualification engine. The
+  [execution-slices ledger](2026-09-18-full-e1-execution-slices.md) owns existing
+  acceptances and remaining prerequisites.
+- **Broker and settlement (T07–T09):** accepted order handling,
+  liquidation/cancellation, ambiguous-request handling, reconciliation and
+  account-evidence procedures through actual consumers. Preserve the
+  [T09 gates](#t09-gate-acceptance-record), capability allocation and applicable
+  drill permissions before dependent implementation. Isolated traces do not
+  establish whole-route acceptance.
+- **Runtime monitoring and recovery (T13):** accepted book-host verification,
+  live runtime/notifier heartbeat evidence and attended recovery. **G10
+  notification rehearsal and cleanup are complete and are not reopened.**
+  Resolve the [Tradovate-unavailable fallback gap](../../notes/2026-10-02-t13-c-a-attended-recovery-draft.md#7-step-5-firm-fallback-when-the-platform-cannot-be-used)
+  through its owner; platform-dependent flattening alone does not close it.
+  Record the accepted disposition and residual limitations rather than infer a
+  fallback.
+- **Feed (T14):** provider-neutral requirements and entitlement/cost/freeze-impact
+  preparation may proceed where independent. Provider-specific implementation,
+  spending and collection retain their governing decisions, including D-feed.
+  Qualification covers required symbols, rolls/sessions, warm-up, equivalence,
+  reconnects, corrections/backfill, duplicates/order, missing/stale data and
+  synchronization through actual consumers. No emission or account orders
+  follow from feed acceptance.
+
+Before assigning readiness work, each owner labels its next step:
+
+| Workstream | May proceed when independently authorized and useful without the current book | Hold until the investment/behavior decision |
+|---|---|---|
+| Qualification engine | Generic result/seal integration, authority refusals and synthetic engine acceptance | Candidate-specific source binding, sizing/edition assumptions and production attempts |
+| Broker/settlement | T07 report semantics and settlement procedure; route-neutral evidence reconciliation | T09 changes tied to leg lifecycle, quantities, takeover or unresolved route semantics; existing T09 gates still apply |
+| Runtime/recovery | Host/notifier health verification and common attended-recovery/fallback procedures | Book-specific incident mappings, capacity behavior and exact-candidate rehearsal |
+| Feed | Provider-neutral cost/entitlement, calendar and protocol preparation | Final symbol/edition bindings and book-dependent adapter work; provider selection, collection and spend keep their separate gates |
+
+This is a dependency classification, not blanket authorization. If an ostensibly
+independent step assumes a particular book or route, return that dependency and
+hold it rather than spend effort on the assumption.
+
+The completed robust T00 NO-GO does not meet D-feed(a) without its explicit
+amendment. This roadmap does not amend that condition or presume provider
+selection/funding permission.
+
+### Calendar-dependent release constraint
+
+The [T07 owner](../../briefs/handoffs/2026-09-21-tradeify-t07-manual-settlement-procedure.md)
+and [commissioning packet](../../notes/2026-09-27-route-commissioning-session-packet.md)
+require the **T07 R3 Timestamp-offset repeat after 2026-11-01**, for the second
+DST regime, **before T16**. This is the settlement read R3, not the broker
+capability label R3.
+
+Initial T07 acceptance may use current-regime evidence. Unless its owner
+identifies an explicit superseding decision, final combined acceptance waits
+for the qualifying repeat and its acceptance. November 1 is not a promised
+release date; all other prerequisites still apply. Use the interval to complete
+independent evidence, not to relax the calendar requirement.
+
+**Separate program checkpoint — 2026-11-08:** the four-firm candidate re-MC is
+already FALSIFIED early-fail ([#715](https://github.com/Joshua-Asante/first-passage/pull/715),
+[#716](https://github.com/Joshua-Asante/first-passage/pull/716)). The program-level
+check and demotion disposition remain with the
+[four-firm program owner](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md)
+on November 8. Milestone 1 supplies Tradeify investment evidence; it neither
+replaces that check nor automatically changes its date or disposition. If the
+successor remains unresolved then, report that state to the program owner;
+do not treat continuing research as passing or postponing the program check.
+
+### Next bounded handoff and coordination
+
+**Selected outcome:** complete the size-feasibility checkpoint and return its
+accepted evidence, limitations, selected decision-tree branch and recommendation
+to investigate one successor, resolve a specific uncertainty or stop. Consume
+accepted Tier-1 evidence; do not recommission it. Tier 2 follows only when the
+owning decision tree routes to it. This roadmap adds no scoring or replay authority.
+
+**Prerequisites:** the size-feasibility preregistration, including §11, its
+reviewed implementation and applicable run authority. Its owner retains the
+budget, inputs and reproduction requirements. If routed to Tier 2, satisfy its
+reviewed-build, H, P7 and signed-approval gates before execution; the current
+hold remains until the decision tree permits lifting it.
+
+**Ownership:** Claude Deployment Coordinator owns the T00/diagnostic cards and
+accepts their reports, following the reported C4 handoff on 2026-10-08. Codex
+deployment coordinator retains combined acceptance. Joshua owns investment and
+operational decisions. The [review relay](https://github.com/Joshua-Asante/first-passage/pull/732#issuecomment-6065313722)
+records the seat distinction; it grants no new authority.
+
+**Verification:** bind claims to accepted evidence identities, distinguish
+observed contributions from counterfactual benefits and report limitations.
+Use the size-feasibility preregistration's reproduction and validity checks,
+and the diagnostic card's sidecar checks when Tier 2 is authorized. Do not turn a
+selected diagnostic sample into a bust-rate estimate.
+
+**Checkpoint:** Claude returns the accepted size-feasibility evidence, causal
+gaps, selected branch and recommendation to Codex for combined review and
+Joshua's investment decision where required by the tree. A later Tier-2 return
+is a separate checkpoint when that branch is authorized.
+Meanwhile, each readiness owner identifies its next book-independent acceptance
+and labels any work held for the investment decision.
+
+**Return boundary:** return the recommendation or precise blocking dependency.
+Configuration selection, new validation, provider spend, production attempts and
+operational acts retain their subsequent handoffs and authority. No supported
+successor returns to Joshua under the decision branch above.
+
+This amendment is based on owner records inspected at main `0ec89ec`, including the merged #731 admission record at `c280118`, and the dated coordinator review relay.
+The scope clarification and size-first handoff were checked against main
+`0cf32a5`, including the T00 successor decision tree and size-feasibility §11.
+It changes no statistical criteria, accepted gates, locked strategy artifacts,
+operational controls or standing instructions.

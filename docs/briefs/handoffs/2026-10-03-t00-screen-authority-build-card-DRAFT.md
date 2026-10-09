@@ -509,6 +509,48 @@ The screen-authority signature (design §8 step 11) uses the same template with 
   - **Hashes.** results.json `a5b985d0abd79177fd910648ffbfaec040f6a4ac04728c8acee1f1e347a742dc`; attestation.json `f627e805ba3e92ef1bc461804cb8877494d77c9a42d5344626c4795d379d1ed5`; REPORT.md `bebceb93e6dbd80567dd4f94436df32f1892c296818d131da4eb61283a5e9984`; authority `241708a1…`.
   - **Run.** Local host; detached H `5d25f9c`, clean throughout; operations venv 3.13.2; `--workers 8`. Exactly one `run` (15:43:29Z → `T00_SCREEN_COMPLETE` 00:04:25Z), with no resume and no acts. Then `finalize` (00:47:59–00:48:01Z) and `verify` (00:48:14–01:00:08Z), all inside the approval window. The run directory was not read before `finalize` (row X2). Private tallies stay in the private run directory.
   - **What it means (#581 A6 and its §6 rulings).** The book fails the pre-registered condition even under the optimistic `UNDETERMINED` assignment. Per amendment §T00 step 3, it goes to Joshua as an **investment decision**: adjust the book, or accept the risk into T15's F1. It is never routed automatically. Under OD-1 reading (c), a **robust** NO-GO does not meet D-feed condition (a), even with risk acceptance; meeting (a) needs an amendment of (a). This is not four-firm §4 falsifier evidence.
+- **Successor stopping rule (Joshua; ruled 2026-10-08, venue unrecorded; RATIFIED 2026-10-08).** The original ruling's venue is not recorded; Joshua does not recall it. He ratified it in chat to the Deployment Coordinator on 2026-10-08 ("I agree with your recommendations") as the binding rule within the successor decision tree below.
+  - **Rule.** Successor work on this four-strategy book stops if either of these confirms the pessimistic anchor (`UNDETERMINED` resolved as bust, judged on H2):
+    - resolution of the R1/R2 intrabar ordering, or
+    - the pre-registered successor screen.
+  - **Consequence.** No further size vector is proposed for this book, and the program is re-scoped.
+  - **Basis.** A private desk model of evaluation → funded → payout economics against a size multiplier k. It assumes P&L variance scales with k² and drift with k. It is an assumption, not evidence; no replay, MC or screen was run.
+    - Under that anchor, a uniform cut that meets the 5% bust ceiling falls below what the integer ladders can express: ORB is already at 1 contract and Vanguard floors to 0.
+    - At that cut, pass time stretches to years per attempt, and the venue's winning-day payout minimum leaves no payout within a year of funding.
+    - Under the favourable anchor, a mid-sized cut could clear both the 5% evaluation bust ceiling and a 1% pre-lock funded-ruin ceiling.
+    - Viability therefore turns on the R1/R2 resolution more than on k.
+  - **Model implication.** The evaluation floor never locks, so an early-phase-only cut has to cover most of the path to target, which makes it a uniform cut. A genuine early-phase cut fits the funded stage, where the floor locks.
+  - **Records.** Figures stay in the private checkpoint folder. The next evidence is the size-feasibility check (tree step 1). Tier 2 is held until that step routes to it.
+- **Successor decision tree (Joshua, 2026-10-08, "I agree with your recommendations", to the Deployment Coordinator).** This is the single record. The size-feasibility prereg §11 (#738) points here. The successor-screen skeleton (#733) is to point here; its author owns that edit.
+  1. **Size-feasibility check** (#735 as amended by #738 §11). Route by its label:
+     - **FEASIBLE** or **CLOCK-DEPENDENT**: go to step 2.
+     - **GRID-NO-CLEAR**: the Deployment Coordinator recommends stopping uniform-cut successors of the accepted book on `Tradeify_Select_100K`. That is Joshua's discretionary investment judgment under stated model uncertainty, not a mathematical exclusion. Joshua chooses a stop or step 2; a uniform-cut stop does not bar per-leg successors.
+     - **GRID-GAP**, **PASS-LIMITED** or **INCONCLUSIVE**: no automatic route. The Deployment Coordinator returns the result to Joshua with a recommendation. Joshua chooses step 2 or a stop.
+     - **INVALID**: fix and re-run under the prereg. No route until a valid label.
+  2. **Lift the hold** (new H, P7 re-run, Tier-2 source approval). Run Tier 2 (#729/#731). Its pattern picks one successor configuration.
+     - R1/R2 resolution may be built in parallel only after a FEASIBLE or CLOCK-DEPENDENT label, as Joshua approved (scoping admitted 2026-10-08). After any other label it is built only if Joshua explicitly chooses it.
+  3. **One pre-registered successor screen** (#733 skeleton) of that configuration, scored under both A5 assignments.
+  - **When the stopping rule fires.** "Confirms the pessimistic anchor" means either of these:
+    - **(a)** The successor screen's H2 result under the pessimistic A5 assignment (`UNDETERMINED` counted as bust) fails the A6 bust ceiling, and no accepted R1/R2 resolution shows that assignment to be unrealistic.
+    - **(b)** An accepted R1/R2 resolution shows that `UNDETERMINED` paths resolve predominantly as busts. "Predominantly" means more than half of the resolved `UNDETERMINED` paths resolve as busts, judged on H2.
+      - *Clarification (Joshua, 2026-10-08 ET, in chat to the Deployment Coordinator: "add the clarification under definition (b) on the T00 card", then "yes you may" to the amendments below; fixed before any resolution output exists).*
+        - **Measure.** The midpoint test governs, and it replaces "more than half of the *resolved* `UNDETERMINED` paths" whenever resolution is partial. The midpoint is the H2 agreed-bust share plus half the H2 `UNDETERMINED` share, computed exactly from the step-12 H2 tallies (results `a5b985d0…`) and never rounded. Every H2 `UNDETERMINED` path counts; an unresolved path counts as bust at the pessimistic end of the bracket and as not bust at the optimistic end. Under full resolution this equals "more than half".
+        - **Reading.**
+          - **Confirmed:** even the optimistic end of the tightened bracket is above the midpoint.
+          - **Not confirmed:** even its pessimistic end is at or below the midpoint.
+          - **Undecided:** the bracket straddles the midpoint. The bracket stands, and (a) applies unchanged.
+        - **(a) after Not confirmed.** The successor screen is judged on the pessimistic end of the tightened bracket, not on the original pessimistic assignment.
+
+    Joshua confirmed (a) and (b) and set the (b) threshold on 2026-10-08, before any resolution output existed, in chat to the Deployment Coordinator: "go with your recommendation for 1".
+  - While step 1 is pending, the new H, P7 re-run and Tier-2 source approval stay on hold (Joshua, 2026-10-08).
+  - *2026-10-09:* **Hold lifted (tree step 2).** Step 1 returned FEASIBLE (size-feasibility return record, #745).
+    - Joshua's ruling: "sign the approval to lift the hold", given in chat to the deployment-path session at about 04:45Z and confirmed directly to the Deployment Coordinator ("confirmed").
+    - Sequence: a new H, then the P7 re-run, then Joshua signs the Tier-2 source approval (Tier-2 card admission item 5, valid 7 days).
+    - One bundled H. It includes #742 (R1/R2 evidence-located convention), so R1/R2 shares that H, the P7 re-run and the approval chain. The coordinator recommended this and Joshua did not object.
+    - Joshua also ratified #742's evidence-located/v1 convention: "ratify 742's convention", confirmed directly with "confirmed". The convention as ratified is #742 at `19502bd`; the ratification record lands with #742.
+    - #742 still needs Codex, the full suite and Joshua's merge word.
+- *2026-10-08:* size-feasibility prereg FROZEN 2026-10-08, freeze commit `103c5ea`, merged `65079a7`; §11 addendum #738.
+- *2026-10-09:* size-feasibility result **FEASIBLE**: largest clearing k 0.5; 1.0 and 0.75 do not clear; reproductions (a) and (b) matched. The tree routes it to **step 2**. The public return record is [RESULTS](../../../lab/analysis/c1/size_feasibility_2026-10/RESULTS.md). FEASIBLE is a target range, not a successor result (§11).
 
 ## §10 — Audit hooks
 

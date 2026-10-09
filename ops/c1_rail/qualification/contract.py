@@ -966,6 +966,16 @@ SOURCE_EVIDENCE_CLASS = "T00_P7_SOURCE_ONLY"
 SOURCE_KEY_PREFIX = "source:"
 SOURCE_REFUSALS = ("QUALIFICATION_STAGES", "BUDGET", "DECISION_RULES", "SCREEN", "MONTE_CARLO", "SEAL",
                    "ADMISSION", "DEPLOYMENT")
+# T00 step-12 Tier-2 diagnostic (card 2026-10-08 §3.4, admission addendum item 4): the same
+# receipt type and refusals, its own purpose, approval scope and evidence class.
+DIAGNOSTIC_SCOPE = "APPROVE_T00_DIAGNOSTIC_CONTRACT"
+DIAGNOSTIC_PURPOSE = "T00_DIAGNOSTIC_ATTRIBUTION"
+DIAGNOSTIC_EVIDENCE_CLASS = "T00_DIAGNOSTIC_SIDECAR"
+# purpose -> (approval scope, evidence class): each scope approves only its own purpose.
+SOURCE_PURPOSES = MappingProxyType({
+    SOURCE_PURPOSE: (SOURCE_SCOPE, SOURCE_EVIDENCE_CLASS),
+    DIAGNOSTIC_PURPOSE: (DIAGNOSTIC_SCOPE, DIAGNOSTIC_EVIDENCE_CLASS),
+})
 SOURCE_ROLES = frozenset({
     "source_startup_policy", "source_calendar", "source_calendar_review", "population_index",
     "population_index_review", "schedule_execution_evidence", "schedule_execution_evidence_review",
@@ -1083,9 +1093,10 @@ def validate_source_contract(
         actual = set(doc) if isinstance(doc, dict) else set()
         raise ContractValidationError(
             f"SOURCE_CONTRACT_FIELDS: missing={sorted(_SOURCE_FIELDS - actual)}, extra={sorted(actual - _SOURCE_FIELDS)}")
-    if (doc["schema"] != SOURCE_CONTRACT_SCHEMA or doc["purpose"] != SOURCE_PURPOSE
-            or doc["refusals"] != list(SOURCE_REFUSALS)):
+    if (doc["schema"] != SOURCE_CONTRACT_SCHEMA or type(doc["purpose"]) is not str
+            or doc["purpose"] not in SOURCE_PURPOSES or doc["refusals"] != list(SOURCE_REFUSALS)):
         raise ContractValidationError("SOURCE_CONTRACT_FIELDS: schema, purpose and refusals must be exact")
+    scope, evidence_class = SOURCE_PURPOSES[doc["purpose"]]
     contract_id = _text(doc["contract_id"], label="contract_id")
 
     # Role set and closed artifact inventory.
@@ -1186,7 +1197,7 @@ def validate_source_contract(
         raise ContractValidationError("SOURCE_KEY_REVOKED: signing key is revoked in the pinned root")
     trusted = {key: TrustedApprovalKey(key, public_keys[key], "OPERATOR", pinned[key].revoked_at) for key in pinned}
     contract_sha = hashlib.sha256(contract_bytes).hexdigest()
-    approval = verify_detached_approval(approval_bytes, trusted_keys=trusted, expected_scope=SOURCE_SCOPE,
+    approval = verify_detached_approval(approval_bytes, trusted_keys=trusted, expected_scope=scope,
         expected_subject_sha256=contract_sha, expected_contract_sha256=contract_sha, now=now,
         allow_test_authority=False)
     if approval.key_id != signer or approval.authority_class != "OPERATOR":
@@ -1207,7 +1218,7 @@ def validate_source_contract(
         populations=MappingProxyType(normalized), initial_state=state,
         effective_settings_sha256=constants.effective_settings_sha256, path_start_date=path_start,
         approval=approval, approval_bytes=bytes(approval_bytes), trust_domain=domain,
-        source_key_sha256=key_sha256)
+        source_key_sha256=key_sha256, evidence_class=evidence_class)
     identity = id(result)
     _ISSUED_SOURCE_CONTRACTS[identity] = (
         weakref.ref(result, lambda ref: _ISSUED_SOURCE_CONTRACTS.pop(identity, None)),
@@ -1240,5 +1251,6 @@ __all__ = [
     "canonical_json_bytes", "parse_canonical_json", "validate_frozen_contract",
     "verify_detached_approval", "require_validated_frozen_contract",
     "SOURCE_CONTRACT_ROLES", "SOURCE_EVIDENCE_CLASS", "SOURCE_SCOPE", "SOURCE_SIGNING_KEYS", "SourceKeyPin",
+    "DIAGNOSTIC_EVIDENCE_CLASS", "DIAGNOSTIC_PURPOSE", "DIAGNOSTIC_SCOPE", "SOURCE_PURPOSES",
     "ValidatedSourceContract", "require_validated_source_contract", "validate_source_contract",
 ]

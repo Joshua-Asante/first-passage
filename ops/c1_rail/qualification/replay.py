@@ -10,6 +10,7 @@ import json
 import math
 from dataclasses import dataclass, replace
 from datetime import timedelta
+from fractions import Fraction
 from typing import Callable, Mapping
 
 from c1_rail.book_policy import (
@@ -33,6 +34,119 @@ L1_BASE_ENTRY_LEGS = frozenset({"orb_mnq_v7"})
 
 def _one_bar_cancel_applies(leg_id, intent):
     return not (leg_id in L1_BASE_ENTRY_LEGS and intent.kind == "entry")
+
+
+#: T00 Tier-2 attribution sidecar (card 2026-10-08 §3.1 (i)). Lot kinds split each
+#: leg's value; forced closes are the replay's own flatten reasons.
+ATTRIBUTION_SCHEMA = "t00_tier2_attribution/v1"
+LOT_KINDS = ("entry", "add")
+FORCED_CLOSE_REASONS = ("scheduled_flatten", "capacity_takeover_close")
+
+
+class AttributionSidecar:
+    """Opt-in per-session, per-leg recorder for the T00 Tier-2 diagnostic.
+
+    It only reads replay state: nothing it holds enters ``events``,
+    ``SessionRecord``, ``ReplayResult`` or a digest. Leg cash is realized P&L
+    net of commission, split by lot kind (an exit's P&L and commission belong
+    to the lot it closes). At every observed point a leg's value is its
+    session-relative cash plus its mark, and leg values sum to the combined
+    value the replay compares against its intraday low. The low point is the
+    first point at which the combined low is set; ``open`` if none is lower.
+    """
+
+    def __init__(self, legs):
+        self.legs = tuple(sorted(legs))
+        self.cash = {(k, kind): 0.0 for k in self.legs for kind in LOT_KINDS}
+        self.commission = dict.fromkeys(self.cash, 0.0)
+        self.sessions = []
+        self.current = None
+        self._open_cash, self._open_commission, self._forced_orders = {}, {}, set()
+
+    def _by_leg(self, values):
+        return {k: {kind: values[(k, kind)] for kind in LOT_KINDS} for k in self.legs}
+
+    def _relative(self, cash):
+        return {key: cash[key] - self._open_cash[key] for key in cash}
+
+    def begin(self, session, mode):
+        self._open_cash, self._open_commission = dict(self.cash), dict(self.commission)
+        self._forced_orders = set()
+        zero = dict.fromkeys(self.cash, 0.0)
+        self.current = {
+            "occurrence": session.occurrence, "source_session_id": session.source.session_id,
+            "path_session_date": session.path_session_date.isoformat(), "session_mode": mode.value,
+            "legs": {k: {"requests": [], "filled": dict.fromkeys(LOT_KINDS, 0), "fills": dict.fromkeys(LOT_KINDS, 0),
+                         "forced_closes": {r: {"count": 0, "qty": 0, "pnl": 0.0, "commission": 0.0}
+                                           for r in FORCED_CLOSE_REASONS}} for k in self.legs},
+            "low": {"where": "open", "bar_index": None, "path_time": None, "value": 0.0,
+                    "cash": self._by_leg(zero), "mark": self._by_leg(zero)},
+            "last_bar_mark": self._by_leg(zero),
+        }
+
+    def entry_fill(self, fill):
+        self.cash[(fill.leg_id, fill.kind)] -= fill.commission
+        self.commission[(fill.leg_id, fill.kind)] += fill.commission
+        row = self.current["legs"][fill.leg_id]
+        row["filled"][fill.kind] += fill.qty
+        row["fills"][fill.kind] += 1
+
+    def exit_fill(self, fill, lot_kind, realized):
+        key = (fill.leg_id, lot_kind)
+        self.cash[key] += realized - fill.commission
+        self.commission[key] += fill.commission
+        if fill.reason in FORCED_CLOSE_REASONS:
+            forced = self.current["legs"][fill.leg_id]["forced_closes"][fill.reason]
+            if (fill.leg_id, fill.order_id) not in self._forced_orders:
+                self._forced_orders.add((fill.leg_id, fill.order_id))
+                forced["count"] += 1
+            forced["qty"] += fill.qty
+            forced["pnl"] += realized - fill.commission
+            forced["commission"] += fill.commission
+
+    def request(self, leg_id, kind, qty):
+        row = {"kind": kind, "requested": qty, "policy": None, "admitted": 0, "outcome": None}
+        self.current["legs"][leg_id]["requests"].append(row)
+        return row
+
+    def reject(self, leg_id, reason):
+        row = self.current["legs"][leg_id]["requests"][-1]
+        if row["outcome"] is None:
+            row["outcome"] = reason
+
+    def observe(self, where, bar_index, path_time, value, cash, marks):
+        """``value`` is exactly the combined value the replay compares; ``cash`` is absolute."""
+        if value < self.current["low"]["value"]:
+            self.current["low"] = {
+                "where": where, "bar_index": bar_index,
+                "path_time": None if path_time is None else path_time.isoformat(), "value": value,
+                "cash": self._by_leg(self._relative(cash)), "mark": self._by_leg(marks)}
+
+    def bar_close(self, bar_index, path_time, value, marks):
+        self.current["last_bar_mark"] = self._by_leg(marks)
+        self.observe("bar_close", bar_index, path_time, value, self.cash, marks)
+
+    def finish(self, where, bar_index, path_time, value, open_at_deadline=None):
+        self.observe(where, bar_index, path_time, value, self.cash, dict.fromkeys(self.cash, 0.0))
+        current = self.current
+        if open_at_deadline is not None:
+            current["open_at_deadline"] = open_at_deadline
+        current["close"] = {"cash": self._by_leg(self._relative(self.cash)),
+                            "commission": self._by_leg({key: self.commission[key] - self._open_commission[key]
+                                                        for key in self.commission})}
+        for k, row in current["legs"].items():
+            requests = row["requests"]
+            row["capacity_refusals"] = sum(1 for r in requests if "capacity_reason" in r and r["admitted"] == 0)
+            row["takeovers_won"] = sum(1 for r in requests if r.get("takeover", {}).get("admitted") is True)
+            row["takeovers_refused"] = sum(1 for r in requests if r.get("takeover", {}).get("admitted") is False)
+            row["takeovers_displaced"] = sum(1 for other in current["legs"].values() for r in other["requests"]
+                                             if k in r.get("takeover", {}).get("cancel_acked", ()))
+        self.sessions.append(current)
+        self.current = None
+
+    def result(self):
+        """A detached, JSON-safe copy: no caller can reach the live accumulator."""
+        return tuple(json.loads(json.dumps(self.sessions, allow_nan=False)))
 
 
 class ReplayNeedsContext(RuntimeError):
@@ -160,6 +274,53 @@ class BookReplay:
         self._used = False
         self._index = 0
         self._path_time = None
+        self._attribution = None  # opt-in Tier-2 sidecar; off by default
+
+    def enable_attribution(self):
+        """Turn on the per-session, per-leg sidecar before ``run``; it changes no replay output."""
+        if self._used:
+            raise ValueError("attribution must be enabled before the single run")
+        self._attribution = AttributionSidecar(self.brokers)
+
+    def attribution(self):
+        if self._attribution is None:
+            raise ValueError("attribution was not enabled")
+        return self._attribution.result()
+
+    def _attribution_marks(self, bars):
+        """Bar-close marks by lot kind; the leg total is the broker's own open_pnl."""
+        marks = dict.fromkeys(self._attribution.cash, 0.0)
+        for k, bar in bars.items():
+            pointvalue = self.instruments[k].pointvalue
+            add = sum((bar.close - lot.price) * (1 if lot.side is Side.BUY else -1) * lot.qty * pointvalue
+                      for lot in self.lots.values() if lot.leg_id == k and lot.kind == "add")
+            marks[(k, "add")] = add
+            marks[(k, "entry")] = self.brokers[k].open_pnl(bar.close) - add
+        return marks
+
+    def _cap_term(self, k, qty, mode, tier, values):
+        """Whether the risk-sized leg's cap term wins the policy's min, from the production call.
+
+        ``entry_quantities`` is called again with the risk term made unbounded (risk dollars a
+        billion times the per-contract risk), so it returns the cap term alone; the formula is
+        never re-implemented. The cap binds when the policy base equals it (a tie counts).
+        """
+        unbounded = dict(values, risk_dollars=Fraction(str(values["per_contract_risk"])) * 10**9)
+        cap_only = entry_quantities(k, mode=mode, policy=self.policy, lifecycle_tier=tier, **unbounded)[0]
+        # A zero policy quantity (lifecycle multiplier 0, e.g. RETIRED) has no binding term: None.
+        return {"cap_only_policy": cap_only, "cap_binds": qty == cap_only if qty > 0 else None}
+
+    def _open_at_deadline(self, edge):
+        """Each leg's open position, working orders, reservation and open lots by kind."""
+        rows = {k: {"position": q} for k, q in edge.positions}
+        for k, n in edge.working_orders:
+            rows[k]["working_orders"] = n
+        for k, n in edge.reservations:
+            rows[k]["reserved"] = n
+        for k, row in rows.items():
+            row["lots"] = {kind: sum(lot.qty for lot in self.lots.values() if lot.leg_id == k and lot.kind == kind)
+                           for kind in LOT_KINDS}
+        return rows
 
     def _log(self, kind, leg_id="", detail=""):
         from .model import ReplayEvent
@@ -198,13 +359,18 @@ class BookReplay:
                         self.orders[key] = (replace(requested, qty=remaining), created)
                     else:
                         self.orders.pop(key)
+                    if self._attribution is not None:
+                        self._attribution.entry_fill(fill)
                 else:
                     original = self.lots.get(fill.entry_fill_id)
                     if original is None or fill.qty > original.qty:
                         raise ReplayNeedsContext("exit lacks confirmed lot evidence")
                     direction = 1 if original.side is Side.BUY else -1
-                    self.cash += ((fill.price - original.price) * direction * fill.qty
-                                  * self.instruments[k].pointvalue)
+                    realized = ((fill.price - original.price) * direction * fill.qty
+                                * self.instruments[k].pointvalue)
+                    self.cash += realized
+                    if self._attribution is not None:
+                        self._attribution.exit_fill(fill, original.kind, realized)
                     if fill.qty == original.qty:
                         del self.lots[original.fill_id]
                     else:
@@ -240,6 +406,9 @@ class BookReplay:
                     for v in (b.open,b.high,b.low,b.close)), b.volume)
                 for k, b in bars.items()}
         cash_before = self.cash
+        attribution = self._attribution
+        before = None if attribution is None else (dict(attribution.cash), dict(attribution.commission))
+        leg_marks = None if attribution is None else dict.fromkeys(attribution.cash, 0.0)
         carried = tuple(self.lots.values())
         # Read the pinned emulator's effective queue, not raw strategy intent:
         # stop levels are tick-rounded and marketable stops become NEXT_OPEN
@@ -274,14 +443,26 @@ class BookReplay:
                 raise ReplayNeedsContext("bar exits exceed confirmed lifetime quantity")
             return value + remaining * per_contract
 
-        adverse = sum(contribution(f, "open") for f in carried)
+        def mark(fill, timing, trigger=None):
+            value = contribution(fill, timing, trigger)
+            if attribution is not None:
+                leg_marks[(fill.leg_id, fill.kind)] += value
+            return value
+
+        adverse = sum(mark(f, "open") for f in carried)
         for f in entries:
             intent = pending[(f.leg_id, f.order_id)]
             b = bars[f.leg_id]
             at_open = (intent.order_type == "market" or
                        (b.open >= intent.price if f.side is Side.BUY else b.open <= intent.price))
-            adverse += contribution(f, "open" if at_open else "midbar", intent.price)
-        return cash_before + adverse - fees
+            adverse += mark(f, "open" if at_open else "midbar", intent.price)
+        value = cash_before + adverse - fees
+        if attribution is not None:
+            # The segment value replaces this segment's realized exits by lifetime marks, so a
+            # leg's cash here is its cash before the segment less this segment's commissions.
+            cash = {key: before[0][key] - (attribution.commission[key] - before[1][key]) for key in before[0]}
+            attribution.observe("segment", self._index, self._path_time, value - self._opening, cash, leg_marks)
+        return value
 
     def _capture_exposure(self, k):
         """One immutable exposure snapshot, enforcing the reservation invariant.
@@ -371,6 +552,8 @@ class BookReplay:
         self._feedback(self.brokers[k]._cancel(action, bar))
 
     def _reject(self, intent, bar, reason):
+        if self._attribution is not None:
+            self._attribution.reject(intent.leg_id, reason)
         self._log("refused", intent.leg_id, reason)
         self.adapters[intent.leg_id].on_execution(ExecutionEvent(
             "reject", intent.leg_id, bar.ts, order_id=intent.order_id, detail=reason))
@@ -391,9 +574,14 @@ class BookReplay:
         bar = dict(pb.bars)[k]
         if intent.bar_time is not None and intent.bar_time != pb.source_bar_time:
             raise ReplayNeedsContext("adapter intent timestamp differs from source bar")
+        # Sidecar row for a port entry/add request; _reject records its refusal reason.
+        row = (self._attribution.request(k, intent.kind, intent.qty)
+               if self._attribution is not None and intent.kind in ("entry", "add") else None)
         key = (k, intent.kind, pb.path_time)
         if key in self.accepted:
             self._log("duplicate_dropped", k, intent.kind)
+            if row is not None:
+                row["outcome"] = "duplicate_dropped"
             return
         if intent.kind in ("entry", "add"):
             if intent.side is not leg(k).entry_side:
@@ -414,13 +602,24 @@ class BookReplay:
                    if intent.kind == "entry" else
                    add_quantity(k, self.base[k], mode=mode, policy=self.policy,
                                 lifecycle_tier=tier))
+            if row is not None:
+                # The production policy's own return and an entry's inputs, recorded, never re-implemented.
+                row.update(policy=qty, lifecycle_tier=tier)
+                if intent.kind == "entry":
+                    row["sizing_inputs"] = {name: str(value) for name, value in sorted(values.items())}
+                if intent.kind == "entry" and "risk_dollars" in values:
+                    row.update(self._cap_term(k, qty, mode, tier, values))
             if qty == 0:
                 self._reject(intent, bar, "zero policy quantity")
                 return
             if (k, intent.order_id) in self.orders:
                 self._reject(intent, bar, "existing working order id")
                 return
+            if row is not None:
+                row["capacity_before"] = {other: self.ledger.leg_micro(other) for other in sorted(self.brokers)}
             decision = self.ledger.request(k, qty)
+            if row is not None:
+                row.update(capacity_reason=decision.reason, micro_requested=decision.micro_requested)
             if decision.takeover is not None:
                 takeover = self.ledger.begin_takeover(decision.takeover)
                 for displaced in decision.takeover.displaced:
@@ -445,9 +644,15 @@ class BookReplay:
                 decision = self.ledger.settle_takeover()
                 self._log("capacity_takeover_admitted" if decision.admitted else
                           "capacity_takeover_refused", k, decision.reason)
+                if row is not None:
+                    row["takeover"] = {"displaced": list(takeover.plan.displaced),
+                                       "cancel_acked": sorted(takeover.cancel_acked),
+                                       "admitted": decision.admitted, "reason": decision.reason}
             if not decision.admitted:
                 self._reject(intent, bar, decision.reason)
                 return
+            if row is not None:
+                row.update(admitted=qty, outcome="admitted")
             intent = replace(intent, qty=qty)
             self.orders[(k, intent.order_id)] = (intent, self._index)
         self.accepted.add(key)
@@ -472,6 +677,9 @@ class BookReplay:
             if not edge.is_flat:
                 from .model import ReplayResult, SessionRecord
                 self._log("deadline_failure")
+                if self._attribution is not None:
+                    self._attribution.finish("deadline", self._index, self._path_time, self.cash - self._opening,
+                                             self._open_at_deadline(edge))
                 record = SessionRecord(session.occurrence, session.path_session_date,
                     session.source.session_id, self.cash - self._opening,
                     min(self._session_low, self.cash - self._opening),
@@ -518,6 +726,8 @@ class BookReplay:
             mode = self.clock.mode_for(session.path_session_date)
             self._path_time = session.bars[0].path_time
             self._log("session_mode", detail=mode.value)
+            if self._attribution is not None:
+                self._attribution.begin(session, mode)
             for k, adapter in self.adapters.items():
                 changes = adapter.set_mode(mode)
                 if any(not isinstance(a, Cancel) for a in changes):
@@ -622,6 +832,9 @@ class BookReplay:
                 low = min(low, close_equity - opening)
                 self._session_low = low
                 self._log("bar_equity", detail=repr(close_equity))
+                if self._attribution is not None:
+                    self._attribution.bar_close(self._index, self._path_time, close_equity - opening,
+                                                self._attribution_marks(bars))
             while next_schedule < len(schedule_events):
                 self._schedule(session, *schedule_events[next_schedule])
                 next_schedule += 1
@@ -632,6 +845,8 @@ class BookReplay:
             if not flat:
                 raise ReplayNeedsContext("unresolved residual at session settlement")
             low = min(low, self.cash - opening)
+            if self._attribution is not None:
+                self._attribution.finish("settlement", self._index, self._path_time, self.cash - opening)
             self.clock.settle(session.path_session_date, max(0.0, self.cash))
             records.append(SessionRecord(session.occurrence, session.path_session_date,
                 session.source.session_id, self.cash - opening, low,

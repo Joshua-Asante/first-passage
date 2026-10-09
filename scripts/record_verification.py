@@ -124,7 +124,14 @@ class RunRecord:
             target.write('\n')
             target.flush()
             os.fsync(target.fileno())
-        os.replace(temporary, self.output / 'record.json')
+        for attempt in range(50):
+            try:
+                os.replace(temporary, self.output / 'record.json')
+                return
+            except PermissionError:  # Windows: a concurrent reader holds record.json open
+                if attempt == 49:
+                    raise
+                time.sleep(0.1)
 
     def __enter__(self):
         return self
