@@ -66,7 +66,7 @@ def results(config, job_id):
     sessions = [s for s in ledger.read()["sessions"] if s.get("source_job_id", s["job_id"]) == job_id]
     vm_seconds = sum(s["end"] - s["start"] for s in sessions)
     return {"directory": str(target), "artifacts": len(rows), "record": record,
-            "verified": verified(record), "deallocation_confirmed": bool(sessions),
+            "verified": verified(record), "archive": expected, "deallocation_confirmed": bool(sessions),
             "vm_seconds": vm_seconds, "estimated_dollars": vm_seconds * RATE / 3600,
             "cpu_report": cpu_report(config)}
 
@@ -103,7 +103,7 @@ def status(config, job_id):
         blob(config, "download", job_id + "/state.json", cached)
         result = read(cached)
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
-        result = {"status": "unknown", "reason": "no published state yet"}
+        result = {"status": "unknown", "reason": "published state unavailable; inspect private Azure diagnostics", "state_read_failed": True}
     azure = Azure(config)
     power = azure.power()
     if power == "VM running":
@@ -121,7 +121,7 @@ def status(config, job_id):
         except (ValueError, RuntimeError, OSError, subprocess.SubprocessError):
             result["guest_state_read_failed"] = True
     local = state / "jobs" / job_id
-    for filename in ("controller-error.json", "observation.json", "stop-request.json"):
+    for filename in ("controller-error.json", "observation.json", "terminal-observation.json", "stop-request.json"):
         if (local / filename).exists():
             result[filename.removesuffix(".json")] = read(local / filename)
     result["cpu_report"] = cpu_report(config)
@@ -248,6 +248,32 @@ def heartbeat(session_path):
     atomic(Path(session_path).parent / "heartbeat.json", {"time": time.time()})
 
 
+def retain_and_cleanup(azure, directory, name):
+    """Attempt one last read before deletion; retain earlier observations separately."""
+    try:
+        value = azure.command(name)
+        atomic(directory / "terminal-observation.json", {"time": time.time(), **value})
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
+        atomic(directory / "terminal-read-error.json", {"type": type(exc).__name__})
+    azure.cleanup(name)
+
+
+def retry_cleanup(config, azure, current_job, session_path, deadline):
+    state = Path(config["state_dir"])
+    commands = {read(p)["command"] for p in (state / "pending-command-cleanup").glob("*.json")}
+    # Include submissions from earlier runner versions, which had no retry tracker.
+    for path in (state / "jobs").glob("*/submitted.json"):
+        if path.parent.name != current_job:
+            commands.add(read(path)["command"])
+    for name in sorted(commands):
+        if not re.fullmatch(r"fp-(?:job|read)-[a-z0-9-]+", name):
+            raise ValueError("invalid retained command identity")
+        if time.time() + 240 >= deadline:
+            raise TimeoutError("bootstrap cleanup exhausted its allowance")
+        heartbeat(session_path)
+        azure.cleanup(name)
+
+
 def guardian(config, session_path, config_path=None):
     session_path = Path(session_path)
     session = read(session_path)
@@ -272,6 +298,7 @@ def guardian(config, session_path, config_path=None):
             if time.time() >= session["bootstrap_deadline"]:
                 raise TimeoutError("startup deadline")
             time.sleep(5)
+        retry_cleanup(config, azure, session["job_id"], session_path, session["bootstrap_deadline"])
         guest_config = {**config, "deadline": session["deadline"] - SHUTDOWN_MARGIN,
                         "execution_deadline": session["deadline"] - SHUTDOWN_MARGIN - PUBLICATION_SECONDS,
                         "session_id": session["job_id"], "mode": session.get("mode", "execute")}
@@ -299,6 +326,14 @@ def guardian(config, session_path, config_path=None):
     except BaseException as exc:
         atomic(session_path.parent / "controller-error.json", {"type": type(exc).__name__, "time": time.time()})
     finally:
+        # Azure cannot delete Run Commands while the VM is deallocated. Try before
+        # shutdown and persist each failure for the next bounded start.
+        submitted = session_path.parent / "submitted.json"
+        try:
+            if submitted.exists():
+                retain_and_cleanup(azure, session_path.parent, read(submitted)["command"])
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+            pass  # Diagnostic storage and cleanup cannot veto deallocation.
         # Never abandon an open billing interval because a deallocation API call failed.
         while True:
             try:
@@ -308,11 +343,6 @@ def guardian(config, session_path, config_path=None):
                 retire(azure, ledger, expected_job=session["job_id"])
             except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
                 time.sleep(10)
-        if (session_path.parent / "submitted.json").exists():
-            try:
-                azure.delete_command(read(session_path.parent / "submitted.json")["command"])
-            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
-                atomic(session_path.parent / "cleanup-pending.json", {"time": time.time()})
 
 
 def reconcile(config):
@@ -328,9 +358,15 @@ def cancel(config, job_id):
     state = Path(config["state_dir"])
     ledger = Ledger(state / "ledger.json")
     active = ledger.read()["active"]
-    if not active or active["job_id"] != job_id:
+    if not active or job_id not in {active["job_id"], active.get("source_job_id")}:
         raise ValueError("job is not the active session")
     azure = Azure(config)
+    directory = state / "jobs" / active["job_id"]
+    session = read(directory / "session.json")
+    if session.get("mode") == "republish":
+        atomic(directory / "stop-request.json", {"reason": "cancelled"})
+        retire(azure, ledger, expected_job=active["job_id"])
+        return {"job_id": job_id, "session_id": active["job_id"], "status": "interrupted"}
     path = config["guest_root"].replace("'", "''") + "/jobs/" + job_id + "/cancel"
     azure.script("$p='" + path + "'; New-Item -ItemType Directory -Force (Split-Path $p) | Out-Null; Set-Content -LiteralPath $p -Value cancel")
     return {"job_id": job_id, "status": "cancellation_requested"}

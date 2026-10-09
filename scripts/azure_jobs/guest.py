@@ -10,7 +10,6 @@ import time
 import threading
 import zipfile
 from scripts.agent_handoff import WindowsJob, spawn_provider
-from scripts.record_verification import snapshot
 from .contract import validate, inventory, sha256, verified
 from .control import atomic, locked
 
@@ -75,6 +74,16 @@ def run_tree(command, cwd, output, *, deadline, job_name=None):
         owned.close()
 
 
+def bounded_snapshot(repo, directory, deadline):
+    """Keep Git and hashing inside a killable process tree with a real cutoff."""
+    result_path = directory / "snapshot.json"
+    result = run_tree([sys.executable, "-I", str(Path(__file__).with_name("guest_entry.py")),
+                       "snapshot", str(repo), str(result_path)], repo, directory, deadline=deadline)
+    if result["status"] != "completed" or result["exit_code"] != 0:
+        raise TimeoutError("source snapshot incomplete before its cutoff")
+    return json.loads(result_path.read_text(encoding="utf-8"))
+
+
 def checked(command, cwd=None, timeout=600, deadline=None):
     if deadline is not None:
         timeout = min(timeout, deadline - time.time())
@@ -121,6 +130,7 @@ def environment(config, spec, repo):
 
 
 def bundle(job_dir, repo, outputs, *, partial):
+    started = time.monotonic()
     rows = inventory(repo, outputs, partial=partial) if repo.exists() else {}
     files = {name: repo / name for name in rows}
     for name in ("stdout.log", "stderr.log", "progress.json", "record.json", "spec.json", "bootstrap.log"):
@@ -137,7 +147,7 @@ def bundle(job_dir, repo, outputs, *, partial):
         stream.write(job_dir / "manifest.json", "manifest.json")
     os.replace(archive, job_dir / "results.zip")
     archive = job_dir / "results.zip"
-    return {"sha256": sha256(archive), "bytes": archive.stat().st_size, "artifacts": len(rows)}
+    return {"sha256": sha256(archive), "bytes": archive.stat().st_size, "artifacts": len(rows), "bundle_seconds": time.monotonic() - started}
 
 
 def execute(config, spec):
@@ -147,6 +157,7 @@ def execute(config, spec):
     job_dir.mkdir(parents=True, exist_ok=True)
     with locked(root / "guest.lock"):
         if (job_dir / "record.json").exists():
+            atomic(root / "idle.json", {"job_id": config.get("session_id", spec["job_id"]), "time": time.time()})
             return  # Never retry a submitted identity, including interrupted jobs.
         atomic(job_dir / "spec.json", spec)
         state = {"status": "running", "phase": "preparing", "job_id": spec["job_id"],
@@ -167,6 +178,7 @@ def execute(config, spec):
         atomic(job_dir / "heartbeat.json", {"time": time.time()})
         heart.start()
         before = None
+        publication_started = None
         try:
             checkout(config, spec["commit"], repo)
             python, env_dir, lock_hash = environment(config, spec, repo)
@@ -175,7 +187,8 @@ def execute(config, spec):
             os.environ.pop("PYTHONPATH", None)
             os.environ.pop("PYTHONHOME", None)
             os.environ.pop("FP_VERIFICATION_ID", None)
-            before = snapshot(repo)
+            before = bounded_snapshot(repo, job_dir / "source-before", config.get("execution_deadline", config["deadline"]))
+            record["preparation_seconds"] = time.time() - state["started_at"]
             if before["commit"] != spec["commit"] or before["status"]:
                 raise ValueError("refusing dirty source")
             command = [str(python), "-I", *spec["command"]]
@@ -184,7 +197,9 @@ def execute(config, spec):
             deadline = min(time.time() + spec["max_wall_seconds"], config.get("execution_deadline", config["deadline"]))
             atomic(job_dir / "state.json", {**state, "phase": "executing", "deadline": deadline})
             record.update(run_tree(command, repo, job_dir, deadline=deadline, job_name=spec["job_id"]))
-            after = snapshot(repo)
+            publication_started = time.time()
+            after = bounded_snapshot(repo, job_dir / "source-after", config["deadline"])
+            record["post_execution_snapshot_seconds"] = time.time() - publication_started
             record.update(source_stable=before == after, capture_complete=True,
                           interpreter=str(python), environment=spec["environment"], lock_sha256=lock_hash,
                           command=command)
@@ -210,7 +225,7 @@ def execute(config, spec):
             # Publishing precedes idle shutdown. Failure retains disk files for later recovery.
             atomic(job_dir / "state.json", {**record, "job_id": spec["job_id"], "archive": archive})
             try:
-                upload(config, job_dir, spec["job_id"])
+                upload({**config, "publication_started_at": publication_started or time.time()}, job_dir, spec["job_id"])
                 published = True
             except Exception:
                 published = False
@@ -224,8 +239,14 @@ def execute(config, spec):
 def upload(config, job_dir, job_id):
     if not config.get("storage_account") or not config.get("container"):
         raise RuntimeError("results destination is not configured")
+    started = time.monotonic()
     descriptor = json.loads((job_dir / "archive.json").read_text())
     for filename in ("results.zip", "state.json", "archive.json"):
+        if filename == "archive.json":
+            descriptor["upload_seconds_before_descriptor"] = time.monotonic() - started
+            if config.get("publication_started_at"):
+                descriptor["publication_seconds_before_descriptor"] = time.time() - config["publication_started_at"]
+            atomic(job_dir / "archive.json", descriptor)
         blob_name = descriptor["sha256"] + ".zip" if filename == "results.zip" else filename
         checked([config["az"], "storage", "blob", "upload", "--auth-mode", "login",
                  "--account-name", config["storage_account"], "--container-name", config["container"],

@@ -75,14 +75,18 @@ def recover(config, lease, reason):
     job_id = lease.get("source_job_id", lease["job_id"])
     job_dir = Path(config["guest_root"]) / "jobs" / job_id
     job_dir.mkdir(parents=True, exist_ok=True)
-    (job_dir / "cancel").touch()
-    terminate_tree(job_id)
+    if reason != "guest supervisor lost":
+        (job_dir / "cancel").touch()
+        terminate_tree(job_id)
     lock = locked(Path(config["guest_root"]) / "guest.lock")
     try:
         lock.__enter__()
     except OSError:
         return False  # Live supervisor owns finalization and publication.
     try:
+        if reason == "guest supervisor lost":
+            (job_dir / "cancel").touch()
+            terminate_tree(job_id)
         record = read(job_dir / "record.json") or {}
         if record.get("status") not in {"completed", "failed", "interrupted"}:
             progress = read(job_dir / "progress.json") or {}
@@ -90,12 +94,11 @@ def recover(config, lease, reason):
                           source_stable=False, capture_complete=False, reason=reason,
                           cpu_seconds=progress.get("cpu_seconds"), cpu_measurement="partial lower bound")
             atomic(job_dir / "record.json", record)
-        if True:  # Rebuild under exclusive ownership; an older descriptor may predate interruption.
-            spec = read(job_dir / "spec.json")
-            if spec:
-                archive = bundle(job_dir, Path(config["guest_root"]) / "repos" / job_id,
-                                 spec["expected_outputs"], partial=True)
-                atomic(job_dir / "archive.json", archive)
+        spec = read(job_dir / "spec.json")
+        if spec:
+            archive = bundle(job_dir, Path(config["guest_root"]) / "repos" / job_id,
+                             spec["expected_outputs"], partial=True)
+            atomic(job_dir / "archive.json", archive)
         atomic(job_dir / "state.json", record)
         try:
             upload(config, job_dir, job_id)

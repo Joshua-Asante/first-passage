@@ -164,3 +164,46 @@ def test_retrieval_remains_consistent_when_descriptor_changes_mid_download(tmp_p
     result=runner.results(cfg,'job')
     assert result['verified']
     assert (Path(result['directory'])/'files/out').read_text()=='first'
+
+
+def test_command_retirement_retains_last_read_before_cleanup(tmp_path):
+    events=[]
+    class Fake:
+        def command(self,name):
+            events.append('read')
+            return {'instanceView':{'executionState':'Succeeded','exitCode':0}}
+        def cleanup(self,name):
+            assert runner.read(tmp_path/'terminal-observation.json')['instanceView']['executionState']=='Succeeded'
+            events.append('cleanup')
+    runner.retain_and_cleanup(Fake(),tmp_path,'job')
+    assert events==['read','cleanup']
+
+
+def test_cancel_recovery_stops_session_without_changing_original_result(tmp_path,monkeypatch):
+    from scripts.azure_jobs.control import atomic
+    import time
+    ledger=Ledger(tmp_path/'ledger.json',initial_seconds=0)
+    ledger.reserve('recover-session',100,time.time(),source_job_id='original')
+    atomic(tmp_path/'jobs/recover-session/session.json',{'mode':'republish'})
+    calls=[]
+    monkeypatch.setattr(runner,'Azure',lambda cfg: object())
+    monkeypatch.setattr(runner,'retire',lambda *a,**kw: calls.append(kw['expected_job']))
+    result=runner.cancel({'state_dir':str(tmp_path)},'original')
+    assert calls==['recover-session']
+    assert result['status']=='interrupted'
+    assert runner.read(tmp_path/'jobs/recover-session/stop-request.json')['reason']=='cancelled'
+
+
+def test_retirement_still_runs_if_diagnostic_storage_fails(tmp_path,monkeypatch):
+    import time
+    from scripts.azure_jobs.control import atomic
+    ledger=Ledger(tmp_path/'ledger.json',initial_seconds=0)
+    session=ledger.reserve('job',100,time.time())
+    path=tmp_path/'jobs/job/session.json'; atomic(path,session)
+    atomic(path.parent/'submitted.json',{'command':'fp-job-job'})
+    monkeypatch.setattr(runner,'Azure',lambda cfg: object())
+    monkeypatch.setattr(runner,'launch_reaper',lambda *a: (_ for _ in ()).throw(RuntimeError('setup failed')))
+    monkeypatch.setattr(runner,'retain_and_cleanup',lambda *a: (_ for _ in ()).throw(OSError('disk full')))
+    monkeypatch.setattr(runner,'retire',lambda *a,**kw: ledger.finish(time.time()))
+    runner.guardian({'state_dir':str(tmp_path)},path,tmp_path/'config.json')
+    assert ledger.read()['active'] is None

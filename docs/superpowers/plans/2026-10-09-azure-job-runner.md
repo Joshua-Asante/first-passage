@@ -28,7 +28,7 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 3. Public guest bootstrap, bounded safety probes, pinned suite collection and full acceptance.
 4. README, independent Claude review, code PR and results comment; operator merge.
 
-## Handoff 1 â€” admit and retire one bounded VM session
+## Handoff 1 — admit and retire one bounded VM session
 
 **Selected outcome:** Tested persistent admission and deallocation behavior, including controller failure.
 **Prerequisites:** Isolated branch based on `7aa2fb94ba4df87b216a881e2f261aec8ebb1971`; operations doctor passed on CPython 3.13.2 with 62 locked packages. Azure read confirms deallocated. Identity permission approved; installation still owed.
@@ -41,7 +41,7 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 - [ ] Implement atomic locked state and Azure adapter; run focused launcher tests.
 - [ ] Evaluate the outcome before guest integration.
 
-## Handoff 2 â€” durable guest execution and complete evidence
+## Handoff 2 — durable guest execution and complete evidence
 
 **Selected outcome:** Commands dispatch once, read durable status, retrieve hashed complete/partial files and cancel the owned process tree.
 **Prerequisites:** Handoff 1 accepted; clean runner revision published before guest fetch; independent shutdown identity installed before unaccompanied jobs.
@@ -55,7 +55,7 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 - [ ] Install a SYSTEM watchdog with no password and minimum identity permissions.
 - [ ] Test controller disconnect, cancellation and idle deallocation.
 
-## Handoff 3 â€” public acceptance and review
+## Handoff 3 — public acceptance and review
 
 **Selected outcome:** Exact PR #742 suite completes on Windows with evidence posted to the runner PR.
 **Prerequisites:** Safety probes pass; public GitHub fetch at exact SHA; operations lock installation and doctor; collection confirms Windows compatibility. First run maximum 8 hours plus 1 hour overhead, eight pytest workers (launcher maximum), subject to available weekly ledger.
@@ -71,7 +71,7 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 
 ## Evidence and unresolved dependencies
 
-Implementation and acceptance pending. The primary checkout remains untouched. Initial Azure read reports deallocated, with no managed identity yet. Historical connection-test running time still needs a conservative ledger seed from activity events. There is no budget alert or nightly shutdown.
+Combined acceptance remains pending. The primary checkout remains untouched. The operator-approved managed identity and private public-results container are provisioned; their bindings remain in ignored local configuration. The ledger includes a conservative 900-second historical seed and every build/probe interval. There is no budget alert or nightly shutdown.
 
 ### Build checkpoint and independent review (2026-10-09)
 
@@ -120,3 +120,28 @@ payload outcome is asserted. These are failed acceptance attempts, not passes.
 The ledger retains both intervals plus a conservative 900-second historical seed.
 The VM was confirmed deallocated after both attempts. Full qualification execution
 and final Claude approval remain pending.
+
+
+### Bootstrap diagnosis and third review corrections
+
+A diagnostic smoke established MSI exit 1603; a bounded read-only guest inspection
+isolated error 1606: the forward-slash Python target was interpreted as a network
+location. The bootstrap now normalizes native Windows installer targets. These
+diagnostic sessions did not run qualification or statistical workloads; each used
+a ledger reservation, detached reaper, and observed deallocation.
+
+Claude's third review confirmed C1-C5 fixed, then requested final command-view
+retention, proof of ownership before declaring a stale-heartbeat supervisor dead,
+bounded source snapshots, and smaller lifecycle corrections. The new candidate
+attempts a final command read before cleanup on every submitted exit, keeps earlier
+observations separately, retries cleanup before the next bounded submission, and
+records successful cleanup to avoid repeated deletion. Azure rejects command
+deletion while a VM is deallocated; cleanup failures never veto VM retirement.
+A final read may still report Pending after Azure resets its view; it is diagnostic
+evidence, never a replacement for a verified launcher record.
+
+Source snapshots now run in deadline-bound Windows Job Objects, and preparation,
+bundling and publication timing is retained. Re-entry marks idle without replay;
+recovery sessions can be cancelled independently of the original job result.
+Runner verification `20261009T054200Z-0360f7497ee4`: 77 passed, completed/exit 0,
+source stable, including a real bounded Git snapshot and expiration regression.

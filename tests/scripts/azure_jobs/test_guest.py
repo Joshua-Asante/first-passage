@@ -73,7 +73,7 @@ def test_finalization_keeps_heartbeat_and_publishes_terminal_state(tmp_path, mon
         repo.mkdir(parents=True); (repo/'out').write_text('42')
     monkeypatch.setattr(guest,'checkout',checkout)
     monkeypatch.setattr(guest,'environment',lambda *a: (Path(sys.executable),tmp_path/'env','lock'))
-    monkeypatch.setattr(guest,'snapshot',lambda *a: {'commit':'a'*40,'status':''})
+    monkeypatch.setattr(guest,'bounded_snapshot',lambda *a: {'commit':'a'*40,'status':''})
     monkeypatch.setattr(guest,'run_tree',lambda *a,**k: dict(status='completed',exit_code=0,cpu_seconds=1,wall_seconds=1,finished_at=time.time()))
     for key in ('PATH','VIRTUAL_ENV','PYTHONPATH','PYTHONHOME','FP_VERIFICATION_ID'):
         if key in os.environ:
@@ -143,10 +143,42 @@ def test_republish_keeps_terminal_record_and_never_executes(tmp_path, monkeypatc
     repo=tmp_path/'repos/original'; repo.mkdir(parents=True); (repo/'out').write_text('result')
     record={'status':'completed','exit_code':0,'source_stable':True}
     atomic(job/'record.json',record)
-    monkeypatch.setattr(guest,'execute',lambda *a: pytest.fail('replayed job'))
+    for forbidden in ('checkout','environment','run_tree'):
+        monkeypatch.setattr(guest,forbidden,lambda *a,**kw: pytest.fail('replayed job'))
     observed=[]
     monkeypatch.setattr(guest,'upload',lambda *a: observed.append(a[2]))
     guest.republish({'guest_root':str(tmp_path),'session_id':'recovery'},spec)
     assert json.loads((job/'record.json').read_text()) == record
     assert json.loads((tmp_path/'idle.json').read_text())['job_id']=='recovery'
     assert observed==['original']
+
+
+def test_stale_heartbeat_does_not_kill_a_live_lock_owner(tmp_path,monkeypatch):
+    from scripts.azure_jobs import watchdog
+    from scripts.azure_jobs.control import locked
+    monkeypatch.setattr(watchdog,'terminate_tree',lambda *a: pytest.fail('killed live supervisor'))
+    with locked(tmp_path/'guest.lock'):
+        assert watchdog.recover({'guest_root':str(tmp_path)},{'job_id':'job'},'guest supervisor lost') is False
+    assert not (tmp_path/'jobs/job/cancel').exists()
+
+
+def test_reentry_marks_idle_without_replaying(tmp_path,monkeypatch):
+    from scripts.azure_jobs.control import atomic
+    spec=dict(job_id='once',commit='a'*40,command=['fake.py'],environment='research',max_wall_seconds=60,expected_outputs=['out'],authority='public test',private_inputs=[])
+    atomic(tmp_path/'jobs/once/record.json',{'status':'completed'})
+    monkeypatch.setattr(guest,'checkout',lambda *a: pytest.fail('replayed'))
+    guest.execute({'guest_root':str(tmp_path)},spec)
+    assert json.loads((tmp_path/'idle.json').read_text())['job_id']=='once'
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows process ownership')
+def test_bounded_source_snapshot_reads_clean_git_revision(tmp_path):
+    import subprocess
+    repo=tmp_path/'repo'; repo.mkdir()
+    subprocess.run(['git','init',str(repo)],check=True,capture_output=True)
+    subprocess.run(['git','-C',str(repo),'-c','user.name=Runner test','-c','user.email=runner@example.invalid','commit','--allow-empty','-m','fixture'],check=True,capture_output=True)
+    result=guest.bounded_snapshot(repo,tmp_path/'snapshot',time.time()+30)
+    assert len(result['commit'])==40
+    assert result['status']==''
+    with pytest.raises(TimeoutError):
+        guest.bounded_snapshot(repo,tmp_path/'expired',time.time()-1)

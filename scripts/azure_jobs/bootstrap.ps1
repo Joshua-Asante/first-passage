@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($RequestBase64)) | ConvertFrom-Json
 $config = $request.config
-$root = $config.guest_root
+$root = [IO.Path]::GetFullPath($config.guest_root)
 New-Item -ItemType Directory -Force $root | Out-Null
 $job = "$root/jobs/$($request.spec.job_id)"
 New-Item -ItemType Directory -Force $job | Out-Null
@@ -29,11 +29,12 @@ function Signed-Download($Uri, $Path, $Publisher) {
         throw 'Installer signature/publisher validation failed'
     }
 }
-$python = "$root/python/python.exe"
+$pythonDirectory = Join-Path $root 'python'
+$python = Join-Path $pythonDirectory 'python.exe'
 if (!(Test-Path -LiteralPath $python)) {
     $installer = "$root/python-install.exe"
     Signed-Download 'https://www.python.org/ftp/python/3.13.2/python-3.13.2-amd64.exe' $installer 'Python Software Foundation'
-    $installed = Start-Process -FilePath $installer -ArgumentList @('/quiet','/log',"$job/python-install.log",'InstallAllUsers=1',"TargetDir=$root/python",'Include_test=0','PrependPath=0','Include_launcher=0') -Wait -PassThru -WindowStyle Hidden
+    $installed = Start-Process -FilePath $installer -ArgumentList @('/quiet','/log',"$job/python-install.log",'InstallAllUsers=1',"TargetDir=$pythonDirectory",'Include_test=0','PrependPath=0','Include_launcher=0') -Wait -PassThru -WindowStyle Hidden
     if ($installed.ExitCode -ne 0) {
         $detail = Get-Content -LiteralPath "$job/python-install.log" -Tail 15 -ErrorAction SilentlyContinue | Out-String
         throw "Python install failed, exit=$($installed.ExitCode): $detail"
@@ -41,11 +42,12 @@ if (!(Test-Path -LiteralPath $python)) {
 }
 $version = & $python -c 'import sys; print(sys.version.split()[0])'
 if ($version -ne '3.13.2') { throw 'Unexpected bootstrap Python version' }
-$git = "$root/git/cmd/git.exe"
+$gitDirectory = Join-Path $root 'git'
+$git = Join-Path $gitDirectory 'cmd/git.exe'
 if (!(Test-Path -LiteralPath $git)) {
     $installer = "$root/git-install.exe"
     Signed-Download 'https://github.com/git-for-windows/git/releases/download/v2.51.0.windows.1/Git-2.51.0-64-bit.exe' $installer 'Johannes Schindelin|Git Development Community'
-    $installed = Start-Process -FilePath $installer -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=$root/git") -Wait -PassThru -WindowStyle Hidden
+    $installed = Start-Process -FilePath $installer -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',"/DIR=$gitDirectory") -Wait -PassThru -WindowStyle Hidden
     if ($installed.ExitCode -ne 0) { throw 'Git install failed' }
 }
 $env:PATH = "$root/git/cmd;$env:PATH"

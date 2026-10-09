@@ -198,6 +198,20 @@ class Azure:
         self.call(["vm", "run-command", "delete", "--resource-group", self.config["resource_group"],
                    "--vm-name", self.config["vm"], "--name", name, "--yes"])
 
+    def cleanup(self, name):
+        pending = Path(self.config["state_dir"]) / "pending-command-cleanup" / (name + ".json")
+        completed = Path(self.config["state_dir"]) / "completed-command-cleanup" / (name + ".json")
+        if completed.exists():
+            return True
+        try:
+            self.delete_command(name)
+            atomic(completed, {"command": name, "time": time.time()})
+            pending.unlink(missing_ok=True)
+            return True
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+            atomic(pending, {"command": name, "time": time.time()})
+            return False
+
     def script(self, script, *, timeout=180):
         name = "fp-read-" + uuid.uuid4().hex[:16]
         try:
@@ -213,10 +227,7 @@ class Azure:
                 time.sleep(3)
             raise TimeoutError("guest management command did not finish")
         finally:
-            try:
-                self.delete_command(name)
-            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
-                atomic(Path(self.config["state_dir"]) / "command-cleanup-pending.json", {"command": name})
+            self.cleanup(name)
 
 
 def retire(azure, ledger, *, expected_job=None, clock=time.time, sleep=time.sleep, attempts=20):
