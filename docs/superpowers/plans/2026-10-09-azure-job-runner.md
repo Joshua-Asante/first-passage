@@ -2,6 +2,8 @@
 
 > **For agentic workers:** Execute with superpowers:executing-plans. The coordinator owns combined acceptance.
 
+**Status:** Build, public remote acceptance and independent Claude review complete; PR #746 is handed to Joshua for merge.
+
 **Goal:** A shared `run / status / results / cancel` interface for separately authorized offline Windows jobs.
 **Architecture:** One serialized local ledger reserves VM time before Azure start. Managed Run Command launches durable guest supervision. A separate local guardian covers bootstrap and confirms deallocation; a credential-free guest watchdog deallocates independently using a VM-scoped identity. Results persist on the OS disk and are published to the operator-approved private Blob container for retrieval after deallocation.
 **Tech Stack:** Python standard library, existing Windows Job Object implementation, PowerShell 5.1, Azure CLI and Managed Run Command.
@@ -37,9 +39,9 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 **Checkpoint:** Before Azure start, evaluate fake failure evidence, ledger seed and guardian acknowledgement.
 **Return boundary:** Return to coordinator after focused tests; no statistical or private dispatch.
 
-- [ ] Write failing tests for reservation and stop/verify semantics.
-- [ ] Implement atomic locked state and Azure adapter; run focused launcher tests.
-- [ ] Evaluate the outcome before guest integration.
+- [x] Write failing tests for reservation and stop/verify semantics.
+- [x] Implement atomic locked state and Azure adapter; run focused launcher tests.
+- [x] Evaluate the outcome before guest integration.
 
 ## Handoff 2 — durable guest execution and complete evidence
 
@@ -50,10 +52,10 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 **Checkpoint:** Record remote safety evidence before full suite dispatch.
 **Return boundary:** Return failures to coordinator; do not weaken safety gates to run acceptance.
 
-- [ ] Test/implement job contract and evidence verification.
-- [ ] Reuse existing Windows Job Object launch; retain stdout/stderr and launcher records.
-- [ ] Install a SYSTEM watchdog with no password and minimum identity permissions.
-- [ ] Test controller disconnect, cancellation and idle deallocation.
+- [x] Test/implement job contract and evidence verification.
+- [x] Reuse existing Windows Job Object launch; retain stdout/stderr and launcher records.
+- [x] Install a SYSTEM watchdog with no password and minimum identity permissions.
+- [x] Test controller disconnect, cancellation and idle deallocation.
 
 ## Handoff 3 — public acceptance and review
 
@@ -64,14 +66,16 @@ Managed Run Command output is a bounded transport, not evidence storage. Guest w
 **Checkpoint:** Report results or exact blocking evidence on the PR, retaining all partial outputs locally.
 **Return boundary:** Stop at reviewed PR and results comment; no merge, next campaign or private transfer.
 
-- [ ] Run collection and full authorized suite through `scripts/fp.py` under the pinned ops venv.
-- [ ] Retrieve and verify evidence, deallocate and reconcile actual charged duration.
-- [ ] Obtain independent Claude review, fix concrete findings and rerun affected checks.
-- [ ] Open PR, post acceptance evidence and return to Joshua.
+- [x] Run collection and full authorized suite through `scripts/fp.py` under the pinned ops venv.
+- [x] Retrieve and verify evidence, deallocate and reconcile actual charged duration.
+- [x] Obtain independent Claude review, fix concrete findings and rerun affected checks.
+- [x] Open PR, post acceptance evidence and return to Joshua.
 
 ## Evidence and unresolved dependencies
 
-Combined acceptance remains pending. The primary checkout remains untouched. The operator-approved managed identity and private public-results container are provisioned; their bindings remain in ignored local configuration. The ledger includes a conservative 900-second historical seed and every build/probe interval. There is no budget alert or nightly shutdown.
+Combined acceptance is complete; see final closure below. Tracked files in the primary checkout remain untouched. The operator-approved managed identity and private public-results container are provisioned; their bindings remain in ignored local configuration. The ledger includes a conservative 900-second historical seed and every build/probe interval. There is no budget alert or nightly shutdown.
+
+The checkpoint entries below retain the status at each stage; the final closure controls current status.
 
 ### Build checkpoint and independent review (2026-10-09)
 
@@ -240,7 +244,9 @@ added a recoverable heartbeat cadence and made the reaper stop marker best-effor
 so a storage failure cannot veto deallocation. Red `20261009T065555Z-79a4a2d0d71b`
 and green `20261009T065628Z-b13c9a2d1420` (90 passed, completed/0/stable) bind those
 paths; exact retry timing and cleanup-error preservation also have coverage.
-A final independent review of these bounded follow-ups is pending.
+The final independent Claude review found **no blocker** in these bounded follow-ups
+and verified their red/green records. The green record attests the pre-commit working
+tree; the committed runtime was subsequently tested remotely as recorded below.
 
 
 ### Full pinned qualification result
@@ -262,5 +268,33 @@ Runner runtime for this job was `16639bbf1e7b453a0aa0067b7a88172c3bb209d0`. Its 
 Final merged-base gates: `20261009T065818Z-b43be3fd224e`, completed/exit 0/stable.
 Acceptance was posted on [PR 742](https://github.com/Joshua-Asante/first-passage/pull/742#issuecomment-6076069160)
 and [runner PR 746](https://github.com/Joshua-Asante/first-passage/pull/746#issuecomment-6076069448).
-The subsequent runner smoke and final Claude follow-up remain to be closed; they do
-not change the pinned qualification result above.
+The final runner smoke and Claude follow-up are closed below; neither changes the
+pinned qualification result above.
+
+
+### Final closure (2026-10-09)
+
+Final runtime `98af2023b301df912ac9f92d6fb429568a7447e2` completed a fresh Windows
+remote smoke: **90 passed**, original launcher `20261009T070211Z-4d8e7f3faef1`,
+completed/exit 0/verification exit 0/source stable/complete capture. All 13 artifacts
+were retrieved and hash-verified; ZIP 292,071 bytes, SHA-256
+`203cbae1c7ad7c95bcd0072a35984cce0145355344b0d9f4d71b5d16f424742b`.
+Workload CPU 5.3125 seconds, wall 15.036735 seconds; publication 4.262622 seconds.
+VM deallocation was independently confirmed and the ledger has no active interval.
+The smoke cost $0.1299. Final weekly VM ledger: 5,010.438778 seconds,
+**$4.0362 / $125** including the conservative seed, provisioning and all probes.
+Retrieved process workload CPU totals 1.425977 hours this week/month against the
+5,000-hour monthly planning allowance; setup-only sessions have no workload CPU record.
+
+Independent Claude reviewed the original runtime, the real Windows atomic-write
+repair, and the final heartbeat/reaper follow-ups. Each final scoped review returned
+**no blocker**; the last verified both red and green local evidence. Its earlier
+claim that the guest traceback was proven was explicitly corrected: the exact
+exception remains inferred, while the local Windows sharing failure is reproduced.
+
+The requested full pinned qualification and cancellation/disconnect/recovery evidence
+are retained above and in the PR comments. No public artifacts contain resource
+bindings. PR #746 includes the current main via a normal merge, without force-push.
+The implementation and evidence are ready for Joshua's merge; no further job authority
+is implied. Linux acceptance and Windows-incompatible research pins retain their
+separate paths and constraints described in the README.
