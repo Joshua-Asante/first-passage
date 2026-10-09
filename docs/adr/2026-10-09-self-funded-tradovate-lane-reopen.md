@@ -25,14 +25,24 @@
    CME's licensing answers (the P6 draft in the
    [feed-provider note](../notes/2026-10-03-feed-provider-questions-narrowed-DRAFT.md#46-p6-tradovate-api-personal-data-only-account)
    is reframed from data-only to own-assets trading).
-4. **Capital clearance is redefined, not waived.** The operator will accept more risk
-   than the current standard. The new standard for "cleared to trade the operator's
-   own money" is owed as its own operator ruling before any live order; until it
-   exists, this lane holds no capital authorization.
+4. **Capital clearance: maximum peak-to-trough drawdown 15%** (operator ruling
+   2026-10-09: "I'd accept a 15% drop", measured peak to trough). Within that bound the
+   lane sizes for maximum growth. Proposed reading of the selection test and the live
+   stop, pending operator confirmation:
+   - *Selection:* a portfolio and its sizing clear only if the intraday-honest simulated
+     p99 peak-to-trough drawdown is ≤ 15%, after Tradovate costs and whole-contract
+     rounding; among clearing candidates, the highest median growth rate wins.
+   - *Live:* equity 15% below its running peak halts new entries and flattens; resumption
+     needs an operator GO.
+   No capital authorization until a portfolio clears this standard.
 
 Effective 2026-10-09. Unchanged: R5/P2 FALSIFIED; the Tradeify program and its gates;
 AGENTS.md live-execution rules (M1, arming, per-session GO); private-figure policy
 (balances and P&L of the personal account stay out of the repo).
+
+## Revision
+
+- 2026-10-09 (same day): portfolio unselected and maximum-growth objective (commit `87d12a0`); 15% drawdown clearance standard recorded (this revision).
 
 ## Grounds
 
@@ -49,9 +59,8 @@ AGENTS.md live-execution rules (M1, arming, per-session GO); private-figure poli
 
 **Owed before first live order** (each a separate record with its owner):
 
-1. Portfolio selection for the growth objective, and the capital-clearance standard
-   (operator ruling: the risk of ruin or the maximum drawdown accepted in exchange for growth)
-   evaluated against it.
+1. Portfolio selection and sizing that clear the 15% drawdown standard (Decision 4),
+   and operator confirmation of that standard's proposed reading.
 2. Personal-account tier in `core/firm_rules.py` with `starting_balance`, then the
    `core/mc/preflight.py` engine pre-flight and a re-MC under that tier.
 3. Tradovate API access on the personal account: the $1,000 key requirement, the API
