@@ -12,7 +12,7 @@
 
 1. **Lane.** The operator reopens a self-funded lane. Venue: the operator's existing
    personal Tradovate account (broker chosen 2026-10-09 over Ironbeam, a Rithmic FCM,
-   tastytrade and IBKR). Planned starting capital: $10,000.
+   tastytrade and IBKR). Planned starting capital is recorded privately (the public record names it `E_0`).
 2. **Objective and book.** The lane's objective is **maximum growth** of the
    account. The portfolio is **not yet selected**; it is not the Tradeify book by
    default (operator, 2026-10-09). Selection is owed against the growth objective,
