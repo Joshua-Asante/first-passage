@@ -84,7 +84,7 @@ def test_unlocatable_candidates_are_dropped_with_a_reason():
     original = Bar(T0, 100, 120, 90, 110, 3)
     def five(i, o, h, l, c, v=1):
         return Bar(T0 + timedelta(minutes=5 * i), o, h, l, c, v)
-    reversed_ = [five(0, 100, 120, 99, 118), five(1, 118, 119, 100, 101), five(2, 101, 102, 90, 110)]
+    reversed_ = [five(0, 100, 120, 99, 118), five(1, 118, 119, 100, 101), five(2, 101, 110, 90, 110)]
     off_segment = [five(0, 100, 101, 90, 95), five(1, 95, 120, 94, 100), five(2, 100, 111, 99, 110)]
     mismatch = [five(0, 100, 101, 90, 95), five(1, 95, 105, 94, 104), five(2, 104, 120, 103, 110, 2)]
     gap = [five(0, 100, 101, 90, 95), five(2, 104, 120, 103, 110)]
@@ -192,10 +192,57 @@ def test_first_touch_order_decides_reversed_and_ties():
     original = Bar(T0, 100, 120, 90, 110, 3)                  # accepted path 100 -> 90 -> 120 -> 110
     def five(i, o, h, l, c):
         return Bar(T0 + timedelta(minutes=5 * i), o, h, l, c, 1)
-    both_reversed = [five(0, 100, 120, 99, 110), five(1, 110, 111, 90, 115), five(2, 115, 116, 109, 110)]
+    both_reversed = [five(0, 100, 120, 99, 110), five(1, 110, 116, 90, 115), five(2, 115, 116, 109, 110)]
     both_in_order = [five(0, 100, 101, 90, 95), five(1, 95, 120, 94, 115), five(2, 115, 116, 109, 110)]
     tied = [five(0, 100, 120, 90, 115), five(1, 115, 117, 112, 115), five(2, 115, 116, 109, 110)]
     assert evidence_row(LEG, original, INSTANT, both_reversed) == (None, 'REVERSED')
     assert evidence_row(LEG, original, INSTANT, tied) == (None, 'TIED')
     row, reason = evidence_row(LEG, original, INSTANT, both_in_order)
     assert reason is None and row['price'] == 115
+
+
+def test_source_assembly_validates_a_marked_row_without_the_runtime_refusal(tmp_path, monkeypatch):
+    import composition_fixture as fixture_module
+    original_encoded = fixture_module.encoded
+
+    def marking(value):
+        # TEST_ONLY: mark the fixture's 15:55 split rows (they start at their source bar).
+        if isinstance(value, dict) and value.get('schema') == 'qualification-schedule-execution/v1':
+            value = {**value, 'rows': [{**row, 'convention': 'evidence-located/v1'} if row['prefix'] is not None else row
+                                       for row in value['rows']]}
+        return original_encoded(value)
+    monkeypatch.setattr(fixture_module, 'encoded', marking)
+    source = fixture_module.build_verified_composition(tmp_path).source
+    assert len(source._quotes.located) > 0                    # built; marked rows retained as located
+
+
+def test_located_row_refuses_to_follow_an_earlier_split_in_the_same_bar():
+    from c1_rail.qualification.replay import ReplayNeedsContext
+    original, row = _located_row()                             # located at 15:55
+    session = SimpleNamespace(occurrence=0, bars=(), source=SimpleNamespace(source_session_date=T0.date()))
+    pb = SimpleNamespace(source_bar_time=T0, bars=((LEG, original),))
+    first = T0 + timedelta(minutes=5)
+    for rows, refuses in (([row], True), ([], False)):
+        provider = ScheduleExecutionBracket(_parse(rows)).for_run('R1')
+        split = provider.split_bar(session, pb, first, LEG, exposure=ScheduleExposure(1, False, 0))
+        assert split.prefix.close == 90                        # earlier boundary: vertex placement
+        call = lambda: provider.split_interval(session, pb, split.suffix, INSTANT, LEG,
+                                               exposure=ScheduleExposure(1, False, 0))
+        if refuses:
+            with pytest.raises(ReplayNeedsContext, match='earlier split'):
+                call()
+        else:
+            assert call().prefix.ts == first
+
+
+def test_malformed_finer_bars_are_dropped():
+    original = Bar(T0, 100, 120, 90, 110, 3)
+    def five(i, o, h, l, c, ts=None):
+        return Bar(ts or T0 + timedelta(minutes=5 * i), o, h, l, c, 1)
+    good = [five(0, 100, 101, 90, 95), five(1, 95, 99, 94, 97), five(2, 97, 120, 96, 110)]
+    bad_interior = [good[0], five(1, 95, 99, 94, 130), good[2]]           # close above its own high
+    naive = [good[0], five(1, 95, 99, 94, 97, ts=datetime(2024, 1, 2, 20, 50)), good[2]]
+    nan = [good[0], five(1, 95, float('nan'), 94, 97), good[2]]
+    for fives in (bad_interior, naive, nan):
+        assert evidence_row(LEG, original, INSTANT, fives) == (None, 'MALFORMED')
+    assert evidence_row(LEG, original, INSTANT, good)[1] is None

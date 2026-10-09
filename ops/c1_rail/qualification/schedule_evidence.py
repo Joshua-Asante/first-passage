@@ -17,6 +17,8 @@ the 2026-09-23 bracket convention; the finer bars only locate the instant on it:
 Candidates that cannot be located are dropped with a reason, and that instant
 stays on the bracket's R1/R2 vertex placement:
 
+- ``MALFORMED``: a finer bar is not an aware, finite, valid OHLCV bar
+  (``0 < low <= min(open, close) <= max(open, close) <= high``, volume >= 0);
 - ``MISSING``: the finer bars do not tile the M15 bar contiguously at one interval,
   or none starts at the instant;
 - ``AGGREGATE``: the finer bars do not aggregate exactly to the M15 bar (OHLC, volume);
@@ -35,6 +37,7 @@ from __future__ import annotations
 
 from collections import Counter
 from datetime import datetime, timedelta
+from math import isfinite
 
 from c1_signal_daemon.feed import Bar
 from .model import LEG_IDS
@@ -57,6 +60,11 @@ def evidence_row(leg, original, instant, fine):
         raise ValueError('aware M15 Bar and instant required')
     if not original.ts < instant < original.ts + M15:
         raise ValueError('instant must be strictly inside the M15 bar')
+    for b in fine:
+        if (not isinstance(b, Bar) or not isinstance(b.ts, datetime) or b.ts.tzinfo is None
+                or not all(isinstance(v, (int, float)) and isfinite(v) for v in (b.open, b.high, b.low, b.close, b.volume))
+                or b.volume < 0 or not 0 < b.low <= min(b.open, b.close) <= max(b.open, b.close) <= b.high):
+            return None, 'MALFORMED'
     fine = sorted(fine, key=lambda b: b.ts)
     head = [b for b in fine if b.ts < instant]
     tail = [b for b in fine if b.ts >= instant]

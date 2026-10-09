@@ -501,8 +501,13 @@ class ScheduleExecutionEvidence:
         # instants without one get a vertex placement, so ``_placed`` (and the
         # consumed-split count) is the unresolved residual.
         if self.located and pb is not None:
-            key = (session.source.source_session_date, leg, pb.source_bar_time, start, instant)
+            # Marked rows always start at the source bar; match on bar plus instant.
+            key = (session.source.source_session_date, leg, pb.source_bar_time, pb.source_bar_time, instant)
             if key in self.located:
+                if start != pb.source_bar_time:
+                    # It is a split of the whole bar and cannot compose with an
+                    # earlier same-bar placement that differs between runs.
+                    raise ReplayNeedsContext('evidence-located row cannot follow an earlier split in the same source bar')
                 prefix, suffix = self.splits[key]
                 return ScheduleSplit(prefix, suffix, True)
         key = (session.occurrence, leg, instant)
@@ -520,8 +525,11 @@ class ScheduleExecutionEvidence:
             raise ValueError('retained evidence validation uses the reviewed provider only')
         # The exact engine validator owns OHLC aggregation and TV path law.
         # Reviewed rows do not depend on exposure; an active pending-only
-        # snapshot only satisfies the frozen split interface.
-        return BookReplay._split(self, session, pb, bars, instant,
+        # snapshot only satisfies the frozen split interface. Marked rows are
+        # validated structurally here (a view without the markers), so the
+        # runtime bracket-only refusal applies to consumption, not validation.
+        view = ScheduleExecutionEvidence(self.quotes, self.splits, self.source_rows)
+        return BookReplay._split(view, session, pb, bars, instant,
                                  {leg: ScheduleExposure(0, True, 0) for leg in bars})
 
     def validate_supplied(self, panels):
