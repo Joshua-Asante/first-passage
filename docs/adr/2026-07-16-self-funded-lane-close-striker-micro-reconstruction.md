@@ -3,6 +3,7 @@
 **Status:** Accepted (operator executive decision, recorded)
 **Superseded-by:** none
 **Superseded-in-part-by:** [`2026-07-31-orb-mnq-unpark-payability-target.md`](2026-07-31-orb-mnq-unpark-payability-target.md) — the 2026-07-24 Addendum's `TERMINAL` clause **only as it applies to Candidate B (ORB-MNQ)**, which is unparked to active research under a payable-Tradeify-leg target. Candidate A (MYM ORC) stays CLOSED; R5/P2 stay FALSIFIED; the c1-execution-quality research interest is unaffected.
+**Superseded-in-part-by:** [`2026-10-09-self-funded-tradovate-lane-reopen.md`](2026-10-09-self-funded-tradovate-lane-reopen.md) — §2.1 self-funded closure only (operator re-open, personal Tradovate account, maximum-growth objective).
 **Retain-until:** none
 **Decision date:** 2026-07-16
 **Authors:** Joshua (decision) + Cursor (recorder)
