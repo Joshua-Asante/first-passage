@@ -218,9 +218,9 @@ def test_retrieval_rejects_incomplete_launcher_proof(tmp_path, monkeypatch, dama
     if damage == 'missing_record':
         alter_archive(job, remove=path)
     elif damage == 'missing_capture':
-        alter_archive(job, remove=str(Path(path).parent / 'stdout.txt'))
+        alter_archive(job, remove=(Path(path).parent / 'stdout.txt').as_posix())
     elif damage == 'tampered_junit':
-        alter_archive(job, change=(str(Path(path).parent / 'junit.xml'), b'not original junit'))
+        alter_archive(job, change=((Path(path).parent / 'junit.xml').as_posix(), b'not original junit'))
     else:
         record.pop('launcher_records')
         alter_archive(job, change=('runner/record.json', json.dumps(record).encode()))
@@ -368,7 +368,7 @@ def test_retrieval_stale_launcher_capture_does_not_prove_current_archive(tmp_pat
     path = launcher(repo); record['launcher_records'] = [path]
     atomic(job / 'record.json', record)
     guest.bundle(job, repo, ['out'], partial=True)
-    capture = str(Path(path).parent / 'stdout.txt')
+    capture = (Path(path).parent / 'stdout.txt').as_posix()
     alter_archive(job, remove=capture)
     stale = tmp_path / 'host/results/job/files' / capture
     stale.parent.mkdir(parents=True); stale.write_text('captured stdout')
