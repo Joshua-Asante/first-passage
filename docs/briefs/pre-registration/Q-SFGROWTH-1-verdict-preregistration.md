@@ -24,11 +24,11 @@ The pinned Tradeify exports are the reference for each leg's locked inputs, not 
   - an **account-size** input used only to compute position size (the Striker legs' static `accountSize` read by `calcSize`, [campaign §D15](../programs/2026-09-03-seven-strategy-select-campaign-state.md)) is set to `k × its reference value`, unrounded; the Pine rounds the resulting quantity itself;
   - the Properties-panel **initial capital** is set to `k × the reference export's initial capital`, so capital-anchored controls (the Striker day soft-stop) keep their locked ratio to position size.
 
-  If a leg ends up with no trades at some `k`, it contributes none at that `k`. Each export's per-trade `Size (qty)` is used as exported. The $10,000 account exists only in the simulator (`E_0`, §C), not in TradingView. Reason: the Striker legs carry size- and capital-dependent state, so a rescaled list from another size can contain trades the smaller strategy would never take.
+  If a leg ends up with no trades at some `k`, it contributes none at that `k`. Each export's per-trade `Size (qty)` is used as exported. The `E_0` account exists only in the simulator (`E_0`, §C), not in TradingView. Reason: the Striker legs carry size- and capital-dependent state, so a rescaled list from another size can contain trades the smaller strategy would never take.
 - Before any export is produced, Phase 0 reads each leg's Pine in the operator checkout (not quoted, not copied) and records in the manifest which inputs are contract-count, account-size and neither. That classification is reviewed before exports are made.
 - Before any export is read for scoring, Phase 0 commits a manifest listing every (leg, k) export with its SHA-256, the inputs changed and their values. A missing or hash-mismatched export ⇒ VOID.
 - **Excluded combinations:** legs 4 and 5 both non-zero (the rail flattens by account and instrument, so two MNQ legs cannot hold independent positions).
-- **Margin exclusion:** a configuration is excluded if `Σ_i max_n_i × IM_i > $10,000`, where `max_n_i` is the largest per-trade quantity in leg i's size-k export over the full calendar and `IM_i` is Tradovate's published initial margin per contract for that instrument in a dated snapshot recorded in the Phase-0 manifest. This assumes every leg's largest position is open at once, which is conservative.
+- **Margin exclusion:** a configuration is excluded if `Σ_i max_n_i × IM_i > E_0`, where `max_n_i` is the largest per-trade quantity in leg i's size-k export over the full calendar and `IM_i` is Tradovate's published initial margin per contract for that instrument in a dated snapshot recorded in the Phase-0 manifest. This assumes every leg's largest position is open at once, which is conservative.
 - Multiplier vectors are not deduplicated: each is a distinct prospective sizing rule.
 - **K = 2,375** = 6^5 − 1 vectors minus the 5,400 with legs 4 and 5 both non-zero, written to the `register_search` manifest before any Explore read. K does not depend on data; margin-excluded vectors count in K.
 
@@ -49,7 +49,7 @@ The pinned Tradeify exports are the reference for each leg's locked inputs, not 
 - path p's days = concatenate `range(starts[p, j], starts[p, j] + 20)` for j = 0 … 12, truncated to the first H = 252
 - the same `starts` array serves every configuration and both cost multiples
 
-**Per path, E_0 = P_0 = $10,000; for t = 1 … 252 (i = the path's t-th day):**
+**Per path, E_0 = P_0 = the planned starting capital (value private); for t = 1 … 252 (i = the path's t-th day):**
 - intraday peak `P*_t = max(P_{t-1}, E_{t-1} + h_i)` (the high is assumed to come before the low, which is conservative)
 - intraday trough `T_t = E_{t-1} + l_i`
 - **hit** if `(P*_t − T_t) / P*_t ≥ 0.15`; the path stops with terminal equity `T_t`
@@ -58,16 +58,16 @@ The pinned Tradeify exports are the reference for each leg's locked inputs, not 
 
 **Clears** (per configuration, window, `c`): hits ≤ 100 of 10,000 on **every** seed.
 **Growth** = `numpy.median` of the 30,000 pooled terminal equities (the average of the two middle values).
-**Rank** (Explore, c = 1, non-excluded configurations only): among those that clear with growth > $10,000, highest growth first; ties go to (i) fewer pooled hits, (ii) the smaller sum of per-trade quantities over Explore-window trades, (iii) the lexicographically smallest multiplier vector in §A leg order.
+**Rank** (Explore, c = 1, non-excluded configurations only): among those that clear with growth > E_0, highest growth first; ties go to (i) fewer pooled hits, (ii) the smaller sum of per-trade quantities over Explore-window trades, (iii) the lexicographically smallest multiplier vector in §A leg order.
 
 **Roll-seam limitation and sensitivity.** Every export is from a continuous `1!` chart. Trades are session-contained, so a back-adjustment seam cannot enter a trade's own P&L, but signals computed across sessions can still differ near a seam. Phase 0 records, per instrument and before any export is read, the session dates on which the continuous series changed contract. The sensitivity re-scores the top configuration on Confirm at c = 1 with every trade whose session date lies within 10 weekdays (either side, inclusive) of such a date removed.
 
 ### Worked example (synthetic, two days, one path)
 
-E_0 = P_0 = 10,000. Day 1: d = +200, l = −300, h = +400. Day 2: d = −1,400, l = −1,600, h = 0.
+Amounts in normalized units (E_0 = 100; not the account's capital). E_0 = P_0 = 100. Day 1: d = +2, l = −3, h = +4. Day 2: d = −14, l = −16, h = 0.
 
-- Day 1: P*_1 = max(10,000, 10,000 + 400) = 10,400; T_1 = 9,700; drawdown 700 / 10,400 = 6.73% → no hit; E_1 = 10,200; P_1 = max(10,400, 10,200) = 10,400.
-- Day 2: P*_2 = max(10,400, 10,200 + 0) = 10,400; T_2 = 10,200 − 1,600 = 8,600; drawdown 1,800 / 10,400 = 17.31% ≥ 15% → **hit**; terminal equity 8,600.
+- Day 1: P*_1 = max(100, 100 + 4) = 104; T_1 = 97; drawdown 7 / 104 = 6.73% → no hit; E_1 = 102; P_1 = max(104, 102) = 104.
+- Day 2: P*_2 = max(104, 102 + 0) = 104; T_2 = 102 − 16 = 86; drawdown 18 / 104 = 17.31% ≥ 15% → **hit**; terminal equity 86.
 
 ## D — Verdict table
 
@@ -76,7 +76,7 @@ Evaluate VOID first; the other rows apply only when no VOID condition holds.
 | Verdict | Trigger | Disposition |
 |---|---|---|
 | VOID | an export is missing or mismatches its manifest hash; run K ≠ manifest K (2,375); the cost snapshot, margin snapshot or roll-date list is missing a component; an export lacks a favorable-excursion column or a k = 1 export has no trades; or a window is shorter than 20 weekdays | ITERATE (fix input, rerun unchanged) |
-| RESOLVED | (1) ≥ 1 non-excluded configuration clears on Explore at c = 1 with growth > $10,000; (2) the top-ranked one clears on Confirm at c = 1; (3) it clears on Confirm at c = 1.5; (4) its Confirm growth > $10,000 at c = 1 and at c = 1.5; (5) it clears the roll-seam sensitivity | INTEGRATE |
+| RESOLVED | (1) ≥ 1 non-excluded configuration clears on Explore at c = 1 with growth > E_0; (2) the top-ranked one clears on Confirm at c = 1; (3) it clears on Confirm at c = 1.5; (4) its Confirm growth > E_0 at c = 1 and at c = 1.5; (5) it clears the roll-seam sensitivity | INTEGRATE |
 | FALSIFIED | condition (1) fails | STOP |
 | AMBIGUOUS-HOLD | (1) holds and any of (2)–(5) fails | ITERATE (operator; no second pick) |
 
@@ -86,17 +86,18 @@ Only the top-ranked Explore configuration is scored on Confirm.
 
 - **2026-10-09, Codex freeze review (PR #743, review on `d90eae8`), before any export was read or any scorer existed.** Changes from `121e2acf`:
   1. One calendar for all configurations, from the full five-leg pool; the builder's weekday calendar; the Explore/Confirm cut stated as a function of W.
-  2. The 1.5× cost limb also requires Confirm growth > $10,000, matching H-SFGROWTH-1.
+  2. The 1.5× cost limb also requires Confirm growth > E_0, matching H-SFGROWTH-1.
   3. An intraday-high channel `h_t` feeds the running peak, so the statistic is genuinely intraday peak-to-trough; missing favorable-excursion data ⇒ VOID.
   4. Multiplier vectors are not deduplicated (final K in item 8); a final lexicographic tie-break makes the selected vector unique.
   5. The bootstrap is pinned: generator, start-index range, array shape and order, concatenation and truncation, window boundaries, and shared draws across configurations.
   6. Normal mode only; leg 1's baseline is the accepted 8 contracts; "no micro on Tradovate" removed (pool limit, not broker fact).
   7. Size-specific exports per (leg, k) replace linear rescaling (the Striker day soft-stop depends on size and capital); the quantity baseline is the export itself.
   8. Legs 4 and 5 may not both be non-zero (one MNQ position per account on the rail); K = 2,375, data-independent, so the K manifest no longer requires reading exports.
-  9. Conservative initial-margin exclusion against $10,000 from a dated Tradovate snapshot.
+  9. Conservative initial-margin exclusion against `E_0` from a dated Tradovate snapshot.
   10. Cost = commission + exchange + clearing + NFA from a dated snapshot of the account's plan; 1.5× multiplies the whole rate.
   11. `numpy.median` fixed; VOID evaluated before every payoff row.
   12. Roll-seam limitation carried, with a frozen ±10-weekday sensitivity as RESOLVED condition (5).
 - **2026-10-09, independent re-review on `fec6ad2` (PR #743), before any export was read or produced.** Change from `c208bde9`:
-  13. The k-mapping now covers risk-sized legs: account-size inputs scale by `k` (unrounded), initial capital scales by `k` (replacing the fixed $10,000 of item 7, which would have tightened the Striker soft-stop tenfold against unchanged positions), contract-count inputs stay `floor(k × reference)`; Phase 0 classifies every sizing input from the Pine before producing exports.
+  13. The k-mapping now covers risk-sized legs: account-size inputs scale by `k` (unrounded), initial capital scales by `k` (replacing the fixed `E_0` of item 7, which would have tightened the Striker soft-stop many times over against unchanged positions), contract-count inputs stay `floor(k × reference)`; Phase 0 classifies every sizing input from the Pine before producing exports.
+- **2026-10-09, public-exposure redaction (not an amendment; PROPOSED, operator decision pending).** The dollar value of the starting capital was replaced by the symbol `E_0` throughout, and the §C worked example was restated in normalized units (same arithmetic, same percentages). No constant changed: `E_0` keeps the value fixed at the freeze, which is held in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`, commit `950ee0f`).
 

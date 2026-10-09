@@ -31,13 +31,13 @@ All anchors are `git log -1 --format='%h %cs' -- <path>` on 2026-10-09.
 
 ## §1 — Context & motivation
 
-On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate account with $10,000, set its objective as maximum growth, left the portfolio unselected, and ruled the clearance standard: at most a 15% peak-to-trough drawdown, tested as p99 on an intraday-honest simulation with Tradovate costs and whole-contract sizing, with a live halt at 15% below peak ([ADR Decision 4](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#decision)). No strategy or combination has been scored against that standard.
+On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate account with a planned starting capital `E_0` (value private), set its objective as maximum growth, left the portfolio unselected, and ruled the clearance standard: at most a 15% peak-to-trough drawdown, tested as p99 on an intraday-honest simulation with Tradovate costs and whole-contract sizing, with a live halt at 15% below peak ([ADR Decision 4](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#decision)). No strategy or combination has been scored against that standard.
 
 ---
 
 ## §2 — Prior art / lineage
 
-- [Four-firm re-MC](../../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md) — FALSIFIED early-fail for the full four-leg book at 100K prop tiers; a $1,500 limit on $10,000 is tighter in dollars, so the full book at accepted size is expected to fail here too (disclosed ex-ante, not a reason to skip it).
+- [Four-firm re-MC](../../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md) — FALSIFIED early-fail for the full four-leg book at 100K prop tiers; a 15% limit on `E_0` is far tighter in dollars than those tiers' limits, so the full book at accepted size is expected to fail here too (disclosed ex-ante, not a reason to skip it).
 - [Size-feasibility prereg](../../lab/analysis/c1/size_feasibility_2026-10/) — FROZEN 2026-10-08, uniform scaling k at prop tiers, no RESULTS yet. Different question (prop pass/bust), same integer-rounding gap.
 - Rejected or falsified, excluded from the pool: R5/P2 locked edge transfer, S-MYM-ORC-02, Guardian→MGC (R7/b8), Q-TXG-1 swaps, Q-COMPOSE-1 ([rejected_candidates.md](../rejected_candidates.md)). Re-proposal needs new mechanism evidence.
 - Parked lanes b1 Aegis→6J, b3 ORB-MNQ payability and b6 Q-NAS-ECR convert to SUBTRACT on 2026-11-08 ([STATE](../../STATE.md#2026-11-08)); this brief uses only legs with an accepted trade list, not those lanes' research bodies.
@@ -46,7 +46,7 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 
 ## §3 — Question (Q-SFGROWTH-1)
 
-**Q-SFGROWTH-1:** Among the strategies with an accepted CME trade list, which combination and whole-contract sizing gives the highest typical one-year growth on a $10,000 Tradovate account while keeping the chance of a 15% peak-to-trough drop at or below 1 in 100, and does that choice hold on data it was not selected on?
+**Q-SFGROWTH-1:** Among the strategies with an accepted CME trade list, which combination and whole-contract sizing gives the highest typical one-year growth on a Tradovate account starting at `E_0` while keeping the chance of a 15% peak-to-trough drop at or below 1 in 100, and does that choice hold on data it was not selected on?
 
 ---
 
@@ -55,7 +55,7 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 **H-SFGROWTH-1:** If at least one configuration on the frozen grid clears the 1-in-100 limit with a median one-year return above zero on the Explore window, then the top-ranked one also clears the limit, at 1× and 1.5× cost, with a positive median return on the Confirm window; otherwise no portfolio from the current pool is fit for this account.
 
 **Accept H-SFGROWTH-1 if:** all five RESOLVED conditions in the [pre-registration §D](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#d--verdict-table) hold.
-**Reject H-SFGROWTH-1 if:** no grid configuration clears on Explore with median terminal equity above $10,000.
+**Reject H-SFGROWTH-1 if:** no grid configuration clears on Explore with median terminal equity above `E_0`.
 **Ambiguous-hold if:** the top Explore configuration fails any Confirm or cost-stress condition.
 
 ---
@@ -65,7 +65,7 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 - **Walking down the ranking after a Confirm failure** — taking the second-ranked configuration is a second selection on the same data; AMBIGUOUS-HOLD returns to the operator instead.
 - **Widening the sizing grid or the leg pool after Explore results exist** — that turns K into a function of the outcome (Known Trap #12); a new grid is a new pre-registration.
 - **Using end-of-day drawdown** — the four-firm run showed the intraday clock changes verdicts; the live halt fires intraday.
-- **Fractional contracts or uncompounded "scaled P&L" without floor rounding** — a $10,000 account cannot hold 0.3 contracts; the selection must match what the rail can place.
+- **Fractional contracts or uncompounded "scaled P&L" without floor rounding** — an account of this size cannot hold 0.3 contracts; the selection must match what the rail can place.
 - **Relaxing to 95 in 100 because nothing clears** — the operator confirmed 99 in 100; a change is a new ruling and a new freeze.
 - **Retuning any strategy parameter** — locked parameters are immutable; only per-leg contract multipliers vary.
 - **Adding any other VENUE_WITHDRAWN or rejected edition** — only the NAS100 MNQ edition was ruled in (pre-lock checklist); rejected candidates need new mechanism evidence.
@@ -77,7 +77,7 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 | Verdict | Trigger condition | Disposition |
 |---|---|---|
 | `RESOLVED` | Pre-registration §D RESOLVED row: ≥1 Explore clearer with median > start; the top one clears Confirm at 1× and 1.5× cost with Confirm median > start at both, and clears the roll-seam sensitivity | `INTEGRATE — record the selected legs and multipliers as the lane's portfolio and sizing binding; proceed to ADR owed items 2–7` |
-| `FALSIFIED` | No grid configuration clears on Explore with median terminal equity > $10,000 | `STOP — re-proposal bar: a new confirmed strategy, or an operator change to capital or the clearance standard; not a re-grid` |
+| `FALSIFIED` | No grid configuration clears on Explore with median terminal equity > `E_0` | `STOP — re-proposal bar: a new confirmed strategy, or an operator change to capital or the clearance standard; not a re-grid` |
 | `AMBIGUOUS-HOLD` | The top Explore configuration fails any Confirm, 1.5× cost or roll-seam condition | `ITERATE — return to the operator with the full ranking; no automatic second pick` |
 | `VOID` | Integrity failure per pre-registration §D VOID row (export hash, K, cost / margin / roll-date snapshots, favorable-excursion column, empty k = 1 export, window length) | `ITERATE — fix the input and rerun the same frozen design` |
 
