@@ -85,7 +85,7 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 
 ## §7 — Execution plan
 
-- **Phase 0 — inputs (operator checkout), before any export is read for scoring.** Classify each leg's sizing inputs from its Pine (reviewed), then produce and hash every (leg, k) size-specific export; record the dated Tradovate rate snapshot (commission + exchange + clearing + NFA, account plan) and initial-margin snapshot, and the per-instrument roll dates; commit them in one manifest; open the `register_search` manifest with K = 2,375 (data-independent).
+- **Phase 0 — inputs (operator checkout), before any export is read for scoring.** Classify each leg's sizing inputs from its Pine (reviewed), then produce and hash every required positive-slot artifact under the frozen pre-registration; record the dated Tradovate rate snapshot (commission + exchange + clearing + NFA, account plan) and initial-margin snapshot, and the per-instrument roll dates; commit the values-bearing manifest privately and its public repository/commit/path/digest binding under pre-registration F6; open the `register_search` manifest with K = 2,375 (data-independent).
 - **Phase 1 — scorer.** Implement the pre-registration's statistic as a new lab scorer reusing `remc_series_builder.parse_trade_list_csv`; unit-test it against the worked example and a synthetic panel, including the bootstrap draw spec. Reviewed before any real export is scored.
 - **Phase 2 — Explore.** Score every non-excluded configuration on the Explore window; commit the full ranking as a hash-pinned freeze.
 - **Phase 3 — Confirm and verdict.** Score only the top configuration on Confirm at 1× and 1.5× cost and on the roll-seam sensitivity; assign the §6 verdict mechanically (VOID first); write the closure.
@@ -99,7 +99,9 @@ Execution runs in the operator's primary checkout (private exports); this public
 [`docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md`](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md) — ships a worked numeric example for the two-implementer test.
 
 Pre-registration commit hash: `ff9f6792` (re-freeze after the Codex review and the independent re-review, pre-registration §E items 1–13; amendments `30c42f82`, `c208bde9`; original freeze `121e2acf`; PR #743, merged with merge commits so both hashes survive on `main`)
-Pre-registration date: 2026-10-09 (FROZEN)
+Pre-registration date: 2026-10-09 (FROZEN baseline)
+
+**2026-10-10 amendment pending review and re-freeze:** Joshua approved the Aegis cap interpretation, five typed disabled-leg slots and the narrow Vanguard cosmetic exemption. [Pre-registration section F](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#f---phase-0-amendment-approved-scope-pending-contract-review-and-re-freeze) owns the precise proposed contract and overrides to the export/VOID wording above. The amended freeze is not yet recorded; exports and scoring remain held. Reconcile scorer ownership and freeze the amended contract before implementation.
 
 Operator rulings before freeze (2026-10-09): the Striker NAS100 MNQ (DOW-excluded) edition is in the pool for this personal-account selection only, its Tradeify withdrawal standing ("include it"); the pre-registration is frozen ("freeze the plan").
 

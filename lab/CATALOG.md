@@ -31,6 +31,7 @@ documents the camp boundary for humans/tools.
 | volregime_l5_pilot_2026-08-31 | _inbox | ACTIVE | Packet C1 bands frozen; large-scale sim not run | lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ |
 | c1_signal_identity_2026-07-28 | c1 | ACTIVE | full-panel MEASURED** (2026-07-29); Q-SIGID-1 §6 offline limb = **FULL** (plan... | lab/analysis/c1/c1_signal_identity_2026-07-28/ |
 | parity_gen2_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/parity_gen2_2026-08/ |
+| sfgrowth_2026-10 | c1 | ACTIVE | — | lab/analysis/c1/sfgrowth_2026-10/ |
 | tradeify_seven_strategy_phase1_2026-09 | c1 | ACTIVE | strict five-source Tradeify source, accounting, deadline, cap, and provenance normalization | lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/ |
 | orb_mym_v04_riskbudget_2026-09-02 | orb | ACTIVE | `EXPLORATORY — NO FILTER PROMOTED; ONE PINE INPUT ADDED, DEFAULT OFF`. Candidate | lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/ |
 | orb_mym_volume_gate_2026-09-02 | orb | ACTIVE | `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED` | lab/analysis/orb/orb_mym_volume_gate_2026-09-02/ |

@@ -100,4 +100,195 @@ Only the top-ranked Explore configuration is scored on Confirm.
 - **2026-10-09, independent re-review on `fec6ad2` (PR #743), before any export was read or produced.** Change from `c208bde9`:
   13. The k-mapping now covers risk-sized legs: account-size inputs scale by `k` (unrounded), initial capital scales by `k` (replacing the fixed `E_0` of item 7, which would have tightened the Striker soft-stop many times over against unchanged positions), contract-count inputs stay `floor(k × reference)`; Phase 0 classifies every sizing input from the Pine before producing exports.
 - **2026-10-09, public-exposure redaction (not an amendment; accepted by Joshua 2026-10-09, in chat to the merge agent).** The dollar value of the starting capital was replaced by the symbol `E_0` throughout, and the §C worked example was restated in normalized units (same arithmetic, same percentages). No constant changed: `E_0` keeps the value fixed at the freeze, which is held in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`, commit `950ee0f`).
+- **2026-10-10, Phase-0 operator rulings approved; technical contract awaiting review and re-freeze.** Aegis cap interpretation, the five typed disabled-leg slots and the two-control Vanguard cosmetic exemption are recorded in section F. Approval reference: `Sentinel_7915fcd79e948191a0248d3bc3fe0b3d`. Amended re-freeze date: **NOT YET RECORDED**; its commit will be recorded in the parent brief §8.
 
+## F - Phase-0 amendment: approved scope, pending contract review and re-freeze
+
+**Authority:** Joshua approved all three scoped rulings on 2026-10-10, approximately
+20:20 UTC, message `Sentinel_7915fcd79e948191a0248d3bc3fe0b3d` ("approve all three").
+The unchanged approval transcript is retained in the private local handoff.
+**Effectivity:** the rulings are approved; this precise artifact/scorer contract
+is prepared for the existing selection owner's review. It takes effect only after
+that review and an explicitly recorded amended freeze. Until then Phase 0 remains
+HOLD before exports, and scorer implementation awaits reconciled ownership and
+the frozen amended contract. Approval is not a run, merge, capital or live GO.
+On re-freeze, this section supersedes only the conflicting §A-§D requirements
+identified below. The prior freeze remains retrievable at `ff9f6792`.
+
+### F1 - Aegis cap interpretation
+
+The existing §A baseline is the `max_contracts` cap used by §B, not a fixed quantity
+on every entry. Actual quantities remain those produced by the pinned equity-risk
+sizing; initial capital scales under §B. Keep the baseline, risk ratios, other
+strategy settings and Pine/port bytes unchanged. Do not force a fixed count or
+post-scale the exported trades. This is the approved semantic clarification.
+
+### F2 - Typed disabled-leg artifacts
+
+For exactly these positive-multiplier slots, replace §B's mandatory TradingView
+export with a `ZERO_BY_INTEGER_SIZING` artifact:
+
+| Leg | Multiplier strings | Input |
+|---|---|---|
+| 3 (Vanguard) | `1/8`, `1/4` | `maxContracts` |
+| 4 (ORB) | `1/8`, `1/4`, `1/2` | `qty` |
+
+These are disabled-leg cases chosen by the operator, not an assertion that the
+unmodified Pine accepts the inadmissible input or produces an empty export.
+Every other positive slot still requires its own TradingView export; `k = 0`
+requires no artifact. The Phase-0 manifest must cover all 25 positive slots exactly
+once: five structural-zero artifacts and twenty exports. Each entry records its
+kind, slot and exact-file SHA-256. A missing, duplicated or incorrectly typed slot
+is VOID. Empty/malformed files never stand in for structural-zero artifacts.
+
+**Exact structural-zero schema (version 1):** one UTF-8 JSON object without a BOM;
+all keys below are required, with no additional keys or duplicate keys. Hash the
+exact file bytes, without normalizing them. Integers below exclude JSON booleans.
+
+| Key | Required type and value |
+|---|---|
+| `schema_version` | Integer `1` |
+| `artifact_type` | String `ZERO_BY_INTEGER_SIZING` |
+| `leg` | Integer `3` or `4`, paired with the permitted multiplier/input above |
+| `multiplier` | One exact reduced-fraction string from that leg's row above |
+| `input_id` | That leg's input identifier above |
+| `reason` | String `FLOORED_COUNT_BELOW_INPUT_MIN` |
+| `pine_sha256` | 64 lowercase hexadecimal characters identifying that leg's pinned Pine |
+| `reference_evidence_sha256` | 64 lowercase hexadecimal characters identifying the reviewed, exact effective-reference evidence used for that input |
+| `classification_sha256` | 64 lowercase hexadecimal characters identifying the reviewed classification file frozen for this study |
+| `preregistration_sha256` | 64 lowercase hexadecimal characters identifying the complete amended preregistration file at its recorded freeze |
+
+The reference-evidence digest identifies the approved original, recapture or
+admission-manifest bytes actually used. Record its provenance separately in the
+private Phase-0 manifest; a recapture digest must not replace or claim equality to
+an unrecovered historical snapshot pin. The manifest binds each zero slot to its
+expected Pine/reference/classification/preregistration digests, independently of
+the artifact's self-declarations, and records the frozen revision.
+
+At Phase-0 admission, hash-check those sources and recompute the floor from the
+reviewed effective reference and the exact rational multiplier; verify that it is
+zero and below the pinned input's declared minimum. A mismatch is VOID, not an
+invitation to extend the five-slot exception. Validate this before publishing the
+data manifest. All later consumers recheck artifact bytes, schema, eligible slot
+and agreement with those admitted manifest bindings before scoring. The artifact
+contains no trade rows, dates, cash values, input values or configurable zero
+outputs; its type fixes its contribution. Freeze the classification and complete
+preregistration first, then generate artifacts, then hash them into the data
+manifest; none of those documents contains its own hash or a future artifact hash.
+
+### F3 - Scorer and verdict handling
+
+A validated structural-zero artifact supplies zero daily gross P&L, costs,
+favorable/adverse excursions, quantity, `d_t`, `l_t` and `h_t` on the existing
+common calendar. Its `max_n_i` and margin contribution are zero. The same holds
+at both cost multiples and under the roll-seam sensitivity. It bypasses the CSV
+trade parser and does not consume randomness or determine calendar endpoints.
+
+Only this validated artifact type is exempt from the TradingView-export and
+favorable-excursion-column requirements. Real exports retain all existing checks,
+including favorable-excursion coverage and nonempty `k = 1` exports for all five
+legs. A valid non-baseline export with no trades retains §B's existing treatment.
+Missing or hash-mismatched artifacts, invalid JSON/schema/bindings, or attempted
+use outside the five slots are VOID, evaluated before any payoff verdict.
+Cost/margin snapshots, roll dates and all other input requirements remain mandatory.
+
+Preserve the complete nominal vector grid, K = 2,375, the all-zero-vector exclusion,
+the exclusion of vectors with both MNQ multipliers nonzero, margin exclusion,
+non-deduplication and the existing ranking/tie-break rules. Exclusions use nominal
+multipliers even when a slot is structurally zero; never rewrite a vector to `k=0`.
+Calendar, windows, seeds/draws, median-growth objective, clearance standard,
+Confirm-only-top-selection and all other statistic/verdict rules are unchanged.
+
+### F4 - Vanguard cosmetic provenance exemption
+
+For leg 3 only, record `showEmas` and `showDashboard` historical values as JSON
+`null`, with status `UNKNOWN_COSMETIC_EXEMPT` in the private reference record.
+Exempt only those two controls from exact historical reference reproduction and
+capture-completeness requirements. Source inspection at the pinned book hash
+shows plot/dashboard use only. Do not infer or relabel their historical values
+from source defaults. Record the display settings actually used for any future
+export separately from historical values. Preserve every trading-setting,
+Properties, source-identity, original-pin and provenance requirement. All other
+unknown required reference values remain blockers. This waives cosmetic equality,
+not hash verification or the distinction between attestation and reproduction.
+
+### F5 - Validation design and integration gate
+
+Before re-freeze, the existing owner reconciles this amendment and classification
+with the current author branch, reviews the contract, and records the re-freeze
+date in §E. Record the commit containing that frozen preregistration in the parent
+brief §8 in a subsequent metadata change; do not embed the preregistration commit's
+own SHA in its bytes. The date and approval message above
+do not themselves identify an amended freeze. Implementation must then demonstrate
+these synthetic cases before any real scoring:
+
+| Case | Required outcome |
+|---|---|
+| Each of the five admitted slots, correctly bound | Accepted as a typed disabled leg; all contributions zero at both costs and through sensitivity; calendar/draws unchanged |
+| Every other positive slot, `k=0`, wrong leg/input/fraction spelling or added slot | Structural-zero artifact rejected as VOID; no clamping, grid change or fallback |
+| Missing/duplicate slot; byte-hash mismatch; wrong source/freeze binding; nonzero floor or admitted bound inconsistency | VOID before scoring |
+| Missing/extra/duplicate JSON key; wrong version/type/reason; non-object/BOM/invalid JSON; extra trade/date/value fields | VOID before scoring |
+| Empty or malformed CSV pretending to be a zero; missing favorable column in a real export; empty baseline export | VOID under the applicable real-export rule; no promotion to structural zero |
+| Full manifest and nominal-grid enumeration | Exactly 25 positive slots and unchanged K/exclusions; no deduplication or conversion of nominal positive multipliers to zero |
+| Zero-slot quantity/margin tie-break contribution | Zero contribution, with nominal vector retained for the existing final tie-break |
+| Only the two exempt historical display values unknown | Provenance completeness accepted with explicit unknown status; any additional required unknown or unauthorized trading-setting change rejected |
+
+These are implementation acceptance cases, not tests already run. Contract review
+and re-freeze precede exports; ownership reconciliation and the amended freeze
+precede scorer implementation; synthetic verification/review and the complete
+Phase-0 manifest precede real scoring. The portfolio remains unselected.
+
+### F6 - Committed private manifest identity
+
+The values-bearing Phase-0 manifest stays private. Its durable destination is
+`Joshua-Asante/first-passage-archive`, the repository's designated private evidence
+store ([archive protocol](../../../scripts/README.md#private-evidence-archive)).
+Use its content-addressed path `evidence/sha256/<first-two-hex>/<sha256>`;
+`private/` in this study is only a local working copy, not the committed identity.
+
+Before scoring, commit a public `PHASE0_MANIFEST_REF.json` in this study directory
+(`lab/analysis/c1/sfgrowth_2026-10/`). It contains only `schema_version` (integer 1),
+`archive_repository` (exactly `Joshua-Asante/first-passage-archive`),
+`archive_commit` (full 40-character lowercase hexadecimal Git commit),
+`archive_path` (the content-addressed path above), and `manifest_sha256`
+(64 lowercase hexadecimal characters). Require exactly these keys, no duplicates
+or extras; JSON booleans are not integers. Register the manifest digest and its
+local private path in `docs/evidence/PRIVATE_EVIDENCE.sha256` in the same public
+commit. No private values, credentials or evidence bodies enter either public file.
+
+Sequence: review/re-freeze classification and preregistration; produce/admit the
+authorized artifacts; finalize the private manifest with all 25 slots, exact-byte
+artifact hashes, changed input values, effective reference/provenance identities,
+cost/margin snapshots, roll dates and frozen source bindings; preserve its exact
+bytes in the private archive and commit/push them; verify retrieval of that blob
+at the recorded commit; then commit the public reference before any scoring read.
+The private manifest must not contain its own digest, archive commit, or the
+public reference's commit. Preserve archived bytes without newline conversion.
+
+Admission and every scoring consumer resolve the committed public reference,
+retrieve the blob from the named repository at that immutable commit/path, and
+verify its SHA-256 against both the path and `manifest_sha256`. Verify the frozen
+source bindings and every required artifact/evidence hash in the private manifest.
+A local working copy is usable only when byte-identical to that committed blob;
+branch tips, local paths alone and self-declared artifact hashes are insufficient.
+Record the public reference commit and private tuple in the run's input identity.
+Missing/unavailable reference, commit, blob or required evidence; malformed
+reference; hash mismatch; source/freeze mismatch; or incomplete/duplicate slot
+coverage is VOID before scoring, without a fallback to uncommitted local bytes.
+
+The destination above does not itself authorize an upload of new private evidence.
+This amendment uploads nothing. Before private publication, the executor must
+establish scoped operator authorization for the exact files and verify the remote
+is this repository and remains private. If that authorization is absent, stop that
+step and request: "Approve committing and pushing the reviewed Q-SFGROWTH-1
+values-bearing Phase-0 manifest and its specifically inventoried supporting
+private evidence to Joshua-Asante/first-passage-archive, under evidence/sha256/;
+publish only repository/commit/path/digest bindings in first-passage."
+Inventory paths and digests locally for that approval; do not upload to obtain it.
+
+Add synthetic acceptance cases to F5: valid committed-reference retrieval passes;
+wrong repository/commit/path/digest, mutable-ref substitution, malformed reference,
+missing archive evidence, local-only or altered manifest, and changed source/freeze
+bindings all produce VOID before scoring. Test exact-byte preservation (including
+line endings), complete 20-export/five-zero coverage, and the absence of private
+values from the public reference. These remain future scorer requirements.
