@@ -259,7 +259,9 @@ A packet that needs a different signature stops and returns (§6).
 
 ## §4 — Hypothesis, integration order and head H′
 
-**H′ (build):** with P-S1, P-S2 and P-S3 merged (and P-S4 if option B), every row Z1–Z10, Y1–Y4, W1 and W3–W10 (and V5) has a red-on-base, green-on-build launcher record, and Y5 and W2 green records; `fp test-ops` (which covers `tests/ops/qualification` and every `book_policy` consumer test), `tests/ops/test_book_policy.py`, `tests/test_remc_series_quantity_parity.py`, `tests/core/test_mc_mode_switching.py`, the parity suite with real inputs read in place, and `fp check` are green at H′; the sealed methods equal `SEALED_SOURCE_SHA256`; and the raw diff from the pre-build base to H′ names no §2.2 forbidden file. **Reject if** a row cannot be made red on its base, a row is green only with a forbidden edit, the sealed hashes change, or the forbidden-file diff is non-empty without a recorded D2-style exception. **Revert trigger:** any existing qualification, book-policy or replay test changes outcome at H′, except the `test_screen_authority.py:474` assertion amended under §2.1.
+**H′ (build):** with P-S1, P-S2 and P-S3 merged (and P-S4 if option B), every row Z1–Z10, Y1–Y4, W1 and W3–W10 (and V5) has a red-on-base, green-on-build launcher record, and Y5 and W2 green records; ~~`fp test-ops` (which covers `tests/ops/qualification` and every `book_policy` consumer test)~~ *(superseded 2026-10-11 by ruling R2, §8: GitHub CI green at H′ plus a local `tests/ops/qualification` launcher record)*, `tests/ops/test_book_policy.py`, `tests/test_remc_series_quantity_parity.py`, `tests/core/test_mc_mode_switching.py`, the parity suite with real inputs read in place, and `fp check` are green at H′; the sealed methods equal `SEALED_SOURCE_SHA256`; and the raw diff from the pre-build base to H′ names no §2.2 forbidden file. **Reject if** a row cannot be made red on its base, a row is green only with a forbidden edit, the sealed hashes change, or the forbidden-file diff is non-empty without a recorded D2-style exception. **Revert trigger:** any existing qualification, book-policy or replay test changes outcome at H′, except the `test_screen_authority.py:474` assertion amended under §2.1.
+
+*Dated note 2026-10-11 (ruling R2, §8):* H′'s regression evidence is (i) GitHub CI green at the exact H′ commit (Tests, Gate manifest, Pylint, c1 image validation and the required `skills (3.12)`) and (ii) a local launcher record of `tests/ops/qualification` (workers allowed), completed with exit 0 and stable source, plus the static checks above (forbidden-file diff, anchors, K7, real-input parity, `fp check`). Local `fp test-ops` is no longer required.
 
 **Dependency graph:**
 
@@ -332,6 +334,7 @@ Each operator act below needs its own GO. Agents never touch a key.
   - **Q2:** "the successor size vector (per-leg whole-contract size plus an adds rule) lives in a signed v2 of the source startup policy, an r3d artifact covered by the existing source-approval chain. No locked Pine, port, dd_protection constant or BASE_RISK is touched."
   - **Q3:** "a NEW screen-authority purpose for successor screens, distinct from T00_STEP3_SELECTED_BOOK_SCREEN. Under it, PARAMETER_CHANGE means 'any change beyond the size vector frozen in the successor pre-registration' (de-risking allowed, re-optimization refused). The original purpose and its refusals stay unchanged for #581."
   - **Q5:** "rewrite #733 to #581's structure (status word, A5/A6 sections, values-block name) so that it passes the authority's existing pre-registration checks, rather than generalizing those checks. The successor path is appended to PREREG_CHAIN. The rewrite itself is a separate docs packet in the card; don't edit #733 in this PR." This departs from the map's Q5 recommendation (generalize); the ruling governs.
+- **H-check evidence standard — RULED (R2)** (Joshua, 2026-10-11 UTC, directly to the Deployment Coordinator: "Make CI-green plus local qualification suite the standard H-check evidence"). An H or H′ check's regression evidence is (i) GitHub CI green at the exact H commit (main-branch workflows Tests, Gate manifest, Pylint and c1 image validation, plus the required `skills (3.12)`) and (ii) a local launcher record of `tests/ops/qualification` (workers allowed), completed with exit 0 and stable source, plus the existing static checks (forbidden-file diff, anchors, K7, real-input parity, `fp check`). Local `fp test-ops` is no longer required: its qualification-isolation children hit a 1 h cap on the operator host, and (i)+(ii) cover its content. Applies from H′ onward; amends §4 and §10.
 - **R1/R2: ON HOLD** (Joshua, 2026-10-10). The successor is judged on (a), the pessimistic A5 assignment. This card builds nothing for R1/R2.
 - **Successor configuration RULED** (Joshua, 2026-10-10, directly to the Deployment Coordinator: "C-1 row 5 uniform, option A, K₀ = 8"; recorded on the T00 card §8 by PR #760; relayed to this card by the coordinator):
   - **C-1:** Tier-2 row 5 alone, uniform reading. Row 3 is not relied on.
@@ -344,7 +347,13 @@ Each operator act below needs its own GO. Agents never touch a key.
   - **Reader rows — OWED:** including the Tier-2 executor session and the Q1 options worker as Tier-2 readers.
 - **Prerequisites:** PS-1 met (card approval above). PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 `REPORT.md` SHA-256 `efcf85dbbe5532f5130674ed7bf0c9bcc77fc6e9a0a65ffc27c6fc85ec2bdb7c`; output SHA256SUMS `d6009bf30dbbea7e8ff6aa6a0bff7de52f483f220b4fcff03ce94199a43da7fd` (abbreviated on the T00 card §8 by #759; full values supplied by the coordinator). PS-4 P-S5 merged at: *pending.*
 - **Packet heads:** *pending.*
-- **H′:** *pending.*
+- **H′: `eed60a1573c2b8840fcd33dcb820b752c673fae0`, ACCEPTED by Joshua** (2026-10-11 UTC, directly to the Deployment Coordinator: "accept H′"; relayed to this card by the coordinator). It is the first `origin/main` commit containing P-S1 (#762), P-S2 (#763, `eb40471`) and P-S3 (#764, `eed60a1`); pre-build base `843e743`. Evidence under ruling R2:
+  - GitHub CI on `main` at H′: Tests, Gate manifest, Pylint and c1 image validation all success.
+  - `tests/ops/qualification`, 4 workers, from worktree `.claude/worktrees/hprime-eed60a1` (record under `.cache/fp-verification`, started 20:41:51Z): 2369 passed, 1 skipped, 7 xfailed, 0 failed; completed / exit 0 / stable. W9 and K7 run inside it; W9 also standalone, record `20261010T203650Z-52e7b661c6b8`.
+  - Real-input parity: 13 passed, 0 skipped, record `20261010T215105Z-b135578602be`.
+  - `fp check` passed; regression set 125 passed.
+  - Forbidden-file diff `843e743..eed60a1` empty; the code diff is exactly the P-S1/P-S2/P-S3 files; original-purpose anchors and the protection cell unchanged.
+  - r3d (`c7a82915…`) re-validated at H′: SHA256SUMS OK, `_derived_from_r3c` True, startup policy v2 parses.
 
 ## §9 — Effort and critical path
 
@@ -389,7 +398,8 @@ rg -n "^A5_TEXT_SHA256|^A6_TEXT_SHA256" ops/c1_rail/qualification/t00_screen/ver
 rg -n "CANDIDATE_SCALE =|def require_policy" ops/c1_rail/book_policy.py
 
 # At H′: full regression, each with its record.json.
-python -I scripts/fp.py test-ops
+# python -I scripts/fp.py test-ops   # superseded 2026-10-11 by §8 ruling R2; CI green at H′ (gh run list --commit "$H") plus:
+python -I scripts/fp.py --workers 4 python -m pytest tests/ops/qualification -q
 python -I scripts/fp.py --workers 2 python -m pytest tests/ops/test_book_policy.py tests/test_remc_series_quantity_parity.py tests/core/test_mc_mode_switching.py tests/ops/test_book_adapters_parity.py -q
 python -I scripts/fp.py check
 

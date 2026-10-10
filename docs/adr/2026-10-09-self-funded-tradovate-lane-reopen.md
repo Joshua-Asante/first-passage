@@ -97,3 +97,13 @@ python scripts/check_adr_graph.py --regenerate-index
 python scripts/check_adr_graph.py
 rg -n "2026-10-09-self-funded" docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md STATE.md
 ```
+
+## Addendum 2026-10-11 — strategy split between lanes (option c)
+
+**Ruling** (Joshua, 2026-10-11 UTC, directly to the Deployment Coordinator: "go with (c), split the strategies between lanes"):
+
+- The Tradeify book's four strategies stay with the Tradeify lane only: aegis_6j, dj30_mym_p250 (Striker DJ30 MYM), vanguard_mgc and orb_mnq_v7, as named in the [venue edition](../../ops/venue_editions/Tradeify_Select_100K.md).
+- Decision 2's candidate pool narrows accordingly: the personal Tradovate lane draws only from **other** locked strategies.
+- **Reason.** Tradeify's 2026-10-08 reply says a bot must be used only within Tradeify, even with different sizing ([exclusive-use replies](../notes/2026-10-10-tradeify-exclusive-use-replies.md), #772).
+
+**Effect on owed item 5.** The strategy-overlap part is resolved by construction: no chosen portfolio shares a strategy with the Tradeify book. The copy-trading, hedging and account-linking questions, and whether the CrossTrade route is permitted, stay **open** pending Tradeify compliance's written answer. Items 1–4, 6 and 7 are unchanged.
