@@ -83,7 +83,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_103 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -171,6 +171,7 @@ _102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/pytest_qualification_collection.py` | governance† | — | — |
 | `scripts/qualification_boundary_environment.py` | governance† | — | — |
 | `scripts/qualification_boundary_verification.py` | governance† | — | — |
+| `scripts/r1r2_evidence.py` | ops | — | — |
 | `scripts/record_verification.py` | governance† | — | — |
 | `scripts/repo_hygiene.py` | governance† | — | — |
 | `scripts/repo_retrieve.py` | governance† | — | — |

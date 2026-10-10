@@ -52,6 +52,8 @@ scripts_layer:
   lock_event_hook: ops
   # imports the H checkout's c1_rail.qualification modules (T00 Tier-1 diagnostic card 2026-10-08)
   t00_tier1_diagnostic: ops
+  # imports c1_rail.qualification (schedule_evidence, production_source) and core bar_export_loader
+  r1r2_evidence: ops
 
 # Import roots that are flat in practice (pyproject pythonpath,
 # scripts/layer_bootstrap.py, the rail entry points, direct scripts/*.py
