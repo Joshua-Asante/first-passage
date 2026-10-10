@@ -75,6 +75,7 @@ first live order on the personal account:
 5. Tradeify rule check, if the chosen portfolio shares any strategy with the Tradeify
    book: whether the same signals in a personal account at the same broker breach any
    copy-trading, hedging or account-linking rule.
+   Evidence (2026-10-10): [Tradeify exclusive-use replies](../notes/2026-10-10-tradeify-exclusive-use-replies.md); item stays open.
 6. Rail binding: an account/instance binding for the personal account kept separate from
    the Tradeify instance (configuration-as-code; no shared credentials).
 7. The 15% live halt (Decision 4): a fail-closed running-peak halt-and-flatten control for
