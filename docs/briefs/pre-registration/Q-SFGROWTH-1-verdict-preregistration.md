@@ -2,6 +2,8 @@
 
 **Status:** FROZEN 2026-10-09 (operator: "freeze the plan"), before any export is read or any scorer exists. The freeze commit is recorded in the [parent brief §8](../Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md#8--verdict-pre-registration). A verdict computed after any constant below moves is void; a changed constant is a new pre-registration. Corrections from the freeze review land before Phase 0 reads data, as a dated amendment and re-freeze (see §E). The original freeze text is immutable at `121e2acf`.
 
+**Lane-split HOLD:** The operator ruling relayed as dated 2026-10-11 excludes legs 1–4 from the personal pool immediately. Section F8 controls pool reconciliation; the five-leg counts below are historical and cannot authorize exports or scoring.
+
 **Amendment reader notice:** Section A below preserves the October 9 baseline wording. The approved native-guard interpretation in [F7](#f7---captured-native-guards-retained-operator-ruling-pending-re-freeze) supersedes its protection parenthetical on amended re-freeze; exports and scoring remain held.
 
 ## A — Pool
@@ -341,3 +343,112 @@ K=2,375, nominal vectors, exclusions, tie-breaks, maximum-growth ranking and the
 99-in-100 clearance standard are unchanged. Exports and scoring remain HOLD
 pending independent review and explicitly recorded amended freeze; this ruling
 does not itself record that freeze.
+
+
+### F8 - Lane split: excluded legs and pool reconciliation HOLD
+
+**Authority:** Joshua's option (c), relayed by the Deployment Coordinator as dated
+2026-10-11: the four Tradeify-book strategies stay Tradeify-only. The personal
+Tradovate pool excludes Aegis 6J (original leg 1), Striker DJ30 MYM (2), Vanguard
+MGC (3) and ORB MNQ v7 (4). These exclusions apply now, before any amended freeze.
+The [exclusive-use record](../../notes/2026-10-10-tradeify-exclusive-use-replies.md)
+records the venue reply; the coordinator owns the dated addendum to the
+[self-funded ADR](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md).
+The [dated addendum](https://github.com/Joshua-Asante/first-passage/blob/d92920946bb7766876ce226a4cea0f67565a2e5f/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11--strategy-split-between-lanes-option-c) is recorded in coordinator PR #778 (pending merge when inspected).
+
+The only remaining member of the already admitted section-A pool is Striker
+NAS100 MNQ, DOW-excluded (original leg 5). No replacement is admitted by this
+amendment. Other locked strategies require explicit eligibility, source/reference
+and pool review before inclusion; rejected/withdrawn editions do not gain admission.
+Original leg identifiers remain provenance identifiers, not available dimensions.
+
+**Recomputed consequences, conditional on retaining only original leg 5:**
+
+- The existing six multipliers give 6 - 1 = **5 nominal configurations** after
+  excluding all-zero. Equivalently, historical vectors are (0,0,0,0,k5), k5 > 0.
+  The original both-MNQ exclusion is vacuous; margin-excluded vectors still count
+  in K, and nominal vectors are never deduplicated.
+- Five positive slots require **5 genuine size-specific exports; 0 structural-zero
+  artifacts**. The five F2 exception slots belong entirely to excluded legs.
+  A structural-zero artifact cannot substitute for any retained leg-5 export.
+- The shared weekday calendar would use the retained leg's genuine nonempty k=1
+  export. Missing favorable excursions or an empty baseline still yield VOID.
+- K=2,375 and the 20-export/five-zero coverage in A–F7 describe the prior pool,
+  not the lane-split pool. They must not be registered or consumed for a new run.
+
+**Decision still owed:** retain that reduced pool or admit additional eligible
+locked candidates before final accounting. The earlier single-candidate proposal
+was not adopted; this arithmetic does not silently adopt it now. Until that
+choice is recorded, there is no executable amended pool or final K. Before
+re-freeze, reconcile A/B/C/D, F2/F3/F5/F6 coverage, the classification and brief
+with the selected pool, then enumerate K without reading outcomes.
+
+**Disposition of prior rulings:** F1 (Aegis cap), F2/F3's five exceptional slots
+and F4 (Vanguard cosmetics) remain historical approvals but are inapplicable to
+the personal pool after the exclusions. They grant no exception for a replacement.
+F7 remains binding for admitted legs: preserve captured native guards and soft-stops,
+exclude external Tradeify overlays, and apply the additional simulator 15% halt.
+Its MYM example remains evidence of the prior clarification, not pool admission.
+The F7 prohibition on removing a leg was scoped to that guard ruling; this later
+lane-split ruling expressly requires removing legs 1–4. Corrected NAS weekday
+lineage and original-versus-recaptured evidence distinctions remain required.
+
+The maximum-growth objective, 15% intraday peak-to-trough halt, 99-in-100 clearance,
+bootstrap, cost stress, margin rule, ranking/tie-break framework and Confirm-only-top
+selection remain unchanged. F6 private committed identity and VOID-on-missing-or-
+mismatched evidence remain mandatory; re-inventory only the selected pool's evidence
+before requesting scoped upload authorization. The earlier five-file packet is not
+an upload authorization or a final pool-specific inventory.
+
+Before scoring, synthetic checks must reject excluded-leg artifacts/vectors and
+unadmitted replacements; enumerate the final nominal grid and exact slot coverage;
+verify genuine-baseline calendar construction; reject zero artifacts outside any
+explicitly frozen eligible slots; and enforce F6 bindings plus retained native
+settings. These are acceptance requirements, not an implemented or tested scorer.
+Exports/scoring remain HOLD pending the pool decision, F9 cost ruling, consistent
+contract, exact-head independent review and explicitly recorded amended freeze.
+Merge remains with the Claude sequencer after Codex is clean and Joshua gives his word.
+
+
+### F9 - Exact-head review findings: exposure, Properties and friction
+
+Codex review of `5134cee0578cdc8aad30f770d97fdf7ba58731a3` identified these
+additional admission defects. They remain relevant after removing legs 1–4.
+The parser source (`lab/discovery/remc_series_builder.py`, inspected at that head)
+provides paired `entry_ny`, `exit_ny`, `qty`; `Trade.gross_usd` adds commission to
+net P&L but does not remove embedded slippage. No export was read for this review.
+
+**Margin correction, proposed for review/re-freeze:** replace section B's largest
+individual trade quantity with each leg/size's maximum concurrent open quantity
+over the full calendar. Sum absolute open contracts across overlapping base/add
+tranches; partial exits reduce only their matched quantity, without double-counting
+paired entry/exit rows. At equal timestamps without a verified finer event ordering,
+process all entries before exits to conservatively bound peak exposure (including
+zero-duration trades). Reject missing/invalid timestamps, nonpositive/noninteger
+quantity, exit-before-entry, inconsistent pairing or unresolvable tranche accounting
+as VOID; do not fall back to largest trade size. Margin exclusion remains the sum
+of each leg's peak exposure times its dated per-contract initial margin versus E_0.
+This correction does not change K, rank tie-break quantity or the clearance standard.
+Synthetic acceptance: overlapping base/add exceeds the larger tranche; separated
+trades do not sum; tied events use the conservative ordering; partial exits and
+multiple closed tranches reconstruct without double counting; malformed exposure
+is VOID; a vector exceeding E_0 is excluded and still counted in nominal K.
+
+**Properties provenance correction:** before any export, bind the captured TradingView
+Properties `Pyramiding` value for every admitted leg in its reviewed private reference
+record and future size-specific artifact manifest. Preserve it as a non-sizing
+setting, distinct from the Pine add-size percentage. Source defaults or a saved chart
+cannot substitute for captured reference evidence. A missing/unknown value or an
+unauthorized difference blocks exports and produces VOID at admission. Test a
+matching capture, missing capture, changed value and percentage/value confusion.
+
+**Friction ruling pending:** retained TradingView commission/slippage can affect the
+native equity/guard-dependent sample; commission add-back changes the accounting,
+not those trades. The existing `gross_usd` series still contains reference slippage.
+Before re-freeze, decide whether to retain that reference behavior and explicitly
+name a fee-only 1.5x stress (leaving reference slippage embedded), or adopt a separately
+specified friction-stress design. Do not zero Properties settings, remove native
+trade effects, call the series friction-free, or claim that multiplying Tradovate
+fees stresses slippage. Record the chosen cost meaning and synthetic acceptance
+cases in section C and the private manifest before exports. No such new cost ruling
+is implied by F7 or the lane split. Review/re-freeze stays HOLD on this item.

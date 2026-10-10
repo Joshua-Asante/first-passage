@@ -4,7 +4,7 @@
 **In-flight:** yes
 
 Active Phase-0 contract review; exports and scoring remain held pending independent
-review and amended freeze. This is an active study with an execution gate, not a
+pool reconciliation under preregistration F8, exact-head review and amended freeze. This is an active study with an execution gate, not a
 parked research disposition.
 
 Owner: [selection brief](../../../../docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md).

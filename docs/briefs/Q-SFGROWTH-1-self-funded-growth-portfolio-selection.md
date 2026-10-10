@@ -1,6 +1,6 @@
 # Q-SFGROWTH-1 — Self-funded growth portfolio selection under a 15% peak-to-trough limit
 
-**Status:** `OPEN`
+**Status:** `OPEN` — lane-split pool reconciliation HOLD (preregistration F8)
 **Authored:** 2026-10-09
 **Closed:** N/A
 **Authors:** Joshua (rulings) + Claude Code (author)
@@ -85,7 +85,7 @@ On 2026-10-09 the operator reopened a self-funded lane on a personal Tradovate a
 
 ## §7 — Execution plan
 
-- **Phase 0 — inputs (operator checkout), before any export is read for scoring.** Classify each leg's sizing inputs from its Pine (reviewed), then produce and hash every required positive-slot artifact under the frozen pre-registration; record the dated Tradovate rate snapshot (commission + exchange + clearing + NFA, account plan) and initial-margin snapshot, and the per-instrument roll dates; commit the values-bearing manifest privately and its public repository/commit/path/digest binding under pre-registration F6; open the `register_search` manifest with K = 2,375 (data-independent).
+- **Phase 0 — inputs (operator checkout), before any export is read for scoring.** Classify each leg's sizing inputs from its Pine (reviewed), then produce and hash every required positive-slot artifact under the frozen pre-registration; record the dated Tradovate rate snapshot (commission + exchange + clearing + NFA, account plan) and initial-margin snapshot, and the per-instrument roll dates; commit the values-bearing manifest privately and its public repository/commit/path/digest binding under pre-registration F6; open the `register_search` manifest only after the lane-split pool and its data-independent K are finalized under F8; the prior K = 2,375 is historical.
 - **Phase 1 — scorer.** Implement the pre-registration's statistic as a new lab scorer reusing `remc_series_builder.parse_trade_list_csv`; unit-test it against the worked example and a synthetic panel, including the bootstrap draw spec. Reviewed before any real export is scored.
 - **Phase 2 — Explore.** Score every non-excluded configuration on the Explore window; commit the full ranking as a hash-pinned freeze.
 - **Phase 3 — Confirm and verdict.** Score only the top configuration on Confirm at 1× and 1.5× cost and on the roll-seam sensitivity; assign the §6 verdict mechanically (VOID first); write the closure.
@@ -95,6 +95,8 @@ Execution runs in the operator's primary checkout (private exports); this public
 ---
 
 ## §8 — Verdict pre-registration
+
+**Lane-split authority pointer:** [2026-10-11 ADR addendum](https://github.com/Joshua-Asante/first-passage/blob/d92920946bb7766876ce226a4cea0f67565a2e5f/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11--strategy-split-between-lanes-option-c) in coordinator PR #778 (pending merge when inspected). [Preregistration F8](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#f8---lane-split-excluded-legs-and-pool-reconciliation-hold) records the four exclusions, conditional five-configuration/five-export/zero-artifact accounting and the outstanding pool decision. No replacement or one-leg study is silently admitted. Section F9 additionally gates freeze on concurrent-exposure margin accounting, captured Properties Pyramiding and an explicit friction ruling.
 
 [`docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md`](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md) — ships a worked numeric example for the two-implementer test.
 
