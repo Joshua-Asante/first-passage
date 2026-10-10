@@ -2,14 +2,16 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT, 2026-10-03. Drafted by a coordinator-(3) worker and not dispatched. **NOT DISPATCHABLE** until every §11 gate holds. Gate G-1 is Joshua's C3-rule admission of the named bound-code edits, and it is **PENDING Joshua**. Coordinator (3) then answers §12, commits the frozen revision under the committed-handoff rule, and records its SHA in the ledger before any executor starts. Dispatch is a separate decision.
+**Status:** DRAFT, 2026-10-03; admission updated 2026-10-10. Drafted by a coordinator-(3) worker and not dispatched. **NOT DISPATCHABLE** until every §11 gate holds. **G-1 code admission APPROVED by Joshua, 2026-10-10 approximately 20:17 UTC** (§13; ledger recording owed). Coordinator (3), or its recorded successor, answers §12, commits the frozen revision under the committed-handoff rule, and records its SHA in the ledger before any executor starts. G-2/G-3 and separate dispatch remain required.
 
 **Base:** drafted at `origin/main` `04a86ac`. Every `file:line` below is at that commit unless it is marked otherwise.
+
+**Current premise check:** [2026-10-10 admission packet](#13-current-source-admission-packet--2026-10-10) at `eb40471b`. The implementation is still absent. Joshua's later G-1 approval is recorded there; the coordinator's ledger entry, G-2 and G-3 remain owed.
 
 **Authority:**
 - **Operator ruling D-7 = B** (Joshua, directly to coordinator (3), 2026-10-03 at about 19:34Z: "go with your recommendation and proceed"). He was answering coordinator (3)'s recommendation of option B in #631's card §12 D-7 (`origin/claude/ra2-offline-card` `a38d89a`, `docs/briefs/handoffs/2026-10-03-ra2-offline-four-sources-card-DRAFT.md:265-271`). Option B sends the non-loosening prepared continuations (first-time attaches and tightenings) before the feed halt, and holds loosenings. This card records the ruling as coordinator (3) relayed it; coordinator (3) records it in the ledger at freeze.
 - **The cost B carries, as coordinator (3) stated it with the same recommendation:** B "needs a small change to the order-protection code (book_protection_owner.py, bound qualification code)". That means its own card plus Joshua's admission of the edit. This is that card.
-- **Not given:** Joshua's C3-rule admission of the bound-code edits. That is gate G-1 (§11), PENDING Joshua.
+- **G-1 code admission:** Joshua approved the bounded scope in PR #769 on 2026-10-10 approximately 20:17 UTC; exact approval and question in §13. This supersedes the drafting-time “not given” status. The constraints and acceptance cases are unchanged.
 
 **Executor:** a Claude worker, single writer of `claude/protection-source-health` (proposed), cut per §9. **Not GLM.** The slice edits the protection owner's loosening admission, which is risk-control code.
 
@@ -416,10 +418,10 @@ git diff --check "$BASE"...HEAD
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1: Joshua's C3-rule admission of the named edits. PENDING Joshua.**
+- **G-1: Joshua's C3-rule admission of the named edits. APPROVED 2026-10-10 (§13); coordinator ledger recording owed.**
   - **Why it is needed.** Both owner files are bound qualification code. In the production trust domain's `_PRODUCTION_CODE`, `book_account_owner` is the `listener_account_owner` role (`trust_domain.py:146`), and `book_protection_owner` is a runtime dependency (`:162`). Editing them changes that code inventory.
   - **What it admits.** The edits are named in §2.2 and §2.6 (`book_protection_owner.py`) and in §2.3 and §2.6 (`book_account_owner.py`).
-  - **Who records it.** Coordinator (3) puts the admission to Joshua and records his words and time in the ledger.
+  - **Who records it.** Coordinator (3), or its recorded successor, records Joshua's §13 words, time and bounded scope in the ledger before dispatch. No repeat approval is needed for this unchanged scope.
   - **Inputs for the admission** (finding (a), drafter's reading at `04a86ac`): neither file, nor `book_runtime.py` or `c1_rail_listener.py`, is in the 68-module measured closure, the T00 P7 closure, or the approximate S5 Linux selection closure. No committed digest pin exists. So this card adds no measured-closure change to the ENG-2 PART_A re-measure (ledger `:983`). If finding (a) differs at the build base, the measurement question routes to coordinator (3), the ENG-2 owner, before any code.
   - `book_runtime.py` and `c1_rail_listener.py` are not in the bound set.
 - **G-2: coordinator (3) freeze.** §12 answered, the frozen revision committed, and its SHA recorded in the ledger.
@@ -441,7 +443,44 @@ git diff --check "$BASE"...HEAD
 - **Loop cost:** one Windows build loop with launcher records. No Docker, no Linux run, no host.
 - **Decisions the executor will hit:** none open after freeze. G-1 is Joshua's, and D-1 to D-6 are coordinator (3)'s.
 - **What makes it moot:**
-  - Joshua declines G-1, so #631 stays at A;
+  - Joshua later withdraws G-1, so #631's build stays blocked pending owner disposition; D-7 = B is not reversed automatically ([coordinator correction](https://github.com/Joshua-Asante/first-passage/pull/653#issuecomment-5973430861));
   - #631 is withdrawn, or a ruling moves source health to the listener (R-N);
   - the attempt ends before a live source matters.
 - **Measurements the return fills in:** Phase-0 findings (a)-(f), the per-case and per-mutant record IDs, and the closure re-check.
+
+## 13. Current-source admission packet — 2026-10-10
+
+**Disposition: G-1 code admission APPROVED; implementation NOT DISPATCHABLE.** The original operating/feed-readiness request authorized preparation; Joshua separately approved the bounded code admission below. Checked public `main@eb40471b5e74252de06197c9e459750f3b7879da`; the [existing documentary review](https://github.com/Joshua-Asante/first-passage/pull/653#pullrequestreview-5402708496) and its disclosed residuals are reused. This is not an executor's post-admission Phase-0 return.
+
+### Current premises and actual consumer
+
+- `git diff 04a86ac eb40471b --` over the four §2.6 code files and `book_evaluate_loop.py` is empty. The cited source lines still resolve. `redeliver_prepared_boundary` (`book_runtime.py:432`), `handle_book_action` (`c1_rail_listener.py:81`) and `BookAccountOwner.dispatch` (`book_account_owner.py:1654`) still have no `sources_healthy` input. The loop redelivers before polling (`book_evaluate_loop.py:43-53`). #631's health-aware consumer is therefore still owed; merging its card did not implement it.
+- The current protection path still classifies on fresh dispatch-time evidence (`book_protection_owner.py:568-600`), and its non-terminal exemption, occurrence disposition and runtime waiting checks remain at `:500`, `book_account_owner.py:1729` and `book_runtime.py:458`. The only `awaiting_evidence` producers in `ops/` remain `book_protection_owner.py:584,586`. The generation/boot checks (`book_account_owner.py:1694-1698`) and halt increment (`:2093-2094`) still support R2. No behavioral test is claimed by these source reads.
+- The existing `stage1c_closure_table.py.txt` run through the validated launcher, `072c133` → `eb40471b`, reports **68 measured / 63 staging, unchanged membership**, with none of the four §2.6 code files in either set. This is a membership finding, not byte equivalence for the whole closure or a substitute for ENG-2. The public P7 D8 list (C′ runtime-identity card `:260-265`) contains none of the four; private P7 records were not read. Searching tracked content for each current file's SHA-256 found no pin. These observations do not admit the two bound-code edits: `trust_domain.py:146,162` still binds them.
+- The same static resolver over all five `S5_CASES` plus the boundary and root test `conftest.py` files finds **98 modules**, excluding all four §2.6 code files (AST imports only; not a dynamic-import or runtime claim). The caller census remains loop `:44` → runtime `:456` → listener `:91` → owner, with fresh dispatches at runtime `:412,418`. `refusal_reason` is `str | None` (`book_account_owner.py:288`); the hold-sensitive tests at protection owner `:500`, account owner `:1729`, runtime `:273,458` are the edits already prescribed here. No additional closed refusal vocabulary was found in adapters, migration/sequence fixtures or telemetry. These findings must be repeated at the future freeze base; there is no build on which to assess new globals or F1–G8 yet.
+- **G-3 is not met.** #628 merged at `6e679cc9`; the GC-5-DISPLACED switch/seams and TB-I3 S2 stale-admission latch are absent from this main. Their two cards remain the predecessors under the proposed D-4 order. Their implementation owners must return accepted merge identities; no new executor is assigned here.
+- **D-3's PR-state premise changed:** #571 was [archived unmerged and closed on 2026-10-09](https://github.com/Joshua-Asante/first-passage/pull/571#issuecomment-6074372215). Its retained branch is historical work, not a merged repair; its legacy guard remains. The earlier “open draft” descriptions in §9/§12 are the drafting snapshot. At freeze, the coordinator must still rule D-3 and confirm that no active local packet writes the listener. Closing #571 alone does not select the route.
+- The [feed-equivalence owner](../../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md) already binds all eleven parameters and A9-PREP #619 is merged. Neither is a missing prerequisite to recreate. They establish the provider-neutral source contract, not this owner's health input or #631's actual-consumer integration. Provider answers, CP-7 and account licensing remain separate.
+
+### Approval record and remaining owner actions
+
+**G-1 approval evidence.** Hyper supplied the following transcript from Joshua's conversation; the approximately 20:17 UTC time is as relayed, not a separately verified timestamp:
+
+```text
+<transcript_evidence>
+Assistant asked Joshua: "One approval is yours: allow the narrowly specified edits to book_protection_owner.py and book_account_owner.py so the already-adopted source-health policy can be implemented. I recommend approving that scope while preserving the existing evidence checks, fences, deadlines and required tests. The existing design’s limitations remain: a mixed group can hold a tightening action too, and protection cannot be attached without fresh evidence. Coordinator freeze and predecessor gates still apply. Do you approve that bounded code admission?"
+Joshua replied in message Sentinel_46ef507429dc819190d26ccab86aded6 on October 10, 2026 at approximately 20:17 UTC: "I approve the pr 769 code admission"
+</transcript_evidence>
+```
+
+**Admitted scope, unchanged from the packet Joshua approved:**
+
+> Admit the bound qualification-code edits in this card's §2.2/§2.6 to `book_protection_owner.py` and §2.3/§2.6 to `book_account_owner.py`, solely for the D-7=B source-health input and `held_unhealthy` semantics. Preserve the owner's fresh classification, fences, refusal precedence, deadlines, occurrence schema and the declared F1/F2/G1–G8 acceptance. G-2 and G-3 remain prerequisites to implementation.
+
+The cost remains: a mixed-scope parent holds its tightening child too; a feed halt prevents that occurrence's later healthy retry and it reaches its original protection deadline; an attach lacking fresh evidence can remain unprotected. Admission changes none of those limitations. It grants no merge, runtime activation or second implementation worker.
+
+**G-2/G-3, card coordinator; recommendation: retain §12 D-1/D-2/D-5 and the default D-4 predecessor order.** Record all six D decisions explicitly: `held_unhealthy`; keyword-only exact-bool default `True`; the chosen listener/direct-owner route; the predecessor order; whole-parent hold; and the exact post-predecessor base. Confirm the current named successor to this card's coordinator-(3) role in the freeze record. Preserve the **one Claude worker, not GLM**, requirement and the worker's no-PR return boundary; this docs-only PR is preparation under Joshua's direct request, not that build dispatch.
+
+Before freezing, recheck §0(a)–(f) on that base, bind every prerequisite merge, confirm one writer per file (including local assignments), commit the frozen card and record its SHA in the execution-slices ledger. Dispatch remains a separate owner action. #631 then consumes the accepted, merged interface and performs its own cases 14–18, including the `finally` feed halt. The present public checkout cannot certify unpushed local ownership or the future freeze base.
+
+**Next owner action:** the card coordinator confirms its named succession, records G-1 in the ledger and resolves D-1–D-6 with the existing predecessor owners. **No further Joshua decision is currently identified within this admitted scope.** A changed scope or a new admission finding returns through its own gate; neither is presumed here.
