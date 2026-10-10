@@ -36,7 +36,7 @@ Offline and compatibility-only callers stay as they are: `book_policy.py:574` (`
   - `book_sizing_context.py` is a trust-domain runtime dependency (`trust_domain.py:163`) and a TB-I1 policy-fingerprint component (`policy_fingerprint.py:29-32`), so an edit moves that fingerprint.
   - Seal, trust-domain and composition suites must stay green, and the edit adds no module-level global (protection-health card `:80`, `:136`).
 - **Avoid:** `book_policy.py`. It sits in the P7 measured closure (GC-5 card `:62`). An edit after H′ "defines a new H′ and repeats §7 step 1" (build card §4). No `book_policy.py` change is needed, because `size=` already exists.
-- **Phase-0 premise:** whether `book_sizing_context.py` is inside the P7 closure through `book_capacity.py:15` must be checked with the closure script. If it is, P-L1 waits until after the screen's `verify`.
+- **Closure premise, resolved 2026-10-11:** the measured-closure script at `b5571a9` gives 68 measured / 63 staging, with `book_sizing_context.py` and `book_account_owner.py` in neither set. The public P7 D8 list (40 paths) names neither file. So P-L1 and P-L2 do not move H′. Each card re-checks this in its Phase 0.
 - **Locked and untouched (any need for these is a stop):** `DD_TRIGGER`, `DD_SCALE` and `CANDIDATE_SCALE`/`require_policy` (`book_policy.py:99-115`); `BASE_RISK`; lifecycle multipliers; Pine; ports; `effective_inputs.json`; `book_adapters.py`.
 - **Not bound:** `book_runtime.py`, `c1_rail_listener.py` and `book_bundle_execution.py` are not in the trust domain (protection-health freeze check, `:7`). The plan does not need to edit `book_runtime.py` or `c1_rail_listener.py`.
 
@@ -62,6 +62,8 @@ Every packet is CC solo, because each one touches sizing (build card §5 bars GL
 | **P-L5** records | Venue edition rows and the release inventory carry `size_vector_sha256` (no values) | Docs check | 0.25 d | T16 |
 
 The total is about 3.25 CC days. None of it is needed on NO-GO.
+
+Draft build cards: [P-L1](../briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) · [P-L2](../briefs/handoffs/2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md).
 
 ## 6. Open questions for Joshua
 
