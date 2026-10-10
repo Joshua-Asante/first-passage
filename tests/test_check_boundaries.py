@@ -121,6 +121,91 @@ def test_parse_failure_message_is_not_labeled_illegal():
         assert "ILLEGAL" not in labeled
 
 
+def _git(root, *args):
+    subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
+
+
+def _reroot(monkeypatch, root):
+    """Re-root the scan at a fresh git repo; the scan set is git-visible files only."""
+    _git(root, "init", "-q")
+    monkeypatch.setattr(cb, "REPO_ROOT", root)
+
+
+def _write(root, files):
+    for rel, source in files.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(source, encoding="utf-8")
+
+
+# ── scan set: tracked + untracked-not-ignored; gitignored skipped (2026-10-10) ──
+
+@pytest.mark.parametrize("track", [False, True])
+def test_git_visible_illegal_import_fails(tmp_path, monkeypatch, capsys, track):
+    _write(tmp_path, {"lab/src.py": "import ops.runner", "ops/runner.py": ""})
+    _reroot(monkeypatch, tmp_path)
+    if track:
+        _git(tmp_path, "add", "-A")
+    assert cb.main() == 1
+    assert "ILLEGAL lab->ops" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("source", ["import ops.runner", "def broken(:\n"])
+def test_gitignored_py_is_skipped(tmp_path, monkeypatch, capsys, source):
+    _write(tmp_path, {".gitignore": "private/\n", "lab/private/src.py": source,
+                      "lab/ok.py": "", "ops/runner.py": ""})
+    _reroot(monkeypatch, tmp_path)
+    assert cb.main() == 0, capsys.readouterr().out
+
+
+def test_gitignored_module_is_not_resolvable_first_party(tmp_path, monkeypatch, capsys):
+    # A gitignored ops module must not satisfy a tracked import; it stays unresolved.
+    _write(tmp_path, {".gitignore": "ops/private_mod.py\n", "ops/private_mod.py": "",
+                      "ops/src.py": "import ops.private_mod"})
+    _reroot(monkeypatch, tmp_path)
+    assert "ops.private_mod" not in cb.build_index()[0]
+    assert cb.main() == 1
+    assert "UNRESOLVED first-party import 'ops.private_mod'" in capsys.readouterr().out
+
+
+def test_tracked_file_deleted_on_disk_is_skipped(tmp_path, monkeypatch):
+    _write(tmp_path, {"lab/src.py": "import ops.runner", "ops/runner.py": "", "core/ok.py": ""})
+    _reroot(monkeypatch, tmp_path)
+    _git(tmp_path, "add", "-A")
+    (tmp_path / "lab/src.py").unlink()
+    assert cb.main() == 0
+
+
+def test_not_a_git_repo_fails_closed(tmp_path, monkeypatch, capsys):
+    _write(tmp_path, {"core/ok.py": ""})
+    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path.parent))
+    assert cb.main() == 1
+    assert "REFUSED" in capsys.readouterr().err
+
+
+def test_git_unavailable_fails_closed(tmp_path, monkeypatch, capsys):
+    _write(tmp_path, {"core/ok.py": ""})
+    _reroot(monkeypatch, tmp_path)
+
+    def no_git(*_args, **_kwargs):
+        raise FileNotFoundError("git")
+    monkeypatch.setattr(cb.subprocess, "run", no_git)
+    assert cb.main() == 1
+    assert "git unavailable" in capsys.readouterr().err
+
+
+def test_real_repo_index_matches_git_visible_set():
+    # Module count is a function of the git-visible set only: the real-tree index
+    # equals one rebuilt from an independent `git ls-files` listing.
+    out = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "--", "*.py"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True).stdout.splitlines()
+    files = sorted({rel for rel in out if (REPO_ROOT / rel).is_file()})
+    assert cb.build_index(files) == cb.build_index()
+    assert len(cb.build_index()[0]) > 100
+
+
 @pytest.mark.parametrize("statement,target", [
     ("import ops.runner as run", "ops/runner.py"),
     ("from ops import runner as run", "ops/runner.py"),
@@ -135,7 +220,7 @@ def test_synthetic_import_paths_fail_closed(tmp_path, monkeypatch, capsys, state
         path = tmp_path / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(source, encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 1
     output = capsys.readouterr().out
     assert "ILLEGAL core->ops" in output
@@ -145,7 +230,7 @@ def test_synthetic_import_paths_fail_closed(tmp_path, monkeypatch, capsys, state
 def test_unresolved_first_party_is_not_third_party(tmp_path, monkeypatch, capsys):
     (tmp_path / "core").mkdir()
     (tmp_path / "core/source.py").write_text("import ops.missing\nimport numpy\n", encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 1
     output = capsys.readouterr().out
     assert "UNRESOLVED first-party import 'ops.missing'" in output
@@ -157,7 +242,7 @@ def test_cross_layer_collision_reports_paths(tmp_path, monkeypatch, capsys):
         path = tmp_path / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("", encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 1
     output = capsys.readouterr().out
     assert "NAME COLLISION" in output
@@ -170,7 +255,7 @@ def test_same_layer_duplicate_and_relative_imports_pass(tmp_path, monkeypatch):
         path = tmp_path / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(source, encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 0
 
 
@@ -184,7 +269,7 @@ def test_legal_core_and_external_imports_pass(tmp_path, monkeypatch, statement):
     (tmp_path / "ops").mkdir()
     (tmp_path / "core/portfolio_mc.py").write_text("def run(): pass", encoding="utf-8")
     (tmp_path / "ops/source.py").write_text(statement, encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 0
 
 
@@ -192,7 +277,7 @@ def test_relative_import_of_mixed_layer_script_is_checked(tmp_path, monkeypatch,
     (tmp_path / "scripts").mkdir()
     (tmp_path / "scripts/check_brief.py").write_text("from . import lock_event_hook", encoding="utf-8")
     (tmp_path / "scripts/lock_event_hook.py").write_text("", encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 1
     assert "ILLEGAL governance->ops" in capsys.readouterr().out
 
@@ -201,7 +286,7 @@ def test_unresolved_known_flat_package_fails(tmp_path, monkeypatch, capsys):
     (tmp_path / "core/pkg").mkdir(parents=True)
     (tmp_path / "core/pkg/__init__.py").write_text("", encoding="utf-8")
     (tmp_path / "core/source.py").write_text("import pkg.missing", encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 1
     assert "UNRESOLVED first-party import 'pkg.missing'" in capsys.readouterr().out
 
@@ -209,7 +294,7 @@ def test_unresolved_known_flat_package_fails(tmp_path, monkeypatch, capsys):
 def test_beyond_top_level_relative_import_is_distinct(tmp_path, monkeypatch, capsys):
     (tmp_path / "core").mkdir()
     (tmp_path / "core/source.py").write_text("from ... import sibling", encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 1
     output = capsys.readouterr().out
     assert "INVALID RELATIVE" in output
@@ -219,6 +304,6 @@ def test_beyond_top_level_relative_import_is_distinct(tmp_path, monkeypatch, cap
 def test_missing_relative_package_fails(tmp_path, monkeypatch, capsys):
     (tmp_path / "core/pkg").mkdir(parents=True)
     (tmp_path / "core/pkg/source.py").write_text("from .missing import thing", encoding="utf-8")
-    monkeypatch.setattr(cb, "REPO_ROOT", tmp_path)
+    _reroot(monkeypatch, tmp_path)
     assert cb.main() == 1
     assert "UNRESOLVED first-party import 'core.pkg.missing'" in capsys.readouterr().out
