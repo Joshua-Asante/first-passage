@@ -313,7 +313,7 @@ Each operator act below needs its own GO. Agents never touch a key.
 | 3 | **K₀ ledger entry:** the coordinator opens a PR registering this book's lineage in `discovery_manifests/` (map §6), merged before step 4 | coordinator, Joshua merges | PS-3 | 0.25 d, parallel with step 2 |
 | 4 | **#733 freeze (ratification), before any replay over r3d** (#733 §R; P7 replays a real path over r3d's contract, `p7_driver.py:1-6`): with C-1, Q1 and K₀ already ruled, Joshua fills C-2…C-7 (C-7 his exposure), the reader log (Tier-2 executor and Q1 options worker added), G4–G6 and Q6 (G5), Q7 (depth), `pass_floor_halves`, OD-1/OD-2 and the values block (with `size_vector_sha256`, new RNG roots, budget); C then C′ per #581's procedure | Joshua | P-S5 merged; steps 2, 3 | 0.5 d |
 | 5 | **Fresh source approval over r3d** (`APPROVE_T00_SOURCE_CONTRACT`, key `source:1ebae5d45bc51280`), verified with `verify_detached_approval(allow_test_authority=False)` | Joshua signs | step 4 | 0.1 d |
-| 6 | **P7 at H′ over r3d**, one run by the accepted P7 procedure. `p7_acceptance.json` is write-once (`coordinator.py:1290-1292`, `P7_ACCEPTANCE_EXISTS`), so the current acceptance is first renamed aside in place, not deleted, on Joshua's GO (the 2026-10-10 precedent, T00 card §8); step 12's attestation hashed that file's earlier version, and step 12's window closes 2026-10-14 in any case. Then `t00_screen accept-p7` | coordinator | steps 1, 5 | 0.25 d (about 1 h) |
+| 6 | **P7 at H′ over r3d**, one run by the accepted P7 procedure. `p7_acceptance.json` is write-once (`coordinator.py:1290-1292`, `P7_ACCEPTANCE_EXISTS`), so the coordinator first renames the current acceptance aside in place, not deleted, as it did on 2026-10-10 (T00 card §8); step 12's attestation hashed that file's earlier version, and step 12's window closes 2026-10-14 in any case. Then `t00_screen accept-p7` | coordinator | steps 1, 5 | 0.25 d (about 1 h) |
 | 7 | **Screen authority** under the successor purpose, over r3d, the P7 record and ratified #733; `validate_screen_authority` ISSUED | Joshua signs | steps 4, 6 | 0.25 d |
 | 8 | **One run**, `--workers 8`, one segment planned; no read of the run directory before `finalize` (row X2) | executor | step 7 | 9–44 h |
 | 9 | **`finalize`, then `verify`**, inside both approval windows | executor | step 8 | about 0.1 d |
@@ -343,7 +343,7 @@ Each operator act below needs its own GO. Agents never touch a key.
   - **C-7 — OWED (Joshua):** his answerer exposure.
   - **Reader rows — OWED:** including the Tier-2 executor session and the Q1 options worker as Tier-2 readers.
   - **Card decisions S-1…S-7** (§0.5), answered with card approval; S-3, S-4 and S-6 option B change frozen design items (§3.2).
-- **Prerequisites:** PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 report SHA-256: *to record from the T00 card.* PS-4 P-S5 merged at: *pending.*
+- **Prerequisites:** PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 `REPORT.md` SHA-256 `efcf85dbbe5532f5130674ed7bf0c9bcc77fc6e9a0a65ffc27c6fc85ec2bdb7c`; output SHA256SUMS `d6009bf30dbbea7e8ff6aa6a0bff7de52f483f220b4fcff03ce94199a43da7fd` (abbreviated on the T00 card §8 by #759; full values supplied by the coordinator). PS-4 P-S5 merged at: *pending.*
 - **Packet heads:** *pending.*
 - **H′:** *pending.*
 
