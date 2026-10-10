@@ -26,7 +26,7 @@
 
 **Falsifier source (Tier 2 — categorical claim, not a numeric simulation input; per brief-authoring §0 citation-tier rule):**
 
-| `core/strategies/striker/LOCK.md:55` | DJ30/MYM: `pyramid trigger 1.29×ATR / size 750% / **minBars 6**` |
+| `core/strategies/striker/LOCK.md:55` | DJ30/MYM: pyramid trigger and min-bars fixed by the locked Pine *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)* · `size 750%` |
 | `core/strategies/nas/LOCK.md:50` | NAS100/MNQ: `pyramid trigger 1.10×ATR / size 1000% / **minBars 6**` |
 
 Pine source is gitignored (`**/*.pine`); LOCK.md is the version-anchored Tier-2 substitute, and the claim it grounds is categorical (minimum bar separation exists), not numeric.
@@ -78,7 +78,7 @@ One strategy intent can reach the venue as two live orders, and the rail cannot 
 
 **Result: falsifier RUN and PASSED, 2026-07-29, before this document was authored.**
 
-Both venue legs enforce a **minimum 6-bar separation** between pyramid adds (`striker/LOCK.md:55`, `nas/LOCK.md:50` — `minBars 6`). On the 15m signal timeframe that is a 90-minute floor between consecutive adds on a leg. `entry` and `add` are distinct `signal_type` values and therefore distinct keys, so an entry and its first add never collide either. **No legitimate risk-add pair can share the tuple.**
+Both venue legs enforce a **minimum bar separation** between pyramid adds (`striker/LOCK.md:55`, `nas/LOCK.md:50` — locked `minBars`) *(redacted 2026-10-09; see note above)*. On the 15m signal timeframe that is a floor of `minBars` × 15 minutes between consecutive adds on a leg. `entry` and `add` are distinct `signal_type` values and therefore distinct keys, so an entry and its first add never collide either. **No legitimate risk-add pair can share the tuple.**
 
 This is why the check is admissible: the one way it could have broken real trading is closed by the locked strategies' own construction, established by citation rather than by argument.
 
@@ -140,7 +140,7 @@ grep -rnE "_order_id|_b1_order_id|intent_key" ops/*.py
 # Falsifier re-check — both legs must still declare a minBars floor between adds.
 # If either line loses minBars, H-C1-DEDUPE-1 must be re-verified before trusting the guard:
 grep -nE "pyramid trigger .* minBars" core/strategies/striker/LOCK.md core/strategies/nas/LOCK.md
-# expect: striker minBars 6, nas minBars 6
+# expect: both legs declare a minBars floor (values redacted 2026-10-09)
 
 # Gate precondition — M1 must read RESOLVED, not CODE_LANDED:
 python -c "import json;print(json.load(open('docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json'))['status'])"

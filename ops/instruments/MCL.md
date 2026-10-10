@@ -79,7 +79,7 @@ STATUS:   OPEN — geometry-cleared, mechanism-owed
 
 Limb reading (link out; do not restate σ/K as authority):
 
-- **N-ACT = P** — Wed/Thu config can host ≥1 Mon–Fri week trade by construction (class attestation; not a measured idle-clock).
+- **N-ACT = P** — Free-weekday config *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `4eb2ed725d21740818032e1df0bf602cc4979111`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)* can host ≥1 Mon–Fri week trade by construction (class attestation; not a measured idle-clock).
 - **N-SURV / N-EDGE / N-SIZE = U** — no mechanism trade series; geometry ≠ edge; Part A / DSR / frontier unread.
 - **N-SHAPE = P** — Energy Product Group · two-sided legal · micro · flat-by-16:00 build target inside venue print (EM5 class). EM3 independence unread until a mechanism exists → disclose “shape-legal as config, not as filled construct.”
 

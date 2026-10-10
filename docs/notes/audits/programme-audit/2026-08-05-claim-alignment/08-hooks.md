@@ -1077,8 +1077,8 @@ Executed at 0af62ec:
           real: lab/analysis/orb/orb_mnq_2026-07/run_decay_monitor.py
   A49  **Theme:** legacy
        **Status:** ACTIVE — Phase A provisional MNQ/MYM granularity floors
-       **PROVISIONAL:** the floors below are provisional until the ATR length (11), SL
-       multiple (1.20×), and risk% ... re-verified against the dropped Pine source at Phase B
+       **PROVISIONAL:** the floors below are provisional until the ATR length, SL
+       multiple *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*, and risk% ... re-verified against the dropped Pine source at Phase B
        Task B0. Treat as a LOCK.md mirror, not an authoritative recompute.
   A48  RESULTS L13:  "**Status:** ACTIVE — the cadence axis F3 required is measured, and
                       **F3 is not decidable on it.** ..."
