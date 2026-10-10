@@ -4,7 +4,7 @@
 
 **Date:** 2026-10-10 (UTC).
 
-**Status:** DRAFT — awaits Joshua's approval. No packet starts and no code is written before that approval is recorded in §8.
+**Status:** APPROVED 2026-10-10 by Joshua (§8). Packets start only once their §0 prerequisites are recorded in §8.
 
 **Authority:**
 - Operator rulings Q2, Q3 and Q5 (Joshua, 2026-10-10, directly to the Deployment Coordinator: "agreed on Q2, Q3, Q5"), recorded in §8. They answer the [readiness map](../../notes/2026-10-10-successor-screen-readiness-map.md) (PR #757) §5.
@@ -327,7 +327,7 @@ Each operator act below needs its own GO. Agents never touch a key.
 
 ## §8 — Approval, rulings and H′ record
 
-- **Card approval:** *pending.*
+- **Card approval: APPROVED** by Joshua, 2026-10-10, directly to the Deployment Coordinator: "approve #758, S-1 to S-7, P-S4 option A" (relayed to this card by the coordinator). S-1…S-7 are adopted as recommended in §0.5. P-S4 is option A, so no verdict packet is built and `t00_screen/verdict.py` stays forbidden. Card approval covers the §3.2 rows marked "with card approval" (the design §9 forbidden-list amendment for `book_policy.py`, `replay.py` and `production_source.py`) and S-3 and S-4.
 - **Operator rulings, Joshua, 2026-10-10, directly to the Deployment Coordinator: "agreed on Q2, Q3, Q5"** (recorded as relayed in this card's dispatch):
   - **Q2:** "the successor size vector (per-leg whole-contract size plus an adds rule) lives in a signed v2 of the source startup policy, an r3d artifact covered by the existing source-approval chain. No locked Pine, port, dd_protection constant or BASE_RISK is touched."
   - **Q3:** "a NEW screen-authority purpose for successor screens, distinct from T00_STEP3_SELECTED_BOOK_SCREEN. Under it, PARAMETER_CHANGE means 'any change beyond the size vector frozen in the successor pre-registration' (de-risking allowed, re-optimization refused). The original purpose and its refusals stay unchanged for #581."
@@ -342,8 +342,7 @@ Each operator act below needs its own GO. Agents never touch a key.
   - **Q7 — OPEN (OWED, Joshua to confirm).** Depth stays N = 1,002 per population (T00 card §8) unless Joshua re-rules.
   - **C-7 — OWED (Joshua):** his answerer exposure.
   - **Reader rows — OWED:** including the Tier-2 executor session and the Q1 options worker as Tier-2 readers.
-  - **Card decisions S-1…S-7** (§0.5), answered with card approval; S-3, S-4 and S-6 option B change frozen design items (§3.2).
-- **Prerequisites:** PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 `REPORT.md` SHA-256 `efcf85dbbe5532f5130674ed7bf0c9bcc77fc6e9a0a65ffc27c6fc85ec2bdb7c`; output SHA256SUMS `d6009bf30dbbea7e8ff6aa6a0bff7de52f483f220b4fcff03ce94199a43da7fd` (abbreviated on the T00 card §8 by #759; full values supplied by the coordinator). PS-4 P-S5 merged at: *pending.*
+- **Prerequisites:** PS-1 met (card approval above). PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 `REPORT.md` SHA-256 `efcf85dbbe5532f5130674ed7bf0c9bcc77fc6e9a0a65ffc27c6fc85ec2bdb7c`; output SHA256SUMS `d6009bf30dbbea7e8ff6aa6a0bff7de52f483f220b4fcff03ce94199a43da7fd` (abbreviated on the T00 card §8 by #759; full values supplied by the coordinator). PS-4 P-S5 merged at: *pending.*
 - **Packet heads:** *pending.*
 - **H′:** *pending.*
 
