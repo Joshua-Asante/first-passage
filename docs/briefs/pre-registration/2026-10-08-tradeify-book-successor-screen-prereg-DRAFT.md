@@ -68,7 +68,7 @@ As #581 §1b, stated here as this file's own disposition: **a T00 screen does no
 ### §1c — K accounting
 
 - **K₀ = 8** (Joshua, 2026-10-10): the step-12 screen of the declared book (1) plus the size-feasibility grid (7), counted once. This successor is **K = 9**.
-- This book's lineage is registered in `discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json` (K = 9: K₀ = 8 plus this pick; card #758 §7 step 3), in its own PR, merged before ratification (§5a item 3).
+- This book's lineage is registered as `discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json` (K = 9: K₀ = 8 plus this pick; card #758 §7 step 3) by its own PR, [#765](https://github.com/Joshua-Asante/first-passage/pull/765), which merges before ratification (§5a item 3).
 - Each further configuration screened, under this file or a sibling, is another trial and needs its own ratified pre-registration.
 
 ### §1d — #733's earlier gates under Q5
@@ -229,7 +229,7 @@ The denominator is always every path in the population. `UNDETERMINED` paths are
 
 ---
 
-## §6 — Ratification (operator; blank until ruled)
+## §6 — Ratification (operator)
 
 The §3 values are recorded once, in the `t00-step2-values/v1` block below: one line equal to `canonical_json_bytes(parameters)` (screen-authority design §3, row A8). Each active §3 *Ratified value* cell names only its keys. The successor's `parameters` differ from #581's only in `expressions` (§2 A1), `rng.roots` and `rng.probe_root` (§3 item 4), `pass_floor_halves` (`BINDING`, §3 item 2) and the text of `budget.basis` (Q7); `depth_per_root` and the two budget figures are #581's (§3 item 1). The block below (SHA-256 `2adfaa831fd281a1a73d401271e1f272431de962352bcc1387e68168b4bc06c8`) passes P-S3's `_check_parameters` under the successor purpose (§10). The verdict is GO-evidence, NO-GO-evidence or INSUFFICIENT, per A6; on H (§4) they read RESOLVED, FALSIFIED and AMBIGUOUS.
 
@@ -264,9 +264,9 @@ Readers of per-session or per-leg step-12 detail, of the step-12 run directory (
 | T2-2 | Q1 options worker | 2026-10-10 | The Tier-2 report | T00 card §8, Tier-2 result |
 | T2-3 | Deployment Coordinator | 2026-10-10 | The Tier-2 hash-and-label return, the Q1 options worker's public-safe return and, from Joshua, the four recommendations adopted as decisions 1–4; not the report | T00 card §8, Tier-2 result |
 | T2-4 | Joshua | 2026-10-10 | Neither report directly (C-7 "not seen"). He received the coordinator's hash-and-label returns, the public-safe Q1 summary, and the Codex assessment chat's (T2-5) qualitative findings summary of the Tier-2 report; decisions 1–4 followed that summary | §1a C-7; relayed by the coordinator |
-| T2-5 | Codex assessment chat (thread `01a126d1-6972-75d2-8190-052ebb21a661`) | 2026-10-10 | The Tier-2 `REPORT.md` (`efcf85db…db7c`), read during its assessment; it gave Joshua a qualitative findings summary and the four recommendations adopted as decisions 1–4. Report exposure, not a new diagnostic run | relayed by the coordinator |
+| T2-5 | Codex assessment chat (thread `01a126d1…`) | 2026-10-10 | The Tier-2 `REPORT.md` (`efcf85db…db7c`), read during its assessment; it gave Joshua a qualitative findings summary and the four recommendations adopted as decisions 1–4. Report exposure, not a new diagnostic run | relayed by the coordinator |
 | PS5-1 | P-S5 worker (this rewrite) | 2026-10-10 | Public code and docs only; no report, series, keys, Q1 sheet or private result | this file |
-| PA-1 | Pre-registration assembly worker (the 2026-10-10 completion) | 2026-10-10 | The private Q1 options sheet (`62a947d5…`; it restates Tier-2 report findings), r3c's startup policy and contract (structure and the startup row), the step-12 authority's `rng`, `depth_per_root`, `pass_floor_halves` and `purpose` fields, the step-12 console log (authority hash only); no report, series, keys, run directory, `results.json`, Pine, port or effective inputs | this file |
+| PA-1 | Pre-registration assembly worker (the 2026-10-10 completion) | 2026-10-10 | The private Q1 options sheet (`Q1_OPTIONS.md` `62a947d5…`, folder SHA256SUMS `08f9c147…`; it restates Tier-2 report findings), r3c's startup policy and contract (structure and the startup row), the step-12 authority's `rng`, `depth_per_root`, `pass_floor_halves` and `purpose` fields, the step-12 console log (authority hash only); no report, series, keys, run directory, `results.json`, Pine, port or effective inputs | this file |
 
 Also exposed to everyone: the public step-12 verdict `NO-GO-evidence-robust` (#724), the Tier-2 card's admission-time row 5, and the public Tier-2 result (rows 4 and 5 hold).
 
@@ -284,11 +284,19 @@ Ratification attests that this table is complete.
 ## §9 — Ratification procedure
 
 1. **Before C (coordinator):** this file's completion PR merged; the K-ledger PR merged (§1c); H′ accepted and this file re-validated at H′ (§5a item 1); §10 run except the ratification-completeness hook. Joshua reviews the full text, including the values block, the fresh roots and §7.
-2. **C (Joshua's ratification, one commit on a branch from `origin/main`, this file only):** two lines change, nothing else (A5/A6, the values block and every other byte unchanged):
-   - line 3 becomes `` **Status:** `RATIFIED <YYYY-MM-DD>` by Joshua, directly to <recipient>: "<his words>" (§6). `` followed by the rest of the current Status text, with `*As drafted:* ` before `` `DRAFT — NOT RATIFIED.` `` (as #581);
-   - the §6 `- **Ruling:**` line becomes `- **Ruling:** Joshua, <date>, directly to <recipient>: "<his words>". This ratifies §1–§5 as written and the §6 `t00-step2-values/v1` block (SHA-256 `2adfaa83…06c8`). The A5/A6 bytes are unchanged (A5 `a8f6f25e…391b`, A6 `b3bdc77b…17d9`).`
-   C must be the oldest commit reachable from `origin/main` whose Status reads RATIFIED.
-3. **C′ (the next commit, this file only):** only the `- **Ratifying commit SHA:**` line changes, to `` - **Ratifying commit SHA:** `<C's 40-hex SHA>` `` with nothing after it. The line count is unchanged.
+2. **C (Joshua's ratification, one commit on a branch from `origin/main`, this file only):** exactly two lines change, nothing else (A5/A6, the values block and every other byte unchanged). With `<date>`, `<recipient>` and `<words>` filled in, line 3 and the §6 Ruling line become:
+
+   ```text
+   **Status:** `RATIFIED <date>` by Joshua, directly to <recipient>: "<words>" (§6). *As drafted:* <the current Status text from `DRAFT — NOT RATIFIED.` to the end of the line>
+   - **Ruling:** Joshua, <date>, directly to <recipient>: "<words>". This ratifies §1–§5 as written and the §6 t00-step2-values/v1 block (SHA-256 2adfaa83…06c8). The A5/A6 bytes are unchanged (A5 a8f6f25e…391b, A6 b3bdc77b…17d9).
+   ```
+
+   Both template lines are indented here; in the file each starts at column 0. C must be the oldest commit reachable from `origin/main` whose Status reads RATIFIED.
+3. **C′ (the next commit, this file only):** only the §6 Ratifying commit SHA line changes, to the line below with C's 40-hex SHA and nothing after it. The line count is unchanged.
+
+   ```text
+   - **Ratifying commit SHA:** `<C's 40-hex SHA>`
+   ```
 4. **Landing:** one PR carrying C and C′, merged with a **merge commit** (never squash or rebase, which would destroy C and C′), as #720 did for #581. The authority later binds `prereg.ratifying_commit` = C, `prereg.commit` = C′ and `prereg.blob_sha256` = the blob at C′.
 5. §10 runs in full at C′, and `_check_prereg` / `_check_sections` from the merged `screen_authority.py` are run against C and C′ once the PR lands. Any failure voids the ratification; a fresh file is opened, never an edit (§5b).
 6. **Order after C′ (card #758 §7):** ratification precedes the r3d source approval and P7 over r3d (§R). Then step 5, the r3d source approval (Joshua signs); step 6, P7 at H′ over r3d, with the current `p7_acceptance.json` renamed aside first, then `accept-p7` (coordinator); step 7, the screen authority (Joshua signs); step 8, the run.
