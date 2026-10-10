@@ -367,10 +367,19 @@ def _require_canonical(size: LegSize) -> None:
         for text, value in ((size.risk_multiplier, m), (size.cap_reserve_multiplier, c)):
             if text != f"{value.numerator}/{value.denominator}":
                 refuse(f"{text!r} is not a reduced fraction")
-        off = m == 0 or c == 0 or size.max_base == 0
+        reserve = 1 + Fraction(spec.add_pct, 100)
+        ceiling = math.inf if size.max_base is None else size.max_base
+        # c acts only through min(floor(a * c / reserve), max_base) for allocations
+        # a = 1..80; the smallest c giving that table is its one encoding.
+        smallest = max(min(math.floor(a * c / reserve), ceiling) * reserve / a
+                       for a in range(1, ACCOUNT_MICRO_CAP + 1))
+        off = m == 0 or smallest == 0
         if off and (m, c, size.max_base) != (0, 0, None):
             refuse("an off Striker leg is risk 0/1, cap 0/1 and no max_base")
-        cap_reach = math.floor(ACCOUNT_MICRO_CAP * c / (1 + Fraction(spec.add_pct, 100)))
+        if c != smallest:
+            refuse(f"cap_reserve_multiplier {size.cap_reserve_multiplier} gives the same cap terms as "
+                   f"{smallest.numerator}/{smallest.denominator}; use the smallest")
+        cap_reach = math.floor(ACCOUNT_MICRO_CAP * c / reserve)
         if size.max_base is not None and size.max_base >= cap_reach:
             refuse(f"max_base {size.max_base} can never undercut the cap term (at most {cap_reach})")
     elif size.leg_id == "vanguard_mgc":

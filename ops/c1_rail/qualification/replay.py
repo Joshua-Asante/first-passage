@@ -306,13 +306,16 @@ class BookReplay:
         """Whether the risk-sized leg's cap term wins the policy's min, from the production call.
 
         ``entry_quantities`` is called again with the risk term made unbounded (risk dollars a
-        billion times the per-contract risk) and the leg's size without its ``max_base``, so it
-        returns the vector's cap term alone; the formula is never re-implemented. The cap binds
-        when the policy base equals it (a tie counts). A ``max_base`` is reported apart.
+        billion times the per-contract risk, risk multiplier one) and the leg's size without its
+        ``max_base``, so it returns the vector's cap term alone; the formula is never
+        re-implemented. The cap binds when the policy base equals it (a tie counts). A
+        ``max_base`` is reported apart.
         """
         unbounded = dict(values, risk_dollars=Fraction(str(values["per_contract_risk"])) * 10**9)
+        probe = replace(size, max_base=None,
+                        **({"risk_multiplier": "1/1"} if size.risk_multiplier is not None else {}))
         cap_only = entry_quantities(k, mode=mode, policy=self.policy, lifecycle_tier=tier,
-                                    size=replace(size, max_base=None), **unbounded)[0]
+                                    size=probe, **unbounded)[0]
         # A zero policy quantity (lifecycle multiplier 0, e.g. RETIRED) has no binding term: None.
         out = {"cap_only_policy": cap_only, "cap_binds": qty == cap_only if qty > 0 else None}
         if size.max_base is not None:
