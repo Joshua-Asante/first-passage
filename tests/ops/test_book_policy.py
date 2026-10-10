@@ -493,6 +493,9 @@ def test_Z8_canonical_twins_and_is_identity_over_the_quantity_table():
     assert direct(orb_mnq_v7=bp.LegSize("orb_mnq_v7", base=1, adds=bp.AddsRule.OFF_WHEN_PROTECTED)).is_identity
     assert not direct(dj30_mym_p250=bp.LegSize("dj30_mym_p250", risk_multiplier="1/1",
                                                cap_reserve_multiplier="1/1", max_base=21)).is_identity  # twin
+    for m, c in (("99/100", "1/1"), ("1/1", "79/80")):         # each multiplier alone, just below one
+        assert not direct(dj30_mym_p250=bp.LegSize("dj30_mym_p250", risk_multiplier=m,
+                                                   cap_reserve_multiplier=c)).is_identity
     with pytest.raises(ValueError):
         bp.LegSize("aegis_6j", base=9)                         # direct construction can only lower too
     with pytest.raises(ValueError):
