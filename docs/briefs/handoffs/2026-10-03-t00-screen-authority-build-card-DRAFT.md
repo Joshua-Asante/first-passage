@@ -549,6 +549,13 @@ The screen-authority signature (design §8 step 11) uses the same template with 
     - One bundled H. It includes #742 (R1/R2 evidence-located convention), so R1/R2 shares that H, the P7 re-run and the approval chain. The coordinator recommended this and Joshua did not object.
     - Joshua also ratified #742's evidence-located/v1 convention: "ratify 742's convention", confirmed directly with "confirmed". The convention as ratified is #742 at `19502bd`; the ratification record lands with #742.
     - #742 merged 2026-10-09 (`a28383a`).
+  - *2026-10-10:* **Bundled H: `39e3f688d4c51c02373533c54a4c6de2466e00ee`, ACCEPTED by Joshua** directly to the Deployment Coordinator ("accept H"). It supersedes `5d25f9c` for the P7 re-run, Tier 2 and R1/R2. The H check ran locally from a detached worktree at H (`core.autocrlf=false`, clean with `--untracked-files=all`) on the operations venv, Python 3.13.2. Each launcher record is completed, exit 0, `source_stable`, capture complete:
+    - (a) `tests/ops/qualification`, 4 workers: `20261009T222533Z-94c5e386c0a0`, 2343 passed, 0 failed, 1 skipped, 7 xfailed. `test_K7` passed. The 7 sealed methods are byte-identical between `5d25f9c` and H and equal `SEALED_SOURCE_SHA256`.
+    - (b) Parity, no inputs: `20261009T235734Z-785d91bbc636`, 1 passed.
+    - (c) Parity, real inputs in place: `20261010T003505Z-667598026994`, 13 passed, 0 skipped. Exports, corrected ports, effective inputs and panels matched H's pins first. An earlier (c) run, `20261009T235753Z-42f9f6008cad`, skipped the export tests because a hygiene move had taken the exports out of place; they were restored on Joshua's ruling and (c) was re-run.
+    - (d) `fp check`: `20261009T235906Z-f7699086e48c`, all gates OK.
+    - Code delta `5d25f9c..H` under `ops/ core/ scripts/`: #736, #742, #725, #726 and #728 as expected. Disclosed to Joshua before acceptance, and accepted with H as a D2-style forbidden-path exception for these files only: #748 changed four Markdown changelogs under `core/strategies/_archive/`. No Pine, port or forbidden-list code file changed.
+    - Next: one P7 re-run at H under a fresh r3c source approval (§7), then the Tier-2 source approval.
 - *2026-10-08:* size-feasibility prereg FROZEN 2026-10-08, freeze commit `103c5ea`, merged `65079a7`; §11 addendum #738.
 - *2026-10-09:* size-feasibility result **FEASIBLE**: largest clearing k 0.5; 1.0 and 0.75 do not clear; reproductions (a) and (b) matched. The tree routes it to **step 2**. The public return record is [RESULTS](../../../lab/analysis/c1/size_feasibility_2026-10/RESULTS.md). FEASIBLE is a target range, not a successor result (§11).
 
