@@ -656,3 +656,176 @@ run, which also requires the frozen `--expect-selection` document;
 definitive same-mode dispatch from re-rolling. Host readiness is separate from
 launch-to-G5 acceptance, which remains blocked on the boundary implementation and
 its approved fixture producer.
+
+## Azure offline jobs
+
+The runner in [azure_jobs](azure_jobs/) provides the same interface for Codex
+and Claude Code. Run it from its own clean, committed checkout using the validated
+operations interpreter. It fetches job source from public GitHub at the exact
+40-character SHA; it never copies the primary checkout.
+
+```powershell
+.\fp.ps1 doctor
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> run <job.json>
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> status <job-id>
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> results <job-id>
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> cancel <job-id>
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> cancel <job-id> --force
+```
+
+Keep configuration, the job ledger, Azure diagnostics and retrieved files in one
+shared **ignored** directory outside the runner checkout. Both harnesses must use
+the same configuration and ledger; a second ledger is not a second allowance.
+Configuration names `az`, `subscription`, `resource_group`, `vm`, `location`,
+`state_dir`, `guest_root`, `repository`, `storage_account` and `container`.
+Never put actual cloud identifiers or credentials in public examples/commits.
+No admin password is used. Configuration is trusted operator-owned input.
+
+The initial installation requires the operator-approved system-assigned VM identity,
+VM-scoped read/instance-view/deallocate permissions and a private results container.
+Use identity authentication and container-scoped Blob Data Contributor access;
+disable public blob and shared-key access. The local signed-in operator also needs
+container data access. The runner creates no access grants automatically.
+The guest installs signed CPython 3.13.2 and Git 2.51.0 installers, Azure CLI 2.91.0
+in its own management venv, then fetches the committed runner. Nothing opens RDP/SSH.
+
+A public job spec looks like:
+
+```json
+{
+  "job_id": "qualification-742",
+  "commit": "ed4d7c9e8283d91c01e4c470bb5091b619fc504c",
+  "command": ["scripts/fp.py", "--workers", "8", "python", "-m", "pytest", "tests/ops/qualification", "-q"],
+  "environment": "operations",
+  "max_wall_seconds": 28800,
+  "expected_outputs": [".cache/fp-verification"],
+  "authority": "Joshua, 2026-10-09: public PR 742 qualification acceptance",
+  "private_inputs": [],
+  "private_ruling": null
+}
+```
+
+The authority field records the actual operator direction; a caller inventing text
+does not grant permission. Every statistical run still needs its own authority.
+This version has **no private-upload path**, including for a spec naming a ruling.
+It never uploads `.env`, Git metadata, symlinks or junctions as output artifacts.
+Linux-specific qualification acceptance remains on its existing Linux path.
+
+Only one active session is accepted; busy submissions and reused job IDs are refused.
+There is no queue in this first version. Operations commands must use `scripts/fp.py`;
+its venv is keyed by `requirements-ops.lock` and includes the repository's pinned
+verification extras. Accepted launcher tasks are test, test-ops, check and
+python -m pytest, optionally prefixed by --workers. Environment overrides, detached
+launcher execution and unrecorded Python entrypoints are refused before admission.
+Research environments and disk-only recovery admission are deferred to a later PR.
+The pinned checkout and an installed environment do not themselves authorize a run.
+
+
+Initialize the persistent ledger once with a conservative account of VM running time
+already incurred in the current week:
+
+```powershell
+.\fp.ps1 python scripts/azure_jobs/entry.py --config <private-config.json> init-ledger --historical-seconds <seconds>
+```
+
+Initialization refuses an existing ledger. Weeks begin Monday 00:00 UTC.
+Admission reserves the maximum job wall time plus one hour for setup, publication
+and shutdown, at $2.90 per VM-hour against $125 per week. Reservations that cross
+the week boundary or exceed the remaining allowance are refused. The final fifteen
+minutes are a shutdown margin. The preceding fifteen minutes are reserved for
+publication; execution and environment preparation stop before that window.
+Actual charged estimates run from before VM start until Azure reports
+`VM deallocated`; `VM stopped` and a successful API submission are insufficient.
+Unconfirmed shutdown leaves the interval open, emits an ALARM and blocks admission.
+Start intent is durable before Azure start and clears only on synchronous completion.
+An uncertain start cannot be reconciled from an old deallocated observation.
+Command cleanup intent is durable before submission; pending cleanup blocks admission.
+A failed diagnostic/state write never licenses a new start or bypasses deallocation.
+Actual usage, including any platform-induced overrun, is reconciled after verified
+deallocation. A hash-verified archive is reported as workload_verified; verified
+job completion additionally requires a settled ledger and no pending cleanup.
+
+**VM acceptance remains blocked:** independent shutdown protection before guest
+watchdog installation is not established. A SYSTEM startup task must already be
+verified, or an independently enforced cloud shutdown mechanism must be supplied,
+before unattended admission. Local guardian/reaper tests do not establish this.
+The 2026-10-09 read-only host check found VM deallocated, no active reservation,
+and one pending cleanup record. No paid VM was started for this rebuild.
+
+Managed Run Command uses asynchronous execution and an explicit timeout. The front-end
+returns after a separate local guardian acknowledges ownership. That guardian arms
+a separate local reaper before starting the VM. Both share the controller host;
+they are not independent protection against total controller-host loss. The guest's SYSTEM scheduled
+watchdog survives local disconnect and restarts after watchdog failure. A named
+Windows Job Object owns each preparation command and the executing process tree.
+Normal cancellation reaches checkout, environment setup and the source-before
+snapshot through the same owned job identity; per-step preparation captures are
+retained with partial results. Workload CPU accounting remains separate from setup.
+Rebooted jobs never silently retry. These mechanisms retry
+`az vm deallocate`; a guest OS shutdown is never the final action.
+Watchdog recovery runs in its own kill-on-close Job Object. The watchdog enforces
+the earlier of the lease deadline and a fifteen-minute recovery window with both
+wall and monotonic clocks; stalled hashing, compression or upload cannot hold its
+deallocation loop. A known expired lease bypasses recovery and boot grace. A cutoff
+retains partial disk evidence, never a success claim for an unfinished archive.
+There is no disk-only recovery command in v1.
+Before each non-idle leased shutdown attempt, the watchdog also terminates the
+lease's named workload Job Object through native calls without waiting on its
+supervisor or archive work. Deallocation runs even if that local stop fails;
+both are retried, so a cloud outage does not leave the local stop dependent on
+the stalled supervisor's timeout loop.
+Azure control-plane failure can delay actual deallocation beyond the margin:
+the ledger continues charging and reports the overrun rather than asserting that
+an unreachable Azure API enforced an absolute bill cap. Disk, IP and Blob charges
+are additional to the VM-running-time estimate.
+
+The guest stores stdout/stderr, original launcher evidence, a runner record and
+per-file SHA-256 inventory, then publishes a ZIP plus its hash to the private
+container before marking itself idle. `results` downloads without restarting
+compute, checks archive size/hash, rejects unsafe or unexpected entries, and checks
+every artifact. Completed results require every expected output to have a file in
+the current archive manifest; empty directories do not establish completion.
+Missing expected outputs remain allowed for failed or interrupted partial results.
+Referenced launcher run directories are included automatically, even when absent
+from `expected_outputs`; publication and retrieval validate the original record,
+stdout/stderr, JUnit and all recorded artifact hashes. Old extracted files cannot
+satisfy a new archive's output or launcher-evidence contract.
+Cancel and timeout retain partial files. An upload failure retains
+disk files, but is not evidence of successful host retrieval. Archives use immutable
+SHA-256 blob names; the descriptor is published last. The watchdog may preserve
+partial evidence within the current bounded session. Disk-only recovery that starts
+another session is deferred; unavailable publication remains an explicit failure.
+Normal cancel sends the guest marker and then verifies deallocation; --force skips
+guest transport. Publication cannot delay that final stop indefinitely.
+
+
+Verification requires a completed runner and launcher record, zero exit and
+verification exit codes, stable source, complete capture, valid expected reports
+and matching artifacts. A `running`, `not_started`, failed or interrupted record
+never counts. Report CPU/wall seconds per job, estimated VM cost, weekly VM usage
+and process CPU-hours per week/month. CPU totals identify unretrieved jobs and assign
+retrieved measurements to their completion period. Historical maintenance sessions
+still map to their original workload for accounting only. The monthly 5,000 CPU-hour
+allowance is planning information, not a hard stop.
+
+Implementation, acceptance evidence and remaining limitations belong in
+[the runner plan](../docs/superpowers/plans/2026-10-09-azure-job-runner.md).
+
+
+Recovery: `reconcile` is a maintenance command for a stranded reservation. It
+closes the interval only after observing an already deallocated VM. It refuses a
+running VM and directs the caller to `cancel`; it never clears usage manually. `status` caches outside submission identities.
+The guardian publishes the new job/deadline in VM tags before start; the guest
+watchdog reads that lease from Azure instance metadata rather than trusting a prior
+job's disk lease. Shutdown is serialized with admission and fenced by job identity.
+A process-wide guest heartbeat covers preparation, execution and publication.
+Bootstrap has a separate 30-minute cutoff published before VM start and enforced by
+the installed guest watchdog. Before the first unattended job, verify that watchdog
+installation succeeded. Initial provisioning depends on the local guardian/reaper
+until the guest watchdog is installed.
+`cancel --force` fences the controller and deallocates even when guest transport is
+unavailable. Pre-submission cancellation also takes this path. Retained disk files
+can then be republished with `results --recover`; force-stop is not a verified run.
+Expected outputs must be in ignored directories; new nonignored outputs count as
+source drift. `probe_workload.py` is an explicitly selected public 120-second safety
+probe, excluded from normal test discovery; it is never a statistical workload.
