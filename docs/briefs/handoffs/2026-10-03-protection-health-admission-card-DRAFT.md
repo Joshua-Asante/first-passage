@@ -2,7 +2,9 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT, 2026-10-03; admission updated 2026-10-10. Drafted by a coordinator-(3) worker and not dispatched. **NOT DISPATCHABLE** until every §11 gate holds. **G-1 code admission APPROVED by Joshua, 2026-10-10 approximately 20:17 UTC** (§13; ledger recording owed). Coordinator (3), or its recorded successor, answers §12, commits the frozen revision under the committed-handoff rule, and records its SHA in the ledger before any executor starts. G-2/G-3 and separate dispatch remain required.
+**Status:** FROZEN 2026-10-10 at base `origin/main` `21a38d345bce25b4bbc4e60edb5fbdaa2ba08c5e` (#769 merge), by the Deployment Coordinator, recorded successor to coordinator (3) for this card. Gates G-1, G-2 and G-3 HOLD (§11); §12 D-1 to D-6 are decided. Dispatchable to the named Claude worker by separate dispatch; this freeze is not that dispatch. Drafted 2026-10-03 by a coordinator-(3) worker; G-1 approved by Joshua 2026-10-10 (§13).
+
+**Freeze premise check (2026-10-10, at `21a38d345`, Git Bash, validated launcher):** §10 hooks and §0(a)–(f) all negative. `.env` absent; #628 MERGED; #571 CLOSED. `trust_domain.py` binds `listener_account_owner` at `:146` and `c1_rail.book_protection_owner` at `:162`; `book_runtime`/`c1_rail_listener` absent. (a) closure re-check `072c133`→HEAD prints `68 True []`; the P7 D8 list names none of the four §2.6 code files; no tracked file holds any of their SHA-256 values. (b) `awaiting_evidence` producers: `book_protection_owner.py:584,586` only. (c) `refusal_reason` tests found only at the prescribed edit sites (`book_account_owner.py:1729`, `book_runtime.py:426,458`) and per-reason equality checks; no closed vocabulary. (d) callers unchanged from §0 (loop `:44`; runtime `:412,418,456`; listener `:81`; tests as listed); no `sources_healthy` anywhere. (e) no build yet; carried to the executor. (f) `book_account_owner.py:1694-1698`, `:2093-2094` and `book_runtime.py:436-437` unchanged; the four §2.6 code files, `book_evaluate_loop.py` and `trust_domain.py` are byte-identical to `eb40471b`.
 
 **Base:** drafted at `origin/main` `04a86ac`. Every `file:line` below is at that commit unless it is marked otherwise.
 
@@ -15,7 +17,7 @@
 
 **Executor:** a Claude worker, single writer of `claude/protection-source-health` (proposed), cut per §9. **Not GLM.** The slice edits the protection owner's loosening admission, which is risk-control code.
 
-**Coordinator:** coordinator (3). It owns the freeze, diff review, integration, the Codex relay, PRs, the ledger, and the re-scope of #631 that this card unlocks (§2.7).
+**Coordinator:** coordinator (3), or its recorded successor (the Deployment Coordinator, ledger 2026-10-10). It owns the freeze, diff review, integration, the Codex relay, PRs, the ledger, and the re-scope of #631 that this card unlocks (§2.7).
 
 **Owners this card narrows (it changes none of them):**
 - [#631's R-A2 card](https://github.com/Joshua-Asante/first-passage/pull/631) §2.2 and §12 D-7, the consumer of the input this card adds.
@@ -418,30 +420,31 @@ git diff --check "$BASE"...HEAD
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1: Joshua's C3-rule admission of the named edits. APPROVED 2026-10-10 (§13); coordinator ledger recording owed.**
+- **G-1: Joshua's C3-rule admission of the named edits. HOLDS: APPROVED 2026-10-10 (§13), confirmed and recorded in the ledger 2026-10-10.**
   - **Why it is needed.** Both owner files are bound qualification code. In the production trust domain's `_PRODUCTION_CODE`, `book_account_owner` is the `listener_account_owner` role (`trust_domain.py:146`), and `book_protection_owner` is a runtime dependency (`:162`). Editing them changes that code inventory.
   - **What it admits.** The edits are named in §2.2 and §2.6 (`book_protection_owner.py`) and in §2.3 and §2.6 (`book_account_owner.py`).
   - **Who records it.** Coordinator (3), or its recorded successor, records Joshua's §13 words, time and bounded scope in the ledger before dispatch. No repeat approval is needed for this unchanged scope.
   - **Inputs for the admission** (finding (a), drafter's reading at `04a86ac`): neither file, nor `book_runtime.py` or `c1_rail_listener.py`, is in the 68-module measured closure, the T00 P7 closure, or the approximate S5 Linux selection closure. No committed digest pin exists. So this card adds no measured-closure change to the ENG-2 PART_A re-measure (ledger `:983`). If finding (a) differs at the build base, the measurement question routes to coordinator (3), the ENG-2 owner, before any code.
   - `book_runtime.py` and `c1_rail_listener.py` are not in the bound set.
-- **G-2: coordinator (3) freeze.** §12 answered, the frozen revision committed, and its SHA recorded in the ledger.
-- **G-3: §9 predecessors merged,** in the order D-4 fixes, with D-3 ruled.
+- **G-2: coordinator (3), or its recorded successor (the Deployment Coordinator, ledger 2026-10-10) freeze.** §12 answered, the frozen revision committed, and its SHA recorded in the ledger. **HOLDS** 2026-10-10 (ledger freeze entry).
+- **G-3: §9 predecessors merged,** in the order D-4 fixes, with D-3 ruled. **HOLDS** 2026-10-10: D-4 places this card first after #628 (MERGED); D-3 ruled.
 
 ## 12. Open decisions (coordinator (3) at freeze)
 
-- **D-1 Result name.** **Recommended:** `held_unhealthy`. It is distinct from `awaiting_evidence`, so the loop, the tests and the operator can tell a held loosening from an evidence wait. Its occurrence state is still `awaiting_evidence` (§2.3).
-- **D-2 Default `True`, keyword-only, exact `bool`.** **Recommended.** It keeps `book_evaluate_loop.py` (#631's) and every existing caller unchanged. **Cost:** a caller that omits the input gets today's behaviour, and a loosening is sent. #631's case 14 is the guard against that.
+- **D-1 Result name.** **Recommended:** `held_unhealthy`. It is distinct from `awaiting_evidence`, so the loop, the tests and the operator can tell a held loosening from an evidence wait. Its occurrence state is still `awaiting_evidence` (§2.3). **Decided 2026-10-10 (Deployment Coordinator, successor to coordinator (3)):** adopted.
+- **D-2 Default `True`, keyword-only, exact `bool`.** **Recommended.** It keeps `book_evaluate_loop.py` (#631's) and every existing caller unchanged. **Cost:** a caller that omits the input gets today's behaviour, and a loosening is sent. #631's case 14 is the guard against that. **Decided 2026-10-10 (Deployment Coordinator, successor to coordinator (3)):** adopted.
 - **D-3 Route.**
   - **Recommended: through `handle_book_action`** (§2.1). It keeps one runtime-to-owner route for redelivery and fresh dispatch. That shares `c1_rail_listener.py` with parked draft PR #571 (disjoint hunks, §9). Coordinator (3) rules whether a parked draft counts as a live packet under the umbrella's single-writer rule (`:245`). If it does, this card waits for #571.
   - **Fallback:** the runtime's redelivery calls `self.owner.dispatch(...)` directly, and `c1_rail_listener.py` leaves §2.6. That is behaviour-equivalent: the runtime already requires a `BookAccountOwner` (`book_runtime.py:98-99`), and the shim adds only that check (`c1_rail_listener.py:89-91`).
-- **D-4 Position in the `book_account_owner.py` order.** **Recommended:** fourth, after TB-I3 S2. Coordinator (3) may move it ahead of TB-I3 S2 to unblock #631 sooner. Either way it is cut from `main` after its predecessor merges.
-- **D-5 Mixed-scope parent held whole.** **Recommended.** It matches the owner's all-or-nothing parent (one `changes` list, `:573-617`) and today's whole-parent refusal. Splitting would need per-child dispositions. **Cost:** a tightening on one fill waits with a loosening on another fill in the same scope.
-- **D-6 Freeze base.** **Recommended:** `main` immediately after the D-4 predecessor merges.
+  - **Decided 2026-10-10 (Deployment Coordinator, successor to coordinator (3)):** route through `handle_book_action`, adopted. #571 closed unmerged 2026-10-09; no live branch edits `c1_rail_listener.py`.
+- **D-4 Position in the `book_account_owner.py` order.** **Recommended:** fourth, after TB-I3 S2. Coordinator (3) may move it ahead of TB-I3 S2 to unblock #631 sooner. Either way it is cut from `main` after its predecessor merges. **Decided 2026-10-10 (Deployment Coordinator, successor to coordinator (3)):** **first** in the `book_account_owner.py` single-writer order, ahead of GC-5-DISPLACED and TB-I3 S1/S2 (Joshua: "D-4 first"). This supersedes §9's proposed fourth position and re-orders coordinator (3)'s 2026-10-03 order: neither GC-5-DISPLACED nor TB-I3 S1/S2 has a build PR, #628 is merged, and the hunks are disjoint (`:1654-1731` against GC-5's `:748`/`:1804` and S2's latch). Owed: the GC-5-DISPLACED and TB-I3 S2 freezes add `test_book_protection_source_health.py` to their acceptance, and S2 keeps the loosening premise (entry terminal observed before any STALE read) green under its latch (ledger freeze entry).
+- **D-5 Mixed-scope parent held whole.** **Recommended.** It matches the owner's all-or-nothing parent (one `changes` list, `:573-617`) and today's whole-parent refusal. Splitting would need per-child dispositions. **Cost:** a tightening on one fill waits with a loosening on another fill in the same scope. **Decided 2026-10-10 (Deployment Coordinator, successor to coordinator (3)):** adopted.
+- **D-6 Freeze base.** **Recommended:** `main` immediately after the D-4 predecessor merges. **Decided 2026-10-10 (Deployment Coordinator, successor to coordinator (3)):** `origin/main` at freeze, `21a38d345bce25b4bbc4e60edb5fbdaa2ba08c5e`.
 
 ## Pre-mortem (README rule)
 
 - **Loop cost:** one Windows build loop with launcher records. No Docker, no Linux run, no host.
-- **Decisions the executor will hit:** none open after freeze. G-1 is Joshua's, and D-1 to D-6 are coordinator (3)'s.
+- **Decisions the executor will hit:** none open after freeze. G-1 is Joshua's, and D-1 to D-6 are coordinator (3), or its recorded successor (the Deployment Coordinator, ledger 2026-10-10)'s.
 - **What makes it moot:**
   - Joshua later withdraws G-1, so #631's build stays blocked pending owner disposition; D-7 = B is not reversed automatically ([coordinator correction](https://github.com/Joshua-Asante/first-passage/pull/653#issuecomment-5973430861));
   - #631 is withdrawn, or a ruling moves source health to the listener (R-N);
