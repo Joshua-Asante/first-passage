@@ -204,8 +204,9 @@ Which days/hours each strategy trades is a Pine session-filter property of the s
 | Tuesday | Guardian + Aegis + NAS100 | G: 8–16, N(NAS100): 8–12, A: 10–13:45 |
 | Wednesday | Aegis only | A: 10–13:45 |
 | Thursday | Guardian only | G: 8–16 |
+| Friday | none of Guardian / Aegis / NAS100 | — |
 
-Striker DJ30's trading days and session window are omitted from this table *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive branch archive/preserve-exposure-2026-10-09 at 87a86d290602482d9de44904e9940805d6c02c1f; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*.
+Striker DJ30 is omitted from every row; its trading days and session window are omitted from this table *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive branch archive/preserve-exposure-2026-10-09 at 87a86d290602482d9de44904e9940805d6c02c1f; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*.
 
 All sessions are morning NY time by design (fits before Joshua's day-job hours).
 

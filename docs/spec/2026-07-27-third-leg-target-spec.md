@@ -527,14 +527,15 @@ grep -n "69/11" ops/c1_rail/c1_sizing_host_reference.py
 
 # §2.2 -- day-of-week structure still holds (expect 0 off-schedule days both legs)
 python - <<'PY'
-import pandas as pd
-p = "lab/analysis/c1/tradeify_book_composition_2026-07-23/out/daily_panel.csv"
-d = pd.read_csv(p, index_col=0, parse_dates=True); d["dow"] = d.index.dayofweek
 # Locked weekday sets are Pine-only: gitignored {"striker_dj30": [..], "striker_nas": [..]}
 import json, pathlib, sys
 k = pathlib.Path("docs/spec/third_leg_locked_days.private.json")
-if not k.is_file(): sys.exit("SKIP: locked weekday sets are private (redacted 2026-10-09)")
+if not k.is_file():
+    print("SKIP: locked weekday sets are private (redacted 2026-10-09)"); sys.exit(0)
 days = json.loads(k.read_text())
+import pandas as pd
+p = "lab/analysis/c1/tradeify_book_composition_2026-07-23/out/daily_panel.csv"
+d = pd.read_csv(p, index_col=0, parse_dates=True); d["dow"] = d.index.dayofweek
 print("MYM off-schedule:", int(((d.striker_dj30 != 0) & ~d.dow.isin(days["striker_dj30"])).sum()))
 print("MNQ off-schedule:", int(((d.striker_nas  != 0) & ~d.dow.isin(days["striker_nas"])).sum()))
 # reproduces the §2.2 entry rates (expect ~30.7% / ~30.5%)
