@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import ast
 import base64
+import dataclasses
 from datetime import datetime, timedelta, timezone
 import hashlib
 import importlib
@@ -43,7 +44,8 @@ from c1_rail.qualification import p7_evidence, screen_authority
 from c1_rail.qualification.contract import canonical_json_bytes as canonical
 from c1_rail.qualification.t00_screen import journal, state
 from test_p7_evidence import make_code_root
-from test_screen_authority import ORB, PREREG, REFUSALS, VAN, pinned_sections, prereg_text, successor
+from test_screen_authority import (ORB, PREREG, REFUSALS, STARTUP_V2, SUCCESSOR, SUCCESSOR_PREREG, TEST_SIZING, VAN,
+                                   pinned_sections, prereg_text, successor)
 from test_source_contract import build_source_case
 
 pytestmark = pytest.mark.skipif(shutil.which('git') is None, reason='git required for the code-root binding')
@@ -94,11 +96,15 @@ def _repo_text(relative):
 class Env:  # pylint: disable=too-many-instance-attributes
     """One TEST_ONLY code root, synthetic source case, P7 record and signed screen authority."""
 
-    def __init__(self, base: Path, monkeypatch, *, code_edits=None):
+    def __init__(self, base: Path, monkeypatch, *, code_edits=None, r3d=False):
         self.base, self.monkeypatch = base, monkeypatch
         monkeypatch.setattr(p7_evidence, 'install_tree_sha256', lambda site, base=None: 'e' * 64, raising=False)
         self.artifact_root = base / 'private'
         self.case = build_source_case(self.artifact_root, monkeypatch)
+        self.r3c_sha256 = sha(self.case.contract_bytes())
+        self.r3d, self.prereg_path, self.successor_pins = r3d, PREREG, {}
+        if r3d:
+            self._derive_r3d()
         self.contract_sha256 = sha(self.case.contract_bytes())
         now = datetime.now(timezone.utc)
         self.issued, self.expires = stamp(now - timedelta(hours=1)), stamp(now + timedelta(days=2))
@@ -114,15 +120,36 @@ class Env:  # pylint: disable=too-many-instance-attributes
             'median_rule': 'LOWER_NEAREST_RANK_INF_INCLUDED',
             'budget': {'path_cpu_seconds': 1_000_000, 'overhead_cpu_seconds': 1_000_000,
                        'basis': 'TEST_ONLY basis'}}
+        if r3d:
+            self.params.update(expressions={'base': 'DECLARED_BOOK', 'size_vector_sha256': sha(canonical(TEST_SIZING))},
+                               rng=dict(self.params['rng'], probe_root='probe-successor'))
         self.code = self._code_root(code_edits or {})
         monkeypatch.setattr(screen_authority, 'REPOSITORY_ROOT', self.code)
-        monkeypatch.setattr(screen_authority, 'R3C_CONTRACT_SHA256', self.contract_sha256)
+        monkeypatch.setattr(screen_authority, 'R3C_CONTRACT_SHA256', self.r3c_sha256)
+        for name, value in self.successor_pins.items():
+            monkeypatch.setattr(screen_authority, name, value, raising=False)
         self.record = self._record()
         self.authority = canonical(self._document())
         self.approval = self.screen_approval()
         self.inputs_dir = base / 'inputs'
         self._write_inputs()
         self.pins = {(module, name): getattr(importlib.import_module(module), name) for module, name in PINNED}
+        self.pins.update({('c1_rail.qualification.screen_authority', name): value
+                          for name, value in self.successor_pins.items()})
+
+    def _derive_r3d(self):
+        """r3d = the synthetic r3c with only ``contract_id`` and the startup-policy row changed, over a
+        v2 startup policy carrying the TEST_ONLY vector (as ``test_screen_authority.Screen``)."""
+        r3c = self.case.document
+        row = next(row for row in r3c['artifacts'] if row['role'] == 'source_startup_policy')
+        raw = canonical(dict(json.loads(self.case.payloads['source_startup_policy']), schema=STARTUP_V2,
+                             sizing=TEST_SIZING))
+        (self.artifact_root / 'retained/source_startup_policy_v2.bin').write_bytes(raw)
+        new = dict(row, path='retained/source_startup_policy_v2.bin', sha256=sha(raw))
+        self.case = dataclasses.replace(self.case, document=dict(
+            r3c, contract_id='TEST_ONLY-r3d', artifacts=[new if old is row else old for old in r3c['artifacts']]))
+        self.prereg_path = SUCCESSOR_PREREG
+        self.successor_pins = {'R3C_CONTRACT_ID': r3c['contract_id'], 'R3C_STARTUP_POLICY_ROW': dict(row)}
 
     def apply(self, monkeypatch):
         """This environment's in-process pins, for one test (two environments share this module)."""
@@ -135,7 +162,8 @@ class Env:  # pylint: disable=too-many-instance-attributes
         sections = pinned_sections()
         edits = {
             'ops/c1_rail/qualification/screen_authority.py':
-                lambda text: text + f'\n# TEST_ONLY code root override\nR3C_CONTRACT_SHA256 = {self.contract_sha256!r}\n',
+                lambda text: text + f'\n# TEST_ONLY code root override\nR3C_CONTRACT_SHA256 = {self.r3c_sha256!r}\n'
+                + ''.join(f'{name} = {value!r}\n' for name, value in self.successor_pins.items()),
             'ops/c1_rail/qualification/p7_evidence.py': lambda text: text + STUB_TREE,
             **code_edits,
         }
@@ -143,15 +171,16 @@ class Env:  # pylint: disable=too-many-instance-attributes
                  'scripts/layer_bootstrap.py': _repo_text('scripts/layer_bootstrap.py'),
                  '.gitignore': '__pycache__/\n',  # as the repository's: an operator launch caches bytecode
                  ORB: successor('| ORB-3 '), VAN: successor('| VAN-3 '),
-                 PREREG: prereg_text(sections, self.params, status='DRAFT — NOT RATIFIED')}
+                 self.prereg_path: prereg_text(sections, self.params, status='DRAFT — NOT RATIFIED')}
         root = make_code_root(self.base / 'code', self.case, edits=edits, extra=files, commit=False)
         git(root, 'init', '-q')
         git(root, 'add', '-A')
         git(root, 'commit', '-q', '-m', 'TEST_ONLY draft')
-        (root / PREREG).write_bytes(prereg_text(sections, self.params).encode('utf-8'))
+        (root / self.prereg_path).write_bytes(prereg_text(sections, self.params).encode('utf-8'))
         git(root, 'commit', '-q', '-am', 'TEST_ONLY ratify')
         self.ratifying = git(root, 'rev-parse', 'HEAD')
-        (root / PREREG).write_bytes(prereg_text(sections, self.params, ratifying=f'`{self.ratifying}`').encode('utf-8'))
+        (root / self.prereg_path).write_bytes(
+            prereg_text(sections, self.params, ratifying=f'`{self.ratifying}`').encode('utf-8'))
         git(root, 'commit', '-q', '-am', 'TEST_ONLY record the ratifying SHA')
         self.head = git(root, 'rev-parse', 'HEAD')
         git(root, 'update-ref', 'refs/remotes/origin/main', self.head)
@@ -172,16 +201,18 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     def _document(self) -> dict:
         record = json.loads(self.record)
+        purpose, grants, evidence_class = SUCCESSOR if self.r3d else (
+            'T00_STEP3_SELECTED_BOOK_SCREEN', ['T00_STEP3_SCREEN_ONCE'], 'T00_STEP3_SCREEN')
         return {
             'schema': 't00_screen_authority/v1', 'authority_id': 'TEST_ONLY-screen-authority',
-            'purpose': 'T00_STEP3_SELECTED_BOOK_SCREEN', 'grants': ['T00_STEP3_SCREEN_ONCE'], 'refusals': REFUSALS,
-            'evidence_class': 'T00_STEP3_SCREEN', 'source': {'contract_sha256': self.contract_sha256},
+            'purpose': purpose, 'grants': grants, 'refusals': REFUSALS,
+            'evidence_class': evidence_class, 'source': {'contract_sha256': self.contract_sha256},
             'run_root_sha256': sha(str((self.artifact_root / 't00-step3').resolve()).encode('utf-8')),
             'p7': {'record_sha256': sha(self.record), 'code_head': record['code_head'],
                    'code_closure_sha256': record['code_closure_sha256'],
                    'bootstrap_sha256': record['bootstrap_sha256'], 'interpreter': record['interpreter']},
-            'prereg': {'path': PREREG, 'ratifying_commit': self.ratifying, 'commit': self.head,
-                       'blob_sha256': sha((self.code / PREREG).read_bytes()),
+            'prereg': {'path': self.prereg_path, 'ratifying_commit': self.ratifying, 'commit': self.head,
+                       'blob_sha256': sha((self.code / self.prereg_path).read_bytes()),
                        'a5_text_sha256': screen_authority.verdict.A5_TEXT_SHA256,
                        'a6_text_sha256': screen_authority.verdict.A6_TEXT_SHA256},
             'a3_answers': [{'path': path, 'commit': self.head, 'blob_sha256': sha((self.code / path).read_bytes())}
@@ -407,6 +438,26 @@ def test_S5(env):
     env.fresh()
     _attempt(env, 'c' * 64, 'docs/briefs/pre-registration/another.md', final=True)
     _scan(env)  # twin: once FINAL it no longer blocks
+
+
+@WINDOWS
+def test_W9(tmp_path, monkeypatch):
+    """Successor card 2026-10-10 §2.5 W9: a successor authority on the TEST_ONLY seam runs to FINAL
+    after a consumed #581-path run; PREREG_CONSUMED and SCREEN_ATTEMPT_OPEN are unchanged."""
+    env = Env(tmp_path, monkeypatch, r3d=True)
+    _attempt(env, 'b' * 64, PREREG)
+    refused('SCREEN_ATTEMPT_OPEN', lambda: drv().run(env.inputs(), workers=WORKERS))
+    env.fresh()
+    _attempt(env, 'b' * 64, SUCCESSOR_PREREG, final=True)
+    refused('PREREG_CONSUMED', lambda: drv().run(env.inputs(), workers=WORKERS))
+    env.fresh()
+    _attempt(env, 'b' * 64, PREREG, final=True)  # the consumed #581-path run
+    drv().run(env.inputs(), workers=WORKERS)
+    drv().finalize(env.inputs())
+    drv().verify(env.inputs())
+    records = ledger_records(env.run_dir)
+    assert records[0]['body']['prereg_path'] == SUCCESSOR_PREREG
+    assert state.fold(records).name == 'FINAL'
 
 
 @WINDOWS

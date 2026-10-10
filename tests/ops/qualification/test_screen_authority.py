@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import base64
 from contextlib import contextmanager
+import dataclasses
 import errno
 import hashlib
 import importlib
@@ -32,6 +33,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from c1_rail.book_policy import IDENTITY_SIZE_VECTOR
 from c1_rail.qualification import p7_evidence
 from c1_rail.qualification.contract import canonical_json_bytes as canonical
 from c1_rail.qualification.t00_screen import journal, verdict
@@ -50,6 +52,13 @@ SECTION3 = {1: ('depth_per_root', 'budget'), 2: ('pass_floor_halves',), 3: ('dea
 REFUSALS = ['QUALIFICATION_STAGES', 'PART_A', 'F1', 'DECISION_RULES', 'SEAL', 'ADMISSION', 'DEPLOYMENT', 'ARM',
             'FALSIFIER_EVIDENCE', 'PARAMETER_CHANGE']
 BINARY = getattr(os, 'O_BINARY', 0)
+# The successor purpose (build card 2026-10-10 §2.5, S-3 to S-7): #733's path, step 12's compiled
+# RNG roots, and a TEST_ONLY non-identity size vector (Aegis base 7). It is not the frozen vector.
+SUCCESSOR_PREREG = 'docs/briefs/pre-registration/2026-10-08-tradeify-book-successor-screen-prereg-DRAFT.md'
+STARTUP_V2 = 'qualification-source-startup/v2'
+TEST_SIZING = dict(IDENTITY_SIZE_VECTOR.as_mapping(), aegis_6j={'base': 7, 'adds': 'UNCHANGED'})
+ORIGINAL = ('T00_STEP3_SELECTED_BOOK_SCREEN', ['T00_STEP3_SCREEN_ONCE'], 'T00_STEP3_SCREEN')
+SUCCESSOR = ('T00_SUCCESSOR_SCREEN', ['T00_SUCCESSOR_SCREEN_ONCE'], 'T00_SUCCESSOR_SCREEN')
 
 
 def sa():
@@ -128,7 +137,7 @@ class Screen:  # pylint: disable=too-many-instance-attributes
 
     def __init__(self, root: Path, monkeypatch, *, a6_byte=False, cprime_cell=False,  # pylint: disable=too-many-arguments
                  a3_unanswered=False, crlf=False, param_changes=None, side_ratified=None, extra_files=None,
-                 install_tree=None):
+                 install_tree=None, r3d=False, purpose=None, startup=None, r3d_edit=None):
         self.monkeypatch = monkeypatch
         # Card-owner ruling 2026-10-04 (4): the install-tree digest is stubbed here, as the
         # interpreter binding is synthetic; test_p7_rrec.py computes the real digest once.
@@ -137,6 +146,11 @@ class Screen:  # pylint: disable=too-many-instance-attributes
         self.ledger = None
         self.artifact_root = root / 'private'
         self.case = build_source_case(self.artifact_root, monkeypatch)
+        self.r3d = r3d
+        self.purpose = (SUCCESSOR if r3d else ORIGINAL) if purpose is None else purpose
+        self.prereg_path = SUCCESSOR_PREREG if self.purpose == SUCCESSOR else PREREG
+        if r3d:
+            self._derive_r3d(startup, r3d_edit)
         self.receipt = self.case.validate()
         smallest = min(len(values) for values in self.case.document['populations'].values())
         self.params = {
@@ -151,6 +165,9 @@ class Screen:  # pylint: disable=too-many-instance-attributes
             'median_rule': 'LOWER_NEAREST_RANK_INF_INCLUDED',
             'budget': {'path_cpu_seconds': 1000, 'overhead_cpu_seconds': 100, 'basis': 'TEST_ONLY basis'},
         }
+        if self.purpose == SUCCESSOR:
+            self.params.update(expressions={'base': 'DECLARED_BOOK', 'size_vector_sha256': sha(canonical(TEST_SIZING))},
+                               rng=dict(self.params['rng'], probe_root='probe-successor'))
         self.params.update(param_changes or {})
         sections = pinned_sections()
         if crlf:
@@ -166,7 +183,7 @@ class Screen:  # pylint: disable=too-many-instance-attributes
             write(repo, relative, content)
         write(repo, ORB, successor('| ORB-3 ', answered=not a3_unanswered, mapping_marker=a3_unanswered))
         write(repo, VAN, successor('| VAN-3 '))
-        write(repo, PREREG, prereg_text(sections, self.params, status='DRAFT — NOT RATIFIED'))
+        write(repo, self.prereg_path, prereg_text(sections, self.params, status='DRAFT — NOT RATIFIED'))
         git(repo, 'add', '-A')
         git(repo, 'commit', '-q', '-m', 'TEST_ONLY draft')
         self.side = None
@@ -175,17 +192,17 @@ class Screen:  # pylint: disable=too-many-instance-attributes
             # bytes, and the merge is TREESAME to both parents, so path-limited history drops it.
             main = git(repo, 'rev-parse', '--abbrev-ref', 'HEAD')
             git(repo, 'checkout', '-q', '-b', 'side')
-            write(repo, PREREG, prereg_text(sections, self.params))
+            write(repo, self.prereg_path, prereg_text(sections, self.params))
             git(repo, 'commit', '-q', '-am', 'TEST_ONLY side ratify', env=side_ratified)
             self.side = git(repo, 'rev-parse', 'HEAD')
             git(repo, 'checkout', '-q', main)
-        write(repo, PREREG, prereg_text(sections, self.params))
+        write(repo, self.prereg_path, prereg_text(sections, self.params))
         git(repo, 'commit', '-q', '-am', 'TEST_ONLY ratify')
         self.ratifying = git(repo, 'rev-parse', 'HEAD')
         if self.side is not None:
             git(repo, 'merge', '-q', '--no-ff', '-m', 'TEST_ONLY merge side', 'side')
         later = cells({2: 'values block: `pass_floor_halves` (edited)'}) if cprime_cell else None
-        write(repo, PREREG, prereg_text(sections, self.params, ratifying=f'`{self.ratifying}`', row_cells=later))
+        write(repo, self.prereg_path, prereg_text(sections, self.params, ratifying=f'`{self.ratifying}`', row_cells=later))
         git(repo, 'commit', '-q', '-am', 'TEST_ONLY record the ratifying SHA')
         self.head = git(repo, 'rev-parse', 'HEAD')
         git(repo, 'update-ref', 'refs/remotes/origin/main', self.head)
@@ -193,11 +210,28 @@ class Screen:  # pylint: disable=too-many-instance-attributes
         self.record = self._record(p7_evidence.P7_BOOTSTRAP_SHA256)
         self.authority = self.document(self.record)
 
-    def _record(self, bootstrap_sha256):
+    def _derive_r3d(self, startup, r3d_edit):
+        """The synthetic case is r3c; r3d is r3c with only ``contract_id`` and the startup-policy row
+        changed (card §7 step 2), over a v2 startup policy whose fields other than ``sizing`` are r3c's."""
+        r3c = self.case.document
+        self.r3c_sha256, self.r3c_id = sha(self.case.contract_bytes()), r3c['contract_id']
+        self.r3c_row = next(row for row in r3c['artifacts'] if row['role'] == 'source_startup_policy')
+        v1 = json.loads(self.case.payloads['source_startup_policy'])
+        raw = canonical(dict(v1, schema=STARTUP_V2, sizing=TEST_SIZING)) if startup is None else startup(v1)
+        self.startup_path = 'retained/source_startup_policy_v2.bin'
+        (self.artifact_root / self.startup_path).write_bytes(raw)
+        row = dict(self.r3c_row, path=self.startup_path, sha256=sha(raw))
+        doc = dict(r3c, contract_id='TEST_ONLY-r3d',
+                   artifacts=[row if old is self.r3c_row else old for old in r3c['artifacts']])
+        self.r3c_case = self.case
+        self.case = dataclasses.replace(self.case, document=doc if r3d_edit is None else r3d_edit(doc, self))
+
+    def _record(self, bootstrap_sha256, contract_sha256=None):
         closure = {'first_party': {'c1_rail.qualification.t00_screen_fixture': {
                        'path': MODULE, 'sha256': sha((self.repo / MODULE).read_bytes())}},
                    'third_party': {}, 'distributions': {}, 'stdlib': [], 'ports': {}}
-        record = {'schema': p7_evidence.RECORD_SCHEMA, 'contract_sha256': self.receipt.contract_sha256,
+        record = {'schema': p7_evidence.RECORD_SCHEMA,
+                  'contract_sha256': contract_sha256 or self.receipt.contract_sha256,
                   'code_head': self.head, 'bootstrap_sha256': bootstrap_sha256,
                   'code_closure_sha256': sha(p7_evidence.canonical(closure)), 'loaded_closure': closure,
                   'interpreter': self.interpreter,
@@ -208,16 +242,17 @@ class Screen:  # pylint: disable=too-many-instance-attributes
 
     def document(self, record_bytes):
         record = p7_evidence.parse_record(record_bytes)
-        blob = (self.repo / PREREG).read_bytes()
+        blob = (self.repo / self.prereg_path).read_bytes()
+        purpose, grants, evidence_class = self.purpose
         return {
             'schema': 't00_screen_authority/v1', 'authority_id': 'TEST_ONLY-screen-authority',
-            'purpose': 'T00_STEP3_SELECTED_BOOK_SCREEN', 'grants': ['T00_STEP3_SCREEN_ONCE'], 'refusals': REFUSALS,
-            'evidence_class': 'T00_STEP3_SCREEN', 'source': {'contract_sha256': self.receipt.contract_sha256},
+            'purpose': purpose, 'grants': grants, 'refusals': REFUSALS,
+            'evidence_class': evidence_class, 'source': {'contract_sha256': self.receipt.contract_sha256},
             'run_root_sha256': sha(str((self.artifact_root / 't00-step3').resolve()).encode('utf-8')),
             'p7': {'record_sha256': sha(record_bytes), 'code_head': record['code_head'],
                    'code_closure_sha256': record['code_closure_sha256'],
                    'bootstrap_sha256': record['bootstrap_sha256'], 'interpreter': record['interpreter']},
-            'prereg': {'path': PREREG, 'ratifying_commit': self.ratifying, 'commit': self.head,
+            'prereg': {'path': self.prereg_path, 'ratifying_commit': self.ratifying, 'commit': self.head,
                        'blob_sha256': sha(blob), 'a5_text_sha256': verdict.A5_TEXT_SHA256,
                        'a6_text_sha256': verdict.A6_TEXT_SHA256},
             'a3_answers': [{'path': path, 'commit': self.head, 'blob_sha256': sha((self.repo / path).read_bytes())}
@@ -232,7 +267,13 @@ class Screen:  # pylint: disable=too-many-instance-attributes
     def patch(self):
         module = sa()
         self.monkeypatch.setattr(module, 'REPOSITORY_ROOT', self.repo)
-        self.monkeypatch.setattr(module, 'R3C_CONTRACT_SHA256', self.receipt.contract_sha256)
+        if not self.r3d:
+            self.monkeypatch.setattr(module, 'R3C_CONTRACT_SHA256', self.receipt.contract_sha256)
+            return module
+        # The successor counterparts of the compiled r3c digest (card §2.2): r3c's id and startup row.
+        self.monkeypatch.setattr(module, 'R3C_CONTRACT_SHA256', self.r3c_sha256)
+        self.monkeypatch.setattr(module, 'R3C_CONTRACT_ID', self.r3c_id, raising=False)
+        self.monkeypatch.setattr(module, 'R3C_STARTUP_POLICY_ROW', dict(self.r3c_row), raising=False)
         return module
 
     def validate(self, *, doc=None, approval=None, record=None, receipt=None,  # pylint: disable=too-many-arguments
@@ -405,6 +446,149 @@ def test_A11(screen):
     screen.validate()
 
 
+# ---- W. the successor purpose (build card 2026-10-10 §2.5) ------------------------------------
+
+@pytest.fixture
+def successor_screen(tmp_path, monkeypatch):
+    return Screen(tmp_path / 'successor', monkeypatch, r3d=True)
+
+
+def with_purpose(doc, purpose, grants, evidence_class):
+    return dict(doc, purpose=purpose, grants=grants, evidence_class=evidence_class)
+
+
+def test_W1(successor_screen):
+    """Successor constants and closed document; a mixed purpose, grant or evidence class is refused."""
+    module = sa()
+    assert (module.SUCCESSOR_PURPOSE, list(module.SUCCESSOR_GRANTS), module.SUCCESSOR_EVIDENCE_CLASS) == SUCCESSOR
+    assert module.PREREG_CHAIN == (PREREG, SUCCESSOR_PREREG)
+    assert module.STEP12_RNG_ROOTS == ('42', '123', '2026', 'probe')
+    profile = module.PURPOSE_PROFILES[module.SUCCESSOR_PURPOSE]
+    assert (list(profile.grants), profile.evidence_class, profile.chain_entry) == [*SUCCESSOR[1:], 1]
+    assert module.PURPOSE_PROFILES[module.SCREEN_PURPOSE].chain_entry == 0
+    doc = successor_screen.authority
+    for mixed in (with_purpose(doc, SUCCESSOR[0], ORIGINAL[1], SUCCESSOR[2]),
+                  with_purpose(doc, SUCCESSOR[0], SUCCESSOR[1], ORIGINAL[2]),
+                  with_purpose(doc, ORIGINAL[0], SUCCESSOR[1], SUCCESSOR[2]),
+                  dict(doc, size_vector_sha256='a' * 64)):
+        refused('SCREEN_AUTHORITY_FIELDS', lambda mixed=mixed: successor_screen.validate(doc=mixed))
+    auth = successor_screen.validate()
+    assert auth.evidence_class == SUCCESSOR[2] and auth.prereg['path'] == SUCCESSOR_PREREG
+
+
+def test_W2(screen):
+    """Regression: a #581 authority under the original purpose validates exactly as at base, and
+    the original refuses the successor's chain entry and expressions as before."""
+    auth = screen.validate()
+    assert (auth.evidence_class, auth.prereg['path'], auth.parameters['expressions']) == \
+        ('T00_STEP3_SCREEN', PREREG, 'DECLARED_BOOK')
+    assert auth.authority_sha256 == sha(canonical(screen.authority))
+    refused('SCREEN_AUTHORITY_FIELDS', lambda: screen.validate(
+        doc=dict(screen.authority, prereg=dict(screen.authority['prereg'], path=SUCCESSOR_PREREG))),
+        'compiled constant')
+    expressions = {'base': 'DECLARED_BOOK', 'size_vector_sha256': sha(canonical(TEST_SIZING))}
+    refused('SCREEN_PARAMETER_UNSUPPORTED', lambda: screen.validate(
+        doc=dict(screen.authority, parameters=dict(screen.params, expressions=expressions))), 'expressions')
+
+
+def test_W3(successor_screen, tmp_path, monkeypatch):
+    """Under the successor, receipt, authority and P7 record carry one contract digest; r3c's digest is
+    refused under the successor and a successor digest under the original."""
+    s = successor_screen
+    auth = s.validate()
+    assert auth.source_receipt.contract_sha256 == s.receipt.contract_sha256 != s.r3c_sha256
+    refused('SCREEN_SOURCE_MISMATCH', lambda: s.validate(
+        doc=dict(s.authority, source={'contract_sha256': s.r3c_sha256})))
+    r3c_record = s._record(p7_evidence.P7_BOOTSTRAP_SHA256, contract_sha256=s.r3c_sha256)  # pylint: disable=protected-access
+    refused('SCREEN_P7_MISMATCH', lambda: s.validate(doc=s.document(r3c_record), record=r3c_record), 'not over')
+    r3c_receipt = s.r3c_case.validate()
+    r3c_doc = dict(s.document(r3c_record), source={'contract_sha256': s.r3c_sha256})
+    refused('SCREEN_SOURCE_MISMATCH', lambda: s.validate(doc=r3c_doc, receipt=r3c_receipt, record=r3c_record))
+    original = Screen(tmp_path / 'original', monkeypatch, r3d=True, purpose=ORIGINAL)
+    refused('SCREEN_SOURCE_MISMATCH', original.validate, 'compiled r3c digest')
+
+
+def test_W4(tmp_path, monkeypatch):
+    """An r3d with one other role changed (cost_model) fails the derivation check."""
+    def other_cost_model(doc, screen):
+        raw = b'TEST_ONLY another cost model'
+        (screen.artifact_root / 'retained/cost_model_other.bin').write_bytes(raw)
+        return dict(doc, artifacts=[dict(row, path='retained/cost_model_other.bin', sha256=sha(raw))
+                                    if row['role'] == 'cost_model' else row for row in doc['artifacts']])
+    bad = Screen(tmp_path / 'bad', monkeypatch, r3d=True, r3d_edit=other_cost_model)
+    refused('SCREEN_SOURCE_MISMATCH', bad.validate, 'derivation')
+    Screen(tmp_path / 'good', monkeypatch, r3d=True).validate()
+
+
+def test_W5(tmp_path, monkeypatch):
+    """The size vector binding: a size_vector_sha256 mismatch, a v1 policy, the identity v2 vector,
+    startup bytes off the receipt digest, a v2 policy differing from r3c's v1 outside ``sizing``, and
+    r3c's startup bytes missing. Each refused."""
+    identity = IDENTITY_SIZE_VECTOR.as_mapping()
+
+    def case(name, **kwargs):
+        return Screen(tmp_path / name, monkeypatch, r3d=True, **kwargs)
+    refused('SCREEN_PARAMETER_UNSUPPORTED', case('sha', param_changes={'expressions': {
+        'base': 'DECLARED_BOOK', 'size_vector_sha256': 'f' * 64}}).validate, 'size_vector_sha256')
+    refused('SCREEN_PARAMETER_UNSUPPORTED', case('v1', startup=lambda v1: json.dumps(v1, indent=1).encode()).validate,
+            'v2')
+    refused('SCREEN_PARAMETER_UNSUPPORTED', case(
+        'identity', startup=lambda v1: canonical(dict(v1, schema=STARTUP_V2, sizing=identity)),
+        param_changes={'expressions': {'base': 'DECLARED_BOOK', 'size_vector_sha256': sha(canonical(identity))}},
+    ).validate, 'identity')
+    drifted = case('bytes')
+    (drifted.artifact_root / drifted.startup_path).write_bytes(b'{}')
+    refused('SCREEN_SOURCE_MISMATCH', drifted.validate, 'startup')
+
+    def richer(v1):
+        legs = dict(v1['legs'], aegis_6j=dict(v1['legs']['aegis_6j'], paper_initial_capital='90000'))
+        return canonical(dict(v1, schema=STARTUP_V2, sizing=TEST_SIZING, legs=legs))
+    refused('SCREEN_SOURCE_MISMATCH', case('fields', startup=richer).validate, "r3c's")
+    missing = case('missing')
+    (missing.artifact_root / missing.r3c_row['path']).unlink()
+    refused('SCREEN_SOURCE_MISMATCH', missing.validate, 'startup')
+    case('good').validate()
+
+
+def test_W6(successor_screen, tmp_path, monkeypatch):
+    """A step-12 root, or the step-12 probe root, is refused under the successor."""
+    s = successor_screen
+    for rng in (dict(s.params['rng'], roots=['42', 'root-b', 'root-c']), dict(s.params['rng'], probe_root='probe')):
+        refused('SCREEN_PARAMETER_UNSUPPORTED', lambda rng=rng: s.validate(
+            doc=dict(s.authority, parameters=dict(s.params, rng=rng))), 'rng')
+    s.validate()
+    step12 = {'tag': 't00-screen-rng/v1', 'roots': ['42', '123', '2026'], 'probe_root': 'probe'}
+    Screen(tmp_path / 'original', monkeypatch, param_changes={'rng': step12}).validate()  # the original keeps them
+
+
+def test_W7(screen, successor_screen):
+    """Cross-binding of purpose and chain entry is refused both ways."""
+    for case, path in ((screen, SUCCESSOR_PREREG), (successor_screen, PREREG)):
+        doc = dict(case.authority, prereg=dict(case.authority['prereg'], path=path))
+        refused('SCREEN_AUTHORITY_FIELDS', lambda case=case, doc=doc: case.validate(doc=doc), 'compiled constant')
+    screen.validate()
+    successor_screen.validate()
+
+
+def test_W8(tmp_path, monkeypatch):
+    """A successor pre-registration with one byte changed in A6 is refused (A9 under the new purpose)."""
+    bad = Screen(tmp_path / 'bad', monkeypatch, r3d=True, a6_byte=True)
+    refused('SCREEN_PREREG_MISMATCH', bad.validate, 'A5/A6')
+    Screen(tmp_path / 'good', monkeypatch, r3d=True).validate()
+
+
+@WINDOWS
+def test_W10(successor_screen):
+    """``require_validated_screen_authority`` refuses a source contract other than the authority's
+    bound digest under the successor, and serves the bound r3d receipt."""
+    s = successor_screen
+    auth = s.validate()
+    r3c_receipt = s.r3c_case.validate()
+    with s.ready(auth):
+        refused('SCREEN_SOURCE_MISMATCH', lambda: require(auth, receipt=r3c_receipt))
+        assert require(auth) is auth
+
+
 # ---- K. capability gate (every use) ----------------------------------------------------------
 
 @WINDOWS
@@ -471,7 +655,7 @@ def test_X3(screen):
 
 def test_compiled_constants_name_the_tracked_files_and_patterns_accept_the_tracked_successors():
     module = sa()
-    assert module.PREREG_CHAIN[-1] == PREREG and set(module.A3_SUCCESSORS) == {ORB, VAN}
+    assert module.PREREG_CHAIN[0] == PREREG and set(module.A3_SUCCESSORS) == {ORB, VAN}
     pinned_sections()
     for path, (prefix, exposure, owed) in module.A3_SUCCESSORS.items():
         lines = tracked_blob(path).decode('utf-8').split('\n')
