@@ -57,7 +57,7 @@ qty_add   = floor( qty_base × pyr_pct/100 )                             # sized
 
 **Alert payload contract (minimum fields, added to venue editions in Q-RAIL-1 Phase 1):** `{leg_id, signal_type (entry|add|exit|flat), bar_time, close, stop_dist_pts}`. Pine already computes `stop_dist` at signal time (`stopDist = atrVal * stopAtr`, both editions) — the payload emits it; it does not create it.
 
-**Worked check (must reproduce F2):** MYM recent-90d, $100K W1: `r_eff = 0.0070 × 1.0 × 0.5 = 0.35%`; SL = 50.68 × 1.20 = 60.8 pts × $0.50 = $30.41/micro; `qty_base = floor(350/30.41) = 11` → RESERVE `floor(cap_alloc 69 / 8.5) = 8` → **8**; `qty_add = floor(8 × 7.5) = 60`. Matches `f2_floors.json` exactly (`legs[0].recent_90d = (8, 60)`).
+**Worked check (must reproduce F2):** MYM recent-90d, $100K W1: `r_eff = 0.0070 × 1.0 × 0.5 = 0.35%`; SL = 60.8 pts (locked SL multiple × MYM recent-90d ATR *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*) × $0.50 = $30.41/micro; `qty_base = floor(350/30.41) = 11` → RESERVE `floor(cap_alloc 69 / 8.5) = 8` → **8**; `qty_add = floor(8 × 7.5) = 60`. Matches `f2_floors.json` exactly (`legs[0].recent_90d = (8, 60)`).
 
 > ⚠ **Superseded arithmetic, retained for provenance.** This worked check previously read
 > `floor(80/8.5) = 9` → `qty_add = 67`, using the **whole firm cap per leg**. That pair is

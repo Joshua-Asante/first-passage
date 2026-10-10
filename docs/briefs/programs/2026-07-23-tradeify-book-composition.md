@@ -219,7 +219,7 @@ DJ30-MYM: PF 1.80 / WR 40.3% vs CFD lock
    clause as written~~ — **false as of 07-29: the mixing clause is rescinded**, and 6J sits in
    the Currencies Product Group, so it does not even interact with the Equity Index legs on
    hedging grounds. A full-size 6J would consume **10 of the 80** micro-equivalents (fits the
-   free capacity on Mon/Wed/Thu/Fri; **not Tue**, where the incumbents leave 0). What still
+   free capacity on every weekday except the one where both incumbents can fire and leave 0 *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `87a86d290602482d9de44904e9940805d6c02c1f`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*). What still
    binds: **measured bust geometry — ledger J4 puts breach at ~11–12% at cap-12 (5–8% at 0.5×)
    against a 3.0% admission ceiling** (see D2); screen **S2** (6J is not a micro) and an
    unmeasured **R1**; solo-account fork fails the ≥1-trade/week rule 63% of weeks and yields

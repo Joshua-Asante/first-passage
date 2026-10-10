@@ -29,7 +29,7 @@ Striker DJ30→MYM and Striker NAS100→MNQ legs.
 |---|---|---|---|
 | **0-A admissibility** | Cannot name a constraint-based WHO for Path 1a **and** will not fund a Path-1b evidence pass | Two constraint framings drafted to ADR 2026-07-26 §2-A's specificity standard; **both fail the delete-test and the flip-test** | **YES** |
 | **0-B raised bar** | Operator rules the domain bar binding (route 1 rejected) | Route 1 **clears** — the bar's scope is broader than its evidence | **NO** |
-| **0-C day set (S5 + S3)** | No day set satisfies S5 **and** S3 **and** projects IS N ≥ 120 | Best compliant set (Mon+Wed+Thu) = **81 IS entries** vs a **120** floor, on a deliberately *generous* proxy | **YES** |
+| **0-C day set (S5 + S3)** | No day set satisfies S5 **and** S3 **and** projects IS N ≥ 120 | Best compliant set (the remaining weekdays *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*) = **81 IS entries** vs a **120** floor, on a deliberately *generous* proxy | **YES** |
 | 0-D §7.1 screen | Any of S1–S6 fails | S5 fails as first drafted; **S3 is the binding limb** and is structural | subsumed by 0-C |
 | 0-E K disclosure | `S-MYM-ORC-02` K=2 ruled bankable ⇒ floor 1.06 > Cap | not reached | — |
 | 1 – 4 | census / IS run / confirm / survivor scoring | **never reached** | — |
@@ -65,7 +65,7 @@ Two sub-predictions the brief made about *itself* were both wrong, in opposite d
 
 Both the incumbent Striker DJ30→MYM leg and SLR-MYM resolve to the **same order symbol `MYM1!`**, and
 the venue holds **one net position per symbol per account**. On the days the incumbent leg can fire —
-**Tuesday and Friday** — a second MYM strategy cannot hold an independent position **regardless of how
+**the incumbent's locked days** *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)* — a second MYM strategy cannot hold an independent position **regardless of how
 much contract cap is allocated to it.**
 
 This is a *position-netting* fact, not a sizing fact, and it is what defeats the cap-reallocation
@@ -131,7 +131,7 @@ That, not the dollar figure, is the material saving.
 > ⚠ **Extended 2026-08-06 (claim-alignment M38):** F1's *rule* remains conditional on its own
 > face ("on an **occupied** instrument"; "calendar-disjointness from **the incumbent** on that
 > symbol") — L2 (check symbol occupancy before cap arithmetic) is durable. **Only the factual
-> premise is dead** — *"On the days the incumbent leg can fire — **Tuesday and Friday**"* —
+> premise is dead** — *"On the days the incumbent leg can fire — **the incumbent's locked days**"* *(redacted 2026-10-09; see note above)* —
 > because no incumbent is deployed post-de-scope (symbols retained-not-released pending F2).
 > §8's "c1 book — two legs, 69/11, disarmed" row is a **no-change attestation** about what this
 > closure did and is **not** corrected here.
@@ -182,7 +182,7 @@ granularity, and MYM.md is a mandatory session-start read for any MYM work, so c
 grep -n "0-A admissibility\|0-C day set" docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md
 
 # The measured census is reproducible (primary checkout only -- vendor data gitignored)
-python lab/archive/slr_mym_phase05_2026-07-29/phase05_census.py   # expect 81 for Mon+Wed+Thu
+python lab/archive/slr_mym_phase05_2026-07-29/phase05_census.py   # expect 81 for the best compliant day set (redacted 2026-10-09)
 
 # F1: the incumbent MYM leg's days are what S3 collides with -- cap table unchanged
 grep -n "Tuesday is closed" docs/spec/2026-07-27-third-leg-target-spec.md
