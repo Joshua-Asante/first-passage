@@ -14,8 +14,8 @@ from fractions import Fraction
 from typing import Callable, Mapping
 
 from c1_rail.book_policy import (
-    BOOK_LEGS, BookProtectionClock, CapacityLedger, add_quantity,
-    entry_quantities, leg, require_policy,
+    BOOK_LEGS, IDENTITY_SIZE_VECTOR, BookProtectionClock, CapacityLedger, SizeVector,
+    add_quantity, entry_quantities, leg, require_policy,
 )
 from c1_rail.book_schedule import SchedulePhase, classify_execution_phase
 from c1_signal_daemon.book_protocol import (
@@ -244,13 +244,17 @@ class BookReplay:
 
     def __init__(self, adapters: Mapping, instruments: Mapping[str, Instrument], *,
                  policy, initial_state, sizing_inputs: Callable,
-                 schedule_quotes: Callable, broker_factory: Callable = TVBrokerEmulator):
+                 schedule_quotes: Callable, broker_factory: Callable = TVBrokerEmulator,
+                 size_vector: SizeVector = IDENTITY_SIZE_VECTOR):
         expected = {x.leg_id for x in BOOK_LEGS}
         if set(adapters) != expected or set(instruments) != expected:
             raise ValueError("exactly the four fixed book legs are required")
         if initial_state is None:
             raise ValueError("initial_state is required")
         self.policy = require_policy(policy)
+        if not isinstance(size_vector, SizeVector):
+            raise ValueError("size_vector must be a SizeVector")
+        self.size_vector = size_vector  # per-leg size (successor card S-1); identity = today
         self.adapters = dict(adapters)
         self.instruments = dict(instruments)
         self.clock = BookProtectionClock(policy, initial_state.current_equity,
@@ -298,17 +302,22 @@ class BookReplay:
             marks[(k, "entry")] = self.brokers[k].open_pnl(bar.close) - add
         return marks
 
-    def _cap_term(self, k, qty, mode, tier, values):
+    def _cap_term(self, k, qty, mode, tier, values, size):
         """Whether the risk-sized leg's cap term wins the policy's min, from the production call.
 
         ``entry_quantities`` is called again with the risk term made unbounded (risk dollars a
-        billion times the per-contract risk), so it returns the cap term alone; the formula is
-        never re-implemented. The cap binds when the policy base equals it (a tie counts).
+        billion times the per-contract risk) and the leg's size without its ``max_base``, so it
+        returns the vector's cap term alone; the formula is never re-implemented. The cap binds
+        when the policy base equals it (a tie counts). A ``max_base`` is reported apart.
         """
         unbounded = dict(values, risk_dollars=Fraction(str(values["per_contract_risk"])) * 10**9)
-        cap_only = entry_quantities(k, mode=mode, policy=self.policy, lifecycle_tier=tier, **unbounded)[0]
+        cap_only = entry_quantities(k, mode=mode, policy=self.policy, lifecycle_tier=tier,
+                                    size=replace(size, max_base=None), **unbounded)[0]
         # A zero policy quantity (lifecycle multiplier 0, e.g. RETIRED) has no binding term: None.
-        return {"cap_only_policy": cap_only, "cap_binds": qty == cap_only if qty > 0 else None}
+        out = {"cap_only_policy": cap_only, "cap_binds": qty == cap_only if qty > 0 else None}
+        if size.max_base is not None:
+            out["max_base_binds"] = qty == size.max_base if qty > 0 else None
+        return out
 
     def _open_at_deadline(self, edge):
         """Each leg's open position, working orders, reservation and open lots by kind."""
@@ -597,18 +606,21 @@ class BookReplay:
             tier = values.pop("lifecycle_tier", None)
             if tier is None:
                 raise ReplayNeedsContext("explicit lifecycle authorization required")
+            size = self.size_vector.leg(k)
             qty = (entry_quantities(k, mode=mode, policy=self.policy,
-                                    lifecycle_tier=tier, **values)[0]
+                                    lifecycle_tier=tier, size=size, **values)[0]
                    if intent.kind == "entry" else
                    add_quantity(k, self.base[k], mode=mode, policy=self.policy,
-                                lifecycle_tier=tier))
+                                lifecycle_tier=tier, size=size))
             if row is not None:
                 # The production policy's own return and an entry's inputs, recorded, never re-implemented.
                 row.update(policy=qty, lifecycle_tier=tier)
                 if intent.kind == "entry":
                     row["sizing_inputs"] = {name: str(value) for name, value in sorted(values.items())}
+                    if size != IDENTITY_SIZE_VECTOR.leg(k):
+                        row["size"] = size.as_mapping()
                 if intent.kind == "entry" and "risk_dollars" in values:
-                    row.update(self._cap_term(k, qty, mode, tier, values))
+                    row.update(self._cap_term(k, qty, mode, tier, values, size))
             if qty == 0:
                 self._reject(intent, bar, "zero policy quantity")
                 return
