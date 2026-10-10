@@ -2,6 +2,8 @@
 
 **Status:** FROZEN 2026-10-09 (operator: "freeze the plan"), before any export is read or any scorer exists. The freeze commit is recorded in the [parent brief §8](../Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md#8--verdict-pre-registration). A verdict computed after any constant below moves is void; a changed constant is a new pre-registration. Corrections from the freeze review land before Phase 0 reads data, as a dated amendment and re-freeze (see §E). The original freeze text is immutable at `121e2acf`.
 
+**Amendment reader notice:** Section A below preserves the October 9 baseline wording. The approved native-guard interpretation in [F7](#f7---captured-native-guards-retained-operator-ruling-pending-re-freeze) supersedes its protection parenthetical on amended re-freeze; exports and scoring remain held.
+
 ## A — Pool
 
 Legs with an accepted CME trade list, at their locked parameters, **normal mode** (no Tradeify protection; the only protection modeled is the 15% halt in §C):
@@ -101,6 +103,8 @@ Only the top-ranked Explore configuration is scored on Confirm.
   13. The k-mapping now covers risk-sized legs: account-size inputs scale by `k` (unrounded), initial capital scales by `k` (replacing the fixed `E_0` of item 7, which would have tightened the Striker soft-stop many times over against unchanged positions), contract-count inputs stay `floor(k × reference)`; Phase 0 classifies every sizing input from the Pine before producing exports.
 - **2026-10-09, public-exposure redaction (not an amendment; accepted by Joshua 2026-10-09, in chat to the merge agent).** The dollar value of the starting capital was replaced by the symbol `E_0` throughout, and the §C worked example was restated in normalized units (same arithmetic, same percentages). No constant changed: `E_0` keeps the value fixed at the freeze, which is held in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`, commit `950ee0f`).
 - **2026-10-10, Phase-0 operator rulings approved; technical contract awaiting review and re-freeze.** Aegis cap interpretation, the five typed disabled-leg slots and the two-control Vanguard cosmetic exemption are recorded in section F. Approval reference: `Sentinel_7915fcd79e948191a0248d3bc3fe0b3d`. Amended re-freeze date: **NOT YET RECORDED**; its commit will be recorded in the parent brief §8.
+
+- **2026-10-10, additional operator ruling:** preserve captured native guards; normal mode excludes external Tradeify protection. Section F7 owns the interpretation and acceptance requirements; independent review and amended re-freeze remain pending.
 
 ## F - Phase-0 amendment: approved scope, pending contract review and re-freeze
 
@@ -300,24 +304,40 @@ rows. Provisional local references cannot satisfy Phase-0 admission. When publis
 each registry name must be the actual repo-relative file path without annotations;
 stage external captures in an ignored primary-checkout evidence directory first.
 
-### F7 - Native drawdown guard conflict: unresolved before re-freeze
+### F7 - Captured native guards retained: operator ruling, pending re-freeze
 
-The three approved October 10 rulings do not settle this additional conflict.
+**Operator ruling, 2026-10-10:** "Preserve captured native guards; clarify that
+normal mode excludes external Tradeify protection (recommended to preserve
+locked trading settings)." This separately resolves the native-guard choice;
+the three earlier approvals remain unchanged. Review and amended freeze are owed.
+
 The hash-verified Striker MYM reference activates the pinned Pine's native daily/
 total drawdown guard. Source reads on October 10 confirm `ddHit` (line 205) feeds
 entry eligibility (241) and position closure (368); `backtestMode` gates it.
 This agrees with the [prior source read](../../notes/2026-09-12-track-b-scaling-faithfulness-read.md#1--classification-per-leg-pine-line-refs-are-to-the-pinned-body).
 
-Section B preserves this captured trading setting, while section A says only the
-simulator's 15% halt is modeled. The native guard can change the export's trade
-sample before simulation. Neither a size-specific export nor capital scaling
-removes that contradiction. Do not silently toggle `backtestMode`, infer the guard
-is inert, remove the leg, or score a protected sample as protection-free.
+On amended re-freeze, this ruling supersedes section A's parenthetical claim that
+only the simulator's 15% halt is modeled: **normal mode excludes external Tradeify
+portfolio/venue protection overlays; captured strategy-native guards and soft-stops
+remain part of each pinned strategy's behavior.** The simulator additionally applies
+the unchanged portfolio-level 15% intraday peak-to-trough halt. A native guard may
+alter the genuine size-specific export's entry/exit sample before simulation;
+that sample must not be described as free of strategy-native protection.
 
-An explicit operator ruling must choose whether to preserve captured strategy-native
-guards and narrow section A's protection wording to external Tradeify controls,
-or authorize a specific study-only guard override with its own reviewed mapping.
-Until that choice is recorded and reviewed, the amended freeze, exports and scoring
-remain HOLD. No new guard decision is inferred from the three earlier approvals.
-The chosen contract must test reference/override provenance, entry and exit effects,
-and related native guard/soft-stop treatment across the pool before admission.
+Section B continues to preserve all non-sizing trading settings at their verified
+reference values, including `backtestMode`. Do not toggle a native guard, force an
+inactive guard on, remove a leg, post-rescale trades, or add a Tradeify overlay.
+Section B's existing capital/account-size/cap scaling remains unchanged. This
+interpretation applies across the pool, including the native Striker soft-stop;
+it does not assume every leg has the same guard or that every guard is active.
+
+Before admission, the reviewed private reference record identifies each leg's
+native guard/soft-stop state and its source/reference provenance. Scorer/input
+acceptance must reject unauthorized non-sizing setting changes, retain native
+entry/exit effects in genuine exports, and still enforce the separate simulator
+15% halt. Check both active and inactive native-guard reference cases and the
+size-dependent Striker soft-stop; do not manufacture missing trades to undo them.
+K=2,375, nominal vectors, exclusions, tie-breaks, maximum-growth ranking and the
+99-in-100 clearance standard are unchanged. Exports and scoring remain HOLD
+pending independent review and explicitly recorded amended freeze; this ruling
+does not itself record that freeze.
