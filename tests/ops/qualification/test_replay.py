@@ -1499,6 +1499,14 @@ def test_Z9_cap_term_diagnostic_and_sizing_row_use_the_vector():
     assert striker_rows(bp.IDENTITY_SIZE_VECTOR, 700) == striker_rows(None, 700)
 
 
+def test_Z9_cap_probe_ignores_the_risk_multiplier():
+    tiny = {"risk_multiplier": "1/1000000000000", "cap_reserve_multiplier": "1/1", "adds": "UNCHANGED"}
+    row = striker_rows(sized(dj30_mym_p250=tiny), 22 * 35 * 10**12)[0]     # risk term 22: ties the cap term
+    assert (row["policy"], row["cap_only_policy"], row["cap_binds"]) == (22, 22, True)
+    row = striker_rows(sized(dj30_mym_p250=tiny), 700)[0]                   # twin: risk term 0
+    assert (row["policy"], row["cap_only_policy"], row["cap_binds"]) == (0, 22, None)
+
+
 def adds_run(rule, state=None):
     vector = (None if rule is None else
               sized(dj30_mym_p250={**IDENTITY_SIZING["dj30_mym_p250"], "adds": rule}))
