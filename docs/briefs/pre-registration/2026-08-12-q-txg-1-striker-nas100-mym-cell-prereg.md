@@ -84,7 +84,7 @@ cross-underlying sibling, not a redeploy.
 }
 ```
 
-Compile notes: stop mapped 80t from raw 60.82t (1.20 × MYM ATR(11) 50.6834 pts / tick 1.0).
+Compile notes: stop mapped 80t from raw 60.82t (1.20 × MYM ATR(11) [recent-90d median redacted] / tick 1.0) *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*.
 ENV-1 cell fully OPEN (power floor 0.0891).
 
 ---

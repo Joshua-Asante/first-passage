@@ -139,7 +139,7 @@ the panel: 0 off-schedule traded days on either leg.
 | Fri | MYM | 69 | **11** |
 
 Measured entry rates (panel, exit-date = entry-date since all holds are intraday): MYM **30.7%**
-(191/623 sessions on its locked days *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*), MNQ **30.5%** (190/623 Mon+Tue sessions).
+(191/623 Tue+Fri sessions), MNQ **30.5%** (190/623 Mon+Tue sessions).
 
 A fail-safe headroom check must reserve a leg's worst case for as long as that leg **can still
 fire**. The locked entry window is 09:00–13:00 ET for both, so **no dynamic scheme frees anything
@@ -155,7 +155,7 @@ costing of the runtime alternative is in §8.)
 > quantity-less `closeposition` on every exit, both keyed `account` + `instrument`
 > (`ops/c1_rail/crosstrade_payload.py:62-73, 86-87`). **Check S7 (§7.1) before reading this table.** The
 > incumbent occupancy map is the "Incumbents able to fire" column above: **MNQ1! on Mon+Tue, MYM1! on
-> its locked days.** *(redacted 2026-10-09; see note above)*
+> Tue+Fri.**
 
 ### §2.3 — Risk-geometry envelope (the binding constraint)
 
@@ -345,7 +345,7 @@ A candidate is **screenable** as a third c1 leg if and only if it meets all of t
 | S4 | If it trades an **Equity Index Product Group** symbol (ES/MES/NQ/MNQ/YM/MYM/RTY/M2K/…), it must be **long-only**. A short-capable Equity Index leg violates the hedging rule against the long-only c1 book — *in any account under the same control* | envelope §4a; GO ADR §5 forbidden move |
 | S5 | Fits the **day-of-week cap table** in §2.2 without re-allocating cap from MYM or MNQ | `c1_sizing_host_reference.py:76` |
 | S6 | **No US Treasuries** (untradable at this firm); rates = EUREX only | envelope §4 overlay |
-| **S7** | **Order-symbol occupancy.** Must not require an **order symbol already traded by an incumbent c1 leg in the same account** on any session that incumbent **can** fire. Satisfied **trivially** by an unoccupied symbol (MES / M2K / MGC / micro-FX are unoccupied today). Otherwise requires **session-disjointness from the incumbent on that symbol**, established from **locked Pine session filters — never from observed trade frequency** (a leg that *can* fire occupies the symbol whether or not it did). Current occupancy: **MNQ1! Mon+Tue · MYM1! on its locked days** *(redacted 2026-10-09; see note above)*. Rationale: every entry sends `flatten_first=true` and every exit sends a quantity-less `closeposition`, both keyed `account`+`instrument` — two strategies on one symbol destroy each other's positions **bidirectionally**, and cap donation cannot fix it | `ops/c1_rail/crosstrade_payload.py:62-73, 86-87`; ADR [`2026-07-29-third-leg-symbol-occupancy-limb`](../adr/2026-07-29-third-leg-symbol-occupancy-limb.md) |
+| **S7** | **Order-symbol occupancy.** Must not require an **order symbol already traded by an incumbent c1 leg in the same account** on any session that incumbent **can** fire. Satisfied **trivially** by an unoccupied symbol (MES / M2K / MGC / micro-FX are unoccupied today). Otherwise requires **session-disjointness from the incumbent on that symbol**, established from **locked Pine session filters — never from observed trade frequency** (a leg that *can* fire occupies the symbol whether or not it did). Current occupancy: **MNQ1! Mon+Tue · MYM1! Tue+Fri**. Rationale: every entry sends `flatten_first=true` and every exit sends a quantity-less `closeposition`, both keyed `account`+`instrument` — two strategies on one symbol destroy each other's positions **bidirectionally**, and cap donation cannot fix it | `ops/c1_rail/crosstrade_payload.py:62-73, 86-87`; ADR [`2026-07-29-third-leg-symbol-occupancy-limb`](../adr/2026-07-29-third-leg-symbol-occupancy-limb.md) |
 
 ### §7.2 — Risk geometry (the pre-screen that does the work)
 
@@ -446,7 +446,7 @@ measured, not modeled — the two incumbents are each other's natural experiment
 weeks (run 9), MNQ alone 151 (run 10), **together 82 (run 4)**. The second leg cut dead weeks ~45%
 and more than halved the worst run **at corr(daily P&L) = −0.13** — *legs can diversify liveness
 without diversifying returns*, which no other limb can see. Current incumbent occupancy
-**`MNQ1!` Mon+Tue · `MYM1!` on its locked days** leaves **two weekdays** free *(redacted 2026-10-09; see note above)* — 622 of 1,556 business days (~40%)
+**`MNQ1!` Mon+Tue · `MYM1!` Tue+Fri** leaves **Wed + Thu** free — 622 of 1,556 business days (~40%)
 on which the book has never traded.
 
 **L1 is subordinate to M1 (§7.4).** M1 requires the mechanism be *day-agnostic by construction and

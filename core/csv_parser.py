@@ -24,6 +24,7 @@ consumed it (ops-owned) was retired 2026-07-11
 """
 
 import csv
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -76,10 +77,18 @@ STRATEGY_MAP = {
 # Day-of-week validation (0=Mon, 4=Fri)
 STRATEGY_DAYS = {
     "Guardian": {0, 1, 3},       # Mon, Tue, Thu
-    "Striker": {1, 4},           # Tue, Fri
     "Aegis": {0, 1, 2},         # Mon, Tue, Wed
     "NAS100": {0, 1},            # Mon, Tue (per v1.0 locked DOW)
 }
+# Striker DJ30 v4.5's day set is Pine-only (core/strategies/CATALOG.md §Locked parameter
+# record): redacted from the public copy 2026-10-09 (operator decision, option 2; original in
+# first-passage-archive archive/preserve-exposure-2026-10-09
+# 87a86d290602482d9de44904e9940805d6c02c1f). It loads from this gitignored input
+# ({"Striker": [weekday ints]}); when absent, Striker trades skip the day-of-week warning.
+_PRIVATE_DAYS = Path(__file__).resolve().parent / "locked_params.private.json"
+if _PRIVATE_DAYS.is_file():
+    STRATEGY_DAYS.update({k: set(v) for k, v in json.loads(
+        _PRIVATE_DAYS.read_text(encoding="utf-8")).items()})
 
 
 def _normalize_instrument(raw: str) -> str:
@@ -105,8 +114,8 @@ def _detect_strategy(instrument: str, entry_time: datetime) -> Optional[str]:
 
     if strategy and entry_time:
         day = entry_time.weekday()
-        expected_days = STRATEGY_DAYS.get(strategy, set())
-        if day not in expected_days:
+        expected_days = STRATEGY_DAYS.get(strategy)
+        if expected_days is not None and day not in expected_days:
             # Trade on unexpected day — flag but still assign
             print(f"  ⚠ {strategy} trade on {entry_time.strftime('%A')} "
                   f"(expected: {expected_days})")

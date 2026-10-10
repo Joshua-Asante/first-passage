@@ -1243,7 +1243,7 @@ constraint paragraph changes no §1 rule) **and the FLIP test** (reversing the c
 not change the trade) — Path 1a ruled unwritable. **0-C day set** (S5 contract-cap ∧ S3 order-symbol
 occupancy) — the incumbent Striker DJ30→MYM leg fires on its locked days *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)* and shares order symbol `MYM1!`; the
 venue nets one position per symbol per account, so those two days close structurally regardless of
-cap. The best S5+S3-compliant day set (Mon+Wed+Thu), measured by `phase05_census.py` on the local
+cap. The best S5+S3-compliant day set (the remaining weekdays *(redacted 2026-10-09; see note above)*), measured by `phase05_census.py` on the local
 `MYM_M15.csv` panel (n=141,477 bars, 1,481 scoreable RTH sessions, IS partition n=860,
 2019–2023) on a deliberately loose (any-time-of-day) 15m upper-bound proxy, yields **81 IS
 entries** against the pre-registered **120-entry floor**. Full-panel entry rate **17.96%**

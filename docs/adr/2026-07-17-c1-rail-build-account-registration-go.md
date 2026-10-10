@@ -195,7 +195,7 @@ regenerated — closing the evidence-volatility gap the same re-audit surfaced.
 2. **Operator manual 15:55 ET flat-check** — **rail-independent**, performed **every session that carried open risk**; flatten via the Tradovate/CrossTrade manual dashboard if any position is open. This is the interim human replacement for the AM's automated rail-independent layer.
 - Tradeify **16:59 ET firm auto-liq** remains **final catch only** — never the designed mechanism.
 
-**Rationale:** (a) MYM/MNQ trade **morning sessions (8–12 ET)** and force-flat intraday — a position open at 15:45 is already an exception; (b) **Tradeify's auto-flatten is NON-FATAL** (envelope's exact reason Tradeify was the recommended tier; contrast MFFU, where post-16:10 orders can *disqualify*) — so the worst-case final catch is not account-ending; (c) WATCH-1 **0.50×** sizing keeps positions small.
+**Rationale:** (a) MYM/MNQ trade **morning sessions (the locked window *(redacted 2026-10-09; see note above)*)** and force-flat intraday — a position open at 15:45 is already an exception; (b) **Tradeify's auto-flatten is NON-FATAL** (envelope's exact reason Tradeify was the recommended tier; contrast MFFU, where post-16:10 orders can *disqualify*) — so the worst-case final catch is not account-ending; (c) WATCH-1 **0.50×** sizing keeps positions small.
 
 **Residual explicitly accepted:** (i) EOD-flat — the compound case *(position open at 15:45 **and** rail down **and** operator absent)* falls to Tradeify's non-fatal 16:59 auto-liq; (ii) **the AM's automated pre-emptive DD-guard flatten is NOT replaced by Option C** — it stays covered only by WATCH-1 bust geometry (≥95%), the sizing-host `DD_SCALE`, and attendance, not by an automated pre-line flatten. Both carried with eyes open.
 
