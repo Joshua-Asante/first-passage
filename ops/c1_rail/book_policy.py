@@ -39,7 +39,9 @@ moved by a binary64 product (the #332 hazard).
 from __future__ import annotations
 
 import math
+import re
 import sys
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
@@ -208,6 +210,233 @@ def leg(leg_id: str) -> LegSpec:
         raise KeyError(f"unknown leg_id {leg_id!r}; fixed book: {sorted(LEG_BY_ID)}") from None
 
 
+# ── successor size vector ────────────────────────────────────────────────
+# T00 successor build card 2026-10-10 (S-1, S-2, S-5, §2.3). A per-leg size
+# carried beside the fixed policy, never inside it: `require_policy` and the
+# protection cell are unchanged. `size=None` is today's quantity, and every
+# form can only lower it. The live rail passes no size.
+
+class AddsRule(str, Enum):
+    UNCHANGED = "UNCHANGED"                      # today's add rule
+    OFF_WHEN_PROTECTED = "OFF_WHEN_PROTECTED"    # no add on a PROTECTED day
+    OFF = "OFF"                                  # no add
+
+
+_RATIONAL = re.compile(r"(0|[1-9][0-9]*)/([1-9][0-9]*)")
+_SIZE_FIELDS: dict[str, tuple[str, ...]] = {
+    "aegis_6j": ("base", "adds"),
+    "dj30_mym_p250": ("risk_multiplier", "cap_reserve_multiplier", "max_base", "adds"),
+    "vanguard_mgc": ("base_by_port", "adds"),
+    "orb_mnq_v7": ("base", "adds"),
+}
+
+
+def _int_in(value: object, low: int, high: int, name: str) -> int:
+    if type(value) is not int or not low <= value <= high:
+        raise ValueError(f"{name} must be an integer in {low}..{high}, got {value!r}")
+    return value
+
+
+def _unit_rational(text: object, name: str) -> Fraction:
+    """An ``"n/d"`` string in [0, 1]; never a float or a decimal string."""
+    match = _RATIONAL.fullmatch(text) if type(text) is str else None
+    if match is None:
+        raise ValueError(f"{name} must be an 'n/d' string, got {text!r}")
+    value = Fraction(int(match[1]), int(match[2]))
+    if value > 1:
+        raise ValueError(f"{name} must be in [0, 1], got {text!r}")
+    return value
+
+
+@dataclass(frozen=True)
+class LegSize:
+    """One leg's size. Fields the leg does not use stay None (`_SIZE_FIELDS`).
+
+    Aegis and ORB: ``base`` (0..8, 0..1). Striker: ``risk_multiplier`` and
+    ``cap_reserve_multiplier`` in [0, 1], optional ``max_base`` 0..22. Vanguard:
+    ``base_by_port`` ((1, 0..1), (2, 0..2)). Construction refuses any value
+    above today's; `validate_size_vector` adds the canonical-encoding rules.
+    """
+    leg_id: str
+    base: int | None = None
+    risk_multiplier: str | None = None
+    cap_reserve_multiplier: str | None = None
+    max_base: int | None = None
+    base_by_port: tuple[tuple[int, int], ...] | None = None
+    adds: AddsRule = AddsRule.UNCHANGED
+
+    def __post_init__(self) -> None:
+        spec = leg(self.leg_id)
+        if not isinstance(self.adds, AddsRule):
+            raise ValueError(f"{self.leg_id}: adds must be an AddsRule, got {self.adds!r}")
+        for name in ("base", "risk_multiplier", "cap_reserve_multiplier", "max_base", "base_by_port"):
+            if name not in _SIZE_FIELDS[self.leg_id] and getattr(self, name) is not None:
+                raise ValueError(f"{self.leg_id}: {name} is not a size field of this leg")
+        if self.leg_id == "dj30_mym_p250":
+            _unit_rational(self.risk_multiplier, "risk_multiplier")
+            _unit_rational(self.cap_reserve_multiplier, "cap_reserve_multiplier")
+            if self.max_base is not None:
+                _int_in(self.max_base, 0, max(spec.normal_base_values), "max_base")
+        elif self.leg_id == "vanguard_mgc":
+            ports = self.base_by_port
+            if (type(ports) is not tuple
+                    or [p[0] if type(p) is tuple and len(p) == 2 and type(p[0]) is int else None
+                        for p in ports] != list(spec.normal_base_values)):
+                raise ValueError("vanguard_mgc base_by_port must be ((1, size), (2, size))")
+            for port, size in ports:
+                _int_in(size, 0, port, f"vanguard_mgc base_by_port[{port}]")
+        else:
+            _int_in(self.base, 0, spec.normal_base_values[0], f"{self.leg_id} base")
+
+    def as_mapping(self) -> dict:
+        """This leg's entry in the startup policy's ``sizing`` mapping."""
+        out: dict = {}
+        for name in _SIZE_FIELDS[self.leg_id]:
+            value = getattr(self, name)
+            if name == "adds":
+                value = value.value
+            elif name == "base_by_port":
+                value = {str(port): size for port, size in value}
+            elif name == "max_base" and value is None:
+                continue
+            out[name] = value
+        return out
+
+
+def _identity_ladder(leg_id: str) -> list[dict]:
+    """Inputs that witness every Striker form: each risk ratio 1..23 at the full
+    allocation and each allocation at ratio 23. A risk multiplier below one lowers
+    ratio 1, a cap multiplier below one lowers allocation 7, and a max_base below
+    22 lowers ratio 23 at allocation 80."""
+    if leg_id == "dj30_mym_p250":
+        cap = ACCOUNT_MICRO_CAP
+        return ([dict(risk_dollars=r, per_contract_risk=1, cap_alloc=cap) for r in range(1, 24)]
+                + [dict(risk_dollars=23, per_contract_risk=1, cap_alloc=a) for a in range(cap)])
+    if leg_id == "vanguard_mgc":
+        return [dict(normal_base=q) for q in LEG_BY_ID[leg_id].normal_base_values]
+    return [{}]
+
+
+@dataclass(frozen=True)
+class SizeVector:
+    legs: tuple[LegSize, ...]          # one per fixed-book leg, in BOOK_LEGS order
+
+    def __post_init__(self) -> None:
+        if (type(self.legs) is not tuple or not all(isinstance(x, LegSize) for x in self.legs)
+                or tuple(x.leg_id for x in self.legs) != tuple(LEG_BY_ID)):
+            raise ValueError("a SizeVector holds one LegSize per fixed-book leg, in book order")
+
+    def leg(self, leg_id: str) -> LegSize:
+        for size in self.legs:
+            if size.leg_id == leg_id:
+                return size
+        leg(leg_id)                                  # raises: unknown or retired
+        raise KeyError(leg_id)
+
+    def as_mapping(self) -> dict:
+        return {size.leg_id: size.as_mapping() for size in self.legs}
+
+    @property
+    def is_identity(self) -> bool:
+        """Today's quantities for every leg x mode x tier x ladder input, whatever the encoding (S-5)."""
+        policy = candidate_book_protection_policy()
+        for size in self.legs:
+            spec = LEG_BY_ID[size.leg_id]
+            for tier in TIER_MULTIPLIER:
+                for mode in (Mode.NORMAL, Mode.PROTECTED):
+                    common = dict(mode=mode, policy=policy, lifecycle_tier=tier)
+                    if any(entry_quantities(spec.leg_id, size=size, **common, **inputs)
+                           != entry_quantities(spec.leg_id, **common, **inputs)
+                           for inputs in _identity_ladder(spec.leg_id)):
+                        return False
+                    if any(add_quantity(spec.leg_id, b, size=size, **common)
+                           != add_quantity(spec.leg_id, b, **common)
+                           for b in range(max(spec.normal_base_values) + 1)):
+                        return False
+        return True
+
+
+def _require_canonical(size: LegSize) -> None:
+    """S-5: one vector, one encoding; a field that cannot change any quantity is refused."""
+    spec = LEG_BY_ID[size.leg_id]
+
+    def refuse(why: str) -> None:
+        raise ValueError(f"{size.leg_id}: non-canonical sizing: {why}")
+    if size.leg_id == "dj30_mym_p250":
+        m, c = Fraction(size.risk_multiplier), Fraction(size.cap_reserve_multiplier)
+        for text, value in ((size.risk_multiplier, m), (size.cap_reserve_multiplier, c)):
+            if text != f"{value.numerator}/{value.denominator}":
+                refuse(f"{text!r} is not a reduced fraction")
+        reserve = 1 + Fraction(spec.add_pct, 100)
+        ceiling = math.inf if size.max_base is None else size.max_base
+        # c acts only through min(floor(a * c / reserve), max_base) for allocations
+        # a = 1..80; the smallest c giving that table is its one encoding.
+        smallest = max(min(math.floor(a * c / reserve), ceiling) * reserve / a
+                       for a in range(1, ACCOUNT_MICRO_CAP + 1))
+        off = m == 0 or smallest == 0
+        if off and (m, c, size.max_base) != (0, 0, None):
+            refuse("an off Striker leg is risk 0/1, cap 0/1 and no max_base")
+        if c != smallest:
+            refuse(f"cap_reserve_multiplier {size.cap_reserve_multiplier} gives the same cap terms as "
+                   f"{smallest.numerator}/{smallest.denominator}; use the smallest")
+        cap_reach = math.floor(ACCOUNT_MICRO_CAP * c / reserve)
+        if size.max_base is not None and size.max_base >= cap_reach:
+            refuse(f"max_base {size.max_base} can never undercut the cap term (at most {cap_reach})")
+    elif size.leg_id == "vanguard_mgc":
+        off = all(s == 0 for _, s in size.base_by_port)
+    else:
+        off = size.base == 0
+    if size.adds is not AddsRule.UNCHANGED:
+        if spec.max_adds == 0:
+            refuse("a leg without adds keeps adds UNCHANGED")
+        if off:
+            refuse("an off leg keeps adds UNCHANGED")
+        if size.adds is AddsRule.OFF_WHEN_PROTECTED and size.leg_id in ("vanguard_mgc", "orb_mnq_v7"):
+            refuse("OFF_WHEN_PROTECTED is already this leg's rule")
+
+
+def validate_size_vector(mapping: object) -> SizeVector:
+    """The startup policy's ``sizing`` mapping -> SizeVector, canonical encoding only."""
+    if not isinstance(mapping, Mapping) or set(mapping) != set(LEG_BY_ID):
+        raise ValueError(f"sizing must map exactly the fixed-book legs {sorted(LEG_BY_ID)}")
+    legs = []
+    for spec in BOOK_LEGS:
+        entry = mapping[spec.leg_id]
+        allowed = set(_SIZE_FIELDS[spec.leg_id])
+        if not isinstance(entry, Mapping) or not allowed - {"max_base"} <= set(entry) <= allowed:
+            raise ValueError(f"{spec.leg_id}: sizing fields must be {sorted(allowed)} "
+                             "(max_base optional, Striker only)")
+        fields = dict(entry)
+        if type(fields["adds"]) is not str or fields["adds"] not in AddsRule.__members__:
+            raise ValueError(f"{spec.leg_id}: adds must be one of {list(AddsRule.__members__)}")
+        fields["adds"] = AddsRule(fields["adds"])
+        if "max_base" in fields and fields["max_base"] is None:
+            raise ValueError("max_base, when present, must be an integer")
+        if "base_by_port" in fields:
+            ports = fields["base_by_port"]
+            if not isinstance(ports, Mapping) or set(ports) != {"1", "2"}:
+                raise ValueError("vanguard_mgc base_by_port must map exactly '1' and '2'")
+            fields["base_by_port"] = ((1, ports["1"]), (2, ports["2"]))
+        size = LegSize(spec.leg_id, **fields)
+        _require_canonical(size)
+        legs.append(size)
+    return SizeVector(tuple(legs))
+
+
+IDENTITY_SIZE_VECTOR = validate_size_vector({
+    "aegis_6j": {"base": 8, "adds": "UNCHANGED"},
+    "dj30_mym_p250": {"risk_multiplier": "1/1", "cap_reserve_multiplier": "1/1", "adds": "UNCHANGED"},
+    "vanguard_mgc": {"base_by_port": {"1": 1, "2": 2}, "adds": "UNCHANGED"},
+    "orb_mnq_v7": {"base": 1, "adds": "UNCHANGED"},
+})
+
+
+def _leg_size(size: LegSize | None, leg_id: str) -> LegSize | None:
+    if size is not None and (not isinstance(size, LegSize) or size.leg_id != leg_id):
+        raise ValueError(f"{leg_id}: size must be this leg's LegSize or None, got {size!r}")
+    return size
+
+
 # ── quantities ───────────────────────────────────────────────────────────
 
 def as_mode(mode) -> Mode:
@@ -253,22 +482,28 @@ def _positive_risk(value: object, field_name: str) -> Fraction:
 
 
 def add_quantity(leg_id: str, confirmed_base: int, *, mode: Mode,
-                 policy: ProtectionPolicy | None, lifecycle_tier: str) -> int:
+                 policy: ProtectionPolicy | None, lifecycle_tier: str,
+                 size: LegSize | None = None) -> int:
     """Per-tier add from confirmed base, never from intended or normal add size.
 
     The caller must obtain base evidence from the execution owner; this pure
     function neither verifies broker evidence nor reserves account capacity.
     A nonzero lifecycle haircut has already affected the executed base and
     must not be applied a second time. Current zero-authorization/mode gates
-    still refuse new adds without resizing the carried base.
+    still refuse new adds without resizing the carried base. ``size.adds``
+    can only refuse an add today's rule places.
     """
     spec = leg(leg_id)
     require_policy(policy)
     mode = as_mode(mode)
+    size = _leg_size(size, leg_id)
     multiplier = lifecycle_multiplier(lifecycle_tier)
     if type(confirmed_base) is not int or not 0 <= confirmed_base <= max(spec.normal_base_values):
         raise ValueError(f"{leg_id}: invalid confirmed base {confirmed_base!r}")
     if confirmed_base == 0 or multiplier == 0 or spec.max_adds == 0:
+        return 0
+    if size is not None and (size.adds is AddsRule.OFF or (
+            size.adds is AddsRule.OFF_WHEN_PROTECTED and mode is Mode.PROTECTED)):
         return 0
     if leg_id in {"vanguard_mgc", "orb_mnq_v7"}:
         if lifecycle_tier != "AUTHORIZED" or mode is Mode.PROTECTED:
@@ -279,17 +514,19 @@ def add_quantity(leg_id: str, confirmed_base: int, *, mode: Mode,
 def entry_quantities(leg_id: str, *, mode: Mode, policy: ProtectionPolicy | None,
                      lifecycle_tier: str, normal_base: int | None = None,
                      risk_dollars: object = None, per_contract_risk: object = None,
-                     cap_alloc: int | None = None) -> tuple[int, int]:
+                     cap_alloc: int | None = None, size: LegSize | None = None) -> tuple[int, int]:
     """Requested base and prospective add *assuming a complete base fill*.
 
     Striker requires unscaled risk dollars, per-contract risk and an explicit
     allocation. A rounded normal quantity cannot recover those inputs. For
     an actual add, call add_quantity with the confirmed base instead of using
     this prospective tuple. All outputs still require capacity admission.
+    ``size`` replaces each leg's normal quantity with its own (S-2); None is today's.
     """
     spec = leg(leg_id)
     require_policy(policy)
     mode = as_mode(mode)
+    size = _leg_size(size, leg_id)
     lifecycle = lifecycle_multiplier(lifecycle_tier)
     scale = Fraction(CANDIDATE_SCALE) if mode is Mode.PROTECTED else Fraction(1)
     if leg_id == "dj30_mym_p250":
@@ -299,20 +536,28 @@ def entry_quantities(leg_id: str, *, mode: Mode, policy: ProtectionPolicy | None
         denominator = _positive_risk(per_contract_risk, "per_contract_risk")
         if type(cap_alloc) is not int or not 0 <= cap_alloc <= ACCOUNT_MICRO_CAP:
             raise ValueError("cap_alloc must be an explicit integer within the account cap")
-        base = min(math.floor(risk * scale * lifecycle / denominator),
-                   math.floor(Fraction(cap_alloc) / (1 + Fraction(spec.add_pct, 100))))
+        risk_term = risk * scale * lifecycle / denominator
+        cap_term = Fraction(cap_alloc) / (1 + Fraction(spec.add_pct, 100))
+        if size is not None:
+            risk_term *= Fraction(size.risk_multiplier)
+            cap_term *= Fraction(size.cap_reserve_multiplier)
+        base = min(math.floor(risk_term), math.floor(cap_term))
+        if size is not None and size.max_base is not None:
+            base = min(base, size.max_base)
     elif leg_id == "vanguard_mgc":
         if type(normal_base) is not int or normal_base not in spec.normal_base_values:
             raise ValueError("vanguard_mgc requires normal_base 1 or 2")
-        base = math.floor(normal_base * scale) if lifecycle_tier == "AUTHORIZED" else 0
+        sized_base = normal_base if size is None else dict(size.base_by_port)[normal_base]
+        base = math.floor(sized_base * scale) if lifecycle_tier == "AUTHORIZED" else 0
     else:
         fixed_base = spec.normal_base_values[0]
         if normal_base is not None and (type(normal_base) is not int or normal_base != fixed_base):
             raise ValueError(f"{leg_id}: normal_base must equal fixed quantity {fixed_base}")
+        sized_base = fixed_base if size is None else size.base
         applied_scale = Fraction(1) if leg_id == "orb_mnq_v7" else scale
-        base = math.floor(fixed_base * applied_scale * lifecycle)
+        base = math.floor(sized_base * applied_scale * lifecycle)
     return base, add_quantity(leg_id, base, mode=mode, policy=policy,
-                              lifecycle_tier=lifecycle_tier)
+                              lifecycle_tier=lifecycle_tier, size=size)
 
 
 def leg_quantities(leg_id: str, normal_base: int, *, mode: Mode, policy: ProtectionPolicy | None,

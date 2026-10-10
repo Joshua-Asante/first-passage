@@ -8,6 +8,7 @@ import pytest
 from c1_signal_daemon.book_protocol import Side, OrderIntent, FillTiming, Bracket, Cancel, BracketAmend
 from c1_signal_daemon.feed import Bar
 from c1_rail.qualification.replay import BookReplay, Instrument, ReplayNeedsContext, ReplayDeadlineFailure, lifetime_adverse_mark
+from c1_rail import book_policy as bp
 from c1_rail.book_policy import BOOK_LEGS, candidate_book_protection_policy
 from c1_rail.qualification.model import SourceBar, SourceSession, SessionSchedule, PathBar, PathSession, ET
 from mc.simulation import EvaluationState
@@ -56,7 +57,8 @@ def schedule_split(prefix, suffix, executes=True):
     return ScheduleSplit(prefix, suffix, executes)
 
 
-def engine(emitters=None, quotes=None, sizing=None, instruments=None, state=None, broker_factory=None):
+def engine(emitters=None, quotes=None, sizing=None, instruments=None, state=None, broker_factory=None,
+           size_vector=None):
     emitters = emitters or {}
     adapters = {s.leg_id: Adapter(s.leg_id, emitters.get(s.leg_id)) for s in BOOK_LEGS}
     inst = instruments or {s.leg_id: Instrument(1, 1, 0, 0) for s in BOOK_LEGS}
@@ -76,7 +78,8 @@ def engine(emitters=None, quotes=None, sizing=None, instruments=None, state=None
         sizing_inputs=sizing or (lambda k, a, p: dict(lifecycle_tier="AUTHORIZED", **(
             dict(risk_dollars=700, per_contract_risk=35, cap_alloc=80) if k == "dj30_mym_p250"
             else dict(normal_base=1) if k == "vanguard_mgc" else {}))),
-        schedule_quotes=provider, **({"broker_factory":broker_factory} if broker_factory else {}))
+        schedule_quotes=provider, **({"broker_factory":broker_factory} if broker_factory else {}),
+        **({"size_vector": size_vector} if size_vector is not None else {}))
     return replay, adapters
 
 
@@ -1380,3 +1383,150 @@ def test_t2_item6_reservation_order_sum_mismatch_is_refused_before_any_split(del
         with pytest.raises(ReplayNeedsContext, match=r'orb_mnq_v7.*reserved %d.*outstanding 1' % (1 + delta)):
             replay.run((session,))
         assert quotes.calls == [] and quotes.inner._placed == {}
+
+
+# ── P-S1 size vector in the replay (successor build card 2026-10-10 §2.3, rows Z7, Z9, Z10) ──
+
+
+IDENTITY_SIZING = {
+    "aegis_6j": {"base": 8, "adds": "UNCHANGED"},
+    "dj30_mym_p250": {"risk_multiplier": "1/1", "cap_reserve_multiplier": "1/1", "adds": "UNCHANGED"},
+    "vanguard_mgc": {"base_by_port": {"1": 1, "2": 2}, "adds": "UNCHANGED"},
+    "orb_mnq_v7": {"base": 1, "adds": "UNCHANGED"},
+}
+OFF_SIZING = {
+    "aegis_6j": {"base": 0, "adds": "UNCHANGED"},
+    "dj30_mym_p250": {"risk_multiplier": "0/1", "cap_reserve_multiplier": "0/1", "adds": "UNCHANGED"},
+    "vanguard_mgc": {"base_by_port": {"1": 0, "2": 0}, "adds": "UNCHANGED"},
+    "orb_mnq_v7": {"base": 0, "adds": "UNCHANGED"},
+}
+PROTECTED_STATE = EvaluationState(100000, 98000, 100000, 1, 0)
+
+
+def sized(**legs):
+    return bp.validate_size_vector({**IDENTITY_SIZING, **legs})
+
+
+def every_leg_enters_once(a, b):
+    return entry(a, b, side=Side.SELL if a.leg_id == "aegis_6j" else Side.BUY) if len(a.bars) == 1 else []
+
+
+def rejects(adapter):
+    return [e.detail for e in adapter.feedback if e.event == "reject"]
+
+
+def fills(adapter):
+    return [e.fill for e in adapter.feedback if e.fill]
+
+
+@pytest.mark.parametrize("off", sorted(OFF_SIZING))
+def test_Z7_leg_at_zero_is_rejected_cleanly_and_frees_capacity(off):
+    replay, adapters = engine({s.leg_id: every_leg_enters_once for s in BOOK_LEGS},
+                              size_vector=sized(**{off: OFF_SIZING[off]}))
+    result = replay.run((path_session(),))                                   # no exception
+    assert rejects(adapters[off]) == ["zero policy quantity"] and fills(adapters[off]) == []
+    assert not any(e.get("leg_id") == off for e in replay.ledger.events)      # nothing reserved, ever
+    assert not any("takeover" in e.kind for e in result.events)
+    assert result.sessions[0].end_edge.is_flat
+    others = [k for k in adapters if k != off]
+    if off == "aegis_6j":                     # Aegis' 80 micro freed: every other leg is admitted
+        assert [fills(adapters[k])[0].qty for k in others] == [20, 1, 1]
+        assert all(rejects(adapters[k]) == [] for k in others)
+    else:                                     # twin: Aegis still takes the whole cap
+        assert fills(adapters["aegis_6j"])[0].qty == 8
+    # twin: today's book, where Aegis' 80 micro refuse every other leg
+    replay, adapters = engine({s.leg_id: every_leg_enters_once for s in BOOK_LEGS})
+    replay.run((path_session(),))
+    assert fills(adapters["aegis_6j"])[0].qty == 8 and rejects(adapters["dj30_mym_p250"]) != []
+
+
+def test_Z7_aegis_at_zero_triggers_no_takeover_and_off_leg_adds_are_rejected():
+    def striker(a, b):
+        return entry(a, b) if len(a.bars) == 1 else []
+
+    def aegis(a, b):
+        return entry(a, b, side=Side.SELL) if len(a.bars) == 2 else []
+
+    def orb(a, b):
+        if len(a.bars) == 1:
+            return entry(a, b)
+        if len(a.bars) == 2:
+            return [OrderIntent("add", a.leg_id, "add", Side.BUY, 1, timing=FillTiming.THIS_CLOSE)]
+        return []
+    emitters = {"aegis_6j": aegis, "dj30_mym_p250": striker, "orb_mnq_v7": orb}
+    session = path_session(prices=[(100, 100, 100, 100)] * 3)
+    replay, adapters = engine(emitters, size_vector=sized(aegis_6j=OFF_SIZING["aegis_6j"],
+                                                          orb_mnq_v7=OFF_SIZING["orb_mnq_v7"]))
+    result = replay.run((session,))
+    assert not any("takeover" in e.kind for e in result.events)
+    assert [f.reason for f in fills(adapters["dj30_mym_p250"])].count("capacity_takeover_close") == 0
+    assert rejects(adapters["aegis_6j"]) == ["zero policy quantity"]
+    assert rejects(adapters["orb_mnq_v7"]) == ["zero policy quantity", "zero policy quantity"]
+    replay, adapters = engine(emitters)                                       # twin: today's takeover
+    result = replay.run((session,))
+    assert any(e.kind == "capacity_takeover_admitted" for e in result.events)
+
+
+def striker_rows(size_vector, risk):
+    replay, _ = engine({"dj30_mym_p250": first_entry}, size_vector=size_vector,
+                       sizing=lambda k, a, p: dict(lifecycle_tier="AUTHORIZED", **(
+                           dict(risk_dollars=risk, per_contract_risk=35, cap_alloc=80)
+                           if k == "dj30_mym_p250" else dict(normal_base=1) if k == "vanguard_mgc" else {})))
+    replay.enable_attribution()
+    replay.run((path_session(),))
+    return replay.attribution()[0]["legs"]["dj30_mym_p250"]["requests"]
+
+
+def test_Z9_cap_term_diagnostic_and_sizing_row_use_the_vector():
+    half = {"risk_multiplier": "1/2", "cap_reserve_multiplier": "1/2", "adds": "UNCHANGED"}
+    row = striker_rows(sized(dj30_mym_p250=half), 700)[0]            # risk 10, cap term floor(40/3.5) = 11
+    assert (row["policy"], row["cap_only_policy"], row["cap_binds"], row["admitted"]) == (10, 11, False, 10)
+    assert row["size"] == half and "max_base_binds" not in row
+    assert row["sizing_inputs"] == {"cap_alloc": "80", "per_contract_risk": "35", "risk_dollars": "700"}
+    row = striker_rows(sized(dj30_mym_p250=half), 7000)[0]           # risk 100: the cap term binds
+    assert (row["policy"], row["cap_only_policy"], row["cap_binds"]) == (11, 11, True)
+    capped = {**half, "max_base": 5}
+    row = striker_rows(sized(dj30_mym_p250=capped), 7000)[0]         # max_base binds, recorded apart
+    assert (row["policy"], row["cap_only_policy"], row["cap_binds"], row["max_base_binds"]) == (5, 11, False, True)
+    assert row["size"] == capped
+    row = striker_rows(sized(dj30_mym_p250={**half, "max_base": 10}), 700)[0]
+    assert (row["policy"], row["cap_binds"], row["max_base_binds"]) == (10, False, True)   # tie counts
+    row = striker_rows(sized(dj30_mym_p250=OFF_SIZING["dj30_mym_p250"]), 700)[0]
+    assert (row["policy"], row["cap_binds"], row["outcome"]) == (0, None, "zero policy quantity")
+    row = striker_rows(None, 700)[0]                                  # twin: today's row, byte for byte
+    assert (row["policy"], row["cap_only_policy"], row["cap_binds"]) == (20, 22, False)
+    assert "size" not in row and "max_base_binds" not in row
+    assert striker_rows(bp.IDENTITY_SIZE_VECTOR, 700) == striker_rows(None, 700)
+
+
+def test_Z9_cap_probe_ignores_the_risk_multiplier():
+    tiny = {"risk_multiplier": "1/1000000000000", "cap_reserve_multiplier": "1/1", "adds": "UNCHANGED"}
+    row = striker_rows(sized(dj30_mym_p250=tiny), 22 * 35 * 10**12)[0]     # risk term 22: ties the cap term
+    assert (row["policy"], row["cap_only_policy"], row["cap_binds"]) == (22, 22, True)
+    row = striker_rows(sized(dj30_mym_p250=tiny), 700)[0]                   # twin: risk term 0
+    assert (row["policy"], row["cap_only_policy"], row["cap_binds"]) == (0, 22, None)
+
+
+def adds_run(rule, state=None):
+    vector = (None if rule is None else
+              sized(dj30_mym_p250={**IDENTITY_SIZING["dj30_mym_p250"], "adds": rule}))
+    replay, adapters = engine({"dj30_mym_p250": striker_entry_then_add}, state=state, size_vector=vector)
+    replay.run((path_session(prices=[(100, 100, 100, 100)] * 3),))
+    a = adapters["dj30_mym_p250"]
+    return [f.qty for f in fills(a) if f.kind in ("entry", "add")], rejects(a)
+
+
+def test_Z10_replay_add_path_follows_the_adds_rule():
+    assert adds_run("OFF") == ([20], ["zero policy quantity"])
+    assert adds_run("OFF", PROTECTED_STATE) == ([8], ["zero policy quantity"])
+    assert adds_run("OFF_WHEN_PROTECTED") == ([20, 50], [])
+    assert adds_run("OFF_WHEN_PROTECTED", PROTECTED_STATE) == ([8], ["zero policy quantity"])
+    assert adds_run("UNCHANGED") == adds_run(None) == ([20, 50], [])                          # twin
+    assert adds_run("UNCHANGED", PROTECTED_STATE) == adds_run(None, PROTECTED_STATE) == ([8, 20], [])
+
+
+def test_Z10_replay_refuses_a_size_vector_of_the_wrong_type():
+    with pytest.raises(ValueError, match="SizeVector"):
+        engine(size_vector=IDENTITY_SIZING)
+    replay, _ = engine(size_vector=bp.IDENTITY_SIZE_VECTOR)                                  # twin
+    assert replay.size_vector is bp.IDENTITY_SIZE_VECTOR
