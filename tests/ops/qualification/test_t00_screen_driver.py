@@ -440,7 +440,25 @@ def test_S5(env):
     _scan(env)  # twin: once FINAL it no longer blocks
 
 
+def _source_parses_v2() -> bool:
+    """Whether this checkout's ``parse_startup_policy`` accepts a v2 startup policy (P-S2)."""
+    from c1_rail.qualification.production_source import LEG_IDS, parse_startup_policy
+    doc = {'schema': STARTUP_V2, 'initialization': 'FRESH_ONCE_CONTINUOUS', 'positions': 'ZERO',
+           'working_orders': 'ZERO', 'splice_behavior': 'CARRY_ALL_STATE', 'path_start_date': '2030-01-07',
+           'shared_account_cap_micro_equivalents': 80, 'sizing': TEST_SIZING,
+           'legs': {leg: {'paper_initial_capital': '100000', 'lifecycle_tier': 'AUTHORIZED',
+                          'request_cap_micro_equivalents': 80} for leg in LEG_IDS}}
+    try:
+        parse_startup_policy(canonical(doc))
+    except ValueError:
+        return False
+    return True
+
+
 @WINDOWS
+@pytest.mark.xfail(not _source_parses_v2(), strict=True,
+                   reason='W9 needs P-S2: the worker source refuses a v2 startup policy until it merges '
+                          '(card §4: W9 must be green at H′, where this gate no longer applies)')
 def test_W9(tmp_path, monkeypatch):
     """Successor card 2026-10-10 §2.5 W9: a successor authority on the TEST_ONLY seam runs to FINAL
     after a consumed #581-path run; PREREG_CONSUMED and SCREEN_ATTEMPT_OPEN are unchanged."""

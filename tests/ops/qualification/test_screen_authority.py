@@ -665,6 +665,29 @@ def test_compiled_constants_name_the_tracked_files_and_patterns_accept_the_track
         assert owed.search(lines[rows[0]]) is None
 
 
+def test_compiled_r3c_successor_constants_are_r3c_shaped_and_derive_their_own_restoration(tmp_path):
+    """The compiled r3c id and startup row are r3c-contract-shaped (validate_source_contract's row
+    rules), and the derivation check restores exactly them. Their agreement with the compiled r3c
+    digest needs r3c's private bytes, so it is checked at r3d assembly (card §7 step 2), not here."""
+    module = sa()
+    row = dict(module.R3C_STARTUP_POLICY_ROW)
+    assert module.R3C_CONTRACT_SHA256 == 'a526b50fa75e68451bdd2b5b57fa7a04e6ee08e61f96865c915ae8116a848d97'
+    assert module.R3C_CONTRACT_ID == 't00-p7-source-contract-r3c'
+    assert set(row) == {'role', 'path', 'sha256', 'producer', 'authority_class'}
+    assert (row['role'], row['authority_class']) == ('source_startup_policy', 'PRODUCTION_REVIEWED')
+    assert module._hex(row['sha256']) and all(type(v) is str and v for v in row.values())  # pylint: disable=protected-access
+    # A synthetic r3c-shaped document over the compiled row: an r3d with another id and startup
+    # row derives back to it exactly when R3C_CONTRACT_SHA256 is that document's digest.
+    other = {'role': 'cost_model', 'path': 'x', 'sha256': 'b' * 64, 'producer': 'p',
+             'authority_class': 'PRODUCTION_REVIEWED'}
+    r3c = {'contract_id': module.R3C_CONTRACT_ID, 'artifacts': [other, row]}
+    r3d = dict(r3c, contract_id='TEST_ONLY-r3d', artifacts=[other, dict(row, path='y', sha256='c' * 64)])
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(module, 'R3C_CONTRACT_SHA256', sha(canonical(r3c)))
+        assert module._derived_from_r3c(r3d)  # pylint: disable=protected-access
+        assert not module._derived_from_r3c(dict(r3d, artifacts=[dict(other, sha256='d' * 64), r3d['artifacts'][1]]))  # pylint: disable=protected-access
+
+
 def test_bind_screen_run_is_write_once_and_needs_the_screen_bootstrap(screen, tmp_path):
     module = sa()
     refused('SCREEN_BOOTSTRAP_MISMATCH', lambda: module.bind_screen_run(tmp_path, 'a' * 64))

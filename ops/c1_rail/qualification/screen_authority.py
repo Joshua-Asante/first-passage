@@ -65,9 +65,16 @@ SUCCESSOR_EVIDENCE_CLASS = 'T00_SUCCESSOR_SCREEN'
 # Compiled r3c digest (design §1); the authority binds the contract, never one approval (C2).
 R3C_CONTRACT_SHA256 = 'a526b50fa75e68451bdd2b5b57fa7a04e6ee08e61f96865c915ae8116a848d97'
 # r3c's contract_id and complete source_startup_policy artifact row (successor card S-3; public
-# values supplied by the coordinator). None refuses every successor authority (fail closed).
-R3C_CONTRACT_ID: str | None = None
-R3C_STARTUP_POLICY_ROW: Mapping[str, str] | None = None
+# metadata read from r3c by the coordinator, 2026-10-10). The derivation check puts them back.
+R3C_CONTRACT_ID: str | None = 't00-p7-source-contract-r3c'
+R3C_STARTUP_POLICY_ROW: Mapping[str, str] | None = MappingProxyType({
+    'authority_class': 'PRODUCTION_REVIEWED',
+    'path': 'lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/t00-p7-closure-2026-09-24/'
+            'task3-source-pack-r3/source_startup_policy.json',
+    'producer': 'executor:claude/t00-p7-tasks-3-4@67becc1708ed r3-producer:278201c451ae',
+    'role': 'source_startup_policy',
+    'sha256': '240caf5aaf276f5acb987e63edcd4a3d41e2c49f9c2d256ccc040f9be272eb8e',
+})
 # Compiled pre-registration chain (row A8; design §4.5): entry 0 is #581, bound by the original
 # purpose; entry 1 is #733, bound by the successor purpose (successor card S-4).
 PREREG_CHAIN = ('docs/briefs/pre-registration/2026-10-01-tradeify-t00-step2-screen-prereg.md',
