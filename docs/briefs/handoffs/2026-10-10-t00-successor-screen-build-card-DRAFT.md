@@ -74,10 +74,10 @@ Line numbers are at `origin/main@85563a4`.
 |---|---|---|
 | PS-1 | This card approved by Joshua, including §0.5 decisions S-1…S-7 | every packet |
 | PS-2 | #757 (readiness map) merged or its head pinned in §8 | every packet |
-| PS-3 | Tier-2 report delivered and accepted; Q1 answered (§8) | §7 step 2 onward, not the build |
+| PS-3 | Tier-2 report delivered and accepted; Q1 answered (§8: RULED 2026-10-10) | §7 step 2 onward, not the build |
 | PS-4 | P-S5 (the #733 rewrite) merged | §7 step 4 (freeze), not H′ |
 
-The build does not wait for Q1 or the Tier-2 report: every packet is written for any vector (§1.2).
+Q1 is ruled (§8), but every packet is still written for any vector (§1.2), so a later change of vector needs no new code.
 
 ## §0.5 — Card decisions (Joshua answers with the card) and recommended defaults
 
@@ -114,7 +114,7 @@ The stopping rule's definition (a) reads the H2 pessimistic bust result. That is
 
 ### §1.2 Any vector, including a leg at 0
 
-A leg at 0 stays in the contract and its signals are still generated. Every entry is rejected with "zero policy quantity" (`replay.py:612-614`), before `ledger.request` (`:620`), any takeover or order insertion; P-S1's row Z7 proves it in a replay. Removing a leg from the contract is out of scope (map §3).
+Under Q1's FLOOR-HALF ruling, at least one leg can floor to 0, so this path is load-bearing, not hypothetical. A leg at 0 stays in the contract and its signals are still generated. Every entry is rejected with "zero policy quantity" (`replay.py:612-614`), before `ledger.request` (`:620`), any takeover or order insertion; P-S1's row Z7 proves it in a replay. Removing a leg from the contract is out of scope (map §3).
 
 ## §2 — Claim manifest and packets
 
@@ -158,7 +158,7 @@ No two packets write the same file. Coordinator rows: **G1** each packet's diff 
   - `test_Z4`: Vanguard `base_by_port`.
   - `test_Z5`: ORB `base` 0 and 1; protected mode leaves it unscaled.
   - `test_Z6`: each `adds` value against `add_quantity`, NORMAL and PROTECTED.
-  - `test_Z7`: a leg at 0 in a synthetic `BookReplay`: every entry is rejected "zero policy quantity", no order, no capacity reserved, no takeover triggered, no exception; another leg's admission uses the freed capacity.
+  - `test_Z7` (load-bearing under Q1's FLOOR-HALF ruling; red-first like every row): a leg at 0 in a synthetic `BookReplay`: every entry is rejected "zero policy quantity", no order, no capacity reserved, no takeover triggered, no exception; another leg's admission uses the freed capacity.
   - `test_Z8`: `validate_size_vector` refusals, one case each, including each non-canonical encoding of S-5; `is_identity` true on directly constructed objects that give today's quantities.
   - `test_Z9`: the `:309` cap-term diagnostic and the recorded `sizing_inputs` row use the vector; `cap_binds` reports the cap term only, and a binding `max_base` is recorded separately.
   - `test_Z10`: the replay's add path (`replay.py:603`) in a synthetic `BookReplay`: `adds` `OFF` rejects every add intent, `OFF_WHEN_PROTECTED` rejects it in PROTECTED only, `UNCHANGED` matches today's add.
@@ -218,7 +218,7 @@ No two packets write the same file. Coordinator rows: **G1** each packet's diff 
   - **D1:** title, blank line, then the Status line `` **Status:** `DRAFT — NOT RATIFIED.` ``; at ratification `` `RATIFIED <date>` `` (Q5: the status word changes from FROZEN).
   - **D2:** `### A5` and `### A6` byte-identical to #581's, followed by `## §3`; their hashes equal `a8f6f25e…391b` and `b3bdc77b…17d9`.
   - **D3:** `## §3` with items 1–8 (item 6 withdrawn) whose last cells read exactly as #581's (`values block: ...`, T00 card K-4 ruling); `## §6` with one `t00-step2-values/v1` fence, the `- **Ruling:**`, `- **OD-1 / OD-2:**` and `- **Ratifying commit SHA:**` fields.
-  - **D4:** the configuration fields C-1…C-7, K₀, the reader log (adding RM-1, the T2 rows from map §6, and every reader of the step-12 run directory, design §4.5) and G4–G6 kept outside A5/A6, with §1.1's mapping and its label-subtype note stated. #733 §7's "distinct RNG tag" becomes "the compiled tag with roots disjoint from step 12's" (S-5).
+  - **D4:** the configuration fields C-1…C-7 (C-1, C-4 by reference to the frozen vector in the signed startup-policy v2, no values), K₀ = 8, the reader log (adding RM-1, the T2 rows from map §6, the Tier-2 executor session and the Q1 options worker, and every reader of the step-12 run directory, design §4.5) and G4–G6 kept outside A5/A6, with §1.1's mapping and its label-subtype note stated. #733 §7's "distinct RNG tag" becomes "the compiled tag with roots disjoint from step 12's" (S-5).
   - **D5:** OD-1 is the D-feed reading for a successor verdict (#733 §8 item 5); OD-2 is the base expressions (C-2). The stopping-rule summary and the decision-tree pointer stay.
   - **D6:** the anchors the copied A5/A6 text cites exist in #733: A1 (the successor expressions: r3d and the size vector), A2, A3, A4, §1b, §3 items 2, 3, 7 and 8, and §4 OD-1/OD-2, with A6 immediately followed by `## §3` (`verdict.py:44`, `:56-58`).
   - **D7:** #733's §10 hooks gain the section-hash check (§10 below) and the authority's ratification-completeness check.
@@ -282,7 +282,7 @@ P-S5 (docs, parallel) ─────────────────► §7
 - Any edit outside the packet's §2.1 footprint or to a §2.2 forbidden file; any change to a sealed method, `runner.py`/`bracket.py` semantics, `SOURCE_REFUSALS`, r3c's bytes or the pinned key.
 - Changing the protection cell, `DD_TRIGGER`/`DD_SCALE`, `BASE_RISK`, lifecycle multipliers, locked Pine, ports or effective inputs.
 - Any real-source replay, screen, probe or Monte Carlo; any test that reads the real source. The only real-source runs are §7's P7 and the one screen, each under its own GO.
-- Choosing or proposing a vector (Q1 is Joshua's), sweeping vectors, or screening more than one configuration.
+- Choosing, proposing, reading or quoting a vector (Q1 is Joshua's and its values are private), sweeping vectors, or screening more than one configuration.
 - Anything for R1/R2 (on hold).
 - Editing #733 outside P-S5, or #581 at all; editing the stopping rule or decision tree.
 - An agent signing, generating, holding or touching an operator key, approval or act.
@@ -309,9 +309,9 @@ Each operator act below needs its own GO. Agents never touch a key.
 | # | Step | Owner | Needs | Estimate |
 |---|---|---|---|---|
 | 1 | **H′ check** (§10) from a detached worktree at H′ (`core.autocrlf=false`, clean with `--untracked-files=all`); Joshua accepts H′ | coordinator, Joshua | §4 | 0.5 d (about 3 h of runs) |
-| 2 | **r3d assembly:** startup policy v2 bytes with Q1's vector; r3d = r3c with only that artifact row and `contract_id` changed; derivation check (S-3) run locally; `size_vector_sha256` computed | coordinator | PS-3 (Q1) | 0.25 d |
+| 2 | **r3d assembly:** startup policy v2 bytes with the frozen vector (Q1 FLOOR-HALF; values private); r3d = r3c with only that artifact row and `contract_id` changed; derivation check (S-3) run locally; `size_vector_sha256` computed | coordinator | PS-3 (Q1) | 0.25 d |
 | 3 | **K₀ ledger entry:** the coordinator opens a PR registering this book's lineage in `discovery_manifests/` (map §6), merged before step 4 | coordinator, Joshua merges | PS-3 | 0.25 d, parallel with step 2 |
-| 4 | **#733 freeze (ratification), before any replay over r3d** (#733 §R; P7 replays a real path over r3d's contract, `p7_driver.py:1-6`): Joshua fills Q1/C-1…C-7, K₀, the reader log, G4–G6 and Q6, Q7 (depth), `pass_floor_halves`, OD-1/OD-2 and the values block (with `size_vector_sha256`, new RNG roots, budget); C then C′ per #581's procedure | Joshua | P-S5 merged; steps 2, 3 | 0.5 d |
+| 4 | **#733 freeze (ratification), before any replay over r3d** (#733 §R; P7 replays a real path over r3d's contract, `p7_driver.py:1-6`): with C-1, Q1 and K₀ already ruled, Joshua fills C-2…C-7 (C-7 his exposure), the reader log (Tier-2 executor and Q1 options worker added), G4–G6 and Q6 (G5), Q7 (depth), `pass_floor_halves`, OD-1/OD-2 and the values block (with `size_vector_sha256`, new RNG roots, budget); C then C′ per #581's procedure | Joshua | P-S5 merged; steps 2, 3 | 0.5 d |
 | 5 | **Fresh source approval over r3d** (`APPROVE_T00_SOURCE_CONTRACT`, key `source:1ebae5d45bc51280`), verified with `verify_detached_approval(allow_test_authority=False)` | Joshua signs | step 4 | 0.1 d |
 | 6 | **P7 at H′ over r3d**, one run by the accepted P7 procedure. `p7_acceptance.json` is write-once (`coordinator.py:1290-1292`, `P7_ACCEPTANCE_EXISTS`), so the current acceptance is first renamed aside in place, not deleted, on Joshua's GO (the 2026-10-10 precedent, T00 card §8); step 12's attestation hashed that file's earlier version, and step 12's window closes 2026-10-14 in any case. Then `t00_screen accept-p7` | coordinator | steps 1, 5 | 0.25 d (about 1 h) |
 | 7 | **Screen authority** under the successor purpose, over r3d, the P7 record and ratified #733; `validate_screen_authority` ISSUED | Joshua signs | steps 4, 6 | 0.25 d |
@@ -333,13 +333,17 @@ Each operator act below needs its own GO. Agents never touch a key.
   - **Q3:** "a NEW screen-authority purpose for successor screens, distinct from T00_STEP3_SELECTED_BOOK_SCREEN. Under it, PARAMETER_CHANGE means 'any change beyond the size vector frozen in the successor pre-registration' (de-risking allowed, re-optimization refused). The original purpose and its refusals stay unchanged for #581."
   - **Q5:** "rewrite #733 to #581's structure (status word, A5/A6 sections, values-block name) so that it passes the authority's existing pre-registration checks, rather than generalizing those checks. The successor path is appended to PREREG_CHAIN. The rewrite itself is a separate docs packet in the card; don't edit #733 in this PR." This departs from the map's Q5 recommendation (generalize); the ruling governs.
 - **R1/R2: ON HOLD** (Joshua, 2026-10-10). The successor is judged on (a), the pessimistic A5 assignment. This card builds nothing for R1/R2.
+- **Successor configuration RULED** (Joshua, 2026-10-10, directly to the Deployment Coordinator: "C-1 row 5 uniform, option A, K₀ = 8"; recorded on the T00 card §8 by PR #760; relayed to this card by the coordinator):
+  - **C-1:** Tier-2 row 5 alone, uniform reading. Row 3 is not relied on.
+  - **Q1 — RULED: option A, FLOOR-HALF.** Every leg at k = 0.5 under the code's own round-down rule; a leg whose halved size floors to 0 is OFF. The per-leg vector stays private (the Q1 options sheet, SHA256SUMS `08f9c147…`); this card refers only to "the frozen vector in the signed startup-policy v2" and quotes no value. The build still works for any vector.
+  - **K₀ — RULED: 8**, so this successor is K = 9.
 - **Still OPEN:**
-  - **Q1 — OPEN.** Which whole-contract vector stands for "half size", and whether the 1-lot legs ORB and Vanguard are kept at 1 or dropped. Decided after the Tier-2 report. The build works for any vector, including a leg at 0.
   - **Q6 — OPEN (OWED, Joshua to confirm).** Recommendation: G5 reported and non-binding.
   - **Q7 — OPEN (OWED, Joshua to confirm).** Depth stays N = 1,002 per population (T00 card §8) unless Joshua re-rules.
-  - **K₀ — OPEN (OWED, Joshua to confirm).** Recommendation: K₀ = 8, this successor K = 9 (map §6).
+  - **C-7 — OWED (Joshua):** his answerer exposure.
+  - **Reader rows — OWED:** including the Tier-2 executor session and the Q1 options worker as Tier-2 readers.
   - **Card decisions S-1…S-7** (§0.5), answered with card approval; S-3, S-4 and S-6 option B change frozen design items (§3.2).
-- **Prerequisites:** PS-2 #757 at: *pending.* PS-3 Tier-2 report SHA-256 and Q1: *pending.* PS-4 P-S5 merged at: *pending.*
+- **Prerequisites:** PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 report SHA-256: *to record from the T00 card.* PS-4 P-S5 merged at: *pending.*
 - **Packet heads:** *pending.*
 - **H′:** *pending.*
 
@@ -354,7 +358,7 @@ Each operator act below needs its own GO. Agents never touch a key.
 | P-S5 #733 rewrite | 0.5 plus Joshua's review | CC |
 | H′ check | 0.5 | coordinator |
 
-**Critical path from card approval:** P-S1 (1.5 d) → P-S2 or P-S3 rebased (1 d) → H′ check (0.5 d) = **about 3–4 calendar days to H′**. Then §7: r3d and K₀ entry (0.25 d) → #733 freeze (0.5 d) → approval and P7 (0.35 d) → authority (0.25 d) → run (0.4–1.9 d) → finalize and verify (0.1 d) = **about 2–3.5 days**. **Total about 5–7.5 calendar days**, if Q1 is answered by the time H′ is accepted; any later Q1 date adds its delay after H′. The map's estimate was 6–9 days counted from the Tier-2 report; building before Q1 is what saves the difference.
+**Critical path from card approval:** P-S1 (1.5 d) → P-S2 or P-S3 rebased (1 d) → H′ check (0.5 d) = **about 3–4 calendar days to H′**. Then §7: r3d and K₀ entry (0.25 d) → #733 freeze (0.5 d) → approval and P7 (0.35 d) → authority (0.25 d) → run (0.4–1.9 d) → finalize and verify (0.1 d) = **about 2–3.5 days**. **Total about 5–7.5 calendar days** from card approval; Q1 is already ruled, so nothing waits on it. The map's estimate was 6–9 days from the Tier-2 report.
 
 ## §10 — Audit hooks
 
@@ -399,5 +403,5 @@ rg -n 'P&L =|\$[0-9]{2,}|account [0-9]' "$c" | grep -v 'rg -n'
 - **Most likely failure:** S-3's derivation check needs r3c's artifact-row form exactly, and the contract's canonical form makes "restore two fields" harder than it looks (row ordering, a path change). P-S3 stops at §6; the fallback is a compiled r3d digest, which makes the build wait for Q1.
 - **Second:** a leg at 0 interacts with takeover or capacity in a way Z7 does not cover. The stop is a failed Z7 twin, not a workaround.
 - **Third:** a reviewer finding that §1.1's implication misses a case; the fallback is P-S4 option B.
-- **What makes it moot:** Tier 2 returns row 6, or row 4 alone (#733 §1 returns to Joshua); Q1 picks a signal reshape (map Q8, out of scope); Joshua stops successor work.
+- **What makes it moot:** Tier 2 returns row 6, or row 4 alone (#733 §1 returns to Joshua); Joshua stops successor work.
 - **Cost:** three code PRs (four with option B), one docs PR, one P7 run, two signatures, one screen run.
