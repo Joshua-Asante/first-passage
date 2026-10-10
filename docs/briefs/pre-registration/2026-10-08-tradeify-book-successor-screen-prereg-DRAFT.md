@@ -2,9 +2,9 @@
 
 **Status:** `DRAFT — NOT RATIFIED.` A draft for the operator's ratification only. Nothing here binds a replay, screen, Monte Carlo or verdict until this line reads `RATIFIED <date>`, every §6 field and the §6 values block hold their values, and the ratifying commit's SHA is recorded in §6 (C, then C′, as #581). Under Q5 the status word is RATIFIED, not FROZEN; "freeze" in the cited owners means this ratification.
 
-*2026-10-10, P-S5 rewrite ([build card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §2.7, approved by Joshua 2026-10-10). Rewritten to #581's structure so that `screen_authority._check_prereg` and `_check_sections` accept it once ratified (Q5). §2 A5 and A6 are byte copies of [#581](2026-10-01-tradeify-t00-step2-screen-prereg.md)'s; their SHA-256 (each from its `###` heading line up to, not including, the next heading line) must stay A5 `a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b` and A6 `b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9` (`verdict.A5_TEXT_SHA256`, `A6_TEXT_SHA256`). Ratification must leave those bytes unchanged.*
+*2026-10-10, P-S5 rewrite ([build card #758](https://github.com/Joshua-Asante/first-passage/pull/758) §2.7, approved by Joshua 2026-10-10). Rewritten to #581's structure so that `screen_authority._check_prereg` and `_check_sections` accept it once ratified (Q5). §2 A5 and A6 are byte copies of [#581](2026-10-01-tradeify-t00-step2-screen-prereg.md)'s; their SHA-256 (each from its `###` heading line up to, not including, the next heading line) must stay A5 `a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b` and A6 `b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9` (`verdict.A5_TEXT_SHA256`, `A6_TEXT_SHA256`). Ratification must leave those bytes unchanged.*
 
-**Authority:** Joshua (operator), 2026-10-08, via the First Passage Deployment Coordinator: "go with your suggestions 1-3" (item 3, drafting). Rulings Q2, Q3, Q5 (2026-10-10, "agreed on Q2, Q3, Q5"), card approval ("approve #758, S-1 to S-7, P-S4 option A") and the successor configuration ("C-1 row 5 uniform, option A, K₀ = 8") are recorded on [card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §8 and the [T00 card](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md) §8.
+**Authority:** Joshua (operator), 2026-10-08, via the First Passage Deployment Coordinator: "go with your suggestions 1-3" (item 3, drafting). Rulings Q2, Q3, Q5 (2026-10-10, "agreed on Q2, Q3, Q5"), card approval ("approve #758, S-1 to S-7, P-S4 option A") and the successor configuration ("C-1 row 5 uniform, option A, K₀ = 8") are recorded on [card #758](https://github.com/Joshua-Asante/first-passage/pull/758) §8 (open PR) and, for the configuration ruling, on the T00 card §8 by PR #760 (open at this rewrite).
 **Owner:** the T00 line ([amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) step 3: after NO-GO-evidence, "adjust the book" is an operator investment decision). Step 3 of the [T00 card §8 successor decision tree](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record).
 **Loop of record:** STRATEGIC (investment decision on an adjusted book; K accounting in §1c).
 **Authored:** 2026-10-08, Claude Code (drafting only); rewritten 2026-10-10 by the P-S5 worker for the Deployment Coordinator. The operator owns every **OWED** field and the ratification.
@@ -13,7 +13,7 @@
 
 ## §R — Standing rule: no candidate-configurable replay before ratification
 
-[Deployment checklist](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) item 7.6.1 (operator ruling 2026-10-02): no agent runs a candidate-configurable replay before its pre-registration is frozen (here: ratified). The configuration of §1a is candidate-configurable ([Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §1). P7 replays a real path over r3d's contract (`p7_driver.py:1-6`), so ratification precedes P7 over r3d ([card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §7 step 4).
+[Deployment checklist](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) item 7.6.1 (operator ruling 2026-10-02): no agent runs a candidate-configurable replay before its pre-registration is frozen (here: ratified). The configuration of §1a is candidate-configurable ([Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §1). P7 replays a real path over r3d's contract (`p7_driver.py:1-6`), so ratification precedes P7 over r3d ([card #758](https://github.com/Joshua-Asante/first-passage/pull/758) §7 step 4).
 
 ---
 
@@ -22,13 +22,13 @@
 | Owner | What it fixes here |
 |---|---|
 | [#581](2026-10-01-tradeify-t00-step2-screen-prereg.md) (`RATIFIED 2026-10-07`) §1b, §2 A1–A6, §3, §6 | The structure copied here; A5/A6 copied byte for byte; the values block form and its ratified values (the carried candidates in §3) |
-| [Card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §0.5 S-1…S-7, §1.1, §1.2, §2.7, §7, §8 | The successor build: size vector in a signed startup-policy v2, r3d by derivation from r3c, per-purpose chain entry, roots disjoint from step 12, the gate mapping under Q5, the ratification step |
-| [T00 card](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md) §8 | Step-12 result (`NO-GO-evidence-robust`), the successor stopping rule and decision tree, Tier-2 result and reader additions, R1/R2 hold, the 2026-10-10 configuration ruling |
+| [Card #758](https://github.com/Joshua-Asante/first-passage/pull/758) §0.5 S-1…S-7, §1.1, §1.2, §2.7, §7, §8 | The successor build: size vector in a signed startup-policy v2, r3d by derivation from r3c, per-purpose chain entry, roots disjoint from step 12, the gate mapping under Q5, the ratification step |
+| [T00 card](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md) §8 | Step-12 result (`NO-GO-evidence-robust`), the successor stopping rule and decision tree, Tier-2 result and reader additions, R1/R2 hold; the 2026-10-10 configuration ruling lands there with PR #760 (open at this rewrite) |
 | `ops/c1_rail/qualification/screen_authority.py:56`, `:95-100`, `:362-453` | `PREREG_CHAIN`; `VALUES_SCHEMA = 't00-step2-values/v1'`; `SECTION3_KEYS`; the Status regex `_RATIFIED`; `_ratified` (title, blank line, Status as line 3, one Status field); `_values_and_cells` (§6 `- **Ruling:**`, `- **OD-1 / OD-2:**`, one values fence, §3 cells); `_check_prereg` (C→C′ changes only the `- **Ratifying commit SHA:**` line); `_check_sections` |
 | `ops/c1_rail/qualification/t00_screen/verdict.py:26-27`, `:44-57`, `:168-178` | A5/A6 hashes and spans (A6 ends at the `## §3` heading); the optimistic assignment's treatment of an `UNDETERMINED` path |
 | `ops/c1_rail/qualification/replay.py:612-614` | A leg at quantity 0 has every entry rejected "zero policy quantity" |
 | [Tier-1 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier1-card.md) §8 and addendum; [Tier-2 card](../handoffs/2026-10-08-t00-step12-diagnostic-tier2-scoping-card-DRAFT.md) §2.1, §7 | Reader log entries; pattern row 5; "Any successor pre-registration names them" |
-| [Readiness map](../../notes/2026-10-10-successor-screen-readiness-map.md) (#757) §5, §6 | Q1–Q8; K₀ prefill; reader row RM-1 |
+| [Readiness map](https://github.com/Joshua-Asante/first-passage/pull/757) (#757) §5, §6 | Q1–Q8; K₀ prefill; reader row RM-1 |
 | [Size-feasibility RESULTS](../../../lab/analysis/c1/size_feasibility_2026-10/RESULTS.md) (#745) | FEASIBLE, largest clearing uniform k 0.5; grid K = 7; its readers |
 | [Screen-authority design](../../superpowers/specs/2026-10-02-t00-screen-authority-design.md) §4.5 | A re-attempt's pre-registration names every reader of the earlier run directory |
 | `AGENTS.md` "Strategy Authorization Lifecycle", "Protection" | De-risking, never re-optimization; the protection cell's change-control path |
@@ -43,7 +43,7 @@ One pre-registered screen of **one** successor configuration of the Tradeify boo
 
 ### §1a — The configuration (C-1…C-7)
 
-| # | Field | Value |
+| # | Field | Value (C-2, C-3, C-5, C-6 derived from the rulings cited; Joshua confirms them at ratification) |
 |---|---|---|
 | C-1 | Tier-2 pattern row relied on | Row 5 alone, read as a **uniform** cut (Joshua, 2026-10-10). Row 3 is not relied on. Tier-2 `REPORT.md` SHA-256 `efcf85dbbe5532f5130674ed7bf0c9bcc77fc6e9a0a65ffc27c6fc85ec2bdb7c` |
 | C-2 | Base expressions | The declared book (r3c identities); r3d is r3c with only `contract_id` and the `source_startup_policy` row changed (card #758 S-3). Same as §4 OD-2 |
@@ -51,7 +51,7 @@ One pre-registered screen of **one** successor configuration of the Tradeify boo
 | C-4 | Size vector | The frozen size vector in the signed startup-policy v2 (Q1 option A, FLOOR-HALF: every leg at k = 0.5 under the code's own round-down rule). Values private; bound by `size_vector_sha256` (§2 A1) |
 | C-5 | Adds rule | The `adds` field of each leg in the frozen size vector in the signed startup-policy v2; no field may turn on an add today's rule refuses |
 | C-6 | Per-session risk-reduction rule | None: row 5 is read as uniform (C-1) |
-| C-7 | Answerer exposure for C-1…C-6 (the §10 marker form) | Answerer exposure: not seen — Joshua (he saw neither the Tier-1 nor the Tier-2 report, only hash-and-label returns and the public-safe Q1 summary relayed by the Deployment Coordinator; relayed 2026-10-10) |
+| C-7 | Answerer exposure for C-1…C-6 (the §10 marker form) | Answerer exposure: not seen — Joshua (he saw neither the Tier-1 nor the Tier-2 report; his other exposure is §7 rows T1-4, SF-3 and T2-4; relayed by the Deployment Coordinator 2026-10-10) |
 
 **FLOOR-HALF is not the fractional k that cleared.** The size-feasibility FEASIBLE label (k 0.5) is a target range for a uniform fractional cut; it does not transfer to the integer vector this screen tests.
 
@@ -228,8 +228,8 @@ The §3 values are recorded once, in the `t00-step2-values/v1` block below: one 
 OWED (operator): replaced at ratification by the single line canonical_json_bytes(parameters)
 ```
 
-- **Ruling:** **OWED (operator)**
-- **OD-1 / OD-2:** **OWED (operator)** for OD-1; OD-2 is the declared book (§4)
+- **Ruling:** —
+- **OD-1 / OD-2:** —
 - **Ratifying commit SHA:** recorded in C′
 
 ---
@@ -245,7 +245,7 @@ Readers of per-session or per-leg step-12 detail, of the step-12 run directory (
 | T1-1 | Executor session (smoke run) | 2026-10-08 | Selected keys, per-stratum counts; no series, no report | Tier-1 card §8 |
 | T1-2 | Executor session (read-only attestation check) | 2026-10-08 ~04:57Z | Binding held; in-memory key-list hash | Tier-1 card §8 |
 | T1-3 | Executor session | 2026-10-08 ~07:10Z | Per-path sealed series and the report | Tier-1 §8 addendum, reader 3 |
-| T1-4 | Joshua | 2026-10-08 ~07:12Z | Findings summary in chat; no series, no keys, no report | Tier-1 §8 addendum, reader 4 |
+| T1-4 | Joshua | 2026-10-08 ~07:12Z | Findings summary in chat; no series, no keys | Tier-1 §8 addendum, reader 4 |
 | T1-5 | Deployment Coordinator | 2026-10-08 ~07:40Z; ~08:10Z | The summary; then the report (no series) | Tier-1 §8 addendum, reader 5 |
 | SF-1 | Executor session (size feasibility) | 2026-10-08/09 | Progress lines, then full results | RESULTS "Readers" 1 |
 | SF-2 | Deployment Coordinator | 2026-10-09 ~02:55Z | Per-k results from the executor's return | RESULTS "Readers" 2 |
@@ -253,7 +253,7 @@ Readers of per-session or per-leg step-12 detail, of the step-12 run directory (
 | RM-1 | Readiness-map session | 2026-10-10 | Public code and docs only; no report, series, keys or private result | Readiness map §6 |
 | T2-1 | Tier-2 executor session | 2026-10-10 01:47Z–03:44Z | All sampled series and the Tier-2 report | T00 card §8, Tier-2 result |
 | T2-2 | Q1 options worker | 2026-10-10 | The Tier-2 report | T00 card §8, Tier-2 result |
-| T2-3 | Deployment Coordinator | 2026-10-10 | The Tier-2 hash-and-label return only | T00 card §8, Tier-2 result |
+| T2-3 | Deployment Coordinator | 2026-10-10 | The Tier-2 hash-and-label return and the Q1 options worker's public-safe return; not the report | T00 card §8, Tier-2 result |
 | T2-4 | Joshua | 2026-10-10 | Neither report; hash-and-label returns and the public-safe Q1 summary | §1a C-7 |
 | PS5-1 | P-S5 worker (this rewrite) | 2026-10-10 | Public code and docs only; no report, series, keys, Q1 sheet or private result | this file |
 
