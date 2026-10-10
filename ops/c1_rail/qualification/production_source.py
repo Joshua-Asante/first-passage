@@ -169,15 +169,21 @@ class StartupPolicy:
     lifecycle_tiers: tuple[tuple[str, str], ...]
     request_caps_micro_equivalents: tuple[tuple[str, int], ...]
     shared_account_cap_micro_equivalents: int
+    size_vector: SizeVector              # v1: IDENTITY_SIZE_VECTOR; v2: its signed `sizing`
 
 
 def parse_startup_policy(raw):
-    """Proposed serialized F1 choice; parsing supplies no approval by itself."""
+    """Proposed serialized F1 choice; parsing supplies no approval by itself.
+
+    v2 is v1's fields plus `sizing` (successor card §2.4), validated by `validate_size_vector`."""
+    from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, validate_size_vector
     doc = _json(raw)
+    v2 = isinstance(doc, dict) and doc.get('schema') == 'qualification-source-startup/v2'
     if set(doc) != {'schema', 'initialization', 'positions', 'working_orders', 'splice_behavior',
-                    'path_start_date', 'shared_account_cap_micro_equivalents', 'legs'}:
+                    'path_start_date', 'shared_account_cap_micro_equivalents', 'legs'} | ({'sizing'} if v2 else set()):
         raise ValueError('complete explicit startup policy fields required')
-    if (doc['schema'] != 'qualification-source-startup/v1' or doc['initialization'] != 'FRESH_ONCE_CONTINUOUS'
+    if (doc['schema'] not in ('qualification-source-startup/v1', 'qualification-source-startup/v2')
+            or doc['initialization'] != 'FRESH_ONCE_CONTINUOUS'
             or doc['positions'] != 'ZERO' or doc['working_orders'] != 'ZERO'
             or doc['splice_behavior'] != 'CARRY_ALL_STATE'):
         raise ValueError('startup requires fresh-once construction and no state resets at splices')
@@ -201,7 +207,8 @@ def parse_startup_policy(raw):
         if type(row['request_cap_micro_equivalents']) is not int or row['request_cap_micro_equivalents'] != 80:
             raise ValueError('per-request cap must be explicit 80 micro-equivalents, not chart contract units')
         capitals.append((leg, capital)); tiers.append((leg, row['lifecycle_tier'])); caps.append((leg, row['request_cap_micro_equivalents']))
-    return StartupPolicy(start, tuple(capitals), tuple(tiers), tuple(caps), 80)
+    size_vector = validate_size_vector(doc['sizing']) if v2 else IDENTITY_SIZE_VECTOR
+    return StartupPolicy(start, tuple(capitals), tuple(tiers), tuple(caps), 80, size_vector)
 
 
 def _instant(value):
@@ -1358,7 +1365,8 @@ class ProductionSource:
         initial = EvaluationState(float(state.original_basis), float(state.current_equity), float(state.historical_eod_peak),
                                   state.prior_trade_days, float(state.prior_max_day_profit))
         return BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy(),
-                          initial_state=initial, sizing_inputs=sizing, schedule_quotes=schedule_quotes, broker_factory=brokers)
+                          initial_state=initial, sizing_inputs=sizing, schedule_quotes=schedule_quotes, broker_factory=brokers,
+                          size_vector=startup.size_vector)
 
     def proof(self, panel):
         from .paths import PathAssembler
