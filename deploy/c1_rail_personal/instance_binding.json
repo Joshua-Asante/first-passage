@@ -1,0 +1,22 @@
+{
+  "_comment": "Personal Tradovate rail instance (ADR 2026-10-09 owed item 6). Overlay on the shared template base_config; instance keys are placeholders, filled LOCALLY on this instance's own volume, never committed, never shared with the Tradeify instance. Destination stays unbound until ADR items 3-4. Validated by ops/c1_rail/instance_binding.py.",
+  "schema": "c1_rail_instance_binding/v1",
+  "instance": "personal_tradovate",
+  "firm_tier": "Personal_Tradovate",
+  "fly_app": "c1-rail-personal",
+  "volume": "c1_rail_personal_data",
+  "base_config": "deploy/c1_rail/c1_rail_config.fly.example.json",
+  "base_fly_toml": "deploy/c1_rail/fly.toml",
+  "overrides": {
+    "account": "REPLACE_PERSONAL_ACCOUNT_ID",
+    "path_token": "REPLACE_PERSONAL_GE_32_CHAR_RANDOM_TOKEN_______",
+    "crosstrade_api_token": "REPLACE_PERSONAL_CROSSTRADE_API_BEARER_TOKEN",
+    "secret_key": "REPLACE_PERSONAL_CROSSTRADE_SECRET_KEY",
+    "webhook_id": "REPLACE_PERSONAL_WEBHOOK_ID",
+    "webhook_secret": "REPLACE_PERSONAL_WEBHOOK_SECRET",
+    "destination": "UNBOUND_PENDING_ADR_2026_10_09_ITEMS_3_4",
+    "halt_state_path": "/data/personal_drawdown_halt.json",
+    "dry_run": true,
+    "armed_until": null
+  }
+}
