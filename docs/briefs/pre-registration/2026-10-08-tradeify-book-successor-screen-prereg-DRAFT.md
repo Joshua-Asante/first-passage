@@ -209,7 +209,7 @@ The denominator is always every path in the population. `UNDETERMINED` paths are
 
 ### §5a — Dependencies before the screen (recorded; none is granted here)
 
-1. Accepted H′ with P-S1…P-S3 merged (card #758 §4), and **this file re-validated at H′ before C**: the §10 parse hooks and the r3d checks of §2 A1 re-run against the merged code. At the heads read (§0), P-S3 is not yet rebased on P-S1's Codex round-1 fold and its `R3C_CONTRACT_ID` and `R3C_STARTUP_POLICY_ROW` are still `None` (coordinator-supplied). If any merged change moves `size_vector_sha256`, the canonical vector or a parse result, this file returns to the coordinator before C.
+1. Accepted H′ with P-S1…P-S3 merged (card #758 §4), and **this file re-validated at H′ before C**: the §10 parse hooks and the r3d checks of §2 A1 re-run against the merged code. At the heads read (§0), P-S3 is not yet rebased on P-S1's Codex round-1 fold and its `R3C_CONTRACT_ID` and `R3C_STARTUP_POLICY_ROW` are `None`; #764 compiles them from `f7bad93` (head `7b83ef8`). The re-validation at H′ is the coordinator's step. If any merged change moves `size_vector_sha256`, the canonical vector or a parse result, this file returns to the coordinator before C.
 2. r3d assembled and its derivation check run; `size_vector_sha256` computed (card #758 §7 step 2): done 2026-10-10 (§2 A1), subject to item 1.
 3. The K₀ ledger entry merged (§1c).
 4. Ratification of this file, C then C′ (§9).
@@ -262,7 +262,7 @@ Readers of per-session or per-leg step-12 detail, of the step-12 run directory (
 | RM-1 | Readiness-map session | 2026-10-10 | Public code and docs only; no report, series, keys or private result | Readiness map §6 |
 | T2-1 | Tier-2 executor session | 2026-10-10 01:47Z–03:44Z | All sampled series and the Tier-2 report | T00 card §8, Tier-2 result |
 | T2-2 | Q1 options worker | 2026-10-10 | The Tier-2 report | T00 card §8, Tier-2 result |
-| T2-3 | Deployment Coordinator | 2026-10-10 | The Tier-2 hash-and-label return, the Q1 options worker's public-safe return and, from Joshua, the four recommendations adopted as decisions 1–4; not the report | T00 card §8, Tier-2 result |
+| T2-3 | Deployment Coordinator | 2026-10-10 | The Tier-2 hash-and-label return, the Q1 options worker's public-safe return, Joshua's relayed four decisions (1–4) and the reader-log text; not the report, and not the Codex chat's (T2-5) qualitative findings summary (confirmed by the coordinator, 2026-10-10) | T00 card §8, Tier-2 result |
 | T2-4 | Joshua | 2026-10-10 | Neither report directly (C-7 "not seen"). He received the coordinator's hash-and-label returns, the public-safe Q1 summary, and the Codex assessment chat's (T2-5) qualitative findings summary of the Tier-2 report; decisions 1–4 followed that summary | §1a C-7; relayed by the coordinator |
 | T2-5 | Codex assessment chat (thread `01a126d1…`) | 2026-10-10 | The Tier-2 `REPORT.md` (`efcf85db…db7c`), read during its assessment; it gave Joshua a qualitative findings summary and the four recommendations adopted as decisions 1–4. Report exposure, not a new diagnostic run | relayed by the coordinator |
 | PS5-1 | P-S5 worker (this rewrite) | 2026-10-10 | Public code and docs only; no report, series, keys, Q1 sheet or private result | this file |
