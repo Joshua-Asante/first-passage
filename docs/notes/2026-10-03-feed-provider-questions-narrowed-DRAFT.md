@@ -1,6 +1,7 @@
 # Feed providers: evidence matrix and narrowed questions (DRAFT, for Joshua's review)
 
 **Status:** DRAFT, 2026-10-03. Nothing here has been sent. Joshua sends the final versions himself. The six existing Gmail drafts stay unsent references.
+*2026-10-10:* §4.0 and §4.6 reframed to own-assets trading with two same-broker destinations per [ADR 2026-10-09](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md); §4.1-§4.5 held as fallback. Nothing sent.
 **Authority:** Joshua's request of 2026-10-03 (about 19:31Z), relayed by coordinator (2) to coordinator (3). It supersedes the attended-outreach plan.
 **Serves, does not replace (Rule 7):** the [#583 note](2026-10-01-feed-provider-questions-DRAFT.md) (question set Q1–Q12, recording rules §4, rulings D-Q1…D-Q7), which coordinator (3) owns and will integrate. This note does not edit it.
 **Evidence:** [companion matrix](2026-10-03-feed-provider-questions-narrowed-matrix.md), one row per (provider variant, question), every source retrieved 2026-10-03.
@@ -83,13 +84,13 @@ None of these is established by an official source. Each is a residual question 
 >
 > Hello,
 >
-> I am an individual (a natural person) and a non-professional trader. A program I run would receive real-time data for the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX), and use it, with no display, to generate and send orders automatically. The data would come from a data vendor or broker, or directly from CME. The orders would go to a proprietary-trading-firm evaluation account held at a different broker from the data source. Nothing would be redistributed.
+> I am an individual (a natural person) and a non-professional trader. A program I run would receive real-time data for the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX), and use it, with no display, to generate and send orders automatically. The data would come from my existing, approved personal account at a broker, Tradovate, which would also route the orders. The program would trade my own assets in that account, and the same data would drive its automated orders to a second destination at that broker: a separate account belonging to a proprietary-trading firm's evaluation. Nothing would be redistributed.
 >
 > Could you answer in writing, with links to the governing terms? Please write "none" for any fee or requirement that does not apply.
 >
-> 1. **Licence route.** Schedule 5 §3.3 does not appear to bar a data distributor from supplying a non-professional subscriber's automated use without the subscriber's own CME licence, while your non-display FAQ says all non-display use is licensed directly with CME. As a non-professional, do I need my own licence for this use, and does any non-display fee apply when the data comes through a distributor? If I need my own licence, is it User Non-Display (A8) or Category A1? Is Managed User (A9) available when the distributor provides the means to route automated orders to CME markets (§11.2) but my orders go to an evaluation account elsewhere?
+> 1. **Licence route.** Schedule 5 §3.3 does not appear to bar a data distributor from supplying a non-professional subscriber's automated use without the subscriber's own CME licence, while your non-display FAQ says all non-display use is licensed directly with CME. As a non-professional, do I need my own licence for this use, and does any non-display fee apply when the data comes through a distributor? If I need my own licence, which applies when the distributor provides the order routing for both destinations: User Non-Display (A8), Category A1, or Managed User (A9, Schedule 5 §11.2)?
 > 2. **Evaluation accounts.** Which category applies when the orders go to a prop-firm evaluation account: A1, A3 or another? Does Information Policies §7.3, on simulated environments that lead to funded-trader programmes, place any obligation on me as a data subscriber, or only on the firm running that environment?
-> 3. **Status.** Does placing the orders in a third-party prop firm's evaluation account count as managing third-party assets under Schedule 5 §8.2, so that I am not non-professional? Can I count as non-professional when my data source provides no order routing device (§8.1)?
+> 3. **Status.** Does the program's automated trading in my personal account, using my own assets, meet Schedule 5 §8.2's own-assets test? Does the additional evaluation-account destination, where orders go to a third-party prop firm's account at the same broker, change my non-professional status?
 > 4. **Fees and terms.** Your fee lists show A8 at $457 a month per exchange ($472 from January 2027) and A1 Basic at $609. Is there also a base ILA fee, setup fee, minimum term, deposit or audit obligation for an individual licensee?
 > 5. **Internal bars, storage and the 2026 updates.** Are 15-minute bars that my program computes internally, and never distributes, a permitted internal derivative work under ILA §2.1(c) rather than a Synthetic Feed? If the licence is Managed User (A9), are such internally constructed bars excluded by Schedule 5 §11.3, which bars derivative works under that licence, or do they need separate permission? May I keep the raw messages and those bars for audit after the licence ends (ILA §5.7)? Please confirm that the ML/AI/LLM wording in the website-display terms does not apply to non-display use.
 > 6. **Direct products.** Please answer separately for (a) the real-time futures and options WebSocket API and (b) Smart Stream on Google Cloud:
@@ -97,7 +98,7 @@ None of these is established by an official source. Each is a residual question 
 >    2. Which entitlements or topics give real-time data for these four products?
 >    3. What is the per-GB tier schedule, what exactly is metered, and is there a minimum or setup fee? Which product does the $0.50/GB starting price belong to? Please give a bounded monthly estimate, in GB and dollars, for trades only (and for top of book) on these four front months.
 >    4. Does the credential (API ID or Google Cloud access grant) carry any order or account capability?
->    5. What connection or subscription limits apply? Does an open WebSocket survive token expiry? Is certification required for a data-only client?
+>    5. What connection or subscription limits apply? Does an open WebSocket survive token expiry? Is certification required for a client that only receives market data?
 >    6. Is each trade message one match event, not conflated? What do the update/change and delete actions mean for volume? What is the timestamp precision?
 >    7. WebSocket: is anything replayed after a reconnect, and is the sequence number per topic per week or per session? Smart Stream: do trade messages carry a gap-detectable sequence number, and how are replayed messages told apart from live ones?
 >    8. How is a trading halt signalled? On Smart Stream, is there a heartbeat or sequenced status message?
@@ -111,8 +112,9 @@ None of these is established by an official source. Each is a residual question 
 - *Individual (natural person):* A8 is for a licensee who is a single natural user, and Managed User for an individual natural person (fee list note 8; Schedule 5 definitions [pdf]).
 - *Non-professional:* Schedule 5 §3.3's distribution limit carves out non-professionals, and §8.2 limits non-professional use to one's own assets [pdf]; questions 1 and 3 depend on it.
 - *No display, automated orders:* this places the use in Category A non-display (non-display FAQ; Schedule 5 definitions [pdf]), which decides the licence.
-- *Data from a vendor, broker or CME:* Schedule 5 §3.3 and §11 turn on how the data is supplied [pdf].
-- *Orders at a prop-firm evaluation account at a different broker:* D-Q2 ruled to disclose. A9 depends on the distributor providing the means to route automated orders (Schedule 5 §11.2 [pdf]), and the own-assets test (§8.2) may turn on the destination.
+- *Data from a broker (Tradovate) that also routes the orders:* Schedule 5 §3.3 and §11 turn on how the data is supplied [pdf], and Managed User requires the distributor to provide the means to route automated orders (Schedule 5 §11.2 [pdf]); this broker routes the orders for both destinations.
+- *Own-assets trading in the personal account:* Schedule 5 §8.2 limits non-professional use to one's own assets [pdf]; question 3 asks whether this destination meets it.
+- *Second destination, a prop-firm evaluation account at the same broker:* D-Q2 ruled to disclose. The destination may change the category (question 2) and the status (question 3).
 - *Simulated evaluation (not stated):* Joshua ruled on 2026-10-03 that evaluation accounts are always simulated and the message need not say so. Question 2 therefore asks about evaluation accounts directly. Information Policies §7.1 [pdf] defines simulated environments, and the category may differ (A1 vs A3).
 - *Four symbols, three exchanges:* fees are per exchange (fee list header; FAQ Q14 [pdf]), so it sets the multiplier.
 - *Nothing redistributed:* keeps question 5 to internal derivative works (ILA §2.1(c) [pdf]).
@@ -254,36 +256,36 @@ None of these is established by an official source. Each is a residual question 
 
 **Stage 2 (one named FCM, chosen by Joshua from Rithmic's answer; same opening paragraph).** Ask only the DEFERRED-TO-FCM items: (1) does a data-only account count as an active futures trading account for non-professional status, and do you bill CME non-display fees; (2) which exchange entitlements and API access you enable on the user ID, and the session count; (3) the all-in monthly cost with no trading at your firm, and every deposit, minimum balance, inactivity and withdrawal term, with refundability; (4) will you issue a data-only user ID, or disable order authorization on the server, and confirm it in writing; (5) cloud hosting and private storage under your customer agreement; (6) any history charge.
 
-### 4.6 P6 Tradovate API, personal data-only account
+### 4.6 P6 Tradovate API, personal account (own-assets trading and API data)
 
-**Operator fact (relayed 2026-10-03 by coordinator (3)):** an existing, approved personal account; current entitlements unverified. The draft therefore asks only about data entitlements, licence and cost on that account, plus the technical residuals.
+**Operator fact (relayed 2026-10-03 by coordinator (3)):** an existing, approved personal account; current entitlements unverified. The draft therefore asks about API trading and data entitlements, the licence and the cost on that account, plus the technical residuals.
 
-> **Subject:** Real-time API market data on my existing personal account
+> **Subject:** API trading and real-time API market data on my existing personal account
 >
 > Hello,
 >
-> I am an individual, non-professional trader with an existing, approved personal Tradovate account. I would like to use it only for real-time API market data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX). A program would use the data, with no display, to make automated trading decisions. The resulting orders go to a separate Tradovate account that belongs to a proprietary-trading firm's evaluation and is never linked to the personal Tradovate account I would use for this data. Could you answer in writing, with links to the governing terms? Please write "none" for any fee or requirement that does not apply.
+> I am an individual, non-professional trader with an existing, approved personal Tradovate account. I would use it through the API to trade my own assets: a program would receive real-time API market data on the front contracts of 6J and MNQ (CME), MYM (CBOT) and MGC (COMEX), use it, with no display, to make automated trading decisions, and place the resulting orders in that account. The same data also drives the program's automated orders in a separate Tradovate account that belongs to a proprietary-trading firm's evaluation and is never linked to the personal account. Could you answer in writing, with links to the governing terms? Please write "none" for any fee or requirement that does not apply.
 >
-> 1. Your API access article says real-time API data requires me to sign the CME Information License Agreement. Once I sign it, may I use the data for automated non-display decisions whose orders go to that separate evaluation account? Which CME category and fee apply (User or Managed User Non-Display, Category A), and is the fee per exchange? Does the evaluation-account destination change the ILA or sub-vendor answer?
+> 1. Your API access article says real-time API data requires me to sign the CME Information License Agreement. Once I sign it, may I use the data for automated non-display decisions whose orders go both to the personal account and to that separate evaluation account? Which CME category and fee apply (User or Managed User Non-Display, Category A), and is the fee per exchange? Does the evaluation-account destination change the ILA or sub-vendor answer?
 > 2. With the CME licence in place, does API data on my account cover all four products in real time? What must be enabled on the account for that: the API Access add-on, a Tradovate data subscription, or the free Level 1?
-> 3. For my account used only for API data: must it hold $1,000 to create the API key, and must that balance be kept afterwards? Does the $35 inactivity fee apply when no trades are placed? Are there one-time fees for API access or data? For each fee, please say what it is for and how often it is billed.
-> 4. Can I create an API key whose order permission makes your servers reject placing, modifying and cancelling orders, while it still receives market data?
-> 5. Can token renewal keep one session alive for weeks with no re-login? Do API users' passwords expire? Is conformance testing required for a data-only app?
-> 6. May the client run unattended on a cloud server, and may raw messages and derived bars be stored privately for audit, under your terms and the CME ILA?
-> 7. For chart minute bars (size 1 and 15): is the timestamp the bar start, in UTC? Is the forming bar updated in place, and is a closed bar ever revised? Are OHLC and volume from exchange trades? How are busted trades signalled? Is a bar published for a minute with no trades, and how is a halt shown? Does an expired or unknown symbol return an error or a substitute, and does every chart message identify the dated contract?
-> 8. Are bars or trades ever revised after delivery, and how are revisions flagged?
-> 9. What are the typical and worst-case delays from bar close to delivery? I need every bar within 30 seconds of its interval closing. What maintenance windows fall inside Sunday–Friday 18:00–17:00 ET, and what signals that a quiet interval is over?
-> 10. What historical minute-bar depth does the API give for these contracts, and how are DST changes and holiday early closes reflected in bar timestamps?
+> 3. What enables API trading plus real-time API data on this account: the API Access add-on, a Tradovate data subscription or the free Level 1, and the CME Information License Agreement? Does creating the API key require $1,000, and must that balance be held afterwards? For each fee, please say what it is for and how often it is billed.
+> 4. Can token renewal keep one session alive for weeks with no re-login? Do API users' passwords expire? Is conformance testing required for an app that also places orders through the API?
+> 5. May the client run unattended on a cloud server, and may raw messages and derived bars be stored privately for audit, under your terms and the CME ILA?
+> 6. For chart minute bars (size 1 and 15): is the timestamp the bar start, in UTC? Is the forming bar updated in place, and is a closed bar ever revised? Are OHLC and volume from exchange trades? How are busted trades signalled? Is a bar published for a minute with no trades, and how is a halt shown? Does an expired or unknown symbol return an error or a substitute, and does every chart message identify the dated contract?
+> 7. Are bars or trades ever revised after delivery, and how are revisions flagged?
+> 8. What are the typical and worst-case delays from bar close to delivery? I need every bar within 30 seconds of its interval closing. What maintenance windows fall inside Sunday–Friday 18:00–17:00 ET, and what signals that a quiet interval is over?
+> 9. What historical minute-bar depth does the API give for these contracts, and how are DST changes and holiday early closes reflected in bar timestamps?
 >
 > Thank you.
 
 *Why each disclosure stays:*
 - *Individual, non-professional:* Tradovate's data rates depend on status, and CME's non-display rates are for a natural person (non-pro data rates KB [excerpt]; CME fee list [pdf]).
 - *No display, automated decisions:* decides the CME category the ILA must carry (non-display FAQ [pdf]).
-- *Existing, approved personal account:* true per the relayed operator fact, and it scopes the questions to entitlements on that account rather than opening one. No identifier or date goes in the message.
-- *Same-broker destination, never linked:* D-Q2 with #583's §3.6 same-broker wording; only "I would open" becomes "I would use", because the account exists. Tradovate says prop and evaluation accounts cannot get API access [excerpt], so the separate personal account must be explicit.
+- *Existing, approved personal account:* true per the relayed operator fact, and it scopes the questions to that account rather than opening one. No identifier or date goes in the message.
+- *Own-assets trading through the API:* the account trades the operator's own assets, so it is both the data source and an order destination; CME's own-assets test (Schedule 5 §8.2 [pdf]) turns on it.
+- *Same-broker evaluation destination, never linked:* D-Q2 with #583's §3.6 same-broker wording. Tradovate says prop and evaluation accounts cannot get API access [excerpt], so the separate personal account must be explicit; the evaluation account is never linked to it.
 - *Four symbols:* entitlement scope; CME fees are per exchange (CME fee list [pdf]).
-- *Cloud host:* only in question 6 (Q6); Tradovate's IP and device limits imply servers are expected, and no source shows it changes the plan.
+- *Cloud host:* only in question 5 (Q6); Tradovate's IP and device limits imply servers are expected, and no source shows it changes the plan.
 
 ## 5. Recording
 
