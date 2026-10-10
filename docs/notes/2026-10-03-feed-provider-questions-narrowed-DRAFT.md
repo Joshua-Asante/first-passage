@@ -21,7 +21,7 @@ Of 13 questions per variant (Q1, Q2a, Q2b, Q3–Q12), public primary sources ful
 | P3b IBKR Client Portal Web API | 0 | 11 | 2 | 13 | **Skipped by Joshua 2026-10-03.** Q5 excerpt-only negative; Q1, Q2a, Q3 open |
 | P4 Ironbeam API | 0 | 9 | 4 | 13 | all four open |
 | P5 Rithmic R\|Protocol (stage 1) | 0 | 9 | 4 | 13 (7 with an FCM part) | all four open; Q3 and Q5 partly deferred to the FCM |
-| P6 Tradovate API, personal data-only account | 0 | 11 | 2 | 13 | all four open |
+| P6 Tradovate API, personal account (own-assets trading and API data) | 0 | 11 | 2 | 13 | all four open |
 
 The drafts in §4 are much shorter than #583's messages because each asks only the residual wording, cites the clause it is asking about, and drops the shared context paragraph's internal detail.
 
@@ -255,6 +255,8 @@ None of these is established by an official source. Each is a residual question 
 - *Cloud server:* Rithmic's plug-in fee relief applies only on the same machine as R|Trader Pro (Rithmic support [excerpt]), so a cloud client needs its own billed session.
 
 **Stage 2 (one named FCM, chosen by Joshua from Rithmic's answer; same opening paragraph).** Ask only the DEFERRED-TO-FCM items: (1) does a data-only account count as an active futures trading account for non-professional status, and do you bill CME non-display fees; (2) which exchange entitlements and API access you enable on the user ID, and the session count; (3) the all-in monthly cost with no trading at your firm, and every deposit, minimum balance, inactivity and withdrawal term, with refundability; (4) will you issue a data-only user ID, or disable order authorization on the server, and confirm it in writing; (5) cloud hosting and private storage under your customer agreement; (6) any history charge.
+
+<a id="46-p6-tradovate-api-personal-data-only-account"></a>
 
 ### 4.6 P6 Tradovate API, personal account (own-assets trading and API data)
 
