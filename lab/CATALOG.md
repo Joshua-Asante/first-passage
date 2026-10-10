@@ -60,6 +60,7 @@ documents the camp boundary for humans/tools.
 | mnq_orb_flow_depth_2026-08-18 | c1 | HOLD | yes | `HOLD 2026-08-23 (operator)` — blocked at P0 twice (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling;... | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | msl_monsurf_1_idle_clock_2026-08 | c1 | CLOSED | yes | Q-MONSURF-1 M-B RESOLVED | lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/ | — |
 | parity_gen2_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
+| sfgrowth_2026-10 | c1 | ACTIVE | yes | — | lab/analysis/c1/sfgrowth_2026-10/ | — |
 | shape_feasibility_map_2026-08 | c1 | ACTIVE | yes | 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU... | lab/analysis/c1/shape_feasibility_map_2026-08/ | — |
 | size_feasibility_2026-10 | c1 | ACTIVE | yes | — | lab/analysis/c1/size_feasibility_2026-10/ | — |
 | tradeify_book_composition_2026-09 | c1 | ACTIVE | yes | informal Downloads-lane measurement, not pre-registered, no K entry; the harness reuses `core/mc/simulation.py` and... | lab/analysis/c1/tradeify_book_composition_2026-09/ | inputs gitignored |
