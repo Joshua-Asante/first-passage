@@ -489,6 +489,12 @@ def _check_p7(doc, record_bytes, artifact_root, head) -> None:
     if _successor(doc):  # S-3: the digest the authority carries, already equal to the receipt's
         _refuse(code, bound['contract_sha256'] != doc['source']['contract_sha256'],
                 "the P7 record is not over the authority's contract")
+        try:  # the embedded contract the P7 run read, not only the scalar field (Codex P1 on #764)
+            payload = p7_evidence._strict_b64(record['contract_b64'], 'contract_b64')  # pylint: disable=protected-access
+        except (KeyError, ValueError) as exc:
+            raise ScreenAuthorityError(code, f'the P7 record contract_b64 cannot be read ({exc})') from None
+        _refuse(code, _sha(payload) != doc['source']['contract_sha256'],
+                "the P7 record's contract_b64 is not the authority's contract")
     else:
         _refuse(code, bound['contract_sha256'] != R3C_CONTRACT_SHA256, 'the P7 record is not over r3c')
     _refuse(code, bound['code_head'] != head, 'the P7 record code_head is not HEAD')
