@@ -1213,3 +1213,159 @@ def test_production_source_imports_no_screen_module():
     assert _screen_imports(planted) == [
         'c1_rail.qualification.p7_evidence', 'c1_rail.qualification.screen_authority',
         'c1_rail.qualification.screen_authority.x', 'c1_rail.qualification.t00_screen.journal']
+
+
+# ---- P-S2: startup policy v2 (successor build card 2026-10-10 §2.4, rows Y1-Y5) ----
+# Synthetic policies and the TEST_ONLY composition fixture only; the sizing below is an
+# arbitrary non-identity vector, not a proposed or ruled one.
+
+SYNTHETIC_SIZING = {'aegis_6j': {'base': 4, 'adds': 'UNCHANGED'},
+                    'dj30_mym_p250': {'risk_multiplier': '1/2', 'cap_reserve_multiplier': '1/2', 'adds': 'OFF'},
+                    'vanguard_mgc': {'base_by_port': {'1': 0, '2': 1}, 'adds': 'UNCHANGED'},
+                    'orb_mnq_v7': {'base': 0, 'adds': 'UNCHANGED'}}
+# sha256(repr(ReplayResult)) of the fixture's five-session replay at the P-S2 base a6a4a76.
+FIXTURE_REPLAY_SHA256 = 'c5beaa0204456287ec184d8793d4aa2da6d08565d704a4e030b5d15e58136bbe'
+STARTUP_FIELDS = ('path_start_date', 'paper_initial_capitals', 'lifecycle_tiers',
+                  'request_caps_micro_equivalents', 'shared_account_cap_micro_equivalents')
+
+
+def _startup(schema='qualification-source-startup/v1', **extra):
+    from c1_rail.qualification.model import LEG_IDS
+    doc = {'schema': schema, 'initialization': 'FRESH_ONCE_CONTINUOUS',
+           'positions': 'ZERO', 'working_orders': 'ZERO', 'splice_behavior': 'CARRY_ALL_STATE',
+           'path_start_date': '2030-01-07', 'shared_account_cap_micro_equivalents': 80,
+           'legs': {leg: {'paper_initial_capital': '100000', 'lifecycle_tier': 'AUTHORIZED',
+                          'request_cap_micro_equivalents': 80} for leg in LEG_IDS}}
+    doc.update(extra)
+    return doc
+
+
+def _v2(sizing=SYNTHETIC_SIZING):
+    return _startup('qualification-source-startup/v2', sizing=json.loads(json.dumps(sizing)))
+
+
+def _parse(doc):
+    return parse_startup_policy(json.dumps(doc).encode())
+
+
+def _five_session_replay(source):
+    from c1_rail.qualification.paths import PathAssembler
+    return source.replay(PathAssembler(source.path_start_date).assemble((source.sessions[:5],), horizon_sessions=5))
+
+
+def test_Y1(tmp_path):
+    """A v1 policy parses to today's fields plus the identity vector; the fixture replays as at base."""
+    from c1_rail.book_policy import IDENTITY_SIZE_VECTOR
+    from composition_fixture import build_verified_composition
+    parsed = _parse(_startup())
+    assert parsed.size_vector is IDENTITY_SIZE_VECTOR
+    assert (parsed.path_start_date.isoformat(), parsed.shared_account_cap_micro_equivalents) == ('2030-01-07', 80)
+    assert {v for _, v in parsed.lifecycle_tiers} == {'AUTHORIZED'}
+    assert {v for _, v in parsed.request_caps_micro_equivalents} == {80}
+    source = build_verified_composition(tmp_path).source
+    assert source.prepared.startup.size_vector is IDENTITY_SIZE_VECTOR
+    result = _five_session_replay(source)
+    assert hashlib.sha256(repr(result).encode()).hexdigest() == FIXTURE_REPLAY_SHA256
+    assert [row.fills for row in result.sessions] == [2] * 5   # twin: the digest covers real fills
+
+
+def test_Y2():
+    """A v2 policy parses to the validated vector; each v1 rule still refuses its own violation under v2."""
+    from c1_rail.book_policy import validate_size_vector
+    parsed, v1 = _parse(_v2()), _parse(_startup())
+    assert parsed.size_vector == validate_size_vector(SYNTHETIC_SIZING) and not parsed.size_vector.is_identity
+    assert all(getattr(parsed, name) == getattr(v1, name) for name in STARTUP_FIELDS)
+    for key, value in (('initialization', 'RESET_DAILY'), ('positions', 'CARRIED'),
+                       ('working_orders', 'CARRIED'), ('splice_behavior', 'RESET_TO_SOURCE_SNAPSHOT')):
+        with pytest.raises(ValueError, match='fresh-once'):
+            _parse({**_v2(), key: value})
+    with pytest.raises(ValueError, match='80 micro-equivalent'):
+        _parse({**_v2(), 'shared_account_cap_micro_equivalents': 79})
+    with pytest.raises(ValueError, match='weekday'):
+        _parse({**_v2(), 'path_start_date': '2030-01-05'})
+    for key, value, reason in (('lifecycle_tier', 'PROBATION', 'AUTHORIZED only'),
+                               ('request_cap_micro_equivalents', 8, 'per-request cap'),
+                               ('paper_initial_capital', 100000, 'explicit decimal string'),
+                               ('paper_initial_capital', '0', 'positive finite')):
+        doc = _v2()
+        doc['legs']['vanguard_mgc'][key] = value
+        with pytest.raises(ValueError, match=reason):
+            _parse(doc)
+    doc = _v2()
+    del doc['legs']['orb_mnq_v7']
+    with pytest.raises(ValueError, match='four-leg'):
+        _parse(doc)
+    doc = _v2()
+    doc['legs']['aegis_6j']['extra'] = 1
+    with pytest.raises(ValueError, match='per-leg'):
+        _parse(doc)
+    with pytest.raises(ValueError, match='complete explicit startup policy fields'):
+        _parse(_startup('qualification-source-startup/v3', sizing=SYNTHETIC_SIZING))
+
+
+def test_Y3():
+    """A bad v2 sizing is refused with validate_size_vector's reason; extra and missing fields refused."""
+    from c1_rail.book_policy import validate_size_vector
+    bad = [{**SYNTHETIC_SIZING, 'aegis_6j': {'base': 9, 'adds': 'UNCHANGED'}},
+           {**SYNTHETIC_SIZING, 'dj30_mym_p250': {'risk_multiplier': '2/4', 'cap_reserve_multiplier': '1/2', 'adds': 'OFF'}},
+           {**SYNTHETIC_SIZING, 'aegis_6j': {'base': 4.0, 'adds': 'UNCHANGED'}},
+           {**SYNTHETIC_SIZING, 'orb_mnq_v7': {'base': 0}},
+           {**SYNTHETIC_SIZING, 'orb_mnq_v7': {'base': 0, 'adds': 'UNCHANGED', 'extra': 1}},
+           {k: v for k, v in SYNTHETIC_SIZING.items() if k != 'vanguard_mgc'},
+           {**SYNTHETIC_SIZING, 'gold_mgc': {'base': 1, 'adds': 'UNCHANGED'}},
+           [], None]
+    for sizing in bad:
+        with pytest.raises(ValueError) as expected:
+            validate_size_vector(sizing)
+        with pytest.raises(ValueError) as refused:
+            _parse(_v2(sizing))
+        assert str(refused.value) == str(expected.value)
+    with pytest.raises(ValueError, match='complete explicit startup policy fields'):
+        _parse({k: v for k, v in _v2().items() if k != 'sizing'})          # v2 without sizing
+    with pytest.raises(ValueError, match='complete explicit startup policy fields'):
+        _parse(_startup(sizing=SYNTHETIC_SIZING))                          # v1 with sizing
+    with pytest.raises(ValueError, match='complete explicit startup policy fields'):
+        _parse({**_v2(), 'extra': 1})
+    assert _parse(_v2()).size_vector.as_mapping() == SYNTHETIC_SIZING      # twin
+
+
+def _v2_composition(tmp_path, monkeypatch, sizing=SYNTHETIC_SIZING):
+    """The TEST_ONLY composition with a v2 startup policy written before signing."""
+    import composition_fixture as fixture_module
+    original_builder = fixture_module.build_artifacts
+    def v2_startup(root, **kwargs):
+        fixture = original_builder(root, **kwargs)
+        doc = json.loads(fixture.payloads['source_startup_policy'])
+        assert doc['schema'] == 'qualification-source-startup/v1'
+        doc.update(schema='qualification-source-startup/v2', sizing=sizing)
+        fixture.payloads['source_startup_policy'] = fixture_module.encoded(doc)
+        (root/fixture.paths['source_startup_policy']).write_bytes(fixture.payloads['source_startup_policy'])
+        return fixture
+    monkeypatch.setattr(fixture_module, 'build_artifacts', v2_startup)
+    return fixture_module.build_verified_composition(tmp_path).source
+
+
+def test_Y4(tmp_path, monkeypatch):
+    """A synthetic source with a v2 policy passes its vector to every BookReplay it constructs."""
+    from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, validate_size_vector
+    from c1_rail.qualification import replay as replay_module
+    engines = []
+    class Recorded(replay_module.BookReplay):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            engines.append(self)
+    source = _v2_composition(tmp_path, monkeypatch)
+    monkeypatch.setattr(replay_module, 'BookReplay', Recorded)
+    expected = validate_size_vector(SYNTHETIC_SIZING)
+    assert source.prepared.startup.size_vector == expected != IDENTITY_SIZE_VECTOR
+    result = _five_session_replay(source)
+    assert len(engines) == 1 and engines[0].size_vector is source.prepared.startup.size_vector
+    # The fixture's only filling leg is ORB, off in this vector: every entry is refused.
+    assert [row.fills for row in result.sessions] == [0] * 5
+    assert any('zero policy quantity' in event.detail for event in result.events)
+
+
+@SCREEN
+def test_Y5(tmp_path, monkeypatch):
+    """Regression row: the seven sealed methods keep their source text (test_K7 re-run as evidence)."""
+    test_K7(tmp_path, monkeypatch)
