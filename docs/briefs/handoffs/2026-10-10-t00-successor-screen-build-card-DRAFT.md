@@ -105,7 +105,7 @@ Q5 copies #581's A5 and A6 into #733 byte for byte, because `_check_sections` co
 | G3 pass floor, pessimistic, FULL | A6, binding, unchanged |
 | G2 bust, R1 alone, H2 | **Implied by G1.** An R1 bust is either an agreed FAILURE with a bust run, or an `UNDETERMINED` path; the pessimistic assignment counts both as busts. So a pessimistic H2 pass of the ceiling implies the R1-alone pass, for GO versus NO-GO. Not separately bound |
 | G4 pass floor, R1 alone, H2 | **Implied by the H2 pass floor** when `pass_floor_halves` is `BINDING`: every pessimistic pass is an agreed PASS, so R1 passes no later. With `REPORTED` (#581's step-12 value) it is not enforced at all. Joshua decides `pass_floor_halves` at freeze |
-| G5 funded survival | Reported, non-binding (Q6, OWED); no producer exists, so it is reported as "not produced" |
+| G5 funded survival | Reported, non-binding (Q6, ruled 2026-10-10, §8); no producer exists, so it is reported as "not produced" |
 | G6 economics | Outside A6; reported only |
 
 **Label subtype.** The implications cover the GO versus NO-GO decision only. #733 §6 rule 4 makes a failed R1-alone gate a *robust* NO-GO; under #581 A6 the same paths can be labelled `UNDETERMINED`-dependent, because the optimistic assignment does not count an undetermined R1 bust and does count an undetermined R1 pass (`verdict.py:173-175`). Under Q5 A6's labels govern; P-S5 states this in #733.
@@ -337,11 +337,12 @@ Each operator act below needs its own GO. Agents never touch a key.
   - **C-1:** Tier-2 row 5 alone, uniform reading. Row 3 is not relied on.
   - **Q1 — RULED: option A, FLOOR-HALF.** Every leg at k = 0.5 under the code's own round-down rule; a leg whose halved size floors to 0 is OFF. The per-leg vector stays private (the Q1 options sheet, SHA256SUMS `08f9c147…`); this card refers only to "the frozen vector in the signed startup-policy v2" and quotes no value. The build still works for any vector.
   - **K₀ — RULED: 8**, so this successor is K = 9.
-- **Still OPEN:**
-  - **Q6 — OPEN (OWED, Joshua to confirm).** Recommendation: G5 reported and non-binding.
-  - **Q7 — OPEN (OWED, Joshua to confirm).** Depth stays N = 1,002 per population (T00 card §8) unless Joshua re-rules.
-  - **C-7 — OWED (Joshua):** his answerer exposure.
-  - **Reader rows — OWED:** including the Tier-2 executor session and the Q1 options worker as Tier-2 readers.
+- **Decisions 1–4 RULED** (Joshua, 2026-10-10, directly to the Deployment Coordinator, on four recommendations from a Codex assessment chat: "Agreed on all four recommendations"; relayed to #733's assembly worker by the coordinator). Recorded in [#733](../pre-registration/2026-10-08-tradeify-book-successor-screen-prereg-DRAFT.md):
+  - **Q6 — RULED:** funded survival (G5) is reported and non-binding, explicitly "not produced" because this screen has no producer; G6 economics stays reported only, likewise "not produced" when absent. A screen GO establishes neither (#733 §1d).
+  - **Q7 — RULED:** N = 1,002 paths per population, 334 per root. Budget 961,920 path CPU-seconds plus 11,300 overhead CPU-seconds. Fresh roots disjoint from step 12's, including a disjoint probe root; fresh paths remain over the same exposed history, a disclosed limitation (#733 §3 items 1 and 4, §6 values block, §7).
+  - **`pass_floor_halves` — RULED: `BINDING`.** H1 and H2 must each meet the existing pass floor, as FULL must, which enforces G4 through A6's existing implementation (no `verdict.py` change; P-S4 option A stands). An explicit change from #581's `REPORTED` (#733 §3 item 2).
+  - **OD-1 — RULED:** D-feed reading (c) extends to the successor (#733 §4), recorded at the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider).
+- **C-7 and reader rows:** recorded in #733 §1a and §7 (C-7 "not seen"; rows T2-1…T2-5 and PA-1).
 - **Prerequisites:** PS-1 met (card approval above). PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 `REPORT.md` SHA-256 `efcf85dbbe5532f5130674ed7bf0c9bcc77fc6e9a0a65ffc27c6fc85ec2bdb7c`; output SHA256SUMS `d6009bf30dbbea7e8ff6aa6a0bff7de52f483f220b4fcff03ce94199a43da7fd` (abbreviated on the T00 card §8 by #759; full values supplied by the coordinator). PS-4 P-S5 merged at: *pending.*
 - **Packet heads:** *pending.*
 - **H′:** *pending.*
