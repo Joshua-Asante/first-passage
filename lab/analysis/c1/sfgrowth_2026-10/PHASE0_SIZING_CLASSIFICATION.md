@@ -72,24 +72,33 @@ Properties-panel margin, commission and slippage are **neither** for every leg. 
 - **C5 - leg 5 requires a three-source distinction.** `phase1_config.json` `lineage_notes` / `pin_divergence` compare the reference (`fa6a70cd…`) with the older locked ancestor (`bb921399…`): `allowThu` and `allowFri` differ, as well as the capital basis described there. The admitted candidate (`d18c2699…`) already carries those weekday defaults. Local comparison of the hash-verified candidate and recovered reference found only initial-capital and comment-line differences; their weekday inputs agree. The recovered reference is `local_artifacts/recovery-2026-09-24/surviving-inputs/striker_nas100_v1_mnq_dow_wed_excluded_cap100k.pine` in the primary checkout. The October recapture and its weekday screenshot also agree with the reference. Thus “no overrides” is relative to the admitted candidate, never permission to use the ancestor's schedule. Preserve all five weekday inputs at the reference state for every multiplier; no Pine edit is needed.
 - **C6 - a zero floor is not an executable TradingView configuration; disabled-leg ruling approved; amended freeze pending.** The contract-count range audit below finds both ORB and Vanguard inputs below their declared minimum at positive multipliers. The existing sentence about a leg ending with no trades applies to a valid export, not an invalid input. Do not clamp to the minimum, change another switch, omit a required export, or manufacture an empty export. Size-specific exports retain locked add behavior only for admissible inputs. The approved typed-artifact amendment must be reviewed and re-frozen before exports.
 
+- **C7 - Striker MYM native-guard conflict: unresolved.** Its captured trading setting activates the pinned daily/total drawdown guard, which blocks entries and closes positions. Preserving that setting under §B conflicts with §A's protection-free wording. [Preregistration F7](../../../../docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#f7---native-drawdown-guard-conflict-unresolved-before-re-freeze) owns the required new ruling. The table is a source classification, not authorization to export this inconsistent mode; do not flip the switch or assume the guard is inert. Re-freeze, exports and scoring remain held.
+
 ## Reference evidence reconciliation
 
 Paths in this section are relative to the primary checkout. `P` means
 `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/`.
-The original digests remain owned by `phase1_config.json`; the new digests below
-identify the existing recaptures, not replacements for those originals.
+The original digests remain owned by `phase1_config.json`. The recapture/admission
+paths below identify provisional local evidence, not replacements for those
+originals. Their new public pins and registry entries are deferred until scoped
+archive authorization, preservation and verified retrieval are complete (M-41).
+The exact path/digest inventory stays local; none is admitted merely by this table.
 
 | Leg | Original snapshot pin prefix | Current retrievable evidence | Coverage / binding |
 |---|---|---|---|
 | 1 | `460f40fa…` | `P/aegis_6j1.json`; also private `first-passage-archive` commit `28eb2c7d3545558ceceb27e16b7be17a0bbdd1e7`, path `evidence/sha256/46/460f40fa079c00a97711d743aa0a5acee62f1c8f2cc33972b8a92b7948e42d08` | Local file and archive blob both match the original digest. |
-| 2 | `b7369ee3…` | `P/recaptured-2026-10-09/striker_dj30_mym_pyramid_250.json`, SHA-256 `121a36ee59e938a12d4e856ceb48814631cf48642441140bf0a3f2b6c357a24a` | 31/31 captured; `backtestMode` differs from the admitted body default. Historical binding is §52's attestation. |
-| 3 | `3bacd6f1…` | `P/recaptured-2026-10-09/vanguard_mgc_v04.json`, SHA-256 `c6662a23352bce7fd5d066246407bebedd494ade7f0e4ebd67ddffd75c3b7471` | 57/59 captured; `showEmas` and `showDashboard` have no captured values. No differences among the checked scalar defaults. Approved cosmetic exemption: mark both historical values unknown; do not fill from defaults by inference. |
-| 4 | separate O-N admission | `P/op1/2026-09-14-seven/step6-admission/manifests/O-N.json`, SHA-256 `945b7aa54d24046940380bc4df7e5ee2d99937c182a4b2ba4a7c44287ad3adbb` | The referenced corrected Inputs and Properties text hashes match; its Pine hash matches the book. The historical Phase-1 ORB snapshot is not this reference. |
-| 5 | `ba59219a…` | `P/recaptured-2026-10-09/striker_nas100_mnq_dow_wed_excluded.json`, SHA-256 `5f22477194b3df9973271b40f616d3fd00a505e265272eb978424e6be569bdf2` | 36/36 captured; no differences among checked scalar defaults of the admitted candidate. Weekday comparison independently checked against the reference body and screenshot (C5). |
+| 2 | `b7369ee3…` | `P/recaptured-2026-10-09/striker_dj30_mym_pyramid_250.json` (provisional local evidence; public pin deferred) | 31/31 captured; `backtestMode` differs from the admitted body default. Historical binding is §52's attestation. |
+| 3 | `3bacd6f1…` | `P/recaptured-2026-10-09/vanguard_mgc_v04.json` (provisional local evidence; public pin deferred) | 57/59 captured; `showEmas` and `showDashboard` have no captured values. No differences among the checked scalar defaults. Approved cosmetic exemption: mark both historical values unknown; do not fill from defaults by inference. |
+| 4 | separate O-N admission | `P/op1/2026-09-14-seven/step6-admission/manifests/O-N.json` (provisional local evidence; public pin deferred) | The referenced corrected Inputs and Properties text hashes match; its Pine hash matches the book. The historical Phase-1 ORB snapshot is not this reference. |
+| 5 | `ba59219a…` | `P/recaptured-2026-10-09/striker_nas100_mnq_dow_wed_excluded.json` (provisional local evidence; public pin deferred) | 36/36 captured; no differences among checked scalar defaults of the admitted candidate. Weekday comparison independently checked against the reference body and screenshot (C5). |
 
 All 19 screenshot files named by the three recaptures were located and hashed.
-The decisive NAS100 weekday capture is `Screenshot 2026-09-04 190624.png`, SHA-256
-`133cd433c6af61974a3affae19c0038e1721bc69bd9afc79414b6005254cbede`.
+The decisive NAS100 weekday capture is `Screenshot 2026-09-04 190624.png`; its
+actual absolute source path and digest are retained in the local inventory. It
+lives outside this repository today. Before a future public registry entry, stage
+an authorized copy under an ignored primary-checkout evidence directory and use
+only its real repo-relative path; descriptive annotations belong in comments.
+No annotated filename or unarchived new digest is registered by this amendment.
 Hashes and scalar-default comparisons do not independently validate every screenshot
 transcription. §52 expressly records no fresh re-export and limits its attestation
 to the historical intake. A reviewed Phase-0 private manifest must retain that

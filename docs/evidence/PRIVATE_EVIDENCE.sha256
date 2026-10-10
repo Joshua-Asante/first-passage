@@ -321,10 +321,3 @@ d9afecf4cd98464ab7212b1d0892969730c6e1e45b981aa5f87ac64e07d6383a  .cache/fp-veri
 b78727675e370c69342873585df2257d10288b34a9e8f3560d36ceabcce2197a  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/run.json
 b56600f098ca91b7a65eada6c971dcd6263c0b0cce5be54ec672dcd67b7b16af  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/artifacts.json
 85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d  local_artifacts/s5-c3-evidence/stage2-read-36766144433/s2_run_evidence.stdout.json
-
-# Q-SFGROWTH-1 reference reconciliation; registration is not archive acceptance.
-121a36ee59e938a12d4e856ceb48814631cf48642441140bf0a3f2b6c357a24a  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/recaptured-2026-10-09/striker_dj30_mym_pyramid_250.json
-c6662a23352bce7fd5d066246407bebedd494ade7f0e4ebd67ddffd75c3b7471  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/recaptured-2026-10-09/vanguard_mgc_v04.json
-5f22477194b3df9973271b40f616d3fd00a505e265272eb978424e6be569bdf2  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/recaptured-2026-10-09/striker_nas100_mnq_dow_wed_excluded.json
-945b7aa54d24046940380bc4df7e5ee2d99937c182a4b2ba4a7c44287ad3adbb  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/op1/2026-09-14-seven/step6-admission/manifests/O-N.json
-133cd433c6af61974a3affae19c0038e1721bc69bd9afc79414b6005254cbede  Screenshot 2026-09-04 190624.png (primary-checkout capture; sfgrowth_2026-10/PHASE0_SIZING_CLASSIFICATION.md)

@@ -292,3 +292,32 @@ missing archive evidence, local-only or altered manifest, and changed source/fre
 bindings all produce VOID before scoring. Test exact-byte preservation (including
 line endings), complete 20-export/five-zero coverage, and the absence of private
 values from the public reference. These remain future scorer requirements.
+
+New reference-evidence pins are subject to the same preservation prerequisite:
+until scoped authorization and verified private-archive publication exist, retain
+their exact inventory locally and defer both public digest citations and registry
+rows. Provisional local references cannot satisfy Phase-0 admission. When published,
+each registry name must be the actual repo-relative file path without annotations;
+stage external captures in an ignored primary-checkout evidence directory first.
+
+### F7 - Native drawdown guard conflict: unresolved before re-freeze
+
+The three approved October 10 rulings do not settle this additional conflict.
+The hash-verified Striker MYM reference activates the pinned Pine's native daily/
+total drawdown guard. Source reads on October 10 confirm `ddHit` (line 205) feeds
+entry eligibility (241) and position closure (368); `backtestMode` gates it.
+This agrees with the [prior source read](../../notes/2026-09-12-track-b-scaling-faithfulness-read.md#1--classification-per-leg-pine-line-refs-are-to-the-pinned-body).
+
+Section B preserves this captured trading setting, while section A says only the
+simulator's 15% halt is modeled. The native guard can change the export's trade
+sample before simulation. Neither a size-specific export nor capital scaling
+removes that contradiction. Do not silently toggle `backtestMode`, infer the guard
+is inert, remove the leg, or score a protected sample as protection-free.
+
+An explicit operator ruling must choose whether to preserve captured strategy-native
+guards and narrow section A's protection wording to external Tradeify controls,
+or authorize a specific study-only guard override with its own reviewed mapping.
+Until that choice is recorded and reviewed, the amended freeze, exports and scoring
+remain HOLD. No new guard decision is inferred from the three earlier approvals.
+The chosen contract must test reference/override provenance, entry and exit effects,
+and related native guard/soft-stop treatment across the pool before admission.
