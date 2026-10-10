@@ -461,6 +461,11 @@ Z8_REFUSALS = {
     "striker_off_by_max_base": lambda: _with("dj30_mym_p250", max_base=0),
     "striker_off_with_adds_rule": lambda: _with("dj30_mym_p250", risk_multiplier="0/1",
                                                 cap_reserve_multiplier="0/1", adds="OFF"),
+    # Codex #762 round 1: a cap multiplier is the smallest one giving its cap-term table.
+    "cap_multiplier_disables_striker": lambda: _with("dj30_mym_p250", cap_reserve_multiplier="1/100"),
+    "cap_multiplier_not_smallest": lambda: _with("dj30_mym_p250", cap_reserve_multiplier="13/25"),
+    "cap_multiplier_hidden_by_max_base": lambda: _with("dj30_mym_p250", cap_reserve_multiplier="21/40",
+                                                       max_base=1),   # acts like 1/2 under max_base 1
 }
 
 
@@ -475,7 +480,11 @@ def test_Z8_canonical_twins_and_is_identity_over_the_quantity_table():
                 _with("dj30_mym_p250", max_base=21),
                 _with("dj30_mym_p250", risk_multiplier="0/1", cap_reserve_multiplier="0/1"),
                 _with("orb_mnq_v7", base=0), _with("orb_mnq_v7", adds="OFF"),
-                _with("vanguard_mgc", adds="OFF"), _with("dj30_mym_p250", adds="OFF_WHEN_PROTECTED")]
+                _with("vanguard_mgc", adds="OFF"), _with("dj30_mym_p250", adds="OFF_WHEN_PROTECTED"),
+                _with("dj30_mym_p250", cap_reserve_multiplier="1/2", max_base=1),
+                _with("dj30_mym_p250", cap_reserve_multiplier="2/7"),
+                _with("dj30_mym_p250", cap_reserve_multiplier="21/40"),
+                _with("dj30_mym_p250", risk_multiplier="1/1000000000000")]
     for mapping in accepted:
         validated = bp.validate_size_vector(mapping)
         assert not validated.is_identity
