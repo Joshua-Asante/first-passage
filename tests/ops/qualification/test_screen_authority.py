@@ -226,7 +226,7 @@ class Screen:  # pylint: disable=too-many-instance-attributes
         self.r3c_case = self.case
         self.case = dataclasses.replace(self.case, document=doc if r3d_edit is None else r3d_edit(doc, self))
 
-    def _record(self, bootstrap_sha256, contract_sha256=None):
+    def _record(self, bootstrap_sha256, contract_sha256=None, contract_bytes=None):
         closure = {'first_party': {'c1_rail.qualification.t00_screen_fixture': {
                        'path': MODULE, 'sha256': sha((self.repo / MODULE).read_bytes())}},
                    'third_party': {}, 'distributions': {}, 'stdlib': [], 'ports': {}}
@@ -235,7 +235,7 @@ class Screen:  # pylint: disable=too-many-instance-attributes
                   'code_head': self.head, 'bootstrap_sha256': bootstrap_sha256,
                   'code_closure_sha256': sha(p7_evidence.canonical(closure)), 'loaded_closure': closure,
                   'interpreter': self.interpreter,
-                  'contract_b64': base64.b64encode(self.case.contract_bytes()).decode('ascii'),
+                  'contract_b64': base64.b64encode(contract_bytes or self.case.contract_bytes()).decode('ascii'),
                   'approval_b64': base64.b64encode(self.receipt.approval_bytes).decode('ascii'),
                   'result': {'labels': []}}
         return p7_evidence.canonical(record)
@@ -506,6 +506,16 @@ def test_W3(successor_screen, tmp_path, monkeypatch):
     refused('SCREEN_SOURCE_MISMATCH', lambda: s.validate(doc=r3c_doc, receipt=r3c_receipt, record=r3c_record))
     original = Screen(tmp_path / 'original', monkeypatch, r3d=True, purpose=ORIGINAL)
     refused('SCREEN_SOURCE_MISMATCH', original.validate, 'compiled r3c digest')
+
+
+def test_W3_p7_payload_binds_the_successor_contract(successor_screen):
+    """Codex P1 on #764: a P7 record whose payload is r3c's contract, with only its contract_sha256
+    field set to r3d's digest, is refused under the successor; the record over r3d is accepted."""
+    s = successor_screen
+    forged = s._record(p7_evidence.P7_BOOTSTRAP_SHA256,  # pylint: disable=protected-access
+                       contract_bytes=s.r3c_case.contract_bytes())
+    refused('SCREEN_P7_MISMATCH', lambda: s.validate(doc=s.document(forged), record=forged), 'contract_b64')
+    s.validate()
 
 
 def test_W4(tmp_path, monkeypatch):
