@@ -11,6 +11,7 @@ until the ATR length / SL multiple / risk% are Pine-verified at Phase B B0.
 """
 from __future__ import annotations
 
+import json
 import math
 import sys
 from pathlib import Path
@@ -66,15 +67,26 @@ def derive_floor(symbol: str, *, atr_len: int, sl_mult: float, risk_pct: float,
 
 BULENOX_TIERS = [25_000, 50_000, 100_000, 150_000, 250_000]
 
-# PROVISIONAL locked values (LOCK.md mirror — re-verify vs Pine at B0).
+# PROVISIONAL locked values (LOCK.md mirror — re-verify vs Pine at B0). The ATR length and
+# SL multiple are Pine-only (core/strategies/CATALOG.md §Locked parameter record): redacted
+# from the public copy 2026-10-09 (operator decision, option 2; original preserved in
+# first-passage-archive archive/preserve-exposure-2026-10-09
+# 7df79240c146ec8a3e9799bb882431c5ab13b9a7). They load from the gitignored input
+# {"NQ": {"atr_len": .., "sl_mult": ..}, "YM": {...}}; main() skips when it is absent.
+_PRIVATE_PARAMS = _HERE / "locked_params.private.json"
 CONFIGS = {
-    "NQ": dict(atr_len=11, sl_mult=1.20, risk_pct=0.37, dollars_per_pt=2.00),   # -> MNQ
-    "YM": dict(atr_len=11, sl_mult=1.20, risk_pct=0.70, dollars_per_pt=0.50),   # -> MYM
+    "NQ": dict(risk_pct=0.37, dollars_per_pt=2.00),   # -> MNQ
+    "YM": dict(risk_pct=0.70, dollars_per_pt=0.50),   # -> MYM
 }
 
 
 def main() -> None:
-    for sym, cfg in CONFIGS.items():
+    if not _PRIVATE_PARAMS.is_file():
+        print(f"SKIP: {_PRIVATE_PARAMS.name} absent (locked ATR length / SL multiple are private)")
+        return
+    private = json.loads(_PRIVATE_PARAMS.read_text(encoding="utf-8"))
+    for sym, base in CONFIGS.items():
+        cfg = {**base, **private[sym]}
         r = derive_floor(sym, balance_grid=BULENOX_TIERS, **cfg)
         print(f"\n{sym} -> micro (${cfg['dollars_per_pt']}/pt) PROVISIONAL")
         print(f"  ATR(pts) median {r['atr_points_median']}  SL(pts) {r['sl_points']}"

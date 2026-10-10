@@ -130,19 +130,20 @@ The cap is account-aggregate 80 micros, statically split **MYM 69 / MNQ 11** (ma
 Session filters are **locked Pine** properties, so free capacity is deterministic. Verified against
 the panel: 0 off-schedule traded days on either leg.
 
-| Day | Incumbents able to fire | Reserved | **Free (fail-safe, static)** |
+| Weekday class | Incumbents able to fire | Reserved | **Free (fail-safe, static)** |
 |---|---|---|---|
-| Mon | MNQ | 11 | **69** |
-| Tue | MYM + MNQ | 80 | **0** |
-| Wed | none | 0 | **80** |
-| Thu | none | 0 | **80** |
-| Fri | MYM | 69 | **11** |
+| MNQ-only weekday | MNQ | 11 | **69** |
+| Shared weekday | MYM + MNQ | 80 | **0** |
+| Free weekday (×2) | none | 0 | **80** |
+| MYM-only weekday | MYM | 69 | **11** |
+
+> **Redaction 2026-10-09 (operator decision 2026-10-09, option 2):** the Striker DJ30 v4.5 day-of-week set and session window are Pine-only (`core/strategies/CATALOG.md` §Locked parameter record). In this document weekdays are therefore named by **class** — the *MNQ-only weekday*, the *shared weekday* (both incumbents can fire), the *MYM-only weekday* and the *two free weekdays* — and entry windows by reference to the locked Pine filters. Every number, gate, slot and verdict is unchanged. Original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`.
 
 Measured entry rates (panel, exit-date = entry-date since all holds are intraday): MYM **30.7%**
-(191/623 Tue+Fri sessions), MNQ **30.5%** (190/623 Mon+Tue sessions).
+(191/623 sessions on its locked weekdays), MNQ **30.5%** (190/623 sessions on its locked weekdays).
 
 A fail-safe headroom check must reserve a leg's worst case for as long as that leg **can still
-fire**. The locked entry window is 09:00–13:00 ET for both, so **no dynamic scheme frees anything
+fire**. Each incumbent's locked entry window (Pine session filter) covers its whole tradable window, so **no dynamic scheme frees anything
 inside the trading window** — the table above is the ceiling for any static or runtime design. (The
 costing of the runtime alternative is in §8.)
 
@@ -154,8 +155,8 @@ costing of the runtime alternative is in §8.)
 > of how much cap is allocated to it** — our own rail sends `flatten_first=true` on every entry and a
 > quantity-less `closeposition` on every exit, both keyed `account` + `instrument`
 > (`ops/c1_rail/crosstrade_payload.py:62-73, 86-87`). **Check S7 (§7.1) before reading this table.** The
-> incumbent occupancy map is the "Incumbents able to fire" column above: **MNQ1! on Mon+Tue, MYM1! on
-> Tue+Fri.**
+> incumbent occupancy map is the "Incumbents able to fire" column above: **MNQ1! on the MNQ-only and shared
+> weekdays, MYM1! on the shared and MYM-only weekdays.**
 
 ### §2.3 — Risk-geometry envelope (the binding constraint)
 
@@ -209,7 +210,7 @@ MNQ — which is exactly why the split gives it 69 contracts and squeezes MNQ to
 
 Both slots are **temporal-disjointness** designs. Neither requires a rail change.
 
-#### Slot 1 — Calendar-disjoint (Wed + Thu)
+#### Slot 1 — Calendar-disjoint (the two free weekdays)
 
 | Property | Value |
 |---|---|
@@ -223,12 +224,12 @@ Both slots are **temporal-disjointness** designs. Neither requires a rail change
 this program has already killed a candidate on exactly that (H-TSMOM-1, N≈86, power 0.34). A Slot-1
 candidate must reach the power floor on ~104 sessions/yr.
 
-#### Slot 2 — Session-disjoint (Mon + Fri, afternoon)
+#### Slot 2 — Session-disjoint (the two single-incumbent weekdays, afternoon)
 
 | Property | Value |
 |---|---|
-| Cap available | **Mon 69 · Fri 11** (static reservation) |
-| Incumbent interaction | same day, but entries are structurally separated (incumbents 09:00–13:00 ET) |
+| Cap available | **69 on the MNQ-only weekday · 11 on the MYM-only weekday** (static reservation) |
+| Incumbent interaction | same day, but entries are structurally separated (after the incumbents' locked entry windows) |
 | Sessions/week | +2 (~104/yr), taking a Slot-1+2 leg to ~208/yr |
 | Variance treatment | same-day, so it **does** stack with incumbent excursion on days they fire (30.7% / 30.5%) |
 | Rail change | none |
@@ -240,11 +241,11 @@ extra afternoon capacity requires the runtime headroom build costed in §8 — w
 recommended**.
 
 > **⚠ AMENDED 2026-07-29 (same ADR) — SLOT 2 IS UNAVAILABLE TO A CANDIDATE ON AN OCCUPIED SYMBOL.**
-> Slot 2 was derived on cap grounds alone. Under **S7**, the incumbent **MNQ** leg can fire **Monday**
-> and the incumbent **MYM** leg can fire **Friday** — so an MNQ candidate collides on Mon and a MYM
-> candidate collides on Fri, and the collision is destructive in both directions, not merely a
+> Slot 2 was derived on cap grounds alone. Under **S7**, the incumbent **MNQ** leg can fire on the
+> **MNQ-only weekday** and the incumbent **MYM** leg on the **MYM-only weekday** — so an MNQ candidate
+> collides on the former and a MYM candidate on the latter, and the collision is destructive in both directions, not merely a
 > sizing conflict. **Slot 2 survives only for a candidate on an UNOCCUPIED symbol.**
-> **Slot 1 (Wed + Thu) is unaffected** — neither incumbent can fire, so no symbol is occupied and
+> **Slot 1 (the two free weekdays) is unaffected** — neither incumbent can fire, so no symbol is occupied and
 > both the full 80-micro cap and the symbol are free.
 >
 > **The cheap escape (ADR §2-E).** S7 is satisfied *trivially* by any venue-tradable symbol the book
@@ -254,7 +255,7 @@ recommended**.
 > not an afterthought — though S7 is one of seven S-limbs, and each of those symbols still faces S4,
 > its own instrument-ledger bars, and its own K bank.
 
-**Tuesday is closed** under any static scheme (0 free). A candidate must not require Tuesdays.
+**The shared weekday is closed** under any static scheme (0 free). A candidate must not require it.
 
 ---
 
@@ -290,7 +291,7 @@ Each was genuinely on the table in the session that produced this spec.
   in *its own* §7 disclosure (that closure's lesson candidate 2).
 - **Designing to the Stage-8 gate alone.** ORB passed `n_eff_risk_delta > 0` at +0.003 and produced
   38.75% bust. Treating the written gate as the spec reproduces the exact failure.
-- **Fitting the mechanism to Wed/Thu.** The free days are a *scheduling* fact about the incumbents,
+- **Fitting the mechanism to the free weekdays.** The free days are a *scheduling* fact about the incumbents,
   not evidence about the market. Selecting an edge because it appears on the free days is a
   fitted-calendar artifact (§7.4 M1).
 - **Taking contract cap from MNQ.** It is the cheapest source in contracts (11) and the most
@@ -345,7 +346,7 @@ A candidate is **screenable** as a third c1 leg if and only if it meets all of t
 | S4 | If it trades an **Equity Index Product Group** symbol (ES/MES/NQ/MNQ/YM/MYM/RTY/M2K/…), it must be **long-only**. A short-capable Equity Index leg violates the hedging rule against the long-only c1 book — *in any account under the same control* | envelope §4a; GO ADR §5 forbidden move |
 | S5 | Fits the **day-of-week cap table** in §2.2 without re-allocating cap from MYM or MNQ | `c1_sizing_host_reference.py:76` |
 | S6 | **No US Treasuries** (untradable at this firm); rates = EUREX only | envelope §4 overlay |
-| **S7** | **Order-symbol occupancy.** Must not require an **order symbol already traded by an incumbent c1 leg in the same account** on any session that incumbent **can** fire. Satisfied **trivially** by an unoccupied symbol (MES / M2K / MGC / micro-FX are unoccupied today). Otherwise requires **session-disjointness from the incumbent on that symbol**, established from **locked Pine session filters — never from observed trade frequency** (a leg that *can* fire occupies the symbol whether or not it did). Current occupancy: **MNQ1! Mon+Tue · MYM1! Tue+Fri**. Rationale: every entry sends `flatten_first=true` and every exit sends a quantity-less `closeposition`, both keyed `account`+`instrument` — two strategies on one symbol destroy each other's positions **bidirectionally**, and cap donation cannot fix it | `ops/c1_rail/crosstrade_payload.py:62-73, 86-87`; ADR [`2026-07-29-third-leg-symbol-occupancy-limb`](../adr/2026-07-29-third-leg-symbol-occupancy-limb.md) |
+| **S7** | **Order-symbol occupancy.** Must not require an **order symbol already traded by an incumbent c1 leg in the same account** on any session that incumbent **can** fire. Satisfied **trivially** by an unoccupied symbol (MES / M2K / MGC / micro-FX are unoccupied today). Otherwise requires **session-disjointness from the incumbent on that symbol**, established from **locked Pine session filters — never from observed trade frequency** (a leg that *can* fire occupies the symbol whether or not it did). Current occupancy: **MNQ1! and MYM1! on their locked weekdays** (§2.2 classes). Rationale: every entry sends `flatten_first=true` and every exit sends a quantity-less `closeposition`, both keyed `account`+`instrument` — two strategies on one symbol destroy each other's positions **bidirectionally**, and cap donation cannot fix it | `ops/c1_rail/crosstrade_payload.py:62-73, 86-87`; ADR [`2026-07-29-third-leg-symbol-occupancy-limb`](../adr/2026-07-29-third-leg-symbol-occupancy-limb.md) |
 
 ### §7.2 — Risk geometry (the pre-screen that does the work)
 
@@ -392,14 +393,14 @@ composed outcome is measured:
 | S2 micros | MNQ | PASS |
 | S3 attended rail | Pine authored + hash-pinned | PASS |
 | S4 long-only if Equity Index | MNQ **is** Equity Index; ADMISSION.md calls it *direction-agnostic* | **FAIL-or-UNRESOLVED** — a short-capable leg is a hedging violation against the long-only book |
-| S5 day-of-week cap table | trades daily, so requires Tuesday | **FAIL** — 0 cap available Tue |
-| **S7 order-symbol occupancy** *(added 2026-07-29)* | trades **MNQ daily**; the incumbent Striker NAS100→MNQ leg can fire **Mon + Tue** | **FAIL — `MNQ1!` occupied.** Destructive both ways: ORB's entry would `flatten_first` the incumbent's position, and its exit would `closeposition` the incumbent's. **Not curable by cap donation** |
+| S5 day-of-week cap table | trades daily, so requires the shared weekday | **FAIL** — 0 cap available on the shared weekday |
+| **S7 order-symbol occupancy** *(added 2026-07-29)* | trades **MNQ daily**; the incumbent Striker NAS100→MNQ leg can fire on its locked weekdays | **FAIL — `MNQ1!` occupied.** Destructive both ways: ORB's entry would `flatten_first` the incumbent's position, and its exit would `closeposition` the incumbent's. **Not curable by cap donation** |
 | R1 per-contract daily-$ ≤$125 | ≈$190 | **FAIL** (1.5×) |
 | R3 ρ < 1.0 | 1.60 | **FAIL** |
 | R4 `n_eff_risk_delta` > 0 | +0.003 | **PASS** — the only one it clears |
 | T3 DSR floor | own 0.9754 at K_eff=2; ~~a new MNQ expression now faces **0.98 at K_eff=3**~~ → **STRUCK 2026-08-06 (M10):** use `floor_at_k(K_intrinsic)` | historical record / see T3 |
 | M2 alive in H1 chop | dead 2019–2020, regime-conditional | **FAIL** |
-| **L1 liveness contribution** *(added 2026-08-02)* | trades **MNQ daily**, so it is eligible on **Wed + Thu**, which no incumbent can fire; at near-daily firing its L1.b approaches the **100% ceiling** (dead weeks 82 → ~0) and its L1.c would collapse the p95 run from 4 to ~0 | **`LIVENESS-POSITIVE` — and it changes nothing.** See the non-vacuity note below: this is the strongest possible liveness score attaching to the known-bad candidate |
+| **L1 liveness contribution** *(added 2026-08-02)* | trades **MNQ daily**, so it is eligible on **the two free weekdays**, which no incumbent can fire; at near-daily firing its L1.b approaches the **100% ceiling** (dead weeks 82 → ~0) and its L1.c would collapse the p95 run from 4 to ~0 | **`LIVENESS-POSITIVE` — and it changes nothing.** See the non-vacuity note below: this is the strongest possible liveness score attaching to the known-bad candidate |
 
 **Result: `SCREEN-FAIL` on six independent grounds** (S5, **S7**, R1, R3, M2, plus S4 pending
 directionality), at zero K and zero spend. The single requirement ORB clears is **exactly the
@@ -438,7 +439,7 @@ see §5-adjacent forbidden moves in the admitting ADR.
 
 | # | Requirement | Source |
 |---|---|---|
-| **L1** | **Liveness contribution.** Report three fields: **L1.a** — weekday sessions the candidate **can** fire that **no incumbent can**, taken from **locked Pine session filters, never observed trade frequency** (S7's rule, inherited); **L1.b** — modeled reduction in the book's **82 dead Mon–Fri weeks** at the candidate's **measured** per-eligible-session entry rate, with the measured **1.13× common-mode discount** applied; **L1.c** — effect on the **p95 longest consecutive dead run** (baseline **4 weeks**). Verdicts `LIVENESS-POSITIVE / NEUTRAL / NEGATIVE`, none of which gates. **Both source rules bind:** eligibility from Pine filters (a leg that *can* fire covers the session as a matter of schedule), **firing rate from the measured panel** (a leg eligible Wed/Thu that fires 5% of the time covers almost nothing) — a report giving only one is incomplete, not conservative | [`c1_liveness_diversification_2026-08-02`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_liveness_diversification_2026-08-02/RESULTS.md); ADR [`2026-08-02-third-leg-liveness-limb`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-02-third-leg-liveness-limb.md) |
+| **L1** | **Liveness contribution.** Report three fields: **L1.a** — weekday sessions the candidate **can** fire that **no incumbent can**, taken from **locked Pine session filters, never observed trade frequency** (S7's rule, inherited); **L1.b** — modeled reduction in the book's **82 dead Mon–Fri weeks** at the candidate's **measured** per-eligible-session entry rate, with the measured **1.13× common-mode discount** applied; **L1.c** — effect on the **p95 longest consecutive dead run** (baseline **4 weeks**). Verdicts `LIVENESS-POSITIVE / NEUTRAL / NEGATIVE`, none of which gates. **Both source rules bind:** eligibility from Pine filters (a leg that *can* fire covers the session as a matter of schedule), **firing rate from the measured panel** (a free-weekday leg that fires 5% of the time covers almost nothing) — a report giving only one is incomplete, not conservative | [`c1_liveness_diversification_2026-08-02`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_liveness_diversification_2026-08-02/RESULTS.md); ADR [`2026-08-02-third-leg-liveness-limb`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-02-third-leg-liveness-limb.md) |
 
 **Why the limb exists.** The book is zero-trade in **82/312 Mon–Fri weeks (26.3%)**, longest run
 **4**, against an idle rule enforced by **irreversible account deletion**. And the effect is
@@ -446,19 +447,19 @@ measured, not modeled — the two incumbents are each other's natural experiment
 weeks (run 9), MNQ alone 151 (run 10), **together 82 (run 4)**. The second leg cut dead weeks ~45%
 and more than halved the worst run **at corr(daily P&L) = −0.13** — *legs can diversify liveness
 without diversifying returns*, which no other limb can see. Current incumbent occupancy
-**`MNQ1!` Mon+Tue · `MYM1!` Tue+Fri** leaves **Wed + Thu** free — 622 of 1,556 business days (~40%)
+**`MNQ1!` and `MYM1!` on their locked weekdays** leaves **two weekdays** free — 622 of 1,556 business days (~40%)
 on which the book has never traded.
 
 **L1 is subordinate to M1 (§7.4).** M1 requires the mechanism be *day-agnostic by construction and
 merely scheduled into the free days*. **L1 scores the schedule, never the edge.** If a candidate's
-edge exists *only* on Wed/Thu, **M1 fails it and L1 is irrelevant** — M1 is evaluated first, and L1
+edge exists *only* on the free weekdays, **M1 fails it and L1 is irrelevant** — M1 is evaluated first, and L1
 is computed only for candidates that already satisfy it.
 
 **L1 is not a substitute for the token mechanism.** Measured: at the incumbents' own entry rate
-(~30.7%) a Wed/Thu leg cuts dead weeks 82 → ~40–45, but the **p95 longest run stays 4**. Only
+(~30.7%) a free-weekday leg cuts dead weeks 82 → ~40–45, but the **p95 longest run stays 4**. Only
 near-daily firing removes it. L1 reduces how often the obligation bites; it does not close the tail.
 
-**The Wed/Thu window is where liveness would pay — not evidence that edge lives there.** The
+**The free-weekday window is where liveness would pay — not evidence that edge lives there.** The
 constraint **narrows** the search space and may well be empty; that is not evidence against it.
 
 ## §8 — Out of scope / costed and rejected
@@ -474,12 +475,12 @@ separate one is owed.
 broker-confirmed and restart-durable, `c1_rail_telemetry.py:354`, with adds boundable from the locked
 750%/1000% ratios). Costing:
 
-- **Marginal capacity inside 09:00–13:00 ET: zero, every day** — a fail-safe check must reserve worst
+- **Marginal capacity inside the incumbents' locked entry windows: zero, every day** — a fail-safe check must reserve worst
   case while a leg can still fire.
-- Post-13:00 expectation is real (Tue E[55], Fri E[59], Mon E[77]) but **stochastic**: Tuesday is
+- Post-window expectation is real (shared weekday E[55], MYM-only E[59], MNQ-only E[77]) but **stochastic**: the shared weekday is
   {80: 45.9%, 69: 23.3%, 11: 20.4%, 0: 10.4%}. Capacity is known at entry time but varies 0–80 day
   to day, which breaks a pyramided expression (granularity fragility).
-- Wed/Thu gain is **zero** — Slot 1 already has the full 80.
+- Free-weekday gain is **zero** — Slot 1 already has the full 80.
 - It would encode locked Pine session windows **into the host**, creating a new doc/code skew surface
   of exactly the class the params-manifest gate exists for.
 - It couples the candidate's size to incumbent activity, so the candidate has **no independent daily
@@ -503,7 +504,7 @@ broker-confirmed and restart-durable, `c1_rail_telemetry.py:354`, with adds boun
 2. **§2.3 has two calibration points.** A third — any composed re-MC at an intermediate σ₃ — would
    convert the budget from extrapolation to interpolation. Cheapest source is a future candidate's
    own run; no dedicated run is proposed.
-3. **Session-window pin.** §2.2 depends on the incumbents' locked 09:00–13:00 ET filter. If either
+3. **Session-window pin.** §2.2 depends on the incumbents' locked entry-window filters. If either
    venue edition's session changes, the cap table changes with it. The §10 hook covers this.
 5. **§2.3's variance basis predates the 69/11 re-allocation** (Q-CAPALLOC-1, read on merge). The
    $273/day book figure is from 2026-07-16/17; the 07-22 re-allocation cut book net 43.2%. Error
@@ -526,14 +527,20 @@ grep -n "69/11" ops/c1_rail/c1_sizing_host_reference.py
 
 # §2.2 -- day-of-week structure still holds (expect 0 off-schedule days both legs)
 python - <<'PY'
+# Locked weekday sets are Pine-only: gitignored {"striker_dj30": [..], "striker_nas": [..]}
+import json, pathlib, sys
+k = pathlib.Path("docs/spec/third_leg_locked_days.private.json")
+if not k.is_file():
+    print("SKIP: locked weekday sets are private (redacted 2026-10-09)"); sys.exit(0)
+days = json.loads(k.read_text())
 import pandas as pd
 p = "lab/analysis/c1/tradeify_book_composition_2026-07-23/out/daily_panel.csv"
 d = pd.read_csv(p, index_col=0, parse_dates=True); d["dow"] = d.index.dayofweek
-print("MYM off-schedule:", int(((d.striker_dj30 != 0) & ~d.dow.isin([1, 4])).sum()))
-print("MNQ off-schedule:", int(((d.striker_nas  != 0) & ~d.dow.isin([0, 1])).sum()))
+print("MYM off-schedule:", int(((d.striker_dj30 != 0) & ~d.dow.isin(days["striker_dj30"])).sum()))
+print("MNQ off-schedule:", int(((d.striker_nas  != 0) & ~d.dow.isin(days["striker_nas"])).sum()))
 # reproduces the §2.2 entry rates (expect ~30.7% / ~30.5%)
-print("MYM entry rate:", round((d.striker_dj30[d.dow.isin([1, 4])] != 0).mean(), 4))
-print("MNQ entry rate:", round((d.striker_nas [d.dow.isin([0, 1])] != 0).mean(), 4))
+print("MYM entry rate:", round((d.striker_dj30[d.dow.isin(days["striker_dj30"])] != 0).mean(), 4))
+print("MNQ entry rate:", round((d.striker_nas [d.dow.isin(days["striker_nas"])] != 0).mean(), 4))
 PY
 
 # §2.1 -- the gated statistic still exists (guard against breadth.py regressing)

@@ -88,7 +88,7 @@ Shared across both legs unless noted. **Mandatory before any live use** (brief �
 | D9 | MNQ file existence | **MISSING** | re-author + pin | re-author + pin | MNQ only | Blocks F3 |
 | D10 | MYM pin integrity | on-disk ≠ `fd91f37b…` | reconcile before deploy | same | MYM only | Blocks honest F3 PASS even after MNQ returns |
 
-**Not deltas (byte-carry / unchanged):** entry/exit/filter/session hour-blocks, ATR(11), SL 1.20×, locked risk% / pyramid% (parameter axis LOCKED). WATCH-1 0.50× is **not** a Pine risk% edit — F1 fallback = account multiplier.
+**Not deltas (byte-carry / unchanged):** entry/exit/filter/session hour-blocks, ATR length, SL multiple *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*, locked risk% / pyramid% (parameter axis LOCKED). WATCH-1 0.50× is **not** a Pine risk% edit — F1 fallback = account multiplier.
 
 ---
 
