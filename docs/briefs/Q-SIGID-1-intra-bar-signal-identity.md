@@ -20,7 +20,7 @@ Read before authoring (2026-07-28):
 - `docs/notes/2026-07-24-execution-quality-investigation.md` — anchor: `153b64e` (Pine timing **deferred** as locked-parameter axis, not EQ P1–P4).
 - `scripts/pine_lint.py` (`check_entry_confirmed`, L216–264) — anchor: `9e62d2a` (check 7 FAIL text: unconfirmed entry on `calc_on_every_tick` can fire/unfire intra-bar).
 - `core/strategies/nas/LOCK.md` — anchor: `48a7a48` (locked MNQ/NAS params: lookback 15, ATR 11/MA 85/exp 0.28, minBody 0.38, SL 1.20×ATR; Mon/Tue; session 13–17 UTC).
-- `core/strategies/striker/LOCK.md` — same param block for DJ30/MYM (Tue/Fri; SL 1.20×ATR).
+- `core/strategies/striker/LOCK.md` — DJ30/MYM param block *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*.
 - `core/strategies/nas/striker_nas100_v1_mnq_FUTURES_LOCK.md` — alert-payload contract; venue editions gitignored (PORT pin), no local `.pine` bytes in this environment.
 - `lab/analysis/c1/c1_signal_identity_2026-07-28/RESULTS.md` — cheap falsifier + 1m phantom proxy (**measured this session before this brief**, per falsifier-before-brief discipline). **2026-07-29:** FULL-panel census supersedes Phase 0 as §6 offline measurement source (ratios in RESULTS §FULL); **§6 threshold text and 0.5 cut unchanged**.
 - `ops/instruments/MNQ.md` W3 — 1m cannot fill an intrabar *execution* layer; proxy here is signal-flip coarseness only.
@@ -101,7 +101,7 @@ Standing doctrine: parameter axis LOCKED (lifecycle ADR / CLAUDE.md); EQ investi
 |---|---|---|
 | `RESOLVED` (gap real) | Fri §2b = **DIFFERENT**, **or** offline phantom/confirmed ≥ **0.5** on either leg after a non-VOID Fri session | Operator GO packet for a named architecture (§7); no silent Pine edit |
 | `FALSIFIED` (gap not warranting change) | Fri §2b = **EQUAL** **and** a **new** offline re-run revises **both** legs' phantom/confirmed ratios below **0.5** | Close; keep lint WARN; no Pine timing change |
-| `AMBIGUOUS-HOLD` | Fri §2b = **VOID** or no MYM entry that day | Re-test next MYM session (Tue/Fri); offline RESULTS remain canonical until superseded |
+| `AMBIGUOUS-HOLD` | Fri §2b = **VOID** or no MYM entry that day | Re-test next MYM session (its locked days *(redacted 2026-10-09; see note above)*); offline RESULTS remain canonical until superseded |
 
 Pre-registered: [`pre-registration/Q-SIGID-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-SIGID-1-verdict-preregistration.md).
 

@@ -1,7 +1,8 @@
 {
   "brief": "Q-RAIL-1",
   "scored": "F2",
-  "method": "roll-seam-masked RMA ATR(11)\u00d71.20; floor=(sl*$/pt)/risk%; WATCH-1=0.50\u00d7 risk",
+  "method": "roll-seam-masked RMA ATR (locked length) \u00d7 locked SL multiple; floor=(sl*$/pt)/risk%; WATCH-1=0.50\u00d7 risk",
+  "_redaction_note": "Redaction 2026-10-09 (operator decision 2026-10-09, option 2): the ATR length and SL multiple in method, and every atr_median_pts value (which with sl_pts recomputes the SL multiple), removed from the public copy because they are Striker DJ30 v4.5 Pine-only values; no other field changed (sl_pts, floors and quantities are untouched). Original preserved in first-passage-archive archive/preserve-exposure-2026-10-09 7df79240c146ec8a3e9799bb882431c5ab13b9a7; see core/strategies/CATALOG.md Locked parameter record.",
   "account_usd": 100000.0,
   "micro_cap": 80,
   "legs": [
@@ -14,7 +15,6 @@
       "panel_n_bars_masked": 141446,
       "panel_end_utc": "2026-07-02 00:00:00+00:00",
       "full_median": {
-        "atr_median_pts": 37.7299,
         "sl_pts": 45.2759,
         "floor_1x_usd": 3234,
         "floor_watch1_usd": 6468,
@@ -37,7 +37,6 @@
         }
       },
       "recent_90d": {
-        "atr_median_pts": 50.6834,
         "sl_pts": 60.8201,
         "floor_1x_usd": 4344,
         "floor_watch1_usd": 8689,
@@ -70,7 +69,6 @@
       "panel_n_bars_masked": 141509,
       "panel_end_utc": "2026-07-02 00:00:00+00:00",
       "full_median": {
-        "atr_median_pts": 24.0367,
         "sl_pts": 28.844,
         "floor_1x_usd": 15591,
         "floor_watch1_usd": 31183,
@@ -93,7 +91,6 @@
         }
       },
       "recent_90d": {
-        "atr_median_pts": 45.5095,
         "sl_pts": 54.6114,
         "floor_1x_usd": 29520,
         "floor_watch1_usd": 59039,

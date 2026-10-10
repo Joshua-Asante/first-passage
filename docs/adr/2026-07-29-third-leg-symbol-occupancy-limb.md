@@ -19,7 +19,7 @@
 |---|---|---|
 | `ops/c1_rail/crosstrade_payload.py:62-73, 86-87` | `54b1489` 2026-07-23 | **The decisive read.** Entry orders: `if leg == "entry": parts.append("flatten_first=true")` (L86-87), on a payload keyed `account=…;instrument=<symbol>`. Exit orders: `command=closeposition` with `account` + `instrument` and **quantity deliberately omitted** at the qty-0 sentinel — the comment states the intent verbatim: *"Omitting quantity lets closeposition flatten whatever is actually open, rather than trusting stale bookkeeping"* (L68-72) |
 | `ops/c1_rail/c1_sizing_host_reference.py:85, 247-249, 284-290` | `c134060` 2026-07-24 | `LEG_MAP` is keyed by **`leg_id`**, validated `if leg_id not in LEG_MAP`, and `cap_alloc` is allocated per `leg_id`. **The host has no symbol-collision concept** — it would accept a third `leg_id` mapping to an already-traded instrument and size it independently. The host is therefore *not* the surface that prevents this |
-| `docs/spec/2026-07-27-third-leg-target-spec.md` §2.2, §2.4, §7.1, §7.5 | `6502c7c` 2026-07-27 | The screen amended here. §2.2 asserts *"Session filters are locked Pine properties, so free capacity is deterministic"* and derives a per-day free-cap table; §2.4 defines Slot 1 (Wed+Thu) and Slot 2 (Mon+Fri); §7.5 scores ORB-MNQ SCREEN-FAIL on five grounds |
+| `docs/spec/2026-07-27-third-leg-target-spec.md` §2.2, §2.4, §7.1, §7.5 | `6502c7c` 2026-07-27 | The screen amended here. §2.2 asserts *"Session filters are locked Pine properties, so free capacity is deterministic"* and derives a per-day free-cap table; §2.4 defines Slot 1 (the two free weekdays) and Slot 2 (the two single-incumbent weekdays); §7.5 scores ORB-MNQ SCREEN-FAIL on five grounds |
 | `docs/notes/rail_build/RUNBOOK.md:116` | read this session | Independent restatement of the payload semantics (*"entries carry `flatten_first=true` (re-fires cannot stack)"*; flat = *"`closeposition` **without** quantity"*) — corroborates the source read above |
 | `docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md` §4 F1 | 2026-07-29 | The originating finding |
 
@@ -31,7 +31,7 @@
 
 The ratified third-leg screen models same-account contention as a **contract-capacity** problem: §2.2 computes free micros per weekday from the incumbents' locked session filters, and §2.4 derives two admissible slots from that table. Every S-requirement in §7.1 is about venue rules, compliance, and cap.
 
-`SLR-MYM-1` was screened against exactly that surface, passed the cap arithmetic on Mon/Wed/Thu/Fri, and was only then found to be structurally impossible on two of those days — for a reason the screen does not model. Both the incumbent Striker DJ30→MYM leg and the candidate resolve to the **same order symbol `MYM1!`**, and our own rail's payload construction makes two strategies on one symbol **destructively interfere**:
+`SLR-MYM-1` was screened against exactly that surface, passed the cap arithmetic on four weekdays, and was only then found to be structurally impossible on two of those days — for a reason the screen does not model. Both the incumbent Striker DJ30→MYM leg and the candidate resolve to the **same order symbol `MYM1!`**, and our own rail's payload construction makes two strategies on one symbol **destructively interfere**:
 
 - A second strategy's **entry** carries `flatten_first=true` → it **closes the incumbent's open position** before entering.
 - A second strategy's **exit** issues `closeposition` with **no quantity** → it flattens **whatever is open**, including the incumbent's position.
@@ -66,9 +66,11 @@ long-only directionality.
 
 **2-B. §2.2 sufficiency correction.** The free-cap table is **necessary, not sufficient**. A weekday with free contract cap may still be unusable, because cap and symbol are independent constraints. §2.2 gains a pointer to S7 and the standing sentence: *"free cap on a day does not imply the day is available; check symbol occupancy first."*
 
-**2-C. §2.4 Slot 2 narrowed.** Slot 2 (Mon + Fri) was derived on cap grounds alone. Under S7 it is **unavailable to a candidate on an occupied symbol**: the incumbent MNQ leg can fire **Monday**, and the incumbent MYM leg can fire **Friday**. Slot 2 therefore survives **only for a candidate on an unoccupied symbol**. Slot 1 (Wed + Thu) is **unaffected** — neither incumbent can fire on those days, so no symbol is occupied.
+**Redaction 2026-10-09 (operator decision 2026-10-09, option 2):** the Striker DJ30 v4.5 day-of-week set and session window are Pine-only (`core/strategies/CATALOG.md` §Locked parameter record). In this document weekdays are therefore named by **class** — the *MNQ-only weekday*, the *shared weekday* (both incumbents can fire), the *MYM-only weekday* and the *two free weekdays* — and entry windows by reference to the locked Pine filters. Every number, gate, slot and verdict is unchanged. Original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `f5f978ab90855e0b64d5981d7d8ffd4a0bbe8e26`.
 
-**2-D. §7.5 negative control gains a sixth failing row.** ORB-MNQ-1 trades **MNQ daily**; the incumbent Striker NAS100→MNQ leg can fire **Mon and Tue**. ORB therefore **fails S7** in addition to S5, R1, R3, M2 and the S4 directionality question. The known-bad candidate is re-rejected by the new limb, which is the non-vacuity check this ADR owes.
+**2-C. §2.4 Slot 2 narrowed.** Slot 2 (the two single-incumbent weekdays) was derived on cap grounds alone. Under S7 it is **unavailable to a candidate on an occupied symbol**: the incumbent MNQ leg can fire on **the MNQ-only weekday**, and the incumbent MYM leg on **the MYM-only weekday**. Slot 2 therefore survives **only for a candidate on an unoccupied symbol**. Slot 1 (the two free weekdays) is **unaffected** — neither incumbent can fire on those days, so no symbol is occupied.
+
+**2-D. §7.5 negative control gains a sixth failing row.** ORB-MNQ-1 trades **MNQ daily**; the incumbent Striker NAS100→MNQ leg can fire on **its locked weekdays**. ORB therefore **fails S7** in addition to S5, R1, R3, M2 and the S4 directionality question. The known-bad candidate is re-rejected by the new limb, which is the non-vacuity check this ADR owes.
 
 **2-E. The escape hatch is named, because it is the useful half of this decision.** S7 is satisfied *trivially* by any venue-tradable symbol the book does not occupy — **MES**, **M2K**, **MGC** and the micro-FX pair (M6A/M6E) are all unoccupied today. A candidate on an unoccupied symbol gets the **full** §2.2 cap table with no session-disjointness argument required. **S7 is therefore a redirect, not only a bar** — it makes "pick an unoccupied instrument" a first-class design move rather than an afterthought, and it is the single cheapest way for a future proposal to clear it.
 
@@ -131,7 +133,7 @@ long-only directionality.
 
 **Positive.** The screen now rejects physically-impossible candidates at zero cost. The rejection is *diagnosable* (a distinct limb, not a muddied S5). And 2-E converts the finding into design guidance — the cheapest route to a viable third leg is now explicitly "use a symbol the book does not occupy," which also sidesteps the Slot-2 narrowing entirely.
 
-**Negative (real).** Slot 2 is materially narrowed for same-symbol candidates, so the admissible design space on MYM/MNQ shrinks to Slot 1 (Wed+Thu, ~104 sessions/yr) — and the spec already flags that slot's session count as a **power** constraint. For an occupied symbol, S7 and the Clause-N power floor now squeeze from both sides; SLR-MYM died in exactly that squeeze. This is an honest narrowing of what the same-account fork can host, not a cost this ADR introduces.
+**Negative (real).** Slot 2 is materially narrowed for same-symbol candidates, so the admissible design space on MYM/MNQ shrinks to Slot 1 (the two free weekdays, ~104 sessions/yr) — and the spec already flags that slot's session count as a **power** constraint. For an occupied symbol, S7 and the Clause-N power floor now squeeze from both sides; SLR-MYM died in exactly that squeeze. This is an honest narrowing of what the same-account fork can host, not a cost this ADR introduces.
 
 **Risk.** The decisive read is our own payload construction, not a venue-published rule. If CrossTrade/Tradovate semantics differ from what the payload implies, S7 could be over-broad — that is the §4 false-positive limb, and the cheap way to settle it is an attended dry-fire observation, not an argument.
 
@@ -163,7 +165,7 @@ grep -n "S7" docs/spec/2026-07-27-third-leg-target-spec.md
 grep -n "six independent grounds\|FAIL — MNQ1! occupied" docs/spec/2026-07-27-third-leg-target-spec.md
 
 # Occupancy is defined by which legs CAN fire -- the incumbent session map
-grep -n "Mon | MNQ\|Tue | MYM + MNQ\|Fri | MYM" docs/spec/2026-07-27-third-leg-target-spec.md
+grep -n "MNQ-only weekday | MNQ\|Shared weekday | MYM + MNQ\|MYM-only weekday | MYM" docs/spec/2026-07-27-third-leg-target-spec.md
 
 # 2-E: the unoccupied-symbol escape must remain true (LEG_MAP holds only the two incumbents)
 grep -n "LEG_MAP: dict" -A 12 ops/c1_rail/c1_sizing_host_reference.py | grep -c "MYM1!\|MNQ1!"

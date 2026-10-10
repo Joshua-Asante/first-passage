@@ -97,7 +97,7 @@ Q-RAIL-1 closed `RESOLVED` 2026-07-17: all five execution-fidelity preconditions
 
 **Positive:** first live fill source since FXIFY closure; pre-registered unblocks fire — **Q-NAS-ECR-1 successor Pre-Q authorized** (fresh Pre-Q, MNQ fill microstructure); **ORB-MNQ-1 decay-monitor calibration re-scoped to the live venue**; Q-DECAY-1 re-arm limb and lifecycle Call-1 gain a live input path.
 
-**Negative (real):** ~$49/mo standing bridge cost while the eval runs (~2× median pass time at WATCH-1 → plausibly >3 months); operator attendance obligation (seasonal window ≈09:00–13:15 ET, Mon/Tue/Fri + EOD daily); build work (payload contract + NT8 host) precedes any fill.
+**Negative (real):** ~$49/mo standing bridge cost while the eval runs (~2× median pass time at WATCH-1 → plausibly >3 months); operator attendance obligation (the legs' locked signal window on their locked trading days + EOD daily) *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*; build work (payload contract + NT8 host) precedes any fill.
 
 **Risks:** WATCH-1 pass-rate ≥95% is bust-geometry, not P&L promise; common-mode edge death remains uncovered (Q-DECAY-1 — drawdown-only detection); +0.46pp bust optimism (Q-PERSIST-1); H1 regime rescue is the haircut's doing. All carried verbatim from the packet — the GO is taken with these read.
 
@@ -195,7 +195,7 @@ regenerated — closing the evidence-volatility gap the same re-audit surfaced.
 2. **Operator manual 15:55 ET flat-check** — **rail-independent**, performed **every session that carried open risk**; flatten via the Tradovate/CrossTrade manual dashboard if any position is open. This is the interim human replacement for the AM's automated rail-independent layer.
 - Tradeify **16:59 ET firm auto-liq** remains **final catch only** — never the designed mechanism.
 
-**Rationale:** (a) MYM/MNQ trade **morning sessions (8–12 ET)** and force-flat intraday — a position open at 15:45 is already an exception; (b) **Tradeify's auto-flatten is NON-FATAL** (envelope's exact reason Tradeify was the recommended tier; contrast MFFU, where post-16:10 orders can *disqualify*) — so the worst-case final catch is not account-ending; (c) WATCH-1 **0.50×** sizing keeps positions small.
+**Rationale:** (a) MYM/MNQ trade **morning sessions (the locked window *(redacted 2026-10-09; see note above)*)** and force-flat intraday — a position open at 15:45 is already an exception; (b) **Tradeify's auto-flatten is NON-FATAL** (envelope's exact reason Tradeify was the recommended tier; contrast MFFU, where post-16:10 orders can *disqualify*) — so the worst-case final catch is not account-ending; (c) WATCH-1 **0.50×** sizing keeps positions small.
 
 **Residual explicitly accepted:** (i) EOD-flat — the compound case *(position open at 15:45 **and** rail down **and** operator absent)* falls to Tradeify's non-fatal 16:59 auto-liq; (ii) **the AM's automated pre-emptive DD-guard flatten is NOT replaced by Option C** — it stays covered only by WATCH-1 bust geometry (≥95%), the sizing-host `DD_SCALE`, and attendance, not by an automated pre-line flatten. Both carried with eyes open.
 

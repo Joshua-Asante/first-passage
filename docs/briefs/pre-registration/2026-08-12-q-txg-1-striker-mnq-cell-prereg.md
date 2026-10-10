@@ -45,11 +45,13 @@ hash-pins the edition — Pine is not transcribed into this freeze.
 
 | Layer | Fixed |
 |---|---|
-| Signal / risk identity | **Striker DJ30 v4.5** — lookback 15 · ATR 11 · SL **1.20×ATR** · TP 8.5×ATR · BE 0.15/0.05 · trail 0.15/0.90/0.80 · maxHold 55b · pyramid 1.29×ATR / **750%** / minBars 6 · risk **0.70%** · session **13–17 UTC** · DOW **Tue/Fri** — **byte-identical** to locked DJ30 Pine (LOCK.md). **No** NAS100 parameter borrow. |
+| Signal / risk identity | **Striker DJ30 v4.5** — lookback, ATR length, SL/TP multiples, break-even, trail, max hold, pyramid spacing and min-bars, session window and day-of-week filter are fixed by the locked DJ30 v4.5 Pine (values redacted; see note below) · pyramid **750%** · risk **0.70%** — **byte-identical** to locked DJ30 Pine (LOCK.md). **No** NAS100 parameter borrow. |
 | Instrument mapping | CME **`MNQ1!`** 15m (micro Nasdaq) — the **only** declared change of identity |
 | Sizing / cost | Integer qty at locked risk% vs MNQ tick economics ($2.00/pt, tick 0.25); Tradeify Select commission $0.91/side + 1-tick slip; `accountSize` 100_000; `microCap` 80 — venue mechanics class of the withdrawn MNQ edition, **not** a locked-constant change |
 | Venue hold | EOD force-flat ET-pinned (FRIENDLY auto-liquidate); discharge default ~15:45 ET bar → ~16:00 ET fill |
 | Offline parity | Allowed (`series[k]` offset, `percent_of_equity` traps). **No verdict off offline fills** — native TV panel is the arbiter (design §7) |
+
+> **Redaction note (2026-10-09):** Parameter values redacted from the public copy 2026-10-09 (operator decision); no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `e0326a4b319e6504fabf1ec19ed4e2cb405fa4ce`. The values live in the locked Pine only; the public record is [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book). Redacted here (§1 row), in the §2.2 compile notes and in §3.
 
 Withdrawn same-underlying `striker×MYM` is **out of scope** (F1). This cell is the
 cross-underlying sibling, not a redeploy.
@@ -84,8 +86,8 @@ cross-underlying sibling, not a redeploy.
 }
 ```
 
-Compile notes: stop mapped **160t** from raw **218.45t** (1.20 × MNQ ATR(11) 45.5095 pts /
-tick 0.25) — nearest ladder rung (ties → larger). ENV-1 verdict
+Compile notes: stop mapped **160t** from raw **218.45t** (locked SL multiple × MNQ ATR at the locked length / tick 0.25;
+values redacted — §1 note) — nearest ladder rung (ties → larger). ENV-1 verdict
 **OPEN-CONDITIONAL(power)**: no committed MNQ panel N in the ENV-1 power floor —
 **disclosed here; not resolved** in Blocks 2–3.
 
@@ -93,9 +95,9 @@ tick 0.25) — nearest ladder rung (ties → larger). ENV-1 verdict
 
 ## §3 — S7 / slot-overlay disclosure (never a Block-3 kill)
 
-From Block-1 disclosure: **MNQ Mon+Tue · MYM Tue+Fri**; both c1 legs withdrawn;
+From Block-1 disclosure: **MNQ Mon+Tue · MYM [day-of-week redacted — §1 note]**; both c1 legs withdrawn;
 `LEG_MAP` retained-not-released. Bindingness deferred — disclosure only for this freeze.
-This cell's DJ30 DOW is **Tue/Fri**; MNQ third-leg overlay marks **Mon+Tue** — Tuesday
+This cell's DJ30 DOW is fixed by the locked Pine (redacted — §1 note); MNQ third-leg overlay marks **Mon+Tue** — any
 overlap is named, not adjudicated as a kill here. W-CADENCE / W-REGIME remain disclosure.
 
 ---

@@ -10,7 +10,7 @@
 ## Ranking (design §5)
 
 OPEN cells ranked by (fewest UNSCREENABLE inputs → same-underlying first → widest W-COST margin).
-Compile fact: only **two** OPEN cells carry a mapped stop cell (ATR(11) MYM/MNQ committed). All other OPEN cells are `stop_cell: UNSCREENABLE`. Same-underlying Striker×{MYM,MNQ} are **WITHDRAWN(F1)**; Guardian×MGC is **PARKED(b8)** / pursuit SUBTRACT — not elected.
+Compile fact: only **two** OPEN cells carry a mapped stop cell (locked-length ATR for MYM/MNQ committed *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*). All other OPEN cells are `stop_cell: UNSCREENABLE`. Same-underlying Striker×{MYM,MNQ} are **WITHDRAWN(F1)**; Guardian×MGC is **PARKED(b8)** / pursuit SUBTRACT — not elected.
 
 | Rank | Cell | Transfer | stop_map | cost_tax_r | qty | ENV-1 | Why elected |
 |---|---|---|---:|---:|---:|---|---|

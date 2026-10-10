@@ -74,7 +74,7 @@ This names the symptom—whether such an opportunity exists—without asking whi
 
 ## §5 — Forbidden moves
 
-- **Reusing locked Tue/Fri, lookback, or pyramid settings as a hidden rescue grid** — that would re-litigate R5/P2 and inflate K.
+- **Reusing the locked day-of-week, lookback, or pyramid settings *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)* as a hidden rescue grid** — that would re-litigate R5/P2 and inflate K.
 - **Looking at holdout P&L before the pre-registration is frozen** — only the disclosed frequency census has touched holdout dates.
 - **Adding a second direction, day filter, volatility regime, stop, target, trail, or add rule after results** — any such change is candidate #2 and requires fresh operator authorization under the reconstruction ADR’s early-fail rule.
 - **Calling absolute MYM profitability evidence that P2/R5 were wrong** — their edge-preservation claims remain falsified.

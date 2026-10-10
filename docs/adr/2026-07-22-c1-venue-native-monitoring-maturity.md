@@ -721,7 +721,7 @@ is live. This is where the deletion argument fails.
 
 ### Cost of the decline, stated so it is chosen knowingly
 
-MYM trades Tue/Fri at a ~30.7% entry rate — about 0.6 entry-days per week, so roughly 3.3 attended
+MYM trades on its locked days *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)* at a ~30.7% entry rate — about 0.6 entry-days per week, so roughly 3.3 attended
 sessions in expectation (~1.5–2 weeks), with a ~23% chance of nothing after four more. MNQ does not
 rescue it: `reserve_cap` is 1 there and it floored to 0 at a 126.75 stop on 07-28. Three of the
 four prior misses (post-window, alert shadowing, qty 0) were fixable defects **since fixed**, so
@@ -757,7 +757,7 @@ Call-1 / ORB decay re-scope chain behind it — waits that long.
 
    **Reachability check** (per the standing gate-reachability discipline — a trigger that cannot
    fire is not a trigger): fires with probability **23.1%** after 4 sessions, ~2 calendar weeks at
-   MYM's Tue/Fri schedule. Sessions 1–4 are **2026-08-04, 08-07, 08-11, 08-14**; the review fires
+   MYM's locked-day schedule *(redacted 2026-10-09; see note above)*. Sessions 1–4 are **2026-08-04, 08-07, 08-11, 08-14**; the review fires
    after **2026-08-14** if item 5 is still undischarged. It is deliberately a tail trigger — firing
    is itself evidence the ~30.7% model is wrong, which is the thing the review exists to re-examine.
 
