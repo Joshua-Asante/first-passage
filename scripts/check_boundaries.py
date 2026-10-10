@@ -48,6 +48,12 @@ it is not a contract party; scanning it misread a recovered
 `tests/...` copy as an illegal governance->ops edge (2026-09-19 finding,
 R2b pre-dispatch recovery packet).
 
+File set: only ``*.py`` that git can see — tracked plus untracked-not-ignored
+(``git ls-files --cached --others --exclude-standard``). Gitignored private and
+debris files are neither scanned nor resolvable first-party modules; before
+2026-10-10 an ``rglob`` walk let them block every commit from the primary
+checkout. No usable git listing fails closed (exit 1), never an empty scan.
+
 Resolution catches plain `import X`, `from X import Y`, aliased, and lazy/
 in-function forms (ast.walk visits every node — the in-function import is exactly
 what a line-grep missed at parity_check.py). Relative imports are resolved from
@@ -59,7 +65,9 @@ Exit codes: 0 = no illegal edges, no name collisions, no unparseable sources;
 """
 from __future__ import annotations
 
+import argparse
 import ast
+import subprocess
 import sys
 from pathlib import Path
 
@@ -119,16 +127,40 @@ def layer_of_file(rel: str) -> str | None:
     return "governance"  # other root-resident .py (none after the move)
 
 
-def build_index() -> tuple[dict[str, tuple[str, ...]], list[tuple[str, tuple[str, ...]]]]:
+class GitListingError(RuntimeError):
+    """git could not enumerate the scan set; the gate must not pass on nothing."""
+
+
+def visible_py_files() -> list[str]:
+    """Repo-relative posix paths of existing *.py files git can see under REPO_ROOT."""
+    try:
+        proc = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard",
+             "--", "*.py"],
+            cwd=REPO_ROOT, capture_output=True, check=False)
+    except OSError as exc:
+        raise GitListingError(f"git unavailable: {exc}") from exc
+    if proc.returncode != 0:
+        raise GitListingError(
+            f"git ls-files exited {proc.returncode}: "
+            f"{proc.stderr.decode('utf-8', 'replace').strip()}")
+    rels = sorted({rel for rel in proc.stdout.decode("utf-8").split("\0")
+                   if rel and (REPO_ROOT / rel).is_file()})
+    if not rels:
+        raise GitListingError(f"git listed no *.py files under {REPO_ROOT}")
+    return rels
+
+
+def build_index(files: list[str] | None = None
+                ) -> tuple[dict[str, tuple[str, ...]], list[tuple[str, tuple[str, ...]]]]:
     """Resolve importable names to repository paths, including namespace packages.
 
     Never recursively flatten arbitrary directories: only documented import roots
     create bare names. Retain every candidate so cross-layer ambiguity fails closed.
     """
     candidates: dict[str, set[str]] = {}
-    for path in sorted(REPO_ROOT.rglob("*.py")):
-        rel = path.relative_to(REPO_ROOT).as_posix()
-        if layer_of_file(rel) is None or "__pycache__" in path.parts:
+    for rel in visible_py_files() if files is None else files:
+        if layer_of_file(rel) is None or "__pycache__" in rel.split("/"):
             continue
         for root in ("", *FLAT_IMPORT_ROOTS):
             prefix = root + "/" if root else ""
@@ -200,7 +232,13 @@ def _first_party_targets(tree: ast.AST, index: dict[str, tuple[str, ...]],
     return out
 
 
-def main() -> int:
+def main(argv: list[str] | tuple[str, ...] = ()) -> int:
+    global REPO_ROOT
+    parser = argparse.ArgumentParser(description="AST import-boundary scanner")
+    parser.add_argument("--root", type=Path, help="repository root to scan (default: this checkout)")
+    args = parser.parse_args(argv)
+    if args.root is not None:
+        REPO_ROOT = args.root.resolve()
     py_ver = sys.version_info[:2]
     if py_ver < MIN_PYTHON:
         print(
@@ -212,7 +250,14 @@ def main() -> int:
         )
         return 1
 
-    index, collisions = build_index()
+    try:
+        files = visible_py_files()
+    except GitListingError as exc:
+        print(f"check_boundaries: REFUSED — cannot list the scan set ({exc}). "
+              "The gate scans only git-visible files and will not pass on an empty scan.",
+              file=sys.stderr)
+        return 1
+    index, collisions = build_index(files)
     edge_violations: list[str] = []
     parse_errors: list[str] = []
     py_label = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
@@ -222,10 +267,10 @@ def main() -> int:
             f"NAME COLLISION: module '{name}' candidates {list(paths)} "
             f"(Option B flattens layer roots; rename or consolidate)")
 
-    for path in sorted(REPO_ROOT.rglob("*.py")):
-        rel = path.relative_to(REPO_ROOT).as_posix()
+    for rel in files:
         if rel.startswith(EXEMPT_PREFIXES) or "__pycache__" in rel:
             continue
+        path = REPO_ROOT / rel
         src_layer = layer_of_file(rel)
         if src_layer is None:
             continue
@@ -276,4 +321,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
