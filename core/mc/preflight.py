@@ -128,6 +128,10 @@ BUST_KEYS: Tuple[str, ...] = ("bust_daily", "bust_static", "bust_trailing")
 INACTIVITY_OFF: int = HORIZON_CAP + 1
 
 
+class EngineUnsupported(ValueError):
+    """The tier's objective has no simulate_path representation; refuse, never approximate."""
+
+
 def firm_kwargs(
     firm_key: str,
     *,
@@ -172,6 +176,11 @@ def firm_kwargs(
             f"{firm_key!r} not in FIRM_RULES; known keys: {sorted(FIRM_RULES)}"
         )
     f = FIRM_RULES[firm_key]
+    if f.get("profit_target_pct") is None:
+        raise EngineUnsupported(
+            f"{firm_key!r} has no profit target: simulate_path is pass/bust shaped "
+            f"and cannot score a growth objective (ADR 2026-10-09; Q-SFGROWTH-1 owns that harness)."
+        )
 
     if account is not None:
         bal = float(account)
