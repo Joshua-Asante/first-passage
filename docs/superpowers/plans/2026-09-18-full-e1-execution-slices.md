@@ -2169,3 +2169,30 @@ Joshua appointed a Codex chat as **deployment coordinator**, effective 2026-10-0
   - T00 depth, budgets and windows (#691).
 - No new merge or operational authority is granted.
 
+### Coordinator succession — Deployment Coordinator succeeds coordinator (3) for the protection-health admission card, 2026-10-10
+
+**Source.** Joshua, directly to the Deployment Coordinator, 2026-10-10. Asked "Name me (the Deployment Coordinator) as coordinator (3)'s recorded successor for this card?" and "D-4 first", he answered: "yes to both, D-4 first, merge 769".
+
+**Scope.** The Deployment Coordinator is coordinator (3)'s recorded successor for the [protection-health admission card](../../briefs/handoffs/2026-10-03-protection-health-admission-card-DRAFT.md) only: its §11 gate recording and §12 decisions, the freeze, diff review, integration, the Codex relay, PRs and this card's ledger entries. Nothing else transfers implicitly; coordinator (3)'s other cards, including GC-5-DISPLACED and TB-I3, keep their recorded owners.
+
+### Operator ruling — protection-health card G-1 code admission (D-7 = B), 2026-10-10
+
+**Source.** Joshua, 2026-10-10 at approximately 20:17 UTC (relayed time), answering the bounded-admission question quoted in the card's [§13](../../briefs/handoffs/2026-10-03-protection-health-admission-card-DRAFT.md#13-current-source-admission-packet--2026-10-10) (PR #769): "I approve the pr 769 code admission". Joshua confirmed it directly to the Deployment Coordinator, successor to coordinator (3) for this card, on 2026-10-10: "Confirm the #769 G-1 admission".
+
+**Effect.** Gate G-1 holds. Admitted: the bound qualification-code edits in the card's §2.2/§2.6 to `ops/c1_rail/book_protection_owner.py` and §2.3/§2.6 to `ops/c1_rail/book_account_owner.py` (`trust_domain.py:146,162`), solely for the D-7 = B `sources_healthy` input and `held_unhealthy` semantics. The owner's fresh classification, fences, refusal precedence, evidence waits, deadlines, occurrence schema and the F1/F2/G1–G8 acceptance are preserved. The §2.6 edits to `book_runtime.py` and `c1_rail_listener.py` (per D-3) are outside the bound set and need no C3 admission. No repeat approval is needed while §2.6 is unchanged; a changed scope or a positive finding (a) returns through its own gate. G-2 (freeze, frozen SHA) and G-3 (§9 predecessors per D-4, D-3 ruled) now hold; see the [freeze entry](#coordinator-freeze--protection-health-admission-card-g-2-2026-10-10).
+
+### Coordinator freeze — protection-health admission card (G-2), 2026-10-10
+
+*Decided by the Deployment Coordinator, recorded successor to coordinator (3) for this card ([succession](#coordinator-succession--deployment-coordinator-succeeds-coordinator-3-for-the-protection-health-admission-card-2026-10-10)).*
+
+**Decisions (card §12).**
+- **D-1** `held_unhealthy`: adopted.
+- **D-2** keyword-only, exact `bool`, default `True`: adopted.
+- **D-3** route through `handle_book_action`: adopted. #571 closed unmerged on 2026-10-09; no live branch edits `c1_rail_listener.py`.
+- **D-4** FIRST in the `book_account_owner.py` single-writer order, ahead of GC-5-DISPLACED and TB-I3 S1/S2 (Joshua: "D-4 first"). This re-orders coordinator (3)'s 2026-10-03 order (#628 → GC-5-DISPLACED → TB-I3 S2). **Why:** neither GC-5-DISPLACED nor TB-I3 S1/S2 has a build PR; #628 is merged; the hunks are disjoint (`dispatch`/`_dispatch_locked` `:1654–1731` against GC-5's `:748`/`:1804` and S2's latch). **Owed consequences:** the GC-5-DISPLACED and TB-I3 S2 freezes must add `tests/ops/test_book_protection_source_health.py` to their acceptance, and S2 must keep the loosening premise (entry terminal observed before any STALE read) green under its latch. The forward note on each predecessor card ([GC-5 §9](../../briefs/handoffs/2026-10-03-gc5-displaced-takeover-switchoff-card-DRAFT.md#9-sequencing), [TB-I3 §9](../../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md#9-sequencing-on-book_account_ownerpy-coordinator-3-ruling)) is owed by each card's owning coordinator at its freeze: neither card's rules provide for a note by another coordinator, and this succession does not transfer them.
+- **D-5** whole-parent hold: adopted.
+- **D-6** freeze base: `origin/main` at freeze, `21a38d345bce25b4bbc4e60edb5fbdaa2ba08c5e`.
+
+**Gates.** G-1 (entry above), G-2 (this entry) and G-3 (D-4 first; its only predecessor, #628, is merged; D-3 ruled) hold. §0(a)–(f) premise checks at the base came back negative; outputs are in the card's Status.
+
+**Frozen card commit:** `617fb506fb755910582a76d67c046a8c6e83080b`. Dispatch to the named Claude worker remains a separate coordinator act.
