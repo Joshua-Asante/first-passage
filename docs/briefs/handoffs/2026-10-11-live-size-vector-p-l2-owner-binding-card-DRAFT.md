@@ -261,7 +261,7 @@ Neither edited code file is in the S2 workflow's path filters (`qualification-s2
 
 ## 8. Out of scope and decision unlocked
 
-**Out of scope:** P-L3 (emulator parity), P-L4 (loader, GO and boot-gate equality, as amendments to the TB-I3 and TB-I3-HOST cards) and P-L5 (records).
+**Out of scope:** P-L3 (emulator parity), P-L4 (GO and boot-gate equality as TB-I3 interlock amendments; the loader as requirement R-SV of the live route packet; [proposal](../../notes/2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md)) and P-L5 (records).
 
 **Unlocks:**
 - The owner's stamped `size_vector_sha256` exists for P-L4 to compare with the screen authority's `parameters.expressions.size_vector_sha256` and the GO.
@@ -271,7 +271,7 @@ Neither edited code file is in the S2 workflow's path filters (`qualification-s2
 
 - **Protection-health** (FROZEN, building) edits `book_account_owner.py` near `:1694-1729`. P-L2 is cut only after it merges: "No two live packets share a file" (umbrella `:245`).
 - **GC-5-DISPLACED** (DRAFT) adds an `aegis_takeover` keyword to `__init__`/`boot` and stamps its resolved value in the same binding record (GC-5 card `:116`). That is the same seam. Serialize per D-2, and keep one stamping pattern.
-- **TB-I3** (DRAFT) and **TB-I3-HOST** (FROZEN 2026-10-06) also list `book_account_owner.py`. The coordinator orders them against P-L2 at freeze (D-2).
+- **TB-I3** (DRAFT) edits `book_account_owner.py` in its S2 latch, which is already ordered after GC-5. The coordinator orders it against P-L2 at freeze (D-2). **TB-I3-HOST** (FROZEN 2026-10-06) forbids that file and is no collision.
 - **Roadmap:** P-L2 is behaviour-changing frozen work. It lands before CP-6 (checklist T15). P-L4 then uses the stamp at T16 and T17.
 
 ## 10. Audit hooks (runnable)
