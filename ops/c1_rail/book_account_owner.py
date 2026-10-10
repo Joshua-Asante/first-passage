@@ -1651,15 +1651,18 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             events.append(ExecutionEvent(**item))
         return DispatchResult(**value, confirmed_events=tuple(events))
 
-    def dispatch(self, action, *, occurrence=None, now):
+    def dispatch(self, action, *, occurrence=None, now, sources_healthy=True):
+        if type(sources_healthy) is not bool:
+            raise TypeError("sources_healthy must be bool")
         try:
             with self.serializer.acquire():
-                return self._dispatch_locked(action, occurrence=occurrence, now=now)
+                return self._dispatch_locked(action, occurrence=occurrence, now=now,
+                                             sources_healthy=sources_healthy)
         except AccountOwnerError:
             self._input_send_suppressed = True
             raise
 
-    def _dispatch_locked(self, action, *, occurrence=None, now):
+    def _dispatch_locked(self, action, *, occurrence=None, now, sources_healthy=True):
         _time(now)
         if getattr(self, "_input_send_suppressed", False):
             raise AccountOwnerError("local send suppression after input incident storage failure")
@@ -1705,7 +1708,8 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                 db.execute("INSERT INTO action_occurrences VALUES (?, ?, ?, NULL, NULL, 'prepared', ?, ?, ?)",
                            (key, _body(asdict(occurrence)), source, now.isoformat(), state["generation"], state["boot_id"]))
         if isinstance(action, BracketAmend):
-            result = self._dispatch_protection_locked(action, occurrence, key, now=now)
+            result = self._dispatch_protection_locked(action, occurrence, key, now=now,
+                                                      sources_healthy=sources_healthy)
         elif isinstance(action, Cancel) and action.order_id is None:
             with self._transaction() as db:
                 row = db.execute("SELECT scope FROM action_occurrences WHERE key=?", (key,)).fetchone()
@@ -1726,7 +1730,9 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         else:
             result = self._dispatch_action_locked(action, occurrence=occurrence, operation_id=operation_id, now=now)
         with self._transaction() as db:
-            disposition = result.refusal_reason if result.refusal_reason in ("awaiting_evidence", "takeover_pending", "close_pending") else "complete"
+            disposition = ("awaiting_evidence" if result.refusal_reason == "held_unhealthy" else
+                           result.refusal_reason if result.refusal_reason in ("awaiting_evidence", "takeover_pending", "close_pending")
+                           else "complete")
             db.execute("UPDATE action_occurrences SET result=?,state=? WHERE key=?", (_body(asdict(result)), disposition, key))
         return result
 
