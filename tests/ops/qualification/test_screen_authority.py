@@ -464,7 +464,7 @@ def test_W1(successor_screen):
     assert module.PREREG_CHAIN == (PREREG, SUCCESSOR_PREREG)
     assert module.STEP12_RNG_ROOTS == ('42', '123', '2026', 'probe')
     profile = module.PURPOSE_PROFILES[module.SUCCESSOR_PURPOSE]
-    assert (list(profile.grants), profile.evidence_class, profile.chain_entry) == [*SUCCESSOR[1:], 1]
+    assert (list(profile.grants), profile.evidence_class, profile.chain_entry) == (*SUCCESSOR[1:], 1)
     assert module.PURPOSE_PROFILES[module.SCREEN_PURPOSE].chain_entry == 0
     doc = successor_screen.authority
     for mixed in (with_purpose(doc, SUCCESSOR[0], ORIGINAL[1], SUCCESSOR[2]),
@@ -561,13 +561,14 @@ def test_W6(successor_screen, tmp_path, monkeypatch):
     Screen(tmp_path / 'original', monkeypatch, param_changes={'rng': step12}).validate()  # the original keeps them
 
 
-def test_W7(screen, successor_screen):
+def test_W7(successor_screen):
     """Cross-binding of purpose and chain entry is refused both ways."""
-    for case, path in ((screen, SUCCESSOR_PREREG), (successor_screen, PREREG)):
-        doc = dict(case.authority, prereg=dict(case.authority['prereg'], path=path))
-        refused('SCREEN_AUTHORITY_FIELDS', lambda case=case, doc=doc: case.validate(doc=doc), 'compiled constant')
-    screen.validate()
-    successor_screen.validate()
+    s = successor_screen
+    for doc in (with_purpose(s.authority, *ORIGINAL), s.authority):
+        path = PREREG if doc is s.authority else SUCCESSOR_PREREG
+        crossed = dict(doc, prereg=dict(doc['prereg'], path=path))
+        refused('SCREEN_AUTHORITY_FIELDS', lambda crossed=crossed: s.validate(doc=crossed), 'compiled constant')
+    s.validate()
 
 
 def test_W8(tmp_path, monkeypatch):
