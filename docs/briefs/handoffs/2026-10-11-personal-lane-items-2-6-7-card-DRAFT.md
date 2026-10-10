@@ -4,11 +4,11 @@
 
 **Date:** 2026-10-11 (UTC).
 
-**Status:** DRAFT. P1–P3 are open PRs (§2); P4 is sequenced (§4).
+**Status:** DRAFT; §0.5 rulings 1–3 RULED 2026-10-10. P1–P3 are open PRs (§2); P4 is sequenced (§4).
 
 **Authority:**
 - [ADR 2026-10-09](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md) owed items 2, 6 and 7, dispatched by the Deployment Coordinator ("Portfolio deployment coordination") 2026-10-10.
-- This card narrows that dispatch; it adds no authority. §0.5 rulings are Joshua's.
+- This card narrows that dispatch; it adds no authority. §0.5 rulings are Joshua's (ruled 2026-10-10).
 
 **Coordinator:** the Deployment Coordinator. The merge sequencer owns merges.
 
@@ -48,7 +48,9 @@ Read on `origin/main` @ `b5571a9`: the lane ADR; `core/firm_rules.py`; `core/mc/
 | Firm-expansion coverage | The lane ADR names the tier (item 2); no separate ADR. Pre-flight in P1; re-MC gated (§4). |
 | `E_0` | `first-passage-archive`, branch `archive/preserve-exposure-2026-10-09` @ `950ee0f`. Read in place only; not copied into the private overlay by this card. |
 
-## §0.5 — Rulings requested (recommended defaults)
+## §0.5 — Rulings (RULED as recommended)
+
+**Ruled:** Joshua, 2026-10-10, directly in the build session: "agreed on rulings 1-3 as recommended". Rulings 1–3 below are adopted as written.
 
 1. **Halt outside `POLICY_REGISTRY`.** The 15% halt is an operator-ruled barrier keyed (portfolio, tier) in its own module. A scale-down `dd_protection` instance for this lane, if any, takes the concept ADR §4 chain after item 1.
 2. **Peak on resumption.** The running peak carries through a resume; re-basing it needs the GO to say so (`rebase_peak: true`).
