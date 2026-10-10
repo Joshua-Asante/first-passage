@@ -9,6 +9,12 @@ the reality it reads and every blob in hand (A5-A10); only then is the receipt i
 their stat guard serve this module's ``screen_epoch``/``screen_bracket`` (§3.3; rows K6 and
 K8 are tested by P-B2); ``validate_screen_act`` checks Joshua's signed acts (X2, X3). Build card
 2026-10-03 §2.3, §3.1. ``contract.py`` is imported, never edited.
+
+A second purpose, ``T00_SUCCESSOR_SCREEN`` (successor build card 2026-10-10 §2.5, S-3 to S-7),
+screens one successor configuration: r3d, which is r3c with only ``contract_id`` and the
+startup-policy row changed, over a signed v2 startup policy whose ``sizing`` vector is the only
+startup change. ``PURPOSE_PROFILES`` holds each purpose's grant, evidence class, chain entry,
+contract rule and expressions rule; the original purpose's row is the behaviour above, unchanged.
 """
 from __future__ import annotations
 
@@ -28,6 +34,7 @@ from types import MappingProxyType
 from typing import Any, Mapping
 import weakref
 
+from c1_rail.book_policy import validate_size_vector
 from . import p7_evidence
 from .contract import (
     SOURCE_EVIDENCE_CLASS, SOURCE_KEY_PREFIX, ApprovalRecord, ContractValidationError, TrustedApprovalKey, ValidatedSourceContract,
@@ -49,11 +56,29 @@ SCREEN_GRANTS = ('T00_STEP3_SCREEN_ONCE',)
 SCREEN_REFUSALS = ('QUALIFICATION_STAGES', 'PART_A', 'F1', 'DECISION_RULES', 'SEAL', 'ADMISSION', 'DEPLOYMENT',
                    'ARM', 'FALSIFIER_EVIDENCE', 'PARAMETER_CHANGE')
 SCREEN_EVIDENCE_CLASS = 'T00_STEP3_SCREEN'
+# The successor purpose (successor card S-7; Q3): the same refusals, where PARAMETER_CHANGE means
+# any change beyond the size vector frozen in the successor pre-registration.
+SUCCESSOR_PURPOSE = 'T00_SUCCESSOR_SCREEN'
+SUCCESSOR_GRANTS = ('T00_SUCCESSOR_SCREEN_ONCE',)
+SUCCESSOR_EVIDENCE_CLASS = 'T00_SUCCESSOR_SCREEN'
 
 # Compiled r3c digest (design §1); the authority binds the contract, never one approval (C2).
 R3C_CONTRACT_SHA256 = 'a526b50fa75e68451bdd2b5b57fa7a04e6ee08e61f96865c915ae8116a848d97'
-# Compiled pre-registration chain (row A8). A re-attempt appends a successor here (design §4.5).
-PREREG_CHAIN = ('docs/briefs/pre-registration/2026-10-01-tradeify-t00-step2-screen-prereg.md',)
+# r3c's contract_id and complete source_startup_policy artifact row (successor card S-3; public
+# metadata read from r3c by the coordinator, 2026-10-10). The derivation check puts them back.
+R3C_CONTRACT_ID: str | None = 't00-p7-source-contract-r3c'
+R3C_STARTUP_POLICY_ROW: Mapping[str, str] | None = MappingProxyType({
+    'authority_class': 'PRODUCTION_REVIEWED',
+    'path': 'lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/t00-p7-closure-2026-09-24/'
+            'task3-source-pack-r3/source_startup_policy.json',
+    'producer': 'executor:claude/t00-p7-tasks-3-4@67becc1708ed r3-producer:278201c451ae',
+    'role': 'source_startup_policy',
+    'sha256': '240caf5aaf276f5acb987e63edcd4a3d41e2c49f9c2d256ccc040f9be272eb8e',
+})
+# Compiled pre-registration chain (row A8; design §4.5): entry 0 is #581, bound by the original
+# purpose; entry 1 is #733, bound by the successor purpose (successor card S-4).
+PREREG_CHAIN = ('docs/briefs/pre-registration/2026-10-01-tradeify-t00-step2-screen-prereg.md',
+                'docs/briefs/pre-registration/2026-10-08-tradeify-book-successor-screen-prereg-DRAFT.md')
 # A3 successors (row A10): path -> (§3 row prefix, answerer-exposure regex, OWED pattern). The
 # exposure form is the successors' own: "Answerer exposure: seen|not seen — <name>".
 _EXPOSURE = re.compile(r'Answerer exposure: (?:seen|not seen) — [^\s<`|]')
@@ -70,6 +95,36 @@ RUN_ROOT_NAME = 't00-step3'
 RNG_TAG = 't00-screen-rng/v1'
 BLOCK_FAMILY = 'JOINT_FLAT_BOTH_RUNS'
 POPULATIONS = journal.POPULATIONS
+# Step 12's compiled RNG roots and probe root (#581 values block); the successor's are disjoint (S-5).
+STEP12_RNG_ROOTS = ('42', '123', '2026', 'probe')
+STARTUP_V1, STARTUP_V2 = 'qualification-source-startup/v1', 'qualification-source-startup/v2'
+STARTUP_ROLE = 'source_startup_policy'
+
+
+@dataclass(frozen=True)
+class PurposeProfile:
+    """One purpose's row: its grants, evidence class, ``PREREG_CHAIN`` index, contract rule
+    (``R3C_COMPILED``: the compiled r3c digest; ``R3C_DERIVED``: the carried digest, derived from
+    r3c by S-3) and expressions rule (``DECLARED_BOOK``, or ``SIZE_VECTOR`` bound to the vector)."""
+    grants: tuple[str, ...]
+    evidence_class: str
+    chain_entry: int
+    contract_rule: str
+    expressions_rule: str
+
+
+PURPOSE_PROFILES = MappingProxyType({
+    SCREEN_PURPOSE: PurposeProfile(SCREEN_GRANTS, SCREEN_EVIDENCE_CLASS, 0, 'R3C_COMPILED', 'DECLARED_BOOK'),
+    SUCCESSOR_PURPOSE: PurposeProfile(SUCCESSOR_GRANTS, SUCCESSOR_EVIDENCE_CLASS, 1, 'R3C_DERIVED', 'SIZE_VECTOR'),
+})
+
+
+def _profile(purpose) -> PurposeProfile | None:
+    return PURPOSE_PROFILES.get(purpose) if type(purpose) is str else None
+
+
+def _successor(doc) -> bool:
+    return PURPOSE_PROFILES[doc['purpose']].contract_rule == 'R3C_DERIVED'
 
 PARAMETER_KEYS = frozenset({
     'expressions', 'scenarios', 'initial_state', 'horizon_sessions', 'rng', 'depth_per_root', 'block',
@@ -178,9 +233,10 @@ def _check_document(doc) -> None:
     for name in ('source', 'p7', 'prereg'):
         _refuse(code, type(doc[name]) is not dict or set(doc[name]) != SCREEN_AUTHORITY_FIELDS[name],
                 f'{name} fields differ from the closed set')
-    _refuse(code, doc['schema'] != SCREEN_SCHEMA or doc['purpose'] != SCREEN_PURPOSE
-            or doc['grants'] != list(SCREEN_GRANTS) or doc['refusals'] != list(SCREEN_REFUSALS)
-            or doc['evidence_class'] != SCREEN_EVIDENCE_CLASS,
+    profile = _profile(doc['purpose'])
+    _refuse(code, doc['schema'] != SCREEN_SCHEMA or profile is None
+            or doc['grants'] != list(profile.grants) or doc['refusals'] != list(SCREEN_REFUSALS)
+            or doc['evidence_class'] != profile.evidence_class,
             'schema, purpose, grants, refusals and evidence_class must be exact')
     _refuse(code, not _text(doc['authority_id']), 'authority_id must be non-empty text')
     answers = doc['a3_answers']
@@ -194,7 +250,7 @@ def _check_document(doc) -> None:
             'every commit field must match ^[0-9a-f]{40}$')
     _refuse(code, any(type(row['path']) is not str for row in answers),
             'every a3_answers path must be text')
-    _refuse(code, prereg['path'] not in PREREG_CHAIN
+    _refuse(code, type(prereg['path']) is not str or prereg['path'] != PREREG_CHAIN[profile.chain_entry]
             or sorted(row['path'] for row in answers) != sorted(A3_SUCCESSORS),
             'every path must equal a compiled constant')
     digests = (doc['source']['contract_sha256'], doc['run_root_sha256'], p7['record_sha256'],
@@ -203,24 +259,38 @@ def _check_document(doc) -> None:
     _refuse(code, not all(map(_hex, digests)), 'every digest must be a lowercase SHA-256')
     _refuse(code, type(p7['interpreter']) is not dict or type(doc['source_trust']) is not dict,
             'p7.interpreter and source_trust must be objects')
-    _check_parameters(doc['parameters'])
+    _check_parameters(doc['parameters'], profile)
 
 
-def _check_parameters(params) -> None:  # pylint: disable=too-many-locals
-    """Row A11 on the bytes; its receipt-bound rules run in ``_check_bindings``."""
+def _expressions(value, profile) -> bool:
+    """Row A11's ``expressions``: the declared book, or under the successor the declared book bound
+    to its size vector, ``{"base": "DECLARED_BOOK", "size_vector_sha256": <hex>}``."""
+    if profile.expressions_rule == 'DECLARED_BOOK':
+        return value == 'DECLARED_BOOK'
+    return (type(value) is dict and set(value) == {'base', 'size_vector_sha256'} and value['base'] == 'DECLARED_BOOK'
+            and _hex(value['size_vector_sha256']))
+
+
+def _check_parameters(params, profile=None) -> None:  # pylint: disable=too-many-locals
+    """Row A11 on the bytes; its receipt-bound rules run in ``_check_bindings``. ``profile`` is the
+    document's purpose row (the original purpose's by default)."""
     code = 'SCREEN_PARAMETER_UNSUPPORTED'
+    profile = PURPOSE_PROFILES[SCREEN_PURPOSE] if profile is None else profile
     _refuse(code, type(params) is not dict or set(params) != PARAMETER_KEYS, 'parameters are a closed set')
     rng, depth, block, budget = params['rng'], params['depth_per_root'], params['block'], params['budget']
     horizon = params['horizon_sessions']
+    rng_ok = (type(rng) is dict and set(rng) == {'tag', 'roots', 'probe_root'} and rng['tag'] == RNG_TAG
+              and type(rng['roots']) is list and len(rng['roots']) == 3 and all(map(_text, rng['roots']))
+              and len(set(rng['roots'])) == 3 and _text(rng['probe_root'])
+              and rng['probe_root'] not in rng['roots'])
+    if rng_ok and profile.contract_rule == 'R3C_DERIVED':  # S-5: keys disjoint from step 12's
+        rng_ok = not set(STEP12_RNG_ROOTS) & {*rng['roots'], rng['probe_root']}
     supported = {
-        'expressions': params['expressions'] == 'DECLARED_BOOK',
+        'expressions': _expressions(params['expressions'], profile),
         'scenarios': params['scenarios'] == ['S0'],
         'initial_state': type(params['initial_state']) is dict,
         'horizon_sessions': type(horizon) is int and horizon == verdict.A6_HORIZON_SESSIONS,
-        'rng': (type(rng) is dict and set(rng) == {'tag', 'roots', 'probe_root'} and rng['tag'] == RNG_TAG
-                and type(rng['roots']) is list and len(rng['roots']) == 3 and all(map(_text, rng['roots']))
-                and len(set(rng['roots'])) == 3 and _text(rng['probe_root'])
-                and rng['probe_root'] not in rng['roots']),
+        'rng': rng_ok,
         'depth_per_root': (type(depth) is dict and set(depth) == set(POPULATIONS)
                            and all(map(_positive, depth.values()))),
         'block': (type(block) is dict and set(block) == {'family', 'length_sessions'}
@@ -306,6 +376,81 @@ def _check_reality(doc) -> str:
     return head
 
 
+def _derived_from_r3c(contract_doc) -> bool:
+    """S-3: the contract with ``contract_id`` and its startup-policy row put back to r3c's compiled
+    values hashes to the compiled r3c digest, so no other role or field differs from r3c."""
+    if R3C_CONTRACT_ID is None or R3C_STARTUP_POLICY_ROW is None:
+        return False
+    rows = contract_doc['artifacts']
+    at = [i for i, row in enumerate(rows) if row['role'] == STARTUP_ROLE]
+    if len(at) != 1:
+        return False
+    restored = dict(contract_doc, contract_id=R3C_CONTRACT_ID,
+                    artifacts=[dict(R3C_STARTUP_POLICY_ROW) if i == at[0] else row for i, row in enumerate(rows)])
+    return _sha(canonical_json_bytes(restored)) == R3C_CONTRACT_SHA256
+
+
+def _startup_bytes(artifact_root, path, digest) -> bytes | None:
+    try:
+        raw = (Path(artifact_root) / path).read_bytes()
+    except (OSError, TypeError):
+        return None
+    return raw if _sha(raw) == digest else None
+
+
+def _check_size_vector(doc, receipt, artifact_root) -> None:
+    """S-3, S-5 and §2.5: r3d's startup bytes are the receipt's, a v2 policy equal to r3c's v1
+    outside ``sizing``, whose vector is canonical, not the identity, and is the authority's
+    ``size_vector_sha256 = sha256(canonical_json_bytes(sizing))``."""
+    from .production_source import _json  # pylint: disable=import-outside-toplevel  # the source's own parser
+    code = 'SCREEN_SOURCE_MISMATCH'
+    row = next(row for row in receipt.artifacts if row.role == STARTUP_ROLE)
+    r3d_raw = _startup_bytes(artifact_root, row.path, row.sha256)
+    r3c_raw = _startup_bytes(artifact_root, R3C_STARTUP_POLICY_ROW['path'], R3C_STARTUP_POLICY_ROW['sha256'])
+    _refuse(code, r3d_raw is None or r3c_raw is None,
+            "the r3d and r3c startup bytes must be present under artifact_root at their contract digests")
+    try:
+        policy, r3c_policy = _json(r3d_raw), _json(r3c_raw)
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise ScreenAuthorityError(code, f'a startup policy cannot be read ({exc})') from None
+    unsupported = 'SCREEN_PARAMETER_UNSUPPORTED'
+    _refuse(unsupported, type(policy) is not dict or policy.get('schema') != STARTUP_V2 or 'sizing' not in policy,
+            'the successor requires a v2 startup policy with a sizing vector')
+    _refuse(code, type(r3c_policy) is not dict or r3c_policy.get('schema') != STARTUP_V1
+            or {k: v for k, v in policy.items() if k not in ('schema', 'sizing')}
+            != {k: v for k, v in r3c_policy.items() if k != 'schema'},
+            "the v2 startup policy differs from r3c's v1 policy outside sizing")
+    try:
+        vector = validate_size_vector(policy['sizing'])
+    except (ValueError, TypeError, KeyError) as exc:
+        raise ScreenAuthorityError(unsupported, f'the sizing vector is refused ({exc})') from None
+    _refuse(unsupported, canonical_json_bytes(policy['sizing']) != canonical_json_bytes(vector.as_mapping()),
+            'the sizing vector is not in its canonical encoding')
+    _refuse(unsupported, vector.is_identity, 'the identity vector re-runs the declared book; it is not a successor')
+    _refuse(unsupported, _sha(canonical_json_bytes(policy['sizing']))
+            != doc['parameters']['expressions']['size_vector_sha256'],
+            'size_vector_sha256 differs from sha256(canonical_json_bytes(sizing)) of the r3d startup policy')
+
+
+def _check_contract(doc, receipt, artifact_root) -> None:
+    """Row A6's contract rule, per purpose: the compiled r3c digest, or (successor, S-3) the carried
+    digest, equal to the receipt's, not r3c's, derived from r3c and bound to the size vector."""
+    code = 'SCREEN_SOURCE_MISMATCH'
+    if not _successor(doc):
+        _refuse(code, receipt.contract_sha256 != R3C_CONTRACT_SHA256
+                or doc['source']['contract_sha256'] != R3C_CONTRACT_SHA256
+                or receipt.evidence_class != SOURCE_EVIDENCE_CLASS,
+                'the source receipt and the authority must both bind the compiled r3c digest (source evidence class)')
+        return
+    _refuse(code, receipt.evidence_class != SOURCE_EVIDENCE_CLASS, 'the source receipt is not of the source evidence class')
+    _refuse(code, receipt.contract_sha256 != doc['source']['contract_sha256'],
+            "the authority's contract digest is not the source receipt's")
+    _refuse(code, receipt.contract_sha256 == R3C_CONTRACT_SHA256, 'the successor screens r3d, never r3c itself')
+    _refuse(code, not _derived_from_r3c(parse_canonical_json(receipt.canonical_bytes, label='source contract')),
+            "the derivation check fails: the contract differs from r3c beyond contract_id and the startup-policy row")
+    _check_size_vector(doc, receipt, artifact_root)
+
+
 def _check_source(doc, source_receipt, artifact_root, now):
     """Row A6, and row A11's receipt-bound rules (initial state, path start, L <= smallest pool)."""
     code = 'SCREEN_SOURCE_MISMATCH'
@@ -313,10 +458,7 @@ def _check_source(doc, source_receipt, artifact_root, now):
         receipt = require_validated_source_contract(source_receipt, now=now)
     except ContractValidationError as exc:
         raise ScreenAuthorityError(code, f'the source receipt is not issued and unexpired ({exc})') from None
-    _refuse(code, receipt.contract_sha256 != R3C_CONTRACT_SHA256
-            or doc['source']['contract_sha256'] != R3C_CONTRACT_SHA256
-            or receipt.evidence_class != SOURCE_EVIDENCE_CLASS,
-            'the source receipt and the authority must both bind the compiled r3c digest (source evidence class)')
+    _check_contract(doc, receipt, artifact_root)
     run_root = (Path(artifact_root) / RUN_ROOT_NAME).resolve()
     _refuse('SCREEN_RUN_ROOT_MISMATCH', _sha(str(run_root).encode('utf-8')) != doc['run_root_sha256'],
             'run_root_sha256 differs from the resolved <private_root>/t00-step3 path')
@@ -344,7 +486,17 @@ def _check_p7(doc, record_bytes, artifact_root, head) -> None:
     except (KeyError, TypeError, ValueError) as exc:
         raise ScreenAuthorityError(code, f'the P7 record cannot be read ({exc})') from None
     _refuse(code, bound['schema'] != p7_evidence.RECORD_SCHEMA, 'the record is not a P7 record')
-    _refuse(code, bound['contract_sha256'] != R3C_CONTRACT_SHA256, 'the P7 record is not over r3c')
+    if _successor(doc):  # S-3: the digest the authority carries, already equal to the receipt's
+        _refuse(code, bound['contract_sha256'] != doc['source']['contract_sha256'],
+                "the P7 record is not over the authority's contract")
+        try:  # the embedded contract the P7 run read, not only the scalar field (Codex P1 on #764)
+            payload = p7_evidence._strict_b64(record['contract_b64'], 'contract_b64')  # pylint: disable=protected-access
+        except (KeyError, ValueError) as exc:
+            raise ScreenAuthorityError(code, f'the P7 record contract_b64 cannot be read ({exc})') from None
+        _refuse(code, _sha(payload) != doc['source']['contract_sha256'],
+                "the P7 record's contract_b64 is not the authority's contract")
+    else:
+        _refuse(code, bound['contract_sha256'] != R3C_CONTRACT_SHA256, 'the P7 record is not over r3c')
     _refuse(code, bound['code_head'] != head, 'the P7 record code_head is not HEAD')
     _refuse(code, bound['bootstrap_sha256'] != p7_evidence.P7_BOOTSTRAP_SHA256,
             'the P7 record bootstrap differs from the compiled P7_BOOTSTRAP_SHA256')
@@ -404,11 +556,12 @@ def _values_and_cells(text: str, params) -> bool:
     return True
 
 
-def _check_prereg(prereg, params) -> bytes:  # pylint: disable=too-many-locals
-    """Row A8: C ratifies #581 with the values block; C′ records C's SHA and nothing else."""
+def _check_prereg(prereg, params, profile) -> bytes:  # pylint: disable=too-many-locals
+    """Row A8: C ratifies the purpose's chain entry (#581 or #733) with the values block; C′
+    records C's SHA and nothing else."""
     code = 'SCREEN_PREREG_MISMATCH'
     path, ratifying, commit = prereg['path'], prereg['ratifying_commit'], prereg['commit']
-    _refuse(code, path != PREREG_CHAIN[-1], 'prereg.path is not the last entry of the compiled chain')
+    _refuse(code, path != PREREG_CHAIN[profile.chain_entry], "prereg.path is not the purpose's compiled chain entry")
     _refuse(code, not _is_ancestor(ratifying, commit), 'C is not an ancestor of C′')
     _refuse(code, not _is_ancestor(commit, _ORIGIN_MAIN), 'C′ is not reachable from origin/main')
     status, names = _git('diff', '--name-only', '--end-of-options', ratifying, commit)
@@ -473,7 +626,7 @@ def _check_bindings(doc, *, source_receipt, p7_record_bytes, artifact_root, now)
     head = _check_reality(doc)
     receipt, run_root = _check_source(doc, source_receipt, artifact_root, now)
     _check_p7(doc, p7_record_bytes, artifact_root, head)
-    blob = _check_prereg(doc['prereg'], doc['parameters'])
+    blob = _check_prereg(doc['prereg'], doc['parameters'], PURPOSE_PROFILES[doc['purpose']])
     _check_sections(doc['prereg'], blob)
     _check_a3(doc['a3_answers'])
     return head, receipt, run_root
@@ -539,7 +692,8 @@ def validate_screen_authority(  # pylint: disable=too-many-arguments,too-many-lo
         authority_id=doc['authority_id'], authority_sha256=authority_sha256, canonical_bytes=bytes(authority_bytes),
         approval=approval, approval_bytes=bytes(approval_bytes), key_sha256=key_sha256, source_receipt=receipt,
         artifact_root=str(Path(artifact_root).resolve()), run_root=str(run_root), code_head=head,
-        parameters=_freeze(doc['parameters']), p7=_freeze(doc['p7']), prereg=_freeze(doc['prereg']))
+        parameters=_freeze(doc['parameters']), p7=_freeze(doc['p7']), prereg=_freeze(doc['prereg']),
+        evidence_class=doc['evidence_class'])
     identity = id(auth)
     _ISSUED[identity] = (weakref.ref(auth, lambda ref: _ISSUED.pop(identity, None)), _snapshot(auth),
                          weakref.ref(receipt))
@@ -606,8 +760,12 @@ def require_validated_screen_authority(auth, *, source_contract, now) -> Validat
     issued = _require_issued(auth)
     _refuse('SCREEN_REQUIRES_SOURCE_RECEIPT', type(source_contract) is not ValidatedSourceContract,
             'the screen serves only a source-only receipt')
+    successor = auth.evidence_class == SUCCESSOR_EVIDENCE_CLASS
+    bound = (parse_canonical_json(auth.canonical_bytes, label='screen authority')['source']['contract_sha256']
+             if successor else R3C_CONTRACT_SHA256)
     _refuse('SCREEN_SOURCE_MISMATCH', source_contract is not auth.source_receipt or issued[2]() is not source_contract
-            or source_contract.contract_sha256 != R3C_CONTRACT_SHA256
+            or source_contract.contract_sha256 != bound
+            or (successor and source_contract.contract_sha256 == R3C_CONTRACT_SHA256)
             or source_contract.evidence_class != SOURCE_EVIDENCE_CLASS,
             'the source receipt is not the object this authority binds')
     require_validated_source_contract(source_contract, now=now)          # r3c window and pin: SOURCE_* codes
@@ -955,7 +1113,9 @@ def validate_screen_act(  # pylint: disable=too-many-arguments
 
 
 __all__ = [
-    'A3_SUCCESSORS', 'PREREG_CHAIN', 'R3C_CONTRACT_SHA256', 'REPOSITORY_ROOT', 'SCREEN_ACT_FIELDS',
+    'A3_SUCCESSORS', 'PREREG_CHAIN', 'PURPOSE_PROFILES', 'PurposeProfile', 'R3C_CONTRACT_ID', 'R3C_CONTRACT_SHA256',
+    'R3C_STARTUP_POLICY_ROW', 'REPOSITORY_ROOT', 'SCREEN_ACT_FIELDS', 'STEP12_RNG_ROOTS', 'SUCCESSOR_EVIDENCE_CLASS',
+    'SUCCESSOR_GRANTS', 'SUCCESSOR_PURPOSE',
     'SCREEN_ACT_SCOPE', 'SCREEN_AUTHORITY_FIELDS', 'SCREEN_SCOPE', 'ScreenAuthorityError', 'ScreenBracket',
     'ScreenEpoch', 'ScreenEpochClose', 'ValidatedScreenAct', 'ValidatedScreenAuthority', 'bind_screen_run',
     'close_screen_epoch', 'open_screen_epoch', 'require_open_screen_epoch', 'require_validated_screen_authority',
