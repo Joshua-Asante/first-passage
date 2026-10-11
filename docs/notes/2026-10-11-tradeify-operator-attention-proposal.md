@@ -4,7 +4,9 @@
 Joshua on 2026-10-11: review the recommendations, sharpen them, and post a PR
 detailing what must change to save operator attention within risk and safety
 guidelines. This is a proposal, not an implementation card or a change to trading
-authority. Evidence baseline: `main@b6fff029`. No live host or account was inspected.
+authority. Evidence baseline: `main@ccdfd878` (refreshed from
+`b6fff029`; PR #777's separate personal rail instance is reflected in R3/R5). No live host or
+account was inspected.
 
 **Recommendation:** automate preparation, collection, verification and recording;
 retain the current substantive operator decisions. First deliver a guided close
@@ -16,7 +18,7 @@ a separate, qualified change to the trading window or operating policy.
 
 - **Decide now:** O1 only (§6). O2–O4 keep their stated defaults unless you say otherwise.
 - **Becomes automatic later, through existing owners:** settlement preparation up to your
-  signature (R1), one readiness view (R2), closing evidence and a disarm-only write (R3),
+  signature (R1), one readiness view (R2), closing evidence and a confirmed disarm-only transition (R3: write, apply, effective-state check),
   incident evidence assembly (R4), held-request watch reads (R5, after a separate access ruling),
   and a batched digest (R6).
 - **Never changes:** per-session GO, M1, operator-device settlement signing, halt and
@@ -185,13 +187,20 @@ T13 and T07. Automated disarm needs acceptance of this transition in the owner p
 The host boot gate does not check M1 and the host-side activation gate is owed at TB-I3
 (AGENTS.md live-execution posture), so any writer to the host config could also arm.
 The disarm automation must be structurally disarm-only: it can write `dry_run=true` and
-`armed_until=null` and nothing else.
+`armed_until=null` and nothing else. Applying it needs a host restart, a new capability
+for the automation: restart only after closure evidence is captured, with no request in
+flight and no INTERVENTION, and only for this disarm transition. A refused or failed
+restart leaves the close incomplete and alerts. Bind the writer and restart to the exact
+Tradeify instance (Fly app, volume, account) and refuse any other; a separate personal
+rail instance now exists ([binding](../../deploy/c1_rail_personal/instance_binding.json),
+PR #777).
 
 **Acceptance:** partial/unknown close, orphan child, late fill, another leg losing its
 stop, own-flat deadline breach, disarm-write failure, crash during capture and source
 correction; any attempted non-disarm config write by the automation is refused; a
 successful disk write whose runtime application or effective-state confirmation fails
-stays incomplete and alerts, never a closure receipt. A normal
+stays incomplete and alerts, never a closure receipt; a restart attempted with a request
+in flight or during INTERVENTION, or aimed at another instance, is refused. A normal
 closure produces an auditable receipt; an incomplete one never produces an all-clear. Test early-close/DST chronology against the bound calendar.
 
 ### R4 — One actionable incident view and authenticated acknowledgment
@@ -242,7 +251,8 @@ that agent visibility is necessary. Both need the owner/access ruling; this prop
 does not permit provisioning credentials.
 
 **Change:** authorize a narrow machine collector for the existing W3 read set and
-specified accounts. At each required due time, collect fresh evidence, compare it
+specified accounts, bound to the Tradeify instance and account identity and refusing
+any other. At each required due time, collect fresh evidence, compare it
 with the prior record, retain originals and classifications, then ping only after a
 durable completed check. Failure to read or record is a missed check. Distinguish
 automated completion from human acknowledgment in the record. An automated ping proves
@@ -263,7 +273,8 @@ unless an actual held request makes the recurring watch the dominant burden.
 **Acceptance:** delayed entry/cancel/close effects, reversal after manual flatten,
 missing history at reset, unrelated manual trade, missed/failed reads, crash before
 record/ping, two consecutive missed days, and a seeded late effect the collector
-misclassifies as "nothing new" (must not ping silently). Preserve reservations and HALTED until
+misclassifies as "nothing new" (must not ping silently), and a read aimed at another
+instance or account (refused). Preserve reservations and HALTED until
 the existing F2 transfer evidence is satisfied. Do not stop or pause the watch merely
 because an order disappears, no activity is seen, or a timer expires.
 
