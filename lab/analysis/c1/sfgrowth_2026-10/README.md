@@ -3,9 +3,9 @@
 **Status:** OPEN
 **In-flight:** yes
 
-Re-scoped 2026-10-11 to Q-SFCLEAR-1 (DRAFT, not ratified): clearance of the Tradeify
-book at rung R1 on the personal account. No export, replay or scoring runs before
-Joshua ratifies its pre-registration. This is an active study with an execution gate.
+Re-scoped 2026-10-11 to Q-SFCLEAR-1 (pre-registration FROZEN 2026-10-11): clearance of
+the Tradeify book at rung R1 on the personal account. Next: P0/replay build and FG
+before any run. This is an active study with an execution gate.
 
 Owner: [Q-SFCLEAR-1 brief](../../../../docs/briefs/Q-SFCLEAR-1-personal-clearance-tradeify-book.md) (supersedes the [Q-SFGROWTH-1 brief](../../../../docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md)).
 Contract: [Q-SFCLEAR-1 preregistration](../../../../docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md).

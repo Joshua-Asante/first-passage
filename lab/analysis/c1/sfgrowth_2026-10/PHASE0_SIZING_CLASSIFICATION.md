@@ -8,7 +8,7 @@
 
 Under ADR addendum 2026-10-11b (PR #784) the personal study is
 [Q-SFCLEAR-1](../../../../docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md)
-(DRAFT, not ratified): the four Tradeify-book legs at rung R1, evidence by port replay
+(pre-registration FROZEN 2026-10-11): the four Tradeify-book legs at rung R1, evidence by port replay
 or Aegis re-sizing, not by size-specific exports. The C1–C4, C6 and C7 classification
 of legs 1–4 and the reference-evidence table stay as cited evidence; leg 5, the
 (leg, k) export grid and the structural-zero slots no longer apply.

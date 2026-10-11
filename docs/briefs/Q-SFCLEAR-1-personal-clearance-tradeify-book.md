@@ -1,6 +1,6 @@
 # Q-SFCLEAR-1 — Personal clearance of the Tradeify book at E_0 (rung R1)
 
-**Status:** `OPEN` — pre-registration DRAFT, NOT RATIFIED
+**Status:** `OPEN` — pre-registration FROZEN 2026-10-11 (ratified by Joshua)
 **Authored:** 2026-10-11
 **Closed:** N/A
 **Authors:** Joshua (rulings) + Claude Code (drafting worker for the Deployment Coordinator)
@@ -85,8 +85,8 @@ The pre-registration §5 holds the full list.
 
 [`docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md`](pre-registration/Q-SFCLEAR-1-verdict-preregistration.md)
 
-Pre-registration commit hash: NOT YET RECORDED (DRAFT, not ratified)
-Pre-registration date: NOT YET RECORDED
+Pre-registration commit hash: `734d108efdc4f83234136ad3d4130a1aecc8996b` (freeze commit; status line only)
+Pre-registration date: 2026-10-11 (FROZEN). Joshua, 2026-10-11, directly to the Deployment Coordinator: "confirm the §1 rulings, ratify Q-SFCLEAR-1". The R1 trial (trial 10, K 9 → 10) and four exposure-log entries are in `discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json`.
 
 ---
 
