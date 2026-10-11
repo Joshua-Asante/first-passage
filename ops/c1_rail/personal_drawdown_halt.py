@@ -134,7 +134,7 @@ class PersonalDrawdownHalt:
             raise HaltStateError("halt state unpersisted in this process")
         try:
             s = json.loads(self.path.read_text(encoding="utf-8"))
-        except (OSError, ValueError) as exc:
+        except (OSError, ValueError, RecursionError) as exc:  # RecursionError: deeply nested JSON
             raise HaltStateError("halt state unavailable") from exc
         try:
             valid = self._valid(s)

@@ -323,3 +323,12 @@ def test_out_of_range_integer_inputs_fail_closed(path, bad):
     assert h.flatten(_flat)
     assert not h.resume(_go(rebase_peak=True), current_equity=bad)
     assert not h.entry_permitted()
+
+
+def test_deeply_nested_state_maps_to_halt_state_error(path):
+    _new(path)
+    path.write_text("[" * 100_000 + "]" * 100_000, encoding="utf-8")  # json.loads: RecursionError
+    h = _load(path)
+    with pytest.raises(HaltStateError):
+        h.snapshot()
+    assert not h.entry_permitted() and h.flatten_required()
