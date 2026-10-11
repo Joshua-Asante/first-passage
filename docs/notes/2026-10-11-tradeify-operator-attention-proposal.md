@@ -164,8 +164,10 @@ evidence survives it, and pre-restart authority does not.
 
 **Change:** extend the accepted scheduled-close path with a durable closure record:
 capture positions, working orders, fills and outstanding requests; establish causal
-coverage of the last possible effect; perform normal disarm through the config owner
-and verify read-back. Record close-boundary evidence while available instead of
+coverage of the last possible effect; perform normal disarm through the config owner,
+apply it to the running process and confirm the effective state there. A config read-back
+alone is not a disarm: the current host holds its config from boot, so an edit takes effect
+only on restart, confirmed by the boot line ([arm helper](../../ops/c1_rail/c1_rail_arm.py)). Record close-boundary evidence while available instead of
 trying to reconstruct it next morning. Export a consistent book-state snapshot using
 the owner's supported database snapshot mechanism, not copies of live SQLite files; the
 existing [exporter](../../ops/c1_rail/export_session_evidence.py) only copies legacy c1
@@ -187,7 +189,9 @@ The disarm automation must be structurally disarm-only: it can write `dry_run=tr
 
 **Acceptance:** partial/unknown close, orphan child, late fill, another leg losing its
 stop, own-flat deadline breach, disarm-write failure, crash during capture and source
-correction; any attempted non-disarm config write by the automation is refused. A normal
+correction; any attempted non-disarm config write by the automation is refused; a
+successful disk write whose runtime application or effective-state confirmation fails
+stays incomplete and alerts, never a closure receipt. A normal
 closure produces an auditable receipt; an incomplete one never produces an all-clear. Test early-close/DST chronology against the bound calendar.
 
 ### R4 — One actionable incident view and authenticated acknowledgment
