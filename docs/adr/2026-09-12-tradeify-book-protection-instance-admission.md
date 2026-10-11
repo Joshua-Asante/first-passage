@@ -252,3 +252,77 @@ Earlier statements that both decisions were absent describe the pre-ratification
 ## Addendum 2026-10-02 — S5 Q1: a committed FAIL followed by exhaustion is FALSIFIED (operator ruling, sitting 2)
 
 Joshua replied "all recommended" to the sitting-2 answer sheet (2026-10-03T01:42Z; 21:42 ET 2026-10-02), row ENG-3. This answers S5 decision draft §6 Q1, which the 2026-10-01 C3 ruling reassigned to the statistical owner. If a TB-E1 stage FAIL is committed and the campaign then exhausts its budget before a result commit, the attempt counts as **FALSIFIED** under §4 R1a: there is no admission, the attempt ends, and there is no runner-up or second sample. Running out of budget does not turn a committed FAIL into a non-verdict, and §4 gains no 'exhausted' outcome. The decision text above is unchanged.
+
+## Addendum 2026-10-11 — the book's size vector in EF and the deployment GO (PROPOSED)
+
+**Status:** `Proposed`. Drafted by Claude Code for the Deployment Coordinator at Joshua's request ("draft the TB-I3 ADR addendum for D-A and D-P5-2"). Joshua has **not ratified** it, and it is **not effective**: §2a, §2b and §2c above are unchanged until a dated operator addendum accepts it.
+
+**Tier:** full. It changes the admission chain's GO artifact and the EF composition for a live-risk instance (header **Tier**).
+
+**Vehicle:** an in-place addendum on the ADR that owns T6, T10 and T11. No sibling ADR is minted.
+
+**Scope:** risk-control governance only. There is **zero change** to `core/dd_protection.py`, `DD_TRIGGER` and `DD_SCALE`, `core/dd_geometry.py`, `POLICY_REGISTRY`, `BASE_RISK`, the lifecycle multipliers, Pine, ports or effective inputs.
+
+**Answers:**
+- D-A of the [P-L4 proposal](../notes/2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md) §2: where the expected hash lives. **Option A, a GO field.**
+- D-P5-2 of the [P-L5 records packet](../notes/2026-10-11-p-l5-size-vector-records-packet-PROPOSAL.md) §4: sizing is an EF shared component.
+
+### Why this is needed
+
+- **The qualification side can already change per-leg sizing.** P-S1 to P-S3 (#762 to #764) added a per-leg size vector to it. The vector is carried by the signed v2 startup policy, so FBR binds it through its contract digest.
+- **The live side has no equivalent.** EF's shared-component proof (§2a notation) covers `book_policy.py`'s code and `cap_alloc`, but not the vector, which is data.
+- **The GO's closed field set (T10) has no place for it.** So nothing in T6–T11 proves that the rail sizes with the vector FBR qualified.
+- **The live wiring is proposed separately.** That is P-L1 to P-L3 and R-SV, in [the scope note](../notes/2026-10-11-live-size-vector-wiring-scope.md). This addendum supplies only the two governance anchors they compare against.
+- **One definition throughout.** `size_vector_sha256 = sha256(canonical_json_bytes(sizing))`, the screen authority's formula (`ops/c1_rail/qualification/screen_authority.py`), over the canonical `validate_size_vector` encoding.
+- **The declared book is not a special case.** It is the identity vector, hash `dc9200a2f13a62a8e9fd27ff1f426f4c8653e1def76a67350cde5a89d0aa1fea` (public; computed from `IDENTITY_SIZE_VECTOR` at `b5571a9`).
+- **The successor recorded in the pre-registration values block is `139919cd1a20961b660c57527fa45c6b811124d468cfc97a3dd161db4d54c271`.** Only the hash is public, never the values.
+
+### Decision (proposed)
+
+1. **EF gains sizing as a shared component (D-P5-2).**
+   - In the §2a notation, EF's list of shared components proven equal to FBR gains: "the book's size vector, as `size_vector_sha256`, and the digest of the artifact it is read from".
+   - **T6 (TB-B7)**: EF1's shared-component proof includes that equality.
+   - **FBR side:** the vector of the startup policy TB-E1 replayed (identity for a v1 startup policy).
+   - **EF side:** the hash of the sizing artifact the rail's configuration references, computed by the same function.
+   - A mismatch fails the seal check (T6 failure exit: no B7; recapture). Under T10, a sizing change after B7 is a shared-component change, so the attempt ends; there is no second n3.
+2. **The GO gains one field (D-A).**
+   - **T10's GO definition** becomes the nine listed fields plus `size_vector_sha256`, ten fields, still a closed set. TB-D2 writes the field from the decision record (T9), equal to the EF1 value in item 1.
+   - **The reseal is unchanged.** The GO is still the only path in the c1→c2 build-context diff, and only the GO's layer differs.
+3. **T11 gains one check.**
+   - At effective activation, the image validates the GO's `size_vector_sha256`, and it must equal the hash the account owner stamped into its runtime binding at this boot.
+   - **Failure:** a missing or unreadable stamp, or a mismatch, refuses the activation; the process boots disarmed with no risk-add.
+   - **Durability:** the activation acknowledgment records the stamped hash, so the post-restart verification reads it back.
+   - **Shape of the check:** like T11's other checks, it is a comparison of hashes the image itself reads. It is not an operator attestation.
+4. **§2b and §2c follow.**
+   - **§2b:** "Fields as T10" now includes the tenth field.
+   - **§2c TB-I3 row:** it gains "validate the GO's `size_vector_sha256` and compare it with the owner's stamp at arm and boot, with a production default that refuses until the live route packet supplies the stamp reader". That is P-L4 amendments A-1 to A-4.
+   - **§2c TB-B7 row:** it gains "the sizing equality of item 1 in the shared-component proof".
+
+### What does not change
+
+- The policy row and its canonical serialization, FBR's recipe, `dd_geometry.py` normalization, and the reseal's layer rule.
+- The per-session GO, M1 `RESOLVED` and the operator's arming rules.
+- §4's falsifier and every failure exit except the two named above.
+- This addendum does not choose a vector. The successor is decided by its screen and its pre-registration. This addendum only requires that whichever vector FBR qualified is the one the rail sizes with.
+
+### Grounds
+
+- **Option A over row provenance (option B).** The GO is already the one baked artifact both the arm and boot gates read (§2b), and TB-D2 writes it after n3, when the vector has long been frozen. Option B would add a field to the registry row's provenance, a `core/` row-format change, and a second comparison path.
+- **Sizing as an EF component, not an extra GO-only check.** The GO only records a hash. B7's shared-component proof is where the qualification-to-live equality is actually *proven*, so without item 1 the GO field would rest on an unproven claim.
+
+### Ratification (proposed wording; not an approval)
+
+"I ratify the 2026-10-11 addendum to the protection-instance admission ADR at commit `<head>`: sizing as an EF shared component, the GO's tenth field `size_vector_sha256`, and the T11 stamp check."
+
+The addendum takes effect on that dated record. No implementation, GO, row, seal or activation is authorized by it.
+
+### Audit hooks (runnable)
+
+```bash
+# The identity hash cited above. Expected: dc9200a2f13a62a8e9fd27ff1f426f4c8653e1def76a67350cde5a89d0aa1fea
+cd ops && python -I -c "import sys,hashlib; sys.path[:0]=['.','../core']; from c1_rail.book_policy import IDENTITY_SIZE_VECTOR as V; from c1_rail.qualification.contract import canonical_json_bytes as c; print(hashlib.sha256(c(V.as_mapping())).hexdigest())"
+# The GO field set is unchanged until ratification. Expected: the T10 row still lists exactly nine fields.
+grep -n "T10 GO recorded" docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md
+# The successor hash is public in the pre-registration. Expected: 1 or more.
+git grep -c 139919cd1a20961b660c57527fa45c6b811124d468cfc97a3dd161db4d54c271 origin/main -- docs/briefs/pre-registration/
+```
