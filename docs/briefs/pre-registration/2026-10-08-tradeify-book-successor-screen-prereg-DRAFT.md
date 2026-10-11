@@ -1,6 +1,6 @@
 # Pre-registration — one screen of one successor configuration of the Tradeify book (#581's structure; not falsifier evidence)
 
-**Status:** `DRAFT — NOT RATIFIED.` A draft for the operator's ratification only. Nothing here binds a replay, screen, Monte Carlo or verdict until this line reads `RATIFIED <date>`, every §6 field and the §6 values block hold their values, and the ratifying commit's SHA is recorded in §6 (C, then C′, as #581). Under Q5 the status word is RATIFIED, not FROZEN; "freeze" in the cited owners means this ratification.
+**Status:** `RATIFIED 2026-10-11` by Joshua, directly to the Deployment Coordinator: "I ratify #733 as written, including its §6 values block" (§6). *As drafted:* `DRAFT — NOT RATIFIED.` A draft for the operator's ratification only. Nothing here binds a replay, screen, Monte Carlo or verdict until this line reads `RATIFIED <date>`, every §6 field and the §6 values block hold their values, and the ratifying commit's SHA is recorded in §6 (C, then C′, as #581). Under Q5 the status word is RATIFIED, not FROZEN; "freeze" in the cited owners means this ratification.
 
 *2026-10-10, P-S5 rewrite ([build card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §2.7, approved by Joshua 2026-10-10). Rewritten to #581's structure so that `screen_authority._check_prereg` and `_check_sections` accept it once ratified (Q5). §2 A5 and A6 are byte copies of [#581](2026-10-01-tradeify-t00-step2-screen-prereg.md)'s; their SHA-256 (each from its `###` heading line up to, not including, the next heading line) must stay A5 `a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b` and A6 `b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9` (`verdict.A5_TEXT_SHA256`, `A6_TEXT_SHA256`). Ratification must leave those bytes unchanged.*
 
@@ -237,9 +237,9 @@ The §3 values are recorded once, in the `t00-step2-values/v1` block below: one 
 {"a5_rule":"T00_A5/v1","block":{"family":"JOINT_FLAT_BOTH_RUNS","length_sessions":5},"budget":{"basis":"Q7 (Joshua 2026-10-10): N = 1,002 per population, 334 per root; #581 formula (design 5.4 at option a upper): path = c x 3N, c = 320 s, 3N = 3006; overhead = (b + 2i) x (W x S + R) + p, b = 173 s, i = 71.4 s, W = 8, S = 3, R = 8, p = 1100 s, rounded up","overhead_cpu_seconds":11300,"path_cpu_seconds":961920},"deadline_only_is_bust":true,"depth_per_root":{"FULL":334,"H1":334,"H2":334},"expressions":{"base":"DECLARED_BOOK","size_vector_sha256":"139919cd1a20961b660c57527fa45c6b811124d468cfc97a3dd161db4d54c271"},"horizon_sessions":1500,"initial_state":{"class":"PRISTINE","current_equity":"100000","historical_eod_peak":"100000","original_basis":"100000","prior_max_day_profit":"0","prior_trade_days":0},"median_rule":"LOWER_NEAREST_RANK_INF_INCLUDED","pass_floor_halves":"BINDING","path_start_date":"2022-09-01","rng":{"probe_root":"successor1-probe","roots":["successor1-r1","successor1-r2","successor1-r3"],"tag":"t00-screen-rng/v1"},"run1_diagnostic":"WAIVED","scenarios":["S0"]}
 ```
 
-- **Ruling:** —
+- **Ruling:** Joshua, 2026-10-11, directly to the Deployment Coordinator: "I ratify #733 as written, including its §6 values block". This ratifies §1–§5 as written and the §6 t00-step2-values/v1 block (SHA-256 2adfaa83…06c8). The A5/A6 bytes are unchanged (A5 a8f6f25e…391b, A6 b3bdc77b…17d9).
 - **OD-1 / OD-2:** Joshua, 2026-10-10. **OD-1:** decision 4, reading (c) extended to this screen (§4), recorded at the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) and [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken). **OD-2: the declared book** (§1a C-2; card #758 S-3, approved 2026-10-10); route-native editions are not these expressions.
-- **Ratifying commit SHA:** recorded in C′
+- **Ratifying commit SHA:** `46e0aafe6a6c5f9efab10167c0c9abbd2bcf5323`
 
 ---
 
