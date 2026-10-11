@@ -376,12 +376,14 @@ Original leg identifiers remain provenance identifiers, not available dimensions
 - K=2,375 and the 20-export/five-zero coverage in A–F7 describe the prior pool,
   not the lane-split pool. They must not be registered or consumed for a new run.
 
-**Decision still owed:** retain that reduced pool or admit additional eligible
-locked candidates before final accounting. The earlier single-candidate proposal
-was not adopted; this arithmetic does not silently adopt it now. Until that
-choice is recorded, there is no executable amended pool or final K. Before
-re-freeze, reconcile A/B/C/D, F2/F3/F5/F6 coverage, the classification and brief
-with the selected pool, then enumerate K without reading outcomes.
+**Operator ruling, 2026-10-10 (America/New_York):** "Hold while additional
+locked candidates are admitted." The study remains HOLD for additional eligible
+locked candidates; the one-leg alternative is not adopted. The five-configuration
+arithmetic above is a counterfactual, not an executable grid. No replacement is
+admitted by this ruling. Complete each candidate's eligibility and source/reference
+review, record the resulting pool, and recompute its data-independent K and artifact
+coverage before re-freeze. Reconcile A/B/C/D, F2/F3/F5/F6 coverage, classification
+and brief with that pool without reading outcomes. There is no final amended K yet.
 
 **Disposition of prior rulings:** F1 (Aegis cap), F2/F3's five exceptional slots
 and F4 (Vanguard cosmetics) remain historical approvals but are inapplicable to
@@ -405,7 +407,7 @@ unadmitted replacements; enumerate the final nominal grid and exact slot coverag
 verify genuine-baseline calendar construction; reject zero artifacts outside any
 explicitly frozen eligible slots; and enforce F6 bindings plus retained native
 settings. These are acceptance requirements, not an implemented or tested scorer.
-Exports/scoring remain HOLD pending the pool decision, F9 cost ruling, consistent
+Exports/scoring remain HOLD pending additional eligible candidate admission, consistent
 contract, exact-head independent review and explicitly recorded amended freeze.
 Merge remains with the Claude sequencer after Codex is clean and Joshua gives his word.
 
@@ -442,13 +444,39 @@ cannot substitute for captured reference evidence. A missing/unknown value or an
 unauthorized difference blocks exports and produces VOID at admission. Test a
 matching capture, missing capture, changed value and percentage/value confusion.
 
-**Friction ruling pending:** retained TradingView commission/slippage can affect the
-native equity/guard-dependent sample; commission add-back changes the accounting,
-not those trades. The existing `gross_usd` series still contains reference slippage.
-Before re-freeze, decide whether to retain that reference behavior and explicitly
-name a fee-only 1.5x stress (leaving reference slippage embedded), or adopt a separately
-specified friction-stress design. Do not zero Properties settings, remove native
-trade effects, call the series friction-free, or claim that multiplying Tradovate
-fees stresses slippage. Record the chosen cost meaning and synthetic acceptance
-cases in section C and the private manifest before exports. No such new cost ruling
-is implied by F7 or the lane split. Review/re-freeze stays HOLD on this item.
+**Operator friction ruling, 2026-10-10 (America/New_York):** "Preserve reference
+friction; explicitly use fee-only stress." Captured TradingView commission and
+slippage remain unchanged for strategy behavior, including native equity/guard
+and soft-stop effects. Commission add-back changes the accounting, not that sample.
+The technical interpretation below is approved in scope, pending exact-head review
+and amended freeze; it does not lift the F8 candidate-admission HOLD.
+
+On amended freeze, interpret section C's "gross P&L" as **P&L before the separately
+deducted Tradovate fees, net of retained reference slippage**. Per trade, use
+`g = Net PnL USD + Commission USD` exactly once, matching `Trade.gross_usd`.
+Do not add back estimated slippage or call g friction-free. With
+`fees_t = sum(sides * dated Tradovate all-in per-side fee)`, the day law remains
+`d_t = sum(g) - c * fees_t`, `l_t = -sum(abs(adverse excursion)) - c * fees_t`,
+and `h_t = sum(abs(favorable excursion))`. Retain the genuine export's excursions;
+do not regenerate entries, exits or excursions to undo captured friction effects.
+The Tradovate fee contains commission, exchange, clearing and NFA components.
+`c in {1, 1.5}` stresses **only those separately deducted fees**. Reference slippage
+and the reference-friction-dependent trade sample remain identical in both limbs.
+This is a fee-only sensitivity, not slippage stress or a strategy rerun at the
+target account's fee schedule. Any reference-versus-target fee difference is
+reconciled in cash accounting only; its effects on strategy behavior are not replayed.
+
+The reviewed private manifest records captured commission/slippage Properties and
+source/effective-reference evidence, separately from target dated Tradovate fees;
+retain the original/recapture distinction. Missing required reference-friction or
+fee evidence, unauthorized Properties changes, repeated commission add-back, or
+slippage removal are VOID. F6's private publication authorization remains separate.
+
+Synthetic scorer acceptance, before real scoring: commission is added back once;
+reference slippage is left embedded; changing c affects d and l by exactly
+`-0.5 * fees_t` between the two limbs, with h and the trade sample unchanged;
+no reference commission is deducted a second time; missing fee components or
+reference bindings yield VOID. Normalized example: exported net=96, commission=4,
+target fees=6 gives g=100, d(1)=94 and d(1.5)=91, regardless of any separately
+estimated slippage amount. These are required tests, not a scorer implementation.
+The maximum-growth, 15% halt, 99-in-100 and ranking rules remain unchanged.

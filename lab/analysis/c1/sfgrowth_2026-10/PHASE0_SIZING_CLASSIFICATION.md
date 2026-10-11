@@ -14,7 +14,7 @@ The Aegis-cap, Vanguard-cosmetic and five structural-zero rulings are therefore
 inapplicable to current personal candidates. The NAS weekday correction and
 original/recapture distinctions still apply, as does F7 native-setting preservation.
 Keeping leg 5 alone would require five genuine exports and no zero artifacts,
-with K=5; the final pool choice remains pending. No replacement is classified or
+with K=5; Joshua instead ruled HOLD while additional eligible locked candidates are admitted. This one-leg grid is not adopted. No replacement is classified or
 admitted here. Reconcile the final pool, private evidence inventory and contract,
 obtain exact-head review, and record the amended freeze before any exports/scoring.
 
@@ -67,7 +67,7 @@ Inputs on the size path, capital/equity reads, and the leg-5 lineage-sensitive w
 | 5 | `strikerDayStopPct`, `maxDailyDD`, `maxTotalDD`, `backtestMode` | neither | 80, 74, 76, 62 | percentages; `backtestMode` gates `ddHit` only |
 | 5 | `allowMon`, `allowTue`, `allowWed`, `allowThu`, `allowFri` | neither | 184-188 (candidate pin) | preserve the reference schedule; distinguish the admitted candidate from its older locked ancestor (C5) |
 
-Properties-panel margin, commission, slippage and **Pyramiding** are **neither** for every admitted leg. The captured Pyramiding value must be independently evidenced and preserved; the Pine add-size percentage is not that Properties value. Missing capture blocks exports under F9. Retained slippage remains embedded in the parsed series; the cost interpretation requires the separate F9 ruling. Default-quantity Properties are unused: every entry passes an explicit `qty`.
+Properties-panel margin, commission, slippage and **Pyramiding** are **neither** for every admitted leg. The captured Pyramiding value must be independently evidenced and preserved; the Pine add-size percentage is not that Properties value. Missing capture blocks exports under F9. Retained slippage remains embedded in the parsed series; F9 records Joshua’s approved fee-only stress interpretation with captured commission/slippage retained for strategy behavior. Default-quantity Properties are unused: every entry passes an explicit `qty`.
 
 ## Where reference values are read from (no values here)
 
