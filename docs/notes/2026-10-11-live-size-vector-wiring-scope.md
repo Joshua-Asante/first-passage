@@ -57,13 +57,13 @@ Every packet is CC solo, because each one touches sizing (build card §5 bars GL
 |---|---|---|---|---|
 | **P-L1** sizing-context seam | `book_sizing_context.py` (a `BookSizingBinding.size: LegSize` field passed as `size=` at `:256-262`); `tests/ops/test_book_sizing_context.py` | A non-identity `LegSize` changes `qty_out` to replay's value for the same inputs; Striker `adds=OFF` gives add 0; a leg at 0 gives qty 0, so the owner refuses `zero_size` | 0.5 d | Before CP-6 (behaviour-changing frozen work; T15 prerequisite) |
 | **P-L2** owner binding | `book_account_owner.py` (`_validate_binding`, `_binding_record`, `immutable`, `_context`); `tests/ops/test_book_account_owner.py` | Missing vector refused; hash mismatch refused; vector change across sessions refused; dispatch `qty_out` equals `BookReplay` for one synthetic action script under a synthetic non-identity vector; trust-domain, seal and composition suites unchanged | 1 d | After protection-health and GC-5; before CP-6 |
-| **P-L3** emulator parity | `book_bundle_execution.py` (`SizingInputs.size`); its tests and the parity suite | Emulator quantities equal L1 and replay under the same vector | 0.5 d | With P-L2 (T16 equality evidence) |
+| **P-L3** emulator parity | `book_bundle_execution.py` (`SizingInputs.size`); its tests and the parity suite | Emulator quantities equal L1 and replay under the same vector | 0.5 d | With P-L2 (T16 equality evidence) | [Card](../briefs/handoffs/2026-10-11-live-size-vector-p-l3-emulator-parity-card-DRAFT.md). The file is unbound, so no admission is needed.
 | **P-L4** config and activation | TB-I3 interlock S1 amendments A-1 to A-4 (`deployment_go.py`, arm, boot gate), plus R-SV for the unwritten live route packet (loader and stamp read-back); see the [proposal](2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md) | SV1–SV6: GO field shape; refusing default stamp; stamp ≠ GO → disarmed; stamp = GO → armed positive control; arm evidence; no real values | 1 d | T16 (bind configuration, prove equality), exercised at T17 |
 | **P-L5** records | Venue edition rows and the release inventory carry `size_vector_sha256` (no values) | Docs check | 0.25 d | T16 |
 
 The total is about 3.25 CC days. None of it is needed on NO-GO.
 
-Draft build cards: [P-L1](../briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) · [P-L2](../briefs/handoffs/2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md).
+Draft build cards: [P-L1](../briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) · [P-L2](../briefs/handoffs/2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md) · [P-L3](../briefs/handoffs/2026-10-11-live-size-vector-p-l3-emulator-parity-card-DRAFT.md).
 
 ## 6. Open questions for Joshua
 
