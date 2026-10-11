@@ -472,7 +472,7 @@ class ProtectionOwnerMixin:
             self._put_protection(db, old)
         return valid
 
-    def _protection_admission(self, db, occurrence, rows, *, now, weakening):
+    def _protection_admission(self, db, occurrence, rows, *, now, weakening, sources_healthy=True):
         state = self._state(db)
         if state['authority'] == 'INTERVENTION' or getattr(self, '_input_send_suppressed', False):
             return 'intervention_fence'
@@ -493,11 +493,15 @@ class ProtectionOwnerMixin:
                     or db.execute("SELECT 1 FROM attempts a JOIN operations o USING(operation_id) "
                                   "WHERE a.state='UNKNOWN' AND o.status NOT IN ('terminal','observed')").fetchone()):
                 return 'risk_add_not_authorized'
+            if not sources_healthy:
+                # D-7 = B: a loosening the owner would send waits for a healthy step.
+                return 'held_unhealthy'
         return None
 
-    def _dispatch_protection_locked(self, action, occurrence, key, *, now):
-        result = self._prepare_dispatch_protection_locked(action, occurrence, key, now=now)
-        if result.refusal_reason not in (None, 'awaiting_evidence', 'intervention_fence'):
+    def _dispatch_protection_locked(self, action, occurrence, key, *, now, sources_healthy=True):
+        result = self._prepare_dispatch_protection_locked(action, occurrence, key, now=now,
+                                                          sources_healthy=sources_healthy)
+        if result.refusal_reason not in (None, 'awaiting_evidence', 'held_unhealthy', 'intervention_fence'):
             # A refused, unsent desire is not an outstanding broker mutation.
             # Attempted children and expired obligations remain retained.
             with self._transaction() as db:
@@ -516,7 +520,7 @@ class ProtectionOwnerMixin:
                                    (op['operation_id'],))
         return result
 
-    def _prepare_dispatch_protection_locked(self, action, occurrence, key, *, now):
+    def _prepare_dispatch_protection_locked(self, action, occurrence, key, *, now, sources_healthy=True):
         from .book_account_owner import BrokerCommand, BrokerResult, DispatchResult, SimulatedOwnerCrash
         parent = 'control:' + key
         self._check_protection_deadlines_locked(now=now)
@@ -595,7 +599,8 @@ class ProtectionOwnerMixin:
                 if old is not None and is_loosening(old, effective, Side(row['side'])):
                     weakening = True
                 refusal = self._protection_admission(db, occurrence, [owners[i] for i in ids],
-                                                     now=now, weakening=weakening)
+                                                     now=now, weakening=weakening,
+                                                     sources_healthy=sources_healthy)
                 if refusal:
                     return DispatchResult(parent, 0, refusal_reason=refusal)
                 op.update(quantity=quantity, old=row['observed'], old_revision=row['revision'])
