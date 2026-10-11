@@ -1,7 +1,7 @@
 """Versioned observation packets, immutable captures and editable Notice drafts.
 
-The registry adapter is deliberately synthetic-only until the watchlist owner
-publishes its authoritative schema. No production symbol definitions live here.
+Synthetic fixtures remain supported alongside an exact-revision adapter for
+the separately owned production registry. No production definitions live here.
 """
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ import shutil
 import tempfile
 
 from scripts.research_asset_registry import ALLOWED_KINDS, validate_registry
+from . import production
 
 ID = re.compile(r"GP-\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 HASH = re.compile(r"[a-f0-9]{64}\Z")
@@ -121,9 +122,12 @@ def registry_rows(registry):
 
 def validate(packet, input_root, *, retained=None):
     """Read only. Return limitations and the exact verified input bytes."""
+    require(isinstance(packet, dict), "packet: expected object")
+    v2 = packet.get("schema_version") == 2
     obj(packet, "schema_version observation_id author source captured_at watchlist measurements "
-        "evidence interpretation limitations prior_exposure lineage correction", "packet")
-    require(type(packet["schema_version"]) is int and packet["schema_version"] == 1,
+        "evidence interpretation limitations prior_exposure lineage correction" +
+        (" data_kind missing_inputs attendance" if v2 else ""), "packet")
+    require(type(packet["schema_version"]) is int and packet["schema_version"] in (1, 2),
             "packet: unsupported schema_version")
     oid = text(packet["observation_id"], "observation_id")
     require(ID.fullmatch(oid), "observation_id must be GP-YYYY-MM-DD-slug")
@@ -131,14 +135,36 @@ def validate(packet, input_root, *, retained=None):
     for field in ("author", "source"):
         text(packet[field], field)
     captured = timestamp(packet["captured_at"], "captured_at")
-    binding = obj(packet["watchlist"], "path sha256", "watchlist")
+    binding = obj(packet["watchlist"], "path sha256" + (" revision" if v2 else ""), "watchlist")
     require(isinstance(binding["sha256"], str) and HASH.fullmatch(binding["sha256"]),
             "watchlist.sha256: exact content hash required")
     registry_bytes = (local_file(input_root, binding["path"]).read_bytes() if retained is None
                       else (retained / "registry.json").read_bytes())
     require(digest(registry_bytes) == binding["sha256"], "unresolvable registry revision: hash mismatch")
-    rows = registry_rows(decode(registry_bytes))
-    warnings = ["SYNTHETIC registry; production watchlist integration pending"]
+    registry = decode(registry_bytes)
+    is_production = isinstance(registry, dict) and registry.get("schema_version") == production.SCHEMA
+    if is_production:
+        require(v2, "production registry requires packet schema_version 2")
+        rows = production.project(registry, registry_bytes, binding["revision"])
+        warnings = ["Production registry audit: " + registry["verification"]["qualification"]]
+    else:
+        rows = registry_rows(registry)
+        warnings = ["SYNTHETIC registry; production watchlist integration pending"]
+        if v2:
+            require(binding["revision"] is None, "synthetic registry has no production Git revision")
+    if v2:
+        require(packet["data_kind"] in ("synthetic", "real"), "data_kind must be synthetic or real")
+        require(is_production or packet["data_kind"] == "synthetic", "real data requires identified production registry")
+        if packet["data_kind"] == "synthetic":
+            require(packet["attendance"] is None, "synthetic values must not claim real attendance")
+            warnings.append("SYNTHETIC VALUES: demonstration only; registry definitions may be real")
+        else:
+            attendance = obj(packet["attendance"], "observer method attended_at evidence_ids", "attendance")
+            text(attendance["observer"], "attendance.observer")
+            text(attendance["method"], "attendance.method")
+            require(timestamp(attendance["attended_at"], "attendance.attended_at") <= captured,
+                    "attendance cannot follow capture")
+            require(strings(attendance["evidence_ids"], "attendance.evidence_ids"), "attendance evidence required")
     warnings.extend(strings(packet["limitations"], "limitations"))
     interpretation = obj(packet["interpretation"],
                          "observation baseline departure why_stands_out candidate_explanations", "interpretation")
@@ -189,48 +215,96 @@ def validate(packet, input_root, *, retained=None):
         require(digest(body) == item["sha256"], f"{eid}: evidence hash mismatch")
         evidence[eid] = body
     require(isinstance(packet["measurements"], list) and packet["measurements"], "measurements required")
+    if v2:
+        if packet["attendance"] is not None:
+            require(all(e in evidence for e in packet["attendance"]["evidence_ids"]), "unknown attendance evidence")
+        require(isinstance(packet["missing_inputs"], list), "missing_inputs must be array")
+        missing = set()
+        for item in packet["missing_inputs"]:
+            obj(item, "series_id reason", "missing input")
+            sid = text(item["series_id"], "missing series_id")
+            require(sid in rows and sid not in missing, "unknown/duplicate missing series ID")
+            text(item["reason"], "missing input reason")
+            missing.add(sid)
+            warnings.append(f"{sid}: UNAVAILABLE / missing input: {item['reason']}")
+        if is_production:
+            require(set(registry["watchlist"]["unavailable_series_ids"]) <= missing,
+                    "explicit missing funding_basis entry required")
     seen = set()
     for m in packet["measurements"]:
         obj(m, "id series_id value unit convention_id definition window_start window_end "
-            "observed_at published_at available_at evidence_ids", "measurement")
+            "observed_at published_at available_at evidence_ids" +
+            (" delivery observation_date bar_time timing_basis source_timezone contract_ids" if v2 else ""), "measurement")
         mid = text(m["id"], "measurement.id")
         require(mid not in seen, "duplicate measurement ID")
         seen.add(mid)
         sid = text(m["series_id"], "series_id")
         require(sid in rows, f"unknown series ID: {sid}")
         row = rows[sid]
+        if v2:
+            require(sid not in missing, f"{sid}: unavailable input cannot be measured")
+            text(m["timing_basis"], "timing_basis")
+            if m["observation_date"] is not None:
+                date.fromisoformat(text(m["observation_date"], "observation_date"))
+            if m["bar_time"] is not None:
+                require(timestamp(m["bar_time"], "bar_time") <= captured, "future bar label is not a realized input")
+            if m["source_timezone"] is not None:
+                text(m["source_timezone"], "source_timezone")
+            strings(m["contract_ids"], "contract_ids")
+            if is_production:
+                source = row["production"]
+                require(source["availability"] == "available", f"{sid}: unavailable registry target")
+                expected = {"delayed": "delayed", "daily_publication": "daily",
+                            "live_label_observed_closed_market": "live_label"}[source["entitlement"]["status"]]
+                require(m["delivery"] == expected, f"{sid}: delivery classification must preserve registry status {expected}")
+                warnings.extend(production.limitations(row))
+                if source["futures"] is not None and not m["contract_ids"]:
+                    warnings.append(f"{sid}: actual contract IDs unknown; continuous-series roll mapping unresolved")
+            else:
+                require(m["delivery"] in ("live_label", "delayed", "daily", "unknown"), "invalid delivery")
         cid = text(m["convention_id"], "convention_id")
         require(cid in row["conventions"], f"{mid}: unknown measurement convention")
         convention = row["conventions"][cid]
         require(m["unit"] == convention["output_unit"], f"{mid}: incorrect units")
         require(m["definition"] == convention["definition"], f"{mid}: ambiguous measurement definition")
         require(type(m["value"]) in (int, float) and math.isfinite(m["value"]), f"{mid}: finite value required")
-        start = timestamp(m["window_start"], f"{mid}.window_start")
-        end = timestamp(m["window_end"], f"{mid}.window_end")
-        observed = timestamp(m["observed_at"], f"{mid}.observed_at")
-        require(start <= end <= observed <= captured, f"{mid}: impossible measurement timing")
+        unknown_clock = v2 and m["observed_at"] is None
+        if unknown_clock:
+            require(m["observation_date"] is not None and m["window_start"] is None and m["window_end"] is None,
+                    f"{mid}: unknown observation clock needs observation_date and null window timestamps")
+            require(date.fromisoformat(m["observation_date"]) <= captured.date(), "future observation date")
+            require(cid == "level", "unknown measurement-window clocks permit only a dated level")
+            observed = None
+            warnings.append(f"{mid}: exact observation/window clock unknown; date/bar label is not availability")
+        else:
+            start = timestamp(m["window_start"], f"{mid}.window_start")
+            end = timestamp(m["window_end"], f"{mid}.window_end")
+            observed = timestamp(m["observed_at"], f"{mid}.observed_at")
+            require(start <= end <= observed <= captured, f"{mid}: impossible measurement timing")
         times = {}
         for field in ("published_at", "available_at"):
             if m[field] is None:
                 warnings.append(f"{mid}: {field} unknown; capture time does not establish historical availability")
             else:
                 times[field] = timestamp(m[field], f"{mid}.{field}")
-                require(observed <= times[field] <= captured, f"{mid}: impossible {field}")
+                require(times[field] <= captured and (observed is None or observed <= times[field]),
+                        f"{mid}: impossible {field}")
         if len(times) == 2:
             require(times["published_at"] <= times["available_at"], f"{mid}: availability precedes publication")
         require(strings(m["evidence_ids"], "measurement.evidence_ids")
                 and all(eid in evidence for eid in m["evidence_ids"]), f"{mid}: unknown/missing evidence IDs")
         providers = {item["provider"] for item in packet["evidence"] if item["id"] in m["evidence_ids"]}
         require(row["provider"] in providers, f"{mid}: series provider not represented in evidence")
-        age = (captured - observed).total_seconds()
+        age = (captured - observed).total_seconds() if observed is not None else None
         policy = row["max_age_seconds"]
-        warnings.append(f"{mid}: observation age {age:g}s; " +
+        warnings.append(f"{mid}: observation age " + (f"{age:g}s; " if age is not None else "unknown; ") +
                         ("no declared age policy" if policy is None else
-                         f"declared maximum {policy:g}s" + (" EXCEEDED" if age > policy else "")))
+                         f"declared maximum {policy:g}s" + (" EXCEEDED" if age is not None and age > policy else "")))
         for field in ("proxy", "futures_roll"):
             if row[field] != "none":
                 warnings.append(f"{mid}: {field}: {row[field]}")
-    return {"limitations": warnings, "registry": registry_bytes, "evidence": evidence}
+    return {"limitations": warnings, "registry": registry_bytes, "evidence": evidence,
+            "registry_context": production.context(registry, binding["revision"]) if is_production else None}
 
 
 @contextmanager
@@ -259,6 +333,9 @@ def verify_bundle(bundle):
     checked = validate(packet, bundle, retained=bundle)
     require(decode((bundle / "validation.json").read_bytes()) == {"limitations": checked["limitations"]},
             "retained limitations differ from packet/registry")
+    if checked["registry_context"] is not None:
+        require(decode((bundle / "registry-context.json").read_bytes()) == checked["registry_context"],
+                "retained production registry context differs")
     return packet
 
 
@@ -285,6 +362,8 @@ def capture(packet, input_root, root):
             files = [("packet.json", body, "evidence"),
                      ("registry.json", checked["registry"], "configuration"),
                      ("validation.json", encoded({"limitations": checked["limitations"]}), "evidence")]
+            if checked["registry_context"] is not None:
+                files.append(("registry-context.json", encoded(checked["registry_context"]), "configuration"))
             for i, item in enumerate(packet["evidence"]):
                 files.append((f"artifact-{i}.bin", checked["evidence"][item["id"]], item["kind"]))
             assets, locations = [], []
@@ -321,7 +400,7 @@ def render(packet, bundle):
     return f"""# Notice — {p['observation_id']}
 
 **Notice ID:** {notice_id(p)}
-**Observed:** {', '.join(m['observed_at'] for m in p['measurements'])}
+**Observed:** {', '.join(m['observed_at'] or (m.get('observation_date', '') + ' (clock unknown)') for m in p['measurements'])}
 **Author:** {p['author']}
 **Source:** {p['source']}
 **Status:** OPEN (draft; routing pending)
@@ -333,6 +412,8 @@ def render(packet, bundle):
 - **Observed at:** per-series timestamps below; captured {p['captured_at']}
 - Packet: {p['observation_id']}; SHA-256 {digest(encoded(p))}
 - Watchlist: {p['watchlist']['path']}; SHA-256 {p['watchlist']['sha256']}; retained registry.json
+- Registry Git revision: {p['watchlist'].get('revision') or 'synthetic fixture; no production revision'}
+- Input data: {p.get('data_kind', 'synthetic')}; attendance: {json.dumps(p.get('attendance'))}
 
 ## §1 — The observation
 
@@ -340,6 +421,8 @@ def render(packet, bundle):
 
 Raw measurements (separate from interpretation):
 {measurements}
+
+Explicit missing inputs: {json.dumps(p.get('missing_inputs', []), sort_keys=True)}
 
 ## §2 — Why it stands out (the N signal)
 

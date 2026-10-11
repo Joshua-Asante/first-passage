@@ -1,0 +1,10 @@
+{
+  "synthetic": true,
+  "description": "Invented values only; not TradingView exports or source observations. Provider strings in the packet identify the pinned definitions, not the origin of these invented values.",
+  "values": {
+    "mchi": 100,
+    "spx": 5000,
+    "dfii10": 2,
+    "brent": 70
+  }
+}

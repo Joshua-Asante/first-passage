@@ -1,0 +1,170 @@
+{
+  "schema_version": 2,
+  "observation_id": "GP-2026-10-11-synthetic-real-definitions",
+  "author": "Synthetic example author",
+  "source": "Synthetic values against exact PR #787 definitions; no market observation",
+  "captured_at": "2026-10-09T20:30:00Z",
+  "watchlist": {
+    "path": "global-market-map-107fe97.json",
+    "sha256": "ae0af9795931524faecc53d00ac63864caf41e68949d28f83d719970783b2b9c",
+    "revision": "107fe97cdba6f2b6b5c0f1939bfe93b3924b3ceb"
+  },
+  "measurements": [
+    {
+      "id": "mchi",
+      "series_id": "mchi",
+      "value": 100,
+      "unit": "USD_per_share",
+      "convention_id": "level",
+      "definition": "Source level at window_end, without rebasing or currency conversion.",
+      "window_start": "2026-10-09T20:29:00Z",
+      "window_end": "2026-10-09T20:29:00Z",
+      "observed_at": "2026-10-09T20:29:00Z",
+      "published_at": null,
+      "available_at": null,
+      "evidence_ids": [
+        "mchi-synthetic"
+      ],
+      "delivery": "live_label",
+      "observation_date": "2026-10-09",
+      "bar_time": null,
+      "timing_basis": "Synthetic clock scenario only; publication/receipt unestablished. Daily observation date does not establish its exact clock.",
+      "source_timezone": null,
+      "contract_ids": []
+    },
+    {
+      "id": "spx",
+      "series_id": "spx",
+      "value": 5000,
+      "unit": "index_points",
+      "convention_id": "level",
+      "definition": "Source level at window_end, without rebasing or currency conversion.",
+      "window_start": "2026-10-09T20:00:00Z",
+      "window_end": "2026-10-09T20:00:00Z",
+      "observed_at": "2026-10-09T20:00:00Z",
+      "published_at": null,
+      "available_at": null,
+      "evidence_ids": [
+        "spx-synthetic"
+      ],
+      "delivery": "delayed",
+      "observation_date": "2026-10-09",
+      "bar_time": null,
+      "timing_basis": "Synthetic clock scenario only; publication/receipt unestablished. Daily observation date does not establish its exact clock.",
+      "source_timezone": null,
+      "contract_ids": []
+    },
+    {
+      "id": "dfii10",
+      "series_id": "dfii10",
+      "value": 2,
+      "unit": "percent",
+      "convention_id": "level",
+      "definition": "Source level at window_end, without rebasing or currency conversion.",
+      "window_start": null,
+      "window_end": null,
+      "observed_at": null,
+      "published_at": null,
+      "available_at": null,
+      "evidence_ids": [
+        "dfii10-synthetic"
+      ],
+      "delivery": "daily",
+      "observation_date": "2026-10-08",
+      "bar_time": null,
+      "timing_basis": "Synthetic clock scenario only; publication/receipt unestablished. Daily observation date does not establish its exact clock.",
+      "source_timezone": null,
+      "contract_ids": []
+    },
+    {
+      "id": "brent",
+      "series_id": "brent",
+      "value": 70,
+      "unit": "USD_per_barrel",
+      "convention_id": "level",
+      "definition": "Source level at window_end, without rebasing or currency conversion.",
+      "window_start": "2026-10-09T20:00:00Z",
+      "window_end": "2026-10-09T20:00:00Z",
+      "observed_at": "2026-10-09T20:00:00Z",
+      "published_at": null,
+      "available_at": null,
+      "evidence_ids": [
+        "brent-synthetic"
+      ],
+      "delivery": "delayed",
+      "observation_date": "2026-10-09",
+      "bar_time": null,
+      "timing_basis": "Synthetic clock scenario only; publication/receipt unestablished. Daily observation date does not establish its exact clock.",
+      "source_timezone": null,
+      "contract_ids": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "mchi-synthetic",
+      "kind": "evidence",
+      "path": "synthetic-production-values.json",
+      "sha256": "d3299e0140e1d3d7f7bcfc9f7d3f77892074b5ba798df3fae2ebe631890354cf",
+      "provider": "iShares issuer; Cboe One quote feed via TradingView",
+      "source_reference": "SYNTHETIC generator; value mchi; provider label describes definition only",
+      "evidence_store_version": null
+    },
+    {
+      "id": "spx-synthetic",
+      "kind": "evidence",
+      "path": "synthetic-production-values.json",
+      "sha256": "d3299e0140e1d3d7f7bcfc9f7d3f77892074b5ba798df3fae2ebe631890354cf",
+      "provider": "S&P Dow Jones Indices via TradingView",
+      "source_reference": "SYNTHETIC generator; value spx; provider label describes definition only",
+      "evidence_store_version": null
+    },
+    {
+      "id": "dfii10-synthetic",
+      "kind": "evidence",
+      "path": "synthetic-production-values.json",
+      "sha256": "d3299e0140e1d3d7f7bcfc9f7d3f77892074b5ba798df3fae2ebe631890354cf",
+      "provider": "Federal Reserve Board H.15 via FRED",
+      "source_reference": "SYNTHETIC generator; value dfii10; provider label describes definition only",
+      "evidence_store_version": null
+    },
+    {
+      "id": "brent-synthetic",
+      "kind": "evidence",
+      "path": "synthetic-production-values.json",
+      "sha256": "d3299e0140e1d3d7f7bcfc9f7d3f77892074b5ba798df3fae2ebe631890354cf",
+      "provider": "ICE Futures Europe; TradingView continuous construction",
+      "source_reference": "SYNTHETIC generator; value brent; provider label describes definition only",
+      "evidence_store_version": null
+    }
+  ],
+  "interpretation": {
+    "observation": "Invented MCHI=100 USD/share, SPX=5000 index points, DFII10=2 percent and Brent=70 USD/barrel use four distinct delivery/timing contexts; funding is unavailable.",
+    "baseline": "Synthetic comparison baseline equals each supplied level; numerical departures are zero.",
+    "departure": "Zero numerical departure; timing and funding coverage remain different.",
+    "why_stands_out": "The fixture demonstrates that a shared capture time cannot align live-label, delayed, daily and missing inputs.",
+    "candidate_explanations": []
+  },
+  "limitations": [
+    "SYNTHETIC VALUES AND CLOCKS: no actual market values, live tick test or attended capture.",
+    "The registry audit is dated, markets-closed metadata; its delays are not measured observation latency."
+  ],
+  "prior_exposure": {
+    "status": "none",
+    "windows": [],
+    "note": "Synthetic demonstration only; says nothing about prior exposure to real market data."
+  },
+  "lineage": {
+    "observations": [],
+    "notices": [],
+    "investigations": []
+  },
+  "correction": null,
+  "data_kind": "synthetic",
+  "attendance": null,
+  "missing_inputs": [
+    {
+      "series_id": "funding_basis",
+      "reason": "Registry explicitly unavailable: no verified 3-month construction, symbol, provider or authorized route. No substitute value."
+    }
+  ]
+}
