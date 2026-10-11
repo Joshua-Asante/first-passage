@@ -1,6 +1,6 @@
 # Live size-vector wiring: decision packet for Joshua
 
-**Date:** 2026-10-11 · **Base:** `origin/main` `7db42f1` · **Prepared by:** the live-wiring lane (single writer), for the Deployment Coordinator ("Portfolio deployment coordination") to relay. **Status:** decisions requested. Nothing here is ratified, admitted, frozen or dispatched.
+**Date:** 2026-10-11 · **Base:** `origin/main` `7db42f1` · **Prepared by:** the live-wiring lane (single writer), for the Deployment Coordinator ("Portfolio deployment coordination") to relay. **Status:** **RULED 2026-10-11.** Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended". Recorded here and at each owner: J-1 in the ADR addendum (now Accepted); J-2 in the P-L1 and P-L2 cards' §11 G-1; J-3 in R-SV; J-4 in the cards' dispatch gates; every §5 default in its owner. P-L1, P-L2 and P-L3 are **frozen** (§6). None is dispatched: the J-4 build gate is not open.
 
 **Sources:**
 - the [scope note](2026-10-11-live-size-vector-wiring-scope.md);
@@ -18,14 +18,14 @@ No private value was read.
 
 ## Your four rulings, at a glance
 
-| # | Decision | Recommendation | One-word reply |
+| # | Decision | Recommendation | Ruling |
 |---|---|---|---|
-| **J-1** | Ratify the PROPOSED ADR addendum: D-A (a GO field) and D-P5-2 (sizing as an EF shared component) | **Yes**, for the Tradeify instance. The personal GO mirrors it under clearance-plan row 2.7 | "J-1 yes" |
-| **J-2** | Code admission (G-1) for the P-L1 and P-L2 edits to bound code | **Yes**, exactly as bounded in §2 | "J-2 yes" |
-| **J-3** | D-SV-1: how the private sizing file reaches the daemon | **An explicit FILE source** (path plus SHA-256) on the instance's host volume, operator-placed. A mismatch or a missing file boots disarmed. No default | "J-3 yes" |
-| **J-4** | The build gate and the activation gates (§4) | **Yes to the coordinator's rule**, with my three conditions | "J-4 yes" |
+| **J-1** | Ratify the PROPOSED ADR addendum: D-A (a GO field) and D-P5-2 (sizing as an EF shared component) | **Yes**, for the Tradeify instance. The personal GO mirrors it under clearance-plan row 2.7 | **Yes** |
+| **J-2** | Code admission (G-1) for the P-L1 and P-L2 edits to bound code | **Yes**, exactly as bounded in §2 | **Yes** |
+| **J-3** | D-SV-1: how the private sizing file reaches the daemon | **An explicit FILE source** (path plus SHA-256) on the instance's host volume, operator-placed. A mismatch or a missing file boots disarmed. No default | **Yes** |
+| **J-4** | The build gate and the activation gates (§4) | **Yes to the coordinator's rule**, with my three conditions | **Yes** |
 
-The decisions in §5 are recommended defaults. A single "rest as recommended" covers them.
+The §5 decisions were ruled "rest as recommended": every recommendation in §5 is now the ruling.
 
 ## 1. J-1: ratify the ADR addendum
 

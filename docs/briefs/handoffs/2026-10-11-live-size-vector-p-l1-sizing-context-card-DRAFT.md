@@ -2,13 +2,13 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L1 and P-L2 build cards") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
+**Status:** **FROZEN 2026-10-11** by the live-wiring lane owner (single writer, delegated by the Deployment Coordinator on 2026-10-11), at the commit that adds this line. The freeze base is `origin/main` `7db42f1`. **Not dispatched:** the J-4 build gate (§11 G-3) is not open. *As drafted:* DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L1 and P-L2 build cards") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
 
-**Base:** `origin/main` `b5571a9`. Every `file:line` is at that commit unless marked otherwise. `ops/c1_rail/book_sizing_context.py` last changed `4eec7e73` (2026-09-15).
+**Base:** drafted at `origin/main` `b5571a9`; re-anchored at the freeze base `7db42f1`, where `book_sizing_context.py` is unchanged and only `book_account_owner.py` moved (#780). Every `file:line` is at `b5571a9` unless marked otherwise. `ops/c1_rail/book_sizing_context.py` last changed `4eec7e73` (2026-09-15).
 
 **Parent scope:** [live size-vector wiring scope](../../notes/2026-10-11-live-size-vector-wiring-scope.md) (PR #773) §5 row P-L1. The successor [build card](2026-10-10-t00-successor-screen-build-card-DRAFT.md) §3.1 owns the interfaces this card consumes: `LegSize`, `SizeVector`, and `entry_quantities`/`add_quantity(..., size=None)`, where `None` is today's behaviour. **Sibling:** [P-L2](2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md) is the only caller that will pass a size.
 
-**Authority:** none yet. Each item is a separate act, recorded in §11:
+**Authority:** G-1 and G-2 are recorded; G-3 waits on the J-4 build gate (§11). Each item is a separate act:
 - G-1 is Joshua's admission of the bounded edit to bound code.
 - G-2 is the coordinator's freeze.
 - G-3 is the dispatch, which depends on the screen.
@@ -71,7 +71,7 @@ Read the files below and report the findings before writing any test. A contradi
 - **(a) Base and bytes.** HEAD descends from `b5571a9`. `book_sizing_context.py` is byte-identical to `b5571a9` unless P-L1's own commits changed it. Report `git log -1 --format='%h %cs' -- ops/c1_rail/book_sizing_context.py`.
 - **(b) Closure membership.** Run the measured-closure script at HEAD (§10). At drafting it gave **68 measured / 63 staging, membership unchanged**, and `book_sizing_context.py` was in neither set. Check the public P7 D8 list ([C′ card](2026-10-02-h9-cprime-runtime-identity-build-DRAFT.md) `:260-265`, 40 paths): at drafting it did not name `book_sizing_context.py`. A different answer is a **stop**, because then the edit would move H′ (build card §4).
 - **(c) Pins.** `git grep` finds no tracked file holding `sha256(book_sizing_context.py)` or its first 16 hex characters.
-- **(d) Callers.** Today's callers of `BookSizingBinding(` are `book_account_owner.py:1575` (positional) and `tests/ops/test_tradeify_sizing_integration.py:27` (positional). Today's callers of `size_book_request` are `book_account_owner.py:1813`, `c1_sizing_host_reference.py:293` and the tests listed by `grep -rn size_book_request tests`. Report any other caller.
+- **(d) Callers.** Today's callers of `BookSizingBinding(` are `book_account_owner.py:1575` (positional) and `tests/ops/test_tradeify_sizing_integration.py:27` (positional). Today's callers of `size_book_request` are `book_account_owner.py:1819` (at `7db42f1`; `:1813` at `b5571a9`), `c1_sizing_host_reference.py:293` and the tests listed by `grep -rn size_book_request tests`. Report any other caller.
 - **(e) The law the replay uses.** Read `qualification/replay.py:605-620` and confirm that `size=self.size_vector.leg(k)` is passed to both `entry_quantities` and `add_quantity`. Read `book_policy.py:434-438` (`_leg_size`) and `:484-560`. P-L1 must reproduce exactly that call shape.
 - **(f) Image closure.** `deploy/c1_rail/Dockerfile:39` and `deploy/c1_signal_daemon/Dockerfile:37` already copy `book_sizing_context.py` and `book_policy.py`. No new file enters either image.
 
@@ -232,14 +232,14 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1. Joshua's code admission.** Joshua names the §2.1 edit to `book_sizing_context.py` as bound code (`trust_domain.py:163`), knowing it moves the TB-I1 policy fingerprint (`policy_fingerprint.py:29-32`). One admission may cover P-L1 and P-L2 together (scope note Q5). The coordinator records his words and the time in the ledger.
-- **G-2. Coordinator freeze.** The coordinator answers §12, commits the frozen revision under the committed-handoff rule, and records its SHA.
-- **G-3. Dispatch.** Recommended: after the successor screen returns GO (scope note Q6). On NO-GO the card is withdrawn.
+- **G-1. Joshua's code admission.** Joshua names the §2.1 edit to `book_sizing_context.py` as bound code (`trust_domain.py:163`), knowing it moves the TB-I1 policy fingerprint (`policy_fingerprint.py:29-32`). One admission may cover P-L1 and P-L2 together (scope note Q5). The coordinator records his words and the time in the ledger. **RECORDED:** Joshua, 2026-10-11 (about 17:15Z), in the live-wiring lane session: "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended", on the [decision packet](../../notes/2026-10-11-live-wiring-decision-packet.md) (#788). One admission covers P-L1 and P-L2 (packet §2).
+- **G-2. Coordinator freeze.** The coordinator answers §12, commits the frozen revision under the committed-handoff rule, and records its SHA. **DONE:** frozen 2026-10-11 by the lane owner at the commit that adds the Status line; the SHA is reported to the coordinator.
+- **G-3. Dispatch.** **RULED (J-4):** the build may be dispatched when **either** the Tradeify successor screen returns GO **or** Q-SFCLEAR-1 resolves. Neither has happened at freeze. Building binds no vector; each lane activates only under its own gates (packet §4). A Tradeify NO-GO does not withdraw the card.
 
 ## 12. Open decisions (coordinator at freeze)
 
-- **D-1. Dispatch timing.** Before or after screen GO? *Recommend:* after GO. The edit is small and has no effect until P-L2. A late GO still leaves time before CP-6, and that is the risk to name.
-- **D-2.** Confirm or replace the §0.5 defaults (A)–(D). *Recommend:* confirm.
+- **D-1. Dispatch timing.** **RULED:** J-4 (G-3).
+- **D-2.** Confirm or replace the §0.5 defaults (A)–(D). **RULED:** confirmed (rest as recommended).
 
 ## Pre-mortem
 

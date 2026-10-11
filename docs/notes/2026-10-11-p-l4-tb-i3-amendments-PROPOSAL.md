@@ -101,6 +101,8 @@ When the live route packet's card is written, it carries the following.
 
 ## 6. Decisions
 
+**RULED 2026-10-11** (Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended"; decision packet): D-A = option A, GO field (the ADR addendum is Accepted); D-B = fold A-1 to A-4 into TB-I3 S1 at its freeze; D-C = the explicit FILE source of R-SV D-SV-1.
+
 - **D-A (Joshua; ADR owner).** The expected hash goes in a GO field (ADR T10 addendum) or in the row provenance. *Recommend:* GO field.
 - **D-B (freezing coordinator).** Fold A-1 to A-4 into S1 at the interlock card's freeze, or add them as a follow-on S3 slice after S1. *Recommend:* fold, if D-A's addendum is ratified before the freeze. Otherwise S3, so that S1 is not held.
 - **D-C (Joshua; scope note Q4).** The private overlay root as the sizing artifact's delivery path. *Recommend:* yes, by reference and hash. The values never enter the public repo.

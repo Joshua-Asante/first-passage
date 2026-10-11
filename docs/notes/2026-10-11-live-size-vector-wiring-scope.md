@@ -67,6 +67,8 @@ Draft build cards: [P-L1](../briefs/handoffs/2026-10-11-live-size-vector-p-l1-si
 
 ## 6. Open questions for Joshua
 
+**RULED 2026-10-11** (Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended"; [decision packet](2026-10-11-live-wiring-decision-packet.md) #788): Q1 yes; Q2 T16 equality item (Tradeify) and the clearance 1.1 freeze (personal); Q3 refuse at sizing; Q4 the explicit FILE source (R-SV D-SV-1); Q5 one admission for P-L1 and P-L2; Q6 build on the screen GO **or** Q-SFCLEAR-1 RESOLVED, activate per lane. P-L1, P-L2 and P-L3 are frozen.
+
 1. **Required or defaulted vector live?** *Recommend:* required. The declared book binds `IDENTITY_SIZE_VECTOR` explicitly, so every live binding states its vector and its hash.
 2. **Is the vector hash enough for equality?** The replay sized with per-request cap 80 and paper capital (`production_source.py:197-210`). Live uses the binding's `cap_allocations` and `risk_dollars`. *Recommend:* P-L2 binds the vector now. T16 adds an explicit equality item, or a ruled permitted difference, for caps, tiers and the risk basis.
 3. **Legs floored to 0.** *Recommend:* keep the adapter running and refuse at sizing (`zero_size`), as in replay Z7. Not running the adapter is a separate runtime behaviour that the screen did not test.

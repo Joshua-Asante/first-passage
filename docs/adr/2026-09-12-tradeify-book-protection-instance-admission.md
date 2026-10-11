@@ -255,7 +255,7 @@ Joshua replied "all recommended" to the sitting-2 answer sheet (2026-10-03T01:42
 
 ## Addendum 2026-10-11 — the book's size vector in EF and the deployment GO (PROPOSED)
 
-**Status:** `Proposed`. Drafted by Claude Code for the Deployment Coordinator at Joshua's request ("draft the TB-I3 ADR addendum for D-A and D-P5-2"). Joshua has **not ratified** it, and it is **not effective**: §2a, §2b and §2c above are unchanged until a dated operator addendum accepts it.
+**Status:** `Accepted` — **ratified 2026-10-11** by Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended", reply J-1 on the [live-wiring decision packet](../notes/2026-10-11-live-wiring-decision-packet.md) (#788) §1, which carried the wording below at commit `7db42f1`. Effective from that record for the `tradeify_portfolio@Tradeify_Select_100K` instance: items 1–4 below now govern T6, T10, T11, §2b and §2c wherever they differ from the text above. No implementation, GO, row, seal or activation is authorized by it. *As drafted:* `Proposed`; drafted by Claude Code for the Deployment Coordinator at Joshua's request ("draft the TB-I3 ADR addendum for D-A and D-P5-2").
 
 **Tier:** full. It changes the admission chain's GO artifact and the EF composition for a live-risk instance (header **Tier**).
 

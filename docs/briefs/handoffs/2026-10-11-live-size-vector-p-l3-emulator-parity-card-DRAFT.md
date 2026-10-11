@@ -2,15 +2,15 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L3 emulator parity card") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
+**Status:** **FROZEN 2026-10-11** by the live-wiring lane owner (single writer, delegated by the Deployment Coordinator on 2026-10-11), at the commit that adds this line. The freeze base is `origin/main` `7db42f1`. **Not dispatched:** the J-4 build gate (§11 G-2) is not open. *As drafted:* DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L3 emulator parity card") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
 
 **Base:** `origin/main` `b5571a9`. Every `file:line` below is at that commit. `ops/` is unchanged through `ba000b2`. `ops/c1_signal_daemon/book_bundle_execution.py` and `book_bundle_intake.py` last changed `3cf42e43` (2026-09-16).
 
 **Parent scope:** [live size-vector wiring scope](../../notes/2026-10-11-live-size-vector-wiring-scope.md) (PR #773) §1 row L4 and §5 row P-L3. The successor [build card](2026-10-10-t00-successor-screen-build-card-DRAFT.md) §3.1 owns the vector interfaces. **Prerequisite:** [P-L1](2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) merged, because LE2's three-way parity calls `size_book_request` with a size. **Siblings:** [P-L2](2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md); [P-L4](../../notes/2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md).
 
-**Authority:** none yet. G-1 and G-2 are separate acts (§11). **No code admission is needed:** this file is not bound code (§0(b)).
+**Authority:** G-1 is recorded; G-2 waits on P-L1 and the J-4 build gate (§11). **No code admission is needed:** this file is not bound code (§0(b)).
 
-**Executor:** a Claude worker or Codex, single writer of `claude/live-size-p-l3` (proposed). **Not GLM:** the change is to order sizing.
+**Executor:** a Claude worker (D-2, ruled), single writer of `claude/live-size-p-l3` (proposed). **Not GLM:** the change is to order sizing.
 
 **Coordinator:** the Deployment Coordinator.
 
@@ -230,14 +230,14 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until both hold)
 
-- **G-1. Coordinator freeze.** The coordinator answers §12, confirms §0(b) (no code admission needed), commits the frozen revision and records its SHA.
-- **G-2. Dispatch.** P-L1 merged. Recommended: after the successor screen returns GO (scope note Q6).
+- **G-1. Coordinator freeze.** The coordinator answers §12, confirms §0(b) (no code admission needed), commits the frozen revision and records its SHA. **DONE:** frozen 2026-10-11 by the lane owner; §0(b) re-confirmed at `7db42f1` (68/63, no hit); the SHA is reported to the coordinator.
+- **G-2. Dispatch.** **RULED (J-4):** dispatched after P-L1 merges, once the build gate is open (the Tradeify successor screen GO **or** Q-SFCLEAR-1 RESOLVED). It may run in parallel with P-L2.
 
 ## 12. Open decisions (coordinator at freeze)
 
-- **D-1. Build it at all?** *Recommend:* build. It costs about 0.5 day, needs no admission, and keeps any later synthetic rehearsal from sizing at declared quantities by accident. The alternative is to withdraw it and record the emulator as identity-only; it is offline and not on the live path.
-- **D-2. Executor.** Claude or Codex. *Recommend:* Codex, if a lane is free, since the file is unbound and the change is mechanical. Otherwise Claude. Not GLM.
-- **D-3.** Confirm the §0.5 defaults (A)–(E). *Recommend:* confirm.
+- **D-1. Build it at all?** **RULED:** build ("rest as recommended", Joshua, 2026-10-11 (about 17:15Z), in the live-wiring lane session: "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended").
+- **D-2. Executor.** **RULED:** a Claude worker, to keep one writer for the lane (decision packet §5). Not GLM, and no @codex unless Joshua asks.
+- **D-3.** Confirm the §0.5 defaults (A)–(E). **RULED:** confirmed.
 
 ## Pre-mortem
 
