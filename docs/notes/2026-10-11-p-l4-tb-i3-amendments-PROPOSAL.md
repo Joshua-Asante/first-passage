@@ -97,6 +97,8 @@ When the live route packet's card is written, it carries the following.
   - §5 row P-L4 now points here.
 - **P-L2 card:** §8 and §9 no longer place the loader in TB-I3-HOST, and no longer say TB-I3-HOST edits `book_account_owner.py`.
 
+**Drafted 2026-10-11:** the ADR addendum for D-A (option A) and D-P5-2 is appended to the [admission ADR](../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-11--the-books-size-vector-in-ef-and-the-deployment-go-proposed) as PROPOSED, awaiting Joshua's ratification.
+
 ## 6. Decisions
 
 - **D-A (Joshua; ADR owner).** The expected hash goes in a GO field (ADR T10 addendum) or in the row provenance. *Recommend:* GO field.
