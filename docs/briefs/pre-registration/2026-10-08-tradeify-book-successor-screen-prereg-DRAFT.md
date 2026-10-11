@@ -1,10 +1,12 @@
 # Pre-registration — one screen of one successor configuration of the Tradeify book (#581's structure; not falsifier evidence)
 
-**Status:** `DRAFT — NOT RATIFIED.` A draft for the operator's ratification only. Nothing here binds a replay, screen, Monte Carlo or verdict until this line reads `RATIFIED <date>`, every §6 field and the §6 values block hold their values, and the ratifying commit's SHA is recorded in §6 (C, then C′, as #581). Under Q5 the status word is RATIFIED, not FROZEN; "freeze" in the cited owners means this ratification.
+**Status:** `RATIFIED 2026-10-11` by Joshua, directly to the Deployment Coordinator: "I ratify #733 as written, including its §6 values block" (§6). *As drafted:* `DRAFT — NOT RATIFIED.` A draft for the operator's ratification only. Nothing here binds a replay, screen, Monte Carlo or verdict until this line reads `RATIFIED <date>`, every §6 field and the §6 values block hold their values, and the ratifying commit's SHA is recorded in §6 (C, then C′, as #581). Under Q5 the status word is RATIFIED, not FROZEN; "freeze" in the cited owners means this ratification.
 
 *2026-10-10, P-S5 rewrite ([build card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §2.7, approved by Joshua 2026-10-10). Rewritten to #581's structure so that `screen_authority._check_prereg` and `_check_sections` accept it once ratified (Q5). §2 A5 and A6 are byte copies of [#581](2026-10-01-tradeify-t00-step2-screen-prereg.md)'s; their SHA-256 (each from its `###` heading line up to, not including, the next heading line) must stay A5 `a8f6f25e025a2e136e477580b7e569531d770a1e35e712b72f5a6b9b50eb391b` and A6 `b3bdc77baf3e6383f1df08afd2f0fbb8a7c930d95a0f56b0c5669a5e18b217d9` (`verdict.A5_TEXT_SHA256`, `A6_TEXT_SHA256`). Ratification must leave those bytes unchanged.*
 
-**Authority:** Joshua (operator), 2026-10-08, via the First Passage Deployment Coordinator: "go with your suggestions 1-3" (item 3, drafting). Rulings Q2, Q3, Q5 (2026-10-10, "agreed on Q2, Q3, Q5"), card approval ("approve #758, S-1 to S-7, P-S4 option A") and the successor configuration ("C-1 row 5 uniform, option A, K₀ = 8") are recorded on [card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §8 and, for the configuration ruling, on the [T00 card](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md) §8 (PR #760, merged `0837ae2`).
+*2026-10-10, completion for ratification (pre-registration assembly worker for the Deployment Coordinator): decisions 1–4 below recorded (§1d, §3 items 1–2, §4 OD-1); r3d assembled privately and `size_vector_sha256` computed (§2 A1); fresh RNG roots proposed with a disjointness proof (§3 item 4); K lineage registered (§1c); the §6 values block and OD-1 / OD-2 field filled; the reader log updated (§7). The Status is unchanged. Ratification remains Joshua's act (§9).*
+
+**Authority:** Joshua (operator), 2026-10-08, via the First Passage Deployment Coordinator: "go with your suggestions 1-3" (item 3, drafting). Rulings Q2, Q3, Q5 (2026-10-10, "agreed on Q2, Q3, Q5"), card approval ("approve #758, S-1 to S-7, P-S4 option A") and the successor configuration ("C-1 row 5 uniform, option A, K₀ = 8") are recorded on [card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §8 and, for the configuration ruling, on the [T00 card](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md) §8 (PR #760, merged `0837ae2`). **Decisions 1–4** (Joshua, 2026-10-10, directly to the Deployment Coordinator, on four recommendations from a Codex assessment chat: "Agreed on all four recommendations"; relayed to the assembly worker by the coordinator): (1) Q6/G5 and G6 reporting (§1d; owner: this file); (2) Q7 depth, budget and fresh roots (§3 items 1 and 4; owners: this file's values block and [card #758](../handoffs/2026-10-10-t00-successor-screen-build-card-DRAFT.md) §8); (3) `pass_floor_halves = BINDING` (§3 item 2; owner: this file); (4) OD-1 (§4; owner: the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider)).
 **Owner:** the T00 line ([amendment §T00](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#t00--feasibility-evidence-for-the-selected-book-new-investment-decision-not-a-gate-250k500k-may-return-early) step 3: after NO-GO-evidence, "adjust the book" is an operator investment decision). Step 3 of the [T00 card §8 successor decision tree](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record).
 **Loop of record:** STRATEGIC (investment decision on an adjusted book; K accounting in §1c).
 **Authored:** 2026-10-08, Claude Code (drafting only); rewritten 2026-10-10 by the P-S5 worker for the Deployment Coordinator. The operator owns every **OWED** field and the ratification.
@@ -32,8 +34,12 @@
 | [Size-feasibility RESULTS](../../../lab/analysis/c1/size_feasibility_2026-10/RESULTS.md) (#745) | FEASIBLE, largest clearing uniform k 0.5; grid K = 7; its readers |
 | [Screen-authority design](../../superpowers/specs/2026-10-02-t00-screen-authority-design.md) §4.5 | A re-attempt's pre-registration names every reader of the earlier run directory |
 | `AGENTS.md` "Strategy Authorization Lifecycle", "Protection" | De-risking, never re-optimization; the protection cell's change-control path |
+| Build branches, read for the 2026-10-10 completion: P-S1 [#762](https://github.com/Joshua-Asante/first-passage/pull/762) `8a788ccb`, P-S2 [#763](https://github.com/Joshua-Asante/first-passage/pull/763) `25a120a4`, P-S3 [#764](https://github.com/Joshua-Asante/first-passage/pull/764) `527960d9` | `validate_size_vector` (canonical encoding, `is_identity`); `parse_startup_policy` v2; `PURPOSE_PROFILES`, `_check_parameters`, `_derived_from_r3c`, `_check_size_vector`, `_values_and_cells`, `_ratified`; `STEP12_RNG_ROOTS`. Not merged; re-validated at H′ (§5a item 1) |
+| `ops/c1_rail/qualification/t00_screen/verdict.py:128-140`, `:189-237` | `pass_floor_halves = "BINDING"` puts H1 and H2 in the pass-floor set (`floor = _POPULATIONS`), with no code change (decision 3) |
+| `ops/c1_rail/qualification/t00_screen/plan.py:42-50` | `seed` = first 8 bytes of SHA-256 of canonical [tag, `path` or `probe`, root, population, index] (the §3 item 4 disjointness hook) |
+| [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) and [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken) | The OD-1 owner records: reading (c) for #581 (2026-10-02) and its extension to this screen (2026-10-10) |
 
-Not read by the P-S5 worker: Pine, ports, effective inputs, the Tier-1 or Tier-2 report, series, key lists, the Q1 options sheet, any private result.
+Not read by the P-S5 worker: Pine, ports, effective inputs, the Tier-1 or Tier-2 report, series, key lists, the Q1 options sheet, any private result. What the 2026-10-10 assembly worker read is its §7 row PA-1.
 
 ---
 
@@ -51,7 +57,7 @@ One pre-registered screen of **one** successor configuration of the Tradeify boo
 | C-4 | Size vector | The frozen size vector in the signed startup-policy v2 (Q1 option A, FLOOR-HALF: every leg at k = 0.5 under the code's own round-down rule). Values private; bound by `size_vector_sha256` (§2 A1) |
 | C-5 | Adds rule | The `adds` field of each leg in the frozen size vector in the signed startup-policy v2; no field may turn on an add today's rule refuses |
 | C-6 | Per-session risk-reduction rule | None: row 5 is read as uniform (C-1) |
-| C-7 | Answerer exposure for C-1…C-6 (the §10 marker form) | Answerer exposure: not seen — Joshua (he saw neither the Tier-1 nor the Tier-2 report; his other exposure is §7 rows T1-4, SF-3 and T2-4; relayed by the Deployment Coordinator 2026-10-10) |
+| C-7 | Answerer exposure for C-1…C-6 (the §10 marker form) | Answerer exposure: not seen — Joshua (he saw neither the Tier-1 nor the Tier-2 report directly; his other exposure is §7 rows T1-4, SF-3 and T2-4, including, before decisions 1–4, the Codex assessment chat's qualitative summary of the Tier-2 report; relayed by the Deployment Coordinator 2026-10-10) |
 
 **FLOOR-HALF is not the fractional k that cleared.** The size-feasibility FEASIBLE label (k 0.5) is a target range for a uniform fractional cut; it does not transfer to the integer vector this screen tests.
 
@@ -62,7 +68,7 @@ As #581 §1b, stated here as this file's own disposition: **a T00 screen does no
 ### §1c — K accounting
 
 - **K₀ = 8** (Joshua, 2026-10-10): the step-12 screen of the declared book (1) plus the size-feasibility grid (7), counted once. This successor is **K = 9**.
-- The coordinator registers this book's lineage in `discovery_manifests/` before ratification (card #758 §7 step 3).
+- This book's lineage is registered as `discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json` (K = 9: K₀ = 8 plus this pick; card #758 §7 step 3) by its own PR, [#765](https://github.com/Joshua-Asante/first-passage/pull/765), which merges before ratification (§5a item 3).
 - Each further configuration screened, under this file or a sibling, is another trial and needs its own ratified pre-registration.
 
 ### §1d — #733's earlier gates under Q5
@@ -74,9 +80,11 @@ The binding verdict is §2 A6, byte for byte. The earlier draft's gates map as f
 | G1 bust, pessimistic, FULL/H1/H2 | A6, binding |
 | G3 pass floor, pessimistic, FULL | A6, binding |
 | G2 bust, R1 alone, H2 | Implied by G1 for GO versus NO-GO: an R1 bust is an agreed FAILURE with a bust run or an `UNDETERMINED` path, and the pessimistic assignment counts both. Not separately bound |
-| G4 pass floor, R1 alone, H2 | Implied by the H2 pass floor when `pass_floor_halves` is `BINDING`; not enforced when it is `REPORTED` (§3 item 2) |
-| G5 funded survival | Reported, non-binding; no producer exists, so it is reported as "not produced". Confirmation **OWED (operator; Q6)** |
-| G6 economics | Outside A6; reported only. No producer exists in the screen, so it is reported as "not produced" |
+| G4 pass floor, R1 alone, H2 | Implied by the H2 pass floor, which is binding: `pass_floor_halves = BINDING` (§3 item 2, decision 3) |
+| G5 funded survival | Reported and non-binding (Q6, decision 1). This screen has no funded-survival producer, so the report states it as "not produced" |
+| G6 economics | Outside A6; reported only (decision 1). When absent, as it is here (no producer), the report states it as "not produced" |
+
+**Decision 1 (Q6; Joshua, 2026-10-10; owner: this file).** Funded survival (G5) is reported and non-binding, and is explicitly "not produced" because this screen has no producer. G6 economics stays reported only, likewise "not produced" when absent. A screen GO-evidence verdict establishes neither funded survival nor economics.
 
 **Label subtype.** The implications hold for GO versus NO-GO only. The earlier draft made a failed R1-alone gate a robust NO-GO; under A6 the same paths may be labelled `UNDETERMINED`-dependent, because the optimistic assignment does not count an undetermined R1 bust and does count an undetermined R1 pass (`verdict.py:173-175`). A6's labels govern.
 
@@ -89,6 +97,7 @@ The binding verdict is §2 A6, byte for byte. The earlier draft's gates map as f
 The four legs of the declared book at the identities r3c binds (`a526b50fa75e68451bdd2b5b57fa7a04e6ee08e61f96865c915ae8116a848d97`; #581 A1), driven by **r3d**: r3c with only `contract_id` and the `source_startup_policy` artifact row changed, checked by derivation (card #758 S-3). r3d's startup policy is `qualification-source-startup/v2`: v1's fields plus `sizing`, the frozen size vector in the signed startup-policy v2 (§1a C-4, C-5). Every other startup field equals r3c's v1 policy.
 
 - **Bound three ways:** this file's §6 values block carries `expressions = {"base": "DECLARED_BOOK", "size_vector_sha256": <hex>}` with `size_vector_sha256 = sha256(canonical_json_bytes(sizing))`; the screen authority carries the same; the signed r3d carries the bytes.
+- **Assembled (2026-10-10, private; hashes only):** `size_vector_sha256` `139919cd1a20961b660c57527fa45c6b811124d468cfc97a3dd161db4d54c271`; the v2 startup policy `53dea292e21e00b0425839ed81b24798c4b9152a3b33e0b063915bc8c697e359`; r3d's canonical contract `c7a829157d0a7700121a2049c1d8c1df3a4a45fe0552e38e6a7c4d9658584c19`. The vector is canonical under P-S1's `validate_size_vector`, is not the identity (S-5), and parses under P-S2's `parse_startup_policy`. r3d differs from r3c only in `contract_id` and the `source_startup_policy` row, and passes P-S3's `_derived_from_r3c` and `_check_size_vector` with r3c's own `contract_id` and startup row as the S-3 constants. r3d's contract digest is bound by the source approval, the P7 record and the authority, not by this file (card #758 S-3).
 - **Refused under the successor purpose:** a v1 startup policy, or a v2 vector that gives today's quantities (card #758 S-5).
 - **Policy, panels, populations:** as #581 A1 (candidate book protection policy, bound by the accepted P7 record's `code_closure_sha256`; r3c's four admitted-panel roles; FULL 997 / H1 499 / H2 498).
 - **Locked inputs untouched:** no Pine, port, effective input, `dd_protection` constant or `BASE_RISK` changes (Q2).
@@ -96,13 +105,13 @@ The four legs of the declared book at the identities r3c binds (`a526b50fa75e684
 
 ### A2 — Pass floor (and the ceiling it is paired with), per partition
 
-As #581 A2, unchanged:
+As #581 A2, except that the halves' pass floor binds (§3 item 2, decision 3):
 
 | Quantity | FULL | H1 | H2 | Owner |
 |---|---|---|---|---|
 | Bust ceiling (§A5 pessimistic count) | **≤ 5.0%** | **≤ 5.0%** | **≤ 5.0%** | prereg v2 §3 · #581 A2 |
-| Pass floor P(pass within 1500) (§A5 pessimistic count) | **≥ 50%** | §3 item 2 | §3 item 2 | prereg v2 §3 · #581 A2 |
-| Median sessions-to-pass (non-passing paths at T = ∞; each path's day per A5) | finite, ≤ 1500 | reported | reported | prereg v2 §3, §7 item 1 |
+| Pass floor P(pass within 1500) (§A5 pessimistic count) | **≥ 50%** | **≥ 50%** (binding) | **≥ 50%** (binding) | prereg v2 §3 · #581 A2 · decision 3 |
+| Median sessions-to-pass (non-passing paths at T = ∞; each path's day per A5) | finite, ≤ 1500 | finite, ≤ 1500 (binding) | finite, ≤ 1500 (binding) | prereg v2 §3, §7 item 1 · decision 3 |
 
 Each population is evaluated independently at its own depth; values are point estimates.
 
@@ -173,10 +182,10 @@ The denominator is always every path in the population. `UNDETERMINED` paths are
 
 | # | Item | Candidate (owner) | Why it is open | Ratified value |
 |---|---|---|---|---|
-| 1 | **Path depth per population** and **compute budget** | N = 1,002 per population, 334 per root (#581 as ratified; card #758 §7 "Budget": 961,920 path CPU-s, 11,300 overhead CPU-s by #581's formula) | **OWED (operator; Q7)**: depth stays N = 1,002 unless re-ruled | values block: `depth_per_root`, `budget` |
-| 2 | **Pass floor on H1 and H2**: binding or reported | #581's ratified `REPORTED`; `BINDING` makes §1d G4 enforced | **OWED (operator)** | values block: `pass_floor_halves` |
+| 1 | **Path depth per population** and **compute budget** | N = 1,002 per population, 334 per root; budget 961,920 path CPU-seconds plus 11,300 overhead CPU-seconds by #581's formula (card #758 §7 "Budget") | Ruled: Q7, decision 2 (Joshua, 2026-10-10) | values block: `depth_per_root`, `budget` |
+| 2 | **Pass floor on H1 and H2**: binding or reported | `BINDING`: H1 and H2 must each meet the pass floor, as FULL must. This enforces §1d G4 through A6's existing implementation (`verdict.py:140`, `:229`, `floor = _POPULATIONS`; no code change). It is an explicit change from #581's ratified `REPORTED` | Ruled: decision 3 (Joshua, 2026-10-10) | values block: `pass_floor_halves` |
 | 3 | **A deadline-only run in the bust numerator** | #581's ratified `true` (A5 (1)) | Carried from #581 | values block: `deadline_only_is_bust` |
-| 4 | **Path construction**: RNG tag and roots, block, path start | The compiled tag `t00-screen-rng/v1` with `roots` and `probe_root` disjoint from step 12's (`42`, `123`, `2026`, `probe`), so successor keys are disjoint from step 12, Tier 1 and Tier 2 (card #758 S-5); block and path start as #581 | Roots are set in the values block at ratification | values block: `rng`, `block`, `path_start_date` |
+| 4 | **Path construction**: RNG tag and roots, block, path start | The compiled tag `t00-screen-rng/v1` with fresh roots `successor1-r1`, `successor1-r2`, `successor1-r3` and probe root `successor1-probe`, disjoint from step 12's (`42`, `123`, `2026`, `probe`; step-12 authority `241708a1…91d3`), so successor keys are disjoint from step 12, Tier 1 and Tier 2 (card #758 S-5; Q7, decision 2). Roots are labels fixed by a rule, chosen before any successor output; the §10 seed hook checks disjointness. Block and path start as #581 | Joshua sets the roots by ratifying the values block (design §3, `rng`) | values block: `rng`, `block`, `path_start_date` |
 | 5 | **Run-1 (consistency-off) diagnostic** | #581's ratified `WAIVED` | Carried from #581 | values block: `run1_diagnostic` |
 | 6 | *Withdrawn (as #581):* prereg v2 §7 item 9 calibration reference | — | Not imported; numbering kept | withdrawn |
 | 7 | **Scenarios beyond S0** | `["S0"]` only (A3) | Carried from #581 | values block: `scenarios` |
@@ -188,9 +197,9 @@ The denominator is always every path in the population. `UNDETERMINED` paths are
 
 **H.** If the configuration of §1a is screened under §2 A6 on keys drawn under §3 item 4, then it is GO-evidence; otherwise it is NO-GO-evidence (robust or `UNDETERMINED`-dependent, per A6) or INSUFFICIENT, and the configuration is not adopted.
 
-**Falsifier.** For FULL, H1 or H2, the A5 pessimistic bust proportion exceeds 5.0%, or FULL's pessimistic P(pass within 1500) is below 50% or its median is not finite inside 1500 (and H1/H2 likewise if §3 item 2 is `BINDING`).
+**Falsifier.** For FULL, H1 or H2, the A5 pessimistic bust proportion exceeds 5.0%, or the pessimistic P(pass within 1500) of FULL, H1 or H2 is below 50% or its median is not finite inside 1500 (§3 item 2 is `BINDING`).
 
-**OD-1. D-feed condition (a) for a successor verdict.** The standing D-feed reading (c) (#581 OD-1, ruled 2026-10-02) is worded on #581 A6's labels, which this file's A6 copies. Whether that reading applies to a successor verdict as written is recorded at the D-feed owner before the screen returns, never chosen by its result — **OWED (operator)**.
+**OD-1. D-feed condition (a) for a successor verdict — RULED (decision 4; Joshua, 2026-10-10).** The existing D-feed reading (c) (#581 OD-1, ruled 2026-10-02) extends to this successor screen. GO-evidence meets condition (a). An `UNDETERMINED`-dependent NO-GO-evidence verdict can meet it only after Joshua's separate, dated acceptance of its risk into T15's F1. A robust NO-GO-evidence verdict requires a dated amendment of D-feed (a). INSUFFICIENT does not qualify. The successor stopping rule ([T00 card §8](../handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record)) is preserved. Recorded at its owner before any successor output exists: the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) addendum of 2026-10-10, mirrored in [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken).
 
 **OD-2. Base expressions.** The declared book (§1a C-2; card #758 S-3). Route-native editions are not these expressions.
 
@@ -200,8 +209,8 @@ The denominator is always every path in the population. `UNDETERMINED` paths are
 
 ### §5a — Dependencies before the screen (recorded; none is granted here)
 
-1. Accepted H′ with P-S1…P-S3 merged (card #758 §4).
-2. r3d assembled and its derivation check run; `size_vector_sha256` computed (card #758 §7 step 2).
+1. Accepted H′ with P-S1…P-S3 merged (card #758 §4), and **this file re-validated at H′ before C**: the §10 parse hooks and the r3d checks of §2 A1 re-run against the merged code. At the heads read (§0), P-S3 is not yet rebased on P-S1's Codex round-1 fold and its `R3C_CONTRACT_ID` and `R3C_STARTUP_POLICY_ROW` are `None`; #764 compiles them from `f7bad93` (head `7b83ef8`). The re-validation at H′ is the coordinator's step. If any merged change moves `size_vector_sha256`, the canonical vector or a parse result, this file returns to the coordinator before C.
+2. r3d assembled and its derivation check run; `size_vector_sha256` computed (card #758 §7 step 2): done 2026-10-10 (§2 A1), subject to item 1.
 3. The K₀ ledger entry merged (§1c).
 4. Ratification of this file, C then C′ (§9).
 5. A fresh source approval over r3d (`APPROVE_T00_SOURCE_CONTRACT`), then one P7 run at H′ over r3d, accepted through `t00_screen accept-p7`.
@@ -220,17 +229,17 @@ The denominator is always every path in the population. `UNDETERMINED` paths are
 
 ---
 
-## §6 — Ratification (operator; blank until ruled)
+## §6 — Ratification (operator)
 
-The §3 values are recorded once, in the `t00-step2-values/v1` block below: one line equal to `canonical_json_bytes(parameters)` (screen-authority design §3, row A8). Each active §3 *Ratified value* cell names only its keys. The successor's `parameters` differ from #581's only in `expressions` (§2 A1), `rng.roots` and `rng.probe_root` (§3 item 4), and any re-ruled `depth_per_root`, `budget` or `pass_floor_halves`. The verdict is GO-evidence, NO-GO-evidence or INSUFFICIENT, per A6; on H (§4) they read RESOLVED, FALSIFIED and AMBIGUOUS.
+The §3 values are recorded once, in the `t00-step2-values/v1` block below: one line equal to `canonical_json_bytes(parameters)` (screen-authority design §3, row A8). Each active §3 *Ratified value* cell names only its keys. The successor's `parameters` differ from #581's only in `expressions` (§2 A1), `rng.roots` and `rng.probe_root` (§3 item 4), `pass_floor_halves` (`BINDING`, §3 item 2) and the text of `budget.basis` (Q7); `depth_per_root` and the two budget figures are #581's (§3 item 1). The block below (SHA-256 `2adfaa831fd281a1a73d401271e1f272431de962352bcc1387e68168b4bc06c8`) passes P-S3's `_check_parameters` under the successor purpose (§10). The verdict is GO-evidence, NO-GO-evidence or INSUFFICIENT, per A6; on H (§4) they read RESOLVED, FALSIFIED and AMBIGUOUS.
 
 ```t00-step2-values/v1
-OWED (operator): replaced at ratification by the single line canonical_json_bytes(parameters)
+{"a5_rule":"T00_A5/v1","block":{"family":"JOINT_FLAT_BOTH_RUNS","length_sessions":5},"budget":{"basis":"Q7 (Joshua 2026-10-10): N = 1,002 per population, 334 per root; #581 formula (design 5.4 at option a upper): path = c x 3N, c = 320 s, 3N = 3006; overhead = (b + 2i) x (W x S + R) + p, b = 173 s, i = 71.4 s, W = 8, S = 3, R = 8, p = 1100 s, rounded up","overhead_cpu_seconds":11300,"path_cpu_seconds":961920},"deadline_only_is_bust":true,"depth_per_root":{"FULL":334,"H1":334,"H2":334},"expressions":{"base":"DECLARED_BOOK","size_vector_sha256":"139919cd1a20961b660c57527fa45c6b811124d468cfc97a3dd161db4d54c271"},"horizon_sessions":1500,"initial_state":{"class":"PRISTINE","current_equity":"100000","historical_eod_peak":"100000","original_basis":"100000","prior_max_day_profit":"0","prior_trade_days":0},"median_rule":"LOWER_NEAREST_RANK_INF_INCLUDED","pass_floor_halves":"BINDING","path_start_date":"2022-09-01","rng":{"probe_root":"successor1-probe","roots":["successor1-r1","successor1-r2","successor1-r3"],"tag":"t00-screen-rng/v1"},"run1_diagnostic":"WAIVED","scenarios":["S0"]}
 ```
 
-- **Ruling:** —
-- **OD-1 / OD-2:** —
-- **Ratifying commit SHA:** recorded in C′
+- **Ruling:** Joshua, 2026-10-11, directly to the Deployment Coordinator: "I ratify #733 as written, including its §6 values block". This ratifies §1–§5 as written and the §6 t00-step2-values/v1 block (SHA-256 2adfaa83…06c8). The A5/A6 bytes are unchanged (A5 a8f6f25e…391b, A6 b3bdc77b…17d9).
+- **OD-1 / OD-2:** Joshua, 2026-10-10. **OD-1:** decision 4, reading (c) extended to this screen (§4), recorded at the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) and [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken). **OD-2: the declared book** (§1a C-2; card #758 S-3, approved 2026-10-10); route-native editions are not these expressions.
+- **Ratifying commit SHA:** `46e0aafe6a6c5f9efab10167c0c9abbd2bcf5323`
 
 ---
 
@@ -253,13 +262,15 @@ Readers of per-session or per-leg step-12 detail, of the step-12 run directory (
 | RM-1 | Readiness-map session | 2026-10-10 | Public code and docs only; no report, series, keys or private result | Readiness map §6 |
 | T2-1 | Tier-2 executor session | 2026-10-10 01:47Z–03:44Z | All sampled series and the Tier-2 report | T00 card §8, Tier-2 result |
 | T2-2 | Q1 options worker | 2026-10-10 | The Tier-2 report | T00 card §8, Tier-2 result |
-| T2-3 | Deployment Coordinator | 2026-10-10 | The Tier-2 hash-and-label return and the Q1 options worker's public-safe return; not the report | T00 card §8, Tier-2 result |
-| T2-4 | Joshua | 2026-10-10 | Neither report; hash-and-label returns and the public-safe Q1 summary | §1a C-7 |
+| T2-3 | Deployment Coordinator | 2026-10-10 | The Tier-2 hash-and-label return, the Q1 options worker's public-safe return, Joshua's relayed four decisions (1–4) and the reader-log text; not the report, and not the Codex chat's (T2-5) qualitative findings summary (confirmed by the coordinator, 2026-10-10) | T00 card §8, Tier-2 result |
+| T2-4 | Joshua | 2026-10-10 | Neither report directly (C-7 "not seen"). He received the coordinator's hash-and-label returns, the public-safe Q1 summary, and the Codex assessment chat's (T2-5) qualitative findings summary of the Tier-2 report; decisions 1–4 followed that summary | §1a C-7; relayed by the coordinator |
+| T2-5 | Codex assessment chat (thread `01a126d1…`) | 2026-10-10 | The Tier-2 `REPORT.md` (`efcf85db…db7c`), read during its assessment; it gave Joshua a qualitative findings summary and the four recommendations adopted as decisions 1–4. Report exposure, not a new diagnostic run | relayed by the coordinator |
 | PS5-1 | P-S5 worker (this rewrite) | 2026-10-10 | Public code and docs only; no report, series, keys, Q1 sheet or private result | this file |
+| PA-1 | Pre-registration assembly worker (the 2026-10-10 completion) | 2026-10-10 | The private Q1 options sheet (`Q1_OPTIONS.md` `62a947d5…`, folder SHA256SUMS `08f9c147…`; it restates Tier-2 report findings), r3c's startup policy and contract (structure and the startup row), the step-12 authority's `rng`, `depth_per_root`, `pass_floor_halves` and `purpose` fields, the step-12 console log (authority hash only); no report, series, keys, run directory, `results.json`, Pine, port or effective inputs | this file |
 
 Also exposed to everyone: the public step-12 verdict `NO-GO-evidence-robust` (#724), the Tier-2 card's admission-time row 5, and the public Tier-2 result (rows 4 and 5 hold).
 
-**Data exposure.** Every admitted panel is fully exposed through step 12, Tier 1 and Tier 2. Keys from roots disjoint from step 12's give fresh paths over the same history, not new history; the Tier-1 keys (`60c128a7…329e`) and the 60 Tier-2 paths (`e51bcca1…68c5`) come from step 12's run, so they are excluded by construction. The report says so.
+**Data exposure.** Every admitted panel is fully exposed through step 12, Tier 1 and Tier 2. Keys from roots disjoint from step 12's give fresh paths over the same history, not new history; the Tier-1 keys (`60c128a7…329e`) and the 60 Tier-2 paths (`e51bcca1…68c5`) come from step 12's run, so they are excluded by construction. **Disclosed limitation (Q7, decision 2):** the fresh roots give fresh paths over the same exposed history, not new history. The report says so.
 
 Ratification attests that this table is complete.
 
@@ -272,12 +283,23 @@ Ratification attests that this table is complete.
 
 ## §9 — Ratification procedure
 
-1. P-S5 merged; card #758 §7 steps 2 and 3 done.
-2. The operator sets every **OWED** field: G5 confirmation (§1d, Q6), depth (§3 item 1, Q7), `pass_floor_halves` (§3 item 2), OD-1 (§4), the §6 values block, Ruling and OD-1 / OD-2 fields. No private value in public text.
-3. Claude runs §10 except the ratification-completeness hook; the operator reviews the full text.
-4. **C:** one commit changes the Status line to `RATIFIED <date>` and fills §6 (and nothing in A5/A6). It is the oldest RATIFIED commit of this path reachable from `origin/main`.
-5. **C′:** one commit changes only the `- **Ratifying commit SHA:**` line, to C's 40-hex SHA in backticks.
-6. §10 runs in full at C′. Any failure voids the ratification.
+1. **Before C (coordinator):** this file's completion PR merged; the K-ledger PR merged (§1c); H′ accepted and this file re-validated at H′ (§5a item 1); §10 run except the ratification-completeness hook. Joshua reviews the full text, including the values block, the fresh roots and §7.
+2. **C (Joshua's ratification, one commit on a branch from `origin/main`, this file only):** exactly two lines change, nothing else (A5/A6, the values block and every other byte unchanged). With `<date>`, `<recipient>` and `<words>` filled in, line 3 and the §6 Ruling line become:
+
+   ```text
+   **Status:** `RATIFIED <date>` by Joshua, directly to <recipient>: "<words>" (§6). *As drafted:* <the current Status text from `DRAFT — NOT RATIFIED.` to the end of the line>
+   - **Ruling:** Joshua, <date>, directly to <recipient>: "<words>". This ratifies §1–§5 as written and the §6 t00-step2-values/v1 block (SHA-256 2adfaa83…06c8). The A5/A6 bytes are unchanged (A5 a8f6f25e…391b, A6 b3bdc77b…17d9).
+   ```
+
+   Both template lines are indented here; in the file each starts at column 0. C must be the oldest commit reachable from `origin/main` whose Status reads RATIFIED.
+3. **C′ (the next commit, this file only):** only the §6 Ratifying commit SHA line changes, to the line below with C's 40-hex SHA and nothing after it. The line count is unchanged.
+
+   ```text
+   - **Ratifying commit SHA:** `<C's 40-hex SHA>`
+   ```
+4. **Landing:** one PR carrying C and C′, merged with a **merge commit** (never squash or rebase, which would destroy C and C′), as #720 did for #581. The authority later binds `prereg.ratifying_commit` = C, `prereg.commit` = C′ and `prereg.blob_sha256` = the blob at C′.
+5. §10 runs in full at C′, and `_check_prereg` / `_check_sections` from the merged `screen_authority.py` are run against C and C′ once the PR lands. Any failure voids the ratification; a fresh file is opened, never an edit (§5b).
+6. **Order after C′ (card #758 §7):** ratification precedes the r3d source approval and P7 over r3d (§R). Then step 5, the r3d source approval (Joshua signs); step 6, P7 at H′ over r3d, with the current `p7_acceptance.json` renamed aside first, then `accept-p7` (coordinator); step 7, the screen authority (Joshua signs); step 8, the run.
 
 ## §10 — Audit hooks
 
@@ -302,8 +324,15 @@ grep -nE '\*\*OW[E]D \(|^OW[E]D \(' "$f"
   awk '/^## §6/{s=1;next} /^## /{s=0} s' "$f" | grep -A1 '^```t00-step2-values/v1$' | tail -1 | grep -q '^{' || echo '§6 values block: not set'
   sed -n 3p "$f" | grep -qE '^[*][*]Status:[*][*] `RATIFIED [0-9]{4}-[0-9]{2}-[0-9]{2}\.?`' || echo 'Status line is not RATIFIED <date>'; } | grep . || echo OK
 
+# Values block and §3 cells through the authority's own parsers, at H′ (expect "parameters ok" then "C-shape ok").
+# The synthetic copy changes only the Status line and the Ruling field; it is never committed.
+python -I scripts/fp.py python -c "import sys,json;sys.path[:0]=['ops','core'];from c1_rail.qualification import screen_authority as s;N,Q=chr(10),chr(96);L=open(sys.argv[1],encoding='utf-8').read().split(N);p=json.loads(L[L.index(Q*3+'t00-step2-values/v1')+1]);s._check_parameters(p,s.PURPOSE_PROFILES[s.SUCCESSOR_PURPOSE]);print('parameters ok');L[2]='**Status:** '+Q+'RATIFIED 2026-10-11'+Q+' synthetic';L=[('- **Ruling:** synthetic' if x.startswith('- **Ruling:**') else x) for x in L];c=N.join(L);assert s._ratified(c.encode()) and s._values_and_cells(c,p);print('C-shape ok')" "$f"
+
+# Fresh roots: string- and seed-disjoint from step 12's (expect "disjoint 3007 3007").
+python -I scripts/fp.py python -c "import sys,json;sys.path[:0]=['ops','core'];from c1_rail.qualification.t00_screen import plan;L=open(sys.argv[1],encoding='utf-8').read().split(chr(10));r=json.loads(L[L.index(chr(96)*3+'t00-step2-values/v1')+1])['rng'];S=lambda roots,probe:{plan.seed(purpose='path',root=x,population=q,path_index=i) for x in roots for q in ('FULL','H1','H2') for i in range(334)}|{plan.seed(purpose='probe',root=probe,population='FULL',path_index=0)};a,b=S(['42','123','2026'],'probe'),S(r['roots'],r['probe_root']);assert not ({*r['roots'],r['probe_root']}&{'42','123','2026','probe'}) and not a&b;print('disjoint',len(a),len(b))" "$f"
+
 # Authority anchors (purpose, grants, chain, values schema, Status regex).
-rg -n "^SCREEN_PURPOSE|^SCREEN_GRANTS|^PREREG_CHAIN|^VALUES_SCHEMA|^_RATIFIED" ops/c1_rail/qualification/screen_authority.py
+rg -n "^SCREEN_PURPOSE|^SCREEN_GRANTS|^SUCCESSOR_PURPOSE|^SUCCESSOR_GRANTS|^STEP12_RNG_ROOTS|^PREREG_CHAIN|^VALUES_SCHEMA|^_RATIFIED" ops/c1_rail/qualification/screen_authority.py
 
 # No private value (expect no output).
 rg -n '\$[0-9]|[0-9]+(\.[0-9]+)? ?% of|account [0-9]' "$f"
