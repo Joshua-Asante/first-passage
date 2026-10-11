@@ -236,18 +236,41 @@ def bootstrap_indices(window_length):
     return result
 
 
-def path_terminal(days, initial_equity):
-    equity = peak = _finite(initial_equity)
+# §C money is fixed-point at 1e-6 USD: each input is rounded half-even onto that
+# grid once, so path arithmetic is exact integer arithmetic and the inclusive halt
+# (peak − trough)/peak ≥ 0.15 is tested exactly as 20·(peak − trough) ≥ 3·peak.
+MICROS = 10**6
+MAX_USD = 10**8  # per input; keeps 252-day sums ×20 inside int64
+
+
+def _micros(values):
+    values = np.asarray(values, dtype=float)
+    if not np.isfinite(values).all() or np.any(np.abs(values) >= MAX_USD):
+        raise Void('money outside fixed-point range')
+    return np.rint(values * MICROS).astype(np.int64)
+
+
+def _initial_micros(initial_equity):
+    equity = int(_micros(_finite(initial_equity)))
     if equity <= 0:
         raise Void('nonpositive initial equity')
-    for d, low, high in days:
+    return equity
+
+
+def _halted(peak, trough):
+    return 20 * (peak - trough) >= 3 * peak
+
+
+def path_terminal(days, initial_equity):
+    equity = peak = _initial_micros(initial_equity)
+    for d, low, high in _micros(days).tolist():
         peak = max(peak, equity + high)
         trough = equity + low
-        if (peak - trough) / peak >= .15:
-            return trough, True
+        if _halted(peak, trough):
+            return trough / MICROS, True
         equity += d
         peak = max(peak, equity)
-    return equity, False
+    return equity / MICROS, False
 
 
 @dataclass(frozen=True)
@@ -279,10 +302,8 @@ def score(days, initial_equity, draws):
     if (draws.shape != (3, 10000, 252) or not np.issubdtype(draws.dtype, np.integer)
             or draws.min() < 0 or draws.max() >= len(days)):
         raise Void('invalid shared draws')
-    initial_equity = _finite(initial_equity)
-    if initial_equity <= 0:
-        raise Void('nonpositive initial equity')
-    equity = np.full((3, 10000), initial_equity, dtype=float)
+    days = _micros(days)
+    equity = np.full((3, 10000), _initial_micros(initial_equity), dtype=np.int64)
     peak = equity.copy()
     hits = np.zeros((3, 10000), dtype=bool)
     for t in range(252):
@@ -290,11 +311,11 @@ def score(days, initial_equity, draws):
         active = ~hits
         intraday_peak = np.maximum(peak, equity + high)
         trough = equity + low
-        hit = active & ((intraday_peak - trough) / intraday_peak >= .15)
+        hit = active & _halted(intraday_peak, trough)
         equity = np.where(hit, trough, np.where(active, equity + d, equity))
         peak = np.where(active, np.maximum(intraday_peak, equity), peak)
         hits |= hit
-    return summarize(equity, hits)
+    return summarize(equity / MICROS, hits)
 
 
 @dataclass(frozen=True)

@@ -165,6 +165,29 @@ def test_c_inclusive_fifteen_percent(low, expected):
     assert hit is expected[1]
 
 
+@pytest.mark.parametrize('engine', ['path', 'vectorized'])
+@pytest.mark.parametrize('equity,day,terminal,hit', [
+    (5000.20, (0, -750.03, 0), 4250.17, True),   # 750.03/5000.20 is exactly 15%
+    (5000, (0, -749.83, .20), 4250.17, True),    # same boundary, peak set intraday
+    (1707.20, (0, -256.08, 0), 1451.12, True),   # -256.08e6 truncates off the grid
+    (5000.20, (0, -750.02, 0), 5000.20, False),  # one cent short
+])
+def test_c_decimal_fifteen_percent_boundary_is_exact(engine, equity, day, terminal, hit):
+    # Binary-float division gives 0.14999999999999997 for the first two paths.
+    if engine == 'path':
+        assert s.path_terminal([day], equity) == (terminal, hit)
+    else:
+        draws = np.zeros((3, 10000, 252), dtype=int)
+        assert s.score([day], equity, draws) == summary(terminal, (10000 * hit,) * 3)
+
+
+@pytest.mark.parametrize('equity,day', [(1e8, (0, 0, 0)), (100, (0, -1e8, 0)),
+                                        (100, (float('nan'), 0, 0)), (4e-7, (0, 0, 0))])
+def test_c_money_outside_fixed_point_grid_void(equity, day):
+    with pytest.raises(s.Void):
+        s.path_terminal([day], equity)
+
+
 def test_c_high_before_low_prior_peak_and_close_peak():
     assert s.path_terminal([(0, -7, 10)], 100) == (93, True)  # 17/110
     assert s.path_terminal([(10, 0, 0), (0, -7, 0)], 100) == (110, False)
