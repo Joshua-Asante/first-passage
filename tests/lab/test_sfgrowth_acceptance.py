@@ -112,6 +112,19 @@ def test_b_empty_nonbaseline_is_valid_and_hash_is_checked(tmp_path):
                       export_tz='America/New_York', baseline=False)
 
 
+def test_f6_export_scores_only_the_hashed_snapshot(tmp_path):
+    verified, rewritten = export_bytes(), export_bytes(net=500, favorable=40)
+    class RewrittenAfterHashRead(type(tmp_path)):
+        def read_bytes(self):
+            raw = super().read_bytes()
+            self.write_bytes(rewritten)  # concurrent replacement after the hash read
+            return raw
+    path = RewrittenAfterHashRead(tmp_path / 'raced.csv')
+    path.write_bytes(verified)
+    assert s.read_export(path, expected_sha256=digest(verified), leg='synthetic',
+                         export_tz='America/New_York', baseline=True) == parsed(tmp_path)
+
+
 @pytest.mark.parametrize('active', [True, False])
 def test_f7_native_guards_and_f9_properties_preserved(active):
     reference = settings(backtestMode=active)

@@ -8,13 +8,16 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import itertools
 import json
 import math
 import re
+import tempfile
 from dataclasses import dataclass
 from datetime import timedelta
 from fractions import Fraction
+from pathlib import Path
 
 import numpy as np
 
@@ -134,14 +137,20 @@ class ExportTrade:
 
 
 def read_export(path, *, expected_sha256, leg, export_tz, baseline):
-    """Reuse the pinned CSV parser, supplementing its missing favorable channel."""
+    """Reuse the pinned CSV parser, supplementing its missing favorable channel.
+
+    Both reads use the one hashed byte snapshot, never ``path`` again: the
+    path-only parser gets a private temporary copy of those bytes.
+    """
     try:
         raw = path.read_bytes()
         if _digest(raw) != expected_sha256:
             raise Void('export hash mismatch')
-        trades = parse_trade_list_csv(path, leg=leg, export_tz=export_tz)
-        with path.open(encoding='utf-8-sig', newline='') as handle:
-            rows = list(csv.DictReader(handle))
+        with tempfile.TemporaryDirectory() as private:
+            snapshot = Path(private) / path.name
+            snapshot.write_bytes(raw)
+            trades = parse_trade_list_csv(snapshot, leg=leg, export_tz=export_tz)
+        rows = list(csv.DictReader(io.StringIO(raw.decode('utf-8-sig'), newline='')))
         favorable = {}
         for row in rows:
             if row['Type'].strip().lower().startswith('exit'):
