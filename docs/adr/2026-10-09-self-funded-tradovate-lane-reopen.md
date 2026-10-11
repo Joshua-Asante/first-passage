@@ -107,3 +107,18 @@ rg -n "2026-10-09-self-funded" docs/adr/2026-07-16-self-funded-lane-close-strike
 - **Reason.** Tradeify's 2026-10-08 reply says a bot must be used only within Tradeify, even with different sizing ([exclusive-use replies](../notes/2026-10-10-tradeify-exclusive-use-replies.md), #772).
 
 **Effect on owed item 5.** The strategy-overlap part is resolved by construction: no chosen portfolio shares a strategy with the Tradeify book. The copy-trading, hedging and account-linking questions, and whether the CrossTrade route is permitted, stay **open** pending Tradeify compliance's written answer. Items 1–4, 6 and 7 are unchanged.
+
+## Addendum 2026-10-11b — Tradeify book reused on the personal lane (supersedes the option-c split)
+
+**Ruling** (Joshua, 2026-10-11 UTC, directly to the Deployment Coordinator): "reuse the Tradeify strategies, qualify their sizing for the personal capital, and finish the personal-account operating controls. The search for additional strategies can come off this deployment's critical path."
+
+- **Supersedes** the [2026-10-11 option-c split](#addendum-2026-10-11--strategy-split-between-lanes-option-c). That addendum stays as history; its candidate-pool narrowing no longer applies.
+- **Decision 2's pool** becomes the Tradeify book's four strategies (aegis_6j, dj30_mym_p250, vanguard_mgc, orb_mnq_v7), sized for the personal starting capital `E_0` (value private). The **exact size vector is an explicit operator choice**; the earlier five-leg study (K = 2,375) is not restored automatically. Searching for additional strategies is off this deployment's critical path.
+- **Decision 4 is unchanged:** the portfolio and its sizing clear only on the intraday-honest p99 peak-to-trough drawdown ≤ 15% after Tradovate costs and whole-contract rounding, with the live 15% halt. A Tradeify screen result does not establish the personal-account drawdown, growth, fee or margin results; those are tested at `E_0`.
+- **Owner:** the Deployment Coordinator owns #752 (Q-SFGROWTH-1) and its re-scope. Existing implementation owners of #775–#777, #779, #782 and #783 are preserved.
+
+**Cross-account constraint (Tradeify Funded Trader Agreement §6.7).** Opposing positions between a Tradeify account and an external (personal) account are prohibited, including opposing positions in different products assigned to the same Product Group, regardless of intent or contract size; a breach can put every involved account in violation. **Gate:** Tradeify and personal accounts do not operate at the same time until a fail-closed opposing-exposure safeguard is built and accepted, with its Product Group mapping confirmed from Tradeify's own source.
+
+**Residual (Agreement §6.6, open).** §6.6 says a bot must be "solely for the Trader's own use within Tradeify" and that running one across multiple firms is against policy; support's 2026-10-08 reply said it "must be used only within Tradeify". A personal brokerage account is not another firm, but the wording is unresolved. **Gate:** before simultaneous operation, either Tradeify's written answer permits the personal-account use, or Joshua records his acceptance of the residual risk in writing.
+
+**Effect on owed items.** Item 1 is re-scoped as above. Item 5 now covers the §6.7 safeguard and the §6.6 residual. Items 2–4, 6 and 7 are unchanged.
