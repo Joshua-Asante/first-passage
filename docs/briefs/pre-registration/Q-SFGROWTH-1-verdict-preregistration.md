@@ -2,7 +2,9 @@
 
 **Status:** FROZEN 2026-10-09 (operator: "freeze the plan"), before any export is read or any scorer exists. The freeze commit is recorded in the [parent brief §8](../Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md#8--verdict-pre-registration). A verdict computed after any constant below moves is void; a changed constant is a new pre-registration. Corrections from the freeze review land before Phase 0 reads data, as a dated amendment and re-freeze (see §E). The original freeze text is immutable at `121e2acf`.
 
-**Lane-split HOLD:** The operator ruling relayed as dated 2026-10-11 excludes legs 1–4 from the personal pool immediately. Section F8 controls pool reconciliation; the five-leg counts below are historical and cannot authorize exports or scoring.
+**Re-scoped 2026-10-11 (DRAFT, not ratified):** under [ADR addendum 2026-10-11b](https://github.com/Joshua-Asante/first-passage/blob/d7ad4d8d672790dfbe647b22fd9d75a95576f109/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split) (PR #784) the personal lane's study is [Q-SFCLEAR-1](Q-SFCLEAR-1-verdict-preregistration.md), a single-tuple clearance of the Tradeify book at R1. See [section G](#g---re-scope-to-q-sfclear-1-2026-10-11). Nothing below runs.
+
+**Lane-split HOLD (superseded by 2026-10-11b):** The operator ruling relayed as dated 2026-10-11 excludes legs 1–4 from the personal pool immediately. Section F8 controls pool reconciliation; the five-leg counts below are historical and cannot authorize exports or scoring.
 
 **Amendment reader notice:** Section A below preserves the October 9 baseline wording. The approved native-guard interpretation in [F7](#f7---captured-native-guards-retained-operator-ruling-pending-re-freeze) supersedes its protection parenthetical on amended re-freeze; exports and scoring remain held.
 
@@ -354,7 +356,7 @@ MGC (3) and ORB MNQ v7 (4). These exclusions apply now, before any amended freez
 The [exclusive-use record](../../notes/2026-10-10-tradeify-exclusive-use-replies.md)
 records the venue reply; the coordinator owns the dated addendum to the
 [self-funded ADR](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md).
-The [dated addendum](https://github.com/Joshua-Asante/first-passage/blob/d92920946bb7766876ce226a4cea0f67565a2e5f/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11--strategy-split-between-lanes-option-c) is recorded in coordinator PR #778 (pending merge when inspected).
+The [dated addendum](https://github.com/Joshua-Asante/first-passage/blob/d92920946bb7766876ce226a4cea0f67565a2e5f/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11--strategy-split-between-lanes-option-c) was merged with coordinator PR #778 (`ba000b2`).
 
 The only remaining member of the already admitted section-A pool is Striker
 NAS100 MNQ, DOW-excluded (original leg 5). No replacement is admitted by this
@@ -480,3 +482,9 @@ reference bindings yield VOID. Normalized example: exported net=96, commission=4
 target fees=6 gives g=100, d(1)=94 and d(1.5)=91, regardless of any separately
 estimated slippage amount. These are required tests, not a scorer implementation.
 The maximum-growth, 15% halt, 99-in-100 and ranking rules remain unchanged.
+
+## G - Re-scope to Q-SFCLEAR-1 (2026-10-11)
+
+**Authority:** [ADR addendum 2026-10-11b](https://github.com/Joshua-Asante/first-passage/blob/d7ad4d8d672790dfbe647b22fd9d75a95576f109/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split) (PR #784) and Joshua's 2026-10-11 rulings recorded in [Q-SFCLEAR-1 §1](Q-SFCLEAR-1-verdict-preregistration.md#1--context-and-operator-rulings). F8's exclusions are superseded: the pool is the four Tradeify-book legs. F8's HOLD lifts when Joshua ratifies Q-SFCLEAR-1.
+
+Nothing ran under this pre-registration; no data or K was consumed. Q-SFCLEAR-1 carries forward §C (statistic mechanics), F6 (private identity), F7 (native guards) and F9 (reference friction, fee-only stress, concurrent-exposure margin). Dropped: the five-leg grid and K = 2,375, NAS leg 5, F1-F4 structural-zero and Aegis-cap rules, Explore/Confirm, F8. Sections A-F stay as history.

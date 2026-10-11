@@ -3,11 +3,11 @@
 **Status:** OPEN
 **In-flight:** yes
 
-Active Phase-0 contract review; exports and scoring remain held pending independent
-additional eligible locked candidate admission under preregistration F8, exact-head review and amended freeze. This is an active study with an execution gate, not a
-parked research disposition.
+Re-scoped 2026-10-11 to Q-SFCLEAR-1 (DRAFT, not ratified): clearance of the Tradeify
+book at rung R1 on the personal account. No export, replay or scoring runs before
+Joshua ratifies its pre-registration. This is an active study with an execution gate.
 
-Owner: [selection brief](../../../../docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md).
-Contract: [preregistration](../../../../docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md).
+Owner: [Q-SFCLEAR-1 brief](../../../../docs/briefs/Q-SFCLEAR-1-personal-clearance-tradeify-book.md) (supersedes the [Q-SFGROWTH-1 brief](../../../../docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md)).
+Contract: [Q-SFCLEAR-1 preregistration](../../../../docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md).
 Current work: [sizing classification](PHASE0_SIZING_CLASSIFICATION.md), PR #752.
 The preregistration owns the private-manifest binding and all acceptance criteria.

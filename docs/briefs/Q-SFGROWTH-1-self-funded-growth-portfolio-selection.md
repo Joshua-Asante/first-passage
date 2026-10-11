@@ -1,6 +1,6 @@
 # Q-SFGROWTH-1 — Self-funded growth portfolio selection under a 15% peak-to-trough limit
 
-**Status:** `OPEN` — lane-split pool reconciliation HOLD (preregistration F8)
+**Status:** `OPEN` — re-scoped 2026-10-11 to [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md) (DRAFT, not ratified) under ADR addendum 2026-10-11b; nothing below runs
 **Authored:** 2026-10-09
 **Closed:** N/A
 **Authors:** Joshua (rulings) + Claude Code (author)
@@ -96,7 +96,7 @@ Execution runs in the operator's primary checkout (private exports); this public
 
 ## §8 — Verdict pre-registration
 
-**Lane-split authority pointer:** [2026-10-11 ADR addendum](https://github.com/Joshua-Asante/first-passage/blob/d92920946bb7766876ce226a4cea0f67565a2e5f/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11--strategy-split-between-lanes-option-c) in coordinator PR #778 (pending merge when inspected). [Preregistration F8](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#f8---lane-split-excluded-legs-and-pool-reconciliation-hold) records the four exclusions, conditional five-configuration/five-export/zero-artifact accounting and Joshua’s explicit HOLD while additional eligible locked candidates are admitted. The one-leg study is not adopted and final K remains unset. Section F9 records concurrent-exposure margin accounting, captured Properties Pyramiding, and the approved retained-reference-friction/fee-only 1.5× stress interpretation. Exact-head review and amended freeze remain owed.
+**Lane-split authority pointer:** [2026-10-11 ADR addendum](https://github.com/Joshua-Asante/first-passage/blob/d92920946bb7766876ce226a4cea0f67565a2e5f/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11--strategy-split-between-lanes-option-c) merged with coordinator PR #778 (`ba000b2`), since superseded by addendum 2026-10-11b (PR #784): the personal study is [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md) ([pre-registration section G](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#g---re-scope-to-q-sfclear-1-2026-10-11)). [Preregistration F8](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#f8---lane-split-excluded-legs-and-pool-reconciliation-hold) records the four exclusions, conditional five-configuration/five-export/zero-artifact accounting and Joshua’s explicit HOLD while additional eligible locked candidates are admitted. The one-leg study is not adopted and final K remains unset. Section F9 records concurrent-exposure margin accounting, captured Properties Pyramiding, and the approved retained-reference-friction/fee-only 1.5× stress interpretation. Exact-head review and amended freeze remain owed.
 
 [`docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md`](pre-registration/Q-SFGROWTH-1-verdict-preregistration.md) — ships a worked numeric example for the two-implementer test.
 

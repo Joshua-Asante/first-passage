@@ -4,6 +4,15 @@
 
 **Scope of this file:** identifiers, classes, source references, hashes and sanitized findings. No Pine text, no input values, no account figures ([AGENTS.md private read surface](../../../../AGENTS.md#public-clone-posture)). Values for each (leg, k) export go in the private manifest under `private/` (gitignored here), which is written only after this review. The committed private identity and public repository/commit/path/digest binding are mandatory under [preregistration F6](../../../../docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#f6---committed-private-manifest-identity); an ignored local copy alone cannot admit scoring.
 
+## Re-scope 2026-10-11 (supersedes the lane-split section below)
+
+Under ADR addendum 2026-10-11b (PR #784) the personal study is
+[Q-SFCLEAR-1](../../../../docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md)
+(DRAFT, not ratified): the four Tradeify-book legs at rung R1, evidence by port replay
+or Aegis re-sizing, not by size-specific exports. The C1–C4, C6 and C7 classification
+of legs 1–4 and the reference-evidence table stay as cited evidence; leg 5, the
+(leg, k) export grid and the structural-zero slots no longer apply.
+
 ## Current applicability after the lane split
 
 [Preregistration F8](../../../../docs/briefs/pre-registration/Q-SFGROWTH-1-verdict-preregistration.md#f8---lane-split-excluded-legs-and-pool-reconciliation-hold)
