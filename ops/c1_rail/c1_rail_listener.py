@@ -78,7 +78,7 @@ class RailAction:
     transport_state: str | None = None  # not_attempted|accepted|failed|unknown
 
 
-def handle_book_action(action, owner, *, occurrence=None, now):
+def handle_book_action(action, owner, *, occurrence=None, now, sources_healthy=True):
     """Route a typed four-leg mutation through the listener-owned serializer.
 
     This is the offline Phase-2 boundary.  The owner has no production route;
@@ -88,7 +88,7 @@ def handle_book_action(action, owner, *, occurrence=None, now):
 
     if not isinstance(owner, BookAccountOwner):
         raise TypeError("typed BookAccountOwner required")
-    return owner.dispatch(action, occurrence=occurrence, now=now)
+    return owner.dispatch(action, occurrence=occurrence, now=now, sources_healthy=sources_healthy)
 
 
 def handle_book_takeover_inventory(snapshot, runtime, *, now):
