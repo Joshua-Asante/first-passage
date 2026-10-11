@@ -287,3 +287,39 @@ def test_unhashable_or_mistyped_state_maps_to_halt_state_error(path, field, valu
     with pytest.raises(HaltStateError):
         h.snapshot()
     assert not h.entry_permitted() and h.flatten_required()
+
+
+# --- Codex review of #776 at d8b55c4 -------------------------------------------------
+
+_HUGE = 10**309  # a valid JSON integer beyond the float range
+
+
+@pytest.mark.parametrize("field,raw", [
+    ("peak", str(_HUGE)), ("peak", str(-_HUGE)), ("peak", "1e400"), ("peak", "Infinity"),
+    ("peak", "NaN"), ("peak", "9" * 5000), ("threshold", str(_HUGE)), ("threshold", '"1e999"'),
+], ids=["peak-huge", "peak-neg-huge", "peak-1e400", "peak-inf", "peak-nan", "peak-5000-digits",
+        "threshold-huge", "threshold-1e999"])
+def test_numeric_overflow_in_state_maps_to_halt_state_error(path, field, raw):
+    _new(path)
+    state = json.loads(path.read_text(encoding="utf-8"))
+    state[field] = "__RAW__"
+    path.write_text(json.dumps(state).replace('"__RAW__"', raw), encoding="utf-8")
+    h = _load(path)
+    for call in (h.snapshot, lambda: h.observe(100.0), lambda: h.flatten(_flat),
+                 lambda: h.resume(_go(rebase_peak=True), current_equity=100.0)):
+        with pytest.raises(HaltStateError):
+            call()
+    assert not h.entry_permitted() and h.flatten_required()
+
+
+@pytest.mark.parametrize("bad", [_HUGE, -_HUGE], ids=["huge", "neg-huge"])
+def test_out_of_range_integer_inputs_fail_closed(path, bad):
+    with pytest.raises(HaltStateError):
+        _new(path, bad)
+    assert not path.exists()
+    h = _new(path)
+    assert h.observe(bad)["state"] == "HALTED"
+    assert h.snapshot()["incidents"][-1]["reason"] == "equity_invalid"
+    assert h.flatten(_flat)
+    assert not h.resume(_go(rebase_peak=True), current_equity=bad)
+    assert not h.entry_permitted()

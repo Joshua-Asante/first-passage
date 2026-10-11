@@ -48,9 +48,16 @@ def _threshold(tier):
 
 
 def _equity(value):
-    if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
+    """Finite positive float, else None. The single numeric conversion for state
+    ``peak`` and caller equity, so an int beyond the float range (a valid JSON
+    10**309) is invalid rather than an escaping OverflowError."""
+    if type(value) not in (int, float):
         return None
-    return float(value)
+    try:
+        value = float(value)
+    except OverflowError:
+        return None
+    return value if math.isfinite(value) and value > 0 else None
 
 
 def _text(value):
