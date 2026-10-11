@@ -68,6 +68,32 @@ def _atomic_write(path, state):
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
         raise
+    _fsync_directory(path.parent)
+
+
+def _fsync_directory(directory):
+    """Make the rename durable (POSIX: fsync the parent directory). Windows has no
+    directory handle via ``os.open``; NTFS journals the rename's metadata, and the
+    rail host is Linux, where this runs."""
+    if os.name == "posix":
+        fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+
+
+_FLAT_KEYS = frozenset({"open_positions", "working_orders", "order_path_closed"})
+
+
+def flat_and_closed(evidence):
+    """Flat for halt or account switch: zero open positions, zero working orders and
+    no path to submit a delayed entry. Anything else, malformed included, is False
+    (uncertainty blocks)."""
+    return (type(evidence) is dict and set(evidence) == _FLAT_KEYS
+            and type(evidence["open_positions"]) is int and evidence["open_positions"] == 0
+            and type(evidence["working_orders"]) is int and evidence["working_orders"] == 0
+            and evidence["order_path_closed"] is True)
 
 
 class PersonalDrawdownHalt:
@@ -103,14 +129,25 @@ class PersonalDrawdownHalt:
             s = json.loads(self.path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as exc:
             raise HaltStateError("halt state unavailable") from exc
-        if (type(s) is not dict or set(s) != _FIELDS or s["schema"] != SCHEMA
+        try:
+            valid = self._valid(s)
+        except (TypeError, KeyError, AttributeError):
+            valid = False
+        if not valid:
+            raise HaltStateError("halt state invalid, foreign or stale")
+        return s
+
+    def _valid(self, s):
+        if type(s) is not dict or set(s) != _FIELDS or not all(
+                type(s[k]) is str for k in ("schema", "account", "portfolio_id", "tier",
+                                            "threshold", "state", "flatten")):
+            return False
+        return not (s["schema"] != SCHEMA
                 or (s["account"], s["portfolio_id"], s["tier"]) != (self.account, self.portfolio_id, self.tier)
                 or s["threshold"] != _threshold(self.tier) or _equity(s["peak"]) is None
                 or s["flatten"] not in _FLATTEN.get(s["state"], ())
                 or type(s["incidents"]) is not list or type(s["resumes"]) is not list
-                or not all(type(r) is dict and _text(r.get("go_id")) for r in s["resumes"])):
-            raise HaltStateError("halt state invalid, foreign or stale")
-        return s
+                or not all(type(r) is dict and _text(r.get("go_id")) for r in s["resumes"]))
 
     def entry_permitted(self):
         try:
@@ -143,24 +180,25 @@ class PersonalDrawdownHalt:
         return s
 
     def flatten(self, executor):
-        """Call ``executor(account) -> open position count`` while a flatten is owed.
+        """Call ``executor(account) -> evidence`` while a flatten is owed.
 
-        Only an exact integer 0 confirms; anything else (exception, positions left,
-        non-int) records FAILED and leaves the flatten owed. True when flat."""
+        Only ``flat_and_closed(evidence)`` confirms; anything else (exception,
+        positions or working orders left, an open order path, malformed evidence)
+        records FAILED and leaves the flatten owed. True when confirmed."""
         s = self.snapshot()
         if s["state"] == "RUNNING" or s["flatten"] == "CONFIRMED":
             return True
         try:
-            remaining = executor(self.account)
+            evidence = executor(self.account)
         except Exception:
-            remaining = None
-        s["flatten"] = "CONFIRMED" if type(remaining) is int and remaining == 0 else "FAILED"
+            evidence = None
+        s["flatten"] = "CONFIRMED" if flat_and_closed(evidence) else "FAILED"
         self._write(s)
         return s["flatten"] == "CONFIRMED"
 
     def resume(self, go, *, current_equity):
         """Operator GO resumes a flattened halt. ``rebase_peak`` must be explicit:
-        False carries the running peak (refused while still breached), True resets
+        False carries the running peak, ratcheted to ``current_equity`` (refused while still breached), True resets
         it to ``current_equity``. Each go_id resumes once. True when resumed."""
         s = self.snapshot()
         value = _equity(current_equity)
@@ -174,6 +212,8 @@ class PersonalDrawdownHalt:
             s["peak"] = value
         elif self._breached(s["peak"], value):
             return False
+        else:
+            s["peak"] = max(s["peak"], value)
         s.update(state="RUNNING", flatten="NOT_REQUIRED")
         s["resumes"].append({"go_id": go["go_id"], "operator": go["operator"],
                              "rebase_peak": go["rebase_peak"], "equity": value, "at": _now()})

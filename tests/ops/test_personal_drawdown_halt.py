@@ -4,6 +4,8 @@ Equity values are test fixtures (peak 100), not account figures.
 """
 import json
 import math
+import os
+from pathlib import Path
 
 import pytest
 
@@ -31,8 +33,11 @@ def _go(go_id="go-1", **over):
             "portfolio_id": PORTFOLIO, "rebase_peak": False, **over}
 
 
+FLAT = {"open_positions": 0, "working_orders": 0, "order_path_closed": True}
+
+
 def _flat(_account):
-    return 0
+    return dict(FLAT)
 
 
 def test_threshold_is_the_tier_value():
@@ -84,7 +89,9 @@ def test_flatten_failure_keeps_demanding_flatten(path):
     def boom(_account):
         raise ConnectionError("broker down")
 
-    for executor in (boom, lambda _a: 2, lambda _a: True, lambda _a: None):
+    bad = [{**FLAT, "open_positions": 2}, {**FLAT, "open_positions": True}, 0, None,
+           {**FLAT, "extra": 1}, {k: v for k, v in FLAT.items() if k != "working_orders"}]
+    for executor in (boom, *[(lambda _a, b=b: b) for b in bad]):
         assert h.flatten(executor) is False
         assert h.snapshot()["flatten"] == "FAILED" and h.flatten_required()
         assert not h.entry_permitted()
@@ -96,7 +103,7 @@ def test_flatten_failure_keeps_demanding_flatten(path):
 
 def test_flatten_is_not_called_while_running(path):
     called = []
-    assert _new(path).flatten(lambda a: called.append(a) or 0) is True
+    assert _new(path).flatten(lambda a: called.append(a) or dict(FLAT)) is True
     assert called == []
 
 
@@ -200,3 +207,83 @@ def test_persist_failure_latches_halt_in_process(path, monkeypatch):
     assert not h.entry_permitted() and h.flatten_required()
     with pytest.raises(HaltStateError):
         h.observe(100.0)
+
+
+# --- Codex review of #776 at 99126d2 -------------------------------------------------
+
+def test_atomic_write_syncs_directory_after_replace(path, monkeypatch):
+    import personal_drawdown_halt as mod
+    calls = []
+    real_replace = mod.os.replace
+    monkeypatch.setattr(mod.os, "replace", lambda a, b: (calls.append("replace"), real_replace(a, b)))
+    monkeypatch.setattr(mod, "_fsync_directory", lambda d: calls.append(("dir", Path(d))))
+    mod._atomic_write(path, {"k": 1})
+    assert calls == ["replace", ("dir", path.parent)]
+
+
+def test_directory_sync_failure_latches_halt(path, monkeypatch):
+    import personal_drawdown_halt as mod
+    h = _new(path)
+
+    def fail(_d):
+        raise OSError("dir fsync failed")
+
+    monkeypatch.setattr(mod, "_fsync_directory", fail)
+    with pytest.raises(HaltStateError):
+        h.observe(80.0)
+    assert not h.entry_permitted()
+
+
+@pytest.mark.skipif(os.name != "posix", reason="directory fsync is POSIX-only")
+def test_fsync_directory_opens_and_syncs_on_posix(tmp_path):
+    import personal_drawdown_halt as mod
+    mod._fsync_directory(tmp_path)  # must not raise on a real directory
+
+
+@pytest.mark.parametrize("evidence", [
+    {**FLAT, "working_orders": 1},          # resting entry/add still working
+    {**FLAT, "order_path_closed": False},   # a delayed entry can still be submitted
+    {**FLAT, "working_orders": True},
+    {**FLAT, "order_path_closed": 1},
+])
+def test_flatten_needs_no_working_orders_and_closed_order_path(path, evidence):
+    h = _new(path)
+    h.observe(80.0)
+    assert h.flatten(lambda _a: dict(evidence)) is False
+    assert h.snapshot()["flatten"] == "FAILED" and h.flatten_required()
+    assert not mod_flat_and_closed(evidence)
+
+
+def mod_flat_and_closed(evidence):
+    import personal_drawdown_halt as mod
+    return mod.flat_and_closed(evidence)
+
+
+def test_flat_and_closed_predicate():
+    assert mod_flat_and_closed(dict(FLAT))
+    for bad in (None, [], {}, {**FLAT, "open_positions": -1}, {**FLAT, "open_positions": 0.0}):
+        assert not mod_flat_and_closed(bad)
+
+
+def test_carry_peak_resume_ratchets_peak_to_resume_equity(path):
+    h = _new(path)
+    h.observe(84.0)
+    h.flatten(_flat)
+    assert h.resume(_go(), current_equity=120.0)
+    assert h.snapshot()["peak"] == 120.0
+    assert h.observe(101.0)["state"] == "HALTED"  # 15.8% below 120
+
+
+@pytest.mark.parametrize("field,value", [
+    ("state", []), ("flatten", []), ("state", {}), ("schema", []), ("account", []),
+    ("threshold", {}), ("incidents", {}),
+])
+def test_unhashable_or_mistyped_state_maps_to_halt_state_error(path, field, value):
+    _new(path)
+    state = json.loads(path.read_text(encoding="utf-8"))
+    state[field] = value
+    path.write_text(json.dumps(state), encoding="utf-8")
+    h = _load(path)
+    with pytest.raises(HaltStateError):
+        h.snapshot()
+    assert not h.entry_permitted() and h.flatten_required()
