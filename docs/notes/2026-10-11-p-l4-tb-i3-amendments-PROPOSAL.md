@@ -23,7 +23,7 @@ So whoever constructs the owner binding is the live route packet. That packet's 
 |---|---|
 | TB-I3 interlock (DRAFT) | **A-1 to A-4** below: the GO carries the vector hash, plus a synthetic, production-refusing equality seam at arm and boot |
 | TB-I3-HOST (FROZEN) | **None.** It does not build, read or forward the owner binding, so nothing in it can carry the vector. Amending a frozen card would add a footprint its §5 forbids |
-| Live route packet (unwritten) | **R-SV** (§4): the loader and the stamp read-back. It is carried into that card when it is written |
+| Live route packet (unwritten) | **R-SV** (§4; full requirement in the [R-SV proposal](2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md)): the loader and the stamp read-back. It is carried into that card when it is written |
 
 ## 2. Where the expected hash lives (decision D-A, Joshua)
 
@@ -82,7 +82,7 @@ When the live route packet's card is written, it carries the following.
 
 - **Loader.**
   - The daemon config references the sizing artifact by path and `sha256`. It never holds a copy of the values.
-  - The artifact is the r3d startup policy v2's `sizing`, delivered through the private overlay root that R-J already uses (`ops/c1_signal_daemon/ports/`, gitignored). This is subject to scope note Q4.
+  - The artifact is the r3d startup policy v2's `sizing`, delivered by the mechanism the live packet chooses for private non-`.py` inputs. *Corrected 2026-10-11:* R-J guard (iii) keeps every non-`.py` port-root file out of the image, so the overlay is not an existing path. See the [R-SV proposal](2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md) D-SV-1.
   - The loader verifies the bytes' SHA-256 and then calls `book_policy.validate_size_vector`. It does not reimplement parsing.
   - It passes the resulting `SizeVector` as the owner binding's `size_vector` (P-L2).
   - Absence, a digest mismatch or a non-canonical encoding refuses the boot to disarmed.
