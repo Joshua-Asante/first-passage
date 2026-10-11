@@ -110,15 +110,92 @@ def test_production_registry_is_not_silently_adopted(inputs):
         b.validate(p, root)
 
 
-def test_paths_and_symlinks(inputs):
+@pytest.mark.parametrize("damage", ["missing", "corrupt", "replacement"])
+def test_verification_rechecks_correction_lineage(inputs, damage):
+    p, root, output = inputs
+    original = b.capture(p, root, output)
+    current = p
+    for suffix in ("correction", "successor"):
+        changed = deepcopy(current)
+        changed["observation_id"] = p["observation_id"] + "-" + suffix
+        changed["correction"] = dict(
+            predecessor_id=current["observation_id"],
+            predecessor_sha256=b.digest((output / current["observation_id"] / "packet.json").read_bytes()),
+            changes=["interpretation corrected"])
+        successor = b.capture(changed, root, output)
+        current = changed
+    assert b.verify_bundle(successor) == current
+    if damage == "corrupt":
+        (original / "packet.json").write_bytes(b"corrupt")
+    else:
+        original.rename(output / "retired-original")
+        if damage == "replacement":
+            replacement = deepcopy(p)
+            replacement["interpretation"]["observation"] = "Replacement with a different hash."
+            b.capture(replacement, root, output)
+    with pytest.raises((ValueError, OSError)):
+        b.verify_bundle(successor)
+
+
+@pytest.mark.parametrize("command", ["validate", "finalize"])
+def test_cli_invalid_utf8_returns_json_error(tmp_path, capsys, command):
+    from scripts.global_pulse.__main__ import main
+
+    bad = tmp_path / "bad.json"
+    bad.write_bytes(b'{"bad": "\xff"}')
+    args = (["validate", "--packet", str(bad), "--input-root", str(tmp_path)]
+            if command == "validate" else
+            ["finalize", "--bundle", str(tmp_path), "--routing", str(bad),
+             "--notice-dir", str(tmp_path / "notices")])
+    assert main(args) == 2
+    captured = capsys.readouterr()
+    assert not captured.out
+    error = b.decode(captured.err)
+    assert error["valid"] is False and "decode" in error["error"]
+
+
+def test_unsafe_paths(inputs):
     p, root, _ = inputs
     p["evidence"][0]["path"] = "../synthetic.csv"
     with pytest.raises(ValueError, match="unsafe local path"):
         b.validate(p, root)
+
+
+def test_symlinks(inputs):
+    p, root, _ = inputs
     p["evidence"][0]["path"] = "link.csv"
-    (root / "link.csv").symlink_to(root / "synthetic.csv")
+    try:
+        (root / "link.csv").symlink_to(root / "synthetic.csv")
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows symlink creation privilege is unavailable")
+        raise
     with pytest.raises(ValueError, match="symlink"):
         b.validate(p, root)
+
+
+@pytest.mark.parametrize("body_fails", [False, True])
+def test_writer_releases_owned_lock_and_preserves_competing_lock(tmp_path, body_fails):
+    lock = tmp_path / "writer.lock"
+
+    def use_writer():
+        with b.writer(tmp_path):
+            assert lock.exists()
+            with pytest.raises(FileExistsError):
+                with b.writer(tmp_path):
+                    pytest.fail("competing writer entered")
+            assert lock.exists()
+            if body_fails:
+                raise ValueError("body failure")
+
+    if body_fails:
+        with pytest.raises(ValueError, match="body failure"):
+            use_writer()
+    else:
+        use_writer()
+    assert not lock.exists()
+    with b.writer(tmp_path):
+        assert lock.exists()
 
 
 def test_declared_age_policy_is_limitation_not_invalidity(inputs):
@@ -140,19 +217,19 @@ def test_transformation_and_known_availability_are_preserved(inputs):
                                 published_at="2026-10-09T16:01:00Z", available_at="2026-10-09T16:02:00Z")
     bundle = b.capture(p, root, output)
     assert b.verify_bundle(bundle)["measurements"][0] == p["measurements"][0]
-    assert convention["definition"] in b.draft(bundle).read_text()
+    assert convention["definition"] in b.draft(bundle).read_text(encoding="utf-8")
 
 
 def test_missing_draft_markers_and_changed_identity_fail(inputs):
     p, root, output = inputs
     bundle = b.capture(p, root, output)
     path = b.draft(bundle)
-    original = path.read_text()
+    original = path.read_text(encoding="utf-8")
     hold = b.decode((root / "hold.json").read_bytes())
-    path.write_text(original.replace(b.ROUTE_START, ""))
+    path.write_text(original.replace(b.ROUTE_START, ""), encoding="utf-8")
     with pytest.raises(ValueError, match="routing markers"):
         b.finalize(bundle, hold, output / "notices")
-    path.write_text(original.replace(b.notice_id(p), "N-2026-10-10-other"))
+    path.write_text(original.replace(b.notice_id(p), "N-2026-10-10-other"), encoding="utf-8")
     with pytest.raises(ValueError, match="identity was edited"):
         b.finalize(bundle, hold, output / "notices")
 
@@ -177,7 +254,7 @@ def test_declared_exposure_survives(inputs):
                                windows=[dict(start="2026-09-01T00:00:00Z", end="2026-09-30T00:00:00Z",
                                              activity="Systematic scan already inspected", series_ids=["SYNTH-DAILY"])])
     bundle = b.capture(p, root, output)
-    assert "Systematic scan already inspected" in b.draft(bundle).read_text()
+    assert "Systematic scan already inspected" in b.draft(bundle).read_text(encoding="utf-8")
 
 
 def test_capture_duplicate_and_correction_preserve_predecessor(inputs):
@@ -196,7 +273,7 @@ def test_capture_duplicate_and_correction_preserve_predecessor(inputs):
     successor = b.capture(changed, root, output)
     assert (bundle / "packet.json").read_bytes() == original
     assert b.verify_bundle(successor)["correction"]["predecessor_id"] == p["observation_id"]
-    assert "corrected description" in b.draft(successor).read_text()
+    assert "corrected description" in b.draft(successor).read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("failure", ["missing", "hash", "earlier"])
@@ -232,23 +309,24 @@ def test_edited_notice_protected_and_explicit_route_required(inputs):
     p, root, output = inputs
     bundle = b.capture(p, root, output)
     draft = b.draft(bundle)
-    original = draft.read_text()
+    original = draft.read_text(encoding="utf-8")
     assert "Decision: PENDING" in original
     assert "GRADUATED to" not in original
     assert "Synthetic daily proxy" in original
     assert "Synthetic continuous future" in original
-    draft.write_text(original.replace(p["interpretation"]["observation"], "Manually edited observation."))
-    assert "Manually edited" in b.draft(bundle).read_text()
+    edited = "Manually edited observation — 日本."
+    draft.write_text(original.replace(p["interpretation"]["observation"], edited), encoding="utf-8")
+    assert "Manually edited" in b.draft(bundle).read_text(encoding="utf-8")
     hold = b.decode((root / "hold.json").read_bytes())
     notice = b.finalize(bundle, hold, output / "notices")
-    assert "Manually edited" in notice.read_text()
-    assert "Decision: HOLD" in notice.read_text()
-    notice.write_text(notice.read_text() + "\nEdited final Notice.\n")
+    assert edited in notice.read_text(encoding="utf-8")
+    assert "Decision: HOLD" in notice.read_text(encoding="utf-8")
+    notice.write_text(notice.read_text(encoding="utf-8") + "\nEdited final Notice.\n", encoding="utf-8")
     with pytest.raises(ValueError, match="already exists"):
         b.finalize(bundle, hold, output / "notices")
     with pytest.raises(ValueError, match="different destination"):
         b.finalize(bundle, hold, output / "other-notices")
-    assert notice.read_text().endswith("Edited final Notice.\n")
+    assert notice.read_text(encoding="utf-8").endswith("Edited final Notice.\n")
 
 
 @pytest.mark.parametrize("choice,investigation", [("DROP", None), ("GRADUATE", "PENDING"), ("GRADUATE", "Q-SYNTH-1")])
@@ -259,7 +337,7 @@ def test_explicit_routing(inputs, choice, investigation):
     route = dict(decision=choice, reason="Synthetic supplied reason.", reconsider_on=None,
                  reconsider_when=None, investigation=investigation)
     notice = b.finalize(bundle, route, output / "notices")
-    assert f"Decision: {choice}" in notice.read_text()
+    assert f"Decision: {choice}" in notice.read_text(encoding="utf-8")
     assert not (output / "discovery_manifests").exists()
     assert not (output / ".evidence").exists()
 

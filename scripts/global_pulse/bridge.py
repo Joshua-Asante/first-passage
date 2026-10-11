@@ -258,6 +258,8 @@ def validate(packet, input_root, *, retained=None):
                             "live_label_observed_closed_market": "live_label"}[source["entitlement"]["status"]]
                 require(m["delivery"] == expected, f"{sid}: delivery classification must preserve registry status {expected}")
                 warnings.extend(production.limitations(row))
+                if source["futures"] is None:
+                    require(not m["contract_ids"], f"{sid}: non-futures input cannot specify contract IDs")
                 if source["futures"] is not None and not m["contract_ids"]:
                     warnings.append(f"{sid}: actual contract IDs unknown; continuous-series roll mapping unresolved")
             else:
@@ -270,6 +272,7 @@ def validate(packet, input_root, *, retained=None):
         require(type(m["value"]) in (int, float) and math.isfinite(m["value"]), f"{mid}: finite value required")
         unknown_clock = v2 and m["observed_at"] is None
         if unknown_clock:
+            require(m["delivery"] == "daily", "unknown observation clocks require daily delivery")
             require(m["observation_date"] is not None and m["window_start"] is None and m["window_end"] is None,
                     f"{mid}: unknown observation clock needs observation_date and null window timestamps")
             require(date.fromisoformat(m["observation_date"]) <= captured.date(), "future observation date")
@@ -311,11 +314,13 @@ def validate(packet, input_root, *, retained=None):
 def writer(root):
     root.mkdir(parents=True, exist_ok=True)
     lock = root / "writer.lock"
-    with lock.open("x"):
-        try:
+    # Exclusive creation owns the lock; close before unlinking on Windows.
+    handle = lock.open("x")
+    try:
+        with handle:
             yield
-        finally:
-            lock.unlink()
+    finally:
+        lock.unlink()
 
 
 def write_new(path, body):
@@ -325,7 +330,7 @@ def write_new(path, body):
         os.fsync(handle.fileno())
 
 
-def verify_bundle(bundle):
+def _verify_snapshot(bundle):
     findings = validate_registry(bundle / "assets.json", bundle / "locations.json")
     require(not findings, f"retained asset integrity failure: {findings}")
     packet = decode((bundle / "packet.json").read_bytes())
@@ -336,6 +341,25 @@ def verify_bundle(bundle):
     if checked["registry_context"] is not None:
         require(decode((bundle / "registry-context.json").read_bytes()) == checked["registry_context"],
                 "retained production registry context differs")
+    return packet
+
+
+def verify_bundle(bundle):
+    packet = _verify_snapshot(bundle)
+    current = packet
+    seen = {packet["observation_id"]}
+    while current["correction"] is not None:
+        correction = current["correction"]
+        predecessor_id = correction["predecessor_id"]
+        require(predecessor_id not in seen, "cyclic correction lineage")
+        seen.add(predecessor_id)
+        predecessor = bundle.parent / predecessor_id
+        prior = _verify_snapshot(predecessor)
+        require(digest((predecessor / "packet.json").read_bytes()) == correction["predecessor_sha256"],
+                "correction predecessor hash mismatch")
+        require(timestamp(prior["captured_at"], "predecessor.captured_at") <=
+                timestamp(current["captured_at"], "captured_at"), "correction predates predecessor")
+        current = prior
     return packet
 
 
@@ -515,7 +539,7 @@ def routing(decision):
 def finalize(bundle, decision, notice_dir):
     packet = verify_bundle(bundle)
     status, route = routing(decision)
-    source = (bundle / "notice-draft.md").read_text()
+    source = (bundle / "notice-draft.md").read_text(encoding="utf-8")
     require(source.count(f"**Notice ID:** {notice_id(packet)}\n") == 1,
             "draft Notice identity was edited; reconcile before finalizing")
     require(source.count(ROUTE_START) == source.count(ROUTE_END) == 1,

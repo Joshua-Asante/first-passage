@@ -24,7 +24,12 @@ def test_exact_revision_and_complete_metadata(case):
     assert b.digest(raw) == prod.SHA256 == "ae0af9795931524faecc53d00ac63864caf41e68949d28f83d719970783b2b9c"
     registry = b.decode(raw)
     rows = prod.project(registry, raw, prod.REVISION)
-    assert len(rows) == 20 and rows["funding_basis"]["conventions"] == {}
+    assert set(rows) == {
+        "spx", "sxxp", "topix", "mchi", "eem", "us02y", "us10y", "dfii10",
+        "de10y", "jp10y", "dxy", "usdjpy", "usdcnh", "oas", "brent", "copper",
+        "gold", "vix", "move", "funding_basis",
+    }
+    assert rows["funding_basis"]["conventions"] == {}
     assert rows["mchi"]["production"]["instrument"]["loaded_feed_alias"] == "BATS:MCHI"
     assert rows["brent"]["production"]["futures"]["back_adjustment"] is False
     assert rows["brent"]["production"]["futures"]["daily_close"] == "settlement"
@@ -52,7 +57,7 @@ def test_mixed_demonstration_remains_synthetic_and_open(case):
     daily = next(m for m in retained["measurements"] if m["series_id"] == "dfii10")
     assert daily["observed_at"] is daily["bar_time"] is daily["window_end"] is None
     assert daily["observation_date"] == "2026-10-08"
-    notice = b.draft(bundle).read_text()
+    notice = b.draft(bundle).read_text(encoding="utf-8")
     for expected in ("SYNTHETIC VALUES", "Decision: PENDING", "funding_basis", "BATS:MCHI",
                      "delay_minutes", "settlement", "contract_mapping", "live_label_observed_closed_market",
                      prod.REVISION, "published_at unknown"):
@@ -82,14 +87,16 @@ def test_production_identity_cannot_be_forged(case, mutation):
 
 
 def test_funding_cannot_disappear_or_be_measured(case):
-    p, root, _ = case
+    p, root, output = case
     copy = deepcopy(p)
     copy["missing_inputs"] = []
     with pytest.raises(ValueError, match="missing funding_basis"):
-        b.validate(copy, root)
+        b.capture(copy, root, output)
+    assert not output.exists()
     p["measurements"][0]["series_id"] = "funding_basis"
     with pytest.raises(ValueError, match="unavailable input"):
-        b.validate(p, root)
+        b.capture(p, root, output)
+    assert not output.exists()
 
 
 @pytest.mark.parametrize("sid,delay", [("spx", 10), ("sxxp", 15), ("topix", 20), ("dxy", 10),
@@ -129,7 +136,7 @@ def test_v1_synthetic_support_survives(case):
     p = b.decode((root / "packet.json").read_bytes())
     bundle = b.capture(p, root, output)
     assert b.verify_bundle(bundle) == p
-    assert "SYNTHETIC registry" in b.draft(bundle).read_text()
+    assert "SYNTHETIC registry" in b.draft(bundle).read_text(encoding="utf-8")
     assert not (bundle / "registry-context.json").exists()
 
 
@@ -160,3 +167,18 @@ def test_persisted_context_is_verified(case):
     (bundle / "registry-context.json").write_text('{}')
     with pytest.raises(ValueError, match="integrity failure"):
         b.verify_bundle(bundle)
+
+@pytest.mark.parametrize("index", [0, 1, 3])
+def test_intraday_inputs_require_observation_clock(case, index):
+    p, root, _ = case
+    p["measurements"][index].update(observed_at=None, window_start=None, window_end=None)
+    with pytest.raises(ValueError, match="daily delivery"):
+        b.validate(p, root)
+
+
+@pytest.mark.parametrize("index", [0, 1, 2])
+def test_non_futures_reject_contract_ids(case, index):
+    p, root, _ = case
+    p["measurements"][index]["contract_ids"] = ["invented-contract"]
+    with pytest.raises(ValueError, match="non-futures"):
+        b.validate(p, root)

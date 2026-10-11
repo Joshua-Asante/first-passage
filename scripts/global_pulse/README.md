@@ -73,6 +73,9 @@ when its exact clock is unestablished; `observation_date` and `timing_basis` are
 then required. Its age is unknown, not zero. Such an input cannot express a
 change requiring timestamped endpoints. A bar label must not be substituted for
 a completed observation time. Known clock values retain the ordering checks below.
+Only daily delivery permits this unknown-clock path; live-label and delayed
+intraday measurements require observation/window timestamps. Non-futures inputs
+must leave contract IDs empty.
 Publication/receipt remains null unless established by the observation evidence.
 Registry delay minutes are historical entitlement metadata, not a formula for
 manufacturing publication or receipt times.
@@ -182,7 +185,10 @@ approved private root. Capture retains:
 
 Capture writes a temporary directory then publishes it under a writer lock.
 Identical same-ID capture is idempotent; different content fails and requires a
-new correction ID. `verify` works after the original inputs disappear. Keep the
+new correction ID. `verify` works after the original inputs disappear. Correction
+verification also rechecks every retained predecessor and its bound packet hash,
+rejects cycles, and preserves capture-time ordering. The complete predecessor
+chain must remain beside the successor. Keep the
 whole directory backed up. Locations are absolute private locators: after moving
 a capture root, deliberately update `locations.json` to the approved new root
 and verify it. Existing snapshots and their hashes remain unchanged. A stale
