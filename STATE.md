@@ -128,6 +128,13 @@ Owners hold canonical criteria; rows are pointers.
   operator initiative or 2026-11-08; alternate supply routes do not depend on it.
   [S2B status](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)/[charter](docs/adr/2026-08-16-deep-iteration-lane-charter.md)/[superseding K](docs/adr/2026-08-22-grow0-two-ledger-k-question.md).
 
+### 2026-10-17
+
+- **Grafana Cloud trial end (paging account):** confirm IRM SMS and voice survive the
+  plan change in the account's plan details, or with one attended test page after it;
+  otherwise upgrade. Owed by the watch's G10 record.
+  [Watch G10](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md#arming-preconditions-q4-as-narrowed).
+
 ### 2026-11-08
 
 - **Queue attention/order review:** first check of the ≤5 cap (two-consecutive-quarter

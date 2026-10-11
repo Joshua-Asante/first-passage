@@ -12,22 +12,23 @@ and next-session workflow using the existing account owner. Then automate watch
 collection and consolidate incident handling. Treat reduced attendance hours as
 a separate, qualified change to the trading window or operating policy.
 
-## 1. What the review changed
+## 1. Summary for Joshua
 
-The earlier recommendation list understated these constraints:
+- **Decide now:** O1 only (§6). O2–O4 keep their stated defaults unless you say otherwise.
+- **Becomes automatic later, through existing owners:** settlement preparation up to your
+  signature (R1), one readiness view (R2), closing evidence and a disarm-only write (R3),
+  incident evidence assembly (R4), held-request watch reads (R5, after a separate access ruling),
+  and a batched digest (R6).
+- **Never changes:** per-session GO, M1, operator-device settlement signing, halt and
+  no-same-session-restart behavior, retained unknown requests, and the obligation to
+  respond while attended. Monitoring reduces checking effort, not that obligation
+  ([halt/resume §3](../spec/2026-09-14-tb-s3-halt-resume-contract.md)).
+- **Target:** two routine decision points a day (session GO; settlement signature), not two
+  clicks or a guaranteed two visits; never keep trading or leave authority active to combine them.
+- **Outside this proposal, owed by about 2026-10-17:** confirm Grafana IRM SMS/voice survive
+  the trial's end (R4).
 
-| Earlier formulation | Sharpened recommendation and evidence |
-|---|---|
-| Two brief interactions per day | Target two routine **decision points**, not two clicks or a guaranteed two visits. Shutdown/disarm and settlement availability can occur at different times. Settlement needs fresh evidence and a current challenge; never keep trading or leave authority active to combine visits. [Settlement contract](../spec/2026-09-15-tradeify-attended-settlement-contract.md) |
-| Automate daily settlement | Reuse the assembler, but distinguish importing available reports from automatically obtaining qualified source evidence. The assembler does not fetch, sign, submit or accept. Historical catch-up requires an equity source its code says is not presently known. [Assembler](../../ops/c1_rail/account_close_assembler.py) |
-| Collect evidence once | Reuse a capture only when its identity, scope, causal coverage and freshness meet each consumer's requirements. Initial account evidence, live observations, settlement and watch checks are not interchangeable. |
-| Reuse the existing evidence exporter | The [exporter](../../ops/c1_rail/export_session_evidence.py) copies legacy c1 files; it is not a coherent snapshot of the book owner's SQLite state or a qualified broker evidence collector. Build the missing book export through its owners. |
-| One acknowledgment action | The [CLI](../../ops/c1_rail/book_incident_operator_cli.py) records operator-reported delivery, not authenticated attendance. Consolidation must implement the missing authentication/binding, not label a provider acknowledgment as attendance. |
-| Automate the held-request watch | Automate evidence work only under amended performer/access rules. A completed check cannot prove an absent order never existed or will never execute. The watch may continue indefinitely. [Watch W1–W7](2026-10-02-t13-a12-f3-held-request-watch-draft.md) |
-| More monitoring enables less attendance | Monitoring reduces checking effort, not the current obligation to respond. No claim that a page, heartbeat or native stop makes unattended operation acceptable. [Halt/resume contract §3](../spec/2026-09-14-tb-s3-halt-resume-contract.md) |
-
-These are source-based design findings. Benefits below are predictions, not measured
-savings. This self-review is not independent implementation acceptance.
+Benefits are predictions, not measured savings; this is not independent acceptance.
 
 ## 2. Objective, boundaries and desired operator experience
 
@@ -67,6 +68,9 @@ Preserve these boundaries in every implementation:
   pre-signed package, fabricated no-trade close or stale-evidence substitution.
 - Retain independently monitored runtime, notifier and watch obligations, with
   qualified delivery/escalation. A successful HTTP call alone is not completion.
+- Reuse a capture only when its identity, scope, causal coverage and freshness meet
+  each consumer's requirements; initial account evidence, live observations, settlement
+  and watch checks are not interchangeable.
 - Keep account data and credentials private. Public reports contain redacted evidence
   references; grant collectors the narrowest available access, with a structural
   no-order path where the vendor cannot issue read-only credentials.
@@ -81,7 +85,10 @@ Preserve these boundaries in every implementation:
 [settlement store](../../ops/c1_rail/book_settlement.py) are reusable components,
 not an end-to-end operator workflow.
 
-**Change:** provide one local workflow: import/collect → validate source coverage →
+The assembler does not fetch, sign, submit or accept, and refuses historical catch-up
+until a venue close-equity source exists.
+
+**Change:** provide one local workflow ([settlement contract](../spec/2026-09-15-tradeify-attended-settlement-contract.md)): import/collect → validate source coverage →
 assemble → reconcile → show changes/exceptions → review → obtain fresh challenge →
 sign → submit → read durable receipt. Keep evidence under the private primary-checkout
 location or an explicitly approved successor. Show fees, unexplained adjustments,
@@ -135,8 +142,15 @@ the legacy arm helper as the sole enforcement point.
 
 **Acceptance:** wrong/stale/replayed GO; changed release, boot or settlement; concurrent
 halt; missing monitoring acceptance; held request; same-session incident; expired
-calendar; interrupted activation/receipt recovery. An eligible later session starts
-at the next eligible complete bar, without replaying missed signals.
+calendar; interrupted activation/receipt recovery; one interface action attempting to
+satisfy two distinct grants (e.g. session GO plus a calendar or entitlement approval).
+An eligible later session starts at the next eligible complete bar, without replaying
+missed signals.
+
+**Release-evidence reuse:** define the invalidators as a closed list owned with the
+activation path (at least release/config/policy digests, boot, calendar, route and
+monitoring qualification). A change the list does not classify invalidates reuse; a
+stale acceptance never carries forward by default.
 
 ### R3 — Automatic closing evidence and disarm, separate from settlement timing
 
@@ -145,7 +159,9 @@ capture positions, working orders, fills and outstanding requests; establish cau
 coverage of the last possible effect; perform normal disarm through the config owner
 and verify read-back. Record close-boundary evidence while available instead of
 trying to reconstruct it next morning. Export a consistent book-state snapshot using
-the owner's supported database snapshot mechanism, not copies of live SQLite files.
+the owner's supported database snapshot mechanism, not copies of live SQLite files; the
+existing [exporter](../../ops/c1_rail/export_session_evidence.py) only copies legacy c1
+files and is neither.
 
 Keep the published entry cutoff, flatten start and own-flat deadline, including early
 closes. Explicitly schedule disarm before absolute arming expiry. An incident revokes
@@ -156,11 +172,15 @@ exposure. The held-request handoff follows W1, separately from ordinary completi
 
 **Owner/dependencies:** T09 qualified close/reconciliation, TB-I3 config/account owner,
 T13 and T07. Automated disarm needs acceptance of this transition in the owner procedure.
+The host boot gate does not check M1 and the host-side activation gate is owed at TB-I3
+(AGENTS.md live-execution posture), so any writer to the host config could also arm.
+The disarm automation must be structurally disarm-only: it can write `dry_run=true` and
+`armed_until=null` and nothing else.
 
 **Acceptance:** partial/unknown close, orphan child, late fill, another leg losing its
 stop, own-flat deadline breach, disarm-write failure, crash during capture and source
-correction. A normal closure produces an auditable receipt; an incomplete one never
-produces an all-clear. Test early-close/DST chronology against the bound calendar.
+correction; any attempted non-disarm config write by the automation is refused. A normal
+closure produces an auditable receipt; an incomplete one never produces an all-clear. Test early-close/DST chronology against the bound calendar.
 
 ### R4 — One actionable incident view and authenticated acknowledgment
 
@@ -171,23 +191,26 @@ evidence age, fence uncertainty and the next recovery step in one view. Automati
 assemble fresh read evidence under authorized access; link to the relevant platform
 and runbook without adding an order terminal.
 
-Replace IRM acknowledgment → local `record-delivery` command → provider resolution
+Replace IRM acknowledgment → local `record-delivery` command ([CLI](../../ops/c1_rail/book_incident_operator_cli.py);
+operator-reported, not authenticated attendance) → provider resolution
 with a reviewed authenticated flow. Keep delivery, attendance acknowledgment, incident
 recovery completion and provider resolution as separate durable events. Qualify a
 provider callback if used; a callback without verified actor/account/incident binding
-cannot assert attendance. Stop reminders only under the accepted provider rules;
+cannot assert attendance. A callback endpoint runs in a separate process that can write
+only the acknowledgment journal, with no path to the account owner, config or broker. Stop reminders only under the accepted provider rules;
 an acknowledged incident can still require attention and recovery.
 
 **Owner/dependencies:** T13, TB-I3 attendance boundary, notifier owner and the existing
 Grafana/Healthchecks integrations. Reuse the qualifications that actually apply;
 the watch records G10 PASS with limitations, not blanket monitoring readiness.
 Its 2026-10-07 record also requires confirming SMS/voice availability when the
-Grafana trial ends about 2026-10-17. Carry that obligation into the readiness view;
-do not assume the free tier supplies the qualified channels indefinitely.
+Grafana trial ends about 2026-10-17. That check is owed now, independently of this
+proposal (STATE scheduled trigger); afterwards carry plan/channel expiry into the readiness
+view. Do not assume the free tier supplies the qualified channels indefinitely.
 
 **Acceptance:** duplicate/forged/replayed callback, wrong incident, provider outage,
 dead notifier beside live rail, failed local storage, missed acknowledgment and
-delivery failure. One incident remains one incident across retry/restart; silence
+delivery failure; callback process compromised or crashed. One incident remains one incident across retry/restart; silence
 cannot resolve it or grant permission. No notification code can reach a broker send.
 
 ### R5 — Automate held-request observations; do not automate uncertainty away
@@ -197,11 +220,18 @@ as performer; he runs the reads, records the result and pings the scheduled dead
 W1 permits attendance to end after its prescribed intervention/disarm/closing check
 and watch setup. W2 explicitly leaves between-check late effects undetected.
 
+**Preconditions:** (a) a read-only credential or a structurally enforced no-order path;
+reads taken in a signed-in trading session (as the watch's G10 evidence was) do not
+qualify; (b) an amendment of W5's ruling that "Joshua configures both ends; no agent
+sees either URL", since an automated pinger must hold the ping URL.
+
 **Change:** authorize a narrow machine collector for the existing W3 read set and
 specified accounts. At each required due time, collect fresh evidence, compare it
 with the prior record, retain originals and classifications, then ping only after a
 durable completed check. Failure to read or record is a missed check. Distinguish
-automated completion from human acknowledgment in the record. Keep the independent
+automated completion from human acknowledgment in the record. An automated ping proves
+the collector ran, not that a person looked: any classification other than "nothing
+new" goes to Joshua before the ping. Keep the independent
 missed-check monitor and its separate alert identities for successive missed days.
 
 Evaluate an additional broker event detector or bounded read polling to reduce
@@ -216,7 +246,8 @@ unless an actual held request makes the recurring watch the dominant burden.
 
 **Acceptance:** delayed entry/cancel/close effects, reversal after manual flatten,
 missing history at reset, unrelated manual trade, missed/failed reads, crash before
-record/ping and two consecutive missed days. Preserve reservations and HALTED until
+record/ping, two consecutive missed days, and a seeded late effect the collector
+misclassifies as "nothing new" (must not ping silently). Preserve reservations and HALTED until
 the existing F2 transfer evidence is satisfied. Do not stop or pause the watch merely
 because an order disappears, no activity is seen, or a timer expires.
 
@@ -232,8 +263,8 @@ view but remains report-only. A preservation trade needs its own operator direct
 the workflow may prepare its decision, not place it automatically.
 
 Separate required live checks from periodic maintenance: retain automated freshness,
-identity and health checks every session; reuse accepted release evidence until an
-actual invalidator changes it. Route routine implementation/review decisions to their
+identity and health checks every session; reuse accepted release evidence only under
+R2's closed invalidator list. Route routine implementation/review decisions to their
 existing owners and send Joshua only concrete operator decisions with evidence,
 options and a recommendation. No daily agent-generated approval checklist on top of
 the runtime's existing one. Calendar edits, entitlement renewals and changed evidence
@@ -297,6 +328,10 @@ Removing a watch worker requires restoring its named performer and due checks fi
 UI/collector failure never bypasses readiness, retries a broker send or resets state.
 
 ## 6. Decisions for Joshua
+
+**The one ask:** approve O1's recommendation. O2–O4 take the default in their last
+column unless you say otherwise; the coordinator reconciles §5's staging with
+T07/T09/T13/T17 and brings back only a concrete O1 packet.
 
 These are proposed decisions, not recorded approvals. Merge of this proposal alone
 does not amend the cited contracts; each accepted policy change must land with its
