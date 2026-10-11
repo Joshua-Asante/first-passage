@@ -216,3 +216,32 @@ def test_daily_release_uses_source_calendar_not_utc_date(case):
     m["source_timezone"] = "America/New_York"
     with pytest.raises(ValueError, match="observation date"):
         b.validate(p, root)
+
+
+def test_attendance_cannot_predate_clockless_date(case):
+    p, root, _ = case
+    p["measurements"] = [p["measurements"][2]]
+    p["measurements"][0]["source_timezone"] = "UTC"
+    p["data_kind"] = "real"  # Invented values, attestation validation only.
+    p["attendance"] = dict(observer="Test", method="Synthetic test",
+                           attended_at="2026-10-01T00:00:00Z", evidence_ids=[p["evidence"][0]["id"]])
+    with pytest.raises(ValueError, match="attendance predates"):
+        b.validate(p, root)
+
+
+@pytest.mark.parametrize("index", [0, 1, 2, 3])
+def test_all_delivery_dates_are_bounded(case, index):
+    p, root, _ = case
+    p["measurements"][index]["observation_date"] = "2099-01-01"
+    with pytest.raises(ValueError, match="future observation date"):
+        b.validate(p, root)
+
+
+@pytest.mark.parametrize("index", [0, 1, 2, 3])
+def test_date_bounds_use_declared_source_calendar(case, index):
+    p, root, _ = case
+    p["measurements"][index].update(observation_date="2026-10-10", source_timezone="Asia/Tokyo")
+    b.validate(p, root)  # Capture is October 9 UTC, October 10 in Tokyo.
+    p["measurements"][index]["source_timezone"] = "America/New_York"
+    with pytest.raises(ValueError, match="future observation date"):
+        b.validate(p, root)

@@ -83,6 +83,10 @@ Its date in that zone must not precede `observation_date`; this date-level check
 does not establish an exact observation time. Without comparable time-zone context,
 retain null release times rather than inventing an ordering. Real attendance must
 be at or after every known observation, publication and availability timestamp.
+Every supplied observation date is bounded by capture and, for real values,
+attendance in the declared IANA source timezone. With an unknown source timezone,
+the supplied capture/attendance offsets bound dates and a limitation explicitly
+records the unverified source calendar; no publication time is inferred.
 Registry delay minutes are historical entitlement metadata, not a formula for
 manufacturing publication or receipt times.
 
@@ -199,7 +203,9 @@ whole directory backed up. Locations are absolute private locators: after moving
 a capture root, deliberately update `locations.json` to the approved new root
 and verify it. Verification requires that root to match the bundle being verified
 and binds each locator to its retained filename; a copy cannot borrow the original
-bundle's hashes. Input traversal must stay beneath the resolved input root,
+bundle's hashes. The complete generated asset inventory, including privacy,
+kinds, labels, claims and limitations, must match the shared capture definition.
+Input traversal must stay beneath the resolved input root,
 including on Windows where a directory junction is distinct from a symlink.
 Existing snapshots and their hashes remain unchanged. A stale
 `writer.lock` requires confirming no writer is active before manual removal.
@@ -207,8 +213,10 @@ Local file/directory publication is not a distributed-store or signed audit-log
 guarantee; interruptions during Notice writes can leave a partial file that must
 be reviewed, never automatically overwritten.
 
-Edit the Notice draft, preserving its identity, status and routing markers.
-Finalization preserves edits outside the marked routing block; that block is
+Edit the Notice draft, preserving its identity, status, single Lives in header
+and routing markers. The draft destination is PENDING; finalization records the
+actual selected absolute path. Finalization preserves narrative edits outside
+the generated status/destination headers and marked routing block; that block is
 replaced with the explicitly supplied decision. The fixture's
 [hold.json](../../tests/global_pulse/fixtures/hold.json) provides a condition-based
 HOLD, with no invented date or reminder:

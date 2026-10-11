@@ -432,3 +432,71 @@ def test_cli_separates_limitations_and_errors(inputs, capsys):
                  "--output", str(output)]) == 2
     assert json.loads(capsys.readouterr().err)["valid"] is False
     assert not output.exists()
+
+
+@pytest.mark.parametrize("field,value", [("privacy", "public"), ("kind", "configuration"),
+                                         ("label", "changed"), ("limitations", ["changed"]),
+                                         ("claims", [dict(scope="review", result="passed",
+                                                         evidence_ids=["claim-evidence"], limitations=[])])])
+def test_generated_asset_metadata_is_bound(inputs, field, value):
+    p, root, output = inputs
+    bundle = b.capture(p, root, output)
+    assets = b.decode((bundle / "assets.json").read_bytes())
+    assets["assets"][0][field] = deepcopy(value)
+    if field == "claims":
+        assets["assets"][0][field][0]["evidence_ids"] = [f"{p['observation_id']}:validation.json"]
+    (bundle / "assets.json").write_bytes(b.encoded(assets))
+    assert not validate_registry(bundle / "assets.json", bundle / "locations.json")
+    with pytest.raises(ValueError, match="inventory"):
+        b.verify_bundle(bundle)
+
+
+@pytest.mark.parametrize("target", ["value", "max_age_seconds"])
+@pytest.mark.parametrize("sign", [-1, 1])
+def test_oversized_numbers_are_cli_validation_errors(inputs, capsys, target, sign):
+    p, root, _ = inputs
+    if target == "value":
+        p["measurements"][0][target] = sign * 10 ** 309
+    else:
+        registry = b.decode((root / "registry.json").read_bytes())
+        registry["series"][0][target] = sign * 10 ** 309
+        raw = b.encoded(registry)
+        (root / "registry.json").write_bytes(raw)
+        p["watchlist"]["sha256"] = b.digest(raw)
+    (root / "packet.json").write_bytes(b.encoded(p))
+    assert main(["validate", "--packet", str(root / "packet.json"), "--input-root", str(root)]) == 2
+    assert json.loads(capsys.readouterr().err)["valid"] is False
+
+
+@pytest.mark.parametrize("reference", ["Q---", "Q--1", "Q-A-", "Q-A--B"])
+def test_investigation_segments_must_be_nonempty(reference):
+    with pytest.raises(ValueError, match="specific Q-ID"):
+        b.routing(dict(decision="GRADUATE", reason="Test", reconsider_on=None,
+                       reconsider_when=None, investigation=reference))
+
+
+def test_notice_records_selected_destination(inputs):
+    p, root, output = inputs
+    bundle = b.capture(p, root, output)
+    draft = b.draft(bundle)
+    assert "**Lives in:** PENDING" in draft.read_text(encoding="utf-8")
+    notice = b.finalize(bundle, b.decode((root / "hold.json").read_bytes()), output / "private notices")
+    assert f"**Lives in:** {notice.resolve().as_posix()}\n" in notice.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("count", [0, 2])
+def test_notice_destination_header_must_be_unique(inputs, count):
+    p, root, output = inputs
+    bundle = b.capture(p, root, output)
+    draft = b.draft(bundle)
+    original = draft.read_text(encoding="utf-8")
+    header = next(line for line in original.splitlines(keepends=True) if line.startswith("**Lives in:**"))
+    draft.write_text(original.replace(header, header * count), encoding="utf-8")
+    with pytest.raises(ValueError, match="Lives in header"):
+        b.finalize(bundle, b.decode((root / "hold.json").read_bytes()), output / "notices")
+    assert not (bundle / "notice-finalization.json").exists()
+
+
+@pytest.mark.parametrize("value", [0, -1, 1.5, 10 ** 308, -10 ** 308])
+def test_finite_numeric_boundary_is_supported(value):
+    assert b.finite_number(value)

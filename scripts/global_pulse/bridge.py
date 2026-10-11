@@ -31,6 +31,13 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def finite_number(value):
+    try:
+        return type(value) in (int, float) and math.isfinite(value)
+    except OverflowError:
+        return False
+
+
 def obj(value, fields, label):
     require(isinstance(value, dict), f"{label}: expected object")
     require(set(value) == set(fields.split()), f"{label}: expected fields {fields}")
@@ -117,7 +124,7 @@ def registry_rows(registry):
             text(convention["definition"], "convention.definition")
             text(convention["output_unit"], "convention.output_unit")
         age = row["max_age_seconds"]
-        require(age is None or (type(age) in (int, float) and math.isfinite(age) and age >= 0),
+        require(age is None or (finite_number(age) and age >= 0),
                 "max_age_seconds must be null or a nonnegative finite number")
         rows[row["id"]] = row
     return rows
@@ -274,21 +281,30 @@ def validate(packet, input_root, *, retained=None):
         convention = row["conventions"][cid]
         require(m["unit"] == convention["output_unit"], f"{mid}: incorrect units")
         require(m["definition"] == convention["definition"], f"{mid}: ambiguous measurement definition")
-        require(type(m["value"]) in (int, float) and math.isfinite(m["value"]), f"{mid}: finite value required")
+        require(finite_number(m["value"]), f"{mid}: finite value required")
         unknown_clock = v2 and m["observed_at"] is None
         source_zone = None
-        if unknown_clock:
-            require(m["delivery"] == "daily", "unknown observation clocks require daily delivery")
-            require(m["observation_date"] is not None and m["window_start"] is None and m["window_end"] is None,
-                    f"{mid}: unknown observation clock needs observation_date and null window timestamps")
+        observation_date = None
+        if v2:
             if m["source_timezone"] is not None:
                 try:
                     source_zone = ZoneInfo(m["source_timezone"])
                 except (ValueError, ZoneInfoNotFoundError) as exc:
                     raise ValueError(f"{mid}: source timezone must be a resolvable IANA zone") from exc
-            observation_date = date.fromisoformat(m["observation_date"])
-            capture_date = captured.astimezone(source_zone).date() if source_zone else captured.date()
-            require(observation_date <= capture_date, "future observation date")
+            if m["observation_date"] is not None:
+                observation_date = date.fromisoformat(m["observation_date"])
+                capture_date = captured.astimezone(source_zone).date() if source_zone else captured.date()
+                require(observation_date <= capture_date, "future observation date")
+                if attended is not None:
+                    attendance_date = attended.astimezone(source_zone).date() if source_zone else attended.date()
+                    require(observation_date <= attendance_date, f"{mid}: attendance predates observation date")
+                if source_zone is None:
+                    warnings.append(f"{mid}: source timezone unknown; date bounds use capture/attendance offsets, "
+                                    "not a verified source calendar")
+        if unknown_clock:
+            require(m["delivery"] == "daily", "unknown observation clocks require daily delivery")
+            require(m["observation_date"] is not None and m["window_start"] is None and m["window_end"] is None,
+                    f"{mid}: unknown observation clock needs observation_date and null window timestamps")
             require(cid == "level", "unknown measurement-window clocks permit only a dated level")
             observed = None
             warnings.append(f"{mid}: exact observation/window clock unknown; date/bar label is not availability")
@@ -351,6 +367,28 @@ def write_new(path, body):
         os.fsync(handle.fileno())
 
 
+def capture_files(packet, checked):
+    files = [("packet.json", encoded(packet), "evidence"),
+             ("registry.json", checked["registry"], "configuration"),
+             ("validation.json", encoded({"limitations": checked["limitations"]}), "evidence")]
+    if checked["registry_context"] is not None:
+        files.append(("registry-context.json", encoded(checked["registry_context"]), "configuration"))
+    for i, item in enumerate(packet["evidence"]):
+        files.append((f"artifact-{i}.bin", checked["evidence"][item["id"]], item["kind"]))
+    return files
+
+
+def capture_inventory(packet, files):
+    assets, locations = [], []
+    for name, data, kind in files:
+        aid = f"{packet['observation_id']}:{name}"
+        assets.append(dict(id=aid, kind=kind, label=name, privacy="private",
+                           members=[dict(key="file", sha256=digest(data))], parents=[],
+                           supersedes=[], claims=[], limitations=[]))
+        locations.append(dict(asset_id=aid, member_key="file", root="capture", relative_path=name))
+    return dict(schema_version=1, assets=assets), locations
+
+
 def _verify_snapshot(bundle):
     locations = decode(local_file(bundle, "locations.json").read_bytes())
     obj(locations, "schema_version roots locations", "capture locations")
@@ -363,18 +401,15 @@ def _verify_snapshot(bundle):
     packet = decode((bundle / "packet.json").read_bytes())
     require(packet["observation_id"] == bundle.name, "capture directory identity mismatch")
     checked = validate(packet, bundle, retained=bundle)
-    names = ["packet.json", "registry.json", "validation.json"]
-    if checked["registry_context"] is not None:
-        names.append("registry-context.json")
-    names.extend(f"artifact-{index}.bin" for index in range(len(packet["evidence"])))
-    expected_locations = [dict(asset_id=f"{packet['observation_id']}:{name}", member_key="file",
-                               root="capture", relative_path=name) for name in names]
+    expected_assets, expected_locations = capture_inventory(packet, capture_files(packet, checked))
     require(locations["locations"] == expected_locations, "capture locations do not bind retained files")
     require(decode((bundle / "validation.json").read_bytes()) == {"limitations": checked["limitations"]},
             "retained limitations differ from packet/registry")
     if checked["registry_context"] is not None:
         require(decode((bundle / "registry-context.json").read_bytes()) == checked["registry_context"],
                 "retained production registry context differs")
+    require(decode((bundle / "assets.json").read_bytes()) == expected_assets,
+            "retained inventory differs from generated capture metadata")
     return packet
 
 
@@ -417,22 +452,11 @@ def capture(packet, input_root, root):
                     timestamp(packet["captured_at"], "captured_at"), "correction predates predecessor")
         temporary = Path(tempfile.mkdtemp(prefix=".capture-", dir=root))
         try:
-            files = [("packet.json", body, "evidence"),
-                     ("registry.json", checked["registry"], "configuration"),
-                     ("validation.json", encoded({"limitations": checked["limitations"]}), "evidence")]
-            if checked["registry_context"] is not None:
-                files.append(("registry-context.json", encoded(checked["registry_context"]), "configuration"))
-            for i, item in enumerate(packet["evidence"]):
-                files.append((f"artifact-{i}.bin", checked["evidence"][item["id"]], item["kind"]))
-            assets, locations = [], []
+            files = capture_files(packet, checked)
+            assets, locations = capture_inventory(packet, files)
             for name, data, kind in files:
                 write_new(temporary / name, data)
-                aid = f"{packet['observation_id']}:{name}"
-                assets.append(dict(id=aid, kind=kind, label=name, privacy="private",
-                                   members=[dict(key="file", sha256=digest(data))], parents=[],
-                                   supersedes=[], claims=[], limitations=[]))
-                locations.append(dict(asset_id=aid, member_key="file", root="capture", relative_path=name))
-            write_new(temporary / "assets.json", encoded(dict(schema_version=1, assets=assets)))
+            write_new(temporary / "assets.json", encoded(assets))
             write_new(temporary / "locations.json", encoded(dict(schema_version=1,
                       roots={"capture": str(destination.resolve())}, locations=locations)))
             # Atomic directory publication; the writer lock prevents competing captures.
@@ -462,7 +486,7 @@ def render(packet, bundle):
 **Author:** {p['author']}
 **Source:** {p['source']}
 **Status:** OPEN (draft; routing pending)
-**Lives in:** docs/notes/notice/{notice_id(p)}.md after explicit finalization
+**Lives in:** PENDING explicit finalization destination
 
 ## §0 — Source anchor
 
@@ -553,7 +577,7 @@ def routing(decision):
                 "reconsideration applies only to HOLD")
         if choice == "GRADUATE":
             reference = text(decision["investigation"], "investigation reference or PENDING required")
-            require(reference == "PENDING" or bool(re.fullmatch(r"Q-[A-Za-z0-9-]+", reference)),
+            require(reference == "PENDING" or bool(re.fullmatch(r"Q-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*", reference)),
                     "investigation must be specific Q-ID or PENDING")
             status = "GRADUATED to " + ("investigation creation PENDING" if reference == "PENDING" else reference)
         else:
@@ -584,6 +608,10 @@ def finalize(bundle, decision, notice_dir):
             "draft status was edited; reconcile it before finalizing")
     result = before.replace("**Status:** OPEN (draft; routing pending)", f"**Status:** {status}") + route + after
     path = notice_dir / f"{notice_id(packet)}.md"
+    destination_header = r"(?m)^\*\*Lives in:\*\*[^\n]*$"
+    require(len(re.findall(destination_header, result)) == 1,
+            "draft must retain exactly one Lives in header")
+    result = re.sub(destination_header, lambda _: f"**Lives in:** {path.resolve().as_posix()}", result)
     with writer(bundle):
         receipt = bundle / "notice-finalization.json"
         intent = encoded({"notice": str(path.resolve()), "routing": decision})
