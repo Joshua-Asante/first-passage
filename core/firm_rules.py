@@ -24,6 +24,10 @@ and the F2 fixed-$-vs-%-of-peak faithfulness caveat for the ``trailing`` firms.
 Every prop tier must carry ``starting_balance`` — there is no $200K fallback.
 """
 
+import json
+import math
+from pathlib import Path
+
 from historical_challenge import HISTORICAL_CHALLENGE_BASE_RISK
 
 
@@ -557,7 +561,48 @@ FIRM_RULES = {
         "BluSky_Premium_50K":  {"starting_balance": 50_000,  "max_dd_pct": 4.0, "micro_contract_cap": 50},   # $2,000 EOD trail -> $48,000 initial floor; 5 mini / 50 micro (Orbit/Premium class)
         "BluSky_Premium_100K": {"starting_balance": 100_000, "max_dd_pct": 3.0, "micro_contract_cap": 100},  # $3,000 EOD trail; 10 mini / 100 micro
     }),
+
+    # Personal Tradovate account -- self-funded lane, ADR 2026-10-09 owed item 2.
+    # Not a prop tier: no venue drawdown, target or activity rule. max_dd_pct is
+    # the operator's 15% running-peak halt (Decision 4), measured intraday; it is
+    # the single source the live halt reads. The starting capital E_0 is private:
+    # starting_balance stays None here and loads via private_starting_balance().
+    # Commissions, margin and contract limits are Q-SFGROWTH-1 Phase-0 snapshots.
+    "Personal_Tradovate": {
+        "dd_type": "trailing",
+        "starting_balance": None,
+        "starting_balance_source": "private",
+        "max_dd_pct": 15.0,
+        "daily_loss_pct": None,
+        "profit_target_pct": None,
+        "min_trading_days": 0,
+        "inactivity_max_idle_days": None,
+        "micro_contract_cap": None,
+        "cost_per_side_usd": None,
+    },
 }
+
+# Gitignored overlay for privately sourced tier values: {tier: {"starting_balance": n}}.
+PRIVATE_RULES_PATH = Path(__file__).resolve().parent / "firm_rules.private.json"
+
+
+class PrivateRuleError(RuntimeError):
+    """A privately sourced tier value is absent or invalid; callers must refuse."""
+
+
+def private_starting_balance(tier: str) -> float:
+    """Return a private tier's starting balance from PRIVATE_RULES_PATH, fail-closed."""
+    if FIRM_RULES[tier].get("starting_balance_source") != "private":
+        raise PrivateRuleError(f"{tier!r} is not privately sourced")
+    try:
+        value = json.loads(PRIVATE_RULES_PATH.read_text(encoding="utf-8"))[tier]["starting_balance"]
+    except FileNotFoundError as exc:
+        raise PrivateRuleError(f"private rules file absent: {PRIVATE_RULES_PATH.name}") from exc
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        raise PrivateRuleError(f"private starting_balance for {tier!r} unreadable") from exc
+    if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
+        raise PrivateRuleError(f"private starting_balance for {tier!r} must be a positive finite number")
+    return float(value)
 
 # Operational target set — prop-portfolio program (ADR 2026-07-12-prop-portfolio-four-friendly-firms).
 # Keys are stable family slugs; values list FIRM_RULES tier keys for challenge-pass / scaling reference.
