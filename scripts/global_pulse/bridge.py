@@ -86,15 +86,23 @@ def _unique(pairs):
 
 
 def decode(data):
-    return json.loads(data, object_pairs_hook=_unique,
-                      parse_constant=lambda x: require(False, f"invalid JSON number: {x}"))
+    try:
+        return json.loads(data, object_pairs_hook=_unique,
+                          parse_constant=lambda x: require(False, f"invalid JSON number: {x}"))
+    except RecursionError as exc:
+        raise ValueError("excessive JSON nesting") from exc
+
+
+def relative_file_path(relative):
+    text(relative, "local path")
+    path = Path(relative)
+    require(path.parts and not path.anchor and not any(p in {"..", "."} for p in path.parts)
+            and "\\" not in relative and ":" not in relative, "unsafe local path")
+    return path
 
 
 def local_file(root, relative):
-    text(relative, "local path")
-    path = Path(relative)
-    require(not path.is_absolute() and not any(p in {"..", "."} for p in path.parts)
-            and "\\" not in relative and ":" not in relative, "unsafe local path")
+    path = relative_file_path(relative)
     resolved_root = root.resolve()
     current = resolved_root
     for part in path.parts:
@@ -146,6 +154,7 @@ def validate(packet, input_root, *, retained=None):
         text(packet[field], field)
     captured = timestamp(packet["captured_at"], "captured_at")
     binding = obj(packet["watchlist"], "path sha256" + (" revision" if v2 else ""), "watchlist")
+    relative_file_path(binding["path"])
     require(isinstance(binding["sha256"], str) and HASH.fullmatch(binding["sha256"]),
             "watchlist.sha256: exact content hash required")
     registry_bytes = (local_file(input_root, binding["path"]).read_bytes() if retained is None
@@ -214,6 +223,7 @@ def validate(packet, input_root, *, retained=None):
     evidence = {}
     for index, item in enumerate(packet["evidence"]):
         obj(item, "id kind path sha256 provider source_reference evidence_store_version", "evidence")
+        relative_file_path(item["path"])
         eid = text(item["id"], "evidence.id")
         require(text(item["kind"], "evidence.kind") in ALLOWED_KINDS, "unknown evidence asset kind")
         require(eid not in evidence, "duplicate evidence ID")
@@ -472,6 +482,11 @@ def notice_id(packet):
     return "N-" + packet["observation_id"][3:]
 
 
+def draft_binding(packet, bundle):
+    return {"- **Source:**": str(bundle.resolve() / "packet.json"),
+            "- Packet:": f"{packet['observation_id']}; SHA-256 {digest(encoded(packet))}"}
+
+
 def render(packet, bundle):
     p = packet
     interp = p["interpretation"]
@@ -479,6 +494,7 @@ def render(packet, bundle):
     measurements = "\n".join("- " + json.dumps(m, sort_keys=True) for m in p["measurements"])
     mechanisms = "\n".join("- " + item for item in interp["candidate_explanations"]) or "None supplied."
     related = json.dumps(p["lineage"], sort_keys=True)
+    binding = "\n".join(f"{prefix} {value}" for prefix, value in draft_binding(p, bundle).items())
     return f"""# Notice — {p['observation_id']}
 
 **Notice ID:** {notice_id(p)}
@@ -490,9 +506,8 @@ def render(packet, bundle):
 
 ## §0 — Source anchor
 
-- **Source:** {bundle.resolve() / 'packet.json'}
+{binding}
 - **Observed at:** per-series timestamps below; captured {p['captured_at']}
-- Packet: {p['observation_id']}; SHA-256 {digest(encoded(p))}
 - Watchlist: {p['watchlist']['path']}; SHA-256 {p['watchlist']['sha256']}; retained registry.json
 - Registry Git revision: {p['watchlist'].get('revision') or 'synthetic fixture; no production revision'}
 - Input data: {p.get('data_kind', 'synthetic')}; attendance: {json.dumps(p.get('attendance'))}
@@ -600,6 +615,9 @@ def finalize(bundle, decision, notice_dir):
     source = (bundle / "notice-draft.md").read_text(encoding="utf-8")
     require(source.count(f"**Notice ID:** {notice_id(packet)}\n") == 1,
             "draft Notice identity was edited; reconcile before finalizing")
+    for prefix, value in draft_binding(packet, bundle).items():
+        require([line for line in source.splitlines() if line.startswith(prefix)] == [f"{prefix} {value}"],
+                "draft provenance differs from selected capture; reconcile before finalizing")
     require(source.count(ROUTE_START) == source.count(ROUTE_END) == 1,
             "edited draft lost routing markers; restore markers before finalizing")
     before, remainder = source.split(ROUTE_START)

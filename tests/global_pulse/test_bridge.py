@@ -500,3 +500,57 @@ def test_notice_destination_header_must_be_unique(inputs, count):
 @pytest.mark.parametrize("value", [0, -1, 1.5, 10 ** 308, -10 ** 308])
 def test_finite_numeric_boundary_is_supported(value):
     assert b.finite_number(value)
+
+
+@pytest.mark.parametrize("command", ["validate", "finalize"])
+def test_deep_json_is_a_structured_cli_error(inputs, capsys, command):
+    p, root, output = inputs
+    nested = "[" * 10000 + "0" + "]" * 10000
+    if command == "validate":
+        (root / "packet.json").write_text(nested, encoding="utf-8")
+        args = [command, "--packet", str(root / "packet.json"), "--input-root", str(root)]
+    else:
+        bundle = b.capture(p, root, output)
+        b.draft(bundle)
+        (root / "hold.json").write_text(nested, encoding="utf-8")
+        args = [command, "--bundle", str(bundle), "--routing", str(root / "hold.json"),
+                "--notice-dir", str(output / "notices")]
+    assert main(args) == 2
+    result = json.loads(capsys.readouterr().err)
+    assert result["valid"] is False
+    assert "nesting" in result["error"]
+
+
+@pytest.mark.parametrize("changed_packet", [False, True])
+def test_copied_draft_must_bind_selected_capture(inputs, changed_packet):
+    p, root, output = inputs
+    first = b.capture(p, root, output)
+    original_draft = b.draft(first).read_bytes()
+    if changed_packet:
+        p["interpretation"]["observation"] = "A different packet under the same ID"
+    second = b.capture(p, root, output / "other")
+    if changed_packet:
+        # Isolate the packet hash check with an otherwise correct source locator.
+        original_draft = original_draft.replace(str(first.resolve() / "packet.json").encode(),
+                                                str(second.resolve() / "packet.json").encode())
+    (second / "notice-draft.md").write_bytes(original_draft)
+    with pytest.raises(ValueError, match="draft provenance"):
+        b.finalize(second, b.decode((root / "hold.json").read_bytes()), output / "notices")
+    assert not (second / "notice-finalization.json").exists()
+
+
+@pytest.mark.parametrize("target", ["watchlist", "evidence"])
+@pytest.mark.parametrize("path", ["../outside", "/absolute", "C:/absolute", "bad\\path", None, 123])
+def test_retained_source_paths_still_obey_packet_contract(inputs, target, path):
+    p, root, output = inputs
+    bundle = b.capture(p, root, output)
+    if target == "watchlist":
+        p["watchlist"]["path"] = path
+    else:
+        p["evidence"][0]["path"] = path
+    (bundle / "packet.json").write_bytes(b.encoded(p))
+    assets = b.decode((bundle / "assets.json").read_bytes())
+    assets["assets"][0]["members"][0]["sha256"] = b.digest(b.encoded(p))
+    (bundle / "assets.json").write_bytes(b.encoded(assets))
+    with pytest.raises(ValueError, match="local path"):
+        b.verify_bundle(bundle)

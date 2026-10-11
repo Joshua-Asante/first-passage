@@ -40,6 +40,9 @@ supplied local bytes, never fetches or adopts the latest branch implicitly.
 input. `bridge.validate()` is the executable v1 schema: all listed fields are
 required, extra fields and duplicate JSON keys fail. Optional values use explicit
 `null` or empty arrays. Schema evolution requires another version.
+Excessive JSON nesting returns the same structured CLI validation error as
+other malformed inputs. Original relative-path syntax is validated even when
+verification reads retained bytes and the original input files are absent.
 
 | Field | Contract |
 |---|---|
@@ -214,7 +217,9 @@ guarantee; interruptions during Notice writes can leave a partial file that must
 be reviewed, never automatically overwritten.
 
 Edit the Notice draft, preserving its identity, status, single Lives in header
-and routing markers. The draft destination is PENDING; finalization records the
+and routing markers. Its generated packet hash and source path must still bind
+the selected capture at finalization; copied or relocated drafts need explicit
+provenance reconciliation. The draft destination is PENDING; finalization records the
 actual selected absolute path. Finalization preserves narrative edits outside
 the generated status/destination headers and marked routing block; that block is
 replaced with the explicitly supplied decision. The fixture's
