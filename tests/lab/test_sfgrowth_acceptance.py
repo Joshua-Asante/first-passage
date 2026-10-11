@@ -383,11 +383,35 @@ def test_f2_f6_generic_slot_and_binding_integrity(defect):
         s.validate_slots(rows, expected, lambda slot: raw)
 
 
-def test_f6_generic_complete_slot_inventory_passes():
+@pytest.mark.parametrize('admitted,slot', [(('synthetic','1'), ('synthetic','1')),
+                                          (('synthetic','1'), ['synthetic','1']),  # JSON array
+                                          ((3,'1/8'), [3,'1/8'])])
+def test_f6_generic_complete_slot_inventory_passes(admitted, slot):
     binding = dict(kind='EXPORT', pine_sha256='1'*64, reference_evidence_sha256='2'*64,
                    classification_sha256='3'*64, preregistration_sha256='4'*64)
-    row = dict(slot=('synthetic','1'), sha256=digest(b'fixture'), **binding)
-    s.validate_slots([row], {('synthetic','1'):binding}, lambda slot: b'fixture')
+    row = dict(slot=slot, sha256=digest(b'fixture'), **binding)
+    s.validate_slots([row], {admitted:binding}, lambda slot: b'fixture')
+
+
+@pytest.mark.parametrize('admitted,slot', [
+    (('synthetic','1'), None), (('synthetic','1'), 7), (('synthetic','1'), []),
+    (('synthetic','1'), {'synthetic':0, '1':0}),  # object keys would coerce to the slot
+    (('a','b'), 'ab'),                             # string would coerce to characters
+    (('synthetic','1'), [['synthetic'], '1']),     # unhashable element
+    (('synthetic',1), ('synthetic',True)), (('synthetic',1), ('synthetic',1.0)),
+])
+def test_f6_malformed_slot_container_void(admitted, slot):
+    binding = dict(kind='EXPORT', pine_sha256='1'*64, reference_evidence_sha256='2'*64,
+                   classification_sha256='3'*64, preregistration_sha256='4'*64)
+    row = dict(slot=slot, sha256=digest(b'fixture'), **binding)
+    with pytest.raises(s.Void):
+        s.validate_slots([row], {admitted:binding}, lambda slot: b'fixture')
+
+
+@pytest.mark.parametrize('rows', [None, [['slot', 'kind', 'sha256', *s.BINDINGS]]])
+def test_f6_malformed_slot_rows_void(rows):
+    with pytest.raises(s.Void):
+        s.validate_slots(rows, {('synthetic','1'):{}}, lambda slot: b'fixture')
 
 
 # F8 supersedes the five historical zero slots and cosmetic exemption. No active

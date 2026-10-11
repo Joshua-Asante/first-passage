@@ -98,17 +98,27 @@ def resolve_manifest(raw_reference, retrieve, *, local_bytes=None):
     return blob
 
 
+def _slot(value):
+    """A slot is a non-empty JSON array (or tuple) of strings and non-boolean integers."""
+    if (not isinstance(value, (list, tuple)) or not value
+            or any(isinstance(item, bool) or not isinstance(item, (str, int)) for item in value)):
+        raise Void('slot container')
+    return tuple(value)
+
+
 def validate_slots(rows, expected, retrieve):
     """Check exact inventory/bytes against independently admitted slot bindings.
 
     Does not admit a pool or certify the contents of an export/zero artifact.
     The caller must then validate each artifact's type-specific contents.
     """
+    if not isinstance(rows, (list, tuple)):
+        raise Void('slot rows')
     seen = set()
     for row in rows:
-        if set(row) != {'slot', 'kind', 'sha256', *BINDINGS}:
+        if not isinstance(row, dict) or set(row) != {'slot', 'kind', 'sha256', *BINDINGS}:
             raise Void('slot schema')
-        slot = tuple(row['slot'])
+        slot = _slot(row['slot'])
         if slot in seen or slot not in expected:
             raise Void('duplicate or unadmitted slot')
         seen.add(slot)
