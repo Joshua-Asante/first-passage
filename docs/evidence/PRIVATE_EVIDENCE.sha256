@@ -321,3 +321,12 @@ d9afecf4cd98464ab7212b1d0892969730c6e1e45b981aa5f87ac64e07d6383a  .cache/fp-veri
 b78727675e370c69342873585df2257d10288b34a9e8f3560d36ceabcce2197a  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/run.json
 b56600f098ca91b7a65eada6c971dcd6263c0b0cce5be54ec672dcd67b7b16af  local_artifacts/s5-c3-evidence/stage2-read-36766144433/binding/artifacts.json
 85a4dfcd1cc1a7c30fbe3a6c8b12e2caf21f4b470fb47ef27f3f7dc1f151201d  local_artifacts/s5-c3-evidence/stage2-read-36766144433/s2_run_evidence.stdout.json
+#
+# 2026-10-11 — Q-SFCLEAR-1 F6 private evidence (docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md §2, §0, §12).
+# Archived in first-passage-archive commit 67679dd12dc393bef29c91d0d2fe1319d5df750b (archive PR #857).
+# The capital-anchor file is bound only through the pre-screen SHA256SUMS row; its own digest is never listed here.
+62d7ae196059b7d98fd814c7b07a911558e8e5891dd2a669170393583b6c671f  t00-step3-console/personal-prescreen-20261011/R1_TUPLE.json
+74aea70dd0df6c6e7f5a24272259511a28cf208afc4a0ff32996adeeefb3641d  t00-step3-console/personal-prescreen-20261011/SHA256SUMS
+53dea292e21e00b0425839ed81b24798c4b9152a3b33e0b063915bc8c697e359  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/t00-p7-closure-2026-09-24/r3d-floor-half-20261010T175626Z/source_startup_policy.json
+62a947d5833bd1c97020e7605d25161f24bb7505faa26ce72765b9b0e1d26680  t00-step3-console/q1-options-20261010/Q1_OPTIONS.md
+08f9c147f1f61f5df781fbd9c66a375b04ecc1a1127a0cb3090f83cd33addb78  t00-step3-console/q1-options-20261010/SHA256SUMS
