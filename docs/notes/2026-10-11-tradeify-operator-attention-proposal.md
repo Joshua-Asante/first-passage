@@ -147,10 +147,18 @@ satisfy two distinct grants (e.g. session GO plus a calendar or entitlement appr
 An eligible later session starts at the next eligible complete bar, without replaying
 missed signals.
 
-**Release-evidence reuse:** define the invalidators as a closed list owned with the
-activation path (at least release/config/policy digests, boot, calendar, route and
-monitoring qualification). A change the list does not classify invalidates reuse; a
-stale acceptance never carries forward by default.
+**Two scoped invalidator lists,** owned with the activation path:
+
+- *Release qualification:* release/config/policy digests, calendar, route and monitoring
+  qualification. A change invalidates only the affected qualification evidence.
+- *Activation:* boot, session and halt generation
+  ([halt/resume §2, §4](../spec/2026-09-14-tb-s3-halt-resume-contract.md)). A change
+  invalidates the current activation and requires fresh operational evidence and GO,
+  while still-valid release evidence is preserved; it does not require a new n3.
+
+A change neither list classifies blocks activation pending classification; it does not
+imply repeating all qualification. Acceptance adds a restart case: unchanged release
+evidence survives it, and pre-restart authority does not.
 
 ### R3 — Automatic closing evidence and disarm, separate from settlement timing
 
@@ -221,9 +229,13 @@ W1 permits attendance to end after its prescribed intervention/disarm/closing ch
 and watch setup. W2 explicitly leaves between-check late effects undetected.
 
 **Preconditions:** (a) a read-only credential or a structurally enforced no-order path;
-reads taken in a signed-in trading session (as the watch's G10 evidence was) do not
-qualify; (b) an amendment of W5's ruling that "Joshua configures both ends; no agent
-sees either URL", since an automated pinger must hold the ping URL.
+the proposed collector's actual transport and credential capabilities still need
+qualification; (b) keep W5's ruling ("Joshua configures both ends; no agent sees either
+URL") wherever possible: a deterministic pinger can consume an operator-provisioned
+secret reference without exposing either URL to a coding agent. Amend the named
+performer and credential-consumer scope explicitly; automation alone does not establish
+that agent visibility is necessary. Both need the owner/access ruling; this proposal
+does not permit provisioning credentials.
 
 **Change:** authorize a narrow machine collector for the existing W3 read set and
 specified accounts. At each required due time, collect fresh evidence, compare it
@@ -264,7 +276,7 @@ the workflow may prepare its decision, not place it automatically.
 
 Separate required live checks from periodic maintenance: retain automated freshness,
 identity and health checks every session; reuse accepted release evidence only under
-R2's closed invalidator list. Route routine implementation/review decisions to their
+R2's release-qualification invalidator list. Route routine implementation/review decisions to their
 existing owners and send Joshua only concrete operator decisions with evidence,
 options and a recommendation. No daily agent-generated approval checklist on top of
 the runtime's existing one. Calendar edits, entitlement renewals and changed evidence
