@@ -15,6 +15,7 @@ from pathlib import Path
 import re
 import shutil
 import tempfile
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from scripts.research_asset_registry import ALLOWED_KINDS, validate_registry
 from . import production
@@ -87,10 +88,12 @@ def local_file(root, relative):
     path = Path(relative)
     require(not path.is_absolute() and not any(p in {"..", "."} for p in path.parts)
             and "\\" not in relative and ":" not in relative, "unsafe local path")
-    current = root.resolve()
+    resolved_root = root.resolve()
+    current = resolved_root
     for part in path.parts:
         current = current / part
         require(not current.is_symlink(), f"symlink not permitted: {relative}")
+        require(current.resolve().is_relative_to(resolved_root), f"path escapes input root: {relative}")
     require(current.is_file(), f"missing local file: {relative}")
     return current
 
@@ -152,6 +155,7 @@ def validate(packet, input_root, *, retained=None):
         warnings = ["SYNTHETIC registry; production watchlist integration pending"]
         if v2:
             require(binding["revision"] is None, "synthetic registry has no production Git revision")
+    attended = None
     if v2:
         require(packet["data_kind"] in ("synthetic", "real"), "data_kind must be synthetic or real")
         require(is_production or packet["data_kind"] == "synthetic", "real data requires identified production registry")
@@ -162,7 +166,8 @@ def validate(packet, input_root, *, retained=None):
             attendance = obj(packet["attendance"], "observer method attended_at evidence_ids", "attendance")
             text(attendance["observer"], "attendance.observer")
             text(attendance["method"], "attendance.method")
-            require(timestamp(attendance["attended_at"], "attendance.attended_at") <= captured,
+            attended = timestamp(attendance["attended_at"], "attendance.attended_at")
+            require(attended <= captured,
                     "attendance cannot follow capture")
             require(strings(attendance["evidence_ids"], "attendance.evidence_ids"), "attendance evidence required")
     warnings.extend(strings(packet["limitations"], "limitations"))
@@ -271,11 +276,19 @@ def validate(packet, input_root, *, retained=None):
         require(m["definition"] == convention["definition"], f"{mid}: ambiguous measurement definition")
         require(type(m["value"]) in (int, float) and math.isfinite(m["value"]), f"{mid}: finite value required")
         unknown_clock = v2 and m["observed_at"] is None
+        source_zone = None
         if unknown_clock:
             require(m["delivery"] == "daily", "unknown observation clocks require daily delivery")
             require(m["observation_date"] is not None and m["window_start"] is None and m["window_end"] is None,
                     f"{mid}: unknown observation clock needs observation_date and null window timestamps")
-            require(date.fromisoformat(m["observation_date"]) <= captured.date(), "future observation date")
+            if m["source_timezone"] is not None:
+                try:
+                    source_zone = ZoneInfo(m["source_timezone"])
+                except (ValueError, ZoneInfoNotFoundError) as exc:
+                    raise ValueError(f"{mid}: source timezone must be a resolvable IANA zone") from exc
+            observation_date = date.fromisoformat(m["observation_date"])
+            capture_date = captured.astimezone(source_zone).date() if source_zone else captured.date()
+            require(observation_date <= capture_date, "future observation date")
             require(cid == "level", "unknown measurement-window clocks permit only a dated level")
             observed = None
             warnings.append(f"{mid}: exact observation/window clock unknown; date/bar label is not availability")
@@ -290,10 +303,18 @@ def validate(packet, input_root, *, retained=None):
                 warnings.append(f"{mid}: {field} unknown; capture time does not establish historical availability")
             else:
                 times[field] = timestamp(m[field], f"{mid}.{field}")
+                if unknown_clock:
+                    require(source_zone is not None,
+                            f"{mid}: known daily release requires a comparable source timezone")
+                    require(times[field].astimezone(source_zone).date() >= observation_date,
+                            f"{mid}: {field} predates observation date")
                 require(times[field] <= captured and (observed is None or observed <= times[field]),
                         f"{mid}: impossible {field}")
         if len(times) == 2:
             require(times["published_at"] <= times["available_at"], f"{mid}: availability precedes publication")
+        if attended is not None:
+            known_times = list(times.values()) + ([observed] if observed is not None else [])
+            require(all(value <= attended for value in known_times), f"{mid}: attendance predates measured data")
         require(strings(m["evidence_ids"], "measurement.evidence_ids")
                 and all(eid in evidence for eid in m["evidence_ids"]), f"{mid}: unknown/missing evidence IDs")
         providers = {item["provider"] for item in packet["evidence"] if item["id"] in m["evidence_ids"]}
@@ -331,11 +352,24 @@ def write_new(path, body):
 
 
 def _verify_snapshot(bundle):
+    locations = decode(local_file(bundle, "locations.json").read_bytes())
+    obj(locations, "schema_version roots locations", "capture locations")
+    obj(locations["roots"], "capture", "capture root")
+    declared_root = Path(text(locations["roots"]["capture"], "capture root"))
+    require(declared_root.is_absolute() and declared_root.resolve() == bundle.resolve(),
+            "capture root does not match bundle being verified")
     findings = validate_registry(bundle / "assets.json", bundle / "locations.json")
     require(not findings, f"retained asset integrity failure: {findings}")
     packet = decode((bundle / "packet.json").read_bytes())
     require(packet["observation_id"] == bundle.name, "capture directory identity mismatch")
     checked = validate(packet, bundle, retained=bundle)
+    names = ["packet.json", "registry.json", "validation.json"]
+    if checked["registry_context"] is not None:
+        names.append("registry-context.json")
+    names.extend(f"artifact-{index}.bin" for index in range(len(packet["evidence"])))
+    expected_locations = [dict(asset_id=f"{packet['observation_id']}:{name}", member_key="file",
+                               root="capture", relative_path=name) for name in names]
+    require(locations["locations"] == expected_locations, "capture locations do not bind retained files")
     require(decode((bundle / "validation.json").read_bytes()) == {"limitations": checked["limitations"]},
             "retained limitations differ from packet/registry")
     if checked["registry_context"] is not None:

@@ -154,6 +154,60 @@ def test_cli_invalid_utf8_returns_json_error(tmp_path, capsys, command):
     assert error["valid"] is False and "decode" in error["error"]
 
 
+@pytest.mark.parametrize("alter_packet", [False, True])
+def test_copied_bundle_must_bind_its_own_root(inputs, tmp_path, alter_packet):
+    p, root, output = inputs
+    original = b.capture(p, root, output)
+    copied = tmp_path / "copy" / original.name
+    shutil.copytree(original, copied)
+    if alter_packet:
+        changed = deepcopy(p)
+        changed["author"] = "Changed in copy only"
+        (copied / "packet.json").write_bytes(b.encoded(changed))
+    with pytest.raises(ValueError, match="capture root"):
+        b.verify_bundle(copied)
+    locations = b.decode((copied / "locations.json").read_bytes())
+    locations["roots"]["capture"] = str(copied.resolve())
+    (copied / "locations.json").write_bytes(b.encoded(locations))
+    if alter_packet:
+        with pytest.raises(ValueError, match="HASH_MISMATCH"):
+            b.verify_bundle(copied)
+    else:
+        assert b.verify_bundle(copied) == p
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="NTFS junction regression")
+def test_input_junction_cannot_escape_root(tmp_path):
+    root = tmp_path / "input"
+    outside = tmp_path / "outside"
+    root.mkdir()
+    outside.mkdir()
+    (outside / "evidence.txt").write_text("test", encoding="utf-8")
+    junction = root / "junction"
+    subprocess.run(["cmd", "/c", "mklink", "/J", str(junction), str(outside)],
+                   check=True, capture_output=True)
+    try:
+        with pytest.raises(ValueError, match="escapes input root"):
+            b.local_file(root, "junction/evidence.txt")
+    finally:
+        junction.rmdir()
+
+
+def test_packet_locator_cannot_borrow_another_file_hash(inputs):
+    p, root, output = inputs
+    bundle = b.capture(p, root, output)
+    original = (bundle / "packet.json").read_bytes()
+    (bundle / "original-packet.json").write_bytes(original)
+    changed = deepcopy(p)
+    changed["author"] = "Altered packet with redirected locator"
+    (bundle / "packet.json").write_bytes(b.encoded(changed))
+    locations = b.decode((bundle / "locations.json").read_bytes())
+    locations["locations"][0]["relative_path"] = "original-packet.json"
+    (bundle / "locations.json").write_bytes(b.encoded(locations))
+    with pytest.raises(ValueError, match="capture locations"):
+        b.verify_bundle(bundle)
+
+
 def test_unsafe_paths(inputs):
     p, root, _ = inputs
     p["evidence"][0]["path"] = "../synthetic.csv"

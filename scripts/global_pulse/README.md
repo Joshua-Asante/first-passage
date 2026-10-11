@@ -77,6 +77,12 @@ Only daily delivery permits this unknown-clock path; live-label and delayed
 intraday measurements require observation/window timestamps. Non-futures inputs
 must leave contract IDs empty.
 Publication/receipt remains null unless established by the observation evidence.
+For a dated level with an unknown observation clock, a known publication or
+availability timestamp additionally requires a resolvable IANA `source_timezone`.
+Its date in that zone must not precede `observation_date`; this date-level check
+does not establish an exact observation time. Without comparable time-zone context,
+retain null release times rather than inventing an ordering. Real attendance must
+be at or after every known observation, publication and availability timestamp.
 Registry delay minutes are historical entitlement metadata, not a formula for
 manufacturing publication or receipt times.
 
@@ -191,7 +197,11 @@ rejects cycles, and preserves capture-time ordering. The complete predecessor
 chain must remain beside the successor. Keep the
 whole directory backed up. Locations are absolute private locators: after moving
 a capture root, deliberately update `locations.json` to the approved new root
-and verify it. Existing snapshots and their hashes remain unchanged. A stale
+and verify it. Verification requires that root to match the bundle being verified
+and binds each locator to its retained filename; a copy cannot borrow the original
+bundle's hashes. Input traversal must stay beneath the resolved input root,
+including on Windows where a directory junction is distinct from a symlink.
+Existing snapshots and their hashes remain unchanged. A stale
 `writer.lock` requires confirming no writer is active before manual removal.
 Local file/directory publication is not a distributed-store or signed audit-log
 guarantee; interruptions during Notice writes can leave a partial file that must

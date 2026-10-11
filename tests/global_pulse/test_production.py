@@ -182,3 +182,37 @@ def test_non_futures_reject_contract_ids(case, index):
     p["measurements"][index]["contract_ids"] = ["invented-contract"]
     with pytest.raises(ValueError, match="non-futures"):
         b.validate(p, root)
+
+
+@pytest.mark.parametrize("field", ["observed_at", "published_at", "available_at"])
+def test_attendance_cannot_predate_known_measurement_times(case, field):
+    p, root, _ = case
+    p["data_kind"] = "real"  # Invented data: tests attestation validation only.
+    p["attendance"] = dict(observer="Test observer", method="Synthetic validation test",
+                           attended_at="2026-10-09T20:29:00Z", evidence_ids=[p["evidence"][0]["id"]])
+    b.validate(p, root)
+    m = p["measurements"][0]
+    m[field] = "2026-10-09T20:29:30Z"
+    with pytest.raises(ValueError, match="attendance predates"):
+        b.validate(p, root)
+
+
+@pytest.mark.parametrize("field", ["published_at", "available_at"])
+@pytest.mark.parametrize("zone", [None, "UTC", "Asia/Tokyo"])
+def test_daily_release_needs_comparable_observation_date(case, field, zone):
+    p, root, _ = case
+    m = p["measurements"][2]
+    m["source_timezone"] = zone
+    m[field] = "2026-10-01T00:00:00Z"
+    with pytest.raises(ValueError, match="observation date|source timezone"):
+        b.validate(p, root)
+
+
+def test_daily_release_uses_source_calendar_not_utc_date(case):
+    p, root, _ = case
+    m = p["measurements"][2]
+    m.update(source_timezone="Asia/Tokyo", published_at="2026-10-07T16:00:00Z")
+    b.validate(p, root)  # October 8 in Tokyo, the declared observation date.
+    m["source_timezone"] = "America/New_York"
+    with pytest.raises(ValueError, match="observation date"):
+        b.validate(p, root)
