@@ -104,8 +104,8 @@ Q5 copies #581's A5 and A6 into #733 byte for byte, because `_check_sections` co
 | G1 bust, pessimistic, FULL/H1/H2 | A6, binding, unchanged |
 | G3 pass floor, pessimistic, FULL | A6, binding, unchanged |
 | G2 bust, R1 alone, H2 | **Implied by G1.** An R1 bust is either an agreed FAILURE with a bust run, or an `UNDETERMINED` path; the pessimistic assignment counts both as busts. So a pessimistic H2 pass of the ceiling implies the R1-alone pass, for GO versus NO-GO. Not separately bound |
-| G4 pass floor, R1 alone, H2 | **Implied by the H2 pass floor** when `pass_floor_halves` is `BINDING`: every pessimistic pass is an agreed PASS, so R1 passes no later. With `REPORTED` (#581's step-12 value) it is not enforced at all. Joshua decides `pass_floor_halves` at freeze |
-| G5 funded survival | Reported, non-binding (Q6, OWED); no producer exists, so it is reported as "not produced" |
+| G4 pass floor, R1 alone, H2 | **Implied by the H2 pass floor** when `pass_floor_halves` is `BINDING`: every pessimistic pass is an agreed PASS, so R1 passes no later. With `REPORTED` (#581's step-12 value) it is not enforced at all. **Ruled `BINDING`** 2026-10-10 (§8) |
+| G5 funded survival | Reported, non-binding (Q6, ruled 2026-10-10, §8); no producer exists, so it is reported as "not produced" |
 | G6 economics | Outside A6; reported only |
 
 **Label subtype.** The implications cover the GO versus NO-GO decision only. #733 §6 rule 4 makes a failed R1-alone gate a *robust* NO-GO; under #581 A6 the same paths can be labelled `UNDETERMINED`-dependent, because the optimistic assignment does not count an undetermined R1 bust and does count an undetermined R1 pass (`verdict.py:173-175`). Under Q5 A6's labels govern; P-S5 states this in #733.
@@ -259,7 +259,9 @@ A packet that needs a different signature stops and returns (§6).
 
 ## §4 — Hypothesis, integration order and head H′
 
-**H′ (build):** with P-S1, P-S2 and P-S3 merged (and P-S4 if option B), every row Z1–Z10, Y1–Y4, W1 and W3–W10 (and V5) has a red-on-base, green-on-build launcher record, and Y5 and W2 green records; `fp test-ops` (which covers `tests/ops/qualification` and every `book_policy` consumer test), `tests/ops/test_book_policy.py`, `tests/test_remc_series_quantity_parity.py`, `tests/core/test_mc_mode_switching.py`, the parity suite with real inputs read in place, and `fp check` are green at H′; the sealed methods equal `SEALED_SOURCE_SHA256`; and the raw diff from the pre-build base to H′ names no §2.2 forbidden file. **Reject if** a row cannot be made red on its base, a row is green only with a forbidden edit, the sealed hashes change, or the forbidden-file diff is non-empty without a recorded D2-style exception. **Revert trigger:** any existing qualification, book-policy or replay test changes outcome at H′, except the `test_screen_authority.py:474` assertion amended under §2.1.
+**H′ (build):** with P-S1, P-S2 and P-S3 merged (and P-S4 if option B), every row Z1–Z10, Y1–Y4, W1 and W3–W10 (and V5) has a red-on-base, green-on-build launcher record, and Y5 and W2 green records; ~~`fp test-ops` (which covers `tests/ops/qualification` and every `book_policy` consumer test)~~ *(superseded 2026-10-11 by ruling R2, §8: GitHub CI green at H′ plus a local `tests/ops/qualification` launcher record)*, `tests/ops/test_book_policy.py`, `tests/test_remc_series_quantity_parity.py`, `tests/core/test_mc_mode_switching.py`, the parity suite with real inputs read in place, and `fp check` are green at H′; the sealed methods equal `SEALED_SOURCE_SHA256`; and the raw diff from the pre-build base to H′ names no §2.2 forbidden file. **Reject if** a row cannot be made red on its base, a row is green only with a forbidden edit, the sealed hashes change, or the forbidden-file diff is non-empty without a recorded D2-style exception. **Revert trigger:** any existing qualification, book-policy or replay test changes outcome at H′, except the `test_screen_authority.py:474` assertion amended under §2.1.
+
+*Dated note 2026-10-11 (ruling R2, §8):* H′'s regression evidence is (i) GitHub CI green at the exact H′ commit (Tests, Gate manifest, Pylint, c1 image validation and the required `skills (3.12)`) and (ii) a local launcher record of `tests/ops/qualification` (workers allowed), completed with exit 0 and stable source, plus the static checks above (forbidden-file diff, anchors, K7, real-input parity, `fp check`). Local `fp test-ops` is no longer required.
 
 **Dependency graph:**
 
@@ -311,7 +313,7 @@ Each operator act below needs its own GO. Agents never touch a key.
 | 1 | **H′ check** (§10) from a detached worktree at H′ (`core.autocrlf=false`, clean with `--untracked-files=all`); Joshua accepts H′ | coordinator, Joshua | §4 | 0.5 d (about 3 h of runs) |
 | 2 | **r3d assembly:** startup policy v2 bytes with the frozen vector (Q1 FLOOR-HALF; values private); r3d = r3c with only that artifact row and `contract_id` changed; derivation check (S-3) run locally; `size_vector_sha256` computed | coordinator | PS-3 (Q1) | 0.25 d |
 | 3 | **K₀ ledger entry:** the coordinator opens a PR registering this book's lineage in `discovery_manifests/` (map §6), merged before step 4 | coordinator, Joshua merges | PS-3 | 0.25 d, parallel with step 2 |
-| 4 | **#733 freeze (ratification), before any replay over r3d** (#733 §R; P7 replays a real path over r3d's contract, `p7_driver.py:1-6`): with C-1, Q1 and K₀ already ruled, Joshua fills C-2…C-7 (C-7 his exposure), the reader log (Tier-2 executor and Q1 options worker added), G4–G6 and Q6 (G5), Q7 (depth), `pass_floor_halves`, OD-1/OD-2 and the values block (with `size_vector_sha256`, new RNG roots, budget); C then C′ per #581's procedure | Joshua | P-S5 merged; steps 2, 3 | 0.5 d |
+| 4 | **#733 freeze (ratification), before any replay over r3d** (#733 §R; P7 replays a real path over r3d's contract, `p7_driver.py:1-6`): every field, the reader log and the values block are filled before C (#733 completion, §8); Joshua reviews the full text, then C and C′ exactly per #733 §9 (C changes only the Status line and the Ruling field) | Joshua | P-S5 merged; steps 2, 3 | 0.5 d |
 | 5 | **Fresh source approval over r3d** (`APPROVE_T00_SOURCE_CONTRACT`, key `source:1ebae5d45bc51280`), verified with `verify_detached_approval(allow_test_authority=False)` | Joshua signs | step 4 | 0.1 d |
 | 6 | **P7 at H′ over r3d**, one run by the accepted P7 procedure. `p7_acceptance.json` is write-once (`coordinator.py:1290-1292`, `P7_ACCEPTANCE_EXISTS`), so the coordinator first renames the current acceptance aside in place, not deleted, as it did on 2026-10-10 (T00 card §8); step 12's attestation hashed that file's earlier version, and step 12's window closes 2026-10-14 in any case. Then `t00_screen accept-p7` | coordinator | steps 1, 5 | 0.25 d (about 1 h) |
 | 7 | **Screen authority** under the successor purpose, over r3d, the P7 record and ratified #733; `validate_screen_authority` ISSUED | Joshua signs | steps 4, 6 | 0.25 d |
@@ -332,19 +334,27 @@ Each operator act below needs its own GO. Agents never touch a key.
   - **Q2:** "the successor size vector (per-leg whole-contract size plus an adds rule) lives in a signed v2 of the source startup policy, an r3d artifact covered by the existing source-approval chain. No locked Pine, port, dd_protection constant or BASE_RISK is touched."
   - **Q3:** "a NEW screen-authority purpose for successor screens, distinct from T00_STEP3_SELECTED_BOOK_SCREEN. Under it, PARAMETER_CHANGE means 'any change beyond the size vector frozen in the successor pre-registration' (de-risking allowed, re-optimization refused). The original purpose and its refusals stay unchanged for #581."
   - **Q5:** "rewrite #733 to #581's structure (status word, A5/A6 sections, values-block name) so that it passes the authority's existing pre-registration checks, rather than generalizing those checks. The successor path is appended to PREREG_CHAIN. The rewrite itself is a separate docs packet in the card; don't edit #733 in this PR." This departs from the map's Q5 recommendation (generalize); the ruling governs.
+- **H-check evidence standard — RULED (R2)** (Joshua, 2026-10-11 UTC, directly to the Deployment Coordinator: "Make CI-green plus local qualification suite the standard H-check evidence"). An H or H′ check's regression evidence is (i) GitHub CI green at the exact H commit (main-branch workflows Tests, Gate manifest, Pylint and c1 image validation, plus the required `skills (3.12)`) and (ii) a local launcher record of `tests/ops/qualification` (workers allowed), completed with exit 0 and stable source, plus the existing static checks (forbidden-file diff, anchors, K7, real-input parity, `fp check`). Local `fp test-ops` is no longer required: its qualification-isolation children hit a 1 h cap on the operator host, and (i)+(ii) cover its content. Applies from H′ onward; amends §4 and §10.
 - **R1/R2: ON HOLD** (Joshua, 2026-10-10). The successor is judged on (a), the pessimistic A5 assignment. This card builds nothing for R1/R2.
 - **Successor configuration RULED** (Joshua, 2026-10-10, directly to the Deployment Coordinator: "C-1 row 5 uniform, option A, K₀ = 8"; recorded on the T00 card §8 by PR #760; relayed to this card by the coordinator):
   - **C-1:** Tier-2 row 5 alone, uniform reading. Row 3 is not relied on.
   - **Q1 — RULED: option A, FLOOR-HALF.** Every leg at k = 0.5 under the code's own round-down rule; a leg whose halved size floors to 0 is OFF. The per-leg vector stays private (the Q1 options sheet, SHA256SUMS `08f9c147…`); this card refers only to "the frozen vector in the signed startup-policy v2" and quotes no value. The build still works for any vector.
   - **K₀ — RULED: 8**, so this successor is K = 9.
-- **Still OPEN:**
-  - **Q6 — OPEN (OWED, Joshua to confirm).** Recommendation: G5 reported and non-binding.
-  - **Q7 — OPEN (OWED, Joshua to confirm).** Depth stays N = 1,002 per population (T00 card §8) unless Joshua re-rules.
-  - **C-7 — OWED (Joshua):** his answerer exposure.
-  - **Reader rows — OWED:** including the Tier-2 executor session and the Q1 options worker as Tier-2 readers.
+- **Decisions 1–4 RULED** (Joshua, 2026-10-10, directly to the Deployment Coordinator, on four recommendations from a Codex assessment chat: "Agreed on all four recommendations"; relayed to #733's assembly worker by the coordinator). Recorded in [#733](../pre-registration/2026-10-08-tradeify-book-successor-screen-prereg-DRAFT.md):
+  - **Q6 — RULED:** funded survival (G5) is reported and non-binding, explicitly "not produced" because this screen has no producer; G6 economics stays reported only, likewise "not produced" when absent. A screen GO establishes neither (#733 §1d).
+  - **Q7 — RULED:** N = 1,002 paths per population, 334 per root. Budget 961,920 path CPU-seconds plus 11,300 overhead CPU-seconds. Fresh roots disjoint from step 12's, including a disjoint probe root; fresh paths remain over the same exposed history, a disclosed limitation (#733 §3 items 1 and 4, §6 values block, §7).
+  - **`pass_floor_halves` — RULED: `BINDING`.** H1 and H2 must each meet the existing pass floor, as FULL must, which enforces G4 through A6's existing implementation (no `verdict.py` change; P-S4 option A stands). An explicit change from #581's `REPORTED` (#733 §3 item 2).
+  - **OD-1 — RULED:** D-feed reading (c) extends to the successor (#733 §4), recorded at the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider).
+- **C-7 and reader rows:** recorded in #733 §1a and §7 (C-7 "not seen"; rows T2-1…T2-5 and PA-1).
 - **Prerequisites:** PS-1 met (card approval above). PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 `REPORT.md` SHA-256 `efcf85dbbe5532f5130674ed7bf0c9bcc77fc6e9a0a65ffc27c6fc85ec2bdb7c`; output SHA256SUMS `d6009bf30dbbea7e8ff6aa6a0bff7de52f483f220b4fcff03ce94199a43da7fd` (abbreviated on the T00 card §8 by #759; full values supplied by the coordinator). PS-4 P-S5 merged at: *pending.*
 - **Packet heads:** *pending.*
-- **H′:** *pending.*
+- **H′: `eed60a1573c2b8840fcd33dcb820b752c673fae0`, ACCEPTED by Joshua** (2026-10-11 UTC, directly to the Deployment Coordinator: "accept H′"; relayed to this card by the coordinator). It is the first `origin/main` commit containing P-S1 (#762), P-S2 (#763, `eb40471`) and P-S3 (#764, `eed60a1`); pre-build base `843e743`. Evidence under ruling R2:
+  - GitHub CI on `main` at H′: Tests, Gate manifest, Pylint and c1 image validation all success.
+  - `tests/ops/qualification`, 4 workers, from worktree `.claude/worktrees/hprime-eed60a1` (record under `.cache/fp-verification`, started 20:41:51Z): 2369 passed, 1 skipped, 7 xfailed, 0 failed; completed / exit 0 / stable. W9 and K7 run inside it; W9 also standalone, record `20261010T203650Z-52e7b661c6b8`.
+  - Real-input parity: 13 passed, 0 skipped, record `20261010T215105Z-b135578602be`.
+  - `fp check` passed; regression set 125 passed.
+  - Forbidden-file diff `843e743..eed60a1` empty; the code diff is exactly the P-S1/P-S2/P-S3 files; original-purpose anchors and the protection cell unchanged.
+  - r3d (`c7a82915…`) re-validated at H′: SHA256SUMS OK, `_derived_from_r3c` True, startup policy v2 parses.
 
 ## §9 — Effort and critical path
 
@@ -389,7 +399,8 @@ rg -n "^A5_TEXT_SHA256|^A6_TEXT_SHA256" ops/c1_rail/qualification/t00_screen/ver
 rg -n "CANDIDATE_SCALE =|def require_policy" ops/c1_rail/book_policy.py
 
 # At H′: full regression, each with its record.json.
-python -I scripts/fp.py test-ops
+# python -I scripts/fp.py test-ops   # superseded 2026-10-11 by §8 ruling R2; CI green at H′ (gh run list --commit "$H") plus:
+python -I scripts/fp.py --workers 4 python -m pytest tests/ops/qualification -q
 python -I scripts/fp.py --workers 2 python -m pytest tests/ops/test_book_policy.py tests/test_remc_series_quantity_parity.py tests/core/test_mc_mode_switching.py tests/ops/test_book_adapters_parity.py -q
 python -I scripts/fp.py check
 

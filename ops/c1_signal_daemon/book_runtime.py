@@ -270,7 +270,8 @@ class FourLegRuntime:
 
     def _retain_local_refusal(self, action, result, *, now, boundary_time=None):
         reason = result.refusal_reason
-        if reason is None or reason in ("takeover_pending", "duplicate_operation", "awaiting_evidence", "close_pending"):
+        if reason is None or reason in ("takeover_pending", "duplicate_operation", "awaiting_evidence",
+                                        "held_unhealthy", "close_pending"):
             return ()
         if any(event.event == "reject" and event.order_id == result.operation_id
                for event in result.confirmed_events):
@@ -429,8 +430,10 @@ class FourLegRuntime:
             self._prepared_here.discard(bar.ts)
         return tuple(results)
 
-    def redeliver_prepared_boundary(self, bar_time, *, now):
+    def redeliver_prepared_boundary(self, bar_time, *, now, sources_healthy=True):
         """Continue only same-runtime, unattempted evidence waits from disk."""
+        if type(sources_healthy) is not bool:
+            raise TypeError("sources_healthy must be bool")
         from c1_rail.book_protection import ActionOccurrence
         with self._application_lock:
             if bar_time not in self._prepared_here:
@@ -453,9 +456,10 @@ class FourLegRuntime:
                 if state["state"] != "awaiting_evidence" or state["attempted"]:
                     continue
                 action = _retained_action(body)
-                result = handle_book_action(action, self.owner, occurrence=occurrence, now=now)
+                result = handle_book_action(action, self.owner, occurrence=occurrence, now=now,
+                                            sources_healthy=sources_healthy)
                 results.append(result)
-                waiting |= result.refusal_reason == "awaiting_evidence"
+                waiting |= result.refusal_reason in ("awaiting_evidence", "held_unhealthy")
                 local = self._retain_local_refusal(action, result, now=now, boundary_time=bar_time)
                 if (result.confirmed_events or local) and self.crash_after_dispatch:
                     raise SimulatedRuntimeCrash("fact committed before adapter feedback")

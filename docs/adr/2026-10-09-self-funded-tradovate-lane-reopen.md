@@ -97,3 +97,37 @@ python scripts/check_adr_graph.py --regenerate-index
 python scripts/check_adr_graph.py
 rg -n "2026-10-09-self-funded" docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md STATE.md
 ```
+
+## Addendum 2026-10-11 — strategy split between lanes (option c)
+
+**Ruling** (Joshua, 2026-10-11 UTC, directly to the Deployment Coordinator: "go with (c), split the strategies between lanes"):
+
+- The Tradeify book's four strategies stay with the Tradeify lane only: aegis_6j, dj30_mym_p250 (Striker DJ30 MYM), vanguard_mgc and orb_mnq_v7, as named in the [venue edition](../../ops/venue_editions/Tradeify_Select_100K.md).
+- Decision 2's candidate pool narrows accordingly: the personal Tradovate lane draws only from **other** locked strategies.
+- **Reason.** Tradeify's 2026-10-08 reply says a bot must be used only within Tradeify, even with different sizing ([exclusive-use replies](../notes/2026-10-10-tradeify-exclusive-use-replies.md), #772).
+
+**Effect on owed item 5.** The strategy-overlap part is resolved by construction: no chosen portfolio shares a strategy with the Tradeify book. The copy-trading, hedging and account-linking questions, and whether the CrossTrade route is permitted, stay **open** pending Tradeify compliance's written answer. Items 1–4, 6 and 7 are unchanged.
+
+## Addendum 2026-10-11b — Tradeify book reused on the personal lane (supersedes the option-c split)
+
+**Ruling** (Joshua, 2026-10-11 UTC, directly to the Deployment Coordinator): "reuse the Tradeify strategies, qualify their sizing for the personal capital, and finish the personal-account operating controls. The search for additional strategies can come off this deployment's critical path."
+
+**Corrections** (Joshua, 2026-10-11, to the coordinator, on this addendum's first draft) are folded in below. He supports reusing the existing personal-account components, a cheap sizing, margin and risk pre-screen before expensive runs, and operating only one account at a time for the first deployment.
+
+- **Supersedes** the [2026-10-11 option-c split](#addendum-2026-10-11--strategy-split-between-lanes-option-c). That addendum stays as history; its candidate-pool narrowing no longer applies.
+- **Decision 2's pool** is the Tradeify book's strategies (aegis_6j, dj30_mym_p250, vanguard_mgc, orb_mnq_v7), sized for the personal starting capital `E_0` (value private). Sizing **starts from the retained successor configuration** (FLOOR-HALF, ruled 2026-10-10 in the T00 card §8; per-leg values private, bound by `size_vector_sha256` `139919cd…c271`). Legs it sets OFF stay OFF. Any change to a leg's state or quantity is an explicit operator choice with a stated justification. Each proposed rung names the quantity behaviour it represents (fixed quantity, risk multiplier, port map or on/off), so the portfolio tested is the one that would run. The earlier five-leg study (K = 2,375) is not restored. Searching for additional strategies is off this deployment's critical path.
+- **Personal sizing and protection policy.** The current book path is bounded by Tradeify limits, not unbounded: 80 micro-equivalents per account, and at most 22 base + 55 add for Striker (`ops/c1_rail/book_policy.py:64-65,163-167,537-546,822`), with protection fixed at trailing 1%/0.40 (`:101-117`). A tier with no micro cap makes that path refuse to load rather than run unbounded. The personal tier therefore needs its own defined cap source, risk-dollar basis and protection policy (owed items 1–2).
+- **Decision 4 is unchanged:** the portfolio and its sizing clear only on the intraday-honest p99 peak-to-trough drawdown ≤ 15% after Tradovate costs and whole-contract rounding, with the live 15% halt. A Tradeify screen result does not establish the personal-account drawdown, growth, fee or margin results; those are tested at `E_0`. Authoritative personal margin inputs (dated Tradovate per-contract margins for 6J, MYM, MGC and MNQ) are not yet recorded anywhere in the repo.
+- **Evidence standing.** Every admitted panel is already fully exposed (book lineage manifest `exposure`), so a result is feasibility on exposed history, not out-of-sample evidence; excluding a configuration after another result has been read does not restore a holdout. Exposure history is retained, further choices are frozen before any `E_0` scoring output, and the trial accounting is justified in the study, not by a K count alone.
+- **Owner:** the Deployment Coordinator owns #752 (Q-SFGROWTH-1) and re-scopes it in place by default. A new study ID is optional for clarity; closing #752 or opening a replacement is not a prerequisite. Existing implementation owners of #775–#777, #779, #782 and #783 are preserved.
+
+**Agreement restrictions** (Tradeify Funded Trader Agreement, page marked last modified May 2026, read 2026-10-10):
+- **Published exception, no permission gate.** §6.6's Exclusive Use bullet has three parts: the trader "may use the bot on the Trader's personal accounts"; use across multiple firms is against Tradeify's policy; and "The bot must be solely for the Trader's own use within Tradeify." On Joshua's correction 1, the personal brokerage account is read as one of the trader's personal accounts, not another firm. That is the adopted reading, not the text's own statement: §6.7(a) lists a broker among External Accounts, which binds the opposing-exposure rule below. The residual ambiguity ("personal accounts" is undefined, beside the "within Tradeify" sentence) is Joshua's to weigh; it is not a gate.
+  - §6.6 sets no prior-permission step. Its Compliance & Verification requests follow a flag, but §1.6 and §6.7(g) let Tradeify request documentation, trading records and External Account statements at any time, so the ownership and records evidence is kept ready on that basis.
+  - A Tradeify reply, including support's 2026-10-08 one, is weighed against that text; it does not by itself block personal-only deployment.
+- **Ownership (binding).** §6.6: the trader must be able to prove sole ownership of the bot, with nobody else having access to it or using it, and the bot must not be high-frequency. §6.7(b): no team trading, third-party management, or copying or mirroring trades with any other person.
+- **Opposing exposure (binding).** §6.7(c)–(e): opposing positions between a Tradeify account and an External Account (a personal brokerage account is one) in the same product or Product Group are prohibited at all times, regardless of intent, contract size or account type. A breach exists as soon as positions overlap; no cure window is published.
+
+**First deployment: one account at a time.** Before the active account switches in either direction (Tradeify to personal or personal to Tradeify, weekly preservation trades included), the outgoing account is verified flat, with no working orders, and unable to submit delayed entries (its instance disarmed, with no queued, retrying or scheduled order path). Any uncertainty blocks the switch. Simultaneous operation is outside the first deployment and would need its own safeguard and operator ruling.
+
+**Effect on owed items.** Item 1 is re-scoped as above. Item 5 covers the binding restrictions: the switch check, its Product Group mapping from Tradeify's own source, and retained evidence of sole ownership; its copy-trading, hedging and account-linking questions are answered against the published text above. A written Tradeify answer is not required to close it. Items 2–4, 6 and 7 are unchanged.
