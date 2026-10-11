@@ -83,7 +83,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_105 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -150,6 +150,9 @@ _102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/fp.py` | governance† | — | — |
 | `scripts/gate_fire_log.py` | governance† | — | — |
 | `scripts/gate_manifest.py` | governance† | — | gate runner (reads gates.yml); not itself a gated id |
+| `scripts/global_pulse/__init__.py` | governance† | — | — |
+| `scripts/global_pulse/__main__.py` | governance† | — | — |
+| `scripts/global_pulse/bridge.py` | governance† | — | — |
 | `scripts/guard_open_verification_record.py` | governance† | — | — |
 | `scripts/guard_operator_acts.py` | governance† | — | — |
 | `scripts/guard_s2_runs.py` | governance† | — | — |

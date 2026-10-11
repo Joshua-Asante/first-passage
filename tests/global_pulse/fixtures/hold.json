@@ -1,0 +1,7 @@
+{
+  "decision": "HOLD",
+  "reason": "Resolve timing and registry integration before investigation.",
+  "reconsider_on": null,
+  "reconsider_when": "The approved watchlist registry is available and availability provenance is supplied.",
+  "investigation": null
+}

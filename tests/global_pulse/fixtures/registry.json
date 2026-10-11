@@ -1,0 +1,34 @@
+{
+  "schema_version": "global-pulse-synthetic-registry/v1",
+  "synthetic": true,
+  "series": [
+    {
+      "id": "SYNTH-DAILY",
+      "provider": "synthetic-generator",
+      "unit": "index_points",
+      "conventions": {
+        "level": {
+          "definition": "Last supplied synthetic level; no transformation or interpolation.",
+          "output_unit": "index_points"
+        }
+      },
+      "proxy": "Synthetic daily proxy for an invented basket; not interchangeable with a traded future.",
+      "futures_roll": "none",
+      "max_age_seconds": null
+    },
+    {
+      "id": "SYNTH-LIVE",
+      "provider": "synthetic-generator",
+      "unit": "USD_per_unit",
+      "conventions": {
+        "level": {
+          "definition": "Last supplied synthetic level; no transformation or interpolation.",
+          "output_unit": "USD_per_unit"
+        }
+      },
+      "proxy": "none",
+      "futures_roll": "Synthetic continuous future: switch at 16:00Z on the 15th; unadjusted prices; do not interpret roll jumps as returns.",
+      "max_age_seconds": 120
+    }
+  ]
+}
