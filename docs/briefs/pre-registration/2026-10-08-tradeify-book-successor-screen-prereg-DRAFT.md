@@ -239,7 +239,7 @@ The §3 values are recorded once, in the `t00-step2-values/v1` block below: one 
 
 - **Ruling:** Joshua, 2026-10-11, directly to the Deployment Coordinator: "I ratify #733 as written, including its §6 values block". This ratifies §1–§5 as written and the §6 t00-step2-values/v1 block (SHA-256 2adfaa83…06c8). The A5/A6 bytes are unchanged (A5 a8f6f25e…391b, A6 b3bdc77b…17d9).
 - **OD-1 / OD-2:** Joshua, 2026-10-10. **OD-1:** decision 4, reading (c) extended to this screen (§4), recorded at the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider) and [checklist §4 CP-7](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken). **OD-2: the declared book** (§1a C-2; card #758 S-3, approved 2026-10-10); route-native editions are not these expressions.
-- **Ratifying commit SHA:** recorded in C′
+- **Ratifying commit SHA:** `46e0aafe6a6c5f9efab10167c0c9abbd2bcf5323`
 
 ---
 
