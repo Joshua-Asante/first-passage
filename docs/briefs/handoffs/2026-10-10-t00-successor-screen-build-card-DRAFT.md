@@ -104,8 +104,8 @@ Q5 copies #581's A5 and A6 into #733 byte for byte, because `_check_sections` co
 | G1 bust, pessimistic, FULL/H1/H2 | A6, binding, unchanged |
 | G3 pass floor, pessimistic, FULL | A6, binding, unchanged |
 | G2 bust, R1 alone, H2 | **Implied by G1.** An R1 bust is either an agreed FAILURE with a bust run, or an `UNDETERMINED` path; the pessimistic assignment counts both as busts. So a pessimistic H2 pass of the ceiling implies the R1-alone pass, for GO versus NO-GO. Not separately bound |
-| G4 pass floor, R1 alone, H2 | **Implied by the H2 pass floor** when `pass_floor_halves` is `BINDING`: every pessimistic pass is an agreed PASS, so R1 passes no later. With `REPORTED` (#581's step-12 value) it is not enforced at all. Joshua decides `pass_floor_halves` at freeze |
-| G5 funded survival | Reported, non-binding (Q6, OWED); no producer exists, so it is reported as "not produced" |
+| G4 pass floor, R1 alone, H2 | **Implied by the H2 pass floor** when `pass_floor_halves` is `BINDING`: every pessimistic pass is an agreed PASS, so R1 passes no later. With `REPORTED` (#581's step-12 value) it is not enforced at all. **Ruled `BINDING`** 2026-10-10 (§8) |
+| G5 funded survival | Reported, non-binding (Q6, ruled 2026-10-10, §8); no producer exists, so it is reported as "not produced" |
 | G6 economics | Outside A6; reported only |
 
 **Label subtype.** The implications cover the GO versus NO-GO decision only. #733 §6 rule 4 makes a failed R1-alone gate a *robust* NO-GO; under #581 A6 the same paths can be labelled `UNDETERMINED`-dependent, because the optimistic assignment does not count an undetermined R1 bust and does count an undetermined R1 pass (`verdict.py:173-175`). Under Q5 A6's labels govern; P-S5 states this in #733.
@@ -311,7 +311,7 @@ Each operator act below needs its own GO. Agents never touch a key.
 | 1 | **H′ check** (§10) from a detached worktree at H′ (`core.autocrlf=false`, clean with `--untracked-files=all`); Joshua accepts H′ | coordinator, Joshua | §4 | 0.5 d (about 3 h of runs) |
 | 2 | **r3d assembly:** startup policy v2 bytes with the frozen vector (Q1 FLOOR-HALF; values private); r3d = r3c with only that artifact row and `contract_id` changed; derivation check (S-3) run locally; `size_vector_sha256` computed | coordinator | PS-3 (Q1) | 0.25 d |
 | 3 | **K₀ ledger entry:** the coordinator opens a PR registering this book's lineage in `discovery_manifests/` (map §6), merged before step 4 | coordinator, Joshua merges | PS-3 | 0.25 d, parallel with step 2 |
-| 4 | **#733 freeze (ratification), before any replay over r3d** (#733 §R; P7 replays a real path over r3d's contract, `p7_driver.py:1-6`): with C-1, Q1 and K₀ already ruled, Joshua fills C-2…C-7 (C-7 his exposure), the reader log (Tier-2 executor and Q1 options worker added), G4–G6 and Q6 (G5), Q7 (depth), `pass_floor_halves`, OD-1/OD-2 and the values block (with `size_vector_sha256`, new RNG roots, budget); C then C′ per #581's procedure | Joshua | P-S5 merged; steps 2, 3 | 0.5 d |
+| 4 | **#733 freeze (ratification), before any replay over r3d** (#733 §R; P7 replays a real path over r3d's contract, `p7_driver.py:1-6`): every field, the reader log and the values block are filled before C (#733 completion, §8); Joshua reviews the full text, then C and C′ exactly per #733 §9 (C changes only the Status line and the Ruling field) | Joshua | P-S5 merged; steps 2, 3 | 0.5 d |
 | 5 | **Fresh source approval over r3d** (`APPROVE_T00_SOURCE_CONTRACT`, key `source:1ebae5d45bc51280`), verified with `verify_detached_approval(allow_test_authority=False)` | Joshua signs | step 4 | 0.1 d |
 | 6 | **P7 at H′ over r3d**, one run by the accepted P7 procedure. `p7_acceptance.json` is write-once (`coordinator.py:1290-1292`, `P7_ACCEPTANCE_EXISTS`), so the coordinator first renames the current acceptance aside in place, not deleted, as it did on 2026-10-10 (T00 card §8); step 12's attestation hashed that file's earlier version, and step 12's window closes 2026-10-14 in any case. Then `t00_screen accept-p7` | coordinator | steps 1, 5 | 0.25 d (about 1 h) |
 | 7 | **Screen authority** under the successor purpose, over r3d, the P7 record and ratified #733; `validate_screen_authority` ISSUED | Joshua signs | steps 4, 6 | 0.25 d |
@@ -337,11 +337,12 @@ Each operator act below needs its own GO. Agents never touch a key.
   - **C-1:** Tier-2 row 5 alone, uniform reading. Row 3 is not relied on.
   - **Q1 — RULED: option A, FLOOR-HALF.** Every leg at k = 0.5 under the code's own round-down rule; a leg whose halved size floors to 0 is OFF. The per-leg vector stays private (the Q1 options sheet, SHA256SUMS `08f9c147…`); this card refers only to "the frozen vector in the signed startup-policy v2" and quotes no value. The build still works for any vector.
   - **K₀ — RULED: 8**, so this successor is K = 9.
-- **Still OPEN:**
-  - **Q6 — OPEN (OWED, Joshua to confirm).** Recommendation: G5 reported and non-binding.
-  - **Q7 — OPEN (OWED, Joshua to confirm).** Depth stays N = 1,002 per population (T00 card §8) unless Joshua re-rules.
-  - **C-7 — OWED (Joshua):** his answerer exposure.
-  - **Reader rows — OWED:** including the Tier-2 executor session and the Q1 options worker as Tier-2 readers.
+- **Decisions 1–4 RULED** (Joshua, 2026-10-10, directly to the Deployment Coordinator, on four recommendations from a Codex assessment chat: "Agreed on all four recommendations"; relayed to #733's assembly worker by the coordinator). Recorded in [#733](../pre-registration/2026-10-08-tradeify-book-successor-screen-prereg-DRAFT.md):
+  - **Q6 — RULED:** funded survival (G5) is reported and non-binding, explicitly "not produced" because this screen has no producer; G6 economics stays reported only, likewise "not produced" when absent. A screen GO establishes neither (#733 §1d).
+  - **Q7 — RULED:** N = 1,002 paths per population, 334 per root. Budget 961,920 path CPU-seconds plus 11,300 overhead CPU-seconds. Fresh roots disjoint from step 12's, including a disjoint probe root; fresh paths remain over the same exposed history, a disclosed limitation (#733 §3 items 1 and 4, §6 values block, §7).
+  - **`pass_floor_halves` — RULED: `BINDING`.** H1 and H2 must each meet the existing pass floor, as FULL must, which enforces G4 through A6's existing implementation (no `verdict.py` change; P-S4 option A stands). An explicit change from #581's `REPORTED` (#733 §3 item 2).
+  - **OD-1 — RULED:** D-feed reading (c) extends to the successor (#733 §4), recorded at the [D-feed row](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider).
+- **C-7 and reader rows:** recorded in #733 §1a and §7 (C-7 "not seen"; rows T2-1…T2-5 and PA-1).
 - **Prerequisites:** PS-1 met (card approval above). PS-2 #757 at: *pending.* PS-3 Q1 and C-1 ruled 2026-10-10 (PR #760). Tier-2 `REPORT.md` SHA-256 `efcf85dbbe5532f5130674ed7bf0c9bcc77fc6e9a0a65ffc27c6fc85ec2bdb7c`; output SHA256SUMS `d6009bf30dbbea7e8ff6aa6a0bff7de52f483f220b4fcff03ce94199a43da7fd` (abbreviated on the T00 card §8 by #759; full values supplied by the coordinator). PS-4 P-S5 merged at: *pending.*
 - **Packet heads:** *pending.*
 - **H′:** *pending.*
