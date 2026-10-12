@@ -38,7 +38,7 @@ Operator direction 2026-10-02.
 
 ## Live-execution posture
 
-**Recorded posture:** the incumbent `Tradeify_Select_100K` eval exists; c1 is warm and **disarmed** (`dry_run=true`) with no deployed book; daemon `emit_enabled=false`. Confirm actual host state before operational work.
+**Recorded posture:** the incumbent `Tradeify_Select_100K` eval exists; c1 is warm and **disarmed** (`dry_run=true`) with no deployed book; daemon `emit_enabled=false`. Confirm actual host state before operational work. M1 is recorded `RESOLVED` (`docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json`; [A8 record](docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md#a8--signed-acceptance-deployed-re-bake-verified-2026-09-14), 2026-09-14), so `fp check` printing `status=RESOLVED` is expected, not a posture conflict; it covers the incumbent's Stage 1 monitoring only, and arming still needs every other gate below. A new instance (for example the personal account) needs its own M1 acceptance.
 
 **Data source (operator report 2026-09-10):** Databento is [retired](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento) and unsubscribed; no replacement is approved; daemon emission stays blocked.
 
