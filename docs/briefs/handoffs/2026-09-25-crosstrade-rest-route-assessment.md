@@ -364,3 +364,9 @@ demonstrated” cells preserve the documentary assessment at its date.
 - **A6:** the criterion is resolved effective behavior, with a mandatory freeze-record check against the approved edition and the deployment binding.
 
 A1, A2, A4 and A7–A14, including A13's process disposition, are accepted as drafted, with their stated limitations. Gates B–D and all operational authority remain pending.
+
+## Addendum 2026-10-12 — Tradeify support rejects bridge routes for evaluation accounts
+
+Tradeify support replied on 2026-10-12 (17:47Z, 18:25Z; Joshua's ticket thread, read by the Deployment Coordinator) that for evaluation and sim-funded accounts execution is permitted only through supported platforms (Tradovate, NinjaTrader, TradingView via Tradovate) with Tradeify-issued credentials, and that third-party execution bridges, including CrossTrade routing via the NinjaTrader Add-On/SDK or via the direct Tradovate API, are not permitted; only live funded accounts may use the Tradovate API directly. No clause or consent process was cited. Joshua has asked for escalation to human risk/compliance.
+
+**Status:** the CrossTrade route for the evaluation account is **UNRESOLVED / not permitted on current support guidance**. Nothing here changes the rail's disarmed posture. No different connector or native-platform rewrite is assumed to be permitted. Existing code and evidence are preserved.
