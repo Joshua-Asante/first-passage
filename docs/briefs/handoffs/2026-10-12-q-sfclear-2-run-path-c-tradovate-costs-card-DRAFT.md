@@ -49,7 +49,7 @@ acceptance:
   - tests/ops/qualification/test_cost_schedule_validation.py
 ```
 
-The first file is new; the rest exist and stay green with no edit. Under option (a) (§0.5) the new test is `tests/ops/qualification/test_personal_cost_terms.py` instead, and the ops trust-domain suites join the list.
+The first file is new; the rest exist and stay green with no edit (the two ops suites guard that `_cost_terms` is unchanged, row C8).
 
 ## 0. Phase 0: premise, Rule-0 reads and findings returned before code
 
@@ -58,12 +58,12 @@ Every anchor is at `origin/main` `92bfca7`. Report findings before any test; a c
 - **(a) Existing parser.** `ops/c1_rail/qualification/production_source.py:127` `_cost_terms`: Tradeify URL, closed four-symbol rows, `round_trip_usd` divided by two at `:156`. It stays exactly as is.
 - **(b) Scorer consumer.** `lab/discovery/sfgrowth_acceptance.py:192` `daily_series(trades, calendar, fees, cost)`: `fees` is **one** component mapping `{commission, exchange, clearing, NFA}` (`:194`), summed and applied as `cost × trade.sides × rate` (`:206`). It takes no instrument key, so a per-instrument snapshot is applied by calling it once per leg with that leg's instrument rate. Confirm.
 - **(c) Sides.** `lab/discovery/remc_series_builder.py:210` (`sides` = one entry and one exit per contract). So the rate is per side per contract, and no divide-by-two applies.
-- **(d) Firm row.** `core/firm_rules.py` `Personal_Tradovate` has `cost_per_side_usd: None`: one undated scalar, not this snapshot. It is not used (decision packet item 3).
+- **(d) Firm row.** `core/firm_rules.py` `Personal_Tradovate` has `cost_per_side_usd: None`: one undated scalar, not this snapshot. It is not used (item 3 RULED (b)).
 - **(e) Inventories.** `lab/` is outside `trust_domain.py:140`/`:156` and `policy_fingerprint.py:29`.
 
 ## 0.5. Routing and clarifying questions
 
-- **(A) Placement.** **Pending decision packet item 3.** Recommended option (b): a lab-side closed parser, `lab/discovery/sfclear_tradovate_fees.py`, consuming a serialized snapshot. Option (a): a separate closed ops parser, `ops/c1_rail/qualification/personal_cost_terms.py`, with an explicit venue discriminator; `_cost_terms` is untouched and `production_source.py` is never edited by this card.
+- **(A) Placement (item 3 RULED: b).** A lab-side closed parser, `lab/discovery/sfclear_tradovate_fees.py`, consuming a serialized snapshot. No ops file is added; `_cost_terms` and `production_source.py` are untouched.
 - **(B) Schema `sfclear_tradovate_fees/v1`, closed.** Fields: `venue = "Tradovate"`, `plan = "Free"`, `unit = "USD_per_side_per_contract"`, `captured_utc` (aware ISO), `source_sha256` (64 hex, the retained private capture), `rows`: exactly one per instrument in {`6J`, `MYM`, `MGC`, `MNQ`}, each with decimal strings `commission`, `exchange`, `clearing`, `NFA`.
 - **(C) Identity, not freshness.** The 30-day re-take in pre-registration §4 item 2 applies **at freeze only**; the coordinator does it before the freeze record is sealed. At run time the parser takes the expected digest from the private freeze record and refuses any snapshot whose hash differs (§6 VOID). It applies no age test at run time.
 - **(D) Output.** `rates_for(instrument)` returns the four-component mapping `daily_series` already accepts. One unit conversion, at parse.
@@ -76,28 +76,21 @@ One closed, dated, per-instrument per-side all-in Tradovate capture feeds scorin
 
 ## 2. Scope
 
-### 2.1 Files (option (b), recommended)
+### 2.1 Files
 
 | File | Bound | Edit |
 |---|---|---|
 | `lab/discovery/sfclear_tradovate_fees.py` | not in either inventory | new |
 | `tests/lab/test_sfclear_tradovate_fees.py` | — | new |
 
-### 2.2 Files (option (a), if ruled)
-
-| File | Bound | Edit |
-|---|---|---|
-| `ops/c1_rail/qualification/personal_cost_terms.py` | T once imported by a bound module | new |
-| `tests/ops/qualification/test_personal_cost_terms.py` | — | new |
-
-**Forbidden files (either option):** `production_source.py` (B's single writer); `replay.py`; `tv_broker_emulator.py`; `lab/discovery/sfgrowth_acceptance.py` and `lab/research_utils/sfgrowth_margin.py` (reused, not edited); every `core/` file; any existing test; Pine, ports, private files.
+**Forbidden files:** every `ops/` file, including `production_source.py` (B's single writer); `replay.py`; `tv_broker_emulator.py`; `lab/discovery/sfgrowth_acceptance.py` and `lab/research_utils/sfgrowth_margin.py` (reused, not edited); every `core/` file; any existing test; Pine, ports, private files.
 
 ## 3. Method
 
 1. Phase 0; post findings.
 2. Fresh worktree; cut `codex/sfclear2-c-tradovate-costs`.
-3. §4 rows red; build; green; acceptance list; `fp test` (option (b)) or `fp test-ops` (option (a)); `fp check`; cite records.
-4. Stage only the option's files; push; return. Return this input contract to the coordinator before B or E integration.
+3. §4 rows red; build; green; acceptance list; `fp test`; `fp check`; cite records.
+4. Stage only the §2.1 files; push; return. Return this input contract to the coordinator before B or E integration.
 
 ## 4. Acceptance checks (falsifier-first)
 
@@ -123,7 +116,7 @@ One closed, dated, per-instrument per-side all-in Tradovate capture feeds scorin
 - No real fee value in fixtures; fixtures invent rates.
 - No private read; no real-data run.
 - No edit to `_cost_terms`, the emulator or reference friction.
-- No `lab↔ops` import under either option.
+- No `lab↔ops` import.
 - No edit to frozen constants or `dd_protection`.
 - GLM, a push to `main`, a merge, or opening a PR.
 
@@ -131,9 +124,9 @@ One closed, dated, per-instrument per-side all-in Tradovate capture feeds scorin
 
 | Status | When |
 |---|---|
-| `DONE` | Rows red then green; mutants killed; suites and `fp check` completed exit 0; footprint equals the option's table |
+| `DONE` | Rows red then green; mutants killed; suites and `fp check` completed exit 0; footprint equals §2.1 |
 | `DONE_WITH_CONCERNS` | As DONE, with an observation |
-| `NEEDS_CONTEXT` | Item 3 unruled; §0(b) contradicted |
+| `NEEDS_CONTEXT` | §0(b) contradicted |
 | `BLOCKED — context-problem` / `capability-problem` / `scope-problem` / `plan-itself-wrong` | As named |
 
 **Gate verdict (coordinator, at review):** **RESOLVED** when `DONE` and both §7 passes reproduce it; **FALSIFIED** when a row cannot be made red or a mutant survives; **AMBIGUOUS** on `DONE_WITH_CONCERNS`.
@@ -152,7 +145,7 @@ One closed, dated, per-instrument per-side all-in Tradovate capture feeds scorin
 
 ## 9. Sequencing and file collisions
 
-- **`production_source.py` single writer:** B's writer. C never edits it. Under option (a), any import of `personal_cost_terms.py` into a bound module is B's edit, after C merges. Order: A → C → B.
+- **`production_source.py` single writer:** B's writer. C is lab-side and never edits it. Order (item 5 RULED as proposed): A0 → A → C → B → D → E.
 - No collision with the calculator branch, P-L2/P-L3 or the owner queue.
 
 ## 10. Audit hooks (runnable)
@@ -160,7 +153,7 @@ One closed, dated, per-instrument per-side all-in Tradovate capture feeds scorin
 ```bash
 python -I scripts/check_brief.py docs/briefs/handoffs/2026-10-12-q-sfclear-2-run-path-c-tradovate-costs-card-DRAFT.md --type cc_handoff
 python -I scripts/fp.py python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-10-12-q-sfclear-2-run-path-c-tradovate-costs-card-DRAFT.md
-git diff --name-only <cut>..HEAD   # expect the option's two files
+git diff --name-only <cut>..HEAD   # expect exactly the two §2.1 files
 git diff <cut>..HEAD -- ops/c1_rail/qualification/production_source.py   # expect empty
 python -I scripts/fp.py python -m pytest <the authority-block acceptance list>
 python -I scripts/fp.py check
@@ -168,13 +161,13 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1. Joshua's ruling on item 3**, and admission if option (a). **Not recorded.**
+- **G-1. Joshua's ruling on item 3.** No bound-code admission is needed (lab-side). **Item rulings RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b".
 - **G-2. Coordinator freeze.** **Not done.**
 - **G-3. Dispatch.** **Not done.**
 
 ## 12. Open decisions (coordinator at freeze; Joshua where marked)
 
-- **D-1 (Joshua, item 3).** Placement.
+- **D-1 (item 3).** RULED: (b), lab-side (§0.5 (A)).
 - **D-2.** Confirm the instrument key set and that 6J's "standard rate" is a row value, not a parser rule.
 
 ## Pre-mortem

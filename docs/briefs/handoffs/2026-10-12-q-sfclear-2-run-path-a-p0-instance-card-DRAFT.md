@@ -86,9 +86,9 @@ Synthetic only; nothing gitignored is read, so a local Codex checkout suffices. 
 
 - **(A) P0 is a named contract.** Add a distinct personal policy type (for example `PersonalP0Policy(tier="Personal_Tradovate")`) and a `require_personal_p0` validator in `book_policy.py`. `require_policy` and the Tradeify instance stay byte-equivalent in behaviour. No huge trigger, no fabricated `ProtectionPolicy` tuple.
 - **(B) Mode.** Under P0 the replay's mode source returns NORMAL for every session at every equity. It never constructs `BookProtectionClock`.
-- **(C) Halt boundary.** **Pending decision packet item 2.** Recommended: the replay calls the live halt's breach predicate. Extract `_breached`'s body into one pure module-level function in `personal_drawdown_halt.py` that `_breached` then calls, so live behaviour is unchanged. The replay imports that function. If Joshua rules the exact scorer predicate instead, the replay implements `20*(peak-trough) >= 3*peak` in ops (no lab import) and `personal_drawdown_halt.py` is not touched.
+- **(C) Halt boundary (item 2 RULED: mirror).** The replay calls the live halt's breach predicate. Extract `_breached`'s body (`personal_drawdown_halt.py:171`, rounded to 6 places) into one pure module-level function that `_breached` then calls, so live behaviour is unchanged. The replay imports that function. The §4 scorer keeps its own exact hit (`sfgrowth_acceptance.py:270`); the replay does not use it.
 - **(D) Observed equity.** The replay observes account equity (realized plus open marks on the same bar marks the replay already uses) at each bar close. It does not observe any adapter's paper equity. The card names this sequence; the worker does not choose another one.
-- **(E) Latch mechanics, not consequence.** This card builds only the live halt contract the replay mirrors: on a latch every entry and add is refused with a named reason (`personal_halt`), open positions flatten at the next bar under the existing cost model, a flatten counts as confirmed only when the replay's own position book is flat with no working order, and the replay emits one latch record (timestamp, peak, observed equity) in its output. Under the frozen reading (decision packet item 7, option (b)), these mechanics are the whole consequence: after a latch the replay adds no risk, so the remaining days come out as zero days and the §4 scorer scores the series as it stands. This card adds no verdict rule. If Joshua instead rules (a), E adds it; if (c), the card waits for the new pre-registration. The card is not frozen until item 7 is settled (Joshua confirms (b), or rules (a) or (c)).
+- **(E) Latch mechanics, not consequence.** This card builds only the live halt contract the replay mirrors: on a latch every entry and add is refused with a named reason (`personal_halt`), open positions flatten at the next bar under the existing cost model, a flatten counts as confirmed only when the replay's own position book is flat with no working order, and the replay emits one latch record (timestamp, peak, observed equity) in its output. Item 7 RULED (b), the frozen reading: these mechanics are the whole consequence. After a latch the replay adds no risk, so the remaining days are zero days produced by the replay, and the §4 scorer scores the series as it stands. No NOT CLEARED rule is added.
 - **(F) Cap.** Add `account_micro_cap(tier)` in `book_policy.py`. It reads the resolved tier row and refuses `None` or a non-positive int. `ACCOUNT_MICRO_CAP` stays the Tradeify value. `book_capacity.py` takes the cap from the resolved instance when one is passed; otherwise it uses today's constant.
 
 ## 1. Goal
@@ -106,9 +106,9 @@ A synthetic `BookReplay` can explicitly select the personal tier, its cap and P0
 
 - `book_policy.py`: §0.5 (A), (B), (F).
 - `book_capacity.py`: §0.5 (F).
-- `qualification/replay.py`: accept a `PersonalP0Policy`; select the P0 mode source; observe the halt per (C)–(E); refuse with `personal_halt`. The Tradeify path is unchanged.
-- `personal_drawdown_halt.py`: only the (C) extraction, and only if item 2 is ruled "mirror live".
-- `qualification/trust_domain.py`: add `c1_rail.personal_drawdown_halt` to the runtime-dependency tuple at `:156`, only if the replay imports it.
+- `qualification/replay.py`: accept a `PersonalP0Policy`; select the P0 mode source; observe the halt per (C)–(E), importing the (C) predicate; refuse with `personal_halt`. The Tradeify path is unchanged.
+- `personal_drawdown_halt.py`: only the (C) extraction.
+- `qualification/trust_domain.py`: add `c1_rail.personal_drawdown_halt` to the runtime-dependency tuple at `:156` (the replay imports it).
 
 ### 2.2 Step A0 (coordinator commit, before the worker cuts)
 
@@ -122,8 +122,8 @@ A synthetic `BookReplay` can explicitly select the personal tier, its cap and P0
 | `ops/c1_rail/book_policy.py` | T+F | §2.1 |
 | `ops/c1_rail/book_capacity.py` | T+F | §2.1 |
 | `ops/c1_rail/qualification/replay.py` | T | §2.1 |
-| `ops/c1_rail/qualification/trust_domain.py` | T | one tuple entry, conditional |
-| `ops/c1_rail/personal_drawdown_halt.py` | becomes T if imported | (C) extraction, conditional |
+| `ops/c1_rail/qualification/trust_domain.py` | T | one tuple entry |
+| `ops/c1_rail/personal_drawdown_halt.py` | becomes T (imported by replay) | (C) extraction |
 | `tests/core/test_personal_tier_cap.py` | — | new (A0) |
 | `tests/ops/test_personal_p0_policy.py` | — | new |
 | `tests/ops/qualification/test_personal_p0_replay.py` | — | new |
@@ -147,8 +147,8 @@ A PR touching `ops/c1_rail/qualification/**` or `book_policy.py` triggers the Qu
 
 | Row | Test | Fails if |
 |---|---|---|
-| P1 | Exact threshold: equity at exactly 15% below peak latches. Clear of the boundary: a drawdown of `0.15 − 1e-5` does not latch and `0.15 + 1e-5` does, a margin ten times the 6-place rounding grain (`1e-6`) of `personal_drawdown_halt.py:171`, so the result does not depend on item 2. The within-grain cases are P2's | The boundary is wrong in either direction |
-| P2 | Boundary predicate is the ruled one (item 2): a case where rounding and exact differ (drawdown `0.1499996`) latches under "mirror live" and does not under "exact" | The replay uses the other predicate |
+| P1 | Exact threshold: equity at exactly 15% below peak latches. Clear of the boundary: a drawdown of `0.15 − 1e-5` does not latch and `0.15 + 1e-5` does, a margin ten times the 6-place rounding grain (`1e-6`) of `personal_drawdown_halt.py:171`. The within-grain cases are P2's | The boundary is wrong in either direction |
+| P2 | Boundary predicate is the live one (item 2 RULED: mirror): a drawdown of `0.1499996`, which rounds to `0.15` at 6 places, latches in the replay exactly as `personal_drawdown_halt` latches on the same peak and equity; `0.1499994` latches in neither | The replay uses the exact predicate or diverges from the live halt |
 | P3 | New peak, then breach measured from the new peak; recovery above peak before breach never latches | Peak tracking is wrong |
 | P4 | At every synthetic equity level, including below 1.5% of peak, mode is NORMAL; `BookProtectionClock` is never constructed under P0 | Any PROTECTED transition |
 | P5 | After a latch every entry and add refuses `personal_halt`; positions flatten at the next bar; zero authorization for the rest of the run | Risk added after a latch |
@@ -157,7 +157,7 @@ A PR touching `ops/c1_rail/qualification/**` or `book_policy.py` triggers the Qu
 | P8 | `account_micro_cap("Personal_Tradovate") == 80`; `None`, `0`, `-1`, `True` refuse; capacity refuses above the resolved cap | The resolved cap is ignored |
 | P9 | `core/mc/preflight.py:249` on a synthetic fixture behaves as `tests/core/test_personal_tier.py` expects (refusal is not clearance) | Preflight treated as clearance |
 
-**Named mutants (each must turn a row red):** M-A1 force the old clock under P0 (P4); M-A2 omit halt observation (P1, P5); M-A3 substitute the Tradeify instance for the personal one (P4, P8); M-A4 ignore the resolved cap (P8); M-A5 swap the boundary predicate (P2).
+**Named mutants (each must turn a row red):** M-A1 force the old clock under P0 (P4); M-A2 omit halt observation (P1, P5); M-A3 substitute the Tradeify instance for the personal one (P4, P8); M-A4 ignore the resolved cap (P8); M-A5 replace the live predicate with the exact integer predicate (P2).
 
 **Revert trigger:** any listed existing suite changes outcome, or P7 diffs.
 
@@ -175,7 +175,7 @@ A PR touching `ops/c1_rail/qualification/**` or `book_policy.py` triggers the Qu
 |---|---|
 | `DONE` | §4 red at the cut, green on the build; mutants killed; suites green; `fp test-ops` and `fp check` records completed exit 0; footprint equals §2.3 |
 | `DONE_WITH_CONCERNS` | As DONE, with an off-pattern observation |
-| `NEEDS_CONTEXT` | A §0.5 default contradicted, or item 2 or item 7 not settled at dispatch |
+| `NEEDS_CONTEXT` | A §0.5 default contradicted |
 | `BLOCKED — context-problem` / `capability-problem` / `scope-problem` / `plan-itself-wrong` | As named; `plan-itself-wrong` covers §0(f) |
 
 **Gate verdict (coordinator, at review):** **RESOLVED** when `DONE` and both §7 passes reproduce it; **FALSIFIED** when a row cannot be made red at the cut, a mutant survives, or the revert trigger fires; **AMBIGUOUS** (held) on `DONE_WITH_CONCERNS`.
@@ -196,7 +196,7 @@ A PR touching `ops/c1_rail/qualification/**` or `book_policy.py` triggers the Qu
 
 ## 9. Sequencing and file collisions
 
-- **`production_source.py` single writer:** card B's writer is the only writer of `production_source.py` across A, B and C. A does not edit it; C does not edit it under either fee option (C card §9). Order: A merges → (C merges, independent of the file) → B cuts from a base containing A.
+- **`production_source.py` single writer:** card B's writer is the only writer of `production_source.py` across A, B and C. A does not edit it; C is lab-side (item 3 RULED (b)) and does not edit it. Order (item 5 RULED as proposed): A0 → A → C → B → D → E; B cuts from a base containing A.
 - `book_account_owner.py` order stays GC-5-DISPLACED → TB-I3 S2 → P-L2 → P4; A does not enter that queue.
 - `book_policy.py` and `firm_rules.py` are P7 D8 paths and TB-I1 components: A moves the Tradeify fingerprint and trust-domain digests (decision packet item 1).
 
@@ -214,21 +214,21 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1. Joshua's code admission.** He names the §2.3 bound files, knowing they move TB-I1 and trust-domain digests and touch P7 D8 paths (decision packet item 1), and rules items 2 and 7. **Admission RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "item 1 admitted as listed" (scope confirmed: card A §2.3 files including A0 `core/firm_rules.py` and the conditional rows; card B §2.2 files including new `qualification/personal_replay.py`; accepting that the Tradeify TB-I1 fingerprint and trust-domain digests move, D8 paths change and H′ moves, with P7 re-measured on the new bytes if P7 D8 is still owed; `book_sizing_context`/`book_account_owner` excluded, with P4). Items 2 and 7: not recorded.
+- **G-1. Joshua's code admission.** He names the §2.3 bound files, knowing they move TB-I1 and trust-domain digests and touch P7 D8 paths (decision packet item 1), and rules items 2 and 7. **Admission RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "item 1 admitted as listed" (scope confirmed: card A §2.3 files including A0 `core/firm_rules.py` and the conditional rows; card B §2.2 files including new `qualification/personal_replay.py`; accepting that the Tradeify TB-I1 fingerprint and trust-domain digests move, D8 paths change and H′ moves, with P7 re-measured on the new bytes if P7 D8 is still owed; `book_sizing_context`/`book_account_owner` excluded, with P4). **Item rulings RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b".
 - **G-2. Coordinator freeze.** Answers §12; commits the frozen revision; records its SHA. **Not done.**
 - **G-3. Dispatch.** The coordinator's dispatch record, after A0 lands. **Not done.**
 
 ## 12. Open decisions (coordinator at freeze; Joshua where marked)
 
-- **D-1 (Joshua, item 2).** Replay halt boundary.
-- **D-2 (Joshua, item 1).** Admission of the §2.3 footprint, including the conditional rows.
-- **D-3 (Joshua, item 7).** Joshua confirms the frozen reading (b), or rules (a) or (c). This card's mechanics implement (b) and emit the latch record under every option.
+- **D-1 (item 2).** RULED: mirror (§0.5 (C)).
+- **D-2 (item 1).** RULED: admitted as listed (G-1).
+- **D-3 (item 7).** RULED: (b), the frozen reading (§0.5 (E)).
 - **D-4.** Confirm (D) observed equity against pre-registration §2.
 
 ## Pre-mortem
 
 - **Loop cost.** One targeted run, one `fp test-ops`, one `fp check`, plus the S2 workflow. A third full run is a checkpoint.
-- **Likely failure.** The trust-domain runtime collector refuses a new import not listed in `:156`; that is the conditional row, not a workaround.
+- **Likely failure.** The trust-domain runtime collector refuses a new import not listed in `:156`; the `trust_domain.py` row covers it, not a workaround.
 - **What would make this moot:** Joshua ruling P0 into the live owner first (P4), so A follows P4's contract.
 - **Evidence binding:** records at the returned head only; a push after green voids them.
 

@@ -1,6 +1,6 @@
 # Q-SFCLEAR-2 run path: decision packet for Joshua
 
-**Date:** 2026-10-12 · **Base:** `origin/main` `92bfca7` · **Prepared by:** drafting worker for the Deployment Coordinator, to relay. **Status:** OPEN; item 1 RULED 2026-10-12; items 2–7 open.
+**Date:** 2026-10-12 · **Base:** `origin/main` `92bfca7` · **Prepared by:** drafting worker for the Deployment Coordinator, to relay. **Status:** items 1–7 RULED (2026-10-12).
 
 **Sources:** the [scope note](2026-10-12-q-sfclear-2-run-path-code-scope.md) (#795); the FROZEN [Q-SFCLEAR-2 pre-registration at F `83867f0`](https://github.com/Joshua-Asante/first-passage/blob/83867f0d362931c2a516a62b990bb1c209372527/docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md); the DRAFT cards [A](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-a-p0-instance-card-DRAFT.md), [B](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-b-personal-replay-card-DRAFT.md), [C](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-c-tradovate-costs-card-DRAFT.md), [D](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-d-fg-parity-card-DRAFT.md), [E](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-e-run-record-card-DRAFT.md). No private value was read.
 
@@ -8,15 +8,15 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 
 ## At a glance
 
-| # | Decision | Recommendation |
-|---|---|---|
-| 1 | Code admissions per card | Admit A and B as bounded below; C and E need none under the recommended options; D is test-only; the owner seam stays with P4 |
-| 2 | P0 halt boundary in replay | Replay mirrors the live halt code; the §4 scorer keeps its exact hit |
-| 3 | Where Tradovate fee parsing lives | Lab-side serialized consumer (option b) |
-| 4 | Aegis route | PR for all legs |
-| 5 | Sequencing and executor per card | A0 (coordinator) → A → C → B → D → E; Codex local per card; no card enters the owner queue |
-| 6 | Whether D's FG evidence run may use the Azure VM | Yes, if you extend the §60 VM exception to this run |
-| 7 | What a P0 latch inside the historical replay means | (b), the frozen reading: you confirm it; (a) is a stricter rule you may add |
+| # | Decision | Recommendation | Ruling |
+|---|---|---|---|
+| 1 | Code admissions per card | Admit A and B as bounded below; C and E need none; D is test-only; the owner seam stays with P4 | RULED: admitted as listed |
+| 2 | P0 halt boundary in replay | Replay mirrors the live halt code; the §4 scorer keeps its exact hit | RULED: mirror |
+| 3 | Where Tradovate fee parsing lives | Lab-side serialized consumer (option b) | RULED: (b) |
+| 4 | Aegis route | PR for all legs | RULED: PR |
+| 5 | Sequencing and executor per card | A0 (coordinator) → A → C → B → D → E; Codex local per card; no card enters the owner queue | RULED: as proposed |
+| 6 | Whether D's FG evidence run may use the Azure VM | Yes, if you extend the §60 VM exception to this run | RULED: (b), §60 extended to the FG run |
+| 7 | What a P0 latch inside the historical replay means | (b), the frozen reading: you confirm it; (a) is a stricter rule you may add | RULED: (b) |
 
 ## 1. Code admissions
 
@@ -28,12 +28,11 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 | A | `ops/c1_rail/book_policy.py` | T, F, D8 | Named P0 policy type; `account_micro_cap(tier)`; Tradeify unchanged |
 | A | `ops/c1_rail/book_capacity.py` | T, F | Resolved cap |
 | A | `ops/c1_rail/qualification/replay.py` | T, D8 | P0 mode source and halt observation |
-| A (conditional on item 2 = mirror) | `ops/c1_rail/personal_drawdown_halt.py` | becomes T when imported | Extract one pure breach function; live behaviour unchanged |
+| A | `ops/c1_rail/personal_drawdown_halt.py` | becomes T when imported | Extract one pure breach function; live behaviour unchanged |
 | A, B (conditional) | `ops/c1_rail/qualification/trust_domain.py` | T, D8 | One inventory entry each for a newly imported module |
 | B | `ops/c1_rail/qualification/production_source.py` | T, D8 | Personal factory (`:1367`) and resolved cap (`:190`) |
 | B | `ops/c1_rail/qualification/replay.py` | T, D8 | G4 enforcement and per-trade route output |
 | B | `ops/c1_rail/qualification/personal_replay.py` (new) | enters T | Verified input envelope and route output |
-| C (only under item 3 option a) | `ops/c1_rail/qualification/personal_cost_terms.py` (new) | T once imported | Separate closed parser |
 | D | `tests/ops/test_personal_replay_live_parity.py` | none | Test only |
 | E | `lab/analysis/c1/sfclear_2026-10/run_record.py`, `score_r1.py` (new) | none, after import audit | Lab only |
 | P4 (not these cards) | `ops/c1_rail/book_sizing_context.py`, `ops/c1_rail/book_account_owner.py` | T (+F for sizing) | The live P0 consumer stays with P4 |
@@ -55,6 +54,8 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 
 **Recommendation:** (a). The replay models live. The §4 scorer keeps its own exact hit definition, which is a separate frozen contract.
 
+**RULED 2026-10-12:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b". Item 2: mirror (option (a)).
+
 **What it changes:** under (a), A edits `personal_drawdown_halt.py` and the replay imports it (closure change, item 1). Under (b), neither happens, and A's row P2 asserts the exact predicate.
 
 ## 3. Where Tradovate fee parsing lives
@@ -67,6 +68,8 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 
 **Recommendation:** (b). The replay does not need the Tradovate fees: reference friction stays in replay for guard and ladder behaviour (pre-registration §4 item 2), and the fees are deducted only in scoring.
 
+**RULED 2026-10-12:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b". Item 3: (b), lab-side.
+
 **What it changes:** (b) keeps C out of the trust domain and out of `production_source.py`. (a) adds a bound file and couples C to B.
 
 ## 4. Aegis route
@@ -74,6 +77,8 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 **Options:** PR for all legs; or RS for Aegis, admissible only if every D9 condition (C-mode, C-life, C-cap, C-sched) and FG-T (fixed-quantity timing identity with scaled Commission) is proved (pre-registration §7).
 
 **Recommendation:** PR for all legs, unless the D9 conditions plus FG-T are cheap to prove.
+
+**RULED 2026-10-12:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b". Item 4: PR for all legs; RS is not used.
 
 **What it changes:** PR adds no route code and drops FG-T from D's evidence run. RS adds refusing condition checks to B and an FG-T anchor to D. If Aegis falls back to PR, all legs run in one PR (§7).
 
@@ -91,6 +96,8 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 
 **Recommendation:** the order above. The study path does not need live P0 (FG item 3 names adds OFF and zero-quantity refusal).
 
+**RULED 2026-10-12:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b". Item 5: as proposed.
+
 **What it changes:** the order sets when the Tradeify identities move (A, B) relative to TB-I3 S2 and P-L2 review, and when FG can run.
 
 ## 6. Whether D's FG evidence run may use the Azure VM
@@ -100,6 +107,8 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 **Options:** (a) laptop, in place; (b) the VM, under an extension of the §60 exception naming this FG run; (c) another host.
 
 **Recommendation:** (b), if you extend the exception. (a) is the fallback with chunked runs.
+
+**RULED 2026-10-12:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b". Item 6: (b), the Azure VM, with §60 extended to the FG run (ports and `effective_inputs.json` only; Pine stays off the VM); the coordinator records the campaign §60 addendum 2026-10-12.
 
 **What it changes:** (b) needs your words extending §60 to this run; Pine stays off the VM either way. (a) needs no new permission but risks timeouts.
 
@@ -114,6 +123,8 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 | (c) | A new pre-registration, Q-SFCLEAR-3, that defines the case | Leaves Q-SFCLEAR-2 as frozen; same tuple, K unchanged | A new ratification and freeze |
 
 **Recommendation:** (b), the frozen reading, which Joshua confirms. (a) is a stricter option he may add on top.
+
+**RULED 2026-10-12:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b". Item 7: (b), the frozen reading; post-latch days are zero days produced by the replay, and no NOT CLEARED rule is added.
 
 **Risk of (b):** if a latch fires, the post-latch tail is flat, so the bootstrap's 20-day blocks partly dilute the pre-latch drawdown.
 **Risk of (a):** it adds a NOT CLEARED path after the freeze.

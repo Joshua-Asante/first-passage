@@ -132,10 +132,11 @@ A scoring run is unusable unless its frozen inputs, FG result and clean start re
 | E13b | Margin snapshot whose hash differs from the freeze record's: VOID before scoring | Unfrozen margins used |
 | E16 | `D_t`: by default every `D_t` is 0 and outputs equal `daily_series`'s; a nonzero `D_t` without a ruling reference refuses; with a synthetic ruling reference, `d` and `l` fall by `D_t` once per account day and `h` is unchanged | `D_t` dropped, doubled per leg, or applied to `h` |
 | E17 | Calendar span: four synthetic panels with different endpoints and one leg OFF with no trades; the span is latest first to earliest last across all four admitted panels | Span taken from legs with output only |
+| E18 | P0 latch (item 7 RULED (b)): a synthetic route output with a latch record and zero days after it is scored as it stands; the latch record alone never yields NOT CLEARED | A latch rule added, or post-latch days removed or filled |
 | E14 | Residual and sensitivity outputs never change the verdict | Residual promoted |
 | E15 | No log line or public field carries a synthetic `E_0`, tuple value, cell value or private path beyond the row form | Leak |
 
-**Named mutants:** M-E1 skip the clean-HEAD check (E1); M-E2 call `split_calendar` (E9); M-E3 skip FG (E4); M-E4 write the record without the row (E8); M-E5 drop the trip rule (E11); M-E6 treat MARGINAL as PASS (E13); M-E7 add an `e0` key to the record (E7, E15); M-E8 build the calendar span from legs with output only (E17); M-E9 use a factor other than 1.5, or recompute G3 instead of reading it (E13a); M-E10 accept a mismatched margin snapshot (E13b); M-E11 apply `D_t` per leg (E16); M-E12 apply a nonzero `D_t` with no operator-ruling reference (E16).
+**Named mutants:** M-E1 skip the clean-HEAD check (E1); M-E2 call `split_calendar` (E9); M-E3 skip FG (E4); M-E4 write the record without the row (E8); M-E5 drop the trip rule (E11); M-E6 treat MARGINAL as PASS (E13); M-E7 add an `e0` key to the record (E7, E15); M-E8 build the calendar span from legs with output only (E17); M-E9 use a factor other than 1.5, or recompute G3 instead of reading it (E13a); M-E10 accept a mismatched margin snapshot (E13b); M-E11 apply `D_t` per leg (E16); M-E12 apply a nonzero `D_t` with no operator-ruling reference (E16); M-E13 map a latch record to NOT CLEARED (E18).
 
 **Revert trigger:** any listed existing suite changes outcome.
 
@@ -172,7 +173,7 @@ A scoring run is unusable unless its frozen inputs, FG result and clean start re
 
 ## 9. Sequencing and file collisions
 
-- After B, C and #752's merge. E writes no `ops/` file, so it holds no slot in the `production_source.py` writer (B) or the owner queue.
+- Order (item 5 RULED as proposed): A0 → A → C → B → D → E; E also needs #752's merge. E writes no `ops/` file, so it holds no slot in the `production_source.py` writer (B) or the owner queue.
 - Publication paths collide with #752 and calculator evidence publication; Claude is their one publication owner (§13).
 
 ## 10. Audit hooks (runnable)
@@ -188,14 +189,14 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the build is NOT DISPATCHABLE until all three hold)
 
-- **G-1.** No bound-code admission if the import audit keeps both modules outside the trust domain; otherwise Joshua's admission (item 1). **Not recorded.**
+- **G-1.** No bound-code admission if the import audit keeps both modules outside the trust domain; otherwise Joshua's admission (item 1). **Item rulings RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b".
 - **G-2. Coordinator freeze.** **Not done.**
 - **G-3. Dispatch.** **Not done.**
 
 ## 12. Open decisions (coordinator at freeze; Joshua where marked)
 
 - **D-1.** Confirm the route-output and fee schemas consumed (B, C returns).
-- **D-2 (Joshua, item 7).** Under the frozen reading (b), E scores the series as it stands and adds no latch rule. If Joshua rules (a), E adds one row mapping a latch record to NOT CLEARED, disclosed as a post-freeze addition. Under (c), E waits for the new pre-registration. The card is not frozen until item 7 is settled.
+- **D-2 (item 7).** RULED: (b), the frozen reading. Post-latch days are zero days produced by the replay; E scores the series as it stands and adds no NOT CLEARED rule (row E18).
 
 ## 13. Coordinator-run publication step (not in the build)
 

@@ -86,7 +86,7 @@ Synthetic only. Defaults apply unless Phase 0 contradicts them (`NEEDS_CONTEXT`)
 - **(B′) Halt start.** The replay's starting account equity, and so the P0 halt's initial peak, is `E_0` read from the private `E_0` file inside the verified envelope: bytes read once, hashed and checked as in (B), parsed as one finite positive value. There is no default, no constructor fallback and no value from any other file. The value is never logged or written to public output. Tests use a synthetic file and digest.
 - **(C) Schedule bridge.** A closed parser for `sfclear_historical_schedule/v1` maps each row to the replay's session facts: DENIED rows refuse entries and adds and stay zero days; PERMITTED rows carry cutoff 15:45, flatten start 15:55 and own-flat 16:00 ET from the row's UTC fields. It is a separate parser, not a feed into `parse_source_calendar`.
 - **(D) Roll list.** A closed parser for `sfclear_roll_dates/v1`. For 6J and MGC, no entry or held position at or after `g4_start_open_utc` of the held contract. Roll dates are never inferred from a price discontinuity.
-- **(E) Route.** **Pending decision packet item 4.** Recommended: PR for all four legs. RS for Aegis is built only if Joshua rules it, and then every D9 condition and FG-T is a refusing check.
+- **(E) Route (item 4 RULED: PR).** Port replay (PR) for all four legs in one `BookReplay` (pre-registration §7). RS is not used: no RS path is built for any leg.
 - **(F) Instance.** The factory at `:1367` takes the resolved instance: Tradeify keeps `candidate_book_protection_policy()`; personal uses A's `PersonalP0Policy`. The startup check at `:190` compares against `account_micro_cap(resolved tier)`, not the literal.
 
 ## 1. Goal
@@ -100,7 +100,7 @@ A four-leg chronological `BookReplay` that consumes only the frozen input identi
 ### 2.1 The change
 
 - New `ops/c1_rail/qualification/personal_replay.py`: the verified input envelope (§0.5 A–D), the personal factory, and the route-output writer `sfclear_route_output/v1`.
-- `sfclear_route_output/v1`, per trade: leg, instrument, contract, entry and exit UTC, side, quantity, tranche index (0 at R1), entry price, initial stop level and `δ₀`, exit price, exit kind, stop-fill distance `b`, Net PnL and Commission (reference friction, as the emulator charges it), whole-trade MAE and MFE in USD. Per leg: refused signals with reason; Striker daily- and total-DD trip timestamps; Vanguard `E_p` path. Per run: every input identity, and A's P0 latch record if one occurred (its consequence is decision packet item 7). No `E_0` or account figure.
+- `sfclear_route_output/v1`, per trade: leg, instrument, contract, entry and exit UTC, side, quantity, tranche index (0 at R1), entry price, initial stop level and `δ₀`, exit price, exit kind, stop-fill distance `b`, Net PnL and Commission (reference friction, as the emulator charges it), whole-trade MAE and MFE in USD. Per leg: refused signals with reason; Striker daily- and total-DD trip timestamps; Vanguard `E_p` path. Per run: every input identity, and A's P0 latch record if one occurred (item 7 RULED (b): later days are zero days; no verdict rule). No `E_0` or account figure.
 - `production_source.py`: §0.5 (F); nothing else.
 - `replay.py`: G4 enforcement and the per-trade fields above, from the actual fill lifecycle.
 - `trust_domain.py`: list `c1_rail.qualification.personal_replay` if §0(e) requires it.
@@ -143,7 +143,7 @@ A four-leg chronological `BookReplay` that consumes only the frozen input identi
 | B9 | Output without MAE or MFE fails the schema validator | VOID not enforced |
 | B10 | Synthetic Striker trip and Vanguard `E_p` path come from the adapter's state, not recomputed | Provenance faked |
 | B11 | Tradeify factory output and startup v1/v2 parsing byte-equal at the cut base | Tradeify changed |
-| B12 | Aegis RS requested without ruling (or any D9 condition false) refuses; PR is the default | RS approximates timing |
+| B12 | All four legs run in the one PR replay; there is no RS path, so a manifest requesting a per-trade rescale for any leg refuses | Any leg rescaled instead of replayed |
 
 **Named mutants:** M-B1 skip one identity check (B1); M-B2 accept DENIED rows (B3); M-B3 `<=` for `<` at cutoff (B4); M-B4 infer a roll from a price gap (B6); M-B5 submit a zero order (B7); M-B6 drop a refusal record (B7); M-B7 omit MFE (B9); M-B8 hash then reopen the file (A); M-B9 start the replay and halt from a default or constructor equity instead of the bound `E_0` (B1); M-B10 start from a wrong value (a different synthetic `E_0` than the hashed file holds) (B1).
 
@@ -163,7 +163,7 @@ A four-leg chronological `BookReplay` that consumes only the frozen input identi
 |---|---|
 | `DONE` | Rows red then green; mutants killed; suites green; `fp test-ops` and `fp check` completed exit 0; footprint equals §2.2 |
 | `DONE_WITH_CONCERNS` | As DONE, with an observation |
-| `NEEDS_CONTEXT` | A default contradicted; item 4 unruled |
+| `NEEDS_CONTEXT` | A default contradicted |
 | `BLOCKED — context-problem` / `capability-problem` / `scope-problem` / `plan-itself-wrong` | As named; `plan-itself-wrong` covers §0(d) |
 
 **Gate verdict (coordinator, at review):** **RESOLVED** when `DONE` and both §7 passes reproduce it; **FALSIFIED** when a row cannot be made red, a mutant survives or the revert trigger fires; **AMBIGUOUS** on `DONE_WITH_CONCERNS`.
@@ -184,7 +184,7 @@ A four-leg chronological `BookReplay` that consumes only the frozen input identi
 
 ## 9. Sequencing and file collisions
 
-- **`production_source.py` single writer (A, B, C):** this card's writer only. A does not touch it (A §9). C's parser lives outside it under either fee option (C §9); if Joshua picks the ops-side option, any wiring of C's parser into the production source is done by this writer, in this card, after C merges. Order: A → C → B.
+- **`production_source.py` single writer (A, B, C):** this card's writer only. A does not touch it (A §9). C is lab-side (item 3 RULED (b)) and never touches it. Order (item 5 RULED as proposed): A0 → A → C → B → D → E.
 - `replay.py`: A then B, serial; B cuts after A merges.
 - No `book_account_owner.py` edit; that queue (GC-5-DISPLACED → TB-I3 S2 → P-L2 → P4) is untouched.
 
@@ -202,21 +202,21 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1. Joshua's code admission** for §2.2's bound files and the new module entering the trust domain (item 1), and the route ruling (item 4). **Admission RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "item 1 admitted as listed" (scope confirmed: card A §2.3 files including A0 `core/firm_rules.py` and the conditional rows; card B §2.2 files including new `qualification/personal_replay.py`; accepting that the Tradeify TB-I1 fingerprint and trust-domain digests move, D8 paths change and H′ moves, with P7 re-measured on the new bytes if P7 D8 is still owed; `book_sizing_context`/`book_account_owner` excluded, with P4). Item 4: not recorded.
+- **G-1. Joshua's code admission** for §2.2's bound files and the new module entering the trust domain (item 1), and the route ruling (item 4). **Admission RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "item 1 admitted as listed" (scope confirmed: card A §2.3 files including A0 `core/firm_rules.py` and the conditional rows; card B §2.2 files including new `qualification/personal_replay.py`; accepting that the Tradeify TB-I1 fingerprint and trust-domain digests move, D8 paths change and H′ moves, with P7 re-measured on the new bytes if P7 D8 is still owed; `book_sizing_context`/`book_account_owner` excluded, with P4). **Item rulings RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b".
 - **G-2. Coordinator freeze**, after A returns RESOLVED and the schedule files are on the base. **Not done.**
 - **G-3. Dispatch.** **Not done.**
 
 ## 12. Open decisions (coordinator at freeze; Joshua where marked)
 
-- **D-1 (Joshua, item 4).** Aegis route.
+- **D-1 (item 4).** RULED: PR for all legs (§0.5 (E)).
 - **D-2.** Confirm the route-output field list against pre-registration §3 (residual `r` needs `δ₀`, `b`, MAE) and §4 item 1.
-- **D-3 (Joshua, item 7).** Joshua confirms the frozen reading (b), or rules (a) or (c). Under (b) the post-latch zero days come from A's mechanics with no extra code here. B carries A's latch record into the route output under every option; the card is not frozen until item 7 is settled.
+- **D-3 (item 7).** RULED: (b), the frozen reading. Post-latch days are zero days produced by the replay through A's mechanics, with no extra code here; B carries A's latch record into the route output. No NOT CLEARED rule is added.
 
 ## Pre-mortem
 
 - **Loop cost.** One targeted run, one `fp test-ops`, one `fp check`, plus the S2 workflow.
 - **Likely failure.** §0(d): Striker's trip state or Vanguard's `E_p` not reachable without a port read. That is a stop, not a workaround.
-- **What would make this moot:** an Aegis RS ruling with cheap D9 proof changes only B12 and the Aegis route.
+- **What would make this moot:** none known; the route is ruled PR.
 - **Evidence binding:** records at the returned head only.
 
 [prereg]: https://github.com/Joshua-Asante/first-passage/blob/83867f0d362931c2a516a62b990bb1c209372527/docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md

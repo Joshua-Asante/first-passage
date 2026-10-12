@@ -150,7 +150,7 @@ A differential test outside `lab/` follows the same synthetic signals through ad
 
 ## 9. Sequencing and file collisions
 
-- After A, B, P-L2, P-L3. D writes no production file, so it holds no slot in the `book_account_owner.py` order (GC-5-DISPLACED → TB-I3 S2 → P-L2 → P4) or the `production_source.py` single writer (B).
+- Order (item 5 RULED as proposed): A0 → A → C → B → D → E; D also needs P-L2 and P-L3 merged. D writes no production file, so it holds no slot in the `book_account_owner.py` order (GC-5-DISPLACED → TB-I3 S2 → P-L2 → P4) or the `production_source.py` single writer (B).
 - D7 waits for P4.
 
 ## 10. Audit hooks (runnable)
@@ -167,22 +167,22 @@ python -I scripts/fp.py check
 
 ## 11. Gates (Part 1 is NOT DISPATCHABLE until all three hold)
 
-- **G-1.** No bound-code admission is needed (test only); the predecessors' admissions must be recorded. **Not recorded.**
+- **G-1.** No bound-code admission is needed (test only); the predecessors' admissions (A, B) are recorded in their cards. **Item rulings RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b".
 - **G-2. Coordinator freeze.** **Not done.**
 - **G-3. Dispatch.** **Not done.**
 
 ## 12. Open decisions (coordinator at freeze; Joshua where marked)
 
-- **D-1 (Joshua, item 4).** The Aegis route sets whether §13 must show FG-T.
-- **D-2 (Joshua, item 6).** Where §13 runs.
+- **D-1 (item 4).** RULED: PR for all legs; §13 shows no FG-T.
+- **D-2 (item 6).** RULED: (b), the Azure VM under the §60 addendum 2026-10-12.
 - **D-3.** Whether D7 must be green before the run (FG item 3 names adds OFF and zero refusal only; P0 live parity is P4's acceptance).
 
 ## 13. Part 2: the FG evidence run (Claude-owned executor act; not in this build)
 
 Owned by Claude under its own frozen executor card, after Part 1, A, B and the predecessors return RESOLVED. This card grants nothing for it. Content the executor card must carry:
 
-- **Executor:** an authorized Claude executor, reading Pine sources, accepted runtime ports and `effective_inputs.json` **in place** in the primary checkout only (AGENTS.md "Private read surface"); never copied, quoted, committed or sent to GLM or any external service. Location per decision packet item 6.
-- **Anchors at R1 on the moved emulator:** per leg, the §7 route's anchor re-shown at R1 (Striker: corrected port `efd479b6…` Step 3 contract and Step 6 replay; Vanguard: V-0 338/338; Aegis: its PR or RS anchor), each with the F11 revalidation (T10 reconciliation R1 hold item (ii); `docs/notes/2026-09-21-t10-phase1-source-reconciliation.md:182`); FG-T only if Aegis RS is ruled (item 4); FG item 1's schedule and roll list loaded by frozen sha256.
+- **Executor and host (item 6 RULED: b).** An authorized Claude executor runs on the Joshua-controlled Azure VM. The accepted runtime ports and `effective_inputs.json` may be copied to that VM **for this FG run only**, under the [campaign §60 addendum 2026-10-12](../programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) (being added by the coordinator) extending AGENTS.md "Private read surface". **Pine stays off the VM.** Nothing private is quoted, committed or sent to GLM or any other external service; any Pine read stays in place in the primary checkout.
+- **Anchors at R1 on the moved emulator:** per leg, the §7 route's anchor re-shown at R1 (Striker: corrected port `efd479b6…` Step 3 contract and Step 6 replay; Vanguard: V-0 338/338; Aegis: its PR anchor), each with the F11 revalidation (T10 reconciliation R1 hold item (ii); `docs/notes/2026-09-21-t10-phase1-source-reconciliation.md:182`); FG item 1's schedule and roll list loaded by frozen sha256. RS is not used (item 4 RULED: PR), so FG-T is not part of this run.
 - **FG items 2 and 3 at the real R1 vector** (pre-registration §7): Part 1's synthetic PASS does not discharge them. The executor re-runs Part 1's differential (adapter quantities equal the rail's sizing law with `LegSize` and `AddsRule.OFF`; live path equals replay for adds OFF and for refused zero-quantity entries, `shared_sizing_zero` / `zero policy quantity`) on the real signals with the frozen R1 vector, bound by the tuple hash `62d7ae19…671f`, read in place. Item 3 needs the #773 P-L1/R-SV seam carrying the frozen vector.
 - **Evidence:** private, under `C:\Users\joshu\t00-step3-console\sfclear2-fg-<UTC>\` with a nonce'd `SHA256SUMS`; public output is pass/fail per item and hashes only, via `docs/evidence/PRIVATE_EVIDENCE.sha256` rows written by the coordinator.
 - **Limits:** a public synthetic PASS or a private-input skip is not FG at R1. No scoring output is read or produced. FG FAIL means the run does not start (§6 VOID).
