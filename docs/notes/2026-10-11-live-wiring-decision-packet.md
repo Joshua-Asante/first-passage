@@ -1,6 +1,6 @@
 # Live size-vector wiring: decision packet for Joshua
 
-**Date:** 2026-10-11 · **Base:** `origin/main` `7db42f1` · **Prepared by:** the live-wiring lane (single writer), for the Deployment Coordinator ("Portfolio deployment coordination") to relay. **Status:** **RULED 2026-10-11.** Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended". Recorded here and at each owner: J-1 in the ADR addendum (now Accepted); J-2 in the P-L1 and P-L2 cards' §11 G-1; J-3 in R-SV; J-4 in the cards' dispatch gates; the §5 defaults in the owners this lane writes (the cards and the three proposals). Three owner records outside this lane still owe a pointer (§7). P-L1, P-L2 and P-L3 are a **candidate freeze** (§6). The freeze is effective on the coordinator's countersignature. None is dispatched: the J-4 build gate is not open.
+**Date:** 2026-10-11 · **Base:** `origin/main` `7db42f1` · **Prepared by:** the live-wiring lane (single writer), for the Deployment Coordinator ("Portfolio deployment coordination") to relay. **Status:** **RULED 2026-10-11.** Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended". Recorded here and at each owner: J-1 in the ADR addendum (now Accepted); J-2 in the P-L1 and P-L2 cards' §11 G-1; J-3 in R-SV; J-4 in the cards' dispatch gates; the §5 defaults in the owners this lane writes (the cards and the three proposals). Three owner records outside this lane still owe a pointer (§7). P-L1, P-L2 and P-L3 are a **candidate freeze** (§6). The freeze is effective on the coordinator's countersignature. None is dispatched: the J-4 build gate is not open. *Update 2026-10-12 (successor Deployment Coordinator):* the freeze at `8a8d7a0` is countersigned and J-4 is amended (§6a): the build gate opens once #792 merges. The frozen cards' Status and gate lines predate both; §6a governs where they differ.
 
 **Sources:**
 - the [scope note](2026-10-11-live-size-vector-wiring-scope.md);
@@ -147,16 +147,18 @@ for f in docs/briefs/handoffs/2026-10-11-live-size-vector-p-l*.md; do python -I 
 
 > **Countersigned** `2026-10-12 00:34Z` by the Deployment Coordinator ("Portfolio deployment coordination"): the freeze of P-L1, P-L2 and P-L3 at `8a8d7a0` is effective. Dispatch stays under J-4 and §7.
 >
-> **Operator confirmation and J-4 amendment** (Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "confirm J-1 to J-4; amend J-4: the F1 acceptance opens it"). J-1 to J-4 are confirmed as recorded. **J-4 amended:** the build gate also opens on Joshua's acceptance of the FLOOR-HALF successor screen's risk into T15's F1 (NO-GO-evidence-UNDETERMINED-dependent, confirmed "confirm A" 2026-10-12T00:12Z; recorded in PR #792), in addition to a successor screen GO or the personal clearance study RESOLVED. That acceptance is recorded, so the J-4 gate is open for the Tradeify vector once #792 merges; §7 blockers still apply and dispatch remains a separate act.
+> **Operator confirmation and J-4 amendment** (Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "confirm J-1 to J-4; amend J-4: the F1 acceptance opens it"). J-1 to J-4 are confirmed as recorded. **J-4 amended:** the build gate also opens on Joshua's acceptance of the FLOOR-HALF successor screen's risk into T15's F1 (NO-GO-evidence-UNDETERMINED-dependent, confirmed "confirm A" 2026-10-12T00:12Z; recorded in PR #792), in addition to a successor screen GO or the personal clearance study RESOLVED. That acceptance is recorded, so the J-4 **build** gate opens once #792 merges. It is lane-neutral: activation of either lane's vector stays under §4, unchanged. §7 blockers still apply and dispatch remains a separate act.
+>
+> **Freeze of record and dispatch** (successor Deployment Coordinator, 2026-10-12; Joshua reconfirmed directly the same day: "confirm A and J-4 amendment"). The freeze of record is `8a8d7a0`, not `4edf564`. The cards' G-2 lines ("frozen … at the commit that adds the Status line"), their Status lines ("Not dispatched: the J-4 build gate … is not open") and their G-3 gate text predate the countersignature and the amendment; the cards stay frozen and this section governs where they differ. Every dispatch prompt cites this section and #792's merge commit, names a fresh worktree and branch unique to the worker, and forbids reusing one in use.
 
 **Not asked:** the merge of #788, which stays Joshua's word through the coordinator relay; any dispatch; and the §7 items owed by other owners, which are listed for relay only.
 
 ## 7. Blocking now
 
-- **The coordinator's countersignature** of the freeze revision, or a committed delegation (§6 item 1).
+- ~~**The coordinator's countersignature** of the freeze revision, or a committed delegation (§6 item 1).~~ Done 2026-10-12 00:34Z (§6a).
 - **GC-5-DISPLACED and TB-I3 S2 are unbuilt.** Today they hold P-L2 behind them in the `book_account_owner.py` queue.
 - **The personal R1 tuple's hash formula and encoding are unconfirmed** (§4 condition 2).
-- **The build gate itself is not open.** Neither the screen GO nor Q-SFCLEAR-1 RESOLVED has happened.
+- ~~**The build gate itself is not open.** Neither the screen GO nor Q-SFCLEAR-1 RESOLVED has happened.~~ *2026-10-12:* the amended J-4 gate opens on #792's merge (§6a).
 
 **Owed by other owners (coordinator relay; not blocking the freeze):**
 - **Clearance plan** (#785): row 2.7 should record the personal GO mirror of J-1 (§5, last row). `:308`'s queue text (GC-5-DISPLACED → TB-I3 S2 → P-L2/P4/P-SW) should read "GC-5 first, then by readiness, one writer at a time" (P-L2 D-2).
