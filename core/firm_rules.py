@@ -577,7 +577,7 @@ FIRM_RULES = {
         "profit_target_pct": None,
         "min_trading_days": 0,
         "inactivity_max_idle_days": None,
-        "micro_contract_cap": None,
+        "micro_contract_cap": 80,  # D6: the existing 80-micro book cap source (not a venue maximum)
         "cost_per_side_usd": None,
     },
 }
