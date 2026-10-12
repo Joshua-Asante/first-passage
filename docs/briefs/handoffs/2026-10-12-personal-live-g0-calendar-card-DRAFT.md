@@ -71,7 +71,7 @@ Read and report before writing a test. A contradiction with this card is a **sto
 A pure, offline-tested module that gives the personal instance its G0 session decision: `PersonalCalendarBinding.session_for(now)` returns a `BookSession` or a typed refusal, using only calendars that the personal registry ratifies, under the TB-S3 §5 `schedule_rule` and the four-class first-release policy.
 
 **Not asked:**
-- Wiring into the arm, the listener or the owner's runtime binding. That is G0-b, a P4 amendment (§9).
+- Wiring into the arm or the owner's runtime binding. That is G0-b, a P4 amendment (§9).
 - Authoring a new month. That stays with the existing author tool and the monthly workflow (`ops/calendars/README.md`).
 - Writing a ratification row (an operator act, §11).
 
@@ -198,13 +198,13 @@ G0-a moves no **T** or **F** byte. The Tradeify trust domain and policy fingerpr
 - **G0-a (this card)** touches no file in the `book_account_owner.py` queue (P-L2 #805 in review → GC-5 → S2 → P4). It can run in parallel with that queue.
 - **G0-b (consumer wiring, proposed as a P4 amendment, not a separate writer):**
   - the arm refuses a personal instance unless `session_for(now)` gives a session, or a typed refusal that permits no risk;
-  - the listener's entry gate refuses on any refusal;
-  - the flatten executor takes its deadlines from the same `BookSession`;
+  - no listener edit. Book legs never reach the listener's webhook gates (`c1_rail_listener.py:259-269` returns `not_attempted` for every fixed-book leg). Every book order goes daemon → `handle_book_action` (`:81-91`) → `BookAccountOwner.dispatch` (`book_account_owner.py:1654`);
+  - the owner already enforces cutoff, scheduled flatten and deadline from its bound `BookSession` (`advance_schedule`, `book_account_owner.py:1950-2003`). A denied or uncovered session therefore yields no binding, and the owner refuses risk-adds without one;
   - P-L4/TB-I3 S1 builds the owner's `binding["session"]` from this module for the personal instance.
 
-  The files involved are `c1_rail_arm.py` (P4 and TB-I3 S1), `c1_rail_listener.py` (P4), the owner (queue) and `deploy/c1_rail/Dockerfile` COPY lines (TB-I3 S1). The coordinator orders them at P4's freeze.
+  The files involved are `c1_rail_arm.py` (P4 and TB-I3 S1), the binding builder (P-L4/TB-I3 S1, outside the owner under G0-6 (a)), the owner only if G0-6 (b) is ruled (queue) and `deploy/c1_rail/Dockerfile` COPY lines (TB-I3 S1). The coordinator orders them at P4's freeze.
 
-  **Trust domain.** The arm and the listener were outside **T** at drafting. The owner is **T** (`trust_domain.py:146`). So any owner edit in G0-b is a **T** edit. If the session binding is built in, or imported by, the owner, `personal_calendar_binding.py` is pulled into **T**. Either case needs G-1b. Building the binding outside the owner and passing in only the `BookSession` (the owner already validates a typed `BookSession`, `book_account_owner.py:455-486`) keeps the module out of **T**. That is the recommended shape.
+  **Trust domain.** The arm was outside **T** at drafting. The owner is **T** (`trust_domain.py:146`). So any owner edit in G0-b is a **T** edit. If the session binding is built in, or imported by, the owner, `personal_calendar_binding.py` is pulled into **T**. Either case needs G-1b. Building the binding outside the owner and passing in only the `BookSession` (the owner already validates a typed `BookSession`, `book_account_owner.py:455-486`) keeps the module out of **T**. That is the recommended shape.
 - **Sibling card:** the [G4 roll card](2026-10-12-personal-live-g4-roll-card-DRAFT.md). This card alone edits `ops/calendars/README.md`. The G4 card writes no README, so the two first builds share no file and can run in parallel. The README is also edited by each monthly extension: if one is in flight, rebase.
 
 ## 10. Audit hooks (runnable)

@@ -25,6 +25,14 @@ The live/replay G0 difference (evidence classes) is disclosed in §3 and was rul
 
 `c1_rail_listener.py` and `c1_rail_arm.py` were outside **T** at drafting. The calendar loader `book_session_calendar.py` is **T**.
 
+**Live book path** (at `158bf2a`):
+1. daemon `FourLegRuntime` (`book_runtime.py:413`, `:419`, `:459`);
+2. `handle_book_action` (`c1_rail_listener.py:81-91`), a pass-through to the owner. The listener's webhook gates never see a book leg (`:259-269`);
+3. `BookAccountOwner.dispatch` (`book_account_owner.py:1654`) → entry/add branch (`:1810`) → `size_book_request` (`:1818`);
+4. the `SyntheticBroker` seam (`:1891`). No production transport exists (`:348`).
+
+The scheduled flatten is the owner's `advance_schedule` (`:1950-2003`).
+
 ## G0 decisions
 
 **G0-1. What the personal live calendar is.**
@@ -55,7 +63,7 @@ The live/replay G0 difference (evidence classes) is disclosed in §3 and was rul
 - **Recommendation: (a).**
 
 **G0-6. Where the personal session binding is built (G0-b).**
-- (a) Outside the owner, passing only the typed `BookSession` that the owner already validates. This keeps the module out of **T**.
+- (a) Outside the owner, passing only the typed `BookSession` that the owner already validates and enforces (cutoff, flatten, deadline in `advance_schedule`). This keeps the module out of **T** and needs no owner edit.
 - (b) Inside the owner. This is a **T** edit and needs G-1b.
 - **Recommendation: (a).**
 
@@ -79,10 +87,11 @@ The live/replay G0 difference (evidence classes) is disclosed in §3 and was rul
 - **Recommendation: (a).**
 
 **G4-4. Where entry and add refusal sits (G4-b).**
-- (a) The owner's dispatch path. This is a **T** edit, it pulls `contract_roll.py` into **T**, and it needs G-1b and a slot in the `book_account_owner.py` queue (P-L2 #805 → GC-5 → S2 → P4).
-- (b) The listener's pre-send risk-add gate, beside the existing `book_halt` rejection (`c1_rail_listener.py:259-277`). This is P4's file and is outside **T** at drafting.
-- (c) The sizing context. This is **T** and **F**.
-- **Recommendation: (b), folded into P4.** It refuses before sizing and send with no **T** edit and no queue slot. Only (a) or (c) would put G4 inside the sealed domain, at the cost of a code admission. The flatten part goes wherever P4 puts its flatten executor; if that is the owner, it needs G-1b.
+- (a) The owner: the entry/add refusal at `:1810` (before sizing) and the G4 flatten in `advance_schedule`. This is authoritative, since every `dispatch` caller passes through it. It is a **T** edit, it pulls `contract_roll.py` into **T**, and it needs G-1b and a slot in the `book_account_owner.py` queue (P-L2 #805 → GC-5 → S2 → P4).
+- (b) A daemon-side refusal in `FourLegRuntime` or `handle_book_action`. This is not **T** and not **F** at drafting, but it is **not authoritative**: any direct `owner.dispatch` caller bypasses it.
+- (c) (a) plus (b), with (b) advisory only.
+- (The listener's webhook gate is not an option: book legs never reach it.)
+- **Recommendation: (a), folded into P4 under G-1b.** G4 is a position invariant, and only the single durable writer can guarantee it. (b) alone leaves bypasses, and (c) adds a call site without adding safety.
 
 **G4-5. Which contract a live 6J/MGC order hits.** Today the rail sends continuous `6J1!`/`MGC1!` (`book_policy.py:182`, `:191`).
 - (a) The personal route sends the dated contract from the OPEN-3 object, and 6J/MGC are refused until it can.

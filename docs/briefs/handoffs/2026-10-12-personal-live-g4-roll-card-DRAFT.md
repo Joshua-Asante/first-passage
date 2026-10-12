@@ -94,7 +94,7 @@ An ops-side roll source and gate that:
 - requires a flatten for any 6J/MGC position held into a window.
 
 **Not asked:**
-- The call sites in the owner, the listener or the flatten executor (G4-b, §9).
+- The call sites in the owner's dispatch and `advance_schedule` (G4-b, §9).
 - The personal route's dated-symbol mapping (ADR 2026-10-09 items 3–4).
 - The replay's own roll parser (run-path card B).
 
@@ -144,11 +144,11 @@ An ops-side roll source and gate that:
 |---|---|---|
 | `contract_roll.py` (new) | No in G4-a, because no **T** module imports it (§0(d)). It **becomes T** the moment the owner or another **T** module imports it | No |
 | Data, script, test | Not code roles | No |
-| G4-b call site in `book_account_owner.py` (later, if chosen) | **Yes**: the owner is **T** (`trust_domain.py:146`), and the import pulls `contract_roll.py` into **T** | No |
-| G4-b call site in `c1_rail_listener.py` (recommended, G4-4) | No at drafting; Phase 0 of G4-b re-confirms | No |
+| G4-b call sites in `book_account_owner.py` (recommended, G4-4 (a)) | **Yes**: the owner is **T** (`trust_domain.py:146`), and the import pulls `contract_roll.py` into **T** | No |
+| G4-b advisory pre-check in `book_runtime.py` / `handle_book_action` (optional, G4-4 (c)) | No at drafting (neither is in the **T** list; Phase 0 of G4-b re-confirms) | No |
 | `book_policy.py` order symbols (G4-5 alternative, not recommended) | **Yes** | **Yes**; moves the TB-I1 fingerprint |
 
-G4-a moves no **T** or **F** byte. **Any owner edit in G4-b is a T edit**, and an owner import of `contract_roll.py` pulls the module into **T**. That needs Joshua's code admission (§11 G-1b). A G4-b confined to the listener, P4's flatten executor outside the owner, and the route adapter moves no **T** byte, provided none of them is **T** at G4-b's Phase 0. Changing `LegSpec.order_symbol` would move both **T** and **F**, and is not proposed.
+G4-a moves no **T** or **F** byte. **Any owner edit in G4-b is a T edit**, and an owner import of `contract_roll.py` pulls the module into **T**. That needs Joshua's code admission (§11 G-1b). Every book order passes through the owner (§9 path), so the authoritative G4 gate and the G4 flatten are owner edits, and therefore **T** edits. Changing `LegSpec.order_symbol` would move both **T** and **F**, and is not proposed.
 
 ## 3. Method
 
@@ -225,11 +225,21 @@ G4-a moves no **T** or **F** byte. **Any owner edit in G4-b is a T edit**, and a
 
 - **G4-a (this card)** touches no file in the `book_account_owner.py` queue (P-L2 #805 in review → GC-5 → S2 → P4). It can run now, in parallel.
 - **G4-b (live enforcement, proposed to fold into P4 or to follow it in the queue; G4-4):**
-  - **Recommended (G4-4 (b)):** in the listener's pre-send risk-add gate, beside the existing `book_halt` rejection (`c1_rail_listener.py:259-277`), call `g4_refusal` for every 6J/MGC entry and add on the personal instance. The gate refuses before sizing and send. Exits and cancels are never refused. This is P4's file and is outside **T** at drafting.
-  - *Alternative (G4-4 (a)):* the owner's dispatch path after the side check (`book_account_owner.py` around `:1772-1777`, per the [clearance plan §7](../../notes/2026-10-11-personal-clearance-plan-tradeify-book.md)). This is a **T** edit, and it pulls `contract_roll.py` into **T**. It needs G-1b, and it takes a slot in the `book_account_owner.py` queue.
-  - At each session open and at the G0 flatten start, P4's flatten executor flattens any position where `flatten_required` is true, then halts. G0's 16:00 ET own-flat means this fires only after a G0 failure. If P4 places the flatten executor in the owner, this part is a **T** edit and needs G-1b.
+  - Live book path at `158bf2a`, end to end:
+    1. The signal daemon's `FourLegRuntime` (`ops/c1_signal_daemon/book_runtime.py:413`, `:419`, `:459`) calls
+    2. `handle_book_action` (`c1_rail_listener.py:81-91`). This is a pass-through: it type-checks the owner and calls `owner.dispatch`. It is **not** the listener's webhook path, whose gates (`:259-269`) return `not_attempted` for every fixed-book leg.
+    3. `BookAccountOwner.dispatch` (`book_account_owner.py:1654`), then `_dispatch_locked` (`:1665`), then `_dispatch_action_locked` (`:1739`). In the entry/add branch (`:1810`), the order is: the permission/authority check, `unknown_order`, `close_unreconciled`, then `size_book_request` (`:1818`).
+    4. Transport. Production transport is intentionally absent (`:348`); the only sender is the `SyntheticBroker` seam (`:1891`). The personal route adapter (ADR 2026-10-09 items 3–4) will sit at that point.
+
+    The scheduled cutoff, flatten and deadline are also the owner's: `advance_schedule` (`:1950-2003`) uses the bound session.
+  - **Recommended (G4-4 (a)):**
+    - In the owner's entry/add branch (`book_account_owner.py:1810`, before `size_book_request` at `:1818`), call `g4_refusal` for every 6J/MGC entry and add on the personal instance. Exits, flats and cancels are never refused.
+    - In `advance_schedule` (`:1950-2003`), emit a flat for any exposure where `flatten_required` is true, then halt. G0's 16:00 ET own-flat means this fires only after a G0 failure.
+    - This is the only authoritative point, because every caller of `dispatch` passes through it. It is a **T** edit, it pulls `contract_roll.py` into **T**, and it needs G-1b and a slot in the `book_account_owner.py` queue.
+  - *Alternative (G4-4 (b)):* a daemon-side refusal in `FourLegRuntime` or `handle_book_action`, before `owner.dispatch`. Neither file is **T** or **F** at drafting. But it is **not authoritative**: anything that calls `owner.dispatch` directly bypasses it, for example a test, a takeover path or a future route. On its own it does not satisfy G4.
+  - *Alternative (G4-4 (c)):* (a) plus (b). The daemon check is advisory, giving an earlier refusal record, and must call the same `g4_refusal`. It adds a second call site and no safety beyond (a).
   - Add the module and the forward artifact to `deploy/c1_rail/Dockerfile` COPY lines and the image manifest test. This collides with TB-I3 S1's Dockerfile/`.dockerignore` lines; the coordinator orders it.
-  - If any part lands in `book_account_owner.py`, the file takes one writer at a time. That part sits after P4 (and relative to P-SW as the coordinator orders), each cut from `main` after its predecessor merges.
+  - `book_account_owner.py` takes one writer at a time (P-L2 #805 → GC-5 → S2 → P4). G4-b's owner part folds into P4, or takes the next slot after P4 (relative to P-SW as the coordinator orders), cut from `main` after its predecessor merges.
 - **Sibling card:** the [G0 calendar card](2026-10-12-personal-live-g0-calendar-card-DRAFT.md). It alone edits `ops/calendars/README.md`. This card writes no README, so the two first builds share no file and can run in parallel.
 - **Personal route (ADR 2026-10-09 items 3–4):** it sends the dated contract from `select_contract`. Until it can, G4-b refuses every 6J/MGC entry (`contract_unbound`). The destination is unbound at `deploy/c1_rail_personal/instance_binding.json`.
 - **Run-path B** keeps its own closed parser over the bound list (its card forbids lab edits and reads bytes by path). R1 proves the live and replay sources equal on the replay window.
@@ -272,7 +282,7 @@ Live use additionally needs a RESOLVED Q-SFCLEAR-2 verdict, M1, arming, live-spe
 ## 12. Open decisions (coordinator at freeze)
 
 - **D-1.** Confirm or replace §0.5 (A)–(D), per Joshua's rulings.
-- **D-2.** Fold G4-b into P4 (listener gate, no **T** edit), or, if G4-4 (a) is ruled, order the owner part after P4 in the `book_account_owner.py` queue under G-1b.
+- **D-2.** Fold G4-b's owner part into P4 or give it the next queue slot after P4. Either way it is under G-1b.
 
 ## Pre-mortem
 
