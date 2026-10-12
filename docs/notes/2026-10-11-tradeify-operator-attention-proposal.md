@@ -21,8 +21,10 @@ a separate, qualified change to the trading window or operating policy.
   signature (R1), one readiness view (R2), closing evidence and a confirmed disarm-only transition (R3: write, apply, effective-state check),
   incident evidence assembly (R4), held-request watch reads (R5, after a separate access ruling),
   and a batched digest (R6).
-- **Never changes:** per-session GO, M1, operator-device settlement signing, halt and
-  no-same-session-restart behavior, retained unknown requests, and the obligation to
+- **Never changes:** per-session GO, M1, operator-device settlement signing, halt behavior,
+  no same-session restart after an incident during armed commissioning and the first
+  attended release (later releases keep halt/resume §4's conditional resumption), retained
+  unknown requests, and the obligation to
   respond while attended. Monitoring reduces checking effort, not that obligation
   ([halt/resume §3](../spec/2026-09-14-tb-s3-halt-resume-contract.md)).
 - **Target:** two routine decision points a day (session GO; settlement signature), not two
@@ -134,7 +136,8 @@ Bind the GO to account, session, release/config/policy/calendar, boot, halt gene
 evidence and expiry. Show what changed and why activation is blocked. Recheck at
 commit/dispatch so a green preview cannot survive a concurrent halt or stale fact.
 
-Build the approved later-session path rather than repeating B7/n3 as daily ritual.
+If the post-first-session decision un-defers it, build the later-session path rather than
+repeating B7/n3 as daily ritual; it is deferred today and not approved for build.
 Initial activation keeps its full gates; material invalidation follows the governing
 stop/adjudicate path. Resolve WP4's un-deferral at the existing post-first-session
 decision unless Joshua explicitly elects earlier preparation. Authorizing this
