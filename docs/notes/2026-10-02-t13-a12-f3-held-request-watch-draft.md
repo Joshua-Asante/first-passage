@@ -134,6 +134,7 @@ Before the first armed session, all of these hold. They are not D1 gates: no req
    - **Paging account (Joshua, 2026-10-07).** The Grafana Cloud trial ends about 2026-10-17. If the Free plan does not keep IRM SMS and phone-call notification, Joshua upgrades to a paid plan.
      - The vendor docs say there are "no additional costs for outgoing calls or SMS notifications" and that Free includes up to 3 IRM users, but they do not state Free's SMS and voice availability explicitly.
      - **Owed before the trial ends:** confirm it in the account's plan details, or with one attended test page after the change.
+     - **Ruled (Joshua, 2026-10-12, verbatim "4 downgrade"):** no upgrade now; the account drops to Free at trial end. Before the first armed session, either an attended test page proves Free keeps IRM SMS and voice, or Joshua upgrades. The arming precondition is unchanged.
 3. The channel qualifications: Q7 (PASS 2026-10-05, binding card §6.3) and HB-L1/L2 ([missed-heartbeat card](../briefs/handoffs/2026-10-03-dmon-missed-heartbeat-monitor-card-DRAFT.md)).
 
 ## Open questions
