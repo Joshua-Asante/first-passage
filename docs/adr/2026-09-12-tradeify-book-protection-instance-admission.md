@@ -272,12 +272,12 @@ Joshua replied "all recommended" to the sitting-2 answer sheet (2026-10-03T01:42
 - **The qualification side can already change per-leg sizing.** P-S1 to P-S3 (#762 to #764) added a per-leg size vector to it. The vector is carried by the signed v2 startup policy, so FBR binds it through its contract digest.
 - **The live side has no equivalent.** EF's shared-component proof (§2a notation) covers `book_policy.py`'s code and `cap_alloc`, but not the vector, which is data.
 - **The GO's closed field set (T10) has no place for it.** So nothing in T6–T11 proves that the rail sizes with the vector FBR qualified.
-- **The live wiring is proposed separately.** That is P-L1 to P-L3 and R-SV, in [the scope note](../notes/2026-10-11-live-size-vector-wiring-scope.md). This addendum supplies only the two governance anchors they compare against.
+- **The live wiring is specified separately.** That is P-L1 to P-L3 and R-SV, in [the scope note](../notes/2026-10-11-live-size-vector-wiring-scope.md). This addendum supplies only the two governance anchors they compare against.
 - **One definition throughout.** `size_vector_sha256 = sha256(canonical_json_bytes(sizing))`, the screen authority's formula (`ops/c1_rail/qualification/screen_authority.py`), over the canonical `validate_size_vector` encoding.
 - **The declared book is not a special case.** It is the identity vector, hash `dc9200a2f13a62a8e9fd27ff1f426f4c8653e1def76a67350cde5a89d0aa1fea` (public; computed from `IDENTITY_SIZE_VECTOR` at `b5571a9`).
 - **The successor recorded in the pre-registration values block is `139919cd1a20961b660c57527fa45c6b811124d468cfc97a3dd161db4d54c271`.** Only the hash is public, never the values.
 
-### Decision (proposed)
+### Decision
 
 1. **EF gains sizing as a shared component (D-P5-2).**
    - In the §2a notation, EF's list of shared components proven equal to FBR gains: "the book's size vector, as `size_vector_sha256`, and the digest of the artifact it is read from".
@@ -310,9 +310,9 @@ Joshua replied "all recommended" to the sitting-2 answer sheet (2026-10-03T01:42
 - **Option A over row provenance (option B).** The GO is already the one baked artifact both the arm and boot gates read (§2b), and TB-D2 writes it after n3, when the vector has long been frozen. Option B would add a field to the registry row's provenance, a `core/` row-format change, and a second comparison path.
 - **Sizing as an EF component, not an extra GO-only check.** The GO only records a hash. B7's shared-component proof is where the qualification-to-live equality is actually *proven*, so without item 1 the GO field would rest on an unproven claim.
 
-### Ratification (proposed wording; not an approval)
+### Ratification
 
-"I ratify the 2026-10-11 addendum to the protection-instance admission ADR at commit `<head>`: sizing as an EF shared component, the GO's tenth field `size_vector_sha256`, and the T11 stamp check."
+Ratified 2026-10-11 by Joshua's reply J-1 (Status above), on the wording carried by the decision packet at `7db42f1`: sizing as an EF shared component, the GO's tenth field `size_vector_sha256`, and the T11 stamp check. The heading keeps its "(PROPOSED)" suffix only so inbound anchors resolve.
 
 The addendum takes effect on that dated record. No implementation, GO, row, seal or activation is authorized by it.
 
@@ -321,7 +321,7 @@ The addendum takes effect on that dated record. No implementation, GO, row, seal
 ```bash
 # The identity hash cited above. Expected: dc9200a2f13a62a8e9fd27ff1f426f4c8653e1def76a67350cde5a89d0aa1fea
 cd ops && python -I -c "import sys,hashlib; sys.path[:0]=['.','../core']; from c1_rail.book_policy import IDENTITY_SIZE_VECTOR as V; from c1_rail.qualification.contract import canonical_json_bytes as c; print(hashlib.sha256(c(V.as_mapping())).hexdigest())"
-# The GO field set is unchanged until ratification. Expected: the T10 row still lists exactly nine fields.
+# The T10 row text above predates this addendum. Expected: it lists nine fields; item 2 makes the GO ten.
 grep -n "T10 GO recorded" docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md
 # The successor hash is public in the pre-registration. Expected: 1 or more.
 git grep -c 139919cd1a20961b660c57527fa45c6b811124d468cfc97a3dd161db4d54c271 origin/main -- docs/briefs/pre-registration/

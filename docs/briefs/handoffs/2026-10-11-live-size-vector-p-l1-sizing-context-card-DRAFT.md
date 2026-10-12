@@ -2,16 +2,16 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **FROZEN 2026-10-11** by the live-wiring lane owner (single writer, delegated by the Deployment Coordinator on 2026-10-11), at the commit that adds this line. The freeze base is `origin/main` `7db42f1`. **Not dispatched:** the J-4 build gate (§11 G-3) is not open. *As drafted:* DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L1 and P-L2 build cards") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
+**Status:** **FREEZE REVISION 2026-10-12, effective on the coordinator's countersignature.** The live-wiring lane writer (single writer for this lane, by the Deployment Coordinator's 2026-10-11 directive) prepared this revision at the commit that adds this line. The review fixes on #788 are folded in. The freeze base is `origin/main` `7db42f1`. The directive exists in chat only, and the committed-handoff rule (surface-allocation ADR, "Committed-handoff rule") does not count a chat-only direction. So the freeze takes effect only when the coordinator commits the delegation or countersigns this revision's SHA (the decision packet §6). Until then the card is a candidate freeze, not a frozen card. **Not dispatched:** the J-4 build gate (§11 G-3) is not open. *As drafted:* DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L1 and P-L2 build cards") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
 
-**Base:** drafted at `origin/main` `b5571a9`; re-anchored at the freeze base `7db42f1`, where `book_sizing_context.py` is unchanged and only `book_account_owner.py` moved (#780). Every `file:line` is at `b5571a9` unless marked otherwise. `ops/c1_rail/book_sizing_context.py` last changed `4eec7e73` (2026-09-15).
+**Base:** drafted at `origin/main` `b5571a9`; re-anchored at the freeze base `7db42f1`, where `book_sizing_context.py` is unchanged; `ops/` changed only in the four files #780 touched (`book_account_owner.py`, `book_protection_owner.py`, `c1_rail_listener.py`, `book_runtime.py`). Every `file:line` is at `b5571a9` unless marked otherwise. `ops/c1_rail/book_sizing_context.py` last changed `4eec7e73` (2026-09-15).
 
 **Parent scope:** [live size-vector wiring scope](../../notes/2026-10-11-live-size-vector-wiring-scope.md) (PR #773) §5 row P-L1. The successor [build card](2026-10-10-t00-successor-screen-build-card-DRAFT.md) §3.1 owns the interfaces this card consumes: `LegSize`, `SizeVector`, and `entry_quantities`/`add_quantity(..., size=None)`, where `None` is today's behaviour. **Sibling:** [P-L2](2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md) is the only caller that will pass a size.
 
 **Authority:** G-1 and G-2 are recorded; G-3 waits on the J-4 build gate (§11). Each item is a separate act:
 - G-1 is Joshua's admission of the bounded edit to bound code.
 - G-2 is the coordinator's freeze.
-- G-3 is the dispatch, which depends on the screen.
+- G-3 is the dispatch, under the J-4 build gate.
 
 **Executor:** a Claude worker, single writer of `claude/live-size-p-l1` (proposed). **Not GLM.** The change is to order sizing (build card §5; AGENTS.md "Protection").
 
@@ -47,6 +47,7 @@ constraints:
 acceptance:
   - tests/ops/test_live_size_vector_sizing_context.py
   - tests/ops/test_tradeify_sizing_integration.py
+  - tests/ops/test_book_takeover_phases.py
   - tests/ops/test_book_quantity_laws.py
   - tests/ops/test_book_policy.py
   - tests/ops/test_book_account_owner.py
@@ -71,7 +72,7 @@ Read the files below and report the findings before writing any test. A contradi
 - **(a) Base and bytes.** HEAD descends from `b5571a9`. `book_sizing_context.py` is byte-identical to `b5571a9` unless P-L1's own commits changed it. Report `git log -1 --format='%h %cs' -- ops/c1_rail/book_sizing_context.py`.
 - **(b) Closure membership.** Run the measured-closure script at HEAD (§10). At drafting it gave **68 measured / 63 staging, membership unchanged**, and `book_sizing_context.py` was in neither set. Check the public P7 D8 list ([C′ card](2026-10-02-h9-cprime-runtime-identity-build-DRAFT.md) `:260-265`, 40 paths): at drafting it did not name `book_sizing_context.py`. A different answer is a **stop**, because then the edit would move H′ (build card §4).
 - **(c) Pins.** `git grep` finds no tracked file holding `sha256(book_sizing_context.py)` or its first 16 hex characters.
-- **(d) Callers.** Today's callers of `BookSizingBinding(` are `book_account_owner.py:1575` (positional) and `tests/ops/test_tradeify_sizing_integration.py:27` (positional). Today's callers of `size_book_request` are `book_account_owner.py:1819` (at `7db42f1`; `:1813` at `b5571a9`), `c1_sizing_host_reference.py:293` and the tests listed by `grep -rn size_book_request tests`. Report any other caller.
+- **(d) Callers.** Today's callers of `BookSizingBinding(` are `book_account_owner.py:1575` (positional) and `tests/ops/test_tradeify_sizing_integration.py:27` (positional). Today's callers of `size_book_request` are `book_account_owner.py:1819` (at `7db42f1`; `:1813` at `b5571a9`), `book_takeover_owner.py:621` (the takeover re-size, which reads `qty_out`), `c1_sizing_host_reference.py:293` and the tests listed by `grep -rn size_book_request tests`. Report any other caller.
 - **(e) The law the replay uses.** Read `qualification/replay.py:605-620` and confirm that `size=self.size_vector.leg(k)` is passed to both `entry_quantities` and `add_quantity`. Read `book_policy.py:434-438` (`_leg_size`) and `:484-560`. P-L1 must reproduce exactly that call shape.
 - **(f) Image closure.** `deploy/c1_rail/Dockerfile:39` and `deploy/c1_signal_daemon/Dockerfile:37` already copy `book_sizing_context.py` and `book_policy.py`. No new file enters either image.
 
@@ -134,8 +135,8 @@ No PR touching this file triggers the Qualification S2 supervision workflow: its
 
 | Row | Test in `test_live_size_vector_sizing_context.py` | Fails if |
 |---|---|---|
-| LS1 | For each leg × mode × tier on the replay's ladder inputs, `size=None` gives `qty_out`, `prospective_add` and halt state equal to `entry_quantities`/`add_quantity` called with no size | The default changes any quantity |
-| LS2 | For a synthetic non-identity `LegSize` on each leg (for example Aegis `base=4`; Striker risk `1/2`, cap at the canonical smallest; Vanguard ports `(1,0),(2,1)`), entry `qty_out` and `prospective_add` equal `entry_quantities(..., size=that)` for the same inputs, and differ from LS1 on at least one input per leg | The size does not reach the entry law |
+| LS1 | For each leg × mode × tier on the replay's ladder inputs, `BookSizingBinding(..., size=None)`, passed explicitly so the row is red on the base, gives `qty_out`, `prospective_add` and halt state equal to `entry_quantities`/`add_quantity` called with no size | The default changes any quantity |
+| LS2 | For a synthetic non-identity `LegSize` on each leg (for example Aegis `base=3`; Striker risk `1/3`, cap at the canonical smallest; Vanguard ports `(1,1),(2,0)`; chosen off the k=0.5 floor-half rule, so no test value can coincide with a screened vector), entry `qty_out` and `prospective_add` equal `entry_quantities(..., size=that)` for the same inputs, and differ from LS1 on at least one input per leg | The size does not reach the entry law |
 | LS3 | An add request with Striker `adds=OFF` and a confirmed base above 0 gives `qty_out == 0` with no halt; with `UNCHANGED`, it equals `add_quantity(..., size=that)` | The size does not reach the add law |
 | LS4 | Aegis `base=0`: entry gives `qty_out == 0`, no halt (the owner turns this into `zero_size`, as replay row Z7 does) | A leg at 0 halts or sizes above 0 |
 | LS5 | A `LegSize` for another leg: halt with reason `size_binding_mismatch`, `qty_out` 0 | A mismatched size is accepted or sized |
@@ -149,7 +150,7 @@ No PR touching this file triggers the Qualification S2 supervision workflow: its
 - Any edit to `book_policy.py`, `book_account_owner.py`, `c1_sizing_host_reference.py`, `book_bundle_execution.py`, `replay.py` or any `qualification/` file.
 - Any edit to an existing test or fixture.
 - Adding a module-level name to `book_sizing_context.py` beyond the one import (D-C).
-- Making `size` required in this card. That changes the owner's call (`book_account_owner.py:1575`), which is P-L2's file and is held by the protection-health worker.
+- Making `size` required in this card. That changes the owner's call (`book_account_owner.py:1575`), which is P-L2's file, in the `book_account_owner.py` one-writer queue (P-L2 §9).
 - Reading, choosing or quoting any real vector value; reading any private artifact, Pine, port or `effective_inputs.json`.
 - `dd_protection`, `DD_TRIGGER`/`DD_SCALE`, `CANDIDATE_SCALE`, `BASE_RISK` or the lifecycle multipliers.
 - The "while I was in there" refactor of neighbouring sizing code. Report it as a concern instead.
@@ -171,7 +172,7 @@ Return exactly one status to the coordinator:
 - **FALSIFIED** when a §4 row cannot be made red on the base, or a revert trigger fires.
 - **AMBIGUOUS** (held for the coordinator) on `DONE_WITH_CONCERNS`.
 
-**Report:** the status; red and green record paths per row; the acceptance-suite records; `git diff --name-only b5571a9..HEAD`; concerns; the next action recommended.
+**Report:** the status; red and green record paths per row; the acceptance-suite records; `git diff --name-only <cut base>..HEAD`; concerns; the next action recommended.
 
 ## 7. Stop conditions and parent review
 
@@ -219,7 +220,7 @@ python -I "$TMP/closure.py" . b5571a9 HEAD | grep -c book_sizing_context   # exp
 git grep -l "$(sha256sum ops/c1_rail/book_sizing_context.py | cut -c1-16)"
 
 # Scope at return. Expected: exactly the two §2.3 files.
-git diff --name-only b5571a9..HEAD
+git diff --name-only <cut base>..HEAD
 
 # The call shape matches the replay. Expected: size= on both calls in each file.
 grep -n "size=" ops/c1_rail/book_sizing_context.py ops/c1_rail/qualification/replay.py
@@ -234,7 +235,7 @@ python -I scripts/fp.py check
 
 - **G-1. Joshua's code admission.** Joshua names the §2.1 edit to `book_sizing_context.py` as bound code (`trust_domain.py:163`), knowing it moves the TB-I1 policy fingerprint (`policy_fingerprint.py:29-32`). One admission may cover P-L1 and P-L2 together (scope note Q5). The coordinator records his words and the time in the ledger. **RECORDED:** Joshua, 2026-10-11 (about 17:15Z), in the live-wiring lane session: "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended", on the [decision packet](../../notes/2026-10-11-live-wiring-decision-packet.md) (#788). One admission covers P-L1 and P-L2 (packet §2).
 - **G-2. Coordinator freeze.** The coordinator answers §12, commits the frozen revision under the committed-handoff rule, and records its SHA. **DONE:** frozen 2026-10-11 by the lane owner at the commit that adds the Status line; the SHA is reported to the coordinator.
-- **G-3. Dispatch.** **RULED (J-4):** the build may be dispatched when **either** the Tradeify successor screen returns GO **or** Q-SFCLEAR-1 resolves. Neither has happened at freeze. Building binds no vector; each lane activates only under its own gates (packet §4). A Tradeify NO-GO does not withdraw the card.
+- **G-3. Dispatch.** **RULED (J-4):** the build may be dispatched when **either** the Tradeify successor screen returns GO **or** the personal clearance study (Q-SFCLEAR-1: #752 or its re-scoped ID) returns **RESOLVED** (FALSIFIED or AMBIGUOUS does not open it). Neither has happened at freeze. Building binds no vector; each lane activates only under its own gates (packet §4). A Tradeify NO-GO does not withdraw the card.
 
 ## 12. Open decisions (coordinator at freeze)
 
@@ -245,6 +246,6 @@ python -I scripts/fp.py check
 
 - **Loop cost.** One targeted run plus one `fp test-ops` and one `fp check`. Budget: two full suite runs. A third run is a checkpoint, not another attempt. No S2 workflow run is triggered (§3).
 - **Decisions the executor will hit:** none beyond (A)–(D), which are ruled in advance.
-- **What would make this moot:** the screen returning NO-GO (withdraw), or Joshua choosing to bind the vector elsewhere than the owner (re-scope P-L1 and P-L2 together).
+- **What would make this moot:** Joshua choosing to bind the vector elsewhere than the owner (re-scope P-L1 and P-L2 together). A Tradeify NO-GO does not make it moot (J-4): the personal clearance study can still open the build gate.
 - **Evidence binding:** acceptance evidence is the targeted, `fp test-ops` and `fp check` records at the returned head only. A push after the green records voids them.
 - **Measure:** wall time, runs and rounds are filled in at return.

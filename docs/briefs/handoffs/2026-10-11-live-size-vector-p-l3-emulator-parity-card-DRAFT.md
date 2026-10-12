@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **FROZEN 2026-10-11** by the live-wiring lane owner (single writer, delegated by the Deployment Coordinator on 2026-10-11), at the commit that adds this line. The freeze base is `origin/main` `7db42f1`. **Not dispatched:** the J-4 build gate (§11 G-2) is not open. *As drafted:* DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L3 emulator parity card") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
+**Status:** **FREEZE REVISION 2026-10-12, effective on the coordinator's countersignature.** The live-wiring lane writer (single writer for this lane, by the Deployment Coordinator's 2026-10-11 directive) prepared this revision at the commit that adds this line. The review fixes on #788 are folded in. The freeze base is `origin/main` `7db42f1`. The directive exists in chat only, and the committed-handoff rule (surface-allocation ADR, "Committed-handoff rule") does not count a chat-only direction. So the freeze takes effect only when the coordinator commits the delegation or countersigns this revision's SHA (the decision packet §6). Until then the card is a candidate freeze, not a frozen card. **Not dispatched:** the J-4 build gate (§11 G-2) is not open. *As drafted:* DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L3 emulator parity card") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
 
 **Base:** `origin/main` `b5571a9`. Every `file:line` below is at that commit. `ops/` is unchanged through `ba000b2`. `ops/c1_signal_daemon/book_bundle_execution.py` and `book_bundle_intake.py` last changed `3cf42e43` (2026-09-16).
 
@@ -77,7 +77,7 @@ Report each finding before any test. A contradiction is a **stop** (§7).
 
 ## 0.5. Routing and clarifying questions
 
-Routing: Claude worker or Codex, local or cloud. No vendor data, secret, Pine, port body or private value is read (template §0.75: `N/A`). `test_book_adapters_parity.py` needs the private ports for a non-skip run. Only the coordinator's review run in the operator's checkout counts for that file (§3, §7). Tests use synthetic `LegSize` values only.
+Routing: a Claude worker (D-2), local or cloud. No vendor data, secret, Pine, port body or private value is read (template §0.75: `N/A`). `test_book_adapters_parity.py` needs the private ports for a non-skip run. Only the coordinator's review run in the operator's checkout counts for that file (§3, §7). Tests use synthetic `LegSize` values only.
 
 Apply each recommended default unless Phase 0 contradicts it. On a contradiction, return `NEEDS_CONTEXT` and quote the conflict.
 
@@ -231,7 +231,7 @@ python -I scripts/fp.py check
 ## 11. Gates (the card is NOT DISPATCHABLE until both hold)
 
 - **G-1. Coordinator freeze.** The coordinator answers §12, confirms §0(b) (no code admission needed), commits the frozen revision and records its SHA. **DONE:** frozen 2026-10-11 by the lane owner; §0(b) re-confirmed at `7db42f1` (68/63, no hit); the SHA is reported to the coordinator.
-- **G-2. Dispatch.** **RULED (J-4):** dispatched after P-L1 merges, once the build gate is open (the Tradeify successor screen GO **or** Q-SFCLEAR-1 RESOLVED). It may run in parallel with P-L2.
+- **G-2. Dispatch.** **RULED (J-4):** dispatched after P-L1 merges, once the build gate is open (the Tradeify successor screen GO **or** the personal clearance study (Q-SFCLEAR-1: #752 or its re-scoped ID) returns **RESOLVED**). It may run in parallel with P-L2.
 
 ## 12. Open decisions (coordinator at freeze)
 
@@ -243,6 +243,6 @@ python -I scripts/fp.py check
 
 - **Loop cost.** One targeted run, one `fp test-ops` and one `fp check` by the worker, plus the coordinator's one unskipped parity run. Budget: two full suite runs. A third run is a checkpoint.
 - **Decisions the executor will hit:** none beyond (A)–(E).
-- **What would make this moot:** NO-GO on the screen, or D-1 = withdraw.
+- **What would make this moot:** D-1 = withdraw. A Tradeify NO-GO does not make it moot (J-4).
 - **Evidence binding:** only the worker's records at the returned head, plus the coordinator's unskipped parity run at that same head. A later push voids them.
 - **Measure:** wall time, runs and rounds are filled in at return.

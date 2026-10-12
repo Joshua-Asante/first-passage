@@ -61,7 +61,7 @@ Every packet is CC solo, because each one touches sizing (build card §5 bars GL
 | **P-L4** config and activation | TB-I3 interlock S1 amendments A-1 to A-4 (`deployment_go.py`, arm, boot gate), plus R-SV for the unwritten live route packet (loader and stamp read-back); see the [proposal](2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md) | SV1–SV6: GO field shape; refusing default stamp; stamp ≠ GO → disarmed; stamp = GO → armed positive control; arm evidence; no real values | 1 d | T16 (bind configuration, prove equality), exercised at T17 |
 | **P-L5** records | Venue edition rows and the release inventory carry `size_vector_sha256` (no values) | Docs check | 0.25 d | T16 | [Records packet](2026-10-11-p-l5-size-vector-records-packet-PROPOSAL.md): coordinator seat, since workers lack `governance.author`.
 
-The total is about 3.25 CC days. None of it is needed on NO-GO.
+The total is about 3.25 CC days. Under J-4 a Tradeify NO-GO does not withdraw it: the personal clearance study can still open the build gate.
 
 Draft build cards: [P-L1](../briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) · [P-L2](../briefs/handoffs/2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md) · [P-L3](../briefs/handoffs/2026-10-11-live-size-vector-p-l3-emulator-parity-card-DRAFT.md).
 

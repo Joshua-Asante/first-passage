@@ -1,6 +1,6 @@
 # Live size-vector wiring: decision packet for Joshua
 
-**Date:** 2026-10-11 · **Base:** `origin/main` `7db42f1` · **Prepared by:** the live-wiring lane (single writer), for the Deployment Coordinator ("Portfolio deployment coordination") to relay. **Status:** **RULED 2026-10-11.** Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended". Recorded here and at each owner: J-1 in the ADR addendum (now Accepted); J-2 in the P-L1 and P-L2 cards' §11 G-1; J-3 in R-SV; J-4 in the cards' dispatch gates; every §5 default in its owner. P-L1, P-L2 and P-L3 are **frozen** (§6). None is dispatched: the J-4 build gate is not open.
+**Date:** 2026-10-11 · **Base:** `origin/main` `7db42f1` · **Prepared by:** the live-wiring lane (single writer), for the Deployment Coordinator ("Portfolio deployment coordination") to relay. **Status:** **RULED 2026-10-11.** Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended". Recorded here and at each owner: J-1 in the ADR addendum (now Accepted); J-2 in the P-L1 and P-L2 cards' §11 G-1; J-3 in R-SV; J-4 in the cards' dispatch gates; the §5 defaults in the owners this lane writes (the cards and the three proposals). Three owner records outside this lane still owe a pointer (§7). P-L1, P-L2 and P-L3 are a **candidate freeze** (§6). The freeze is effective on the coordinator's countersignature. None is dispatched: the J-4 build gate is not open.
 
 **Sources:**
 - the [scope note](2026-10-11-live-size-vector-wiring-scope.md);
@@ -82,7 +82,7 @@ P-L3 (`book_bundle_execution.py`) is unbound and needs no admission.
 ## 4. J-4: build gate and activation gates
 
 **The coordinator's rule.**
-- **BUILD** P-L1 and P-L2 when **either** the Tradeify successor screen returns GO **or** Q-SFCLEAR-1 resolves (#752; clearance plan §9 "#773 personal-lane dispatch should follow clearance RESOLVED").
+- **BUILD** P-L1 and P-L2 when **either** the Tradeify successor screen returns GO **or** the personal clearance study (Q-SFCLEAR-1: #752 or its re-scoped ID) returns **RESOLVED** (FALSIFIED or AMBIGUOUS does not open it) (clearance plan §9 "#773 personal-lane dispatch should follow clearance RESOLVED").
 - **ACTIVATE** each lane's frozen vector only under its own gate:
   - **Tradeify:** screen GO, plus Tradeify arming (M1 `RESOLVED`, the T10 GO with the J-1 field, the per-session GO).
   - **Personal:** Q-SFCLEAR-1 RESOLVED, plus ADR 10-09 owed items 3–7, plus the 2026-10-11b one-account-at-a-time rule, plus the two-way switch check (outgoing account flat, no working orders, no delayed-entry path).
@@ -115,7 +115,7 @@ The personal lane also needs clearance-plan row 2.2 (tier and instance parameter
 
 ## 6. After your rulings
 
-1. **Freeze.** I freeze P-L1, P-L2 and P-L3 under the committed-handoff rule. Each card is re-anchored to the freeze base (#780 shifted `book_account_owner.py` lines), its §11 gates are recorded with your words and time, and the freeze SHA is reported to the coordinator.
+1. **Freeze.** I prepare the freeze revision of P-L1, P-L2 and P-L3. Each card is re-anchored to the freeze base (#780 shifted `book_account_owner.py` lines), and its §11 gates are recorded with your words and time. The lane directive exists only in chat, and the committed-handoff rule does not count a chat-only direction. So the freeze takes effect when the coordinator commits the delegation or countersigns the revision SHA reported to it.
 2. **Dispatch proposal.**
    - **P-L1:** first, as soon as the J-4 build gate opens.
    - **P-L2:** when the J-4 gate and the `book_account_owner.py` queue both allow it.
@@ -125,7 +125,13 @@ The personal lane also needs clearance-plan row 2.2 (tier and instance parameter
 
 ## 7. Blocking now
 
-- **Your rulings J-1 to J-4.**
+- **The coordinator's countersignature** of the freeze revision, or a committed delegation (§6 item 1).
 - **GC-5-DISPLACED and TB-I3 S2 are unbuilt.** Today they hold P-L2 behind them in the `book_account_owner.py` queue.
 - **The personal R1 tuple's hash formula and encoding are unconfirmed** (§4 condition 2).
 - **The build gate itself is not open.** Neither the screen GO nor Q-SFCLEAR-1 RESOLVED has happened.
+
+**Owed by other owners (coordinator relay; not blocking the freeze):**
+- **Clearance plan** (#785): row 2.7 should record the personal GO mirror of J-1 (§5, last row). `:308`'s queue text (GC-5-DISPLACED → TB-I3 S2 → P-L2/P4/P-SW) should read "GC-5 first, then by readiness, one writer at a time" (P-L2 D-2).
+- **TB-I3 interlock card** (DRAFT): a back-pointer to the P-L4 D-B fold ruling, for its freezing coordinator.
+- **STATE decision index:** a 2026-10-11 row for the ADR addendum's ratification (J-1 to J-4).
+- **Live route packet** (clearance plan row 2.8): it must name which process holds the GO and the owner database. Today the GO is baked into the listener image only, and R-SV's daemon-side expected-value check assumes otherwise (R-SV §2.3).

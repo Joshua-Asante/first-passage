@@ -49,6 +49,7 @@
 - The loader's hash must equal the expected value from the D-A owner: the baked GO field (P-L4 A-1) or the admitted row's provenance. For `IDENTITY`, it must equal `IDENTITY_SIZE_VECTOR`'s hash.
 - A mismatch boots the daemon disarmed, with no risk-add and a CRITICAL log naming the gate.
 - While the D-A owner holds no value (no GO, or an empty registry), every non-identity sizing refuses. This is the fail-closed default.
+- **Open for the live route packet: where the check runs.** The GO is baked into the listener image only. The daemon, where this loader sits, has no GO today. The live route packet must name which process holds the GO and the owner database, and put this comparison there. Moving the comparison to the listener at owner construction is one option. Baking the GO into the daemon image is another, but it changes that image's digest. The packet must not assume the daemon can read the GO. Tracked as an owed item in the [decision packet](2026-10-11-live-wiring-decision-packet.md) §7.
 
 ### 2.4 Binding
 

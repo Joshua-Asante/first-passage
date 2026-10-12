@@ -56,7 +56,7 @@ Every link is a hash comparison, and no record carries a vector value. The start
 - **D-P5-2 (Joshua; ADR owner).** Add sizing to T6's EF composition, so that B7's shared-component proof covers it. *Recommend:* yes, in the same ADR addendum as P-L4 D-A, if D-A = GO field. One ratification would then cover both.
 - **D-P5-3 (coordinator; venue-binding ADR §2.6 owner).** The [venue-edition ledger](../../ops/venue_editions/Tradeify_Select_100K.md) has no row for the four-leg book as such, and no Aegis row. It has the three route-native candidate rows (ORB MNQ, Striker MYM, Vanguard MGC). *Recommend:* add no column now (the ledger's form is its owner's, §2.6 "deliberately small"). At T17, whichever rows the owner process moves to live cite the activation's `size_vector_sha256` in their existing `deployment` cell. The book-level record stays REC-8's session record.
 
-**Drafted 2026-10-11:** the ADR addendum for D-A (option A) and D-P5-2 is appended to the [admission ADR](../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-11--the-books-size-vector-in-ef-and-the-deployment-go-proposed) as PROPOSED, awaiting Joshua's ratification.
+**Drafted 2026-10-11:** the ADR addendum for D-A (option A) and D-P5-2 is appended to the [admission ADR](../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-11--the-books-size-vector-in-ef-and-the-deployment-go-proposed). Joshua ratified it on 2026-10-11 (J-1; §4).
 
 ## 5. Forbidden
 
