@@ -114,3 +114,4 @@ tools/qualification_verification/* text eol=lf
 # Workflow scripts: the Workflow tool's permission handler rejects \r as a hidden
 # control character, so a CRLF checkout (core.autocrlf=true) cannot be run by name.
 .claude/workflows/** text eol=lf
+lab/analysis/c1/sfclear_2026-10/schedule/*.json text eol=lf

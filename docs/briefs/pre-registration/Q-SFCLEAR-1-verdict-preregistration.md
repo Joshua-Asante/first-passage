@@ -1,5 +1,7 @@
 # Q-SFCLEAR-1 — Personal clearance of the Tradeify book at R1: verdict pre-registration
 
+**SUPERSEDED-BEFORE-RUN 2026-10-11** by [Q-SFCLEAR-2](Q-SFCLEAR-2-verdict-preregistration.md) (DRAFT — NOT RATIFIED); see its §S for the eleven Codex findings (review 5484097066) and Joshua's rulings (a)–(d) ("accept all four, have the worker draft the successor"). The freeze recorded below is void: its §12 step 2 operator re-hash was never recorded. Nothing was scored, exported or replayed under this file. The text below is the frozen record, unchanged; the successor governs.
+
 **Status:** FROZEN 2026-10-11. Ratified by Joshua, 2026-10-11, directly to the Deployment Coordinator (relayed to the drafting worker): "confirm the §1 rulings, ratify Q-SFCLEAR-1". No constant below moves; a changed constant is a new pre-registration and a new trial. No export, replay or scoring at a personal configuration ran before this freeze.
 **Re-scopes:** [Q-SFGROWTH-1](Q-SFGROWTH-1-verdict-preregistration.md) and PR #752 under [ADR addendum 2026-10-11b](https://github.com/Joshua-Asante/first-passage/blob/d7ad4d8d672790dfbe647b22fd9d75a95576f109/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split) (PR #784). Parent brief: [Q-SFCLEAR-1](../Q-SFCLEAR-1-personal-clearance-tradeify-book.md).
 **Authored:** 2026-10-11, drafting worker for the Deployment Coordinator (owner of #752).

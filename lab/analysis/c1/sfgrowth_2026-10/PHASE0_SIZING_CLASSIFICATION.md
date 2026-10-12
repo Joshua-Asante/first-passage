@@ -7,9 +7,9 @@
 ## Re-scope 2026-10-11 (supersedes the lane-split section below)
 
 Under ADR addendum 2026-10-11b (PR #784) the personal study is
-[Q-SFCLEAR-1](../../../../docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md)
-(pre-registration FROZEN 2026-10-11): the four Tradeify-book legs at rung R1, evidence by port replay
-or Aegis re-sizing, not by size-specific exports. The C1–C4, C6 and C7 classification
+[Q-SFCLEAR-2](../../../../docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md)
+(DRAFT; successor of Q-SFCLEAR-1, superseded before run 2026-10-11): the four Tradeify-book legs at
+rung R1, evidence by port replay or Aegis re-sizing, not by size-specific exports. The C1–C4, C6 and C7 classification
 of legs 1–4 and the reference-evidence table stay as cited evidence; leg 5, the
 (leg, k) export grid and the structural-zero slots no longer apply.
 
@@ -60,7 +60,7 @@ Inputs on the size path, capital/equity reads, and the leg-5 lineage-sensitive w
 | 2 | `microCap` | contract-count | 59; used 192 | cap on base quantity, reserved for the add |
 | 2 | `riskPerTrade`, `pyramidSize`, `mymPointValue` | neither | 44, 126, 60; used 189–192, 340 | ratios / instrument constant |
 | 2 | Properties initial capital | capital | 11; read 198–205, 231 | day soft-stop (231) and `ddHit` (205) are % of initial capital |
-| 2 | `strikerDayStopPct`, `maxDailyDD`, `maxTotalDD`, `backtestMode` | neither | 51, 46, 48, 34 | percentages; `backtestMode` gates `ddHit` only |
+| 2 | `strikerDayStopPct`, `maxDailyDD`, `maxTotalDD`, `backtestMode` | neither (held at the captured reference) | 51, 46, 48, 34 | percentages. **`backtestMode` OFF as captured; port-native `ddHit` (daily/total DD) exits and the day soft-stop are live** in the capture, the replay and the live rail (`ops/c1_signal_daemon/book_adapters.py:150-153,175` pass the accepted inputs unchanged to the corrected port `efd479b6…`; [faithfulness read §1](../../../../docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md#1--classification-per-leg-pine-line-refs-are-to-the-pinned-body)). These halts read paper equity built from actual fills against thresholds that are % of initial capital, so they are size-dependent: the route is port replay at the tested size, never re-sizing, and halt timing differs from the capture (Q-SFCLEAR-2 ruling (b), 2026-10-11) |
 | 3 | Properties initial capital | capital (**sets size**) | 3; read 374–379, 419 | `strategy.equity × riskPerTrade` sets the risk budget (`calcSize` 418–422) |
 | 3 | `maxContracts` | contract-count | 157; used 443, 422 | cap on the risk-sized quantity |
 | 3 | `riskPerTrade`, `regimeWeakRiskMult`, `regimeStrongRiskMult`, `regimeWeakCapMult`, `regimeStrongCapMult`, `useRegimeSizing`, `useStreakFade`, `streakFadeFloor`, `streakFadeFullDays` | neither | 151, 260, 262, 256, 258, 250, 217, 223, 221; used 324, 443–445 | ratios and switches |

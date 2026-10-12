@@ -1,8 +1,8 @@
 # Q-SFCLEAR-1 — Personal clearance of the Tradeify book at E_0 (rung R1)
 
-**Status:** `OPEN` — pre-registration FROZEN 2026-10-11 (ratified by Joshua)
+**Status:** `SUPERSEDED-BEFORE-RUN 2026-10-11` by [Q-SFCLEAR-2](Q-SFCLEAR-2-personal-clearance-tradeify-book.md) — the pre-registration freeze (2026-10-11) is void (operator re-hash not recorded; Codex review 5484097066); nothing ran; no closure file
 **Authored:** 2026-10-11
-**Closed:** N/A
+**Closed:** 2026-10-11 (superseded before run; no verdict)
 **Authors:** Joshua (rulings) + Claude Code (drafting worker for the Deployment Coordinator)
 **Parent question:** N/A — owed item 1 of the [self-funded lane ADR](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds), re-scoped by [addendum 2026-10-11b](https://github.com/Joshua-Asante/first-passage/blob/d7ad4d8d672790dfbe647b22fd9d75a95576f109/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split) (PR #784)
 **Supersedes:** [Q-SFGROWTH-1](Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md) for the personal lane (PR #752, re-scoped)
@@ -21,7 +21,7 @@ The [pre-registration §0](pre-registration/Q-SFCLEAR-1-verdict-preregistration.
 
 ## §1 — Context & motivation
 
-Joshua ruled on 2026-10-11 to reuse the Tradeify book on the personal account and qualify its sizing at `E_0` (ADR addendum 2026-10-11b). The zero-K pre-screen found the retained FLOOR-HALF configuration (R0) fails at least one binding pre-screen gate at `E_0` (gate-level standing private); Joshua then ruled R1 (R0 with adds OFF on Striker and Vanguard, ORB OFF) and the gates, buffer, personal policy and routes ("confirm O2, accept all recommendations, go with R1"). [Pre-registration §1](pre-registration/Q-SFCLEAR-1-verdict-preregistration.md#1--context-and-operator-rulings) records them.
+Joshua ruled on 2026-10-11 to reuse the Tradeify book on the personal account and qualify its sizing at `E_0` (ADR addendum 2026-10-11b). After a private pre-screen (record bound by hash), Joshua ruled R1 (R0 with adds OFF on Striker and Vanguard, ORB OFF) and the gates, buffer, personal policy and routes ("confirm O2, accept all recommendations, go with R1"). [Pre-registration §1](pre-registration/Q-SFCLEAR-1-verdict-preregistration.md#1--context-and-operator-rulings) records them.
 
 **Why a new ID rather than editing Q-SFGROWTH-1 in place:** Q-SFGROWTH-1 is a selection over a searched grid with an Explore/Confirm out-of-sample design and a frozen baseline whose text is immutable; Q-SFCLEAR-1 is a single-tuple clearance on fully exposed history. Keeping one ID per design keeps K, exposure and verdict semantics unambiguous. #752 carries both: its Q-SFGROWTH-1 files now point here.
 
@@ -82,6 +82,8 @@ The pre-registration §5 holds the full list.
 ---
 
 ## §8 — Verdict pre-registration
+
+**Superseded before run (2026-10-11):** the freeze below is void and the R1 trial carries to [Q-SFCLEAR-2](pre-registration/Q-SFCLEAR-2-verdict-preregistration.md#8--trial-accounting-and-exposure-ruling-d).
 
 [`docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md`](pre-registration/Q-SFCLEAR-1-verdict-preregistration.md)
 

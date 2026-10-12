@@ -1,8 +1,8 @@
 # Q-SFGROWTH-1 — Self-funded growth portfolio selection under a 15% peak-to-trough limit
 
-**Status:** `OPEN` — re-scoped 2026-10-11 to [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md) (pre-registration FROZEN 2026-10-11) under ADR addendum 2026-10-11b; nothing below runs
+**Status:** `SUPERSEDED 2026-10-11` — re-scoped under ADR addendum 2026-10-11b to [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md), itself superseded before run by [Q-SFCLEAR-2](Q-SFCLEAR-2-personal-clearance-tradeify-book.md) (DRAFT); nothing below runs; no verdict, no closure file
 **Authored:** 2026-10-09
-**Closed:** N/A
+**Closed:** 2026-10-11 (superseded; never ran)
 **Authors:** Joshua (rulings) + Claude Code (author)
 **Parent question:** N/A — owed item 1 of the [self-funded lane ADR](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds)
 **Sub-questions opened:** none

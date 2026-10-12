@@ -330,3 +330,21 @@ b56600f098ca91b7a65eada6c971dcd6263c0b0cce5be54ec672dcd67b7b16af  local_artifact
 53dea292e21e00b0425839ed81b24798c4b9152a3b33e0b063915bc8c697e359  lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/t00-p7-closure-2026-09-24/r3d-floor-half-20261010T175626Z/source_startup_policy.json
 62a947d5833bd1c97020e7605d25161f24bb7505faa26ce72765b9b0e1d26680  t00-step3-console/q1-options-20261010/Q1_OPTIONS.md
 08f9c147f1f61f5df781fbd9c66a375b04ecc1a1127a0cb3090f83cd33addb78  t00-step3-console/q1-options-20261010/SHA256SUMS
+#
+# 2026-10-11 — Q-SFCLEAR-2 draft: fact-finding folder for rulings (a)-(d) (docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md §D, §0).
+# NOT YET ARCHIVED: the upload awaits Joshua's scoped F6 authorization (`make audit` reports it until then).
+badcee2df072fe9382ae6e8cc4295eb7c0a3cc1d411b4d2b51ab8266b3c101c6  t00-step3-console/sfclear-facts-20261011T174256Z/SHA256SUMS
+#
+# 2026-10-11 — Q-SFCLEAR-2 draft: private record of rulings (a)-(d) exactly as relayed (pre-registration §D, §1; nonce'd).
+# NOT YET ARCHIVED: the upload awaits Joshua's scoped F6 authorization (`make audit` reports it until then).
+02e82fdab4d4b3779bb504991a2548014bf0b6a31c27be21a8fcf88c60f8adf1  t00-step3-console/sfclear2-rulings-20261011T221012Z/RULINGS_AS_RELAYED.md
+9180680e19e02963fcafd7dc3d968d5a00e2afdf3147a2a96afbe04a6f63fc1f  t00-step3-console/sfclear2-rulings-20261011T221012Z/SHA256SUMS
+#
+# 2026-10-11 — Q-SFCLEAR-2 draft, third review fold: private note and pattern file, superseded by the 2026-10-11 E0-bound ruling (pre-registration §D; nonce'd).
+# NOT YET ARCHIVED: the upload awaits Joshua's scoped F6 authorization (`make audit` reports it until then).
+2f843d073b1e20b4ffffc6afce40912e4fa65aa6ebadb8742e20e5503e70f252  t00-step3-console/sfclear2-fold3-20261012T000149Z/STANDING_SIGNAL_NOTE.md
+7e04bb1dff7749750369f31d534a438ef20aebe7264403ad6c684efedeb1d433  t00-step3-console/sfclear2-fold3-20261012T000149Z/SHA256SUMS
+#
+# 2026-10-12 — Q-SFCLEAR-2 draft, fourth fold: private exact-E_0 leak scan (pre-registration §10 hook 6; nonce'd).
+# NOT YET ARCHIVED: the upload awaits Joshua's scoped F6 authorization (`make audit` reports it until then).
+d4e358f8a6b5564e3dc751be9d16474129e76c8d3219b966baec0af2fb58a45c  t00-step3-console/sfclear2-fold4-20261012T001816Z/SHA256SUMS

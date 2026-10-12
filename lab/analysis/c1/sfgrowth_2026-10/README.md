@@ -1,13 +1,10 @@
-# Q-SFGROWTH-1 — personal-account growth selection
+# Q-SFGROWTH-1 — personal-account growth selection (evidence store)
 
-**Status:** OPEN
-**In-flight:** yes
+**Status:** ACTIVE — evidence store for Q-SFCLEAR-2 (Phase-0 sizing classification; F6 manifest reference). Q-SFGROWTH-1 SUPERSEDED 2026-10-11; nothing here runs.
 
-Re-scoped 2026-10-11 to Q-SFCLEAR-1 (pre-registration FROZEN 2026-10-11): clearance of
-the Tradeify book at rung R1 on the personal account. Next: P0/replay build and FG
-before any run. This is an active study with an execution gate.
+Q-SFGROWTH-1 was re-scoped 2026-10-11 to Q-SFCLEAR-1, which was superseded before run by
+Q-SFCLEAR-2 (DRAFT). The in-flight study and its inputs live in
+[`../sfclear_2026-10/`](../sfclear_2026-10/README.md).
 
-Owner: [Q-SFCLEAR-1 brief](../../../../docs/briefs/Q-SFCLEAR-1-personal-clearance-tradeify-book.md) (supersedes the [Q-SFGROWTH-1 brief](../../../../docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md)).
-Contract: [Q-SFCLEAR-1 preregistration](../../../../docs/briefs/pre-registration/Q-SFCLEAR-1-verdict-preregistration.md).
-Current work: [sizing classification](PHASE0_SIZING_CLASSIFICATION.md), PR #752.
-The preregistration owns the private-manifest binding and all acceptance criteria.
+Owner: [Q-SFCLEAR-2 brief](../../../../docs/briefs/Q-SFCLEAR-2-personal-clearance-tradeify-book.md) (supersedes the [Q-SFCLEAR-1](../../../../docs/briefs/Q-SFCLEAR-1-personal-clearance-tradeify-book.md) and [Q-SFGROWTH-1](../../../../docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md) briefs).
+Cited evidence: [sizing classification](PHASE0_SIZING_CLASSIFICATION.md); `PHASE0_MANIFEST_REF.json` binds the private pre-screen `SHA256SUMS` archived at first-passage-archive `67679dd`.
