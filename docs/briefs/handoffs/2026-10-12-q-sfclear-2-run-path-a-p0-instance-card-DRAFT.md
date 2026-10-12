@@ -88,7 +88,7 @@ Synthetic only; nothing gitignored is read, so a local Codex checkout suffices. 
 - **(B) Mode.** Under P0 the replay's mode source returns NORMAL for every session at every equity. It never constructs `BookProtectionClock`.
 - **(C) Halt boundary.** **Pending decision packet item 2.** Recommended: the replay calls the live halt's breach predicate. Extract `_breached`'s body into one pure module-level function in `personal_drawdown_halt.py` that `_breached` then calls, so live behaviour is unchanged. The replay imports that function. If Joshua rules the exact scorer predicate instead, the replay implements `20*(peak-trough) >= 3*peak` in ops (no lab import) and `personal_drawdown_halt.py` is not touched.
 - **(D) Observed equity.** The replay observes account equity (realized plus open marks on the same bar marks the replay already uses) at each bar close. It does not observe any adapter's paper equity. The card names this sequence; the worker does not choose another one.
-- **(E) Latch mechanics, not consequence.** This card builds only the live halt contract the replay mirrors: on a latch every entry and add is refused with a named reason (`personal_halt`), open positions flatten at the next bar under the existing cost model, a flatten counts as confirmed only when the replay's own position book is flat with no working order, and the replay emits one latch record (timestamp, peak, observed equity) in its output. **How a latch inside the historical replay enters the series or the verdict is not decided here.** It is conditional on Joshua's ruling on decision packet item 7, and this card implements no option of it. If item 7 is unruled at freeze, the card is not frozen.
+- **(E) Latch mechanics, not consequence.** This card builds only the live halt contract the replay mirrors: on a latch every entry and add is refused with a named reason (`personal_halt`), open positions flatten at the next bar under the existing cost model, a flatten counts as confirmed only when the replay's own position book is flat with no working order, and the replay emits one latch record (timestamp, peak, observed equity) in its output. Under the frozen reading (decision packet item 7, option (b)), these mechanics are the whole consequence: after a latch the replay adds no risk, so the remaining days come out as zero days and the §4 scorer scores the series as it stands. This card adds no verdict rule. If Joshua instead rules (a), E adds it; if (c), the card waits for the new pre-registration. The card is not frozen until item 7 is settled (Joshua confirms (b), or rules (a) or (c)).
 - **(F) Cap.** Add `account_micro_cap(tier)` in `book_policy.py`. It reads the resolved tier row and refuses `None` or a non-positive int. `ACCOUNT_MICRO_CAP` stays the Tradeify value. `book_capacity.py` takes the cap from the resolved instance when one is passed; otherwise it uses today's constant.
 
 ## 1. Goal
@@ -175,7 +175,7 @@ A PR touching `ops/c1_rail/qualification/**` or `book_policy.py` triggers the Qu
 |---|---|
 | `DONE` | §4 red at the cut, green on the build; mutants killed; suites green; `fp test-ops` and `fp check` records completed exit 0; footprint equals §2.3 |
 | `DONE_WITH_CONCERNS` | As DONE, with an off-pattern observation |
-| `NEEDS_CONTEXT` | A §0.5 default contradicted, or item 2 or item 7 unruled at dispatch |
+| `NEEDS_CONTEXT` | A §0.5 default contradicted, or item 2 or item 7 not settled at dispatch |
 | `BLOCKED — context-problem` / `capability-problem` / `scope-problem` / `plan-itself-wrong` | As named; `plan-itself-wrong` covers §0(f) |
 
 **Gate verdict (coordinator, at review):** **RESOLVED** when `DONE` and both §7 passes reproduce it; **FALSIFIED** when a row cannot be made red at the cut, a mutant survives, or the revert trigger fires; **AMBIGUOUS** (held) on `DONE_WITH_CONCERNS`.
@@ -222,7 +222,7 @@ python -I scripts/fp.py check
 
 - **D-1 (Joshua, item 2).** Replay halt boundary.
 - **D-2 (Joshua, item 1).** Admission of the §2.3 footprint, including the conditional rows.
-- **D-3 (Joshua, item 7).** The consequence of a P0 latch inside the historical replay. This card emits the latch record under every option; it does not choose one.
+- **D-3 (Joshua, item 7).** Joshua confirms the frozen reading (b), or rules (a) or (c). This card's mechanics implement (b) and emit the latch record under every option.
 - **D-4.** Confirm (D) observed equity against pre-registration §2.
 
 ## Pre-mortem

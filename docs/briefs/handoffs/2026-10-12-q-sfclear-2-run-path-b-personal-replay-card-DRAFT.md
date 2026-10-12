@@ -82,8 +82,8 @@ Report before any test. A contradiction is a **stop** (§7).
 Synthetic only. Defaults apply unless Phase 0 contradicts them (`NEEDS_CONTEXT`).
 
 - **(A) Read once.** Each input is read as bytes once, hashed, parsed from the same bytes and retained. No hash-then-reopen.
-- **(B) Expected hashes.** Public pins (schedule, roll list) are module constants equal to the pre-registration's values. Private identities (tuple, source bundle with its reference-friction capture, and the private `E_0` file) arrive as expected digests in a run manifest that E builds from the frozen pre-registration at F and the private freeze record. No expected hash is read from the file it checks.
-- **(B′) Halt start.** The replay's starting account equity, and so the P0 halt's initial peak, is `E_0` read from the private `E_0` file inside the verified envelope: bytes read once, hashed against the manifest digest, parsed as one finite positive value. There is no default, no constructor fallback and no value from any other file. The value is never logged or written to public output. Tests use a synthetic file and digest.
+- **(B) Expected hashes.** Public pins (schedule, roll list) are module constants equal to the pre-registration's values. Private identities (tuple, source bundle with its reference-friction capture) arrive as expected digests in a run manifest that E builds from the frozen pre-registration at F and the private freeze record. The `E_0` file reference comes from `R1_TUPLE.json`, itself verified against the frozen tuple sha256 `62d7ae19…671f` (pre-registration §2: the tuple carries the `E_0` file reference). The `E_0` file's bytes are also checked against the `E_0` file hash in the private freeze record's `input_sha256` map; the coordinator confirms at freeze that the map includes that file. Both must match. No expected hash is read from the file it checks.
+- **(B′) Halt start.** The replay's starting account equity, and so the P0 halt's initial peak, is `E_0` read from the private `E_0` file inside the verified envelope: bytes read once, hashed and checked as in (B), parsed as one finite positive value. There is no default, no constructor fallback and no value from any other file. The value is never logged or written to public output. Tests use a synthetic file and digest.
 - **(C) Schedule bridge.** A closed parser for `sfclear_historical_schedule/v1` maps each row to the replay's session facts: DENIED rows refuse entries and adds and stay zero days; PERMITTED rows carry cutoff 15:45, flatten start 15:55 and own-flat 16:00 ET from the row's UTC fields. It is a separate parser, not a feed into `parse_source_calendar`.
 - **(D) Roll list.** A closed parser for `sfclear_roll_dates/v1`. For 6J and MGC, no entry or held position at or after `g4_start_open_utc` of the held contract. Roll dates are never inferred from a price discontinuity.
 - **(E) Route.** **Pending decision packet item 4.** Recommended: PR for all four legs. RS for Aegis is built only if Joshua rules it, and then every D9 condition and FG-T is a refusing check.
@@ -210,7 +210,7 @@ python -I scripts/fp.py check
 
 - **D-1 (Joshua, item 4).** Aegis route.
 - **D-2.** Confirm the route-output field list against pre-registration §3 (residual `r` needs `δ₀`, `b`, MAE) and §4 item 1.
-- **D-3 (Joshua, item 7).** The consequence of a P0 latch inside the historical replay. B carries A's latch record into the route output under every option and implements none of them; if item 7 is unruled at freeze, the card is not frozen.
+- **D-3 (Joshua, item 7).** Joshua confirms the frozen reading (b), or rules (a) or (c). Under (b) the post-latch zero days come from A's mechanics with no extra code here. B carries A's latch record into the route output under every option; the card is not frozen until item 7 is settled.
 
 ## Pre-mortem
 

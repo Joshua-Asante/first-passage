@@ -16,7 +16,7 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 | 4 | Aegis route | PR for all legs |
 | 5 | Sequencing and executor per card | A0 (coordinator) → A → C → B → D → E; Codex local per card; no card enters the owner queue |
 | 6 | Whether D's FG evidence run may use the Azure VM | Yes, if you extend the §60 VM exception to this run |
-| 7 | What a P0 latch inside the historical replay means | (a) a dated clarification that a latch gives NOT CLEARED |
+| 7 | What a P0 latch inside the historical replay means | (b), the frozen reading: you confirm it; (a) is a stricter rule you may add |
 
 ## 1. Code admissions
 
@@ -103,16 +103,17 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 
 ## 7. What a P0 latch inside the historical replay means
 
-**Fact:** the replay mirrors the live 15% halt (P0). The frozen pre-registration says what a Striker total-DD trip means (§4 item 8, NOT CLEARED) but not what a P0 latch inside the 2022-09-01..2026-09-02 replay means for the §4 series or the verdict. Cards A, B and E emit the latch record and implement no consequence until you rule.
+**Fact:** the frozen pre-registration says what a Striker total-DD trip means (§4 item 8, NOT CLEARED) but names no consequence for a P0 latch inside the 2022-09-01..2026-09-02 replay. Three readings, set against the frozen §6, §7 and §12 step 6:
 
-| Option | What it is | Effect |
-|---|---|---|
-| (a) | A dated operator clarification, recorded in the brief and not in the frozen files, that a P0 latch in the historical replay gives NOT CLEARED | Stricter only; recorded before any run; disclosed in the closure. The frozen pre-registration stays as it is |
-| (b) | A latch gives zero days for the rest of the window (faithful to live behaviour) | Changes the verdict and is not in the frozen text, so it needs a new pre-registration |
-| (c) | A new pre-registration, Q-SFCLEAR-3, that defines this case | Same tuple, K unchanged; a new freeze |
+| Option | What it is | Against the frozen text | Needs |
+|---|---|---|---|
+| (b) | A latch refuses risk, so the following days come out of the replay as zero days; the §4 scorer scores the series as it stands | Arguably the frozen reading: §7 runs the replay "under P0", and P0 includes the live 15% halt (§2). No new rule | Joshua **confirms the reading** |
+| (a) | A latch gives NOT CLEARED | Adds a verdict rule after the freeze: §6 lists RESOLVED's conditions exhaustively, and §12 step 6 says no constant moves after the freeze. Stricter only | A **dated operator ruling**, recorded in the brief (not the frozen files) before any run and disclosed in the closure as a post-freeze addition |
+| (c) | A new pre-registration, Q-SFCLEAR-3, that defines the case | Leaves Q-SFCLEAR-2 as frozen; same tuple, K unchanged | A new ratification and freeze |
 
-**Recommendation:** (a).
+**Recommendation:** (b), the frozen reading, which Joshua confirms. (a) is a stricter option he may add on top.
 
-**Risk of (a):** it adds a NOT CLEARED path after the freeze. It can only make clearance harder, but it is still a post-freeze rule, so it must be dated, recorded before any run and disclosed in the closure.
+**Risk of (b):** if a latch fires, the post-latch tail is flat, so the bootstrap's 20-day blocks partly dilute the pre-latch drawdown.
+**Risk of (a):** it adds a NOT CLEARED path after the freeze.
 
-**What it changes:** under (a), E maps a latch record to NOT CLEARED and the cards freeze as drafted. Under (b) or (c), the cards wait for the new pre-registration and its freeze.
+**What it changes:** under (b), A's mechanics produce the zero days and E adds no rule; the cards freeze as drafted. Under (a), E adds one row that maps a latch record to NOT CLEARED. Under (c), the cards wait for the new pre-registration and its freeze.
