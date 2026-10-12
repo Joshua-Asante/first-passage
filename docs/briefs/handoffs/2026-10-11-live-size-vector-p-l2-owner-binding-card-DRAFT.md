@@ -2,13 +2,13 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L1 and P-L2 build cards") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
+**Status:** **FREEZE REVISION 2026-10-12, effective on the coordinator's countersignature.** The live-wiring lane writer (single writer for this lane, by the Deployment Coordinator's 2026-10-11 directive) prepared this revision at the commit that adds this line. The review fixes on #788 are folded in. The freeze base is `origin/main` `7db42f1`. The directive exists in chat only, and the committed-handoff rule (surface-allocation ADR, "Committed-handoff rule") does not count a chat-only direction. So the freeze takes effect only when the coordinator commits the delegation or countersigns this revision's SHA (the decision packet §6). Until then the card is a candidate freeze, not a frozen card. **Not dispatched:** the J-4 build gate (§11 G-3) is not open. *As drafted:* DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L1 and P-L2 build cards") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
 
 **Base:** `origin/main` `b5571a9`. Every `file:line` is at that commit unless marked otherwise. `ops/c1_rail/book_account_owner.py` last changed `18107a75` (2026-10-02); `book_incident_irm_live_page.py` last changed `eebd37ba` (2026-10-04). **The executor's base is later:** it is cut after P-L1, protection-health and (per D-2) GC-5 have merged, so Phase 0 re-anchors every line.
 
 **Parent scope:** [live size-vector wiring scope](../../notes/2026-10-11-live-size-vector-wiring-scope.md) (PR #773) §2 and §5 row P-L2. The successor [build card](2026-10-10-t00-successor-screen-build-card-DRAFT.md) §3.1 owns the vector interfaces. The screen authority defines the hash this card must reproduce: `size_vector_sha256 = sha256(canonical_json_bytes(sizing))` (`screen_authority.py:401-432`). **Prerequisite:** [P-L1](2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) merged (`BookSizingBinding.size`).
 
-**Authority:** none yet. G-1, G-2 and G-3 are separate acts (§11).
+**Authority:** G-1 and G-2 are recorded; G-3 waits on the J-4 build gate and the `book_account_owner.py` queue (§11).
 
 **Executor:** a Claude worker, single writer of `claude/live-size-p-l2` (proposed). **Not GLM:** the change is to sizing and to a bound module.
 
@@ -21,7 +21,7 @@ max_risk: medium
 capabilities: [repository.read, tests.run, worktree.write, branch.push]
 constraints:
   - not_dispatchable_until_section_11_gates_recorded
-  - cut_after_p_l1_and_protection_health_merged
+  - cut_after_p_l1_and_gc5_merged_one_writer_queue
   - offline_synthetic_only
   - card_section2_files_only
   - fixture_edits_limited_to_section_2_4
@@ -58,6 +58,7 @@ acceptance:
   - tests/ops/test_synthetic_integrated_session.py
   - tests/ops/test_book_incident_grafana_irm.py
   - tests/ops/test_tradeify_sizing_integration.py
+  - tests/ops/test_book_takeover_phases.py
   - tests/ops/test_c1_rail_image_manifest.py
   - tests/ops/test_c1_signal_daemon_image_manifest.py
   - tests/ops/qualification/test_trust_domain.py
@@ -71,7 +72,7 @@ acceptance:
 - `test_live_size_vector_sizing_context.py` is P-L1's and must stay green.
 - The others exist and stay green. The only edits allowed are the two §2.4 fixture lines.
 - The last five are listed because `book_account_owner.py` is bound as `listener_account_owner` (`trust_domain.py:146`; `composition_fixture.py:83`).
-- No tracked file pins the current SHA-256 of `book_account_owner.py` (`0b45513a…`) or of `book_incident_irm_live_page.py` (`fac6a47d…`); checked at drafting, §0(c).
+- No tracked file pins the current SHA-256 of `book_account_owner.py` (`0b45513a…` at `b5571a9`; `ad86a0e6…` at `7db42f1`) or of `book_incident_irm_live_page.py` (`fac6a47d…`); checked at drafting, §0(c).
 
 ## 0. Phase 0: premise, Rule-0 reads and findings returned before code
 
@@ -90,7 +91,7 @@ Report each finding before any test. A contradiction is a **stop** (§7).
   - within-session equality `:425-427`;
   - the cross-session `immutable` tuple `:431-433`;
   - `_context` `:1555-1590`, where `BookSizingBinding` is built at `:1575`;
-  - the dispatch at `:1812-1820`, including `zero_size` at `:1819`.
+  - the dispatch at `:1812-1820`, including `zero_size` at `:1819` (at the freeze base `7db42f1`: `:1819-1827` and `:1825`; #780 shifted the dispatch region and touched `:1651-1736`, none of the P-L2 sites).
   - Also report every other reader of the binding record: `book_bootstrap.py:47-49` and `:126`, and `book_migration.py:111-117` and `:411-417`.
 - **(e) Binding constructors.** At drafting, three functions build a complete runtime binding:
   - `tests/ops/test_book_account_owner.py:50` `binding()`;
@@ -269,7 +270,7 @@ Neither edited code file is in the S2 workflow's path filters (`qualification-s2
 
 ## 9. Sequencing and file collisions
 
-- **Protection-health** (FROZEN, building) edits `book_account_owner.py` near `:1694-1729`. P-L2 is cut only after it merges: "No two live packets share a file" (umbrella `:245`).
+- **Protection-health** merged (#780 `2cfb3d7`). Its hunks (`:1651-1736` at `7db42f1`) do not overlap the P-L2 sites. "No two live packets share a file" (umbrella `:245`) still orders every later writer.
 - **GC-5-DISPLACED** (DRAFT) adds an `aegis_takeover` keyword to `__init__`/`boot` and stamps its resolved value in the same binding record (GC-5 card `:116`). That is the same seam. Serialize per D-2, and keep one stamping pattern.
 - **TB-I3** (DRAFT) edits `book_account_owner.py` in its S2 latch, which is already ordered after GC-5. The coordinator orders it against P-L2 at freeze (D-2). **TB-I3-HOST** (FROZEN 2026-10-06) forbids that file and is no collision.
 - **Roadmap:** P-L2 is behaviour-changing frozen work. It lands before CP-6 (checklist T15). P-L4 then uses the stamp at T16 and T17.
@@ -308,21 +309,21 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1. Joshua's code admission.** Joshua names the §2.1 edits to `book_account_owner.py` (bound as `listener_account_owner`, `trust_domain.py:146`) and the §2.2 edit. A single admission may also cover P-L1 (scope note Q5). The coordinator records his words and the time.
-- **G-2. Coordinator freeze.** The coordinator answers §12, re-anchors §0(d) at the cut base, commits the frozen revision and records its SHA.
-- **G-3. Dispatch.** Requires P-L1 and protection-health merged, plus the D-2 order. Recommended: after the successor screen returns GO (scope note Q6).
+- **G-1. Joshua's code admission.** Joshua names the §2.1 edits to `book_account_owner.py` (bound as `listener_account_owner`, `trust_domain.py:146`) and the §2.2 edit. A single admission may also cover P-L1 (scope note Q5). The coordinator records his words and the time. **RECORDED:** Joshua, 2026-10-11 (about 17:15Z), in the live-wiring lane session: "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended", on the [decision packet](../../notes/2026-10-11-live-wiring-decision-packet.md) (#788). One admission covers P-L1 and P-L2 (packet §2).
+- **G-2. Coordinator freeze.** The coordinator answers §12, re-anchors §0(d) at the cut base, commits the frozen revision and records its SHA. **DONE:** frozen 2026-10-11 by the lane owner; §0(d) re-anchored at `7db42f1`; the executor re-anchors again at its cut base. The SHA is reported to the coordinator.
+- **G-3. Dispatch.** **RULED (J-4):** the build may be dispatched when **either** the Tradeify successor screen returns GO **or** the personal clearance study (Q-SFCLEAR-1: #752 or its re-scoped ID) returns **RESOLVED** (FALSIFIED or AMBIGUOUS does not open it). It also needs P-L1 merged, protection-health merged (done, #780 `2cfb3d7`), GC-5-DISPLACED merged, and the `book_account_owner.py` file free under the one-writer queue (D-2). None of the gate conditions holds at freeze. Building binds no vector; each lane activates only under its own gates (packet §4).
 
 ## 12. Open decisions (coordinator at freeze; Joshua where marked)
 
-- **D-1 (Joshua; scope note Q1).** Required vector, with identity stated explicitly for the declared book? *Recommend:* yes. That is this card's (A) and the §5 ban on a default.
-- **D-2. Order on the shared seam:** protection-health → GC-5 → P-L2, or protection-health → P-L2 → GC-5? *Recommend:* GC-5 first. It is ruled for the first release, and P-L2 then follows its stamping pattern.
-- **D-3.** Confirm (E): legacy retained records read as identity for comparison only. *Recommend:* confirm. The alternative, refusing every legacy record, would refuse owners whose quantities were already today's.
-- **D-4 (Joshua; scope note Q2).** Caps, tiers and risk basis are outside this card. *Recommend:* leave them out, and keep the T16 equality item that the scope note names.
+- **D-1 (Joshua; scope note Q1).** Required vector, with identity stated explicitly for the declared book? **RULED:** yes (rest as recommended).
+- **D-2. Order on the shared seam:** protection-health → GC-5 → P-L2, or protection-health → P-L2 → GC-5? **RULED:** GC-5 first; then the queue runs by readiness, one writer at a time, so P-L2 may take the file before TB-I3 S2 if S2 is not yet dispatched (packet §4 condition 3).
+- **D-3.** Confirm (E): legacy retained records read as identity for comparison only. **RULED:** confirmed.
+- **D-4 (Joshua; scope note Q2).** Caps, tiers and risk basis are outside this card. **RULED:** left out; a T16 equality item (Tradeify) and the clearance 1.1 freeze (personal).
 
 ## Pre-mortem
 
 - **Loop cost.** One targeted run, one `fp test-ops` and one `fp check`. Budget: two full suite runs. A third run is a checkpoint. No S2 workflow run is triggered.
 - **Decisions the executor will hit:** (A)–(G) are pre-ruled. The two likely bounces are §0(e) (another binding constructor) and §0(g) (a same-session legacy reboot). The coordinator can pre-empt both by running those two reads at freeze.
-- **What would make this moot:** NO-GO on the screen (withdraw), or Joshua putting the vector somewhere other than the owner binding (D-1).
+- **What would make this moot:** Joshua putting the vector somewhere other than the owner binding (D-1). A Tradeify NO-GO does not make it moot (J-4).
 - **Evidence binding:** acceptance evidence is the targeted, `fp test-ops` and `fp check` records at the returned head only. A push afterwards voids them.
 - **Measure:** wall time, runs and rounds are filled in at return.

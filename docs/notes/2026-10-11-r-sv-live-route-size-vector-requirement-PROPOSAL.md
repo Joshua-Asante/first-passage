@@ -49,6 +49,7 @@
 - The loader's hash must equal the expected value from the D-A owner: the baked GO field (P-L4 A-1) or the admitted row's provenance. For `IDENTITY`, it must equal `IDENTITY_SIZE_VECTOR`'s hash.
 - A mismatch boots the daemon disarmed, with no risk-add and a CRITICAL log naming the gate.
 - While the D-A owner holds no value (no GO, or an empty registry), every non-identity sizing refuses. This is the fail-closed default.
+- **Open for the live route packet: where the check runs.** The GO is baked into the listener image only. The daemon, where this loader sits, has no GO today. The live route packet must name which process holds the GO and the owner database, and put this comparison there. Moving the comparison to the listener at owner construction is one option. Baking the GO into the daemon image is another, but it changes that image's digest. The packet must not assume the daemon can read the GO. Tracked as an owed item in the [decision packet](2026-10-11-live-wiring-decision-packet.md) §7.
 
 ### 2.4 Binding
 
@@ -84,6 +85,7 @@
 
 ## 4. Decisions
 
+- **RULED 2026-10-11** (Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended"; decision packet J-3 and §5): D-SV-1 = option (a), an explicit FILE source by path plus SHA-256 on each instance's volume, shared with `effective_inputs.json`; a missing file, digest mismatch, non-canonical encoding or expected-value mismatch boots disarmed; no default. D-SV-2 = the whole v2 startup policy (Tradeify) and the clearance study's frozen sizing artifact (personal). D-A = GO field (ADR addendum, Accepted).
 - **D-SV-1 (Joshua; replaces scope note Q4). How the private sizing bytes reach the daemon.** R-J (iii) keeps every non-`.py` port-root file out of the image, and `effective_inputs.json` already faces the same constraint. Options:
   - **(a) Recommended.** A private, operator-placed file on the host's persistent volume, referenced by path and SHA-256 in the daemon config. Integrity comes from the hash and the expected-value check (§2.3), not from where the file sits. Use one mechanism for both `effective_inputs.json` and the sizing file, decided once in the live packet. Volume mutability is harmless: a changed file fails the hash and the daemon stays disarmed.
   - (b) An R-J amendment admitting named non-`.py` files into the image. This needs a spec change and a new guard. It also bakes private values into an image layer, which changes the image digest that EF2 records whenever the vector changes.
