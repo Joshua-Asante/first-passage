@@ -18,7 +18,7 @@ from decimal import Decimal
 from fractions import Fraction
 
 from .book_policy import (
-    ACCOUNT_MICRO_CAP, BOOK_LEGS, PolicyAbsent, PolicyMismatch, add_quantity,
+    ACCOUNT_MICRO_CAP, BOOK_LEGS, LegSize, PolicyAbsent, PolicyMismatch, add_quantity,
     as_mode, entry_quantities, is_protected, leg, lifecycle_multiplier, require_policy,
 )
 from c1_signal_daemon.book_protocol import Mode
@@ -59,6 +59,7 @@ class BookSizingBinding:
     order_symbol: str
     cap_alloc: int
     risk_dollars: object  # explicit unscaled account-basis risk; Striker only
+    size: LegSize | None = None  # this leg's size; None is today's quantities
 
 
 @dataclass(frozen=True)
@@ -163,6 +164,8 @@ def _identities(request, context, binding):
     for name in ("account_id", "owner_epoch", "leg_id", "order_symbol"):
         _require(_text(getattr(binding, name)) and
                  getattr(binding, name) == getattr(context, name), f"{name}_binding_mismatch")
+    _require(binding.size is None or (isinstance(binding.size, LegSize) and
+                                      binding.size.leg_id == request.leg_id), "size_binding_mismatch")
     for name in ("policy_digest", "snapshot_digest"):
         _require(_digest(getattr(binding, name)) and
                  getattr(binding, name) == getattr(context, name), f"{name}_mismatch")
@@ -245,6 +248,7 @@ def size_book_request(request, *, context, binding, policy, now) -> BookSizingDe
     No legacy files or current-equity input participate. Capacity is an observation,
     not a reservation: a stale or contended observation cannot authorize execution.
     Takeover, terminal releases and completed-operation dedupe belong to TB-I3.
+    The binding's ``size`` reaches both quantity laws; None is today's quantities.
     """
     identity = (request.operation_id, request.leg_id) if isinstance(request, BookSizingRequest) else (None, None)
     try:
@@ -256,10 +260,12 @@ def size_book_request(request, *, context, binding, policy, now) -> BookSizingDe
             qty, prospective = entry_quantities(
                 request.leg_id, mode=mode, policy=policy, lifecycle_tier=context.lifecycle_tier,
                 normal_base=request.normal_base, risk_dollars=binding.risk_dollars,
-                per_contract_risk=request.per_contract_risk, cap_alloc=binding.cap_alloc)
+                per_contract_risk=request.per_contract_risk, cap_alloc=binding.cap_alloc,
+                size=binding.size)
         else:
             qty = add_quantity(request.leg_id, context.confirmed_base, mode=mode,
-                               policy=policy, lifecycle_tier=context.lifecycle_tier)
+                               policy=policy, lifecycle_tier=context.lifecycle_tier,
+                               size=binding.size)
             prospective = 0
         needed = qty * spec.micro_equiv
         _require((own.confirmed + own.reserved) * spec.micro_equiv + needed <= binding.cap_alloc,
