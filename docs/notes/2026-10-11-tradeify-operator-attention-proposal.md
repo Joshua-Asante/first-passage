@@ -27,8 +27,8 @@ a separate, qualified change to the trading window or operating policy.
   ([halt/resume §3](../spec/2026-09-14-tb-s3-halt-resume-contract.md)).
 - **Target:** two routine decision points a day (session GO; settlement signature), not two
   clicks or a guaranteed two visits; never keep trading or leave authority active to combine them.
-- **Outside this proposal, owed by about 2026-10-17:** confirm Grafana IRM SMS/voice survive
-  the trial's end (R4).
+- **Outside this proposal, check by 2026-10-14 (trial ends about 2026-10-17):** confirm
+  Grafana IRM SMS/voice survive the trial's end (R4).
 
 Benefits are predictions, not measured savings; this is not independent acceptance.
 
@@ -61,7 +61,10 @@ Preserve these boundaries in every implementation:
   A presentation layer, collector, notifier or agent cannot create trading authority.
 - Per-session GO, M1, release identity, freshness and account binding remain enforced.
   Startup remains halted; day change, recovered feed and acknowledgment do not resume.
-- An incident ends automated trading for that session under the first-release rule.
+- During armed commissioning and the first attended release, an incident ends automated
+  trading for that session (halt/resume §4, §A11.2). Later releases keep §4's conditional
+  same-session resumption with fresh operator approval; any permanent no-restart rule is a
+  separate operator decision, not something this proposal imposes.
   In INTERVENTION the runtime sends no CLOSE, CANCEL, AMEND or ATTACH. Operator
   platform recovery and its second-close race remain explicit.
 - Unknown or possibly transmitted orders retain ownership and reservations. No retry
@@ -152,7 +155,10 @@ missed signals.
 **Two scoped invalidator lists,** owned with the activation path:
 
 - *Release qualification:* release/config/policy digests, calendar, route and monitoring
-  qualification. A change invalidates only the affected qualification evidence.
+  qualification. Before activation, a change invalidates only the affected qualification
+  evidence. While a session is active, calendar coverage becoming invalid is not a
+  release-evidence change: it enters INTERVENTION and revokes scheduled-exit authority
+  (halt/resume §2).
 - *Activation:* boot, session and halt generation
   ([halt/resume §2, §4](../spec/2026-09-14-tb-s3-halt-resume-contract.md)). A change
   invalidates the current activation and requires fresh operational evidence and GO,
@@ -160,7 +166,8 @@ missed signals.
 
 A change neither list classifies blocks activation pending classification; it does not
 imply repeating all qualification. Acceptance adds a restart case: unchanged release
-evidence survives it, and pre-restart authority does not.
+evidence survives it, and pre-restart authority does not; and an active-session calendar
+invalidation that enters INTERVENTION rather than only invalidating release evidence.
 
 ### R3 — Automatic closing evidence and disarm, separate from settlement timing
 
@@ -225,7 +232,7 @@ an acknowledged incident can still require attention and recovery.
 Grafana/Healthchecks integrations. Reuse the qualifications that actually apply;
 the watch records G10 PASS with limitations, not blanket monitoring readiness.
 Its 2026-10-07 record also requires confirming SMS/voice availability when the
-Grafana trial ends about 2026-10-17. That check is owed now, independently of this
+Grafana trial ends about 2026-10-17; check by 2026-10-14. That check is owed now, independently of this
 proposal (STATE scheduled trigger); afterwards carry plan/channel expiry into the readiness
 view. Do not assume the free tier supplies the qualified channels indefinitely.
 
