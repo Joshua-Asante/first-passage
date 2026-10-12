@@ -1,6 +1,6 @@
 # Tradeify: reduce recurring operator attention
 
-**Status: PROPOSED for operator and deployment-coordinator review.** Requested by
+**Status: PROPOSED; O1 approved by operator 2026-10-12 (§6).** Requested by
 Joshua on 2026-10-11: review the recommendations, sharpen them, and post a PR
 detailing what must change to save operator attention within risk and safety
 guidelines. This is a proposal, not an implementation card or a change to trading
@@ -373,6 +373,12 @@ Removing a watch worker requires restoring its named performer and due checks fi
 UI/collector failure never bypasses readiness, retries a broker send or resets state.
 
 ## 6. Decisions for Joshua
+
+**Operator ruling 2026-10-12 (Joshua, directly to Claude Code: "approve O1"; reconfirmed the same day directly to the Deployment Coordinator: "yes I approved O1"):** O1's
+recommendation is approved: prepare R1's local import workflow and R2's read-only
+readiness view first, with baseline measurement. It grants only that preparation scope;
+implementation dispatch still needs the corresponding approved scope/card through the
+deployment coordinator. O2–O4 keep their stated defaults.
 
 **The one ask:** approve O1's recommendation. O2–O4 take the default in their last
 column unless you say otherwise; the coordinator reconciles §5's staging with
