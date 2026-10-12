@@ -182,3 +182,11 @@ Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "extend (E
 - **Admission extended (G-1):** `ops/c1_rail/book_takeover_owner.py` (trust-domain dependency, `trust_domain.py:164`; not a TB-I1 fingerprint component), its two comparison sites only. The J-2 admission otherwise stands. Fixtures stay untouched (card §2.4).
 - **Added acceptance:** legacy same-session passes; legacy versus non-identity live vector refuses; one-key record refuses; migrated legacy `pending_takeover` plan passes; mutant "any key-less record matches anything" is killed.
 - The card stays frozen at `8a8d7a0`; §6a, §6b and this entry govern where it differs.
+
+## 6d. Owner-file order amendment: P4 and P-SW ahead of GC-5 and TB-I3 S2 (2026-10-12)
+
+Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "2 extend", on the coordinator's decision plan (extend §6b so P4 and P-SW go ahead of GC-5 and TB-I3 S2).
+
+- After P-L2 (#805, merged `143a61a`), `book_account_owner.py`'s writer order is **P4 → P-SW → GC-5-DISPLACED → TB-I3 S2**. GC-5 and S2 serve the deferred Tradeify route ([route record](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts)); they re-anchor after P-SW.
+- One writer at a time, each cut from `main` after its predecessor merges, is unchanged. P4 still builds on `2cfb3d7` or later and preserves #780's routing.
+- Not checked: whether P4's or P-SW's edit sites overlap GC-5's or S2's. Re-anchoring absorbs any overlap; no card is changed by this entry.

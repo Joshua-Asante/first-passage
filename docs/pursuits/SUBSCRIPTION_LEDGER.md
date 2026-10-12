@@ -39,6 +39,7 @@ charges.
 
 | Date | Change |
 |---|---|
+| 2026-10-12 | Operator keeps CrossTrade (d14, $50/month) while Tradeify-route work is deferred (verbatim "5 keep"). No amount changes; the d11–d18 reconfirm stays owed. |
 | 2026-09-23 | Operator reports GLM Max 5x at $80/month, replacing the retired Cursor subscription (d16, already excluded). Added as [d19](d19-glm-subscription.md). Active recurring total: $420 + $80 = $500. The report does not reconfirm rows d11–d18; that 2026-09-21 reconfirm remains owed (STATE Monthly trigger). |
 | 2026-09-15 | Operator settles two of the three outstanding Cursor items, asked directly: subscription **fully terminated**; **no final or prorated charge** landed after cancellation. The cancellation date was not to hand and **remains open** — 2026-09-10 stays a report date, not a cancellation date. Ledger effect: **none** ($420 unchanged; the row was already excluded). |
 | 2026-09-15 | Cursor retired as a worker surface repo-wide (operator instruction; [ADR revision](../adr/2026-07-14-cc-cursor-surface-allocation.md)). Ledger effect: **none** — the row was already excluded from the active recurring total on 2026-09-10. Cancellation date and final charges remain outstanding operator items; this row records the surface retirement, not a settlement. |
