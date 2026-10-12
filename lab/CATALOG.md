@@ -31,6 +31,7 @@ documents the camp boundary for humans/tools.
 | volregime_l5_pilot_2026-08-31 | _inbox | ACTIVE | Packet C1 bands frozen; large-scale sim not run | lab/analysis/_inbox/volregime_l5_pilot_2026-08-31/ |
 | c1_signal_identity_2026-07-28 | c1 | ACTIVE | full-panel MEASURED** (2026-07-29); Q-SIGID-1 §6 offline limb = **FULL** (plan... | lab/analysis/c1/c1_signal_identity_2026-07-28/ |
 | parity_gen2_2026-08 | c1 | ACTIVE | — | lab/analysis/c1/parity_gen2_2026-08/ |
+| sfclear_2026-10 | c1 | ACTIVE | successor pre-registration DRAFT, not ratified; calendar-only historical schedule committed; no scoring output | lab/analysis/c1/sfclear_2026-10/ |
 | tradeify_seven_strategy_phase1_2026-09 | c1 | ACTIVE | strict five-source Tradeify source, accounting, deadline, cap, and provenance normalization | lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/ |
 | orb_mym_v04_riskbudget_2026-09-02 | orb | ACTIVE | `EXPLORATORY — NO FILTER PROMOTED; ONE PINE INPUT ADDED, DEFAULT OFF`. Candidate | lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/ |
 | orb_mym_volume_gate_2026-09-02 | orb | ACTIVE | `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED` | lab/analysis/orb/orb_mym_volume_gate_2026-09-02/ |
@@ -60,6 +61,8 @@ documents the camp boundary for humans/tools.
 | mnq_orb_flow_depth_2026-08-18 | c1 | HOLD | yes | `HOLD 2026-08-23 (operator)` — blocked at P0 twice (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling;... | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | msl_monsurf_1_idle_clock_2026-08 | c1 | CLOSED | yes | Q-MONSURF-1 M-B RESOLVED | lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/ | — |
 | parity_gen2_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
+| sfclear_2026-10 | c1 | ACTIVE | yes | successor pre-registration DRAFT, not ratified; calendar-only historical schedule committed; no scoring output | lab/analysis/c1/sfclear_2026-10/ | — |
+| sfgrowth_2026-10 | c1 | ACTIVE | yes | evidence store for Q-SFCLEAR-2 (Phase-0 sizing classification; F6 manifest reference). Q-SFGROWTH-1 SUPERSEDED... | lab/analysis/c1/sfgrowth_2026-10/ | — |
 | shape_feasibility_map_2026-08 | c1 | ACTIVE | yes | 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU... | lab/analysis/c1/shape_feasibility_map_2026-08/ | — |
 | size_feasibility_2026-10 | c1 | ACTIVE | yes | — | lab/analysis/c1/size_feasibility_2026-10/ | — |
 | tradeify_book_composition_2026-09 | c1 | ACTIVE | yes | informal Downloads-lane measurement, not pre-registered, no K entry; the harness reuses `core/mc/simulation.py` and... | lab/analysis/c1/tradeify_book_composition_2026-09/ | inputs gitignored |
