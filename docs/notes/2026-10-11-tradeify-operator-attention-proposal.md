@@ -374,7 +374,7 @@ UI/collector failure never bypasses readiness, retries a broker send or resets s
 
 ## 6. Decisions for Joshua
 
-**Operator ruling 2026-10-12 (Joshua, directly to Claude Code: "approve O1"):** O1's
+**Operator ruling 2026-10-12 (Joshua, directly to Claude Code: "approve O1"; reconfirmed the same day directly to the Deployment Coordinator: "yes I approved O1"):** O1's
 recommendation is approved: prepare R1's local import workflow and R2's read-only
 readiness view first, with baseline measurement. It grants only that preparation scope;
 implementation dispatch still needs the corresponding approved scope/card through the

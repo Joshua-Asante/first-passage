@@ -50,11 +50,13 @@ Every link is a hash comparison, and no record carries a vector value. The start
 
 ## 4. Decisions
 
+**RULED 2026-10-11** (Joshua, 2026-10-11 (about 17:15Z): "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended"; decision packet): D-P5-1 = the F1 freeze inventory names the v2 startup artifact by digest; D-P5-2 = sizing is an EF shared component (the ADR addendum is Accepted); D-P5-3 = no new ledger column, live rows cite the hash at T17.
+
 - **D-P5-1 (coordinator, then F1).** REC-3 needs the production E1 to replay the successor's v2 startup policy. Today's T10 packet (2026-09-21) predates P-S2, so it cannot name a v2 startup policy. *Recommend:* the F1 freeze inventory names the v2 startup artifact by digest. The successor GO is meaningless if E1 qualified r3c's sizing.
 - **D-P5-2 (Joshua; ADR owner).** Add sizing to T6's EF composition, so that B7's shared-component proof covers it. *Recommend:* yes, in the same ADR addendum as P-L4 D-A, if D-A = GO field. One ratification would then cover both.
 - **D-P5-3 (coordinator; venue-binding ADR §2.6 owner).** The [venue-edition ledger](../../ops/venue_editions/Tradeify_Select_100K.md) has no row for the four-leg book as such, and no Aegis row. It has the three route-native candidate rows (ORB MNQ, Striker MYM, Vanguard MGC). *Recommend:* add no column now (the ledger's form is its owner's, §2.6 "deliberately small"). At T17, whichever rows the owner process moves to live cite the activation's `size_vector_sha256` in their existing `deployment` cell. The book-level record stays REC-8's session record.
 
-**Drafted 2026-10-11:** the ADR addendum for D-A (option A) and D-P5-2 is appended to the [admission ADR](../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-11--the-books-size-vector-in-ef-and-the-deployment-go-proposed) as PROPOSED, awaiting Joshua's ratification.
+**Drafted 2026-10-11:** the ADR addendum for D-A (option A) and D-P5-2 is appended to the [admission ADR](../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-11--the-books-size-vector-in-ef-and-the-deployment-go-proposed). Joshua ratified it on 2026-10-11 (J-1; §4).
 
 ## 5. Forbidden
 

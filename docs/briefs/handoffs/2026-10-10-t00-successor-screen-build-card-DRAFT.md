@@ -355,6 +355,7 @@ Each operator act below needs its own GO. Agents never touch a key.
   - `fp check` passed; regression set 125 passed.
   - Forbidden-file diff `843e743..eed60a1` empty; the code diff is exactly the P-S1/P-S2/P-S3 files; original-purpose anchors and the protection cell unchanged.
   - r3d (`c7a82915…`) re-validated at H′: SHA256SUMS OK, `_derived_from_r3c` True, startup policy v2 parses.
+- *2026-10-11:* **§7 steps 6–9 done.** P7 record `de7646b9…`, `p7_acceptance.json` `00d4ef31…`, authority `75f03043…`; one run at `--workers 8` (two resumes), `finalize`, `verify` VERIFIED. Verdict `NO-GO-evidence-UNDETERMINED-dependent`; definition (a) does not fire. Joshua accepted the risk into T15's F1 (option 1). Record: [T00 card §8](2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record).
 
 ## §9 — Effort and critical path
 

@@ -2,15 +2,15 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L3 emulator parity card") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
+**Status:** **FREEZE REVISION 2026-10-12, effective on the coordinator's countersignature.** The live-wiring lane writer (single writer for this lane, by the Deployment Coordinator's 2026-10-11 directive) prepared this revision at the commit that adds this line. The review fixes on #788 are folded in. The freeze base is `origin/main` `7db42f1`. The directive exists in chat only, and the committed-handoff rule (surface-allocation ADR, "Committed-handoff rule") does not count a chat-only direction. So the freeze takes effect only when the coordinator commits the delegation or countersigns this revision's SHA (the decision packet §6). Until then the card is a candidate freeze, not a frozen card. **Not dispatched:** the J-4 build gate (§11 G-2) is not open. *As drafted:* DRAFT, 2026-10-11. Drafted at Joshua's request ("draft the P-L3 emulator parity card") for the Deployment Coordinator ("Portfolio deployment coordination") to freeze. Not frozen, not dispatched. **Not dispatchable until the §11 gates hold.**
 
 **Base:** `origin/main` `b5571a9`. Every `file:line` below is at that commit. `ops/` is unchanged through `ba000b2`. `ops/c1_signal_daemon/book_bundle_execution.py` and `book_bundle_intake.py` last changed `3cf42e43` (2026-09-16).
 
 **Parent scope:** [live size-vector wiring scope](../../notes/2026-10-11-live-size-vector-wiring-scope.md) (PR #773) §1 row L4 and §5 row P-L3. The successor [build card](2026-10-10-t00-successor-screen-build-card-DRAFT.md) §3.1 owns the vector interfaces. **Prerequisite:** [P-L1](2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) merged, because LE2's three-way parity calls `size_book_request` with a size. **Siblings:** [P-L2](2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md); [P-L4](../../notes/2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md).
 
-**Authority:** none yet. G-1 and G-2 are separate acts (§11). **No code admission is needed:** this file is not bound code (§0(b)).
+**Authority:** G-1 is recorded; G-2 waits on P-L1 and the J-4 build gate (§11). **No code admission is needed:** this file is not bound code (§0(b)).
 
-**Executor:** a Claude worker or Codex, single writer of `claude/live-size-p-l3` (proposed). **Not GLM:** the change is to order sizing.
+**Executor:** a Claude worker (D-2, ruled), single writer of `claude/live-size-p-l3` (proposed). **Not GLM:** the change is to order sizing.
 
 **Coordinator:** the Deployment Coordinator.
 
@@ -77,7 +77,7 @@ Report each finding before any test. A contradiction is a **stop** (§7).
 
 ## 0.5. Routing and clarifying questions
 
-Routing: Claude worker or Codex, local or cloud. No vendor data, secret, Pine, port body or private value is read (template §0.75: `N/A`). `test_book_adapters_parity.py` needs the private ports for a non-skip run. Only the coordinator's review run in the operator's checkout counts for that file (§3, §7). Tests use synthetic `LegSize` values only.
+Routing: a Claude worker (D-2), local or cloud. No vendor data, secret, Pine, port body or private value is read (template §0.75: `N/A`). `test_book_adapters_parity.py` needs the private ports for a non-skip run. Only the coordinator's review run in the operator's checkout counts for that file (§3, §7). Tests use synthetic `LegSize` values only.
 
 Apply each recommended default unless Phase 0 contradicts it. On a contradiction, return `NEEDS_CONTEXT` and quote the conflict.
 
@@ -230,19 +230,19 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until both hold)
 
-- **G-1. Coordinator freeze.** The coordinator answers §12, confirms §0(b) (no code admission needed), commits the frozen revision and records its SHA.
-- **G-2. Dispatch.** P-L1 merged. Recommended: after the successor screen returns GO (scope note Q6).
+- **G-1. Coordinator freeze.** The coordinator answers §12, confirms §0(b) (no code admission needed), commits the frozen revision and records its SHA. **DONE:** frozen 2026-10-11 by the lane owner; §0(b) re-confirmed at `7db42f1` (68/63, no hit); the SHA is reported to the coordinator.
+- **G-2. Dispatch.** **RULED (J-4):** dispatched after P-L1 merges, once the build gate is open (the Tradeify successor screen GO **or** the personal clearance study (Q-SFCLEAR-1: #752 or its re-scoped ID) returns **RESOLVED**). It may run in parallel with P-L2.
 
 ## 12. Open decisions (coordinator at freeze)
 
-- **D-1. Build it at all?** *Recommend:* build. It costs about 0.5 day, needs no admission, and keeps any later synthetic rehearsal from sizing at declared quantities by accident. The alternative is to withdraw it and record the emulator as identity-only; it is offline and not on the live path.
-- **D-2. Executor.** Claude or Codex. *Recommend:* Codex, if a lane is free, since the file is unbound and the change is mechanical. Otherwise Claude. Not GLM.
-- **D-3.** Confirm the §0.5 defaults (A)–(E). *Recommend:* confirm.
+- **D-1. Build it at all?** **RULED:** build ("rest as recommended", Joshua, 2026-10-11 (about 17:15Z), in the live-wiring lane session: "J-1 yes, J-2 yes, J-3 yes, J-4 yes, rest as recommended").
+- **D-2. Executor.** **RULED:** a Claude worker, to keep one writer for the lane (decision packet §5). Not GLM, and no @codex unless Joshua asks.
+- **D-3.** Confirm the §0.5 defaults (A)–(E). **RULED:** confirmed.
 
 ## Pre-mortem
 
 - **Loop cost.** One targeted run, one `fp test-ops` and one `fp check` by the worker, plus the coordinator's one unskipped parity run. Budget: two full suite runs. A third run is a checkpoint.
 - **Decisions the executor will hit:** none beyond (A)–(E).
-- **What would make this moot:** NO-GO on the screen, or D-1 = withdraw.
+- **What would make this moot:** D-1 = withdraw. A Tradeify NO-GO does not make it moot (J-4).
 - **Evidence binding:** only the worker's records at the returned head, plus the coordinator's unskipped parity run at that same head. A later push voids them.
 - **Measure:** wall time, runs and rounds are filled in at return.
