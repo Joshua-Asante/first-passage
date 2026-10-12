@@ -6,8 +6,9 @@ records each child as an attribute of its package, and the runtime inventory
 inspects package attributes, so an explicit mixed selection pulls the child into
 every signed closure, where the collector correctly refuses the flat alias.
 Directory runs avoid this with a clean child process (``tests/ops/conftest.py``).
-Here the package attributes of such children are detached for each test and
-restored afterwards; ``sys.modules`` and the inventory check are unchanged.
+Here the package attributes of such children are detached around each test's
+whole run protocol (so module-scoped setup sees the same view) and restored
+afterwards; ``sys.modules`` and the inventory check are unchanged.
 """
 from pathlib import Path
 import sys
@@ -18,7 +19,8 @@ import pytest
 from c1_rail.qualification.runtime_inventory import REPOSITORY_ROOT, _module_name
 
 
-_TESTS = REPOSITORY_ROOT / 'tests'
+# Repository source roots only: a checkout-local venv (tmp/ops-env) is not source.
+_SOURCE_ROOTS = tuple(REPOSITORY_ROOT / name for name in ('core', 'ops', 'lab', 'governance', 'scripts'))
 _CANONICAL = {}  # origin -> canonical module name, '' if none, None outside scope
 
 
@@ -28,7 +30,8 @@ def _canonical_name(raw):
             path = Path(raw).resolve()
         except OSError:
             path = None
-        if path is None or not path.is_relative_to(REPOSITORY_ROOT) or path.is_relative_to(_TESTS):
+        if path is None or not (path.parent == REPOSITORY_ROOT
+                                or any(path.is_relative_to(root) for root in _SOURCE_ROOTS)):
             _CANONICAL[raw] = None
         else:
             try:
@@ -75,11 +78,13 @@ def _flat_alias_children():
             and vars(sys.modules[parent]).get(child) is loaded[name][0]]
 
 
-@pytest.fixture(autouse=True)
-def _canonical_package_view():
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_protocol(item, nextitem):
     detached = _flat_alias_children()
     for package, child, _ in detached:
         delattr(package, child)
-    yield
-    for package, child, module in detached:
-        setattr(package, child, module)
+    try:
+        return (yield)
+    finally:
+        for package, child, module in detached:
+            setattr(package, child, module)

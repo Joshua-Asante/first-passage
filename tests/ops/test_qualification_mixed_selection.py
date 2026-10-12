@@ -20,7 +20,10 @@ def test_legacy_listener_import_does_not_contaminate_signed_inventory(tmp_path):
          "--basetemp=" + str(tmp_path / "child"),
          "tests/ops/test_book_account_owner.py::test_existing_empty_account_database_is_not_reinitialized",
          "tests/ops/qualification/test_seal.py::"
-         "test_historical_complete_pass_signatures_inspect_but_active_authority_is_retired"],
+         "test_historical_complete_pass_signatures_inspect_but_active_authority_is_retired",
+         # Module-scoped setup builds a signed inventory before function fixtures.
+         "tests/ops/qualification/test_production_budget_boundaries.py::"
+         "test_issued_budget_origin_cannot_be_mutated"],
         cwd=repository, env=environment, capture_output=True, text=True, timeout=900, check=False)
     assert completed.returncode == 0, completed.stdout[-8000:] + completed.stderr[-4000:]
-    assert "2 passed" in completed.stdout
+    assert "3 passed" in completed.stdout
