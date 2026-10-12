@@ -155,7 +155,7 @@ satisfy two distinct grants (e.g. session GO plus a calendar or entitlement appr
 An eligible later session starts at the next eligible complete bar, without replaying
 missed signals.
 
-**Two scoped invalidator lists,** owned with the activation path:
+**Three scoped invalidator lists,** owned with the activation path:
 
 - *Release qualification:* release/config/policy digests, calendar, route and monitoring
   qualification. Before activation, a change invalidates only the affected qualification
@@ -166,11 +166,19 @@ missed signals.
   ([halt/resume §2, §4](../spec/2026-09-14-tb-s3-halt-resume-contract.md)). A change
   invalidates the current activation and requires fresh operational evidence and GO,
   while still-valid release evidence is preserved; it does not require a new n3.
+- *Settlement/evidence chain:* a correction to accepted close or history evidence
+  invalidates dependent settlements, modes and unused activation/resume approvals and
+  halts new risk, including during an active session ([settlement contract, Corrections
+  and restore](../spec/2026-09-15-tradeify-attended-settlement-contract.md)).
 
+These lists govern only whether evidence may be reused. They never narrow a halt,
+INTERVENTION or invalidation trigger defined by the halt/resume, settlement or incident
+contracts; those apply in full during an active session whether or not a list names them.
 A change neither list classifies blocks activation pending classification; it does not
 imply repeating all qualification. Acceptance adds a restart case: unchanged release
 evidence survives it, and pre-restart authority does not; and an active-session calendar
-invalidation that enters INTERVENTION rather than only invalidating release evidence.
+invalidation that enters INTERVENTION rather than only invalidating release evidence; and a
+settlement correction after activation that halts new risk.
 
 ### R3 — Automatic closing evidence and disarm, separate from settlement timing
 
