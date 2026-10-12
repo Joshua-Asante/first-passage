@@ -222,3 +222,8 @@ Mirrors that still describe the takeover as live (coordinator (3) mirror sweep; 
 - **D5 Persisted takeover under OFF.** Ruled (coordinator (3) ruling 2026-10-03 (r08 review fold)): refuse risk-adds or halt in memory with a named reason; never raise at boot (the 2026-07-31 crash-loop class). Exits, the displaced leg's in-flight close and the scheduled flatten continue. Case 7 asserts all of it. The first release starts flat (TB-V1 seed, sitting-2 ED-27).
 - **D6 §5 ordering with #605.** Whether the GC-5 §5 entry precedes or follows RS-S5, and who amends `:324`.
 - **D7 Mirrors.** Whether TB-S1 capacity spec `:93`/`:95` and §59 Ruling 3 get dated markers in coordinator (3)'s mirror batch, since coordinator (2)'s batch does not list them.
+
+## Addendum 2026-10-12 — order relative to P-L2 and run-path card A
+
+Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "1 yes, 2 yes" ([live-wiring packet §6b](../../notes/2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12)): P-L2 and run-path card A both land before this card; it re-anchors on them at freeze (its `1a350ec` base is stale; #628 merged; R-E/RC-5 markers now on main). Tradeify-specific; deferred with the Tradeify execution route. Not frozen.
+

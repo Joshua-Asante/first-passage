@@ -441,3 +441,8 @@ The personal session sits downstream of most of the Tradeify book-route build: T
 | 48 | Re-sizing exceptions did not say they override RC-1 | verification | P3 | Fixed: rung rules and S4 |
 | 49 | `microCap` at ⌊80k⌋ = c = k only when 80k is an integer | verification | P3 | Fixed: §3.3 Striker row |
 | 50 | "Nested subsets" wrong under Striker's size-dependent halts | verification | P3 | Fixed: §5.2 |
+
+## Addendum 2026-10-12 — row 2.2 order
+
+Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "1 yes, 2 yes": run-path card A (which carries row 2.2's `book_policy`/`book_capacity` parameterization for the study path) lands before GC-5-DISPLACED; GC-5 re-anchors after it ([live-wiring packet §6b](2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12)). P-L2 may also precede GC-5 and TB-I3 S2.
+

@@ -165,3 +165,11 @@ for f in docs/briefs/handoffs/2026-10-11-live-size-vector-p-l*.md; do python -I 
 - **TB-I3 interlock card** (DRAFT): a back-pointer to the P-L4 D-B fold ruling, for its freezing coordinator.
 - **STATE decision index:** a 2026-10-11 row for the ADR addendum's ratification (J-1 to J-4).
 - **Live route packet** (clearance plan row 2.8): it must name which process holds the GO and the owner database. Today the GO is baked into the listener image only, and R-SV's daemon-side expected-value check assumes otherwise (R-SV §2.3).
+
+## 6b. Owner-file order amendment (2026-10-12)
+
+Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "1 yes, 2 yes", on the coordinator's packet.
+
+- **(1) P-L2 ahead of GC-5-DISPLACED and TB-I3 S2.** P-L2 may take `book_account_owner.py` before GC-5-DISPLACED and TB-I3 S2. Grounds (coordinator readiness return, 2026-10-12, read-only at `ebd84e4`): the dependency is single-writer serialization only. GC-5 stamps its takeover mode on the `Reserve` record (`book_account_owner.py:1827`), not in `_binding_record` (`:108-136`), so P-L2 §9's shared-seam premise (`:274`) does not hold; P-L2's edits (`:108-136`, `:431-439`, `:458-460`, `:1575-1581`) do not overlap GC-5's or S2's. This amends P-L2's gate text (constraint `cut_after_p_l1_and_gc5_merged_one_writer_queue`, §0(a), G-3, D-2) to: cut after P-L1 merged, one writer at a time on the owner file. The card stays frozen; this entry governs where it differs. GC-5 and S2 re-anchor after P-L2 (their bases are stale anyway). One uncertainty carried: GC-5's D5 boot-halt site is unnamed; if it lands in boot next to P-L2's edits, GC-5 re-anchors there.
+- **(2) Run-path card A before GC-5-DISPLACED.** Card A (dispatched) and GC-5 both edit `book_capacity.py` `_reserve` (`:163-196`) and `book_policy`; card A goes first and GC-5 re-anchors after it. Only one writer is active (GC-5 is not dispatched).
+

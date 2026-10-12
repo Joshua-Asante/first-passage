@@ -130,3 +130,8 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 **Risk of (a):** it adds a NOT CLEARED path after the freeze.
 
 **What it changes:** under (b), A's mechanics produce the zero days and E adds no rule; the cards freeze as drafted. Under (a), E adds one row that maps a latch record to NOT CLEARED. Under (c), the cards wait for the new pre-registration and its freeze.
+
+## Addendum 2026-10-12 — owner-file order (item 5)
+
+Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "1 yes, 2 yes". Item 5's order stands (A0 → A → C → B → D → E). Two clarifications, recorded at the owner ([live-wiring packet §6b](2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12)): P-L2 may take the owner file before GC-5-DISPLACED and TB-I3 S2, so D's P-L2 prerequisite no longer waits on them; card A goes before GC-5, which re-anchors after it.
+
