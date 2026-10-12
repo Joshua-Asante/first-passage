@@ -8,7 +8,7 @@
 
 **Parent scope:** [run-path scope note](../../notes/2026-10-12-q-sfclear-2-run-path-code-scope.md) §1 item 3, cross-component constraint "fee identities stay separate", §2 packet C.
 
-**Study (governs):** the FROZEN Q-SFCLEAR-2 [pre-registration at F `83867f0`][prereg] §4 items 1 (`g = Net PnL + Commission` once) and 2 (dated per-side all-in Tradovate rate per instrument: Free-plan commission + exchange + clearing + NFA; 6J at the standard rate; snapshot re-taken and hashed if older than 30 days; `c ∈ {1, 1.5}` multiplies only these fees; the replay keeps reference friction), §1 D7, §6 VOID (fee snapshot missing or mismatched).
+**Study (governs):** the FROZEN Q-SFCLEAR-2 [pre-registration at F `83867f0`][prereg] §4 items 1 (`g = Net PnL + Commission` once) and 2 (dated per-side all-in Tradovate rate per instrument: Free-plan commission + exchange + clearing + NFA; 6J at the standard rate; snapshot re-taken and hashed at freeze if older than 30 days, then used by hash; `c ∈ {1, 1.5}` multiplies only these fees; the replay keeps reference friction), §1 D7, §6 VOID (fee snapshot missing or mismatched).
 
 **Authority:** G-1, G-2, G-3 (§11).
 
@@ -65,7 +65,7 @@ Every anchor is at `origin/main` `92bfca7`. Report findings before any test; a c
 
 - **(A) Placement.** **Pending decision packet item 3.** Recommended option (b): a lab-side closed parser, `lab/discovery/sfclear_tradovate_fees.py`, consuming a serialized snapshot. Option (a): a separate closed ops parser, `ops/c1_rail/qualification/personal_cost_terms.py`, with an explicit venue discriminator; `_cost_terms` is untouched and `production_source.py` is never edited by this card.
 - **(B) Schema `sfclear_tradovate_fees/v1`, closed.** Fields: `venue = "Tradovate"`, `plan = "Free"`, `unit = "USD_per_side_per_contract"`, `captured_utc` (aware ISO), `source_sha256` (64 hex, the retained private capture), `rows`: exactly one per instrument in {`6J`, `MYM`, `MGC`, `MNQ`}, each with decimal strings `commission`, `exchange`, `clearing`, `NFA`.
-- **(C) Freshness.** The parser takes the run's start time and refuses a snapshot older than 30 days (pre-registration §4 item 2).
+- **(C) Identity, not freshness.** The 30-day re-take in pre-registration §4 item 2 applies **at freeze only**; the coordinator does it before the freeze record is sealed. At run time the parser takes the expected digest from the private freeze record and refuses any snapshot whose hash differs (§6 VOID). It applies no age test at run time.
 - **(D) Output.** `rates_for(instrument)` returns the four-component mapping `daily_series` already accepts. One unit conversion, at parse.
 
 ## 1. Goal
@@ -108,13 +108,13 @@ One closed, dated, per-instrument per-side all-in Tradovate capture feeds scorin
 | C1 | Each instrument's rate is independent: changing one row changes only that instrument's output | Rates cross |
 | C2 | A row labelled round-trip, or `unit` other than per-side, refuses; a per-side value is never halved | Per-side and round-trip conflated |
 | C3 | Missing component, extra component, duplicate instrument, missing or extra instrument refuse | Partial all-in accepted |
-| C4 | Wrong `venue` or `plan`; naive or unparsable `captured_utc`; snapshot older than 30 days refuse | Stale or mislabelled snapshot accepted |
+| C4 | Wrong `venue` or `plan`, or naive or unparsable `captured_utc`, refuses. A snapshot whose hash matches the freeze-record digest is accepted whatever its age at run time; any other snapshot refuses (VOID) | Mislabelled or swapped snapshot accepted, or a frozen snapshot refused for age |
 | C5 | `source_sha256` mismatch against the expected digest refuses; a rate lookup without a new capture does not change identity | Silent snapshot swap |
 | C6 | NaN, infinity, negative, non-decimal-string, or positive value that underflows to 0.0 refuse | Bad number accepted |
-| C7 | Through `daily_series` on synthetic trades: `g = net + commission` once; Tradovate fee deducted once per side at `c = 1` and `1.5`; reference commission remains in `g` | Double or missing deduction |
+| C7 | Through `daily_series` on synthetic trades: `g = Net PnL + Commission` adds the reference commission back exactly once; the Tradovate fee is then deducted exactly once per side at each multiplier `c = 1` and `c = 1.5`. Assert the day total equals `Σ(Net PnL + Commission) − c × sides × rate` exactly, so neither commission is deducted twice | Double deduction, a missing add-back, or a missing fee |
 | C8 | `_cost_terms` on its existing fixtures is byte-equal at the cut base | Tradeify contract changed |
 
-**Named mutants:** M-C1 divide per-side by two (C2, C7); M-C2 replace reference friction with the Tradovate rate (C7); M-C3 accept a missing instrument (C3); M-C4 skip freshness (C4); M-C5 apply `c` to reference commission (C7).
+**Named mutants:** M-C1 divide per-side by two (C2, C7); M-C2 replace reference friction with the Tradovate rate (C7); M-C3 accept a missing instrument (C3); M-C4 refuse a snapshot older than 30 days at run time (C4: the frozen snapshot must still be accepted, so this mutant is a defect the row catches); M-C6 accept a snapshot whose hash differs from the freeze record (C4, C5); M-C5 apply `c` to reference commission (C7).
 
 **Revert trigger:** any listed existing suite changes outcome.
 

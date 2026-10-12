@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 for the Deployment Coordinator. Freezing is the coordinator's act, and only after Joshua's admissions and rulings ([decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1, 4, 5).
+**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 for the Deployment Coordinator. Freezing is the coordinator's act, and only after Joshua's admissions and rulings ([decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1, 4, 5, 7).
 
 **Base:** `origin/main` `92bfca7` for every `file:line`; the build cuts from a base that contains A's merge and #752's frozen schedule files (§0(a)).
 
@@ -82,7 +82,8 @@ Report before any test. A contradiction is a **stop** (§7).
 Synthetic only. Defaults apply unless Phase 0 contradicts them (`NEEDS_CONTEXT`).
 
 - **(A) Read once.** Each input is read as bytes once, hashed, parsed from the same bytes and retained. No hash-then-reopen.
-- **(B) Expected hashes.** Public pins (schedule, roll list) are module constants equal to the pre-registration's values. Private identities (tuple, source bundle with its reference-friction capture) arrive as expected digests in a run manifest that E builds from the frozen pre-registration at F. No expected hash is read from the file it checks.
+- **(B) Expected hashes.** Public pins (schedule, roll list) are module constants equal to the pre-registration's values. Private identities (tuple, source bundle with its reference-friction capture, and the private `E_0` file) arrive as expected digests in a run manifest that E builds from the frozen pre-registration at F and the private freeze record. No expected hash is read from the file it checks.
+- **(B′) Halt start.** The replay's starting account equity, and so the P0 halt's initial peak, is `E_0` read from the private `E_0` file inside the verified envelope: bytes read once, hashed against the manifest digest, parsed as one finite positive value. There is no default, no constructor fallback and no value from any other file. The value is never logged or written to public output. Tests use a synthetic file and digest.
 - **(C) Schedule bridge.** A closed parser for `sfclear_historical_schedule/v1` maps each row to the replay's session facts: DENIED rows refuse entries and adds and stay zero days; PERMITTED rows carry cutoff 15:45, flatten start 15:55 and own-flat 16:00 ET from the row's UTC fields. It is a separate parser, not a feed into `parse_source_calendar`.
 - **(D) Roll list.** A closed parser for `sfclear_roll_dates/v1`. For 6J and MGC, no entry or held position at or after `g4_start_open_utc` of the held contract. Roll dates are never inferred from a price discontinuity.
 - **(E) Route.** **Pending decision packet item 4.** Recommended: PR for all four legs. RS for Aegis is built only if Joshua rules it, and then every D9 condition and FG-T is a refusing check.
@@ -99,7 +100,7 @@ A four-leg chronological `BookReplay` that consumes only the frozen input identi
 ### 2.1 The change
 
 - New `ops/c1_rail/qualification/personal_replay.py`: the verified input envelope (§0.5 A–D), the personal factory, and the route-output writer `sfclear_route_output/v1`.
-- `sfclear_route_output/v1`, per trade: leg, instrument, contract, entry and exit UTC, side, quantity, tranche index (0 at R1), entry price, initial stop level and `δ₀`, exit price, exit kind, stop-fill distance `b`, Net PnL and Commission (reference friction, as the emulator charges it), whole-trade MAE and MFE in USD. Per leg: refused signals with reason; Striker daily- and total-DD trip timestamps; Vanguard `E_p` path. Per run: every input identity. No `E_0` or account figure.
+- `sfclear_route_output/v1`, per trade: leg, instrument, contract, entry and exit UTC, side, quantity, tranche index (0 at R1), entry price, initial stop level and `δ₀`, exit price, exit kind, stop-fill distance `b`, Net PnL and Commission (reference friction, as the emulator charges it), whole-trade MAE and MFE in USD. Per leg: refused signals with reason; Striker daily- and total-DD trip timestamps; Vanguard `E_p` path. Per run: every input identity, and A's P0 latch record if one occurred (its consequence is decision packet item 7). No `E_0` or account figure.
 - `production_source.py`: §0.5 (F); nothing else.
 - `replay.py`: G4 enforcement and the per-trade fields above, from the actual fill lifecycle.
 - `trust_domain.py`: list `c1_rail.qualification.personal_replay` if §0(e) requires it.
@@ -131,7 +132,7 @@ A four-leg chronological `BookReplay` that consumes only the frozen input identi
 
 | Row | Test | Fails if |
 |---|---|---|
-| B1 | Independently mutate each identity (tuple, size vector, source bundle, schedule, generator, calendar, reference-friction capture, roll list; the Tradovate fee and margin snapshots are E's inputs, not the replay's): each refuses before adapter construction or outcome access | Any mismatch reaches execution |
+| B1 | Independently mutate each identity (tuple, size vector, source bundle, schedule, generator, calendar, reference-friction capture, roll list, `E_0` file; the Tradovate fee and margin snapshots are E's inputs, not the replay's): each refuses before adapter construction or outcome access. With a valid envelope, the replay's starting equity and the halt's initial peak equal the synthetic `E_0`; a missing `E_0` file refuses | Any mismatch reaches execution, or the halt starts from anything but the bound `E_0` |
 | B2 | Wrong four-leg set; non-canonical size vector; adds ON for Striker or Vanguard; ORB with nonzero base | Accepted |
 | B3 | Entry on a DENIED row refused; the row is a zero day in output | Entry or removed day |
 | B4 | Entry or add at exactly the cutoff refused; one second before admitted; flatten at flatten start; flat by own-flat | Off-by-one at a boundary |
@@ -144,7 +145,7 @@ A four-leg chronological `BookReplay` that consumes only the frozen input identi
 | B11 | Tradeify factory output and startup v1/v2 parsing byte-equal at the cut base | Tradeify changed |
 | B12 | Aegis RS requested without ruling (or any D9 condition false) refuses; PR is the default | RS approximates timing |
 
-**Named mutants:** M-B1 skip one identity check (B1); M-B2 accept DENIED rows (B3); M-B3 `<=` for `<` at cutoff (B4); M-B4 infer a roll from a price gap (B6); M-B5 submit a zero order (B7); M-B6 drop a refusal record (B7); M-B7 omit MFE (B9); M-B8 hash then reopen the file (A).
+**Named mutants:** M-B1 skip one identity check (B1); M-B2 accept DENIED rows (B3); M-B3 `<=` for `<` at cutoff (B4); M-B4 infer a roll from a price gap (B6); M-B5 submit a zero order (B7); M-B6 drop a refusal record (B7); M-B7 omit MFE (B9); M-B8 hash then reopen the file (A); M-B9 start the replay and halt from a default or constructor equity instead of the bound `E_0` (B1); M-B10 start from a wrong value (a different synthetic `E_0` than the hashed file holds) (B1).
 
 **Revert trigger:** any existing suite changes outcome, or B11 diffs.
 
@@ -209,7 +210,7 @@ python -I scripts/fp.py check
 
 - **D-1 (Joshua, item 4).** Aegis route.
 - **D-2.** Confirm the route-output field list against pre-registration §3 (residual `r` needs `δ₀`, `b`, MAE) and §4 item 1.
-- **D-3.** Disposition of a P0 latch on the historical replay (A §12 D-3): the pre-registration does not define it.
+- **D-3 (Joshua, item 7).** The consequence of a P0 latch inside the historical replay. B carries A's latch record into the route output under every option and implements none of them; if item 7 is unruled at freeze, the card is not frozen.
 
 ## Pre-mortem
 

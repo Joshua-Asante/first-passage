@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 for the Deployment Coordinator. Freezing is the coordinator's act, and only after Joshua's admissions and rulings ([decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1, 2, 5).
+**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 for the Deployment Coordinator. Freezing is the coordinator's act, and only after Joshua's admissions and rulings ([decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1, 2, 5, 7).
 
 **Base:** `origin/main` `92bfca7`. Every `file:line` below is at that commit. `ops/`, `core/`, `lab/` and `tests/` are unchanged from the scope note's snapshot `a8769f8`, so its anchors carry.
 
@@ -88,7 +88,7 @@ Synthetic only; nothing gitignored is read, so a local Codex checkout suffices. 
 - **(B) Mode.** Under P0 the replay's mode source returns NORMAL for every session at every equity. It never constructs `BookProtectionClock`.
 - **(C) Halt boundary.** **Pending decision packet item 2.** Recommended: the replay calls the live halt's breach predicate. Extract `_breached`'s body into one pure module-level function in `personal_drawdown_halt.py` that `_breached` then calls, so live behaviour is unchanged. The replay imports that function. If Joshua rules the exact scorer predicate instead, the replay implements `20*(peak-trough) >= 3*peak` in ops (no lab import) and `personal_drawdown_halt.py` is not touched.
 - **(D) Observed equity.** The replay observes account equity (realized plus open marks on the same bar marks the replay already uses) at each bar close. It does not observe any adapter's paper equity. The card names this sequence; the worker does not choose another one.
-- **(E) After a latch.** Halted: every entry and add is refused with a named reason (`personal_halt`), open positions flatten at the next bar under the existing cost model, and the latch never clears inside the run. The replay records a flatten as confirmed only when its own position book is flat with no working order.
+- **(E) Latch mechanics, not consequence.** This card builds only the live halt contract the replay mirrors: on a latch every entry and add is refused with a named reason (`personal_halt`), open positions flatten at the next bar under the existing cost model, a flatten counts as confirmed only when the replay's own position book is flat with no working order, and the replay emits one latch record (timestamp, peak, observed equity) in its output. **How a latch inside the historical replay enters the series or the verdict is not decided here.** It is conditional on Joshua's ruling on decision packet item 7, and this card implements no option of it. If item 7 is unruled at freeze, the card is not frozen.
 - **(F) Cap.** Add `account_micro_cap(tier)` in `book_policy.py`. It reads the resolved tier row and refuses `None` or a non-positive int. `ACCOUNT_MICRO_CAP` stays the Tradeify value. `book_capacity.py` takes the cap from the resolved instance when one is passed; otherwise it uses today's constant.
 
 ## 1. Goal
@@ -147,7 +147,7 @@ A PR touching `ops/c1_rail/qualification/**` or `book_policy.py` triggers the Qu
 
 | Row | Test | Fails if |
 |---|---|---|
-| P1 | Exact threshold: equity at exactly 15% below peak latches; one unit above does not; one unit below does | The boundary is off by one in either direction |
+| P1 | Exact threshold: equity at exactly 15% below peak latches. Clear of the boundary: a drawdown of `0.15 − 1e-5` does not latch and `0.15 + 1e-5` does, a margin ten times the 6-place rounding grain (`1e-6`) of `personal_drawdown_halt.py:171`, so the result does not depend on item 2. The within-grain cases are P2's | The boundary is wrong in either direction |
 | P2 | Boundary predicate is the ruled one (item 2): a case where rounding and exact differ (drawdown `0.1499996`) latches under "mirror live" and does not under "exact" | The replay uses the other predicate |
 | P3 | New peak, then breach measured from the new peak; recovery above peak before breach never latches | Peak tracking is wrong |
 | P4 | At every synthetic equity level, including below 1.5% of peak, mode is NORMAL; `BookProtectionClock` is never constructed under P0 | Any PROTECTED transition |
@@ -175,7 +175,7 @@ A PR touching `ops/c1_rail/qualification/**` or `book_policy.py` triggers the Qu
 |---|---|
 | `DONE` | §4 red at the cut, green on the build; mutants killed; suites green; `fp test-ops` and `fp check` records completed exit 0; footprint equals §2.3 |
 | `DONE_WITH_CONCERNS` | As DONE, with an off-pattern observation |
-| `NEEDS_CONTEXT` | A §0.5 default contradicted, or item 2 unruled at dispatch |
+| `NEEDS_CONTEXT` | A §0.5 default contradicted, or item 2 or item 7 unruled at dispatch |
 | `BLOCKED — context-problem` / `capability-problem` / `scope-problem` / `plan-itself-wrong` | As named; `plan-itself-wrong` covers §0(f) |
 
 **Gate verdict (coordinator, at review):** **RESOLVED** when `DONE` and both §7 passes reproduce it; **FALSIFIED** when a row cannot be made red at the cut, a mutant survives, or the revert trigger fires; **AMBIGUOUS** (held) on `DONE_WITH_CONCERNS`.
@@ -214,7 +214,7 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1. Joshua's code admission.** He names the §2.3 bound files, knowing they move TB-I1 and trust-domain digests and touch P7 D8 paths (decision packet item 1), and rules item 2. **Not recorded.**
+- **G-1. Joshua's code admission.** He names the §2.3 bound files, knowing they move TB-I1 and trust-domain digests and touch P7 D8 paths (decision packet item 1), and rules items 2 and 7. **Not recorded.**
 - **G-2. Coordinator freeze.** Answers §12; commits the frozen revision; records its SHA. **Not done.**
 - **G-3. Dispatch.** The coordinator's dispatch record, after A0 lands. **Not done.**
 
@@ -222,7 +222,8 @@ python -I scripts/fp.py check
 
 - **D-1 (Joshua, item 2).** Replay halt boundary.
 - **D-2 (Joshua, item 1).** Admission of the §2.3 footprint, including the conditional rows.
-- **D-3.** Confirm (D) observed equity and (E) post-latch behaviour against pre-registration §2/§4. The pre-registration does not state how a P0 latch on the historical replay enters the §4 series; the coordinator settles that before B's freeze or returns it as a study gap.
+- **D-3 (Joshua, item 7).** The consequence of a P0 latch inside the historical replay. This card emits the latch record under every option; it does not choose one.
+- **D-4.** Confirm (D) observed equity against pre-registration §2.
 
 ## Pre-mortem
 

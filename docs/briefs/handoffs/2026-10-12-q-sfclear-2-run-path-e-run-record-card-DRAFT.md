@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 for the Deployment Coordinator. Freezing is the coordinator's act, and only after Joshua's rulings ([decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1, 5).
+**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 for the Deployment Coordinator. Freezing is the coordinator's act, and only after Joshua's rulings ([decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1, 5, 7).
 
 **Base:** `origin/main` `92bfca7` for every `file:line`; the build cuts from a base containing #752's `lab/analysis/c1/sfclear_2026-10/` folder, B and C (§0(a)).
 
@@ -73,7 +73,10 @@ The first two files are new; the rest exist at the §0(a) base (the third-to-las
 - **(A) Process boundary.** The wrapper runs replay (ops, B) and scoring (lab) as separate processes via the launcher and `sys.executable`, exchanging only serialized artifacts under the private root. No `lab↔ops` import.
 - **(B) Private root.** Passed explicitly; refused if inside the repository or any git work tree.
 - **(C) Verdict cells.** G1 and G3 are read from the freeze record (by the hash pinned at F). G1-D and G3-D are computed after the run by the bound calculator (sha256 `2333844d…97bf`, private) from the run's `E_p` path only. The build tests use a synthetic stub calculator with a test hash.
-- **(D) No ranking.** One fixed R1 verdict. `nominal_grid`, `rank` and `verdict` (`sfgrowth_acceptance.py:339`–`:357`) are not called.
+- **(D) `D_t` (§4 item 1).** `d_t = Σg − c·fees_t − D_t` and `l_t = −Σ|MAE| − c·fees_t − D_t`. `daily_series` (`sfgrowth_acceptance.py:192`) takes no `D_t` argument, so `score_r1.py` adds a wrapper: it subtracts each day's `D_t` from the `d` and `l` channels of `daily_series`'s result, once per day for the account (not per leg), and never touches `h`. `sfgrowth_acceptance.py` is not edited. The `D_t` schedule is an input bound by hash in the freeze record. Under D7, `D_t = 0` on every day unless open fact 6 (pre-registration §11) resolves to Tradovate debiting the account.
+- **(E) Calendar (§4 item 3).** One weekday calendar, from the latest first session date to the earliest last session date across **all four legs' admitted panels** (book `data_window` 2022-09-01..2026-09-02). It is fixed whatever a leg's OFF status: ORB, OFF at R1, still contributes its admitted panel's span, and a leg with no trades still counts. DENIED schedule rows are zero days. FULL = all W weekdays; H1 = weekdays 1…⌊W/2⌋; H2 = the rest. VOID if any window < 20 weekdays.
+- **(F) B2 (§3).** `u` = peak concurrent intraday margin from `check_concurrent_margin` on route output × the dated intraday margin per contract, ÷ `E_0` (the private `E_0` file, by hash). `g = 0.15 × G3`, with G3 in rope units read from the freeze record. `f` = one month of fixed costs Tradovate debits from the trading account ÷ `E_0` (the pre-screen's debited-case value if open fact 6 is still open at the run). `u_max = (0.85 − g − f) / 1.5`; headroom = `(u_max − u) × E_0`, compared privately in dollars against one 6J contract's dated intraday margin: PASS if headroom ≥ that margin, MARGINAL if 0 ≤ headroom < it, FAIL if headroom < 0. Only PASS clears. The margin snapshot is used only if its hash equals the freeze record's; otherwise VOID.
+- **(G) No ranking.** One fixed R1 verdict. `nominal_grid`, `rank` and `verdict` (`sfgrowth_acceptance.py:339`–`:357`) are not called.
 
 ## 1. Goal
 
@@ -86,7 +89,7 @@ A scoring run is unusable unless its frozen inputs, FG result and clean start re
 ### 2.1 The change
 
 - `run_record.py`: clean 40-hex HEAD recorded before work (empty `git status --porcelain`); aware UTC start; F ancestry and frozen files unchanged against F; FG PASS reference required before replay starts; private root outside the repo; nonce file of at least 128 bits listed in `SHA256SUMS`; hash of exact completed bytes; a publication candidate of exactly `run_head`, `started_utc`, `private_sha256sums_sha256` plus the matching `PRIVATE_EVIDENCE.sha256` row, staged together; refuse overwrite and name collision; an interrupted publication leaves no usable output and is recoverable.
-- `score_r1.py`: §4 composition. Per leg, `g = Net PnL + Commission` once; `daily_series` per instrument with C's rate; one weekday calendar; DENIED rows zero days; FULL, H1, H2 by §4 item 3; VOID if any window < 20 weekdays; `bootstrap_indices` and `score` for the 18 drawdown cells; pooled median of 30,000 terminals for the 3 growth cells; `check_concurrent_margin` for B2 (PASS / MARGINAL / FAIL); G1, G3, G1-D, G3-D; G0/G4 breach or missing MAE/MFE is VOID; a Striker total-DD trip is NOT CLEARED; residual reports and sensitivities written privately, never verdict inputs.
+- `score_r1.py`: §4 composition. Per leg, `g = Net PnL + Commission` once; `daily_series` per instrument with C's rate; `D_t` subtracted per §0.5 (D); the calendar per §0.5 (E); B2 per §0.5 (F); DENIED rows zero days; FULL, H1, H2 by §4 item 3; VOID if any window < 20 weekdays; `bootstrap_indices` and `score` for the 18 drawdown cells; pooled median of 30,000 terminals for the 3 growth cells; `check_concurrent_margin` for B2 (PASS / MARGINAL / FAIL); G1, G3, G1-D, G3-D; G0/G4 breach or missing MAE/MFE is VOID; a Striker total-DD trip is NOT CLEARED; residual reports and sensitivities written privately, never verdict inputs.
 
 ### 2.2 Files
 
@@ -124,11 +127,15 @@ A scoring run is unusable unless its frozen inputs, FG result and clean start re
 | E10 | 18 drawdown cells (3 seeds × 2 c × 3 windows) and 3 growth cells (c = 1.5) computed; each binding cell's failure gives NOT CLEARED | A cell missing or not binding |
 | E11 | Synthetic Striker total-DD trip gives NOT CLEARED even with every cell passing | Trip ignored |
 | E12 | Verdict order: a FREEZE INVALID input outranks VOID; VOID outranks NOT CLEARED | Order wrong |
-| E13 | B2: synthetic headroom ≥ one 6J margin PASS; between 0 and that MARGINAL (not clearing); below 0 FAIL | B2 misclassified |
+| E13 | B2 bands: synthetic headroom ≥ one 6J margin PASS; between 0 and that MARGINAL (not clearing); below 0 FAIL; exact-boundary cases at headroom = 0 and = one margin | B2 misclassified |
+| E13a | B2 composition on synthetic inputs: `u` = peak concurrent margin ÷ `E_0`; the factor is exactly 1.5; `g = 0.15 × G3` with G3 read from a synthetic freeze record (not recomputed); `f` = monthly debited fixed costs ÷ `E_0`; `u_max = (0.85 − g − f)/1.5`; headroom = `(u_max − u) × E_0`. Each term changed alone moves headroom as the formula predicts | A term missing, recomputed or mis-scaled |
+| E13b | Margin snapshot whose hash differs from the freeze record's: VOID before scoring | Unfrozen margins used |
+| E16 | `D_t`: with a synthetic nonzero `D_t` schedule, `d` and `l` fall by `D_t` once per account day, `h` is unchanged; with the D7 default every `D_t` is 0 and outputs equal `daily_series`'s | `D_t` dropped, doubled per leg, or applied to `h` |
+| E17 | Calendar span: four synthetic panels with different endpoints and one leg OFF with no trades; the span is latest first to earliest last across all four admitted panels | Span taken from legs with output only |
 | E14 | Residual and sensitivity outputs never change the verdict | Residual promoted |
 | E15 | No log line or public field carries a synthetic `E_0`, tuple value, cell value or private path beyond the row form | Leak |
 
-**Named mutants:** M-E1 skip the clean-HEAD check (E1); M-E2 call `split_calendar` (E9); M-E3 skip FG (E4); M-E4 write the record without the row (E8); M-E5 drop the trip rule (E11); M-E6 treat MARGINAL as PASS (E13); M-E7 add an `e0` key to the record (E7, E15).
+**Named mutants:** M-E1 skip the clean-HEAD check (E1); M-E2 call `split_calendar` (E9); M-E3 skip FG (E4); M-E4 write the record without the row (E8); M-E5 drop the trip rule (E11); M-E6 treat MARGINAL as PASS (E13); M-E7 add an `e0` key to the record (E7, E15); M-E8 build the calendar span from legs with output only (E17); M-E9 use a factor other than 1.5, or recompute G3 instead of reading it (E13a); M-E10 accept a mismatched margin snapshot (E13b); M-E11 apply `D_t` per leg (E16).
 
 **Revert trigger:** any listed existing suite changes outcome.
 
@@ -188,7 +195,7 @@ python -I scripts/fp.py check
 ## 12. Open decisions (coordinator at freeze; Joshua where marked)
 
 - **D-1.** Confirm the route-output and fee schemas consumed (B, C returns).
-- **D-2.** Confirm that a P0 latch on the historical replay has a defined treatment in the series (A §12 D-3); the pre-registration does not state one.
+- **D-2 (Joshua, item 7).** The consequence of a P0 latch inside the historical replay. E implements whichever option is ruled and none before; if item 7 is unruled at freeze, the card is not frozen.
 
 ## 13. Coordinator-run publication step (not in the build)
 

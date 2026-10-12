@@ -16,6 +16,7 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 | 4 | Aegis route | PR for all legs |
 | 5 | Sequencing and executor per card | A0 (coordinator) → A → C → B → D → E; Codex local per card; no card enters the owner queue |
 | 6 | Whether D's FG evidence run may use the Azure VM | Yes, if you extend the §60 VM exception to this run |
+| 7 | What a P0 latch inside the historical replay means | (a) a dated clarification that a latch gives NOT CLEARED |
 
 ## 1. Code admissions
 
@@ -39,7 +40,7 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 
 **Recommendation:** admit A and B as listed, including the conditional rows, with one admission covering both (as J-2 covered P-L1 and P-L2).
 
-**What it changes:** A and B move the **Tradeify** instance's TB-I1 fingerprint (`firm_rules`, `book_policy`, `book_capacity` are shared components) and trust-domain digests, and they touch D8 paths. If the P7 D8 obligation is still open, admitting them also accepts that H′ moves and that P7 evidence must be re-measured on the new bytes. Refusing keeps the Tradeify identities fixed and leaves the study unrunnable (pre-registration §11 items 1 and 10).
+**What it changes:** A moves the **Tradeify** instance's TB-I1 fingerprint, because it edits `REQUIRED_COMPONENTS` files (`firm_rules`, `book_policy`, `book_capacity` are shared components). A and B both move trust-domain digests and touch D8 paths. B edits no `REQUIRED_COMPONENTS` file, so B alone does not move the TB-I1 fingerprint. If the P7 D8 obligation is still open, admitting them also accepts that H′ moves and that P7 evidence must be re-measured on the new bytes. Refusing keeps the Tradeify identities fixed and leaves the study unrunnable (pre-registration §11 items 1 and 10).
 
 ## 2. P0 halt boundary in the replay
 
@@ -99,3 +100,19 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 **Recommendation:** (b), if you extend the exception. (a) is the fallback with chunked runs.
 
 **What it changes:** (b) needs your words extending §60 to this run; Pine stays off the VM either way. (a) needs no new permission but risks timeouts.
+
+## 7. What a P0 latch inside the historical replay means
+
+**Fact:** the replay mirrors the live 15% halt (P0). The frozen pre-registration says what a Striker total-DD trip means (§4 item 8, NOT CLEARED) but not what a P0 latch inside the 2022-09-01..2026-09-02 replay means for the §4 series or the verdict. Cards A, B and E emit the latch record and implement no consequence until you rule.
+
+| Option | What it is | Effect |
+|---|---|---|
+| (a) | A dated operator clarification, recorded in the brief and not in the frozen files, that a P0 latch in the historical replay gives NOT CLEARED | Stricter only; recorded before any run; disclosed in the closure. The frozen pre-registration stays as it is |
+| (b) | A latch gives zero days for the rest of the window (faithful to live behaviour) | Changes the verdict and is not in the frozen text, so it needs a new pre-registration |
+| (c) | A new pre-registration, Q-SFCLEAR-3, that defines this case | Same tuple, K unchanged; a new freeze |
+
+**Recommendation:** (a).
+
+**Risk of (a):** it adds a NOT CLEARED path after the freeze. It can only make clearance harder, but it is still a post-freeze rule, so it must be dated, recorded before any run and disclosed in the closure.
+
+**What it changes:** under (a), E maps a latch record to NOT CLEARED and the cards freeze as drafted. Under (b) or (c), the cards wait for the new pre-registration and its freeze.

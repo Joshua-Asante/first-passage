@@ -146,7 +146,7 @@ A differential test outside `lab/` follows the same synthetic signals through ad
 
 **Out of scope:** §13, P4, E.
 
-**Unlocks:** the FG evidence run's public capability half (FG items 2–3).
+**Unlocks:** the tested capability that §13 re-runs at the real R1 vector for FG items 2–3.
 
 ## 9. Sequencing and file collisions
 
@@ -183,6 +183,7 @@ Owned by Claude under its own frozen executor card, after Part 1, A, B and the p
 
 - **Executor:** an authorized Claude executor, reading Pine sources, accepted runtime ports and `effective_inputs.json` **in place** in the primary checkout only (AGENTS.md "Private read surface"); never copied, quoted, committed or sent to GLM or any external service. Location per decision packet item 6.
 - **Anchors at R1 on the moved emulator:** per leg, the §7 route's anchor re-shown at R1 (Striker: corrected port `efd479b6…` Step 3 contract and Step 6 replay; Vanguard: V-0 338/338; Aegis: its PR or RS anchor), each with the F11 revalidation (T10 reconciliation R1 hold item (ii); `docs/notes/2026-09-21-t10-phase1-source-reconciliation.md:182`); FG-T only if Aegis RS is ruled (item 4); FG item 1's schedule and roll list loaded by frozen sha256.
+- **FG items 2 and 3 at the real R1 vector** (pre-registration §7): Part 1's synthetic PASS does not discharge them. The executor re-runs Part 1's differential (adapter quantities equal the rail's sizing law with `LegSize` and `AddsRule.OFF`; live path equals replay for adds OFF and for refused zero-quantity entries, `shared_sizing_zero` / `zero policy quantity`) on the real signals with the frozen R1 vector, bound by the tuple hash `62d7ae19…671f`, read in place. Item 3 needs the #773 P-L1/R-SV seam carrying the frozen vector.
 - **Evidence:** private, under `C:\Users\joshu\t00-step3-console\sfclear2-fg-<UTC>\` with a nonce'd `SHA256SUMS`; public output is pass/fail per item and hashes only, via `docs/evidence/PRIVATE_EVIDENCE.sha256` rows written by the coordinator.
 - **Limits:** a public synthetic PASS or a private-input skip is not FG at R1. No scoring output is read or produced. FG FAIL means the run does not start (§6 VOID).
 
