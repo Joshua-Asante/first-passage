@@ -226,7 +226,7 @@ git status --porcelain   # expect empty: no repo write by the executor
 - **Loop cost.** One VM session: transfer, five items, seal and teardown.
 - **Likely failure.**
   - No single `FP_PORT_ROOT` serves the corrected Striker port and the other three (§0(f)).
-  - The VM was never provisioned, because route A was withdrawn on quota.
+  - The VM was never provisioned, because route A was withdrawn on quota. *Cleared 2026-10-12: Joshua confirms the VM exists.*
 - **What would make this moot:** none. FG PASS is a precondition of the study run.
 - **Evidence binding:** the private `SHA256SUMS` at the returned UTC root, the run head and the driver hash only.
 
