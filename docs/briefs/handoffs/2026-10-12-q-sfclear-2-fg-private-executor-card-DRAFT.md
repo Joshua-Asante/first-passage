@@ -216,7 +216,9 @@ git status --porcelain   # expect empty: no repo write by the executor
 - **D-3.** How the frozen vector enters the live path: a sizing FILE derived from `R1_TUPLE.json` in the private root (proposed). This also confirms live-wiring §4 condition 2 (the tuple's hash formula equals `sha256(canonical_json_bytes(sizing))`).
 - **D-4.** Per-item timeout values, and whether an `INCOMPLETE` rerun needs Joshua or only the coordinator.
 - **D-5 (Joshua).** Whether "the frozen study's run inputs" in §60 2026-10-12 covers `R1_TUPLE.json`, the Step 3/Step 6 anchor artifacts and the interpreter/venv mirror on the VM.
+  - **RULED 2026-10-12 (Joshua, to the Deployment Coordinator, verbatim "D-5 and D-6 as recommended"):** yes; the §60 2026-10-12 run inputs cover `R1_TUPLE.json`, the Step 3/Step 6 anchor artifacts and the interpreter/venv mirror. Pine stays off the VM.
 - **D-6 (Joshua).** Teardown: who removes the VM copies, and whether deallocation is enough or disk deletion is required.
+  - **RULED 2026-10-12 (same words):** Joshua removes the H1/H4 copies, the executor confirms their absence with a listing, then Joshua deallocates the VM. Disk deletion is not required once absence is confirmed.
 - **D-7.** Exposure: the R1 PR replay inside items 2–3 runs the same path the scoring run will. Confirm that §5's output restriction (no P&L, equity or trip data) is sufficient, or require a separate executor for scoring.
 
 ## Pre-mortem
