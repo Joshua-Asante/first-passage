@@ -111,3 +111,39 @@ Plus Tradovate's $25/month API add-on and, if required for API use (not stated),
 - Tradovate pages TV1–TV3 rendered in headless Chromium (`--dump-dom`) on 2026-10-10 and read in full; quotes are copied from the rendered text. `support.tradovate.com` failed TLS verification (incomplete chain); the same articles were read on `vendor-support.ninjatrader.com`. Community thread t/11320 read through its public JSON (lead).
 - Leads used (excerpts only): WebSearch for the Schedule 5 Managed User clause, the ILA Subscriber Addendum, and Tradovate sub-vendor threads.
 - No login, form, chat, email or contact. No GLM.
+
+## Addendum 2026-10-12 — operator read of the licence clauses
+
+Joshua read the posted CME documents on 2026-10-12 and supplied this clause map to the Deployment Coordinator. Agents could not verify it: CME's site blocks automated access, and no PDFs or screenshots were saved (CME blocked PDF downloads and a browser attempt timed out). URLs, versions and clause locations are in a private source index, `local_artifacts/cme-licensing-2026-10-12/source-index.json` (gitignored), sha256 `0af6ccf902d78890dc629e9bba2385eb01d201ef3a955062c7a781060d511ae0`. The dates given are document versions or CME index labels, not HTTP Last-Modified dates. This is a summary, not an eligibility determination.
+
+- **Schedule 5 v5.06 (posted Aug 2026), §3.3 (p. 5).** It bars a distributor from supplying subscribers' automated or semi-automated trading without a direct CME agreement, "other than a Non-Professional Subscriber".
+  - It is an exception to the distributor's restriction. It does not declare that non-professionals need no direct licence under every other provision.
+  - It has no fee term and no cross-reference.
+  - Definitions are on p. 3. The conditions for the non-professional fee are in §§8.1–8.2 (pp. 8–9): an active futures account, professional-status limits, a device limit, personal use, own assets only, and no third-party asset management.
+- **Non-display guidelines (updated Jan 2025), FAQ 30 (p. 6).** A non-professional using a semi-automated system need not license directly with CME; licensing goes through the vendor. Its scenario is narrower than all automated use.
+- **Subscriber Addendum (posted June 2026).**
+  - §4.2 (p. 4): "All Non-Display Use of CME Licensed Information requires a direct license with CME." There is no exception within §4.2.
+  - §7.3(c) (p. 6) still excludes a subscriber directly licensed with the distributor for Managed User Non Display from the direct-licensing obligation.
+  - §6.1(j) (p. 6): non-display use needs an active, separate, direct CME agreement authorizing it. It is not the derived-work clause.
+  - §6.1(d) (p. 4): derivative works restricted unless licensed.
+  - §6.1(i) (p. 5): a Managed User licence excludes other purposes, including display and derived works, without a separate licence.
+  - §6.1(e) (p. 5): synthetic feeds prohibited.
+- **Schedule 2 v5.01 (posted Sept 2024), §3.4 (p. 4).** User Non-Display fees "apply only when Licensee is a single natural person". It assigns no code or amount and has no own-assets condition.
+- **Fee list effective 2026-06-01 (pp. 1–3).** "A8" and "A9" in earlier notes are misread footnotes, not category codes.
+
+  | Row | Monthly fee per exchange |
+  |---|---|
+  | Category A1, Trading As a Principal | $609 (1 application), $1,820 (2–3), $3,640 (4+) |
+  | User Non-Display, Category A (footnote 8: single natural user) | $457 |
+  | Managed User Non-Display, Category A (footnote 9) | $208 |
+
+  Fees are per exchange, not bundled. Three exchanges total $1,371 per month at the user rate, or $624 at the Managed User rate, before other charges. Earlier "A8"/"A9" labels in this note and in feed-questions should be read as these footnoted rows.
+- **2025 adjustment notice, §2 (p. 2).** It says non-display is "moving, from multiple, to one license type", but for delayed and end-of-day non-display only (reporting from 2025-01-01, consolidation from 2025-04-01). It does not merge real-time categories or exchanges.
+- **Main ILA v5.02 (posted June 2026), §2.1(c) (p. 2).** Limited internal derivative works are permitted for internal business purposes; synthetic feeds are excluded; some works need separate licensing. The 1-minute to 15-minute internal OHLC case is not expressly classified.
+- **Information Policies v5.06 (posted June 2026), §§7.1–7.3 (pp. 4–5).** §7.3 requires CME's prior written consent for a licensee's provision of data in simulations tied to compensation, funded allocation or rewards. This bears on prop-evaluation environments. It does not settle an individual's category or fee, and the absence of a real exchange order is not stated as an exemption.
+
+**Open for ticket #04738415:**
+1. How §3.3 reconciles with Addendum §§4.2 and 6.1(j).
+2. Whether §7.3(c) is operative.
+3. How internal OHLC aggregation is classified.
+4. Which subscriber licence, exchange packages and fees apply, separately for personal trading and for prop evaluation.

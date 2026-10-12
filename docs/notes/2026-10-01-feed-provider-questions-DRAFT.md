@@ -344,8 +344,12 @@ Recorded 2026-10-10 from Joshua's Gmail at his request. Originals are kept priva
 | R3 | P5d Rithmic direct | sales, 2026-10-06 19:26Z (price list) | `e9f9eaf8afa9760158ac90cb13bb8c20e437b06de3a3f71c0212a55b047702fc` |
 | R4 | P5 / P5d | R\|API team, 2026-10-08 15:54Z (answers part of Joshua's 10-08 follow-up) | `d3e263514e98b22115e6f8d2b1def9f3f50236a7419ae0794afa84fc61fd78f1` |
 | R5 | P5d Rithmic direct | sales, 2026-10-09 13:10Z: asks for subscriber details before confirming costs; no new answer | `3537a25fe08da5e8d523b993efb0dafdc70a5c1ccd48e569ec886110544e3709` |
+| C1 | CME-LIC (P7) | marketdata@cmegroup.com (Data Client Services, cc cmedatasales@), 2026-10-12 07:25Z: opened ticket #04738415 on the 10-11 follow-up; asks Joshua's location; a Data Sales colleague will make contact. No answer content. Joshua replied with his location 2026-10-12 15:20Z (sent; not recorded here) | `c77a61752d61282207c889589286559b200d214f936e9d4ce71d9753f26ee679` |
+| T3 | P6 Tradovate | NinjaTrader API Support (apisupport@ninjatrader.com, Tradovate's parent), 2026-10-12 02:12Z: classification, feasibility and pricing are for CME Sales (CMEDataSales@cmegroup.com). Q1 stays open | `3b40de51b513b106a1556bae3c2d836c170eb589a2282598a6f0ae3a058ab18e` |
 
 **No reply** (as of 2026-10-10): CME-LIC / P7a / P7b (sent 10-04, follow-up 10-10); P2 tastytrade (sent 10-04); P4 Ironbeam (sent 10-04). P3a/P3b IBKR were not sent (skipped 2026-10-03). Unanswered follow-ups: Massive (Joshua, 10-07), Rithmic R\|API (Joshua, 10-08 17:15Z), Tradovate (Joshua, 10-10).
+
+**Update 2026-10-12** (recorded by the Deployment Coordinator from Joshua's Gmail): CME-LIC now has ticket #04738415 open (C1) with no substantive answer; P6's substantive Client Services answer is still pending (T3 defers licensing to CME); Massive (10-07) and Rithmic R\|API (10-08) follow-ups are still unanswered. Private folder `SHA256SUMS` now `546031e30ad7f204885b0121e0db147422efdda6d7aa06d6d8185c681746befd`. The operator's 2026-10-12 reading of the CME licence texts is recorded in the [licensing research note](2026-10-10-cme-non-display-licensing-research.md#addendum-2026-10-12--operator-read-of-the-licence-clauses).
 
 **P5d** is a variant the reply introduced: a direct Rithmic subscription to its Paper Trading simulator, with live data and no FCM (R1). It is screened separately from P5 (data through an FCM).
 
