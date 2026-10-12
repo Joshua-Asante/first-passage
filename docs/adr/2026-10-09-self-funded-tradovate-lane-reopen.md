@@ -141,3 +141,10 @@ Tradeify support ("Daniel") replied twice on 2026-10-12 (17:47Z and 18:25Z) in J
 - Joshua asked (18:18Z) for escalation to a human risk/compliance reviewer; no answer yet.
 
 **Effect on item 5:** none. The reply is consistent with the §6.6 reading in addendum 2026-10-11b, which governs; the §6.7 opposing-exposure restriction, the one-account-at-a-time switch check and the ownership evidence remain binding and stay in operational acceptance. The execution-route answer concerns the Tradeify evaluation lane, recorded at its route owner ([CrossTrade route assessment](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12--tradeify-support-rejects-bridge-routes-for-evaluation-accounts)); it does not gate this lane, whose own broker/API, data, qualification and readiness gates are unchanged.
+
+## Addendum 2026-10-12 (later) — third Tradeify support reply (item 5 record)
+
+Support's 20:19Z reply on 2026-10-12, recorded at the [route owner](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), says that for evaluation and sim-funded accounts all strategy logic must be native to a supported platform and that no Python-engine route exists. It does not address personal accounts.
+
+**Effect on item 5:** none. The §6.6 reading (addendum 2026-10-11b) and the binding §6.7 opposing-exposure restriction, switch check and ownership evidence are unchanged. The personal lane's own broker/API, data, qualification and readiness gates are unchanged.
+
