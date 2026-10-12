@@ -1,6 +1,6 @@
 # Q-SFCLEAR-2 — Personal clearance of the Tradeify book at E_0 (rung R1), successor
 
-**Status:** `OPEN — pre-registration FROZEN 2026-10-12 at F` — the verdict pre-registration is DRAFT — NOT RATIFIED; nothing runs before its §12 freeze
+**Status:** `OPEN — pre-registration FROZEN 2026-10-12 at F` — the verdict pre-registration is FROZEN (F `83867f0`); nothing has been scored, exported or replayed; the run waits for the run-path builds and FG
 **Authored:** 2026-10-11
 **Closed:** N/A
 **Authors:** Joshua (rulings) + Claude Code (drafting worker for the Deployment Coordinator)
@@ -86,7 +86,7 @@ The pre-registration §5 holds the full list.
 [`docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md`](pre-registration/Q-SFCLEAR-2-verdict-preregistration.md)
 
 Pre-registration commit hash: `83867f0d362931c2a516a62b990bb1c209372527` (freeze commit F, 2026-10-12; ratified draft `b97beaa613f7cd7fbdc2d89d7a7191a0274ea99a`)
-Pre-registration date: pending
+Pre-registration date: 2026-10-12 (frozen)
 
 ---
 
