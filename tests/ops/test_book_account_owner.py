@@ -12,7 +12,7 @@ from c1_rail.book_account_owner import (
     SyntheticBroker,
     SimulatedOwnerCrash,
 )
-from c1_rail.book_policy import candidate_book_protection_policy
+from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, candidate_book_protection_policy
 from c1_rail.book_sizing_context import BookSession, SettledClose
 from c1_rail.c1_rail_listener import handle_book_action
 from c1_signal_daemon.book_protocol import (
@@ -70,6 +70,7 @@ def binding():
             "orb_mnq_v7": 80,
         },
         "risk_dollars": {"dj30_mym_p250": 100},
+        "size_vector": IDENTITY_SIZE_VECTOR,
     }
 
 

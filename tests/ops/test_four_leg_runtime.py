@@ -8,7 +8,7 @@ import threading
 
 import pytest
 
-from c1_rail.book_policy import candidate_book_protection_policy
+from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, candidate_book_protection_policy
 from c1_rail.book_sizing_context import BookSession, SettledClose
 from c1_rail.book_account_owner import (
     AccountOwnerError,
@@ -59,6 +59,7 @@ def binding(*, protected=False):
         "lifecycle_tiers": {leg: "AUTHORIZED" for leg in LEGS},
         "cap_allocations": {leg: 80 for leg in LEGS},
         "risk_dollars": {"dj30_mym_p250": 100},
+        "size_vector": IDENTITY_SIZE_VECTOR,
     }
 
 
