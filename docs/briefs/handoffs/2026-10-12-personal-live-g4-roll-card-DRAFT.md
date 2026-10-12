@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 by a drafting worker for the Deployment Coordinator. It closes nothing until Joshua rules the decisions in the [decision list](../../notes/2026-10-12-personal-live-g0-g4-decisions.md) (G4-1 to G4-5) and the coordinator freezes a revision under the committed-handoff rule.
+**Status:** **FROZEN 2026-10-12** by the Deployment Coordinator at the commit that adds this line (committed-handoff rule), after Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "G0/G4 as recommended" (decision list G4-1 to G4-5, X-1, X-2 all as recommended). **Dispatchable now:** G4-a (offline) only. **Not dispatchable:** G4-b, which needs G-1b (Joshua's code admission for the owner edit, not yet given) and its P4 queue slot.
 
 **Base:** `origin/main` `158bf2a`. Every `file:line` is at that commit.
 
@@ -266,7 +266,7 @@ python -I scripts/fp.py check
 
 ## 11. Gates and operator acts (NOT DISPATCHABLE until G-1 to G-3 hold)
 
-- **G-1. Joshua's decisions** G4-1 to G4-5 ([decision list](../../notes/2026-10-12-personal-live-g0-g4-decisions.md)).
+- **G-1. Joshua's decisions** — **RULED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "G0/G4 as recommended". G4-1 to G4-5 ([decision list](../../notes/2026-10-12-personal-live-g0-g4-decisions.md)).
 - **G-1b. Code admission (G4-b only, not G4-a).** Before any G4-b part edits `book_account_owner.py`, or makes any **T** module import `contract_roll.py`, Joshua admits that edit as bound code (**T**, `trust_domain.py:146`). He does this in his own words, which the coordinator records with the time, as G-1 for P-L1/P-L2.
 - **G-2. Coordinator freeze** under the committed-handoff rule.
 - **G-3. Dispatch** by the coordinator. G4-a needs no queue slot. G4-b waits for P4 (or folds into it) and for the route decision.

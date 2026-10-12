@@ -1,6 +1,6 @@
 # Personal lane live G0/G4: decisions for Joshua (2026-10-12)
 
-**Status:** DRAFT decision list. None of these is ruled. It was drafted by a worker for the Deployment Coordinator, at `origin/main` `158bf2a`, and revised for the Claude docs review of #809.
+**Status:** **RULED 2026-10-12**: Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "G0/G4 as recommended". Every decision below is ruled as its recommendation, including X-1 (Claude worker) and X-2 (build both offline first packets now). The G4-4 placement (owner) is ruled; the code admission for that owner edit (cards' G-1b) is a separate act, not given.
 
 **Cards:**
 - [G0 calendar card](../briefs/handoffs/2026-10-12-personal-live-g0-calendar-card-DRAFT.md) (gap C4);
