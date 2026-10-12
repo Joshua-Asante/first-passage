@@ -52,7 +52,6 @@ Retracted verdicts leave; their correction stays with the owner.
 - **2026-09-19** — S2-R2b accepted as the funded-scheduler integration only; restart ownership ruled auto-recover. [Ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-r2b-funded-scheduler-integration-2026-09-19)
 - **2026-09-19** — B0: protected qualification service retained; operator-launched batch not adopted. [Decision](docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)
 - **2026-09-15** — Cursor retired as a worker surface; workers are Claude Code and Codex. [ADR](docs/adr/2026-07-14-cc-cursor-surface-allocation.md)/[#405](https://github.com/Joshua-Asante/first-passage/pull/405)
-- **2026-09-14** — B7-REFIRE Stage 1 + M1 complete, verified in disarmed listener v11; Track A left the queue; live-feed/strategy readiness and arming stay separate. [A8 record](docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md#a8--signed-acceptance-deployed-re-bake-verified-2026-09-14)
 
 ## Dormant cross-session threads
 
