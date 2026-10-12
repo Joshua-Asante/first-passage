@@ -1,0 +1,28 @@
+{
+  "_comment": "Personal instance forward session calendar binding (G0-a, card docs/briefs/handoffs/2026-10-12-personal-live-g0-calendar-card-DRAFT.md). Reuses the Tradeify-authored book_session_calendar/v1 files unchanged; admission only through the personal registry, one operator row per digest. A Tradeify ratification never admits the personal instance. Validated by ops/c1_rail/personal_calendar_binding.py. Holds no credential, account or private value.",
+  "schema": "personal_calendar_binding/v1",
+  "instance": "personal_tradovate",
+  "schedule_rule": {
+    "owner": "docs/spec/2026-09-14-tb-s3-halt-resume-contract.md#5-exact-schedule-rule",
+    "own_flat_cap_local": "16:00",
+    "own_flat_before_v_minutes": 15,
+    "cutoff_before_own_flat_minutes": 15,
+    "flatten_start_before_own_flat_minutes": 5
+  },
+  "first_release_policy_deny": ["HOLIDAY", "SHORTENED", "UNCERTAIN_ADJACENT", "MISSING_SOURCE"],
+  "ratification_registry": "ops/calendars/personal/RATIFIED.json",
+  "closure_overlay": {
+    "file": "ops/calendars/book_closure_overlay.json",
+    "sha256": "483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b"
+  },
+  "calendars": [
+    {
+      "calendar_file": "ops/calendars/book_session_calendar_2026-10.json",
+      "calendar_sha256": "16e322b1b7c9c7e2b1e8a5fdebb6eaba34e7a509630677f7ac389df54e211b3b"
+    },
+    {
+      "calendar_file": "ops/calendars/book_session_calendar_2026-11.json",
+      "calendar_sha256": "b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7"
+    }
+  ]
+}
