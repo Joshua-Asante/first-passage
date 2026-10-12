@@ -348,3 +348,5 @@ badcee2df072fe9382ae6e8cc4295eb7c0a3cc1d411b4d2b51ab8266b3c101c6  t00-step3-cons
 # 2026-10-12 — Q-SFCLEAR-2 draft, fourth fold: private exact-E_0 leak scan (pre-registration §10 hook 6; nonce'd).
 # NOT YET ARCHIVED: the upload awaits Joshua's scoped F6 authorization (`make audit` reports it until then).
 d4e358f8a6b5564e3dc751be9d16474129e76c8d3219b966baec0af2fb58a45c  t00-step3-console/sfclear2-fold4-20261012T001816Z/SHA256SUMS
+2333844dd2a9342239812baa38a119b55f4b8a65841165740a9a39633f2297bf  t00-step3-console/sfclear2-calc-20261012T160123Z/g1g3_calculator.py
+68f97d95833bb7c3b0cc3d66083ec724d1e679e76ff6c996cedfe789a0ffff59  t00-step3-console/sfclear2-calc-20261012T160123Z/SHA256SUMS
