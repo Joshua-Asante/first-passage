@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 for the Deployment Coordinator. Freezing is the coordinator's act, and only after Joshua's rulings ([decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1, 5, 7).
+**Status:** **FROZEN 2026-10-12** by the Deployment Coordinator at the commit that adds this line (committed-handoff rule), after Joshua's rulings on [decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1–7 (2026-10-12: "item 1 admitted as listed"; "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b"). **Not dispatched.** Dispatchable on the coordinator's dispatch record once: cards B, C and D merged and #752 merged to main.
 
 **Base:** `origin/main` `92bfca7` for every `file:line`; the build cuts from a base containing #752's `lab/analysis/c1/sfclear_2026-10/` folder, B and C (§0(a)).
 

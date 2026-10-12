@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 for the Deployment Coordinator. Freezing is the coordinator's act, and only after Joshua's admissions and rulings ([decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1, 2, 5, 7).
+**Status:** **FROZEN 2026-10-12** by the Deployment Coordinator at the commit that adds this line (committed-handoff rule), after Joshua's rulings on [decision packet](../../notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md) items 1–7 (2026-10-12: "item 1 admitted as listed"; "2 mirror, 3 b, 4 PR, 5 as proposed, 6 b (extend §60 to the FG run), 7 b"). **Not dispatched.** Dispatchable on the coordinator's dispatch record once: A0 (coordinator `core/firm_rules.py` commit) landed.
 
 **Base:** `origin/main` `92bfca7`. Every `file:line` below is at that commit. `ops/`, `core/`, `lab/` and `tests/` are unchanged from the scope note's snapshot `a8769f8`, so its anchors carry.
 
