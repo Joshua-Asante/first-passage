@@ -370,3 +370,15 @@ A1, A2, A4 and A7–A14, including A13's process disposition, are accepted as dr
 Tradeify support replied on 2026-10-12 (17:47Z, 18:25Z; Joshua's ticket thread, read by the Deployment Coordinator) that for evaluation and sim-funded accounts execution is permitted only through supported platforms (Tradovate, NinjaTrader, TradingView via Tradovate) with Tradeify-issued credentials, and that third-party execution bridges, including CrossTrade routing via the NinjaTrader Add-On/SDK or via the direct Tradovate API, are not permitted; only live funded accounts may use the Tradovate API directly. No clause or consent process was cited. Joshua has asked for escalation to human risk/compliance.
 
 **Status:** the CrossTrade route for the evaluation account is **UNRESOLVED / not permitted on current support guidance**. Nothing here changes the rail's disarmed posture. No different connector or native-platform rewrite is assumed to be permitted. Existing code and evidence are preserved.
+
+## Addendum 2026-10-12 (later) — Tradeify support: strategy logic must be native for evaluation accounts
+
+Asked (20:17Z) which permitted interface, if any, lets a privately owned Python engine submit orders automatically through a supported platform, support replied (20:19Z; Joshua's ticket thread, read by the Deployment Coordinator):
+
+- For evaluation and simulated funded accounts, all strategy logic, calculations and signal generation must be native to a supported platform: NinjaTrader (typically NinjaScript), Tradovate, or TradingView via the Tradovate integration.
+- An external program, including a privately owned Python engine, may not generate signals that are then executed through NinjaTrader or Tradovate. This applies to all third-party bridges and direct API access, including NinjaTrader Add-Ons/SDK and the direct Tradovate API.
+- There is no approved interface for a Python engine to submit orders automatically for these accounts. API-based execution and bridges are allowed only in live funded accounts. Support stated: "No exceptions."
+- No clause was cited, and the §1.3 exception question was not answered.
+
+**Status:** the evaluation account has **no approved Python-engine route** on current support guidance (UNRESOLVED pending human compliance review). The rail stays disarmed. New Tradeify-route work and native-platform rewrites stay deferred under Joshua's confirmed sequencing (2026-10-12). No native runtime is approved; a proposal is open as a draft (#807). Existing code and evidence are preserved.
+
