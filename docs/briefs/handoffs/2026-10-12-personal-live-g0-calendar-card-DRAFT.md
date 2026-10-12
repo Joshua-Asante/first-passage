@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 by a drafting worker for the Deployment Coordinator. It closes nothing until Joshua rules the decisions in the [decision list](../../notes/2026-10-12-personal-live-g0-g4-decisions.md) (G0-1 to G0-5) and the coordinator freezes a revision under the committed-handoff rule.
+**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 by a drafting worker for the Deployment Coordinator. It closes nothing until Joshua rules the decisions in the [decision list](../../notes/2026-10-12-personal-live-g0-g4-decisions.md) (G0-1 to G0-6) and the coordinator freezes a revision under the committed-handoff rule.
 
 **Base:** `origin/main` `158bf2a`. Every `file:line` is at that commit.
 
@@ -57,8 +57,8 @@ Read and report before writing a test. A contradiction with this card is a **sto
 - **(a) Loader.** `ops/c1_rail/book_session_calendar.py`. The venue block is Tradeify-bound: `account_day_basis` must be `TRADEIFY_ACCOUNT_DAY` (`:398-400`), and the venue clocks must be 16:45 and 12:59 (`:405-410`). Session IDs match `tradeify-account-day:` (`:52`). `load_ratified_calendar(path, *, overlay_path, ratified_path, repo_root)` (`:583-601`) takes the ratification registry as a **parameter** and refuses a digest that the registry does not list (`calendar_not_ratified`). `load_ratifications` (`:548-580`) accepts an empty list. Confirm all of this at the cut base.
 - **(b) Artifacts.** `ops/calendars/book_session_calendar_2026-10.json` (sha256 `16e322b1…1b3b`) and `…2026-11.json` (`b89562a5…0aad7`) are ratified for the Tradeify book in `ops/calendars/RATIFIED.json`, scoped to "Book permission rows … Grants no activation". Each carries `schedule_rule` (TB-S3 §5: cap 16:00, 15, 15, 5) and `first_release_policy.deny` = HOLIDAY, SHORTENED, UNCERTAIN_ADJACENT, MISSING_SOURCE. Ratification records: [Packet 1 Step 4](../../notes/2026-09-15-packet1-step4-session-calendar.md) for 2026-09, PR #560 for 2026-10 and PR #685 for 2026-11.
 - **(c) Formula equality.** On a PERMITTED row the venue deadline is V = 16:45 ET, so D = min(16:00, 16:30) = 16:00. Under the personal replay schedule, V = 17:00 (product close) and D = min(16:00, 16:45) = 16:00. Confirm that cutoff 15:45, flatten start 15:55 and own-flat 16:00 ET hold on every PERMITTED row of both files. `production_source.py:230-266` (`parse_source_calendar`) is the qualification-replay parser for `qualification-source-calendar/v1` ("deployment calendar is not a substitute"). It computes the same own-flat formula, but it is **not** a live consumer, and this card does not touch it.
-- **(d) Consumers today.** Report every caller of `load_ratified_calendar`/`session_for` in `ops/`. At drafting the only callers were `account_close_assembler.py`, `account_close_calculation.py` and `book_settlement.py`. No production code builds the owner's runtime `binding["session"]`: `BookAccountOwner._validate_binding` (`book_account_owner.py:455-486`) only checks it. That construction belongs to P-L4/TB-I3 S1, not to this card.
-- **(e) Trust domain.** `book_session_calendar` is a trust-domain runtime dependency (`qualification/trust_domain.py:162`, **T**). It is not a TB-I1 fingerprint component (`policy_fingerprint.py:29-32`, **F** = no). The new module must be imported by no **T** module. Report the import graph.
+- **(d) Consumers today.** Report every caller of `load_ratified_calendar`/`session_for` in `ops/`. At drafting **no ops code calls either**. `account_close_assembler.py`, `account_close_calculation.py` and `book_settlement.py` import only the `SessionCalendar` type. No production code builds the owner's runtime `binding["session"]`: `BookAccountOwner._validate_binding` (`book_account_owner.py:455-486`) only checks it. That construction belongs to P-L4/TB-I3 S1, not to this card.
+- **(e) Trust domain.** `book_session_calendar` is a trust-domain runtime dependency (`qualification/trust_domain.py:162`, **T**). It is not a TB-I1 fingerprint component (`policy_fingerprint.py:29-32`, **F** = no). `book_account_owner` is **T** too (`trust_domain.py:146`, role `listener_account_owner`), and the collector re-derives imports (`:153-158`). So if the owner, or any other **T** module, imports the new module, the new module enters **T**. G0-a keeps it outside **T**: report the import graph and confirm that no **T** module imports it. `c1_rail_arm.py` and `c1_rail_listener.py` were outside the **T** list at drafting; confirm that too.
 
 ## 0.5. Recommended defaults (each is a Joshua decision; see the decision list)
 
@@ -85,11 +85,11 @@ A pure, offline-tested module that gives the personal instance its G0 session de
    - loads the binding;
    - for each listed calendar, checks the file bytes against the pinned sha256 **from the binding**, never from the file;
    - calls `load_ratified_calendar(..., ratified_path=<personal registry>)`;
-   - refuses a calendar whose `schedule_rule` or `first_release_policy` differs from the binding;
+   - relies on the **T** loader for the `schedule_rule` constants (`book_session_calendar.py:412-420`) and the four-class deny set (`:535-538`). Both refuse with `CalendarError` before any check in this module runs, so the module adds no refusal of its own for them;
    - requires the coverage windows to chain with no gap (each next `coverage_start_utc` ≤ the previous `coverage_end_utc`);
    - exposes `session_for(now)`, which routes to the calendar whose coverage holds `now` (on an overlap, the later-ratified file wins) and passes through every existing typed refusal.
 
-   Refusals it adds: `binding_digest_mismatch`, `schedule_rule_mismatch`, `first_release_policy_mismatch`, `coverage_gap`. No weekday fallback.
+   Refusals it adds: `binding_digest_mismatch` and `coverage_gap`. No weekday fallback.
 4. `ops/calendars/README.md`: one short section naming the personal registry and stating that a Tradeify row does not admit the personal instance.
 
 ### 2.2 What does not change
@@ -117,11 +117,11 @@ A pure, offline-tested module that gives the personal instance its G0 session de
 
 | Path | T (`trust_domain.py:154-178`) | F (`policy_fingerprint.py:29-32`) |
 |---|---|---|
-| `personal_calendar_binding.py` (new) | No, provided no T module imports it (§0(e)); the collector re-derives imports | No |
+| `personal_calendar_binding.py` (new) | No in G0-a, because no **T** module imports it (§0(e)). It **becomes T** the moment the owner (**T**, `trust_domain.py:146`) or another **T** module imports it | No |
 | `book_session_calendar.py` (imported, not edited) | Yes, **unchanged** | No |
 | Data files (binding, registry, README) | Not code roles | No |
 
-No **T** or **F** byte moves. The Tradeify trust domain and policy fingerprint are unchanged.
+G0-a moves no **T** or **F** byte. The Tradeify trust domain and policy fingerprint are unchanged. **G0-b is different:** any owner edit is a **T** edit, and an owner import of this module pulls the module into **T**. That needs Joshua's code admission (§11 G-1b).
 
 ## 3. Method
 
@@ -140,8 +140,8 @@ No **T** or **F** byte moves. The Tradeify trust domain and policy fingerprint a
 | PC1 | Real 2026-10 file, Tradeify registry lists it, personal registry empty → `calendar_not_ratified` | A Tradeify ratification admits the personal instance | M-PC1: the loader is passed `ops/calendars/RATIFIED.json` |
 | PC2 | Synthetic personal registry row for the 2026-10 digest (tmp path): a PERMITTED row returns a `BookSession` with cutoff 15:45, flatten 15:55, own-flat 16:00 ET | A ratified PERMITTED session is refused or carries other times | M-PC2: a fail-closed stub that refuses every session (positive control) |
 | PC3 | One flipped byte in a calendar copy → `binding_digest_mismatch` before parsing | Bytes are trusted over the pin | M-PC3: expected digest read from the file being checked |
-| PC4 | Synthetic calendar with `cutoff_before_own_flat_minutes: 10` → `schedule_rule_mismatch` | The binding accepts another rule | M-PC4: the rule check is skipped |
-| PC5 | Synthetic calendar whose `deny` omits MISSING_SOURCE → `first_release_policy_mismatch`; real 2026-10-12 row → `session_denied:MISSING_SOURCE` | An evidence class is dropped | M-PC5: deny set compared as a subset |
+| PC4 | Synthetic calendar with `cutoff_before_own_flat_minutes: 10`, pinned in a synthetic binding → the loader's `CalendarError` ("schedule_rule constants differ") propagates; no session | The personal path admits another rule | None in this module: the check is the **T** loader's. The row guards the call path |
+| PC5 | Synthetic calendar whose `deny` omits MISSING_SOURCE → the loader's `CalendarError` ("first_release_policy …") propagates; real 2026-10-12 row → `session_denied:MISSING_SOURCE` | An evidence class is dropped on the personal path | M-PC5: the module catches `CalendarError` and falls through to the next calendar |
 | PC6 | Two synthetic calendars with a one-day coverage gap; `now` in the gap → `coverage_gap` | A weekday fallback or the last calendar is used | M-PC6: the nearest calendar is chosen |
 | PC7 | 2026-10/2026-11 overlap rows (2026-10-29, 2026-10-30) give identical sessions from either file, and the later-ratified file is selected | The overlap rows diverge or the selection is ambiguous | M-PC7: the first-listed file wins |
 | PC8 | Closure overlay sha differs from the binding → refused | Overlay drift is admitted | M-PC8: the overlay check is skipped |
@@ -203,7 +203,9 @@ No **T** or **F** byte moves. The Tradeify trust domain and policy fingerprint a
   - P-L4/TB-I3 S1 builds the owner's `binding["session"]` from this module for the personal instance.
 
   The files involved are `c1_rail_arm.py` (P4 and TB-I3 S1), `c1_rail_listener.py` (P4), the owner (queue) and `deploy/c1_rail/Dockerfile` COPY lines (TB-I3 S1). The coordinator orders them at P4's freeze.
-- `ops/calendars/README.md` is also edited by each monthly extension. If one is in flight, rebase.
+
+  **Trust domain.** The arm and the listener were outside **T** at drafting. The owner is **T** (`trust_domain.py:146`). So any owner edit in G0-b is a **T** edit. If the session binding is built in, or imported by, the owner, `personal_calendar_binding.py` is pulled into **T**. Either case needs G-1b. Building the binding outside the owner and passing in only the `BookSession` (the owner already validates a typed `BookSession`, `book_account_owner.py:455-486`) keeps the module out of **T**. That is the recommended shape.
+- **Sibling card:** the [G4 roll card](2026-10-12-personal-live-g4-roll-card-DRAFT.md). This card alone edits `ops/calendars/README.md`. The G4 card writes no README, so the two first builds share no file and can run in parallel. The README is also edited by each monthly extension: if one is in flight, rebase.
 
 ## 10. Audit hooks (runnable)
 
@@ -224,7 +226,8 @@ python -I scripts/fp.py check
 
 ## 11. Gates and operator acts (NOT DISPATCHABLE until G-1 to G-3 hold)
 
-- **G-1. Joshua's decisions** G0-1, G0-2 and G0-3 ([decision list](../../notes/2026-10-12-personal-live-g0-g4-decisions.md)), in his own words.
+- **G-1. Joshua's decisions** G0-1, G0-2, G0-3 and G0-6 ([decision list](../../notes/2026-10-12-personal-live-g0-g4-decisions.md)), in his own words.
+- **G-1b. Code admission (G0-b only, not G0-a).** Before any G0-b packet edits `book_account_owner.py`, or makes it import `personal_calendar_binding.py`, Joshua admits that edit as bound code (**T**, `trust_domain.py:146`). He does this in his own words, which the coordinator records with the time, as G-1 for P-L1/P-L2.
 - **G-2. Coordinator freeze** under the committed-handoff rule.
 - **G-3. Dispatch** by the coordinator.
 
