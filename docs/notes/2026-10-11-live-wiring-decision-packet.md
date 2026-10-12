@@ -145,6 +145,10 @@ for f in docs/briefs/handoffs/2026-10-11-live-size-vector-p-l*.md; do python -I 
 
 > **Countersigned** `<YYYY-MM-DD HH:MMZ>` by the Deployment Coordinator ("Portfolio deployment coordination"): the freeze of P-L1, P-L2 and P-L3 at `8a8d7a0` is effective. Dispatch stays under J-4 and §7.
 
+> **Countersigned** `2026-10-12 00:34Z` by the Deployment Coordinator ("Portfolio deployment coordination"): the freeze of P-L1, P-L2 and P-L3 at `8a8d7a0` is effective. Dispatch stays under J-4 and §7.
+>
+> **Operator confirmation and J-4 amendment** (Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "confirm J-1 to J-4; amend J-4: the F1 acceptance opens it"). J-1 to J-4 are confirmed as recorded. **J-4 amended:** the build gate also opens on Joshua's acceptance of the FLOOR-HALF successor screen's risk into T15's F1 (NO-GO-evidence-UNDETERMINED-dependent, confirmed "confirm A" 2026-10-12T00:12Z; recorded in PR #792), in addition to a successor screen GO or the personal clearance study RESOLVED. That acceptance is recorded, so the J-4 gate is open for the Tradeify vector once #792 merges; §7 blockers still apply and dispatch remains a separate act.
+
 **Not asked:** the merge of #788, which stays Joshua's word through the coordinator relay; any dispatch; and the §7 items owed by other owners, which are listed for relay only.
 
 ## 7. Blocking now
