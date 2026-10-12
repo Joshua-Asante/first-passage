@@ -11,7 +11,7 @@ from dataclasses import dataclass, replace
 from fractions import Fraction
 
 from c1_rail.book_policy import (
-    ACCOUNT_MICRO_CAP, add_quantity, entry_quantities, leg, require_policy,
+    ACCOUNT_MICRO_CAP, LegSize, add_quantity, entry_quantities, leg, require_policy,
 )
 from c1_signal_daemon.book_protocol import BracketAmend, Cancel, ExecutionEvent, Mode, OrderIntent, Side
 
@@ -24,6 +24,7 @@ class SizingInputs:
     cap_alloc: int
     risk_dollars: object
     pointvalue: float
+    size: LegSize | None = None  # this leg's size; None is today's quantities
 
 
 def require(condition, reason):
@@ -119,6 +120,8 @@ class BundleExecution:
         require(type(inputs.cap_alloc) is int and 0 < inputs.cap_alloc <= ACCOUNT_MICRO_CAP,
                 "invalid_allocation")
         require(Fraction(str(inputs.pointvalue)) > 0, "invalid_pointvalue")
+        require(inputs.size is None or (isinstance(inputs.size, LegSize) and
+                                        inputs.size.leg_id == inputs.leg_id), "size_identity_mismatch")
         self.adapter = adapter
         self.inputs = inputs
         self.policy = policy
@@ -161,12 +164,13 @@ class BundleExecution:
                     policy=self.policy, normal_base=action.qty,
                     risk_dollars=cfg.risk_dollars,
                     per_contract_risk=Fraction(str(action.stop_dist_pts)) * Fraction(str(cfg.pointvalue)),
-                    cap_alloc=cfg.cap_alloc)
+                    cap_alloc=cfg.cap_alloc, size=cfg.size)
             else:
                 require(not any(kind == "entry" for kind, _ in self._pending.values()), "pending_base")
                 require(self.confirmed_base > 0 and self.open_quantity > 0, "add_requires_confirmed_base")
                 qty = add_quantity(self.leg_id, self.confirmed_base, mode=cfg.mode,
-                                   lifecycle_tier=cfg.lifecycle_tier, policy=self.policy)
+                                   lifecycle_tier=cfg.lifecycle_tier, policy=self.policy,
+                                   size=cfg.size)
             if qty == 0:
                 self.adapter.on_execution(ExecutionEvent(
                     "reject", self.leg_id, bar.ts, order_id=action.order_id,
