@@ -295,3 +295,17 @@ Live use additionally needs a RESOLVED Q-SFCLEAR-2 verdict, M1, arming, live-spe
 
 [prereg]: ../pre-registration/Q-SFCLEAR-2-verdict-preregistration.md
 [feq]: ../../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md
+
+## Coordinator amendment 2026-10-12 — G4-a file list (repo hygiene)
+
+The G4-a worker stopped before committing (card §7). The repo's pre-commit hook requires every new `scripts/` file to have a row in `REPO_MAP.md` §2.1 (`check_repo_map_scripts_table.py`), and the card's file list did not include `REPO_MAP.md`. The worker also flagged that `.gitattributes` does not pin the new data files to LF, so a `core.autocrlf=true` checkout would change their bytes and make the module refuse (fail-closed).
+
+The Deployment Coordinator, owner of this card's freeze, amends G4-a's allowed files with two mechanical edits. Neither changes behaviour, a ruling or a bound file:
+1. `REPO_MAP.md` §2.1: one row for `scripts/author_contract_roll.py` (regenerated with `check_repo_map_scripts_table.py --write`, which also updates the generated count line). **Superseded in part by amendment 2 below:** the row's layer is `ops`, not `governance†`.
+2. `.gitattributes`: `text eol=lf` lines for `ops/calendars/contract_roll_forward.json` and `ops/calendars/roll_sources/*.tsv` only.
+
+Everything else in the card stands. This amendment takes effect at the commit that adds it.
+
+### Coordinator amendment 2 (2026-10-12) — the authoring script is an `ops` script
+
+The commit was blocked a second time, by `check_boundaries`: `scripts/author_contract_roll.py` imports `c1_rail.contract_roll`, and a `governance` script may import only `core` or `governance`. The worker stopped (card §7) rather than work around it. The edge is real: the authoring CLI drives an ops module. So the script is classified `ops`, following the precedent `t00_tier1_diagnostic: ops` in `scripts/repo_map_layers.yml`. G4-a's allowed files gain one line, `author_contract_roll: ops` under `scripts_layer` in `scripts/repo_map_layers.yml`, and the §2.1 row reads `ops`. No boundary rule is relaxed. Everything else stands. Takes effect at the commit that adds it.
