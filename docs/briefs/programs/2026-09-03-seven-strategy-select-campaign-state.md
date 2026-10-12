@@ -4070,6 +4070,12 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 - **Threat model:** attended host, with the interpreter and venv read-only, applies to the VM for the whole run (T00 build card §8).
 - **Not changed:** the private status of every other Pine and port; any other use of a cloud host.
 
+**Addendum 2026-10-12 — the same VM for the Q-SFCLEAR-2 FG evidence run.** *Operator ruling 2026-10-12, given by Joshua directly to the Deployment Coordinator, verbatim: "6 b (extend §60 to the FG run)", ruling item 6 of the [Q-SFCLEAR-2 run-path decision packet](https://github.com/Joshua-Asante/first-passage/pull/798).*
+
+- **Admitted.** For the Q-SFCLEAR-2 fidelity-gate (FG) evidence run only (run-path card D, Part 2), agents may copy, byte-for-byte, the four accepted runtime ports (the paths pinned in `core/strategies/BOOK_SOURCES.sha256`, including the corrected Striker port), `effective_inputs.json`, the bar panels and captured TradingView exports that run binds, and the frozen study's run inputs to the same Joshua-controlled Windows VM admitted on 2026-10-07, each to the same absolute path it has in the primary checkout, and read and use them there for that run. The Pine sources are not admitted.
+- **Still in force:** every condition of the 2026-10-07 addendum (direct transfer, Joshua-opened access only, no credential handling, rules 2–4, no other external service, attended-host threat model).
+- **Not changed:** any other run, host or use; the private status of Pine and ports.
+
 ## §61 — X-1 observed route acceptance (2026-09-30)
 
 Joshua directed the continuation review of the completed September 30 X-1
