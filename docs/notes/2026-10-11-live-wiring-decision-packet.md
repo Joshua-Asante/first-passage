@@ -123,6 +123,30 @@ The personal lane also needs clearance-plan row 2.2 (tier and instance parameter
    - Every packet goes to a Claude worker, CC-solo, never GLM. Merges go through the coordinator relay on your word.
 3. **Cards for a GO.** P-L4 folds into TB-I3. R-SV is carried into the live route packet, which is written instance-parameterized (clearance plan 2.8). P-L5 runs as a coordinator checklist.
 
+### 6a. Countersign request (to the Deployment Coordinator)
+
+**Asked:** countersign the freeze of P-L1, P-L2 and P-L3 at **`8a8d7a077915548eb6e1bb5006d256959900f0af`** (freeze base `origin/main` `7db42f1`). Or, instead, commit the 2026-10-11 lane delegation. Either one makes the freeze effective. Neither one dispatches anything: the J-4 build gate (§4) and the §7 blockers still apply.
+
+**What the revision holds:**
+- Joshua's J-1 to J-4 rulings, recorded in each card's §11 G-1.
+- The fixes from the #788 independent review (VERIFIED WITH CAVEATS; no blockers).
+- No code changes. `fp check` passed on the tree that became `8a8d7a0`: status completed, exit 0, source stable. The record is `.cache/fp-verification/20261012T000251Z-9829e0ede340/record.json`, in the lane's cloud session.
+
+**Checks before signing** (each should give the result shown):
+
+```bash
+# The card bytes are unchanged since the revision. Expected: no output.
+git diff 8a8d7a0 HEAD -- docs/briefs/handoffs/2026-10-11-live-size-vector-p-l*.md
+# The card form and authority blocks. Expected: well-formed; 0 violations.
+for f in docs/briefs/handoffs/2026-10-11-live-size-vector-p-l*.md; do python -I scripts/check_brief.py "$f" --type cc_handoff; python -I scripts/check_handoff_authority.py "$f"; done
+```
+
+**How to record it.** Option (a): commit the line below into this section, on #788's branch or on `main` after the merge. Option (b): commit the delegation into the coordinator's synthesis record (the campaign record or `docs/SESSIONS.md`), naming the lane, its single writer, and that freeze authority covers P-L1, P-L2 and P-L3.
+
+> **Countersigned** `<YYYY-MM-DD HH:MMZ>` by the Deployment Coordinator ("Portfolio deployment coordination"): the freeze of P-L1, P-L2 and P-L3 at `8a8d7a0` is effective. Dispatch stays under J-4 and §7.
+
+**Not asked:** the merge of #788, which stays Joshua's word through the coordinator relay; any dispatch; and the §7 items owed by other owners, which are listed for relay only.
+
 ## 7. Blocking now
 
 - **The coordinator's countersignature** of the freeze revision, or a committed delegation (§6 item 1).
