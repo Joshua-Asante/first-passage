@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Roll 2026-10-12** (automated keep-15 roll; `scripts/state_roll.py`):
+
+- **2026-09-14** — B7-REFIRE Stage 1 + M1 complete, verified in disarmed listener v11; Track A left the queue; live-feed/strategy readiness and arming stay separate. [A8 record](../../../../../docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md#a8--signed-acceptance-deployed-re-bake-verified-2026-09-14)
+
 **Roll 2026-10-09** (automated keep-15 roll; `scripts/state_roll.py`):
 
 - **2026-09-11** — Production feed deferred: provider unselected; A′ shortlisted only. [ADR](../../../../../docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-09-11--stage-1-input-source-options-and-ratified-selection-option-d)/[plan §3.2](../../../../../docs/superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md#32-a9--production-feed-verification-record-and-funding-checkpoint-added-2026-09-11)
