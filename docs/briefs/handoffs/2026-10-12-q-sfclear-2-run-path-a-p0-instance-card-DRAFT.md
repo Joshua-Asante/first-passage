@@ -214,7 +214,7 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1. Joshua's code admission.** He names the §2.3 bound files, knowing they move TB-I1 and trust-domain digests and touch P7 D8 paths (decision packet item 1), and rules items 2 and 7. **Not recorded.**
+- **G-1. Joshua's code admission.** He names the §2.3 bound files, knowing they move TB-I1 and trust-domain digests and touch P7 D8 paths (decision packet item 1), and rules items 2 and 7. **Admission RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "item 1 admitted as listed" (scope confirmed: card A §2.3 files including A0 `core/firm_rules.py` and the conditional rows; card B §2.2 files including new `qualification/personal_replay.py`; accepting that the Tradeify TB-I1 fingerprint and trust-domain digests move, D8 paths change and H′ moves, with P7 re-measured on the new bytes if P7 D8 is still owed; `book_sizing_context`/`book_account_owner` excluded, with P4). Items 2 and 7: not recorded.
 - **G-2. Coordinator freeze.** Answers §12; commits the frozen revision; records its SHA. **Not done.**
 - **G-3. Dispatch.** The coordinator's dispatch record, after A0 lands. **Not done.**
 

@@ -1,6 +1,6 @@
 # Q-SFCLEAR-2 run path: decision packet for Joshua
 
-**Date:** 2026-10-12 · **Base:** `origin/main` `92bfca7` · **Prepared by:** drafting worker for the Deployment Coordinator, to relay. **Status:** OPEN; nothing here is ruled.
+**Date:** 2026-10-12 · **Base:** `origin/main` `92bfca7` · **Prepared by:** drafting worker for the Deployment Coordinator, to relay. **Status:** OPEN; item 1 RULED 2026-10-12; items 2–7 open.
 
 **Sources:** the [scope note](2026-10-12-q-sfclear-2-run-path-code-scope.md) (#795); the FROZEN [Q-SFCLEAR-2 pre-registration at F `83867f0`](https://github.com/Joshua-Asante/first-passage/blob/83867f0d362931c2a516a62b990bb1c209372527/docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md); the DRAFT cards [A](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-a-p0-instance-card-DRAFT.md), [B](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-b-personal-replay-card-DRAFT.md), [C](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-c-tradovate-costs-card-DRAFT.md), [D](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-d-fg-parity-card-DRAFT.md), [E](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-e-run-record-card-DRAFT.md). No private value was read.
 
@@ -39,6 +39,8 @@ Bound notation: **T** = trust-domain code inventory (`ops/c1_rail/qualification/
 | P4 (not these cards) | `ops/c1_rail/book_sizing_context.py`, `ops/c1_rail/book_account_owner.py` | T (+F for sizing) | The live P0 consumer stays with P4 |
 
 **Recommendation:** admit A and B as listed, including the conditional rows, with one admission covering both (as J-2 covered P-L1 and P-L2).
+
+**RULED 2026-10-12:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "item 1 admitted as listed" (scope confirmed: card A §2.3 files including A0 `core/firm_rules.py` and the conditional rows; card B §2.2 files including new `qualification/personal_replay.py`; accepting that the Tradeify TB-I1 fingerprint and trust-domain digests move, D8 paths change and H′ moves, with P7 re-measured on the new bytes if P7 D8 is still owed; `book_sizing_context`/`book_account_owner` excluded, with P4).
 
 **What it changes:** A moves the **Tradeify** instance's TB-I1 fingerprint, because it edits `REQUIRED_COMPONENTS` files (`firm_rules`, `book_policy`, `book_capacity` are shared components). A and B both move trust-domain digests and touch D8 paths. B edits no `REQUIRED_COMPONENTS` file, so B alone does not move the TB-I1 fingerprint. If the P7 D8 obligation is still open, admitting them also accepts that H′ moves and that P7 evidence must be re-measured on the new bytes. Refusing keeps the Tradeify identities fixed and leaves the study unrunnable (pre-registration §11 items 1 and 10).
 

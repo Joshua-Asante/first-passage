@@ -202,7 +202,7 @@ python -I scripts/fp.py check
 
 ## 11. Gates (the card is NOT DISPATCHABLE until all three hold)
 
-- **G-1. Joshua's code admission** for §2.2's bound files and the new module entering the trust domain (item 1), and the route ruling (item 4). **Not recorded.**
+- **G-1. Joshua's code admission** for §2.2's bound files and the new module entering the trust domain (item 1), and the route ruling (item 4). **Admission RECORDED:** Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "item 1 admitted as listed" (scope confirmed: card A §2.3 files including A0 `core/firm_rules.py` and the conditional rows; card B §2.2 files including new `qualification/personal_replay.py`; accepting that the Tradeify TB-I1 fingerprint and trust-domain digests move, D8 paths change and H′ moves, with P7 re-measured on the new bytes if P7 D8 is still owed; `book_sizing_context`/`book_account_owner` excluded, with P4). Item 4: not recorded.
 - **G-2. Coordinator freeze**, after A returns RESOLVED and the schedule files are on the base. **Not done.**
 - **G-3. Dispatch.** **Not done.**
 
