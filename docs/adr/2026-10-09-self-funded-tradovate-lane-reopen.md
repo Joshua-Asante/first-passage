@@ -131,3 +131,13 @@ rg -n "2026-10-09-self-funded" docs/adr/2026-07-16-self-funded-lane-close-strike
 **First deployment: one account at a time.** Before the active account switches in either direction (Tradeify to personal or personal to Tradeify, weekly preservation trades included), the outgoing account is verified flat, with no working orders, and unable to submit delayed entries (its instance disarmed, with no queued, retrying or scheduled order path). Any uncertainty blocks the switch. Simultaneous operation is outside the first deployment and would need its own safeguard and operator ruling.
 
 **Effect on owed items.** Item 1 is re-scoped as above. Item 5 covers the binding restrictions: the switch check, its Product Group mapping from Tradeify's own source, and retained evidence of sole ownership; its copy-trading, hedging and account-linking questions are answered against the published text above. A written Tradeify answer is not required to close it. Items 2–4, 6 and 7 are unchanged.
+
+## Addendum 2026-10-12 — Tradeify support replies on execution routes and personal accounts (item 5 record)
+
+Tradeify support ("Daniel") replied twice on 2026-10-12 (17:47Z and 18:25Z) in Joshua's exclusive-use ticket thread, read by the Deployment Coordinator the same day. Summary, not a ruling:
+
+- **Evaluation and sim-funded accounts:** execution only through Tradeify-supported platforms (Tradovate, NinjaTrader, TradingView via Tradovate) with Tradeify-issued credentials. Third-party execution bridges, named as CrossTrade-style routing via a NinjaTrader Add-On/SDK or the direct Tradovate API, are not permitted; only live funded accounts may use the Tradovate API directly. No clause was cited and no prior-consent process was identified.
+- **Personal account:** support's own inference is that there is no explicit restriction on using the same strategy in the trader's self-funded account, provided it is not connected to another prop firm. It cited no clause and said nothing specific on §6.7.
+- Joshua asked (18:18Z) for escalation to a human risk/compliance reviewer; no answer yet.
+
+**Effect on item 5:** none. The reply is consistent with the §6.6 reading in addendum 2026-10-11b, which governs; the §6.7 opposing-exposure restriction, the one-account-at-a-time switch check and the ownership evidence remain binding and stay in operational acceptance. The execution-route answer concerns the Tradeify evaluation lane, recorded at its route owner ([CrossTrade route assessment](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12--tradeify-support-rejects-bridge-routes-for-evaluation-accounts)); it does not gate this lane, whose own broker/API, data, qualification and readiness gates are unchanged.
