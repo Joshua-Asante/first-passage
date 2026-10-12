@@ -39,7 +39,7 @@ from c1_rail.book_account_owner import BookAccountOwner  # noqa: E402
 from c1_rail.book_incident_grafana_irm import GrafanaIRMChannel  # noqa: E402
 from c1_rail.book_incident_notifier import (  # noqa: E402
     IncidentNotifier, LocalFileChannel, NotifierConfig, NotifierConfigError)
-from c1_rail.book_policy import candidate_book_protection_policy  # noqa: E402
+from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, candidate_book_protection_policy  # noqa: E402
 from c1_rail.book_sizing_context import BookSession, SettledClose  # noqa: E402
 
 
@@ -70,7 +70,8 @@ def _binding(now):
             "snapshot_digest": "a" * 64, "as_of": now - timedelta(seconds=1),
             "valid_until": now + timedelta(minutes=5), "max_evidence_age": timedelta(seconds=30),
             "lifecycle_tiers": {leg_id: "AUTHORIZED" for leg_id in LEGS},
-            "cap_allocations": {leg_id: 0 for leg_id in LEGS}, "risk_dollars": {}}
+            "cap_allocations": {leg_id: 0 for leg_id in LEGS}, "risk_dollars": {},
+            "size_vector": IDENTITY_SIZE_VECTOR}
 
 
 def _print_events(notifier, key):

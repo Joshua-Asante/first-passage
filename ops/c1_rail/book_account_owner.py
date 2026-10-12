@@ -109,9 +109,11 @@ def _binding_record(binding):
     from c1_signal_daemon.book_adapters import (
         ADAPTERS, EFFECTIVE_INPUTS_SHA256, RUNTIME_EFFECTIVE_INPUTS_SHA256,
     )
+    from c1_rail.qualification.contract import canonical_json_bytes
     session = binding["session"]
     settlement = binding["settlement"]
     policy = binding["policy"]
+    sizing = binding["size_vector"].as_mapping()
     return {
         "session": asdict(session),
         "settlement": asdict(settlement),
@@ -133,6 +135,9 @@ def _binding_record(binding):
         "historical_effective_inputs_sha256": EFFECTIVE_INPUTS_SHA256,
         "effective_inputs_sha256": RUNTIME_EFFECTIVE_INPUTS_SHA256,
         "phase1_admission": PHASE1_ADMISSION_IDENTITIES,
+        # The screen authority's formula: sha256(canonical_json_bytes(sizing)).
+        "size_vector": sizing,
+        "size_vector_sha256": hashlib.sha256(canonical_json_bytes(sizing)).hexdigest(),
     }
 
 
@@ -424,15 +429,21 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                     raise AccountOwnerError("runtime binding authority missing")
                 if retained[0] == owner.binding["session"].session_id:
                     if retained[1] != raw:
-                        raise AccountOwnerError("runtime binding changed within session")
+                        try:
+                            legacy = owner._sized_binding_view(json.loads(retained[1]))
+                        except ValueError:
+                            legacy = None
+                        if legacy is None or _body(legacy) != raw:
+                            raise AccountOwnerError("runtime binding changed within session")
                 else:
-                    previous = json.loads(retained[1])
+                    previous = owner._sized_binding_view(json.loads(retained[1]))
                     current = json.loads(raw)
                     immutable = ("policy", "policy_digest", "lifecycle_tiers", "cap_allocations",
                                  "risk_dollars", "runtime_identities",
                                  "historical_effective_inputs_sha256", "effective_inputs_sha256",
-                                 "phase1_admission")
-                    if (owner.binding["session"].prior_session_id != retained[0]
+                                 "phase1_admission", "size_vector", "size_vector_sha256")
+                    if (previous is None
+                            or owner.binding["session"].prior_session_id != retained[0]
                             or owner.binding["settlement"].session_id != retained[0]
                             or any(previous[key] != current[key] for key in immutable)
                             or previous["session"]["calendar_digest"] != current["session"]["calendar_digest"]):
@@ -457,7 +468,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
     def _validate_binding(binding):
         required = {"session", "settlement", "policy", "policy_digest", "snapshot_digest",
                     "as_of", "valid_until", "max_evidence_age", "lifecycle_tiers",
-                    "cap_allocations", "risk_dollars"}
+                    "cap_allocations", "risk_dollars", "size_vector"}
         if not isinstance(binding, dict) or set(binding) != required:
             raise AccountOwnerError("complete runtime binding required")
         if not isinstance(binding["session"], BookSession) or not isinstance(
@@ -514,7 +525,36 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
                 _positive_risk(risk, "risk_dollars")
         except (ValueError, TypeError, OverflowError) as exc:
             raise AccountOwnerError(str(exc)) from exc
+        # P-L2 (B): typed and canonical; no default, so None or a mapping is refused.
+        from .book_policy import SizeVector, validate_size_vector
+        vector = binding["size_vector"]
+        try:
+            canonical = (isinstance(vector, SizeVector)
+                         and validate_size_vector(vector.as_mapping()) == vector)
+        except (ValueError, TypeError, KeyError) as exc:
+            raise AccountOwnerError(f"canonical size vector required: {exc}") from exc
+        if not canonical:
+            raise AccountOwnerError("canonical size vector required")
         return binding
+
+    @staticmethod
+    def _sized_binding_view(body):
+        """P-L2 (E), packet §6c: a retained record from before P-L2 lacks both
+        size-vector keys; every such owner sized at identity, so it reads as the
+        identity vector's mapping and hash. A record with exactly one key is
+        None, which matches nothing; any other body is returned unchanged."""
+        if not isinstance(body, dict):
+            return body
+        present = {"size_vector", "size_vector_sha256"} & set(body)
+        if len(present) == 2:
+            return body
+        if present:
+            return None
+        from c1_rail.qualification.contract import canonical_json_bytes
+        from .book_policy import IDENTITY_SIZE_VECTOR
+        sizing = IDENTITY_SIZE_VECTOR.as_mapping()
+        return {**body, "size_vector": sizing,
+                "size_vector_sha256": hashlib.sha256(canonical_json_bytes(sizing)).hexdigest()}
 
     @contextmanager
     def _transaction(self, *, create=False):
@@ -1578,6 +1618,7 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
             self.binding["max_evidence_age"], action.leg_id, leg(action.leg_id).order_symbol,
             self.binding["cap_allocations"][action.leg_id],
             self.binding["risk_dollars"].get(action.leg_id, 0),
+            size=self.binding["size_vector"].leg(action.leg_id),
         )
         request = BookSizingRequest(
             action.order_id, action.leg_id, leg(action.leg_id).order_symbol,

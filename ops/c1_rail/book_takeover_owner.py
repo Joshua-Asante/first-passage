@@ -108,7 +108,10 @@ class TakeoverOwnerMixin:
                          and plan['binding']['account_id'] == self.account
                          and plan['admission_binding']['session']['session_id'] == plan['session_id'], 'invalid admission witness')
                 retained_binding = db.execute('SELECT body FROM runtime_bindings WHERE session_id=?', (plan['session_id'],)).fetchone()
-                _require(retained_binding is not None and json.loads(retained_binding[0]) == plan['admission_binding'], 'missing admission binding')
+                # P-L2 (E), packet §6c: either side may be a pre-P-L2 record read at identity.
+                _require(retained_binding is not None
+                         and (view := self._sized_binding_view(json.loads(retained_binding[0]))) is not None
+                         and view == self._sized_binding_view(plan['admission_binding']), 'missing admission binding')
                 for name in ('operations', 'scope_operations', 'fills', 'owners', 'unresolved', 'displaced'):
                     _require(type(plan[name]) is list and all(type(x) is str and x for x in plan[name])
                              and len(set(plan[name])) == len(plan[name]), 'invalid plan identity set')
@@ -578,7 +581,7 @@ class TakeoverOwnerMixin:
         if (proof['marker'] != self._takeover_marker_db(db)
                 or not timedelta(0) <= now - datetime.fromisoformat(evidence['as_of']) <= min(MAX_FACT_AGE, self.binding['max_evidence_age'])):
             return 'stale_takeover_proof'
-        if json.loads(_dump(_binding_record(self.binding))) != plan['admission_binding']:
+        if json.loads(_dump(_binding_record(self.binding))) != self._sized_binding_view(plan['admission_binding']):
             return 'takeover_binding_changed'
         action = self._restore_intent(_dump(plan['action']))
         if validate_action(action) or action.bar_time is None or not action.bar_time <= now <= action.bar_time + BAR_PERIOD + BAR_SLACK:
