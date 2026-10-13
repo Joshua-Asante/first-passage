@@ -84,6 +84,10 @@ def load_personal_calendar_binding(path: Path, *, repo_root: Path) -> PersonalCa
     paths = [_pinned(repo_root, r["calendar_file"], r["calendar_sha256"]) for r in rows]
     calendars = tuple(load_ratified_calendar(p, overlay_path=overlay_path, ratified_path=repo_root / registry,
                                              repo_root=repo_root) for p in paths)
+    # The loader re-reads each path; its digests are of the bytes it parsed. Bind those to the pins.
+    for row, calendar in zip(rows, calendars):
+        if (calendar.calendar_digest, calendar.overlay_digest) != (row["calendar_sha256"], overlay["sha256"]):
+            raise CalendarError(f"binding_digest_mismatch: {row['calendar_file']} changed after the pin check")
     for prev, nxt in zip(calendars, calendars[1:]):
         if not prev.coverage_start < nxt.coverage_start <= prev.coverage_end:
             raise CalendarError(f"coverage_gap: {nxt.calendar_id} does not chain from {prev.calendar_id}")

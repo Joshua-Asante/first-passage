@@ -175,6 +175,35 @@ def test_pc8_overlay_pin_drift_refuses(tmp_path):
         load_personal_calendar_binding(path, repo_root=repo)
 
 
+@pytest.mark.parametrize("swap", ["calendar", "overlay"])
+def test_pc11_file_swapped_after_the_pin_check_refuses(tmp_path, monkeypatch, swap):
+    """M-PC11: the binding trusts the path re-read by the loader instead of the pinned bytes."""
+    import c1_rail.personal_calendar_binding as module
+    repo = tmp_repo(tmp_path)
+    ratify(repo, [OCT, NOV])                            # the substitute digest is itself ratified
+    path = bind(repo, [OCT])
+    cal_dir = repo / "ops" / "calendars"
+    if swap == "overlay":                               # ratify an alternate overlay for the October digest
+        alt = json.loads((cal_dir / "book_closure_overlay.json").read_bytes())
+        alt["dates"][0]["reason"] += " (alternate)"
+        alt_bytes = json.dumps(alt, indent=2).encode("utf-8") + b"\n"
+        registry = cal_dir / "personal" / "RATIFIED.json"
+        reg = json.loads(registry.read_bytes())
+        reg["ratifications"][0]["closure_overlay_sha256"] = sha256(alt_bytes).hexdigest()
+        dump(registry, reg)
+    real = module.load_ratified_calendar
+
+    def swapping_loader(p, **kwargs):
+        if swap == "calendar":
+            Path(p).write_bytes((cal_dir / NOV).read_bytes())
+        else:
+            Path(kwargs["overlay_path"]).write_bytes(alt_bytes)
+        return real(p, **kwargs)
+    monkeypatch.setattr(module, "load_ratified_calendar", swapping_loader)
+    with pytest.raises(CalendarError, match="^binding_digest_mismatch"):
+        load_personal_calendar_binding(path, repo_root=repo)
+
+
 def _imports(path):
     names = set()
     for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
