@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 by the Deployment Coordinator after Joshua chose option (a), "go with (a), draft the timeout card", to stop recurring local timeouts. Freezing and dispatch are coordinator acts after Joshua reviews this draft.
+**Status:** **FROZEN 2026-10-12** by the Deployment Coordinator at the commit that adds this line (committed-handoff rule), on Joshua's word, verbatim: "Freeze the timeout card" (G-1 and G-2). §12's upper bound is 14400 s as proposed. **Not dispatched**: G-3 is the coordinator's dispatch record to Codex.
 
 **Base:** `origin/main` `6cf684a`. Every `file:line` is at that commit.
 
@@ -140,7 +140,7 @@ git diff --stat origin/main...HEAD   # expect only §2 files
 
 ## 12. Open decisions (coordinator at freeze)
 
-The upper bound: 14400 s (4 h) is proposed, covering the observed 60% at 3600 s on `[core]` with margin.
+**Settled at freeze:** 14400 s (4 h), as proposed, covering the observed 60% at 3600 s on `[core]` with margin.
 
 ## Pre-mortem
 
