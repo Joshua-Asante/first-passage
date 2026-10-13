@@ -57,7 +57,7 @@ Tradeify's [supported-platforms page](https://help.tradeify.co/en/articles/10468
 
 ## For the 11-08 sitting
 
-- **(b)** is the only in-guidance automation path, and only through route 1. It needs three written answers first: offline fixed parameters allowed (follow-up Q3), Tradeify's company NinjaTrader licence running automated strategies (not yet asked; add it to the follow-up if one is sent), and CME's category for automated orders into a prop simulation (ticket #04738415).
+- **(b)** is the only in-guidance automation path, and only through route 1. It needs three written answers first: offline fixed parameters allowed (follow-up Q3), Tradeify's company NinjaTrader licence running automated strategies (follow-up Q6, drafted 2026-10-13, not yet sent), and CME's category for automated orders into a prop simulation (ticket #04738415).
 - **(a)** needs a clause-citing reversal of [G]'s bridge and API bar. Nothing found here reverses it.
 - Routes 2–4 are semi-automation. They need no reversal, but they change the qualified expression and cost operator hours. Route 4 waits on follow-up Q4.
 
