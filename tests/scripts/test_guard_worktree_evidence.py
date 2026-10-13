@@ -406,6 +406,25 @@ def test_enumeration_failure_fails_closed(tmp_path):
     assert result.stdout == ""
 
 
+def test_a_multi_line_git_error_is_folded_into_one_reason_line(
+        monkeypatch, mod, capsys, tmp_path):
+    """Git versions differ in how many stderr lines a failure prints (a hint or
+    warning before the fatal); the hook still emits exactly one reason line."""
+    def failing_git(args, **kwargs):
+        return subprocess.CompletedProcess(
+            args, 128, stdout="",
+            stderr="warning: first line\n\nfatal: not a git repository\nhint: third\n")
+    monkeypatch.setattr(mod.subprocess, "run", failing_git)
+    assert run_main(monkeypatch, mod, "git worktree remove wt", tmp_path) == 2
+    captured = capsys.readouterr()
+    lines = captured.err.splitlines()
+    assert len(lines) == 1, captured.err
+    assert lines[0].startswith("guard_worktree_evidence: cannot enumerate worktrees")
+    for part in ("warning: first line", "fatal: not a git repository", "hint: third"):
+        assert part in lines[0]
+    assert captured.out == ""
+
+
 # --- (j) the manifest: idempotent appends, conflicting hashes refused -----------
 
 def test_manifest_rejects_a_path_with_two_hashes(site):
