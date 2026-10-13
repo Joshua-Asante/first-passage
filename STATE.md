@@ -85,6 +85,7 @@ Owners hold canonical criteria; rows are pointers.
     R-1 ran on X-1's order instead ([discharged](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)
     2026-10-01, `LOCATED_WITH_CLORDID`, this order at this time only).
   - 10-05→10-09: placed Monday 10-05; the operator attests (10-08, to the Deployment Coordinator) it was verified and reported at the time. The capture's location is not recalled, so this record is not independently checked.
+  - 10-12→10-16: placed Monday 10-12 by the operator: a one-lot MYMZ6 market buy and sell, both filled (operator-attested 10-12 to the Deployment Coordinator with an orders-tab capture, kept privately in the primary checkout's `local_artifacts/preservation-2026-10/` with `SHA256SUMS`). Placed directly on the trading platform, not via CrossTrade (Joshua, 10-12: "placed directly").
 - Preserve missed-week records when advancing; record coverage only when attested;
   `daily-repo-truth-sync` reads this board's dated obligations.
 
