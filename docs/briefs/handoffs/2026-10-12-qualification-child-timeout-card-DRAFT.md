@@ -146,3 +146,18 @@ git diff --stat origin/main...HEAD   # expect only §2 files
 
 - **A large override could hide a real hang locally for up to 4 hours.** The cap is bounded, and CI is unaffected.
 - **CI might export the variable some other way.** Phase 0 (b) and the §7 stop guard against this.
+
+## Amendment 2026-10-13 — T5 evidence route (coordinator; worker hook block)
+
+**Trigger:** the Codex Phase 0 return (2026-10-13, BLOCKED/AMBIGUOUS, no code changed, head `13e5d2e`, launcher record status `failed`, exit 5). `tests/ops/conftest.py` `pytest_collection_modifyitems` removes `test_qualification_isolation.py`'s items from every focused or filtered selection (`_isolate_qualification` is true only for an unfiltered ancestor-directory run), so T5 as written cannot run. Not bypassed. Phase 0's other findings stand: the child uses `sys.executable` and strips `PYTEST_ADDOPTS` and three xdist variables; CI's `tests.yml` `pytest` job runs `pytest tests/` with no job timeout; no CI configuration sets the variable; nothing else reads `qualification_child_timeout_s`.
+
+**T5 is replaced by T5a and T5b.** All other rows, mutants, scope and forbidden lists are unchanged; `tests/ops/conftest.py` stays forbidden.
+
+| Row | Check |
+|---|---|
+| T5a (local, recorded) | With the variable unset, `.p.ps1 python -m pytest tests/ops --collect-only -q` collects the bridge's shard items and none under `tests/ops/qualification` or the provenance file. Collection only; no qualification child runs locally. |
+| T5b (CI, at the build head) | The `pytest (3.11)` job passes on the build PR's exact head. It runs `pytest tests/` unfiltered with the variable unset, so the bridge runs the shards at the 3600 s default and records `qualification_child_timeout_s` = 3600 and the not-overridden flag. The return cites the job and the property from the retained `pytest-evidence` artifact. |
+
+**T1–T4 helper tests:** the new `test_qualification_child_timeout.py` imports only the helper (a non-`test_` name) from the isolation module, so no bridge test function is re-collected under the new module. It runs focused as normal.
+
+**Return:** T5a's launcher record locally; T5b is evidence only once CI is green at the exact head. A local full `fp test-ops` is not required (§9).
