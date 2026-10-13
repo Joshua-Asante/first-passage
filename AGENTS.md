@@ -25,6 +25,39 @@ serve the pipeline and pass the [retention test](docs/operational_rules.md#16-re
 removed evidence is retrievable via [archive guidance](docs/ltm/README.md) and
 [lab/ARCHIVED.json](lab/ARCHIVED.json).
 
+## Contribution to the objective
+
+Prioritize authorized work by its contribution to First Passage's stated objective
+and current priorities in [STATE.md](STATE.md). Scale formality to the work:
+
+1. Before substantial work, name the unresolved question and the consequential
+   decision its answer will change.
+2. Choose the cheapest trustworthy evidence: reuse valid existing evidence and
+   focused tests, following [verify-source](.claude/skills/verify-source/SKILL.md)
+   and [local verification](#python-environment-and-local-checks). Engineering
+   needed for measurement integrity is valuable. Explain why additional agents or
+   checks are decision-relevant and whether sufficient evidence already exists.
+3. Before a substantial experiment, state what success, failure and inconclusive
+   results imply for the decision, and an appropriate effort/cost bound within
+   existing authorization. Reaching the bound triggers reassessment, not automatic
+   expansion or weaker acceptance; a proposed bound is not spending permission.
+4. Justify prerequisites: defer a task if postponing it still permits a valid,
+   safe and lawful answer. Preserve mandatory legal, capital, credential,
+   private-data, verification and release controls; value judgments cannot waive
+   authority or acceptance gates. Route changes to assigned work through its owner.
+5. At existing progress reviews, summarize uncertainty resolved, decisions changed
+   and whether the next investment remains worthwhile, including operator
+   supervision/coordination cost. PR counts, documentation volume and architectural
+   completeness are not evidence of business value. Negative findings are useful
+   only when accurately recorded and incorporated into subsequent choices; follow
+   [correction rules](docs/operational_rules.md#14-corrections-land-where-the-error-is-read-not-where-it-is-convenient-to-write),
+   and never silently modify frozen tests.
+
+When useful, put a short statement in the existing task or handoff: "Resolve this
+question, using this evidence, within this bound; these outcomes lead to these
+decisions." Routine fixes need no new form, ledger, recurring report, automation,
+approval layer, code hook or ceremony.
+
 ## Output efficiency
 
 Use the fewest words that meet the objective in text, code, tool calls and records.
