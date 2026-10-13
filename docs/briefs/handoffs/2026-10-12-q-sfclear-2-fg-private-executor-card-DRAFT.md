@@ -73,8 +73,8 @@ The acceptance files run green at the run head before any real-input step (§3 s
 ## 0.5. Routing and clarifying questions
 
 - **(A) Why Claude, why private.** The run reads accepted ports, `effective_inputs.json`, vendor exports and the R1 tuple. That routes it to a Claude private executor under AGENTS.md "Private read surface" and §60, never to Codex or GLM.
-- **(B) The driver.** FG items 2–3 need a real-input driver. Part 1 is a synthetic test, and this card writes no repo code. The driver is a private script in the private root, written and hashed before any real-input step, and its sha256 is recorded in the dispatch record (decision D-2, §12). It imports the run head's production modules unchanged and the Part 1 differential's logic by reference. It reimplements no law.
-- **(C) The vector on the live path.** The R1 vector reaches the P-L1/P-L2/P-L3 seam as a sizing FILE source (J-3). The FILE is derived inside the private root from `R1_TUPLE.json`'s `sizing` mapping. Its sha256 must equal the tuple's `size_vector_sha256`, and `validate_size_vector` must accept it (decision D-3).
+- **(B) The driver.** FG items 2–3 need a real-input driver. Part 1 is a synthetic test, and this card writes no repo code. The driver is a private script, prepared and reviewed **before dispatch**, and its sha256 is bound in the dispatch record. H4 copies it into the private root and verifies those exact bytes; nothing is written or edited on the VM (decision D-2, §13). It imports the run head's production modules unchanged and the Part 1 differential's logic by reference. It reimplements no law.
+- **(C) The vector on the live path.** The R1 vector reaches the P-L1/P-L2/P-L3 seam as a sizing FILE source (J-3). The FILE is exactly `canonical_json_bytes(tuple["sizing"])`, with no reformatting. Its sha256 must equal the tuple's frozen `size_vector_sha256`, and `validate_size_vector` must accept it. Three identities stay distinct: the tuple file hash (`62d7ae19…671f`), the canonical size-vector hash, and the owner's binding identity (decision D-3, §13).
 
 ## 1. Goal
 
@@ -115,13 +115,13 @@ Produce private, hash-bound evidence of FG items 1–3 at R1 (pre-registration �
 | Anchor artifacts (§0(g)) | their private paths | `acfa7920…`, `ebcb2efb…`, the Step 6 record hash |
 | Interpreter and operations venv | `C:\Program Files\Python313` and the launcher's venv path | the launcher's `doctor` identity |
 
-**Never copied:** Pine (`core/strategies/book/*.pine`); `e0_private.txt`; the freeze, rulings, fold or fact-finding folders; any T00, screen, replay or MC output; any other private file.
+**Never copied:** Pine (`core/strategies/book/*.pine`); the freeze, rulings, fold or fact-finding folders (but see §13 input scope for the `E_0` file and the digest-only run manifest); any T00, screen, replay or MC output; any other private file.
 
 **H2. Verify.** On the VM, before any run, compare every copied file by sha256 against its pin. Run `sha256sum -c core/strategies/BOOK_SOURCES.sha256` on the four port rows only (Pine is absent by design), and check the panel `SHA256SUMS`.
 
 **H3. Read-only interpreter and venv.** Set `C:\Program Files\Python313` and the venv read-only for the run's duration (attended-host threat model, T00 card §8). `fp doctor` passes. Use `sys.executable` for any child process.
 
-**H4. Private root.** Create `C:\Users\joshu\t00-step3-console\sfclear2-fg-<UTC>\`, outside the repo, on the VM. Write `nonce.txt` first (≥ 128 random bits, §6 nonce rule). Write the driver (§0.5 B) and the derived sizing FILE (§0.5 C); hash both into `SHA256SUMS` before any real-input step.
+**H4. Private root.** Create `C:\Users\joshu\t00-step3-console\sfclear2-fg-<UTC>\`, outside the repo, on the VM. Write `nonce.txt` first (≥ 128 random bits, §6 nonce rule). Copy in the reviewed driver (§0.5 B) and verify its sha256 equals the dispatch-record value; derive the sizing FILE (§0.5 C) and verify it; hash both into `SHA256SUMS` before any real-input step.
 
 **H5. Run, attended.** Run the acceptance list green at the run head. Then set `FP_PORT_ROOT`, `FP_BAR_DATA_DIR` and `FP_TV_EXPORT_DIR` to the §H1 paths and run items 1a → 1b → 1c → 2 → 3, each under the §7 timeout. Outputs are per-item pass/fail plus counts, refusal reasons and divergence locations (bar time, leg, field). No P&L, equity, drawdown, MAE/MFE or trip column is written, printed or returned.
 
@@ -174,7 +174,7 @@ Stop and return at once, writing nothing further:
 - any FG item FAIL. Finish sealing the outputs, then return `DONE — FG FAIL`. No retry by any change;
 - VM access not opened, or any credential, login or MFA prompt;
 - **power and disk:** the VM is stopped, preempted or deallocated mid-run; free disk below twice the copied-input size before H4; or a write error;
-- **timeout:** any single item exceeds its per-item wall-clock limit (decision D-4). An interrupted root is sealed as `INCOMPLETE` and kept, never reused. A rerun uses a new `<UTC>` root on the same frozen inputs, only on a coordinator dispatch, and the interrupted root is disclosed;
+- **timeout:** any single item exceeds its per-item wall-clock limit (decision D-4, §13). An interrupted root is sealed as `INCOMPLETE` (the only writes allowed after interruption are the `INCOMPLETE` marker and `SHA256SUMS`; no further output), kept, never reused, and carries no PASS standing. A rerun uses a new `<UTC>` root on the same frozen inputs, only on a coordinator dispatch, and the interrupted root is disclosed;
 - the VM is unavailable. Falling back to the laptop needs a new coordinator ruling, because item 6 ruled (b) and the laptop has hit timeouts.
 
 ## 8. Out of scope and decision unlocked
@@ -220,6 +220,45 @@ git status --porcelain   # expect empty: no repo write by the executor
 - **D-6 (Joshua).** Teardown: who removes the VM copies, and whether deallocation is enough or disk deletion is required.
   - **RULED 2026-10-12 (same words):** Joshua removes the H1/H4 copies, the executor confirms their absence with a listing, then Joshua deallocates the VM. Disk deletion is not required once absence is confirmed.
 - **D-7.** Exposure: the R1 PR replay inside items 2–3 runs the same path the scoring run will. Confirm that §5's output restriction (no P&L, equity or trip data) is sufficient, or require a separate executor for scoring.
+
+## 13. Coordinator resolutions before freeze (2026-10-12)
+
+Prepared on Joshua's 2026-10-12 instruction to resolve #808's contradictions using the fidelity review (main `6cf684a`, #808 `ae689ff`). They govern §§0.5, 2, 3, 7 and 12 where they differ. D-5 and D-6 stay as ruled. Items marked **(Joshua)** need his words before freeze.
+
+**D-1. What item 1 demonstrates, per leg.** Item 1 has two separate parts, and passing one does not imply the other.
+- **1(i) Captured-setting F11 revalidation.** On the moved emulator, at the captured sizing, each anchor reproduces exactly as recorded: Vanguard V-0 338/338; Striker Step 3 contract `acfa7920…`/`ebcb2efb…` and the Step 6 replay record; Aegis's captured-size PR run against its retained reference. Reference: the recorded anchor. Permitted difference: none.
+- **1(ii) Transfer to R1 sizing.** Reference: the 1(i) run of the same leg on the same pins.
+  - *Aegis* (fixed quantity): in the isolated-leg run, every trade's entry/exit bar and price equal the reference, with only quantity scaled. This does not imply unchanged whole-book timing, so 1(ii) also runs the four-leg PR under the bound schedule and P0. Every whole-book difference from the isolated run must carry a named control record (G0 denial, G4 window, P0 refusal or latch, cap). Any unexplained difference fails.
+  - *Vanguard* and *Striker* (size-dependent state: port paper equity, port map, `ddHit` and soft-stop): all trades up to the first divergence equal the reference, apart from quantity, which item 2 checks against the law. The first divergence must be attributable to a recorded size-dependent state change (paper-equity path, or a trip with its date). After it, differences are permitted only through that state. The divergence point and its cause are recorded privately, with pass/fail public. "The replay completes and quantities match" alone is not a 1(ii) PASS.
+- None of this weakens the frozen §7 item 1: each anchor is re-shown at R1, with F11.
+
+**D-2. Driver custody.** The coordinator prepares the private driver before dispatch. A Claude reviewer reads it in place: it imports the run head's production modules unchanged, uses production feedback (fills and refusals reach the adapters exactly as in replay), reimplements no strategy or sizing law, and follows the output allowlist below. Its sha256 is then bound in the dispatch record. H4 copies and verifies; it never writes the driver.
+
+**D-3. Vector identities and the FG seam.** The FILE is exactly `canonical_json_bytes(tuple["sizing"])`, verified against the frozen `size_vector_sha256` and accepted by `validate_size_vector`. The typed consumers exist (P-L1, P-L2 and P-L3 are merged). The production FILE loader (R-SV) does not exist yet and stays with its owner. **(Joshua)** Decide whether the reviewed in-process seam satisfies FG item 3. In that seam, the driver reads the FILE bytes, validates them into a `SizeVector`, and builds the owner binding through P-L2's typed path. Recommended: yes for FG, with the R-SV production loader kept as a separate gate before any live activation. Otherwise FG waits for the R-SV loader build.
+
+**D-4. Timeouts.** No VM runtime is assumed. Each item's limit is 4× a measurement, recorded in the dispatch record:
+- items 1(i) and 1(ii): the laptop's recorded parity run at the run head (the coordinator's #797 run: 29 tests in 43 s), re-measured at the run head before dispatch;
+- items 2 and 3: Part 1's own synthetic full-calendar replay duration at its merged head.
+
+An interrupted root is sealed `INCOMPLETE`: only its marker and `SHA256SUMS` are written after interruption, it has no PASS standing, and it is kept. A rerun needs a coordinator dispatch, a new root and unchanged frozen inputs. A rerun that would change any input needs Joshua.
+
+**D-7. Exposure and input scope.** Under frozen card B, the replay must verify a starting-equity file and its digest from the freeze record. This card excluded both, which is the contradiction.
+- **Smallest amendment.** Add two machine-consumed inputs to H1, both never opened or printed by any person or agent process outside the replay's verified envelope:
+  - (a) the `E_0` file (`e0_private.txt`), checked against the tuple's reference and the freeze record's `input_sha256` digest;
+  - (b) a **digest-only run manifest** built by the coordinator from F and the freeze record. It holds only the expected digests that card B's envelope consumes. It holds no G1/G3, drift or other values, so the freeze record itself is not copied.
+- **No bypass.** No substitute equity, no skipped verification, and no edit to frozen card B.
+- **(Joshua) Approval needed.** D-5 covered the tuple, anchors and interpreter. It did not cover the `E_0` file. Transferring `e0_private.txt` to the VM needs his explicit words.
+- **Output allowlist** (unchanged scope: no separate scoring executor is required). The replay keeps its normal internal equity and P&L arithmetic; nothing derived from it leaves the process except:
+  - per item, PASS/FAIL;
+  - per trade, leg, timestamps, quantity and reason codes;
+  - divergence points and causes (private);
+  - hashes.
+
+  Denied in output: P&L, equity, drawdown, trip dates, `E_0` and any cell value.
+  - Exceptions are logged as class and code location only, with no message text or locals.
+  - Pytest runs use `--tb=line -p no:cacheprovider`, with no captured-variable dumps.
+  - No route-output file is kept beyond the allowlisted fields.
+  - The leak scan runs on everything returned.
 
 ## Pre-mortem
 
