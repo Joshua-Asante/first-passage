@@ -29,6 +29,9 @@ permissions:
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    # Hang bound, not a performance gate. Serial runs took 46-74 min (2026-10-13);
+    # without this the job inherits GitHub's 360 min default.
+    timeout-minutes: 90
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -51,8 +54,12 @@ jobs:
       # report root from the parent's xmlpath, so the child's junit.xml and
       # output.log land beside it. Before 2026-09-19 both were discarded and CI
       # had no per-test evidence for the 18-25 min child.
+      # -n 3 runs the bridge's two shard cases (~85% of serial test time) in
+      # parallel with each other and the rest of the suite. --dist load, not
+      # loadscope: loadscope keeps a module on one worker, which would
+      # serialize both shard cases again.
       - name: Run pytest
-        run: pytest tests/ -v --junitxml="$RUNNER_TEMP/pytest-evidence/junit.xml"
+        run: pytest tests/ -v -n 3 --dist load --junitxml="$RUNNER_TEMP/pytest-evidence/junit.xml"
       - name: Retain pytest evidence (parent junit, qualification child junit/output)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
