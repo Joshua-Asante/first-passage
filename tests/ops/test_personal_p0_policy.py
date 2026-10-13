@@ -82,4 +82,3 @@ def test_personal_cap_bounds_risk_allocation(monkeypatch):
         bp.entry_quantities("dj30_mym_p250", mode=Mode.NORMAL, policy=policy,
                             lifecycle_tier="AUTHORIZED", risk_dollars=700,
                             per_contract_risk=35, cap_alloc=21)
-
