@@ -215,3 +215,12 @@ Private outputs stay under `C:\Users\joshu\t00-step3-console\sfclear2-run-<UTC>\
 - **Evidence binding:** records at the returned head only.
 
 [prereg]: https://github.com/Joshua-Asante/first-passage/blob/83867f0d362931c2a516a62b990bb1c209372527/docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md
+
+## Amendment 2026-10-13 — Striker trips and Vanguard `E_p` from a private port-state record
+
+**Ruling:** Joshua, 2026-10-13, directly to the Deployment Coordinator, verbatim "yes", approving the coordinator's proposal after card B's Phase 0 stop (card B amendment 2026-10-13: B exposes a `bar_observer` hook and no longer emits trips or `E_p`).
+
+**Changes (all else unchanged):**
+- **New input `sfclear_port_state/v1`** (private; written by the clearance-run driver beside B's route output; listed in the run's `SHA256SUMS`, which lists a nonce file per §6). Closed schema: `schema`, `run_head` (40 hex), `legs`: `dj30_mym_p250` → `daily_dd_trips_utc` and `total_dd_trips_utc` (lists of aware UTC times); `vanguard_mgc` → `e_p` (list of `[bar_close_utc, value]`). Any other key, a missing leg, a non-finite value or a `run_head` that differs from the run record's refuses (VOID).
+- **Producer:** the private clearance-run driver registers B's `bar_observer` and derives these from each port's own per-bar equity and trip logic on the live strategy object (private read surface; never copied to the repo or quoted). The driver is reviewed by the coordinator and its sha256 is bound in the run manifest before the run; a changed driver is a new manifest.
+- **E11** reads the Striker total-DD trip from `total_dd_trips_utc`; **G1-D/G3-D** read the `E_p` path from `e_p`. Logic unchanged. Build tests use synthetic `sfclear_port_state/v1` files; **E-row added:** a port-state record whose `run_head` differs from the run record's refuses.

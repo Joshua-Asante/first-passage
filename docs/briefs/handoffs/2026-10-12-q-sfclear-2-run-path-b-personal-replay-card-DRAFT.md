@@ -220,3 +220,13 @@ python -I scripts/fp.py check
 - **Evidence binding:** records at the returned head only.
 
 [prereg]: https://github.com/Joshua-Asante/first-passage/blob/83867f0d362931c2a516a62b990bb1c209372527/docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md
+
+## Amendment 2026-10-13 — port state via an observer hook (§0(d) stop resolved)
+
+**Trigger:** card B's Phase 0 return (Codex, 2026-10-13, NEEDS_CONTEXT at exact base `07d90b0`): `BookStrategy.checkpoint()` has no public contract for Striker's paper equity or `ddHit` trips or Vanguard's `E_p`. The coordinator read the two ports in place (private read surface; nothing quoted): neither stores its trip state or paper equity in `checkpoint()`; both compute them per bar. B10 as written is unmeetable without a port edit (§0(d): plan-itself-wrong). **Ruling:** Joshua, 2026-10-13, directly to the Deployment Coordinator, verbatim "yes", approving the coordinator's proposal after card B's Phase 0 stop.
+
+**Changes (all else unchanged):**
+- **Observer hook.** The personal replay accepts an optional `bar_observer`. After every leg has processed a bar's close and that bar's fills have settled, it is called once per leg, in a fixed leg order, as `bar_observer(leg_id, bar_close_utc, strategy)`, where `strategy` is the leg's loaded strategy object as the replay holds it. Its return value is ignored. An exception from it aborts the run with no route output. Default `None`: behaviour and output bytes identical to no hook. Public code never reads, interprets or logs the strategy's state.
+- **Route output.** `sfclear_route_output/v1` no longer carries Striker daily/total-DD trip timestamps or Vanguard's `E_p` path. Per-trade fields (D-2, confirmed 2026-10-13), refused signals with reason, verified input identities and A's latch record are unchanged.
+- **B10 replaced by B10′:** a synthetic observer is called exactly once per leg per bar, in order, after fills settle, with the same strategy instance each time; route output bytes with a no-op observer equal those with none; a raising observer aborts with no output. Named mutant **M-B11:** call the observer before fills settle, or skip a leg.
+- **Where trips and `E_p` come from:** the private clearance-run driver (card E amendment 2026-10-13), not this card.
