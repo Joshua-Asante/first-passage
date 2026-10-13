@@ -99,3 +99,50 @@ Deferring costs no timing on the evidence path: the successor screen and Q-SFGRO
 - Inputs read: #770's note at its branch head; the #583 note §4.1 at #768's branch head; size-feasibility RESULTS and private `verdict.json` and k = 0.5 reports in place; the private desk model (sha256 `86c03617…`) and Q1 options sheet in place; [load-bearing numbers](../load_bearing_numbers.md); the T00 card §8; the Q-SFGROWTH-1 prereg (no RESULTS on disk).
 - Arithmetic: the private `calc.py`; its output is pinned in the private `SHA256SUMS`. No MC, replay, screen or GLM.
 - Gates: `python -I scripts/fp.py check`; record cited in the PR body.
+
+## Addendum 2026-10-12 — personal-lane route budget (conditional subtotals)
+
+Prepared on Joshua's 2026-10-12 instruction. These are conditional subtotals for planning, not a quote, a confirmed range or a ceiling. Nothing here selects, funds or provisions anything.
+
+**Relabel.** Per the 2026-10-12 operator read of the June 2026 CME fee list ([licensing addendum](2026-10-10-cme-non-display-licensing-research.md#addendum-2026-10-12--operator-read-of-the-licence-clauses)), "A8" and "A9" in §1 are footnoted rows, not category codes:
+- User Non-Display Category A (footnote 8): $457 per exchange.
+- Managed User Non-Display Category A (footnote 9): $208 per exchange.
+- Three exchanges come to $1,371 and $624 respectively.
+
+**Monthly items (personal Python/API route):**
+
+| Item | Monthly | Status |
+|---|---|---|
+| Rail hosting: checked-in two-process Fly configuration, compute plus storage | ~$4.68 | Public starting price from the 2026-10-12 review; capacity and usage unverified |
+| Tradovate API add-on | $25 | Provisional; price still to be confirmed |
+| Ordinary market data | $0–$12 | Display data; establishes **no** automated-use rights |
+| Paging (Grafana) | $0 | Free tier (ruled 2026-10-12); SMS/voice re-proved before arming |
+| CME non-display licence | $624 or $1,371 | Scenario only; classification open on ticket #04738415 |
+
+**Incremental priced subtotal:**
+- **$653.68–$665.68 per month** in the $624 scenario.
+- **$1,400.68–$1,412.68 per month** in the $1,371 scenario.
+
+**Excluded:**
+- retained CrossTrade (d14, $50/month, kept by ruling 2026-10-12);
+- trading costs and slippage;
+- Azure research compute;
+- taxes;
+- any unresolved charge (base ILA, setup or term fees, Level 1 if the API requires it, the $35 inactivity fee);
+- the $1,000 API-key balance, which is capital.
+
+**CrossTrade baseline.** CrossTrade is kept, so its $50/month is a cost already being paid, not a saving available by cancelling it. It supplies no client market-data feed, so it does not offset the data line. Choosing between finishing the personal route on CrossTrade REST and integrating Tradovate directly belongs to the T09 route owner. That owner compares the remaining qualification work on each before choosing.
+
+**Azure (research, priced separately).**
+- VM: `Standard_D32ls_v6` (32 vCPU / 64 GiB, Windows Server 2025, East US).
+- Cost: about $2.90 per running VM-hour, plus disk and IP.
+- Joshua's guardrail: $125/week, enforced by the runner, with idle auto-deallocate.
+- A bounded FG run envelope is 4× the measured limits set in #808 §13 D-4, multiplied by $2.90 per hour.
+- No runtime is assumed until D-4's measurements exist.
+
+**Open:**
+- CME classification and fees;
+- Tradovate's API access terms and price;
+- all-in costs.
+
+Both provider follow-ups were sent on 2026-10-12, and no replies have come yet.
