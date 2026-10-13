@@ -223,3 +223,30 @@ def test_late_personal_flat_cannot_retroactively_clear_schedule_deadline(gap_min
         replay.run((session,))
     assert replay.personal_halted and replay.personal_flatten_owed
     assert not any(e.kind == "personal_halt_flat_confirmed" for e in replay.events)
+
+
+def test_halt_then_same_bar_close_confirms_flat_before_bar_equity():
+    def emit(a, b):
+        if len(a.bars) == 1:
+            return first_entry(a, b)
+        if len(a.bars) == 2:
+            return [OrderIntent("same-bar-close", a.leg_id, "flat", Side.SELL, None,
+                                timing=FillTiming.THIS_CLOSE, reason="strategy_close")]
+        return []
+
+    replay, _ = personal_engine(emit, pointvalue=1000, price=75)
+    session = path_session(prices=[(100,100,100,100), (80,80,80,80), (75,75,75,75)])
+    result = replay.run((session,))
+    latch, = latches(result)
+    confirmed, = [e for e in result.events if e.kind == "personal_halt_flat_confirmed"]
+    close, = [e for e in result.events if e.kind == "fill"
+              and json.loads(e.detail)["reason"] == "strategy_close"]
+    assert latch.path_time == close.path_time == confirmed.path_time
+    latch_index = result.events.index(latch)
+    close_equity_index = next(i for i, e in enumerate(result.events)
+                              if i > latch_index and e.kind == "bar_equity")
+    assert latch_index < result.events.index(close) < result.events.index(confirmed) < close_equity_index
+    assert replay.personal_halted and not replay.personal_flatten_owed
+    assert result.sessions[0].end_edge.is_flat
+    assert not any(e.kind == "fill" and json.loads(e.detail)["reason"] == "personal_halt"
+                   for e in result.events)

@@ -596,7 +596,10 @@ class BookReplay:
 
     def _observe_personal(self, bars):
         """Observe account marks at this close, including any just-confirmed close fills/fees."""
-        if not self.personal or self.personal_halted:
+        if not self.personal:
+            return
+        if self.personal_halted:
+            self._confirm_personal_flat()
             return
         equity = self.cash + sum(self.brokers[k].open_pnl(b.close) for k, b in bars.items())
         if not math.isfinite(equity):
