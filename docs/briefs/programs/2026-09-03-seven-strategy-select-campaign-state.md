@@ -4076,6 +4076,8 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 - **Still in force:** every condition of the 2026-10-07 addendum (direct transfer, Joshua-opened access only, no credential handling, rules 2–4, no other external service, attended-host threat model).
 - **Not changed:** any other run, host or use; the private status of Pine and ports.
 
+**Addendum 2026-10-12 (later) — the `E_0` file for the same FG run.** *Operator ruling 2026-10-12, given by Joshua directly to the Deployment Coordinator, verbatim: "yes to both", on the [FG executor card](https://github.com/Joshua-Asante/first-passage/pull/808) §13 D-7.* The private `E_0` file may be copied to the same VM for the Q-SFCLEAR-2 FG evidence run only, consumed solely by the replay's verified envelope, never opened or printed by any person or agent process, and removed at teardown with the other copies. Every condition above stays in force; nothing else is admitted.
+
 ## §61 — X-1 observed route acceptance (2026-09-30)
 
 Joshua directed the continuation review of the completed September 30 X-1
