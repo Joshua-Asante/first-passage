@@ -172,11 +172,12 @@ class StartupPolicy:
     size_vector: SizeVector              # v1: IDENTITY_SIZE_VECTOR; v2: its signed `sizing`
 
 
-def parse_startup_policy(raw):
+def parse_startup_policy(raw, *, tier=None):
     """Proposed serialized F1 choice; parsing supplies no approval by itself.
 
     v2 is v1's fields plus `sizing` (successor card §2.4), validated by `validate_size_vector`."""
-    from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, validate_size_vector
+    from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, validate_size_vector, account_micro_cap, TIER
+    cap = account_micro_cap(TIER if tier is None else tier)
     doc = _json(raw)
     v2 = isinstance(doc, dict) and doc.get('schema') == 'qualification-source-startup/v2'
     if set(doc) != {'schema', 'initialization', 'positions', 'working_orders', 'splice_behavior',
@@ -187,8 +188,8 @@ def parse_startup_policy(raw):
             or doc['positions'] != 'ZERO' or doc['working_orders'] != 'ZERO'
             or doc['splice_behavior'] != 'CARRY_ALL_STATE'):
         raise ValueError('startup requires fresh-once construction and no state resets at splices')
-    if type(doc['shared_account_cap_micro_equivalents']) is not int or doc['shared_account_cap_micro_equivalents'] != 80:
-        raise ValueError('shared account cap must bind the accepted 80 micro-equivalent law')
+    if type(doc['shared_account_cap_micro_equivalents']) is not int or doc['shared_account_cap_micro_equivalents'] != cap:
+        raise ValueError(f'shared account cap must bind the accepted {cap} micro-equivalent law')
     start = date.fromisoformat(doc['path_start_date'])
     if start.weekday() >= 5 or set(doc['legs']) != set(LEG_IDS):
         raise ValueError('weekday path origin and exact four-leg startup rows required')
@@ -204,11 +205,11 @@ def parse_startup_policy(raw):
             raise ValueError('positive finite paper initial capital required')
         if row['lifecycle_tier'] != 'AUTHORIZED':
             raise ValueError('decision-bearing startup proposal is AUTHORIZED only')
-        if type(row['request_cap_micro_equivalents']) is not int or row['request_cap_micro_equivalents'] != 80:
-            raise ValueError('per-request cap must be explicit 80 micro-equivalents, not chart contract units')
+        if type(row['request_cap_micro_equivalents']) is not int or row['request_cap_micro_equivalents'] != cap:
+            raise ValueError(f'per-request cap must be explicit {cap} micro-equivalents, not chart contract units')
         capitals.append((leg, capital)); tiers.append((leg, row['lifecycle_tier'])); caps.append((leg, row['request_cap_micro_equivalents']))
     size_vector = validate_size_vector(doc['sizing']) if v2 else IDENTITY_SIZE_VECTOR
-    return StartupPolicy(start, tuple(capitals), tuple(tiers), tuple(caps), 80, size_vector)
+    return StartupPolicy(start, tuple(capitals), tuple(tiers), tuple(caps), cap, size_vector)
 
 
 def _instant(value):
@@ -1341,7 +1342,7 @@ class ProductionSource:
             sidecars.append(engine.attribution())
         return SidecarBracket(SourceOnlyBracket(*sealed), ATTRIBUTION_SCHEMA, *sidecars)
 
-    def _engine(self, schedule_quotes):
+    def _engine(self, schedule_quotes, *, policy=None):
         """One fresh engine: reloaded ports, brokers, ledger, cash and clock."""
         from c1_signal_daemon.book_adapters import _load_domain_adapters
         from c1_signal_daemon.tv_broker_emulator import TVBrokerEmulator
@@ -1364,7 +1365,7 @@ class ProductionSource:
         state = self.contract.initial_state
         initial = EvaluationState(float(state.original_basis), float(state.current_equity), float(state.historical_eod_peak),
                                   state.prior_trade_days, float(state.prior_max_day_profit))
-        return BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy(),
+        return BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy() if policy is None else policy,
                           initial_state=initial, sizing_inputs=sizing, schedule_quotes=schedule_quotes, broker_factory=brokers,
                           size_vector=startup.size_vector)
 
