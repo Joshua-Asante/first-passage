@@ -2,7 +2,7 @@
 
 **Type:** cc_handoff (private executor card)
 
-**Status:** **DRAFT, not frozen, not dispatchable.** Drafted 2026-10-12 by a drafting worker for the Deployment Coordinator. It grants nothing until the coordinator freezes it under the committed-handoff rule and records a dispatch (§11).
+**Status:** **FROZEN 2026-10-12** by the Deployment Coordinator (single writer of this card, by Joshua's 2026-10-12 "you own #808, keep writing it") at the commit that adds this line, after §13's resolutions and Joshua's rulings (D-5/D-6 "as recommended"; E_0 transfer and the FG seam "yes to both"). **Not dispatched.** Dispatchable only when §0 and §11 hold: cards A, B, D Part 1 merged, P-L2/P-L3 merged (done), the driver reviewed and its hash bound, D-4 measurements recorded, the digest-only run manifest built, and Joshua's per-run VM access opened.
 
 **Base:** `origin/main` `158bf2a` for every `file:line`. The run head is a later clean `main` commit that holds every §0(a) predecessor.
 
@@ -223,7 +223,7 @@ git status --porcelain   # expect empty: no repo write by the executor
 
 ## 13. Coordinator resolutions before freeze (2026-10-12)
 
-Prepared on Joshua's 2026-10-12 instruction to resolve #808's contradictions using the fidelity review (main `6cf684a`, #808 `ae689ff`). They govern §§0.5, 2, 3, 7 and 12 where they differ. D-5 and D-6 stay as ruled. Items marked **(Joshua)** need his words before freeze.
+Prepared on Joshua's 2026-10-12 instruction to resolve #808's contradictions using the fidelity review (main `6cf684a`, #808 `ae689ff`). They govern §§0.5, 2, 3, 7 and 12 where they differ. D-5 and D-6 stay as ruled. Items marked **(Joshua)** need his words before freeze. Card D's open D-3 (whether D7 must be green) is read from card D's own verdict rule (`:137`: RESOLVED allows `DONE_WITH_CONCERNS` only for D7 `PENDING-P4`), so D7 need not be green before this run; P0 live parity stays P4's acceptance.
 
 **D-1. What item 1 demonstrates, per leg.** Item 1 has two separate parts, and passing one does not imply the other.
 - **1(i) Captured-setting F11 revalidation.** On the moved emulator, at the captured sizing, each anchor reproduces exactly as recorded: Vanguard V-0 338/338; Striker Step 3 contract `acfa7920…`/`ebcb2efb…` and the Step 6 replay record; Aegis's captured-size PR run against its retained reference. Reference: the recorded anchor. Permitted difference: none.
@@ -234,7 +234,7 @@ Prepared on Joshua's 2026-10-12 instruction to resolve #808's contradictions usi
 
 **D-2. Driver custody.** The coordinator prepares the private driver before dispatch. A Claude reviewer reads it in place: it imports the run head's production modules unchanged, uses production feedback (fills and refusals reach the adapters exactly as in replay), reimplements no strategy or sizing law, and follows the output allowlist below. Its sha256 is then bound in the dispatch record. H4 copies and verifies; it never writes the driver.
 
-**D-3. Vector identities and the FG seam.** The FILE is exactly `canonical_json_bytes(tuple["sizing"])`, verified against the frozen `size_vector_sha256` and accepted by `validate_size_vector`. The typed consumers exist (P-L1, P-L2 and P-L3 are merged). The production FILE loader (R-SV) does not exist yet and stays with its owner. **(Joshua)** Decide whether the reviewed in-process seam satisfies FG item 3. In that seam, the driver reads the FILE bytes, validates them into a `SizeVector`, and builds the owner binding through P-L2's typed path. Recommended: yes for FG, with the R-SV production loader kept as a separate gate before any live activation. Otherwise FG waits for the R-SV loader build.
+**D-3. Vector identities and the FG seam.** The FILE is exactly `canonical_json_bytes(tuple["sizing"])`, verified against the frozen `size_vector_sha256` and accepted by `validate_size_vector`. The typed consumers exist (P-L1, P-L2 and P-L3 are merged). The production FILE loader (R-SV) does not exist yet and stays with its owner. **RULED (Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "yes to both"):** the reviewed in-process seam satisfies FG item 3; the R-SV production loader stays a separate gate before any live activation. *As put:* Decide whether the reviewed in-process seam satisfies FG item 3. In that seam, the driver reads the FILE bytes, validates them into a `SizeVector`, and builds the owner binding through P-L2's typed path. Recommended: yes for FG, with the R-SV production loader kept as a separate gate before any live activation. Otherwise FG waits for the R-SV loader build.
 
 **D-4. Timeouts.** No VM runtime is assumed. Each item's limit is 4× a measurement, recorded in the dispatch record:
 - items 1(i) and 1(ii): the laptop's recorded parity run at the run head (the coordinator's #797 run: 29 tests in 43 s), re-measured at the run head before dispatch;
@@ -247,7 +247,7 @@ An interrupted root is sealed `INCOMPLETE`: only its marker and `SHA256SUMS` are
   - (a) the `E_0` file (`e0_private.txt`), checked against the tuple's reference and the freeze record's `input_sha256` digest;
   - (b) a **digest-only run manifest** built by the coordinator from F and the freeze record. It holds only the expected digests that card B's envelope consumes. It holds no G1/G3, drift or other values, so the freeze record itself is not copied.
 - **No bypass.** No substitute equity, no skipped verification, and no edit to frozen card B.
-- **(Joshua) Approval needed.** D-5 covered the tuple, anchors and interpreter. It did not cover the `E_0` file. Transferring `e0_private.txt` to the VM needs his explicit words.
+- **RULED (Joshua, 2026-10-12, directly to the Deployment Coordinator, verbatim: "yes to both"):** `e0_private.txt` may be transferred to the VM for this FG run only, consumed by the replay's verified envelope and never opened or printed by any person or agent process; it is listed in H1 and removed at H7 teardown under D-6. Recorded at the §60 owner as well. *As put:* D-5 covered the tuple, anchors and interpreter, not the `E_0` file.
 - **Output allowlist** (unchanged scope: no separate scoring executor is required). The replay keeps its normal internal equity and P&L arithmetic; nothing derived from it leaves the process except:
   - per item, PASS/FAIL;
   - per trade, leg, timestamps, quantity and reason codes;
