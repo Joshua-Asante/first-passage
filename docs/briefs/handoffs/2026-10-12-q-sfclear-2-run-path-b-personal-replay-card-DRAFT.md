@@ -230,3 +230,13 @@ python -I scripts/fp.py check
 - **Route output.** `sfclear_route_output/v1` no longer carries Striker daily/total-DD trip timestamps or Vanguard's `E_p` path. Per-trade fields (D-2, confirmed 2026-10-13), refused signals with reason, verified input identities and A's latch record are unchanged.
 - **B10 replaced by B10′:** a synthetic observer is called exactly once per leg per bar, in order, after fills settle, with the same strategy instance each time; route output bytes with a no-op observer equal those with none; a raising observer aborts with no output. Named mutant **M-B11:** call the observer before fills settle, or skip a leg.
 - **Where trips and `E_p` come from:** the private clearance-run driver (card E amendment 2026-10-13), not this card.
+
+### Addendum 2026-10-13 (b) — tuple schema and `E_0` resolution
+
+On card B's question (Codex, 2026-10-13), the coordinator read `R1_TUPLE.json`'s key structure and the `E_0` file's encoding in place (no value read or printed; same scope as pre-registration §8 exposure entry 13). Public schema, names and types only:
+
+- `schema` = `q-sfclear-1-sizing-tuple/v1`; scalars (str): `study`, `rung`, `status`, `protection`, `lifecycle_tier`, `striker_risk_basis`, `size_vector_hash_rule`, `size_vector_sha256`, `prescreen_SHA256SUMS_sha256`, `nonce`; (int): `paper_initial_capital`; `book_legs`: list of 4 str.
+- `sizing` (the `validate_size_vector` input; `size_vector_sha256` = sha256 of `canonical_json_bytes(sizing)`): `aegis_6j` {`base` int, `adds` str}; `dj30_mym_p250` {`risk_multiplier` str, `cap_reserve_multiplier` str, `adds` str}; `vanguard_mgc` {`base_by_port` {`1` int, `2` int}, `adds` str}; `orb_mnq_v7` {`base` int, `adds` str}. `adds` ∈ {`OFF`, `UNCHANGED`}.
+- `capital_anchor` {`file` str, `file_sha256` str (64 hex), `symbol` str}; `cap_source` {`code_source` str, `ruling` str, `shared_account_cap_micro_equivalents` int, `request_cap_micro_equivalents_each_leg` int}; `rule_max_contracts` {one int per leg id, `book_micro_equivalents` int}; `derived_from` {`R0_size_vector_sha256`, `change_from_R0`, `r3d_startup_policy_sha256`} str; `ruling` {`D4`, `date`, `source`, `text`} str.
+
+**`E_0` resolution (replaces "file reference" in §0.5 (B)/(B′)):** `capital_anchor.file` is a descriptive label, not a path; never parse it. The run manifest supplies the `E_0` file path. B reads those bytes once and refuses unless their sha256 equals `capital_anchor.file_sha256` from the hash-verified tuple. Encoding: ASCII, no BOM, exactly one line of digits `[0-9]+` terminated by a single LF; the value must be > 0. Anything else refuses. Tests use a synthetic tuple and `E_0` file.
