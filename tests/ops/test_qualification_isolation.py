@@ -40,6 +40,23 @@ _SHARDS = {
 }
 
 
+def qualification_child_timeout(record_property):
+    """Resolve and record the bounded local override without silent fallback."""
+    raw = os.environ.get("FP_QUALIFICATION_CHILD_TIMEOUT_S")
+    timeout = 3600
+    if raw is not None:
+        message = "FP_QUALIFICATION_CHILD_TIMEOUT_S must be an integer between 3600 and 14400 inclusive"
+        try:
+            timeout = int(raw)
+        except ValueError:
+            pytest.fail(message, pytrace=False)
+        if not 3600 <= timeout <= 14400:
+            pytest.fail(message, pytrace=False)
+    record_property("qualification_child_timeout_s", timeout)
+    record_property("qualification_child_timeout_overridden", raw is not None)
+    return timeout
+
+
 @pytest.mark.parametrize("shard", sorted(_SHARDS))
 def test_qualification_suite_in_clean_process(shard, request, record_property):
     """Legacy flat imports must not contaminate signed canonical inventories."""
@@ -71,12 +88,11 @@ def test_qualification_suite_in_clean_process(shard, request, record_property):
     # (CI run 37233382687) and hit this cap at 84% after T00 P-A (#672) added
     # ~50 tests. Split, that run's test time is 1,917 s (execution) and
     # 1,613 s (core, before #672's test_screen_authority.py).
-    child_timeout = 3600
+    child_timeout = qualification_child_timeout(record_property)
     with tempfile.TemporaryDirectory(prefix="fp-qualification-") as scratch, output.open(
             "w", encoding="utf-8") as stream:
         command.append("--basetemp=" + str(Path(scratch) / "pytest"))
         record_property("qualification_child_command", repr(command))
-        record_property("qualification_child_timeout_s", child_timeout)
         try:
             completed = subprocess.run(
                 command, cwd=repository, env=environment, stdout=stream,

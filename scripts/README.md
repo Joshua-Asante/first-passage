@@ -2,6 +2,7 @@
 
 ## Local operations launcher
 
+For slow local hosts, set `FP_QUALIFICATION_CHILD_TIMEOUT_S` to an integer from 3600 through 14400 seconds (default 3600); invalid or empty values fail, and CI leaves it unset.
 Use the launcher from the checkout you intend to test. In PowerShell 7.3+:
 
 ```powershell
