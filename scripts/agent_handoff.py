@@ -614,7 +614,7 @@ class WindowsJob:
         return ctypes, wintypes, kernel
 
     @classmethod
-    def create(cls):
+    def create(cls, *, name=None):
         ctypes, wintypes, kernel = cls._api()
 
         class IO_COUNTERS(ctypes.Structure):
@@ -650,9 +650,12 @@ class WindowsJob:
                 ('PeakJobMemoryUsed', ctypes.c_size_t),
             ]
 
-        handle = kernel.CreateJobObjectW(None, None)
+        handle = kernel.CreateJobObjectW(None, name)
         if not handle:
             raise OSError('CreateJobObject failed')
+        if name is not None and ctypes.get_last_error() == 183:
+            kernel.CloseHandle(handle)
+            raise OSError('Named job already exists; refusing foreign ownership')
         info = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
         info.BasicLimitInformation.LimitFlags = cls.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
         if not kernel.SetInformationJobObject(handle, cls.JobObjectExtendedLimitInformation, ctypes.byref(info), ctypes.sizeof(info)):

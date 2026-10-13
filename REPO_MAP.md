@@ -83,7 +83,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_111 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -96,6 +96,15 @@ _102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/archive_strategy.py` | governance† | — | — |
 | `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (audit) | — |
 | `scripts/author_book_session_calendar.py` | governance† | — | — |
+| `scripts/azure_jobs/__init__.py` | governance† | — | — |
+| `scripts/azure_jobs/contract.py` | governance† | — | — |
+| `scripts/azure_jobs/control.py` | governance† | — | — |
+| `scripts/azure_jobs/entry.py` | governance† | — | — |
+| `scripts/azure_jobs/guest.py` | governance† | — | — |
+| `scripts/azure_jobs/guest_entry.py` | governance† | — | — |
+| `scripts/azure_jobs/probe_workload.py` | governance† | — | — |
+| `scripts/azure_jobs/runner.py` | governance† | — | — |
+| `scripts/azure_jobs/watchdog.py` | governance† | — | — |
 | `scripts/beta_cohesion_read.py` | lab | — | — |
 | `scripts/certification_power.py` | governance† | — | — |
 | `scripts/check_adr_graph.py` | governance† | `adr-graph` (path-conditional) | — |
