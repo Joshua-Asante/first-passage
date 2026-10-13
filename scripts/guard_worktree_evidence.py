@@ -413,7 +413,9 @@ def main() -> int:
             print(f"guard_worktree_evidence: archived {written} verification "
                   f"record(s) from {holders} linked worktree(s) to {archive}")
     except (ArchiveError, OSError) as exc:
-        print(f"guard_worktree_evidence: {exc}", file=sys.stderr)
+        # one reason line: a multi-line cause (git's stderr) is folded, not leaked
+        reason = " | ".join(part.strip() for part in str(exc).splitlines() if part.strip())
+        print(f"guard_worktree_evidence: {reason}", file=sys.stderr)
         return 2
     return 0
 
