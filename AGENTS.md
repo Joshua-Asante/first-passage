@@ -17,6 +17,10 @@ This is the only agent instruction file; a dated record's `CLAUDE.md §X` means
 The [surface-allocation ADR](docs/adr/2026-07-14-cc-cursor-surface-allocation.md) owns
 seats, the committed-handoff rule and escalation-lane triggers
 ([M-26 … M-48](docs/methodology/lessons/methodology_lessons.md) hold the evidence).
+Chip tasks, handoffs and dispatch cards run in the cloud by default. One that must
+run locally says **"Must run locally"** near its top, with the reason (for example
+the private read surface below, the operator's machine or VM, or private evidence
+writes). Operator direction 2026-10-13.
 
 Decisions live with their owning specification, campaign, plan or PR; ADRs follow the
 [admission rule](docs/adr/2026-08-08-adr-ceremony-tiering.md); other documents link the
