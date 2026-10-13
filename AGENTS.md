@@ -25,6 +25,15 @@ serve the pipeline and pass the [retention test](docs/operational_rules.md#16-re
 removed evidence is retrievable via [archive guidance](docs/ltm/README.md) and
 [lab/ARCHIVED.json](lab/ARCHIVED.json).
 
+## Contribution to the objective
+
+STATE's operator queue and the owning records' sequencing decide **what** to work on; this section governs **how** authorized work is done (Joshua's direction, 2026-10-13).
+
+- Before substantial work, name the question and the decision its answer changes ([pre-Q gate](docs/methodology/inqhiori-canon.md)), and budget it under [Rule 2](docs/adr/2026-06-16-rule-2-budget-before-acting.md); reaching the bound triggers reassessment, not expansion or weaker acceptance.
+- Use the cheapest trustworthy evidence: reuse valid evidence and focused tests ([verify-source](.claude/skills/verify-source/SKILL.md), [local verification](#python-environment-and-local-checks)). Reviews and checks required by a card, ADR or gate are not optional under this test.
+- PR counts, document volume and architectural completeness are not evidence of value; record negative findings where they are read ([Rule 14](docs/operational_rules.md#14-corrections-land-where-the-error-is-read-not-where-it-is-convenient-to-write)).
+- No value judgment waives a legal, capital, credential, private-data, verification or release control. Routine fixes need no new form, ledger, report or approval layer.
+
 ## Output efficiency
 
 Use the fewest words that meet the objective in text, code, tool calls and records.
