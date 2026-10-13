@@ -114,6 +114,8 @@ Produce private, hash-bound evidence of FG items 1–3 at R1 (pre-registration �
 | Frozen tuple | `C:\Users\joshu\t00-step3-console\personal-prescreen-20261011\R1_TUPLE.json` | `62d7ae19…671f` |
 | Anchor artifacts (§0(g)) | their private paths | `acfa7920…`, `ebcb2efb…`, the Step 6 record hash |
 | Interpreter and operations venv | `C:\Program Files\Python313` and the launcher's venv path | the launcher's `doctor` identity |
+| `E_0` file (machine-consumed only, §13 D-7) | `C:\Users\joshu\t00-step3-console\personal-prescreen-20261011\e0_private.txt` | the tuple's reference and the freeze record's `input_sha256` digest, both via the run manifest |
+| Digest-only run manifest (§13 D-7) | built by the coordinator in the private root before dispatch | its sha256 in the dispatch record |
 
 **Never copied:** Pine (`core/strategies/book/*.pine`); the freeze, rulings, fold or fact-finding folders (but see §13 input scope for the `E_0` file and the digest-only run manifest); any T00, screen, replay or MC output; any other private file.
 
