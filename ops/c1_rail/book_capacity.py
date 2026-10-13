@@ -11,7 +11,9 @@ consumer-local counter. Broker fact IDs retain immutable execution identity.
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
-from .book_policy import ACCOUNT_MICRO_CAP, BOOK_LEGS, leg
+from .book_policy import (
+    ACCOUNT_MICRO_CAP, BOOK_LEGS, account_micro_cap, leg, require_personal_p0,
+)
 from .book_sizing_context import BookAccountContext, BookExposure
 from c1_signal_daemon.book_protocol import Mode
 
@@ -160,7 +162,7 @@ def _replace_operation(state, operation):
         for o in state.operations))
 
 
-def _reserve(state, request):
+def _reserve(state, request, cap=ACCOUNT_MICRO_CAP):
     _require(all(_identity(v) for v in (request.operation_id, request.leg_id,
                                        request.order_symbol)), "invalid reservation identity")
     _require(_integer(request.quantity, 1), "invalid reservation quantity")
@@ -175,12 +177,12 @@ def _reserve(state, request):
     status = "refused"
     takeover = state.takeover
     blocks = state.blocks
-    if not blocks and not takeover and needed <= ACCOUNT_MICRO_CAP:
-        if used_micro(state) + needed <= ACCOUNT_MICRO_CAP:
+    if not blocks and not takeover and needed <= cap:
+        if used_micro(state) + needed <= cap:
             status = "active"
         elif request.leg_id == "aegis_6j":
             displaced = []
-            available = ACCOUNT_MICRO_CAP - used_micro(state)
+            available = cap - used_micro(state)
             by_leg = {e.leg_id: e.confirmed + e.reserved for e in exposures(state)}
             for lower in sorted(BOOK_LEGS, key=lambda item: item.priority, reverse=True):
                 if lower.priority <= spec.priority or not by_leg[lower.leg_id]:
@@ -257,7 +259,7 @@ def _reduce(state, fact):
     return replace(state, reductions=state.reductions + (fact,))
 
 
-def _complete(state, fact, sequence):
+def _complete(state, fact, sequence, cap=ACCOUNT_MICRO_CAP):
     previous = next((f for f in state.completed_takeovers
                      if f.operation_id == fact.operation_id), None)
     if previous:
@@ -281,7 +283,7 @@ def _complete(state, fact, sequence):
              "displaced operation not terminal")
     operation = _operation(state, fact.operation_id)
     _require(used_micro(state) + operation.request.quantity * leg(operation.request.leg_id).micro_equiv
-             <= ACCOUNT_MICRO_CAP, "takeover exceeds cap")
+             <= cap, "takeover exceeds cap")
     return replace(_replace_operation(state, replace(operation, status="active")),
                    takeover=None, blocks=(),
                    completed_takeovers=state.completed_takeovers + (fact,))
@@ -298,13 +300,14 @@ def _retire_takeover(state, fact):
 
 
 def apply_event(state: CapacityState, event: Event, *, now: datetime,
-                max_age: timedelta) -> CapacityState:
+                max_age: timedelta, instance=None) -> CapacityState:
     """Return new retained state. Invalid evidence adds a block, never a release.
 
     Exact deliveries are no-ops, including after restart; reacquired broker facts
     use a new envelope sequence but their immutable payload must remain identical.
     Invalid deliveries remain in receipts for later explicit reconciliation.
     """
+    cap = ACCOUNT_MICRO_CAP if instance is None else account_micro_cap(require_personal_p0(instance).tier)
     _require(isinstance(state, CapacityState) and isinstance(event, Event), "typed state/event required")
     if event in state.receipts:
         return state
@@ -324,7 +327,9 @@ def apply_event(state: CapacityState, event: Event, *, now: datetime,
         handlers = {Reserve: _reserve, Fill: _fill, Terminal: _terminal, Reduction: _reduce,
                     RetireTakeover: _retire_takeover}
         if type(fact) is CompleteTakeover:
-            result = _complete(state, fact, event.sequence)
+            result = _complete(state, fact, event.sequence, cap)
+        elif type(fact) is Reserve:
+            result = _reserve(state, fact, cap)
         else:
             _require(type(fact) in handlers, "unknown fact type")
             result = handlers[type(fact)](state, fact)

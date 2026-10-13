@@ -47,6 +47,11 @@ def _threshold(tier):
     return str(Fraction(str(firm_rules.FIRM_RULES[tier]["max_dd_pct"])) / 100)
 
 
+def drawdown_breached(peak, equity, *, tier=TIER):
+    """Pure live breach predicate, shared by the personal replay."""
+    return round((peak - equity) / peak, 6) >= float(Fraction(_threshold(tier)))
+
+
 def _equity(value):
     """Finite positive float, else None. The single numeric conversion for state
     ``peak`` and caller equity, so an int beyond the float range (a valid JSON
@@ -169,7 +174,7 @@ class PersonalDrawdownHalt:
             return True
 
     def _breached(self, peak, equity):
-        return round((peak - equity) / peak, 6) >= float(Fraction(_threshold(self.tier)))
+        return drawdown_breached(peak, equity, tier=self.tier)
 
     def observe(self, equity):
         """Record one equity read; halt on breach or invalid equity. Returns state."""

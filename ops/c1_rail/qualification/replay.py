@@ -15,11 +15,13 @@ from typing import Callable, Mapping
 
 from c1_rail.book_policy import (
     BOOK_LEGS, IDENTITY_SIZE_VECTOR, BookProtectionClock, CapacityLedger, SizeVector,
-    add_quantity, entry_quantities, leg, require_policy,
+    PersonalP0Policy, account_micro_cap, add_quantity, entry_quantities, leg,
+    require_personal_p0, require_policy, require_finite_number,
 )
+from c1_rail.personal_drawdown_halt import drawdown_breached
 from c1_rail.book_schedule import SchedulePhase, classify_execution_phase
 from c1_signal_daemon.book_protocol import (
-    Cancel, ExecutionEvent, FillTiming, OrderIntent, Side,
+    Cancel, ExecutionEvent, FillTiming, Mode, OrderIntent, Side,
 )
 from c1_signal_daemon.feed import Bar
 from c1_signal_daemon.tv_broker_emulator import TVBrokerEmulator
@@ -251,14 +253,24 @@ class BookReplay:
             raise ValueError("exactly the four fixed book legs are required")
         if initial_state is None:
             raise ValueError("initial_state is required")
-        self.policy = require_policy(policy)
+        self.personal = isinstance(policy, PersonalP0Policy)
+        self.policy = require_personal_p0(policy) if self.personal else require_policy(policy)
         if not isinstance(size_vector, SizeVector):
             raise ValueError("size_vector must be a SizeVector")
         self.size_vector = size_vector  # per-leg size (successor card S-1); identity = today
         self.adapters = dict(adapters)
         self.instruments = dict(instruments)
-        self.clock = BookProtectionClock(policy, initial_state.current_equity,
-                                         initial_state.historical_eod_peak)
+        self.clock = None if self.personal else BookProtectionClock(
+            policy, initial_state.current_equity, initial_state.historical_eod_peak)
+        self.personal_halted = False
+        self.personal_flatten_owed = False
+        self.personal_peak = None
+        if self.personal:
+            eq = require_finite_number(initial_state.current_equity, field="initial_equity", strictly_positive=True)
+            self.personal_peak = require_finite_number(
+                initial_state.historical_eod_peak, field="initial_peak", strictly_positive=True)
+            if self.personal_peak < eq:
+                raise ValueError("initial_peak must be >= initial_equity")
         self.initial_equity = initial_state.current_equity
         self.sizing_inputs = sizing_inputs
         self.schedule_quotes = schedule_quotes
@@ -266,7 +278,8 @@ class BookReplay:
                         v.slippage_ticks, v.commission_per_side,
                         margin_pct=0, orders_on_close=v.orders_on_close)
                         for k, v in instruments.items()}
-        self.ledger = CapacityLedger()
+        self.ledger = (CapacityLedger(cap=account_micro_cap(self.policy.tier))
+                       if self.personal else CapacityLedger())
         self.orders = {}  # (leg, order id) -> (sized intent, path ordinal)
         self.base = {k: 0 for k in expected}
         self.base_order = {k: None for k in expected}
@@ -581,6 +594,40 @@ class BookReplay:
                          Side.SELL if pos > 0 else Side.BUY, None,
                          timing=FillTiming.THIS_CLOSE, reason=reason)], bar)
 
+    def _observe_personal(self, bars):
+        """Observe account marks at this close, including any just-confirmed close fills/fees."""
+        if not self.personal or self.personal_halted:
+            return
+        equity = self.cash + sum(self.brokers[k].open_pnl(b.close) for k, b in bars.items())
+        if not math.isfinite(equity):
+            raise ReplayNeedsContext("personal account equity is not finite")
+        if drawdown_breached(self.personal_peak, equity, tier=self.policy.tier):
+            self.personal_halted = self.personal_flatten_owed = True
+            self._log("personal_halt_latched", detail=json.dumps(
+                {"peak": self.personal_peak, "equity": equity}, sort_keys=True, separators=(",", ":")))
+            # Cancel resting risk now; confirmed positions close at the next bar open.
+            for k, bar in bars.items():
+                self._cancel_pending(k, Cancel(k), bar)
+            self._confirm_personal_flat()
+        else:
+            self.personal_peak = max(self.personal_peak, equity)
+
+    def _confirm_personal_flat(self):
+        if self.personal_flatten_owed and self._edge().is_flat and not self.lots and not self.orders:
+            self.personal_flatten_owed = False
+            self._log("personal_halt_flat_confirmed")
+
+    def _flatten_personal(self, bars):
+        if not self.personal_flatten_owed:
+            return
+        for k, bar in bars.items():
+            # The existing close path applies slippage/fees to this next-open quote.
+            opening = Bar(bar.ts, bar.open, bar.open, bar.open, bar.open)
+            self._flatten(k, opening, "personal_halt")
+        self._confirm_personal_flat()
+        if self.personal_flatten_owed:
+            raise ReplayNeedsContext("personal halt flatten is unconfirmed")
+
     def _admit(self, intent, pb, mode, schedule):
         k = intent.leg_id
         bar = dict(pb.bars)[k]
@@ -589,6 +636,9 @@ class BookReplay:
         # Sidecar row for a port entry/add request; _reject records its refusal reason.
         row = (self._attribution.request(k, intent.kind, intent.qty)
                if self._attribution is not None and intent.kind in ("entry", "add") else None)
+        if self.personal_halted and intent.kind in ("entry", "add"):
+            self._reject(intent, bar, "personal_halt")
+            return
         key = (k, intent.kind, pb.path_time)
         if key in self.accepted:
             self._log("duplicate_dropped", k, intent.kind)
@@ -738,7 +788,7 @@ class BookReplay:
             self._opening, self._start_edge = opening, start
             low = 0.0
             self._session_low = low
-            mode = self.clock.mode_for(session.path_session_date)
+            mode = Mode.NORMAL if self.personal else self.clock.mode_for(session.path_session_date)
             self._path_time = session.bars[0].path_time
             self._log("session_mode", detail=mode.value)
             if self._attribution is not None:
@@ -774,6 +824,8 @@ class BookReplay:
                 while next_schedule < len(schedule_events) and schedule_events[next_schedule][0] <= pb.source_bar_time:
                     self._schedule(session, *schedule_events[next_schedule])
                     next_schedule += 1
+                # A later halt close cannot retroactively satisfy an earlier deadline.
+                self._flatten_personal(bars)
                 for (k, oid), (intent, created) in list(self.orders.items()):
                     if self._index - created > 1 and _one_bar_cancel_applies(k, intent):
                         self._cancel_pending(k, Cancel(k, oid), bars[k])
@@ -812,6 +864,7 @@ class BookReplay:
                 low = min(low, self._process_segment(segment_bars) - opening)
                 self._session_low = low
                 self._path_time = pb.path_time + timedelta(minutes=15)
+                self._observe_personal(bars)
                 batches = {}
                 for k, adapter in self.adapters.items():
                     if k not in bars:
@@ -843,6 +896,7 @@ class BookReplay:
                     # OCA cancellations and orders_on_close bracket evaluation
                     # happen only after every action of this calculation exists.
                     self._submit(k, actions, bars[k])
+                    self._observe_personal(bars)
                 close_equity = self.cash + sum(self.brokers[k].open_pnl(bar.close) for k, bar in bars.items())
                 low = min(low, close_equity - opening)
                 self._session_low = low
@@ -862,7 +916,8 @@ class BookReplay:
             low = min(low, self.cash - opening)
             if self._attribution is not None:
                 self._attribution.finish("settlement", self._index, self._path_time, self.cash - opening)
-            self.clock.settle(session.path_session_date, max(0.0, self.cash))
+            if not self.personal:
+                self.clock.settle(session.path_session_date, max(0.0, self.cash))
             records.append(SessionRecord(session.occurrence, session.path_session_date,
                 session.source.session_id, self.cash - opening, low,
                 self.confirmed_fill_count - self._session_fill_start, flat, start, end))

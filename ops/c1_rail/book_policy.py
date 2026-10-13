@@ -117,6 +117,39 @@ def require_policy(policy: ProtectionPolicy | None) -> ProtectionPolicy:
     return policy
 
 
+
+@dataclass(frozen=True)
+class PersonalP0Policy:
+    """Named personal instance: NORMAL sizing plus the separate running-peak halt."""
+    tier: str = "Personal_Tradovate"
+
+
+def require_personal_p0(policy) -> PersonalP0Policy:
+    """P0 is explicit and personal only; it is never a ProtectionPolicy surrogate."""
+    if type(policy) is not PersonalP0Policy:
+        raise PolicyAbsent("an explicit PersonalP0Policy is required")
+    if policy.tier != "Personal_Tradovate":
+        raise PolicyMismatch("P0 requires the Personal_Tradovate instance")
+    return policy
+
+
+def account_micro_cap(tier: str) -> int:
+    """Resolve the public tier cap without coercion or an unbounded fallback."""
+    cap = FIRM_RULES[tier]["micro_contract_cap"]
+    if type(cap) is not int or cap <= 0:
+        raise ValueError("account micro cap must be a positive integer")
+    return cap
+
+
+def _quantity_policy(policy, mode):
+    if isinstance(policy, PersonalP0Policy):
+        require_personal_p0(policy)
+        if as_mode(mode) is not Mode.NORMAL:
+            raise PolicyMismatch("personal P0 never enters PROTECTED")
+        return policy
+    return require_policy(policy)
+
+
 def drawdown_from_peak(equity: float, peak: float) -> float:
     equity = require_finite_number(equity, field="equity", minimum=0.0)
     peak = require_finite_number(peak, field="peak", strictly_positive=True)
@@ -458,7 +491,7 @@ def lifecycle_multiplier(tier: str) -> Fraction:
 def scaled_quantity(normal_qty: int, *, mode: Mode, policy: ProtectionPolicy | None,
                     lifecycle_tier: str = "AUTHORIZED") -> int:
     """D-B10: floor(normal x scale x lifecycle), exact rationals, never a float floor."""
-    policy = require_policy(policy)
+    policy = _quantity_policy(policy, mode)
     mode = as_mode(mode)
     if type(normal_qty) is not int or normal_qty < 0:
         raise ValueError(f"normal_qty must be a non-negative int, got {normal_qty!r}")
@@ -494,7 +527,7 @@ def add_quantity(leg_id: str, confirmed_base: int, *, mode: Mode,
     can only refuse an add today's rule places.
     """
     spec = leg(leg_id)
-    require_policy(policy)
+    _quantity_policy(policy, mode)
     mode = as_mode(mode)
     size = _leg_size(size, leg_id)
     multiplier = lifecycle_multiplier(lifecycle_tier)
@@ -524,7 +557,7 @@ def entry_quantities(leg_id: str, *, mode: Mode, policy: ProtectionPolicy | None
     ``size`` replaces each leg's normal quantity with its own (S-2); None is today's.
     """
     spec = leg(leg_id)
-    require_policy(policy)
+    _quantity_policy(policy, mode)
     mode = as_mode(mode)
     size = _leg_size(size, leg_id)
     lifecycle = lifecycle_multiplier(lifecycle_tier)
@@ -534,7 +567,8 @@ def entry_quantities(leg_id: str, *, mode: Mode, policy: ProtectionPolicy | None
             raise ValueError("Striker normal_base diagnostic must be an integer in 0..22")
         risk = _positive_risk(risk_dollars, "risk_dollars")
         denominator = _positive_risk(per_contract_risk, "per_contract_risk")
-        if type(cap_alloc) is not int or not 0 <= cap_alloc <= ACCOUNT_MICRO_CAP:
+        cap = account_micro_cap(policy.tier) if isinstance(policy, PersonalP0Policy) else ACCOUNT_MICRO_CAP
+        if type(cap_alloc) is not int or not 0 <= cap_alloc <= cap:
             raise ValueError("cap_alloc must be an explicit integer within the account cap")
         risk_term = risk * scale * lifecycle / denominator
         cap_term = Fraction(cap_alloc) / (1 + Fraction(spec.add_pct, 100))
