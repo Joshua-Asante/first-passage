@@ -27,36 +27,12 @@ removed evidence is retrievable via [archive guidance](docs/ltm/README.md) and
 
 ## Contribution to the objective
 
-Prioritize authorized work by its contribution to First Passage's stated objective
-and current priorities in [STATE.md](STATE.md). Scale formality to the work:
+STATE's operator queue and the owning records' sequencing decide **what** to work on; this section governs **how** authorized work is done (Joshua's direction, 2026-10-13).
 
-1. Before substantial work, name the unresolved question and the consequential
-   decision its answer will change.
-2. Choose the cheapest trustworthy evidence: reuse valid existing evidence and
-   focused tests, following [verify-source](.claude/skills/verify-source/SKILL.md)
-   and [local verification](#python-environment-and-local-checks). Engineering
-   needed for measurement integrity is valuable. Explain why additional agents or
-   checks are decision-relevant and whether sufficient evidence already exists.
-3. Before a substantial experiment, state what success, failure and inconclusive
-   results imply for the decision, and an appropriate effort/cost bound within
-   existing authorization. Reaching the bound triggers reassessment, not automatic
-   expansion or weaker acceptance; a proposed bound is not spending permission.
-4. Justify prerequisites: defer a task if postponing it still permits a valid,
-   safe and lawful answer. Preserve mandatory legal, capital, credential,
-   private-data, verification and release controls; value judgments cannot waive
-   authority or acceptance gates. Route changes to assigned work through its owner.
-5. At existing progress reviews, summarize uncertainty resolved, decisions changed
-   and whether the next investment remains worthwhile, including operator
-   supervision/coordination cost. PR counts, documentation volume and architectural
-   completeness are not evidence of business value. Negative findings are useful
-   only when accurately recorded and incorporated into subsequent choices; follow
-   [correction rules](docs/operational_rules.md#14-corrections-land-where-the-error-is-read-not-where-it-is-convenient-to-write),
-   and never silently modify frozen tests.
-
-When useful, put a short statement in the existing task or handoff: "Resolve this
-question, using this evidence, within this bound; these outcomes lead to these
-decisions." Routine fixes need no new form, ledger, recurring report, automation,
-approval layer, code hook or ceremony.
+- Before substantial work, name the question and the decision its answer changes ([pre-Q gate](docs/methodology/inqhiori-canon.md)), and budget it under [Rule 2](docs/adr/2026-06-16-rule-2-budget-before-acting.md); reaching the bound triggers reassessment, not expansion or weaker acceptance.
+- Use the cheapest trustworthy evidence: reuse valid evidence and focused tests ([verify-source](.claude/skills/verify-source/SKILL.md), [local verification](#python-environment-and-local-checks)). Reviews and checks required by a card, ADR or gate are not optional under this test.
+- PR counts, document volume and architectural completeness are not evidence of value; record negative findings where they are read ([Rule 14](docs/operational_rules.md#14-corrections-land-where-the-error-is-read-not-where-it-is-convenient-to-write)).
+- No value judgment waives a legal, capital, credential, private-data, verification or release control. Routine fixes need no new form, ledger, report or approval layer.
 
 ## Output efficiency
 
