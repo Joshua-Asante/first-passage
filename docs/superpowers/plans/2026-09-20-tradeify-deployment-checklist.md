@@ -923,3 +923,22 @@ The scope clarification and size-first handoff were checked against main
 `0cf32a5`, including the T00 successor decision tree and size-feasibility §11.
 It changes no statistical criteria, accepted gates, locked strategy artifacts,
 operational controls or standing instructions.
+
+## Addendum 2026-10-13 — Track B suspended; 11-08 decision rules (DRAFT)
+
+**Ruling (Joshua, 2026-10-13, directly to the Deployment Coordinator, verbatim "1 yes", "4 yes"):** record a Track B suspension; draft the 11-08 decision rules now and defer the FLOOR-HALF pass-time check. Basis: Tradeify support's 2026-10-12 replies (no bridges, no direct API, all strategy logic native for evaluation and sim-funded accounts; [route record](../../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts)) and the 2026-10-13 cloud status review. The review's figures not found on main (the 36.08% full-size bust; E1's ~96% within 500 business days) are unverified here.
+
+**Suspension, not a kill.** Frozen until the 11-08 sitting or an operator ruling: the E1 qualification spine (T05 R1/C′ through T17); T09 and its gates B–D; route drills X-3/X-4 and any CrossTrade order on the evaluation account; edition pre-registrations; CP-7 feed funding (#790); T07 operator workflow (#791); the O1 operator-attention R1/R2 work; GC-5-DISPLACED and TB-I3 S2; new evaluations; #807 beyond read-only. Not frozen: the weekly preservation trade (placed on a supported platform, never through CrossTrade or the API, per the 10-12 replies); the personal lane (Q-SFCLEAR-2 cards, P4, P-SW, the #746 runner). Code and evidence are kept. This is separate from the four-firm §4 falsifier.
+
+**Compliance.** Ticket #144659998 was closed for inactivity at 2026-10-13T14:36Z; replying reopens it. A five-question follow-up is drafted for Joshua to send (clause; §1.3 consent; offline-parameter NinjaScript; hand-placed TradingView-native signals and agent placement; §6.6 personal-account reuse).
+
+**11-08 decision rules (DRAFT; ratification owed).** Applied at the 11-08 sitting with the four-firm check; a choice outside them needs a written reason. Silence from compliance by 11-08 counts as native-only for planning.
+
+| Branch | Condition | Action |
+|---|---|---|
+| (a) Resume Tradeify | All of: a written human-compliance reversal citing a clause; a feed or licence path that 1–5 accounts can pay for; then the E1 kill check (run only once the first two hold) not failed | Restart at two-symbol X-3 under CP-3. A reversal alone means stay parked |
+| (b) Native read-only look | Native-only confirmed and offline fixed parameters allowed | Grant #807 stage 1 (read-only toolchain assessment) only |
+| (c) Personal funding checkpoint | Q-SFCLEAR-2 RESOLVED, private median growth beats g\* on the cheapest legitimate licence, CME and Tradovate answered in writing | Set a personal spend ceiling before any purchase; funding stays a separate decision |
+| (d) Default | Otherwise | Park without lapsing: keep the eval and weekly trade; close the K ledger for this lineage; move shared rail items to the personal lane |
+
+(c) and (d) can both apply. The deferred FLOOR-HALF pass-time check (E1 kill check) reads existing T00 outputs and is logged as exposure when run.
