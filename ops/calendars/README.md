@@ -200,6 +200,18 @@ Every denied session must be named explicitly with its reason; the tool enumerat
 account days inside the named horizon and nothing else. Pin the new digest in the tests and record the
 operator's ratification before activation. Never edit a ratified file in place.
 
+### Personal instance registry (G0-a)
+
+The personal instance (`personal_tradovate`) consumes these `book_session_calendar/v1` files
+unchanged, through [`deploy/c1_rail_personal/calendar_binding.json`](../../deploy/c1_rail_personal/calendar_binding.json)
+and `ops/c1_rail/personal_calendar_binding.py`. It admits a session only for a digest listed in
+[`personal/RATIFIED.json`](personal/RATIFIED.json), its own `calendar_ratification/v1` registry.
+**A row in the Tradeify `RATIFIED.json` does not admit the personal instance.** Each personal row
+is an operator act naming its digest. The binding pins every calendar and overlay digest and adds
+the refusals `binding_digest_mismatch` and `coverage_gap`; the loader's schedule-rule,
+first-release and ratification refusals pass through. Owner: the G0 card,
+`docs/briefs/handoffs/2026-10-12-personal-live-g0-calendar-card-DRAFT.md` (PR #809).
+
 ### Capture identity and holiday halt evidence
 
 Both author and loader reject duplicate capture IDs before indexing evidence.
