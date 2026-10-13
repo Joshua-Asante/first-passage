@@ -1,5 +1,34 @@
 {
   "schema": "calendar_ratification/v1",
   "note": "Operator ratifications of session calendars for the personal instance only (personal_tradovate), by exact file digest. A row in ops/calendars/RATIFIED.json (Tradeify) never admits the personal instance. One row per digest, written by the operator or on his explicit instruction naming that digest; rows are appended, never edited.",
-  "ratifications": []
+  "ratifications": [
+    {
+      "calendar_id": "tradeify-select-100k/forward/2026-10",
+      "calendar_file": "ops/calendars/book_session_calendar_2026-10.json",
+      "calendar_sha256": "16e322b1b7c9c7e2b1e8a5fdebb6eaba34e7a509630677f7ac389df54e211b3b",
+      "closure_overlay_file": "ops/calendars/book_closure_overlay.json",
+      "closure_overlay_sha256": "483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b",
+      "coverage_start_utc": "2026-09-28T22:00:00Z",
+      "coverage_end_utc": "2026-10-30T21:00:00Z",
+      "ratified_by": "operator",
+      "ratified_utc": "2026-10-13T04:30:00Z",
+      "instruction": "Joshua, 2026-10-13, directly to the Deployment Coordinator, verbatim: \"Let's go with option 1\", adopting the presented sentence \"Ratify for the personal instance: 2026-10 calendar 16e322b1b7c9c7e2b1e8a5fdebb6eaba34e7a509630677f7ac389df54e211b3b and 2026-11 calendar b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7\"; row written by the agent on that instruction",
+      "record": "https://github.com/Joshua-Asante/first-passage/pull/817",
+      "scope": "Personal-instance session permission rows only (G0-3). Grants no activation, deployment, arming or live spend; the personal lane's other gates are unchanged."
+    },
+    {
+      "calendar_id": "tradeify-select-100k/forward/2026-11",
+      "calendar_file": "ops/calendars/book_session_calendar_2026-11.json",
+      "calendar_sha256": "b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7",
+      "closure_overlay_file": "ops/calendars/book_closure_overlay.json",
+      "closure_overlay_sha256": "483f2324b85548e60429b823454641a0ee6e34c8ef2a9cadc7dcc6555f7def5b",
+      "coverage_start_utc": "2026-10-28T22:00:00Z",
+      "coverage_end_utc": "2026-11-30T22:00:00Z",
+      "ratified_by": "operator",
+      "ratified_utc": "2026-10-13T04:30:00Z",
+      "instruction": "Joshua, 2026-10-13, directly to the Deployment Coordinator, verbatim: \"Let's go with option 1\", adopting the presented sentence \"Ratify for the personal instance: 2026-10 calendar 16e322b1b7c9c7e2b1e8a5fdebb6eaba34e7a509630677f7ac389df54e211b3b and 2026-11 calendar b89562a58a665daa4054f310f41007f815bb45b54444c6404ad463ac0b60aad7\"; row written by the agent on that instruction",
+      "record": "https://github.com/Joshua-Asante/first-passage/pull/817",
+      "scope": "Personal-instance session permission rows only (G0-3). Grants no activation, deployment, arming or live spend; the personal lane's other gates are unchanged."
+    }
+  ]
 }

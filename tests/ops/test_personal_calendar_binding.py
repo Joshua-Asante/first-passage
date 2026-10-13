@@ -79,12 +79,22 @@ def mutate(repo, name, out, fn):
     dump(repo / "ops" / "calendars" / out, payload)
 
 
-def test_pc1_tradeify_ratification_does_not_admit_the_personal_instance():
+def test_pc1_tradeify_ratification_does_not_admit_the_personal_instance(tmp_path):
     tradeify = {r["calendar_sha256"] for r in json.loads((CAL / "RATIFIED.json").read_bytes())["ratifications"]}
     assert {OCT_SHA, NOV_SHA} <= tradeify
-    assert json.loads(PERSONAL_REGISTRY.read_bytes())["ratifications"] == []
+    repo = tmp_repo(tmp_path)
+    shutil.copyfile(CAL / "RATIFIED.json", repo / "ops" / "calendars" / "RATIFIED.json")
+    ratify(repo, [])  # Tradeify rows present, personal registry empty
     with pytest.raises(CalendarError, match="^calendar_not_ratified$"):
-        load_personal_calendar_binding(BINDING, repo_root=REPO)
+        load_personal_calendar_binding(bind(repo, [OCT, NOV]), repo_root=repo)
+
+
+def test_checked_in_personal_registry_ratifies_exactly_the_bound_digests():
+    """Joshua's 2026-10-13 ratification (G0-3): one personal row per bound digest."""
+    rows = json.loads(PERSONAL_REGISTRY.read_bytes())["ratifications"]
+    assert [r["calendar_sha256"] for r in rows] == [OCT_SHA, NOV_SHA]
+    assert all(r["calendar_id"] == json.loads((REPO / r["calendar_file"]).read_bytes())["calendar_id"] for r in rows)
+    load_personal_calendar_binding(BINDING, repo_root=REPO)
 
 
 def test_checked_in_binding_pins_the_checked_in_bytes():
