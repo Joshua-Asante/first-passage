@@ -155,7 +155,7 @@ git diff --stat origin/main...HEAD   # expect only §2 files
 
 | Row | Check |
 |---|---|
-| T5a (local, recorded) | With the variable unset, `.p.ps1 python -m pytest tests/ops --collect-only -q` collects the bridge's shard items and none under `tests/ops/qualification` or the provenance file. Collection only; no qualification child runs locally. |
+| T5a (local, recorded) | With the variable unset, `.\fp.ps1 python -m pytest tests/ops --collect-only -q` collects the bridge's shard items and none under `tests/ops/qualification` or the provenance file. Collection only; no qualification child runs locally. |
 | T5b (CI, at the build head) | The `pytest (3.11)` job passes on the build PR's exact head. It runs `pytest tests/` unfiltered with the variable unset, so the bridge runs the shards at the 3600 s default and records `qualification_child_timeout_s` = 3600 and the not-overridden flag. The return cites the job and the property from the retained `pytest-evidence` artifact. |
 
 **T1–T4 helper tests:** the new `test_qualification_child_timeout.py` imports only the helper (a non-`test_` name) from the isolation module, so no bridge test function is re-collected under the new module. It runs focused as normal.
