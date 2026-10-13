@@ -161,6 +161,7 @@ _PRODUCTION_CODE.update({
         'c1_rail.book_migration_schema', 'c1_rail.book_policy', 'c1_rail.book_protection',
         'c1_rail.book_protection_owner', 'c1_rail.book_schedule', 'c1_rail.book_session_calendar',
         'c1_rail.book_settlement', 'c1_rail.book_sizing_context', 'c1_rail.book_takeover',
+        'c1_rail.personal_drawdown_halt',
         'c1_rail.book_takeover_owner', 'c1_rail.ed25519_verify', 'c1_rail.qualification',
         'c1_rail.qualification.attempt', 'c1_rail.qualification.blocks',
         'c1_rail.qualification.clock', 'c1_rail.qualification.contract',
