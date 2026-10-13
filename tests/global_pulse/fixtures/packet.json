@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "observation_id": "GP-2026-10-10-synthetic-divergence",
+  "author": "Synthetic example author",
+  "source": "Invented input; no vendor data",
+  "captured_at": "2026-10-10T14:30:00Z",
+  "watchlist": {
+    "path": "registry.json",
+    "sha256": "0d27c21a65d1bf3dc52e0c41fed3e48391a36bfd328f3db2265fb6b624da3f14"
+  },
+  "measurements": [
+    {
+      "id": "daily",
+      "series_id": "SYNTH-DAILY",
+      "value": 101,
+      "unit": "index_points",
+      "convention_id": "level",
+      "definition": "Last supplied synthetic level; no transformation or interpolation.",
+      "window_start": "2026-10-09T16:00:00Z",
+      "window_end": "2026-10-09T16:00:00Z",
+      "observed_at": "2026-10-09T16:00:00Z",
+      "published_at": null,
+      "available_at": null,
+      "evidence_ids": [
+        "synthetic-table"
+      ]
+    },
+    {
+      "id": "live",
+      "series_id": "SYNTH-LIVE",
+      "value": 203,
+      "unit": "USD_per_unit",
+      "convention_id": "level",
+      "definition": "Last supplied synthetic level; no transformation or interpolation.",
+      "window_start": "2026-10-10T14:29:00Z",
+      "window_end": "2026-10-10T14:29:00Z",
+      "observed_at": "2026-10-10T14:29:00Z",
+      "published_at": null,
+      "available_at": null,
+      "evidence_ids": [
+        "synthetic-table"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "synthetic-table",
+      "kind": "bar_dataset",
+      "path": "synthetic.csv",
+      "sha256": "3ae85f2ec1ca8f3f9e27850f7d7c5d90583fe2bf4ec40650eca98a7112aa0aaf",
+      "provider": "synthetic-generator",
+      "source_reference": "Invented CSV rows 2 and 3",
+      "evidence_store_version": null
+    }
+  ],
+  "interpretation": {
+    "observation": "The supplied synthetic daily level is 101 and the live level is 203.",
+    "baseline": "Invented comparison levels: daily 100 index points; live 200 USD per unit.",
+    "departure": "Daily +1 index point; live +3 USD per unit, at different observation times.",
+    "why_stands_out": "The invented baseline departures motivate checking timing before comparison.",
+    "candidate_explanations": [
+      "Different measurement times could explain the apparent divergence."
+    ]
+  },
+  "limitations": [
+    "All values and series are synthetic; no market inference.",
+    "Coverage is two rows; no historical panel retained."
+  ],
+  "prior_exposure": {
+    "status": "unknown",
+    "windows": [],
+    "note": "Earlier inspection history was not supplied."
+  },
+  "lineage": {
+    "observations": [],
+    "notices": [],
+    "investigations": []
+  },
+  "correction": null
+}

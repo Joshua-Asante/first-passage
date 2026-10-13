@@ -1,0 +1,1907 @@
+{
+  "schema_version": "global-market-map/v1",
+  "registry_id": "global-market-map",
+  "as_of": "2026-10-11",
+  "verification": {
+    "audit_window": "2026-10-10 late evening through 2026-10-11 early morning America/New_York; markets closed",
+    "markets_closed": true,
+    "moving_tick_test_performed": false,
+    "qualification": "Signed-in symbol, feed-status and settings inspection; live labels were not validated against moving ticks. This is a dated account-delivery snapshot, not a guarantee of future entitlement or publication latency.",
+    "evidence": [
+      {
+        "id": "account-ui",
+        "kind": "signed_in_ui_observation",
+        "observed_window": "2026-10-10 late evening through 2026-10-11 early morning America/New_York; markets closed",
+        "description": "Symbol search, loaded feed aliases, data status and exchange subscription prompts inspected in the signed-in account. Public handoff retains the audit transcription; account screenshots remain private."
+      },
+      {
+        "id": "saved-layouts",
+        "kind": "signed_in_ui_observation",
+        "observed_window": "2026-10-10 late evening through 2026-10-11 early morning America/New_York; markets closed",
+        "description": "New saved layouts inspected after configuration: daily, roughly one year; seven populated Funding & Stress charts and explicit missing funding concept. Existing layouts preserved."
+      },
+      {
+        "id": "loaded-exports",
+        "kind": "manual_csv_audit",
+        "observed_window": "2026-10-10 late evening through 2026-10-11 early morning America/New_York; markets closed",
+        "description": "Download chart data through signed-in TradingView UI. All range uses monthly bars; monthly exports demonstrate retrievable period coverage, NOT first daily observation, uninterrupted daily completeness, historical intraday entitlement, or point-in-time availability. Current October 2026 monthly bar is unfinished. Gaps >45 days are audit flags in downloaded files, not independently proven source omissions. Two full-history export attempts stalled (Brent, T10Y2Y); Brent loaded daily export succeeded."
+      }
+    ]
+  },
+  "watchlist": {
+    "name": "Global Market Map",
+    "conceptual_count": 20,
+    "available_symbol_count": 19,
+    "unavailable_series_ids": [
+      "funding_basis"
+    ]
+  },
+  "chart_settings": {
+    "interval": "1D",
+    "visible_range": "approximately one year",
+    "chart_timezone_observation": "All three layouts displayed UTC-4 during inspection. Named IANA chart setting not verified. This display offset does not define source session/close. CSV export selected UNIX timestamp (UTC).",
+    "display": "Saved daily intervals, roughly one year; FRED daily lines; comparison percentage normalization. Yields/OAS native changes are percentage points, labeled ×100=bp. No trades/purchases.",
+    "etf_dividend_adjustment": false,
+    "comparison_base": "first visible bar; not a fixed research base",
+    "yield_credit_change": "Native percentage-point change multiplied by 100 is bp; section labels document this, no custom computed bp column."
+  },
+  "sources": {
+    "tv_export": "https://www.tradingview.com/support/solutions/43000537255-how-to-export-chart-data/",
+    "tv_history": "https://www.tradingview.com/support/solutions/43000480679-historical-intraday-data-bars-and-limits-explained/",
+    "tv_api": "https://www.tradingview.com/support/solutions/43000474413-i-need-access-to-your-api-in-order-to-get-data-or-indicator-values/",
+    "tvc": "https://www.tradingview.com/support/solutions/43000709178-what-does-tvc-stand-for-in-the-instrument-ticker/",
+    "coverage": "https://www.tradingview.com/data-coverage/",
+    "roll": "https://www.tradingview.com/support/solutions/43000691027-how-is-the-switching-date-of-contracts-determined-in-continuous-futures/",
+    "adjust": "https://www.tradingview.com/support/solutions/43000685266-how-can-i-enable-backadjustment-for-continuous-futures/",
+    "settlement": "https://www.tradingview.com/support/solutions/43000685268-can-i-switch-settlement-and-last-prices-as-close-for-futures/",
+    "sp": "https://www.spglobal.com/spdji/en/indices/equity/sp-500/",
+    "stoxx": "https://stoxx.com/index/sxxp/?factsheet=true",
+    "topix": "https://www.jpx.co.jp/english/markets/indices/topix/",
+    "topix_revision": "https://www.jpx.co.jp/english/markets/indices/revisions-indices/index.html",
+    "tse_hours": "https://www.jpx.co.jp/english/corporate/news/news-releases/1030/20230920-01.html",
+    "ishares": "https://www.ishares.com/us/products/etf-investments",
+    "eem": "https://www.ishares.com/us/products/239637/ISHARES-MSCI-EMERGING-MARKETS-ETF",
+    "dfii": "https://fred.stlouisfed.org/series/DFII10",
+    "oas": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+    "h15": "https://www.federalreserve.gov/releases/h15/",
+    "curve": "https://home.treasury.gov/policy-issues/financing-the-government/interest-rate-statistics/treasury-yield-curve-methodology",
+    "t10y2y": "https://fred.stlouisfed.org/data/T10Y2Y",
+    "t10yie": "https://fred.stlouisfed.org/series/T10YIE",
+    "fred_key": "https://fred.stlouisfed.org/docs/api/api_key.html",
+    "fred_vintage": "https://fred.stlouisfed.org/docs/api/fred/series_vintagedates.html",
+    "dxy": "https://www.ice.com/fixed-income-data-services/index-solutions/currency-indices",
+    "brent": "https://www.ice.com/brent-crude",
+    "copper": "https://www.cmegroup.com/market-regulation/rule-filings/2017/09/17-358_1.pdf",
+    "cme_api": "https://www.cmegroup.com/datamine/datamine-api.html",
+    "ice_api": "https://developer.ice.com/fixed-income-data-services/guides/ice-python-user-guide-overview/gettimeseries",
+    "ice_history": "https://www.ice.com/fixed-income-data-services/access-and-delivery/connectivity-and-feeds/ice-consolidated-history",
+    "vix": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
+    "vix_faq": "https://www.cboe.com/tradable_products/vix/faqs",
+    "move": "https://developer.ice.com/fixed-income-data-services/catalog/ice-data-indices-move-index"
+  },
+  "series": [
+    {
+      "series_id": "spx",
+      "concept": "S&P 500",
+      "definition": "Official US large-cap cash price index; float-adjusted market capitalization weighted.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "SP:SPX",
+        "loaded_feed_alias": "SP_DLY:SPX",
+        "provider": "S&P Dow Jones Indices via TradingView",
+        "unit": "index_points",
+        "unit_notes": "Index points; USD calculation basis; excludes dividend reinvestment."
+      },
+      "observation": {
+        "frequency": "Intraday during calculation session; dashboard 1D.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "America/New_York (economic cash-market clock). Chart/CSV timestamp is not final-close availability."
+        },
+        "publication_notes": "Cash trading date; regular US close around 16:00 ET, subject to calendar and corrections. Account receives delayed values. Exact final publication timestamp not audited."
+      },
+      "entitlement": {
+        "status": "delayed",
+        "delay_minutes": 10,
+        "realtime_exchange_entitlement": "not_present",
+        "evidence_notes": "10-minute delayed; real-time S&P package absent.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None; very old chart prehistory is not verified modern-index history."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "index_points"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1871-02-01T14:26:02.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T13:30:00.0000000+00:00",
+        "rows": 1675,
+        "gaps_over_45_days_count": 180,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "2DA16BA4A4C9E685B03F09A521CE0246CDC62B3684E7784CAA96A040CC0CA189",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Modern index launched 1957-03-04; provider lists first value 1928-01-03. Export extends to 1871 with sparse pre-1928 observations: provenance unresolved, exclude from homogeneous modern-index tests. Constituent/weight changes and price-versus-total-return distinction.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "sp"
+      ]
+    },
+    {
+      "series_id": "sxxp",
+      "concept": "STOXX Europe 600",
+      "definition": "Official STOXX Europe 600 EUR price-return index.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "STOXX:SXXP",
+        "loaded_feed_alias": "STOXX_DLY:SXXP",
+        "provider": "STOXX / Deutsche Boerse STOXX feed",
+        "unit": "index_points",
+        "unit_notes": "Index points; EUR calculation basis."
+      },
+      "observation": {
+        "frequency": "Provider publishes every 15 seconds during calculation window; dashboard 1D.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "European calculation clock; provider specifies 09:00–18:00 CET. Preserve CET/CEST calendar rules rather than assuming a fixed UTC offset."
+        },
+        "publication_notes": "Multiple constituent-market closes; dissemination end and underlying stock close are different times. Exact final-value delivery timestamp not audited."
+      },
+      "entitlement": {
+        "status": "delayed",
+        "delay_minutes": 15,
+        "realtime_exchange_entitlement": "not_present",
+        "evidence_notes": "15-minute delayed; real-time STOXX package absent.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "index_points"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "2001-12-02T23:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T22:00:00.0000000+00:00",
+        "rows": 299,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "E3071BCE7E32A16355F71DAD81EB46858B5F07E87A1D48417B4720E88319B6F4",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Provider history from 1991-12-31 and launch 1998-06-15; this export begins only in December 2001. EUR differs from USD/JPY panels; changing constituents; excludes reinvested dividends.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "stoxx"
+      ]
+    },
+    {
+      "series_id": "topix",
+      "concept": "TOPIX",
+      "definition": "Official free-float market-cap-weighted Japanese equity price index.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "TSE:TOPIX",
+        "loaded_feed_alias": "TSE_DLY:TOPIX",
+        "provider": "Tokyo Stock Exchange / JPX",
+        "unit": "index_points",
+        "unit_notes": "Index points; JPY calculation basis."
+      },
+      "observation": {
+        "frequency": "Provider calculates per second in session; dashboard 1D.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Asia/Tokyo, UTC+09:00; no DST."
+        },
+        "publication_notes": "Japanese trading date. Current cash close 15:30 JST; prior to 2024-11-05 close was 15:00. Account delay applies after calculation."
+      },
+      "entitlement": {
+        "status": "delayed",
+        "delay_minutes": 20,
+        "realtime_exchange_entitlement": "not_present",
+        "evidence_notes": "20-minute delayed; real-time TSE package absent.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "index_points"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1988-09-01T00:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T00:00:00.0000000+00:00",
+        "rows": 458,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "500C4816DBACBBEE504FF485F84F2595DF3911EF797809C32572691D9D97A516",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Export begins September 1988, later than 1969 launch. TOPIX phased revisions in 2022–2025 and subsequent revision stages alter composition; TSE closing-time change affects alignment.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "topix",
+        "topix_revision",
+        "tse_hours"
+      ]
+    },
+    {
+      "series_id": "mchi",
+      "concept": "MSCI China",
+      "definition": "USD-listed iShares MSCI China ETF market price; proxy for broad MSCI China exposure.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "NASDAQ:MCHI",
+        "loaded_feed_alias": "BATS:MCHI",
+        "provider": "iShares issuer; Cboe One quote feed via TradingView",
+        "unit": "USD_per_share",
+        "unit_notes": "USD per ETF share; dividend adjustment OFF."
+      },
+      "observation": {
+        "frequency": "Intraday US trading; dashboard 1D.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "America/New_York for US trading; underlying China/Hong Kong markets have earlier closes."
+        },
+        "publication_notes": "US trading date and market price, not same-time China close or NAV. Exact daily-bar feed composition/official consolidated-close equivalence not established."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Real-time Cboe One alternative feed; official Nasdaq feed entitlement not established.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "etf",
+        "notes": "ETF replaces unavailable broad MSCI China USD cash price index."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "USD_per_share"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "2011-03-01T14:30:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T13:30:00.0000000+00:00",
+        "rows": 188,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "E0F680EBC073F0B25492455724B08E4847FE0B6E497770B81533ECD481C7C6BE",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Fund inception 2011-03-29; monthly label March 1 predates first trading date and is only a period label. Fees, tracking error, distributions, premium/discount and US-vs-Asia hours. Cboe One is not consolidated primary-exchange tape.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "ishares"
+      ]
+    },
+    {
+      "series_id": "eem",
+      "concept": "MSCI Emerging Markets",
+      "definition": "USD-listed iShares MSCI Emerging Markets ETF market price; fund benchmark is MSCI Emerging Markets Index (Net).",
+      "availability": "available",
+      "instrument": {
+        "symbol": "AMEX:EEM",
+        "loaded_feed_alias": "BATS:EEM",
+        "provider": "iShares issuer; Cboe One quote feed via TradingView",
+        "unit": "USD_per_share",
+        "unit_notes": "USD per ETF share; dividend adjustment OFF."
+      },
+      "observation": {
+        "frequency": "Intraday US trading; dashboard 1D.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "America/New_York for US trading; underlying countries have multiple clocks."
+        },
+        "publication_notes": "US trading date; market price differs from NAV and underlying local closes. Exact feed history equivalence not established."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Cboe One alternative feed available; official NYSE Arca consolidated entitlement not established.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "etf",
+        "notes": "ETF replaces unavailable broad MSCI Emerging Markets USD cash price index."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "USD_per_share"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "2003-04-01T14:30:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T13:30:00.0000000+00:00",
+        "rows": 283,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "756AB61E8E3C67ED34D18C7C9E4B65D530FC4522E402D5A6A31D68C537B30DC9",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Inception 2003-04-07; monthly April 1 label is not inception. Fees, tracking error, distributions, country/index inclusion changes and nonsynchronous underlying markets.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "eem",
+        "ishares"
+      ]
+    },
+    {
+      "series_id": "us02y",
+      "concept": "US 2-year yield",
+      "definition": "Indicative US government benchmark 2-year yield; not identified as a constant-maturity FRED series.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "TVC:US02Y",
+        "loaded_feed_alias": "TVC:US02Y",
+        "provider": "TVC / Refinitiv (LSEG)",
+        "unit": "percent",
+        "unit_notes": "Percent per annum; 0.01 percentage point = 1 bp. Native watchlist Chg is percentage points; multiply by 100."
+      },
+      "observation": {
+        "frequency": "Intraday indicative updates; exact cadence not specified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "US market clock America/New_York; exact TVC vendor session timezone/cutoff unverified."
+        },
+        "publication_notes": "Quote/trading date; daily OHLC follows vendor session, not H.15 release or a confirmed official fixing. Publication latency beyond live feed unverified."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Real-time TVC feed available; no delay label.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "percent"
+        },
+        {
+          "id": "change_bp",
+          "definition": "100 * (source level at window_end - source level at window_start); source levels expressed in percent.",
+          "output_unit": "basis_points",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1988-02-01T00:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T23:00:00.0000000+00:00",
+        "rows": 464,
+        "gaps_over_45_days_count": 1,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "4338EB8383F0341476958D2EE4A50B610C697CF269823137ABE5C0C2C9AC8C17",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Benchmark-security replacement and vendor splice methodology not audited. Export has an older >45-day interval. Do not silently mix with FRED constant-maturity inputs.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "tvc"
+      ]
+    },
+    {
+      "series_id": "us10y",
+      "concept": "US 10-year yield",
+      "definition": "Indicative US government benchmark 10-year yield; distinct from FRED DGS10 constant maturity.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "TVC:US10Y",
+        "loaded_feed_alias": "TVC:US10Y",
+        "provider": "TVC / Refinitiv (LSEG)",
+        "unit": "percent",
+        "unit_notes": "Percent per annum; 0.01 percentage point = 1 bp. Native watchlist Chg is percentage points; multiply by 100."
+      },
+      "observation": {
+        "frequency": "Intraday indicative updates; exact cadence not specified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "US market clock America/New_York; exact vendor session timezone/cutoff unverified."
+        },
+        "publication_notes": "Quote/trading date; vendor daily close is not a verified official Treasury fixing or release timestamp."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Real-time TVC feed available; no delay label.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "percent"
+        },
+        {
+          "id": "change_bp",
+          "definition": "100 * (source level at window_end - source level at window_start); source levels expressed in percent.",
+          "output_unit": "basis_points",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1912-06-03T00:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T23:00:00.0000000+00:00",
+        "rows": 1273,
+        "gaps_over_45_days_count": 50,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "D9864E238578807E350DFDAA45A3262417A77B95383822D9FFE80B7D667E4397",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Export starts June 1912 with sparse early history. Historical underlying benchmark/splice definitions unresolved. Do not interpret all history as a uniform present-day 10Y instrument.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "tvc"
+      ]
+    },
+    {
+      "series_id": "dfii10",
+      "concept": "US 10-year real yield",
+      "definition": "10-year inflation-indexed Treasury constant-maturity market yield, investment basis.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "FRED:DFII10",
+        "loaded_feed_alias": "FRED:DFII10",
+        "provider": "Federal Reserve Board H.15 via FRED",
+        "unit": "percent",
+        "unit_notes": "Percent per annum; 0.01 percentage point = 1 bp. Native watchlist Chg is percentage points; multiply by 100."
+      },
+      "observation": {
+        "frequency": "Daily business-day observations, not live quotes.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Observation is US business date. Fed release clock America/New_York; FRED page update clock America/Chicago; export labels UTC."
+        },
+        "publication_notes": "Example verified: observation 2026-10-08; FRED updated 2026-10-09 15:16 CDT (20:16 UTC). H.15 scheduled 16:15 ET on business days; schedule is not same-day availability proof. TradingView ingest time unknown."
+      },
+      "entitlement": {
+        "status": "daily_publication",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_applicable",
+        "evidence_notes": "Daily publication available; no intraday entitlement implied.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "Accepted published daily real-yield series."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "percent"
+        },
+        {
+          "id": "change_bp",
+          "definition": "100 * (source level at window_end - source level at window_start); source levels expressed in percent.",
+          "output_unit": "basis_points",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "2003-01-01T00:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T00:00:00.0000000+00:00",
+        "rows": 286,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "9CB19715D56B8F05DEC7F766C450C0E0542B3CB59A49D66DF114A368772A3A78",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "FRED website download and documented FRED/ALFRED API (own API key required; no key inspected or created). Series-specific licences and vintage availability apply.",
+      "limitations": [
+        "Source daily history begins 2003-01-02. Monthly period labels are not release times. Revisions, holidays and Treasury curve methodology changes; current download is not a point-in-time vintage.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "dfii",
+        "h15",
+        "curve",
+        "fred_key",
+        "fred_vintage"
+      ]
+    },
+    {
+      "series_id": "de10y",
+      "concept": "German 10-year yield",
+      "definition": "Indicative benchmark German 10-year government-bond yield.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "TVC:DE10Y",
+        "loaded_feed_alias": "TVC:DE10Y",
+        "provider": "TVC / Refinitiv (LSEG)",
+        "unit": "percent",
+        "unit_notes": "Percent per annum; 0.01 percentage point = 1 bp. Native watchlist Chg is percentage points; multiply by 100."
+      },
+      "observation": {
+        "frequency": "Intraday indicative updates; exact cadence unspecified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Europe/Berlin economic market clock (CET/CEST); vendor cutoff unverified."
+        },
+        "publication_notes": "Vendor quote/trading date; no verified daily publication/fixing timestamp."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Real-time TVC feed available.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "percent"
+        },
+        {
+          "id": "change_bp",
+          "definition": "100 * (source level at window_end - source level at window_start); source levels expressed in percent.",
+          "output_unit": "basis_points",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1979-12-03T07:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T06:00:00.0000000+00:00",
+        "rows": 548,
+        "gaps_over_45_days_count": 3,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "A2663A4B0607718ADCF2BFFD3FB43DC29697EEA4F34AEF19E6017B3D3399C6C2",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Downloaded monthly series has >45-day gaps around 1990, 1999 and 2014; treat as export/data gaps until source checked. Benchmark changes; early pre-euro history not methodologically audited.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "tvc"
+      ]
+    },
+    {
+      "series_id": "jp10y",
+      "concept": "Japanese 10-year yield",
+      "definition": "Japan 10 Year LSEG Government Bonds Yield; benchmark JGB yield.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "TVC:JP10Y",
+        "loaded_feed_alias": "TVC:JP10Y",
+        "provider": "TVC / Refinitiv (LSEG)",
+        "unit": "percent",
+        "unit_notes": "Percent per annum; 0.01 percentage point = 1 bp. Native watchlist Chg is percentage points; multiply by 100."
+      },
+      "observation": {
+        "frequency": "Intraday indicative updates; exact cadence unspecified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Japan economic market clock Asia/Tokyo; exact vendor session timezone/cutoff unverified."
+        },
+        "publication_notes": "Vendor quote date/session is not proven to coincide with Tokyo stock close; UTC export can start on previous civil day."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Real-time TVC feed available.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "percent"
+        },
+        {
+          "id": "change_bp",
+          "definition": "100 * (source level at window_end - source level at window_start); source levels expressed in percent.",
+          "output_unit": "basis_points",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "2006-01-31T22:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T21:00:00.0000000+00:00",
+        "rows": 249,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "68889CA9996941F9B6D4987C7A7ED109DC57984840B7DF544553FE2D1EEACF6B",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView manual CSV export. TradingView provides no customer market-data API; Premium is not an API licence. External exact-series API mapping and entitlement not established.",
+      "limitations": [
+        "Export begins around February 2006. Benchmark-security changes and vendor session conventions unresolved; yield is not a bond total return.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "tvc"
+      ]
+    },
+    {
+      "series_id": "dxy",
+      "concept": "Dollar index",
+      "definition": "ICE US Dollar Index, geometric six-currency basket; spot currency index, not DX futures.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "ICEUS:DXY",
+        "loaded_feed_alias": "ICEUS_DLY:DXY",
+        "provider": "ICE Futures US / ICE index data",
+        "unit": "index_points",
+        "unit_notes": "Index points; relative USD basket value."
+      },
+      "observation": {
+        "frequency": "Intraday; exact delivered cadence not verified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "US index market clock America/New_York; exact vendor daily cutoff unverified."
+        },
+        "publication_notes": "Vendor daily session label; no futures settlement/roll applies to DXY. Do not equate date label with US equity close."
+      },
+      "entitlement": {
+        "status": "delayed",
+        "delay_minutes": 10,
+        "realtime_exchange_entitlement": "not_present",
+        "evidence_notes": "10-minute delayed; real-time ICEUS package absent.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "different_index",
+        "notes": "Accepted replacement for Bloomberg Dollar Spot Index; more euro-heavy and different basket."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "index_points"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1985-11-01T00:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T23:00:00.0000000+00:00",
+        "rows": 492,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "B0706223CFA6B84D674BE5A53464E3F21BD606B82F6D6F2174743D5A0A27E9D3",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView CSV; ICE historical/API products are a documented alternative, requiring separate licensed access and symbol mapping. No external ICE entitlement verified.",
+      "limitations": [
+        "Export begins November 1985. Basket/currency regime changes and euro introduction require review for long samples; not broad trade-weighted dollar exposure.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "dxy",
+        "ice_api"
+      ]
+    },
+    {
+      "series_id": "usdjpy",
+      "concept": "USD/JPY",
+      "definition": "OTC spot-style USD/JPY provider quote.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "FX_IDC:USDJPY",
+        "loaded_feed_alias": "FX_IDC:USDJPY",
+        "provider": "ICE Data Services",
+        "unit": "JPY_per_USD",
+        "unit_notes": "JPY per 1 USD."
+      },
+      "observation": {
+        "frequency": "Intraday FX updates, broadly 24x5; exact cadence not specified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Global OTC; no single exchange timezone. Exact ICE daily-session timezone/cutoff unverified; exported timestamps UTC."
+        },
+        "publication_notes": "Quote timestamp/session date, not central-bank fixing. Vendor daily boundary may lie on previous UTC date."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Real-time feed available.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "JPY_per_USD"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1970-12-31T22:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T22:00:00.0000000+00:00",
+        "rows": 670,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "6277BD5BD1F5141F9E5845F671909EA7227C30E928FA03B1A3084EA745D3C5BC",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView CSV; ICE historical/API products are a documented alternative, requiring separate licensed access and symbol mapping. No external ICE entitlement verified.",
+      "limitations": [
+        "Export extends to 1971; early exchange-rate regimes and historical provider lineage not audited. Weekend/holiday gaps and vendor bid/ask/mid construction require control.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "coverage",
+        "ice_api"
+      ]
+    },
+    {
+      "series_id": "usdcnh",
+      "concept": "USD/CNH",
+      "definition": "OTC offshore renminbi per USD; not onshore CNY.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "FX_IDC:USDCNH",
+        "loaded_feed_alias": "FX_IDC:USDCNH",
+        "provider": "ICE Data Services",
+        "unit": "CNH_per_USD",
+        "unit_notes": "CNH per 1 USD."
+      },
+      "observation": {
+        "frequency": "Intraday FX updates, broadly 24x5; exact cadence not specified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Global OTC; offshore China economic context Asia/Hong_Kong. Exact ICE session timezone/cutoff unverified."
+        },
+        "publication_notes": "Quote/session date; not PBoC CNY fixing or a synchronized Asian stock-market close."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Real-time feed available.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "CNH_per_USD"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "2012-01-01T22:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T22:00:00.0000000+00:00",
+        "rows": 178,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "B32B435226DACBC3DD6D5CBB415B5F79AFA692E90B0CE57C8C90348742DBE53F",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView CSV; ICE historical/API products are a documented alternative, requiring separate licensed access and symbol mapping. No external ICE entitlement verified.",
+      "limitations": [
+        "Export begins January 2012. Offshore/onshore segmentation, liquidity and regime changes; do not splice USDCNY history.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "coverage",
+        "ice_api"
+      ]
+    },
+    {
+      "series_id": "oas",
+      "concept": "US high-yield OAS",
+      "definition": "ICE BofA US High Yield Index option-adjusted spread over Treasury spot curve; USD below-investment-grade corporate debt.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "FRED:BAMLH0A0HYM2",
+        "loaded_feed_alias": "FRED:BAMLH0A0HYM2",
+        "provider": "ICE Data Indices via FRED",
+        "unit": "percent",
+        "unit_notes": "Percent spread; 1.00 percentage point = 100 bp."
+      },
+      "observation": {
+        "frequency": "Daily close; some month-end weekend observations possible.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "US observation date; FRED release/update clock America/Chicago; exact ICE valuation cutoff unverified; exported period labels UTC."
+        },
+        "publication_notes": "Example: observation 2026-10-08; FRED update 2026-10-09 08:08 CDT (13:08 UTC). TradingView receipt time unknown. Do not assign it to start of observation day."
+      },
+      "entitlement": {
+        "status": "daily_publication",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_applicable",
+        "evidence_notes": "Published daily data available; not live.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "different_oas_index",
+        "notes": "Accepted ICE BofA OAS replaces Bloomberg index; not an HY ETF price."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "percent"
+        },
+        {
+          "id": "change_bp",
+          "definition": "100 * (source level at window_end - source level at window_start); source levels expressed in percent.",
+          "output_unit": "basis_points",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1996-12-01T00:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T00:00:00.0000000+00:00",
+        "rows": 359,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "8DD16D2A84C60D85E2F90228186766F44541648F3F22E1965AE809FFFCB5CC00",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "FRED website download and documented FRED/ALFRED API (own API key required; no key inspected or created). Series-specific licences and vintage availability apply. Longer source history requires separately licensed ICE access.",
+      "limitations": [
+        "FRED restricts current source downloads to three years from April 2026; TradingView monthly export nonetheless retains December 1996 onward. Daily completeness, continued availability and vintage rights not established. Composition/model changes.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "oas",
+        "fred_key"
+      ]
+    },
+    {
+      "series_id": "brent",
+      "concept": "Brent crude",
+      "definition": "Front continuous ICE Brent futures; changing underlying expiry.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "ICEEUR:BRN1!",
+        "loaded_feed_alias": "ICEEUR_DLY:BRN1!",
+        "provider": "ICE Futures Europe; TradingView continuous construction",
+        "unit": "USD_per_barrel",
+        "unit_notes": "USD per barrel."
+      },
+      "observation": {
+        "frequency": "Intraday futures trades; daily close configured as settlement.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Europe/London settlement clock, GMT/BST; session crosses dates."
+        },
+        "publication_notes": "Trade date can differ from UTC session start. ICE daily settlement uses 19:28–19:30 London trading window; final delivery/correction timestamp not verified."
+      },
+      "entitlement": {
+        "status": "delayed",
+        "delay_minutes": 10,
+        "realtime_exchange_entitlement": "not_present",
+        "evidence_notes": "10-minute delayed; real-time ICE Europe package absent.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "Requested futures exposure; continuous series is a constructed history."
+      },
+      "futures": {
+        "back_adjustment": false,
+        "daily_close": "settlement",
+        "exact_roll_schedule": null,
+        "contract_mapping": null,
+        "notes": "TradingView instrument-specific continuous switching rule, based on historical volume migration; not necessarily expiry or a same-day volume crossover. Exact historical contract map and switch dates not audited. B-ADJ OFF (unadjusted roll gaps); SET ON (daily/higher close uses settlement)."
+      },
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "USD_per_barrel"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 day",
+        "first_exported_bar_utc": "2025-08-14T00:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-11T22:00:00.0000000+00:00",
+        "rows": 300,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [
+          "2026-10-11T22:00:00.0000000+00:00"
+        ],
+        "sha256": "ED08E8C30410D2345CB9C426B260ED6ED565475083EE417E26AE01CA9DA1192A",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView CSV; ICE historical/API products are a documented alternative, requiring separate licensed access and symbol mapping. No external ICE entitlement verified.",
+      "limitations": [
+        "Full-history monthly export stalled; loaded daily CSV succeeded. Earliest full history and historical switch map remain unresolved. Roll gaps are not spot moves or investable roll returns.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "brent",
+        "roll",
+        "adjust",
+        "settlement",
+        "ice_api"
+      ]
+    },
+    {
+      "series_id": "copper",
+      "concept": "Copper",
+      "definition": "Front continuous COMEX high-grade copper futures.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "COMEX:HG1!",
+        "loaded_feed_alias": "COMEX_DL:HG1!",
+        "provider": "COMEX / CME Group; TradingView continuous construction",
+        "unit": "USD_per_pound",
+        "unit_notes": "USD per pound (not cents/lb or USD/metric tonne)."
+      },
+      "observation": {
+        "frequency": "Intraday futures trades; daily close configured as settlement.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Exchange session US Central/Eastern context; cited settlement clock America/New_York."
+        },
+        "publication_notes": "CME published active-month settlement procedure uses 12:59–13:00 ET; document dated 2017, revalidate latest and holiday exceptions before intraday timing tests. Settlement availability is later than pricing window."
+      },
+      "entitlement": {
+        "status": "delayed",
+        "delay_minutes": 10,
+        "realtime_exchange_entitlement": "not_present",
+        "evidence_notes": "10-minute delayed; real-time COMEX package absent.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "different_futures_market",
+        "notes": "COMEX futures replace LME 3-month copper; different market, unit and tenor."
+      },
+      "futures": {
+        "back_adjustment": false,
+        "daily_close": "settlement",
+        "exact_roll_schedule": null,
+        "contract_mapping": null,
+        "notes": "TradingView instrument-specific continuous switching rule, based on historical volume migration; not necessarily expiry or a same-day volume crossover. Exact historical contract map and switch dates not audited. B-ADJ OFF (unadjusted roll gaps); SET ON (daily/higher close uses settlement)."
+      },
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "USD_per_pound"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1988-06-30T22:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T22:00:00.0000000+00:00",
+        "rows": 460,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "BCB4B486BEB463FFECA203988158DE0FB2016433E9D2CBA18D2F830DCD399FA6",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView CSV confirmed; CME DataMine REST API is authorized for purchased datasets with own credentials. No CME API purchase or entitlement verified.",
+      "limitations": [
+        "Monthly export starts around July 1988. Contract rolls/active-month conventions differ from LME; settlement/last-trade distinction and currency/unit conversion matter.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "copper",
+        "cme_api",
+        "roll",
+        "adjust",
+        "settlement"
+      ]
+    },
+    {
+      "series_id": "gold",
+      "concept": "Gold",
+      "definition": "OTC gold/USD provider quote; TradingView classifies commodity/CFD-style quote. Not a futures contract or LBMA fixing.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "FX_IDC:XAUUSD",
+        "loaded_feed_alias": "FX_IDC:XAUUSD",
+        "provider": "ICE Data Services",
+        "unit": "USD_per_troy_ounce",
+        "unit_notes": "USD per troy ounce."
+      },
+      "observation": {
+        "frequency": "Intraday OTC updates; exact cadence not specified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Global OTC; exact provider daily timezone/cutoff unverified."
+        },
+        "publication_notes": "Provider quote/session date; no official fixing time is implied by daily bar."
+      },
+      "entitlement": {
+        "status": "live_label_observed_closed_market",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_verified",
+        "evidence_notes": "Real-time feed available.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "Spot-style quote as requested; provider-specific, not physical fixing."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "USD_per_troy_ounce"
+        },
+        {
+          "id": "percent_change",
+          "definition": "100 * (source level at window_end / source level at window_start - 1); requires positive endpoints and unchanged source conventions.",
+          "output_unit": "percent",
+          "scale": 100
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1832-12-31T22:56:02.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T22:00:00.0000000+00:00",
+        "rows": 1333,
+        "gaps_over_45_days_count": 63,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "6EC4EF8F93E9AC241B4ADB92847EDEF376AE6CD8EA9E3F674BEC33E3BE86E6F4",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView CSV; ICE historical/API products are a documented alternative, requiring separate licensed access and symbol mapping. No external ICE entitlement verified.",
+      "limitations": [
+        "Export extends to 1833 with sparse early observations. Pre-modern monetary regimes and historical source splices are unresolved; do not treat this as homogeneous live spot history.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "coverage",
+        "ice_api"
+      ]
+    },
+    {
+      "series_id": "vix",
+      "concept": "VIX",
+      "definition": "Official VIX: 30-day expected S&P 500 volatility inferred from SPX options.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "CBOE:VIX",
+        "loaded_feed_alias": "CBOE_DLY:VIX",
+        "provider": "Cboe Global Indices",
+        "unit": "index_points",
+        "unit_notes": "Volatility index points, conventionally annualized percent volatility; changes in index points, not yield bp."
+      },
+      "observation": {
+        "frequency": "Intraday calculation; official daily history also available.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Cboe US market clock America/Chicago; exact chart-session convention unverified."
+        },
+        "publication_notes": "Observation/trading date; do not equate VIX close with SPX 16:00 ET close without checking source sessions and revisions."
+      },
+      "entitlement": {
+        "status": "delayed",
+        "delay_minutes": 15,
+        "realtime_exchange_entitlement": "not_present",
+        "evidence_notes": "15-minute delayed; real-time Cboe indices package absent.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None; not VIX futures or VXO."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "index_points"
+        },
+        {
+          "id": "change_points",
+          "definition": "Source level at window_end minus source level at window_start.",
+          "output_unit": "index_points"
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "1990-01-01T08:15:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T07:15:00.0000000+00:00",
+        "rows": 442,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "B1559DB031AFEB555382124A566E422B17EA05712CAD2FFD700BF16E5BADBF07",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView CSV confirmed. Cboe offers official downloadable daily history; separately licensed DataShop for richer data. No API entitlement verified.",
+      "limitations": [
+        "Current-methodology daily history back to 1990; methodology replaced original OEX-based VIX in 2003. Earlier current-methodology history is reconstructed; never splice VXO silently.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "vix",
+        "vix_faq"
+      ]
+    },
+    {
+      "series_id": "move",
+      "concept": "MOVE",
+      "definition": "Official ICE BofA US Bond Market Option Volatility Estimate Index. Current ICE catalog describes a basket of OTC interest-rate-swap options.",
+      "availability": "available",
+      "instrument": {
+        "symbol": "ICE:MOVE",
+        "loaded_feed_alias": "ICE_DLY:MOVE",
+        "provider": "ICE Data Indices",
+        "unit": "index_points",
+        "unit_notes": "MOVE index points; yield-volatility measure. Do not apply yield/OAS ×100 conversion."
+      },
+      "observation": {
+        "frequency": "Provider offers intraday and daily; exact delivered intraday cadence and historical definition changes unverified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "US rates-market context; exact calculation timezone and daily fixing cutoff unverified."
+        },
+        "publication_notes": "Intraday index observations and daily close; final-value publication time and historical transition to intraday publication unverified."
+      },
+      "entitlement": {
+        "status": "delayed",
+        "delay_minutes": 15,
+        "realtime_exchange_entitlement": "not_present",
+        "evidence_notes": "15-minute delayed; real-time ICE Data Indices package absent.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None; official ICE series, not a CFD copy."
+      },
+      "futures": null,
+      "measurement_conventions": [
+        {
+          "id": "level",
+          "definition": "Source level at window_end, without rebasing or currency conversion.",
+          "output_unit": "index_points"
+        },
+        {
+          "id": "change_points",
+          "definition": "Source level at window_end minus source level at window_start.",
+          "output_unit": "index_points"
+        }
+      ],
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "2002-11-01T00:45:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-09-30T23:45:00.0000000+00:00",
+        "rows": 288,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "871C1D70D9DCEF694F6824D6FC397DC0DE76F542340AEB5176B16A0F9676F100",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "TradingView CSV; ICE historical/API products are a documented alternative, requiring separate licensed access and symbol mapping. No external ICE entitlement verified.",
+      "limitations": [
+        "TradingView monthly export begins November 2002; ICE catalog says provider history since 1996. Exact full methodology, historical component lineage and weighting version require source licence/documentation.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui",
+        "loaded-exports"
+      ],
+      "source_refs": [
+        "move",
+        "ice_api"
+      ]
+    },
+    {
+      "series_id": "funding_basis",
+      "concept": "EUR/USD 3-month dollar funding basis",
+      "definition": "Intended FX-swap-implied 3-month USD funding pressure. No matching construction or series verified.",
+      "availability": "unavailable",
+      "instrument": {
+        "symbol": null,
+        "loaded_feed_alias": null,
+        "provider": null,
+        "unit": null,
+        "unit_notes": "Intended bp; precise sign, leg, day count and annualization UNVERIFIED."
+      },
+      "observation": {
+        "frequency": "Unverified.",
+        "published_at": null,
+        "available_at": null,
+        "max_age_seconds": null,
+        "timezone": {
+          "exact_vendor_session_zone": null,
+          "economic_clock_context": "Unverified."
+        },
+        "publication_notes": "Requires matched spot, 3M forward points, USD/EUR rate curves and timestamps; settlement/holiday dates and quote convention must be pinned."
+      },
+      "entitlement": {
+        "status": "unavailable",
+        "delay_minutes": null,
+        "realtime_exchange_entitlement": "not_applicable",
+        "evidence_notes": "Unavailable in configured map; no invented proxy.",
+        "evidence_refs": [
+          "account-ui"
+        ]
+      },
+      "proxy": {
+        "kind": "none",
+        "notes": "None; longer-tenor cross-currency basis swap is not interchangeable."
+      },
+      "futures": null,
+      "measurement_conventions": [],
+      "history": {
+        "status": "unverified_or_derived",
+        "detail": "Symbol, provider, history, access and exact construction remain a gap. Exclude from tested signals until resolved.",
+        "first_daily_observation": "unverified in TradingView",
+        "completeness": "not established",
+        "complete_daily_history_verified": false
+      },
+      "authorized_access": "No authorized data route verified.",
+      "limitations": [
+        "Symbol, provider, history, access and exact construction remain a gap. Exclude from tested signals until resolved.",
+        "Closed-market verification does not establish moving-tick latency; source-session timezone and actual TradingView receipt times remain unverified."
+      ],
+      "evidence_refs": [
+        "account-ui"
+      ],
+      "source_refs": []
+    }
+  ],
+  "derived_views": [
+    {
+      "view_id": "t10y2y",
+      "name": "US 10Y–2Y spread",
+      "symbol": "FRED:T10Y2Y",
+      "loaded_feed_alias": "FRED:T10Y2Y",
+      "provider": "Federal Reserve Bank of St. Louis; US Treasury inputs",
+      "definition": "Published difference of matched 10Y and 2Y Treasury constant-maturity yields.",
+      "units": "Percentage points; level or change ×100 = bp.",
+      "frequency": "Daily business-day publication.",
+      "delivery": "Available daily; not live.",
+      "timezone": "Observation US business date; source US Eastern, FRED update America/Chicago; exports UTC labels.",
+      "publication_notes": "Latest page example: observation 2026-10-09, updated 16:03 CDT that day (21:03 UTC). Not a guaranteed future schedule; TradingView ingest time unknown.",
+      "substitution": "Published series replaces subtraction of live TVC yields.",
+      "history": {
+        "status": "unverified_or_derived",
+        "detail": "FRED source history from 1976-06-01. TradingView monthly export stalled; chart daily available. Inputs sourced directly from Treasury since 2019-06-21; curve methodology changed 2021-12-06.",
+        "first_daily_observation": "unverified in TradingView",
+        "completeness": "not established",
+        "complete_daily_history_verified": false
+      },
+      "limitations": "FRED source history from 1976-06-01. TradingView monthly export stalled; chart daily available. Inputs sourced directly from Treasury since 2019-06-21; curve methodology changed 2021-12-06.",
+      "authorized_access": "FRED website download and documented FRED/ALFRED API (own API key required; no key inspected or created). Series-specific licences and vintage availability apply.",
+      "futures": null,
+      "source_refs": [
+        "t10y2y",
+        "curve",
+        "fred_vintage"
+      ]
+    },
+    {
+      "view_id": "t10yie",
+      "name": "US 10-year breakeven",
+      "symbol": "FRED:T10YIE",
+      "loaded_feed_alias": "FRED:T10YIE",
+      "provider": "Federal Reserve Bank of St. Louis; US Treasury inputs",
+      "definition": "Published nominal 10Y constant-maturity yield minus matched 10Y inflation-indexed constant-maturity yield.",
+      "units": "Percentage points; level or change ×100 = bp.",
+      "frequency": "Daily business-day publication.",
+      "delivery": "Available daily; not live.",
+      "timezone": "Observation US business date; FRED update America/Chicago; exports UTC labels.",
+      "publication_notes": "Example: 2026-10-09 observation updated 16:03 CDT (21:03 UTC). Actual availability, not observation midnight, controls signal eligibility.",
+      "substitution": "Published matched series; not TVC:US10Y minus FRED:DFII10.",
+      "history": {
+        "status": "retrieved_export",
+        "interval": "1 month",
+        "first_exported_bar_utc": "2003-01-01T00:00:00.0000000+00:00",
+        "last_exported_bar_utc": "2026-10-01T00:00:00.0000000+00:00",
+        "rows": 286,
+        "gaps_over_45_days_count": 0,
+        "duplicate_timestamp_count": 0,
+        "future_bar_labels_at_audit": [],
+        "sha256": "46DB70A4B0BF18E1A4279F35CC82883A898377FC6236B594009ECCD0D80B5E50",
+        "first_daily_observation": "Earliest daily observation in the full source not established; first exported bar above is only the loaded sample boundary.",
+        "completeness": "Not established; loaded export only. Monthly bar labels can precede actual first observation and session start can be on prior UTC date. Future-labelled or unfinished bars must not be treated as realized outcomes.",
+        "complete_daily_history_verified": false
+      },
+      "limitations": "Source starts 2003-01-02. Treasury sourcing changed 2019; curve methodology 2021. Breakeven also reflects inflation-risk/liquidity effects, not pure expected inflation.",
+      "authorized_access": "FRED website download and documented FRED/ALFRED API (own API key required; no key inspected or created). Series-specific licences and vintage availability apply.",
+      "futures": null,
+      "source_refs": [
+        "t10yie",
+        "curve",
+        "fred_vintage"
+      ]
+    },
+    {
+      "view_id": "regional_comparison",
+      "name": "Normalized regional equities",
+      "symbol": "SP:SPX + STOXX:SXXP + TSE:TOPIX + NASDAQ:MCHI + AMEX:EEM",
+      "loaded_feed_alias": "Underlying aliases above",
+      "provider": "TradingView comparison of five source series",
+      "definition": "Percentage price change from first visible bar, each series separately rebased.",
+      "units": "Percent change; mixed USD/EUR/JPY bases; dividends not reinvested.",
+      "frequency": "Underlying source frequencies; dashboard daily.",
+      "delivery": "Mixed delayed cash indices and Cboe One ETF feeds.",
+      "timezone": "Multiple market timezones; no common economic close.",
+      "publication_notes": "Chart date alignment is not simultaneous availability. Visible-window base changes when chart range changes.",
+      "substitution": "China/EM ETF substitutions; Europe EUR and Japan JPY remain explicitly labeled.",
+      "history": {
+        "status": "unverified_or_derived",
+        "detail": "Common overlap cannot precede MCHI March 2011, and daily completeness still unverified. Choose fixed base date and currency for formal tests; chart-window normalization is not a frozen research feature.",
+        "first_daily_observation": "unverified in TradingView",
+        "completeness": "not established",
+        "complete_daily_history_verified": false
+      },
+      "limitations": "Common overlap cannot precede MCHI March 2011, and daily completeness still unverified. Choose fixed base date and currency for formal tests; chart-window normalization is not a frozen research feature.",
+      "authorized_access": "Export constituent histories independently and compute a versioned comparison; no separate source API.",
+      "futures": null,
+      "source_refs": [
+        "sp",
+        "stoxx",
+        "topix",
+        "ishares"
+      ],
+      "currency_basis": "mixed_USD_EUR_JPY",
+      "constituents": [
+        "spx",
+        "sxxp",
+        "topix",
+        "mchi",
+        "eem"
+      ]
+    },
+    {
+      "view_id": "brent_spread",
+      "name": "Brent front-minus-second spread",
+      "symbol": "ICEEUR:BRN1!-ICEEUR:BRN2!",
+      "loaded_feed_alias": "ICEEUR_DLY:BRN1!-ICEEUR_DLY:BRN2!",
+      "provider": "TradingView expression over ICE futures",
+      "definition": "Rolling first-minus-second continuous Brent futures spread; positive indicates front premium/backwardation.",
+      "units": "USD per barrel; absolute differences, not percentage near zero.",
+      "frequency": "Underlying futures intraday; dashboard daily.",
+      "delivery": "Underlying ICE Europe feed delayed 10 minutes.",
+      "timezone": "Europe/London underlying settlement; vendor session dates require alignment.",
+      "publication_notes": "Daily expression close uses configured settlement legs. Intraday synthetic OHLC construction not independently audited.",
+      "substitution": "Near-versus-deferred spread in place of full futures curve.",
+      "history": {
+        "status": "unverified_or_derived",
+        "detail": "Not fixed expiries or constant tenor. Must record both actual contract months on each day. Joint history and complete exports not verified.",
+        "first_daily_observation": "unverified in TradingView",
+        "completeness": "not established",
+        "complete_daily_history_verified": false
+      },
+      "limitations": "Not fixed expiries or constant tenor. Must record both actual contract months on each day. Joint history and complete exports not verified.",
+      "authorized_access": "Export both actual futures legs with matching settlement timestamps; ICE licensed API alternative. No separate expression API entitlement.",
+      "futures": {
+        "back_adjustment": false,
+        "daily_close": "settlement",
+        "exact_roll_schedule": null,
+        "contract_mapping": null,
+        "notes": "TradingView instrument-specific continuous switching rule, based on historical volume migration; not necessarily expiry or a same-day volume crossover. Exact historical contract map and switch dates not audited. B-ADJ OFF (unadjusted roll gaps); SET ON (daily/higher close uses settlement)."
+      },
+      "source_refs": [
+        "brent",
+        "roll",
+        "settlement",
+        "ice_api"
+      ]
+    }
+  ],
+  "layouts": [
+    {
+      "name": "Global Pulse",
+      "url": "https://www.tradingview.com/chart/WMYb20tE/",
+      "interval": "1D",
+      "populated_chart_count": 8,
+      "panels": [
+        {
+          "ref": "spx",
+          "state": "configured"
+        },
+        {
+          "ref": "sxxp",
+          "state": "configured"
+        },
+        {
+          "ref": "mchi",
+          "state": "configured"
+        },
+        {
+          "ref": "dxy",
+          "state": "configured"
+        },
+        {
+          "ref": "us10y",
+          "state": "configured"
+        },
+        {
+          "ref": "brent",
+          "state": "configured"
+        },
+        {
+          "ref": "copper",
+          "state": "configured"
+        },
+        {
+          "ref": "oas",
+          "state": "configured"
+        }
+      ]
+    },
+    {
+      "name": "Funding & Stress",
+      "url": "https://www.tradingview.com/chart/fmsYFkbN/",
+      "interval": "1D",
+      "populated_chart_count": 7,
+      "panels": [
+        {
+          "ref": "us02y",
+          "state": "configured"
+        },
+        {
+          "ref": "dfii10",
+          "state": "configured"
+        },
+        {
+          "ref": "de10y",
+          "state": "configured"
+        },
+        {
+          "ref": "jp10y",
+          "state": "configured"
+        },
+        {
+          "ref": "usdjpy",
+          "state": "configured"
+        },
+        {
+          "ref": "vix",
+          "state": "configured"
+        },
+        {
+          "ref": "move",
+          "state": "configured"
+        },
+        {
+          "ref": "funding_basis",
+          "state": "unavailable"
+        }
+      ]
+    },
+    {
+      "name": "Regional & Cross-Asset",
+      "url": "https://www.tradingview.com/chart/4EZiX8Mc/",
+      "interval": "1D",
+      "populated_chart_count": 8,
+      "panels": [
+        {
+          "ref": "topix",
+          "state": "configured"
+        },
+        {
+          "ref": "eem",
+          "state": "configured"
+        },
+        {
+          "ref": "usdcnh",
+          "state": "configured"
+        },
+        {
+          "ref": "gold",
+          "state": "configured"
+        },
+        {
+          "ref": "t10y2y",
+          "state": "configured"
+        },
+        {
+          "ref": "t10yie",
+          "state": "configured"
+        },
+        {
+          "ref": "regional_comparison",
+          "state": "configured"
+        },
+        {
+          "ref": "brent_spread",
+          "state": "configured"
+        }
+      ]
+    }
+  ],
+  "research_requirements": [
+    "Store hypothesis ID/version, creation time UTC, exact series/feed, units, formula/window/threshold, decision cutoff, horizon, outcome definition and invalidation/missing-data rule BEFORE the outcome period.",
+    "Store observation_date, provider_published_at_utc (nullable), first_seen_at_utc, retrieved_at_utc, vintage/as_of, value, source file hash, final/provisional flag, source timezone and current contract IDs.",
+    "Join signals by availability time at or before decision cutoff, not shared calendar date. Unknown release times cannot be silently backfilled as midnight.",
+    "Freeze the research sample, currency basis, corporate-action/roll settings and methodology regime. A changed symbol/provider is a new version, not a silent splice.",
+    "Keep snapshots unchanged; append corrections with new vintage. Use subsequent outcomes and predeclared horizons; report all hypotheses and missing outcomes, not only winners.",
+    "This package prepares metadata and evidence. It does not establish a complete point-in-time research database or create/test signal rules."
+  ]
+}
