@@ -278,6 +278,14 @@ Simultaneous operation is outside the first deployment. It would need its own sa
 
 ## 8. Live path to an attended armed personal session
 
+**Current navigation (2026-10-14):** the table below retains the original queue.
+[Live-wiring §§6b–6d](2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12)
+supersede its GC-5/S2 dependencies: card A precedes GC-5; after P-L2, the
+account-owner order is P4 → P-SW → GC-5 → TB-I3 S2. The latter two serve the
+now-suspended Tradeify route. Personal clearance now follows
+[Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md)
+and the existing cards' F₃ amendments; assignments are unchanged.
+
 The personal session sits downstream of most of the Tradeify book-route build: T09, TB-I3, the live route packet, T13 and T14. It also adds new personal items. The legacy single-leg path cannot trade the book (#773 scope note §1).
 
 | # | Packet | Layer | Owner | Depends on |
