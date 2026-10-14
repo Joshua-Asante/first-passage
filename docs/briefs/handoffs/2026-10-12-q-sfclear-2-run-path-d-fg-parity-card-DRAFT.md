@@ -195,3 +195,7 @@ Owned by Claude under its own frozen executor card, after Part 1, A, B and the p
 - **Evidence binding:** records at the returned head only.
 
 [prereg]: https://github.com/Joshua-Asante/first-passage/blob/83867f0d362931c2a516a62b990bb1c209372527/docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md
+
+## Amendment 2026-10-14 — bind Q-SFCLEAR-3 (F₃)
+
+**Takes effect only when Q-SFCLEAR-3 is frozen** (commit F₃, recorded in the parent brief as `Q-SFCLEAR-3 pre-registration commit hash`); until then it is a committed draft and changes nothing. Basis: [Q-SFCLEAR-3](../pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) §S, ratified by Joshua at freeze. The study that governs this card becomes Q-SFCLEAR-3 at F₃, which incorporates Q-SFCLEAR-2 at F₂ `83867f0` except its §S. Part 1's rows are unchanged; FG item 5 (15:55 placement) belongs to the private run (#808), not to Part 1.

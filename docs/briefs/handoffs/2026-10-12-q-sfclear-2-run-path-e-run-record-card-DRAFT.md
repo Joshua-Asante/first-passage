@@ -224,3 +224,11 @@ Private outputs stay under `C:\Users\joshu\t00-step3-console\sfclear2-run-<UTC>\
 - **New input `sfclear_port_state/v1`** (private; written by the clearance-run driver beside B's route output; listed in the run's `SHA256SUMS`, which lists a nonce file per §6). Closed schema: `schema`, `run_head` (40 hex), `legs`: `dj30_mym_p250` → `daily_dd_trips_utc` and `total_dd_trips_utc` (lists of aware UTC times); `vanguard_mgc` → `e_p` (list of `[bar_close_utc, value]`). Any other key, a missing leg, a non-finite value or a `run_head` that differs from the run record's refuses (VOID).
 - **Producer:** the private clearance-run driver registers B's `bar_observer` and derives these from each port's own per-bar equity and trip logic on the live strategy object (private read surface; never copied to the repo or quoted). The driver is reviewed by the coordinator and its sha256 is bound in the run manifest before the run; a changed driver is a new manifest.
 - **E11** reads the Striker total-DD trip from `total_dd_trips_utc`; **G1-D/G3-D** read the `E_p` path from `e_p`. Logic unchanged. Build tests use synthetic `sfclear_port_state/v1` files; **E-row added:** a port-state record whose `run_head` differs from the run record's refuses.
+
+## Amendment 2026-10-14 — bind Q-SFCLEAR-3 (F₃)
+
+**Takes effect only when Q-SFCLEAR-3 is frozen** (commit F₃, recorded in the parent brief as `Q-SFCLEAR-3 pre-registration commit hash`); until then it is a committed draft and changes nothing. Basis: [Q-SFCLEAR-3](../pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) §S, ratified by Joshua at freeze.
+
+- **Governing text:** Q-SFCLEAR-3 at F₃ (incorporating Q-SFCLEAR-2 at F₂ `83867f0` except its §S). §0(a)'s base check adds `docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md` byte-equal to F₃ and keeps the F₂ paths byte-equal to F₂.
+- **Hook 4:** Q-SFCLEAR-3 §10 hook 4 replaces Q-SFCLEAR-2's: run records under `lab/analysis/c1/sfclear_2026-10/run_records/` descend from F₃; the closure is `docs/briefs/closures/Q-SFCLEAR-3-*`.
+- **Label:** a RESOLVED verdict uses Q-SFCLEAR-3 §S row 3's label. **Freeze record:** Q-SFCLEAR-2's, reused by hash (§S rows 6–6b), plus any re-taken snapshot record pinned in F₃.

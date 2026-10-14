@@ -273,3 +273,12 @@ An interrupted root is sealed `INCOMPLETE`: only its marker and `SHA256SUMS` are
 
 [prereg]: https://github.com/Joshua-Asante/first-passage/blob/83867f0d362931c2a516a62b990bb1c209372527/docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md
 [s60]: ../programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25
+
+## Amendment 2026-10-14 — FG item 5 and Q-SFCLEAR-3 (F₃)
+
+**Takes effect only when Q-SFCLEAR-3 is frozen** (commit F₃, recorded in the parent brief as `Q-SFCLEAR-3 pre-registration commit hash`); until then it is a committed draft and changes nothing. Basis: [Q-SFCLEAR-3](../pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) §S, ratified by Joshua at freeze. Joshua's freeze words for Q-SFCLEAR-3 are quoted here when F₃ is recorded.
+
+- **Governing text:** Q-SFCLEAR-3 at F₃; every "pre-registration" reference in this card reads Q-SFCLEAR-3 (incorporating Q-SFCLEAR-2 at F₂ except its §S).
+- **Item 5 (new; Q-SFCLEAR-3 §S row 4):** on the full R1 PR replay, every exposed leg's 15:55 instant is split at the R1 placement and no unexposed leg is split. The driver re-derives the expected splits from the exposure log and the M15 bars independently of `placement()` and compares them with `BracketScheduleQuotes.placements`. PASS = 100% conformity, zero missing, zero extra. The split count stays private; pass/fail is public.
+- **FG verdict:** PASS only if 1a, 1b, 1c, 2, 3 and 5 all PASS (item 4 was dropped under ruling (j)).
+- **Prerequisite added to §0(a):** card B amendment (c) merged.
