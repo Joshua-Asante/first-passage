@@ -172,11 +172,12 @@ class StartupPolicy:
     size_vector: SizeVector              # v1: IDENTITY_SIZE_VECTOR; v2: its signed `sizing`
 
 
-def parse_startup_policy(raw):
+def parse_startup_policy(raw, *, tier=None):
     """Proposed serialized F1 choice; parsing supplies no approval by itself.
 
     v2 is v1's fields plus `sizing` (successor card §2.4), validated by `validate_size_vector`."""
-    from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, validate_size_vector
+    from c1_rail.book_policy import IDENTITY_SIZE_VECTOR, validate_size_vector, account_micro_cap, TIER
+    cap = account_micro_cap(TIER if tier is None else tier)
     doc = _json(raw)
     v2 = isinstance(doc, dict) and doc.get('schema') == 'qualification-source-startup/v2'
     if set(doc) != {'schema', 'initialization', 'positions', 'working_orders', 'splice_behavior',
@@ -187,8 +188,8 @@ def parse_startup_policy(raw):
             or doc['positions'] != 'ZERO' or doc['working_orders'] != 'ZERO'
             or doc['splice_behavior'] != 'CARRY_ALL_STATE'):
         raise ValueError('startup requires fresh-once construction and no state resets at splices')
-    if type(doc['shared_account_cap_micro_equivalents']) is not int or doc['shared_account_cap_micro_equivalents'] != 80:
-        raise ValueError('shared account cap must bind the accepted 80 micro-equivalent law')
+    if type(doc['shared_account_cap_micro_equivalents']) is not int or doc['shared_account_cap_micro_equivalents'] != cap:
+        raise ValueError(f'shared account cap must bind the accepted {cap} micro-equivalent law')
     start = date.fromisoformat(doc['path_start_date'])
     if start.weekday() >= 5 or set(doc['legs']) != set(LEG_IDS):
         raise ValueError('weekday path origin and exact four-leg startup rows required')
@@ -204,11 +205,11 @@ def parse_startup_policy(raw):
             raise ValueError('positive finite paper initial capital required')
         if row['lifecycle_tier'] != 'AUTHORIZED':
             raise ValueError('decision-bearing startup proposal is AUTHORIZED only')
-        if type(row['request_cap_micro_equivalents']) is not int or row['request_cap_micro_equivalents'] != 80:
-            raise ValueError('per-request cap must be explicit 80 micro-equivalents, not chart contract units')
+        if type(row['request_cap_micro_equivalents']) is not int or row['request_cap_micro_equivalents'] != cap:
+            raise ValueError(f'per-request cap must be explicit {cap} micro-equivalents, not chart contract units')
         capitals.append((leg, capital)); tiers.append((leg, row['lifecycle_tier'])); caps.append((leg, row['request_cap_micro_equivalents']))
     size_vector = validate_size_vector(doc['sizing']) if v2 else IDENTITY_SIZE_VECTOR
-    return StartupPolicy(start, tuple(capitals), tuple(tiers), tuple(caps), 80, size_vector)
+    return StartupPolicy(start, tuple(capitals), tuple(tiers), tuple(caps), cap, size_vector)
 
 
 def _instant(value):
@@ -746,20 +747,29 @@ def _read_retained_artifacts(artifacts, artifact_root):
     return retained
 
 
-def prepare_production_inputs(contract, *, artifact_root):
+def _startup_tier(policy):
+    from c1_rail.book_policy import PersonalP0Policy, require_personal_p0, require_policy, TIER
+    if isinstance(policy, PersonalP0Policy):
+        return require_personal_p0(policy).tier
+    if policy is not None:
+        require_policy(policy)
+    return TIER
+
+
+def prepare_production_inputs(contract, *, artifact_root, policy=None):
     from c1_signal_daemon.book_adapters import _qualification_domain
     domain = _qualification_domain(contract)
     if domain.authority_class != 'OPERATOR' or domain.permits_synthetic:
         raise ValueError('exact production G1-validated contract required')
-    return _prepare_domain_inputs(contract, artifact_root=artifact_root, domain=domain)
+    return _prepare_domain_inputs(contract, artifact_root=artifact_root, domain=domain, policy=policy)
 
 
-def _prepare_domain_inputs(contract, *, artifact_root, domain):
+def _prepare_domain_inputs(contract, *, artifact_root, domain, policy=None):
     retained = _read_retained_artifacts(contract.artifacts, artifact_root)
-    return _derive_retained_inputs(contract, retained=retained, domain=domain)
+    return _derive_retained_inputs(contract, retained=retained, domain=domain, policy=policy)
 
 
-def _derive_retained_inputs(contract, *, retained, domain):
+def _derive_retained_inputs(contract, *, retained, domain, policy=None):
     """Derive all source inputs from one verified retained byte snapshot."""
     from c1_signal_daemon.book_adapters import _resolve_domain
     if _resolve_domain(contract) is not domain:
@@ -788,7 +798,7 @@ def _derive_retained_inputs(contract, *, retained, domain):
         if leg == 'aegis_6j' and bars[0].ts != admission.interval_start:
             raise ValueError('Aegis attested full-origin prefix is missing')
         panels.append((leg, bars))
-    startup = parse_startup_policy(snapshots['source_startup_policy']) if 'source_startup_policy' in snapshots else None
+    startup = parse_startup_policy(snapshots['source_startup_policy'], tier=_startup_tier(policy)) if 'source_startup_policy' in snapshots else None
     gaps = tuple(gap for gap in PRODUCER_GAPS if not (startup is not None and gap.code == 'STARTUP_POLICY_BINDING_MISSING'))
     return PreparedProductionInputs(contract.contract_sha256, tuple(retained.items()), trace, admission, tuple(panels), startup, gaps)
 
@@ -1104,38 +1114,39 @@ class ProductionSource:
     _instruments: tuple
     _token: object
     _domain: object
+    _policy: object
     evidence_class: str
 
     def __new__(cls, *args, **kwargs):
         raise ProductionSourceNeedsContext()
 
     @classmethod
-    def build(cls, contract, *, artifact_root):
+    def build(cls, contract, *, artifact_root, policy=None):
         from c1_signal_daemon.book_adapters import _qualification_domain, _source_domain
         if _is_source_only(contract):
             from .contract import require_validated_source_contract
             require_validated_source_contract(contract, now=_now())
-            return cls._build_domain(contract, artifact_root=artifact_root, domain=_source_domain(contract))
+            return cls._build_domain(contract, artifact_root=artifact_root, domain=_source_domain(contract), policy=policy)
         domain = _qualification_domain(contract)
         if domain.authority_class != 'OPERATOR' or domain.permits_synthetic:
             raise ValueError('exact production OPERATOR contract required')
-        return cls._build_domain(contract, artifact_root=artifact_root, domain=domain)
+        return cls._build_domain(contract, artifact_root=artifact_root, domain=domain, policy=policy)
 
     @classmethod
-    def _build_composition(cls, contract, *, artifact_root):
+    def _build_composition(cls, contract, *, artifact_root, policy=None):
         from c1_signal_daemon.book_adapters import _qualification_domain
         domain = _qualification_domain(contract)
         if domain.authority_class != 'TEST_ONLY' or not domain.permits_synthetic:
             raise ValueError('TEST_ONLY composition contract domain required')
-        return cls._build_domain(contract, artifact_root=artifact_root, domain=domain)
+        return cls._build_domain(contract, artifact_root=artifact_root, domain=domain, policy=policy)
 
     @classmethod
-    def _build_domain(cls, contract, *, artifact_root, domain):
-        prepared = _prepare_domain_inputs(contract, artifact_root=artifact_root, domain=domain)
-        return cls._build_from_prepared(contract, prepared, domain=domain)
+    def _build_domain(cls, contract, *, artifact_root, domain, policy=None):
+        prepared = _prepare_domain_inputs(contract, artifact_root=artifact_root, domain=domain, policy=policy)
+        return cls._build_from_prepared(contract, prepared, domain=domain, policy=policy)
 
     @classmethod
-    def _build_from_prepared(cls, contract, prepared, *, domain):
+    def _build_from_prepared(cls, contract, prepared, *, domain, policy=None):
         """Internal reuse of the exact retained snapshot checked by admission."""
         from c1_signal_daemon.book_adapters import _resolve_domain
         from c1_signal_daemon.book_adapters import _load_domain_adapters
@@ -1146,7 +1157,7 @@ class ProductionSource:
                 or _resolve_domain(contract) is not domain):
             raise ValueError('prepared source contract/domain mismatch')
         retained = dict(prepared.retained_bytes)
-        derived = _derive_retained_inputs(contract, retained=retained, domain=domain)
+        derived = _derive_retained_inputs(contract, retained=retained, domain=domain, policy=policy)
         if _execution_snapshot(prepared) != _execution_snapshot(derived):
             raise ValueError('prepared source derived state mismatch')
         prepared = derived
@@ -1168,7 +1179,7 @@ class ProductionSource:
         review = (lambda raw, **kw: _review_source(raw, contract=contract, **kw)) if gated else _review
         for role, scope in (('source_calendar', 'SOURCE_CALENDAR'), ('schedule_execution_evidence', 'SCHEDULE_EXECUTION')):
             review(snapshots[role+'_review'], role=role, digest=digests[role], scope=scope)
-        startup = parse_startup_policy(snapshots['source_startup_policy'])
+        startup = parse_startup_policy(snapshots['source_startup_policy'], tier=_startup_tier(policy))
         if source_only and startup.path_start_date != contract.path_start_date:
             raise ValueError('path_start_date differs between the signed contract and the startup policy')
         if gated:
@@ -1231,7 +1242,7 @@ class ProductionSource:
                       path_start_date=startup.path_start_date, exclusions=exclusions, _quotes=quotes,
                       shared_provider_gaps=tuple((day,instant) for day,instant,state,_ in population_index.slot_provenance
                                                  if state=='PROVIDER_SHARED_ABSENCE'),
-                      _instruments=tuple(instruments), _token=_SOURCE_TOKEN, _domain=domain,
+                      _instruments=tuple(instruments), _token=_SOURCE_TOKEN, _domain=domain, _policy=policy,
                       evidence_class=contract.evidence_class if source_only else 'QUALIFICATION')
         for name, value in fields.items():
             object.__setattr__(result, name, value)
@@ -1341,17 +1352,23 @@ class ProductionSource:
             sidecars.append(engine.attribution())
         return SidecarBracket(SourceOnlyBracket(*sealed), ATTRIBUTION_SCHEMA, *sidecars)
 
-    def _engine(self, schedule_quotes):
+    def _engine(self, schedule_quotes, *, policy=None):
         """One fresh engine: reloaded ports, brokers, ledger, cash and clock."""
         from c1_signal_daemon.book_adapters import _load_domain_adapters
         from c1_signal_daemon.tv_broker_emulator import TVBrokerEmulator
         from c1_rail.book_policy import candidate_book_protection_policy
         from mc.simulation import EvaluationState
         from .replay import BookReplay
-        loaded = _load_domain_adapters(self.contract, retained_bytes=dict(self.prepared.retained_bytes), domain=self._domain)
         startup = self.prepared.startup
         if startup is None:
             raise ProductionSourceNeedsContext((PRODUCER_GAPS[-1],))
+        from c1_rail.book_policy import account_micro_cap
+        policy = self._policy if policy is None else policy
+        cap = account_micro_cap(_startup_tier(policy))
+        if (startup.shared_account_cap_micro_equivalents != cap
+                or any(value != cap for _, value in startup.request_caps_micro_equivalents)):
+            raise ValueError('startup cap differs from resolved policy cap')
+        loaded = _load_domain_adapters(self.contract, retained_bytes=dict(self.prepared.retained_bytes), domain=self._domain)
         tiers, caps, capitals = dict(startup.lifecycle_tiers), dict(startup.request_caps_micro_equivalents), dict(startup.paper_initial_capitals)
         def sizing(leg, action, pb):
             return request_sizing_inputs(leg, action, loaded.registry[leg].params,
@@ -1364,7 +1381,7 @@ class ProductionSource:
         state = self.contract.initial_state
         initial = EvaluationState(float(state.original_basis), float(state.current_equity), float(state.historical_eod_peak),
                                   state.prior_trade_days, float(state.prior_max_day_profit))
-        return BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy(),
+        return BookReplay(loaded.registry, dict(self._instruments), policy=candidate_book_protection_policy() if policy is None else policy,
                           initial_state=initial, sizing_inputs=sizing, schedule_quotes=schedule_quotes, broker_factory=brokers,
                           size_vector=startup.size_vector)
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import math
 from dataclasses import dataclass, replace
-from datetime import timedelta
+from datetime import timedelta, timezone
 from fractions import Fraction
 from typing import Callable, Mapping
 
@@ -247,13 +247,17 @@ class BookReplay:
     def __init__(self, adapters: Mapping, instruments: Mapping[str, Instrument], *,
                  policy, initial_state, sizing_inputs: Callable,
                  schedule_quotes: Callable, broker_factory: Callable = TVBrokerEmulator,
-                 size_vector: SizeVector = IDENTITY_SIZE_VECTOR):
+                 size_vector: SizeVector = IDENTITY_SIZE_VECTOR,
+                 bar_observer: Callable | None = None):
         expected = {x.leg_id for x in BOOK_LEGS}
         if set(adapters) != expected or set(instruments) != expected:
             raise ValueError("exactly the four fixed book legs are required")
         if initial_state is None:
             raise ValueError("initial_state is required")
         self.personal = isinstance(policy, PersonalP0Policy)
+        if bar_observer is not None and not callable(bar_observer):
+            raise ValueError("bar_observer must be callable")
+        self.bar_observer = bar_observer
         self.policy = require_personal_p0(policy) if self.personal else require_policy(policy)
         if not isinstance(size_vector, SizeVector):
             raise ValueError("size_vector must be a SizeVector")
@@ -292,6 +296,7 @@ class BookReplay:
         self._index = 0
         self._path_time = None
         self._attribution = None  # opt-in Tier-2 sidecar; off by default
+        self._personal_route = None
 
     def enable_attribution(self):
         """Turn on the per-session, per-leg sidecar before ``run``; it changes no replay output."""
@@ -559,6 +564,8 @@ class BookReplay:
         return splits
 
     def _submit(self, k, actions, bar):
+        if self._personal_route is not None:
+            self.brokers[k].route_time = self._path_time
         events = self.brokers[k].submit(actions, bar)
         self._feedback(events)
         for action in actions:
@@ -649,6 +656,12 @@ class BookReplay:
                 row["outcome"] = "duplicate_dropped"
             return
         if intent.kind in ("entry", "add"):
+            if self._personal_route is not None:
+                reason = self._personal_route.risk_refusal(k, pb.source_bar_time + timedelta(minutes=15),
+                    contract=self._personal_route.contract_at(k, pb.source_bar_time))
+                if reason is not None:
+                    self._reject(intent, bar, reason)
+                    return
             if intent.side is not leg(k).entry_side:
                 self._reject(intent, bar, "side differs from fixed book")
                 return
@@ -821,6 +834,24 @@ class BookReplay:
                 last_path_time = self._path_time = pb.path_time
                 self._index += 1
                 bars = dict(pb.bars)
+                if self._personal_route is not None:
+                    for k, bar in bars.items():
+                        broker = self.brokers[k]
+                        contract = self._personal_route.contract_at(k, bar.ts)
+                        for order_id in tuple(broker.pending_order_ids()):
+                            origin = broker.order_contract(order_id)
+                            origin_boundary = self._personal_route.rolls.get((broker.symbol, origin))
+                            if origin != contract or (origin_boundary is not None and bar.ts >= origin_boundary):
+                                self._cancel_pending(k, Cancel(k, order_id), bar)
+                                self._log('refused', k, 'cancelled '+order_id+': originating contract '+origin+
+                                          (' changed' if origin != contract else ' reached G4 boundary'))
+                        if any(broker._route_lots[f.fill_id]['contract'] != contract for f in broker.open_fills):
+                            raise ReplayNeedsContext('held contract changed without a close')
+                        boundary = self._personal_route.rolls.get((broker.symbol, contract))
+                        if boundary is not None and bar.ts >= boundary:
+                            if broker.position():
+                                raise ReplayNeedsContext('G4 held contract boundary')
+                            self._cancel_pending(k, Cancel(k), bar)
                 for k in set(self.brokers) - set(bars):
                     if self.brokers[k].position() or self.brokers[k].pending_order_ids():
                         raise ReplayNeedsContext("missing bar for exposed leg")
@@ -907,6 +938,14 @@ class BookReplay:
                 if self._attribution is not None:
                     self._attribution.bar_close(self._index, self._path_time, close_equity - opening,
                                                 self._attribution_marks(bars))
+                if self.bar_observer is not None:
+                    # Observe only after every calculation and its close fills
+                    # have settled. State belongs to the caller; do not inspect
+                    # it or catch an exception and return a partial result.
+                    close = (pb.source_bar_time + timedelta(minutes=15)).astimezone(timezone.utc)
+                    for spec in BOOK_LEGS:
+                        if spec.leg_id in bars:
+                            self.bar_observer(spec.leg_id, close, self.adapters[spec.leg_id])
             while next_schedule < len(schedule_events):
                 self._schedule(session, *schedule_events[next_schedule])
                 next_schedule += 1
@@ -925,3 +964,122 @@ class BookReplay:
                 session.source.session_id, self.cash - opening, low,
                 self.confirmed_fill_count - self._session_fill_start, flat, start, end))
         return ReplayResult(tuple(records), tuple(self.events))
+
+
+class RouteBroker(TVBrokerEmulator):
+    """Read-only fill-lifecycle instrumentation of the unchanged native broker.
+
+    Hooks always delegate native execution. Excursions follow the broker's
+    snapped, ordered price path only while each FIFO lot exists. No strategy
+    state is inspected. Missing initial stop evidence refuses route output.
+    """
+
+    def __init__(self, *args, contract_at, symbol, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.contract_at, self.symbol = contract_at, symbol
+        self.route_trades, self._route_lots = [], {}
+        self.route_time = None
+        self._route_stop = None
+        self._order_contracts = {}
+
+    def order_contract(self, order_id):
+        if order_id not in self._order_contracts:
+            raise ReplayNeedsContext('pending order has no originating contract')
+        return self._order_contracts[order_id]
+
+    def submit(self, actions, bar):
+        actions = tuple(actions)
+        for action in actions:
+            if isinstance(action, OrderIntent):
+                origin = self.contract_at(action.leg_id, bar.ts)
+                if action.order_id in self.pending_order_ids() and self.order_contract(action.order_id) != origin:
+                    raise ReplayNeedsContext('pending order replacement changed originating contract')
+                self._order_contracts[action.order_id] = origin
+        return super().submit(actions, bar)
+
+    def _require_order_contract(self, intent, ts):
+        if self.order_contract(intent.order_id) != self.contract_at(intent.leg_id, ts):
+            raise ReplayNeedsContext('order cannot fill outside its originating contract')
+
+    def _mark_route(self, price):
+        for fill in self.open_fills:
+            row = self._route_lots[fill.fill_id]
+            value = (price - row['entry'].price) * row['direction'] * self.pointvalue
+            row['mae'] = min(row['mae'], value)
+            row['mfe'] = max(row['mfe'], value)
+
+    def process_bar(self, bar):
+        self.route_time = bar.ts
+        # Queued exits execute before _at_open; their own hooks observe the
+        # opening price. The remaining lots are marked in _at_open.
+        return super().process_bar(bar)
+
+    def _at_open(self, bar):
+        self._mark_route(bar.open)
+        return super()._at_open(bar)
+
+    def _segment(self, a, b, bar):
+        self._mark_route(a)
+        result = super()._segment(a, b, bar)
+        self._mark_route(b)
+        return result
+
+    def _fill_entry(self, intent, price, ts, *, slip):
+        self._require_order_contract(intent, ts)
+        self._mark_route(price)
+        event = super()._fill_entry(intent, price, ts, slip=slip)
+        if event.fill is not None:
+            fill = event.fill
+            bracket = self._open[fill.fill_id].bracket
+            self._route_lots[fill.fill_id] = {'entry': fill,
+                'entry_utc': (self.route_time or ts).astimezone(timezone.utc).isoformat(),
+                'contract': self.contract_at(fill.leg_id, ts),
+                'stop': None if bracket is None else bracket.stop,
+                'direction': 1 if fill.side is Side.BUY else -1, 'mae': 0.0, 'mfe': 0.0}
+            self._mark_route(price)
+        return event
+
+    def _amend(self, action):
+        result = super()._amend(action)
+        for fid, active in self._open.items():
+            row = self._route_lots[fid]
+            if row['stop'] is None and active.bracket is not None:
+                row['stop'] = active.bracket.stop
+        return result
+
+    def _fill_exit(self, of, price, ts, *, slip, reason, order_id=None, kind='exit'):
+        self._mark_route(price)
+        self._route_stop = ((self._long_effective_stop(of) if of.is_long else self._short_effective_stop(of))
+                            if 'stop' in reason else None)
+        try:
+            return super()._fill_exit(of, price, ts, slip=slip, reason=reason, order_id=order_id, kind=kind)
+        finally:
+            self._route_stop = None
+
+    def _close_scope(self, intent, price, ts, *, slip):
+        self._require_order_contract(intent, ts)
+        self._mark_route(price)
+        return super()._close_scope(intent, price, ts, slip=slip)
+
+    def _emit(self, event, ts, *, fill=None, order_id=None, detail=''):
+        result = super()._emit(event, ts, fill=fill, order_id=order_id, detail=detail)
+        if fill is not None and fill.entry_fill_id is not None:
+            row = self._route_lots[fill.entry_fill_id]
+            entry, stop, q = row['entry'], row['stop'], fill.qty
+            if stop is None:
+                raise ReplayNeedsContext('route trade has no initial stop evidence')
+            move = (fill.price-entry.price)*row['direction']*self.pointvalue
+            entry_fee = entry.commission*q/entry.qty
+            self.route_trades.append({
+                'leg': fill.leg_id, 'instrument': self.symbol, 'contract': row['contract'],
+                'entry_utc': row['entry_utc'],
+                'exit_utc': (self.route_time or ts).astimezone(timezone.utc).isoformat(),
+                'side': entry.side.value, 'quantity': q, 'tranche_index': 0,
+                'entry_price': entry.price, 'initial_stop_level': stop,
+                'delta_0': abs(entry.price-stop), 'exit_price': fill.price, 'exit_kind': fill.reason,
+                'stop_fill_distance_b': (max(0.0, (self._route_stop-fill.price)*row['direction'])
+                                         if self._route_stop is not None else 0.0),
+                'net_pnl_usd': move*q-entry_fee-fill.commission,
+                'commission_usd': entry_fee+fill.commission,
+                'mae_usd': min(row['mae'], move)*q, 'mfe_usd': max(row['mfe'], move)*q})
+        return result

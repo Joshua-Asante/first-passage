@@ -169,6 +169,7 @@ _PRODUCTION_CODE.update({
         'c1_rail.qualification.seed_identity', 'c1_rail.policy_fingerprint',
         'c1_rail.qualification.panel', 'c1_rail.qualification.preflight',
         'c1_rail.qualification.production', 'c1_rail.qualification.production_source',
+        'c1_rail.qualification.personal_replay',
         'c1_rail.qualification.provider', 'c1_rail.qualification.runner',
         'c1_rail.qualification.runtime_inventory', 'c1_rail.qualification.sessions',
         'c1_rail.qualification.trust_domain', 'c1_rail.settlement_signing',
