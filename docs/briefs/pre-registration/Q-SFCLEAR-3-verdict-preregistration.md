@@ -104,6 +104,7 @@ Status stays **DRAFT — NOT RATIFIED** until Joshua acts:
 1. Joshua confirms, in his own words, the §S changes, and rules:
    - **(s1)** the 15:55 instant uses the convention's R1 run alone, with the "not a proven worst case" disclosure (§S row 2); or the full two-run bracket, where any path whose verdict depends on the run is UNDETERMINED (which would need its own verdict rule and a further successor);
    - **(s2)** whether a private, non-binding R2 sensitivity report (the same run with R2 placement, cell values private, standings never public, no verdict effect) is produced after the binding run; default **no**.
+   - **Ruled 2026-10-13 (Joshua, directly to the Deployment Coordinator, verbatim: "R1 alone, no R2 report"):** (s1) R1 alone; (s2) no R2 sensitivity report. §S rows 2 and 5 apply as drafted; any R2 run is a forbidden move.
 2. **Required, recorded:** Joshua re-hashes `R1_TUPLE.json` himself (Q-SFCLEAR-2 §10 hook 1) and states the full 64-hex digest verbatim.
 3. Joshua states "ratify Q-SFCLEAR-3 at <40-hex commit>", naming the committed draft he reviewed.
 4. The coordinator checks the reused freeze record's `PRIVATE_EVIDENCE` row and the fee and margin snapshot ages; a snapshot older than 30 days is re-taken into a new nonce'd private record (§S row 6).
