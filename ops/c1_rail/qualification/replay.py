@@ -1002,9 +1002,8 @@ class RouteBroker(TVBrokerEmulator):
             raise ReplayNeedsContext('order cannot fill outside its originating contract')
 
     def _mark_route(self, price):
-        for fid, row in self._route_lots.items():
-            if not any(f.fill_id == fid for f in self.open_fills):
-                continue
+        for fill in self.open_fills:
+            row = self._route_lots[fill.fill_id]
             value = (price - row['entry'].price) * row['direction'] * self.pointvalue
             row['mae'] = min(row['mae'], value)
             row['mfe'] = max(row['mfe'], value)
@@ -1042,9 +1041,9 @@ class RouteBroker(TVBrokerEmulator):
 
     def _amend(self, action):
         result = super()._amend(action)
-        for fid, row in self._route_lots.items():
-            active = self._open.get(fid)
-            if row['stop'] is None and active is not None and active.bracket is not None:
+        for fid, active in self._open.items():
+            row = self._route_lots[fid]
+            if row['stop'] is None and active.bracket is not None:
                 row['stop'] = active.bracket.stop
         return result
 

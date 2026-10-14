@@ -13,6 +13,7 @@ import hashlib
 import json
 import math
 import re
+from bisect import bisect_right
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
@@ -173,6 +174,7 @@ class VerifiedInputs:
     instruments: object
     path: tuple
     contracts: object
+    contract_index: object
     splits: object
     striker_risk: float = field(repr=False)
 
@@ -192,11 +194,23 @@ class VerifiedInputs:
 
     def contract_at(self, leg, instant):
         # Contract labels are retained facts, never inferred from price jumps.
-        candidates = [(ts, contract) for (k, ts), contract in self.contracts.items()
-                      if k == leg and ts <= instant]
-        if not candidates:
+        times, labels = self.contract_index.get(leg, ((), ()))
+        index = bisect_right(times, instant) - 1
+        if index < 0:
             raise ValueError('missing contract fact')
-        return max(candidates)[1]
+        return labels[index]
+
+
+def _index_contracts(contracts):
+    """Build immutable per-leg chronology once, outside the replay hot path."""
+    grouped = {leg: [] for leg in LEG_IDS}
+    for (leg, instant), label in contracts.items():
+        grouped[leg].append((instant, label))
+    result = {}
+    for leg, facts in grouped.items():
+        facts.sort()
+        result[leg] = (tuple(instant for instant, _ in facts), tuple(label for _, label in facts))
+    return MappingProxyType(result)
 
 
 def _freeze(value):
@@ -326,7 +340,7 @@ def _verify_retained(retained, identities):
     envelope = VerifiedInputs(MappingProxyType(retained), MappingProxyType(identities), sizing,
         equity, doc['paper_initial_capital'], doc['cap_source']['request_cap_micro_equivalents_each_leg'],
         MappingProxyType(schedules), MappingProxyType(rolls), MappingProxyType(instruments), tuple(path),
-        MappingProxyType(contracts), _freeze(splits), risk)
+        MappingProxyType(contracts), _index_contracts(contracts), _freeze(splits), risk)
     return envelope
 
 

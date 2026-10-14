@@ -126,3 +126,27 @@ def test_p0_latch_timestamp_survives_without_account_figures_and_later_day_is_ze
     assert output['latch'] == {'utc': '2026-01-05T20:15:00+00:00', 'kind': 'personal_halt_latched'}
     assert output['days'][1] == {'account_date': '2026-01-06', 'net_pnl_usd': 0.0, 'fills': 0}
     assert not {'peak', 'equity', 'initial_equity', 'E_0'} & set(output['latch'])
+
+
+def test_r4_excursions_and_amendment_do_not_walk_closed_history():
+    from datetime import datetime, timezone
+    from c1_signal_daemon.book_protocol import OrderIntent, FillTiming, Bracket, BracketAmend, Side
+    from c1_signal_daemon.feed import Bar
+    from c1_rail.qualification.replay import RouteBroker
+    class NoHistoricalWalk(dict):
+        def items(self):
+            pytest.fail('per-bar operation walked historical lots')
+    broker = RouteBroker('vanguard_mgc', 1, 1, 0, 1, contract_at=lambda *a: '2026-03', symbol='MGC')
+    bar = Bar(datetime(2026, 1, 5, 20, tzinfo=timezone.utc), 100, 100, 100, 100)
+    broker.submit([OrderIntent('entry', 'vanguard_mgc', 'entry', Side.BUY, 1,
+                               timing=FillTiming.THIS_CLOSE)], bar)
+    active = next(iter(broker._route_lots))
+    historical = {'entry': None, 'stop': None, 'mae': -999, 'mfe': 999}
+    broker._route_lots = NoHistoricalWalk({**dict.fromkeys(range(90000), historical), active: broker._route_lots[active]})
+    broker._mark_route(95)
+    broker._mark_route(110)
+    broker._amend(BracketAmend('vanguard_mgc', Bracket(stop=90)))
+    assert broker._route_lots[active]['mae'] == -5
+    assert broker._route_lots[active]['mfe'] == 10
+    assert broker._route_lots[active]['stop'] == 90
+    assert historical == {'entry': None, 'stop': None, 'mae': -999, 'mfe': 999}

@@ -560,3 +560,73 @@ def test_r1_close_admission_uses_originating_bar_contract(tmp_path, monkeypatch)
     result = json.loads(p.run_personal_replay(manifest, adapter_factory=lambda e: adapters(signal)))
     assert not any(t['leg'] == 'aegis_6j' for t in result['trades'])
     assert result['refusals']['aegis_6j'][0]['reason'] == 'G4 contract boundary'
+
+
+def test_r4_indexed_contract_lookup_matches_multi_roll_scan(tmp_path, monkeypatch):
+    from dataclasses import replace
+    from types import MappingProxyType
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    def rolls(d):
+        for row in tuple(d['contracts']):
+            d['contracts'].extend(dict(row, contract_month=label) for label in ('2026-06', '2026-09'))
+    rewrite(manifest, 'roll_list', rolls, monkeypatch)
+    def contracts(d):
+        for i, row in enumerate(d['sessions'][0]['bars']):
+            for j, leg in enumerate(LEG_IDS):
+                row['legs'][leg]['contract'] = ('2026-03', '2026-06', '2026-09')[(i+j) % 3]
+    rewrite(manifest, 'source_bundle', contracts, monkeypatch)
+    envelope = p.verify_inputs(manifest)
+    def scan(self, leg, instant):
+        candidates = [(ts, label) for (k, ts), label in self.contracts.items() if k == leg and ts <= instant]
+        if not candidates:
+            raise ValueError('missing contract fact')
+        return max(candidates)[1]
+    start = min(ts for _, ts in envelope.contracts)
+    assert p._index_contracts(dict(reversed(tuple(envelope.contracts.items())))) == envelope.contract_index
+    for leg in LEG_IDS:
+        times, labels = envelope.contract_index[leg]
+        assert times == tuple(sorted(times)) and len(times) == len(labels) == 4
+        for minute in (-1, 0, 1, 14, 15, 16, 29, 30, 44, 45, 55, 60):
+            instant = start + timedelta(minutes=minute)
+            if minute < 0:
+                with pytest.raises(ValueError, match='missing contract fact'):
+                    envelope.contract_at(leg, instant)
+            else:
+                assert envelope.contract_at(leg, instant) == scan(envelope, leg, instant)
+    with pytest.raises(ValueError, match='missing contract fact'):
+        envelope.contract_at('missing-leg', start)
+    with pytest.raises(TypeError):
+        envelope.contract_index[LEG_IDS[0]] = ((), ())
+    corrupted = replace(envelope, contract_index=MappingProxyType(dict.fromkeys(LEG_IDS, ((), ()))))
+    with pytest.raises(ValueError, match='derived state'):
+        p.build_personal_replay(corrupted, adapter_factory=lambda e: pytest.fail('unverified index reached factory'))
+    actual = p.run_personal_replay(manifest, adapter_factory=lambda e: adapters())
+    monkeypatch.setattr(p.VerifiedInputs, 'contract_at', scan)
+    assert p.run_personal_replay(manifest, adapter_factory=lambda e: adapters()) == actual
+
+
+def test_r4_90000_bars_four_legs_lookup_scale(record_property):
+    import subprocess
+    import sys
+    # Bound the old quadratic implementation without leaving a runaway worker.
+    code = '''
+from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
+from time import perf_counter
+from c1_rail.qualification.personal_replay import VerifiedInputs, _index_contracts
+from c1_rail.qualification.model import LEG_IDS
+start = perf_counter()
+t0 = datetime(2022, 9, 1, tzinfo=timezone.utc)
+times = tuple(t0 + timedelta(minutes=15*i) for i in range(90000))
+facts = {(leg, ts): str(i//1000+j) for j, leg in enumerate(LEG_IDS) for i, ts in enumerate(times)}
+receipt = SimpleNamespace(contracts=facts, contract_index=_index_contracts(facts))
+for j, leg in enumerate(LEG_IDS):
+    for i, ts in enumerate(times):
+        assert VerifiedInputs.contract_at(receipt, leg, ts) == str(i//1000+j)
+print(perf_counter()-start)
+'''
+    result = subprocess.run([sys.executable, '-c', 'import sys; sys.path[:0] = '+repr(sys.path)+'\n'+code],
+                            capture_output=True, text=True, timeout=5, check=True)
+    elapsed = float(result.stdout)
+    record_property('lookup_scale_seconds', elapsed)
+    assert elapsed < 5
