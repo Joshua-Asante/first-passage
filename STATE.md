@@ -1,8 +1,9 @@
 # STATE — First Passage
 
-**Last curated:** 2026-10-13
+**Last curated:** 2026-10-14
 
-Read the queue, then its linked plan.
+Read the queue, then its linked plan. For lane applicability, start with the
+[deployment decision map](docs/notes/2026-10-14-deployment-decision-map.md).
 [SESSIONS](docs/SESSIONS.md) is history, `git status` owns uncommitted work, [Rule 7](docs/operational_rules.md)
 assigns fact ownership, and routine updates need no ADR ([policy](docs/adr/2026-08-08-adr-ceremony-tiering.md)).
 
@@ -100,7 +101,7 @@ Owners hold canonical criteria; rows are pointers.
 
 ### No fixed date / gated
 
-- **Self-funded Tradovate lane:** the seven items owed in the [ADR](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds) (portfolio clearing the 15% drawdown standard, firm-tier + pre-flight + re-MC, API access, CME licensing, Tradeify rule check, rail binding, tested 15% live halt) gate the first live order; API access and licensing also gate any feed activation. [Q-SFCLEAR-2](docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md) is **FROZEN** (F `83867f0`, 2026-10-12); nothing scored. Next: run-path cards A → C → B → D → E ([frozen](docs/notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md), A0 merged #800, A with Codex), P-L2 ([#805](https://github.com/Joshua-Asante/first-passage/pull/805), ahead of GC-5/S2 per [§6b](docs/notes/2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12)), the private FG run, then the clearance run. Live readiness (P4 halt wiring, P-SW, T09 route, T14 feed licence) runs in parallel and gates live use only. The Q-SFCLEAR-1 F6 evidence is preserved (first-passage-archive `67679dd`, archive PR #857); the fact-finding folder's F6 upload awaits Joshua's scoped authorization.
+- **Self-funded Tradovate lane:** the seven items owed in the [ADR](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds) (portfolio clearing the 15% drawdown standard, firm-tier + pre-flight + re-MC, API access, CME licensing, Tradeify rule check, rail binding, tested 15% live halt) gate the first live order; API access and licensing also gate any feed activation. [Q-SFCLEAR-3](docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) is **FROZEN** (F₃ `15bea250fc8ee9a57b59735c9e8be685c4ddbf22`, 2026-10-14), superseding Q-SFCLEAR-2 before run. Next: complete the existing B, D and E cards under their F₃ amendments, then FG and clearance through their existing owners ([run-path packet](docs/notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md), [F₃ §S/§11](docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md)). Personal live-wiring order follows [§§6b–6d](docs/notes/2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12). Live readiness (P4 halt wiring, P-SW, T09 route, T14 feed licence) runs in parallel and gates live use only. The Q-SFCLEAR-1 F6 evidence is preserved (first-passage-archive `67679dd`, archive PR #857); the fact-finding folder's F6 upload awaits Joshua's scoped authorization.
 - **Held-request watch (T13):** while any request is held, a check is due at each account-session open (18:00 ET Sun–Thu), paged at due + 60 min by the G1 dead-man once built; before the first armed session, the G1 build (Healthchecks.io), G10, Q7 (PASS) and HB-L1/L2 are arming preconditions. [Watch](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md).
 - **M-B idle-clock monitor:** built, registration-ready; wire only on F3 successor
   registration (S1 elects no migration), after re-freezing venue semantics.

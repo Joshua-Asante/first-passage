@@ -23,13 +23,21 @@ On a consistent rubric the leaders score within 0.6 of each other (§4), so the 
 
 ## 2. What a venue must accept for the book to run unchanged
 
+**Applicability correction (2026-10-14):** this is a research comparison against
+the declared book, not a selected alternative-venue configuration. Personal R1
+keeps Aegis base, disables Striker/Vanguard adds and disables ORB under P0;
+Tradeify's unfrozen route-native editions are separate, suspended candidates.
+Joshua has not decided whether alternatives should preserve original behavior
+first, or whether that would include full quantities/adds rather than R1 sizing.
+See the [decision map](2026-10-14-deployment-decision-map.md) and its source owners.
+
 | Requirement | Source (DOCUMENTED) |
 |---|---|
 | External, privately owned engine trading automatically at evaluation and sim-funded, not only live | rail architecture; [route record](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md) |
 | Cloud hosting of the order path (Fly.io listener) | [feed-cost note](2026-10-11-feed-cost-sanity-check.md) addendum 2026-10-12 |
 | Full-size 6J (Aegis, sell-only) with long MGC, MYM, MNQ in one account; 1 full = 10 micros | [`book_policy.py`](../../ops/c1_rail/book_policy.py) |
 | Cap ≥ 80 micro-equivalents at evaluation and funded (Aegis alone is 8 × 6J); half size needs about 40 | [`book_policy.py`](../../ops/c1_rail/book_policy.py); [`firm_rules.py`](../../core/firm_rules.py) |
-| Flat deadline ≥ 16:15 ET: the scored series fills its flatten at 16:15 and is open past 16:10 on 403 of 1,020 weekdays; an earlier deadline forces re-expression and requalification | [four-firm RESULTS](../../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md); [prereg I-24](../briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md); [halt contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md) |
+| Flat deadline ≥ 16:15 ET preserves the current 15-minute venue buffer for 16:00 own-flat (15:55 flatten start). An earlier deadline moves the schedule under TB-S3 §5 and needs corresponding qualification. Historically, the scored series filled at 16:15 and was open past 16:10 on 403 of 1,020 weekdays; that evidence is not the current holding allowance | [halt contract §5](../spec/2026-09-14-tb-s3-halt-resume-contract.md#5-exact-schedule-rule); historical [four-firm RESULTS](../../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md) / [prereg I-24](../briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md) |
 | Bracket entry, per-bar stop modify, close, cancel, fill and position reads | [route record §6](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md) |
 
 Owed at every venue: a production four-leg broker adapter (the book owner returns `production_route_unavailable`, [`book_account_owner.py`](../../ops/c1_rail/book_account_owner.py); the legacy CrossTrade path is long-only, [`c1_rail_listener.py`](../../ops/c1_rail/c1_rail_listener.py)); a firm ADR, tier rows, pre-flight and a pre-registered intraday-honest re-MC (fresh authorization; four-firm early-fail branch armed); venue editions, protection rebinding, own M1 acceptance; stopping all Tradeify use of the bot first (FTA §6.6, [exclusive-use replies](2026-10-10-tradeify-exclusive-use-replies.md)); and the CME non-display answer ($0–$1,408/month, ticket #04738415, [feed-cost note](2026-10-11-feed-cost-sanity-check.md)).
@@ -85,13 +93,13 @@ Under a fixed-dollar trail the full book on rope R behaves like the book at size
 | FXIFY Flex 150K + bundle | $4,750 | 0.63 | untested zone |
 | Bulenox Fast Track 150K Opt 2 | $5,500 | 0.55 | untested zone, nearest the cleared point |
 
-Plan on FLOOR-HALF (ORB off) or about 0.75 size until a dated intraday-honest re-MC on the chosen tier clears full size.
+Research sizing suggestion only: FLOOR-HALF (ORB off) or about 0.75 size would need a dated intraday-honest re-MC on the chosen tier. Neither is selected for an alternative venue, and neither substitutes for personal R1.
 
 ## 7. Routes and adapter reuse
 
 | Rail | Chain | Venues | Notes |
 |---|---|---|---|
-| Tradovate | daemon → Fly.io listener → new 4-leg adapter → CrossTrade → Tradovate | Lucid, FXIFY, BluSky; personal Tradovate | Repo already models Tradovate semantics. Shared risk: bridge-only on prop accounts. CrossTrade REST has no trailing stop (Vanguard uses its fixed-stop edition). CrossTrade "Link Demo" OAuth to prop logins is a vendor claim (**UNVERIFIED**) |
+| Tradovate | daemon → Fly.io listener → new 4-leg adapter → CrossTrade → Tradovate | Lucid, FXIFY, BluSky; personal Tradovate | Candidate route, not a personal CrossTrade-over-direct decision. Repo already models Tradovate semantics. Shared risk: bridge-only on prop accounts. The recorded CrossTrade REST trailing-stop limitation motivated a Tradeify-specific, unfrozen Vanguard fixed-stop proposal; it is not automatically adopted here. CrossTrade "Link Demo" OAuth to prop logins is a vendor claim (**UNVERIFIED**) |
 | Rithmic | daemon → Fly.io listener → new R\|Protocol or R\|API+ adapter → Rithmic | FundYourEdge, Bulenox, DayTraders.com; AMP self-funded | New protocol plus Rithmic conformance; server-side brackets and trailing stops. R\|Protocol is "Not available for paper trading demos with live market data" (rithmic.com); whether that covers paid prop paper IDs is unconfirmed; R\|API+ (C++) carries no such caveat. NinjaTrader is no longer onboarding new Rithmic connections |
 | ProjectX | daemon and new ProjectX adapter on a home machine → api.topstepx.com | Topstep only | Cloud may only log, monitor and receive copies of fills; signals from ProjectX data (ToU bans "an external or slow Data feed") |
 
@@ -142,6 +150,13 @@ Three payouts at these tiers total at most about $9,000–$10,000 gross and need
 4. **11-08 sitting:** if a venue passes, it is an input to the operator's decision under S1; any move then needs a firm ADR, tier rows, pre-flight, a pre-registered re-MC (full and FLOOR-HALF, at the venue's costs and evaluation clock), the adapter and drills, a separate live-spend GO, and an exit from Tradeify use first.
 
 ## 12. Questions to send
+
+**Draft applicability:** the order descriptions below (including "about 2 round
+trips a day", market entries and requested quantities) are prospective envelopes,
+not measured request-rate or protection bounds for the selected book. Before use,
+bind the chosen expression, resting versus market entries, split requests,
+amendments and closes. The section and §11's full/FLOOR-HALF comparison are
+research proposals; they do not settle Joshua's open objective or authorize outreach.
 
 **Lucid (§1(c) approval request).** (1) Approval, separately for the LucidPro evaluation, LucidPro funded and LucidLive, of our own Python program on a US cloud server computing signals on completed 15-minute bars and sending market orders with attached stop and target to our Lucid Tradovate account via CrossTrade; about 2 round trips a day, intraday, not HFT. (2) Does the third-party-software ban cover an order-routing bridge when all strategy logic is ours? (3) Do the Terms of Use and LucidTest terms carry the same requirement (please send copies)? (4) Does "external or slow data feed" bar signals from a separately licensed CME feed, and may the account's data drive automated orders? (5) Any IP or region rule for the cloud host? (6) What advance testing is required, and does approval carry to LucidLive? (7) Breach on intraday net liquidation value or closing balance? (8) Does one 6J count as 10 micros against the 100-micro limit; LucidLive limits for 6J and MGC? (9) Current price of LucidPro 150K with DLL off.
 

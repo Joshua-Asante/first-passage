@@ -1,13 +1,15 @@
 # Q-SFCLEAR-2 — Personal clearance of the Tradeify book at E_0 (rung R1), successor
 
-**Status:** `OPEN — pre-registration FROZEN 2026-10-12 at F` — the verdict pre-registration is FROZEN (F `83867f0`); nothing has been scored, exported or replayed; the run waits for the run-path builds and FG
+**Status:** `SUPERSEDED-BEFORE-RUN by Q-SFCLEAR-3` — current study [Q-SFCLEAR-3](pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) is FROZEN at F₃ `15bea250fc8ee9a57b59735c9e8be685c4ddbf22` (2026-10-14). Q-SFCLEAR-2 at F₂ remains the immutable incorporated design, except where Q-SFCLEAR-3 §S changes it. Builds and FG remain with their existing cards and owners.
 **Authored:** 2026-10-11
 **Closed:** N/A
 **Authors:** Joshua (rulings) + Claude Code (drafting worker for the Deployment Coordinator)
 **Parent question:** N/A — owed item 1 of the [self-funded lane ADR](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds), re-scoped by [addendum 2026-10-11b](https://github.com/Joshua-Asante/first-passage/blob/d7ad4d8d672790dfbe647b22fd9d75a95576f109/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split) (PR #784)
 **Supersedes:** [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md) (SUPERSEDED-BEFORE-RUN 2026-10-11), which re-scoped [Q-SFGROWTH-1](Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md) (PR #752)
-**Loop:** Inquire-phase Pre-Q — closure is gated by the [verdict pre-registration](pre-registration/Q-SFCLEAR-2-verdict-preregistration.md)
+**Loop:** Inquire-phase Pre-Q — current closure is governed by [Q-SFCLEAR-3](pre-registration/Q-SFCLEAR-3-verdict-preregistration.md); Q-SFCLEAR-2 receives no run record or verdict.
 **Artifact path:** `docs/briefs/Q-SFCLEAR-2-personal-clearance-tradeify-book.md`
+
+**Reading scope:** §§0–10 below retain the Q-SFCLEAR-2 record, including its old run/closure paths and audit instructions. For current execution use Q-SFCLEAR-3 §S/§10 and the cards' F₃ amendments; the two freeze-hash lines in §8 remain lookup anchors. See the [deployment decision map](../notes/2026-10-14-deployment-decision-map.md) for lane applicability.
 
 ---
 
