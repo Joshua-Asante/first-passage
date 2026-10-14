@@ -657,7 +657,8 @@ class BookReplay:
             return
         if intent.kind in ("entry", "add"):
             if self._personal_route is not None:
-                reason = self._personal_route.risk_refusal(k, pb.source_bar_time + timedelta(minutes=15))
+                reason = self._personal_route.risk_refusal(k, pb.source_bar_time + timedelta(minutes=15),
+                    contract=self._personal_route.contract_at(k, pb.source_bar_time))
                 if reason is not None:
                     self._reject(intent, bar, reason)
                     return
@@ -837,6 +838,13 @@ class BookReplay:
                     for k, bar in bars.items():
                         broker = self.brokers[k]
                         contract = self._personal_route.contract_at(k, bar.ts)
+                        for order_id in tuple(broker.pending_order_ids()):
+                            origin = broker.order_contract(order_id)
+                            origin_boundary = self._personal_route.rolls.get((broker.symbol, origin))
+                            if origin != contract or (origin_boundary is not None and bar.ts >= origin_boundary):
+                                self._cancel_pending(k, Cancel(k, order_id), bar)
+                                self._log('refused', k, 'cancelled '+order_id+': originating contract '+origin+
+                                          (' changed' if origin != contract else ' reached G4 boundary'))
                         if any(broker._route_lots[f.fill_id]['contract'] != contract for f in broker.open_fills):
                             raise ReplayNeedsContext('held contract changed without a close')
                         boundary = self._personal_route.rolls.get((broker.symbol, contract))
@@ -972,6 +980,26 @@ class RouteBroker(TVBrokerEmulator):
         self.route_trades, self._route_lots = [], {}
         self.route_time = None
         self._route_stop = None
+        self._order_contracts = {}
+
+    def order_contract(self, order_id):
+        if order_id not in self._order_contracts:
+            raise ReplayNeedsContext('pending order has no originating contract')
+        return self._order_contracts[order_id]
+
+    def submit(self, actions, bar):
+        actions = tuple(actions)
+        for action in actions:
+            if isinstance(action, OrderIntent):
+                origin = self.contract_at(action.leg_id, bar.ts)
+                if action.order_id in self.pending_order_ids() and self.order_contract(action.order_id) != origin:
+                    raise ReplayNeedsContext('pending order replacement changed originating contract')
+                self._order_contracts[action.order_id] = origin
+        return super().submit(actions, bar)
+
+    def _require_order_contract(self, intent, ts):
+        if self.order_contract(intent.order_id) != self.contract_at(intent.leg_id, ts):
+            raise ReplayNeedsContext('order cannot fill outside its originating contract')
 
     def _mark_route(self, price):
         for fid, row in self._route_lots.items():
@@ -998,6 +1026,7 @@ class RouteBroker(TVBrokerEmulator):
         return result
 
     def _fill_entry(self, intent, price, ts, *, slip):
+        self._require_order_contract(intent, ts)
         self._mark_route(price)
         event = super()._fill_entry(intent, price, ts, slip=slip)
         if event.fill is not None:
@@ -1029,6 +1058,7 @@ class RouteBroker(TVBrokerEmulator):
             self._route_stop = None
 
     def _close_scope(self, intent, price, ts, *, slip):
+        self._require_order_contract(intent, ts)
         self._mark_route(price)
         return super()._close_scope(intent, price, ts, slip=slip)
 

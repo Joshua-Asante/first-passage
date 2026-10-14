@@ -84,7 +84,7 @@ def _tuple(raw, size_raw):
     if any(sizing.leg(k).adds.value != 'OFF' for k in ('dj30_mym_p250', 'vanguard_mgc')) or sizing.leg('orb_mnq_v7').base != 0:
         raise ValueError('R1 requires adds OFF and ORB OFF')
     _digest(doc['size_vector_sha256'])
-    if _sha(canonical_json_bytes(doc['sizing'])) != doc['size_vector_sha256'] or _json(size_raw) != doc['sizing']:
+    if _sha(canonical_json_bytes(doc['sizing'])) != doc['size_vector_sha256'] or _sha(canonical_json_bytes(_json(size_raw))) != doc['size_vector_sha256']:
         raise ValueError('size vector identity differs')
     _closed(doc['capital_anchor'], ('file', 'file_sha256', 'symbol'), 'capital anchor')
     if any(type(v) is not str or not v for v in doc['capital_anchor'].values()):
@@ -176,13 +176,13 @@ class VerifiedInputs:
     splits: object
     striker_risk: float = field(repr=False)
 
-    def risk_refusal(self, leg, instant):
+    def risk_refusal(self, leg, instant, *, contract=None):
         local = instant.astimezone(ET)
         day = local.date() + timedelta(days=int(local.hour >= 18))
         permission, schedule = self.schedules[day]
         if permission != 'PERMITTED':
             return 'DENIED schedule row'
-        contract = self.contract_at(leg, instant)
+        contract = self.contract_at(leg, instant) if contract is None else contract
         boundary = self.rolls.get((SYMBOLS[leg], contract))
         if boundary is not None and instant >= boundary:
             return 'G4 contract boundary'
@@ -457,5 +457,6 @@ def run_personal_replay(manifest, *, adapter_factory, bar_observer=None):
                      'net_pnl_usd': sessions[day].pnl if day in sessions else 0.0,
                      'fills': sessions[day].fills if day in sessions else 0}
                     for day in envelope.schedules],
-           'input_identities': dict(envelope.identities), 'latch': latch}
+           'input_identities': dict(envelope.identities, size_vector=
+               _json(envelope.retained['tuple'])['size_vector_sha256']), 'latch': latch}
     return canonical_json_bytes(validate_route_output(doc))

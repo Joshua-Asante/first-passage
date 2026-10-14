@@ -391,7 +391,7 @@ def test_b11_startup_and_factory_bytes_equal_clean_07d90b0(version, expected, mo
     source = SimpleNamespace(contract=SimpleNamespace(initial_state=SimpleNamespace(
         original_basis=100000, current_equity=100000, historical_eod_peak=100000,
         prior_trade_days=0, prior_max_day_profit=0)), prepared=SimpleNamespace(startup=startup,
-        retained_bytes=()), _domain=None, _instruments=tuple(original.instruments.items()))
+        retained_bytes=()), _domain=None, _policy=None, _instruments=tuple(original.instruments.items()))
     replay = ProductionSource._engine(source, original.schedule_quotes)
     assert digest(output_bytes(replay.run((path_session(prices=[(100,100,100,100)]*3),)))) == 'b4ab6b7703e8cfb51c608daa7ab5150fcc3b4ce306e6e48696d9fd76fdafd9f6'
     personal = ProductionSource._engine(source, original.schedule_quotes, policy=PersonalP0Policy())
@@ -404,7 +404,7 @@ def test_b1_derived_envelope_cannot_substitute_initial_equity(tmp_path, monkeypa
     envelope = p.verify_inputs(manifest)
     called = []
     with pytest.raises(ValueError, match='derived state'):
-        p.build_personal_replay(replace(envelope, initial_equity=1), adapter_factory=lambda e: called.append(True))
+        p.build_personal_replay(replace(envelope, initial_equity=1), adapter_factory=lambda e: (called.append(True) or adapters()))
     assert not called
 
 
@@ -414,3 +414,149 @@ def test_b3_denied_without_market_bars_is_retained_as_zero_day(tmp_path, monkeyp
     result = json.loads(p.run_personal_replay(manifest, adapter_factory=lambda e: adapters(signal)))
     assert result['days'] == [{'account_date': '2026-01-05', 'net_pnl_usd': 0.0, 'fills': 0}]
     assert result['trades'] == []
+
+
+@pytest.mark.parametrize('leg', ['aegis_6j', 'vanguard_mgc'])
+@pytest.mark.parametrize('change_contract', [False, True])
+def test_r1_pending_stop_is_cancelled_at_originating_roll(tmp_path, monkeypatch, leg, change_contract):
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    symbol = p.SYMBOLS[leg]
+    def roll(d):
+        old = next(row for row in d['contracts'] if row['product'] == symbol)
+        d['contracts'].append(dict(old, contract_month='2026-06'))
+        old['g4_start_open_utc'] = '2026-01-05T20:30:00Z'
+    rewrite(manifest, 'roll_list', roll, monkeypatch)
+    def prices(d):
+        for row in d['sessions'][0]['bars'][1 if change_contract else 2:]:
+            row['legs'][leg]['ohlc'] = [80 if leg == 'aegis_6j' else 120]*4
+            if change_contract:
+                row['legs'][leg]['contract'] = '2026-06'
+        d['splits'][0]['legs'][leg] = {'prefix': [80 if leg == 'aegis_6j' else 120]*4,
+                                      'suffix': [80 if leg == 'aegis_6j' else 120]*4}
+    rewrite(manifest, 'source_bundle', prices, monkeypatch)
+    def emit(a, bar):
+        if a.leg_id != leg or len(a.bars) != 1:
+            return []
+        return [OrderIntent('old-stop', leg, 'entry', Side.SELL if leg == 'aegis_6j' else Side.BUY,
+                            1, 'stop', 90 if leg == 'aegis_6j' else 110,
+                            bracket=Bracket(stop=130 if leg == 'aegis_6j' else 70), stop_dist_pts=40)]
+    strategies = adapters(emit)
+    result = json.loads(p.run_personal_replay(manifest, adapter_factory=lambda e: strategies))
+    assert result['trades'] == []
+    assert not any(e.fill for e in strategies[leg].feedback)
+    assert any(e.event == 'cancel' and e.order_id == 'old-stop' for e in strategies[leg].feedback)
+    assert len(result['refusals'][leg]) == 1
+    assert 'originating contract' in result['refusals'][leg][0]['reason']
+
+
+@pytest.mark.parametrize('leg,key,value', [
+    ('aegis_6j', 'base', 1.0), ('aegis_6j', 'base', True),
+    ('orb_mnq_v7', 'base', 0.0), ('vanguard_mgc', 'base_by_port', {'1': 1.0, '2': 1}),
+])
+def test_r3_standalone_size_vector_numeric_alias_refuses(tmp_path, monkeypatch, leg, key, value):
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    rewrite(manifest, 'size_vector', lambda d: d[leg].update({key: value}), monkeypatch)
+    called = []
+    with pytest.raises(ValueError, match='size vector identity'):
+        p.run_personal_replay(manifest, adapter_factory=lambda e: (called.append(True) or adapters()))
+    assert not called
+
+
+def test_r3_output_size_identity_is_the_tuple_canonical_digest(tmp_path, monkeypatch):
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    path = Path(manifest['inputs']['size_vector']['path'])
+    raw = json.dumps(json.loads(path.read_bytes()), indent=2).encode()
+    path.write_bytes(raw)
+    manifest['inputs']['size_vector']['sha256'] = digest(raw)
+    result = json.loads(p.run_personal_replay(manifest, adapter_factory=lambda e: adapters()))
+    tuple_doc = json.loads(Path(manifest['inputs']['tuple']['path']).read_bytes())
+    assert result['input_identities']['size_vector'] == tuple_doc['size_vector_sha256']
+    assert result['input_identities']['size_vector'] != digest(raw)
+
+
+@pytest.mark.parametrize('personal,cap', [(True, 7), (True, 80), (False, 7), (False, 80)])
+def test_r2_resolved_policy_reaches_every_startup_parse(tmp_path, monkeypatch, personal, cap):
+    from composition_fixture import (build_artifacts, verified_domain, contract_document, signed_approval)
+    from test_trust_domain import NOW
+    from c1_rail.qualification.contract import validate_frozen_contract, ObservedBindings
+    from c1_rail.qualification import production_source as ps
+    from c1_rail import book_policy as bp
+    monkeypatch.setitem(bp.FIRM_RULES['Personal_Tradovate'], 'micro_contract_cap', 7)
+    fixture = build_artifacts(tmp_path, idle=True).with_runtime_artifacts(tmp_path)
+    startup = json.loads(fixture.payloads['source_startup_policy'])
+    startup['shared_account_cap_micro_equivalents'] = cap
+    for row in startup['legs'].values():
+        row['request_cap_micro_equivalents'] = cap
+    raw = canonical_json_bytes(startup)
+    fixture.payloads['source_startup_policy'] = raw
+    (tmp_path / fixture.paths['source_startup_policy']).write_bytes(raw)
+    domain, private, keys = verified_domain(fixture)
+    raw = canonical_json_bytes(contract_document(fixture, domain))
+    approval = signed_approval(raw, private['test-freeze'], key_id='test-freeze', scope='FREEZE_F1')
+    observed = ObservedBindings(
+        artifact_sha256={fixture.paths[r]: digest(b) for r, b in fixture.payloads.items()},
+        runtime_load_sha256={r: digest(b) for r, b in fixture.payloads.items()},
+        effective_settings_sha256=digest(fixture.payloads['effective_settings_successor']), orb_normal_base=1)
+    contract = validate_frozen_contract(raw, approval, keys, observed, now=NOW, trust_domain=domain)
+    seen, original = [], ps.parse_startup_policy
+    def parse(raw, *, tier=None):
+        seen.append(tier)
+        return original(raw, tier=tier)
+    monkeypatch.setattr(ps, 'parse_startup_policy', parse)
+    policy = PersonalP0Policy() if personal else None
+    def build():
+        return ps.ProductionSource._build_composition(contract, artifact_root=tmp_path, policy=policy)
+    if cap != (7 if personal else 80):
+        with pytest.raises(ValueError, match='cap'):
+            build()
+        return
+    source = build()
+    assert len(seen) >= 3
+    assert all(tier == ('Personal_Tradovate' if personal else bp.TIER) for tier in seen)
+    assert source.prepared.startup.shared_account_cap_micro_equivalents == cap
+    replay = source._engine(source._quotes)
+    assert replay.personal is personal
+    assert replay.ledger.cap == cap
+    from c1_rail.book_policy import candidate_book_protection_policy
+    override = candidate_book_protection_policy() if personal else PersonalP0Policy()
+    with pytest.raises(ValueError, match='startup cap'):
+        source._engine(source._quotes, policy=override)
+
+
+@pytest.mark.parametrize('kind', ['entry', 'add', 'exit', 'flat'])
+def test_r1_every_pending_order_binds_contract_and_cannot_fill_successor(kind):
+    from datetime import datetime
+    from c1_signal_daemon.feed import Bar
+    from c1_rail.qualification.replay import RouteBroker, ReplayNeedsContext
+    start = datetime(2026, 1, 5, 20, tzinfo=timezone.utc)
+    edge = start + timedelta(minutes=15)
+    broker = RouteBroker('aegis_6j', mintick=1, pointvalue=1, slippage_ticks=0,
+                         commission_per_side=1, symbol='6J',
+                         contract_at=lambda leg, ts: '2026-03' if ts < edge else '2026-06')
+    bar = Bar(start, 100, 100, 100, 100)
+    if kind in ('exit', 'flat'):
+        broker.submit([OrderIntent('held', 'aegis_6j', 'entry', Side.BUY, 1,
+                                   timing=FillTiming.THIS_CLOSE, bracket=Bracket(stop=90))], bar)
+    broker.submit([OrderIntent('pending', 'aegis_6j', kind,
+                               Side.SELL if kind in ('exit', 'flat') else Side.BUY,
+                               1, timing=FillTiming.NEXT_OPEN, bracket=Bracket(stop=90))], bar)
+    assert 'pending' in broker.pending_order_ids()
+    assert broker.order_contract('pending') == '2026-03'
+    with pytest.raises(ReplayNeedsContext, match='originating contract'):
+        broker.process_bar(Bar(edge, 120, 120, 120, 120))
+
+
+def test_r1_close_admission_uses_originating_bar_contract(tmp_path, monkeypatch):
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    def roll(d):
+        old = next(row for row in d['contracts'] if row['product'] == '6J')
+        d['contracts'].append(dict(old, contract_month='2026-06'))
+        old['g4_start_open_utc'] = '2026-01-05T20:15:00Z'
+    rewrite(manifest, 'roll_list', roll, monkeypatch)
+    def contracts(d):
+        for row in d['sessions'][0]['bars'][1:]:
+            row['legs']['aegis_6j']['contract'] = '2026-06'
+    rewrite(manifest, 'source_bundle', contracts, monkeypatch)
+    result = json.loads(p.run_personal_replay(manifest, adapter_factory=lambda e: adapters(signal)))
+    assert not any(t['leg'] == 'aegis_6j' for t in result['trades'])
+    assert result['refusals']['aegis_6j'][0]['reason'] == 'G4 contract boundary'
