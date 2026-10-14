@@ -1,4 +1,4 @@
-"""Q-SFCLEAR-2 chronology and paired publication; no default private paths.
+"""Q-SFCLEAR-3 chronology and paired publication; no default private paths.
 
 The coordinator supplies the reviewed private replay driver. This module invokes
 it through the checkout launcher in a separate process; it never imports ops.
@@ -20,8 +20,10 @@ import sys
 
 from discovery.sfgrowth_acceptance import strict_object
 
-FREEZE = '83867f0d362931c2a516a62b990bb1c209372527'
-FROZEN_PATHS = ('docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md',
+FREEZE2 = '83867f0d362931c2a516a62b990bb1c209372527'
+FREEZE = '15bea250fc8ee9a57b59735c9e8be685c4ddbf22'
+FROZEN_PATHS = ('docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md',
+                'docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md',
                 'lab/analysis/c1/sfclear_2026-10/schedule',
                 'lab/analysis/c1/sfclear_2026-10/build_historical_schedule.py')
 PUBLIC_KEYS = {'run_head', 'started_utc', 'private_sha256sums_sha256'}
@@ -122,6 +124,8 @@ def begin(*, repo, private_root, fg_path, fg_sha256, freeze=FREEZE, frozen_paths
         raise Refusal('invalid source identity')
     _git(repo, 'merge-base', '--is-ancestor', freeze, head)
     _git(repo, 'diff', '--quiet', freeze, head, '--', *frozen_paths)
+    if freeze == FREEZE:
+        _git(repo, 'diff', '--quiet', FREEZE2, head, '--', *FROZEN_PATHS[1:])
     try:
         fg_path = Path(fg_path).resolve()
         fg_raw = fg_path.read_bytes()
@@ -300,10 +304,16 @@ def _git_bytes(repo,*args):
 
 
 def freeze_bindings(repo, freeze=FREEZE):
-    """Verify hook-4 freeze provenance using public Git objects only."""
+    """Q-SFCLEAR-3 hook 4 (I1–I5), from committed public objects only."""
     p=FROZEN_PATHS[0]
     study='lab/analysis/c1/sfclear_2026-10'
+    evidence='docs/evidence/PRIVATE_EVIDENCE.sha256'
+    audited=_git(repo,'rev-parse','HEAD')
     try:
+        _git(repo,'merge-base','--is-ancestor',freeze,audited)
+        _git(repo,'merge-base','--is-ancestor',FREEZE2,freeze)
+        _git(repo,'diff','--quiet',FREEZE2,freeze,'--',*FROZEN_PATHS[1:])
+        _git(repo,'diff','--quiet',freeze,audited,'--',*FROZEN_PATHS)
         frozen=_git_bytes(repo,'show',f'{freeze}:{p}')
         parent=_git_bytes(repo,'show',f'{freeze}^:{p}')
         lines=frozen.decode().splitlines()
@@ -311,10 +321,12 @@ def freeze_bindings(repo, freeze=FREEZE):
         if len(statuses)!=1 or not statuses[0].startswith('**Status:** `FROZEN'):
             raise Refusal('freeze status invalid')
         status=statuses[0]
-        ratified=re.search(r'ratify Q-SFCLEAR-2 at ([0-9a-f]{40})',status)
+        ratified=re.search(r'ratify Q-SFCLEAR-3 at ([0-9a-f]{40})',status)
         hashes=re.findall(r'\b[0-9a-f]{64}\b',status)
         if (ratified is None or not hashes or 'exposure attestation' not in status.lower()
-                or '2026-10-11T23:39:57Z' not in status):
+                or any(marker not in status for marker in ('2026-10-11T23:39:57Z',
+                    '(s1)','(s2)','(s3)','G1/G3','2026-10-12 coordinator',
+                    '62d7ae196059b7d98fd814c7b07a911558e8e5891dd2a669170393583b6c671f'))):
             raise Refusal('freeze ratification or exposure missing')
         _git(repo,'merge-base','--is-ancestor',ratified[1],freeze+'^')
         if _git_bytes(repo,'show',f'{ratified[1]}:{p}')!=parent:
@@ -322,20 +334,24 @@ def freeze_bindings(repo, freeze=FREEZE):
         without=lambda blob:[line for line in blob.splitlines() if not line.startswith(b'**Status:**')]
         if without(frozen)!=without(parent) or _git(repo,'diff','--numstat',freeze+'^',freeze,'--',p).split()[:2]!=['1','1']:
             raise Refusal('freeze changed more than status')
-        history=_git(repo,'log','--format=%H','-G',r'^\*\*Status:\*\* .FROZEN',freeze,'--',p).splitlines()
+        history=_git(repo,'log','--format=%H','-G',r'^\*\*Status:\*\*.*FROZEN',audited,'--',p).splitlines()
         if not history or history[-1]!=freeze:
             raise Refusal('not first freeze')
-        rows=_git_bytes(repo,'show',f'{freeze}:docs/evidence/PRIVATE_EVIDENCE.sha256').decode().splitlines()
-        matches=[re.fullmatch(r'([0-9a-f]{64})  t00-step3-console/sfclear2-freeze-[0-9TZ]+/FREEZE_RECORD.json',line)
-                 for line in rows]
+        if set(_git(repo,'diff','--name-only',freeze+'^',freeze).splitlines())!={p,evidence}:
+            raise Refusal('freeze changed unexpected paths')
+        delta=_git(repo,'diff','--unified=0',freeze+'^',freeze,'--',evidence).splitlines()
+        added=[line[1:] for line in delta if line.startswith('+') and not line.startswith('+++')]
+        removed=[line for line in delta if line.startswith('-') and not line.startswith('---')]
+        matches=[re.fullmatch(r'([0-9a-f]{64})  (t00-step3-console/sfclear3-freeze-[0-9]{8}T[0-9]{6}Z)/FREEZE_RECORD\.json',line)
+                 for line in added]
         matches=[match for match in matches if match]
-        if len(matches)!=1 or matches[0][1] not in hashes:
+        if len(matches)!=1 or len(added)!=2 or removed:
             raise Refusal('freeze record not uniquely pinned')
-        delta=_git(repo,'diff',freeze+'^',freeze,'--','docs/evidence/PRIVATE_EVIDENCE.sha256')
-        if '+'+matches[0][0] not in delta:
-            raise Refusal('freeze record not added at F')
+        if not any(re.fullmatch('[0-9a-f]{64}  '+re.escape(matches[0][2])+'/SHA256SUMS',line) for line in added):
+            raise Refusal('freeze manifest pair missing')
+        inherited=_git_bytes(repo,'show',f'{FREEZE2}:{FROZEN_PATHS[1]}').decode().splitlines()
         def line_hash(prefix):
-            found=[line for line in lines if line.startswith(prefix)]
+            found=[line for line in inherited if line.startswith(prefix)]
             if len(found)!=1:
                 raise Refusal('missing frozen binding')
             return re.search(r'\b[0-9a-f]{64}\b',found[0])[0]
@@ -345,9 +361,39 @@ def freeze_bindings(repo, freeze=FREEZE):
         schedule_path=study+'/schedule/historical_schedule_2022-09-01_2026-09-02.json'
         if digest(_git_bytes(repo,'show',f'{freeze}:{roll_path}'))!=roll:
             raise Refusal('frozen roll identity differs')
+        brief=_git_bytes(repo,'show',f'{audited}:docs/briefs/Q-SFCLEAR-2-personal-clearance-tradeify-book.md').decode()
+        recorded=re.findall(r'^Q-SFCLEAR-3 pre-registration commit hash: `([0-9a-f]{40})`',brief,re.M)
+        if recorded!=[freeze]:
+            raise Refusal('freeze metadata differs')
+        lineage=strict_object(_git_bytes(repo,'show',f'{audited}:discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json'))
+        trials=[t for t in strict_object(lineage['params'].encode('utf-8'))['further_trial_log'] if t['trial']==10]
+        if (len(trials)!=1 or trials[0].get('successor_freeze_commit')!=freeze
+                or type(trials[0].get('superseded_before_run_freezes')) is not list
+                or FREEZE2 not in trials[0]['superseded_before_run_freezes']):
+            raise Refusal('trial lineage differs')
+        additions=[]
+        for name in _git(repo,'ls-tree','-r','--name-only',audited,'--',study+'/run_records/').splitlines():
+            added_at=_git(repo,'log','--diff-filter=A','--format=%H',audited,'--',name).splitlines()[-1]
+            original=_git_bytes(repo,'show',f'{added_at}:{name}')
+            if original!=_git_bytes(repo,'show',f'{audited}:{name}'):
+                raise Refusal('run record changed')
+            record=validate_public_record(strict_object(original))
+            _git(repo,'merge-base','--is-ancestor',freeze,record['run_head'])
+            _git(repo,'merge-base','--is-ancestor',record['run_head'],added_at)
+            _git(repo,'diff','--quiet',freeze,record['run_head'],'--',*FROZEN_PATHS)
+            changes=_git(repo,'show','--format=','--unified=0',added_at,'--',evidence).splitlines()
+            if not any(re.fullmatch(r'\+'+record['private_sha256sums_sha256']+r'  t00-step3-console/[^\s]+/SHA256SUMS',line) for line in changes):
+                raise Refusal('run evidence row not added with record')
+            additions.append(added_at)
+        for commit in _git(repo,'log','--format=%H',audited,'--','docs/briefs/closures/Q-SFCLEAR-3-*').splitlines():
+            _git(repo,'merge-base','--is-ancestor',freeze,commit)
+            _git(repo,'diff','--quiet',freeze,commit,'--',*FROZEN_PATHS)
+            ancestors=set(_git(repo,'rev-list',commit).splitlines())
+            if not any(added_at in ancestors for added_at in additions):
+                raise Refusal('closure without prior run record')
         return {'freeze':matches[0][1],'calculator':calculator,'tuple':hashes[0],
                 'roll_list':roll,'schedule':digest(_git_bytes(repo,'show',f'{freeze}:{schedule_path}'))}
-    except (UnicodeError,AttributeError,IndexError):
+    except (ValueError,AttributeError,IndexError,KeyError,TypeError):
         raise Refusal('freeze provenance malformed') from None
 
 
@@ -402,12 +448,14 @@ def run_job(job):
     """Coordinator API. Inputs are explicit path+hash references; no real defaults.
 
     job keys: repo, private_root, fg {path,sha256}, driver {path,sha256,args},
-    inputs {role:{path,sha256}}, calculator {path,inputs}, panels.
+    inputs {role:{path,sha256}}, calculator {path,inputs}, panels,
+    source_build {path,sha256,inputs:{role:{path,sha256}}}. The source-build
+    folder stays in place, read-only; the coordinator owns host copy and teardown.
     Driver args may contain {private_root} and {run_head}. It must write route.json
     and port_state.json. Calculator inputs stay in place (never copy ports/Pine).
     Only the public candidate is returned; publication remains a separate action.
     """
-    required={'repo','private_root','fg','driver','inputs','calculator','panels'}
+    required={'repo','private_root','fg','driver','inputs','calculator','panels','source_build'}
     if type(job) is not dict or set(job)!=required:
         raise Refusal('job fields')
     module_root=Path(job['repo']).resolve()/'lab/analysis/c1/sfclear_2026-10'
@@ -437,7 +485,8 @@ def run_job(job):
         local[role]=name
     request={'schema':'sfclear_score_request/v1','repo':str(receipt.repo),
              'root':str(receipt.private_root),'run_head':receipt.run_head,'pins':pins,
-             'inputs':local,'calculator':job['calculator'],'panels':job['panels']}
+             'inputs':local,'calculator':job['calculator'],'panels':job['panels'],
+             'source_build':job['source_build']}
     request_path=receipt.private_root/'request.json'
     request_path.write_bytes(_json(request))
     args=['--request',str(request_path),'--manifest-sha256','{manifest_sha256}']

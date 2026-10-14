@@ -228,15 +228,62 @@ def test_publication_pair_must_be_staged_together(r,repo,tmp_path):
 def test_freeze_provenance_from_public_git_objects(r):
     # Read public Git blobs only; this does not open the pinned private artifact.
     pins=r.freeze_bindings(SOURCE.parents[4])
-    assert pins['freeze']=='91c2754e6373f39ed8ae2f522854fed5333568213157d23d33bb31ad7b1e5425'
+    assert pins['freeze']=='036b89889302654d3c6a66adcb1130de81248e5d018191bd0706e46c4bb473f9'
     assert pins['calculator']=='2333844dd2a9342239812baa38a119b55f4b8a65841165740a9a39633f2297bf'
 
 
 def test_job_cannot_record_another_checkout(r,repo,tmp_path):
-    job=dict.fromkeys(('repo','private_root','fg','driver','inputs','calculator','panels'))
+    job=dict.fromkeys(('repo','private_root','fg','driver','inputs','calculator','panels','source_build'))
     job['repo']=str(repo[0])
     with pytest.raises(r.Refusal,match='recorded checkout'):
         r.run_job(job)
+
+
+@pytest.fixture
+def public_clone(tmp_path):
+    # Public objects only; no checkout of private or tracked data inputs.
+    root=tmp_path/'clone'
+    subprocess.run(['git','clone','--shared','--no-checkout',str(SOURCE.parents[4]),str(root)],
+                   check=True,capture_output=True)
+    git(root,'config','core.hooksPath',str(tmp_path/'no-hooks'))
+    git(root,'config','user.name','Synthetic')
+    git(root,'config','user.email','synthetic@example.invalid')
+    git(root,'read-tree','HEAD')
+    return root
+
+
+@pytest.mark.parametrize('damage',['none','pre_f3','changed_record','missing_row','closure_without_record',
+                                   'metadata','frozen_file'])
+def test_f3_hook4_committed_history(r,public_clone,damage):
+    root=public_clone
+    def write(name,blob):
+        path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(blob)
+        git(root,'add','--',name)
+    head=git(root,'rev-parse','HEAD')
+    record_path='lab/analysis/c1/sfclear_2026-10/run_records/synthetic.json'
+    evidence='docs/evidence/PRIVATE_EVIDENCE.sha256'
+    if damage!='closure_without_record':
+        record={'run_head':('83867f0d362931c2a516a62b990bb1c209372527' if damage=='pre_f3' else head),
+                'started_utc':'2026-10-14T12:00:00Z','private_sha256sums_sha256':'a'*64}
+        write(record_path,json.dumps(record).encode())
+        if damage!='missing_row':
+            blob=subprocess.run(['git','-C',str(root),'show','HEAD:'+evidence],check=True,capture_output=True).stdout
+            write(evidence,blob+b'\n'+b'a'*64+b'  t00-step3-console/sfclear2-run-20261014T120000Z/SHA256SUMS\n')
+        git(root,'commit','-m','synthetic record')
+        if damage=='changed_record':
+            record['started_utc']='2026-10-14T13:00:00Z'
+            write(record_path,json.dumps(record).encode())
+    if damage=='metadata':
+        write('docs/briefs/Q-SFCLEAR-2-personal-clearance-tradeify-book.md',b'bad metadata\n')
+    if damage=='frozen_file':
+        write('docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md',b'changed\n')
+    write('docs/briefs/closures/Q-SFCLEAR-3-synthetic.md',b'synthetic closure\n')
+    git(root,'commit','-m','synthetic closure')
+    if damage=='none':
+        assert r.freeze_bindings(root)['freeze']=='036b89889302654d3c6a66adcb1130de81248e5d018191bd0706e46c4bb473f9'
+    else:
+        with pytest.raises(r.Refusal):
+            r.freeze_bindings(root)
 
 
 RUN_MUTANTS = {

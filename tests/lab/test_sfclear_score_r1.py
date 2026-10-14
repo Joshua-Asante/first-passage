@@ -41,11 +41,29 @@ def days(n=61):
 
 
 def freeze():
-    return dict(schema='sfclear2_freeze_record/v1', nonce='1' * 64,
+    return dict(schema='sfclear3_freeze/v1', nonce='1' * 64,
                 calculator_sha256='2' * 64,
                 G1={leg: dict(p95=.1, max=999) for leg in LEGS[:3]},
-                G3=dict(p95=.5, max=999), margin_snapshot=dict(sha256='3' * 64),
-                fee_snapshot=dict(sha256='4' * 64))
+                G3=dict(p95=.5, max=999), margin_snapshot_sha256='3' * 64,
+                fee_snapshot_sha256='4' * 64, effective_schedule_sha256='5'*64,
+                roll_list_sha256='6'*64, source_build_sha256sums_sha256='7'*64)
+
+
+def test_f3_refuses_legacy_freeze(s):
+    doc=freeze()
+    doc['schema']='sfclear2_freeze_record/v1'
+    doc['margin_snapshot']={'sha256':doc.pop('margin_snapshot_sha256')}
+    doc['fee_snapshot']={'sha256':doc.pop('fee_snapshot_sha256')}
+    blob=raw(doc)
+    with pytest.raises(s.FreezeInvalid):
+        s.read_freeze(blob,sha(blob),'2'*64)
+
+
+@pytest.mark.parametrize('schema',['sfclear2_freeze_record/v1','unknown/v1'])
+def test_f3_schema_is_required_even_with_f3_fields(s,schema):
+    doc=freeze();doc['schema']=schema;blob=raw(doc)
+    with pytest.raises(s.FreezeInvalid):
+        s.read_freeze(blob,sha(blob),'2'*64)
 
 
 def score_inputs():
@@ -214,7 +232,7 @@ def test_added_fee_both_identities(s):
     assert s.read_fees(blob, frozen, inputs).rates_for('6J')['commission'] == 1
     with pytest.raises(s.Void):
         s.read_fees(blob+b' ', frozen, inputs)
-    frozen['fee_snapshot']['sha256'] = 'f'*64
+    frozen['fee_snapshot_sha256'] = 'f'*64
     with pytest.raises(s.Void):
         s.read_fees(blob, frozen, inputs)
 
@@ -416,6 +434,7 @@ def test_composition_binds_all_cells_and_residuals(s):
         drift=drift,schedule=schedule(),rolls=rolls(),pointvalues=dict.fromkeys(SYMBOLS,1.),
         rule_max=dict.fromkeys(LEGS[:3],1),roll_dates=dict.fromkeys(SYMBOLS,()))
     assert result['verdict']=='RESOLVED'
+    assert result['label']=='clears on exposed history (model-fitted; 15:55 flatten at the R1 adverse intrabar placement)'
     assert len(result['cells']['drawdown'])==18 and len(result['cells']['growth'])==3
     assert set(result['residuals'])=={'slippage','drift_slippage','port_state','sensitivities'}
     assert set(result['residuals']['sensitivities'])=={'B3','news','seams'}
@@ -433,13 +452,25 @@ d={'schema':'sfclear2_g1g3/v1','calculator_sha256':h(pathlib.Path(__file__).read
 b=json.dumps(d).encode();(pathlib.Path(a.out_root)/'g1g3_20260101T000000Z_12345678.json').write_bytes(b);print(h(b))
 ''')
     inputs=score_inputs();inputs['fee_snapshot_v1_sha256']=sha(fee_raw())
-    frozen=freeze();frozen['calculator_sha256']=sha(calculator.read_bytes());frozen['margin_snapshot']['sha256']=sha(margins())
+    frozen=freeze();frozen['calculator_sha256']=sha(calculator.read_bytes());frozen['margin_snapshot_sha256']=sha(margins())
     tuple_doc={'capital_anchor':{'file_sha256':sha(b'1000\n')},'size_vector_sha256':sha(b'{}'),
                'rule_max_contracts':dict(zip(LEGS,(1,1,1,0)))}
     blobs={'freeze':raw(frozen),'fees':fee_raw(),'margin':margins(),'score_inputs':raw(inputs),'e0':b'1000\n',
            'tuple':raw(tuple_doc),'size_vector':b'{}','source_bundle':b'{}','schedule':raw(schedule()),
            'roll_list':raw(rolls()),'generator':b'synthetic','calendar':b'synthetic',
            'reference_friction':raw({'instruments':{leg:{'pointvalue':1.} for leg in LEGS}})}
+    source=tmp_path/'sfclear3-source-20260101T000000Z';source.mkdir()
+    source_refs={}
+    for role in ('source_bundle','reference_friction','effective_schedule'):
+        blob=blobs['schedule' if role=='effective_schedule' else role]
+        path=source/(role+'.json');path.write_bytes(blob)
+        source_refs[role]={'path':str(path),'sha256':sha(blob)}
+    source_manifest=''.join(ref['sha256']+'  '+Path(ref['path']).name+'\n' for ref in source_refs.values()).encode()
+    (source/'SHA256SUMS').write_bytes(source_manifest)
+    source_build={'path':str(source),'sha256':sha(source_manifest),'inputs':source_refs}
+    frozen.update(source_build_sha256sums_sha256=sha(source_manifest),
+                  effective_schedule_sha256=sha(blobs['schedule']),roll_list_sha256=sha(blobs['roll_list']))
+    blobs['freeze']=raw(frozen)
     for role,blob in blobs.items():
         (root/(role+'.bin')).write_bytes(blob)
     calc_inputs={name:{'path':str(root/'calendar.bin'),'sha256':sha(blobs['calendar'])}
@@ -457,7 +488,7 @@ b=json.dumps(d).encode();(pathlib.Path(a.out_root)/'g1g3_20260101T000000Z_123456
     request={'schema':'sfclear_score_request/v1','repo':str(SOURCE.parents[4]),'root':str(root),
              'run_head':HEAD,'pins':{key:sha(blobs[key]) for key in ('freeze','tuple','schedule','roll_list')},
              'inputs':{key:key+'.bin' for key in blobs},'calculator':{'path':str(calculator),'inputs':calc_inputs},
-             'panels':panel_refs}
+             'panels':panel_refs,'source_build':source_build}
     request['pins']['calculator']=sha(calculator.read_bytes())
     doc=route();doc['trades']=[trade(d.isoformat(),leg=leg) for d in days() for leg in LEGS[:3]]
     doc['input_identities']={key:sha(blobs[key]) for key in doc['input_identities']}
@@ -496,6 +527,53 @@ def test_manifest_mismatch_refuses_before_calculator(s,artifact_request):
     with pytest.raises(s.Void):
         s.score_request(request,manifest_sha256=expected)
     assert not (root/'calculator-output').exists()
+
+
+@pytest.mark.parametrize('damage',['effective_schedule','roll_list','source_manifest','source_bytes','source_role'])
+def test_f3_source_bindings_void_before_calculator(s,artifact_request,damage):
+    root,request,seal=artifact_request
+    frozen=json.loads((root/'freeze.bin').read_bytes())
+    if damage in ('effective_schedule','roll_list'):
+        frozen[damage+'_sha256']='f'*64
+    elif damage=='source_manifest':
+        frozen['source_build_sha256sums_sha256']='f'*64
+    elif damage=='source_bytes':
+        Path(request['source_build']['inputs']['source_bundle']['path']).write_bytes(b'changed')
+    else:
+        request['source_build']['inputs']['source_bundle']=request['source_build']['inputs']['reference_friction']
+    blob=raw(frozen);(root/'freeze.bin').write_bytes(blob)
+    request['pins']['freeze']=sha(blob)
+    with pytest.raises(s.Void):
+        s.score_request(request,manifest_sha256=seal(),preflight=True)
+    assert not (root/'calculator-output').exists()
+
+
+def test_f3_legacy_freeze_precedes_manifest_void(s,artifact_request):
+    root,request,seal=artifact_request
+    frozen=json.loads((root/'freeze.bin').read_bytes())
+    frozen['schema']='sfclear2_freeze_record/v1'
+    frozen['fee_snapshot']={'sha256':frozen.pop('fee_snapshot_sha256')}
+    frozen['margin_snapshot']={'sha256':frozen.pop('margin_snapshot_sha256')}
+    blob=raw(frozen);(root/'freeze.bin').write_bytes(blob)
+    request['pins']['freeze']=sha(blob)
+    with pytest.raises(s.FreezeInvalid):
+        s.score_request(request,manifest_sha256='0'*64,preflight=True)
+
+
+def test_effective_schedule_is_distinct_from_f2_base(s,artifact_request):
+    root,request,seal=artifact_request
+    # A later zero day is excluded; the immutable F2 schedule remains PERMITTED.
+    schedule_doc=json.loads((root/'schedule.bin').read_bytes())
+    schedule_doc['sessions'][-1]['permission']='DENIED'
+    source=request['source_build'];ref=source['inputs']['effective_schedule']
+    blob=raw(schedule_doc);Path(ref['path']).write_bytes(blob);ref['sha256']=sha(blob)
+    request['calculator']['inputs']['schedule']=dict(ref)
+    manifest=''.join(item['sha256']+'  '+Path(item['path']).name+'\n' for item in source['inputs'].values()).encode()
+    (Path(source['path'])/'SHA256SUMS').write_bytes(manifest);source['sha256']=sha(manifest)
+    frozen=json.loads((root/'freeze.bin').read_bytes())
+    frozen.update(effective_schedule_sha256=sha(blob),source_build_sha256sums_sha256=sha(manifest))
+    frozen_blob=raw(frozen);(root/'freeze.bin').write_bytes(frozen_blob);request['pins']['freeze']=sha(frozen_blob)
+    assert s.score_request(request,manifest_sha256=seal(),preflight=True) is None
 
 
 def test_panel_endpoints_cannot_be_narrowed(s,artifact_request):
@@ -587,9 +665,10 @@ def test_full_synthetic_job_to_sealed_candidate(artifact_request,tmp_path,monkey
         'driver':{'path':str(driver),'sha256':sha(driver.read_bytes()),'args':['{private_root}']},
         'inputs':{role:{'path':str(root/name),'sha256':sha((root/name).read_bytes())}
                   for role,name in request['inputs'].items()},
-        'calculator':request['calculator'],'panels':request['panels']})
+        'calculator':request['calculator'],'panels':request['panels'],'source_build':request['source_build']})
     assert candidate.record['run_head']==head
     assert json.loads((output/'cells.json').read_bytes())['verdict']=='RESOLVED'
     _,manifest=records.read_manifest(output)
     assert {'provenance.json','route.json','port_state.json','cells.json','residuals.json'}<=set(manifest)
+    assert json.loads((output/'request.json').read_bytes())['source_build']==request['source_build']
     assert git('status','--porcelain')==''

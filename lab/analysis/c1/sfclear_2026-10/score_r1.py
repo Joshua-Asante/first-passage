@@ -92,15 +92,16 @@ def read_freeze(raw, expected_sha256, calculator_sha256=CALCULATOR_HASH):
         if _sha(raw) != _hex(expected_sha256):
             raise Void('freeze identity mismatch')
         doc = strict_object(raw)
-        if doc['schema'] != 'sfclear2_freeze_record/v1':
+        if doc['schema'] != 'sfclear3_freeze/v1':
             raise Void('freeze schema')
         _hex(doc['nonce'])
         if _hex(doc['calculator_sha256']) != _hex(calculator_sha256):
             raise Void('calculator identity differs')
         _p95(doc, 'G1', True)
         _p95(doc, 'G3')
-        _hex(doc['margin_snapshot']['sha256'])
-        _hex(doc['fee_snapshot']['sha256'])
+        for key in ('margin_snapshot_sha256','fee_snapshot_sha256',
+                    'effective_schedule_sha256','roll_list_sha256','source_build_sha256sums_sha256'):
+            _hex(doc[key])
         return doc
     except (ValueError, KeyError, TypeError):
         raise FreezeInvalid('invalid frozen record') from None
@@ -128,7 +129,7 @@ def read_score_inputs(raw, manifest, name):
 def read_fees(raw, frozen, inputs):
     try:
         return parse_snapshot(raw, expected_sha256=inputs['fee_snapshot_v1_sha256'],
-                              expected_source_sha256=frozen['fee_snapshot']['sha256'])
+                              expected_source_sha256=frozen['fee_snapshot_sha256'])
     except (ValueError, KeyError, TypeError):
         raise Void('fee identity or schema mismatch') from None
 
@@ -584,7 +585,51 @@ def compose(route, *, calendar, fees, equity, frozen, inputs, margins, port, dri
                                         inputs['monthly_debited_fixed_costs_usd'],margins['6J'])}
     residuals['sensitivities']['seams'] = seam_sensitivity(route,calendar,fees,equity,roll_dates,
                                                          debits=debits,ruling=ruling)
-    return {'verdict':label,'cells':cells,'gates':gates,'B2':margin,'residuals':residuals}
+    description = ('clears on exposed history (model-fitted; 15:55 flatten at the R1 adverse intrabar placement)'
+                   if label == 'RESOLVED' else label)
+    return {'verdict':label,'label':description,'cells':cells,'gates':gates,'B2':margin,'residuals':residuals}
+
+
+def source_build_inputs(binding, frozen, blobs, roll_sha256):
+    """Verify the independent source-build folder without modifying its bytes."""
+    import importlib
+    records=importlib.import_module('analysis.c1.sfclear_2026-10.run_record')
+    _closed(binding,('path','sha256','inputs'))
+    root=records.outside_git(binding['path'])
+    manifest=(root/'SHA256SUMS').read_bytes()
+    if _sha(manifest)!=_hex(binding['sha256']) or binding['sha256']!=frozen['source_build_sha256sums_sha256']:
+        raise Void('source-build manifest identity')
+    rows={}
+    for line in manifest.decode('utf-8').splitlines():
+        match=re.fullmatch(r'([0-9a-f]{64})  (.+)',line)
+        if match is None:
+            raise Void('source-build manifest encoding')
+        expected,name=match.groups()
+        if name in rows or name=='SHA256SUMS':
+            raise Void('source-build manifest inventory')
+        path=records._within(root,name)
+        if _sha(path.read_bytes())!=expected:
+            raise Void('source-build file identity')
+        rows[name]=expected
+    _closed(binding['inputs'],('source_bundle','reference_friction','effective_schedule'))
+    result={}
+    for role,ref in binding['inputs'].items():
+        _closed(ref,('path','sha256'))
+        path=Path(ref['path']).resolve()
+        if not path.is_relative_to(root):
+            raise Void('source-build input outside folder')
+        if rows.get(path.relative_to(root).as_posix())!=_hex(ref['sha256']):
+            raise Void('source-build input absent from manifest')
+        result[role]=path.read_bytes()
+        if _sha(result[role])!=ref['sha256']:
+            raise Void('source-build input changed')
+    if any(result[role]!=blobs[role] for role in ('source_bundle','reference_friction')):
+        raise Void('source-build differs from replay input')
+    if _sha(result['effective_schedule'])!=frozen['effective_schedule_sha256']:
+        raise Void('effective schedule identity')
+    if frozen['roll_list_sha256']!=roll_sha256 or _sha(blobs['roll_list'])!=roll_sha256:
+        raise Void('roll list differs from F2')
+    return result
 
 
 def score_request(request, *, manifest_sha256, preflight=False):
@@ -599,7 +644,7 @@ def score_request(request, *, manifest_sha256, preflight=False):
     import secrets
     records=importlib.import_module('analysis.c1.sfclear_2026-10.run_record')
     try:
-        _closed(request,('schema','repo','root','run_head','pins','inputs','calculator','panels'))
+        _closed(request,('schema','repo','root','run_head','pins','inputs','calculator','panels','source_build'))
         if request['schema']!='sfclear_score_request/v1':
             raise Void('score request schema')
         _hex(request['run_head'],40)
@@ -622,9 +667,10 @@ def score_request(request, *, manifest_sha256, preflight=False):
         for role in ('freeze','tuple','schedule','roll_list'):
             if _sha(blobs[role])!=request['pins'][role]:
                 raise Void('frozen input differs')
+        source=source_build_inputs(request['source_build'],frozen,blobs,request['pins']['roll_list'])
         inputs=read_score_inputs(blobs['score_inputs'],manifest,request['inputs']['score_inputs'])
         fees=read_fees(blobs['fees'],frozen,inputs)
-        margins=read_margins(blobs['margin'],frozen['margin_snapshot']['sha256'])
+        margins=read_margins(blobs['margin'],frozen['margin_snapshot_sha256'])
         tuple_doc=strict_object(blobs['tuple'])
         if (re.fullmatch(rb'[0-9]+\n',blobs['e0']) is None
                 or _sha(blobs['e0'])!=tuple_doc['capital_anchor']['file_sha256']):
@@ -632,7 +678,7 @@ def score_request(request, *, manifest_sha256, preflight=False):
         equity=_finite(float(int(blobs['e0'])),positive=True)
         if int(equity)!=int(blobs['e0']):
             raise Void('equity precision')
-        schedule=strict_object(blobs['schedule'])
+        schedule=strict_object(source['effective_schedule'])
         roll_list=strict_object(blobs['roll_list'])
         friction=strict_object(blobs['reference_friction'])
         pointvalues={SYMBOLS[leg]:friction['instruments'][leg]['pointvalue'] for leg in LEGS}
@@ -644,7 +690,8 @@ def score_request(request, *, manifest_sha256, preflight=False):
         if set(calc_inputs)!=CALCULATOR_INPUTS:
             raise Void('calculator inputs incomplete')
         for name in ('e0','tuple','schedule'):
-            if calc_inputs[name]['sha256']!=_sha(blobs[name]):
+            expected_blob=source['effective_schedule'] if name=='schedule' else blobs[name]
+            if calc_inputs[name]['sha256']!=_sha(expected_blob):
                 raise Void('calculator source differs from score source')
         for ref in calc_inputs.values():
             _closed(ref,('path','sha256'))
@@ -682,6 +729,7 @@ def score_request(request, *, manifest_sha256, preflight=False):
         after,_=records.read_manifest(root,filename='INPUT_SHA256SUMS')
         if after!=manifest_blob:
             raise Void('input manifest changed')
+        source_build_inputs(request['source_build'],frozen,blobs,request['pins']['roll_list'])
         cells={key:value for key,value in result.items() if key!='residuals'}
         cells.update(schema='sfclear_cells/v1',run_head=request['run_head'],nonce=secrets.token_hex(32))
         residuals={'schema':'sfclear_residuals/v1','run_head':request['run_head'],
