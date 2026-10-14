@@ -86,6 +86,8 @@ The pre-registration §5 holds the full list.
 [`docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md`](pre-registration/Q-SFCLEAR-2-verdict-preregistration.md)
 
 Pre-registration commit hash: `83867f0d362931c2a516a62b990bb1c209372527` (freeze commit F, 2026-10-12; ratified draft `b97beaa613f7cd7fbdc2d89d7a7191a0274ea99a`)
+
+Q-SFCLEAR-3 pre-registration commit hash: `15bea250fc8ee9a57b59735c9e8be685c4ddbf22` (freeze commit F₃, 2026-10-14; ratified draft `235f523418119e3aa0c16060465c27d7ff5cadee`; supersedes F before any run)
 Pre-registration date: 2026-10-12 (frozen)
 
 ---
