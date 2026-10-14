@@ -83,7 +83,7 @@ if [ -z "$F" ]; then echo 'NOT FROZEN: no Q-SFCLEAR-3 freeze commit recorded at 
   git merge-base --is-ancestor "$F" "$X" || echo 'F IS NOT IN THE AUDITED HISTORY'
   # I1
   L=$(git show "$F:$P" | grep '^\*\*Status:\*\* `FROZEN')
-  [ "$(git log --format=%H -G'^\*\*Status:\*\* .FROZEN' "$X" -- "$P" | tail -1)" = "$F" ] || echo 'F IS NOT THE FIRST COMMIT TO SET FROZEN'
+  [ "$(git log --format=%H -G'^\*\*Status:\*\*.*FROZEN' "$X" -- "$P" | tail -1)" = "$F" ] || echo 'F IS NOT THE FIRST COMMIT TO SET FROZEN'
   echo "$L" | grep -q 62d7ae196059b7d98fd814c7b07a911558e8e5891dd2a669170393583b6c671f || echo 'NO FULL TUPLE RE-HASH ON THE STATUS LINE'
   echo "$L" | grep -qi 'exposure attestation' || echo 'NO EXPOSURE ATTESTATION ON THE STATUS LINE'
   echo "$L" | grep -q '2026-10-11T23:39:57Z' || echo 'ATTESTATION DOES NOT NAME THE DISCLOSED T00 EXPOSURE'
@@ -93,18 +93,18 @@ if [ -z "$F" ]; then echo 'NOT FROZEN: no Q-SFCLEAR-3 freeze commit recorded at 
     git diff --quiet "$R" "$F^" -- "$P" || echo 'TEXT CHANGED AFTER RATIFICATION'
   fi
   [ "$(git diff --name-only "$F^" "$F" | sort | tr '\n' ' ')" = "$(printf '%s\n' "$E" "$P" | sort | tr '\n' ' ')" ] || echo 'F CHANGES PATHS OTHER THAN THE PRE-REGISTRATION AND THE EVIDENCE LEDGER'
-  [ "$(git show "$F:$P" | grep -c '^\*\*Status:\*\*')" = 1 ] && [ "$(git diff --numstat "$F^" "$F" -- "$P" | cut -f1-2)" = "$(printf '1\t1')" ] || echo 'F CHANGES MORE THAN THE STATUS LINE'
-  ADD=$(git diff "$F^" "$F" -- "$E" | grep '^+[0-9a-f]'); DEL=$(git diff "$F^" "$F" -- "$E" | grep -c '^-[0-9a-f]')
-  FR=$(echo "$ADD" | grep -oE 't00-step3-console/sfclear3-freeze-[0-9TZ]+/FREEZE_RECORD\.json$' | head -1)
-  { [ -n "$FR" ] && [ "$(echo "$ADD" | grep -c .)" = 2 ] && [ "$DEL" = 0 ] && echo "$ADD" | grep -qF "  ${FR%/FREEZE_RECORD.json}/SHA256SUMS"; } || echo 'F DOES NOT ADD EXACTLY THE FREEZE RECORD PAIR'
+  [ "$(git show "$F:$P" | grep -c '^\*\*Status:\*\*')" = 1 ] && [ "$(git diff --numstat "$F^" "$F" -- "$P" | cut -f1-2)" = "$(printf '1\t1')" ] && [ "$(git diff -U0 "$F^" "$F" -- "$P" | grep -c '^-\*\*Status:\*\*')" = 1 ] || echo 'F CHANGES MORE THAN THE STATUS LINE'
+  ADD=$(git diff "$F^" "$F" -- "$E" | tr -d '\r' | grep '^+[^+]')
+  FR=$(echo "$ADD" | grep -oxE '\+[0-9a-f]{64}  t00-step3-console/sfclear3-freeze-[0-9]{8}T[0-9]{6}Z/FREEZE_RECORD\.json' | sed 's/^+[0-9a-f]*  //')
+  { [ "$(git diff --numstat "$F^" "$F" -- "$E" | cut -f1-2)" = "$(printf '2\t0')" ] && [ -n "$FR" ] && echo "$ADD" | grep -qxE "\+[0-9a-f]{64}  ${FR%/FREEZE_RECORD.json}/SHA256SUMS"; } || echo 'F DOES NOT ADD EXACTLY THE FREEZE RECORD PAIR'
   # I2
   git merge-base --is-ancestor "$F2" "$F" || echo 'F DOES NOT DESCEND FROM F2'
   RL=$(git show "$F2:docs/briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md" | grep '^\*\*G4 roll-date list:\*\*'); RH=$(echo "$RL" | grep -oE '[0-9a-f]{64}' | head -1); RP=$(echo "$RL" | grep -oE 'lab/analysis/c1/sfclear_2026-10/schedule/roll_dates[^` ]+' | head -1)
   { [ -n "$RH" ] && [ -n "$RP" ] && [ "$(git show "$F:$RP" | sha256sum | cut -c1-64)" = "$RH" ]; } || echo 'ROLL-DATE LIST AT F DIFFERS FROM THE F2 BINDING'
   # I3
-  git show "$X:discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json" | python -I -c "import json,sys; d=json.load(sys.stdin); p=json.loads(d['params']); t=[x for x in p['further_trial_log'] if x['trial']==10][0]; ok=t.get('successor_freeze_commit')=='$F' and '$F2' in t.get('superseded_before_run_freezes', []); print('' if ok else 'TRIAL 10 MANIFEST DOES NOT RECORD F3 WITH F2 SUPERSEDED')" | grep . || true
+  [ "$(git show "$X:discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json" 2>/dev/null | python -I -c "import json,sys; d=json.load(sys.stdin); p=json.loads(d['params']); t=[x for x in p['further_trial_log'] if x['trial']==10][0]; sup=t.get('superseded_before_run_freezes'); ok=t.get('successor_freeze_commit')=='$F' and isinstance(sup, list) and '$F2' in sup; print('OK' if ok else '')" 2>/dev/null | tr -d '\r')" = OK ] || echo 'TRIAL 10 MANIFEST DOES NOT RECORD F3 WITH F2 SUPERSEDED'
   # I4
-  RECS=$(git ls-tree --name-only "$X" "$S/run_records/" | grep '\.json$')
+  RECS=$(git ls-tree -r --name-only "$X" -- "$S/run_records/")
   for f in $RECS; do
     A=$(git log --diff-filter=A --format=%H "$X" -- "$f" | tail -1)
     [ "$(git show "$A:$f" | sha256sum)" = "$(git show "$X:$f" | sha256sum)" ] || echo "RECORD CHANGED AFTER ITS ADD COMMIT $f"
