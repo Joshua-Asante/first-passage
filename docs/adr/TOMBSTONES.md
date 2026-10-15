@@ -5,6 +5,33 @@ retain their original archive retrieval instructions. A tombstone records histor
 not renewed permission; the linked current owner governs present work.
 
 
+<a id="2026-10-15-adr-decay-audit-removals"></a>
+
+## 2026-10-15 ADR decay-audit removals
+
+Operator direction 2026-10-15 (ADR decay and retention audit): delete, rely on git history.
+Every body below is retrievable at `4121e84c95f4990b71962e3b9570c4c3fad88426`, the `main` commit
+before removal. Each file passed the [§16 classification](../operational_rules.md#16-retention--an-artifact-must-earn-its-place-and-deletion-is-classified-by-execution-not-by-folder)
+first; surviving rules moved verbatim to the owner each row names, and future trigger riders were
+carried or held, never retired (operator ruling packet in the
+[audit note](../notes/audits/adr-corpus/2026-10-15-adr-decay-audit.md)). These rows grant nothing.
+
+### Surface allocation and governance
+
+| Removed path | Disposition / current owner | Immutable body |
+|---|---|---|
+| `docs/adr/2026-08-14-cc-cursor-autonomous-loop.md` | Hot stub of an ADR superseded in full 2026-09-15 by the [surface-allocation ADR](2026-07-14-cc-cursor-surface-allocation.md) (whose `**Supersedes:**` field still names it; A2 resolves it here); every clause retired (cold body §11). The one surviving rule — *this repo's CI grants Codex no write/push credential without a superseding ADR* — is owned by that ADR's §Decision ("Executive review path and its credential bar", moved there 2026-10-15 from its removed §8). No trigger field; no code readers. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-14-cc-cursor-autonomous-loop.md); `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-08-14-cc-cursor-autonomous-loop.md`; blob `a0d7d408deae167aea39fc7e90c0f75f57f62ca6` (prior hot body `26c65f5f626e15824bd79feb8311ef6c25ad0c7f`) |
+| `docs/ltm/adr/2026-08-14-cc-cursor-autonomous-loop.md` | Cold body (2026-08-14 decision + 2026-09-15 §11 retirement record). §4 limbs 1–3 retired unreachable 2026-09-15 (limb 4 kept at the parent, now the surface ADR's *Measure and falsifier*); its 2026-11-08 trigger retired with them (discharged; sentinel never read ltm). Both account-level integrations (routine `trig_012nvuH7jqmjFUFgoFVpZ6RP`, `daily-repo-truth-sync`) verified deleted 2026-09-15. Was a `check_advisor_dedup.py` prior-art glob input only (retrieval aid). | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-14-cc-cursor-autonomous-loop.md); `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/ltm/adr/2026-08-14-cc-cursor-autonomous-loop.md`; blob `8a8ea731f703c7783a68ab65592f34d6bd5147e7` |
+| `docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md` | Ledger procedure (D1–D4 and the review rule) moved verbatim in substance to [ledger § Rules](../pursuits/SUBSCRIPTION_LEDGER.md#rules), stale details corrected (d11–d19; checker manual-run since 2026-08-24). Rider "every monthly reconfirm (2026-09-21, then rolled forward)" carried verbatim to the ledger's `**Trigger check schedule:**` line; the live date stays in STATE's Monthly row (STATE link repointed to the ledger). `scripts/check_pursuit_records.py` docstring and WARN message repointed. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md); `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md`; blob `47f440aee8777c4fdb7438ead6a6c522e13e0e76`; prior revision `4fb2b88f3b7d56d77463c43ba45c87ffadff6a31` |
+| `docs/adr/2026-08-22-catalog-hot-vs-disposition.md` | CATALOG schema rules (two axes, keep `status`, Verdict wins, C2 joins `hot`, two-part `--slug`, regenerator-only writer + 2026-08-29 single-row exception, 2026-09-03 Hot bodies / In flight / Verdict-stamp GO and forbidden list) moved to [lab/analysis/README.md § CATALOG schema rules](../../lab/analysis/README.md#catalog-schema-rules). §4 re-check rider discharged (full-corpus `check_status_consistency.py` clean 2026-10-15; `status-consistency` gate + `tests/test_check_status_consistency.py` pin both limbs; reversal carried as the README *Reversal* paragraph). Docstrings in `scripts/archive_lab_analysis.py` and `scripts/check_status_consistency.py` repointed. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md); `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-08-22-catalog-hot-vs-disposition.md`; blob `ea85a0e206b5470cac6922bb5efe2a6988dd2c7f` |
+| `docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md` | Light election record (frozen ID 2, observe-only). Rulings, the implementation constraint (MTM-or-dual trigger and threshold-before-first-fill, or accept fail-open) and "no fourth frozen ID" moved to the [Q-TRADECAP-2 closure](../briefs/closures/Q-TRADECAP-2-closure-resolved.md) Addendum 2026-10-15; G1–G3 owned by the Q-TRADECAP-2 brief §4. No rider. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md); `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md`; blob `c3d23a496c82d94402fc632126e2206b0da46f49` |
+
+### Infrastructure records
+
+| Removed path | Disposition / current owner | Immutable body |
+|---|---|---|
+| `docs/adr/2026-06-12-notion-surface-retirement.md` | Retired Notion as a workflow surface (operator adjudication 2026-06-12): Phase 1 freeze, Phase 2 migration (DONE 2026-06-13), Phase 3 cold archive (operator GO 2026-08-10; workspace not deleted). Freeze, cold-archive/no-delete reserve, add-back order and no-live-URL rule → [redirect map §Standing rules](../governance/notion-redirect-map.md#standing-rules), which also lists the optional operator residuals (hub archiving; Daily Execution DB export). §4 falsifier discharged (H held through the 2026-07-01 and 2026-08-08 audits). §10 hook-6 add-back check (input to the add-back ADR) discharged with 0 add-backs; its audit cadence retired 2026-09-08. No trigger field; no riders. Skills `inqhiori`/`ooda-loop` repointed to the map; historical citations pinned. Left unedited (deleted or trimmed by sibling work packages): three-loop binding `:15,:25,:65,:90,:102,:133`, add-back ADR `:28,:110`, gen1 retirement `:12`, grand-tier `:50`; handoff card `2026-07-24-cursor-handoff-agent-surface-posture-sync.md:48` (never-edit). No code citations. | [Full body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-12-notion-surface-retirement.md); `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-06-12-notion-surface-retirement.md`; blob `48e222a7cb707e9ff6ed967a32abe8bc6238f2a1` |
+
 <a id="2026-09-15-cursor-agent-retirement"></a>
 
 ## 2026-09-15 Cursor agent retirement (RATIFIED — operator, in-session)
@@ -14,13 +41,16 @@ incorporating cursor agents. it will be just claude and codex."* Already ruled f
 as D-B6 (2026-09-11) and preceded by the 2026-09-10 removal from recurring spend
 ([`d16`](../pursuits/d16-cursor-subscription.md)). Current owner of the surviving rules:
 [`2026-07-14-cc-cursor-surface-allocation.md`](2026-07-14-cc-cursor-surface-allocation.md),
-Revision 2026-09-15 (§Decision, §8 disposition table, §9 operator actions).
+Revision 2026-09-15 as trimmed 2026-10-15 (§Decision; *Operator residues outside the tree*); its §8
+disposition table and §9 operator actions are at the pre-trim blob `d4e26fba472ab9c0ca7e1e5280b2bcbe3ddcfa75`.
 
-**No ADR file was removed.** `2026-08-14-cc-cursor-autonomous-loop.md` was superseded in full and
-converted to the standard hot-stub/cold-body form; its body is live at
-`docs/ltm/adr/2026-08-14-cc-cursor-autonomous-loop.md`, not deleted. The rows below are the
-**non-ADR** artifacts removed by the sweep. This tombstone records history, not renewed
-permission: retrieval does not revive the Cursor lane.
+**ADR files.** `2026-08-14-cc-cursor-autonomous-loop.md` was superseded in full on 2026-09-15 and
+converted to the hot-stub/cold-body form; both files were removed on 2026-10-15 in the ADR retention
+pruning ([rows](#2026-10-15-adr-decay-audit-removals)). The rows below are the **non-ADR** artifacts
+removed by the 2026-09-15 sweep. This tombstone records history, not renewed permission: retrieval
+does not revive the Cursor lane.
+
+**Deliberately retained Cursor-named guards (moved here 2026-10-15 from the surface-allocation ADR; not a missed sweep):** `scripts/check_pine_manifest.py`'s `cursoragent@cursor.com` author denylist — dormant anti-re-entry armor for the PR #574 / `66c2a14` incident (a Pine manifest pin authored from a disposable Cursor cloud checkout, bytes lost; `.github/workflows/manifest-check.yml`'s comment is its record); the `cursor` alternation in both copies of `check_brief.py`'s type-inference regex — inert tolerance for two frozen briefs self-declared `**Brief type:** Cursor handoff` (removing it was measured to change zero classifications; it stays because it is harmless, not because anything depends on it); `lab/research_utils/msl_preflight.py`'s ripgrep fallback to a Cursor editor install path — a guarded filesystem probe with no agent semantics. Dated Cursor attributions in ledgers, `lab/CATALOG.md`, `PORT_MANIFEST.sha256`, `docs/SESSIONS.md`, closures and superseded specs are history and are not swept.
 
 All blobs are reachable from commit `242992b741dc44485b491aab45075ab44e1b34ef`
 (`git show <blob>` retrieves any row directly), except the `cursor-fleet` row's, which is

@@ -20,10 +20,9 @@
 | 2026-05-16-fxify-correct-timeout-semantic.md | Accepted | 2026-05-16 | none | ACCEPTED |
 | 2026-05-23-allocation-refresh-2.md | Accepted | 2026-05-23 | `2026-05-14-allocation-refresh.md` full | (with documented regime-robustness-gate override) |
 | 2026-06-04-lean-portfolio-meta-layer.md | Accepted | 2026-06-04 | none | ratified 2026-06-04 by PO (Joshua); Rule-0 anchors confirmed on-disk (see blockquote header below for the full ratification note). |
-| 2026-06-05-monorepo-layer-boundaries.md | Accepted | 2026-06-05 | none | ratified 2026-06-05 by PO (Joshua); execution-time amendment 2026-06-06 (see blockquote header below for the full ratification note). |
+| 2026-06-05-monorepo-layer-boundaries.md | Accepted | 2026-06-05 | none | ratified 2026-06-05 by PO (Joshua); execution-time amendments 2026-06-06, 2026-09-11 and 2026-09-17; body trimmed 2026-10-15 (see Revision). |
 | 2026-06-07-decompound-remc-hold.md | Accepted | 2026-06-07 | none | Accepted |
 | 2026-06-11-instrument-ledger-and-cfg-fingerprint.md | Accepted | 2026-06-11 | none | (P1 + P3) · P2 recorded as **not ratified** (§2c) |
-| 2026-06-12-notion-surface-retirement.md | Accepted | 2026-06-12 | none | decision made 2026-06-12 by owner adjudication; execution phased (see §2). Phase 1 (FREEZE) 2026-06-12 · Phase 2 (MIGRATE) DONE 2026-06-13 · **Phase 3 (COLD ARCHIVE) executed 2026-08-10** — workspace **not** deleted (see Addendum 2026-08-10). |
 | 2026-06-12-three-loop-methodology-binding.md | Accepted | 2026-06-12 | none | ratified 2026-07-06 by PO (Joshua); D1/D2/D3 graduated Proposed to Accepted per the Section 4 hook (see blockquote header above for the full ratification note). |
 | 2026-06-14-reject-usoil-rdm-spike-fader.md | Accepted | 2026-06-14 | none | REJECT (edge-failure + venue/cost-constraint). The kill is **confirmed on the canonical `PEPPERSTONE:SPOTCRUDE` feed** (the load-bearing reproduction the `Proposed` draft was waiting on). All three pre-registered limbs falsified. |
 | 2026-06-16-rule-2-budget-before-acting.md | Accepted | 2026-06-16 | none | ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4/§6's evidentiary graduation gate (trip-log has not accrued ≥1 entry per active loop class). See Addendum 2026-08-21. |
@@ -77,13 +76,10 @@
 | 2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md | Accepted | 2026-08-16 | none | operator election 2026-08-16 (in-session, presented as a blocking scope ruling with three options — narrow / broad / narrow-gated-by-cheap-falsifier; "cheap falsifier gate" elected) |
 | 2026-08-19-cme-broker-panel-admission-for-breadth-revival.md | Accepted | 2026-08-19 | none | operator ratified 2026-08-19, in-session direct instruction ("I accept |
 | 2026-08-20-analogue-modality-override-ict-ote-1-admit.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction |
-| 2026-08-21-cfo-subscription-ledger-consolidation.md | Accepted | 2026-08-21 | none | operator ratified the ledger, checks and monthly cadence on 2026-08-21. |
-| 2026-08-22-catalog-hot-vs-disposition.md | Accepted | 2026-08-22 | none | ratified by operator (Joshua) 2026-08-22, in-session ("accepted. GO"); Phase 1 (parser + C2 + `hot` column) lands in the same GO. |
 | 2026-08-22-grow-lane-build-authorization.md | Accepted | 2026-08-22 | none | operator GO (JA) 2026-08-22 ("ratify, accept, and begin the build"), |
 | 2026-08-22-grow0-two-ledger-k-question.md | Accepted | 2026-08-22 | `2026-08-16-deep-iteration-lane-charter.md` in part — adds §2.2(iv), a | operator GO (JA) 2026-08-22 ("GO on the ADR — ratify it as-is"), after |
 | 2026-08-23-strategy-coldstore-phase-b.md | Accepted | 2026-08-23 | `2026-08-04-strategy-coldstore-phase-a.md` in part — Phase B is now GO’d; this ADR is that GO + the disposition table | operator GO 2026-08-23: restore design then execute Phase B Tasks 2+ (design body unrestored; Approach 2 + Phase A inventory used; Approach 3 not invented) |
 | 2026-08-23-strategy-coldstore-phase-c.md | Accepted | 2026-08-23 | `2026-08-04-strategy-coldstore-phase-a.md` in part — Phase C non-touch list released for living Guardian/Aegis `BASE_RISK` keys only; `2026-08-03-claude-md-futures-refocus.md` in part — §7 CFD living-`BASE_RISK` / CLAUDE table retirement now executed (Striker keys + `LEG_MAP` stay) | operator GO 2026-08-23 for Phase C (fresh admitting ADR; Phase A Accept is not C authority) |
-| 2026-08-24-q-tradecap-2-elect-alert-tripwire.md | Accepted | 2026-08-24 | none | operator ratified 2026-08-24 after Claude judgment review |
 | 2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md | Accepted | 2026-08-24 | none | ratified via operator in-session instruction to execute the |
 | 2026-08-24-sourcing-phase-channel-retirement.md | Accepted | 2026-08-24 | `2026-07-26-mechanism-counterparty-constraint-boundaries.md` in part — clause 2-B only (structural flow census sourcing channel); clauses 2-A and 2-C untouched; `2026-08-05-avenue-a-generate-confirm-route.md` full; `2026-08-08-edge-cohort-correction-and-necessity-retarget.md` in part — §2-C row L1 only (Route B lane disposition); rows L2–L5 and §2-A/§2-B untouched | operator ratified 2026-08-24 ("I ratify, execute Phase 4 here"), after the adversarial pre-ratification review's 3 confirmed BLOCKERs + 6 confirmed CONCERNs were fixed in place (PR #165, merged) and the fixed draft's CI passed clean. No second adversarial-review pass was … |
 | 2026-08-24-tradeify-growth-tier-scoring-only.md | Accepted | 2026-08-24 | none | ratified by operator (JA) 2026-08-24, in-session instruction ("Add Growth |
@@ -157,4 +153,3 @@
 | 2026-08-05-avenue-a-generate-confirm-route.md | Superseded | 2026-08-05 | none | Superseded |
 | 2026-08-10-implied-sr-plausibility-gate.md | Superseded | 2026-08-10 | none | Superseded |
 | 2026-08-12-msl-implied-sr-disclosure-not-kill.md | Superseded | 2026-08-12 | none | Superseded |
-| 2026-08-14-cc-cursor-autonomous-loop.md | Superseded | 2026-08-14 | none | **RATIFIED 2026-09-15** (operator, in-session). Prior hot body at blob `26c65f5f626e15824bd79feb8311ef6c25ad0c7f`. |
