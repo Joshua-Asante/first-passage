@@ -11,7 +11,7 @@ from lifecycle import (
     load_lifecycle_state,
 )
 
-ADR = Path(__file__).resolve().parents[1] / "docs" / "adr" / "2026-08-23-strategy-coldstore-phase-b.md"
+CATALOG = Path(__file__).resolve().parents[1] / "core" / "strategies" / "CATALOG.md"
 
 
 def test_b_does_not_mutate_protection_or_ladder_pins():
@@ -40,7 +40,7 @@ def test_striker_stays_authorized_by_default():
 
 
 def test_disposition_table_none_for_venue_withdrawn():
-    text = ADR.read_text(encoding="utf-8")
+    text = CATALOG.read_text(encoding="utf-8")
     assert "VENUE_WITHDRAWN" in text
     assert "**none** — Tradeify de-scope is edition-level" in text
     assert "lifecycle_state.json" in text

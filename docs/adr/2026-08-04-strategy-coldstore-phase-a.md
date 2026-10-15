@@ -1,6 +1,6 @@
 # ADR 2026-08-04 — Admit Phase A strategy cold-store (filesystem surface only)
 
-**Status:** `Accepted` — operator GO to execute Phase A via subagent-driven development, recorded 2026-08-04; this ADR is the admitting gate. Phase B/C were separately GO’d 2026-08-23 — owners [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md) / [`2026-08-23-strategy-coldstore-phase-c.md`](2026-08-23-strategy-coldstore-phase-c.md).
+**Status:** `Accepted` — operator GO to execute Phase A via subagent-driven development, recorded 2026-08-04; this ADR is the admitting gate. Phase B/C were separately GO’d 2026-08-23 — owners [`core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md) (Phase B table; the Phase B ADR is tombstoned) / [`2026-08-23-strategy-coldstore-phase-c.md`](2026-08-23-strategy-coldstore-phase-c.md).
 **Decision date:** 2026-08-04
 **Supersedes:** none
 **Superseded-by:** none
@@ -223,7 +223,7 @@ git log -1 --oneline -- core/dd_protection.py core/lifecycle.py ops/c1_rail/c1_s
 
 Operator GO recorded 2026-08-23. This ADR remains Phase A only. Authority:
 
-- Phase B disposition table: [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md)
+- Phase B disposition table: [`core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md) (Phase B table; the Phase B ADR is tombstoned)
 - Phase C living-key retirement: [`2026-08-23-strategy-coldstore-phase-c.md`](2026-08-23-strategy-coldstore-phase-c.md)
 
 Design spec body still unrestored. Approach 2 (already elected here) used. Approach 3 not invented.
