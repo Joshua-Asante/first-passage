@@ -3631,7 +3631,8 @@
  "files": {
   "docs/adr/2026-03-01-aegis-session-selection.md": {
    "blob": "44d952807ad5b2b88802169001242708c730ce16",
-   "archive_main_status_before_preserve": "DIFFERENT"
+   "archive_main_status_before_preserve": "DIFFERENT",
+   "note_2026_10_15": "The retired cold body docs/ltm/adr/2026-03-01-aegis-session-selection.md was also deleted 2026-10-15 (public-exposure removal; last at 4121e84c95f4990b71962e3b9570c4c3fad88426, blob 239729f3871fd0008ae7a6fc41943603d7047f91); see docs/adr/TOMBSTONES.md#2026-10-15-public-exposure-removal."
   },
   "docs/adr/2026-04-17-guardian-v5.1-architecture.md": {
    "blob": "67b84adbdbc66462d5767057b8bb41c9ef3aa8f5",
