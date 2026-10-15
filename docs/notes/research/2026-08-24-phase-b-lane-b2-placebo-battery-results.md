@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-24
 **Plan:** [`Phase B mechanism supply`](../../superpowers/plans/2026-08-23-viable-strategy-phase-b-mechanism-supply.md) — Lane B2, task B2.2
-**Owner artifacts:** [`N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md`](../notice/N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md)
+**Owner artifacts:** [`N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md)
 (B2.0/B2.1, the mechanism definition in §4, and the B2.1 ADMIT ruling this task is licensed by) ·
 [`lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/b2_london_fix_wake_2026-08-24/)
 (harness, raw log, and the detailed per-symbol numeric record — `RESULTS.md`) ·

@@ -38,7 +38,7 @@ The 2026-08-18 assumption-sweep audit note (`docs/notes/audits/2026-08-18-strate
 
 - **Audit note** `docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md` §4 (B5, D8, D9) — source of all three limbs; §3 D-gate deletions (5 other candidates: DD-protection/FXIFY-C2 geometry pinning, `check_pine_manifest.py` CI-detection gap, sessions-gate CI-mirror gap, sentinel Tier 2-3 cadence miss, harvest-req5 slippage constant) are unrelated surfaces already closed with citation and are explicitly **not** in scope here — none of the 5 is the open Tier-A branch-protection finding (same audit note §4 A1), which is a separate, still-open surface this Q does not touch either.
 - **Transition ADR** `docs/adr/2026-08-14-repo-public-visibility-transition.md` — the artifact under audit; this brief does not re-litigate the transition decision itself, only whether its own closing conditions were met.
-- **`Q-CAPBAND-1`** (`docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md`) — the structural precedent this brief follows: one combined H spanning named limbs, a single gate-criteria table, binary locational reads of already-recorded facts, no new spend.
+- **`Q-CAPBAND-1`** ([`docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md)) — the structural precedent this brief follows: one combined H spanning named limbs, a single gate-criteria table, binary locational reads of already-recorded facts, no new spend.
 - No prior Q has opened against this ADR's own completeness; this is the first.
 
 ---

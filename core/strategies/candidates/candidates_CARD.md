@@ -3,7 +3,7 @@
 **Family:** candidates
 **Disposition:** MIXED — see per-file note below (Phase A cold-store body stays FALSIFIED_PARKED;
 `expiry-oi-strike-convergence` operator-`PARKED` 2026-08-21)
-**Body:** `core/strategies/_archive/candidates/`
+**Body:** removed 2026-10-15 (two FX concept sweep specs for a retired gen-1 grid); [pinned tree](https://github.com/Joshua-Asante/first-passage/tree/4121e84c95f4990b71962e3b9570c4c3fad88426/core/strategies/_archive/candidates)
 
 ## Live candidate — `PARKED` 2026-08-21 (hash-pinned 2026-08-23)
 

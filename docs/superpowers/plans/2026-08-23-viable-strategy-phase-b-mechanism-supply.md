@@ -7,7 +7,7 @@
 B4 void. No lane produced a Vet candidate.
 **Cost:** $0 through every falsifier task below. Any data spend needs its own Rule-2 dry-run +
 operator GO and is out of this plan's scope.
-**Parent:** [`sequence overview`](2026-08-23-viable-strategy-sequence-overview.md) ·
+**Parent:** [`sequence overview`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) ·
 **Inputs:** Phase A2's feasible-shape region (pre-check; disclosed-N accepted — [`RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)), Phase A1's revival list (B4 lane — voided, empty list).
 **Provenance:** historical candidate lanes B1–B2; B3 KILL (A1). Lanes originate from the reconciled
 ox-alpha Use-4 output
@@ -100,7 +100,7 @@ lane's own arithmetic is knife-edge.
   M6E fails as expected (9.1–13.1 pips); 6E and 6B are NOT equivalent — 6E recomputes to
   3.98–5.98 pips (arithmetically alive), 6B to 7.97–11.97 pips (close to the dead micro zone).
   Both confirmed legal at Tradeify. DD-fit holds trivially either way.
-  [`notice`](../../notes/notice/N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md#2--the-4-cost-floor-arithmetic-two-conventions-both-run).
+  [`notice`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-24-b2-london-fix-wake-cost-arithmetic.md#2--the-4-cost-floor-arithmetic-two-conventions-both-run).
 - [x] **B2.1 — operator bar-reading (named, not self-cleared):** does the wake-WHO clear F3's
   *"not a different fix"* re-proposal bar as new mechanism evidence? Present the F3 kill text +
   this lane's distinct WHO/window; operator rules admit/decline. **Ruled before any data is

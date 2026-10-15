@@ -3,7 +3,7 @@
 **Audit ID:** AUDIT-2026-08-23-shape-feasibility-map
 **Date:** 2026-08-23
 **Triggered by:** scheduled — Task A2 of the viable-strategy sequence, Phase A
-([`plan`](../../superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md) §Task A2)
+([`plan`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md) §Task A2)
 **Authors:** Joshua (GO) + Claude Code (Sonnet 5)
 **Scope:** build + run + publish the payoff-shape feasibility map (`lab/analysis/c1/shape_feasibility_map_2026-08/`). Not a methodology-failure audit — nothing in this session's execution failed; this note is a completion/verification record, structured against the outer task brief's own "Report format" section rather than the `brief-authoring:audit_note.md` template (that template is shaped for auditing a methodology failure — "Failure class: Methodology failure / Decision failure / Source-of-truth fracture / …" — none of which fits a build task that completed with disclosed judgment calls; forcing the mismatch would itself be the "ceremonial section" trap the skill warns against). Header fields borrowed from the template where they genuinely apply.
 **Lives in:** `docs/notes/audits/2026-08-23-shape-feasibility-map-audit.md`

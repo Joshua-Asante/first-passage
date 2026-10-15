@@ -15,7 +15,7 @@ questions continue to use ordinary INQHIORI without being forced through this fu
 [channel liveness](../../methodology/strategy_harvest.md#channel-liveness-contract)
 **Related — context:** [`INQHIORI canon`](../../methodology/inqhiori-canon.md) ·
 [`strategy harvest`](../../methodology/strategy_harvest.md) ·
-[`generate→confirm historical route`](../../methodology/avenue_a_generate_confirm.md) ·
+[`generate→confirm historical route`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/methodology/avenue_a_generate_confirm.md) ·
 [`Q-GATECAL-1`](../../briefs/Q-GATECAL-1-mechanism-gate-false-negative-rate.md) ·
 [`objective composition map`](../../methodology/objective_composition_map.md) ·
 [`generate/evaluate tensions note`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-30-generate-evaluate-tensions.md)

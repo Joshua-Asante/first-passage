@@ -46,7 +46,7 @@ Steps:
    as the negative control); (b) a fan-out where each worker patches via the new
    primitive must attest a singleton value and pass. Watch both fail/pass correctly
    before building the real thing — this is the non-vacuity guard from the W1 spec
-   precedent (`2026-08-09-w1-intraday-rerun-execution-spec.md` step 2), applied here.
+   precedent ([`2026-08-09-w1-intraday-rerun-execution-spec.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-08-09-w1-intraday-rerun-execution-spec.md) step 2), applied here.
 4. **Build `lab/research_utils/attested_patch.py`** — a generic, reusable primitive (not
    `dd_lock_offset_usd`-specific; M-23's own enforcement rule is general to "any run whose
    correctness depends on a mutated module-level constant"):

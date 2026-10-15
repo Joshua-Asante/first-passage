@@ -41,7 +41,7 @@ The 2026-08-18 assumption-sweep audit note (`docs/notes/audits/2026-08-18-strate
 
 - **Q-TVCOV-1** (closed **FALSIFIED** 2026-07-13, `docs/briefs/INDEX.md:135`) — the only prior TV-fidelity work. Covered bar existence/coverage only, for 3 symbols, and its own §5 Forbidden moves (`Q-TVCOV-1-tv-bar-coverage-census.md:69`) explicitly ruled price comparison out of scope. This Q does not re-litigate that closure — it opens the narrower question Q-TVCOV-1 deliberately left untouched, for instruments Q-TVCOV-1 never covered.
 - **D-gate scoping (audit note §3):** none of the 5 already-covered deletions in the audit's D-gate touch price fidelity or manifest-gate scope — no overlap to avoid.
-- **Q-CAPBAND-1** (`docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md`) — the structural precedent this brief follows: one brief, one combined falsifiable H spanning named limbs, one gate-criteria table, closed-artifact/self-executing $0 execution.
+- **Q-CAPBAND-1** ([`docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md)) — the structural precedent this brief follows: one brief, one combined falsifiable H spanning named limbs, one gate-criteria table, closed-artifact/self-executing $0 execution.
 - **DOC-1** (`docs/notes/audits/2026-08-14-requirements-backlog-ratification.md` row DOC-1; independently confirmed `2026-08-08-conventions-delete-phase-gap-audit.md:132`) — names the feed-equivalence pre-flight's broken state twice, with no ruling issued either time. This Q inherits that unresolved fact as Limb-C3's starting condition rather than re-deriving it.
 
 ---

@@ -23,7 +23,7 @@ A proposal that would survive looks boring in pipeline-native terms: a one-line 
 
 ## Prior instances (do not re-derive)
 
-- [`N-2026-08-18-quintessentials-ml-lifecycle-mapping.md`](../notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md)
-- [`N-2026-08-20-anthropic-training-principles-pipeline-mapping.md`](../notes/notice/N-2026-08-20-anthropic-training-principles-pipeline-mapping.md)
-- [`N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md`](../notes/notice/N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md)
+- [`N-2026-08-18-quintessentials-ml-lifecycle-mapping.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md)
+- [`N-2026-08-20-anthropic-training-principles-pipeline-mapping.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-20-anthropic-training-principles-pipeline-mapping.md)
+- [`N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md)
 - Instance 4 record: [`N-2026-08-23-nemo-guardrails-reconciliation.md`](../notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md)

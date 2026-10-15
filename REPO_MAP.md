@@ -83,7 +83,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_96 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -136,9 +136,7 @@ _102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_status_consistency.py` | governance† | `status-consistency` (path-conditional) | — |
 | `scripts/check_supersession_placement.py` | governance† | `supersession-placement` (path-conditional) | — |
 | `scripts/cost_geometry_pregate.py` | lab | — | — |
-| `scripts/diff_econ_calendar.py` | lab | — | — |
 | `scripts/docker_verification.py` | governance† | — | — |
-| `scripts/event_study_read.py` | lab | — | — |
 | `scripts/evidence_archive.py` | governance† | `evidence-archive` (audit) | — |
 | `scripts/evidence_store/__init__.py` | governance† | `evidence-store` (path-conditional) | — |
 | `scripts/evidence_store/__main__.py` | governance† | `evidence-store` (path-conditional) | — |
@@ -161,10 +159,7 @@ _102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/layer_bootstrap.py` | governance† | — | — |
 | `scripts/link_policy.py` | governance† | — | — |
 | `scripts/lock_event_hook.py` | ops | — | — |
-| `scripts/m1_item5_capture.py` | governance† | — | — |
-| `scripts/mc_user_guardian.py` | lab | — | — |
 | `scripts/parse_bar_export.py` | governance | — | — |
-| `scripts/parse_econ_export.py` | lab | — | — |
 | `scripts/pine_check.py` | governance | — | — |
 | `scripts/pine_lint.py` | lab | — | — |
 | `scripts/pytest_junit_subtests.py` | governance† | — | — |
@@ -175,7 +170,6 @@ _102 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/record_verification.py` | governance† | — | — |
 | `scripts/repo_hygiene.py` | governance† | — | — |
 | `scripts/repo_retrieve.py` | governance† | — | — |
-| `scripts/research_asset_registry.py` | governance† | — | — |
 | `scripts/retire_adr.py` | governance† | — | — |
 | `scripts/roll_sessions.py` | governance† | `sessions-order` (path-conditional); `sessions-append-only` (path-conditional) | — |
 | `scripts/s2_run_evidence.py` | governance† | — | — |

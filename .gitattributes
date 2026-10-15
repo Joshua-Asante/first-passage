@@ -1,18 +1,6 @@
 # EOL pins for files whose on-disk bytes are pinned by SHA or rebuilt with LF
 # in tests. Without this, Windows clones with core.autocrlf=true check these
 # out as CRLF and break byte-exact comparisons.
-#
-# HISTORICAL NOTE (2026-07-31): the pin below was originally justified by the
-# "F01 round-trip / hash-sentinel tests in tests/test_ingest.py". That suite was
-# DELETED 2026-06-25 with the Notion ingest subsystem (c6af48f), and the two
-# tracked fixtures it covers (counterfactuals_fixture.jsonl,
-# signals_fixture_fixed_ids.jsonl) now have no loader anywhere in the tree. The
-# pin is retained as inert-but-harmless rather than removed with its fixtures;
-# retire all three together if they are ever pruned. Scope kept narrow so
-# vendor-data CRLF hashing under
-# data/tv_exports/, data/bar_data/, data/external/ (see AGENTS.md "Vendor-data
-# integrity gate") is unaffected.
-tests/fixtures/*.jsonl text eol=lf
 
 # Secondary-calendar wrapper binds this tracked JSON by its raw SHA-256.
 ops/calendars/cme_holiday_calendar_2022_2026.json text eol=lf
@@ -80,7 +68,8 @@ docs/rejected_candidates.md merge=union
 # union-merge incident. The resurrection hazard needs a roll to fire, so this stays as-is rather
 # than being removed. Note the asymmetry: only docs/SESSIONS.md has an ordering gate
 # (gates.yml `sessions-order`); rejected_candidates.md and this file have none, so contradictory
-# entries can merge cleanly and silently. Same retain-as-inert precedent as the fixtures pin above.
+# entries can merge cleanly and silently. Same retain-as-inert precedent as the tests/fixtures/*.jsonl pin
+# removed 2026-10-15: https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/.gitattributes#L5-L15
 docs/mc_anchor_history.md merge=union
 
 # Container-build files whose line endings are load-bearing. A Windows clone with

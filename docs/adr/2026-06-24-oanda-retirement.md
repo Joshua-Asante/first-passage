@@ -8,7 +8,7 @@
 **Decision date:** 2026-06-24
 **Authors:** Joshua (decision) + Claude Code (recorder, this session)
 **Supersedes:** none directly. **Extends** `docs/adr/2026-06-17-dukascopy-retirement.md` — that ADR §2 explicitly scoped `scripts/fetch_oanda_bars.py` (OANDA) "out of scope and untouched"; this ADR completes the arc to a single canonical feed family. **Retires** the two-tier-canonical methodology (memory `feedback_two_tier_canonical_pepperstone_oanda`).
-**Related:** `docs/spec/2026-06-24-oanda-retirement-design.md` (design) + `docs/spec/2026-06-24-oanda-retirement-plan.md` (implementation plan, executed this session).
+**Related:** [`docs/spec/2026-06-24-oanda-retirement-design.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-24-oanda-retirement-design.md) (design) + [`docs/spec/2026-06-24-oanda-retirement-plan.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-24-oanda-retirement-plan.md) (implementation plan, executed this session).
 **Layer:** infrastructure (R&D + live data-acquisition layer) + methodology (the two-tier→single-tier validation-posture change).
 
 ---
@@ -107,7 +107,7 @@ This ADR accepts a real cost (§6): the loss of the independent OANDA second-fee
 
 ## §7 — Implementation plan
 
-Executed this session per `docs/spec/2026-06-24-oanda-retirement-plan.md` (Tasks 0–8, branch `claude/festive-neumann-289a93`):
+Executed this session per [`docs/spec/2026-06-24-oanda-retirement-plan.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-24-oanda-retirement-plan.md) (Tasks 0–8, branch `claude/festive-neumann-289a93`):
 
 - **Phase 0** — §0 reads verified; baseline green (495 passed / 14 skipped, `verify_lock_anchors` Closed, `check_boundaries` OK).
 - **Phase 1** — delete REST API + tests + `--from-oanda` (Task 1, `0f128b4`).

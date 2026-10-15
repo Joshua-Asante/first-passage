@@ -2,7 +2,7 @@
 
 Approved by Joshua in chat on 2026-09-08. Builds on the
 [retrieval contract](2026-09-08-evidence-retrieval-design.md) and
-[bounded replay](../../notes/2026-09-08-evidence-retrieval-replay.md).
+[bounded replay](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/2026-09-08-evidence-retrieval-replay.md).
 
 ## Claims and judgments
 

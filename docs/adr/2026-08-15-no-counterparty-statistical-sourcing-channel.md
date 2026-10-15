@@ -200,7 +200,7 @@ python scripts/check_adr_graph.py
 > (`axis_screen.py:31`), not the in-house edge. Whether Cap belongs at 1.0 or 2.0 is a **recorded open question** — the
 > [2026-08-03 gate-stack audit](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) §5.4 lists it under what it *cannot*
 > establish, naming D6 (floor 1.835) and D2-low (1.925) as the axes that would price the counterfactual. Opened as
-> [`Q-CAPBAND-1`](../briefs/Q-CAPBAND-1-cap-band-counterfactual.md) — **which prices the counterfactual and does not propose a Cap change.**
+> [`Q-CAPBAND-1`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md) — **which prices the counterfactual and does not propose a Cap change.**
 
 Two properties of this table are load-bearing and were verified, not assumed:
 

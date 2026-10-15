@@ -11,7 +11,6 @@ In flight first** — do not glob `analysis/` to infer what is live.
 | [`research_utils/`](research_utils/) | Stable primitives (DSR, Step-0, universe gate, …) |
 | [`discovery/`](discovery/) | Gen-2 K-ledger + Stage-2/4 runner |
 | [`databento_fetch/`](databento_fetch/) | Cost-gated Databento client |
-| [`tools/`](tools/) | Research CLIs (e.g. econ export) |
 
 What is turning: [`PIPELINES.md`](../PIPELINES.md) P1. Layer contract:
 [`REPO_MAP.md`](../REPO_MAP.md).

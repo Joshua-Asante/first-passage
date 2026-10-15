@@ -107,7 +107,6 @@ ALLOWLISTED_MAX_STAGED_FILE_BYTES = 2_000_000
 # narrowed; never grow it to admit a new force-add.
 TRACKED_IGNORED_GRANDFATHERED = frozenset(
     {
-        "lab/pine/mnq_mym_mechanism_diagnostic_v0_1.pine",
         "tests/fixtures/c1_image_validation/lifecycle_state.json",
     }
 )

@@ -25,7 +25,7 @@ the missing re-entry+expiry fields
 
 > **Note 2026-08-29 (brief-decay-audit) — wake condition's first disjunct has no literal
 > referent.** Verified against source:
-> [`Q-POLFRONT-1`](../briefs/Q-POLFRONT-1-policy-augmented-seed-frontier.md) §6's frozen grid
+> [`Q-POLFRONT-1`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-POLFRONT-1-policy-augmented-seed-frontier.md) §6's frozen grid
 > scores synthetic constant-R edge geometry against the **eval-phase** gate only (bust ≤3.0% /
 > pass ≥50%) — zero funded-phase dimension. The brief's sole "funded" occurrence is its own §7,
 > which names funded-phase policy inheritance as a fork explicitly **not** opened there and

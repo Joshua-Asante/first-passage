@@ -4,7 +4,7 @@
 **Authored:** 2026-08-24
 **Closed:** 2026-08-24
 **Authors:** Joshua + Cursor
-**Parent question:** [`Q-TRADECAP-1`](Q-TRADECAP-1-per-trade-loss-bound.md) (`RESOLVED` 2026-08-23) — absence confirmed; this brief is the opened successor
+**Parent question:** [`Q-TRADECAP-1`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-TRADECAP-1-per-trade-loss-bound.md) (`RESOLVED` 2026-08-23) — absence confirmed; this brief is the opened successor
 **Sub-questions opened:** none
 **Loop:** Inquire-phase Pre-Q — closure gated on operator election among a frozen option set, after a $0 geometry re-scope of the CFD-era fork to `Tradeify_Select_100K`
 **Artifact path:** `docs/briefs/Q-TRADECAP-2-per-trade-bound-election.md`
@@ -49,7 +49,7 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 held the election (now deleted
 
 ## §2 — Prior art / lineage
 
-- [`Q-TRADECAP-1`](Q-TRADECAP-1-per-trade-loss-bound.md) + [closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md) — parent; absence only.
+- [`Q-TRADECAP-1`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-TRADECAP-1-per-trade-loss-bound.md) + [closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TRADECAP-1-closure-resolved.md) — parent; absence only.
 - [`1r_estimation.md`](../methodology/1r_estimation.md) L235–267 — pre-staged pair; CFD-era trigger retired.
 - [`disaster-stop ADR`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-07-28-c1-disaster-stop-payload-supported.md) — the only accepted path that can cap *realized* loss; unpaid Phase 0a.
 - M1 ADR — size-bound vs identity-bound; realized-magnitude is the unnamed third axis.

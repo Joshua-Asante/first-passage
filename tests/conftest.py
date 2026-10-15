@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 import shutil
 
-import pandas as pd
 import pytest
 
 # Monorepo layer roots on PYTHONPATH so test-spawned subprocesses (which run repo
@@ -17,7 +16,6 @@ os.environ["PYTHONPATH"] = os.pathsep.join(
     _LAYER_ROOTS + ([os.environ["PYTHONPATH"]] if os.environ.get("PYTHONPATH") else [])
 )
 
-FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 @pytest.fixture
@@ -45,12 +43,6 @@ def shell():
     if not executable or not Path(executable).exists():
         pytest.skip('Bash is required for shell integration tests')
     return str(executable)
-
-
-@pytest.fixture
-def usdjpy_fixtures() -> pd.DataFrame:
-    path = FIXTURES_DIR / "usdjpy_pnl_fixtures.csv"
-    return pd.read_csv(path)
 
 
 @pytest.fixture

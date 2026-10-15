@@ -178,7 +178,7 @@ counters incl. DL-1 ABANDONED 1/2) · blind-channel ADR @ `85a83ba` (L208) · EM
 `85a83ba` (L61, refusal path) · `lab/discovery/register_search.py` @ `4028be7` (L357–360
 blind-unbound residual; L388 `_require_admission`) · CON-4 + CON-5 closures @ `6545ad5`
 (burned shared window; unread-forever election; lane-wide pause) ·
-[Route B checklist](../methodology/avenue_a_generate_confirm.md) ·
+[Route B checklist](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/methodology/avenue_a_generate_confirm.md) ·
 [survivor-scoring prereg](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md)
 @ `85a83ba` (frozen gate: bust ≤ 3.0% ∧ P(pass) ≥ 50%; the intraday-honest qualifier arrived
 via W1/TNEC-1) · W4 dormancy ADR @ `85a83ba` (re-arm condition) · F3 spec ·
