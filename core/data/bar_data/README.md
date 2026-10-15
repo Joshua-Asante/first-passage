@@ -14,7 +14,7 @@ Derived M15 OHLC panels for CME futures micros. CSV bytes are **gitignored**
 
 **Pepperstone producer is dead.** `scripts/parse_bar_export.py` defaulted to
 Pepperstone `bar_export/` inputs retired 2026-08-02
-([Pepperstone feed ADR](../../../docs/adr/2026-08-02-pepperstone-feed-retirement.md)).
+([feed policy §Retired feeds](../../../docs/adr/2026-06-12-tv-csv-canonical-feed-policy.md#retired-feeds)).
 `6J` / `MGC` / `MNQ` / `MYM` are now landed via explicit `--in` from fresh CME
 BAR EXPORT v0.2 captures (MGC first 2026-08-12, see
 [`docs/notes/2026-08-12-guardian-mgc-nsurv-bar-derived-intraday-prep.md`](../../../docs/notes/2026-08-12-guardian-mgc-nsurv-bar-derived-intraday-prep.md);
@@ -30,10 +30,10 @@ only what its own window covers, not the historical depth several prior studies
 consumed.
 
 **CFD-era panels deleted 2026-08-03** (`US30*`, `NAS100*`, `USDJPY*`, `XAUUSD*`,
-`XAGUSD`) — owning ADR
-[`docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md`](../../../docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md);
-hashes in
-[`docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`](../../../docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md).
+`XAGUSD`) — owner
+[substrate §11](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)
+(the 2026-08-03 bar-data ADR is tombstoned); hashes in
+[`docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/00cdd1484ef1087ee97c7da2e4011777384b5cbf/docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md) (private archive).
 
 Integrity gate: `python scripts/check_data_manifests.py --check` (regen + commit
 `SHA256SUMS` in the same commit as any CSV change).

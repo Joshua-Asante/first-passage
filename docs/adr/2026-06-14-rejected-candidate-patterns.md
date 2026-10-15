@@ -7,7 +7,7 @@ owns confirm verdicts. The original parser descriptions below are historical; se
 **Status:** Accepted (2026-06-14) — taxonomy, dedup-axis separation, add-back gate, and the additive schema extension are all adopted; the §7 downstream sweep landed (SCHEMA.md note + registry pointer + `feedback.py` field extension with a round-trip test, 19/19 intake tests green).
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - dedup.py/feedback.py mechanism only
+**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - dedup.py/feedback.py mechanism only (tombstoned)
 **Superseded-in-part-by:** `2026-08-09-rejection-register-topology-and-bar-wiring.md` - registry topology only.
 **Retain-until:** none
 **Decision date:** 2026-06-14

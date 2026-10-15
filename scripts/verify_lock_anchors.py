@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """verify_lock_anchors.py — surface Closed / Forward / Error routing.
 
-Slimmed 2026-08-03 (ADR docs/adr/2026-08-03-params-toml-gate-retirement.md):
+Slimmed 2026-08-03 (ADR 2026-08-03 params-toml gate retirement; ban in
+docs/adr/2026-07-22-challenge-era-substrate-retirement.md §11):
 the retired `params.toml` hub is no longer a source. This script asks only:
 
   Are live DD_TRIGGER / DD_SCALE readable in `dd_protection.py`, is historical

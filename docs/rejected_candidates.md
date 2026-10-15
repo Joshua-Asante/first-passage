@@ -340,7 +340,7 @@ at this writing — see the 2026-07-01 audit follow-ups.)
 
 ### Gold trend-persistence regime-gate (KER_126 + TSMOM_252 deploy-vs-wait)
 
-**Rejection scope:** the direction (a gold-regime "deploy vs wait" participation gate keyed on gold `KER_126 ≥ 0.12` **AND** `TSMOM_252 > 0`) is rejected as an overlay — not only these thresholds. Absorbed here from the retired `ops/regime_gate/` shadow tool per ADR [`docs/adr/2026-07-11-ops-cfd-estate-retirement.md`](adr/2026-07-11-ops-cfd-estate-retirement.md).
+**Rejection scope:** the direction (a gold-regime "deploy vs wait" participation gate keyed on gold `KER_126 ≥ 0.12` **AND** `TSMOM_252 > 0`) is rejected as an overlay — not only these thresholds. Absorbed here from the retired `ops/regime_gate/` shadow tool per ADR [`docs/adr/2026-07-11-ops-cfd-estate-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-ops-cfd-estate-retirement.md).
 **Closure date:** 2026-07-01 (shadow logging discontinued; tool `git rm`-ed 2026-07-11 with the ops CFD-estate retirement).
 **Class:** edge-failure (the in-sample separation was an n≈2-regime-block artifact; the gate inverts OOS).
 **Authoritative artifact:** retired `ops/regime_gate/README.md` (retrieve via `git show <pre-2026-07-11-commit>:ops/regime_gate/README.md`); OOS falsifiers **Q-REGIME-OOS-1** (`f2ae609`, 2026-06-21) + **Q-REGIME-POSTCOVID-1** (`f6f0524`, 2026-06-22); graduated from [`lab/analysis/regime/regime_stress_2026-06-15/`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/regime/regime_stress_2026-06-15/RESULTS.md).

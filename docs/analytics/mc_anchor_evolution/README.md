@@ -1,6 +1,6 @@
 # MC anchor evolution — 2026-04-17 → 2026-05-23
 
-> **ARCHIVE NOTE (2026-06-24)** — the OANDA cross-feed is retired ([`docs/adr/2026-06-24-oanda-retirement.md`](../../adr/2026-06-24-oanda-retirement.md)). The OANDA overlay below is **frozen at its 5 historical anchors (2026-05-05 → 2026-05-24)**; no new OANDA anchors will be added. `plot.py` / `data.csv` and the OANDA chart-guard tests remain as a historical record.
+> **ARCHIVE NOTE (2026-06-24)** — the OANDA cross-feed is retired ([`docs/adr/2026-06-24-oanda-retirement.md`](../../adr/2026-06-12-tv-csv-canonical-feed-policy.md#retired-feeds)). The OANDA overlay below is **frozen at its 5 historical anchors (2026-05-05 → 2026-05-24)**; no new OANDA anchors will be added. `plot.py` / `data.csv` and the OANDA chart-guard tests remain as a historical record.
 
 Nine-anchor trajectory of the production portfolio MC lock anchor, with
 OANDA pattern-spotting overlay where exports exist (frozen historical). Every number is
@@ -112,7 +112,7 @@ Footer note: ADR 2026-04-23 reports 92.73% pass / 0.65% bust / 4.94% p99 DD agai
 - [ADR 2026-05-14 allocation refresh](../../adr/2026-05-14-allocation-refresh.md)
 - [ADR 2026-05-16 FXIFY-correct timeout semantic](../../adr/2026-05-16-fxify-correct-timeout-semantic.md) (superseded by 2026-05-23)
 - [ADR 2026-05-23 allocation refresh-2](../../adr/2026-05-23-allocation-refresh-2.md) **(historical regression pin; re-scoped 2026-07-11)**
-- [ADR 2026-07-11 challenge-era claims rescope](../../adr/2026-07-11-challenge-era-claims-rescope.md) — claim-scope only; pins byte-unchanged
+- [ADR 2026-07-11 challenge-era claims rescope](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md) — claim-scope only; pins byte-unchanged
 - Q-NAS-3 — 4-strategy MC addition: `striker_nas100_q_nas_3_mc_addition.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/striker_nas100_q_nas_3_mc_addition.md`)
 - Q-DDP-1 — recommendation: `Q-DDP-1/recommendation.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`), `Q-DDP-1/sweep_results.csv` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/sweep_results.csv`)
 - Q-MCTO-1 — portfolio_mc timeout semantics: `Q-MCTO-1-portfolio-mc-timeout-semantics.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-MCTO-1-portfolio-mc-timeout-semantics.md`) — **CLOSED-RESOLVED 2026-05-16**

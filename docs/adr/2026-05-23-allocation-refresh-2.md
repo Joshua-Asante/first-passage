@@ -366,7 +366,7 @@ below 95% for two consecutive 6-month windows … quarterly cadence via
 2027-02-08 / 2027-05-08"* — is dark on **two independent grounds**:
 
 1. **Duty retired 2026-07-22.**
-   [`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md)
+   [`2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md)
    §Addendum 2026-07-22 (D2 resolved by retirement): *"`python lab/analysis/time_to_pass.py
    --regime-check` is no longer a standing quarterly obligation, and the 2026-08-08 /
    11-08 / 2027-02-08 / 2027-05-08 dates carry **no revert-check duty**."* Grounds: the
@@ -474,7 +474,7 @@ none taken here:
 1. **Derive a successor forward monitor** under the current venue (c1 / Tradeify), on an
    interpretable denominator. Note the constraint that retired the last one: a
    challenge-denominated pass-rate is uninterpretable with the venue closed
-   ([`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md)
+   ([`2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md)
    §Addendum 2026-07-22), so a successor must not be pass-rate-shaped.
 2. **Accept the absence of a forward monitor explicitly**, dated, on the ground that the
    decompound HOLD already characterizes the tail and the book is unchanged since.

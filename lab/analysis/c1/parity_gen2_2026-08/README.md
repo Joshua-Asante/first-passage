@@ -28,8 +28,8 @@ Exit `0` = `ADMIT`, `1` = `FAIL`. JSON summary prints to stdout.
 
 ## Gen-1 retired
 
-The Gen-1 `lab/validation` harness is **retired** (ADR
-`docs/adr/2026-07-11-gen1-pipeline-retirement.md`). Do not resurrect it.
+The Gen-1 `lab/validation` harness is **retired** (substrate ADR §11 rule 4,
+`docs/adr/2026-07-22-challenge-era-substrate-retirement.md`). Do not resurrect it.
 Bands here are **refrozen** (`FROZEN-PRE-RUN` in [`PREREG.md`](PREREG.md)), not
 inherited. Methodology shape:
 [`docs/methodology/prefilter_rank_correlation_gate.md`](../../../docs/methodology/prefilter_rank_correlation_gate.md).

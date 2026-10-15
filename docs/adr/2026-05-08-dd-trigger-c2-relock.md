@@ -77,7 +77,7 @@ Negative / watched:
 > - **The constants are in force and untouched:** `DD_TRIGGER` 0.015 / `DD_SCALE` 0.40 remain live law in
 >   `core/dd_protection.py`. Nothing on this page is withdrawn by this banner.
 > - **The scheduled check was retired by decision, not by decay:** the quarterly C2→C0 revert check was retired
->   2026-07-22 — its criterion was challenge-denominated ([`claims-rescope §Addendum 2026-07-22`](2026-07-11-challenge-era-claims-rescope.md)).
+>   2026-07-22 — its criterion was challenge-denominated ([`claims-rescope §Addendum 2026-07-22`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md)).
 >   A *scheduled review* was retired; the control was not.
 > - **Its instrument cannot run either way:** the operationalization below names `analysis/time_to_pass.py`
 >   (the script lives at `lab/analysis/`) run against a *"live-extended Pepperstone panel"* — the Pepperstone feed

@@ -104,7 +104,7 @@ surface) than later (larger surface).
 > §4 below is a **one-shot migration acceptance test** ("post-hoc relocation is
 > test-neutral"), discharged when the relocation landed — not a standing revert trigger.
 > Its subject matter is gone: the `ops/live_journal` estate was retired 2026-07-11
-> ([`2026-07-11-ops-cfd-estate-retirement.md`](../../adr/2026-07-11-ops-cfd-estate-retirement.md)), so
+> ([`2026-07-11-ops-cfd-estate-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-ops-cfd-estate-retirement.md)), so
 > the paths §4 names (`live_journal/signals/schema.py`, the Phase-0 resolution doc under
 > `live_journal/data/ingest_runs/`) no longer exist and the pytest baseline it compares
 > against is unreproducible. Nothing here needs re-arming — the hypothesis was answered.

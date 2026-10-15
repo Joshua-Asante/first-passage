@@ -1,6 +1,6 @@
 # ADR 2026-07-22 — Retire the challenge-era substrate after decoupling the futures path
 
-**Status:** `Accepted` — operator approved in principle 2026-07-22; §7 Phase 0 returned `RESOLVED` 2026-07-22 (all five §4 pre-acceptance conditions met), which authorizes Phases 1-6. **Phase 1 decoupling MERGED** 2026-07-22 (PRs #477 / #479: historical fixture named; `ACTIVE_FIRM=Tradeify_Select_100K`; synthetic planted-defect fixtures; FXIFY-C2 `dd_geometry` seed retired). **Phase 2 (multiplier spine) MERGED** 2026-07-24 (PR #485). **Phase 3 (Pepperstone executable anchor) MERGED** 2026-07-24 (PR #488). **Phase 4 (FXIFY core defaults) MERGED** 2026-07-30 (PR #572, `fc14682`) — `FIRM_RULES["FXIFY"]` / `ACTIVE_FIRM` / `BASELINE_BALANCE` deleted; historical challenge semantics frozen in `core/historical_challenge.py`; living firm selection is always an explicit `FIRM_RULES` key. **Phase 5 (OANDA + Dukascopy wipe) CODE_LANDED** on `chore/substrate-phase-5-oanda-duka` — OANDA dir removed from `MANIFEST_DIRS`; eight OANDA CSVs + three `*_duka.csv` deleted; hashes in [`docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md`](../ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md). **Phase 6 docs landed** 2026-08-23 ([completion](../ltm/notes/2026-08-23-substrate-phase-6-completion.md)); destroy-copy remains operator-gated.
+**Status:** `Accepted` — operator approved in principle 2026-07-22; §7 Phase 0 returned `RESOLVED` 2026-07-22 (all five §4 pre-acceptance conditions met), which authorizes Phases 1-6. **Phase 1 decoupling MERGED** 2026-07-22 (PRs #477 / #479: historical fixture named; `ACTIVE_FIRM=Tradeify_Select_100K`; synthetic planted-defect fixtures; FXIFY-C2 `dd_geometry` seed retired). **Phase 2 (multiplier spine) MERGED** 2026-07-24 (PR #485). **Phase 3 (Pepperstone executable anchor) MERGED** 2026-07-24 (PR #488). **Phase 4 (FXIFY core defaults) MERGED** 2026-07-30 (PR #572, `fc14682`) — `FIRM_RULES["FXIFY"]` / `ACTIVE_FIRM` / `BASELINE_BALANCE` deleted; historical challenge semantics frozen in `core/historical_challenge.py`; living firm selection is always an explicit `FIRM_RULES` key. **Phase 5 (OANDA + Dukascopy wipe) MERGED** 2026-08-02 (`0091c5f`, pre-public history) — OANDA dir removed from `MANIFEST_DIRS`; eight OANDA CSVs + three `*_duka.csv` deleted; hashes in [Phase 5 tombstone (private archive)](https://github.com/Joshua-Asante/first-passage-archive/blob/00cdd1484ef1087ee97c7da2e4011777384b5cbf/docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md). **Phase 6 docs landed** 2026-08-23 ([completion](../ltm/notes/2026-08-23-substrate-phase-6-completion.md)); destroy-copy remains operator-gated. Consolidated owner of the closed CFD/challenge era (§11).
 **Decision date:** 2026-07-22
 **Supersedes:** `2026-06-17-dukascopy-retirement.md` in part — cached `*_duka.csv` retention clause
 **Supersedes:** `2026-06-24-oanda-retirement.md` in part — frozen OANDA CSV retention clause
@@ -14,89 +14,18 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 per-path reads and cheap-falsifier record, the §4 pre-acceptance gate (with its FALSIFIED/AMBIGUOUS limbs), the §6 downstream-artifact list, the §7 Phase 0–6 bullets (now a table), the §10 Class-S block and `## Verification` removed; §11 added (consolidation). Pre-trim text at blob `2de3e1a2ee69f3170e5ef86792cc1101694435b0` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 
 ---
 
 ## §0 — Rule 0 reads and cheap falsifier
 
-Read before authoring on 2026-07-22, after `git fetch origin main`; `origin/main`
-had no newer commits touching the target paths.
-
-- `core/firm_rules.py` — anchor `a53ee99` (2026-07-13). `FIRM_RULES["FXIFY"]`
-  is the closed-venue rule row; `ACTIVE_FIRM="FXIFY"` selects it at import
-  time. The same module also owns active four-firm prop configurations and the
-  locked risk mirror; those are separate from the FXIFY fixture.
-- `core/dd_protection.py` — anchor `a53ee99` (2026-07-13). Import-time
-  `FIRM_RULES[ACTIVE_FIRM]` derives the FXIFY target, daily-loss, static-DD, and
-  $200K state defaults. The venue-agnostic sizing law
-  `BASE_RISK × DD_SCALE × lifecycle` is also here and is consumed by c1.
-- `core/mc/modes.py` — anchor `a53ee99` (2026-07-13). The default mode is an
-  FXIFY challenge simulator over four named Pepperstone panels; it exposes
-  `PEPPERSTONE_PANELS`, `DEFAULT_PANEL`, and challenge-derived module globals.
-- `core/config/params.toml` — anchor `784a9ab` (2026-06-24).
-  `[mc_anchor_pepperstone]` owns the derived 99.83/0.17/4.37/26 mirror.
-- `tests/core/test_mc_anchors.py` — anchor `83ba1b2` (2026-07-12). The four
-  Pepperstone bytes gate the anchor tests through `skipif`; missing bytes can
-  therefore produce a green suite without executing the pin.
-- `ops/accounts.py` — anchor `8c461bc` (2026-07-11). The account store and
-  `calc_multiplier` depend on `RISK_TIERS`, `BASELINE_BALANCE`, and
-  `BASELINE_RISK`; no production module outside `ops/cli.py` imports the
-  multiplier functions.
-- `ops/cli.py` — anchor `859e505` (2026-07-20). `add`, `update`, `status`, and
-  `lots` are the multiplier-spine surface. `tearsheet` is independently useful
-  and must be extracted before the spine is removed.
-- `scripts/check_data_manifests.py` — anchor `f2be990` (2026-07-11). OANDA is
-  one of six mandatory manifest directories; deleting it requires changing
-  the gate and its tests, not only removing CSV bytes.
-- `docs/adr/2026-06-17-dukascopy-retirement.md` — anchor `ba943a1`
-  (2026-07-17). The adapter is retired but three `*_duka.csv` panels were
-  explicitly retained as manifest-pinned history.
-- `docs/adr/2026-06-24-oanda-retirement.md` — anchor `ba943a1`
-  (2026-07-17). OANDA code and the executable cross-feed tier are gone, but
-  eight CSVs were explicitly frozen.
-- `docs/adr/2026-07-11-challenge-era-claims-rescope.md` — anchor `ba943a1`
-  (2026-07-17). It retained the Pepperstone anchor and FXIFY constants as an
-  engine/panel regression fixture while removing their live-claim status.
-- `docs/adr/2026-07-11-ops-cfd-estate-retirement.md` — anchor `ba943a1`
-  (2026-07-17), plus the B3 disposition at
-  `docs/briefs/programs/2026-07-14-b3-multiplier-spine-forward-relevance-disposition.md`
-  anchor `d9d764b`. B3 found no forward consumer but chose DORMANT-RETAIN.
-- `docs/spec/c1_watch_realization_multiplier_layer.md` — accepted 2026-07-17.
-  Its “multiplier layer” is the active rail-side `r_eff` quantity law, not
-  `ops/accounts.py::calc_multiplier`; the former must survive removal of the
-  latter.
-- `core/dd_geometry.py` — the concept is venue-agnostic, but its sole registry
-  row and import-time validator are explicitly FXIFY-C2. Preserving the module
-  therefore requires retiring that row and pin, not preserving the file
-  byte-for-byte.
-- `docs/notes/notice/N-2026-07-17-cfd-data-estate-trigger-dated-disposition.md`
-  — anchor `9901abb` (2026-07-17). It blocks class-wide deletion on live
-  dependencies and names the silent anchor-skip hazard.
-
-**Cheap falsifier, run before this ADR was written:**
-
-```text
-Tracked manifests declare: 8 OANDA TV exports, 3 Dukascopy bar files, and
-4 Pepperstone 2026-05-24 anchor panels.
-
-This cloud clone contains none of those gitignored vendor bytes and has no
-ops/data/accounts.json. check_data_manifests.py therefore reports the declared
-vendor files MISSING; the anchor test cannot execute here (pandas is absent,
-and the four panel bytes are absent).
-
-Static reverse-dependency checks found:
-- calc_multiplier/get_multipliers: only ops/accounts.py, ops/cli.py, and tests;
-- ACTIVE_FIRM/FXIFY import-time coupling: dd_protection.py, mc/modes.py,
-  mc/simulation.py, inactivity_simulator.py, and research harnesses;
-- PEPPERSTONE_PANELS/default-anchor coupling: anchor tests, verifier/tooling,
-  scripts, and several lab studies.
-```
-
-The empirical result falsifies a direct-delete plan: this environment cannot
-prove byte identity or run the anchor, and removing FXIFY before decoupling
-would break import-time behavior. It supports a staged retirement whose
-destructive byte step runs only in the operator checkout where the vendor files
-and research environment exist.
+Read before authoring on 2026-07-22 (anchor `a53ee99`, 2026-07-13): `core/firm_rules.py`,
+`core/dd_protection.py`, `core/mc/modes.py`, `ops/cli.py`, `scripts/check_data_manifests.py`,
+`core/dd_geometry.py`, the then-live account store and the predecessor ADRs. The cheap
+falsifier (no vendor bytes in the cloud clone; FXIFY import-time coupling) refuted a
+direct-delete plan and set the staged program. The per-path reads and the falsifier record
+are in the pre-trim text (Revision line).
 
 ---
 
@@ -254,42 +183,8 @@ anchor, multiplier spine, and FXIFY defaults will leave c1 sizing and current
 prop/research simulation behavior unchanged while eliminating every executable
 dependency on the closed CFD/challenge world.
 
-### Pre-acceptance gate
-
-**RESOLVED — acceptance permitted only if all are true:**
-
-1. In the operator checkout, the pre-delete manifest check is clean and the
-   historical Pepperstone anchor executes once—not skips—and reproduces its
-   recorded pins within existing tolerance.
-2. A byte-for-byte offline rollback copy exists for every gitignored file in
-   A–C, with a generated inventory matching the tracked pre-delete hashes.
-3. The Pepperstone panel is released from successor-diagnostic duty — either
-   by the D2/T2 decision, or by a validated replacement diagnostic that no
-   longer reads the four anchor panels. Release must be *recorded*, not
-   assumed; no calendar dependency. (Amended 2026-07-22 — see Change history.)
-4. Every active code consumer of A–E—including Class-S scoring, regime riders,
-   c1 sizing, `dd_geometry`, and parameter validation—has a named migration or
-   archive disposition and an executable acceptance command.
-5. Baseline outputs are captured for c1 sizing vectors, alert golden path,
-   lifecycle, current firm preflight/scoring, and the historical anchor.
-
-No Phase-1–6 implementation result is required to accept the ADR; requiring
-post-removal tests before acceptance would be circular. The five checks above
-authorize implementation, not declare it complete.
-
-**FALSIFIED — stop and supersede this proposal if either occurs:**
-
-- the panel-release decision (D2/T2 or its equivalent) retains the Pepperstone
-  panel as a successor diagnostic with no validated replacement; or
-- any c1 quantity, lifecycle multiplier, named current-firm outcome, or
-  forward risk-policy result changes solely because the historical substrate
-  was removed; or
-- a current dated obligation still requires one of the A–C bytes and has no
-  validated replacement input.
-
-**AMBIGUOUS — no destructive deletion:** any missing operator byte, unavailable
-dependency, skipped pre-acceptance test, unresolved active consumer, or
-non-reproducing pre-delete anchor routes here.
+The pre-acceptance gate (five conditions) returned `RESOLVED` 2026-07-22 (Change history);
+its text is in the pre-trim body (Revision line).
 
 ### Post-acceptance implementation falsifier
 
@@ -306,10 +201,7 @@ vendor bytes restore only from the Phase-0 offline copy. A future need for
 OANDA, Dukascopy, or a challenge-class anchor requires a new ADR and fresh
 venue data; it does not silently re-arm this historical fixture.
 
-**Trigger check schedule:** at pre-acceptance Phase 0 and after each
-implementation phase; final consolidated check before the vendor-byte backup
-is destroyed. A recorded panel-release resolution is mandatory before
-acceptance; it gates on the decision existing, not on a calendar date.
+**Trigger check schedule:** 2026-10-31 — Pepperstone feed/data 90-day check (2026-08-02 Pepperstone ADR §4; §11 table) · 2026-11-01 — CFD `bar_data` + `tv_exports/candidates` 90-day check (2026-08-03 bar-data ADR §4; §11 table) · 2026-11-08 — end of the two-quarter windows of the 2026-08-03 params-toml ADR §4 (a live defect traced to Pine/`dd_protection`/`firm_rules`/root-doc skew that the retired `validate_params` hub would have hard-failed and no surviving gate catches → shape-2 restore ADR or git restore) and of the 2026-08-03 futures-refocus ADR §4/§6 (a dated incident attributing a decision error to a fact that pass demoted → restore that block class) · 2026-11-08, 2027-02-08, 2027-05-08 — quarterly reviews of the event triggers now quoted in §11 rules 2–3 (2026-07-10 R6 ADR §4, 2026-07-11 claims-rescope ADR §4) and the 2026-11-08 Gen-1 quarterly ride (2026-07-11 Gen-1 ADR §4; its codification limb was discharged by the 2026-07-24 bridge retirement) · 2027-01-11 — Gen-1 extraction-incompleteness check (2026-07-11 Gen-1 ADR §4; §11 table) · before any offline copy is destroyed — final consolidated check (§10), then a separate operator confirmation (§11).
 
 ---
 
@@ -384,104 +276,19 @@ gate.
   documentation. Mitigation: root-doc and path-liveness sweeps in the same
   program.
 
-**Downstream artifacts to update during implementation:**
-
-- `CLAUDE.md`, `PIPELINES.md`, `REPO_MAP.md`, `STATE.md`, `README.md`
-- `docs/mc_anchor_history.md` and a new LTM data-manifest tombstone
-- the four partially superseded ADR headers when this proposal is accepted
-- `core/config/params.toml`, `scripts/verify_lock_anchors.py`,
-  `scripts/validate_params.py`, `scripts/check_data_manifests.py`
-- `core/firm_rules.py`, `core/dd_protection.py`, `core/mc/*`
-- `ops/accounts.py`, `ops/cli.py`, extracted tearsheet entry point
-- corresponding tests, Makefile targets, skills, and operational references
-- `docs/SESSIONS.md`
-
 ---
 
 ## §7 — Implementation plan
 
-### Phase 0 — operator-side evidence and freeze
-
-1. Re-fetch `origin/main`; re-run the reverse-dependency audit with
-   `rg --no-ignore`.
-2. Run the pre-delete data-manifest check and the full historical anchor test
-   in the operator checkout. An all-skipped anchor result is failure.
-3. Create an offline byte inventory for all A–C files; verify every SHA-256
-   against the active manifests.
-4. Obtain a recorded decision releasing the Pepperstone panel from
-   successor-diagnostic duty — the D2/T2 review, or a validated replacement
-   diagnostic that no longer reads the four anchor panels. Phase 0 cannot
-   resolve until that release is recorded; the source of the release is open,
-   its existence is not.
-5. Inventory every active A–E consumer, including Class-S scoring/regime
-   runners, `dd_geometry`, `validate_params`, and c1, with a migration and
-   executable acceptance command.
-6. Record baseline outputs for c1 sizing vectors, current firm preflight/
-   scoring, lifecycle, and MC synthetic controls.
-7. Return `RESOLVED`, `FALSIFIED`, or `AMBIGUOUS` under §4. Only `RESOLVED`
-   permits this ADR to move from `Proposed` to `Accepted`.
-8. In the same commit that flips this ADR to `Accepted`, add the matching
-   partial-supersession reverse edge to all seven predecessor ADRs and
-   regenerate `docs/adr/INDEX.md`. Acceptance must never leave the ADR graph
-   temporarily red.
-
-### Phase 1 — decouple forward code from FXIFY
-
-- Parameterize firm rules and account basis throughout `core/mc/`.
-- Separate the venue-agnostic protection calculation from the historical
-  challenge-state/reporting CLI.
-- Update research harnesses to pass explicit bases and named firms.
-- Remove the Class-S candidate scorer’s `ACTIVE_FIRM == "FXIFY"` integrity
-  assertion and replace it with checks over explicit tier inputs; execute both
-  the scorer and regime-rider smoke paths.
-- Remove the FXIFY-C2 `dd_geometry` seed and import-time pin while retaining the
-  venue-agnostic policy type and reference-mode mapping.
-- Land replacement synthetic engine fixtures and prove their planted-defect
-  sensitivity.
-- Verify c1 quantities and current firm outcomes before removing any fixture.
-
-### Phase 2 — retire the multiplier spine
-
-- Extract tearsheet.
-- Delete account/multiplier code, commands, state, and tests.
-- Remove multiplier-only constants after a zero-consumer sweep.
-- Run ops, c1, lifecycle, and boundary tests.
-
-### Phase 3 — retire the Pepperstone executable anchor
-
-- Confirm Phase 0’s mandatory panel-release decision is recorded; otherwise stop.
-- Record the final operator-side reproduction.
-- Remove the four anchor bytes and manifest rows.
-- Atomically remove config pins, default-panel contract, verifier parsing,
-  historical anchor tests, and canonical living headlines.
-- Preserve the historical record and hash inventory in LTM.
-- Confirm no pin test remains skip-gated.
-
-### Phase 4 — remove FXIFY core defaults — MERGED 2026-07-30 (PR #572)
-
-- Delete the FXIFY rule row and `ACTIVE_FIRM`.
-- Remove remaining challenge-derived globals and default CLI behavior.
-- Run the complete core, c1, prop-scoring, lifecycle, and synthetic-engine
-  suites.
-
-### Phase 5 — retire OANDA and Dukascopy frozen data — CODE_LANDED 2026-07-30
-
-- Archive or mark blocked studies first. ✅ (`feed_divergence_2026-06` HOLD +
-  BLOCKED banner; `oanda_stage1` already RETIRED; cold archive exempt)
-- Delete OANDA and Dukascopy bytes. ✅
-- Remove OANDA from `MANIFEST_DIRS`; regenerate affected manifests. ✅
-- Update manifest tests and living restore instructions. ✅
-- LTM tombstone:
-  [`docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md`](../ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md)
-
-### Phase 6 — consolidated documentation and completion
-
-- Update root orientation docs and session log without rewriting historical
-  bodies.
-- Run §10 and the final full suite.
-- Mark the explicit point of no return. Destroy the temporary offline byte
-  copy only after a separate operator confirmation; after that action A–C are
-  intentionally irreversible.
+| Phase | Scope | PR / commit | Date |
+|---|---|---|---|
+| Phase 0 | Operator-side evidence and freeze: manifest check, anchor reproduction, offline byte inventory, recorded Pepperstone panel release, consumer inventory, baselines; returned `RESOLVED` | acceptance commit (Change history) | 2026-07-22 |
+| Phase 1 | Decouple forward code from FXIFY: explicit firm rules and account basis in `core/mc/`, Class-S explicit tiers, FXIFY-C2 `dd_geometry` seed retired, synthetic engine fixtures | #477 / #479 | 2026-07-22 |
+| Phase 2 | Retire the multiplier spine (tearsheet extracted first) | #485 | 2026-07-24 |
+| Phase 3 | Retire the Pepperstone executable anchor: bytes, manifest rows, config pins, default-panel contract, verifier parsing and anchor tests removed atomically; record and hashes kept in LTM | #488 | 2026-07-24 |
+| Phase 4 | Remove FXIFY core defaults (`FIRM_RULES["FXIFY"]`, `ACTIVE_FIRM`, challenge-derived globals) | #572 (`fc14682`) | 2026-07-30 |
+| Phase 5 | Retire OANDA and Dukascopy frozen data: studies marked blocked first, bytes deleted, OANDA removed from `MANIFEST_DIRS`, LTM tombstone | `0091c5f` (pre-public history) | 2026-08-02 |
+| Phase 6 | Consolidated documentation and completion ([completion note](../ltm/notes/2026-08-23-substrate-phase-6-completion.md)). Mark the explicit point of no return. Destroy the temporary offline byte copy only after a separate operator confirmation; after that action A–C are intentionally irreversible. | Phase-6 note | 2026-08-23 |
 
 Each numbered phase lands in its own commit and may use its own PR. No later
 phase begins while an earlier phase is red or ambiguous.
@@ -491,7 +298,7 @@ phase begins while an earlier phase is red or ambiguous.
 ## §10 — Audit hooks
 
 ```bash
-# Proposed ADR structure and graph
+# ADR structure and graph
 python3 scripts/check_brief.py \
   docs/adr/2026-07-22-challenge-era-substrate-retirement.md --type adr
 python3 scripts/check_adr_graph.py
@@ -539,43 +346,77 @@ python3 -m pytest tests/ops/test_c1_sizing_host_reference.py \
 # The original path here did not resolve (fixed 2026-07-22 during Phase-0
 # condition-5 capture); dd_geometry + firm-constants added as A-E consumers.
 
-# Active Class-S explicit-tier bounded executions
-OUT_DIR="$(mktemp -d)"
-python3 lab/analysis/class_s_candidate1_scoring_2026-07-15/run_class_s_c1_scoring.py \
-  --n-sims 200 --out-dir "$OUT_DIR/scoring"
-python3 lab/analysis/class_s_candidate1_scoring_2026-07-15/run_class_s_c1_regime_gate.py \
-  --smoke --n-jobs 1 --out-dir "$OUT_DIR/regime"
-
 # Full acceptance
 python3 -m pytest tests/ -q
 ```
 
 ---
 
-## Verification
+<a id="cfd-challenge-era-carried-forward"></a>
+## §11 — Closed CFD/challenge era: carried-forward rules and obligations (consolidated 2026-10-15)
 
-```bash
-# Mechanical authoring checks
-python3 scripts/check_brief.py \
-  docs/adr/2026-07-22-challenge-era-substrate-retirement.md --type adr
-python3 scripts/check_adr_graph.py
+Consolidated 2026-10-15 from `2026-07-10-r6-nogo-futures-residual-disposition`,
+`2026-07-11-challenge-era-claims-rescope`, `2026-07-11-gen1-pipeline-retirement`,
+`2026-07-11-ops-cfd-estate-retirement`, `2026-08-02-pepperstone-feed-retirement`,
+`2026-08-03-bar-data-cfd-and-candidates-retirement`, `2026-08-03-params-toml-gate-retirement` and
+`2026-08-03-claude-md-futures-refocus` (removed; see
+[TOMBSTONES](TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)). This section owns what survives of
+them; quoted clauses keep their original authority and source. The removed bodies are history only
+and grant nothing.
 
-# Rule-0 anchors
-git log -1 --format='%h %ci' -- core/firm_rules.py
-git log -1 --format='%h %ci' -- core/dd_protection.py
-git log -1 --format='%h %ci' -- core/mc/modes.py
-git log -1 --format='%h %ci' -- ops/accounts.py
-git log -1 --format='%h %ci' -- tests/core/test_mc_anchors.py
+**Standing rules**
 
-# Scope evidence in this authoring PR: ADR/session only, no retirement executed
-git diff --name-only origin/main...HEAD
-```
+1. **No manual execution** — the no-manual-execution rule and its reconciliation with
+   [AGENTS.md §Live-execution posture](../../AGENTS.md#live-execution-posture) remain owned by the
+   [2026-06-30 no-manual/CFD retirement ADR](2026-06-30-no-manual-trading-cfd-retirement.md)
+   (including its 2026-07-10 CFD venue closure) pending a later consolidation.
+2. **Locked-book futures-prop fan-out NO-GO** — 2026-07-10 R6 ADR §4: "the futures-prop path re-opens
+   **only** on **new mechanism evidence** that a locked leg transfers to a prop-micro venue with
+   edge-preservation ≥ 0.8× under realistic (commission + slippage + force-flat) modeling — a *dated,
+   pre-registered* result, not a re-run of any spent gate (P2 K2/E1 or R5 B2) on a shifted window.
+   Absent that, the NO-GO holds." Program-level restatement:
+   [four-firm ADR §2 R6 boundary](2026-07-12-prop-portfolio-four-friendly-firms.md); kill evidence
+   `lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md`.
+3. **Challenge-era numbers are historical** — 2026-07-11 claims-rescope ADR §4: when a live
+   challenge-class venue re-enters, "the re-arming ADR must commission a fresh re-MC under *that
+   venue's* rules (never a revival of 99.83/0.17/4.37 as a live number — it stays historical
+   regardless)". Its Addendum 2026-07-22 retired the quarterly C2→C0 revert check; `dd_protection`
+   change-control is the chain in [AGENTS.md §Protection](../../AGENTS.md#protection).
+4. **Retired surfaces** — (a) ops CFD-estate ADR §4 Trigger A: "**rebuild repo-native against the
+   *actual* venue microstructure FIRST** (the retired code is design reference via `git show`, not a
+   drop-in restore) — do **not** `git revert` the DXTrade-coupled design". (b) params-toml ADR §5:
+   "Reintroducing a derived `params.toml` (or equivalent hub mirror) without a new ADR" and "Weakening
+   `check_pine_manifest` / path-liveness / skill no-constants to "make retirement green"" are
+   forbidden; hook lesson (its Addendum 2026-08-08): "a hook of the form `git diff -- <path>` cannot
+   distinguish *absent* from *unchanged*, and an `A && B` hook silently disables `B` when `A` is
+   retired. Prefer `test -e <path> &&` guards, or separate the limbs onto their own lines." (c) Gen-1
+   ADR: the hand-rolled harness stays retired ([strategy-validation §8a](../../.claude/skills/strategy-validation/SKILL.md),
+   "do not reimplement"); a specific module is restored only via the 2027-01-11 row below; Addendum
+   2026-07-24: "a future Python→Pine bridge is a fresh build against the then-current survivor format,
+   not a restore." (d) OANDA, Dukascopy or a challenge-class anchor: §4 Revert action above.
+5. **Feeds** — owner: [feed policy §Retired feeds](2026-06-12-tv-csv-canonical-feed-policy.md#retired-feeds).
 
-Cloud-authoring caveat: the local vendor manifest and anchor-test checks cannot
-pass in this clone because the gitignored CSVs and research dependencies are
-absent. That is recorded as §0 evidence and deliberately routes destructive
-execution to Phase 0 in the operator checkout; it does not permit assuming the
-missing bytes were safely deleted.
+**Open obligations**
+
+| Item | Date / wake | Rule (verbatim source) |
+|---|---|---|
+| Pepperstone feed/data retirement (2026-08-02 ADR §4) | 2026-10-31 | "if within **90 days** any live decision — a rail change, a lifecycle rung move, a screen verdict, or an 11-08 §4 limb — requires a Pepperstone-sourced number that no venue-native substitute can supply … restore from the offline copy and re-admit the panel via a superseding ADR." RESOLVED: no blocked decision (copy may be considered for destruction under a separate ruling) · FALSIFIED: restore from copy (b); re-admit by superseding ADR; record what the venue-native substitute failed to supply · AMBIGUOUS: historical reproduction only → read-only restore; **no** manifest re-admission. |
+| CFD `bar_data` + `tv_exports/candidates` (2026-08-03 ADR §4) | 2026-11-01 | "if within **90 days** a live rail / screen / §4 / lifecycle decision is blocked on a deleted basename that no CME / Databento substitute can supply → restore from the offline copy and re-admit via superseding ADR." AMBIGUOUS (historical only): read-only restore; **no** re-admission. |
+| Gen-1 extraction-incompleteness (2026-07-11 Gen-1 ADR §4) | 2027-01-11 | "a Gen-2 discovery campaign reaches admission and needs a capability that lived only in the retired Gen-1 code and was *not* captured by the three extractions (controls, rank-ρ parity invariant, §8 invariants #1–#4) → … restore the specific module from git history" and record it here. |
+| Offline copies: (a) 2026-07-22, 15 files (8 OANDA, 3 Dukascopy, 4 Pepperstone anchor); (b) 2026-08-02, 35 Pepperstone files; (c) 2026-08-03, 9 CFD bar files + candidates tree (operator machine, `backups/first-passage-*-preretirement-*`) | operator request | "Destroy the temporary offline byte copy only after a separate operator confirmation; after that action A–C are intentionally irreversible" (§7 Phase 6). Not destroyed as part of either retirement (2026-08-02 §5-1; 2026-08-03 §5-3). |
+
+Hash inventories of the deleted bytes: `first-passage-archive` @ `00cdd148`,
+`docs/ltm/notes/2026-07-30-oanda-dukascopy-data-tombstone.md`,
+`docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md`,
+`docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`.
+
+**A1 (accept-beta fork)** — 2026-08-02 Pepperstone ADR §2-C: "A1 may not be decided on a
+Pepperstone-shaped input that no longer exists, and may not be decided by default either"; §5-2:
+"Inventing an A5-substitute number to close A1" is forbidden. A5's retirement and the orphaned
+decompound limb 2 (§2-B, §2-D, §5-3, §5-4) are owned by
+[decompound HOLD Addendum 2026-08-03](2026-06-07-decompound-remc-hold.md) (its §5 items 1–4 and the
+"not pass-rate-shaped" constraint); the [08-08 packet](../briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md)
+rows A1/A5 are mirrors.
 
 ---
 
@@ -588,6 +429,7 @@ missing bytes were safely deleted.
 | 2026-07-22 | **§4 condition 3 amended** — calendar lock on the 2026-08-08 D2/T2 date replaced by the substantive requirement it encoded: a *recorded* release of the Pepperstone panel from successor-diagnostic duty, from D2/T2 **or** a validated replacement diagnostic. Rationale: the date was a proxy for "nothing still needs these four panels"; binding on the proxy blocked the program on a calendar rather than on evidence, while binding on the substance preserves the protection (the panels are gitignored and unrecoverable) and lets Phase 0 resolve as soon as the release exists. Propagated to §4 FALSIFIED limb, §4 trigger schedule, §7 Phase-0 step 4, and §7 Phase-3 step 1. **Not** a weakening of the deletion gate: conditions 1, 2, 4, 5 are unchanged and all remain unmet. | Joshua (decision) + Claude Code (amendment) |
 | 2026-07-22 | **`Proposed` → `Accepted`.** §7 Phase 0 returned `RESOLVED` — all five §4 pre-acceptance conditions met (anchor reproduced 6 passed/0 skipped; 15-file offline rollback copy verified 15/15 against tracked manifests; D2 released the Pepperstone panel; every A–E consumer dispositioned; baselines captured). Seven partial-supersession reverse edges added and `INDEX.md` regenerated in this same commit per §7 step 8, so the ADR graph is never left red. Authorizes Phases 1–6; **no phase has run and no vendor byte has been deleted.** | Joshua (decision) + Claude Code (recording) |
 | 2026-08-23 | **Phase 6 docs landed.** Completion note + §10 cheap-subset evidence. Destroy-copy still operator-gated. No §2 edit. Offline rollback copy not destroyed. | Cursor Cloud Agent |
+| 2026-10-15 | Revision: retention trim (pre-trim blob `2de3e1a2`, commit `4121e84c`); §11 consolidates the 07-10 R6, 07-11 claims-rescope/Gen-1/ops-CFD, 08-02 Pepperstone and 08-03 bar-data/params-toml/futures-refocus ADRs (TOMBSTONES); the 2026-06-30 no-manual/CFD ADR stays the owner of its rule; Trigger field carries their future riders. | Claude Code (ADR decay audit) |
 
 ---
 
@@ -628,4 +470,4 @@ grep -n 'Tradeify_Select_100K' core/firm_rules.py
 
 **Reader-path note.** Neither the four-firms program ADR nor `STATE.md` cites this prereg today, so a W4-only
 intercept would miss both checkpoint reader paths — the pointer is owed on W4 §2 and on the STATE forward board.
-Recorded here as owed; not landed in this change.
+W4 half landed (W4 §2 note); the STATE half was not landed as of 2026-10-15 (open).

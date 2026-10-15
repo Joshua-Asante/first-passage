@@ -4,7 +4,7 @@
 **Authored:** 2026-07-14 (scaffold → question freeze same session)
 **Closed:** `2026-07-15` — [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](Q-SFRISK-1-closure-resolved.md); admitting ADR [`docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md`](../adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md) (`Accepted`, ratified 2026-07-15)
 **Authors:** Joshua (authority) + Cursor (structure + question architecture) — parent triage: claude.ai advisor 2026-07-13
-**Parent question:** `N/A` (spawned by audit §5.2 / D1 under [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../adr/2026-07-11-challenge-era-claims-rescope.md))
+**Parent question:** `N/A` (spawned by audit §5.2 / D1 under [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md))
 **Sub-questions opened:** none yet (D2 / D3 may now fork from this closed Pre-Q — §6 has fired)
 **Loop:** Inquire-phase Pre-Q — gates the first self-funded risk question set before any successor-semantics MC number is produced
 **Artifact path:** `docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`
@@ -35,11 +35,11 @@ Standing doctrine: rescope ADR §5 forbids running successor-semantics MC number
 
 ## §2 — Prior art / lineage
 
-- [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../adr/2026-07-11-challenge-era-claims-rescope.md) — `Accepted`; owns the completion falsifier + forbidden "numbers before question"; **this Pre-Q is its D1 discharge**
+- [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md) — `Accepted`; owns the completion falsifier + forbidden "numbers before question"; **this Pre-Q is its D1 discharge**
 - [`docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/programme-audit/2026-07-11-core-fxify-anchoring-audit.md) — Class D / D1 + §5.2 spawn; D2 and D3 feed *from* a frozen D1
 - [`docs/adr/2026-06-07-decompound-remc-hold.md`](../adr/2026-06-07-decompound-remc-hold.md) + [`lab/analysis/regime/decompound_remc_2026-06-07/`](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/regime/decompound_remc_2026-06-07/) — closest instrument; HOLD, not a successor framework
 - [`docs/adr/2026-07-13-dd-protection-concept-not-constant.md`](../adr/2026-07-13-dd-protection-concept-not-constant.md) — D2 *frame*; does not define the self-funded risk *question*
-- [`docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`](../adr/2026-07-10-r6-nogo-futures-residual-disposition.md) — futures-prop NO-GO; Aegis→M6J go-live separately gated (blocked by incomplete D1 per rescope §4 until this Pre-Q is pre-registered)
+- [`docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md) — futures-prop NO-GO; Aegis→M6J go-live separately gated (blocked by incomplete D1 per rescope §4 until this Pre-Q is pre-registered)
 - No prior Q-SFRISK-* brief — genuinely novel Pre-Q ID
 
 ---
@@ -80,7 +80,7 @@ Standing doctrine: rescope ADR §5 forbids running successor-semantics MC number
 
 ## §5 — Forbidden moves
 
-**Transcribed verbatim from [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](../adr/2026-07-11-challenge-era-claims-rescope.md) §5:**
+**Transcribed verbatim from [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md) §5:**
 
 - **Editing `dd_protection` constants, the display banner, or any executable line "while we're here."** Genuinely tempting (the FXIFY banner is now anachronistic; C2's grounds are void) — but constants are frozen re-MC-gated, and the zero-behavior-change scope is what makes this ADR safe to accept without a re-MC. D2 owns the calibration question at 08-08.
 - **Deleting or weakening the anchor test pins / lock-criteria test.** They are re-scoped to engine regression pins, not removed — deleting them severs byte-reproducibility of the engine against its only validated benchmark.

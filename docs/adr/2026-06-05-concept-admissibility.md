@@ -3,14 +3,14 @@
 **Status:** `Accepted`
 **Machinery-status:** ⚠ **RETIRED 2026-07-11; the decision is NOT withdrawn.** The tree this ADR
 ratified (`validation/concept_intake/` → later `lab/validation/concept_intake/`) was deleted by
-[`2026-07-11-gen1-pipeline-retirement.md`](2026-07-11-gen1-pipeline-retirement.md), which names this ADR as
+[`2026-07-11-gen1-pipeline-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-gen1-pipeline-retirement.md), which names this ADR as
 "the concept-intake contract being retired". Read every present-tense claim below — including §Effective's
 "already enforced in `validation/concept_intake/`" — as **historical**. The *doctrine* survives and is live:
 an economic-mechanism requirement before any data is mined, and dedup against `docs/rejected_candidates.md`.
 Its enforcement is now **discipline, not code** — the dedup attestation must be **executed** and its output
 pasted (see that registry's own corrected §Queryable index, 2026-08-08).
 **Superseded-by:** none
-**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - machinery only, the doctrine survives per the Machinery-status line above.
+**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - machinery only, the doctrine survives per the Machinery-status line above. (tombstoned)
 **Retain-until:** none
 **Decision date:** 2026-06-05
 **Authors:** Joshua + claude.ai (advisor)

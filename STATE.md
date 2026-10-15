@@ -120,8 +120,8 @@ Owners hold canonical criteria; rows are pointers.
   not a new build. [Design](docs/spec/2026-06-23-inqhiori-sentinel-design.md)/[Hermes closure](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md).
 - **PREREG-C1-DEDUPE-1:** M1 prerequisite met 2026-09-14; GO granted ([D-B13](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md), 2026-09-11). It does not apply to the REST book route as written (operator ruling 2026-10-02 (sitting 2)).
   [Pre-registration](docs/spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md)/[plan](docs/spec/PREREG-C1-DEDUPE-1-implementation-plan.md).
-- **CFD data-estate class-wide deletion:** awaits T1 / F3 FUTURES_LOCK and substrate
-  Phase-6 confirmation. [Estate ADR](docs/adr/2026-07-11-ops-cfd-estate-retirement.md)/[substrate successor](docs/adr/2026-07-22-challenge-era-substrate-retirement.md)/[gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md).
+- **CFD/challenge-era offline rollback copies:** checkout deletion is done (substrate Phases 3/5, Pepperstone 2026-08-02, CFD `bar_data` 2026-08-03); copies (a) 2026-07-22, (b) 2026-08-02 and (c) 2026-08-03 are kept. Destroying any copy is a separate operator confirmation and the point of no return; (b) and (c) back the 2026-10-31 and 2026-11-01 90-day checks.
+  [Owner](docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)/[gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md).
 - **Mechanism-sourcing radar:** on demand; progress/idle checkpoint 2026-11-08.
   [Harvest method](docs/methodology/strategy_harvest.md).
 - **Reversed-evidence propagation sweep:** pursuit fixes from the closed, unmerged pass are
