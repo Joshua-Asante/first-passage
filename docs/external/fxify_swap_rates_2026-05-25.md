@@ -2,7 +2,7 @@
 
 **Source:** FXIFY DXTrade Instrument Details modals (4 instruments), screenshotted by Joshua 2026-05-25.
 
-**Calibration anchor:** 2026-05-25 Guardian XAUUSD live trade (Trade Journal page `36cdc0b5-3c11-8197-a85e-d309859ca393`). 0.69 lot × -$57.49/lot/night × 1 rollover = **-$39.67** — matches DXTrade Net-vs-gross delta exactly (Net Closed P&L -$733.12 minus gross Closed P&L -$693.45 = -$39.67). This is the empirical calibration that ties the screenshot pip values to actual USD swap costs.
+**Calibration anchor:** 2026-05-25 Guardian XAUUSD live trade (Trade Journal page `36cdc0b5-3c11-8197-a85e-d309859ca393`). Lot size × the XAUUSD long rate below × 1 rollover matched the DXTrade net-vs-gross Closed P&L delta exactly (the trade's size and P&L figures were redacted from the public copy 2026-10-15; see git history). This is the empirical calibration that ties the screenshot pip values to actual USD swap costs.
 
 **Convention:** All rates from the Monday-row of the Instrument Details modal's "Overnight Rates" panel; FXIFY DXTrade timezone declared as America/New_York. Triple-rollover (Wed/Fri convention for metals/forex) not modeled in first-pass — naive day-counting sums cumulative carry correctly over weekends.
 

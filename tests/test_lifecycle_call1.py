@@ -45,10 +45,10 @@ def test_loader_parses_live_baselines():
     got = _require_live_baselines()
     assert set(got) == set(STRATEGY_KEYS)
     assert sorted(got) == sorted(STRATEGY_KEYS)
-    assert got["Guardian"].pf == pytest.approx(3.750)
-    assert got["Striker"].pf == pytest.approx(3.373)
-    assert got["Striker NAS100"].pf == pytest.approx(3.717)
-    assert got["Aegis"].pf == pytest.approx(4.188)
+    # The anchor values are private (removed from the public tree 2026-10-15);
+    # pin their shape, not their literals.
+    for pf in got.values():
+        assert np.isfinite(pf.pf) and pf.pf > 1.0
     assert got["Guardian"].line_number >= 1
     assert "baselines.md" in got["Guardian"].source_path
 
@@ -83,7 +83,7 @@ def test_loader_signals_skip_on_redacted_placeholder(tmp_path: Path):
 def test_loader_refuses_incomplete_keyset(tmp_path: Path):
     bad = tmp_path / "partial.md"
     bad.write_text(
-        "## Guardian Gold v5.5\n\n| Pepperstone | 203 | 3.750 |\n",
+        "## Guardian Gold v5.5\n\n| Pepperstone | 10 | 2.000 |\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="baseline keyset"):
@@ -91,13 +91,24 @@ def test_loader_refuses_incomplete_keyset(tmp_path: Path):
 
 
 def test_no_baseline_pf_literals_outside_loader_and_tests():
-    """§10 audit: PF literals must not appear in harness production code."""
+    """§10 audit: PF literals must not appear in harness production code.
+
+    The anchors are private, so the public check is structural (no
+    three-decimal literal, the anchors' form); the exact values are checked
+    too wherever the live baselines are present.
+    """
+    try:
+        live = [f"{b.pf:.3f}" for b in load_baseline_pfs(BASELINES).values()]
+    except BaselineDataUnavailable:
+        live = []
     for path in PKG.rglob("*.py"):
         if path.name.startswith("test") or path.name == "__init__.py":
             continue
         text = path.read_text(encoding="utf-8")
-        for lit in ("3.750", "3.373", "3.717", "4.188"):
-            assert lit not in text, f"{lit} found in {path.relative_to(REPO)}"
+        rel = path.relative_to(REPO)
+        assert not re.search(r"\b\d+\.\d{3}\b", text), f"3-decimal literal in {rel}"
+        for lit in live:
+            assert lit not in text, f"{lit} found in {rel}"
 
 
 # ── Step 2.2 — pf_sigma computer ──────────────────────────────────────────────
