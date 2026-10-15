@@ -7,7 +7,7 @@ description: Methodology for structural, low-reversibility, or statistically-gat
 
 Component skill of the **INQHIORI ⊕ OODA dual-loop framework** (reactivated 2026-05-01). This skill scopes to INQHIORI; OODA is the sibling skill `ooda-loop`.
 
-**Canonical reference:** `docs/methodology/inqhiori-canon.md` (§14 = the three-loop binding). When this skill disagrees with the canon, trust the canon. The Notion surface was retired 2026-06-12 (ADR `docs/adr/2026-06-12-notion-surface-retirement.md`; dead-ID map `docs/governance/notion-redirect-map.md`). Last reconciliation: 2026-05-01 (post-split).
+**Canonical reference:** `docs/methodology/inqhiori-canon.md` (§14 = the three-loop binding). When this skill disagrees with the canon, trust the canon. The Notion surface was retired 2026-06-12 (standing rules and dead-ID map: `docs/governance/notion-redirect-map.md`). Last reconciliation: 2026-05-01 (post-split).
 
 **What this skill replaces.** The orthogonal-framing predecessors:
 - INQHIORI reference page — `34cdc0b53c11812d96f8f6e9ee500d5e`

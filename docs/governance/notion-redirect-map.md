@@ -1,6 +1,6 @@
 # Notion Redirect Map
 
-**Created:** 2026-06-13 — Notion Phase-2 migration, per [`docs/adr/2026-06-12-notion-surface-retirement.md`](../adr/2026-06-12-notion-surface-retirement.md) §2.6.
+**Created:** 2026-06-13 — Notion Phase-2 migration (retirement decision consolidated here 2026-10-15; removed record: [TOMBSTONES](../adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
 **Purpose:** resolve every retired Notion page-ID to its repo home, archive path, or successor — so dead IDs in
 memory, briefs, and the canon's `[LEGACY-NOTION]` tags never become silent drift sources (forbidden move #4).
 
@@ -10,6 +10,17 @@ The Notion workspace is FROZEN (read-only) under Phase 1 and **cold-archived** u
 dereference there as historical / rollback reserve; **repo paths in this map are the read authority**.
 LTM export bodies under `docs/ltm/notes/archive/notion/` were removed from the working tree in the
 Great Prune T1 pass — recover via `git show pre-prune-2026-08-08:<path>`.
+
+## Standing rules
+
+Consolidated 2026-10-15 from 2026-06-12-notion-surface-retirement (removed; see [TOMBSTONES](../adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)). Decision: operator adjudication 2026-06-12; Phase 3 cold archive: operator GO 2026-08-10.
+
+1. **Freeze (Phase 1, effective 2026-06-12).** Notion is read-only. No new writes of methodology, state, decisions, or briefs. Repo + skills are the sole canon; memory carries pointers.
+2. **Cold archive (Phase 3, executed 2026-08-10).** Keep the workspace alive as the historical / rollback reserve. Do not use Danger-zone workspace deletion (**Settings → Workspace → General → Danger zone → Delete entire workspace**); do not empty Trash of retired content as a substitute for archival; do not re-open the surface for live workflow writes.
+3. **Add-back order.** A re-emergent daily-ops tooling need is the add-back signal — disposition order is rebuild-as-repo-artifact (or small app) FIRST; return to Notion only if the rebuild demonstrably fails.
+4. **Read path.** Treat this map + Phase-2 exports as the repo read path; do not cite live Notion URLs as authority; no NEW live Notion dependency.
+
+Open operator-owned residuals (optional): archive the structural hub pages out of daily view (`•••` → **Archive** on Business/Enterprise; hide from sidebar / favorites otherwise), and native **Export** of any still-unexported Daily Execution System databases into [`lab/data/behavioral_archive/`](../../lab/data/behavioral_archive/README.md) (Phase-2 `DONE_WITH_CONCERNS` residual; the operator accepted proceeding without them on the 2026-08-10 GO).
 
 ## Structural / hub pages
 
@@ -69,5 +80,5 @@ Great Prune T1 pass — recover via `git show pre-prune-2026-08-08:<path>`.
 - memory **#8** (loop-selection canon) → docs/methodology/inqhiori-canon.md
 - memory **#9** (anchors) → AGENTS.md + docs/mc_anchor_history.md
 - memory **#13** (Q-roster) → docs/briefs/INDEX.md
-- memory **#16** (role map / three-surfaces) → docs/methodology/archive/notion/methodology-canon.md + docs/adr/2026-06-12-notion-surface-retirement.md
+- memory **#16** (role map / three-surfaces) → docs/methodology/archive/notion/methodology-canon.md + this map's standing rules
 - memory **#24** (canon §14 read-surface clause) → docs/methodology/inqhiori-canon.md §14

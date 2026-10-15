@@ -21,7 +21,7 @@
 > 1. `ADR-XXX` → this filename (the repo has no `ADR-NNN` numbering; the date-slug is the identifier).
 > 2. Header rebuilt to the six machine-parsed fields + house lines (Status token grammar, Layer, LoR).
 > 3. §0 item 3 **corrected**: the "Notion dual-loop page" is a retired surface (FREEZE 2026-06-12 per
->    [`notion-surface-retirement`](2026-06-12-notion-surface-retirement.md)); the loop-selection
+>    [`notion-surface-retirement`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-12-notion-surface-retirement.md)); the loop-selection
 >    canon's live home is [`docs/methodology/inqhiori-canon.md`](../methodology/inqhiori-canon.md) §14.
 > 4. §1 item 5's "override meta-analysis" has **no repo anchor** — advisor-layer finding; marked as
 >    such in §0 with the nearest in-repo corroborating record.

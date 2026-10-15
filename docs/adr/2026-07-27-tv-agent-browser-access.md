@@ -7,7 +7,7 @@
 **Retain-until:** none
 **Decision date:** 2026-07-27
 **Authors:** Joshua (operator directive) + Claude Code (Opus 5)
-**Related:** `2026-06-23-tv-backtest-egress-automation.md` (+ its Addendum 2026-07-27); `2026-06-30-no-manual-trading-cfd-retirement.md`; `2026-07-17-c1-rail-build-account-registration-go.md`
+**Related:** `2026-06-23-tv-backtest-egress-automation.md` (+ its Addendum 2026-07-27); `2026-06-30-no-manual-trading-cfd-retirement.md`; `2026-07-17-c1-rail-build-account-registration-go.md` · `2026-08-07-loop-s2-signal-host-fork.md` (live signal host is the Python daemon; TV login/actuation automation prohibited)
 **Layer:** infrastructure
 
 ---
@@ -136,8 +136,15 @@ python scripts/check_adr_graph.py
 
 ---
 
+## Addendum 2026-10-15 — TradingView is no longer the live signal origin (S2)
+
+Recorded by the 2026-10-15 ADR decay audit; §0–§6 above stay as written. [S2](2026-08-07-loop-s2-signal-host-fork.md) §2 (2026-08-07) made a Python signal daemon the live signal host for new strategies; Pine/TradingView is the research/export surface. The Stage 1 input is operator-attended controlled input (option D, ratified 2026-09-11, [daemon build ADR](2026-08-08-s2b-signal-daemon-build.md)), not a TV alert; as of 2026-10-15 the rail is disarmed with no deployed book. §2.3's "sole signal origin of the live rail", §3's first two bullets, §5's last bullet and §6's "rail's sole signal origin" describe the pre-S2 chain. While no TV alert is in a live path, enforcement against the account would cost research exports and TV access, not live alert delivery; that changes if a TV-alert route is adopted (for example routes 2–3 in the [2026-10-13 routes note](../notes/2026-10-13-tradeify-compliant-automation-routes.md)). §4's alert-delivery limb cannot fire while no TV alert is in a live path; its enforcement-signal limb still reverts automatically. S2 prohibits TV login/actuation automation absolutely (`scripts/seat_authority.yml` `forbidden: tv.login_automation`); nothing in §2 relaxes it. The read grant, per-action confirmation for alert writes and the no-scripted/no-unattended rule are unchanged. This addendum does not change §4's 2026-10-25 hard check.
+
+---
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-07-27 | Authored on operator directive reversing the agent-access prohibition. Scoped to page-level reads; retains the allowlist-circumvention, second-account and private-Pine bullets; records that the reversal rests on operator risk-acceptance rather than on precedent (§1 premise correction), and that the platform browser control is outside repo authority (§2.1). | Joshua (directive) + Claude Code (Opus 5) |
+| 2026-10-15 | Addendum: S2 moved the live signal origin off TradingView; §2.3/§3/§5/§6 signal-origin text marked pre-S2; S2 added to Related. No decision text changed | ADR decay audit |

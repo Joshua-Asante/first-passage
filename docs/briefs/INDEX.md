@@ -1,6 +1,6 @@
 # Open-Question Roster (Q-roster)
 
-Created 2026-06-13 as part of the Notion Phase-2 migration (`docs/adr/2026-06-12-notion-surface-retirement.md` §2.5).
+Created 2026-06-13 as part of the Notion Phase-2 migration ([`docs/adr/2026-06-12-notion-surface-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-12-notion-surface-retirement.md) §2.5).
 The Notion Command Center previously held the live Q-roster; that surface is retired (read-only). This file is the
 repo home for **open / dormant** investigation questions — one home per open Q. Closed questions live in
 [`docs/briefs/closures/`](closures/) (hot). Pre-prune / restored bodies are mostly

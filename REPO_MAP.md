@@ -228,8 +228,9 @@ governance→lab import prohibition.
 
 Current seams are in the layer table and enforced maps. Historical Gen-1, CFD,
 codification, Notion and migration dispositions are in the
-[boundaries ADR](docs/adr/2026-06-05-monorepo-layer-boundaries.md) (§8 for seams
-Q-a to Q-e), linked retirement decisions and Git history.
+[boundaries ADR](docs/adr/2026-06-05-monorepo-layer-boundaries.md) (§8 seams Q-a to Q-e; pre-trim inventories at
+[`4121e84c`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-05-monorepo-layer-boundaries.md)),
+linked retirement decisions and Git history.
 
 ## §5 — Coverage check (zero unmapped)
 
