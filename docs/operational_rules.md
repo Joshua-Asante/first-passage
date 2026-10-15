@@ -265,8 +265,8 @@ sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
    `journal_review.py` output — **RETIRED 2026-07-11** with the CFD estate;
    rebuild-repo-native if a fill source returns). "I'm trading the system"
    without this citation is unverified — see execution lessons E1 (2026-04-07
-   Guardian skip, $3,752 counterfactual) and E2 (2026-04-15 Aegis decomposition,
-   $6,100 gap). _(Anchored: 2026-04-29 honesty audit; methodology layer was 6×
+   Guardian skip) and E2 (2026-04-15 Aegis decomposition) (dollar figures redacted
+   2026-10-15). _(Anchored: 2026-04-29 honesty audit; methodology layer was 6×
    more cited than execution layer in briefs over a 7-week sample.)_
 7. **Pre-registration freeze is a separate, earlier commit than results.** A
    pre-registration / FREEZE artifact (frozen H, gates, thresholds, verdict

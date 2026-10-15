@@ -16,7 +16,7 @@
 
 Files read **before** authoring this ADR:
 
-- `core/strategies/guardian/guardian_gold_v5.5.pine` — anchor: blob `de54ef3b` (per `core/strategies/guardian/LOCK.md`, lock 2026-04-23; gitignored `**/*.pine`, read from the main working tree on 2026-06-23). Verbatim: `process_orders_on_close=false` (line 9), `slippage=3` (line 8), grace stop `minBarsBeforeStop=1`/`graceStopMult=2.0` (lines 47–49, 195–216).
+- `core/strategies/guardian/guardian_gold_v5.5.pine` — anchor: blob `de54ef3b` (per `core/strategies/guardian/LOCK.md`, lock 2026-04-23; gitignored `**/*.pine`, read from the main working tree on 2026-06-23). Verbatim: `process_orders_on_close=false` (line 9), `slippage=3` (line 8), grace stop `minBarsBeforeStop`/`graceStopMult` (lines 47–49, 195–216) *(values redacted from the public copy 2026-10-15; see git history)*.
 - `lab/validation/sweep/engine.py` — anchor: read 2026-06-23. `PythonPrefilterEngine` enters at `feed.close[i]` under `process_orders_on_close=true` (line 328); signal_fn contract = `SignalArrays` (lines 99–131); intentionally NO gate authority (lines 195–207).
 - `lab/validation/sweep/parity.py` / `parity_run.py` — anchor: read 2026-06-23. Parity gate = trade-count EXACT + net/PF within `PARITY_NET_PF_BAND=0.02`; rank falsifier ρ≥`0.70`; native tier is a **documented manual** export (no browser automation).
 - `core/strategies/guardian/LOCK.md` — anchor: lock 2026-04-23 (Tier-2 citation for the locked config).
