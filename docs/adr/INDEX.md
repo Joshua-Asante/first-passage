@@ -8,9 +8,6 @@
 
 | file | status | decision date | supersedes | notes |
 |---|---|---|---|---|
-| 2026-04-17-equity-tier-deletion.md | Accepted | 2026-04-17 | none | Accepted |
-| 2026-04-17-striker-v4.3-pyramid.md | Accepted | 2026-04-17 | none | Accepted |
-| 2026-04-23-guardian-risk-relock-0.34.md | Accepted | 2026-04-23 | `2026-04-17-portfolio-allocations.md` in part — Guardian allocation only (Striker/Aegis unaffected by this ADR; see that ADR's Addendum 2026-08-29 for their current, since-changed figures). | Accepted |
 | 2026-04-24-mvd-discipline.md | Accepted | 2026-04-24 | none | generalizes and supersedes the standing Rule 0 (2026-04-17, audit-first for risk-control decisions). **AMENDED 2026-08-14:** code-level self-checks remain live; the doc-audit-table and MVD-attest one-liner are not enforced (Addendum 2026-08-14). |
 | 2026-05-03-sentinel-gate-decision.md | Accepted | 2026-05-03 | none | Accepted |
 | 2026-05-08-dd-trigger-c2-relock.md | Accepted | 2026-05-08 | `2026-04-17-dd-trigger-calibration.md` in part — DD_TRIGGER only; DD_SCALE = 0.40 unchanged. | (with documented dissent) |
@@ -102,9 +99,6 @@
 
 | file | status | decision date | supersedes | notes |
 |---|---|---|---|---|
-| 2026-04-17-dd-trigger-calibration.md | Accepted | 2026-04-17 | none | Accepted |
-| 2026-04-17-portfolio-allocations.md | Accepted | 2026-04-17 | none | allocations superseded by later refreshes; see Addendum 2026-08-29 for current figures. |
-| 2026-05-10-mc-c2-anchor-ratification.md | Accepted | 2026-05-10 | none | ACCEPTED |
 | 2026-06-05-concept-admissibility.md | Accepted | 2026-06-05 | none | Accepted |
 | 2026-06-05-sweep-engine.md | Accepted | 2026-06-05 | none | Accepted |
 | 2026-06-06-firm-constants-single-source.md | Accepted | 2026-06-06 | none | Accepted |
