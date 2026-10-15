@@ -1,6 +1,6 @@
 # Q-FILLTAX-1 — How large is the TV fill-optimism gap on the reference panels, and is Pine↔Python parity verified or assumed? (VALIDATION)
 
-**Status:** `OPEN` — intaken 2026-08-05; **V2 Phase-0 scaffold `CODE_LANDED` 2026-08-07** (Gen-2 gate under [`lab/analysis/c1/parity_gen2_2026-08/`](../../lab/analysis/c1/parity_gen2_2026-08/); Gate RESOLVED still needs first family TV anchor — operator); `check_brief.py --type inquire` PASS (6/6) at intake
+**Status:** `OPEN` — **V1 DORMANT-DATA, V2 DORMANT-OTHER 2026-10-15**, no owner. V1 wake: data source approved (MBO / L3 history) plus a re-scope off the withdrawn Striker panels; V2 wake: operator supplies the first family same-feed TV anchor ([INDEX Dormant](INDEX.md)). Intaken 2026-08-05; **V2 Phase-0 scaffold `CODE_LANDED` 2026-08-07** (Gen-2 gate under [`lab/analysis/c1/parity_gen2_2026-08/`](../../lab/analysis/c1/parity_gen2_2026-08/); Gate RESOLVED still needs first family TV anchor — operator); `check_brief.py --type inquire` PASS (6/6) at intake
 **Authored:** 2026-08-04
 **Intaken:** 2026-08-05 (handoff-verify PASS; anchors re-verified at `origin/main` `21e09c8`; V2's CI-tier claim scoped to local/pre-commit — see Amendment log)
 **Closed:** N/A

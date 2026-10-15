@@ -1,6 +1,6 @@
 # ORB-MYM-1 v0.4 — conditioning-filter screen, PR #259 verification, riskBudgetUsd input
 
-**In-flight:** yes
+**In-flight:** no — 2026-10-15, per the recorded P50 ruling: "The exact ORB-MYM P50 expression is a historical/source-stage development lead only" and was "retired as the lead"; the campaign closed `PRE-CONTRACT DROP` 2026-09-03 (docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md §5, addenda 2026-09-03 and 2026-09-03b)
 **Status:** `EXPLORATORY — NO FILTER PROMOTED; ONE PINE INPUT ADDED, DEFAULT OFF`. Candidate
 construct only (`orb_mym_4_edition.pine`, CANDIDATE lifecycle, never AUTHORIZED, chart-only paper
 vehicle — see `ops/instruments/MYM.md` M8/M9). No lifecycle, allocation, `dd_protection`, rail, or

@@ -1,6 +1,6 @@
 # Q-GATECAL-1 — Mechanism gate false-negative rate
 
-**Status:** `OPEN — DRAFT (pre-lock)`
+**Status:** `OPEN — DRAFT (pre-lock)` — **DORMANT-DATA 2026-10-15**, no owner. Wake: data source approved (Phase 3's 2015–2026 multi-instrument panels came through the retired Databento flow; TV exports do not cover them); D1 sign-off still precedes Phase 1 ([INDEX Dormant](INDEX.md)).
 **Authored:** 2026-08-29
 **Closed:** N/A
 **Authors:** Joshua + claude.ai (advisor)
@@ -241,7 +241,7 @@ Self-executing in a Claude Code session with repo + Databento access (this sessi
 
 ## §8 — Verdict pre-registration (mandatory before Phase 1)
 
-Separate file: `docs/briefs/pre-registration/Q-GATECAL-1-verdict-preregistration.md`, committed
+Separate file: `docs/briefs/pre-registration/Q-GATECAL-1-verdict-preregistration.md` (removed from the tree 2026-09-06 by `770413bb`; [pinned copy](https://github.com/Joshua-Asante/first-passage/blob/2d40dbeb56c167844cab5136742d70787835f8e2/docs/briefs/pre-registration/Q-GATECAL-1-verdict-preregistration.md)), committed
 before Phase 1 (register_search open) runs.
 
 Pre-registration commit hash: `<populated at pre-registration commit time>`

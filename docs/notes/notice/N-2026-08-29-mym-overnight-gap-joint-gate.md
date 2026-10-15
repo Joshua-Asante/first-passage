@@ -4,7 +4,7 @@
 **Observed:** 2026-08-29
 **Author:** Joshua | claude.ai
 **Source:** own statistical computation this session — direct port of MNQ's D-S-A pre-Q joint gate
-**Status:** `HELD` — recommendation below; **actioned 2026-08-30** via `Q-RANGEXFER-1`'s amendment (§4/§5 below), which is the PR review this notice named as the correct venue
+**Status:** ~~`HELD`~~ `ACTIONED` 2026-08-30 — recommendation below; trigger (a) fired via `Q-RANGEXFER-1`'s amendment (§4/§5 below), which is the PR review this notice named as the correct venue; that Q closed `MIXED` the same day. Nothing here is live (recorded 2026-10-15).
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md`
 
 ---

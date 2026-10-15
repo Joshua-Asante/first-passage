@@ -4,7 +4,7 @@
 **Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same day, adversarial-review catch)
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `OPEN` — GRADUATE-eligible.
+**Status:** ~~`OPEN` — GRADUATE-eligible.~~ `GRADUATED` — consumed by `Q-RANGEXFER-1` (closed `MIXED` 2026-08-30: `H-RANGEXFER-1.a-MYM` FALSIFIED, `.b-MYM` AMBIGUOUS-DESIGN); the `bprime=1` stratum stays unsupported with no trigger. Nothing here is live (recorded 2026-10-15).
 
 **Pre-Q:** already nested under [`Q-RANGEXFER-1`](../../briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) as `H-RANGEXFER-1.a-MYM`.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md`
