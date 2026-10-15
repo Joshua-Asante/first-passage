@@ -2,7 +2,7 @@ export const meta = {
   name: 'pre-ratification-adversarial-panel',
   description: 'Refute-first multi-lens adversarial review of a brief/ADR/closure before operator ratification',
   whenToUse:
-    'Before ratifying any Pre-Q brief, ADR, lock decision, or closure doc in First Passage -- a green check_brief.py pass is FORM-only and has missed real BLOCKERs before (doubled multiplier, unread ADR clause, claimed-but-unscored screen, missing dedup attestation, false bounding claim -- see MEMORY.md feedback_adversarial_review_before_ratification.md). Pass args.targetPath (or args as a bare path string) pointing to the doc under review; optionally args.extraContext as an array of additional cited file paths reviewers must read in full.',
+    'Before ratifying any Pre-Q brief, ADR or closure doc in First Passage -- a green check_brief.py pass is FORM-only and has missed real BLOCKERs before (doubled multiplier, unread ADR clause, claimed-but-unscored screen, missing dedup attestation, false bounding claim -- see MEMORY.md feedback_adversarial_review_before_ratification.md). Pass args.targetPath (or args as a bare path string) pointing to the doc under review; optionally args.extraContext as an array of additional cited file paths reviewers must read in full.',
   phases: [
     { title: 'Form Check', detail: 'mechanical check_brief.py pass, FORM-only' },
     { title: 'Review', detail: '6 independent refute-first lenses read the target + cited doctrine' },

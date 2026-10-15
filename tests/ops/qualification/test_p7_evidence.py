@@ -31,11 +31,26 @@ def _git(root, *args):
                            '-c', 'core.autocrlf=false', *args], check=True, capture_output=True, text=True).stdout
 
 
+def copy_unignored(src: Path, dst: Path, parts) -> None:
+    """Copy the tracked and untracked-unignored files under ``parts``.
+
+    Gitignored bytes never leave the checkout: in the primary checkout they
+    include the accepted book's Pine and runtime ports, which campaign §60
+    rule 1 bars from any scratch copy.
+    """
+    listed = subprocess.run(['git', '-C', str(src), 'ls-files', '-z', '--cached', '--others',
+                             '--exclude-standard', '--', *parts], check=True, capture_output=True).stdout
+    for relative in filter(None, listed.decode('utf-8').split('\0')):
+        source = src / relative
+        if source.is_file():
+            target = dst / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+
+
 def make_code_root(dst: Path, case, *, edits=None, extra=None, commit=True):
     """Copy ops/core, append TEST_ONLY pin overrides, and commit."""
-    ignore = shutil.ignore_patterns('__pycache__', '*.pyc', '.pytest_cache')
-    for part in ('ops', 'core'):
-        shutil.copytree(REPO / part, dst / part, ignore=ignore)
+    copy_unignored(REPO, dst, ('ops', 'core'))
     shutil.copy2(REPO / 'requirements-ops.lock', dst / 'requirements-ops.lock')
     public = case.public_keys[KEY_ID]
     contract = dst / 'ops/c1_rail/qualification/contract.py'
@@ -134,6 +149,22 @@ def refusal(code, done, record):
 def test_bootstrap_constant_matches_pinned_hash():
     from c1_rail.qualification import p7_evidence
     assert sha(p7_evidence.P7_BOOTSTRAP.encode('utf-8')) == p7_evidence.P7_BOOTSTRAP_SHA256
+
+
+# ---- code-root copy ------------------------------------------------------------
+
+def test_code_root_copy_skips_gitignored_bytes(tmp_path):
+    src, dst = tmp_path / 'src', tmp_path / 'dst'
+    for relative, text in {'.gitignore': '*.pine\nops/ports/private.py\n', 'ops/tracked.py': 'a = 1\n',
+                           'ops/ports/private.py': 'b = 2\n', 'core/strategies/book/x.pine': '//\n'}.items():
+        (src / relative).parent.mkdir(parents=True, exist_ok=True)
+        (src / relative).write_text(text, encoding='utf-8')
+    _git(src, 'init', '-q')
+    _git(src, 'add', '.gitignore', 'ops/tracked.py')
+    (src / 'ops/untracked.py').write_text('c = 3\n', encoding='utf-8')
+    copy_unignored(src, dst, ('ops', 'core'))
+    copied = sorted(p.relative_to(dst).as_posix() for p in dst.rglob('*') if p.is_file())
+    assert copied == ['ops/tracked.py', 'ops/untracked.py']
 
 
 # ---- A16 / A16b / A16c -------------------------------------------------------

@@ -36,7 +36,7 @@ scripts_layer:
   parse_bar_export: governance
   check_skills_no_constants: governance
   verify_lock_anchors: governance
-  sync_pine_to_worktree: governance
+  # (the Pine worktree-copy script retired 2026-10-15 — docs/operational_rules.md Rule 9)
   sync_skills: governance
   # lab — research
   beta_cohesion_read: lab

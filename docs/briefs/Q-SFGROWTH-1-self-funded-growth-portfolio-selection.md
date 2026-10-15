@@ -1,6 +1,6 @@
 # Q-SFGROWTH-1 — Self-funded growth portfolio selection under a 15% peak-to-trough limit
 
-**Status:** `SUPERSEDED 2026-10-11` — re-scoped under ADR addendum 2026-10-11b to [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md), itself superseded before run by [Q-SFCLEAR-2](Q-SFCLEAR-2-personal-clearance-tradeify-book.md) (DRAFT); nothing below runs; no verdict, no closure file
+**Status:** `SUPERSEDED 2026-10-11` — re-scoped under ADR addendum 2026-10-11b to [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md), itself superseded before run by Q-SFCLEAR-2 and then by [Q-SFCLEAR-3](pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) (FROZEN 2026-10-14; parent brief [Q-SFCLEAR-2](Q-SFCLEAR-2-personal-clearance-tradeify-book.md)); nothing below runs; no verdict, no closure file
 **Authored:** 2026-10-09
 **Closed:** 2026-10-11 (superseded; never ran)
 **Authors:** Joshua (rulings) + Claude Code (author)

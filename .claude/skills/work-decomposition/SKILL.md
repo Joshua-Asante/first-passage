@@ -243,8 +243,8 @@ partition fan-outs; replication fan-outs are exempt from them as described below
 
 Two fan-out shapes, one protocol each. **Partition fan-outs** join disjoint evidence: the batch
 and inventory rules above apply in full — `adr-decay-audit`'s batch-scan-then-adversarial-verify
-and the 14-agent Algorithm review of 2026-07-24 (recorded in the deleted `cursor-fleet` skill's
-routing table — body pinned in [TOMBSTONES](../../../docs/adr/TOMBSTONES.md)) are instances.
+and the 14-agent Algorithm review of 2026-07-24 (record pinned in
+[TOMBSTONES](../../../docs/adr/TOMBSTONES.md)) are instances.
 **Replication fan-outs** deliberately have every agent read the *same* target through a different
 lens, because independent duplicate review is the verification mechanism:
 [`pre-ratification-adversarial-panel`](../../workflows/pre-ratification-adversarial-panel.js)
@@ -266,7 +266,7 @@ fits the question; author an ad-hoc wave only when none does.
 | "Just read all the files first for context." | That is the input-shaped tell. Size, filter, batch. |
 | "The merge looks thin — spawn another level." | Depth 2 is never the fix; re-read the disputed span. |
 | "This packet is small, it can carry a judgment call." | Size does not move a judgment task off CC — surface-allocation test 2, no exception. |
-| "I'll keep the manifest in my head." | The manifest is the anti-duplication device; unwritten means two sessions answer the same question (the Q-SFRISK-1 collision, recorded in the deleted `cursor-fleet` skill's friction ledger — body pinned in [TOMBSTONES](../../../docs/adr/TOMBSTONES.md)). |
+| "I'll keep the manifest in my head." | The manifest is the anti-duplication device; unwritten means two sessions answer the same question (the Q-SFRISK-1 collision, pinned in [TOMBSTONES](../../../docs/adr/TOMBSTONES.md)). |
 
 ## Red flags
 
@@ -285,7 +285,7 @@ fits the question; author an ad-hoc wave only when none does.
 |---|---|
 | `question-decomposition` | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. |
 | `refine-question` | If the parent's done cannot be stated in two sentences, refine before decomposing. |
-| [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) §Decision "Orchestrating more than one worker at a time" | Owns the orchestration rules that consume this skill's manifest and children when 2+ packets are frozen implementation — claim manifest, disjoint footprints (single-writer rule), dispatch-time Phase-0 re-check, review-round-as-freeze, frozen-SHA dispatch pointer. Its disjoint-footprints rule is the atomic test's point 5 applied at dispatch. Worker surfaces are Claude Code sessions and Codex tasks; the `cursor-fleet` skill that stated the loop is deleted by the ADR's 2026-09-15 revision (body pinned in [TOMBSTONES](../../../docs/adr/TOMBSTONES.md)). |
+| [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) §Decision "Orchestrating more than one worker at a time" | Owns the orchestration rules that consume this skill's manifest and children when 2+ packets are frozen implementation — claim manifest, disjoint footprints (single-writer rule), dispatch-time Phase-0 re-check, review-round-as-freeze, frozen-SHA dispatch pointer. Its disjoint-footprints rule is the atomic test's point 5 applied at dispatch. Worker surfaces are Claude Code sessions and Codex tasks. |
 | `brief-authoring` | Authors each child as a `cc_handoff` brief; check 8's `BLOCKED — scope-problem` sub-case sends the packet back here for re-cutting. |
 | `handoff-verify` / `handoff-verify-panel` | Pre-dispatch verification of a child; the panel is the input-shaped protocol applied to a many-claim packet. |
 | `task-routing` | Picks local vs cloud per child after the cut. |
