@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -289,6 +290,78 @@ def test_sessions_queue_bind_reaches_each_additional_consumed_file(
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
 
     assert "sessions-queue-bind" in selected
+
+
+def test_lifecycle_consistency_reaches_agents_md(monkeypatch):
+    """AGENTS.md succeeded the retired CLAUDE.md (2026-09-20); a tier restated
+    there must select the gate at pre-commit."""
+    data = gm.load_manifest(MANIFEST)
+    monkeypatch.setattr(gm, "staged_names", lambda: ["AGENTS.md"])
+
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+
+    assert "lifecycle-consistency" in selected
+
+
+def _top_level_alternatives(pattern: str) -> list[str]:
+    """Split ``^(a|b)$`` into ``[^a$, ^b$]``; any other shape stays whole."""
+    suffix = "$" if pattern.endswith("$") else ""
+    if not (pattern.startswith("^(") and pattern[: len(pattern) - len(suffix)].endswith(")")):
+        return [pattern]
+    body = pattern[2 : len(pattern) - len(suffix) - 1]
+    parts, cur, depth, in_class, escaped = [], "", 0, False, False
+    for ch in body:
+        if escaped:
+            escaped = False
+        elif ch == "\\":
+            escaped = True
+        elif in_class:
+            in_class = ch != "]"
+        elif ch == "[":
+            in_class = True
+        elif ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth < 0:  # `^(a)(b)`: the outer parens are not one group
+                return [pattern]
+        elif ch == "|" and depth == 0:
+            parts.append(cur)
+            cur = ""
+            continue
+        cur += ch
+    parts.append(cur)
+    return [f"^{p}{suffix}" for p in parts]
+
+
+def test_top_level_alternatives_split():
+    assert _top_level_alternatives("^(a[.]md|b/(c|d)/|e[|]f)$") == [
+        "^a[.]md$", "^b/(c|d)/$", "^e[|]f$",
+    ]
+    assert _top_level_alternatives("^lab/x[.]md$") == ["^lab/x[.]md$"]
+    assert _top_level_alternatives("^(a)(b|c)") == ["^(a)(b|c)"]
+
+
+def test_every_staged_regex_alternative_selects_a_tracked_file():
+    """A trigger keyed on a retired or absent file can never fire, so edits to
+    its live successor go unchecked at pre-commit (2026-10-15: CLAUDE.md after
+    the AGENTS.md successor; *DESK_CARD* notes kept out of the public seed)."""
+    tracked = subprocess.run(
+        ["git", "ls-files"], cwd=REPO, capture_output=True, text=True, check=True
+    ).stdout.splitlines()
+    data = gm.load_manifest(MANIFEST)
+    dead = [
+        f"{g['id']}: {alt}"
+        for g in data["gates"]
+        if g.get("tier") == "path-conditional"
+        and (g.get("when") or {}).get("staged_regex")
+        for alt in _top_level_alternatives(g["when"]["staged_regex"])
+        if not any(re.search(alt, p) for p in tracked)
+    ]
+    assert dead == [], (
+        "staged_regex alternatives that match no tracked file (retarget them at "
+        "the live successor or drop them):\n" + "\n".join(dead)
+    )
 
 
 @pytest.mark.parametrize(

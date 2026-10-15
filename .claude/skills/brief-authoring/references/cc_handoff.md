@@ -2,7 +2,7 @@
 
 **Date:** YYYY-MM-DD
 **Parent session:** <originating session or task>
-**Spawn target:** Claude Code | Codex — and for each, `local` or `cloud` (the environment is what §0.75 turns on, not the vendor). Frozen-spec implementation routes to a worker per `docs/adr/2026-07-14-cc-cursor-surface-allocation.md`; use the §0.5 frozen-spec-worker variant.
+**Spawn target:** Claude Code | Codex — and for each, `cloud` (default) or `local` (the environment is what §0.75 turns on, not the vendor; a local packet carries the §0.75 "Must run locally" line). Frozen-spec implementation routes to a worker per `docs/adr/2026-07-14-cc-cursor-surface-allocation.md`; use the §0.5 frozen-spec-worker variant.
 **Repo:** `first-passage` (or specific repo path)
 **Brief type:** CC handoff (single-step | multi-step)
 **Parent question:** Q-X (if executing a Pre-Q) | <owning specification, campaign, plan, PR or dated ADR> (if executing an approved decision) | `N/A`
@@ -19,7 +19,6 @@ Per SKILL.md: when production isn't directly accessible from the authoring envir
 - `path/to/file.py` — report: full file contents OR specific line range [a:b] for [reason]
 - `path/to/config.yaml` — report: full contents
 - `<owning-artifact-path>` — report: the effective decision, scope, consequences and approval/evidence requirements (for an ADR, use its actual `docs/adr/YYYY-MM-DD-slug.md` path)
-- `Notion: <page_title>` (page ID `<id>`) — report: read-only confirmation of current state of [specific table/field]
 - `<git log -1 -- path/to/file.py>` — report: commit hash + date (anchor for §0 of any closure record this spawn produces)
 
 After Phase 0: post the read-report. Continue when the work is already authorized and the checks reveal no material contradiction or unresolved choice. Carry existing authorization forward accurately. Ask only for missing authority or a material change in scope, destination, data access, or permitted actions.
@@ -44,10 +43,12 @@ For local CLI dispatch **when Spawn target is Claude Code**, use the repository'
 
 - **Gitignored vendor data:** does any §0 read or §2 step touch a path under `core/data/tv_exports/**`, `core/data/bar_data/**`, or `core/data/external/**`? These are gitignored by standing policy (personal export OK, redistribution not) — a cloud checkout has them **only** if manually staged there for this session.
   - If yes: `Confirmed present — <how you verified it for THIS dispatch, e.g. "sha256-matched against SHA256SUMS in this checkout on <date>">` OR `NOT confirmed — route local.`
-- **Secrets/API keys:** does any step need a credential (e.g. the databento key)?
+- **Secrets/API keys:** does any step need a credential (e.g. a broker, Fly or data-vendor key)?
   - If yes: `Confirmed present — <the check you ran in THIS environment, e.g. a command output>` OR `NOT confirmed — route local.`
 
 A general belief that the bytes or key exist "somewhere" (a prior session, a different project) does not clear this gate — confirm for the dispatch you are about to make. If either line is `NOT confirmed`, do not dispatch to a cloud environment: run locally, or stage the dependency into that specific cloud workspace first and re-confirm.
+
+**Default is cloud** ([AGENTS.md §Purpose](../../../../AGENTS.md#purpose), operator direction 2026-10-13). A packet that must run locally says **"Must run locally"** near its top, with the reason (the line above that is `NOT confirmed`, the private read surface, the operator's machine or VM, or private evidence writes).
 
 **This section has no surface exemption (corrected 2026-09-15).** It previously read `N/A` whenever the spawn target was CC, on the premise that "CC runs in the operator's own environment, where these bytes/keys are already present." That premise is false: Claude Code runs in remote cloud containers too (claude.ai/code, GitHub Actions, and this repo's own remote sessions), where a fresh clone structurally lacks every gitignored vendor path. Codex likewise has local and cloud modes. The gate keys on **environment**, never on vendor — answer it for every dispatch. `N/A` is only correct when no §0 read or §2 step touches vendor data or a secret at all.
 

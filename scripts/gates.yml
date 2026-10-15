@@ -222,11 +222,11 @@ gates:
   # Trigger must match check_supersession_placement.py's own in_scope() -- the
   # checker never scans docs/adr/ (see its SCOPE docstring), so a docs/adr/
   # trigger let this gate run on edits it could never find anything in, while
-  # never running on the two doc classes it actually inspects.
+  # never running on the doc class it actually inspects.
   - id: supersession-placement
     tier: path-conditional
     when:
-      staged_regex: '^(docs/notes/rail_build/[^/]*DESK_CARD[^/]*[.]md$|lab/analysis/.*/RESULTS[^/]*[.]md$)'
+      staged_regex: '^lab/analysis/.*/RESULTS[^/]*[.]md$'
     cmd:
       - python
       - scripts/check_supersession_placement.py
@@ -303,7 +303,7 @@ gates:
   - id: lifecycle-consistency
     tier: path-conditional
     when:
-      staged_regex: '^(core/lifecycle[.]py|CLAUDE[.]md|[.]claude/skills/c1-rail/SKILL[.]md|docs/methodology/strategy_lifecycle[.]md|docs/pursuits/|ops/instruments/|ops/venue_editions/)'
+      staged_regex: '^(core/lifecycle[.]py|AGENTS[.]md|[.]claude/skills/c1-rail/SKILL[.]md|docs/methodology/strategy_lifecycle[.]md|docs/pursuits/|ops/instruments/|ops/venue_editions/)'
     cmd:
       - python
       - scripts/check_lifecycle_consistency.py

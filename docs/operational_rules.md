@@ -397,44 +397,44 @@ was never at risk.
 
 ---
 
-## 9. Pine-dependent work in a git worktree requires a Pine sync pre-flight
+## 9. Pine-dependent work reads Pine in place in the primary checkout
 
 `**/*.pine` is gitignored (the live edge is held privately — AGENTS.md "Public-clone
-posture"). Gitignored files are **not** shared across git worktrees: the locked
-`.pine` live only in the primary checkout. Any worktree from `git worktree add`
-starts with `core/strategies/*/*.pine` **absent**, which silently blocks every
-Pine-dependent task — codification / scaffold extraction, and any decision-brief §0
-that reads `*.pine`.
+posture"), and git never copies gitignored bytes into a linked worktree, so every
+private `.pine` exists only in the operator's primary checkout. A worktree that looks
+for Pine under its own `core/strategies/` finds none, which silently blocks
+codification / scaffold extraction and any decision-brief §0 that reads `*.pine`.
 
-**Procedure (run at the start of any Pine-dependent task):**
+**Procedure (at the start of any Pine-dependent task):**
 
-1. **Pre-flight gate.** `python scripts/sync_pine_to_worktree.py --check` — exit 0
-   if the locked Pine is present in the current tree, exit 1 if you are in a
-   worktree without it. A brief's §0 reading `*.pine` should gate on this.
-2. **Remedy.** `python scripts/sync_pine_to_worktree.py [--verify]` copies the
-   locked `.pine` from the auto-detected primary worktree into the current
-   worktree (gitignore keeps them uncommittable; `--verify` checks bytes against
-   `core/strategies/MANIFEST.sha256`). This is the Pine analogue of restoring
-   gitignored vendor data from its canonical source (cf. `scripts/parse_bar_export.py`).
-3. **Fallback** when no local checkout has the Pine at all: use the
-   brief-authoring §0 **citation-chain** sub-rule (Tier 1 audit-doc verbatim
-   quote → Tier 2 `LOCK.md` → Tier 3 CHANGELOG/baselines), per Rule 8 and the
-   Q-GUARDIAN-TRAIL-1 anchor. Cite, do not infer.
+1. **Read in place.** Read the accepted book's Pine (`core/strategies/book/`,
+   pinned in `core/strategies/BOOK_SOURCES.sha256`), the legacy locked Pine
+   (`core/strategies/_archive/<family>/`, pinned in `core/strategies/MANIFEST.sha256`)
+   and candidate Pine (`core/strategies/candidates/`) by the primary checkout's
+   absolute path. Never copy any of them into a worktree, clone, sandbox or scratch
+   directory. For the book's Pine and runtime ports this is
+   [campaign §60](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)
+   rule 1. §60 does not reach the legacy or candidate Pine; this rule applies the
+   same mechanism to them so that no copy tool exists that could select book files.
+2. **Fallback** when no local checkout has the Pine at all (a cloud session, a
+   public clone): use the brief-authoring §0 **citation-chain** sub-rule (Tier 1
+   audit-doc verbatim quote → Tier 2 `LOCK.md` → Tier 3 CHANGELOG/baselines), per
+   Rule 8 and the Q-GUARDIAN-TRAIL-1 anchor. Cite, do not infer.
 
-**Do not** edit locked `.pine` inside a worktree — Rule 5 stands (Pine source of
-truth; edits happen in the primary checkout). Synced worktree copies are
-read-only fuel for §0 reads and scaffold extraction; candidate Pine goes to
-`core/strategies/candidates/` (a distinct, non-locked path).
+**Do not** edit locked `.pine` — Rule 5 stands (Pine source of truth; edits happen in
+the primary checkout). New candidate Pine goes to `core/strategies/candidates/` (a
+distinct, non-locked path).
 
 **Origin:** 2026-06-05. The R&D-pipeline codification stage (reads the four
 locked `.pine` as scaffold templates) was dispatched into worktree
 `xenodochial-nobel-a54b80` and would have hit absent Pine — a `NEEDS_CONTEXT`
-bounce at best, a silent Rule-0 citation substitution at worst. `validate_params`
-Pine cross-check had already been silently no-op'ing in worktrees for the same
-reason (that script was retired 2026-08-03 with the `params.toml` hub —
-[ADR](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-params-toml-gate-retirement.md) — this is historical
-illustration only, not a live cross-check today). `scripts/sync_pine_to_worktree.py`
-+ this rule close the class.
+bounce at best, a silent Rule-0 citation substitution at worst. The rule first
+closed the gap by copying Pine into the worktree. **Amended 2026-10-15:** that copy
+tool ([last version](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/scripts/sync_pine_to_worktree.py))
+copied every `*.pine` under the primary checkout, so once the book's Pine landed in
+the gitignored `core/strategies/book/` (2026-09-25) its remedy step made exactly the
+copy §60 rule 1 forbids. The tool is retired and reads go by absolute path;
+`tests/governance/test_private_pine_read_in_place.py` keeps the copy path closed.
 
 ---
 
@@ -794,6 +794,10 @@ New operational rules are added here only after a specific failure or near-miss.
 Edits to existing rules must be logged with a dated entry explaining what changed and why. Rules do not silently drift.
 
 ### Edit log
+
+- **2026-10-15** — Rule 9 rewritten from "sync Pine into the worktree" to "read Pine
+  in place by the primary checkout's absolute path"; the copy tool is retired because
+  its remedy copied the book's Pine, which campaign §60 rule 1 forbids.
 
 - **2026-10-15** — Rule 8 sub-rule 8 absorbs the dedup-first ADR's design bounds
   (report-only aids; no hard semantic dedup gate), its three implemented legs and its

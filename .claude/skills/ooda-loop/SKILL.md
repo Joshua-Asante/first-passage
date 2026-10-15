@@ -96,19 +96,19 @@ Worth naming explicitly: **most OODA observations should NOT promote to INQHIORI
 
 ## 5. Worked example — attended c1 arming day (canonical OODA cycle)
 
-Live execution is the **c1 rail only** (TV → listener → CrossTrade → Tradovate; Option C). Manual FIRE→lots CFD execution is **HISTORICAL/DORMANT** (retired 2026-06-30 / FXIFY closed 2026-07-10). For any arming / disarm / fill question, load the `c1-rail` skill + the M1 ADR — do not invent a desk playbook here. The rail runbook lives in the private archive.
+Live execution is the **c1 rail only**; its path, signal host and arm state are owned by the `c1-rail` skill and [AGENTS.md §Live-execution posture](../../../AGENTS.md#live-execution-posture) (S2: Python-native signal host; Pine/TV is research/export only). Manual FIRE→lots CFD execution is **HISTORICAL/DORMANT** (retired 2026-06-30 / FXIFY closed 2026-07-10). For any arming / disarm / fill question, load the `c1-rail` skill + the M1 ADR — do not invent a desk playbook here. Arming procedure: [`ARMING_PROCEDURE.md`](../../../docs/notes/rail_build/ARMING_PROCEDURE.md).
 
-**[Rule 0 read]** — open `ops/c1_rail/c1_rail_arm.py` / rail status, `dd_protection.py` sizing path, M1 acceptance pointer, today's `armed_until` if any. Confirm disarmed vs armed in head.
+**[Rule 0 read]** — open `ops/c1_rail/c1_rail_arm.py` / rail status, `core/dd_protection.py` sizing path, M1 acceptance pointer, today's `armed_until` if any. Confirm disarmed vs armed in head.
 
 **Observe** — on a B7 arming day only (not every calendar day):
 - Rail `dry_run` / arm state and absolute `armed_until`.
-- M1 gate status (next `dry_run=false` entry/add send gated on M1 `RESOLVED` + operator GO).
+- M1 acceptance for this instance (the gate's object is the arm: `dry_run=false` needs M1 `RESOLVED` + a session operator GO + the other AGENTS gates).
 - Open Tradovate positions / recent fills if any.
 - Whether a strategy-signal path (not a canned re-POST) is the session intent.
 
-**Orient** — place observations against locked context: Is M1 `RESOLVED`? Is arming still inside `armed_until`? Is disarm scheduled **before** expiry (07-31 self-brick lesson)? Is this an attended session with operator GO?
+**Orient** — place observations against locked context: Does this instance's M1 acceptance cover today's arm (AGENTS scopes the incumbent's to Stage 1 monitoring)? Is arming still inside `armed_until`? Is disarm scheduled **before** expiry (07-31 self-brick lesson)? Is this an attended session with operator GO?
 
-**Decide** — eligible actions are bounded by the c1-rail skill + RUNBOOK: keep disarmed; arm only under GO + M1; disarm before `armed_until`; take no action. Manual lot entry from a FIRE alert is **not** an eligible action.
+**Decide** — eligible actions are bounded by the c1-rail skill + the arming procedure: keep disarmed; arm only under GO + M1; disarm before `armed_until`; take no action. Manual lot entry from a FIRE alert is **not** an eligible action.
 
 **Act** — execute the chosen rail action only. Do not modify SL/TP in the broker. Do not re-POST payloads for "idempotency" (order_id idempotency is DISPROVEN). Do not invent sizing outside `ops/c1_rail/c1_sizing_host_reference.py`.
 

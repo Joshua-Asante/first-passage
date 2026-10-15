@@ -209,9 +209,9 @@ The Notice phase compression that landed on 2026-04-25 (commits `a05e9f3` → `c
 
 ---
 
-## 9. First conscious test — Inquire-phase work (in flight)
+## 9. First conscious test — Inquire-phase work (2026-04-25, retrospective)
 
-The 2026-04-25 Claude Code brief sets up three Inquire-phase questions. Each is an opportunity to **explicitly run the gate and log the audit trail**:
+The 2026-04-25 Claude Code brief set up three Inquire-phase questions. Each was an opportunity to **explicitly run the gate and log the audit trail**:
 
 1. **Q1 — Guardian 1R reconciliation.** I/N corpus: Guardian v5.5 OANDA backtest CSV + Pine sizing line + canonical 1R doc.
    - Pre-Q gate: Delete the bar-data findings (out of scope by temporal / instrument test); Simplify to per-trade equity-normalized loss; Accelerate by precomputing running equity.
@@ -222,6 +222,8 @@ The 2026-04-25 Claude Code brief sets up three Inquire-phase questions. Each is 
 
 3. **Q8 — Doc / code skew postmortem.** I/N corpus: ADR change log + recent decision briefs.
    - Pre-Q gate: Delete (Q8a only audits the last 60 days, not all-time — that's a D-test on temporal scope); Simplify (single audit table); Accelerate (grep-friendly).
+
+All three have since closed; Q8a (doc/code skew) was promoted to a standing operational rule with its own slash command, `.claude/commands/skew-audit.md`.
 
 **If a gate audit reveals a forbidden D-test was applied, that's the framework working as intended.** Log it; learn from it; tighten the D-test criterion next iteration.
 

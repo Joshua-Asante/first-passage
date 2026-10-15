@@ -1,11 +1,11 @@
 ---
 name: prop-firm-challenge
-description: Use this skill for firm/venue rules, portfolio MC, dd_protection, lifecycle sizing, broker CSV P&L analysis, or ops questions about Guardian/Striker/Aegis/NAS100 — including dormant FXIFY/Bulenox configs in core/firm_rules.py, self-funded Aegis→M6J scale-path work, MNQ/MYM/MGC, trailing-DD/eval/consistency rules, or c1 rail sizing questions. Triggers on strategy parameters in an ops (not Pine) context, uploaded broker CSVs, drawdown/P&L, or firm-tier questions. Live prop challenges are closed; live execution questions route to the `c1-rail` skill. This skill is durable ops + historical challenge-era reference — use pinescript-v6 for strategy-code work.
+description: Use this skill for firm/venue rules, portfolio MC, dd_protection, lifecycle sizing, broker CSV P&L analysis, or ops questions about Guardian/Striker/Aegis/NAS100 — including the four-firm configs in core/firm_rules.py, the historical FXIFY fixture, self-funded lane sizing questions, MNQ/MYM/MGC, trailing-DD/eval/consistency rules, or c1 rail sizing questions. Triggers on strategy parameters in an ops (not Pine) context, uploaded broker CSVs, drawdown/P&L, or firm-tier questions. Current eval and rail posture is owned by AGENTS.md §Live-execution posture; live execution questions route to the `c1-rail` skill. This skill is durable firm/sizing/MC mechanics + historical challenge-era reference — use pinescript-v6 for strategy-code work.
 ---
 
 # Prop Firm / Portfolio Operations
 
-Operational context for Joshua's locked 4-strategy book (Guardian v5.5, Striker DJ30 v4.5, Aegis v4.3, Striker NAS100 v1 — parameter-axis LOCKED) under firm rules from `core/firm_rules.py`. Firm-specific numbers are never hardcoded here; read the file.
+Operational context for Joshua's LOCKED legacy 4-strategy book (Guardian v5.5, Striker DJ30 v4.5, Aegis v4.3, Striker NAS100 v1 — parameter-axis LOCKED) under firm rules from `core/firm_rules.py`. The accepted Tradeify book is owned by its [campaign record](../../../docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) and [venue edition](../../../ops/venue_editions/Tradeify_Select_100K.md), not this skill. Firm-specific numbers are never hardcoded here; read the file.
 
 ## Posture — not owned here (rewritten 2026-08-08)
 
@@ -41,7 +41,7 @@ both Striker legs**, so there is no deployed strategy and nothing to arm).
   manual CFD + FXIFY closed; historical MC now pins via `core/historical_challenge.py`'s
   `HISTORICAL_CHALLENGE_FIRM_KWARGS` — `FIRM_RULES["FXIFY"]` itself was **deleted** at Phase 4
   ([`substrate`](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md) §2-E / §7 Phase 4).
-- **Arming / fills / disarm → `c1-rail` skill + RUNBOOK §B7.** Live sizing path:
+- **Arming / fills / disarm → `c1-rail` skill + [`ARMING_PROCEDURE.md`](../../../docs/notes/rail_build/ARMING_PROCEDURE.md).** Live sizing path:
   `BASE_RISK × DD_SCALE × lifecycle` with integer-qty flooring in
   `ops/c1_rail/c1_sizing_host_reference.py` (continuous-lot spine deleted).
 
@@ -91,7 +91,7 @@ Two corollaries specific to this operational domain:
 | Bulenox_150K | trailing | 3.0% | 6.0% | none | 0 | 150 |
 | Bulenox_250K | trailing | 2.2% | 6.0% | none | 0 | 250 |
 
-FXIFY (historical): DXTrade via Alchemy Markets (CFD) — venue closed. Bulenox tiers force-flatten EOD (no overnight/weekend carry), no daily-loss limit — bust mode is 100% trailing-DD. Bulenox configs remain in `firm_rules.py` for simulation provenance; **no account registered; futures-prop NO-GO**.
+FXIFY (historical): DXTrade via Alchemy Markets (CFD) — venue closed. Bulenox tiers force-flatten EOD (no overnight/weekend carry), no daily-loss limit — bust mode is 100% trailing-DD. Bulenox is in `AUTOMATION_FRIENDLY_PROP_FIRMS` (`core/firm_rules.py`) — an operational target for new portfolios under the [four-firm program ADR](../../../docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md); the R6 NO-GO bars only redeploying the locked legacy book ([R6 — substrate §11 rule 2](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)).
 
 **Onboarding a new firm:** add its config to `FIRM_RULES`, then run an **engine-support pre-flight** (many firms have `daily_loss_pct: None` and need bespoke bust branches — see AGENTS.md Firm Expansion + challenge-era rescope ADR). If the execution feed differs from the locked MC's Pepperstone calibration feed, also run the feed-equivalence pre-flight (`docs/spec/feed_equivalence_discovery_test_LOCKED.md`) before re-MC against that firm's tier key.
 
@@ -115,9 +115,7 @@ No funded-phase ramp, no active overlays — challenge and funded phase run iden
 
 For known binary volatility events (central-bank decisions, major scheduled geopolitical releases), Aegis is paused for the session — mean-reversion edge inverts on binary regime breaks. Not a general news filter; applies only to pre-scheduled binary-outcome events. Generic FOMC/NFP/CPI days are NOT binary-event pauses — those are handled by each strategy's existing session/hour filters. Guardian and Striker continue normal operation unless independently flagged.
 
-⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [closed CFD/challenge era — substrate §11](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the self-funded Aegis→M6J futures scale path is CLOSED/parked, not active ([2026-07-16 lane close](../../../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)). The paragraph below is durable pause-rule mechanic for a possible future re-open only; see [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference for current state.
-
-Aegis's live instrument is venue-dependent: USDJPY on CFD venues (locked v4.3); a CME 6J synthetic-spot-inversion prototype exists for futures venues but is **non-canonical** (see `project_aegis_6j_transfer_state` project memory) — do not treat it as a drop-in replacement without re-checking that record.
+⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [closed CFD/challenge era — substrate §11](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the 2026-07-16 Aegis→M6J scale path is not active (the self-funded lane reopened 2026-10-09 with no portfolio selected — see Posture above). The paragraph above is durable pause-rule mechanic for the locked legacy edition only; the accepted book's Aegis 6J edition is owned by the accepted book's records (see the top of this file).
 
 ---
 
@@ -148,28 +146,7 @@ Reintroduce only if: (1) single-tier DD-only fails to hold bust below the progra
 
 ## Position sizing by venue
 
-Sizing mechanics differ by venue type; both funnel through `ops/c1_rail/c1_sizing_host_reference.py` (live integer-qty rail; the continuous-lot multiplier spine is deleted — see CLAUDE.md "Multiplier System (RETIRED)").
-
-### CFD venues (e.g. FXIFY/DXTrade) — HISTORICAL / DORMANT
-
-Manual CFD execution and the FXIFY venue are **retired**. The table below is retained only as historical DXTrade contractValue provenance (Rule 3 safety fact). **Live sizing is the c1 integer-qty rail** (`ops/c1_rail/c1_sizing_host_reference.py`); do not execute FIRE→lots from this section.
-
-Lot size historically scaled via a `contractValue` multiplier per instrument:
-
-| Instrument | 1 Lot = | contractValue | Notes |
-|---|---|---|---|
-| XAUUSD | 100 oz | 100 | Direct match |
-| USDJPY | 100K units | Default (1) | Direct match |
-| DJ30 | 10 × index | **10** | MUST SET — default of 1 is 10× wrong. VERIFIED 2026-04-23. |
-| NAS100 | 10 × index | **10** | MUST SET — default of 1 is 10× wrong. CONFIRMED 2026-05-05. |
-
-**Historical desk sanity check (not a live action set)** — when reading old FIRE/DXTrade artifacts, lot sizes outside these ranges usually meant wrong ATR/risk% or `contractValue = 1`:
-
-- Guardian lot size > 5 → probably wrong ATR or risk%
-- Striker DJ30 lot size > 7 → probably contractValue = 1 instead of 10
-- Striker NAS100 lot size > 4 → probably contractValue = 1 instead of 10
-- Aegis lot size > 25 → probably wrong ATR
-- Any trade risking > 2% of account on a single position
+Live sizing funnels through `ops/c1_rail/c1_sizing_host_reference.py` (integer-qty rail; the continuous-lot multiplier spine is deleted). CFD lot sizing is retired with manual trading; its DXTrade `contractValue` safety fact is owned by [`operational_rules.md` Rule 3](../../../docs/operational_rules.md#3-dxtrade-contractvalue-for-dj30-must-be-10).
 
 ### Futures venues (e.g. Bulenox CME micros)
 
@@ -178,7 +155,7 @@ Sizing is **integer contract count**, not a continuous multiplier — this is th
 - Position size = `floor(target_risk_$ / (stop_distance × tick_value))`, capped by the tier's `micro_contract_cap`.
 - **Granularity floor**: the account balance below which a strategy's intended risk rounds to 0 contracts. Single-position strategies (Guardian) are granularity-*tolerant* (integer rounding only quantizes size uniformly). Pyramided strategies (Striker DJ30/NAS100) are granularity-*fragile* — a pyramid leg rounding to 0 breaks the edge structure, not just the size. Derive floors per `lab/analysis/legacy/futures_conversion_2026-07-01/derive_floors.py`'s pattern before sizing a pyramided strategy on a small account.
 - **RESERVE cap rule** for pyramided strategies: base position size must be capped at `floor(account_cap / (1 + pyramid_pct))` so the pyramid add-on never gets starved of headroom by an oversized base — where `account_cap` is **this leg's allocated share** when several legs share one account-aggregate cap (Tradeify counts the limit across the whole account; per-leg shares live in the GO ADR Addendum 2026-07-22 / `c1_sizing_host_reference` constants — **not restated here**). Applying the **whole** account cap per leg over-counts. A missing per-leg allocation must **HALT**, never fall back to the account cap — `ops/c1_rail/c1_sizing_host_reference.py`.
-- Contract specs (tick value, commission) are NOT the CFD `contractValue` table above — re-derive per instrument (MNQ/MYM/MGC/6J) from the venue's own contract specs, never reuse CFD numbers.
+- Contract specs (tick value, commission) are NOT CFD `contractValue` numbers — re-derive per instrument (MNQ/MYM/MGC/6J) from the venue's own contract specs, never reuse CFD numbers.
 
 ---
 
@@ -194,42 +171,9 @@ Pointer-heavy — these are the load-bearing differences from CFD operation, eac
 
 ---
 
-## Strategy trading schedule
+## Broker CSV P&L
 
-Which days/hours each strategy trades is a Pine session-filter property of the strategy itself, not of whichever firm hosts it — this table holds regardless of venue:
-
-| Day | Strategies | Session Times (EST) |
-|---|---|---|
-| Monday | Guardian + Aegis + NAS100 | G: 8–16, A: 10–13:45, N: 8–12 |
-| Tuesday | Guardian + Aegis + NAS100 | G: 8–16, N(NAS100): 8–12, A: 10–13:45 |
-| Wednesday | Aegis only | A: 10–13:45 |
-| Thursday | Guardian only | G: 8–16 |
-| Friday | none of Guardian / Aegis / NAS100 | — |
-
-Striker DJ30 is omitted from every row; its trading days and session window are omitted from this table *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive branch archive/preserve-exposure-2026-10-09 at 87a86d290602482d9de44904e9940805d6c02c1f; values live in the locked Pine only — [CATALOG §Locked parameter record](../../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*.
-
-All sessions are morning NY time by design (fits before Joshua's day-job hours).
-
----
-
-## Alert semantics
-
-**Live path:** strategy entry/exit webhooks on the **c1 rail** (`c1-rail` skill + `ops/c1_rail/crosstrade_payload.py`). Attended arming, M1, `armed_until`, and disarm rules live there — not in a manual FIRE desk loop.
-
-**HISTORICAL / DORMANT (manual CFD desk):** Indicator + Anticipation scripts used a SETUP / PROXIMITY / FIRE / MISS state machine; only FIRE meant "execute." That action set is retired with manual trading. Informational alerts may still exist on charts; they are **not** an authorization to size or send orders outside the c1 rail.
-
----
-
-## Performance analysis workflow (live P&L)
-
-When Joshua uploads a broker CSV export (DXTrade, Tradovate/Bulenox, or any other execution broker):
-
-1. Parse trade history (entry/exit pairs by Trade #) — this step is the `trade-csv-reconcile` skill's pipeline; hand off to it rather than re-parsing here.
-2. Calculate: WR, PF, avg win/loss, max DD, daily P&L, cumulative equity — also `trade-csv-reconcile`'s output.
-3. Compare against per-strategy backtest baselines (`references/strategy_reference.md` → `trade-csv-reconcile/references/baselines.md`)
-4. Flag deviations: WR, PF, or DD outside expected ranges
-5. Project days remaining to the active firm's profit target at current pace (`profit_target_pct` from `core/firm_rules.py`)
-6. Check if the active firm's daily-loss limit (if any) was approached
+Parsing, metrics and baseline comparison are the `trade-csv-reconcile` skill's pipeline; hand off to it. Firm targets and loss limits come from `core/firm_rules.py`.
 
 Keep this tool SEPARATE from portfolio MC. Live P&L analysis is backward-looking on broker exports; portfolio MC is forward-looking on TV backtest CSVs. One tool per question.
 
@@ -248,7 +192,7 @@ Implemented in `core/portfolio_mc.py`. Answers one question: given locked strate
 
 ### Methodology (enshrined after 2026-04-17 error; feed-calibration fixed 2026-04-20; Pepperstone re-basis 2026-04-23)
 
-1. **Ingest** the per-strategy TV CSV exports for the panel the run targets. **There is no canonical CFD calibration feed** — Dukascopy retired 2026-06-17, OANDA 2026-06-24, Pepperstone 2026-08-02 (data tombstoned); `core/data/tv_exports/` holds only `cme/`. The live canonical feed is CME futures TV exports. Pair Entry/Exit rows by `Trade #`. ⚠ The CFD-era four-strategy run this methodology was written for is **NOT RUNNABLE** — Pepperstone panels are gone. A 2-leg `cme` key exists for breadth only and is not a working 4-leg MC CLI; steps 2–8 remain the live engine's algorithm when a panel is actually loaded.
+1. **Ingest** the per-strategy TV CSV exports for the panel the run targets. **There is no canonical CFD calibration feed** — Dukascopy retired 2026-06-17, OANDA 2026-06-24, Pepperstone 2026-08-02 (data tombstoned); `core/data/tv_exports/` holds only `cme/`. The live canonical feed is CME futures TV exports. Pair Entry/Exit rows by `Trade #`.
 2. **Pre-MC CSV reconciliation (MANDATORY):** verify each CSV against its Pine-header backtest — trade count, net P&L, PF, DD within 0.5%. Halt if any leg fails. This check exists because a mislabeled CSV silently corrupted a lock run on 2026-04-23 (see Rule 0 corollary above).
 3. **Implied 1R per strategy** — Guardian (no BE, pure trend-rider): median loss. Striker DJ30/NAS100 and Aegis (BE exits): mean of `|losses| > 1%` of account (full-stop cohort). Fall back to median ONLY if zero full stops (not `< 5` — that fallback was a trap, fixed 2026-04-23 via commit `bf32aa3`). Thin-cohort warning fires when `1 ≤ n < 5`.
 4. **Scale factor** per strategy: `target_risk_pct / implied_risk_pct`, applied to every trade's P&L.
@@ -287,9 +231,9 @@ self-funded risk questions need a fresh Pre-Q (hard date per the rescope ADR).
 
 1. **Trade the system, not your opinion.** Edge comes from 4+ years of tested data, not today's macro read.
 2. **No discretionary overrides.** Rule logged from the February override incident on a valid Guardian long that would have been a winner.
-3. **Live trades only via the c1 rail under GO + M1.** Historical FIRE/SETUP/PROXIMITY desk semantics are DORMANT — see Alert semantics above.
+3. **Live trades only via the c1 rail** under the arming gates in [`AGENTS.md`](../../../AGENTS.md#live-execution-posture) §Live-execution posture. Manual FIRE/SETUP/PROXIMITY desk semantics are retired.
 4. **One trade at a time per strategy.** Aegis max 1/day, Striker respects pyramid rules, Guardian one position.
-5. **Respect the schedule.** Wednesday is Aegis only. Thursday is Guardian only. Don't improvise.
+5. **Respect each strategy's own session filters.** Trading days and hours are Pine session-filter properties of the strategy, not of the venue — read them from the Pine and `core/strategies/CATALOG.md`, never improvise.
 6. **Export CSVs weekly** for performance tracking, whichever firm/venue is active.
 7. **The portfolio is locked at the parameter axis** — risk% / versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference; live authority `core/firm_rules.py` `_BASE_RISK`. Parameter/allocation changes require MC-validated re-locks. Capital **authorization** is a separate revocable axis owned by [`docs/methodology/strategy_lifecycle.md`](../../../docs/methodology/strategy_lifecycle.md) (current tier state lives there / AGENTS.md §Strategy Authorization Lifecycle — do not restate here).
 8. **Audit-first for risk-control decisions.** Read `dd_protection.py` (and any other production risk file) before authoring any decision brief that touches it.
