@@ -10,9 +10,11 @@ missing was residual ownership, which this record supplies.
   day, per the analyst recommendation already on record) → **owner: operator**, no dated deadline
 - ~~roll-rule pin (`.v.0` not `.c.0` for TV-`1!` comparisons) → `databento-data` skill reference~~
   — ⚠️ **ALREADY DISCHARGED; this residual should never have been recorded as open.** Verified
-  2026-08-09: `.claude/skills/databento-data/reference/schemas-and-symbology.md:37-44` carries the
-  full pin, self-labelled *"Earned pin (Q-TVCOV-1, 2026-07-13)"* — landed at the time of the
-  original verdict. The GSUB-1 inventory copied "open items" verbatim from a stale Q-roster row
+  2026-08-09: [`.claude/skills/databento-data/reference/schemas-and-symbology.md:37-44`](https://github.com/Joshua-Asante/first-passage/blob/24306389e460a868c4e0353f2488d17db5a9d5aa/.claude/skills/databento-data/reference/schemas-and-symbology.md#L37-L44)
+  carries the full pin, self-labelled *"Earned pin (Q-TVCOV-1, 2026-07-13)"* — landed at the
+  time of the original verdict. Current home (vendor-neutral, 2026-10-15):
+  [`tool-discipline.md`](../../.claude/skills/futures-anomaly-discovery/reference/tool-discipline.md)
+  §Pre-mining data hygiene. The GSUB-1 inventory copied "open items" verbatim from a stale Q-roster row
   without checking the target surface. Recorded as a firing of
   [[feedback_verify_owed_claims_before_reporting]], not silently deleted — an assigned-owner
   residual that was already satisfied is exactly the kind of phantom obligation that survives by
