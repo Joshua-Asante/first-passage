@@ -1,6 +1,6 @@
-# Public-exposure cleanup packet — 2026-10-09 (PREPARED, not applied)
+# Public-exposure cleanup packet — 2026-10-09
 
-**Status:** prepared under the operator's 2026-10-09 preparation handoff. Nothing below has been applied to GitHub. Editing or deleting any PR body or comment needs the operator's separate approval.
+**Status:** prepared under the operator's 2026-10-09 preparation handoff. **Disposition 2026-10-15:** §1's edits are all applied; bot-comment deletion is the operator's UI action; history is not rewritten; §3's duplicates go to a follow-up ([§5](#5--operator-decisions), [§6](#6--2026-10-15-follow-up)).
 
 **Originals preserved:** `first-passage-archive` branch `archive/preserve-exposure-2026-10-09` (preservation commit `950ee0f`, manifest update `e273cbb`), manifest `preservation/2026-10-09-public-exposure/MANIFEST.json`.
 
@@ -327,7 +327,39 @@ Intentionally public and kept: risk%, pyramid size and `contractValue` ([CATALOG
 
 1. Merge this draft PR (sanitized changelogs, pyramid ADR line, #743 files)? **DECIDED 2026-10-09: yes** (Joshua, in chat to the merge agent).
 2. Is the §E redaction note acceptable on a FROZEN pre-registration (value unchanged, symbol only), or should the pre-registration stay byte-identical with only the ADR, brief and index redacted? **DECIDED 2026-10-09: the §E redaction note is accepted** (Joshua, in chat to the merge agent).
-3. Edit PR #743's body and the 7 operator comments with §1's text?
-4. Delete the 4 Codex bot comments (and accept that the 22 diff-hunk copies go only if those comments are deleted too)? Deletion is irreversible; originals are in the archive.
-5. Rewrite history (filter the changelogs and the figure from all commits, force-push)? This breaks every SHA cited in the repo and every open branch; recommended only if the exposure is judged material.
-6. The flagged duplicates in §3: sanitize, or leave as ratified record?
+3. Edit PR #743's body and the 7 operator comments with §1's text? **DECIDED 2026-10-15: yes, applied.** The body and six comments
+   already carried §1's text (edited 2026-10-10). Comment `6074237135` still held the ratio §1 removes; it was replaced
+   with §1's text 2026-10-15 (Joshua, in session: "edit what I can"). GitHub's edit history keeps prior revisions until
+   each is deleted in the UI.
+4. Delete the 4 Codex bot comments (and accept that the 22 diff-hunk copies go only if those comments are deleted too)? Deletion is irreversible; originals are in the archive. **2026-10-15: not done by an agent**; the agent tools cannot delete review comments.
+   Deleting them, and any edit-history revisions, is the operator's action in the GitHub UI.
+5. Rewrite history (filter the changelogs and the figure from all commits, force-push)? This breaks every SHA cited in the repo and every open branch; recommended only if the exposure is judged material. **2026-10-15: not taken** (operator direction: out of scope unless asked); still open.
+6. The flagged duplicates in §3: sanitize, or leave as ratified record? **DECIDED 2026-10-15: flag for a follow-up** (Joshua, in session); the widened list is in §6.
+
+## 6 — 2026-10-15 follow-up
+
+A second pass on 2026-10-15 removed the surveyed figures (operator direction: delete and rely on
+git history; history still holds every value). Values are named here by class only.
+
+- **Removed or redacted:** three locked Guardian parameters (all copies); the Striker day soft-stop
+  values, ruled Pine-only on 2026-10-15 (all copies outside Track B documents); the locked-book
+  baseline anchors embedded in `trade-csv-reconcile` and its tests (now read from a gitignored
+  private file); realized account P&L and manual-trade dollar figures (FXIFY era); one live trade's
+  size and P&L in the swap-rate record; per-trade instrument and timestamps in STATE's
+  weekly-coverage block. Deleted: the FXIFY execution-history skill reference and the retired Aegis
+  session-selection cold body ([TOMBSTONES](../adr/TOMBSTONES.md#2026-10-15-public-exposure-removal)).
+- **Left for the decision-6 follow-up** (same classes, not touched here):
+
+| Location | What remains |
+|---|---|
+| `docs/adr/2026-05-23-allocation-refresh-2.md` | per-strategy backtest N/PF/Net/DD/1R inputs and deltas |
+| `ops/instruments/NAS100.md` (N4) | Striker NAS100 baseline row |
+| `ops/instruments/XAUUSD.md` (F1, F2, F5–F7) | Guardian WR/PF anchors; day, session and hour-block filter values |
+| `docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md` | the four baseline PF anchors |
+| `docs/briefs/pre-registration/2026-07-15-existing-strategy-book-candidate-1-prereg.md` (frozen) | 1R dollar figures |
+| `docs/adr/2026-09-03-venue-legality-re-expression-lane.md`, `docs/superpowers/specs/2026-09-03-venue-bound-session-guard.md`, `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/phase1_config.json`, `tests/test_tv_trade_ledger.py`, `lab/archive/transfer_expression_grid_2026-08/mechanisms.py` | the Aegis session window and days (a test and code read the string) |
+| `docs/methodology/lessons/methodology_lessons.md` (M-7), `scripts/_build_lessons_index.py`, `docs/methodology/LESSONS_INDEX.jsonl` | one live fill's slippage dollar figure |
+| `docs/methodology/1r_estimation.md` | Guardian backtest equity-growth figures (resolution paragraph); the derived Striker layer-stop figure Q-PUBTRANS-1 called a softer hit |
+| `core/strategies/_archive/striker/striker_dj30_v4.5_mym_FUTURES_LOCK.md` (item 6), `lab/analysis/c1/q_rail_1_2026-07/PHASE1.md` | the Striker port's daily drawdown-kill value (a separate Pine input from the soft-stop; not ruled) |
+| `docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md` (D15), `docs/notes/2026-09-11-track-b-adapters-and-book-rules.md` | Striker day soft-stop values (Track B documents, left alone by instruction) |
+| PR #743 | four Codex bot comments with the capital figure, and their diff hunks (decision 4) |
