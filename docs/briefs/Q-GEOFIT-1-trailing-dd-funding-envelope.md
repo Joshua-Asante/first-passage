@@ -68,7 +68,7 @@ Primary read: [`core/mc/simulation.py`](../../core/mc/simulation.py):
   corrected-geometry state of record: zero Part A clearers on the frozen $100K set
   (Tradeify 4.74% / MFFU 4.25% / Bulenox 3.51% / BluSky 4.44%); the correction idiom
   (`dd_lock_offset_usd → 1_000_000.0`, never `None`).
-- **[`docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](../adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) @ `13ad9a1`** —
+- **[`docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) @ `13ad9a1`** —
   Addendum 2026-07-24: Striker→MYM/MNQ reconstruction is **TERMINAL** (MYM ORC CLOSED,
   ORB-MNQ PARKED); reconstruction re-open needs a fresh operator GO + pre-registration.
   **This brief's §5 hard-guards against becoming a side-door re-open.**

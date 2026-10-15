@@ -16,7 +16,7 @@
 
 Read before authoring on 2026-07-16:
 
-- [`docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](../adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) — `9aa2dbf`; authorizes new venue-native candidates, forbids an R5/P2 re-run, and requires pre-registration before Pine search.
+- [`docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) — `9aa2dbf`; authorizes new venue-native candidates, forbids an R5/P2 re-run, and requires pre-registration before Pine search.
 - [`core/strategies/striker/LOCK.md`](../../core/strategies/striker/LOCK.md) — `48a7a48`; locked CFD identity is long breakout + heavy pyramid and remains untouched.
 - [`core/strategies/striker/striker_dj30_v4.5_mym_FUTURES_LOCK.md`](../../core/strategies/striker/striker_dj30_v4.5_mym_FUTURES_LOCK.md) — `fe83d17`; mapped edition exposes the cap/commission/force-flat constraints.
 - [`lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md`](../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md) — `fad8984`; R5 failed edge preservation, but the mapped MYM edition was stable near PF 2 and explicitly said recovery would require entry-signal changes.

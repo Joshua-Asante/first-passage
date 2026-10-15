@@ -15,7 +15,7 @@ pasted (see that registry's own corrected §Queryable index, 2026-08-08).
 **Decision date:** 2026-06-05
 **Authors:** Joshua + claude.ai (advisor)
 **Supersedes:** none
-**Related:** `docs/adr/2026-06-05-sweep-engine.md` (stage-3 companion) · `docs/adr/2026-06-04-lean-portfolio-meta-layer.md` (parent doctrine: the pass-rate objective) · `docs/notes/2026-06-05-rnd-pipeline-anchor-correction.md` (source-doc anchor correction)
+**Related:** `docs/adr/2026-06-05-sweep-engine.md` (stage-3 companion) · [`2026-06-04-lean-portfolio-meta-layer.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-04-lean-portfolio-meta-layer.md) (removed; historical parent; see TOMBSTONES) · `docs/notes/2026-06-05-rnd-pipeline-anchor-correction.md` (source-doc anchor correction)
 **Layer:** infrastructure (R&D pipeline stage 1) — operationalizes methodology doctrine; does not author it
 
 ---
@@ -30,7 +30,7 @@ This ADR ratifies a contract that is already built and enforced in-repo; §0 lis
 - `validation/concept_intake/dedup.py` — anchor `0f5a05d`. Composite-key dedup; **reads `docs/rejected_candidates.md` at call time** and raises (not CLEAR) if the registry is missing.
 - `validation/concept_intake/contract.py` — anchor `0f5a05d`. Deep-freezes the loaded contract to `MappingProxyType`/tuples; assignment raises `ContractMutationError` (the no-self-tune property).
 - `docs/rejected_candidates.md` — anchor `0f5a05d`. The registry the §2.4 feedback hook appends to and dedup reads (loop-closure target; current entry: Guardian-family-on-XAGUSD).
-- `docs/adr/2026-06-04-lean-portfolio-meta-layer.md` — anchor `c5df37c` (2026-06-04). Parent doctrine: the challenge-window pass-rate objective this gate pushes upstream to proposal time.
+- [`2026-06-04-lean-portfolio-meta-layer.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-04-lean-portfolio-meta-layer.md) — anchor `c5df37c` (2026-06-04; pre-transplant, first-passage-archive). Parent doctrine: the challenge-window pass-rate objective this gate pushes upstream to proposal time.
 
 **Lift precondition (verified):** `pytest validation/concept_intake/` → **14 passed** on 2026-06-05. SCHEMA.md's lift condition ("once the §2.5 controls pass") is met.
 

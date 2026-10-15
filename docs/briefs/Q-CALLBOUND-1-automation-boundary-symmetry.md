@@ -19,7 +19,7 @@
 - `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:66` — "Because the response is graded, reversible sizing (Call 2), a false positive costs only *one size step*, not a killed edge... The terror of the binary dissolves once the action is cheap." (the decision driver behind σ = 1.0)
 - `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:71` — "recommended σ = 1.0 (tighter than the 2σ a kill-trigger would use, *because* the action is reversible)."
 - `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:213` — forbidden-moves list: "No autonomous size-up, ever. Automation may move authorization down only. It may never promote a tier, re-enter a RETIRED strategy, or increase size beyond the authorized tier."
-- `docs/methodology/strategy_lifecycle.md:86-94` (Call 5) — "The boundary is **reversibility**... Reversible de-risk → autonomous (rules-mandated): tier demotions... **Irreversible retirement → operator GO/NO-GO** against pre-registered criteria: WATCH-2→`RETIRED` (**capital to zero**) and full beta shutdown."
+- `docs/methodology/strategy_lifecycle.md:86-94` @ `4121e84c` (Call 5) — "The boundary is **reversibility**... Reversible de-risk → autonomous (rules-mandated): tier demotions... **Irreversible retirement → operator GO/NO-GO** against pre-registered criteria: WATCH-2→`RETIRED` (**capital to zero**) and full beta shutdown."
 - `docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md:23` — production-read table: "`autonomous_demote` floors at WATCH-2; no promote path in code today."
 - `docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md:55` — "Call 5's 'never promotes' gains only this sandbox admit. No autonomous path to full AUTHORIZED book size, no RETIRED re-entry, no re-optimization." (S5 scopes strictly to brand-new CANDIDATE packets, not to restoring a demoted incumbent — confirmed by re-read, not merely asserted.)
 - `ops/c1_rail/c1_sizing_host_reference.py:280` — `r_eff = base_risk * dd_scale * lifecycle_m` (WATCH-1's 0.50× haircut lands here).
@@ -39,7 +39,7 @@ Origin: the 2026-08-18 assumption-sweep audit note (`docs/notes/audits/2026-08-1
 
 - **Audit note** `docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md` — source of both limbs (§4 D3, D6); §3 D-gate deletions checked and **none overlap** this Q's scope (the five deletions cover DD-multiplier firm-mismatch, CI wiring gaps, sentinel non-firing, and a slippage constant — none touch the Call-system's up/down asymmetry).
 - **`docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md`** (`Withdrawn` 2026-08-22) — proposed a *down-direction* ladder rung (WATCH-1H). Orthogonal: it adds resolution to the descent, it does not touch whether descent reverses. Not re-litigated here.
-- **`docs/adr/2026-08-06-candidate-call1-action-on-breach.md`** — governs the `CANDIDATE`-tier breach path, a different rung than D3's already-`AUTHORIZED` incumbent. Not re-litigated here.
+- **`docs/methodology/strategy_lifecycle.md` Call 1 — CANDIDATE action-on-breach (formerly ADR 2026-08-06)** — governs the `CANDIDATE`-tier breach path, a different rung than D3's already-`AUTHORIZED` incumbent. Not re-litigated here.
 - **Q-CAPBAND-1** (`docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md`) — structural precedent for this brief's shape: one combined H over named limbs, a binary locational read of already-recorded facts, no new spend, no constant/code edited by the brief itself.
 
 ---

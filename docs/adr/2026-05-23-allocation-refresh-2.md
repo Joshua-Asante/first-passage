@@ -170,7 +170,7 @@ The six 2026-05-23 open items, in full at the pre-trim blob (see **Revision**):
 ## Cross-references
 
 - **Superseded ADR:** `docs/adr/2026-05-14-allocation-refresh.md` ([tombstoned](TOMBSTONES.md#earlier-removals)) — prior allocation refresh (DJ30 colder / NAS hotter, inverse of this ADR's pattern).
-- **Prior canonical (now historical):** [`docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`](2026-05-16-fxify-correct-timeout-semantic.md) — the FXIFY-correct timeout semantic locked here is preserved unchanged; only allocations + Pine parameters move.
+- **Prior canonical (now historical):** [`docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-05-16-fxify-correct-timeout-semantic.md) — the FXIFY-correct timeout semantic locked here is preserved unchanged; only allocations + Pine parameters move.
 - **Override-with-grounds template ancestor:** [`docs/adr/2026-05-08-dd-trigger-c2-relock.md`](2026-05-08-dd-trigger-c2-relock.md) — first ADR to use the override-with-documented-grounds pattern for the regime-robustness gate.
 - **Worked example for the override-with-grounds template:** `Q-DDP-1/recommendation.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`).
 - **Regime-robustness gate doctrine:** [`docs/methodology/regime_robustness_gate.md`](../methodology/regime_robustness_gate.md).

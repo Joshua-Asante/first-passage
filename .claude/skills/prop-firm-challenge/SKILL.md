@@ -37,7 +37,7 @@ both Striker legs**, so there is no deployed strategy and nothing to arm).
 - Self-funded lane REOPENED 2026-10-09 (personal Tradovate account, maximum-growth objective,
   portfolio not yet selected; 15% max-drawdown clearance; no capital authorization until a portfolio clears it) —
   [`2026-10-09`](../../../docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md),
-  superseding the [`2026-07-16`](../../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) closure;
+  superseding the [`2026-07-16`](../../../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals) closure;
   manual CFD + FXIFY closed; historical MC now pins via `core/historical_challenge.py`'s
   `HISTORICAL_CHALLENGE_FIRM_KWARGS` — `FIRM_RULES["FXIFY"]` itself was **deleted** at Phase 4
   ([`substrate`](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md) §2-E / §7 Phase 4).
@@ -115,7 +115,7 @@ No funded-phase ramp, no active overlays — challenge and funded phase run iden
 
 For known binary volatility events (central-bank decisions, major scheduled geopolitical releases), Aegis is paused for the session — mean-reversion edge inverts on binary regime breaks. Not a general news filter; applies only to pre-scheduled binary-outcome events. Generic FOMC/NFP/CPI days are NOT binary-event pauses — those are handled by each strategy's existing session/hour filters. Guardian and Striker continue normal operation unless independently flagged.
 
-⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [closed CFD/challenge era — substrate §11](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the self-funded Aegis→M6J futures scale path is CLOSED/parked, not active ([2026-07-16 lane close](../../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md)). The paragraph below is durable pause-rule mechanic for a possible future re-open only; see [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference for current state.
+⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [closed CFD/challenge era — substrate §11](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the self-funded Aegis→M6J futures scale path is CLOSED/parked, not active ([2026-07-16 lane close](../../../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)). The paragraph below is durable pause-rule mechanic for a possible future re-open only; see [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference for current state.
 
 Aegis's live instrument is venue-dependent: USDJPY on CFD venues (locked v4.3); a CME 6J synthetic-spot-inversion prototype exists for futures venues but is **non-canonical** (see `project_aegis_6j_transfer_state` project memory) — do not treat it as a drop-in replacement without re-checking that record.
 

@@ -145,7 +145,7 @@ read as confirmed-negative-to-date, not ambiguous.
   A SEED calibration (no live venue exists yet to fire it), tagged `SURVIVAL-ONLY`
   (surveillance tightness only — does not revisit the ADMISSION-decided CANDIDATE
   @ 1.00× starting multiplier). Call-1 action-on-breach at `CANDIDATE`:
-  [`ADR 2026-08-06-candidate-call1-action-on-breach`](../../../docs/adr/2026-08-06-candidate-call1-action-on-breach.md)
+  [`ADR 2026-08-06-candidate-call1-action-on-breach`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-06-candidate-call1-action-on-breach.md)
   (`Accepted` 2026-08-21 — operator review flag only; in force).
 - [x] Cap tripwire companion **registered** (docs-only, not live-wired) beside the
   PF-CUSUM seed — [`ADR 2026-08-06`](../../../docs/adr/2026-08-06-capa-tripwire-pfcusum-companion-registration.md)

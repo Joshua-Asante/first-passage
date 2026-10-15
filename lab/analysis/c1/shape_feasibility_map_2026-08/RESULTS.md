@@ -828,7 +828,7 @@ as the single lever worth shopping across Tradeify products.
 **Not licensed:** (1) This is still a *shape* map over a synthetic generating process. It admits no
 mechanism and no candidate. (2) **UPDATE 2026-08-24 (same day):** `Tradeify_Growth_100K` was
 promoted to `AUTOMATION_FRIENDLY_PROP_FIRMS['tradeify']` by operator GO, ratifying
-[`2026-08-24-tradeify-growth-tier-scoring-only.md`](../../../../docs/adr/2026-08-24-tradeify-growth-tier-scoring-only.md).
+[`2026-08-24-tradeify-growth-tier-scoring-only.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-tradeify-growth-tier-scoring-only.md).
 Only the $100K tier is defined; 25K/50K/150K need their own `FIRM_RULES` rows before joining it.
 (3) The funded-phase rules differ (Growth has a fixed payout policy and a 35% payout-stage
 consistency rule); **nothing here measures the funded phase.** (4) No K consumed, $0 spent,

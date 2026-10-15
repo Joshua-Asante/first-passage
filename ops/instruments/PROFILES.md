@@ -490,7 +490,7 @@ Porting a locked strategy to a different venue or contract without re-deriving p
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| 6J | AMBIGUOUS-PARKED | 2026-07-16 | ../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md |
+| 6J | AMBIGUOUS-PARKED | 2026-07-16 | ../../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals |
 | MJY | DEAD | 2026-07-05 | #M1 |
 | MYM | DEAD | 2026-07-09 | ../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md |
 | YM | DEAD | 2026-07-09 | ../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md |
