@@ -68,7 +68,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Focus:** Decision. Queue row 2: operator ratified the elect-2 light ADR.
 
-**Shipped:** [`elect-2`](../../../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Accepted`. [`closure`](../../../../briefs/closures/Q-TRADECAP-2-closure-resolved.md) `RESOLVED`. STATE row 2 deleted (no auto-replace). No rail wire.
+**Shipped:** [`elect-2`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Accepted`. [`closure`](../../../../briefs/closures/Q-TRADECAP-2-closure-resolved.md) `RESOLVED`. STATE row 2 deleted (no auto-replace). No rail wire.
 
 **Decisions/defects:** licensed close is observe-only ID **2**. Threshold later. Consult `RESOLVED`.
 
@@ -82,11 +82,11 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Focus:** Decision. Queue row 2: operator asked for the light ADR after the consult recommendation.
 
-**Shipped:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../../../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Proposed`. No rail wire. Q stays `OPEN` until `Accepted`. Blast-radius: phase-D D4, consult HOLD, brief Phase 1, and `1r_estimation.md` retargeted at the Proposed ADR.
+**Shipped:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) `Proposed`. No rail wire. Q stays `OPEN` until `Accepted`. Blast-radius: phase-D D4, consult HOLD, brief Phase 1, and `1r_estimation.md` retargeted at the Proposed ADR.
 
 **Decisions/defects:** ID **2** observe-only. Surviving consult rows on the notice. Claude judgment review requested.
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`elect-2`](../../../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) · [`Q-TRADECAP-2`](../../../../briefs/Q-TRADECAP-2-per-trade-bound-election.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`elect-2`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) · [`Q-TRADECAP-2`](../../../../briefs/Q-TRADECAP-2-per-trade-bound-election.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -1200,7 +1200,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 
 **Focus:** Rule 7 sweep after Phase 1. Report-first; parentheticals only. No mass `--slug`. No sixth root doc.
 
-**Shipped:** [`ADR`](../../../../adr/2026-08-22-catalog-hot-vs-disposition.md) §4/§5/§6/§10 parentheticals (Phase 1 landed this GO). [`docs/governance/INDEX.md`](../../../../governance/INDEX.md) P2b points at the `Accepted` ADR. C2 module header joins to `hot`.
+**Shipped:** [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md) §4/§5/§6/§10 parentheticals (Phase 1 landed this GO). [`docs/governance/INDEX.md`](../../../../governance/INDEX.md) P2b points at the `Accepted` ADR. C2 module header joins to `hot`.
 
 **Decisions/defects:** none new. §0/§1 left as pre-implementation defect record.
 
@@ -1214,7 +1214,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 
 **Focus:** Operator `Accepted` + GO. Verdict-wins parser, C2 joins to `hot`, regenerate CATALOG. No mass `--slug`. No sixth root doc.
 
-**Shipped:** [`ADR`](../../../../adr/2026-08-22-catalog-hot-vs-disposition.md) `Accepted`. Parser + C2 + `hot` column on [`lab/CATALOG.md`](../../../../../lab/CATALOG.md). `--slug` still two-part.
+**Shipped:** [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md) `Accepted`. Parser + C2 + `hot` column on [`lab/CATALOG.md`](../../../../../lab/CATALOG.md). `--slug` still two-part.
 
 **Decisions/defects:** none new. Leftover pins stay on [`lab/analysis/README.md`](../../../../../lab/analysis/README.md).
 
@@ -1228,7 +1228,7 @@ GROW-0's own RESOLVED/FALSIFIED gate.
 
 **Focus:** Draft the commissioned ADR (PR #98). ADR only — no parser/C2, no `--slug`, no CATALOG hand-edit.
 
-**Shipped:** [`docs/adr/2026-08-22-catalog-hot-vs-disposition.md`](../../../../adr/2026-08-22-catalog-hot-vs-disposition.md) (`Proposed`, full tier). Two axes (`hot`/`disposition`); Verdict-wins parser rule; C2 retargeted to `hot`; column call = keep `status`, add `hot` (less parser/C2 blast per Phase 0). `docs/adr/INDEX.md` regenerated. Both gates green.
+**Shipped:** [`docs/adr/2026-08-22-catalog-hot-vs-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md) (`Proposed`, full tier). Two axes (`hot`/`disposition`); Verdict-wins parser rule; C2 retargeted to `hot`; column call = keep `status`, add `hot` (less parser/C2 blast per Phase 0). `docs/adr/INDEX.md` regenerated. Both gates green.
 
 **Decisions/defects:** none new. Parser/C2/`--slug` implementation is Phase 1, gated on `Accepted` + a separate operator GO.
 
@@ -2884,7 +2884,7 @@ token; Magdon-Ismail B.
 
 **Focus:** Close the Great Prune's fired F-2 falsifier; ratify a CC/Cursor autonomous dispatch-detect-merge loop at operator direction.
 
-**Shipped:** branch `claude/first-passage-requirements-review-8c0bd9` — [`2026-08-14-f2-adr-corpus-disposition.md`](../../../../notes/audits/programme-audit/2026-08-14-f2-adr-corpus-disposition.md) (126-ADR corpus classified, 0/4 tombstone candidates survived adversarial verification) · addendum on [`2026-08-08-great-prune.md`](../../../../adr/2026-08-08-great-prune.md) · [`2026-08-14-cc-cursor-autonomous-loop.md`](../../../../adr/2026-08-14-cc-cursor-autonomous-loop.md) (Supersedes-in-part `2026-07-14-cc-cursor-surface-allocation.md`) · webhook routine live (`trig_012nvuH7jqmjFUFgoFVpZ6RP`, every-6h cron + GitHub PR-opened event). $0 · K=0.
+**Shipped:** branch `claude/first-passage-requirements-review-8c0bd9` — [`2026-08-14-f2-adr-corpus-disposition.md`](../../../../notes/audits/programme-audit/2026-08-14-f2-adr-corpus-disposition.md) (126-ADR corpus classified, 0/4 tombstone candidates survived adversarial verification) · addendum on [`2026-08-08-great-prune.md`](../../../../adr/2026-08-08-great-prune.md) · [`2026-08-14-cc-cursor-autonomous-loop.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-14-cc-cursor-autonomous-loop.md) (Supersedes-in-part `2026-07-14-cc-cursor-surface-allocation.md`) · webhook routine live (`trig_012nvuH7jqmjFUFgoFVpZ6RP`, every-6h cron + GitHub PR-opened event). $0 · K=0.
 
 **Decisions/defects:** F-2 ruled fired-on-a-miscalibrated-premise, not degeneration; instrument replaced (content-sample re-test), no new hard gate. 5 backlog-fix chips this session dispatched independently merged as PRs #824-826/828/829 before this branch landed — direct re-implementation of the same 5 fixes was reconciled out via hard-reset-and-restore rather than committed, confirmed non-duplicative by adversarial re-check (all 5 PRs fully cover scope). Auto-mode classifier blocked `gate_manifest.py`/`pytest` mid-session; resolved via a `.claude/settings.json` permission-allow rule.
 

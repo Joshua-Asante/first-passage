@@ -94,7 +94,7 @@ Owners hold canonical criteria; rows are pointers.
 
 - **Subscription reconfirm:** on the 21st, recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
   rows d11–d18 and record the operator's confirmation, even if unchanged; resolve
-  Fly.io/Tradeify unknowns when evidence appears. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
+  Fly.io/Tradeify unknowns when evidence appears. [Rules](docs/pursuits/SUBSCRIPTION_LEDGER.md#rules).
 - **Coverage:** 2026-09-21 missed (not attested as of 09-22); the operator's d11–d18
   confirmation is still owed.
 
