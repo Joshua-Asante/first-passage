@@ -120,7 +120,12 @@ def test_p0_latch_timestamp_survives_without_account_figures_and_later_day_is_ze
     rewrite(manifest, 'schedule', lambda d: next_day(d, 'sessions'), monkeypatch)
     def source(d):
         next_day(d, 'sessions')
-        next_day(d, 'splits')
+        d['splits'] = []
+        from datetime import datetime, timedelta, timezone
+        start = datetime(2026, 1, 5, 23, tzinfo=timezone.utc)
+        legs = d['sessions'][1]['bars'][0]['legs']
+        d['sessions'][1]['bars'] = [dict(utc=(start + timedelta(minutes=15*i)).isoformat(),
+            legs=legs) for i in range(88)]
     rewrite(manifest, 'source_bundle', source, monkeypatch)
     output = json.loads(p.run_personal_replay(manifest, adapter_factory=lambda e: adapters(signal)))
     assert output['latch'] == {'utc': '2026-01-05T20:15:00+00:00', 'kind': 'personal_halt_latched'}
