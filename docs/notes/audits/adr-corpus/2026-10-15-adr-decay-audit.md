@@ -302,7 +302,7 @@ Two further dated obligations that no ADR field carries:
   guardian-pyport (rider, §5.1), egress → browser (after the 2026-10-25 check) and 06-30 → substrate
   §11 (after §5.2 item 6).
 - **#851 merged** (taken in at `86a46111`): #851 pinned most references in surviving ADRs itself.
-  This PR pinned the rest: 9 bare §0 paths, two runnable §10 hooks (now `git show` at
+  This PR pinned the rest: 9 bare paths in 5 ADRs, two runnable §10 hooks (now `git show` at
   `4121e84c`) and four TOMBSTONES rows. Expected-output listings inside §10 code blocks stay as
   recorded.
 - **Idle-lines chip:** the research-supply consolidations, all tagged DEFERRED in the ledger.
