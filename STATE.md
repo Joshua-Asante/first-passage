@@ -53,8 +53,6 @@ Retracted verdicts leave; their correction stays with the owner.
 - **2026-09-24** — T08 R3 = NONE (no documented unknown-request fence; D-broker void; T09 unspecifiable): live release held; one narrow operator-sent CrossTrade question authorized, written answer retained as evidence; bounded-exposure amendment scoped. [§7.8](docs/briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24)/[scope](docs/superpowers/specs/2026-09-24-bounded-exposure-unknown-request-amendment-scope.md)
 - **2026-09-23** — T00 step 1 returned INSUFFICIENT, accepted. A T00 screen is not four-firm §4 falsifier evidence; the 2026-11-08 falsifier needs its own dated re-MC. Path-position bracket convention [ratified](docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23), replacing one P7 blocker only. [Rulings](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23). *2026-10-02:* §4 status is ruled at its [owner](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted).
 - **2026-09-22** — Deployment-checklist amendment §4 ratified, all five as recommended: T00 step 1 authorized; D-feed, D-broker, D-codex and D-sequence adopted. [Addendum](docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)
-- **2026-09-21** — S2 accepted as the enforced work boundary; #436 merged. [Ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-budgeted-admission-and-real-linux-work-supervision-2026-09-21)
-- **2026-09-19** — S2-R2b accepted as the funded-scheduler integration only; restart ownership ruled auto-recover. [Ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-r2b-funded-scheduler-integration-2026-09-19)
 
 ## Dormant cross-session threads
 
@@ -131,12 +129,6 @@ Owners hold canonical criteria; rows are pointers.
 - **MNQFLOW-1-DEPTH:** operator HOLD on value of spend (not a cost-only block or a decline); revisit at
   operator initiative or 2026-11-08; alternate supply routes do not depend on it.
   [S2B status](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)/[charter](docs/adr/2026-08-16-deep-iteration-lane-charter.md)/[superseding K](docs/adr/2026-08-22-grow0-two-ledger-k-question.md).
-
-### 2026-10-14
-
-- **Grafana Cloud trial end (about 2026-10-17):** ruled 2026-10-12, downgrade to Free; prove SMS/voice
-  with an attended test page or upgrade before the first armed session. Owed by the watch's G10 record.
-  [Watch G10](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md#arming-preconditions-q4-as-narrowed).
 
 ### 2026-11-08
 
