@@ -244,3 +244,5 @@ the degeneration risk this ADR itself flagged.
 If the 2026-11-16 §4 review confirms the discipline catches defects via the
 existing pytest anchors, no mechanical Hook 1 is needed; if it falsifies, the
 whole §2 discipline is revoked per §6.
+
+**Correction 2026-10-15:** the pilot pair and `test_mc_anchors.py` named under 'Intent already met' are not in this public tree; `tests/core/test_mc_fp_boundaries.py` and `tests/core/test_firm_constants_single_source.py` remain.

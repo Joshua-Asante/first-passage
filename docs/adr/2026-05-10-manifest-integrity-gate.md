@@ -1,6 +1,6 @@
 # ADR: Vendor manifest integrity gate (pre-commit + format CI)
 
-**Date:** 2026-05-10  
+**Date:** 2026-05-10 · **Revision:** 2026-10-15 — Decision items 1–4 restated to current paths and owners; prior text at `4121e84c`  
 **Status:** Accepted  
 **Decision date:** 2026-05-10
 **Supersedes:** none
@@ -24,10 +24,10 @@ There was **no** manifest-generation script in `scripts/` at Phase A; Phase B **
 
 ## Decision
 
-1. Add [`scripts/check_data_manifests.py`](../../scripts/check_data_manifests.py) (stdlib only): `--check` (default), `--regenerate`, `--regenerate --dry-run`, walking the four directories that hold tracked `SHA256SUMS`.
-2. Add a **git-native** `pre-commit` hook (tracked template at [`scripts/githooks/pre-commit`](../../scripts/githooks/pre-commit)) installed per clone via [`scripts/install_hooks.sh`](../../scripts/install_hooks.sh) or [`scripts/install_hooks.bat`](../../scripts/install_hooks.bat). The hook runs `--check` when any staged path is under `data/tv_exports/`, `data/bar_data/`, or `data/external/`. `git commit --no-verify` remains the explicit escape hatch.
-3. Add [`.github/workflows/manifest-check.yml`](../../.github/workflows/manifest-check.yml): **format-only** validation of `SHA256SUMS` lines plus enforcement that no `data/tv_exports/**/*.csv` or `data/bar_data/**/*.csv` is **tracked**. Hash equality against bytes is **local-only** — CI does not have gitignored CSVs.
-4. Document the standing regen-with-data workflow in [`CLAUDE.md`](../../CLAUDE.md).
+1. Add [`scripts/check_data_manifests.py`](../../scripts/check_data_manifests.py) (stdlib only): `--check` (default), `--regenerate`, `--regenerate --dry-run`, walking the directories in its `MANIFEST_DIRS` (three since 2026-08-03: `core/data/tv_exports/cme`, `core/data/bar_data`, `core/data/external`; `--list-dirs` prints them).
+2. Add a **git-native** `pre-commit` hook (tracked template at [`scripts/githooks/pre-commit`](../../scripts/githooks/pre-commit)) installed per clone via [`scripts/install_hooks.sh`](../../scripts/install_hooks.sh) or [`scripts/install_hooks.bat`](../../scripts/install_hooks.bat). The hook runs the gate manifest's pre-commit tier, whose `data-manifests` gate ([`scripts/gates.yml`](../../scripts/gates.yml), tier `data-conditional`) runs `--check` when a staged path matches `^core/data/(tv_exports|bar_data|external)/`. `git commit --no-verify` is not the standing path ([`AGENTS.md`](../../AGENTS.md) §Vendor-data integrity gate); agent shells surface it for operator confirmation (`scripts/guard_shell_command.py`).
+3. Add [`.github/workflows/manifest-check.yml`](../../.github/workflows/manifest-check.yml): **format-only** validation of `SHA256SUMS` lines plus enforcement that no `core/data/tv_exports/**/*.csv` or `core/data/bar_data/**/*.csv` is **tracked**. Hash equality against bytes is **local-only** — CI does not have gitignored CSVs.
+4. Document the standing regen-with-data workflow in [`AGENTS.md`](../../AGENTS.md) §Vendor-data integrity gate (formerly `CLAUDE.md`).
 5. Graduate methodology lesson **M-9** in [`docs/methodology/lessons/methodology_lessons.md`](../methodology/lessons/methodology_lessons.md).
 
 ## Trade-offs

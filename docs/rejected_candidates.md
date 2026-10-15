@@ -347,13 +347,21 @@ at this writing — see the 2026-07-01 audit follow-ups.)
 **Closure basis:** the KER/TSMOM gold-regime signal falsified twice OOS after deployment — Q-REGIME-OOS-1 deep-OOS AUC 0.448 / 0.563 (the gate **inverts**: DEPLOY +0.004R vs WAIT +0.284R), Q-REGIME-POSTCOVID-1 held-out AUC 0.556 with the KER leg inverted. The pre-registered forward kill-tripwire was structurally unfireable in shadow mode (it keys on acted-on `DEPLOY` outcomes; shadow emits none), so continued logging accrued no decision value. The locked book (99.83 / 0.17 / 4.37) was never touched by this gate.
 **Re-proposal bar:** **new mechanism evidence that survives OOS** — NOT a re-run of this signal, a refit of the `0.12` / sign thresholds, or a longer shadow log. Refitting the frozen constants is the named overlay-scar move.
 
+### Short-only Donchian safe-haven hedge ("Sentinel") × USDCHF H4 — H2_KILL (build/no-build gate)
+
+**Rejection scope:** the no-overlay short-only Donchian rule on USDCHF H4 (Sentinel v2.0 design intent; v1.0's realized-vol gate already deleted under the no-overlay rule) is rejected as a portfolio addition — never built: no Pine, no portfolio MC, no allocation change.
+**Closure date:** 2026-05-03
+**Class:** edge-failure (entries indistinguishable from random within the session × weekday pool).
+**Authoritative artifact:** [ADR 2026-05-03 Sentinel gate decision](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-05-03-sentinel-gate-decision.md) (blob `ed93d5c2dffac614ba1ac26555ecd150b6210dcd`); full numerical record `archive/docs/methodology/findings/2026-05-03_usdchf_h4_sentinel_gate.md` at tag `pre-prune-2026-06-05` (private archive only — not on this public clone). Consolidated 2026-10-15 from `2026-05-03-sentinel-gate-decision` (removed; see [TOMBSTONES](adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
+**Closure basis:** parent-brief §6/§8 gate: (a) N 84 vs ≥ 80 ✅; (b) PF **1.026** vs ≥ 2.0 ❌; (c) max DD **4.252%** vs < 3.0% ❌; (d) permutation p **0.944** vs < 0.05 ❌ — verdict **H2_KILL**. Permutation-null PF median 1.076; the observed PF sits below it. Daily P&L |r| < 0.07 against the then-locked G/S/A legs (moot under the kill).
+**Re-proposal bar:** a *different* USDCHF operationalization (rule × timeframe × direction, or a different pair-correlation signal) that clears its own pre-Q gate, or the finding's named forward observation firing (a structural/macro shift named in the finding body). NOT a re-spec at lower risk (sizing clears (c) only; (b) and (d) are size-invariant), NOT an SL/TP re-test without a fresh pre-Q, and NOT the post-hoc ATR-Q4 filter (PF 2.231 in the top-volatility quartile is the forbidden Pre-Q-D "keep only trades that fit the thesis" rescue, recorded as a forward observation only).
+
 ### Other directions (entries pending formalization)
 
 Directions named in `Q-CORR-1-closure.md` §3 as existing on this list under prior disposition. Each requires its own entry written at the close of its authoritative investigation; the closure note references them as comparators only, not as content for this file.
 
 - AUDNZD
 - CHN50U
-- Sentinel USDCHF
 - ORATS short-vol strangles
 - Aegis SHORT v0.1
 - Guardian-on-USOIL

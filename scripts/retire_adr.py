@@ -10,7 +10,11 @@ hot CARD-shape stub at `docs/adr/<file>`, then regenerates
 this script is the one place that performs the retire-time move + link
 rewrite + Status/Superseded-by flip (D1/\u00a73 of the design).
 
-Design: docs/superpowers/specs/2026-07-17-adr-lifecycle-graph-design.md
+Optional legacy form; the default removal route is verified deletion plus a
+`docs/adr/TOMBSTONES.md` row (ceremony-tiering ADR). This helper writes no
+tombstone.
+
+Design (private archive): https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/specs/2026-07-17-adr-lifecycle-graph-design.md
 """
 from __future__ import annotations
 
