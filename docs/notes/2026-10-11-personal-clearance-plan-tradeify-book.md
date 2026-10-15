@@ -340,7 +340,7 @@ The personal session sits downstream of most of the Tradeify book-route build: T
 
 ### 8.1 Personal R1 route and feed next steps (2026-10-15)
 
-**Current preparation sequence; existing owners retained.** Joshua requested this
+**Current preparation workstreams; existing owners retained.** Joshua requested this
 documentation alignment after the bounded route/feed audit. This section replaces
 the broad external-ask and route/feed preparation reading of rows 0.2, 2.9 and
 3.1–3.2 above; their activation, funding and qualification gates remain. The
@@ -350,7 +350,13 @@ for the frozen study. Track B stays [suspended](../superpowers/plans/2026-09-20-
 This alignment selects no route/provider, changes no operating authority and
 authorizes no outreach, access, spend or additional simulation.
 
-1. **Obtain the actual R1 intent trace from the existing fidelity owner first.**
+T14 feed eligibility and independent entitlement, access, licensing and cost checks
+do not wait for the R1 trace or route selection. They and other independent owner
+work can proceed in parallel under existing gates; the trace prerequisite applies
+to trace-dependent T09 comparison and qualification.
+
+1. **Before trace-dependent route comparison, obtain the actual R1 intent trace
+   from the existing fidelity owner.**
    Reuse [Card D / its FG executor](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-d-fg-parity-card-DRAFT.md#13-part-2-the-fg-evidence-run-claude-owned-executor-act-not-in-this-build)
    and the current B/D/E work; do not open a parallel replay or clearance writer.
    Bind the trace to the frozen R1 tuple, source/port identities and schedule;
