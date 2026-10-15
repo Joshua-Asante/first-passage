@@ -213,7 +213,7 @@ and still supports `--regime-check`.
 - **Phase 1 runner:** `scripts/q_mcto_1_phase1.py` (deleted; Q-MCTO Phase scripts retired) — reproduced control + treatment anchors deterministically
 - **Boundary tests:** [`tests/test_inactivity_boundary.py`](../../tests/test_inactivity_boundary.py) — 10 tests pin the semantic
 - **Reference simulator:** [`scripts/inactivity_simulator.py`](../../scripts/inactivity_simulator.py) — Phase 1 work-product (production port lands in `portfolio_mc.py`)
-- **Trajectory artifact:** [`docs/analytics/mc_anchor_evolution/README.md`](../analytics/mc_anchor_evolution/README.md) — A8 anchor added by this ADR
+- **Trajectory artifact:** [`docs/analytics/mc_anchor_evolution/README.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/analytics/mc_anchor_evolution/README.md) — A8 anchor added by this ADR
 - **Standing doctrine:**
   - `docs/methodology/regime_robustness_gate.md` — Phase 2 gate worked-example here
   - `docs/rule_0.md` — §0 above is the production-source verification
