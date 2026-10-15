@@ -2962,9 +2962,9 @@ token; Magdon-Ismail B.
 
 **Focus:** Verify Stage-8 variance-dominance header (no edit) and reconcile MVD-discipline ceremony to what is actually enforced.
 
-**Shipped:** branch `cursor/mvd-ceremony-reconcile-a1df` — [PR #828](https://github.com/Joshua-Asante/first-passage-archive/pull/828) — [MVD addendum](../../../../adr/2026-04-24-mvd-discipline.md). Stage-8 risk-N_eff ADR left unchanged (W4 in-part edge already complete). $0 · K=0.
+**Shipped:** branch `cursor/mvd-ceremony-reconcile-a1df` — [PR #828](https://github.com/Joshua-Asante/first-passage-archive/pull/828) — [MVD addendum](https://github.com/Joshua-Asante/first-passage/blob/dad73e3d2c6b78a2ca10a4ba90df2765a05286e8/docs/adr/2026-04-24-mvd-discipline.md). Stage-8 risk-N_eff ADR left unchanged (W4 in-part edge already complete). $0 · K=0.
 
-**Decisions/defects:** none new. Owner: the 2026-08-14 addendum on [MVD discipline](../../../../adr/2026-04-24-mvd-discipline.md). Code checks untouched.
+**Decisions/defects:** none new. Owner: the 2026-08-14 addendum on [MVD discipline](https://github.com/Joshua-Asante/first-passage/blob/dad73e3d2c6b78a2ca10a4ba90df2765a05286e8/docs/adr/2026-04-24-mvd-discipline.md). Code checks untouched.
 
 **Open / next:** CapFLOW Cap-spend FALSIFIED (Cap held). Carry: F-2; F1 2026-11-08; M1; weekly token; Magdon-Ismail B; no slate-4 until NEW WHO. Confirm #806 CI; cart confirm. Third-leg spec still restates 08-06 retained-not-released (owed).
 
