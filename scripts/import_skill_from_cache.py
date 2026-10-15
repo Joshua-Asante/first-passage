@@ -20,6 +20,7 @@ This is NOT bidirectional sync (scripts/README.md#skill-lifecycle). Guardrails:
     exists, every edit goes through the repo authoring path; there is no
     deployed -> repo overwrite, ever (deliberately no --force).
   * REFUSES when the source dir lacks a SKILL.md (not a real skill).
+  * REFUSES a retired skill name (sync_skills.RETIRED_SKILLS).
   * Copies one named skill byte-for-byte; never touches other skills.
 
 After a successful import the repo is canonical for that skill. Gate + commit:
@@ -36,7 +37,7 @@ Source resolution (uses sync_skills.py primary-target helper; not release defaul
 
 Exit codes:
   0 — imported
-  1 — refused: repo copy already exists (use the repo authoring path)
+  1 — refused: repo copy already exists, or the skill is retired
   2 — source missing / not a skill dir
 """
 from __future__ import annotations
@@ -60,6 +61,9 @@ _spec.loader.exec_module(_sync_skills)
 
 def import_skill(source_skill: Path, dest_skill: Path) -> tuple[int, str]:
     """Copy one skill dir from the deployed bundle into the repo. No overwrite."""
+    retired_owner = _sync_skills.RETIRED_SKILLS.get(dest_skill.name)
+    if retired_owner:
+        return 1, f"REFUSED: {dest_skill.name} is retired; see {retired_owner}"
     if dest_skill.exists():
         return 1, (
             f"REFUSED: repo copy already exists: {dest_skill}\n"

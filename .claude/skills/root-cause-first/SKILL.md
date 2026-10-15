@@ -208,7 +208,7 @@ failing-then-clean run — is verification theater (fable-method failure mode 14
 |---|---|
 | `code-defect-debugging` | Owns the evidence engine: Phase 1 reproduction, Phase 2 forward boundary logging, Phase 4.5 three strikes. This skill is the gate at the fix; its backward trace and hidden-write hunt are Phase 2 alternatives for crash- and state-shaped bugs. |
 | `fable-method` | Step 2.6 / 4.1 `INTENT` is the contract reconstruction; 4.6 forbids weakening checks; 5(c) `TWINS`. This skill's three lines join those in the report. |
-| `verify-source` / `rule-0` | The contract must come from the read source, the right vintage, not memory. |
+| `verify-source` / Rule 0 (`docs/rule_0.md`) | The contract must come from the read source, the right vintage, not memory. |
 | `blast-radius` | After the fix: sweep the owners and mirrors that still restate the pre-fix behaviour. |
 | Rule 7, firm-constants single-source ADR, M-24 | The in-repo single-source-of-truth owners. When the mechanism is duplicated truth, consolidate to the owner, then return here for the regression check. |
 | `fable-judge` | Review-time use: a returned fix with no named mechanism is REFUTED on that ground, whatever its tests say. |

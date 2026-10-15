@@ -73,3 +73,13 @@ def test_main_exit_codes_and_source_flag(tmp_path):
     # Second run refuses — the seed is one-time.
     rc = isc.main(["alpha", "--source", str(bundle), "--repo-skills", str(repo)])
     assert rc == 1
+
+
+def test_refuses_retired_skill(tmp_path):
+    bundle = tmp_path / "bundle"
+    repo = tmp_path / "repo_skills"
+    _mk_skill(bundle, "fxify-challenge", {"SKILL.md": "retired\n"})
+    rc, msg = isc.import_skill(bundle / "fxify-challenge", repo / "fxify-challenge")
+    assert rc == 1
+    assert "retired" in msg
+    assert not (repo / "fxify-challenge").exists()
