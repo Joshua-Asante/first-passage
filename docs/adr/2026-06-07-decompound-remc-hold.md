@@ -10,20 +10,13 @@
 **Related:** `docs/adr/2026-05-23-allocation-refresh-2.md` (the locked config being characterized) · `docs/methodology/regime_robustness_gate.md` (the gate applied) · Q-DDP-1 (the regime-fragility precedent)
 **Layer:** portfolio
 **Addendum 2026-06-25 (see end):** clean single-file re-MC re-validates the HOLD (still breaches both gates) but **corrects the breach severity** — the headline was inflated by a Guardian/DJ30 stitch-seam artifact. Clean B_2020 = **98.53% / 1.47% / 5.32%** (not 97.08 / 2.92 / 5.93).
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): reduced the spent §0 Rule-0 reads to a pointer and §10 to its one still-runnable hook; removed the §6 downstream-artifacts list, §7 implementation plan, Verification block, and the 2026-08-03 addendum's §0 table and §10 hooks; condensed the 2026-07-01 addendum and the 2026-06-25 re-run flag; repointed archived-harness paths and the dead design link. §1–§5 (including the §4 trigger field), the 2026-08-03 Decision, forbidden moves and §6 gate are unchanged. Pre-trim text at blob `8ba0605c4d12714e29da98384f08df953788fc47` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
 
-Read **before** authoring, this session (2026-06-07):
-
-- `core/portfolio_mc.py` — anchor `4331e65` (2026-06-06). Read `_simulate_path` (bust/pass semantics, lines 369–426), `build_daily_panel` + `implied_1r` (risk-normalization, 292–354), `_load_all`. The locked anchor reproduces **99.83 / 0.17 / 4.37** in this environment (verified `pytest tests/test_mc_anchors.py -k pepperstone` → 2 passed, this session).
-- `core/dd_protection.py` — anchor `4331e65` (2026-06-06). `DD_TRIGGER=0.015`, `DD_SCALE=0.40` (C2, single-tier brake).
-- `core/firm_rules.py` — anchor `4331e65` (2026-06-06). FXIFY: `max_dd_pct=5`, `daily_loss_pct=5`, `profit_target_pct=5` → lock gates **bust<1% AND p99 DD<5%**; allocations G 0.34 / DJ30 0.70 / A 1.50 / N 0.37.
-- `tests/test_mc_anchors.py` — anchor `92da2c9` (2026-05-25). Pins 99.83/0.17/4.37 on the **2022-01-04 → 2026-05-19** Pepperstone panel (1141 bdays / 227 week-blocks) — i.e. the locked anchor is a **2022+ window**.
-- `docs/methodology/regime_robustness_gate.md` — anchor `5b8ff71` (2026-05-23). Gate v1.0: 6-month block bootstrap + half-panel split; floor = the brief's headline criteria; mandatory for dd_protection-class changes and "any brief comparing MC configurations where regime distribution materially affects the result."
-- `docs/ltm/briefs/Q-SWAP-3/_run_regime_robustness.py` — implementation pattern mirrored by `lab/analysis/regime/decompound_remc_2026-06-07/regime_gate.py`.
-- `lab/analysis/regime/decompound_remc_2026-06-07/` (this session) — REG byte-identity verified: the research driver, fed the canonical panels, reproduces `compute_default_config` and the 99.83/0.17/4.37 anchor exactly (18 gates pass, `test_decompound.py`). Decompounding round-trip error = $0.000000.
+Spent: the 2026-06-07 reads (anchor `4331e65`: `core/portfolio_mc.py`, `core/dd_protection.py`, `core/firm_rules.py`, `tests/test_mc_anchors.py`, `docs/methodology/regime_robustness_gate.md` and the since-archived harness) are in the pre-trim blob (see **Revision**).
 
 ---
 
@@ -99,7 +92,7 @@ Re-MC on that corrected basis (decompounding round-trips losslessly; harness rep
 **Positive:**
 - Canonical risk picture now reflects regime-dependence instead of one misleading number; operators size with eyes open.
 - Locked config unchanged → no relock churn, no benign-regime pass-time cost, no destabilization of a config that performs excellently in trending regimes.
-- The decompounding + regime-gate harness (`lab/analysis/regime/decompound_remc_2026-06-07/`) is reusable for the quarterly §4 trigger.
+- The decompounding + regime-gate harness ([archived](https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/regime/decompound_remc_2026-06-07/); `lab/ARCHIVED.json` key `decompound_remc_2026-06-07`) was reusable for the quarterly §4 trigger, whose schedule was struck 2026-08-03.
 
 **Negative (real cost):**
 - The portfolio carries **known, unfixed** tail risk in choppy/crisis regimes; safety now depends partly on operator discretion (harder to enforce than a constant).
@@ -109,59 +102,16 @@ Re-MC on that corrected basis (decompounding round-trips losslessly; harness rep
 - A 2022-style regime arrives unrecognized (mitigation: §4 quarterly regime-check + live-outcome monitor).
 - Discretion drift — operators ignore regime-awareness under FOMO (mitigation: the §4 live trigger fires on realized failures regardless of discretion).
 
-**Downstream artifacts that need updating:**
-- `CLAUDE.md` MC-anchor section — add a caveat + pointer to this ADR (done this session).
-- `lab/analysis/regime/decompound_remc_2026-06-07/RESULTS.md` — final record incl. gate + n=100 (done this session).
-- Auto-memory `project_decompound_remc_canonical_shift_2026_06_07.md` — closure state (done this session).
-
----
-
-## §7 — Implementation plan
-
-Policy + risk-characterization — **no mechanical `core/` edits** (the decision is HOLD).
-
-- **Phase 0** — §0 reads current (verified this session; anchor `4331e65`).
-- **Phase 1** — add caveat + ADR pointer to `CLAUDE.md` MC-anchor section.
-- **Phase 2** — finalize `RESULTS.md` with the n=100 bootstrap numbers; update auto-memory to closure.
-- **Phase 3** — verification block executes; status `Accepted`.
-
 ---
 
 ## §10 — Audit hooks (runnable)
 
+The other 2026-06-07 hooks target the retired `CLAUDE.md` and the archived harness (pre-trim blob, see **Revision**). Still runnable:
+
 ```bash
-# This ADR is referenced from CLAUDE.md (characterization is canonical)
-grep -n "2026-06-07-decompound-remc-hold" CLAUDE.md
-# Expected: >=1 hit in the MC-anchor / Protection section
-
-# §4 quarterly regime trigger (next: 2026-08-08) — re-run the gate on the locked config
-python lab/analysis/regime/decompound_remc_2026-06-07/regime_gate.py 100
-# Expected at HOLD: both candidates still GATE FAIL; the locked-config H1 still breaches
-# (the trigger fires if a TRAILING-6mo window, substituted into the harness, clears/breaches)
-
 # Locked config is genuinely untouched
 git -C . diff --stat origin/main -- core/dd_protection.py core/firm_rules.py
 # Expected: empty (no constant changes under this ADR)
-
-# Calendar trigger reminder
-# Quarterly regime check due: 2026-08-08 (then 11-08, 2027-02-08, 05-08)
-```
-
----
-
-## Verification
-
-```bash
-# Discipline checks (mechanical)
-python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-06-07-decompound-remc-hold.md --type adr
-# Expected: all 6 checks PASS
-
-# Production-source verification (Rule 0 confirmation)
-git log -1 --format='%h %ci' -- core/portfolio_mc.py core/dd_protection.py core/firm_rules.py
-pytest tests/test_mc_anchors.py -k pepperstone -q   # locked anchor still reproduces
-
-# Regime-gate evidence reproduces
-python lab/analysis/regime/decompound_remc_2026-06-07/regime_gate.py 100   # both candidates GATE FAIL on H1
 ```
 
 ---
@@ -174,8 +124,7 @@ ADR's panels stitched Guardian/DJ30 from 2 TV exports each, and that the clean s
 stitched 9.03%; Aegis/NAS, single-file in both vintages, matched the old DD exactly) — a
 **stitch-seam artifact**. This addendum re-runs the decompound re-MC on the clean vintage.
 
-**Pre-registration:** `docs/ltm/briefs/pre-registration/2026-06-25-decompound-cleanvintage-remc-prereg.md`
-(lock gates frozen before the run). **Full results:** `lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_cleanvintage_2026-06-25.md`. **Driver:** `remc_cleanvintage.py` (sibling; zero fork of the frozen 2026-06-07 harness).
+**Pre-registration:** `docs/ltm/briefs/pre-registration/2026-06-25-decompound-cleanvintage-remc-prereg.md` at the time (lock gates frozen before the run; not in this public tree). **Full results:** [`RESULTS_cleanvintage_2026-06-25.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_cleanvintage_2026-06-25.md) (harness archived, `lab/ARCHIVED.json` key `decompound_remc_2026-06-07`). **Driver:** `remc_cleanvintage.py` (sibling; zero fork of the frozen 2026-06-07 harness).
 
 **Result — the HOLD stands; its breach magnitude was inflated:**
 
@@ -196,39 +145,19 @@ corrected to 98.53% / 1.47% / 5.32%**; this ADR's 97.08 / 2.92 / 5.93 overstated
 by ~1.45pp bust / ~0.61pp p99 because of the stitch artifact. The §4 revert triggers and the
 HELD config are unaffected.
 
-**Flagged for the 2026-08-08 regime trigger (not run here):** because H1 is materially less
-severe on clean data, the regime-robust deep-de-risk frontier may now clear at a more
-practical risk/median than §3's "k≈0.25, 367-591d." Re-run `h1_check.py` on the clean vintage
-at the trigger; a practical regime-robust config would reopen the de-risk option this ADR
-closed. Today's HOLD is unchanged either way.
+*(The `h1_check.py` re-run this addendum flagged for the 2026-08-08 regime trigger lapsed with the schedule struck on 2026-08-03; today's HOLD is unchanged.)*
 
 ---
 
 ## Addendum — 2026-07-01 — §4 limb 1 falsifier dormancy (retirement back-propagation)
 
-Per operational-rules Rule 11 (retirement events back-propagate to standing
-falsifiers), the 2026-07-01 programme audit records that **§4 revert-trigger limb 1
-— "≥2 challenge failures attributable to drawdown within any rolling 6-month
-window" — is DORMANT.** As of the 2026-06-30 CFD retirement
-(`docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md`) there is no live
-challenge in flight (FXIFY idle; futures chain not yet live), so no live challenge
-failure can accrue to bind this limb. This is not a threshold change and §4 is not
-edited — the limb re-arms automatically when live execution resumes (the futures
-automation chain goes live and a challenge is in flight).
-
-**Surviving coverage is intact:** §4 limb 2 (the quarterly trailing-6-month
-`p99 DD ≥ 5% OR bust ≥ 1%` MC check, next **2026-08-08**) consumes TV panel
-exports, not live fills, and remains fully in force and mechanically scheduled
-(cron `fwd-quarterly-regime-ddrevert`). The HOLD's decision rests on that limb; the
-dormant limb 1 was a *corroborating* live catch-path, not the primary. No re-MC and
-no config change under this addendum.
-
-> ⚠ **CORRECTION 2026-08-03 — the "surviving coverage is intact" paragraph above is NO LONGER
-> TRUE.** It was accurate when written. Limb 2 is now **SUSPENDED-ORPHANED**: it consumes TV panel
-> exports, and that panel can no longer be extended, so the trailing-window call is permanently
-> `NOT_EXECUTABLE`. The sentence *"The HOLD's decision rests on that limb"* now reads as an
-> **exposure statement**, not a reassurance — the limb it rested on is gone. See §Addendum
-> 2026-08-03. Paragraph retained unedited as the 07-01 record.
+Per Rule 11, the 2026-07-01 programme audit recorded **§4 limb 1** ("≥2 challenge failures
+attributable to drawdown within any rolling 6-month window") as **DORMANT**: after the 2026-06-30
+CFD retirement (`docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md`) no live challenge is in
+flight, so no failure can accrue. Not a threshold change; §4 is not edited. The limb re-arms
+automatically when live execution resumes with a challenge in flight. This addendum's further
+statement that limb 2 remained fully in force was **corrected 2026-08-03** (limb 2
+SUSPENDED-ORPHANED, below). Full text: `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-06-07-decompound-remc-hold.md`.
 
 ---
 
@@ -242,17 +171,7 @@ second operator ruling 2026-08-03 (*"all pepperstone has been retired in light o
 pivot"*) re-confirmed the retirement independently. What was missing was the record **on the ADR
 that owns the falsifier** — a reader of §4 had no way to learn its trigger could not fire.
 
-### §0 — Rule 0 reads (this addendum, 2026-08-03)
-
-Executed, not asserted — the claims below are measurements, not inferences:
-
-| Read | Finding |
-|---|---|
-| `lab/analysis/regime/decompound_remc_2026-06-07/inputs/` (`ls`) | **6 Pepperstone CSVs + README still present.** Neither retirement touched them — both scoped to `core/data/tv_exports/pepperstone/`. The harness is **not** input-less. |
-| `python regime_gate.py --regime-check --asof 2026-08-08` | `VERDICT: NOT_EXECUTABLE — panel ends 2026-06-02, 49 bdays short… 49/126 bdays uncovered.` Names its own remedy: *"a fresh Pepperstone TV export through the check date… an operator action, not a fetch."* |
-| `python regime_gate.py 100` (the §10 hook) | **Still runs.** Full-panel C1 prints `pass 99.87% bust 0.13% p99 4.33%`. The §10 hook is not broken; only the *trailing-window* mode is unreachable. |
-| [ADR 2026-08-02 §2-D](2026-08-02-pepperstone-feed-retirement.md) | A5 struck; limb 2 recorded as orphaned; owed forward regime monitor + orphaned limb 2 ruled **the same obligation**. |
-| `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` | CFD venue closed — establishes that the named remedy is unprocurable, not merely outstanding. |
+Rule-0 measurements behind this addendum (2026-08-03; the harness and its inputs are since archived, `lab/ARCHIVED.json` key `decompound_remc_2026-06-07`): prior body `4121e84c95f4990b71962e3b9570c4c3fad88426`.
 
 ### The precise failure — reachability, not thresholds
 
@@ -286,7 +205,7 @@ that was wrong *and* is now unreachable is worse than one that is merely unreach
 - **Discharge = the venue-native regime monitor** (§2-D: the two holes are one hole). It discharges
   limb 2 and the owed forward monitor together; its standing constraints carry unchanged (**not**
   pass-rate-shaped; the both-halves gate is **not** re-run as if the answer were unknown). Design:
-  [`docs/superpowers/specs/2026-08-02-venue-native-regime-monitor-design.md`](../superpowers/specs/2026-08-02-venue-native-regime-monitor-design.md).
+  `docs/superpowers/specs/2026-08-02-venue-native-regime-monitor-design.md` (not in this public tree; private archive). Current status: STATE "M-A regime observer / decompound limb-2 successor" ([Q-MONSURF-1 closure](../briefs/closures/Q-MONSURF-1-closure-resolved.md)).
   It is gated on the **first live fill**, not a date — so this gap does not close on a calendar.
 - **Limb 1 is unaffected** by this addendum — dormant since 2026-07-01, feed-independent, re-arms on
   live execution. It is a *corroborating* catch-path; it does not substitute for limb 2.
@@ -316,29 +235,6 @@ HOLD is falsified on the merits; open the regime-adaptive-sizing Pre-Q and apply
 **AMBIGUOUS** — no live fill has occurred by the **2026-11-08** review, so the successor remains
 unbuilt. Then the gap is **≥3 months old** and must be re-raised in that cycle's programme audit as
 a standing-unfalsifiable finding, not rolled forward silently.
-
-### §10 — Audit hooks (runnable)
-
-```bash
-# 1. The suspension is recorded where the falsifier is READ (Rule 14 reader-intercept)
-grep -c "SUSPENDED-ORPHANED" docs/adr/2026-06-07-decompound-remc-hold.md
-# Expected: >=3 (the §4 banner, this addendum, the change-history row)
-
-# 2. The gap is still open — the §4 reader-intercept still declares the HOLD uncovered
-grep -c "no live falsifier" docs/adr/2026-06-07-decompound-remc-hold.md
-# Expected: 2 — the §4 banner plus this hook's own string (M-AHF: the hook counts itself).
-# A count of 1 means the banner was removed: do NOT read that as a lift until an explicit
-# Rule-12 lift artifact is produced and named in Change history.
-
-# 3. Limb 2 is genuinely unreachable, not merely unrun (re-verify, do not assume)
-cd lab/analysis/regime/decompound_remc_2026-06-07 && python regime_gate.py --regime-check --asof 2026-11-08
-# Expected: NOT_EXECUTABLE, uncovered-bday count LARGER than 08-08's 49/126 (the gap grows daily).
-# If this ever returns a verdict, the panel was extended — investigate the source before trusting it.
-
-# 4. Locked config untouched by this addendum
-git diff --stat origin/main -- core/dd_protection.py core/firm_rules.py
-# Expected: empty
-```
 
 ---
 

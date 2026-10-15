@@ -41,7 +41,7 @@ Open operator-owned residuals (optional): archive the structural hub pages out o
 - `34cdc0b53c11812cbb4ff637ba44736e` — Rule 1 — Small-cell variance prior → ARCHIVED-AT:docs/methodology/archive/notion/rule-1-small-cell-variance-prior.md
 - `34bdc0b53c1181fe9dc3fd93eadf3e8e` — Iran-Hormuz overlay deactivation (hard lesson) → DEAD (404, 2026-06-13) → REPO-HISTORY:`git show pre-prune-2026-06-05:archive/docs/methodology/archive/overlays/guardian_conflict_risk.md`; summary in inqhiori-canon.md §7 + methodology-canon.md §5
 - `357dc0b53c118124a3ddf811d1d50745` — Reflect — Striker NAS100 v1 dual-loop closure → DEAD (404, 2026-06-13) → SUPERSEDED-BY:inqhiori-canon.md §9 (closure summary) + core/strategies LOCK record
-- `346dc0b53c11816085bbf2292be934cc` — 2026-04-17 risk-control incident chain → DEAD (404, 2026-06-13) → SUPERSEDED-BY:docs/adr/2026-04-17-dd-trigger-calibration.md + docs/adr/2026-04-17-equity-tier-deletion.md
+- `346dc0b53c11816085bbf2292be934cc` — 2026-04-17 risk-control incident chain → DEAD (404, 2026-06-13) → SUPERSEDED-BY:docs/adr/2026-05-08-dd-trigger-c2-relock.md §Lineage (the two 2026-04-17 ADRs, tombstoned 2026-10-15)
 - `34ddc0b53c1181199976c9b1b4effb17` — CC brief: 1R diagnosis + Notice-phase compression (first INQHIORI test case) → DEAD (404, 2026-06-13) → SUPERSEDED-BY:docs/methodology/observation_routing.md + docs/methodology/archive/notion/the-algorithm.md (worked example)
 
 ## Command Center current-state pages (§2.4 verified MATCH vs repo)

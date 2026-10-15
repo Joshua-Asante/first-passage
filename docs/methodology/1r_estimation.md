@@ -284,7 +284,7 @@ entry only.** Pyramid sizing has a tracked divergence:
 
 Asymmetric impact: live undersizes layer-2 in winning extensions (drag on
 PF since 94% of Striker profit historically comes from pyramid extensions
-per the v4.3-pyramid ADR) and undersizes in losing extensions (modest
+per the v4.3-pyramid record, now `core/strategies/_archive/striker/striker_CHANGELOG.md` v4.3) and undersizes in losing extensions (modest
 benefit on the rare reversal-at-pyramid case). Net direction: live PF on
 Striker tracks below backtest PF; magnitude scales with how favorable
 layer-1 was at the moment layer-2 fires. Quantification requires per-trade

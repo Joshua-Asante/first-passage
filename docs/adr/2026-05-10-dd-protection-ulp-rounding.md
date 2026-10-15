@@ -7,14 +7,14 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Scope:** `dd_protection.py` (line 92), new `tests/test_dd_protection.py`
+**Scope:** `dd_protection.py` (line 92 as of 2026-05-10; now `core/dd_protection.py` `calculate_protection`), new `tests/test_dd_protection.py` (now `tests/core/test_dd_protection.py`)
 **Bound to:** [2026-05-08-dd-trigger-c2-relock](2026-05-08-dd-trigger-c2-relock.md) — precision-correctness companion. The C2 lock binds the `0.015 / 0.40×` threshold; this ADR binds how that threshold is compared.
 
 **Ratification note (2026-05-10):** Accepted on the strength of the asymmetric-error-costs reading (account-loss-class miss-fire vs opportunity-cost early-fire). The empirical 47.4% pre-fix miss rate **inverts the brief's framing** — the C2 calibration substrate (anchor 98.09 / 0.36 / 4.73, 2026-05-08 relock) is now known to have systematically under-fired the risk control. Direction of MC drift is asymmetric: post-fix bust rate likely *higher*, pass rate likely *lower*. Issue [#55](https://github.com/Joshua-Asante/multi_firm_operations/issues/55) is **P0** and is the falsifier on whether the C2 lock itself survives. The 0.5pp tolerance from the original brief is provisional; the MC re-run spawn brief reframes it explicitly. The 2026-05-08 bust attribution (striker 44.4 / aegis 24.1 / G 21.3 / NAS 10.2) was computed on the buggy comparison; if the attribution shape changes post-fix, the relock decision itself is up for review (separate ADR if drift confirms).
 
 **Post-merge update (2026-05-10, ~14:36Z):** `tests/test_mc_anchors.py` verification on post-fix main showed C2 anchor (98.09 / 0.36 / 4.73) and OANDA anchor (96.23 / 0.69 / 4.91) hold at `abs=1e-4` tolerance — 50× tighter than the brief's proposed 0.5pp. Parent's escalation of [#55](https://github.com/Joshua-Asante/multi_firm_operations/issues/55) to P0 was based on overweighting the 47.4% boundary-exact mis-fire rate without first checking whether that magnitude translates through the MC impact path. It does not — boundary-exact cases are rare per evaluation step in continuous trajectories, and pre-fix `dd_protection` effectively fired one bar late rather than missing entirely. Issue [#55](https://github.com/Joshua-Asante/multi_firm_operations/issues/55) downgraded to P3; remaining scope is supplementary metric verification (bust attribution shape, median days-to-pass, p50/p95 DD, bust-type split) folded into next hygiene pass. The 2026-05-08 C2 relock decision stands.
 
-**See also:** `docs/adr/2026-05-10-mc-c2-anchor-ratification.md` documents the import-topology reason the C2 anchor was structurally insulated from this fix. The post-merge addendum above records the empirical reproduction (Δ = 0.00 pp); the standalone ADR records the structural reason future PR authors should reference during §0 reads to either domain.
+**See also:** [§Import topology](#import-topology) below (consolidated 2026-10-15 from the tombstoned `2026-05-10-mc-c2-anchor-ratification.md`) records the import-topology reason the C2 anchor was structurally insulated from this fix. The post-merge addendum above records the empirical reproduction (Δ = 0.00 pp); that section records the structural reason future PR authors should reference during §0 reads to either domain.
 
 This addendum is additive to the original ratification note (2026-05-10, pre-merge). Editing in place would lose the audit trail of the parent's reasoning *before* the impact-path verification — that escalation logic and the lesson it embeds (overweight boundary-exact magnitude → check impact path → downgrade) is itself the load-bearing artifact, not the corrected verdict alone.
 
@@ -56,7 +56,7 @@ The semantic comparison (`>=`) is unchanged. The conservative-of-trader inclusiv
 
 ### Asymmetry of error costs
 
-The validator's PR #52 introduced the inclusive-at-boundary reading on the explicit asymmetric-error-costs ground (test [`test_2phase_faq_example_inclusive_interpretation`](../../tests/test_fxify_rule_validator.py:181) — *"asymmetric error costs justify the conservative-of-trader reading"*). The same reasoning applies one layer earlier here, on the precision dimension:
+The validator's PR #52 introduced the inclusive-at-boundary reading on the explicit asymmetric-error-costs ground (test `test_2phase_faq_example_inclusive_interpretation`, `multi_firm_operations` `tests/test_fxify_rule_validator.py` — validator and test retired with the CFD estate, not in this repository — *"asymmetric error costs justify the conservative-of-trader reading"*). The same reasoning applies one layer earlier here, on the precision dimension:
 
 | Direction | Mechanism | Worst case | Recoverable? |
 |---|---|---|---|
@@ -91,7 +91,7 @@ Post-fix MISSES (round6 < DD_TRIGGER): 0 / 1000 (0.0%)
 Asymmetry guard (true dd = 1.49%): post-fix over-fires 0 / 500 (0.0%)
 ```
 
-Construction: 1000 (peak, equity) pairs across three arithmetic paths (multiplicative diff, subtractive via reciprocal, cents-aligned broker-realistic), all targeting true rational dd = 0.015. Asymmetry guard: 500 pairs targeting true rational dd = 0.0149. Run via `python` one-shot; not added to the test suite (the named boundary tests in `tests/test_dd_protection.py` are the standing gates).
+Construction: 1000 (peak, equity) pairs across three arithmetic paths (multiplicative diff, subtractive via reciprocal, cents-aligned broker-realistic), all targeting true rational dd = 0.015. Asymmetry guard: 500 pairs targeting true rational dd = 0.0149. Run via `python` one-shot; not added to the test suite (the named boundary tests in `tests/core/test_dd_protection.py` are the standing gates).
 
 ### Follow-up issues (deferred)
 
@@ -108,3 +108,36 @@ Filed via `gh issue create` 2026-05-10. Cross-referenced inline:
 2. **Switch `dd_from_peak` to `Decimal`.** Rejected — type cascade through dd_protection, MC throughput regression, validator chose `float + round` for the same reason on PR #52.
 3. **Tighten the MVD self-check epsilon to ULP scale.** Rejected as part of *this* fix — the self-check role is sanity-bounds against spec drift, not float-precision detection. Whether to tighten is a separate methodology question (issue #4).
 4. **Add prophylactic rounding at every comparison in the file.** Rejected — line 90 is the only `dd_from_peak` decision site; each rounding site is a behavior change requiring its own justification. Pattern: surface other sites in a deliberate audit, not a "while I'm in here" sweep.
+
+---
+
+<a id="import-topology"></a>
+
+## Import topology — two independent ULP-compare domains (consolidated 2026-10-15)
+
+Consolidated 2026-10-15 from 2026-05-10-mc-c2-anchor-ratification (removed; see [TOMBSTONES](TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
+Accepted text, quoted verbatim (file paths and line numbers as of 2026-05-10):
+
+> **Context.** The Δ = 0.00 result is not coincidence; it is structurally guaranteed by the import topology:
+>
+> - `portfolio_mc.py:31-34` imports only the constants `DD_TRIGGER` and `DD_SCALE` from `dd_protection`. It never calls `calculate_protection`.
+> - The MC threshold check is inlined twice: `portfolio_mc.py:198` (`_simulate_path`) and `portfolio_mc.py:501` (`mode_historical`).
+> - Both inline sites were ULP-rounded by PR #60 / Q-MCFP-1, which merged before the C2 anchor was committed.
+>
+> Therefore the C2 anchor was already computed under ULP-rounded comparisons in the MC path. PR #53 is a forward-only consistency fix at the live-tool site; the two ULP-comparison domains are independently applied and not coupled to a shared anchor.
+>
+> **Decision 3.** Document the import-topology finding here so future PRs to either domain (`dd_protection.py` or `portfolio_mc.py` threshold sites) reference this ADR in their own §0 reads and do not re-enumerate "MC anchor stability" as a follow-up unless the import topology has changed.
+>
+> **Consequences.** GH#55 closes with this ADR as the resolution artifact. Future ULP-class fixes at either domain require explicit topology verification before enumerating cross-domain follow-ups.
+>
+> **Forbidden move.** Do not generalize this finding to "ULP fixes at one site never affect MC anchors." The conclusion is specific to the import topology as of 2026-05-10. If the topology changes (e.g., `portfolio_mc.py` is refactored to call `calculate_protection`), the next ULP-class fix re-opens the verification.
+
+Current code, re-verified 2026-10-15 at `4121e84c` (`core/portfolio_mc.py` is now a compatibility
+facade): the constants-only imports are `core/mc/modes.py:28,46` and `core/mc/preflight.py:44,49`;
+the inline ULP-rounded compares are `core/mc/simulation.py:506,514` and `core/mc/modes.py:567`;
+`grep -rn calculate_protection core/mc/` returns nothing. The source's pins
+(`tests/test_mc_anchors.py`) and audit hooks were retired with substrate Phase 3 (2026-07-24).
+
+**§Follow-up issues status (2026-10-15).** #55 closed 2026-05-10 (above). #54 and #56 are moot:
+neither `ops/accounts.py` nor a `dd_protection_state.json` is in this repository. #57 remains open
+and undated. Line numbers in §Context and §Decision are as of 2026-05-10.

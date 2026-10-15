@@ -18,7 +18,7 @@
 - `docs/methodology/references/statistics-of-tradable-anomalies.md:96-98` — names the Politis–White (2004) automatic block-length selector as the rigorous alternative, adjacent to a qualitative endorsement of the repo's fixed 5-day choice, without ever running the selector.
 - `docs/methodology/references/statistics-of-tradable-anomalies.md:105-128` (Domain 4) — states the E[max of N] / best-of-N correction is mandatory whenever a best-of-N config is picked from noisy trials.
 - `docs/methodology/regime_robustness_gate.md:46` — the 6-month "outer" bootstrap that nests the same unvalidated 5-day "inner" block unit; zero DSR/PBO/multiplicity hits anywhere in this file.
-- `docs/adr/2026-04-17-dd-trigger-calibration.md:34-40` — the 5-config `DD_TRIGGER`/`DD_SCALE` grid search, scored on the same historical panel it then reports the winner against.
+- [`docs/adr/2026-04-17-dd-trigger-calibration.md:34-40`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-04-17-dd-trigger-calibration.md#L34-L40) (tombstoned 2026-10-15; condensed in C2 relock §Lineage) — the 5-config `DD_TRIGGER`/`DD_SCALE` grid search, scored on the same historical panel it then reports the winner against.
 - `core/mc/modes.py:643-658` — `SWEEP_CONFIGS`, the 8-config allocation-weight grid, same pattern.
 - `docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md` — scopes K/DSR correction exclusively to strategy-candidate discovery/harvest intake; silent on constant-selection grids.
 
@@ -132,7 +132,7 @@ sed -n '215,255p' core/mc/simulation.py
 grep -n -B2 -A2 "Politis" docs/methodology/references/statistics-of-tradable-anomalies.md
 
 # Limb C — locate the logged per-config grid scores
-sed -n '30,45p' docs/adr/2026-04-17-dd-trigger-calibration.md
+git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-04-17-dd-trigger-calibration.md | sed -n '30,45p'   # tombstoned 2026-10-15
 sed -n '640,660p' core/mc/modes.py
 git show pre-prune-2026-08-08:docs/adr/2026-04-17-dd-trigger-calibration.md 2>/dev/null | sed -n '1,80p'
 
