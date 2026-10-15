@@ -176,6 +176,7 @@ python -I scripts/fp.py check
 - **D-1 (item 4).** RULED: PR for all legs; §13 shows no FG-T.
 - **D-2 (item 6).** RULED: (b), the Azure VM under the §60 addendum 2026-10-12.
 - **D-3.** Whether D7 must be green before the run (FG item 3 names adds OFF and zero refusal only; P0 live parity is P4's acceptance).
+  - **RESOLVED 2026-10-15 (coordinator, at freeze authority):** no. FG item 3 names adds OFF and zero refusal only; P0 live parity is P4's acceptance. Card D Part 1 (#840, DONE_WITH_CONCERNS on D7 alone) is RESOLVED under §6's gate verdict, and FG's §0(h) holds.
 
 ## 13. Part 2: the FG evidence run (Claude-owned executor act; not in this build)
 
