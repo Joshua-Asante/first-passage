@@ -26,7 +26,7 @@ recorded event (§3.3). §5 holds the rulings only the operator can make.
   [Rule 16](../../../operational_rules.md#16-retention--an-artifact-must-earn-its-place-and-deletion-is-classified-by-execution-not-by-folder),
   the `adr-decay-audit` skill.
 - Concurrent PRs that touch the same tree: #850 (public-exposure redaction), #851 (wave-1
-  deletions), #848, #847, #852 (all merged and taken in), and #849 (idle-line dormancy; open). #855
+  deletions), #848, #847, #852 and #849 (idle-line dormancy), all merged and taken in. #855
   merges last, per the coordinating doc-alignment session.
 - Prior run: [2026-08-29 audit](2026-08-29-adr-decay-audit.md).
 
