@@ -18,7 +18,7 @@
 | Symbol / TF | CBOT **`MYM1!`** · **15m** · back-adjusted ("Adjust for contract changes" **ON**) |
 | Mode | TradingView **Deep Backtesting** |
 | Start | script default `2022-01-01` (do not advance the start to manufacture N) |
-| Inputs | **all defaults** — session/DOW filters **ON**; EOD Force-Flat **ON**; accountSize 100000; microCap 80; risk 0.37%; day soft-stop −1.5% |
+| Inputs | **all defaults** — session/DOW filters **ON**; EOD Force-Flat **ON**; accountSize 100000; microCap 80; risk 0.37%; day soft-stop at its Pine default *(value redacted 2026-10-15; Pine-only)* |
 | Commission / slip | already in script (`$0.91` / side, slippage 1) — do not double-count in TV properties |
 
 ---
