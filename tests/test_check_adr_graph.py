@@ -232,6 +232,42 @@ def test_a2_accepted_full_requires_reverse_and_superseded_status(tmp_path: Path)
     assert "A2" in codes
 
 
+def test_tombstone_mention_of_live_adr_does_not_silence_a2(tmp_path: Path):
+    """TOMBSTONES rows name current owners by filename. Only a removed file is
+    a pruned target; a live file mentioned there must still get A2's reverse-
+    edge check (2026-10-15: eight live owner names were silencing A2)."""
+    _write_adr(tmp_path, "2026-01-01-old.md", """# old
+**Status:** `Accepted`
+**Decision date:** 2026-01-01
+**Supersedes:** none
+**Superseded-by:** none
+**Superseded-in-part-by:** none
+**Retain-until:** none
+
+## body
+""")
+    _write_adr(tmp_path, "2026-02-01-new.md", """# new
+**Status:** `Accepted`
+**Decision date:** 2026-02-01
+**Supersedes:** `2026-01-01-old.md` full
+**Supersedes:** `2025-12-01-pruned.md` full
+**Superseded-by:** none
+**Superseded-in-part-by:** none
+**Retain-until:** none
+
+## body
+""")
+    (tmp_path / "TOMBSTONES.md").write_text(
+        "| `docs/adr/2025-12-01-pruned.md` | owner: [old](2026-01-01-old.md) |\n",
+        encoding="utf-8",
+    )
+    tombstoned = cag.load_tombstoned_names(tmp_path)
+    assert tombstoned == frozenset({"2025-12-01-pruned.md"})
+    findings = cag.check_a2(cag.load_adr_headers(tmp_path), tombstoned)
+    assert [f.message for f in findings if "2026-01-01-old.md" in f.message]
+    assert not [f for f in findings if "2025-12-01-pruned.md" in f.message]
+
+
 def test_a2_in_part_matches_file_not_clause_text(tmp_path: Path):
     _write_adr(tmp_path, "2026-01-01-old.md", """# old
 **Status:** `Accepted`
