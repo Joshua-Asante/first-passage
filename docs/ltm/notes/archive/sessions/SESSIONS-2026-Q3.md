@@ -1041,7 +1041,7 @@ per the charter's own GO-1 dry-run).
 
 **Focus:** Decision. Operator Accept of four leftover Proposed ADRs; reject of the intermediate-rung ADR; STATE pointer refresh.
 
-**Shipped:** [`disaster-stop`](../../../../adr/2026-07-28-c1-disaster-stop-payload-supported.md) `Accepted` (Phase 0 still the wiring gate) · [`venue-binding`](../../../../adr/2026-08-05-strategy-venue-binding-axis.md) `Accepted` (registry owed; T1 acknowledged) · [`W1`](../../../../adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) `Accepted` (Class-S 0.50× MEASURED) · [`public-visibility`](../../../../adr/2026-08-14-repo-public-visibility-transition.md) `Accepted` (status catch-up) · [`WATCH-1H`](../../../../adr/2026-08-03-lifecycle-ladder-intermediate-rung.md) `Withdrawn`. STATE decision-index + live Proposed-pointer mirrors updated.
+**Shipped:** [`disaster-stop`](../../../../adr/2026-07-28-c1-disaster-stop-payload-supported.md) `Accepted` (Phase 0 still the wiring gate) · [`venue-binding`](../../../../adr/2026-08-05-strategy-venue-binding-axis.md) `Accepted` (registry owed; T1 acknowledged) · [`W1`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) `Accepted` (Class-S 0.50× MEASURED) · [`public-visibility`](../../../../adr/2026-08-14-repo-public-visibility-transition.md) `Accepted` (status catch-up) · [`WATCH-1H`](../../../../adr/2026-08-03-lifecycle-ladder-intermediate-rung.md) `Withdrawn`. STATE decision-index + live Proposed-pointer mirrors updated.
 
 **Decisions/defects:** graph vocabulary has no `Rejected` token — reject recorded as `Withdrawn`. Accept does not implement disaster-stop `sl=` wiring or `ops/venue_editions/`.
 
@@ -1975,7 +1975,7 @@ unconditional lane-wide again pending a genuinely new modality or its own fresh 
 
 **Shipped:** branch `cursor/remove-dead-conceptrecords-7c7e`. One-cell edit on [`systematic-trading-lifecycle.md`](../../../../governance/systematic-trading-lifecycle.md) L20: `ConceptRecords` → `K-trial pre-registration manifests` (Gen-2 `register_search` ledger).
 
-**Decisions/defects:** none new. Machinery retired 2026-07-11 ([gen-1 retirement](../../../../adr/2026-07-11-gen1-pipeline-retirement.md)); doctrine still [concept-admissibility](../../../../adr/2026-06-05-concept-admissibility.md) (discipline, not code). Dedup already listed via rejected-candidates.
+**Decisions/defects:** none new. Machinery retired 2026-07-11 ([gen-1 retirement](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-gen1-pipeline-retirement.md)); doctrine still [concept-admissibility](../../../../adr/2026-06-05-concept-admissibility.md) (discipline, not code). Dedup already listed via rejected-candidates.
 
 **Open / next:** Carry 18p/18m: MNQSR-1 / Q-CAPA-1 bank rulings discharged (live figure at MNQ.md §K_BANKED). Next slate admission screens claim horizon vs the E1 flat-by-16:00 envelope. S1b conditioner-engineering prereg is **not** electable. S2 stage-1 $0 cheap falsifier still owed; S3 matched-day prereg still owed. TRAINKILL census STOP — re-proposal is a new panel or an operator election. B1 Koijen admissibility parallel. B2 unblocked: elects on existing evidence + H1 screen, TRAINKILL holds disclosed. F1 / B7-REFIRE.
 

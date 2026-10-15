@@ -74,7 +74,7 @@ This ADR accepts a real cost (§6): it forfeits a 99.83%-to-pass challenge and o
 > ratio *cannot accrue* while manual trading is stopped. One further fact, surfaced by the
 > 2026-08-02 falsifier-input reachability census: the **measuring instrument itself no longer
 > exists** — `journal_review.py` was deleted with the `ops/live_journal` estate on 2026-07-11
-> ([`2026-07-11-ops-cfd-estate-retirement.md`](2026-07-11-ops-cfd-estate-retirement.md)) and
+> ([`2026-07-11-ops-cfd-estate-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-ops-cfd-estate-retirement.md)) and
 > has zero occurrences in any `.py` in the tree. Consequence for re-arming: trigger 2 needs
 > the harness **rebuilt against the futures fill microstructure**, not merely a resumption of
 > trading — the CFD-era DXTrade-fill semantics do not transfer (same finding as
