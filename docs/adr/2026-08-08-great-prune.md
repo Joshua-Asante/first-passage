@@ -128,7 +128,7 @@ the commit lands. The pre-commit gate battery does **not** run tests and is not 
 
 **What is adopted instead:** the falsifier's *instrument* is replaced, not its intent. At each future programme-audit cadence, F-2 is re-tested by a content sample (read N live ADRs in full against Rule 16), not a raw count/byte regrowth measurement. Six genuine partial-edit findings from this pass (dormancy/reconciliation addenda owed on specific ADRs, not deletions) are the real, smaller-than-hoped belt-tightening this cycle earned — tracked in the linked audit note §3, not restated here.
 
-**Open, not decided here:** [`2026-08-12-closure-disposition-coverage-hard.md`](2026-08-12-closure-disposition-coverage-hard.md) self-armed a new HARD/commit-blocking gate 4 days into F-2's own trigger window — the only ADR in the corpus to do so, over a documentation-bookkeeping concern. Whether that gate was the right call sits with the operator; not re-litigated by this addendum.
+**Open, not decided here:** [`2026-08-12-closure-disposition-coverage-hard.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-12-closure-disposition-coverage-hard.md) self-armed a new HARD/commit-blocking gate 4 days into F-2's own trigger window — the only ADR in the corpus to do so, over a documentation-bookkeeping concern. Whether that gate was the right call sits with the operator; not re-litigated by this addendum.
 
 ## §5 — Forbidden moves
 

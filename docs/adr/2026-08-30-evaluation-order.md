@@ -89,7 +89,7 @@ TRADEABLE-REACHABLE orchestrates existing authorities and derives no new formula
 Cost at admission/harvest uses [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-five-admission-requirements-all-mandatory-before-screening),
 the per-event bp-of-panel-price form. The per-trade stop-distance-R check in
 [`cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) remains
-separate and additive at design time. The [August 24 D2 split](2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
+separate and additive at design time. The [August 24 D2 split](TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)
 settled these owners. Pin authority and revision at freeze; a later authority/scope
 revision voids and refreezes the affected campaign under the new authority,
 including its attestation, instead of silently rescoring it.

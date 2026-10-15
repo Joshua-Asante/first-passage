@@ -68,7 +68,7 @@ likely path; it is a **different hypothesis shape** from this brief's blind scre
 under a fresh Q-ID.
 
 > **Update 2026-08-05 — entry condition (a) is now DISCHARGED as a reopen *path*, and this brief is
-> still NOT OPENED.** [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> still NOT OPENED.** [`ADR 2026-08-05-avenue-a-generate-confirm-route`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md)
 > (`Accepted`) is the amendment condition (a) named: Avenue A §6 condition 3 now admits **Route B
 > (generate→confirm)** alongside survivor-tie. Three things this does **not** do:
 > 1. **It does not open this brief.** Status stays `DRAFTED — NOT OPENED`; a successor still opens
@@ -83,7 +83,7 @@ under a fresh Q-ID.
 > lead-lag) transfers to any Route B successor and is now the natural input to its G0 freeze.
 
 > **Update 2026-08-24 — entry condition (a)'s reopen path is now RETIRED, not merely discharged.**
-> [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> [`ADR 2026-08-05-avenue-a-generate-confirm-route`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md)
 > — the amendment condition (a) named above — is now `Superseded` in full by
 > [`ADR 2026-08-24 — sourcing-phase channel retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md).
 > Route B no longer exists as a live reopen path for this channel; the 2026-08-05 update above is

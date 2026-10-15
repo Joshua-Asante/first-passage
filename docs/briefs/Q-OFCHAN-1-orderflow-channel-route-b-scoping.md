@@ -16,7 +16,7 @@ G2 [`RESULTS_g2.md`](https://github.com/Joshua-Asante/first-passage-archive/blob
 > **Cheap falsifier (parent-side, before lock — discharged this session):**
 >
 > 1. `Tradeify_Select_100K` geometry still matches EM §1 (`max_dd_pct=3.0`, no eval lock, idle=5, cap=80, cost=$0.91) — `core/firm_rules.py` @ `83b665d` (script assert OK 2026-08-06).
-> 2. Avenue A Route B ADR still `Accepted` — [`ADR`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) @ `b0427fd`.
+> 2. Avenue A Route B ADR still `Accepted` — [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md) @ `b0427fd`.
 > 3. EM0–EM5 ratified this session — [`spec`](../spec/2026-08-05-eval-mechanism-shape-screen.md) Status `RATIFIED 2026-08-06`; screen is a **G0 act** (§2.0a).
 > 4. Free 1y `tbbo` entitlement still the working window — [`inventory`](../notes/2026-08-04-databento-entitlement-inventory.md) @ `b82ae65`; Cap full-year estimate was $0.0000 (no new estimate required to pin ISO halves).
 > 5. Cap seat is **spent** (Q-CAPA-1) — this campaign is ordinary Route B K-disclosure, **not** Cap-seat.
@@ -31,7 +31,7 @@ G2 [`RESULTS_g2.md`](https://github.com/Joshua-Asante/first-passage-archive/blob
 |---|---|---|
 | [`core/firm_rules.py`](../../core/firm_rules.py) `Tradeify_Select_100K` | `83b665d` 2026-08-06 | EM §1 geometry falsifier — rope/target/idle/cap/cost/lock |
 | [`docs/spec/2026-08-05-eval-mechanism-shape-screen.md`](../spec/2026-08-05-eval-mechanism-shape-screen.md) | ratified this session (was `87b0547`) | EM0–EM5; G0 application; §7 dispositions |
-| [`docs/adr/2026-08-05-avenue-a-generate-confirm-route.md`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) | `b0427fd` 2026-08-05 | Route B Accepted; Stage G/C; blind admission barred |
+| [`docs/adr/2026-08-05-avenue-a-generate-confirm-route.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md) | `b0427fd` 2026-08-05 | Route B Accepted; Stage G/C; blind admission barred |
 | [`docs/methodology/avenue_a_generate_confirm.md`](../methodology/avenue_a_generate_confirm.md) | `b0427fd` | G0 checklist; CONFIRM=older / EXPLORATION=newer worked example; M at G0 |
 | [`docs/briefs/Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md`](Q-MSCHAN-1-microstructure-sourcing-channel-scoping.md) | `b0427fd` | Salvage: two-stage, ≥5 s, flicker (arXiv 2507.22712), no ES→MNQ lead-lag. **Do not reuse Q-ID** |
 | [`docs/briefs/closures/MNQBASE-1-closure-intake-dry.md`](closures/MNQBASE-1-closure-intake-dry.md) | `5c5012c` + intercept 2026-08-06 | STOP; re-proposal bar = new sourcing channel |

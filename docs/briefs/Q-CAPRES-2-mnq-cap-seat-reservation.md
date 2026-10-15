@@ -17,7 +17,7 @@
 | [`Cap companion ADR`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-06-capa-tripwire-pfcusum-companion-registration.md) | Tripwire docs-only; **not** entry filter |
 | [`MNQDTL-1`](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) | Fresh Cap reservation before Cap-style K=1 cell |
 | [`MNQ.md`](../../ops/instruments/MNQ.md) C11 / N16 / F2 GUARD | No N14 `A` as ORB gate |
-| [`Avenue A ADR`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) | Route A survivor-tied default |
+| [`Avenue A ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md) | Route A survivor-tied default |
 
 ---
 

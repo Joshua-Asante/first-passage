@@ -57,10 +57,16 @@ gates:
       - --check
 
   # pursuit-records retired 2026-08-24 (Rule 16 R5 — docs/operational_rules.md;
-  # docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md):
+  # docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals):
   # scripts/check_pursuit_records.py always exits 0 as invoked, so this entry
   # could never fail regardless of tier — unfalsifiable ceremony, deletable
   # even when signed. Script retained on disk, runnable manually.
+  # Revert trigger (b), carried 2026-10-15 from the removed ADR's §4 (check
+  # schedule "the next quarterly programme-audit cadence"): if "a future need for
+  # docs/pursuits/ change detection resurfaces and no replacement mechanism exists",
+  # "re-author a pursuit-records-equivalent gate with an actual failing condition
+  # (not a report-only always-0 script) ... never restore the deleted file verbatim,
+  # since its structural defect (cannot fail) is what earned the deletion."
 
   - id: pine-manifest
     tier: always
