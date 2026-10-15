@@ -328,7 +328,7 @@ ls lab/analysis/harvest/q_kbudget_harvest_1_2026-07/ 2>/dev/null && echo "Phase 
 ## Verification
 
 ```bash
-PYTHONIOENCODING=utf-8 python "C:\Users\joshu\.claude\skills\brief-authoring\scripts\check_brief.py" docs/adr/2026-07-15-external-mechanism-harvest-intake.md --type adr
+PYTHONIOENCODING=utf-8 python ".claude/skills/brief-authoring/scripts/check_brief.py" docs/adr/2026-07-15-external-mechanism-harvest-intake.md --type adr
 # Expected: all checks PASS
 
 # §0 anchors reproduce

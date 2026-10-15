@@ -14,6 +14,8 @@
 
 > **Provenance (Rule 0).** Authored in a web session (no repo access) against the non-canonical `FX_USOIL` 4H feed. Reconciled to the repo and then **reproduced on the canonical `PEPPERSTONE:SPOTCRUDE` panel** (the deployment feed). The canonical run kills the concept *harder* than the staging run — gross expectancy is negative at every target cell on the clean feed. Full results: [`lab/archive/usoil_rdm/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/RESULTS.md).
 
+> **2026-10-15 currency note.** Pepperstone was retired 2026-08-02 and `lab/validation/` 2026-07-11, so "the deployment feed" (Provenance), "the feed Joshua actually trades" (§1), the `lab/validation/concept_intake/` reads (§0) and the §10/Verification hooks are historical. The kill evidence is unaffected. Probe bodies: `lab/ARCHIVED.json` key `usoil_rdm`.
+
 ---
 
 ## §0 — Rule 0 reads (production / analysis-of-record before authoring)
@@ -24,8 +26,8 @@
 - `lab/validation/concept_intake/concepts/` — no `CONCEPT-USOIL-RDM-001.yaml` → the concept never passed the intake gate; no harness `DispositionRecord`. The registry entry (§7) is hand-authored under the companion ADR §D schema.
 
 **Analysis-of-record (now IN-REPO under `lab/analysis/usoil_rdm/`):**
-- [`probe4h.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/probe4h.py) + [`probe4h_run_FXUSOIL_staging.log`](../../lab/analysis/usoil_rdm/probe4h_run_FXUSOIL_staging.log) — the web-session staging probe; reproduces the original numbers exactly (bar-walk first-touch, amb=0 all cells).
-- [`probe4h_canonical.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/probe4h_canonical.py) + [`probe4h_run_canonical_c35c1.log`](../../lab/analysis/usoil_rdm/probe4h_run_canonical_c35c1.log) — the canonical port (15m→4H resample, same engine).
+- [`probe4h.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/probe4h.py) + [`probe4h_run_FXUSOIL_staging.log`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/probe4h_run_FXUSOIL_staging.log) — the web-session staging probe; reproduces the original numbers exactly (bar-walk first-touch, amb=0 all cells).
+- [`probe4h_canonical.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/probe4h_canonical.py) + [`probe4h_run_canonical_c35c1.log`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/probe4h_run_canonical_c35c1.log) — the canonical port (15m→4H resample, same engine).
 - [`costlaw.py`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/costlaw.py) — assumed-stop cost-law table.
 - [`RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/RESULTS.md) — verdict + both-feed comparison.
 - Raw panels (`FX_USOIL` staging CSV, `PEPPERSTONE:SPOTCRUDE` `c35c1`) are vendor data (gitignored class) — not committed; the canonical SHA/source is pinned in the ledger.

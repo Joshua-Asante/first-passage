@@ -10,6 +10,8 @@
 **Related:** `docs/adr/2026-07-10-databento-research-stack.md` (the stack these defaults govern); `docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md` (discovery-first is the sole new-leg path — these defaults are its rules of evidence); `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md` (the admission route a survivor exits into); `docs/methodology/references/statistics-of-tradable-anomalies.md` (the field guide whose Domains 4–8 are the rationale for each default); memories `project_futures_prop_pivot`, Q-NEFF-1 / Q-DECAY-1 closures.
 **Layer:** methodology (research rules of evidence only). **No** strategy/risk-control parameter, allocation, `dd_protection` constant, `portfolio_mc.py`, or Pine source is touched. Locked MC anchor 99.83/0.17/4.37 untouched.
 
+> **2026-10-15 currency note (no rule or value change; values remain in the template).** Default #2's K semantics were amended in part by [`2026-07-26-mechanism-counterparty-constraint-boundaries.md`](2026-07-26-mechanism-counterparty-constraint-boundaries.md) §2-C (executed-K banking for operator-stopped campaigns) and [`2026-08-04-family-k-bank-disclosure-not-gate.md`](2026-08-04-family-k-bank-disclosure-not-gate.md) (`K_banked(family)` is disclosure-only; `K_eff = K_intrinsic`), so §2 item 2's "program-cumulative K per instrument-family feeds DSR" no longer describes the rule. Default #1 was extended by [`2026-07-26-regime-candidate-flag-lane.md`](2026-07-26-regime-candidate-flag-lane.md) and Default #5 by the mechanism-boundaries ADR §2-A(iv). Default #6's `estimate`/`pull` gate is inoperative while data acquisition is blocked (Databento retired 2026-09-10; [`PIPELINES.md`](../../PIPELINES.md)). The DISC-CAMP-0 shakedown and pre-registration paths in §0 and Verification were removed from the tree; DISC-CAMP-0 closed FALSIFIED 2026-07-13.
+
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
@@ -152,3 +154,4 @@ ls docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md \
 |---|---|---|
 | 2026-07-11 | Initial authoring + acceptance (operator ratifies the Campaign defaults by reference) | Joshua + claude.ai (recorder) |
 | 2026-07-11 | §0 anchors resolved + template/shakedown authored to complete the chain (advisor referenced them blind); landed with the Tranche-1 statistics adoption | Claude Code |
+| 2026-10-15 | Currency note: Default #2/#1/#5 amendments, Default #6 inoperative, removed paths | ADR decay audit |
