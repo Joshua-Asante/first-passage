@@ -942,3 +942,23 @@ operational controls or standing instructions.
 | (d) Default | Otherwise | Park without lapsing: keep the eval and weekly trade; close the K ledger for this lineage; move shared rail items to the personal lane |
 
 (c) and (d) can both apply. The deferred FLOOR-HALF pass-time check (E1 kill check) reads existing T00 outputs and is logged as exposure when run.
+
+## Deployment case study — work, attention, costs and evidence (2026-10-15)
+
+Derived snapshot of public records at main `bdd026c9ba1d36c80c2428346b0cffe7f6924f7e`,
+recorded at Joshua's direction. These are examples of organizational output, not a
+measurement of organizational effectiveness or strategy/portfolio economic performance.
+Track B remains suspended under the preceding ruling; the personal lane continues
+under its existing owners. Q-SFCLEAR-3 is frozen at F₃
+`15bea250fc8ee9a57b59735c9e8be685c4ddbf22`; its
+[§S limitations](../../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md#s--what-this-successor-changes)
+remain part of any eventual clearance interpretation.
+
+| Measure | Recorded result and evidence |
+|---|---|
+| Useful work agents completed | Claude's P-L2 build added size-vector owner binding and legacy-record handling ([#805](https://github.com/Joshua-Asante/first-passage/pull/805), 2026-10-12, reviewed head `ddf8b78bb79b8c118391f9c5d12def0040b4ab04`, merged `143a61a`). Codex's Card D Part 1 supplied synthetic adapter/replay/owner parity tests ([#840](https://github.com/Joshua-Asante/first-passage/pull/840), 2026-10-14, head `65ff575c1f8309b0b3a664a50f152e3852a8cacd`, merged at the snapshot above). These are build/test deliverables, not deployed portfolio results. |
+| Human work and attention still required | Joshua supplied the P-L2 scope ruling ([live-wiring §6c](../../notes/2026-10-11-live-wiring-decision-packet.md#6c-p-l2-amendment-legacy-reading-extended-takeover-owner-admitted-2026-10-12)) and personally rehashed the tuple, ratified Q-SFCLEAR-3 and attested exposure ([freeze record](../../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md)). Funding/access/licensing decisions and first-session authority remain with the [personal-lane owners](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md). Active minutes, availability burden, interruptions, rework and net time saved are **not measured in this snapshot**; the [existing attention measurement proposal](../../notes/2026-10-11-tradeify-operator-attention-proposal.md#5-sequence-benefit-test-and-rollback) describes measurement, not demonstrated savings. |
+| Actual attributable costs | **Not yet measured as a deployment-case total.** The public [subscription ledger](../../pursuits/SUBSCRIPTION_LEDGER.md) holds dated operator-reported recurring amounts, reconfirmation owed and unresolved charges; it does not allocate expenditure to these deliverables. Feed prices and break-even scenarios in the [cost note](../../notes/2026-10-11-feed-cost-sanity-check.md) are not actual incurred costs. Billing-period reconciliation, compute/hosting actuals and shared-subscription allocation remain missing; unknown is not zero. |
+| Evidence supporting results | #805 records the worker's 27 binding tests passing and coordinator verification, with disclosed suite limitations. #840 records the coordinator's 455 passed / 3 private-input skips at its head: public synthetic capability only, not FG at R1; D7 remains `PENDING-P4`. The linked rulings establish human decisions, not their duration. No cited record establishes attributable cost, causal time savings, trading edge or realized portfolio profitability. |
+
+This snapshot changes no acceptance, frozen criteria, execution gates or dispatch.
