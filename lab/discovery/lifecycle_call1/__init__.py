@@ -9,7 +9,7 @@ runtime state) only on a confirmed 2nd consecutive breach via
 harness-owned file — never widen the ``{strategy: tier}`` schema.
 
 Canonical owner: ``docs/methodology/strategy_lifecycle.md`` Call 1.
-Handoff: ``docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md``.
+Handoff: https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md
 """
 from __future__ import annotations
 

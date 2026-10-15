@@ -170,7 +170,7 @@ Three screens, three different questions. **A candidate must clear all three tha
 | [`prop_envelope_default.md`](../../ops/prop_envelope_default.md) **E1–E7** | *Is it tradable at the four friendly firms at all?* | RATIFIED 2026-07-13 — **unchanged** |
 | [`third-leg-target-spec.md`](2026-07-27-third-leg-target-spec.md) **S1–S7** | *Can it occupy a same-account slot beside the existing c1 book?* | RATIFIED 2026-07-27 — **unchanged**; applies only when a same-account slot is sought |
 | **This spec, EM0–EM5** | *Does its mechanism shape survive the eval geometry?* | `RATIFIED 2026-08-06` |
-| [`avenue_a_generate_confirm.md`](../methodology/avenue_a_generate_confirm.md) **Route B** | *Is the evidence for it laundered?* — a **process**, not a shape screen | `Accepted` 2026-08-05 — composes at **G0** per §2.0a |
+| [`avenue_a_generate_confirm.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/methodology/avenue_a_generate_confirm.md) **Route B** | *Is the evidence for it laundered?* — a **process**, not a shape screen | `Accepted` 2026-08-05 — composes at **G0** per §2.0a |
 
 Deliberate overlaps, and which owner wins: **EM5 ⊃ E1/E5 + S4/S7** — this spec restates none of them and
 defers to their owners on any conflict. **EM2/EM3 have no counterpart** in either — the envelope prices

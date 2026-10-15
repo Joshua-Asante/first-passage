@@ -447,9 +447,10 @@ _INQUIRE_DECL_RE = re.compile(r"^\s*inquire(?:-style|-phase|-light)?\b", re.IGNO
 _HANDOFF_READY_BRIEF_RE = re.compile(r"\bbrief,\s*cc-handoff-ready\b", re.IGNORECASE)
 _HANDOFF_DECL_RE = re.compile(
 # `cursor` stays in this alternation after the 2026-09-15 Cursor retirement:
-# two FROZEN historical briefs self-declare `**Brief type:** Cursor handoff`
-# (docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md,
-#  docs/briefs/handoffs/2026-07-24-cursor-handoff-agent-surface-posture-sync.md).
+# two historical briefs (removed from the tree 2026-10-15; pinned below) self-declare
+# `**Brief type:** Cursor handoff`
+# (https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md,
+#  https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/handoffs/2026-07-24-cursor-handoff-agent-surface-posture-sync.md).
 # Dropping it would silently reclassify those records. The regex reads history;
 # it does not authorize a Cursor lane.
     r"\b(?:cc[/\s-]*cursor|cursor|cc)[\s-]+handoff\b(?!-ready)", re.IGNORECASE,

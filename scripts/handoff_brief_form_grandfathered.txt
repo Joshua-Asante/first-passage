@@ -4,7 +4,6 @@
 # binds any of them that is dispatched. The list only shrinks. A new card named with an earlier date
 # is not on it, so the gate checks it (surface-allocation ADR, Addendum 2026-09-27).
 2026-07-24-cc-handoff-core-dead-code-prune.md
-2026-07-24-cursor-handoff-agent-surface-posture-sync.md
 2026-09-05-claude-funding-evidence.md
 2026-09-10-track-a-a1-claude-signal-source-decision-packet.md
 2026-09-10-track-a-a2-cursor-linux-image-validation.md
@@ -43,7 +42,6 @@
 2026-09-19-full-e1-s2-r2b-warm-service-scheduler.md
 2026-09-19-glm-s2-enforcement-continuation.md
 2026-09-19-glm-s2-linux-diagnostic-steering.md
-2026-09-19-jev-experimentation-claude.md
 2026-09-20-full-e1-s2-g3-resume-before-exec.md
 2026-09-20-full-e1-s2-g4-store-invariants.md
 2026-09-20-full-e1-s2-g5-contract-identity-and-event-versioning.md
