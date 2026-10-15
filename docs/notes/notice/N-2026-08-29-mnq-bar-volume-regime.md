@@ -5,6 +5,7 @@
 **Author:** Claude Code
 **Source:** own statistical computation this session, candidate 3 of a pre-specified 5-candidate MNQ Notice-phase batch
 **Status:** `OPEN` — routing decision below is GRADUATE (range limb only); direction limb is DROP. **Re-verified 2026-08-30** against live `MNQ_M15.csv` — the ToD-indexing fix holds (figures shift up slightly, do not dissolve) and the within-stratum null-calibrated p is now computed (decisive, p=0.00025 both strata) — see the update below, superseding the "pending re-verification" caveat.
+**Liveness (2026-10-15):** dormant with [`Q-VOLREGIME-1`](../../briefs/INDEX.md) (no owner); the range-limb routing above is unchanged and nothing here is live.
 
 **Pre-Q:** [`Q-VOLREGIME-1`](../../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) (opened separately — see that brief's own Authored field), jointly with MYM's own independently-run same-day candidate.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mnq-bar-volume-regime.md`

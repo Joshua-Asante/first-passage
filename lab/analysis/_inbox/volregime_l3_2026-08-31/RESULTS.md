@@ -1,6 +1,6 @@
 # Q-VOLREGIME-1 L3 chronological halves — 2026-08-31
 
-**In-flight:** yes
+**In-flight:** no — dormant 2026-10-15 with Q-VOLREGIME-1 (no owner; wake: operator GO for L5 pilot packets C2–C4 and a right-size ruling; see docs/briefs/INDEX.md Dormant)
 **Status:** `ACTIVE` — L3 PASS independently on MNQ and MYM; the presence battery is complete on both instruments and L5 attribution remains open.
 
 ## Result

@@ -1,6 +1,6 @@
 # ORB-MYM v0.4 opening-range volume gate — operator TradingView read, 2026-09-02
 
-**In-flight:** yes
+**In-flight:** no — 2026-10-15, per the recorded P50 ruling: "The exact ORB-MYM P50 expression is a historical/source-stage development lead only" and was "retired as the lead"; the campaign closed `PRE-CONTRACT DROP` 2026-09-03 (docs/adr/2026-09-02-portable-edge-cultivation-campaign-objective.md §5, addenda 2026-09-03 and 2026-09-03b)
 **Status:** `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED`
 **Instrument:** MYM, TradingView chart/Strategy Tester
 **Source:** private Downloads-local `orb_mym_4_edition.pine`

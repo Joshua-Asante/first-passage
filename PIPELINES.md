@@ -7,7 +7,7 @@ Companion to [REPO_MAP.md](REPO_MAP.md). [STATE.md](STATE.md) owns priorities an
 
 | # | Pipeline | Recorded use / next handoff | Owner layers |
 |---|---|---|---|
-| P1 | Discovery / research | Available; Track B uses supplied strategies, not a new run | `lab/discovery/`, `lab/research_utils/`, `discovery_manifests/` |
+| P1 | Discovery / research | Available on TV CME exports; vendor acquisition blocked (below); idle lines recorded dormant with wake conditions 2026-10-15 ([INDEX](docs/briefs/INDEX.md)); Track B uses supplied strategies, not a new run | `lab/discovery/`, `lab/research_utils/`, `discovery_manifests/` |
 | P2 | Python → Pine codification bridge | Retired | [Archive guidance](docs/ltm/README.md) |
 | P3 | Legacy portfolio Monte Carlo | CLI idle; current research reuses its primitives | `core/mc/`, `core/portfolio_mc.py` |
 | P4 | Firm-specific construction / sizing | Selection closed 2026-09-10 by operator [acceptance](docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure); Track B qualification is the handoff | `lab/analysis/c1/`, `core/mc/`, `core/firm_rules.py`, `ops/c1_rail/book_policy.py` |

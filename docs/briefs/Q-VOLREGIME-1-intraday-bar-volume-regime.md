@@ -1,6 +1,6 @@
 # Q-VOLREGIME-1 — Does an M15 bar's own volume regime carry same-bar-lag predictive information for the next bar's realized range, beyond the trigger bar's own range state? (MNQ; replicated on MYM)
 
-**Status:** `OPEN`
+**Status:** `OPEN` — **DORMANT-OTHER 2026-10-15**, no owner. Wake: operator GO for L5 pilot packets C2–C4 and a ruling on the `PROPOSED` right-size; Packet D also needs the pre-refresh panel bytes the scripts pin (MNQ `6c86f41a…`, MYM `24e16952…`, replaced 2026-09-03) or a re-bind ([INDEX Dormant](INDEX.md)).
 **Authored:** 2026-08-30
 **Closed:** N/A
 **Authors:** Claude Code (D-S-A gate + joint MNQ+MYM authoring, per the operator's own batch framing naming a pooling session before either instrument's Pre-Q opens)

@@ -4,7 +4,7 @@
 **Observed:** 2026-08-29 (marginal-comparison run); **corrected 2026-08-29** (stratified re-run, same day, adversarial-review catch)
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
-**Status:** `OPEN` — GRADUATE-eligible; Pre-Q authoring deliberately deferred to the planned MNQ+MYM pooling session (not opened here)
+**Status:** ~~`OPEN` — GRADUATE-eligible; Pre-Q authoring deliberately deferred to the planned MNQ+MYM pooling session (not opened here)~~ `GRADUATED` — folded into `Q-RANGEXFER-1` (closed `MIXED` 2026-08-30; `H-RANGEXFER-1-MYM` AMBIGUOUS-DESIGN). Nothing here is live (recorded 2026-10-15).
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md`
 
 > ⚠ **Numbers below are stale, corrected 2026-08-31.** The `[00:00, 09:29]` ET overnight-window

@@ -26,7 +26,7 @@
 > `RESOLVED`, per that ADR's §2). A close resets the streak only if it yields an admitted candidate.
 > Tightening only — the ≥3 threshold and the "never a 4th campaign by default" consequence are unchanged.
 
-Status: PROPOSED · 2026-08-09 · authorizes nothing ($0 · K=0) · depends: [TNEC-1](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-08-tnec-1-tradeify-necessary-conditions.md) `RATIFIED` · Q-MNQSEL-2 `RESOLVED` · Q-MNQDTL-CON-1 `FALSIFIED` STOP
+Status: PROPOSED · **stop rule fired, closure owed (recorded 2026-10-15):** CON-2 → CON-5 closed as four consecutive zero-yield mechanisms (2026-08-10 → 2026-08-12; Branch A STOP 2026-08-12), past step 6's threshold of 3; the lane-review packet step 6 requires was never produced. No owner; the dense-1m universe is Databento-derived and TV has no 1-minute panel. CLOSE recommended to the operator (dormancy packet (2026-10-15)). · 2026-08-09 · authorizes nothing ($0 · K=0) · depends: [TNEC-1](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-08-tnec-1-tradeify-necessary-conditions.md) `RATIFIED` · Q-MNQSEL-2 `RESOLVED` · Q-MNQDTL-CON-1 `FALSIFIED` STOP
 Objective: iterate named entry mechanisms, one per campaign, on the dense-1m G=10 universe — the estate's only measured non-phantom headroom (oracle S3 ≈ 0.858 both arms vs the 0.40R inversion floor, inside the K-wall's 5–20 pt viable band) — until one clears TNEC N-EDGE+N-SHAPE or the lane stop-rule fires.
 
 Steps:

@@ -125,8 +125,10 @@ Owners hold canonical criteria; rows are pointers.
 - **Reversed-evidence propagation sweep:** pursuit fixes from the closed, unmerged pass are
   owed; most skills and strategy-card mirrors are unswept.
   [Findings](docs/notes/audits/2026-08-31-pursuits-personas-reversed-evidence-audit.md)/[first audit](docs/notes/audits/2026-08-31-reversed-evidence-docs-audit.md)/[instrument audit](docs/notes/audits/2026-08-31-ops-instruments-reversed-evidence-audit.md).
-- **MNQFLOW-1-DEPTH:** operator HOLD on value of spend (not a cost-only block or a decline); revisit at
-  operator initiative or 2026-11-08; alternate supply routes do not depend on it.
+- **MNQFLOW-1-DEPTH:** operator HOLD on value of spend (not a cost-only block or a decline). Since the
+  2026-09-10 Databento retirement it is also data-blocked: MBP-10 depth has no approved source and TV exports
+  carry none (wake: data source approved). Revisit at operator initiative or 2026-11-08; alternate supply
+  routes do not depend on it.
   [S2B status](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)/[charter](docs/adr/2026-08-16-deep-iteration-lane-charter.md)/[superseding K](docs/adr/2026-08-22-grow0-two-ledger-k-question.md).
 
 ### 2026-11-08

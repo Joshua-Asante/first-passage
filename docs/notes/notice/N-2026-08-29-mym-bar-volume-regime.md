@@ -5,6 +5,7 @@
 **Author:** Joshua | claude.ai
 **Source:** backtest CSV (bar panel) — atheoretical mechanism harvest, MYM Phase 2
 **Status:** `OPEN` — **INCREMENT** (2026-08-30, both strata decisive, p=0.00025 each), superseding the prior UNRESOLVED — Q-VOLREGIME-1's own Phase 0.5 precondition for MYM now clears.
+**Liveness (2026-10-15):** dormant with [`Q-VOLREGIME-1`](../../briefs/INDEX.md) (no owner); the range-limb routing above is unchanged and nothing here is live.
 
 **Pre-Q:** [`Q-VOLREGIME-1`](../../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) (opened 2026-08-30, jointly with MNQ). Its own §4 precondition originally named this notice's then-UNRESOLVED status as a gate on its MYM-side hypothesis rather than treating the observed-series CI as decisive; **that precondition is now CLEARED** (this notice's own INCREMENT, above) — see that brief's own §4/§7 for the current status.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mym-bar-volume-regime.md`

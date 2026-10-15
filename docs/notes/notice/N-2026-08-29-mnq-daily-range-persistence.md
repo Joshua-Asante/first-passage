@@ -5,6 +5,7 @@
 **Author:** Claude Code
 **Source:** own MC/statistical computation this session (`daily-range-state-persistence` class, MECHANISMS.md), candidate 1 of a pre-specified 5-candidate MNQ Notice-phase batch
 **Status:** `HELD until operator scope call` (no calendar date — see §5)
+**Liveness (2026-10-15):** dormant, no owner. Trigger (a) needs a 7-calendar-year MNQ panel: the current TV panel starts 2022-09 and a fresh TV export cannot reach further back, so (a) waits on an approved longer-history source or restored pre-refresh bytes. Trigger (b), a new surrogate class, is design work and needs no data.
 **Lives in:** `docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md`
 
 ---
