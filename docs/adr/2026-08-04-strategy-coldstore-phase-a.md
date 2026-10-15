@@ -8,7 +8,7 @@
 **Superseded-in-part-by:** `2026-08-23-strategy-coldstore-phase-c.md` — living Guardian/Aegis `BASE_RISK` keys retired
 **Retain-until:** none
 **Authors:** Joshua (operator GO) + Cursor (SDD Task 1 recorder)
-**Related:** [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped in 08-03; living-key retirement is the [`Phase C ADR`](2026-08-23-strategy-coldstore-phase-c.md), not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design `docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` (pruned; 2026-08-23 retrieve `BLOCKED` — [note](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-23-coldstore-phase-b-prego-blocked.md)) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
+**Related:** [`2026-08-03-claude-md-futures-refocus.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped in 08-03; living-key retirement is the [`Phase C ADR`](2026-08-23-strategy-coldstore-phase-c.md), not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design `docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` (pruned; 2026-08-23 retrieve `BLOCKED` — [note](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-23-coldstore-phase-b-prego-blocked.md)) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
 **Layer:** strategy surface (filesystem + discoverability). **No** `BASE_RISK`, lifecycle, `LEG_MAP`, or Pine-parameter edit.
 
 ---
@@ -23,7 +23,7 @@ All read in-session on 2026-08-04 **before** authoring (anchors = `git log -1 --
 | `core/lifecycle.py` | `4441c72` | Authorization ladder unchanged; Striker remains on the authorization axis per ADR 2026-08-04 (Tradeify de-scope). Catalog disposition ≠ lifecycle write. |
 | `ops/c1_rail/c1_sizing_host_reference.py` `LEG_MAP` | `2345095` | `dj30_mym`→`Striker`, `nas100_mnq`→`Striker NAS100` — rail import surface; Phase A does not edit `LEG_MAP`. |
 | `core/strategies/MANIFEST.sha256` | `dd4e4aa` | Hot-path Pine pins still under family dirs (pre-move); Phase A re-points path column only. |
-| [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 | `dc7adcc` | Prior ADR scoped CFD code retirement and deferred execution; Phase A is the filesystem limb that §7 did not authorize. |
+| [`2026-08-03-claude-md-futures-refocus.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-claude-md-futures-refocus.md) §7 | `dc7adcc` | Prior ADR scoped CFD code retirement and deferred execution; Phase A is the filesystem limb that §7 did not authorize. |
 | [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) §2 | `dc7adcc` | Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; catalog `VENUE_WITHDRAWN` must not be read as lifecycle `RETIRED`. |
 | Design + Phase A plan | `59c2301` / `cfb84a6` | Approach 2 + frozen inventory table copied verbatim into §2 below. |
 
@@ -37,7 +37,7 @@ All read in-session on 2026-08-04 **before** authoring (anchors = `git log -1 --
 
 After Tradeify de-scope ([`2026-08-04`](2026-08-04-tradeify-venue-descope-eval-included.md)), neither Striker futures leg is a Tradeify deployment target, CFD locked editions have no live venue, and ORB/candidates sit falsified-parked — yet `core/strategies/` still presents as a live multi-leg book (CFD Pine, futures editions, prototypes, and candidates side-by-side). Agents and humans still glob the hot tree as “what’s live.”
 
-[`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 scoped **code** retirement of Guardian + Aegis but never executed it, and forbade starting that project from the scope sketch alone. The operator-confirmed design (2026-08-04) chose **Approach 2**: Phase A cold-store surface → Phase B lifecycle disposition → Phase C hot-path code — each separately GO’d.
+[`2026-08-03-claude-md-futures-refocus.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-claude-md-futures-refocus.md) §7 scoped **code** retirement of Guardian + Aegis but never executed it, and forbade starting that project from the scope sketch alone. The operator-confirmed design (2026-08-04) chose **Approach 2**: Phase A cold-store surface → Phase B lifecycle disposition → Phase C hot-path code — each separately GO’d.
 
 **Decision driver (one sentence):** the hot strategy tree is a discoverability hazard after venue de-scope, and filesystem cold-store can be admitted without moving the authorization or sizing axes that later phases must still decide deliberately.
 

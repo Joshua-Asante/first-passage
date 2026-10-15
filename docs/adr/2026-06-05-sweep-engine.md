@@ -3,7 +3,7 @@
 **Status:** `Accepted`
 **Machinery-status:** ⚠ **RETIRED 2026-07-11; the decision is NOT withdrawn.** The tree this ADR
 designed (`validation/sweep/` → later `lab/validation/sweep/`) was deleted by
-[`2026-07-11-gen1-pipeline-retirement.md`](2026-07-11-gen1-pipeline-retirement.md), which names this ADR as
+[`2026-07-11-gen1-pipeline-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-gen1-pipeline-retirement.md), which names this ADR as
 "the two-tier sweep engine being retired". Read every present-tense claim below — including §2's
 scope on `validation/sweep/` — as **historical**. The *doctrine* survives and is live:
 **Python never gates deployment; pre-filter and confirm use the same feed** — still cited as the
@@ -11,7 +11,7 @@ two-tier [`2026-06-23-tv-backtest-egress-automation.md`](2026-06-23-tv-backtest-
 builds on ("the Python-prefilter/native-confirm two-tier this builds on").
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - machinery only, the doctrine survives per the Machinery-status line above.
+**Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - machinery only, the doctrine survives per the Machinery-status line above. (tombstoned)
 **Retain-until:** none
 **Decision date:** 2026-06-05
 **Authors:** Joshua (CEO, decider) + Claude (Tech Advisor)
@@ -200,7 +200,7 @@ grep -n "DD_TRIGGER\|DD_SCALE" dd_protection.py
 
 **Type:** dated correction under Rule 14. **§2 decision text is not edited.** Header `Machinery-status` is the reader-intercept (same pattern as [`2026-06-05-concept-admissibility.md`](2026-06-05-concept-admissibility.md)).
 
-[`2026-07-11-gen1-pipeline-retirement.md`](2026-07-11-gen1-pipeline-retirement.md) retired `validation/sweep/` / `lab/validation/sweep/` and named this ADR as the two-tier sweep engine being retired. The core invariant — Python never gates deployment; pre-filter and confirm use the same feed — is **not** withdrawn and remains live doctrine.
+[`2026-07-11-gen1-pipeline-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-gen1-pipeline-retirement.md) retired `validation/sweep/` / `lab/validation/sweep/` and named this ADR as the two-tier sweep engine being retired. The core invariant — Python never gates deployment; pre-filter and confirm use the same feed — is **not** withdrawn and remains live doctrine.
 
 | Date | Change | By |
 |---|---|---|

@@ -64,7 +64,7 @@ Re-MC on that corrected basis (decompounding round-trips losslessly; harness rep
 > is permanently `NOT_EXECUTABLE` because the panel cannot be extended (Pepperstone feed retired
 > 2026-08-02, CFD venue closed 2026-06-30). ⇒ **This HOLD currently has no live falsifier.** That is
 > a recorded, dated gap, not a claim the HOLD is safe. Discharge path and the "two holes are one
-> hole" ruling: [ADR 2026-08-02 §2-D](2026-08-02-pepperstone-feed-retirement.md).
+> hole" ruling: [ADR 2026-08-02 §2-D](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-02-pepperstone-feed-retirement.md).
 > Full record: §Addendum 2026-08-03 (limb 2) · §Addendum 2026-07-01 (limb 1).
 
 **Revert trigger (binary):** the HOLD is falsified — escalate to de-risk / regime-adaptive investigation — if **either** fires:
@@ -73,7 +73,7 @@ Re-MC on that corrected basis (decompounding round-trips losslessly; harness rep
 
 **Revert action:** open a fresh Pre-Q on **regime-adaptive sizing** (the only viable fix per §3); in the interim apply the documented **k≈0.55 mitigation** operationally (reduce all four allocations to 55%).
 
-**Trigger check schedule:** quarterly, **aligned with the existing dd_protection revert-trigger dates** (`CLAUDE.md` Protection section): **2026-08-08**, 2026-11-08, 2027-02-08, 2027-05-08. ~~Run alongside `python lab/analysis/time_to_pass.py --regime-check`~~ — **that companion check (the C2→C0 quarterly revert check) was RETIRED 2026-07-22** ([`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) §Addendum 2026-07-22, D2). This §4 limb-2 regime-check trigger is a **separate, still-standing** decompound-remc check — it just no longer has that CLI companion; re-run `regime_gate.py` directly per the line above.
+**Trigger check schedule:** quarterly, **aligned with the existing dd_protection revert-trigger dates** (`CLAUDE.md` Protection section): **2026-08-08**, 2026-11-08, 2027-02-08, 2027-05-08. ~~Run alongside `python lab/analysis/time_to_pass.py --regime-check`~~ — **that companion check (the C2→C0 quarterly revert check) was RETIRED 2026-07-22** ([`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md) §Addendum 2026-07-22, D2). This §4 limb-2 regime-check trigger is a **separate, still-standing** decompound-remc check — it just no longer has that CLI companion; re-run `regime_gate.py` directly per the line above.
 
 ---
 
@@ -166,7 +166,7 @@ SUSPENDED-ORPHANED, below). Full text: `git show 4121e84c95f4990b71962e3b9570c4c
 **Type:** back-propagation under operational-rules **Rule 11** (retirement events back-propagate to
 standing falsifiers), placed here under **Rule 14** (corrections land where the claim is read).
 **This addendum decides nothing new.** The disposition was already ratified in
-[ADR 2026-08-02 §2-D](2026-08-02-pepperstone-feed-retirement.md) (`Accepted`, operator ruling); a
+[ADR 2026-08-02 §2-D](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-02-pepperstone-feed-retirement.md) (`Accepted`, operator ruling); a
 second operator ruling 2026-08-03 (*"all pepperstone has been retired in light of the futures
 pivot"*) re-confirmed the retirement independently. What was missing was the record **on the ADR
 that owns the falsifier** — a reader of §4 had no way to learn its trigger could not fire.

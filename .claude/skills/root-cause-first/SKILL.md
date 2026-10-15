@@ -120,7 +120,7 @@ a failure into success is a band-aid whatever the comment above it says.
    - **First-unintended-write hunt** — state-shaped bugs, a wrong value present and nobody
      obviously wrote it. Ask whether the write, mutation or request should have happened at all.
      List the canonical source of truth and every competing one (Rule 7;
-     [firm-constants single source](../../../docs/adr/2026-06-06-firm-constants-single-source.md);
+     [historical-challenge single source](../../../core/historical_challenge.py);
      M-24's independent re-encodings). Audit the hidden writers: `SessionStart` / `PostToolUse`
      hooks, startup code, boot-time caching, restore and migration paths, worker pools that
      re-import config, background refreshers, retries, rewriters. Non-explicit writes are suspects

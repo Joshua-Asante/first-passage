@@ -6,6 +6,7 @@
 **Implements:** full retirement of OANDA from the repo
 **Plan:** `docs/spec/2026-06-24-oanda-retirement-plan.md`
 **Governance:** `docs/adr/2026-06-24-oanda-retirement.md` (authored at execution)
+**Decision owner:** [feed policy §Retired feeds](../adr/2026-06-12-tv-csv-canonical-feed-policy.md#retired-feeds) (OANDA ADR tombstoned).
 **Precedent / template:** `docs/adr/2026-06-17-dukascopy-retirement.md` (+ its design/plan). That ADR
 explicitly scoped `scripts/fetch_oanda_bars.py` (OANDA) **out** and "untouched"; this work
 completes that arc — one canonical feed family (TV/Pepperstone BAR EXPORT v0.1).

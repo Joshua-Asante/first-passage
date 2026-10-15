@@ -13,4 +13,4 @@ Then:
 - If routing is **Error**: required `dd_protection.py` missing or unparseable — restore and re-run.
 
 Reference: routing semantics defined in [docs/methodology/observation_routing.md](../../docs/methodology/observation_routing.md).
-Retired toml hub: [docs/adr/2026-08-03-params-toml-gate-retirement.md](../../docs/adr/2026-08-03-params-toml-gate-retirement.md).
+Retired toml hub: [substrate §11 rule 4](../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward).

@@ -35,19 +35,25 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # Each directory contains SHA256SUMS covering non-hidden *.csv in that dir only.
 #
 # Pepperstone (tv_exports/pepperstone + .../bar_export) left this contract
-# 2026-08-02 with the feed itself — ADR 2026-08-02-pepperstone-feed-retirement.
+# 2026-08-02 with the feed itself — ADR 2026-08-02 Pepperstone feed retirement
+# (tombstoned; data/copy owner:
+# docs/adr/2026-07-22-challenge-era-substrate-retirement.md §11).
 # The bytes were deleted from the checkout after a verified offline copy; hashes
-# survive in docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md (canonical;
-# an independent 2026-08-03 record of the same retirement exists as a corrected
-# stub at .../2026-08-03-pepperstone-data-tombstone.md). Five dirs became three.
+# survive in
+# first-passage-archive@00cdd148:docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md
+# (canonical; an independent 2026-08-03 record of the same retirement exists as a
+# corrected stub at .../2026-08-03-pepperstone-data-tombstone.md). Five dirs
+# became three.
 #
-# bar_data remains in the contract, narrowed 2026-08-03 (ADR
-# 2026-08-03-bar-data-cfd-and-candidates-retirement, supersedes Pepperstone §2-F
-# in part): KEEP only the three frozen CME micros (6J/MNQ/MYM_M15). CFD-era
-# panels and tv_exports/candidates were deleted after a verified offline copy;
-# hashes in docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md.
-# Producer (scripts/parse_bar_export.py → pepperstone/bar_export) is still dead —
-# panels are usable, not regenerable without an offline restore.
+# bar_data remains in the contract, narrowed 2026-08-03 (ADR 2026-08-03 bar-data
+# retirement, tombstoned; owner docs/adr/2026-07-22-challenge-era-substrate-retirement.md
+# §11): CFD-era panels and tv_exports/candidates were deleted after a verified
+# offline copy; hashes in
+# first-passage-archive@00cdd148:docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md.
+# Six CME micro panels are tracked (core/data/bar_data/README.md). The Pepperstone
+# default producer path (scripts/parse_bar_export.py → pepperstone/bar_export) is
+# dead; panels land via explicit --in from fresh CME BAR EXPORT captures and are
+# regenerable only for each fresh export's window.
 MANIFEST_DIRS = [
     REPO_ROOT / "core/data/tv_exports/cme",
     REPO_ROOT / "core/data/bar_data",

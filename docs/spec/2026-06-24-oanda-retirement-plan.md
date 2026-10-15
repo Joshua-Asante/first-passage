@@ -9,6 +9,7 @@
 **Tech Stack:** Python 3, pandas, pytest, tomllib. Repo conventions: `pyproject.toml` `pythonpath` adds `core/`, `lab/`, `ops/`; boundaries enforced by `scripts/check_boundaries.py`; vendor-data integrity by `scripts/check_data_manifests.py` + the `scripts/githooks/pre-commit` hash gate; lock-anchor agreement by `scripts/verify_lock_anchors.py`.
 
 **Spec:** `docs/spec/2026-06-24-oanda-retirement-design.md`
+**Decision owner:** [feed policy §Retired feeds](../adr/2026-06-12-tv-csv-canonical-feed-policy.md#retired-feeds) (OANDA ADR tombstoned).
 
 **Testing model (NOT new-test TDD — this is a removal):** the gate is the *existing* suite staying green after the removal, minus the deleted OANDA tests, plus `verify_lock_anchors.py` routing **Closed** and a clean grep sweep. Each task runs the relevant existing checks after its edit.
 

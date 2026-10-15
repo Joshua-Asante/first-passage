@@ -75,7 +75,7 @@ Config above, 10,000 sims × 3 seeds (42 / 123 / 2026), FXIFY-correct timeout se
 
 OANDA C2 anchor under the new allocations (3-strategy, OANDA panel unchanged 2026-04-25 / 2026-05-08 vintage, DJ30 still v4.4 on OANDA): **99.58% pass / 0.42% bust / 4.78% p99 DD / median 27 days**. Δ vs prior 2026-05-16 OANDA anchor (99.51/0.49/4.82): pass +0.07pp, bust -0.07pp, p99 DD -0.04pp — all within sampling noise.
 
-Pinned by `tests/test_mc_anchors.py` until substrate Phase 3 deleted it (2026-07-24). These figures are a **historical challenge-era calibration** (re-scoped 2026-07-11, [claims-rescope](2026-07-11-challenge-era-claims-rescope.md)), recorded in [`docs/mc_anchor_history.md`](../mc_anchor_history.md).
+Pinned by `tests/test_mc_anchors.py` until substrate Phase 3 deleted it (2026-07-24). These figures are a **historical challenge-era calibration** (re-scoped 2026-07-11, [claims-rescope](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md)), recorded in [`docs/mc_anchor_history.md`](../mc_anchor_history.md).
 
 ---
 
@@ -159,7 +159,7 @@ The dissent on regime-robustness is preserved: a future panel update with materi
 The six 2026-05-23 open items, in full at the pre-trim blob (see **Revision**):
 
 1. **Undocumented motive for the DJ30-hotter / NAS100-colder inversion** — retained as history; `AGENTS.md` §Strategy Authorization Lifecycle now holds locked parameters immutable.
-2. **Pine `endDate` defaults below panel union-end** — moot: the Pepperstone feed was retired 2026-08-02 ([ADR](2026-08-02-pepperstone-feed-retirement.md)).
+2. **Pine `endDate` defaults below panel union-end** — moot: the Pepperstone feed was retired 2026-08-02 ([ADR](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-02-pepperstone-feed-retirement.md)).
 3. **Skill-cache `baselines.md` lag** — discharged: synced 2026-06-04 (`.claude/skills/trade-csv-reconcile/references/baselines.md`).
 4. **OANDA re-export at 2026-05-23 vintage** — discharged by the 2026-05-24 panel refresh (OANDA at 4-strategy parity, [`docs/mc_anchor_history.md`](../mc_anchor_history.md)); OANDA is since retired.
 5. **Pyramid-annotation parity in the `CLAUDE.md` table** — moot: `CLAUDE.md` retired; the table lives in [`core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).
@@ -202,7 +202,7 @@ and continues to carry the retroactive coverage alone until live execution resum
 
 **Limb 1** (the quarterly `time_to_pass.py --regime-check` rolling-6-month pass-rate check) is dark
 on two independent grounds. (1) **Duty retired 2026-07-22:**
-[`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md)
+[`2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md)
 §Addendum 2026-07-22 (D2 resolved by retirement) — *"`python lab/analysis/time_to_pass.py
 --regime-check` is no longer a standing quarterly obligation, and the 2026-08-08 / 11-08 /
 2027-02-08 / 2027-05-08 dates carry **no revert-check duty**"*; the criterion is

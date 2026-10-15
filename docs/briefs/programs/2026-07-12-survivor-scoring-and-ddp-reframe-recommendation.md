@@ -190,7 +190,7 @@ grep -n "17.70\|17.7" lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.
 
 **H-REFRAME gate-set correction:** as of 2026-08-29, 2 of the 5 named gates (§4) no longer exist
 as files and cannot be evaluated — `scripts/validate_params.py` was retired 2026-08-03
-([`docs/adr/2026-08-03-params-toml-gate-retirement.md`](../../adr/2026-08-03-params-toml-gate-retirement.md),
+([`docs/adr/2026-08-03-params-toml-gate-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-params-toml-gate-retirement.md),
 Shape 1) and `tests/core/test_mc_anchors.py` was deleted (confirmed absent — no file at that path
 anywhere in the tree). The remaining three gates — the MVD import self-check,
 `scripts/verify_lock_anchors.py`, `scripts/check_boundaries.py` — were independently re-run

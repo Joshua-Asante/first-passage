@@ -17,7 +17,7 @@
 
 Venue/scale-path + research-priority decision. §0 proves no locked risk constant is edited and anchors the spent transfer falsifiers this reconstruction must **not** re-litigate.
 
-- [`docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`](2026-07-10-r6-nogo-futures-residual-disposition.md) — anchor `fad8984`. §2.2 names self-funded Aegis→M6J as sole active scale lane; §2.1 futures-prop NO-GO for the locked book.
+- [`docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md) — anchor `fad8984`. §2.2 names self-funded Aegis→M6J as sole active scale lane; §2.1 futures-prop NO-GO for the locked book.
 - [`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) — anchor `936a9e0`. Prop-portfolio program at four FRIENDLY firms; rail/account/live-spend gated; R5/P2 not reopened.
 - [`docs/adr/2026-07-14-prop-portfolio-existing-strategy-candidates.md`](2026-07-14-prop-portfolio-existing-strategy-candidates.md) — anchor `507761a`. Class-S admits native-futures *expressions* of locked legs with **immutable** locked Pine; claim = bust-geometry, not CFD-edge preservation.
 - [`lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md`](../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md) — anchor `fad8984`. R5 Stage-1 NOT CLEARED — OOS PF ratio **0.559 < 0.8×**; miss attributed to structural venue costs; recovery "would require entry-signal changes" (out of locked-transfer scope).
@@ -143,7 +143,7 @@ rg -n "Aegis→M6J|sole active|self-funded" CLAUDE.md | head -40
 # Expected: parked/closed language + pointer to this ADR; no "sole active lane = Aegis→M6J"
 
 # R6 supersede chain
-rg -n "Superseded in part by|2026-07-16-self-funded" docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md
+git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md | rg -n "Superseded in part by|2026-07-16-self-funded"
 
 # Locked params untouched
 git diff -- core/config/params.toml core/dd_protection.py core/firm_rules.py

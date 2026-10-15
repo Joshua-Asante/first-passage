@@ -432,7 +432,7 @@ locked `.pine` as scaffold templates) was dispatched into worktree
 bounce at best, a silent Rule-0 citation substitution at worst. `validate_params`
 Pine cross-check had already been silently no-op'ing in worktrees for the same
 reason (that script was retired 2026-08-03 with the `params.toml` hub —
-[ADR](adr/2026-08-03-params-toml-gate-retirement.md) — this is historical
+[ADR](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-params-toml-gate-retirement.md) — this is historical
 illustration only, not a live cross-check today). `scripts/sync_pine_to_worktree.py`
 + this rule close the class.
 
