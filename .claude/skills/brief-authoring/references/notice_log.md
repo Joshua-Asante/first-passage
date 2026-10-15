@@ -3,9 +3,9 @@
 **Notice ID:** N-YYYY-MM-DD-[short-slug]
 **Observed:** YYYY-MM-DD
 **Author:** Joshua | claude.ai
-**Source:** [live trade | backtest CSV | MC run | Notion page | conversation | other]
+**Source:** [live trade | backtest CSV | MC run | repo doc | conversation | other]
 **Status:** `OPEN` | `GRADUATED to Q-X` | `DROPPED` | `HELD until YYYY-MM-DD`
-**Lives in:** `docs/notes/notice/N-YYYY-MM-DD-slug.md` or Notion *Notice Log*
+**Lives in:** `docs/notes/notice/N-YYYY-MM-DD-slug.md`
 
 ---
 

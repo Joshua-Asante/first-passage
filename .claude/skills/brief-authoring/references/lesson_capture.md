@@ -13,7 +13,7 @@
 
 The recurring failure mode this lesson captures, stated as a pattern not a story.
 
-[One sentence. "Citing the MC anchor from memory rather than from the Notion canonical page produces stale numbers within ~2 weeks of any allocation refresh." — not "On 2026-04-29 we cited stale MC numbers."]
+[One sentence. "Citing the MC anchor from memory rather than from its owning repo doc produces stale numbers within ~2 weeks of any allocation refresh." — not "On 2026-04-29 we cited stale MC numbers."]
 
 ---
 
@@ -38,13 +38,13 @@ Per Known Trap #9: a lesson without a dated incident AND a dollar cost / counter
 
 The specific rule that, if followed, would have prevented the anchor incidents.
 
-**Rule:** [Present-tense imperative. "Before citing MC anchor numbers, fetch from Notion *📊 Portfolio MC Lock Details* (page ID `35cdc0b53c11813e82fdf5f09f36a459`); do not quote from memory."]
+**Rule:** [Present-tense imperative. "Before citing MC anchor numbers, read `docs/mc_anchor_history.md`; do not quote from memory."]
 
 **Where the rule lives (canonical enforcement point):**
 - [ ] SKILL.md body — which skill, which section
 - [ ] Brief template — which template, which section
 - [ ] check_brief.py — which check (if mechanically enforceable)
-- [ ] Operational checklist — Notion page or Todoist standing task
+- [ ] Operational checklist — `docs/operational_rules.md` or a Todoist standing task
 - [ ] Calendar trigger — recurring check
 
 If the rule has no canonical enforcement point, it's a wish, not a discipline. Flag and either find the enforcement surface or downgrade to Candidate.
@@ -53,7 +53,7 @@ If the rule has no canonical enforcement point, it's a wish, not a discipline. F
 
 ## Cross-references
 
-- **Briefs citing this lesson:** [list of Pre-Q / ADR / lock decision paths]
+- **Briefs citing this lesson:** [list of Pre-Q / ADR / closure paths]
 - **Skills enforcing this lesson:** [list of skills that load this rule]
 - **Related lessons:** [E-M / M-K — sibling lessons in the same failure family]
 - **Superseded lesson (if any):** [E-L — what this replaces and why]

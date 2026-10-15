@@ -1,6 +1,6 @@
 ---
 name: pinescript-v6
-description: Write, review, debug, or refactor Pine Script v6 code for TradingView. Use this skill whenever the user mentions Pine Script, TradingView strategies or indicators, .pine files, or asks to build/fix/optimize any trading script. Also trigger for locked-book strategy work (Guardian Gold, Striker DJ30/NAS100 and their MYM/MNQ venue editions), backtesting scripts, alert conditions, or any task involving ta.*, strategy.*, request.security(), or other Pine Script functions.
+description: Write, review, debug, or refactor Pine Script v6 code for TradingView. Use this skill whenever the user mentions Pine Script, TradingView strategies or indicators, .pine files, or asks to build/fix/optimize any trading script. Also trigger for accepted-book strategy work (Aegis 6J, Striker DJ30 MYM, Vanguard Gold MGC, ORB MNQ — read in place under AGENTS.md §Public-clone posture, never copied or quoted), legacy locked-book work (Guardian Gold, Striker DJ30/NAS100 and their MYM/MNQ venue editions), backtesting scripts, alert conditions, or any task involving ta.*, strategy.*, request.security(), or other Pine Script functions.
 ---
 
 # Pine Script v6 Developer Skill
