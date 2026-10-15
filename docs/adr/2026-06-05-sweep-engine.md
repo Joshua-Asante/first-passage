@@ -9,6 +9,7 @@ scope on `validation/sweep/` — as **historical**. The *doctrine* survives and 
 **Python never gates deployment; pre-filter and confirm use the same feed** — still cited as the
 two-tier [`2026-06-23-tv-backtest-egress-automation.md`](2026-06-23-tv-backtest-egress-automation.md)
 builds on ("the Python-prefilter/native-confirm two-tier this builds on").
+**Currency note 2026-10-15:** the literal "Python never gates deployment" is overtaken — under [S2](2026-08-07-loop-s2-signal-host-fork.md) the live signal host is a Python daemon (Pine/TV is research/export) and qualification replays parity-validated Python ports ([replay spec](../spec/2026-09-12-tradeify-synchronized-replay-spec.md) RC-1/RC-4; `ops/c1_signal_daemon/book_parity.py`). What survives is the parity form: a pre-filter re-implementation has no gate authority until it clears the [rank-correlation floor](../methodology/prefilter_rank_correlation_gate.md), and a deployed port must reproduce its native exports at parity.
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - machinery only, the doctrine survives per the Machinery-status line above. (tombstoned)

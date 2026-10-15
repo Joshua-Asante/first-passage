@@ -4,6 +4,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 body condensed to a pointer, §7 "Landed"/"Held" notes and Verification removed, §10 reduced to its decision-persistence hooks; §7 status note added. Pre-trim text at blob `19d7553cca42c924bf9a6cb473a870b2fc341e5f` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 **Decision date:** 2026-07-11
 **Authors:** Joshua (direction) + Claude Code (gap audit + authoring)
 **Supersedes:** none. Additive — a reference layer + methodology doctrine.
@@ -14,15 +15,7 @@
 
 ## §0 — Rule 0 reads (gap audit against production)
 
-The adoption is grounded in an 8-reader parallel audit of the actual repo (Rule 0 —
-production code opened, not doc references), anchor `509f6b5`. Verified state, by
-domain of the field guide:
-
-- **Strongest already-built:** Domain 4 (multiplicity). K-ledger (`register_search.py`), DSR/PSR (`lab/validation/dsr.py` + skill CLI, control-tested), PBO/CSCV (`lab/validation/pbo.py`), CPCV (`lab/validation/cpcv.py`), native White-RC + Romano–Wolf with known-truth FWER calibration (`lab/validation/corpus/reality_check.py`), Storey q-values, corpus-FDR. Pre-registration discipline is the repo's best-built capability (template + 28 committed pre-regs + git freeze-ancestry rule).
-- **Available zero-install:** `arch` 8.0.0 + `statsmodels` 0.14.6 import in the ops venv today — SPA/StepM/MCS, `arch.unitroot.VarianceRatio`, GARCH `simulate`, `cov_hac`, `acorr_ljungbox` all live-verified. The research venv (stumpy/tsfresh/hmmlearn/skfolio/databento) is pinned in `requirements-research.txt` but not currently on disk (recreate before those tools run).
-- **Weakest domain:** Domain 2 (classical inference). No HAC/Newey–West in code; Ljung-Box/runs/BDS absent; Lo–MacKinlay VR exists only as one-off lab code; no reusable event-study harness.
-- **One-offs never promoted to tooling:** VR, ENB (Q-NEFF-1 computed in an *uncommitted* scratchpad; nearest in-repo is `decompound_ddprot_2026-06-21/analyze_part1.py`), the Guardian CUSUM decay gate (built, calibrated, dormant), the joint-MC candidate-admission driver (hand-rolled per study).
-- **Incidental findings surfaced by the audit (noted, not fixed here):** (a) `guardian_signal.py` + its tests are absent from disk in *both* this worktree and the main checkout (README-documented loss mode fired; recovery verified: `git show dc07898:…` bytes match the `PORT_MANIFEST.sha256` pin — restore not yet run); (b) the COT gold CSV has a live manifest hash mismatch, already tracked in `docs/notes/notice/N-2026-07-10-vendor-csv-manifest-drift.md`.
+The adoption rests on an 8-reader gap audit of the repo at anchor `509f6b5` — the 8-domain → repo gap map, plus two incidental findings. That audit describes July state (several paths it names, e.g. `lab/validation/`, were later retired) and is historical; read it in the [prior revision](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md).
 
 ---
 
@@ -146,17 +139,13 @@ built — the honest residual, tracked on the forward board, not silently closed
 
 ## §7 — Implementation plan / forward board
 
-**Landed this commit (Tranche 1 + the discovery-campaign chain):** the reference doc;
-the six doctrine additions in §2(2); the campaign template + defaults ADR + shakedown +
-DISC-CAMP-0 pre-registration + pipeline-hardening handoff (the operator's chain, §0
-anchors resolved, missing linchpin authored).
-
 **Forward (deferred, tracked in `STATE.md`):**
+
+> **Status 2026-10-15 (no decision change).** T2's originally scoped tools landed 2026-08-23 (`lab/research_utils/event_study.py`, `detector_kit.py`); Addendum (b) reopened T2 for four null primitives that still live only in `lab/analysis/_inbox/{mym_mechanism_harvest,mnq_dailygeom_notice}_2026-08-29/` and are not carried in `STATE.md`. T3: a GARCH-fitted null and ENB are in `lab/research_utils/breadth.py`. T4: synthetic Call-1 OC landed 2026-08-23 ([record](../notes/research/2026-08-23-call1-oc-synthetic.md)); the live σ-source stays fill-gated and the Task-3 writer is not authorized (`STATE.md` No fixed date). The 2026-08-08 board date has passed.
 
 - **T2 — Stage-1 scan instrumentation:** reusable **event-study harness** (constraint/flow family — highest persistence prior; our only mechanism-named finding, JPY month-end, lives there); **cheap detector kit** — promote Lo–MacKinlay VR to a tool, add Ljung-Box on r vs |r|, HAC-t, an autocorrelation-corrected n_eff helper (all via already-installed `arch`/`statsmodels`).
 - **T3 — scanner calibration + admission tooling:** GARCH-fitted-null / surrogate-data pipeline calibration (also upgrades the corpus-FDR IID-Gaussian null); promote ENB + downside-correlation + with/without-candidate marginal-delta into committed tools (the operator's CC-handoff Track C covers the ENB breadth column — recover the Q-NEFF-1 computation into it).
 - **T4 — riding the 2026-08-08 board:** compute the production Call-1 kill-line operating characteristics (false-kill rate, detection lag vs horizon) *before* the first decay review; build the owed rolling-PF σ-source harness + tier-demotion state writer.
-- **Held (operator-gated):** the CC-handoff's 3 code tracks (db_fetch date-cap, `temporal_consistency.py`, breadth column) await the §0.5 answers (flag names; Track-B home; the — now-confirmed unnecessary — `portfolio_mc` extraction).
 
 ---
 
@@ -172,26 +161,8 @@ grep -n "Filtered, not" .claude/skills/futures-anomaly-discovery/reference/tool-
 grep -n "Data hygiene" .claude/skills/databento-data/reference/schemas-and-symbology.md
 grep -n "Backtest → live shrinkage" docs/methodology/backtest_live_shrinkage.md
 
-# Ledger anchored (no cwd-relative default)
-grep -n "parents\[4\]" .claude/skills/futures-anomaly-discovery/scripts/register_search.py
-
 # Non-adoptions recorded
 grep -nE "Kelly|SPRT|Ledoit|numeric π|numeric-π" docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md
-
-# Changed NO locked constant (expect empty)
-git diff --stat HEAD -- core/config/params.toml core/dd_protection.py core/portfolio_mc.py core/firm_rules.py
-```
-
----
-
-## Verification
-
-```bash
-python scripts/check_brief.py docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md --type adr
-python scripts/check_skill_refs.py --all
-python scripts/check_path_liveness.py
-python scripts/check_boundaries.py
-python scripts/validate_params.py
 ```
 
 ---
@@ -236,3 +207,4 @@ way, rather than leaving T2 read as fully closed.
 |---|---|---|
 | 2026-07-11 | Initial authoring + acceptance (adopt reference; Tranche-1 doctrine; non-adoptions) | Joshua + Claude Code |
 | 2026-08-29 | Addendum: (a) Tranche-2 pre-registration completeness rule; (b) T2 reopened to promote duplicated null-construction primitives into `lab/research_utils/`. | Claude Code |
+| 2026-10-15 | §0 body, §7 Landed/Held, Verification removed; §10 reduced to decision-persistence hooks; §7 status note; prior body pinned | ADR decay audit |

@@ -41,7 +41,7 @@ L-COST-GEOMETRY is already named methodology — it is the add-back condition fo
 
 Add a runnable **cost-geometry pre-gate** to the instrument-ledger **Phase-0** validation step (operational rule 10). It is **additive** — Rule 10's read-at-start / append-at-end obligation is unchanged; this inserts one pre-flight before the first backtest of a new candidate mechanism.
 
-**§2a — The gate.** Before any backtest on a *new candidate entry mechanism* on an instrument, compute from the **canonical TV/Pepperstone 15m series**:
+**§2a — The gate.** Before any backtest on a *new candidate entry mechanism* on an instrument, compute from the **canonical CME futures TV-export 15m series** (`core/data/tv_exports/cme/`; corrected 2026-10-15 — Pepperstone retired 2026-08-02):
 
 ```
 cost_ratio@1xATR = median(spread) / median(ATR15m)
@@ -54,7 +54,7 @@ with `realized_stop_distance = stop_atr · median(ATR15m)` (or an explicit reali
 
 **§2c — Disposition.** The Phase-0 ledger disposition for a new-mechanism session records `cost_R`, the ceiling, and the verdict. A **FAIL** means the mechanism *as specified* is cost-infeasible and does not proceed to backtest without a stop-geometry change (wider stop, higher execution TF) or a lower-cost venue — mirroring the §A venue/cost add-back. A **PASS is necessary-not-sufficient**: the pre-registered backtest still runs.
 
-**Effective:** immediately, all surfaces (CC, claude.ai, cursor). **Implementation:** [`scripts/cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) (stdlib-only, runnable on a public clone) + [`tests/test_cost_geometry_pregate.py`](../../tests/test_cost_geometry_pregate.py) (pins the USOIL/USDCAD anchors); Rule 10 amended with a dated maintenance-log entry pointing here.
+**Effective:** immediately, all surfaces (CC, claude.ai; Cursor retired 2026-09-15). **Implementation:** [`scripts/cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) (stdlib-only, runnable on a public clone) + [`tests/test_cost_geometry_pregate.py`](../../tests/test_cost_geometry_pregate.py) (pins the USOIL/USDCAD anchors); Rule 10 amended with a dated maintenance-log entry pointing here.
 
 ---
 
@@ -86,7 +86,7 @@ with `realized_stop_distance = stop_atr · median(ATR15m)` (or an explicit reali
 ## §5 — Forbidden moves (under this ADR)
 
 - **Running the gate on the *assumed* k·ATR stop when the design's realized stop is sub-ATR.** The exact USOIL trap. The realized stop (`--realized-stop`) governs for confirmation/structural-stop designs; the gate flags sub-ATR stops precisely so this move is visible.
-- **Sourcing ATR15m from a non-canonical feed** (the `FX_USOIL`/`TVC:USOIL` corruption class). Canonical TV-export / Pepperstone series only (2026-06-12 policy). A new execution feed clears the feed-equivalence pre-flight first.
+- **Sourcing ATR15m from a non-canonical feed** (the `FX_USOIL`/`TVC:USOIL` corruption class). Canonical CME futures TV-export series only (2026-06-12 policy; Pepperstone retired 2026-08-02 — corrected 2026-10-15). A new execution feed clears the feed-equivalence pre-flight first.
 - **Treating a PASS as edge validation.** The pre-gate is necessary-not-sufficient; it spends zero forward days and makes zero edge claim. The pre-registered, placebo-controlled backtest still runs.
 - **Loosening `--ceiling` per candidate to manufacture a PASS.** The design-layer analogue of "widen the stop post-hoc to cut cost" (ADR 2026-06-14-reject-usoil-rdm §5c). The ceiling is set once per investigation; a candidate clears it or changes its geometry/venue.
 - **Citing one feed's spread/ATR as a proxy for another's** (the feed-equivalence + XAGUSD instrument-vs-strategy-correlation belt). Geometry is feed-specific.
@@ -155,3 +155,4 @@ grep -q "cost_geometry_pregate" docs/operational_rules.md && echo "Rule 10 wired
 | Date | Change | By |
 |---|---|---|
 | 2026-06-22 | Initial authoring — runnable cost-geometry pre-gate added to instrument-ledger Phase-0 (Rule 10); script + test + Rule 10 amendment; additive, no locked config touched | Joshua + Claude Code |
+| 2026-10-15 | Stale feed/surface names corrected in place (§2a, §2 Effective, §5); no rule change | ADR decay audit |

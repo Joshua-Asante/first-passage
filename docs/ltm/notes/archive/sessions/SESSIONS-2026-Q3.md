@@ -1742,7 +1742,7 @@ findings from the earlier ranking pass still apply — worse population, and SMT
 **Focus:** Operator approved an override ADR against the analogue-modality pause specifically for
 `Q-ICT-OTE-1`; per that ADR's own §2, the cheap falsifier was licensed and run immediately.
 
-**Shipped:** [`override ADR`](../../../../adr/2026-08-20-analogue-modality-override-ict-ote-1-admit.md)
+**Shipped:** [`override ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-20-analogue-modality-override-ict-ote-1-admit.md)
 (`Accepted`, ratified same-turn — "Approve an override ADR"). Cheap falsifier reconstructed the
 sweep/pivot detector fresh (original code absent from this public worktree — pre-transition history is
 private-archive-only) and scored decisively `FALSIFIED`: both arms n≥100, CI entirely below 0 (long

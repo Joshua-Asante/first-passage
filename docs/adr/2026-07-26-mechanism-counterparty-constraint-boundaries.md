@@ -68,7 +68,7 @@ Separately, ST-EH-1's operator-stop exposed a hole in K semantics: `register_sea
 
 **Effective:** **2026-07-26**, all three clauses (operator ratification). **Scope:** research rules of evidence; harvest/discovery intake and ledger semantics only.
 
-**2-C first application (same session, recorded here because it is the clause's worked example):** ST-EH-1 closed `operator-stopped`, banking **executed K=2** (one look per instrument family — the two 1-yr TV baseline panels) against **declared K=84**, which is retained in the manifest's `declared_K` field. All four conditions were met and are auditable. Resulting family banks and floors (K_intrinsic=1 seed): **MNQ bank 2 → K_eff 3 → floor 0.98** (open, but AT the cap — a single K_intrinsic=1 seed only; any second expression fails), **MYM bank 1 → K_eff 2 → floor 0.85**, **6E bank 1 → K_eff 2 → floor 0.85**. **Reader warning:** the ST-EH-1 manifest banks `K=2` as one number spanning TWO families — the split is **1 MNQ + 1 MYM**, stated in its `executed_looks` field. Do not add 2 to either family.
+**2-C first application (same session, recorded here because it is the clause's worked example):** ST-EH-1 closed `operator-stopped`, banking **executed K=2** (one look per instrument family — the two 1-yr TV baseline panels) against **declared K=84**, which is retained in the manifest's `declared_K` field. All four conditions were met and are auditable. Resulting family banks and floors (K_intrinsic=1 seed): **MNQ bank 2 → K_eff 3 → floor 0.98** (open, but AT the cap — a single K_intrinsic=1 seed only; any second expression fails), **MYM bank 1 → K_eff 2 → floor 0.85**, **6E bank 1 → K_eff 2 → floor 0.85**. **Reader warning:** the ST-EH-1 manifest banks `K=2` as one number spanning TWO families — the split is **1 MNQ + 1 MYM**, stated in its `executed_looks` field. Do not add 2 to either family. *[2026-10-15 currency note: the floor figures in this paragraph predate [ADR 2026-08-04](2026-08-04-family-k-bank-disclosure-not-gate.md) — the family bank is disclosure-only and `K_eff = K_intrinsic`, so a `K_intrinsic=1` seed screens at floor 0.65 on every family; read MNQ 0.98 / MYM 0.85 / 6E 0.85 as history. Executed-K banking itself is unchanged.]*
 
 ---
 
@@ -112,7 +112,7 @@ Separately, ST-EH-1's operator-stop exposed a hole in K semantics: `register_sea
 
 ## §6 — Consequences
 
-**Positive:** admission kills narrative seeds at paragraph cost; "lesser-mined" becomes a stated, checkable claim (capacity/awkwardness clause) instead of a hope; sourcing gains a channel whose entries are free until graduated; the ledger gains an honest closure path for stopped campaigns; MYM (0.85) and 6E (0.85) runways stay open under 2-C's first application.
+**Positive:** admission kills narrative seeds at paragraph cost; "lesser-mined" becomes a stated, checkable claim (capacity/awkwardness clause) instead of a hope; sourcing gains a channel whose entries are free until graduated; the ledger gains an honest closure path for stopped campaigns; MYM (0.85) and 6E (0.85) runways stay open under 2-C's first application *(floors historical — see the 2026-10-15 note in §2-C)*.
 
 **Negative (real):** 1a gets harder to satisfy — some genuinely good seeds with fuzzy counterparties will route to the slower 1b path or die; census maintenance is ongoing curation work; executed-K closures require enumerated-look bookkeeping that declared-K never needed.
 

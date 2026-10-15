@@ -180,7 +180,7 @@ this ADR's §0 owes, not as a sizing input.
   doctrine: a rule, gate, falsifier threshold, or convention that binds future work." Applied to this
   ADR's own tier classification above.
 - Standing quarterly-programme-audit cadence confirmed against multiple sibling ADRs
-  (`2026-05-08-dd-trigger-c2-relock.md:99`, `2026-06-14-rejected-candidate-patterns.md:115`, and
+  (`2026-05-08-dd-trigger-c2-relock.md:99`, `2026-06-14-rejected-candidate-patterns.md:115` @ `4bc89a4b`, and
   others): **2026-08-08, 2026-11-08, 2027-02-08, 2027-05-08.** Today is 2026-08-27 → the next
   quarterly slate is **2026-11-08**, the same date D4's own falsifier already targets. Used in §4
   below rather than inventing a new date.

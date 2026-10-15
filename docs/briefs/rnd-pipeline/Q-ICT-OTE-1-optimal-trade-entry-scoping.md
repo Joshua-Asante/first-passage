@@ -4,7 +4,7 @@
 **Cheap falsifier:** [`_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md)
 — both arms n≥100, session-block CI entirely below 0 (long −0.525R, short −0.518R), mean stop_dist
 13.16pt confirming the §2.4 CON-5-shaped risk prediction exactly. Licensed by
-[`the override ADR`](../../adr/2026-08-20-analogue-modality-override-ict-ote-1-admit.md) §7 Phase 1;
+[`the override ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-20-analogue-modality-override-ict-ote-1-admit.md) §7 Phase 1;
 that ADR's own §4 revert trigger fired — the exception is spent, no G0 freeze follows.
 **Class:** order-free at scoping time; a real construct once opened — **NOT** the `Q-ICTEXP-1` zero-K
 falsifier class (see §9 — this is a genuinely new entry-geometry construct, not a one-way kill test).
@@ -252,7 +252,7 @@ python scripts/check_advisor_dedup.py --keywords "optimal trade entry OTE fibona
   Authored at operator instruction following the ICT concept-gap ranking pass. §1 states the
   governance blocker up front, not as a caveat at the end.
 - **2026-08-20b — OPERATOR OVERRIDE GRANTED, then STOP same day.** Operator approved an override ADR
-  ([`Accepted`](../../adr/2026-08-20-analogue-modality-override-ict-ote-1-admit.md)); its Phase 1
+  ([`Accepted`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-20-analogue-modality-override-ict-ote-1-admit.md)); its Phase 1
   cheap falsifier ran and returned `FALSIFIED` — decisive, both arms powered and CI entirely below 0,
   mean stop_dist (13.16pt) confirming this document's own §2.4 prediction. `PREREG_G0` never frozen;
   no K spent beyond the $0 falsifier; no mechanism id registered. STOP — re-proposal needs new
