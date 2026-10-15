@@ -3,8 +3,8 @@
 Manifest v1 carries independent expected digests in ``inputs`` (role -> path,
 sha256) and four PR routes. The source bundle v1 carries dated sessions of
 synchronous 15-minute bars (utc, legs -> contract month and OHLC), a retained
-Striker risk-dollar input, and evidenced schedule splits (utc, legs -> prefix,
-suffix OHLC). Reference friction v1 carries the four Instrument mappings.
+Striker risk-dollar input, and explicit missing-active-bar exclusions. Schedule
+splits are forbidden. Reference friction v1 carries the four Instrument mappings.
 Neither a callback nor adapter construction precedes complete input validation.
 """
 from __future__ import annotations
@@ -22,7 +22,8 @@ from types import MappingProxyType
 from c1_rail.book_policy import PersonalP0Policy, account_micro_cap, validate_size_vector
 from c1_signal_daemon.feed import Bar
 from .contract import canonical_json_bytes
-from .model import LEG_IDS, ET, SourceBar, SourceSession, SessionSchedule, PathBar, PathSession, ScheduleSplit
+from .model import LEG_IDS, ET, SourceBar, SourceSession, SessionSchedule, PathBar, PathSession
+from .bracket import BracketScheduleQuotes
 from .production_source import _json
 from .replay import BookReplay, Instrument, ReplayNeedsContext, RouteBroker
 
@@ -157,6 +158,12 @@ def parse_roll_dates(raw):
         if key[0] not in ('6J', 'MGC') or key in result or re.fullmatch(r'\d{4}-\d{2}', key[1]) is None:
             raise ValueError('roll contract identity')
         result[key] = _utc(row['g4_start_open_utc'])
+    for row in doc['seams']:
+        key = (row['product'], row['to_month'])
+        if key[0] in ('6J', 'MGC'):
+            if type(key[1]) is not str or re.fullmatch(r'\d{4}-(0[1-9]|1[0-2])', key[1]) is None:
+                raise ValueError('roll seam contract identity')
+            result.setdefault(key, None)
     return result
 
 
@@ -280,18 +287,25 @@ def _verify_retained(retained, identities):
     _closed(friction['instruments'], LEG_IDS, 'friction legs')
     instruments = {leg: Instrument(**row) for leg, row in friction['instruments'].items()}
     source = _json(retained['source_bundle'])
-    _closed(source, ('schema', 'sessions', 'striker_risk_dollars', 'splits'), 'source bundle')
+    _closed(source, ('schema', 'sessions', 'striker_risk_dollars', 'splits', 'data_exclusions'), 'source bundle')
     if source['schema'] != 'sfclear_source_bundle/v1':
         raise ValueError('source bundle schema')
     risk = _finite(source['striker_risk_dollars'], positive=True)
+    if source['splits'] != []:
+        raise ValueError('source splits must be empty for R1 bracket placement')
     splits = {}
-    for row in source['splits']:
-        _closed(row, ('utc', 'legs'), 'split')
-        ts = _utc(row['utc'])
-        if ts in splits:
-            raise ValueError('duplicate split chronology')
-        _closed(row['legs'], LEG_IDS, 'split legs')
-        splits[ts] = row['legs']
+    if type(source['data_exclusions']) is not list:
+        raise ValueError('data exclusions must be a list')
+    exclusions = set()
+    for row in source['data_exclusions']:
+        _closed(row, ('account_date', 'leg', 'reason'), 'data exclusion')
+        day = date.fromisoformat(row['account_date'])
+        key = (day, row['leg'])
+        if (row['leg'] not in LEG_IDS or row['reason'] != 'missing_active_bar'
+                or key in exclusions or day not in schedules or schedules[day][0] != 'PERMITTED'):
+            raise ValueError('invalid data exclusion')
+        exclusions.add(key)
+    excluded_days = {day for day, _ in exclusions}
     path, contracts, days = [], {}, []
     for row in source['sessions']:
         _closed(row, ('account_date', 'bars'), 'source session')
@@ -299,9 +313,12 @@ def _verify_retained(retained, identities):
         days.append(day)
         if day not in schedules:
             raise ValueError('source day absent from frozen schedule')
-        if row['bars'] == [] and schedules[day][0] == 'DENIED':
-            # A closed market has no price events. Keep its output row without
-            # inventing bars or resetting any of the four persistent adapters.
+        empty = row['bars'] == []
+        if day in excluded_days and not empty:
+            raise ValueError('excluded day must have no bars')
+        if empty and schedules[day][0] == 'PERMITTED' and day not in excluded_days:
+            raise ValueError('unlisted empty PERMITTED day')
+        if empty:
             continue
         bars = []
         for item in row['bars']:
@@ -326,16 +343,18 @@ def _verify_retained(retained, identities):
             bars.append(SourceBar(ts, tuple(legs)))
         if any(b.source_bar_time-a.source_bar_time != timedelta(minutes=15) for a,b in zip(bars,bars[1:])):
             raise ValueError('missing source chronology')
+        if len(days) > 1:
+            opening = datetime.combine(day-timedelta(days=1), time(18), ET).astimezone(timezone.utc)
+            if not bars or bars[0].source_bar_time != opening:
+                raise ValueError('missing session opening chronology')
         schedule = schedules[day][1]
         session = SourceSession(day.isoformat(), day, tuple(bars), schedule)
         for edge in (schedule.cutoff, schedule.flatten_start, schedule.own_flat_deadline):
             if not any(b.source_bar_time <= edge <= b.source_bar_time+timedelta(minutes=15) for b in bars):
                 raise ValueError('missing schedule chronology')
-            if all(edge not in (b.source_bar_time, b.source_bar_time+timedelta(minutes=15)) for b in bars) and edge not in splits:
-                raise ValueError('missing finer chronology')
         mapped = tuple(PathBar(b.source_bar_time, b.source_bar_time, day, b.source_bar_time.astimezone(ET), b.bars) for b in bars)
         path.append(PathSession(len(path), day, session, mapped, True, True))
-    if days != list(schedules):
+    if days != list(schedules) or not excluded_days <= set(days):
         raise ValueError('source must retain every frozen schedule day')
     envelope = VerifiedInputs(MappingProxyType(retained), MappingProxyType(identities), sizing,
         equity, doc['paper_initial_capital'], doc['cap_source']['request_cap_micro_equivalents_each_leg'],
@@ -344,25 +363,23 @@ def _verify_retained(retained, identities):
     return envelope
 
 
-class _Quotes:
-    def __init__(self, envelope):
-        self.envelope = envelope
+class _PersonalReplay(BookReplay):
+    """Deliver empty-session boundaries without submitting invented price bars."""
 
-    def __call__(self, session, instant, leg):
-        if instant in self.envelope.splits:
-            return self.envelope.splits[instant][leg]['prefix'][3]
-        for pb in session.bars:
-            bar = dict(pb.bars)[leg]
-            if instant == pb.source_bar_time:
-                return bar.open
-            if instant == pb.source_bar_time+timedelta(minutes=15):
-                return bar.close
-        raise ReplayNeedsContext('missing source-instant chronology')
-
-    def split_bar(self, session, pb, instant, leg, *, exposure):
-        row = self.envelope.splits[instant][leg]
-        _closed(dict(row), ('prefix', 'suffix'), 'split OHLC')
-        return ScheduleSplit(Bar(pb.source_bar_time, *row['prefix']), Bar(instant, *row['suffix']), True)
+    def run(self, path):
+        def chronological():
+            sessions = iter(path)
+            session = next(sessions, None)
+            for day in self._personal_route.schedules:
+                if session is not None and session.path_session_date == day:
+                    yield session
+                    session = next(sessions, None)
+                elif self.bar_observer is not None:
+                    for leg in LEG_IDS:
+                        self.bar_observer(leg, None, self.adapters[leg])
+            if session is not None:
+                raise ValueError('path session outside verified calendar')
+        return super().run(chronological())
 
 
 def build_personal_replay(envelope, *, adapter_factory, bar_observer=None):
@@ -388,9 +405,9 @@ def build_personal_replay(envelope, *, adapter_factory, bar_observer=None):
         return RouteBroker(leg, *args, initial_capital=envelope.paper_capital,
                            contract_at=envelope.contract_at, symbol=SYMBOLS[leg], **kwargs)
     eq = envelope.initial_equity
-    replay = BookReplay(strategies, envelope.instruments, policy=PersonalP0Policy(),
+    replay = _PersonalReplay(strategies, envelope.instruments, policy=PersonalP0Policy(),
         initial_state=EvaluationState(eq, eq, eq, 0, 0), sizing_inputs=sizing,
-        schedule_quotes=_Quotes(envelope), broker_factory=broker,
+        schedule_quotes=BracketScheduleQuotes('R1'), broker_factory=broker,
         size_vector=envelope.sizing, bar_observer=bar_observer)
     replay._personal_route = envelope
     return replay

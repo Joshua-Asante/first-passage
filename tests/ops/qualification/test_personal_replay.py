@@ -127,8 +127,7 @@ def fixture_inputs(tmp_path, monkeypatch, *, denied=False):
     source = {'schema': 'sfclear_source_bundle/v1', 'sessions': [
         {'account_date': '2026-01-05', 'bars': bars}],
         'striker_risk_dollars': 20,
-        'splits': [{'utc': '2026-01-05T20:55:00Z', 'legs': {
-            leg: {'prefix': [100]*4, 'suffix': [100]*4} for leg in LEG_IDS}}]}
+        'splits': [], 'data_exclusions': []}
     friction = {'schema': 'sfclear_reference_friction/v1', 'instruments': {
         leg: dict(mintick=1, pointvalue=1, slippage_ticks=0, commission_per_side=1,
                   orders_on_close=False) for leg in LEG_IDS}}
@@ -242,11 +241,11 @@ def test_b3_denied_keeps_zero_day_and_refusals(tmp_path, monkeypatch):
     assert all(len(result['refusals'][leg]) == 1 for leg in LEG_IDS)
 
 
-def test_b5_missing_split_refuses(tmp_path, monkeypatch):
+def test_b5_nonempty_split_refuses(tmp_path, monkeypatch):
     p, manifest = fixture_inputs(tmp_path, monkeypatch)
-    rewrite(manifest, 'source_bundle', lambda d: d.update(splits=[]), monkeypatch)
-    with pytest.raises(ValueError, match='chronology'):
-        p.run_personal_replay(manifest, adapter_factory=lambda e: adapters(signal))
+    rewrite(manifest, 'source_bundle', lambda d: d.update(splits=[{}]), monkeypatch)
+    with pytest.raises(ValueError, match='splits'):
+        p.verify_inputs(manifest)
 
 
 @pytest.mark.parametrize('leg', ['aegis_6j', 'vanguard_mgc'])
@@ -431,8 +430,6 @@ def test_r1_pending_stop_is_cancelled_at_originating_roll(tmp_path, monkeypatch,
             row['legs'][leg]['ohlc'] = [80 if leg == 'aegis_6j' else 120]*4
             if change_contract:
                 row['legs'][leg]['contract'] = '2026-06'
-        d['splits'][0]['legs'][leg] = {'prefix': [80 if leg == 'aegis_6j' else 120]*4,
-                                      'suffix': [80 if leg == 'aegis_6j' else 120]*4}
     rewrite(manifest, 'source_bundle', prices, monkeypatch)
     def emit(a, bar):
         if a.leg_id != leg or len(a.bars) != 1:
@@ -630,3 +627,139 @@ print(perf_counter()-start)
     elapsed = float(result.stdout)
     record_property('lookup_scale_seconds', elapsed)
     assert elapsed < 5
+
+
+@pytest.mark.parametrize('kind', ['long', 'short', 'pending'])
+def test_b5_r1_vertices_and_unexposed_not_split(tmp_path, monkeypatch, kind):
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    leg = 'aegis_6j' if kind == 'short' else 'vanguard_mgc'
+    def prices(d):
+        d['sessions'][0]['bars'][-1]['legs'][leg]['ohlc'] = [100, 110, 90, 105]
+    rewrite(manifest, 'source_bundle', prices, monkeypatch)
+    def emit(a, bar):
+        if a.leg_id != leg or len(a.bars) != 1:
+            return []
+        side = Side.SELL if kind == 'short' else Side.BUY
+        return [OrderIntent('vertex', leg, 'entry', side, 1,
+            order_type='stop' if kind == 'pending' else 'market',
+            price=200 if kind == 'pending' else None,
+            timing=FillTiming.THIS_CLOSE if kind != 'pending' else FillTiming.NEXT_OPEN,
+            bracket=Bracket(stop=150 if kind == 'short' else 50), stop_dist_pts=50)]
+    envelope = p.verify_inputs(manifest)
+    replay = p.build_personal_replay(envelope, adapter_factory=lambda e: adapters(emit))
+    from c1_rail.qualification.bracket import BracketScheduleQuotes
+    assert isinstance(replay.schedule_quotes, BracketScheduleQuotes)
+    if kind == 'pending':
+        # Isolate the provider's pending-only branch; the book cutoff normally
+        # cancels resting entries before flatten start.
+        from c1_rail.qualification.model import ScheduleExposure
+        session = envelope.path[0]
+        pb = session.bars[-1]
+        exposure = ScheduleExposure(position=0, pending=True, reserved=0)
+        replay.schedule_quotes.split_bar(session, pb, session.source.schedule.flatten_start,
+            leg, exposure=exposure)
+    else:
+        replay.run(envelope.path)
+    rows = replay.schedule_quotes.placements
+    assert [(r.leg_id, r.price) for r in rows] == [(leg, {'long':90, 'short':110, 'pending':105}[kind])]
+    assert replay.schedule_quotes.run == 'R1'
+
+
+def exclude_day(d):
+    d['sessions'][0]['bars'] = []
+    d['data_exclusions'] = [dict(account_date='2026-01-05', leg=LEG_IDS[0], reason='missing_active_bar')]
+
+
+def test_b15_exclusion_zero_day(tmp_path, monkeypatch):
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    rewrite(manifest, 'source_bundle', exclude_day, monkeypatch)
+    doc = json.loads(p.run_personal_replay(manifest, adapter_factory=lambda e: adapters(signal)))
+    assert doc['days'] == [dict(account_date='2026-01-05', net_pnl_usd=0.0, fills=0)]
+    assert not doc['trades'] and not any(doc['refusals'].values())
+
+
+@pytest.mark.parametrize('invalid', ['unlisted', 'bars', 'denied', 'reason', 'leg', 'duplicate', 'absent'])
+def test_b16_b17_invalid_exclusion_refuses(tmp_path, monkeypatch, invalid):
+    p, manifest = fixture_inputs(tmp_path, monkeypatch, denied=invalid == 'denied')
+    def change(d):
+        original = d['sessions'][0]['bars']
+        exclude_day(d)
+        row = d['data_exclusions'][0]
+        if invalid == 'unlisted': d['data_exclusions'] = []
+        elif invalid == 'bars': d['sessions'][0]['bars'] = original
+        elif invalid == 'reason': row['reason'] = 'other'
+        elif invalid == 'leg': row['leg'] = 'other'
+        elif invalid == 'duplicate': d['data_exclusions'].append(dict(row))
+        elif invalid == 'absent': row['account_date'] = '2026-01-06'
+    rewrite(manifest, 'source_bundle', change, monkeypatch)
+    with pytest.raises(ValueError):
+        p.verify_inputs(manifest)
+
+
+@pytest.mark.parametrize('leg,month', [('aegis_6j','2026-09'), ('vanguard_mgc','2026-12')])
+def test_b18_post_seam_no_boundary_and_unknown_refuses(tmp_path, monkeypatch, leg, month):
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    rewrite(manifest, 'roll_list', lambda d: d['seams'].append(dict(product=p.SYMBOLS[leg],
+        from_month='2026-03', to_month=month, switch_open_local='2026-01-04T18:00:00-05:00',
+        switch_open_utc='2026-01-04T23:00:00Z', switch_trade_date='2026-01-05', last_trade='2026-03-03')), monkeypatch)
+    def contract(d, value):
+        for bar in d['sessions'][0]['bars']: bar['legs'][leg]['contract'] = value
+    rewrite(manifest, 'source_bundle', lambda d: contract(d, month), monkeypatch)
+    envelope = p.verify_inputs(manifest)
+    assert envelope.rolls[(p.SYMBOLS[leg], month)] is None
+    assert json.loads(p.run_personal_replay(manifest, adapter_factory=lambda e: adapters(signal)))['trades']
+    rewrite(manifest, 'source_bundle', lambda d: contract(d, '2099-01'), monkeypatch)
+    with pytest.raises(ValueError, match='contract'):
+        p.verify_inputs(manifest)
+
+
+@pytest.mark.parametrize('denied', [False, True])
+def test_b19_b20_boundary_order_factory_once_state_untouched(tmp_path, monkeypatch, denied):
+    from c1_signal_daemon.feed import Bar
+    from c1_signal_daemon.book_protocol import Fill
+    namespaces = {cls: frozenset(vars(cls)) for cls in (Bar, Fill)}
+    p, manifest = fixture_inputs(tmp_path, monkeypatch)
+    def schedule(d):
+        first = d['sessions'][0]
+        middle = json.loads(json.dumps(first).replace('2026-01-05','2026-01-06').replace('2026-01-04','2026-01-05'))
+        last = json.loads(json.dumps(first).replace('2026-01-05','2026-01-07').replace('2026-01-04','2026-01-06'))
+        if denied: middle = dict(account_date='2026-01-06', permission='DENIED', denial_reason='synthetic')
+        d['sessions'] += [middle, last]
+    rewrite(manifest, 'schedule', schedule, monkeypatch)
+    def source(d):
+        last = json.loads(json.dumps(d['sessions'][0]).replace('2026-01-05','2026-01-07'))
+        # All subsequent sessions must cover their 18:00 ET opening.
+        from datetime import datetime
+        start = datetime(2026,1,6,23,tzinfo=timezone.utc)
+        template = last['bars'][0]
+        last['bars'] = [dict(utc=(start+timedelta(minutes=15*i)).isoformat(), legs=template['legs']) for i in range(88)]
+        d['sessions'] += [dict(account_date='2026-01-06', bars=[]), last]
+        if not denied: d['data_exclusions'] = [dict(account_date='2026-01-06',leg=LEG_IDS[0],reason='missing_active_bar')]
+    rewrite(manifest, 'source_bundle', source, monkeypatch)
+    strategies = adapters(signal)
+    calls, factories, snapshots = [], [], {}
+    for a in strategies.values(): a.sentinel = ['persistent']
+    def factory(envelope):
+        factories.append(envelope)
+        return strategies
+    def observe(leg, close, strategy):
+        assert strategy is strategies[leg]
+        assert strategy.sentinel == ['persistent']
+        if close is None:
+            assert strategy.__dict__ == snapshots[leg]
+        else:
+            # Bars and feedback records are immutable. deepcopy would cache
+            # __slotnames__ on their classes and corrupt later integrity checks.
+            snapshots[leg] = {key: list(value) if isinstance(value, list) else value
+                              for key, value in strategy.__dict__.items()}
+        calls.append((leg, close))
+    p.run_personal_replay(manifest, adapter_factory=factory, bar_observer=observe)
+    assert len(factories) == 1
+    assert all(frozenset(vars(cls)) == keys for cls, keys in namespaces.items())
+    assert [leg for leg, close in calls if close is None] == list(LEG_IDS)
+    assert calls[16:20] == [(leg, None) for leg in LEG_IDS]
+    assert len(calls) == (4+88+1)*4
+    import ast
+    tree = ast.parse(Path(p.__file__).read_text())
+    assert not [n for n in ast.walk(tree) if isinstance(n, ast.Attribute) and n.attr in
+                ('reset', 'clear', '__init__', '__dict__')]
