@@ -84,13 +84,43 @@ edge:
   motif/feature that "fires at the open" is often just the vol hump in a costume.
   Normalize by the time-of-day vol curve before mining any time-of-day effect.
 - **Bid-ask bounce.** Returns computed off *trade* prices carry spurious negative
-  autocorrelation — the spread bouncing, not mean reversion. Use midpoints (`mbp-1`
-  or the `tbbo` quote) for any short-horizon MR / reversal mining.
-- **Back-adjustment + session/clock provenance** are data-semantics facts that
-  precede mining — they live with the data layer: `databento-data`
-  `reference/schemas-and-symbology.md` §Data hygiene (continuous-contract adjustment,
-  RTH/ETH, DST, the Globex session boundary). A level-based motif on a
-  difference-adjusted series is mining phantom levels.
+  autocorrelation — the spread bouncing, not mean reversion. Use the prevailing
+  top-of-book midpoint, not the trade print, for any short-horizon MR / reversal mining.
+
+Provenance facts precede any statistic; unhandled, they silently poison the series:
+
+- **Continuous-contract back-adjustment.** How a continuous series stitches across
+  rolls changes what is true of it. Difference-adjustment preserves point moves but
+  distorts price *levels* (they can go negative on deep history): percentage returns
+  on it are wrong, and any *level*-based signal (round numbers, prior highs/lows, a
+  fixed price band) tests phantom levels. Ratio-adjustment preserves returns but
+  distorts point values ($-P&L per point is off). The roll date injects a jump whose
+  timing is a convention, not the market's. An indicator may run on an adjusted series
+  for continuity, but **entries, exits and P&L are evaluated on the tradeable
+  contract's prices**, and any calendar-adjacent anomaly is checked against the roll
+  schedule so you haven't discovered your own back-adjustment. Confirm the source's
+  roll rule and whether it price-adjusts before a deep build; do not assume either.
+- **The roll rule changes which bars exist, not just prices** (Q-TVCOV-1,
+  2026-07-13) — "counts only, so roll is moot" is a trap. A calendar-rank front-month
+  series maps CME currency futures to the near-dead monthly serial after each
+  quarterly expiry (6J 2021-09: 335 covered NY-session 15m slots vs 734 actual) and
+  parks equity-index micros on the dying contract over quarterly-roll Fridays. For any
+  TradingView `1!` comparison or liquidity/coverage measurement, use a volume-rolled
+  series — verified to match TV bar-for-bar
+  ([`RESULTS.md`](../../../../lab/analysis/c1/tvcov_2026-07/RESULTS.md) §Roll-rule
+  attribution).
+- **Session & clock (CME Globex)** — the leading generators of fake time-of-day
+  anomalies:
+  - **RTH vs ETH.** Globex trades near-24h (ETH); an RTH-only hypothesis (e.g. the
+    equity-index cash session) must be sliced to RTH explicitly — ETH bars are a
+    different population.
+  - **Session boundary: 17:00 America/Chicago.** A new trade date opens at 17:00 CT
+    the prior calendar day, with a daily maintenance break. A "daily" bar is a Globex
+    trade date, not a midnight-UTC day.
+  - **DST.** A fixed UTC-hour filter shifts an exchange-local open by an hour twice a
+    year; convert to America/Chicago DST-aware and spot-check the boundary weeks.
+  - **Holiday half-sessions** (early closes) truncate the session — exclude or flag
+    them, or a session-return statistic mixes full and half days.
 
 These are the futures-microstructure counterpart of `strategy-validation`'s §1
 Step-0 panel-integrity battery (which is TV/CFD-shaped). Rationale: field guide
