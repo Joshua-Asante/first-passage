@@ -2,7 +2,7 @@
 
 **Status:** `PROPOSED` — operator marks owed (§6). $0 spent, K=0 bound at authoring; every screen
 is its own frozen prereg on GO, in the `H-DSTRUCT-MNQ-1` mold.
-**Liveness (2026-10-15):** never ruled; no owner. §4 resolved 2026-08-18 and its routed row was parked by Q-CONDVAL-1; S2 and S3 remain paused ("do not GO"). CLOSE (withdraw) is recommended to the operator (dormancy packet (2026-10-15)). If kept: S2 could run on the MGC/MCL TV M15 panels resampled to 1h (about four years of history), while S3's ≥6-of-8-year stability test needs a longer-history source (DORMANT-DATA).
+**Liveness (2026-10-15):** never ruled; no owner. §4 resolved 2026-08-18 and its routed row was parked by Q-CONDVAL-1; S2 and S3 remain paused ("do not GO"). CLOSE (withdraw) is recommended to the operator ([dormancy packet #849](https://github.com/Joshua-Asante/first-passage/pull/849)). If kept: S2 could run on the MGC/MCL TV M15 panels resampled to 1h (about four years of history), while S3's ≥6-of-8-year stability test needs a longer-history source (DORMANT-DATA).
 **Type:** commissioning slate (MSL first-slate lineage, minimal-spec style) — decides nothing;
 queues Tier-1 mechanism screens for the deep-iteration-lane program.
 **Date:** 2026-08-18 · **Authors:** Claude Code (drafter), operator thread (JA commission:

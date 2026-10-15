@@ -14,7 +14,7 @@
 **Survive bound:** near-daily operator sessions (the estate's most active lane); databento per-pull cost under the skill's cost-gate discipline
 **Review date:** 2026-11-08 (co-scheduled with the quarterly programme audit)
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
-**Liveness (2026-10-15):** no live component and no owner — Route B retired 2026-08-24, CapFLOW FALSIFIED 2026-08-14, the dense-1m lane's stop rule fired, and TNEC intake is Tradeify-scoped while Track B is suspended. The survive bound's Databento pulls ended with the 2026-09-10 retirement. "Active campaign" no longer holds; SUBTRACT at or before the 2026-11-08 review is recommended to the operator (dormancy packet (2026-10-15)). Standing stays as ratified until then.
+**Liveness (2026-10-15):** no live component and no owner — Route B retired 2026-08-24, CapFLOW FALSIFIED 2026-08-14, the dense-1m lane's stop rule fired, and TNEC intake is Tradeify-scoped while Track B is suspended. The survive bound's Databento pulls ended with the 2026-09-10 retirement. "Active campaign" no longer holds; SUBTRACT at or before the 2026-11-08 review is recommended to the operator ([dormancy packet #849](https://github.com/Joshua-Asante/first-passage/pull/849)). Standing stays as ratified until then.
 
 **Owner artifacts:** [`TNEC-1`](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) ·
 [`lab/CATALOG.md`](../../lab/CATALOG.md) `c1` theme
