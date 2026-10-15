@@ -1,6 +1,6 @@
 # Q-SIGID-1 — What is the measured live↔backtest signal-identity gap from mid-bar `alert()`/`strategy.entry`, and which architectures close it?
 
-**Status:** `OPEN`
+**Status:** `OPEN` — **DORMANT-OTHER 2026-10-15**, no owner. Wake: the operator selects an execution route whose signals come from intra-bar Pine evaluation (11-08 sitting). The ruled S2b host evaluates closed bars only, so §2b reads EQUAL by construction there; close-or-keep is an operator question ([INDEX Dormant](INDEX.md)).
 **Authored:** 2026-07-28
 **Closed:** N/A
 **Authors:** Cursor cloud agent (drafting) — operator lock pending
