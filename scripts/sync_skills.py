@@ -15,6 +15,13 @@ never bypasses the release checks.
 snapshot, cache, or log under the target and never implies permission to
 publish. Diagnostic default-target resolution stays on resolve_targets().
 
+Retirement: RETIRED_SKILLS names skills that are never released or imported.
+--prune --target reports retired skill directories in that target; adding
+--apply moves them into a sibling backup (refused on an account-bundle
+mirror). --check-account audits a claude.ai
+account-bundle mirror, read-only; deleting account skills is an operator act
+in claude.ai, not something this script can do.
+
 Exit codes:
   0 — publication succeeded / no substantive diagnostic drift
   1 — diagnostic drift, or preparation/install/rollback error
@@ -25,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
 import shutil
 import stat
@@ -46,6 +54,23 @@ DEFAULT_DEPLOY_TARGET = Path(
 )
 
 HOME_SKILLS_DEPLOY_TARGET = Path.home() / ".claude" / "skills"
+
+# Managed remote containers mirror the claude.ai account bundle here as
+# synced/<org>_<account>/ with a manifest.json; the desktop app's mirror is
+# DEFAULT_DEPLOY_TARGET. Account sync rewrites both.
+HOME_SYNCED_SKILLS = HOME_SKILLS_DEPLOY_TARGET / "synced"
+ACCOUNT_MANIFEST = "manifest.json"
+ANTHROPIC_SOURCES = frozenset({"anthropic", "anthropic-example"})
+
+# Retired skill -> owner record. A retired name has no repo copy and is never
+# released or imported; --prune removes only these names from a target.
+RETIRED_SKILLS: dict[str, str] = {
+    "fxify-challenge": "docs/pursuits/d7-fxify-challenge-plugin.md",
+    "inqhiori-algorithm": "docs/pursuits/d9-inqhiori-algorithm-plugin.md",
+    "live-execution-journal": "docs/pursuits/d8-live-execution-journal-plugin.md",
+    "mql-developer": "docs/pursuits/d5-mql-developer-user-skill.md",
+    "notion-mcp-api-patterns": "docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md",
+}
 
 STOCK_SKILLS_EXEMPT = frozenset({
     "consolidate-memory",
@@ -202,7 +227,14 @@ def find_extra_deployed_skills(repo_skills: Path, target: Path) -> list[str]:
     for d in sorted(p for p in target.iterdir() if p.is_dir()):
         if d.name in repo_names or d.name in STOCK_SKILLS_EXEMPT:
             continue
-        if d.name.startswith(".skill-release-"):
+        if d.name.startswith(".") or d.name == HOME_SYNCED_SKILLS.name:
+            # Release scratch, the harness .trash, and the account mirror.
+            continue
+        if d.name in RETIRED_SKILLS:
+            extras.append(
+                f"{d.name}  (retired; see {RETIRED_SKILLS[d.name]} — "
+                "report/remove with --prune)"
+            )
             continue
         if d.name == RULE0_SKILL:
             extras.append(
@@ -225,6 +257,98 @@ def check_drift(repo_skills: Path, target: Path) -> list[str]:
         drift.extend(diff_skill(skill_dir, target / skill_dir.name))
     drift.extend(find_extra_deployed_skills(repo_skills, target))
     return drift
+
+
+def _repo_skill_names(repo_skills: Path) -> set[str]:
+    return {
+        p.name for p in repo_skills.iterdir()
+        if p.is_dir() and not p.name.startswith(".")
+    }
+
+
+def account_bundle_candidates() -> list[Path]:
+    """Account-bundle mirrors under HOME_SYNCED_SKILLS (managed remote layout)."""
+    if not HOME_SYNCED_SKILLS.is_dir():
+        return []
+    return sorted(
+        p for p in HOME_SYNCED_SKILLS.iterdir()
+        if p.is_dir() and (p / ACCOUNT_MANIFEST).is_file()
+    )
+
+
+def _account_sources(bundle: Path) -> dict[str, str] | None:
+    """Skill name -> manifest source, or None when no readable manifest exists."""
+    try:
+        data = json.loads((bundle / ACCOUNT_MANIFEST).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    skills = data.get("skills") if isinstance(data, dict) else None
+    if not isinstance(skills, list):
+        return None
+    return {
+        s["name"]: str(s.get("source", ""))
+        for s in skills
+        if isinstance(s, dict) and isinstance(s.get("name"), str)
+    }
+
+
+def check_account_bundle(repo_skills: Path, bundle: Path) -> tuple[list[str], list[str]]:
+    """Audit a claude.ai account-bundle mirror. Returns (drift, notes).
+
+    Repo copies are canonical, so the account should hold no skill this repo
+    owns and no retired skill; repo skills absent from the account are not
+    drift. Anthropic-provided entries (manifest source) are out of scope;
+    without a manifest, STOCK_SKILLS_EXEMPT stands in for them.
+    """
+    sources = _account_sources(bundle)
+    repo_names = _repo_skill_names(repo_skills)
+    drift: list[str] = []
+    notes: list[str] = []
+    for d in sorted(p for p in bundle.iterdir() if p.is_dir()):
+        name = d.name
+        if name.startswith("."):
+            continue
+        if sources is not None and sources.get(name) in ANTHROPIC_SOURCES:
+            continue
+        if sources is None and name in STOCK_SKILLS_EXEMPT:
+            continue
+        if name in RETIRED_SKILLS:
+            drift.append(
+                f"{name}  (retired; see {RETIRED_SKILLS[name]} — "
+                "delete it from the claude.ai account)"
+            )
+        elif name in repo_names:
+            drift.append(
+                f"{name}  (duplicate of repo-canonical .claude/skills/{name} — "
+                "delete it from the claude.ai account)"
+            )
+        elif name == RULE0_SKILL:
+            notes.append(f"{name}  (intentionally separately owned; see {RULE0_OWNER})")
+        else:
+            notes.append(f"{name}  (account-only skill; not owned by this repo)")
+    return drift, notes
+
+
+def is_account_mirror(target: Path) -> bool:
+    """True for a local copy of the claude.ai account bundle (sync rewrites it)."""
+    if _account_sources(target) is not None:
+        return True
+    try:
+        return _same_path(target, DEFAULT_DEPLOY_TARGET)
+    except OSError:
+        return False
+
+
+def find_retired_deployed(repo_skills: Path, target: Path) -> list[str]:
+    """Retired skill directories present directly under *target*."""
+    if not target.is_dir():
+        return []
+    repo_names = _repo_skill_names(repo_skills)
+    return sorted(
+        p.name for p in target.iterdir()
+        if p.name in RETIRED_SKILLS and p.name not in repo_names
+        and (p.is_dir() or _path_is_reparse(p))
+    )
 
 
 def copy_skills(repo_skills: Path, target: Path) -> int:
@@ -944,6 +1068,15 @@ def _validate_source_for_publish(
             toplevel,
             sha,
         )
+    retired = sorted(_repo_skill_names(repo_skills) & RETIRED_SKILLS.keys())
+    if retired:
+        return (
+            EXIT_POLICY,
+            "REFUSED: revision releases retired skill(s): " + ", ".join(retired)
+            + " (scripts/README.md#skill-lifecycle)",
+            toplevel,
+            sha,
+        )
     return EXIT_OK, "", toplevel, sha
 
 
@@ -1174,6 +1307,13 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
             f"Released {len(installed)} skill(s) revision={sha} -> {target} "
             f"(explicit release; backup {backup_root})"
         )
+        leftover_retired = find_retired_deployed(repo_skills, target)
+        if leftover_retired:
+            print(
+                "NOTE: retired skill(s) still deployed at the target: "
+                + ", ".join(leftover_retired)
+                + f". Report them with: --prune --target {target}"
+            )
         return EXIT_OK
     finally:
         # Successful releases and clean rollbacks drop the stage directory.
@@ -1182,10 +1322,112 @@ def _publish(repo_skills: Path, revision: str, target: Path) -> int:
             _safe_rmtree(staging_root, ignore_errors=True)
 
 
+def _prune(repo_skills: Path, target: Path, apply: bool) -> int:
+    """Report, or with *apply* back up and remove, retired skills in *target*."""
+    if not target.is_dir():
+        print(f"ERROR: prune target is not a directory: {target}", file=sys.stderr)
+        return EXIT_USAGE
+    retired = find_retired_deployed(repo_skills, target)
+    if not retired:
+        print(f"OK: no retired skills at {target}.")
+        return EXIT_OK
+    for name in retired:
+        print(f"RETIRED: {name}  (see {RETIRED_SKILLS[name]})")
+    mirror = is_account_mirror(target)
+    if not apply:
+        hint = (
+            "This is a claude.ai account-bundle mirror: delete them in claude.ai "
+            "(scripts/README.md#skill-lifecycle)."
+            if mirror else
+            "Re-run with --apply to move them into a sibling backup."
+        )
+        print(f"{len(retired)} retired skill(s) at {target}; nothing changed. {hint}")
+        return EXIT_ERROR
+    if mirror:
+        print(
+            "REFUSED: target is a claude.ai account-bundle mirror; account sync "
+            "restores what is removed here. Delete the skills in claude.ai "
+            "(scripts/README.md#skill-lifecycle).",
+            file=sys.stderr,
+        )
+        return EXIT_POLICY
+    if _path_has_reparse_ancestor(target) or _any_reparse_in_tree(target):
+        print(
+            "REFUSED: target path contains a symlink/junction/reparse point",
+            file=sys.stderr,
+        )
+        return EXIT_POLICY
+    if _paths_overlap(repo_skills, target) or _inside_any_git_metadata(target):
+        print(
+            "REFUSED: target overlaps the source checkout or git metadata",
+            file=sys.stderr,
+        )
+        return EXIT_POLICY
+    backup_root = target.parent / f".skill-prune-backup-{uuid.uuid4().hex}"
+    moved: list[str] = []
+    try:
+        _require_safe_io_path(backup_root)
+        backup_root.mkdir(parents=True)
+        for name in retired:
+            before = _tree_inventory(target / name)
+            _safe_replace(target / name, backup_root / name)
+            if _tree_inventory(backup_root / name) != before:
+                raise OSError(f"backup of {name} does not match the removed tree")
+            moved.append(name)
+    except OSError as exc:
+        print(
+            f"ERROR: prune stopped: {exc}\n"
+            f"  moved={', '.join(moved) or '<none>'}\n"
+            f"  target={target}\n  backup={backup_root}",
+            file=sys.stderr,
+        )
+        return EXIT_ERROR
+    print(f"Pruned {len(moved)} retired skill(s) from {target} (backup {backup_root})")
+    return EXIT_OK
+
+
+def _check_account(repo_skills: Path, explicit: str | None) -> int:
+    if explicit:
+        bundle = Path(explicit)
+    else:
+        candidates = account_bundle_candidates()
+        if len(candidates) > 1:
+            print(
+                "ERROR: several account bundles under "
+                f"{HOME_SYNCED_SKILLS}; pass --target",
+                file=sys.stderr,
+            )
+            return EXIT_USAGE
+        bundle = candidates[0] if candidates else resolve_target(None)
+    if not bundle.is_dir():
+        print(f"ERROR: account bundle not found: {bundle}", file=sys.stderr)
+        return EXIT_USAGE
+    drift, notes = check_account_bundle(repo_skills, bundle)
+    for note in notes:
+        print(f"NOTE: {note}")
+    if drift:
+        print(f"DRIFT ({len(drift)} account skill(s)) bundle={bundle}:")
+        for item in drift:
+            print(f"  {item}")
+        print(
+            "Account skills are deleted in claude.ai by the operator; "
+            "see scripts/README.md#skill-lifecycle."
+        )
+        return EXIT_ERROR
+    print(f"OK: account bundle holds no retired or repo-owned skills ({bundle}).")
+    return EXIT_OK
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true",
                         help="report repo-vs-deployed drift; no writes")
+    parser.add_argument("--check-account", action="store_true",
+                        help="audit a claude.ai account-bundle mirror; no writes")
+    parser.add_argument("--prune", action="store_true",
+                        help="report retired skills in --target; no writes without --apply")
+    parser.add_argument("--apply", action="store_true",
+                        help="with --prune: move retired skills into a sibling backup")
     parser.add_argument("--target", default=None,
                         help="sole destination (required for publication)")
     parser.add_argument("--revision", default=None,
@@ -1207,6 +1449,32 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: repo skills dir missing: {repo_skills_raw}", file=sys.stderr)
         return EXIT_USAGE
     repo_skills = repo_skills_raw.resolve()
+
+    if sum([args.check, args.check_account, args.prune]) > 1 or (
+        (args.check_account or args.prune) and args.revision
+    ):
+        print(
+            "ERROR: choose one of --check, --check-account and --prune; "
+            "--check-account and --prune take no --revision",
+            file=sys.stderr,
+        )
+        return EXIT_USAGE
+    if args.apply and not args.prune:
+        print("ERROR: --apply requires --prune", file=sys.stderr)
+        return EXIT_USAGE
+
+    if args.check_account:
+        return _check_account(repo_skills, args.target)
+
+    if args.prune:
+        if not args.target:
+            print(
+                "ERROR: --prune requires --target. No AppData or home "
+                "destination is selected implicitly.",
+                file=sys.stderr,
+            )
+            return EXIT_USAGE
+        return _prune(repo_skills, Path(args.target), args.apply)
 
     if args.check:
         targets = [t.resolve() for t in resolve_targets(args.target)]

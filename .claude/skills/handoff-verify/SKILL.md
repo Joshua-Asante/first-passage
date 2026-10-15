@@ -1,6 +1,6 @@
 ---
 name: handoff-verify
-description: Use BEFORE executing any external handoff — Claude Code / CC spawn, Codex packet, web-advisor note, or any brief that claims repo state you did not just verify. Triggers on "execute this handoff", "CC handoff", "advisor said", "Phase-0", or when a prompt asserts files/ADRs/closures/templates exist. Blocks work until the Phase-0 checklist passes or returns NEEDS_CONTEXT. Sibling of verify-source (source STATE) and rule-0 (read production first); this skill is the handoff-shaped gate for the recurring feedback_web_advisor_handoff_confabulates_repo_state failure.
+description: Use BEFORE executing any external handoff — Claude Code / CC spawn, Codex packet, web-advisor note, or any brief that claims repo state you did not just verify. Triggers on "execute this handoff", "CC handoff", "advisor said", "Phase-0", or when a prompt asserts files/ADRs/closures/templates exist. Blocks work until the Phase-0 checklist passes or returns NEEDS_CONTEXT. Sibling of verify-source (source STATE) and Rule 0 (`docs/rule_0.md`, read production first); this skill is the handoff-shaped gate for the recurring feedback_web_advisor_handoff_confabulates_repo_state failure.
 ---
 
 # handoff-verify — Phase-0 before executing an external handoff
@@ -124,7 +124,7 @@ do-not: <what the handoff asked that you will not do>
 
 | Skill | Owns |
 |---|---|
-| `rule-0` / `docs/rule_0.md` | Read production source, not memory |
+| Rule 0 (`docs/rule_0.md`) | Read production source, not memory |
 | `verify-source` | Source STATE (currency, vintage, cohort) for a value/claim |
 | **handoff-verify** | Whole external instruction packet before acting |
 | `handoff-verify-panel` (workflow) | Same checklist, fanned out — for large/many-claim packets |

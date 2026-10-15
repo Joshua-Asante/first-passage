@@ -1,6 +1,6 @@
 # fxify-challenge (anthropic-skills plugin bundle) — SUBTRACT (marker only)
 
-**Class:** (d) meta-belt · **Standing:** SUBTRACT — **no file operation performed or possible**
+**Class:** (d) meta-belt · **Standing:** SUBTRACT — account deletion owed (operator act in claude.ai)
 **Test applied:** serves no currently stated Aim — challenge era closed, CFD estate retired;
 durable successors already retained live: `prop-firm-challenge` (repo) covers firm rules/MC/
 dd_protection, `c1-rail` (repo) covers live execution.
@@ -13,6 +13,13 @@ directories — no `anthropic-skills` marketplace or cache entry exists anywhere
 **Conclusion: `anthropic-skills` is not a user-controlled plugin install — it is platform-bundled,
 not a file Joshua or this session can delete.** This is not a judgment call to weigh; there is no
 deletion path.
+
+**Correction 2026-10-15:** the conclusion above is wrong. `anthropic-skills:` lists the
+skills uploaded to Joshua's claude.ai account (this one: account-bundle manifest
+`source: plugin`, last updated 2026-04-26), which Claude Code downloads one-way into every
+session, cloud ones included. Local plugin files could not show it. Joshua can delete it
+in claude.ai; steps and the `sync_skills.py --check-account` verification are in the
+[skill lifecycle](../../scripts/README.md#skill-lifecycle). `fxify-challenge` is in `RETIRED_SKILLS`.
 
 **Disposition executed:** marker only — this record states the pursuit is superseded and should
 not be invoked; the repo/user skills (`prop-firm-challenge`, `c1-rail`) are authoritative. No file

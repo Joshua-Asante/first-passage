@@ -8,7 +8,7 @@ Eighteen ways agentic work goes wrong, what each looks like from the outside, an
 | 2 | **Wrong-deliverable guess** | Agent built interpretation A; user meant B | Step 0: ambiguous-scope test, one pointed question with a recommended interpretation |
 | 3 | **Re-litigating settled decisions** | Agent reopens choices the operator already made | Step 0: extract decisions already made; rejected-candidates/rejected-signals registries are settled |
 | 4 | **Fake "done"** | No one, including the agent, can say how the result was checked | Step 1: done is defined with a named gate before work starts |
-| 5 | **Invented APIs / constants** | Code calls signatures that do not exist; a risk % quoted from memory | Step 2.2: rule-0 + verify-source; Step 4.2: the recall gate at first use |
+| 5 | **Invented APIs / constants** | Code calls signatures that do not exist; a risk % quoted from memory | Step 2.2: Rule 0 (`docs/rule_0.md`) + verify-source; Step 4.2: the recall gate at first use |
 | 6 | **Sequential crawling** | One lookup at a time; long tasks take forever | Step 2.3: independent lookups in one batch |
 | 7 | **Context flooding** | Whole files and logs dumped into the conversation | Step 2.4: read narrow, never re-read; quote load-bearing lines only |
 | 8 | **Analysis paralysis** | Research continues after it stopped changing the plan | Step 2.5: two rounds, then a stated reason or stop |

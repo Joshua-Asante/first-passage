@@ -45,6 +45,8 @@ Three findings were **not** anticipated at pre-registration:
    `installed_plugins.json` (only `superpowers` + `hookify`), `known_marketplaces.json`, and the
    `cache/`/`marketplaces/` trees. No deletion path exists, so the pre-registered fallback
    (marker-only, §0.5 ruling 6) applied — not as a judgment call but as the only available action.
+   *Corrected 2026-10-15:* they are skills uploaded to the claude.ai account, deletable by the
+   operator in claude.ai; local plugin files could not show them ([d7](../../pursuits/d7-fxify-challenge-plugin.md)).
 3. **The MERGE precondition failed as literally stated and had to be verified, not assumed.** d4's
    disposition said "verify-no-unique-content diff"; the diff came back **non-empty** on three
    files. Reading them showed every hunk was the repo copy being strictly *more* current (futures/c1

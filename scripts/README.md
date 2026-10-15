@@ -300,7 +300,7 @@ the verified inventory, rechecks source identity/payload and the target snapshot
 and refuses source/target overlap, Git metadata and symlinks/junctions/reparse paths.
 Successful installation requires a final byte/inventory check. It replaces only
 released skills, retaining predecessor backups and unrelated deployed skills,
-including separately owned `rule-0`.
+including separately owned `rule-0`. A revision containing a retired skill is refused.
 
 Install failure attempts rollback. Rollback must not overwrite concurrent target
 changes; failed recovery or installed-byte mismatch reports an incomplete release
@@ -311,8 +311,9 @@ still rewrite bundles; local checks do not enforce external ownership.
 
 `--check` is read-only from any checkout and creates no destination or release
 artifacts. Only this diagnostic retains default target resolution: the primary
-bundle (environment override when set) plus `~/.claude/skills/`; explicit `--target`
-selects one. It reports missing/differing/extra content, ignoring generated caches
+bundle (environment override when set, else `DEFAULT_DEPLOY_TARGET`) plus
+`~/.claude/skills/`, whose harness-owned `synced/` and dot directories it ignores;
+explicit `--target` selects one. It reports missing/differing/extra content, ignoring generated caches
 and normalizing supported UTF-8 text newlines. Binary/invalid UTF-8 bytes compare
 exactly. A diagnostic result supplies no release permission. Exit codes: 0 success
 or no diagnostic drift; 1 drift/preparation/install/recovery error; 2 invalid source
@@ -339,8 +340,32 @@ Revision 2026-09-15.)
 recovery exception: copy one named skill byte-for-byte only when its repository
 destination is absent and the source has `SKILL.md`. No overwrite option exists.
 After import, repository ownership and gates apply; it is not reverse sync or a
-release. Deployed-only extras need triage, not automatic deletion/import;
-`notion-mcp-api-patterns` remains [archived](../docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md).
+release. It refuses retired skills. Other deployed-only extras need triage, not
+automatic deletion or import.
+
+**Retirement.** `RETIRED_SKILLS` in `sync_skills.py` maps each retired skill to its
+owner record. To retire a skill, delete its repo directory, add it there with its
+owner, and prune each deployed copy. `--check` labels a deployed retired skill.
+`--prune --target <dir>` reports the retired skills directly under that one directory
+and changes nothing (exit 1 when any exist); adding `--apply` moves them into a
+sibling `.skill-prune-backup-<token>` directory and touches nothing else. It refuses an
+account-bundle mirror (below).
+
+**Account bundle.** Skills uploaded to the claude.ai account appear in sessions as
+`anthropic-skills:<name>`. Claude Code [downloads them one-way](https://code.claude.com/docs/en/skills.md)
+into `~/.claude/skills/synced/<bundle>/` (with a `manifest.json`); a later sync can
+overwrite or remove local edits there. `DEFAULT_DEPLOY_TARGET` carries the same
+bundle identifiers and is taken to be the desktop app's copy (inferred from its path;
+undocumented). Neither a release nor a deletion in either copy reaches the account.
+Repo copies are canonical, so the account holds no repo-owned or retired skill;
+`--check-account` (read-only; default: the single synced bundle, else
+`DEFAULT_DEPLOY_TARGET`) lists account skills that break that rule and ignores
+Anthropic-provided ones (manifest `source`). Only the operator can delete an account
+skill: claude.ai → **Customize** → **Skills** → open the skill → switch its toggle off
+→ **⋯** → **Delete** → confirm. A new session's `--check-account` verifies the result.
+To use a repo skill outside this repository, upload a ZIP of a reviewed revision
+(`git archive --format=zip --prefix=<name>/ -o <name>.zip <sha>:.claude/skills/<name>`)
+and delete it again when it is superseded.
 
 [`check_skill_deploy_sync.py`](check_skill_deploy_sync.py) checks existence of
 literal ADR-cited deployed scripts, not equality. It is `SKIP` / `NOT CHECKED`

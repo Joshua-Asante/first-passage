@@ -1,6 +1,6 @@
 ---
 name: verify-source
-description: Use when about to quote, commit, or decide on a value/claim/premise that came from somewhere other than a fresh authoritative computation this turn — a handoff or advisor note, a pinned anchor in a checked-out file, an on-disk artefact that agrees with its own test pin, a metric borrowed from another cohort, or a result whose export window you did not set. Fires hardest under time pressure ("just need the number, quick") and when the source looks internally consistent or authoritative. Methodology/ops discipline; does not modify strategy code, allocations, dd_protection, or MC constants. Sibling: `rule-0` covers the read-production-source-first channel this skill builds on.
+description: Use when about to quote, commit, or decide on a value/claim/premise that came from somewhere other than a fresh authoritative computation this turn — a handoff or advisor note, a pinned anchor in a checked-out file, an on-disk artefact that agrees with its own test pin, a metric borrowed from another cohort, or a result whose export window you did not set. Fires hardest under time pressure ("just need the number, quick") and when the source looks internally consistent or authoritative. Methodology/ops discipline; does not modify strategy code, allocations, dd_protection, or MC constants. Sibling: Rule 0 (`docs/rule_0.md`) covers the read-production-source-first channel this skill builds on.
 ---
 
 # verify-source — verify the source is the RIGHT source, not just *a* source
@@ -56,7 +56,7 @@ Asked to quote the canonical MC anchor from a feature branch, three fresh agents
 
 ## Relationship to other skills
 
-- **`rule-0`** (`docs/rule_0.md`) owns one channel: read production source first, not memory or prior briefs. This skill assumes Rule-0 is done and adds the source-STATE check. Rule-0 compliance can give *false confidence* — see the worked example.
+- **Rule 0** (`docs/rule_0.md`) owns one channel: read production source first, not memory or prior briefs. This skill assumes Rule-0 is done and adds the source-STATE check. Rule-0 compliance can give *false confidence* — see the worked example.
 - **`handoff-verify`** — before *executing* an external handoff packet (CC/advisor/Phase-0), run that skill's Phase-0 checklist; then use this skill for any specific number/claim inside it.
 - **`fable-judge`** — after work is *claimed complete* (by another session, advisor, worker, or subagent), that skill re-runs the claimed verifications and hunts frauds; this skill is its per-value tool.
 - Hand off to **`prop-firm-challenge`** for the operational facts and **`brief-authoring`** for where the verified value lands.
