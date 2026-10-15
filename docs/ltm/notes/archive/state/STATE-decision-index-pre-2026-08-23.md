@@ -2,6 +2,12 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Roll 2026-10-14** (automated keep-15 roll; `scripts/state_roll.py`):
+
+- **2026-09-21** — S2 accepted as the enforced work boundary; #436 merged. [Ledger](../../../../../docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-budgeted-admission-and-real-linux-work-supervision-2026-09-21)
+
+- **2026-09-19** — S2-R2b accepted as the funded-scheduler integration only; restart ownership ruled auto-recover. [Ledger](../../../../../docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-acceptance--s2-r2b-funded-scheduler-integration-2026-09-19)
+
 **Roll 2026-10-12** (automated keep-15 roll; `scripts/state_roll.py`):
 
 - **2026-09-19** — B0: protected qualification service retained; operator-launched batch not adopted. [Decision](../../../../../docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)
