@@ -302,7 +302,7 @@ self-funded risk questions need a fresh Pre-Q (hard date per the rescope ADR).
 
 Notion retired 2026-06-12 — canonical homes are in-repo: `docs/adr/` (decisions), `core/strategies/CATALOG.md` (index) → `core/strategies/_archive/<family>/LOCK.md` (locks), `core/firm_rules.py` / `core/dd_protection.py` / `core/lifecycle.py` (live constants). Historical Notion URLs: `docs/governance/notion-redirect-map.md`.
 
-See also: `references/strategy_reference.md` (per-strategy mechanics) and `references/execution_history.md` (historical manual-execution playbook, retired 2026-06-30).
+See also: `references/strategy_reference.md` (per-strategy mechanics) and the historical manual-execution playbook (retired 2026-06-30; removed from the public tree 2026-10-15, [last version](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/.claude/skills/prop-firm-challenge/references/execution_history.md)).
 
 ## Related skills
 

@@ -15,7 +15,7 @@ Usage:
 
   --strategy   guardian | striker_dj30 | striker_nas | aegis
                (auto-detect from filename if omitted)
-  --baseline   reconcile against references/baselines.md anchors
+  --baseline   reconcile against the private references/baselines.private.json anchors
   --scale      report allocation-scaled P&L for portfolio aggregation
   --account    initial equity for DD reconstruction (default $200,000)
 
@@ -43,10 +43,26 @@ import numpy as np  # type: ignore
 
 
 # ---------------------------------------------------------------------------
-# Strategy registry — embedded copy of references/baselines.md anchors.
-# Update on every re-lock. The references file is the authoritative narrative;
-# this dict is the executable subset used by --baseline reconciliation.
+# Strategy registry — structural fields only. The per-strategy baseline anchors
+# (N/PF/WR/Net/DD/RF/1R) are private figures: they live in the gitignored
+# references/baselines.private.json, not in this public file (removed
+# 2026-10-15; restore that file from git history or the private archive). Its
+# shape is {strategy: {"baselines": {feed: {...}}, "legacy": {...}}}. Update
+# it on every re-lock, in the same motion as references/baselines.md.
 # ---------------------------------------------------------------------------
+
+PRIVATE_BASELINES = (
+    Path(__file__).resolve().parent.parent / "references" / "baselines.private.json"
+)
+
+
+def load_private_baselines(path: Path | None = None) -> dict:
+    """Baseline anchors by strategy, or {} when the private file is absent."""
+    path = PRIVATE_BASELINES if path is None else path
+    if not path.is_file():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
 
 STRATEGIES = {
     "guardian": {
@@ -57,14 +73,6 @@ STRATEGIES = {
         "risk_pct": 0.34,
         "contract_value": 100,
         "pyramid": False,
-        "baselines": {
-            "pepperstone": {
-                "n": 203, "pf": 3.750, "wr_pct": 22.17,
-                "net": 571_840.77, "dd_pct": 5.01, "rf": 23.65,
-                "lock_date": "2026-04-23",
-                "panel": "2022-01-04 to 2026-04-20 (52mo)",
-            },
-        },
     },
     "striker_dj30": {
         "label": "Striker DJ30 v4.5",
@@ -75,30 +83,6 @@ STRATEGIES = {
         "contract_value": 10,  # CRITICAL — default of 1 is 10x wrong
         "pyramid": True,
         "expected_pyramid_share": 0.427,  # ~42.7% (Q-DJ30-2 Phase B); the prior 0.94 was a NAS100 cross-strategy misattribution corrected 2026-06-08 in references/baselines.md
-        "baselines": {
-            "oanda": {
-                "n": 225, "pf": 2.755, "wr_pct": 72.00,
-                "net": 433_000.00, "dd_pct": 4.81, "rf": None,
-                "lock_date": "2026-05-05",
-                "panel": "4yr OANDA",
-            },
-            "pepperstone": {
-                # v4.5 Pepperstone: full PF/WR/DD pending re-export per memory
-                "n": 218, "pf": 3.373, "wr_pct": 72.94,
-                "net": 440_447.54, "dd_pct": 6.22, "rf": 21.40,
-                "r_dollars": 4_240.13,
-                "lock_date": "2026-05-05",
-                "panel": "4yr Pepperstone",
-                "note": "1R pinned; full headline pending re-export",
-            },
-        },
-        "legacy": {
-            "v4_4_pepperstone": {
-                "n": 229, "pf": 2.272, "wr_pct": 71.18,
-                "net": 279_437.56, "dd_pct": 5.09, "rf": 18.29,
-                "lock_date": "2026-04-20",
-            },
-        },
     },
     "striker_nas": {
         "label": "Striker NAS100 v1",
@@ -109,14 +93,6 @@ STRATEGIES = {
         "contract_value": 10,
         "pyramid": True,
         "expected_pyramid_share": 0.885,
-        "baselines": {
-            "pepperstone": {
-                "n": 196, "pf": 3.717, "wr_pct": 55.61,
-                "net": 369_698.41, "dd_pct": 3.54, "rf": 18.82, "r_dollars": 3_940.31,
-                "lock_date": "2026-05-05",
-                "panel": "4yr+ Pepperstone",
-            },
-        },
     },
     "aegis": {
         "label": "Aegis-Reversion USDJPY v4.3",
@@ -126,21 +102,6 @@ STRATEGIES = {
         "risk_pct": 1.50,
         "contract_value": 1,  # default — USDJPY direct match
         "pyramid": False,
-        "baselines": {
-            "pepperstone": {
-                "n": 124, "pf": 4.188, "wr_pct": 60.48,
-                "net": 178_298.13, "dd_pct": 4.30, "rf": 20.72, "r_dollars": 3_293.45,
-                "lock_date": "2026-04-22",
-                "panel": "4yr Pepperstone",
-            },
-            "oanda": {
-                "n": 123, "pf": 4.91, "wr_pct": 63.41,
-                "net": 212_678.00, "dd_pct": 4.27, "rf": 24.90,
-                "lock_date": "2026-04-22",
-                "panel": "4yr OANDA",
-                "note": "USDJPY broker-uniform (123t identical across feeds)",
-            },
-        },
     },
 }
 
@@ -581,14 +542,16 @@ def reconcile(
     feed: str | None,
 ) -> tuple[dict | None, list[str]]:
     """Return (baseline_dict_used, list_of_drift_messages)."""
-    spec = STRATEGIES[strategy]
-    if feed is None or feed not in spec.get("baselines", {}):
+    baselines = load_private_baselines().get(strategy, {}).get("baselines", {})
+    if feed is None or feed not in baselines:
         return (None, [
             f"NO BASELINE for feed={feed} on strategy={strategy}. "
-            "Reconciliation skipped — provide --strategy and ensure feed in filename."
+            "Reconciliation skipped — provide --strategy and ensure feed in filename; "
+            f"the anchors are read from {PRIVATE_BASELINES.name}, which the public "
+            "clone does not carry."
         ])
 
-    bl = spec["baselines"][feed]
+    bl = baselines[feed]
     drifts: list[str] = []
 
     def cmp_n(actual, baseline, label):

@@ -14,8 +14,8 @@ Pure trend-rider (no BE, no trail). DXTrade contractValue: **100**. Pine v6 —
 
 ## Striker DJ30 v4.5 🔒 LOCKED (2026-05-05; allocation-refresh-2 2026-05-23: risk 0.75%→0.70%, pyramid 500%→750%)
 
-Heavy pyramid architecture. **Day soft-stop: −1.15% live (TV override of Pine default
-−2.00%)** — halts new Striker entries when realized day P&L hits threshold. **CRITICAL
+Heavy pyramid architecture. **Day soft-stop** (live value is a TV override of the Pine default; both values are
+Pine-only, redacted 2026-10-15) — halts new Striker entries when realized day P&L hits threshold. **CRITICAL
 safety rule.**
 
 **Cross-feed $ deltas are contract-spec, not signal drift.** OANDA US30.pro is $5/pt (E-mini
@@ -62,7 +62,8 @@ structure — do NOT re-test without new mechanism evidence). The pyramid pathwa
 strategy — base-only performance is materially weaker than the full pyramided book
 (load-bearing). Do not overlay base-entry filters.
 
-**Day soft-stop: −1.50%** (native Pine default — NOT a TV override, unlike DJ30's −1.15%) —
+**Day soft-stop** (native Pine default — NOT a TV override, unlike DJ30's; value redacted
+2026-10-15, Pine-only) —
 halts new NAS100 entries when realized day P&L hits threshold.
 
 **Cross-feed validated 2026-05-24** (OANDA reached 4-strategy parity) — dollar-Net delta vs

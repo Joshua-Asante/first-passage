@@ -35,8 +35,8 @@ pattern). Demotion is rare; lessons mostly accumulate.
 **Counterfactual:** Backtest fired a valid Guardian XAUUSD long entry on Tue
 2026-04-07. The trader skipped it on the basis that the Iran-Hormuz macro
 escalation made the position too risky. The strategy held the position 13
-days — through the entire macro window — and exited on 2026-04-20 at +$3,752
-realized counterfactual. This was the largest single winner in the strategy
+days — through the entire macro window — and exited on 2026-04-20 with a large realized counterfactual gain (dollar figures redacted 2026-10-15).
+This was the largest single winner in the strategy
 CSV for the surrounding window. The skip "to protect against macro" cost the
 biggest gain.
 
@@ -76,12 +76,12 @@ the source.
 **Anchor incident:** 2026-04-15 Aegis intra-trade discretion on USDJPY.
 
 **Counterfactual:** Backtest fired one Aegis entry signal at 12:30 USDJPY for a
-35-lot position, held to 13:45 BB-mean exit, +$6,467 realized counterfactual.
-Live execution decomposed this into three separate entries totaling ~35 lots
+single position, held to 13:45 BB-mean exit, with a large realized counterfactual gain.
+Live execution decomposed this into three separate entries totaling the same size
 across the same window. One of the three sub-entries hit its individual stop
-loss while the other two continued. Net realized: +$362.
+loss while the other two continued. Net realized: a small fraction of the counterfactual (dollar figures redacted 2026-10-15).
 
-**Execution gap:** $6,105 ($6,467 − $362). Largest single-day execution leakage
+**Execution gap:** most of the counterfactual. Largest single-day execution leakage
 in the 7-week 04-29 audit window.
 
 **Rule:** When a FIRE alert specifies a single entry size, execute it as a
@@ -92,7 +92,7 @@ against single-entry execution.
 
 **Mechanism (why this fails on Aegis specifically):** Aegis carries 1.50%
 per trade — the highest allocation in the portfolio. Splitting a single
-intended 35-lot position into three sub-positions doesn't change total
+intended position into three sub-positions doesn't change total
 exposure, but it does change DD geometry: each sub-position has its own
 1R worst-case loss. The aggregate worst case for three split sub-positions
 is ~3R if they all hit stops near-simultaneously, vs 1R for the single
@@ -153,11 +153,11 @@ trigger promotion.
 
 ## E4 — Entry latency from manual SL/size adjustment (feed-realign lag)
 
-**Status:** CANDIDATE 2026-06-01 (single anchored incident −$270.82, below $3K; firing 1 of 3 for promotion) · ⚠ DORMANT 2026-08-14 — promotion counter structurally unreachable (`journal_review.py` retired 2026-07-11); firings cannot accrue.
+**Status:** CANDIDATE 2026-06-01 (single anchored incident below $3K (dollar figures redacted 2026-10-15); firing 1 of 3 for promotion) · ⚠ DORMANT 2026-08-14 — promotion counter structurally unreachable (`journal_review.py` retired 2026-07-11); firings cannot accrue.
 
-**Anchor incident:** 2026-05-29 Striker DJ30 v4.5 long. The signal was running on the **Pepperstone** indicator (entry 51004) while the execution feed is **Alchemy** (entry 51027, ~+23pt basis). Manually adjusting SL and lot size to the broker feed introduced fill latency: the DXTrade entry filled at 51048.05 — **+21pt above the Alchemy signal** — because the bar broke up during the manual adjustment. Exited at 51050.05 (trail), realized +$30.
+**Anchor incident:** 2026-05-29 Striker DJ30 v4.5 long. The signal was running on the **Pepperstone** indicator while the execution feed is **Alchemy** (~+23pt basis; fill prices and dollar figures redacted 2026-10-15). Manually adjusting SL and lot size to the broker feed introduced fill latency: the DXTrade entry filled **+21pt above the Alchemy signal** because the bar broke up during the manual adjustment. Exited on the trail.
 
-**Execution gap:** **−$270.82.** Verified Striker DJ30 v4.5 strategy backtest counterfactual = +$300.82 (slippage=2 already baked in); realized = +$30 = **10.0% edge captured**. Exits were ~aligned (~51050); essentially the entire gap is the +21pt late entry.
+**Execution gap:** realized = **10.0% of the edge** in the verified Striker DJ30 v4.5 strategy backtest counterfactual (slippage=2 already baked in). Exits were ~aligned; essentially the entire gap is the +21pt late entry.
 
 **Rule:** Keep the live indicator on the **execution feed (Alchemy)** at all times, so there is nothing to hand-translate at fire time. Never re-derive SL/size manually from a different-feed indicator during the fire window — the adjustment latency, not the feed price basis, is what eats the edge on fast breakouts.
 
@@ -225,7 +225,7 @@ abstraction layers.
 - 2026-05-07: Live-execution-journal skill authored; this registry becomes the
   output reference for `scripts/journal_review.py` watch-point messages.
 - 2026-06-01: E4 added as candidate (entry latency from manual SL/size
-  adjustment; anchor 2026-05-29 DJ30, −$270.82, firing 1 of 3) on the first
+  adjustment; anchor 2026-05-29 DJ30, firing 1 of 3) on the first
   weekly execution review run against verified strategy-tester counterfactuals.
 - 2026-07-11: **Relocated** from `ops/live_journal/references/` to
   `docs/methodology/lessons/` and **preserved** as a KEEP under the ops CFD-estate

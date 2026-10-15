@@ -28,11 +28,11 @@ This ADR is a venue/posture decision. It changes **no** risk-control code or loc
 
 The four locked strategies are ~99.83% to pass the FXIFY challenge *if executed per-spec*. They are not the risk. The risk is the execution layer — and the execution layer is the operator, executing FIRE alerts (and non-alerts) by hand on DXTrade. On 29–30 Jun 2026 that layer failed in the most legible possible way: the operator manually opened oversized, off-spec index/Nasdaq longs and tilted into the loss.
 
-**The receipt (hand-classified per `live-execution-journal`):** six manual fills over two days, **net −$4,188.85**. Every one is OFF-SPEC. On 30 Jun (a Tue, all four systems eligible), the Striker NAS100 and Striker DJ30 panels both read **FILTERED / Day P&L $0 / 0-of-2 trades** — the systems carried **zero** exposure on USTec and DJ30, yet the operator ran 25-lot USTec + double 10-lot DJ30 longs (−$3,077.75). On 29 Jun the USTec manual size was 32.5 lots — ~8× the strategy's own sanity tripwire (NAS100 > 4 lots ⇒ wrong). This is not under-capturing the edge (the usual leakage); it is *manufacturing* loss the design never signalled: 0% of the −$4.2K is system, 100% is discretion.
+**The receipt (hand-classified per `live-execution-journal`):** six manual fills over two days, a net loss *(account figures redacted from the public copy 2026-10-15; see git history)*. Every one is OFF-SPEC. On 30 Jun (a Tue, all four systems eligible), the Striker NAS100 and Striker DJ30 panels both read **FILTERED / Day P&L $0 / 0-of-2 trades** — the systems carried **zero** exposure on USTec and DJ30, yet the operator ran large USTec and DJ30 longs (most of the loss). On 29 Jun the USTec manual size was ~8× the strategy's own lot-size sanity tripwire. This is not under-capturing the edge (the usual leakage); it is *manufacturing* loss the design never signalled: 0% of the loss is system, 100% is discretion.
 
 This forces a venue decision the operator has been circling since 2026-06-28. "No more manual trading" means execution must be automated. Automated CFD execution requires MT4/MT5 (or a broker API), and `project_ea_conversion_state` established that **no US-accessible MT4/MT5 venue can host gold/indices** for this operator — only Aegis/USDJPY runs on OANDA US MT4. `project_us_legal_master_research` established that the only US-legal automated chain is TV→TradersPost→Tradovate **futures**, and that FXIFY will not accept a futures master. The CFD venue is therefore un-automatable for this operator, and an un-automatable venue is incompatible with a no-manual-execution rule. The pivot to CME-micro futures-prop (`project_futures_prop_pivot`) is not a new idea — it is the only venue left once manual execution is removed.
 
-**Decision driver (one sentence):** the live execution layer (the operator's hand) just produced −$4.2K of 100%-off-spec loss against flat systems, so the operator removes himself as the execution layer — which, because the CFD venue cannot be automated for a US person, forces abandonment of the CFD/FXIFY path in favour of automatable futures.
+**Decision driver (one sentence):** the live execution layer (the operator's hand) just produced a two-day, 100%-off-spec loss against flat systems, so the operator removes himself as the execution layer — which, because the CFD venue cannot be automated for a US person, forces abandonment of the CFD/FXIFY path in favour of automatable futures.
 
 ---
 
@@ -52,11 +52,11 @@ This forces a venue decision the operator has been circling since 2026-06-28. "N
 
 | Alternative | Why ruled out |
 |---|---|
-| **Keep trading FXIFY manually, "with more discipline"** | The −$4,188.85/2-day receipt *is* the disciplined-intent failure mode — the operator knew the systems were flat and traded anyway. The skill's Core Principle #1 ("trade the system, not your opinion") and the Feb-2026 discretionary-override loss already logged this; one more "I'll be disciplined" iteration is the exact pattern the rule exists to break. |
+| **Keep trading FXIFY manually, "with more discipline"** | The 2-day receipt *is* the disciplined-intent failure mode — the operator knew the systems were flat and traded anyway. The skill's Core Principle #1 ("trade the system, not your opinion") and the Feb-2026 discretionary-override loss already logged this; one more "I'll be disciplined" iteration is the exact pattern the rule exists to break. |
 | **Keep the CFD venue, automate it somehow** | Closed three times: `project_ea_conversion_state` (no US-accessible MT4/MT5 host for gold/indices), `project_copygram_migration_state` (FXIFY 1-mo-verified-trades wall), `project_us_legal_master_research` (FXIFY won't accept a futures master). Re-opening requires a jurisdiction/entity change, not a fourth attempt. |
 | **Formally close/withdraw the FXIFY account now** | Operator chose idle-not-closed (this session). Closing forfeits residual optionality (a jurisdiction change could reopen it) for no gain — the fees are already sunk and idle costs nothing. |
 | **Stay on FXIFY and just wait out the challenge un-traded** | Conflates "stop manual trading" with "make progress." An un-traded challenge times out; it is not a scale path. The point of the pivot is a venue that *can* be automated — idling FXIFY is the disposition of the old venue, not the plan. |
-| **Status quo — no decision** | Leaves the operator as a discretionary execution layer that just lost $4.2K against flat systems, on a venue that structurally cannot be automated. The single most likely-to-pass asset in the operation (99.83%) kept at the mercy of tilt. Worse than recording the disposition. |
+| **Status quo — no decision** | Leaves the operator as a discretionary execution layer that just took a two-day loss against flat systems, on a venue that structurally cannot be automated. The single most likely-to-pass asset in the operation (99.83%) kept at the mercy of tilt. Worse than recording the disposition. |
 
 ---
 
@@ -88,7 +88,7 @@ This ADR accepts a real cost (§6): it forfeits a 99.83%-to-pass challenge and o
 
 ## §5 — Forbidden moves (under this ADR)
 
-- **"Just one more manual trade to make back the loss."** This is the exact tilt that produced the −$4.2K receipt (29 Jun's 32.5-lot revenge size into a 4.6-lot reference). The no-manual rule has no recovery exception; the urge to recover *is* the failure mode.
+- **"Just one more manual trade to make back the loss."** This is the exact tilt that produced the 2-day receipt (29 Jun's revenge size, ~7× the reference size). The no-manual rule has no recovery exception; the urge to recover *is* the failure mode.
 - **Logging back into the idle FXIFY/DXTrade account to trade it discretionarily.** "Idle, not closed" preserves optionality; it does not authorize trading. Treating the quiet account as "still in play" re-opens the execution layer through the back door.
 - **Re-opening the MT4/MT5-host / FXIFY-CFD-automation question without a jurisdiction or entity change.** Closed three times (`project_ea_conversion_state`, `project_copygram_migration_state`, `project_us_legal_master_research`). Re-proposing requires the §4 trigger, not renewed effort against the same wall.
 - **Letting the futures re-mapping touch locked strategy parameters.** The re-map is *sizing translation* (spot %-risk → integer micro contracts), validated with parity discipline. It is forbidden from changing any SL/TP/ATR/risk%/pyramid/session constant — those stay locked (Rule 0). A "while we're porting, let's tweak X" is a separate lock decision with its own MC re-validation.
@@ -99,7 +99,7 @@ This ADR accepts a real cost (§6): it forfeits a 99.83%-to-pass challenge and o
 ## §6 — Consequences
 
 **Positive consequences:**
-- Removes the execution-layer single point of failure — the hand that just produced −$4,188.85 of 100%-off-spec loss against flat systems. The strategies' 99.83% pass profile assumes per-spec execution; automation is the only way to actually realize it.
+- Removes the execution-layer single point of failure — the hand that just produced the 2-day, 100%-off-spec loss against flat systems. The strategies' 99.83% pass profile assumes per-spec execution; automation is the only way to actually realize it.
 - Aligns the live venue with the one that supports US-legal automation (CME-micro futures via TV→TradersPost→Tradovate), ending the structural bind where the automatable platforms lack the instruments and the instrument-complete platform lacks automation.
 - Stops the bleed on the FXIFY account immediately (idle, no further trades).
 - Purely subtractive at the strategy layer: no parameter/allocation/`dd_protection`/Pine change, so the locked MC anchor (99.83/0.17/4.37) is untouched and needs no re-MC.

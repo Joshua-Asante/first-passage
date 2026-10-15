@@ -39,10 +39,10 @@ duplicated. Candidate 1 (this entry) was rejected.
 1. **No on-disk-confirmed dated incident.** No record exists of a *built,
    MC-validated* track being starved by within-stream flow domination. The incident
    originally proposed as the nearest candidate — a missed Aegis signal dated
-   "2026-03-16, +$3,467" — **does not verify against the live-execution-journal
+   "2026-03-16" (claimed dollar figure redacted 2026-10-15) — **does not verify against the live-execution-journal
    record** (the on-disk execution-lessons registry anchors its nearest comparable
-   incident at the 2026-04-07 Guardian macro-skip, +$3,752, which is a *behavioral*
-   skip under E1, not flow-starvation; no Mar-16 Aegis +$3,467 incident is on disk).
+   incident at the 2026-04-07 Guardian macro-skip, which is a *behavioral*
+   skip under E1, not flow-starvation; no Mar-16 Aegis incident is on disk).
    The absence of a verifiable dated incident is itself the disqualifier.
 
 2. **The causal mechanism is structurally absent (load-bearing).** The mechanism that
