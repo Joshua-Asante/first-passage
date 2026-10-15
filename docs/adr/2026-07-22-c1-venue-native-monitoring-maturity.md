@@ -2,16 +2,17 @@
 
 **Superseded-in-part-by:** `2026-09-14-a7-attended-agent-capture.md` — controlled-input actor and candle transcript scope only
 
-> **Scoped amendment, 2026-09-14:** [Attended agent capture](2026-09-14-a7-attended-agent-capture.md) changes the controlled-input actor/provenance for the approved agent variant. Item 5's origin, sizing, dry-run and signoff requirements stand; the source is not a production-feed qualification. Historical manual evidence and current M1 acceptance remain unchanged.
+> **Scoped amendment, 2026-09-14:** [Attended agent capture](2026-09-14-a7-attended-agent-capture.md) changes the controlled-input actor/provenance for the approved agent variant. Item 5's origin, sizing, dry-run and signoff requirements stand; the source is not a production-feed qualification. Historical manual evidence is unchanged; M1 acceptance was set `RESOLVED` on 2026-09-14 from the event A7 attempt 4 captured under this variant (A8).
 
 **D-S-A domain:** system
-**Status:** `Accepted` — operator ratified 2026-07-23 ("flip ADR to ratified and proceed to close the monitoring gap"); architecture policy in force. **AMENDED 2026-07-31, operator-ratified (Addendum 2026-07-31b): the M1 gate's trigger is the ARM, not the send** — `dry_run=false` may not be set while M1 is not `RESOLVED`. Acceptance authorizes M1 implementation; it does **not** claim M1 is `RESOLVED` or permit an armed session (§4 M1 verdict is the next-**arm** gate).
+**Status:** `Accepted` — operator ratified 2026-07-23 ("flip ADR to ratified and proceed to close the monitoring gap"); **M1 `RESOLVED` 2026-09-14** ([acceptance](../notes/rail_build/M1_MONITORING_ACCEPTANCE.json); [A8](../notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md#a8--signed-acceptance-deployed-re-bake-verified-2026-09-14)), limited by Addendum 2026-10-01 (no legacy-leg arm while #571 is parked); architecture policy in force. **AMENDED 2026-07-31, operator-ratified (Addendum 2026-07-31b): the M1 gate's trigger is the ARM, not the send** — `dry_run=false` may not be set while M1 is not `RESOLVED`. Acceptance (2026-07-23) authorizes M1 implementation; it does **not** by itself claim M1 is `RESOLVED` or permit an armed session (§4 M1 verdict is the next-**arm** gate).
 **Decision date:** 2026-07-22
 **Supersedes:** `2026-07-17-c1-rail-build-account-registration-go.md` in part — the next armed session/B7-REFIRE Stage 2 gains the M1 monitoring gate defined here (trigger amended from "send" to "session" 2026-07-31b)
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-07-loop-s2-signal-host-fork.md` — §4 item 5 **signal-origin definition only** (TradingView-only → ruled Python-native host). Item 5 itself, expected sizing, Stage-1 `dry_run`, deletion decline, and the bar on **silent** redefinition stand.
 **Superseded-in-part-by:** `2026-08-07-loop-s5-bounded-promotion-lane.md` — §5 forbidden move *“Creating a second tier/state writer or autonomous promotion path”* **autonomous promotion path limb only** (bounded sandbox lane). No second tier/state writer; arm-gate, reflex layer, and unattended bar **stand**.
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0's non-RUNBOOK Rule-0 bullets and cheap-falsifier transcript, the §7 phase list, §10's duplicated operator-evidence list, and the narrative parts of Addenda 2026-07-31 and 2026-07-31b condensed; no clause amended, and every RUNBOOK site the 2026-09-12 intercept lists is unchanged. Pre-trim text at blob `a164a94581e2b35813100893628c11665f6233c7` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`): [this file at `4121e84c`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md).
 
 **Related:** `2026-07-11-ops-cfd-estate-retirement.md` (venue-native rebuild
 rule); `2026-07-10-strategies-never-locked-lifecycle-governance.md`;
@@ -44,64 +45,15 @@ fast-forwarding the current branch through the latest PR-review fix.
   `_urllib_sender` and `send_to_crosstrade` return an integer HTTP status only;
   response body, CrossTrade validation stage, broker order ID, fill, and reject
   reason are discarded.
-- `ops/c1_rail/c1_rail_http_server.py` — anchor `1ec003f` (2026-07-19). `_audit`
-  emits an unstructured log line after `handle_signal`; unauthorized paths,
-  ignored non-JSON alerts, equity failures, and handler exceptions have no
-  shared structured event contract. The optional audit file is a normal text
-  `FileHandler`.
-- `ops/c1_rail/c1_sizing_host_reference.py` — anchor `7a95f81` (2026-07-18).
-  `SizingDecision` already contains the quantity, floor/halt state, DD scale,
-  lifecycle multiplier, and effective risk needed for a monitoring event.
-  The sizing host deliberately does not own broker fills or exits.
-- `core/lifecycle.py` — anchor `4441c72` (2026-07-11). Call-1 breach logic and
-  Call-4 mechanical beta-death controls exist; neither ingests live fills.
-- `lab/discovery/lifecycle_call1/evaluate.py` — anchor `a38676d`
-  (2026-07-14). Thin or missing data returns `AMBIGUOUS`; its
-  `MIN_TRADE_COUNT=30` is explicitly provisional pending 2026-08-08.
 - `docs/notes/rail_build/RUNBOOK.md` — anchor `d9e8f2a` (2026-07-21).
   B6 proved synthetic sizing and controlled SIM fills. It also records two
   monitoring-relevant incidents: the rail reported HTTP 200 while CrossTrade
   failed validation on a wrong secret, and B7 delivered non-JSON informational
   alerts instead of the B1 JSON order payload. B7-REFIRE still requires a
   real strategy signal through the complete chain.
-- `docs/adr/2026-07-17-c1-rail-build-account-registration-go.md` — anchor
-  `1ec003f` (2026-07-19). It authorizes the c1 rail and says a first fill
-  unblocks the Q-NAS-ECR successor, ORB decay calibration, Q-DECAY re-arm, and
-  lifecycle Call-1; it does not build their data path.
-- `docs/adr/2026-07-11-ops-cfd-estate-retirement.md` — anchor `ba943a1`
-  (2026-07-17). Trigger A requires a repository-native rebuild against the
-  actual venue and explicitly forbids restoring the DXTrade-shaped
-  `live_journal` estate.
-- `docs/spec/PREREG-NAS-ECR-1-live-edge-capture.md` — anchor `47cc3eb`
-  (2026-07-12). The frozen Copygram→DXTrade gate is unreachable; MNQ/Tradovate
-  is not type-preserving and requires a fresh Pre-Q.
-- `docs/briefs/closures/Q-DECAY-1-closure-scope-split.md` — anchor `79b78b7`
-  (2026-07-10). ECR is execution fidelity, not decay; common-mode edge death
-  remains uncovered.
-- `docs/methodology/strategy_lifecycle.md` — anchor `ae91ddd`
-  (2026-07-17). Call-1 uses rolling PF against a pre-registered floor; Call-4
-  is sequenced first; surveillance is scheduled, not discretionary P&L
-  staring.
-- `PIPELINES.md` — anchor `3c14385` (2026-07-21). P5 is built/disarmed; P6 is
-  retired. The allowed rebuild path is venue-native, not a restore.
+- Other anchors read at authoring — `ops/c1_rail/c1_rail_http_server.py`, `ops/c1_rail/c1_sizing_host_reference.py`, `core/lifecycle.py`, `lab/discovery/lifecycle_call1/evaluate.py`, the c1 GO ADR, the estate-retirement ADR, the frozen Q-NAS-ECR-1 pre-registration, the Q-DECAY-1 closure, `docs/methodology/strategy_lifecycle.md` and `PIPELINES.md` (anchors 2026-07-10…07-21) — are in the pinned prior version (header Revision line).
 
-**Cheap falsifier, run parent-side before authoring:**
-
-```text
-send_to_crosstrade(fake_sender_returning_200) -> 200 (int)
-RailAction fields:
-  decision, sent, dry_run, payload_text, http_status
-Can RailAction represent response body, execution status, broker order ID,
-or event ID? False.
-ops/*telemetry*.py: zero files.
-ops/*.py references to event_id, execution_verified, fill_qty,
-broker_order, events_log_path, or jsonl: zero.
-```
-
-This confirms the gap at the cheapest level: the current rail can prove that
-it computed and attempted transport, but cannot represent downstream
-acceptance, fill truth, or a durable event identity. The B6 false-positive
-HTTP-200 incident is therefore architectural, not merely a missing dashboard.
+**Cheap falsifier, run parent-side before authoring** (transcript in the pinned prior version): `RailAction` carried only `decision, sent, dry_run, payload_text, http_status`, `send_to_crosstrade` returned a bare HTTP status, and no ops telemetry module existed. The rail could prove that it computed and attempted transport, but could not represent downstream acceptance, fill truth, or a durable event identity; the B6 false-positive HTTP-200 incident was therefore architectural, not merely a missing dashboard.
 
 ---
 
@@ -503,82 +455,7 @@ declare the statistical monitoring gap closed before data exists.
 
 ## §7 — Implementation plan
 
-### Phase 0 — freeze the M1 contract
-
-- Record operator architecture acceptance separately from M1 completion.
-  Acceptance flips the ADR to `Accepted`, adds the c1 GO ADR’s matching
-  `Superseded-in-part-by` edge, and regenerates the ADR index in one commit.
-- Write the versioned event-variant and evidence-overlay schemas.
-- Freeze allowed outcomes, event/order identity, secret denylist, append
-  lock/fsync/startup-recovery semantics, session export, and fail-safe
-  behavior.
-- Capture B6 wrong-secret and B7 non-JSON examples as redacted regression
-  fixtures.
-- Specify an injected operator-notification interface and select a deployed,
-  operator-reachable channel. Provider choice/addition receives its own
-  dependency and secret-handling review; M1 cannot resolve with a fake sink.
-
-### Phase 1 — structured hot-path events
-
-- Implement the ops-owned append-only writer; do not import lab.
-- Emit structured records for authorized ignored payloads, equity failures,
-  handler errors, sizing halts/floors, dry runs, and sends.
-- Parse valid B1 `signal_type` before equity/state reads so exit/flat always
-  bypass risk-add prerequisites.
-- Require a writable event path before armed entry/add.
-- Preserve best-effort exit/flat and no-retry semantics.
-- Add `transport_unknown`; acknowledge uncertain sends without upstream retry,
-  block subsequent risk-add, and reconcile before any operator retry.
-- Implement the locked/fsynced append and strict startup validation.
-- Add schema, redaction, concurrency, crash-tail, tamper, write-failure,
-  exit-on-equity-failure, unknown-send, and behavior-parity tests.
-
-### Phase 2 — downstream evidence and reconciliation
-
-- Add the operator-attested CrossTrade/Tradovate overlay schema.
-- Build a read-only reconciler with the six fixed verdicts.
-- Persist broker-confirmed base fills and flatness as execution state. Move
-  open-base tracking out of pre-transport sizing; reject/partial fixtures prove
-  adds use confirmed quantity and restart safely.
-- Add B6 reject, successful B6 round-trip, quantity mismatch, and missing-flat
-  fixtures.
-- Empirically test duplicate `order_id` behavior in CrossTrade SIM; treat
-  idempotency as unproven unless the evidence is explicit.
-- Verify a session export can be copied off the Fly volume without secrets.
-
-### Phase 3 — M1 operator gate
-
-- Run B7-REFIRE Stage 1 at `dry_run=true` on a real strategy signal.
-- Run the controlled SIM full-chain and flatness check.
-- Exercise deployed notification, transport-unknown, duplicate-order,
-  restart/open-position, partial-fill, and exit-during-equity-failure
-  procedures.
-- Return `RESOLVED`, `FALSIFIED`, or `AMBIGUOUS` under §4.
-- Write the secret-free M1 acceptance artifact and validate it mechanically;
-  it records fixture hashes, test commit, event IDs, reconcile verdict,
-  notification acknowledgement, restart/partial/unknown-send drills, and
-  operator sign-off.
-- Only `RESOLVED` permits the next c1 `dry_run=false` entry/add send.
-
-### Phase 4 — M2 venue-native fills
-
-- Normalize first armed fills without defining post-hoc thresholds.
-- Publish fidelity metrics descriptively.
-- Author and freeze the Q-NAS-ECR successor before testing any transfer claim.
-
-### Phase 5 — M3 lifecycle feed
-
-- Pre-register the minimum trade count at the 2026-08-08 review.
-- Admit venue-native MYM/MNQ per-leg PF baselines and matching σ panels before
-  calling the existing Call-1 harness; the CFD baselines are not substitutes.
-- Build the thin adapter from completed venue-native trades to the existing
-  Call-1 harness.
-- Keep missing/thin data `AMBIGUOUS`.
-- Scope Call-4 beta cohesion separately; do not bundle an uncalibrated
-  diagnostic into the M1 hot path.
-
-Each phase is a separate commit and review boundary. Phases 4–5 cannot block
-the code build but cannot claim maturity before their data gates clear.
+Phases 0–3 — freeze the M1 contract (event variants, overlay schema, outcomes, identity, secret denylist, locked/fsynced append and startup validation, session export, and a deployed operator-reachable notification channel whose provider gets its own dependency and secret-handling review; M1 cannot resolve with a fake sink), structured hot-path events, downstream evidence and reconciliation, and the operator gate — were delivered against §2 and §4: M1 was set `RESOLVED` 2026-09-14 (acceptance JSON; A8), limited by Addendum 2026-10-01. Phases 4–5 follow §2 M2/M3: normalize first armed fills without post-hoc thresholds and freeze any successor thresholds before M2 results are read; admit venue-native per-leg PF baselines and matching σ panels and pre-register the minimum trade count before calling the Call-1 harness; keep missing/thin data `AMBIGUOUS`; scope Call-4 separately. Each phase is a separate commit and review boundary; Phases 4–5 cannot claim maturity before their data gates clear. The full phase list is in the pinned prior version.
 
 ---
 
@@ -593,7 +470,7 @@ python3 scripts/check_adr_graph.py
 # Retired estate must stay absent
 test ! -e ops/live_journal
 rg -n 'live_journal|ecr_rolling|Copygram|DXTrade' \
-  ops/c1_rail_*.py ops/c1_rail/crosstrade_payload.py
+  ops/c1_rail/c1_rail_listener.py ops/c1_rail/c1_rail_http_server.py ops/c1_rail/crosstrade_payload.py
 # Expected: empty.
 
 # Structured monitoring exists and is configured
@@ -633,16 +510,6 @@ python3 scripts/check_root_doc_liveness.py
 make check
 ```
 
-Operator M1 acceptance evidence:
-
-```text
-1. Real strategy signal at dry_run=true → structured event, expected qty.
-2. Controlled SIM entry → CrossTrade RECEIVE/VALIDATE/EXECUTE Success.
-3. Tradovate Filled quantity == sizing decision quantity.
-4. Exit/flat → Tradovate no open position.
-5. Session event/evidence export validates and reconciler returns CHAIN_OK.
-```
-
 ---
 
 ## Verification
@@ -679,19 +546,7 @@ in a way worth keeping on the record.
 
 ### The premise was wrong — and this correction is the reason for the decline
 
-The draft asserted item 5 is **circular**: that it wants a `dry_run` event while §6 makes
-`RESOLVED` the gate on arming, so an armed session discharging it would let the gate be satisfied
-by the act it authorizes.
-
-**That is not a property of the item.** B7-REFIRE **Stage 1 is the unarmed stage.** A real strategy
-signal arriving with `dry_run=true` produces a structured dry-run event and discharges item 5
-cleanly, with no arming and no circularity. What happened on 07-31 is that Stage 1 was *collapsed
-into Stage 2 and armed*, skipping the dry run — a session-level choice, not a defect in the gate.
-The circularity only bites if one insists on discharging item 5 from an armed session, which is
-precisely what item 5 exists to prevent.
-
-Item 5 is therefore **satisfiable as written**. The real cost of keeping it is operator-hours, not
-impossibility.
+The draft called item 5 circular. It is not: B7-REFIRE **Stage 1 is the unarmed stage**, so a real strategy signal arriving with `dry_run=true` discharges item 5 with no arming and no circularity; on 07-31 Stage 1 had been *collapsed into Stage 2 and armed* — a session-level choice, not a defect in the gate. Item 5 is therefore **satisfiable as written**; the cost of keeping it was operator-hours, not impossibility.
 
 ### What item 5 uniquely certifies
 
@@ -708,26 +563,12 @@ canned payloads.
 
 ### The engineering read survives, but does not cover the exposure
 
-The 07-31 sizing analysis is **correct and retained** — verified against
-[`ops/c1_rail/c1_sizing_host_reference.py`](../../ops/c1_rail/c1_sizing_host_reference.py): `reserve_cap =
-⌊cap_alloc/(1+pyr%)⌋` gives MYM `⌊69/8.5⌋ = 8` and MNQ `⌊11/11⌋ = 1`; `qty_out =
-min(qty_base_raw, reserve_cap)`; `submit = qty_out > 0`. A bad mid-bar ATR can only **under**-size
-an entry, never over-size it, and a floored `qty_out=0` returns before the sender.
+The 07-31 sizing analysis is **correct and retained**: `reserve_cap = ⌊cap_alloc/(1+pyr%)⌋`, `qty_out = min(qty_base_raw, reserve_cap)`, `submit = qty_out > 0`. A bad mid-bar ATR can only **under**-size an entry, never over-size it, and a floored `qty_out=0` returns before the sender.
 
 But that bounds **size**, not **signal identity**. The 07-28 finding was that the rail acted on a
 price that was never the bar's close — which changes *which trade is taken*, not how large it is.
 `reserve_cap` is silent on that, and item 5 is the only gate positioned to catch it before money
 is live. This is where the deletion argument fails.
-
-### Cost of the decline, stated so it is chosen knowingly
-
-MYM trades on its locked days *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)* at a ~30.7% entry rate — about 0.6 entry-days per week, so roughly 3.3 attended
-sessions in expectation (~1.5–2 weeks), with a ~23% chance of nothing after four more. MNQ does not
-rescue it: `reserve_cap` is 1 there and it floored to 0 at a 126.75 stop on 07-28. Three of the
-four prior misses (post-window, alert shadowing, qty 0) were fixable defects **since fixed**, so
-only 07-31 was a genuine base-rate miss and the forward odds are better than an 0-for-4 record
-suggests. Every later item — Stage 2, first live fill, and the Q-NAS-ECR successor / lifecycle
-Call-1 / ORB decay re-scope chain behind it — waits that long.
 
 ### What follows operationally
 
@@ -737,40 +578,7 @@ Call-1 / ORB decay re-scope chain behind it — waits that long.
    never be re-read to accept live evidence, and `--allow-live` must never write into
    `dry_run_strategy_signal_event_id`; the field would then assert something untrue. An acceptance
    artifact that lies is worse than one missing an item.
-3. **RATIFIED 2026-08-02** (operator ruling: *"rule the 4-session trigger"*; proposed 2026-07-31,
-   unruled until now): a review trigger of **4 further attended Stage-1 sessions** without a
-   discharge, at which point this decline is revisited with the base rate as measured rather than
-   modelled.
-
-   **Counting convention — DERIVED, not chosen.** A session counts whether or not a strategy signal
-   arrived. This is not a preference: the proposal's own cost model says *"~23% chance of nothing
-   after four more"*, and at the stated ~30.7% MYM entry rate that figure reproduces only as
-   `(1 − 0.307)^4 = 23.06%` — i.e. four **attended** sessions, not four signal-bearing ones. Reading
-   it the other way (count only sessions where a signal arrived) would measure a different quantity
-   entirely — defect rate rather than base rate — and would leave the trigger effectively
-   unreachable, since the 07-31 miss was an absent signal, not a failed one.
-
-   **What counts:** the rail attended and live through the MYM entry window with the §0
-   receiver-side pre-flight passed — a session that *could* have discharged item 5. A session that
-   never reached the window (2026-07-20's post-window arrival) does **not** count; it was not a draw
-   from the distribution being measured.
-
-   **Reachability check** (per the standing gate-reachability discipline — a trigger that cannot
-   fire is not a trigger): fires with probability **23.1%** after 4 sessions, ~2 calendar weeks at
-   MYM's locked-day schedule *(redacted 2026-10-09; see note above)*. Sessions 1–4 are **2026-08-04, 08-07, 08-11, 08-14**; the review fires
-   after **2026-08-14** if item 5 is still undischarged. It is deliberately a tail trigger — firing
-   is itself evidence the ~30.7% model is wrong, which is the thing the review exists to re-examine.
-
-   **What the review does:** compares measured vs modelled entry rate; classifies each miss as
-   base-rate (no signal arrived) or defect (signal arrived and failed to discharge — a materially
-   different finding that would point at the rail, not the odds); and re-decides the item-5 deletion
-   on that evidence. **What it does not do:** it does not auto-delete item 5, auto-relax the gate, or
-   authorize anything. The decline stands unless the operator changes it; this schedules a look, not
-   an outcome.
-
-#### Addendum 2026-08-04 — 4-session review trigger **SUSPENDED** (not discharged)
-
-The 2026-08-02 reachability certification ("a trigger that cannot fire is not a trigger") is now false **in both directions**: no qualifying session can be drawn (counting convention requires the rail attended and live through the MYM entry window with a deployed emitter), yet the date limb reaches **2026-08-14** regardless and would "fire" on zero draws. **SUSPENDED**, not discharged. The **23.1%** figure no longer describes a sampled distribution. Session 1 (2026-08-04) never ran and cannot (both Striker legs withdrawn — [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md)). **Do not read an elapsed 2026-08-14 as a fired review.** Re-arms against whatever fork **F3** registers. Trigger text, counting convention, and the item-5 deletion decline above remain **byte-unchanged**.
+3. **4-session review trigger — discharged.** Ratified 2026-08-02 (a review after 4 further attended Stage-1 sessions without a discharge; sessions 08-04/08-07/08-11/08-14) and **suspended** 2026-08-04, when the Striker withdrawal left no qualifying session to draw. Its object — re-deciding the item-5 deletion while item 5 stayed undischarged — lapsed when item 5 was discharged on 2026-09-14 (acceptance `dry_run_strategy_signal_event_id`; A8). **Do not read the elapsed 2026-08-14 as a fired review.** The counting convention, reachability check and suspension text are in the pinned prior version.
 
 ### What this addendum does not do
 
@@ -808,50 +616,11 @@ session. Under the tightened trigger the next arm is **more** gated than before,
 
 ### What happened — both sessions, factually
 
-**2026-07-28.** Operator elected to override the planned Stage-1 `dry_run=true` step and arm live,
-on the stated rationale *"we have already proven that the rail works."* Pre-flight 9/9 clear. A real
-MYM entry fired at 11:28 ET and **routed nothing** — the body arrived as plain text, because
-TradingView snapshots a script at *alert-creation* time and the alerts predated the 07-21/22 fixes.
-After the alerts were recreated, a real MNQ `alert()` arrived as `b1_json` and was sized:
-`r_eff 0.00185`, `per_contract 253.50`, **`qty_out 0`** — the documented granularity floor.
-`dry_run_strategy_signal_event_id` was **deliberately left unset**, correctly: populating it from a
-floored-to-zero decision would advance the gate on evidence the gate exists to exclude.
+On **2026-07-28** the operator armed live over the planned Stage-1 `dry_run=true` step (pre-flight 9/9 clear). A real MYM entry routed nothing — the body arrived as plain text from alerts that predated the 07-21/22 fixes — and after the alerts were recreated a real MNQ `alert()` arrived as `b1_json` and sized to **`qty_out 0`** (the granularity floor), so `dry_run_strategy_signal_event_id` was deliberately left unset. On **2026-07-31** the operator collapsed B7-REFIRE Stage 1 into Stage 2 and armed before M1 `RESOLVED` — recorded as *"a knowing deviation … with the amendment to be written after the fact"* — for 4 h with zero arrivals; that session's own finding, the `armed_until` self-brick, is an availability defect owned by the RUNBOOK, not by M1. M1 was `CODE_LANDED` throughout both. The full narrative is in the pinned prior version.
 
-**2026-07-31.** Operator elected to collapse B7-REFIRE Stage 1 into Stage 2 and arm before M1
-`RESOLVED` — recorded in the RUNBOOK as *"a knowing deviation … with the amendment to be written
-after the fact."* The engineering case was that `reserve_cap = ⌊69/8.5⌋ = 8` hard-caps a base entry
-regardless of the incoming stop, so the dry-run step's marginal *safety* value is near zero. Armed
-12:57:28 UTC for 4 h. **The ledger never moved** — `seq 25` at open, `seq 25` at close, zero arrivals
-in four hours, consistent with MYM's ~30.7% entry rate. The session's own finding was the subsequent
-`armed_until` self-brick, which is an availability defect and is owned by the RUNBOOK, not by M1.
+### The finding, and the definitional gap it exposes
 
-M1 was `CODE_LANDED` throughout both.
-
-### The finding: the gate stopped neither session — other things did
-
-**Neither session produced an armed send.** On the gate's literal text that is compliance: §4 M1 is
-*"required before the next armed send"*, and no send occurred. That reading is too kind to what
-happened.
-
-What actually prevented a send was, on 07-28, **an arithmetic floor** (`qty_out 0`, a property of the
-granularity law at a 126.75 stop) and, on 07-31, **the absence of a signal** (a property of MYM's
-base rate). Both are outcomes of the market and the sizing law. Neither is the gate, and neither was
-under operator control at arming time. On 07-28 in particular the rail processed a live strategy
-signal while armed, and the distance between that session and a live send was one stop-width.
-
-So the honest statement is not *"the gate was breached twice"* and not *"the gate held twice."* It is:
-**twice the rail was placed in a state where the next qualifying signal would have sent, with M1
-unresolved, and on both occasions the reason nothing sent was chance rather than control.**
-
-### The definitional gap this exposes
-
-The gate's object is the **send**. The send is market-triggered. The operator's controllable act is
-the **arm**. A gate whose trigger is not the operator's own action cannot be complied with
-prospectively — it can only be evaluated afterwards, which is why both sessions could be simultaneously
-*"a knowing deviation"* in the operator's own words and *not a literal breach* on the text.
-
-Note that both operators-of-record already read the gate as covering arming: each session logged
-itself as a deviation. The text is what lagged.
+Neither session produced an armed send, but the gate stopped neither: an arithmetic floor (07-28) and an absent signal (07-31) did — outcomes of the market and the sizing law, not under operator control at arming time. Twice the rail was placed in a state where the next qualifying signal would have sent with M1 unresolved, and chance rather than control kept it from sending. The gate's object was the market-triggered **send**; the operator's controllable act is the **arm**, so the gate could only be evaluated afterwards, never complied with prospectively. Both session records already read the gate as covering arming; the text lagged.
 
 ### The change (the only substantive one) — **RATIFIED AND APPLIED 2026-07-31**
 
@@ -893,6 +662,8 @@ non-empty the day the escalation is built. **Otherwise**, if the next armed sess
 The mechanical form of the falsifier: a new entry in the RUNBOOK §B7 arming log dated after this
 addendum whose text records `DRY_RUN=false`, while `M1_MONITORING_ACCEPTANCE.json` still carries
 `"status": "CODE_LANDED"`.
+
+**Disposition (2026-10-15, additive; the falsifier text above is unchanged):** the structural escalation it names was built — `ops/c1_rail/c1_rail_arm.py` `m1_acceptance_reason` refuses `--arm` unless `scripts/validate_c1_monitoring_acceptance.py` passes with `require_resolved=True` (hook 4 below) — and M1 was set `RESOLVED` 2026-09-14. Arming with an unresolved artifact is possible only through `--acknowledge-m1-unresolved`, against a structurally valid artifact, and writes an `arming_deviation` record citing this addendum.
 
 ### What this addendum does not do
 
@@ -948,10 +719,10 @@ grep -n "M1_MONITORING_ACCEPTANCE" ops/c1_rail/c1_rail_arm.py
 # INVERTED 2026-08-08: actual is NON-empty (c1_rail_arm.py:58) — the escalation WAS built
 # (PR #601, m1_acceptance_reason). Non-empty is now the CORRECT state and empty would be the
 # regression. Read this hook inverted until the comment above is rewritten.
-# ⚠ Scope caveat, measured: the interlock reads ONLY the artifact's `status` field. A 24-byte
-# {"status":"RESOLVED"} clears it while scripts/validate_c1_monitoring_acceptance.py FAILs the
-# same bytes with 19 errors, and the arm path never invokes that validator. Non-empty here means
-# "a gate exists", NOT "the artifact was validated".
+# ⚠ CORRECTED 2026-10-15: the scope caveat first recorded here (status-field-only read; validator
+# not called) no longer holds. m1_acceptance_reason runs validate_c1_monitoring_acceptance with
+# require_resolved=True, so a 24-byte {"status":"RESOLVED"} fails; a complete forged RESOLVED
+# artifact still passes (AGENTS.md §Live-execution posture). Non-empty = a validating gate exists.
 ```
 
 ---
@@ -1033,6 +804,7 @@ Reads: this file @ `0059ca7` (six sites located by `grep -n RUNBOOK`) · `ops/c1
 
 | Date | Change | By |
 |---|---|---|
+| 2026-10-15 | History trim (header Revision line): §0 non-RUNBOOK bullets + cheap-falsifier transcript, §7 phases, §10 duplicated evidence list, and the narrative of Addenda 2026-07-31 / 2026-07-31b condensed; 4-session trigger dispositioned discharged; 07-31b falsifier disposition appended; Status / L5 / hook-4 / §10-path FIXes. RUNBOOK sites unchanged; prior text pinned at `4121e84c` (ADR decay audit; operator direction 2026-10-15) | Claude Code (recorder) |
 | 2026-09-12 | Addendum + header intercept — `RUNBOOK.md` pointer re-home to the public `ARMING_PROCEDURE.md` and the private retrieval convention (TB-O1); no clause amended, status unchanged | Claude Code (recorder) |
 | 2026-09-11 | Codex fold (PR #340): Rule 0 pin distinguishes the PROPOSED packet pin from the A1r ratification; option D names the venue contract (`venue_contract`) the operator reads — provenance, not sizing | Claude (fold) · Codex (review) |
 | 2026-09-11 | Addendum — item-5 Stage 1 input = operator-attended controlled input (express); limbs, decline, no-arm stand; TV webhook / delayed feed / eval-account API not licensed | Joshua (ruling) · Claude (recorder) |

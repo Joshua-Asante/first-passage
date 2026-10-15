@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): the stale `var_trials`/R3/R5/R6 text and its three 2026-08-15 reader-intercepts replaced by the discharged state (the §0 row annotated in place); breadth-row status pointer added. Pre-trim text at blob `528bbd39e8348c1b1a6458ba6b0e5017f6c09d16` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 **Related:** [SPEC S7](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) · [gate-stack audit R3/R5/R6](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) · [survivor-scoring prereg](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (frozen — close+reopen only)
 **Layer:** research-gate composition. **$0 / K=0** — no campaign open, no K spend, no frozen-prereg body edit.
 
@@ -16,12 +17,10 @@
 
 | Source | Anchor | What it pins |
 |---|---|---|
-| `lab/research_utils/universe_gate.py` | SPA/StepM + DSR + PBO orchestrator; `var_trials` default still empirical | Live composition today |
+| `lab/research_utils/universe_gate.py` | SPA/StepM + DSR + PBO orchestrator; `var_trials` default still empirical as read 2026-08-07 (`1/n` since 2026-08-15, `universe_gate.py:363-365`) | Live composition today |
 | `lab/research_utils/breadth.py` + skill launcher | Stage-8 5th-column tool | Sole producer of envelope §2 item 6 coordinates |
 | Survivor-scoring prereg Trap #12 | frozen body | G6/G7/tier changes only via close+reopen |
 | Gate-stack audit R3/R5/R6 | 2026-08-03 | Sentinel pairing · `var_trials=1/n` · `DEFAULT_FIRM_KEY` |
-
-> ⚠ **2026-08-15 reader-intercept:** the `universe_gate.py` row above ("`var_trials` default still empirical") is stale — the module default flipped to `1/n` at `universe_gate.py:363-365` (see Addendum below). Table text unedited per Trap #12.
 
 ---
 
@@ -63,23 +62,11 @@ Posture-A collapses the research gate surface to a **minimal live set** and puts
 | **PBO / CPCV** (`skfolio` via `universe_gate`) | **Dormant** | Same — prereg + GO; time-series leakage risk must be argued in the prereg |
 | **Universe-gate orchestrator as default promote/reject** | **Dormant** | Re-arm only when SPA+DSR+PBO are all re-armed for that family |
 | **Plateau protocol** (`plateau_tracker`) | **Archived** (skill banner) | Fresh pre-reg with same-feed baseline rule; not the standing validation path |
-| **Breadth / risk-N_eff** (`breadth.py`) | **Tombstoned as live producer** | Envelope §2 item 6 coordinates stay doctrine but are **report-optional / no sole producer** until a re-arm ADR restores a producer; skill launcher not the default path |
+| **Breadth / risk-N_eff** (`breadth.py`) | **Tombstoned as live producer** | Envelope §2 item 6 coordinates stay doctrine but are **report-optional / no sole producer** until a re-arm ADR restores a producer; skill launcher not the default path <br>*2026-10-15: the producer was revived on CME data by the [2026-08-19 panel admission](2026-08-19-cme-broker-panel-admission-for-breadth-revival.md); per the operator ruling of 2026-09-01 recorded in the [Stage-8 ADR](2026-07-20-stage8-variance-dominance-risk-neff-gate.md), that revival is **not** this table's re-arm event — item 6 stays report-optional until a book-leg admission session rules on re-arming it.* |
 
-### `var_trials` / audit R5
+### Audit R3 / R5 / R6 — discharged 2026-08-15
 
-> ⚠ **2026-08-15 reader-intercept:** the paragraph below is stale — the module default flipped to `1/n` at `universe_gate.py:363-365`; self-tests were rewritten against it (see Addendum below). Frozen text unedited per Trap #12.
-
-`universe_gate.py` still defaults to the empirical `Var(col_sr)` estimator (self-tests depend on it). **Do not flip the module default in this PR.** Campaigns should continue to **pass `var_trials=1/n`** (or pin V) until a separate change lands with green self-tests. Audit R5 schedule **2026-09-01** stands unless absorbed by that later change.
-
-### Audit board absorption (pointers)
-
-| Audit row | Disposition under W4 |
-|---|---|
-| **R3** (`sentinel` prereg↔RESULTS pairing) | Absorbed-or-redated by two-tier / closed-loop PREREG discipline; sentinel repair remains its own owner if still red — dated pointer, not silent drop |
-| **R5** (`var_trials=1/n` default) | Absorbed as **standing caveat** (pass V explicitly); schedule 09-01 left standing for the code default flip |
-| **R6** (`DEFAULT_FIRM_KEY` in `cost_mnq.py`) | Schedule 09-01 left standing — not discharged by dormancy alone |
-
-> ⚠ **2026-08-15 reader-intercept:** the R5 row above is stale — R5 was fully discharged (not merely held as a caveat) by the 2026-08-15 gate-stack repair pass, ahead of the 09-01 schedule date it names (see Addendum below). Table text unedited per Trap #12.
+The 2026-08-15 gate-stack repair pass executed the code flips W4 had deferred: R3 — `_corresponds` pairs a prereg with its RESULTS by body Q-ID plus RESULTS-cites-prereg; R5 — `universe_gate.py` defaults `var_trials` to `1/n` (self-tests rewritten against it); R6 — `cost_mnq.py` requires `firm_key` (cheapest-firm default retired). R10 lives as the Accepted second §4 limb of the [harvest-intake ADR](2026-07-15-external-mechanism-harvest-intake.md) (operator GO 2026-08-15). The dormancy table above is unchanged by these discharges.
 
 ### Envelope §2 item 6
 
@@ -126,17 +113,3 @@ grep -n "Dormant\|tombstoned\|archived" REPO_MAP.md .claude/skills/strategy-vali
 grep -n "Superseded-in-part-by" docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md
 grep -n "W4\|dormant\|tombston" ops/prop_envelope_default.md docs/methodology/strategy_harvest.md
 ```
-
----
-
-## Addendum 2026-08-15 — audit R3 / R5 / R6 discharged
-
-W4 deferred the code flips and left the 09-01 / sentinel-repair dates standing. The 2026-08-15 gate-stack repair pass executed them:
-
-| Audit row | Disposition |
-|---|---|
-| **R3** (`_corresponds` prereg↔RESULTS) | **DONE** — body Q-ID + RESULTS-cites-prereg pairing; path-only tests unchanged |
-| **R5** (`var_trials=1/n` default) | **DONE** — module default flipped; self-tests rewritten against `1/n` |
-| **R6** (`DEFAULT_FIRM_KEY` in `cost_mnq.py`) | **DONE** — `firm_key` required; cheapest-firm default retired |
-
-R10 now lives as an **Accepted** second §4 limb on the [harvest-intake ADR](2026-07-15-external-mechanism-harvest-intake.md) (operator GO 2026-08-15). Pin marked `no` 2026-08-15; post-mark count 0/2 — not fired. Dormancy table above is unchanged.

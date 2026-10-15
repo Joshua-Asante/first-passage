@@ -33,7 +33,7 @@ both Striker legs**, so there is no deployed strategy and nothing to arm).
 - WATCH-1 measurement / B7 inputs — owner GO ADR + lab RESULTS under `lab/analysis/c1/`
   (do not restate panel bust cells here).
 - ⚠ Bust/DD figures anywhere in this skill are **EOD-clock lower bounds** pending
-  [`W1 ADR`](../../../docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md).
+  [`W1` — `load_bearing_numbers.md` §1](../../../docs/load_bearing_numbers.md#1-standing-rule--eval-bust-figures-are-eod-clock-lower-bounds).
 - Self-funded lane REOPENED 2026-10-09 (personal Tradovate account, maximum-growth objective,
   portfolio not yet selected; 15% max-drawdown clearance; no capital authorization until a portfolio clears it) —
   [`2026-10-09`](../../../docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md),
