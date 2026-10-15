@@ -286,8 +286,8 @@ without a mechanism is fine; deploying without one is not.
 
 - **The gate itself + universe-level correction (White RC / SPA / Romano–Wolf, DSR/PBO, CPCV):** `strategy-validation`.
 - **Whether a candidate is worth an Inquire-phase question at all; what gates a question:** `inqhiori`.
-- **The data these tools run on:** no acquisition source is approved ([PIPELINES.md](../../../PIPELINES.md) Acquire data row); parent→micro proxy discipline: [`proxy-discipline.md`](../databento-data/reference/proxy-discipline.md); data hygiene: [`reference/tool-discipline.md`](reference/tool-discipline.md) §Pre-mining data hygiene.
+- **The data these tools run on:** no acquisition source is approved ([PIPELINES.md](../../../PIPELINES.md) Acquire data row); parent→micro proxy discipline: [`reference/proxy-discipline.md`](reference/proxy-discipline.md); data hygiene: [`reference/tool-discipline.md`](reference/tool-discipline.md) §Pre-mining data hygiene.
 - **A candidate that graduates into a Pre-Q / decision artifact:** `brief-authoring`.
-- **The campaign this discovery runs inside (Stage-0 universe registration + the ratified rules of evidence):** [`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`](../../../docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md) (cold store, moved 2026-08-08).
+- **The campaign this discovery runs inside (Stage-0 universe registration + the ratified rules of evidence):** `git show pre-prune-2026-08-08:docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` (pruned 2026-08-08).
 - **Sourcing/admitting a published external mechanism (§1 requirements, sourcing tiers, seed manifest):** `docs/methodology/strategy_harvest.md` (ADR `docs/adr/2026-07-15-external-mechanism-harvest-intake.md`).
 - **Why the K-ledger / least-overfit-first discipline exists (the statistics):** `docs/methodology/references/statistics-of-tradable-anomalies.md` (Domain 4 = multiplicity; Part II = the stage pipeline).

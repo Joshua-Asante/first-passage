@@ -10,8 +10,9 @@ class InstrumentSpec:
     tick_value: float
 
 
-# Sourced to proxy-discipline.md (+ standard CME parent/energy specs for
-# campaigns that score on those notionals). MYM tick_size = 1.00.
+# Sourced to .claude/skills/futures-anomaly-discovery/reference/proxy-discipline.md
+# (+ standard CME parent/energy specs for campaigns that score on those
+# notionals). MYM tick_size = 1.00.
 INSTRUMENT_SPECS: dict[str, InstrumentSpec] = {
     "MES": InstrumentSpec("MES", 5.0, 0.25, 1.25),
     "MNQ": InstrumentSpec("MNQ", 2.0, 0.25, 0.50),

@@ -170,6 +170,25 @@ def test_environment_variable_selects_venv(checkout, ops_env):
     assert str(Path(ops_env)) in result.stdout
 
 
+def test_doctor_names_shared_supplements_when_signing_is_absent(checkout, tmp_path):
+    """The qualification bridge fails, not skips, without cryptography; say what supplies it."""
+    environment = tmp_path / "bare env"
+    venv.EnvBuilder(with_pip=False).create(environment)
+    python = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    purelib = Path(subprocess.check_output(
+        [str(python), "-I", "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"], text=True
+    ).strip())
+    metadata = purelib / "fixture_marker-1.0.dist-info"
+    metadata.mkdir()
+    (metadata / "METADATA").write_text(
+        "Metadata-Version: 2.1\nName: fixture-marker\nVersion: 1.0\n", encoding="utf-8")
+    (checkout / "requirements-ops.lock").write_text("fixture-marker==1.0\n", encoding="utf-8")
+    result = launch(checkout, "--env", str(environment), "doctor")
+    assert result.returncode == 0, result.stderr
+    assert "Optional signing dependency: absent" in result.stdout
+    assert "tools/local_verification/requirements-extra.txt" in result.stdout
+
+
 def test_lock_mismatch_blocks_execution(checkout, ops_env):
     (checkout / "requirements-ops.lock").write_text("pytest==0.0.0\n", encoding="utf-8")
     result = launch(checkout, "--env", ops_env, "python", "-c", "print('RAN')")

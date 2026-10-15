@@ -12,7 +12,7 @@ by anything here. Use this module for new work and for re-deriving a campaign
 figure from that campaign's own declared primitives.
 
 Instrument specs are sourced to
-``.claude/skills/databento-data/reference/proxy-discipline.md`` (MYM
+``.claude/skills/futures-anomaly-discovery/reference/proxy-discipline.md`` (MYM
 ``tick_size`` = 1.00 index point — not MNQ's 0.25). Parent + energy rows
 extend that table for campaigns that score on parent/NG notionals.
 
