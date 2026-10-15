@@ -69,6 +69,8 @@ telemetry.jsonl
 .agents/skills/*
 !.agents/skills/babysit/
 !.agents/skills/babysit/**
+!.agents/skills/relay-skill/
+!.agents/skills/relay-skill/**
 .codex/
 
 # Deep-research leftovers — copyrighted source papers / raw text dumps pulled in
