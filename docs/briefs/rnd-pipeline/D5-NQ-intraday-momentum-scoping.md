@@ -3,7 +3,7 @@
 **Status:** `CLOSED — Stage-2 cost-law KILL 2026-07-16` (Stage-0 FROZEN + §R GO + Stage-1 complete; H1 failed 4× MNQ RT hurdle on IS).
 **Axis:** D5 (was "gamma-positioning"; confirm-construct pinned to **intraday-momentum footprint**)
 **Lane:** mechanism-first (HARV ADR `Accepted` — HARD gate)
-**Parents:** [`Q-KBUDGET-1`](../Q-KBUDGET-1-axis-reachability-screen.md) (RESOLVED) · [`d5_clause_n_rescreen.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_kbudget_1_2026-07/d5_clause_n_rescreen.md) · Baltussen et al. 2021 *JFE*
+**Parents:** [`Q-KBUDGET-1`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-KBUDGET-1-axis-reachability-screen.md) (RESOLVED) · [`d5_clause_n_rescreen.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/q_kbudget_1_2026-07/d5_clause_n_rescreen.md) · Baltussen et al. 2021 *JFE*
 **Inheritance:** Campaign-defaults ADR 2026-07-11 + DSR-K supersession 2026-07-12 + HARV lane 2026-07-13
 
 ---
