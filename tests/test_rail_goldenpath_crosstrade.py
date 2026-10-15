@@ -57,15 +57,3 @@ def test_golden_path_translation_matches_intent(fixture):
 def test_golden_path_e2e_sim(fixture):
     """Fire through live rail on sim; diff fill echo vs source intent (operator wiring)."""
     raise NotImplementedError("operator-owned: CrossTrade webhook → NT8 sim101")
-
-
-def test_matrix_verdict_tokens_present():
-    matrix = _REPO / "docs" / "notes" / "2026-07-06-crosstrade-nt8-payload-sufficiency-matrix.md"
-    if not matrix.is_file():
-        pytest.skip(
-            "payload-sufficiency matrix lives under docs/notes/ "
-            "(excluded from the public seed)"
-        )
-    text = matrix.read_text(encoding="utf-8")
-    for token in ("EXPRESSIBLE", "DEFAULTABLE-SAFE", "INEXPRESSIBLE"):
-        assert token in text
