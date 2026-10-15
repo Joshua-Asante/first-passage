@@ -7,17 +7,19 @@ Companion to [REPO_MAP.md](REPO_MAP.md). [STATE.md](STATE.md) owns priorities an
 
 | # | Pipeline | Recorded use / next handoff | Owner layers |
 |---|---|---|---|
-| P1 | Discovery / research | Available on TV CME exports; vendor acquisition blocked (below); idle lines recorded dormant with wake conditions 2026-10-15 ([INDEX](docs/briefs/INDEX.md)); Track B uses supplied strategies, not a new run | `lab/discovery/`, `lab/research_utils/`, `discovery_manifests/` |
+| P1 | Discovery / research | Available on TV CME exports; vendor acquisition blocked (below); idle lines recorded dormant with wake conditions 2026-10-15 ([INDEX](docs/briefs/INDEX.md)); the personal lane and Track B use supplied strategies, not a new run | `lab/discovery/`, `lab/research_utils/`, `discovery_manifests/` |
 | P2 | Python → Pine codification bridge | Retired | [Archive guidance](docs/ltm/README.md) |
 | P3 | Legacy portfolio Monte Carlo | CLI idle; current research reuses its primitives | `core/mc/`, `core/portfolio_mc.py` |
-| P4 | Firm-specific construction / sizing | Selection closed 2026-09-10 by operator [acceptance](docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure); Track B qualification is the handoff | `lab/analysis/c1/`, `core/mc/`, `core/firm_rules.py`, `ops/c1_rail/book_policy.py` |
-| P5 | Execution rail + qualification | Built, disarmed; Track B qualification, feed decision and deployment GO precede deployment | `ops/c1_rail/` (incl. `qualification/`), `ops/c1_signal_daemon/`, `deploy/`, `tools/qualification_verification/` |
+| P4 | Firm-specific construction / sizing | Selection closed 2026-09-10 by operator [acceptance](docs/notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure); Track B qualification [suspended 2026-10-13](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft); the personal lane's clearance ([Q-SFCLEAR-3](docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md)) is the active handoff | `lab/analysis/c1/`, `core/mc/`, `core/firm_rules.py`, `ops/c1_rail/book_policy.py` |
+| P5 | Execution rail + qualification | Built, disarmed; Track B [suspended](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft); the personal lane's first live order waits for its clearance and the [ADR](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds)'s owed items | `ops/c1_rail/` (incl. `qualification/`), `ops/c1_signal_daemon/`, `deploy/`, `tools/qualification_verification/` |
 | P6 | Monitoring | M1 `RESOLVED` 2026-09-14; fill-gated monitors dormant | `ops/c1_rail/c1_rail_telemetry.py` |
 | X | Governance | Evidence, integrity and authority checks on every handoff | `scripts/`, `docs/`, manifests |
 
 ### Current campaign handoff
 
-Track B — qualify the accepted book (the [STATE](STATE.md) queue item). Owners:
+**Personal lane (active):** [Q-SFCLEAR-3](docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) tests whether the Tradeify book at R1 clears the personal Tradovate account's standards, under the [self-funded lane ADR](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md); [STATE](STATE.md) holds its next steps.
+
+**Track B (suspended 2026-10-13):** Tradeify-specific build and spend are frozen until the 11-08 sitting or an operator ruling; code and evidence are kept ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft)). Tradeify support ruled on 2026-10-12 that evaluation-account strategy logic must be native, with no external engine or bridge ([route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts)). Owners:
 [umbrella](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) (scope, authority, gates),
 [deployment checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) (cross-workstream sequence),
 [execution-slices plan](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md) (qualification engineering requirements;
@@ -87,8 +89,8 @@ Python signal daemon → Python listener/sizing host → CrossTrade → Tradovat
 READMEs. Track B's book modules (`book_*`, `account_close_*`) stay offline until a deployment
 GO. [`nautilus_trader`](docs/adr/2026-07-10-databento-research-stack.md) remains research-only.
 
-**Qualification (Track B, offline).** `ops/c1_rail/qualification/` is the fixed-book
-qualification machinery: contracts, panel and replay, adjudication, evidence and seals. Its
+**Qualification (offline).** `ops/c1_rail/qualification/` is the fixed-book
+qualification machinery (Track B suspended; `personal_replay.py` serves the personal lane): contracts, panel and replay, adjudication, evidence and seals. Its
 `execution/` subpackage is the separately installed protected service for staged TEST_ONLY
 qualification on Linux; complete E1 is still in development.
 `deploy/qualification/bootstrap.py` is its isolated-Python role launcher;

@@ -7,10 +7,9 @@ ones — if they ever pass, the gate has gone vacuous.
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 from pathlib import Path
-
-import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -101,14 +100,18 @@ def test_repo_is_currently_clean():
 # ---------------------------------------------------------------- selector pins (C16 / FU-5)
 
 def test_in_scope_covers_theme_nest_results():
-    """Flat glob missed nested RESULTS; selector must reach the theme nest."""
+    """Flat glob missed nested RESULTS; selector must reach the theme nest.
+
+    The fixed ``>= 60`` floor counted the pre-seed tree and never ran publicly
+    (the test skipped without DESK_CARD notes); pin to the tracked set instead.
+    """
     paths = csp.in_scope(REPO)
-    if not any("DESK_CARD" in f.name for f in paths):
-        pytest.skip(
-            "DESK_CARD notes live under docs/notes/ (excluded from the public seed)"
-        )
-    assert len(paths) >= 60, f"selector too narrow: {len(paths)} files"
+    tracked = subprocess.run(
+        ["git", "ls-files", "lab/analysis/**/RESULTS*.md"],
+        cwd=REPO, capture_output=True, text=True, check=True,
+    ).stdout.splitlines()
+    missed = set(tracked) - {f.relative_to(REPO).as_posix() for f in paths}
+    assert tracked and not missed, f"selector too narrow, missed: {sorted(missed)}"
     assert any("/analysis/orb/" in f.as_posix().replace("\\", "/") for f in paths)
-    assert any("DESK_CARD" in f.name for f in paths)
     assert not any("/lab/archive/" in f.as_posix().replace("\\", "/") for f in paths)
 

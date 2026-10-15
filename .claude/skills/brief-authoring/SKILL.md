@@ -1,6 +1,6 @@
 ---
 name: brief-authoring
-description: Use this skill whenever Joshua needs to author, structure, or verify a written decision artifact — Pre-Q (Inquire-phase) briefs, ADRs, lock decision briefs, Claude Code handoff/spawn prompts, Notice-phase observation logs, methodology lesson captures, or audit notes. Triggers on phrases like "draft a brief", "write a Pre-Q", "write an ADR", "CC handoff", "spawn prompt", "lock decision", "audit note", "methodology lesson", "is this brief well-formed", or any request to structure a decision as a written artifact. Also fires when reviewing an existing brief for ceremonial-vs-load-bearing classification, or before authoring any artifact destined for `docs/adr/`, `docs/briefs/`. Addresses the pattern where each session re-derives brief structure (§0 Rule-0 reads, §4 falsifiable H, §5 forbidden moves, §6 gate, §10 audit-hooks). Hand off to inqhiori for methodology framing (when to inquire, what gates a question), pinescript-v6 for strategy code, prop-firm-challenge for live-ops decisions.
+description: Use this skill whenever Joshua needs to author, structure, or verify a written decision artifact — Pre-Q (Inquire-phase) briefs, ADRs, Claude Code handoff/spawn prompts, Notice-phase observation logs, methodology lesson captures, closure records, or audit notes. Triggers on phrases like "draft a brief", "write a Pre-Q", "write an ADR", "CC handoff", "spawn prompt", "audit note", "methodology lesson", "is this brief well-formed", or any request to structure a decision as a written artifact. Also fires when reviewing an existing brief for ceremonial-vs-load-bearing classification, or before authoring any artifact destined for `docs/adr/`, `docs/briefs/`. Addresses the pattern where each session re-derives brief structure (§0 Rule-0 reads, §4 falsifiable H, §5 forbidden moves, §6 gate, §10 audit-hooks). Hand off to inqhiori for methodology framing (when to inquire, what gates a question), pinescript-v6 for strategy code, c1-rail for live-ops decisions, prop-firm-challenge for firm rules and dd_protection.
 ---
 
 # Brief Authoring
@@ -13,7 +13,7 @@ The 04-17 dd_protection retune → reversal → delete-and-retune cycle is the l
 
 **Boundary with sibling skills:**
 - `inqhiori` — methodology framing (when to inquire, what gates a question, pre-Q routing) and the home of The Algorithm operator (Question / Delete / Simplify / Accelerate). This skill executes the artifact step *after* inqhiori has decided one is needed; briefs authored here should pass The Algorithm before they ship, which this skill enforces at the verification block.
-- `prop-firm-challenge` — live ops, allocation locks, dd_protection. This skill uses the artifact required by the owning contract; an ADR is not automatic. It records decisions; it does not grant authority.
+- `prop-firm-challenge` — firm rules, allocation locks, dd_protection; `c1-rail` — live ops. This skill uses the artifact required by the owning contract; an ADR is not automatic. It records decisions; it does not grant authority.
 - `pinescript-v6` — strategy code. Decision artifacts may reference Pine source; they do not modify it.
 - `trade-csv-reconcile` — produces broker/TV CSV metrics referenced inside briefs; not consumed in reverse. (`live-execution-journal` retired 2026-07-11 with the CFD estate.)
 
@@ -254,7 +254,7 @@ Failure modes that recur, ranked by frequency:
 
 **6. Audit hooks no one can run.** §10 says "review quarterly" with no command. Repair: write the actual grep / file path / assertion. If you can't write it, the audit hook is theater.
 
-**7. Stale Notion page IDs.** Cited Notion anchors (`32cdc0b53c...`) are reused across briefs without re-verifying. Repair: include a verification grep in §10 that confirms the cited page exists with the cited title.
+**7. Stale anchors.** Cited anchors (SHAs, line numbers, headings) are reused across briefs without re-verifying. Repair: include a verification grep in §10 that confirms each cited anchor still resolves. Notion is retired as a canonical surface ([ADR 2026-06-12](../../../docs/adr/2026-06-12-notion-surface-retirement.md)); a historical Notion page ID is never an anchor — resolve it through [`notion-redirect-map.md`](../../../docs/governance/notion-redirect-map.md) and cite the repo owner.
 
 **8. Briefs floating from doctrine.** New brief that doesn't reference standing doctrine (prop-firm-challenge Core Principles, lessons registries, prior ADRs). Repair: §1 Context must connect to existing doctrine where any exists. Orphan briefs accumulate as noise.
 
@@ -330,5 +330,6 @@ If brief is a CC handoff, also:
 
 Related skills:
 - `inqhiori` — when to author (this skill is the how, given inqhiori has decided), and the Algorithm operator (Q/D/S/A); briefs authored here pass The Algorithm before shipping
-- `prop-firm-challenge` — owns live-ops decisions; its governing contract determines the required approval, evidence and artifact
+- `c1-rail` — owns live-ops routing; the governing contract determines the required approval, evidence and artifact
+- `prop-firm-challenge` — firm rules, portfolio MC, dd_protection mechanics
 - `trade-csv-reconcile` — produce data referenced inside briefs (`live-execution-journal` retired 2026-07-11)

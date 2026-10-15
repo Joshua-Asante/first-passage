@@ -25,7 +25,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | one-liner | body |
 |---|---|---|---|---|
-| sfclear_2026-10 | c1 | ACTIVE | successor pre-registration DRAFT, not ratified; calendar-only historical schedule committed; no scoring output | lab/analysis/c1/sfclear_2026-10/ |
+| sfclear_2026-10 | c1 | ACTIVE | Q-SFCLEAR-3 pre-registration FROZEN 2026-10-14, superseding Q-SFCLEAR-2 before run; no scoring output | lab/analysis/c1/sfclear_2026-10/ |
 | tradeify_seven_strategy_phase1_2026-09 | c1 | ACTIVE | strict five-source Tradeify source, accounting, deadline, cap, and provenance normalization | lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/ |
 
 ## Hot bodies
@@ -53,8 +53,8 @@ documents the camp boundary for humans/tools.
 | mnq_orb_flow_depth_2026-08-18 | c1 | HOLD | yes | `HOLD 2026-08-23 (operator)` — blocked at P0 twice (original $148.04, redraw S2B $154.73, both vs $125.00 ceiling;... | lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/ | — |
 | msl_monsurf_1_idle_clock_2026-08 | c1 | CLOSED | yes | Q-MONSURF-1 M-B RESOLVED | lab/analysis/c1/msl_monsurf_1_idle_clock_2026-08/ | — |
 | parity_gen2_2026-08 | c1 | ACTIVE | yes | — | lab/analysis/c1/parity_gen2_2026-08/ | — |
-| sfclear_2026-10 | c1 | ACTIVE | yes | successor pre-registration DRAFT, not ratified; calendar-only historical schedule committed; no scoring output | lab/analysis/c1/sfclear_2026-10/ | — |
-| sfgrowth_2026-10 | c1 | ACTIVE | yes | evidence store for Q-SFCLEAR-2 (Phase-0 sizing classification; F6 manifest reference). Q-SFGROWTH-1 SUPERSEDED... | lab/analysis/c1/sfgrowth_2026-10/ | — |
+| sfclear_2026-10 | c1 | ACTIVE | yes | Q-SFCLEAR-3 pre-registration FROZEN 2026-10-14, superseding Q-SFCLEAR-2 before run; no scoring output | lab/analysis/c1/sfclear_2026-10/ | — |
+| sfgrowth_2026-10 | c1 | ACTIVE | yes | evidence store for Q-SFCLEAR-3 via Q-SFCLEAR-2 (Phase-0 sizing classification; F6 manifest reference). Q-SFGROWTH-1... | lab/analysis/c1/sfgrowth_2026-10/ | — |
 | shape_feasibility_map_2026-08 | c1 | ACTIVE | yes | 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU... | lab/analysis/c1/shape_feasibility_map_2026-08/ | — |
 | size_feasibility_2026-10 | c1 | ACTIVE | yes | — | lab/analysis/c1/size_feasibility_2026-10/ | — |
 | tradeify_book_composition_2026-09 | c1 | ACTIVE | yes | informal Downloads-lane measurement, not pre-registered, no K entry; the harness reuses `core/mc/simulation.py` and... | lab/analysis/c1/tradeify_book_composition_2026-09/ | inputs gitignored |
