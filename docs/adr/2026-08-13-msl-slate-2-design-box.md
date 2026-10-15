@@ -21,7 +21,7 @@ Operator instruction 2026-08-13: go straight to P3.4 (S2-A campaign manager). An
 
 ## Reads
 
-[re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) @ `5dbf8129` · [second slate](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-13-msl-second-slate.md) @ `dc67c164` · [Magdon-Ismail RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/mc/mc_mdd_closed_form_2026-08/RESULTS.md) @ HEAD — **MEASURED, validation only, not calibration** · [eval-sprint notice](../notes/notice/N-2026-08-13-eval-sprint-lane-derivation.md) — **not elected**.
+[re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) @ `5dbf8129` · [second slate](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-13-msl-second-slate.md) @ `dc67c164` · [Magdon-Ismail RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/mc/mc_mdd_closed_form_2026-08/RESULTS.md) @ HEAD — **MEASURED, validation only, not calibration** · [eval-sprint notice](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-13-eval-sprint-lane-derivation.md) — **not elected**.
 
 ## Gate
 

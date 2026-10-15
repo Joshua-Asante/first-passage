@@ -30,7 +30,7 @@ def test_silver_bootstrap_p05_optional():
     historical-anchor parameters; distinct from the §14 Gate 9 disposition
     convention (canonical bootstrap_seed=42, bootstrap_n_panels=1000 — orchestration
     metadata recorded in run_manifest.json at init-run per
-    docs/spec/wfo-runner-v0.md §2).
+    https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/wfo-runner-v0.md §2).
     """
     p = os.environ.get("Q_CORR_SILVER_TV_CSV")
     if not p:

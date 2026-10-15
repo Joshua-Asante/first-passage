@@ -1,6 +1,7 @@
 """score_rules() near-duplicate wiring (2026-08-19) -- advisory only.
 
-Reuses the known-good synthetic-motif fixture from test_stage4_7_drivers.py
+Reuses the known-good synthetic-motif fixture first written for the retired
+DISC-CAMP-0 driver suite (tests/test_stage4_7_drivers.py, removed 2026-10-15)
 ("fixture must yield a cost-law survivor"). Two rules built from the
 IDENTICAL shape/direction/horizon/trigger produce identical bar_returns when
 evaluated on the same series -- a deterministic positive case with no need to

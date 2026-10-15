@@ -1,6 +1,6 @@
 # A7 browser readiness check results
 
-Checked September 14, 2026 against local revision f4d0d01657dc0f87d14429df2fa2633dda661238. This is a readiness assessment, not ceremony execution or deployed-version acceptance. The approved [design](../specs/2026-09-14-a7-attended-browser-capture-design.md) remains authorized.
+Checked September 14, 2026 against local revision f4d0d01657dc0f87d14429df2fa2633dda661238. This is a readiness assessment, not ceremony execution or deployed-version acceptance. The approved [design](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/specs/2026-09-14-a7-attended-browser-capture-design.md) remains authorized.
 
 ## Browser observations
 

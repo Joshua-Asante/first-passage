@@ -16,8 +16,8 @@ import pytest
 
 pytest.importorskip("databento")
 
-# Canonical lab module (lab is on pytest pythonpath); the skill-dir db_fetch.py is
-# a thin launcher that forwards to this.
+# Canonical module lab/databento_fetch/db_fetch.py (lab is on pytest pythonpath);
+# the skill-dir launcher that forwarded to it was removed 2026-10-15.
 from databento_fetch import db_fetch as dfetch  # noqa: E402
 
 

@@ -3,7 +3,7 @@
 **Audit ID:** AUDIT-2026-08-23-kill-register-attribution
 **Date:** 2026-08-23
 **Triggered by:** scheduled — Task A1 of the viable-strategy sequence, Phase A
-([`plan`](../../superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md) §Task A1)
+([`plan`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-23-viable-strategy-phase-a-target-derivation.md) §Task A1)
 **Authors:** Joshua (GO) + Claude Code
 **Scope:** every strategy-grounds kill in the estate — registry + closures + Notice-phase census +
 door-table screens. Pure attribution pass: **$0, K=0, no locked surface touched.**

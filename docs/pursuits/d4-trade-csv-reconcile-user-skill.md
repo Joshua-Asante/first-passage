@@ -18,6 +18,8 @@ exact user-level copy. Zero unique content found worth preserving.
    [`d5`](d5-mql-developer-user-skill.md) for the enumeration); step 3's "now the sole copy" claim
    was therefore **false when written**.
 4. Repo copy (`.claude/skills/trade-csv-reconcile/`) is now genuinely the sole copy.
+   *Corrected 2026-10-15:* false. A claude.ai account copy (OANDA/Pepperstone era) is still
+   served to every session; deleting it is owed ([d10](d10-plugin-duplicate-set.md)).
 
 **Residuals transferred:** none — the archived copy is strictly dominated, nothing to graft.
 

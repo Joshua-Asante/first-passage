@@ -8,8 +8,8 @@ The two checkers deliberately disagree on lock/notice/lesson/audit/light-tier
 records: repo-side declines them (`RESULT: NOT CHECKED`); this skill-side
 checker applies each type's OWN section contract, per the ADR's §Decision.
 
-Global constraint (docs/superpowers/plans/2026-08-27-ssot-data-lineage-
-remediation.md "Global Constraints"): every new/extended checker must be
+Global constraint ("Global Constraints" of the plan pinned at
+https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md): every new/extended checker must be
 mutation-tested — plant the exact bad condition it claims to catch and
 confirm a HARD violation actually fires, not just that a well-formed fixture
 passes. Every new per-type contract below (notice/audit/lesson/light/lock)

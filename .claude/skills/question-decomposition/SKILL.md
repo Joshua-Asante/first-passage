@@ -1,6 +1,6 @@
 ---
 name: question-decomposition
-description: Use when a review question, ADR draft, pre-registration brief, or falsifier/kill-rule interpretation feels like a single hard yes/no but arguing it directly produces a standoff — a "does X count toward Y" dispute, a governance ruling on an ambiguous edge case, a demotion/retirement-clause reading, a Notice/Inquire framing that "could go either way," or any single verdict that would simultaneously drive reporting, escalation, and precedent. Also fires when two people share the same facts but reach opposite conclusions, or when a proposed rule change is motivated by a "gap" or "conflict" that might just be an unsearched composition of existing rules. Reasoning-structure layer only — produces a decomposition and a recombination map, not a verdict; does not replace rule-0, verify-source, fable-judge, or pre-ratification-adversarial-panel.
+description: Use when a review question, ADR draft, pre-registration brief, or falsifier/kill-rule interpretation feels like a single hard yes/no but arguing it directly produces a standoff — a "does X count toward Y" dispute, a governance ruling on an ambiguous edge case, a demotion/retirement-clause reading, a Notice/Inquire framing that "could go either way," or any single verdict that would simultaneously drive reporting, escalation, and precedent. Also fires when two people share the same facts but reach opposite conclusions, or when a proposed rule change is motivated by a "gap" or "conflict" that might just be an unsearched composition of existing rules. Reasoning-structure layer only — produces a decomposition and a recombination map, not a verdict; does not replace Rule 0 (docs/rule_0.md), verify-source, fable-judge, or pre-ratification-adversarial-panel.
 ---
 
 # question-decomposition — decompose before you resolve
@@ -128,7 +128,7 @@ would never get its own decision.
 - **`brief-authoring`** — where a completed decomposition lands as a written artifact. The
   recombination map is the natural skeleton for an ADR's or Pre-Q brief's findings section — this
   skill structures the reasoning; brief-authoring structures the document.
-- **`rule-0`** and **`verify-source`** — this skill assumes both disciplines are already running.
+- **Rule 0** (`docs/rule_0.md`) and **`verify-source`** — this skill assumes both disciplines are already running.
   Rule-0 gets you reading the actual rule text and production constants instead of memory;
   verify-source gets you the right vintage/state of each fact. Decomposition then organizes what
   those disciplines surface — it doesn't replace either one, and a beautifully decomposed

@@ -8,7 +8,7 @@
 **Authors:** Joshua (decision) + Claude Code (recorder, this session)
 **Supersedes:** `2026-06-12-tv-csv-canonical-feed-policy.md` in part - Section 2.3 + Section 4 Forbidden-move #3 (the "tooling retained, not deleted" clause) reversed by operator decision.
 **Supersedes:** `2026-06-12-rnd-feed-instrument-class-split.md` full - premise (split R&D feeds by instrument class, Dukascopy serving FX/metals) mooted by full retirement; was Proposed, never ratified.
-**Related:** Q-FEED-1 (`docs/ltm/briefs/Q-FEED-1-dukascopy-tv-feed-divergence.md`) — closed `RESOLVED-BY-RETIREMENT` by this ADR. Design spec: `docs/spec/2026-06-17-dukascopy-retirement-design.md`. Does NOT affect `docs/spec/feed_equivalence_discovery_test_LOCKED.md` (firm-onboarding execution-feed equivalence — different question).
+**Related:** Q-FEED-1 (`docs/ltm/briefs/Q-FEED-1-dukascopy-tv-feed-divergence.md`) — closed `RESOLVED-BY-RETIREMENT` by this ADR. Design spec: [`docs/spec/2026-06-17-dukascopy-retirement-design.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-17-dukascopy-retirement-design.md). Does NOT affect `docs/spec/feed_equivalence_discovery_test_LOCKED.md` (firm-onboarding execution-feed equivalence — different question).
 **Layer:** infrastructure (R&D data-acquisition layer + the governance doctrine over it)
 
 ---
@@ -105,7 +105,7 @@ This ADR accepts a real cost (§6): deep multi-year M15 FX/metals history for `N
 
 ## §7 — Implementation plan
 
-Executed this session per `docs/spec/2026-06-17-dukascopy-retirement-plan.md` (Tasks 1–8, 10–12 in worktree `claude/quirky-davinci-db1578`):
+Executed this session per [`docs/spec/2026-06-17-dukascopy-retirement-plan.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-17-dukascopy-retirement-plan.md) (Tasks 1–8, 10–12 in worktree `claude/quirky-davinci-db1578`):
 
 - **Phase 0** — §0 reads verified current (anchors above).
 - **Phase 1** — `core/bar_export_loader.py` + `scripts/parse_bar_export.py` + tests (TDD); GBPUSD added to shared `PRICE_COL_BY_INSTRUMENT`; `bar_export` registered in `MANIFEST_DIRS`.

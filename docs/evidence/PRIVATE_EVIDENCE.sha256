@@ -93,7 +93,7 @@ a18d6d376e07fb737967c87f4081e120bc9d77dc1a7672c8f0c20461aa8c1d62  recovery/full-
 736a68541a6adcf5ea9f3625fa47a1beda59435297ea0821a20be0ac2f639e2f  recovery/full-e1-s2-r1-20260919/SHA256SUMS
 a49c7cd74f8670c18aae12f58691b59750c54a0ea9faf6f18031e786e37b9fab  recovery/full-e1-r2b-predispatch-20260919/test_campaign_scheduler.py
 
-# Recovery packets whose dead links #495 replaced with digest pins (2026-09-25); archived in first-passage-archive.
+# Recovery packets whose dead links #495 replaced with digest pins (2026-09-25); archived in first-passage-archive. The records pinning the first seven rows were removed 2026-10-15 and are read at 4121e84: the four jev-* rows by https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/handoffs/2026-09-19-jev-experimentation-claude.md, the next three by https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/audits/2026-09-19-jev-research-workflow-fit.md; the last row is still pinned by docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md.
 c13c1c598a0708535e2996416079d63077a3e7de5697e217c8fb879e22b67ef8  recovery/jev-retrieval-pilot-20260919/RESULTS.md
 4a5909001eb43f4c83c4530df362c31d00f191af82c738807b9fa5cd0000f2bc  recovery/jev-paired-retrieval-20260919/RESULTS.md
 320717d62747d5bcfd18bc76307067e7046319dda75d94aff8eed5e67b5488c3  recovery/jev-paired-retrieval-20260919/PROTOCOL.md
