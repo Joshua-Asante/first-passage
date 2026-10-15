@@ -18,7 +18,7 @@ Target: the most recent completed work in this conversation, or whatever the ope
 1. **Collect the claims.** From the report: what was supposedly done, what was supposedly verified ("make validate passes", "byte-identical", "anchor unchanged", "all tests green"), and what was supposedly left untouched. Each becomes a row to prove or refute.
 2. **Establish what actually changed.** `git diff` / `git status` (or `gh pr diff`). The diff is ground truth; the report is not. Compare touched files against the ask's blast radius and against the declared scope (a handoff's §5 forbidden moves, a spec's file list).
 3. **Re-run every claimed verification yourself.** Do not read code and nod. Repo surfaces:
-   - `make validate` — params + data manifests + pine manifest gates.
+   - `make validate` — the `validate` tier of `scripts/gates.yml`; `python scripts/gate_manifest.py --tier validate --dry-run` lists its gates (the params gate was retired 2026-08-03).
    - `python -m pytest tests/` or the exact test node the claim names. **Count skips:** vendor-CSV-dependent tests skip-if-missing; "400+ tests pass" on a tree without local data is a different claim than the same sentence with data present.
    - `python -m pytest tests/core/test_mc_synthetic_engine.py -q` whenever anything on the MC path was touched — vendor-free engine regression. (`python core/portfolio_mc.py --panel pepperstone` raises since the executable Pepperstone anchor retired 2026-07-24; `PANELS_BY_BROKER` is not globally empty — owner `core/mc/modes.py` / PIPELINES P3. Historical MC numerals stay record-only — see `docs/mc_anchor_history.md`.)
    - `python scripts/check_boundaries.py` for any layer-contract claim (`lab↔ops` isolation, `core` imports nothing internal).

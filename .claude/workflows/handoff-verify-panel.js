@@ -226,7 +226,9 @@ const DIMENSIONS = [
       'Live posture is owned by AGENTS.md section "Live-execution posture" -- read it there, never trust the ' +
       'packet. The packet is STALE (or HARD_FAIL if the plan depends on it) if it assumes any of: an open FXIFY ' +
       'challenge; an active Aegis->M6J lane; an unbuilt CrossTrade rail; the Striker MYM/MNQ legs deployed at ' +
-      'Tradeify; an armed live book. Challenge-era MC pass/bust rates are historical pins, not live ' +
+      'Tradeify; an armed live book; M1 items still owed for the incumbent; a TV-alert live signal host; a ' +
+      'Databento pull or any data source PIPELINES.md does not approve; Notion as a canonical surface. ' +
+      'Challenge-era MC pass/bust rates are historical pins, not live ' +
       'probabilities. For any specific constant (risk %, DD_TRIGGER, anchor, price): open the owning bytes ' +
       '(core/dd_protection.py, core/firm_rules.py, or the cited spec/note) and compare.',
   },

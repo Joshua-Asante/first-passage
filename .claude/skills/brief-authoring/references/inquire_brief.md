@@ -19,7 +19,6 @@ If authored in an environment without filesystem access to the repo (web-Claude 
 
 - `path/to/file.py` — anchor: `<commit_hash>` (verified `git log -1 -- path/to/file.py` on YYYY-MM-DD)
 - `path/to/config.yaml` — anchor: `last-modified YYYY-MM-DD` (per `stat`)
-- `Notion: <page_title>` — anchor: page ID `<id>` (verified existence on YYYY-MM-DD)
 - `docs/adr/NNN-prior-decision.md` — anchor: `<commit_hash>` (verified on YYYY-MM-DD)
 
 ---
@@ -142,8 +141,8 @@ Commands or checks that can be mechanically executed later. "Review at quarterly
 # Confirm §0 anchors still resolve
 git log -1 -- path/to/file.py | grep <commit_hash>
 
-# Cross-reference cited Notion page IDs (Known Trap #7)
-# Manually verify page <id> exists with title "<title>" on YYYY-MM-DD
+# Confirm every other cited anchor still resolves (Known Trap #7)
+# grep -n "<cited heading>" <cited path>
 
 # Re-run the gate-firing assertion (if RESOLVED/FALSIFIED)
 python scripts/<analysis_script>.py --reproduce-q-x

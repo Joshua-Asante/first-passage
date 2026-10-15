@@ -20,7 +20,7 @@ The first decision before any phase. Misrouted work is the single largest cost i
 | Function returns a value inconsistent with its declared inputs | **this skill** | Deterministic code; root cause is in code |
 | Script crashes / raises exception | **this skill** | Code defect by definition |
 | Output magnitude implausible vs known reference (JPY ~153×, P&L 100× expected) | **this skill** | Almost always feed/encoding/units bug, not strategy edge |
-| Cross-platform output differs (TV vs Pepperstone vs Python) for same logical input | **this skill** | Code or feed-handling defect |
+| Cross-platform output differs (TV vs Python) for same logical input | **this skill** | Code or feed-handling defect |
 | Strategy WR / PF deviates from baseline despite no parameter change | **inqhiori** | Statistical anomaly in unchanged code; investigation question |
 | Regime sensitivity unexpected (anchor trades, tail behavior) | **inqhiori** | Methodology / hypothesis territory |
 | Live trade decision under time pressure | **ooda-loop** | Tactical / recoverable / tempo |
@@ -62,7 +62,7 @@ The load-bearing technique for wrong-value bugs. Adapted from `systematic-debugg
 
 - **Function call boundaries** — between `portfolio_mc.py` modules (data loader → bootstrap engine → bust-attribution aggregator). Log inputs entering and outputs exiting at each.
 - **File-format boundaries** — CSV in, DataFrame out; DataFrame in, dict out; dict in, JSON file out. The serializer/deserializer pair is the highest-frequency source of subtle bugs (encoding drift, NaN handling, integer-vs-float, timezone parsing).
-- **Feed boundaries** — Pepperstone CSV in, Python in-memory representation out. The 2026-04 OANDA→Pepperstone transition history shows that feed-boundary bugs hide as "the methodology must be wrong"; they are not.
+- **Feed boundaries** — CME futures TV export CSV in (`core/data/tv_exports/cme/`; Pepperstone retired 2026-08-02), Python in-memory representation out. The 2026-04 OANDA→Pepperstone transition history shows that feed-boundary bugs hide as "the methodology must be wrong"; they are not.
 - **Unit boundaries** — points-vs-pips, percentage-vs-decimal, contract-value-vs-notional, base-vs-quote. The JPY ~153× incident was a unit-boundary bug at the feed-to-P&L interface.
 - **Session/timezone boundaries** — chart-TZ vs UTC, NY-close-anchored vs broker-day. Guardian's session filter timing was corrected on prior pass; the same class of bug can recur.
 
