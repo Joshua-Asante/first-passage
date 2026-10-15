@@ -16,9 +16,9 @@
 - `core/lifecycle.py:21-23` — module docstring: "Writing state (a Call-1 tier demotion) is item 3, not built here — a human hand-edits `lifecycle_state.json` in the interim." No reverse-path mention anywhere in the file.
 - `core/lifecycle.py:149-155` — `next_tier_down()`: walks `_LADDER_ORDER` strictly downward, floor `RETIRED`.
 - `core/lifecycle.py:158-166` — `autonomous_demote()`: "Call 5: automation may move authorization DOWN only and may NEVER auto-RETIRE... the autonomous floor is WATCH-2." No promote function exists in the module.
-- `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:66` — "Because the response is graded, reversible sizing (Call 2), a false positive costs only *one size step*, not a killed edge... The terror of the binary dissolves once the action is cheap." (the decision driver behind σ = 1.0)
-- `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:71` — "recommended σ = 1.0 (tighter than the 2σ a kill-trigger would use, *because* the action is reversible)."
-- `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:213` — forbidden-moves list: "No autonomous size-up, ever. Automation may move authorization down only. It may never promote a tier, re-enter a RETIRED strategy, or increase size beyond the authorized tier."
+- `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:66` @ `dad73e3d` (pre-trim) — "Because the response is graded, reversible sizing (Call 2), a false positive costs only *one size step*, not a killed edge... The terror of the binary dissolves once the action is cheap." (the decision driver behind σ = 1.0)
+- `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:71` @ `dad73e3d` (pre-trim) — "recommended σ = 1.0 (tighter than the 2σ a kill-trigger would use, *because* the action is reversible)."
+- `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:213` @ `dad73e3d` (pre-trim) — forbidden-moves list: "No autonomous size-up, ever. Automation may move authorization down only. It may never promote a tier, re-enter a RETIRED strategy, or increase size beyond the authorized tier."
 - `docs/methodology/strategy_lifecycle.md:86-94` @ `4121e84c` (Call 5) — "The boundary is **reversibility**... Reversible de-risk → autonomous (rules-mandated): tier demotions... **Irreversible retirement → operator GO/NO-GO** against pre-registered criteria: WATCH-2→`RETIRED` (**capital to zero**) and full beta shutdown."
 - `docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md:23` — production-read table: "`autonomous_demote` floors at WATCH-2; no promote path in code today."
 - `docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md:55` — "Call 5's 'never promotes' gains only this sandbox admit. No autonomous path to full AUTHORIZED book size, no RETIRED re-entry, no re-optimization." (S5 scopes strictly to brand-new CANDIDATE packets, not to restoring a demoted incumbent — confirmed by re-read, not merely asserted.)
@@ -131,7 +131,7 @@ python scripts/check_brief.py docs/briefs/Q-CALLBOUND-1-automation-boundary-symm
 
 # Section 0 anchor spot-checks
 sed -n '149,166p' core/lifecycle.py
-sed -n '66p;71p;213p' docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md
+git show dad73e3d2c6b78a2ca10a4ba90df2765a05286e8:docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md | sed -n '66p;71p;213p'
 sed -n '86,94p' docs/methodology/strategy_lifecycle.md
 sed -n '23p;55p' docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md
 sed -n '280p;286,300p' ops/c1_rail/c1_sizing_host_reference.py
