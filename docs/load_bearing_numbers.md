@@ -17,8 +17,7 @@ correction lands where the claim is read.
 path.** Scope is all 7 `dd_type="trailing"` tiers — Tradeify/MFFU **and** Bulenox/BluSky, confirmed
 CLOCK-affected, not just the Class-S candidate's tiers
 ([`Q-FIRMEOD-1`](briefs/closures/Q-FIRMEOD-1-closure-falsified.md) `FALSIFIED`;
-[W1 ADR](adr/2026-08-07-w1-intraday-honest-engine-remeasure.md) `Accepted` 2026-08-22, with other
-decisions of record still pending as measurement).
+W1 method below, operator-accepted 2026-08-22).
 
 Honest-clock RESULTS that satisfy the rule:
 
@@ -30,6 +29,17 @@ Honest-clock RESULTS that satisfy the rule:
 Read that R1 file's §2/§4b before concluding anything about the remaining tiers: the other four
 Bulenox tiers carry a since-corrected archived figure from a closed, NO-GO'd, non-live book — that
 is **not** the same as "no figure". Only `BluSky_Premium_50K` genuinely carries none.
+
+**Method (W1, operator-accepted 2026-08-22).** Consolidated 2026-10-15 from 2026-08-07-w1-intraday-honest-engine-remeasure (removed; see [TOMBSTONES](adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)). An honest-clock
+re-measure (W1 §2, verbatim): "Uses the **intraday** breach clock (`intraday_low` threaded per survivor-scoring / MC
+path …)"; "Leaves `dd_lock_offset_usd` at the production no-lock default (`1_000_000.0`); does **not** restore to
+`100`"; re-runs with "frozen seeds/sims/panels where the original study pinned them"; and "Publishes RESULTS with
+before/after deltas; **does not invent interim bust %** …". **Falsified if** (W1 §4, verbatim): "any orientation doc
+publishes a new bust % without a RESULTS path; or a harness restore-to-100 lands on `main` after this hygiene pass
+without a dated exception comment." Forbidden (W1 §5): "Retiring science harnesses without a RESULTS tombstone."
+**Still owed as measurement, not a status gate** (W1 §6): the 2026-07-22 eval-lock withdrawal / remc correction, the
+2026-07-24 50K-band re-score and the 2026-08-02 realizable-book / band-quantization scoring; the `core/firm_rules.py`
+RESIDUAL caveat's Superseded-by is "owed when the remaining RESULTS publish".
 
 ## 2. Standing rule — every published figure assumes the inactivity barrier is OFF
 

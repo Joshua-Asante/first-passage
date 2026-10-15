@@ -3,7 +3,7 @@
 **Closed:** 2026-07-23
 **Parent brief:** [`../Q-BUSTGATE-1-bust-gate-re-derivation.md`](../Q-BUSTGATE-1-bust-gate-re-derivation.md) (anchor `a3a7d71`) — now `CLOSED-FALSIFIED`
 **Pre-registration (FROZEN before the derivation was read):** [`../pre-registration/Q-BUSTGATE-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-BUSTGATE-1-verdict-preregistration.md) — commit `98d0fa6`
-**Fork-B artifact:** [`../../adr/2026-07-23-c1-rung-selection-ev-objective.md`](../../adr/2026-07-23-c1-rung-selection-ev-objective.md) (`Proposed`)
+**Fork-B artifact:** [`../../adr/2026-07-23-c1-rung-selection-ev-objective.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-23-c1-rung-selection-ev-objective.md) (`Proposed`)
 **Directive:** 08-08 packet §0.5 directive (1) / §3 P0 (operator, 2026-07-23)
 **Execution invariants held:** zero `core/` edits; zero live-sizing / rail / lifecycle change; the incumbent 3.0% survivor-scoring pre-reg (`be6dda6`) byte-unedited (Trap #12); K = 0 (locational read of closed artifacts, no new run).
 
@@ -27,7 +27,7 @@ The pre-registration deliberately fixed a **binary locational** method (inside/o
 
 ## Operator fork election
 
-Presented with the two-option fork the `FALSIFIED` verdict routes, the operator **elected fork B** (2026-07-23): adopt an **EV-per-dollar-day rung-selection objective** for the c1 book via a fresh superseding ADR. Recorded in [`../../adr/2026-07-23-c1-rung-selection-ev-objective.md`](../../adr/2026-07-23-c1-rung-selection-ev-objective.md) (`Proposed`).
+Presented with the two-option fork the `FALSIFIED` verdict routes, the operator **elected fork B** (2026-07-23): adopt an **EV-per-dollar-day rung-selection objective** for the c1 book via a fresh superseding ADR. Recorded in [`../../adr/2026-07-23-c1-rung-selection-ev-objective.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-23-c1-rung-selection-ev-objective.md) (`Proposed`).
 
 **Fork A** (retain 3.0% re-justified as a survival gate) was declined; it stands as the ADR §4 revert target, not vacated.
 
@@ -36,7 +36,7 @@ Presented with the two-option fork the `FALSIFIED` verdict routes, the operator 
 - **Q-BUSTGATE-1 CLOSED-FALSIFIED.** The derivation-layer question is answered; the operator fork is elected.
 - **The 3.0% survivor-scoring gate is RETAINED, unedited, as the candidate-ADMISSION falsifier** (four-firms ADR §4). Fork B's ADR is scoped to the c1 **rung-selection** objective only — not admission, not the frozen pre-reg.
 - **A0b resolved NO-GO on 1.00× (2026-07-23).** The both-halves regime-robustness gate — A0b's core safety check — was **already run** under a frozen operator-signed pre-reg (`class_s_c1_haircut_regime_remc`, 2026-07-17): **1.00× FAILS** (regime-fragile — H1 chop-half bust 4.37%, bootstrap-95th 10.37%, both > the 3.0% floor), **0.50× PASSES** both halves. So the fork-B EV objective, correctly constrained by the retained regime gate, selects **0.50× (WATCH-1)** — the current rung. Operator chose **"keep 0.50× / accept NO-GO"**. The **08-08 calendar dependency is removed** (the regime result, not the date, was the real gate). A higher rung requires a **fresh** both-halves regime PASS — which the current evidence contradicts.
-- **No change to live sizing.** The c1 rung stays WATCH-1 0.50× / disarmed. Fork B's ADR ([`../../adr/2026-07-23-c1-rung-selection-ev-objective.md`](../../adr/2026-07-23-c1-rung-selection-ev-objective.md), `Accepted`) authorizes no sizing change and does not override the failed regime gate.
+- **No change to live sizing.** The c1 rung stays WATCH-1 0.50× / disarmed. Fork B's ADR ([`../../adr/2026-07-23-c1-rung-selection-ev-objective.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-23-c1-rung-selection-ev-objective.md), `Accepted`) authorizes no sizing change and does not override the failed regime gate.
 - **08-08 packet:** P0 discharged (this brief + pre-reg + ADR); A0 = fork B elected; **A0b = NO-GO on 1.00×** on the already-run regime gate.
 - **K-accounting:** zero K consumed or banked (locational read of closed artifacts).
 
