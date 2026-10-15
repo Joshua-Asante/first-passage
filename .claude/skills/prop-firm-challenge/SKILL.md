@@ -53,7 +53,7 @@ This skill documents durable mechanics (firm rules, sizing, protection, MC) for 
 
 ## Rule 0 — audit-first discipline
 
-Before authoring any decision brief that touches risk controls (dd_protection, lot sizing, account rules, protection tiers), read the production code directly — not memory, not prior docs, not reconstructed specs. Full doctrine: `docs/rule_0.md`. This rule exists because it was violated three times on 2026-04-17, producing a retune → reversal → delete-and-retune cycle that should have been a single decision (root cause each time: authoring the brief from assumed semantics rather than verified code). Full chain: `docs/adr/2026-04-17-dd-trigger-calibration.md` + `docs/adr/2026-04-17-equity-tier-deletion.md`.
+Before authoring any decision brief that touches risk controls (dd_protection, lot sizing, account rules, protection tiers), read the production code directly — not memory, not prior docs, not reconstructed specs. Full doctrine: `docs/rule_0.md`. This rule exists because it was violated three times on 2026-04-17, producing a retune → reversal → delete-and-retune cycle that should have been a single decision (root cause each time: authoring the brief from assumed semantics rather than verified code). Full chain: `docs/rule_0.md` §Triggering failures + [C2 relock §Lineage](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md#lineage-2026-04-17) (both 2026-04-17 records tombstoned in `docs/adr/TOMBSTONES.md`).
 
 Two corollaries specific to this operational domain:
 
@@ -123,7 +123,7 @@ Aegis's live instrument is venue-dependent: USDJPY on CFD venues (locked v4.3); 
 
 ## Protection system
 
-Single-tier internal drawdown overlay, independent of whichever firm's own DD rule applies. **Literals and logic are not restated here** — read [`core/dd_protection.py`](../../../core/dd_protection.py) and the human summary in [`AGENTS.md`](../../../AGENTS.md) §Protection. Decision lineage: [`C2 relock`](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md) · [`equity-tier deletion`](../../../docs/adr/2026-04-17-equity-tier-deletion.md) · [`concept-not-constant`](../../../docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
+Single-tier internal drawdown overlay, independent of whichever firm's own DD rule applies. **Literals and logic are not restated here** — read [`core/dd_protection.py`](../../../core/dd_protection.py) and the human summary in [`AGENTS.md`](../../../AGENTS.md) §Protection. Decision lineage: [`C2 relock`](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md) · [`equity-tier deletion`](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md#lineage-2026-04-17) · [`concept-not-constant`](../../../docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
 
 **This overlay sits on top of, not instead of, the active firm's own DD rule.** A static-DD firm and a trailing-DD firm bust differently underneath this same overlay — MC modeling must thread the active firm's `dd_type` through (`core/portfolio_mc.py`'s `bust_trailing` vs `bust_static`/`bust_daily` outcomes), not assume one firm's semantics apply everywhere.
 
@@ -139,7 +139,7 @@ Single-tier internal drawdown overlay, independent of whichever firm's own DD ru
 
 ⚠ Per [`AGENTS.md` §Protection](../../../AGENTS.md): the original equity tier's revert triggers are
 **LOST** — reintroducing a second tier needs fresh pre-registration, not a lookup. The candidate
-signals below (drawn from the equity-tier-deletion ADR's unratified notes, never elevated to a
+signals below (drawn from the tombstoned equity-tier-deletion ADR's unratified notes, now [C2 relock §Lineage](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md#lineage-2026-04-17), never elevated to a
 pre-registered gate) should prompt *starting* that fresh pre-registration, not substitute for it.
 
 Reintroduce only if: (1) single-tier DD-only fails to hold bust below the programme's live bust bar at any future portfolio mix change; (2) a specific tail failure emerges that DD-protection mechanically cannot catch (slow sustained bleed where peak tracks equity down); (3) allocation shifts push a high-risk leg above its locked band or add a fourth strategy with correlated tail. If any fire, the new tier must be MC-validated against **live code semantics** (not assumed semantics) from day one.

@@ -221,7 +221,7 @@ and still supports `--regime-check`.
 - **Related ADRs:**
   - [2026-05-14-allocation-refresh](2026-05-14-allocation-refresh.md) — immediately-prior canonical anchor, now historical
   - [2026-05-08-dd-trigger-c2-relock](2026-05-08-dd-trigger-c2-relock.md) — C2 lock, unchanged; this ADR is orthogonal
-  - [2026-04-17-dd-trigger-calibration](2026-04-17-dd-trigger-calibration.md) — load-bearing anchor for "production reads before brief authoring" discipline
+  - [2026-04-17-dd-trigger-calibration](2026-05-08-dd-trigger-c2-relock.md#lineage-2026-04-17) (tombstoned; lineage in C2 relock, discipline owned by [Rule 0](../rule_0.md)) — load-bearing anchor for "production reads before brief authoring" discipline
   - [2026-04-24-mvd-discipline](2026-04-24-mvd-discipline.md) — constant-change MVD gate
   - [2026-05-10-dd-protection-ulp-rounding](2026-05-10-dd-protection-ulp-rounding.md) — ULP-rounding precedent reused at L83/L89/L91 in inactivity_simulator.py and the production port
 
