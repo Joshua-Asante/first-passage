@@ -31,7 +31,15 @@ Relative explicit paths resolve from the invoking directory. Invalid explicit
 or existing local environments fail rather than falling back. The launcher does
 not use `.venv`, install packages, or modify global PATH. Create a separate venv
 with a supported Python and install `requirements-ops.lock` with `--require-hashes`
-if an environment is missing. Select it with `--env` or `FP_OPS_ENV`.
+if an environment is missing. Select it with `--env` or `FP_OPS_ENV`. Full test runs
+(`test`, `test-ops`) also need the shared verification supplements in
+`tools/local_verification/requirements-extra.txt`, which CI's `tests.yml` installs on
+top of the lock. Without its `cryptography`, signed settlement tests skip, but the
+qualification bridge (`tests/ops/test_qualification_isolation.py`) fails by design:
+it requires the signed composition cases to pass, not skip. Debian/Ubuntu system
+interpreters ship their own `sitecustomize.py` in the standard library, which shadows
+the one `tests/ops/qualification/test_p7_evidence.py` plants for its control run, so
+that test fails on them; CI uses an `actions/setup-python` interpreter.
 
 Before each command, the launcher checks that the interpreter starts, the venv
 excludes system site-packages, and all locked distribution versions match this
