@@ -1498,3 +1498,231 @@ def test_publish_refuses_when_validator_missing_from_revision(tmp_path, capsys):
     assert rc == ss.EXIT_POLICY
     err = capsys.readouterr().err.lower()
     assert "validator" in err and ("missing" in err or "refused" in err)
+
+
+# --- retirement: RETIRED_SKILLS, --prune, account-bundle audit ---
+
+def test_retired_skills_have_owner_records_and_no_repo_copy():
+    for name, owner in ss.RETIRED_SKILLS.items():
+        assert (_REPO / owner).is_file(), (name, owner)
+        assert not (_REPO / ".claude" / "skills" / name).exists(), name
+
+
+def test_check_classifies_retired_extra(tmp_path, capsys):
+    repo = tmp_path / "repo"
+    target = tmp_path / "deployed"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    ss.copy_skills(repo, target)
+    _mk(target, "fxify-challenge", "SKILL.md", "old\n")
+    rc = ss.main(["--check", "--repo-skills", str(repo), "--target", str(target)])
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "fxify-challenge  (retired; see docs/pursuits/d7" in out
+    assert "--prune" in out
+
+
+def test_check_ignores_account_mirror_and_dot_dirs(tmp_path):
+    repo = tmp_path / "repo"
+    target = tmp_path / "deployed"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    ss.copy_skills(repo, target)
+    _mk(target / "synced" / "org_acct", "inqhiori", "SKILL.md", "mirror\n")
+    _mk(target, ".trash", "SKILL.md", "removed\n")
+    assert ss.check_drift(repo, target) == []
+
+
+def test_prune_requires_explicit_target(tmp_path, capsys):
+    repo = tmp_path / "repo"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    rc = ss.main(["--prune", "--repo-skills", str(repo)])
+    assert rc == ss.EXIT_USAGE
+    assert "--prune requires --target" in capsys.readouterr().err
+
+
+def test_prune_report_is_read_only(tmp_path, capsys):
+    repo = tmp_path / "repo"
+    target = tmp_path / "deployed"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    ss.copy_skills(repo, target)
+    _mk(target, "live-execution-journal", "SKILL.md", "old\n")
+    _mk(target, "zombie", "SKILL.md", "unrelated\n")
+    before = _fingerprint(tmp_path)
+    rc = ss.main(["--prune", "--repo-skills", str(repo), "--target", str(target)])
+    assert rc == ss.EXIT_ERROR
+    out = capsys.readouterr().out
+    assert "RETIRED: live-execution-journal" in out
+    assert "zombie" not in out
+    assert _fingerprint(tmp_path) == before
+
+
+def test_prune_clean_target_reports_ok(tmp_path, capsys):
+    repo = tmp_path / "repo"
+    target = tmp_path / "deployed"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    ss.copy_skills(repo, target)
+    rc = ss.main(
+        ["--prune", "--apply", "--repo-skills", str(repo), "--target", str(target)]
+    )
+    assert rc == ss.EXIT_OK
+    assert "no retired skills" in capsys.readouterr().out
+    assert not list(tmp_path.glob(".skill-prune-backup-*"))
+
+
+def test_prune_apply_moves_only_retired_into_backup(tmp_path):
+    repo = tmp_path / "repo"
+    target = tmp_path / "deployed"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    ss.copy_skills(repo, target)
+    _mk(target, "fxify-challenge", "SKILL.md", "old\n")
+    _mk(target / "fxify-challenge", "references", "notes.md", "nested\n")
+    _mk(target, "rule-0", "SKILL.md", "user-owned\n")
+    _mk(target, "zombie", "SKILL.md", "unrelated\n")
+    retired_before = _fingerprint(target / "fxify-challenge")
+    rc = ss.main(
+        ["--prune", "--apply", "--repo-skills", str(repo), "--target", str(target)]
+    )
+    assert rc == ss.EXIT_OK
+    assert not (target / "fxify-challenge").exists()
+    for kept in ("alpha", "rule-0", "zombie"):
+        assert (target / kept / "SKILL.md").is_file(), kept
+    backups = list(tmp_path.glob(".skill-prune-backup-*"))
+    assert len(backups) == 1
+    assert _fingerprint(backups[0] / "fxify-challenge") == retired_before
+
+
+def test_prune_apply_refuses_reparse_target(tmp_path):
+    repo = tmp_path / "repo"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    real = tmp_path / "real"
+    _mk(real, "fxify-challenge", "SKILL.md", "old\n")
+    link = tmp_path / "link"
+    if not _try_reparse(link, real):
+        pytest.skip("symlink/junction creation unavailable")
+    rc = ss.main(
+        ["--prune", "--apply", "--repo-skills", str(repo), "--target", str(link)]
+    )
+    assert rc == ss.EXIT_POLICY
+    assert (real / "fxify-challenge" / "SKILL.md").is_file()
+
+
+def test_apply_without_prune_and_mode_conflicts_are_usage_errors(tmp_path):
+    repo = tmp_path / "repo"
+    target = tmp_path / "deployed"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    target.mkdir()
+    base = ["--repo-skills", str(repo), "--target", str(target)]
+    assert ss.main(["--apply", *base]) == ss.EXIT_USAGE
+    assert ss.main(["--prune", "--check", *base]) == ss.EXIT_USAGE
+    assert ss.main(["--check-account", "--revision", "HEAD", *base]) == ss.EXIT_USAGE
+
+
+def test_publish_refuses_revision_that_releases_retired_skill(tmp_path, capsys):
+    repo, skills_dir, sha, target = _primary_release(
+        tmp_path,
+        {
+            "alpha": {"SKILL.md": "alpha-v1\n"},
+            "inqhiori-algorithm": {"SKILL.md": "old\n"},
+        },
+    )
+    rc = _publish(skills_dir, sha, target)
+    assert rc == ss.EXIT_POLICY
+    assert "retired skill(s): inqhiori-algorithm" in capsys.readouterr().err
+    assert not target.exists()
+
+
+def test_publish_notes_retired_leftovers_without_touching_them(tmp_path, capsys):
+    repo, skills_dir, sha, target = _primary_release(tmp_path)
+    _mk(target, "notion-mcp-api-patterns", "SKILL.md", "old\n")
+    rc = _publish(skills_dir, sha, target)
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "retired skill(s) still deployed" in out and "notion-mcp-api-patterns" in out
+    assert (target / "notion-mcp-api-patterns" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "old\n"
+
+
+def _account_bundle(root: Path, entries: dict[str, str]) -> Path:
+    """Mirror layout: one dir per skill plus manifest.json naming each source."""
+    root.mkdir(parents=True, exist_ok=True)
+    for name in entries:
+        _mk(root, name, "SKILL.md", f"{name}\n")
+    manifest = {
+        "lastUpdated": 0,
+        "skills": [{"name": n, "source": s} for n, s in entries.items()],
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    return root
+
+
+def test_check_account_flags_retired_and_repo_duplicates(tmp_path, capsys):
+    repo = tmp_path / "repo"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    _mk(repo, "beta", "SKILL.md", "x\n")
+    bundle = _account_bundle(tmp_path / "bundle", {
+        "alpha": "plugin",
+        "fxify-challenge": "plugin",
+        "personal-notes": "plugin",
+        "docx": "anthropic",
+        "morning": "anthropic-example",
+    })
+    drift, notes = ss.check_account_bundle(repo, bundle)
+    assert [d.split()[0] for d in drift] == ["alpha", "fxify-challenge"]
+    assert "duplicate of repo-canonical" in drift[0]
+    assert "retired" in drift[1]
+    assert [n.split()[0] for n in notes] == ["personal-notes"]
+    rc = ss.main(["--check-account", "--repo-skills", str(repo), "--target", str(bundle)])
+    assert rc == ss.EXIT_ERROR
+    out = capsys.readouterr().out
+    assert "beta" not in out  # repo skills absent from the account are not drift
+    assert "morning" not in out and "docx" not in out
+
+
+def test_check_account_clean_bundle_passes(tmp_path, capsys):
+    repo = tmp_path / "repo"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    bundle = _account_bundle(tmp_path / "bundle", {"pdf": "anthropic"})
+    before = _fingerprint(bundle)
+    rc = ss.main(["--check-account", "--repo-skills", str(repo), "--target", str(bundle)])
+    assert rc == ss.EXIT_OK
+    assert "OK: account bundle" in capsys.readouterr().out
+    assert _fingerprint(bundle) == before
+
+
+def test_check_account_without_manifest_uses_stock_exemptions(tmp_path):
+    repo = tmp_path / "repo"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    bundle = tmp_path / "bundle"
+    _mk(bundle, "xlsx", "SKILL.md", "stock\n")
+    _mk(bundle, "alpha", "SKILL.md", "published\n")
+    drift, notes = ss.check_account_bundle(repo, bundle)
+    assert [d.split()[0] for d in drift] == ["alpha"]
+    assert notes == []
+
+
+def test_check_account_discovers_single_synced_bundle(tmp_path, monkeypatch, capsys):
+    repo = tmp_path / "repo"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    synced = tmp_path / "home" / "synced"
+    _account_bundle(synced / "org_acct", {"alpha": "plugin"})
+    monkeypatch.setattr(ss, "HOME_SYNCED_SKILLS", synced)
+    rc = ss.main(["--check-account", "--repo-skills", str(repo)])
+    assert rc == ss.EXIT_ERROR
+    assert "org_acct" in capsys.readouterr().out
+    _account_bundle(synced / "org_other", {"pdf": "anthropic"})
+    rc = ss.main(["--check-account", "--repo-skills", str(repo)])
+    assert rc == ss.EXIT_USAGE
+    assert "pass --target" in capsys.readouterr().err
+
+
+def test_prune_refuses_to_apply_on_account_mirror(tmp_path, capsys):
+    repo = tmp_path / "repo"
+    _mk(repo, "alpha", "SKILL.md", "x\n")
+    bundle = _account_bundle(tmp_path / "bundle", {"fxify-challenge": "plugin"})
+    before = _fingerprint(tmp_path)
+    base = ["--prune", "--repo-skills", str(repo), "--target", str(bundle)]
+    assert ss.main(base) == ss.EXIT_ERROR
+    assert "delete them in claude.ai" in capsys.readouterr().out
+    assert ss.main([*base, "--apply"]) == ss.EXIT_POLICY
+    assert "account-bundle mirror" in capsys.readouterr().err
+    assert _fingerprint(tmp_path) == before

@@ -77,8 +77,8 @@ Prefixes name different historical series; a matching number does not establish 
 | Prefix | Means | Does not mean | Owner |
 |---|---|---|---|
 | pipeline `P1–P6` | Object pipelines in [`PIPELINES.md`](../../PIPELINES.md) | Pain-point packets P0–P10, or viable-strategy Phase A–D | [`PIPELINES.md`](../../PIPELINES.md) |
-| pain-point `P0–P10` | Repo-hygiene packets | Pipeline-P or phase-letter | [`pain-point charter`](../../docs/superpowers/plans/2026-08-23-repo-pain-point-packets.md) |
-| Phase A–D | Viable-strategy sequence phases | Pipeline-P or pain-point-P | [`sequence overview`](../../docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) |
+| pain-point `P0–P10` | Repo-hygiene packets | Pipeline-P or phase-letter | [`pain-point charter`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-23-repo-pain-point-packets.md) |
+| Phase A–D | Viable-strategy sequence phases | Pipeline-P or pain-point-P | [`sequence overview`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) |
 | `S1–S7` | Closed-loop specs | S2b daemon, or the Survive queue | [`loop-spec index`](../../docs/spec/2026-08-07-loop-spec-index.md) |
 | `F1/F2/F3` | S1 environment forks | Pain-point-F or firm-class F | [`S1 ADR`](../../docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
 | `B6/B7` | c1 rail stages | Pipeline-P or pain-point-P | [`rail GO ADR`](../../docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |

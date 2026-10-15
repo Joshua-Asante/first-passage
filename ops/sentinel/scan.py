@@ -133,7 +133,7 @@ _ISO_DATE = re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b")
 #
 # The design spec (docs/spec/2026-06-23-inqhiori-sentinel-design.md §4.1) named
 # `docs/adr/*` as one of five obligation_scan surfaces. The IMPLEMENTATION PLAN
-# (docs/spec/2026-06-23-inqhiori-sentinel-plan.md, Step 3 code block) already
+# (https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-23-inqhiori-sentinel-plan.md, Step 3 code block) already
 # narrowed that to three files, dropping docs/adr/* silently -- _OBLIGATION_FILES
 # above is a faithful build of the PLAN, not a code-vs-plan bug. The plan is a
 # spent, dated artifact; corrected here at the point future sessions will read

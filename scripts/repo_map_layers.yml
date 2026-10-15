@@ -39,15 +39,11 @@ scripts_layer:
   # (the Pine worktree-copy script retired 2026-10-15 — docs/operational_rules.md Rule 9)
   sync_skills: governance
   # lab — research
-  mc_user_guardian: lab
   beta_cohesion_read: lab
   audit_notice_grade_k_correction: lab
-  event_study_read: lab
   pine_lint: lab
   cost_geometry_pregate: lab
   check_cost_model_closed_world: lab
-  parse_econ_export: lab
-  diff_econ_calendar: lab
   # ops — live-ops tooling (run_ecr / preprocess_pine_ecr_logs retired 2026-07-11)
   lock_event_hook: ops
   # imports the H checkout's c1_rail.qualification modules (T00 Tier-1 diagnostic card 2026-10-08)

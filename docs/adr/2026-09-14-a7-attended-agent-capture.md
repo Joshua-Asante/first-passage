@@ -54,7 +54,7 @@ Downstream updates: S2b and M1 receive scoped supersession notices; A7 and A8 po
 
 ## §7 — Implementation
 
-The [implementation plan](../superpowers/plans/2026-09-14-a7-agent-source-implementation.md) covers the new source, manifest authorization digest, explicit actor arguments, capture validation, durable evidence and projector. Local code passed 188 targeted tests; independent review accepted the attribution fix. Deployment and actual ceremony evidence remain separate.
+The [implementation plan](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-09-14-a7-agent-source-implementation.md) covers the new source, manifest authorization digest, explicit actor arguments, capture validation, durable evidence and projector. Local code passed 188 targeted tests; independent review accepted the attribution fix. Deployment and actual ceremony evidence remain separate.
 
 ## §10 — Audit hooks
 

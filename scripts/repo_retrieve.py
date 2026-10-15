@@ -63,7 +63,9 @@ CORPUS_SOURCES = (
     CorpusSource("docs/rejected_candidates.md", "heading_h3"),
     CorpusSource("docs/SESSIONS.md", "heading_h2", 24),
     CorpusSource("STATE.md", "heading_h2"),
-    # Preserve existing membership, including INDEX/TOMBSTONES (see execution record).
+    # Membership deliberately includes docs/adr/INDEX.md and TOMBSTONES.md: the
+    # pre-refactor exclusion compared name.upper() with "INDEX.md"/"TOMBSTONES.md",
+    # so it never matched. Repairing that is a separate behaviour change.
     CorpusSource("docs/adr/*.md", "header_lines", 24),
     CorpusSource("docs/briefs/closures/*.md", "header_lines", 20),
     CorpusSource("docs/briefs/*.md", "header_lines", 24),

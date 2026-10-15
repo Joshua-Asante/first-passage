@@ -71,7 +71,7 @@ running code, a live gate, or a live test. The sharpest: deleting
 `register_search.py::_require_reachability_attestation` **abort**, because
 `discovery_manifests/h_od_1_es_overnight_drift.json` names it as a reachability attestation.
 `2026-07-15-existing-strategy-book-candidate-2-prereg.md` is reached by **pathlib joins** at
-`run_class_s_c2_scoring.py:50-55`. `docs/spec/2026-06-23-inqhiori-sentinel-plan.md` is named by
+`run_class_s_c2_scoring.py:50-55`. [`docs/spec/2026-06-23-inqhiori-sentinel-plan.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-23-inqhiori-sentinel-plan.md) is named by
 `ops/sentinel/scan.py:136-140` as the authority for the live scanner's obligation surface.
 
 **Failure mode #5 (the one §4a predicted but could not pre-empt):** references to these documents are
@@ -101,7 +101,7 @@ the right instrument, not the intuition that burned it.
 |---|---|---|---|
 | 1 | `lab/analysis` harnesses imported by sibling campaign code | "closed campaign ⇒ inert" — the tree has an import graph | full `pytest`, not the gate battery |
 | 2 | `DISC-CAMP-0` + `Q-FEED-1` frozen pre-registrations | "docs/ltm is cold prose" — they are **pinned threshold sources read at runtime** | quoted-path scan across `core/ ops/ scripts/ tests/ lab/` |
-| 3 | `docs/analytics/mc_anchor_evolution/plot.py` | an **executable** living under `docs/` | same scan (extension-agnostic) |
+| 3 | [`docs/analytics/mc_anchor_evolution/plot.py`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/analytics/mc_anchor_evolution/plot.py) | an **executable** living under `docs/` | same scan (extension-agnostic) |
 | 4 | `docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` — **the arming-gate artifact** | `ops/c1_rail/c1_rail_arm.py` builds the path with `pathlib` joins; no string literal exists to grep | hard-protected directory list + `"docs" /` pathlib-join scan |
 | 5 | 66 of 69 reviewed docs (precision 4.3%) — incl. a prereg whose absence makes `register_search.py` abort | inbound references are **not markdown links**: backticked prose paths, `{design,plan}` braces, runnable `rg` audit hooks, `**Related:**` evidence lines | classes 3, 5–8 HALTED (§3.2) |
 | 6 | **CLAUDE.md's own prose** — the MC-anchor literals `99.83% pass / 0.17% bust` and `p99 DD 4.37%` | `ops/recall/guard.py:~100` **regex-parses CLAUDE.md** to build the recall denylist; the pointer-form rewrite reworded them, silently disabling the guard so it would admit the anchor as authority | literals restored **with an inline warning naming the parser**; caught by full `pytest`, invisible to every gate |

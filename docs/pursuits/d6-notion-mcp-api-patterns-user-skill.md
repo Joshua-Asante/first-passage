@@ -13,7 +13,9 @@ since 2026-06-12 with its Phase-2 migration long DONE ([`docs/adr/2026-06-12-not
 **Re-entry armor:** requires out-of-frame evidence plus an attached falsifier, recorded through a
 governance channel — ADR §2.3 (a Notion Phase-1 un-freeze would need its own ruling first, which
 c6 makes even less likely by proposing cold archival instead).
-**Residuals:** none.
+**Residuals:** none recorded at execution. *Corrected 2026-10-15:* a copy uploaded to the
+claude.ai account is still served to every session; deleting it is owed
+([d10](d10-plugin-duplicate-set.md), [skill lifecycle](../../scripts/README.md#skill-lifecycle)).
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
 **Source:** [`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row d6

@@ -76,7 +76,8 @@ remediation applied (or the forward obligation, if not applied this session — 
 3. **[`2026-06-04-methodology-skills-under-vc.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-06-04-methodology-skills-under-vc.md)** — Ratified migrating 3 named skills
    (`fxify-challenge`, `live-execution-journal`, `notion-mcp-api-patterns`) verbatim into
    `.claude/skills/`; none exist there. GSUB-1 (2026-08-09) found the first two are platform-bundled
-   plugins with no file-level existence to migrate, and the third was archived, not migrated — the
+   plugins (*corrected 2026-10-15:* claude.ai account uploads; see
+   [d7](../../../pursuits/d7-fxify-challenge-plugin.md)) with no file-level existence to migrate, and the third was archived, not migrated — the
    opposite of this ADR's premise, never linked back. The ADR's canonical-home/gating-machinery
    decisions (§2.1/§2.4/§2.5) remain very much alive. **Remediated** — addendum narrowly scoped to the
    falsified 3-skill migration plan only.

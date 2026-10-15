@@ -25,8 +25,8 @@ recorded event (§3.3). §5 holds the rulings only the operator can make.
 - Policy owners: [ceremony tiering](../../../adr/2026-08-08-adr-ceremony-tiering.md),
   [Rule 16](../../../operational_rules.md#16-retention--an-artifact-must-earn-its-place-and-deletion-is-classified-by-execution-not-by-folder),
   the `adr-decay-audit` skill.
-- Concurrent PRs that touch the same tree: #850 (public-exposure redaction; merged and taken in
-  at `dad73e3d`), #851 (wave-1 deletions; open), #848, #849 (idle-line dormancy), #847, #852. #855
+- Concurrent PRs that touch the same tree: #850 (public-exposure redaction), #851 (wave-1
+  deletions), #848, #847, #852 (all merged and taken in), and #849 (idle-line dormancy; open). #855
   merges last, per the coordinating doc-alignment session.
 - Prior run: [2026-08-29 audit](2026-08-29-adr-decay-audit.md).
 
@@ -301,8 +301,10 @@ Two further dated obligations that no ADR field carries:
   trim and the venue-binding trim plus 2 FIXes landed in this PR. Still held, for other reasons:
   guardian-pyport (rider, §5.1), egress → browser (after the 2026-10-25 check) and 06-30 → substrate
   §11 (after §5.2 item 6).
-- **After #851 merges:** fix the §0/§10 references in surviving ADRs to the specs and briefs it
-  deletes.
+- **#851 merged** (taken in at `86a46111`): #851 pinned most references in surviving ADRs itself.
+  This PR pinned the rest: 9 bare §0 paths, two runnable §10 hooks (now `git show` at
+  `4121e84c`) and four TOMBSTONES rows. Expected-output listings inside §10 code blocks stay as
+  recorded.
 - **Idle-lines chip:** the research-supply consolidations, all tagged DEFERRED in the ledger.
   Verdicts were checked; nothing was consolidated.
 
@@ -338,7 +340,7 @@ python -c "import importlib.util,sys;from pathlib import Path;from datetime impo
 
 - **Status:** `Repair-in-flight`. Immediate repairs land in #855. §5 rulings and the §5.4
   dependents are open.
-- **Next trigger:** the 2026-11-08 sitting (§5.1–§5.3), and the merge of #850 / #851 (§5.4).
+- **Next trigger:** the 2026-11-08 sitting (§5.1–§5.3), and the idle-lines chip (§5.4).
 
 ## Appendix — per-ADR ledger
 

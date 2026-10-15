@@ -12,8 +12,8 @@ citation-driven instead: it greps docs/adr/**/*.md for
 `~/.claude/skills/<name>/scripts/<file>.py` citations and asserts each cited
 path actually exists at the deployed target.
 
-Mutation-testing discipline (docs/superpowers/plans/2026-08-27-ssot-data-
-lineage-remediation.md "Global Constraints"): every new checker must have the
+Mutation-testing discipline ("Global Constraints" of the plan pinned at
+https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md): every new checker must have the
 exact bad condition it claims to catch planted and confirmed to propagate as
 a non-zero exit — `test_missing_deployed_file_fails` below does exactly that
 (a skill dir that exists but is missing the cited scripts/*.py file), not a

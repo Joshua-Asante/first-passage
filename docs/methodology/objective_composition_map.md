@@ -1,6 +1,6 @@
 # Objective composition map
 
-**Status:** standing reference, established by [`Q-OBJCOHERE-1`](../briefs/Q-OBJCOHERE-1-objective-coherence-audit.md) → [`FALSIFIED-COHERENT`](../briefs/closures/Q-OBJCOHERE-1-closure-falsified-coherent.md), 2026-07-30.
+**Status:** standing reference, established by [`Q-OBJCOHERE-1`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-OBJCOHERE-1-objective-coherence-audit.md) → [`FALSIFIED-COHERENT`](../briefs/closures/Q-OBJCOHERE-1-closure-falsified-coherent.md), 2026-07-30.
 **Purpose:** a single place to look up which objective instrument governs a given decision class, and — where more than one instrument touches the same class — the precedence rule between them. This is **not** a new gate, registry, or tracked metric layer (see the retired 2026-05-11 Objective-Map, a different mechanism — a Notion goal-tracking registry — retired 2026-07-12 for unrelated reasons). This map is inert: it records what the estate already ratifies; it does not decide anything new.
 **Maintenance:** update this file when a new Accepted ADR, RATIFIED spec, or FROZEN pre-registration adds or changes a decision-class/precedence clause. No recurring review cadence is created — this is documentation, not a standing audit.
 

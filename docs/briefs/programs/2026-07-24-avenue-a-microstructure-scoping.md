@@ -106,7 +106,7 @@ both routes.
 
 > **3 — Either (Route A) survivor-tied** — improves or monitors ORB-MNQ-1 (or another admitted
 > survivor), **or (Route B) generate→confirm** under
-> [`docs/methodology/avenue_a_generate_confirm.md`](../../methodology/avenue_a_generate_confirm.md) —
+> [`docs/methodology/avenue_a_generate_confirm.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/methodology/avenue_a_generate_confirm.md) —
 > not an unguided screen that claims admission from the exploration window.
 
 **Route A is unchanged and remains the default reading.** Route B is available *only* when that

@@ -67,7 +67,7 @@ Dated repo instances of the output this skill prescribes: the 2026-08-25 first-l
 were cut into five plans P6–P10 and, on operator follow-up, re-landed one commit per packet
 ([Q3 archive](../../../docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md) `2026-08-25b` /
 `2026-08-25f`; charter
-[`2026-08-23-repo-pain-point-packets.md`](../../../docs/superpowers/plans/2026-08-23-repo-pain-point-packets.md));
+[`2026-08-23-repo-pain-point-packets.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-23-repo-pain-point-packets.md));
 Track A was cut into per-packet briefs A1–A8 under one plan, A2 as a lightweight dispatch issue
 ([`2026-09-10-track-a-m1-stage1-completion.md`](../../../docs/superpowers/plans/2026-09-10-track-a-m1-stage1-completion.md));
 Track B carries an umbrella with a dependency graph, a sub-track → packet map, wave gates and a

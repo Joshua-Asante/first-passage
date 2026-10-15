@@ -3,7 +3,7 @@
 **Status:** `Accepted` — operator-ratified 2026-07-17 (chat: "ratify the spec and commit it"). Phase-3 bridge-capability check remains the implementability gate (§4); the §6 downstream pointer-sweep is deferred until the in-flight Cursor Q-RAIL-1 session lands (its files own those edit targets).
 **Decision date:** 2026-07-17 (authored)
 **Authors:** Joshua (direction) + Claude Code (authoring)
-**Related:** [`Q-PYRPARITY-1` closure](../briefs/closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md) (the falsification that forces this) · [`Q-RAIL-1`](../briefs/Q-RAIL-1-c1-execution-rail-go-live-scoping.md) (consumer: Phase 1 payload contract + Phase 3 bridge screen) · [`strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) §change-log CONFIRMED-FALLBACK row (the rule this spec mechanizes) · ADR [2026-07-10 lifecycle governance](../adr/2026-07-10-strategies-never-locked-lifecycle-governance.md)
+**Related:** [`Q-PYRPARITY-1` closure](../briefs/closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md) (the falsification that forces this) · [`Q-RAIL-1`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-RAIL-1-c1-execution-rail-go-live-scoping.md) (consumer: Phase 1 payload contract + Phase 3 bridge screen) · [`strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) §change-log CONFIRMED-FALLBACK row (the rule this spec mechanizes) · ADR [2026-07-10 lifecycle governance](../adr/2026-07-10-strategies-never-locked-lifecycle-governance.md)
 **Layer:** execution / infrastructure
 
 ---

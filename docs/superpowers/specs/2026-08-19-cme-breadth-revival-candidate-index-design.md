@@ -154,7 +154,7 @@ reasoning, per this repo's own dedup-first discipline):
 
 **Chosen: Approach C.** Extend `register_search.py`'s `close_run()` candidate records with a pointer
 to that candidate's frozen-rule provenance file — the same `FrozenRule.as_provenance()` +
-shape-array JSON shape already produced per campaign today (see `tests/test_stage4_7_drivers.py`'s
+shape-array JSON shape already produced per campaign today (see `tests/lab/test_frozen_rules.py`'s
 `test_load_frozen_rules_roundtrip` for the existing round-trip). This is a small, additive manifest
 field, the same shape as the `cost_law_preflight`/`admission`/`prereg` pointer fields already added
 to `register_search.py` this session (Option E) — no new persistence mechanism invented, the same

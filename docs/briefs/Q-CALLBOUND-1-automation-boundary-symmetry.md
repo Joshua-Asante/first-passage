@@ -40,7 +40,7 @@ Origin: the 2026-08-18 assumption-sweep audit note (`docs/notes/audits/2026-08-1
 - **Audit note** `docs/notes/audits/2026-08-18-strategy-generation-assumptions-sweep.md` — source of both limbs (§4 D3, D6); §3 D-gate deletions checked and **none overlap** this Q's scope (the five deletions cover DD-multiplier firm-mismatch, CI wiring gaps, sentinel non-firing, and a slippage constant — none touch the Call-system's up/down asymmetry).
 - **`docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md`** (`Withdrawn` 2026-08-22) — proposed a *down-direction* ladder rung (WATCH-1H). Orthogonal: it adds resolution to the descent, it does not touch whether descent reverses. Not re-litigated here.
 - **`docs/methodology/strategy_lifecycle.md` Call 1 — CANDIDATE action-on-breach (formerly ADR 2026-08-06)** — governs the `CANDIDATE`-tier breach path, a different rung than D3's already-`AUTHORIZED` incumbent. Not re-litigated here.
-- **Q-CAPBAND-1** (`docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md`) — structural precedent for this brief's shape: one combined H over named limbs, a binary locational read of already-recorded facts, no new spend, no constant/code edited by the brief itself.
+- **Q-CAPBAND-1** ([`docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-CAPBAND-1-cap-band-counterfactual.md)) — structural precedent for this brief's shape: one combined H over named limbs, a binary locational read of already-recorded facts, no new spend, no constant/code edited by the brief itself.
 
 ---
 

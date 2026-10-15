@@ -1020,7 +1020,7 @@ overstate by two orders of magnitude.
   2026-05-16) encoded the independent USD formula and a `compute_pnl_tv_buggy`
   regression helper; its suite `tests/test_tv_mt5_pnl_reconciliation.py` pinned the canonical, inverse and 30-day boundary cases.
   Neither file is in this public tree (both predate the 2026-08-14 public seed; retrieval: private archive).
-  Only `tests/fixtures/usdjpy_pnl_fixtures.csv` survives, and its `usdjpy_fixtures` loader (`tests/conftest.py:50-53`) has no consumer.
+  The last survivors, `tests/fixtures/usdjpy_pnl_fixtures.csv` and its unused `usdjpy_fixtures` loader in `tests/conftest.py`, were removed 2026-10-15 (#851); both are at `4121e84c`.
 
 ### Cost
 

@@ -2,7 +2,7 @@
 
 **Trade-authority clarification (2026-10-01).** Categorical statements below that agents may not place trades, exit positions or cancel orders are **historical, superseded** by [ADR Addendum 2026-09-30b](2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b): Agents may place orders, exit positions and cancel orders only at the operator's direction for the specific act; `trade.submit` is an operator act at risk `high`, never grantable in a card. Arming, live-spend and per-session GO requirements are unchanged. This artifact grants no order action; its task-specific exclusions, named performers and separate drill approvals remain in force. It does not supply direction for a specific trade.
 
-**Status:** `Accepted` — implements [SPEC S1](../spec/2026-08-07-loop-s1-environment-ratification-spec.md); operator direction recorded 2026-08-07 (*"this is going to be our environment, as soon as we solidify a strategy for it"*) + plan-execution GO 2026-08-07
+**Status:** `Accepted` — implements [SPEC S1](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-08-07-loop-s1-environment-ratification-spec.md); operator direction recorded 2026-08-07 (*"this is going to be our environment, as soon as we solidify a strategy for it"*) + plan-execution GO 2026-08-07
 **Decision date:** 2026-08-07
 **Authors:** Joshua (direction + plan GO) + Cursor (drafter)
 **Supersedes:** `2026-08-04-tradeify-venue-descope-eval-included.md` in part — §7 forks **F2** and **F3** only (rail disposition + successor-venue question). De-scope clauses 1–2 (withdrawn Striker legs; bar on redeploying those two legs) and fork **F1** (§4 reading, 2026-11-08) **stand**.
@@ -10,7 +10,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [SPEC S1](../spec/2026-08-07-loop-s1-environment-ratification-spec.md) · [loop index](../spec/2026-08-07-loop-spec-index.md) · [Q-VENUEGEO-1](../briefs/Q-VENUEGEO-1-f3-successor-venue-geometry-scoping.md) · [MNQDTL-1](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) · [`2026-07-10-databento-research-stack.md`](2026-07-10-databento-research-stack.md) (added 2026-08-29, adr-decay-audit discharge — superseded in part by this ADR: its §2 rail-verdict clause, KEEP TradingView→NinjaTrader8→Bulenox, is stale; this ADR's F2/F3 ruling is part of what actually moved the rail. See that ADR's 2026-08-29 addendum)
+**Related:** [SPEC S1](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-08-07-loop-s1-environment-ratification-spec.md) · [loop index](../spec/2026-08-07-loop-spec-index.md) · [Q-VENUEGEO-1](../briefs/Q-VENUEGEO-1-f3-successor-venue-geometry-scoping.md) · [MNQDTL-1](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) · [`2026-07-10-databento-research-stack.md`](2026-07-10-databento-research-stack.md) (added 2026-08-29, adr-decay-audit discharge — superseded in part by this ADR: its §2 rail-verdict clause, KEEP TradingView→NinjaTrader8→Bulenox, is stale; this ADR's F2/F3 ruling is part of what actually moved the rail. See that ADR's 2026-08-29 addendum)
 **Layer:** environment / rail-disposition only. **$0 / K=0** — authorizes nothing, arms nothing, redeploys no Striker leg, places no trade.
 
 ---
@@ -19,7 +19,7 @@
 
 | Source | Anchor | What it pins |
 |---|---|---|
-| [SPEC S1](../spec/2026-08-07-loop-s1-environment-ratification-spec.md) | `e3272cb` (PR #677) | F2=rail warm/disarmed at incumbent; F3=incumbent eval = environment for **new** strategies; Striker redeploy barred |
+| [SPEC S1](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-08-07-loop-s1-environment-ratification-spec.md) | `e3272cb` (PR #677) | F2=rail warm/disarmed at incumbent; F3=incumbent eval = environment for **new** strategies; Striker redeploy barred |
 | [de-scope ADR §7](2026-08-04-tradeify-venue-descope-eval-included.md) | Accepted 2026-08-04 | F2 / F3 / F1 fork definitions; clauses 1–2 withdrawal of Striker legs |
 | [`STATE.md`](../../STATE.md) board rows 0–3 | HEAD at draft | Row 0 RULED 2026-08-05 (venue will not lapse); rows 1/3 named S1 as operator input |
 | [Q-VENUEGEO-1](../briefs/Q-VENUEGEO-1-f3-successor-venue-geometry-scoping.md) | OPEN | DP3 bust half measured; EV/$ half owed; evidence for F3 — **unconsumed** by this ruling |

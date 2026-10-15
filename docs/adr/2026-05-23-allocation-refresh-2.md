@@ -174,7 +174,7 @@ The six 2026-05-23 open items, in full at the pre-trim blob (see **Revision**):
 - **Override-with-grounds template ancestor:** [`docs/adr/2026-05-08-dd-trigger-c2-relock.md`](2026-05-08-dd-trigger-c2-relock.md) — first ADR to use the override-with-documented-grounds pattern for the regime-robustness gate.
 - **Worked example for the override-with-grounds template:** `Q-DDP-1/recommendation.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`).
 - **Regime-robustness gate doctrine:** [`docs/methodology/regime_robustness_gate.md`](../methodology/regime_robustness_gate.md).
-- **Anchor evolution trajectory:** [`docs/analytics/mc_anchor_evolution/README.md`](../analytics/mc_anchor_evolution/README.md) — A9 row pins this ADR's canonical anchor in the trajectory record.
+- **Anchor evolution trajectory:** [`docs/analytics/mc_anchor_evolution/README.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/analytics/mc_anchor_evolution/README.md) — A9 row pins this ADR's canonical anchor in the trajectory record.
 - **Current owners:** `core/historical_challenge.py` (frozen 4-leg record), `core/firm_rules.py` `_BASE_RISK` (live sizing), [`core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book) (human-readable mirror); `dd_protection` constants unchanged.
 
 ---

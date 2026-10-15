@@ -7,7 +7,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Claude Code (measurement, verification, draft) — commissioned via the Phase 0 section of the plan file below; ratification is a reserved operator action, not performed here.
-**Related:** [`2026-08-09-rejection-register-topology-and-bar-wiring.md`](2026-08-09-rejection-register-topology-and-bar-wiring.md) (D4 — this program's Phase 1 Task 2 discharges it; D1–D3 are read, not reopened) · [`2026-08-22-catalog-hot-vs-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md) (confirmed already `Accepted` and landed — cited for contrast, not reopened) · [`2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md) (Phase 1 Task 1 discharges its unimplemented half) · [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test, applied below) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) (audit-format precedent this program reuses) · plan file [`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](../superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md) (§7 implementation-plan pointer; also carries this program's Global Constraints and Non-goals)
+**Related:** [`2026-08-09-rejection-register-topology-and-bar-wiring.md`](2026-08-09-rejection-register-topology-and-bar-wiring.md) (D4 — this program's Phase 1 Task 2 discharges it; D1–D3 are read, not reopened) · [`2026-08-22-catalog-hot-vs-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md) (confirmed already `Accepted` and landed — cited for contrast, not reopened) · [`2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md) (Phase 1 Task 1 discharges its unimplemented half) · [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test, applied below) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) (audit-format precedent this program reuses) · plan file [`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md) (§7 implementation-plan pointer; also carries this program's Global Constraints and Non-goals)
 **Layer:** governance convention (gate authorship + skill-deploy convention over `scripts/gates.yml`, `.claude/skills/`, `docs/rejected_candidates.md`/`ops/instruments/`, `docs/operational_rules.md`). **$0 / K=0.**
 **Tier:** full — limb 4 fires (creates/wires gates and a deploy-verification convention that binds future ADR authoring, skill deployment, and discharges a standing doctrine obligation (D4) from a prior ADR).
 
@@ -195,7 +195,7 @@ this ADR's §0 owes, not as a sizing input.
 A cross-repo mining pass (2026-08-27, "Recurrence Ledger") found unverified-claim-propagation,
 gate-reachability defects, and missing-SSOT axes among the most-recurring methodology problem
 classes in this repo's post-pivot record. The parent plan
-(`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`) named four concrete,
+([`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md)) named four concrete,
 already-identified gaps and scoped a Phase 1 fix for each, but flagged that several of its own cited
 facts (a coverage percentage, a row count, whether a successor ADR already exists) were stale or
 unknown at scoping time and needed re-derivation before anything could be ratified — this is that
@@ -229,7 +229,7 @@ failure mode the program exists to fix.
 ## §2 — Decision
 
 **Decision:** Ratify the phased SSOT/data-lineage remediation program described in
-`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`. **Phase 1's four tasks are the
+[`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md). **Phase 1's four tasks are the
 immediately-authorized scope** once this ADR's Status flips to `Accepted`:
 
 1. **Task 1** — author (not merely redeploy — §0 Step 1 finding) the skill-side `check_brief.py` under
@@ -394,7 +394,7 @@ ceremony-as-implemented.
 
 Points at the plan file rather than re-deriving it: full task-by-task detail (files, interfaces,
 failing-test-first steps, exact commit messages) lives in
-[`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](../superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md)
+[`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md)
 Phases 1–4. This ADR's own phases:
 
 - **Phase 0** — §0 reads above (done, this document). No mechanical edits beyond authoring this ADR.
@@ -520,7 +520,7 @@ gate convention). Amendment-first: this file is the owner.
 | Harvest intake ADR L150 / L158 | `87afe00` | `(a) Authoritative surface` + `Running count (canonical): 0 / 2` + increment table |
 | Blind-channel ADR L312 / L320 | `87afe00` | same (a) sentence + `2 / 3` + increment table; 8-day lag disclosed 2026-08-23 |
 | Deep-lane charter L114 / L119 | `87afe00` | same (a) sentence + multi-field prose; no increment table; two `*deep-lane*` preregs cited |
-| Parent program plan Phase 2 | this session | stub replaced by pointer at [`2026-08-29-ssot-phase-2-running-count-mirror.md`](../superpowers/plans/2026-08-29-ssot-phase-2-running-count-mirror.md) |
+| Parent program plan Phase 2 | this session | stub replaced by pointer at [`2026-08-29-ssot-phase-2-running-count-mirror.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-29-ssot-phase-2-running-count-mirror.md) |
 
 ```
 $ rg -l "Authoritative surface|STATE.md is a mirror only" docs/adr/
@@ -544,7 +544,7 @@ Three files. No fourth. `rg` against `lab/CATALOG.md`, `docs/briefs/INDEX.md`,
   the canonical line lagging its own increment evidence, not mirrors lagging the canonical line.
 
 **Decision (binding):** authorize Phase 2 as specified in
-[`2026-08-29-ssot-phase-2-running-count-mirror.md`](../superpowers/plans/2026-08-29-ssot-phase-2-running-count-mirror.md).
+[`2026-08-29-ssot-phase-2-running-count-mirror.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-29-ssot-phase-2-running-count-mirror.md).
 Build **A8** — intra-ADR count consistency — as a new `check_adr_graph.py` check:
 
 1. Discover ADRs by the existing `(a) Authoritative surface` / `running-count line` sentence.
@@ -593,7 +593,7 @@ do not open a STATE row.
 | [`lab/discovery/cost_model.py`](../../lab/discovery/cost_model.py) | `027a729` | `resolve_commission` resolves index-micros only; SPECS is a larger table; `NO_COMMISSION_ROW_INSTRUMENTS` names a subset of the raise set |
 | [`2026-07-25-instrument-profile-index.md`](2026-07-25-instrument-profile-index.md) | `027a729` | missing-`bars` class still named in §Risks; P1–P3 catch malformed, not omitted |
 | Q-CAPBAND-1 closure §4.2 | `ab303d0` | gate 2 unevaluable-by-construction outside the index-micro commission row |
-| Parent program plan Phase 3 | this session | stub replaced by pointer at [`2026-08-29-ssot-phase-3-cost-model-closed-world.md`](../superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md) |
+| Parent program plan Phase 3 | this session | stub replaced by pointer at [`2026-08-29-ssot-phase-3-cost-model-closed-world.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md) |
 
 ```
 $ rg -l "closed-world|ssot-phase-3|check_cost_model" lab/CATALOG.md docs/rejected_candidates.md
@@ -614,7 +614,7 @@ $ rg -n "Q-CAPBAND-1" docs/briefs/INDEX.md
   policy, not SSOT. Authorized design is the intra-module partition.
 
 **Decision (binding):** authorize Phase 3 as specified in
-[`2026-08-29-ssot-phase-3-cost-model-closed-world.md`](../superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md).
+[`2026-08-29-ssot-phase-3-cost-model-closed-world.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-29-ssot-phase-3-cost-model-closed-world.md).
 
 1. Void a bars completeness checker in this packet. The class stays on the 2026-07-25 ADR
    Risks line.
