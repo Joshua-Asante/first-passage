@@ -1709,7 +1709,7 @@ before a brief was authored.
 **Scope:** the claim that the **final RTH block (15:30–16:00 ET) is anomalous** for an intraday
 trend-aligned, fixed-stop index-futures construct, and any mechanism proposed to explain it. Does
 **not** cover: the incumbent `ORB-MNQ-1`; the *exit-time* question itself (settled separately by
-[`ADR 2026-07-31`](adr/2026-07-31-orb-mnq-unpark-payability-target.md) §5, which bars adopting the
+[`ADR 2026-08-03`](adr/2026-08-03-orb-mnq-repark-payability-falsified.md#consolidated-record--2026-07-31-unpark-adr) (consolidated 2026-07-31 §5), which bars adopting the
 15:30 exit); non-index complexes; or the exit-policy arithmetic finding below.
 
 **Basis — four attempts, and then the premise itself failed:**

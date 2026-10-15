@@ -85,7 +85,7 @@ structure:
 | 8 | `Q-CAPA-1` Cap-seat | none — Cap spend, no harvest manifest | 1 | bank **20→21** — operator 2026-08-18; seat SPENT **and** family increment |
 | 9 | `Q-ICT-1MEXEC-1` | [`ict-1mexec-1.json`](../../discovery_manifests/ict-1mexec-1.json) | 1 | bank **21→22** (2026-08-24) — `register_search open/close --lane mechanism-first`, `K_intrinsic=1`, closed 0 of 1 submitted survivors (`FALSIFIED_F1`) |
 
-**Already ruled zero (not missing):** [`orb_mnq_intraday_breakout.json`](../../discovery_manifests/orb_mnq_intraday_breakout.json) — `executed_k=0`, [ADR 2026-07-31](../../docs/adr/2026-07-31-orb-mnq-unpark-payability-target.md) Ruling 1.
+**Already ruled zero (not missing):** [`orb_mnq_intraday_breakout.json`](../../discovery_manifests/orb_mnq_intraday_breakout.json) — `executed_k=0`, [ADR 2026-08-03 consolidated record](../../docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md#consolidated-record--2026-07-31-unpark-adr) (2026-07-31 Ruling 1).
 
 **Still not in the 21 (existing annotation convention, not reopened):** later DEAD-list rows tagged `K=1 (disclosure; Cap not claimed)` — TNEC-CON-*, R2VBUCK, H-DSTRUCT, and siblings — are campaign `K_intrinsic` disclosures. They were never annotated `bank X→Y`, have no closed harvest manifest, and are not Cap-seat spends. The 2026-08-18 ruling does not pull them in.
 

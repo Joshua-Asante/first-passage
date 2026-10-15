@@ -7,8 +7,9 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 anchor table, pre-C cheap-falsifier literal, catalog-attestation and amendment-first notes, §6 Phase-2 sweep table, §7, the pre-C §10 hook and the Verification `git log` line removed; §2 gains a CATALOG pointer and a dated `LEG_MAP` note; Related repointed from the tombstoned Phase B ADR. Pre-trim text at blob `c5976fee6c1518748bb41cafc112a240c8e74a1d` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 **Authors:** Joshua (operator GO) + Cursor Cloud Agent
-**Related:** [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md) (authorization axis unchanged) · [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 · [`2026-05-23-allocation-refresh-2.md`](2026-05-23-allocation-refresh-2.md) (lock lineage of the frozen percents) · [Phase C plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-coldstore-phase-c-implementation.md)
+**Related:** [catalog authorization-axis table](../../core/strategies/CATALOG.md) (Phase B, authorization axis unchanged; ADR tombstoned) · [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 · [`2026-05-23-allocation-refresh-2.md`](2026-05-23-allocation-refresh-2.md) (lock lineage of the frozen percents) · [Phase C plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-coldstore-phase-c-implementation.md)
 **Layer:** live-sizing constants (LOCKED risk% key set). **No** `DD_TRIGGER` / `DD_SCALE` / `LEG_MAP` / Pine-parameter edit.
 **Tier:** full — live-risk + LOCKED surface.
 
@@ -16,33 +17,7 @@
 
 ## §0 — Rule 0 reads (production-source verification)
 
-All read 2026-08-23 **before** authoring (anchors = `git log -1 --oneline -- <path>` on `origin/main` `ea0850f`):
-
-| Source | Anchor | What it grounds |
-|---|---|---|
-| `core/firm_rules.py` `_BASE_RISK` | `027a729` | Living slug dict `guardian/striker/aegis/striker_nas100`. Canonical lock percents. |
-| `core/dd_protection.py` `BASE_RISK = base_risk_display()` | `027a729` | Display keys derived; CLI Call-4 used `BASE_RISK.keys()` (would become 2-leg if keys drop with no other change). |
-| `core/lifecycle.py` `STRATEGY_KEYS` | `027a729` | Four-leg authorization book. Call-4 2-of-4 / 3-of-4 math. |
-| `core/historical_challenge.py` | `027a729` | Existing home for retired FXIFY challenge fixture. Named destination for the 4-leg historical book. |
-| `core/mc/modes.py` `ALLOCATIONS = dict(_BASE_RISK)` | `5d38119` | Historical MC book currently piggy-backs living `_BASE_RISK`. Must keep 4-leg bytes after the living delete. |
-| `ops/c1_rail/c1_sizing_host_reference.py` `LEG_MAP` | `027a729` | Consumes `BASE_RISK["Striker"]` / `["Striker NAS100"]` only. |
-| `scripts/verify_lock_anchors.py` | `027a729` | Parses living `_BASE_RISK['guardian']` safe band. Must move to the historical dict or C breaks Closed. |
-| `tests/test_lifecycle.py` / `tests/core/test_firm_constants_single_source.py` | `027a729` | The only `BASE_RISK["Guardian"]` / `["Aegis"]` **subscript** consumers (cheap falsifier). |
-
-**Cheap falsifier (parent-side, before this ADR):**
-
-```
-living _BASE_RISK literal: _BASE_RISK = {"guardian": 0.0034, "striker": 0.0070, "aegis": 0.0150, "striker_nas100": 0.0037}
-sha256: 2f2a41b006c52aeed8fd2416b65a77e2401274198da9eb35dbfe178208b177aa
-subscript consumers: tests/test_lifecycle.py, tests/core/test_firm_constants_single_source.py
-"Guardian" / "Aegis" count in dd_protection.py: 0 / 0
-```
-
-Empirical blast radius is **two test files** for subscript access, plus derived dict consumers (`mc.modes.ALLOCATIONS`, `verify_lock_anchors`, CLAUDE table, firm-constants test). Not a theoretical “everywhere.”
-
-**Catalog attestation (sub-rule 8):** same empty `rg` as Phase B §0. No new `lab/analysis/` slug.
-
-**Amendment-first:** Phase A cannot admit C (Phase A §5 T2). 08-03 §7 scoped this work and forbade starting from the sketch. New admitting ADR required.
+Read 2026-08-23 at `ea0850f` before authoring: `core/firm_rules.py` `_BASE_RISK`, `core/dd_protection.py` `BASE_RISK`, `core/lifecycle.py` `STRATEGY_KEYS`, `core/historical_challenge.py`, `core/mc/modes.py` `ALLOCATIONS`, `ops/c1_rail/c1_sizing_host_reference.py` `LEG_MAP`, `scripts/verify_lock_anchors.py`, and the two subscript-consumer tests. Full anchor table and the pre-C cheap-falsifier record at the pinned prior version (`4121e84c`).
 
 ---
 
@@ -58,7 +33,7 @@ Call-4 is 2-of-4 / 3-of-4 over `STRATEGY_KEYS`. Dropping two living `BASE_RISK` 
 
 ## §2 — Decision
 
-**Decision:** Retire **Guardian** and **Aegis** from living `firm_rules._BASE_RISK` and `dd_protection.BASE_RISK`. Move the frozen 4-leg percent book to `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK` (bytes unchanged: guardian 0.0034 / striker 0.0070 / aegis 0.0150 / striker_nas100 0.0037). Historical MC `ALLOCATIONS` / `PINE_SHRINK_ALLOCATIONS` / sweep REG derive from that historical dict. `lifecycle.STRATEGY_KEYS` stays the four-leg authorization book. Call-4 assessment uses `STRATEGY_KEYS`, not living `BASE_RISK.keys()`. Striker living keys and `LEG_MAP` Striker rows stay. `DD_TRIGGER` / `DD_SCALE` stay. CLAUDE Strategy Reference CFD rows become pointer-only historical.
+**Decision:** Retire **Guardian** and **Aegis** from living `firm_rules._BASE_RISK` and `dd_protection.BASE_RISK`. Move the frozen 4-leg percent book to `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK` (bytes unchanged: guardian 0.0034 / striker 0.0070 / aegis 0.0150 / striker_nas100 0.0037). Historical MC `ALLOCATIONS` / `PINE_SHRINK_ALLOCATIONS` / sweep REG derive from that historical dict. `lifecycle.STRATEGY_KEYS` stays the four-leg authorization book. Call-4 assessment uses `STRATEGY_KEYS`, not living `BASE_RISK.keys()`. Striker living keys and `LEG_MAP` Striker rows stay. `DD_TRIGGER` / `DD_SCALE` stay. CLAUDE Strategy Reference CFD rows become pointer-only historical. (That table now lives in [`core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md) §Locked parameter record, moved 2026-09-04.)
 
 **Effective:** immediately upon acceptance (this GO).
 **Scope:** living key set + historical owner + verifier + CLAUDE pointer + tests. **Out of scope:** F2 rail teardown; Pine parameters; `lifecycle_state.json`; Call-4 constant recalibration (2/3/0.50 stay); authorization `RETIRED`.
@@ -67,7 +42,7 @@ Call-4 is 2-of-4 / 3-of-4 over `STRATEGY_KEYS`. Dropping two living `BASE_RISK` 
 
 | Surface | After C |
 |---|---|
-| Living sizing (`BASE_RISK`, rail `LEG_MAP`) | `Striker`, `Striker NAS100` only |
+| Living sizing (`BASE_RISK`, rail `LEG_MAP`) | `Striker`, `Striker NAS100` only (2026-10-15: `LEG_MAP` also carries the separately sized M1 proof leg `m1_stage1_test`, `m1_stage1_contract.BASE_RISK`, cap 0 by default; no Guardian/Aegis key) |
 | Authorization book (`STRATEGY_KEYS`, default multipliers) | four keys, all `AUTHORIZED` @ 1.00× (Phase B) |
 | Call-4 `beta_death_assessment` | over `STRATEGY_KEYS` (still 2-of-4 / 3-of-4) |
 | Historical MC `ALLOCATIONS` | four slugs from `HISTORICAL_CHALLENGE_BASE_RISK` |
@@ -147,38 +122,11 @@ Call-4 is 2-of-4 / 3-of-4 over `STRATEGY_KEYS`. Dropping two living `BASE_RISK` 
 - Phase A / 08-03 `Superseded-in-part-by`
 - `docs/adr/INDEX.md`
 
-**Phase-2 sweep (pre-decision vocabulary) + disposition:**
-
-| Hit | Disposition |
-|---|---|
-| `tests/test_lifecycle.py` Guardian/Aegis `scaled_risk` subscripts | **edited** — living haircut examples use `Striker` |
-| `tests/core/test_firm_constants_single_source.py` 4-key equality | **edited** — living vs historical split |
-| `scripts/verify_lock_anchors.py` living guardian parse | **edited** — historical guardian + living-CFD Error |
-| `core/mc/modes.py` `ALLOCATIONS = dict(_BASE_RISK)` | **edited** — historical dict |
-| `CLAUDE.md` 4-row table | **edited** — CFD rows pointer-only; Striker rows kept; MC-anchor literals untouched |
-| `ops/recall/guard.py` | **edited** — denylist sources `HISTORICAL_CHALLENGE_BASE_RISK` so 0.34/1.50 stay |
-| `ops/c1_rail/c1_sizing_host_reference.py` | **ruled unaffected** — already Striker-only |
-| `core/csv_parser.py` XAUUSD→Guardian | **ruled unaffected** — historical CSV identity, not living `BASE_RISK` |
-| `core/lifecycle.py` `STRATEGY_KEYS` | **ruled unaffected** — 4-leg authorization book stays |
-| `DD_TRIGGER` / `DD_SCALE` | **ruled unaffected** |
-
----
-
-## §7 — Implementation plan
-
-- **Phase 0** — cheap falsifier numbers in §0.
-- **Phase 1** — historical dict → living subset → MC ALLOCATIONS → CLI Call-4 → verifier → tests → CLAUDE pointer.
-- **Phase 2** — sweep table in §6 (union complete; every hit dispositioned).
-- **Phase 3** — `test_mc_synthetic_engine` + firm-constants + lifecycle + verify_lock_anchors green; this ADR `Accepted`.
-
 ---
 
 ## §10 — Audit hooks (runnable)
 
 ```bash
-# Cheap falsifier (pre-C; recorded in §0)
-python -c "import pathlib,hashlib,re; t=pathlib.Path('core/firm_rules.py').read_text(); m=re.search(r'_BASE_RISK = \{[^}]+\}', t); print(m.group(0)); print(hashlib.sha256(m.group(0).encode()).hexdigest())"
-
 # After C: living keys are Striker pair only
 python -c "from firm_rules import _BASE_RISK; assert set(_BASE_RISK)=={'striker','striker_nas100'}, _BASE_RISK"
 python -c "from dd_protection import BASE_RISK; assert set(BASE_RISK)=={'Striker','Striker NAS100'}, BASE_RISK"
@@ -207,7 +155,6 @@ python -m pytest tests/test_lifecycle.py tests/core/test_firm_constants_single_s
 ```bash
 python scripts/check_brief.py docs/adr/2026-08-23-strategy-coldstore-phase-c.md --type adr
 python scripts/check_adr_graph.py --regenerate-index
-git log -1 --oneline -- core/dd_protection.py core/firm_rules.py core/historical_challenge.py core/lifecycle.py ops/c1_rail/c1_sizing_host_reference.py
 ```
 
 ---

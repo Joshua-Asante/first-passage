@@ -8,12 +8,14 @@ Disposition ≠ lifecycle authorization — see
 [`docs/methodology/strategy_lifecycle.md`](../../docs/methodology/strategy_lifecycle.md)
 and ADR 2026-08-04 (Tradeify de-scope).
 
-| Disposition | Meaning |
-|---|---|
-| `VENUE_LESS_CFD` | Locked CFD edition; no live venue |
-| `VENUE_WITHDRAWN` | Futures edition withdrawn from Tradeify; F3-retainable |
-| `PARKED_PROTOTYPE` | Research prototype; not locked live |
-| `FALSIFIED_PARKED` | Candidate/falsified research; not live |
+| Disposition | Meaning | Authorization-axis action |
+|---|---|---|
+| `VENUE_LESS_CFD` | Locked CFD edition; no live venue | **none** — CFD books stay `AUTHORIZED · MECHANISM @ 1.00×`. No live venue ≠ decay. |
+| `VENUE_WITHDRAWN` | Futures edition withdrawn from Tradeify; F3-retainable | **none** — Tradeify de-scope is edition-level. Book stays `AUTHORIZED · MECHANISM @ 1.00×`. |
+| `PARKED_PROTOTYPE` | Research prototype; not locked live | **none** — never `AUTHORIZED`; do not mint a `RETIRED` row. |
+| `FALSIFIED_PARKED` | Candidate/falsified research; not live | **none** — kill evidence lives in RESULTS / `rejected_candidates.md`; not a Call-5 retirement. |
+
+No catalog disposition is a lifecycle write (Phase B, operator GO 2026-08-23): do not create or edit `core/lifecycle_state.json` to record one, because an absent file is the record and every book stays at the default tier; never write a demotion tier for any catalog class. Edition `WITHDRAWN` lives on the venue-binding registry (`ops/venue_editions/`). Enforced by `tests/test_coldstore_phase_b.py`. Consolidated 2026-10-15 from `2026-08-23-strategy-coldstore-phase-b` (removed; see [TOMBSTONES](../../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
 
 ## Locked parameter record (CFD-era book)
 
