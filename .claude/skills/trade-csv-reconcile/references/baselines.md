@@ -12,8 +12,8 @@ the Pine source on disk; this file is a cache for fast reconciliation.
 > canonical feed — is **not currently possible**: the Pepperstone feed retired 2026-08-02 and the panels are
 > usable but **not regenerable**.
 >
-> **Do not delete steps 1–4.** Step 2 is the **only** written statement in the repo that the `STRATEGIES` dict
-> embedded in `scripts/reconcile.py` must be updated in the same motion as this markdown — deleting it would turn
+> **Do not delete steps 1–4.** Step 2 is the **only** written statement in the repo that the private anchor file
+> `references/baselines.private.json` read by `scripts/reconcile.py` must be updated in the same motion as this markdown — deleting it would turn
 > a documented drift hazard into an undocumented one.
 >
 > **Re-arm condition:** a re-lock landed under a fresh admitting ADR via the standing change-control chain
@@ -32,12 +32,14 @@ the Pine source on disk; this file is a cache for fast reconciliation.
 > Pine-config blocks and PF/WR/Net/DD tables (below, and their archival predecessors) are redacted per
 > [`docs/adr/2026-08-14-repo-public-visibility-transition.md`](../../../../docs/adr/2026-08-14-repo-public-visibility-transition.md)
 > — same pass that redacted `core/strategies/_archive/*/LOCK.md`. The private operational archive holds
-> the literal values; `scripts/reconcile.py --baseline` reads them from the private copy, not this one.
+> the literal values; `scripts/reconcile.py --baseline` reads them from the gitignored
+> `references/baselines.private.json`, not this one. **2026-10-15:** the copy that was still embedded
+> in `reconcile.py` is removed too; restore the private file from git history or the private archive.
 
 When a strategy is re-locked:
 1. Read the new Pine source headers (Net / PF / WR / DD / N from a fresh
    strategy-tester run on the canonical feed).
-2. Update the matching block below + the `STRATEGIES` dict in `reconcile.py`.
+2. Update the matching block below + `references/baselines.private.json` (private, gitignored).
 3. Note the lock date.
 4. Re-run `reconcile.py --baseline` against the post-lock CSV to verify the
    anchor reproduces.

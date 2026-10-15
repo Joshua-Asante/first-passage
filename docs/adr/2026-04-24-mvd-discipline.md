@@ -23,7 +23,7 @@ A retrospective audit of nine recent debugging instances across the trading rese
 - `dd_protection` production-vs-memory drift (Rule 0 catalyst)
 - Aegis $117K calibration on USDJPY mislabeled as USDJPY_X (~2× overstated)
 - Striker primary bust-risk mis-attributed to pyramid-reversal (actual: solo gap-fill)
-- Striker `dayStopPct` -3% inert (never fired in 4yr panel)
+- Striker `dayStopPct` *(value redacted 2026-10-15; Pine-only)* inert (never fired in 4yr panel)
 - Aegis EOM described as "last 3 trading days" while Pine reads `dayofmonth>=29`
 - "4yr Alchemy panel" actually 14mo (no 2022 regime coverage)
 - TradingView <30-day P&L distortion via JPY→USD conversion hook

@@ -42,7 +42,7 @@
 | `mymPointValue` | $0.50 | futures input |
 | EOD force-flat | ON; bar **16:30 ET** → fill ~**16:45 ET** | `isEodBar` |
 | `riskPerTrade` | 0.70% | risk group (locked) |
-| `strikerDayStopPct` | **−1.15%** | promoted Bulenox-chain default |
+| `strikerDayStopPct` | *(value redacted 2026-10-15; Pine-only)* | promoted Bulenox-chain default |
 | `maxDailyDD` | 1.15% | risk group |
 | RESERVE | `floor(microCap / (1 + pyramidSize/100))` | sizing path |
 
@@ -81,7 +81,7 @@ Shared across both legs unless noted. **Mandatory before any live use** (brief �
 | D2 | `microCap` (RESERVE basis) | MYM default **150**; MNQ sheet Bulenox ladder | **80** | **80** | MYM + MNQ | RESERVE base max → `floor(80/8.5)=9` (MYM) / `floor(80/11)=7` (MNQ). Cap-bind on MYM **tightens** vs Bulenox 150 |
 | D3 | `accountSize` default | MYM **150000** | **100000** | **100000** | MYM + MNQ | Discharge tier; WATCH-1 haircut stays at account-multiplier layer (F1), not here |
 | D4 | EOD force-flat bar | **16:30 ET** (~16:45 fill) | ≤**16:00 ET** trigger (E1) | ≤**16:00 ET** trigger (E1; binding firm 16:10) | MYM + MNQ | **MFFU-critical.** Designing to Tradeify 16:59 is forbidden (envelope). Prefer 15:45 or 16:00 ET bar so fill ≤16:00 |
-| D5 | Day soft-stop default | MYM **−1.15%** promoted | **Operator call** — keep −1.15 (automated-chain rationale) vs restore CFD −2.00 | same | MYM (MNQ: confirm source default on re-author) | Not a firm_rules field; automation-safety default from Bulenox chain |
+| D5 | Day soft-stop default | MYM promoted value *(value redacted 2026-10-15; Pine-only)* | **Operator call** — keep the promoted value (automated-chain rationale) vs restore the CFD default | same | MYM (MNQ: confirm source default on re-author) | Not a firm_rules field; automation-safety default from Bulenox chain |
 | D6 | Slippage model | 1 tick | Re-verify vs firm/platform | Re-verify vs firm/platform | MYM + MNQ | Keep 1-tick until primary says otherwise; not a hard firm constant |
 | D7 | Inactivity / min days | Bulenox ≥1 trade / 5 days (sheet) | Tradeify min **3** trading days (eval); idle rules per FTA | MFFU min **2** days; idle per firm | automation layer | Not necessarily a Pine constant — rail/ops obligation |
 | D8 | Acceptance checklist | all open | must execute after D1–D5 | must execute after D1–D5 | MYM + MNQ | TV compile + per-candle CFD parity + hash re-pin |

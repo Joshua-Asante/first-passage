@@ -156,7 +156,7 @@ a318d432c38dce445a108ad329889c0ccaec001182ed9384ab621badff0f62ab  core/strategie
 # striker_nas100_v1_mym_qtxg1_prototype.pine provenance:
 #   19264da2… — 2026-08-12 Q-TXG-1 Block-2/3 sibling-swap research port.
 #               Locked NAS100 v1 signal identity (lookback/ATR/SL/TP/BE/trail/
-#               pyramid/risk%/session/DOW/day soft-stop −1.5%) carried from
+#               pyramid/risk%/session/DOW/day soft-stop) carried from
 #               striker_nas100_v1.pine; execution-mechanical layer only changed
 #               to CBOT MYM venue class (integer qty @ accountSize $100k,
 #               mymPointValue $0.50, Tradeify commission $0.91/side, slippage 1,
@@ -171,8 +171,8 @@ a318d432c38dce445a108ad329889c0ccaec001182ed9384ab621badff0f62ab  core/strategie
 # striker_dj30_v4.5_mnq_qtxg1_prototype.pine provenance:
 #   178a2a8e… — 2026-08-12 Q-TXG-1 Block-2/3 sibling-swap research port.
 #               Locked DJ30 v4.5 signal identity (lookback/ATR/SL/TP/BE/trail/
-#               pyramid/risk%/session/DOW/day soft-stop −2% Pine default — not
-#               the live TV −1.15% override) carried from striker_dj30_v4.5.pine;
+#               pyramid/risk%/session/DOW/day soft-stop at its Pine default — not
+#               the live TV override) carried from striker_dj30_v4.5.pine;
 #               execution-mechanical layer only changed to CME MNQ venue class
 #               (integer qty @ accountSize $100k, mnqPointValue $2.00, Tradeify
 #               commission $0.91/side, slippage 1, microCap 80, EOD force-flat

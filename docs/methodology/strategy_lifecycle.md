@@ -11,7 +11,7 @@
 
 ## Why this exists (one paragraph)
 
-Live edges decay, and "consistent over time" can only be *disproven*, never confirmed. So a strategy cannot be authorized to hold capital *indefinitely* — but its parameters should still be immutable (anti-overfitting). The word "LOCKED" was silently doing both jobs. This file splits them: **parameters stay `LOCKED`** (stronger than before), while **capital authorization becomes an explicit, always-revocable, graded axis** governed by pre-registered triggers — so decay is met by a cheap reversible de-risk fired by a *rule*, not by in-the-moment discretion (the −$4,188.85 receipt, `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md`).
+Live edges decay, and "consistent over time" can only be *disproven*, never confirmed. So a strategy cannot be authorized to hold capital *indefinitely* — but its parameters should still be immutable (anti-overfitting). The word "LOCKED" was silently doing both jobs. This file splits them: **parameters stay `LOCKED`** (stronger than before), while **capital authorization becomes an explicit, always-revocable, graded axis** governed by pre-registered triggers — so decay is met by a cheap reversible de-risk fired by a *rule*, not by in-the-moment discretion (the 2026-06-30 receipt, `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md`).
 
 ## The two orthogonal axes
 
