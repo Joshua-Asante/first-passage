@@ -192,7 +192,7 @@ def assert_no_fallback(fallback_count: int, label: str = "") -> None:
 def assert_guard_fired(event_count: int, label: str = "") -> None:
     """Fail if a guard / stop / cap that should fire never did across the panel.
 
-    Catches the Striker dayStopPct -3% inert case (audit instance #6).
+    Catches the Striker dayStopPct inert case (audit instance #6).
     If the guard is intentionally inactive in the panel, document that
     explicitly rather than silencing this assertion.
     """

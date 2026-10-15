@@ -703,7 +703,7 @@ Not yet covered by the gate: `contractValue` / `maxTradesDay` (future extension)
 
 **Reproducer / worked example:** 2026-05-28 divergence audit (this session) —
 `grep` across all 8 Pine files showed strategy pyramid 750 / NAS risk 0.37 vs
-indicator pyramid 500 / NAS risk 0.45; day-stop strategy −2 vs indicator −1.15
+indicator pyramid 500 / NAS risk 0.45; day-stop strategy vs indicator values also differed *(values redacted 2026-10-15; Pine-only)*
 (left as a documented backtest-vs-live split, separate issue). Indicator value
 fixes + manifest regen at commit `53f65da`.
 
