@@ -1,5 +1,5 @@
 """Tests for the Gen-2 §8 universe-gate orchestrator
-.claude/skills/strategy-validation/scripts/universe_gate.py.
+lab/research_utils/universe_gate.py.
 
 Research-venv-only module (imports arch + skfolio, per the databento-research-stack
 ADR isolation rule). These tests `importorskip` those libs so they SKIP cleanly in

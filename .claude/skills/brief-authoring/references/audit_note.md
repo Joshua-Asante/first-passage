@@ -5,17 +5,16 @@
 **Triggered by:** [methodology failure | unexpected outcome | scheduled audit | external observation]
 **Authors:** Joshua + claude.ai
 **Scope:** [single brief | brief family | skill | framework layer | portfolio decision]
-**Lives in:** `docs/notes/audits/AUDIT-YYYY-MM-DD-slug.md` or Notion
+**Lives in:** `docs/notes/audits/AUDIT-YYYY-MM-DD-slug.md`
 
 ---
 
 ## §0 — Source anchors
 
-What artifacts are being audited. Audits cite specific commits / page IDs / chat URLs — vague audits produce vague repairs.
+What artifacts are being audited. Audits cite specific commits / file paths / chat URLs — vague audits produce vague repairs.
 
 - `docs/briefs/Q-X-name.md` — commit `<hash>` (the brief being audited, or where the failure originated)
 - `<chat URL>` — the session where the failure surfaced
-- `Notion: <page>` — page ID `<id>` (state at audit time)
 - `data/...` — commit `<hash>` (data referenced by the audited artifact)
 
 ---
@@ -84,7 +83,7 @@ Two layers: immediate (close out this specific instance) and structural (prevent
 
 ### Immediate
 
-- [ ] [Specific action — re-author the affected brief / correct the stale Notion page / re-run analysis with correct anchor]
+- [ ] [Specific action — re-author the affected brief / correct the stale owner doc / re-run analysis with correct anchor]
 - [ ] [Specific action]
 
 ### Structural
@@ -93,7 +92,7 @@ Two layers: immediate (close out this specific instance) and structural (prevent
 - [ ] [Template update — which references/*.md, which section]
 - [ ] [Validator update — which check in check_brief.py]
 - [ ] [Calendar / Todoist trigger — what recurring check would have surfaced this]
-- [ ] [Notion page restructure — if source-of-truth fracture]
+- [ ] [Owner consolidation (Rule 7) — if source-of-truth fracture]
 
 If no structural repair exists, the failure is likely to recur. Flag this explicitly — sometimes the right call is to accept the recurrence rather than over-engineer; sometimes it surfaces a deeper architectural gap.
 

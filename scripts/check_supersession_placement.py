@@ -31,10 +31,14 @@ the mechanizable subset):
   mooted desk card) scans clean. Missing-intercept-entirely is a human obligation
   under Rules 11/14, not a gated one.
 
-SCOPE (the two doc classes consumed top-down under time pressure; extension is
-a Rule-14 edit, not a flag):
-  - docs/notes/rail_build/*DESK_CARD*.md
+SCOPE (the doc class consumed top-down under time pressure; extension is a
+Rule-14 edit, not a flag):
   - lab/analysis/**/RESULTS*.md         (theme nest; lab/archive/ is LTM — excluded)
+
+  docs/notes/rail_build/*DESK_CARD*.md was the second class until 2026-10-15. The
+  B7 desk cards were mooted 2026-08-04, kept out of the public seed, and live only
+  in the read-only first-passage-archive; private rail_build notes go to the
+  archive or the private root (ARMING_PROCEDURE.md §2), never this tree.
 
 Exit 0 clean, 1 on violations. Warn-only on files it cannot read.
 """
@@ -95,7 +99,6 @@ def scan_file(path: Path) -> str | None:
 
 def in_scope(repo: Path) -> list[Path]:
     files: list[Path] = []
-    files += sorted((repo / "docs" / "notes" / "rail_build").glob("*DESK_CARD*.md"))
     lab = repo / "lab" / "analysis"
     if lab.is_dir():
         for path in sorted(lab.glob("**/RESULTS*.md")):
