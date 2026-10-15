@@ -12,6 +12,7 @@ backward-compatible legacy path. See docs/SESSIONS.md 2026-06-27.
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -242,3 +243,40 @@ def test_futures_identity_long_side_sign(tmp_path):
         df, pointvalue=12_500_000, tick=0.0000005, commission=1.0
     )
     assert res.ok, res.failures
+
+
+# --- private baseline anchors (2026-10-15) ---------------------------------
+def _metrics(tmp_path):
+    rows = [
+        "1,Entry long,2024-01-01 10:00,Long,100,1,0,0,0,0,3100,-50",
+        "1,Exit long,2024-01-01 11:00,Exit Long,103,1,3000,1.5,3000,1.5,3100,-50",
+    ]
+    df = reconcile.load_csv(_write(tmp_path, "g.csv", OLD_HEADER, rows))
+    return reconcile.compute_metrics(df, "guardian", account=200_000.0)
+
+
+def test_public_registry_carries_no_baseline_anchors():
+    for spec in reconcile.STRATEGIES.values():
+        assert "baselines" not in spec and "legacy" not in spec
+
+
+def test_baseline_absent_reports_no_baseline(tmp_path, monkeypatch):
+    monkeypatch.setattr(reconcile, "PRIVATE_BASELINES", tmp_path / "absent.json")
+    baseline, drifts = reconcile.reconcile(_metrics(tmp_path), "guardian", "pepperstone")
+    assert baseline is None
+    assert drifts and drifts[0].startswith("NO BASELINE")
+
+
+def test_baseline_read_from_private_file(tmp_path, monkeypatch):
+    m = _metrics(tmp_path)
+    anchor = {"n": m.n, "pf": m.pf, "wr_pct": m.wr_pct, "net": m.net,
+              "dd_pct": m.max_dd_pct}
+    private = tmp_path / "baselines.private.json"
+    private.write_text(
+        json.dumps({"guardian": {"baselines": {"pepperstone": anchor}}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(reconcile, "PRIVATE_BASELINES", private)
+    baseline, drifts = reconcile.reconcile(m, "guardian", "pepperstone")
+    assert baseline == anchor
+    assert drifts == []

@@ -53,18 +53,13 @@ the closure for detail. All are $0/K=0 unless noted.
 - **Q-PUBTRANS-1** — did the 2026-08-14 public-visibility transition complete cleanly (ADR
   Status stale, residual-disclosure risk untested, sentinel queue orphaned; B5+D8+D9) —
   **`FALSIFIED` 2026-08-23** — H-PUBTRANS rejected outright: Limb D8 concretely fails —
-  Guardian Gold's ATR multiplier (1.55×), grace-stop multiplier (2.0×), and grace-bar window
-  are stated in cleartext at `docs/methodology/1r_estimation.md:77,379`, a file absent from the
-  admitting ADR's own downstream-artifact inventory and missed by the 2026-08-14 sweep — a live
-  leak of Pine-only-locked strategy detail on the now-public repo, present at closure time. ⚠ **Not
-  remediated by this closure — flagged for immediate operator attention, see chat.** **Update
-  2026-08-24 (partial):** the ATR multiplier and grace-bar window are redacted at the source — see
-  [`docs/methodology/1r_estimation.md`](../methodology/1r_estimation.md), which now points those two
-  figures to the private operational archive per the 2026-08-14 public-visibility-transition policy
-  ([ADR](../adr/2026-08-14-repo-public-visibility-transition.md)). **The grace-stop multiplier itself
-  is still disclosed in cleartext** at that file's line 77 ("max 0.6806% = **2.000× designed,
-  exactly**" / "trades that exit during the grace window realize 2× the normal stop loss") — this
-  specific figure remains an open leak, not remediated. Limb B5
+  three locked Guardian Gold parameters (the ATR stop multiplier, the grace-stop multiplier and
+  the grace-bar window) were stated in cleartext in `docs/methodology/1r_estimation.md`, a file
+  absent from the admitting ADR's own downstream-artifact inventory and missed by the 2026-08-14
+  sweep. Two were redacted at the source 2026-08-24. **Update 2026-10-15:** D8 remediated — the
+  grace-stop multiplier is redacted there too, and the restatements of all three in this row, the
+  closure, the XAUUSD ledger and three ADRs are removed (values in git history only; see the
+  [cleanup packet](../notes/2026-10-09-public-exposure-cleanup-packet.md#6--2026-10-15-follow-up)). Limb B5
   (withheld literal account/$ grep) and Limb D9 (pre-transition sentinel-queue disposition —
   corrected count 12, not 11) remain individually open pending operator input; D9's own premise
   that it "needs private-archive access" is shown to be wrong (the archive is an already-fetched

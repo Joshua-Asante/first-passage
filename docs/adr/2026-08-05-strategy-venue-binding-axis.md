@@ -81,7 +81,7 @@ The audit's **B3** is this leak in its most consequential form. `docs/spec/c1_wa
 | **VENUE EDITION** | `<strategy>@<firm-tier>` | Everything derived from **one venue's geometry**: contract-cap allocation, cost basis, DD/trail geometry, cadence/activity rule fit, flat deadline, instrument symbol, compliance posture — **and its own authorization state** (§2.4) | `Striker NAS100@Tradeify_Select_100K` |
 | **DEPLOYMENT** | `<strategy>@<firm-tier>#<account>` | Account binding, rail slot, `leg_id`, arming state, live P&L | `…#<ACCOUNT_ID>` via `leg_id=nas100_mnq` |
 
-**The test that decides which level a fact belongs to:** *would this fact change if the same mechanism ran at a different firm?* If yes, it is venue-edition or deeper. `cap_alloc` changes → venue edition. `SL = 1.55×ATR` does not → book.
+**The test that decides which level a fact belongs to:** *would this fact change if the same mechanism ran at a different firm?* If yes, it is venue-edition or deeper. `cap_alloc` changes → venue edition. The locked ATR stop multiple does not → book *(values redacted from the public copy 2026-10-15; see git history)*.
 
 ### §2.2 What this makes expressible that was not
 
