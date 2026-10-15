@@ -2,16 +2,58 @@
 
 One row per `docs/pursuits/d11-d19` cost-carrying record. Canonical source for every $/mo
 figure — the pursuit records themselves link here rather than restating the number (Rule 7,
-one canonical owner). Built per
-[`docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md`](../adr/2026-08-21-cfo-subscription-ledger-consolidation.md),
-closing GSUB-1's concern C-1 (subscription $ figures not discoverable in-repo, open
-2026-08-09 → 2026-08-21).
+one canonical owner). Created 2026-08-21, closing GSUB-1's concern C-1 (subscription $ figures
+not discoverable in-repo, open 2026-08-09 → 2026-08-21), under the operator-ratified
+[rules](#rules) below.
 
 **Reconfirmation owner:** the operator.
 
 **Reconfirm cadence:** monthly — see `STATE.md` § Scheduled forward triggers, "Monthly —
 recurring." Each reconfirm updates the "Last confirmed" column below; a figure that goes
 un-reconfirmed for >60 days should be treated as stale, not silently trusted.
+
+## Rules
+
+Consolidated 2026-10-15 from 2026-08-21-cfo-subscription-ledger-consolidation (removed; see
+[TOMBSTONES](../adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)). The operator ratified the
+ledger, checks and monthly cadence on 2026-08-21; the 2026-09-08 revision removed the retired role's
+hooks with ledger terms unchanged. Two stale details are corrected on the move: the ledger covers
+d11–d19 (the ADR said d11–d17), and the checker is run manually (unwired from every gate tier since
+2026-08-24, [pursuits README](README.md)).
+
+- **One ledger.** This file owns the cost figures for d11–d19. Pursuit records link to it rather
+  than repeat numbers. Missing figures remain unknown, not zero.
+- **Ledger pointer.** [`check_pursuit_records.py`](../../scripts/check_pursuit_records.py) requires
+  a ledger pointer on KEEP records of class `(d) meta-belt (subscription)` or
+  `(d) meta-belt (venue account)`. It reports WARN and exits zero on a completed scan; no severity
+  escalation or class widening is authorized. Reverify the actual corpus before any separately
+  approved widening. This remains a scoped check, not a general required-field mandate for every
+  pursuit.
+- **Monthly reconfirmation.** The operator confirms the ledger figures monthly, rolling the
+  `STATE.md` deadline after each occurrence. Confirm even when unchanged; silence is not evidence
+  of currency. No replacement role, hook or scheduled service is commissioned; STATE holds the
+  forward reminder, not a claim about external scheduling.
+- **Update at disclosure.** A cost supplied in-session updates its ledger row in that session. This
+  is a practice, not a telemetry subsystem. Additional automation needs evidence that the practice
+  is insufficient and its own decision.
+
+**Trigger check schedule:** every monthly reconfirm (2026-09-21, then rolled forward) — carried verbatim from ADR 2026-08-21-cfo-subscription-ledger-consolidation; the live date is `STATE.md`'s Monthly row.
+
+At each reconfirm, check whether the pointer rule gave a false-positive WARN for a record with no
+meaningful cost, or the ledger missed a stale/wrong figure that the former per-pursuit text would
+have caught. Either finding requires a decision to narrow/redesign the affected mechanism, with the
+miss recorded. Three consecutive reconfirms with no figure changes and no staleness found warrant
+proposing a quarterly cadence; they do not authorize changing it silently. The original verdict
+distinction remains: RESOLVED when the mechanism runs without those failures, FALSIFIED for a
+confirmed mechanism failure, AMBIGUOUS for that cadence signal pending a proposal.
+
+*Grounds:* scattered cost tags left a known information gap open for twelve days. One owner plus a
+creation-time pointer check makes the figures discoverable; operator reconfirmation checks their
+truth. HARD-gating, a parallel monthly cron and new telemetry were rejected as extra machinery
+without evidence. Monthly was the operator's chosen interval, so its suitability remains reviewable
+under the rule above.
+
+## Ledger
 
 | Subscription | Pursuit | $/mo | Billing model | Last confirmed | Status |
 |---|---|---|---|---|---|

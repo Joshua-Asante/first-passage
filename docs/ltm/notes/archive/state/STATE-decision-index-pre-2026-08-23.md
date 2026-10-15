@@ -52,7 +52,7 @@ Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-poin
 
 **Twelfth roll, 2026-09-03** (one entry, pushed off by the seven-strategy Select campaign queue-reprioritization decision):
 
-- **2026-08-24** — `Q-TRADECAP-2` closed `RESOLVED` — licensed close is frozen ID **2** (observe-only). Queue row 2 deleted (no auto-replace). No tripwire wire. [`elect-2`](../../../../../docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) [`closure`](../../../../../docs/briefs/closures/Q-TRADECAP-2-closure-resolved.md)
+- **2026-08-24** — `Q-TRADECAP-2` closed `RESOLVED` — licensed close is frozen ID **2** (observe-only). Queue row 2 deleted (no auto-replace). No tripwire wire. [`elect-2`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) [`closure`](../../../../../docs/briefs/closures/Q-TRADECAP-2-closure-resolved.md)
 
 **Eleventh roll, 2026-09-02** (one entry, pushed off by the portable-edge campaign decision):
 

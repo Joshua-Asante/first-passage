@@ -86,7 +86,7 @@ P2–P5 are closed. P6–P10 landed 2026-08-23 (same PR; README + STATE diet + t
 
 ### P1 — Orientation (status words + hop table)
 
-**Problem:** `LOCKED`, `ACTIVE`, `eval is live`, `four-layer`, `AUTHORIZED @ 1.00×` do not mean English. [`lab/CATALOG.md`](../../../lab/CATALOG.md) already has a `hot` column ([`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md) Phase 1 landed). The remaining confusion is the **status** token still reading as a work queue (86 `ACTIVE` rows, many decided).
+**Problem:** `LOCKED`, `ACTIVE`, `eval is live`, `four-layer`, `AUTHORIZED @ 1.00×` do not mean English. [`lab/CATALOG.md`](../../../lab/CATALOG.md) already has a `hot` column ([`2026-08-22-catalog-hot-vs-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md) Phase 1 landed). The remaining confusion is the **status** token still reading as a work queue (86 `ACTIVE` rows, many decided).
 
 **Do:**
 
@@ -96,7 +96,7 @@ P2–P5 are closed. P6–P10 landed 2026-08-23 (same PR; README + STATE diet + t
 
 **Do not:**
 
-- Mass-stamp `**Verdict:**` or mass `--slug` ([catalog ADR](../../adr/2026-08-22-catalog-hot-vs-disposition.md) §5 / §7: separate GO).
+- Mass-stamp `**Verdict:**` or mass `--slug` ([CATALOG schema rules](../../../lab/analysis/README.md#catalog-schema-rules): separate GO).
 - Rewrite [`lab/CATALOG.md`](../../../lab/CATALOG.md) by hand (regenerator-only).
 - Add `docs/glossary.md`.
 
@@ -105,8 +105,8 @@ P2–P5 are closed. P6–P10 landed 2026-08-23 (same PR; README + STATE diet + t
 **Falsifier:** a newcomer reading README §Where to look still cannot tell `ACTIVE` from “in-flight.”
 
 **Successor (2026-09-03):** falsifier fired — the glossary taught non-English tokens instead of
-making them mean English. Owner is the 2026-09-03 addendum on
-[`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md).
+making them mean English. Owner is the 2026-09-03 addendum, consolidated 2026-10-15 into
+[CATALOG schema rules](../../../lab/analysis/README.md#catalog-schema-rules).
 Do not reopen P1 as a packet.
 
 ---
@@ -319,7 +319,7 @@ Attestation (this session, before authoring): `lab/CATALOG.md` and `docs/briefs/
 | W5 CI-from-`gates.yml` (H6) | **Landed 2026-08-23** | [`2026-08-23-w5-ci-from-gates-yml-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-w5-ci-from-gates-yml-implementation.md) · [W5 addendum](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md#addendum-2026-08-23--h6-hold-lifted-ci-composition-from-gatesyml) |
 | SESSIONS keep-20 roll | **Landed 2026-08-23** | [`scripts/roll_sessions.py`](../../../scripts/roll_sessions.py) · archive `docs/ltm/notes/archive/sessions/` |
 | Generation dryness | bind row 3 closed; object-layer sequence already authored | [channel ADR addendum](../../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-08-23--scoped-decline-of-the-reopened-6am6a-and-gcmgc-entry-geometry--dense-1m-cell) · [`viable-strategy sequence`](2026-08-23-viable-strategy-sequence-overview.md) |
-| Mass CATALOG Verdict / `--slug` | catalog ADR forbids without its own GO | [`2026-08-22-catalog-hot-vs-disposition.md`](../../adr/2026-08-22-catalog-hot-vs-disposition.md) |
+| Mass CATALOG Verdict / `--slug` | CATALOG schema rules forbid without its own GO | [CATALOG schema rules](../../../lab/analysis/README.md#catalog-schema-rules) |
 | Personas / dual skill homes / two venvs | operating model. ⚠ **Stale (corrected 2026-08-31).** Persona hierarchy fully retired — [persona-hierarchy-full-retirement ADR](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-31-persona-hierarchy-full-retirement.md); dual skill homes/venvs unaffected | leave |
 | CI green ≠ merge precondition / no branch protection | ⚠ **Stale (corrected 2026-08-24)** — ruleset landed 2026-08-19; `skills (3.12)` IS required | [`Q-GATESTACK-1`](../../briefs/closures/Q-GATESTACK-1-closure-falsified.md) closure addendum |
 | S3/S7 `PROPOSED`; session lettering | leave; do not reopen S7 | [`loop-spec index`](../../spec/2026-08-07-loop-spec-index.md) · [`roll_sessions.py`](../../../scripts/roll_sessions.py) |
