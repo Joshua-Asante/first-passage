@@ -3,8 +3,8 @@
 Filename: `docs/briefs/closures/Q-X-closure-<verdict-slug>.md` — the verdict lives in the
 filename and the H1 title (house convention; `handoff-verify` treats the filename as the
 closure vocabulary). This template distills the observed strong closures (Q-GEOFIT-1,
-Q-COSTGEO-2, Q-HARV-0, Q-CAPALLOC-2) plus the mandatory Iterate block ratified by
-`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`.
+Q-COSTGEO-2, Q-HARV-0, Q-CAPALLOC-2) plus the mandatory Iterate block ratified 2026-08-04 —
+`docs/methodology/inqhiori-canon.md` §16 (enforcement: `scripts/README.md#closure-enforcement`).
 
 **Verdict:** `[as filed — RESOLVED / FALSIFIED / AMBIGUOUS[-qualifier] / VOID / MOOT / ABORT / operator-stopped / screen-fail / …]`
 **Closed:** YYYY-MM-DD
@@ -107,11 +107,19 @@ Authoring notes (not part of the artifact):
 - **The pre-registered §6 branch is the default, not a cage.** Discharging a different
   branch is closure-time judgment, not a Trap-#12 amendment — quote the frozen §6 row
   and state why the other branch fired.
+- **No in-place amendment; verdict as filed.** Consolidated 2026-10-15 from
+  `2026-08-04-iterate-closure-exit-mandatory` §5 (removed; see
+  [TOMBSTONES](../../../../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)):
+  do not amend "a §6 disposition (or the Iterate block of a signed closure) mid-flight —
+  Trap #12 and its cross-brief form (sibling Q, same H, looser gates). If the disposition is
+  wrong, the successor artifact says so; the frozen record stands." Do not invent a
+  closure-verdict taxonomy: "verdict-as-filed stands. The typed surface is the
+  *disposition*, not the verdict."
 - **Verdict asymmetry is by design.** RESOLVED-and-fully-integrated closures owe no
   re-proposal bar; FALSIFIED/AMBIGUOUS/VOID/STOPPED closures owe one. Do not manufacture
   stop rules to fill the field — "n/a — integrated" is the honest value.
 - **Only the tokens are mechanical.** Gate 14 checks heading + `Next:` + `Board write:`
   presence; everything else is judgment, audited at the quarterly methodology cadence
-  (ceremony limb of the owning ADR's §4).
+  (ceremony limb: `scripts/README.md#closure-enforcement`).
 - Section numbering (numbered vs `§N`) follows your file; the Iterate block heading must
   contain the word "Iterate".

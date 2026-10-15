@@ -7,7 +7,8 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Related:** [`three-loop binding`](2026-06-12-three-loop-methodology-binding.md) (D4 add-back metric reads these registers) · [`GRAND tier`](2026-08-09-grand-tier-quintessentials-binding.md) (pursuit-layer sibling; this ADR is object-layer) · [`iterate-closure-exit`](2026-08-04-iterate-closure-exit-mandatory.md) (the gate that checks closures) · [`2026-08-08 quarterly audit`](../notes/audits/programme-audit/2026-08-08-quarterly-audit.md) §1.2 diagnostic 4 (the RED this ADR answers)
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 read detail (one decisive read kept), D5 per-correction detail, §7 implementation plan, §10 hooks other than the two D2 machine-consult checks, and the Verification block removed; D3's gate-tier claim, D4's §7 pointer and §6's hardening pointer corrected to what landed. No decision text changed. Pre-trim text at blob `0f4627ba1ea02dc24c5922e26528214da3e1a95a` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
+**Related:** [`three-loop binding`](2026-06-12-three-loop-methodology-binding.md) (D4 add-back metric reads these registers) · [`GRAND tier`](2026-08-09-grand-tier-quintessentials-binding.md) (pursuit-layer sibling; this ADR is object-layer) · [`closure enforcement`](../../scripts/README.md#closure-enforcement) (the gate that checks closures) · [`2026-08-08 quarterly audit`](../notes/audits/programme-audit/2026-08-08-quarterly-audit.md) §1.2 diagnostic 4 (the RED this ADR answers)
 **Layer:** governance convention + object-layer register topology. **$0 / K=0.** Tier: **FULL** (ceremony-tiering limb 4 — amends doctrine binding future work).
 **Loop-of-Record:** STRATEGIC — this rules which register carries kill-record authority, i.e. governance of a stopping rule. D2 channel (c).
 
@@ -15,32 +16,7 @@
 
 ## §0 — Rule 0 reads (executed 2026-08-09, this worktree, all re-verified by an adversarial pass)
 
-- `docs/rejected_candidates.md` read in full — admission criterion `:5` ("at the close of any Pre-Q
-  that closes FALSIFIED **on strategy grounds**, or… on SNAG-budget-exhaustion grounds"), per-direction
-  bar `:3`, domain bar `:411-416`, 5th-leg SNAG closure `:418-455`, raised bars `:468`/`:482`.
-  Anchor: `baaab64` 2026-08-08.
-- `grep -i ratif docs/rejected_candidates.md` → **exactly two hits**, `:470` "**Operator-ratified
-  2026-07-21**" and `:485` "**operator-ratified 2026-08-02**". The 5th-leg entry has **none**.
-- `docs/notes/audits/programme-audit/2026-07-01-portfolio-audit.md` — `:153` Status
-  "`PROPOSED verdict pending owner ratification`"; `:113` §5.3 "Owner: operator ratifies; CC authors";
-  `:154` "SNAG repair (§5.3) is **mandatory** under signal #5".
-- `git log -S 'Reviewed at the 2026-08-08 slate' -- docs/rejected_candidates.md` → only `13c01d0`
-  (2026-07-01), the authoring commit — i.e. a forward instruction, never a record.
-- `docs/notes/audits/programme-audit/2026-08-08-quarterly-audit.md` — grep `5th-leg|SNAG|rejected_candidates`
-  returns only the diagnostic-4 RED cell (`:65`) and §4 (`:105`). **No review of the entry occurred.**
-- `ops/instruments/profiles.json` — the only registry-sourced bar id is
-  `index-intraday-ohlcv-directional-timing-2026-07-21`. Executed
-  `python scripts/instrument_profiles.py cell MNQ ict-liquidity` → prints
-  `BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md`
-  and blocks. Gate id `instrument-profiles`, **tier=always** (`scripts/gates.yml:91-92`).
-- `ls validation/` → **No such file or directory**. Anchor for the dead-consumer finding below.
-- `scripts/gate_manifest.py --list` → 15 gates. **None enforces the per-direction feed.**
-  `check_closure_disposition.py` checks only Iterate-block tokens; `check_status_consistency.py`
-  scans links; `check_advisor_dedup.py` is a manual CLI returning 0 unconditionally.
-- `git log --since=2026-07-25 -- docs/methodology/rejected_signals.md` → one commit, `9c8fc83`
-  2026-07-29; nothing in the 08-03→08-09 window.
-- `ops/instruments/MNQ.md` DEAD/REJECTED table `:92-104` (13 data rows) + SESSION LOG `:119-134`;
-  fed continuously through the window.
+- `docs/rejected_candidates.md` read in full (anchor `baaab64` 2026-08-08), with `ops/instruments/profiles.json`, `python scripts/instrument_profiles.py cell MNQ ict-liquidity` (prints `BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21` and blocks), the 2026-07-01 portfolio audit, the 2026-08-08 quarterly audit, `scripts/gate_manifest.py --list` and the `ops/instruments/MNQ.md` DEAD table. Per-read findings are at the pre-trim blob (see **Revision:**).
 
 ---
 
@@ -100,7 +76,7 @@ fire at a tier=always gate; the unratified one had zero consults across the esta
 
 | Register | Owns | Machine consult |
 |---|---|---|
-| `ops/instruments/<SYM>.md` DEAD/REJECTED + `profiles.json` | **Per-direction, instrument-scoped** mechanism rejections | `instrument_profiles.py` (gate `instrument-profiles`, tier=always) |
+| `ops/instruments/<SYM>.md` DEAD/REJECTED + `profiles.json` | **Per-direction, instrument-scoped** mechanism rejections | `instrument_profiles.py` (gate `instrument-profiles`: path-conditional on `ops/instruments/` at pre-commit, unconditional in `make check`/CI; the `cell` consult exits 1 on a binding bar) |
 | `docs/rejected_candidates.md` | **Domain-level and cross-instrument** bars — the tier with no per-instrument home | via `profiles.json` `source` pointers |
 | `docs/methodology/rejected_signals.md` | **Meta-layer** methodology signals (unchanged) | none; reviewed qualitatively at methodology audits |
 
@@ -117,17 +93,9 @@ discipline collapse** — with one real residual: ledger coverage is itself part
 **D4 — The per-direction feed gets an enforcement instrument or an honest downgrade.** Rule (1) is
 currently enforced by nothing. Until an instrument exists, no artifact may cite the per-direction feed
 as an operative stopping rule. Building the check (does every terminal-negative closure with a named
-instrument have a ledger DEAD row?) is **owed and is dispatched, not assumed** — see §7.
+instrument have a ledger DEAD row?) was **owed and dispatched**; landed 2026-08-27/28 as `scripts/check_instrument_rejection_coverage.py` (gate `instrument-rejection-coverage`, audit tier, `--exit-zero` until clean) — [SSOT program](2026-08-27-ssot-data-lineage-remediation-program.md) Phase 1 Task 2.
 
-**D5 — Corrections landed with this ADR** (each a `lesson_corrections_land_where_read` firing):
-- `rejected_candidates.md:455` "Reviewed at the 2026-08-08 slate" — **false as a record**; rewritten to
-  say what actually happened.
-- `:557` the auto-append preamble still asserts in the **present tense** that
-  `validation/concept_intake/feedback.py` appends and `dedup_check` reads it. `validation/` does not
-  exist. The 2026-08-08 correction landed at `:138-149` — 400 lines above the place a future appender
-  actually writes. Corrected **at the point of use**.
-- `:141-143` names two live consumers and **misses a third that is a hard gate**: `instrument-profiles`
-  (tier=always) resolves `source` paths into this file, so moving or deleting it **hard-fails CI today**.
+**D5 — Corrections landed with this ADR:** three stale or false claims in `rejected_candidates.md` (:455 slate record, :557 dead-consumer preamble, :141-143 missed hard-gate consumer) corrected at their point of use 2026-08-09.
 
 ---
 
@@ -187,53 +155,21 @@ in. Mitigated by the table in D3 and by `profiles.json` pointers being the singl
 
 **Risk:** MNQ carries the 2026-07-21 bar under `inherited_bars`, **not** `bars` — its binding is
 transitive through the parent class. Editing that inheritance edge would silently unbind the instrument
-at the centre of the estate's densest kill run. Flagged here; hardening is part of the §7 dispatch.
+at the centre of the estate's densest kill run. Flagged here; hardening landed: `inherited_bars()` in `scripts/instrument_profiles.py`, tested by `tests/test_instrument_profiles.py::test_cell_inherited_bar_from_family_parent_forces_exit_one`.
 
 **Downstream artifacts updated in this commit:** `docs/rejected_candidates.md` (D1 stamp + three D5
 corrections); `docs/pursuits/a3-mnq-discovery-pipeline.md` (the open concern this ADR resolves).
 
 ---
 
-## §7 — Implementation plan
-
-- **Phase 0** — §0 reads (done, adversarially re-verified).
-- **Phase 1** — land D1 stamp + D5 corrections in `rejected_candidates.md`; update the a3 pursuit record.
-- **Phase 2** — the D4 enforcement instrument and the `inherited_bars` hardening are **dispatched as a
-  separate packet**, not built here (they are code+tests, and this ADR is the ruling).
-- **Phase 3** — verification block below; status `Accepted` on ratification (this commit).
-
----
-
 ## §10 — Audit hooks (runnable, each quarterly gate)
 
 ```bash
-# D1 — the mandated repair carries its stamp (expect 3 hits, not 2)
-grep -c -i "ratif" docs/rejected_candidates.md
-
 # D2 — every registry-sourced bar in profiles.json resolves into a ratified block
 python scripts/instrument_profiles.py check
-grep -n "operator-ratified\|Operator-ratified\|RATIFIED" docs/rejected_candidates.md
 
 # D2 — the machine consult still blocks on the wired bar
 python scripts/instrument_profiles.py cell MNQ ict-liquidity   # expect: BINDING BAR + exit 1
-
-# D5 — the dead-consumer claim is not restated at the point of use
-grep -n "Read by dedup_check at call time" docs/rejected_candidates.md   # expect: empty
-ls validation/ 2>/dev/null || echo "validation/ absent (expected)"
-
-# risk — MNQ's bar binding is still present (direct or inherited)
-python -c "import json;d=json.load(open('ops/instruments/profiles.json'));print(json.dumps(d,indent=1))" | grep -n "index-intraday-ohlcv-directional-timing-2026-07-21"
-```
-
----
-
-## Verification
-
-```bash
-python scripts/check_brief.py docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md --type adr
-python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md --type adr
-python scripts/check_adr_graph.py
-python scripts/instrument_profiles.py check
 ```
 
 ---

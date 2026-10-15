@@ -19,7 +19,7 @@
 | [`core/firm_rules.py`](../../core/firm_rules.py) `Tradeify_Select_100K` | `45e3cea` | Incumbent eval geometry |
 | [`docs/spec/2026-08-05-eval-mechanism-shape-screen.md`](../spec/2026-08-05-eval-mechanism-shape-screen.md) | `d93dafd` | EM0–EM5; G0 act |
 | [`docs/spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md`](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) | `27c7943` | MNQDTL R2 live |
-| [`docs/adr/2026-08-05-avenue-a-generate-confirm-route.md`](../adr/2026-08-05-avenue-a-generate-confirm-route.md) | `b0427fd` | Route B Accepted |
+| [`docs/adr/2026-08-05-avenue-a-generate-confirm-route.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md) | `b0427fd` | Route B Accepted |
 | [`docs/methodology/avenue_a_generate_confirm.md`](../methodology/avenue_a_generate_confirm.md) | `b0427fd` | G0 checklist |
 | [`lab/discovery/admission_schema.py`](../../lab/discovery/admission_schema.py) | `cc4142e` | S6 ADMIT/REFUSE |
 | [`docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-R2AGRUN-1-closure-ambiguous-hold.md) | this session | Non-promotable close; re-proposal bar |

@@ -144,7 +144,7 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | Current priorities and outstanding obligations | `STATE.md` queue and forward board; obligation details remain with their owning decision/closure |
 | Executable campaign next steps | Campaign's current implementation plan; campaign record owns evidence, gate dispositions, and operator decisions |
 | Session-specific "open / next" | Optional historical context in that session's entry; never a replacement for the current STATE queue or campaign plan |
-| Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
+| Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (doctrine: `docs/methodology/inqhiori-canon.md` §16); a STATE forward-board row is a labeled pointer mirror only |
 | Durable atomic facts | Their owning specification, campaign record, plan, PR, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 or sub-rule 8/10 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
 
 Roles that must **not** restate canonical values:
@@ -791,6 +791,8 @@ New operational rules are added here only after a specific failure or near-miss.
 Edits to existing rules must be logged with a dated entry explaining what changed and why. Rules do not silently drift.
 
 ### Edit log
+
+- **2026-10-15** — Rule 7 owner table: the per-Q forward-disposition row repoints from the removed 2026-08-04 Iterate ADR to canon §16 (ADR decay audit; pointer only, ownership unchanged). [`record`](adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)
 
 - **2026-09-08** — Clarified decision ownership: specifications, campaigns, plans
   and PRs can own decisions; a distinct ADR must meet the admission rule. Neither

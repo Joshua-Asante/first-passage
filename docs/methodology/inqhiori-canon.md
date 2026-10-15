@@ -337,15 +337,15 @@ Corollaries:
 
 ## 16. Iterate exit — closure-resident, typed (added 2026-08-04)
 
-**Canonical source:** `docs/adr/2026-08-04-iterate-closure-exit-mandatory.md` (ADR of record, `Accepted` 2026-08-04; gate 14 self-armed HARD). This section is the canon-side statement; if it and the ADR ever disagree, the ADR wins.
+**Owners:** this section owns the doctrine (ratified 2026-08-04; removed ADR record: [TOMBSTONES](../adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)); authoring form — `.claude/skills/brief-authoring/references/closure_record.md`; §6 typed Disposition column — `.claude/skills/brief-authoring/references/inquire_brief.md`; enforcement — [`scripts/README.md#closure-enforcement`](../../scripts/README.md#closure-enforcement) (gate `closure-disposition`, fixed HARD since 2026-09-08).
 
 The loop in §1 ends `… O → R → I`, but this file never defined the terminal phase — the only definition lives in the v1 predecessor (`docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md` §8, preserved per §12 for definitional content): *Iterate = specify which phase to return to and what new information triggered the loop-back*; exit criteria *"The next phase has a clear entry packet. No dangling state."*
 
 For compressed Pre-Q work, that exit is discharged **on the closure artifact**, not as a standing phase: Observe is the closure's numbers-vs-§6 assertion (already required by the closure-record format), and Reflect + Iterate collapse into a mandatory typed **`## Iterate`** block — Verdict used / Model update / **Next: INTEGRATE | ITERATE | STOP** / routing / entry packet / stop rule / board write. Template: `.claude/skills/brief-authoring/references/closure_record.md`.
 
-Three rules the ADR fixes that this loop's users must not un-learn:
+Three rules ratified 2026-08-04 that this loop's users must not un-learn:
 
-1. **STOP is a ratified extension, not v1 restatement.** v1's exit is binary (Integrate / Iterate). STOP — Iterate with budget zero, recording the re-proposal bar — is new doctrine owned by the ADR.
+1. **STOP is a ratified extension, not v1 restatement.** v1's exit is binary (Integrate / Iterate). STOP — Iterate with budget zero, recording the re-proposal bar — is new doctrine owned here.
 2. **ITERATE names a successor; it never opens one.** Parent-Q convention ("named, not opened"): the entry packet freezes what a successor must carry; opening it is a fresh operator GO. Automation never promotes here, same asymmetry as the authorization lifecycle.
 3. **Ownership split (Rule 7):** the closure Iterate block owns the per-Q forward disposition; a STATE forward-board row is the cross-session pointer mirror; the SESSIONS Open/next block is the session-level carry. The block's Board-write field records which pointer was written.
 
