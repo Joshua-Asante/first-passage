@@ -146,7 +146,7 @@ Code retained at `lab/research_utils/breadth.py` for re-arm / self-test; **not**
 the default Stage-8 path. Envelope §2 item 6 coordinates stay doctrine without
 a sole live producer until a re-arm ADR
 ([`W4 ADR`](../../../docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md)).
-The skill-side breadth launcher was removed 2026-10-15; run `lab/research_utils/breadth.py` only under a re-arm ADR.
+The skill-side breadth launcher was removed 2026-10-15; for self-test or re-arm use `PYTHONPATH=lab python -m research_utils.breadth` — not a standing Stage-8 step.
 
 **Integration (minimal live set — W4).** Campaign preregs name their live limbs.
 Standing defaults: mechanism-first admission + DSR-cap refuse (S6), temporal

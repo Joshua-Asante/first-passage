@@ -195,7 +195,7 @@ this ADR's §0 owes, not as a sizing input.
 A cross-repo mining pass (2026-08-27, "Recurrence Ledger") found unverified-claim-propagation,
 gate-reachability defects, and missing-SSOT axes among the most-recurring methodology problem
 classes in this repo's post-pivot record. The parent plan
-(`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`) named four concrete,
+([`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md)) named four concrete,
 already-identified gaps and scoped a Phase 1 fix for each, but flagged that several of its own cited
 facts (a coverage percentage, a row count, whether a successor ADR already exists) were stale or
 unknown at scoping time and needed re-derivation before anything could be ratified — this is that
@@ -229,7 +229,7 @@ failure mode the program exists to fix.
 ## §2 — Decision
 
 **Decision:** Ratify the phased SSOT/data-lineage remediation program described in
-`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`. **Phase 1's four tasks are the
+[`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md). **Phase 1's four tasks are the
 immediately-authorized scope** once this ADR's Status flips to `Accepted`:
 
 1. **Task 1** — author (not merely redeploy — §0 Step 1 finding) the skill-side `check_brief.py` under

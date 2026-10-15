@@ -148,7 +148,8 @@ Five of seven diagnostics graded RED or RED-leaning (§3.2, §3.4, §3.6, §3.7 
 ```bash
 # 1. Has a fourth instance of this move-class run without a fresh owner GO recorded?
 grep -rl "external-mapping-move-class\|external-mechanism.*mapping\|nemo-guardrails-reconciliation" docs/notes/notice/ | wc -l
-# Expected after 2026-08-23: 4. The 4th (N-2026-08-23-nemo-guardrails-reconciliation) must cite Operator GO (instance 4).
+# Expected after 2026-10-15: 1. Instances 1-3 were removed 2026-10-15 (pinned at 4121e84, §0 rows 1-3); the survivor is the 4th
+# (N-2026-08-23-nemo-guardrails-reconciliation), which must cite Operator GO (instance 4). A count above 1 is a new instance.
 
 # 2. Rule-2 STRATEGIC row exists (action 3)
 grep -c "STRATEGIC" docs/notes/audits/rule-2-trip-log.md
@@ -161,9 +162,9 @@ grep -rn "Q-TRAINKILL-2" docs/briefs/ STATE.md 2>/dev/null | grep -iv "not opene
 # 4. Belt churn at next audit of this move-class — must show >=1 removal/consolidation, not a 6th pure add
 grep -c "sharpened\|ADD$" docs/notes/audits/programme-audit/2026-08-20-external-mapping-move-class-audit.md
 
-# 5. Cross-reference discharge (action 5)
-grep -l "AUDIT-2026-08-20-external-mapping-move-class" docs/notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md docs/notes/notice/N-2026-08-20-anthropic-training-principles-pipeline-mapping.md docs/notes/notice/N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md
-# Expected after action 5: all three
+# 5. Cross-reference discharge (action 5) — discharged 2026-08-23; the three notices were removed 2026-10-15, so read the pinned blobs
+for p in docs/notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md docs/notes/notice/N-2026-08-20-anthropic-training-principles-pipeline-mapping.md docs/notes/notice/N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md; do git show 4121e84c:"$p" | grep -q "AUDIT-2026-08-20-external-mapping-move-class" && echo "$p"; done
+# Expected: all three
 ```
 
 **Discipline check:** seven diagnostics answered with evidence anchors ✓ · belt churn counted (5/0) ✓ · falsifier check executed against the actual ADR text, not asserted ✓ · no cross-layer citation ✓ · verdict assigned with reasoning ✓ · Degenerating ⇒ five actions named with owner ✓ (dates event-gated where a calendar date would be false precision) · §10 hooks runnable ✓.
