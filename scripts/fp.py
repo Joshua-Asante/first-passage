@@ -38,7 +38,8 @@ for name, version in expected.items():
 try:
     signing = md.version('cryptography')
 except md.PackageNotFoundError:
-    signing = 'absent; signed settlement tests may skip'
+    signing = ('absent; signed settlement tests skip, but the qualification suite fails without it: '
+               'install tools/local_verification/requirements-extra.txt for full test runs, as CI does')
 print(json.dumps({'python': sys.executable, 'version': sys.version.split()[0],
                   'errors': errors, 'signing': signing}))
 """
