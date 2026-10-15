@@ -58,7 +58,7 @@ discovery-campaign pipeline cite.
 | Null hygiene — name the null; permutation drift-handling | `strategy-validation` SKILL §5 | Domain 1/3 — the joint-hypothesis + drift traps were undocumented |
 | hmmlearn filtered-vs-smoothed lookahead | `futures-anomaly-discovery` tool-discipline | Domain 5 — regime-label leak was uncovered |
 | Pre-mining vol-U-shape hygiene | `futures-anomaly-discovery` tool-discipline | Domain 1/7 — scanner would rediscover the vol hump |
-| Back-adjustment / CME clock / bid-ask-bounce data hygiene | `databento-data` schemas-and-symbology | Domain 7 — the futures-microstructure hygiene layer was entirely missing |
+| Back-adjustment / CME clock / bid-ask-bounce data hygiene | `futures-anomaly-discovery` tool-discipline §Pre-mining data hygiene (was `databento-data` schemas-and-symbology; moved by #860) | Domain 7 — the futures-microstructure hygiene layer was entirely missing |
 | Discovery ledger anchored to `<repo-root>/discovery_manifests` | `register_search.py` | Cwd-scatter; databento ADR §4/§10 hook intent |
 | Backtest→live shrinkage convention (30–70% band, ex-ante prior) | `docs/methodology/backtest_live_shrinkage.md` | Domain 5 — no ex-ante decay haircut existed (ECR is ex-post) |
 
@@ -158,7 +158,7 @@ grep -n "Status: REFERENCE" docs/methodology/references/statistics-of-tradable-a
 # Tranche-1 doctrine present
 grep -n "Null hygiene" .claude/skills/strategy-validation/SKILL.md
 grep -n "Filtered, not" .claude/skills/futures-anomaly-discovery/reference/tool-discipline.md
-grep -n "Data hygiene" .claude/skills/databento-data/reference/schemas-and-symbology.md
+grep -n "Pre-mining data hygiene" .claude/skills/futures-anomaly-discovery/reference/tool-discipline.md   # moved from databento-data schemas-and-symbology by #860
 grep -n "Backtest → live shrinkage" docs/methodology/backtest_live_shrinkage.md
 
 # Non-adoptions recorded

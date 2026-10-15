@@ -105,7 +105,7 @@ Component roles:
 
 **Risks:**
 - Stack-version drift (nautilus/vectorbt/numba pins are tight) — mitigated by the lockfile; upgrades are deliberate, not incidental.
-- The JPY micro (M6J vs MJY, quote inversion) is flagged UNRESOLVED in `reference/proxy-discipline.md` — building the FX lane before resolving it is a named red-flag stop, not an ADR risk to accept.
+- The JPY micro (M6J vs MJY, quote inversion) is flagged UNRESOLVED in [`reference/proxy-discipline.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/.claude/skills/databento-data/reference/proxy-discipline.md) (now under `futures-anomaly-discovery`, #860) — building the FX lane before resolving it is a named red-flag stop, not an ADR risk to accept.
 
 **Downstream artifacts:**
 - The three skills + lockfile land in the same commit as this ADR. `CLAUDE.md` / `STATE.md` are deliberately untouched (handoff scope); if the stack becomes load-bearing for a live decision, surfacing it in `CLAUDE.md` is a follow-up, not part of this change.

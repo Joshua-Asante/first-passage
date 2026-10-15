@@ -27,7 +27,7 @@ branch `claude/tradable-anomalies-strategy-dbf713`, anchor `git rev-parse --shor
 - `docs/ltm/briefs/rnd-pipeline/DISC-CAMP-0-shakedown.md` — **authored this session** (same missing-file finding). The first campaign that inherits these defaults; ratification unblocks its lock.
 - `docs/adr/2026-07-10-databento-research-stack.md` — read. Stack scope + the cost falsifier (§4) the per-campaign cost gate mirrors; §5 "post-integration amendments go through the normal skill-authoring path with their own review" is the authority under which this ratification + the pipeline-hardening tracks land.
 - `.claude/skills/strategy-validation/SKILL.md` §8 — read. SPA/StepM/MCS via `arch.bootstrap`, DSR via `scripts/deflated_sharpe.py`, PBO/CPCV via `skfolio` — the universe correction the DSR/SPA defaults invoke. The block-bootstrap `block_size`-not-`sqrt(T)` instruction is §8a verbatim.
-- `.claude/skills/databento-data/reference/proxy-discipline.md` — read. Micro-era start **2019-05-06** (index micros; MGC 2010) and the 1:10 re-scale the temporal-axis default depends on; the 2019+ native-micro OOS gate is a **realism** gate, handed to `strategy-validation`.
+- [`.claude/skills/databento-data/reference/proxy-discipline.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/.claude/skills/databento-data/reference/proxy-discipline.md) — read (now `futures-anomaly-discovery/reference/proxy-discipline.md`, #860). Micro-era start **2019-05-06** (index micros; MGC 2010) and the 1:10 re-scale the temporal-axis default depends on; the 2019+ native-micro OOS gate is a **realism** gate, handed to `strategy-validation`.
 
 ---
 
