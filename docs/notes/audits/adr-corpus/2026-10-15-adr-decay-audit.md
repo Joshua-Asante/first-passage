@@ -8,11 +8,11 @@
 **Lives in:** `docs/notes/audits/adr-corpus/2026-10-15-adr-decay-audit.md`
 
 The `adr-decay-audit` method ran as 15 Phase-1 scan batches, 12 refute-first Phase-2
-verifiers and 10 implementation packages. The coordinator merged and reviewed each
-package, then re-ran the gates. Result: **45 ADRs removed (140 → 95)** and 7 legacy cold bodies
+verifiers and 11 implementation packages. The coordinator merged and reviewed each
+package, then re-ran the gates. Result: **46 ADRs removed (140 → 94)** and 7 legacy cold bodies
 removed, each with a [TOMBSTONES row](../../../adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals).
-19 ADRs were trimmed, 22 owners (8 of them ADRs) absorbed consolidated text and 38 more got fixes or link pins.
-ADR bytes fell from 3,080,786 to 2,262,069 (−27%). **No future trigger rider was retired**:
+21 ADRs were trimmed, 23 owners (8 of them ADRs) absorbed consolidated text and 39 more got fixes or link pins.
+ADR bytes fell from 3,080,786 to 2,219,058 (−28%). **No future trigger rider was retired**:
 each one is still in place, carried verbatim to a surviving owner, or discharged by a
 recorded event (§3.3). §5 holds the rulings only the operator can make.
 
@@ -25,9 +25,9 @@ recorded event (§3.3). §5 holds the rulings only the operator can make.
 - Policy owners: [ceremony tiering](../../../adr/2026-08-08-adr-ceremony-tiering.md),
   [Rule 16](../../../operational_rules.md#16-retention--an-artifact-must-earn-its-place-and-deletion-is-classified-by-execution-not-by-folder),
   the `adr-decay-audit` skill.
-- Concurrent open PRs that touch the same tree: #850 (public-exposure redaction), #851
-  (wave-1 deletions), #848, #849 (idle-line dormancy), #847, #852. #855 merges last, per the
-  coordinating doc-alignment session.
+- Concurrent PRs that touch the same tree: #850 (public-exposure redaction; merged and taken in
+  at `dad73e3d`), #851 (wave-1 deletions; open), #848, #849 (idle-line dormancy), #847, #852. #855
+  merges last, per the coordinating doc-alignment session.
 - Prior run: [2026-08-29 audit](2026-08-29-adr-decay-audit.md).
 
 ## §1 — Trigger
@@ -49,7 +49,8 @@ Each deletion passes the full §16 classification.
 3. **Phase 2 verify.** 12 verifiers re-derived evidence and tried to refute each proposal. 117
    items were verified. The verifiers corrected many Phase-1 specs, most often for line-cited text,
    check-required sections, riders and Track B dependencies.
-4. **Implementation.** 10 packages ran in isolated worktrees. The coordinator merged them,
+4. **Implementation.** 10 packages ran in isolated worktrees, plus an 11th on the three
+   #850-held ADRs once #850 merged (its pins and tombstone row use `dad73e3d`, the redacted text). The coordinator merged them,
    resolved 19 merge conflicts, assembled TOMBSTONES and regenerated INDEX. After each merge it ran a
    guard (no Track B, protected-code, #850-held or frozen-file edits, no redacted figure) and a
    sentinel rider-map diff.
@@ -99,23 +100,24 @@ both reproduced.
 
 | Outcome | Count |
 |---|---:|
-| Removed (TOMBSTONES row; inbound links repointed to owner or pinned blob) | 45 ADRs + 7 cold bodies |
-| Trimmed (Revision line names the pre-trim blob) | 19 |
-| Received consolidated text verbatim, with provenance | 8 ADRs + 14 non-ADR owners |
-| Fixed / link-pinned only | 38 |
-| Unchanged (KEEP, HOLD, DEFERRED, Track B) | 31 |
+| Removed (TOMBSTONES row; inbound links repointed to owner or pinned blob) | 46 ADRs + 7 cold bodies |
+| Trimmed (Revision line names the pre-trim blob) | 21 |
+| Received consolidated text verbatim, with provenance | 8 ADRs + 15 non-ADR owners |
+| Fixed / link-pinned only | 39 |
+| Unchanged (KEEP, HOLD, DEFERRED, Track B) | 27 |
 
 Consolidation families landed:
 - The CFD/challenge era (8 ADRs) went to [substrate §11](../../../adr/2026-07-22-challenge-era-substrate-retirement.md).
 - The retired data vendors (Dukascopy, OANDA) went to the [feed policy](../../../adr/2026-06-12-tv-csv-canonical-feed-policy.md).
 - The closure-gate pair went to [`scripts/README.md#closure-enforcement`](../../../../scripts/README.md#closure-enforcement)
   and the closure template.
-- Call-1 went to `strategy_lifecycle.md`, and dedup-first to Rule 8.
+- Call-1 went to `strategy_lifecycle.md`, dedup-first to Rule 8, and MVD discipline to
+  `rule_0.md` (after #850).
 - The dd lineage went to the C2 relock and ULP (append-only).
 - Rung selection went to the objective map, W1 to load-bearing numbers §1, and the CFO ledger
   and catalog rules to their operating owners.
 
-The legacy cold store now holds only the Aegis body, which #850 deletes. The
+The legacy cold store `docs/ltm/adr/` is gone: this PR removed 7 bodies and #850 removed Aegis. The
 `scripts/retire_adr.py` docstring now says the stub/body form is optional. Its behaviour is
 unchanged.
 
@@ -295,13 +297,10 @@ Two further dated obligations that no ADR field carries:
 
 ### §5.4 Waiting on other PRs or the idle-lines chip (no ruling needed)
 
-- **After #850 merges:**
-  - mvd-discipline → `rule_0.md`, verified;
-  - guardian-pyport delete (also rider-held);
-  - lifecycle-governance trim, verified;
-  - venue-binding reduced trim plus 2 FIXes, verified;
-  - egress → browser, after the 10-25 check;
-  - 06-30 → substrate §11, after §5.2 item 6.
+- **#850 merged** (taken in at `dad73e3d`): mvd-discipline → `rule_0.md`, the lifecycle-governance
+  trim and the venue-binding trim plus 2 FIXes landed in this PR. Still held, for other reasons:
+  guardian-pyport (rider, §5.1), egress → browser (after the 2026-10-25 check) and 06-30 → substrate
+  §11 (after §5.2 item 6).
 - **After #851 merges:** fix the §0/§10 references in surviving ADRs to the specs and briefs it
   deletes.
 - **Idle-lines chip:** the research-supply consolidations, all tagged DEFERRED in the ledger.
@@ -354,7 +353,7 @@ SA = still applicable · DD = decayed, documented · DU = decayed, undocumented 
 | `2026-04-17-portfolio-allocations` | DD | removed | confirmed (changed) | 5,517 → 0 |
 | `2026-04-17-striker-v4.3-pyramid` | DU | removed | confirmed (changed) | 4,764 → 0 |
 | `2026-04-23-guardian-risk-relock-0.34` | DD | removed | confirmed (changed) | 4,444 → 0 |
-| `2026-04-24-mvd-discipline` | DD | unchanged | HOLD (#850 redaction) | 11,083 → 11,083 |
+| `2026-04-24-mvd-discipline` | DD | removed | confirmed (changed); done after #850 merged | 11,083 → 0 |
 | `2026-05-03-sentinel-gate-decision` | SA | removed | confirmed (changed) | 6,924 → 0 |
 | `2026-05-08-dd-trigger-c2-relock` | SA | consolidation target | HOLD_TRACK_B | 11,148 → 15,664 |
 | `2026-05-10-dd-protection-ulp-rounding` | SA | consolidation target | confirmed (changed) | 12,050 → 14,979 |
@@ -378,15 +377,15 @@ SA = still applicable · DD = decayed, documented · DU = decayed, undocumented 
 | `2026-06-16-rule-2-budget-before-acting` | DU | trimmed | confirmed (changed) | 36,521 → 24,257 |
 | `2026-06-17-dukascopy-retirement` | DD | removed | confirmed (changed) | 18,907 → 0 |
 | `2026-06-22-cost-geometry-pregate` | SA | fixed/pinned | HOLD_RIDER | 16,647 → 16,937 |
-| `2026-06-23-tv-backtest-egress-automation` | DD | unchanged | HOLD (#850 redaction) + HOLD_RIDER | 18,655 → 18,655 |
+| `2026-06-23-tv-backtest-egress-automation` | DD | fixed/pinned | HOLD (#850 redaction) + HOLD_RIDER | 18,655 → 18,718 |
 | `2026-06-24-oanda-retirement` | DD | removed | confirmed (changed) | 19,568 → 0 |
 | `2026-06-30-no-manual-trading-cfd-retirement` | DU | fixed/pinned | HOLD (#850 redaction) | 22,785 → 22,887 |
 | `2026-07-01-add-back-metric-layer-split` | DD | removed | confirmed (changed) | 18,971 → 0 |
-| `2026-07-01-guardian-pyport-public-tracking` | DD | unchanged | HOLD (#850 redaction) + HOLD_RIDER | 22,708 → 22,708 |
+| `2026-07-01-guardian-pyport-public-tracking` | DD | fixed/pinned | HOLD (#850 redaction) + HOLD_RIDER | 22,708 → 22,795 |
 | `2026-07-06-bust-day-maxdd-inclusion` | DU | unchanged | HOLD_RIDER | 15,098 → 15,098 |
 | `2026-07-10-databento-research-stack` | DD | trimmed | confirmed (changed) | 26,345 → 17,487 |
 | `2026-07-10-r6-nogo-futures-residual-disposition` | DD | removed | confirmed (changed) | 21,055 → 0 |
-| `2026-07-10-strategies-never-locked-lifecycle-governance` | DD | fixed/pinned | HOLD (#850 redaction) | 53,859 → 54,224 |
+| `2026-07-10-strategies-never-locked-lifecycle-governance` | DD | trimmed | confirmed (changed); done after #850 merged | 53,859 → 25,496 |
 | `2026-07-11-challenge-era-claims-rescope` | DD | removed | confirmed (changed) | 30,060 → 0 |
 | `2026-07-11-discovery-campaign-defaults-ratified` | DD | fixed/pinned | confirmed (changed) | 13,872 → 15,208 |
 | `2026-07-11-gen1-pipeline-retirement` | DU | removed | confirmed (changed) | 31,201 → 0 |
@@ -430,7 +429,7 @@ SA = still applicable · DD = decayed, documented · DU = decayed, undocumented 
 | `2026-08-04-tradeify-venue-descope-eval-included` | SA | unchanged | REPORT_ONLY (Track B) | 71,391 → 71,391 |
 | `2026-08-05-avenue-a-generate-confirm-route` | DD | removed | confirmed (changed) | 527 → 0 |
 | `2026-08-05-blusky-inactivity-unsourced-encoding` | DD | removed | confirmed (changed) | 22,133 → 0 |
-| `2026-08-05-strategy-venue-binding-axis` | UN | unchanged | HOLD (#850 redaction) | 31,949 → 31,949 |
+| `2026-08-05-strategy-venue-binding-axis` | UN | trimmed | confirmed (changed); done after #850 merged | 31,949 → 28,599 |
 | `2026-08-05b-blusky-inactivity-rule-sourced` | SA | consolidation target | confirmed (changed) | 17,661 → 20,360 |
 | `2026-08-06-candidate-call1-action-on-breach` | SA | removed | confirmed (changed) | 14,420 → 0 |
 | `2026-08-07-loop-s1-environment-ratification` | SA | unchanged | not re-verified | 8,417 → 8,417 |
