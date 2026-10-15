@@ -231,12 +231,11 @@ def test_force_add_check_covers_renames_into_ignored_paths(repo: Path):
 GRANDFATHERED = "tests/fixtures/c1_image_validation/lifecycle_state.json"
 
 
-def test_grandfathered_constant_names_exactly_the_two_known_files():
+def test_grandfathered_constant_names_exactly_the_known_file():
     """Codex P1 4111056549: the tracked-despite-ignore exemption is a named,
     closed list, not a HEAD-membership test."""
     assert csd.TRACKED_IGNORED_GRANDFATHERED == frozenset(
         {
-            "lab/pine/mnq_mym_mechanism_diagnostic_v0_1.pine",
             "tests/fixtures/c1_image_validation/lifecycle_state.json",
         }
     )

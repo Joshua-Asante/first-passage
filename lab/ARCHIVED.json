@@ -811,11 +811,7 @@
     "lab/archive/feed_divergence_2026-06/parse_tv_export.py",
     "lab/archive/feed_divergence_2026-06/run_gates.py"
    ],
-   "retained_files": [
-    "lab/analysis/feed_divergence_2026-06/CARD.md",
-    "lab/archive/feed_divergence_2026-06/README.md",
-    "lab/archive/feed_divergence_2026-06/_lib.py"
-   ]
+   "retained_files": []
   },
   "firm_model_repair_r1_7tier_2026-08-23": {
    "table": "hot",
