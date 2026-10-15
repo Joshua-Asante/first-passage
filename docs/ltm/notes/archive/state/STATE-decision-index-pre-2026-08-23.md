@@ -4,6 +4,8 @@ Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-poin
 
 **Roll 2026-10-15** (automated keep-15 roll; `scripts/state_roll.py`):
 
+- **2026-09-23** — T00 step 1 returned INSUFFICIENT, accepted. A T00 screen is not four-firm §4 falsifier evidence; the 2026-11-08 falsifier needs its own dated re-MC. Path-position bracket convention [ratified](../../../../../docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23), replacing one P7 blocker only. [Rulings](../../../../../docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23). *2026-10-02:* §4 status is ruled at its [owner](../../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted).
+
 - **2026-09-22** — Deployment-checklist amendment §4 ratified, all five as recommended: T00 step 1 authorized; D-feed, D-broker, D-codex and D-sequence adopted. [Addendum](../../../../../docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)
 
 **Roll 2026-10-14** (automated keep-15 roll; `scripts/state_roll.py`):

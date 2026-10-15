@@ -2,9 +2,6 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "mcp__733e0d99-31e4-4160-9c89-e998d4df3c6f__notion-fetch",
-      "mcp__733e0d99-31e4-4160-9c89-e998d4df3c6f__notion-search",
-      "Bash(python dd_protection.py:*)",
       "Bash(python scripts/verify_lock_anchors.py:*)",
       "Bash(git log:*)",
       "Bash(git diff:*)",

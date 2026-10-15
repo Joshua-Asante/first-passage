@@ -12,14 +12,15 @@ Decide `environment: local` vs `cloud` **before** launching a Task / cloud-capab
 
 ## Procedure
 
-1. **Honor explicit override.** If the user already said local or cloud for this work, use that (including a standing preference below). Skip the ask.
-2. **Run the local-only checklist.** Any hit → `local`. State which item hit.
-3. **No hits → cloud-eligible.** Do **not** launch yet. Ask for GO with a one-line reason.
-4. **Unclear → `local`.** Safe default.
+1. **Honor explicit override.** If the user already said local or cloud for this work, use that. Skip the rest.
+2. **Run the local-only checklist.** Any hit → `local`, and the card, handoff or dispatch prompt says **"Must run locally"** near its top with the reason (the checklist item that hit).
+3. **No hits → `cloud`.** Cloud is the default for chip tasks, handoffs and dispatch cards ([AGENTS.md §Purpose](../../../AGENTS.md#purpose), operator direction 2026-10-13); no environment GO is asked.
+4. **Unclear → resolve the item.** Run the cheap check (is the path tracked? is the credential needed?). If it stays unresolved, treat it as a hit and apply step 2.
 
 ## Standing preferences
 
-- **Cloud review (operator, 2026-09-27).** Read-only review and adversarial-verification work is cloud-eligible without a per-task GO when it reviews a pushed, pinned revision; fixes and anything touching uncommitted state stay local. This standing GO satisfies step 3 for such reviews only; the local-only checklist still applies, and the reviewer returns findings without writing to the reviewed branch.
+- **Cloud default (operator, 2026-10-13).** Owner: [AGENTS.md §Purpose](../../../AGENTS.md#purpose). A local packet without the "Must run locally" line and its reason is malformed.
+- **Cloud review (operator, 2026-09-27).** A cloud reviewer of a pushed, pinned revision returns findings without writing to the reviewed branch.
 
 ## Local-only checklist
 
@@ -31,18 +32,17 @@ Any hit forces `local`:
 - Needs GUI, interactive approval, or browser-on-this-machine
 - Depends on uncommitted, unpushed, or worktree-only state
 - Needs durable local disk or paths outside a fresh cloud checkout
+- Needs the private read surface or other private evidence writes ([AGENTS.md §Public-clone posture](../../../AGENTS.md#public-clone-posture)) or the operator's machine or VM
 
 ## Output contract
 
-Emit this before launch (or before the cloud ask):
+Emit this before launch:
 
 ```text
-Routing: local | cloud-eligible
+Routing: local | cloud
 Reason: <checklist hit, or "no local-only deps">
-Action: launching local | waiting for cloud GO
+Action: launching local ("Must run locally: <reason>" on the packet) | launching cloud
 ```
-
-**Cloud ask** (one sentence): why eligible + “Launch in cloud?”
 
 ## Non-goals
 
@@ -56,7 +56,3 @@ This skill is the **canonical home** for the local-only checklist. Any multi-pac
 re-applies it per packet at dispatch time, not once at authoring time — the dispatch-moment
 re-check is the load-bearing part, because a packet's environment premises go stale between
 authoring and dispatch.
-
-The retired `cursor-fleet` skill carried that per-packet restatement; it is removed with the
-Cursor lane ([worker-surface allocation](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md),
-Revision 2026-09-15). Nothing was lost: the checklist itself never moved from here.

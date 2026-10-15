@@ -3,7 +3,7 @@ description: Generate per-decision Q8a-style audit table for a doc/code skew win
 allowed-tools: Bash(git log:*), Bash(git show:*), Bash(git diff:*), Read, Grep
 ---
 
-Per Rule 6 in [docs/operational_rules.md](../../docs/operational_rules.md), Q8a section.
+Per Rule 6 in [docs/operational_rules.md](../../docs/operational_rules.md), §Q8a audit result.
 
 Steps:
 
@@ -15,7 +15,7 @@ Steps:
    - Stale pointer it could plausibly consult (e.g., `aegis_v4.1.pine` ADR `Code:` line; "None" if none)
    - Consulted? (Yes / No / explanation)
    - Equivalent at relevant logic? (Yes / No / n/a)
-4. **Render** as a markdown table matching the format in `operational_rules.md` lines 111-124.
+4. **Render** as a markdown table with the step-3 columns (the original Q8a per-commit table is in history: `git show cfea4a2`).
 5. **Close** the audit with either "zero corrupted decisions" or list the corrupted ones with the load-bearing logic that was wrong.
 
 Output the table in chat. Do NOT write to any file. The user will paste it into the relevant ADR or operational_rules.md update if they want it persisted.
