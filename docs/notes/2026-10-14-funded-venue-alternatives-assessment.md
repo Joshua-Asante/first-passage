@@ -89,6 +89,14 @@ Plan on FLOOR-HALF (ORB off) or about 0.75 size until a dated intraday-honest re
 
 ## 7. Routes and adapter reuse
 
+**Capability correction (2026-10-15):** the recorded no-trailing limitation below
+is historical, not a current capability claim. CrossTrade now documents native
+continuous trailing and Tradovate account events; triggered-trailing ownership
+has conflicting descriptions. The dated sources and current personal route/feed
+next steps are in [personal plan §8.1](2026-10-11-personal-clearance-plan-tradeify-book.md#81-personal-r1-route-and-feed-next-steps-2026-10-15).
+Qualify only features emitted by active R1 legs; the fixed-stop proposal does not
+substitute for personal R1. This research table does not choose its route.
+
 | Rail | Chain | Venues | Notes |
 |---|---|---|---|
 | Tradovate | daemon → Fly.io listener → new 4-leg adapter → CrossTrade → Tradovate | Lucid, FXIFY, BluSky; personal Tradovate | Repo already models Tradovate semantics. Shared risk: bridge-only on prop accounts. CrossTrade REST has no trailing stop (Vanguard uses its fixed-stop edition). CrossTrade "Link Demo" OAuth to prop logins is a vendor claim (**UNVERIFIED**) |

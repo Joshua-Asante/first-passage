@@ -133,6 +133,13 @@ Prepared on Joshua's 2026-10-12 instruction. These are conditional subtotals for
 
 **CrossTrade baseline.** CrossTrade is kept, so its $50/month is a cost already being paid, not a saving available by cancelling it. It supplies no client market-data feed, so it does not offset the data line. Choosing between finishing the personal route on CrossTrade REST and integrating Tradovate directly belongs to the T09 route owner. That owner compares the remaining qualification work on each before choosing.
 
+**Incremental-cost reading (2026-10-15):** use [personal plan §8.1](2026-10-11-personal-clearance-plan-tradeify-book.md#81-personal-r1-route-and-feed-next-steps-2026-10-15)
+for the comparison sequence. Confirm whether Tradovate API access is required for
+the selected feed under both execution routes before counting it as a direct-route
+increment. Retained-plan API entitlement also needs confirmation; nominal list-price
+subtraction does not decide the route. The figures above remain dated conditional
+scenarios, not an account-specific licensing classification or total quote.
+
 **Azure (research, priced separately).**
 - VM: `Standard_D32ls_v6` (32 vCPU / 64 GiB, Windows Server 2025, East US).
 - Cost: about $2.90 per running VM-hour, plus disk and IP.

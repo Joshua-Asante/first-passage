@@ -1,5 +1,10 @@
 # Personal-clearance plan: Tradeify book at E_0
 
+**Current reading (2026-10-15):** the dated proposal, pending-decision labels and
+queue below retain their historical scope. Current route/feed preparation is
+[§8.1](#81-personal-r1-route-and-feed-next-steps-2026-10-15), which links the frozen
+study and current writer order; it does not reopen the old sizing decisions.
+
 **Status:** DRAFT plan for Joshua, prepared by the Deployment Coordinator; corrected 2026-10-11 for Joshua's corrections (§1). The coordinator owns #752 under [ADR addendum 2026-10-11b](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split) (#784, open). This plan authorizes nothing: no build, export, replay, freeze, spend, arm or order. Items marked **Joshua** are decisions for him to make.
 
 **Read at:** `origin/main@2cfb3d7`. PR heads read: #752 `b02c173`, #775 `d3e4487`, #776 `99126d2`, #777 `bf5579a`, #779 `2275285`, #782 `22d0924`, #783 `a6d8f02`, #784 `d7ad4d8` (corrected 2026-10-11), plus #770, #773 and #774. Sources re-read for the correction fold:
@@ -332,6 +337,99 @@ The personal session sits downstream of most of the Tradeify book-route build: T
 | Personal deployment GO (baked into the image) | Arming, or a `dry_run=false` boot | Joshua |
 | Live-spend GO | Any live order, drills included | Joshua |
 | Per-session GO | Every armed session | Joshua |
+
+### 8.1 Personal R1 route and feed next steps (2026-10-15)
+
+**Current preparation sequence; existing owners retained.** Joshua requested this
+documentation alignment after the bounded route/feed audit. This section replaces
+the broad external-ask and route/feed preparation reading of rows 0.2, 2.9 and
+3.1–3.2 above; their activation, funding and qualification gates remain. The
+historical queue is not a new dispatch. Use [live-wiring §§6b–6d](2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12)
+for writer order and [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md)
+for the frozen study. Track B stays [suspended](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft).
+This alignment selects no route/provider, changes no operating authority and
+authorizes no outreach, access, spend or additional simulation.
+
+1. **Obtain the actual R1 intent trace from the existing fidelity owner first.**
+   Reuse [Card D / its FG executor](../briefs/handoffs/2026-10-12-q-sfclear-2-run-path-d-fg-parity-card-DRAFT.md#13-part-2-the-fg-evidence-run-claude-owned-executor-act-not-in-this-build)
+   and the current B/D/E work; do not open a parallel replay or clearance writer.
+   Bind the trace to the frozen R1 tuple, source/port identities and schedule;
+   identify entry timing, side, quantity law, per-fill bracket/attach/amend/cancel
+   and exit behavior, including intentional delayed protection. Keep private
+   quantities and source bodies private. R1 keeps Aegis base, Striker/Vanguard
+   adds OFF, ORB OFF, personal P0 and the 80-micro cap. Generic continuous or
+   triggered trailing is a qualification requirement only if an enabled R1 leg
+   emits it. Do not substitute the full book or Tradeify's fixed-stop/single-contract
+   drafts. Stop feature mapping on an unverified trace; use its existing owner.
+2. **T09 compares both routes against that same trace.** Separate documented
+   capability, repository implementation, test evidence and account entitlement.
+   The [book owner](../../ops/c1_rail/book_account_owner.py) still returns
+   `production_route_unavailable` without a synthetic broker. Reuse synthetic
+   parity/control tests without calling them production or real-R1 FG evidence.
+   Direct Tradovate documents [OSO/OCO](https://partner.tradovate.com/api/rest-api-endpoints/orders/place-oso),
+   [modify](https://partner.tradovate.com/api/rest-api-endpoints/orders/modify-order)
+   and [account synchronization](https://partner.tradovate.com/overview/core-concepts/web-sockets/user-syncrequest).
+   CrossTrade documents native continuous trailing and Tradovate account-event
+   streaming ([Destinations](https://crosstrade.io/docs/webhooks/destinations),
+   [WebSocket](https://crosstrade.io/docs/api/websocket-api)); older blanket
+   no-trailing/no-account-stream readings are superseded as capability claims.
+   Its [execution internals](https://crosstrade.io/docs/tradovate/webhooks) disclose
+   first-fill-sized protection and an uncovered later-fill interval before repair.
+   Compare protection coverage, stop-change outcomes, ambiguous-send reconciliation
+   (not blind retries or presumed `clOrdId` idempotency), reconnect, cancellation
+   and scheduled exit on each route. Inventory broker/provider watchers, copiers
+   and delayed work, including how manual takeover accounts for them. Direct
+   execution removes an intermediary but needs its own adapter/evidence handling;
+   CrossTrade supplies management but adds actors to reconcile. Neither is proven
+   preferable yet. **Triggered-trail contradiction:** the CrossTrade
+   [overview](https://crosstrade.io/docs/api/tradovate/overview) `atmTrailOffset`
+   table describes native handoff, while its example and Destinations describe
+   continuing managed ordinary-stop amendments without conversion. Do not choose
+   an interpretation or demand this feature unless the R1 trace requires it.
+3. **T14 establishes minute-feed eligibility before provider implementation.**
+   [Tradovate `md/getChart`](https://partner.tradovate.com/overview/core-concepts/web-sockets/market-data/market-data-request-reference)
+   documents MinuteBar OHLC, volume fields and historical/realtime IDs; it does
+   not establish the required completion/ordering contract. Bind timestamp meaning,
+   total-volume construction, forming updates versus corrections, quiet-minute
+   behavior, and historical/live separation across reconnects against the existing
+   [equivalence spec §§4, 7.1, 16](../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md).
+   A completion message needs sequence continuity or documented in-order delivery;
+   a generic heartbeat or elapsed minute is insufficient. The existing
+   [final-bar wrapper](../../ops/c1_signal_daemon/bar_source_contract.py) excludes
+   minute aggregation and cannot establish provider finality (`final=True` is not
+   evidence). CrossTrade's Tradovate account stream is not market data. Next proof:
+   bounded offline fixtures for normalization, updates, gaps and reconnect overlap;
+   then authorized service capture and the existing equivalence test. Fixtures
+   cannot prove vendor guarantees. Stop on unsupported completeness or unclassifiable
+   replay; do not invent quiet bars, weaken thresholds or activate a feed to find out.
+4. **Return one route decision through the existing owners.** Compare the remaining
+   adapter, evidence-producer and qualification work plus exact account access and
+   incremental cost. [CrossTrade is retained](../pursuits/SUBSCRIPTION_LEDGER.md);
+   Tradovate API access may be needed for the feed under either execution route.
+   List-price subtraction is not incremental cost; use the
+   [cost note's conditional baseline](2026-10-11-feed-cost-sanity-check.md).
+   Licensing classification, internal aggregation permission and total fees remain
+   external answers, separate from technical capability and portfolio clearance.
+   Reuse [attended recovery §§1–4](../spec/2026-09-14-tb-s3-halt-resume-contract.md):
+   incident halt fences runtime mutations; Joshua manages the platform, acknowledges
+   within the existing target and remains until reconciled/disarmed. A local fence
+   cannot quiesce provider actors. Preserve the one-account switch check (§7.2),
+   including no queued/retrying/scheduled entries. Stop release on missing coherent
+   recovery evidence; do not reopen accepted engineering or dispatch new writers.
+
+**Remaining provider questions — only after checking existing answers.** Public
+sources above and below were read 2026-10-15 at main `bdd026c9`; documentation is
+not account-specific entitlement or observed execution. These are questions to
+retain with the existing owners, not instructions to send. The unsent joint
+licensing draft is unchanged; private correspondence is not reproduced here.
+
+| Recipient / question | Decision it changes / evidence needing resolution |
+|---|---|
+| Tradovate/NinjaTrader: which exact personal service and entitlements enable market-data `md/getChart` and the required order operations, and what incremental charges apply? | Account/service eligibility and shared-cost treatment. [API access](https://support.ninjatrader.com/s/article/Tradovate-API-Access?language=en_US) and partner schemas do not establish this account's access; the support article body was not readable in the audit. |
+| Market-data provider: what are minute timestamp, volume, forming-update/correction, no-trade and reconnect semantics; what sequence/finality contract proves no earlier constituent can still arrive? Which chart ID cancels the live subscription? | Eligibility under spec §7.1. The getChart reference lacks these guarantees and describes historical versus realtime cancellation IDs inconsistently. Observations alone cannot establish a delivery guarantee. |
+| CrossTrade, **if active R1 needs triggered trailing**: is the working stop converted or continuously managed, and what survives outages? | Exact exit mapping and recovery ownership; overview field table conflicts with example/Destinations. |
+| Each route's provider, for unresolved facts after intent mapping: how are later partial fills protected, and how can all remaining watcher, delayed and scheduled work be inventoried and safely quiesced for platform takeover? | Protection intervals and recovery evidence. CrossTrade execution internals disclose repair after fills; neither API availability nor local fencing proves no future provider effect. |
+| Existing licensing inquiry: confirm distributing legal entity/service, Schedule 5 §3.3 applicability, direct ILA requirement, internal 1-minute-to-15-minute OHLC permission and total three-exchange fees. | Permission and funding, not technical or clearance acceptance; [licensing research and subsequent addenda](2026-10-10-cme-non-display-licensing-research.md) and the cost note retain conditional scenarios, not a licence determination or quote. |
 
 ## 9. Dependencies and open decisions
 

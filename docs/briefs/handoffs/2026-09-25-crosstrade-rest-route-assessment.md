@@ -1,5 +1,12 @@
 # CrossTrade REST route assessment — bounded handoff
 
+**Capability update / personal applicability (2026-10-15):** historical findings
+and scoped acceptance below are retained. Blanket no-trailing or no-account-stream
+readings are superseded by current official documentation; triggered-trailing
+ownership is still described inconsistently. See [personal plan §8.1](../../notes/2026-10-11-personal-clearance-plan-tradeify-book.md#81-personal-r1-route-and-feed-next-steps-2026-10-15)
+for dated sources and the same-R1-trace comparison with direct Tradovate. This
+does not reopen accepted drills, select a personal route or resume Track B.
+
 **Status:** RETURNED; **Gate A accepted with changes 2026-09-26 ([§6.11](#611-gate-a-factual-disposition))**. The original dispatch instructions and the execution record remain below; §6.1 records the committed-handoff breach. The 2026-09-26 reconciliation incorporates the separate Vanguard return as evidence awaiting acceptance, not route adoption.
 
 > Execute with `superpowers:executing-plans`. This is a documentary capability assessment, not an adapter implementation. The deployment checklist remains the roadmap; the coordinator retains combined acceptance.

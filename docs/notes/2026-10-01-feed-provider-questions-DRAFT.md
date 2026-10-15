@@ -11,6 +11,14 @@
 
 ---
 
+**Personal-lane navigation (2026-10-15):** the dated shortlist and broad Q1–Q12
+record below are retained. For current personal Tradovate preparation, use the
+[personal plan §8.1](2026-10-11-personal-clearance-plan-tradeify-book.md#81-personal-r1-route-and-feed-next-steps-2026-10-15)
+for the remaining eligibility gaps, bounded proofs and provider-only questions.
+Earlier requests to send the full shortlist are not a current dispatch. Account
+events do not supply market data; the final-bar wrapper does not prove minute-bar
+completion. Existing licensing correspondence/drafts and ownership are unchanged.
+
 ## 0. Evidence standard: read this first
 
 **No vendor page was opened in this session.** The cloud session's network policy blocked direct reads of `cmegroup.com`, `massive.com` and `developer.tastytrade.com` (`EGRESS_BLOCKED`). Every published-terms entry below therefore comes from one of two places:
