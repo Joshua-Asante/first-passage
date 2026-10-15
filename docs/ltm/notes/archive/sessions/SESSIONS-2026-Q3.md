@@ -3004,9 +3004,9 @@ token; Magdon-Ismail B.
 
 **Focus:** Four independently verified dead-trigger surfaces (2026-08-14): delete lock-brief template; dormancy-mark 1R live-calibration + E1–E4; discharge lean-portfolio meta-layer falsifier.
 
-**Shipped:** branch `cursor/dormant-dead-trigger-docs-0ebd` — [PR #824](https://github.com/Joshua-Asante/first-passage-archive/pull/824) — [lock_decision.md deleted](../../../../../.claude/skills/brief-authoring/SKILL.md) · [1r_estimation](../../../../methodology/1r_estimation.md) · [lean-portfolio addendum](../../../../adr/2026-06-04-lean-portfolio-meta-layer.md) · [E1–E4](../../../../methodology/lessons/execution_lessons.md). $0 · K=0.
+**Shipped:** branch `cursor/dormant-dead-trigger-docs-0ebd` — [PR #824](https://github.com/Joshua-Asante/first-passage-archive/pull/824) — [lock_decision.md deleted](../../../../../.claude/skills/brief-authoring/SKILL.md) · [1r_estimation](../../../../methodology/1r_estimation.md) · [lean-portfolio addendum](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-04-lean-portfolio-meta-layer.md) · [E1–E4](../../../../methodology/lessons/execution_lessons.md). $0 · K=0.
 
-**Decisions/defects:** §4 falsifier of [lean-portfolio](../../../../adr/2026-06-04-lean-portfolio-meta-layer.md) recorded FIRED 2026-07-30 (ceremonial; children live). Owner: that ADR's 2026-08-14 addendum.
+**Decisions/defects:** §4 falsifier of [lean-portfolio](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-04-lean-portfolio-meta-layer.md) recorded FIRED 2026-07-30 (ceremonial; children live). Owner: that ADR's 2026-08-14 addendum.
 
 **Open / next:** CapFLOW Cap-spend FALSIFIED (Cap held). Carry: F-2; F1 2026-11-08; M1; weekly token; Magdon-Ismail B; no slate-4 until NEW WHO. Confirm #806 CI; cart confirm.
 

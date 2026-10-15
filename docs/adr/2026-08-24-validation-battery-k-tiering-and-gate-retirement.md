@@ -138,7 +138,7 @@ record:
    as invoked. This is Rule 16 R5's textbook case.
 
 The plan also cited an "add-back-metric-layer-split ADR" as the source of a STRATEGIC-tier
-adjudication requirement for the `pursuit-records` deletion. That ADR (`2026-07-01-add-back-metric-layer-split.md`)
+adjudication requirement for the `pursuit-records` deletion. That ADR ([`2026-07-01-add-back-metric-layer-split.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-01-add-back-metric-layer-split.md), removed 2026-10)
 exists but governs a methodology calibration metric — it contains no adjudication-authority
 clause. The actual rule (`2026-06-12-three-loop-methodology-binding.md` D2) governs
 programme/track/instrument-tier **Delete verdicts**, not gate-infrastructure retirement — see §2

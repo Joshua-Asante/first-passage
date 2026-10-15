@@ -199,7 +199,7 @@ This ADR accepts real costs (§6): surveillance overhead, and the risk that grad
 
 **Revert action:** supersede this ADR with a fresh one stating which trigger fired as the anchor. **Never edit §2's ratified values or §4 in place** (inherited from 2026-06-30 §5). The discomfort of a Type-I clip is a *named cost*, not grounds to silently loosen a floor.
 
-**Trigger check schedule:** at each quarterly programme audit / regime trigger — next **2026-08-08**, then 2026-11-08, 2027-02-08, 2027-05-08 — plus event-driven for trigger 3.
+**Trigger check schedule:** at each quarterly programme audit / regime trigger — next **2026-08-08**, then 2026-11-08, 2027-02-08, 2027-05-08 — plus event-driven for trigger 3; plus (carried from removed ADR 2026-08-06-candidate-call1-action-on-breach, rule now in strategy_lifecycle.md Call 1): Cap companion arming GO (packet 3), any ORB unpark GO, and 2026-11-08 programme audit if still open — check every hot mirror says operator-review-flag-only for a CANDIDATE breach and no code path autonomously demotes or retires from CANDIDATE.
 
 ---
 

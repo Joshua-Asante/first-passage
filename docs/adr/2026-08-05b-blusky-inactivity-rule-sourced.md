@@ -3,7 +3,7 @@
 **Status:** `Accepted` — operator directive this session (2026-08-05): *"source BluSky's actual activity rule from help.blusky.pro"*, the limb ADR 2026-08-05 §4 T1 pre-registered as the thing that would decide F3.
 **Decision date:** 2026-08-05
 **Authors:** Joshua (directive) + Claude Code (sourcing + measurement + draft + apply)
-**Supersedes:** [`2026-08-05-blusky-inactivity-unsourced-encoding.md`](2026-08-05-blusky-inactivity-unsourced-encoding.md) in part — its §4 **T1 fired**. That ADR's containment was correct for what was known at the time and is now discharged, not overturned.
+**Supersedes:** [`2026-08-05-blusky-inactivity-unsourced-encoding.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-05-blusky-inactivity-unsourced-encoding.md) in part — its §4 **T1 fired**. That ADR's containment was correct for what was known at the time and is now discharged, not overturned.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** superseded by a BluSky rule republication (§4 T2) or by an ADR that resolves the absorbing-vs-discretionary residual (§6)
@@ -30,7 +30,7 @@
 
 ## §1 — Context
 
-[`ADR 2026-08-05`](2026-08-05-blusky-inactivity-unsourced-encoding.md) contained a field it could not correct: `BluSky_Premium_*.inactivity_max_idle_days: 30`, annotated in its own comment as the *"30-day eval subscription renewal window"*, with **no** BluSky activity rule found anywhere in the repo. Its §4 T1 pre-registered the discharge: source the real rule, encode it, flip the flag, supersede, and re-run F3's BluSky arms.
+[`ADR 2026-08-05`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-05-blusky-inactivity-unsourced-encoding.md) contained a field it could not correct: `BluSky_Premium_*.inactivity_max_idle_days: 30`, annotated in its own comment as the *"30-day eval subscription renewal window"*, with **no** BluSky activity rule found anywhere in the repo. Its §4 T1 pre-registered the discharge: source the real rule, encode it, flip the flag, supersede, and re-run F3's BluSky arms.
 
 Sourcing found the rule — **in the Terms of Use, not the Evaluations collection.** The 2026-07-12 sweep read the rules articles and stopped there; the binding clause sits under *Refunds and Billing Policy*, which is also why the original annotation landed on the adjacent billing cycle. Both objects are real, both are "30 days", and the sweep encoded the wrong one.
 
@@ -76,14 +76,14 @@ So the threshold `30` turns out to be **right by coincidence and wrong by unit**
 |---|---|---|---|
 | T1 | BluSky publishes an evaluation-phase activity rule that is **not** 30 days, or explicitly scopes §3.3 to trading days | primary source, article-cited | Re-encode; if 5-day-class, **F3's answer becomes "no successor survives the unmitigated barrier"** and all three candidates fall |
 | T2 | §3.3 is republished defining "inactive" as login- or payment-based rather than trade-based | primary source | The field stops being an activity rule at all; revert to the 2026-08-05 containment posture (flag `False`) |
-| T3 | A tier is onboarded whose inactivity value is not traceable to a published activity rule and which omits `inactivity_rule_sourced` | any new tier | Block at engine pre-flight — inherited from ADR 2026-08-05 §4 T2, still in force |
+| T3 | A tier is onboarded whose inactivity value is not traceable to a published activity rule and which omits `inactivity_rule_sourced` | any new tier | Block at engine pre-flight (originally ADR 2026-08-05 §4 T2; see the consolidated section) |
 | T4 | An artifact quotes BluSky's **superseded** 0.52–1.40% as current | any RESULTS/ADR/brief | Banner it; the parent RESULTS' own banner + addendum is the reference form |
 
 **Not admissible as a revert route:** restoring `30` because it matches the clause's printed number. The printed number is calendar days; the field is business days. That equivalence is the defect this ADR closes.
 
 **Revert action:** author a superseding ADR. Never edit §2 in place.
 
-**Trigger check schedule:** T1/T2 at the next 90-day venue-fact re-verify (~2026-11-05, and this session resets that clock for BluSky). T3 on any new tier. T4 at each programme audit.
+**Trigger check schedule:** T1/T2 at the next 90-day venue-fact re-verify (~2026-11-05; ToU art. 11490284 §3.3 + art. 12434442 — not re-read by the 2026-10-02/03 envelope pass, PR #621). T3 on any new tier. T4 at each programme audit.
 
 ---
 
@@ -166,6 +166,8 @@ git diff --stat HEAD~1 -- core/mc/simulation.py core/mc/preflight.py core/dd_pro
 # Expected: empty
 ```
 
+*2026-10-15 — hook note:* hooks 1–2 count literals written before `4089c7a3` (2026-09-17); the value is now set once in `_BLUSKY_PREMIUM_EVAL`, so each returns 1. Current check: `python -c "import sys;sys.path.insert(0,'core');from firm_rules import FIRM_RULES as F;assert all(F[t]['inactivity_max_idle_days']==22 and F[t]['inactivity_rule_sourced'] is True for t in ('BluSky_Premium_50K','BluSky_Premium_100K'));print('OK')"`.
+
 ---
 
 ## Verification
@@ -185,3 +187,28 @@ python lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/run_blusky_unit_se
 | Date | Change | By |
 |---|---|---|
 | 2026-08-05 | Initial authoring, `Accepted` on operator directive. Supersedes the same-day containment ADR by discharging its §4 T1: BluSky's activity rule sourced to ToU art. 11490284 §3.3 (+ art. 12434442 defining *active* as trade-based), limit unit-corrected 30 → **22 idle bdays**, `inactivity_rule_sourced` flipped to `True` on both tiers. Guard machinery retained and re-tested against a synthetic tier. F3's direction unchanged, magnitude ~10× worse. Absorbing-vs-discretionary and the 2026-07-12 sweep's collection-scoping named as residuals. | Joshua (directive) + Claude Code (sourcing + measurement + draft + apply) |
+
+## Consolidated from ADR 2026-08-05 (containment) — 2026-10-15
+
+Consolidated 2026-10-15 from 2026-08-05-blusky-inactivity-unsourced-encoding (removed; see [TOMBSTONES](TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
+
+[ADR 2026-08-05](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-05-blusky-inactivity-unsourced-encoding.md)
+contained BluSky's then-unsourced limit and added the guard §2.3 retains; its
+§4 T1 fired and was discharged here the same day. Its surviving rules:
+
+- **Guard design.** An unsourced inactivity value is kept and flagged `inactivity_rule_sourced: False`;
+  `firm_kwargs` refuses an inactivity-ON run on it unless `allow_unsourced_inactivity=True`. Rejected,
+  not to be re-proposed: `None` (a bare `TypeError` deep inside `simulate_path`); deleting the key
+  (`KeyError`, and loses what the number was); substituting a sibling firm's value; and silently mapping
+  an unsourced tier to `INACTIVITY_OFF` — the most dangerous option, because it turns an optimistic
+  figure into a maximally optimistic one while looking like a safety measure.
+- **Not admissible as a way around the guard:** deleting `inactivity_rule_sourced` to make a run
+  proceed, or substituting a sibling firm's value. A figure run with `allow_unsourced_inactivity=True`
+  is an assumption and is labelled as one.
+- **Enforcement.** `tests/core/test_mc_preflight.py` pins the guard on a synthetic tier
+  (`test_unsourced_inactivity_on_raises_without_ack`, `…_allowed_with_explicit_ack`,
+  `test_unsourced_flag_never_affects_inactivity_off`); the former "guard bypassable or removed" trigger
+  is carried by those tests.
+- **History only:** the MFFU "not modeled as absorbing barrier" annotation versus the engine's absorbing
+  barrier when inactivity is ON; published figures are barrier-OFF
+  ([load-bearing numbers §2](../load_bearing_numbers.md#2-standing-rule--every-published-figure-assumes-the-inactivity-barrier-is-off)).

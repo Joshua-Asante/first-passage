@@ -177,7 +177,7 @@ Owners hold canonical criteria; rows are pointers.
 ### 2026-12-31 (approx.)
 
 - **Prop-envelope overlay:** reverify the 90-day venue facts for the four friendly firms only (operator default 2026-10-02, sheet E). The other four rows stay stale and unused.
-  Last done 2026-10-02/03 by [#621](https://github.com/Joshua-Asante/first-passage/pull/621). [Envelope §4](ops/prop_envelope_default.md)/[ratification](docs/adr/2026-07-13-prop-envelope-v1-ratification.md).
+  Last done 2026-10-02/03 by [#621](https://github.com/Joshua-Asante/first-passage/pull/621). [Envelope §4](ops/prop_envelope_default.md)/[ratification](ops/prop_envelope_default.md#5--ratification-record-all-v01-open-items-resolved-2026-07-13).
 
 ### 2027-02-08
 
