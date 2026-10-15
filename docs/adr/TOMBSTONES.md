@@ -5,6 +5,20 @@ retain their original archive retrieval instructions. A tombstone records histor
 not renewed permission; the linked current owner governs present work.
 
 
+<a id="2026-10-15-public-exposure-removal"></a>
+
+## 2026-10-15 public-exposure removal
+
+Operator direction 2026-10-15: delete, rely on git history. The retired cold body published
+locked-book backtest figures and Pine-only session values on the public tree. No live decision
+depended on it: the hot stub was already removed (2026-09-06 reduction, `lab/ARCHIVED.json`), and
+the locked values live in the locked Pine only ([CATALOG](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book)).
+Git history still holds the body; this row grants nothing.
+
+| Removed path | Disposition / current owner | Immutable blob |
+|---|---|---|
+| `docs/ltm/adr/2026-03-01-aegis-session-selection.md` | Retired 2026-08-31 ([audit](../notes/audits/programme-audit/2026-08-31-adr-corpus-audit.md)); no current owner (historical CFD book). | `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/ltm/adr/2026-03-01-aegis-session-selection.md`; blob `239729f3871fd0008ae7a6fc41943603d7047f91` |
+
 <a id="2026-09-15-cursor-agent-retirement"></a>
 
 ## 2026-09-15 Cursor agent retirement (RATIFIED — operator, in-session)

@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-10-13
+**Last curated:** 2026-10-15
 
 Read the queue, then its linked plan.
 [SESSIONS](docs/SESSIONS.md) is history, `git status` owns uncommitted work, [Rule 7](docs/operational_rules.md)
@@ -36,6 +36,7 @@ Newest 15 consequences; rationale stays with owners; older rows are in the
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave; their correction stays with the owner.
 
+- **2026-10-15** — Public-exposure removal (operator direction: delete, rely on git history; no history rewrite): the Striker day soft-stop is Pine-only; cleanup-packet decision 3 applied, decision 4 (bot-comment deletion) is the operator's UI action, decision 6's duplicates go to a follow-up ([packet §5–§6](docs/notes/2026-10-09-public-exposure-cleanup-packet.md#6--2026-10-15-follow-up)).
 - **2026-10-13** — Track B suspended (Tradeify-specific build and spend frozen; weekly trade and personal lane continue); 11-08 decision rules drafted, ratification owed ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft)).
 - **2026-10-12** — Personal clearance and live wiring: Q-SFCLEAR-2 ratified and frozen (F `83867f0`, [#752](https://github.com/Joshua-Asante/first-passage/pull/752)); run-path cards A–E frozen after rulings on items 1–7 ([packet](docs/notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md)); §60 VM exception extended to the FG run ([§60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)); P-L2 ordered ahead of GC-5/S2 and its legacy reading extended ([§6b/§6c](docs/notes/2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12)); Tradeify support rejected bridge routes for evaluation accounts, so new Tradeify-route and activation work is deferred while the personal lane proceeds under §6.6 ([route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12--tradeify-support-rejects-bridge-routes-for-evaluation-accounts), [ADR item 5](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-12--tradeify-support-replies-on-execution-routes-and-personal-accounts-item-5-record)).
 - **2026-10-12** — Route plan rulings: #805 P-L2 merged; P4 and P-SW take `book_account_owner.py` ahead of GC-5 and TB-I3 S2 ([§6d](docs/notes/2026-10-11-live-wiring-decision-packet.md#6d-owner-file-order-amendment-p4-and-p-sw-ahead-of-gc-5-and-tb-i3-s2-2026-10-12)); Grafana downgraded to Free, paging re-proved before arming ([G10](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md)); CrossTrade kept ([ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)); narrowed CME follow-up sent ([feed note](docs/notes/2026-10-01-feed-provider-questions-DRAFT.md)).
@@ -51,7 +52,6 @@ Retracted verdicts leave; their correction stays with the owner.
 - **2026-09-24** — Bracket-convention build GO, engine layer only ([GO](docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23)). T00 step 1 RESOLVED (P7 MET) at `2baa516`; step-1b P7 re-run done and accepted 2026-10-02 (`b2c9f9c`, landed `c3ab0cc`; [closure §7](docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus)). Production-feed work waits for a T00 verdict outside {INSUFFICIENT, NO-GO-evidence} (in practice, GO-evidence) and ~~T10's F1 packet~~, since the 2026-10-02 D-feed (b) re-rule, a bound equivalence spec and A9-PREP ([CP-7](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken); [§3](docs/notes/2026-09-29-t00-t10-cp7-sequence.md) is historical); T00 supplies its own P7 (b) inputs ([§7.9](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24)).
 - **2026-09-24** — T08 R3 = NONE (no documented unknown-request fence; D-broker void; T09 unspecifiable): live release held; one narrow operator-sent CrossTrade question authorized, written answer retained as evidence; bounded-exposure amendment scoped. [§7.8](docs/briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24)/[scope](docs/superpowers/specs/2026-09-24-bounded-exposure-unknown-request-amendment-scope.md)
 - **2026-09-23** — T00 step 1 returned INSUFFICIENT, accepted. A T00 screen is not four-firm §4 falsifier evidence; the 2026-11-08 falsifier needs its own dated re-MC. Path-position bracket convention [ratified](docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23), replacing one P7 blocker only. [Rulings](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23). *2026-10-02:* §4 status is ruled at its [owner](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted).
-- **2026-09-22** — Deployment-checklist amendment §4 ratified, all five as recommended: T00 step 1 authorized; D-feed, D-broker, D-codex and D-sequence adopted. [Addendum](docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#addendum-2026-09-22--4-dispositions-ratified-2026-09-22--all-five-adopted-as-recommended-and-the-5-correction-applied)
 
 ## Dormant cross-session threads
 
@@ -73,10 +73,10 @@ Owners hold canonical criteria; rows are pointers.
     row unverified; **record still owed** ([§15](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#15-d20--the-acceleration-ruling-2026-09-04-deploy-at-the-phase-3-commit)).
   - 09-07→09-11: attested 09-12 (placed Thursday 09-10; reported recorded with Claude).
   - 09-14→09-18: **missed** (operator, 09-19); account reported active, unverified.
-  - 09-21→09-25: attested 09-23 (filled MYM market round trip; undated session capture, uncommitted).
+  - 09-21→09-25: attested 09-23 (filled market round trip; undated session capture, uncommitted).
   - 09-28→10-02: covered by the Monday 09-28 trade, attested 09-29. It is T7 in the private
-    A-8 reconciliation (MYMZ6 sell 19:01:11Z, buy 19:05:52Z; fills in the native export, operator,
-    2026-09-30). Platform order-lifecycle captures (about 19:40 UTC) and same-day fills and
+    A-8 reconciliation (fills in the native export, operator, 2026-09-30; per-trade detail stays
+    in that record). Platform order-lifecycle captures and same-day fills and
     position-history captures are in the primary checkout's `local_artifacts/route-drills-2026-09/`
     (`platform-2026-09-28/`, `account-binding-2026-09-28/`), hashed in `MANIFEST.tsv`. X-1's
     trade also counts ([ruling 2026-09-30](docs/notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30)).
@@ -84,7 +84,7 @@ Owners hold canonical criteria; rows are pointers.
     R-1 ran on X-1's order instead ([discharged](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)
     2026-10-01, `LOCATED_WITH_CLORDID`, this order at this time only).
   - 10-05→10-09: placed Monday 10-05; the operator attests (10-08, to the Deployment Coordinator) it was verified and reported at the time. The capture's location is not recalled, so this record is not independently checked.
-  - 10-12→10-16: placed Monday 10-12 by the operator: a one-lot MYMZ6 market buy and sell, both filled (operator-attested 10-12 to the Deployment Coordinator with an orders-tab capture, kept privately in the primary checkout's `local_artifacts/preservation-2026-10/` with `SHA256SUMS`). Placed directly on the trading platform, not via CrossTrade (Joshua, 10-12: "placed directly").
+  - 10-12→10-16: placed Monday 10-12 by the operator: a market round trip, both legs filled (per-trade detail is in the private capture; operator-attested 10-12 to the Deployment Coordinator with an orders-tab capture, kept privately in the primary checkout's `local_artifacts/preservation-2026-10/` with `SHA256SUMS`). Placed directly on the trading platform, not via CrossTrade (Joshua, 10-12: "placed directly").
 - Preserve missed-week records when advancing; record coverage only when attested;
   `daily-repo-truth-sync` reads this board's dated obligations.
 

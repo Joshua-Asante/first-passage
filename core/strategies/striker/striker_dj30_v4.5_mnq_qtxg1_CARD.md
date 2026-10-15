@@ -13,7 +13,7 @@
 
 Execution-mechanics-only port of locked Striker DJ30 v4.5 onto CME MNQ.
 Cross-underlying research — **not** the WITHDRAWN(F1) striker×MYM redeploy.
-Day soft-stop stays locked Pine default −2% (not live TV −1.15%).
+Day soft-stop stays at the locked Pine default (not the live TV override) *(values redacted 2026-10-15; Pine-only)*.
 Authorizes native-TV export per RUNSPEC only; **no scoring / N-SURV / PnL verdict
 in Blocks 2–3.** ENV-1 `OPEN-CONDITIONAL(power)` remains disclosure only.
 ⚠ Superseded 2026-08-12: Block 4 subsequently scored this cell and closed
