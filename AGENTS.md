@@ -71,6 +71,7 @@ Operator direction 2026-10-02.
 | Rail build/account registration GO; spend ceiling $700 | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
 | Licensed test strategy can discharge M1 item 5 / B7 Stage 1 independently of strategy selection | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) |
 | Four-firm program falsifier remains dated 2026-11-08; Tradeify counts again | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md), [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) |
+| Tradeify eval accounts: strategy logic must be native, with no external engine, bridge or direct API (support, 2026-10-12); Track B suspended 2026-10-13 until the 11-08 sitting or an operator ruling; the weekly trade (supported platform only, never CrossTrade or the API) and the personal lane continue | [route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [suspension](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft) |
 
 ## Architecture
 
@@ -214,7 +215,7 @@ the operator's primary checkout (from a worktree, by that checkout's absolute pa
 Never copy them into a worktree, commit or quote their bodies or values, edit them,
 or pass them to `glm_agent` or any external service
 ([campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
-The single exception covers the ports and `effective_inputs.json` (not Pine), copied to the Joshua-controlled Windows VM for the T00 screen (§60 addendum 2026-10-07) for the Q-SFCLEAR-2 FG evidence run (§60 addendum 2026-10-12), for its clearance run (§60 addendum 2026-10-13), and for the Q-SFCLEAR-3 FG evidence and clearance runs (§60 addendum 2026-10-14).
+The single exception covers the ports and `effective_inputs.json` (not Pine), copied to the Joshua-controlled Windows VM only for the runs, and on the terms, that the [§60 VM addenda](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) (2026-10-07 onward) admit.
 
 ### Vendor-data integrity gate
 
