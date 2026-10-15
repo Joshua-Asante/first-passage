@@ -32,7 +32,7 @@ Pine, or rail surface.
 | 3 | [`2026-07-27-fts5-delete-falsifier-prereg-v2.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-07-27-fts5-delete-falsifier-prereg-v2.md) | frozen `b04cd15` | **Frozen binary verdict table.** `DELETE-HOLDS` iff `R_fts5@5 ≥ 0.70` **and** `R_fts5@5 > R_rg@5`. `DELETE-FAILS` disposition is verbatim: *"Build nothing."* K=5 frozen; forbidden moves listed. |
 | 4 | [`fts5_delete_falsifier_2026-07-27/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/RESULTS.md) | archive `f608190` | Recorded verdict `DELETE-HOLDS`; `R_fts5@5` = **0.718** (84/117), `R_rg@5` = 0.222; CI [0.630, 0.792] straddles the floor, disclosed and not rescued. Authorizes "build the sidecar, search + staged write only". |
 | 5 | `falsifier_v2.py` | `git show pre-prune-2026-08-08:lab/analysis/harvest/fts5_delete_falsifier_2026-07-27/falsifier_v2.py` | The measured engine ranks with **`ORDER BY bm25(docs)`** (L100). Fixture, exclusions, and engine-parity rules contain "no discretion of its own". |
-| 6 | [`2026-08-13-dedup-first-before-new-work.md`](../../../adr/2026-08-13-dedup-first-before-new-work.md) §1, §3, §4 | archive `f608190` | Diagnosis: *"the failure is not a documentation gap"*. §3 **compares** cheap-reflex vs FTS5 sidecar and rules the sidecar out for this purpose. §4 T1–T3 falsifier table. |
+| 6 | [`2026-08-13-dedup-first-before-new-work.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md) §1, §3, §4 | archive `f608190` | Diagnosis: *"the failure is not a documentation gap"*. §3 **compares** cheap-reflex vs FTS5 sidecar and rules the sidecar out for this purpose. §4 T1–T3 falsifier table. |
 | 7 | [`docs/operational_rules.md`](../../../operational_rules.md) §8 + edit log | live tree, PR #2 | Rule 8 sub-rules 1–10; 9 and 10 added 2026-08-15. |
 | 8 | `scripts/repo_retrieve.py`, `scripts/sync_liveness_indexes.py`, `scripts/gates.yml`, `tests/test_repo_retrieve.py` | live tree, PR #2 | Full source read. Findings in §3.1 / §3.4 / §3.7. |
 | 9 | [`rule-2-trip-log.md`](../rule-2-trip-log.md) | archive `f608190` | Falsifier of record for Rule 2. **1 row, a declared non-trip baseline (2026-06-16).** Own rule: empty across ≥2 cycles ⇒ falsified as load-bearing. |
@@ -193,7 +193,7 @@ from waiting** — it raises the cost of the amend-or-delete the rule has pre-co
 
 ### §3.6 Theory comparison — did the chosen design outperform?
 
-The comparison was made explicitly and recently. [`dedup-first`](../../../adr/2026-08-13-dedup-first-before-new-work.md)
+The comparison was made explicitly and recently. [`dedup-first`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md)
 §3 weighed *cheap mandatory reflex* against *FTS5 sidecar* and chose the reflex, on the record:
 
 > *"even a built, working version misses roughly one probe in four. Not a substitute for a cheap
@@ -231,7 +231,7 @@ Two further reachability defects, both verified by execution:
   carries `default=True` and `args.check` is never read. Its green is not evidence
   (`lesson_green_gate_is_not_coverage`).
 
-**Unreachable ADR falsifiers.** [`dedup-first`](../../../adr/2026-08-13-dedup-first-before-new-work.md)
+**Unreachable ADR falsifiers.** [`dedup-first`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md)
 §4 pre-commits T2 (*"≥3 dated instances of a WARN dismissed as noise within one quarter"*) and T3
 (*"recurrence rate over the next 90 days … measured at the next quarterly programme audit"*). **No
 mechanism in the belt records that it fired.** `grep -rlE "fire_log|gate_log|telemetry" scripts/`
