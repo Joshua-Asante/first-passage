@@ -3,7 +3,7 @@
 **Class:** (c) standing exploration · **Standing:** SUBTRACT (ruling + mechanical follow-up
 recorded)
 **Test applied:** residual function unowned and unneeded as an open decision — the retirement
-ADR's own Phase 3 (`docs/adr/2026-06-12-notion-surface-retirement.md`) had sat undecided through
+ADR's own Phase 3 ([`docs/adr/2026-06-12-notion-surface-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-12-notion-surface-retirement.md)) had sat undecided through
 both the 2026-07-01 and 2026-08-08 quarterly audits, with its own §4 H held throughout (no
 workflow has required a Notion write; no load-bearing fact has surfaced Notion-only since Phase 2
 reported DONE).
@@ -12,7 +12,7 @@ reported DONE).
 per this GSUB-1 disposition.
 
 **Mechanical follow-up (2026-08-10):** repo record landed — Addendum 2026-08-10 on
-[`docs/adr/2026-06-12-notion-surface-retirement.md`](../adr/2026-06-12-notion-surface-retirement.md)
+[`docs/adr/2026-06-12-notion-surface-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-12-notion-surface-retirement.md)
 (PR #709 / branch `cursor/notion-phase3-cold-archive-e902`). Operator GO:
 *"cold archive, proceed with next steps"*. Workspace **not** deleted. Notion UI hub-Archive
 clicks remain operator-owned (recording session had no Notion MCP). Redirect map + ADR INDEX

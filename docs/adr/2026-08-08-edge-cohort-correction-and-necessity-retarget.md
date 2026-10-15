@@ -9,6 +9,7 @@
 **Superseded-in-part-by:** `2026-08-24-sourcing-phase-channel-retirement.md` — §2-C row L1 only (Route B lane disposition, `PAUSED` → `RETIRED`); L2 (above), L3–L5, and §2-A/§2-B untouched.
 **Superseded-in-part-by:** `2026-08-26-striker-legmap-cap-release.md` — §L4 row's "Named ruling owed before any deployment" clause on `LEG_MAP`'s 69/11 allocation only; the rest of L4 (book-shape admission) and every other row untouched.
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 read table, §1 cost and superseded-by-events narrative (the venue-binding sentence §5 relies on is kept), §2-A not-rewritten list, §2-B item 3 body (historical), the §2-C not-commissioned line, §3 alternatives table, §6 list, §10 hooks 1/2/4/6, Verification and the 2026-08-29 addendum body removed. §1 cohort table, §2-A/B/C rulings, §4 (R1–R4 and its trigger schedule), §5 and §8 unchanged. Pre-trim text at blob `a553325063f4150907487c4805f259a9fe0a2b5d` (commit [`4121e84c95f4990b71962e3b9570c4c3fad88426`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md)).
 **Related:** [TNEC-1 spec](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md) (the successor target, same packet) · [MNQBASE-1 §1.3](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/MNQBASE-1-tradeify-shaped-base-construct-harvest-scoping.md) (the correct cohort table) · [ORB re-park ADR](2026-08-03-orb-mnq-repark-payability-falsified.md) · [seed-target-spec RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md) · [S1 ADR](2026-08-07-loop-s1-environment-ratification.md) · [W1 ADR](2026-08-07-w1-intraday-honest-engine-remeasure.md) · [catalogue K wall](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) · [MSL ratification](2026-08-12-msl-sourcing-channel-ratification.md)
 **Layer:** research-target doctrine + provenance correction. **$0 / K=0.** No `core/`, Pine, allocation, `dd_protection`, lifecycle, `LEG_MAP`, or rail change; nothing armed; no venue action. Full-tier per [ceremony tiering](2026-08-08-adr-ceremony-tiering.md) limbs 3+4 (supersession of ratified surfaces; doctrine), written compact.
 
@@ -16,24 +17,7 @@
 
 ## §0 — Rule 0 reads (verified this session, 2026-08-08, worktree clean)
 
-| Source | Anchor (`git log -1`) | What it grounds |
-|---|---|---|
-| [`core/firm_rules.py`](../../core/firm_rules.py) `Tradeify_Select_100K` L335–348 + W1 residual comment L299–306 | `45e3cea` | Venue-necessary set: $3,000 EOD trail (intraday-enforced — every bust figure a lower bound pending W1) · target $6,000 · `daily_loss_pct None` · idle ≥1 trade/Mon–Fri wk · consistency 40% soft · cap 80 · $0.91/side · no duration cap. Read directly, ±20 lines. |
-| [`eval_slow_archetype_2026-08-04/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/eval_slow_archetype_2026-08-04/RESULTS.md) L3, L73–76, L96–131, **L123–124** + `run_slow.py` L103–108 | `cad464f` | The mutation sentence (L123–124: *"it is this estate's own N1 finding (`ops/instruments/MNQ.md`, ORB-MNQ-1's realized edge)"*) and the hard-coded config `(0.55, 2.363636)` solved to 0.85 — no panel derivation exists in the study. |
-| [`eval_inverse_requirements_2026-08-03/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/eval_inverse_requirements_2026-08-03/RESULTS.md) §5 L101–132 | `d08537a` | The origin two-cell table ("Edge per trade: MNQ **0.85R** / MYM **0.49R**", "measured from the 2026-08-03 venue-edition exports (see the sibling study)") — the cited sibling (`c1_cadence_coverage_2026-08-03`) publishes no per-trade R. |
-| [`MNQBASE-1` §1.3](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/MNQBASE-1-tradeify-shaped-base-construct-harvest-scoping.md) L27, L101–102 | `d08537a` | The correct cohort binding: Striker NAS100→MNQ **0.85R** at 0.35 trades/cal-day, "✗ pyramid = correlated add"; ORB-MNQ-1 **~0.09R — 4× below the inversion**; N1 = "~0.09R/trade gross". |
-| [ORB re-park ADR](2026-08-03-orb-mnq-repark-payability-falsified.md) §4–§5 | `9b5ce43` | ORB realized **meanR +0.0626, n=1,846**; intraday-honest bust 67.67/77.01/80.18% at k=1/2/3; frozen survivor gate both limbs fail at every k; R2/R3 reopen routes. |
-| [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) N1 (L67), N13 (L81), DEAD list | `af3b776` | N1 records Stage-2 cost-law 5.31×/8.10×, DSR 0.9754, annSR +0.890 — **no per-trade 0.85R anywhere in N1**. N13 carries the false "(0.85R, this ledger's N1)" citation. |
-| [MNQDTL-1](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) (full read) | `27c7943` | §1.1 D1 = operator preference (recorded as such) · §1.2 L=$325 elected as "the published MNQ 0.85R EM2 frontier cell" · §1.3 row "0.85R — MNQ best-ever measured (ORB-MNQ-1, N1)" · §3.2 O1 "ORB edge is real: 0.85R per-trade" · §6 μ ≥ $130/day gate · F-B 2026-11-08. |
-| [EM screen](../spec/2026-08-05-eval-mechanism-shape-screen.md) (full read) | `d93dafd` | EM1 0.40R intake-kill + its "generated by" derivation (frequency inversion); EM2 cells $250/$275/$325 sourced to the slow-archetype frontier; §8 change control ("never edit §2 in place"); §4 F-B limb-demotion route. |
-| [seed-target-spec RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md) | `5ebee58` | *"the eval's binding constraint for a seed construct is the **weekly activity rule and nothing else**"*; token trade +96.3pp at duty 0.22; DD binds only via sizing ($350–425/trade at the 3.0% ceiling); admissibility reaches ≈**+0.10R** at $75/trade (96.3–98.7% pass) — *"0.40R is where the frequency lever dies, not where admissibility dies."* |
-| [survivor-scoring prereg](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) | `91137fb` | The frozen admission gate: **bust ≤ 3.0% ∧ P(pass) ≥ 50%**, unedited since 2026-07-13. |
-| Route B campaign artifacts (4× `PREREG_G0.md` + `RESULTS_g2.md`: [OFCHAN](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_ofchan_routeb_2026-08/RESULTS_g2.md) · [R2VBUCK](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_r2vbuck_routeb_2026-08/RESULTS_g2.md) · [R2AGRUN](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_r2agrun_routeb_2026-08/RESULTS_g2.md) · [R2FLOW](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mnq_r2flow_routeb_2026-08/RESULTS_g2.md)) + [K wall](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) | read this session | All four: 60s mid-return target, Pearson ρ, minute-scale clocks, \|ρ\|≥0.02 floor, empty candidate lists; σ(r) ≈ 5.3–6.9e-4; viable stop band 5–20 pt ⇒ **3–9 pt/trade** required edge; DSR floor 0.650/0.850/0.980/1.060 at K=1/2/3/4. |
-| [`strategy_harvest.md`](../methodology/strategy_harvest.md) §1 Req 1–5, §2.3 channel ranks | `275601e` | Req 1–5 untouched by this ADR; §2.3's own annotations: rank-3 *"under-mined … to date"*, rank-4 never direct-read, rank-6 never drawn, rank-1 burst logged HTTP-429 "BLOCKED" partial ([SOURCES_LOG](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/harvest/radar_tier_a_burst_2026-07/SOURCES_LOG.md)). |
-| [`Q-MNQSEL-2` closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-MNQSEL-2-closure-resolved.md) + [RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/mnq_selection_ceiling_allbars_2026-08/RESULTS.md) — **landed concurrently, merged into this branch via `origin/main` PR #693 same day** | this session, post-merge | `RESOLVED` (C4): dense RTH 1m-open oracle at **G=10 pt** clears EM1 with real margin — S3 long **0.8584** / short **0.8566** (both ≫ 0.40), S1 negative, median **390 clocks/day**. Contrast Q-MNQSEL-1's restart-clock cell (S3 0.3998/0.3984, both < 0.40) — a **different clock/target parametrization**, not a contradiction. G=10 sits inside the catalogue-K-wall's 5–20 pt viable stop band. Still an oracle, not a construct — closure's own words: *"the ceiling is real, not a free strategy."* |
-| [`Q-MNQDTL-CON-1`](../briefs/Q-MNQDTL-CON-1-dense-1m-em-construct-scoping.md) — same landing | this session, post-merge | `OPEN`, Stage-0/explore GO **unpaid**, $0/K=0. Scopes a named-entry, G=10-stopped construct on that universe toward EM0–EM5 `SHAPE-CLEAR`. §0 cites MNQDTL-1 as "D1 daily cadence; D2 L=$325"; §3/§7 frame the eventual GO as scoring against "MNQDTL D1/D2". Does **not** cite the phantom 0.85R. See §2 item 3 for the re-pointer this ADR makes to it. |
-
-**Gitignore pre-flight:** no Pine read or cited; no constant here derives from Pine.
+Rule-0 reads (verified 2026-08-08, worktree clean): `core/firm_rules.py` `Tradeify_Select_100K` (`45e3cea`), `ops/instruments/MNQ.md` (`af3b776`), the MNQDTL-1 spec, the EM screen, the seed-target study, the survivor-scoring prereg and the four Route B campaigns. The read table is in the pre-trim text (Revision).
 
 ---
 
@@ -50,9 +34,7 @@
 | ORB-MNQ-1, realized | **+0.0626R** (n=1,846; ~0.09R gross) | ~1/day | ✓ | ✗ T2: intraday-honest bust ≥67.67% at every k |
 | Oracle top-1/day ceiling (restart clocks, s=40) | **0.3998 / 0.3984** | 1/day | — | a ceiling, not a construct ([Q-MNQSEL-1](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/Q-MNQSEL-1-selection-value-ceiling-scoping.md)) |
 
-**What it was costing.** The ratified target (MNQDTL-1: D1 daily cadence + D2 $325 + μ ≥ $130/day = 0.40R at L=$325) demands an intersection — {MNQ × daily × ≥0.40R net/trade independent} — that **no measured construct occupied at authoring time, on the one oracle cell then in evidence** (Q-MNQSEL-1's restart-clock ceiling, S3 < 0.40 both arms). The spec's feasibility row was the phantom. Meanwhile the venue itself binds almost nothing: the [seed-target study](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md) measured the binding constraint as *"the weekly activity rule and nothing else"*, with admissibility reaching ≈+0.10R at $75/trade under the no-time-limit fact. Four Route B campaigns (2026-08-06→08) returned empty candidate lists under a design whose promotion floor (\|ρ\| = 0.02 at σ(r) ≈ 6.9e-4 ≈ **0.3 pt per 1σ of signal over 60 s**) sits an order of magnitude below the 0.95 pt round trip and the 3–9 pt/trade band EM1 requires — a search that could not have licensed a viable candidate even on success. Left standing, MNQDTL-1's F-B was on track to fire `FALSIFIED` on 2026-11-08 by near-arithmetic, after ~3 more months of pre-determined dry campaigns.
-
-**Superseded by events, in the program's favor, before this ADR even ratifies.** Between drafting and committing this packet, `Q-MNQSEL-2` landed (via `origin/main` PR #693, same day) measuring a *different* oracle cell — dense RTH 1m opens at G=10 pt — clearing 0.40R with real margin (S3 ≈0.858 both arms) and sitting inside the catalogue-K-wall's 5–20 pt viable stop band. `Q-MNQDTL-CON-1` opened the same day to scope a named-entry construct on it, `OPEN`/unpaid. This is exactly the *"different causal candidate set"* Q-MNQSEL-1's own re-proposal bar called for (§3.1 door — not reopened, discharged forward). It does not change §1's provenance finding (the 0.85R cell is still a phantom, ORB's realized edge is still +0.0626R) — it changes the answer to "does a promising non-phantom cell exist" from "not yet measured" to "yes, oracle-side, unconstructed." **This strengthens rather than weakens the case for 2-B**: Q-MNQDTL-CON-1's own §3 frames its eventual GO as scoring against "MNQDTL D1/D2" — the same phantom-anchored gate this ADR retires. Landing the necessity retarget now means that construct is scored against what the venue actually requires, not against an income target with no antecedent in the evidence that motivated it.
+**Venue binding (cited by §5).** The [seed-target study](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md) measured the eval's binding constraint as "the weekly activity rule and nothing else", with admissibility reaching ≈+0.10R at $75/trade; 0.40R is where the frequency lever dies, not where admissibility dies.
 
 ---
 
@@ -68,15 +50,13 @@ Reader-intercepts land at every surface where the false binding is **read** (fro
 4. [slow-archetype RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/eval_slow_archetype_2026-08-04/RESULTS.md) — banner under Status (covers L123–124 and the `run_slow.py` hardcode; MYM 0.49R same caveat).
 5. [inverse-requirements RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/eval_inverse_requirements_2026-08-03/RESULTS.md) — banner at top (covers §5's two-cell table).
 
-Deliberately **not** rewritten (history stays history; listed so the sweep is auditable): `docs/SESSIONS.md` L387/1500/1725 · `STATE.md` L101 decision-index line · `ops/instruments/MYM.md` L107 (already carries the flat-sized caveat) · `ops/instruments/MNQ.md` L139 session-log entry · [catalogue-K-wall](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/catalogue_k_wall_2026-08-05/RESULTS.md) "vs 0.85R" benchmark columns + `run_catalogue_k_wall.py:51` `EM2_MAX_RISK=325` (consumers; re-run only if a ratified EM2 cell moves) · [Q-FILLTAX-1](../briefs/Q-FILLTAX-1-fill-realism-and-parity-scoping.md) L80 passing mention.
-
 ### 2-B — Necessity retarget (effective at §8)
 
 The operator's direction is to do **only what is necessary to construct a Tradeify-compatible strategy or book of strategies**. Accordingly:
 
 1. **Adopt [TNEC-1](../spec/2026-08-08-tradeify-necessary-conditions-target-spec.md)** as the standing target: the five venue/program-necessary conditions (weekly activity · frozen survivor gate on the honest clock · positive net edge with CI + DSR-at-K · independence/stop-integrity + session/slot legality · candidate-derived sizing ceiling), for a **single construct or a book scored jointly**.
 2. **MNQDTL-1 superseded in part:** D1 (daily cadence), D2 (L=$325), and the §6 μ ≥ $130/day gate are **demoted from gates to recorded preferences** — reportable coordinates, never intake kills. Its §3.1 closed doors (C1–C11) and §3.2 scope pins are ledger facts and **carry forward unchanged**. The income aspiration (μ* ≈ $250/day) is preserved as a *funded-phase design preference*; re-electing it as a gate is a fresh F-E-class ratification against the **corrected** cohort table, never against the phantom.
-3. **`Q-MNQDTL-CON-1` re-pointed, not re-scoped.** Its Stage-0 target (name a causal entry rule, freeze G=10 pt stop, attest toward EM0–EM5 `SHAPE-CLEAR`) is **untouched** — EM0/EM2–EM5 are unchanged by this ADR. Its §3/§7 "later GO … clears MNQDTL D1/D2" now reads **"later GO … clears TNEC-1 N-EDGE/N-SIZE"**: the same evidentiary bar (positive CI-cleared edge, DSR-at-K, candidate-derived sizing), pointed at the corrected gate instead of the phantom-anchored one. No Stage-0 GO, PREREG freeze, or Cap claim is authorized by this ADR — `Q-MNQDTL-CON-1` stays `OPEN`/unpaid exactly as filed; only its eventual scoring referent moves.
+3. **`Q-MNQDTL-CON-1` re-pointed, not re-scoped.** *(historical — Q-MNQDTL-CON-1 closed FALSIFIED 2026-08-09; see change history)*
 4. **EM screen amended in one row (supersession-in-part, not in-place edit):** **EM1** re-types from "≥0.40R net intake-kill" to — *necessity:* net expectancy > 0 after Requirement-5 costs (screen $0.95/side) with a pre-registered 95% CI excluding 0, plus DSR ≥ `floor_at_k(K_intrinsic)` (EM0 unchanged); *disclosure (retained verbatim):* below ~0.40R the frequency lever **inverts** — frequency can never rescue a thin edge, and any re-elected income target re-instates 0.40R-at-L arithmetic explicitly. EM0, EM2 (principle + edge-indexing), EM3, EM4, EM5 are **unchanged**; EM2's published cells are void **as provenance** (the $325 cell traces to the phantom) and re-derive per candidate from its own measured edge at a stated tolerance.
 
 ### 2-C — Lane dispositions (effective at §8; each strips non-necessary work)
@@ -98,19 +78,11 @@ The operator's direction is to do **only what is necessary to construct a Tradei
 > §2-A/§2-B above are untouched. The L1 row text above is left unedited (dated-decision integrity);
 > this note is the reader intercept.
 
-**Not commissioned here (already owned elsewhere, listed to keep the critical path visible):** W1 intraday-honest re-measure (`Proposed`, owed — every bust figure is an EOD lower bound) · S4 sensor layer / M1 `RESOLVED` (deploy gate) · Q-FILLTAX-1 (fill-tax validation of the $0.95 screen) · R8 / a watchdog on the weekly-activity clock (STATE row 0 — no gate currently observes it).
-
 ---
 
 ## §3 — Alternatives considered
 
-| Alternative | Why ruled out |
-|---|---|
-| Fix the labels, keep MNQDTL-1's gates | Leaves an income-derived floor presenting as venue-derived; F-B then fires 2026-11-08 by near-arithmetic after ~3 months of campaigns the design cannot win. The operator's direction is necessity, not label hygiene. |
-| Loosen harvest Req 1–5 to raise the finding rate | The seed-target study's own §5.4: every sourcing death was Req-1, and loosening limbs that never caused a closure "does not change the finding rate." Evidence quality is the spine; untouched. |
-| Full supersession of the EM screen | EM0/EM2-principle/EM3/EM4/EM5 are sound and venue-derived; only EM1's kill-threshold is elective. Surgical re-type, minimum blast radius. |
-| Wait for the 2026-11-08 F-B verdict | Three months of pre-determined dry runs; the correction evidence is complete today; the 08-08 audit is the natural vehicle. |
-| Also unpark ORB under the looser EM1 | T2's survivor-gate failure (67.67% at k=1 vs 3.0%) is venue-survival, not an EM1 artifact — the necessity gate kills it identically. Re-park R2/R3 remain the only routes. |
+**Grounds.** Fixing labels alone left an income floor presenting as venue-derived; loosening harvest Req 1–5 would not change the finding rate; only EM1's threshold was elective, so EM1 is re-typed surgically; ORB stays parked because T2 is a venue-survival failure under the necessity gate too.
 
 ---
 
@@ -144,13 +116,7 @@ The operator's direction is to do **only what is necessary to construct a Tradei
 
 ## §6 — Consequences
 
-- The search stops optimizing a phantom: candidate intake is gated by five venue/program-necessary conditions, and the operator's income shape becomes an explicit, separately-priced election.
-- The four Route B closures stay closed as filed; their family is paused with recorded grounds, freeing the next research cell for a design that can license success.
-- MNQBASE-1's "new sourcing channel" bar gets a concrete, taxonomy-internal discharge path (L2) without touching Req 1–5.
-- Instrument-lane work (MES/MGC/M2K/MCL) is unblocked from a schedule dependency it never needed.
-- `Q-MNQDTL-CON-1` — the one construct-scoping brief now open on a non-phantom, oracle-cleared cell — is re-pointed at a real gate instead of an income target with no antecedent in the evidence that motivated it; its Stage-0 scope, falsifier, and forbidden moves are otherwise untouched.
-- **Cost recorded:** MNQDTL-1 was ratified 2026-08-07 and is superseded-in-part ~1 day later; the phantom cell also spent four Route B campaign slots (all $0, all honest). The 08-08 quarterly audit should carry this as a `lesson_metric_cohort_provenance_binding` firing (that lesson's third firing threshold — check and promote if met).
-- Ratification-time propagation (one commit with §8): STATE decision-index line + queue check · SESSIONS entry · MNQDTL-1 header gains `Superseded-in-part-by` + reciprocal edge here · EM screen §2 EM1 row superseded by pointer (not in-place rewrite) · `Q-MNQDTL-CON-1` §0/§3/§7 "MNQDTL D1/D2" references get a one-line pointer to this ADR (frozen body otherwise unedited, same convention as the packet's other reader-intercepts) · `check_adr_graph` green.
+Recorded at ratification: candidate intake gated by the five necessary conditions; Route B family paused with grounds; instrument lane unblocked; MNQDTL-1 superseded in part ~1 day after ratification. Full list and ratification-time propagation: pre-trim text (Revision).
 
 ---
 
@@ -170,24 +136,13 @@ DATE / INITIALS: 2026-08-08 / JA
 | 2026-08-08 | §8 Accepted; TNEC-1 RATIFIED atomic | JA |
 | 2026-08-12 | `Superseded-in-part-by` → MSL ratification ADR (L2 taxonomy addition only — MSL named) | Joshua (B1) + Cursor |
 | 2026-08-29 | Addendum: `Q-MNQDTL-CON-1` closed FALSIFIED 2026-08-09; §2-B item 3 / §10 hook 6 "stays OPEN/unpaid" now historical-only (adr-decay-audit discharge) | Claude Code |
+| 2026-10-15 | Trim: §0 table, §1 narrative, §3 detail, §6 list, §10 hooks 1/2/4/6, Verification and the addendum body removed to history (Revision pin); §1 table, §2-A/B/C, §4, §5, §8 kept; R3 rider unchanged pending operator ruling | ADR decay audit |
 
 ---
 
 ## §10 — Audit hooks (runnable)
 
 ```bash
-# 1. The banners landed at all five read-sites (2-A).
-rg -l "COHORT CORRECT" ops/instruments/MNQ.md \
-  docs/spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md \
-  docs/spec/2026-08-05-eval-mechanism-shape-screen.md \
-  lab/analysis/c1/eval_slow_archetype_2026-08-04/RESULTS.md \
-  lab/analysis/c1/eval_inverse_requirements_2026-08-03/RESULTS.md
-# Expected: all five paths print.
-
-# 2. The corrected cohort facts still reproduce from their sources.
-rg -n "0.85R.*2× the bar|~0.09R" docs/briefs/rnd-pipeline/MNQBASE-1-tradeify-shaped-base-construct-harvest-scoping.md
-rg -n "meanR \+0\.0626" docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md
-
 # 3. Venue-necessary geometry unchanged (fires R2-class review if it moves).
 python -c "
 import sys; sys.path.insert(0,'core')
@@ -196,65 +151,8 @@ t = FIRM_RULES['Tradeify_Select_100K']
 assert t['daily_loss_pct'] is None and t['max_dd_pct']==3.0 and t['inactivity_max_idle_days']==5 and t['micro_contract_cap']==80
 print('necessary-set geometry OK')"
 
-# 4. After ratification only: no new Route B G0 in the paused family.
-ls lab/analysis/c1/ | rg -i "routeb" 
-# Expected: only the four closed 2026-08 campaigns until L1 is superseded.
-
 # 5. TNEC-1 adoption state matches this ADR's Status.
 rg -n "^Status:" docs/spec/2026-08-08-tradeify-necessary-conditions-target-spec.md
-
-# 6. Q-MNQDTL-CON-1 stays OPEN/unpaid -- this ADR authorizes no GO on it.
-rg -n "^\*\*Status:\*\*" docs/briefs/Q-MNQDTL-CON-1-dense-1m-em-construct-scoping.md
-# Expected: `OPEN` -- construct scoping; Stage-0 / explore GO unpaid (unchanged by this ADR)
 ```
 
----
-
-## Verification
-
-```bash
-PYTHONIOENCODING=utf-8 python "$HOME/.claude/skills/brief-authoring/scripts/check_brief.py" \
-  docs/adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md --type adr
-
-# §0 anchors current
-for f in core/firm_rules.py ops/instruments/MNQ.md \
-         docs/spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md \
-         docs/spec/2026-08-05-eval-mechanism-shape-screen.md \
-         lab/analysis/c1/eval_slow_archetype_2026-08-04/RESULTS.md \
-         lab/analysis/c1/eval_inverse_requirements_2026-08-03/RESULTS.md \
-         docs/briefs/rnd-pipeline/MNQBASE-1-tradeify-shaped-base-construct-harvest-scoping.md \
-         docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md \
-         docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md \
-         lab/analysis/c1/tradeify_seed_target_spec_2026-08-04/RESULTS.md \
-         docs/methodology/strategy_harvest.md; do
-  git log -1 --format="%h %cs $f" -- "$f"; done
-# Expected: 45e3cea / af3b776 / 27c7943 / d93dafd / cad464f / d08537a / d08537a / 9b5ce43 / 91137fb / 5ebee58 / 275601e
-```
-
-## Addendum 2026-08-29 — `Q-MNQDTL-CON-1` closed FALSIFIED; §2-B item 3 / §10 hook 6 now historical-only
-
-The `adr-decay-audit` sweep flagged §2-B item 3 (*"`Q-MNQDTL-CON-1` stays `OPEN`/unpaid exactly as
-filed"*) and §10 hook 6 (*"Expected: `OPEN`"*) as stale — §0/§1–§10 above stay byte-unedited as the
-historical record (Rule 14); this addendum is the discharge.
-
-**What changed.** [`Q-MNQDTL-CON-1`](../briefs/Q-MNQDTL-CON-1-dense-1m-em-construct-scoping.md)
-closed **`FALSIFIED`** 2026-08-09 — one day after this ADR ratified —
-([`closure`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-MNQDTL-CON-1-closure-falsified.md)): both the long and short arms
-came back negative mean R (−0.1065 / −0.1113) with the session-block 95% CI entirely below 0 on
-both. Spend/K: $0.00 · `K_intrinsic=1` · Cap **not claimed**. Live effect: none — N-SURV / confirm /
-deploy were never reached. Registry: `rejected_candidates.md` — MNQDTL-CON-1 ES-NQ 5m divergence
-relative-contrarian × MNQ, FALSIFIED (explore IS).
-
-**What this does and does not affect.** §2-B item 3's "stays OPEN/unpaid" clause and §10 hook 6's
-"Expected: OPEN" are now historical-only — accurate as of 2026-08-08, superseded-in-fact one day
-later. **No operative clause of this ADR depends on that construct's fate**: TNEC-1 adoption,
-MNQDTL-1's demotion from gate to recorded preference, the EM1 re-type, and the L1–L5 lane
-dispositions are all untouched — item 3's re-pointer (*"later GO … clears TNEC-1 N-EDGE/N-SIZE"*)
-was scoped to *if and when* that construct advanced, which it no longer will. §5's forbidden move
-(*"reading the re-pointer as an endorsement of that specific cell"*) is likewise now moot in
-practice — there is no live cell left to over-read as endorsed, since the cell is closed dead.
-
-**Not re-opened by this note.** This addendum records a status change already made by the closure;
-it authorizes no revival, no new GO, and no re-scoring. Any future MNQ dense-1m EM construct work
-is a fresh seed against TNEC-1, per the closure's own "STOP — re-proposal = new entry mechanism"
-disposition.
+**Addendum 2026-08-29 (condensed 2026-10-15):** `Q-MNQDTL-CON-1` closed `FALSIFIED` 2026-08-09 (both arms negative, CI below 0); §2-B item 3 is historical; no operative clause depended on it. Full text: prior text (Revision).
