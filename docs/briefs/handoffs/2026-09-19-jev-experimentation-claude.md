@@ -17,7 +17,7 @@ Repository: `C:/Users/joshu/multi_firm_operations`.
 Read the existing research note rather than repeat broad discovery:
 
 - [Research and fit to recent work](../../notes/audits/2026-09-19-jev-research-workflow-fit.md).
-- [Integration roadmap and dated experiment updates](../../superpowers/plans/2026-09-19-jev-integration-roadmap.md).
+- [Integration roadmap and dated experiment updates](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-09-19-jev-integration-roadmap.md).
 
 The video described substantial dispatch savings, but we did not independently substantiate its headline 71%/90% figures. Published reranking work was more directly relevant than routing demos to our actual workflow. Other reviewed evaluations showed that task decomposition and a strong deterministic baseline can matter more than the model's headline accuracy. These were inspected reports, not replications.
 

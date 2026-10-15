@@ -83,7 +83,7 @@ Because the four legs are one beta, decay can arrive **portfolio-wide at once**;
 
 - **Soft flag (ratified):** **2 of 4** legs simultaneously in `WATCH` within one regime-check window → pull the next review forward; run the transfer-entropy / lead-lag **beta-cohesion** check across the four legs + parents.
 - **Beta-death trigger (ratified):** **3 of 4** legs simultaneously in `WATCH` within one regime-check window → **portfolio-wide de-risk to 0.50×** (a beta-level lifecycle multiplier across all legs) **AND** raise a **mandatory operator GO/NO-GO** on full shared-beta shutdown. Autonomous action stops at 0.5×; going to zero is operator-confirmed (Call 5).
-- **First evaluation: scheduled 2026-08-08, not conducted.** The beta-cohesion diagnostic it depends on did not land until 2026-08-24 ([implementation plan](../superpowers/plans/2026-08-23-call4-beta-cohesion-implementation.md): "First-eval date 2026-08-08 is historical; this plan does not back-date a missed review"); the 2026-08-08 quarterly audit contains no Call-4/beta-death mentions. No rescheduled date is registered anywhere.
+- **First evaluation: scheduled 2026-08-08, not conducted.** The beta-cohesion diagnostic it depends on did not land until 2026-08-24 ([implementation plan](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-23-call4-beta-cohesion-implementation.md): "First-eval date 2026-08-08 is historical; this plan does not back-date a missed review"); the 2026-08-08 quarterly audit contains no Call-4/beta-death mentions. No rescheduled date is registered anywhere.
 
 ### Call 5 — The automation boundary (reversibility)
 

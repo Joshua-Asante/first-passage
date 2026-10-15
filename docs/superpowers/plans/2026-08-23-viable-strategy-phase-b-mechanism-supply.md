@@ -7,7 +7,7 @@
 B4 void. No lane produced a Vet candidate.
 **Cost:** $0 through every falsifier task below. Any data spend needs its own Rule-2 dry-run +
 operator GO and is out of this plan's scope.
-**Parent:** [`sequence overview`](2026-08-23-viable-strategy-sequence-overview.md) ·
+**Parent:** [`sequence overview`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-23-viable-strategy-sequence-overview.md) ·
 **Inputs:** Phase A2's feasible-shape region (pre-check; disclosed-N accepted — [`RESULTS §4`](../../../lab/analysis/c1/shape_feasibility_map_2026-08/RESULTS.md)), Phase A1's revival list (B4 lane — voided, empty list).
 **Provenance:** historical candidate lanes B1–B2; B3 KILL (A1). Lanes originate from the reconciled
 ox-alpha Use-4 output

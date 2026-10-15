@@ -4,7 +4,7 @@ Research date: 2026-09-19. Purpose: improve the Jev adoption decision for Codex 
 
 ## Finding
 
-The evidence supports testing Jev as a source-selection and semantic-triage assistant. It does not establish that Jev can replace the engineering review that found our recent cross-component defects. The strongest initial experiment is now ranking relevant context from a deterministic shortlist, followed by evidence-packet triage. This revises the earlier failure-log-first preference in the [roadmap](../../superpowers/plans/2026-09-19-jev-integration-roadmap.md).
+The evidence supports testing Jev as a source-selection and semantic-triage assistant. It does not establish that Jev can replace the engineering review that found our recent cross-component defects. The strongest initial experiment is now ranking relevant context from a deterministic shortlist, followed by evidence-packet triage. This revises the earlier failure-log-first preference in the [roadmap](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-09-19-jev-integration-roadmap.md).
 
 Three different savings mechanisms must be measured separately:
 
