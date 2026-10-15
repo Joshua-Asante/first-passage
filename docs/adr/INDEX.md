@@ -9,7 +9,6 @@
 | file | status | decision date | supersedes | notes |
 |---|---|---|---|---|
 | 2026-04-24-mvd-discipline.md | Accepted | 2026-04-24 | none | generalizes and supersedes the standing Rule 0 (2026-04-17, audit-first for risk-control decisions). **AMENDED 2026-08-14:** code-level self-checks remain live; the doc-audit-table and MVD-attest one-liner are not enforced (Addendum 2026-08-14). |
-| 2026-05-03-sentinel-gate-decision.md | Accepted | 2026-05-03 | none | Accepted |
 | 2026-05-08-dd-trigger-c2-relock.md | Accepted | 2026-05-08 | `2026-04-17-dd-trigger-calibration.md` in part — DD_TRIGGER only; DD_SCALE = 0.40 unchanged. | (with documented dissent) |
 | 2026-05-10-dd-protection-ulp-rounding.md | Accepted | 2026-05-10 | none | (with documented downstream cascade) |
 | 2026-05-10-manifest-integrity-gate.md | Accepted | 2026-05-10 | none | Accepted |
@@ -62,13 +61,11 @@
 | 2026-08-10-temporal-selectivity-outside-mapped-levers.md | Accepted | 2026-08-10 | none | operator ruling in-session 2026-08-10 / JA ("I rule it open" + "proceed with the step 1 repair"). Ruling ID **`TEMPORAL-SELECTIVITY-OPEN-2026-08-10`**. |
 | 2026-08-12-msl-mym-occupancy-release.md | Accepted | 2026-08-12 | `2026-07-29-third-leg-symbol-occupancy-limb.md` in part — its Addendum 2026-08-06 "retained-not-released" occupancy-posture claim for `MYM1!`/`MNQ1!` only; S7 (the core decision) stands. | operator election (Board B8) 2026-08-12 |
 | 2026-08-12-msl-sourcing-channel-ratification.md | Accepted | 2026-08-12 | `2026-08-08-edge-cohort-correction-and-necessity-retarget.md` in part — §2-C L2 channel taxonomy **by addition only** (MSL named); nothing else in that ADR moves. | operator ratified 2026-08-12 (Board B1); [MSL charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) Status `PROPOSED → RATIFIED` in the same commit (TNEC-1 step-1 pattern). Full tier, compact: ceremony-tiering **limb 4 fires** (this creates standing sourcing doctrine); the earlier light-record framing was a P1 review finding and … |
-| 2026-08-13-dedup-first-before-new-work.md | Accepted | 2026-08-13 | none | operator ruling recorded 2026-08-13 in session, verbatim: *"ratify it and I will spawn as suggested task."* **§7 Phases 1–5 (mechanical wiring) landed** on branch `cursor/dedup-first-mechanical-wiring-0813` the same day; see Change history for the implementation commit. §2's decision remains in force. |
 | 2026-08-13-implied-sr-report-only-fade-reopen.md | Accepted | 2026-08-13 | `2026-08-10-implied-sr-plausibility-gate.md` full; `2026-08-12-msl-implied-sr-disclosure-not-kill.md` full | operator ruling 2026-08-13. Ruling ID **`IMPLIED-SR-REPORT-ONLY-2026-08-13`**. |
 | 2026-08-13-msl-slate-2-design-box.md | Accepted | 2026-08-13 | none | operator election (P3.4 GO) 2026-08-13 |
 | 2026-08-14-repo-public-visibility-transition.md | Accepted | 2026-08-14 | `2026-07-01-guardian-pyport-public-tracking.md` in part — the | operator 2026-08-22. Phase 1 remediation and the fresh-repo transplant already executed; this public clone is that seed. Status field lagged the executed work. |
 | 2026-08-15-analogue-modality-route-ruling.md | Accepted | 2026-08-15 | none | operator election 2026-08-15 (in-session, presented as a blocking route ruling with three options; "New modality — proceed" elected) |
 | 2026-08-15-no-counterparty-statistical-sourcing-channel.md | Accepted | 2026-08-15 | none | ratified by operator (JA) 2026-08-15, in-session election ("admit a weaker evidentiary grade for candidate sourcing"); CC drafted and adversarially stress-tested (3 independent rounds) before ratification |
-| 2026-08-15-notice-log-is-the-live-observation-routing-convention.md | Accepted | 2026-08-15 | none | Accepted |
 | 2026-08-16-con5-timeframe-scope-cheap-falsifier-gate.md | Accepted | 2026-08-16 | none | operator election 2026-08-16 (in-session, presented as a blocking scope ruling with three options — narrow / broad / narrow-gated-by-cheap-falsifier; "cheap falsifier gate" elected) |
 | 2026-08-19-cme-broker-panel-admission-for-breadth-revival.md | Accepted | 2026-08-19 | none | operator ratified 2026-08-19, in-session direct instruction ("I accept |
 | 2026-08-20-analogue-modality-override-ict-ote-1-admit.md | Accepted | 2026-08-20 | none | ratified by operator (Joshua) 2026-08-20, in-session direct instruction |

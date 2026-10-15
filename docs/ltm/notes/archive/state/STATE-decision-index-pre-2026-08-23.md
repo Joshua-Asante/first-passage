@@ -165,7 +165,7 @@ Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-poin
 - **2026-08-14** — MSL §7 slate-generation review packet authored; election then recorded E1 (line above). [`packet`](../../../../../docs/briefs/programs/2026-08-14-msl-slate-generation-review.md)
 - **2026-08-14** — MSL slate-3 `BLOCKED` (mechanism-dry). notice (`git show ef48b015:docs/notes/notice/N-2026-08-14-msl-slate-3-constraints.md`)
 - **2026-08-14** — MSL-S2B Stage-0/1 `STAGE-1 FAIL` (route; pre-G0). [`closure`](../../../../../docs/briefs/closures/MSL-S2B-closure-stage1-fail-route.md) [`STAGE1`](../../../../../lab/analysis/c1/msl_s2b_mym_2026-08/STAGE1.md)
-- **2026-08-13** — Dedup-first-before-new-work `Accepted`; §7 mechanical wiring merged (PR #800). [`ADR`](../../../../../docs/adr/2026-08-13-dedup-first-before-new-work.md)
+- **2026-08-13** — Dedup-first-before-new-work `Accepted`; §7 mechanical wiring merged (PR #800). [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md)
 - **2026-08-13** — Tradeify Select 100K checkout price re-sourced (PR #801). note (`git show 67e4b209:docs/notes/2026-08-13-tradeify-select-100k-checkout-price.md`)
 - **2026-08-13** — MSL-C3-K2 dual-axis explore FALSIFIED. [`closure`](../../../../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md) [`PREREG_G0`](../../../../../lab/archive/msl_c3_m2k_2026-08/PREREG_G0.md)
 - **2026-08-13** — MSL-C3-K2 dual-axis G0 FROZEN. [`ADR`](../../../../../docs/adr/2026-08-13-msl-c3-k2-dual-axis-revive.md) [`PREREG_G0`](../../../../../lab/archive/msl_c3_m2k_2026-08/PREREG_G0.md)

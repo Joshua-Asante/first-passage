@@ -2856,7 +2856,7 @@ token; Magdon-Ismail B.
 
 **Focus:** Close the search-blindness → new artifact → stale index loop (registry feed, amendment-first, Limb B FTS, liveness sweep, Rule 2 pointers, gate/CI diet). Live rail out of scope. Replayed onto the public seed; merged after [PR #1](https://github.com/Joshua-Asante/first-passage/pull/1).
 
-**Shipped:** branch `cursor/search-memory-liveness-2af2` — [PR #2](https://github.com/Joshua-Asante/first-passage/pull/2) — Rule 8.9/8.10 + addenda on [dedup-first](../../../../adr/2026-08-13-dedup-first-before-new-work.md) / [ceremony-tiering](../../../../adr/2026-08-08-adr-ceremony-tiering.md) / [W5](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md); [Q-XMEM-1](../../../../briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) v1.2 Limb B; `scripts/repo_retrieve.py` + `scripts/sync_liveness_indexes.py`; INDEX CON-3/CON-4 repair. Mem0 T0 and local vector unpaid. Trip-log not replayed (`docs/notes/` omitted from the public seed).
+**Shipped:** branch `cursor/search-memory-liveness-2af2` — [PR #2](https://github.com/Joshua-Asante/first-passage/pull/2) — Rule 8.9/8.10 + addenda on [dedup-first](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md) / [ceremony-tiering](../../../../adr/2026-08-08-adr-ceremony-tiering.md) / [W5](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md); [Q-XMEM-1](../../../../briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) v1.2 Limb B; `scripts/repo_retrieve.py` + `scripts/sync_liveness_indexes.py`; INDEX CON-3/CON-4 repair. Mem0 T0 and local vector unpaid. Trip-log not replayed (`docs/notes/` omitted from the public seed).
 
 **Decisions/defects:** no new ADR. Rule 2 stays PROPOSED.
 
@@ -3146,7 +3146,7 @@ token; Magdon-Ismail B.
 
 **Shipped:** branch `cursor/test-same-theme-collision-warn-b103` — [PR #814](https://github.com/Joshua-Asante/first-passage-archive/pull/814) — [`tests/test_archive_lab_analysis.py`](../../../../../tests/test_archive_lab_analysis.py) (`test_warn_new_slug_same_theme_collision_emits_stderr`, `test_warn_new_slug_same_theme_collision_silent_without_overlap`).
 
-**Decisions/defects:** Owner: [dedup-first before new work](../../../../adr/2026-08-13-dedup-first-before-new-work.md) §2 leg 3.
+**Decisions/defects:** Owner: [dedup-first before new work](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md) §2 leg 3.
 
 **Open / next:** Operator F-2 disposition (from 14b/14c). Confirm #806 CI green; cart confirm; CapFLOW; F1 2026-11-08; M1; weekly token; Magdon-Ismail B; research venvs. On Windows: `make sync-skills` (from 14c).
 
@@ -3280,9 +3280,9 @@ token; Magdon-Ismail B.
 
 ## 2026-08-13v — ADR 2026-08-13 dedup-first mechanical wiring
 
-**Focus:** Execute [`ADR 2026-08-13`](../../../../adr/2026-08-13-dedup-first-before-new-work.md) §7 Phases 1–5 (hookify + keyword search + Rule 8.8 + theme-collision WARN + brief-authoring link).
+**Focus:** Execute [`ADR 2026-08-13`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md) §7 Phases 1–5 (hookify + keyword search + Rule 8.8 + theme-collision WARN + brief-authoring link).
 
-**Shipped:** branch `cursor/dedup-first-mechanical-wiring-0813` — [PR #800](https://github.com/Joshua-Asante/first-passage-archive/pull/800) @ `8a60c92`/`b48722a` — tracked `.claude/hookify.advisor-dedup-first.md`; `check_advisor_dedup.py --keywords`; Rule 8 sub-rule 8; `warn_new_slug_same_theme_collisions`; brief-authoring → §8. §10 audits PASS. [ADR](../../../../adr/2026-08-13-dedup-first-before-new-work.md). Label renumbered `13u`→`13v` on merge (collision with #799 soft-degrade on main).
+**Shipped:** branch `cursor/dedup-first-mechanical-wiring-0813` — [PR #800](https://github.com/Joshua-Asante/first-passage-archive/pull/800) @ `8a60c92`/`b48722a` — tracked `.claude/hookify.advisor-dedup-first.md`; `check_advisor_dedup.py --keywords`; Rule 8 sub-rule 8; `warn_new_slug_same_theme_collisions`; brief-authoring → §8. §10 audits PASS. [ADR](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md). Label renumbered `13u`→`13v` on merge (collision with #799 soft-degrade on main).
 
 **Decisions/defects:** Decision already Accepted; this session is pure mechanical execution (no re-litigation). Report-only WARN only — no `gates.yml` blocking change.
 
