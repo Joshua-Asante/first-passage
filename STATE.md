@@ -129,12 +129,6 @@ Owners hold canonical criteria; rows are pointers.
   operator initiative or 2026-11-08; alternate supply routes do not depend on it.
   [S2B status](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)/[charter](docs/adr/2026-08-16-deep-iteration-lane-charter.md)/[superseding K](docs/adr/2026-08-22-grow0-two-ledger-k-question.md).
 
-### 2026-10-14
-
-- **Grafana Cloud trial end (about 2026-10-17):** ruled 2026-10-12, downgrade to Free; prove SMS/voice
-  with an attended test page or upgrade before the first armed session. Owed by the watch's G10 record.
-  [Watch G10](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md#arming-preconditions-q4-as-narrowed).
-
 ### 2026-11-08
 
 - **Queue attention/order review:** first check of the ≤5 cap (two-consecutive-quarter
