@@ -256,8 +256,8 @@ adversarial pass this session and should not be treated as pre-verified. Same st
 before executing any of them.
 
 **Separately flagged, not actioned by this note:** `2026-03-01-aegis-session-selection.md`'s
-retired body (now `docs/ltm/adr/`) still publishes locked-book backtest figures (Net ~$62K, PF
-2.28, WR 59.9%, Max DD 3.46%) that the 2026-08-14 public-visibility redaction pass should have
+retired body (now `docs/ltm/adr/`) still publishes locked-book backtest figures (net, PF, WR and max DD; values redacted from
+this note 2026-10-15, body deleted the same day, see [TOMBSTONES](../../../adr/TOMBSTONES.md#2026-10-15-public-exposure-removal)) that the 2026-08-14 public-visibility redaction pass should have
 caught if `docs/adr/` (or its `ltm` destination) was in that pass's scope. This note does not
 redact it — that is a public-redaction-policy call, not a corpus-hygiene one, and belongs with the
 operator. `2026-04-17-guardian-v5.1-architecture.md` and `2026-04-17-striker-v4.3-pyramid.md`
