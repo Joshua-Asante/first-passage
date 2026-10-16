@@ -161,7 +161,8 @@ class BundleExecution:
                 require(self.open_quantity == 0, "entry_requires_empty_leg")
                 qty, _ = entry_quantities(
                     self.leg_id, mode=cfg.mode, lifecycle_tier=cfg.lifecycle_tier,
-                    policy=self.policy, normal_base=action.qty,
+                    policy=self.policy,
+                    normal_base=(None if self.leg_id in ("aegis_6j", "orb_mnq_v7") else action.qty),
                     risk_dollars=cfg.risk_dollars,
                     per_contract_risk=Fraction(str(action.stop_dist_pts)) * Fraction(str(cfg.pointvalue)),
                     cap_alloc=cfg.cap_alloc, size=cfg.size)
