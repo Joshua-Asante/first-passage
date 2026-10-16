@@ -4,6 +4,7 @@ Public synthetic consumers only; this is never FG or accepted-port evidence.
 """
 from dataclasses import replace
 from datetime import timedelta
+from enum import IntEnum
 
 import pytest
 
@@ -12,7 +13,9 @@ from c1_rail.book_policy import entry_quantities, validate_size_vector
 from c1_rail.qualification.model import ET, PathBar, SessionSchedule
 from c1_rail.qualification.replay import BookReplay, Instrument
 from c1_signal_daemon.book_adapters import ADAPTER_BY_LEG, synthetic_adapter_registry
-from c1_signal_daemon.book_bundle_execution import BundleExecution, SizingInputs
+from c1_signal_daemon.book_bundle_execution import (
+    BundleExecution, SizingInputs, run_sized_adapter,
+)
 from c1_signal_daemon.book_protocol import Mode
 from c1_signal_daemon.book_runtime import FourLegRuntime
 from c1_signal_daemon.feed import Bar
@@ -201,3 +204,39 @@ def test_f6_explicit_fixed_leg_overrides_still_fail_closed(leg_id, source_qty):
     with pytest.raises(ValueError, match="normal_base must equal fixed quantity"):
         entry_quantities(leg_id, mode=Mode.NORMAL, policy=POLICY, lifecycle_tier="AUTHORIZED",
                          normal_base=source_qty, size=validate_size_vector(VECTOR).leg(leg_id))
+
+class PositiveInt(int):
+    """A source-shaped positive integer whose exact type is not int."""
+
+
+class FixedQuantity(IntEnum):
+    ONE = 1
+    EIGHT = 8
+
+
+@pytest.mark.parametrize("leg_id,source_qty", [
+    ("aegis_6j", True),
+    ("orb_mnq_v7", True),
+    ("aegis_6j", PositiveInt(8)),
+    ("orb_mnq_v7", PositiveInt(1)),
+    ("aegis_6j", FixedQuantity.EIGHT),
+    ("orb_mnq_v7", FixedQuantity.ONE),
+], ids=["aegis-bool", "orb-bool", "aegis-subclass", "orb-subclass", "aegis-enum", "orb-enum"])
+def test_non_exact_fixed_leg_source_is_rejected_before_submission(leg_id, source_qty):
+    source = OneEntry(leg_id, entry(leg_id, source_qty, stop=24))
+    original = source.action
+    spec = ADAPTER_BY_LEG[leg_id]
+    consumer = BundleExecution(source, SizingInputs(
+        leg_id, Mode.NORMAL, "AUTHORIZED", 80, 100, spec.pointvalue,
+        validate_size_vector(VECTOR).leg(leg_id)), policy=POLICY)
+    broker = TVBrokerEmulator(leg_id, spec.mintick, spec.pointvalue, 0, 0)
+    bar = Bar(NOW, 100, 100, 100, 100)
+    with pytest.raises(ValueError, match="normal_base must equal fixed quantity"):
+        run_sized_adapter(consumer, [bar], broker)
+    assert source.action is original and original.qty is source_qty
+    assert consumer.checkpoint()["pending"] == {}
+    assert consumer.open_quantity == consumer.confirmed_base == 0
+    assert source.events == []
+    assert broker.events == []
+    assert broker.pending_order_ids() == []
+    assert broker.position() == 0
