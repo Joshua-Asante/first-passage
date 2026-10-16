@@ -2,7 +2,7 @@
 
 **Status:** Accepted (operator executive decision, chat 2026-10-09)
 **Decision date:** 2026-10-09
-**Supersedes:** 2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md in part — §2.1 "self-funded scale lane CLOSED (parked)" and §4 limb 1's re-open path, which this record discharges
+**Supersedes:** `2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md` in part — §2.1 "self-funded scale lane CLOSED (parked)" and §4 limb 1's re-open path, which this record discharges
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
@@ -14,9 +14,10 @@
    personal Tradovate account (broker chosen 2026-10-09 over Ironbeam, a Rithmic FCM,
    tastytrade and IBKR). Planned starting capital is recorded privately (the public record names it `E_0`).
 2. **Objective and book.** The lane's objective is **maximum growth** of the
-   account. The portfolio is **not yet selected**; it is not the Tradeify book by
-   default (operator, 2026-10-09). Selection is owed against the growth objective,
-   with candidates drawn from existing strategies under their locks; whatever is
+   account. The candidate pool is the Tradeify book's strategies (aegis_6j,
+   dj30_mym_p250, vanguard_mgc, orb_mnq_v7) under their locks, sized for `E_0` from the retained
+   successor configuration ([addendum 2026-10-11b](#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split)).
+   Selection and sizing are owed against the growth objective; whatever is
    chosen gets its own (portfolio, firm-tier) protection and sizing binding, keyed to the
    personal-account tier (owed item 2), under the
    [concept-not-constant ADR](2026-07-13-dd-protection-concept-not-constant.md),
@@ -44,6 +45,9 @@ AGENTS.md live-execution rules (M1, arming, per-session GO); private-figure poli
 ## Revision
 
 - 2026-10-09 (same day): portfolio unselected and maximum-growth objective (commit `87d12a0`); 15% peak-to-trough clearance standard recorded (`8a5e42c`); its p99 selection test and live stop confirmed by the operator (`f63a19c`); Codex review of PR #743: venue/parity checklist reading, (portfolio, firm-tier) keying, feed gating on items 3–4, and owed item 7 (this revision).
+- 2026-10-15: Decision 2 restated to the pool ruled in addendum 2026-10-11b (was "not yet
+  selected; not the Tradeify book by default"); item 7 status recorded. Prior text at
+  `4121e84c95f4990b71962e3b9570c4c3fad88426`.
 
 ## Grounds
 
@@ -80,7 +84,9 @@ first live order on the personal account:
    the Tradeify instance (configuration-as-code; no shared credentials).
 7. The 15% live halt (Decision 4): a fail-closed running-peak halt-and-flatten control for
    the personal account, with tests and an activation check that refuses to arm without it.
-   Nothing in `ops/c1_rail` or `core` implements it today.
+   Status 2026-10-15: `ops/c1_rail/personal_drawdown_halt.py` holds the tested halt state, not
+   wired to the rail; entry gating, flatten wiring and the arm refusal stay owed (card P4,
+   [build card](../briefs/handoffs/2026-10-11-personal-lane-items-2-6-7-card-DRAFT.md)).
 
 ## Current owner
 
@@ -95,7 +101,7 @@ This ADR owns the lane's scope until a campaign or plan owner is named for items
 python .claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md --type adr
 python scripts/check_adr_graph.py --regenerate-index
 python scripts/check_adr_graph.py
-rg -n "2026-10-09-self-funded" docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md STATE.md
+rg -n "2026-10-09-self-funded" STATE.md; rg -n "2026-07-16-self-funded-lane-close" docs/adr/TOMBSTONES.md
 ```
 
 ## Addendum 2026-10-11 — strategy split between lanes (option c)

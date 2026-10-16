@@ -9,7 +9,8 @@ a public clone is legitimate (not drift). Only committed directories are
 checked, so this gate is environment-independent.
 
 The former `params.toml` lock_md / strategy-dir leg was retired with the
-derived mirror (ADR docs/adr/2026-08-03-params-toml-gate-retirement.md).
+derived mirror (ADR 2026-08-03 params-toml gate retirement; ban in
+docs/adr/2026-07-22-challenge-era-substrate-retirement.md §11).
 Pine membership/hash integrity remains `scripts/check_pine_manifest.py`.
 
 Exit codes:

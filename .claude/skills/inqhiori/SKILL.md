@@ -7,7 +7,7 @@ description: Methodology for structural, low-reversibility, or statistically-gat
 
 Component skill of the **INQHIORI ⊕ OODA dual-loop framework** (reactivated 2026-05-01). This skill scopes to INQHIORI; OODA is the sibling skill `ooda-loop`.
 
-**Canonical reference:** `docs/methodology/inqhiori-canon.md` (§14 = the three-loop binding). When this skill disagrees with the canon, trust the canon. The Notion surface was retired 2026-06-12 (ADR `docs/adr/2026-06-12-notion-surface-retirement.md`; dead-ID map `docs/governance/notion-redirect-map.md`). Last reconciliation: 2026-05-01 (post-split).
+**Canonical reference:** `docs/methodology/inqhiori-canon.md` (§14 = the three-loop binding). When this skill disagrees with the canon, trust the canon. The Notion surface was retired 2026-06-12 (standing rules and dead-ID map: `docs/governance/notion-redirect-map.md`). Last reconciliation: 2026-05-01 (post-split).
 
 **What this skill replaces.** The orthogonal-framing predecessors:
 - INQHIORI reference page — `34cdc0b53c11812d96f8f6e9ee500d5e`
@@ -203,7 +203,7 @@ The Notice phase compression that landed on 2026-04-25 (commits `a05e9f3` → `c
 | S | Meta-process | Replaced two-phase ceremony with three-bucket routing gate (`docs/methodology/observation_routing.md`) |
 | (no A) | — | The simplified gate didn't need acceleration |
 
-> ⚠ **Historical record, not current practice** — the S step's replacement did not hold for narrative-observation routing; see [`ADR 2026-08-15`](../../../docs/adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md).
+> ⚠ **Historical record, not current practice** — the S step's replacement did not hold for narrative-observation routing; see [`ADR 2026-08-15`](../../../docs/methodology/observation_routing.md).
 
 **Cascade rule:** when D acts on a meta-process (a framework), it implicitly authorizes corpus-level D on the data that framework was producing. When D acts on data alone (the pre-Q gate), it does **not** authorize framework changes. Frameworks are governed by the meta-process domain, which has its own discipline.
 
@@ -236,8 +236,8 @@ All three have since closed; Q8a (doc/code skew) was promoted to a standing oper
 - **Rule 0** is canonical in `docs/rule_0.md`. Pre-loop gate at both layers — pre-Identify here, pre-Observe in OODA. See §0.
 - **Rule 1 (small-cell variance prior)** — page `34cdc0b53c11812cbb4ff637ba44736e` — still binds. Small cohorts trigger caution at the Observe / Reflect phase regardless of how the gate filtered the corpus.
 - **Overlay policy** is unchanged. No overlays without full INQHIORI. The gate is the front of that loop, not a relaxation of the back.
-- **Observation routing** operates *after* the pre-Q gate. Narrative observations that pass the gate route via the Notice-log convention (`docs/notes/notice/N-YYYY-MM-DD-slug.md`, `GRADUATE / DROP / HOLD`) — `docs/methodology/observation_routing.md`'s Closed/Action/Forward vocabulary did not displace it in practice ([`ADR 2026-08-15`](../../../docs/adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md)) and now governs only one mechanical gate (`scripts/verify_lock_anchors.py`). The two gates compose; they don't compete.
-- **Iterate exit is closure-resident and typed** (canon §16; ADR `docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`). The loop's terminal I is discharged on the closure artifact as a mandatory `## Iterate` block — Next: INTEGRATE | ITERATE | STOP, entry packet, stop rule, board write — pre-registered per verdict in the brief's §6 Disposition column. STOP is a ratified extension (v1's exit was binary); ITERATE names a successor but never opens one (operator GO). Template: `brief-authoring references/closure_record.md`.
+- **Observation routing** operates *after* the pre-Q gate. Narrative observations that pass the gate route via the Notice-log convention (`docs/notes/notice/N-YYYY-MM-DD-slug.md`, `GRADUATE / DROP / HOLD`) — `docs/methodology/observation_routing.md`'s Closed/Action/Forward vocabulary did not displace it in practice ([`ADR 2026-08-15`](../../../docs/methodology/observation_routing.md)) and now governs only one mechanical gate (`scripts/verify_lock_anchors.py`). The two gates compose; they don't compete.
+- **Iterate exit is closure-resident and typed** (canon §16 — `docs/methodology/inqhiori-canon.md`; enforcement `scripts/README.md#closure-enforcement`). The loop's terminal I is discharged on the closure artifact as a mandatory `## Iterate` block — Next: INTEGRATE | ITERATE | STOP, entry packet, stop rule, board write — pre-registered per verdict in the brief's §6 Disposition column. STOP is a ratified extension (v1's exit was binary); ITERATE names a successor but never opens one (operator GO). Template: `brief-authoring references/closure_record.md`.
 - **`prop-firm-challenge` skill** governs the operational layer (live trading, MC, dd_protection). This skill governs the methodology layer for structural / statistical work. They co-fire on investigation tasks: prop-firm-challenge for the operational facts, this skill for the investigation discipline.
 - **`pinescript-v6` skill** governs strategy code. Strategies are locked (current lock versions in `core/strategies/_archive/*/LOCK.md`; allocation ADR `docs/adr/2026-05-23-allocation-refresh-2.md`) and not in scope for this skill.
 

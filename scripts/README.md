@@ -550,6 +550,21 @@ remain warnings. The [closure template](../.claude/skills/brief-authoring/refere
 owns authoring detail; this gate does not enforce Lane/Closed fields,
 semantic completeness, or successor authorization.
 
+Consolidated 2026-10-15 from `2026-08-04-iterate-closure-exit-mandatory` and
+`2026-08-12-closure-disposition-coverage-hard` (removed; see
+[TOMBSTONES](../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
+Scope and boundaries: the Iterate and Registry limbs scan `docs/briefs/closures/*.md`
+only — lab `RESULTS*.md` and adjudication notes are out of scope, and widening
+scope is a reviewed code and operating-contract change. `GRANDFATHERED` and
+`COVERAGE_GRANDFATHERED` are closed, forward-only boundaries: never append a
+filename or campaign ID to clear a fire (a newly discovered pre-promotion gap is
+a reviewed code and operating-contract change), and never retro-edit a
+grandfathered closure to add an Iterate block. Iterate exemption is not coverage
+exemption: grandfathered closures still count as closure records for the
+coverage join.
+
+**Trigger check schedule:** carried verbatim from `2026-08-04-iterate-closure-exit-mandatory.md` §4 and `2026-08-12-closure-disposition-coverage-hard.md` §4 — "ride the standing quarterly methodology-audit cadence; first eligible check = first audit ≥3 months post-acceptance" (Iterate ≥2026-11-04; coverage ≥2026-11-12): Iterate ceremony (≥3 vacuous post-acceptance Iterate blocks), friction (≥2 legitimate closure commits resolved by `--no-verify` or a gutted block; count 1, 2026-08-07, Q-CAPA-1) and drift (≥2 successor Qs opened without the promised entry packet) limbs; coverage friction (≥2 `--no-verify` or grandfather-append resolutions), false-positive (≥2 HARD fires on campaigns whose closure the join missed) and ceremony (≥3 terminal closes evidenced only in SESSIONS/RESULTS) limbs. Not read by Sentinel.
+
 ## Independent review
 
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)

@@ -7,7 +7,7 @@ description: Tempo loop for tactical, recoverable decisions where speed matters 
 
 Component skill of the **INQHIORI ⊕ OODA dual-loop framework** (reactivated 2026-05-01). This skill scopes to OODA; INQHIORI is the sibling skill `inqhiori`.
 
-**Canonical reference:** `docs/methodology/inqhiori-canon.md` (§14 = the three-loop binding). When this skill disagrees with the canon, trust the canon. The Notion surface was retired 2026-06-12 (ADR `docs/adr/2026-06-12-notion-surface-retirement.md`; dead-ID map `docs/governance/notion-redirect-map.md`). Last reconciliation: 2026-05-01 (post-split codification).
+**Canonical reference:** `docs/methodology/inqhiori-canon.md` (§14 = the three-loop binding). When this skill disagrees with the canon, trust the canon. The Notion surface was retired 2026-06-12 (standing rules and dead-ID map: `docs/governance/notion-redirect-map.md`). Last reconciliation: 2026-05-01 (post-split codification).
 
 OODA is John Boyd's loop: **Observe → Orient → Decide → Act**, repeat. The point is tempo — getting inside the decision cycle of the situation rather than slowing down to formalize. In Joshua's context, the "situation" is the market and broker stack within his free-window before NDR work starts at 2pm ET, and the failure mode is treating tactical recoverable decisions as if they were structural ones (writing a brief when you should be acting, then re-observing).
 

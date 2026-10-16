@@ -69,7 +69,7 @@ only, never a retelling")
 statistic Q-COMPOSE-1 and the Stage-8 ADR established as the one that actually predicts composed-book
 bust) but has been dormant since the Pepperstone/CFD data it depended on was retired
 (2026-07-22 disposition C; confirmed final retirement 2026-08-02,
-`docs/adr/2026-08-02-pepperstone-feed-retirement.md`). Its `load_baseline_panel()` call fails today
+[`docs/adr/2026-08-02-pepperstone-feed-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-02-pepperstone-feed-retirement.md)). Its `load_baseline_panel()` call fails today
 with `PANELS_BY_BROKER` empty. The four locked strategies' CME-futures editions already have real,
 manifested backtest data (`core/data/tv_exports/cme/SHA256SUMS`), and two of the four —
 Striker DJ30 (MYM) and Striker NAS100 (MNQ) — remain `AUTHORIZED @ 1.00×`, the same 2-leg composition

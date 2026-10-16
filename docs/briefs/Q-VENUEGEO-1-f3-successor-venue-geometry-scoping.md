@@ -49,7 +49,7 @@ execution plan are otherwise as originally scoped.
 
 **This branch (`claude/preq-intake-venuegeo-monsurf-filltax-mschan`) sat open while three separate
 sessions landed [PR #647](https://github.com/Joshua-Asante/first-passage-archive/pull/647) (F3 cadence
-study), [ADR 2026-08-05](../adr/2026-08-05-blusky-inactivity-unsourced-encoding.md) (contain
+study), [ADR 2026-08-05](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-05-blusky-inactivity-unsourced-encoding.md) (contain
 BluSky's unsourced field), and [ADR 2026-08-05b](../adr/2026-08-05b-blusky-inactivity-rule-sourced.md)
 (source it) directly on `origin/main`.** Read in full before resolving the merge conflict (per
 `feedback_check_origin_main_before_multistep_build` — re-fetch before any multi-step build, not just
@@ -107,7 +107,7 @@ original `613aa0d` anchor — no cited file changed in between):
 
 Read at merge (2026-08-05), full body:
 - `lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md` (+ Addendum 2026-08-05b) — DP1 cadence measurement; Bulenox/MFFU 90.85–97.54% unmitigated, BluSky 4.87–13.14% sourced
-- `docs/adr/2026-08-05-blusky-inactivity-unsourced-encoding.md` + `docs/adr/2026-08-05b-blusky-inactivity-rule-sourced.md` — BluSky idle-rule sourcing chain; DP2 item 8 discharge for BluSky; §6 Risks flags consistency/cost/auto-liquidation as un-re-verified
+- [`2026-08-05`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-05-blusky-inactivity-unsourced-encoding.md) + `docs/adr/2026-08-05b-blusky-inactivity-rule-sourced.md` — BluSky idle-rule sourcing chain; DP2 item 8 discharge for BluSky; §6 Risks flags consistency/cost/auto-liquidation as un-re-verified
 - `core/firm_rules.py` `BluSky_Premium_100K` block — current encoded state: `inactivity_max_idle_days: 22`, `inactivity_rule_sourced: True`, `micro_contract_cap: 100`, `consistency_rule_pct: 34.0`, `automation_attended: True`, `cost_per_side_usd: 0.95` — all present but only the first two are independently re-verified; the rest inherit the flagged 2026-07-12 sweep
 
 Anchored, body unread — `[§0-pending content read before lock]`:

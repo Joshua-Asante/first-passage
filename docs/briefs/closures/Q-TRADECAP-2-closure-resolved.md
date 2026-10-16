@@ -6,7 +6,7 @@
 **Pre-registration:** [`Q-TRADECAP-2-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-TRADECAP-2-verdict-preregistration.md) — frozen at `4d6761b`
 **Spend / K:** $0.00 · K consumed: 0
 **Live effect:** none — election record only; no tripwire, cap, `dd_protection`, arming, or `sl=` wire
-**Artifacts:** [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) (`Accepted`) · [consult](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md)
+**Artifacts:** electing ADR (`Accepted` 2026-08-24; removed 2026-10-15 — [body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md), Addendum 2026-10-15 below) · [consult](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md)
 
 ---
 
@@ -71,11 +71,34 @@ $ rg -n "per.trade.dollar|TRADECAP_BOUND|max_loss_usd" ops/c1_rail core/dd_prote
 (no matches)
 ```
 
+## Addendum 2026-10-15 — election record consolidated here
+
+Consolidated 2026-10-15 from 2026-08-24-q-tradecap-2-elect-alert-tripwire (removed; see
+[TOMBSTONES](../../adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)). The electing ADR
+(operator-ratified 2026-08-24 after Claude judgment review; [body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md))
+was removed in the ADR retention pruning; this closure now owns the election. Its rulings, verbatim
+in substance:
+
+- Frozen ID **2** (alert tripwire) is the licensed close — observe-only: it does not flatten and
+  does not discharge the realized-loss gap. Do not wire **1-size** or **1-realized**. The threshold
+  is a later election; do not import the CFD-era example percent.
+- **If a tripwire is later implemented, freeze an MTM-or-dual trigger and threshold-before-first-fill,
+  or accept fail-open on that implementation record.**
+- O4 declined as re-litigation of absence (parent “unbounded” = no per-trade bound inside the trail;
+  **2** is a pre-breach warning). O9 N/A: **1-size** is not elected.
+- Gate: FALSIFIED if any of G1/G2/G3 (owned by the
+  [Q-TRADECAP-2 brief](../Q-TRADECAP-2-per-trade-bound-election.md) §4) is already false on the
+  frozen owners — then escalate; do not elect the CFD pair in place.
+- Boundary: this record is not a wire. Do not change `DD_TRIGGER` / `DD_SCALE` / `BASE_RISK`; do
+  not pass `sl=` or flatten; do not treat **1-size** as discharging realized loss; **do not invent a
+  fourth frozen ID**.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-24 | Closure authored. Operator ratified elect-2 after Claude review. `RESOLVED` recorded. | Cursor Cloud Agent, operator GO |
+| 2026-10-15 | Addendum 2026-10-15: the removed electing ADR's rulings consolidated here; Artifacts and Verification repointed. No verdict change. | Joshua (direction) + Claude Code |
 
 ---
 
@@ -83,6 +106,6 @@ $ rg -n "per.trade.dollar|TRADECAP_BOUND|max_loss_usd" ops/c1_rail core/dd_prote
 
 ```bash
 python scripts/check_closure_disposition.py docs/briefs/closures/Q-TRADECAP-2-closure-resolved.md
-python scripts/check_brief.py docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md --type adr
+git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md
 python scripts/check_adr_graph.py
 ```

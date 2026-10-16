@@ -144,7 +144,7 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | Current priorities and outstanding obligations | `STATE.md` queue and forward board; obligation details remain with their owning decision/closure |
 | Executable campaign next steps | Campaign's current implementation plan; campaign record owns evidence, gate dispositions, and operator decisions |
 | Session-specific "open / next" | Optional historical context in that session's entry; never a replacement for the current STATE queue or campaign plan |
-| Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
+| Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (doctrine: `docs/methodology/inqhiori-canon.md` §16); a STATE forward-board row is a labeled pointer mirror only |
 | Durable atomic facts | Their owning specification, campaign record, plan, PR, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 or sub-rule 8/10 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
 
 Roles that must **not** restate canonical values:
@@ -314,7 +314,8 @@ sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
    `lab/CATALOG.md` and `docs/briefs/INDEX.md` (and a cheap companion
    `git log --oneline -20` / keyword probe via
    `python scripts/check_advisor_dedup.py --keywords "..."`). An attestation
-   without executed search output is void. **Any work naming a candidate
+   without executed search output is void. An inherited "spawned as a separate task" pointer is re-checked against current repo state, not trusted on its own text. The dedup aids stay report-only — never build a hard, commit-blocking semantic duplicate gate (the C1 status-contradiction semantic join, `project_status_consistency_gate`, went 100% false-positive on its first real run); the implemented legs are the tracked `.claude/hookify.advisor-dedup-first.md` trigger, `check_advisor_dedup.py --keywords` (always exit 0) and the report-only same-theme WARN in `scripts/archive_lab_analysis.py`. **Trigger check schedule:** next quarterly programme audit, or immediately on the next dated incident of this class — T1 a real duplicate lands although the trigger fired and the pasted-search step ran (diagnose corpus coverage vs scoring); T2 ≥3 dated same-theme WARNs dismissed as noise in one quarter (narrow or drop the WARN); T3 90-day recurrence at or above the 2026-08-13 baseline of 2 incidents/session (escalate to the Q-XMEM-1 FTS5 sidecar) — source ADR 2026-08-13 §4; T2/T3 recorded unmeasurable 2026-08-15 (governance-belt meta-audit).
+   **Any work naming a candidate
    mechanism for a specific instrument additionally reads
    `ops/instruments/<SYM>.md` in full** — that ledger's own purpose line
    already makes this mandatory ("any session deriving/testing/adjudicating on
@@ -326,7 +327,7 @@ sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
    deletion-side "cross-reference grep before classifying isolated cruft,"
    lifting the binding procedure from the 2026-07-26 forced-flow census past
    its harvest-only origin. _(Anchored:
-   [`ADR 2026-08-13`](adr/2026-08-13-dedup-first-before-new-work.md);
+   [`ADR 2026-08-13`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md) — consolidated 2026-10-15 from `2026-08-13-dedup-first-before-new-work` (removed; see [TOMBSTONES](adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals));
    2026-08-13 Tradeify eval-battery near-miss (caught by deliberate sweep) and
    Magdon-Ismail closed-form MDD duplicate (uncaught until pre-commit
    `lab-catalog`); source language
@@ -745,11 +746,13 @@ not revive a retired authorization or evade a research re-proposal bar.
 1. quoted-path scan for `docs/…` and `lab/…` literals across `core/ ops/ scripts/ tests/ lab/`;
 2. **pathlib-join scan** (`"docs" / "notes" / …`) — constructed paths have no literal to grep;
 3. incoming file, Markdown-fragment and section-reference validation from surviving
-   documents, plus content/glob readers (including Sentinel schedules and A8 counts);
+   documents, plus content/glob readers (including Sentinel schedules, A8 counts,
+   `instrument_profiles.py` ledger `source:` cells, runtime `spec_from_file_location`
+   loads, `check_skill_refs` targets and ADR `Supersedes*` edges);
    moving an obligation to STATE is insufficient unless its reader follows;
 4. **full `pytest`** — the pre-commit gate battery does not run tests and is not sufficient evidence of safety.
 
-Owner: [`ADR 2026-08-08-great-prune`](adr/2026-08-08-great-prune.md) (§2 test, §4a failure log).
+Owner: this rule (test and instrument text revised 2026-09-08 under the [ADR policy](adr/2026-08-08-adr-ceremony-tiering.md)). Origin: [`ADR 2026-08-08-great-prune`](adr/2026-08-08-great-prune.md) §3.2 (4.3% docs-classifier precision) and §4a (classifier-failure log); its §2 is the superseded 2026-08-08 wording.
 
 ## 17. Quarterly programme-audit checklist — standing tooling census
 
@@ -796,6 +799,16 @@ Edits to existing rules must be logged with a dated entry explaining what change
   in place by the primary checkout's absolute path"; the copy tool is retired because
   its remedy copied the book's Pine, which campaign §60 rule 1 forbids.
 
+- **2026-10-15** — Rule 8 sub-rule 8 absorbs the dedup-first ADR's design bounds
+  (report-only aids; no hard semantic dedup gate), its three implemented legs and its
+  §4 recurrence checks; the ADR is removed ([tombstone](adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
+  No rule behaviour changed.
+
+- **2026-10-15** — Rule 16 owner line points at this rule (revised 2026-09-08) instead
+  of the great-prune ADR; instrument item 3 names the executable-citation readers. No retention test changed.
+
+- **2026-10-15** — Rule 7 owner table: the per-Q forward-disposition row repoints from the removed 2026-08-04 Iterate ADR to canon §16 (ADR decay audit; pointer only, ownership unchanged). [`record`](adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)
+
 - **2026-09-08** — Clarified decision ownership: specifications, campaigns, plans
   and PRs can own decisions; a distinct ADR must meet the admission rule. Neither
   importance nor approval alone creates an ADR requirement.
@@ -822,8 +835,8 @@ allocation, `dd_protection`, Pine, or rail touched.
 - **2026-08-22** — Rule 7 STATE decision-index restored to one line + owner (had grown back into multi-paragraph restatements after the 2026-08-19 relaxation below).
 - **2026-08-21** — Rule 9/10/14 reference repair: dropped a stale retired-script example, replaced drifted ordinal gate-number pointers with stable `id:` fields. No rule behavior changed.
 - **2026-08-19** — Rule 7 STATE decision-index cap relaxed from strict one-line to concise (practice had drifted; operator ruled relax-to-match). Still bars multi-sentence narrative.
-- **2026-08-15** — Rule 8 sub-rules 9–10 added: closures carry a `Registry:` line; amend the existing owner before minting a new ADR/brief/notice/lab slug. [`ADR`](adr/2026-08-13-dedup-first-before-new-work.md)
-- **2026-08-13** — Rule 8 sub-rule 8 added: paste literal dedup-search output (`lab/CATALOG.md` + `docs/briefs/INDEX.md`) before opening new work. [`ADR`](adr/2026-08-13-dedup-first-before-new-work.md)
+- **2026-08-15** — Rule 8 sub-rules 9–10 added: closures carry a `Registry:` line; amend the existing owner before minting a new ADR/brief/notice/lab slug. [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md)
+- **2026-08-13** — Rule 8 sub-rule 8 added: paste literal dedup-search output (`lab/CATALOG.md` + `docs/briefs/INDEX.md`) before opening new work. [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md)
 - **2026-08-08** — ADR ceremony stakes-tiering ratified (pointer only, no rule text changed): full §0–§7 only when a tier-test limb fires. [`ADR`](adr/2026-08-08-adr-ceremony-tiering.md)
 - **2026-08-07** — Rule 15 added (always-on hosting is not the desktop). [`ADR`](adr/2026-08-07-w6-rail-infra-closures.md)
 - **2026-08-07** — Rule 7 / SESSIONS·STATE entry-class direction (W5 — see the prose-target note above §7). [`ADR`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md)

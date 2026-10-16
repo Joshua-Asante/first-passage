@@ -160,7 +160,7 @@ CLOSURE_FILENAME_NONSTANDARD = re.compile(
 )
 
 # Closures on disk at ADR authoring time (2026-08-04). Forward-only boundary —
-# permanent record, per the ADR's §5 first forbidden move. Never append here to
+# permanent record, per scripts/README.md#closure-enforcement. Never append here to
 # dodge the gate; a new closure complies instead.
 GRANDFATHERED = frozenset({
     "2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
@@ -189,7 +189,7 @@ GRANDFATHERED = frozenset({
 # record at the coverage-limb promote-to-HARD ADR's authoring baseline
 # (2026-08-12). Empty: PR #745 cleared the backlog 9 → 0 (SESSIONS
 # 2026-08-11v). Permanent forward-only boundary — never append to dodge;
-# a genuine newly discovered pre-promotion gap needs a superseding ADR.
+# a genuine newly discovered pre-promotion gap needs a reviewed code + operating-contract change.
 COVERAGE_GRANDFATHERED: frozenset[str] = frozenset()
 
 # Closures on disk at the registry-feed land (2026-08-15). Forward-only —
@@ -725,7 +725,7 @@ def main(argv: list[str] | None = None) -> int:
         for a in argv:
             p = Path(a)
             # Grandfathered closures stay exempt here too — hard-failing them
-            # would invite exactly the retro-editing the ADR's §5 forbids.
+            # would invite exactly the retro-editing the closure contract forbids.
             try:
                 grandfathered = (p.resolve().parent == CLOSURES_DIR.resolve()
                                  and p.name in GRANDFATHERED)

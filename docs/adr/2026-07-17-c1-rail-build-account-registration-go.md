@@ -4,7 +4,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - `ACTIVE_FIRM` retention prohibition only. The c1 rail build, Tradeify registration, attended-only posture, spend ceiling, and B7 arm-gate stand.
 **Superseded-in-part-by:** `2026-07-22-c1-venue-native-monitoring-maturity.md` - next `dry_run=false` entry/add send / B7-REFIRE Stage 2 gains the M1 operational-monitoring gate. Rail build, account registration, attended posture, and spend ceiling stand.
-**Superseded-in-part-by:** `2026-08-04-tradeify-venue-descope-eval-included.md` - **DEPLOYMENT LIMB ONLY.** Tradeify is no longer a deployment target for the locked Striker book, **evaluation included**, and both legs are withdrawn from the c1 eval deployment. §2's authorization to *deploy* is spent. The rail build, the account registration, the attended-only posture, the $700 spend ceiling, and the arm gate all **stand** — the rail is retained and **disarmed** pending fork F2. See the dated Addendum 2026-08-04 below.
+**Superseded-in-part-by:** `2026-08-04-tradeify-venue-descope-eval-included.md` - **DEPLOYMENT LIMB ONLY.** Tradeify is no longer a deployment target for the locked Striker book, **evaluation included**, and both legs are withdrawn from the c1 eval deployment. §2's authorization to *deploy* is spent. The rail build, the account registration, the attended-only posture, the $700 spend ceiling, and the arm gate all **stand** — the rail is retained and **disarmed** (fork F2 ruled 2026-08-07 by [S1](2026-08-07-loop-s1-environment-ratification.md): built, warm and disarmed at the incumbent eval). See the dated Addendum 2026-08-04 below.
 **Retain-until:** none
 **Clarification 2026-08-08 (two dated corrections, no clause withdrawn):**
 (1) **§5 forbidden move 1 — "nothing arms before B6" — is DISCHARGED FOR THIS BUILD**, not *spent*: B6 PASSED
@@ -21,12 +21,12 @@ and it is now live rather than hypothetical.
 [`2026-07-22-c1-venue-native-monitoring-maturity.md`](2026-07-22-c1-venue-native-monitoring-maturity.md)): the
 Superseded-in-part-by line above still says *"next `dry_run=false` entry/add **send**"*. The operative rule is that
 `dry_run=false` may not be **SET** while M1 is not `RESOLVED` — enforced in `ops/c1_rail/c1_rail_arm.py`. M1 is
-`CODE_LANDED`, **not** `RESOLVED`, as of 2026-08-08.
+`CODE_LANDED`, **not** `RESOLVED`, as of 2026-08-08. M1 has been `RESOLVED` since 2026-09-14 ([acceptance](../notes/rail_build/M1_MONITORING_ACCEPTANCE.json)); while #571 is parked it supports no legacy-leg arm ([M1 Addendum 2026-10-01](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-10-01--transport_unknown-risk-add-block-proven-only-within-one-process-571-parked)).
 **Decision date:** 2026-07-17
 **Authors:** Joshua (decision) + Claude Code (recorder)
-**Supersedes:** none — this ADR **discharges** the rail-build/account/live-spend gate held open by [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) ("rail build, account registration, and any live spend gated" on operator GO) and satisfies [`2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) §5 (no research ADR is rail authorization — a fresh operator decision + ADR is; this is that ADR). Manual-trading retirement ([`2026-06-30-no-manual-trading-cfd-retirement.md`](2026-06-30-no-manual-trading-cfd-retirement.md)) stands untouched — attended automation is not manual execution.
+**Supersedes:** none — this ADR **discharges** the rail-build/account/live-spend gate held open by [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) ("rail build, account registration, and any live spend gated" on operator GO) and satisfies [`2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) §5 (no research ADR is rail authorization — a fresh operator decision + ADR is; this is that ADR). Manual-trading retirement ([`2026-06-30-no-manual-trading-cfd-retirement.md`](2026-06-30-no-manual-trading-cfd-retirement.md)) stands untouched — attended automation is not manual execution.
 **Related:** [`Q-RAIL-1 closure RESOLVED`](../briefs/closures/Q-RAIL-1-closure-resolved.md) (the decision packet this GO consumes); GO packet [`PHASE4.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE4.md); rail architecture [`PHASE3.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/q_rail_1_2026-07/PHASE3.md); sizing contract [`docs/spec/c1_watch_realization_multiplier_layer.md`](../spec/c1_watch_realization_multiplier_layer.md) (`Accepted` 2026-07-17); NT8 sizing-host implementation spec [`docs/spec/c1_nt8_sizing_host_impl.md`](../spec/c1_nt8_sizing_host_impl.md) (`Proposed`, B2, 2026-07-17); [`Q-PYRPARITY-1 closure`](../briefs/closures/Q-PYRPARITY-1-closure-falsified-nonproportional.md) (F1 fallback); c1 ratification [`G8_INTAKE.md`](../../lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/G8_INTAKE.md).
-**Layer:** execution — **not** locked-parameter. No change to locked Pine, allocations, `dd_protection` constants, or the FXIFY MC anchor pins (~~`ACTIVE_FIRM` stays FXIFY~~ — **superseded, see header**: `ACTIVE_FIRM = "Tradeify_Select_100K"` live since substrate Phase 1, 2026-07-22; historical MC/`dd_protection` challenge semantics still pin to `FIRM_RULES["FXIFY"]` by name, just not via this selector).
+**Layer:** execution — **not** locked-parameter. No change to locked Pine, allocations, `dd_protection` constants, or the FXIFY MC anchor pins (~~`ACTIVE_FIRM` stays FXIFY~~ — **superseded, see header**: the `ACTIVE_FIRM` selector and the FXIFY tier row were deleted in substrate Phase 4, 2026-07-30 (`core/firm_rules.py` provenance note); historical challenge semantics live in `core/historical_challenge.py` (opt-in fixture only), and the rail uses the explicit `Tradeify_Select_100K` tier key).
 
 **Pointer re-home 2026-09-12 (TB-O1; reader-intercept, no clause amended):** the `RUNBOOK.md` links in the header clarification, the §7 table (B3, B6 rows) and the 2026-07-19 addendum (re-add trigger, discharged open item, audit hooks) name `docs/notes/rail_build/RUNBOOK.md`, a private file **not on the public tree**; those bodies stay byte-unedited (Trap #12; Addendum 2026-08-21). The public operating procedure is [`ARMING_PROCEDURE.md`](../notes/rail_build/ARMING_PROCEDURE.md); the private runbook is retrieved per its §2 (archive pin `5d47b4dc…`, or the primary checkout's ignored private root). See Addendum 2026-09-12 at the end of this file.
 
@@ -95,13 +95,7 @@ Q-RAIL-1 closed `RESOLVED` 2026-07-17: all five execution-fidelity preconditions
 
 ## §6 — Consequences
 
-**Positive:** first live fill source since FXIFY closure; pre-registered unblocks fire — **Q-NAS-ECR-1 successor Pre-Q authorized** (fresh Pre-Q, MNQ fill microstructure); **ORB-MNQ-1 decay-monitor calibration re-scoped to the live venue**; Q-DECAY-1 re-arm limb and lifecycle Call-1 gain a live input path.
-
-**Negative (real):** ~$49/mo standing bridge cost while the eval runs (~2× median pass time at WATCH-1 → plausibly >3 months); operator attendance obligation (the legs' locked signal window on their locked trading days + EOD daily) *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*; build work (payload contract + NT8 host) precedes any fill.
-
-**Risks:** WATCH-1 pass-rate ≥95% is bust-geometry, not P&L promise; common-mode edge death remains uncovered (Q-DECAY-1 — drawdown-only detection); +0.46pp bust optimism (Q-PERSIST-1); H1 regime rescue is the haircut's doing. All carried verbatim from the packet — the GO is taken with these read.
-
-**Downstream artifacts:** CLAUDE.md posture line (pointer only); STATE executed-decisions line + fill-starved thread annotations; SESSIONS entry; Q-RAIL-1 closure's "On GO" list activates.
+Consequences as of 2026-07-17 are history (full text: [this file at `4121e84c`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-17-c1-rail-build-account-registration-go.md)): a first live fill source and the fill-starved unblocks it listed; a standing bridge cost and an operator attendance obligation (the legs' locked signal window on their locked trading days + EOD daily) *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*; and the packet's risks, carried verbatim. The WATCH-1 0.50× figures those risks cited were re-measured under corrected geometry (Addenda 2026-07-24 and 2026-07-28), and the book was withdrawn from this venue on 2026-08-04 (Addendum 2026-08-04).
 
 ---
 
@@ -122,18 +116,14 @@ Q-RAIL-1 closed `RESOLVED` 2026-07-17: all five execution-fidelity preconditions
 ## §10 — Audit hooks (runnable)
 
 ```bash
-# This GO is the only rail authorization; the research-ADR guard still holds upstream
-grep -n "rail-build, account-registration, or live-spend" docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md
-grep -rn "2026-07-17-c1-rail-build-account-registration-go" STATE.md docs/SESSIONS.md CLAUDE.md   # expect: pointer lines present
-
-# No armed session before dry-fire: build artifacts must show B6 evidence before any fills log exists
-ls docs/notes/rail_build/ 2>/dev/null || echo "no build notes yet - expected until B1 starts"
-
-# Spend ceiling tally (update at each purchase; must stay <= 700)
-grep -n "CEILING SIGNED" lab/analysis/c1/q_rail_1_2026-07/PHASE4.md
-
-# Tier constants unchanged at build time (re-run before B2 arithmetic)
-git log -1 --format='%h %cs' -- core/firm_rules.py   # a53ee99 at GO; investigate drift
+# Spend ceiling and its dated exemptions (§2, §4(b), Addenda 2026-10-01 and 2026-10-02)
+grep -n '\$700\|\$500' docs/adr/2026-07-17-c1-rail-build-account-registration-go.md
+# Hedging-clearance premise and contract-cap invariants (Addendum 2026-07-22)
+grep -n 'entry / add are always long' ops/c1_rail/c1_rail_listener.py
+python -m pytest tests/ops/test_c1_sizing_host_reference.py -q -k "cap"
+grep -n '§4a' ops/prop_envelope_default.md
+# E1 caveat at the source the 2026-07-19 addendum quotes
+grep -n "never design to the" ops/prop_envelope_default.md
 ```
 
 ---
@@ -150,35 +140,7 @@ grep -n "RESOLVED" docs/briefs/closures/Q-RAIL-1-closure-resolved.md
 
 ## Addendum — 2026-07-18: MYM Step-2 parity override re-affirmed against corrected exit-lag census
 
-An adversarial re-audit of the F3 evidence (STEP2_PARITY.md) found the MYM per-candle
-parity override — one of the fidelity limbs this GO's §0 Rule-0 reads cite as PASS —
-was granted 2026-07-17 against an **understated** exit-lag census: the documented
-bound was "MYM 1–3 bars later," T9 (+3), T11/T12 (+2). Independent re-comparison of the
-underlying exports found **9 lagged exits**, not 3, including one pair at **+10 bars
-(2.5 hours)**: T9/T11/T12 as documented, plus T25/T26 (+1, 2026-01-06), T29/T30 (+10,
-2026-02-08 22:30 → 02-09 01:00), T37 (+1, 2026-05-29), T42 (+3, 2026-06-30). Full table:
-[`lab/analysis/c1/q_rail_1_2026-07/STEP2_PARITY.md`](../../lab/analysis/c1/q_rail_1_2026-07/STEP2_PARITY.md).
-
-**Operator re-affirmation (chat, 2026-07-18):** *"re-affirm the override against the
-corrected census."* The override stands as-is against the corrected facts — entry-
-cascade mechanism (larger CFD size → earlier day-stop soft-halt → MYM's smaller integer
-size stays free to re-enter) and exit-lag absorption both re-affirmed; F3 stays `PASS`.
-The pre-registered discharging same-size control (unrun at original grant) remains the
-open revisit condition, unchanged by this re-affirmation — binds before any live-fill
-claim leans on MYM CME-native timing precision, and in particular before/at **B6
-dry-fire** (§7).
-
-No change to §2 Decision, §4 Falsifier, or §5 Forbidden moves — the corrected census
-does not flip a PASS to FAIL, does not change the tier recommendation, and does not
-add a new forbidden move. It is carried into §6 Risks and PHASE4.md §3 Standing risk
-framing (updated same date) because it is new information material to a risk already
-accepted, discovered after ratification — same class of correction as the
-[2026-06-07 decompound-remc HOLD addendum](2026-06-07-decompound-remc-hold.md)
-(severity-corrected figures, verdict unchanged).
-
-Also landed same date: the 12 F3 Step-2/C3 evidence CSVs (previously Downloads-only,
-unpinned) archived into `core/data/tv_exports/{pepperstone,cme}/` with SHA256SUMS
-regenerated — closing the evidence-volatility gap the same re-audit surfaced.
+*Condensed 2026-10-15; full text in [this file at `4121e84c`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-17-c1-rail-build-account-registration-go.md).* The MYM per-candle parity override (an F3 fidelity limb) was granted 2026-07-17 against an understated exit-lag census; the re-audit found 9 lagged exits, not 3, including one pair at +10 bars. **Operator re-affirmation (chat, 2026-07-18):** *"re-affirm the override against the corrected census"* — F3 stays `PASS`; no change to §2, §4 or §5. The pre-registered discharging same-size control stays the open revisit condition, recorded with the corrected census in [`STEP2_PARITY.md`](../../lab/analysis/c1/q_rail_1_2026-07/STEP2_PARITY.md): it binds before any live-fill claim leans on MYM CME-native timing precision (the Striker DJ30 MYM edition it concerns is barred from redeploy since 2026-08-04).
 
 ---
 
@@ -221,109 +183,39 @@ grep -n "15:55 ET flat-check" docs/adr/2026-07-17-c1-rail-build-account-registra
 
 ## Addendum — 2026-07-22: Tradeify hedging rule — c1 CLEARS by construction; contract-cap defect fixed; one open B7 input
 
-**§0 reads (this addendum).** Primary, [`help.tradeify.co`](https://help.tradeify.co) read 2026-07-22: [`10495868`](https://help.tradeify.co/en/articles/10495868) (hedging, article updated 2026-07-21) · [`10495876`](https://help.tradeify.co/en/articles/10495876-rules-permitted-times-to-trade) · [`10468222`](https://help.tradeify.co/en/articles/10468222) · [`10495897`](https://help.tradeify.co/en/articles/10495897-rules-trailing-max-drawdowns) · [`12853921`](https://help.tradeify.co/en/articles/12853921-select-evaluation-accounts) · [`12268167`](https://help.tradeify.co/en/articles/12268167-essential-trading-rules-overview); MFFU [`13286542`](https://help.myfundedfutures.com/en/articles/13286542). Production: `core/strategies/striker/striker_dj30_v4.5_mym.pine` + `core/strategies/nas/striker_nas100_v1_mnq.pine` (locked Pine, gitignored — read on disk); [`ops/c1_rail/c1_rail_listener.py`](../../ops/c1_rail/c1_rail_listener.py) `_leg_action`; [`ops/c1_rail/c1_sizing_host_reference.py`](../../ops/c1_rail/c1_sizing_host_reference.py).
+*Condensed 2026-10-15; the §0 source list (help.tradeify.co articles read 2026-07-22, the locked Pine, the rail code), the exposure figures and the audit hooks are in [this file at `4121e84c`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-17-c1-rail-build-account-registration-go.md). Venue facts are owned by [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) §4 (Tradeify row) and §4a.*
 
 ### Hedging / correlated products — CLEARS, no guard required
 
-Tradeify prohibits **opposing directions within a Product Group**, in one account or across any accounts under the same control. The **Equity Index** group contains `ES, MES, NQ, MNQ, YM, MYM, RTY, M2K, EMD, NKD` + EUREX index — so **c1's two legs share a group**. Consequences are severe: violation status on *every* account involved, profit forfeiture, possible permanent ban. Nothing in the repo encoded this rule.
-
-**The two legs cannot ever be opposite-signed.** Three independent layers:
-
-1. **Locked Pine (decisive).** Both venue editions are structurally long-only: **zero `strategy.short`** (also zero in the two CFD editions). Entries are only `strategy.entry(…, strategy.long, …)`; every exit is `strategy.exit` / `strategy.close_all`, which flatten and never reverse. The dashboard renders `LONG ONLY`.
-2. **Rail.** `_leg_action` hard-codes `"buy"` for `entry`/`add` (*"c1 is long-only"*) and maps `exit`/`flat` to `command=closeposition`. No sell-to-open path exists; a `closeposition` cannot open a short.
-3. **Realized.** Zero short entries across ~6,000 trade rows, every Striker DJ30 / NAS100 export vintage, CFD and venue-native.
-
-Reachable joint states are **long+long** and **long+flat**. Tradeify lists long+long explicitly under *What IS Allowed*. **This is a proof of non-reachability, not an accepted risk.**
-
-**Caveat worth recording:** the three-condition automated breach (opposing + >10s + >$250 profit) is **not a safe harbour** for the correlated-product case — that bucket is *"monitored separately and reviewed by our risk team"* with no published threshold. Moot for c1 as constituted; recorded so nobody later reasons "under $250 is fine."
+Tradeify prohibits **opposing directions within a Product Group**, in one account or across any accounts under the same control; MYM and MNQ share the Equity Index group (rule, group table, detection and consequences: envelope §4a). c1's two legs could never be opposite-signed: both locked venue editions are long-only (zero `strategy.short`), the rail's `_leg_action` hard-codes `"buy"` for `entry`/`add` and maps `exit`/`flat` to `command=closeposition`, and no short entry appears in any export. **This is a proof of non-reachability, not an accepted risk.** The automated three-condition breach is **not a safe harbour** for the correlated-product case, which Tradeify reviews separately with no published threshold (envelope §4a Detection; its profit limb is >$150 since 2026-10-02, was >$250).
 
 **§5 Forbidden moves — ADDS one:** *adding any short-capable or long/short leg on an **Equity Index** Product Group instrument to this account, or to any account under the same control, while a long Equity Index leg can be open.* The published list is explicitly **not exhaustive**, and long **FVS** (Volatility) against long Equity Index is also treated as offsetting. This bites a live research direction: the Stage-8 gate ([ADR 2026-07-20](2026-07-20-stage8-variance-dominance-risk-neff-gate.md)) *rewards* `n_eff_risk_delta > 0`, and a negatively-correlated same-group leg is exactly what that gate favours and this rule forbids. Decorrelation candidates must now be screened for **Product Group + sign** before scoring.
 
 ### Contract cap — real defect, FIXED
 
-The same article makes the cap explicitly combined: *"Your combined position must stay within your account's contract limit, counted at 10 micros = 1 mini"* (100K = 8 mini / 80 micro, [`12268167`](https://help.tradeify.co/en/articles/12268167-essential-trading-rules-overview)). The sizing host applied `cap_firm` **per leg**, each against the full 80 → worst case **MYM 76 + MNQ 77 = 153 micros, 1.91× the account limit**.
+The cap is **account-aggregate**: *"Your combined position must stay within your account's contract limit, counted at 10 micros = 1 mini"* (100K = 8 mini / 80 micro; envelope §4a contract-cap corollary). The sizing host had applied `cap_firm` **per leg**, so the two-leg book could reach 1.91× the account limit, and the pinned exports showed combined positions above 80. Plan for breach, not a bounced order, unless Tradeify confirms otherwise in writing (envelope §4a corollary); a confirmed hard reject would drop this to an execution defect and let the split relax.
 
-**Not theoretical.** On the pinned venue-edition exports: MYM is cap-bound in **93%** of trades (40/43); **22.1%** of DJ30 trades carry a simultaneous NAS position; observed **max combined 98 micros** (2025-10-14 12:15 = MYM 76 + MNQ 22). WATCH-1 0.50× does not rescue it — the haircut scales `r_eff`; the cap branch is invariant.
+**Fix (operator-approved):** static per-leg allocation of the account cap (`cap_alloc` in `LEG_MAP`, [`ops/c1_rail/c1_sizing_host_reference.py`](../../ops/c1_rail/c1_sizing_host_reference.py)) — stateless, deterministic, oracle-pinnable, provably compliant by construction; it allocates a firm constant, and the locked pyramid ratios are untouched. A missing/oversized `cap_alloc` halts to zero rather than falling back to the permissive whole-account cap. A runtime joint check was rejected: the host deliberately does not track live position size (`crosstrade_payload` omits quantity on close for exactly that reason), so sizing a compliance-critical budget off that bookkeeping is the M8 class the fail-safe doctrine exists to prevent; it would also make qty order-dependent when both legs fire on the same 15m close. **Upgrade path:** when the host gains verified position truth, the split relaxes to a runtime headroom check — same re-add shape as the 2026-07-19 AM trigger. The original MYM 69 / MNQ 11 split (`f2_floors.json` re-pinned, originals retained under `pre_2026_07_22_whole_cap_per_leg`) was **released to 0/0** by operator ruling 2026-08-26 (Addendum 2026-09-01 below).
 
-**Severity.** Tradeify does not publish the enforcement mechanism. MFFU, same firm class and same 8/80 numbers, does: exceeding it *"can result in a **breach** of the trading account."* Planned for breach, not a bounced order. **Open cheap action for the operator:** ask Tradeify support whether over-cap hard-rejects; a confirmed hard reject drops this to an execution defect and would let the split relax.
+### Open B7 input — CLOSED 2026-07-24, measured benign
 
-**Fix (operator-approved):** static per-leg allocation of the account cap — **MYM 69 / MNQ 11** → maxima 68 + 11 = **79 ≤ 80**. Stateless, deterministic, oracle-pinnable, provably compliant by construction. A missing/oversized `cap_alloc` halts to zero rather than falling back to the permissive whole-account cap. Cost: MYM base 9→8; MNQ capped at base 1. Locked pyramid ratios (750%/1000%) untouched — this allocates a *firm constant*. A runtime joint check was rejected: the host deliberately does not track live position size (`crosstrade_payload` omits quantity on close for exactly that reason), so sizing a compliance-critical budget off that bookkeeping is the M8 class the fail-safe doctrine exists to prevent; it would also make qty order-dependent when both legs fire on the same 15m close. **Upgrade path:** when the host gains verified position truth, the split relaxes to a runtime headroom check — same re-add shape as the 2026-07-19 AM trigger. `f2_floors.json` re-pinned (MYM 9/67 → 8/60), originals retained under `pre_2026_07_22_whole_cap_per_leg`.
-
-### ⚠️ Open B7 input — §6's WATCH-1 0.50× figures are UNMEASURED under corrected geometry
-
-The eval-tier drawdown-locking defect ([`lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md`](../../lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md)) means the 0.50× figures §6 cites — full-panel bust 0.08%, H1 0.14%, bootstrap-95th 0.77% — were computed with a cushion the eval phase does not have. **Known-optimistic by an unmeasured amount**; direction certain, magnitude not. The corrected run was stopped on runtime cost before reaching that arm. The +2.10pp measured at 1.00× must **not** be scaled to 0.50× — halved risk interacts with the barrier non-linearly. Closing needs only the full-panel reference (≈3 min), not the n=100 bootstrap. **Recommend closing before B7 arms.** The GO itself is not overturned: the withdrawn Part A discharge is a different gate ([ADR 2026-07-22](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md)).
-
-> **CLOSED 2026-07-24 — measured benign. See Addendum 2026-07-24 below.**
+The WATCH-1 0.50× figures §6 cited had been computed under defective eval geometry ([`RESULTS.md`](../../lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md)); Addenda 2026-07-24 and 2026-07-28 measured them.
 
 ### Flat deadline corrected
 
-**16:45 ET** regular (12:59 ET holiday-short), tightened from the 16:59 ET this ADR carried. **Verified harmless before editing:** the E1 target (16:00 ET), the Pine 15:45 force-flat, and the operator 15:55 check all sit inside the tighter print, and the auto-flatten remains explicitly **non-fatal** — the property the 2026-07-19 Option-C addendum leans on. Read every "16:59" in the 07-19 addendum as **16:45**.
-
-**Audit hooks (runnable):**
-```bash
-python -c "import pathlib,sys; f=[p for p in ('core/strategies/striker/striker_dj30_v4.5_mym.pine','core/strategies/nas/striker_nas100_v1_mnq.pine') if pathlib.Path(p).exists()]; sys.exit(0) if not f else [print(p,'strategy.short x',pathlib.Path(p).read_text(encoding='utf-8',errors='replace').count('strategy.short')) for p in f]"
-grep -n 'entry / add are always long' ops/c1_rail/c1_rail_listener.py     # rail long-only invariant
-python -m pytest tests/ops/test_c1_sizing_host_reference.py -q -k "cap"   # combined-cap invariant
-grep -n '§4a' ops/prop_envelope_default.md                        # hedging overlay present
-```
+**16:45 ET** regular (12:59 ET holiday-short), tightened from the 16:59 ET this ADR carried (owner: envelope §4 Tradeify row). The E1 target (16:00 ET), the Pine 15:45 force-flat and the operator 15:55 check all sit inside it, and the auto-flatten remains **non-fatal** — the property the 2026-07-19 Option-C addendum leans on. Read every "16:59" in the 07-19 addendum as **16:45**.
 
 ---
 
 ## Addendum — 2026-07-24: §6's WATCH-1 0.50× figures MEASURED under corrected geometry — open B7 input CLOSED benign
 
-Operator directive 2026-07-24 ("proceed with the two unmeasured arms"). Run:
-[`lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md)
-(frozen 2026-07-15 primitives + the 2026-07-22 correction idiom; reproduction
-controls matched every published corrected pin, incl. 1.00× full 4.74%/4.25% and
-H1 6.78%/6.28%).
-
-**Corrected WATCH-1 0.50×, $100K basis, both discharge tiers:** full-panel bust
-**0.11%** (pass 99.80/99.81%), **H1 0.22%**, **H2 0.04%** — every partition
-PASSES the frozen floor. Versus the defective-geometry figures §6 cited
-(0.08% / 0.14%): the correction costs **+0.03pp full-panel / +0.08pp H1** at the
-deployed rung. The §5-forbidden down-scaling of the 1.00× delta is empirically
-vindicated: +2.10pp at 1.00× vs +0.03pp at 0.50× — strongly non-linear barrier
-interaction. Still unmeasured (declared): the corrected 0.50× bootstrap-95th
-(defective 0.77% vs 3.0% ceiling; separable long pole, not a B7 gate per the
-withdrawal ADR's own close recommendation). Read §6's risk framing with these
-corrected values; the GO stands unchanged. Same-day sibling result (separate
-pre-registration, not this ADR's scope): two corrected-geometry Part A clearers
-exist at the 50K band —
-[`lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md).
+Operator directive 2026-07-24 ("proceed with the two unmeasured arms"); run [`CORRECTED_FULLPANEL.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md). **Corrected WATCH-1 0.50×, $100K basis, both discharge tiers:** full-panel bust **0.11%**, **H1 0.22%**, **H2 0.04%** — every partition passes the frozen floor. Against the defective-geometry figures (0.08% / 0.14%) the correction costs **+0.03pp full-panel / +0.08pp H1**, versus +2.10pp at 1.00× — a strongly non-linear barrier interaction that vindicates §5's no-down-scaling rule. The GO stands unchanged. Same-day sibling result (separate pre-registration, not this ADR's scope): two corrected-geometry Part A clearers at the 50K band ([`RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/c1_band_rescore_2026-07-24/RESULTS.md)).
 
 ## Addendum 2026-07-28 — the declared separable long pole is MEASURED and CLEARS
 
-The Addendum 2026-07-24 left exactly one open measurement on the deployed rung:
-the **corrected-geometry 0.50× bootstrap-95th** (defective-era 0.77%), declared a
-separable long pole and explicitly **not** a B7 gate. It is now measured.
+The one measurement Addendum 2026-07-24 left open on the deployed rung — the corrected-geometry 0.50× **bootstrap-95th**, declared a separable long pole and **not** a B7 gate — measured **1.20%** (pass-5th 95.5%) against the 3.0% ceiling (`Tradeify_Select_100K`, frozen rider primitives; reproduction controls matched the published full/H1/H2 pins), so every partition of the deployed configuration was measured under corrected geometry and passed. Evidence: [`RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/eval_shape_diagnostics_2026-07-28/RESULTS.md) Part B · `rider_050x_report.json`.
 
-`Tradeify_Select_100K` @ **WATCH-1 0.50×**, corrected geometry (worker-local patch,
-all 100 panels attested at `dd_lock_offset_usd = 1e6`), frozen rider primitives
-(`BOOT_SEED=20260715`, n=100, block=126bd, seeds 42/123/2026, 10K sims/seed,
-horizon 1500):
-
-| Partition | Bust | Floor (≤3.0% ∧ pass ≥50%) |
-|---|---|---|
-| Full-panel | 0.11% | PASS |
-| H1 | 0.22% | PASS |
-| H2 | 0.04% | PASS |
-| **Bootstrap-95th** | **1.20%** (pass-5th 95.5%) | **PASS** |
-
-Reproduction controls reproduced the published corrected full/H1/H2 pins exactly.
-Correction cost at the bootstrap tail is **+0.43pp** (0.77% → 1.20%), leaving
-1.8pp of headroom under the 3.0% ceiling. **Every partition of the deployed
-configuration is now measured under corrected geometry and passes** — no open risk
-measurement remains on the 0.50× rung. Evidence:
-[`lab/analysis/c1/eval_shape_diagnostics_2026-07-28/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/eval_shape_diagnostics_2026-07-28/RESULTS.md)
-Part B · `rider_050x_report.json`.
-
-**Scope discipline, unchanged.** This closes a *measurement*, not a gate: it was
-never a B7 gate, and it does not touch B7's actual blockers (M1 `RESOLVED` +
-operator GO), the §4 falsifier (undischarged; scored at the $100K band at 1.00×),
-or any locked parameter. Same pass established that **1.00× is far worse than
-previously published** under corrected geometry (bootstrap-95th **17.79%**), which
-strengthens rather than disturbs §5's no-downscaling rule and the choice of the
-0.50× rung.
+**Scope discipline, unchanged.** This closed a *measurement*, not a gate: it did not touch B7's actual blockers (M1 `RESOLVED` + operator GO), the §4 falsifier (undischarged; scored at the $100K band at 1.00×), or any locked parameter. The same pass found corrected 1.00× bootstrap-95th **17.79%**, which strengthens rather than disturbs §5's no-downscaling rule and the choice of the 0.50× rung.
 
 ## Addendum 2026-08-04 — the DEPLOYMENT limb is spent; the build stands, disarmed
 
@@ -351,9 +243,9 @@ the error is READ). The header now carries the reciprocal `Superseded-in-part-by
   the **$700** spend ceiling ($208 committed); the per-session arm-GO discipline; and the arm gate
   itself (`dry_run=false` barred while M1 is not `RESOLVED` — Addendum 2026-07-31b moved the trigger
   send→arm). The rail is **retained and DISARMED**, pointed at a de-scoped venue, pending fork **F2**
-  (rail disposition, 2026-08-08), which also governs the account and the M1 spine.
+  (rail disposition, 2026-08-08; ruled 2026-08-07 by [S1](2026-08-07-loop-s1-environment-ratification.md)), which also governs the account and the M1 spine.
 - **§2, §4, §5 and every prior Addendum are unedited** (Trap #12 — frozen bodies are never rewritten
-  in place). This Addendum is the intercept, not a revision.
+  in place). This Addendum is the intercept, not a revision. *(Revision 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §6 shortened, §10 hooks replaced, Addenda 2026-07-18, 2026-07-22, 2026-07-24 and 2026-07-28 condensed, header FIXes in place; recorded here, not as a header line, so L1–L95 keep their cited line numbers. Pre-trim text at blob `3cc1081f6cbf34c57de708534efd5eb9172426bf` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`): [this file at `4121e84c`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-17-c1-rail-build-account-registration-go.md).)*
 - The lifecycle axis: both legs remain `AUTHORIZED @ 1.00×`. **Venue-fit is not decay.**
 
 **Scope of the de-scope, stated so it is not over-read:** its same-day Addendum narrows the bar to
@@ -394,6 +286,7 @@ Reads: de-scope addendum “any qualifying strategy” @ `acc4f41` · M1 addendu
 | 2026-08-24 | Addendum: test strategy is a qualifying strategy for M1 item 5 / B7 Stage 1; dated 08-24; Stage 2 / arm unchanged | Joshua (ruling) + Cursor |
 | 2026-09-01 | Addendum: reader-intercept -- Addendum 2026-07-22's 69/11 cap-alloc split was released to 0/0 by a later ADR (2026-08-26); this addendum was never updated to reflect it | Claude Code (ADR-corpus reconciliation sweep) |
 | 2026-09-12 | Addendum + header intercept: `RUNBOOK.md` pointer re-home to the public `ARMING_PROCEDURE.md` and the private retrieval convention (TB-O1); no clause amended | Claude Code (recorder) |
+| 2026-10-15 | History trim: §6 shortened, §10 hooks replaced, Addenda 2026-07-18/07-22/07-24/07-28 condensed; header FIXes (F2 ruled by S1; M1 `RESOLVED` 2026-09-14; `ACTIVE_FIRM` deleted). Prior text pinned at `4121e84c` (ADR decay audit; operator direction 2026-10-15) | Claude Code (recorder) |
 
 ---
 

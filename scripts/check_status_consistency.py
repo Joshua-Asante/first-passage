@@ -225,7 +225,7 @@ def parse_catalog(text: str) -> dict[str, CatalogEntry]:
 def check_catalog_internal(catalog: dict[str, CatalogEntry]) -> list[Finding]:
     """C2 — table membership vs body-path tier, and vs the `hot` column.
 
-    Disposition class is not a C2 join key (ADR 2026-08-22-catalog-hot-vs-disposition):
+    Disposition class is not a C2 join key (lab/analysis/README.md, CATALOG schema rules):
     a terminal status in Active is legal when ``hot=yes``. Unrecognised / missing
     ``hot`` cells are not class-checked (legacy 6-col rows).
     """

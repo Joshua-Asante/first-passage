@@ -9,7 +9,7 @@
 **Decision date:** 2026-07-13
 **Authors:** Joshua (decision) + Claude Code Opus 4.8 (recorder/implementer)
 **Ratified recommendation (the §0 reads, engine findings, and verification record live there):** [`docs/briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md`](../briefs/programs/2026-07-12-survivor-scoring-and-ddp-reframe-recommendation.md) (§3 + §7)
-**Related:** [`2026-05-08-dd-trigger-c2-relock.md`](2026-05-08-dd-trigger-c2-relock.md) (the FXIFY-C2 instance); [`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) (audit item **D2** — this ADR is its frame); [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (the program whose per-firm geometry made the reframe necessary); [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the sibling axis-separation precedent)
+**Related:** [`2026-05-08-dd-trigger-c2-relock.md`](2026-05-08-dd-trigger-c2-relock.md) (the FXIFY-C2 instance); [`2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md) (audit item **D2** — this ADR is its frame); [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (the program whose per-firm geometry made the reframe necessary); [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the sibling axis-separation precedent)
 **Layer:** risk-control governance + one additive `core/` module — **zero change to any locked constant, allocation, Pine source, MC anchor, or executable line of `dd_protection.py`**.
 
 ---
@@ -254,7 +254,7 @@ it green. The §4 text is **not edited**; the 2026-08-02 addendum text is **not 
 
 Named in the original five-member §4 gate set and re-affirmed GREEN in the 2026-08-02 addendum's
 "Surviving §4 coverage" table. The file was retired **2026-08-03** — one day after that addendum's
-green check — under [`2026-08-03-params-toml-gate-retirement.md`](2026-08-03-params-toml-gate-retirement.md)
+green check — under [`2026-08-03-params-toml-gate-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-params-toml-gate-retirement.md)
 (the `params.toml` hub-validator shape was retired; `scripts/validate_params.py` + its
 fixtures/tests removed). Verified 2026-09-01:
 

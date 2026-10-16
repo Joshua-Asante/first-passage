@@ -4,26 +4,18 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 read list compressed; §2b one-time permission restated in the past tense; §6 landing-artifact lists, §7 build narrative, Execution-note-1 measurement/sweep detail, stale §10 hooks, the Verification block, Addendum (b) narrative and the change-history table removed; dead design-doc links unlinked. Pre-trim text at blob `663a229d073cad2f0c3d21f3ca11295f703c443c` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 **Decision date:** 2026-07-25
 **Authors:** Joshua (ratification) + Claude Code (design + build, Tasks 1-10)
 **Supersedes:** none
-**Related:** [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](2026-06-11-instrument-ledger-and-cfg-fingerprint.md) (parent decision — homes the ledgers this project indexes; §5 backfill rule this ADR scopes an override against; template for this ADR's shape) · [`docs/superpowers/specs/2026-07-25-instrument-profiles-design.md`](../superpowers/specs/2026-07-25-instrument-profiles-design.md) (design doc this ADR records) · [`docs/operational_rules.md`](../operational_rules.md) Rule 10 (amended one clause by this ADR) · [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) §1 (amended one requirement by this ADR) · [`docs/superpowers/specs/2026-07-16-status-consistency-checker-design.md`](../superpowers/specs/2026-07-16-status-consistency-checker-design.md) (C1 lesson this design inherits as a hard constraint)
+**Related:** [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](2026-06-11-instrument-ledger-and-cfg-fingerprint.md) (parent decision — homes the ledgers this project indexes; §5 backfill rule this ADR scopes an override against; template for this ADR's shape) · `docs/superpowers/specs/2026-07-25-instrument-profiles-design.md` (design doc this ADR records — not in the public tree; private archive per `docs/ltm/README.md`; this ADR is the public owner of the contract) · [`docs/operational_rules.md`](../operational_rules.md) Rule 10 (amended one clause by this ADR) · [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) §1 (amended one requirement by this ADR) · `docs/superpowers/specs/2026-07-16-status-consistency-checker-design.md` (C1 lesson, restated in §5; private archive only)
 **Layer:** governance / infrastructure (R&D session tooling) — does not touch strategy code, allocations, `dd_protection`, Pine, or vendor panels
 
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
 
-Read before authoring, in this session, at worktree HEAD `171c7d0` (== `origin/main` at authoring time; `git log HEAD..origin/main` and `git log origin/main..HEAD` both empty, 2026-07-25):
-
-- [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](2026-06-11-instrument-ledger-and-cfg-fingerprint.md) — the direct parent decision. Confirms: §5 forbids pre-emptive ledger backfill; the 2026-07-16 addendum is the ratified scoped-override precedent this ADR's §2c copies the shape of; §6/§10's Consequences/Audit-hooks layout is the template this ADR follows.
-- [`docs/superpowers/specs/2026-07-25-instrument-profiles-design.md`](../superpowers/specs/2026-07-25-instrument-profiles-design.md) — the design this ADR ratifies into governance. §3 (schema), §3.2 (the two asymmetries), §6 (intake checker + the C1 lesson), §7 (seeding-pass override scope), and §9 (falsifier, quoted verbatim below) are load-bearing.
-- [`docs/operational_rules.md`](../operational_rules.md) Rule 10 (current text at HEAD, pre-amendment) — confirms the section this ADR appends a clause to, and that the append point (after the "Boundaries" bullet list) does not collide with the existing Phase-0 cost-geometry pre-gate clause that follows it.
-- [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) §1 (current text at HEAD) — confirms the five-requirement admission table this ADR appends a sixth, differently-shaped item after; confirms requirement 3 already cites `discovery_manifests/` (repo-root), not `docs/discovery_manifests/` — a parallel session's fix, already merged, left untouched by this ADR.
-- [`docs/superpowers/specs/2026-07-16-status-consistency-checker-design.md`](../superpowers/specs/2026-07-16-status-consistency-checker-design.md) §Addendum (2026-07-16) — confirms the exact C1 finding this design's §5 forbidden-moves clause inherits: the designed slug-join from `rejected_candidates.md` to CATALOG status fell to **100% false positives** on its first real run and was dropped, not softened.
-- [`scripts/instrument_profiles.py`](../../scripts/instrument_profiles.py) — the tooling actually landed by Tasks 1-9 (single consolidated script, `build`/`check`/`cell` subcommands), read to confirm §10's audit hooks and §7's implementation description match what is on disk rather than the design doc's three-script sketch.
-- [`ops/instruments/MYM.md`](../../ops/instruments/MYM.md), [`ops/instruments/ZN.md`](../../ops/instruments/ZN.md), [`ops/instruments/MECHANISMS.md`](../../ops/instruments/MECHANISMS.md) — worked PROFILE block, the Treasury tail-exhaustion bar (R1) referenced in §Execution-notes below, and the 15-entry seeded vocabulary.
-- `tests/test_instrument_profiles.py` — 51 tests, synthetic `tmp_path` fixtures only (no dependence on live ledger content, per the repo's fixture-test discipline).
+Read at worktree HEAD `171c7d0` (2026-07-25) before authoring: the parent decision (Related), `docs/operational_rules.md` Rule 10, `docs/methodology/strategy_harvest.md` §1, `scripts/instrument_profiles.py`, worked `ops/instruments/` ledgers and the two private design specs. Full read list: pre-trim text (Revision line).
 
 ---
 
@@ -85,7 +77,7 @@ structure:
 
 The parent ADR's §5 forbids pre-emptively backfilling ledgers, and Tasks 1-9's seeding pass touched all 21 existing substantive ledgers (plus the `US500.md` stub) in one motion. Per the same operator-approval pattern as the parent ADR's ratified **Addendum — 2026-07-16 · Scoped §5 override (XAGUSD + EURUSD ledger creation)**, this is recorded as a **scoped** override, not a general repeal:
 
-**What this override permits:** adding a derived-index `## PROFILE (machine-readable)` block (or the `no-profile` marker) to `ops/instruments/*.md` ledgers that **already exist**. Every seeded cell traces to an existing ledger row or closure — the pass is a re-indexing of committed findings, not an adjudication; a finding whose class is genuinely ambiguous was seeded at the grain the prose supports, or left out with the omission noted, never resolved by the seeding session's own judgment (design doc §7, "no new research claims").
+**What this override permitted (one-time, executed 2026-07-25):** adding a derived-index PROFILE block (or the `no-profile` marker) to ledgers that already existed — a re-indexing of committed findings, not an adjudication.
 
 **What this override does NOT permit:** creating `ops/instruments/*.md` ledgers for **un-ledgered instruments**. The parent ADR's §5 creation-on-touch default — a ledger is created on the first session touching a new instrument, no pre-emptive backfill — stands untouched. A PROFILE block can only be added to a ledger that a prior session already had cause to create; this ADR does not license inventing new instrument coverage to complete the matrix.
 
@@ -145,24 +137,11 @@ The thin-sample clause is deliberate and must not be dropped on any future re-re
 - Date provenance on seeded cells is not gate-enforced (§Execution-notes below) — a `source` link resolving on disk (P1) says nothing about whether that source self-dates the cited verdict date. Mitigation: the standing rule recorded in §Execution-notes (prefer a self-dating closure/scoping/ADR document over a numbers-only `RESULTS.md`), enforced by review discipline, not machine gate, until/unless a future amendment adds one.
 - A missing `bars` entry silently under-reports rather than erroring loudly (§Execution-notes below) — the schema has no mechanical check that every applicable class-level bar was actually inherited.
 
-**Downstream artifacts (this commit):**
-- [`docs/adr/2026-07-25-instrument-profile-index.md`](2026-07-25-instrument-profile-index.md) — this ADR, placed.
-- [`docs/operational_rules.md`](../operational_rules.md) Rule 10 — profile-block clause appended after the "Boundaries" bullet list.
-- [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) §1 — profile-consult requirement appended after the five-requirement admission table.
-- [`docs/adr/INDEX.md`](INDEX.md) — regenerated (`check_adr_graph.py --regenerate-index`) to include this ADR's header row.
-
-**Already landed (Tasks 1-9, this branch, prior commits — recorded, not re-done here):** `ops/instruments/MECHANISMS.md`; PROFILE blocks in all 21 substantive `ops/instruments/*.md` ledgers + the `no-profile` marker on `US500.md`; `ops/instruments/PROFILES.md` + `profiles.json` (generated); `scripts/instrument_profiles.py` (`build`/`check`/`cell`); `tests/test_instrument_profiles.py` (51 tests); the gate 11 wiring in `scripts/githooks/pre-commit`, `Makefile`, and CI.
-
 ---
 
 ## §7 — Implementation plan
 
-- **Phase 0 (Tasks 1-9, prior commits on this branch)** — schema design, taxonomy seeding, builder + gate + consult tooling, 21-ledger seeding pass, pre-commit/Makefile/CI wiring, test suite. Complete before this task opened.
-- **Phase 1 (this task)** — governance record: this ADR; the Rule 10 clause; the `strategy_harvest.md` §1 amendment; `docs/adr/INDEX.md` regeneration; verification (§10 below) and commit.
-
-**Implementation-vs-design divergence, noted for the record:** the design doc's §4/§5/§6 sketch three separate scripts (`build_instrument_profiles.py`, `check_instrument_profiles.py`, `check_candidate_cell.py`); Tasks 1-9 landed one consolidated script, `scripts/instrument_profiles.py`, with `build`/`check`/`cell` subcommands. This ADR governs the landed shape; the design doc's script names are historical intent, not the audit-hook surface (§10 below uses the real path).
-
-**Not implemented (deliberately, per design doc §10 "Out of scope"):** parsing verdicts out of ledger prose (Approach C, §3 above); auto-generating `structure` rows from closure documents; any semantic join to `rejected_candidates.md` or `lab/CATALOG.md` (§5 above); backfilling ledgers for un-ledgered instruments (§2b); machine-verifying the `cost_hurdle` value against its prose row (§2a, named limitation); a profile surface for firms/venues rather than instruments.
+**Out of scope (not built):** prose-verdict parsing (Approach C), auto-generated `structure` rows, any semantic join to `rejected_candidates.md`/`lab/CATALOG.md`, ledger backfill, machine-verifying `cost_hurdle` against prose, a firm/venue profile surface. Tooling: `scripts/instrument_profiles.py` `build`/`check`/`cell`.
 
 ---
 
@@ -178,15 +157,9 @@ Three findings surfaced during Tasks 1-9's build and seeding pass that belong in
    - **`P5` (HARD)** — the source declares no labelled date *and* the cell's date appears nowhere in it — unverifiable as cited.
    - **`P5-WEAK` (NOTE, advisory, never changes the exit code)** — the source declares no verdict date at all; push toward one that self-dates.
 
-   Measured on all 47 cells: **0 P4, 0 P5, 5 NOTE.** Sources decompose as **26 one-labelled-date (all matching, fully P4-checked)**, 5 unlabelled, 5 multi-label registries, 11 anchor-only.
-
-   **Advisory sweep (2026-07-26).** The nine NOTEs the check first surfaced were worked down to five, two ways. Widening the label pattern to accept a date anywhere on the label's own line — this repo also writes `**Status:** CLOSED — FALSIFIED 2026-07-21`, a genuine self-dated verdict with prose between label and date — converted two cells to fully-checked and fired **zero** new P4s. Two more were repointed at records that actually own and self-date their verdict: MYM `event-window-reversal` from an undated `RESULTS.md` to [`MYM-3FPS-1-closure-falsified.md`](../briefs/closures/MYM-3FPS-1-closure-falsified.md), and MYM `venue-transfer` from the sibling `YM.md` ledger to the prototype `RESULTS.md` that YM's own cell already cites.
-
-   The remaining five are **left as NOTEs deliberately**: MNQ/NQ `opening-range-breakout`, MYM `trend-following`, SPX500 `opening-range-breakout`, USDCAD `band-pierce-continuation`. A repo-wide search for any record self-dating those verdict dates found none that owns the verdict — the 2026-07-23 self-dating artifacts are c1 monitoring and cost-geometry decisions, not the ORB parking ruling; the 2026-06-22 ADR is NAS100 ORB, not SPX500. Forcing a repoint at a record that merely shares a date would be worse than the advisory: it would read as provenance while asserting a connection nobody checked. The NOTE is the correct resting state until one of those verdicts gets a dated closure of its own.
+   A NOTE is a correct resting state until the verdict gets a dated closure of its own; never repoint a cell at a record that merely shares the date to silence it.
 
    **What stays discipline-only, deliberately.** A multi-entry registry (`rejected_candidates.md`) gets the `P5` fallback but never `P4`: selecting *which* of its many dated entries a cell refers to needs semantics, which is precisely the join the status-consistency checker's `C1` was dropped for after scoring 100% false positives on real data. Anchor-only sources resolve to the ledger itself, take the `P5` fallback, and are exempt from the NOTE — a ledger row is not a decision artifact, so the note would fire on all 11 as noise. Net: the gate now closes the class where a date is **unverifiable** from its source; it does not close the class where a date is **plausible but wrong**, and that one still needs a reader.
-
-   Note the pattern detail that cost a full measurement round: this repo writes `**Closed:** 2026-07-21` with the colon **inside** the bold. A pattern expecting `**Closed**:` matches almost nothing and silently disarms the check.
 2. **A missing `bars` entry silently under-reports.** Seeding initially missed the Treasury-complex tail-exhaustion bar (`treasury-complex-tail-exhaustion`, [`ZN.md`](../../ops/instruments/ZN.md) R1) on ZB/ZF/ZN — without it, a `cell` consult on any Treasury directional mechanism would have returned a clean "untested, proceed" on an instrument complex the ledgers themselves say needs its parent question reformulated, not a fourth directional construct. Fixed in-branch (`9d0b46c`) before this ADR landed, but the class of defect is real: `bars` are as load-bearing as `cells`, and nothing in P1/P2/P3 catches an *omitted* bar the way it catches a malformed one.
 3. **Two mechanism classes recur in the corpus but are not yet in the vocabulary.** A calendar/day-of-week selection-gate class and a carry/term-structure class both surface repeatedly across ledgers without a matching `MECHANISMS.md` entry. They were deliberately **not** invented mid-seeding — inventing a class to make a seeding pass complete is exactly the judgment-call risk the growth rule (§2a) is designed to keep out of a routine pass. They are noted here as the first expected users of the `NEW` growth path the next time either recurs in an actual pre-registration.
 
@@ -195,59 +168,8 @@ Three findings surfaced during Tasks 1-9's build and seeding pass that belong in
 ## §10 — Audit hooks (runnable)
 
 ```bash
-# Core gate + wiring + vocabulary size (this task's brief hooks, verbatim)
 python scripts/instrument_profiles.py check
-grep -n "instrument_profiles" scripts/githooks/pre-commit Makefile
-grep -c "^## " ops/instruments/MECHANISMS.md
-```
-
-```bash
-# Rule 10 profile-block clause landed, pointing at this ADR
-grep -n "Profile-block clause" docs/operational_rules.md
-
-# strategy_harvest.md §1 profile-consult requirement landed, pointing at this ADR
-grep -n "Profile consult" docs/methodology/strategy_harvest.md
-
-# discovery_manifests/ citation NOT reverted by this task (parallel-session fix)
-grep -n "discovery_manifests/" docs/methodology/strategy_harvest.md
-```
-
-```bash
-# ADR well-formedness + lifecycle graph + root-doc link liveness
-python scripts/check_brief.py docs/adr/2026-07-25-instrument-profile-index.md --type adr
-python scripts/check_adr_graph.py
-python scripts/check_root_doc_liveness.py
-```
-
-```bash
-# No semantic join to rejected_candidates.md exists in the tooling (§5 forbidden move)
 grep -n "rejected_candidates" scripts/instrument_profiles.py || echo "no reference — as designed"
-```
-
----
-
-## Verification
-
-```bash
-# Discipline check (mechanical) — repo-side checker
-python scripts/check_brief.py docs/adr/2026-07-25-instrument-profile-index.md --type adr
-# Expected: PASS
-
-# Governance-tier gates
-python scripts/check_root_doc_liveness.py
-python scripts/check_adr_graph.py
-# Expected: both OK
-
-# Tooling gate + full test suite
-python scripts/instrument_profiles.py check
-python -m pytest tests/test_instrument_profiles.py -v
-# Expected: exit 0; 51 passed
-
-# Downstream artifact update verification (§6 list)
-grep -q "instrument-profile-index" docs/adr/INDEX.md \
-  && grep -q "Profile-block clause" docs/operational_rules.md \
-  && grep -q "Profile consult" docs/methodology/strategy_harvest.md \
-  && echo ALL-PLACED
 ```
 
 ---
@@ -272,26 +194,4 @@ extends the same provenance discipline the 2026-07-26 amendment applied to the `
 Both are directed at `scripts/instrument_profiles.py check`; **not implemented by this addendum** —
 record + direction now, mechanization later, the same sequencing P4/P5 followed.
 
-**(b) — parser fragility record; structured-authoring floated as a future phase, not authorized
-here.** Since ratification, the prose-extraction path (`MECHANISMS.md` definitions, `Class finding`
-bullets) broke on four distinct soft-line-wrap shapes, each fixed same-day (2026-08-29):
-definition-paragraph wrap (#196), annotated-bullet capture (#197), multi-bullet body wrap (#198),
-bold-annotation-span wrap (#203). Each hardened the regex; none changed the underlying design —
-prose is hand-authored, `PROFILES.md`/`profiles.json` are recovered from it by pattern-matching.
-The same day, `REPO_MAP.md` §2.1 converted from hand-maintained prose to a live-source generator
-(`f32d8cc`), eliminating that defect class structurally rather than patching it. **Considered as a
-future phase, not authorized here:** inverting §2a's authoring direction — verdict/status/citation/
-finding-text fields authored as structured front-matter, prose rendered from it — sequenced the way
-the SSOT remediation program phases its own work, not attempted as one rewrite. Authorizing the
-inversion itself needs a fresh admitting ADR (schema-replacement scope: the PROFILE-block contract,
-the value-carrying rule, and the vocabulary-growth rule would all need re-authoring, then content
-re-authored across 21+ ledgers and MECHANISMS.md), not a further amendment to this one.
-
----
-
-## Change history
-
-| Date | Change | By |
-|---|---|---|
-| 2026-07-25 | Initial authoring; ratifies Tasks 1-9's shipped design (schema, value-carrying rule, vocabulary growth rule, intake consult, generated-view invariant), records the scoped §5 override for the 21-ledger seeding pass, copies the design doc §9 falsifier verbatim (incl. thin-sample clause), and records three execution findings (date provenance, missing-bar under-report, two unvocabularied mechanism classes). | Joshua + Claude Code |
-| 2026-08-29 | Addendum: (a) P6/P7 verdict-label-to-precondition binding, directed not yet implemented; (b) parser-fragility record (4 same-day soft-wrap fixes) + structured-authoring floated as a future phase, not authorized here. | Claude Code |
+**(b) — structured authoring not authorized.** Prose extraction broke on four soft-wrap shapes on 2026-08-29 (#196/#197/#198/#203), each fixed same-day. Inverting §2a's authoring direction (structured front-matter, prose rendered from it) is **not authorized here**: it needs a fresh admitting ADR (schema-replacement scope: PROFILE contract, value-carrying rule, vocabulary-growth rule), not a further amendment to this one.

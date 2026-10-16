@@ -7,7 +7,7 @@
 **Decision date:** 2026-07-15
 **Authors:** Joshua (risk-tolerance numbers, "confirm T1") + Claude Code (recorder/adjudicator)
 **Supersedes:** none — **admits** a new falsifiable claim set; does not edit or revive the retired challenge-era numbers (99.83/0.17/4.37 stay historical per the rescope ADR).
-**Related:** [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) (§4 completion falsifier, discharged by this ADR — see its dated addendum); [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md) (parent Pre-Q, `H-SFRISK-1`); [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md) (T1's frozen numbers); [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) (the closure this ADR is promoted from); [`docs/adr/2026-06-07-decompound-remc-hold.md`](2026-06-07-decompound-remc-hold.md) (the instrument this framework runs on; its HOLD is unaffected — see §2); [`docs/adr/2026-07-06-bust-day-maxdd-inclusion.md`](2026-07-06-bust-day-maxdd-inclusion.md) (explains the F1 fidelity delta, §0).
+**Related:** [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md) (§4 completion falsifier, discharged by this ADR — see its dated addendum); [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md) (parent Pre-Q, `H-SFRISK-1`); [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md) (T1's frozen numbers); [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) (the closure this ADR is promoted from); [`docs/adr/2026-06-07-decompound-remc-hold.md`](2026-06-07-decompound-remc-hold.md) (the instrument this framework runs on; its HOLD is unaffected — see §2); [`docs/adr/2026-07-06-bust-day-maxdd-inclusion.md`](2026-07-06-bust-day-maxdd-inclusion.md) (explains the F1 fidelity delta, §0).
 **Layer:** portfolio / governance (a new risk-characterization claim; **zero** locked parameter, allocation, `dd_protection` constant, or MC-anchor touch)
 
 ---
@@ -21,7 +21,7 @@ Read on-disk this session, off `origin/main` @ `432e14e`:
 - [`lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md) — the Phase-1 numeric report (merged `936a9e0`). F1: H1 pass 86.16% / bust 13.84% / p99 **8.00%** / med 62; H2 pass 99.79% / bust 0.21% / p99 **4.53%** / med 20. F4 (n_paths=30000, seed=20260607): H1 median **51.0 bd** / censoring 0.3%; H2 median **16.0 bd** / censoring 0.0%; pooled median 26.0 bd / censoring 0.0%. Independently re-run locally this session against the identical frozen driver spec — every reported figure reproduced byte-identically, cross-validating both the instrument and the Phase-1 report's F4 panel-source correctness (built from the clean 2026-06-25 vintage, not the stitched 2026-06-07 vintage `days_to_first_skim.build_banded_portfolio_panel()` would default to).
 - [`docs/adr/2026-07-06-bust-day-maxdd-inclusion.md`](2026-07-06-bust-day-maxdd-inclusion.md) — anchor `83e589f` (2026-07-06). Explains why F1's H1 p99 (8.00%) diverges from the 2026-06-25 informal reference (7.76%) while pass/bust/median stay byte-identical: the fix includes breach-day drawdown in bust-path `max_dd`, scaling with bust rate. Confirms 8.00% is the current, engine-correct figure — not a re-run defect.
 - [`docs/adr/2026-06-07-decompound-remc-hold.md`](2026-06-07-decompound-remc-hold.md) (+ 2026-06-25 addendum) — the instrument this framework runs on. Its HOLD (locked allocations/dd_protection unchanged; both *historical challenge-era* gates breach on the decompounded full-history panel) is a separate, still-standing decision about **parameter** configuration. This ADR does not touch it — T1 is a different, self-funded-native claim set evaluated on the same instrument, not a relock of the challenge-era gates.
-- [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) — anchor `99b7854` (2026-07-11). §4's completion falsifier (2026-11-08 hard date, "no successor risk-framework Pre-Q pre-registered" → D1 mandatory go-live blocker) — this ADR discharges it in full (see its dated addendum, landed alongside this ADR).
+- [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md) — anchor `99b7854` (2026-07-11). §4's completion falsifier (2026-11-08 hard date, "no successor risk-framework Pre-Q pre-registered" → D1 mandatory go-live blocker) — this ADR discharges it in full (see its dated addendum, landed alongside this ADR).
 - CLAUDE.md — Live-execution posture section: "Aegis→M6J is the sole active lane (go-live is a separately gated decision)." This ADR supplies risk-characterization input to that separate gate; it is not the gate itself (§5 forbidden moves).
 
 ---
@@ -69,7 +69,7 @@ The 2026-07-11 rescope ADR retired the challenge-era P(pass)/bust/p99-DD claims 
 2. **New regime data:** the quarterly regime-check machinery (`docs/adr/2026-06-07-decompound-remc-hold.md` §4, next 2026-08-08) finds a trailing window materially worse than the recorded H1 — if a fresh half-panel cut under T1's own F1/F4 clauses would fail, that is grounds to reopen, not silently absorb into "the framework already cleared once."
 3. **F2 amendment:** if a future TUW amendment to T1 fails on either half, that failure attaches to the *amended* triple, not this one — this ADR's admission of the 3-dimension T1 stands until superseded, per §2 item 4.
 
-**Trigger check schedule:** ride the standing quarterly regime-check cadence (2026-08-08, 2026-11-08, 2027-02-08, 2027-05-08), alongside the decompound-HOLD ADR's own §4 trigger. **Note (2026-07-22):** that §4 trigger's *separate* C2→C0 revert-check companion (`time_to_pass.py --regime-check`) was retired the same day ([`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) §Addendum, D2) — the regime-check limb itself (and this trigger, which rides it) is unaffected and still stands.
+**Trigger check schedule:** ride the standing quarterly regime-check cadence (2026-08-08, 2026-11-08, 2027-02-08, 2027-05-08), alongside the decompound-HOLD ADR's own §4 trigger. **Note (2026-07-22):** that §4 trigger's *separate* C2→C0 revert-check companion (`time_to_pass.py --regime-check`) was retired the same day ([`2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md) §Addendum, D2) — the regime-check limb itself (and this trigger, which rides it) is unaffected and still stands.
 
 ---
 
@@ -101,7 +101,7 @@ The 2026-07-11 rescope ADR retired the challenge-era P(pass)/bust/p99-DD claims 
 
 **Downstream artifacts updated (this session, §7):**
 - [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) — the closure this ADR is promoted from (done).
-- `docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md` — `Status` flips `OPEN` → `CLOSED-RESOLVED`.
+- [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md) — `Status` flips `OPEN` → `CLOSED-RESOLVED`.
 - `docs/adr/2026-07-11-challenge-era-claims-rescope.md` — dated addendum discharging §4's D1 completion falsifier.
 - `STATE.md` — SFRISK forward-board entry updated to closed/RESOLVED.
 - `docs/SESSIONS.md` — session entry.
@@ -123,7 +123,7 @@ Docs-only.
 
 ```bash
 # This ADR referenced from the closure record and the parent brief
-grep -n "2026-07-15-sfrisk-1-t1-admitting" docs/briefs/closures/Q-SFRISK-1-closure-resolved.md docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md
+git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md | grep -n "2026-07-15-sfrisk-1-t1-admitting"   # brief removed by #851; the closure record is not on this tree
 
 # T1's three clauses cleared, as claimed here — cross-check against the Phase-1 report
 grep -n "8.00%\|4.53%\|51.0\|16.0" lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_sfrisk_t1_phase1_2026-07-15.md
@@ -137,7 +137,7 @@ git diff --stat <pre-ADR-commit> -- core/
 # Expected: empty
 
 # Rescope ADR's completion falsifier discharge addendum present
-grep -n "D1 completion falsifier discharged" docs/adr/2026-07-11-challenge-era-claims-rescope.md
+git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-07-11-challenge-era-claims-rescope.md | grep -n "D1 completion falsifier discharged"
 
 # Validators unaffected
 python scripts/verify_lock_anchors.py
@@ -175,7 +175,7 @@ stays byte-unedited (Rule 14).
 
 **What happened, in order:**
 
-1. `2026-08-02-pepperstone-feed-retirement.md` §2-D retired the Pepperstone CFD feed the venue
+1. [`2026-08-02-pepperstone-feed-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-02-pepperstone-feed-retirement.md) §2-D retired the Pepperstone CFD feed the venue
    the decompound harness's gitignored CSV inputs depend on.
 2. `2026-06-07-decompound-remc-hold.md`'s own **2026-08-03 addendum** declared that ADR's §4 limb
    2 (the quarterly trailing-6-month regime-check re-MC this SFRISK-1 ADR's limb 2 rides)

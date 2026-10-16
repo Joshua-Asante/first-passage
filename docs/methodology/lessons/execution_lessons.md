@@ -229,7 +229,7 @@ abstraction layers.
   weekly execution review run against verified strategy-tester counterfactuals.
 - 2026-07-11: **Relocated** from `ops/live_journal/references/` to
   `docs/methodology/lessons/` and **preserved** as a KEEP under the ops CFD-estate
-  retirement (ADR [`2026-07-11-ops-cfd-estate-retirement`](../../adr/2026-07-11-ops-cfd-estate-retirement.md)).
+  retirement (ADR [`2026-07-11-ops-cfd-estate-retirement`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-ops-cfd-estate-retirement.md)).
   The `live-execution-journal` pipeline (`scripts/journal_review.py`, ECR engine)
   was **retired** in that pass — the E1–E4 watch-point references to
   `journal_review.py` above are now **historical** (the lessons themselves stand;

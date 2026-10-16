@@ -1,5 +1,5 @@
 <!--
-Notion export (verbatim content) — Phase-2 migration per docs/adr/2026-06-12-notion-surface-retirement.md
+Notion export (verbatim content) — Phase-2 migration per [docs/adr/2026-06-12-notion-surface-retirement.md](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-12-notion-surface-retirement.md)
 Notion page-ID : 34ddc0b53c11811eb6a0d9192b63d252  (legacy canon-referenced page; resolved in docs/governance/notion-redirect-map.md)
 Notion URL     : https://app.notion.com/p/34ddc0b53c11811eb6a0d9192b63d252
 Notion path    : Trading Plan ▸ Dev-phase archive ▸ Framework references ▸ The Algorithm

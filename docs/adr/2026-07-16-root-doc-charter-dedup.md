@@ -7,11 +7,11 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Format:** concise
-**Revision:** 2026-09-08; [prior full decision](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md). Root routing remains effective from 2026-09-06.
+**Revision:** 2026-09-08; [prior full decision](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-07-16-root-doc-charter-dedup.md). Root routing remains effective from 2026-09-06; 2026-10-15: Decision names `AGENTS.md` (role renamed 2026-09-20, addendum below); prior at `4121e84c`.
 
 ## Decision
 
-Keep five root guides: README for human routing, CLAUDE for agent constraints and
+Keep five root guides: README for human routing, AGENTS.md for agent constraints and
 essential safeguards, REPO_MAP for architecture/module entry points, PIPELINES
 for workflows/handoffs, and STATE for current priorities and obligation pointers.
 Do not add a sixth root guide or another state store.

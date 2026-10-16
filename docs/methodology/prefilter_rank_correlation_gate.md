@@ -1,6 +1,6 @@
 # Pre-filter rank-correlation gate (Gen-2)
 
-**Status:** Pre-registered invariant — extracted from Gen-1 sweep layer at retirement (ADR `docs/adr/2026-07-11-gen1-pipeline-retirement.md`, 2026-07-11).
+**Status:** Pre-registered invariant — extracted from Gen-1 sweep layer at retirement (ADR [`docs/adr/2026-07-11-gen1-pipeline-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-gen1-pipeline-retirement.md), 2026-07-11).
 
 ## Invariant
 

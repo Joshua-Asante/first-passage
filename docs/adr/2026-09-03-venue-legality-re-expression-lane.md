@@ -5,7 +5,7 @@
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** none
-**Retain-until:** campaign close (seven-strategy `Tradeify_Select_100K` configuration campaign) or the campaign's own retirement, whichever is first
+**Retain-until:** none — the configuration-selection objective this lane served was accepted and closed 2026-09-10 ([acceptance](../notes/2026-09-10-tradeify-protection-selection.md#operator-acceptance-and-state-item-1-closure)); retained as the `authority` of the digest-pinned `ops/calendars/book_closure_overlay.json` (`ops/calendars/RATIFIED.json`) and as D19's owning clarification
 **Authors:** Joshua (direction) + Claude Code (drafter)
 **Layer:** methodology + campaign scope. No `dd_protection`, `firm_rules`, allocation, lifecycle, locked Pine, or rail config touched; nothing armed; no venue action; no spend.
 **Tier:** full — the record gates whether a class of results is admissible at all, so the ceremony-tiering escalation rule ("ambiguous tier → FULL") applies.

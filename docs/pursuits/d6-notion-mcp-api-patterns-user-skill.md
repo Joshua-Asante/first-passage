@@ -3,7 +3,7 @@
 **Class:** (d) meta-belt · **Standing:** SUBTRACT
 **Test applied:** serves no currently stated Aim — this skill exists solely as
 "infrastructure-for-the-infrastructure" for the Notion surface, which is itself frozen read-only
-since 2026-06-12 with its Phase-2 migration long DONE (`docs/adr/2026-06-12-notion-surface-retirement.md`
+since 2026-06-12 with its Phase-2 migration long DONE ([`docs/adr/2026-06-12-notion-surface-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-12-notion-surface-retirement.md)
 §0, calling this skill exactly that marker).
 
 **Executed 2026-08-09:**

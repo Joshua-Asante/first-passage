@@ -78,7 +78,7 @@ In the interim, every consumer that needed the corrected geometry applied it as 
 
 **Revert action:** author a superseding ADR. Never edit this ADR's §2 in place.
 
-**Trigger check schedule:** T1 at Phase 2 completion (this session). T2 at each 90-day venue-fact re-verify (next due ~2026-10-20, per the standing re-verification cadence). T3 on any new `FIRM_RULES` tier addition.
+**Trigger check schedule:** T1 discharged 2026-08-04 (§8). T2 at each 90-day venue-fact re-verify (last run 2026-10-02/03, PR #621; next per STATE.md's Prop-envelope overlay row). T3 on any new `FIRM_RULES` tier addition.
 
 ---
 
@@ -185,6 +185,8 @@ git log -p --follow -- docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawa
 # 7. The intraday-clock residual is named, not silently dropped.
 grep -n "3.2a\|intraday" docs/adr/2026-08-04-firm-rules-eval-lock-fix-applied.md | head -5
 ```
+
+*2026-10-15 — hook note:* hooks 1–2 count literals written before `4089c7a3` (2026-09-17, tiers composed from product defaults; resolved rows pinned in `tests/core/fixtures/firm_rules_resolved.json`). Literal counts are now 2 and 3, and resolved `trailing` tiers are 8 (incl. `Personal_Tradovate`). Current checks: `python -c "import sys;sys.path.insert(0,'core');from firm_rules import FIRM_RULES as F;r=[k for k,v in F.items() if v.get('dd_type')=='trailing_locking'];assert r and all(F[k]['dd_lock_offset_usd']==1_000_000.0 for k in r);print(len(r))"` (expect 7) and `python -c "import sys;sys.path.insert(0,'core');from firm_rules import FIRM_RULES as F;assert not any('dd_lock_offset_usd' in v for v in F.values() if v.get('dd_type')=='trailing');print('OK')"`.
 
 ---
 

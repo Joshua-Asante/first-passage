@@ -1,34 +1,23 @@
 # Strategy organization gains a third axis: venue binding (book → venue edition → deployment) — `strategy-venue-binding-axis`
 
-**Status:** `Accepted` — operator GO 2026-08-22 (the fresh GO the 2026-08-14 addendum required). Axis is standing doctrine. §7 Phase 1–3 landed 2026-08-23 (ledger live set empty); T1 already fired (S1 F2/F3 in prose) and is acknowledged, not reopened.
+**Status:** `Accepted` — operator GO 2026-08-22 (the fresh GO the 2026-08-14 addendum required). Axis is standing doctrine. §7 Phase 1–3 landed 2026-08-23 (ledger live set empty); T1's 2026-08-07/08 S1 occurrence is dispositioned INAPPLICABLE (bootstrap) by [`2026-08-24-venue-binding-axis-t1-disposition.md`](2026-08-24-venue-binding-axis-t1-disposition.md); T1 applies from 2026-08-22.
 **Decision date:** 2026-08-05
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-24-venue-binding-axis-t1-disposition.md` — §4 T1's disposition and prospective applicability window only (the 2026-08-07/08 firing is dispositioned INAPPLICABLE, not FALSIFYING; T1 is amended to apply from 2026-08-22 forward, at the same "any 1 occurrence" strictness). §2/§3/§5/§6/§7 and T2–T4 are untouched by that ADR.
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): the 2026-08-22 reader-intercept, the §0 read table and gitignore pre-flight (reduced to a pointer), the §10 landing-time hooks and the Verification block (one hook kept) removed; §2.3 account-prefix scrub; Status line names the 2026-08-24 T1 disposition. The header edge, the 2026-08-24 reader-intercept, §2–§7 (apart from the §2.3 scrub), the trigger field, the addenda and the Change History are unchanged. Pre-trim text at blob `90fbcdf0f52b52c7125173f59af777222619959f` (commit `dad73e3d2c6b78a2ca10a4ba90df2765a05286e8`).
 **Authors:** Joshua (direction + both design rulings) + Claude Code (authoring)
 **Related:** [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the two existing axes — **extended, not modified**) · [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) (canonical owner of the authorization axis) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (the decision that exposed the gap) · [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (the four-firm programme this axis serves) · [`docs/spec/2026-07-27-third-leg-target-spec.md`](../spec/2026-07-27-third-leg-target-spec.md) (a screen whose limbs this ADR re-homes) · [`2026-08-05 claim-alignment audit`](../notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md) (B3 + the 112-site premise-dead estate this axis would have prevented)
 **Layer:** governance / strategy organization. **No locked parameter, allocation, `dd_protection` constant, `core/lifecycle.py` tier multiplier, Pine file, or `LEG_MAP` entry is changed by this ADR.**
 
 ---
 
-> ⚠ **2026-08-22 reader-intercept:** operator Accepted this ADR (fresh GO). The 2026-08-14 stall note is historical. T1 remains acknowledged as already fired. §7 Phase 1–3 landed 2026-08-23 (ledger live set empty). See Addendum 2026-08-22 + Change History 2026-08-23.
-
 > ⚠ **2026-08-24 reader-intercept:** T1's 2026-08-07/08 firing is now dispositioned — [`2026-08-24-venue-binding-axis-t1-disposition.md`](2026-08-24-venue-binding-axis-t1-disposition.md) (`Accepted`) rules it INAPPLICABLE, not FALSIFYING (a bootstrap-timing artifact of the decision predating this ADR's own Phase 0 acceptance), and amends T1 to apply from 2026-08-22 forward at unchanged strictness. This §2/§4/§5 body stays byte-unchanged (Trap #12); the disposition lives entirely in the superseding-in-part ADR. Do not read this reader-intercept as reopening or relitigating §2.
 
 ## §0 — Rule 0 reads (production-source verification, all executed 2026-08-05)
 
-| Source | Anchor (`git log -1`) | What it pins |
-|---|---|---|
-| `core/lifecycle.py` L30–50 | `4441c72` 2026-07-11 | `TIER_MULTIPLIER = {AUTHORIZED 1.00, WATCH-1 0.50, WATCH-2 0.25, RETIRED 0.00}`; `DEFAULT_TIER = "AUTHORIZED"`; `STRATEGY_KEYS = {Guardian, Striker, Aegis, Striker NAS100}`; `_LADDER_ORDER` demotes DOWN only; `_validate_ladder()` hard-fails at import on any multiplier change. **Read with surrounding context per the §0 sub-rule.** This is the axis this ADR must not touch — and note `STRATEGY_KEYS` is **book-level**, with no venue dimension anywhere in the module. |
-| `core/dd_protection.py` | `fc14682` 2026-07-30 | `scaled_risk = BASE_RISK × DD_SCALE × lifecycle` — the risk_pct composition. Venue binding must compose *multiplicatively alongside* this, never edit it. |
-| `ops/c1_rail/c1_sizing_host_reference.py` L60–99, L276–296 | `2345095` 2026-08-03 | `LEG_MAP` maps `leg_id → {leg_key, pyr_pct, dollars_per_pt, cap_alloc}`. **This is the venue-edition record that already exists but is not named as one:** `leg_key` points at the book (`"Striker"`), while `cap_alloc` (69/11) is a pure Tradeify-account fact. `reserve_cap = floor(cap_alloc / (1 + pyr_pct/100))`; halts on missing `cap_alloc` and on `cap_alloc > cap_firm`. |
-| `core/firm_rules.py` | `8ec740d` 2026-08-05 | `AUTOMATION_FRIENDLY_PROP_FIRMS = {bulenox, tradeify, myfundedfutures, blusky}`; per-tier venue facts (`micro_contract_cap`, `inactivity_max_idle_days`, `cost_per_side_usd`, `max_dd_pct`). The venue-fact source this axis binds against. **No `ACTIVE_FIRM` selector exists** (deleted substrate Phase 4). |
-| `docs/methodology/strategy_lifecycle.md` L14–27, L95–107 | `cdfd2f8` 2026-08-03 | "The two orthogonal axes"; the descriptor triple `<version> · LOCKED · <authorization> · <durability-source>`; the forbidden-moves column. **The descriptor has no venue slot** — the defect this ADR names. |
-| [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) | `c99c60d` 2026-07-29 | The ratified two-axis model and its five Calls. This ADR **extends** it; §2 of that ADR is untouched. |
-| [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) §2, §6 | `01714e5` 2026-08-05 | *"Lifecycle axis NOT moved — both legs stay `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit is not decay."* The prose workaround this ADR converts into structure. |
-
-**Gitignore pre-flight.** `**/*.pine` is ignored. **No Pine source is read or cited here** and no numeric constant below derives from Pine — this decision sits entirely at the organization layer. Citation-chain mode not required.
+Spent: the 2026-08-05 reads (`core/lifecycle.py` at `4441c72`, `core/dd_protection.py` at `fc14682`, `ops/c1_rail/c1_sizing_host_reference.py` at `2345095`, `core/firm_rules.py` at `8ec740d`, `docs/methodology/strategy_lifecycle.md` at `cdfd2f8`, and the 2026-07-10 and 2026-08-04 ADRs) and the gitignore pre-flight (no Pine source read or cited) are in the pre-trim blob (see **Revision**).
 
 ---
 
@@ -100,11 +89,11 @@ The 2026-08-04 de-scope should move **exactly one thing**. Under this axis it do
 ```
 BEFORE   Striker NAS100          BOOK    LOCKED · AUTHORIZED · MECHANISM @ 1.00×
          …@Tradeify_Select_100K  EDITION ACTIVE   (cap_alloc 11, MNQ1!, 16:45 ET flat)
-         …#TDFYSL1006…           DEPLOY  WIRED    (leg_id nas100_mnq, dry_run=true)
+         …#<ACCOUNT_ID>          DEPLOY  WIRED    (leg_id nas100_mnq, dry_run=true)
 
 AFTER    Striker NAS100          BOOK    LOCKED · AUTHORIZED · MECHANISM @ 1.00×   ← UNCHANGED
          …@Tradeify_Select_100K  EDITION WITHDRAWN — venue de-scoped 2026-08-04    ← the only move
-         …#TDFYSL1006…           DEPLOY  RETIRED (rail retained, disarmed, F2)     ← follows the edition
+         …#<ACCOUNT_ID>          DEPLOY  RETIRED (rail retained, disarmed, F2)     ← follows the edition
 ```
 
 **One state transition, at one level, and "venue-fit is not decay" becomes a structural property rather than a sentence someone must remember to write.**
@@ -269,45 +258,10 @@ This ADR buys a vocabulary and a place to put facts. It changes no arithmetic, n
 
 ## §10 — Audit hooks (runnable)
 
-```bash
-# 1. The axis this ADR must NOT have moved — ladder + pin intact (expect 4 tiers, validator present)
-grep -n "AUTHORIZED\|WATCH-1\|WATCH-2\|RETIRED" core/lifecycle.py | head -8
-grep -c "_validate_ladder" core/lifecycle.py        # expect >= 2 (definition + call)
-
-# 2. Live sizing composition unchanged (expect the BASE_RISK x DD_SCALE x lifecycle line)
-grep -n "scaled_risk" core/dd_protection.py
-
-# 3. cap_alloc is edition-owned and production still halts rather than falling back (expect both)
-grep -n "cap_alloc" ops/c1_rail/c1_sizing_host_reference.py | head
-grep -c "cap_firm / (1" docs/spec/c1_watch_realization_multiplier_layer.md   # expect 0 (B3 fixed)
-
-# 4. Phase 1 landed and the Tradeify edition set is EMPTY of ACTIVE rows (the §1.3 fact)
-ls ops/venue_editions/ 2>/dev/null || echo "Phase 1 not yet run"
-grep -c "ACTIVE" ops/venue_editions/Tradeify_Select_100K.md 2>/dev/null   # expect 0 until F3
-
-# 5. T1 reachability — did F2/F3 produce an edition transition, or fall back to prose?
-grep -n "edition\|EDITION" STATE.md | head
-
-# 6. Both Striker legs still AUTHORIZED at BOOK level (venue-fit is not decay)
-grep -n "AUTHORIZED" docs/methodology/strategy_lifecycle.md | head -3
-```
-
----
-
-## Verification
+The 2026-08-05 hooks checked one-time landing facts (pre-trim blob, see **Revision**). Still runnable:
 
 ```bash
-# Discipline check (expect PASS)
-PYTHONIOENCODING=utf-8 python scripts/check_brief.py docs/adr/2026-08-05-strategy-venue-binding-axis.md --type adr
-
-# Graph integrity — this ADR declares no supersession edges, so A2 must stay clean
 python scripts/check_adr_graph.py
-
-# §0 anchors resolve
-for f in core/lifecycle.py core/dd_protection.py ops/c1_rail/c1_sizing_host_reference.py \
-         core/firm_rules.py docs/methodology/strategy_lifecycle.md; do
-  git log -1 --format="%h %ci $f" -- $f
-done
 ```
 
 ## Addendum 2026-08-14 — Status framing: stalled/bypassed; T1 likely fired

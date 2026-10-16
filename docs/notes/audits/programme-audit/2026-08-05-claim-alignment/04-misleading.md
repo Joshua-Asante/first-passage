@@ -70,7 +70,7 @@ L59–62 →  The table below is the **human-readable record** of locked sizing 
           (`_BASE_RISK`), with Pine canonical for strategy behavior — there is **no
           mechanical parameter-mirror gate** (the `params.toml` hub and
           `scripts/validate_params.py` were retired 2026-08-03,
-          [ADR](../../../../adr/2026-08-03-params-toml-gate-retirement.md)). The two Striker legs'
+          [ADR](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-params-toml-gate-retirement.md)). The two Striker legs'
           futures editions (MYM/MNQ) **were** the c1 book until 2026-08-04, when both were
           withdrawn from the eval deployment
           ([ADR](../../../../adr/2026-08-04-tradeify-venue-descope-eval-included.md)); their code

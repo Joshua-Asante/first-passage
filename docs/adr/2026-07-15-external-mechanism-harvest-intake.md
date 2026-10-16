@@ -17,7 +17,7 @@
 Files read **before** authoring this ADR (session 2026-07-15, main checkout on branch `claude/strategy-factory-progress-31da50`, base `4ec95a4`):
 
 - `docs/briefs/pre-registration/Q-KBUDGET-1-screen-preregistration.md` — anchor `936a9e0` 2026-07-15 (freeze commit `b304f2c`; §E verdict **RESOLVED** fired 2026-07-15 with D5 PASS) — supplies the frozen two-clause formula this ADR generalizes: Clause K (`K_eff = K_intrinsic + K_banked(family)`, floor(K_eff) ≤ Cap 1.0 ⇔ K_eff ≤ 3, DSR ≥ 0.95 at V = 1/n) + Clause N (power = Φ(√N·|δ|/σ − 1.96) ≥ 0.50, δ cohort-cited, UNSCREENABLE-never-patched) + "a PASS never blesses"
-- `docs/briefs/Q-KBUDGET-1-phase1-inventory.md` — anchor `1417b79` (ratification anchor `ca02030`, G2) — supplies the §C declaration 5-tuple (family→K_banked, design→K_intrinsic, era→N, cohort-cited δ/σ or UNSCREENABLE, blockers) reused as the seed-manifest schema
+- [`docs/briefs/Q-KBUDGET-1-phase1-inventory.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-KBUDGET-1-phase1-inventory.md) — anchor `1417b79` (ratification anchor `ca02030`, G2) — supplies the §C declaration 5-tuple (family→K_banked, design→K_intrinsic, era→N, cohort-cited δ/σ or UNSCREENABLE, blockers) reused as the seed-manifest schema
 - `lab/archive/q_kbudget_1_2026-07/floor_scan.py` — anchor `936a9e0` — the production screen harness (hardcoded `AXES` list; the promotion target for the reusable module in §6/§7)
 - `lab/archive/q_kbudget_1_2026-07/d5_clause_n_rescreen.md` — anchor `4a2471e` at initial read, re-verified at `5a8713f` 2026-07-16 (PR #391 doc-sync: status header updated to reflect the already-ratified state; substantive derivation untouched) — the worked external-harvest instance: Baltussen et al. 2021 *JFE* NQ cohort, δ/σ = 0.113 (conservative t-scaled, not the 0.194 R² reading), power 0.947 at N = 1000; the SPX→NQ transplant refusal for the gamma-sign construct; the net-of-cost caveat
 - `docs/adr/2026-07-13-harv-discovery-lane-ratification.md` — anchor `fad8984` (`Accepted` 2026-07-14) — the campaign-level lane this intake feeds; its reachability HARD gate blocks `register_search open`, not sourcing
@@ -318,7 +318,7 @@ git diff origin/main -- core/ | grep -E "DD_TRIGGER|BASE_RISK" || echo "core cle
 # §4 trigger reminders — quarterly: 2026-08-08 (progress), 2026-11-08 (idle guard + closure count)
 
 # Q-KBUDGET-HARVEST-1 (PR #391, first execution instance) inherited requirement 1 pre-Phase-1
-grep -n "Path 1a\|Path 1b" docs/briefs/pre-registration/Q-KBUDGET-HARVEST-1-verdict-preregistration.md docs/briefs/Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md
+grep -n "Path 1a\|Path 1b" docs/briefs/pre-registration/Q-KBUDGET-HARVEST-1-verdict-preregistration.md; git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/briefs/Q-KBUDGET-HARVEST-1-bounded-axis-literature-sweep.md | grep -n "Path 1a\|Path 1b"   # brief removed by #851
 # Expected: both files reference the pre-check
 ls lab/analysis/harvest/q_kbudget_harvest_1_2026-07/ 2>/dev/null && echo "Phase 1 has started — reconciliation amendment must predate this dir's first commit" || echo "Phase 1 not yet started (expected at ADR authoring time)"
 ```
@@ -328,7 +328,7 @@ ls lab/analysis/harvest/q_kbudget_harvest_1_2026-07/ 2>/dev/null && echo "Phase 
 ## Verification
 
 ```bash
-PYTHONIOENCODING=utf-8 python "C:\Users\joshu\.claude\skills\brief-authoring\scripts\check_brief.py" docs/adr/2026-07-15-external-mechanism-harvest-intake.md --type adr
+PYTHONIOENCODING=utf-8 python ".claude/skills/brief-authoring/scripts/check_brief.py" docs/adr/2026-07-15-external-mechanism-harvest-intake.md --type adr
 # Expected: all checks PASS
 
 # §0 anchors reproduce

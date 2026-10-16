@@ -33,11 +33,11 @@ both Striker legs**, so there is no deployed strategy and nothing to arm).
 - WATCH-1 measurement / B7 inputs — owner GO ADR + lab RESULTS under `lab/analysis/c1/`
   (do not restate panel bust cells here).
 - ⚠ Bust/DD figures anywhere in this skill are **EOD-clock lower bounds** pending
-  [`W1 ADR`](../../../docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md).
+  [`W1` — `load_bearing_numbers.md` §1](../../../docs/load_bearing_numbers.md#1-standing-rule--eval-bust-figures-are-eod-clock-lower-bounds).
 - Self-funded lane REOPENED 2026-10-09 (personal Tradovate account, maximum-growth objective,
   portfolio not yet selected; 15% max-drawdown clearance; no capital authorization until a portfolio clears it) —
   [`2026-10-09`](../../../docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md),
-  superseding the [`2026-07-16`](../../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) closure;
+  superseding the [`2026-07-16`](../../../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals) closure;
   manual CFD + FXIFY closed; historical MC now pins via `core/historical_challenge.py`'s
   `HISTORICAL_CHALLENGE_FIRM_KWARGS` — `FIRM_RULES["FXIFY"]` itself was **deleted** at Phase 4
   ([`substrate`](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md) §2-E / §7 Phase 4).
@@ -53,7 +53,7 @@ This skill documents durable mechanics (firm rules, sizing, protection, MC) for 
 
 ## Rule 0 — audit-first discipline
 
-Before authoring any decision brief that touches risk controls (dd_protection, lot sizing, account rules, protection tiers), read the production code directly — not memory, not prior docs, not reconstructed specs. Full doctrine: `docs/rule_0.md`. This rule exists because it was violated three times on 2026-04-17, producing a retune → reversal → delete-and-retune cycle that should have been a single decision (root cause each time: authoring the brief from assumed semantics rather than verified code). Full chain: `docs/adr/2026-04-17-dd-trigger-calibration.md` + `docs/adr/2026-04-17-equity-tier-deletion.md`.
+Before authoring any decision brief that touches risk controls (dd_protection, lot sizing, account rules, protection tiers), read the production code directly — not memory, not prior docs, not reconstructed specs. Full doctrine: `docs/rule_0.md`. This rule exists because it was violated three times on 2026-04-17, producing a retune → reversal → delete-and-retune cycle that should have been a single decision (root cause each time: authoring the brief from assumed semantics rather than verified code). Full chain: `docs/rule_0.md` §Triggering failures + [C2 relock §Lineage](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md#lineage-2026-04-17) (both 2026-04-17 records tombstoned in `docs/adr/TOMBSTONES.md`).
 
 Two corollaries specific to this operational domain:
 
@@ -91,7 +91,7 @@ Two corollaries specific to this operational domain:
 | Bulenox_150K | trailing | 3.0% | 6.0% | none | 0 | 150 |
 | Bulenox_250K | trailing | 2.2% | 6.0% | none | 0 | 250 |
 
-FXIFY (historical): DXTrade via Alchemy Markets (CFD) — venue closed. Bulenox tiers force-flatten EOD (no overnight/weekend carry), no daily-loss limit — bust mode is 100% trailing-DD. Bulenox is in `AUTOMATION_FRIENDLY_PROP_FIRMS` (`core/firm_rules.py`) — an operational target for new portfolios under the [four-firm program ADR](../../../docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md); the R6 NO-GO bars only redeploying the locked legacy book ([R6](../../../docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md)).
+FXIFY (historical): DXTrade via Alchemy Markets (CFD) — venue closed. Bulenox tiers force-flatten EOD (no overnight/weekend carry), no daily-loss limit — bust mode is 100% trailing-DD. Bulenox is in `AUTOMATION_FRIENDLY_PROP_FIRMS` (`core/firm_rules.py`) — an operational target for new portfolios under the [four-firm program ADR](../../../docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md); the R6 NO-GO bars only redeploying the locked legacy book ([R6 — substrate §11 rule 2](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)).
 
 **Onboarding a new firm:** add its config to `FIRM_RULES`, then run an **engine-support pre-flight** (many firms have `daily_loss_pct: None` and need bespoke bust branches — see AGENTS.md Firm Expansion + challenge-era rescope ADR). If the execution feed differs from the locked MC's Pepperstone calibration feed, also run the feed-equivalence pre-flight (`docs/spec/feed_equivalence_discovery_test_LOCKED.md`) before re-MC against that firm's tier key.
 
@@ -115,13 +115,13 @@ No funded-phase ramp, no active overlays — challenge and funded phase run iden
 
 For known binary volatility events (central-bank decisions, major scheduled geopolitical releases), Aegis is paused for the session — mean-reversion edge inverts on binary regime breaks. Not a general news filter; applies only to pre-scheduled binary-outcome events. Generic FOMC/NFP/CPI days are NOT binary-event pauses — those are handled by each strategy's existing session/hour filters. Guardian and Striker continue normal operation unless independently flagged.
 
-⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [2026-07-11 ops CFD estate retirement](../../../docs/adr/2026-07-11-ops-cfd-estate-retirement.md)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the 2026-07-16 Aegis→M6J scale path is not active (the self-funded lane reopened 2026-10-09 with no portfolio selected — see Posture above). The paragraph above is durable pause-rule mechanic for the locked legacy edition only; the accepted book's Aegis 6J edition is owned by the accepted book's records (see the top of this file).
+⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [closed CFD/challenge era — substrate §11](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the 2026-07-16 Aegis→M6J scale path is not active (the self-funded lane reopened 2026-10-09 with no portfolio selected — see Posture above). The paragraph above is durable pause-rule mechanic for the locked legacy edition only; the accepted book's Aegis 6J edition is owned by the accepted book's records (see the top of this file).
 
 ---
 
 ## Protection system
 
-Single-tier internal drawdown overlay, independent of whichever firm's own DD rule applies. **Literals and logic are not restated here** — read [`core/dd_protection.py`](../../../core/dd_protection.py) and the human summary in [`AGENTS.md`](../../../AGENTS.md) §Protection. Decision lineage: [`C2 relock`](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md) · [`equity-tier deletion`](../../../docs/adr/2026-04-17-equity-tier-deletion.md) · [`concept-not-constant`](../../../docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
+Single-tier internal drawdown overlay, independent of whichever firm's own DD rule applies. **Literals and logic are not restated here** — read [`core/dd_protection.py`](../../../core/dd_protection.py) and the human summary in [`AGENTS.md`](../../../AGENTS.md) §Protection. Decision lineage: [`C2 relock`](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md) · [`equity-tier deletion`](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md#lineage-2026-04-17) · [`concept-not-constant`](../../../docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
 
 **This overlay sits on top of, not instead of, the active firm's own DD rule.** A static-DD firm and a trailing-DD firm bust differently underneath this same overlay — MC modeling must thread the active firm's `dd_type` through (`core/portfolio_mc.py`'s `bust_trailing` vs `bust_static`/`bust_daily` outcomes), not assume one firm's semantics apply everywhere.
 
@@ -137,7 +137,7 @@ Single-tier internal drawdown overlay, independent of whichever firm's own DD ru
 
 ⚠ Per [`AGENTS.md` §Protection](../../../AGENTS.md): the original equity tier's revert triggers are
 **LOST** — reintroducing a second tier needs fresh pre-registration, not a lookup. The candidate
-signals below (drawn from the equity-tier-deletion ADR's unratified notes, never elevated to a
+signals below (drawn from the tombstoned equity-tier-deletion ADR's unratified notes, now [C2 relock §Lineage](../../../docs/adr/2026-05-08-dd-trigger-c2-relock.md#lineage-2026-04-17), never elevated to a
 pre-registered gate) should prompt *starting* that fresh pre-registration, not substitute for it.
 
 Reintroduce only if: (1) single-tier DD-only fails to hold bust below the programme's live bust bar at any future portfolio mix change; (2) a specific tail failure emerges that DD-protection mechanically cannot catch (slow sustained bleed where peak tracks equity down); (3) allocation shifts push a high-risk leg above its locked band or add a fourth strategy with correlated tail. If any fire, the new tier must be MC-validated against **live code semantics** (not assumed semantics) from day one.
@@ -167,7 +167,7 @@ Pointer-heavy — these are the load-bearing differences from CFD operation, eac
 - **Force-flat / no overnight.** Futures-prop venues typically force-flatten before session close — no overnight or weekend carry. Strategies with multi-day holds (Guardian) do not fit a force-flat venue as-is; see `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` and the futures-pivot project memory for the venue-fit determination per strategy.
 - **Consistency + inactivity rules.** Most futures-prop firms require profit concentration below some % of total (a "consistency rule," typically since-inception-cumulative on funded accounts, not per-payout-window) and a minimum trading cadence (an "inactivity rule," e.g. Bulenox's ≥1 trade per 5 trading days). A strategy that goes quiet past the inactivity window needs a scheduled token-micro-trade mitigation at the execution layer — this is NOT optional if the strategy's natural trade cadence can exceed the window.
 - **Eval economics.** Futures-prop evals are typically cheap-retry (a failed eval costs a modest monthly fee, re-purchasable) vs FXIFY's one-shot challenge purchase. This changes which bust-rate gate is appropriate — a 1% bust gate calibrated for a one-shot purchase may be needlessly conservative for a cheap-retry eval. Gate provenance (which economic model a bust-rate threshold assumes) must be pre-registered before reading results against it, not chosen after seeing the numbers.
-- **Venue-transfer gates.** A strategy locked and backtested on one feed/venue does not automatically transfer its edge to a new feed/venue — treat every venue switch as a gated hypothesis, not a free port. Run the feed-equivalence pre-flight (`docs/spec/feed_equivalence_discovery_test_LOCKED.md`) before trusting a locked MC on a new feed. the P2 edge-transfer gate is the worked example (tombstoned 2026-08-08; body via `git show pre-prune-2026-08-08:docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md`): a two-sided gate that FALSIFIED on the as-mapped CME-micro venue for two of the four strategies (structural under-firing). The R5 DJ30→MYM successor also FALSIFIED (2026-07-09); residual futures-**prop** program closed at R6 NO-GO — see `docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md` and historical brief via `git show pre-prune-2026-08-08:docs/ltm/briefs/futures_residual_program_2026-07-05.md`.
+- **Venue-transfer gates.** A strategy locked and backtested on one feed/venue does not automatically transfer its edge to a new feed/venue — treat every venue switch as a gated hypothesis, not a free port. Run the feed-equivalence pre-flight (`docs/spec/feed_equivalence_discovery_test_LOCKED.md`) before trusting a locked MC on a new feed. the P2 edge-transfer gate is the worked example (tombstoned 2026-08-08; body via `git show pre-prune-2026-08-08:docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md`): a two-sided gate that FALSIFIED on the as-mapped CME-micro venue for two of the four strategies (structural under-firing). The R5 DJ30→MYM successor also FALSIFIED (2026-07-09); residual futures-**prop** program closed at R6 NO-GO — see `docs/adr/2026-07-22-challenge-era-substrate-retirement.md` §11 rule 2 and historical brief via `git show pre-prune-2026-08-08:docs/ltm/briefs/futures_residual_program_2026-07-05.md`.
 
 ---
 
@@ -209,7 +209,7 @@ Implemented in `core/portfolio_mc.py`. Answers one question: given locked strate
 parsed by `ops/recall/guard.py` — do not "fix" them in isolation). Engine regression:
 `tests/core/test_mc_synthetic_engine.py`. Tombstone (retired executable pin):
 `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-24-pepperstone-executable-anchor-tombstone.md`.
-Re-scope: [`2026-07-11`](../../../docs/adr/2026-07-11-challenge-era-claims-rescope.md) — **historical**,
+Re-scope: [substrate §11 rule 3](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward) — **historical**,
 not a live pass-probability.
 
 This pin is FXIFY-rule-shaped (static DD, one-shot eval). A trailing-DD firm's simulation is a

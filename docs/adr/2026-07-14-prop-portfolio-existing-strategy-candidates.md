@@ -8,7 +8,7 @@
 **Decision date:** 2026-07-14
 **Authors:** Joshua (direction) + Claude Code (Fable 5, recorder)
 **Supersedes:** `2026-07-12-prop-portfolio-four-friendly-firms.md` in part - its candidate-class scoping only (Section 2 "R6 boundary" second sentence and Section 5 bullet 2). Its firm set, registry, gating, Section 4 falsifier, and every other clause stand.
-**Related:** Q-KBUDGET-1 ([closure: AMBIGUOUS-HOLD](../briefs/closures/Q-KBUDGET-1-axis-reachability-screen.md)) — the motivating verdict; [`2026-07-13-prop-survivor-scoring-prereg`](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (the unchanged gate); [`2026-07-10-r6-nogo-futures-residual-disposition.md`](2026-07-10-r6-nogo-futures-residual-disposition.md) (falsifiers preserved); [`2026-07-13-dd-protection-concept-not-constant.md`](2026-07-13-dd-protection-concept-not-constant.md) (per-tier sizing variables); Q-KBUDGET-1 Phase-1 inventory Class S ([`Q-KBUDGET-1-phase1-inventory.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-KBUDGET-1-phase1-inventory.md) §3–§4).
+**Related:** Q-KBUDGET-1 ([closure: AMBIGUOUS-HOLD](../briefs/closures/Q-KBUDGET-1-axis-reachability-screen.md)) — the motivating verdict; [`2026-07-13-prop-survivor-scoring-prereg`](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (the unchanged gate); [`2026-07-10-r6-nogo-futures-residual-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md) (falsifiers preserved); [`2026-07-13-dd-protection-concept-not-constant.md`](2026-07-13-dd-protection-concept-not-constant.md) (per-tier sizing variables); Q-KBUDGET-1 Phase-1 inventory Class S ([`Q-KBUDGET-1-phase1-inventory.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-KBUDGET-1-phase1-inventory.md) §3–§4).
 **Layer:** portfolio operations — **not** locked-parameter. No change to Pine, locked SL/TP/ATR, locked CFD allocations, `dd_protection` constants, `ACTIVE_FIRM`, or the FXIFY MC pins.
 
 ---
@@ -20,7 +20,7 @@
 - [`lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_futures3_remc_2026-07-11/RESULTS.md) + [`…bustcut…/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/tradeify_futures3_bustcut_2026-07-11/RESULTS.md) — anchor `eba5030`. Prior looks: 3-leg full-Aegis 100K bust 17.70%; 50K variants — 2-leg 0.76%, Aegis@0.75% 2.02%/1.28%; ae744↔5274c inventory delta; 1R pin-fallback artifact.
 - [`ops/instruments/6J.md`](../../ops/instruments/6J.md) — anchor `fad8984`. J1 panel of record; J5 sizing reality; M6J absent at all FRIENDLY firms; verified 6J commissions.
 - [`docs/briefs/closures/Q-KBUDGET-1-axis-reachability-screen.md`](../briefs/closures/Q-KBUDGET-1-axis-reachability-screen.md) — this session (`b387ce1`). The AMBIGUOUS-HOLD verdict this ADR responds to.
-- [`docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`](2026-07-10-r6-nogo-futures-residual-disposition.md) — cited-in-force; R5/P2 falsifiers preserved (§2 constraint 1).
+- [`docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md) — cited-in-force; R5/P2 falsifiers preserved (§2 constraint 1).
 
 ---
 
@@ -129,7 +129,7 @@ grep -n "bust ≤ 3.0%\|≥ 50%" docs/briefs/pre-registration/2026-07-13-prop-su
 ls docs/briefs/pre-registration/ | grep -i "existing-strategy\|book-candidate" || echo "no candidate pre-reg yet (expected while Proposed)"
 
 # R5/P2 falsifiers still in force (this ADR must never be cited against them)
-grep -n "FALSIFIED" docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md | head -3
+git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md | grep -n "FALSIFIED" | head -3
 ```
 
 ---

@@ -48,7 +48,7 @@ directly (`handoff-verify`) either way. Also open `lab/CATALOG.md` and
 `docs/briefs/INDEX.md` and paste literal search output into §0
 (`docs/operational_rules.md` Rule 8 sub-rule 8).
 
-Grounding: [`ADR 2026-08-13`](docs/adr/2026-08-13-dedup-first-before-new-work.md);
+Grounding: [`ADR 2026-08-13`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-13-dedup-first-before-new-work.md);
 2026-07-24 SESSIONS entry "Q-ICT-1 + composite-closure gate audit:
 confabulated handoff caught, corrected, relocated";
 `feedback_web_advisor_handoff_confabulates_repo_state`.

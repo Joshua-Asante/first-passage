@@ -12,48 +12,21 @@ gitignored + hash-pinned) stands unchanged and is not touched by this ADR.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-
----
-
-## Tier test — full ceremony or light record?
-
-FULL ceremony applies. Two limbs fire: **limb 2** (touches a live-risk-adjacent
-surface — the live prop-firm account identifier and realized P&L history, and the
-`firm_rules`/`LOCK.md` disclosure of live risk-sizing parameters) and **limb 4**
-(amends doctrine — supersedes the "repo is currently private" premise stated as
-standing posture in `CLAUDE.md` §Public-clone-posture and decided in
-[`2026-07-01-guardian-pyport-public-tracking.md`](2026-07-01-guardian-pyport-public-tracking.md)).
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): tier test, §0
+read detail, §7 implementation plan, the §6 per-file downstream list and Verification detail removed; an
+*As executed* record added under §2.
+No decision text changed. Pre-trim text at blob `fe8d9193cb94794d6b24f6c75210785caf3f54ca`
+(commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
 
-- `.gitignore` — anchor: `9d86268` (verified `git log -1 -- .gitignore` on 2026-08-14; confirms
-  `**/*.pine`, vendor CSVs, and the two named Guardian Python-port files are excluded, but
-  `lab/archive/oanda_stage1/guardian_stage1.py` is NOT covered by any existing pattern)
-- `core/firm_rules.py` — anchor: `0356be2` (verified `git log -1 -- core/firm_rules.py` on
-  2026-08-14; `_BASE_RISK` at line 583 — `{"guardian": 0.0034, "striker": 0.0070, "aegis": 0.0150,
-  "striker_nas100": 0.0037}` — tracked in source, matches `CLAUDE.md`'s Strategy Reference table)
-- `core/dd_protection.py` — anchor: `0356be2` (same commit; no account/balance content, unaffected)
-- `docs/adr/2026-07-01-guardian-pyport-public-tracking.md` — anchor: `5563cf4` (verified
-  `git log -1` on 2026-08-14; §2.6 explicitly forwarded the LOCK.md-disclosure question as
-  unresolved, and a same-day addendum found the repo was gh-verified private since 2026-06-06,
-  contrary to that ADR's own premise)
-- `core/strategies/_archive/guardian/LOCK.md` — anchor: `85156a0` (verified `git log -1` on
-  2026-08-14, pre-redaction; confirmed the "Locked config" block transcribed full entry/exit
-  parameters — SL/TP/ATR multipliers, hold/day-count limits, session window, hour-blocks — and
-  "Reference backtest" published trade count, net P&L, PF, WR, and max DD figures. Literal values
-  are not reproduced here (this file ships in the public seed) — the private archive at this
-  commit is the record. The other 3 core LOCK.md files shared this two-block structure and were
-  redacted identically; the 2 `FUTURES_LOCK.md` venue-delta files do not have this structure and
-  were left unchanged, per §6)
-- `.github/workflows/tests.yml` — anchor: `c9ae0e7` (verified `git log -1` on 2026-08-14; all jobs
-  across all 4 workflow files run `ubuntu-latest` only — confirms the cost driver is
-  job-count×trigger-frequency, not an OS-runner multiplier)
-- `gh pr view 831` — checked live 2026-08-14: state `OPEN`, checks failing on the billing-gate
-  annotation (root cause per operator: no payment method was ever added to the GitHub account,
-  which produces GitHub's generic "recent account payments have failed or your spending limit
-  needs to be increased" message)
+- Read 2026-08-14 at authoring: `.gitignore` (`9d86268`), `core/firm_rules.py` and
+  `core/dd_protection.py` (`0356be2`), `docs/adr/2026-07-01-guardian-pyport-public-tracking.md`
+  (`5563cf4`), `core/strategies/_archive/guardian/LOCK.md` (`85156a0`, pre-redaction),
+  `.github/workflows/tests.yml` (`c9ae0e7`) and `gh pr view 831`. Findings per file are at the pre-trim
+  blob above; literal account and parameter values were never reproduced in this file.
 
 ---
 
@@ -105,6 +78,17 @@ step regardless of this ADR's status).
 **Scope:** applies to the one-time public-visibility transition. Does not change ongoing gitignore
 policy beyond adding the one missing pattern (§6), does not touch Pine, `dd_protection` constants,
 or allocations, and does not reopen the 2026-07-01 ADR's untracking decision (which stands).
+
+**As executed (recorded 2026-10-15).** Phase 1 remediation landed; the public repo was seeded as one
+"Initial public release" commit `027a7295` (2026-08-14) with `LICENSE` and without `docs/notes/**`,
+`docs/ltm/**` and `docs/superpowers/**`. It is a separate GitHub resource that took the `first-passage`
+name; the original private repository continues as `first-passage-archive`. That repository was
+GitHub-archived (read-only) after the transplant and was later un-archived (date not recorded; first
+recorded write: the 2026-09-06 preservation branch of
+[`2026-09-06-tracked-file-reduction-prune.md`](2026-09-06-tracked-file-reduction-prune.md)). It is now
+the private, writable evidence store of [M-41](../methodology/lessons/methodology_lessons.md)
+(`scripts/evidence_archive.py`). Private visibility and retained full history are unchanged. Open for the
+operator: whether the name reuse (§5 fourth bullet) and the non-archived state are ratified as executed.
 
 ---
 
@@ -190,82 +174,26 @@ monitoring in between.
   accepted — mitigation is out of scope for this ADR (would require a much broader doc-vocabulary
   sweep with its own cost/benefit call).
 
-**Downstream artifacts that need updating (§6 list — DERIVED, see §10 raw sweep output; every hit dispositioned):**
+**Curation and redaction rules (executed with Phase 1; the per-file disposition list is at the pre-trim
+blob):**
 
-*Curation rule (revised from a pure line-scrub during implementation):* `docs/notes/**`,
-`docs/ltm/**`, and `docs/superpowers/**` are internal working-memory/ops-log directories with no
-standalone public-documentation value (`docs/ltm/` is explicitly cold long-term-memory archive
-already). Rather than line-scrub dense multi-paragraph operational logs (`RUNBOOK.md`,
-`TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md`, the session archive, audit notes, etc.) with the
-attendant risk of an incomplete redaction, these three directories are **excluded from the new
-repo's Phase-3 seed tree wholesale** — unmodified, unscrubbed, staying only in this (archived,
-private-forever) repo. This is a curation default, easy to revisit before Phase 3 actually runs.
-
-- `CLAUDE.md` — rewrite §Public-clone-posture entirely (repo is now public via the new repo; this
-  file's account-ID/balance line at L41 scrubbed) — **EDIT**
-- `STATE.md:144` — scrub account ID — **EDIT**
-- `docs/adr/2026-08-05-strategy-venue-binding-axis.md:78` — scrub account ID from example — **EDIT**
-- `deploy/c1_rail/README.md` — scrub balance figure — **EDIT** (kept in-scope for public: genuine
-  deployment documentation, not an ops log)
-- `tests/ops/test_c1_rail_arm.py:125` — replace real account ID with a fake test fixture value —
-  **EDIT** (good practice regardless of visibility)
-- `docs/notes/2026-08-09-repo-truth-sync-fix-queue.md:28`,
-  `docs/notes/rail_build/RUNBOOK.md`, `docs/notes/rail_build/TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md`,
-  `docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md`,
-  `docs/notes/2026-07-29-comparative-advantage-thesis.md`,
-  `docs/notes/audits/2026-08-11-rule7-dry-fact-audit.md`,
-  `docs/notes/audits/programme-audit/2026-08-05-claim-alignment/03-agent-facing.md`,
+- *Curation rule:* `docs/notes/**`, `docs/ltm/**` and `docs/superpowers/**` are internal working-memory /
+  ops-log directories with no standalone public-documentation value. Rather than line-scrub dense
+  operational logs, they were **excluded from the public seed wholesale** and stay only in the private
+  archive. Named members of that exclusion include `docs/notes/rail_build/RUNBOOK.md`,
+  `docs/notes/rail_build/TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md`,
   `docs/notes/rail_build/B7_STAGE1_DESK_CARD_2026-07-28.md`,
-  `docs/superpowers/plans/2026-08-02-cadence-inactivity-support-research.md`,
-  `docs/superpowers/specs/2026-08-02-idle-rule-disposition-options.md`,
-  `lab/analysis/c1/c1_cadence_inactivity_2026-08-02/RESULTS.md` — **EXCLUDE FROM SEED** (curation
-  rule above; unmodified in this repo)
-- `core/strategies/_archive/{guardian,striker,aegis,nas}/LOCK.md`,
-  `core/strategies/_archive/nas/striker_nas100_v1_mnq_FUTURES_LOCK.md`,
-  `core/strategies/_archive/striker/striker_dj30_v4.5_mym_FUTURES_LOCK.md` — redact
-  parameter/backtest blocks to name/version/lock-date/risk%/hash — **EDIT**
-- `core/firm_rules.py:583` — **RULED UNAFFECTED, explicit reason**: `_BASE_RISK` constants are
-  load-bearing runtime values, not disclosure-only text; accepted per §6 negative consequences
-- `lab/archive/oanda_stage1/{guardian,aegis,striker}_stage1.py` — **UNTRACK** (`git rm --cached` +
-  `.gitignore` pattern addition). Widened during implementation: the original exposure audit named
-  only `guardian_stage1.py`, but `aegis_stage1.py` and `striker_stage1.py` are the same class —
-  frozen historical missed-alpha analysis scripts that embed real filter/pyramid parameters
-  (EOM block days, hour-blocks, ATR-expansion thresholds, pyramid trigger/size). `bar_loader.py`,
-  `permutation.py`, `pine_indicators.py`, `post_exit_excursion.py`, `__init__.py`, `RESULTS.md` in
-  the same directory stay tracked — generic statistical/data-loading infra and a disposition
-  marker, not strategy-signal logic (same infra-vs-edge split as the 2026-07-01 ADR's
-  `next_open_engine.py` precedent).
-- `LICENSE` — **NEW FILE**, all-rights-reserved notice
-- `docs/adr/2026-07-01-guardian-pyport-public-tracking.md` — addendum noting partial supersession
-  by this ADR (premise + §2.6 Forward question) — **EDIT** (addendum only, not a rewrite — see
-  Change history discipline)
-- `docs/adr/INDEX.md` — regenerate — **EDIT**
-- New GitHub repository (separate resource, not a repo path) — create, seed, configure branch
-  protection — **NEW**
-- Cursor background-agent repo target — operational follow-up, not a repo path — **FLAG, owed
-  separately, not blocking this ADR's Accepted status**
-
----
-
-## §7 — Implementation plan
-
-- **Phase 0** — §0 reads reverified at implementation time (rerun the `git log -1` anchors above
-  immediately before Phase 1 edits land).
-- **Phase 1** — mechanical edits: scrub account ID/balances (16 files), redact LOCK.md-family
-  parameter/backtest blocks (6 files), untrack `oanda_stage1/guardian_stage1.py`, fix the test
-  fixture, add LICENSE. Lands as a normal reviewed PR to this (still-private) repo's `main`.
-- **Phase 2** — grep-sweep verification (§10) rerun post-merge; zero hits required except the
-  dispositioned `firm_rules.py` residual. ADR status flips `Proposed` → `Accepted` only once this
-  is clean.
-- **Phase 3** — *(requires separate explicit operator go-ahead — publish/account-setting action,
-  not authorized by ADR acceptance alone)*: create the new public GitHub repository; seed it with a
-  single "initial public release" commit built from Phase 1's merged tree, **excluding**
-  `docs/notes/**`, `docs/ltm/**`, `docs/superpowers/**` per the §6 curation rule; configure branch
-  protection and repo metadata.
-- **Phase 4** — *(same explicit-go requirement)*: archive this repo (GitHub Settings → Archive —
-  read-only, stays private, full history retained) once the new repo is confirmed live and green.
-- **Phase 5** — operational follow-up: repoint Cursor background-agent configuration and any local
-  clone remotes to the new repo.
+  `docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md`, the audit notes, and
+  `lab/analysis/c1/c1_cadence_inactivity_2026-08-02/RESULTS.md`.
+- *LOCK-family redaction:* `core/strategies/_archive/{guardian,striker,aegis,nas}/LOCK.md` reduced to
+  name / version / lock-date / risk% / hash; the two `*_FUTURES_LOCK.md` venue-delta files lack that
+  structure and were left unchanged.
+- *Untracked:* `lab/archive/oanda_stage1/{guardian,aegis,striker}_stage1.py` (`git rm --cached` +
+  `.gitignore`); generic infra in the same directory stays tracked (the 2026-07-01 ADR's infra-vs-edge
+  split).
+- `core/firm_rules.py` `_BASE_RISK` — **ruled unaffected, explicit reason**: load-bearing runtime values,
+  not disclosure-only text; accepted under the negative consequences above.
+- `LICENSE` — all-rights-reserved, shipped in the first public commit.
 
 ---
 
@@ -301,25 +229,8 @@ git ls-files | grep -iE '^LICENSE'
 ## Verification
 
 ```bash
-# Discipline checks (mechanical) — run once brief-authoring's checker is available in this env
-$ python <brief-authoring-skill-path>/scripts/check_brief.py docs/adr/2026-08-14-repo-public-visibility-transition.md --type adr
-
-# ADR lifecycle graph
+$ python .claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-08-14-repo-public-visibility-transition.md --type adr
 $ python scripts/check_adr_graph.py
-
-# Production-source verification (Rule 0 confirmation) — anchors above, reverify at Phase 0
-$ git log -1 --format="%h %ci" -- .gitignore core/firm_rules.py core/dd_protection.py \
-    docs/adr/2026-07-01-guardian-pyport-public-tracking.md core/strategies/_archive/guardian/LOCK.md \
-    .github/workflows/tests.yml
-
-# Downstream artifact update verification — post Phase 1, all §6 EDIT-dispositioned hits should be
-# gone outside docs/notes|ltm|superpowers/** (substitute the literal values from the private archive
-# for $ACCOUNT_ID / $ACCOUNT_NUMERIC_ID — not reproduced here; this file ships in the public seed)
-$ git grep -n "$ACCOUNT_ID\|$ACCOUNT_NUMERIC_ID" -- . | grep -v '^docs/notes/\|^docs/ltm/\|^docs/superpowers/' ; echo "expect: no output"
-
-# Supersede chain integrity (partial supersession — no accept+retire checklist required)
-$ grep -A1 "Supersedes" docs/adr/2026-08-14-repo-public-visibility-transition.md
-$ grep -A1 "Superseded-in-part-by" docs/adr/2026-07-01-guardian-pyport-public-tracking.md
 ```
 
 ---
@@ -386,3 +297,4 @@ git grep -c -E "first-passage(-archive)?#[0-9]+" -- 'docs/*.md' 'STATE.md' | awk
 | 2026-08-14 | Initial authoring | Joshua + claude.ai |
 | 2026-08-22 | **Operator Accept.** Status `Proposed` → `Accepted`. Phase 1 remediation and the fresh-repo transplant already executed; this public clone is that seed. Status field lagged the executed work. | Joshua (Accept) + Cursor (record) |
 | 2026-09-11 | **Addendum — PR-number era convention.** Numbers restarted at #1 with the §2 transplant; citation rule (`first-passage-archive#N` / `first-passage#N`), no retro-edits, reader-intercept in the `docs/SESSIONS.md` living header. Does not amend §2 / §4 / §5. | Joshua (request) + Claude Code (record) |
+| 2026-10-15 | Retention trim: tier test, §0 detail, §7 plan, §6 per-file list and Verification detail removed (pre-trim blob `fe8d9193cb94794d6b24f6c75210785caf3f54ca`); *As executed* record added under §2. No decision change. | Joshua (direction) + Claude Code |
