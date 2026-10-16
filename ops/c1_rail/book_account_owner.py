@@ -1622,7 +1622,8 @@ class BookAccountOwner(BootstrapOwnerMixin, TakeoverOwnerMixin, ProtectionOwnerM
         )
         request = BookSizingRequest(
             action.order_id, action.leg_id, leg(action.leg_id).order_symbol,
-            action.kind, action.qty if action.kind == "entry" else None,
+            action.kind, (action.qty if action.kind == "entry"
+                          and action.leg_id not in ("aegis_6j", "orb_mnq_v7") else None),
             Fraction(str(action.stop_dist_pts)) * Fraction(
                 str(ADAPTER_BY_LEG[action.leg_id].pointvalue)),
         )
