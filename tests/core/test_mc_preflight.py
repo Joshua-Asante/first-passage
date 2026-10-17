@@ -40,7 +40,10 @@ def _mk_seed(pass_=0, bust_daily=0, bust_static=0, bust_trailing=0,
     }
 
 
-_ALL_PROP_TIERS = [t for tiers in AUTOMATION_FRIENDLY_PROP_FIRMS.values() for t in tiers]
+_ALL_PROP_TIERS = [
+    t for tiers in AUTOMATION_FRIENDLY_PROP_FIRMS.values() for t in tiers
+    if FIRM_RULES[t].get("rules_status") != "provisional"
+]
 
 
 # ── Constraint D: firm_kwargs threads None-safely + dispatches dd_type ────────
