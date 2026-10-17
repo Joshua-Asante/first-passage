@@ -113,3 +113,40 @@ No news exclusion is offered as a stress assumption. The sources define no windo
   - For an automated strategy, the EA page is the most specific text, and it conflicts with the general page.
   - This sheet changes neither the strategy nor the model's news handling. The venue note's FXIFY Q6, already sent, is the resolution path.
 - **D2, GTC versus website.** The GTC (Dec 2024) describes a two-step "FXIFY Challenge and Verification" that does not match the one-step Flex evaluation. GTC 6.2 adopts the website parameters, and 5.4.1.8 allows 7-day amendments. Every figure here is valid only while the FAQ pages are stamped 2026-09-28; re-read them at the pre-registration freeze (2026-10-23).
+
+## E. Decision readiness (second read, 2026-10-17)
+
+A second, independent rendering-fetch read on 2026-10-17 found the same "Updated on September 28, 2026" stamp and the same values on the MLL, DLL, account-parameters, Flex-overview, time-limit, trading-hours, EA, news-policy and prohibited-strategies pages. The GTC PDF fetched again hashes to the same `c25d2fa8…abfc72f`.
+
+**E1. MNQ costs: unpublished.**
+- No FXIFY Futures source names a per-contract commission, an exchange or NFA pass-through, or whether a figure is per side or round trip. The full FAQ index (48 articles across six categories) has no fee or commission article. The payment-structure, account-parameters, Flex-overview and products pages list only the one-time fee and the reset fee. The GTC mentions "fee" only for the challenge purchase price (2.5–3.3) and has no "commission".
+- Third-party reviews give unsourced estimates. They are not evidence.
+- `cost_per_side_usd` stays `None`. The §4 harness's per-tier G2 (`cost_law_kill`) raises on `None` ([executor card](../briefs/handoffs/2026-10-06-four-firm-remc-executor-card.md) §0.5 item 4), so an FXIFY tier cannot be scored as frozen until one of two things happens: FXIFY gives a written figure, or the pre-registration adopts and discloses its own cost assumption (an operator choice, not a venue fact).
+
+**E2. Source capture.**
+- Condition (c) of the [2026-10-16 addendum §3](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-16--operator-rulings-50-ceiling-fresh-4-candidate-orb-mnq-v7-fxify-futures-flex-registration-accepted) requires the modelled facts to be "re-verified at a primary source and dated". It does not require a byte-for-byte capture, and no adopted rule found in the repo requires one for firm rules. Tradeify, MFFU and BluSky rows rest on dated help-centre reads; Bulenox's byte-exact PDF re-check was an extra step, not a stated requirement.
+- This sheet and the second read above are two dated primary-domain reads that agree. They meet (c). The row's "FAQ capture is not byte-verified" hold is a self-imposed caution, not a gate. Lifting it is the acceptance owner's call.
+- Residual risk: a rendering fetch can paraphrase. The load-bearing numbers ($4,500, the lock text, $9,000, 50%, 100 micros, $3,000, 4:59 PM) were returned as quotes in both reads. If the owner wants more, an operator browser save of the MLL page is enough.
+
+**E3. Facts, modelling assumptions and execution restrictions.**
+
+| Item | Fact (sourced) | Modelling assumption (pre-registration states it) | Execution restriction (before trading only) |
+|---|---|---|---|
+| News | Conflict D1: general "allowed"; EA "news trading" = immediate breach; "High Leverage News Trading" prohibited; GTC 5.4.1.6 gap clause. No window is defined | None. The MC applies no news exclusion. Inventing a window is barred (§C) | Whether ORB v7's automated entries or holds around scheduled releases are "EA news trading". Answer at FXIFY Q6 |
+| DLL $3,000 | Soft, read-only for the rest of the day; "resets based on your new starting balance"; Flex overview: "caps allowable intraday losses" | The engine ignores it (`daily_loss_pct: None`). Material only if a day's loss at `R_deploy` can reach $3,000; otherwise immaterial. The bundle removes it | Realized or open P&L; reset time; whether positions are flattened |
+| MLL breach clock | Not stated | B2: intraday, a house convention and the conservative direction | FXIFY Q7 |
+| 30-day duration | "30-day duration"; extension for "a small fee"; calendar or trading days not stated; expiry outcome not stated | **Material and not yet encoded.** Prereg v2 uses horizon 1500. The pre-registration must choose and disclose a horizon (for example 30 calendar days ≈ 21 sessions, or paid extensions with the fee counted) | Extension price |
+| Session close | 4:59 PM ET auto-close; weekend closed; no holiday rule | `weekend_holds: False`; ORB is intraday | Whether the auto-close counts as a violation (Q7) |
+| Prohibited behaviour | The 2026-10-17 page also lists "exploiting the absence of slippage", "isolated fills in illiquid or gapped markets" and account rolling | None | Fill-realism discretion; no strategy change |
+
+**E4. Acceptance map.**
+- **Acceptable now (sourced, two dated reads):** `starting_balance` 150,000; `dd_type` trailing_locking; `max_dd_pct` 3.0; `profit_target_pct` 6.0; `micro_contract_cap` 100; `consistency_rule_pct` 50.0 (soft); `soft_daily_loss_pct` 2.0; `weekend_holds` False; `daily_loss_pct` None and `inactivity_max_idle_days` None (deliberate non-encodings).
+- **Acceptable as a disclosed interpretation:** `dd_lock_offset_usd` 0.0 (B1, with S1 as stress); `min_trading_days` 2 (derived); the intraday breach clock (B2).
+- **Not acceptable as a fact:** `cost_per_side_usd` (E1).
+- **What stops FXIFY counting in the 2026-10-23 frozen set:**
+  - (a) the row is not on `main` until #867 merges;
+  - (b) the pre-flight passes only with `allow_provisional_rules=True`, so the owner must lift the provisional hold, which (c) no longer needs;
+  - G2 cannot run on a `None` cost (E1);
+  - the pre-registration must fix a horizon for the 30-day clock (E3).
+- **Before execution only:** news (Q6), the breach clock and auto-close (Q7), the DLL basis, the extension price, and the B6/B7 automation and feed questions (Q1–Q4). None of them changes the MC inputs above.
+- **Outreach status:** the venue note's Q1–Q8 are recorded as owed. No sent record or reply is in the repo, and the connected mailbox has no FXIFY thread. Confirm the channel before relying on "already sent" (§B6, §B7, §D1).
