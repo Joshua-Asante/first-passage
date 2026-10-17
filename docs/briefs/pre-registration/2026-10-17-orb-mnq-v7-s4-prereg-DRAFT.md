@@ -1,0 +1,249 @@
+# ORB MNQ v7 solo — dated §4 re-MC preregistration
+
+**Status:** RATIFIED 2026-10-17 — FREEZE CANDIDATE; commit/publication and effective PR-merge freeze remain pending. No scoring release.
+**Review state:** technical preparation independently accepted; Joshua ratified the exact reviewed contract on October 17 (§9). Executor-control readiness remains a separate held gate.
+**Must run locally:** private sources, effective inputs, vendor inputs and detailed evidence remain in Joshua's primary checkout. Private bindings and new outputs belong only in ignored `.cache/orb-mnq-v7-s4-2026-10/`.
+**Technical owner:** local chat **Own ORB MNQ v7 Section 4 evidence**, `01a1480a-af8d-7953-b576-bacc9467627e`, sole study writer.
+**Coordinator / combined acceptance:** **Coordinate First Passage returns**, `01a142a1-3172-7dd2-a6d8-ff1f0e67634f`.
+**Authority:** #864, merge `a5c71338ff387d7bb3110b2e15a7aa4752ad72be`, accepted October 16 addendum to [program ADR](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md). Read that blob at the merge pin: the preparation checkout `3d898ecd7e697a567ffda2e941dc73cf20246d9c` predates the addendum. Existing dirty work is preserved.
+
+## Question, roadmap and current handoff
+
+Does one precisely elected ORB MNQ v7 solo expression clear the existing survivor gate on the admitted frozen tiers? Its answer changes §4's evidence for November 8; historical failures remain standing.
+
+Roadmap: preparation → reviewed/ratified, committed freeze by **October 23, 2026** → admitted dated re-MC by **October 30** → verdict and limitations returned for **November 8**. The coordinator retains combined acceptance. This file is the new candidate's owner, not a replacement for the completed October 6 study.
+
+**Selected outcome:** source/configuration attestation, historical difference/exposure tables, reusable inputs, tested solo producer and independently reviewed conditional-envelope contract for ratification.
+**Prerequisites:** #864 read at its accepted pin; in-place hashes checked; solo configuration elected October 17. Producer/conditional-envelope verification and independent technical review are complete; full-contract ratification/freeze remains pending.
+**Ownership:** one technical evidence owner; registry/preflight, rail sizing and native architecture retain separate owners/files.
+**Verification:** local read/hash/schema checks, synthetic per-tier preflight, 53 focused synthetic tests and recorded structural audits; reviewed identity, clock, rule/date and data provenance bind the eventual freeze.
+**Checkpoint:** immediate ownership acceptance and first concrete findings returned to the coordinator on October 17; consequential choices returned before dependent work.
+**Return boundary:** return this technically reviewed contract for Joshua's full ratification. Producer implementation is complete under §7; freeze and scored-executor release remain subsequent bounded handoffs. No additional writers, cloud jobs, infrastructure or native work.
+
+Preparation budget: one inventory/draft-and-review pass, $0, zero decision-bearing runs. Stop at the reviewable package; unresolved inputs do not justify a strategy search.
+
+## 1. Identity and proposed election
+
+All eight entries in `core/strategies/BOOK_SOURCES.sha256` match in-place bytes on October 17. ORB pins:
+
+| Artifact | SHA-256 |
+|---|---|
+| Accepted v7 venue-bound Pine | `176c4f70c67d58053c4d3b8170d0a9be3733bc6b76b1e2f928bd7a877be052a3` |
+| Accepted v7 port | `b1f4e573009e62b976013e08e7ef2784497d840f490f04e3878fdaef553f317d` |
+| Historical `effective_inputs.json` | `66406dee955fa69f237fde60eacdd24259a08d5320352d98e59889acaa18158d` |
+| Original v7 chart export (O-0) | `bff235ea0934dace8a000dbad7eeede8673506718bd020f54f2c04cbae304568` |
+
+**Elected by Joshua, October 17:** use the original chart-capture expression defined by those Pine/port bytes and the `orb_mnq_v7` block of that exact effective-input file, with its constructor defaults resolved explicitly. One configuration, quantities as captured, no rescaling or size sweep. Protection OFF (v2 default), normal mode throughout. No book-policy, lifecycle, personal-R1, native-experiment, route-native or news-filter overlay. This election uses identity/custody and the directly reproducible original capture, not its outcomes. It is not final ratification/freeze.
+
+The effective-input file describes reconstructed historical chart overrides, not an operator election for this solo study. `book_adapters.load_book_adapters` derives a different ORB runtime quantity from `book_policy`; that reviewed book successor is not interchangeable with the chart capture. O-N/O-P are further book-normal/protected exports. The port constructor alone is also not the capture binding. Private `configuration-choice.private.json` retains the concrete distinctions. Native/private personal artifacts were not opened or adopted.
+
+The complete private binding is `resolved-binding.private.json`, canonical SHA-256 **`a4ddd99572584e47b505677172b25b9f4a3d8aca1984fbbe05f3a903f2fbd9f1`**. It resolves every `OrbParams` field, applies only the elected historical override, binds emulator settings/source, Pine-only strategy/date fields, calendar and proposed window. The port lacks Pine's date filter: this study consumes the original Pine-captured export, never replays the port without that filter. Native/personal settings are not adopted. Stable candidate identity: **ORB-MNQ-v7-solo-S4-2026-10**; any Class-S integer is coordinator bookkeeping, not invented here. Never score alternatives to choose.
+
+### Difference from previously tested ORB-MNQ-1
+
+| Dimension | Previously tested construct | v7 candidate / consequence |
+|---|---|---|
+| Source identity | July frozen reconstruction, its own preregistration | Distinct reconstruction lineage and accepted venue-bound source pins above; same name does not establish equivalence |
+| Direction and trade selection | Original prereg: both-sided opening-range construct | Direction/day/participation settings differ; exact fields/values remain private |
+| Exits | Original exit-at-close construct | Different protective/target/trailing/time-exit modules and settings; field-level attestation completed in the private binding/difference table |
+| Position construction | Original frozen construct and later tested solo sizes | v7 includes its own base/add behavior; original chart and book bindings differ; no inherited size authorization |
+| Session/calendar | Original session convention | Venue-bound flatten/calendar treatment differs; historical metadata has a stale declared-session description, so metadata alone is insufficient |
+| Data exposure | Original native panel includes earlier regimes | Later reconstruction/export panels omit some earlier regimes; the published performance gap is not an isolated strategy-change effect |
+| Protection | Solo historical tests, separately registered configurations | Prior four-leg mode-switching policy is not a solo policy; NORMAL/protection OFF elected October 17 |
+
+Evidence: [original prereg](2026-07-16-orb-nas100-mnq-reconstruction-preregistration.md), [original RESULTS](../../../lab/analysis/orb/orb_mnq_2026-07/RESULTS.md), [reconstruction RESULTS §3–4](../../../lab/analysis/orb/orb_mnq_recon_v3_2026-08-31/RESULTS.md), and permitted in-place accepted sources. Private attestation records changed fields without publishing parameters. This table does not establish that v7 is unexposed.
+
+## 2. Prior exposure and trial lineage
+
+This is a post-exposure confirmation attempt authorized afresh by Joshua, not untouched out-of-sample research. K=1 here is a proposed future candidate count, not a claim that historical search K was one.
+
+| Exposure | Standing evidence and accounting |
+|---|---|
+| July discovery / payability | Original discovery manifest reports `executed_k=0` under the July 31 ruling; its prereg described `K_intrinsic=1`, `K_eff=2`. Preserve that distinction. Tradeify payability subsequently failed; PARK/repark remains. |
+| [b3 August 24](../../pursuits/b3-orb-mnq-payability-line.md) | Solo fails all four registered families. Additional firms tested sizes 1–3. The corrected six-year solo panel later busts at every tested size 1–8, EOD clock. These are observed prior trials, not new proposed arms. |
+| Aegis + ORB explorations | Multiple windows, sizes and weighting/correction looks. Early pooled/proxy claims were superseded by timestamp-sequenced/both-halves results; the second half still fails the raised ceiling. Combined-book evidence does not clear solo ORB. [Owner](../../../lab/analysis/c1/aegis_orbmnq_combined_book_2026-08-26/RESULTS.md) |
+| Reconstruction tuning | v1→v7 iterative lineage, volume/direction/exit/filter tuning, without preregistration, held-out data or complete K accounting. August 31 reconstruction fails all tested sizes 1–3; different panel from original. Count observed trials separately; unknown total is explicitly unreconciled, never zero. [Owner](../../../lab/analysis/orb/orb_mnq_recon_v3_2026-08-31/RESULTS.md) |
+| Q-RANGECOND-1 | **FALSIFIED**; original RESOLVED and b3 August 30 claim **retracted** for look-ahead. Corrected effect disappears. `K_intrinsic=1`, disclosure only. [Corrected closure](../closures/Q-RANGECOND-1-closure-falsified.md) |
+| Q-ORBCUSH-1 | **FALSIFIED**, explanatory classifier, K consumed 0; no unpark. Closure read from preservation commit `2d40dbeb56c167844cab5136742d70787835f8e2:docs/briefs/closures/Q-ORBCUSH-1-closure-falsified.md`. |
+| Wider exposure | Q-ORBSURV-1 fails robustness; four-leg feasibility/protection selection and P7 replay evidence were seen. MNQ family bank's last-reconciled figure is 22, disclosure only; not a complete ORB tuning count. [Ledger](../../../ops/instruments/MNQ.md) |
+| October 6 Class-S #3 | Four-leg accepted-book dated re-MC **FALSIFIED — early-fail**, not solo v7. Corrected depth re-run confirms failure. All candidate/reference tables and correction/depth lineage were read. Fresh #864 authorization preserves this verdict. [RESULTS](../../../lab/analysis/c1/four_firm_remc_2026-10/RESULTS.md) |
+
+The drafter also read the sources linked here, source comments containing earlier exploratory outcomes, v2's prior-result disclosure and the October 2 prereg's prior-look table. No new performance calculation was made. Further operator/owner exposure and the unreconciled tuning trial count must be appended before signing; the candidate never gains an independent-sample claim by freezing this file. The archived conditioning chat remains archived.
+
+## 3. Proposed scoring contract
+
+Adopt [survivor prereg v2](2026-08-26-prop-survivor-scoring-prereg-v2.md) and standing [October 2 protocol/verdict mapping](2026-10-02-four-firm-dated-remc-prereg-DRAFT.md), with candidate-specific identity/producer choices resolved here. Do not inherit that study's four-leg candidate or protection policy.
+
+- G1 deployable-expression and G2 ≥4× cost-law/cap checks precede G3/G4. A per-tier venue-timing failure cannot clear that tier; do not delay exits or alter ORB to satisfy rules.
+- **Mandatory executor admission assertions:** preserve October 2 I-24 for `MFFU_Rapid_100K`: any retained same-day lot whose `(entry, exit]` contains 16:10 ET, or whose exit is at/after 16:10 ET, makes that tier **inadmissible — 16:10 unmodeled** and unable to clear. No truncation, delayed exit, filter or altered strategy is allowed. Reconstruct actual concurrent quantities from the complete lot intervals, conservatively treating timestamp ties, and enforce each frozen row's `micro_contract_cap`; record G1 deployment-expression and G2 ≥4× cost-law evidence before G3/G4. The producer, source-schedule audit and synthetic engine test establish none of those tier admissions. Missing admission evidence is not a clearing result.
+- Proposed existing cross-section: exactly `Bulenox_100K`, `Tradeify_Select_100K`, `MFFU_Rapid_100K`, `BluSky_Premium_100K`, pristine registered starting balances. Other existing tiers are excluded, not searched.
+- Headline bust is daily + static + trailing via `summarize_outcomes`, with per-seed bucket partition assertion; **bust ≤5.0%**, **pass ≥50%**, finite median days-to-target ≤1500. ≥2 distinct firms must clear, including ≥1 `trailing_locking`.
+- 10,000 simulations × seeds **42/123/2026**, horizon **1500**, inactivity barrier **OFF**. Run-1 mandatory; consistency-on Run-2 gates where applicable; Bulenox single run. Thread per-tier `firm_kwargs`, never module globals.
+- Intraday-honest channel mandatory on every gating read, with the non-vacuity guard and depth bound to each report. EOD-only never gates a clear. Existing Bulenox/BluSky F2 optimistic-lower-bound labels remain.
+- Per-tier commission netting from gross/contract-sides; preserve original execution/slippage assumptions explicitly, avoid double subtraction. Complete business-day calendar, timezone/DST, actual retained window, block anchor and partial-week handling bind before freeze. The current block helper assigns positional weekdays and cannot prove actual dates by itself.
+- Calibration reference: same non-candidate as October 2 I-20, **rerun once after freeze** under the current frozen harness within the main budget. Exact code identity reuse was not established: `core/firm_rules.py`, `core/mc/preflight.py` and `prop_survivor_scoring.py` differ from depth-era executor `c180283`. No result-dependent reuse or equivalence exception is inferred; retained input/panel/depth hashes remain useful provenance.
+- G7 funded ≤1% remains a diagnostic, not a §4 gate; the existing scorer's eval-derived funded count is not evidence of a newly simulated funded phase. **Regime rider scope resolved by Joshua October 17 (§8):** do not import the prior book's nonblocking rider into this fresh solo study; zero rider runs, main criteria/historical verdicts intact, G8 reliance/admission withheld. Full contract ratification/freeze and scoring release remain separate.
+
+Verdicts preserve October 2 §4: AMBIGUOUS calibration override; missing/unbound/incomplete evidence → INSUFFICIENT; discharge → RESOLVED; exactly one clear → ONE-TIER/operator decision November 8; ≥2 without a locking tier → FALSIFIED—partial (program residual still unruled); zero clears → FALSIFIED—early-fail. Missing a verdict at November 8 invokes the standing deadline rule, not evidence that the strategy failed a completed run. Historical proposed PARTIAL extension is not silently ratified here.
+
+### Current executable and four-rule pins
+
+`current-import-closure.private.json` binds the **17 current public source files** reachable through the producer/parser/scorer/preflight/simulation imports, including module-local imports and executed package-parent initializers (`mc` loads `modes`; `discovery` also initializes), plus the operations lock, actual interpreter digest, threshold-source digest, four-rule payload and private binding. Canonical SHA-256 **`4bf77dd699711e963025b82fe079bd102a7a4a25c33c8656ec6b8a425c515ff2`**. Namespace-only parents have no source to pin. This is a concrete current code choice, not an unspecified future engine. Exact source-file map remains private with the execution evidence. The earlier 14-file pin omitted executed package initializers and is superseded, not a complete closure claim.
+
+`four-rule-rows.private.json` binds canonical full rows and resolved consistency/inactivity-OFF engine kwargs, SHA-256 **`23a706d36f2c1840a6b4da5da44df3eb8d4f9f81136da6a124564722dc1876d9`**:
+
+| Frozen existing tier | Canonical row SHA-256 |
+|---|---|
+| Bulenox_100K | `d9e6e87285440099b6cb8f7fb1b021c93c049d088570cd6753b44db2dce4d7e5` |
+| Tradeify_Select_100K | `fa1c855ead4670562b8a08383282332b22b1421e4d92847f65db97d2ba34dc35` |
+| MFFU_Rapid_100K | `24a84181fd647a47629bf0ceaf6f12de07dce83e466aeef75ba2e5be2495865b` |
+| BluSky_Premium_100K | `d62654688c01ecc4865dd00c486cc555475ff41ebd8f8aefd7dfd9aa89246ae4` |
+
+At the eventual freeze commit, rebind/re-hash the same reviewed executable bytes, source/calendar/threshold inputs and canonical rule rows; externally record that commit SHA. A checkout/rebase changing a pinned source or rule blocks freeze until affected verification and review are refreshed. It does not permit a different scorer or strategy to be selected silently. The frozen executor/resource guards remain a subsequent bounded release, not existing claimed capabilities.
+
+**FXIFY admission condition:** #867 `fc68c1e7bba9cee55b1d57860ad0482c447d333b` is owner-reported OPEN/provisional. Distinct `FXIFY_Futures_Flex_150K`/`fxify_futures` and starting balance exist on that head; only provisional-override preflight passes. Default preflight is blocked. Sourced eval lock versus optional no-lock stress, breach timing and news interpretation remain unresolved. Include only if distinct rows, default per-row passing preflight, dated primary-source facts and accepted interpretations all close before freeze. Then explicitly enumerate admitted keys and recompute the finite budget before signing. Otherwise freeze the existing four families. No silent additions afterwards; no inferred stop/exit/news-filter changes. Registry merge/green alone is insufficient.
+
+## 4. Verified producer and reusable-input inventory
+
+Private inventory/checks are in the study cache; no private source was copied. Ten historical input/report hashes match their existing pins: original O-0; O-N/O-P; three calibration exports; reconstructed reference panel; October 6 candidate/reference reports and reference depth record. All three ORB exports have the required trade-list date/type/quantity/net/commission/adverse-excursion columns. Four existing rows pass `assert_engine_ready` on twelve synthetic idle days. These checks establish accessibility/schema and engine support, not candidate eligibility or performance.
+
+| Item | Reuse / required action before freeze |
+|---|---|
+| Source/config | In-place hashes pass. Resolve elected constructor/emulator inputs and private complete-binding digest. Original override digest in phase1 metadata is not assumed to be the reconstructed file digest. |
+| O-0 chart export | Original pinned input elected. Full export passes strict pairing, long-only, expected quantity, exact capture commissions, chronology/same-NY-day/weekdays and decimal MAE coverage of realized gross losses. No real daily P&L was aggregated. |
+| O-N/O-P | Hashes/schema pass; retained only as differing identities, not solo substitutes. |
+| Clock evidence | `phase1_config.json` says synchronized intraday path unavailable. Joshua elected a conditional conservative envelope. Its inequality and falsifying synthetic cases are in §8; no timestamp-sequenced path is claimed. Trade-list completeness/MAE fidelity remain conditional on accepted original-capture provenance. |
+| Calendar | Pine/port early-close sets agree; derived calendar union agrees throughout the proposed actual window. All source exits are within its ordinary/early-close schedule; all entries obey its date range. Calendar coverage contains the window; 2027 carry-over is outside it. Historical special-close/closure provenance remains SECONDARY, not newly primary-verified. This is a source-consistency check, not venue acceptance. |
+| Scorer/kernel | Existing per-tier `TierSeries`, headline buckets, sidecar/depth and days-to-pass capture are reusable by interface. Bind exact code/import closure and rule hashes at freeze. |
+| Prior executor/builder | Hard-coded four-leg inputs/policy; not invoked. New `orb_solo_series.py` reuses the hash-first strict parser, validates solo lots and emits explicit dated net/low channels with private hash-bound manifests. No strategy implementation, replay or scoring entry point. Synthetic verification and accepted independent review are recorded in §8. |
+| Reference | Exact historical inputs/report/depth available; code identity changed, so select the approved rerun-once branch after freeze. No calibration run in this handoff. |
+
+## 5. Approved finite execution budget — October 17
+
+One elected candidate, one frozen tier set, one scored attempt; zero parameter, size, filter or tier searches. Existing four-family main run: candidate **19 arm groups**, reference rerun once, at most **19** (three guard groups plus Run-1 and consistency Run-2 per tier; each group uses 3 × 10k). Exact report reuse was not established; the selected branch is the reference rerun. No allocation savings fund variants.
+
+Use the [original timing card §7/§10](../handoffs/2026-10-05-four-firm-remc-timing-card.md): **1005.43 seconds is `time.perf_counter` WALL time** for one serial three-seed group, not aggregate process CPU. Main 38-group planning estimate **15.9193 serial wall-hours** including ×1.5 margin; typical old shape ≈1.5 serial wall-hours. Neither is a current measured CPU bound or a guaranteed runtime. No eight-worker speedup is assumed.
+
+**Correction October 17:** the initial proposal's 57-group/three-dataset rider reserve and 95-group/39.79-hour combined figure are **superseded and invalid**. Its CPU label was also wrong: the source timing is wall time. Canonical Part A requires **100** alternate six-month-block histories, plus two halves. A hypothetical 19 groups on every dataset would total 1976 with main (≈827.8 serial wall-hours using the exact old timing and margin), not an established required runtime. Required tiers/arms and scope were not verified by that extrapolation. Joshua approved the candidate-specific scope resolution in §8 with **zero rider runs**. No reduced-depth/history substitute, hidden rider reserve or budget expansion is authorized.
+
+Approved hard resources: **42 aggregate CPU-hours (including setup/timing overhead), 48 wall-hours, ≤2 worker processes, 16 GiB peak RAM, 2 GiB new disk**, $0 spend. One synthetic timing/schema verification pass ≤15 minutes before freeze only if necessary; no new benchmark merely to repeat the established wall/CPU distinction. No scored pilot. Stop on identity drift, missing inputs, clock/cap/rule mismatch, invalid depth/report capture, resource ceiling or deadline threat. Retain partial outputs as incomplete; no automatic retry or depth reduction. Repairs/re-runs require coordinator reassessment; failed outcomes never trigger alternative parameters.
+
+Approved corrected allocation (CPU allocations are stop thresholds, not measured predictions):
+
+| Phase | Full-depth groups | `run_seed` calls | CPU allocation | Serial-wall planning |
+|---|---:|---:|---:|---|
+| Prior/current preparation, producer proof, setup and resource-guard verification | 0 scored | 0 scored | 8 h | separately bounded; includes already spent preparation |
+| Solo candidate maximum, if all tiers reach G4 | 19 | 57 | 16 h | 7.95965 h old worst-shape planning |
+| Calibration reference rerun once | 19 | 57 | 16 h | 7.95965 h old worst-shape planning |
+| Report/depth sealing and mechanical verdict return | 0 additional MC | 0 | 2 h | within global cap |
+| **Total** | **38** | **114** | **42 h** | **15.9193 h MC planning; 48 h hard wall cap** |
+
+Every group has three seeds ×10,000 paths; no group-count shortcut pools away guard depth. Three guard groups plus Run-1 on each of four tiers, and three consistency Run-2 groups, make 19 per population. G1/G2 failures can reduce work but cannot license replacement configurations.
+
+Retrospective preparation CPU was not measured. Conservatively debit elapsed active-preparation time ×8 logical CPUs, never call this measured consumption. Own-session creation was October 17 **00:07:02 ET**; the observed **00:34:46 ET** upper-bound debit was ≈3.70 CPU-hours. Unmetered preparation must return within one hour total elapsed (by 01:07:02 ET) or obtain authoritative accounting/reassess before further work; later executor setup consumes the remainder of the same 8-hour allocation. Saved work never funds variants.
+
+**Executor release prerequisite, not implemented in this producer:** prove authoritative cumulative CPU accounting for the owned process tree, including venv-launcher grandchildren and completed workers, and stop owned processes on missing/stale/non-monotone accounting. Windows job accounting is one concrete mechanism; it must be demonstrated on synthetic launch/exit/kill cases before scored release. The existing size-feasibility heartbeat's wall fallback/no-report-never-kill behavior cannot be reused unchanged as aggregate CPU enforcement. Record finished-child CPU exactly once; include parent/controller/setup CPU. Stop before phase/global limits with a reserved shutdown margin; cap worker count, summed job memory at 16 GiB and study disk at 2 GiB, plus 48 wall-hours. Polling/kill latency and metadata overhead must fit the reserve, not overshoot the approved cap. An unavailable guard blocks execution; it does not justify relabeling wall as CPU. No new harness or infrastructure was implemented in this handoff.
+
+## 6. Freeze conditions and next handoff
+
+Before October 23: coordinator reviews the elected solo binding and producer; reconcile any further operator prior-reader exposure; ratify the exact window/calendar/clock construction and its limitations; pin final producer/engine import closure and applicable rule/source-date identity; confirm the reference rerun and exact tier set within the approved budget; carry forward the approved new-study rider scope (§8); obtain full-contract operator ratification/signature; commit and merge the frozen contract through the applicable procedure. Record freeze commit SHA externally, then issue the dated-run handoff. Drafting/committing this DRAFT does not freeze it.
+
+Current deadline dependency is the final review/ratification/commit sequence, not Azure or native availability. The solo producer and binding are concrete; further code changes need refreshed affected evidence. FXIFY can fall out without delaying existing-family work.
+
+**Signature/ratification:** Joshua, October 17, direct coordinator message (§9). **Solo election:** accepted October 17. **Effective freeze:** publication/merge pending. **Run release:** withheld pending executor controls, tier admission and coordinator acceptance.
+
+Preparation evidence: `fp.ps1 doctor` selected `tmp/ops-env/Scripts/python.exe` **3.13.2**, 62 locked packages matched. `fp.ps1 python .cache/orb-mnq-v7-s4-2026-10/check_preparation.py` exited 0: 10/10 historical pins, 4/4 synthetic preflights, v2 threshold/depth pins, required ORB columns present. No replay, scored run or full gate suite ran. The raw Python command does not automatically create the launcher's pytest verification record; a source-bound preparation record is retained separately in the private cache before delivery.
+
+## 7. Producer/clock verification handoff — operator release October 17
+
+Joshua: "Go with your recommendations. Proceed with the solo producer and clock-envelope verification, keep FXIFY conditional, and return the reviewed contract for my ratification before freeze. No scoring until then."
+
+This elected the chart-capture solo binding, normal mode/protection OFF, the envelope construction subject to technical verification and conditional FXIFY. Joshua subsequently approved the corrected resource caps and rider scope (§5/§8). Full-contract ratification/freeze remains held; no unresolved strategy election or missing producer is implied.
+
+**Selected outcome:** a tested solo export-to-series producer, a conditional envelope proof with its limits, and the reconciled reviewable contract.
+**Prerequisites:** source pins and launcher verified; actual-date/window and MAE semantics are inspected without performance summaries; shared parser is reused but not the four-leg builder.
+**Ownership:** this session remains sole writer; coordinator retains combined acceptance; operator retains ratification/freeze.
+**Verification:** synthetic counterexamples for losses, overlap, costs, bad identities/quantities/dates, calendar alignment and private output boundary; real-export validation is hash/schema/structural only. Source-bound focused pytest records; focused self-review and coordinator review (no additional agents).
+**Checkpoint:** report any missing clock semantics or source/calendar authority before claiming gate fidelity; return evidence and contract after focused checks.
+**Return boundary:** reviewed contract for Joshua's ratification; zero scoring, real-export daily-performance generation, replay, MC or freeze.
+
+Build budget: one bounded implementation/review pass, at most two hours, $0. Stop and reassess consequential contradictions or the standing repeated-correction threshold.
+
+Footprint: new `lab/discovery/orb_solo_series.py`, `tests/test_orb_solo_series.py`, this owned contract and ignored private study evidence. No edits to shared builder/scorer/kernel, firm registry, native files or locked sources.
+
+- [x] Inspect real capture structure and exact input binding without P&L aggregation.
+- [x] Write synthetic tests first; record the expected missing-producer failure.
+- [x] Implement minimal hash-first parser adaptation, explicit calendar/quantity validation, conservative daily loss envelope, per-tier costs and custody-safe output manifest.
+- [x] Run focused synthetic tests with the approved launcher; inspect completed records and perform focused self-review.
+- [x] Reconcile this contract and return the proof, limitations, identities and remaining full-contract ratification/freeze boundary.
+
+## 8. Clock proof and approved rider-scope resolution
+
+### Exact envelope and its limits
+
+Provenance: [October 5 builder card §0.5(5–6)](../handoffs/2026-10-05-four-firm-remc-series-builder-card.md); `remc_series_builder.py` builds the same coincident-sum envelope. [TradingView's MAE explanation](https://www.tradingview.com/support/solutions/43000681750-list-of-trades-adverse-excursion/) (read October 17) defines the adverse move relative to entry while a trade is open. That definition supports the following conditional proof; it does not certify this export or venue fills.
+
+For a complete set of same-day lots, let `a_i = abs(reported MAE_i)`. At time `t`, a not-yet-open lot contributes zero; an open lot contributes marked gross P&L `g_i(t) ≥ -a_i`; a closed lot contributes final gross P&L, which the producer also requires to be `≥ -a_i`. Let actual modeled costs paid by time `t` be `c(t)`, with `0 ≤ c(t) ≤ C = sum(2 × qty_i × tier_cost_per_side)`. Then:
+
+`equity(t) - opening_equity = sum(g_i(t)) - c(t) ≥ -sum(a_i) - C = envelope_low`.
+
+Overlap, sequential losing trades and different times of per-lot worst marks do not invalidate this inequality: summing every lot's worst loss is deliberately conservative. Full costs in the low avoid assuming fee timing; daily net separately adds back capture commissions and subtracts that tier's costs once. Original execution/slippage remains in the captured prices/P&L. Reported MAE that fails to cover a final gross loss is **rejected**, never expanded/repaired to force acceptance. Decimal comparison avoids a tolerance waiver for small uncovered losses.
+
+Necessary assumptions: the accepted export accounts for every traded lot once, quantities represent complete elected lots, open-trade MAE has the stated meaning/currency/size basis, all positions close within the same NY day/CME trade date, and modeled costs are nonnegative and complete. Strict row pairing/duplicates, quantity, commission, chronology/DST, session and final-loss checks reject observable violations. Missing intra-trade marks or omitted trades cannot be disproved from trade-list rows alone; completeness/MAE fidelity rests on accepted capture provenance, not a new replay or tick reconstruction. The proof is conditional on those assumptions.
+
+`core/mc/simulation.py` tests `min(close_equity, opening_equity + low)` against its barrier; EOD peaks and realized-day daily-loss logic remain unchanged. This proof therefore covers the supplied model's low-equity channel only. It does **not** repair intraday peak ratchets (retain F2 optimism), daily-loss timing, margin/capacity/takeover on resampled histories, venue rules or actual live fills. Capture margin/execution behavior is retained in the historical trades, not re-simulated at each resampled account equity. Source-calendar consistency is not new primary venue verification.
+
+### Actual calendar policy proposed for the signed contract
+
+The captured bounds are September 1, 2022 (Thursday) to September 1, 2026 (Tuesday). Retain exactly **September 5, 2022 through August 28, 2026**, the complete actual Monday–Friday weeks strictly within those observed bounds. Include every weekday, holiday/no-trade weekdays as zero rows. Disclose excluded boundary trade IDs privately; no synthetic padding outside observed bounds, source-date relabeling, outcome-based trimming or additional look-back/window variant. Every retained entry remains inside the pinned Pine date filter; actual export timestamps are NY wall time with DST. Same civil-day validation makes the CME 18:00 roll agree for these lots; crossings and late exits are rejected. This complete-week policy is proposed for ratification, not silently frozen by implementation.
+
+The retained I-20 reference panel is a distinct non-candidate identity: January 6, 2020 (Monday) through July 1, 2026 (Wednesday), 1693 weekday rows. Its existing paired-week helper retains 1690 rows through June 26, 2026 and drops the final three-row partial week. Make that effective reference window explicit in the frozen executor; do not align it to the solo window or change its historical construction to improve discrimination. Date continuity is audited without aggregating its P&L.
+
+### Approved candidate-specific scope resolution — October 17
+
+**Apply the canonical regime gate's declared scope and the [accepted August 24 forward rule](../../adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md) to this fresh solo study: do not import the old book's nonblocking regime rider.** This study changes no locked risk constants and makes no risk-constant LOCK recommendation. Keep the §4 main scoring criteria, honest-clock requirement, geometry/depth, historical rider results and all prior verdicts intact. **No G8 reliance/admission follows from this bounded study**; its intake requirements remain separately unresolved.
+
+The October 2 prior-study prereg I-21/O-10 expressly records Joshua's later October 5 election of candidate #1 §6's rider. That prior-study ruling is not erased or retroactively invalidated. v2 §7(7) also retains its inherited text. Joshua's October 17 approval resolves this fresh study's scope explicitly; it is not an assertion that #864 had already waived a requirement. No rider runs or hidden reserve are included in the approved corrected table.
+
+**Approved narrow rider/budget disposition:** apply the accepted canonical scope rule to this fresh study and do not import the prior book's nonblocking regime rider; retain the main §4 criteria and all historical verdicts. No G8 reliance/admission follows from this study. Retain the 42 aggregate CPU-hour cap with the 8/16/16/2 allocation, one reference rerun and no rider runs. Scoring stays held until the full contract is ratified and frozen and the executor release has demonstrated resource controls.
+
+**Approval evidence:** Joshua's direct message `01a1482a-78c6-7fd0-8f30-2fde80465d6c` in coordinator turn `01a1482a-6e28-7bb3-a045-9b085d0c5269`, verified by this owner with `read_thread`: "I approve the ORB rider-scope recommendation and corrected 42 CPU-hour budget. Finish synthetic verification and independent review, then bring back the freeze-ready contract before any scoring." The approval is recorded here; producer/tests/private binding bytes are held stable for coordinator review.
+
+**Full-contract ratification, separate and now ready after technical review:** ratify the disclosed complete-week window, conditional MAE proof/limitations, elected resolved configuration/producer/import/rule identities and frozen tier set; attest any additional operator prior-reader exposure (historical unknown K remains explicitly unknown); then instruct the applicable freeze procedure. The existing narrow rider/budget approval did not itself freeze this file.
+
+### Verification and review package
+
+Starting revision remains `3d898ecd7e697a567ffda2e941dc73cf20246d9c`, primary dirty checkout. Changed study-owned files are this draft, `lab/discovery/orb_solo_series.py` and `tests/test_orb_solo_series.py`; all bindings/audits remain ignored. No shared engine/builder/registry/native or locked-source edits.
+
+The first expected missing-module failure is recorded at `.cache/fp-verification/20261017T042514Z-e49476561ccf/record.json`; it also exposed a sandbox-temp cleanup permission error. Study-local TEMP/TMP removed that environmental obstruction without a harness change. A near-zero uncovered-loss counterexample then demonstrated the unsafe tolerance; strict decimal validation closes both CSV and direct-builder entry paths. A separate direct-builder session bypass counterexample was added and repaired using the shared CME roll/late-close constants. These are synthetic failures retained as red evidence, not passing checks.
+
+The intermediate 47-case run completed at `.cache/fp-verification/20261017T042954Z-a7e58d9cca5e/record.json`, exit/verification 0, source stable. It covered the new producer, existing parser/builder regressions and dated-pair consumer. Final focused verification and independent coordinator review are recorded in the return below; intermediate results are not substituted after code changes.
+
+**Independent-review R1 correction:** the shared parser prefers Exit quantity and permits Entry fallback, which could conceal a mismatched or blank raw pair. Four counterexamples reproduced that failure at `.cache/fp-verification/20261017T044651Z-942b95daf5ad/record.json`. The owned adapter now requires both raw rows to contain the exact elected complete quantity; shared builder unchanged. The actual pinned capture's raw pairs pass this structural check, retained as `review-r1-quantity.private.json`, with no P&L aggregation. Related trade-number/side/pair/session invariants remain covered; monetary Exit/Entry fallback is not redefined as a duplicate-lot rule.
+
+**Final focused code verification after R1:** `fp.ps1 --workers 2 python -m pytest tests/test_orb_solo_series.py tests/test_remc_series_builder.py tests/test_prop_survivor_intraday_channel.py::test_paired_blocks_share_calendar_indices -q`, with study-local TEMP/TMP and validated Python 3.13.2, completed **53 passed, 0 failed/errors/skips**. Record `.cache/fp-verification/20261017T044813Z-f3fd80039b8b/record.json`: completed, exit/verification 0, source_stable/capture_complete true. Producer SHA-256 `6cafa36f91d969a1000c23a42cc0c8a584e59bcf6479cc902f5877ff42b93ae4`; tests `20f3b4f531d89307bad457fec340481cd31730987c3e42008374ec6740e08324`. Subsequent edits are this documentation/private evidence only; code/test hashes remain equal to the passing record. Full suite not run. The earlier 49-case record is superseded for current-code acceptance, retained as history.
+
+**Independent review:** **ACCEPTED for technical preparation, October 17**, by the existing coordinator `01a142a1-3172-7dd2-a6d8-ff1f0e67634f`. R1's four raw-quantity counterexamples were verified and the correction accepted; no remaining producer findings. The coordinator independently verified the final 53-case record/artifact hashes, 17-file executed import closure, canonical rule payload and normalized review manifest. The conditional envelope/actual-week policy, source binding, historical disclosure and executor admission/resource controls were reviewed as the full-contract ratification proposal. This is technical acceptance, not operator ratification, freeze, G8 reliance or scored release.
+
+**Latest structural receipt:** `.cache/orb-mnq-v7-s4-2026-10/producer-final-structural-verification/record.json` (October 17 00:52 ET), completed, child/verification exit 0, source_stable/capture_complete true. It rechecked the current R1-corrected code against the 53-case record, raw capture pairs, unchanged private binding, actual calendars, 17-file closure/rule rows and approved budget status. The old `producer-structural-verification` receipt is historical 49-case evidence, not the latest-code receipt. Final review-disposition edits change this documentation/manifest only; code/tests/binding stay byte-identical. The final draft/manifest SHA-256 is returned externally to avoid self-referential hashes.
+
+## 9. Ratification and freeze/executor-readiness handoff — October 17
+
+**Ratification evidence:** verified direct human message `01a1483c-7f7b-7db0-9f1e-566d3c20bf89` in coordinator turn `01a1483c-7665-77e3-94f1-2067e0b8febf`: "I ratify the ORB contract. Have the existing owner complete the freeze and verify executor controls within the 42 CPU-hour cap. Bring back scoring readiness before any run." Ratified starting document SHA-256 `0afb5baba77d46e98efb3e93743457945afb45eb2959c63f7c3568eb142afdf9`. Scientific choices unchanged. Earlier pending-ratification statements describe the preparation stage, discharged by this entry. No additional operator exposure was supplied; historical unknown K remains accepted as disclosed, never converted to a fabricated zero-exposure attestation.
+
+**Selected outcome:** reproducible public freeze publication and a concrete scoring-readiness verdict after synthetic executor-control evidence; zero scoring.
+**Prerequisites:** accepted producer/tests/binding/import/rule pins reverified unchanged in primary; public isolation at #864 merge; private data/sources stay in primary. Preserve the current four tiers; FXIFY is not admitted or awaited.
+**Ownership:** same sole writer, existing coordinator combined acceptance; Joshua retains per-PR merge approval.
+**Verification:** reuse unchanged 53-case evidence. Inspect the actual Windows Job suspended-launch/accounting boundary with source-free processes; prove the remaining CPU/tree/termination/memory/disk/wall/worker-role/admission/configuration controls before any scored release. No mock supplies a missing host capability.
+**Checkpoint:** accounting start October 17 01:03:30.918 ET; charge new unmetered active elapsed ×8 against the remaining 1.35 CPU-hours, retaining the prior 6.65. Return before that allowance with shutdown margin; prospective measurements do not erase prior charges.
+**Return boundary:** READY only after combined evidence, otherwise NOT_READY with exact missing gates or budget stop. Publication may be ratified/committed but is not merged/effectively frozen until the approved PR merges. No merge or scoring authority inferred.
+
+Public isolation: managed worktree `orb-s4-executor-controls`, branch `codex/orb-s4-freeze-controls`, base `a5c71338ff387d7bb3110b2e15a7aa4752ad72be`; only the three public reviewed study files are transferred. Primary's unrelated dirty branch/files remain intact. Proposed minimal new files `lab/discovery/orb_solo_executor.py` and `tests/test_orb_solo_executor.py` are not claimed implemented until their tests/evidence exist.
+
+Initial native observation: existing `scripts/agent_handoff.py` WindowsJob/suspended-launch functions successfully account a source-free subprocess/grandchild tree; Job user+kernel CPU 0.28125 s, separate controller CPU 0.015625 s, terminal ActiveProcesses=0, monotone samples. This establishes normal-completion accounting only. Peak Job membership includes venv launchers; membership count is not the count of scoring workers. Interruption/kill, hard/stale/decreasing accounting, worker-role bounds, aggregate resource guards, bound-configuration refusal and executor tier/G1/G2 assertions remain unproved. No readiness claim follows from this probe.
+
+Private setup evidence: `.cache/orb-mnq-v7-s4-2026-10/freeze-setup/accounting-probe.private.json`; the initial synthetic command quoting failure was corrected once and is not a control acceptance result. The Job was terminated/closed in cleanup; no scoring or real series was generated.
+
+**Publication/readiness return:** the normal isolated commit was refused by the mandatory `state-currency` hook: STATE's weekly next deadline 2026-10-16 is past on October 17 ET. Earlier mandatory hooks passed; private-source/heavy-artifact absence was disclosed as expected worktree warnings. No commit/PR was created and no hook was bypassed. STATE's actual obligation/roll belongs with the coordinator, outside this study footprint; it was not changed or silently copied from dirty primary work. Preserve the staged public candidate for resumption after that dependency is resolved.
+
+**Scoring readiness: NOT_READY.** Publication/merge freeze and the unproved executor controls/admission assertions above remain gates. The successful normal-completion Job accounting probe is insufficient to release them. The setup phase's remaining budget is a stop condition, not permission to weaken evidence, borrow from candidate/reference phases or manufacture readiness.
