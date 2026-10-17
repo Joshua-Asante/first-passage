@@ -564,18 +564,22 @@ FIRM_RULES = {
     }),
 
     # Futures ONLY; never restore the retired FX/CFD "FXIFY" key or its defaults.
-    # Provisional input: PR #867 at 768b71bab112a79584d30592dad5e742b76ffdd1,
+    # Source: PR #867 at 2d5bc8f69f7536c9fb6a3856f8559a1f3ddfc395,
     # docs/notes/2026-10-17-fxify-futures-flex-150k-evaluation-rule-sheet.md.
     # FAQ figures are reported verified there, not independently accepted here.
-    # Hold final field acceptance / ADR §4 counting until Claude's revision is
-    # reconciled. Preflight requires explicit provisional opt-in meanwhile.
+    # Reconciled 2026-10-17 with that revision: the eval lock is at the starting
+    # balance (sheet B1; no-lock is optional stress S1 = 1_000_000.0), and the
+    # news policy is an open conflict (sheet D1), so no news field is encoded.
+    # Still provisional: commissions are unpublished and the FAQ capture is not
+    # byte-verified. Hold final field acceptance / ADR §4 counting until those
+    # clear. Preflight requires explicit provisional opt-in meanwhile.
     "FXIFY_Futures_Flex_150K": {
         "rules_status": "provisional",
-        "rules_source_revision": "768b71bab112a79584d30592dad5e742b76ffdd1",
+        "rules_source_revision": "2d5bc8f69f7536c9fb6a3856f8559a1f3ddfc395",
         "starting_balance": 150_000,
         "dd_type": "trailing_locking",  # fixed-$ EOD trail, NOT %-of-peak
         "max_dd_pct": 3.0,              # $4,500, initial floor $145,500
-        "dd_lock_offset_usd": 1_000_000.0,  # C1: no eval lock; sensitivity = 0.0
+        "dd_lock_offset_usd": 0.0,      # B1: locks at the starting balance; stress S1 = 1_000_000.0
         "daily_loss_pct": None,         # engine hard bust must NOT model a soft stop
         "soft_daily_loss_pct": 2.0,     # $3,000 read-only; bundle removes it
         "profit_target_pct": 6.0,       # $9,000
@@ -585,7 +589,6 @@ FIRM_RULES = {
         "micro_contract_cap": 100,      # ordinary 1:10 micros; MBT/MET/SIL differ
         "inactivity_max_idle_days": None,  # 14 calendar days + 7 grace != engine bdays
         "cost_per_side_usd": None,      # unknown: do not borrow another venue's fees
-        "news_trading": False,          # C2 conservative automated-entry assumption
     },
 
     # Personal Tradovate account -- self-funded lane, ADR 2026-10-09 owed item 2.

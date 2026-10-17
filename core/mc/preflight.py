@@ -164,9 +164,9 @@ def firm_kwargs(
     gating); None runs consistency-off (Run-1).
 
     Rows marked ``rules_status="provisional"`` require ``allow_provisional_rules``
-    for plumbing/sensitivity work. This is not final field acceptance. FXIFY
-    Futures' pinned sheet still awaits reconciliation with Claude's revision;
-    soft DLL, expiry, execution filters and costs are outside this smoke test.
+    for plumbing/sensitivity work. This is not final field acceptance; the
+    row's comment names what still holds it. Soft DLL, expiry, execution
+    filters and costs are outside this smoke test.
 
     ``allow_unsourced_inactivity`` is the explicit override for an inactivity-ON
     run against a tier whose ``inactivity_rule_sourced`` is False. **Dormant by
@@ -185,7 +185,7 @@ def firm_kwargs(
     if f.get("rules_status") == "provisional" and not allow_provisional_rules:
         raise ValueError(
             f"{firm_key!r} has provisional rules at {f['rules_source_revision']}; "
-            "reconcile Claude's revision before final acceptance, or pass "
+            "final field acceptance is held (see the row's comment), or pass "
             "allow_provisional_rules=True for provisional plumbing/sensitivity work."
         )
     if f.get("profit_target_pct") is None:

@@ -1,6 +1,6 @@
 # FXIFY Futures Flex 150K — evaluation-stage rule sheet (2026-10-17)
 
-**Scope:** Flex plan, $150,000, **evaluation stage** (the tier in [four-firm addendum 2026-10-16 §3](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-16--operator-rulings-50-ceiling-fresh-4-candidate-orb-mnq-v7-fxify-futures-flex-registration-accepted)). This is the dated primary-source re-read for condition (c). It changes no firm_rules row and no strategy; conditions (a) and (b) stay with their owners.
+**Scope:** Flex plan, $150,000, **evaluation stage** (the tier in [four-firm addendum 2026-10-16 §3](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-16--operator-rulings-50-ceiling-fresh-4-candidate-orb-mnq-v7-fxify-futures-flex-registration-accepted)). This is the dated primary-source re-read for condition (c). It changes no strategy. Its row is `FIRM_RULES["FXIFY_Futures_Flex_150K"]` (provisional; reconciled with this revision 2026-10-17).
 
 **Sources, read 2026-10-17:**
 - fxifyfutures.com FAQ pages, every one stamped "Updated on September 28, 2026". They were read through a rendering fetch that returns quoted extracts, because Cloudflare blocks scripted reads; they are not checked byte-for-byte. Cited as `faq:<slug>`.
