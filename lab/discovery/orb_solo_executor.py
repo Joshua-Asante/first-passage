@@ -8,6 +8,7 @@ the scoring adapter supplies those bounds this module is not scoring readiness.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from collections import deque
 from datetime import time as clock_time
 import hashlib
 import json
@@ -208,6 +209,9 @@ def admit_tier(tier, trades, *, micro_cap, g1, cost_multiple):
 
 
 def _native_types(job):
+    cached=getattr(job,'_orb_native_types',None)
+    if cached is not None:
+        return cached
     c, w = job._ctypes, job._wintypes
     class Basic(c.Structure):
         _fields_ = [('process_time', c.c_int64), ('job_time', c.c_int64),
@@ -222,7 +226,8 @@ def _native_types(job):
     class Memory(c.Structure):
         _fields_ = [('cb', w.DWORD), ('faults', w.DWORD)] + [(name, c.c_size_t) for name in (
             'peak_ws', 'ws', 'peak_paged', 'paged', 'peak_nonpaged', 'nonpaged', 'pagefile', 'peak_pagefile', 'private')]
-    return Extended, Memory
+    job._orb_native_types=(Extended,Memory)
+    return job._orb_native_types
 
 
 def _set_native_limits(job, memory_bytes):
@@ -246,9 +251,12 @@ def _native_sample(job):
             raise StopExecution('authoritative Job accounting unavailable')
     kernel = job._kernel
     kernel.GetCurrentProcess.restype = w.HANDLE
-    psapi = c.WinDLL('psapi', use_last_error=True)
-    psapi.GetProcessMemoryInfo.argtypes = [w.HANDLE, w.LPVOID, w.DWORD]
-    psapi.GetProcessMemoryInfo.restype = w.BOOL
+    psapi=getattr(job,'_orb_psapi',None)
+    if psapi is None:
+        psapi=c.WinDLL('psapi',use_last_error=True)
+        psapi.GetProcessMemoryInfo.argtypes=[w.HANDLE,w.LPVOID,w.DWORD]
+        psapi.GetProcessMemoryInfo.restype=w.BOOL
+        job._orb_psapi=psapi
     memory = Memory()
     memory.cb = c.sizeof(memory)
     if not psapi.GetProcessMemoryInfo(kernel.GetCurrentProcess(), c.byref(memory), c.sizeof(memory)):
@@ -270,7 +278,7 @@ def _disk_bytes(root):
     return total
 
 
-def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None):
+def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None, sample_capacity=4096):
     """Run at most two exact worker-role commands; descendants stay in one Job.
 
     This low-level boundary deliberately has no CLI or scoring authorization.
@@ -279,6 +287,8 @@ def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None):
     """
     started, controller_start = time.monotonic(), time.process_time()
     limits.validate()
+    if type(sample_capacity) is not int or not 1 <= sample_capacity <= 4096:
+        raise StopExecution('invalid bounded sample capacity')
     if not 1 <= len(commands) <= 2 or any(not cmd or not all(isinstance(arg, str) for arg in cmd) for cmd in commands):
         raise StopExecution('one or two explicit worker commands required')
     if os.name != 'nt':
@@ -295,11 +305,12 @@ def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None):
     output.mkdir(parents=True, exist_ok=False)
     guard = AccountingGuard(limits)
     guard.observe(Sample(0, 0, 0, 0, 0))
-    processes, handles, samples = [], [], []
+    processes, handles, samples = [], [], deque(maxlen=sample_capacity)
+    sampling=dict(observations=0,first=None,memory_bytes_max=0,active_processes_max=0)
     job = None
     receipt = dict(status='stopped', reason='incomplete setup', limits=asdict(limits),
                    command_sha256=hashlib.sha256(json.dumps(commands).encode()).hexdigest(),
-                   pins=pins, accounting_complete=False, active_processes=None, samples=samples)
+                   pins=pins, accounting_complete=False, active_processes=None)
     last_job_cpu = 0
     try:
         job = WindowsJob.create()
@@ -311,10 +322,17 @@ def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None):
             processes.append(_spawn_windows_suspended_in_job(command, Path(cwd), stdout, stderr, job))
         while True:
             verify_identity(pins)
-            last_job_cpu, memory, active = _native_sample(job)
-            sample = Sample(time.monotonic()-started, last_job_cpu+time.process_time()-controller_start,
+            measured_cpu, memory, active = _native_sample(job)
+            sample = Sample(time.monotonic()-started, measured_cpu+time.process_time()-controller_start,
                             memory, _disk_bytes(output), active)
+            if any(not math.isfinite(value) or value < 0 for value in asdict(sample).values()):
+                raise StopExecution('invalid authoritative accounting')
+            last_job_cpu=measured_cpu
             samples.append(asdict(sample))
+            sampling['observations']+=1
+            sampling['first']=sampling['first'] or asdict(sample)
+            sampling['memory_bytes_max']=max(sampling['memory_bytes_max'],memory)
+            sampling['active_processes_max']=max(sampling['active_processes_max'],active)
             guard.observe(sample)
             if active == 0 and all(p.poll() is not None for p in processes):
                 codes = [p.wait(timeout=1) for p in processes]
@@ -333,7 +351,7 @@ def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None):
                 while job.active_processes() and time.monotonic() < deadline:
                     time.sleep(.01)
                 final_cpu, _, active = _native_sample(job)
-                if final_cpu < last_job_cpu or active:
+                if not math.isfinite(final_cpu) or final_cpu < last_job_cpu or active:
                     raise StopExecution('terminal accounting or tree shutdown failed')
                 receipt.update(job_cpu_seconds=final_cpu, active_processes=active, accounting_complete=True)
             except Exception as exc:
@@ -355,7 +373,7 @@ def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None):
         controller_cpu = time.process_time()-controller_start
         receipt.update(controller_cpu_seconds=controller_cpu,
                        cpu_seconds=receipt.get('job_cpu_seconds', last_job_cpu)+controller_cpu,
-                       elapsed=time.monotonic()-started)
+                       elapsed=time.monotonic()-started,samples=list(samples),sampling=sampling)
         if not receipt['accounting_complete']:
             receipt['status'] = 'stopped'
         if ledger is not None:
@@ -363,5 +381,10 @@ def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None):
                 receipt['budget'] = ledger.finish(receipt['cpu_seconds'], accounting_complete=receipt['accounting_complete'])
             except Exception as exc:
                 receipt.update(status='stopped', reason=f'budget journal not sealed: {exc}')
-        (output/'receipt.json').write_text(json.dumps(receipt, indent=2, allow_nan=False), encoding='utf-8')
+        data=json.dumps(receipt,separators=(',',':'),allow_nan=False).encode('utf-8')
+        if len(data)>2*1024**2:
+            raise StopExecution('bounded receipt size exceeded; no success publication')
+        with (output/'receipt.json').open('xb') as handle:
+            handle.write(data)
+            handle.flush(); os.fsync(handle.fileno())
     return receipt

@@ -295,3 +295,34 @@ def test_completed_process_handles_do_not_accumulate(tmp_path):
                            pins={str(Path(__file__)):hashlib.sha256(Path(__file__).read_bytes()).hexdigest()})
         assert result['status'] == 'completed'
     assert count() <= before+1
+
+
+@pytest.mark.skipif(os.name != 'nt',reason='real native bounded sampling')
+def test_long_lived_sampling_keeps_a_bounded_tail(tmp_path):
+    pins={str(Path(__file__)):hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+    result=run_owned([[sys.executable,'-c','import time; time.sleep(.2)']],cwd=tmp_path,
+                     output=tmp_path/'bounded',pins=pins,
+                     limits=replace(Limits(),poll_seconds=.01),sample_capacity=2)
+    assert result['status']=='completed'
+    assert len(result['samples'])==2 and result['sampling']['observations']>2
+    assert result['sampling']['first']['elapsed']<result['samples'][0]['elapsed']
+
+
+@pytest.mark.skipif(os.name != 'nt',reason='actual refusal and cleanup')
+def test_nonfinite_native_accounting_produces_a_failed_receipt(tmp_path,monkeypatch):
+    import discovery.orb_solo_executor as executor
+    monkeypatch.setattr(executor,'_native_sample',lambda job:(float('nan'),0,1))
+    result=run_owned([[sys.executable,'-c','import time; time.sleep(30)']],cwd=tmp_path,
+                     output=tmp_path/'invalid',pins={str(Path(__file__)):hashlib.sha256(Path(__file__).read_bytes()).hexdigest()})
+    assert result['status']=='stopped' and not result['accounting_complete']
+    assert json.loads((tmp_path/'invalid/receipt.json').read_text())['status']=='stopped'
+
+
+def test_native_structure_metadata_is_reused_per_job():
+    import ctypes
+    from ctypes import wintypes
+    from types import SimpleNamespace
+    from discovery.orb_solo_executor import _native_types
+    job=SimpleNamespace(_ctypes=ctypes,_wintypes=wintypes)
+    first=_native_types(job)
+    assert _native_types(job) is first
