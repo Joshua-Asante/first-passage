@@ -139,6 +139,7 @@ def firm_kwargs(
     consistency: float | None = None,
     account: float | None = None,
     allow_unsourced_inactivity: bool = False,
+    allow_provisional_rules: bool = False,
 ) -> Dict[str, object]:
     """Build the simulate_path kwargs for a FIRM_RULES tier, None-safely.
 
@@ -162,6 +163,11 @@ def firm_kwargs(
     an explicit existing argument: it sets the eval consistency fraction (Run-2
     gating); None runs consistency-off (Run-1).
 
+    Rows marked ``rules_status="provisional"`` require ``allow_provisional_rules``
+    for plumbing/sensitivity work. This is not final field acceptance; the
+    row's comment names what still holds it. Soft DLL, expiry, execution
+    filters and costs are outside this smoke test.
+
     ``allow_unsourced_inactivity`` is the explicit override for an inactivity-ON
     run against a tier whose ``inactivity_rule_sourced`` is False. **Dormant by
     design at HEAD:** no shipped tier currently carries that flag (do not
@@ -176,6 +182,12 @@ def firm_kwargs(
             f"{firm_key!r} not in FIRM_RULES; known keys: {sorted(FIRM_RULES)}"
         )
     f = FIRM_RULES[firm_key]
+    if f.get("rules_status") == "provisional" and not allow_provisional_rules:
+        raise ValueError(
+            f"{firm_key!r} has provisional rules at {f['rules_source_revision']}; "
+            "final field acceptance is held (see the row's comment), or pass "
+            "allow_provisional_rules=True for provisional plumbing/sensitivity work."
+        )
     if f.get("profit_target_pct") is None:
         raise EngineUnsupported(
             f"{firm_key!r} has no profit target: simulate_path is pass/bust shaped "
@@ -193,6 +205,12 @@ def firm_kwargs(
             f"{HISTORICAL_CHALLENGE_BALANCE})"
         )
     dlp = f.get("daily_loss_pct")
+
+    if not inactivity_off and f.get("inactivity_max_idle_days") is None:
+        raise EngineUnsupported(
+            f"{firm_key!r} has no business-day inactivity limit: calendar-day "
+            "rules and grace periods need a separate model; use inactivity_off=True."
+        )
 
     # Absorbing-barrier guard: a tier whose activity rule was never sourced must
     # not silently produce an inactivity figure. Absent the key => sourced (every
@@ -246,7 +264,9 @@ def firm_kwargs(
     return kwargs
 
 
-def assert_engine_ready(firm_key: str) -> Dict[str, object]:
+def assert_engine_ready(
+    firm_key: str, *, allow_provisional_rules: bool = False,
+) -> Dict[str, object]:
     """Constraint-D gate: prove ``firm_key`` threads into simulate_path cleanly.
 
     Builds firm_kwargs and runs one deterministic simulate_path over a synthetic
@@ -255,7 +275,7 @@ def assert_engine_ready(firm_key: str) -> Dict[str, object]:
     returns the built kwargs on success. Call this on each pre-registered tier
     before trusting its re-MC (recommendation §2.1 G3).
     """
-    kwargs = firm_kwargs(firm_key)
+    kwargs = firm_kwargs(firm_key, allow_provisional_rules=allow_provisional_rules)
     # 12 idle days × 3 synthetic legs: enough to walk the barrier branches; with
     # inactivity disabled it terminates at horizon_cap without raising.
     zero_path = np.zeros((12, 3), dtype=float)

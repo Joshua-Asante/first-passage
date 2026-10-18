@@ -3,13 +3,14 @@
 import firm_rules
 
 
-def test_automation_friendly_prop_firms_has_four_families():
-    assert len(firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS) == 4
+def test_automation_friendly_prop_firms_includes_provisional_futures_family():
+    assert len(firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS) == 5
     assert set(firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS) == {
         "bulenox",
         "tradeify",
         "myfundedfutures",
         "blusky",
+        "fxify_futures",
     }
 
 
@@ -47,6 +48,11 @@ def test_prop_tiers_carry_cost_per_side():
         for key in tier_keys:
             cfg = firm_rules.FIRM_RULES[key]
             cost = cfg.get("cost_per_side_usd")
+            if key == "FXIFY_Futures_Flex_150K":
+                # #867 does not source commissions. Ordinary preflight is held.
+                assert cfg["rules_status"] == "provisional"
+                assert cost is None
+                continue
             assert isinstance(cost, (int, float)) and 0 < cost < 5, (
                 f"{key}: cost_per_side_usd missing or implausible ({cost!r})"
             )
