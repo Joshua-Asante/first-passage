@@ -962,3 +962,25 @@ operational controls or standing instructions.
   - D5 is closed as a gate, and the unsent five-question follow-up draft is preserved, not sent.
 - **The 11-08 decision rules** stay a draft for the sitting. Branch (b)'s condition is now supported by the evidence and inference above. Branch (c) should point at Q-SFCLEAR-3, not the superseded Q-SFCLEAR-2.
 
+## Addendum 2026-10-19 — no book-lineage configuration has an evidence case for the Tradeify evaluation
+
+**Ruling (Joshua, 2026-10-19, verbatim, given directly in the Claude session that drafted the qualification packet):** "I decline R-2. Record that no book-lineage configuration has an evidence case for the Tradeify eval."
+
+**What was declined.** R-2 of the private Tradeify qualification packet (r5, sha256 `7dad04e9…3933`, not in the repo). It nominated rung R1 for one qualification run from the incumbent evaluation's current state. R1 is FLOOR-HALF with adds off on MYM and MGC, and P0 normal mode in place of the 1%/0.40 book policy ([Q-SFCLEAR-2 §1–§2](../../briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md#2--book-identity-and-the-sizing-tuple-r1)). The packet itself recommended declining: a FAIL would have landed where declining lands, and a PASS would have opened only porting and parity planning.
+
+**Basis (public evidence):**
+- **Declared book:** robust NO-GO at T00 step 12 ([T00 card §8](../../briefs/handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md)).
+- **FLOOR-HALF:** its own test reads FALSIFIED, "the configuration is not adopted" ([#733 §4 H](../../briefs/pre-registration/2026-10-08-tradeify-book-successor-screen-prereg-DRAFT.md#4--hypothesis-falsifier-and-open-operator-decisions)). The verdict was NO-GO under the deciding pessimistic assignment. Its 10-11/12 risk acceptance into T15's F1 lapsed with the 2026-10-16 supersession above.
+- **R1:** never scored on any account path. The committed composition grid ([RESULTS](../../../lab/analysis/c1/tradeify_book_composition_2026-09/RESULTS.md), EXPLORATORY, protection off) has rows for the Aegis leg alone on Select. At the grid's two largest sizes its FULL bust is at or above S1's 5% failure bound, with higher first-half and 2020–2022 busts. Every Select book that adds a leg to the largest Aegis cell busts more on FULL. Those added legs were ORB legs, not R1's.
+
+**Scope:**
+- The finding covers the book lineage on this evaluation: the declared book and its T00 successor rungs, including FLOOR-HALF and R1. No run was made and no trial was added; the T00 ledger stays at K = 12.
+- **Not covered:** ORB MNQ v7 solo, which is paused by Joshua, not failed, and any strategy outside the lineage.
+- **Not four-firm §4 falsifier evidence.**
+- **Unchanged:** the K ledger stays open. Whether draft 11-08 branch (d) applies is left to the sitting.
+
+**Not changed:**
+- the incumbent evaluation stays retained and disarmed, and the weekly preservation trade continues;
+- Tradeify remains an optional separate native lane for a strategy run only at Tradeify;
+- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal in [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), open).
+
