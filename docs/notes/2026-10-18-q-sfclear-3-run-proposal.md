@@ -4,6 +4,8 @@
 
 **Approved 2026-10-18** by Joshua, directly in the proposing Claude session, verbatim: "I approve the Q-SFCLEAR-3 FG and clearance dispatch as proposed in PR #873, within its §6 budget. The coordinator closes the five §5 dispatch items first." The approval covers dispatch only once the five §5 items are closed. The clearance run follows FG PASS only. Joshua still opens VM access for each run.
 
+**Paused 2026-10-19** by Joshua, directly in the deployment coordinator session, verbatim: "Pause Q-SFCLEAR-3 dispatch preparation. Keep PR #873 open and unmerged; NinjaTrader and Tradeify stay the priority." No dispatch-item work proceeds until he lifts the pause.
+
 **Owner:** [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) (FROZEN, F₃ `15bea25`), which incorporates [Q-SFCLEAR-2](../briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md) at F₂ `83867f0` except its §S. Where this note differs from them, they govern.
 
 **Source.** The NinjaTrader pilot candidate inventory (Claude session, 2026-10-18) found that the only pre-registered existing-strategy portfolio test is the three-leg Q-SFCLEAR-3 R1 subset on the personal account. It is conditional and has never been scored. This note turns that finding into one approvable run.
