@@ -425,3 +425,46 @@ Untested and ranked. None is a prerequisite for §5 or a remedy for a failure. E
 - **Values** stay in a private file in the primary checkout.
 
 **Exposure.** The read and its labels are a Q-SFCLEAR-3 exposure entry. That entry names this session and Joshua, as the labels' recipient.
+
+## Addendum 2026-10-19: Step 2 result (labels only)
+
+**Run.** Parts 2a and 2b, under the record above.
+- **Reader and place:** this session, locally in the primary checkout. It used the project launcher (ops environment, Python 3.13.2), with no bytecode written.
+- **Time:** read at 22:59:59Z.
+- **What was read:** the run directory's printed outputs and journals.
+- **What was not done:** nothing was replayed, and nothing was written into the run directory.
+
+**Integrity checks.** All nine passed:
+- the pinned `verdict.py`;
+- the artifact hashes;
+- the #733 values-block hash;
+- segment-journal heads against `attestation.json`;
+- every plan key present;
+- the recorded verdict reproduced;
+- `results.json` reproduced byte for byte;
+- median inputs equal to the recorded tallies.
+
+The reproduction re-evaluates the existing outcomes with `verdict.evaluate`. It yields no new statistic: it only proves that the median was derived from the same outcomes the verdict used.
+
+**Labels** (the ratified rule; pessimistic assignment; FULL, H1 and H2):
+
+| Basis | D = 252 sessions | D = 126 sessions |
+|---|---|---|
+| FundedNext Flex 150K | **UNCLEAR** | **NOT PROMISING** |
+| FXIFY Flex 150K | **UNCLEAR** | **NOT PROMISING** |
+
+Rounding the FundedNext ratio to 1.33 instead of 8,000/6,000 changes no label.
+
+**Which label binds.** It is set by CME ticket #04738415, still unanswered:
+- a confirmed fee ≤ $500 a month, or none, selects D = 252, giving **UNCLEAR** on both bases. Joshua decides whether any Step 3 item is worth funding.
+- a higher fee selects D = 126, giving **NOT PROMISING** on both bases. That is a research-budget recommendation to stop investing in FLOOR-HALF, not a falsification.
+
+Neither label carries evidential weight. The data are in-sample and the configuration is selected.
+
+**Exposure entry** (owed to the T00 lineage manifest and to Q-SFCLEAR-3's exposure log; to be written there by their owners):
+- **Readers:** session local_c36ee23a, and Joshua as the labels' recipient.
+- **Time:** 2026-10-19T22:59:59Z.
+- **Artifacts:**
+  - `results.json` `f781c716…f495`, `REPORT.md` `42c008d1…6b6b` and `attestation.json` `96af7491…eae`;
+  - the s-journals, pinned by the attestation heads.
+- **Private record:** `local_artifacts/flex-qualification-2026-10/step2-read-20261019.private.json` (`8a77bdc4…d379`). The read script beside it is `d64efd11…abd`.
