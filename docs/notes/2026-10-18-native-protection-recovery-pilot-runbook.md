@@ -151,3 +151,157 @@ Operator rulings, 2026-10-18 (Joshua, in session):
 - **D-N1:** "the NinjaTrader strategy be allowed to close positions itself". Adopted as the bounded incident close in §2.8. Before P2 can rely on it, U-3, U-5, U-9 and U-17 must pass.
 - **D-N2:** "strategies are ranked by expected value, the higher ranked strategy gets priority. this can be done simply". Adopted in §2.1 item 2. The rank values come from portfolio selection. How two strategies on one instrument are handled, and every `⟨L-…⟩` value, also wait for portfolio selection.
 - **D-N3:** "running several strategies should not be a problem as long as it doesn't violate their rules". Adopted in §2.1 item 1. The selected firm's hedging, news and automation terms are checked at its admission.
+
+## 6. Shared account-risk interface
+
+*Added 2026-10-18; same proposal status as above.* §2 states the rules; this section states the contract every account owner implements. One contract serves three uses: the NinjaScript owner (P1, P2); a pure Python reference model, the P0 oracle ([build card](../briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md)); and the offline check of exported journals (§2.7 step 7), where replaying a session's journal through the reference model must reproduce every decision, command and latch. It generalizes the laws of the Python book reducer (`ops/c1_rail/book_capacity.py`: reserve before send, whole or refuse, partial fills move only filled quantity, a terminal must match its fills, invalid evidence adds a block and never a release) from the fixed four-leg book to configured legs and limits.
+
+### 6.1 Roles
+
+| Role | May | May not |
+|---|---|---|
+| Strategy leg | Emit intents (§6.3) for its own leg | Send, modify or cancel any order; read another leg's state |
+| Account owner (one per account) | Decide intents; send every order; own protection; latch | Unlatch within the session (A11.2); clip a request |
+| Broker adapter | Deliver facts with broker order and execution IDs | Synthesize a fact the broker did not report |
+| Operator | Start the session; give GO; recover uncertain exposure | — |
+
+### 6.2 Configuration
+
+One `AccountRiskConfig` per account instance, bound by the portfolio-selection record. Its canonical hash, `config_id`, is written on every journal record. Every limit is a field, never a constant.
+
+| Field | Meaning | Bound by |
+|---|---|---|
+| `account_id`, `instance` | The only account the owner may touch | Account admission |
+| `legs[]` | `leg_id`, `instrument`, `order_symbol`, `micro_equiv`, `point_value`, `entry_side`, `rank`, `adds_allowed` | Portfolio selection |
+| `same_instrument` | `refuse` or `serialize` (§2.1 item 3) | Portfolio selection |
+| `cap_micro` | `⟨L-cap⟩` | §2.2 |
+| `instrument_cap{}` | `⟨L-inst⟩` per instrument | §2.2 |
+| `max_legs` | `⟨L-legs⟩` | §2.2 |
+| `max_open_risk` | `⟨L-risk⟩`, account currency | §2.2 |
+| `day_loss_stop` | `⟨L-day⟩`, recorded with `⟨L-day-margin⟩` | §2.4 |
+| `unprotected_max` | `⟨L-unprot⟩` | §2.3 |
+| `disconnect_max` | `⟨L-disc⟩` | §2.5 |
+| `outcome_window` | Time after a send with no acknowledgment before the order is unknown | Pilot card |
+| `fact_max_age` | Maximum age of a snapshot or P&L reading used for a decision | Pilot card |
+| `barrier_timeout` | How long a bar batch waits for every leg's report | Pilot card |
+
+Loading rejects the configuration, and the owner stays `HALTED`, if any field is unbound, ranks are not unique, a `micro_equiv` or `point_value` is not positive, or two legs share an instrument with opposite `entry_side` or without `same_instrument` bound.
+
+### 6.3 Inputs
+
+Every input carries `event_id`, a strictly increasing `sequence`, `as_of`, `account_id`, owner epoch and `config_id`. An identical replayed event is a no-op; the same `event_id` with different content is a block (§6.8).
+
+| Input | Fields | From |
+|---|---|---|
+| `BarReport` | `leg_id`, `bar_time`, `intents[]` (may be empty) | Strategy leg |
+| `EntryIntent` | `intent_id`, `leg_id`, `bar_time`, `kind` (`BASE`/`ADD`), `quantity`, `reference_price`, `stop_price`, `base_order_id` for an add | Strategy leg, inside a `BarReport` |
+| `ExitIntent` | `intent_id`, `leg_id`, `quantity` | Strategy leg |
+| `Ack` | `order_id`, `client_tag` | Broker |
+| `Fill` | `execution_id`, `order_id`, `quantity`, `price` | Broker |
+| `Terminal` | `order_id`, `status` (`filled`/`cancelled`/`rejected`), `cumulative_filled` | Broker |
+| `ProtectionState` | `order_id`, `state` (`working`/`rejected`/`terminal`), `quantity`, `stop_price` | Broker |
+| `Connection` | `up` or `down` | Adapter |
+| `Snapshot` | `source` (`A` native, `B` firm platform), positions, working orders, executions since the journal watermark | Adapter |
+| `AccountPnl` | Realized plus open P&L | Adapter |
+| `Tick` | `now` | Clock |
+| `OperatorStart` | Session ID and GO reference | Operator |
+
+### 6.4 Outputs
+
+Before any command the owner appends the decision and the command to its journal (write-ahead). A failed write sets the dirty epoch and sends nothing (§2.6).
+
+| Output | Meaning |
+|---|---|
+| `Decision` | `intent_id`, `ADMITTED` or `REFUSED`, reason (§6.6) |
+| `SubmitEntry` | Exactly the admitted quantity; a fresh `client_tag` per payload |
+| `SubmitProtection`, `ResizeProtection` | Stop (and target) linked to the entry `order_id`, sized to its filled quantity |
+| `Cancel` | A resting entry or add; protection only under §6.7 item 4 |
+| `Close` | Policy exit (§2.4, `ExitIntent`) or incident close (§2.8), sized to exactly known quantity |
+| `Latch` | `HALT` or `INCIDENT`, with reason; never cleared within the session |
+
+### 6.5 State and accounting
+
+Per order: requested quantity, fills by `execution_id`, terminal, and state `SENT → ACKED → TERMINAL`, or `UNKNOWN` once `outcome_window` passes with no `Ack`. Per leg: confirmed open quantity (fills minus correlated closes) and its protection.
+
+- **Reservation** of an order: requested minus filled while it is not terminal. An `UNKNOWN` order keeps its full remaining reservation; a terminal order reserves nothing.
+- **Usage** per limit: confirmed open plus every reservation, including partial, unknown and recovery-pending ones, in the limit's unit. Micro-equivalents for `cap_micro` and `instrument_cap`; legs holding confirmed or reserved quantity for `max_legs`; Σ |quantity| × |price − stop| × `point_value` for `max_open_risk`, using the fill price for open quantity and `reference_price` for reservations.
+- **Permission:** `RUNNING`; `HALTED` (no new risk; policy exits and §2.8 allowed); or `INCIDENT` (no new risk; policy-exit authority revoked; only §2.8). Every session starts `HALTED`. The operator's start moves it to `RUNNING` only with a clean epoch and a verified-flat account (§2.7).
+- **Uncertain set:** instruments whose exposure is not known exactly. The owner sends nothing on them; they wait for the operator (§2.6). An instrument leaves the set only when every order on it has a uniquely correlated terminal outcome and its position follows exactly from correlated executions (A12 F2). Leaving the set never lifts a latch.
+
+### 6.6 Entry admission
+
+A bar batch for `bar_time` closes when every configured leg has sent its `BarReport` for that bar, or when `barrier_timeout` passes; intents in a later report are refused `late`. The batch is decided in `rank` order, one intent at a time, each against usage that includes every earlier admission in the batch. Arrival order inside a batch never matters.
+
+An intent is admitted only if every row holds. Otherwise it is refused whole, never clipped, with the first failing reason:
+
+| Order | Condition | Refusal |
+|---|---|---|
+| 1 | Permission `RUNNING` | `halted` |
+| 2 | `intent_id` not seen before | `duplicate` |
+| 3 | Leg configured; side equals `entry_side`; no opposite position on the instrument | `invalid_leg`, `opposing` |
+| 4 | An add: `adds_allowed`, and `base_order_id` has a confirmed fill on this leg | `add_without_base` |
+| 5 | `same_instrument` rule satisfied | `same_instrument` |
+| 6 | `cap_micro`, `instrument_cap`, `max_legs`, `max_open_risk` each hold after the request | `cap`, `instrument`, `legs`, `risk` |
+| 7 | P&L above −`day_loss_stop` (a reading older than `fact_max_age` is a block, §6.8) | `day_loss` |
+
+A refused intent has no later effect: it is not queued, retried or resized. An `ExitIntent` becomes a `Close` only while `RUNNING` or `HALTED`, only for quantity known exactly on that leg net of closes already in flight, so it cannot reverse the position; under `INCIDENT` it is refused and §2.8 governs.
+
+### 6.7 Protection ownership
+
+1. For each entry order, the owner keeps protection whose working quantity equals that order's confirmed open quantity. Each `Fill` produces `SubmitProtection` or `ResizeProtection` to the new filled total; each correlated close reduces it.
+2. Coverage counts only on `ProtectionState(working)` at the target quantity. A deficit clock runs from the first uncovered fill until coverage is confirmed. A deficit longer than `unprotected_max`, or `ProtectionState(rejected)`, latches `INCIDENT` (§2.3 item 3).
+3. Strategy logic may move a stop only toward less risk; protection is never widened, and never moved under `INCIDENT` (§2.8 item 1).
+4. Protection is cancelled only after fills confirm the position it covers is flat (§2.8 item 4). The cancel counts only when `ProtectionState(terminal)` arrives.
+5. Disconnect, strategy disable and owner restart never cancel protection (§2.3 item 5).
+
+### 6.8 Blocks
+
+Each condition latches as shown. No later fact lifts a latch within the session; the session ends through §2.7.
+
+| Condition | Latch | Uncertain set gains |
+|---|---|---|
+| Order `UNKNOWN` (no `Ack` within `outcome_window`) | `INCIDENT` | Its instrument |
+| `Fill` for an order not in the journal, or exceeding its reservation; an `execution_id` repeated with different content | `INCIDENT` | Its instrument |
+| `Terminal.cumulative_filled` differs from the sum of correlated fills | `INCIDENT` | Its instrument |
+| A snapshot position, order or execution the journal cannot correlate | `INCIDENT` | Its instrument |
+| Snapshots `A` and `B` disagree | `INCIDENT` | The disagreeing instruments |
+| Protection deficit beyond `unprotected_max`, or protection rejected | `INCIDENT` | None while the position is known exactly |
+| `Connection(down)` | `HALT`; `INCIDENT` if it lasts beyond `disconnect_max`, occurs after cutoff, or reconnect reconciliation finds a gap | Instruments with orders in flight at the drop |
+| P&L or snapshot older than `fact_max_age` when a decision needs it | `INCIDENT` | None |
+| Journal write failure; start with an unclosed dirty epoch | `INCIDENT` | All instruments |
+| Event under another `config_id`, account or epoch; conflicting `event_id` | `INCIDENT` | None |
+| Scheduled cutoff or day-loss stop reached | `HALT`, then policy exit (§2.4) | None |
+
+Reconnect never resumes trading. After `Connection(up)` the owner reconciles from its watermark (§2.5 item 3) and stays latched.
+
+## 7. Deterministic scenarios
+
+These are the interface's acceptance fixtures. The reference model must pass each; P1 runs each on the real platform (§3); each **incorrect variant** is an implementation error the check must detect. Fixture values are test inputs, not proposals for any `⟨L-…⟩`.
+
+**Fixture:** legs `A` (rank 1, instrument X), `B` (rank 2, Y) and `C` (rank 3, Z), each `micro_equiv` 1, long only, adds allowed on `A`. `cap_micro` 4; `instrument_cap` 4 each; `max_legs` 2; `max_open_risk` and `day_loss_stop` non-binding; `outcome_window` 3 s; `unprotected_max` 5 s; `disconnect_max` 10 s; `barrier_timeout` 2 s. Each scenario starts `RUNNING`, flat and unblocked at t = 0; protection confirms working 0.5 s after each fill unless the row says otherwise.
+
+| ID | Events | Expected | Incorrect variant |
+|---|---|---|---|
+| **Competing entries** | | | |
+| CE-1 | One bar: `B` reports entry 2, then `A` reports entry 3 | `A` admitted 3 (rank 1 decided first); `B` refused `cap` (3 + 2 > 4); one `SubmitEntry` of 3 | Arrival order decides; `B` clipped to 1 |
+| CE-2 | One bar: `A` 1, `B` 1, `C` 1 | `A` and `B` admitted; `C` refused `legs` | `C` admitted because micro usage 3 ≤ 4 |
+| CE-3 | Bar 1: `A` 3 admitted, 1 filled, 2 working. Bar 2: `B` 2 | `B` refused `cap` (1 confirmed + 2 reserved + 2 > 4) | Only confirmed quantity counted |
+| CE-4 | `A` and `B` report bar 1 at t = 0; `C` reports bar 1 at t = 2.5 s | Batch closes at t = 2 s; `C` refused `late` | Batch reopened, or `C` decided against stale usage |
+| CE-5 | `A` add 1 whose `base_order_id` is acknowledged but unfilled | Refused `add_without_base` | Acknowledgment treated as an executed base |
+| **Partial fills** | | | |
+| PF-1 | `A` 3 admitted; fill 1 at t = 1; working (1) at 1.5; fill 2 at t = 2; working (3) at 2.5 | Usage 3 throughout; protection commands sized 1, then 3; no deficit beyond 0.5 s; no latch | Protection sized to the requested 3 before fills; reservation released at the first fill |
+| PF-2 | `A` 3 admitted; fill 1 at t = 1; protection acknowledged, never working | `INCIDENT` at the first `Tick` after t = 6; new intents refused `halted`; a §2.8 close of exactly 1 is permitted | Acknowledged protection counted as coverage; no latch |
+| PF-3 | `A` 3 admitted; fill `e1` of 1; then `e1` again with quantity 2 | `INCIDENT`; `X` uncertain; no close sent on `X` | The second report replaces the first |
+| **Cancellations** | | | |
+| CX-1 | `A` 3 admitted; fill 1; owner cancels the rest; cancel acknowledged, no `Terminal` yet; next bar `B` 2 | `A` still reserves 2; `B` refused `cap` | Cancel acknowledgment releases the reservation |
+| CX-2 | CX-1, then `Terminal(cancelled, cumulative 1)`; next bar `B` 2 | Reservation 0, confirmed 1, protection stays at 1; `B` admitted (1 + 2 ≤ 4) | Protection cancelled with the entry |
+| CX-3 | `A` 3 admitted; fill 1; `Terminal(cancelled, cumulative 2)` | `INCIDENT`; `X` uncertain; reservation held | Terminal accepted and the missing fill assumed |
+| CX-4 | `A` 3 admitted; `Terminal(rejected, cumulative 0)` | Reservation released; nothing resent; `A` enters again only on a later bar's new intent | Rejected order resent automatically |
+| **Reconnects** | | | |
+| RC-1 | `A` 2 sent at t = 0, no `Ack`; `Connection(down)` at t = 1, `up` at t = 4; snapshots `A` and `B` agree: `X` long 2 from one correlated execution of 2, order terminal filled | `HALT` at t = 1; `INCIDENT` at t = 3 (`UNKNOWN`); after reconnect `X` leaves the uncertain set with 2 known exactly; permission stays `INCIDENT`; a §2.8 close of 2 is permitted; no entry or resend | Reconnect restores `RUNNING`; the order is resent |
+| RC-2 | As RC-1, but the snapshots show `X` long 2 and no execution since the watermark | `X` stays uncertain; the owner sends nothing on `X`; operator recovery | Owner closes 2 on the position read alone |
+| RC-3 | Flat, nothing in flight; down at t = 1, up at t = 12 | `HALT` at t = 1; `INCIDENT` at t = 11 (> `disconnect_max`); §2.7 runs | No incident because nothing was in flight |
+| RC-4 | After reconnect, snapshot `A` shows no working orders; snapshot `B` shows a working order on `Y` absent from the journal | `INCIDENT`; `Y` uncertain; flat not verified (§2.7 step 5) | Snapshot `A` alone accepted |
+| RC-5 | Owner restarts with an unclosed dirty epoch and a stored `RUNNING` | `INCIDENT`; operator start refused | Stored `RUNNING` honoured |
+
+Every scenario also asserts that each command follows its journal record, and that replaying the journal through the model reproduces the same decisions, commands and latches.
