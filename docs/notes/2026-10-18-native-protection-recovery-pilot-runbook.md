@@ -21,7 +21,7 @@
 | Every mutation passes one serializer (rev9 §1) | All orders for the account go through the account owner. No second strategy instance, ATM template or chart-trader action may hold orders on the account during a pilot session. | Stricter: one owner per account |
 | Reserve before send; whole or refuse; unresolved reservations count (capacity §4) | Unchanged. Reserve in the journal before submit; partial fills move only filled quantity; an unknown request keeps its full reservation. | No |
 | Settled-close mode selected once per session; never resize carried positions (capacity §3) | Unchanged. Mode is read from the journal's last accepted settled close, not from intraday account values. | No; trigger/scale unbound |
-| Incident → durable halt, intervention, no runtime close/cancel/amend (rev9 §1, §3; A12 F1(c)) | Kept for the pilot. On an incident the owner latches HALT and sends nothing more; the operator recovers in the platform. Platform auto-close on error is not admitted (D-N1). | No (pilot) |
+| Incident → durable halt, intervention, no runtime close/cancel/amend (rev9 §1, §3; A12 F1(c)) | Replaced by D-N1: on an incident the owner latches HALT, then may close only exposure it knows exactly (§2.8). Anything uncertain still goes to the operator. | **Yes** (D-N1) |
 | Policy exits: scheduled cutoff and own-flat deadline under SCHEDULED_EXIT (rev9 §1, §5) | Kept, and the account loss stop joins them as a policy exit (§2.4). Any incident revokes this authority. | Adds the loss stop |
 | Unknown outcome → hold reservation, halt; release only on unique correlation (A12 F1–F3) | Unchanged. Correlation uses broker order ID and execution ID, never signal name or timestamp. | No |
 | Unexplained position, order or fill is an incident (A12 F5) | Unchanged, on every instrument in the account, including fills the owner did not request. | No |
@@ -33,8 +33,8 @@
 
 ### 2.1 Simultaneous strategy entries
 
-1. One account owner hosts every selected leg for that account, with a fixed leg priority. Separate strategy instances sharing one account are not admitted: their positions are tracked separately, so the account can net flat or reverse while each instance still holds protective orders.
-2. Signals that complete on the same bar are admitted in priority order, one at a time. Each admission sees every earlier reservation from that bar.
+1. One account owner hosts every selected leg for that account, with a fixed leg priority. Several strategies may run on one account wherever the firm's rules allow it (D-N3). Separate strategy instances sharing one account are not admitted: their positions are tracked separately, so the account can net flat or reverse while each instance still holds protective orders.
+2. Priority is the strategies' expected-value rank, highest first (D-N2). The rank is a fixed, strictly ordered list bound at portfolio selection and unchanged during a session. Signals that complete on the same bar are admitted in that order, one at a time. Each admission sees every earlier reservation from that bar, so a lower-ranked signal is refused, never clipped, when a higher-ranked one has used the room.
 3. One leg per instrument per account. If the selected portfolio has two legs on one instrument, the selection must state whether they are serialized or refused. Opposing positions in one instrument are refused; firms commonly prohibit hedging (bind per firm).
 4. Adds count as entries. They need a confirmed executed base, never an accepted order (capacity §2).
 
@@ -76,18 +76,18 @@ If the account P&L reading is stale or unavailable, that is an incident (rev9 §
 2. Orders sent but not acknowledged before the disconnect become unknown when their outcome window expires. A12 F1 applies: hold the reservation, halt, no resend.
 3. On reconnect the owner reconciles positions, working orders and executions since its last journal watermark. Any gap, or any fill or order it cannot correlate, is an incident (F5).
 4. The platform's connection-loss setting must not recalculate or replay strategy state into new orders after reconnect (U-4).
-5. A disconnect that outlasts `⟨L-disc⟩`, or that occurs after cutoff, goes to attended recovery: the operator acts in the firm platform.
+5. A disconnect that outlasts `⟨L-disc⟩`, or that occurs after cutoff, is an incident. After reconnect, §2.8 applies: the owner closes exposure it knows exactly, and the operator handles the rest in the firm platform.
 
 ### 2.6 Uncertain account state
 
-The owner enters `UNRESOLVED` (packet §12.1 states) and sends nothing when any of these holds: unknown request outcome; an uncorrelated fill, position or order; a protective order of unknown state; account P&L or position evidence missing or stale; a journal write failure; or a start with an unclosed dirty epoch. Exits wait for the operator. Fresh evidence alone never lifts the state: release follows A12 F2 and the halt ends only through §2.7.
+The owner enters `UNRESOLVED` (packet §12.1 states) and sends nothing when any of these holds: unknown request outcome; an uncorrelated fill, position or order; a protective order of unknown state; account P&L or position evidence missing or stale; a journal write failure; or a start with an unclosed dirty epoch. The owner sends no close for an uncertain position; that exposure waits for the operator. Exposure known exactly on other instruments may still be closed under §2.8. Fresh evidence alone never lifts the state: release follows A12 F2 and the halt ends only through §2.7.
 
 ### 2.7 Verified flat shutdown
 
 Run at the planned end, after an incident, or at `D`, whichever comes first:
 
-1. Owner latches HALT; resting entries are cancelled at cutoff (policy) or left for the operator (incident).
-2. Policy exits, or the operator's platform flatten, bring every leg flat.
+1. Owner latches HALT and cancels resting entries and adds.
+2. Policy exits and §2.8 incident closes bring known legs flat; the operator flattens anything uncertain in the platform.
 3. **Read A (native):** account positions, working orders and executions for every instrument on the account, postdating the last request.
 4. **Read B (independent):** the firm platform's web view of the same account. The native order grid hides prior-day orders after rollover, so read A alone cannot prove no working orders.
 5. Flat is verified only when both reads show zero gross positions, no working orders, and no unresolved request; every journal request has a terminal outcome; and every execution is correlated. Net zero, an empty grid, elapsed time or acknowledgment does not count (rev9 §3).
@@ -95,6 +95,18 @@ Run at the planned end, after an incident, or at `D`, whichever comes first:
 7. Export the journal and both reads to authorized custody. Python compares offline.
 
 If step 5 fails, HALT stays and the account stays under attended recovery past the planned end (rev9 §3, attendance).
+
+### 2.8 Native incident close (D-N1)
+
+On an incident the owner may close positions itself, within these bounds (adapted from packet §12.1):
+
+1. Only risk-reducing commands: cancel resting entries and adds, and close open positions. No entry, add, reversal, re-entry, or loosening or widening of protection.
+2. A close is sent only for a position whose residual quantity is known exactly from fresh facts correlated by broker order and execution ID. The close is sized to that quantity.
+3. A close must not be able to reverse the position if a protective order fills at the same time. The pilot card binds the mechanism; U-17 must prove it. Until then, the incident close is not admitted for P2.
+4. Protection stays working until the close is confirmed filled; then the owner cancels that position's protective orders and confirms them terminal.
+5. No retry when an outcome is ambiguous. At most one replacement close follows a definitive rejection or cancellation, and only on fresh facts. A cancel acknowledgment does not prove the position is flat.
+6. Unknown, partial, rejected or unexplained outcomes, and any position the owner cannot attribute, go to `UNRESOLVED` and the operator. The owner never sends an order against a position it does not own.
+7. The incident still ends automation for the session (A11.2), and the session still ends with §2.7.
 
 ## 3. Pilot sequence and stop rules
 
@@ -118,7 +130,7 @@ None of these has native evidence today. Each is INCONCLUSIVE until its named te
 | U-2 | Same-bar multi-leg admission in priority order with reservations visible to later legs | Two legs signal on one bar at the cap edge | Z1 (partial) |
 | U-3 | Protection residency per order type on the firm's connection (server vs local OCO/simulated stop) | Place, disconnect, move price through the stop, reconnect | R3 |
 | U-4 | Connection-loss and restart settings cause no replayed or recalculated orders | Disconnect and restart mid-position under each setting | R1, R3 |
-| U-5 | Error-handling setting causes no automatic close or cancel on a rejection (D-N1) | Reject an entry, an add and a protective amend | O1 |
+| U-5 | The platform's error-handling setting either stays out of the way or behaves exactly as §2.8 requires: no reversal, and no retry after an ambiguous outcome | Reject an entry, an add and a protective amend | O1 |
 | U-6 | Disable and enable never cancel working protection on an open position | Repeat the 10-17 canary under the pilot settings | none |
 | U-7 | Fill-to-protection interval measurable and bounded by `⟨L-unprot⟩` | Timed entry fills, including partials | Z2 (partial) |
 | U-8 | Journal dirty epoch blocks entry after a failed write at every cut | Fault cuts before write, before replace, after replace | R2 |
@@ -130,9 +142,12 @@ None of these has native evidence today. Each is INCONCLUSIVE until its named te
 | U-14 | Scheduled cutoff and flatten derive from source-backed calendar rows, including early closes and DST | Calendar fixtures at each boundary | S1 |
 | U-15 | Firm-side external actors (auto-liquidation, server-side risk rules) inventoried and raced safely | Firm documentation plus one observed event | none |
 | U-16 | Wrong-account and profile-swap refusal on the real loader, key and outbound destination | Packet I1 and I2 on the platform, not a fixture | I1, I2 |
+| U-17 | §2.8 incident close cannot reverse a position when a protective order fills at the same time, and sends nothing for uncertain exposure | Trigger the stop while the close is in flight; close with exposure known exactly, partially known and unknown | R3 (partial) |
 
-## 5. Open decisions
+## 5. Decisions
 
-- **D-N1 (operator):** keep rev9's no-runtime-incident-mutation posture for the pilot (recommended: the auto-close path is unproved, U-5), or admit a native bounded risk-reducing exit as packet §12.1 proposes, after U-3, U-5 and U-9 pass.
-- **D-N2 (portfolio selection):** leg priority, same-instrument handling, and every `⟨L-…⟩` value.
-- **D-N3 (firm admission):** whether one owner hosting several strategies is permitted on the selected firm's account, and whether its hedging and news rules constrain §2.1.
+Operator rulings, 2026-10-18 (Joshua, in session):
+
+- **D-N1:** "the NinjaTrader strategy be allowed to close positions itself". Adopted as the bounded incident close in §2.8. Before P2 can rely on it, U-3, U-5, U-9 and U-17 must pass.
+- **D-N2:** "strategies are ranked by expected value, the higher ranked strategy gets priority. this can be done simply". Adopted in §2.1 item 2. The rank values come from portfolio selection. How two strategies on one instrument are handled, and every `⟨L-…⟩` value, also wait for portfolio selection.
+- **D-N3:** "running several strategies should not be a problem as long as it doesn't violate their rules". Adopted in §2.1 item 1. The selected firm's hedging, news and automation terms are checked at its admission.
