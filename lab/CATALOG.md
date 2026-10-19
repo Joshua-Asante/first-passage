@@ -68,6 +68,7 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | orb_mym_v04_riskbudget_2026-09-02 | orb | ACTIVE | yes | `EXPLORATORY — NO FILTER PROMOTED; ONE PINE INPUT ADDED, DEFAULT OFF`. Candidate | lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/ | — |
 | orb_mym_volume_gate_2026-09-02 | orb | ACTIVE | yes | `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED` | lab/analysis/orb/orb_mym_volume_gate_2026-09-02/ | — |
+| orprem_mnq_2026-10 | orb | ACTIVE | yes | Phase 0 harness built and tested on synthetic data only; pre-registration DRAFT, not ratified; no market data read. | lab/analysis/orb/orprem_mnq_2026-10/ | — |
 
 ### legacy
 

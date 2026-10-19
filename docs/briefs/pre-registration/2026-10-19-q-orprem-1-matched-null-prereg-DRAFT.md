@@ -206,8 +206,8 @@ So the open question is whether the OR's gross continuation exceeds that of late
 - **Date cut.** Immediately after decoding, rows dated after 2025-08-31 are dropped, before any statistic is computed. The G0 record asserts that the maximum date is no later than 2025-08-31. The decode-rate gate counts rows only.
 - **Eligible session.**
   - The RTH session has all 26 fifteen-minute bars (bar opens 09:30 … 15:45 ET).
-  - The previous eligible session exists, and its mean bar range Aₐ = mean(high − low) over its 26 bars is greater than 0. That session may lie before the window start; for example, E2's first session takes Aₐ from 2020-12-31 in `dd9d8`.
-  - It passes the **intra-RTH discontinuity guard**: no RTH bar opens more than 0.5% from the close of the bar before it in the export. For the 09:30 bar, that is the 09:15 Globex bar. Excluded sessions are listed.
+  - Aₐ = mean(high − low) over the 26 bars of the most recent earlier date that has a complete 26-bar RTH session. Aₐ must exist and be greater than 0. That date may lie before the window start; for example, E2's first session takes Aₐ from 2020-12-31 in `dd9d8`.
+  - It passes the **intra-RTH discontinuity guard**: no RTH bar opens more than 0.5% from the close of the bar before it in the export. For the 09:30 bar, that is the 09:15 Globex bar. If no bar precedes 09:30 in the export, the session is ineligible. Excluded sessions are listed.
   - The guard does not see roll gaps at session boundaries. Those cannot affect intraday R.
   - Eligibility uses prices only.
 
