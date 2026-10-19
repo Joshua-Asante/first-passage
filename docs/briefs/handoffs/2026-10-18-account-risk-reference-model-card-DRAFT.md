@@ -4,7 +4,7 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT 2026-10-18, proposal for Codex. Joshua asked for "a bounded Codex implementation proposal" of the shared account-risk interface. That request authorizes this draft only. Revised 2026-10-19 for operator rulings D-N4 to D-N6 (runbook §5); code admission, freeze and dispatch are Joshua's (§0.5).
+**Status:** FROZEN 2026-10-19 (admission and freeze in §11). Drafted 2026-10-18 as a proposal for Codex. Joshua asked for "a bounded Codex implementation proposal" of the shared account-risk interface. That request authorizes this draft only. Revised 2026-10-19 for operator rulings D-N4 to D-N6 (runbook §5); code admission and freeze were then granted by Joshua (§11); dispatch waits for this card's PR to merge.
 
 **Base:** `origin/main` = `3d396e28bd96b2717f5924279b40080f0d4285a1` at drafting. Refresh at dispatch.
 
@@ -147,7 +147,7 @@ Record commands, interpreter, base and returned revision, red, green and mutant 
 ## 11. Admission record
 
 - **Draft requested:** Joshua, 2026-10-18, in the Claude session: "a bounded Codex implementation proposal".
-- **Code admission:** not granted.
-- **Freeze:** not granted.
-- **Dispatch:** none.
+- **Code admission:** GRANTED — Joshua, 2026-10-19, in the Claude session: "I admit the production-code footprint in the account-risk reference-model card and authorize freeze; record it in §11." Covers the four-file §2 footprint.
+- **Freeze:** GRANTED — same statement. The frozen revision is the one in the commit that adds this record; any later change needs a new freeze.
+- **Dispatch:** not yet. Runbook §6 and §7 reach `main` only when [#874](https://github.com/Joshua-Asante/first-passage/pull/874) merges, which needs Joshua's exact-head approval. Codex then dispatches from that merge commit and records its full SHA (§0.5 item 3).
 - **Merge:** a later exact-head approval from Joshua after every check finishes green.
