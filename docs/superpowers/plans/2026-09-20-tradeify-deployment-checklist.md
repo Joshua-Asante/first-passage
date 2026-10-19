@@ -942,3 +942,23 @@ operational controls or standing instructions.
 | (d) Default | Otherwise | Park without lapsing: keep the eval and weekly trade; close the K ledger for this lineage; move shared rail items to the personal lane |
 
 (c) and (d) can both apply. The deferred FLOOR-HALF pass-time check (E1 kill check) reads existing T00 outputs and is logged as exposure when run.
+
+## Addendum 2026-10-16 — Track B superseded for Tradeify
+
+**Ruling (Joshua, 2026-10-16, directly to the firm-eligibility and deployment-planning lead, verbatim):** "record Track B as superseded for Tradeify". It follows his planning correction of the same day.
+
+**Basis:**
+- **Explicit:** Daniel's 2026-10-12 reply permits native platform automation and names NinjaTrader/NinjaScript for evaluation and sim-funded accounts. It prohibits external Python-generated signals and execution bridges. Track B's route (Python daemon → listener → CrossTrade → Tradovate) is therefore not a permitted Tradeify destination.
+- **Explicit:** the Tradeify Help Center prohibits using the same bot across multiple firms. A strategy intended for reuse at other firms does not go to Tradeify.
+- **Inference (labelled, not a separate approval):** offline research followed by a self-contained native implementation with fixed parameters fits the native boundary. External ongoing signals or parameter feeds do not.
+
+**Effect:**
+- **Superseded, not suspended:** for Tradeify, Track B's 2026-10-13 suspension becomes a supersession. That covers the Tradeify-specific E1 qualification spine, T09 and its gates, route drills X-3/X-4, CrossTrade orders on the evaluation account, and the CrossTrade-shaped edition pre-registrations. None are pursued on this route. Items that also serve the personal lane or the native path keep their existing owners there.
+- **Branch (a) (resume Tradeify on a compliance reversal) is withdrawn.** A future written reversal would be a new decision, not a resumption.
+- **Not changed:**
+  - the incumbent evaluation stays retained and disarmed, and the weekly preservation trade continues;
+  - the personal lane continues;
+  - Tradeify remains an optional separate native lane, for a strategy run only at Tradeify, subject to technical verification of the account and platform configuration;
+  - D5 is closed as a gate, and the unsent five-question follow-up draft is preserved, not sent.
+- **The 11-08 decision rules** stay a draft for the sitting. Branch (b)'s condition is now supported by the evidence and inference above. Branch (c) should point at Q-SFCLEAR-3, not the superseded Q-SFCLEAR-2.
+

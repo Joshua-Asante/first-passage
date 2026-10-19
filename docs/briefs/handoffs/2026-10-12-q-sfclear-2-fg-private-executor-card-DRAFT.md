@@ -276,7 +276,7 @@ An interrupted root is sealed `INCOMPLETE`: only its marker and `SHA256SUMS` are
 
 ## Amendment 2026-10-14 — FG item 5 and Q-SFCLEAR-3 (F₃)
 
-**Takes effect only when Q-SFCLEAR-3 is frozen** (commit F₃, recorded in the parent brief as `Q-SFCLEAR-3 pre-registration commit hash`); until then it is a committed draft and changes nothing. Basis: [Q-SFCLEAR-3](../pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) §S, ratified by Joshua at freeze. Joshua's freeze words for Q-SFCLEAR-3 are quoted here when F₃ is recorded.
+**Takes effect only when Q-SFCLEAR-3 is frozen** (commit F₃, recorded in the parent brief as `Q-SFCLEAR-3 pre-registration commit hash`); until then it is a committed draft and changes nothing. Basis: [Q-SFCLEAR-3](../pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) §S, ratified by Joshua at freeze. Joshua's freeze words for Q-SFCLEAR-3 are quoted here when F₃ is recorded. **Recorded (F₃ `15bea250fc8ee9a57b59735c9e8be685c4ddbf22`, 2026-10-14):** Joshua, directly to the Deployment Coordinator, verbatim: "confirm the §S changes as recorded"; "62d7ae196059b7d98fd814c7b07a911558e8e5891dd2a669170393583b6c671f" (after "i rehashed the tuple"); "ratify Q-SFCLEAR-3 at 235f523418119e3aa0c16060465c27d7ff5cadee"; exposure attestation: "1. I haven't seen any of them 2. i re-confirm".
 
 - **Governing text:** Q-SFCLEAR-3 at F₃; every "pre-registration" reference in this card reads Q-SFCLEAR-3 (incorporating Q-SFCLEAR-2 at F₂ except its §S).
 - **Authority (amends the authority block and §1/H5):** the constraint `fg_items_1_to_3_only_no_scoring` reads `fg_items_1_to_3_5_6_only_no_scoring`; §1's goal and H5's run order become 1a → 1b → 1c → 2 → 3 → 5 → 6, each under the §7 timeout, with pass/fail per item returned. Nothing else in the block changes.
@@ -287,3 +287,12 @@ An interrupted root is sealed `INCOMPLETE`: only its marker and `SHA256SUMS` are
 - **Prerequisite added to §0(a):** card B amendment (c) merged.
 - **Host authority:** the Q-SFCLEAR-3 FG run uses the VM under the [campaign §60 addendum 2026-10-14](../programs/2026-09-03-seven-strategy-select-campaign-state.md) (Joshua 2026-10-14), which replaces the 2026-10-12 addenda for this run; its admitted inputs bound H1.
 - **H1 input added:** the hash-bound source-build folder `t00-step3-console/sfclear3-source-<UTC>/` (`source_bundle.json`, `reference_friction.json`, `effective_schedule.json`, `BUILD_RECORD.json`, the builder, nonce and `SHA256SUMS`), copied direct to the identical path on the VM, verified by `sha256sum -c` against the `SHA256SUMS` digest in the dispatch record (H2), used read-only, and removed at H7 teardown with the other copies. The digest-only run manifest names its files by path and sha256.
+
+## Amendment 2026-10-15 — D-4 timeout basis for the full R1 replay (coordinator, owner of this card)
+
+**Why:** §13 D-4 and the 2026-10-14 amendment base the limit for items 2, 3, 5 and 6 on "Part 1's synthetic full-calendar replay duration at its merged head". Card D Part 1 (#840) has no such replay. The nearest test, card B's 90,000-bar lookup-scale check, takes about 1.8 s, and 4× that would interrupt the real four-port, 87,464-bar replay almost at once and seal the root `INCOMPLETE` for no reason.
+
+- **Items 1(i) and 1(ii):** unchanged. The basis is the private parity run at the run head, re-measured on 2026-10-15 at main `6a96af3` (`test_book_adapters_parity.py` plus `test_live_size_vector_emulator.py`, corrected-ports root: 29 passed in 42.6 s). The limit is 4× that measurement, recorded in the dispatch record.
+- **Items 2, 3, 5 and 6:** they read one shared full R1 PR replay. That replay and the items' checks share a fixed wall-clock limit of **4 hours**. The limit only detects a hang; it is not a performance bound.
+- **Interruption:** sealing is unchanged (`INCOMPLETE`, no PASS standing, kept). A rerun with unchanged frozen inputs needs only a coordinator dispatch and a new root; a rerun that changes any input needs Joshua.
+

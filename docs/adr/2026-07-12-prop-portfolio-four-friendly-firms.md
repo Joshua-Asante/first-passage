@@ -376,6 +376,38 @@ gap.
 **Trigger check schedule:** at 2026-11-08 (does the gap fire for real) and, if it does, again at
 2027-02-08 (was the extension the right call).
 
+## Addendum 2026-10-16 — operator rulings: 5.0% ceiling, fresh §4 candidate ORB MNQ v7, FXIFY Futures Flex registration (Accepted)
+
+**Rulings:** Joshua, 2026-10-16, directly to the firm-eligibility and deployment-planning lead (Claude), verbatim:
+- "authorize ORB MNQ v7 as the fresh §4 candidate";
+- after being shown the prior-failure evidence below: "1, proceed as authorized. the program text should be updated to reflect 5%";
+- "Let's register FXIFY Flex".
+
+**1. Ceiling.** §4's operator-pre-registered bust ceiling is **5.0%**. This aligns with [prereg v2](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) §3.
+- It applies to the fresh candidate's pre-registration and to every later one. The 3.0% wording in the 2026-08-22 addendum, including its forbidden move "Moving the 3.0% ceiling", reads as 5.0% from this date.
+- The 50% pass floor, the `trailing_locking` requirement, the intraday-honest clock (2026-10-02) and the inactivity-barrier-OFF convention are unchanged.
+- **Disclosure:** this ceiling is set after the 2026-10-06 dated re-MC returned FALSIFIED — early-fail. That candidate's tiers busted far above 5.0%, so no past verdict changes.
+
+**2. Fresh §4 candidate: ORB MNQ v7 (solo).** This is the fresh operator authorization the 2026-10-06 record requires. The pre-registration must disclose the following and count it in the trial ledger:
+- The [b3 PARK record](../pursuits/b3-orb-mnq-payability-line.md), addendum 2026-08-24: ORB-MNQ solo failed at all four registered firms, and the corrected 6-year panel busts at every tested size (1–8 contracts, EOD clock).
+- Q-RANGECOND-1 and Q-ORBCUSH-1 are FALSIFIED.
+- Any differences between v7 and the ORB-MNQ-1 that was tested.
+
+Clearance is read on the intraday-honest clock with `headline_bust`. The pre-registration freezes by **2026-10-23**, and the dated re-MC runs by **2026-10-30**, so a verdict exists before the 2026-11-08 hard date. Evidence: existing technical owners, under Codex's integration and dispatch.
+
+**3. FXIFY Futures Flex registration.** FXIFY Futures Flex is added to the program's firm set and directed into `AUTOMATION_FRIENDLY_PROP_FIRMS`. This is FXIFY's futures program. It is distinct from the retired FX/CFD `FXIFY` substrate ([2026-07-22 retirement](2026-07-22-challenge-era-substrate-retirement.md)), so it takes its own registry key and never `ACTIVE_FIRM="FXIFY"`.
+- **Eligibility basis, recorded as it stands:** a generic, platform-scoped automation permission ([venue note 2026-10-14](../notes/2026-10-14-funded-venue-alternatives-assessment.md) §§1, 5, 12). It was read from search excerpts because direct reads were blocked. No written, clause-cited confirmation exists. The secondary (eligibility) trigger of §4 applies to this family.
+- **Counting toward §4** starts only when all three hold:
+  - (a) `core/firm_rules.py` carries the tier row or rows with `starting_balance`, per AGENTS.md "Firm Expansion";
+  - (b) the `core/mc/preflight.py` engine-support pre-flight passes for each row;
+  - (c) the modelled facts are re-verified at a primary source and dated.
+  Owner: the existing technical owners, under Codex.
+- **Facts to verify and model** (venue note :102, unverified): Flex 150K; $4,500 end-of-day trailing drawdown that locks at the starting balance; $9,000 target; 50% evaluation consistency; 10 minis / 100 micros; 16:59 ET automatic close; soft daily loss limit (removed by the paid bundle); news-trading clause for automated strategies.
+- **Timing:** for FXIFY tiers to be part of the fresh candidate's frozen tier set, (a)–(c) must hold before its pre-registration freezes (2026-10-23). Otherwise the candidate is pre-registered on the four existing families only.
+- **Wording:** "the four `FRIENDLY` firm tiers" in §4 H now reads as the `AUTOMATION_FRIENDLY_PROP_FIRMS` families, five once FXIFY Futures counts. The revert trigger already says "any" tier.
+
+**Not changed:** the hard date (2026-11-08), the demotion rule, S1 (a non-incumbent venue still needs its venue admission before any execution), and the native experiment's separate admissions.
+
 ---
 
 ## Change history
@@ -388,3 +420,5 @@ gap.
 | 2026-07-25 | `Superseded-in-part-by` reciprocal added for `2026-07-22-prop-portfolio-s4-discharge-withdrawal.md` (§4 discharge status only). Was invisible to `check_adr_graph.py`'s A2 check — the withdrawal ADR's `Supersedes:` line uses markdown-link citation style, which the edge parser silently dropped rather than flagging; fixed in the same pass (`scripts/check_adr_graph.py`). Non-material header repair — no §2/§4 prose edit. | Claude Code |
 | 2026-08-22 | **Addendum drafted (`Proposed`, not yet `Accepted`):** §4's success/revert dichotomy does not cover an exactly-one-of-four-tiers-clears state; proposes a fourth `PARTIAL` disposition holding the falsifier open to the existing 2027-02-08 quarterly check rather than firing either branch on the wrong evidence. No §2/§4 original text edited; awaits operator ratification. | Claude Code |
 | 2026-10-02 | §4 status pointer only: the operator withdrew the 2026-09-03 EOD-clock discharge and requires an intraday-honest clear, recorded at the status owner ([withdrawal ADR Addendum 2026-10-02](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)). Its exactly-one-tier clause bears on Addendum 2026-08-22 above, which stays `Proposed`. No §2/§4 text edited. | Joshua (ruling) + Claude Code (record) |
+| 2026-10-16 | Addendum (Accepted, operator rulings): §4 ceiling 5.0%; fresh §4 candidate ORB MNQ v7 authorized with prior-failure disclosure; FXIFY Futures Flex registration directed (counts toward §4 only once its firm_rules row, pre-flight and re-verified facts exist) | Joshua + Claude |
+| 2026-10-17 | Pointer only: by Joshua's 2026-10-17 instruction, the 2026-10-16 addendum's "under Codex" owner wording now reads as the Claude coordinator for integration and dispatch; Codex owners keep technical execution ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-transfer--claude-deployment-coordinator-2026-10-17)). No rule changed. | Claude coordinator |

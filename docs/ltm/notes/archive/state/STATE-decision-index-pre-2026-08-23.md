@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Roll 2026-10-17** (automated keep-15 roll; `scripts/state_roll.py`):
+
+- **2026-09-24** — T08 R3 = NONE (no documented unknown-request fence; D-broker void; T09 unspecifiable): live release held; one narrow operator-sent CrossTrade question authorized, written answer retained as evidence; bounded-exposure amendment scoped. [§7.8](../../../../../docs/briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24)/[scope](../../../../../docs/superpowers/specs/2026-09-24-bounded-exposure-unknown-request-amendment-scope.md)
+
 **Roll 2026-10-15** (automated keep-15 roll; `scripts/state_roll.py`):
 
 - **2026-09-23** — T00 step 1 returned INSUFFICIENT, accepted. A T00 screen is not four-firm §4 falsifier evidence; the 2026-11-08 falsifier needs its own dated re-MC. Path-position bracket convention [ratified](../../../../../docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23), replacing one P7 blocker only. [Rulings](../../../../../docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23). *2026-10-02:* §4 status is ruled at its [owner](../../../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted).
