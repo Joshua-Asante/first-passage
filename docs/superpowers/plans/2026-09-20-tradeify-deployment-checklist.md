@@ -966,6 +966,8 @@ operational controls or standing instructions.
 
 **Ruling (Joshua, 2026-10-19, verbatim, given directly in the Claude session that drafted the qualification packet):** "I decline R-2. Record that no book-lineage configuration has an evidence case for the Tradeify eval."
 
+**Same ruling, second source (Joshua, 2026-10-19, verbatim, given in the deployment coordinator session):** "I decline R-2 as r5 recommends: no book-lineage configuration has an evidence case for this account; park the Tradeify qualification."
+
 **What was declined.** R-2 of the private Tradeify qualification packet (r5, sha256 `7dad04e9…3933`, not in the repo). It nominated rung R1 for one qualification run from the incumbent evaluation's current state. R1 is FLOOR-HALF with adds off on MYM and MGC, and P0 normal mode in place of the 1%/0.40 book policy ([Q-SFCLEAR-2 §1–§2](../../briefs/pre-registration/Q-SFCLEAR-2-verdict-preregistration.md#2--book-identity-and-the-sizing-tuple-r1)). The packet itself recommended declining: a FAIL would have landed where declining lands, and a PASS would have opened only porting and parity planning.
 
 **Basis (public evidence):**
@@ -982,5 +984,5 @@ operational controls or standing instructions.
 **Not changed:**
 - the incumbent evaluation stays retained and disarmed, and the weekly preservation trade continues;
 - Tradeify remains an optional separate native lane for a strategy run only at Tradeify;
-- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; [run proposal](../../notes/2026-10-18-q-sfclear-3-run-proposal.md), PR #873).
+- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal in [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), open).
 
