@@ -93,14 +93,14 @@ This section is a **derived input** to the coordinator's dated FXIFY-vs-FundedNe
 
 | Fact | FundedNext Flex 150K | FXIFY Flex 150K |
 |---|---|---|
-| MLL | $4,000 end-of-day (EOD) trailing, updated 17:00 CT, from the "highest balance that day" (ambiguous). An intraday floating touch breaches instantly. Locks at $150,100 | $4,500 EOD trailing. Breach clock unstated ("balance"). The start-balance lock names no stage (sheet B1). An add-on gives $4,750 |
+| MLL | $4,000 end-of-day (EOD) trailing, updated once a day (time unstated), from the "highest balance that day" (ambiguous). An intraday floating touch breaches instantly. Locks at $150,100 | $4,500 EOD trailing. Breach clock unstated ("balance"). The start-balance lock names no stage (sheet B1). An add-on gives $4,750 |
 | Target / time limit | $8,000 (closed-P&L basis UNV) / none | $9,000 / 30 days. The reset FAQ treats an ended evaluation as failed. Paid extension, fee and repeatability unpublished |
 | Consistency (evaluation) | 40% of target; exceeding it raises the target | 50%, soft |
 | Daily loss limit | None | $3,000 soft (read-only for the day); an add-on removes it |
 | Contract cap | 8 minis / 80 micros at 1:10; full-size 6J counting unstated | 10 / 100 at 1:10; full-size 6J counting unstated |
 | Instruments | 6J (full only), MGC, MYM and MNQ listed | Exchanges only; 6J and MGC never named |
 | Forced flat | 16:10 ET, a listed breach cause; auto-close may not run on half days. The harness's own-flat rule would give 15:55 (§4) | 16:59 ET auto-close; own-flat stays 16:00 |
-| News | No news rule; terms §2.2.14 ban gapped or illiquid trading, including "before major market events" | EA page: "news trading" means immediate breach. News policy: allowed. Unresolved |
+| News | No news rule. Terms §2.2.14 ban trading in extreme gaps or low liquidity, and the prohibited-strategies article adds "before major market events" | EA page: an EA that breaks the prohibited-strategies policy (examples include news trading) means immediate breach; that policy's only news item is "High Leverage News Trading"; the news policy allows news trading. Scope unresolved |
 | Automation | EAs and bots allowed at both stages. §2.2.6 lets the firm request execution-system materials. §2.1.7: a different dashboard or trading IP needs prior approval | Enabled by default on NinjaTrader, Tradovate and TradingView. Off-platform logic unaddressed. GTC 5.4.1.2 bars an "external or slow data feed" |
 | Hedging | Correlated-instrument hedging banned within and across accounts and firms (§1.2.21, §2.2.13); "Asset Group" undefined | Reverse trading across accounts banned; silent within one account |
 | Standing | No `firm_rules` row; outside `AUTOMATION_FRIENDLY_PROP_FIRMS` | In the program firm set ([four-firm ADR addendum 2026-10-16 §3](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md)); row provisional on #867, held under SR-4 |
