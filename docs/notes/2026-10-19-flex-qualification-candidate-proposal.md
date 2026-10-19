@@ -394,3 +394,34 @@ Untested and ranked. None is a prerequisite for §5 or a remedy for a failure. E
 2. **Step 2:** grant the bounded summary read, as part 2a only or 2a plus the 2b derivation. Each part is a separate permission and approves nothing in Step 3.
 3. **After the labels:** whether to fund the Step 3 items, in order.
 4. **This note** is open for review as #877; merging is yours.
+
+## Addendum 2026-10-19: Step 1 ratified, Step 2 granted (record made before any read)
+
+**Ruling.** Joshua, 2026-10-19, directly in this session, verbatim: "I ratify Step 1 as proposed and grant the Step 2 read, parts 2a and 2b. Run it locally under the stated limits."
+
+**Frozen by this record.** These are §5 Step 1 as written above, unchanged:
+
+| Parameter | Value |
+|---|---|
+| D | 252 sessions if CME confirms no non-display fee or one ≤ $500 a month; 126 sessions otherwise |
+| CME status | As of 22:46Z, ticket #04738415 is unanswered, so labels are produced for both D. The answer selects the binding one |
+| Pass criterion | P(pass within D) ≥ 50%, so the median is ≤ D |
+| Populations | FULL, H1 and H2, under the pessimistic assignment; the optimistic assignment is reported |
+| Target ratios | 1.33 for FundedNext and 1.5 for FXIFY; one label per basis |
+| Label rule | The 2× band, the per-population label table, and the combination order (any NOT PROMISING, then any UNCLEAR, then PROMISING) |
+| Cost basis | The existing outputs' single cost model |
+| Part 2a | The printed label and tallies |
+| Part 2b | #733's median rule (`MEDIAN_RULE = LOWER_NEAREST_RANK_INF_INCLUDED`), evaluated on the existing PATH journal with the existing verdict code: `ops/c1_rail/qualification/t00_screen/verdict.py`, sha256 `c2af4f70…d7d3`, unchanged since the run's H′ `eed60a1`. No replay, no rescoring, no strategy change, and no other statistic |
+
+**Artifacts.** The FLOOR-HALF successor screen as recorded in the T00 card §8:
+- `results.json` `f781c716…f495`;
+- `REPORT.md` `42c008d1…6b6b`;
+- authority `75f03043…9428`.
+
+**Reader and recipients:**
+- **Reader:** this Claude session (local_c36ee23a, "Portfolio qualification experiment selection", worktree `portfolio-qualification-experiment-d883a3`). It is not a Q-SFCLEAR-3 executor.
+- **Joshua** receives the per-basis labels and each population's limb class. He does not receive tallies or medians.
+- **The public record** carries the labels only.
+- **Values** stay in a private file in the primary checkout.
+
+**Exposure.** The read and its labels are a Q-SFCLEAR-3 exposure entry. That entry names this session and Joshua, as the labels' recipient.
