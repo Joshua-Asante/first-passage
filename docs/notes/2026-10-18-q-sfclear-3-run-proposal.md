@@ -14,7 +14,7 @@
 - **Decisions the answer changes:**
   - **RESOLVED:** R1 becomes the personal sizing binding, which discharges owed item 1 of the [self-funded ADR](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds). The three-leg book also becomes the scored "book without MNQ" reference that any later MNQ portfolio comparison can cite (§7).
   - **NOT CLEARED:** R1 stops. The personal lane has no cleared sizing, and the native pilot has no pre-registered existing-book portfolio. Any other rung needs a new ruling, a new trial and a new freeze.
-- **Why now:** every code prerequisite has merged (§5). Not running it leaves the only frozen portfolio study unscored.
+- **Why now:** every production-code prerequisite has merged. The private FG driver is incomplete (§5). Not running it leaves the only frozen portfolio study unscored.
 - **What it cannot decide:** native NinjaScript parity, any firm instance, profitability, funding, arming or orders. The unpublished native reassessment proposal (2026-10-16) drops Python FG and clearance as universal dependencies. So the value of this run is the personal-lane binding plus a scored three-leg reference, not a native qualification. Joshua should approve on that basis.
 
 ## 2. Exact versions
@@ -29,7 +29,7 @@
 | Code at the run head | Card A #821; card B #833 plus amendment (c) #861 (`6a96af3`); card C #827; card D Part 1 #840; card E #839; P-L1 #794, P-L2 #805, P-L3 #797; fixed-leg live-sizing fix #863. The run head is a later clean `main` commit that holds all of these |
 | G1/G3 calculator | sha256 `2333844dd2a9342239812baa38a119b55f4b8a65841165740a9a39633f2297bf` |
 | Freeze record | `sfclear3-freeze-20261014T171313Z` (private), pinned in F₃ |
-| Drivers | FG: `fg_driver.py` draft `def26ea1…` (not yet bound). Clearance: `clearance_driver.py` `e4201e3f…` (bound 2026-10-15 after independent review) |
+| Drivers | FG: `fg_driver.py` draft `145e009c…` (folder SHA256SUMS `1c035423…`; not yet bound). Items 1c and 3 are fail-closed GAP stubs, so a run on this draft seals FG FAIL. The dispatch-record DRAFT still names the older `def26ea1…`. Clearance: `clearance_driver.py` `e4201e3f…` (bound 2026-10-15 after independent review) |
 
 ## 3. Data
 
@@ -86,10 +86,19 @@ FG must first PASS all seven items: 1a, 1b, 1c, 2, 3, 5 and 6. Then every bindin
 **Remaining before dispatch (owners: coordinator, Joshua):**
 
 1. FG items 1c and 3: rule the ex-ante comparison rules. The proposals are in private `sfclear3-fg-1c-item3-proposals-20261016T001103Z`, and no public ruling has been found.
-2. Review the FG driver at the run head and bind its hash.
+2. Build FG items 1c and 3 in the driver, after their rulings. The coordinator estimates 1,200–1,600 lines plus tests. Then review the driver at the run head and bind its hash.
 3. Build the digest-only run manifest.
 4. Fill the run head in both dispatch records. Hook 4 must print nothing there, and hook 4b must print nothing in the operator checkout.
 5. Joshua opens VM access for each run (§60 addendum 2026-10-14).
+
+**Found after approval (coordinator, 2026-10-19):** the preparation is larger than five items. Four of the item 1c and 3 rulings are Joshua's. In addition:
+
+- no hook 4b script or run-manifest builder exists;
+- `run_record` expects status `PASS`, but the FG driver writes `fg_verdict`;
+- the D-h timeout and the 171 s cap conflict;
+- a clean operator checkout is needed at the run head.
+
+The private scope packet is `sfclear3-dispatch-scope-20261019/SFCLEAR3-DISPATCH-SCOPE-r1.md` (sha256 `9493eb56…`). The coordinator recommends pausing the preparation until Joshua funds it. Dispatch waits on that decision.
 
 ## 6. Budget (Rule 2)
 
