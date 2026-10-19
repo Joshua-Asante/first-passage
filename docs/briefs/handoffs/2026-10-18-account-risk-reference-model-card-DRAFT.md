@@ -4,13 +4,13 @@
 
 **Type:** cc_handoff (worker build card)
 
-**Status:** DRAFT 2026-10-18, proposal for Codex. Joshua asked for "a bounded Codex implementation proposal" of the shared account-risk interface. That request authorizes this draft only; code admission, freeze and dispatch are Joshua's (§0.5).
+**Status:** DRAFT 2026-10-18, proposal for Codex. Joshua asked for "a bounded Codex implementation proposal" of the shared account-risk interface. That request authorizes this draft only. Revised 2026-10-19 for operator rulings D-N4 to D-N6 (runbook §5); code admission, freeze and dispatch are Joshua's (§0.5).
 
 **Base:** `origin/main` = `3d396e28bd96b2717f5924279b40080f0d4285a1` at drafting. Refresh at dispatch.
 
 **Goal:** A pure Python reference model of the account owner that implements [runbook §6](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md#6-shared-account-risk-interface) and passes every [§7 scenario](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md#7-deterministic-scenarios), with each incorrect variant detected.
 
-**Architecture:** One deterministic reducer, `step(state, event) -> (state, outputs)`, with frozen dataclasses for configuration, events, state and outputs. No I/O, clock, broker, persistence or randomness; time arrives only as event `as_of` and `Tick`. The journal is the ordered list of `(event, outputs)` pairs, so replay is a fold.
+**Architecture:** One deterministic reducer, `step(state, event) -> (state, outputs)`, with frozen dataclasses for configuration, events, state and outputs. No I/O, clock, broker, persistence or randomness; time arrives only as event `as_of` and `Tick`. The journal is the ordered list of `(event, outputs)` pairs, so replay is a fold. The model is an offline specification and test oracle, never a service in the live execution path; passing it proves nothing about NinjaTrader or broker behavior.
 
 **Tech stack:** Python standard library, pytest, the project launcher.
 
@@ -88,7 +88,7 @@ acceptance:
 
 1. `AccountRiskConfig.load(mapping)` validates per runbook §6.2 and returns a config with `config_id` = SHA-256 of its canonical JSON. Invalid input raises; it never fills defaults.
 2. `initial_state(config, *, dirty_epoch)` starts `HALTED`. An `OperatorStart` event moves it to `RUNNING` only if the epoch is clean and nothing is open or reserved.
-3. `step(state, event)` implements §6.3–§6.8 exactly: bar batches in rank order, whole-or-refuse admission with §6.6 reasons in table order, reservations and usage per §6.5, protection per §6.7, latches and the uncertain set per §6.8. Every command output is preceded in the same output tuple by its `JournalRecord`.
+3. `step(state, event)` implements §6.3–§6.9 exactly: bar batches in rank order for entries only, with every other event processed on arrival, whole-or-refuse admission with §6.6 reasons in table order, reservations and usage per §6.5, protection per §6.7, latches and the uncertain set per §6.8, and the incident close procedure per §6.9. Every command output is preceded in the same output tuple by its `JournalRecord`.
 4. An invalid or contradictory event never raises out of `step`; it latches per §6.8.
 5. `replay(config, events)` folds `step` and returns the full journal; two replays of the same events are equal.
 
@@ -98,14 +98,14 @@ acceptance:
 
 | Row | Required executable evidence | Fails if |
 |---|---|---|
-| A1 | One test per §7 row (CE-1…RC-5) with the §7 fixture configuration, asserting decisions, refusal reasons, commands with quantities, latches, uncertain set and usage | Any expectation differs |
+| A1 | One test per §7 row (CE-1 to IC-4, 23 rows) with the §7 fixture configuration, asserting decisions, refusal reasons, commands with quantities, latches, uncertain set and usage | Any expectation differs |
 | A2 | Each row's incorrect variant built as a mutant of the reducer (see below) makes that row fail | A variant survives |
 | A3 | Replay: for every row, `replay(events)` equals the step-by-step journal; permuting arrival order inside one bar batch leaves decisions unchanged | Replay or permutation changes a result |
 | A4 | Every command output has a preceding `JournalRecord`; a simulated journal failure produces no command and latches `INCIDENT` | A command without a record |
 | A5 | Configuration: each unbound field, duplicate rank, non-positive `micro_equiv`, and opposite-side legs on one instrument is rejected; limits come only from the config (a test with a second fixture, cap 6, changes CE-1's outcome to both admitted) | A default or hard-coded limit |
 | A6 | No latch is cleared by any later event in the same session, across every row | A latch drops |
 
-**Named mutants** (one at a time): M1 decide in arrival order; M2 clip to remaining capacity; M3 count only confirmed quantity; M4 release a reservation on cancel acknowledgment; M5 size protection to requested quantity; M6 count acknowledged protection as working; M7 accept a terminal that exceeds correlated fills; M8 restore `RUNNING` on reconnect; M9 close an uncorrelated position; M10 skip snapshot `B`; M11 honour a stored `RUNNING` at start; M12 resend a rejected order. Each must turn its §7 row red.
+**Named mutants** (one at a time): M1 decide in arrival order; M2 clip to remaining capacity; M3 count only confirmed quantity; M4 release a reservation on cancel acknowledgment; M5 size protection to requested quantity; M6 count acknowledged protection as working; M7 accept a terminal that exceeds correlated fills; M8 restore `RUNNING` on reconnect; M9 close an uncorrelated position; M10 skip snapshot `B`; M11 honour a stored `RUNNING` at start; M12 resend a rejected order, or keep trading after one; M13 hold fills or protection until a bar batch closes; M14 keep an instrument uncertain while its own protection is working, or cancel that protection to clear it; M15 submit new protection under `INCIDENT`; M16 forget the resting entry remainder on incident; M17 send a second replacement close, or resend an ambiguous one; M18 leave a close working after the stop fills. Each must turn its §7 row red.
 
 **Revert trigger:** a surviving mutant or a row that passes only through behavior absent from §6.
 
