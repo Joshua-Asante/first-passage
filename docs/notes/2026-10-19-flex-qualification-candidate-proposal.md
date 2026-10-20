@@ -1,6 +1,6 @@
 # Does FLOOR-HALF merit more investment? One cheap screen before any qualification build (proposal, 2026-10-19)
 
-**Status:** PROPOSAL, revision 2. It responds to the review of #877. It is not execution approval: nothing is run, scored, frozen, bought, sent or admitted, and every decision in §9 is Joshua's.
+**Current disposition:** Dedicated FLOOR-HALF work is **PARKED pending the CME and firm answers**. Joshua approved one two-hour, zero-spend reassessment under #877's unchanged criteria; see the [parking ruling](#operator-ruling-2026-10-19-parking-and-bounded-reassessment). Step 1 and the completed Step 2 remain the baseline. The proposal body below is retained as history.
 
 **Question:** which existing portfolio, on which fresh-evaluation basis, deserves one qualification experiment before native implementation?
 
@@ -468,3 +468,30 @@ Neither label carries evidential weight. The data are in-sample and the configur
   - `results.json` `f781c716…f495`, `REPORT.md` `42c008d1…6b6b` and `attestation.json` `96af7491…eae`;
   - the s-journals, pinned by the attestation heads.
 - **Private record:** `local_artifacts/flex-qualification-2026-10/step2-read-20261019.private.json` (`8a77bdc4…d379`). The read script beside it is `d64efd11…abd`.
+
+## Operator ruling 2026-10-19: parking and bounded reassessment
+
+Joshua, directly in Codex chat `01a1569b-eaaa-7990-926a-b076a47a1c8f`
+("Assess FLOOR-HALF investment"), approved:
+
+> Agreed. Park dedicated FLOOR-HALF work pending the CME and firm answers. Approve the two-hour, zero-spend reassessment under #877’s unchanged criteria. Keep NinjaTrader work moving through its existing owners.
+
+- **Disposition:** preserve the option; park dedicated candidate qualification work.
+- **Trigger and ownership:** the existing CME and firm-answer owners return their
+  answers through the coordinator's eligibility register. The existing
+  [firm-question drafts](2026-10-19-flex-firm-questions-DRAFT.md) and assignments
+  remain with their owners.
+- **Reassessment:** one desk assessment, at most two analyst hours and zero new
+  spend, using the ratified Step 1 criteria, completed Step 2 results and permitted
+  summaries. Preserve existing private-access and disclosure boundaries.
+- **Return boundary:** recommend stop, continued parking, or a separately scoped
+  next experiment. Return at the two-hour limit with unresolved facts named.
+  Additional private access, a build or a run requires its own scoped approval;
+  Step 2 is not repeated and criteria are not revised.
+- **Decision rule:** apply the existing CME-dependent D selection. A fee above
+  $500/month selects the completed NOT PROMISING result on both bases and the
+  recommendation to stop dedicated investment. Otherwise assess the remaining
+  firm restrictions and net economics; incomplete answers leave the option parked.
+- **Separate work:** NinjaTrader remains the chosen execution route. Its already
+  authorized execution, protection and recovery work continues through its
+  existing owners, independently of FLOOR-HALF's parking.
