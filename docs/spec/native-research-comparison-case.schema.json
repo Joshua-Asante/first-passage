@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Native research comparison case v1",
+  "description": "Artifact envelope only. Semantic requirements and verdicts are defined by 2026-10-18-native-research-comparison-contract.md. No candidate defaults.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "interface_version", "case_id", "mode", "profile", "inputs", "policy",
+    "reference_binding", "native_binding", "reference_trace", "native_trace"
+  ],
+  "properties": {
+    "interface_version": { "const": 1 },
+    "case_id": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["controlled_feedback", "independent_execution"] },
+    "profile": { "$ref": "#/$defs/artifact" },
+    "inputs": { "$ref": "#/$defs/artifact" },
+    "policy": { "$ref": "#/$defs/artifact" },
+    "reference_binding": { "$ref": "#/$defs/artifact" },
+    "native_binding": { "$ref": "#/$defs/artifact" },
+    "reference_trace": { "$ref": "#/$defs/trace" },
+    "native_trace": { "$ref": "#/$defs/trace" }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locator", "sha256"],
+      "properties": {
+        "locator": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw", "canonical", "mapping", "capture_evidence", "row_count"],
+      "properties": {
+        "raw": { "$ref": "#/$defs/artifact" },
+        "canonical": { "$ref": "#/$defs/artifact" },
+        "mapping": { "$ref": "#/$defs/artifact" },
+        "capture_evidence": { "$ref": "#/$defs/artifact" },
+        "row_count": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
