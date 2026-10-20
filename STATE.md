@@ -92,7 +92,7 @@ Owners hold canonical criteria; rows are pointers.
 
 - **Subscription reconfirm:** on the 21st, recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
   rows d11–d18 and record the operator's confirmation, even if unchanged; resolve
-  Fly.io/Tradeify unknowns when evidence appears. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
+  Fly.io/Tradeify unknowns when evidence appears. [Rules](docs/pursuits/SUBSCRIPTION_LEDGER.md#rules).
 - **Coverage:** 2026-09-21 missed (not attested as of 09-22); the operator's d11–d18
   confirmation is still owed.
 
@@ -118,8 +118,8 @@ Owners hold canonical criteria; rows are pointers.
   not a new build. [Design](docs/spec/2026-06-23-inqhiori-sentinel-design.md)/[Hermes closure](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md).
 - **PREREG-C1-DEDUPE-1:** M1 prerequisite met 2026-09-14; GO granted ([D-B13](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md), 2026-09-11). It does not apply to the REST book route as written (operator ruling 2026-10-02 (sitting 2)).
   [Pre-registration](docs/spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md)/[plan](docs/spec/PREREG-C1-DEDUPE-1-implementation-plan.md).
-- **CFD data-estate class-wide deletion:** awaits T1 / F3 FUTURES_LOCK and substrate
-  Phase-6 confirmation. [Estate ADR](docs/adr/2026-07-11-ops-cfd-estate-retirement.md)/[substrate successor](docs/adr/2026-07-22-challenge-era-substrate-retirement.md)/[gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md).
+- **CFD/challenge-era offline rollback copies:** checkout deletion is done (substrate Phases 3/5, Pepperstone 2026-08-02, CFD `bar_data` 2026-08-03); copies (a) 2026-07-22, (b) 2026-08-02 and (c) 2026-08-03 are kept. Destroying any copy is a separate operator confirmation and the point of no return; (b) and (c) back the 2026-10-31 and 2026-11-01 90-day checks.
+  [Owner](docs/adr/2026-07-22-challenge-era-substrate-retirement.md#cfd-challenge-era-carried-forward)/[gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md).
 - **Mechanism-sourcing radar:** on demand; progress/idle checkpoint 2026-11-08.
   [Harvest method](docs/methodology/strategy_harvest.md).
 - **Reversed-evidence propagation sweep:** pursuit fixes from the closed, unmerged pass are
@@ -171,7 +171,7 @@ Owners hold canonical criteria; rows are pointers.
 ### 2026-12-31 (approx.)
 
 - **Prop-envelope overlay:** reverify the 90-day venue facts for the four friendly firms only (operator default 2026-10-02, sheet E). The other four rows stay stale and unused.
-  Last done 2026-10-02/03 by [#621](https://github.com/Joshua-Asante/first-passage/pull/621). [Envelope §4](ops/prop_envelope_default.md)/[ratification](docs/adr/2026-07-13-prop-envelope-v1-ratification.md).
+  Last done 2026-10-02/03 by [#621](https://github.com/Joshua-Asante/first-passage/pull/621). [Envelope §4](ops/prop_envelope_default.md)/[ratification](ops/prop_envelope_default.md#5--ratification-record-all-v01-open-items-resolved-2026-07-13).
 
 ### 2027-02-08
 

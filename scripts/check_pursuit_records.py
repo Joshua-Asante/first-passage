@@ -2,7 +2,7 @@
 """check_pursuit_records.py — GRAND-tier pursuit-record limbs (ADR 2026-08-09).
 
 RETIRED FROM scripts/gates.yml 2026-08-24 (Rule 16 R5 — docs/operational_rules.md;
-see docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md): every
+see docs/adr/TOMBSTONES.md, 2026-10-15 ADR decay audit removals): every
 reachable exit path in main() below returns 0, so as invoked by the gate this check
 could never fail regardless of tier. Retained on disk and still runnable manually
 (`python scripts/check_pursuit_records.py`); no longer wired into any gate tier.
@@ -28,7 +28,7 @@ THE MECHANICAL RULE (deliberately narrow — M-8):
   5. ledger-pointer — every KEEP whose Class is (d) meta-belt (subscription) or
      (d) meta-belt (venue account) must reference SUBSCRIPTION_LEDGER.md
      somewhere in its body (§2.5-adjacent; ledger contract:
-     docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md D2).
+     docs/pursuits/SUBSCRIPTION_LEDGER.md, Rules — "Ledger pointer").
 
 SEVERITY:
 
@@ -241,8 +241,8 @@ def scan_file(path: Path, asof: date) -> list[Finding]:
                     path,
                     "subscription/venue-account-class KEEP missing a SUBSCRIPTION_LEDGER.md "
                     "pointer (subscription contract — $/mo tracked at row-creation "
-                    "time, not backfilled later; see docs/adr/2026-08-21-"
-                    "cfo-subscription-ledger-consolidation.md D2)",
+                    "time, not backfilled later; see docs/pursuits/"
+                    "SUBSCRIPTION_LEDGER.md, Rules)",
                 )
             )
 

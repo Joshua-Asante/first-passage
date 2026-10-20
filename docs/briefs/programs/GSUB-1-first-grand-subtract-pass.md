@@ -131,7 +131,7 @@ execution.
 ## §6 — Gate criteria (closure verdict) and return taxonomy
 
 Closure is binary per §4; dispositions typed per
-[`iterate-closure-exit`](../../adr/2026-08-04-iterate-closure-exit-mandatory.md):
+[`iterate-closure-exit`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-04-iterate-closure-exit-mandatory.md):
 
 | Verdict | Trigger condition | Disposition (typed) |
 |---|---|---|

@@ -71,7 +71,7 @@ running code, a live gate, or a live test. The sharpest: deleting
 `register_search.py::_require_reachability_attestation` **abort**, because
 `discovery_manifests/h_od_1_es_overnight_drift.json` names it as a reachability attestation.
 `2026-07-15-existing-strategy-book-candidate-2-prereg.md` is reached by **pathlib joins** at
-`run_class_s_c2_scoring.py:50-55`. `docs/spec/2026-06-23-inqhiori-sentinel-plan.md` is named by
+`run_class_s_c2_scoring.py:50-55`. [`docs/spec/2026-06-23-inqhiori-sentinel-plan.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-23-inqhiori-sentinel-plan.md) is named by
 `ops/sentinel/scan.py:136-140` as the authority for the live scanner's obligation surface.
 
 **Failure mode #5 (the one §4a predicted but could not pre-empt):** references to these documents are
@@ -87,7 +87,7 @@ inbound-reference index built from *prose and hook* citations, not links, and mu
 this measured precision. The delivered reduction (§6) comes from the classes that were safe.
 
 Safety/rail (R2): `2026-07-17-c1-rail-build-account-registration-go` · `2026-07-22-c1-venue-native-monitoring-maturity` · `2026-05-08-dd-trigger-c2-relock` · `2026-08-08-s2b-signal-daemon-build` · `2026-08-07-loop-s2-signal-host-fork` · `2026-08-07-loop-s1-environment-ratification` · `2026-08-07-loop-s5-bounded-promotion-lane`.
-Open obligations (R5): `2026-08-04-tradeify-venue-descope-eval-included` (F1, T4) · `2026-07-12-prop-portfolio-four-friendly-firms` (§4 11-08) · `2026-07-22-prop-portfolio-s4-discharge-withdrawal` · `2026-08-07-w1-intraday-honest-engine-remeasure` · `2026-06-07-decompound-remc-hold` (standing HOLD on live posture) · `2026-07-26-mechanism-counterparty-constraint-boundaries` (11-08) · `2026-07-15-external-mechanism-harvest-intake` (11-08) · `2026-08-03-params-toml-gate-retirement` (falsifier window → 11-08; zero-exposure recorded).
+Open obligations (R5): `2026-08-04-tradeify-venue-descope-eval-included` (F1, T4) · `2026-07-12-prop-portfolio-four-friendly-firms` (§4 11-08) · `2026-07-22-prop-portfolio-s4-discharge-withdrawal` · `2026-08-07-w1-intraday-honest-engine-remeasure` · `2026-06-07-decompound-remc-hold` (standing HOLD on live posture) · `2026-07-26-mechanism-counterparty-constraint-boundaries` (11-08) · `2026-07-15-external-mechanism-harvest-intake` (11-08) · [`2026-08-03-params-toml-gate-retirement`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-03-params-toml-gate-retirement.md) (falsifier window → 11-08; zero-exposure recorded).
 Live doctrine/gates (R1): `2026-08-04-family-k-bank-disclosure-not-gate` · `2026-08-05-avenue-a-generate-confirm-route` · `2026-07-12-dsr-k-rule-and-variance-floor-supersession` · `2026-07-10-strategies-never-locked-lifecycle-governance` · `2026-07-13-dd-protection-concept-not-constant` · `2026-08-08-adr-ceremony-tiering` · [`2026-08-07-w5-governance-diet`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md) · `2026-08-07-w4-minimal-gate-set-dormancy` · `2026-08-04-iterate-closure-exit-mandatory` · `2026-05-10-manifest-integrity-gate` · `2026-07-01-guardian-pyport-public-tracking` · `2026-06-05-monorepo-layer-boundaries` · **this ADR**.
 Operator ruling at PR review: `2026-07-03-hardcore-p1` and `-p3` keep-or-tombstone (default tombstone; obligations recorded in audit note §2). P2/P4/P5 tombstone (moot/unfalsifiable).
 
@@ -101,7 +101,7 @@ the right instrument, not the intuition that burned it.
 |---|---|---|---|
 | 1 | `lab/analysis` harnesses imported by sibling campaign code | "closed campaign ⇒ inert" — the tree has an import graph | full `pytest`, not the gate battery |
 | 2 | `DISC-CAMP-0` + `Q-FEED-1` frozen pre-registrations | "docs/ltm is cold prose" — they are **pinned threshold sources read at runtime** | quoted-path scan across `core/ ops/ scripts/ tests/ lab/` |
-| 3 | `docs/analytics/mc_anchor_evolution/plot.py` | an **executable** living under `docs/` | same scan (extension-agnostic) |
+| 3 | [`docs/analytics/mc_anchor_evolution/plot.py`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/analytics/mc_anchor_evolution/plot.py) | an **executable** living under `docs/` | same scan (extension-agnostic) |
 | 4 | `docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` — **the arming-gate artifact** | `ops/c1_rail/c1_rail_arm.py` builds the path with `pathlib` joins; no string literal exists to grep | hard-protected directory list + `"docs" /` pathlib-join scan |
 | 5 | 66 of 69 reviewed docs (precision 4.3%) — incl. a prereg whose absence makes `register_search.py` abort | inbound references are **not markdown links**: backticked prose paths, `{design,plan}` braces, runnable `rg` audit hooks, `**Related:**` evidence lines | classes 3, 5–8 HALTED (§3.2) |
 | 6 | **CLAUDE.md's own prose** — the MC-anchor literals `99.83% pass / 0.17% bust` and `p99 DD 4.37%` | `ops/recall/guard.py:~100` **regex-parses CLAUDE.md** to build the recall denylist; the pointer-form rewrite reworded them, silently disabling the guard so it would admit the anchor as authority | literals restored **with an inline warning naming the parser**; caught by full `pytest`, invisible to every gate |
@@ -128,7 +128,7 @@ the commit lands. The pre-commit gate battery does **not** run tests and is not 
 
 **What is adopted instead:** the falsifier's *instrument* is replaced, not its intent. At each future programme-audit cadence, F-2 is re-tested by a content sample (read N live ADRs in full against Rule 16), not a raw count/byte regrowth measurement. Six genuine partial-edit findings from this pass (dormancy/reconciliation addenda owed on specific ADRs, not deletions) are the real, smaller-than-hoped belt-tightening this cycle earned — tracked in the linked audit note §3, not restated here.
 
-**Open, not decided here:** [`2026-08-12-closure-disposition-coverage-hard.md`](2026-08-12-closure-disposition-coverage-hard.md) self-armed a new HARD/commit-blocking gate 4 days into F-2's own trigger window — the only ADR in the corpus to do so, over a documentation-bookkeeping concern. Whether that gate was the right call sits with the operator; not re-litigated by this addendum.
+**Open, not decided here:** [`2026-08-12-closure-disposition-coverage-hard.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-12-closure-disposition-coverage-hard.md) self-armed a new HARD/commit-blocking gate 4 days into F-2's own trigger window — the only ADR in the corpus to do so, over a documentation-bookkeeping concern. Whether that gate was the right call sits with the operator; not re-litigated by this addendum.
 
 ## §5 — Forbidden moves
 

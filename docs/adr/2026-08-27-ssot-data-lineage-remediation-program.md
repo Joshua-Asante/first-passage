@@ -7,7 +7,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Authors:** Claude Code (measurement, verification, draft) — commissioned via the Phase 0 section of the plan file below; ratification is a reserved operator action, not performed here.
-**Related:** [`2026-08-09-rejection-register-topology-and-bar-wiring.md`](2026-08-09-rejection-register-topology-and-bar-wiring.md) (D4 — this program's Phase 1 Task 2 discharges it; D1–D3 are read, not reopened) · [`2026-08-22-catalog-hot-vs-disposition.md`](2026-08-22-catalog-hot-vs-disposition.md) (confirmed already `Accepted` and landed — cited for contrast, not reopened) · [`2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md) (Phase 1 Task 1 discharges its unimplemented half) · [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test, applied below) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) (audit-format precedent this program reuses) · plan file [`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md) (§7 implementation-plan pointer; also carries this program's Global Constraints and Non-goals)
+**Related:** [`2026-08-09-rejection-register-topology-and-bar-wiring.md`](2026-08-09-rejection-register-topology-and-bar-wiring.md) (D4 — this program's Phase 1 Task 2 discharges it; D1–D3 are read, not reopened) · [`2026-08-22-catalog-hot-vs-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md) (confirmed already `Accepted` and landed — cited for contrast, not reopened) · [`2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md) (Phase 1 Task 1 discharges its unimplemented half) · [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test, applied below) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) (audit-format precedent this program reuses) · plan file [`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md) (§7 implementation-plan pointer; also carries this program's Global Constraints and Non-goals)
 **Layer:** governance convention (gate authorship + skill-deploy convention over `scripts/gates.yml`, `.claude/skills/`, `docs/rejected_candidates.md`/`ops/instruments/`, `docs/operational_rules.md`). **$0 / K=0.**
 **Tier:** full — limb 4 fires (creates/wires gates and a deploy-verification convention that binds future ADR authoring, skill deployment, and discharges a standing doctrine obligation (D4) from a prior ADR).
 
@@ -173,14 +173,14 @@ this ADR's §0 owes, not as a sizing input.
 
 **Additional reads (not scripted commands, context confirmation):**
 
-- `docs/adr/2026-08-22-catalog-hot-vs-disposition.md` read in full — `Status: Accepted`, ratified
+- [`docs/adr/2026-08-22-catalog-hot-vs-disposition.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-22-catalog-hot-vs-disposition.md) read in full — `Status: Accepted`, ratified
   2026-08-22, Phase 1 (parser Verdict-wins rewrite, C2 retarget, `hot` column) landed the same GO.
   Confirms the plan's "already fixed" row; not reopened here (§5 below).
 - `docs/adr/2026-08-08-adr-ceremony-tiering.md:22` — limb-4 text quoted verbatim: "Creates or amends
   doctrine: a rule, gate, falsifier threshold, or convention that binds future work." Applied to this
   ADR's own tier classification above.
 - Standing quarterly-programme-audit cadence confirmed against multiple sibling ADRs
-  (`2026-05-08-dd-trigger-c2-relock.md:99`, `2026-06-14-rejected-candidate-patterns.md:115`, and
+  (`2026-05-08-dd-trigger-c2-relock.md:99`, `2026-06-14-rejected-candidate-patterns.md:115` @ `4bc89a4b`, and
   others): **2026-08-08, 2026-11-08, 2027-02-08, 2027-05-08.** Today is 2026-08-27 → the next
   quarterly slate is **2026-11-08**, the same date D4's own falsifier already targets. Used in §4
   below rather than inventing a new date.

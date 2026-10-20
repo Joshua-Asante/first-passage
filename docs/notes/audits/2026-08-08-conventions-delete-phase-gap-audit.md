@@ -302,7 +302,7 @@ reciprocity check A5 is not in `DEFAULT_ENABLED_CHECKS`.
 
 ## §7 — The one deletion the estate already ordered, and never executed
 
-**[verified-here]** [`ADR 2026-06-04 — Lean Portfolio Meta-Layer`](../../adr/2026-06-04-lean-portfolio-meta-layer.md)
+**[verified-here]** [`ADR 2026-06-04 — Lean Portfolio Meta-Layer`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-04-lean-portfolio-meta-layer.md)
 is the **only ADR in the 121-file corpus that pre-registers its own deletion**:
 
 > **Falsifier:** if at 8 weeks no allocation decision references realized ECR — i.e.

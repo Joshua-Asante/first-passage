@@ -1017,10 +1017,10 @@ overstate by two orders of magnitude.
 - **Discovery path:** noticed manually during equivalence cross-check; not
   caught by any fixture suite (none existed at the time).
 - **Canonical fix:** `tv_mt5_pnl_reconciliation.py` (commit `8e2a2d6`,
-  2026-05-16) encodes the independent USD formula and a `compute_pnl_tv_buggy`
-  regression helper that reproduces the defect. Fixture suite at
-  `tests/test_tv_mt5_pnl_reconciliation.py` pins the canonical, inverse, and
-  30-day boundary cases against independently derived expected values.
+  2026-05-16) encoded the independent USD formula and a `compute_pnl_tv_buggy`
+  regression helper; its suite `tests/test_tv_mt5_pnl_reconciliation.py` pinned the canonical, inverse and 30-day boundary cases.
+  Neither file is in this public tree (both predate the 2026-08-14 public seed; retrieval: private archive).
+  The last survivors, `tests/fixtures/usdjpy_pnl_fixtures.csv` and its unused `usdjpy_fixtures` loader in `tests/conftest.py`, were removed 2026-10-15 (#851); both are at `4121e84c`.
 
 ### Cost
 
@@ -1035,7 +1035,7 @@ Before citing an analysis-script output as brief evidence, confirm the script
 has a fixture test under `tests/` pinning its anchor invariant against an
 independently derived expected value, and that `pytest tests/` returns green.
 (The covering test need not be named `test_<basename>.py` — the repo's
-convention is topical, e.g. `portfolio_mc.py` → `tests/core/test_mc_anchors.py`.)
+convention is topical, e.g. MC fixed-point boundaries → `tests/core/test_mc_fp_boundaries.py`, firm constants → `tests/core/test_firm_constants_single_source.py`.)
 
 ### Mechanism (why this fails)
 
@@ -1571,6 +1571,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to this section's own
 "maintained at the bottom" convention) — content unedited by the move.
 
+- **2026-10-15:** F-1 anchor-incident paths corrected (pilot script/test absent from the public tree; topical-test example repointed to surviving tests). No rule change.
 - **2026-09-20:** M-26 through M-48 migrated from the Claude-memory store (process / verification / multi-agent review lessons) in the light format, so every harness reading this repo sees them; each carries its memory twin in `LESSONS_INDEX.jsonl`. Operator direction 2026-09-20 (AGENTS.md single instruction file; three-seat delegation). No retroactive edit to M-7 … M-24.
 - **2026-08-29:** Format spec lightened for entries going forward: light 5-field format (Date /
   Anchor / What broke / Rule / optional Mechanism / Link) replaces the 8-field template + dollar-

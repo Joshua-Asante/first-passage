@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 read detail (two decisive reads kept), §7 implementation plan, §10 hooks other than the two §4-trigger-2 checks, and the detail of the first two amendment-log entries removed; §4 trigger 2's pointer to §7 Phase 2 now names the landed enforcement. No decision text changed; line numbers cited elsewhere refer to the pre-trim text. Pre-trim text at blob `9225866089a08dba64a5a185ace3000aaa59327c` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 **Amends-in-part:** [`2026-07-15-external-mechanism-harvest-intake.md`](2026-07-15-external-mechanism-harvest-intake.md) Requirement 3 · [`2026-07-11-discovery-campaign-defaults-ratified.md`](2026-07-11-discovery-campaign-defaults-ratified.md) Default #2 (K semantics) · [`2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`](2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) (the `K_DSR` *input*; its non-overlap floor and `V=1/n` pin are untouched) · [`2026-07-26-mechanism-counterparty-constraint-boundaries.md`](2026-07-26-mechanism-counterparty-constraint-boundaries.md) §2-C (executed-K banking survives, but what a bank *does* changes)
 **Related:** [`Q-ICTEXP-1 results`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_EXP.md) · [`Q-ICT-1MEXEC-1 draft prereg`](../briefs/pre-registration/2026-08-04-ict-1m-execution-mnq-preregistration.md) §2 (the reachability screen that surfaced this) · [`ORB cadence adjudication`](../notes/2026-08-04-orb-cadence-role-adjudication.md) (*"the K bank is NOT the terminator"*)
 **Layer:** methodology (research rules of evidence only). No strategy parameter, allocation, `dd_protection` constant, lifecycle state, Pine source, or rail config is touched.
@@ -15,14 +16,7 @@
 
 ## §0 — Rule 0 reads (production source, verified this session 2026-08-04)
 
-- **[`lab/research_utils/axis_screen.py`](../../lab/research_utils/axis_screen.py) @ `8908121`** — **the live enforcement surface, and the thing this ADR actually changes.** `_REQUIRED_KEYS` includes `k_banked` (L39); validation at L91-92; **L161-162 `k_lo, k_hi = lo + a["k_banked"], hi + a["k_banked"]`** is the ratchet; `clause_k = "PASS" if f_lo <= CAP else "FAIL"` (L164) and the FAIL short-circuit (L169). Frozen constants `CAP = 1.0`, `DSR_MIN = 0.95` (L31-32) with an explicit no-override rule.
-- **[`lab/discovery/register_search.py`](../../lab/discovery/register_search.py) @ `e0bbad8`** — **does NOT sum families.** It stores one `K` per manifest (`"K": args.search_space_size`, L292) and may only lower it to `executed_k` at close (L357-368). There is no `K_banked` computation anywhere in it. The family bank is assembled **by hand, by reading closed manifests**, per doctrine — so most of the ratchet is convention, and exactly one module enforces it.
-- **[`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) @ `1bafe6f`** — the doctrinal home. **Requirement 3** ("Unburned family K-bank … If the family bank pushes floor(K_eff) above Cap 1.0, the seed is dead regardless of quality"), the family snapshot (GC/MGC 3,177 · ES 2 · **MNQ 2** · MYM 1 · 6E 1 · CL 1), **§Clause K** (`K_eff = K_intrinsic + K_banked(family)`; PASS iff `K_eff ≤ 3`; floors 1→0.65 · 2→0.85 · 3→0.98 · 4→1.06), and **L37** — *"`K_banked(family)` only grows … a family-bank kill does not soften with time or new evidence. This is the one requirement where 'the bar is too high' is never the right diagnosis."*
-- **[`lab/research_utils/deflated_sharpe.py`](../../lab/research_utils/deflated_sharpe.py) @ `48b8cef`** — `expected_max_sharpe(K, V)` supplies `SR0`, i.e. **the expected maximum over K trials**. This is the statistical fact §1 turns on: the correction prices *taking a max*.
-- **[`2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`](2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) @ `ba943a1`** — the direct precedent. It re-baselined `K_DSR` because counting overlapping matrix-profile subsequences as independent trials over-deflated to unreachability, and its §4 pre-commits a re-baseline path when a gate is shown mis-calibrated. **Its non-overlap floor and unconditional `V = 1/n` pin are NOT touched here.**
-- **[`2026-07-26-mechanism-counterparty-constraint-boundaries.md`](2026-07-26-mechanism-counterparty-constraint-boundaries.md) @ `0f36c3a`** §2-C — the executed-K closure rule and its first application. **ST-EH-1 closed `operator-stopped` banking executed `K=2` split 1 MNQ + 1 MYM against declared 84.**
-- **`discovery_manifests/st_eh_supertrend_grid.json`** — read directly, not from prose: `status: closed`, `K: 2`, `declared_K: 84`, `results.n_submitted: 0`, `closure_mode: operator-stopped`, and a `verdict` field reading **"OPERATOR-STOPPED before declared reads executed. NO campaign verdict exists and none may be quoted."**
-- **`discovery_manifests/d5_nq_intraday_mom.json`** — `status: closed`, `K: 1`, hypothesis = Baltussen intraday momentum. The other half of MNQ's bank.
+- **[`lab/research_utils/axis_screen.py`](../../lab/research_utils/axis_screen.py) @ `8908121`** and **[`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) @ `1bafe6f`** — the live enforcement surface and the doctrinal home this ADR changes. The other reads (`register_search.py`, `deflated_sharpe.py`, the 2026-07-12 and 2026-07-26 ADRs, and the two closed manifests `st_eh_supertrend_grid.json` / `d5_nq_intraday_mom.json`) are at the pre-trim blob (see **Revision:**).
 
 ---
 
@@ -88,7 +82,7 @@ immediately and the family term should return.
 
 **Revert action:** supersede with a **graded** family term (the §3 alternative deferred for lack of evidence), calibrated on the observed replication failures — **not** a return to the hard ratchet, which the same evidence would not support either. The superseding ADR must cite the specific failed replication.
 
-**Second, independent trigger:** if any seed is admitted under this ADR whose pre-registration **omits** the `K_banked(family)` disclosure, the disclosure has decayed to ceremony and the mechanical enforcement in §7 Phase 2 has failed. That is an implementation defect, not a doctrine defect — repair the screen, do not revert the doctrine.
+**Second, independent trigger:** if any seed is admitted under this ADR whose pre-registration **omits** the `K_banked(family)` disclosure, the disclosure has decayed to ceremony and the mechanical enforcement (`axis_screen.py` `_REQUIRED_KEYS` plus the rendered `k_banked` column, landed 2026-08-04) has failed. That is an implementation defect, not a doctrine defect — repair the screen, do not revert the doctrine.
 
 **Trigger check schedule:** the standing quarterly programme audit — next **2026-08-08**, then **2026-11-08**. Checked alongside ADR 2026-07-12's own trigger, which rides the same date.
 
@@ -127,7 +121,7 @@ immediately and the family term should return.
 - The cross-campaign channel may be larger than §1 argues. Mitigation: §4 trigger 1 plus the retained disclosure; the graded-term alternative is pre-staged in §3 so the repair path is already designed.
 - Reviewers may read the family snapshot as decorative once it stops gating. Mitigation: §4 trigger 2 makes an omitted disclosure a detectable implementation defect.
 
-**Downstream artifacts needing update (enumerated for §7):**
+**Downstream artifacts needing update (enumerated for the former §7 plan; see **Revision:**):**
 
 - `docs/methodology/strategy_harvest.md` — Requirement 3, §Clause K formula, the L37 "never softens" note.
 - `lab/research_utils/axis_screen.py` + `tests/test_axis_screen.py` — the L161-162 sum, and tests that pin it.
@@ -137,46 +131,19 @@ immediately and the family term should return.
 
 ---
 
-## §7 — Implementation plan
-
-- **Phase 0** — re-verify the §0 anchors (`axis_screen.py` @ `8908121`, `strategy_harvest.md` @ `1bafe6f`) still current; abort if either moved.
-- **Phase 1 — doctrine.** `strategy_harvest.md`: rewrite Requirement 3 from gate to disclosure; change §Clause K to `K_eff = K_intrinsic`; replace the L37 "never softens" paragraph with the disclosure rule. Retain the family snapshot verbatim (it is now the disclosure's reference).
-- **Phase 2 — code.** `axis_screen.py`: keep `k_banked` in `_REQUIRED_KEYS` and in the emitted row/table (disclosure preserved); change L161-162 so `k_eff = k_intrinsic` and `k_banked` is reported alongside rather than summed. Add a regression test asserting a row with a large `k_banked` and `k_intrinsic=1` now **PASSES** Clause K while still **reporting** the bank — and an adversarial test that a `k_intrinsic` of 5 still FAILs, so the change cannot be mistaken for disabling the clause.
-- **Phase 3 — sweep.** `rg --no-ignore "K_intrinsic \+ K_banked|K_eff = K_intrinsic \+"` across `docs/` and `lab/` and repair every restatement; frozen pre-registrations are **historical record and must not be edited** — they get a reader-intercept only where they state the rule as current doctrine.
-- **Phase 4 — ledger.** Amend `MNQ.md` **N10** (and the MYM/M2K sibling lines that quote floors) to record the arithmetic as correct-under-the-prior-rule and superseded here.
-- **Phase 5** — verification block below executes; status → `Accepted` on operator ratification.
-
----
-
 ## §10 — Audit hooks (runnable)
 
 ```bash
-# The enforcement surface this ADR changes (expect the SUM before Phase 2, k_intrinsic-only after):
-grep -n "k_banked" lab/research_utils/axis_screen.py
-
-# Doctrine must not still state the summed form as current:
-grep -n "K_intrinsic + K_banked" docs/methodology/strategy_harvest.md
-
 # The disclosure must survive as a REQUIRED key (guards the FM-3 decay-to-ceremony risk):
 grep -n "_REQUIRED_KEYS" -A 4 lab/research_utils/axis_screen.py
 
 # register_search must still never sum families (it did not before; it must not start):
 grep -c "K_banked" lab/discovery/register_search.py        # expect 0
-
-# The frozen constants this ADR does NOT touch (expect CAP 1.0 / DSR_MIN 0.95):
-grep -n "^CAP\|^DSR_MIN" lab/research_utils/axis_screen.py
-
-# The no-verdict bank this ADR cites (expect operator-stopped, n_submitted 0, declared 84):
-python -c "import json;d=json.load(open('discovery_manifests/st_eh_supertrend_grid.json'));print(d['closure_mode'], d['results']['n_submitted'], d['declared_K'], d['K'])"
-
-# N10 must not still assert MNQ is closed once this is Accepted:
-grep -n "N10" ops/instruments/MNQ.md
 ```
 
 ---
 
 ## Amendment log (append-only)
 
-- **2026-08-04 — PROPOSED.** Drafted at operator direction after the `Q-ICT-1MEXEC-1` reachability screen surfaced the 0.020-wide MNQ band. Operator selected option (a) (remove per-instrument ratcheting, keep within-search K) over (b) (drop K as a gate). **Not in force until ratified**; §7 is unexecuted, so `axis_screen.py` and `strategy_harvest.md` still carry the summed form.
-- **2026-08-04 — RATIFIED and §7 EXECUTED** (operator: *"ratify it and execute §7"*). Phase 0 re-verified both anchors unmoved (`axis_screen.py` @ `8908121`, `strategy_harvest.md` @ `1bafe6f`). **Phase 1** — `strategy_harvest.md`: Requirement 3 rewritten gate→disclosure, §Clause K set to `K_eff = K_intrinsic` with the grid-still-pays clause, the "never softens / not a judgment call" paragraph explicitly **withdrawn**, and the pre-registration §K block re-worded so `K_intrinsic` carries an enumerate-every-axis instruction. **Phase 2** — `axis_screen.py` L161-162 no longer sums; `k_banked` stays a `_REQUIRED_KEYS` member, stays in the emitted row, and was **added to the rendered table** (it was JSON-only, which would have let the disclosure decay unseen — §4 trigger 2). Tests 21 → **25**: the fixture test's superseded expectations are recorded in-place rather than silently flipped, plus four new pins including the adversarial `k_intrinsic=5` still-FAILs case and a `k_banked`-still-required case. **Phase 3** — sweep repaired the live deference in `strategy_harvest.md` (it named a *frozen* pre-registration as source-of-truth for a formula that has now diverged), added a reader-intercept to `Q-KBUDGET-1-screen-preregistration.md` §B at the point of reading, and left `instrument_map.py` on the old formula **by design** with a docstring explaining why (closed-study reproducibility). **Phase 4** — `MNQ.md` **N10**, `MYM.md` K-bank bullet, and `M2K.md` **M4** amended as correct-under-the-prior-rule and superseded, none deleted. **Measured effect on the standing fixture:** GC/MGC's 3,177-bank axes (D1, D4) stop being K-killed and fall through to UNSCREENABLE on their own merits, while the genuine wide searches (D2 at `K_intrinsic` 1000-10000, D6 at 450) still **FAIL Clause K** — which is the intended shape in one table.
+- **2026-08-04 — PROPOSED, then RATIFIED and §7 EXECUTED** (operator: *"ratify it and execute §7"*): `strategy_harvest.md` Requirement 3 / Clause K / §K block; `axis_screen.py` no longer sums (`k_banked` stays required and is rendered; tests 21 → 25); reader-intercepts; `MNQ.md` N10, `MYM.md` and `M2K.md` M4 amended. Detail at the pre-trim blob (see **Revision:**).
 - **2026-08-18 — Notice-phase closed manifests and Cap-seat K bank against the family tally.** Operator: *"OK on both"*, ruling the two items left OPEN on [`ops/instruments/MNQ.md`](../../ops/instruments/MNQ.md) §K_BANKED after the same-day TXG recon (5→6). **Reads (this session):** this ADR @ `027a729` · `MNQ.md` §K_BANKED @ `fd0e6ee` · `discovery_manifests/mnqsr1_structure_20260806.json` (+`b`) @ `027a729` (K=14, `n_pass_bh=0`, same construct) · `docs/briefs/closures/Q-CAPA-1-closure-resolved.md` @ `027a729` (Cap SPENT, `K_intrinsic=1`, no manifest). **Decision:** (1) a Notice-phase screen that closed a `discovery_manifests/` entry banks its K against `K_banked(family)` — lane label (Notice vs harvest) does not exempt; a seed-fixed re-score of the same construct banks **once**. (2) a Cap-seat spend (`K_intrinsic=1`, seat SPENT) banks +1 against the family tally even without a harvest manifest — the Cap reservation and the family bank are not mutually exclusive. **Does not change:** `K_eff = K_intrinsic`; bank remains disclosure-not-gate; ORB Ruling 1 (`executed_k=0`) still banks 0; campaign `K=1 (disclosure; Cap not claimed)` rows that are neither a closed harvest manifest nor a Cap-spend stay campaign-local. **MNQ figure:** 6 + 14 + 1 = **21**. No `core/` / Pine / rail / live-risk change.

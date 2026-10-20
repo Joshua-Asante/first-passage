@@ -7,7 +7,7 @@
 **Retain-until:** none
 **Decision date:** 2026-07-13
 **Authors:** claude.ai Tech Advisor (draft) · Joshua (decision)
-**Related:** [`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (parent program — this ADR supplies its account-boundary semantics; supersedes nothing); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) (E2/E3 interactions); [`docs/adr/2026-06-06-firm-constants-single-source.md`](2026-06-06-firm-constants-single-source.md); [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) (tier multipliers act per-account under this rule).
+**Related:** [`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (parent program — this ADR supplies its account-boundary semantics; supersedes nothing); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) (E2/E3 interactions); [Rule 7](../operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror) (one canonical owner; the 2026-06-06 firm-constants ADR is tombstoned); [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) (tier multipliers act per-account under this rule).
 **Layer:** execution + portfolio operations — not locked-parameter. No change to locked allocations, `dd_protection`, Pine, `ACTIVE_FIRM`, or MC pins.
 
 ---
@@ -37,7 +37,7 @@ The four-firms program (`Accepted` 2026-07-12) targets challenge-passing with po
 - **No post-hoc co-mingling.** Adding a leg to a live account constitutes a new book: superseding registration + re-MC under that tier before the added leg's first trade.
 - **Legacy × greenfield separation.** Any lifecycle survivor of the locked-book family and any greenfield discovery candidate never share an account absent rule-1 registration. (R6's locked-book fan-out NO-GO stands regardless.)
 - **E2 consistency-pairing is an instance of the rule, not an exception.** Pairing legs to smooth the daily P&L distribution against a consistency cap is a legitimate multi-leg-book motive and follows the same pre-registration path.
-- **Program-level risk is integrated even though deployment is segregated:** one joint MC across accounts — per-account bust under each account's own rule set, joint resampling for co-movement, plus the shock-conditional module proposed in [`docs/adr/2026-07-13-stage8-mechanistic-exposure-companion.md`](2026-07-13-stage8-mechanistic-exposure-companion.md).
+- **Program-level risk is integrated even though deployment is segregated:** one joint MC across accounts — per-account bust under each account's own rule set, joint resampling for co-movement, plus the shock-conditional module proposed in [Stage-8 Companion A](2026-07-20-stage8-variance-dominance-risk-neff-gate.md#companion-a--mechanistic-exposure) (not built as of 2026-10-15).
 
 ---
 

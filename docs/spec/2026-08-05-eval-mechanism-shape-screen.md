@@ -90,7 +90,7 @@ chosen: the "why it binds" column names the venue rule that generates it.
 ### 2.0a — **When** the screen is applied (binding, not stylistic)
 
 > ⚠ **Addendum 2026-08-24 — Route B retired; this section's own audit hook (§9 below) has fired.**
-> [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> [`ADR 2026-08-05-avenue-a-generate-confirm-route`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md)
 > is now `Superseded` in full by [`ADR 2026-08-24 — sourcing-phase channel retirement`](../adr/2026-08-24-sourcing-phase-channel-retirement.md).
 > Per this section's own pre-registered contingency: "if it reverts, section 2.0a's Route B paragraph
 > is a dead pointer and the general form ('screen the class, not the winner') is what survives." The
@@ -103,7 +103,7 @@ chosen: the "why it binds" column names the venue rule that generates it.
 scored candidate list afterward.** The screen consumes zero data and zero holdout: it is derived from
 venue rules plus frozen simulation, so applying it early costs nothing and applying it late costs K.
 
-Under [Avenue A **Route B**](../adr/2026-08-05-avenue-a-generate-confirm-route.md) this has an exact
+Under [Avenue A **Route B**](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md) this has an exact
 address: **the screen is a G0 act.** `K_intrinsic` is the exploration catalogue size actually examined,
 so pruning shape-dead cells *before* the G0 freeze removes them from K at no evidentiary cost, which
 lowers the DSR floor the CONFIRM run must clear. The checklist's own rule — *"choosing among candidates
@@ -182,7 +182,7 @@ waste §2.0a exists to prevent.
 
 ### 3a — Cost authority (scope split resolved 2026-08-24)
 
-**EM1 defines no cost formula.** [August 24 D2](../adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
+**EM1 defines no cost formula.** [August 24 D2](../adr/2026-08-30-evaluation-order.md#reachability)
 resolved G3 by scope: [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-five-admission-requirements-all-mandatory-before-screening)
 owns per-event bp-of-panel-price cost at admission/harvest; the separate
 [`cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) owns per-trade
@@ -354,12 +354,12 @@ ls ops/prop_envelope_default.md docs/spec/2026-07-27-third-leg-target-spec.md \
    docs/spec/2026-08-05-eval-mechanism-shape-screen.md
 
 # 9. Route B is still Accepted -- section 2.0a's G0 address depends on it.
-rg -n '^\*\*Status:\*\*' docs/adr/2026-08-05-avenue-a-generate-confirm-route.md
+rg -n '2026-08-05-avenue-a-generate-confirm-route' docs/adr/TOMBSTONES.md
 # Expected: Accepted. If it reverts, section 2.0a's Route B paragraph is a dead pointer and
 # the general form ("screen the class, not the winner") is what survives.
 
 # 10. EM1 delegates costs under the accepted scope split (section 3a).
-rg -n 'validation-battery-k-tiering|Requirement 5|cost_geometry_pregate.py' docs/spec/2026-08-05-eval-mechanism-shape-screen.md
+rg -n 'Requirement 5|cost_geometry_pregate.py' docs/spec/2026-08-05-eval-mechanism-shape-screen.md
 # Read section 3a: Requirement 5 owns admission/harvest; the script owns design-time
 # stop-R geometry. The spec must not introduce a competing formula.
 

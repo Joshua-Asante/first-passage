@@ -4,25 +4,20 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 body condensed, §6 downstream list, §7, part of §10 (the local `cd` line, the three DISC-CAMP-0 greps, the trigger reminder) and Verification removed; currency note added. Pre-trim text at blob `3b62deabcbc8d8abc2aa0d6983338555556c5dfc` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 **Decision date:** 2026-07-12
 **Authors:** Joshua (operator, ratified) + Claude (advisor; drafted from a 21-agent gate-reachability audit + direct code verification)
 **Supersedes:** `2026-07-11-discovery-campaign-defaults-ratified.md` in part - Section 2 Campaign-default #3 ("Universe correction" row only - SPA/StepM/PBO mechanics and thresholds are untouched; only the DSR K and V inputs are re-baselined).
 **Related:** `docs/notes/audits/2026-07-12-disccamp0-gate-reachability-audit.md` (the evidentiary base); `docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md` (the campaign this unblocks, amended in the same landing); `STATE.md` lines 143-153 (the pre-existing "pre-run obligation" this ADR discharges); `docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md` (the sibling gate-reachability precedent — same failure class, different mechanism)
 **Layer:** methodology (research rules-of-evidence only). **No** strategy/risk-control parameter, allocation, `dd_protection` constant, `portfolio_mc.py`, or Pine source is touched. Locked MC anchor 99.83/0.17/4.37 untouched.
 
+> **2026-10-15 currency note.** The `K_DSR` input semantics are amended in part by [`2026-08-04-family-k-bank-disclosure-not-gate.md`](2026-08-04-family-k-bank-disclosure-not-gate.md) (`K_eff = K_intrinsic`; family bank disclosure-only); the non-overlap floor and `V = 1/n` pin stand. `universe_gate.py`'s default has been `V = 1/n` since 2026-08-15 (Change history). The DISC-CAMP-0 pre-registration and shakedown paths cited below were removed from the tree; DISC-CAMP-0 closed FALSIFIED 2026-07-13 without reaching DSR.
+
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
 
-Read directly this session (2026-07-12) in worktree branch `claude/stage-runner-gate-reachability-8569df`, after `git merge origin/main`, `git rev-parse --short HEAD` = **`2a15c0e`** (PR #339, merges PR #337's universe-gate landing + Track B temporal-consistency).
-
-- `docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md` — the ADR being partially superseded. §2 Campaign-default #3 (verbatim): *"SPA (family gate, adjusted p < 0.05) + StepM (superior set), block bootstrap with an explicitly-chosen block_size (never sqrt(T)); **DSR ≥ 0.95**; PBO < 0.5 via CPCV."* §6 self-admits: *"these are reasoned defaults, not empirically-tuned ones."* §4 falsifier names the exact remedy: *"the DSR-0.95 threshold is shown mis-calibrated for the realized trial economics... changed by a superseding ADR that re-baselines it."*
-- `docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md` — §2 (K rule, verbatim): `Campaign-local K = 22 (catch22) + 3 · N_subseq(GC 1h, 2010-01-01:2018-12-31)`. §3 gate table row: `Deflated Sharpe | DSR ≥ 0.95 | deflated_sharpe.py, cumulative-family K + V`. Both `[PENDING]` integers unbound; no `register_search open` has run; zero pulls (freeze-ordering intact — this amendment is pre-result, not post-result, so brief-authoring Known-Trap #12 does not apply).
-- `lab/research_utils/deflated_sharpe.py` — `expected_max_sharpe(k, var_trials)`: `SR0 = √V·[(1−γ)·Φ⁻¹(1−1/K) + γ·Φ⁻¹(1−1/(K·e))]`, γ = Euler-Mascheroni. Independently re-verified: `expected_max_sharpe(156_500, 1/500) = 0.2007` (matches the audit's 0.201 to 3dp).
-- `lab/research_utils/universe_gate.py` — `run_universe_gate()` (lines 325-387): **the actual production `V` (across-trial Sharpe variance) is computed empirically**, `var_trials = float(np.var(col_sr, ddof=1)) if K > 1 else 0.0` (line 354), where `col_sr` is the per-column Sharpe of whatever candidates are present in the Stage-4 returns matrix, and `K` here is the **matrix column count** (i.e. `K_SPA`, the post-triage scored-candidate count), not `cumulative_k` (the DSR-consumed search-magnitude count, a separate parameter threaded in at line 355). This was **not visible from the pre-registration or SKILL.md prose alone** — it required reading the landed implementation.
-- `docs/notes/audits/2026-07-12-disccamp0-gate-reachability-audit.md` — this session's own prior audit (21-agent, adversarially verified), whose §3/§4 are the evidentiary base for the K-rule finding this ADR fixes.
-- `STATE.md:143-153` — confirms the pre-run gate-reachability obligation was already a named, pre-existing forward-board item (not invented by this session): *"Pre-run obligation from Q-HARV-0 (below): audit the frozen gates for reachability... a structurally un-passable clause found pre-data forks a clean re-registration, not a silent edit."*
-- **Direct empirical validation against the live `.venv-research` (arch 8.0.0, skfolio 0.20.1) this session**, not just the standalone `deflated_sharpe.py` arithmetic: ran `run_universe_gate`/`run_dsr_gate` on synthetic candidate matrices at both the old (156,500) and proposed (3,200) K_DSR, under both the module's DEFAULT empirical-V estimator and a pinned `V=1/n`, across `K_SPA ∈ {1,5,15,30,60,100}` and `true per-trade SR ∈ [0.10, 0.35]`. Findings that changed this ADR's design mid-draft (see §1): (a) the default empirical-V estimator is biased upward by the very edge it is scoring — even at `K_SPA=100` its DSR (0.58) had not converged to the unbiased `V=1/n` value (0.65) for a `SR=0.20` edge at `n=500`; (b) at `K_SPA=1` it collapses to `var_trials=0` and DSR promotes almost unconditionally, independent of `cumulative_k`; (c) with `var_trials` pinned to `1/n`, `run_universe_gate` has **no parameter to accept the override** — confirmed by reading the full 481-line module, `var_trials` was computed internally with no injection point.
+Read 2026-07-12 at `2a15c0e`: the defaults ADR (§2 default #3, §4 remedy path); the DISC-CAMP-0 pre-registration (raw K ≈ 156,500); `deflated_sharpe.py` `expected_max_sharpe`; `universe_gate.py` (empirical V, no override at the time); the [gate-reachability audit](../notes/audits/2026-07-12-disccamp0-gate-reachability-audit.md); and direct `.venv-research` runs showing the empirical-V bias (DSR 0.58 vs 0.65 at K_SPA=100) and the K_SPA=1 collapse. Full reads: [prior revision](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md).
 
 ---
 
@@ -50,7 +45,7 @@ Reading the now-landed `universe_gate.py` (which did not exist at audit time —
 4. **Standing power-disclosure requirement (template-level, applies to all future campaigns).** Every campaign pre-registration must report, alongside its K/V rule, the **minimum detectable per-trade Sharpe** its bound `(K_DSR, V=1/n, plausible-n)` requires for DSR to clear the frozen threshold — operationalizing the Q-HARV-0 gate-reachability lesson as a structural pre-freeze step rather than a one-off audit. For DISC-CAMP-0, the validated power table (§6) shows: **at n≥500 the fix roughly doubles detection power** for a plausible-true edge relative to the unfixed default (e.g. `SR=0.20`: power 3%→21% at n=500, 63%→89% at n=1000), but **n≤250 stays near-zero power across the entire plausible-true range regardless of the fix** — rare/discord-class candidates with few OOS occurrences remain structurally excluded from DSR promotion by construction, not by a fixable calibration error. A campaign whose disclosed minimum exceeds a stated plausible-edge ceiling is malformed and must not freeze as written; DISC-CAMP-0 specifically must triage or explicitly flag low-n (≤250-trade) candidates as DSR-unreachable rather than let them silently fail at Stage 5.
 5. **DSR ≥ 0.95 itself is retained, unchanged.** A graded/provisional-admission alternative (partial credit below 0.95) is explicitly **out of scope** here — forked to a separate, not-yet-authored Pre-Q (§3).
 
-**Effective:** immediately upon operator ratification (2026-07-12 draft; not yet `Accepted`). **Scope:** all discovery campaigns using an overlapping-window/matrix-profile search term, retroactive to any campaign (DISC-CAMP-0 is the only one) still pre-freeze. Does not retroactively reopen closed campaigns (none exist for this family — cumulative K prior to DISC-CAMP-0 is 0).
+**Effective:** immediately upon operator ratification (accepted 2026-07-12; see Change history). **Scope:** all discovery campaigns using an overlapping-window/matrix-profile search term, retroactive to any campaign (DISC-CAMP-0 is the only one) still pre-freeze. Does not retroactively reopen closed campaigns (none exist for this family — cumulative K prior to DISC-CAMP-0 is 0).
 
 ---
 
@@ -112,39 +107,11 @@ Reading the now-landed `universe_gate.py` (which did not exist at audit time —
 - The non-overlap floor is itself a modeling choice, not a proven-correct effective-independence count for autocorrelated subsequences — true effective K could sit anywhere between the non-overlap floor and 1 (fully redundant). Mitigated by §2.1's bracket-reporting requirement (both floor and raw count travel together for review) and the §4 falsifier.
 - `universe_gate.py`'s **default** behavior (no `var_trials` passed) still uses the biased empirical estimator, unchanged — the fix is opt-in via the new keyword/CLI flag, not a default-behavior change (deliberately, to avoid silently altering the module's existing self-test calibration). Any caller of `run_universe_gate`/the CLI that omits `--var-trials` inherits the known-biased default; this campaign's Stage-2/4 runner must always pass it explicitly.
 
-**Downstream artifacts needing update (this landing):**
-- `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` §Campaign-defaults #3 row — update to cite this ADR, mark the prior K-rule language superseded (mirroring the repo's `CLAUDE.md` "SUPERSEDED" convention for allocation history).
-- `docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md` §2/§3 — amend the K rule and add the K_SPA/K_DSR + `V=1/n` language (landed this session).
-- `docs/ltm/briefs/rnd-pipeline/DISC-CAMP-0-shakedown.md` §3/§8/Pre-Lock-Checklist — mirror-text update for consistency.
-- `STATE.md` forward-board entry — record this ADR as discharging the pre-run gate-reachability obligation (the `universe_gate.py` `var_trials` override landed this session, not deferred).
-
----
-
-## §7 — Implementation plan
-
-- **Phase 0** — §0 reads complete (this session, `2a15c0e`).
-- **Phase 1 — DONE (this session).** `lab/research_utils/universe_gate.py::run_universe_gate` gained the `var_trials: float | None = None` override (default preserves prior behavior), `--var-trials` CLI flag, `self_test(..., var_trials=...)` forwarding. 3 new tests added (`tests/test_universe_gate.py`); full suite 12/12 green; `check_boundaries.py` clean; sibling `tests/test_temporal_consistency.py` (12/12) re-verified unaffected.
-- **Phase 2 — DONE (this session).** Amended `docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md` §2 (K_DSR/K_SPA split + non-overlap floor + unconditional V=1/n pin + power-disclosure) and §3 (DSR row cites this ADR; REGIME/CUSUM rows updated to cite the now-landed `temporal_consistency.py` predicates; REALISM row gets a pinned-but-unimplemented predicate). Re-verified the amended threshold summary line still parses under `load_thresholds_from_prereg` (unchanged: α=0.05, DSR=0.95, PBO=0.5, 5/7).
-- **Phase 3 — DONE (this session).** Amended `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` §Campaign-defaults #3 to cite this ADR.
-- **Phase 4 — DONE (this session).** Mirror-text update in `docs/ltm/briefs/rnd-pipeline/DISC-CAMP-0-shakedown.md` and `STATE.md` forward-board entry.
-- **Phase 5 — DONE.** Operator ratified 2026-07-12; status `Accepted`. Verification block ran clean (check_brief 5/5; universe_gate 12/12 + temporal_consistency 12/12; check_boundaries clean). Landing with the audit note + Cursor runner handoff as one PR.
-
 ---
 
 ## §10 — Audit hooks (runnable)
 
 ```bash
-cd "C:/Users/joshu/multi_firm_operations"
-
-# This ADR ratifies-by-amendment; the template's K-rule row must cite it, not restate silently
-grep -n "2026-07-12-dsr-k-rule" docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md
-
-# The pre-reg's K rule reflects the non-overlap floor, not the raw overlapping count
-grep -nE "N_subseq|non-overlap|K_DSR|K_SPA" docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md
-
-# The K bracket is reported together (floor + raw), never only the passing number
-grep -n "raw overlapping\|BINDING" docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md
-
 # No locked constant / allocation / dd_protection / MC anchor touched (expect empty)
 git diff --stat HEAD -- core/config/params.toml core/dd_protection.py core/portfolio_mc.py
 
@@ -166,21 +133,6 @@ PY
 # var_trials override landed and is exercised by tests (Phase 1, DONE — not deferred)
 grep -n "var_trials: float | None = None" lab/research_utils/universe_gate.py   # confirm the override parameter exists
 PYTHONPATH=lab .venv-research/Scripts/python -m pytest tests/test_universe_gate.py -k var_trials -q
-
-# §4 trigger reminder — next programme audit: 2026-08-08
-```
-
----
-
-## Verification
-
-```bash
-python /c/Users/joshu/.claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md --type adr
-# Expected: all 6 checks PASS
-
-# Chain coherence — the amended pre-reg + template both exist and cite this ADR
-ls docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md
-grep -l "2026-07-12-dsr-k-rule" docs/briefs/pre-registration/*.md docs/briefs/rnd-pipeline/*.md
 ```
 
 ---
@@ -192,3 +144,4 @@ grep -l "2026-07-12-dsr-k-rule" docs/briefs/pre-registration/*.md docs/briefs/rn
 | 2026-07-12 | Initial drafting (operator "Go" on the gate-reachability audit's fix path); status `Proposed`, pending explicit ratification | Claude (advisor) |
 | 2026-07-12 | **Operator ratified** — status `Proposed` → `Accepted`. K/V fix becomes standing policy for matrix-profile-family campaigns | Joshua |
 | 2026-08-15 | Module default flipped: `run_universe_gate(var_trials=None)` now uses `1/n` on the selected candidate's finite OOS trade count (gate-stack audit R5). The empirical `Var(col_sr)` default is retired. §6 risk line "omitting `--var-trials` inherits the known-biased default" is **discharged** by this addendum — not a silent §2 rewrite. Explicit pin still overrides. | Cursor (R5 execution; winning V already ratified 2026-07-12) |
+| 2026-10-15 | §0 body, §6 downstream, §7, part of §10, Verification removed; currency note; prior body pinned | ADR decay audit |

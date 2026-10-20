@@ -8,31 +8,13 @@
 **Date:** 2026-05-23
 **Authors:** Joshua
 **Supersedes:** `2026-05-14-allocation-refresh.md` full - carries forward the no-version-bump doctrine (2026-05-14 ADR Open items 1+2, ratified 2026-05-23); v4.5/v1 designations retained at new production parameters.
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): reduced the spent §0 Rule-0 reads to a pointer; removed Implementation notes, Audit hooks, Verification block and §Cross-references code list; replaced §Open items with a disposition list; condensed the 2026-07-01 and 2026-08-02 addenda (headings, re-arm conditions, corrections, forbidden moves and change rows kept). §Context, Decision, §Falsifier, Consequences, §Override, Alternatives and Forbidden moves are unchanged; the §Falsifier's "CLAUDE.md Prior anchors (historical)" revert target is now recorded in [`docs/mc_anchor_history.md`](../mc_anchor_history.md). Pre-trim text at blob `28d7f80d5203109c4b8fa46f4942ebbaad4a00f2` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
 
-Verification anchors as of 2026-05-23 (commit `5ea248c` HEAD before this change; per-file last-commit anchors below):
-
-- [`portfolio_mc.py`](../../core/portfolio_mc.py) — pre-edit anchor `43aa187`. `ALLOCATIONS` (line 55–60) reads `striker: 0.0075, striker_nas100: 0.0045` (2026-05-14 lock values); `PEPPERSTONE_PANELS` (line 81–86) references the four 2026-05-14 CSV filenames (`3b689 / e4dd7 / d2682 / da880`). Both are 2-line + 4-line edits in this commit set.
-- [`dd_protection.py`](../../core/dd_protection.py) — pre-edit anchor `f341648`. `DD_TRIGGER = 0.015`, `DD_SCALE = 0.40` (C2 from 2026-05-08, unchanged). `BASE_RISK` (line 60–65) reads `Striker: 0.0075, Striker NAS100: 0.0045` and is updated to new values in this same commit set. **This ADR does NOT touch DD_TRIGGER / DD_SCALE.**
-- [`firm_rules.py`](../../core/firm_rules.py) — pre-edit anchor `a16a36b`. `_BASE_RISK` (line 32) reads `striker: 0.0075, striker_nas100: 0.0045`. Both updated in this commit set.
-- [`live_journal/scripts/journal_review.py`](../../ops/live_journal/scripts/journal_review.py) — `STRATEGIES.risk_pct` (line 71–74) reads `striker_dj30: 0.75, striker_nas: 0.45`. Both updated in this commit set.
-- [`tests/test_mc_anchors.py`](../../tests/test_mc_anchors.py) — pre-edit anchor `43aa187`. Pins prior canonical: Pepperstone `0.9988/0.0012/0.0421` (2026-05-16 FXIFY-correct timeout-semantic anchor); OANDA `0.9951/0.0049/0.0482`. Pepperstone panel-shape pinned at `1039 bdays / 207 week-blocks`. All four pins updated in this commit set.
-- [`CLAUDE.md`](../../CLAUDE.md) — pre-edit anchor `f341648`. Strategy Reference table reads DJ30 `0.75% (pyramid 500%) v4.5 LOCKED`, NAS100 `0.45% v1 LOCKED`. Protection-section MC anchor pins `99.88 / 0.12 / 4.21 @ median 21d`. Both updated in this commit set.
-- [`docs/methodology/regime_robustness_gate.md`](../methodology/regime_robustness_gate.md) — pre-edit anchor `f341648`. Production-pinned anchor line at L182 reads `98.78% / 0.12% / 4.17% on 48mo Pepperstone 2026-05-14 allocation refresh`. Updated in this commit set.
-- [`docs/adr/2026-05-14-allocation-refresh.md`](2026-05-14-allocation-refresh.md) — pre-edit anchor `f341648`. Status: `ACCEPTED`. Marked SUPERSEDED-BY this ADR in this same commit set; §Open items 1+2 closures (added 2026-05-23 earlier in this session) preserve the no-version-bump doctrine call that carries forward.
-- `Q-CORR-2-closure.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-CORR-2-closure.md`) — §4 #7 amended 2026-05-23 to retire B3/B4 re-open candidates (separate decision Joshua ratified earlier in this session; not load-bearing on this ADR).
-- Pine source verification (provided directly by user 2026-05-23, file paths in Joshua's `Downloads/`):
-  - `dj30.txt` — `riskPerTrade = input.float(0.70, ...)` (line 30); `pyramidSize = input.float(750.0, ...)` (line 97). Strategy header still reads "Striker DJ30 v4.5" (line 2). `endDate = input.time(timestamp("2026-04-17"), ...)` (line 23) — Pine default endDate is below the panel union-end; see §Consequences/Negative below.
-  - `nas100.txt` — `riskPerTrade = input.float(0.37, ...)` (line 63); `pyramidSize = input.float(1000.0, ...)` (line 138). Strategy header still reads "Striker NAS100 v1.0" (line 2). `endDate = input.time(timestamp("2026-04-20"), ...)` (line 56) — same default-stale pattern as DJ30.
-- CSV data files (in `data/tv_exports/pepperstone/` as of 2026-05-23):
-  - `Striker_DJ30_v4.5_PEPPERSTONE_US30_2026-05-23_237b7.csv` — 216 trades, PF 3.330, Net $432,565, DD 6.22%, 1R $4,240. Last trade 2026-03-31 (Pine endDate filter).
-  - `Striker_NAS100_v1_PEPPERSTONE_NAS100_2026-05-23_8c850.csv` — 196 trades, PF 3.717, Net $369,698, DD 3.54%, 1R $3,940. Last trade 2026-04-14 (Pine endDate filter).
-  - `Guardian_Gold_v5.5_PEPPERSTONE_XAUUSD_2026-05-23_2a704.csv` — 203 trades, PF 3.750, Net $571,841, DD 5.01%, 1R $1,208. Last trade 2026-05-14.
-  - `Aegis_USDJPY_v4.3_PEPPERSTONE_USDJPY_2026-05-23_ad2b7.csv` — 124 trades, PF 4.188, Net $178,298, DD 4.30%, 1R $3,293. Last trade 2026-05-19. **Defines panel union-end.**
-  - All four reconciled via `scripts/reconcile.py` before MC. Per-strategy reconcile clean against the 2026-05-14 baselines (Guardian + Aegis within ±1 trade panel-extension drift; DJ30 + NAS100 above the skill's drift tolerance — surfaced to user, ratified as intentional Pine parameter change rather than CSV mislabel per `trade-csv-reconcile` Step 5 #3).
+Spent: the 2026-05-23 anchors (HEAD `5ea248c`; `core/portfolio_mc.py`, `core/dd_protection.py`, `core/firm_rules.py`, `tests/test_mc_anchors.py`, the Pine and CSV reads) are in the pre-trim blob (see **Revision**).
 
 ---
 
@@ -93,7 +75,7 @@ Config above, 10,000 sims × 3 seeds (42 / 123 / 2026), FXIFY-correct timeout se
 
 OANDA C2 anchor under the new allocations (3-strategy, OANDA panel unchanged 2026-04-25 / 2026-05-08 vintage, DJ30 still v4.4 on OANDA): **99.58% pass / 0.42% bust / 4.78% p99 DD / median 27 days**. Δ vs prior 2026-05-16 OANDA anchor (99.51/0.49/4.82): pass +0.07pp, bust -0.07pp, p99 DD -0.04pp — all within sampling noise.
 
-Pinned by [`tests/test_mc_anchors.py`](../../tests/test_mc_anchors.py).
+Pinned by `tests/test_mc_anchors.py` until substrate Phase 3 deleted it (2026-07-24). These figures are a **historical challenge-era calibration** (re-scoped 2026-07-11, [claims-rescope](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md)), recorded in [`docs/mc_anchor_history.md`](../mc_anchor_history.md).
 
 ---
 
@@ -172,178 +154,36 @@ The dissent on regime-robustness is preserved: a future panel update with materi
 
 ---
 
-## Implementation notes
+## Open items — dispositions (2026-10-15)
 
-Changes landed in this same commit set:
+The six 2026-05-23 open items, in full at the pre-trim blob (see **Revision**):
 
-- `portfolio_mc.py`: `ALLOCATIONS["striker"]` 0.0075 → 0.0070; `ALLOCATIONS["striker_nas100"]` 0.0045 → 0.0037; `PEPPERSTONE_PANELS` all 4 entries pointed at 2026-05-23 CSV filenames (`2a704 / 237b7 / ad2b7 / 8c850`).
-- `firm_rules.py`: `_BASE_RISK` striker 0.0075 → 0.0070, striker_nas100 0.0045 → 0.0037; comment block adds 2026-05-23 allocation-refresh-2 line; `BASELINE_RISK` inline comment updated.
-- `dd_protection.py`: `BASE_RISK` Striker 0.0075 → 0.0070, Striker NAS100 0.0045 → 0.0037; comment block adds 2026-05-23 allocation-refresh-2 line.
-- `live_journal/scripts/journal_review.py`: `STRATEGIES.risk_pct` for striker_dj30 0.75 → 0.70, striker_nas 0.45 → 0.37.
-- `tests/test_mc_anchors.py`: Pepperstone pin 0.9988/0.0012/0.0421 → 0.9983/0.0017/0.0437; OANDA pin 0.9951/0.0049/0.0482 → 0.9958/0.0042/0.0478; panel-shape pin 1039/207 → 1141/227. Docstrings updated.
-- `CLAUDE.md`: Strategy Reference table risk + pyramid columns updated (DJ30 0.70%/750%, NAS100 0.37%/1000%); allocation refresh annotation adds 2026-05-23 line; 2026-05-16 anchor moves to "Prior anchors (historical)", new 2026-05-23 anchor becomes canonical; Protection section MC line updated; baseline-risk prose updated; anchor trajectory link bumps 8 → 9 anchors.
-- `README.md`: Strategy table risk column (DJ30 0.70% pyr 750%, NAS100 0.37% pyr 1000%); headline anchor 98.78/0.12/4.17 → 99.83/0.17/4.37; bust attribution updated.
-- `analysis/time_to_pass.py`: baseline pass-rate 98.78% → 99.83%; halt-condition delta computed against 0.9983; trigger-fired narrative updated to point at the 2026-05-23 anchor.
-- `docs/methodology/regime_robustness_gate.md`: production-pinned anchor line updated; this ADR added as latest override-with-grounds example; locked allocation note updated.
-- `docs/notion/repo_context.md`: ALLOCATIONS code snippet, _BASE_RISK code snippet, and anchor-pinned-by line all updated to 2026-05-23 values.
-- `docs/analytics/mc_anchor_evolution/data.csv` + `README.md`: A9 row added (Pepperstone canonical), O9 row added (OANDA), bust-attribution table extended, lock-criteria gate table extended.
-- `docs/adr/2026-05-14-allocation-refresh.md`: Status: ACCEPTED → SUPERSEDED-BY-2026-05-23-allocation-refresh-2. §Open items 1+2 closures from earlier in this session preserved (record the doctrine call at-the-time).
-- `archive/docs/briefs/Q-CORR-2-closure.md`: §4 #7 amendment from earlier in this session preserved (B3/B4 follow-up retirement; not load-bearing on this ADR).
-- `data/tv_exports/pepperstone/SHA256SUMS`: regenerated to include the four 2026-05-23 CSV hashes (`2a704 / 237b7 / ad2b7 / 8c850`). Prior 2026-05-14 entries retained for historical reproducibility.
-
-Out-of-scope follow-ups (documented in §Open items below or in 2026-05-14 ADR §Open items #3):
-- OANDA panel re-export at 2026-05-23 vintage (especially DJ30 v4.5 — currently still v4.4 on OANDA per `portfolio_mc.py:75` comment).
-- Skill cache `~/.claude/skills/trade-csv-reconcile/references/baselines.md` update to 2026-05-23 anchor (user-local; not committable in-repo).
-- Chart regeneration via `python docs/analytics/mc_anchor_evolution/plot.py` (data.csv already has A9/O9 rows; running plot.py regenerates the PNGs).
-
-No changes to:
-- `dd_protection.py` C2 constants (`DD_TRIGGER = 0.015, DD_SCALE = 0.40`) — unchanged.
-- OANDA panel CSVs (no OANDA re-export this cycle).
-- Guardian Pine source or CSV reconcile shape (Guardian metrics within panel-extension tolerance).
-- Aegis Pine source or CSV reconcile shape (Aegis metrics within panel-extension tolerance).
-
----
-
-## Audit hooks
-
-```
-# Verify the allocations are still locked
-$ grep -A6 "^ALLOCATIONS" portfolio_mc.py
-# Expected: striker 0.0070, striker_nas100 0.0037
-
-# Verify the variant CSVs are still wired
-$ grep -E "(2a704|237b7|ad2b7|8c850)" portfolio_mc.py
-# Expected: four hits — one per strategy in PEPPERSTONE_PANELS
-
-# Verify the MC anchor pin matches this ADR
-$ grep -E "0.9983|0.0017|0.0437" tests/test_mc_anchors.py
-# Expected: three hits in test_pepperstone_anchor
-
-# Verify the four production-constants files are aligned
-$ grep "0.0070\|0.0037" firm_rules.py portfolio_mc.py dd_protection.py
-$ grep -E "0.70|0.37" live_journal/scripts/journal_review.py
-# Expected: BASE_RISK / _BASE_RISK / ALLOCATIONS / STRATEGIES all match
-
-# Run the regime-robustness retrospective check (quarterly cadence)
-$ python analysis/time_to_pass.py --regime-check
-# Expected: pass-rate >= 95% on both recent and prior 6mo windows
-
-# Verify the falsifier hasn't fired (live-PnL edge-captured ratio for DJ30 + NAS100)
-$ python analysis/journal_review.py --strategy striker      --since 2026-05-23
-$ python analysis/journal_review.py --strategy striker_nas  --since 2026-05-23
-# Expected: edge_captured_ratio >= 0.70 over >= 30 trades each
-
-# Verify no superseding ADR has shipped without back-linking
-$ grep -l "Supersedes: 2026-05-23-allocation-refresh-2" docs/adr/
-# Expected: empty (or, if shipped, this ADR's status updated to SUPERSEDED-BY)
-
-# Verify the 2026-05-14 ADR is properly marked SUPERSEDED
-$ grep "Status:" docs/adr/2026-05-14-allocation-refresh.md
-# Expected: line contains "SUPERSEDED-BY: 2026-05-23-allocation-refresh-2"
-```
-
----
-
-## Open items
-
-1. **No documented rationale for the parameter inversion.** Joshua moved DJ30 hotter and NAS100 colder between 2026-05-14 and 2026-05-23 without external doctrinal context (e.g., a Notice-phase observation log, live-PnL edge-captured drift, or a Pre-Q investigation outcome). If the §Falsifier fires later and the question becomes "why did we make this change", the doctrinal gap is real. **Forward consideration:** if any subsequent Pine parameter shift occurs without written motivation, the pattern needs a methodology audit (silent parameter drift is the recurrence of the 04-17 dd_protection cycle's failure mode but at the strategy-parameter layer instead of risk-control layer).
-
-2. **DJ30 + NAS100 Pine `endDate` defaults below panel union-end.** Documented in §Consequences/Negative as not blocking but worth uniform panel hygiene. **Forward consideration:** before the next monthly panel refresh (~2026-06-23), bump DJ30 endDate from 2026-04-17 to the export-day value, and same for NAS100 (currently 2026-04-20). Or, less invasively, set the input.time defaults to far-future dates (e.g., 2030-01-01) so they don't gate exports.
-
-3. **Skill cache `baselines.md` lag.** [`~/.claude/skills/trade-csv-reconcile/references/baselines.md`](../../.claude/skills/trade-csv-reconcile/references/baselines.md) was last synced 2026-05-06 (post 2026-05-05 lock). The 2026-05-14 and 2026-05-23 refreshes have both bypassed it. **Forward consideration:** Joshua to update the skill cache at next convenient session start (cannot be committed in-repo as the file is user-local).
-
-4. **OANDA panel re-export at 2026-05-23 vintage.** Inherited from 2026-05-14 ADR §Open items #3 (Joshua's "let me know which" answer in this session: load-bearing = DJ30 v4.5; date-parity = Guardian + Aegis; out-of-scope = NAS100). Forward consideration; not gating this ADR. The OANDA anchor (99.58/0.42/4.78) is reproducible against the existing OANDA panel and is consistent with the new Pepperstone canonical.
-
-5. **Pyramid annotation parity in CLAUDE.md table.** This ADR adds "(pyramid 1000%)" annotation to the NAS100 row in CLAUDE.md's Strategy Reference table, mirroring the DJ30 "(pyramid 750%)" annotation. This is a doc-clarity change, not a parameter change. The annotation is now self-consistent for both pyramid strategies.
-
-6. **Regime-robustness gate scope ambiguity.** Two consecutive allocation refreshes have overridden the gate on the same "ambiguous-in-scope" template (2026-05-14 + 2026-05-23). A third such override should trigger explicit doctrinal resolution of whether allocations are in-scope or out-of-scope for the gate. **Forward consideration:** if a third allocation-refresh ADR ships without running the gate, author a methodology amendment to `docs/methodology/regime_robustness_gate.md` making the scope decision explicit (one direction or the other), instead of perpetuating the override-with-grounds template.
+1. **Undocumented motive for the DJ30-hotter / NAS100-colder inversion** — retained as history; `AGENTS.md` §Strategy Authorization Lifecycle now holds locked parameters immutable.
+2. **Pine `endDate` defaults below panel union-end** — moot: the Pepperstone feed was retired 2026-08-02 ([ADR](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-02-pepperstone-feed-retirement.md)).
+3. **Skill-cache `baselines.md` lag** — discharged: synced 2026-06-04 (`.claude/skills/trade-csv-reconcile/references/baselines.md`).
+4. **OANDA re-export at 2026-05-23 vintage** — discharged by the 2026-05-24 panel refresh (OANDA at 4-strategy parity, [`docs/mc_anchor_history.md`](../mc_anchor_history.md)); OANDA is since retired.
+5. **Pyramid-annotation parity in the `CLAUDE.md` table** — moot: `CLAUDE.md` retired; the table lives in [`core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).
+6. **Regime-gate scope for allocations** — resolved: `docs/methodology/regime_robustness_gate.md` lists allocation changes under "Not required" (recorded in §Addendum 2026-08-02 below).
 
 ---
 
 ## Cross-references
 
-- **Superseded ADR:** [`docs/adr/2026-05-14-allocation-refresh.md`](2026-05-14-allocation-refresh.md) — prior allocation refresh (DJ30 colder / NAS hotter, inverse of this ADR's pattern). §Open items 1+2 closures from earlier in this session preserve the no-version-bump doctrine that carries forward to this ADR.
-- **Prior canonical (now historical):** [`docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`](2026-05-16-fxify-correct-timeout-semantic.md) — the FXIFY-correct timeout semantic locked here is preserved unchanged; only allocations + Pine parameters move.
+- **Superseded ADR:** `docs/adr/2026-05-14-allocation-refresh.md` ([tombstoned](TOMBSTONES.md#earlier-removals)) — prior allocation refresh (DJ30 colder / NAS hotter, inverse of this ADR's pattern).
+- **Prior canonical (now historical):** [`docs/adr/2026-05-16-fxify-correct-timeout-semantic.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-05-16-fxify-correct-timeout-semantic.md) — the FXIFY-correct timeout semantic locked here is preserved unchanged; only allocations + Pine parameters move.
 - **Override-with-grounds template ancestor:** [`docs/adr/2026-05-08-dd-trigger-c2-relock.md`](2026-05-08-dd-trigger-c2-relock.md) — first ADR to use the override-with-documented-grounds pattern for the regime-robustness gate.
 - **Worked example for the override-with-grounds template:** `Q-DDP-1/recommendation.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`).
 - **Regime-robustness gate doctrine:** [`docs/methodology/regime_robustness_gate.md`](../methodology/regime_robustness_gate.md).
 - **Anchor evolution trajectory:** [`docs/analytics/mc_anchor_evolution/README.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/analytics/mc_anchor_evolution/README.md) — A9 row pins this ADR's canonical anchor in the trajectory record.
-- **Code:**
-  - `portfolio_mc.py` — `ALLOCATIONS` + `PEPPERSTONE_PANELS`
-  - `tests/test_mc_anchors.py` — Pepperstone + OANDA pins + panel-shape pin
-  - `dd_protection.py` — `DD_TRIGGER = 0.015`, `DD_SCALE = 0.40` (unchanged)
-  - `firm_rules.py` — `_BASE_RISK`
-  - `live_journal/scripts/journal_review.py` — `STRATEGIES.risk_pct`
-- **Forward-trigger instrumentation:** `analysis/time_to_pass.py --regime-check` mode (established 2026-05-08).
-
----
-
-## Verification
-
-```
-# 1. MC anchor reproduces
-$ python portfolio_mc.py --panel pepperstone
-# Expected (tail): Pass: 99.83% / Bust: 0.17% / p99 DD: 4.37% / median 26
-
-$ python portfolio_mc.py --panel oanda
-# Expected (tail): Pass: 99.58% / Bust: 0.42% / p99 DD: 4.78% / median 27
-
-# 2. Test pins pass
-$ python -m pytest tests/test_mc_anchors.py -v
-# Expected: 8 passed
-
-# 3. Full test suite green (modulo pre-existing Windows-autocrlf failures in test_ingest.py)
-$ python -m pytest -q
-# Expected: only the 3 pre-existing test_ingest.py CRLF/LF fixture-byte-identity failures
-# remain; all other tests green. The 3 ingest failures pre-date this commit and are
-# documented as unrelated Windows-environment artifacts.
-
-# 4. Manifest integrity
-$ python scripts/check_data_manifests.py
-# Expected: no output (silent success)
-
-# 5. CLAUDE.md / README / regime_robustness_gate.md / repo_context.md / mc_anchor_evolution
-#    headline anchor consistency
-$ grep -l "99.83" CLAUDE.md README.md docs/methodology/regime_robustness_gate.md \
-                  docs/notion/repo_context.md docs/analytics/mc_anchor_evolution/README.md
-# Expected: all five files
-
-# 6. Brief-authoring discipline check
-$ python ~/.claude/skills/anthropic-skills/brief-authoring/scripts/check_brief.py \
-         docs/adr/2026-05-23-allocation-refresh-2.md
-# Expected: 6/6 checks PASS
-```
+- **Current owners:** `core/historical_challenge.py` (frozen 4-leg record), `core/firm_rules.py` `_BASE_RISK` (live sizing), [`core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book) (human-readable mirror); `dd_protection` constants unchanged.
 
 ---
 
 ## Addendum — 2026-07-01 — §Falsifier limbs 2–3 dormancy (retirement back-propagation)
 
-Per operational-rules Rule 11 (retirement events back-propagate to standing
-falsifiers), the 2026-07-01 programme audit records that **§Falsifier limbs 2 and 3
-— the live `journal_review.py` edge-captured ratio <0.70 over a ≥30-trade post-lock
-window, for DJ30 (limb 2) and NAS100 (limb 3) — are DORMANT and cannot currently
-accrue.** As of the 2026-06-30 CFD retirement
-(`docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md`) manual/live CFD
-execution is stopped and FXIFY is idle, so no post-lock live trades accumulate.
-NAS100's limb (3) in fact never accrued a single verified fill; DJ30's limb (2) is
-additionally unbindable on its stated instrument once the venue moves to MYM
-(force-flat-modified). This is **not** a threshold change and §Falsifier is not
-edited.
+Per Rule 11: **§Falsifier limbs 2 and 3** (live `journal_review.py` edge-captured ratio < 0.70 over a ≥30-trade post-lock window, DJ30 and NAS100) are **DORMANT** from the 2026-06-30 CFD retirement (`docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md`): no post-lock live trades accrue, and NAS100's limb never accrued a verified fill. Not a threshold change; §Falsifier is not edited.
 
-**Why this is load-bearing (not cosmetic):** §Override / §Consequences named "both
-the quarterly regime-check **and** the live edge-captured falsifier" as the **dual
-retroactive catch-paths** compensating for the regime-robustness gate this ADR
-skipped. One of those two paths (the live edge-captured limbs) is now dark. The
-surviving path — the quarterly `time_to_pass.py --regime-check` (next **2026-08-08**,
-cron-scheduled) — remains in force and continues to carry the retroactive coverage
-alone until live execution resumes.
-
-**Re-arm condition:** limbs 2–3 re-arm when the futures automation chain goes live
-and post-lock fills accrue on the actual venue. At that point a fresh Pre-Q must
-re-map the edge-captured falsifier to the futures fill microstructure (the CFD-era
-`cost_proxy.py` band and DXTrade-fill semantics do not transfer — see
-`STATE.md` Q-NAS-ECR-1 and the 2026-07-01 SESSIONS note). No config change under
-this addendum.
+**Re-arm condition:** limbs 2–3 re-arm when the futures automation chain goes live and post-lock fills accrue on the actual venue. A fresh Pre-Q must then re-map the edge-captured falsifier to the futures fill microstructure (the CFD-era `cost_proxy.py` band and DXTrade-fill semantics do not transfer). This addendum's statement that the quarterly regime-check carried the coverage alone was corrected on 2026-08-02 (below). Full text: `git show 4121e84c95f4990b71962e3b9570c4c3fad88426:docs/adr/2026-05-23-allocation-refresh-2.md`.
 
 | Date | Change | By |
 |---|---|---|
@@ -360,31 +200,17 @@ and continues to carry the retroactive coverage alone until live execution resum
 
 ### What went dark, and when
 
-**Limb 1** — *"Rolling 6-month MC pass-rate on the live-extended Pepperstone panel falls
-below 95% for two consecutive 6-month windows … quarterly cadence via
-`python analysis/time_to_pass.py --regime-check`, next dates 2026-08-08 / 2026-11-08 /
-2027-02-08 / 2027-05-08"* — is dark on **two independent grounds**:
-
-1. **Duty retired 2026-07-22.**
-   [`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md)
-   §Addendum 2026-07-22 (D2 resolved by retirement): *"`python lab/analysis/time_to_pass.py
-   --regime-check` is no longer a standing quarterly obligation, and the 2026-08-08 /
-   11-08 / 2027-02-08 / 2027-05-08 dates carry **no revert-check duty**."* Grounds: the
-   criterion is challenge-denominated and the FXIFY venue is closed.
-2. **Tool no longer executes.** Independently, substrate Phase 3 (2026-07-24, `bd92d8e`)
-   retired the Pepperstone executable anchor. Verified 2026-08-02:
-
-   ```
-   $ python lab/analysis/time_to_pass.py --regime-check
-   ValueError: No registered broker panel. The Pepperstone executable anchor was retired
-   (ADR 2026-07-22 Phase 3).
-   ```
-
-   Note the harness **file still exists** — only running it reveals the darkness. A
-   path-existence check scores this limb REACHABLE.
-
-**Limbs 2–3** were already recorded DORMANT on 2026-07-01 (above); `journal_review.py` has
-zero occurrences in any `.py` in the tree as of 2026-08-02.
+**Limb 1** (the quarterly `time_to_pass.py --regime-check` rolling-6-month pass-rate check) is dark
+on two independent grounds. (1) **Duty retired 2026-07-22:**
+[`2026-07-11-challenge-era-claims-rescope.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md)
+§Addendum 2026-07-22 (D2 resolved by retirement) — *"`python lab/analysis/time_to_pass.py
+--regime-check` is no longer a standing quarterly obligation, and the 2026-08-08 / 11-08 /
+2027-02-08 / 2027-05-08 dates carry **no revert-check duty**"*; the criterion is
+challenge-denominated and the FXIFY venue is closed. (2) **Tool no longer executes:** substrate
+Phase 3 (2026-07-24, `bd92d8e`) retired the Pepperstone executable anchor; verified 2026-08-02,
+the harness raises `ValueError: No registered broker panel`. The harness file still exists, so a
+path-existence check scores this limb REACHABLE. **Limbs 2–3** were already DORMANT (2026-07-01,
+above); `journal_review.py` has no occurrence in any `.py` file as of 2026-08-02.
 
 ### Why this is load-bearing
 
@@ -431,56 +257,25 @@ re-arm per the 2026-07-01 addendum (futures fills accrue + fresh Pre-Q).
 
 ### The retrospective question is ALREADY ANSWERED — and this ADR never says so
 
-The obvious remedy ("run the both-halves regime gate retroactively") is **redundant: it was
-already run against this exact locked config, on a harder panel, and it FAILED.**
-
-[`2026-06-07-decompound-remc-hold.md`](2026-06-07-decompound-remc-hold.md) (`Accepted`,
-`Superseded-by: none`) names this ADR in its own header as *"the locked config being
-characterized"* and `regime_robustness_gate.md` as *"the gate applied."* Its clean-vintage
-re-run ([`RESULTS_cleanvintage_2026-06-25.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_cleanvintage_2026-06-25.md)
-§"Half-panel regime cut (Part B)") reports, for **LOCKED k=1.0**:
-
-| Partition | pass | bust | p99 DD | median | verdict |
-|---|---:|---:|---:|---:|:---:|
-| H1 2020-01→2023-03 (843bd) | 86.16% | **13.84%** | **7.76%** | 62 | **FAIL** |
-| H2 2023-03→2026-06 (844bd) | 99.79% | 0.21% | 4.53% | 20 | PASS |
-
-against the floor *bust<1% AND p99<5%*. Notes carried from that run: *"Locked-config H1
-isolated for the first time"*, and Part A (bootstrap) was **deliberately not run** because
-*"the bootstrap can only matter when H1 passes."* That reasoning applies here too — the
-locked config fails H1, so the full gate (bootstrap AND H1 AND H2) fails regardless.
-
-That panel is **stricter** than anything this ADR's own gate would have used: full-history
-2020-06 decompounded, versus this ADR's 2022-01→2026-05 compounded window.
-
-The disposition was **HOLD**, on the ground that *no viable static sizing config (allocation
-or dd_protection) is regime-robust* — both de-risk candidates also FAIL H1, and pass gates
-only by making the challenge impractical (≥367d median). So the regime risk on these
-allocations is **measured, worse than this ADR assumed, and consciously accepted.**
-
-**The actual defect is discoverability, and it is one-directional.** The decompound ADR
-points at this one; `rg "decompound|2026-06-07"` over this file returns **nothing**. A
-reader of this ADR sees "regime gate not run + two catch-paths" and never learns the gate
-was effectively run and failed. That cross-reference is what this addendum supplies.
+Running the both-halves regime gate retroactively is redundant: it was already run against this
+exact locked config, on a harder panel, and it **FAILED**.
+[`2026-06-07-decompound-remc-hold.md`](2026-06-07-decompound-remc-hold.md) names this ADR as
+*"the locked config being characterized"*; its clean-vintage re-run
+([`RESULTS_cleanvintage_2026-06-25.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/regime/decompound_remc_2026-06-07/RESULTS_cleanvintage_2026-06-25.md)
+§"Half-panel regime cut (Part B)") reports, for **LOCKED k=1.0**, H1 2020-01→2023-03 bust
+**13.84%** / p99 DD **7.76%** (**FAIL**) and H2 2023-03→2026-06 bust 0.21% / p99 4.53% (PASS),
+against the floor *bust < 1% AND p99 < 5%* (the H1 figures are in that ADR's §Addendum 2026-06-25 table). That panel
+(full-history 2020-06 decompounded) is stricter than this ADR's 2022-01→2026-05 compounded window.
+The disposition was **HOLD**: no viable static sizing config (allocation or dd_protection) is
+regime-robust. The regime risk on these allocations is **measured, worse than this ADR assumed,
+and consciously accepted**; this cross-reference supplies the missing discoverability.
 
 ### Open item — narrowed to the forward gap only
 
-Retrospective coverage: **discharged** (decompound HOLD, above). Not re-opened.
-
-What remains genuinely missing is **forward** monitoring — the catch-paths were tripwires
-for a *future* regime shift, and a retrospective measurement is not a tripwire. Options,
-none taken here:
-
-1. **Derive a successor forward monitor** under the current venue (c1 / Tradeify), on an
-   interpretable denominator. Note the constraint that retired the last one: a
-   challenge-denominated pass-rate is uninterpretable with the venue closed
-   ([`2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md)
-   §Addendum 2026-07-22), so a successor must not be pass-rate-shaped.
-2. **Accept the absence of a forward monitor explicitly**, dated, on the ground that the
-   decompound HOLD already characterizes the tail and the book is unchanged since.
-
-Doing nothing leaves the 2026-07-01 addendum's "coverage alone" claim standing and false,
-which is the exact failure Rule 11 exists to prevent.
+Retrospective coverage: **discharged** (decompound HOLD, above). What remained was **forward**
+monitoring — a successor monitor on an interpretable, non-pass-rate denominator, or explicit dated
+acceptance of no forward monitor. Resolved 2026-08-15 by explicit acceptance (change history
+below).
 
 **Forbidden under this addendum:** re-running the both-halves gate as if the answer were
 unknown, or inventing a pass-rate floor for it. `regime_robustness_gate.md` §Edge cases:

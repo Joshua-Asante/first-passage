@@ -4,30 +4,19 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
-**Format:** concise — converted from the original full format by the 2026-09-15 revision, which consolidated §0–§10 and six addenda into Decision / Grounds / Current owner plus the §8 disposition table. Prior full-format text at the blob pinned below.
+**Format:** concise — converted from the original full format by the 2026-09-15 revision, which consolidated §0–§10 and six addenda into Decision / Grounds / Current owner. Prior full-format text at the blob pinned below.
 **Decision date:** 2026-07-14
-**Revision:** 2026-09-25 — action classes (low / medium / operator act / forbidden) with a
-machine-read authority block on cards (handoff contract item 7), approval bound to the exact
-object and by acts the operator already performs, the `IN_DOUBT` rule for side effects, the
-operator decision-packet format, the enforcement-point table, and the seat-name mapping for
-imported organisation proposals. Operator-directed in-session 2026-09-25 ("proceed with your
-recommended sequence in full", after a review of three external drafts); ratification pending
-operator merge of the PR that carries it. Prior (2026-09-20) effective text, in full and unedited,
-at blob `cbe2a5886e3b6588b68294ac801f88acde3637b5`
-(`git show cbe2a5886e3b6588b68294ac801f88acde3637b5`), commit `d7af57013b88e11099f5a4b69fdcef7e751597a7`.
-**Prior revision (2026-09-20):** three-seat delegation (executive / coordinator / worker) with a Fable
-escalation lane, the committed-handoff rule, acceptance tests named in the card, and the
-quality-then-attention priority. Operator-directed in-session 2026-09-20 (items 1, 2, 4, 5, 6 of the
-delegation review); ratification pending operator merge of the PR that carries it. Prior (2026-09-15)
-effective text, in full and unedited, at blob `9a55a9c71e5ebebad87bb0bc8cf6332a486f7541`
-(`git show 9a55a9c71e5ebebad87bb0bc8cf6332a486f7541`), commit `4a8067dcba5fe99c27396a61a1aa2043cc9383f7`.
-**Prior revision:** 2026-09-15 — **RATIFIED** by the operator in-session ("execute my decisions").
-Retires Cursor as a worker surface and rescopes this decision to the surviving surfaces
-(Claude Code, Codex); consolidates the six 2026-07-16 → 2026-09-04 addenda into the §8
-disposition table. This revised text is the effective decision. Prior decision text, in full
-and unedited, at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`
-(`git show 0bcd6699fd683a18b9493e25bb053797dcf4fafe`), commit
-`b448e2b6f852a49c2a46e278ade95a4c4e2c4c54`.
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): spent revision
+narrative, the §8 clause-disposition tables, the §4 / §9 / §10 sections of the Cursor retirement and
+superseded addendum detail removed; every surviving clause is restated in place. No rule changes. Pre-trim
+text at blob `d4e26fba472ab9c0ca7e1e5280b2bcbe3ddcfa75` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
+**Prior revisions** (each with the text it replaced): 2026-09-25 — action classes, authority block,
+decision packets; ratified by merge of PR #503 (2026-09-26); replaced the 2026-09-20 text at blob
+`cbe2a5886e3b6588b68294ac801f88acde3637b5` (commit `d7af57013b88e11099f5a4b69fdcef7e751597a7`) · 2026-09-20 — three seats,
+escalation lane, committed-handoff rule; ratified by merge of PR #442; replaced the 2026-09-15 text at blob
+`9a55a9c71e5ebebad87bb0bc8cf6332a486f7541` (commit `4a8067dcba5fe99c27396a61a1aa2043cc9383f7`) · 2026-09-15 — Cursor retired;
+RATIFIED in-session ("execute my decisions"); replaced the 2026-07-14 text at blob
+`0bcd6699fd683a18b9493e25bb053797dcf4fafe` (commit `b448e2b6f852a49c2a46e278ade95a4c4e2c4c54`).
 **Supersedes:** `2026-08-14-cc-cursor-autonomous-loop.md` full — its entire subject (Cursor
 dispatch without chip approval, `cursor/*` webhook detection, and auto-merge on a binary gate)
 retires with the Cursor lane; the surviving general rule is restated in §2 below.
@@ -36,11 +25,6 @@ retires with the Cursor lane; the surviving general rule is restated in §2 belo
 [`task-routing`](../../.claude/skills/task-routing/SKILL.md) (canonical local-vs-cloud checklist) ·
 [`cc_handoff` template](../../.claude/skills/brief-authoring/references/cc_handoff.md) (producer-side contract)
 **Layer:** infrastructure
-
-> ⚠ **REVISED 2026-09-25 — action classes, authority blocks, decision packets** (on top of the
-> 2026-09-20 three seats, one escalation lane and committed handoffs, and the 2026-09-15 rescoping
-> that retired Cursor). The body below is the effective decision text. The clause-by-clause record of what each revision kept, restated or retired is
-> §8. Each revision's pre-revision text is pinned at a blob in the header.
 
 ---
 
@@ -156,7 +140,7 @@ about which vendor runs the session, so all four survive the retirement unchange
   executive review, on every route ([Addendum 2026-09-26b](#addendum-2026-09-26b)).
 
 **Scoped exception — the lightweight dispatch issue** (2026-08-29 addendum #2, retained in shape
-by §8; scoped 2026-09-16 after post-merge review; re-scoped 2026-09-20 to the six-item contract).
+by the 2026-09-15 revision; scoped 2026-09-16 after post-merge review; re-scoped 2026-09-20 to the six-item contract).
 For a small, precedented fix, a complete GitHub-issue body stands in place of item 1's
 `docs/briefs/**` brief only when it carries items 2–6 in full: the §0 read-report-before-code
 requirement with the `NEEDS_CONTEXT` bounce, the §5 forbidden moves naming the nearby locked
@@ -223,8 +207,21 @@ Fable never takes the coordinator seat, never supervises the worker day to day, 
 sits beside the executive as a second planner.
 
 **Merge authority is the operator's, with no automated exception.** The 2026-08-14 binary
-auto-merge gate is retired with the mechanism it drove (§8). Neither a green CI run, nor a clean
+auto-merge gate is retired with the mechanism it drove (2026-09-15 revision). Neither a green CI run, nor a clean
 automated review, nor an adjudication verdict is merge authority.
+
+**Executive review path and its credential bar (2026-08-29 addendum #1, retained).** Codex's
+account-level native GitHub review is the executive's independent review path. Its standing bar
+survives unchanged: *this repo's CI grants Codex no write/push credential without a superseding ADR*.
+Revert trigger: a rolling 8-week window in which Codex's native review is demonstrably lower-signal
+than Claude's on the same class of PR, or the operator disables the
+`chatgpt.com/codex/settings/code-review` toggle for this repo (operator-judged, logged in
+`docs/SESSIONS.md`). Revert action: none in this tree — the mechanism is account-level, so reverting
+is toggling that setting off.
+
+**Forbidden moves (2026-07-14 §5, retained):** verbal-spec handoffs (the containment is the brief,
+whatever the worker); scope-creep via adjacency; merging on green tests without review (unnarrowed);
+retro-fitting a brief after the build.
 
 **Orchestrating more than one worker at a time.** When work decomposes into 2+ independent
 spec-freezable packets, the coordinator owns the claim manifest and every packet still clears
@@ -251,13 +248,10 @@ retirement of the skill that stated them:
   returns `NEEDS_CONTEXT` rather than building: a stale pointer is a stale spec, and building it
   anyway is how a withdrawn packet gets built.
 
-  Both rules are paid for by SESSIONS `2026-09-04f`: all three workers were fired from `af0203f`
-  while the review was still running; the re-freeze withdrew packet B (built anyway, #304 closed
-  without merge) and moved packet C's guard mid-build (C falsified, fix round C1 owed). Relay lag,
-  not worker error — the workers had no SHA to notice the drift by. Ratified as
-  [#402](https://github.com/Joshua-Asante/first-passage/pull/402) against the `cursor-fleet`
-  skill on 2026-09-15 and carried here verbatim in substance when that skill was deleted the same
-  day; nothing of #402 is lost.
+  Both rules are paid for by SESSIONS `2026-09-04f` (workers fired from `af0203f` while the review
+  was still running; withdrawn packet B was built anyway). Ratified as
+  [#402](https://github.com/Joshua-Asante/first-passage/pull/402) on 2026-09-15 and carried here
+  when the `cursor-fleet` skill was deleted.
 
 <a id="action-classes-and-the-authority-block"></a>
 **Action classes and the authority block (2026-09-25).** Every consequential act falls in one
@@ -317,13 +311,9 @@ PowerShell variables, `Invoke-Expression`, `Start-Process`, stdin, encodings oth
 dot-sourcing; user-defined `gh` / `git` aliases, push configuration (`push.default`,
 `remote.<r>.push`, `remote.<r>.mirror`) and flags missing from its tables; GitHub API writes to
 `main` other than a merge, other GitHub clients; remote execution on the rail other than
-`fly ssh console -C`; and every Codex / Z Code session. Still open for the operator, with the
-hook's current behaviour unchanged meanwhile: whether an agent may use
-`--acknowledge-m1-unresolved` under a prompt (today it asks, with an M1-unresolved prompt) or is
-denied; the Fly deploy scope (today every `fly deploy` asks, not only the rail's); whether an
-`--admin` merge is denied or askable (today a pinned one asks); and how a card's seat is bound to
-the worker seat.
-**Operator rulings 2026-09-26 on these four:** [Addendum 2026-09-26](#addendum-2026-09-26); the seat-binding question was ruled later that day in [Addendum 2026-09-26b](#addendum-2026-09-26b).
+`fly ssh console -C`; and every Codex / Z Code session. The four questions the 2026-09-25 text left open here (agent use of
+`--acknowledge-m1-unresolved`, the Fly deploy scope, `--admin` merges, card-to-seat binding) were
+ruled on 2026-09-26: [Addendum 2026-09-26](#addendum-2026-09-26) and [26b](#addendum-2026-09-26b).
 
 <a id="operator-decision-packets"></a>
 **Operator decision packets (2026-09-25).** Anything that needs the operator arrives as one
@@ -350,8 +340,18 @@ repo use other names; they are translated at the boundary and never adopted as a
 | Execution teams | **Workers** |
 | Review / verification | reviewer ≠ planner signatures plus deterministic gates |
 
-**Measure and falsifier for the three-seat model.** The existing §4 limbs stand (judgment-defect
-worker PRs; overhead exceeding value). Added: the model is measured on **operator-minutes per
+**Measure and falsifier for the three-seat model.** Two revert limbs (2026-07-14 §4, restated
+surface-agnostically): (1) **allocation-caused defects** — over any rolling 8-week window, ≥2 merged
+worker-built PRs carry defects traceable to *spec-interpretation judgment* (the worker resolved an
+ambiguity instead of bouncing `NEEDS_CONTEXT`) rather than to spec error → supersede with a tightened
+rule (narrower worker scope, or mandatory coordinator re-verification of every worker diff hunk);
+(2) **overhead exceeds value** — ≥3 consecutive handoffs where authoring and verifying the brief
+demonstrably cost more session time than the gated build (operator-judged, logged in
+`docs/SESSIONS.md`) → carve the affected task class back to the coordinator by superseding ADR —
+**do not silently stop writing briefs.** Proactive dispatch (routing test 3) reverts to per-task
+"dispatch this" confirmation before any worker dispatch if two proactively dispatched tasks in a
+rolling 8-week window turn out to have needed operator judgment the coordinator lacked (wrong root
+cause, misjudged scope, a spec that was not actually frozen) (2026-08-29 addendum #2). Added: the model is measured on **operator-minutes per
 accepted change** and **defects found after merge**, never on cards closed. If, over a rolling
 8-week window, the Fable lane fires on more than a third of cards, the cards are not being
 frozen and the coordinator seat — not the lane — is the defect to fix; if it never fires while
@@ -362,6 +362,8 @@ exceeds a third of packets over a rolling 8 weeks, the escalation line or the pa
 the defect to fix. Any operator act that happened without the operator's act — a merge, arm or
 deploy by an agent without the operator — is a failed enforcement point: fix it at the cheapest
 layer (test → hook → credential) before other work on that surface.
+
+**Trigger check schedule:** rides the standing quarterly programme review.
 
 **Effective:** the 2026-07-14 decision on acceptance; the 2026-09-15 rescoping on the
 operator's same-day in-session ratification; the 2026-09-20 and 2026-09-25 revisions each on
@@ -408,11 +410,7 @@ synthesis the executive steers by — is the documented fold-loop failure (M-37,
 on PRs #360, #395 and #401; reviewer ≠ planner is its structural fix (M-46). Fable is placed as a
 lane rather than a seat because its cost is per-instance and its edge is on long, messy,
 high-reasoning work; vendor benchmark and pricing claims about it were treated as unverified
-and are non-load-bearing, as the 2026-07-14 text did for the Cursor comparison. The fifteen untracked
-handoff packets found in the main checkout's `docs/briefs/handoffs/` on 2026-09-20 (two GLM, one
-Astra, twelve coordinator/operator packets; `git status --short -- docs/briefs/handoffs/`) are the
-committed-handoff rule's first application: each is committed or tombstoned before the next
-dispatch that would rely on it.
+and are non-load-bearing, as the 2026-07-14 text did for the Cursor comparison.
 
 **Why this is a revision and not a new ADR.** The subject of this record *is* surface
 allocation; retiring one of the two surfaces is a change of scope to this decision, not a
@@ -463,249 +461,34 @@ rubber stamp.
   [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) own the mechanical
   check of item 7 and the best-effort operator-act prompt for the Claude Code harness; the
   enforcement boundaries are the ones the enforcement-point table names.
+- The pre-trim blob `d4e26fba472ab9c0ca7e1e5280b2bcbe3ddcfa75` holds the clause-by-clause disposition
+  of every prior text (§8 and the 2026-09-20 / 2026-09-25 tables) and the 2026-09-15 §4 / §9 / §10
+  record; [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement) holds the three
+  deliberately retained Cursor-named guards.
 
-## §8 — Disposition of the prior decision's clauses and addenda
+<!-- Load-bearing anchors: #2--decision (above Decision; linked from the seven-strategy campaign state)
+and #addendum-2026-09-04-disable-notify-cursor (Change history; linked from docs/SESSIONS.md, which is
+append-only). Do not remove either. -->
 
-> **Two HTML anchors in this file are load-bearing and must not be removed:**
-> `#2--decision` (the slug of the pre-revision `## §2 — Decision` heading) and
-> `#addendum-2026-09-04-disable-notify-cursor`. The 2026-09-15 revision dropped both
-> headings and broke two live incoming links — `docs/SESSIONS.md:424` and the Track B
-> [campaign state](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md).
-> The SESSIONS citation sits in a merged entry that `sessions-append-only` forbids
-> editing, so the anchor is pinned here rather than the caller repointed.
+## Operator residues outside the tree (2026-09-15 retirement)
 
-Every clause of the 2026-07-14 body and its six addenda, dispositioned per
-[ceremony tiering](2026-08-08-adr-ceremony-tiering.md) ("disposition each obligation as retained,
-discharged, superseded or explicitly retired"). Full prior text at blob
-`0bcd6699fd683a18b9493e25bb053797dcf4fafe`.
+Four spent `cursor/*` refs remain on `origin` (`git ls-remote --heads origin 'cursor/*'`, verified
+2026-10-15): `cursor/research-asset-registry-0ba4`, `cursor/scripts-side-2026-09-04-p2`,
+`cursor/scripts-side-2026-09-04-p3`, `cursor/windows-handoff-job-accounting-7785`. Operator:
+`git push origin --delete <ref>` ×4; the command above then returns empty, and any other ref is a
+finding. The autonomous-loop routine `trig_012nvuH7jqmjFUFgoFVpZ6RP` and `daily-repo-truth-sync` were
+verified deleted on 2026-09-15. One residual check only the operator can make: the
+`claude.ai/code/routines` page, confirming no other routine carries a GitHub event source on
+`first-passage`.
 
-| Prior clause | Disposition |
-|---|---|
-| §2 routing test 0 (local-only dependency pre-check, 2026-07-16 addendum) | **Retained**, surface-agnostic. Binds Claude Code and Codex equally; checklist owner is `task-routing`. |
-| §2 routing test 1 (locked/governed surface → coordinator) | **Retained** verbatim in substance. No surface exception, no size exception. |
-| §2 routing test 2 (spec frozen; never resolve ambiguity unilaterally) | **Retained**, "Cursor" → "a worker". |
-| §2 routing test 3 (handoff-overhead threshold) | **Retained**. Its 2026-08-29 reading as *proactive dispatch authority* (act, don't merely label) is also retained. |
-| §2 handoff contract, items 1–3 and 5 (brief passing `check_brief`; §0 read-report + `NEEDS_CONTEXT`; §5 forbidden moves; vendor-bytes/secret declaration) | **Retained** unchanged. |
-| §2 return contract, "no commit/merge without operator go" | **Retained, and restored to its unnarrowed form** — the 2026-08-14 narrowing retires with its mechanism. |
-| §2 return contract, `cursor/*` branch | **Superseded** — worker branches are `codex/*` or `claude/*`. |
-| Four-state return taxonomy (`DONE`/`DONE_WITH_CONCERNS`/`NEEDS_CONTEXT`/`BLOCKED`) | **Retained** and promoted into §Decision; it was previously stated only by the deleted `cursor-fleet` skill. |
-| §4 falsifier limb 1 (≥2 judgment-defect PRs in 8 weeks) | **Retained**, re-scoped to worker PRs on any surviving surface. |
-| §4 falsifier limb 2 (overhead exceeds value, ≥3 consecutive handoffs) | **Retained**, surface-agnostic. |
-| §5 forbidden move — verbal-spec handoffs | **Retained**. The containment is the brief, whatever the worker. |
-| §5 forbidden move — scope-creep via adjacency | **Retained**. |
-| §5 forbidden move — merging on green tests without review | **Retained**, unnarrowed (see above). |
-| §5 forbidden move — retro-fitting a brief after the build | **Retained**. |
-| §5 forbidden move — quoting the vendor comparison's numbers in routing arguments | **Explicitly retired** — the comparison was Cursor-vs-CC and has no remaining referent. Its *principle* (don't ground routing doctrine in vendor marketing) is generic and survives under `verify-source`. |
-| §6 downstream artifacts; §7 implementation plan (Phases 0–3) | **Discharged** 2026-07-14/16. Completed maintenance acts; no standing obligation. |
-| §10 audit hooks (cursor-branch merge/locked-surface sweeps) | **Superseded** by §10 below — the old hooks scan a branch namespace that no longer exists. |
-| Addendum 2026-07-16 (Step 0 + 5th contract item) | **Folded into §Decision above**; binding, not an appendix. |
-| Addendum 2026-08-14 (auto-merge narrowing) | **Explicitly retired** with its parent mechanism. See the `2026-08-14` ADR's own retirement. |
-| Addendum 2026-08-23 (automatic Claude judgment review) | **Already self-superseded 2026-08-29** — the mechanism never fired (`GITHUB_TOKEN`-authored comments do not trigger workflow runs) and its files were deleted then. No live obligation. |
-| Addendum 2026-08-29 #1 (Codex native GitHub review) | **Retained and now load-bearing** — Codex's account-level review is a surviving surface's review path. Its standing bar — *this repo's CI grants Codex no write/push credential without a superseding ADR* — **survives the Cursor retirement unchanged**; nothing here relaxes it. |
-| Addendum 2026-08-29 #1 — **its revert trigger**: a rolling 8-week window in which Codex's native review is demonstrably lower-signal than Claude's on the same class of PR, or the operator disables the `chatgpt.com/codex/settings/code-review` toggle for this repo (operator-judged, logged in `docs/SESSIONS.md`) | **Retained.** Revert action unchanged and still correct: none in this tree — the mechanism is account-level, so reverting is toggling that setting off, not editing this repo. |
-| Addendum 2026-08-29 #2 — **its revert trigger**: two proactively-dispatched tasks in a rolling 8-week window turn out to have needed operator judgment the coordinator lacked (wrong root cause, misjudged scope, a spec that was not actually frozen) | **Retained**, re-scoped to the surviving worker surfaces. Revert action: back to per-task "dispatch this" confirmation before any worker dispatch. |
-| Addendum 2026-08-29 #1, "relay findings to Cursor's Cloud Agent" | **Explicitly retired** — the relay target is gone. Findings are addressed by the coordinator or a Codex/Claude Code worker. |
-| Addendum 2026-08-29 #2 (proactive dispatch; lightweight GitHub-issue + `@cursor` format) | **Split.** Proactive-dispatch authority is **retained** (above). The lightweight issue format is **retained in shape** — a complete issue body in place of a full brief for small precedented fixes — but its `@cursor` dispatch step is **explicitly retired**; dispatch is to a Codex or Claude Code worker. |
-| <a id="addendum-2026-09-04-disable-notify-cursor"></a>Addendum 2026-09-04 (`notify-cursor.yml` auto-ping disabled) and its revert trigger ("operator asks to turn the ping back on"; restore `on:` events from `4f3ddc6`) | **Explicitly retired, not left standing.** The workflow is deleted by this revision's sweep; the revert trigger is unreachable and is discharged rather than carried as a dead obligation. Retrieval via [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement). |
-
-### 2026-09-20 revision — disposition of the 2026-09-15 clauses it touches
-
-| 2026-09-15 clause | Disposition |
-|---|---|
-| "Surfaces" paragraph (coordinator = Claude Code; workers = Claude Code and Codex; Cursor retired) | **Superseded** by the seat table. Cursor's retirement and its no-falsifier election are **retained** verbatim in substance. |
-| Routing tests 0–3 | **Retained** unchanged; test 1's `CLAUDE.md` reference updated to `AGENTS.md` (the file was retired the same day). |
-| Handoff contract, five items | **Retained**; a sixth item (acceptance tests named in the card) **added**. |
-| Lightweight dispatch issue (items 2–5 in place of a brief) | **Retained in shape, re-scoped**: must carry items 2–6 including the predeclared acceptance tests; its freeze is the body hash in the coordinator's read comment, the one permitted non-file card under the committed-handoff rule. |
-| Routing test 1 "→ coordinator, full stop"; return contract "two bounces fall back to the coordinator" | **Retained**; *Ownership and precedence* under the escalation lane governs the overlap — the coordinator keeps ownership and performs the named authoring/rebuild on Fable. |
-| Return contract branches `codex/*` / `claude/*` | **Retained**, `glm/*` **added**. |
-| Merge authority is the operator's | **Retained** verbatim. |
-| Orchestration rules (disjoint footprints, dispatch-moment Phase-0, review round part of the freeze, pointer SHA) | **Retained** verbatim; the committed-handoff rule generalises the single-writer rule to every seat boundary. |
-| Addendum 2026-08-29 #1 (Codex native review, retained) | **Retained and re-seated** — it is now the executive's independent signature under reviewer ≠ planner. |
-| `AGENTS.md` §Continuous improvement, "after two failed corrections… restart with a cleaner prompt" (external rule, not this ADR's) | **Bound, not changed** — the restart is where the Fable lane's trigger 1 fires. |
-
-### 2026-09-25 revision — disposition of the 2026-09-20 clauses it touches
-
-| 2026-09-20 clause | Disposition |
-|---|---|
-| Seat table | **Retained** unchanged; imported names map onto it (seat-name table). |
-| Handoff contract, six items | **Retained**; a seventh item (authority block) **added**. |
-| Lightweight dispatch issue | **Retained**; it carries item 7 too, checked by hand in the read comment. |
-| Merge authority is the operator's, no automated exception | **Retained** verbatim; auto-merge is refused server-side by `allow_auto_merge: false`; `guard_operator_acts.py` adds a best-effort prompt (merge) or refusal (auto-merge) for the Claude Code forms it recognises. |
-| Measure and falsifier | **Retained**; packet-return measures and the failed-enforcement-point rule **added**. |
-| Committed-handoff rule | **Retained**; named as the event log under *Enforcement points*. |
-
-### Deliberately retained (not over-swept)
-
-Three Cursor-named things survive on purpose; a future reader should not treat them as a
-missed sweep:
-
-- **`scripts/check_pine_manifest.py`'s `cursoragent@cursor.com` author denylist.** Dormant —
-  that identity can no longer appear — but retained as cheap anti-re-entry armor for the
-  incident it encodes (commit `66c2a14`/PR #574: a Pine manifest pin authored from a
-  disposable Cursor cloud checkout, bytes lost). The guard costs nothing and still fires if
-  the lane is ever restored. `.github/workflows/manifest-check.yml`'s matching comment is
-  that incident's record.
-- **The `cursor` alternation in both copies of `check_brief.py`'s type-inference regex.**
-  Retained as inert tolerance for two frozen historical briefs that self-declare
-  `**Brief type:** Cursor handoff`. **Correction (2026-09-15, adversarial review):** an earlier
-  draft of this section claimed removing the alternation "would silently reclassify those
-  records." That was **false** and is corrected here rather than quietly dropped — `infer_type`
-  also matches on filename, and both briefs carry `cursor-handoff` in their names, so removal was
-  measured to change zero classifications across all 858 markdown files. The alternation stays
-  because it is harmless and costs nothing, not because anything depends on it. The regex reads
-  history; it authorizes nothing.
-- **`lab/research_utils/msl_preflight.py`'s ripgrep fallback** to a Cursor *editor* install
-  path. It is a guarded filesystem probe reached only when `rg` is absent from `PATH`, with no
-  agent semantics; removing it could only reduce robustness on a host that still has the editor.
-
-Dated Cursor attributions in instrument ledgers, `lab/CATALOG.md`, `PORT_MANIFEST.sha256`,
-`docs/SESSIONS.md`, closures and superseded specs are historical record and are **not** swept —
-history stays, per the reader-intercept principle this revision relies on.
-
-## §4 — Falsifier (revert trigger), restated surface-agnostically
-
-Both limbs survive the retirement; only "Cursor" becomes "a worker". Restored here
-because the 2026-09-15 consolidation carried their *thresholds* into the §8 table but
-dropped their revert **actions** and their check schedule — a falsifier without a
-stated consequence is the failure mode this repo has a lesson for.
-
-**Revert trigger (either limb):**
-
-1. **Allocation-caused defects** — over any rolling 8-week window, ≥2 merged
-   worker-built PRs carry defects traceable to *spec-interpretation judgment* (the
-   worker resolved an ambiguity instead of bouncing `NEEDS_CONTEXT`) rather than to
-   spec error.
-2. **Overhead exceeds value** — ≥3 consecutive handoffs where authoring and verifying
-   the brief demonstrably cost more session time than the gated build
-   (operator-judged, logged in `docs/SESSIONS.md`).
-
-**Revert action:** limb 1 → supersede with a tightened rule (narrower worker scope, or
-mandatory coordinator re-verification of every worker diff hunk); limb 2 → carve the
-affected task class back to the coordinator by superseding ADR — **do not silently stop
-writing briefs.**
-
-**Trigger check schedule:** rides the standing quarterly programme review.
-
-## §9 — Operator actions this repo cannot perform
-
-Three Cursor residues sit outside what a file edit can reach, so merging the sweep could not touch
-them. Recorded here, in the hot record, so the retirement is not mistaken for complete at the
-account level. **Items 1 and 2 verified already gone on 2026-09-15** (same-day follow-up session,
-run on the operator's machine and account):
-
-1. **The GitHub webhook trigger** created under the now-superseded autonomous-loop ADR (routine
-   `trig_012nvuH7jqmjFUFgoFVpZ6RP`, firing unfiltered on `pull_request: opened`) — an
-   account-level routine, not a repo file. **Deleted.** `RemoteTrigger get` on the id returns
-   HTTP 404 `Trigger not found` from the same account whose 2026-08-15 session transcript holds
-   the routine's API record; `list_runs` shows zero sessions against a `52 */6 * * *` cron that
-   would have produced ~4/day; and all 30 `cursor/*` PRs opened after 2026-08-14 were merged by
-   the operator or `app/cursor`, never by the routine. The API's `list` returns only the 20
-   newest routines and does not page, so the earlier "not in the listing" was uninformative
-   either way — the resource-level 404 is the evidence. Nothing to disable. One residual check
-   only the operator can make: the routines page at `claude.ai/code/routines`, confirming no
-   *other* routine carries a GitHub event source on `first-passage` (a routine object exposes no
-   event-source field, so the API cannot answer this).
-2. **`daily-repo-truth-sync`**, the operator-machine scheduled task whose step 2 classified
-   `cursor/*` branches SPENT / CARRIES-WORK / UNKNOWN. **Deleted.** The desktop scheduler
-   reports `taskDeleted: true` (42 runs; last 2026-09-14 00:59Z). Its `SKILL.md` remains under
-   `~/.claude/scheduled-tasks/` as the scheduler's documented post-delete residue, not a live
-   task. Nothing to prune.
-3. **Four spent `cursor/*` refs still on `origin`** — a remote deletion, not a file edit, so the
-   sweep could not perform it (and §10 hook 3 read "empty" from an unfetched checkout):
-   `cursor/research-asset-registry-0ba4` (#315 merged), `cursor/scripts-side-2026-09-04-p3`
-   (#303 merged), `cursor/windows-handoff-job-accounting-7785` (#326 merged) — each an ancestor
-   of `main` — and `cursor/scripts-side-2026-09-04-p2` (#304 closed unmerged, "Packet B was
-   withdrawn before dispatch"), one commit ahead holding the withdrawn diff, which stays
-   reachable from the PR after deletion. Operator: `git push origin --delete <ref>` ×4.
-
-None of this blocks ratification. A fourth item is the operator's alone: the **Cursor row in the
-[subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md)** still records a cancellation date and
-final charges as not supplied. That is an operator reconfirmation, not an agent edit.
-
-### In-flight work this revision interacts with (2026-09-15)
-
-Two PRs were open against `main` when this revision landed. Neither is editable from this
-branch; both need a pass at merge time:
-
-- **[#402](https://github.com/Joshua-Asante/first-passage/pull/402)** amends
-  `.claude/skills/cursor-fleet/SKILL.md`, which this revision **deletes** at operator
-  instruction. Whichever lands second conflicts. The deletion is the operator's ruling and
-  should win; #402's substance (a brief's review round is part of the freeze, and the dispatch
-  pointer carries the frozen SHA) is **already carried** in §Decision's orchestration rules, so
-  nothing of it is lost by closing it against the deletion. **Resolved 2026-09-16:** #402 had
-  merged first (`c86a0a0`, 2026-09-15); the conflict was settled at this revision's merge by
-  carrying its two rules here and deleting the skill (`a9f3a9f`). TOMBSTONES now pins the final
-  body `main` held (`c47af22…`, with #402's rules) — the `56f728a…` first pinned predated #402.
-- **[#401](https://github.com/Joshua-Asante/first-passage/pull/401)** adds a
-  `work-decomposition` skill whose line 19 reads "retired by operator instruction on 2026-09-15
-  (**retirement record pending**)". **This revision is that record** — the pointer resolves here
-  once both land. #401 also makes pointer edits to `cursor-fleet`, which will need re-homing to
-  this ADR for the same reason. **Resolved 2026-09-16:** #401 was re-pointed to this clause and
-  TOMBSTONES before merge (its `cursor-fleet` edits dropped in `430eefe`) and merged as
-  `b8e4034`; the back-pointer in §Decision closes the loop.
-
-## §10 — Audit hooks (runnable)
+## Audit hooks (runnable)
 
 ```bash
-# 1. No Cursor harness, dispatch script or workflow survives in the tree.
-git ls-files .cursor scripts/dispatch_cursor.ps1 scripts/test_dispatch_cursor.ps1 \
-             .github/workflows/notify-cursor.yml .claude/skills/cursor-fleet
-# Expected after ratification: empty.
-
-# 2. No live agent-facing surface still names a Cursor lane, dispatch or branch namespace.
-#    Three carriers are deliberately excluded and are the ONLY permitted hits:
-#      - comment lines recording why the lane is gone;
-#      - scripts/agent_handoff.md's retirement note in prose;
-#      - scripts/check_pine_manifest.py's `cursoragent@cursor.com` author denylist, retained as
-#        dormant anti-re-entry armor for the PR #574 incident (bytes lost to a Cursor cloud agent).
-#    Any OTHER hit is a finding.
-rg -n -i "@cursor|cursor/\*|dispatch_cursor|cursor\[bot\]|cursor-agent" .claude scripts .github \
-  | grep -vE ':[0-9]+: *#' \
-  | grep -v '^scripts/agent_handoff.md:' \
-  | grep -v '^scripts/check_pine_manifest.py:'
-# Verified empty at authoring (2026-09-15). The workflow half is additionally pinned
-# mechanically by tests/test_claude_review_workflows.py::test_no_workflow_dispatches_cursor.
-# Historical citations in docs/adr/, docs/SESSIONS.md, docs/notes/ and lab/ARCHIVED.json are
-# deliberately out of scope — history is not swept.
-
-# 2b. No LIVE handoff brief still offers the retired surface as a spawn target.
-#     Scope widened 2026-09-15 after a Codex review found
-#     docs/briefs/handoffs/2026-09-11-track-a-a1b-... at "Status: dispatch now" still reading
-#     "Spawn target: Codex (or Cursor)" while hooks 1-2 reported clean: they scan only
-#     .claude/ scripts/ .github/, so a dispatchable brief was outside them.
-rg -n -i '^\*\*spawn target:\*\*.*cursor' docs/briefs docs/superpowers \
-  | grep -viE 'not cursor|not a lane|retire|re-?target'
-# The FIELD VALUE is what is audited. The bare pattern matched six lines on 2026-09-16 — the two
-# historical targets below plus four explanatory carriers (briefs re-targeted away from Cursor
-# that say so, and one that says "NOT Cursor-eligible"); the filter drops the carriers. A brief
-# that still OFFERS Cursor — "Codex (or Cursor)" — carries none of those words and stays a hit.
-# Expected, as of 2026-09-16, exactly two hits, both spent and both verified as such:
-#   docs/briefs/handoffs/2026-07-24-cursor-handoff-agent-surface-posture-sync.md
-#     -- its own banner reads "STATUS 2026-07-24: DISCHARGED - DO NOT DISPATCH";
-#   docs/briefs/rnd-pipeline/2026-07-14-cursor-handoff-lifecycle-call1-sigma-harness.md
-#     -- no DISCHARGED line, but discharged BY DELIVERY: its deliverable exists at
-#     lab/discovery/lifecycle_call1/, whose __init__.py:12 cites this brief as its handoff.
-# Any hit on a brief that is still dispatchable is a finding.
-
-# 3. Worker branches use a surviving namespace. Ask the remote: `git branch -a` sees only refs
-#    this checkout has fetched, which is how the authoring pass read "empty" while origin held
-#    four (the same unfetched-branch trap the #401 search fell into — SESSIONS 2026-09-15a).
-git ls-remote --heads origin 'cursor/*'
-# Expected: empty once the §9 item-3 refs are deleted. Verified 2026-09-15: exactly the four
-# spent refs named in §9 item 3. Any ref not in that list is a finding.
-
-# 4. The retirement did not silently drop the surviving clauses' owners.
-test -f .claude/skills/task-routing/SKILL.md \
-  && test -f .claude/skills/brief-authoring/references/cc_handoff.md \
-  && test -f .claude/skills/handoff-verify/SKILL.md && echo "owners present"
-python scripts/check_skill_refs.py --all
-# Expected: "owners present" and a clean skill-refs pass.
-
-# 5. Falsifier limb-1 evidence sweep (at each quarterly check).
+# Falsifier limb-1 evidence sweep (at each quarterly check).
 grep -in "worker\|packet" docs/SESSIONS.md | grep -in "defect\|redesign\|NEEDS_CONTEXT"
-# Adjudicate hits against the two §4 limbs; log the verdict in the review entry.
+# Adjudicate hits against the two revert limbs under "Measure and falsifier"; log the verdict in the review entry.
 
-# 6. (2026-09-25) Card grants only narrow; the best-effort hook prompts or denies the forms it reads.
+# (2026-09-25) Card grants only narrow; the best-effort hook prompts or denies the forms it reads.
 python scripts/check_handoff_authority.py --all
 python -m pytest -q tests/scripts/test_check_handoff_authority.py tests/scripts/test_guard_operator_acts.py
 # Expected: 0 violation(s); all tests pass.
@@ -717,7 +500,7 @@ python -m pytest -q tests/scripts/test_check_handoff_authority.py tests/scripts/
 **Source.** Operator rulings of 2026-09-26, each chosen in the babysit session from analysed
 options. The text above is not rewritten; it gains one sentence each in handoff-contract items 5
 and 7, and a correction to the card-grants and merge rows of the enforcement-point table, all
-pointing here. Ratifies on operator merge of the PR that carries it.
+pointing here. Ratified by merge of PR #512 (2026-09-26).
 
 **A. Seat binding — "human read + one gate".**
 
@@ -785,9 +568,9 @@ rail-deploy row of the enforcement-point table is updated to the ruled scope.
 | Question | Ruling (verbatim) | Effect |
 |---|---|---|
 | May an agent use `--acknowledge-m1-unresolved`? | "agents can use the arming override" | **Permitted.** An agent may invoke `c1_rail_arm.py --arm --acknowledge-m1-unresolved '<reason>'`; the hook **asks** (never denies) on it, as on every `--arm`, under a prompt that says M1 is unresolved, that the helper accepts the override only against a structurally valid unresolved artifact, and that it writes an `arming_deviation` record. Unchanged: the override remains the operator-ratified discretion of the [monitoring ADR's Addendum 2026-07-31b](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-07-31b--the-two-knowing-deviations-past-the-m1-gate-recorded-and-the-gates-trigger-is-proposed-to-move-from-send-to-arm) (cited by `plan_arm` and recorded in each deviation event); every armed session needs its own operator GO, and answering the prompt is that act (§Decision rule 2); an arming GO does not direct a trade. **Trade-authority correction 2026-10-01:** [2026-09-30b](#addendum-2026-09-30b) permits operator-directed orders, exits and cancels as `trade.submit` (`high`), never grantable in a card; arming, live-spend and per-session GO requirements are unchanged. The hook is best effort (ruling 2026-09-25), so this is a **permission, not an enforcement claim**. |
-| Fly deploy scope | "deploy prompt shouldn't fire more than it needs to" | `rail.deploy` asks only when the target app is on the live execution path — `c1-rail` (listener) and `c1-signal-daemon`, the `app` names in `deploy/c1_rail/fly.toml` and `deploy/c1_signal_daemon/fly.toml` — and names the app in the prompt. It is silent for other apps and for invocations that deploy nothing (`--help`). If the target cannot be determined (no `-a`/`--app`, no readable `--config`/`-c` fly.toml, no fly.toml in the effective working directory, `FLY_APP` set, or a directory the hook cannot see), it **asks** (fail closed). Codex review of #511 at `b9d71f2`: a fly.toml is trusted only when nothing the call runs before the deploy, beside it (pipeline, background job) or in a loop with it may have changed the environment or files it reads; a variable assignment, a file-writing redirection, a prefix or wrapper on the deploy, or any program off a short read-only list (`cat`, `echo`, `ls`, `grep`, directory changes …) leaves only `-a` to name the target, so `sed -i … fly.toml && fly deploy` and `export FLY_APP=…; fly deploy` ask. A directory change unanchors only the deploys that run after it (every deploy, when the call has a loop or defines a function, whose body runs where it is called). A relative `--config` beside a working-directory argument is read against both directories (`fly deploy --help` does not say which flyctl uses) and names an app only when both agree, so the READMEs' `fly deploy . --config deploy/…/fly.toml` names its app. Capability id stays `rail.deploy`; no registry change. |
+| Fly deploy scope | "deploy prompt shouldn't fire more than it needs to" | `rail.deploy` asks only when the target app is on the live execution path — `c1-rail` (listener) and `c1-signal-daemon`, the `app` names in `deploy/c1_rail/fly.toml` and `deploy/c1_signal_daemon/fly.toml` — and names the app in the prompt. It is silent for other apps and for invocations that deploy nothing (`--help`). If the target cannot be determined (no `-a`/`--app`, no readable `--config`/`-c` fly.toml, no fly.toml in the effective working directory, `FLY_APP` set, or a directory the hook cannot see), it **asks** (fail closed). Target resolution and its fail-closed cases (Codex review of #511): `scripts/guard_operator_acts.py` module docstring and `tests/scripts/test_guard_operator_acts.py`. Capability id stays `rail.deploy`; no registry change. |
 | `gh pr merge --admin` | "askable admin merges" | **Record only.** A pinned `--admin` merge stays askable (the hook's current behaviour); an unpinned one stays denied as `pr.merge_unpinned`. |
-| How a card's seat is bound to the worker seat | "Let's consider how a card is bound to the worker seat" | **Not decided — under consideration.** No mechanism is adopted; `check_handoff_authority.py` behaviour is unchanged. The question stays open for the operator. *Superseded the same day: ruled in [Addendum 2026-09-26b](#addendum-2026-09-26b) (human-read binding plus A6 on cards granting `worktree.write` or `research.run`).* |
+| How a card's seat is bound to the worker seat | "Let's consider how a card is bound to the worker seat" | **Superseded the same day:** ruled in [Addendum 2026-09-26b](#addendum-2026-09-26b) (human-read binding plus A6 on cards granting `worktree.write` or `research.run`). |
 | Activation-gap wording (AGENTS.md, Live-execution posture) | "correct the wording in the activation gap" | The bullet that read "a forged or status-only artifact fails closed" is corrected to what the code does, verified on `main` at `7211fa1`: `validate_c1_monitoring_acceptance.validate(require_resolved=True)` checks structure and `RESOLVED` status, and `operator_signoff` only for a non-empty `operator` field (no signature), so a complete forged `RESOLVED` file passes; a status-only file fails. The interlock gates only the arm helper: the rail host's boot gate (`c1_rail_http_server.load_config`) checks `events_log_path` and `armed_until`, not M1, so arming by editing the `/data` config bypasses it. The host-side activation gate is owed at TB-I3 ([book-protection instance admission](2026-09-12-tradeify-book-protection-instance-admission.md)). The bullet also states the override and this addendum's agent permission. The rail-arm row's "enforced for M1 by the interlock" above is read with these limits. |
 
 **Verification.** `tests/scripts/test_guard_operator_acts.py` (2026-09-26 section: live-path
@@ -805,19 +588,13 @@ ruling" from three analysed options; the other two were restructuring all five f
 exempting the returned cards while restructuring the set file. The operator then directed the
 same day: "address the root cause directly"; *Enforcement* below is that change. The text above
 is not rewritten, except that handoff-contract item 1 gains a pointer here and the
-enforcement-point table gains a *card form* row. Ratifies on operator merge of the PR that carries it.
+enforcement-point table gains a *card form* row. Ratified by merge of PR #532 (2026-09-27).
 
-**Finding.** On 2026-09-27, `python3 scripts/check_brief.py <card>` reported `RESULT: MALFORMED`
-for every new card under `docs/briefs/handoffs/`. The typical HARD violations were a missing §0,
-§0.5 or §10; no §4 `H:` or falsifier; no §5 list; and an incomplete §6 status taxonomy. The
-merge-train card was restructured on its own PR ([#531](https://github.com/Joshua-Asante/first-passage/pull/531)). The mechanism: nothing runs item 1
-before a dispatch. `check_brief.py` is not in the `check` gate list (`scripts/gates.yml`), no
-git hook or CI workflow runs it (the pre-ratification panel runs it only when invoked on a
-document), and it is not a step of the
-[`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md) Phase-0 checklist. The authority
-block (item 7) is checked by `check_handoff_authority.py`; the brief's form was not. The gap
-predates 2026-09-27: on that day 58 of the 80 files under `docs/briefs/handoffs/` reported
-`MALFORMED`, including all but six of the cards dated 2026-09-20 to 2026-09-26.
+**Finding.** On 2026-09-27 `check_brief.py` reported `RESULT: MALFORMED` for every new card under
+`docs/briefs/handoffs/` (58 of the 80 files there). The mechanism: nothing ran item 1 before a
+dispatch — `check_brief.py` was in no gate, git hook, CI workflow or `handoff-verify` step; only the
+authority block (item 7) was checked. The merge-train card was restructured on its own PR
+([#531](https://github.com/Joshua-Asante/first-passage/pull/531)).
 
 **Ruling.**
 
@@ -830,7 +607,7 @@ predates 2026-09-27: on that day 58 of the 80 files under `docs/briefs/handoffs/
 | `2026-09-27-m2-modify-semantics.md` | Carded, not dispatched | **Not exempt.** Restructured before dispatch into the numbered sections, with no change of scope, grants or acceptance; it passes `check_brief.py`. |
 
 *Why exemption, not restructure.* Restructuring a card after its build to make the record
-compliant is the retained §5 forbidden move "retro-fitting a brief after the build" (§8 table),
+compliant is the retained §5 forbidden move "retro-fitting a brief after the build" (§Decision, *Forbidden moves*),
 which the prior text (blob `0bcd6699…`) names as self-attestation. The exemption leaves each exempt file's text,
 authority block and acceptance record byte-identical.
 
@@ -839,60 +616,23 @@ and it does not reach a later card, including one copied out of the set file. It
 and changes no grant: the three worker cards' authority blocks are untouched and still pass
 `check_handoff_authority.py`.
 
-*Enforcement.* A `check` gate, `handoff-brief-form`
+*Enforcement.* The `handoff-brief-form` `check` gate
 ([`scripts/check_handoff_brief_form.py`](../../scripts/check_handoff_brief_form.py), wired in
-[`scripts/gates.yml`](../../scripts/gates.yml)), runs `check_brief.py --type handoff` on every card in
-scope. The type is forced because every card in scope is a handoff card; inference from content
-would let a card that omits §0.5 and the four-state return pass as `generic`. Only
-`RESULT: well-formed` passes: the zero-exit `NOT CHECKED` outcome validates nothing, so it fails.
-The gate adds scope, not rules: the handoff contract is `check_brief.py`'s own. It runs at
-pre-commit whenever a brief, the checker, its engine, the block reader or the historical list is
-staged, and in the required
-`skills (3.12)` check on every PR. A card is committed before it is dispatched (committed-handoff
-rule), so a malformed card now fails before dispatch. The scope:
-- every card anywhere under `docs/briefs/handoffs/`, where the committed-handoff rule places cards
-  (`docs/briefs/handoffs/**`), except that directory's own `README.md` and the historical cards:
-  the 74 direct children dated before 2026-09-27 that were on `main` at `38e62ee`, listed by name in
-  [`scripts/handoff_brief_form_grandfathered.txt`](../../scripts/handoff_brief_form_grandfathered.txt).
-  Because the list is by name, a new card with a backdated name is still checked. The gate
-  pins the list: every name on it must be a card at `38e62ee`, so the list can shrink but never
-  gain a card, and a checkout that cannot read `38e62ee` (a shallow clone) fails closed;
-- any `docs/briefs/**` card carrying a `yaml authority` block, read with
-  `check_handoff_authority.py`'s block reader;
-- minus the four files exempted above, named in the script. The gate itself pins them to this
-  table's **Exempt** rows, so an exemption the ruling does not grant fails the required check,
-  and this ADR is in the gate's path trigger. An exemption naming a missing file fails the gate,
-  so a renamed exempt card loses its exemption.
+[`scripts/gates.yml`](../../scripts/gates.yml) with this ADR in its path trigger) runs
+`check_brief.py --type handoff` on every card under `docs/briefs/handoffs/**` except that directory's
+`README.md` and the 74 historical cards named in
+[`scripts/handoff_brief_form_grandfathered.txt`](../../scripts/handoff_brief_form_grandfathered.txt)
+(pinned to `38e62ee`: the list can shrink, never gain a card), and on any `docs/briefs/**` card
+carrying a `yaml authority` block; only `RESULT: well-formed` passes. **The gate parses this
+addendum's Ruling table:** its `EXEMPT` set must equal the table's **Exempt** rows, pinned by
+`tests/scripts/test_check_handoff_brief_form.py`, so edit those rows only together with the script;
+an exemption naming a missing file fails the gate. Scope details, the staged/unstaged rule and the
+fail-closed cases (from the Codex reviews of #532) are in the script's module docstring. The
+historical cards are **not retrofitted** (item 7's precedent); item 1 still binds any of them that
+is dispatched, through the coordinator's pre-dispatch read.
 
-In a git checkout, a card with both staged and unstaged changes fails, because pre-commit reads
-the working copy while the commit records the staged one. That check runs before scope, on both
-copies, so a staged card whose working copy has left scope, or has been deleted, still fails. These
-rules came from the Codex reviews of #532: the name-based list, the verdict and partial staging at
-`35e91ac`; the forced handoff type at `afdac7d`; nested cards and the check order at `0efe06d`;
-the pinned historical list at `f061616`.
-
-The historical cards are **not retrofitted**, following item 7's precedent ("historical cards are not
-retrofitted"). The gate does not check them, and this is not an exemption: item 1 still binds any
-of them that is dispatched, through the coordinator's pre-dispatch read. Run against `ed3e476`,
-before the M2 restructure, the gate exits 1 and names only the M2 card; on this change it exits 0.
-One intervention was chosen, at the cheapest reliable layer. A `handoff-verify` step was not
-added: once the committed card has passed the gate, the step would repeat the same check.
-
-**Verification.**
-
-```bash
-# Through the checkout's launcher (AGENTS.md, "Python environment and local checks"); on Windows
-# with PowerShell 7.3+, `.\fp.ps1 <command>` is the same entry point.
-python -I scripts/fp.py doctor
-python -I scripts/fp.py python scripts/check_brief.py --type handoff docs/briefs/handoffs/2026-09-27-m2-modify-semantics.md  # RESULT: well-formed
-python -I scripts/fp.py python scripts/check_handoff_authority.py --all      # 0 violation(s)
-python -I scripts/fp.py python scripts/check_handoff_brief_form.py           # 0 failing
-python -I scripts/fp.py python -m pytest tests/scripts/test_check_handoff_brief_form.py tests/test_gate_manifest.py
-git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/2026-09-27-h4-fence-classification-orb-l1-repair.md \
-  docs/briefs/handoffs/2026-09-27-h5b-attended-incident-rehearsal.md \
-  docs/briefs/handoffs/2026-09-27-h8c-omission-incident-session-end.md \
-  docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md                         # empty: the ruling left them unchanged
-```
+**Verification.** `python -I scripts/fp.py python scripts/check_handoff_brief_form.py` (0 failing)
+and `python -I scripts/fp.py python -m pytest tests/scripts/test_check_handoff_brief_form.py tests/test_gate_manifest.py`.
 
 ---
 
@@ -921,13 +661,13 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 
 > **Agents may place orders, exit positions, and cancel orders when directed by the operator**, including through computer use. This operator amendment (2026-09-30) supersedes the categorical prohibition on agent-placed trades; existing arming, live-spend, and session-specific operator GO requirements still apply. Weekly account-preservation trades may be operator-placed or agent-placed at the operator's direction; deadline in [STATE](../../STATE.md#scheduled-forward-triggers).
 
-**Decision.** `trade.submit` moves from `forbidden:` to the **operator-act class (`high`)** in `scripts/seat_authority.yml`. It is **never grantable in a card**: rule A3 of `scripts/check_handoff_authority.py` rejects it on every card, including worker, coordinator and handoff cards. The authority is the operator's direction for that specific order, exit or cancel, together with the existing arming, live-spend and per-session GO requirements. An arming GO does not direct a trade. This addendum supersedes the earlier forbidden-class trade example and the trade credential-custody row above only to this extent; arming, live spend and per-session GO are unchanged. The registry/ADR reconciliation is proposed and ratifies on operator merge of the PR that carries it; the AGENTS.md amendment is already ratified.
+**Decision.** `trade.submit` moves from `forbidden:` to the **operator-act class (`high`)** in `scripts/seat_authority.yml`. It is **never grantable in a card**: rule A3 of `scripts/check_handoff_authority.py` rejects it on every card, including worker, coordinator and handoff cards. The authority is the operator's direction for that specific order, exit or cancel, together with the existing arming, live-spend and per-session GO requirements. An arming GO does not direct a trade. This addendum supersedes the earlier forbidden-class trade example and the trade credential-custody row above only to this extent; arming, live spend and per-session GO are unchanged. The registry/ADR reconciliation was ratified by merge of PR #566 (2026-10-01); the AGENTS.md amendment was ratified earlier (PR #563).
 
 **What this does not authorize.** No card-granted trading, automated or unattended order, change to the arming interlock, M1 requirements, the $700 spend ceiling or the incident contract. No handoff or seat grant substitutes for the operator's direction for the specific act. Classing trading as medium or low would permit card delegation and is rejected; retaining it in `forbidden:` would contradict the ratified amendment.
 
 **Enforcement points.** The registry change in this PR makes A3 reject card delegation; the operator's direction and credential custody govern the act itself. Broker credentials stay outside agent environments: no agent holds them, per boundary row OF-5 of the [qualification execution boundary](../superpowers/specs/2026-09-17-qualification-execution-boundary-design.md) and its G-ARM re-verification at every arm and session GO ([host obligations](../notes/2026-09-27-host-obligations-assignment.md)). An agent acts on a directed order only through an already-authenticated attended or computer-use surface. This addendum does not amend that boundary. The operator-act hook cannot observe broker calls, so its behavior and `DECISION` / `MESSAGES` tables are unchanged; only its explanatory text is reconciled. This is not a claim of new broker-side enforcement.
 
-**Verification.** The registry test asserts that `trade.submit` is absent from `forbidden:` and has risk `high`; the existing parametrized `test_operator_act_is_never_delegated` covers it automatically. Run through the checkout's launcher: `python -m pytest tests/scripts/test_check_handoff_authority.py tests/scripts -q`, `python scripts/check_handoff_authority.py --all` (0 violations), and `check`. Verification records belong on PR #566. **Historical sequencing condition:** the sweep and ready status were held until X-1 finished and Joshua gave GO. X-1 is complete; Joshua authorized ready status and folding the sweep into #566. The 2026-10-01 sweep updates live authority statements and explicitly labels retained historical or task-scoped wording; its file inventory and verification are retained in the PR body. No merge is authorized.
+**Verification.** The registry test asserts that `trade.submit` is absent from `forbidden:` and has risk `high`; the existing parametrized `test_operator_act_is_never_delegated` covers it automatically. Run through the checkout's launcher: `python -m pytest tests/scripts/test_check_handoff_authority.py tests/scripts -q`, `python scripts/check_handoff_authority.py --all` (0 violations), and `check`. Verification records belong on PR #566. The 2026-10-01 sweep (folded into #566) updated live authority statements and labelled retained historical or task-scoped wording; its file inventory and verification are in the PR body.
 
 ## Change history
 
@@ -940,10 +680,11 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-08-23 | Addendum RATIFIED — automatic Claude judgment review (review-only) | Joshua |
 | 2026-08-29 | Addendum RATIFIED — Codex second look via its native GitHub integration | Joshua |
 | 2026-08-29 | Second addendum RATIFIED — proactive dispatch; lightweight issue format | Joshua |
-| 2026-09-04 | Addendum RATIFIED — `notify-cursor.yml` auto-ping disabled | Joshua |
+| 2026-09-04 | <a id="addendum-2026-09-04-disable-notify-cursor"></a>Addendum RATIFIED — `notify-cursor.yml` auto-ping disabled (explicitly retired 2026-09-15 with its revert trigger; workflow deleted, [`TOMBSTONES.md`](TOMBSTONES.md#2026-09-15-cursor-agent-retirement)) | Joshua |
 | 2026-09-15 | **Revision RATIFIED** — Cursor retired as a worker surface; decision rescoped to Claude Code + Codex; six addenda consolidated into the §8 disposition table; `2026-08-14-cc-cursor-autonomous-loop.md` superseded in full. Prior text at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`. §4 falsifier restated; two 2026-08-29 revert triggers restored and one false retention claim corrected after adversarial review. | Joshua (in-session ratification) + Claude Code |
 | 2026-09-25 | Revision proposed — action classes, authority block (item 7), approval bound to its object, `IN_DOUBT`, decision packets, enforcement-point table, seat-name mapping. Prior text at blob `cbe2a5886e3b6588b68294ac801f88acde3637b5`. Ratifies on operator merge. | Joshua (direction) + Claude Code |
 | 2026-09-26 | Addendum — operator rulings on the four open hook questions (M1 override permitted through the prompt; deploy prompt scoped to live-path apps; `--admin` merges stay askable; card-to-seat binding under consideration) and the AGENTS.md activation-gap wording correction. Rail-deploy enforcement row updated to the ruled scope; open-questions paragraph gains a pointer. | Joshua (rulings) + Claude Code |
-| 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check, GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
+| 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check (that ruling's text is owned by `scripts/check_staged_debris.py`, not this body), GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
 | 2026-09-27 | Addendum 2026-09-27 — operator ruling on handoff-contract item 1: the H4, H5b and H8c cards (dispatched and returned without passing `check_brief.py`) are exempted as recorded deviations, not retro-fitted; the staged-acceptance set is exempted as a set file whose copied-out cards must pass; the undispatched M2 card is restructured instead. Enforcement at the operator's same-day direction: the `handoff-brief-form` gate (forward-only from 2026-09-27, plus any card with an authority block; the four exempt files named). Item 1 gains a pointer; the enforcement-point table gains a *card form* row. | Joshua (ruling, direction) + Claude Code |
 | 2026-09-30 | Addendum 2026-09-30b — proposed: operator-directed orders, exits and cancels are `trade.submit`, operator act (`high`), never grantable in a card; ratified on operator merge. Original X-1 sweep hold is historical; completed sweep inventory and evidence are on #566 (2026-10-01). | Joshua (direction) + Codex |
+| 2026-10-15 | Retention trim (operator direction): §8 disposition tables, §4 (folded into *Measure and falsifier*, trigger field verbatim), §9 / §10 (residues kept under *Operator residues outside the tree*; hooks 5–6 kept), spent revision / provenance text and superseded addendum detail removed; the Codex credential bar, the four retained forbidden moves and both 2026-08-29 revert triggers restated in §Decision; ratification-pending phrases corrected to the merging PRs. Pre-trim blob `d4e26fba472ab9c0ca7e1e5280b2bcbe3ddcfa75`. | Joshua (direction) + Claude Code |

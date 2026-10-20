@@ -86,14 +86,13 @@ Regenerate: `python scripts/check_docs_runtime_inventory.py --write`
 | `docs/adr/2026-08-22-grow0-two-ledger-k-question.md` | quoted | `lab/discovery/burned_segments.py:9`, `tests/test_discovery_burned_segments.py:10` |
 | `docs/adr/2026-08-23-strategy-coldstore-phase-b.md` | pathlib | `tests/test_coldstore_phase_b.py:14` |
 | `docs/adr/2026-08-24-tradeify-growth-tier-scoring-only.md.` | quoted | `core/firm_rules.py:535`, `core/firm_rules.py:578` |
-| `docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md` | quoted | `scripts/check_pursuit_records.py:5` |
 | `docs/adr/2026-08-26-striker-legmap-cap-release.md` | quoted | `ops/c1_rail/c1_sizing_host_reference.py:89`, `tests/ops/test_c1_rail_listener.py:36`, `tests/ops/test_c1_sizing_host_reference.py:40`, `tests/ops/test_c1_sizing_host_reference.py:437`, `tests/ops/test_m1_acceptance_drills.py:57` |
 | `docs/adr/2026-08-27-ssot-` | quoted | `scripts/check_skill_deploy_sync.py:10` |
 | `docs/adr/2026-08-27-ssot-data-lineage-remediation-program.md` | quoted | `scripts/check_adr_graph.py:786`, `tests/scripts/test_check_skill_deploy_sync.py:2` |
 | `docs/adr/2026-08-29-clv-autocorrelation-admission-route-scope.md` | quoted | `lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate5_clv_cost_screen.py:2`, `lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c5_clv_cost_screen.py:2` |
 | `docs/adr/INDEX.md` | pathlib,quoted | `scripts/check_adr_graph.py:558`, `scripts/check_push_collision.py:14`, `scripts/retire_adr.py:44`, `scripts/retire_adr.py:7`, `tests/governance/test_sentinel.py:212`, `tests/test_check_advisor_dedup.py:114`, `tests/test_check_advisor_dedup.py:133`, `tests/test_repo_retrieve.py:21` |
 | `docs/adr/README.md` | pathlib,quoted | `tests/test_check_advisor_dedup.py:117`, `tests/test_check_advisor_dedup.py:134` |
-| `docs/adr/TOMBSTONES.md` | pathlib,quoted | `tests/test_check_advisor_dedup.py:119`, `tests/test_check_advisor_dedup.py:135`, `tests/test_repo_retrieve.py:21` |
+| `docs/adr/TOMBSTONES.md` | pathlib,quoted | `scripts/check_pursuit_records.py:5`, `tests/test_check_advisor_dedup.py:119`, `tests/test_check_advisor_dedup.py:135`, `tests/test_repo_retrieve.py:21` |
 | `docs/adr/a.md` | quoted | `tests/test_repo_retrieve.py:21` |
 | `docs/adr/decision.md` | quoted | `tests/test_roll_sessions.py:1285`, `tests/test_roll_sessions.py:1338` |
 | `docs/adr/demo.md` | quoted | `tests/governance/test_sentinel.py:840` |

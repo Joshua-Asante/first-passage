@@ -1,9 +1,9 @@
 # Default Prop Envelope — automation-friendly futures firms (v1.0, RATIFIED)
 
 **Path:** `ops/prop_envelope_default.md`
-**Status:** **v1.0 RATIFIED 2026-07-13** per [`docs/adr/2026-07-13-prop-envelope-v1-ratification.md`](../docs/adr/2026-07-13-prop-envelope-v1-ratification.md) (operator "proceed" 2026-07-13; §5 open items resolved on primary-source research, adversarially citation-verified same day). Seeded as v0.1 by Q-AUTO-FIRM-1 (2026-07-12).
+**Status:** **v1.0 RATIFIED 2026-07-13** per the [§5 ratification record](#5--ratification-record-all-v01-open-items-resolved-2026-07-13) ([decision record](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-13-prop-envelope-v1-ratification.md)) (operator "proceed" 2026-07-13; §5 open items resolved on primary-source research, adversarially citation-verified same day). Seeded as v0.1 by Q-AUTO-FIRM-1 (2026-07-12).
 **Purpose:** one reusable constraint set that candidate strategies are designed and annotated against, so research artifacts never hard-code a single firm. Per-firm differences are **overlays** on this default, resolved at the deployment fork — never inputs to an investigation brief.
-**Change control:** the default (§1–§3) changes only by ADR. Overlays (per-firm rows in §4) change when re-verified (90-day stale rule). Commission constants live in `core/firm_rules.py` (`cost_per_side_usd`, single-source per ADR 2026-06-06), not here.
+**Change control:** the default (§1–§3) changes only by ADR. Overlays (per-firm rows in §4) change when re-verified (90-day stale rule). Commission constants live in `core/firm_rules.py` (`cost_per_side_usd`, single-source per ADR 2026-06-06), not here. Re-open triggers (from the 2026-07-13 ratification; consolidated 2026-10-15 from 2026-07-13-prop-envelope-v1-ratification, removed — see [TOMBSTONES](../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)): if the E1 binding minimum drops below 16:00 ET, or any firm's consistency rule becomes a hard mid-eval breach rule, the affected §1 default re-opens by ADR, never by in-place edit.
 
 **Survey record:** [`docs/briefs/Q-AUTO-FIRM-1-attended-automation-survey.md`](../docs/briefs/Q-AUTO-FIRM-1-attended-automation-survey.md) (attended-automation bar; survey-era CrossTrade/NT8 reference — live c1 path is Option C, see E6).
 
@@ -27,7 +27,7 @@
 2. **Consistency annotation:** state qualifying-event frequency and P&L-bearing days/yr; if concentrated, mark portfolio-slot-only.
 3. **Excursion reporting:** report per-trade excursion stats against E3's intraday-trail posture for any candidate advancing to a deployment fork.
 4. **No firm names in research artifacts.** Firm-specific facts enter only at the deployment fork via §4 overlays.
-5. **Exposure-coordinates annotation** ([ADR 2026-07-13](../docs/adr/2026-07-13-stage8-mechanistic-exposure-companion.md) §2b): at closure, alongside `DEPLOYABLE-DEFAULT-ENVELOPE`, declare {unconditional or regime-conditional side; entry session window (ET); expected in-market minutes/yr; per-book-leg structural overlap = expected simultaneous-in-market minutes/yr × sign-agreement} — so the exposure-coordinates travel to the deployment fork (consumed by the account-boundary joint MC per [ADR 2026-07-13-prop-account-book-segregation](../docs/adr/2026-07-13-prop-account-book-segregation.md) §2). Declarations describe, never filter.
+5. **Exposure-coordinates annotation** ([Stage-8 ADR Companion A](../docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md#companion-a--mechanistic-exposure)): at closure, alongside `DEPLOYABLE-DEFAULT-ENVELOPE`, declare {unconditional or regime-conditional side; entry session window (ET); expected in-market minutes/yr; per-book-leg structural overlap = expected simultaneous-in-market minutes/yr × sign-agreement} — so the exposure-coordinates travel to the deployment fork (consumed by the account-boundary joint MC per [ADR 2026-07-13-prop-account-book-segregation](../docs/adr/2026-07-13-prop-account-book-segregation.md) §2). Declarations describe, never filter.
 6. **Risk-breadth + variance-dominance coordinates** ([ADR 2026-07-20](../docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md) §2; **Superseded-in-part by [`W4 ADR`](../docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md)** — breadth tool tombstoned as live producer): for any candidate advancing to a deployment fork **as a book leg**, declare — alongside item 5's exposure-coordinates — its `n_eff_risk_delta` and `ρ = candidate daily-$std / existing-book daily-$std` at the deployable weight when a producer is available. **While breadth is tombstoned, these coordinates are report-optional doctrine, not a sole-producer hard gate.** When a producer is re-armed: admissibility as a book leg requires `n_eff_risk_delta > 0`; `ρ ≥ 1.0` is a presumptive reject. Dependence/correlation breadth alone is never the grant (M-21). Never signal-level entry.
 
 ## §3 — What the envelope does NOT govern
@@ -84,7 +84,7 @@ Overlay discipline: one row per firm/program-tier; every cell carries a verified
 
 ## §5 — Ratification record (all v0.1 open items RESOLVED 2026-07-13)
 
-All five v0.1 open items closed by the 2026-07-13 primary-source research pass (10-agent workflow: 5 researchers + 5 adversarial citation-verifiers; zero load-bearing facts refuted). Decision record: [`docs/adr/2026-07-13-prop-envelope-v1-ratification.md`](../docs/adr/2026-07-13-prop-envelope-v1-ratification.md).
+All five v0.1 open items closed by the 2026-07-13 primary-source research pass (10-agent workflow: 5 researchers + 5 adversarial citation-verifiers; zero load-bearing facts refuted). Decision record: [`docs/adr/2026-07-13-prop-envelope-v1-ratification.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-13-prop-envelope-v1-ratification.md).
 
 1. **E1 default print — CONFIRMED 16:00 ET.** All four FRIENDLY deadlines primary-verified; the binding minimum is MFFU 16:10 ET, so 16:00 ET sits strictly inside every print with ≥10-min buffer (§1 E1 row updated).
 2. **E2 checkpoint semantics — RESOLVED: soft eligibility gate at pass/payout, never a breach**, at all four firms (§1 E2 row updated). Validates the re-MC engine's consistency-on modeling (keep trading until consistent = extended barrier exposure).
@@ -98,7 +98,7 @@ All five v0.1 open items closed by the 2026-07-13 primary-source research pass (
 
 ## Amendment 2026-08-06 — E6 transport parenthetical (claim-alignment M43)
 
-§1 change-control (ratification ADR 2026-07-13): default rows change only by ADR;
+§1 change-control (header; ratified 2026-07-13, §5): default rows change only by ADR;
 this amendment records the de-scope reading without rewriting the ratified E6 cell.
 
 **E6 Default column — amended reading:** the attended-automation **bar** (attended;

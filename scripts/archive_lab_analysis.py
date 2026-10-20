@@ -314,7 +314,7 @@ def parse_disposition(text: str) -> Disposition | None:
     """Resolve campaign disposition from a card head.
 
     When both a Verdict field and a Status/Disposition field are present as
-    separate lines, Verdict wins (ADR 2026-08-22-catalog-hot-vs-disposition).
+    separate lines, Verdict wins (lab/analysis/README.md, CATALOG schema rules).
     Dominance *inside* a single value still uses ``_NON_TERMINAL_DOMINANT``
     on the verdict clause — HOLD in that clause still dominates.
     """

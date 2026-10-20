@@ -26,7 +26,7 @@ Production files verified before authoring (verification timestamp: 2026-05-16):
   deliberate-regression). Last
   `git log -1 -- tests/test_tv_mt5_pnl_reconciliation.py`
   = `8e2a2d6 2026-05-16 23:25:25 -0400`.
-- `tests/fixtures/usdjpy_pnl_fixtures.csv` — pilot fixture format with
+- [`tests/fixtures/usdjpy_pnl_fixtures.csv`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/tests/fixtures/usdjpy_pnl_fixtures.csv) — pilot fixture format with
   `#`-prefixed derivation comments. Last
   `git log -1 -- tests/fixtures/usdjpy_pnl_fixtures.csv`
   = `8e2a2d6 2026-05-16 23:25:25 -0400`.
@@ -244,3 +244,5 @@ the degeneration risk this ADR itself flagged.
 If the 2026-11-16 §4 review confirms the discipline catches defects via the
 existing pytest anchors, no mechanical Hook 1 is needed; if it falsifies, the
 whole §2 discipline is revoked per §6.
+
+**Correction 2026-10-15:** the pilot pair and `test_mc_anchors.py` named under 'Intent already met' are not in this public tree; `tests/core/test_mc_fp_boundaries.py` and `tests/core/test_firm_constants_single_source.py` remain.

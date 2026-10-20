@@ -1,7 +1,7 @@
 # Methodology: Observation routing — three-bucket gate
 
 **Date established:** 2026-04-25
-**Status:** ⚠ **Superseded-in-practice for its own stated scope, 2026-08-15** — [`ADR: notice-log-is-live-observation-routing-convention`](../adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md).
+**Status:** ⚠ **Superseded-in-practice for its own stated scope, 2026-08-15** — this status block is the current rule. Consolidated 2026-10-15 from [`2026-08-15-notice-log-is-the-live-observation-routing-convention`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md) (removed; see [TOMBSTONES](../adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
 The "Replaces the prior Notice / Inquire two-phase framework" claim below did not hold for **narrative observations**
 (the scope line just below): `docs/notes/notice/N-YYYY-MM-DD-slug.md` (per
 [`brief-authoring:notice_log.md`](../../.claude/skills/brief-authoring/references/notice_log.md)) has been the estate's
@@ -10,8 +10,9 @@ three-bucket Closed/Action/Forward classification below saw real but partial, no
 inside 4 of 20 real notices (2026-06-20 to 2026-07-26 only) — it is not deleted, but it is not the governing convention for
 narrative findings either. **One real exception:** `scripts/verify_lock_anchors.py` (`/lock-check`) is a genuinely live,
 currently-correct Closed/Forward/Error gate — but it checks one mechanical fact (Guardian's risk% inside its safe band), not
-a narrative "interesting thing," so it does not evidence the blanket claim below. Read the ADR before citing this doc as
-current doctrine elsewhere.
+a narrative "interesting thing," so it does not evidence the blanket claim below. Cite this status block, not the three-bucket body below, as
+current doctrine. Grounds: no notice predates 2026-04-25 and Notice-log practice ran unbroken from then; three-bucket tags appeared in only 4 of 20 notices (2026-06-20 to 2026-07-26); deleting this doc outright was rejected because the optional lens saw real use. Existing notices are not re-labelled.
+**Trigger check schedule:** no calendar date — at the next quarterly methodology audit, or sooner if noticed: if Closed/Action/Forward becomes the dominant §4/§6 decision vocabulary across ≥3 consecutive new notices (superseding, not accompanying, GRADUATE/DROP/HOLD), revisit this ruling (source: ADR 2026-08-15 §4).
 **Scope (as originally written; superseded for narrative findings, per above):** Every market observation, bar-data finding,
 anomaly, or "interesting thing" that surfaces between locked decision points.
 

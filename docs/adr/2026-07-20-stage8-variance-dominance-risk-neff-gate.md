@@ -1,25 +1,18 @@
 # Stage-8 gains a variance-dominance companion (risk-N_eff-delta binding gate + daily-$-std pre-flight) — `2026-07-20-stage8-variance-dominance-risk-neff-gate`
 
-**Status:** `Accepted` — operator ratified 2026-07-20 (superseding-ADR adoption route per campaign-template change control; co-sibling to `2026-07-13-stage8-mechanistic-exposure-companion.md`, **not** a supersede). Drafted by Claude Code 2026-07-20 from the Q-COMPOSE-1 closure lesson candidates.
+**Status:** `Accepted` — operator ratified 2026-07-20 (superseding-ADR adoption route per campaign-template change control; co-sibling to `2026-07-13-stage8-mechanistic-exposure-companion.md`, **not** a supersede). Drafted by Claude Code 2026-07-20 from the Q-COMPOSE-1 closure lesson candidates. The 2026-07-13 companion was consolidated here as Companion A on 2026-10-15.
 **Decision date:** 2026-07-20
 **Supersedes:** none
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-07-w4-minimal-gate-set-dormancy.md` — sole-producer status of risk-breadth coordinates while `breadth.py` is tombstoned (doctrine retained; producer dormant)
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): §0 body condensed; §6 downstream list, §7 and Verification removed; §10 reduced to its still-runnable hooks; 2026-09-01 addenda condensed (ruling verbatim); 2026-07-13 mechanistic-exposure companion absorbed as Companion A. Pre-trim text at blob `4feb50c4efab3290ba5096059987787f4fc4c646` (commit `4121e84c95f4990b71962e3b9570c4c3fad88426`).
 
 ---
 
 ## §0 — Rule 0 reads (production-source verification)
 
-Files read **before** authoring this ADR (this session, 2026-07-20):
-
-- `lab/research_utils/breadth.py` — anchor: `d83e0f9` (verified `git log -1 -- lab/research_utils/breadth.py` on 2026-07-20). Confirms the Stage-8 tool **already emits** `n_eff_risk` (PR of the weekly covariance matrix) and `n_eff_risk_delta` on candidate injection — the gated statistic historically was `n_eff_dependence` / ENB, not risk. Self-test anchors: Q-NEFF-1 4-leg baseline 3.98 dependence / 3.09 risk.
-- `docs/briefs/closures/Q-COMPOSE-1-closure-falsified.md` — anchor: `4de8085` (verified 2026-07-20). Source of the two lesson candidates this ADR promotes to a gate. Confirmed numbers: composed 3-leg bust 38.75% (Tradeify full) vs 2.65% 2-leg baseline; ORB daily-$std $438 vs whole-book $273; composed ~$539/day vs unchanged $3,000 trailing barrier; dependence N_eff 1.9948→2.9502; **risk N_eff 1.96→1.96 (flat)**.
-- `docs/adr/2026-07-13-stage8-mechanistic-exposure-companion.md` — anchor: `ba943a1` (verified 2026-07-20). The sibling companion this one is authored parallel to; it addresses realized-**correlation** blindness for same-beta episodic legs, a **distinct** failure mode from variance dominance. This ADR adds a second companion clause; it does not touch the 2026-07-13 clause.
-- `lab/analysis/orb/orb_mnq_2026-07/ADMISSION.md` — anchor: `9620138` (verified 2026-07-20). The admitted candidate whose composition Q-COMPOSE-1 falsified; confirms ORB-MNQ-1 was admitted on dependence-breadth (+0.96 N_eff) with risk-breadth flat, the exact separation this gate makes decision-binding.
-- Campaign template Stage-8 row content-read 2026-07-20 (`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`): current row gates on "5th-column ENB / cross-leg-correlation delta" + the 2026-07-13 mechanistic-exposure companion; **no risk-N_eff / variance clause present** — the gap this ADR fills.
-
-**Owed at implementation (not read this session):** `ops/prop_envelope_default.md` §2 (envelope item add is a §6 downstream — Rule-0 read it before the §7 Phase-1 edit); `core/mc/modes.py` / the compose harness `run_compose_regime_remc.py` (if ρ emission is wired MC-side).
+Read 2026-07-20: `lab/research_utils/breadth.py` @ `d83e0f9` already emits `n_eff_risk` (participation ratio of the weekly covariance matrix) and `n_eff_risk_delta` on candidate injection (Q-NEFF-1 4-leg anchors 3.98 dependence / 3.09 risk); the Q-COMPOSE-1 closure @ `4de8085` (figures in §1); the 2026-07-13 sibling @ `ba943a1`; ORB-MNQ-1 `ADMISSION.md` @ `9620138`; the template Stage-8 row. Full reads: [prior revision](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md).
 
 ---
 
@@ -73,7 +66,7 @@ then this ADR is revoked.
 
 **Verdict (binary):** `RESOLVED` (a composed-candidate evaluation shows the screen changing an outcome the dependence-delta statistic got wrong, with no false-reject — gate stands) / `FALSIFIED` (immaterial or false-reject limb above fires by the schedule — demote to advisory-only via superseding ADR) / `AMBIGUOUS` (no composed candidate reaches a frozen-engine verdict by 2027-02-08 — escalate at that quarterly cluster, hold the gate meanwhile).
 
-**Trigger check schedule:** evaluated at each quarterly regime cluster (2026-11-08, 2027-02-08) and on the close of every composed-candidate evaluation, whichever fires first.
+**Trigger check schedule:** evaluated at each quarterly regime cluster (2026-11-08, 2027-02-08) and on the close of every composed-candidate evaluation, whichever fires first. Companion A (carried from the removed `2026-07-13-stage8-mechanistic-exposure-companion.md` §4): hard check 2026-11-08 — shock-conditional MC vs stream bootstrap on the three-leg family; < 1pp joint bust delta at every grid point → demote Companion A to annotation-only; module not runnable by 2026-11-08 → AMBIGUOUS, escalate at that gate.
 
 ---
 
@@ -102,22 +95,6 @@ then this ADR is revoked.
 - **Single-datapoint induction.** The gate is generalized from one composed candidate (ORB). Mitigation: §4's ≥3-evaluation / false-reject clause forces a demote if the separation doesn't hold on the next candidates.
 - **`τ_risk` set too tight** could false-reject a genuine risk-diversifier; the §4 false-reject limb is the explicit guard, and `τ_risk` lives per-campaign so it can be justified against that campaign's baseline.
 
-**Downstream artifacts that need updating (Status stays `Proposed` until all done):**
-- `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` Stage-8 row — append the variance-dominance companion clause (parallel to the 2026-07-13 mechanistic-exposure clause).
-- `ops/prop_envelope_default.md` §2 — add an item: risk-N_eff-delta + ρ coordinates travel to the deployment fork (Rule-0 read the file first).
-- `docs/methodology/lessons/methodology_lessons.md` — **promote Q-COMPOSE-1 lesson #1** to a standing lesson (dated 2026-07-17; dollar anchor: composed bust 2.65%→38.75% on the $100K Tradeify tier, ~15× the 3.0% ceiling — a book-blowup counterfactual well past the E1 >$3K single-incident bar).
-- `STATE.md` — one pointer line under the executed-decision log once ratified.
-- (Optional) `lab/research_utils/breadth.py` / compose harness — emit ρ so §7 disclosure is mechanical rather than hand-computed.
-
----
-
-## §7 — Implementation plan
-
-- **Phase 0** — re-confirm §0 anchors current at apply-time (`git log -1` on `breadth.py`, the closure, the 2026-07-13 ADR); Rule-0 read `ops/prop_envelope_default.md` §2 before editing it.
-- **Phase 1** — apply the four documentation edits in §6 (template Stage-8 row; envelope item; methodology lesson promotion; STATE.md pointer). These are the substance; a small CC handoff (`references/cc_handoff.md`) is warranted only if the envelope/lesson edits touch >1 file family — otherwise direct apply.
-- **Phase 2** — grep-sweep for any Stage-8 doc asserting "breadth = dependence/ENB delta" without the variance companion, and cross-link this ADR from the 2026-07-13 sibling's Related line.
-- **Phase 3** — verification block executes; on green + operator ratification, Status → `Accepted`.
-
 ---
 
 ## §10 — Audit hooks (runnable)
@@ -141,72 +118,60 @@ grep -n "n_eff_risk_delta" lab/research_utils/breadth.py \
 # For each evaluated composed candidate, compare (screen verdict) vs (frozen-engine verdict)
 # and vs (dependence-delta-only verdict). Demote if immaterial or a false-reject appears.
 # Next scheduled evaluation: 2026-11-08 regime cluster; hard revert check 2027-02-08.
-
-# ADR graph integrity
-python scripts/check_adr_graph.py   # expect exit 0 (A2 edge-check skipped while Proposed)
 ```
 
 ---
 
-## Verification
+## Companion A — mechanistic exposure
 
-```bash
-# Discipline checks (mechanical)
-$ python "C:/Users/joshu/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/72fdf38f-9be5-43cc-9803-8e04bfac2290/4a461c5e-0034-4ec3-8928-8324158d1365/skills/brief-authoring/scripts/check_brief.py" docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md --type adr
-# Expected: all 6 checks PASS
+*Consolidated 2026-10-15 from `2026-07-13-stage8-mechanistic-exposure-companion` (removed; see [TOMBSTONES](TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)). Operator ratified 2026-07-13; [prior body](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-13-stage8-mechanistic-exposure-companion.md). A distinct Stage-8 blindness from variance dominance (§1). The text below is that ADR's §1–§5, verbatim except spent items; its section references (§2c, §8) use the original numbering — §2a–§2c are items (a)–(c) under Decision.*
 
-# ADR lifecycle graph
-$ python scripts/check_adr_graph.py
-# Expected: exit 0; A2 reverse-edge check skipped (this ADR is Proposed, Supersedes: none)
+**Symptom (measured 2026-07-13).** Three legs of the ratified one-beta family, on their seven-year futures panels (2026-07-12 TV exports: Striker→MYM, Striker-NAS→MNQ, Aegis→6J), measure as follows. Direction census: 287/287 long, 290/290 long, 155/155 short-yen — every trade in all three books is the same macro side. Entries cluster in the NY morning; time-in-market is 0.62% / 0.67% / 0.27% of the clock; in-market overlaps in seven years: 64 (MYM×MNQ), 18 (MNQ×6J), 4 (MYM×6J); days all three traded: 6; days all three lost: 0. And yet pairwise monthly correlations on equity-deflated streams are −0.10 / +0.13 / −0.01, worst-decile-month overlap 0–1 of 9, same-day both-lose rates at or below the independence baseline, max-DD windows fully disjoint.
 
-# Production-source verification (Rule 0 confirmation)
-$ git log -1 --format='%h %ci' -- lab/research_utils/breadth.py                       # expect d83e0f9
-$ git log -1 --format='%h %ci' -- docs/briefs/closures/Q-COMPOSE-1-closure-falsified.md  # expect 4de8085
-$ grep -n "438\|273\|1.9948\|2.9502\|1.96 → 1.96" docs/briefs/closures/Q-COMPOSE-1-closure-falsified.md
+The zero is a sampling fact, not an exposure fact: episodic strategies are almost never in-market together, so the shared factor has no data through which to express itself. Consequences: (1) Stage-8's realized-stream statistic cannot detect same-beta duplication for exactly the strategy class the discovery engine most plausibly emits (NY-session, direction-conditional, episodic) — a candidate that is the incumbent beta with a fresh label passes by construction; (2) any bootstrap that resamples these realized streams (week-block included) mechanically reports near-independence and cannot price the common-mode event (zero occurrences in seven years to resample). The known common-mode kill path stays both uninsured and unmeasured. This finding is robust to the Q-TVCOV-1 census outcome: it is driven by structural non-overlap, which only strengthens if pre-2022 segments are discarded.
 
-# Sibling cross-reference (co-companion, not supersede)
-$ grep -n "2026-07-13-stage8-mechanistic-exposure-companion" docs/adr/2026-07-20-stage8-variance-dominance-risk-neff-gate.md
-```
+**Decision.**
 
-If §6 downstream artifacts haven't all been updated, the ADR stays `Proposed`. Do not flip to `Accepted` until the downstream sweep completes **and** the operator ratifies.
+**(a) Campaign template, Stage-8 row** — append a companion clause:
+
+> …reproduces the Q-NEFF-1 4-leg anchor first. **Companion (mechanistic exposure):** every Stage-8 candidate files an exposure declaration — {unconditional or regime-conditional side; entry session window (ET); expected in-market minutes/yr; per-book-leg structural overlap = expected simultaneous-in-market minutes/yr × sign-agreement} — and the campaign pre-registration binds a structural-overlap admission threshold at Stage 0. Realized-correlation/ENB deltas remain reported but are not sufficient for breadth admission for episodic candidates (in-market < 5% of session clock).
+
+**(b) Envelope §2** — add item 5: exposure-coordinates annotation (same fields) required at closure alongside `DEPLOYABLE-DEFAULT-ENVELOPE`, so the coordinates travel to the deployment fork.
+
+**(c) Consumer note** — 08-08 Class A (accept-beta fork), proposed input only, packet owner accepts/rejects: the program-level MC pricing the accept-beta decision should add a shock-conditional module — impose an adverse NY-morning gap over a pre-registered grid (e.g., −1% to −5%) on a max-concurrency day, all in-market legs at entry-time sizing, evaluated against per-account rule sets — precisely because stream resampling cannot generate the event. Not a unilateral packet edit.
+
+Applied 2026-07-13: template Stage-8 row; envelope §2 item 5 ([`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md)); (c) was recorded as a proposed input in the 08-08 pre-triage brief. The packet never dispositioned it and the module was never built (status 2026-10-15).
+
+**Alternatives considered.**
+
+| Alternative | Why ruled out |
+|---|---|
+| Tighten the correlation/ENB threshold | Blind is blind at any threshold — the statistic reads ≈0 for same-beta episodic legs regardless of the cut. |
+| Demand longer panels before Stage 8 | Event frequency, not panel length, binds: seven years produced six all-three days. |
+| Handle exposure only at the deployment fork | Too late — discovery K budget is spent re-manufacturing the incumbent beta; Stage 8 exists to gate book-level admission. |
+| Drop the correlation delta entirely | Q-NEFF-1 anchor reproduction still catches dense-overlap duplication cheaply; companion, not replacement. |
+
+**Falsifier.**
+
+**H (hypothesis):** the blindness is material to bust risk.
+
+**Test (pre-registered here, before any run):** run the §2c shock-conditional module on the current three-leg family versus the stream-bootstrap estimate under identical per-account rule sets. **Falsifier:** if, at every point of the pre-registered shock grid, the joint bust-probability delta is < 1pp absolute, the companion demotes to annotation-only (declaration retained, no admission gate) via superseding ADR. Grid and rule sets frozen in the run's pre-registration; first run owed with the 08-08 packet work; hard check 2026-11-08.
+
+**Verdict (binary):** RESOLVED (delta ≥ 1pp somewhere on the grid — companion stands) / FALSIFIED (< 1pp everywhere — demote to annotation-only) / AMBIGUOUS (module not runnable by 2026-11-08 — escalate at that gate).
+
+Status 2026-10-15: undischarged; module unbuilt; the 2026-11-08 hard check is carried in §4's `**Trigger check schedule:**` field.
+
+**Forbidden moves.**
+
+- Choosing or trimming the shock grid after seeing MC output.
+- Letting exposure declarations become entry filters — declarations describe, never filter (default #4's "test conditions, never filters" applies).
+- Editing the §Campaign-defaults table or the Stage-8 row in place without this ADR's ratification event.
 
 ---
 
 ## Addendum 2026-09-01 -- `breadth.py`'s risk-N_eff producer revived on canonical CME data; this ADR's "producer dormant" clause is stale
 
-**What changed.** This ADR's own `Superseded-in-part-by` field (-> `2026-08-07-w4-minimal-gate-set-dormancy.md`)
-carries the clause *"sole-producer status of risk-breadth coordinates while `breadth.py` is
-tombstoned (doctrine retained; producer dormant)"* -- accurate when W4 ratified 2026-08-07.
-[`2026-08-19-cme-broker-panel-admission-for-breadth-revival.md`](2026-08-19-cme-broker-panel-admission-for-breadth-revival.md)
-(`Accepted`, ratified 2026-08-19) registered a `"cme"` entry in `core/mc/modes.py`
-`PANELS_BY_BROKER` for the two `AUTHORIZED` legs (Striker DJ30/MYM, Striker NAS100/MNQ) -- confirmed
-present at `core/mc/modes.py` lines 115-133 this session. `breadth.py`'s `load_baseline_panel()` no
-longer fails for lack of a registered panel, and its self-test anchors now carry a measured,
-non-placeholder fresh value: `CME_NEFF_DEPENDENCE_ANCHOR = 1.9988` / `CME_NEFF_RISK_ANCHOR = 1.0871`
-(`lab/research_utils/breadth.py` lines 69-70) -- the §7 Phase-2 measurement the revival ADR called
-for was actually executed. The producer runs on real data today; "producer dormant" no longer
-describes the current state.
-
-**What this does and does not affect.** §0-§10 above stay byte-unedited as the historical record
-(Rule 14); this addendum is the discharge. No operative clause of this ADR changes: the binding
-gate (§2 item 1, risk-N_eff-delta floor) and the ρ pre-flight (§2 item 2) are unaffected by which
-panel feeds them -- they gate on `n_eff_risk_delta`/ρ regardless of data source, and
-`n_eff_risk_delta` is still emitted (confirmed, `lab/research_utils/breadth.py`).
-
-> ⚠ **2026-09-01 reader-intercept:** the "not decided here" framing below is superseded by direct
-> operator ruling the same day — see "Addendum 2026-09-01 (operator ruling)" below. The 2026-08-19
-> revival is **not** treated as W4's re-arm event; envelope §2 item 6 stays report-optional. This
-> paragraph is left unedited as the record of what this addendum originally proposed.
-
-**Not resolved by this note -- an operator call.** Whether the 2026-08-19 revival is the "re-arm ADR
-[that] restores a producer" W4 §2's dormancy table names as the condition for lifting "report-optional
-/ no sole producer" back to a binding sole-producer status is not decided here. The revival ADR
-registers a working data source and says in its own §6 that it "revives" the mechanism, but carries
-no formal `Supersedes`/`Superseded-by` edge naming W4 or this ADR, and never uses the word "re-arm."
-Whether envelope §2 item 6 is once again mandatory (not merely doctrine-retained/optional) is an
-operator disposition this addendum does not make.
-
-**Not re-opened by this note.** No new GO, gate change, or threshold re-election is authorized here.
+[`2026-08-19-cme-broker-panel-admission-for-breadth-revival.md`](2026-08-19-cme-broker-panel-admission-for-breadth-revival.md) registered a `"cme"` panel in `core/mc/modes.py` `PANELS_BY_BROKER`, so `breadth.py` runs on real CME data with measured anchors (`CME_NEFF_DEPENDENCE_ANCHOR = 1.9988`, `CME_NEFF_RISK_ANCHOR = 1.0871`). The header's "producer dormant" clause is historical. §2's binding gate and ρ pre-flight are unaffected. Whether this is W4's re-arm event is ruled below.
 
 ## Addendum 2026-09-01 (operator ruling) — 2026-08-19 revival is not W4's re-arm event
 
@@ -215,29 +180,7 @@ count as the re-arm event W4 §2's dormancy table names. Envelope §2 item 6 (ri
 **stays report-optional / doctrine-retained**, not mandatory, until a session actually evaluating a
 new book-leg admission decision explicitly rules on re-arming it.
 
-**Grounds, all three independently supporting this reading:**
-1. The revival ADR carries zero formal graph edges (`Supersedes: none`, `Superseded-by: none`,
-   `Superseded-in-part-by: none`) — it does not touch W4's or this ADR's position in the supersession
-   graph at all.
-2. It never uses the word "re-arm" anywhere in its text.
-3. Its own §0 explicitly disclaims altering the Stage-8 gate: *"This ADR's panel feeds that existing,
-   unchanged mechanism; it does not alter the Stage-8 gate itself."* The authors had both W4 and this
-   ADR open (both are read in full in its §0) and chose not to claim re-arm status — a deliberate
-   scoping choice, not an oversight.
-
-**Rationale for deferring rather than ruling the other way:** whether item 6 is mandatory is a real
-decision with consequences — it determines whether a future candidate's risk-N_eff/dependence-N_eff
-coordinates are a *required* clearance, not just optional context. That's better decided by whoever is
-actually looking at a live admission decision than pre-emptively now, with no candidate pending
-(Striker disarmed, no active third-leg candidate at this stage). `breadth.py` producing real numbers
-again is necessary but not sufficient for re-arm; a session with an actual admission in front of it
-should make that call explicitly, citing this addendum, rather than inheriting an implicit default
-either way.
-
-**What does not change:** §0-§10 above and the 2026-08-19 revival ADR's own text both stay
-byte-unedited (Rule 14/Trap #12). The revival's factual content (panel registered, `breadth.py` runs
-on real CME data, self-test anchors measured) is unaffected — only the mandatory/optional status of
-envelope §2 item 6 is ruled on here, and it stays optional.
+Grounds (condensed 2026-10-15): the revival ADR carries no graph edges, never says "re-arm", and its §0 disclaims altering the Stage-8 gate; the re-arm call belongs to a session with a live admission decision. Full text: prior revision (see Revision).
 
 ## Change history
 
@@ -247,3 +190,4 @@ envelope §2 item 6 is ruled on here, and it stays optional.
 | 2026-07-20 | Ratified — Status `Accepted`; §6 downstream applied (template Stage-8 row, envelope §2 item 6, lesson M-21, STATE pointer) | Joshua (decision) · Claude Code (apply) |
 | 2026-09-01 | Addendum: breadth.py's risk-N_eff producer revived 2026-08-19 on canonical CME data; "producer dormant" clause stale; operator call on whether this counts as W4's re-arm condition | Claude Code (ADR-corpus reconciliation sweep) |
 | 2026-09-01 | Ruling: 2026-08-19 revival is not treated as the re-arm event; envelope §2 item 6 stays report-optional pending a session with an actual admission decision in front of it | Claude Code (ADR-corpus reconciliation sweep, operator ruling) |
+| 2026-10-15 | Spent §6-downstream/§7/Verification removed; §0 condensed; §10 reduced to still-runnable hooks; 2026-09-01 addenda condensed (ruling verbatim); 2026-07-13 companion absorbed as Companion A with its 2026-11-08 hard check carried in §4's trigger field | ADR decay audit |

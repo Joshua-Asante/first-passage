@@ -7,67 +7,33 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-15 — retention trim (ADR decay audit; operator direction 2026-10-15): instantiation
+provenance, §0 read detail, §6 and ratification narrative condensed; §10-defect note and Rule-0
+verification lines removed; §1–§5, §10 and both addenda's rulings unchanged. Pre-trim text at blob `37c0de1f5231602a99dbbf7f94453a019d5ecf8e` (commit
+`4121e84c95f4990b71962e3b9570c4c3fad88426`).
 **Related:** [`three-loop binding`](2026-06-12-three-loop-methodology-binding.md) (`Accepted` — extended one tier up, not amended) · [`GSUB-1 run spec`](../briefs/programs/GSUB-1-first-grand-subtract-pass.md) (arms §4; ratifies alongside) · [`ceremony tiering`](2026-08-08-adr-ceremony-tiering.md) (limb-4 → FULL tier: creates doctrine)
 **Layer:** meta-process (tier binding); additionally creates a fourth operator domain — **pursuit** (§2.4). **$0 / K=0.**
 **Loop-of-Record:** STRATEGIC — binding methodology authority to tiers is governance-of-what-governs (same LoR class as the three-loop binding ADR's own declaration). On ACCEPT, the tier vocabulary itself gains GRAND.
 
-> **Authoring provenance + instantiation deltas.** Drafted in the advisor layer without repo
-> access, deliberately repo-state-agnostic; §0 population was delegated to the instantiating
-> session as a ratification precondition. Instantiated 2026-08-09 (branch
-> `claude/gsub-1-adr-grand-tier-bb2d54`). Deltas from the advisor draft — formatting
-> reconciliation per the draft's own instruction ("the in-repo template wins"); **no §2 decision
-> substance was altered**:
->
-> 1. `ADR-XXX` → this filename (the repo has no `ADR-NNN` numbering; the date-slug is the identifier).
-> 2. Header rebuilt to the six machine-parsed fields + house lines (Status token grammar, Layer, LoR).
-> 3. §0 item 3 **corrected**: the "Notion dual-loop page" is a retired surface (FREEZE 2026-06-12 per
->    [`notion-surface-retirement`](2026-06-12-notion-surface-retirement.md)); the loop-selection
->    canon's live home is [`docs/methodology/inqhiori-canon.md`](../methodology/inqhiori-canon.md) §14.
-> 4. §1 item 5's "override meta-analysis" has **no repo anchor** — advisor-layer finding; marked as
->    such in §0 with the nearest in-repo corroborating record.
-> 5. §3 (alternatives) added from content already present in the draft (§1.3 placement finding + §4
->    sunset branch) — full-tier ADRs list alternatives.
-> 6. §4 restated with explicit `H:` / `Falsifier:` / `Trigger check schedule:` tokens (checker +
->    sentinel field-form requirements).
-> 7. `<pursuit-records-path>` instantiated as **`docs/pursuits/`** — proposed by the instantiating
->    session, confirmed at ratification (§10 note).
-> 8. §2.6's "existing quarterly gate" named concretely (the quarterly programme audit; 2026-08-08
->    vehicle ran, next 2026-11-08).
+> **Authoring provenance.** Drafted in the advisor layer (claude.ai, repo-state-agnostic); instantiated by
+> Claude Code 2026-08-09 on `claude/gsub-1-adr-grand-tier-bb2d54` with eight formatting and stale-surface
+> deltas (listed at the pre-trim blob). **No §2 decision substance was altered.**
 
 ---
 
 ## §0 — Rule 0 reads (instantiation checklist — populated 2026-08-09, this worktree)
 
-- [x] Three-loop binding ADR — `docs/adr/2026-06-12-three-loop-methodology-binding.md` — Status
-  `Accepted` (ratified 2026-07-06 by PO; D1–D3 graduated, D4 carried by sibling). D1 table binds
-  **OODA = INNER, INQHIORI = OUTER, The Algorithm = STRATEGIC** exactly as cited in §1. Anchor:
-  `ba943a1` 2026-07-17 (`git log -1`).
-- [x] `docs/rule_0.md` — anchor: `7196893` 2026-06-24.
-- [x] Loop-selection canon — **corrected surface** (delta 3): live home is
-  `docs/methodology/inqhiori-canon.md` — §14 "Methodology-to-Loop Binding" (L285), three-object
-  D-S-A framing (L42), D user-gate (L282: *"Claude Code and web Claude both propose deletions;
-  Joshua authorizes"*). Anchor: `adb42d7` 2026-08-04. The Notion page cited in the advisor draft is
-  retired read-only (`docs/adr/2026-06-12-notion-surface-retirement.md`, anchor `ba943a1`).
-- [x] Skills index / methodology belt — `.claude/skills/` (19 `SKILL.md` under version control; the
-  belt GSUB-1 treats as a pursuit class). Anchor: `d98ca40` 2026-08-09. Quarterly meta-layer
-  cadence owner: `.claude/skills/programme-audit/SKILL.md` (`1772f26` 2026-07-08).
-- [x] Pursuit/campaign registry surfaces — `docs/briefs/INDEX.md` (Q-roster; `7dfbbb5` 2026-08-09) ·
-  `lab/CATALOG.md` (`7dfbbb5` 2026-08-09) · `STATE.md` (operator queue + decision index + dormant
-  threads + forward triggers; `92b6f78` 2026-08-09) · `docs/rejected_candidates.md` (`baaab64`
-  2026-08-08).
-- [x] Instantiation-convention reads — `docs/adr/2026-08-08-adr-ceremony-tiering.md` (tier test:
-  this ADR is limb-4 → FULL; `2a790d0` 2026-08-08) · `.claude/skills/brief-authoring/references/adr.md`
-  (status grammar, six header fields) · `scripts/check_brief.py` (`47cc3eb` 2026-07-12; §4 token
-  requirements) · `docs/operational_rules.md` retention test (`75e54ed` 2026-08-09; this ADR is
-  R5 — open fireable obligation via §4, R3 — re-proposal bar via §2.3 SUBTRACT armor).
-- [ ] ⚠ **Unanchored citation, surfaced (delta 4):** §1 item 5's "override meta-analysis" is an
-  advisor-layer finding (2026-08-09 claude.ai session) with **no repo artifact**. Nearest in-repo
-  record consistent with its signature:
-  `docs/notes/audits/programme-audit/2026-08-05-claim-alignment/06-operator-judgement.md`
-  (a *"reasoned operator override, not a silent boundary erosion"*, with the reasoning on the
-  record). Context-tier citation only — no §2 clause load-bears on it beyond the Update-rule
-  design it motivated. If the operator wants it load-bearing, the meta-analysis lands as its own
-  note first.
+- [x] Instantiation reads, 2026-08-09 (per-item findings at the pre-trim blob):
+  `docs/adr/2026-06-12-three-loop-methodology-binding.md` (`ba943a1`; D1 binds OODA = INNER,
+  INQHIORI = OUTER, The Algorithm = STRATEGIC) · `docs/methodology/inqhiori-canon.md` (`adb42d7`; §14 is
+  the live loop-selection canon — the advisor draft's Notion page is retired) · `docs/rule_0.md`
+  (`7196893`) · pursuit registry surfaces `docs/briefs/INDEX.md`, `lab/CATALOG.md`, `STATE.md`,
+  `docs/rejected_candidates.md` (2026-08-08/09 anchors).
+- [ ] ⚠ **Unanchored citation:** §1 item 5's "override meta-analysis" is an advisor-layer finding
+  (2026-08-09 claude.ai session) with **no repo artifact**. Nearest consistent record:
+  `docs/notes/audits/programme-audit/2026-08-05-claim-alignment/06-operator-judgement.md`. Context-tier
+  only — no §2 clause load-bears on it beyond the Update-rule design it motivated; if the operator wants
+  it load-bearing, the meta-analysis lands as its own note first.
 
 ---
 
@@ -202,16 +168,10 @@ after GSUB-1 closes (**2026-11-08**; the 2026-08-08 vehicle has run).
 
 ## §6 — Gate (binary)
 
-- **PROPOSED → ACCEPTED** requires: §0 populated with anchors (**done at instantiation,
-  2026-08-09**); operator ratification; the GSUB-1 spec accepted alongside (the ADR's falsifier
-  needs its test armed).
-- **ACCEPTED** arms §4 against GSUB-1's outcome. Same-commit downstream updates at ACCEPT
-  (pre-declared blast radius): `CLAUDE.md` standing-decision pointer row;
-  `docs/methodology/inqhiori-canon.md` §14 gains the GRAND row; `STATE.md` gated row flips to the
-  2026-11-08 forward-trigger board; `docs/pursuits/` is created by GSUB-1 Phase 4.
-- **REJECTED / AMBIGUOUS** (named defect, returns for re-authoring) are the alternatives. No
-  silent amendment of this ADR mid-review — defects close it AMBIGUOUS and a fresh version states
-  the fix up front.
+- **PROPOSED → ACCEPTED** passed 2026-08-09: §0 populated, operator ratification, GSUB-1 accepted
+  alongside (Ratification note). **ACCEPTED** armed §4 against GSUB-1's outcome; §4 RESOLVED the same
+  day (Addendum 2026-08-09). **REJECTED / AMBIGUOUS** were the alternatives; no silent amendment
+  mid-review.
 
 ---
 
@@ -244,24 +204,13 @@ grep -rln "SUBTRACT" docs/pursuits/ --include="*.md"
 
 ## Ratification note (2026-08-09)
 
-**Ratified by:** Joshua (PO), in-session direct instruction — *"make best judgements and run
+**Ratified by:** Joshua (PO), in-session 2026-08-09 — *"make best judgements and run
 `2026-08-09-grand-tier-quintessentials-binding.md` and `GSUB-1-first-grand-subtract-pass.md`"*
-(2026-08-09, follow-on to PR #705). Authority channel: explicit owner adjudication — the
-three-loop ADR's D2 channel (c), the same channel that ratified the three-loop binding itself.
-
-**§6 preconditions at ratification:** §0 populated with anchors (instantiation, 2026-08-09) ✓ ·
-operator ratification (this note) ✓ · GSUB-1 accepted alongside (same commit) ✓. "Run" arms the
-pair and executes GSUB-1 Phases 1–2 in-session; it does **not** collapse the Phase-3 gate —
-disposition ratification stays operator-gated per the D user-gate this ADR extends.
-
-**Delegated judgment calls confirmed under "make best judgements":** pursuit-records surface =
-`docs/pursuits/` (as instantiated); no separate GSUB-1 pre-registration file (its §4 gate has no
-tunable thresholds — the pre-reg anchor is this ratification commit, populated in GSUB-1 §8 in
-the follow-up commit).
-
-**§6 ACCEPT downstream updates (this commit):** `CLAUDE.md` standing-decision row ·
-`docs/methodology/inqhiori-canon.md` §14 GRAND row · `STATE.md` gated row → 2026-11-08
-forward-trigger board. `docs/pursuits/` is created by GSUB-1 Phase 4 (post-Phase-3, by design).
+(follow-on to `first-passage-archive#705`), through the three-loop ADR's D2 channel (c). §6
+preconditions met. "Run" armed the pair and executed GSUB-1 Phases 1–2; it did **not** collapse the
+Phase-3 gate (dispositions stay operator-gated under the D user-gate). Delegated calls confirmed:
+pursuit-records surface = `docs/pursuits/`; no separate GSUB-1 pre-registration file. The §6 ACCEPT
+downstream updates landed in the ratification commit.
 
 ---
 
@@ -283,10 +232,6 @@ holding throughout; and Q-USOIL-1's park, whose named "08-08 revisit" lapsed whe
 deleted at the Great Prune with no re-park. Neither was visible from any single existing surface.
 That is the pursuit-layer accretion §1.4 predicted, in a shape the campaign-layer machinery does
 not catch.
-
-**§10 defect found and corrected by running the hook** (trap M-AHF): the park-compliance hook as
-originally authored was unscoped and flagged every KEEP/SUBTRACT/MERGE record. Corrected in place
-above; a §10 hook is machinery, not a frozen verdict construct.
 
 **Not licensed by this addendum:** anything at a lower tier (§2.2 downward interface is scoping
 authority only), and no campaign inside a KEEP pursuit is adjudicated by its KEEP.
@@ -316,13 +261,6 @@ python ~/.claude/skills/brief-authoring/scripts/check_brief.py docs/adr/2026-08-
 python scripts/check_adr_graph.py
 # Expected: exit 0 (A2 reverse-edge skipped while Proposed)
 
-# Rule-0 confirmation (§0 anchors)
-git log -1 -- docs/adr/2026-06-12-three-loop-methodology-binding.md   # ba943a1
-git log -1 -- docs/methodology/inqhiori-canon.md                      # adb42d7
-git log -1 -- docs/rule_0.md                                          # 7196893
-
-# cited binding exists as cited
-grep -n "OODA" docs/adr/2026-06-12-three-loop-methodology-binding.md  # D1 table: OODA = INNER
 ```
 
 ---
@@ -334,3 +272,4 @@ grep -n "OODA" docs/adr/2026-06-12-three-loop-methodology-binding.md  # D1 table
 | 2026-08-09 | Initial authoring (advisor layer, repo-state-agnostic) | Joshua + claude.ai |
 | 2026-08-09 | Instantiated: §0 populated with anchors; deltas 1–8 in the provenance note (formatting + stale-surface corrections; no §2 substance change) | Claude Code |
 | 2026-08-09 | Ratified `Proposed` → `Accepted` (operator in-session instruction; Ratification note); §6 downstream updates landed same commit | Joshua + Claude Code |
+| 2026-10-15 | Retention trim (provenance, §0 detail, §6 and ratification narrative condensed; §10-defect note and Rule-0 verification lines removed). Pre-trim blob `37c0de1f5231602a99dbbf7f94453a019d5ecf8e`. §4 and §2.6 untouched pending the operator's rider ruling. | Joshua (direction) + Claude Code |

@@ -22,7 +22,6 @@ commit in the archive. Owner:
 
 | On this public tree today | Job |
 |---|---|
-| [`adr/`](adr/) | Cold ADR stubs (superseded / retired) |
 | [`briefs/rnd-pipeline/discovery-campaign-template.md`](briefs/rnd-pipeline/discovery-campaign-template.md) | Campaign-default template owner |
 | [`notes/2026-08-23-substrate-phase-6-completion.md`](notes/2026-08-23-substrate-phase-6-completion.md) | Substrate Phase 6 docs + §10 checklist (destroy-copy still operator-gated) |
 | [`notes/archive/state/STATE-decision-index-pre-2026-08-23.md`](notes/archive/state/STATE-decision-index-pre-2026-08-23.md) | STATE executed-decision index older than keep-15 (P8) |

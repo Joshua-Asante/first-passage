@@ -1,11 +1,11 @@
 # A7 attended agent capture and execution
 
-**Status:** `Accepted` — operator decision; runtime activation pending deployment verification.
+**Status:** `Accepted` — operator decision; used 2026-09-14: compatible listener v9 / daemon v3 images were deployed and verified inert, and A7 attempt 4 (`stage1-20260914-4`) supplied the item-5 event A8 accepted (M1 `RESOLVED` 2026-09-14). Each further use needs a fresh attended session that passes §6; no M1 Stage-1 ceremony runs while #571 is parked (M1 Addendum 2026-10-01).
 **Decision date:** 2026-09-14
 **Authors:** Joshua (decision), Codex (implementation and record)
 **Layer:** execution
 **Supersedes:** `2026-08-08-s2b-signal-daemon-build.md` (in part) — controlled-input actor and candle transcript scope only
-**Supersedes:** `2026-07-22-c1-venue-native-monitoring-maturity.md` (in part) — controlled-input actor and candle transcript scope only
+**Supersedes:** `2026-07-22-c1-venue-native-monitoring-maturity.md` in part — controlled-input actor and candle transcript scope only
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
@@ -48,7 +48,7 @@ If any attempt cannot establish the exact closed target, captures unrelated acco
 
 The input workflow removes operator transcription but requires compatible control/source/projector deployment and honest provenance. CLI actor declarations are not authentication: session GO and actual tool/command receipts remain necessary. Chart timestamp conversion is an operational risk; observed chart EDT and application CDT must not be conflated.
 
-Code acceptance is PASS only when the targeted tests and independent review pass. Operational readiness is PASS only when the source/actor procedure, compatible deployed revisions, current host preflight, exact fresh candle binding and attendance are established; otherwise FAIL and do not enable. M1 acceptance stays unchanged until A8 obtains the required actual evidence and dated signoff.
+Code acceptance is PASS only when the targeted tests and independent review pass. Operational readiness is PASS only when the source/actor procedure, compatible deployed revisions, current host preflight, exact fresh candle binding and attendance are established; otherwise FAIL and do not enable. M1 acceptance stays unchanged until A8 obtains the required actual evidence and dated signoff. (A8 obtained both on 2026-09-14.)
 
 Downstream updates: S2b and M1 receive scoped supersession notices; A7 and A8 point to this variant and its evidence semantics. No historical append-only return is overwritten.
 

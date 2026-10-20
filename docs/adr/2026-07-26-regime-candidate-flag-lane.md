@@ -1,6 +1,6 @@
 # ADR 2026-07-26 — REGIME-CANDIDATE flag lane + reserved-holdout mechanics for grid campaigns
 
-**Status:** `Accepted` — ratified by operator (JA) 2026-08-21, after re-reading the ADR directly. See Addendum 2026-08-21 for Phase 1 discharge and one owed item found during the blast-radius sweep.
+**Status:** `Accepted` — ratified by operator (JA) 2026-08-21, after re-reading the ADR directly. See Addendum 2026-08-21 for Phase 1 discharge and one owed item found during the blast-radius sweep; two of that addendum's claims are corrected by Addendum 2026-08-29.
 **Decision date:** 2026-07-26
 **Authors:** Joshua (direction) + Claude Code (Fable 5, drafter)
 **Supersedes:** none
@@ -267,7 +267,7 @@ left untouched per this repo's append-don't-rewrite convention for closed record
 | Date | Change | By |
 |---|---|---|
 | 2026-07-26 | Drafted `Proposed` at operator direction, alongside ST-EH-1 Stage-0 (first campaign-local instance). Operator ratification pending. | Joshua (direction) + Claude Code (Fable 5) |
-| 2026-08-21 | Ratified `Accepted` (Addendum 2026-08-21). Template-row step blocked — target file absent from this tree. | Claude Code, per operator direction |
+| 2026-08-21 | Ratified `Accepted` (Addendum 2026-08-21). Template-row step blocked — target file absent from this tree (resolved the same day: row restored, per the Addendum 2026-08-21 body). | Claude Code, per operator direction |
 | 2026-08-29 | Addendum: corrects two false claims in the 2026-08-21 addendum (STATE.md line never actually added; "0 hits" claim does not reproduce) — adr-decay-audit discharge | Claude Code |
 
 ## Addendum 2026-08-29 — Two false claims in the 2026-08-21 addendum, corrected (adr-decay-audit discharge)

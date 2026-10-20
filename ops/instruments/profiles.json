@@ -3,7 +3,7 @@
     "6J": {
       "venue-transfer": {
         "date": "2026-07-16",
-        "source": "../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md",
+        "source": "../../docs/adr/TOMBSTONES.md#2026-10-15-adr-decay-audit-removals",
         "verdict": "AMBIGUOUS-PARKED"
       }
     },

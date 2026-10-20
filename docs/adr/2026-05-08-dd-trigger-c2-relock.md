@@ -77,15 +77,15 @@ Negative / watched:
 > - **The constants are in force and untouched:** `DD_TRIGGER` 0.015 / `DD_SCALE` 0.40 remain live law in
 >   `core/dd_protection.py`. Nothing on this page is withdrawn by this banner.
 > - **The scheduled check was retired by decision, not by decay:** the quarterly C2→C0 revert check was retired
->   2026-07-22 — its criterion was challenge-denominated ([`claims-rescope §Addendum 2026-07-22`](2026-07-11-challenge-era-claims-rescope.md)).
+>   2026-07-22 — its criterion was challenge-denominated ([`claims-rescope §Addendum 2026-07-22`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-11-challenge-era-claims-rescope.md)).
 >   A *scheduled review* was retired; the control was not.
 > - **Its instrument cannot run either way:** the operationalization below names `analysis/time_to_pass.py`
 >   (the script lives at `lab/analysis/`) run against a *"live-extended Pepperstone panel"* — the Pepperstone feed
 >   was retired 2026-08-02 and `PANELS_BY_BROKER` has been empty since substrate Phase 3. A run today reports
 >   **AMBIGUOUS-no-input**, never PASS.
-> - **A different forward-revert trigger IS still live** and must not be confused with this one: the §Falsifier
->   forward-revert trigger in [`2026-05-23-allocation-refresh-2.md`](2026-05-23-allocation-refresh-2.md)
->   (revert target: DJ30 0.75% / pyr 500%, NAS100 0.45%) is **not retired**.
+> - **Do not confuse this with the allocation §Falsifier** in [`2026-05-23-allocation-refresh-2.md`](2026-05-23-allocation-refresh-2.md)
+>   (revert target: DJ30 0.75% / pyr 500%, NAS100 0.45%): its limb 1 is this same retired check, limbs 2–3 are dormant
+>   (re-arm: live-fill route + fresh Pre-Q), and its zero forward tripwire was accepted 2026-08-15 (that ADR's addenda).
 >
 > Any change to the DD constants still runs the standing chain: pre-registration → re-MC → **both-halves**
 > regime-robustness gate → admitting ADR.
@@ -122,3 +122,51 @@ Per the OVERRIDE section in `Q-DDP-1/recommendation.md` (evicted 2026-06-05; ret
 - C2 anchor 98.09 / 0.36 / 4.73 empirically reconfirmed post-precision-fix
   (Run A identical to baseline at abs=1e-4).
 - Reference: [archive/docs/briefs/Q-MCFP-1/closure.md](https://github.com/Joshua-Asante/multi_firm_operations/blob/main/archive/docs/briefs/Q-MCFP-1/closure.md)
+
+---
+
+<a id="lineage-2026-04-17"></a>
+
+## Lineage — 2026-04-17 origin (consolidated 2026-10-15)
+
+Consolidated 2026-10-15 from 2026-04-17-equity-tier-deletion and 2026-04-17-dd-trigger-calibration (removed; see [TOMBSTONES](TOMBSTONES.md#2026-10-15-adr-decay-audit-removals)).
+Accepted text, quoted verbatim; history only. `core/dd_protection.py` owns the live constants and
+`AGENTS.md` §Protection the rule for any second tier (the equity tier's revert triggers are LOST;
+the revisit note quoted below is not one). Incident record: [Rule 0](../rule_0.md#triggering-failures).
+
+**2026-04-17-equity-tier-deletion** (Accepted 2026-04-17; its 1.0% trigger was re-locked to 1.5% by this ADR):
+
+> **Context.** Prior `dd_protection.py` implemented two-tier protection: a drawdown-from-peak trigger (DD tier) and an equity-level trigger (equity tier). Under the intended composition, both tiers fired independently and their scaling factors combined via `min(DD_SCALE, EQUITY_SCALE)` to produce the active risk multiplier.
+>
+> Phase 1 audit surfaced the issue. Under `min()` semantics with the actual parameter values in use, the equity tier cannot fire without the DD tier having already fired first. The equity threshold (3.5% equity loss) is reached through drawdown from peak, which is exactly what the DD tier (1.5% DD) is already monitoring. The equity tier was behaviorally inert — mathematically dead code contributing nothing to the protection envelope.
+>
+> This was verified by sweeping equity-tier parameters across plausible ranges and confirming zero behavioral difference in Monte Carlo outcomes.
+>
+> **Decision.** Delete the equity tier entirely. Single-tier protection: DD trigger 1.0% from peak with 0.40× risk scaling.
+>
+> **Alternatives considered.**
+> - **3a. Keep both tiers, change combination from `min()` to `*=` (multiplicative).** Under multiplicative combination, the equity tier would provide behavioral contribution. MC at 2.0%/0.40× with multiplicative showed bust 1.66% vs 1.55% for the single-tier option. One extra line of semantic complexity for a worse result. Rejected.
+> - **3b. Delete equity, single-tier DD 1.0%/0.40×.** Chosen. Bust 1.55%, pass 93.00%, p99 DD ~4.9%.
+> - **Do nothing.** Keep dead code. Rejected — violates Delete step of The Algorithm, adds ongoing maintenance burden and reader confusion.
+>
+> **Negative.** Requires a follow-up ADR if future portfolio changes (fourth strategy, Aegis allocation above 1.5%, correlated tail additions) make a genuine equity-level floor useful. Revisit then, do not preemptively restore.
+
+**2026-04-17-dd-trigger-calibration** (Accepted 2026-04-17; superseded in part by this ADR — `DD_TRIGGER` re-locked to C2 (1.5%); `DD_SCALE` 0.40× unchanged):
+
+> **Context.** Calibration objective: minimize portfolio bust rate across 150-day challenge horizon while preserving enough profit capture to clear the 5% FXIFY target at acceptable pass rate.
+>
+> **Decision.** DD trigger: 1.0% drawdown from peak.
+> Scale factor: 0.40× (i.e., active risk multiplied by 0.40 when triggered).
+>
+> Under this configuration and the finalized allocations (G 0.30 / S 1.00 / A 1.50):
+> - Bust rate: 1.55%
+> - Pass rate: 93.00%
+> - p99 drawdown: ~4.9%
+> - Bust attribution: Aegis ~47% / Striker ~40% / Guardian ~12%
+>
+> **Alternatives considered.** MC sweep across trigger × scale grid. Key points tested:
+> - **1.5% / 0.40× (initial retune).** Bust rate higher than 1.0%/0.40× because the trigger fired too late to meaningfully protect the 5% static DD bound. Rejected.
+> - **2.0% / 0.40× with multiplicative two-tier (3a).** Bust 1.66% — worse than single-tier 1.0%/0.40× despite additional complexity. Rejected in favor of single-tier deletion.
+> - **2.0% / 0.50× (post-challenge retune proposal).** Bust rate acceptable but only under relaxed challenge constraints (no 5% static DD cap). Proposal is queued for post-challenge, NOT active. See Notion: "dd_protection recalibration to 2.0%/0.50× — post-challenge — 2026-04-17".
+> - **0.50× scale (looser protection).** Preserves more upside but crosses the 5% challenge threshold with higher probability. Rejected for the challenge phase.
+> - **0.30× scale (tighter protection).** Reduces bust rate marginally but compresses profit distribution enough to drop pass rate below 90%. Rejected.

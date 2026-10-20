@@ -1,6 +1,6 @@
 # Behavioral Archive — Daily Execution System (pre-automation baseline)
 
-**Created:** 2026-06-13 (Notion Phase-2 migration, per `docs/adr/2026-06-12-notion-surface-retirement.md` §2).
+**Created:** 2026-06-13 (Notion Phase-2 migration, per [`docs/adr/2026-06-12-notion-surface-retirement.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-06-12-notion-surface-retirement.md) §2).
 **Status:** `DONE_WITH_CONCERNS` — **database rows are NOT yet exported.** See §0.5-Q2 below.
 
 ## Why this directory exists

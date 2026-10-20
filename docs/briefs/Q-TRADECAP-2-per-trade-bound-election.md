@@ -55,7 +55,7 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 held the election (now deleted
 - M1 ADR — size-bound vs identity-bound; realized-magnitude is the unnamed third axis.
 - Assumption-sweep A6 — origin of the parent.
 - Ox-alpha consult (zero authority): [`N-2026-08-24-ox-alpha-per-trade-bound-election.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/notice/N-2026-08-24-ox-alpha-per-trade-bound-election.md). Surviving rows travel with the election; they do not elect.
-- Election record (`Accepted`): [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) — ID **2**.
+- Election record (`Accepted`): [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) — ID **2**.
 
 ---
 
@@ -105,7 +105,7 @@ Q-TRADECAP-1 confirmed the gap. STATE queue row 2 held the election (now deleted
 ## §7 — Execution plan (self-executing; $0 / K=0)
 
 - **Phase 0 — Geometry (done this session, before lock).** G1/G2/G3 measured in §0. **H-GEO accepts:** Option 1-as-staged is not startable. Recommended default for the *operator* (not elected here): **2** (alert tripwire), threshold not imported from 2.0%. **1-realized** waits on disaster-stop Phase 0a. **1-size** is available if the operator wants a size bound knowing it does not close realized loss.
-- **Phase 1 — Operator election.** `Accepted` on [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) (ID **2**). Observe-only; threshold later; not a wire.
+- **Phase 1 — Operator election.** `Accepted` on [`2026-08-24-q-tradecap-2-elect-alert-tripwire.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md) (ID **2**). Observe-only; threshold later; not a wire.
 - **Phase 2 — Verdict assertion** per §6: `RESOLVED`. See [`closures/Q-TRADECAP-2-closure-resolved.md`](closures/Q-TRADECAP-2-closure-resolved.md).
 
 ---

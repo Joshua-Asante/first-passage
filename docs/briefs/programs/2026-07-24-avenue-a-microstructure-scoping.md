@@ -90,9 +90,9 @@ Absent the qualifying triple, the verdict is **FALSIFIED (as scoped)** → **sco
 estimate command is runnable today); it is deliberately hard to satisfy. A qualifying feature would
 re-open toward RESOLVED, never AMBIGUOUS (the gate is binary on the triple).
 
-### Addendum 2026-08-05 — condition 3 gains a second route (ADR [`2026-08-05-avenue-a-generate-confirm-route`](../../adr/2026-08-05-avenue-a-generate-confirm-route.md), `Accepted`) — **WITHDRAWN 2026-08-24**
+### Addendum 2026-08-05 — condition 3 gains a second route (ADR [`2026-08-05-avenue-a-generate-confirm-route`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md), `Accepted`) — **WITHDRAWN 2026-08-24**
 
-> ⚠ **Withdrawn 2026-08-24.** [`ADR 2026-08-05-avenue-a-generate-confirm-route`](../../adr/2026-08-05-avenue-a-generate-confirm-route.md)
+> ⚠ **Withdrawn 2026-08-24.** [`ADR 2026-08-05-avenue-a-generate-confirm-route`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/ltm/adr/2026-08-05-avenue-a-generate-confirm-route.md)
 > is now `Superseded` in full by [`ADR 2026-08-24 — sourcing-phase channel retirement`](../../adr/2026-08-24-sourcing-phase-channel-retirement.md).
 > Per that ADR's own §7 pre-specified revert instruction ("If this ADR ever reverts to
 > `Proposed`/`Withdrawn`, ... Avenue A §6's addendum block must be withdrawn in the same change"),

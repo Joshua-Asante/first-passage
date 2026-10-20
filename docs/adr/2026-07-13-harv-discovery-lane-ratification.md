@@ -7,7 +7,7 @@
 **Decision date:** 2026-07-13
 **Authors:** Joshua (authority) + Cursor (assembly from Phase-0 sources) — parent triage: claude.ai advisor 2026-07-13
 **Supersedes:** none — this ADR ratifies a **lane**; it does **not** supersede the discovery-campaign defaults, statistics-adoption, or DSR-K ADRs
-**Related:** [`docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md`](../briefs/closures/Q-HARV-0-month-end-rebalance-ES.md) (mechanism-first evidence, AMBIGUOUS); [`docs/briefs/closures/DISC-CAMP-0-closure-falsified.md`](../briefs/DISC-CAMP-0-closure-falsified.md) (mechanism-blind shakedown, FALSIFIED / pipeline proven); [`2026-07-11-discovery-campaign-defaults-ratified.md`](2026-07-11-discovery-campaign-defaults-ratified.md); [`2026-07-11-tradable-anomalies-statistics-adoption.md`](2026-07-11-tradable-anomalies-statistics-adoption.md); [`2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`](2026-07-12-dsr-k-rule-and-variance-floor-supersession.md)
+**Related:** [`docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md`](../briefs/closures/Q-HARV-0-month-end-rebalance-ES.md) (mechanism-first evidence, AMBIGUOUS); [`docs/briefs/closures/DISC-CAMP-0-closure-falsified.md`](https://github.com/Joshua-Asante/first-passage/blob/2d40dbeb56c167844cab5136742d70787835f8e2/docs/briefs/closures/DISC-CAMP-0-closure-falsified.md) (mechanism-blind shakedown, FALSIFIED / pipeline proven); [`2026-07-11-discovery-campaign-defaults-ratified.md`](2026-07-11-discovery-campaign-defaults-ratified.md); [`2026-07-11-tradable-anomalies-statistics-adoption.md`](2026-07-11-tradable-anomalies-statistics-adoption.md); [`2026-07-12-dsr-k-rule-and-variance-floor-supersession.md`](2026-07-12-dsr-k-rule-and-variance-floor-supersession.md)
 **Layer:** methodology (discovery-lane doctrine)
 
 ---
@@ -145,7 +145,7 @@ grep -n "does not supersede\|Supersedes: none" docs/adr/2026-07-13-harv-discover
 
 # Primary evidence sources still present
 test -f docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md
-test -f docs/briefs/closures/DISC-CAMP-0-closure-falsified.md
+git cat-file -e 2d40dbeb56c167844cab5136742d70787835f8e2:docs/briefs/closures/DISC-CAMP-0-closure-falsified.md   # removed 2026-09-06; pinned
 
 # No locked constant / allocation / dd_protection / MC-anchor touch (expect empty on core/)
 git diff origin/main -- core/ | grep -E "DD_TRIGGER|BASE_RISK" || echo "core clean"

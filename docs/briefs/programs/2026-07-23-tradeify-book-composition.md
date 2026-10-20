@@ -125,7 +125,7 @@ interaction with c1 in either direction**, not merely same-direction safety.
 (dated **May 20, 2026**): the micro-currency products are **M6A and M6E only**; `6J` appears under
 Currency Futures at **full size**. The article warns explicitly against assuming a micro version
 of a standard contract exists. This **independently reproduces** the repo's existing pin — the
-ratified envelope ADR [`2026-07-13-prop-envelope-v1-ratification.md`](../../adr/2026-07-13-prop-envelope-v1-ratification.md)
+ratified envelope ADR [`2026-07-13-prop-envelope-v1-ratification.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-13-prop-envelope-v1-ratification.md)
 §5 already recorded "**no M6J**" for Tradeify. Two sources, same answer, 16 days apart.
 
 **No re-MC triggered.** §10's trigger is "any change to the ⚠ rule pins"; this was not one of the
@@ -154,7 +154,7 @@ The 2026-08-08 gate still carries decompound HOLD + accept-beta; Q-FUNNEL eviden
 
 Operator plan-level frame (2026-07-23, **not repo doctrine**): prop-as-accelerator toward a
 self-funded savings path — note self-funded scale is **CLOSED/parked** in-repo
-([`docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](../../adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md));
+([`docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md));
 do not cite this brief to reopen that lane. Doctrine in force: locked strategies,
 dd_protection philosophy, no off-spec discretion (CFD-venue retirement is the anchor), sizing
 owned by the account-multiplier layer, ORB lifecycle **CANDIDATE** (pre-reg 2026-07-16),
