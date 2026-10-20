@@ -28,3 +28,16 @@ append-only commitment before any pre-freeze probe reads data.
 ## Close
 
 If no campaign freezes, this probe closes on the mechanism record as stand-alone spend ($0, K=0).
+
+## Closing entry — 2026-10-20 (append-only)
+
+**Authority:** Joshua, relayed by the coordinator from his own chat: "Close the B0 reservation stub as probe spend".
+
+- **Disposition:** closed as stand-alone probe spend: $0, K=0. No campaign followed.
+- **Reservation:** the 12-month forward MYM Confirm reservation above is released.
+- **Result:** the export read ran after this stub's push (`99f8523`). Results are held privately, outside the repo, as `2026-10-20-striker-b0-attribution-results.md` in the session notes. They contain backtest dollars and are not published here.
+  - Public summary: 26 add episodes (not the 20 previously counted from add-exit labels; 6 adds closed through the EOD flatten).
+  - No stacked-loss tail appeared in this capture.
+  - No halt divergence on this panel.
+  - The depth break-even is not a measured fill cost.
+- **Decision:** p250 stays the unchanged research baseline. B0 is dormant. It can return only as an explicitly different candidate if critical-path savings justify it (Joshua, 2026-10-20).
