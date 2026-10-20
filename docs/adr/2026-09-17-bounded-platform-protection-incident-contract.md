@@ -572,6 +572,15 @@ D8, whether §A12 also governs an armed commissioning session (Scope), is not a 
 
 **Carried out (2026-10-02).** §A12.4 (reduced propagation set) and §A12.6 (decisions D1–D8 with recommendations and rationale) were removed under the coordinator's scope narrowing and are carried to the acceptance packet note `docs/notes/2026-10-02-a12-acceptance-packet.md` (commit `7424747`), owed when Joshua takes up acceptance; D1's prerequisites stay in §A12.5.
 
+## Addendum 2026-10-20 — native-pilot departures (pointer)
+
+For the native NinjaScript pilot only, two operator rulings in the [native protection and recovery runbook §5](../notes/2026-10-18-native-protection-recovery-pilot-runbook.md#5-decisions) depart from this ADR:
+
+- **D-N1** (2026-10-18) admits a bounded incident close and incident cancels of resting entries for exposure known exactly. This departs from §A12 F1(c) and from §2's bar on automatic post-incident cancellation.
+- **D-N8** (2026-10-20) extends those cancels to uncertain instruments, for orders an Ack bound that were never UNKNOWN. It is the explicit amendment §2 requires.
+
+§A12 F1(a), no cancel of an unknown request, is unchanged. Everything else in this ADR is unchanged and still governs the Tradeify rail.
+
 ## Change history
 
 | Date | Change | By |
