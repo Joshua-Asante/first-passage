@@ -1,0 +1,48 @@
+TFY Select Flex 50K      S=1.0 maxP  sd=   600 stop=None take=750.0  P=0.78 cost=$571 days=50.0 pay1=$786 evpass=0.33
+TFY Select Flex 50K      S=1.0 P/$   sd=   400 stop=1000.0 take=1200.0  P=0.63 cost=$388 days=61.0 pay1=$544 evpass=0.34
+TFY Select Flex 50K      S=2.0 maxP  sd=   600 stop=None take=750.0  P=0.89 cost=$439 days=43.0 pay1=$806 evpass=0.43
+TFY Select Flex 50K      S=2.0 P/$   sd=   250 stop=None take=None  P=0.62 cost=$217 days=75.0 pay1=$428 evpass=0.55
+TFY Select Flex 50K      S=2.7 maxP  sd=   600 stop=1000.0 take=1200.0  P=0.95 cost=$373 days=39.0 pay1=$882 evpass=0.50
+TFY Select Flex 50K      S=2.7 P/$   sd=   250 stop=None take=None  P=0.77 cost=$197 days=68.0 pay1=$443 evpass=0.70
+TFY Select Daily 50K     S=1.0 maxP  sd=   600 stop=None take=750.0  P=0.63 cost=$646 days=54.0 pay1=$493 evpass=0.31
+TFY Select Daily 50K     S=1.0 P/$   sd=   600 stop=None take=750.0  P=0.63 cost=$646 days=54.0 pay1=$493 evpass=0.31
+TFY Select Daily 50K     S=2.0 maxP  sd=   600 stop=None take=750.0  P=0.81 cost=$503 days=51.0 pay1=$498 evpass=0.42
+TFY Select Daily 50K     S=2.0 P/$   sd=   400 stop=1000.0 take=1200.0  P=0.64 cost=$349 days=64.0 pay1=$449 evpass=0.48
+TFY Select Daily 50K     S=2.7 maxP  sd=   600 stop=1000.0 take=1200.0  P=0.89 cost=$420 days=43.0 pay1=$543 evpass=0.49
+TFY Select Daily 50K     S=2.7 P/$   sd=   400 stop=1000.0 take=1200.0  P=0.78 cost=$294 days=60.0 pay1=$454 evpass=0.59
+TFY Growth 50K           S=1.0 maxP  sd=   600 stop=None take=750.0  P=0.53 cost=$608 days=60.0 pay1=$1350 evpass=0.31
+TFY Growth 50K           S=1.0 P/$   sd=   600 stop=None take=750.0  P=0.53 cost=$608 days=60.0 pay1=$1350 evpass=0.31
+TFY Growth 50K           S=2.0 maxP  sd=   600 stop=None take=750.0  P=0.74 cost=$467 days=54.0 pay1=$1350 evpass=0.42
+TFY Growth 50K           S=2.0 P/$   sd=   400 stop=None take=None  P=0.55 cost=$316 days=71.0 pay1=$1350 evpass=0.47
+TFY Growth 50K           S=2.7 maxP  sd=   600 stop=None take=750.0  P=0.84 cost=$397 days=50.0 pay1=$1350 evpass=0.49
+TFY Growth 50K           S=2.7 P/$   sd=   400 stop=None take=None  P=0.71 cost=$267 days=65.0 pay1=$1350 evpass=0.58
+TFY Lightning 50K        S=1.0 maxP  sd=   600 stop=None take=750.0  P=0.88 cost=$1651 days=46.0 pay1=$1800 evpass=0.00
+TFY Lightning 50K        S=1.0 P/$   sd=   250 stop=None take=750.0  P=0.53 cost=$824 days=71.0 pay1=$1800 evpass=0.00
+TFY Lightning 50K        S=2.0 maxP  sd=   600 stop=None take=750.0  P=0.95 cost=$1215 days=38.0 pay1=$1800 evpass=0.00
+TFY Lightning 50K        S=2.0 P/$   sd=   250 stop=None take=750.0  P=0.75 cost=$664 days=64.0 pay1=$1800 evpass=0.00
+TFY Lightning 50K        S=2.7 maxP  sd=   600 stop=None take=750.0  P=0.98 cost=$1016 days=34.0 pay1=$1800 evpass=0.00
+TFY Lightning 50K        S=2.7 P/$   sd=   250 stop=None take=750.0  P=0.85 cost=$592 days=57.0 pay1=$1800 evpass=0.00
+TFY Select Flex 100K     S=1.0 maxP  sd=  1200 stop=None take=1500.0  P=0.70 cost=$1351 days=51.0 pay1=$1611 evpass=0.23
+TFY Select Flex 100K     S=1.0 P/$   sd=   500 stop=None take=None  P=0.40 cost=$540 days=75.0 pay1=$647 evpass=0.23
+TFY Select Flex 100K     S=2.0 maxP  sd=  1200 stop=None take=1500.0  P=0.83 cost=$1084 days=46.0 pay1=$1639 evpass=0.30
+TFY Select Flex 100K     S=2.0 P/$   sd=   500 stop=1500.0 take=2400.0  P=0.64 cost=$435 days=71.0 pay1=$690 evpass=0.41
+TFY Select Flex 100K     S=2.7 maxP  sd=  1200 stop=None take=1500.0  P=0.90 cost=$911 days=41.0 pay1=$1711 evpass=0.36
+TFY Select Flex 100K     S=2.7 P/$   sd=   500 stop=None take=None  P=0.77 cost=$386 days=65.0 pay1=$733 evpass=0.54
+TFY Select Daily 100K    S=1.0 maxP  sd=  1200 stop=None take=2400.0  P=0.66 cost=$1466 days=50.0 pay1=$817 evpass=0.21
+TFY Select Daily 100K    S=1.0 P/$   sd=   800 stop=None take=2400.0  P=0.45 cost=$988 days=62.0 pay1=$645 evpass=0.22
+TFY Select Daily 100K    S=2.0 maxP  sd=  1200 stop=None take=1500.0  P=0.80 cost=$1158 days=46.0 pay1=$759 evpass=0.30
+TFY Select Daily 100K    S=2.0 P/$   sd=   500 stop=1500.0 take=2400.0  P=0.42 cost=$494 days=77.0 pay1=$506 evpass=0.38
+TFY Select Daily 100K    S=2.7 maxP  sd=  1200 stop=None take=1500.0  P=0.87 cost=$978 days=42.0 pay1=$757 evpass=0.36
+TFY Select Daily 100K    S=2.7 P/$   sd=   500 stop=1500.0 take=2400.0  P=0.58 cost=$441 days=72.0 pay1=$516 evpass=0.50
+TFY Growth 100K          S=1.0 maxP  sd=  1200 stop=None take=1500.0  P=0.59 cost=$1219 days=57.0 pay1=$1800 evpass=0.27
+TFY Growth 100K          S=1.0 P/$   sd=  1200 stop=None take=1500.0  P=0.59 cost=$1219 days=57.0 pay1=$1800 evpass=0.27
+TFY Growth 100K          S=2.0 maxP  sd=  1200 stop=None take=1500.0  P=0.73 cost=$974 days=50.5 pay1=$1800 evpass=0.36
+TFY Growth 100K          S=2.0 P/$   sd=   800 stop=None take=1500.0  P=0.62 cost=$640 days=66.0 pay1=$1800 evpass=0.41
+TFY Growth 100K          S=2.7 maxP  sd=  1200 stop=None take=1500.0  P=0.84 cost=$814 days=48.0 pay1=$1800 evpass=0.43
+TFY Growth 100K          S=2.7 P/$   sd=   500 stop=None take=1500.0  P=0.53 cost=$354 days=83.0 pay1=$1800 evpass=0.61
+TFY Lightning 100K       S=1.0 maxP  sd=  1200 stop=None take=1500.0  P=0.87 cost=$2142 days=46.0 pay1=$2250 evpass=0.00
+TFY Lightning 100K       S=1.0 P/$   sd=   500 stop=None take=None  P=0.54 cost=$1106 days=71.0 pay1=$2250 evpass=0.00
+TFY Lightning 100K       S=2.0 maxP  sd=  1200 stop=None take=1500.0  P=0.95 cost=$1662 days=38.0 pay1=$2250 evpass=0.00
+TFY Lightning 100K       S=2.0 P/$   sd=   500 stop=None take=1500.0  P=0.75 cost=$885 days=64.0 pay1=$2250 evpass=0.00
+TFY Lightning 100K       S=2.7 maxP  sd=  1200 stop=None take=1500.0  P=0.98 cost=$1358 days=34.0 pay1=$2250 evpass=0.00
+TFY Lightning 100K       S=2.7 P/$   sd=   500 stop=None take=None  P=0.85 cost=$789 days=57.0 pay1=$2250 evpass=0.00
