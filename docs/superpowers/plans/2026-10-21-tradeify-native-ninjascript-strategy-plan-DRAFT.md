@@ -21,7 +21,7 @@
 
 ## 2. Prerequisites before any build (operator-owned)
 
-1. **Written Tradeify answers** to follow-up Q3 (offline fixed parameters count as native) and Q6 (the company NinjaTrader license runs automated strategies). The [drafted follow-up](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft) is unsent.
+1. **Written Tradeify answers** on offline fixed parameters and on automated strategies under the company NinjaTrader license: Q1 and Q2 of the [2026-10-21 follow-up draft](../../notes/2026-10-21-tradeify-native-followup-questions-DRAFT.md), which is unsent. That draft also covers ownership, running location, cross-firm scope, personal-account reuse, multi-account use and data licensing.
 2. **CME category** for automated orders into a prop simulation: ticket #04738415, open.
 3. **11-08 ruling** granting branch (b): #807 stage 1, a read-only toolchain assessment.
 
