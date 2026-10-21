@@ -38,6 +38,19 @@ Rules implemented (card §0.5, frozen):
   mode) exits at/after 16:10 ET, which is exactly the card's "interval
   ``(entry, exit]`` contains 16:10, or exit after 16:10" on a same-day trade.
 
+Corrected-cost opt-in: ``--corrected-cost-inputs PATH@SHA256`` supplies a version-1
+JSON object with ``tier=Tradeify_Select_100K``, ``commission_schedule`` (path and
+SHA256, relative to this JSON), ``symbols`` (per-side cost and tick value),
+``inputs`` (six ``leg:mode`` keys, export SHA256 and embedded slippage basis), and
+optional ``fills`` (leg, mode, trade_number, entry_order_type, exit_order_type).
+Rates must match the pinned schedule's round-trip rates divided by two. Embedded
+bases are nonnegative numbers or ``"unknown"``; output preserves them. Additional
+slippage is integer 0/1/2 ticks, incremental to the export, never an absolute bound.
+Only explicit ``limit`` fills are exempt; absent/unknown types are charged and
+counted. Derived quantities reuse their source fill metadata. This mode emits only
+Tradeify; the default retains the legacy flat-tier calculation. API callers must
+supply input_hashes from their verified source tables, as the CLI does.
+
 Import contract: ``lab → core`` only (never ``ops``). Synthetic inputs only in
 tests; the private exports are read at run time by the caller, never here.
 """
@@ -593,12 +606,112 @@ def _cost_per_side(tier: str) -> float:
     return float(raw)
 
 
+LEG_SYMBOLS = dict(zip(LEGS, ("6J", "MYM", "MGC", "MNQ")))
+CORRECTED_TIER = "Tradeify_Select_100K"
+
+
+def _pinned_json(path: Path, digest: str) -> dict:
+    """Hash and parse the same bytes; duplicate keys cannot change interpretation."""
+    if not isinstance(digest, str) or not _SHA256_RE.fullmatch(digest):
+        raise InputIdentityError("cost input requires a SHA-256 pin")
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != digest.lower():
+        raise InputIdentityError(f"cost input SHA-256 mismatch: {path}")
+
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError(f"duplicate cost metadata key: {key}")
+            result[key] = value
+        return result
+
+    value = json.loads(raw, object_pairs_hook=pairs)
+    if not isinstance(value, dict):
+        raise ValueError("cost metadata must be an object")
+    return value
+
+
+def _cost_number(value, label: str, *, positive: bool = False) -> float:
+    if isinstance(value, bool):
+        raise ValueError(f"invalid {label}")
+    try:
+        number = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"invalid {label}") from exc
+    if not math.isfinite(number) or number < 0 or (positive and number == 0):
+        raise ValueError(f"invalid {label}")
+    return number
+
+
+def _corrected_costs(source, tables, input_hashes):
+    """Validate caller-pinned symbol and per-fill evidence, without guessing types."""
+    path, digest = source
+    path = Path(path)
+    data = _pinned_json(path, digest)
+    try:
+        if type(data["version"]) is not int or data["version"] != 1:
+            raise ValueError("unsupported cost metadata version")
+        if data["tier"] != CORRECTED_TIER:
+            raise ValueError("corrected costs cover Tradeify only")
+        schedule_ref = data["commission_schedule"]
+        schedule = _pinned_json(path.parent / schedule_ref["path"], schedule_ref["sha256"])
+        rates = {}
+        for row in schedule["rows"]:
+            symbol = row["symbol"]
+            if symbol in rates:
+                raise ValueError("duplicate commission schedule symbol")
+            rates[symbol] = _cost_number(row["round_trip_usd"], "round-trip rate") / 2
+        symbols = {}
+        for symbol in LEG_SYMBOLS.values():
+            row = data["symbols"][symbol]
+            rate = _cost_number(row["cost_per_side_usd"], "per-side rate")
+            tick = _cost_number(row["tick_value_usd"], "tick value", positive=True)
+            if rate != rates[symbol]:
+                raise ValueError(f"{symbol} rate differs from pinned commission schedule")
+            symbols[symbol] = {"cost_per_side_usd": rate, "tick_value_usd": tick}
+        inputs = data["inputs"]
+        if set(inputs) != {":".join(key) for key in FILE_TABLES}:
+            raise ValueError("cost evidence must identify all six exports")
+        for key in FILE_TABLES:
+            row = inputs[":".join(key)]
+            sha = row["sha256"]
+            if (not isinstance(sha, str) or not _SHA256_RE.fullmatch(sha)
+                    or sha.lower() != (input_hashes or {}).get(key, "").lower()):
+                raise ValueError("cost evidence export identity mismatch")
+            basis = row["embedded_slippage_ticks_per_side"]
+            if basis != "unknown":
+                _cost_number(basis, "embedded slippage basis")
+        fills = {}
+        known = {(leg, mode, trade.trade_number)
+                 for (leg, mode), trades in tables.items() for trade in trades}
+        for row in data.get("fills", []):
+            key = (row["leg"], row["mode"], row["trade_number"])
+            if type(key[2]) is not int or key not in known or key in fills:
+                raise ValueError("duplicate or unknown fill metadata trade")
+            kinds = (row.get("entry_order_type"), row.get("exit_order_type"))
+            if any(kind is not None and not isinstance(kind, str) for kind in kinds):
+                raise ValueError("order types must be strings or null")
+            fills[key] = kinds
+    except (KeyError, TypeError, AttributeError) as exc:
+        raise ValueError("missing or malformed corrected-cost evidence") from exc
+    return symbols, fills, {
+        "metadata_sha256": digest.lower(),
+        "commission_schedule_sha256": schedule_ref["sha256"].lower(),
+        "symbols": symbols, "inputs": inputs,
+        "interpretation": "incremental_scenario_not_bound",
+    }
+
+
 def build_series(
     tables: Mapping[tuple[str, str], Sequence[Trade]],
     *,
     export_tz: str,
     quantity_spec: Mapping[str, Mapping[str, object]] | None = None,
     input_hashes: Mapping[tuple[str, str], str] | None = None,
+    corrected_cost_inputs: tuple[str | Path, str] | None = None,
+    additional_slippage_ticks_per_side: int | None = None,
+    tiers: Sequence[str] | None = None,
 ) -> SeriesBundle:
     """Build the per-tier weekday series from the parsed (leg, mode) trade tables.
 
@@ -608,6 +721,18 @@ def build_series(
     rule (which is how aegis protected and vanguard protected exist at all).
     """
     _as_zone(export_tz)  # fail fast on a bad tz string
+    requested_tiers = tuple(tiers) if tiers is not None else (
+        (CORRECTED_TIER,) if corrected_cost_inputs is not None else TIERS
+    )
+    if not requested_tiers or len(set(requested_tiers)) != len(requested_tiers):
+        raise ValueError("tiers must be nonempty and unique")
+    ticks = additional_slippage_ticks_per_side
+    if ticks is not None and (type(ticks) is not int or ticks not in (0, 1, 2)):
+        raise ValueError("additional slippage must be integer 0, 1 or 2")
+    if corrected_cost_inputs is None and ticks is not None:
+        raise ValueError("slippage scenarios require corrected cost inputs")
+    if corrected_cost_inputs is not None and requested_tiers != (CORRECTED_TIER,):
+        raise ValueError("no supplied corrected rates for requested tiers")
     spec = normalize_quantity_spec(
         DEFAULT_QUANTITY_SPEC if quantity_spec is None else quantity_spec
     )
@@ -658,15 +783,40 @@ def build_series(
                 adverse[position] += abs(trade.adverse_excursion_usd)
         daily[mode] = {"gross": gross, "sides": sides, "adverse_excursion": adverse}
 
-    tiers: dict[str, dict[str, np.ndarray]] = {}
-    for tier in TIERS:
+    scenario = None
+    corrected = {}
+    if corrected_cost_inputs is not None:
+        symbols, fills, scenario = _corrected_costs(corrected_cost_inputs, tables, input_hashes)
+        scenario["additional_slippage_ticks_per_side"] = ticks or 0
+        scenario["default_classified_fills"] = {}
+        for mode in MODES:
+            cost = np.zeros(len(dates), dtype=float)
+            defaults = 0
+            for leg in LEGS:
+                source_mode = mode if (leg, mode) in tables else "normal"
+                rates = symbols[LEG_SYMBOLS[leg]]
+                for trade in resolved[(leg, mode)]:
+                    kinds = fills.get((leg, source_mode, trade.trade_number), (None, None))
+                    defaults += sum(kind not in ("market", "stop", "limit") for kind in kinds)
+                    affected = sum(kind != "limit" for kind in kinds)
+                    cost[index[trade.session_date]] += trade.qty * (
+                        2 * rates["cost_per_side_usd"]
+                        + affected * (ticks or 0) * rates["tick_value_usd"]
+                    )
+            corrected[mode] = cost
+            scenario["default_classified_fills"][mode] = defaults
+
+    tier_series: dict[str, dict[str, np.ndarray]] = {}
+    for tier in requested_tiers:
         cost_per_side = _cost_per_side(tier)
         channels: dict[str, np.ndarray] = {}
         for mode in MODES:
-            cost = daily[mode]["sides"] * cost_per_side
+            cost = corrected[mode] if scenario is not None else daily[mode]["sides"] * cost_per_side
             pnl = daily[mode]["gross"] - cost
             # 0.0 - x keeps a no-trade day at exactly +0.0 (never -0.0).
             low = 0.0 - daily[mode]["adverse_excursion"] - cost
+            if scenario is not None and np.any(low > pnl):
+                raise ValueError("corrected low exceeds net P&L; inconsistent excursion input")
             for label, series in ((f"{mode}_pnl", pnl), (f"{mode}_low", low)):
                 if not np.isfinite(series).all():
                     raise ValueError(f"{tier} {label} is not finite")
@@ -676,7 +826,7 @@ def build_series(
                 )
             channels[f"{mode}_pnl"] = pnl
             channels[f"{mode}_low"] = low
-        tiers[tier] = channels
+        tier_series[tier] = channels
 
     flagged_days = {
         trade.session_date
@@ -700,7 +850,10 @@ def build_series(
             for leg in LEGS
             for mode in MODES
         },
-        "tiers": {tier: {"cost_per_side_usd": _cost_per_side(tier)} for tier in TIERS},
+        "cost_basis": "per_symbol_tradeify" if scenario is not None else "legacy_flat_tier",
+        "tiers": {tier: ({"symbols": scenario["symbols"]} if scenario is not None
+                         else {"cost_per_side_usd": _cost_per_side(tier)})
+                  for tier in requested_tiers},
         "mffu_admissible": not flagged_days,
         "mffu_flagged_days": len(flagged_days),
         "columns": {
@@ -712,10 +865,12 @@ def build_series(
             for mode in MODES
         },
     }
+    if scenario is not None:
+        manifest["cost_scenario"] = scenario
     return SeriesBundle(
         dates=dates,
         window=(start, end),
-        tiers=tiers,
+        tiers=tier_series,
         daily=daily,
         mffu_admissible=not flagged_days,
         mffu_flagged_days=len(flagged_days),
@@ -850,11 +1005,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="timezone the export timestamps are naive wall times in (#616 freeze input)",
     )
     parser.add_argument("--out", required=True, metavar="DIR", help="output directory")
+    parser.add_argument("--corrected-cost-inputs", metavar="PATH@SHA256",
+                        help="opt in to pinned per-symbol Tradeify costs (see module schema)")
+    parser.add_argument("--additional-slippage-ticks-per-side", type=int, choices=(0, 1, 2),
+                        help="incremental scenario above embedded export slippage, not a bound")
+    parser.add_argument("--tier", action="append", help="requested tier; corrected mode is Tradeify only")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     out_dir = Path(args.out)
     # Refuse an unsafe destination before any input byte is read or hashed.
     assert_out_dir_allowed(out_dir)
+    cost_inputs = None
+    if args.corrected_cost_inputs is not None:
+        path_text, separator, digest = args.corrected_cost_inputs.rpartition("@")
+        if not separator or not path_text or not _SHA256_RE.fullmatch(digest):
+            raise ValueError("--corrected-cost-inputs must be PATH@SHA256")
+        cost_inputs = (Path(path_text), digest)
 
     spec = (
         DEFAULT_QUANTITY_SPEC
@@ -881,7 +1047,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise ValueError(f"missing required input tables: {missing}")
 
     bundle = build_series(
-        tables, export_tz=args.export_tz, quantity_spec=spec, input_hashes=hashes
+        tables, export_tz=args.export_tz, quantity_spec=spec, input_hashes=hashes,
+        corrected_cost_inputs=cost_inputs,
+        additional_slippage_ticks_per_side=args.additional_slippage_ticks_per_side,
+        tiers=args.tier,
     )
     manifest_path = write_bundle(bundle, out_dir)
     print(
