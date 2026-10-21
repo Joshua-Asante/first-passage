@@ -1,59 +1,47 @@
-# Tradeify follow-up questions for a native NinjaScript strategy (DRAFT, unsent)
+# Tradeify follow-up for a native NinjaScript strategy (DRAFT v2, unsent)
 
-**Status:** DRAFT for Joshua to send; not sent. Serves prerequisite P0.1 of the [native strategy plan](../superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md#2-prerequisites-before-any-build-operator-owned).
+**Status:** DRAFT for Joshua to send; not sent. Serves the [native strategy plan](../superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md#2-prerequisites-by-what-they-gate) before any strategy is enabled on an evaluation account. It is not a prerequisite for bounded offline research or prototyping, which existing internal approvals govern.
 
-**What it replaces:** the 2026-10-13 five-question draft, which is not in this repo, for the native lane only. Its clause and §1.3-consent questions served the bridge route, which was superseded on 2026-10-16 ([addendum](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify)).
+**History:**
+- **v1** (commit d2807b7c) asked eight questions.
+- **v2** follows Joshua's 2026-10-21 triage: one statement of the architecture, then one priority eligibility question. The other topics are routed or deferred (§2).
+- **Replaces:** for the native lane only, the 2026-10-13 five-question draft, which is not in this repo. Its bridge-route questions lapsed with the [2026-10-16 supersession](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify).
 
-**How to send:** reply on ticket #144659998 (replying reopens it) or open a new ticket. Ask for written answers, and for the governing clause where one exists. Before sending, add the account reference privately; this public file deliberately omits account identifiers.
+**How to send:**
+- Reply on ticket #144659998 (replying reopens it) or open a new ticket.
+- Add the account reference privately; this public file omits it.
+- Fill the bracketed candidate details once decision D2 names the rule. If the candidate is not a published rule, rewrite the question rather than send it as is.
 
-**What each answer decides:**
-
-| Question | Answer decides |
-|---|---|
-| Q1 | Whether the plan's build is allowed at all. A no stops the plan (P0 stop rule). |
-| Q2 | Whether the plan's build is allowed at all. A no stops the plan (P0 stop rule). |
-| Q3 | Operating setup (P5–P6). |
-| Q4 | Operating setup (P5–P6). |
-| Q5 | Candidate eligibility (decision D2). |
-| Q6 | Decision D4. |
-| Q7 | Scale-up (P7). |
-| Q8 | CME prerequisite P0.2, alongside CME ticket #04738415. |
-
----
-
-## Message (paste-ready)
+## 1. Message (paste-ready once the brackets are filled)
 
 > Hello,
 >
-> Thank you for the October 12 replies. They confirmed that, for evaluation and Sim Funded accounts, all strategy logic must be native to a supported platform such as NinjaTrader (NinjaScript), and that external engines, bridges and direct API access are not permitted. I have dropped the external-engine approach entirely. I am now planning a strategy that runs only inside NinjaTrader 8, on my own PC, under Tradeify's NinjaTrader license, connected through Tradovate. Before I build it, could you confirm the following in writing? Where a rule comes from the Funded Trader Agreement or another agreement, please cite the clause.
+> Thank you for the October 12 replies on evaluation and Sim Funded accounts. I have dropped the external-engine approach. What I plan is a NinjaScript strategy that runs entirely inside NinjaTrader 8 under Tradeify's NinjaTrader license, connected through Tradovate. Every calculation, signal, position size and order happens in NinjaScript while it trades, with fixed inputs and no external program, file feed or connection. Research and testing happen offline beforehand.
 >
-> 1. **Offline development, fixed parameters.** I would research and test the strategy offline, using my own tools, including Python, and then compile it into a self-contained NinjaScript strategy with fixed input values. While it trades, every calculation, signal, position size and order happens inside NinjaTrader, with no external program, file feed or connection. Is that "native" under your rules for evaluation and Sim Funded accounts?
-> 2. **Automated strategies under Tradeify's NinjaTrader license.** Does the Tradeify company NinjaTrader license allow an enabled NinjaScript strategy to submit, modify and cancel orders automatically on my evaluation and Sim Funded accounts? Are there restrictions on strategy features, such as ATM strategies, the Strategy Analyzer or Playback for testing, or unmanaged order handling?
-> 3. **Ownership verification.** The guidelines say you may require a live video of me enabling the code on my own PC. When is this requested, at purchase, at payout or on review, and what must it show? I will write the strategy myself, with help from AI coding assistants and standard NinjaTrader indicators. Does that still count as "sole owner"?
-> 4. **Where it runs.** The strategy would run on a dedicated PC at my home. Is it acceptable for that PC to run unattended during the session, and to check on it through a remote-desktop tool from my own devices? I understand that logging in over a VPN or VPS is not allowed.
-> 5. **Meaning of "the same bot across multiple firms."** If a strategy at another firm shares a general idea, for example an opening-range rule, but is a separately written program with different logic and parameters, is it "the same bot"? What test do you apply?
-> 6. **Personal accounts.** The guidelines say I may use the bot on my personal accounts. Does that include a personal, non-prop Tradovate brokerage account in my own name, running the same strategy at the same time as my Tradeify accounts?
-> 7. **Several Tradeify accounts.** May I run the same NinjaScript strategy on each of my own Tradeify accounts, either as a separate instance per account or through NinjaTrader's multi-account order handling, with every account trading in the same direction? Will the "similar orders on other accounts" scan treat this as permitted grouping of my own accounts?
-> 8. **Market data for automated use.** Your supported-platforms page says Level 1 CME data is included. Does that data licence cover an automated (non-display) NinjaScript strategy on evaluation and Sim Funded accounts, or must I hold a separate CME licence?
+> **My question is about ownership and exclusivity.** The strategy would be my private NinjaScript implementation of a published trading rule: [rule name; authors; publication; year]. It would use the published parameters, [or: parameters I selected]. I write the code with the help of AI coding assistants, and no one else has access to it or uses it.
+>
+> 1. Does a private implementation of a published rule, written this way, meet Tradeify's requirement that I be "the sole owner of the bot or strategy"? Does it also meet the bot exclusivity terms in the Funded Trader Agreement §6.6–6.7?
+> 2. If it does, what evidence would establish that, for example the source code, development records, or a written description of the rule and its source?
+> 3. Your October 8 reply said ownership must be provable on request. For a strategy like this, is any verification required before I enable it on an evaluation account, or only on request?
 >
 > Thank you,
 > Joshua
 
----
+## 2. Topics not in the message, and where each goes
 
-## Notes
+| Topic | Disposition | Ask Tradeify when |
+|---|---|---|
+| Offline research, fixed native parameters | Stated once in the architecture paragraph, not asked. Researching a rule outside NinjaTrader does not make the runtime external when every trading decision happens in NinjaScript ([NinjaTrader automated trading](https://ninjatrader.com/support/helpGuides/nt8/automated_trading.htm)). This does not settle research-data rights | Not planned |
+| Company license and automated orders | Treated as a technical check. Native automated strategies are a documented NinjaTrader capability, and Tradeify documents use of its company license ([setup guide](https://help.tradeify.co/en/articles/12268716-ninjatrader-8-setup-guide)). Check the installed entitlement and the documentation for the features this strategy actually needs (plan P1). A menu being present proves neither trading permission nor correct execution | Only if the local and documentary checks leave a concrete gap. Then ask one narrow question about that feature |
+| Ownership verification video | Already published ([guidelines](https://help.tradeify.co/en/articles/10468318-guidelines-for-traders)). Only the timing and evidence parts are asked, in §1 Q2–Q3 | — |
+| Unattended home PC, remote desktop | Deferred. The first release is attended locally. The [FAQ](https://help.tradeify.co/en/articles/12268494-common-faqs) (2026-10-20) says "You cannot log in with VPN/VPS. After logging in normally, you may use VPS for trading at your own risk." It neither bans all remote operation nor approves remote desktop | Before any unattended or remote operation |
+| "Same bot" at another firm | Deferred for a Tradeify-only pilot. Asked on 2026-10-08 and left undefined; the reply said the policy turns on ownership and exclusivity ([10-10 replies §3](2026-10-10-tradeify-exclusive-use-replies.md#3-answers-r1-paraphrased-per-point)). Different filenames, rewritten code or changed parameters cannot settle it. When asked, describe a genuinely distinct strategy honestly, and do not ask for detection tests or scan thresholds: the [compliance FAQ](https://help.tradeify.co/en/articles/17069653-risk-compliance-guidelines-faq) says those may stay confidential | Now, only if the answer decides which candidate D2 picks; otherwise before any cross-firm use |
+| Same strategy on a personal brokerage account | Mostly answered: the [Funded Trader Agreement §6.6–6.7](https://tradeify.co/funded-trader-agreement) permits personal-account use and prohibits use across firms. That reading still sits under the other rules, including the bans on hedging across accounts. **Recorded conflict:** support's 2026-10-08 reply ("used only within Tradeify", [10-10 replies](2026-10-10-tradeify-exclusive-use-replies.md#3-answers-r1-paraphrased-per-point)) cuts the other way. The [routes note](2026-10-13-tradeify-compliant-automation-routes.md) treats this as an unresolved interpretation | Before any concurrent personal-account operation, citing both texts |
+| Several own Tradeify accounts | Already permitted ([copy-trading guidance](https://help.tradeify.co/en/articles/13196343-tradovate-order-entry-copy-trading)). The remaining questions are engineering ones: copier versus separate instances, and safety | Not planned. Settle in the plan's P7 design |
+| CME data rights | Routed to the existing licensing thread, not a new generic question: obtain the legal distributor and the exact subscriber agreement from Tradeify/Tradovate, then take the open classification through CME ticket #04738415 ([CME note](2026-10-10-cme-non-display-licensing-research.md)). Keep native automation, internal bars and caching separate from any optional research export | Through that thread |
 
-- **Omitted on purpose:**
-  - **Agent-placed orders** (routes note route 4): the native plan doesn't need them.
-  - **TradingView manual signals**: routes 2 and 3 are not part of this plan.
-  - **The bridge clause:** branch (a) was withdrawn on 2026-10-16.
-- **Already settled; not asked again:**
-  - eval lock;
-  - platform list;
-  - Select Flex payout rules;
-  - account limits;
-  - same-direction copying is allowed;
-  - hedging across own accounts is banned.
+## 3. Recording the answer
 
-  These are in [Q-PATH-TO-PAYOUT-1 §5](research/2026-10-21-q-path-to-payout-1-memo.md#5-verification-of-open-items-2026-10-21).
-- **Recording the answers:** record them as an addendum to the [route record](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md), where the 2026-10-12 guidance lives, and update the plan's P0 row.
+Record the reply as an addendum to the [route record](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md), where the 2026-10-12 guidance lives, and update the plan's §2.
+
+A negative answer rules out enabling that candidate on Tradeify. It does not make bounded research or implementation work impermissible. Existing internal build approvals still apply either way.

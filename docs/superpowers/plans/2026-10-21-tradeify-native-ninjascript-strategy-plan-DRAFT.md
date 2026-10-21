@@ -11,19 +11,24 @@
 |---|---|---|
 | All strategy logic, calculations and signals native to NinjaTrader; no external engine, bridge or API | Self-contained NinjaScript strategy. Python is for offline research only | [route record](../../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts) |
 | Same bot at another firm is prohibited; personal accounts are allowed | The candidate must not be any firm's strategy elsewhere. Running it on the personal Tradovate lane is permitted | Q-PATH §5 |
-| Sole ownership; Tradeify may require a live video of enabling it; no HFT | Own code; runs on Joshua's own PC (no VPS/VPN login) | Q-PATH §5 |
-| NinjaTrader via Tradovate only, under Tradeify's company license | Needs an account bought with Tradovate as broker. Whether the company license runs automated strategies is **OPEN** | Q-PATH §5; routes note Q6 |
+| Sole ownership of "the bot or strategy", provable on request; Tradeify may require a live video of enabling it; no HFT | Private code. Whether a private, AI-assisted implementation of a published rule satisfies sole ownership is **OPEN** (follow-up Q1). Login never via VPN/VPS; after a normal login a VPS may be used "at your own risk" ([FAQ](https://help.tradeify.co/en/articles/12268494-common-faqs), 2026-10-20). The first release is attended locally | Q-PATH §5; [10-10 replies](../../notes/2026-10-10-tradeify-exclusive-use-replies.md) |
+| NinjaTrader via Tradovate only, under Tradeify's company license | Needs an account bought with Tradovate as broker. Native automated strategies are a documented NinjaTrader capability. Whether this entitlement restricts a feature the strategy needs is a P1 technical check, not a support question unless a concrete gap remains | Q-PATH §5; [NinjaTrader automated trading](https://ninjatrader.com/support/helpGuides/nt8/automated_trading.htm) |
 | Book lineage has no evidence case for the Tradeify eval | Excludes the declared book, its T00 rungs, FLOOR-HALF and R1 | [10-19 addendum](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation) |
 | ORB MNQ v7 solo is the four-firm §4 candidate | Excluded unless Joshua reassigns it (decision D2) | [#864](https://github.com/Joshua-Asante/first-passage/pull/864) |
 | Select 50K eval: $3K target, $2K EOD trailing drawdown enforced intraday, no lock, 40% consistency, 3-day minimum, 4 minis / 40 micros | Size and cap per §3 | `core/firm_rules.py` `Tradeify_Select_50K`; Q-PATH §5 |
 | Flat by 16:45 ET; ≥ 1 trade per week per account; no hedging across own accounts; funded payouts need > 50% of trades and profit from holds > 10 s | Hard-coded session flatten, a weekly-activity guard and a minimum hold | Q-PATH §5 |
 | Public repo | NinjaScript source of the strategy is an executable strategy port. Keep it private, like the Pine and ports | AGENTS.md §Public-clone posture |
 
-## 2. Prerequisites before any build (operator-owned)
+## 2. Prerequisites, by what they gate
 
-1. **Written Tradeify answers** on offline fixed parameters and on automated strategies under the company NinjaTrader license: Q1 and Q2 of the [2026-10-21 follow-up draft](../../notes/2026-10-21-tradeify-native-followup-questions-DRAFT.md), which is unsent. That draft also covers ownership, running location, cross-firm scope, personal-account reuse, multi-account use and data licensing.
-2. **CME category** for automated orders into a prop simulation: ticket #04738415, open.
-3. **11-08 ruling** granting branch (b): #807 stage 1, a read-only toolchain assessment.
+**For bounded offline research and prototyping (P1–P4):** only the existing internal approvals. That means the 11-08 ruling granting branch (b) for P1, and the phase GOs below. Tradeify's answers are not a prerequisite for this work.
+
+**For enabling a strategy on an evaluation account (P6):**
+1. **A written Tradeify answer on ownership and exclusivity** for the chosen candidate: a private, AI-assisted implementation of a published rule. This is the [follow-up draft](../../notes/2026-10-21-tradeify-native-followup-questions-DRAFT.md), unsent, which needs D2 to name the rule.
+2. **Data rights** through the existing licensing thread: the legal distributor and subscriber agreement from Tradeify/Tradovate, then the open classification via CME ticket #04738415.
+3. **The P1 entitlement check** of the features the strategy uses. Support is asked only about a concrete gap.
+
+**Deferred until planned:** unattended or remote operation; concurrent personal-account use; cross-firm use; scaling across accounts (design question, P7). The follow-up draft's §2 says when each is raised.
 
 ## 3. Strategy design targets
 
@@ -43,17 +48,17 @@ These come from the Q-PATH model (i.i.d. Gaussian; an upper bound on what a fat-
 
 | Phase | Work | Exit gate | Owner / authority |
 |---|---|---|---|
-| P0 | Prerequisites §2 | Written answers; 11-08 ruling | Joshua |
-| P1 | #807 stage 1: read-only NinjaTrader toolchain assessment (compile, Strategy Analyzer, Playback, order lifecycle, account-level state) | Assessment report; no strategy code | Branch (b) GO |
+| P0 | 11-08 ruling (branch (b)); send the follow-up once D2 names a candidate | Ruling; follow-up sent | Joshua |
+| P1 | #807 stage 1: read-only NinjaTrader toolchain assessment, plus a check that the installed Tradeify entitlement supports the features this strategy needs. Feature list comes from the candidate; a menu being present is not evidence of trading permission or correct execution | Assessment report naming any concrete entitlement gap; no strategy code | Branch (b) GO |
 | P2 | Candidate sourcing under the [evaluation order](../../adr/2026-08-30-evaluation-order.md), steps 1–6: structural screen; Confirm reservation; contract freeze with Tradeify Select 50K as the role; TRADEABLE-REACHABLE; bind K; Explore; selection freeze. Check the [rejected register](../../rejected_candidates.md) first | Frozen candidate contract and selection freeze | **GO** (campaign envelope) |
 | P3 | Confirm/holdout per the evaluation order, steps 7–10, on the Python reference. Intraday-honest scoring against `Tradeify_Select_50K` (EOD-clock results are lower bounds) | Confirm verdict; first-payout model rerun with the measured return distribution in place of Gaussian | Campaign owner |
 | P4 | Native port: a private NinjaScript implementation with fixed parameters; frozen identical-input parity (decisions and sizing) against the Python reference (#807 §2.6, §6) | Parity pass; no external calls in the binary | **GO** (implementation) |
 | P5 | Forward test on NinjaTrader sim with Tradeify-equivalent rules: at least 40 sessions or a pre-registered N, attended start | Live Sharpe after costs ≥ 1.5 at a pre-registered confidence; no rule breach | **GO** |
-| P6 | First evaluation: Select 50K ($165, reset $109), Tradovate broker. Monitoring acceptance for the new instance (AGENTS.md: a new instance needs its own M1) | Pass or bust record; fee budget 4 attempts (about $490) before review | **GO** + spend ruling |
+| P6 | First evaluation: Select 50K ($165, reset $109), Tradovate broker. Requires §2's evaluation-account prerequisites. Monitoring acceptance for the new instance (AGENTS.md: a new instance needs its own M1) | Pass or bust record; fee budget 4 attempts (about $490) before review | **GO** + spend ruling |
 | P7 | Funded: request at the first eligible cycle with ≥ $2,222 profit (≥ $1,000 net). Scale only by adding 50K accounts that copy the same strategy (≤ 5 funded per household) | First payout | **GO** per account |
 
 **Stop rules:**
-- P0 answers negative on Q3 or Q6: stop; park Tradeify (branch (d)).
+- Tradeify answers that the candidate does not satisfy ownership/exclusivity: do not enable it on Tradeify. That rules out this deployment route for that candidate. It does not void the research or implementation done, which internal approvals still govern. Choose another candidate (D2) or park (branch (d)).
 - P3 Confirm fails: record in the rejected register; next candidate only through a new contract.
 - P5 live Sharpe after costs is inconsistent with ≥ 1: stop before P6.
 - P6: judge the edge on trade-level statistics, not pass/fail. Zero edge passes about 22% of attempts, Sharpe 2 about 40%.
