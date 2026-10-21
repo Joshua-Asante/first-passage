@@ -4119,3 +4119,20 @@ readiness and CP-3 remain later gates. No implementation or live action is grant
 *[2026-10-01: the card's full tool suite is superseded by the deployment
 checklist's [reduced X-4 build path](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts),
 which owns the build scope.]*
+
+## §62 — Aegis capture cost basis: zero slippage (2026-10-20)
+
+The `aegis_6j1` source (`Aegis_6J1_VB_CME_6J1!_2026-09-03_cc310.csv`, `71e732fc…`) was captured at **0 ticks of slippage** and **$3.10 per contract per side**. The source is Joshua's TradingView Properties screenshot (2026-10-20), confirmed by an in-place read of the hash-pinned effective inputs. $3.10 is Tradeify's all-in 6J rate per side. The Pine declares $1.30 and 1 tick. This explains the "commission/slippage properties differ" entry in the [track-b note](../../notes/2026-09-11-track-b-adapters-and-book-rules.md) and the §52 effective-input record for Aegis. Joshua ruled on 2026-10-20 that the label may be public.
+
+**Consequences.** Recorded here as the campaign mirror; the owner record is [6J ledger J17](../../../ops/instruments/6J.md).
+- `remc_series_builder`, which serves the four-firm re-MC and size feasibility, keeps this zero embedded slippage. It also charges 6J at the tier's index-micro rate ($0.91 on Tradeify) instead of $3.10. Both biases are optimistic.
+- The T00 qualification path charges $3.10 per side. Its slippage follows the runtime effective inputs.
+- No negative verdict can improve. Size feasibility's FEASIBLE is the one positive verdict whose sensitivity must be re-read.
+- `cc310` stays unchanged as the parity reference. Economic reads use ≥1 tick per side as a scenario, not a bound.
+
+**Routing (Joshua, 2026-10-20, through the Deployment PM):**
+- builder per-symbol netting plus a slippage-scenario parameter;
+- the size-feasibility sensitivity re-read;
+- a Q-SFCLEAR-3 successor freeze adding an Aegis-only reference-slippage deduction before dispatch resumes.
+
+Nothing is rerun or requalified by this entry. S4 stays stopped, FLOOR-HALF stays parked and Q-SFCLEAR-3 dispatch stays paused.
