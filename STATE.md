@@ -68,7 +68,7 @@ Owners hold canonical criteria; rows are pointers.
   agent at the operator's direction for that specific trade ([Addendum 2026-09-30b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b));
   the rail stays disarmed. A missed venue week risks account deletion; venue-session
   boundaries apply. [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)/[idle-clock audit](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md). An X-3 or X-4 fill counts in the week it fills, as X-1's did ([ruling 2026-10-02](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#20-rules-common-to-x-1--x-5)).
-- **Coverage** (operator-attested; the private compliance record is not independently verified):
+- **Coverage** (operator-attested unless browser verification is stated; earlier private compliance rows are not independently verified):
   - 08-31→09-04: attested 09-04 and 09-05; day unresolved (09-02 or 09-03); private ledger
     row unverified; **record still owed** ([§15](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#15-d20--the-acceleration-ruling-2026-09-04-deploy-at-the-phase-3-commit)).
   - 09-07→09-11: attested 09-12 (placed Thursday 09-10; reported recorded with Claude).
@@ -85,6 +85,7 @@ Owners hold canonical criteria; rows are pointers.
     2026-10-01, `LOCATED_WITH_CLORDID`, this order at this time only).
   - 10-05→10-09: placed Monday 10-05; the operator attests (10-08, to the Deployment Coordinator) it was verified and reported at the time. The capture's location is not recalled, so this record is not independently checked.
   - 10-12→10-16: placed Monday 10-12 by the operator: a market round trip, both legs filled (per-trade detail is in the private capture; operator-attested 10-12 to the Deployment Coordinator with an orders-tab capture, kept privately in the primary checkout's `local_artifacts/preservation-2026-10/` with `SHA256SUMS`). Placed directly on the trading platform, not via CrossTrade (Joshua, 10-12: "placed directly").
+  - 10-19→10-23: **COMPLETE** — native Tradovate round trip on 10-21; both fills, position zero, open P&L zero and working orders zero verified through the browser in the operator's session. Private transcription: `local_artifacts/preservation-2026-10/2026-10-21-trade.private.json` (hashed in `SHA256SUMS`); final account snapshot: `local_artifacts/tradeify-pilot-2026-10/account-state.private.json`.
 - Preserve missed-week records when advancing; record coverage only when attested;
   `daily-repo-truth-sync` reads this board's dated obligations.
 
