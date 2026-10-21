@@ -26,5 +26,5 @@ Reproduce: `python -I lab/analysis/_inbox/prop_payout_geometry_2026-10/run_ranki
 ## Known limits
 
 - The i.i.d. Gaussian assumption favours high variance more than fat tails would.
-- FundedNext Flex's funded rules are incomplete: the model gives it positive EV at zero edge.
-- The Tradeify Select eval drawdown lock conflicts between Tradeify's own pages; the model assumes no lock.
+- FundedNext Flex's funded rules were corrected on 2026-10-21 against its help centre (payout memo §5); zero-edge expected net is now negative, as for every other program.
+- The Tradeify Select eval has no drawdown lock (verified 2026-10-21, payout memo §5), as modelled.

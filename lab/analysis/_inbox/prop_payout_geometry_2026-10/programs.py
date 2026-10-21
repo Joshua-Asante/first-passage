@@ -51,11 +51,13 @@ def others50():
     P["Alpha Standard 50K"] = Program("Alpha Standard 50K", 129, 109, 0,
         Phase(target=3000, dd=2000, dd_type="eod", lock=0, cons=0.5),
         Phase(dd=2000, dd_type="eod", lock=0, dll=1000, cons=0.4, win_days=5, win_thr=200, cap=3000, frac=0.5, min_pay=500), monthly=129)
-    # FundedNext Flex [F]: promo $74.99, reset $82.99; PT $2.5K / MLL $1.5K EODT lock at start; eval 40% cons.
-    # Funded: 5 benchmark days (threshold unknown, assume $100) + $500 profit; cap $1.5K; 95%.
+    # FundedNext Flex [F, verified 2026-10-21 at helpfutures.fundednext.com art. 17229848]: $74.99 first two
+    # purchases, reset $82.99 (landing-page FAQ conflicts); PT $2.5K / MLL $1.5K EODT, eval 40% cons.
+    # Funded: MLL $1.5K EODT locking at start+$100; 5 benchmark days >= $200 and >= $500 cycle profit;
+    # 50% of profit up to $1.5K, min $250, 95%; account ends after the 5th payout.
     P["FundedNext Flex 50K"] = Program("FundedNext Flex 50K", 75, 83, 0,
-        Phase(target=2500, dd=1500, dd_type="eod", lock=0, cons=0.4),
-        Phase(dd=1500, dd_type="eod", lock=0, win_days=5, win_thr=100, buffer=500, cap=1500, min_pay=250, split=0.95))
+        Phase(target=2500, dd=1500, dd_type="eod", cons=0.4),
+        Phase(dd=1500, dd_type="eod", lock=100, win_days=5, win_thr=200, buffer=500, cap=1500, frac=0.5, min_pay=250, split=0.95))
     # TradeDay Fast Pass [F]: $95/mo promo, reset $95; eval 45% cons, 3 days; funded EODT, 45% cons,
     # 5 winning days >= $150, 50% of balance up to $1.5K, min $250, 80/20; DD locks at start.
     P["TradeDay FastPass 50K"] = Program("TradeDay FastPass 50K", 95, 95, 0,
