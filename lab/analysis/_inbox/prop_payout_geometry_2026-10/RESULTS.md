@@ -28,3 +28,4 @@ Reproduce: `python -I lab/analysis/_inbox/prop_payout_geometry_2026-10/run_ranki
 - The i.i.d. Gaussian assumption favours high variance more than fat tails would.
 - FundedNext Flex's funded rules were corrected on 2026-10-21 against its help centre (payout memo §5); zero-edge expected net is now negative, as for every other program.
 - The Tradeify Select eval has no drawdown lock (verified 2026-10-21, payout memo §5), as modelled.
+- Subscription programs (Topstep, TradeDay Fast Pass, Alpha Standard) are charged a reset fee per failed attempt *and* the monthly fee for every 21 eval days beyond the first (`payout_sim.py` cost line; `programs.py` `monthly=`). Where a reset also renews or replaces the subscription, this double-counts, so their fee and $/payout figures may be overstated.

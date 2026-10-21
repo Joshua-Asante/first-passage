@@ -61,7 +61,7 @@ All drawdowns below are enforced intraday on net liquidation unless noted.
 
 **Tradeify specifics** [Tradeify help centre, verified 21 Oct 2026]:
 - **Select 50K eval:** $165, reset $109. $3K target, $2K EOD trailing drawdown, 40% consistency, 3-day minimum, max 4 minis.
-- **Open conflict:** Tradeify's own pages disagree on whether the eval floor locks at start + $100. The model assumes no lock, the conservative case.
+- **Eval lock:** resolved in §5 as no lock in the eval (v1 listed it as an open conflict between pages); the model assumes no lock.
 - **Select Flex funded:**
   - $2K EOD trailing drawdown, which locks at start + $100 on reaching +$2,100 or on the first payout request;
   - no daily loss limit and no consistency rule;
