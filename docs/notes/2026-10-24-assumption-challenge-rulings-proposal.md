@@ -37,7 +37,7 @@ All seven chips spent $0 and added nothing to K.
 |---|---|---|---|---|
 | R1 | 90-day cash window | Split into a startup **runway** (≤ 6 months, budget-limited) and a **quarterly cadence**, with a zero-edge null control | Adopt | Quarterly no-payout limit p_Q |
 | R2 | 4× cost hurdle | 4× becomes a disclosed warning; a stressed, shrunk lower-confidence net-edge test binds | Adopt | — |
-| R3 | Constant size and withdrawal | **Keep** constant integer size per leg with greedy withdrawal; choose size against P(breach) and P(no payout) limits | Adopt | P(breach) limit |
+| R3 | Constant size and withdrawal | **Keep** constant integer size per leg; choose size against P(breach) and P(no payout) limits. **Withdrawal policy stays open** (§3.8): greedy wins over 90–180 days, cushion wins over an account's life | Adopt the sizing part; defer withdrawal | P(breach) limit; whether a surviving account carries value |
 | R4 | Component hurdle | Policies qualify, components don't; marginal-contribution test on joint intraday paths | Adopt with R3 | — |
 | R5 | Owned 100K as destination | Keep it while it costs $0 in cash; buy nothing now; model only a Select 50K, and only once validated SR ≥ 2.5 (≥ 2.0 with R1) | Adopt at the 11-08 sitting | Standing weekly-trade GO? Review cadence |
 | R6 | First-release scope | One strategy, one account, one firm, attended; exposure fits the attention budget; each expansion has one trigger and one evidence item | Adopt | — |
@@ -155,6 +155,7 @@ LCB = ρ·δ_sel − c₊₂ − 1.96·σ/√N > 0
 - Greedy withdrawal: request the maximum eligible amount at the first eligible end of day.
 - The size is chosen against stated P(breach) and P(no payout) limits, **not by expected cash alone**.
 - A state-dependent policy returns only through a fresh candidate-blind pre-registration that wins every cell.
+- **PRM qualification:** the greedy-withdrawal result holds only at chip 3's 90–180-day horizon. The cash-vs-survival memo (§3.8) shows cushion compounds over an account's life, so the withdrawal rule is deferred.
 
 **Side finding: expected cash alone points to reckless size.** The expected-cash-maximising constant size has P(breach) 0.96–1.00, because the model allows unlimited cheap resets and rebuys. That is outside D1's purchase limits and is **not a sizing result**. It is why R3 requires explicit limits.
 
@@ -264,7 +265,7 @@ Further:
 **Engine gap:** `core/mc/simulation.py::simulate_path` takes one `intraday_low` per day, which must be the low of the summed path. It has no payout or withdrawal model.
 
 **PRM reconciliation with chip 3:**
-- Chip 6 used a cushion-preserving withdrawal rule that chip 3 found never helps. Adopt chip 3's greedy rule for both, and re-check case (a-ii) under it.
+- Chips 3 and 6 used different withdrawal rules: chip 6 kept a $1,500 cushion, while chip 3 found greedy withdrawal best over 90–180 days. The cash-vs-survival memo (§3.8) shows the right choice depends on how a surviving account is valued. Pre-register one withdrawal policy for both chips once Joshua rules on that, then re-check case (a-ii) under it.
 - (a-ii) raises P(breach) by 0.35. That is acceptable only with R3's explicit breach limit, so R3 and R4 must be adopted together.
 - (a-ii) wins only if a breached account is replaced. Under D1's current purchase limits the no-replacement valuation applies.
 
@@ -302,6 +303,50 @@ Further:
 - S5 (an automated sandbox admit without a GO) and D1 (a GO for each paid pilot) both govern step 6.
 - Does an evaluation bought only to pilot count as step 6 or step 7? It is treated as step 7 until he rules.
 
+### 3.8 Related evidence: net cash generation vs account survival (desk memo, not a chip)
+
+**Source:** a separate desk session's memo of the same day (private, `504c5f05…`).
+- It asks whether accepting more funded-account failures raises net cash.
+- It uses E1's stored 90-day results (synthetic, new Select 50K Flex, 20,000 paths per row), closed-form lifetime arithmetic and Tradeify's payout-policy page.
+- It ran no new simulation, used no market data, and added nothing to K.
+
+**Findings relevant to R1–R7:**
+1. **No withdrawal policy creates cash without edge.**
+   - At true SR 0, expected lifetime withdrawals equal the starting cushion under any policy, so fees make every policy negative.
+   - In E1, nothing qualifies at SR ≤ 1.5, and not trading wins there.
+   - *This supports R1's and R5's zero-edge null control.*
+2. **Within 90 days, size is the lever, and X3 is what stops it.**
+   - At SR 2 (normal law), going from 3 to 4 MES raises mean 90-day net cash from $206 to $481. P(cash loss) falls from 67% to 57%.
+   - But X3 (funded failures) rises from 9% to 36%, which the X3 ≤ 10% election forbids.
+   - Under the positive-skew law the gain nearly vanishes ($9 → $39).
+   - *This independently confirms chip 3's side finding that expected cash alone points to reckless size, and why R3 needs explicit limits.*
+3. **Withdrawal timing depends on the horizon. This is the main new input.**
+   - **Over 90 days,** requesting at first eligibility:
+     - costs $20–115 of mean cash;
+     - raises P(any payout) by 8–15 points;
+     - lowers P(loss ≥ $300) by 2–9 points;
+     - but creates a 3.5–9.4% class of paths that are paid and still lose money.
+   - **Over an account's life,** cushion compounds whenever edge is positive. At SR 2, keeping a $3,000 cushion is worth about 29× the roughly $400 cushion left after an early Flex request, because that request locks the floor.
+   - Chip 3's "greedy is best" result holds at its 90–180-day horizon, but not over a lifetime.
+   - *So R3 adopts constant size and defers the withdrawal rule until Joshua rules on whether a surviving account carries value. R1's quarterly cadence partly answers this, because it values the quarters after the runway.*
+4. **Select Daily fits a preference for frequent payouts best.**
+   - It allows daily eligibility with no winning-day threshold, and its buffer enforces a cushion after every payout.
+   - On a 100K it costs about 25–40% of lifetime value against Flex at SR 1–2 (smaller drawdown, lower cap). On a 50K the gap is small.
+   - The Flex/Daily choice is permanent at activation, and it is the first irreversible policy decision.
+5. **Copying one strategy across accounts is leverage, not diversification.**
+   - Accounts that move together bust together, so P(cash-positive quarter) does not improve.
+   - *Chip 5's second-account option is therefore justified only by fees and cadence, not by risk. Real diversification needs distinct strategies.*
+6. **What strategies to seek:**
+   - net edge first;
+   - under Flex, frequency counted in qualifying days ($200 on 100K, $150 on 50K), not winning trades;
+   - profit spread across many days rather than a few large ones;
+   - left tails decide survival.
+
+**Proposed follow-up (not recommended yet): E1-P.**
+- Rerun the accepted E1 harness with Select Daily, Flex with a fixed cushion, and one de-risking rule.
+- Budget: ≤ 3 h build plus 1 h independent review, $0, K += 0.
+- It becomes decision-relevant only when a candidate has edge evidence, because the first irreversible policy choice comes at activation after a pass.
+
 ## 4. What the seven results mean together
 
 1. **The binding constraint is validation speed, not the rules removed.**
@@ -311,8 +356,9 @@ Further:
 
    **The fastest credible route is historical data that no one in the selection chain has examined**, not forward time. Research should prefer candidates for which such data exists.
 2. **Attention narrows the search (R6).** At about 15 attended hours a week, a candidate's exposure must fit about 2.25 hours a day inside 09:30–16:00 ET. The overnight territory waits until unattended operation is earned.
-3. **Expected cash alone is not a decision rule.** Chip 3 shows it points to near-certain breach. R1's null control, R3's limits and R4's no-payout term each guard against that.
-4. **The standard is not lowered.** Every removal is paired with a replacement that is at least as strict on the risk it protected (§2).
+3. **Expected cash alone is not a decision rule.** Chip 3 and the cash-vs-survival memo both show it points to near-certain breach. R1's null control, R3's limits and R4's no-payout term each guard against that.
+4. **The open tradeoff is how a surviving account is valued, not more simulation.** Over 90–180 days, early withdrawal and larger size look best. Over an account's life, cushion and smaller size win. A ruling on continuation value, which R1's quarterly cadence partly supplies, settles the withdrawal rule and the Flex/Daily choice.
+5. **The standard is not lowered.** Every removal is paired with a replacement that is at least as strict on the risk it protected (§2).
 
 ## 5. Follow-ups if adopted
 
@@ -320,11 +366,12 @@ Further:
 |---|---|
 | ADR 2026-07-16 and strategy_harvest Requirement 5 amendment; `register_search._require_cost_law` | R2 |
 | Evaluation-order ADR addendum and the three matching edits | R7 |
-| D1 wording: split horizon, constant size, greedy withdrawal, breach and no-payout limits | R1, R3 |
+| D1 wording: split horizon, constant size, breach and no-payout limits (withdrawal rule after the continuation-value ruling) | R1, R3 |
 | Qualification-screen wording: marginal-contribution test | R4 |
 | `core/mc` engine: summed-path intraday low, plus a payout and withdrawal model | R4 |
 | P-E1H: extend E1 to runway plus two quarters, with the null control (needs approval) | R1 |
-| Re-check chip 6 case (a-ii) under greedy withdrawal | R3/R4 |
+| Pre-register one withdrawal policy after the continuation-value ruling; re-check chip 6 case (a-ii) under it | R3/R4 |
+| E1-P (Daily, fixed-cushion Flex, one de-risk rule), only once a candidate has edge evidence | §3.8 |
 | Replace chip 5's hour estimates with canary timings | R6 |
 
 ## 6. Decisions requested from Joshua
@@ -334,3 +381,4 @@ Further:
 3. A P(breach) limit for sizing (R3). D1's 10% tolerance covers budget exhaustion, not account breach.
 4. A standing, revocable weekly-trade GO for the owned evaluation, and an 8-week review (R5, at the 11-08 sitting).
 5. Which of S5 and D1 governs paid pilots, and whether a pilot-only evaluation is step 6 or step 7 (R7).
+6. Whether a surviving funded account carries value beyond cash received. This decides the withdrawal rule and the Flex/Daily choice (R3, §3.8).
