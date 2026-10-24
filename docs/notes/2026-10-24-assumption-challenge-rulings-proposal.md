@@ -1,8 +1,24 @@
 # Assumption challenge: simplify by subtraction (2026-10-24)
 
-**Status:** PROPOSAL for operator review. Nothing here is a ruling. Every rule it names stays in force until Joshua rules.
+**Status:** §2.1 ENDORSED by Joshua on 2026-10-24 (ruling recorded below). The rest of the report is the proposal and the study findings as written, and is not itself a ruling.
 **Owner:** Portfolio Research Manager (PRM). **Rulings owner:** Joshua.
-**How to read it:** §2 is the only current recommendation. §3 is the evidence behind it.
+**How to read it:** the operator ruling below is what binds. §2 is the recommendation it answered. §3 is the historical study evidence.
+
+## Operator ruling (Joshua, 2026-10-24)
+
+Recorded separately from the study findings, in Joshua's words:
+
+> "I endorse §2.1's deletions and authorize their implementation in the owner documents, enforcement code and duplicate references. Preserve the four boundaries in §2.2. Remove only the targeted restrictions, not adjacent cost accounting, evidence records or trading protections. Use focused checks to verify the deletions work; don't create replacement machinery or another review programme.
+>
+> Keep the current D1 horizon, cash and time limits unchanged. Use D1 as the single authority for paid-pilot approval. No standing maintenance-trade authorization is granted here, and the owned-account decision remains at November 8. No sizing, withdrawal or Flex/Daily policy is selected."
+
+**The §2.3 items as ruled:**
+1. The D1 window is **unchanged**.
+2. **No** standing weekly-trade GO is granted.
+3. **D1** is the single authority for paid-pilot approval.
+4. The owned Select 100K decision stays at the **11-08 sitting**.
+
+**Implementation:** a separate PR, with deletions only.
 **Public-clone posture:** this report contains no account identifiers, account balances, budget amounts or backtest P&L. Dollar figures are published firm rules or synthetic-model outputs. The private returns are cited by content hash.
 
 ## 1. Direction
