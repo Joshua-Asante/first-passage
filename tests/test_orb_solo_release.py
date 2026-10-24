@@ -380,6 +380,11 @@ def test_reference_and_candidate_routes_use_source_shaped_reports(monkeypatch):
         'tiers':{key:dict(g2={'passed':True},clock_cap={'admissible':True,'reason':'synthetic'}) for key in fixture['tiers']}}
     fixture['admission_sha256']=digest(admission)
     calls=[]
+    threshold_paths=[]
+    real_load=scoring.load_scoring_thresholds
+    def load_frozen(path=None, *args, **kwargs):
+        threshold_paths.append(path)
+        return real_load(path, *args, **kwargs)
     def fake_score(**kwargs):
         calls.append(kwargs)
         assert kwargs['thresholds'].sims_per_seed==10000
@@ -392,6 +397,7 @@ def test_reference_and_candidate_routes_use_source_shaped_reports(monkeypatch):
                 captured['days_to_pass']['run2']=captured['days_to_pass']['run1']
         return report
     monkeypatch.setattr(scoring,'score_candidate',fake_score)
+    monkeypatch.setattr(scoring,'load_scoring_thresholds',load_frozen)
     bundle=SimpleNamespace(tiers={key:{'pnl':np.zeros(5),'low':-np.ones(5)} for key in fixture['tiers']})
     monkeypatch.setattr(worker,'candidate_context',lambda *a:([SimpleNamespace(gross_usd=2.)],bundle,np.array([2.,0.,0.,0.,0.]),admission))
     monkeypatch.setattr(worker,'read_json',lambda *a,**kw:admission)
@@ -403,6 +409,7 @@ def test_reference_and_candidate_routes_use_source_shaped_reports(monkeypatch):
     result=worker.evaluate_phase(fixture,configuration)
     assert result['groups_completed']==19 and calls[-1]['full_res_trades']==[]
     assert calls[-1]['gross_edge_usd']==float('inf')
+    assert threshold_paths == [scoring.DEFAULT_PREREG, scoring.DEFAULT_PREREG]
 
 
 def test_running_lease_after_controller_loss_cannot_be_reused(tmp_path):

@@ -1,6 +1,7 @@
 """#715 executor: verdict derivation rebuilt from invariants I1-I6 (escalation lane); synthetic inputs only."""
 from __future__ import annotations
 
+import ast
 import copy
 import hashlib
 import importlib.util
@@ -23,6 +24,24 @@ BULENOX, TRADEIFY, MFFU = "Bulenox_100K", "Tradeify_Select_100K", "MFFU_Rapid_10
 CSHA, RSHA = "c" * 64, "r" * 64
 PREP = {"g2_killed_tiers": [], "mffu_admissible": False}
 KILLED = {"g2_killed_tiers": [TRADEIFY], "mffu_admissible": False}
+
+
+def test_all_frozen_stage_threshold_loads_are_explicit_v2():
+    """Prep, candidate, reference, and verdict retain the historical v2 gate."""
+    source = (REPO / "lab/analysis/c1/four_firm_remc_2026-10/run_four_firm_remc.py").read_text()
+    tree = ast.parse(source)
+    stage_names = {"stage_prep", "stage_candidate", "stage_reference", "stage_verdict"}
+    loads = {}
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name in stage_names:
+            loads[node.name] = [call for call in ast.walk(node)
+                                if isinstance(call, ast.Call)
+                                and isinstance(call.func, ast.Name)
+                                and call.func.id == "load_scoring_thresholds"]
+    assert set(loads) == stage_names
+    assert all(len(calls) == 1 for calls in loads.values())
+    assert all(isinstance(calls[0].args[0], ast.Name)
+               and calls[0].args[0].id == "DEFAULT_PREREG" for calls in loads.values())
 
 
 def _run(bust):

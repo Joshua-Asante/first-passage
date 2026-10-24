@@ -422,3 +422,39 @@ def test_addendum_must_name_its_prereg(tmp_path):
     bad.write_text("# x\n\n**Applies to:** `other.md`.\n\n**Removes: G2**\n", encoding="utf-8")
     with pytest.raises(ValueError, match="does not apply"):
         load_scoring_thresholds(PREREG_V2, addenda=(bad,))
+
+
+@pytest.mark.parametrize("explicit", [False, True])
+def test_cli_prereg_omission_uses_prospective_default(tmp_path, monkeypatch, explicit):
+    """The CLI must preserve the loader's omitted-vs-explicit path distinction."""
+    import discovery.prop_survivor_scoring as scoring
+
+    daily = tmp_path / "daily.csv"
+    trades = tmp_path / "trades.csv"
+    out = tmp_path / "report.json"
+    daily.write_text("pnl\n1\n", encoding="utf-8")
+    trades.write_text("pnl\n1\n", encoding="utf-8")
+    seen = []
+    real_load = scoring.load_scoring_thresholds
+
+    def capturing_load(path=None, *args, **kwargs):
+        seen.append(path)
+        return real_load(path, *args, **kwargs)
+
+    class Report:
+        discharges_falsifier = False
+        halted_at = None
+        breach_clock = "synthetic"
+        gate_grade = False
+
+        def write_json(self, path):
+            Path(path).write_text("{}\n", encoding="utf-8")
+
+    monkeypatch.setattr(scoring, "load_scoring_thresholds", capturing_load)
+    monkeypatch.setattr(scoring, "score_candidate", lambda **_: Report())
+    argv = ["--label", "synthetic", "--daily-pnl-csv", str(daily),
+            "--trades-csv", str(trades), "--envelope", "YES", "--out", str(out)]
+    if explicit:
+        argv += ["--prereg", str(PREREG_V2)]
+    assert scoring.main(argv) == 0
+    assert seen == [str(PREREG_V2) if explicit else None]
