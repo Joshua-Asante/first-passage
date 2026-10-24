@@ -20,9 +20,8 @@ Same rules in every mode:
   dirs under tracked trees are not this gate's business), but not a
   one-for-one mirror: ``recovery/`` and ``tmp/`` match their ignore rules,
   the ``tmp-*`` ban covers the whole root ``tmp-*`` namespace (a superset of
-  the ignored ``/tmp-*/``, ``/tmp-*.md``, ``/tmp-*.py`` shapes), and
-  ``.zcodeignore`` is ignored but not banned. Root names compare
-  case-insensitively: on a case-insensitive checkout (Windows,
+  the ignored ``/tmp-*/``, ``/tmp-*.md``, ``/tmp-*.py`` shapes). Root names
+  compare case-insensitively: on a case-insensitive checkout (Windows,
   core.ignorecase=true) ``Recovery/`` or ``TMP/`` is the same on-disk root;
 * force-added ignored files (operator ruling 2026-09-26) -- a judged path
   that the repository's own .gitignore rules ignore, i.e. one that only

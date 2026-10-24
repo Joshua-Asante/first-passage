@@ -35,7 +35,6 @@ def test_path_finding_bans_exactly_the_local_only_roots():
     allowed = [
         "docs/x.md",                  # normal tree
         "tmp_screenshots/s.png",      # different name (underscore): ignore rule, not this gate
-        ".zcodeignore",               # ignored by .gitignore; not in this gate's banned set
         "sub/tmp/x",                  # nested tmp dir: not the root-anchored incident class
         "sub/recovery/x",             # nested recovery dir: same
         "tmpp/x",                     # prefix collision guard

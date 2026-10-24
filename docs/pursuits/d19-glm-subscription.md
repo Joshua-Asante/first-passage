@@ -1,6 +1,12 @@
-# GLM subscription (Z Code worker surface) — KEEP
+# GLM subscription (Z Code worker surface) — SUBTRACT (cancelled)
 
-**Retired 2026-10-24 (operator): Claude and Codex only.** The worker seat this record serves is gone ([addendum](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24)); keeping or cancelling the plan is the operator's call, not yet reported.
+**Class:** (d) meta-belt (subscription) · **Standing:** SUBTRACT — cancelled by the operator,
+reported 2026-10-24 ("i have cancelled the glm max plan") after GLM was retired from the
+workflow ([addendum](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24)).
+A final or prorated charge was not reported.
+Current cost/status belongs to the [subscription ledger](SUBSCRIPTION_LEDGER.md).
+
+## Historical disposition — superseded 2026-10-24
 
 **Class:** (d) meta-belt (subscription) · **Standing:** KEEP
 **Aim served:** cross-cutting — recurring tooling spend for the GLM worker seat named in the

@@ -23,22 +23,24 @@ un-reconfirmed for >60 days should be treated as stale, not silently trusted.
 | Cursor Ultra | [d16](d16-cursor-subscription.md) | excluded | removed from recurring spend by operator; **surface retired outright 2026-09-15** ([worker-surface allocation](../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision 2026-09-15); **fully terminated, no final or prorated charge** (operator, 2026-09-15); cancellation date **still not supplied** | 2026-09-10 (spend), 2026-09-15 (surface; terminated / no final charge) | removed from active recurring total; terminated |
 | Claude Max | [d17](d17-claude-max-subscription.md) | $200 | flat | 2026-10-23 | confirmed |
 | Codex | [d18](d18-codex-subscription.md) | $200 | monthly amount supplied; plan details unspecified | 2026-10-23 | operator-confirmed |
-| GLM Max 5x | [d19](d19-glm-subscription.md) | $80 | monthly amount and plan name supplied; billing date unspecified | 2026-09-23 | operator-confirmed; seat retired 2026-10-24 (Claude and Codex only), cancellation not reported |
+| GLM Max 5x | [d19](d19-glm-subscription.md) | excluded | was $80 flat; **cancelled** (operator report 2026-10-24); final or prorated charge not reported | 2026-10-24 (operator report) | removed from active recurring total; cancelled |
 
-**Confirmed active recurring monthly total:** $600/mo (five confirmed active rows:
-TradingView, CrossTrade, Claude Max, Codex and GLM Max 5x).
+**Confirmed active recurring monthly total:** $520/mo (four confirmed active rows:
+TradingView, CrossTrade, Claude Max and Codex).
 Databento is retired and excluded; its effective cancellation date and final invoice
 were not supplied. Cursor is removed from recurring spend by operator instruction and the surface
 itself was retired on 2026-09-15; the operator confirmed on 2026-09-15 that the subscription
 is fully terminated and that no final or prorated charge landed, but the cancellation date
 itself was not to hand and remains open. Fly.io and Tradeify remain
-unverified, not zero. Do not read $600 as total spend or as settlement of outstanding
+unverified, not zero. GLM Max 5x was cancelled on the operator's 2026-10-24 report; any final
+charge is unreported. Do not read $520 as total spend or as settlement of outstanding
 charges.
 
 **Change log**
 
 | Date | Change |
 |---|---|
+| 2026-10-24 | Operator retires GLM from the workflow ([addendum](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24)) and reports the plan cancelled (verbatim "i have cancelled the glm max plan"). Row d19 excluded. Active recurring total: $600 − $80 = $520. Final or prorated charge not reported. |
 | 2026-10-23 | Monthly d11–d18 reconfirm (operator, asked directly with every row listed): Claude Max (d17) revised **$100 → $200/month**; the operator named no other change, read as rows d11, d12, d14, d16 and d18 unchanged. Fly.io (d13) and Tradeify (d15) amounts still not supplied and remain open. Active recurring total: $500 − $100 + $200 = $600. Discharges the STATE Monthly reconfirm owed since 2026-09-21. |
 | 2026-10-12 | Operator keeps CrossTrade (d14, $50/month) while Tradeify-route work is deferred (verbatim "5 keep"). No amount changes; the d11–d18 reconfirm stays owed. |
 | 2026-09-23 | Operator reports GLM Max 5x at $80/month, replacing the retired Cursor subscription (d16, already excluded). Added as [d19](d19-glm-subscription.md). Active recurring total: $420 + $80 = $500. The report does not reconfirm rows d11–d18; that 2026-09-21 reconfirm remains owed (STATE Monthly trigger). |

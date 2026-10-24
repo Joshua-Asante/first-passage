@@ -943,7 +943,7 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 git grep -n -i -E 'glm|z\.ai|zhipu|zcode' -- AGENTS.md .claude .github scripts
 ```
 
-Expected: only `scripts/handoff_brief_form_grandfathered.txt` (dated card filenames) and `scripts/check_staged_debris.py` (the `.zcodeignore` debris rule).
+Expected: only `scripts/handoff_brief_form_grandfathered.txt` (dated card filenames).
 
 ## Change history
 
