@@ -403,3 +403,22 @@ def test_prereg_without_cost_hurdle_skips_g2(tmp_path):
     p.write_text(stripped, encoding="utf-8")
     t = load_scoring_thresholds(p)
     assert t.cost_law_multiple is None
+
+
+def test_default_spec_is_v2_plus_addendum_1():
+    """Default runs are governed by frozen v2 + Addendum 1 (G2 removed); an explicit
+    v2 path reproduces v2 alone, so historical runs keep their 4× hurdle."""
+    t = load_scoring_thresholds()
+    assert Path(t.source_path) == PREREG_V2
+    assert [Path(a).name for a in t.addenda] == [
+        "2026-10-24-prop-survivor-scoring-prereg-v2-addendum-1.md"
+    ]
+    assert t.cost_law_multiple is None
+    assert load_scoring_thresholds(PREREG_V2).cost_law_multiple == pytest.approx(4.0)
+
+
+def test_addendum_must_name_its_prereg(tmp_path):
+    bad = tmp_path / "addendum.md"
+    bad.write_text("# x\n\n**Applies to:** `other.md`.\n\n**Removes: G2**\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="does not apply"):
+        load_scoring_thresholds(PREREG_V2, addenda=(bad,))

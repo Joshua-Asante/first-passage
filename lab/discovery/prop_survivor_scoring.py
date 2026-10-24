@@ -48,6 +48,12 @@ DEFAULT_PREREG = (
     / "pre-registration"
     / "2026-08-26-prop-survivor-scoring-prereg-v2.md"
 )
+#: Prospective addenda to DEFAULT_PREREG, applied by default (Joshua, 2026-10-24).
+#: Addendum 1 removes only the universal ≥4× cost hurdle (G2); v2 stays frozen.
+DEFAULT_ADDENDA = (
+    Path(__file__).resolve().parents[2]
+    / "docs/briefs/pre-registration/2026-10-24-prop-survivor-scoring-prereg-v2-addendum-1.md",
+)
 
 
 class StaleGateWarning(UserWarning):
@@ -86,6 +92,8 @@ class ScoringThresholds:
     #: pre-registrations that declare G2 are still scored as written.
     cost_law_multiple: float | None
     source_path: str
+    #: Addenda applied on top of ``source_path``; together they are the governing spec.
+    addenda: tuple[str, ...] = ()
     #: Non-None when the parsed pre-registration's own Status line says it is CLOSED
     #: or superseded — i.e. these numbers are a historical record, not the live gate.
     #: Carries the Status text verbatim so a caller can print it. See
@@ -267,12 +275,17 @@ class ScoringReport:
 
 def load_scoring_thresholds(
     path: Path | str | None = None,
+    addenda: tuple[Path | str, ...] | None = None,
 ) -> ScoringThresholds:
     """Parse frozen ceiling / tiers / seeds from the survivor-scoring pre-reg.
 
     Refuses to guess — any missing number raises ``ValueError``.
     """
     prereg = Path(path) if path is not None else DEFAULT_PREREG
+    if addenda is None:
+        # The default spec carries its addenda; an explicit path reproduces that
+        # pre-registration alone (historical runs).
+        addenda = DEFAULT_ADDENDA if path is None else ()
     text = prereg.read_text(encoding="utf-8")
 
     def _req(pattern: str, label: str) -> str:
@@ -414,10 +427,22 @@ def load_scoring_thresholds(
         seeds=seeds,
         sims_per_seed=sims_per_seed,
         horizon=horizon,
-        cost_law_multiple=cost_law_multiple,
+        cost_law_multiple=_apply_addenda(prereg, addenda, cost_law_multiple),
         source_path=str(prereg),
+        addenda=tuple(str(Path(a)) for a in addenda),
         superseded_note=superseded_note,
     )
+
+
+def _apply_addenda(prereg: Path, addenda, cost_law_multiple):
+    """Apply prospective addenda. Each must name ``prereg`` in its Applies-to line."""
+    for a in addenda:
+        text = Path(a).read_text(encoding="utf-8")
+        if f"`{prereg.name}`" not in text.splitlines()[2]:
+            raise ValueError(f"addendum {a} does not apply to {prereg.name}")
+        if "**Removes: G2**" in text:
+            cost_law_multiple = None
+    return cost_law_multiple
 
 
 def reduce_to_deployable(
@@ -876,7 +901,7 @@ def score_candidate(
     report = ScoringReport(
         strategy_label=strategy_label,
         g1=g1,
-        thresholds_source=thr.source_path,
+        thresholds_source=" + ".join((thr.source_path, *thr.addenda)),
     )
     gate_reasons: list[str] = []
     if not channel_given:
@@ -1035,6 +1060,7 @@ def naive_daily_static_bust(summary_rates: dict) -> float:
 __all__ = [
     "CANDIDATE_STRAT",
     "DD_SCALE",
+    "DEFAULT_ADDENDA",
     "DEFAULT_PREREG",
     "NO_PROTECTION_TRIGGER",
     "G1Result",
