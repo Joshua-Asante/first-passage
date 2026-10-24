@@ -1115,7 +1115,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="DEPLOYABLE-DEFAULT-ENVELOPE verdict from the producing brief",
     )
     ap.add_argument("--out", required=True, help="output JSON path")
-    ap.add_argument("--prereg", default=str(DEFAULT_PREREG), help="pre-registration path")
+    ap.add_argument(
+        "--prereg", default=None,
+        help="pre-registration path (omitted: v2 + addenda; explicit path: that specification alone)",
+    )
     ap.add_argument(
         "--n-sims",
         type=int,

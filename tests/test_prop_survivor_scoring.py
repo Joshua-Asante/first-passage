@@ -1,6 +1,7 @@
 """Prop survivor-scoring harness — G0–G8 + F1/F2 load-bearing regressions."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -422,3 +423,41 @@ def test_addendum_must_name_its_prereg(tmp_path):
     bad.write_text("# x\n\n**Applies to:** `other.md`.\n\n**Removes: G2**\n", encoding="utf-8")
     with pytest.raises(ValueError, match="does not apply"):
         load_scoring_thresholds(PREREG_V2, addenda=(bad,))
+
+
+@pytest.mark.parametrize("explicit_v2", [False, True], ids=["prospective-default", "explicit-v2"])
+def test_cli_selects_governing_spec_and_g2(tmp_path, monkeypatch, explicit_v2):
+    """Exercise parsing, threshold loading, scoring and the written report; no MC."""
+    import discovery.prop_survivor_scoring as scoring
+
+    daily = tmp_path / "daily.csv"
+    trades = tmp_path / "trades.csv"
+    out = tmp_path / "report.json"
+    for path in (daily, trades):
+        path.write_text("pnl\n" + "0.01\n" * 10, encoding="utf-8")
+    runs = []
+
+    def fake_remc(firm_key, *args, **kwargs):
+        runs.append(firm_key)
+        return {"headline_bust": 0.5, "pass_rate": 0.5, "summary": {"rates": {}}}
+
+    monkeypatch.setattr(scoring, "run_tier_remc", fake_remc)
+    argv = ["--label", "synthetic", "--daily-pnl-csv", str(daily),
+            "--trades-csv", str(trades), "--envelope", "YES", "--out", str(out)]
+    if explicit_v2:
+        argv += ["--prereg", str(PREREG_V2)]
+    assert scoring.main(argv) == 0
+    report = json.loads(out.read_text(encoding="utf-8"))
+    expected_sources = [str(PREREG_V2)]
+    if not explicit_v2:
+        expected_sources.extend(str(path) for path in scoring.DEFAULT_ADDENDA)
+    assert report["thresholds_source"] == " + ".join(expected_sources)
+    assert report["halted_at"] is None
+    if explicit_v2:
+        assert set(report["g2_by_tier"]) == set(_thr().tier_keys)
+        assert all(not row["passed"] for row in report["g2_by_tier"].values())
+        assert all(row["gated_on"] == "g2_killed" for row in report["tiers"].values())
+        assert runs == []
+    else:
+        assert report["g2_by_tier"] == {}
+        assert set(runs) == set(_thr().tier_keys)
