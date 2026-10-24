@@ -45,6 +45,14 @@ Joshua, 2026-10-24: "Simplify by subtraction. Remove redundant gates and their s
 
 No new text replaces them beyond a dated "deleted, see this report" line.
 
+**Make each deletion real:** remove its enforcement and duplicate references in the same change. For the 4× gate, that means:
+- `register_search._require_cost_law`;
+- the discovery-campaign template row;
+- the strategy-validation cross-reference;
+- any sourcing script that rejects below 4×.
+
+No replacement formula, calibration project or review step.
+
 ### 2.2 Keep: boundaries that protect something real, each with one home
 
 | Boundary | Protects | One home |
@@ -64,7 +72,7 @@ No new text replaces them beyond a dated "deleted, see this report" line.
 3. **Account permissions: one home for paid-pilot approval.** S5 (an automated sandbox admit without a GO) and D1 (a GO for each paid pilot) both claim this step. **Recommend D1 as the single home.**
 4. **Financial exposure: the owned Select 100K.** Keep it while it costs $0 in cash, and buy nothing now (chip 4). Decide at the 11-08 sitting.
 
-**Not brought, because they don't change exposure, permissions or claimed evidence:** sizing method, withdrawal timing and Flex vs Daily. Those are decided when a viable strategy exists, using the evidence in §3.
+**Sizing method, withdrawal timing and Flex vs Daily:** deferred until a viable strategy exists. This report selects none of these policies. Routine choices within an approved operating scope stay with the owner. Material changes to financial exposure or account permissions come to Joshua. Flex vs Daily is a permanent account choice.
 
 ## 3. Evidence behind the recommendation
 
@@ -74,7 +82,7 @@ No new text replaces them beyond a dated "deleted, see this report" line.
 - A per-candidate net-return and cost-sensitivity estimate sees what the ratio misses.
 
 **Chip 6 (component hurdles).** On synthetic Select Flex 100K funded paths, an SR-2 hurdle per component got all three cases wrong:
-- it rejected two low-SR components that improved the account (one hedges losing days, one fills the $200 winning days);
+- it rejected two low-SR components that improved the account: one hedges losing days, and one fills the $200 winning days. The second helped only when a failed account could be replaced, which current purchase limits do not permit;
 - it admitted a high-SR component whose shared 09:30 dip breached the floor.
 
 What the combination delivers is what matters. **Daily data cannot show it when the floor is checked intraday:** an end-of-day model called the harmful pair +$3,922 when the true figure was −$1,604.
