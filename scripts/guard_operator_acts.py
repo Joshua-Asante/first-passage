@@ -221,7 +221,7 @@ MESSAGES = {
     "main.direct_push": ("Pushing to main is forbidden (main.direct_push): main takes PRs "
                          "only.",
                          "`main` requires a PR and the required status; a direct push "
-                         "bypasses both. Push a `glm/`, `codex/` or `claude/` branch and "
+                         "bypasses both. Push a `codex/` or `claude/` branch and "
                          "open a PR."),
     "rail.arm": ("Arming the c1 rail is an operator act (rail.arm): M1 RESOLVED and a GO "
                  "for this armed session. Confirm to proceed.",

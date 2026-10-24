@@ -1,5 +1,7 @@
 # GLM subscription (Z Code worker surface) — KEEP
 
+**Retired 2026-10-24 (operator): Claude and Codex only.** The worker seat this record serves is gone ([addendum](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24)); keeping or cancelling the plan is the operator's call, not yet reported.
+
 **Class:** (d) meta-belt (subscription) · **Standing:** KEEP
 **Aim served:** cross-cutting — recurring tooling spend for the GLM worker seat named in the
 [worker-surface allocation ADR](../adr/2026-07-14-cc-cursor-surface-allocation.md) (Z Code

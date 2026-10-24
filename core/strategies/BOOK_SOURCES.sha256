@@ -5,7 +5,7 @@
 # tracked except this manifest: `**/*.pine` and the port directories are gitignored.
 #
 # Rules (§60): read in place; never copy into a worktree, commit, quote bodies or parameter
-# values into tracked files, edit, or send to glm_agent / Z.ai / any external service.
+# values into tracked files, edit, or send to any external service.
 #
 # Pins match ops/c1_rail/book_policy.py and ops/c1_signal_daemon/book_adapters.py.
 # Striker's accepted port is the corrected generation (efd479b6...); the default

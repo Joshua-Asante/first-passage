@@ -23,7 +23,7 @@ un-reconfirmed for >60 days should be treated as stale, not silently trusted.
 | Cursor Ultra | [d16](d16-cursor-subscription.md) | excluded | removed from recurring spend by operator; **surface retired outright 2026-09-15** ([worker-surface allocation](../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision 2026-09-15); **fully terminated, no final or prorated charge** (operator, 2026-09-15); cancellation date **still not supplied** | 2026-09-10 (spend), 2026-09-15 (surface; terminated / no final charge) | removed from active recurring total; terminated |
 | Claude Max | [d17](d17-claude-max-subscription.md) | $200 | flat | 2026-10-23 | confirmed |
 | Codex | [d18](d18-codex-subscription.md) | $200 | monthly amount supplied; plan details unspecified | 2026-10-23 | operator-confirmed |
-| GLM Max 5x | [d19](d19-glm-subscription.md) | $80 | monthly amount and plan name supplied; billing date unspecified | 2026-09-23 | operator-confirmed |
+| GLM Max 5x | [d19](d19-glm-subscription.md) | $80 | monthly amount and plan name supplied; billing date unspecified | 2026-09-23 | operator-confirmed; seat retired 2026-10-24 (Claude and Codex only), cancellation not reported |
 
 **Confirmed active recurring monthly total:** $600/mo (five confirmed active rows:
 TradingView, CrossTrade, Claude Max, Codex and GLM Max 5x).
