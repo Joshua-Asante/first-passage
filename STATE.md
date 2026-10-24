@@ -89,13 +89,13 @@ Owners hold canonical criteria; rows are pointers.
 - Preserve missed-week records when advancing; record coverage only when attested;
   `daily-repo-truth-sync` reads this board's dated obligations.
 
-### Monthly — recurring (rolling; next deadline **2026-10-21**)
+### Monthly — recurring (rolling; next deadline **2026-11-21**)
 
 - **Subscription reconfirm:** on the 21st, recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
   rows d11–d18 and record the operator's confirmation, even if unchanged; resolve
   Fly.io/Tradeify unknowns when evidence appears. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
-- **Coverage:** 2026-09-21 missed (not attested as of 09-22); the operator's d11–d18
-  confirmation is still owed.
+- **Coverage:** 2026-09-21 missed; 2026-10-21 discharged late on 2026-10-23 (operator reconfirmed
+  d11–d18; Claude Max revised to $200/month; [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) change log).
 
 ### No fixed date / gated
 
