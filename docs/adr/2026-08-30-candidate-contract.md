@@ -82,9 +82,12 @@ capital-facing actions retain their own authority under [S5](2026-08-07-loop-s5-
 [Rule 2](2026-06-16-rule-2-budget-before-acting.md) effort/iteration limits apply
 independently; being inside the spend envelope does not satisfy the effort axis.
 
-A pre-freeze extraction probe requires its own operator-approved spend/schema/
-window/K ceiling before any data access, with instrument and exact statistics
-declared on the draft contract. It may read only outside the already-reserved
+A pre-freeze extraction probe inside an explicitly approved research scope needs no
+separate operator approval; it declares its spend/schema/window/K ceiling,
+instrument and exact statistics on the draft contract before any data access.
+A probe that materially changes the approved scope (new spend, new data rights,
+or a read of the reserved Confirm window) escalates to Joshua (operator ruling
+2026-10-24). It may read only outside the already-reserved
 Confirm window. If the campaign proceeds, cite actual probe spend and K as an
 already-spent sub-line, counted exactly once within the campaign's inclusive
 ceiling; never silently top up the ceiling. If no campaign freezes, close the

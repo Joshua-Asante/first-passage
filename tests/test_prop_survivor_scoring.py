@@ -391,3 +391,15 @@ def test_live_prereg_does_not_warn():
     assert t.is_superseded is False
     assert t.superseded_note is None
     assert t.eval_bust_ceiling == pytest.approx(0.05)
+
+
+def test_prereg_without_cost_hurdle_skips_g2(tmp_path):
+    """Operator ruling 2026-10-24 deleted the universal 4× gate: a pre-registration
+    that declares no ≥N× cost hurdle loads with G2 disabled instead of aborting."""
+    text = PREREG_V2.read_text(encoding="utf-8")
+    stripped = text.replace("≥4× cost", "cost")
+    assert "× cost" not in stripped
+    p = tmp_path / "prereg-no-cost-hurdle.md"
+    p.write_text(stripped, encoding="utf-8")
+    t = load_scoring_thresholds(p)
+    assert t.cost_law_multiple is None

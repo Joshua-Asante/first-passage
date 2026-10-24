@@ -80,7 +80,11 @@ class ScoringThresholds:
     seeds: tuple[int, ...]
     sims_per_seed: int
     horizon: int
-    cost_law_multiple: float
+    #: ``None`` when the pre-registration declares no ≥N× cost hurdle: G2 is then
+    #: skipped. The universal 4× gate was deleted by operator ruling 2026-10-24
+    #: (docs/notes/2026-10-24-assumption-challenge-rulings-proposal.md); frozen
+    #: pre-registrations that declare G2 are still scored as written.
+    cost_law_multiple: float | None
     source_path: str
     #: Non-None when the parsed pre-registration's own Status line says it is CLOSED
     #: or superseded — i.e. these numbers are a historical record, not the live gate.
@@ -372,9 +376,7 @@ def load_scoring_thresholds(
     horizon = int(horizon_m.group(1))
 
     cost_m = re.search(r"[≥>=]\s*([0-9]*\.?[0-9]+)\s*[×x]\s*cost", text, re.IGNORECASE)
-    if not cost_m:
-        raise ValueError(f"pre-registration {prereg} has no parseable ≥N× cost hurdle.")
-    cost_law_multiple = float(cost_m.group(1))
+    cost_law_multiple = float(cost_m.group(1)) if cost_m else None
 
     for key in tier_keys:
         if key not in FIRM_RULES:
@@ -900,14 +902,17 @@ def score_candidate(
         blocks = blocks_from_daily_pnl(candidate_daily_pnl)
 
     for firm_key in tier_keys:
-        g2 = cost_law_kill(
-            firm_key,
-            r_deploy=g1.r_deploy,
-            gross_edge_usd=edge,
-            thresholds=thr,
-        )
-        report.g2_by_tier[firm_key] = g2
-        if not g2.passed:
+        if thr.cost_law_multiple is None:
+            g2 = None
+        else:
+            g2 = cost_law_kill(
+                firm_key,
+                r_deploy=g1.r_deploy,
+                gross_edge_usd=edge,
+                thresholds=thr,
+            )
+            report.g2_by_tier[firm_key] = g2
+        if g2 is not None and not g2.passed:
             # Cost-law kill stops this tier; continue others (per-firm cost schedules).
             report.tiers[firm_key] = TierScore(
                 firm_key=firm_key,
