@@ -33,7 +33,7 @@ for _p in (REPO / "lab", REPO / "core"):
 
 from discovery import remc_series_builder as rsb  # noqa: E402
 from discovery.prop_survivor_scoring import (  # noqa: E402
-    TierSeries, _consistency_frac, cost_law_kill, load_scoring_thresholds, score_candidate,
+    DEFAULT_PREREG, TierSeries, _consistency_frac, cost_law_kill, load_scoring_thresholds, score_candidate,
 )
 
 PRIMARY = Path(r"C:/Users/joshu/multi_firm_operations")
@@ -171,7 +171,7 @@ def stage_prep(out: Path) -> None:
     rsb.main(argv)
     manifest = json.loads((series_dir / "manifest.json").read_text())
     window = (date.fromisoformat(manifest["window"]["start"]), date.fromisoformat(manifest["window"]["end"]))
-    thr = load_scoring_thresholds()
+    thr = load_scoring_thresholds(DEFAULT_PREREG)
     g = per_leg_g1_g2(window, thr)
     prep = {**gate, "rehash": rh, "window": [str(window[0]), str(window[1])],
             "window_start_weekday": window[0].strftime("%A"),
@@ -186,7 +186,7 @@ def stage_candidate(out: Path) -> None:
     prep = json.loads((out / "prep.json").read_text())
     trigger = float(Fraction(candidate_trigger()))
     assert trigger == 0.01, trigger
-    thr = load_scoring_thresholds()
+    thr = load_scoring_thresholds(DEFAULT_PREREG)
     tier_series = {}
     for tier in thr.tier_keys:
         df = pd.read_csv(out / "series" / f"{tier}.csv")
@@ -204,7 +204,7 @@ def stage_candidate(out: Path) -> None:
 
 
 def stage_reference(out: Path) -> None:
-    thr = load_scoring_thresholds()
+    thr = load_scoring_thresholds(DEFAULT_PREREG)
     panel = pd.read_csv(REF / "reference_panel.csv")
     legs = ["striker", "striker_nas100", "aegis"]
     daily = panel[legs].sum(axis=1).to_numpy()
@@ -346,7 +346,7 @@ def derive_verdict(prep: dict, cand: dict, ref: dict, thr, *, cand_sha: str | No
 
 
 def stage_verdict(out: Path) -> None:
-    thr = load_scoring_thresholds()
+    thr = load_scoring_thresholds(DEFAULT_PREREG)
     prep = json.loads((out / "prep.json").read_text())
     cand = json.loads((out / "candidate_report.json").read_text())
     ref = json.loads((out / "reference_report.json").read_text())
