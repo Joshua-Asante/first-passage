@@ -36,9 +36,9 @@ PIN = f"--match-head-commit {SHA}"
     "gh api -X PUT repos/o/r/pulls/501/" + f"merge -f sha={SHA}",
     "gh api graphql -f query='mutation { merge" + f"PullRequest(input: {{expectedHeadOid: \"{SHA}\"}}) {{ x }} }}'",
 ])
-def test_pinned_merge_asks(command):
-    # Fails if a merge pinned to a head SHA runs without an operator prompt.
-    assert g.classify_command(command) == ("ask", "pr.merge")
+def test_pinned_merge_allowed(command):
+    # Fails if a pinned merge under the standing GO (Addendum 2026-10-24b) is not allowed.
+    assert g.classify_command(command) == ("allow", "pr.merge")
 
 
 @pytest.mark.parametrize("command", [
@@ -78,7 +78,7 @@ def test_mcp_tools():
     # Fails if the GitHub MCP merge path bypasses the operator, or auto-merge is askable.
     merge = "mcp__github__merge_pull_request"
     assert g.classify({"tool_name": merge, "tool_input": {"expectedHeadSha": SHA}}) == (
-        "ask", "pr.merge")
+        "allow", "pr.merge")
     assert g.classify({"tool_name": merge, "tool_input": {}}) == ("deny", "pr.merge_unpinned")
     assert g.classify({"tool_name": merge, "tool_input": {"expectedHeadSha": "abc"}}) == (
         "deny", "pr.merge_unpinned")
@@ -174,8 +174,8 @@ def test_hook_contract():
                                       "tool_input": {"expectedHeadSha": SHA}})))
     block = out["hookSpecificOutput"]
     assert block["hookEventName"] == "PreToolUse"
-    assert block["permissionDecision"] == "ask"
-    assert SHA in block["permissionDecisionReason"]  # the operator sees what they approve
+    assert block["permissionDecision"] == "allow"
+    assert "independent review" in block["additionalContext"]  # the GO's conditions
     assert _run(json.dumps({"tool_name": "Bash", "tool_input": {"command": "ls"}})) == ""
     assert _run("not json") == ""
 
@@ -244,7 +244,7 @@ def test_prompt_names_the_sha_the_merge_pins():
     # Fails if the operator is shown a SHA other than the one GitHub will enforce
     # (Codex #503 threads Dr1 / TGt).
     block = _reason(f"git show {OLD} && {MERGE} 501 {PIN}")
-    assert block["permissionDecision"] == "ask"
+    assert block["permissionDecision"] == "allow"
     assert SHA in block["permissionDecisionReason"]
     assert OLD not in block["permissionDecisionReason"]
 
@@ -261,7 +261,7 @@ def test_prompt_names_every_act_and_sha_in_one_call():
 
 @pytest.mark.parametrize("command,expected", [
     (f"{MERGE} 501 {PIN} --match-head-commit ''", ("deny", "pr.merge_unpinned")),
-    (f"{MERGE} 501 --match-head-commit abc {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --match-head-commit abc {PIN}", ("allow", "pr.merge")),
 ])
 def test_repeated_pin_uses_the_last_value(command, expected):
     # Fails if the guard reads a different `--match-head-commit` than gh does (pflag:
@@ -329,14 +329,14 @@ def test_graphql_pin_must_be_structurally_active(query, fields):
 def test_graphql_pin_through_variables_asks(query, fields):
     # Fails if a merge pinned through a GraphQL variable is refused as unpinned.
     command = f"gh api graphql -f query='{query}'{fields}"
-    assert g.classify_command(command) == ("ask", "pr.merge")
+    assert g.classify_command(command) == ("allow", "pr.merge")
 
 
 @pytest.mark.parametrize("command,expected", [
     ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -H sha={SHA}", ("deny", "pr.merge_unpinned")),
-    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge --raw-field=sha={SHA}", ("ask", "pr.merge")),
-    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -F sha={SHA}", ("ask", "pr.merge")),
-    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -f=sha={SHA}", ("ask", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge --raw-field=sha={SHA}", ("allow", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -F sha={SHA}", ("allow", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -f=sha={SHA}", ("allow", "pr.merge")),
 ])
 def test_rest_pin_must_be_a_request_field(command, expected):
     # Fails if a `sha=` that is not a request field (a header) is taken as the pin.
@@ -389,7 +389,7 @@ def test_powershell_tool_calls_are_judged():
     call = {"tool_name": "PowerShell", "tool_input": {"command": f"{MERGE} 501 --auto"}}
     assert g.classify(call) == ("deny", "pr.auto_merge")
     pinned = {"tool_name": "PowerShell", "tool_input": {"command": f"{MERGE} 501 {PIN}"}}
-    assert g.classify(pinned) == ("ask", "pr.merge")
+    assert g.classify(pinned) == ("allow", "pr.merge")
 
 
 @pytest.mark.parametrize("command,expected", [
@@ -490,8 +490,8 @@ def test_a_pin_inside_another_options_value_is_not_a_pin(spoof):
     (f"{MERGE} 501 -t --match-head-commit={SHA}", ("deny", "pr.merge_unpinned")),
     (f"{MERGE} 501 -b --auto", ("deny", "pr.merge_unpinned")),
     (f"{MERGE} 501 --no-such-flag {PIN}", ("deny", "pr.merge_unpinned")),
-    (f"{MERGE} 501 -sd {PIN}", ("ask", "pr.merge")),
-    (f"{MERGE} 501 -s -t 'Title' -b 'Body' {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 -sd {PIN}", ("allow", "pr.merge")),
+    (f"{MERGE} 501 -s -t 'Title' -b 'Body' {PIN}", ("allow", "pr.merge")),
     (f"{MERGE} 501 --help", None),
 ])
 def test_merge_options_are_read_as_pflag_reads_them(command, expected):
@@ -505,7 +505,7 @@ def test_merge_options_are_read_as_pflag_reads_them(command, expected):
     ("gh -b x pr " + "merge 501", ("deny", "pr.merge_unpinned")),
     ("gh -A a@b pr " + "merge 501 --auto", ("deny", "pr.auto_merge")),
     ("gh --subject s pr " + "merge 501 --auto", ("deny", "pr.auto_merge")),
-    (f"gh --match-head-commit {SHA} pr " + "merge 501", ("ask", "pr.merge")),
+    (f"gh --match-head-commit {SHA} pr " + "merge 501", ("allow", "pr.merge")),
     ("gh --no-such-flag v pr " + "merge 501", ("deny", "pr.merge_unpinned")),
     ("gh -R o/r pr view 501", None),
     # While cobra looks for the subcommand only -h/--help/--version are booleans at the
@@ -515,7 +515,7 @@ def test_merge_options_are_read_as_pflag_reads_them(command, expected):
     ("gh -d 501 pr " + "merge", ("deny", "pr.merge_unpinned")),
     ("gh --auto 501 pr " + "merge", ("deny", "pr.auto_merge")),
     ("gh pr --auto 501 " + "merge", ("deny", "pr.auto_merge")),
-    (f"gh --admin 501 pr merge {PIN}", ("ask", "pr.merge")),
+    (f"gh --admin 501 pr merge {PIN}", ("allow", "pr.merge")),
     ("gh -i repos/o/r/pulls/1/" + "merge api -X PUT", ("deny", "pr.merge_unpinned")),
     ("gh --silent repos/o/r/pulls/1/" + "merge api -X PUT", ("deny", "pr.merge_unpinned")),
     ("gh -i graphql api -f query='mutation { merge" + "PullRequest(input: {}) { x } }'",
@@ -569,7 +569,7 @@ def test_unreadable_push_to_heads_main_fails_closed():
     ("g`h pr " + "merge 501 `-`-auto", ("deny", "pr.auto_merge")),
     ("gh pr m`u{65}rge 501", ("deny", "pr.merge_unpinned")),
     ('pwsh -c "echo x`ngh pr ' + 'merge 1"', ("deny", "pr.merge_unpinned")),
-    ("gh pr " + f"merge 501 `\n  {PIN}", ("ask", "pr.merge")),
+    ("gh pr " + f"merge 501 `\n  {PIN}", ("allow", "pr.merge")),
     ('git commit -m "say `"gh pr ' + 'merge`" later"', None),
     ("Write-Output a`tb", None),
 ])
@@ -582,7 +582,7 @@ def test_powershell_backtick_escapes_are_resolved(command, expected):
 
 @pytest.mark.parametrize("command,expected", [
     ("gh api -X PUT repos/o/r/pulls//1/" + "merge", ("deny", "pr.merge_unpinned")),
-    ("gh api -X PUT repos/o/r/pulls/1//" + f"merge -f sha={SHA}", ("ask", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/1//" + f"merge -f sha={SHA}", ("allow", "pr.merge")),
 ])
 def test_merge_path_with_repeated_slashes_is_a_merge(command, expected):
     # Fails if a doubled slash takes a REST merge path out of the guard's reading.
@@ -642,15 +642,15 @@ def test_push_that_is_not_a_dry_run_is_still_judged(command):
 
 
 @pytest.mark.parametrize("command,expected", [
-    (f"{MERGE} 501 --auto=false {PIN}", ("ask", "pr.merge")),
-    (f"{MERGE} 501 --auto=0 {PIN}", ("ask", "pr.merge")),
-    (f"{MERGE} 501 --auto=f {PIN}", ("ask", "pr.merge")),
-    (f"{MERGE} 501 --auto=F {PIN}", ("ask", "pr.merge")),
-    (f"{MERGE} 501 --auto=FALSE {PIN}", ("ask", "pr.merge")),
-    (f"{MERGE} 501 --auto=False {PIN}", ("ask", "pr.merge")),
-    (f"{MERGE} 501 --auto --auto=false {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=false {PIN}", ("allow", "pr.merge")),
+    (f"{MERGE} 501 --auto=0 {PIN}", ("allow", "pr.merge")),
+    (f"{MERGE} 501 --auto=f {PIN}", ("allow", "pr.merge")),
+    (f"{MERGE} 501 --auto=F {PIN}", ("allow", "pr.merge")),
+    (f"{MERGE} 501 --auto=FALSE {PIN}", ("allow", "pr.merge")),
+    (f"{MERGE} 501 --auto=False {PIN}", ("allow", "pr.merge")),
+    (f"{MERGE} 501 --auto --auto=false {PIN}", ("allow", "pr.merge")),
     (f"{MERGE} 501 --auto=false --squash", ("deny", "pr.merge_unpinned")),
-    ("gh --auto=false pr " + f"merge 501 {PIN}", ("ask", "pr.merge")),
+    ("gh --auto=false pr " + f"merge 501 {PIN}", ("allow", "pr.merge")),
     (f"{MERGE} 501 --auto {PIN}", ("deny", "pr.auto_merge")),
     (f"{MERGE} 501 --auto=true {PIN}", ("deny", "pr.auto_merge")),
     (f"{MERGE} 501 --auto=1 {PIN}", ("deny", "pr.auto_merge")),
@@ -1234,3 +1234,12 @@ def test_read_only_or_later_segments_keep_the_target(template, config, tmp_path)
     toml = _other_toml(tmp_path)
     command = template.format(deploy=DEPLOY + config.format(toml=toml), toml=toml)
     assert g.classify_command(command, cwd=str(tmp_path)) is None
+
+
+@pytest.mark.parametrize("command", [
+    f"{MERGE} 501 {PIN} && {DEPLOY} -a c1-rail",
+    f"bash -c '{MERGE} 501 {PIN}; {ARM}'",
+])
+def test_allowed_merge_cannot_launder_an_operator_act(command):
+    # Fails if an allowed merge earlier in a call lets a deploy or arm run without a prompt.
+    assert g.classify_command(command)[0] == "ask"

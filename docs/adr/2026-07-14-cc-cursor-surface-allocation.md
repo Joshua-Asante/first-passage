@@ -938,6 +938,20 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Addendum 2026-09-26b part C is moot: its subject is gone. It is not discharged, so credential custody for the Codex and Claude seats stays an open question for the operator.
 - How work divides between the three models is out of scope here; that research (2026-10-24) feeds a later revision of the seat table.
 
+## Addendum 2026-10-24b — operator rulings: conditioned merge GO and credential custody
+
+**Rulings (Joshua, 2026-10-24, in session):** "merges still have a standing GO from me unless I auto approve a merge when independent review and ci is green"; asked which reading applies, he chose "agents may merge". On credentials he chose a fine-grained PAT agent identity and the revocations recorded in the operator checklist below.
+
+**A. Conditioned merge GO.** An agent may merge a PR without a per-PR prompt when all hold: (1) an independent review has passed: a reviewer other than the PR's author (a different vendor seat or the operator) left no unresolved blocking finding; (2) every CI check is `COMPLETED` and green at the head; (3) the merge is pinned to that head SHA. `scripts/guard_operator_acts.py` now allows a pinned merge (it still denies an unpinned one), and an ask or deny elsewhere in the same call still wins. GitHub auto-merge stays forbidden (`pr.auto_merge`). Enforcement: GitHub enforces condition (2) through the ruleset's strict required check. Condition (1) is the merging agent's obligation. Asked whether GitHub should require an approving review, the operator chose no: agents and the operator share one account, and review bots only comment, so a required approval would force an operator approval on every PR.
+
+**B. Credential custody (resolves Addendum 2026-09-26b part C's open question for the remaining seats).** Agents act under their own scoped credentials, never the operator's:
+- GitHub: agents use a fine-grained, repo-scoped PAT (Contents and Pull requests: write; no Administration) set as `GH_TOKEN` in agent environments. The operator's owner token stays in the keyring for the operator. The `main` ruleset's bypass list holds the operator only, so no agent token can bypass the required check.
+- Fly and rail: agents hold no Fly credential and the operator keeps no standing Fly login (`fly logout`; per-app expiring deploy tokens when deploying); `rail.deploy` stays an operator act. The dormant rail's CrossTrade secrets are wiped from the Fly volume and revoked; revival preconditions live in `docs/notes/rail_build/ARMING_PROCEDURE.md` §7.
+- Unused credentials are removed rather than guarded: the Databento key (and its persistent User environment variable), `NOTION_TOKEN` in `.env`, and the standing Azure CLI login.
+- Codex sessions are not hooked; for Codex the limits are the sandbox mode, `scripts/dispatch_codex.ps1` (agent token only, refuses a directory holding `.env`) and the scoped PAT. Claude-side read-deny rules are a separate change.
+- CI: `claude.yml` keeps its write permissions; the ruleset, not CI permissions, is the merge boundary. The earlier claim that "CI holds no write credential" is withdrawn.
+*Status:* host steps are the operator's (checklist in the carrying PR); until done, agents still reach the owner token through `gh`.
+
 ## Change history
 
 | Date | Change | By |
@@ -957,3 +971,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-09-27 | Addendum 2026-09-27 — operator ruling on handoff-contract item 1: the H4, H5b and H8c cards (dispatched and returned without passing `check_brief.py`) are exempted as recorded deviations, not retro-fitted; the staged-acceptance set is exempted as a set file whose copied-out cards must pass; the undispatched M2 card is restructured instead. Enforcement at the operator's same-day direction: the `handoff-brief-form` gate (forward-only from 2026-09-27, plus any card with an authority block; the four exempt files named). Item 1 gains a pointer; the enforcement-point table gains a *card form* row. | Joshua (ruling, direction) + Claude Code |
 | 2026-09-30 | Addendum 2026-09-30b — proposed: operator-directed orders, exits and cancels are `trade.submit`, operator act (`high`), never grantable in a card; ratified on operator merge. Original X-1 sweep hold is historical; completed sweep inventory and evidence are on #566 (2026-10-01). | Joshua (direction) + Codex |
 | 2026-10-24 | Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped; `glm/*` branches withdrawn; 2026-09-26b part C moot | Joshua |
+| 2026-10-24 | Addendum 2026-10-24b — operator rulings: conditioned agent merge GO (independent review + green CI + pinned head); credential custody (agent PAT, no agent Fly credential, unused credentials removed, rail CrossTrade secrets wiped, no standing Fly login) | Joshua |

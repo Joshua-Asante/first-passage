@@ -152,6 +152,19 @@ relative `--env`/`FP_OPS_ENV` resolved against the caller's directory; launcher
 options are never abbreviated. Completion is still judged only from `record.json` as before: poll
 it, and accept nothing but `completed` with verification exit zero.
 
+## Agent CLI dispatch
+
+`dispatch_claude.ps1` (receipts and return validation; see `agent_handoff.md`) and
+`dispatch_codex.ps1` (thin Codex wrapper):
+
+```powershell
+.\scripts\dispatch_codex.ps1 -Worktree <worktree> -Prompt 'Read TICKET.md and execute it.' -OutputFile <scratch>\last.txt [-Sandbox read-only] [-Model gpt-6.1-sol] [-DryRun]
+```
+
+It runs the Codex app's bundled `app\resources\codex.exe` (the `.sandbox-bin` copy cannot run tools),
+passes `FP_AGENT_GH_TOKEN` as `GH_TOKEN` to the child only, and refuses a directory containing `.env`.
+Tests: `tests/scripts/test_dispatch_codex.py` (dry-run).
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via

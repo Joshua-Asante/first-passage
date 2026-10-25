@@ -46,7 +46,11 @@ capabilities:
   handoff.dispatch:     {risk: medium}   # opening a worker session against a frozen card
   governance.author:    {risk: medium}   # drafting ADRs/briefs/STATE/campaign records (routing test 1)
   core_anchor.edit:     {risk: medium}   # edits to routing test 1's core/ anchor paths
-  pr.merge:             {risk: high}     # operator act — GitHub merge
+  pr.merge:             {risk: high}     # operator act — GitHub merge; standing-GO exception (ADR Addendum 2026-10-24b):
+                                       # an agent may merge a PR pinned to its head SHA once an
+                                       # independent review (not the PR's author) has passed and
+                                       # every CI check is COMPLETED and green at that head; never
+                                       # grantable in a card; auto-merge stays forbidden.
   governance.ratify:    {risk: high}     # operator act — ratifying an ADR/prereg/closure
   spend:                {risk: high}     # operator act — any paid service or subscription
   rail.deploy:          {risk: high}     # operator act — fly deploy of c1-rail
@@ -61,7 +65,7 @@ capabilities:
 
 forbidden:
   pr.auto_merge:
-    rule: "Merge authority is the operator's, with no automated exception."
+    rule: "GitHub auto-merge is retired; agent merges run only under pr.merge's standing-GO exception."
     owner: docs/adr/2026-07-14-cc-cursor-surface-allocation.md
   tv.login_automation:
     rule: "TV login automation prohibited."
