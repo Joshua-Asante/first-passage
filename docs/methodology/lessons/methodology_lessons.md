@@ -68,17 +68,6 @@ next session install (same repo-wins convention as `operational_rules.md` §8's 
 
 ## Migration plan (M-1..M-6)
 
-**Decision (2026-05-08):** the lesson-registry on-disk format spec above is
-confirmed. M-1..M-6 (currently in user memory entries + Notion lesson page)
-migrate to this file when next a brief or §0 cites them and the format
-mismatch surfaces. Until then, the Notion / memory pointers remain
-authoritative for those six and this file holds only newly-authored or newly-
-PROMOTED methodology lessons (M-7 onward).
-
-This is a deliberate "grow on evidence" choice: porting six lessons cold is
-cheap-but-ceremonial; porting on first cite is load-bearing. The migration
-order will be the order in which they are next cited.
-
 If a future brief authors a fresh M-class lesson before any of M-1..M-6 are
 cited, that fresh lesson lands here directly under its own M-N tag (using the
 next free integer above the highest currently-pointed-to in memory; check
@@ -317,11 +306,7 @@ surfaced only as a volatile flag string with no persisted audit timestamp.
 status table adjacency, `cmd_update` duplicate metrics, silent daily-loss
 reference, phase-complete persistence ambiguity); instance count over dollars.
 
-**Rule:** For firm-specific rule validators, **route display and failure through the
-validator exclusively** for that firm; keep simplified accounting properties only
-for firms that do not use the validator. Never default fake inputs that defeat
-explicit skip paths. Persist audit-worthy completion (`phase_completed_at` per-phase
-dict of ISO timestamps) when adopting completion semantics.
+**Rule:** Never default fake inputs that defeat explicit skip paths.
 
 **Mechanism (why tests missed it):** Integration tests exercised validator math;
 they did not assert **single-truth UI** (no adjacent contradictory columns) or
@@ -852,13 +837,11 @@ infrastructure), M-9 (gitignored bytes not git-reconcilable).
 
 ## M-20 — Reachability must be simulated per-gate, in the gate's own units, at the adjudication panel's price basis
 
-> ⚠ **2026-10-24 — the cost-law inequality this lesson routes to is deleted.** [strategy_harvest Requirement 5](../strategy_harvest.md#1-the-four-admission-requirements-all-mandatory-before-screening) (the universal 4× hurdle) was removed by [Joshua's ruling](../../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24), so the **Rule**'s "mandatory inequality" and its "run it at admission too" sentence no longer bind. The same-units, scoring-basis and explicit-commission discipline still governs every cost gate a campaign actually declares. The body below is the 2026-07-16 record, unedited.
-
 **Status:** CANDIDATE 2026-07-16 (two same-day firings, D5 + H-OD-1; dollar cost ≈ $0 data but two full freeze→GO→register→pull→screen cycles + 2 family-K banked — NQ/MNQ 1, ES 2 — spent on gates arithmetic already decided). Promotion per registry rule on a third firing or a measured ≥$3K instance. **Domain:** futures-anomaly-discovery · brief-authoring (§R attestations) · strategy-validation.
 
 **Anchor incidents (both 2026-07-16):** the first two mechanism-first campaigns after the HARV lane ADR both died at the **Stage-2 cost-law (bp space)** while their §R reachability attestations argued in **annualized-Sharpe space against the Stage-6 confirm floor**. D5: §R attested Stage-6 (gross 1.79 vs floor 0.65) and never simulated Stage-2 — cohort-implied edge ≈2.97bp vs hurdle 11.06bp, unreachable ~3.7×. H-OD-1: §R did simulate Stage-2 but in the wrong basis (recent index ~4400 vs the IS panel median 1942 that Stage-2 actually scores on — ~2.3× the cost fraction) with a ×10 commission mis-scaling ("≤0.03bp" vs actual 0.27bp @4400 / 0.62bp @IS) — corrected, the true world (cohort +1.5bp) passes at **no** commissions-included basis (hurdle 5.05bp IS / 2.23bp @4400). H-OD-1's mechanism meanwhile CONFIRMED in-sample (+1.444bp, t≈5.0, 9/9 years positive) — the gate, not the transfer premise, was the failure. HARV lane ADR §4 falsifier FIRED (both conjuncts, twice); amending ADR `Proposed` ([`2026-07-16-harv-attestation-same-units-supersession.md`](../../adr/2026-07-16-harv-attestation-same-units-supersession.md)).
 
-**Rule:** a §R attestation discharges a gate only when simulated **in that gate's own units** (a Sharpe-space argument does not discharge a bp-space cost gate), **at the basis the gate is scored on** (IS panel for Stage-2, OOS for Stage-6 — never a present-day or convenience basis), **with commissions divided out explicitly** (never waived as "negligible" without showing the division). For cost-law clauses the mandatory inequality is [`docs/methodology/strategy_harvest.md`](../strategy_harvest.md) §1 Requirement 5's — **derived mirror, not restated here**; that section is the sole authority for its exact form. Run it at admission too — seeds whose event-scale cannot clear it die for the cost of one division (both anchor campaigns would have).
+**Rule:** a §R attestation discharges a gate only when simulated **in that gate's own units** (a Sharpe-space argument does not discharge a bp-space cost gate), **at the basis the gate is scored on** (IS panel for Stage-2, OOS for Stage-6 — never a present-day or convenience basis), **with commissions divided out explicitly** (never waived as "negligible" without showing the division).
 
 **Forbidden moves:**
 - Do NOT attest "REACHABLE" from the confirm-floor argument alone when the campaign carries an upstream cost/kill gate — every gate the campaign can die at gets its own same-units simulation.
@@ -1074,16 +1057,6 @@ by the always-on `pytest tests/` suite. The ADR's former mechanical Hook 1
 `tests/test_<basename>.py` basename heuristic did not match the repo's
 test-naming convention and it was all-false-positive.
 
-### Promotion criteria for F-class
-
-Same shape as M-class:
-- (a) single instance with dollar cost ≥ $3,000 OR
-- (b) three separate fixture-caught defects across the registry.
-
-F-1 stays CANDIDATE as a retroactive seed; PROMOTION fires on the second
-genuinely fixture-caught defect (i.e. one where the fixture suite, not
-manual inspection, surfaced the defect first).
-
 ---
 
 ## M-SWAP-1 — Risk-normalized MC absorbs additive-cost shocks via implied_1r recalibration
@@ -1153,7 +1126,6 @@ If the watch-point fires, the brief's Pre-Q gate must specify both adaptive-1R M
 - **Cite a FALSIFIED adaptive-1R MC as proof that an additive-cost shock is immaterial.** Q-SWAP-1 is this exact failure shape; cite it as worked example. The cost is real even when adaptive-1R MC absorbs it.
 - **Use adaptive-1R MC to set `dd_protection` calibration in the presence of a known additive-cost shock.** dd_protection was tuned assuming MC bust attribution reflects live risk; hidden costs invalidate that assumption.
 - **Tweak swap rates / cost magnitudes to make adaptive-1R MC produce a verdict-meaningful delta.** This is p-hacking through cost calibration. The right fix is fixed-1R MC, not rate tweaking.
-- **Treat M-SWAP-1 as falsifying the swap question** — it falsifies the *adaptive-1R MC's answer* to the swap question; the swap question itself is open until Q-SWAP-2 RESOLVES or FALSIFIES.
 
 ### Reproducer / worked example
 
@@ -1250,9 +1222,8 @@ When an investigation's half-panel split lands within ±2 months of 2024-04-30 a
 When an investigation's half-panel split (regime-robustness or otherwise) lands within ±2 months of 2024-04-30:
 
 1. Treat the H1/H2 spread as priors-shifting; do NOT discount as sample-size noise.
-2. Reference `MEMORY.md/project_2024_regime_shift_accumulating_signal.md` (PROMOTED) explicitly in the brief's §1 / §4.
-3. If the spread is verdict-deciding (FALSIFIED / AMBIGUOUS-HOLD turns on it), consider running `portfolio_mc.py --boundary-sweep --ga4` (or analogous multi-boundary sweep) as a cheap-falsifier check — even when the canonical mid-panel boundary is the only one specified. The sweep takes ~5 minutes and discriminates "specifically 2024-04-30" from "any boundary."
-4. If the brief frames the spread as artifact-vs-structural, the search-space MUST include ≥3 non-2024 boundary dates with ≥18 months per side (or document the narrowing per the Q-REGIME-1 2025-01-31 precedent).
+2. If the spread is verdict-deciding (FALSIFIED / AMBIGUOUS-HOLD turns on it), consider running `portfolio_mc.py --boundary-sweep --ga4` (or analogous multi-boundary sweep) as a cheap-falsifier check — even when the canonical mid-panel boundary is the only one specified. The sweep takes ~5 minutes and discriminates "specifically 2024-04-30" from "any boundary."
+3. If the brief frames the spread as artifact-vs-structural, the search-space MUST include ≥3 non-2024 boundary dates with ≥18 months per side (or document the narrowing per the Q-REGIME-1 2025-01-31 precedent).
 
 ### Mechanism (why this matters)
 
@@ -1474,7 +1445,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 - **Date:** 2026-09-20 (migrated from Claude memory `lesson_llm_reviewer_fold_loop_needs_stopping_rule`; PRs #335 and #336, 2026-09-10/11)
 - **Anchor:** two sessions ran "fold every Codex finding, post `@codex review`, repeat": per-round counts 14, 15, 11, 7, 10, 14, 3, 8 (#336) and 7, 5, 5, 4, 3, 4, 1, 2 (#335); pushback 1 partial of 99; the umbrella doubled 66 KB → 133 KB and grew 18 → 31 packets and 11 → 16 operator decisions, four created by the reviewer. Codex was grounded — every cited line checked out — so the loop was a stopping-rule failure. A Codex "simplify" that replaced the plan and eight briefs with one 167-line plan re-found five defects the deleted briefs had already fixed within ten minutes; reverted.
 - **What broke:** a fix to finding X in round k landed on one surface and the reviewer found the other surfaces still restating the old design in round k+1 (M-26); unchosen conditional branches were specified instead of removed.
-- **Rule:** count findings per round and stop when the count fails to fall for two rounds or the document grows on a "fix" round; triage each finding with M-43 and expect nonzero pushback; route unchosen operator options out of the document before specifying them; end with N one-line folds, an explicit "Open items (recorded, not folded)" section, one reply per thread, and merge — no further review request. A simplification that deletes verified specifics must carry them forward. Never mention `@codex` in a coordination comment.
+- **Rule:** count findings per round and stop when the count fails to fall for two rounds or the document grows on a "fix" round; triage each finding with M-43 and expect nonzero pushback; route unchosen operator options out of the document before specifying them. A simplification that deletes verified specifics must carry them forward. Never mention `@codex` in a coordination comment.
 - **Link:** siblings M-38, M-39, M-40, M-43, M-47.
 
 ## M-38 — Code-review fold loop on contract-driven code: after two rounds, rebuild from the invariant table
