@@ -138,3 +138,37 @@ def test_az_calls_are_read_or_deallocate_and_redacted(monkeypatch):
         vm.deallocate()
     assert "12345678" not in str(e.value) and "<redacted>" in str(e.value)
     assert calls == [["vm", "get-instance-view"], ["vm", "deallocate"]]
+
+
+def test_slow_read_cannot_defer_the_deadline(tmp_path):
+    clock = Clock()
+
+    class SlowVm(FakeVm):
+        def power(self):
+            if not self.forced:
+                clock.t += 1800  # one read blocks past the 15-minute deadline
+            return super().power()
+
+    vm = SlowVm([RUN])
+    rc, _, _ = run(vm, tmp_path, clock=clock, hours=0.25)
+    assert rc == 0 and vm.deallocations == 1 and clock() - (MONDAY + 3600) < 1900
+
+
+def test_unwritable_ledger_deallocates(tmp_path):
+    (tmp_path / "ledger.json").mkdir()  # reading a directory raises OSError
+    vm = FakeVm([RUN])
+    rc, _, _ = run(vm, tmp_path, hours=12)
+    assert rc == 0 and vm.deallocations == 1
+
+
+def test_power_read_timeout_is_short(monkeypatch):
+    seen = {}
+
+    def fake_run(cmd, timeout, **_):
+        seen[cmd[2]] = timeout
+        raise subprocess.TimeoutExpired(cmd, timeout)
+
+    monkeypatch.setattr(w.subprocess, "run", fake_run)
+    with pytest.raises(subprocess.TimeoutExpired):
+        w.Vm("az", "g", "n").power()
+    assert seen["get-instance-view"] <= 120

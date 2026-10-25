@@ -43,22 +43,22 @@ class Vm:
     def __init__(self, az: str, group: str, name: str):
         self.base, self.args = [az, "vm"], ["-g", group, "-n", name]
 
-    def _az(self, *cmd: str) -> str:
+    def _az(self, *cmd: str, timeout: float) -> str:
         p = subprocess.run([*self.base, *cmd, *self.args, "-o", "json"],
-                           capture_output=True, text=True, timeout=1800)
+                           capture_output=True, text=True, timeout=timeout)
         if p.returncode:
             raise RuntimeError(redact(p.stderr.strip()) or f"az exit {p.returncode}")
         return p.stdout
 
     def power(self) -> str:
-        view = json.loads(self._az("get-instance-view"))
+        view = json.loads(self._az("get-instance-view", timeout=120))  # short: every safety check waits on it
         for s in view["instanceView"]["statuses"]:
             if s["code"].startswith("PowerState/"):
                 return s["displayStatus"]
         raise RuntimeError("no PowerState status")
 
     def deallocate(self) -> None:
-        self._az("deallocate")
+        self._az("deallocate", timeout=1800)
 
 
 def week_key(now: float) -> str:
@@ -107,9 +107,12 @@ def deallocate_verified(vm, state_dir: Path, reason: str, sleep, attempts: int =
             log(f"deallocate error: {redact(str(e))}")
         sleep(60)
     msg = f"ALARM: deallocation NOT verified after {attempts} attempts ({reason}); the VM may still be billing"
-    state_dir.mkdir(parents=True, exist_ok=True)
-    (state_dir / "ALARM.txt").write_text(f"{dt.datetime.now().isoformat()} {msg}\n")
     print(msg, file=sys.stderr, flush=True)
+    try:
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "ALARM.txt").write_text(f"{dt.datetime.now().isoformat()} {msg}\n")
+    except OSError as e:
+        print(f"ALARM.txt not written: {e}", file=sys.stderr, flush=True)
     return 2
 
 
@@ -119,20 +122,24 @@ def watch(vm, ledger: Ledger, state_dir: Path, *, hours: float, poll: float, gra
     deadline, seen_allocated, unreadable_since = start + hours * 3600, False, None
     while True:
         keep_awake()
-        now = clock()
         try:
             state, unreadable_since = vm.power(), None
         except Exception as e:
             log(f"power read failed: {redact(str(e))}")
-            unreadable_since = unreadable_since or now
-            if now - unreadable_since >= max_unreadable:
+            unreadable_since = unreadable_since or clock()
+            if clock() - unreadable_since >= max_unreadable:
                 return deallocate_verified(vm, state_dir, "power state unreadable", sleep)
             state = None
-        if state not in (None, DEALLOCATED) or (state is None and seen_allocated):
-            seen_allocated = True
-            ledger.add(now, now - last)  # unreadable polls count once the VM was seen allocated
+        now = clock()  # after the read, so a slow read cannot defer the checks below
+        try:
+            if state not in (None, DEALLOCATED) or (state is None and seen_allocated):
+                seen_allocated = True
+                ledger.add(now, now - last)  # unreadable polls count once the VM was seen allocated
+            dollars = ledger.seconds(now) * rate / 3600
+        except (OSError, ValueError) as e:  # the cap cannot be enforced without the ledger
+            log(f"ledger unavailable: {e}")
+            return deallocate_verified(vm, state_dir, "weekly ledger unavailable", sleep)
         last = now
-        dollars = ledger.seconds(now) * rate / 3600
         reason = ("deadline" if now >= deadline else
                   f"weekly cap ${cap:.0f} reached (${dollars:.2f})" if dollars >= cap else
                   "stopped but still allocated" if state == STOPPED else None)
