@@ -154,6 +154,8 @@ it, and accept nothing but `completed` with verification exit zero.
 
 ### Azure VM deallocation watcher
 
+Standing rules: [Azure compute VM policy](../docs/governance/azure-compute-vm-policy.md).
+
 The session that starts the Azure compute VM verifies `VM deallocated` before its
 turn ends (Joshua, 2026-10-24). For runs of up to 12 hours, keep the PC plugged in
 and this watcher running for the whole allocation, started before or right after
