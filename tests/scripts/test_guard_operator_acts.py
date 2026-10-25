@@ -71,7 +71,7 @@ def test_deny_wins_over_ask_in_one_command(command):
     "gh api graphql -f query='mutation { enablePullRequest" + "AutoMerge(input: {}) { x } }'",
 ])
 def test_auto_merge_denied(command):
-    # Fails if auto-merge (retired, no automated exception) is merely asked, not refused.
+    # Fails if auto-merge (retired; agents merge only pinned) is merely asked, not refused.
     assert g.classify_command(command) == ("deny", "pr.auto_merge")
 
 

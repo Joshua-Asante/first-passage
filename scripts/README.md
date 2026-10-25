@@ -597,8 +597,17 @@ semantic completeness, or successor authorization.
 
 ## Independent review
 
+Codex is the separate reviewer; Claude does not review its own work
+([surface-allocation ADR Addendum 2026-10-25](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work)).
+On a PR, comment `@codex review` after each push; the merge rule and review limit are
+[Addendum 2026-10-24b A](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody),
+applied by `merge_train.py gate` ([merge-train skill](../.claude/skills/merge-train/SKILL.md)).
+Before ratification of an ADR, prereg or closure, Codex's review also covers premises,
+calculations, gate evidence and contradictions (Rule 5).
+
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
-owns its review mechanics. Reviewers assess the source independently of the proposer's
+is optional author input on Claude-authored work, never that review, and owns its review
+mechanics. Reviewers assess the source independently of the proposer's
 reasoning; synthesis is advisory and cannot supply operator ratification or execution
 authority. Reviewer/delegate assignment never grants permission to edit locked surfaces.
 

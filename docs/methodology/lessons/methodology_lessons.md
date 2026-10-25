@@ -1527,7 +1527,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 
 - **Date:** 2026-09-20 (migrated from Claude memory `feedback_codex_pr_review_replaces_inchat_workflow_verification`; operator ruling 2026-08-30)
 - **Anchor:** operator, interrupting an in-chat Workflow launch: "we will get adversarial verification when we open the pr… codex will take care of the adversarial review, we no longer have to conduct it in chat." Earlier in-chat passes had caught real defects, so the ruling is "don't duplicate", not "adds no value".
-- **What broke:** running both is redundant spend on a review that already fires at PR time.
+- **What broke:** running both is redundant spend on the Codex review the PR gets anyway (requested with `@codex review` after each push, per the merge-train skill).
 - **Rule:** for work headed into a PR, go from drafting to commit → push → open/update PR and let the PR review surface issues; in-chat multi-lens review stays available for work not entering a PR cycle and for the ratification gate (M-42), which the diff reviewer does not cover.
 - **Link:** the surface-allocation ADR (2026-08-29 addendum #1, retained); siblings M-37, M-43.
 
