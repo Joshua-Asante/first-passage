@@ -23,7 +23,7 @@ appear in public commits, PRs or records.
   A run may last up to **12 hours**; for multi-hour runs the local PC stays
   plugged in and [`scripts/azure_vm_watch.py`](../../scripts/azure_vm_watch.py)
   stays on for the whole allocation (2026-10-24).
-- **Backstop** (design approved 2026-10-25;
+- **Backstop** (design approved and deployed 2026-10-25;
   [`scripts/azure_backstop/`](../../scripts/azure_backstop/runbook.ps1)): an Azure Automation
   runbook runs every 4 hours. It deallocates the VM if it is stopped but still
   allocated, if average CPU over the last hour is under 5% (stuck, or finished and
@@ -38,7 +38,9 @@ appear in public commits, PRs or records.
 
 Agent Azure roles are restricted and granted case by case (2026-10-25): each
 grant names the identity, the actions and the scope (VM or resource group). Only
-Joshua grants roles.
+Joshua grants roles. Current grants on the VM: the backstop's `FP compute VM
+backstop` role, and the VM's own identity's `Offline compute self-deallocate` role
+from the PR #746 runner work.
 
 ## Private data and teardown
 
