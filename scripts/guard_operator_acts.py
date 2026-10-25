@@ -35,7 +35,7 @@ interaction, which a model's "the operator approved this" is not. A forbidden ac
 recognises is refused (``deny``). One prompt names every operator act it found in the
 call, because one answer approves all of them.
 
-  * ``pr.merge``     — allow under the conditioned standing GO (Addendum 2026-10-24b),
+  * ``pr.merge``     — pass (no prompt, no allow) under the conditioned standing GO (Addendum 2026-10-24b),
                        **only when pinned to a full 40-hex head SHA**: the GitHub MCP
                        ``merge_pull_request`` tool with ``expectedHeadSha``; ``gh pr merge
                        --match-head-commit <sha>`` (the last one given, as gh reads it); a
@@ -187,7 +187,7 @@ try:  # imported as `scripts.guard_operator_acts` (tests, repo root on sys.path)
 except ImportError:  # run as `python scripts/guard_operator_acts.py`
     from _shell_tokens import Word, expand, is_assignment, program, segments
 
-ALLOW, ASK, DENY = "allow", "ask", "deny"
+PASS, ASK, DENY = "pass", "ask", "deny"
 
 MCP_MERGE = "mcp__github__merge_pull_request"
 MCP_AUTO_MERGE = "mcp__github__enable_pr_auto_merge"
@@ -196,11 +196,13 @@ _SHA = re.compile(r"[0-9a-fA-F]{40}")
 
 # Every capability id the hook emits and its decision. A deny is a registry `forbidden:`
 # entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability. A
-# pinned merge is allowed under the operator's conditioned standing GO (surface-allocation
+# pass emits no permission decision (normal permission evaluation still runs, so the
+# rest of a compound call is never pre-approved) and only adds agent context. A
+# pinned merge passes under the operator's conditioned standing GO (surface-allocation
 # ADR, Addendum 2026-10-24b): the agent merges only after an independent review passed and
 # CI is green at the pinned head; the pin keeps the merge to that exact head.
 DECISION = {
-    "pr.merge": ALLOW,
+    "pr.merge": PASS,
     "pr.merge_unpinned": DENY,
     "pr.auto_merge": DENY,
     "main.direct_push": DENY,
@@ -1387,12 +1389,11 @@ def main() -> int:
     first = _verdict(hits)
     if first:
         user_msg, agent_msg = _reasons(hits, first)
-        sys.stdout.write(json.dumps({"hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": first.decision,
-            "permissionDecisionReason": user_msg,
-            "additionalContext": agent_msg,
-        }}))
+        block = {"hookEventName": "PreToolUse", "additionalContext": agent_msg}
+        if first.decision != PASS:  # a pass never pre-approves the call
+            block.update(permissionDecision=first.decision,
+                         permissionDecisionReason=user_msg)
+        sys.stdout.write(json.dumps({"hookSpecificOutput": block}))
     return 0
 
 
