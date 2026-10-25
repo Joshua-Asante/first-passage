@@ -13,6 +13,7 @@
 **Related:** `docs/ltm/briefs/futures_residual_program_2026-07-05.md` (the pre-registered lanes this stack serves — R5 DJ30/MYM edition, Aegis→6J, Guardian-MGC); `docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md` (P2 FALSIFIED on the as-mapped CME-micro venue — the finding that motivates *discovery-first* rebuilding instead of re-mapping CFD edges); `docs/adr/2026-06-17-dukascopy-retirement.md` + `docs/adr/2026-06-24-oanda-retirement.md` (prior data-feed retirements — Databento is the first vendor feed added since, and the first tick/book-capable one); `docs/adr/2026-06-05-monorepo-layer-boundaries.md` (the boundary contract the additions must survive); the 2026-07-09 DJ30→MYM prototype falsification (memory: structural venue costs, not tunable — the dead end that makes anomaly-*discovery* on native futures data the surviving research direction).
 **Layer:** infrastructure + methodology (research tooling only). **Not** strategy/risk-control parameters — no SL/TP/ATR/risk%/pyramid constant, no `dd_protection` constant, no allocation, no Pine source is touched. The locked MC anchor (99.83/0.17/4.37) is untouched.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-83, ADR03-85, ADR03-87); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the estimate-before-pull rule, the live-rail KEEP verdict and the cost-gate-breach trigger (ADR03-73, ADR03-79, ADR03-82); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -50,16 +51,16 @@ Component roles:
 
 | Component | Role | Explicitly NOT |
 |---|---|---|
-| `databento-data` skill + `db_fetch.py` | Cost-gated GLBX.MDP3 pulls (estimate mandatory before every pull); schema ladder (bars → TBBO → depth → MBO); parent→micro proxy discipline with 2019+ native-micro OOS gate | Not a live data feed for execution; no pull without estimate |
+| `databento-data` skill + `db_fetch.py` | Cost-gated GLBX.MDP3 pulls; schema ladder (bars → TBBO → depth → MBO); parent→micro proxy discipline with 2019+ native-micro OOS gate | Not a live data feed for execution |
 | `futures-anomaly-discovery` skill + `register_search.py` | Candidate generation (STUMPY / ruptures / tsfresh / catch22 / hmmlearn / PySR) with K registered *before* results; cheap Bonferroni/BH triage on close | Never promotes a candidate; outputs are observations, not signals |
 | `strategy-validation` §8 + `deflated_sharpe.py` | Universe-level correction consuming the ledger's K: SPA/StepM/MCS (`arch.bootstrap`), DSR, PBO via CPCV (`skfolio`) | Does not replace §1–§7 within-panel protocols |
 | `nautilus_trader` | **Research / fill-realism backtesting only** — realistic fill simulation for surviving candidates | **Not an execution rail.** NautilusTrader has no Rithmic adapter and therefore cannot execute to Bulenox |
 | `vectorbt` | Fast vectorized sweep layer for bar-level triage | Not the fill-realism arbiter |
 | Research venv (`.venv`, py3.11) + `requirements-research.txt` lockfile | Isolation of the numba/Julia-heavy stack from the ops pipeline env | Research deps do not enter `pyproject.toml` |
 
-**Live-rail verdict: KEEP** TradingView → CrossTrade → NinjaTrader 8 → Bulenox via Rithmic (the identified, not-yet-built rail per CLAUDE.md R3; R6 GO/NO-GO remains operator-only and unmade). Nautilus cannot reach Bulenox (no Rithmic adapter), so no migration question exists today. **Migration trigger:** the Nautilus-as-execution question re-opens if and only if the operation leaves the prop-firm model for a direct-API broker (e.g., IBKR) — at that point a fresh ADR weighs Nautilus against the incumbent rail.
+**Live-rail verdict:** *(Removed 2026-10-25, rule consolidation D5, ADR03-79: the KEEP verdict for TradingView → CrossTrade → NinjaTrader 8 → Bulenox via Rithmic and its Nautilus-as-execution migration trigger. The rail is owned by the S1/S2 ADRs (Addendum 2026-08-29 below); §5 keeps Nautilus research-only.)*
 
-**Data-spend discipline (binding):** every pull is preceded by a free `estimate`; `pull` refuses above `--max-cost`. The $125 free-credit window is the validation budget for the workflow itself.
+**Data-spend discipline:** *(Removed 2026-10-25, D5, ADR03-73: the binding estimate-before-every-pull and `--max-cost` refusal rule, with its $125 free-credit validation budget. The [Addendum 2026-09-10](#addendum-2026-09-10---operator-retirement-of-databento) bars every pull and estimate.)*
 
 **Effective:** immediately upon this commit.
 **Scope:** research layer only (`.claude/skills/`, research venv, lockfile). No execution, allocation, strategy, or risk-control code is touched.
@@ -84,7 +85,7 @@ Component roles:
 
 **Revert trigger (uselessness):** if by **2027-01-10** (two quarterly review cycles) the stack has produced **zero** closed `register_search.py` manifests whose survivors were handed to the §8 gate — i.e., no discovery run has completed the pipeline even once — the stack is dead weight; archive the three skills and retire the venv/lockfile via a superseding ADR.
 
-**Revert trigger (cost-gate breach):** any Databento billing event that was not preceded by a recorded `estimate`, or any single pull >$25 without prior operator sign-off, falsifies the "mechanically enforceable cost gate" premise → freeze all pulls, audit the breach, re-decide the data rail.
+**Revert trigger (cost-gate breach):** *(Removed 2026-10-25, D5, ADR03-82: a Databento billing event without a recorded `estimate`, or a single pull >$25 without operator sign-off, froze pulls and forced an audit. The Addendum 2026-09-10 retired Databento, so no pull exists to breach.)*
 
 **Rail-verdict falsifier:** the KEEP verdict is falsified only by its trigger — leaving the prop-firm model for a direct-API broker. If that happens, this ADR's rail section is superseded by a fresh execution-rail ADR; nothing here pre-commits that choice.
 
@@ -96,7 +97,6 @@ Component roles:
 
 - **Wiring Nautilus (or any research component) toward live execution** — tempting once it's installed and simulating fills well; ruled out because no Rithmic adapter exists and the rail decision belongs to R6 (operator-only, unmade). Research code never places an order.
 - **Running any discovery tool before `register_search.py open`** — the "just a quick look at the matrix profile" move. K cannot be declared after results are seen; the script refuses `close` without `open`, and the operator side must refuse the informal peek.
-- **Skipping the estimate because "it's small"** — every pull, no exceptions; the estimate is free by construction.
 - **Adding research deps to `pyproject.toml` or installing them into the ops env** — single-environment convenience is exactly how a numba/Julia stack destabilizes the pipeline that computes live multipliers.
 - **Treating a parent-era (ES/NQ/YM/GC) result as micro-validated** — the 1:10 economics re-scale + native-micro 2019+ OOS gate are mandatory before any candidate is trusted (proxy discipline).
 - **Hardcoding, printing, or committing `DATABENTO_API_KEY`** — env-var reference only, everywhere, always.

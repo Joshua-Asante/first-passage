@@ -225,8 +225,9 @@ under the [`2026-06-30 retirement ADR`](adr/2026-06-30-no-manual-trading-cfd-ret
 
 Default DXTrade `contractValue` is 1. At `contractValue=1`, Striker position sizing produces approximately **7% per-trade risk** against a 1% intended risk. This is catastrophic and silent — the platform will execute the trade without warning.
 
-**Conditional check:** If DXTrade is explicitly reactivated, verify
-`contractValue=10` before any Striker trade.
+*(The conditional pre-trade check for a DXTrade reactivation was removed 2026-10-25, rule
+consolidation D5, OPS-4; the value 10 stays recorded above and in the
+[`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md) locked table.)*
 
 **Origin:** Prop firm setup phase. Caught during Pine-to-platform parameter reconciliation. Would have been account-ending if missed.
 

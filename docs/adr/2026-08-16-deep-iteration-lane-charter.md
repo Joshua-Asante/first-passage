@@ -14,6 +14,7 @@ disclosure-only fourth conjunct (cross-campaign sealed-consultation ledger); §2
 **Related:** [no-counterparty channel](2026-08-15-no-counterparty-statistical-sourcing-channel.md) (sibling charter; this lane mirrors its structure) · [family-K disclosure](2026-08-04-family-k-bank-disclosure-not-gate.md) · [W4 dormancy](2026-08-07-w4-minimal-gate-set-dormancy.md) · [Q-CAPBAND-1 closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-CAPBAND-1-closure-resolved.md) · [M-19](../methodology/lessons/methodology_lessons.md) · [MSL slate-2 design box](2026-08-13-msl-slate-2-design-box.md)
 **Layer:** research governance — no live-risk surface; no locked parameter; no allocation; no arming.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR11-1, ADR11-2, ADR11-5, ADR11-26); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the Databento dry-run, pull and cost-gate procedures (ADR11-19, ADR11-38); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -81,7 +82,7 @@ Charter a **deep-iteration lane** (`--lane deep`) with the following properties,
    landed in its own dated commit, not this one).
 
    **This is not a Cap change:** `CAP = 1.0` remains the reachability prior for every one-shot channel; this lane replaces the *prior* with a *measured demand* — the survivor must itself clear `floor_at_k(K, confirm_years)` on data the search never touched. The K-cap addendum's rationale (refuse expensive deaths at the cheapest possible moment) is traded against deliberately here: the lane buys potentially-expensive confirm-stage deaths, bounded by §4's two-campaign falsification budget — that trade is the charter's price, stated, not hidden.
-3. **Frozen train/confirm partition, confirm ≥ the years the floor was computed at.** Named in the prereg before any variant is scored. All iteration feedback reads **train only**; the confirm partition is read **once**, on the single pre-nominated survivor (nomination rule frozen at prereg: best-on-train under a stated statistic — selection is in-sample only). Per-variant confirm results are never computed. A 6.5-year confirm in practice means parent-era Databento history on the train side (cost dry-run mandatory before any pull) with the native panel era reserved for confirm, or an explicitly shorter confirm with the floor honestly recomputed at that length.
+3. **Frozen train/confirm partition, confirm ≥ the years the floor was computed at.** Named in the prereg before any variant is scored. All iteration feedback reads **train only**; the confirm partition is read **once**, on the single pre-nominated survivor (nomination rule frozen at prereg: best-on-train under a stated statistic — selection is in-sample only). Per-variant confirm results are never computed. A 6.5-year confirm in practice means parent-era history on the train side *(the Databento cost-dry-run-then-pull procedure was removed 2026-10-25, rule consolidation D5, ADR11-19: Databento is retired)* with the native panel era reserved for confirm, or an explicitly shorter confirm with the floor honestly recomputed at that length.
 4. **Regime-fragility control (the CFD lesson, priced).** The prereg freezes an own-series half-split on the confirm partition — split point and per-half floor named before the read; deliberately **not** named "regime-robustness gate" (that gate is scoped to dd_protection-class sweeps; mirror of the blind channel's forbidden move 5). A survivor whose confirm passes pooled but fails a half is `FALSIFIED-FRAGILE`, not admissible — this is the control whose absence produced the locked book's H1 13.84%.
 5. **Everything downstream is unchanged.** Cost-law ≥ 4× at the venue-legal expression (arithmetic run at family selection, before the search opens); N-SURV (intraday-honest bust ≤ 3.0% ∧ P(pass) ≥ 50%) byte-unedited; native-TV anchor before admission; lifecycle intake at SURVIVAL-ONLY / WATCH-1; M1 + per-session GO for anything live. The lane supplies candidates *to the existing gauntlet*; it admits nothing by itself.
 6. **Multi-shot correction re-armed.** At K in the tens the frozen split is no longer the "explicit, weaker, disclosed substitute" it is at K ≤ 3: the campaign prereg must name SPA/StepM thresholds — and, if cross-validated selection is used, PBO/CPCV thresholds **plus the time-series-leakage argument W4's PBO row requires** — discharging W4's re-arm condition with the operator GO that ratifies the prereg (GO dated after 2026-08-07). The `universe_gate` orchestrator re-arms only when SPA + DSR + PBO are all re-armed for the family (W4's own all-three condition).
@@ -149,7 +150,7 @@ Charter a **deep-iteration lane** (`--lane deep`) with the following properties,
 2. **Code:** `--lane deep` flag on `register_search` (open requires the prereg path + declared K + partition; refuses on the §2.2(i)–(iii) predicate), lane-scoped tests. No change to other lanes' predicates.
 3. **Doc scoping:** one-line lane-scoping note on `docs/methodology/strategy_harvest.md` Clause-K and a reader-intercept on M-19 (its K-sweep will otherwise be quoted against the lane without §2.2's answer).
 4. **Skill wiring:** `futures-anomaly-discovery` SKILL K-accounting section gains the lane row.
-5. **Data (if the 6.5-year-confirm geometry is elected):** Databento parent-era cost dry-run → operator GO → pull → panel manifest.
+5. **Data (if the 6.5-year-confirm geometry is elected):** *(Removed 2026-10-25, D5, ADR11-19: the Databento parent-era dry-run → GO → pull → manifest step. Databento is [retired](2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento) with no approved replacement; any new data spend is an operator act.)*
 6. **§2.2(iv) code (owned by [`2026-08-22-grow0-two-ledger-k-question.md`](2026-08-22-grow0-two-ledger-k-question.md), not this charter's own §7)** — `lab/discovery/burned_segments.py`'s `consultation_count`/`consultation_history` extension lands in that ADR's own dated commit; §2.2(iv) is enforced by human review at prereg-authoring time until `register_search.open_run` wiring (build-authorization ADR forward work) lands. This charter's own item 2 above is unaffected — `--lane deep`'s code-enforced refusal predicate stays §2.2(i)–(iii) only.
 
 ---
@@ -234,22 +235,18 @@ crossed by anything this charter's first campaign (K≈10, bar-level mechanism-f
 needs.
 
 **Ruling:** bar-level discovery on `GC/CL/6A` (train) and `MGC/MCL/M6A` (confirm) is **free at
-any of the three tested granularities** — the first lane campaign's prereg may name whichever
-of `ohlcv-1d/1h/1m` its mechanism family needs without a cost gate, and may pull immediately on
-its own operator GO (no separate `--max-cost` negotiation required for bars). **Escalating past
-bars (`tbbo` or finer) is a real-money decision** ($200s–$2,000s at this symbol/window scope)
-and stays gated exactly as Rule 2 already requires — only after a candidate survives on bars,
-and only with an explicit `--max-cost` + operator sign-off at pull time, never inferred from
-this dry-run.
+any of the three tested granularities**; **escalating past bars (`tbbo` or finer) is a real-money
+decision** ($200s–$2,000s at this symbol/window scope). *(Removed 2026-10-25, rule consolidation
+D5, ADR11-38: the pull permissions and gates this ruling set — bar pulls on the campaign's operator
+GO alone, `tbbo` or finer only after bar survival with an explicit `--max-cost` and operator
+sign-off. Databento was retired 2026-09-10 with no replacement.)*
 
 **GO-1 status: fully discharged.** Both conditions met — Q-POLFRONT-1 landed
 `RESOLVED-QUANTIFIED` (2026-08-16) and this dry-run is on record. §7 step 1 (first campaign
 prereg) is now the only remaining gate before the lane's first candidate.
 
 **Forbidden moves added:** citing this addendum's $0.00 bar-schema figures as if they extended
-to `tbbo`/`mbp-1`/`mbp-10`/`mbo` — they do not, the table above shows the actual jump; treating
-this estimate-only dry-run as authorization for any `pull` — a pull is a separate, campaign-scoped
-act under its own `--max-cost`; re-deriving the TRAIN/CONFIRM boundary — `2018-12-31` is the
+to `tbbo`/`mbp-1`/`mbp-10`/`mbo` — they do not, the table above shows the actual jump; re-deriving the TRAIN/CONFIRM boundary — `2018-12-31` is the
 estate's own ratified IS boundary, reused, not re-struck.
 
 ---

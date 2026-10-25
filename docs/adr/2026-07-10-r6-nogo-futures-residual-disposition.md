@@ -11,6 +11,7 @@
 **Related:** residual-program R6 (operator-only GO/NO-GO); `docs/adr/2026-07-03-hardcore-{p1,p3,p4,p5}-*.md` (the two-sided gates whose live existence-bars this NO-GO makes dormant); companion addendum on `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` (FXIFY formally closed); memories `project_futures_prop_pivot`, `project_dj30_mym_prototype_falsified`, `project_aegis_6j_transfer_state`, `project_us_legal_master_research`.
 **Layer:** execution (live-trading venue + scale path) — **not** strategy/risk-control. No locked parameter, allocation, `dd_protection` constant, or Pine source is touched by this ADR.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-95); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the sole-active Aegis→M6J lane ruling and the closed-book rail bar (ADR03-94, ADR03-99); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -42,7 +43,7 @@ That contingency has now been run. The R5 DJ30→MYM prototype was **FALSIFIED (
 **R6 = NO-GO.** The futures-prop residual program is closed. Concretely:
 
 1. **No futures-prop book is deployed.** The Bulenox (or any prop-firm) futures fan-out of the locked four-strategy portfolio is NO-GO. No Bulenox account is registered; no CrossTrade/NinjaTrader-8-via-Rithmic rail is built; no live automated prop execution is initiated. The `core/firm_rules.py` Bulenox config and the P0–P5 gate ADRs remain on record for provenance and for a future re-open under §4, not as live targets.
-2. **The sole active scale lane is self-funded Aegis→M6J.** Per operator decision this session, the Aegis USDJPY→micro-JPY-futures (M6J) transfer lane is the surviving active scale path (lineage: `project_aegis_6j_transfer_state`, v0.3 129 trades / +$39K / PF 2.318 / +0.218R ≈ 50% preservation — a self-funded futures book, not a prop fan-out). Its own go-live authorization is a separate operator decision; this ADR authorizes the *lane*, not a live start.
+2. **Self-funded Aegis→M6J lane.** *(Removed 2026-10-25, rule consolidation D5, ADR03-94: the ruling that self-funded Aegis→M6J is the sole active scale lane and that its lane authorization is not a live start. The lane was closed by [`2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md). Lineage kept: `project_aegis_6j_transfer_state`, v0.3 129 trades / +$39K / PF 2.318 / +0.218R ≈ 50% preservation.)*
 3. **Guardian-MGC (R7, the prior Rank-1 self-funded track) is PARKED.** The self-funded Guardian→micro-gold-futures track is parked, not killed — its R7 granularity-floor work was data-blocked (needs a real GC1!/MGC1! bar-export) and it is set down behind Aegis→M6J.
 
 **Effective:** immediately upon acceptance (2026-07-10).
@@ -78,8 +79,8 @@ This ADR accepts a real cost (§6): it closes the futures-prop scale path the 20
 
 - **Re-running R5's DJ30→MYM E1 on a shifted exit/cost grid to overturn the NO-GO.** The one-shot is spent and operator-accepted FALSIFIED; the free lever cannot reach the gap. Re-opening requires §4's new-mechanism trigger, not a re-fit.
 - **Relabeling the NO-GO as GO-CONDITIONAL on the DJ30-only book.** The gate that would have made it conditional is the gate that failed; a conditional-with-named-blocker where the blocker is the failed test is a NO-GO in disguise.
-- **Standing up the CrossTrade/NinjaTrader-8-via-Rithmic rail "so it's ready."** The rail is dormant under NO-GO; building transport for a closed book is sunk effort and re-opens the automated-prop-execution surface this decision closes.
-- **Treating Aegis→M6J's lane authorization as a live-start authorization.** This ADR authorizes the *lane* as the surviving scale path; the go-live is a separate operator decision with its own venue/parity checklist. "The lane is open so I'll start it" skips that gate.
+- *(Removed 2026-10-25, D5, ADR03-99: the bar on standing up the CrossTrade/NinjaTrader-8-via-Rithmic rail for a closed book. The c1 rail was later authorized by [`2026-07-17-c1-rail-build-account-registration-go.md`](2026-07-17-c1-rail-build-account-registration-go.md) (Addendum 2026-09-01 below), and closed-book deployment is barred by AGENTS.md §Strategy Reference.)*
+- *(Removed 2026-10-25, D5, ADR03-94: the lane-authorization-is-not-a-live-start bar; the lane is closed.)*
 - **Letting any futures re-mapping touch locked strategy parameters.** The Aegis→M6J sizing translation (spot %-risk → integer micro contracts) is validated with parity discipline; it is forbidden from changing any SL/TP/ATR/risk%/pyramid/session constant (Rule 0).
 
 ---
