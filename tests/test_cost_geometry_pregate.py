@@ -1,15 +1,17 @@
 """Tests for scripts/cost_geometry_pregate.py — the instrument-ledger Phase-0
 cost-geometry pre-gate (ADR 2026-06-22).
 
-The gate makes L-COST-GEOMETRY mechanical: cost_R = round_trip_cost / stop_dist,
-PASS iff cost_R < ceiling. These tests pin it against the two documented anchors
-the gate is paid for by:
+Report-only since the 2026-10-24 ruling (ADR addendum): cost_R =
+round_trip_cost / stop_dist, its band and the sub-ATR flag are recorded; there is
+no pass/fail threshold. These tests pin the record against the two documented
+anchors:
 
   * USOIL spike-fader (docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md /
     lab/analysis/usoil_rdm/RESULTS.md): realized round-trip cost ~0.090R on a
-    sub-ATR confirmation stop -> FAIL.
+    sub-ATR confirmation stop -> "marginal", sub-ATR flagged.
   * USDCAD 15m cost law (ops/instruments/USDCAD.md durable finding #1):
-    0.097R round-trip at a 1.42xATR stop; 0.055R at 2.5xATR -> both FAIL @0.05.
+    0.097R round-trip at a 1.42xATR stop ("marginal"); 0.055R at 2.5xATR
+    ("acceptable").
 
 Stdlib-only (no numpy/pandas/pytest hard dep) so it runs on a public clone.
 """
@@ -73,13 +75,13 @@ def test_wilder_atr_constant_true_range():
 
 # ── documented anchors (the lesson made mechanical) ─────────────
 
-def test_usoil_spike_fader_fails_on_realized_substop():
+def test_usoil_spike_fader_realized_substop_is_flagged():
     """USOIL: x_price ~0.08, realized confirmation stop ~0.9 (sub-ATR at 4H
-    ATR~3.0) -> ~0.089R, the ~0.090R kill. FAILS, sub-ATR flagged."""
+    ATR~3.0) -> ~0.089R, the ~0.090R kill. Sub-ATR flagged."""
     bars = _flat_bars(3.0, close=90.0, n=60)  # 4H ATR ~ 3.0
     r = cgp.evaluate(bars, spread=0.08, stop_atr=None, realized_stop=0.9,
-                     ceiling=0.05, symbol="USOIL")
-    assert r.verdict == "FAIL"
+                     symbol="USOIL")
+    assert r.sub_atr_stop
     assert math.isclose(r.cost_r, 0.08 / 0.9, rel_tol=1e-6)
     assert 0.088 < r.cost_r < 0.091          # ~0.090R documented
     assert r.realized_stop_in_atr < 1.0      # the sub-ATR trap is visible
@@ -88,43 +90,53 @@ def test_usoil_spike_fader_fails_on_realized_substop():
 
 def test_usdcad_15m_cost_law_anchor():
     """USDCAD finding #1: 0.097R at 1.42xATR, 0.055R at 2.5xATR. With the
-    measured spread/ATR ratio ~0.1377 both stop choices FAIL @0.05."""
+    measured spread/ATR ratio ~0.1377: marginal at 1.42xATR, acceptable at 2.5xATR."""
     atr = 0.0009
     ratio = 0.1377
     spread = ratio * atr
     bars = _flat_bars(atr, close=1.35, n=60)
 
     tight = cgp.evaluate(bars, spread=spread, stop_atr=1.42, realized_stop=None,
-                         ceiling=0.05, symbol="USDCAD")
-    assert tight.verdict == "FAIL"
+                         symbol="USDCAD")
+    assert tight.band == "marginal" and not tight.sub_atr_stop
     assert math.isclose(tight.cost_r, ratio / 1.42, rel_tol=1e-6)
     assert 0.096 < tight.cost_r < 0.098      # ~0.097R documented
 
     wide = cgp.evaluate(bars, spread=spread, stop_atr=2.5, realized_stop=None,
-                        ceiling=0.05, symbol="USDCAD")
-    assert wide.verdict == "FAIL"            # 0.055R still > 0.05 ceiling
+                        symbol="USDCAD")
+    assert wide.band == "acceptable"
     assert 0.054 < wide.cost_r < 0.056
 
 
 def test_range_fx_cross_class_flag():
     """The EURGBP/EURCHF failure mode the 5th-leg search keeps surfacing: a
-    1.2-pip spread on a 10-pip 15m ATR at a 2xATR stop = 0.06R -> FAIL."""
+    1.2-pip spread on a 10-pip 15m ATR at a 2xATR stop = 0.06R ("acceptable")."""
     bars = _flat_bars(0.0010, close=0.86, n=60)   # ~10 pip ATR
     r = cgp.evaluate(bars, spread=0.00012, stop_atr=2.0, realized_stop=None,
-                     ceiling=0.05, symbol="EURGBP")
-    assert r.verdict == "FAIL"
+                     symbol="EURGBP")
+    assert r.band == "acceptable"
     assert math.isclose(r.cost_r, 0.06, rel_tol=1e-9)
     assert math.isclose(r.cost_ratio_1x_atr, 0.12, rel_tol=1e-9)
 
 
-def test_clean_instrument_passes():
-    """Wide ATR relative to spread + a generous stop clears the gate."""
+def test_clean_instrument_reads_comfortable():
+    """Wide ATR relative to spread + a generous stop reads comfortable."""
     bars = _flat_bars(0.0012, close=1.10, n=60)
     r = cgp.evaluate(bars, spread=0.00006, stop_atr=3.0, realized_stop=None,
-                     ceiling=0.05, symbol="EURUSD")
-    assert r.verdict == "PASS"
-    assert r.cost_r < 0.05
-    assert r.band in ("comfortable", "acceptable")
+                     symbol="EURUSD")
+    assert r.band == "comfortable" and not r.sub_atr_stop
+
+
+def test_report_only_has_no_verdict_and_exits_zero(tmp_path):
+    """Ruling 2026-10-24 (b): a crippling cost is recorded, never a blocking exit."""
+    r = cgp.evaluate(_flat_bars(0.001, n=60), spread=0.0005, stop_atr=1.0,
+                     realized_stop=None)
+    assert r.band == "crippling"
+    assert not hasattr(r, "verdict") and not hasattr(r, "ceiling")
+    p = tmp_path / "bars.csv"
+    rows = ["time,open,high,low,close"] + [f"t{i},1.0,1.001,1.0,1.0" for i in range(40)]
+    p.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    assert cgp.main(["--csv", str(p), "--spread", "0.0005", "--stop-atr", "1.0"]) == 0
 
 
 def test_spread_column_median_used():
@@ -132,7 +144,7 @@ def test_spread_column_median_used():
         high=[1.0 + 0.001] * 30, low=[1.0] * 30, close=[1.0] * 30,
         spread=[0.0001, 0.0002, 0.0003] * 10,   # median 0.0002
     )
-    r = cgp.evaluate(bars, spread=None, stop_atr=2.0, realized_stop=None, ceiling=0.05)
+    r = cgp.evaluate(bars, spread=None, stop_atr=2.0, realized_stop=None)
     assert math.isclose(r.round_trip_spread, 0.0002, rel_tol=1e-9)
 
 
