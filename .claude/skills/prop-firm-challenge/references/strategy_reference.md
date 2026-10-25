@@ -44,9 +44,7 @@ Long-only (short side eliminated in v3 → v4 rebuild — no edge). **BE logic I
 Do not remove.**
 
 **Regime risk:** USDJPY range-regime sensitive; 2022 was a materially weaker year than
-2023–2025. **Passive diagnostic:** rolling 40-trade PF — track in weekly review only. NOT a
-halt trigger. If it degrades meaningfully, apply The Algorithm consciously, do not
-reflexively halt.
+2023–2025.
 
 **Binary-event pause rule applies** (see SKILL.md "Portfolio Configuration → Aegis pause
 rule"). Aegis's live instrument is venue-dependent — see SKILL.md's note on the non-canonical

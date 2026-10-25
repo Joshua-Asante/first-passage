@@ -150,16 +150,6 @@ Run before declaring an audit complete:
 
 ---
 
-## Reference files (to be authored as audit history accumulates)
-
-- `references/audit_template_methodology.md` — meta-layer audit template (when first methodology audit completes)
-- `references/audit_template_portfolio.md` — object-layer audit template (when first portfolio audit completes)
-- `references/degeneration_signals.md` — expanded catalog of degeneration signals as new ones are discovered in practice
-
-Until these reference files are authored from lived audit experience, follow the structure in this SKILL.md body directly. The first two completed audits become the canonical templates.
-
----
-
 ## Worked example (canonical anchor)
 
 **2026-05-12 portfolio audit, applying the seven diagnostic questions to the 4-strategy portfolio.** Audit produced surplus content as a byproduct: question 1 (hard core integrity) led to examining whether the implicit "instrument correlation ≈ strategy correlation" assumption had been preserved. Direct evidence from the existing locked portfolio (DJ30 / NAS strategy-level correlation materially lower than instrument-level correlation would predict) was inconsistent with the assumption. This was not predicted by the audit; it surfaced as a consequence of asking the question rigorously.
