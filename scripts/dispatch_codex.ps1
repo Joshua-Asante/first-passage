@@ -7,14 +7,17 @@ copy lacks codex-code-mode-host.exe and cannot run tools. The child authenticate
 only with the agent's own token (FP_AGENT_GH_TOKEN -> GH_TOKEN; GITHUB_TOKEN cleared). With
 no agent token it refuses to launch, because gh would fall back to the operator's stored
 credential. -DryRun prints the command and runs nothing; the token is never printed.
+-ReviewBase <ref> runs `codex exec review --base <ref>` instead of a prompt, forced to the
+read-only sandbox: the Codex CLI review fallback the merge-train skill uses when a GitHub
+Codex review stalls.
 #>
 [CmdletBinding()]
 param(
   [Parameter(Mandatory)][string]$Worktree,
-  [Parameter(Mandatory)][string]$Prompt,
+  [string]$Prompt,
   [Parameter(Mandatory)][string]$OutputFile,
   [ValidateSet('read-only','workspace-write')][string]$Sandbox = 'workspace-write',
-  [string]$Model, [string]$Codex, [switch]$DryRun
+  [string]$Model, [string]$Codex, [string]$ReviewBase, [switch]$DryRun
 )
 $ErrorActionPreference = 'Stop'
 if (-not $Codex -and (Get-Command Get-AppxPackage -ErrorAction SilentlyContinue)) {
@@ -23,9 +26,16 @@ if (-not $Codex -and (Get-Command Get-AppxPackage -ErrorAction SilentlyContinue)
 }
 $wt = (Resolve-Path -LiteralPath $Worktree).Path
 if (Test-Path -LiteralPath (Join-Path $wt '.env')) { throw "Refusing: $wt contains .env; dispatch from a worktree under .claude\worktrees\." }
-$codexArgs = @('exec', '-C', $wt, '-s', $Sandbox, '-o', $OutputFile)
-if ($Model) { $codexArgs += @('-m', $Model) }
-$codexArgs += $Prompt
+if ($ReviewBase) {
+  # `review --base` takes no prompt argument.
+  $codexArgs = @('exec', '-C', $wt, '-s', 'read-only', 'review', '--base', $ReviewBase, '-o', $OutputFile)
+  if ($Model) { $codexArgs += @('-m', $Model) }
+} else {
+  if (-not $Prompt) { throw 'Pass -Prompt, or -ReviewBase <ref> for a review.' }
+  $codexArgs = @('exec', '-C', $wt, '-s', $Sandbox, '-o', $OutputFile)
+  if ($Model) { $codexArgs += @('-m', $Model) }
+  $codexArgs += $Prompt
+}
 $token = $env:FP_AGENT_GH_TOKEN
 if ($DryRun) {
   "codex: $Codex"

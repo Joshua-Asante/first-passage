@@ -11,13 +11,13 @@ PWSH = shutil.which("pwsh")
 pytestmark = pytest.mark.skipif(PWSH is None, reason="PowerShell 7 not installed")
 
 
-def _run(tmp_path, *extra, env_token=None, dry=True):
+def _run(tmp_path, *extra, env_token=None, dry=True, prompt="do x"):
     env = {k: v for k, v in os.environ.items() if k != "FP_AGENT_GH_TOKEN"}
     if env_token:
         env["FP_AGENT_GH_TOKEN"] = env_token
     # An explicit -Codex keeps the test off Windows package discovery (portable to Linux CI).
     args = [PWSH, "-NoProfile", "-File", str(SCRIPT), "-Worktree", str(tmp_path),
-            "-Prompt", "do x", "-OutputFile", str(tmp_path / "out.txt"),
+            *(["-Prompt", prompt] if prompt else []), "-OutputFile", str(tmp_path / "out.txt"),
             "-Codex", str(tmp_path / "codex-not-run.exe"), *extra]
     if dry:
         args.append("-DryRun")
@@ -54,3 +54,17 @@ def test_refuses_worktree_with_env(tmp_path):
     out = _run(tmp_path)
     assert out.returncode != 0
     assert ".env" in out.stderr + out.stdout
+
+
+def test_review_mode_is_read_only_with_base_and_no_prompt(tmp_path):
+    # Fails if the CLI review fallback could write to the worktree or pass a prompt that
+    # `codex exec review --base` rejects.
+    out = _run(tmp_path, "-ReviewBase", "origin/main", "-Sandbox", "workspace-write", prompt=None)
+    assert out.returncode == 0, out.stderr
+    assert f"exec | -C | {tmp_path} | -s | read-only | review | --base | origin/main | -o |" in out.stdout
+
+
+def test_prompt_required_without_review_base(tmp_path):
+    out = _run(tmp_path, prompt=None)
+    assert out.returncode != 0
+    assert "-ReviewBase" in out.stderr + out.stdout
