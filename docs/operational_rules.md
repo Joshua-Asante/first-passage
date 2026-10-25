@@ -469,13 +469,15 @@ stale generated view fails the `instrument-profiles` gate
 ([`scripts/gates.yml`](../scripts/gates.yml)) — so this clause documents the
 obligation rather than carrying it.
 
-> ⚠ **2026-10-25 — decision pending.** The 0.05R PASS ceiling below is justified as consistent with the 4×-median-cost hurdle, which [Joshua's 2026-10-24 ruling](notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) deleted. Whether it is re-derived, made report-only or retired is Joshua's decision (decision packet: [PR #900](https://github.com/Joshua-Asante/first-passage/pull/900)); until then this sub-step stands as written.
-
 **Phase-0 cost-geometry pre-gate (added 2026-06-22; canonical:
 [`docs/adr/2026-06-22-cost-geometry-pregate.md`](adr/2026-06-22-cost-geometry-pregate.md)).**
 Any session that opens a *new candidate entry mechanism* on an instrument MUST,
-at Phase 0 (before the first backtest), run the cost-geometry pre-gate and record
-`cost_R` + the verdict in the ledger disposition:
+at Phase 0 (before the first backtest), run the cost-geometry report and record
+`cost_R`, its band and the realized stop-in-ATR (sub-ATR flag) in the ledger
+disposition. It is **report-only** since the 2026-10-24 ruling
+([ADR addendum](adr/2026-06-22-cost-geometry-pregate.md#addendum-2026-10-24--report-only-operator-ruling-option-b)): it blocks
+nothing, and the values feed the candidate's own net-return and cost-sensitivity
+estimate.
 
 ```bash
 python scripts/cost_geometry_pregate.py --csv <canonical M15 series> \
@@ -484,18 +486,12 @@ python scripts/cost_geometry_pregate.py --csv <canonical M15 series> \
 
 It computes `median(spread)/median(ATR15m)` from the **canonical TV**
 15m series (per the 2026-06-12 feed policy) and the realized round-trip
-`cost_R = round_trip_cost / (stop_atr · median(ATR15m))`. **PASS iff
-`cost_R < 0.05R`** (the round-trip cost a PF~2.0 after-cost leg absorbs with
-margin; consistent with the standing 4×-median-cost hurdle). The stop fed in MUST
+`cost_R = round_trip_cost / (stop_atr · median(ATR15m))`. The stop fed in MUST
 be the strategy's **realized** stop, not an assumed comfortable k·ATR — the USOIL
 trap is a sub-ATR confirmation stop that reads "comfortable" assumed but is ~8×
 the cost realized (use `--realized-stop` for structural stops; the gate flags any
-sub-ATR stop). A **FAIL** means the mechanism *as specified* is cost-infeasible
-and does not proceed to backtest without a stop-geometry change or a lower-cost
-venue (the venue/cost add-back condition,
-[`docs/adr/2026-06-14-rejected-candidate-patterns.md`](adr/2026-06-14-rejected-candidate-patterns.md)
-§A). A **PASS is necessary-not-sufficient** — the pre-registered backtest still
-runs. This makes the L-COST-GEOMETRY lesson (the USOIL spike-fader kill,
+sub-ATR stop). A low `cost_R` is never edge evidence; the pre-registered backtest
+still runs. This makes the L-COST-GEOMETRY lesson (the USOIL spike-fader kill,
 [`lab/archive/usoil_rdm/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/usoil_rdm/RESULTS.md) (stub:
 [`lab/analysis/usoil_rdm/CARD.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/usoil_rdm/CARD.md)); the
 USDCAD durable finding #1) a mechanical pre-flight rather than a post-hoc finding.
@@ -794,7 +790,7 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
-- **2026-10-25** — Rule 10 Phase-0 cost-geometry pre-gate: reader banner added marking the 0.05R ceiling's 4× derivation as deleted (2026-10-24 ruling) and the keep/report-only/retire choice as pending Joshua's decision; obligation text unchanged. [`ADR`](adr/2026-06-22-cost-geometry-pregate.md)
+- **2026-10-24** — Rule 10 Phase-0 cost-geometry pre-gate made report-only (operator ruling, option (b)): the 0.05R PASS/FAIL ceiling and the blocking FAIL removed; `cost_R`, band and sub-ATR flag still recorded. Replaces the same-day pending-decision banner. [`ADR`](adr/2026-06-22-cost-geometry-pregate.md)
 - **2026-10-15** — Rule 9 rewritten from "sync Pine into the worktree" to "read Pine
   in place by the primary checkout's absolute path"; the copy tool is retired because
   its remedy copied the book's Pine, which campaign §60 rule 1 forbids.

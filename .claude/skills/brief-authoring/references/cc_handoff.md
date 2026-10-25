@@ -6,7 +6,7 @@
 **Repo:** `first-passage` (or specific repo path)
 **Brief type:** CC handoff (single-step | multi-step)
 **Parent question:** Q-X (if executing a Pre-Q) | <owning specification, campaign, plan, PR or dated ADR> (if executing an approved decision) | `N/A`
-**Authority:** Joshua (operator). The parent authors this brief; the selected agent executes within its authorized scope. Record any existing scoped authorization here. No commit/merge without Joshua's go; a `DONE` status or recommended next action supplies no permission.
+**Authority:** Joshua (operator). The parent authors this brief; the selected agent executes within its authorized scope. Record any existing scoped authorization here. Committing and pushing the agent's own `codex/`/`claude/` branch and opening a PR need no per-action go (operator ruling 2026-10-24); no merge without Joshua's go; a `DONE` status or recommended next action supplies no permission.
 
 ---
 

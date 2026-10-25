@@ -296,6 +296,12 @@ Each item is owed to the named packet and is absent from the deployed rail and d
 missing the disposition is **stop and return to the owner** — never hand-edit live state, never
 improvise an interlock, never substitute a source.
 
+- **Revival precondition (operator ruling 2026-10-24)** — before any re-arm. The CrossTrade
+  secrets were wiped from `/data/c1_rail_config.json` and revoked; reissue them into `fly secrets`
+  with the config holding `secret:NAME` references only (the notifier's `secret_ref` pattern),
+  land the host-side M1 gate in `c1_rail_http_server.load_config` (owed at TB-I3), and record a
+  fresh M1 acceptance for the instance. Deploys use a per-app expiring token
+  (`fly tokens create deploy -a <app> -x 2h`); no standing Fly login.
 - **Sealed runtime-input inventory and evidence capture contract** — TB-B7 / TB-S3 → TB-I3.
   Classify every bound volume input as immutable or intentionally mutable, fix digest/projection
   rules and the authorized transition evidence required by E2, and specify the complete daemon

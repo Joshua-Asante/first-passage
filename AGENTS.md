@@ -232,6 +232,8 @@ not the standing path.
 parallel gate list. `main` requires a PR and the `skills (3.12)` status ([Q-GATESTACK-1's addendum](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md)
 records the ruleset); other path-filtered checks are not required merge checks.
 
+**Merges and credentials (Joshua, 2026-10-24).** An agent may merge a PR, pinned to its head SHA, once a Codex review at that head comes back clean and every CI check is completed and green; auto-merge stays forbidden. After fixing Codex findings, push and comment `@codex review` for a fresh review of the new head. A PR may merge only if a review is clean within three Codex reviews; if three reviews have found issues, stop fixing and return it to its original owner for a rewrite. Agents act under their own scoped credentials (a repo-scoped GitHub PAT), never the operator's tokens, and hold no Fly or broker credential ([Addendum 2026-10-24b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody)).
+
 ## Python environment and local checks
 
 - Use the launcher of the checkout being tested: `.\fp.ps1 doctor` before project Python work; `.\fp.ps1 python ...` for operations Python; `.\fp.ps1 test`, `test-ops` and `check` for the standard suites and gates; `.\fp.ps1 python -m pytest <paths>` for selected tests. Without PowerShell 7.3+: `python -I scripts/fp.py <command>`.

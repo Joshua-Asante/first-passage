@@ -171,6 +171,19 @@ runs, exits 0 once the VM is verified deallocated or has not started within the
 grace period, and exits 2 with `.cache/azure-vm-watch/ALARM.txt` if deallocation
 cannot be verified. Run one watcher per VM; it never prints the subscription ID.
 
+## Agent CLI dispatch
+
+`dispatch_claude.ps1` (receipts and return validation; see `agent_handoff.md`) and
+`dispatch_codex.ps1` (thin Codex wrapper):
+
+```powershell
+.\scripts\dispatch_codex.ps1 -Worktree <worktree> -Prompt 'Read TICKET.md and execute it.' -OutputFile <scratch>\last.txt [-Sandbox read-only] [-Model gpt-6.1-sol] [-DryRun]
+```
+
+It runs the Codex app's bundled `app\resources\codex.exe` (the `.sandbox-bin` copy cannot run tools),
+passes `FP_AGENT_GH_TOKEN` as `GH_TOKEN` to the child only, and refuses a directory containing `.env`.
+Tests: `tests/scripts/test_dispatch_codex.py` (dry-run).
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via
@@ -350,7 +363,7 @@ or CLI input; 3 source/target/release-policy refusal.
 remain `always` gates. [`check_skill_refs.py`](check_skill_refs.py) checks eligible
 repository references with its documented exceptions.
 [`check_skills_no_constants.py`](check_skills_no_constants.py) scans only `SKILL.md`
-of `inqhiori`, `ooda-loop`, `programme-audit` and `brief-authoring`;
+of `inqhiori`, `programme-audit` and `brief-authoring`;
 operational-reference skills and `pinescript-v6` remain exempt.
 
 The [PostToolUse skill hook](sync_skills_hook.py), registered in

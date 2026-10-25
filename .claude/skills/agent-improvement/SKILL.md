@@ -23,7 +23,7 @@ plans/records. Search lessons/history when reuse is plausible; use the
 Do not turn every opportunity into a repository-wide search. Read any relevant
 prior improvement entry and its later outcomes before reusing its recommendation.
 
-For an observed defect use [root-cause-first](../root-cause-first/SKILL.md), which
+For an observed defect use [code-defect-debugging §11](../code-defect-debugging/SKILL.md), which
 owns diagnosis and regression evidence. For external or frozen handoffs use
 [handoff-verify](../handoff-verify/SKILL.md); a contradiction returns to the
 coordinator rather than being silently repaired by a worker.

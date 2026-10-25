@@ -1,6 +1,6 @@
 ---
 name: work-decomposition
-description: Use when a unit of work — a handoff brief, a lightweight dispatch issue, a campaign-plan step, a PR, or this session's own task — is too big for one focused session or one packet, or when the input to be read is too big for one context (10+ files, 50k+ tokens, or pairwise/multi-hop reasoning across scattered sources). Triggers on "break this down", "split this", "too big for one session", "decompose the work", "chunk this", a brief with more than 5 gate conditions or more than 3 unrelated code areas, a `BLOCKED — scope-problem` return, a second `NEEDS_CONTEXT` bounce on the same packet, or a task whose worst-case iteration count exceeds its Rule 2 budget. Produces sized child units each with its own gate plus a parent manifest (work-shaped), or a sized batch plan with depth-1 sub-agents and a source spot-check (input-shaped). Sibling of question-decomposition (a question with too many axes, not work with too many parts). Does not dispatch implementation workers (the coordinator does, under the surface-allocation ADR's orchestration rules), pick environments (task-routing), author the packets (brief-authoring), or verify returns (fable-judge); its input-shaped protocol does run read-only sub-agent waves in-session, which is evidence gathering, not work dispatch; changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
+description: Use when a unit of work — a handoff brief, a lightweight dispatch issue, a campaign-plan step, a PR, or this session's own task — is too big for one focused session or one packet, or when the input to be read is too big for one context (10+ files, 50k+ tokens, or pairwise/multi-hop reasoning across scattered sources). Triggers on "break this down", "split this", "too big for one session", "decompose the work", "chunk this", a brief with more than 5 gate conditions or more than 3 unrelated code areas, a `BLOCKED — scope-problem` return, a second `NEEDS_CONTEXT` bounce on the same packet, or a task whose worst-case iteration count exceeds its Rule 2 budget. Produces sized child units each with its own gate plus a parent manifest (work-shaped), or a sized batch plan with depth-1 sub-agents and a source spot-check (input-shaped). Sibling of refine-question (contested-question decomposition) (a question with too many axes, not work with too many parts). Does not dispatch implementation workers (the coordinator does, under the surface-allocation ADR's orchestration rules), pick environments (task-routing), author the packets (brief-authoring), or verify returns (handoff-verify post-execution judging); its input-shaped protocol does run read-only sub-agent waves in-session, which is evidence gathering, not work dispatch; changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
 ---
 
 # work-decomposition — size it before you start it
@@ -37,7 +37,7 @@ grounds; §Provenance lists what was dropped and why.
 
 | Shape | Tell | Owner |
 |---|---|---|
-| **Question-shaped** | One yes/no that two people with the same facts answer differently; a verdict that would drive reporting, escalation and precedent at once | `question-decomposition` |
+| **Question-shaped** | One yes/no that two people with the same facts answer differently; a verdict that would drive reporting, escalation and precedent at once | `refine-question` (contested-question decomposition) |
 | **Work-shaped** | One brief / issue / plan step / PR whose deliverables, gates or footprint exceed what one session or one packet can carry to a verified return | §Work-shaped, below |
 | **Input-shaped** | The evidence to read exceeds one context, or the answer needs pairwise / multi-hop reasoning across scattered files | §Input-shaped, below |
 
@@ -145,7 +145,7 @@ inline under the session's own checklist (fable-method Step 4.4).
    session; work that still fits one session but needs ordering → the session's own checklist.
    Environment per child → the local-only checklist in `task-routing`.
 6. **Hand the children off.** Packet authoring is `brief-authoring` (cc_handoff template),
-   pre-dispatch verification is `handoff-verify`, returns are adjudicated by `fable-judge`. This
+   pre-dispatch verification is `handoff-verify`, returns are adjudicated by `handoff-verify` post-execution judging. This
    skill's deliverable ends at the manifest and the child specs.
 
 ### Child quality checklist
@@ -241,7 +241,7 @@ partition fan-outs; replication fan-outs are exempt from them as described below
   join; disjoint batches alone cannot see a relationship whose endpoints sit in different batches.
 
 Two fan-out shapes, one protocol each. **Partition fan-outs** join disjoint evidence: the batch
-and inventory rules above apply in full — `adr-decay-audit`'s batch-scan-then-adversarial-verify
+and inventory rules above apply in full — the `programme-audit` ADR decay sweep's batch-scan-then-adversarial-verify
 and the 14-agent Algorithm review of 2026-07-24 (record pinned in
 [TOMBSTONES](../../../docs/adr/TOMBSTONES.md)) are instances.
 **Replication fan-outs** deliberately have every agent read the *same* target through a different
@@ -282,14 +282,14 @@ fits the question; author an ad-hoc wave only when none does.
 
 | Skill | Boundary with this one |
 |---|---|
-| `question-decomposition` | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. |
+| `refine-question` (contested-question decomposition) | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. |
 | `refine-question` | If the parent's done cannot be stated in two sentences, refine before decomposing. |
 | [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) §Decision "Orchestrating more than one worker at a time" | Owns the orchestration rules that consume this skill's manifest and children when 2+ packets are frozen implementation — claim manifest, disjoint footprints (single-writer rule), dispatch-time Phase-0 re-check, review-round-as-freeze, frozen-SHA dispatch pointer. Its disjoint-footprints rule is the atomic test's point 5 applied at dispatch. Worker surfaces are Claude Code sessions and Codex tasks. |
 | `brief-authoring` | Authors each child as a `cc_handoff` brief; check 8's `BLOCKED — scope-problem` sub-case sends the packet back here for re-cutting. |
 | `handoff-verify` / `handoff-verify-panel` | Pre-dispatch verification of a child; the panel is the input-shaped protocol applied to a many-claim packet. |
 | `task-routing` | Picks local vs cloud per child after the cut. |
 | `fable-method` | Step 2 owns evidence gathering and points here when the input is oversize; Step 4.4's checklist is the in-session lane for work that still fits one session. |
-| `fable-judge` | Adjudicates each child's return; this skill renders no verdict on returned work. |
+| `handoff-verify` post-execution judging | Adjudicates each child's return; this skill renders no verdict on returned work. |
 | Rule 2 ([ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)) | Sets the per-child iteration budget; this skill is how a unit is cut so the tripwire fires at a child boundary rather than mid-unit. |
 
 ## Provenance — what was imported, what was dropped
