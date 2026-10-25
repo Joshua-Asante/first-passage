@@ -74,7 +74,7 @@ forbidden:
     owner: docs/adr/2026-08-07-loop-s2-signal-host-fork.md
   locked_parameter.edit:
     rule: "Locked parameters are immutable."
-    owner: AGENTS.md#strategy-authorization-lifecycle
+    owner: AGENTS.md#strategy-reference-locked-legacy-book--do-not-modify
   protection_constant.edit:
     rule: "DD_TRIGGER / DD_SCALE are frozen."
     owner: AGENTS.md#protection

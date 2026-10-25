@@ -378,7 +378,7 @@ grep -n "INNER" docs/notes/audits/rule-2-trip-log.md
 **Operator direction (Joshua, 2026-10-24):** "the rule 2 budget should be reevaluated to cover all
 substantial work". This supersedes the [2026-08-15 addendum](#addendum-2026-08-15--pointer-propagation-narrowed-to-inqhiori-only)'s
 limit (budget declared "only from INQHIORI-loop entry"). Its pointer removals stay removed:
-[AGENTS.md §Contribution to the objective](../../AGENTS.md#contribution-to-the-objective) states the
+[AGENTS.md §Core rules](../../AGENTS.md#core-rules) (Rule 2) states the
 rule once for every seat and links here. §2's magnitudes, tripwire and corollaries, §4 and §6 are
 unchanged.
 
