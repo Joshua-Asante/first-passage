@@ -299,7 +299,7 @@ improvise an interlock, never substitute a source.
 - **Revival precondition (operator ruling 2026-10-24)** — before any re-arm. The CrossTrade
   secrets were wiped from `/data/c1_rail_config.json` and revoked; reissue them into `fly secrets`
   with the config holding `secret:NAME` references only (the notifier's `secret_ref` pattern),
-  land the host-side M1 gate in `c1_rail_http_server.load_config` (owed at TB-I3), and record a
+  land the host-side M1 gate in `c1_rail_http_server.load_config` (owed: [self-funded lane ADR item 8](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-25--owed-item-8-host-side-activation-gate-from-tb-i3), from TB-I3), and record a
   fresh M1 acceptance for the instance. Deploys use a per-app expiring token
   (`fly tokens create deploy -a <app> -x 2h`); no standing Fly login.
 - **Sealed runtime-input inventory and evidence capture contract** — TB-B7 / TB-S3 → TB-I3.
