@@ -8,6 +8,7 @@
 **Authors:** Joshua (operator, ratified) + Claude (advisor; drafted from a 21-agent gate-reachability audit + direct code verification)
 **Supersedes:** `2026-07-11-discovery-campaign-defaults-ratified.md` in part - Section 2 Campaign-default #3 ("Universe correction" row only - SPA/StepM/PBO mechanics and thresholds are untouched; only the DSR K and V inputs are re-baselined).
 **Related:** `docs/notes/audits/2026-07-12-disccamp0-gate-reachability-audit.md` (the evidentiary base); `docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md` (the campaign this unblocks, amended in the same landing); `STATE.md` lines 143-153 (the pre-existing "pre-run obligation" this ADR discharges); `docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md` (the sibling gate-reachability precedent — same failure class, different mechanism)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR04-69, ADR04-70); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Layer:** methodology (research rules-of-evidence only). **No** strategy/risk-control parameter, allocation, `dd_protection` constant, `portfolio_mc.py`, or Pine source is touched. Locked MC anchor 99.83/0.17/4.37 untouched.
 
 ---
@@ -82,7 +83,6 @@ Reading the now-landed `universe_gate.py` (which did not exist at audit time —
 ## §5 — Forbidden moves (under this ADR)
 
 - **Amending K_DSR or the `V=1/n` rule again after DISC-CAMP-0 sees a result.** The freeze contract's Known-Trap #12 still applies from the moment the amended pre-registration is committed — this ADR is a **pre-result** fix, not a license for further mid-campaign tuning.
-- **Patching `universe_gate.py` beyond the minimal, additive `var_trials` override.** The landed patch (§2.3) is deliberately narrow: one new optional keyword, defaulting to the prior behavior, plus the matching CLI flag and `self_test()` forwarding — no change to SPA/StepM/PBO, no re-implementation of any vetted primitive, full existing test suite (9/9 prior tests) verified still green before adding 3 new ones (12/12 total). Any broader change to this module (e.g. changing the default itself, touching block-size logic) is out of scope here and requires its own review.
 - **Lowering the DSR ≥ 0.95 threshold to compensate for either defect.** Ruled out in §3; the threshold itself is not what's miscalibrated.
 - **Applying this K-rule to non-matrix-profile search terms** (e.g. a future campaign using only catch22 or only a fixed-penalty segmentation) — the non-overlap floor is specific to overlapping-window search; other tools keep face-value counting as the ratified default already specifies.
 - **Retroactively reopening Q-HARV-0** (K=1, a wholly different tool/mechanism, already closed AMBIGUOUS) — this ADR is scoped to future/pre-freeze matrix-profile-family campaigns only.
@@ -110,7 +110,7 @@ Reading the now-landed `universe_gate.py` (which did not exist at audit time —
 
 **Risks (probabilistic):**
 - The non-overlap floor is itself a modeling choice, not a proven-correct effective-independence count for autocorrelated subsequences — true effective K could sit anywhere between the non-overlap floor and 1 (fully redundant). Mitigated by §2.1's bracket-reporting requirement (both floor and raw count travel together for review) and the §4 falsifier.
-- `universe_gate.py`'s **default** behavior (no `var_trials` passed) still uses the biased empirical estimator, unchanged — the fix is opt-in via the new keyword/CLI flag, not a default-behavior change (deliberately, to avoid silently altering the module's existing self-test calibration). Any caller of `run_universe_gate`/the CLI that omits `--var-trials` inherits the known-biased default; this campaign's Stage-2/4 runner must always pass it explicitly.
+- `universe_gate.py`'s **default** behavior (no `var_trials` passed) still uses the biased empirical estimator, unchanged — the fix is opt-in via the new keyword/CLI flag, not a default-behavior change (deliberately, to avoid silently altering the module's existing self-test calibration). Any caller of `run_universe_gate`/the CLI that omits `--var-trials` inherits the known-biased default.
 
 **Downstream artifacts needing update (this landing):**
 - `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` §Campaign-defaults #3 row — update to cite this ADR, mark the prior K-rule language superseded (mirroring the repo's `CLAUDE.md` "SUPERSEDED" convention for allocation history).

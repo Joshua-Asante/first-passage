@@ -4,6 +4,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - the ACTIVE_FIRM-selector-mechanism clause only (Phase 4, merged 2026-07-30, PR #572: ACTIVE_FIRM/FIRM_RULES["FXIFY"]/BASELINE_BALANCE deleted outright, not renamed). The broader "one canonical firm_rules.py home for firm constants" principle this ADR established is still honored in spirit — core/dd_protection.py now derives challenge constants from core/historical_challenge.py instead.
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-29); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Decision date:** 2026-06-06
 **Authors:** Joshua + claude.ai (Tech Advisor)
 **Supersedes:** none
@@ -39,8 +40,6 @@ The forcing function is **BrightFunded onboarding** (on the roadmap, per the SNA
 ## §2 — Decision
 
 **Decision:** `core/firm_rules.py` is the **single canonical source** for all firm-challenge constants and starting equity. `core/portfolio_mc.py` and `core/dd_protection.py` **derive** their module-level constants from `firm_rules.FIRM_RULES[ACTIVE_FIRM]` + `firm_rules.BASELINE_BALANCE` (a legal `core→core` import), preserving their existing public attribute names and each module's existing representation. No literal firm-rule numbers are declared anywhere except `firm_rules.FIRM_RULES`.
-
-`firm_rules.py` gains an explicit `ACTIVE_FIRM = "FXIFY"` selector so the derivation source is `FIRM_RULES[ACTIVE_FIRM]`. This makes future firm onboarding a single-line switch (plus the new dict entry) rather than a three-module edit — directly serving the BrightFunded goal. (Selecting the active firm is the *only* new surface; it is not an allocation or rule change.)
 
 **Derivation map (the values each consumer must resolve to — byte-identical to today):**
 

@@ -9,6 +9,7 @@
 **Supersedes:** none. **Refines** the standing "The portfolio and strategies are LOCKED" Key Principle (`CLAUDE.md`) by splitting the word "locked" into its two silent meanings (see §1). Does **not** supersede any allocation, `dd_protection`, or lock-decision ADR — those remain the canonical owners of their constants.
 **Related:** `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` (the discretion-governance precedent: pre-authorize the one legitimate intervention rather than pretend intervention never happens — this ADR is the *ex-ante* generalization of that *ex-post* move); `docs/adr/2026-06-07-decompound-remc-hold.md` (the regime-split evidence base — the shared-beta regime dependence this ADR's Call 4 monitors); `CLAUDE.md` §Protection (the existing pre-registered decay-style trigger this ADR extends — quarterly C2→C0 revert, rolling-6mo MC-pass <95% for two consecutive windows); `docs/methodology/observation_routing.md` (Closed/Action/Forward — the observation-disposition axis, *orthogonal* to the authorization axis added here); `docs/methodology/regime_robustness_gate.md`; `docs/rejected_candidates.md` / `docs/methodology/rejected_signals.md` (re-proposal requires new mechanism / dated incident, not new parameters — the doctrinal parent of §5's "decay is never a re-optimization trigger"); the Q-MECH-1 family finding (one shared long-continuation beta across all four legs; NY-morning entry; 2023–26 trend era; zero free external monitors — the load-bearing premise, carried in memory/session, not re-derived here).
 **Layer:** methodology + operational (governance model for capital authorization over a strategy's life; a new sizing *factor*). **Not** strategy/risk-control parameters — no SL/TP/ATR/risk%/pyramid/session/BE/trail constant, no `dd_protection` constant, no allocation, no Pine source is touched by this ADR. The locked MC anchor (99.83/0.17/4.37) is untouched and needs no re-MC.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-123, ADR03-126); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -221,9 +222,8 @@ These are the commitments that get locked *tighter* than any parameter, so that 
 This ADR is `Proposed`. It becomes **`Accepted` / RESOLVED** when **all** hold:
 1. The five §2 calls have **ratified numeric values committed** to `docs/methodology/strategy_lifecycle.md` (σ+windows for Call 1; tier ladder + integration-layer/compounding rule for Call 2; the four differential magnitudes for Call 3; the 2/4 + 3/4 + 0.5× for Call 4; the two GO/NO-GO events + no-autonomous-promotion invariant for Call 5).
 2. The **authorization-axis vocabulary** is added to `CLAUDE.md` **outside** the LOCKED table (verifiable by grep, §10).
-3. The STATE.md **forward-trigger board** gains two entries — per-strategy decay review and the beta-death review (Call 4) — each pointing at `strategy_lifecycle.md` as owner, first evaluation **2026-08-08**.
 
-**Ratification status (2026-07-10):** the operator-owed input — the five §2 calls — is **RATIFIED as recommended** (values enumerated in the change history). Gate items 1–3 above are the remaining *implementation* follow-through (Phase 2/3); until they land, this ADR is `Accepted` (decision made) but not yet `RESOLVED` (implemented).
+**Ratification status (2026-07-10):** the operator-owed input — the five §2 calls — is **RATIFIED as recommended** (values enumerated in the change history). Gate items 1–2 above are the remaining *implementation* follow-through (Phase 2/3); until they land, this ADR is `Accepted` (decision made) but not yet `RESOLVED` (implemented).
 
 **FALSIFIED / re-open** per any §4 trigger. **AMBIGUOUS** if, at the 2026-08-08 first evaluation, the Call-1 metric has < the minimum trade count to compute a rolling PF for ≥2 legs — in which case the calls' *structure* stands but the numeric floors are provisional and re-confirmed at 2026-11-08 (recorded, not silently amended).
 
@@ -240,8 +240,7 @@ Policy + one sizing-factor addition. No risk-control *constant* changes.
   - Add the authorization-axis note to `CLAUDE.md` (outside the LOCKED table).
   - **Rule-0-at-build (now narrow):** wire the per-strategy `lifecycle_multiplier` into the **risk_pct layer** — i.e. into `dd_protection.py`'s `scaled_risk` computation as `BASE_RISK[k] × DD_SCALE × lifecycle_multiplier[k]` — **without altering `BASE_RISK`, `DD_SCALE`, or `DD_TRIGGER`** (byte-identical; the MVD spec-pin at `dd_protection.py:176/181` must still pass). **Addendum 2026-08-06 (C20):** the pin is the literals `if DD_TRIGGER != 0.015:` / `if DD_SCALE != 0.40:` (currently ~L292/L297) — line numbers in the preceding clause are historical; do not treat 176/181 as current. Verify **Pine pyramid-nonlinearity parity** for DJ30 (750%) / NAS100 (1000%): confirm scaling the input risk_pct scales the whole pyramided stack proportionally (if it does not, the haircut must be applied at the account-multiplier layer instead — the operational fallback). Add a test pinning axis-separation (a lifecycle tier change must not alter any Pine/`params.toml`/`dd_protection` constant).
   - Extend the decay metric: a read-only rolling-PF-vs-baseline check (reusing `baselines.md` + `ecr_rolling.py` outputs) that emits the Call-1 tier-demotion signal.
-- **Phase 3** — STATE.md forward-trigger entries (per-strategy decay review + beta-death review, first eval 2026-08-08 alongside the existing regime check); memory (`project_strategy_lifecycle_governance` recall hook + `MEMORY.md` line); `docs/SESSIONS.md` entry at wrap-up.
-- **Scope note (Delete-until-needed).** All four current legs are one mechanism-adjacent beta, so the **per-leg tier apparatus is largely inert for today's book** — Call 4 (beta-level) is what actually bites. Phase 2 may ship the **beta-cohesion monitor + the risk_pct lifecycle hook (default AUTHORIZED/1.0×) only**, deferring the full per-strategy tier state-machine/UI until the first `SURVIVAL-ONLY` addition (a residual-program lane or a discovery-stack candidate) actually needs it. Build the per-leg framework when it has a customer; do not gold-plate a four-leg one-beta book. (The §6 forward-board *reviews* still register on cadence regardless — a review date is not the tier machinery.)
+- **Phase 3** — memory (`project_strategy_lifecycle_governance` recall hook + `MEMORY.md` line); `docs/SESSIONS.md` entry at wrap-up.
 - **Sequencing (operator-stated priority):** build **Call 4 (beta-death monitor) first** — it defends existing capital and maps to the stated largest structural exposure. The transfer-entropy/lead-lag beta-cohesion read is the concrete first artifact, evaluated at 2026-08-08.
 
 ---
@@ -281,10 +280,6 @@ grep -nE "sigma|window|WATCH-1|WATCH-2|SURVIVAL-ONLY|MECHANISM|2 of 4|3 of 4|GO/
 # 5. Axis-separation invariant (the §4-trigger-3 integrity check) has a pinning test.
 grep -rn "lifecycle" tests/ | grep -i "param\|lock\|separation\|base_risk\|dd_scale"
 # Expected (post-Phase-2): a test asserting a tier change alters no locked constant.
-
-# 6. Beta-death + per-strategy decay reviews are on the forward board, first eval 08-08.
-grep -n "decay review\|beta-death\|strategy_lifecycle" STATE.md
-# Expected (post-Phase-3): two entries, owner = strategy_lifecycle.md, next 2026-08-08.
 
 # 7. Existing regime check remains the cadence carrier (reused, not duplicated).
 grep -n "regime-check\|2026-08-08" CLAUDE.md STATE.md

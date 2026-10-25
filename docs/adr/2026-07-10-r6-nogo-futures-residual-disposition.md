@@ -10,6 +10,7 @@
 **Superseded-in-part-by:** `2026-07-12-prop-portfolio-four-friendly-firms.md` - "no futures-prop operational target" posture replaced by the prop-portfolio program.
 **Related:** residual-program R6 (operator-only GO/NO-GO); `docs/adr/2026-07-03-hardcore-{p1,p3,p4,p5}-*.md` (the two-sided gates whose live existence-bars this NO-GO makes dormant); companion addendum on `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` (FXIFY formally closed); memories `project_futures_prop_pivot`, `project_dj30_mym_prototype_falsified`, `project_aegis_6j_transfer_state`, `project_us_legal_master_research`.
 **Layer:** execution (live-trading venue + scale path) — **not** strategy/risk-control. No locked parameter, allocation, `dd_protection` constant, or Pine source is touched by this ADR.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-95); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -42,7 +43,7 @@ That contingency has now been run. The R5 DJ30→MYM prototype was **FALSIFIED (
 
 1. **No futures-prop book is deployed.** The Bulenox (or any prop-firm) futures fan-out of the locked four-strategy portfolio is NO-GO. No Bulenox account is registered; no CrossTrade/NinjaTrader-8-via-Rithmic rail is built; no live automated prop execution is initiated. The `core/firm_rules.py` Bulenox config and the P0–P5 gate ADRs remain on record for provenance and for a future re-open under §4, not as live targets.
 2. **The sole active scale lane is self-funded Aegis→M6J.** Per operator decision this session, the Aegis USDJPY→micro-JPY-futures (M6J) transfer lane is the surviving active scale path (lineage: `project_aegis_6j_transfer_state`, v0.3 129 trades / +$39K / PF 2.318 / +0.218R ≈ 50% preservation — a self-funded futures book, not a prop fan-out). Its own go-live authorization is a separate operator decision; this ADR authorizes the *lane*, not a live start.
-3. **Guardian-MGC (R7, the prior Rank-1 self-funded track) is PARKED.** The self-funded Guardian→micro-gold-futures track is parked, not killed — its R7 granularity-floor work was data-blocked (needs a real GC1!/MGC1! bar-export) and it is set down behind Aegis→M6J. Re-opening it is a fresh operator decision, not a re-run of R7 as-scoped.
+3. **Guardian-MGC (R7, the prior Rank-1 self-funded track) is PARKED.** The self-funded Guardian→micro-gold-futures track is parked, not killed — its R7 granularity-floor work was data-blocked (needs a real GC1!/MGC1! bar-export) and it is set down behind Aegis→M6J.
 
 **Effective:** immediately upon acceptance (2026-07-10).
 **Scope:** the futures-prop scale path and the residual program's R1–R8 tracks. The four locked strategies, allocations, `dd_protection`, and Pine source are **untouched** (Rule 0) — this ADR changes *which venue/path* scales, not *what* is traded.
@@ -79,7 +80,6 @@ This ADR accepts a real cost (§6): it closes the futures-prop scale path the 20
 - **Relabeling the NO-GO as GO-CONDITIONAL on the DJ30-only book.** The gate that would have made it conditional is the gate that failed; a conditional-with-named-blocker where the blocker is the failed test is a NO-GO in disguise.
 - **Standing up the CrossTrade/NinjaTrader-8-via-Rithmic rail "so it's ready."** The rail is dormant under NO-GO; building transport for a closed book is sunk effort and re-opens the automated-prop-execution surface this decision closes.
 - **Treating Aegis→M6J's lane authorization as a live-start authorization.** This ADR authorizes the *lane* as the surviving scale path; the go-live is a separate operator decision with its own venue/parity checklist. "The lane is open so I'll start it" skips that gate.
-- **Silently promoting Guardian-MGC back ahead of Aegis→M6J after the go-dark gets uncomfortable.** The re-rank is a recorded operator decision; changing it is a fresh operator decision, not a drift. The discomfort of a single-lane scale path is the cost this ADR names, not grounds to un-park.
 - **Letting any futures re-mapping touch locked strategy parameters.** The Aegis→M6J sizing translation (spot %-risk → integer micro contracts) is validated with parity discipline; it is forbidden from changing any SL/TP/ATR/risk%/pyramid/session constant (Rule 0).
 
 ---

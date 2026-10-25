@@ -9,6 +9,7 @@
 **Authors:** Joshua + claude.ai (advisor)
 **Related:** [`docs/adr/2026-07-11-fxify-ops-surface-retirement.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-07-11-fxify-ops-surface-retirement.md) (**parallel** FXIFY-challenge-surface retirement — did the `accounts.py`/`cli.py` excision this ADR's PR-2 planned, kept `tearsheet`, and *parked* the reconcile subsystem this ADR dispositions); [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) (re-scoped the challenge-era MC/claims to historical record — the CLAUDE.md/STATE.md context this branch merges with); [`docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md`](2026-06-30-no-manual-trading-cfd-retirement.md) (+ 2026-07-10 Addendum — the posture whose ops-layer consequence this ADR executes); [`docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md`](2026-07-10-r6-nogo-futures-residual-disposition.md) (futures-prop NO-GO — closes the re-arm path for the ECR/reconcile machinery); [`docs/ltm/briefs/2026-07-06-weekly-review-feeder-retirement.md`](../ltm/briefs/2026-07-06-weekly-review-feeder-retirement.md) (the immediate ops-retirement precedent — delete + git-history-retrieval convention)
 **Layer:** infrastructure (ops-layer scope; **no `core/`, allocation, `dd_protection`, or Pine touch — no re-MC required**; locked anchor 99.83/0.17/4.37 untouched)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR04-42, ADR04-43, ADR04-44, ADR04-45, ADR04-46, ADR04-47, ADR04-48); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -116,12 +117,6 @@ Two independent triggers; either firing revisits a specific part of this decisio
 ## §5 — Forbidden moves (under this ADR)
 
 - **`git revert`-ing the DXTrade-coupled `live_journal` design unchanged if a fill source returns.** The DXTrade fill microstructure this code models does not transfer to the futures venue (Q-NAS-ECR-1 dormancy flag: re-point is not type-preserving). Rebuild repo-native against the real venue first — restoring the old shape re-imports the wrong assumptions (direct analog of the weekly-review-feeder §5).
-- **`git rm`-ing `execution_lessons.md` with the estate.** It is a canonical $-anchored lessons registry cited by 8 external sites, not execution machinery — it must be extracted to `docs/methodology/lessons/` first (§2 KEEP). A blind `git rm -r ops/live_journal/` that takes it down is the single highest-loss error in this ADR.
-- **Touching any `core/` file in this ops pass** — `core/lib/tearsheet.py` becomes *orphaned* once `cmd_tearsheet` goes, but `core/` is the locked, imports-nothing-internal tier; its disposition is a **separate follow-on**, never a side effect of an ops cleanup. (`core/csv_parser.py` is **not** orphaned — `validate_params.py` uses it — so it is not even a follow-on candidate; leave it.) Leaving a dead-but-locked orphan is acceptable; reaching into `core/` here is not.
-- **Deleting REPO_MAP.md move-provenance rows instead of annotating them retired.** The 2026-06-05 moves genuinely happened; annotate-retired (matching the weekly-review-feeder and validation/codification rows), do not erase history.
-- **Retiring the multiplier spine as a side effect of this cleanup.** That is the §4 Trigger-B decision, gated on M6J sizing design and operator GO — not something to fold into a CFD-estate prune because the spine "looks dormant too."
-- **Half-excising FXIFY** (e.g., loosening `evaluate_fxify_challenge_status` to a stub, or leaving `fxify_rule_validator.py` importable "just in case"). The FXIFY path and its validator retire *together* as one clean seam; a stub is a frozen-surface remnant, the exact thing this prune removes.
-- **Retiring `sentinel/`, `reports/regime_time_cost/RESULTS.md`, or the `instruments/` registry.** Surface-similar to the estate but load-bearing (live governance / cited evidence / ratified registry) — KEEP is explicit, not incidental.
 
 ---
 
@@ -148,7 +143,7 @@ Two independent triggers; either firing revisits a specific part of this decisio
 - `Makefile` — remove `ecr`; re-point `test-ops` to `tests/ops/`.
 - `pyproject.toml` — remove the `pdf` optional extra (L25).
 - **Skill layer (`.claude/`, governance — second-pass addition):** **retire** `.claude/skills/live-execution-journal/` in full (its DXTrade-pipeline premise is moot post-no-manual-trading, and it is the *only* skill referencing the retired code). Relocate the canonical `execution_lessons.md` → `docs/methodology/lessons/` and fix the one live cross-ref link (`methodology_lessons.md:4`; the `2026-06-04` ADR + `2026-07-06` brief line-number citations are point-in-time-exempt). No `prop-firm-challenge` or `brief-authoring` edit needed (verified no retired-code refs). Run `make skills-check` after.
-- `scripts/check_skill_refs.py` — drop `live_journal/` from the navigation allowlist (L33 comment + L71) **only after** the skill refs above are retired/re-pointed (else `make skills-check` fails on a live ref to a now-un-allowlisted path). Ordering matters.
+- `scripts/check_skill_refs.py` — drop `live_journal/` from the navigation allowlist (L33 comment + L71).
 - `docs/rejected_candidates.md` — absorb the gold-gate OOS-falsification record from `regime_gate/README.md` before its `git rm`.
 - `docs/SESSIONS.md` — new entry per PR.
 
