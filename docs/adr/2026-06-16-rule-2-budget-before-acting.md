@@ -13,6 +13,7 @@
 **Loop-of-Record:** STRATEGIC — this commits a new constitutional numeral that binds all future artifacts (a governance act on what governs); low-reversibility canon edit. Load-bearing clause: §2 inserts a standing rule into `inqhiori-canon.md`. Switch-gate: N/A (no lower-loop execution component).
 **Amends / extends:** the three-loop binding ADR (`docs/adr/2026-06-12-three-loop-methodology-binding.md`, PROPOSED) — Rule 2's magnitude is set by the Loop-of-Record / reversibility class that ADR defines. Canon home: `docs/methodology/inqhiori-canon.md` §15 (full statement) + §12 Hard-rules pointer + §14 loop-budget mirror.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-140, ADR02-141); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the discharged authoring-time own-ADR forbidden move (ADR02-136); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -96,7 +97,6 @@ Thresholds are validated **forward, never by retrodiction.** Retrodiction onto p
 
 ## §5 — Forbidden moves (each genuinely tempting; each would corrupt the commit)
 
-1. **Folding Rule 2 into the three-loop ADR.** Tempting (they are adjacent) — but Rule 2 is a new numeral, not a clarification of the loops. Own-ADR. Conflating them buries it.
 2. **Expressing the budget in minutes** anywhere in canon or ADR. Neither client can meter wall-clock; minutes evaporate, iteration counts enforce. Iterations only.
 3. **Tuning 3/8/3 to match the historical record** during authoring. That is the selection-bias trap §4 exists to bar. The numbers are authored as given; only the forward log moves them.
 4. **Auto-killing at budget** (writing the rule as a hard wall). It is a *tripwire* — a forced extend-or-stop decision, asymmetric by reversibility. A wall is a different, worse rule.

@@ -12,6 +12,7 @@
 **Related:** `docs/adr/2026-07-10-databento-research-stack.md` (Gen-2 discovery stack — the supersessor; §3 of it *forbids* hand-rolling the DSR/PBO/CPCV layer, which retroactively frames the Gen-1 harness); `docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md` (R6 = NO-GO — no prop rail exit for any Gen-1 output); `docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md` (P2 edge-transfer FALSIFIED — no ported CFD edges enter); `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` (2026-07-10 addendum — FXIFY/DXTrade closed, no CFD candidates enter); `docs/adr/2026-06-05-monorepo-layer-boundaries.md` + `REPO_MAP.md` (the boundary contract + tier map the retirement must survive; `sweep/` and `scripts/wfo/` already classified lab/P3); `docs/adr/2026-06-05-concept-admissibility.md` (the concept-intake contract being retired); `docs/adr/2026-06-05-sweep-engine.md` (the two-tier sweep engine being retired); the three prior retirement ADRs whose pattern this copies — `docs/adr/2026-06-12-notion-surface-retirement.md`, `docs/adr/2026-06-17-dukascopy-retirement.md`, `docs/adr/2026-06-24-oanda-retirement.md`.
 **Layer:** methodology + research tooling (`lab/validation/**`, `scripts/wfo/**`). **Not** strategy/risk-control: no Pine source, no `dd_protection`/`firm_rules`/`portfolio_mc` constant, no allocation, no MC anchor (99.83/0.17/4.37) is touched. `core/` is untouched.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR04-28, ADR04-30, ADR04-33, ADR04-38); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the executed one-off scope guard on core, Pine, locked constants and the MC anchor, which Rule 14 and AGENTS.md §Protection state (ADR04-31); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -111,7 +112,6 @@ A retirement's falsifier is: *did removing this break or lose something the repl
 
 - **Executing any `git rm` before §7 Phase 0 passes.** The reverse-dependency audit + the three extractions + the two concept-intake verification gates are blocking. Deleting first and fixing imports after is the build-breaking move this ADR exists to prevent.
 - **Retiring `concept_intake` before verifying `corpus/` and the `rejected_candidates.md` mirror.** The most-hedged row; skipping its two gates risks silently dropping the dedup/negative-rediscovery registry. Gates 0b/0c are hard.
-- **Letting the retirement touch `core/`, any Pine source, any locked constant, or the MC anchor.** Research-layer only. A diff that touches `core/dd_protection.py`/`firm_rules.py`/`portfolio_mc.py`/`config/params.toml` or any `.pine` is an integrity failure of this change.
 - **Marking this ADR `Accepted` without operator STRATEGIC-LoR sign-off.** Subsystem-tier Delete authority is reserved (three-loop binding ADR). The advisor draft cannot self-ratify.
 
 ---

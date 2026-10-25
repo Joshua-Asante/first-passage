@@ -9,6 +9,7 @@
 **Authors:** Joshua
 **Supersedes:** `2026-05-14-allocation-refresh.md` full - carries forward the no-version-bump doctrine (2026-05-14 ADR Open items 1+2, ratified 2026-05-23); v4.5/v1 designations retained at new production parameters.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-77, ADR01-81, ADR01-87); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the silent-drift audit trigger, superseded by locked-parameter immutability and the pine-manifest gate (ADR01-83); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -222,7 +223,7 @@ $ grep "Status:" docs/adr/2026-05-14-allocation-refresh.md
 
 ## Open items
 
-1. **No documented rationale for the parameter inversion.** Joshua moved DJ30 hotter and NAS100 colder between 2026-05-14 and 2026-05-23 without external doctrinal context (e.g., a Notice-phase observation log, live-PnL edge-captured drift, or a Pre-Q investigation outcome). If the §Falsifier fires later and the question becomes "why did we make this change", the doctrinal gap is real. **Forward consideration:** if any subsequent Pine parameter shift occurs without written motivation, the pattern needs a methodology audit (silent parameter drift is the recurrence of the 04-17 dd_protection cycle's failure mode but at the strategy-parameter layer instead of risk-control layer).
+1. **No documented rationale for the parameter inversion.** Joshua moved DJ30 hotter and NAS100 colder between 2026-05-14 and 2026-05-23 without external doctrinal context (e.g., a Notice-phase observation log, live-PnL edge-captured drift, or a Pre-Q investigation outcome). If the §Falsifier fires later and the question becomes "why did we make this change", the doctrinal gap is real.
 
 2. **DJ30 + NAS100 Pine `endDate` defaults below panel union-end.** Documented in §Consequences/Negative as not blocking but worth uniform panel hygiene. **Forward consideration:** before the next monthly panel refresh (~2026-06-23), bump DJ30 endDate from 2026-04-17 to the export-day value, and same for NAS100 (currently 2026-04-20). Or, less invasively, set the input.time defaults to far-future dates (e.g., 2030-01-01) so they don't gate exports.
 

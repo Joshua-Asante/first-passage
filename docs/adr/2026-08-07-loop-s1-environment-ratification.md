@@ -12,6 +12,7 @@
 **Retain-until:** none
 **Related:** [SPEC S1](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-08-07-loop-s1-environment-ratification-spec.md) · [loop index](../spec/2026-08-07-loop-spec-index.md) · [Q-VENUEGEO-1](../briefs/Q-VENUEGEO-1-f3-successor-venue-geometry-scoping.md) · [MNQDTL-1](../spec/2026-08-06-mnq-daily-cadence-tight-daily-loss-target-spec.md) · [`2026-07-10-databento-research-stack.md`](2026-07-10-databento-research-stack.md) (added 2026-08-29, adr-decay-audit discharge — superseded in part by this ADR: its §2 rail-verdict clause, KEEP TradingView→NinjaTrader8→Bulenox, is stale; this ADR's F2/F3 ruling is part of what actually moved the rail. See that ADR's 2026-08-29 addendum)
 **Layer:** environment / rail-disposition only. **$0 / K=0** — authorizes nothing, arms nothing, redeploys no Striker leg, places no trade.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the operator-only agent-trade forbidden move, superseded by the surface-allocation ADR Addendum 2026-09-30b (`trade.submit` operator act) (ADR09-47); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -85,7 +86,6 @@ Q-VENUEGEO-1 remains valuable evidence (Bulenox/BluSky/MFFU geometry) but is **n
 
 - Redeploying either withdrawn Striker leg (de-scope clauses 1–2).
 - Arming the rail or setting `dry_run=false` under this ADR.
-- Agent-placed trades (board row 0 token-trade path remains operator-only if needed for activity).
 - Consuming Q-VENUEGEO-1 into a migration GO without a fresh ADR.
 - Editing locked `BASE_RISK` / Pine / lifecycle multipliers.
 - Treating this ADR as M1 `RESOLVED` or as B7 Stage-1 discharge.

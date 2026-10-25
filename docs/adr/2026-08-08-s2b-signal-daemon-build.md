@@ -15,6 +15,7 @@
 **Retain-until:** none
 **Related:** [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md) · [S2 ADR](2026-08-07-loop-s2-signal-host-fork.md) · [Databento research ADR](2026-07-10-databento-research-stack.md) · [M1 ADR](2026-07-22-c1-venue-native-monitoring-maturity.md) · [rail GO ADR](2026-07-17-c1-rail-build-account-registration-go.md)
 **Layer:** infrastructure / signal-host. Fills S2b deferred decisions. Code/image/deploy wait on operator build GO.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the rev8 listener risk-reducing recovery sentence, replaced by the rev9 attended incident-recovery addendum (2026-09-15) (ADR09-154); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -425,7 +426,7 @@ git diff --name-only origin/main...HEAD   # exactly: STATE.md; both ADRs; A4, A6
 
 Joshua approved decision E as revised to TB-S3 rev8 at PR #380 merge `8101ba498aad812e79c3d80c45f963cd67b55de6`. [Approval record](../briefs/handoffs/2026-09-14-track-b-ratifications.md); [S3](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md); [rev8 halt/resume owner](../spec/2026-09-14-tb-s3-halt-resume-contract.md). This amends the Listener/Fail-closed rows and corresponding falsifier limbs for the fixed four-leg book only.
 
-Retain R-B1/R-B3 optional B1 fields (`side`, `qty_normal`, `qty`, `stop_price`, `stop_loss`, `take_profit`, `trail_activation_ticks`, `trail_offset_ticks`, `order_ref`, `scope_refs`), cancel/amend types and five-field M1 compatibility. Unhealthy sources emit no ordinary strategy signal until valid bars return. Authenticated, ordered health reports request a listener-owned account halt; they carry no daemon B1 flat. The listener owns durable halt and qualified risk-reducing recovery under rev8 §§1–4. Missing reports never authorize risk-adds; watchdog and evidence-freshness checks apply. Neither source recovery, session rollover nor restart restores permission. Resume requires fresh bounded operator approval after reconciliation and all retained gates.
+Retain R-B1/R-B3 optional B1 fields (`side`, `qty_normal`, `qty`, `stop_price`, `stop_loss`, `take_profit`, `trail_activation_ticks`, `trail_offset_ticks`, `order_ref`, `scope_refs`), cancel/amend types and five-field M1 compatibility. Unhealthy sources emit no ordinary strategy signal until valid bars return. Authenticated, ordered health reports request a listener-owned account halt; they carry no daemon B1 flat. Missing reports never authorize risk-adds; watchdog and evidence-freshness checks apply. Neither source recovery, session rollover nor restart restores permission. Resume requires fresh bounded operator approval after reconciliation and all retained gates.
 
 Emitting a risk-add under HALTED, an invalid/expired authorization, failed barrier or unhealthy required source falsifies this four-leg contract. So does treating an unhealthy-source strategy signal as the recovery authority or using an unsupported protective-order cancellation/close fallback. Retain separate apps/volumes, source selection, build GO, M1 and emission gates. Other B1 changes require their own authorization. Existing single-strategy operation is not migrated by this record. This addendum grants contract authority, not deployment, arming or trading permission.
 

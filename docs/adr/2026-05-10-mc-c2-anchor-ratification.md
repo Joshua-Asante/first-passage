@@ -9,6 +9,7 @@
 **Supersedes:** none
 **Relates to:** ADR 2026-05-08-dd-trigger-c2-relock; ADR 2026-05-10-dd-protection-ulp-rounding (PR #53); PR #60 / Q-MCFP-1 (MC inline ULP rounding); GH#55 (closes)
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-53); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the repin forbidden move, moot since the pinned test was deleted (ADR01-52); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -42,7 +43,6 @@ GH#55's framing inherited an implicit call-graph assumption that was not verifie
 
 ## Forbidden moves
 
-- Do not repin `tests/test_mc_anchors.py` — the existing pins reproduce. Repinning to "post-fix values" when the values are bitwise identical is ceremony and obscures the actual finding.
 - Do not amend PR #53's ADR retroactively to claim it never enumerated GH#55. The enumeration was made; this ADR documents why the enumerated risk did not materialize.
 - Do not generalize this finding to "ULP fixes at one site never affect MC anchors." The conclusion is specific to the import topology as of 2026-05-10. If the topology changes (e.g., `portfolio_mc.py` is refactored to call `calculate_protection`), the next ULP-class fix re-opens the verification.
 
