@@ -61,7 +61,9 @@ git -C <repo> worktree add --detach <repo>\.claude\worktrees\codex-review-train 
 
 - The wrapper runs the app-bundled Codex in a read-only sandbox. It refuses a directory holding `.env`, and it refuses to run without `FP_AGENT_GH_TOKEN` rather than fall back to the operator's token. If it refuses for the token, tell Joshua: the agent PAT is step B1 of his credential checklist.
 - Reuse the one worktree. `guard_worktree_evidence.py` can block `git worktree remove`.
-- Post the result as a PR comment whose **first line** is `codex-cli-review:v1 <40-hex head sha> clean` (or `findings`), followed by the review. `gate` counts that line as a Codex review, but only from the repository owner's account and only for that SHA.
+- Post the result as a new PR comment whose **first line** is `codex-cli-review:v1 <40-hex head sha> clean` (or `findings`), followed by the review. `gate` counts that line as a Codex review, but only from the repository owner's account and only for that SHA. Never edit a posted result: `gate` HOLDs on an edited one, because the edit hides a review.
+
+`gate` counts reviews from the Codex summary card's edit history. When it HOLDs with "Codex review history incomplete" (an old-format card, an unrecognised Codex reply, a deleted card revision, an edited result, or a receipt the card doesn't account for), count the reviews by hand and ask Joshua before merging.
 
 ### 5. Merge
 

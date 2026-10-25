@@ -16,12 +16,19 @@ a shell variable or command substitution, so paste that command as printed.
     python scripts/merge_train.py gate 912 --json
     python scripts/merge_train.py watch --min 911         # one line per change; for a Monitor
 
-The review is Codex: the GitHub connector's summary card or receipt, or a Codex CLI
-fallback result posted by the repository owner's account whose first line is
-``codex-cli-review:v1 <40-hex sha> clean`` (or ``findings``). Every completed Codex review
-counts toward the limit, one per reviewed commit.
+The review is Codex. The GitHub connector keeps one summary card per PR and edits it in
+place, so its text shows only the latest review; GitHub keeps every earlier version, and
+each version that turns ``completed`` is one review, re-requests on the same commit
+included. A Codex CLI fallback result posted by the repository owner's account, first
+line ``codex-cli-review:v1 <40-hex sha> clean`` (or ``findings``), is one more. Reviews
+are put in time order and the limit applies to where the first clean review at the head
+falls. The connector's receipts and PR reviews are other records of the same reviews; a
+record the card's history does not account for, an old-format card, an unrecognised
+connector comment, a deleted or foreign card revision, or an edited CLI comment means the
+history is incomplete, and the PR HOLDs for a count by hand: a missed review could make a
+later clean one look like the fourth.
 
-``watch`` takes a lock in its state directory, clears old state so its first poll reports
+``watch`` holds an OS lock on its state directory, clears old state so its first poll reports
 every PR, and exits by itself after ``--max-seconds`` (default 1680, under a 30-minute
 Monitor limit). A GitHub review still "running" at the head after ``--stall-minutes``
 (default 30) is flagged STALLED, the cue for the Codex CLI fallback. Requires ``gh``.
@@ -30,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -42,6 +50,7 @@ from typing import Callable
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REPO = "Joshua-Asante/first-passage"
 CODEX_BOT = "chatgpt-codex-connector[bot]"
+CODEX_LOGIN = CODEX_BOT.removesuffix("[bot]")   # GraphQL drops the suffix
 GREEN = {"SUCCESS", "NEUTRAL", "SKIPPED"}
 _STATE_RE = re.compile(r"codex-review-state:v1 (\{.*?\}) -->")
 _RECEIPT_RE = re.compile(r"Reviewed commit:\*\*\s*`([0-9a-f]{7,40})`")
@@ -51,6 +60,10 @@ _THREADS_QUERY = (
     "query($o:String!,$n:String!,$p:Int!,$c:String){repository(owner:$o,name:$n)"
     "{pullRequest(number:$p){reviewThreads(first:100,after:$c)"
     "{nodes{isResolved} pageInfo{hasNextPage endCursor}}}}}"
+)
+_EDITS_QUERY = (
+    "query($id:ID!,$c:String){node(id:$id){...on IssueComment{userContentEdits(first:100,after:$c)"
+    "{nodes{editedAt deletedAt editor{login} diff} pageInfo{hasNextPage endCursor}}}}}"
 )
 
 Runner = Callable[[list[str]], str]
@@ -69,15 +82,24 @@ def gh_runner(args: list[str]) -> str:
 
 @dataclass
 class CodexState:
-    sha: str = ""          # commit the GitHub review card (or receipt) refers to
+    sha: str = ""          # commit the GitHub review card refers to now
     status: str = "none"   # none | running | completed
     findings: bool | None = None
     running_since: str = ""
 
 
 @dataclass
+class Review:
+    sha: str
+    findings: bool         # an unknown result counts as findings
+    source: str            # connector | cli
+    at: str                # ISO time the result was recorded
+
+
+@dataclass
 class PrGate:
     number: int
+    repo: str = DEFAULT_REPO
     title: str = ""
     state: str = "OPEN"    # OPEN | MERGED | CLOSED
     base: str = "main"
@@ -89,7 +111,8 @@ class PrGate:
     codex: CodexState = field(default_factory=CodexState)
     clean_at_head: bool = False
     findings_at_head: bool = False
-    reviews: dict[str, bool] = field(default_factory=dict)   # commit -> review found issues
+    reviews: list[Review] = field(default_factory=list)   # every completed review, oldest first
+    history_problems: list[str] = field(default_factory=list)   # why the count can't be trusted
     unresolved_threads: int = 0
     verdict: str = ""      # READY | WAIT | HOLD | MERGED | CLOSED
     reasons: list[str] = field(default_factory=list)
@@ -122,65 +145,53 @@ def _same_commit(a: str, b: str) -> bool:
     return bool(a and b) and (a.startswith(b) or b.startswith(a)) and min(len(a), len(b)) >= 7
 
 
-def codex_state(bot_bodies: list[str]) -> tuple[CodexState, dict[str, bool]]:
-    """The connector's current review state, and every commit it reviewed.
+def _card(body: str) -> CodexState | None:
+    """The code-review state one version of the summary card records."""
+    m = _STATE_RE.search(body or "")
+    if not m:
+        return None
+    try:
+        review = json.loads(m.group(1)).get("code_review") or {}
+    except json.JSONDecodeError:
+        return None
+    findings = review.get("has_any_findings")
+    if findings is None:
+        findings = review.get("has_unresolved_findings")
+    state = CodexState(sha=review.get("commit_sha") or "", status=review.get("status") or "none",
+                       findings=findings)
+    since = _RUNNING_SINCE_RE.search(body)
+    state.running_since = since.group(1) if since and state.status == "running" else ""
+    return state
 
-    The summary card (``codex-review-state:v1 {json}``) is one comment edited in place, so
-    it is the current state whatever its position; receipts ("Reviewed commit: `sha`") are
-    appended per clean review and only stand in when no card exists.
-    """
-    card, receipts = None, []
-    for body in bot_bodies:
-        m = _STATE_RE.search(body)
-        if m:
-            try:
-                review = json.loads(m.group(1)).get("code_review") or {}
-            except json.JSONDecodeError:
-                continue
-            findings = review.get("has_any_findings")
-            if findings is None:
-                findings = review.get("has_unresolved_findings")
-            card = CodexState(sha=review.get("commit_sha") or "",
-                              status=review.get("status") or "none", findings=findings)
-            since = _RUNNING_SINCE_RE.search(body)
-            card.running_since = since.group(1) if since and card.status == "running" else ""
+
+def connector_reviews(versions: list[tuple[str, str]]) -> list[Review]:
+    """One Review per summary-card version that turns ``completed``, from (time, body)
+    versions oldest first. A completed version that only restates the previous one (same
+    commit, e.g. after threads are resolved) is the same review; findings win."""
+    out: list[Review] = []
+    prev: CodexState | None = None
+    for at, body in versions:
+        state = _card(body)
+        if state is None:
             continue
-        r = _RECEIPT_RE.search(body)
-        if r and "find any major issues" in body:
-            receipts.append(r.group(1))
-    reviewed: dict[str, bool] = {sha: False for sha in receipts}
-    if card and card.status == "completed" and card.sha:
-        reviewed[card.sha] = bool(card.findings) or reviewed.get(card.sha, False)
-    if card:
-        return card, reviewed
-    if receipts:
-        return CodexState(sha=receipts[-1], status="completed", findings=False), reviewed
-    return CodexState(), reviewed
-
-
-def cli_reviews(owner_bodies: list[str]) -> dict[str, bool]:
-    """Codex CLI fallback verdicts posted by the repository owner's account."""
-    out: dict[str, bool] = {}
-    for body in owner_bodies:
-        m = _CLI_RE.match(body)
-        if m:
-            out[m.group(1)] = m.group(2) == "findings"
+        dirty = state.findings is not False
+        if state.status == "completed" and state.sha:
+            if prev and prev.status == "completed" and _same_commit(prev.sha, state.sha):
+                out[-1].findings = out[-1].findings or dirty
+            else:
+                out.append(Review(state.sha, dirty, "connector", at))
+        prev = state
     return out
 
 
-def _merge_reviews(*maps: dict[str, bool]) -> dict[str, bool]:
-    """One entry per reviewed commit (short and full SHAs unified); findings win."""
-    merged: dict[str, bool] = {}
-    for mp in maps:
-        for sha, findings in mp.items():
-            key = next((k for k in merged if _same_commit(k, sha)), None)
-            if key is None:
-                merged[sha] = findings
-            else:
-                merged[key] = merged[key] or findings
-                if len(sha) > len(key):
-                    merged[sha] = merged.pop(key)
-    return merged
+def cli_reviews(owner_comments: list[dict]) -> list[Review]:
+    """Codex CLI fallback verdicts posted by the repository owner's account."""
+    out = []
+    for c in owner_comments:
+        m = _CLI_RE.match(c.get("body") or "")
+        if m:
+            out.append(Review(m.group(1), m.group(2) == "findings", "cli", c.get("created_at") or ""))
+    return out
 
 
 def is_stalled(state: CodexState, head: str, now: datetime, minutes: int) -> bool:
@@ -207,15 +218,28 @@ def decide(g: PrGate) -> PrGate:
         hold.append(f"base is {g.base}, not main: retarget it first")
     if g.failing_checks:
         hold.append("failing: " + ", ".join(g.failing_checks))
+    if g.history_problems:
+        hold.append("Codex review history incomplete (" + "; ".join(g.history_problems)
+                    + "): count the reviews by hand and ask Joshua")
     n = len(g.reviews)
-    dirty = sum(1 for f in g.reviews.values() if f)
+    dirty = sum(1 for r in g.reviews if r.findings)
+    at_head = [(i, r.findings) for i, r in enumerate(g.reviews, 1) if _same_commit(r.sha, g.head)]
+    g.findings_at_head = any(f for _, f in at_head)
+    g.clean_at_head = bool(at_head) and not g.findings_at_head
     # Clean within three Codex reviews; amended 2026-10-25: a clean fourth counts;
-    # beyond the fourth is not ruled on.
+    # beyond the fourth is not ruled on. A later review does not undo a clean fourth.
     if g.clean_at_head:
-        if n > 4:
-            hold.append(f"clean review is review {n}; beyond the fourth is not ruled on: ask Joshua")
+        pos = at_head[0][0]
+        if pos > 4:
+            hold.append(f"first clean review at head is review {pos}; beyond the fourth is "
+                        "not ruled on: ask Joshua")
     elif n >= 4:
-        hold.append(f"{n} Codex reviews without a clean one at head: return to the original owner")
+        early = next((i for i, r in enumerate(g.reviews[:4], 1) if not r.findings), None)
+        if early:
+            hold.append(f"review {early} was clean at an older head; a fresh review would be "
+                        f"review {n + 1}, beyond the fourth: ask Joshua")
+        else:
+            hold.append(f"{n} Codex reviews without a clean one at head: return to the original owner")
     elif g.findings_at_head:
         hold.append("Codex findings at head: back to the owner")
     else:
@@ -227,7 +251,8 @@ def decide(g: PrGate) -> PrGate:
     if g.unresolved_threads:
         wait.append(f"{g.unresolved_threads} unresolved thread(s)")
     if g.merge_state == "BEHIND":
-        wait.append("mergeStateStatus=BEHIND (gh pr update-branch; then a fresh review)")
+        nxt = f"; it would be review {n + 1}: ask Joshua first" if n >= 4 else ""
+        wait.append(f"mergeStateStatus=BEHIND (gh pr update-branch; then a fresh review{nxt})")
     elif g.merge_state == "DIRTY":
         wait.append("mergeStateStatus=DIRTY (conflict: route to the owner)")
     elif g.merge_state != "CLEAN":
@@ -235,25 +260,99 @@ def decide(g: PrGate) -> PrGate:
     g.reasons = hold + wait
     g.verdict = "HOLD" if hold else ("WAIT" if wait else "READY")
     g.merge_command = (
-        f"gh pr merge {g.number} --merge --match-head-commit {g.head}" if g.verdict == "READY" else ""
+        f"gh pr merge {g.number} --repo {g.repo} --merge --match-head-commit {g.head}"
+        if g.verdict == "READY" else ""
     )
     return g
 
 
-def _unresolved_threads(number: int, repo: str, run: Runner) -> int:
-    owner, name = repo.split("/", 1)
-    count, cursor = 0, None
+def _pages(query: str, fields: list[str], path: list[str], run: Runner) -> list[dict]:
+    """Every node of a paginated GraphQL connection reached by ``path``."""
+    nodes, cursor = [], None
     while True:
-        args = ["api", "graphql", "-f", f"query={_THREADS_QUERY}", "-F", f"o={owner}",
-                "-F", f"n={name}", "-F", f"p={number}"]
+        args = ["api", "graphql", "-f", f"query={query}", *fields]
         if cursor:
             args += ["-f", f"c={cursor}"]
-        page = json.loads(run(args))["data"]["repository"]["pullRequest"]["reviewThreads"]
-        count += sum(1 for node in page["nodes"] if not node.get("isResolved"))
+        page = json.loads(run(args))["data"]
+        for key in path:
+            page = page[key]
+        nodes += page["nodes"]
         info = page.get("pageInfo") or {}
         if not info.get("hasNextPage"):
-            return count
+            return nodes
         cursor = info.get("endCursor")
+
+
+def _unresolved_threads(number: int, repo: str, run: Runner) -> int:
+    owner, name = repo.split("/", 1)
+    nodes = _pages(_THREADS_QUERY, ["-F", f"o={owner}", "-F", f"n={name}", "-F", f"p={number}"],
+                   ["repository", "pullRequest", "reviewThreads"], run)
+    return sum(1 for node in nodes if not node.get("isResolved"))
+
+
+def _card_versions(comment: dict, run: Runner) -> tuple[list[tuple[str, str]], list[str]]:
+    """Every version of a summary card, oldest first, and why its history can't be trusted.
+    GitHub's edit list holds every version of an edited comment, the current one included,
+    so the REST body (read earlier, so possibly older) stands in only for a card never edited."""
+    edits = _pages(_EDITS_QUERY, ["-f", f"id={comment['node_id']}"],
+                   ["node", "userContentEdits"], run) if comment.get("node_id") else []
+    problems = []
+    for e in edits:
+        editor = ((e.get("editor") or {}).get("login") or "").lower()
+        if e.get("deletedAt") or e.get("diff") is None:
+            problems.append(f"a revision of Codex card {comment.get('id')} was deleted")
+        elif editor != CODEX_LOGIN:
+            problems.append(f"Codex card {comment.get('id')} was edited by {editor or 'a deleted account'}")
+    if not edits:
+        return [(comment.get("updated_at") or "", comment.get("body") or "")], problems
+    return sorted((e.get("editedAt") or "", e.get("diff") or "") for e in edits), problems
+
+
+def _receipt(body: str, commit: str = "") -> tuple[str, bool] | None:
+    """(commit, findings) a connector receipt records, or None."""
+    m = _RECEIPT_RE.search(body)
+    sha = m.group(1) if m else commit
+    return (sha, "find any major issues" not in body) if sha else None
+
+
+def codex_history(comments: list[dict], pr_reviews: list[dict], owner: str,
+                  run: Runner) -> tuple[CodexState, list[Review], list[str]]:
+    """The card's current state, every completed Codex review oldest first, and reasons the
+    history is incomplete (each one HOLDs the PR)."""
+    login = lambda c: ((c.get("user") or {}).get("login") or "").lower()  # noqa: E731
+    state, reviews, problems, records = CodexState(), [], [], []
+    for c in comments:
+        body = c.get("body") or ""
+        if login(c) == CODEX_BOT:
+            if _card(body):
+                versions, bad = _card_versions(c, run)
+                problems += bad
+                reviews += connector_reviews(versions)
+                state = _card(versions[-1][1]) or state
+            elif "codex-pull-request-review-summary" in body:
+                problems.append(f"old-format Codex card {c.get('id')}")
+            elif rec := _receipt(body):
+                records.append(rec)
+            else:
+                first = body.strip().splitlines()[0][:40] if body.strip() else ""
+                problems.append(f"unrecognised Codex comment {c.get('id')} ({first!r})")
+        elif login(c) == owner and _CLI_RE.match(body):
+            if (c.get("updated_at") or "") != (c.get("created_at") or ""):
+                problems.append(f"CLI review comment {c.get('id')} was edited")
+            reviews += cli_reviews([c])
+    # A connector PR review with a body is the receipt of one review; an empty one is a
+    # thread reply.
+    records += [rec for r in pr_reviews if login(r) == CODEX_BOT and (r.get("body") or "").strip()
+                and (rec := _receipt(r["body"], r.get("commit_id") or ""))]
+    connector = [r for r in reviews if r.source == "connector"]
+    for sha, findings in records:
+        def same(s: str, f: bool) -> bool:
+            return _same_commit(s, sha) and f == findings
+        if sum(same(*rec) for rec in records) > sum(same(r.sha, r.findings) for r in connector):
+            problems.append(f"a Codex {'findings' if findings else 'clean'} record at {sha[:7]} "
+                            "is missing from the card's history")
+    reviews.sort(key=lambda r: r.at)
+    return state, reviews, list(dict.fromkeys(problems))
 
 
 def fetch_gate(number: int, repo: str, run: Runner = gh_runner) -> PrGate:
@@ -262,31 +361,19 @@ def fetch_gate(number: int, repo: str, run: Runner = gh_runner) -> PrGate:
         "number,title,state,isDraft,baseRefName,headRefOid,mergeStateStatus,statusCheckRollup",
     ]))
     if pr.get("state", "OPEN") != "OPEN":
-        return decide(PrGate(number=number, title=pr.get("title", ""), state=pr["state"],
-                             head=pr.get("headRefOid", "")))
+        return decide(PrGate(number=number, repo=repo, title=pr.get("title", ""),
+                             state=pr["state"], head=pr.get("headRefOid", "")))
     head = pr["headRefOid"]
     pending, failing = classify_checks(pr.get("statusCheckRollup") or [])
-    comments = [c for page in json.loads(run(
-        ["api", "--paginate", "--slurp", f"repos/{repo}/issues/{number}/comments"])) for c in page]
-    login = lambda c: (c.get("user") or {}).get("login")  # noqa: E731
-    owner = repo.split("/", 1)[0]
-    card, connector = codex_state([c.get("body") or "" for c in comments if login(c) == CODEX_BOT])
-    cli = cli_reviews([c.get("body") or "" for c in comments if login(c) == owner])
-    pr_reviews = [r for page in json.loads(run(
-        ["api", "--paginate", "--slurp", f"repos/{repo}/pulls/{number}/reviews"])) for r in page]
-    # The connector leaves a PR review only when it has inline findings.
-    dirty = {r["commit_id"]: True for r in pr_reviews if login(r) == CODEX_BOT and r.get("commit_id")}
-    reviews = _merge_reviews(connector, dirty, cli)
-    at_head = [f for sha, f in reviews.items() if _same_commit(sha, head)]
-    findings_at_head = any(at_head) or (
-        card.status == "completed" and bool(card.findings) and _same_commit(card.sha, head))
-    clean_at_head = bool(at_head) and not findings_at_head
+    comments, pr_reviews = ([c for page in json.loads(run(
+        ["api", "--paginate", "--slurp", f"repos/{repo}/{kind}/{number}/{what}"])) for c in page]
+        for kind, what in (("issues", "comments"), ("pulls", "reviews")))
+    state, reviews, problems = codex_history(comments, pr_reviews, repo.split("/", 1)[0].lower(), run)
     return decide(PrGate(
-        number=number, title=pr.get("title", ""), base=pr.get("baseRefName") or "main",
+        number=number, repo=repo, title=pr.get("title", ""), base=pr.get("baseRefName") or "main",
         head=head, draft=bool(pr.get("isDraft")), merge_state=pr.get("mergeStateStatus") or "",
-        pending_checks=pending, failing_checks=failing, codex=card,
-        clean_at_head=clean_at_head, findings_at_head=findings_at_head, reviews=reviews,
-        unresolved_threads=_unresolved_threads(number, repo, run),
+        pending_checks=pending, failing_checks=failing, codex=state, reviews=reviews,
+        history_problems=problems, unresolved_threads=_unresolved_threads(number, repo, run),
     ))
 
 
@@ -352,25 +439,43 @@ def watch_once(repo: str, min_pr: int, state_dir: Path, stall_minutes: int,
     return events
 
 
-def _acquire_lock(state_dir: Path, ttl: float) -> Path:
-    """Refuse a second watcher on the same state while the first is alive."""
+def _acquire_lock(state_dir: Path):
+    """Refuse a second watcher on the same state. The lock is an exclusive OS lock held for
+    the process's life, so it never expires mid-poll and the OS drops it however the
+    watcher exits. The file is never deleted: a new file would be a second, free lock."""
     state_dir.mkdir(parents=True, exist_ok=True)
-    lock = state_dir / "watch.lock"
-    if lock.exists() and time.time() - lock.stat().st_mtime < ttl:
-        raise SystemExit(f"another watcher is running ({lock}); stop it first, or wait {int(ttl)} s")
-    lock.write_text(str(time.time()), encoding="utf-8")
-    return lock
+    path = state_dir / "watch.lock"
+    fh = open(path, "a+b")  # noqa: SIM115 - held until _release_lock
+    try:
+        if os.name == "nt":
+            import msvcrt
+            fh.seek(0)
+            msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fh.close()
+        raise SystemExit(f"another watcher is running ({path}); stop it first") from None
+    return fh
+
+
+def _release_lock(fh) -> None:
+    if os.name == "nt":
+        import msvcrt
+        fh.seek(0)
+        msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+    fh.close()
 
 
 def cmd_watch(args: argparse.Namespace) -> int:
     state_dir = Path(args.state_dir)
-    lock = _acquire_lock(state_dir, args.interval + 120)
+    lock = _acquire_lock(state_dir)
     for old in state_dir.glob("pr_*.txt"):   # first poll reports every PR as NEW
         old.unlink()
     start = time.monotonic()
     try:
         while time.monotonic() - start < args.max_seconds:
-            lock.touch()
             try:
                 for line in watch_once(args.repo, args.min, state_dir,
                                        args.stall_minutes, datetime.now(timezone.utc)):
@@ -382,7 +487,7 @@ def cmd_watch(args: argparse.Namespace) -> int:
                 break
             time.sleep(min(args.interval, remaining))
     finally:
-        lock.unlink(missing_ok=True)
+        _release_lock(lock)
     return 0
 
 

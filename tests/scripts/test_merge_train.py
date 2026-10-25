@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,9 +23,14 @@ _spec.loader.exec_module(mt)
 
 HEAD = "a1943a3ed9708e00716374cd56313bbf978ced7c"
 OLD = "4499cb7e8ec534883b900be145955d36c4d0a084"
+A, B, C, D = (c * 40 for c in "abcd")
 BOT = mt.CODEX_BOT
 OWNER = mt.DEFAULT_REPO.split("/")[0]
 NOW = datetime(2026, 10, 25, 4, 0, tzinfo=timezone.utc)
+
+
+def t(i: int, s: int = 0) -> str:
+    return f"2026-10-25T05:{i:02d}:{s:02d}Z"
 
 
 def card(sha: str, status: str, findings, since: str = "2026-10-25T03:25:05Z", any_=None) -> str:
@@ -45,8 +51,19 @@ def cli(sha: str, verdict: str) -> str:
     return f"codex-cli-review:v1 {sha} {verdict}\n\nCodex CLI review (fallback) ..."
 
 
-def dirty(*commits: str) -> list[dict]:
-    return [{"user": {"login": BOT}, "state": "COMMENTED", "commit_id": c} for c in commits]
+def timeline(*events) -> dict:
+    """PR fields from events in time order. ("codex", sha, findings) is one connector review:
+    a running then a completed version of the one summary card. ("running", sha, None) is a
+    review still running. ("cli", sha, findings) is an owner CLI-fallback comment."""
+    versions, human = [], []
+    for i, (kind, sha, findings) in enumerate(events):
+        if kind == "cli":
+            human.append((OWNER, cli(sha, "findings" if findings else "clean"), t(i, 30)))
+            continue
+        versions.append((t(i), card(sha, "running", None)))
+        if kind == "codex":
+            versions.append((t(i, 30), card(sha, "completed", findings, any_=findings)))
+    return {"bot": [{"history": versions}] if versions else [], "human": human}
 
 
 def green(*names: str) -> list[dict]:
@@ -54,10 +71,27 @@ def green(*names: str) -> list[dict]:
 
 
 class FakeGh:
-    """Answers the calls fetch_gate makes, per PR number."""
+    """Answers the calls fetch_gate makes, per PR number. A bot entry is a card body that
+    was never edited, a plain comment body, or {"history": [(time, body), ...]}, whose last
+    version is the current text; GitHub returns edit versions newest first."""
 
-    def __init__(self, prs: dict[int, dict], thread_pages: int = 1):
-        self.prs, self.thread_pages = prs, thread_pages
+    def __init__(self, prs: dict[int, dict], thread_pages: int = 1, edit_page: int = 100):
+        self.prs, self.thread_pages, self.edit_page, self.edits = prs, thread_pages, edit_page, {}
+
+    def _comments(self, n: int) -> list[dict]:
+        out = []
+        for j, entry in enumerate(self.prs[n].get("bot", [])):
+            versions = entry["history"] if isinstance(entry, dict) else [("2026-10-25T03:00:00Z", entry)]
+            node = f"IC_{n}_{j}"
+            self.edits[node] = versions if len(versions) > 1 else []
+            rest = versions[entry.get("rest", -1)] if isinstance(entry, dict) else versions[-1]
+            out.append({"id": 100 + j, "user": {"login": BOT}, "node_id": node, "body": rest[1],
+                        "created_at": versions[0][0], "updated_at": rest[0]})
+        for j, entry in enumerate(self.prs[n].get("human", [])):
+            who, body, at, edited = (*entry, *("2026-10-25T03:00:00Z", None)[len(entry) - 2:])
+            out.append({"id": 200 + j, "user": {"login": who}, "body": body, "created_at": at,
+                        "updated_at": edited or at})
+        return out
 
     def __call__(self, args: list[str]) -> str:
         if args[:2] == ["pr", "list"]:
@@ -74,16 +108,22 @@ class FakeGh:
                 "statusCheckRollup": p.get("checks", green("skills (3.12)", "build (3.11)")),
             })
         if args[0] == "api" and args[-1].endswith("/comments"):
-            p = self.prs[int(args[-1].split("/")[-2])]
-            comments = [{"user": {"login": BOT}, "body": b} for b in p.get("bot", [])]
-            comments += [{"user": {"login": who}, "body": b} for who, b in p.get("human", [])]
-            return json.dumps([comments])
+            return json.dumps([self._comments(int(args[-1].split("/")[-2]))])
         if args[0] == "api" and args[-1].endswith("/reviews"):
             return json.dumps([self.prs[int(args[-1].split("/")[-2])].get("reviews", [])])
         if args[:2] == ["api", "graphql"]:
-            n = int(next(a for a in args if a.startswith("p=")).split("=")[1])
             cursor = next((a.split("=", 1)[1] for a in args if a.startswith("c=")), None)
             page = int(cursor or 0)
+            node = next((a.split("=", 1)[1] for a in args if a.startswith("id=")), None)
+            if node:
+                newest_first = [{"editedAt": v[0], "diff": v[1], "deletedAt": None,
+                                 "editor": {"login": mt.CODEX_LOGIN}, **(v[2] if len(v) > 2 else {})}
+                                for v in reversed(self.edits[node])]
+                chunk = newest_first[page * self.edit_page:(page + 1) * self.edit_page]
+                more = (page + 1) * self.edit_page < len(newest_first)
+                return json.dumps({"data": {"node": {"userContentEdits": {
+                    "nodes": chunk, "pageInfo": {"hasNextPage": more, "endCursor": str(page + 1)}}}}})
+            n = int(next(a for a in args if a.startswith("p=")).split("=")[1])
             unresolved = self.prs[n].get("threads", 0) if page == self.thread_pages - 1 else 0
             nodes = [{"isResolved": False}] * unresolved + [{"isResolved": True}]
             more = page < self.thread_pages - 1
@@ -100,7 +140,22 @@ def test_ready_prints_literal_full_sha_merge_command():
     g = gate(bot=[card(HEAD, "completed", False)])
     assert g.verdict == "READY", g.reasons
     # guard_operator_acts refuses a SHA in a variable or $(...): the command must carry it literally
-    assert g.merge_command == f"gh pr merge 1 --merge --match-head-commit {HEAD}"
+    assert g.merge_command == f"gh pr merge 1 --repo {mt.DEFAULT_REPO} --merge --match-head-commit {HEAD}"
+
+
+def test_merge_command_targets_the_checked_repository():
+    # Codex P2 on #915: without --repo, the pasted command acts on the caller's checkout.
+    g = mt.fetch_gate(7, "someone/fork", FakeGh({7: {"bot": [card(HEAD, "completed", False)]}}))
+    assert g.verdict == "READY" and "--repo someone/fork " in g.merge_command
+
+
+def test_printed_merge_command_is_a_pinned_merge_to_the_guard():
+    spec = importlib.util.spec_from_file_location("guard_operator_acts",
+                                                  _PATH.with_name("guard_operator_acts.py"))
+    guard = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(guard)
+    command = gate(bot=[card(HEAD, "completed", False)]).merge_command
+    assert guard.classify_command(command) == ("pass", "pr.merge")
 
 
 def test_clean_review_of_an_older_head_does_not_count():
@@ -118,17 +173,27 @@ def test_resolved_threads_do_not_turn_findings_clean():
     # has_any_findings is the review's result; has_unresolved_findings tracks threads
     g = gate(bot=[card(HEAD, "completed", False, any_=True)])
     assert g.verdict == "HOLD" and g.findings_at_head
+    # the connector edits the card again as threads resolve: still one review, still dirty
+    resolved = {"history": [(t(0), card(HEAD, "running", None)), (t(1), card(HEAD, "completed", True)),
+                            (t(2), card(HEAD, "completed", False))]}
+    g = gate(bot=[resolved])
+    assert len(g.reviews) == 1 and g.findings_at_head and g.verdict == "HOLD"
 
 
-def test_card_is_edited_in_place_so_later_receipts_do_not_override_it():
-    # Observed order: the summary card is the first bot comment; receipts follow.
-    g = gate(bot=[card(HEAD, "running", None), receipt(OLD)])
-    assert g.verdict == "WAIT" and "Codex review running" in g.reasons
-    assert mt.is_stalled(g.codex, HEAD, NOW, 30)
+def test_completed_card_without_a_result_is_not_clean():
+    g = gate(bot=[card(HEAD, "completed", None)])
+    assert g.verdict == "HOLD" and g.findings_at_head
 
 
-def test_receipt_alone_counts_when_no_card_exists():
-    assert gate(bot=[receipt(HEAD)]).verdict == "READY"
+def test_receipts_and_pr_reviews_are_not_counted_again():
+    # #906 as recorded: the card's history holds all four reviews; the receipt and the three
+    # connector PR reviews are other records of the same reviews.
+    pr = timeline(("codex", A, True), ("codex", B, True), ("codex", C, True), ("codex", HEAD, False))
+    pr["bot"].append(receipt(HEAD))
+    pr["reviews"] = [{"user": {"login": BOT}, "state": "COMMENTED", "commit_id": c, "body": "x"}
+                     for c in (A, B, C)]
+    g = gate(**pr)
+    assert len(g.reviews) == 4 and g.verdict == "READY"
 
 
 def test_cli_fallback_marker_from_owner_clears_a_stalled_review():
@@ -145,11 +210,122 @@ def test_cli_marker_from_anyone_else_or_for_another_commit_is_ignored():
     assert gate(bot=[stalled], human=[(OWNER, "see below\n" + cli(HEAD, "clean"))]).verdict == "WAIT"
 
 
+def test_owner_match_ignores_the_case_of_repo():
+    # gh and the API accept any case in --repo; GitHub returns the login's own case.
+    fake = FakeGh({1: {"bot": [card(HEAD, "running", None)], "human": [(OWNER, cli(HEAD, "clean"))]}})
+    assert mt.fetch_gate(1, mt.DEFAULT_REPO.lower(), fake).verdict == "READY"
+
+
 def test_no_approval_substitutes_for_codex():
     # Addendum 2026-10-25: Claude does not review its own work; Codex is the reviewer.
     approvals = [{"user": {"login": "claude[bot]"}, "state": "APPROVED", "commit_id": HEAD}]
     assert gate(reviews=approvals).verdict == "WAIT"
     assert gate(bot=[card(HEAD, "completed", True)], reviews=approvals).verdict == "HOLD"
+
+
+# The review limit, from the order reviews completed in. Joshua 2026-10-25: "a clean fourth
+# review counts, it can still merge then"; beyond the fourth is not ruled on.
+LIMIT_CASES = {
+    "906: three dirty, clean fourth": (
+        [("codex", A, True), ("codex", B, True), ("codex", C, True), ("codex", HEAD, False)],
+        "READY", 4, ""),
+    "codex P1: a re-requested review of the same commit counts again": (
+        [("codex", A, True), ("codex", A, True), ("codex", B, True), ("codex", C, True),
+         ("codex", HEAD, False)], "HOLD", 5, "ask Joshua"),
+    "a review only the card recorded still counts after the card moves on": (
+        [("codex", A, True), ("codex", B, True), ("codex", C, True), ("codex", D, False),
+         ("codex", HEAD, False)], "HOLD", 5, "ask Joshua"),
+    "a clean fourth stands when the stalled review completes after the CLI fallback": (
+        [("codex", A, True), ("codex", B, True), ("codex", C, True), ("cli", HEAD, False),
+         ("codex", HEAD, False)], "READY", 5, ""),
+    "connector and CLI reviews of one commit are two reviews": (
+        [("codex", A, True), ("cli", B, True), ("codex", B, True), ("cli", C, True),
+         ("cli", HEAD, False)], "HOLD", 5, "ask Joshua"),
+    "fourth review with findings returns to the owner": (
+        [("codex", A, True), ("codex", B, True), ("codex", C, True), ("codex", HEAD, True)],
+        "HOLD", 4, "original owner"),
+    "three dirty and the fourth running waits for a clean fourth": (
+        [("codex", A, True), ("codex", B, True), ("codex", C, True), ("running", HEAD, None)],
+        "WAIT", 3, "clean fourth"),
+    "findings at head win over a later clean review of the same head": (
+        [("codex", HEAD, True), ("codex", HEAD, False)], "HOLD", 2, "findings at head"),
+    "a clean review of an older head leaves the head unreviewed": (
+        [("codex", OLD, False)], "WAIT", 1, "no Codex review at head"),
+    "a connector clean review after CLI fallbacks keeps its time position": (
+        [("codex", A, True), ("cli", B, True), ("cli", C, True), ("cli", D, True),
+         ("codex", HEAD, False)], "HOLD", 5, "ask Joshua"),
+    "a clean fourth at an older head is spent once the head moves": (
+        [("codex", A, True), ("codex", B, True), ("codex", C, True), ("codex", D, False)],
+        "HOLD", 4, "review 4 was clean at an older head; a fresh review would be review 5"),
+}
+
+
+@pytest.mark.parametrize("events,verdict,n,reason", LIMIT_CASES.values(), ids=LIMIT_CASES.keys())
+def test_review_limit(events, verdict, n, reason):
+    g = gate(**timeline(*events))
+    assert (g.verdict, len(g.reviews)) == (verdict, n), g.reasons
+    assert reason in " ".join(g.reasons)
+
+
+def test_behind_after_a_clean_fourth_warns_before_update_branch():
+    g = gate(**timeline(("codex", A, True), ("codex", B, True), ("codex", C, True),
+                        ("codex", HEAD, False)), merge="BEHIND")
+    assert g.verdict == "WAIT" and "it would be review 5: ask Joshua first" in " ".join(g.reasons)
+
+
+def test_completed_on_one_commit_then_another_is_two_reviews():
+    history = [(t(0), card(A, "running", None)), (t(1), card(A, "completed", True, any_=True)),
+               (t(2), card(B, "completed", True, any_=True))]
+    assert [r.sha for r in gate(bot=[{"history": history}]).reviews] == [A, B]
+
+
+def test_rest_body_older_than_the_edit_history_is_not_counted_again():
+    # The connector edited the card between the REST read and the GraphQL read.
+    pr = timeline(("codex", A, True), ("codex", B, True), ("codex", C, True), ("running", HEAD, None))
+    pr["bot"][0]["rest"] = -2   # REST still shows C's completed version
+    g = gate(**pr)
+    assert len(g.reviews) == 3 and g.codex.status == "running"
+
+
+HISTORY_GAPS = {
+    "old-format card (before about 2026-10-14)": (
+        {"bot": ["<!-- codex-pull-request-review-summary -->\n| Code Review | **Completed** | `abc1234` |",
+                 card(HEAD, "completed", False)]}, "old-format Codex card"),
+    "a Codex reply that is neither a card nor a receipt (#896)": (
+        {"bot": [card(HEAD, "running", None), "## Review Result\n\n**No blocking findings.**"]},
+        "unrecognised Codex comment"),
+    "a deleted card revision": (
+        {"bot": [{"history": [(t(0), card(A, "running", None)), (t(1), "", {"diff": None}),
+                              (t(2), card(HEAD, "completed", False))]}]}, "was deleted"),
+    "a card revision by someone else": (
+        {"bot": [{"history": [(t(0), card(A, "running", None)),
+                              (t(1), card(HEAD, "completed", False), {"editor": {"login": "someone"}})]}]},
+        "edited by someone"),
+    "an edited CLI review comment": (
+        {"bot": [card(HEAD, "running", None)], "human": [(OWNER, cli(HEAD, "clean"), t(0), t(9))]},
+        "CLI review comment 200 was edited"),
+    "a connector PR review the card's history lacks": (
+        {"bot": [card(HEAD, "completed", False)],
+         "reviews": [{"user": {"login": BOT}, "state": "COMMENTED", "commit_id": A,
+                      "body": f"<!-- codex-review-receipt:v1 -->\n**Reviewed commit:** `{A[:10]}`"}]},
+        "findings record at aaaaaaa is missing"),
+    "a clean receipt the card's history lacks": (
+        {"bot": [card(HEAD, "completed", True, any_=True), receipt(HEAD)]},
+        "clean record at a1943a3 is missing"),
+}
+
+
+@pytest.mark.parametrize("pr,reason", HISTORY_GAPS.values(), ids=HISTORY_GAPS.keys())
+def test_incomplete_review_history_holds_for_a_count_by_hand(pr, reason):
+    g = gate(**pr)
+    assert g.verdict == "HOLD" and reason in " ".join(g.reasons), g.reasons
+    assert "count the reviews by hand" in " ".join(g.reasons)
+
+
+def test_card_edit_history_is_paginated():
+    pr = timeline(("codex", A, True), ("codex", B, True), ("codex", HEAD, False))
+    g = mt.fetch_gate(1, mt.DEFAULT_REPO, FakeGh({1: pr}, edit_page=1))
+    assert len(g.reviews) == 3 and g.verdict == "READY"
 
 
 def test_check_running_is_wait_even_with_empty_conclusion():
@@ -186,44 +362,17 @@ def test_review_threads_are_paginated():
     assert g.unresolved_threads == 1 and g.verdict == "WAIT"
 
 
-def test_clean_fourth_review_still_clears_after_three_dirty():
-    # Joshua 2026-10-25: "a clean fourth review counts, it can still merge then" (#906)
-    three = dirty("6fc7e35", "89ccb09", "8a245a6")
-    g = gate(bot=[card(HEAD, "completed", False)], reviews=three)
-    assert len(g.reviews) == 4 and g.verdict == "READY"
-    pending = gate(bot=[card(HEAD, "running", None)], reviews=three)
-    assert pending.verdict == "WAIT" and "clean fourth" in " ".join(pending.reasons)
-
-
-def test_fourth_review_with_findings_returns_to_owner():
-    g = gate(bot=[card(HEAD, "completed", True)], reviews=dirty("a1b2c3d", "b2c3d4e", "c3d4e5f"))
-    assert g.verdict == "HOLD" and "original owner" in " ".join(g.reasons)
-
-
-def test_clean_review_beyond_the_fourth_asks_joshua():
-    # four earlier reviews (one clean at an older head) then a clean fifth at head
-    g = gate(bot=[receipt(OLD), card(HEAD, "completed", False)],
-             reviews=dirty("a1b2c3d", "b2c3d4e", "c3d4e5f"))
-    assert len(g.reviews) == 5 and g.verdict == "HOLD"
-    assert "ask Joshua" in " ".join(g.reasons)
-
-
-def test_reviews_unify_short_and_full_shas():
-    merged = mt._merge_reviews({HEAD[:10]: False}, {HEAD: False}, {"6fc7e35": True})
-    assert len(merged) == 2 and merged[HEAD] is False
-
-
 def test_merged_pr_reports_terminal_state():
     g = gate(state="MERGED", merge="UNKNOWN")
     assert g.verdict == "MERGED" and g.merge_command == ""
 
 
 def test_stall_flag_after_thirty_minutes_at_current_head_only():
-    running, _ = mt.codex_state([card(HEAD, "running", None, since="2026-10-25T03:25:05Z")])
+    running = mt._card(card(HEAD, "running", None, since="2026-10-25T03:25:05Z"))
     assert mt.is_stalled(running, HEAD, NOW, 30)
     assert not mt.is_stalled(running, HEAD, NOW, 40)
     assert not mt.is_stalled(running, OLD, NOW, 30)
-    done, _ = mt.codex_state([card(HEAD, "completed", False)])
+    done = mt._card(card(HEAD, "completed", False))
     assert not mt.is_stalled(done, HEAD, NOW, 30)
 
 
@@ -265,11 +414,17 @@ def test_watch_flags_stall(tmp_path):
     assert "STALLED" in event
 
 
-def test_watch_command_locks_clears_state_and_exits(monkeypatch, tmp_path):
+def test_watch_command_holds_the_lock_while_polling_clears_state_and_exits(monkeypatch, tmp_path):
     (tmp_path / "pr_901.txt").write_text("stale", encoding="utf-8")
     seen = []
-    monkeypatch.setattr(mt, "watch_once",
-                        lambda *a, **k: seen.append(sorted(p.name for p in tmp_path.glob("pr_*"))) or [])
+
+    def poll(*a, **k):
+        seen.append(sorted(p.name for p in tmp_path.glob("pr_*")))
+        with pytest.raises(SystemExit):   # a second watcher is refused mid-poll
+            mt._acquire_lock(tmp_path)
+        return []
+
+    monkeypatch.setattr(mt, "watch_once", poll)
     monkeypatch.setattr(mt.time, "sleep", lambda s: None)
     clock = iter([0.0, 0.0, 5.0, 999.0, 999.0, 999.0])
     monkeypatch.setattr(mt.time, "monotonic", lambda: next(clock))
@@ -277,13 +432,36 @@ def test_watch_command_locks_clears_state_and_exits(monkeypatch, tmp_path):
                                  stall_minutes=30, interval=1, max_seconds=20)
     assert mt.cmd_watch(args) == 0
     assert seen and seen[0] == []                       # old state cleared before first poll
-    assert not (tmp_path / "watch.lock").exists()       # lock released on exit
+    mt._release_lock(mt._acquire_lock(tmp_path))       # lock released on exit
+    assert (tmp_path / "watch.lock").exists()           # never deleted: a new file is a free lock
 
 
-def test_second_watcher_is_refused_while_lock_is_fresh(tmp_path):
-    mt._acquire_lock(tmp_path, ttl=300)
+def test_second_watcher_is_refused_while_the_first_holds_the_lock(tmp_path):
+    first = mt._acquire_lock(tmp_path)
     with pytest.raises(SystemExit):
-        mt._acquire_lock(tmp_path, ttl=300)
+        mt._acquire_lock(tmp_path)
+    mt._release_lock(first)
+    mt._release_lock(mt._acquire_lock(tmp_path))
+
+
+def test_lock_lasts_any_poll_length_and_dies_with_the_process(tmp_path):
+    # Codex P2 on #915: a TTL lock expired during a slow poll. The OS lock has no TTL: a
+    # live holder keeps it however long it waits, and its exit frees it.
+    holder = subprocess.Popen(
+        [sys.executable, "-I", "-c",
+         "import importlib.util, sys; s = importlib.util.spec_from_file_location('m', sys.argv[1]);"
+         " m = sys.modules['m'] = importlib.util.module_from_spec(s); s.loader.exec_module(m);"
+         " h = m._acquire_lock(__import__('pathlib').Path(sys.argv[2])); print('held', flush=True);"
+         " sys.stdin.read()", str(_PATH), str(tmp_path)],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    try:
+        assert holder.stdout.readline().strip() == "held"
+        with pytest.raises(SystemExit):
+            mt._acquire_lock(tmp_path)
+    finally:
+        holder.stdin.close()
+        holder.wait(timeout=30)
+    mt._release_lock(mt._acquire_lock(tmp_path))
 
 
 def test_gate_exit_code_json_and_unicode_title(capsys):
