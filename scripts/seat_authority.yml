@@ -24,7 +24,8 @@
 #   high    — an operator act. Never grantable in a card: the operator performs it through
 #             an act they already perform (GitHub merge, arming GO, ratification, spend).
 #             One performer exception: trade.submit stays an operator act, but an agent may
-#             perform it when the operator directs that specific order, exit or cancel
+#             perform it when the operator directs that specific order, exit or cancel, or
+#             under his standing GO for the weekly account-preservation trade (2026-10-25)
 #             (see its entry below).
 #   forbidden (the `forbidden:` map, not a level) — un-grantable to any seat, and no
 #             approval unlocks it for an agent. Some have a separate governed route for the
@@ -57,7 +58,8 @@ capabilities:
   rail.arm:             {risk: high}     # operator act — M1 RESOLVED + a GO per armed session
   trade.submit:         {risk: high}     # operator act; an order, exit or cancel only when the operator directs it;
                                        # performer exception: the operator, or an agent at the operator's
-                                       # direction for that specific act, acting only through an
+                                       # direction for that specific act or under his standing GO for the
+                                       # weekly account-preservation trade (2026-10-25), acting only through an
                                        # already-authenticated attended or computer-use surface; broker
                                        # credentials are never given to an agent (boundary OF-5);
                                        # AGENTS.md amendment 2026-09-30; ADR Addendum 2026-09-30b;
