@@ -469,6 +469,8 @@ stale generated view fails the `instrument-profiles` gate
 ([`scripts/gates.yml`](../scripts/gates.yml)) — so this clause documents the
 obligation rather than carrying it.
 
+> ⚠ **2026-10-25 — decision pending.** The 0.05R PASS ceiling below is justified as consistent with the 4×-median-cost hurdle, which [Joshua's 2026-10-24 ruling](notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) deleted. Whether it is re-derived, made report-only or retired is Joshua's decision (decision packet: [PR #900](https://github.com/Joshua-Asante/first-passage/pull/900)); until then this sub-step stands as written.
+
 **Phase-0 cost-geometry pre-gate (added 2026-06-22; canonical:
 [`docs/adr/2026-06-22-cost-geometry-pregate.md`](adr/2026-06-22-cost-geometry-pregate.md)).**
 Any session that opens a *new candidate entry mechanism* on an instrument MUST,
@@ -792,6 +794,7 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-10-25** — Rule 10 Phase-0 cost-geometry pre-gate: reader banner added marking the 0.05R ceiling's 4× derivation as deleted (2026-10-24 ruling) and the keep/report-only/retire choice as pending Joshua's decision; obligation text unchanged. [`ADR`](adr/2026-06-22-cost-geometry-pregate.md)
 - **2026-10-15** — Rule 9 rewritten from "sync Pine into the worktree" to "read Pine
   in place by the primary checkout's absolute path"; the copy tool is retired because
   its remedy copied the book's Pine, which campaign §60 rule 1 forbids.

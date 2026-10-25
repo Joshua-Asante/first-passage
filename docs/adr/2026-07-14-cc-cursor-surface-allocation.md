@@ -77,7 +77,7 @@ The executive's PR review and the operator's merge are the independent signature
 coordinator's adjudication of a worker return is an input to them, not a substitute. The executive
 reviews against its own stated goal, not against the coordinator's cards.
 
-**Committed-handoff rule.** Nothing crosses a seat boundary except as a committed, dated file:
+**Committed-handoff rule.** *[⚠ SUPERSEDED 2026-10-24 by operator ruling ([addendum](#addendum-2026-10-24--operator-ruling-seats-bound-to-claude-and-codex-glm-dropped)): a direction or card may cross a seat boundary as a direct prompt (chat, session message or `codex exec`); the return contract — pushed branch plus PR — still holds.]* Nothing crosses a seat boundary except as a committed, dated file:
 an executive direction lands in `STATE.md`'s operator queue or the owning campaign plan; a
 coordinator → worker card lands under `docs/briefs/handoffs/**` (or the lightweight issue below)
 at a pinned SHA; a worker return is a pushed branch plus its PR; the coordinator's synthesis lands
@@ -291,7 +291,7 @@ Rules:
    idempotency is disproven at the venue. This is the qualification service's START_INTENT /
    IN_DOUBT rule stated for every seat.
 4. **Enforcement points, not a new service.** The runtime is the set of points below plus git
-   as the event log (committed-handoff rule). An orchestrator service is built only if a
+   as the event log (committed-handoff rule, superseded 2026-10-24; returns stay pushed branches plus PRs). An orchestrator service is built only if a
    recorded failure shows these points are insufficient.
 
 | Act | Enforcement point | Status 2026-09-25 |
@@ -848,8 +848,8 @@ would let a card that omits §0.5 and the four-state return pass as `generic`. O
 The gate adds scope, not rules: the handoff contract is `check_brief.py`'s own. It runs at
 pre-commit whenever a brief, the checker, its engine, the block reader or the historical list is
 staged, and in the required
-`skills (3.12)` check on every PR. A card is committed before it is dispatched (committed-handoff
-rule), so a malformed card now fails before dispatch. The scope:
+`skills (3.12)` check on every PR. A committed card is checked before dispatch (the committed-handoff
+rule that required committing is superseded 2026-10-24), so a malformed committed card fails before dispatch. The scope:
 - every card anywhere under `docs/briefs/handoffs/`, where the committed-handoff rule places cards
   (`docs/briefs/handoffs/**`), except that directory's own `README.md` and the historical cards:
   the 74 direct children dated before 2026-09-27 that were on `main` at `38e62ee`, listed by name in
@@ -937,6 +937,7 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Worker branches are `codex/*` or `claude/*`; `glm/*` is withdrawn (`scripts/seat_authority.yml`, `scripts/guard_operator_acts.py`).
 - Addendum 2026-09-26b part C is moot: its subject is gone. It is not discharged, so credential custody for the Codex and Claude seats stays an open question for the operator.
 - Credential-read backstop (operator direction 2026-10-24, "deny rules and local settings"): tracked `.claude/settings.json` denies `Read` of `~/.fly`, `~/.azure`, the gcloud and GitHub CLI config directories, `~/.ssh` and any `.env`. Claude Code applies it to Read, Grep and Glob, and to `cat`-style Bash commands it recognizes. It is best effort: Codex sessions and scripts that open files themselves are not covered, so it does not settle custody.
+- **Committed-handoff rule superseded** (Joshua, 2026-10-24: "the committed handoff rule is superceded"). A direction or card may now cross a seat boundary as a direct prompt (chat, a session message or a `codex exec` prompt); it no longer has to be a committed, dated file first. Still in force: Joshua's direct instruction is the only authority (AGENTS.md §Purpose), a worker return is a pushed branch plus its PR, and a card that *is* committed under `docs/briefs/handoffs/` still passes `check_brief.py`.
 - How work divides between the three models is out of scope here; that research (2026-10-24) feeds a later revision of the seat table.
 
 ## Change history
@@ -957,4 +958,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check, GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
 | 2026-09-27 | Addendum 2026-09-27 — operator ruling on handoff-contract item 1: the H4, H5b and H8c cards (dispatched and returned without passing `check_brief.py`) are exempted as recorded deviations, not retro-fitted; the staged-acceptance set is exempted as a set file whose copied-out cards must pass; the undispatched M2 card is restructured instead. Enforcement at the operator's same-day direction: the `handoff-brief-form` gate (forward-only from 2026-09-27, plus any card with an authority block; the four exempt files named). Item 1 gains a pointer; the enforcement-point table gains a *card form* row. | Joshua (ruling, direction) + Claude Code |
 | 2026-09-30 | Addendum 2026-09-30b — proposed: operator-directed orders, exits and cancels are `trade.submit`, operator act (`high`), never grantable in a card; ratified on operator merge. Original X-1 sweep hold is historical; completed sweep inventory and evidence are on #566 (2026-10-01). | Joshua (direction) + Codex |
-| 2026-10-24 | Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped; `glm/*` branches withdrawn; 2026-09-26b part C moot | Joshua |
+| 2026-10-24 | Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped; `glm/*` branches withdrawn; 2026-09-26b part C moot; committed-handoff rule superseded | Joshua |

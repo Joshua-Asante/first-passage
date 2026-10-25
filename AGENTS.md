@@ -15,7 +15,7 @@ authorization from historical dispatches.
 This is the only agent instruction file; a dated record's `CLAUDE.md §X` means
 `AGENTS.md §X` ([charter addendum](docs/adr/2026-07-16-root-doc-charter-dedup.md#addendum-2026-09-20--the-agent-constraints-root-is-agentsmd-claudemd-retired)).
 The [surface-allocation ADR](docs/adr/2026-07-14-cc-cursor-surface-allocation.md) owns
-seats, the committed-handoff rule and escalation-lane triggers
+seats and escalation-lane triggers
 ([M-26 … M-48](docs/methodology/lessons/methodology_lessons.md) hold the evidence).
 Chip tasks, handoffs and dispatch cards run in the cloud by default. One that must
 run locally says **"Must run locally"** near its top, with the reason (for example
@@ -33,7 +33,7 @@ removed evidence is retrievable via [archive guidance](docs/ltm/README.md) and
 
 STATE's operator queue and the owning records' sequencing decide **what** to work on; this section governs **how** authorized work is done (Joshua's direction, 2026-10-13).
 
-- Before substantial work, name the question and the decision its answer changes ([pre-Q gate](docs/methodology/inqhiori-canon.md)), and budget it under [Rule 2](docs/adr/2026-06-16-rule-2-budget-before-acting.md); reaching the bound triggers reassessment, not expansion or weaker acceptance.
+- Before substantial work, name the question and the decision its answer changes ([pre-Q gate](docs/methodology/inqhiori-canon.md)), and budget it in one line under [Rule 2](docs/adr/2026-06-16-rule-2-budget-before-acting.md#addendum-2026-10-24--scope-widened-to-all-substantial-work), which defines substantial work and excludes routine fixes; reaching the bound triggers reassessment, not expansion or weaker acceptance.
 - Use the cheapest trustworthy evidence: reuse valid evidence and focused tests ([verify-source](.claude/skills/verify-source/SKILL.md), [local verification](#python-environment-and-local-checks)). Reviews and checks required by a card, ADR or gate are not optional under this test.
 - PR counts, document volume and architectural completeness are not evidence of value; record negative findings where they are read ([Rule 14](docs/operational_rules.md#14-corrections-land-where-the-error-is-read-not-where-it-is-convenient-to-write)).
 - No value judgment waives a legal, capital, credential, private-data, verification or release control. Routine fixes need no new form, ledger, report or approval layer.
