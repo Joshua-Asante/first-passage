@@ -6,6 +6,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR13-42); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ## §0 — Rule 0 reads
 
@@ -145,8 +146,7 @@ verdict follows from the election.
 
 ## §7 — Implementation
 
-Apply the reciprocal header edge, add the two candidate ledger rows, and update
-the campaign and plan pointers in this PR. Preserve all old withdrawn rows.
+Preserve all old withdrawn rows.
 At a winner's Phase 8, verify its actual identity and runtime bindings against this
 scope; do not infer those bindings from the candidate ledger.
 

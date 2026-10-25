@@ -148,7 +148,7 @@
 | 2026-08-05-blusky-inactivity-unsourced-encoding.md | Accepted | 2026-08-05 | none | operator directive this session (2026-08-05): *"fix the BluSky inactivity field encoding in firm_rules.py"*, given after being shown the measured consequence and the provenance finding it rests on. |
 | 2026-08-05-strategy-venue-binding-axis.md | Accepted | 2026-08-05 | none | operator GO 2026-08-22 (the fresh GO the 2026-08-14 addendum required). Axis is standing doctrine. §7 Phase 1–3 landed 2026-08-23 (ledger live set empty); T1 already fired (S1 F2/F3 in prose) and is acknowledged, not reopened. |
 | 2026-08-08-edge-cohort-correction-and-necessity-retarget.md | Accepted | 2026-08-08 | none | §8 ratified by JA 2026-08-08; TNEC-1 `PROPOSED → RATIFIED` atomic in the same commit. **TNEC-1 supersedes MNQDTL-1 as the intake gate** (MNQDTL remains `RATIFIED` historical target; §3.1 doors C1–C11 stand). SPECs are outside the ADR graph — in-part supersession of … |
-| 2026-08-16-deep-iteration-lane-charter.md | Accepted | 2026-08-16 | none | operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the … |
+| 2026-08-16-deep-iteration-lane-charter.md | Accepted | 2026-08-16 | none | operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. Its two first-campaign sequencing conditions were discharged 2026-08-16: **GO-1** (P2 policy-frontier measurement … |
 
 ## Cold
 

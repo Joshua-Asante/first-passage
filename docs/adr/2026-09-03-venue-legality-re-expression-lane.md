@@ -9,6 +9,7 @@
 **Authors:** Joshua (direction) + Claude Code (drafter)
 **Layer:** methodology + campaign scope. No `dd_protection`, `firm_rules`, allocation, lifecycle, locked Pine, or rail config touched; nothing armed; no venue action; no spend.
 **Tier:** full — the record gates whether a class of results is admissible at all, so the ceremony-tiering escalation rule ("ambiguous tier → FULL") applies.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR13-11, ADR13-14); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -138,7 +139,7 @@ disliked, tuning anything beyond the session bound, or re-running until a replac
 - Producing more than **one** replacement per strategy. A second attempt at the same strategy is a search
   over session bounds and is void; the strategy drops instead. ⚠ **The count starts at the first export taken
   against the VERIFIED D12 early-close calendar.** An export run against the interim placeholder list is not a
-  replacement at all and must not be produced; the one-attempt rule must never be satisfied by a body whose
+  replacement at all; the one-attempt rule must never be satisfied by a body whose
   holiday dates were known-unverified, or the rule would consume the single attempt on a configuration nobody
   intended to test. **The clock starts 2026-09-03**, with the re-pointed bodies below.
 - ~~**Exporting any of the three before the verified per-product-group early-close calendar replaces the interim
@@ -162,9 +163,8 @@ disliked, tuning anything beyond the session bound, or re-running until a replac
   `FULL_CLOSURE` resolution — conservative; and an unruled-out ad-hoc closure 2026-05-28…09-02 — **not**
   conservative); and every non-calendar cap still binds. See campaign-state §6 D19.
 
-  ⚠ **Two conditions rode with the discharge.** (1) ~~The calendar's provenance is **SECONDARY** — no CME primary
-  source was reachable — so a replacement export inherits a `NEEDS_CONTEXT` provenance cap it cannot clear on its
-  own; that is a cap on the *verdict*, not a bar on the *export*.~~ **(Superseded by D19, above.)** (2) Three dates close **before** 12:59 ET
+  ⚠ **Two conditions rode with the discharge.** (1) A verdict cap for the calendar's **SECONDARY** provenance —
+  **superseded by D19, above.** (2) Three dates close **before** 12:59 ET
   (2023-04-07, 2026-04-03, 2025-01-09) and no deadline can express them; Aegis 6J is the live exposure, trading
   to 11:15 ET on both Good Fridays. Those need a no-trade block, and a replacement that silently relies on the
   deadline there is not venue-legal. See the campaign-state artifact §12.

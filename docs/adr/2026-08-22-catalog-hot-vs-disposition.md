@@ -12,6 +12,7 @@ Filename: `docs/adr/2026-08-22-catalog-hot-vs-disposition.md`
 **Related:** [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test) · [`2026-07-16-root-doc-charter-dedup.md`](2026-07-16-root-doc-charter-dedup.md) (no sixth root/index doc) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) C-P1-10 (regenerator-only CATALOG writer) · `docs/superpowers/specs/2026-07-11-lab-analysis-stm-ltm-archive-design.md` (pointer only — pruned from the public tree; retrievable via `git show pre-prune-2026-08-08:docs/superpowers/specs/2026-07-11-lab-analysis-stm-ltm-archive-design.md`, confirmed retrievable this session)
 **Layer:** governance convention (lab hygiene tooling). **$0 / K=0.**
 **Tier:** full — limb 4 fires (creates a parsing/gating convention — Verdict-wins precedence, the `hot`/`disposition` axis split, the C2 join key — that binds `archive_lab_analysis.py`, `check_status_consistency.py`, and every future CATALOG-consuming script).
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR11-68); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -98,7 +99,6 @@ The mechanism is `parse_disposition` returning on the **first** field line in a 
 
 ## §5 — Forbidden moves (under this ADR)
 
-- **Implementing the parser/C2 change, or regenerating `lab/CATALOG.md` with a `hot` column, in this same commission.** The handoff commissioning this ADR is explicit: ADR only, no `scripts/` edit, no CATALOG regen. Tempting because the fix is now fully specified and small — ruled out because `Proposed → Accepted` is the operator ratification gate this decision needs before it binds `archive_lab_analysis.py` and `check_status_consistency.py`. (Discharged: the later 2026-08-22 operator GO authorized Phase 1 in this PR; see §7.)
 - **Mass-stamping `**Verdict:**` fields or mass `--slug`-ing now that the leftovers are enumerated.** Out of scope for this ADR; a separate GO per the handoff and per standing dedup-first discipline.
 - **Renaming `status` → `disposition` "while in the file" for symmetry with the axis names.** §2 item 2 makes a specific blast-radius call against this; revisiting it requires new Phase-0 evidence that the blast estimate above was wrong, not a naming preference.
 - **A third schema (e.g., encoding `hot` as a third status token instead of a column, or inventing a third table).** §3 already weighed and ruled out both; do not re-litigate without new evidence.
