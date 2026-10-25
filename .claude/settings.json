@@ -11,6 +11,16 @@
       "Bash(python scripts/gate_manifest.py:*)",
       "Bash(pytest:*)",
       "Bash(python -m pytest:*)"
+    ],
+    "deny": [
+      "Read(~/.fly/**)",
+      "Read(~/.azure/**)",
+      "Read(~/AppData/Roaming/gcloud/**)",
+      "Read(~/.config/gcloud/**)",
+      "Read(~/AppData/Roaming/GitHub CLI/**)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.ssh/**)",
+      "Read(//**/.env)"
     ]
   },
   "hooks": {
