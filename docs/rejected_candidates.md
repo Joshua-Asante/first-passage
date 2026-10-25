@@ -349,7 +349,7 @@ at this writing — see the 2026-07-01 audit follow-ups.)
 
 ### Other directions (entries pending formalization)
 
-Directions named in `Q-CORR-1-closure.md` §3 as existing on this list under prior disposition. Each requires its own entry written at the close of its authoritative investigation; the closure note references them as comparators only, not as content for this file.
+Directions named in `Q-CORR-1-closure.md` §3 as existing on this list under prior disposition; the closure note references them as comparators only, not as content for this file. Their formalization duty was retired 2026-10-25 (rule consolidation D5, ROOT-162): all six are CFD-era or options directions on the [retired CFD estate](adr/2026-07-11-ops-cfd-estate-retirement.md), so their formalizing closures cannot occur.
 
 - AUDNZD
 - CHN50U
@@ -357,8 +357,6 @@ Directions named in `Q-CORR-1-closure.md` §3 as existing on this list under pri
 - ORATS short-vol strangles
 - Aegis SHORT v0.1
 - Guardian-on-USOIL
-
-When the next closure note appends to this registry, that closure's author writes the relevant entry above this list and removes the corresponding bullet.
 
 ---
 
@@ -1845,10 +1843,6 @@ grep -n "Authoritative artifact" docs/rejected_candidates.md
 # Re-proposal-bar discipline: every direction states "new mechanism evidence"
 grep -n "Re-proposal bar" docs/rejected_candidates.md
 # Expected: one line per directional rejection; phrasing names mechanism evidence, not "new parameters"
-
-# Pending-entry hygiene: directions in the pending list either gain a full entry above or are dropped
-grep -A1 "Other directions" docs/rejected_candidates.md
-# Expected: list shrinks monotonically; entries never reappear once promoted
 ```
 
 ## Harness-fed rejections (auto-appended)

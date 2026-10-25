@@ -100,7 +100,7 @@ neither reachability nor adoption.
 |---|---|
 | HARV | [Harvest intake §4 and addenda](../adr/2026-07-15-external-mechanism-harvest-intake.md). Source-class/idle review and fundability-transfer counters retain their distinct cohorts. HARV owns the whole rank-1–6 portfolio below. |
 | dense-1m / TNEC | [Entry-mechanism lane spec](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md). Proposed and paused; its lane-review/reset rules do not authorize reopening. |
-| MSL | [Manual sourcing charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) under its [ratification](../adr/2026-08-12-msl-sourcing-channel-ratification.md). Process, soft and hard triggers retain their own units and consequences. |
+| MSL | [Manual sourcing charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) under its [ratification](../adr/2026-08-12-msl-sourcing-channel-ratification.md). Process, soft and hard triggers retain their own units and consequences. **Closed:** the yield-conversion hard trigger fired 2026-10-07 and the operator enacted the closure on 2026-10-25 (ruling D7; closing record in the ratification ADR, now `Retired`). |
 | No-counterparty statistical/geometric | [Blind-channel charter §4 and addenda](../adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md). A probe decline is not a battery failure or generation-dry election; remaining work still needs its scoped GO. |
 | Deep iteration | [Deep-iteration charter §4 and addenda](../adr/2026-08-16-deep-iteration-lane-charter.md). Completed, survivor and abandonment counts remain distinct. Discharged audit duty and paused supply do not authorize a new campaign. GROW is tooling inside this channel, not a sixth channel. |
 

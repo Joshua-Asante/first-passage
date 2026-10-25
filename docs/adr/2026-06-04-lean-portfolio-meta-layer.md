@@ -12,10 +12,9 @@
 > with the CFD estate, none structurally could. The condition fired in its
 > strongest form: not "did not happen" but "could not happen".
 >
-> **(c) Re-arm.** The allocation meta-layer re-arms only if a producing
-> edge-captured-ratio surface exists again **and** an allocation decision
-> actually cites it. Absent both, allocation reverts to OODA + ad-hoc, as §4
-> prescribes.
+> **(c) Re-arm.** *(Removed 2026-10-25, rule consolidation D5, ADR01-88: the
+> re-arm condition, a producing edge-captured-ratio surface plus an allocation
+> decision citing it. The ECR engine `journal_review.py` was retired 2026-07-11.)*
 >
 > **(d) Surviving coverage / why this is not a deletion.** Two ratified ADRs
 > cite this file as parent doctrine —
@@ -38,6 +37,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-90, ADR01-94, ADR01-96); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the ECR re-arm, projection-labelling and automation-trust rules (ADR01-88, ADR01-92, ADR01-93); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 > **Status:** ACCEPTED 2026-06-04 — §0 confirmed on-disk; anchor 6 re-pointed, ADR landed. §0-NOTES resolved.
 > **Date authored:** 2026-06-04 (rev. 4 — ACCEPTED; status flip staged by CC re-dispatch after §0-NOTES resolution. rev. 3 — §0 upgraded memory-tier → on-disk-confirmed via CC pass; anchor 6 re-pointed to real artifacts, phantom-note claim dropped; anchor 3 / §2.4 reworded: ECR engine assembled, production not yet running. rev. 2 — Copygram/ECR unified in §2.6; §7 reframed; §8 kill-switch added).
@@ -98,9 +98,7 @@ Standing doctrine this connects to: `fxify-challenge` Core Principles (MC + dd_p
 
 **2.4 — The upward loop is the agility mechanism, and it is currently broken.** What separates this framework from Water-Scrum-Fall is one loop: realized live data revises capital allocation. That loop's load-bearing artifact is a **producing** rolling 6-week ECR. The engine is assembled and functional (`journal_review.py` with edge-captured-ratio logic, PR #100 ingest, counterfactual datasets) — but it is **not yet producing end-to-end**: no rolling-6-week runner, no `reports/` output, and no live DXTrade fills to drive it (that export is in flight on `feat/dxtrade-notion-reconciler`). Until ECR is *producing*, the strategic layer allocates on MC projection, not realized edge — the live-vs-spec gap at portfolio scale. Therefore:
 
-> **ECR assembly is the precondition for any strategic-layer pivot.** No capital reallocation may claim to be data-driven until rolling 6-week ECR is producing. Until then, allocation changes are explicitly projection-driven and labelled as such.
->
-> **Tightened by §2.6:** the same instrument now also gates automation trust. **No automated execution path is trusted with size until ECR verifies that path reproduced its strategy's backtest signal.** Pivot-precondition and automation-acceptance are the same discipline at two scales.
+> *(Removed 2026-10-25, rule consolidation D5: the ECR precondition and projection-driven labelling rule (ADR01-92), and the ECR automation-trust gate (ADR01-93). The ECR engine is retired; arming and sizing an automated path now run through M1 `RESOLVED`, a per-session operator GO (AGENTS.md §Live-execution posture) and the campaign's Phase 8 parity gate ([campaign §15](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md)).)*
 
 **2.5 — Single-operator role collapse.** Strategic + Governance + PO collapse into one person. In an enterprise, that separation is an epistemic check — executives *cannot* micromanage, so they must trust bottom-up data. Here, the substitute for that forced separation is the provenance/audit discipline (on-disk > web > memory; session-assertion; `programme-audit`). The meta-layer's job is therefore not coordinating people — it is coordinating one operator's attention across two value streams, and specifically preventing the high-engagement development stream from cannibalizing the operational one.
 
@@ -110,7 +108,7 @@ This **upgrades ECR's role rather than deprecating it.** ECR stops being a behav
 
 Two rules follow, and they are load-bearing:
 
-1. **Sequencing is per-strategy, not build-then-measure.** For each strategy: automate → ECR-verify that strategy's automated path reproduces its backtest → only then trust it with size. Automation done wrong *introduces* gaps (see open Copygram items: unverified close-all-by-symbol, two unverified DXTrade ticker mappings). If close-all-by-symbol misfires on the pyramiders (Striker, NAS100), you have automated reliable *opens* and unreliable *closes* — a new gap, invisible precisely because the automation was trusted. **The pyramiding strategies are the high-risk path** and must not be sized up before ECR confirms their close logic.
+1. *(Removed 2026-10-25, D5, ADR01-93: per-strategy ECR verification before an automated path carries size. Its rationale stands: automation done wrong introduces gaps, and on the pyramiders (Striker, NAS100) a misfiring close-all-by-symbol automates reliable opens and unreliable closes.)*
 
 2. **E1/E3 do not die at automation — they migrate to the kill switch.** E1 (macro-skip) and E3 (skip-rationale) were never about the entry mechanic; they were about *deciding not to take a signal*. Any discretionary override ("pause the bot before FOMC") rebuilds that exact decision point one layer up. Automation eliminates E1/E3 only to the degree discretion is not reintroduced at the override. This forces a conscious design decision — see §8.
 
@@ -137,10 +135,10 @@ This is binary and checkable. The form: *adopting SAFe-speak with zero behaviora
 
 ## §5 — Forbidden moves (genuinely tempting, ruled out)
 
-4. **Allocating real capital on MC projection alone once ECR exists.** Re-creates the 04-29 output-vs-outcome gap at portfolio scale. (Before ECR exists, projection-driven allocation is permitted but must be *labelled* projection-driven — §2.4.)
+4. *(Removed 2026-10-25, D5, ADR01-92.)*
 5. **Treating "ADR authored / feature shipped" as a success metric.** Output worship; the development stream's only success metric is operational-stream ECR delta.
 6. **Adopting the framework as vocabulary with no behavioral change.** The deepest ceremony risk. §4's falsifier exists specifically to catch this.
-7. **Claiming "it's automated, therefore the gap is closed."** Forbidden move #5 in automation's disguise — its most convincing costume. Automation makes gap-closure *plausible*; only ECR makes it *known*. No automated path is declared gap-closing on the basis of being automated; the claim requires an ECR reading (§2.6 rule 1).
+7. *(Removed 2026-10-25, D5, ADR01-93.)*
 8. **Reintroducing discretion at the kill switch without recognizing it rebuilds E1/E3.** A human pause-button override *is* E1/E3 with better tooling. Forbidden only in its *unexamined* form — the §8 open question forces the choice to be made consciously; making it consciously (even choosing a human pause) is permitted, sleepwalking into it is not.
 
 ---
@@ -153,11 +151,7 @@ Evaluated at the 8-week mark (or sooner if ECR assembles early):
 - **FALSIFIED (Degenerating):** 8 weeks elapsed, no allocation decision references realized ECR. Delete the meta-layer; revert to OODA + ad-hoc allocation. Capture as a methodology lesson with dollar/counterfactual anchor.
 - **AMBIGUOUS:** ECR assembled but no allocation decision yet *needed* one (no regime change, no drift signal). Hold; re-gate at +4 weeks. Do not amend criteria mid-window (anti-p-hack, brief-authoring trap 12).
 
-**Per-strategy automation-acceptance gate (§2.6 rule 1, separate from the meta-layer gate above).** For each strategy independently, the automated path is trusted with size only when:
-- ECR for that strategy's automated fills is within tolerance of its backtest signal (define the σ tolerance per strategy at acceptance time — do not leave as "close enough"), AND
-- for the pyramiders (Striker, NAS100): close-all-by-symbol is independently verified to fire correctly, since automated reliable-open + unreliable-close is a *new* gap, not a closed one.
-
-Until both conditions pass for a given strategy, that strategy runs at minimum size or stays manual. This gate is per-strategy and does not wait on the portfolio-level meta-layer gate.
+**Per-strategy automation-acceptance gate.** *(Removed 2026-10-25, rule consolidation D5, ADR01-93; superseded by M1 `RESOLVED`, the per-session operator GO and the campaign Phase 8 parity gate named in §2.4.)*
 
 ---
 

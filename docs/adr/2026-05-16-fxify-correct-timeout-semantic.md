@@ -11,6 +11,7 @@
 **Supersedes:** No prior ADR pinned the timeout semantic — `HORIZON_DAYS = 150` was an implicit modeling choice present since the original `portfolio_mc.py` and never locked through an ADR. This ADR is the first formal decision on portfolio MC timeout semantics. It does **not** supersede `2026-05-08-dd-trigger-c2-relock` (dd_protection constants C2 unchanged) or `2026-05-14-allocation-refresh` (allocations unchanged).
 **Closes:** `Q-MCTO-1-portfolio-mc-timeout-semantics.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-MCTO-1-portfolio-mc-timeout-semantics.md`) — CLOSED-RESOLVED on this ADR's adoption.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-62); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the unreachable four-limb falsifier and its revert action (ADR01-63); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -91,7 +92,7 @@ OANDA C2 anchor under the FXIFY-correct semantic: re-computed by post-code-chang
 
 ## Falsifier
 
-This ADR is invalidated if **any** of the following observes:
+This ADR's falsifier (historical; removed below):
 
 > ⚠ **FALSIFIER-UNREACHABLE — added 2026-08-08. All four limbs below have lost their input; none can fire.**
 > Limb 1 needs a **FXIFY rule change** — the venue was formally closed 2026-07-11/07-22. Limb 2 needs **live
@@ -103,12 +104,7 @@ This ADR is invalidated if **any** of the following observes:
 > require a successor venue with a published inactivity rule **and** a runnable panel; book it at the next
 > programme audit rather than rolling the four dates forward silently.
 
-1. **FXIFY rule change.** If FXIFY updates `inactivity_max_idle_days` from 60 (the firm-published rule this ADR models). Re-MC against the new rule.
-2. **Live-PnL inactivity bust appears.** If forward live execution produces ≥3 consecutive idle bdays across the 4-strategy portfolio in any rolling 6-month window. The bootstrap-of-week-blocks structure should make this vanishingly rare; an empirical observation contradicts the modeling assumption. (Single-incident threshold: ≥30 consecutive idle bdays = immediate ADR invalidation; ≥3-instance threshold guards against ambiguous shorter clusters.)
-3. **Quarterly regime-robustness drift.** At any of the four standing quarterly review dates (2026-08-08, 2026-11-08, 2027-02-08, 2027-05-08), if the rolling 6-month MC pass-rate on the live-extended Pepperstone panel falls below 95% for two consecutive 6-month windows under the FXIFY-correct semantic, treat as evidence the H1↔H2 regime-fragility risk has materialized and re-open. (Same quarterly cadence as 2026-05-08 C2 ADR — `python analysis/time_to_pass.py --regime-check`.)
-4. **Anchor reproduction failure.** If `python portfolio_mc.py --panel pepperstone` produces output that deviates from `0.9988 / 0.0012 / 0.0421` by more than `abs=1e-4` after this ADR's code change lands. Indicates a code-edit error; this ADR's anchor literals do not hold.
-
-Minimum action on falsification (any of 1–4 firing): revert `portfolio_mc.py` to the 150-bday horizon-runout semantic and restore the 2026-05-14 anchor pins (98.78 / 0.12 / 4.17). The 2026-05-14 allocation refresh ADR is the documented revert target.
+*(Removed 2026-10-25, rule consolidation D5, ADR01-63: the four limbs and their revert action.)* The limbs were: (1) an FXIFY change to `inactivity_max_idle_days` from 60; (2) a live inactivity bust, ≥3 consecutive idle bdays in a rolling 6-month window (≥30 = immediate invalidation); (3) the rolling 6-month MC pass-rate on the live-extended Pepperstone panel below 95% for two consecutive windows at the quarterly reviews; (4) `portfolio_mc.py --panel pepperstone` deviating from `0.9988 / 0.0012 / 0.0421` by more than `abs=1e-4`. Any firing reverted to the 150-bday semantic and the 2026-05-14 pins (98.78 / 0.12 / 4.17). FXIFY is closed, the Pepperstone feed retired and no strategy-signal fill exists, so none can fire.
 
 ---
 
