@@ -213,7 +213,7 @@ accepted runtime ports listed in `core/strategies/BOOK_SOURCES.sha256`, and the 
 file `ops/c1_signal_daemon/ports/effective_inputs.json` (§60 addendum 2026-10-02), in place in
 the operator's primary checkout (from a worktree, by that checkout's absolute path).
 Never copy them into a worktree, commit or quote their bodies or values, edit them,
-or pass them to `glm_agent` or any external service
+or pass them to any external service
 ([campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
 The single exception covers the ports and `effective_inputs.json` (not Pine), copied to the Joshua-controlled Windows VM only for the runs, and on the terms, that the [§60 VM addenda](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) (2026-10-07 onward) admit.
 
