@@ -178,3 +178,9 @@ def test_deallocation_retries_are_billed(tmp_path):
     vm = FakeVm([RUN], deallocate_works=False)
     rc, ledger, clock = run(vm, tmp_path, hours=1)
     assert rc == 2 and ledger.seconds(clock()) == pytest.approx(3600 + 3 * 60)
+
+
+def test_external_deallocation_bills_the_final_interval(tmp_path):
+    vm = FakeVm([RUN, RUN, w.DEALLOCATING, w.DEALLOCATED])
+    rc, ledger, clock = run(vm, tmp_path)
+    assert rc == 0 and ledger.seconds(clock()) == pytest.approx(180)

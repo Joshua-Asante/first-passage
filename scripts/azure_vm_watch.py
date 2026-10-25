@@ -141,9 +141,9 @@ def watch(vm, ledger: Ledger, state_dir: Path, *, hours: float, poll: float, gra
             state = None
         now = clock()  # after the read, so a slow read cannot defer the checks below
         try:
-            if state not in (None, DEALLOCATED) or (state is None and seen_allocated):
-                seen_allocated = True
-                ledger.add(now, now - last)  # unreadable polls count once the VM was seen allocated
+            seen_allocated = seen_allocated or state not in (None, DEALLOCATED)
+            if seen_allocated:  # once allocated, every interval to exit counts, including the last one
+                ledger.add(now, now - last)
             dollars = ledger.seconds(now) * rate / 3600
         except (OSError, ValueError) as e:  # the cap cannot be enforced without the ledger
             log(f"ledger unavailable: {e}")
