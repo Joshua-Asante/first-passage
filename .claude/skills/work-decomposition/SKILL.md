@@ -60,7 +60,7 @@ imported numbers as calibration candidates — record the firing when one bites,
 | More than **one context window** of work | One CC session; after compaction the summary keeps the plan and loses the detail the gate needs | One child per session-sized deliverable, each with its own resume handoff |
 | **Multiple independent deliverables** | §1 "What CC is being asked to produce" bullets that do not consume each other's outputs | One child per deliverable |
 | **Internal sequencing** — step N's input is step N−1's output, which does not exist yet | §2 Step 2.x chains whose later specs cannot be frozen until earlier steps return | Cut at the first output that must exist before the next spec can be frozen |
-| **Worst-case iterations exceed the Rule 2 budget** — *INQHIORI-loop work only*, i.e. a unit with a declared Loop-of-Record (INNER 3 / OUTER 8 / STRATEGIC 3 constituent OUTER investigations — [canon §15](../../../docs/methodology/inqhiori-canon.md)); the [Rule 2 ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)'s 2026-08-15 addendum instructs budget declaration from INQHIORI entry only, so this row never turns a non-loop task into a budgeted one | Attempt-and-check cycles (INNER / OUTER); constituent OUTER investigations (STRATEGIC) | The tripwire would fire mid-unit. Cutting does not mint budget: an INNER or OUTER parent's iterations are allocated across its children and their worst cases must sum inside it; a STRATEGIC parent's budget is a *count* of OUTER children (at most three), each carrying its own full OUTER budget. A sum or count that exceeds the parent's is the parent's tripwire firing at cut time — a structured stop and, for OUTER / STRATEGIC, the owner's extension authority before anything is dispatched |
+| **Worst-case iterations exceed the Rule 2 budget** — any unit carrying a Rule 2 budget (INNER 3 / OUTER 8 / STRATEGIC 3 constituent OUTER investigations — [canon §15](../../../docs/methodology/inqhiori-canon.md)); the [Rule 2 ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md#addendum-2026-10-24--scope-widened-to-all-substantial-work) budgets all substantial work, routine fixes excluded | Attempt-and-check cycles (INNER / OUTER); constituent OUTER investigations (STRATEGIC) | The tripwire would fire mid-unit. Cutting does not mint budget: an INNER or OUTER parent's iterations are allocated across its children and their worst cases must sum inside it; a STRATEGIC parent's budget is a *count* of OUTER children (at most three), each carrying its own full OUTER budget. A sum or count that exceeds the parent's is the parent's tripwire firing at cut time — a structured stop and, for OUTER / STRATEGIC, the owner's extension authority before anything is dispatched |
 | A `BLOCKED — scope-problem` return, or a **second** `NEEDS_CONTEXT` bounce on the same packet | brief-authoring check 8; the surface-allocation ADR's return contract ("two bounces means the spec was not freezable and the packet was mis-routed") | The packet was mis-sized or mis-routed; re-cut before any re-dispatch |
 
 Dated repo instances of the output this skill prescribes: the 2026-08-25 first-look residuals
@@ -87,7 +87,7 @@ That umbrella is the reference shape for this skill's work-shaped output.
    edges make explicit. A revert that would silently break a sibling with no edge to it means the
    footprint or the edge is wrong.
 4. **Fits one session with margin** — no step whose detail must survive a compaction. For
-   INQHIORI-loop work only: an INNER or OUTER child's worst-case iterations fit the share
+   a budgeted unit: an INNER or OUTER child's worst-case iterations fit the share
    allocated to it from the parent's Rule 2 budget, never a fresh budget of its own; a STRATEGIC
    parent's children are whole OUTER investigations, each with its own OUTER budget, and the
    parent's budget bounds how many of them there are.
@@ -130,10 +130,9 @@ inline under the session's own checklist (fable-method Step 4.4).
    `RETURNED (NEEDS_CONTEXT — re-anchor 1 of 1 | re-cut)`, `RETURNED (BLOCKED — <sub-case>)` — so
    the row says whether work is still owed; a child never stays `DISPATCHED` after its return, and
    a `NEEDS_CONTEXT` child goes back to `QUEUED` only once, then is re-cut. The `budget` column
-   is filled only for INQHIORI-loop parents (a declared Loop-of-Record): each child's share of an
-   INNER / OUTER parent's iterations, summing inside the parent's, or `OUTER (own 8)` under a
-   STRATEGIC parent; for every other unit it reads `n/a — one session`, per the Rule 2 ADR's
-   2026-08-15 propagation limit. The
+   is filled for every budgeted parent: each child's share of an INNER / OUTER parent's
+   iterations, summing inside the parent's, or `OUTER (own 8)` under a STRATEGIC parent; a
+   routine-fix child reads `n/a — routine`. The
    parent lists every child; a child absent from the manifest does not exist. This is the
    anti-duplication device: before any session opens work in the area, the manifest says who holds
    it.

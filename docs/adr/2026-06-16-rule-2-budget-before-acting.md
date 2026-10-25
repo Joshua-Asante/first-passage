@@ -1,7 +1,7 @@
 # ADR 2026-06-16 — Rule 2: Budget Before Acting (scaled to reversibility)
 
 **Path:** `docs/adr/2026-06-16-rule-2-budget-before-acting.md`
-**Status:** Accepted — ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4/§6's evidentiary graduation gate (trip-log has not accrued ≥1 entry per active loop class). See Addendum 2026-08-21.
+**Status:** Accepted — ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4/§6's evidentiary graduation gate (trip-log has not accrued ≥1 entry per active loop class). See Addendum 2026-08-21. Scope widened 2026-10-24 to all substantial work (operator direction; Addendum 2026-10-24).
 **Decision date:** 2026-06-16
 **Supersedes:** none
 **Superseded-by:** none
@@ -142,9 +142,16 @@ grep -n "Rule 0\|Rule 1\|Rule 2" docs/methodology/inqhiori-canon.md | head   # a
 # 3. The 3/8/3 magnitudes match across the three artifacts (no drift)
 grep -rn "3 iterations\|8 iterations\|3 constituent OUTER" \
   docs/methodology/inqhiori-canon.md docs/adr/2026-06-16-rule-2-budget-before-acting.md
+
+# 4. Forward trip-log exists (the falsifier is live, not theater)
+ls docs/notes/audits/ | grep -i "rule-2-trip-log"
+# at each programme audit: confirm >=1 entry per active loop class, else flag the rule inert
 ```
 
 ## Addendum 2026-08-15 — pointer propagation narrowed to inqhiori only
+
+**Superseded 2026-10-24** by [Addendum 2026-10-24](#addendum-2026-10-24--scope-widened-to-all-substantial-work):
+the INQHIORI-entry-only limit below no longer holds.
 
 **Does not amend §2 / §4 / §6.** This is a propagation-scope correction, not a
 verdict on the ADR — §4's own gate is unmet either way: the trip-log carries one
@@ -225,10 +232,6 @@ validated forward only (§4). Ratification does not retroactively manufacture tr
 the log stays exactly as sparse as it is, and future audits should read it as such, not as
 "already validated."
 
-# 4. Forward trip-log exists (the falsifier is live, not theater)
-ls docs/notes/audits/ | grep -i "rule-2-trip-log"
-# at each programme audit: confirm >=1 entry per active loop class, else flag the rule inert
-```
 
 ---
 
@@ -367,6 +370,43 @@ grep -c "Rule 2\|trip log" docs/notes/audits/programme-audit/2026-11-08*.md 2>/d
 # §6 graduation is still separately gated on a per-loop-class basis (not satisfied by the STRATEGIC trip alone)
 grep -n "INNER" docs/notes/audits/rule-2-trip-log.md
 ```
+
+---
+
+## Addendum 2026-10-24 — scope widened to all substantial work
+
+**Operator direction (Joshua, 2026-10-24):** "the rule 2 budget should be reevaluated to cover all
+substantial work". This supersedes the [2026-08-15 addendum](#addendum-2026-08-15--pointer-propagation-narrowed-to-inqhiori-only)'s
+limit (budget declared "only from INQHIORI-loop entry"). Its pointer removals stay removed:
+[AGENTS.md §Contribution to the objective](../../AGENTS.md#contribution-to-the-objective) states the
+rule once for every seat and links here. §2's magnitudes, tripwire and corollaries, §4 and §6 are
+unchanged.
+
+**Substantial work** — Rule 2 applies when any of these holds, at the start or as soon as it
+becomes true:
+
+1. the work creates or changes a decision artifact (ADR, pre-registration, brief or card, plan,
+   closure, RESULTS, ruling, STATE or campaign record);
+2. it runs research or spends: a backtest, MC, sweep, data pull, paid service, or trial count K;
+3. it changes more than one file;
+4. it is expected to need more than about ten tool calls.
+
+**Excluded — routine fixes:** a change one check proves correct (a typo, link, lint or format fix;
+a failing test with a known cause; a mechanical rename or regeneration), answering from reads, and
+an operator-directed operational act already governed by its own gate. These carry no budget even
+when they touch several files.
+
+**The budget is one line, written where the work is already recorded** (the card, plan, PR
+description or the first status message): the decision the work changes, the loop class by
+reversibility (recoverable → INNER, low-reversibility or statistical → OUTER, programme tier →
+STRATEGIC, per §2), and the bound — `Rule 2: <decision> · <class> <n> iterations` plus `· $<ceiling>
+· K=<n>` where the work spends. Minutes stay barred (§5.2). No new file, ledger, form or approval.
+Reaching the bound is §2's structured stop: reassess (extend under corollary 2, cut, or stop); never
+expand silently or weaken acceptance.
+
+**Trip-log.** Rows still record only trips, plus the baseline of an INQHIORI investigation; other
+work that finishes under budget writes no row. Trips from non-INQHIORI work are logged like any
+other, and INNER trips are the class §6 still lacks.
 
 ---
 
