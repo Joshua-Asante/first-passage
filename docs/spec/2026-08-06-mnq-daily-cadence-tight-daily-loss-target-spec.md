@@ -67,6 +67,11 @@ wholesale in §3)
 > Live intake gating is [TNEC-1](2026-08-08-tradeify-necessary-conditions-target-spec.md). Re-electing D1, D2
 > or μ as gates is a fresh ratification against the **corrected** cohort table — never against the phantom.
 
+> ⚠ **READER INTERCEPT 2026-10-25 — cost authority repointed; frozen body unedited.** §3's "**Cost authority:** EM1's — `strategy_harvest.md` Requirement 5"
+> and its "Harvest Req 1–5" row are stale: Requirement 5 (the universal 4× hurdle) was deleted by [Joshua's 2026-10-24 ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24).
+> EM1's cost authority is now the candidate's own net-cost estimate ([shape screen §3a](2026-08-05-eval-mechanism-shape-screen.md#3a--cost-authority-revised-2026-10-24));
+> EM1's ≥0.40R net floor at $0.95/side is unchanged.
+
 ## §0 — Rule 0 reads (production source, verified 2026-08-06 at HEAD `5f5519a`, worktree clean)
 
 | Source | Anchor (`git log -1`) | What it grounds |
