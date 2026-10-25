@@ -27,6 +27,7 @@ ADR's §2.2(iv) design mirrors) · [EM screen](../spec/2026-08-05-eval-mechanism
 [TNEC-1 application spec](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-11-tnec-application-unit-book-admission.md)
 **Layer:** research governance — no live-risk surface; no locked parameter; no allocation; no
 arming; no Databento spend (doctrine + a small disclosure-schema extension only).
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR11-85); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -343,22 +344,7 @@ operator.
 
 - **Phase 0** — re-verify §0 anchors still current at implementation time; abort and re-derive if
   any moved materially.
-- **Phase 1 — charter edit.** Add §2.2(iv) text (this ADR's §2 part B, verbatim) to
-  `2026-08-16-deep-iteration-lane-charter.md`; add this ADR's `Superseded-in-part-by` line to the
-  charter's header; note in the charter's own §7 that (iv)'s code lands per this ADR, and that
-  (iv) is enforced by human review at prereg time, not by an automated gate, until the separately
-  named `register_search.open_run` wiring (build-authorization ADR forward work) lands.
-- **Phase 2 — code (dated slice, separate commit from Phase 1).** Extend
-  `lab/discovery/burned_segments.py`: add a `consultations` list field to the ledger schema
-  (backward-compatible with the existing single-consultation entry, migrated to a one-element
-  list), add `consultation_count`/`consultation_history` functions (channel-agnostic — no filter on
-  `source`), add regression tests (a zero-consultation window returns `M=0`; a window with two
-  recorded consultations from different sources returns `M=2` and the full history; the existing
-  `is_window_burned` binary behavior is unchanged and re-tested for regression; the current single
-  MNQ entry migrates cleanly to the new schema with no data loss). Wiring into
-  `register_search.open_run` stays separately named forward work.
-- **Phase 3 — sweep.** `rg -n "chargeable K is.*sealed consultation|K = M \(GROW" docs/ lab/` and
-  repair any restatement of the now-rejected claim 1 as if it were open or adopted.
+- **Phases 1–3** — executed 2026-08-22 (Change history, `Accepted` row).
 - **Phase 4** — verification block below executes; status → `Accepted` on operator ratification.
 
 ---

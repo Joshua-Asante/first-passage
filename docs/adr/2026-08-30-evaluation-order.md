@@ -6,6 +6,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** operator ruling 2026-10-24 — §Reachability's Requirement 5 cost limb and its blind-only exception (Requirement 5 deleted); see the dated note in §Reachability
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR12-111); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Format:** concise
 **Layer:** methodology
 
@@ -41,8 +42,7 @@ a current owner.
    including discriminator, costs, scoped compliance snapshot, succession policy
    and alpha/M/procedure. No unscored shape limb may pass this point.
 5. **TRADEABLE-REACHABLE, before Explore.** Delegate cost, latency, firm geometry
-   and payoff shape to their owners as below; the named blind cost exception
-   satisfies that limb by citation of its accepted deferred order.
+   and payoff shape to their owners as below.
 6. **Bind K, Explore, then selection-freeze.** Open the register_search manifest
    against declared K/alpha/window before any exploration data read or cell score.
    Score the entire frozen catalogue, select at most M cells, and append the full

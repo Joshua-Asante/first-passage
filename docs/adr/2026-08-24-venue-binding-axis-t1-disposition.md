@@ -8,6 +8,7 @@ Filename: `docs/adr/2026-08-24-venue-binding-axis-t1-disposition.md`.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR12-43); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Authors:** Claude Code (ruling + authoring, per operator direction to close the open T1 gap) — pending Joshua's ratification (§7 Phase 0).
 **Related:** [`2026-08-05-strategy-venue-binding-axis.md`](2026-08-05-strategy-venue-binding-axis.md) (the ADR this partially supersedes) · [`.claude/skills/brief-authoring/references/adr.md`](../../.claude/skills/brief-authoring/references/adr.md) (Forbidden-move-2 pattern: "silent amendment of the revert trigger is `p`-hacking... author a fresh ADR that supersedes this one") · [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (tier test — this is full-ceremony, limb 4: amends doctrine) · [`docs/superpowers/plans/2026-08-23-venue-binding-registry-implementation.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-venue-binding-registry-implementation.md) (already-executed implementation plan this ruling does not disturb)
 **Layer:** governance / ADR-graph discipline. **No `core/`, Pine, allocation, `dd_protection`, `LEG_MAP`, lifecycle-multiplier, or rail change.** No live behavior changes; this is a ruling on a falsifier disposition only.
@@ -137,7 +138,6 @@ T1 fired. The F2/F3 venue-scope decision (recorded via `2026-08-07-loop-s1-envir
 ## §7 — Implementation plan
 
 - **Phase 0** — operator ratifies `Proposed → Accepted`. Nothing below runs first.
-- **Phase 1** — on acceptance: append `Superseded-in-part-by` header line to `docs/adr/2026-08-05-strategy-venue-binding-axis.md` (immediately below its existing `Superseded-by: none` line) and one Change History row. No edit to that ADR's §2/§4/§5 body text.
 - **Phase 2** — grep-sweep executed and raw output pasted in §10; disposition table in §6 is the union of both hooks' output, every hit dispositioned. Re-run at Phase 0 to confirm no new hits landed between authoring and acceptance.
 - **Phase 3** — run `python scripts/check_adr_graph.py --regenerate-index`; run `python scripts/check_brief.py <this file> --type adr`; both must pass before this ADR's Status is considered live.
 

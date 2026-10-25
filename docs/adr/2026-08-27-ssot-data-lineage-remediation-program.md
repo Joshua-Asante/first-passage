@@ -6,6 +6,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR12-68); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Authors:** Claude Code (measurement, verification, draft) — commissioned via the Phase 0 section of the plan file below; ratification is a reserved operator action, not performed here.
 **Related:** [`2026-08-09-rejection-register-topology-and-bar-wiring.md`](2026-08-09-rejection-register-topology-and-bar-wiring.md) (D4 — this program's Phase 1 Task 2 discharges it; D1–D3 are read, not reopened) · [`2026-08-22-catalog-hot-vs-disposition.md`](2026-08-22-catalog-hot-vs-disposition.md) (confirmed already `Accepted` and landed — cited for contrast, not reopened) · [`2026-08-09-check-brief-canon-ruling.md`](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-09-check-brief-canon-ruling.md) (Phase 1 Task 1 discharges its unimplemented half) · [`2026-08-08-adr-ceremony-tiering.md`](2026-08-08-adr-ceremony-tiering.md) (limb-4 tier test, applied below) · [`docs/notes/audits/2026-08-21-coherence-campaign.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/audits/2026-08-21-coherence-campaign.md) (audit-format precedent this program reuses) · plan file [`docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/superpowers/plans/2026-08-27-ssot-data-lineage-remediation.md) (§7 implementation-plan pointer; also carries this program's Global Constraints and Non-goals)
 **Layer:** governance convention (gate authorship + skill-deploy convention over `scripts/gates.yml`, `.claude/skills/`, `docs/rejected_candidates.md`/`ops/instruments/`, `docs/operational_rules.md`). **$0 / K=0.**
@@ -569,8 +570,7 @@ named-not-scoped until the operator promotes one.
 
 **Boundary:** Do **not** join STATE.md or `ops/instruments/MNQ.md` (legal mirrors; STATE
 deletes). Do **not** rewrite the three canonical count lines into an HTML-comment schema.
-Do **not** fold D4 21.4% coverage or M1 report-only skew into this packet. Do **not**
-auto-open Phase 3 when Phase 2 ships — delete STATE row 3 (succession).
+Do **not** fold D4 21.4% coverage or M1 report-only skew into this packet.
 
 **§10 hook (runnable):** `python scripts/check_adr_graph.py --enable A8` — expected OK
 once landed; see the Phase 2 block appended to §10 above.
@@ -582,8 +582,7 @@ once landed; see the Phase 2 block appended to §10 above.
 **Does not amend** Phase 1's four tasks, Phase 2's A8, §4's 2026-11-08 falsifier, or §5's
 CATALOG / D1–D3 / Pine / allocation bars. **Does not authorize** Phase 4. **$0 / K=0.**
 Limb 4 (new path-conditional gate). Amendment-first: this file is the owner.
-`queue-exception: operator GO on the attached Phase 3 plan` — live queue stays #1 / #2;
-do not open a STATE row.
+`queue-exception: operator GO on the attached Phase 3 plan` — live queue stays #1 / #2.
 
 **Rule 0 (this addendum, 2026-08-29, worktree at `d276076`):**
 
@@ -637,8 +636,7 @@ silenced). Phase 4 stays named-not-scoped until the operator promotes it.
 
 **Boundary:** Do **not** join `ops/instruments/*.md`. Do **not** parse ledger prose into
 `bars`. Do **not** edit `firm_rules.py` commission dollars. Do **not** rewrite harvest
-gate-2 FAIL policy. Do **not** fold D4 21.4% or M1 report-only. Do **not** auto-open a
-STATE operator-queue row.
+gate-2 FAIL policy. Do **not** fold D4 21.4% or M1 report-only.
 
 **§10 hook (runnable):** `python scripts/check_cost_model_closed_world.py` — expected OK
 once landed; see the Phase 3 block appended to §10 above.
