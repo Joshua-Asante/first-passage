@@ -291,7 +291,7 @@ Rules:
    idempotency is disproven at the venue. This is the qualification service's START_INTENT /
    IN_DOUBT rule stated for every seat.
 4. **Enforcement points, not a new service.** The runtime is the set of points below plus git
-   as the event log (committed-handoff rule). An orchestrator service is built only if a
+   as the event log (committed-handoff rule, superseded 2026-10-24; returns stay pushed branches plus PRs). An orchestrator service is built only if a
    recorded failure shows these points are insufficient.
 
 | Act | Enforcement point | Status 2026-09-25 |
@@ -848,8 +848,8 @@ would let a card that omits §0.5 and the four-state return pass as `generic`. O
 The gate adds scope, not rules: the handoff contract is `check_brief.py`'s own. It runs at
 pre-commit whenever a brief, the checker, its engine, the block reader or the historical list is
 staged, and in the required
-`skills (3.12)` check on every PR. A card is committed before it is dispatched (committed-handoff
-rule), so a malformed card now fails before dispatch. The scope:
+`skills (3.12)` check on every PR. A committed card is checked before dispatch (the committed-handoff
+rule that required committing is superseded 2026-10-24), so a malformed committed card fails before dispatch. The scope:
 - every card anywhere under `docs/briefs/handoffs/`, where the committed-handoff rule places cards
   (`docs/briefs/handoffs/**`), except that directory's own `README.md` and the historical cards:
   the 74 direct children dated before 2026-09-27 that were on `main` at `38e62ee`, listed by name in
