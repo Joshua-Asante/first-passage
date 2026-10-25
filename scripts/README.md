@@ -184,6 +184,17 @@ It runs the Codex app's bundled `app\resources\codex.exe` (the `.sandbox-bin` co
 passes `FP_AGENT_GH_TOKEN` as `GH_TOKEN` to the child only, and refuses a directory containing `.env`.
 Tests: `tests/scripts/test_dispatch_codex.py` (dry-run).
 
+### Merge train
+
+`merge_train.py` is the read-only gate and watcher used by the [merge-train skill](../.claude/skills/merge-train/SKILL.md), which owns how to use it:
+
+```powershell
+.\fp.ps1 python scripts/merge_train.py gate 912 913      # READY / WAIT / HOLD; exit 0 only if all READY
+.\fp.ps1 python scripts/merge_train.py watch --min 911   # NEW / CHANGED / CLOSED / STALLED lines
+```
+
+`dispatch_codex.ps1 -ReviewBase origin/main` runs the read-only Codex CLI review fallback. Tests: `tests/scripts/test_merge_train.py` (a fake `gh`; no network) and `tests/scripts/test_dispatch_codex.py`.
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via
