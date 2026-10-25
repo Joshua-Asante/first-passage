@@ -18,8 +18,6 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 
    ### Agent-session authority (operator grant 2026-08-02)
 
-   Supersedes the prior blanket *"never an agent action"* / *"do not arm/disarm/deploy from an agent session"*.
-
    | Action | Agent may run? | Conditions |
    |---|---|---|
    | `fly deploy` (listener **or** signal-daemon app) | **YES** | All six deploy pre-conditions below, **scoped per app**. |
@@ -65,7 +63,7 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 
 - Book and legs: see **Status** above. Lifecycle tiers: [`strategy_lifecycle.md`](../../../docs/methodology/strategy_lifecycle.md) and `core/lifecycle.py`; never infer them from rail history.
 - Instrument ledgers (rule 10 read-before-touch): the **MICRO** cards (`ops/instruments/MYM.md`, `MNQ.md`, …) own leg state; parents (`YM.md`, `NQ.md`) delegate to them and hold shared venue geometry only.
-- ~~Execution-quality research (better fills/exits) is the standing research interest on this rail~~ — **SUSPENDED 2026-08-04, not re-scoped and not closed: it has no data source.** No strategy-signal fill has occurred ([AGENTS.md §Live-execution posture](../../../AGENTS.md#live-execution-posture), Account) and the discharge path is gone (ADR 2026-08-04 §6). Do not open a fills/exits workstream and do not route a depth/microstructure pull from this skill until S4 delivers a fill path (fork F3 already ruled no-successor 2026-08-07 without lifting this suspension — [S1 ADR](../../../docs/adr/2026-08-07-loop-s1-environment-ratification.md) §6).
+- Execution-quality research (better fills/exits) on this rail is **suspended (2026-08-04), not re-scoped and not closed: it has no data source.** No strategy-signal fill has occurred ([AGENTS.md §Live-execution posture](../../../AGENTS.md#live-execution-posture), Account) and the discharge path is gone (ADR 2026-08-04 §6). Do not open a fills/exits workstream and do not route a depth/microstructure pull from this skill until S4 delivers a fill path (fork F3 already ruled no-successor 2026-08-07 without lifting this suspension — [S1 ADR](../../../docs/adr/2026-08-07-loop-s1-environment-ratification.md) §6).
 
 ## Verification commands
 

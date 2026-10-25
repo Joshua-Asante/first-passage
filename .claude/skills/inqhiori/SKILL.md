@@ -12,7 +12,6 @@ Component skill of the **INQHIORI ⊕ OODA dual-loop framework** (reactivated 20
 **What this skill replaces.** The orthogonal-framing predecessors:
 - INQHIORI reference page — `34cdc0b53c11812d96f8f6e9ee500d5e`
 - The Algorithm reference page — `34ddc0b53c11811eb6a0d9192b63d252`
-- Unified `inqhiori-algorithm` skill (pre-split) — superseded 2026-05-01
 
 Both predecessor pages remain valid for their definitional content (loop structure on INQHIORI; operator semantics on The Algorithm); both are archived under `docs/methodology/archive/notion/`. The integration discipline lives in this skill and `docs/methodology/inqhiori-canon.md`.
 

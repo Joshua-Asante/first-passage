@@ -383,16 +383,7 @@ non-mirror content in that file; they are relocated here as their canonical
 in-repo home. The `brief-authoring` skill bundle carries a generalized
 propagation and is downstream of this section (repo wins on drift). _(Sub-rule 7
 added 2026-07-01; sub-rule 8 added 2026-08-13; sub-rules 9–10 added
-2026-08-15.)_ **[2026-07-01 note:** the repo is now **private** (gh-verified
-`isPrivate: true`); the "repo is public" rationale above is historical. claude.ai
-reaches the repo via its GitHub connector, which supports private repos, so the
-migration rationale is unaffected. See AGENTS.md §Public-clone posture.**]**
-⚠ **Superseded 2026-08-14:** the repo went public again
-([transition ADR](adr/2026-08-14-repo-public-visibility-transition.md)); current
-visibility is owned by AGENTS.md §Public-clone posture, not this 2026-07-01
-footnote. Either way claude.ai reaches the repo (directly when public, via the
-GitHub connector when private), so the migration rationale this note defends
-was never at risk.
+2026-08-15.)_
 
 ---
 
@@ -649,7 +640,10 @@ downstream of the claim it corrects).
    place, at the assertion site**. A living doc that retracts its own headline
    three paragraphs below the headline has not been corrected. Same-session
    work is *never* frozen — freezing your own uncommitted document and
-   appending to it is the append reflex misfiring, not discipline. ADR revisions
+   appending to it is the append reflex misfiring, not discipline. On living
+   rule surfaces, delete superseded text and its marker so the current rule is
+   stated once; Git history is the archive, so add no tombstone (operator
+   direction 2026-10-24). ADR revisions
    retain a dated scope note and immutable prior revision; Proposed clauses stay
    separately labelled. This exception does not unfreeze research evidence,
    preregistrations or verdict logic (see [ADR policy](adr/2026-08-08-adr-ceremony-tiering.md)).
