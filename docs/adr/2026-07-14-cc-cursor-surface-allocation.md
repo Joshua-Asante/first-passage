@@ -936,6 +936,7 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Seats are filled only by Claude (Claude Code, Opus 5.5) and Codex (GPT 6.1 Sol or GPT 6 Astra). The Worker row now names Codex and Claude Code sessions; Z Code / GLM is no longer a surface for any seat.
 - Worker branches are `codex/*` or `claude/*`; `glm/*` is withdrawn (`scripts/seat_authority.yml`, `scripts/guard_operator_acts.py`).
 - Addendum 2026-09-26b part C is moot: its subject is gone. It is not discharged, so credential custody for the Codex and Claude seats stays an open question for the operator.
+- Credential-read backstop (operator direction 2026-10-24, "deny rules and local settings"): tracked `.claude/settings.json` denies `Read` of `~/.fly`, `~/.azure`, the gcloud and GitHub CLI config directories, `~/.ssh` and any `.env`. Claude Code applies it to Read, Grep and Glob, and to `cat`-style Bash commands it recognizes. It is best effort: Codex sessions and scripts that open files themselves are not covered, so it does not settle custody.
 - How work divides between the three models is out of scope here; that research (2026-10-24) feeds a later revision of the seat table.
 
 ## Change history
