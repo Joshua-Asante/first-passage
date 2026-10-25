@@ -76,6 +76,7 @@ retire either surface, it names the seat each normally occupies.
 The executive's PR review and the operator's merge are the independent signatures; the
 coordinator's adjudication of a worker return is an input to them, not a substitute. The executive
 reviews against its own stated goal, not against the coordinator's cards.
+Claude does not review its own work; Codex is the separate reviewer ([2026-10-25](#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work)).
 
 **Handoffs.** A direction or card may cross a seat boundary as a direct prompt (chat, a session
 message or a `codex exec` prompt) or as a committed file. Joshua's direct instruction is the only
@@ -924,6 +925,13 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - CI: `claude.yml` keeps its write permissions; the ruleset, not CI permissions, is the merge boundary.
 *Status:* host steps are the operator's (checklist in the carrying PR); until done, agents still reach the owner token through `gh`.
 
+## Addendum 2026-10-25 — operator ruling: Claude does not review its own work
+
+**Ruling (Joshua, 2026-10-25, in session):** "claude doesn't review it's own work. a separate reviewer is required, in this case codex."
+
+- Work Claude authors (a diff, a plan or a proposal) needs a review from a separate reviewer, and Codex is that reviewer. A Claude self-review, a Claude-run panel or workflow, or the Claude escalation lane's refute-first pass (item 2) on Claude-authored work may inform the author but does not count as that review.
+- This is the review under reviewer ≠ planner and condition (1) of the [conditioned merge GO](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody). Neither changes otherwise.
+
 ## Change history
 
 | Date | Change | By |
@@ -944,3 +952,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-09-30 | Addendum 2026-09-30b — proposed: operator-directed orders, exits and cancels are `trade.submit`, operator act (`high`), never grantable in a card; ratified on operator merge. Original X-1 sweep hold is historical; completed sweep inventory and evidence are on #566 (2026-10-01). | Joshua (direction) + Codex |
 | 2026-10-24 | Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped; direct-prompt handoffs | Joshua |
 | 2026-10-24 | Addendum 2026-10-24b — operator rulings: conditioned agent merge GO (independent review + green CI + pinned head); credential custody (agent PAT, no agent Fly credential, unused credentials removed, rail CrossTrade secrets wiped, no standing Fly login) | Joshua |
+| 2026-10-25 | Addendum 2026-10-25 — operator ruling: Claude does not review its own work; Codex is the separate reviewer | Joshua |
