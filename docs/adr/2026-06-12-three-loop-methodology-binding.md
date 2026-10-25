@@ -10,6 +10,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-82); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the Plan T telemetry consumer rule (ADR02-81); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 **Owner:** Joshua
 **Author:** Claude (Tech Advisor), authored in claude.ai (briefs/methodology/no-commits role); landed to repo via Claude Code 2026-06-12 (the repo uses date-prefixed ADR filenames, not sequential `NNN` — `NNN`→date applied, §0 anchors populated, and audit-hook paths repointed at landing).
 **Loop-of-Record:** STRATEGIC — this ADR binds methodology authority to loop tiers, which is itself a Strategic-loop act (governance of what governs). Load-bearing clause: D2/D3 change which sessions may execute programme-tier Deletes. Switch-gate: N/A (no lower-loop execution component).
@@ -114,7 +115,7 @@ FALSIFIED/AMENDED: per §4 otherwise-branch.
 - The R-plan's phase ordering acquires doctrinal force: Accelerate-tier builds (sweep engine) are licensed only after Question/Delete/Simplify have run at the appropriate tier — recorded in the sweep-engine ADR's own Algorithm pass.
 - Programme-audit checklist gains two items: STRATEGIC-Delete declaration compliance; add-back rate computation. (Fold into `programme-audit` skill in the same R0 handoff.)
 - Kill records and registry entries become the add-back metric's data source — no new artifact type required; existing conventions already carry the needed fields (date, tier, re-open trigger).
-- The lifecycle map gives telemetry (Plan T) its consumer definition: every alert/report names its consuming loop and cadence (T1 spec requirement, already in plan).
+- *(Removed 2026-10-25, rule consolidation D5, ADR02-81: the Plan T telemetry consumer rule, every alert or report naming its consuming loop and cadence. Plan T's Copygram/DXTrade estate was retired 2026-07-11; the lifecycle map keeps consumer-loop routing descriptively.)*
 
 ---
 

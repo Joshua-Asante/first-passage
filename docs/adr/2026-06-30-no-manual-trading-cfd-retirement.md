@@ -10,6 +10,7 @@
 **Related:** `docs/adr/2026-06-23-tv-backtest-egress-automation.md` (never-automate-the-live-account posture); memories `project_futures_prop_pivot` (the chosen scale lever), `project_ea_conversion_state`, `project_us_legal_master_research` (the two prior venue closures); skill `live-execution-journal` (the off-spec classification used in §1).
 **Layer:** execution (live-trading venue + operator role) — **not** strategy/risk-control. No locked parameter, allocation, `dd_protection` constant, or Pine source is touched by this ADR.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-34); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the manual-reopen evidence, the idle-account login bar and the weekly attestation hook (ADR03-36, ADR03-37, ADR03-39); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -67,7 +68,7 @@ This ADR accepts a real cost (§6): it forfeits a 99.83%-to-pass challenge and o
 
 **Revert trigger (binary, event-driven):**
 1. **CFD-venue reopen:** the operator's US jurisdiction/entity changes such that an automated CFD or MT4/MT5 venue carrying **gold + indices** becomes accessible to the operator (the `project_ea_conversion_state` jurisdiction blocker dissolves), **OR** a US-legal automated execution path for the full four-strategy CFD portfolio is demonstrated end-to-end. → CFD/FXIFY may be re-evaluated as a live venue via a fresh ADR.
-2. **No-manual reconsideration:** explicitly **not** triggered by a desire to recover P&L. The no-manual rule holds until automation replaces it. The only evidence that would reopen "may the operator execute manually" is a clean-version `journal_review.py` **edge-captured ratio ≥ 80% over a ≥ 6-week window of system-faithful manual execution** — which, by construction, cannot accrue while manual trading is stopped. The no-manual rule is therefore *permanent-until-automation*: its revert is replacement-by-automation, not return-to-manual.
+2. **No-manual reconsideration:** explicitly **not** triggered by a desire to recover P&L. The no-manual rule holds until automation replaces it; it is *permanent-until-automation*: its revert is replacement-by-automation, not return-to-manual. *(Removed 2026-10-25, rule consolidation D5, ADR03-36: the reopen evidence, a clean `journal_review.py` edge-captured ratio ≥ 80% over ≥ 6 weeks of system-faithful manual execution. That instrument was deleted 2026-07-11, and operator-directed orders now run under the [AGENTS.md 2026-09-30 amendment](2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b).)*
 
 **Revert action:** supersede this ADR with a fresh one stating the changed jurisdiction/entity or the demonstrated automated CFD path as the anchor. Never edit §4 in place.
 
@@ -90,7 +91,7 @@ This ADR accepts a real cost (§6): it forfeits a 99.83%-to-pass challenge and o
 ## §5 — Forbidden moves (under this ADR)
 
 - **"Just one more manual trade to make back the loss."** This is the exact tilt that produced the 2-day receipt (29 Jun's revenge size, ~7× the reference size). The no-manual rule has no recovery exception; the urge to recover *is* the failure mode.
-- **Logging back into the idle FXIFY/DXTrade account to trade it discretionarily.** "Idle, not closed" preserves optionality; it does not authorize trading. Treating the quiet account as "still in play" re-opens the execution layer through the back door.
+- *(Removed 2026-10-25, D5, ADR03-37: the bar on logging back into the idle FXIFY/DXTrade account. The account is closed and its credentials removed, so the Addendum 2026-07-10 item 2 enforces it by construction.)*
 - **Re-opening the MT4/MT5-host / FXIFY-CFD-automation question without a jurisdiction or entity change.** Closed three times (`project_ea_conversion_state`, `project_copygram_migration_state`, `project_us_legal_master_research`). Re-proposing requires the §4 trigger, not renewed effort against the same wall.
 - **Letting the futures re-mapping touch locked strategy parameters.** The re-map is *sizing translation* (spot %-risk → integer micro contracts), validated with parity discipline. It is forbidden from changing any SL/TP/ATR/risk%/pyramid/session constant — those stay locked (Rule 0). A "while we're porting, let's tweak X" is a separate lock decision with its own MC re-validation.
 - **Loosening the §4 trigger in place after the go-dark interval gets uncomfortable.** "We wished we were still earning, so we lowered the bar to resume manual/CFD" is `p`-hacking at the methodology layer. The discomfort *is* the cost this ADR named; fire the trigger openly (supersede) or hold.
@@ -153,15 +154,9 @@ grep -n "manual trading\|CFD.*retire\|futures-prop" CLAUDE.md
 python scripts/verify_lock_anchors.py
 # Expected: ROUTING: Closed (exit 0)
 
-# Weekly zero-fills attestation (added 2026-07-02; audit R5 follow-up).
-# The idle FXIFY/DXTrade account stays credential-accessible and nothing
-# mechanical watched it between this ADR and 2026-08-08 — this closes that gap.
-# Operator downloads the DXTrade fills export weekly (idle => empty), then:
-python ops/live_journal/scripts/zero_fills_attestation.py --fills <export.csv|.pdf>
-# Expected on the idle account: "ATTESTED: 0 fills since 2026-07-01" (exit 0),
-# one dated line appended to ops/live_journal/data/no_manual_attestation_log.md.
-# A fill in-window => loud BREACH banner + exit 2 (a no-manual-rule violation,
-# = the §5 forbidden move "logging back into the idle account to trade it").
+# Weekly zero-fills attestation (added 2026-07-02): removed 2026-10-25 (rule
+# consolidation D5, ADR03-39); retired by the Addendum 2026-07-10 item 3 (account
+# closed; ops/live_journal tooling absent).
 
 # §4 trigger reminder — next programme audit / regime check: 2026-08-08
 ```

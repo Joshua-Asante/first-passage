@@ -185,12 +185,10 @@ The Forward question therefore narrows: **does the initial-entry
 distribution's max (3.56%) plus realistic correlated-day pairings
 challenge `dd_protection`'s working envelope?** This is decidable from the
 existing panel + the existing simulator output without re-MC and without
-new data. **Tag: re-cal-trigger candidate** — flag this for the next MC
-pre-flight reconciliation so it surfaces immediately rather than being
-re-discovered. The trigger does not fire today (no version bump, no 6mo
-live data, no allocation change, no `dd_protection` constant change), but
-it is the kind of structural finding that justifies an early MC pass if
-the inflation factor *grows* in live data.
+new data. It was tagged a re-cal-trigger candidate on 2026-04-25; the tag was
+retired 2026-10-25 (rule consolidation D5, METHOD-188) because the CFD Striker legs
+were [withdrawn](../adr/2026-08-04-tradeify-venue-descope-eval-included.md) and the
+legacy book has no live venue, so no MC pre-flight or live reconciliation will consume it.
 
 **Empirical answer to the narrowed question (combined-account simulator,
 `archive/analysis/dd_protection_trace.py`):** of the three branches (a) trigger
@@ -259,12 +257,10 @@ layer-1 was at the moment layer-2 fires. Quantification requires per-trade
 open-profit data, which the current CSV panel does not directly expose.
 Routed Forward as part of the same re-cal-trigger-candidate question.
 
-> **Forward signpost for the 6-month live reconciliation:** 94% of historical
-> Striker profit is pyramid-driven; live undersizing on layer-2 (no
-> open-profit credit on the weekly-balance multiplier) is therefore the
+> **Finding (the 6-month live-reconciliation signpost was retired 2026-10-25, D5,
+> METHOD-188):** 94% of historical Striker profit is pyramid-driven; live undersizing on
+> layer-2 (no open-profit credit on the weekly-balance multiplier) was therefore the
 > dominant expected live-vs-backtest PF gap on Striker, magnitude TBD.
-> The reconciliation should be looking for this specific divergence — not
-> discovering it as a surprise.
 
 The program-level prior this specific divergence sits *inside* — expect live to
 retain only a fraction (≈30–70%) of backtest edge before any strategy-specific gap —

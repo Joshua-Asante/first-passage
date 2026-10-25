@@ -8,6 +8,7 @@
 **Retain-until:** none
 **Scope:** `dd_protection.py`, `tests/test_mc_anchors.py`, `tests/test_mvd_selfchecks.py`, `CLAUDE.md`, `mc_explore.py`
 **Supersedes:** `2026-04-17-dd-trigger-calibration.md` in part - DD_TRIGGER only; DD_SCALE = 0.40 unchanged.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the retired C0/C2 forward revert trigger and its revert fallback (ADR01-37); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ## Context
 
@@ -68,7 +69,7 @@ Positive:
 - Both lock criteria (bust < 1%, p99 DD < 5%) continue to clear on Pepperstone and OANDA.
 
 Negative / watched:
-- **Regime-robustness dissent.** H1 sub-panel pass-rate of 86.78% under C2 remains a real characterization of the strategy under early-panel (2022-01 → 2024-04) market conditions. The 12.9pp half-panel spread is on record. If forward live-PnL or future panel updates show H1-like underperformance, **C2's regime-fragility risk has materialized** — the documented fallback is to revert to C0.
+- **Regime-robustness dissent.** H1 sub-panel pass-rate of 86.78% under C2 remains a real characterization of the strategy under early-panel (2022-01 → 2024-04) market conditions. The 12.9pp half-panel spread is on record. If forward live-PnL or future panel updates show H1-like underperformance, **C2's regime-fragility risk has materialized**. *(The revert-to-C0 fallback was removed 2026-10-25 with the trigger below, ADR01-37.)*
 - **Reduced p99 DD headroom under the 5% static cap.** 4.55% → 4.73% (45 bp → 27 bp of headroom). Still clear, but tighter than C0.
 - **Striker concentration in bust attribution.** DJ30 share grew 40.9% → 44.4%. Q-DJ30-3 closed exhausted on the SNAG-tail anchor (2025-02-07 / −5.94R) on 2026-05-06; under C2 the DJ30 path now carries marginally more bust budget. Forward live-PnL on DJ30 warrants the most attention.
 
@@ -92,11 +93,13 @@ Negative / watched:
 
 ### Forward revert trigger (load-bearing)
 
-Per the OVERRIDE section in `Q-DDP-1/recommendation.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`):
-
-> If rolling 6-month MC pass-rate on the live-extended Pepperstone panel falls below 95% for two consecutive 6-month windows after this override, treat as evidence the regime-fragility risk has materialized and re-open the C0/C2 question with the new panel data.
-
-**Operationalization (2026-05-08):** quarterly cadence; the rolling 6-month MC pass-rate check is implemented in `analysis/time_to_pass.py` (`--regime-check` mode) and reported during the next four quarter-end reviews (2026-08-08, 2026-11-08, 2027-02-08, 2027-05-08 minimum).
+*(Removed 2026-10-25, rule consolidation D5, ADR01-37.)* The trigger came from the OVERRIDE section in
+`Q-DDP-1/recommendation.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-DDP-1/recommendation.md`):
+re-open the C0/C2 question if the rolling 6-month MC pass-rate on the live-extended Pepperstone panel fell
+below 95% for two consecutive 6-month windows, checked quarterly by `analysis/time_to_pass.py --regime-check`
+from 2026-08-08. It was retired by [claims-rescope §Addendum 2026-07-22](2026-07-11-challenge-era-claims-rescope.md)
+(§D2) and its Pepperstone input is retired. Any change to `DD_TRIGGER` / `DD_SCALE` runs only through the
+AGENTS.md §Protection chain.
 
 ## Cross-references
 
