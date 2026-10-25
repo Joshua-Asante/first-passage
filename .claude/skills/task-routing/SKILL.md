@@ -20,6 +20,7 @@ Decide `environment: local` vs `cloud` **before** launching a Task / cloud-capab
 ## Standing preferences
 
 - **Cloud default (operator, 2026-10-13).** Owner: [AGENTS.md §Purpose](../../../AGENTS.md#purpose). A local packet without the "Must run locally" line and its reason is malformed.
+- **Cloud return channel (operator, 2026-10-24).** A cloud session cannot message its coordinator, and no note arrives when it ends. So every cloud brief must say: open a PR whose description begins `Cloud-task: <session name>`, and post the final report, or any blocking question, as a PR comment. The coordinator finds results with `gh pr list --search "Cloud-task"` and answers by messaging the session. Push the branch the cloud session starts from before launching it. Work that will need the operator's decisions partway through goes to a local session, whose turns report back.
 - **Cloud review (operator, 2026-09-27).** A cloud reviewer of a pushed, pinned revision returns findings without writing to the reviewed branch.
 
 ## Local-only checklist
