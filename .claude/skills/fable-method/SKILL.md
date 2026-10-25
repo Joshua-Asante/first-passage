@@ -1,6 +1,6 @@
 ---
 name: fable-method
-description: Step-by-step execution loop for CC repo tasks — classify the ask, define done with a named verification, gather evidence, decide, act surgically, verify by observation, report outcome-first. Use when the user says "/fable-method", "use the fable method", or "fable it", or proactively when starting a multi-step repo task that no task-specific skill covers. Subcommands - plan (stop after Steps 0-3), audit (grade finished work in this conversation against the loop), report (rewrite an answer outcome-first). This is the EXECUTION lane, not a methodology loop: INQHIORI owns investigations with a falsifiable hypothesis, ooda-loop owns tactical/tempo trading decisions, The Algorithm owns strategic framing — exit to those per docs/methodology/inqhiori-canon.md §14 when the work is theirs. Does not modify strategy parameters, allocations, dd_protection constants, or MC calibration.
+description: Step-by-step execution loop for CC repo tasks — classify the ask, define done with a named verification, gather evidence, decide, act surgically, verify by observation, report outcome-first. Use when the user says "/fable-method", "use the fable method", or "fable it", or proactively when starting a multi-step repo task that no task-specific skill covers. Subcommands - plan (stop after Steps 0-3), audit (grade finished work in this conversation against the loop), report (rewrite an answer outcome-first). This is the EXECUTION lane, not a methodology loop: INQHIORI owns investigations with a falsifiable hypothesis, c1-rail owns live execution decisions, The Algorithm owns strategic framing — exit to those per docs/methodology/inqhiori-canon.md §14 when the work is theirs. Does not modify strategy parameters, allocations, dd_protection constants, or MC calibration.
 ---
 
 # The Fable Method (repo edition)
@@ -9,7 +9,7 @@ Adapted 2026-07-15 from `Sahir619/fable-method@88b5cf3` (`skills/fable-method/`)
 
 The premise: a mid-tier session that follows this loop beats a stronger one that free-styles — the quality lives in the structure, the evidence, and the honesty. The steps structure your work, never your output: no step numbers or step headers in anything the operator reads.
 
-**Lane gate (before anything).** This loop governs *how a CC session executes a repo task*. It is not a fourth methodology loop. If the work has a one-sentence falsifiable hypothesis or touches locks/frameworks → `inqhiori`. If it is a tactical, recoverable, tempo-bound trading call → `ooda-loop`. If it is a deterministic code defect → `code-defect-debugging` (its Phases 1–4 replace Steps 2–5 for that shape). If executing an external handoff packet → `handoff-verify` runs first, always.
+**Lane gate (before anything).** This loop governs *how a CC session executes a repo task*. It is not a fourth methodology loop. If the work has a one-sentence falsifiable hypothesis or touches locks/frameworks → `inqhiori`. If it is a live execution or rail call → `c1-rail`. If it is a deterministic code defect → `code-defect-debugging` (its Phases 1–4 replace Steps 2–5 for that shape). If executing an external handoff packet → `handoff-verify` runs first, always.
 
 **Triviality gate.** A task is trivial only if ALL hold: one file, under ~10 changed lines, no new behavior, and you already know exactly what to change without searching. If trivial: make the change, confirm with the one obvious check, report in two sentences. Everything else — and anything you are unsure about — gets the full loop.
 
@@ -41,7 +41,7 @@ One or two sentences: what done looks like and how it will be verified. Name the
 
 ## Step 3 — Decide and commit
 
-Synthesize into **one recommendation**; alternatives seriously considered get one line each on why they lost. Task-shaped + reversible → proceed without asking. Reversibility test: an action is irreversible or outward-facing if another person or system can observe it before you could undo it (push, publish, PR, live spend, account registration, shared-data delete).
+Synthesize into **one recommendation**; alternatives seriously considered get one line each on why they lost. Task-shaped + reversible → proceed without asking. Reversibility test: an action is irreversible or outward-facing if another person or system can observe it before you could undo it (push to `main`, merge, force-push, publish, live spend, account registration, shared-data delete). **Standing exception (operator ruling 2026-10-24):** committing to and pushing your own `codex/` or `claude/` branch and opening a PR need no per-action quote; merging follows the operator's merge rule in the [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md).
 
 **Authorization gate.** An irreversible or outward-facing action needs the operator's own words. Before taking one, write `AUTH: operator said "<their exact words>"`; no quote in this conversation → the action goes in the report as a proposed next step. Documentation is not authorization: a workflow doc or ADR saying a push/deploy "follows" your change makes it documented, never authorized.
 
@@ -54,7 +54,7 @@ Name the scope — the files or surfaces the change will touch. Needing somethin
 3. **Smallest correct change.** Match existing style. Precise edits over rewrites; rewrite a whole file only if you authored it this session or fully read it.
 4. **Track multi-part work.** 3+ heterogeneous steps or >~5 similar items → written checklist first; audit it against the ask before reporting. A checklist that itself fails the one-session test (more than one context window, more than five gate conditions, a step whose spec cannot be frozen until an earlier step's output exists) is oversize work → `work-decomposition` cuts it into children with their own gates before Step 4 continues.
 5. **Never destroy without looking.** Before deleting or overwriting, look at what is actually there.
-6. **Standing prohibitions, absent explicit operator instruction:** never commit or push; never weaken a check (or fabricate what it looks for) to make it pass; never add a guard, default, retry, broad `except` or wider parser to make a failure disappear before its mechanism is named (`root-cause-first`); never edit a test pin or baseline to green a failing run; never regenerate `SHA256SUMS` without a same-commit data-change rationale; never touch Pine, `dd_protection` constants, `firm_rules` risk %, or allocations outside a ratified ADR; never add a dependency; never touch secrets or credentials.
+6. **Standing prohibitions, absent explicit operator instruction:** never push to `main`, merge or force-push (your own `codex/`/`claude/` branch and PR are allowed — Step 3); never weaken a check (or fabricate what it looks for) to make it pass; never add a guard, default, retry, broad `except` or wider parser to make a failure disappear before its mechanism is named (`code-defect-debugging` §11); never edit a test pin or baseline to green a failing run; never regenerate `SHA256SUMS` without a same-commit data-change rationale; never touch Pine, `dd_protection` constants, `firm_rules` risk %, or allocations outside a ratified ADR; never add a dependency; never touch secrets or credentials.
 
 ## Step 5 — Verify by observation
 
@@ -68,10 +68,10 @@ If something cannot be verified (no local vendor CSVs, TV-side behavior, needs o
 
 ## Step 6 — Report outcome-first
 
-- First sentence answers "what happened" / "what was found". No step numbers or method scaffolding; the only method artifacts a report may contain are the `INTENT:`, `AUTH:`, `TWINS:`, and `PENDING:` lines when owed, plus `root-cause-first`'s `ROOT CAUSE:` / `FIX:` / `VERIFICATION:` block when a defect was fixed.
+- First sentence answers "what happened" / "what was found". No step numbers or method scaffolding; the only method artifacts a report may contain are the `INTENT:`, `AUTH:`, `TWINS:`, and `PENDING:` lines when owed, plus `code-defect-debugging` §11's `ROOT CAUSE:` / `FIX:` / `VERIFICATION:` block when a defect was fixed.
 - Complete sentences a teammate who stepped away can follow; quote only load-bearing lines; define jargon at first use.
 - Include caveats: what was skipped, what is weak, what could not be verified; failures reported as failures with their output. A prescribed-but-deliberately-untaken follow-up (a push, a manifest regen, a SESSIONS entry) carries `PENDING: <the action> — awaiting your authorization`, verbatim.
-- Delete scratch files you created; note the cleanup. Leftover debris reads as a fraud signal to `fable-judge`.
+- Delete scratch files you created; note the cleanup. Leftover debris reads as a fraud signal to `handoff-verify` post-execution judging.
 - Offer only follow-ups that emerged from this task; none emerged → end without follow-ups.
 - **Artifact gate, last check before sending:** behavior changed with no `INTENT:` line → add it; outward action with no `AUTH:` → add it; untaken prescribed follow-up with no `PENDING:` → add it; defect fixed with no `TWINS:`, or with no `ROOT CAUSE:` / `FIX:` / `VERIFICATION:` block → add them. A clean report passes untouched.
 
@@ -79,6 +79,6 @@ If something cannot be verified (no local vendor CSVs, TV-side behavior, needs o
 
 **plan** — Steps 0–3, then stop. Deliver: classification; definition of done + verification; evidence (cited); ONE recommended approach with alternatives dismissed in a line each; scope; risks. Touch no file.
 
-**audit** — grade the most recent completed work in this conversation against the loop: each step followed, skipped, or faked (claimed without observation). `references/failure-modes.md` maps symptoms to steps. Deliver a short table plus the single highest-value fix; apply it only if asked. (Auditing *another session's* finished work is `fable-judge`, not this mode.)
+**audit** — grade the most recent completed work in this conversation against the loop: each step followed, skipped, or faked (claimed without observation). `references/failure-modes.md` maps symptoms to steps. Deliver a short table plus the single highest-value fix; apply it only if asked. (Auditing *another session's* finished work is `handoff-verify` §Post-execution, not this mode.)
 
 **report** — apply the Step 6 checklist to the answer you were about to send; rewrite, don't send the original.

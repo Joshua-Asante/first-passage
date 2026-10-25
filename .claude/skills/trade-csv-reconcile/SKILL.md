@@ -192,7 +192,7 @@ Failure modes that have actually happened, ranked by frequency:
 
 ## When NOT to use this skill
 
-- **No CSV in scope.** Pure methodology questions, framework discussions, brief authoring without data — route to `inqhiori` or `ooda-loop`.
+- **No CSV in scope.** Pure methodology questions, framework discussions, brief authoring without data — route to `inqhiori`.
 - **Pine code authoring/audit.** Hand off to `pinescript-v6`. This skill consumes CSV outputs of Pine; it doesn't write Pine.
 - **MC simulation, dd_protection decisions, allocation locks, c1 arming.** Hand off to `prop-firm-challenge` / `c1-rail`. This skill produces verified metrics; those skills own the decisions.
 - **Bar data rather than trade data.** 15-min OHLCV / tick exports use a different parser. This skill is trade-CSV-specific.

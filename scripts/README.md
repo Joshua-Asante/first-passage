@@ -331,7 +331,7 @@ or CLI input; 3 source/target/release-policy refusal.
 remain `always` gates. [`check_skill_refs.py`](check_skill_refs.py) checks eligible
 repository references with its documented exceptions.
 [`check_skills_no_constants.py`](check_skills_no_constants.py) scans only `SKILL.md`
-of `inqhiori`, `ooda-loop`, `programme-audit` and `brief-authoring`;
+of `inqhiori`, `programme-audit` and `brief-authoring`;
 operational-reference skills and `pinescript-v6` remain exempt.
 
 The [PostToolUse skill hook](sync_skills_hook.py), registered in
