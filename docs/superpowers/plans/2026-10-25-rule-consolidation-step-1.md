@@ -1,7 +1,8 @@
 # Rule consolidation — step 1: inventory, 42 core rules, classification
 
-**Status:** proposal for operator ruling. No rule source is edited by this plan; edits come in
-later PRs after Joshua rules (§7).
+**Status:** **ruled 2026-10-25** — Joshua adopted Codex's decision review of this proposal: the
+consolidation is adopted with amendments to D1, D4 and D8 (§5 records each ruling; §3 carries the
+amended wording). No rule source is edited by this plan; the edits come in the PRs of §7.
 
 **Question:** which of the repo's documented agent rules are still needed, and what ~42 core rules
 state the rest? **Decision it changes:** what the consolidation PRs keep, absorb, move or delete,
@@ -14,7 +15,9 @@ recommendation **stop and rule** (low-reversibility governance act; the ruling, 
 investigation, is the next step).
 
 **Base:** inventory read at `3feb596`; reconciled to `b8524d17` after #906, #907, #908, #909 and
-#911 merged during the pass (§2.4). Seats: Claude coordinator; Codex reviews this PR
+#911 merged during the pass (§2.4). #910 (task-routing) and #914 (standing GO for the weekly
+preservation trade) merged after the reconciliation: Rule 10 carries #914; the PRs of §7 re-read
+each file they touch at their own head. Seats: Claude coordinator; Codex reviews this PR
 ([Rule 5 below](#authority-review-and-orientation), ruling 2026-10-25).
 
 ## 1. Collision check
@@ -84,8 +87,9 @@ all three removed rows for deletion. The appendix marks each change *at HEAD*.
 
 ## 3. The 42 core rules
 
-One numbered list, Rule 0 to Rule 41. Each is one or two lines in AGENTS.md (§4.1) and links its
-owner, where the detail it absorbs stays. Rule 0 (audit first), Rule 1 (small-cell variance prior,
+One numbered list, Rule 0 to Rule 41. Each is stated briefly in AGENTS.md (§4, item 1) and links
+its owner, where the detail it absorbs stays. The 42 are a navigation layer, not a reduction of the
+rulebook to 42 obligations: the 2,366 detail rows remain binding at their owners. Rule 0 (audit first), Rule 1 (small-cell variance prior,
 numeral fixed by the [Rule 2 ADR §5.7](../../adr/2026-06-16-rule-2-budget-before-acting.md)) and
 Rule 2 (budget) keep their numerals. Frozen controls (Rules 10–15) are pointers to their owners and
 weaken nothing: dd_protection constants, locked parameters, Pine, the MC literals in AGENTS.md
@@ -94,6 +98,8 @@ controls stay exactly as their owners state them.
 
 The draft was classified against by 27 agents; their wording and scope feedback is folded into the
 statements below without renumbering, so every row in the appendix still points at the right rule.
+The 2026-10-25 rulings are applied: the D1 corrections to Rules 3, 4, 10, 14 and 30, D3's review scope
+in Rule 5 and D10(d)'s `Rule 0-T` in Rule 21.
 "Rows" counts the inventory rows that fall under each rule.
 
 ### Authority, review and orientation
@@ -103,9 +109,9 @@ statements below without renumbering, so every row in the appendix still points 
 | **Rule 0 — Audit first** | Read the production source or primary artifact before a claim, brief, decision or edit. Prior docs, memory, handoffs and self-consistent artifacts are premises to verify; load-bearing claims need code-resident checks; returned work is judged against its artifacts. | [`docs/rule_0.md`](../../rule_0.md); [operational_rules §8–§9](../../operational_rules.md) (§0 sub-rules); `verify-source`, `handoff-verify` skills | canon Rule 0; op-Rule 2, op-Rule 8 §0 sub-rules, op-Rule 9 citation chain; verify-source; handoff-verify Phase-0 and judging; brief-authoring Check 1 / Trap #3; fixture-test 'Rule 0 ext'; MVD assertions | none (MVD helpers and anchor fixture tests per claim) | 55 / 75 / 5 |
 | **Rule 1 — Small-cell variance prior** | Small samples and short streaks are variance: no parameter, size, timing or signal change on them, no override of a valid signal on a narrative or forecast, and no regime overlay without a full INQHIORI investigation. | [INQHIORI canon](../../methodology/inqhiori-canon.md) (numeral fixed by Rule 2 ADR §5.7); [operational_rules §1, §4](../../operational_rules.md) | canon Rule 1; regime-gate 'Rule 1 extension' (partition permutation); op-Rules 1 and 4; E1 | none | 13 / 9 / 4 |
 | **Rule 2 — Budget before acting** | Budget substantial work in one line — iterations by loop class, plus $ and K where it spends, never minutes; at the bound make a structured stop and never expand silently or weaken acceptance. | [Rule 2 ADR](../../adr/2026-06-16-rule-2-budget-before-acting.md); canon §15 | canon Rule 2 and corollaries 1–3; Rule 2 ADR §2, addenda; work-decomposition budget arithmetic | rule2-trip-log-liveness (audit tier) | 12 / 24 / 7 |
-| **Rule 3 — The operator decides; grants are literal** | Direct operator instructions govern; a ruling, GO or record grants only what it states, and history, relays or other agents add none. Ratification, spend, deletion, retirement and irreversible acts are the operator's; a tool's or control's refusal is reported, never worked around; no value judgment waives a legal, capital, credential, private-data, verification or release control. | [AGENTS.md §Purpose, §Contribution, §Output efficiency](../../../AGENTS.md); [surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md) (decision packets; approval bound to its object) | surface-ADR 'Rule 2 (approval bound to object)'; repo-hygiene Rule 1; 'no X granted' lines; tool-safety non-circumvention | guard_operator_acts (prompt), guard_shell_command | 46 / 51 / 13 |
-| **Rule 4 — Seats, action classes and cards** | Act within the seat's grants and the card's authority block — cards only narrow and operator acts are never delegated; parallel workers keep disjoint footprints and single-writer reserved files; a frozen card's worker returns contradictions, not scope changes, as a pushed branch plus PR with a four-state status. | [surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md); [`scripts/seat_authority.yml`](../../../scripts/seat_authority.yml) | surface-ADR seat table, action classes, 'Rule 1 (card only narrows)'; work-decomposition atomic tests | handoff-authority, guard_operator_acts | 26 / 47 / 6 |
-| **Rule 5 — A separate reviewer** | Claude does not review its own work: Codex is the separate reviewer and reviewer ≠ planner. A Claude-run review, panel or escalation pass informs the author but is never the review. | [surface-allocation ADR Addendum 2026-10-25](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work); [scripts/README §Independent review](../../../scripts/README.md#independent-review) | reviewer ≠ planner; escalation item 2 (see ruling D3); M-42, M-46, M-47 | none (merging agent's obligation) | 5 / 6 / 0 |
+| **Rule 3 — The operator decides; grants are literal** | Direct operator instructions govern; a ruling, GO or record grants only what it states, and history, relays or other agents add none. Ratification, spend, retirement, GO/NO-GO and irreversible acts are operator acts: an agent performs one only under the operator's direction or a standing GO that names it (directed trading, the conditioned merge GO); deletion follows its classification by execution and consequence (Rule 31). A tool's or control's refusal is reported, never worked around; no value judgment waives a legal, capital, credential, private-data, verification or release control. | [AGENTS.md §Purpose, §Contribution, §Output efficiency](../../../AGENTS.md); [surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md) (decision packets; approval bound to its object) | surface-ADR 'Rule 2 (approval bound to object)'; repo-hygiene Rule 1; 'no X granted' lines; tool-safety non-circumvention | guard_operator_acts (prompt), guard_shell_command | 46 / 51 / 13 |
+| **Rule 4 — Seats, action classes and cards** | Act within the seat's grants and the card's authority block — cards only narrow and never grant an operator act or forbidden capability; parallel workers keep disjoint footprints and single-writer reserved files; a frozen card's worker returns contradictions, not scope changes, as a pushed branch plus PR with a four-state status. | [surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md); [`scripts/seat_authority.yml`](../../../scripts/seat_authority.yml) | surface-ADR seat table, action classes, 'Rule 1 (card only narrows)'; work-decomposition atomic tests | handoff-authority, guard_operator_acts | 26 / 47 / 6 |
+| **Rule 5 — A separate reviewer** | Claude does not review its own work: Codex is the separate reviewer and reviewer ≠ planner, and before ratification of an ADR, prereg or closure Codex's review covers premises, calculations, gate evidence and contradictions — an ordinary diff review does not cover that adjudication. A Claude-run review or panel is optional author input, never the review. | [surface-allocation ADR Addendum 2026-10-25](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work); [scripts/README §Independent review](../../../scripts/README.md#independent-review) | reviewer ≠ planner; escalation item 2 (refute-first pass, now Codex's per D3); M-42, M-46, M-47 | none (merging agent's obligation) | 5 / 6 / 0 |
 | **Rule 6 — PRs and merges** | Land work by PR from a `codex/` or `claude/` branch; merge only pinned to a head whose Codex review is clean within three and whose checks are all green; never auto-merge, never merge a DRAFT/HOLD without an explicit lift, never rewrite pushed history you do not own; resolve a concurrent-session collision before pushing. | [surface-allocation ADR Addendum 2026-10-24b](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody); [operational_rules §12](../../operational_rules.md) | op-Rule 12; repo-hygiene Rules 2–5; M-37; pr.merge grant | main ruleset (required check), guard_operator_acts, check_push_collision | 17 / 43 / 10 |
 | **Rule 7 — Stop after two failed corrections** | After two failed corrections of one issue — this count overrides any per-skill bound — stop, summarize and restart cleaner on the named escalation lane; a PR whose three Codex reviews all found issues returns to its owner for a rewrite. | [AGENTS.md §Continuous improvement](../../../AGENTS.md); surface-allocation ADR escalation triggers | M-38, M-39; code-defect Phase 4.5; fable-method Step 5 | none | 2 / 12 / 0 |
 | **Rule 8 — Orient and dedup first** | Start from STATE and the owning plan or record; before new research or a new artifact, search CATALOG In-flight, briefs INDEX, the instrument ledger and rejection bars and paste the literal output — an empty search proves nothing. | [operational_rules §8.8](../../operational_rules.md) (dedup-first ADR is rationale) | op-Rule 8.8 (sub-rule 8), op-Rule 10 dedup clause; dedup-first ADR | hookify advisor-dedup-first (prompt warning) | 19 / 11 / 3 |
@@ -115,11 +121,11 @@ statements below without renumbering, so every row in the appendix still points 
 
 | Rule | Statement | Owner (detail lives here) | Absorbs | Enforced by | Rows (abs / det / del) |
 |---|---|---|---|---|---|
-| **Rule 10 — Live-execution gates** | Confirm host state first; arming an instance needs its own M1 RESOLVED; live spend needs M1 plus a per-session operator GO inside the signed ceiling; disarm before `armed_until`; orders, exits, cancels, deploys and host access only at operator direction; no discretionary manual strategy execution; venue compliance terms (Tradeify eval: native logic only) bind every deployment. | [AGENTS.md §Live-execution posture](../../../AGENTS.md); `c1-rail` skill; rail-GO, M1 and deployment-checklist records | AGENTS live-execution bullets; c1-rail invariants and authority table; op-Rule 3 (dormant) | c1_rail_arm interlock, m1-artifact-structure, guard_operator_acts | 33 / 104 / 28 |
+| **Rule 10 — Live-execution gates** | Confirm host state first; arming an instance needs its own M1 RESOLVED; live spend needs M1 plus a per-session operator GO inside the signed ceiling; disarm before `armed_until`; orders, exits and cancels require operator direction for the act, except the weekly account-preservation trade covered by the standing, revocable GO, whose supported-platform, authenticated-surface and disarmed-rail conditions remain binding; deploys and host access are operator acts; no discretionary manual strategy execution; venue compliance terms (Tradeify eval: native logic only) bind every deployment. | [AGENTS.md §Live-execution posture](../../../AGENTS.md); `c1-rail` skill; rail-GO, M1 and deployment-checklist records | AGENTS live-execution bullets; c1-rail invariants and authority table; op-Rule 3 (dormant) | c1_rail_arm interlock, m1-artifact-structure, guard_operator_acts | 33 / 104 / 28 |
 | **Rule 11 — Rail operating invariants** | Fresh tag per payload; a send is not a fill; an unobserved side effect is IN_DOUBT and reconciled, never auto-retried; an unhealthy source emits nothing and an unknown request halts; exits, flats and disarms never wait while risk-adds halt on any unpersisted decision; recovery never restores authority; operation is attended. | c1 monitoring-maturity, S2/S2b daemon and incident-contract records | surface-ADR 'Rule 3 (IN_DOUBT)'; incident-contract Rules 9–10, §A12; c1-rail invariants | b1_payload fresh tag; rail and daemon tests | 12 / 101 / 21 |
 | **Rule 12 — Credentials** | Act under the agent's own scoped credentials, never the operator's; hold no Fly or broker credential; reference secrets, never embed them. | [surface-allocation ADR Addendum 2026-10-24b B](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) | AGENTS §Merges and credentials; dispatch_codex limits | settings.json permissions.deny, secret-shape checks | 6 / 17 / 1 |
 | **Rule 13 — Private data and the public clone** | Never commit or quote account identifiers, P&L, locked-book backtest figures or parameter values, vendor CSVs, Pine or locked ports; read the private surface in place only and never pass it to an external service; the VM copy exception is the §60 addenda's alone. | [AGENTS.md §Public-clone posture](../../../AGENTS.md); campaign §60; visibility-transition ADR | op-Rule 9; campaign §60; visibility ADR redactions | staged-debris, pine-manifest, pine-pin-provenance, private-Pine-read test | 17 / 41 / 10 |
-| **Rule 14 — Locked parameters and protection** | Locked parameters, allocations and Pine are immutable (Pine owns strategy parameters; `BASE_RISK` is the live sizing authority); dd_protection's constants and structure and the MC literals resident in AGENTS.md change only by pre-registration → re-MC → both-halves regime gate → admitting ADR; a lock is complete only when its skew audit has run and every consumer reflects it. | [AGENTS.md §Strategy Reference, §Protection](../../../AGENTS.md); [operational_rules §5–§6](../../operational_rules.md); [regime gate](../../methodology/regime_robustness_gate.md) (change-control order) | op-Rules 5–6; dd-protection ADRs; trade-csv-reconcile Rule 0; prop-firm Rule 7; skew-audit 'Rule 6' | _validate_protection_rule, pine-manifest, recall-guard test, lock_event_hook | 49 / 125 / 29 |
+| **Rule 14 — Locked parameters and protection** | Locked parameters, allocations and Pine are immutable (Pine owns strategy parameters; `BASE_RISK` is the live sizing authority); dd_protection's constants and structure change only by pre-registration → re-MC → the both-halves regime gate where it applies → admitting ADR; the MC calibration literals are historical facts kept verbatim in AGENTS.md for the recall parser, never replaced by a new re-MC, and moved or reworded only with that parser; a lock is complete only when its skew audit has run and every consumer reflects it. | [AGENTS.md §Strategy Reference, §Protection](../../../AGENTS.md); [operational_rules §5–§6](../../operational_rules.md); [regime gate](../../methodology/regime_robustness_gate.md) (change-control order) | op-Rules 5–6; dd-protection ADRs; trade-csv-reconcile Rule 0; prop-firm Rule 7; skew-audit 'Rule 6' | _validate_protection_rule, pine-manifest, recall-guard test, lock_event_hook | 49 / 126 / 28 |
 | **Rule 15 — Capital authorization is separate and revocable** | Lock, capital authorization and venue deployment are separate axes and each fact lives at one level (book, edition, deployment); an account holds one pre-registered book; decay permits only pre-registered de-risking and upward moves need their full gate chain; automation moves authorization down only, bar the sandbox lane; retirement needs operator GO; a de-scope is not escaped by renaming; neither a lock nor a result grants capital. | [`strategy_lifecycle.md`](../../methodology/strategy_lifecycle.md); lifecycle, venue-binding and book-segregation ADRs | lifecycle governance ADR; venue-binding axis; book segregation; shrinkage convention | lifecycle-consistency, core/lifecycle tests | 34 / 116 / 19 |
 
 ### Firms, venues, data and figures
@@ -136,14 +142,14 @@ statements below without renumbering, so every row in the appendix still points 
 
 | Rule | Statement | Owner (detail lives here) | Absorbs | Enforced by | Rows (abs / det / del) |
 |---|---|---|---|---|---|
-| **Rule 21 — Report verification honestly** | Report command, interpreter, revision, actual result and record.json; a pass needs completed, exit 0 and stable source; disclose pre-existing failures; a form check is not semantic proof and an unexercised gate is unproven; a re-implementation reproduces its baseline before a delta counts; numbers that feed a gate are computed in code; an override is logged beside the honest result. | [AGENTS.md §Python environment](../../../AGENTS.md); [scripts/README verification evidence](../../../scripts/README.md#automatic-verification-evidence) | AGENTS §Python environment; external-mapping guardrail 2 | guard_open_verification_record | 25 / 50 / 3 |
+| **Rule 21 — Report verification honestly** | Report command, interpreter, revision, actual result and record.json; a pass needs completed, exit 0 and stable source; disclose pre-existing failures; a form check is not semantic proof and an unexercised gate is unproven; a regression test exercises the changed production path and distinguishes the defective from the corrected behavior; a re-implementation reproduces its baseline before a delta counts; numbers that feed a gate are computed in code; an override is logged beside the honest result. | [AGENTS.md §Python environment](../../../AGENTS.md); [scripts/README verification evidence](../../../scripts/README.md#automatic-verification-evidence) | AGENTS §Python environment; external-mapping guardrail 2; `Rule 0-T` (D10 d) | guard_open_verification_record | 25 / 50 / 3 |
 | **Rule 22 — Use the checkout's launcher** | Run project Python through `fp` (doctor, test, check); never fall back silently to system Python; spawn with `sys.executable`; the CI substitution covers only the qualification timeout; add no dependency without operator instruction. | [AGENTS.md §Python environment](../../../AGENTS.md); [scripts/README launcher](../../../scripts/README.md#local-operations-launcher) | AGENTS launcher bullets; fable-method dependency bar | fp doctor | 5 / 9 / 0 |
 
 ### Research
 
 | Rule | Statement | Owner (detail lives here) | Absorbs | Enforced by | Rows (abs / det / del) |
 |---|---|---|---|---|---|
-| **Rule 23 — Pre-register; count K honestly** | Freeze criteria in their own commit before results; never rescue with post-hoc filters; declare K honestly (no splitting, informal exploration counts); every frozen gate is reachable and binding; frozen preregs and defaults change only by dated superseding record; results on viewed data are exploratory. | `futures-anomaly-discovery` skill; candidate-contract ADR; HARV same-units ADR | Discovery Rule 1 (declare K); op-Rule 8 prereg-freeze clause; gate-reachability lesson | sentinel prereg scan, register_search refusals | 65 / 152 / 30 |
+| **Rule 23 — Pre-register; count K honestly** | Freeze criteria in their own commit before results; never rescue with post-hoc filters; declare K honestly (no splitting, informal exploration counts); every frozen gate is reachable and binding; frozen preregs and defaults change only by dated superseding record; results on viewed data are exploratory. | `futures-anomaly-discovery` skill; candidate-contract ADR; HARV same-units ADR | Discovery Rule 1 (declare K); op-Rule 8 prereg-freeze clause; gate-reachability lesson | sentinel prereg scan, register_search refusals | 65 / 153 / 29 |
 | **Rule 24 — Verdicts from the pre-registered gates, in order** | Validate mechanically at the declared gates (DSR-at-K, net of costs, intraday-honest clock, placebo and temporal battery) in the evaluation-order sequence; dormant gates re-arm only on a dated operator GO; qualifying risk-control lock changes also clear the regime-robustness gate. | [evaluation-order ADR](../../adr/2026-08-30-evaluation-order.md); `strategy-validation` skill; [regime gate](../../methodology/regime_robustness_gate.md) (mechanics) | validation battery K-tiering; W4 dormancy; prefilter gate | none | 21 / 191 / 36 |
 | **Rule 25 — Generation never blesses** | Discovery output and harvested strategies are candidates: state a mechanism before mining, admit external mechanisms only through harvest intake, carry the manifest and K into validation, and retire a channel at its liveness ceiling. | [`strategy_harvest.md`](../../methodology/strategy_harvest.md); `futures-anomaly-discovery` skill | Discovery Rules 2–3; harvest Requirements 1–4; concept-admissibility | none | 14 / 69 / 14 |
 | **Rule 26 — Rejections bar re-proposal** | Re-propose a rejected candidate only with new mechanism evidence; route rejections by scope (instrument ledger or register); the register is additions-only and a bar binds once ratified and wired; every closure names its Registry line. | [`docs/rejected_candidates.md`](../../rejected_candidates.md); rejected-candidate-patterns and rejection-register ADRs | op-Rule 8.9; 95 registry re-proposal bars | closure-disposition, instrument-rejection-coverage | 35 / 130 / 7 |
@@ -155,7 +161,7 @@ statements below without renumbering, so every row in the appendix still points 
 | Rule | Statement | Owner (detail lives here) | Absorbs | Enforced by | Rows (abs / det / del) |
 |---|---|---|---|---|---|
 | **Rule 29 — One canonical owner per fact** | Each fact has one owner; elsewhere link it or label a mirror; check and amend the owner before opening a new artifact; AGENTS.md is the only instruction file among five root guides; memory and retired surfaces are never owners; cite code by symbol, not line. | [operational_rules §7](../../operational_rules.md); root-doc charter ADR | op-Rule 7, op-Rule 8.10; 'Rule 7' citations in ADRs and skills | adr-graph (status rows), root-doc-liveness | 58 / 51 / 7 |
-| **Rule 30 — Correct where the error is read** | Mark a withdrawal where readers meet it; frozen evidence gets an addendum and an upstream banner; sweep a withdrawn claim repo-wide by mechanism, not token, and re-read its consumers; recompute corrected numbers from source. | [operational_rules §14](../../operational_rules.md); `blast-radius` skill | op-Rule 14; brief-authoring Trap #7 | supersession-placement | 36 / 29 / 2 |
+| **Rule 30 — Correct where the error is read** | On living rule surfaces delete superseded wording and its marker so the current rule is stated once; frozen evidence keeps its body and gets an addendum with an upstream correction where readers meet it; sweep a withdrawn claim repo-wide by mechanism, not token, and re-read its consumers; recompute corrected numbers from source. | [operational_rules §14](../../operational_rules.md); `blast-radius` skill | op-Rule 14; brief-authoring Trap #7 | supersession-placement | 36 / 29 / 2 |
 | **Rule 31 — Artifacts earn their place** | Keep an artifact only if it passes the retention test; classify deletion by execution, migrate every obligation and reader first, tombstone removed ADRs and pin incoming anchors, verify retrieval; never revive retired code by revert. | [operational_rules §16](../../operational_rules.md); ADR ceremony-tiering | op-Rule 16 R1–R5; Great Prune | docs-runtime-inventory (report-only) | 33 / 40 / 22 |
 | **Rule 32 — ADRs only under the admission rule** | Create an ADR only when the admission test holds; Accepted needs a dated operator GO; an approved revision updates effective text and keeps the immutable prior; Proposed and DRAFT records decide nothing; the superseded record's header carries every supersession edge, wherever the ruling lives. | [ADR ceremony-tiering](../../adr/2026-08-08-adr-ceremony-tiering.md) | Trap #12 (revision part); superseding-ADR conventions | adr-graph | 43 / 17 / 12 |
 | **Rule 33 — Cards, briefs, notices and lessons follow their form** | A card, committed or prompted, carries the full contract — check_brief form, named acceptance tests, authority block, 'Must run locally' when it applies; never retro-fit; observations route through the notice log; lessons are cited from their registry, not re-derived. | `brief-authoring` skill; surface-allocation ADR handoff contract; notice-log ADR; [lesson registries](../../methodology/lessons/) | brief-authoring checks and traps; handoff contract items 1–7 | handoff-brief-form, handoff-authority | 29 / 93 / 15 |
@@ -178,14 +184,15 @@ statements below without renumbering, so every row in the appendix still points 
 | Disposition | Rows | Meaning |
 |---|---:|---|
 | Absorbed | 944 | The core line, read with its owner, fully states it; the source sentence shrinks to a link or goes. 104 of AGENTS.md's 146 rows are here. |
-| Kept as detail | 2,364 | Still needed but too specific for a core line (values, procedure steps, scoped exceptions, venue, campaign or instrument contracts, frozen terms). Stays at an owner under its core rule; 278 rows should move to a different owner (named in the appendix). |
-| Proposed for deletion | 428 | No longer needed: superseded, discharged, executed, historical or tied to a retired surface, with the evidence per row. 3 are already gone at HEAD (#909). 240 carry plain evidence (§5, D9); 188 need a ruling (§5, D4–D8). |
+| Kept as detail | 2,366 | Still needed but too specific for a core line (values, procedure steps, scoped exceptions, venue, campaign or instrument contracts, frozen terms). Stays at an owner under its core rule; 278 rows should move to a different owner (named in the appendix). Includes ADR01-45 and ADR11-37, kept as open obligations by ruling D8. |
+| Proposed for deletion | 426 | No longer needed: superseded, discharged, executed, historical or tied to a retired surface, with the evidence per row. 3 are already gone at HEAD (#909). 240 carry plain evidence (§5, D9); 186 were ruled per cluster (§5, D4–D8). |
 
 Every deletion that touches a frozen control is in the ruling set, whatever its evidence.
 
 ## 4. Namespace scheme
 
-**Recommendation:**
+**Ruled (D2), as recommended.** The core-list switch and the citation migration are coordinated so
+no intermediate commit changes what a bare "Rule 7" means (§7, steps 1–2).
 
 1. **"Rule N" means only the core list.** The 42 rules are stated in AGENTS.md under a new
    §Core rules, one or two lines each with the owner link; AGENTS.md prose that only restates them is
@@ -225,28 +232,32 @@ Every deletion that touches a frozen control is in the ruling set, whatever its 
 | trade-csv-reconcile Rule 0 | Rule 14 |
 | surface-allocation ADR Rule 1 / 2 / 3 / 4 | Rule 4 / 3 / 11 / 36 |
 | incident contract Rules 4a–12 | Rule 11 |
-| `Rule 0-T` (cited by three production tests, never defined) | Rule 21 — define once or retire (D10) |
+| `Rule 0-T` (cited by three production tests, never defined) | Rule 21, which now defines it (D10 d) |
 
 4. **No new gate.** The repoint is one mechanical PR (`rg '\bRule [0-9]'` over living surfaces,
    checked against the map). If bare-numeral drift recurs, extend an existing checker rather than add
    one (Rule 36).
 
-## 5. Rulings requested
+## 5. Rulings (Joshua, 2026-10-25)
 
-Joshua decides; nothing below executes without the ruling. Recommendations are marked.
+Joshua adopted Codex's decision review of the proposal ("this is codex's recommendation, which I
+agree with"): the consolidation is adopted with amendments to D1, D4 and D8. Codex's review read the
+42 statements, all 428 then-proposed deletions and the disputed owners at `962d11e` against main
+`883ba618`; it was a decision review with targeted source checks, not a re-extraction. A ruling
+grants only what it states.
 
-| # | Decision | Recommendation |
+| # | Decision | Ruling |
 |---|---|---|
-| D1 | Adopt the 42 core rules as worded in §3 | Adopt; wording changes welcome before the AGENTS.md PR |
-| D2 | Namespace scheme and legacy map (§4) | Adopt |
-| D3 | Rule 5 scope: does the pre-ratification refute-first pass (surface-allocation ADR escalation item 2, M-42, `pre-ratification-adversarial-panel`) remain a Claude-run gate before ADR, prereg and closure ratification, or is it now the separate reviewer's (Codex) job, with Claude panels optional input? | Codex's job; Claude panels optional (follows the 2026-10-25 rulings) |
-| D4 | **C1 — Track B and the CrossTrade route for Tradeify** (66 rows): every ruling row in the 2026-09-12 book-protection instance ADR, the ORB R2 supersession DRAFT and the venue-legality re-expression lane, plus the incident contract's option-B and R-read rows and the Track B rows in AGENTS.md, STATE, the rail-GO ADR, the four-firm ADR and the c1-rail skill. The 2026-10-16 checklist addendum superseded Track B for Tradeify, but the instance ADR still reads Accepted / Superseded-by none and AGENTS.md still calls Track B suspended until 11-08. Record the supersession in that ADR's header and AGENTS.md and delete these rows | Adopt, except move the host-side activation gate (TB-I3) and the regime-gate deviation design (ADR13-65 to ADR13-69) to the personal-lane owner if that lane needs them |
-| D5 | **C2 — retired venues, feeds, vendors and the CFD/challenge-era estate** (31 named rows): DXTrade and FXIFY execution (op-Rule 3, the idle-account rules), Pepperstone, Databento and the MJY venue, the edge-captured-ratio meta-layer, Copygram telemetry, the parked Aegis→M6J lane, the legacy Guardian relock and the Aegis event pause. Delete, or keep dormant with a named re-arm condition | Delete; history stays in git and the archive |
-| D6 | **C3 — lesson-registry rows tied to retired surfaces** (15 rows, all in the two lesson registries): manual FIRE-alert execution lessons, the Pine-alert and params.toml lock lessons, deadline-capped challenge exits, the retired-panel 2024 boundary sweep and the frozen E-lesson demotion clock. Delete these rows only; the registry's own governance (promotion, dollar cost, keeping superseded lessons) is D10 (c) and (e), and those rows stay detail until then | Delete |
-| D7 | **C4 — MSL sourcing channel** (7 rows, the two MSL ADRs): the channel's hard rung was met 2026-10-07; delete its operating rules with the closing record | Adopt, with the closing record |
-| D8 | **C5** (39 other frozen-control rows, each superseded or discharged by a named live owner, e.g. the C0 DD trigger, deleted anchor-pin tests, the agent `fly deploy` grant) and **C6** (30 other dormant, discharged, executed or unclear rows) | Approve as a batch; veto any row by ID |
-| D9 | The 240 deletions with plain evidence (superseded with owner named, discharged, executed, historical) | Approve as a batch; Codex review of the deletion PRs checks each |
-| D10 | Contradictions that need a choice, not a repair (affected rows are marked *pending D10* in the appendix): (a) CI write credential — the surface-allocation ADR §8 row (ADR05-98) keeps "CI grants Codex no write credential" while Addendum 2026-10-24b B keeps `claude.yml` write permissions; (b) op-Rule 4 logs every losing streak in SESSIONS (OPS-6) while op-Rule 7 limits SESSIONS to judgment calls (OPS-27); (c) lesson promotion and per-lesson dollar cost — AGENTS "high-severity or recurring" and the 2026-08-29 light format (no promotion ceremony, no dollar threshold) vs the E-registry and lesson_capture gate ($3K or three firings, a dollar-cost field the public clone now redacts; LESSONS-E-2, E-3, SKILL01-115, SKILL02-25, SKILL02-26); (d) `Rule 0-T` (a test must reach the changed path; cited by three production tests, defined nowhere); (e) superseded lessons kept forever (LESSONS-M1-6) vs Rule 31 | (a) 10-24b governs; (b) streaks go to the instrument ledger, not SESSIONS; (c) AGENTS and the light format govern, drop the dollar field; (d) define once under Rule 21; (e) tombstone like any artifact |
+| D1 | Adopt the 42 core rules (§3) | **Adopted with wording corrections, now in §3:** Rules 3–4 separate authority from performer (a card never grants an operator act; an agent performs one only under direction or a named standing GO; deletion follows its classification, Rule 31); Rule 10 carries #914's standing GO for the weekly preservation trade and its conditions; Rule 14 separates the historical MC literals (kept verbatim for the recall parser, never replaced by a re-MC) from protection change control, and the regime gate applies where its scope says; Rule 30 states the living/frozen split (living surfaces delete superseded wording and its marker; frozen evidence keeps its body and gets an upstream correction). |
+| D2 | Namespace scheme and legacy map (§4) | **Adopted.** Living citations take the new meaning; dated records keep theirs through the source-qualified legacy map; the switch and the migration are coordinated (§7). |
+| D3 | Who runs the pre-ratification refute-first pass | **Adopted:** Codex owns the mandatory substantive review; Claude panels are optional author input. The review keeps its scope — premises, calculations, gate evidence and contradictions — and an ordinary diff review does not cover milestone adjudication (Rule 5). |
+| D4 | **C1 — Track B and the CrossTrade route for Tradeify** (66 rows: the 2026-09-12 book-protection instance ADR, the ORB R2 supersession DRAFT, the venue-legality lane, the incident contract's option-B and R-read rows, and the Track B rows in AGENTS.md, STATE, the rail-GO ADR, the four-firm ADR and the c1-rail skill) | **Adopted with a stronger migration condition.** Before any source text is deleted, resolve each shared obligation and name its destination. Scope the instance ADR's supersession to Tradeify: the 2026-10-16 ruling preserves items serving the personal or native lanes. The host-side activation-gate obligation (TB-I3) gets a named surviving owner. Reusable regime-gate deviations (ADR13-65 to ADR13-69) keep their provenance and need explicit adoption before another instance uses them; moving their text authorizes nothing. |
+| D5 | **C2 — retired venues, feeds, vendors and the CFD/challenge-era estate** (31 rows) | **Adopted** for the enumerated operating rules. The Aegis pause removed is the manual event pause, not a Pine condition. |
+| D6 | **C3 — lesson-registry rows tied to retired surfaces** (15 rows) | **Adopted** for the 15-row scope. Lesson-governance changes stay under D10. |
+| D7 | **C4 — MSL sourcing channel** (7 rows) | **Adopted together with the channel's closure and required supersession:** the hard rung is met, and the acknowledgement and closing record are still owed, so the operating rules go only with that record. |
+| D8 | **C5** (38 frozen-control rows, each superseded or discharged by a named live owner) and **C6** (29 other dormant, discharged, executed or unclear rows) | **Not approved wholesale.** Each deletion PR separates demonstrated supersessions and completions (deleted) from rows whose deletion would cancel an unfinished obligation (listed for explicit retirement). **ADR01-45** (the self-check epsilon question deferred to issue #57; the production self-check still carries the epsilon) and **ADR11-37** (the M-19 reader correction the deep-lane charter requires, never landed) are excluded and kept as detail until completed or expressly retired. |
+| D9 | The 240 deletions with plain evidence | **Authorized** in verified batches. Each PR establishes its row-level claims and preserves readers and obligations under the existing retention checks (dependency scans, reader validation, full pytest); Track-B-dependent rows follow D4. |
+| D10 | Contradictions needing a choice (rows marked *per ruling D10* in the appendix) | (a) **CI credentials:** 10-24b governs its stated scope; the older §8 sentence (ADR05-98) concerns credentials CI grants Codex, the newer one keeps `claude.yml`'s permissions — reconcile by named actor and credential path, never as a general CI write grant. (b) **Losing streaks:** the instrument ledger for the disposition, SESSIONS for an actual judgment call; account figures and detailed trade evidence stay private. (c) **Lesson promotion:** adopt the light format and remove the mandatory dollar field and threshold; keep dated incident evidence and the high-severity or independently-recurring bar for standing guidance, and reconcile "once written it is in force" with that bar. (d) **`Rule 0-T`:** defined once under Rule 21 — "a regression test must exercise the changed production path and distinguish the defective behavior from the corrected behavior"; the legacy citations are repointed. (e) **Superseded lessons:** the existing retention and retrieval rules apply; keep needed evidence, repair surviving lesson references, no mandatory tombstone per deleted sentence. |
 
 ### 5.1 Rows behind D4–D8
 
@@ -401,14 +412,13 @@ evidence is from the classification pass; the full row also appears in Appendix 
 
 </details>
 
-<details><summary><b>C5 — Other frozen-control rows, each superseded or discharged by a named live owner</b>: 39 rows</summary>
+<details><summary><b>C5 — Other frozen-control rows, each superseded or discharged by a named live owner</b>: 38 rows</summary>
 
 | ID | File | Rule | Evidence |
 |---|---|---|---|
 | ADR01-2 | `adr/2026-04-17-dd-trigger-calibration.md` | Fire DD protection at the C0 trigger (1.0% drawdown from peak). | Superseded by docs/adr/2026-05-08-dd-trigger-c2-relock.md (header Superseded-in-part-by); live DD_TRIGGER=0.015 in core/dd_protection.py L80. |
 | ADR01-40 | `adr/2026-05-08-dd-trigger-c2-relock.md` | Pin the C2 MC anchor in tests/test_mc_anchors.py and tests/test_mvd_selfchecks.py. | tests/core/test_mc_anchors.py removed in substrate Phase 3 (2026-07-24) per docs/mc_anchor_history.md L3; synthetic engine test replaces. |
 | ADR01-44 | `adr/2026-05-10-dd-protection-ulp-rounding.md` | Re-run MC after the ULP fix to confirm the C2 anchor; drift beyond tolerance triggers a separate C2 re-evaluation ADR. | Discharged by docs/adr/2026-05-10-mc-c2-anchor-ratification.md: re-run delta 0.00pp, GH#55 closed. |
-| ADR01-45 | `adr/2026-05-10-dd-protection-ulp-rounding.md` | Audit other risk-control comparison sites for ULP defects (Pre-Q if three or more), re-evaluate historical state logs, and review the self-check epsilon. | #54 targets absent accounts.py, #56 absent dd_protection_state.json; issues in retired multi_firm_operations repo; #57 epsilon question still open (1e-4, L251). |
 | ADR01-52 | `adr/2026-05-10-mc-c2-anchor-ratification.md` | Do not repin anchor tests to bitwise-identical post-fix values as ceremonial confirmation. | Anchor pin tests deleted in substrate Phase 3 2026-07-24 (mc-c2 ratification Addendum 2026-08-29); nothing left to repin. |
 | ADR01-72 | `adr/2026-05-23-allocation-refresh-2.md` | Under the no-version-bump doctrine, a version label (v4.5, v1) denotes whatever the current Pine production parameters are. | Contradicted by stricter AGENTS.md §Strategy Authorization Lifecycle (locked parameters immutable) and pine-manifest pins; doctrine status unclear. |
 | ADR01-73 | `adr/2026-05-23-allocation-refresh-2.md` | Treat the refresh-2 MC anchor as the canonical calibration reference, pinned by tests/test_mc_anchors.py. | Superseded by AGENTS.md §Strategy Reference (historical record, not live claim) and mc_anchor_history.md L3; test pins deleted 2026-07-24. |
@@ -447,7 +457,7 @@ evidence is from the classification pass; the full row also appears in Appendix 
 
 </details>
 
-<details><summary><b>C6 — Other dormant, discharged, executed or unclear rows</b>: 30 rows</summary>
+<details><summary><b>C6 — Other dormant, discharged, executed or unclear rows</b>: 29 rows</summary>
 
 | ID | File | Rule | Evidence |
 |---|---|---|---|
@@ -470,7 +480,6 @@ evidence is from the classification pass; the full row also appears in Appendix 
 | ADR08-121 | `adr/2026-08-04-tradeify-venue-descope-eval-included.md` | Any §4 success claim resting on a Tradeify clearance must disclose the 2026-08-04 withdrawal and F1's ruling status; no unconditional claim while F1 is open. | Proposed/unratified; F1 ruled 2026-09-01 so 'while F1 open' cannot arise; disclosure practice carried by Addendum 2026-09-01 L550. |
 | ADR09-105 | `adr/2026-08-08-adr-ceremony-tiering.md` | Treat the former light-share target and its November-8 omitted-apparatus review as retired by policy replacement, not passed. | Historical Grounds note; grep finds light-share target/Nov-8 review only in this ADR and archived SESSIONS-2026-Q3; no live consumer. |
 | ADR09-117 | `adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md` | Do not reopen MNQDTL doors C1-C11, ORB-MNQ at Tradeify, either Striker leg, Aegis-6J admission, or any safety invariant. | Superseded: ORB/Aegis readmitted by operator selection 2026-09-10 and ORB route-native CANDIDATE 2026-09-25; remaining clauses held by withdrawal ADR, rejected_candidates. |
-| ADR11-37 | `adr/2026-08-16-deep-iteration-lane-charter.md` | Build --lane deep on register_search, add lane-scoping notes to strategy_harvest Clause-K and M-19, and add the lane row to the anomaly-discovery skill. | Steps 2-4 landed: register_search --lane deep, strategy_harvest.md L105 row, skill L123/148; only M-19 intercept missing, owed-or-drop is operator's. |
 | ADR11-57 | `adr/2026-08-21-cfo-subscription-ledger-consolidation.md` | KEEP pursuit records of subscription or venue-account meta-belt class must point to the ledger; the check WARNs only, with no severity escalation or class widening. | gates.yml L59-63 retired the pursuit-records check 2026-08-24 as always-exit-0; pointer duty is D1; manual script retained, operator's call. |
 | ADR12-44 | `adr/2026-08-26-striker-legmap-cap-release.md` | Set LEG_MAP cap_alloc for dj30_mym and nas100_mnq to 0, releasing the 80-micro account cap. | Executed: ops/c1_rail/c1_sizing_host_reference.py L108/L114 set cap_alloc 0 with release comments; allocation-adjacent, so operator confirms. |
 | ADR12-131 | `adr/2026-09-02-portable-edge-cultivation-campaign-objective.md` | Make the Confirm interval's first eligible bar strictly later than the founding-freeze commit; bars between the last source read and the freeze are excluded. | Campaign-scoped (§1.4) rule; campaign closed 2026-09-03b; candidate-contract freezes never adopted it. Operator decides whether to generalize. |
@@ -518,15 +527,20 @@ inventory agents with paths and are re-checked when repaired.
 ## 7. Sequence after the ruling
 
 Each step is one PR on a `claude/` branch, reviewed by Codex, budgeted under Rule 2 in its own
-description.
+description. Wording, the namespace transition and shared-obligation destinations settle before any
+deletion PR consumes them.
 
-1. **AGENTS.md §Core rules** (D1): add the 42 lines; cut the 104 absorbed AGENTS.md rows to links;
-   keep §Live-execution posture, §Protection and the MC literals in place.
-2. **Namespace** (D2): legacy map at the end of operational_rules.md; repoint living "Rule N"
-   citations; rename skill-local numerals.
-3. **Deletions with plain evidence** (D9), one PR per source group; each carries its rows' IDs.
-4. **Ruled deletions** (D4–D8), one PR per cluster, recording each supersession where its readers
-   meet it (Rule 30).
+1. **Namespace first** (D2): add the legacy map at the end of operational_rules.md and repoint living
+   citations to their source-qualified form (`operational_rules §7`, canon Rule 1, named skill
+   checks). No citation changes meaning in this step.
+2. **AGENTS.md §Core rules** (D1): add the 42 ruled lines; only now does a bare "Rule N" take the core
+   meaning. Cut the 104 absorbed AGENTS.md rows to links; keep §Live-execution posture, §Protection
+   and the MC literals in place.
+3. **Deletions with plain evidence** (D9), one PR per source group; each carries its rows' IDs and the
+   retention checks.
+4. **Ruled deletions** (D4–D8), one PR per cluster. D4 first names each shared obligation's
+   destination and scopes the instance ADR's supersession to Tradeify; D7 lands the MSL closing record
+   and supersession in the same PR; D8 PRs list cancellations separately from completions.
 5. **Repairs** (§6) and the D10 choices.
 6. **Detail moves**: the 278 detail rows whose owner should change, by destination owner.
 
@@ -716,7 +730,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 | OPS-3 | §2 L17 | Before authoring any brief, ADR or decision doc that specifies risk-control parameters, read the current production code first, not remembered state. | R0 abs |  |
 | OPS-4 | §3 L27 | If DXTrade is explicitly reactivated, verify contractValue=10 for DJ30 before any Striker trade. | R10 DEL⚖ | DXTrade/CFD retired by 2026-06-30 ADR, FXIFY DXTrade closed 2026-07-10 (core/csv_parser.py); value 10 survives in core/strategies/CATALOG.md locked table. |
 | OPS-5 | §4 L41 | Do not adjust parameters, reduce size or skip signals in response to 3+ consecutive losses on one strategy; treat it as normal variance. | R1 abs |  |
-| OPS-6 | §4 L45 | Log a losing streak in docs/SESSIONS.md (on the c1 rail, against M1 telemetry/fill evidence) and keep executing signals. | R1 det | pending D10(b) |
+| OPS-6 | §4 L45 | Log a losing streak in docs/SESSIONS.md (on the c1 rail, against M1 telemetry/fill evidence) and keep executing signals. | R1 det | per ruling D10(b) |
 | OPS-7 | §4 L45 | Consider intervention only if the streak exceeds the 5yr backtest p99, no regime shift explains it, and logs show a systematic issue. | R1 det |  |
 | OPS-8 | §5 L54 | Pine is the source of truth for strategy parameters; when any document disagrees, Pine wins and the document is fixed. | R14 abs |  |
 | OPS-9 | §5 L58 | Exceptions to Pine ownership: dd_protection.py parameters, firm_rules.py allocations and any active overlay live in the Python sizing layer. | R14 det |  |
@@ -737,7 +751,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 | OPS-24 | §7 L155 | Record executed operator decisions in STATE only as one-line decision-index bullets with an owner link, never dated narrative sections. | R34 abs |  |
 | OPS-25 | §7 L159 | Delete closed or retired STATE rows rather than striking them; detail stays with the owning decision record or closure. | R34 det |  |
 | OPS-26 | §7 L161 | SESSIONS.md is append-only history that links owners instead of duplicating values; its living header links to STATE for current work. | R34 abs |  |
-| OPS-27 | §7 L164 | Write a full SESSIONS entry only for a real judgment call; never add a session stub just to copy the live queue. | R34 det | pending D10(b) |
+| OPS-27 | §7 L164 | Write a full SESSIONS entry only for a real judgment call; never add a session stub just to copy the live queue. | R34 det | per ruling D10(b) |
 | OPS-28 | §7 L167 | Keep AGENTS.md §Live-execution posture a pointer block: a new posture decision adds one pointer line with owner link, not a retelling. | R29 abs |  |
 | OPS-29 | §7 L171 | The AGENTS.md MC-anchor triple and §Protection are canonical owners resident there (recall guard regex-reads the triple), not mirrors; do not relocate them. | R14 det |  |
 | OPS-30 | §7 L177 | README.md links out everywhere; its public-clone note is a one-liner pointing at AGENTS.md §Public-clone posture. | R29 abs |  |
@@ -1257,7 +1271,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 | SKILL01-112 | §Known traps L257 | Re-verify reused anchors (SHAs, line numbers, headings) with a §10 grep confirming each still resolves. | R0 abs |  |
 | SKILL01-113 | §Known traps L257 | Never cite a historical Notion page ID as an anchor; resolve it via docs/governance/notion-redirect-map.md and cite the repo owner. | R29 det |  |
 | SKILL01-114 | §Known traps L259 | Connect a new brief's §1 Context to existing doctrine (core principles, lessons registries, prior ADRs) wherever any exists. | R33 det |  |
-| SKILL01-115 | §Known traps L261 | A lesson graduates only with a dated incident plus dollar cost or counterfactual meeting the bar (single incident above $3K or three separate firings); otherwise it stays candidate. | R33 det | → docs/methodology/lessons/execution_lessons.md (Promotion criteria) · pending D10(c) |
+| SKILL01-115 | §Known traps L261 | A lesson graduates only with a dated incident plus dollar cost or counterfactual meeting the bar (single incident above $3K or three separate firings); otherwise it stays candidate. | R33 det | → docs/methodology/lessons/execution_lessons.md (Promotion criteria) · per ruling D10(c) |
 | SKILL01-116 | §Known traps L263 | Give every promised check a meaningful action and a date or wake condition; migrate or retire obsolete checks; never attach a quarterly obligation to an ADR by default. | R32 det |  |
 | SKILL01-117 | §Known traps L265 | Gate one question per Pre-Q; split multi-question briefs, or for coupled questions name the parent and fork ungated sub-questions (parent-Q convention). | R9 det |  |
 | SKILL01-118 | §Known traps L267 | Never amend §6 gate criteria mid-investigation; close the brief AMBIGUOUS, record why, and open a fresh brief with the new criteria stated up front. | R23 det |  |
@@ -1388,8 +1402,8 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 |---|---|---|---|---|
 | SKILL02-23 | Header L3-8 | Classify lessons E/M/B/O with status Candidate, Standing rule or Retired (superseded or no longer applicable), in the matching registry file. | R33 det |  |
 | SKILL02-24 | Pattern L14 | State a lesson's pattern as a one-sentence recurring failure mode, not a dated story. | R33 det |  |
-| SKILL02-25 | Anchor incidents L22-33 | Promote a lesson only with dated incidents and dollar cost or counterfactual meeting the gate: one incident above the dollar threshold, or three firings in separate windows; else Candidate. | R36 det | pending D10(c) |
-| SKILL02-26 | Anchor incidents L33 | Bypass the empirical promotion gate by structural argument only rarely, with explicit justification for the bypass. | R36 det | pending D10(c) |
+| SKILL02-25 | Anchor incidents L22-33 | Promote a lesson only with dated incidents and dollar cost or counterfactual meeting the gate: one incident above the dollar threshold, or three firings in separate windows; else Candidate. | R36 det | per ruling D10(c) |
+| SKILL02-26 | Anchor incidents L33 | Bypass the empirical promotion gate by structural argument only rarely, with explicit justification for the bypass. | R36 det | per ruling D10(c) |
 | SKILL02-27 | Repair L41 | Write each lesson's repair as a present-tense imperative rule that would have prevented its anchor incidents. | R33 det |  |
 | SKILL02-28 | Repair L43-50 | Name the lesson rule's canonical enforcement point (skill, template, check_brief, operational checklist, calendar); without one, flag it and find a surface or keep it Candidate. | R33 det |  |
 | SKILL02-29 | Cross-references L54 | Record briefs citing, skills enforcing, related and superseded lessons for each lesson. | R33 det |  |
@@ -2530,7 +2544,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 
 </details>
 
-<details><summary><code>docs/adr/2026-05-10-dd-protection-ulp-rounding.md</code> — 5 rules: 0 absorbed, 3 detail, 2 delete</summary>
+<details><summary><code>docs/adr/2026-05-10-dd-protection-ulp-rounding.md</code> — 5 rules: 0 absorbed, 4 detail, 1 delete</summary>
 
 | ID | Where | Rule | → | Note |
 |---|---|---|---|---|
@@ -2538,7 +2552,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 | ADR01-42 | Asymmetry of error costs L57-66 | When risk-control error costs are asymmetric, resolve boundary or precision ambiguity toward the conservative-of-trader reading: inclusive boundary, fire early. | R14 det |  |
 | ADR01-43 | Alternatives 4 L110 | Keep risk-control and lock-change PRs strictly scoped: no drive-by edits at other comparison sites or bundled unrelated lock changes; surface those via deliberate audit. | R14 det | → docs/operational_rules.md §6 |
 | ADR01-44 | Consequences L79; Follow-up #55 L101 | Re-run MC after the ULP fix to confirm the C2 anchor; drift beyond tolerance triggers a separate C2 re-evaluation ADR. | R14 DEL⚖ | Discharged by docs/adr/2026-05-10-mc-c2-anchor-ratification.md: re-run delta 0.00pp, GH#55 closed. |
-| ADR01-45 | Follow-ups #54/#56/#57 L100-103 | Audit other risk-control comparison sites for ULP defects (Pre-Q if three or more), re-evaluate historical state logs, and review the self-check epsilon. | R14 DEL⚖ | #54 targets absent accounts.py, #56 absent dd_protection_state.json; issues in retired multi_firm_operations repo; #57 epsilon question still open (1e-4, L251). |
+| ADR01-45 | Follow-ups #54/#56/#57 L100-103 | Audit other risk-control comparison sites for ULP defects (Pre-Q if three or more), re-evaluate historical state logs, and review the self-check epsilon. | R14 det |  |
 
 </details>
 
@@ -3377,7 +3391,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 | ADR05-95 | §8 L497; Addendum 2026-09-27 L832 | Never retro-fit a brief after the build to make the record compliant; record a dated deviation instead. | R33 abs |  |
 | ADR05-96 | §8 L494 | Never hand off a verbal spec; the brief is the containment, whatever the worker. | R33 det |  |
 | ADR05-97 | §8 L498; Grounds L384-386, L409-411 | Never ground routing doctrine in unverified vendor benchmark, pricing or marketing claims. | R0 abs |  |
-| ADR05-98 | §8 L504 | Grant Codex no write or push credential in this repository's CI without a superseding ADR. | R12 det | pending D10(a) |
+| ADR05-98 | §8 L504 | Grant Codex no write or push credential in this repository's CI without a superseding ADR. | R12 det | per ruling D10(a) |
 | ADR05-99 | §8 L504-505, L523 | Keep Codex's native review as the executive's independent signature; revert by toggling the account setting if it proves lower-signal than Claude's over 8 weeks. | R5 det |  |
 | ADR05-100 | §8 L506 | If two proactively dispatched tasks in 8 weeks needed operator judgment the coordinator lacked, revert to per-task dispatch confirmation. | R41 det |  |
 | ADR05-101 | §4 L574-577, L582 | If two or more merged worker PRs in 8 weeks carry spec-interpretation defects, supersede with a tightened rule (narrower scope or full coordinator re-verification). | R4 det |  |
@@ -4549,7 +4563,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 
 </details>
 
-<details><summary><code>docs/adr/2026-08-16-deep-iteration-lane-charter.md</code> — 40 rules: 6 absorbed, 26 detail, 8 delete</summary>
+<details><summary><code>docs/adr/2026-08-16-deep-iteration-lane-charter.md</code> — 40 rules: 6 absorbed, 27 detail, 7 delete</summary>
 
 | ID | Where | Rule | → | Note |
 |---|---|---|---|---|
@@ -4589,7 +4603,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 | ADR11-34 | §5 L131 | Never waive the floor predicate per campaign, shorten the confirm after seeing train results, or recompute the floor at friendlier years post hoc. | R23 det |  |
 | ADR11-35 | §7 step 1 L150 | File each lane prereg as docs/briefs/pre-registration/*deep-lane*.md with all §2.2 conjuncts, half-split, nomination rule, SPA thresholds, cost-law and attestations; cite its path on the running-count line. | R23 det |  |
 | ADR11-36 | §7 step 1 L150 | Obtain a separate operator GO for each lane prereg freeze and for the confirm read, beyond the charter GO. | R3 det |  |
-| ADR11-37 | §7 steps 2-4 L151 | Build --lane deep on register_search, add lane-scoping notes to strategy_harvest Clause-K and M-19, and add the lane row to the anomaly-discovery skill. | R23 DEL⚖ | Steps 2-4 landed: register_search --lane deep, strategy_harvest.md L105 row, skill L123/148; only M-19 intercept missing, owed-or-drop is operator's. |
+| ADR11-37 | §7 steps 2-4 L151 | Build --lane deep on register_search, add lane-scoping notes to strategy_harvest Clause-K and M-19, and add the lane row to the anomaly-discovery skill. | R23 det |  |
 | ADR11-38 | Addendum 2026-08-16 L238 | Bar-schema Databento pulls need only the campaign's operator GO; tbbo or finer needs bar survival, explicit --max-cost and operator sign-off; an estimate never authorizes a pull. | R18 DEL⚖ | References retired Databento pulls: retired and unsubscribed 2026-09-10, no replacement approved (AGENTS.md data source). |
 | ADR11-39 | Addendum 2026-08-16 L254 | Reuse the ratified 2018-12-31 IS boundary for TRAIN/CONFIRM splits; never re-derive or re-strike it. | R23 det | → docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md §1 item 1 |
 | ADR11-40 | §10 L162 | An ADR must not read Accepted without an operator GO line in its change history. | R32 abs |  |
@@ -5653,8 +5667,8 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 | ID | Where | Rule | → | Note |
 |---|---|---|---|---|
 | LESSONS-E-1 | Header L3 | Treat execution_lessons.md as the single canonical registry for E-class (execution) behavioral lessons; cite it, not skill copies. | R29 abs |  |
-| LESSONS-E-2 | Header L4-9 | Anchor every execution lesson to a dated incident, a dollar cost or counterfactual gain, an imperative rule statement, and a named Step-6 watch-point. | R33 det | → .claude/skills/brief-authoring/references/lesson_capture.md · pending D10(c) |
-| LESSONS-E-3 | Promotion criteria L11-14 | Promote a candidate execution lesson only on a single incident costing over $3K or the same pattern firing across three separate review windows. | R33 det | → .claude/skills/brief-authoring/references/lesson_capture.md · pending D10(c) |
+| LESSONS-E-2 | Header L4-9 | Anchor every execution lesson to a dated incident, a dollar cost or counterfactual gain, an imperative rule statement, and a named Step-6 watch-point. | R33 det | → .claude/skills/brief-authoring/references/lesson_capture.md · per ruling D10(c) |
+| LESSONS-E-3 | Promotion criteria L11-14 | Promote a candidate execution lesson only on a single incident costing over $3K or the same pattern firing across three separate review windows. | R33 det | → .claude/skills/brief-authoring/references/lesson_capture.md · per ruling D10(c) |
 | LESSONS-E-4 | Demotion criteria L16-19 | Demote a promoted lesson only after 12+ months without its watch-point firing and once the structural condition producing it no longer exists. | R33 DEL⚖ | Inoperative: 2026-08-14 freeze bars the 12-month clock; only E1/E2 promoted, feeder journal_review.py absent. Operator chose MARK-DORMANT over delete (2026-08-08 audit item 6). |
 | LESSONS-E-5 | Freeze notice L21-25 | Treat E1-E4 promotion and demotion as frozen; do not promote or auto-demote them on firings or the 12-month clock, since the watch-point feeder is retired. | R28 det |  |
 | LESSONS-E-6 | E1 Rule L43-46 | Never skip a valid system signal on a macro-volatility forecast; the filter stack already handles volatility regime, so make no discretionary macro-thesis overrides. | R1 abs |  |
@@ -5685,7 +5699,7 @@ Inventory base `3feb596`, reconciled to `b8524d17`. Columns: **ID** (chunk-numbe
 | LESSONS-M1-3 | §Format spec L37 | Author new M-class lessons in the light format: Date/Anchor, What broke, one-sentence imperative Rule, optional Mechanism, Link. | R33 det |  |
 | LESSONS-M1-4 | §Format spec L38 | Do not retroactively rewrite legacy 8-field lesson entries (M-7 onward, pre-2026-08-29) into the light format; keep them unedited. | R33 det |  |
 | LESSONS-M1-5 | §Format spec L52 | Add a lesson only when a real incident earns it; once written it is in force, with no promotion ceremony, dollar threshold or CANDIDATE/PROMOTED tracking. | R36 abs |  |
-| LESSONS-M1-6 | §Format spec L53 | Never delete a superseded lesson; keep it and mark '[SUPERSEDED — see M-N]' at its own top. | R30 det | pending D10(e) |
+| LESSONS-M1-6 | §Format spec L53 | Never delete a superseded lesson; keep it and mark '[SUPERSEDED — see M-N]' at its own top. | R30 det | per ruling D10(e) |
 | LESSONS-M1-7 | §Legacy format L56; per-lesson Promotion criteria | Promote legacy lessons CANDIDATE to PROMOTED on a second independent firing or a >=$3K cost, updating the Cost section at each firing. | R33 DEL | Superseded by the 2026-08-29 light-format rule (methodology_lessons.md L52): no promotion ceremony, dollar threshold or CANDIDATE/PROMOTED state machine. |
 | LESSONS-M1-8 | §File ownership L63 | Edit this lesson file first; the brief-authoring skill is downstream and inherits changes on next sync (repo wins). | R29 abs |  |
 | LESSONS-M1-9 | §Migration plan L72 | Migrate M-1..M-6 from Notion/memory into this file on first cite; until then treat those external pointers as authoritative. | R33 DEL | M-1..M-6 have zero headings (2026-08-08 conventions audit L249); Notion made read-only by ADR 2026-06-12; migration never fired. |
