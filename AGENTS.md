@@ -215,7 +215,7 @@ the operator's primary checkout (from a worktree, by that checkout's absolute pa
 Never copy them into a worktree, commit or quote their bodies or values, edit them,
 or pass them to any external service
 ([campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
-The single exception covers the ports and `effective_inputs.json` (not Pine), copied to the Joshua-controlled Windows VM only for the runs, and on the terms, that the [§60 VM addenda](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) (2026-10-07 onward) admit.
+The single exception covers the ports and `effective_inputs.json` (not Pine), copied to the Joshua-controlled Windows VM only for the runs, and on the terms, that the [§60 VM addenda](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) (2026-10-07 onward) admit; the [VM policy](docs/governance/azure-compute-vm-policy.md) owns the standing host rules.
 
 ### Vendor-data integrity gate
 
