@@ -152,6 +152,25 @@ relative `--env`/`FP_OPS_ENV` resolved against the caller's directory; launcher
 options are never abbreviated. Completion is still judged only from `record.json` as before: poll
 it, and accept nothing but `completed` with verification exit zero.
 
+### Azure VM deallocation watcher
+
+The session that starts the Azure compute VM verifies `VM deallocated` before its
+turn ends (Joshua, 2026-10-24). For runs of up to 12 hours, keep the PC plugged in
+and this watcher running for the whole allocation, started before or right after
+the VM starts (with Joshua's `az login`):
+
+```powershell
+.\fp.ps1 python scripts/azure_vm_watch.py --hours 6
+```
+
+It only reads power state and calls `az vm deallocate`. It deallocates at the
+deadline, at the weekly dollar cap (default $125 at $2.90/h, counting only time
+it watched, by UTC week from Monday), when the VM is stopped but still allocated,
+or after 10 minutes of unreadable power state. It keeps the PC awake while it
+runs, exits 0 once the VM is verified deallocated or has not started within the
+grace period, and exits 2 with `.cache/azure-vm-watch/ALARM.txt` if deallocation
+cannot be verified. Run one watcher per VM; it never prints the subscription ID.
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via
