@@ -232,41 +232,9 @@ calibrated system, not a detachable post-hoc overlay. The 44.9% panel
 trigger frequency from the trace above is therefore a property of the same
 system whose pass/bust numbers are anchored.
 
-**Pre-staged Forward question — category-gap fix vs live-monitor.** The
-2025-02-07 result is a structural category gap, not a configuration miss:
-`dd_protection`'s daily cadence cannot, by construction, attenuate a
-fresh-peak single-trade outlier. Two structurally distinct responses are
-on the table; do not decide now (`dd_protection` constants are
-out-of-scope for this brief), but pre-stage the choice so the next
-allocation review or 6-month live reconciliation walks into a known
-question, not a fresh one:
-
-  1. **Within-day per-trade hard-cap** — a separate tripwire layered on
-     top of the existing daily-cadence rule, capping any single trade's
-     realized loss at e.g. 2.0% of equity at entry. Closes the category
-     gap by construction. Cost: adds operational surface area, requires
-     re-MC to confirm the cap value does not over-attenuate Striker's
-     pyramid-driven PF (94% of historical Striker profit sits above the
-     cap-clip threshold for the largest pyramid stacks).
-  2. **Leave the rule and observe live** — accept that the gap is real
-     but the base rate of fresh-peak single-trade outliers is, in the
-     panel, exactly one event in four years. With n=1, the conditional
-     probability of a *second* outlier inside the budget-consumption
-     window of a first is unestimable from history (you would be fitting
-     a Poisson on n=1). The honest framing is that this question may be
-     decidable **only from live data** — meaning the gap cannot be closed
-     pre-launch and has to be monitored live with a tripwire (e.g., an
-     alert that fires when any single trade exceeds 2.0% of equity at
-     entry, even if `dd_protection` itself does not engage).
-
-The choice is between closing-by-construction (option 1) and
-closing-by-observation (option 2 with a live tripwire). Option 2 is
-cheaper today and falsifiable in 6 months from live data; option 1 is
-permanent insurance whose price (potential PF drag on pyramid extensions)
-is currently unquantified. Tagged Forward, gated downstream on either
-allocation review or 6-month live reconciliation, whichever fires first.
-Tradeify election owner (this CFD-era fork is not the
-live option set): [`Q-TRADECAP-2`](../briefs/Q-TRADECAP-2-per-trade-bound-election.md)
+**Per-trade bound.** The 2025-02-07 result is a structural category gap: `dd_protection`'s daily
+cadence cannot attenuate a fresh-peak single-trade outlier. The per-trade bound is elected for
+Tradeify under [`Q-TRADECAP-2`](../briefs/Q-TRADECAP-2-per-trade-bound-election.md)
 · [`elect-2`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md)
 · [`closure`](../briefs/closures/Q-TRADECAP-2-closure-resolved.md).
 

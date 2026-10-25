@@ -237,17 +237,12 @@ Each of these is an opportunity to **explicitly run the gate and log the audit t
 
 **Update 2026-05-05 — second conscious test (post-reactivation).** The Q-NAS series for Striker NAS100 v1 production clearance. 5 Inquire-phase questions (Q-NAS-1 through Q-NAS-5), 0 forbidden D-tests detected, mandatory §3 headers authored on every brief. Two memory drifts surfaced and resolved before propagation (DJ30 v4.4 → v4.5; Striker NAS100 B_15 → FINAL_LOCK). One methodology assumption verified on first principles (NAS 1R Striker-class branch confirmed at `portfolio_mc.py:122-127` with full-stop n=25, well above the n=5 fallback). Production lock cleared with comfortable margin on every gate (Pass 98.13% / Bust 0.22% / p99 DD 4.49%). This is the framework's first multi-turn dual-loop deployment with web Claude in the Inquire role and Code in the executor role; the handoff held without canon corruption. Reflect entry (carried into the 2026-07-29 rebound check): Reflect — Striker NAS100 v1 dual-loop closure (Notion `357dc0b53c118124a3ddf811d1d50745`; page retired/404 — resolved in `docs/governance/notion-redirect-map.md`; closure summary in §9 above).
 
-### Backfill discipline (added v2, 2026-04-27)
-
-Q1, Q5, and Q8 were drafted before the v2 Sources Read declaration block was codified. Each must add the §3 Sources Read block before its execution audit fires. The drafting Sources Read block is paired with an execution-time Sources Read block in the audit. The 2026-04-27 Q-meta-a brief is retrospectively annotated rather than re-run; its cited gate-audit path was never instantiated (see §Status) — related Case B audits: `git show pre-prune-2026-06-05:archive/docs/methodology/archive/gate_audits/`.
-
 ## 10. Integration with existing infrastructure
 
 - **Rule 0 (audit-first for source-fidelity)** — originally codified in `prop-firm-challenge` skill for risk-control decisions, now operative across all methodology work via the §3 Sources Read declaration block. Production-source reads (code, prior chats, prior briefs) come before any decision brief or audit. The gate operates on what Rule 0 surfaces, not memory. Weakening language ("spirit," "weakened form," "analogue") is not authorized; see §3 forbidden patterns. The 2026-04-17 risk-control incident chain (Notion `346dc0b53c11816085bbf2292be934cc`; page retired/404 — superseded by `docs/adr/2026-04-17-dd-trigger-calibration.md` + `docs/adr/2026-04-17-equity-tier-deletion.md`; see redirect map) and the 2026-04-27 methodology-layer Q-meta-a incident establish two domain instances of the same failure pattern.
 - **Rule 1 (small-cell variance prior) still binds.** Small cohorts trigger caution at the Observe / Reflect phase regardless of how the gate filtered the corpus.
 - **Overlay policy is unchanged.** No overlays without full INQHIORI. The gate is the front of that loop, not a relaxation of the back.
 - **Observation routing** operates *after* the pre-Q gate — observations that pass the gate get routed to a decision. The two gates compose; they don't compete. ⚠ **Corrected 2026-08-15** ([`ADR`](../adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md)): narrative observations (findings, anomalies, "interesting things") route via the Notice-log convention (`docs/notes/notice/N-YYYY-MM-DD-slug.md`, `GRADUATE / DROP / HOLD`) — `observation_routing.md`'s Closed/Action/Forward vocabulary did not displace it in practice and now governs only one mechanical gate (`scripts/verify_lock_anchors.py`), not narrative routing.
-- **Trade journal** entries that derive from a gated INQHIORI loop reference the gate audit slug.
 - **Audit trail location:** `docs/notes/audits/YYYY-MM-DD_gate_<slug>.md`. Required fields: deleted items, D-test applied, S-compression rationale, A-index used, regret events. Historical Case B audits (pre-2026-06-05 archive): `git show pre-prune-2026-06-05:archive/docs/methodology/archive/gate_audits/`.
 
 ## 11. What this does not change
@@ -273,7 +268,6 @@ This document codifies methodology. It governs how future loops are run, not wha
 - **First test case:** Claude Code brief — 1R diagnosis + Open Questions reorder + Notice phase compression — 2026-04-25 — Notion `34ddc0b53c1181199976c9b1b4effb17` (page retired/404 — superseded by `docs/methodology/observation_routing.md`; see redirect map)
 - **Repo touchpoints:**
   - Gate-audit write-target (live): `docs/notes/audits/YYYY-MM-DD_gate_<slug>.md`. Historical directory `docs/methodology/gate_audits/` was archived 2026-04-29 and evicted 2026-06-05 — recover via `git show pre-prune-2026-06-05:archive/docs/methodology/archive/gate_audits/` (Case B example: `2026-04-25_q3_halt_rules_design_skew.md`)
-  - `CLAUDE.md` — update at commit to reference THIS FILE as the primary methodology entry point (previously referenced the Notion page)
   - This file supersedes the unexecuted `docs/methodology/inqhiori_dsa_gate.md` mirror plan noted in the archive README.
 
 ## 13. Usage notes for Claude Code and web Claude

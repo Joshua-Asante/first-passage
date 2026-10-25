@@ -59,10 +59,6 @@ locked 2026-04-23 (Hormuz overlay deactivated). Discretionary skips on macro
 thesis are operationally equivalent to a regime overlay applied at execution
 time. Same failure mode, different layer.
 
-**Watch-point:** `check_macro_skip` in `scripts/journal_review.py`. Fires when
-skip rate on tier-1 macro days (CPI/FOMC/NFP/BOJ) exceeds baseline by 1.5×
-with at least 2 macro-day skips in the window.
-
 **Output trigger:** When E1 fires, the watchlist message references this lesson
 by name and dollar cost. Do NOT re-derive the rule each time — the registry is
 the source.
@@ -106,12 +102,6 @@ winner mechanism, because the BE trigger fires on the original entry price;
 sub-entries at later prices have different effective BE points and degrade the
 BE conversion rate.
 
-**Watch-point:** `check_discretion_on_largest` in `scripts/journal_review.py`.
-Fires when TAKEN-DISCRETIONARY events concentrate on the highest-allocation
-strategy with at least 2 events and >50% concentration. Aegis-specifically,
-the multi-fill-on-single-signal pattern (which the pairing logic flags
-automatically for non-pyramid arch).
-
 **Output trigger:** When E2 fires, the watchlist message references this
 lesson by name. The discretionary detail line shows the multi-fill count
 and aggregate gap, anchoring the abstract pattern to concrete dollar cost.
@@ -144,11 +134,6 @@ post-hoc rationale led to a recurring failure pattern (n=3 firings of the
 same masked-skip pattern), or a single incident where post-hoc rationale
 produced a wrong decision with measurable cost.
 
-**Watch-point:** Indirect — when MISSING rationale appears for ≥3 skips in a
-single review window, that's evidence the discipline isn't operationalized.
-Three consecutive review windows with ≥3 MISSING rationales each would
-trigger promotion.
-
 ---
 
 ## E4 — Entry latency from manual SL/size adjustment (feed-realign lag)
@@ -165,32 +150,7 @@ trigger promotion.
 
 **Connection to standing doctrine:** Execution-layer instantiation of the N-2026-05-29 feed-divergence Notice (`docs/notes/notice/N-2026-05-29-pepperstone-alchemy-feed-divergence.md`) — that Notice tracks price-basis divergence; E4 tracks the execution-latency cost it induces. Reinforces fxify-challenge Core Principle 1 ("trade the system") — the system assumes a fire-time fill, not a fire-plus-manual-adjustment fill.
 
-**Watch-point:** Entry-slippage on TAKEN-ON-SPEC fills (Step 4 per-trade gap) — a cluster of adverse entry slippage on the same broker feed. Surfaces in the weekly deviation table, not one of the four named Step-6 checks. Flag when ≥2 trades in a window show material adverse entry slippage attributable to feed-realign latency.
-
 **Promotion criteria:** CANDIDATE → PROMOTED on EITHER (a) a single entry-latency execution gap >$3K, OR (b) the pattern firing across three separate review windows. This is firing 1 of 3.
-
----
-
-## Candidate watch-list (insufficient firings, not yet candidates)
-
-These are observations that *might* graduate to candidates if the pattern
-recurs. Do NOT cite as lessons; do NOT add to the registry until a clear
-incident anchors them.
-
-- **Size-cutting bias.** Hypothesis: when uncertain, the trader executes at
-  smaller size than the alert specifies, capping upside without proportionally
-  reducing downside. No anchored incident yet. Watch via the size-deviation
-  field in TAKEN-DISCRETIONARY classification.
-
-- **Early-exit-on-winner bias.** Hypothesis: closing winners before TP triggers
-  a regret-avoidance pattern. No anchored incident yet. Watch via exit-time
-  deviation in TAKEN-DISCRETIONARY classification (close_time materially
-  earlier than backtest exit_time).
-
-- **First-trade-of-day-skip bias.** Hypothesis: the first FIRE alert of any
-  trading day has a higher skip rate than subsequent alerts within the same
-  day. No anchored incident; would need pattern detection across dozens of
-  trading days.
 
 ---
 
@@ -211,10 +171,6 @@ These lessons interlock with standing doctrine in `fxify-challenge`:
   E1 is the execution-layer manifestation. The Hormuz overlay was rejected
   at the strategy layer; E1 catches the same logic re-entering at the
   execution layer.
-
-The execution-lesson registry should therefore be read with `fxify-challenge`'s
-Core Principles section nearby — they are the same doctrine at different
-abstraction layers.
 
 ---
 
