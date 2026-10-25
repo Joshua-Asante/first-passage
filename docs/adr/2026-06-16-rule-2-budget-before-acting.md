@@ -102,7 +102,7 @@ Thresholds are validated **forward, never by retrodiction.** Retrodiction onto p
 5. **"While I'm in here" canon edits.** Editing anything in `inqhiori-canon.md` beyond the Rule 2 insertion points (§15 + §12 pointer + §14 mirror line). The diff must be insertion-only.
 6. **Building a Rule-2 telemetry subsystem** (dashboard / logger / metrics module). The validation instrument is one table. Proposing more is itself a Rule-2 violation — over-spending on the rule about not over-spending — and is the explicit tripwire on authoring this commit.
 7. **Renaming the existing canon Rule 1 (small-cell variance prior) to free up "Rule 1."** Rejected at adjudication: it edits a live hard rule (not insertion-only) and is the exact "while-I'm-in-here" creep move #5 forbids. The new rule took the next free numeral instead.
-8. **Deconflicting the three "Rule N" namespaces here** (canon vs `regime_robustness_gate.md` vs `operational_rules.md`). Out of scope — a separate STRATEGIC act. This ADR only commits Rule 2 into the canon namespace and records the fragmentation in §0.
+8. **Deconflicting the three "Rule N" namespaces here** (canon vs `regime_robustness_gate.md` vs `operational_rules.md`). Out of scope — a separate STRATEGIC act. This ADR only commits Rule 2 into the canon namespace and records the fragmentation in §0. **Lifted 2026-10-25 for the rule consolidation** ([Addendum 2026-10-25](#addendum-2026-10-25--58-lifted-for-the-rule-consolidation)).
 
 ---
 
@@ -124,7 +124,7 @@ Thresholds are validated **forward, never by retrodiction.** Retrodiction onto p
 - Every future artifact may now declare a Rule-2 budget in its header alongside its Loop-of-Record; the magnitude follows directly from the LoR. This very ADR carried one (OUTER, 8 iterations — landed at iteration ~3, no overrun).
 - The programme-audit checklist gains one item: read `docs/notes/audits/rule-2-trip-log.md`; confirm ≥1 entry per active loop class (else flag the rule inert per §4) and check whether the wire fired at hindsight-correct stops.
 - The trip-log becomes the calibration data source; no new artifact type beyond the single table is licensed.
-- Rule-numbering fragmentation (§0) is now documented but unresolved; a future STRATEGIC pass may deconflict the three namespaces (forbidden to do so here, §5.8).
+- Rule-numbering fragmentation (§0) is now documented but unresolved; a future STRATEGIC pass may deconflict the three namespaces (forbidden to do so here, §5.8; [lifted 2026-10-25](#addendum-2026-10-25--58-lifted-for-the-rule-consolidation) for the rule consolidation).
 
 ---
 
@@ -407,6 +407,17 @@ expand silently or weaken acceptance.
 **Trip-log.** Rows still record only trips, plus the baseline of an INQHIORI investigation; other
 work that finishes under budget writes no row. Trips from non-INQHIORI work are logged like any
 other, and INNER trips are the class §6 still lacks.
+
+## Addendum 2026-10-25 — §5.8 lifted for the rule consolidation
+
+**Operator ruling (Joshua, 2026-10-25):** "keep §5.7, lift §5.8 for the consolidation".
+
+- **§5.8 is lifted for the 2026-10-24 rule consolidation only.** That consolidation is the
+  STRATEGIC pass §7 anticipated and may deconflict the "Rule N" namespaces (canon,
+  `operational_rules.md`, `regime_robustness_gate.md`, skill-local) and renumber or rename their
+  citations. Outside that pass, §5.8 still stands.
+- **§5.7 stands:** canon Rule 1 (small-cell variance prior) keeps its numeral; the consolidation
+  may not rename it to free "Rule 1".
 
 ---
 
