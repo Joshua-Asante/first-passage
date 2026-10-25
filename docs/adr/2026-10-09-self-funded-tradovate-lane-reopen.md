@@ -8,6 +8,7 @@
 **Retain-until:** none
 **Format:** concise
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR13-124, ADR13-147); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D4 added owed item 8 (host-side activation gate, migrated from Track B's TB-I3; Addendum 2026-10-25); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ## Decision
 
@@ -83,7 +84,7 @@ first live order on the personal account:
 
 ## Current owner
 
-This ADR owns the lane's scope until a campaign or plan owner is named for items 1–7;
+This ADR owns the lane's scope until a campaign or plan owner is named for items 1–8;
 [STATE.md](../../STATE.md) carries the forward row. Venue rules stay with
 [`core/firm_rules.py`](../../core/firm_rules.py); feed questions with the
 [feed-provider note](../notes/2026-10-03-feed-provider-questions-narrowed-DRAFT.md).
@@ -146,3 +147,10 @@ Support's 20:19Z reply on 2026-10-12, recorded at the [route owner](../briefs/ha
 
 **Effect on item 5:** none. The §6.6 reading (addendum 2026-10-11b) and the binding §6.7 opposing-exposure restriction, switch check and ownership evidence are unchanged. The personal lane's own broker/API, data, qualification and readiness gates are unchanged.
 
+## Addendum 2026-10-25 — owed item 8, host-side activation gate (from TB-I3)
+
+**Ruling** (Joshua, 2026-10-25, rule consolidation D4, [plan §5](../superpowers/plans/2026-10-25-rule-consolidation-step-1.md#5-rulings-joshua-2026-10-25)): the host-side activation-gate obligation (TB-I3) gets a named surviving owner. Its Track B owner was [superseded for Tradeify 2026-10-16](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify); this ADR now owns it for the rail.
+
+8. **Host-side activation gate.** The rail host itself refuses activation (booting with `dry_run=false`, or enabling risk-add) unless the instance's M1 acceptance and its other arm gates hold. Today `c1_rail_http_server.load_config` does not check M1, so editing the `/data` config bypasses the arm helper's interlock ([AGENTS.md §Live-execution posture](../../AGENTS.md#live-execution-posture)). Item 8 gates the first live order on the personal account, with items 1–7.
+   - *Design inputs, not adopted requirements:* the [instance ADR](2026-09-12-tradeify-book-protection-instance-admission.md) §2b validator, T11 effective activation and its 2026-10-11 addendum; the [synthetic interlock card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md); and the [incident ADR](2026-09-17-bounded-platform-protection-incident-contract.md) §A12.5 items it assigns to TB-I3 (the stale-evidence latch and the halt-on-unknown implementation), where this lane's instance uses the rail.
+   - Nothing is implemented, armed or authorized by this addendum.
