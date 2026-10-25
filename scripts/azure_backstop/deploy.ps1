@@ -43,7 +43,8 @@ $principal = $a.identity.principalId
 'role'
 $role = @{ Name = $roleName; IsCustom = $true
     Description = 'Read status and CPU metrics of the compute VM and deallocate it; nothing else.'
-    Actions = @('Microsoft.Compute/virtualMachines/read', 'Microsoft.Compute/virtualMachines/deallocate/action',
+    Actions = @('Microsoft.Compute/virtualMachines/read', 'Microsoft.Compute/virtualMachines/instanceView/read',
+                'Microsoft.Compute/virtualMachines/deallocate/action',
                 'Microsoft.Insights/metrics/read', 'Microsoft.Insights/metricDefinitions/read',
                 'Microsoft.Insights/eventtypes/values/read')
     NotActions = @(); AssignableScopes = @($rgId) }
