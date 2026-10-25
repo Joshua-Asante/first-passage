@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR09-44); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Related:** [`strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) Call 1 / Call 5 · [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) · ORB decay seed [`RESULTS_decay_monitor.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor.md) · replay consumer [`RESULTS_decay_monitor_replay.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_decay_monitor_replay.md) · Cap companion [`2026-08-06-capa-tripwire-pfcusum-companion-registration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-06-capa-tripwire-pfcusum-companion-registration.md) (orthogonal — forbids inventing demotion *under Cap registration*; this ADR is the separate Call-1 governance packet) · intermediate-rung [`2026-08-03-lifecycle-ladder-intermediate-rung.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md) (`Withdrawn` 2026-08-22 — orthogonal; does not address below-AUTHORIZED)
 **Layer:** methodology / authorization-axis Call-1 policy. No strategy parameter, allocation, `dd_protection`, Pine, Cap arming, or `STRATEGY_KEYS` extension.
 
@@ -86,7 +87,6 @@ The decay RESULTS already recorded an interim posture (operator-flagged review, 
 
 - Treating this ADR (even after Accept) as license to **extend `STRATEGY_KEYS` to ORB** or write `lifecycle_state.json` for ORB.
 - **Arming Cap** or inventing Cap fire thresholds under cover of closing this gap (Cap companion ADR owns that packet).
-- Rewriting the PF-CUSUM **replay runner into demotion** — sibling harness posture stays `OPERATOR_REVIEW_FLAG` only; link, do not absorb.
 - Restating PF floors / Cap Δ as owned values here — **link** decay RESULTS / Cap RESULTS.
 - **Silently amending §4** if a future wiring session finds the rule inconvenient — supersede instead.
 - Landing Accept-era code that makes `autonomous_demote("CANDIDATE")` return a tier without a superseding ADR.

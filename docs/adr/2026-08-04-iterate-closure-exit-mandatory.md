@@ -9,6 +9,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-12-closure-disposition-coverage-hard.md` — advisory-coverage clause only
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR08-90); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -69,7 +70,7 @@ The operator's 2026-08-04 direction: make the Iterate exit mandatory and structu
 3. **STOP is ratified as a third branch,** extending v1 §8's binary Integrate/Iterate exit. STOP = Iterate with budget zero: the loop exit that records why no re-entry is warranted and what bar a re-proposal must clear. This is new doctrine owned by this ADR, not a restatement of canon.
 4. **Verdict → default-disposition map** (guidance, not law — the closure may argue a different branch): RESOLVED → INTEGRATE (+ ITERATE only for named residuals); FALSIFIED → STOP with re-proposal bar (ITERATE only when the failure forces a new question); AMBIGUOUS / VOID / ABORT → ITERATE (successor inherits the frozen record); MOOT / operator-stopped → STOP (naming what remains motivated, without opening it).
 5. **Three-surface ownership split (Rule 7):** the closure Iterate block **owns** the per-Q forward disposition; a STATE forward-board row is the cross-session **pointer mirror** (one line + owner link, per STATE's own charter); the SESSIONS Open/next block is the **session-level carry**. The Board-write field records which pointer was written, keeping the three surfaces joined at authoring time — the only join the dropped-C4 post-mortem says is reachable. Rule 7's owner table is deliberately **not** extended while this ADR is `Proposed`; the ratification commit adds its one-line row ("Per-Q forward disposition → closure Iterate block; STATE row = labeled pointer mirror") with a dated edit-log entry (§7 Phase 4).
-6. **Enforcement:** authoring-time discipline (brief-authoring skill + closure template) plus pre-commit **gate 14** (`scripts/check_closure_disposition.py`) — token-presence only (Iterate heading, `Next:` branch token, `Board write:` token), scoped to `docs/briefs/closures/*.md`, the 34 pre-existing files grandfathered by name. The gate runs WARN-only while this ADR is `Proposed` and hard-fails once `Accepted` (self-arming; no second wiring step).
+6. **Enforcement:** authoring-time discipline (brief-authoring skill + closure template) plus pre-commit **gate 14** (`scripts/check_closure_disposition.py`) — token-presence only (Iterate heading, `Next:` branch token, `Board write:` token), scoped to `docs/briefs/closures/*.md`, the 34 pre-existing files grandfathered by name. Severity is owned by [the operating contract](../../scripts/README.md#closure-enforcement) (fixed HARD since 2026-09-08).
 
 **Effective:** 2026-08-04, immediately upon acceptance. Forward-only — no retroactive editing of existing closures.
 **Scope:** closure artifacts under `docs/briefs/closures/` and §6 of newly authored Pre-Q briefs. Lab `RESULTS*.md` and adjudication notes are **out of scope** (deliberate — see §5).

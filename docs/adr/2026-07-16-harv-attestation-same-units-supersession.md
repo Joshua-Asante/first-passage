@@ -9,6 +9,7 @@
 **Trigger:** the parent ADR's own §4 falsifier **FIRED** on the H-OD-1 closure (2026-07-16),
 with the same defect retro-diagnosed in the D5 closure (2026-07-16) — per its §Revert action
 ("superseding ADR citing the dated campaign closure; do not edit §2 in place").
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR05-161); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -42,11 +43,7 @@ The parent §2 HARD gate stands, with the attestation requirement re-specified:
 1. **Per-gate, same-units.** §R must simulate **every** gate the campaign can die at —
    Stage-2 cost-law, Stage-6 confirm, placebo, temporal battery where bundled — **in that
    gate's own units**. A Sharpe-space argument discharges only a Sharpe-denominated gate.
-2. **Cost-law clause (mandatory formula).** The attestation must exhibit the inequality
-   `cohort δ (bp/event) ≥ 4 × RT_frac(panel-era median price)` with `RT_frac` computed from
-   the frozen execution model **plus commissions — never waived as negligible without the
-   division shown**. If the inequality fails at the adjudication panel's price basis, the
-   clause is UNREACHABLE: redesign the gate/instrument or do not open the campaign.
+2. *Cost-law clause deleted 2026-10-24 (operator ruling; see Change history).*
 3. **Adjudication-basis rule.** Every reachability quantity is computed at the basis the gate
    will actually be scored on (IS panel for Stage-2; OOS panel for Stage-6) — never a
    present-day or convenience basis.

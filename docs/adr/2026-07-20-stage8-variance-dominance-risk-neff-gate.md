@@ -6,6 +6,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-07-w4-minimal-gate-set-dormancy.md` — sole-producer status of risk-breadth coordinates while `breadth.py` is tombstoned (doctrine retained; producer dormant)
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR06-48); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -102,12 +103,7 @@ then this ADR is revoked.
 - **Single-datapoint induction.** The gate is generalized from one composed candidate (ORB). Mitigation: §4's ≥3-evaluation / false-reject clause forces a demote if the separation doesn't hold on the next candidates.
 - **`τ_risk` set too tight** could false-reject a genuine risk-diversifier; the §4 false-reject limb is the explicit guard, and `τ_risk` lives per-campaign so it can be justified against that campaign's baseline.
 
-**Downstream artifacts that need updating (Status stays `Proposed` until all done):**
-- `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` Stage-8 row — append the variance-dominance companion clause (parallel to the 2026-07-13 mechanistic-exposure clause).
-- `ops/prop_envelope_default.md` §2 — add an item: risk-N_eff-delta + ρ coordinates travel to the deployment fork (Rule-0 read the file first).
-- `docs/methodology/lessons/methodology_lessons.md` — **promote Q-COMPOSE-1 lesson #1** to a standing lesson (dated 2026-07-17; dollar anchor: composed bust 2.65%→38.75% on the $100K Tradeify tier, ~15× the 3.0% ceiling — a book-blowup counterfactual well past the E1 >$3K single-incident bar).
-- `STATE.md` — one pointer line under the executed-decision log once ratified.
-- (Optional) `lab/research_utils/breadth.py` / compose harness — emit ρ so §7 disclosure is mechanical rather than hand-computed.
+**Downstream artifacts:** applied at ratification 2026-07-20 — campaign-template Stage-8 row, `ops/prop_envelope_default.md` §2 item 6, lesson M-21, STATE pointer (Change history). Emitting ρ from `breadth.py` / the compose harness was optional.
 
 ---
 
