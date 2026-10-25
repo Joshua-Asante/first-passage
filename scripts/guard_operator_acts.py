@@ -35,7 +35,8 @@ interaction, which a model's "the operator approved this" is not. A forbidden ac
 recognises is refused (``deny``). One prompt names every operator act it found in the
 call, because one answer approves all of them.
 
-  * ``pr.merge``     — ask, **only when pinned to a full 40-hex head SHA**: the GitHub MCP
+  * ``pr.merge``     — pass (no prompt, no allow) under the conditioned standing GO (Addendum 2026-10-24b),
+                       **only when pinned to a full 40-hex head SHA**: the GitHub MCP
                        ``merge_pull_request`` tool with ``expectedHeadSha``; ``gh pr merge
                        --match-head-commit <sha>`` (the last one given, as gh reads it); a
                        ``gh api`` call on a ``pulls/<n>/merge`` path with a ``sha`` request
@@ -57,7 +58,8 @@ call, because one answer approves all of them.
                        ``gh pr merge --auto`` (unless its last value is one of pflag's
                        false spellings, which leaves a merge, judged as ``pr.merge``); an
                        ``enablePullRequestAutoMerge`` mutation.
-                       Merge authority is the operator's with no automated exception.
+                       GitHub auto-merge stays retired; only a pinned agent merge under
+                       the standing GO is allowed.
                        Server-side, ``allow_auto_merge: false`` refuses it for every form.
   * ``main.direct_push`` — deny: ``git push`` with ``main`` as a destination (``main``,
                        ``HEAD:main``, ``+x:refs/heads/main``, ``--delete main``), a bulk push
@@ -185,7 +187,7 @@ try:  # imported as `scripts.guard_operator_acts` (tests, repo root on sys.path)
 except ImportError:  # run as `python scripts/guard_operator_acts.py`
     from _shell_tokens import Word, expand, is_assignment, program, segments
 
-ASK, DENY = "ask", "deny"
+PASS, ASK, DENY = "pass", "ask", "deny"
 
 MCP_MERGE = "mcp__github__merge_pull_request"
 MCP_AUTO_MERGE = "mcp__github__enable_pr_auto_merge"
@@ -193,9 +195,14 @@ SHELL_TOOLS = frozenset({"Bash", "PowerShell"})
 _SHA = re.compile(r"[0-9a-fA-F]{40}")
 
 # Every capability id the hook emits and its decision. A deny is a registry `forbidden:`
-# entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability.
+# entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability. A
+# pass emits no permission decision (normal permission evaluation still runs, so the
+# rest of a compound call is never pre-approved) and only adds agent context. A
+# pinned merge passes under the operator's conditioned standing GO (surface-allocation
+# ADR, Addendum 2026-10-24b): the agent merges only after an independent review passed and
+# CI is green at the pinned head; the pin keeps the merge to that exact head.
 DECISION = {
-    "pr.merge": ASK,
+    "pr.merge": PASS,
     "pr.merge_unpinned": DENY,
     "pr.auto_merge": DENY,
     "main.direct_push": DENY,
@@ -210,11 +217,12 @@ MESSAGES = {
                           "merge pinned to the full 40-hex head SHA the operator reviewed: MCP "
                           "`expectedHeadSha`, `gh pr merge --match-head-commit <sha>`, a REST "
                           "`sha` field, or GraphQL `expectedHeadOid`."),
-    "pr.merge": ("Merging is an operator act (pr.merge). Confirm only if you, the operator, "
-                 "are merging this PR now.",
-                 "Merge authority is the operator's (surface-allocation ADR). Do not merge "
-                 "unless the operator confirms this prompt; otherwise report the PR as "
-                 "ready and stop."),
+    "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
+                 "Standing GO (surface-allocation ADR, Addendum 2026-10-24b): merge only if "
+                 "an independent review (a Codex review clean at this head, within three "
+                 "reviews) has passed and every CI check is COMPLETED and green at the pinned "
+                 "head; after three reviews with findings, return the PR to its owner for a "
+                 "rewrite; otherwise report the PR as ready and stop."),
     "pr.auto_merge": ("Auto-merge is forbidden to agents (pr.auto_merge).",
                       "Auto-merge is retired: merge authority is the operator's with no "
                       "automated exception. Report the PR as ready instead."),
@@ -1308,10 +1316,12 @@ def _powershell_hits(command: str) -> list[Hit]:
 
 
 def _verdict(hits: list[Hit]) -> Hit | None:
-    """A deny anywhere wins over any ask: one wrapper cannot launder a forbidden act."""
-    for hit in hits:
-        if hit.decision == DENY:
-            return hit
+    """A deny anywhere wins over any ask, and an ask over any allow: one wrapper cannot
+    launder a forbidden act or an operator act behind an allowed merge."""
+    for level in (DENY, ASK):
+        for hit in hits:
+            if hit.decision == level:
+                return hit
     return hits[0] if hits else None
 
 
@@ -1380,12 +1390,11 @@ def main() -> int:
     first = _verdict(hits)
     if first:
         user_msg, agent_msg = _reasons(hits, first)
-        sys.stdout.write(json.dumps({"hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": first.decision,
-            "permissionDecisionReason": user_msg,
-            "additionalContext": agent_msg,
-        }}))
+        block = {"hookEventName": "PreToolUse", "additionalContext": agent_msg}
+        if first.decision != PASS:  # a pass never pre-approves the call
+            block.update(permissionDecision=first.decision,
+                         permissionDecisionReason=user_msg)
+        sys.stdout.write(json.dumps({"hookSpecificOutput": block}))
     return 0
 
 
