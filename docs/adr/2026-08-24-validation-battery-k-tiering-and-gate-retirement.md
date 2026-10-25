@@ -7,7 +7,7 @@ validation-phase-cuts plan (2026-08-24); see Ratification note.
 **Supersedes:** nothing. No prior ADR states a K-tiering rule for §8's universe-level correction,
 names a canonical cost-law owner, or rules on `pursuit-records`.
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** operator ruling 2026-10-24 — D2's per-event owner (strategy_harvest Requirement 5) deleted and the skill's 4× convention removed; see the marker above D2 and Change history
 **Retain-until:** none
 **Related:** [Rule 16 — retention](../operational_rules.md#16-retention) · [great-prune ADR](2026-08-08-great-prune.md)
 (§2 retention test, cited as authority) · [three-loop methodology binding](2026-06-12-three-loop-methodology-binding.md)
@@ -162,6 +162,8 @@ standard 6.5-year confirm window — a candidate cannot reach §8 with K≥4 in 
 construction (`SR0` is a function of K) and does not need a declared-no-op convention; the
 K-tiering addition is scoped to §8a/§8c only, which are gated as DORMANT-unless-re-armed
 independent of K.
+
+> ⚠ **2026-10-24 — D2 is partly superseded.** Its per-event bp-of-panel-price owner, [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-four-admission-requirements-all-mandatory-before-screening), and the skill's "target ≥ 4× hurdle" convention were deleted by [Joshua's ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24). `cost_geometry_pregate.py` stays the owner of the per-trade stop-distance-R formula; whether its 0.05R PASS ceiling survives is pending Joshua's decision ([pre-gate ADR banner](2026-06-22-cost-geometry-pregate.md)). The text below is the 2026-08-24 decision as ratified.
 
 **D2 — Cost-law: two owners, correctly separated, not one.**
 - Per-event bp-of-panel-price form: `docs/methodology/strategy_harvest.md` §1 Requirement 5
@@ -340,3 +342,4 @@ manifests; any edit to `core/`, `ops/`, `dd_protection`, or allocations; any cha
 | Date | Change | By |
 |---|---|---|
 | 2026-08-24 | Initial authoring and ratification — K-tiering scoped to §8, cost-law split into its true two owners, pursuit-records retirement, profile-field question recorded as already-closed. | Claude Code, operator-directed |
+| 2026-10-25 | D2 partly superseded by the 2026-10-24 ruling: the per-event owner (Requirement 5) and the skill's 4× convention are deleted; the per-trade formula owner stands. Header and a reader marker above D2 added; D2 body unedited. | Claude Code (propagation of Joshua's ruling) |

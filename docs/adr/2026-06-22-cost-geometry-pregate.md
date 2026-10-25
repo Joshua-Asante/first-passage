@@ -10,6 +10,8 @@
 **Related:** [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](2026-06-11-instrument-ledger-and-cfg-fingerprint.md) (the instrument-ledger rule this extends) · [`docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md`](2026-06-14-reject-usoil-rdm-spike-fader.md) + [`docs/adr/2026-06-14-rejected-candidate-patterns.md`](2026-06-14-rejected-candidate-patterns.md) (the paid-for failure + the venue/cost add-back condition this mechanizes) · [`docs/ltm/briefs/Q-5LEG-DATA-instrument-regime-public-data.md`](../ltm/briefs/Q-5LEG-DATA-instrument-regime-public-data.md) (the search that motivates it)
 **Layer:** methodology / infrastructure (R&D session governance) — **does not touch strategy code, allocations, dd_protection, or MC calibration.** Locked config untouched.
 
+> ⚠ **2026-10-25 — decision pending on the 0.05R ceiling.** §2a's only stated derivation of the PASS ceiling is consistency with the standing 4×-median-cost hurdle, which [Joshua's 2026-10-24 ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) deleted. Whether the ceiling is re-derived, made report-only or retired with its code is Joshua's decision (decision packet: PR_LINK). Until Joshua decides, this ADR, Rule 10's Phase-0 obligation and `scripts/cost_geometry_pregate.py` stand as written.
+
 ---
 
 ## §0 — Rule 0 reads (production-source verification)

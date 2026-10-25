@@ -19,7 +19,7 @@ Post-W4 shape: [`W4 ADR`](../adr/2026-08-07-w4-minimal-gate-set-dormancy.md).
 
 ---
 
-## 1. The five admission requirements (all mandatory before screening)
+## 1. The four admission requirements (all mandatory before screening)
 
 A seed that fails any requirement is not screened — it is either routed to a recovery path (see the relief-valve note below) or dropped with the failure named.
 
@@ -33,7 +33,7 @@ A seed that fails any requirement is not screened — it is either routed to a r
 
 **Confirm-not-mine:** the seed declares **K_intrinsic ≤ 3 fixed hypothesis expressions** at admission (both 1a and 1b seeds are pre-committed-hypothesis shaped and open via `register_search open --lane mechanism-first`, which since 2026-07-25 also requires `--profile-cell` + `--profile-consult` — see the profile-consult block below). Post-admission widening (parameter sweeps, extra windows, extra variants) voids the screen result and is a new axis — fresh manifest, fresh screen. Enforcement point (screen pre-reg §C): a campaign `register_search open` that binds K above the declared band voids the PASS.
 
-**Relief valve — requirement 3 is a mandatory disclosure, not a gate.** The five requirements read as a bouncer; in practice most of them have a documented recovery route, and the family K-bank (requirement 3) cannot fail a seed:
+**Relief valve — requirement 3 is a mandatory disclosure, not a gate.** The four live requirements read as a bouncer; in practice most of them have a documented recovery route, and the family K-bank (requirement 3) cannot fail a seed:
 
 - **Requirement 1** can be satisfied two ways (1a/1b above); a seed with no named mechanism is not automatically dead — check 1b before dropping it.
 - **Requirement 2**'s "nearest analytic analogue" provision (screen pre-reg §B) let D7 screen at all despite having no non-circular JPY-native δ (it borrowed the HARV class-analogue reading instead of inventing a number); a rank-6 (§2.3) seed with no independent cohort can fund a **δ-extraction probe** to generate one (costs data spend + K, but is a real path, not a dead end).
@@ -55,7 +55,7 @@ Canonical: [`docs/adr/2026-07-25-instrument-profile-index.md`](../adr/2026-07-25
 
 ## 2. Sourcing — class-priority + ranked channel portfolio (added 2026-07-16)
 
-**Why this section exists:** the five admission requirements (§1) and the two-clause screen (§3) govern what happens *once a seed exists*. Neither one aims the search. Two funded campaigns since this doc's authoring — D5 and H-OD-1 — both **confirmed their mechanism** (H-OD-1: +1.444bp vs SR917's +1.5bp, t≈5.0, 9/9 IS years positive) and both **died at Stage-2 cost-law** (D5: 11.06bp hurdle vs ≈2.97bp cohort-implied; H-OD-1: 5.05bp hurdle vs 1.5bp cohort) — see [`STATE.md`](../../STATE.md) harvest-intake entry and [`2026-07-16-harv-attestation-same-units-supersession.md`](../adr/2026-07-16-harv-attestation-same-units-supersession.md). The lesson: sourcing effort spent on high-frequency, small-per-event-δ mechanisms is structurally cost-walled regardless of mechanism truth. §2.1–§2.3 below aim sourcing at the surviving band; full design rationale in [`docs/superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md`](../superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md).
+**Why this section exists:** the four admission requirements (§1) and the two-clause screen (§3) govern what happens *once a seed exists*. Neither one aims the search. Two funded campaigns since this doc's authoring — D5 and H-OD-1 — both **confirmed their mechanism** (H-OD-1: +1.444bp vs SR917's +1.5bp, t≈5.0, 9/9 IS years positive) and both **died at Stage-2 cost-law** (D5: 11.06bp hurdle vs ≈2.97bp cohort-implied; H-OD-1: 5.05bp hurdle vs 1.5bp cohort) — see [`STATE.md`](../../STATE.md) harvest-intake entry and [`2026-07-16-harv-attestation-same-units-supersession.md`](../adr/2026-07-16-harv-attestation-same-units-supersession.md). The lesson: sourcing effort spent on high-frequency, small-per-event-δ mechanisms is structurally cost-walled regardless of mechanism truth. §2.1–§2.3 below aim sourcing at the surviving band; full design rationale in [`docs/superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md`](../superpowers/specs/2026-07-16-mechanism-sourcing-strategy-design.md).
 
 ### 2.1 Mechanism-class priority
 

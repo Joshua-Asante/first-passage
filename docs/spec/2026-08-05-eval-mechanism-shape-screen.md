@@ -183,7 +183,7 @@ waste §2.0a exists to prevent.
 ### 3a — Cost authority (scope split resolved 2026-08-24)
 
 **EM1 defines no cost formula.** [August 24 D2](../adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
-resolved G3 by scope: [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-five-admission-requirements-all-mandatory-before-screening)
+resolved G3 by scope: [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-four-admission-requirements-all-mandatory-before-screening)
 owns per-event bp-of-panel-price cost at admission/harvest; the separate
 [`cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) owns per-trade
 stop-distance-R geometry at design time. Both apply in their own scopes. EM1 continues
