@@ -115,8 +115,11 @@ call, because one answer approves all of them.
                        unresolved artifact and that it writes an ``arming_deviation`` record.
                        ``--disarm`` and ``--status`` never ask:
                        disarming is a risk-reducing exit and must never wait on a prompt.
-  * ``gh pr merge --admin`` stays askable when pinned (operator ruling 2026-09-26: record
-    only, no change).
+  * ``pr.merge_admin`` — ask: a pinned ``gh pr merge --admin`` (unless its last value is
+                       one of pflag's false spellings). ``--admin`` asks GitHub to merge
+                       past unmet requirements, which the standing GO does not cover
+                       (operator ruling 2026-09-26: "askable admin merges"; the merge-train
+                       skill forbids it to agents). Unpinned, it is ``pr.merge_unpinned``.
 
 **Scope — what this hook is not.** It covers the Claude Code harness only (Codex sessions
 are not hooked). It adds a prompt where an agent session holds a
@@ -196,7 +199,8 @@ SHELL_TOOLS = frozenset({"Bash", "PowerShell"})
 _SHA = re.compile(r"[0-9a-fA-F]{40}")
 
 # Every capability id the hook emits and its decision. A deny is a registry `forbidden:`
-# entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability. A
+# entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability
+# (`pr.merge_admin` is `pr.merge` outside its standing GO). A
 # pass emits no permission decision (normal permission evaluation still runs, so the
 # rest of a compound call is never pre-approved) and only adds agent context. A
 # pinned merge passes under the operator's conditioned standing GO (surface-allocation
@@ -204,12 +208,14 @@ _SHA = re.compile(r"[0-9a-fA-F]{40}")
 # CI is green at the pinned head; the pin keeps the merge to that exact head.
 DECISION = {
     "pr.merge": PASS,
+    "pr.merge_admin": ASK,
     "pr.merge_unpinned": DENY,
     "pr.auto_merge": DENY,
     "main.direct_push": DENY,
     "rail.deploy": ASK,
     "rail.arm": ASK,
 }
+_PINNED = frozenset({"pr.merge", "pr.merge_admin"})  # caps whose detail is the head SHA
 
 MESSAGES = {
     "pr.merge_unpinned": ("Merge refused: not pinned to a head SHA (pr.merge). Re-issue it "
@@ -225,6 +231,12 @@ MESSAGES = {
                  "CI check is COMPLETED and green at the pinned head; if no review is clean "
                  "by the fourth, return the PR to its owner for a rewrite; otherwise report "
                  "the PR as ready and stop. `scripts/merge_train.py gate` applies the count."),
+    "pr.merge_admin": ("Admin merge (pr.merge_admin): --admin asks GitHub to merge past "
+                       "unmet requirements, outside the agents' standing GO. Confirm only if "
+                       "you, the operator, are making this merge.",
+                       "`--admin` is outside the standing GO (Addendum 2026-10-24b A; the "
+                       "merge-train skill forbids it). Drop `--admin` and merge only when the "
+                       "GO's conditions hold; otherwise report the PR as ready and stop."),
     "pr.auto_merge": ("Auto-merge is forbidden to agents (pr.auto_merge).",
                       "Auto-merge is retired: an agent merges only by a pinned merge under "
                       "the standing GO (Addendum 2026-10-24b A). Report the PR as ready "
@@ -312,7 +324,7 @@ class Hit(NamedTuple):
     """One operator or forbidden act found in a call."""
 
     cap: str
-    detail: str | None = None  # the pinned head SHA for pr.merge; a message detail otherwise
+    detail: str | None = None  # the pinned head SHA for `_PINNED`; a message detail otherwise
     readings: tuple[_Deploy, ...] = ()  # rail.deploy: the command's readings, unresolved
 
     @property
@@ -545,7 +557,10 @@ def _judge_pr_merge(args: list[str]) -> list[Hit]:
         return [Hit("pr.merge_unpinned", UNREAD)]
     if value.get("help") in _GH_TRUE or value.get("disable-auto") in _GH_TRUE:
         return []  # gh prints help, or disables auto-merge and returns before merging
-    return [_merge_hit(value.get("match-head-commit"))]
+    hit = _merge_hit(value.get("match-head-commit"))
+    if hit.cap == "pr.merge" and value.get("admin", "false") not in _GH_FALSE:
+        return [Hit("pr.merge_admin", hit.detail)]  # past unmet requirements: outside the GO
+    return [hit]
 
 
 def _api_fields(parsed: _Parsed) -> tuple[dict[str, str], bool]:
@@ -1371,13 +1386,13 @@ def _reasons(hits: list[Hit], first: Hit) -> tuple[str, str]:
         return _message(first)
     users, agents, seen = [], [], set()
     for hit in hits:
-        key = (hit.cap, None if hit.cap == "pr.merge" else hit.detail)
+        key = (hit.cap, None if hit.cap in _PINNED else hit.detail)
         if key not in seen:
             seen.add(key)
             user, agent = _message(hit)
             users.append(user)
             agents.append(agent)
-    shas = list(dict.fromkeys(h.detail for h in hits if h.cap == "pr.merge" and h.detail))
+    shas = list(dict.fromkeys(h.detail for h in hits if h.cap in _PINNED and h.detail))
     if shas:
         label = "Head SHA" if len(shas) == 1 else "Head SHAs"
         users.append(f"{label} being approved: {', '.join(shas)}.")
