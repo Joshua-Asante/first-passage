@@ -56,7 +56,7 @@ gates:
       - scripts/check_data_manifests.py
       - --check
 
-  # pursuit-records retired 2026-08-24 (Rule 16 R5 — docs/operational_rules.md;
+  # pursuit-records retired 2026-08-24 (operational_rules §16 R5 — docs/operational_rules.md;
   # docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md):
   # scripts/check_pursuit_records.py always exits 0 as invoked, so this entry
   # could never fail regardless of tier — unfalsifiable ceremony, deletable

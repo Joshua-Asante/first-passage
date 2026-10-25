@@ -2,7 +2,7 @@
 
     python -m ops.recall build              # (re)index the markdown corpus
     python -m ops.recall search "<query>"   # verbatim FTS5 search, incl. cold store
-    python -m ops.recall add "<note>"       # stage a note (Rule-7 guarded)
+    python -m ops.recall add "<note>"       # stage a note (operational_rules §7 guarded)
     python -m ops.recall notes              # list staged notes
 
 Frozen scope: search + staged write. No summarisation subcommand — that path

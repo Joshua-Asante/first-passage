@@ -70,11 +70,10 @@ Trap #9). "No new lesson" is a legal body.]
   to `STATE.md`; for campaign-local work, quote the update to the existing campaign-owner
   artifact. A `SESSIONS.md` line may preserve historical context but cannot be the sole
   live board write. Use `none — STOP, nothing owed` only when no work remains. One-line
-  pointer + owner link only (Rule 7); detail stays in this file.]
+  pointer + owner link only (operational_rules §7); detail stays in this file.]
 - **Registry:** `rejected_candidates.md — ### <heading>` **or** `n/a — <reason>`
   (RESOLVED / governance / not a strategy-grounds kill). Token-gated; see
-  [`docs/operational_rules.md`](../../../../docs/operational_rules.md) Rule 8
-  sub-rule 9. Do not skip on FALSIFIED/DEAD/STOP.
+  [`docs/operational_rules.md`](../../../../docs/operational_rules.md) §8.9. Do not skip on FALSIFIED/DEAD/STOP.
 
 ## §10 audit-hook discharge
 

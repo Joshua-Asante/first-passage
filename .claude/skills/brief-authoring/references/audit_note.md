@@ -92,7 +92,7 @@ Two layers: immediate (close out this specific instance) and structural (prevent
 - [ ] [Template update — which references/*.md, which section]
 - [ ] [Validator update — which check in check_brief.py]
 - [ ] [Calendar / Todoist trigger — what recurring check would have surfaced this]
-- [ ] [Owner consolidation (Rule 7) — if source-of-truth fracture]
+- [ ] [Owner consolidation (operational_rules §7) — if source-of-truth fracture]
 
 If no structural repair exists, the failure is likely to recur. Flag this explicitly — sometimes the right call is to accept the recurrence rather than over-engineer; sometimes it surfaces a deeper architectural gap.
 

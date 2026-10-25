@@ -224,7 +224,7 @@ lab/analysis/us500_discovery_2026-06-22/us500_15m.pkl
 lab/analysis/**/orb_universe_2026-06-22/_cache_*.pkl
 
 # Databento vendor bars (GLBX.MDP3, redistribution not permitted) — regenerable at $0.00
-# per the pull command recorded in each campaign's own PREREG (Rule 1 estimate output pasted).
+# per the pull command recorded in each campaign's own PREREG (databento Rule 1 estimate output pasted).
 lab/analysis/_inbox/rangestate_gc_2026-08/gc_1d.parquet
 lab/analysis/_inbox/rangestate_mcl_2026-08/cl_1d.parquet
 lab/analysis/harvest/six_lead_cf_2026-08-17/p4_concentration_2026-08-20/*.parquet

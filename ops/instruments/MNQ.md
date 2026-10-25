@@ -171,7 +171,7 @@ structure:
 
 - **2026-08-29** — **Notice-phase 5-candidate bars-only geometry screen (MNQ M15) — 2 GRADUATE, 1
   split GRADUATE/DROP, 1 HOLD (real, VOIDs under the frozen battery), 1 HOLD (real, route
-  unresolved). Zero new DEAD-list rows.** `--lane blind` registration (Rule 1: K declared before
+  unresolved). Zero new DEAD-list rows.** `--lane blind` registration (Discovery check 1: K declared before
   any result), K=5, closed same session —
   [`discovery_manifests/mnq_dailygeom_notice_20260829.json`](../../discovery_manifests/mnq_dailygeom_notice_20260829.json)
   (not yet reconciled into the K_BANKED table below; re-read at next admission per that table's own

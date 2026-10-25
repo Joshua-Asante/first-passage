@@ -9,12 +9,12 @@ supplies dated instances for triggers like the dedup-first ADR's T2
 unmeasurable -- nothing in the belt records that it ran.
 
 Records only that a mechanism fired: tool name, a short context (query text,
-file path, or similar), and counts. Never log Rule-7 owned values or locked
+file path, or similar), and counts. Never log operational_rules §7 owned values or locked
 strategy parameters -- callers control what they pass; this module does not
 inspect or redact content.
 
 Fail-open: a logging failure must never break the caller. The log itself is
-gitignored (``.cache/``) -- a local, regenerable record, not a Rule-7 owner.
+gitignored (``.cache/``) -- a local, regenerable record, not an operational_rules §7 owner.
 
 Usage (as a library):
     from gate_fire_log import log_fire

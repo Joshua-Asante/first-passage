@@ -25,11 +25,11 @@ Any brief that touches risk controls, locked parameters, or production code must
 
 **Canonical sub-rules 1–7** live in [`docs/operational_rules.md` §8](../../../docs/operational_rules.md). The three teeth this skill already names are inlined below so a session that never opens §8 still has them. Open §8 for 1–7.
 
-**Sub-rule 8 (paste-search before new work).** Before opening any new `lab/analysis/<theme>/<slug>/` or scoping new `core/`-adjacent work, paste the *literal command output* — not a conclusion — of searches against `lab/CATALOG.md` and `docs/briefs/INDEX.md` (and a cheap `git log --oneline -20` / `python scripts/check_advisor_dedup.py --keywords "..."`). Attestation without executed output is void. Work naming a candidate mechanism for a specific instrument additionally reads `ops/instruments/<SYM>.md` in full.
+**operational_rules §8.8 (paste-search before new work).** Before opening any new `lab/analysis/<theme>/<slug>/` or scoping new `core/`-adjacent work, paste the *literal command output* — not a conclusion — of searches against `lab/CATALOG.md` and `docs/briefs/INDEX.md` (and a cheap `git log --oneline -20` / `python scripts/check_advisor_dedup.py --keywords "..."`). Attestation without executed output is void. Work naming a candidate mechanism for a specific instrument additionally reads `ops/instruments/<SYM>.md` in full.
 
-**Sub-rule 9 (Registry line on every new closure).** A non-grandfathered file under `docs/briefs/closures/` must carry `- **Registry:**` in the Iterate block: `rejected_candidates.md — ### <heading>` or `n/a — <reason>`. Token-only; heading-join quality is judgment.
+**operational_rules §8.9 (Registry line on every new closure).** A non-grandfathered file under `docs/briefs/closures/` must carry `- **Registry:**` in the Iterate block: `rejected_candidates.md — ### <heading>` or `n/a — <reason>`. Token-only; heading-join quality is judgment.
 
-**Existing-owner first (sub-rule 10).** Check whether the current owner or PR can
+**Existing-owner first (operational_rules §8.10).** Check whether the current owner or PR can
 hold the change before creating a decision artifact. Routine repairs and in-envelope
 campaign elections need no ADR. A new ADR must meet the [admission rule](../../../docs/adr/2026-08-08-adr-ceremony-tiering.md);
 recording a decision does not require giving it a separate file. Research dedup/source-read evidence remains required
@@ -45,7 +45,7 @@ where applicable; routine maintenance needs no permanent search transcript.
 
 ## The six load-bearing discipline checks
 
-These six are the authoring-side stack. They are **type-scoped** — see the applicability matrix below. `scripts/check_brief.py` automates the mechanical subset for types it models (inquire / full ADR / handoff). The others require human judgment. Amendment-first (sub-rule 10) is a cross-cutting pre-condition, not a 7th numbered check.
+These six are the authoring-side stack. They are **type-scoped** — see the applicability matrix below. `scripts/check_brief.py` automates the mechanical subset for types it models (inquire / full ADR / handoff). The others require human judgment. Amendment-first (operational_rules §8.10) is a cross-cutting pre-condition, not a 7th numbered check.
 
 **1. §0 Rule 0 reads populated.** At least one production file with a verification anchor (commit hash, timestamp, line range, or `last-modified` date). Empty or "TBD" §0 fails. Light ADRs keep the *read* (tier-independent) but drop the §0 table — the Reads line is the form.
 
