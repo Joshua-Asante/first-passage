@@ -40,7 +40,7 @@ git log --oneline HEAD..origin/main | head
 ```
 
 - Confirm you are in the **intended** worktree (not the primary tree while a linked worktree was named).
-- If behind `origin/main` on files the handoff cites, read `origin/main`'s copy (or ff/rebase per operator) before trusting checkout prose.
+- If behind `origin/main` on files the handoff cites, read `origin/main`'s copy (or merge the base into the branch) before trusting checkout prose.
 
 ### 2. Named paths exist
 
@@ -75,7 +75,7 @@ If the work already landed (merged PR, on-disk module, closed RESULTS), return `
 ### 5. Numeric / posture claims
 
 - Challenge-era MC pass/bust rates are **historical / engine pins**, not live probabilities (`docs/adr/2026-07-11-challenge-era-claims-rescope.md`).
-- Live posture is owned by `AGENTS.md` §Live-execution posture — read it there, never from this file. A handoff is **STALE** if it assumes any of: an open FXIFY challenge; an active Aegis→M6J lane; an unbuilt CrossTrade rail; **the Striker MYM/MNQ legs deployed at Tradeify**; **an armed live book**; M1 items still owed for the incumbent; a TV-alert live signal host; a Databento pull or any data source `PIPELINES.md` does not approve; Notion as a canonical surface.
+- Live posture is owned by `AGENTS.md` §Live-execution posture — read it there, never from this file. A handoff is **STALE** if it assumes any of: an open FXIFY challenge or a live CFD/DXTrade venue; an active Aegis→M6J lane; an unbuilt c1 rail; **Track B active or only suspended** (STATE: superseded for Tradeify 2026-10-16); **a Tradeify eval route through an external engine, bridge, CrossTrade or direct API** (strategy logic must be native); **the Striker MYM/MNQ legs deployed at Tradeify**; **an armed live book or a deployed strategy**; M1 items still owed for the incumbent; a TV-alert live signal host; a Databento pull or any data source `PIPELINES.md` does not approve; Cursor, GLM/Z Code or Notion as a live surface; `CLAUDE.md` as the instruction file.
 - Any specific constant (risk %, DD_TRIGGER, anchor): apply `verify-source` (branch currency + open the bytes).
 
 ### 6. Gate reachability (research handoffs only)
@@ -177,8 +177,8 @@ Target: the most recent completed work in this conversation, or whatever the ope
 | **Manifest laundering** | `SHA256SUMS` regenerated with no data-change rationale in the same commit — or data changed with no manifest delta (the M-9 gate exists because this drifts silently). |
 | **False completion** | A pass claimed with no output shown; skipped tests counted as passes; "should work now"; success language over a failure transcript. |
 | **Locked-surface creep** | Diff touches Pine, `dd_protection` constants, `firm_rules` risk %, or allocations without a ratified ADR. Surviving mechanical checks: `scripts/check_pine_manifest.py`, `scripts/check_skills_no_constants.py`, `scripts/verify_lock_anchors.py`. |
-| **Unauthorized action** | Push/merge/publish, account registration, or live spend with no operator quote behind it — rail build and registration are explicitly ADR-gated (no live spend). |
-| **Stale-posture claims** | Challenge-era MC numbers quoted as live pass-probabilities (re-scoped 2026-07-11); FXIFY treated as open; R6 treated as pending; quarterly pass-rate output quoted outside its historical-semantics lens. |
+| **Unauthorized action** | Push to `main`, merge, publish, account registration, or live spend with no operator quote behind it — rail build and registration are explicitly ADR-gated (no live spend). |
+| **Stale-posture claims** | Any assumption on the Phase-0 §5 stale list; challenge-era MC numbers quoted as live pass-probabilities (re-scoped 2026-07-11); R6 treated as pending; quarterly pass-rate output quoted outside its historical-semantics lens. |
 | **Cohort-free metrics** | PF/WR/p99/DD quoted without (n, filter, window) — a value whose denominator did not travel with it. |
 | **Spec betrayal** | Code changed to satisfy a check that contradicts the ADR/LOCK.md. Authority order: explicit operator statement > ADR/LOCK > tests > current code behavior. |
 | **Debris** | Scratch files, debug prints, orphan worktrees, commented-out code. Cleanup itself routes to `repo-hygiene`. |

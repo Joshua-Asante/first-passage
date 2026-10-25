@@ -198,8 +198,8 @@ The missing middle between a pulled dataset and (when re-armed) `universe_gate`
 / `temporal_consistency` lives in `lab/discovery/stage24_runner.py`. It mines
 (STUMPY / catch22-covariate / ruptures), binds K_DSR via `discovery.k_count`
 (ADR 2026-07-12 non-overlap floor), scores frozen IS rules, and emits the
-option-(i) Stage-4 return matrix. Synthetic-only until the
-operator authorizes a real `register_search open` / `db_fetch pull`.
+option-(i) Stage-4 return matrix. Synthetic-only: no data source is approved
+(`db_fetch` is the retired Databento client; [PIPELINES.md](../../../PIPELINES.md) Acquire data row).
 **W4:** SPA/PBO path dormant — prefer temporal-consistency + campaign-named
 limbs; when calling DSR/`universe_gate`, the module default is `var_trials=1/n`
 (audit R5, flipped 2026-08-15). An explicit pin still overrides.

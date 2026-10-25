@@ -59,4 +59,4 @@ Asked to quote the canonical MC anchor from a feature branch, three fresh agents
 - **Rule 0** (`docs/rule_0.md`) owns one channel: read production source first, not memory or prior briefs. This skill assumes Rule-0 is done and adds the source-STATE check. Rule-0 compliance can give *false confidence* — see the worked example.
 - **`handoff-verify`** — before *executing* an external handoff packet (CC/advisor/Phase-0), run that skill's Phase-0 checklist; then use this skill for any specific number/claim inside it.
 - **`handoff-verify` post-execution judging** — after work is *claimed complete* (by another session, advisor, worker, or subagent), that skill re-runs the claimed verifications and hunts frauds; this skill is its per-value tool.
-- Hand off to **`prop-firm-challenge`** for the operational facts and **`brief-authoring`** for where the verified value lands.
+- Hand off to **`prop-firm-challenge`** for firm-rule/MC facts, **`c1-rail`** for live-ops facts, and **`brief-authoring`** for where the verified value lands.

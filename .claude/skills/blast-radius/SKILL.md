@@ -1,6 +1,6 @@
 ---
 name: blast-radius
-description: After editing docs, ADRs, posture lines, STATE, skills, catalogs, or other linked judgments, surface the blast radius — owners and mirrors that may still restate the prior finding. Use when stopping after substantive edits, when the Claude hookify nudge fires, or on "tidy", "blast radius", "propagate", "grep-sweep", "source-of-truth fracture". Report-first; repair only clear silent restatements owed by this turn. Sibling of handoff-verify post-execution judging (claims vs artifacts), brief-authoring Phase 2 (ADR/lock authoring sweep), and Rule 6 skew-audit (lock windows). Does not touch Pine, dd_protection constants, or allocations.
+description: After editing docs, ADRs, posture lines, STATE, skills, catalogs, or other linked judgments, surface the blast radius — owners and mirrors that may still restate the prior finding. Run it by hand when stopping after substantive edits, or on "tidy", "blast radius", "propagate", "grep-sweep", "source-of-truth fracture". Report-first; repair only clear silent restatements owed by this turn. Sibling of handoff-verify post-execution judging (claims vs artifacts), brief-authoring Phase 2 (ADR/lock authoring sweep), and Rule 6 skew-audit (lock windows). Does not touch Pine, dd_protection constants, or allocations.
 ---
 
 # blast-radius — surface linked drift after a change
@@ -12,7 +12,6 @@ This repo links judgments across ADRs, posture pointers, boards, skills, and cat
 ## When to use
 
 - After any substantive edit to hot surfaces (docs/, AGENTS.md, STATE.md, PIPELINES.md, REPO_MAP.md, `.claude/skills/`, lab/CATALOG.md, ops/instruments/, strategy LOCK/CHANGELOG mirrors).
-- When a stop-hook / hookify nudge asks for it.
 - On explicit "tidy" / "blast radius" / "propagate this finding".
 
 **SKIP** read-only turns, pure code refactors with no judgment/posture prose, and edits confined to the blast-radius skill/hooks themselves.
@@ -65,7 +64,7 @@ through `archive_lab_analysis.py --regenerate-catalog`, not hand-edits.)
 | Class | Action |
 |---|---|
 | **Canonical owner** (this turn's primary write) | Already updated — cite it |
-| **Labeled mirror / pointer** (STATE board, CLAUDE posture bullet, SESSIONS Open/next, INDEX row) | Update to **link**, or refresh the one-line pointer — never restate owned values |
+| **Labeled mirror / pointer** (STATE board, AGENTS.md posture bullet, SESSIONS Open/next, INDEX row) | Update to **link**, or refresh the one-line pointer — never restate owned values |
 | **Silent restatement** (prose repeats a value/status it does not own) | Fix in-session if clearly owed by this change; else list as owed |
 | **Historical ADR / closure body** | Leave text; add parenthetical / Superseded-by only when this ADR's Phase 2 requires it |
 | **False positive** (same string, different meaning) | Mark `n/a` with one-line why |
@@ -100,7 +99,7 @@ Close with:
 
 ### 5. Repair scope
 
-Default after a hook nudge: **report + fix clear silent restatements and stale one-line pointers** that this turn's tokens prove. Stop and ask when:
+Default: **report + fix clear silent restatements and stale one-line pointers** that this turn's tokens prove. Stop and ask when:
 
 - the hit is outside the ask's scope,
 - fixing would edit a locked constant or Pine,
@@ -132,5 +131,5 @@ Default after a hook nudge: **report + fix clear silent restatements and stale o
 | Surface | Path | Notes |
 |---|---|---|
 | Skill (tracked) | `.claude/skills/blast-radius/` | Auto-discovered by the Claude Code skill loader |
-| Stop nudge (template, tracked) | [`references/hookify-blast-radius.local.md`](references/hookify-blast-radius.local.md) | A hookify rule *template*: nothing fires from it until the per-clone copy below is installed. The automatic, always-on stop nudge retired with the Cursor harness on 2026-09-15 and has no tracked Claude-side replacement; wiring a tracked Stop hook is an operator election (AGENTS.md §Continuous improvement item 6). Until the copy is installed, run this skill by hand after substantive edits. (Corrected 2026-09-16: an earlier row called this the "sole carrier".) |
-| Claude hookify (local) | copy `references/hookify-blast-radius.local.md` → `.claude/hookify.blast-radius.local.md` | `.local.md` is gitignored by convention — install once per clone |
+| Trigger | none tracked | No tracked hook runs this skill; run it by hand after substantive edits. Wiring a tracked Stop hook is an operator election (AGENTS.md §Continuous improvement item 6). |
+| Optional per-clone nudge | [`references/hookify-blast-radius.local.md`](references/hookify-blast-radius.local.md) → `.claude/hookify.blast-radius.local.md` (gitignored) | A hookify rule template; it fires only where a clone has copied it. |
