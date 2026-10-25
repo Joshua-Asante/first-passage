@@ -5,7 +5,7 @@ description: "Monitor and maintain a pull request after the agent opens or updat
 
 # Babysit a pull request
 
-Own the PR from creation through merge readiness. Do not merely report failures or promise to check later: inspect, repair, push, and verify.
+Own the PR from creation through merge readiness. Do not merely report failures or promise to check later: inspect, repair, push, and verify. Push only the PR's own `codex/` or `claude/` head branch; never push `main` or merge — merging follows the operator's merge rule in the [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) (operator ruling 2026-10-24).
 
 ## Start monitoring
 

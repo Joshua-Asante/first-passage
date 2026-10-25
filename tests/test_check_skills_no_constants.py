@@ -36,7 +36,7 @@ def test_skills_guard_restated_version_is_hard(tmp_path):
 
 
 def test_skills_guard_restated_riskpct_is_hard(tmp_path):
-    _mk_skill(tmp_path, "ooda-loop", "Allocation: risk_pct dict is G 0.34%.\n")
+    _mk_skill(tmp_path, "brief-authoring", "Allocation: risk_pct dict is G 0.34%.\n")
     assert _hard(tmp_path), "expected HARD on risk_pct restatement"
 
 

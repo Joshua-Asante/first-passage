@@ -1,11 +1,11 @@
 ---
 name: blast-radius
-description: After editing docs, ADRs, posture lines, STATE, skills, catalogs, or other linked judgments, surface the blast radius — owners and mirrors that may still restate the prior finding. Use when stopping after substantive edits, when the Claude hookify nudge fires, or on "tidy", "blast radius", "propagate", "grep-sweep", "source-of-truth fracture". Report-first; repair only clear silent restatements owed by this turn. Sibling of fable-judge (claims vs artifacts), brief-authoring Phase 2 (ADR/lock authoring sweep), and Rule 6 skew-audit (lock windows). Does not touch Pine, dd_protection constants, or allocations.
+description: After editing docs, ADRs, posture lines, STATE, skills, catalogs, or other linked judgments, surface the blast radius — owners and mirrors that may still restate the prior finding. Use when stopping after substantive edits, when the Claude hookify nudge fires, or on "tidy", "blast radius", "propagate", "grep-sweep", "source-of-truth fracture". Report-first; repair only clear silent restatements owed by this turn. Sibling of handoff-verify post-execution judging (claims vs artifacts), brief-authoring Phase 2 (ADR/lock authoring sweep), and Rule 6 skew-audit (lock windows). Does not touch Pine, dd_protection constants, or allocations.
 ---
 
 # blast-radius — surface linked drift after a change
 
-This repo links judgments across ADRs, posture pointers, boards, skills, and catalogs. Agents often update the primary artifact and leave silent restatements elsewhere. This skill is the **cheap post-edit sweep**: find the blast radius, triage it, report it. It is not `fable-judge` (adversarial claim verification) and not Rule 6 lock-window skew audit.
+This repo links judgments across ADRs, posture pointers, boards, skills, and catalogs. Agents often update the primary artifact and leave silent restatements elsewhere. This skill is the **cheap post-edit sweep**: find the blast radius, triage it, report it. It is not `handoff-verify` post-execution judging (adversarial claim verification) and not Rule 6 lock-window skew audit.
 
 **Doctrine:** `docs/operational_rules.md` Rule 7 (one canonical owner; everyone else links or is a labeled mirror). Owner table detail: [references/owner-surfaces.md](references/owner-surfaces.md).
 
@@ -112,7 +112,7 @@ Default after a hook nudge: **report + fix clear silent restatements and stale o
 |---|---|
 | `brief-authoring` Phase 2 / lock §7 | Downstream sweep **while authoring** ADRs/locks |
 | Rule 6 + `.claude/commands/skew-audit.md` | Lock-window `Code:`-pointer audit |
-| `fable-judge` | Post-hoc claim verification (read-only) |
+| `handoff-verify` post-execution judging | Post-hoc claim verification (read-only) |
 | `handoff-verify` | Pre-execution packet gate |
 | `repo-hygiene` | Git/worktree debris |
 | **blast-radius** | Post-edit linked-judgment surface |
@@ -124,7 +124,7 @@ Default after a hook nudge: **report + fix clear silent restatements and stale o
 | "I updated the ADR; mirrors can wait." | Stale pointers read as truth (Rule 7). Sweep now. |
 | "grep was clean on the new phrase." | Search the **old** token and the decision slug. |
 | "STATE already mentions it." | STATE may still carry the prior obligation as open — open the bytes. |
-| "fable-judge will catch this." | Judge checks claims vs diff; it does not hunt undischarged mirrors. |
+| "handoff-verify post-execution judging will catch this." | Judge checks claims vs diff; it does not hunt undischarged mirrors. |
 | "I'll note it in SESSIONS only." | A SESSIONS line is not a mirror repair. |
 
 ## Install surfaces

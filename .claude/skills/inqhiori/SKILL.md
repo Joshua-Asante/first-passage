@@ -1,11 +1,11 @@
 ---
 name: inqhiori
-description: Methodology for structural, low-reversibility, or statistically-gated investigation. Trigger on INQHIORI, The Algorithm, D-S-A pre-Q gate, Notice/Inquire phases, gate audits, observation routing, or framework refinement. Also fires when authoring decision briefs, proposing structural changes, formulating Inquire-phase questions, auditing deletion criteria, or evaluating whether artefacts are load-bearing vs ceremonial. Methodology layer only — does NOT modify strategy code, allocations, dd_protection, or MC calibration. Sibling: `ooda-loop` for tactical/recoverable/tempo work; exit this skill if a request needs speed over rigor. Hand off to prop-firm-challenge for operational/Rule-0 facts and pinescript-v6 for strategy code. Loop-selection canon: docs/methodology/inqhiori-canon.md (§14 three-loop binding).
+description: Methodology for structural, low-reversibility, or statistically-gated investigation. Trigger on INQHIORI, The Algorithm, D-S-A pre-Q gate, Notice/Inquire phases, gate audits, observation routing, or framework refinement. Also fires when authoring decision briefs, proposing structural changes, formulating Inquire-phase questions, auditing deletion criteria, or evaluating whether artefacts are load-bearing vs ceremonial. Methodology layer only — does NOT modify strategy code, allocations, dd_protection, or MC calibration. Tactical/recoverable/tempo work runs outside this skill (the `ooda-loop` skill was retired 2026-10-24; live execution follows `c1-rail`); exit this skill if a request needs speed over rigor. Hand off to prop-firm-challenge for operational/Rule-0 facts and pinescript-v6 for strategy code. Loop-selection canon: docs/methodology/inqhiori-canon.md (§14 three-loop binding).
 ---
 
 # INQHIORI — Recursive investigation loop with D-S-A pre-Q gate
 
-Component skill of the **INQHIORI ⊕ OODA dual-loop framework** (reactivated 2026-05-01). This skill scopes to INQHIORI; OODA is the sibling skill `ooda-loop`.
+Component skill of the **INQHIORI ⊕ OODA dual-loop framework** (reactivated 2026-05-01). This skill scopes to INQHIORI; the OODA sibling skill `ooda-loop` was retired 2026-10-24 ([tombstone](../../../docs/adr/TOMBSTONES.md#2026-10-24-skills-consolidation)).
 
 **Canonical reference:** `docs/methodology/inqhiori-canon.md` (§14 = the three-loop binding). When this skill disagrees with the canon, trust the canon. The Notion surface was retired 2026-06-12 (ADR `docs/adr/2026-06-12-notion-surface-retirement.md`; dead-ID map `docs/governance/notion-redirect-map.md`). Last reconciliation: 2026-05-01 (post-split).
 
@@ -231,7 +231,7 @@ All three have since closed; Q8a (doc/code skew) was promoted to a standing oper
 
 ## 10. Interaction with other rules and skills
 
-- **`ooda-loop` is the sibling skill.** Tactical / recoverable / tempo work runs through OODA, not this skill. Selection criterion: if the work is structural / low-reversibility / requires statistical support, this skill. If tactical / recoverable / tempo-driven, exit and use OODA. Tiebreaker: if the falsifiable hypothesis cannot be stated in one sentence, the work is not yet INQHIORI territory — run OODA, gather observations, let INQHIORI activate when a hypothesis crystallizes. Canon: docs/methodology/inqhiori-canon.md (§14).
+- **Tactical work is not this skill's** (the `ooda-loop` skill was retired 2026-10-24). Tactical / recoverable / tempo work runs through OODA as a loop; live execution decisions follow `c1-rail` and [AGENTS.md §Live-execution posture](../../../AGENTS.md#live-execution-posture) (the `ooda-loop` skill was retired 2026-10-24). Selection criterion: if the work is structural / low-reversibility / requires statistical support, this skill. If tactical / recoverable / tempo-driven, exit and use OODA. Tiebreaker: if the falsifiable hypothesis cannot be stated in one sentence, the work is not yet INQHIORI territory — run OODA, gather observations, let INQHIORI activate when a hypothesis crystallizes. Canon: docs/methodology/inqhiori-canon.md (§14).
 - **`code-defect-debugging` is the sibling for deterministic code bugs.** Code returning the wrong value, scripts crashing, output magnitudes implausible vs reference, cross-platform output diverging — those are not INQHIORI questions, they are deterministic-defect questions. Selection criterion: if the failure is "code is doing something inconsistent with its inputs" and re-runs reproduce deterministically, exit to that skill. If the failure is "the strategy / methodology is producing unexpected statistical behavior," this skill applies. Tail-methodology-exhaustion (§6 guardrail #6) and that skill's Phase 4.5 mirror each other; misrouting between the two skills is the most common cost in this region.
 - **Rule 0** is canonical in `docs/rule_0.md`. Pre-loop gate at both layers — pre-Identify here, pre-Observe in OODA. See §0.
 - **Rule 1 (small-cell variance prior)** — page `34cdc0b53c11812cbb4ff637ba44736e` — still binds. Small cohorts trigger caution at the Observe / Reflect phase regardless of how the gate filtered the corpus.
@@ -284,7 +284,7 @@ Keep these short. The point is the criterion update; everything else is provenan
 
 ## 13. Usage notes for Claude (web and Code)
 
-- **Loop selection precedes everything else.** Before any of the below, confirm the work is INQHIORI (structural / statistical / low-reversibility). If it's tactical/tempo, exit to `ooda-loop`. See §10.
+- **Loop selection precedes everything else.** Before any of the below, confirm the work is INQHIORI (structural / statistical / low-reversibility). If it's tactical/tempo, exit this skill; live execution decisions follow `c1-rail` and [AGENTS.md §Live-execution posture](../../../AGENTS.md#live-execution-posture) (the `ooda-loop` skill was retired 2026-10-24). See §10.
 - **Rule 0 first, every time.** §0 is not optional. Read source before authoring.
 - **Both clients reference this skill and `docs/methodology/inqhiori-canon.md`**, not the orthogonal-framing predecessors.
 - **Briefs that author Inquire-phase questions** include the mandatory Pre-Q gate header from §3.
