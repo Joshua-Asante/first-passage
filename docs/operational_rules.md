@@ -2,9 +2,199 @@
 
 Hard rules. No exceptions. Each rule is here because it was violated or nearly violated in the past and the correction was costly.
 
-Cite a section here as `operational_rules §N`. A bare "Rule N" is reserved for the core rule
-list ([consolidation plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §4); older
+Cite a section here as `operational_rules §N`. A bare "Rule N" means a core rule
+([below](#core-rules--full-statements); indexed in [AGENTS.md §Core rules](../AGENTS.md#core-rules)); older
 records resolve through the [legacy citation map](#legacy-citation-map) below.
+
+## Core rules — full statements
+
+The core rule list, Rule 0 to Rule 41, as ruled 2026-10-25
+([plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §3, §5). AGENTS.md §Core rules
+indexes them. Each statement is the rule; its owners hold the binding detail. Frozen controls
+(Rules 10–15) point to their owners and weaken nothing.
+
+### Authority, review and orientation
+
+#### Rule 0 — Audit first
+
+Read the production source or primary artifact before a claim, brief, decision or edit. Prior docs, memory, handoffs and self-consistent artifacts are premises to verify; load-bearing claims need code-resident checks; returned work is judged against its artifacts. *Owner:* [`docs/rule_0.md`](rule_0.md); [operational_rules §8–§9](operational_rules.md) (§0 sub-rules); `verify-source`, `handoff-verify` skills.
+
+#### Rule 1 — Small-cell variance prior
+
+Small samples and short streaks are variance: no parameter, size, timing or signal change on them, no override of a valid signal on a narrative or forecast, and no regime overlay without a full INQHIORI investigation. *Owner:* [INQHIORI canon](methodology/inqhiori-canon.md) (numeral fixed by Rule 2 ADR §5.7); [operational_rules §1, §4](operational_rules.md).
+
+#### Rule 2 — Budget before acting
+
+Budget substantial work in one line — iterations by loop class, plus $ and K where it spends, never minutes; at the bound make a structured stop and never expand silently or weaken acceptance. *Owner:* [Rule 2 ADR](adr/2026-06-16-rule-2-budget-before-acting.md); canon §15.
+
+#### Rule 3 — The operator decides; grants are literal
+
+Direct operator instructions govern; a ruling, GO or record grants only what it states, and history, relays or other agents add none. Ratification, spend, retirement, GO/NO-GO and irreversible acts are operator acts: an agent performs one only under the operator's direction or a standing GO that names it (directed trading, the conditioned merge GO); deletion follows its classification by execution and consequence (Rule 31). A tool's or control's refusal is reported, never worked around; no value judgment waives a legal, capital, credential, private-data, verification or release control. *Owner:* [AGENTS.md §Purpose](../AGENTS.md); [surface-allocation ADR](adr/2026-07-14-cc-cursor-surface-allocation.md) (decision packets; approval bound to its object).
+
+#### Rule 4 — Seats, action classes and cards
+
+Act within the seat's grants and the card's authority block — cards only narrow and never grant an operator act or forbidden capability; parallel workers keep disjoint footprints and single-writer reserved files; a frozen card's worker returns contradictions, not scope changes, as a pushed branch plus PR with a four-state status. *Owner:* [surface-allocation ADR](adr/2026-07-14-cc-cursor-surface-allocation.md); [`scripts/seat_authority.yml`](../scripts/seat_authority.yml).
+
+#### Rule 5 — A separate reviewer
+
+Claude does not review its own work: Codex is the separate reviewer and reviewer ≠ planner, and before ratification of an ADR, prereg or closure Codex's review covers premises, calculations, gate evidence and contradictions — an ordinary diff review does not cover that adjudication. A Claude-run review or panel is optional author input, never the review. *Owner:* [surface-allocation ADR Addendum 2026-10-25](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work); [scripts/README §Independent review](../scripts/README.md#independent-review).
+
+#### Rule 6 — PRs and merges
+
+Land work by PR from a `codex/` or `claude/` branch; merge only pinned to a head whose Codex review is clean within three reviews, or on a clean fourth, and whose checks are all green; never auto-merge, never merge a DRAFT/HOLD without an explicit lift, never rewrite pushed history you do not own; resolve a concurrent-session collision before pushing. *Owner:* [surface-allocation ADR Addendum 2026-10-24b](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody); [operational_rules §12](operational_rules.md).
+
+#### Rule 7 — Stop after two failed corrections
+
+After two failed corrections of one issue — this count overrides any per-skill bound — stop, summarize and restart cleaner on the named escalation lane; a PR whose Codex reviews found issues three times returns to its owner for a rewrite unless a fourth review is clean. *Owner:* [AGENTS.md §Continuous improvement](../AGENTS.md); surface-allocation ADR escalation triggers.
+
+#### Rule 8 — Orient and dedup first
+
+Start from STATE and the owning plan or record; before new research or a new artifact, search CATALOG In-flight, briefs INDEX, the instrument ledger and rejection bars and paste the literal output — an empty search proves nothing. *Owner:* [operational_rules §8.8](operational_rules.md) (dedup-first ADR is rationale).
+
+#### Rule 9 — Name the question; pick the loop
+
+Before substantial work name the question and the decision it changes (pre-Q gate, D-S-A) and pick the loop tier — INNER, OUTER, STRATEGIC or GRAND — by reversibility, exiting to the owning skill lane. *Owner:* [INQHIORI canon §1–§8, §14](methodology/inqhiori-canon.md); three-loop ADR.
+
+### Frozen controls (point to, never weaken)
+
+#### Rule 10 — Live-execution gates
+
+Confirm host state first; arming an instance needs its own M1 RESOLVED; live spend needs M1 plus a per-session operator GO inside the signed ceiling; disarm before `armed_until`; orders, exits and cancels require operator direction for the act, except the weekly account-preservation trade covered by the standing, revocable GO, whose supported-platform, authenticated-surface and disarmed-rail conditions remain binding; deploys and host access are operator acts; no discretionary manual strategy execution; venue compliance terms (Tradeify eval: native logic only) bind every deployment. *Owner:* [AGENTS.md §Live-execution posture](../AGENTS.md); `c1-rail` skill; rail-GO, M1 and deployment-checklist records.
+
+#### Rule 11 — Rail operating invariants
+
+Fresh tag per payload; a send is not a fill; an unobserved side effect is IN_DOUBT and reconciled, never auto-retried; an unhealthy source emits nothing and an unknown request halts; exits, flats and disarms never wait while risk-adds halt on any unpersisted decision; recovery never restores authority; operation is attended. *Owner:* c1 monitoring-maturity, S2/S2b daemon and incident-contract records.
+
+#### Rule 12 — Credentials
+
+Act under the agent's own scoped credentials, never the operator's; hold no Fly or broker credential; reference secrets, never embed them. *Owner:* [surface-allocation ADR Addendum 2026-10-24b B](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody).
+
+#### Rule 13 — Private data and the public clone
+
+Never commit or quote account identifiers, P&L, locked-book backtest figures or parameter values, vendor CSVs, Pine or locked ports; read the private surface in place only and never pass it to an external service; the VM copy exception is the §60 addenda's alone. *Owner:* [AGENTS.md §Public-clone posture](../AGENTS.md); campaign §60; [VM policy](governance/azure-compute-vm-policy.md); visibility-transition ADR.
+
+#### Rule 14 — Locked parameters and protection
+
+Locked parameters, allocations and Pine are immutable (Pine owns strategy parameters; `BASE_RISK` is the live sizing authority); dd_protection's constants and structure change only by pre-registration → re-MC → the both-halves regime gate where it applies → admitting ADR; the MC calibration literals are historical facts kept verbatim in AGENTS.md for the recall parser, never replaced by a new re-MC, and moved or reworded only with that parser; a lock is complete only when its skew audit has run and every consumer reflects it. *Owner:* [AGENTS.md §Strategy Reference, §Protection](../AGENTS.md); [operational_rules §5–§6](operational_rules.md); [regime gate](methodology/regime_robustness_gate.md) (change-control order).
+
+#### Rule 15 — Capital authorization is separate and revocable
+
+Lock, capital authorization and venue deployment are separate axes and each fact lives at one level (book, edition, deployment); an account holds one pre-registered book; decay permits only pre-registered de-risking and upward moves need their full gate chain; automation moves authorization down only, bar the sandbox lane; retirement needs operator GO; a de-scope is not escaped by renaming; neither a lock nor a result grants capital. *Owner:* [`strategy_lifecycle.md`](methodology/strategy_lifecycle.md); lifecycle, venue-binding and book-segregation ADRs.
+
+### Firms, venues, data and figures
+
+#### Rule 16 — Firm rules: one source and a pre-flight
+
+Define firm rules once in `core/firm_rules.py` and import them; every tier carries `starting_balance`; run the engine pre-flight; an unsourced venue rule is flagged and blocked, never defaulted away; documented-but-unmodelled terms live in the prop envelope; a new firm needs an ADR and a re-MC when used. *Owner:* firm-constants ADR; `ops/prop_envelope_default.md`.
+
+#### Rule 17 — Venue facts: quote, source, date, scope
+
+Record venue obligations verbatim with source, date read and scope; silence on scope reads broad; never inherit a qualifier the source lacks; model discretionary or warning-first limits as enforced. *Owner:* [operational_rules §13](operational_rules.md).
+
+#### Rule 18 — Feeds are admitted, never assumed
+
+The canonical research feed is the CME TV exports; retired feeds and vendors stay retired and their retained data is historical only; a new feed needs an ADR and the feed-equivalence pre-flight; pre-filter and confirm run on one feed; geometry is feed-specific; research code never wires toward live execution. *Owner:* TV-CSV feed-policy ADR; feed-equivalence spec; vendor retirement ADRs.
+
+#### Rule 19 — Vendor-data integrity
+
+Commit each SHA256SUMS delta with its data change; `bar_data` changes only by a fresh operator CME export; install hooks per clone and never use `--no-verify` as the standing path; verify non-regenerable bytes before removing them. *Owner:* [manifest-integrity ADR](adr/2026-05-10-manifest-integrity-gate.md).
+
+#### Rule 20 — Figures come from their owner
+
+Quote prop-tier figures through the load-bearing-numbers index and their owners: bust claims are EOD lower bounds unless intraday-honest, and published figures assume the inactivity barrier is off; never invent, hand-edit, extrapolate or transplant a figure — convert borrowed numbers and re-run MC; historical anchors are never live claims. *Owner:* [`docs/load_bearing_numbers.md`](load_bearing_numbers.md) (index) and each figure's owner.
+
+### Verification
+
+#### Rule 21 — Report verification honestly
+
+Report command, interpreter, revision, actual result and record.json; a pass needs completed, exit 0 and stable source; disclose pre-existing failures; a form check is not semantic proof and an unexercised gate is unproven; a regression test exercises the changed production path and distinguishes the defective from the corrected behavior; a re-implementation reproduces its baseline before a delta counts; numbers that feed a gate are computed in code; an override is logged beside the honest result. *Owner:* [AGENTS.md §Python environment](../AGENTS.md); [scripts/README verification evidence](../scripts/README.md#automatic-verification-evidence).
+
+#### Rule 22 — Use the checkout's launcher
+
+Run project Python through `fp` (doctor, test, check); never fall back silently to system Python; spawn with `sys.executable`; the CI substitution covers only the qualification timeout; add no dependency without operator instruction. *Owner:* [AGENTS.md §Python environment](../AGENTS.md); [scripts/README launcher](../scripts/README.md#local-operations-launcher).
+
+### Research
+
+#### Rule 23 — Pre-register; count K honestly
+
+Freeze criteria in their own commit before results; never rescue with post-hoc filters; declare K honestly (no splitting, informal exploration counts); every frozen gate is reachable and binding; frozen preregs and defaults change only by dated superseding record; results on viewed data are exploratory. *Owner:* `futures-anomaly-discovery` skill; candidate-contract ADR; HARV same-units ADR.
+
+#### Rule 24 — Verdicts from the pre-registered gates, in order
+
+Validate mechanically at the declared gates (DSR-at-K, net of costs, intraday-honest clock, placebo and temporal battery) in the evaluation-order sequence; dormant gates re-arm only on a dated operator GO; qualifying risk-control lock changes also clear the regime-robustness gate. *Owner:* [evaluation-order ADR](adr/2026-08-30-evaluation-order.md); `strategy-validation` skill; [regime gate](methodology/regime_robustness_gate.md) (mechanics).
+
+#### Rule 25 — Generation never blesses
+
+Discovery output and harvested strategies are candidates: state a mechanism before mining, admit external mechanisms only through harvest intake, carry the manifest and K into validation, and retire a channel at its liveness ceiling. *Owner:* [`strategy_harvest.md`](methodology/strategy_harvest.md); `futures-anomaly-discovery` skill.
+
+#### Rule 26 — Rejections bar re-proposal
+
+Re-propose a rejected candidate only with new mechanism evidence; route rejections by scope (instrument ledger or register); the register is additions-only and a bar binds once ratified and wired; every closure names its Registry line. *Owner:* [`docs/rejected_candidates.md`](rejected_candidates.md); rejected-candidate-patterns and rejection-register ADRs.
+
+#### Rule 27 — Instrument ledgers
+
+Read `ops/instruments/<SYM>.md` before the first run or edit on an instrument and append a dated disposition at the end; create on first touch, never backfill; keep its PROFILE block and cfg fingerprint current. *Owner:* [operational_rules §10](operational_rules.md); ledger and instrument-profile ADRs.
+
+#### Rule 28 — Closures, falsifiers and audits
+
+Every closure carries a typed Iterate exit and naming a successor never opens it; falsifiers and kill thresholds never move — a fired one's remedy becomes due and dated verdicts are the operator's; retiring an input migrates or retires each falsifier it fed (an unreachable check is not a pass); programme audits run at their cadence. *Owner:* [iterate-exit ADR](adr/2026-08-04-iterate-closure-exit-mandatory.md); [operational_rules §11, §17](operational_rules.md); `programme-audit` skill.
+
+### Records and communication
+
+#### Rule 29 — One canonical owner per fact
+
+Each fact has one owner; elsewhere link it or label a mirror; check and amend the owner before opening a new artifact; AGENTS.md is the only instruction file among five root guides; memory and retired surfaces are never owners; cite code by symbol, not line. *Owner:* [operational_rules §7](operational_rules.md); root-doc charter ADR.
+
+#### Rule 30 — Correct where the error is read
+
+On living rule surfaces delete superseded wording and its marker so the current rule is stated once; frozen evidence keeps its body and gets an addendum with an upstream correction where readers meet it; sweep a withdrawn claim repo-wide by mechanism, not token, and re-read its consumers; recompute corrected numbers from source. *Owner:* [operational_rules §14](operational_rules.md); `blast-radius` skill.
+
+#### Rule 31 — Artifacts earn their place
+
+Keep an artifact only if it passes the retention test; classify deletion by execution, migrate every obligation and reader first, tombstone removed ADRs and pin incoming anchors, verify retrieval; never revive retired code by revert. *Owner:* [operational_rules §16](operational_rules.md); ADR ceremony-tiering.
+
+#### Rule 32 — ADRs only under the admission rule
+
+Create an ADR only when the admission test holds; Accepted needs a dated operator GO; an approved revision updates effective text and keeps the immutable prior; Proposed and DRAFT records decide nothing; the superseded record's header carries every supersession edge, wherever the ruling lives. *Owner:* [ADR ceremony-tiering](adr/2026-08-08-adr-ceremony-tiering.md).
+
+#### Rule 33 — Cards, briefs, notices and lessons follow their form
+
+A card, committed or prompted, carries the full contract — check_brief form, named acceptance tests, authority block, 'Must run locally' when it applies; never retro-fit; observations route through the notice log; lessons are cited from their registry, not re-derived. *Owner:* `brief-authoring` skill; surface-allocation ADR handoff contract; notice-log ADR; [lesson registries](methodology/lessons/).
+
+#### Rule 34 — STATE, SESSIONS and CATALOG stay current and thin
+
+STATE points to owners — at most five queue items, one-line decision bullets, current deadlines; SESSIONS is append-only; CATALOG and INDEX are generated, never hand-edited. *Owner:* root-doc charter ADR; [operational_rules §7](operational_rules.md) STATE rows; catalog-hot ADR.
+
+#### Rule 35 — Fewest words
+
+Use the fewest words that meet the objective and link the owner; no 'not granted' disclaimers, but keep a verdict's limits on how it may be read; never trade away correctness or honest reporting.
+
+#### Rule 36 — Subtract, then improve once
+
+Use the cheapest trustworthy evidence; add no ledger, form, approval layer, registry or tool without a decision; volume is not value; write a rule only after an observed failure and promote feedback only when high-severity or recurring; make at most one durable intervention per mechanism, at the cheapest layer; edit standing instructions only on request. *Owner:* [AGENTS.md §Continuous improvement](../AGENTS.md); `agent-improvement` skill.
+
+### Engineering and routing
+
+#### Rule 37 — Layer boundaries
+
+`core` imports no internal layer, `lab` and `ops` never import each other, and REPO_MAP owns placement; fix an illegal edge by placement, never by relaxing the contract. *Owner:* monorepo-layer ADR; [REPO_MAP.md](../REPO_MAP.md).
+
+#### Rule 38 — Gates and tooling
+
+scripts/gates.yml alone composes gates and report-only checks stay in the audit tier; checkers fail closed — empty input is never green and SKIP is never a pass — and match the storage form without self-matching; cited paths resolve; skills publish only by explicit release. *Owner:* [`scripts/gates.yml`](../scripts/gates.yml); [scripts/README](../scripts/README.md).
+
+#### Rule 39 — Configuration as code
+
+Define reused configuration once and compose it, separate shared, variant and instance layers, validate the resolved configuration where consumed, and keep its identity through deployment. *Owner:* [AGENTS.md §Configuration as code](../AGENTS.md).
+
+#### Rule 40 — Root cause and contract first
+
+Name the mechanism before a fix — no band-aid default, broad except, retry or looser schema without a ROOT CAUSE / FIX / VERIFICATION block; design verifier and order/state code from an invariant table or state model. *Owner:* `code-defect-debugging` skill §11.
+
+#### Rule 41 — Route, host and delegate deliberately
+
+Run cards in the cloud unless they say 'Must run locally'; always-on services run on an always-on host, which never implies unattended arming; split oversized work into gated child units; relays carry communication only. *Owner:* `task-routing`, `work-decomposition`, `relay-skill` skills; [operational_rules §15](operational_rules.md).
+
 
 ---
 
@@ -788,6 +978,7 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-10-25** — §Core rules — full statements added (consolidation ruling D1; AGENTS.md §Core rules indexes it). Rules 6 and 7 carry the same-day clean-fourth-review amendment (surface-allocation ADR Addendum 2026-10-24b A) and Rule 13 names the VM policy as an owner; otherwise the statements are the [plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §3 wording.
 - **2026-10-25** — Living citations repointed from bare "Rule N" to `operational_rules §N`; legacy citation map added (consolidation ruling D2, [plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §4). No rule text changed.
 - **2026-10-24** — Rule 10 Phase-0 cost-geometry pre-gate made report-only (operator ruling, option (b)): the 0.05R PASS/FAIL ceiling and the blocking FAIL removed; `cost_R`, band and sub-ATR flag still recorded. Replaces the same-day pending-decision banner. [`ADR`](adr/2026-06-22-cost-geometry-pregate.md)
 - **2026-10-15** — Rule 9 rewritten from "sync Pine into the worktree" to "read Pine
