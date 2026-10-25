@@ -77,7 +77,7 @@ The executive's PR review and the operator's merge are the independent signature
 coordinator's adjudication of a worker return is an input to them, not a substitute. The executive
 reviews against its own stated goal, not against the coordinator's cards.
 
-**Committed-handoff rule.** Nothing crosses a seat boundary except as a committed, dated file:
+**Committed-handoff rule.** *[⚠ SUPERSEDED 2026-10-24 by operator ruling ([addendum](#addendum-2026-10-24--operator-ruling-seats-bound-to-claude-and-codex-glm-dropped)): a direction or card may cross a seat boundary as a direct prompt (chat, session message or `codex exec`); the return contract — pushed branch plus PR — still holds.]* Nothing crosses a seat boundary except as a committed, dated file:
 an executive direction lands in `STATE.md`'s operator queue or the owning campaign plan; a
 coordinator → worker card lands under `docs/briefs/handoffs/**` (or the lightweight issue below)
 at a pinned SHA; a worker return is a pushed branch plus its PR; the coordinator's synthesis lands
@@ -936,6 +936,7 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Seats are filled only by Claude (Claude Code, Opus 5.5) and Codex (GPT 6.1 Sol or GPT 6 Astra). The Worker row now names Codex and Claude Code sessions; Z Code / GLM is no longer a surface for any seat.
 - Worker branches are `codex/*` or `claude/*`; `glm/*` is withdrawn (`scripts/seat_authority.yml`, `scripts/guard_operator_acts.py`).
 - Addendum 2026-09-26b part C is moot: its subject is gone. It is not discharged, so credential custody for the Codex and Claude seats stays an open question for the operator.
+- **Committed-handoff rule superseded** (Joshua, 2026-10-24: "the committed handoff rule is superceded"). A direction or card may now cross a seat boundary as a direct prompt (chat, a session message or a `codex exec` prompt); it no longer has to be a committed, dated file first. Still in force: Joshua's direct instruction is the only authority (AGENTS.md §Purpose), a worker return is a pushed branch plus its PR, and a card that *is* committed under `docs/briefs/handoffs/` still passes `check_brief.py`.
 - How work divides between the three models is out of scope here; that research (2026-10-24) feeds a later revision of the seat table.
 
 ## Change history
@@ -956,4 +957,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check, GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
 | 2026-09-27 | Addendum 2026-09-27 — operator ruling on handoff-contract item 1: the H4, H5b and H8c cards (dispatched and returned without passing `check_brief.py`) are exempted as recorded deviations, not retro-fitted; the staged-acceptance set is exempted as a set file whose copied-out cards must pass; the undispatched M2 card is restructured instead. Enforcement at the operator's same-day direction: the `handoff-brief-form` gate (forward-only from 2026-09-27, plus any card with an authority block; the four exempt files named). Item 1 gains a pointer; the enforcement-point table gains a *card form* row. | Joshua (ruling, direction) + Claude Code |
 | 2026-09-30 | Addendum 2026-09-30b — proposed: operator-directed orders, exits and cancels are `trade.submit`, operator act (`high`), never grantable in a card; ratified on operator merge. Original X-1 sweep hold is historical; completed sweep inventory and evidence are on #566 (2026-10-01). | Joshua (direction) + Codex |
-| 2026-10-24 | Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped; `glm/*` branches withdrawn; 2026-09-26b part C moot | Joshua |
+| 2026-10-24 | Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped; `glm/*` branches withdrawn; 2026-09-26b part C moot; committed-handoff rule superseded | Joshua |
