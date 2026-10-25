@@ -1,7 +1,7 @@
 # Idempotent deployment of the compute-VM backstop (policy:
 # docs/governance/azure-compute-vm-policy.md). Run by, or under the az login of,
 # a subscription owner. Creates an Automation account with a system identity, a
-# custom role (VM read, deallocate, metrics read) assigned on the VM only, the
+# custom role (VM read, deallocate, metrics and activity-log read) assigned on the VM only, the
 # runbook, a 4-hourly schedule, then one probe job. Never prints the subscription ID.
 param(
     [string]$ResourceGroup = 'fp-compute-01_group',
@@ -44,7 +44,8 @@ $principal = $a.identity.principalId
 $role = @{ Name = $roleName; IsCustom = $true
     Description = 'Read status and CPU metrics of the compute VM and deallocate it; nothing else.'
     Actions = @('Microsoft.Compute/virtualMachines/read', 'Microsoft.Compute/virtualMachines/deallocate/action',
-                'Microsoft.Insights/metrics/read', 'Microsoft.Insights/metricDefinitions/read')
+                'Microsoft.Insights/metrics/read', 'Microsoft.Insights/metricDefinitions/read',
+                'Microsoft.Insights/eventtypes/values/read')
     NotActions = @(); AssignableScopes = @($rgId) }
 $roleFile = New-TemporaryFile
 try {
@@ -74,11 +75,12 @@ Arm POST "$acct/runbooks/$runbook/publish" $null | Out-Null
 $startTime = [datetimeoffset]::UtcNow.AddMinutes(15).ToString('yyyy-MM-ddTHH:mm:00Z')
 Arm PUT "$acct/schedules/$schedule" @{ properties = @{ startTime = $startTime; frequency = 'Hour'; interval = 4; timeZone = 'UTC' } } | Out-Null
 try { Arm DELETE "$acct/jobSchedules/$jobScheduleId" $null | Out-Null } catch { }
-Arm PUT "$acct/jobSchedules/$jobScheduleId" @{ properties = @{ schedule = @{ name = $schedule }; runbook = @{ name = $runbook } } } | Out-Null
+$binding = @{ ResourceGroup = $ResourceGroup; VmName = $VmName }  # same VM the role is assigned on
+Arm PUT "$acct/jobSchedules/$jobScheduleId" @{ properties = @{ schedule = @{ name = $schedule }; runbook = @{ name = $runbook }; parameters = $binding } } | Out-Null
 
 'probe job'
 $job = [guid]::NewGuid().ToString()
-Arm PUT "$acct/jobs/$job" @{ properties = @{ runbook = @{ name = $runbook } } } | Out-Null
+Arm PUT "$acct/jobs/$job" @{ properties = @{ runbook = @{ name = $runbook }; parameters = $binding } } | Out-Null
 do { Start-Sleep 15; $status = (Arm GET "$acct/jobs/$job" $null).properties.status } while ($status -notin 'Completed', 'Failed', 'Stopped', 'Suspended')
 "probe status: $status"
 Invoke-Az rest --method GET --url "https://management.azure.com$acct/jobs/$job/output?$api"

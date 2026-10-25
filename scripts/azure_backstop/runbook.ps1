@@ -25,18 +25,26 @@ $metric = Get-AzMetric -ResourceId $vm.Id -MetricName 'Percentage CPU' -Aggregat
 $points = @($metric.Data | Where-Object { $null -ne $_.Average } | ForEach-Object Average)
 $cpu = if ($points.Count) { [math]::Round(($points | Measure-Object -Average).Average, 2) } else { $null }
 
+$lastStart = Get-AzActivityLog -ResourceId $vm.Id -StartTime $now.UtcDateTime.AddHours(-($MaxHours + 5)) -WarningAction SilentlyContinue |
+    Where-Object { $_.OperationName.Value -eq 'Microsoft.Compute/virtualMachines/start/action' -and $_.Status.Value -eq 'Succeeded' } |
+    ForEach-Object { [datetimeoffset]$_.EventTimestamp } | Sort-Object | Select-Object -Last 1
 if ($power -in 'VM deallocated', 'VM deallocating') {
     Set-AutomationVariable -Name $seenVar -Value 'none'
-    "OK: $power (cpu points=$($points.Count))"
+    "OK: $power (cpu points=$($points.Count), last start $lastStart)"
     return
 }
 
-# Start time: the earlier of the last provisioning operation and the first check
-# that saw the VM allocated, so a later operation cannot extend the cap.
+# Start time: the last successful start in the activity log, so a deallocate and
+# restart between checks begins a new baseline; other operations never move it.
+# Without a logged start, the first check that saw the VM allocated (or the last
+# provisioning operation, if earlier) is the baseline.
 $seen = Get-AutomationVariable -Name $seenVar
-if ($seen -eq 'none') { $seen = $now.ToString('o'); Set-AutomationVariable -Name $seenVar -Value $seen }
-$start = @([datetimeoffset]::Parse($seen)) + @($provisioned | Where-Object { $_ } | ForEach-Object { [datetimeoffset]$_ }) |
-    Sort-Object | Select-Object -First 1
+$start = if ($seen -ne 'none') { [datetimeoffset]::Parse($seen) }
+if ($lastStart -and (-not $start -or $lastStart -gt $start)) { $start = $lastStart }
+elseif (-not $start) {
+    $start = @($now) + @($provisioned | Where-Object { $_ } | ForEach-Object { [datetimeoffset]$_ }) | Sort-Object | Select-Object -First 1
+}
+if ($start.ToString('o') -ne $seen) { Set-AutomationVariable -Name $seenVar -Value $start.ToString('o') }
 $hours = [math]::Round(($now - $start).TotalHours, 2)
 
 $reason = if ($power -eq 'VM stopped') { 'stopped but still allocated' }
