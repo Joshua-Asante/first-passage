@@ -10,6 +10,7 @@
 **Supersedes:** `2026-06-12-rnd-feed-instrument-class-split.md` full - premise (split R&D feeds by instrument class, Dukascopy serving FX/metals) mooted by full retirement; was Proposed, never ratified.
 **Related:** Q-FEED-1 (`docs/ltm/briefs/Q-FEED-1-dukascopy-tv-feed-divergence.md`) — closed `RESOLVED-BY-RETIREMENT` by this ADR. Design spec: [`docs/spec/2026-06-17-dukascopy-retirement-design.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/spec/2026-06-17-dukascopy-retirement-design.md). Does NOT affect `docs/spec/feed_equivalence_discovery_test_LOCKED.md` (firm-onboarding execution-feed equivalence — different question).
 **Layer:** infrastructure (R&D data-acquisition layer + the governance doctrine over it)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-6); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -71,7 +72,6 @@ This ADR accepts a real cost (§6): deep multi-year M15 FX/metals history for `N
 ## §5 — Forbidden moves (under this ADR)
 
 - **Re-introducing a programmatic bar feed (Dukascopy or a REST adapter) by convention without an ADR** — Dukascopy's "canonical R&D feed" status originally existed only in PR #152 + handoff briefs, never an ADR; that un-governed convention is exactly what the 2026-06-12 ADRs and this one exist to prevent recurring. A programmatic feed returns only via the §4 revert trigger or a fresh Pre-Q, not by quietly adding an adapter.
-- **Citing the retained cached `*_duka.csv` bars as canonical-fresh** — they are frozen historical provenance, not a live feed. Using them to back a new verdict re-introduces the retired feed through the back door.
 - **Loosening the §4 trigger after a deep-history gate proves annoying to assemble** — "the export was tedious so we lowered the bar" is `p`-hacking at the methodology layer. The tedium IS the trigger; fire it openly (supersede), do not edit §4.
 - **Re-proposing the instrument-class split or full-Dukascopy retention without new mechanism evidence** — those alternatives (§3) are ruled out for stated reasons; reviving one requires evidence invalidating the §3 reason, not renewed cost frustration.
 - **Writing producer intermediates (`*_pep.csv`, `*.bars.csv`) into `core/data/bar_data/`** — `bar_data/` holds only canonical `<SYMBOL>_M15.csv`; `feed_loader` would silently load a stray intermediate.

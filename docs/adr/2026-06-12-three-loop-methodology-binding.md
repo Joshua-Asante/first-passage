@@ -9,6 +9,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-82); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Owner:** Joshua
 **Author:** Claude (Tech Advisor), authored in claude.ai (briefs/methodology/no-commits role); landed to repo via Claude Code 2026-06-12 (the repo uses date-prefixed ADR filenames, not sequential `NNN` — `NNN`→date applied, §0 anchors populated, and audit-hook paths repointed at landing).
 **Loop-of-Record:** STRATEGIC — this ADR binds methodology authority to loop tiers, which is itself a Strategic-loop act (governance of what governs). Load-bearing clause: D2/D3 change which sessions may execute programme-tier Deletes. Switch-gate: N/A (no lower-loop execution component).
@@ -103,7 +104,7 @@ ADOPTED when all four are true; otherwise OPEN with the failing item named:
 3. Consolidated INQHIORI skill description carries the one-line routing ("Outer loop; siblings: ooda-loop = Inner; Algorithm Strategic-tier verdicts bind via LoR") — rides the Phase-R0 skill-dedup CC handoff, not a separate dispatch.
 4. Memory carries one edit: binding + pointer. *(Executed 2026-06-12; verify per §10.)*
 
-Graduation PROPOSED→ACCEPTED: per §4 H at first programme audit. FALSIFIED/AMENDED: per §4 otherwise-branch.
+FALSIFIED/AMENDED: per §4 otherwise-branch.
 **Graduated 2026-07-06 (D1–D3) — see Ratification Note below.**
 
 ---

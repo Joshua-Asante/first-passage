@@ -8,6 +8,7 @@
 **Date:** 2026-05-23
 **Authors:** Joshua
 **Supersedes:** `2026-05-14-allocation-refresh.md` full - carries forward the no-version-bump doctrine (2026-05-14 ADR Open items 1+2, ratified 2026-05-23); v4.5/v1 designations retained at new production parameters.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-77, ADR01-81, ADR01-87); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -143,7 +144,7 @@ This ADR proceeds without executing the regime-robustness gate (half-panel split
 
 4. **Forward revert trigger is operationalized.** Same quarterly `time_to_pass.py --regime-check` cadence from the 2026-05-08 + 2026-05-14 ADRs (next dates 2026-08-08, 2026-11-08, 2027-02-08, 2027-05-08). Combined with the live-PnL edge-captured falsifier in §Falsifier (now extended to NAS100 in addition to DJ30), the regime-fragility risk has dual catch-paths.
 
-5. **The 2026-05-14 ADR set the override precedent for this lock-cycle pattern.** Two consecutive allocation refreshes overriding the same gate on the same template constitutes a doctrinal pattern. If a future ADR makes a third such override, the regime-robustness gate's scope-ambiguity (literal-`dd_protection`-only vs reasonable-allocation-inclusive) needs explicit doctrinal resolution. Flagged as a forward methodology open item; not blocking on this ADR.
+5. **The 2026-05-14 ADR set the override precedent for this lock-cycle pattern.** Two consecutive allocation refreshes overriding the same gate on the same template constitutes a doctrinal pattern.
 
 The dissent on regime-robustness is preserved: a future panel update with materially different USDJPY / DJ30 / NAS dynamics could surface H1-like asymmetry. This override accepts that risk.
 
@@ -166,7 +167,6 @@ The dissent on regime-robustness is preserved: a future panel update with materi
 - **Bumping NAS allocation further DOWN below 0.37% without re-running MC and verifying the falsifier.** NAS bust share at 0.37% is 2.0% — well below its allocation share — but the diversification thesis at NAS100 lock assumed at-or-above-allocation-share contribution. Below 0.37% pushes NAS into territory where the diversification budget is unused.
 - **Bumping DJ30 risk above 0.70% or pyramid above 750% without re-running MC.** Both parameters moved together; further movement in the same direction (hotter DJ30) needs fresh MC validation against the lock criteria. p99 DD 4.37% has 0.63pp headroom — a +30% pyramid bump or +10% risk bump could plausibly close that headroom.
 - **Reverting DJ30 alone while keeping NAS at 0.37%.** Same coupling argument as 2026-05-14 ADR's forbidden move #3 — but inverted. If reverting, revert both DJ30 risk/pyramid AND NAS100 risk to the 2026-05-16 baseline together.
-- **Skipping the next four quarterly `time_to_pass.py --regime-check` runs.** The override's only retrospective safety net is the quarterly cadence.
 - **Amending this ADR mid-investigation if forward data goes sideways.** Per `brief-authoring` trap #12: if §Falsifier fires, the discipline is to close this ADR (status → SUPERSEDED-BY-NNN) and open a fresh ADR with the new gate criteria, not amend in place.
 - **Updating CLAUDE.md headline anchor to this ADR's MC numbers without simultaneously moving the 2026-05-16 anchor to "Prior anchors (historical)".** Cross-doc consistency requires both moves in the same commit set.
 
@@ -206,33 +206,9 @@ No changes to:
 
 ## Audit hooks
 
+The allocation, CSV-wiring, anchor-pin, quarterly regime-check and `journal_review` hooks targeted retired paths and duties (see the 2026-08-02 addendum); they are recoverable at the prior decision commit.
+
 ```
-# Verify the allocations are still locked
-$ grep -A6 "^ALLOCATIONS" portfolio_mc.py
-# Expected: striker 0.0070, striker_nas100 0.0037
-
-# Verify the variant CSVs are still wired
-$ grep -E "(2a704|237b7|ad2b7|8c850)" portfolio_mc.py
-# Expected: four hits — one per strategy in PEPPERSTONE_PANELS
-
-# Verify the MC anchor pin matches this ADR
-$ grep -E "0.9983|0.0017|0.0437" tests/test_mc_anchors.py
-# Expected: three hits in test_pepperstone_anchor
-
-# Verify the four production-constants files are aligned
-$ grep "0.0070\|0.0037" firm_rules.py portfolio_mc.py dd_protection.py
-$ grep -E "0.70|0.37" live_journal/scripts/journal_review.py
-# Expected: BASE_RISK / _BASE_RISK / ALLOCATIONS / STRATEGIES all match
-
-# Run the regime-robustness retrospective check (quarterly cadence)
-$ python analysis/time_to_pass.py --regime-check
-# Expected: pass-rate >= 95% on both recent and prior 6mo windows
-
-# Verify the falsifier hasn't fired (live-PnL edge-captured ratio for DJ30 + NAS100)
-$ python analysis/journal_review.py --strategy striker      --since 2026-05-23
-$ python analysis/journal_review.py --strategy striker_nas  --since 2026-05-23
-# Expected: edge_captured_ratio >= 0.70 over >= 30 trades each
-
 # Verify no superseding ADR has shipped without back-linking
 $ grep -l "Supersedes: 2026-05-23-allocation-refresh-2" docs/adr/
 # Expected: empty (or, if shipped, this ADR's status updated to SUPERSEDED-BY)
@@ -256,8 +232,6 @@ $ grep "Status:" docs/adr/2026-05-14-allocation-refresh.md
 
 5. **Pyramid annotation parity in CLAUDE.md table.** This ADR adds "(pyramid 1000%)" annotation to the NAS100 row in CLAUDE.md's Strategy Reference table, mirroring the DJ30 "(pyramid 750%)" annotation. This is a doc-clarity change, not a parameter change. The annotation is now self-consistent for both pyramid strategies.
 
-6. **Regime-robustness gate scope ambiguity.** Two consecutive allocation refreshes have overridden the gate on the same "ambiguous-in-scope" template (2026-05-14 + 2026-05-23). A third such override should trigger explicit doctrinal resolution of whether allocations are in-scope or out-of-scope for the gate. **Forward consideration:** if a third allocation-refresh ADR ships without running the gate, author a methodology amendment to `docs/methodology/regime_robustness_gate.md` making the scope decision explicit (one direction or the other), instead of perpetuating the override-with-grounds template.
-
 ---
 
 ## Cross-references
@@ -280,39 +254,7 @@ $ grep "Status:" docs/adr/2026-05-14-allocation-refresh.md
 
 ## Verification
 
-```
-# 1. MC anchor reproduces
-$ python portfolio_mc.py --panel pepperstone
-# Expected (tail): Pass: 99.83% / Bust: 0.17% / p99 DD: 4.37% / median 26
-
-$ python portfolio_mc.py --panel oanda
-# Expected (tail): Pass: 99.58% / Bust: 0.42% / p99 DD: 4.78% / median 27
-
-# 2. Test pins pass
-$ python -m pytest tests/test_mc_anchors.py -v
-# Expected: 8 passed
-
-# 3. Full test suite green (modulo pre-existing Windows-autocrlf failures in test_ingest.py)
-$ python -m pytest -q
-# Expected: only the 3 pre-existing test_ingest.py CRLF/LF fixture-byte-identity failures
-# remain; all other tests green. The 3 ingest failures pre-date this commit and are
-# documented as unrelated Windows-environment artifacts.
-
-# 4. Manifest integrity
-$ python scripts/check_data_manifests.py
-# Expected: no output (silent success)
-
-# 5. CLAUDE.md / README / regime_robustness_gate.md / repo_context.md / mc_anchor_evolution
-#    headline anchor consistency
-$ grep -l "99.83" CLAUDE.md README.md docs/methodology/regime_robustness_gate.md \
-                  docs/notion/repo_context.md docs/analytics/mc_anchor_evolution/README.md
-# Expected: all five files
-
-# 6. Brief-authoring discipline check
-$ python ~/.claude/skills/anthropic-skills/brief-authoring/scripts/check_brief.py \
-         docs/adr/2026-05-23-allocation-refresh-2.md
-# Expected: 6/6 checks PASS
-```
+One-time pre-adoption checks (MC anchor reproduction, test pins, full suite, manifest integrity, anchor consistency, brief check) ran before this ADR's lock commit; the commands are recoverable at the prior decision commit.
 
 ---
 

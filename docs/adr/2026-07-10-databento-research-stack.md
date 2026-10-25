@@ -12,6 +12,7 @@
 **Supersedes:** none. Extends the research layer; touches no execution, allocation, or strategy decision.
 **Related:** `docs/ltm/briefs/futures_residual_program_2026-07-05.md` (the pre-registered lanes this stack serves — R5 DJ30/MYM edition, Aegis→6J, Guardian-MGC); `docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md` (P2 FALSIFIED on the as-mapped CME-micro venue — the finding that motivates *discovery-first* rebuilding instead of re-mapping CFD edges); `docs/adr/2026-06-17-dukascopy-retirement.md` + `docs/adr/2026-06-24-oanda-retirement.md` (prior data-feed retirements — Databento is the first vendor feed added since, and the first tick/book-capable one); `docs/adr/2026-06-05-monorepo-layer-boundaries.md` (the boundary contract the additions must survive); the 2026-07-09 DJ30→MYM prototype falsification (memory: structural venue costs, not tunable — the dead end that makes anomaly-*discovery* on native futures data the surviving research direction).
 **Layer:** infrastructure + methodology (research tooling only). **Not** strategy/risk-control parameters — no SL/TP/ATR/risk%/pyramid constant, no `dd_protection` constant, no allocation, no Pine source is touched. The locked MC anchor (99.83/0.17/4.37) is untouched.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-83, ADR03-85, ADR03-87); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -95,11 +96,9 @@ Component roles:
 
 - **Wiring Nautilus (or any research component) toward live execution** — tempting once it's installed and simulating fills well; ruled out because no Rithmic adapter exists and the rail decision belongs to R6 (operator-only, unmade). Research code never places an order.
 - **Running any discovery tool before `register_search.py open`** — the "just a quick look at the matrix profile" move. K cannot be declared after results are seen; the script refuses `close` without `open`, and the operator side must refuse the informal peek.
-- **Pulling MBO/MBP-10 before a bar-level candidate survives** — the granularity temptation is the classic way to burn the credit budget on a hypothesis bars would have killed free. Schema ladder is binding.
 - **Skipping the estimate because "it's small"** — every pull, no exceptions; the estimate is free by construction.
 - **Adding research deps to `pyproject.toml` or installing them into the ops env** — single-environment convenience is exactly how a numba/Julia stack destabilizes the pipeline that computes live multipliers.
 - **Treating a parent-era (ES/NQ/YM/GC) result as micro-validated** — the 1:10 economics re-scale + native-micro 2019+ OOS gate are mandatory before any candidate is trusted (proxy discipline).
-- **"Improving" the three delivered skills or scripts during integration** — they are authored, tested deliverables; integration is as-is. Post-integration amendments go through the normal skill-authoring path with their own review.
 - **Hardcoding, printing, or committing `DATABENTO_API_KEY`** — env-var reference only, everywhere, always.
 
 ---
@@ -117,7 +116,6 @@ Component roles:
 
 **Risks:**
 - Stack-version drift (nautilus/vectorbt/numba pins are tight) — mitigated by the lockfile; upgrades are deliberate, not incidental.
-- The JPY micro (M6J vs MJY, quote inversion) is flagged UNRESOLVED in `reference/proxy-discipline.md` — building the FX lane before resolving it is a named red-flag stop, not an ADR risk to accept.
 
 **Downstream artifacts:**
 - The three skills + lockfile land in the same commit as this ADR. `CLAUDE.md` / `STATE.md` are deliberately untouched (handoff scope); if the stack becomes load-bearing for a live decision, surfacing it in `CLAUDE.md` is a follow-up, not part of this change.

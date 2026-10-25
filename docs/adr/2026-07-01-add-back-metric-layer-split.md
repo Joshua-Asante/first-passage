@@ -14,6 +14,7 @@
 **Loop-of-Record:** STRATEGIC — this amends a canon calibration metric (governance of what governs); low-reversibility canon edit. Landed PROPOSED; graduation PROPOSED→ACCEPTED is the owner's Strategic act (no-borrowing per `docs/adr/2026-06-12-three-loop-methodology-binding.md` D3 — CC proposes, owner ratifies).
 **Rule-2 budget:** OUTER (8 iterations) for the authoring execution. Landed under budget.
 **Amends / extends:** `docs/adr/2026-06-12-three-loop-methodology-binding.md` §2 **D4** (add-back-rate metric) + its canon mirror `docs/methodology/inqhiori-canon.md` §14. For the **add-back metric definition specifically, this ADR governs**; the three-loop ADR governs the binding.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-48); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -84,7 +85,6 @@ The definition-as-written is a **latent cross-layer contamination** (programme-a
 2. **Using Guardian Silver — or any strategy/track/instrument reversal — as evidence in a *methodology* audit.** Object-layer anchor for (b) only. Symmetric: no rejected-signal re-accept in a *portfolio* audit.
 3. **Amending the metric definition in place without an ADR of record.** A Strategic canon edit needs a recorded decision (this ADR); a silent in-canon patch is the no-borrowing violation (three-loop D3).
 4. **Letting either band auto-tune a threshold.** The three-loop ADR §5 #6 already forbids self-tuning governance; restated here per-instrument. Bands inform the audit; the audit decides.
-5. **Editing `docs/rejected_candidates.md` per-entry `addback_condition` fields or the 2026-06-14 rejected-candidate-patterns §C gate.** Those are the object-layer per-candidate *gate* (a distinct device); this ADR splits the aggregate *rate*, not the gate. Out of scope.
 
 ---
 

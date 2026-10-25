@@ -12,6 +12,7 @@
 **Author:** Claude (Tech Advisor), authored in claude.ai (briefs/methodology/no-commits role); landed to repo via Claude Code 2026-06-16. **Numeral reconciled at landing: the handoff proposed "Rule 1"; Phase-0 read found "Rule 1" already occupied by the live canon rule "small-cell variance prior" (`inqhiori-canon.md:245`/`:268`). Owner adjudicated the new rule as "Rule 2" on 2026-06-16. See §0/§1.**
 **Loop-of-Record:** STRATEGIC — this commits a new constitutional numeral that binds all future artifacts (a governance act on what governs); low-reversibility canon edit. Load-bearing clause: §2 inserts a standing rule into `inqhiori-canon.md`. Switch-gate: N/A (no lower-loop execution component).
 **Amends / extends:** the three-loop binding ADR (`docs/adr/2026-06-12-three-loop-methodology-binding.md`, PROPOSED) — Rule 2's magnitude is set by the Loop-of-Record / reversibility class that ADR defines. Canon home: `docs/methodology/inqhiori-canon.md` §15 (full statement) + §12 Hard-rules pointer + §14 loop-budget mirror.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-140, ADR02-141); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -108,13 +109,6 @@ Thresholds are validated **forward, never by retrodiction.** Retrodiction onto p
 
 ## §6 — Gate (binary adoption criteria)
 
-**Commit gate (all must hold for the landing to be DONE):**
-
-1. This ADR committed to `docs/adr/` (date-prefixed filename), Status PROPOSED, §0 lists the Phase-0 reads with commit anchors.
-2. `inqhiori-canon.md` contains the Rule 2 statement (§15) + the §12 Hard-rules pointer + the §14 mirror line; **no other canon text changed** (diff insertion-only).
-3. `docs/notes/audits/rule-2-trip-log.md` exists with the five-column table.
-4. The 3/8/3 magnitudes read identically across ADR §2, canon §15, canon §14, and the trip-log seed (no cross-artifact drift).
-
 **Graduation:** PROPOSED→ACCEPTED at the first programme audit where §4 H holds (≥1 trip-log entry per active loop class, wire firing at hindsight-correct stops). **FALSIFIED / AMENDED** per the §4 otherwise-branch (wire fires at productive moments) or the inert-rule branch (empty trip-log across ≥2 audit cycles). If neither has accrued evidence by the audit, disposition is **AMBIGUOUS** — hold PROPOSED one more cycle, do not silently retain.
 
 ---
@@ -150,9 +144,6 @@ ls docs/notes/audits/ | grep -i "rule-2-trip-log"
 
 ## Addendum 2026-08-15 — pointer propagation narrowed to inqhiori only
 
-**Superseded 2026-10-24** by [Addendum 2026-10-24](#addendum-2026-10-24--scope-widened-to-all-substantial-work):
-the INQHIORI-entry-only limit below no longer holds.
-
 **Does not amend §2 / §4 / §6.** This is a propagation-scope correction, not a
 verdict on the ADR — §4's own gate is unmet either way: the trip-log carries one
 non-trip baseline row at ~60 days post-authoring, short of the ≥2-audit-cycle
@@ -176,14 +167,9 @@ concern). `docs/methodology/inqhiori-canon.md` §15 remains the full statement;
 canon §12/§14 mirrors are untouched (§5.5 forbids editing them outside this
 ADR); the `.claude/skills/inqhiori/SKILL.md` pointer stays, since INQHIORI-loop
 work is this rule's most specific applicable context and canon §15 is already
-its natural home. Declaring a Rule-2 budget is no longer instructed from
-brief-authoring, cursor-fleet dispatch, or general session-start discipline —
-only from INQHIORI-loop entry.
+its natural home.
 
 **Not a repeal.** The ADR stays `PROPOSED`; §4's graduation path is unchanged.
-Re-widening propagation is available once the trip-log actually accrues
-evidence at the next programme audit — narrower footprint until then, per the
-same "run tight, loosen only on evidence" bias §4 already states.
 
 ## Addendum 2026-08-19 — §0 "third meaning" is the Rule 1 extension
 

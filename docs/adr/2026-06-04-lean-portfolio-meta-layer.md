@@ -37,6 +37,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-90, ADR01-94, ADR01-96); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 > **Status:** ACCEPTED 2026-06-04 — §0 confirmed on-disk; anchor 6 re-pointed, ADR landed. §0-NOTES resolved.
 > **Date authored:** 2026-06-04 (rev. 4 — ACCEPTED; status flip staged by CC re-dispatch after §0-NOTES resolution. rev. 3 — §0 upgraded memory-tier → on-disk-confirmed via CC pass; anchor 6 re-pointed to real artifacts, phantom-note claim dropped; anchor 3 / §2.4 reworded: ECR engine assembled, production not yet running. rev. 2 — Copygram/ECR unified in §2.6; §7 reframed; §8 kill-switch added).
@@ -79,26 +80,6 @@ Standing doctrine this connects to: `fxify-challenge` Core Principles (MC + dd_p
 
 ## §2 — Decision
 
-Adopt a four-layer governance hierarchy. The top two layers (Strategic + Governance) are the meta-layer this ADR installs; the bottom two (Program + Team) are governed by the pending SCRUM ADR.
-
-```
-1. STRATEGIC      Self-funded life (~$10M NW, ~$20K/mo). Multi-firm prop scaling
-                  as primary income + compounding vehicle. CTA track deprecated.
-                          │
-2. GOVERNANCE     ← META-LAYER (this ADR)
-   (Lean Portfolio) Allocates two currencies across two value streams; sets
-                    outcome measures (ECR); funds Epics at MVP budget; holds
-                    the upward feedback loop that revises 1 from live data.
-                          │
-   ─────────────── delivery framework begins ───────────────
-                          │
-3. PROGRAM        Outer loop. Roadmap / dependency mapping across build tracks.
-                  (Governed by pending SCRUM ADR.)
-                          │
-4. TEAM           Inner loop. Sprints, increments, conditional sync.
-                  (Governed by pending SCRUM ADR.)
-```
-
 **2.1 — Two value streams, two currencies.** The framework's single-corporate-dollar assumption is adapted: this operation allocates two scarce resources with different guardrails, horizons, and falsifiers.
 
 | | Operational value stream | Development value stream |
@@ -127,13 +108,11 @@ Adopt a four-layer governance hierarchy. The top two layers (Strategic + Governa
 
 This **upgrades ECR's role rather than deprecating it.** ECR stops being a behavioral coach for a human and becomes the **acceptance test for the automation**: the instrument that determines whether the automated path actually reproduced the backtest signal. Copygram is the *output*; gap-closure is the *outcome*; ECR is the only thing that distinguishes them — a clean instance of §2.3.
 
-Three rules follow, and they are load-bearing:
+Two rules follow, and they are load-bearing:
 
 1. **Sequencing is per-strategy, not build-then-measure.** For each strategy: automate → ECR-verify that strategy's automated path reproduces its backtest → only then trust it with size. Automation done wrong *introduces* gaps (see open Copygram items: unverified close-all-by-symbol, two unverified DXTrade ticker mappings). If close-all-by-symbol misfires on the pyramiders (Striker, NAS100), you have automated reliable *opens* and unreliable *closes* — a new gap, invisible precisely because the automation was trusted. **The pyramiding strategies are the high-risk path** and must not be sized up before ECR confirms their close logic.
 
-2. **ECR runs NOW, on current manual trades, as the control.** Pre-Copygram ECR is the baseline the automated path must beat; post-Copygram ECR is the proof it did. Same instrument, two readings; the delta between them is the entire business case for the automation. This removes any "wait for Copygram to start measuring" sequencing — the control reading is available today.
-
-3. **E1/E3 do not die at automation — they migrate to the kill switch.** E1 (macro-skip) and E3 (skip-rationale) were never about the entry mechanic; they were about *deciding not to take a signal*. Any discretionary override ("pause the bot before FOMC") rebuilds that exact decision point one layer up. Automation eliminates E1/E3 only to the degree discretion is not reintroduced at the override. This forces a conscious design decision — see §8.
+2. **E1/E3 do not die at automation — they migrate to the kill switch.** E1 (macro-skip) and E3 (skip-rationale) were never about the entry mechanic; they were about *deciding not to take a signal*. Any discretionary override ("pause the bot before FOMC") rebuilds that exact decision point one layer up. Automation eliminates E1/E3 only to the degree discretion is not reintroduced at the override. This forces a conscious design decision — see §8.
 
 ---
 
@@ -141,10 +120,6 @@ Three rules follow, and they are load-bearing:
 
 From the prior-turn SCRUM adoption, fixed here as it sits under the meta-layer:
 
-- SCRUM governs the **development value stream only**. Firewalled from the trading clock.
-- **Sprint Review** → DoD check + PO acceptance (no external stakeholders; no staged demo).
-- **Sprint Retrospective** → maps onto existing `programme-audit` cadence + F-class/M-class lesson registry (not a new artifact).
-- **Daily Scrum** → **conditional**: exists only on dates with active parallel build work to coordinate. Absent that, it is ceremony the programme-audit doctrine hunts.
 - **Roles:** PO = Joshua. "Scrum Master" = Claude, but hybrid — the label must not strip the Tech Advisor advisory half. "Developers" = CC (Analyst/Tactical Ops, delegated) + Cursor (Engineering, self-organizing) — distinct functions, not interchangeable.
 - **Product Backlog** = single ordered source of truth, to stand up in Notion Command Center.
 
@@ -162,9 +137,6 @@ This is binary and checkable. The form: *adopting SAFe-speak with zero behaviora
 
 ## §5 — Forbidden moves (genuinely tempting, ruled out)
 
-1. **Forcing the operational stream into sprint cadence.** Tempting because the symmetry is clean. Forbidden: it colonizes the trading clock, which is continuous and regime-/shift-gated.
-2. **Defining a "Definition of Done" or "shippable increment" for a trading week.** Category error — the operational increment is captured edge measured over a rolling window, not a shippable artifact.
-3. **Letting Daily Scrum become a fixed daily ritual** absent active parallel build. Ceremony; see §3.
 4. **Allocating real capital on MC projection alone once ECR exists.** Re-creates the 04-29 output-vs-outcome gap at portfolio scale. (Before ECR exists, projection-driven allocation is permitted but must be *labelled* projection-driven — §2.4.)
 5. **Treating "ADR authored / feature shipped" as a success metric.** Output worship; the development stream's only success metric is operational-stream ECR delta.
 6. **Adopting the framework as vocabulary with no behavioral change.** The deepest ceremony risk. §4's falsifier exists specifically to catch this.
@@ -195,9 +167,8 @@ Until both conditions pass for a given strategy, that strategy runs at minimum s
 
 What this ADR forces is therefore not a Copygram-vs-ECR reprioritization but a **sequencing and instrumentation discipline**:
 
-1. **Assemble ECR now, on current manual trades** — it is the control reading and the baseline Copygram must beat (§2.6 rule 2). This does not wait on Copygram.
-2. **Sequence automation per-strategy with ECR as the acceptance gate** (§2.6 rule 1, §6) — never build-all-then-measure; never size up a strategy before ECR confirms its automated path, pyramiders especially.
-3. **Decide the kill-switch design consciously** before automation carries size (§8), because that decision determines whether E1/E3 survive automation or migrate intact to the override.
+1. **Sequence automation per-strategy with ECR as the acceptance gate** (§2.6 rule 1, §6) — never build-all-then-measure; never size up a strategy before ECR confirms its automated path, pyramiders especially.
+2. **Decide the kill-switch design consciously** before automation carries size (§8), because that decision determines whether E1/E3 survive automation or migrate intact to the override.
 
 This is recorded as **decisions the ADR forces**, not recommendations to revisit later. The Water-Scrum-Fall failure this prevents is unchanged: without the ECR control reading, "Copygram closed the gap" is an unfalsifiable output claim, and a year of build could pass before the operator learns the automated path never reproduced the backtest.
 
@@ -230,19 +201,8 @@ grep -rl "realized ECR\|ECR-driven\|edge-captured ratio" docs/adr/ docs/briefs/ 
   | xargs -r grep -l "2026-0[6-9]\|2026-1[0-2]" 2>/dev/null \
   || echo "NONE YET — H not yet satisfied"
 
-# 3. Forbidden-move #2 guard: no 'Definition of Done' attached to a trading week
-grep -ri "definition of done" docs/ | grep -i "trading\|week\|execution\|increment" \
-  && echo "VIOLATION — forbidden move #2" || echo "clean"
-
-# 4. Forbidden-move #3 guard: Daily Scrum entries only on dates with active build
-#    (manual: cross-check daily-sync log dates against sprint-active dates)
-
 # 5. Provenance: confirm §0 anchors were on-disk confirmed before lock
 git log --oneline -1 -- docs/adr/*allocation-refresh-2* 2>/dev/null || echo "CONFIRM §0"
-
-# 6. §2.6 control reading: is manual-trade ECR being produced NOW (pre-Copygram baseline)?
-ls -la reports/ecr/*manual* 2>/dev/null && echo "BASELINE EXISTS" \
-  || echo "MISSING — §2.6 rule 2 control reading not yet running"
 
 # 7. Per-strategy automation gate: any strategy sized up on an automated path
 #    without a recorded ECR acceptance reading? (§6 per-strategy gate, §2.6 rule 1)

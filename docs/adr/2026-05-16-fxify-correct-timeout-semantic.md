@@ -10,6 +10,7 @@
 **Authors:** Joshua (decision); Claude Code (execution)
 **Supersedes:** No prior ADR pinned the timeout semantic — `HORIZON_DAYS = 150` was an implicit modeling choice present since the original `portfolio_mc.py` and never locked through an ADR. This ADR is the first formal decision on portfolio MC timeout semantics. It does **not** supersede `2026-05-08-dd-trigger-c2-relock` (dd_protection constants C2 unchanged) or `2026-05-14-allocation-refresh` (allocations unchanged).
 **Closes:** `Q-MCTO-1-portfolio-mc-timeout-semantics.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/Q-MCTO-1-portfolio-mc-timeout-semantics.md`) — CLOSED-RESOLVED on this ADR's adoption.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-62); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -70,8 +71,6 @@ Replace `portfolio_mc.py`'s 150-bday horizon-runout timeout with the FXIFY-corre
 - **Remove** `HORIZON_DAYS = 150` (the 150-bday runout cap).
 - **Add** inactivity tracking inside `_simulate_path`: a day is idle iff `pnl == 0 AND no individual strategy had a non-zero pnl` (symmetric check guards against offsetting non-zero pnls). On `consecutive_idle >= 60`, return `"bust_inactivity"` with `culprit = None` (no single-strategy attribution applies — the bust is "no one traded").
 - **Replace** the `"timeout"` outcome with `"horizon_cap"` (semantic only — `horizon_cap` is a runtime-tractability safety, not an FXIFY rule). Bootstrap-of-week-blocks structure makes 60 consecutive all-zero bdays vanishingly rare and 1500-bday runout effectively impossible. Both bucket rates are expected to be ≤0.10% empirically; in Phase 1, both are 0.00%.
-- **Re-pin** `tests/test_mc_anchors.py` Pepperstone anchor from `0.9878 / 0.0012 / 0.0417` to `0.9988 / 0.0012 / 0.0421`. OANDA anchor re-pin from `0.9633 / 0.0040 / 0.0473` to its FXIFY-correct value (determined by post-code-change re-run; see §Implementation notes).
-- **Re-point** `tests/test_inactivity_boundary.py` to exercise `portfolio_mc._simulate_path` directly (importing from `scripts/inactivity_simulator.py` becomes redundant once the simulator is in production code).
 
 dd_protection (C2: DD_TRIGGER=0.015, DD_SCALE=0.40), allocations (G 0.34% / DJ30 0.75% pyr 500% / A 1.50% / NAS 0.45%), and the Pepperstone 2022-05-23 → 2026-05-14 panel (1039 bdays / 207 week-blocks) are **all unchanged**.
 

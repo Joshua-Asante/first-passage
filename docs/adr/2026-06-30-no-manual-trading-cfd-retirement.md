@@ -9,6 +9,7 @@
 **Supersedes:** none directly. **Closes the live-execution arc** that `project_ea_conversion_state` (MT4/MT5 US-jurisdiction blocker) and `project_us_legal_master_research` (FXIFY won't accept a futures master) left at "scale blocked on both fronts" — this ADR records the operator's resolution of that bind: stop manual execution, abandon the CFD venue, route scale through futures.
 **Related:** `docs/adr/2026-06-23-tv-backtest-egress-automation.md` (never-automate-the-live-account posture); memories `project_futures_prop_pivot` (the chosen scale lever), `project_ea_conversion_state`, `project_us_legal_master_research` (the two prior venue closures); skill `live-execution-journal` (the off-spec classification used in §1).
 **Layer:** execution (live-trading venue + operator role) — **not** strategy/risk-control. No locked parameter, allocation, `dd_protection` constant, or Pine source is touched by this ADR.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-34); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -41,7 +42,7 @@ This forces a venue decision the operator has been circling since 2026-06-28. "N
 **Decision:** The operator ceases to be the execution layer. Concretely, two coupled rules take effect:
 
 1. **No manual discretionary execution.** No hand-placed trades on the live edge. Live execution happens only through an automated chain (FIRE alert → bridge → broker) or not at all. The bridge between "stop manual" and "automation live" is *no live trading*, not "careful manual trading."
-2. **The CFD venue is retired.** The FXIFY $200K DXTrade challenge is, for all intents and purposes, done. Per the operator's executive call this session, the account is **left idle (no further trades, not formally closed)** — fees are sunk, optionality is preserved at zero cost, and it lapses on its own. Scale routes through **CME-micro futures-prop** (`project_futures_prop_pivot`), the one venue that supports US-legal automated execution of the gold/indices portfolio.
+2. **The CFD venue is retired.** The FXIFY $200K DXTrade challenge is, for all intents and purposes, done. Scale routes through **CME-micro futures-prop** (`project_futures_prop_pivot`), the one venue that supports US-legal automated execution of the gold/indices portfolio.
 
 **Effective:** immediately upon acceptance (2026-06-30).
 **Scope:** all live execution of the four locked strategies from this date onward. The strategies, allocations, `dd_protection`, and Pine source are **untouched** (Rule 0) — this ADR changes *who/how* executes, not *what* is executed. The futures re-mapping (sizing translation to micro contracts) is separate active work, begun this session (workflow `ws79oe4l5`).

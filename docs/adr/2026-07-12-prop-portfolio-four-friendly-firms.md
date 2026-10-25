@@ -11,6 +11,7 @@
 **Superseded-in-part-by:** `2026-07-22-prop-portfolio-s4-discharge-withdrawal.md` - the §4 discharge status only (Class-S candidate #1's 2026-07-15 result withdrawn on corrected eval-lock geometry). Program, four-firm target set, envelope, and the 2026-11-08 hard date stand unchanged.
 **Superseded-in-part-by:** `docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md` (not an ADR — a pre-registration; recorded here per this file's own convention of tracking every citation touching the "bust ≤3.0%" wording below) - the §4 falsifier's operationalized Part A eval ceiling only (3.0% → 5.0%, operator risk-tolerance override, 2026-08-26; full rationale in that document's own §8). H's "clears the bust ceiling" text, the ≥2-of-4 discharge shape, and the 2026-11-08 hard date all stand unchanged — only the numeric ceiling the scoring harness reads moved.
 **Related:** [`docs/ltm/briefs/Q-AUTO-FIRM-1-attended-automation-survey.md`](../ltm/briefs/Q-AUTO-FIRM-1-attended-automation-survey.md) (eligibility survey); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) (E1–E7 build envelope); [`docs/notes/2026-07-06-rail-reconciliation-traderspost-vs-crosstrade.md`](../notes/2026-07-06-rail-reconciliation-traderspost-vs-crosstrade.md) (KEEP rail = TV→CrossTrade→NT8); [`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`](../ltm/briefs/rnd-pipeline/discovery-campaign-template.md) (Gen-2 discover→admit pipeline); [`docs/adr/2026-06-06-firm-constants-single-source.md`](2026-06-06-firm-constants-single-source.md) (`firm_rules` canonical).
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR04-74, ADR04-85); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Layer:** execution + portfolio operations — **not** locked-parameter. No change to the locked four-strategy allocations, `dd_protection` constants, Pine source, or FXIFY MC regression pin.
 
 ---
@@ -49,7 +50,7 @@ The operator directive (2026-07-12) reframes **multi-firm operations**: not rede
 **Operational program (end-to-end):**
 
 1. **Discover** — Gen-2 lab pipeline (`lab/` discovery campaigns). Candidates must declare `DEPLOYABLE-DEFAULT-ENVELOPE: YES/NO` against [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) at closure; portfolio composition is a first-class design target (multi-leg books that pass together, not single-strategy heroics).
-2. **Productionalize** — admitted survivors (`CANDIDATE` lifecycle intake per [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md)) through codification → sweep → validation; prop-firm constraints pulled from `firm_rules.FIRM_RULES[<tier>]` + envelope overlays, never hard-coded in research artifacts.
+2. **Productionalize** — prop-firm constraints pulled from `firm_rules.FIRM_RULES[<tier>]` + envelope overlays, never hard-coded in research artifacts.
 3. **Execute** — attended automation on **TV → CrossTrade → NT8 → Rithmic/Tradovate** per the 2026-07-06 rail note. **Rail build and account registration remain gated** — this ADR sets the *target* and *constraint registry*, not a live-start authorization.
 
 **`firm_rules` registry:** `AUTOMATION_FRIENDLY_PROP_FIRMS` maps each family to its tier keys; all tier dicts carry challenge targets/constraints (profit target, DD type/level, flat posture, contract caps, consistency where applicable). `ACTIVE_FIRM` stays **`FXIFY`** — the 99.83/0.17/4.37 MC anchor remains a historical regression pin, not the live prop target.
@@ -338,10 +339,6 @@ no second distinct firm has also cleared:
   the withdrawn Striker book, counts). F1 is a different question — orthogonal to *how many*
   tiers clear — and stays a separate, still-open queue item (STATE.md row 1). Deciding it here
   would be exactly the pre-emption STATE.md's own F1 note warns against.
-- **Treating the sanitized external-lens pass as evidence for or against this ruling.** Per
-  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)
-  §2/§5, that lane is zero-authority tripwire input only; this ruling stands or falls on the real
-  artifacts cited in §0, not on that lane's output.
 
 ### What is unchanged
 

@@ -8,6 +8,7 @@
 **Date:** 2026-05-10
 **Supersedes:** none
 **Relates to:** ADR 2026-05-08-dd-trigger-c2-relock; ADR 2026-05-10-dd-protection-ulp-rounding (PR #53); PR #60 / Q-MCFP-1 (MC inline ULP rounding); GH#55 (closes)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-53); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -85,9 +86,6 @@ grep -E "approx\((0\.9809|0\.0036|0\.0473|0\.9623|0\.0069|0\.0491)" tests/test_m
 # is invalidated. Re-verify against the latest MC re-run before accepting
 # any test failure as benign.
 ```
-
-
-If any audit hook fails on quarterly review, the ratification's premise has shifted and the ADR needs re-evaluation.
 
 ## Addendum 2026-08-29 — Pepperstone anchor deleted; import-topology finding relocated
 
