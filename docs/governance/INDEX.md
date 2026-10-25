@@ -22,6 +22,7 @@ facts remain with the linked owners; this page does not restate locked values.
 - [`../../core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md) — strategy dispositions.
 - [`../../ops/instruments/PROFILES.md`](../../ops/instruments/PROFILES.md) — mechanism × instrument matrix.
 - [`../adr/INDEX.md`](../adr/INDEX.md) — derived ADR lifecycle index.
+- [`azure-compute-vm-policy.md`](azure-compute-vm-policy.md) — standing rules for the Azure compute VM.
 - [`../../STATE.md`](../../STATE.md) — cross-session open threads and forward
   obligations.
 
