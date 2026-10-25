@@ -219,9 +219,10 @@ MESSAGES = {
                           "`sha` field, or GraphQL `expectedHeadOid`."),
     "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
                  "Standing GO (surface-allocation ADR, Addendum 2026-10-24b): merge only if "
-                 "an independent review (not this PR's author) has passed and every CI check "
-                 "is COMPLETED and green at the pinned head; otherwise report the PR as "
-                 "ready and stop."),
+                 "an independent review (a Codex review clean at this head, within three "
+                 "reviews) has passed and every CI check is COMPLETED and green at the pinned "
+                 "head; after three reviews with findings, return the PR to its owner for a "
+                 "rewrite; otherwise report the PR as ready and stop."),
     "pr.auto_merge": ("Auto-merge is forbidden to agents (pr.auto_merge).",
                       "Auto-merge is retired: merge authority is the operator's with no "
                       "automated exception. Report the PR as ready instead."),
