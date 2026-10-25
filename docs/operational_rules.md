@@ -469,7 +469,7 @@ stale generated view fails the `instrument-profiles` gate
 ([`scripts/gates.yml`](../scripts/gates.yml)) — so this clause documents the
 obligation rather than carrying it.
 
-> ⚠ **2026-10-25 — decision pending.** The 0.05R PASS ceiling below is justified as consistent with the 4×-median-cost hurdle, which [Joshua's 2026-10-24 ruling](notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) deleted. Whether it is re-derived, made report-only or retired is Joshua's decision (decision packet: PR_LINK); until then this sub-step stands as written.
+> ⚠ **2026-10-25 — decision pending.** The 0.05R PASS ceiling below is justified as consistent with the 4×-median-cost hurdle, which [Joshua's 2026-10-24 ruling](notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) deleted. Whether it is re-derived, made report-only or retired is Joshua's decision (decision packet: [PR #900](https://github.com/Joshua-Asante/first-passage/pull/900)); until then this sub-step stands as written.
 
 **Phase-0 cost-geometry pre-gate (added 2026-06-22; canonical:
 [`docs/adr/2026-06-22-cost-geometry-pregate.md`](adr/2026-06-22-cost-geometry-pregate.md)).**

@@ -36,7 +36,8 @@ Tune with `--ceiling`.
 
 DECISION PENDING (2026-10-25): the 4x hurdle above was deleted by operator ruling
 2026-10-24. Whether this ceiling is re-derived, made report-only or retired is
-Joshua's decision; see the banner in docs/adr/2026-06-22-cost-geometry-pregate.md.
+Joshua's decision; see the banner in docs/adr/2026-06-22-cost-geometry-pregate.md
+(decision packet: PR #900).
 Behaviour is unchanged until then.
 
 THE LOAD-BEARING CAVEAT (use the REALIZED stop, not the assumed one)
