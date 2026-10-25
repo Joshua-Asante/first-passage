@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """check_supersession_placement.py — a withdrawing addendum needs an upstream warning.
 
-THE FAILURE MODE (operational_rules.md Rule 14; two firings 2026-08-02, both
+THE FAILURE MODE (operational_rules.md §14; two firings 2026-08-02, both
 caught only by a manual pre-merge review):
 
   A finding is withdrawn/superseded in an addendum appended at the BOTTOM of a
@@ -23,7 +23,7 @@ the mechanizable subset):
 
   What this deliberately does NOT catch: a claim retracted three paragraphs
   below itself INSIDE a section (firing #2, the 08-04 desk card). That is
-  judgment, owned by Rule 14's prose and the restating-surfaces sweep — a gate
+  judgment, owned by operational_rules §14's prose and the restating-surfaces sweep — a gate
   pretending to cover it would be vacuous assurance.
 
   What this deliberately does NOT catch: a file with NO addendum heading at all -
@@ -93,7 +93,7 @@ def scan_file(path: Path) -> str | None:
         f"{shown}: addendum at line {first_addendum + 1} "
         f"withdraws content ({tok!r}) but NOTHING upstream warns the reader — "
         f"add a head banner or in-body marker at the superseded claim "
-        f"(operational_rules.md Rule 14; pattern: book-composition brief §2)"
+        f"(operational_rules.md §14; pattern: book-composition brief §2)"
     )
 
 

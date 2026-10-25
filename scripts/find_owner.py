@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Look up the Rule 7 owner for a path or token. Not a second owner table.
+"""Look up the operational_rules §7 owner for a path or token. Not a second owner table.
 
 Reads docs/operational_rules.md §7 first. Falls back to the blast-radius
 sweep checklist (labeled, not a second owner). Prints the matching row

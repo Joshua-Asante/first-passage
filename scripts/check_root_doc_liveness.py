@@ -9,7 +9,7 @@ STATE.md — are the repo's entry points. They rot in two ways:
      it. (Origin: STATE.md linked `lab/analysis/harv_0.../RESULTS.md` after the
      study body moved to `lab/archive/` — a silent dead link.)
   2. **Stale prose facts** — a version / status / date the doc restates goes
-     stale. That is NOT mechanically checkable here (Rule 6 skew audit + Rule 7
+     stale. That is NOT mechanically checkable here (operational_rules §6 skew audit + operational_rules §7
      canonical-owner discipline own it); the companion hookify reminder
      (`.claude/hookify.root-doc-skew.local.md`) nudges a human review.
 

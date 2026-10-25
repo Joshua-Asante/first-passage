@@ -19,7 +19,7 @@ The five root documents have separate jobs:
 
 Campaign plans own executable next steps; their campaign records own evidence
 and decisions. [SESSIONS.md](docs/SESSIONS.md) is historical narrative, not the
-current work list. [Operational Rule 7](docs/operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror)
+current work list. [operational_rules §7](docs/operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror)
 assigns ownership; [Rule 0](docs/rule_0.md) requires reading production sources
 when checking claims about code, parameters, or risk controls.
 

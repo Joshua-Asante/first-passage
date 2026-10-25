@@ -2,6 +2,10 @@
 
 Hard rules. No exceptions. Each rule is here because it was violated or nearly violated in the past and the correction was costly.
 
+Cite a section here as `operational_rules §N`. A bare "Rule N" is reserved for the core rule
+list ([consolidation plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §4); older
+records resolve through the [legacy citation map](#legacy-citation-map) below.
+
 ---
 
 ## 1. Never override a valid signal based on a macro volatility forecast
@@ -58,7 +62,7 @@ If the Pine file and any document (CHANGELOG, ADR, Notion page, README) disagree
 The only exceptions are:
 - `core/dd_protection.py` parameters — those live in the Python pipeline, not in Pine
 - `core/firm_rules.py` allocations — same
-- Active overlays — those modify risk at the sizing layer. None are currently active; the historical Guardian overlay is git-retrievable at the command in Rule 1.
+- Active overlays — those modify risk at the sizing layer. None are currently active; the historical Guardian overlay is git-retrievable at the command in §1.
 
 ---
 
@@ -80,7 +84,7 @@ run a doc/code skew audit before closing the lock commit. The audit checks:
    the prior version) but a parenthetical is added noting what changed
    between the decision-era version and current.
 3. **Active overlays (if any)** — currently none; the historical Guardian
-   overlay is git-retrievable at the command in Rule 1. When an overlay
+   overlay is git-retrievable at the command in §1. When an overlay
    is active, audit its doc the same as ADRs.
 4. **`docs/methodology/`** — same as ADRs, plus measurement values that quote
    "Guardian v<X> observed" must be either re-measured or marked as
@@ -125,12 +129,12 @@ that fact must either (a) **link** to the owner, or (b) be explicitly labeled a
 restates a value it does not own will drift, and a stale duplicate reads as
 truth.
 
-This generalizes Rule 5 (Pine owns strategy parameters) from constants to
+This generalizes §5 (Pine owns strategy parameters) from constants to
 **state and narrative docs**. Canonical owners:
 
 | Fact class | Canonical owner |
 |---|---|
-| Strategy parameters (risk %, pyramid, SL/TP) | Pine source (per Rule 5); human-readable mirror = [`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md) §Locked parameter record (moved there from `CLAUDE.md` 2026-09-04) |
+| Strategy parameters (risk %, pyramid, SL/TP) | Pine source (per §5); human-readable mirror = [`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md) §Locked parameter record (moved there from `CLAUDE.md` 2026-09-04) |
 | Current lock state + source blob hashes | `core/strategies/_archive/<family>/LOCK.md` + hot `*_CARD.md` stubs ([`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md)) |
 | Which of two live-vs-historical values is current | [`docs/load_bearing_numbers.md`](load_bearing_numbers.md) — the live-value index (extracted from `CLAUDE.md` 2026-09-04). It **restates** each figure from that figure's own owner and is never itself the owner |
 | `dd_protection` / allocation constants | `core/dd_protection.py` / `core/firm_rules.py` |
@@ -145,7 +149,7 @@ This generalizes Rule 5 (Pine owns strategy parameters) from constants to
 | Executable campaign next steps | Campaign's current implementation plan; campaign record owns evidence, gate dispositions, and operator decisions |
 | Session-specific "open / next" | Optional historical context in that session's entry; never a replacement for the current STATE queue or campaign plan |
 | Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
-| Durable atomic facts | Their owning specification, campaign record, plan, PR, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a Rule 7 owner, never Rule 0 / §0 or sub-rule 8/10 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
+| Durable atomic facts | Their owning specification, campaign record, plan, PR, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a §7 owner, never Rule 0 / §0 or sub-rule 8/10 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
 
 Roles that must **not** restate canonical values:
 - **`STATE.md`** — current operator queue, compact executed-decision index,
@@ -227,7 +231,7 @@ wrapper on an unpaid second.**
 
 Applied at brief-authoring time **and** at the §0 (Rule 0 audit-first) read that
 opens any decision brief or implementation step. These are the operationalized
-sub-rules of Rule 0 / Rule 2 — each anchored to a specific brief failure.
+sub-rules of Rule 0 / §2 — each anchored to a specific brief failure.
 
 1. **Cross-reference grep before classifying "isolated cruft."** For each
    candidate move/delete, run `grep -rn <basename>` across active paths and
@@ -409,9 +413,9 @@ codification / scaffold extraction and any decision-brief §0 that reads `*.pine
 2. **Fallback** when no local checkout has the Pine at all (a cloud session, a
    public clone): use the brief-authoring §0 **citation-chain** sub-rule (Tier 1
    audit-doc verbatim quote → Tier 2 `LOCK.md` → Tier 3 CHANGELOG/baselines), per
-   Rule 8 and the Q-GUARDIAN-TRAIL-1 anchor. Cite, do not infer.
+   §8 and the Q-GUARDIAN-TRAIL-1 anchor. Cite, do not infer.
 
-**Do not** edit locked `.pine` — Rule 5 stands (Pine source of truth; edits happen in
+**Do not** edit locked `.pine` — §5 stands (Pine source of truth; edits happen in
 the primary checkout). New candidate Pine goes to `core/strategies/candidates/` (a
 distinct, non-locked path).
 
@@ -443,8 +447,8 @@ genuinely differ), and open decisions awaiting adjudication.
 
 Boundaries:
 - Ledgers own instrument-level findings and concept status only. Strategy
-  parameters stay canonical in Pine (Rule 5); sizing constants in
-  `core/dd_protection.py`/`core/firm_rules.py`; everything else links out (Rule 7).
+  parameters stay canonical in Pine (§5); sizing constants in
+  `core/dd_protection.py`/`core/firm_rules.py`; everything else links out (§7).
 - Ledgers are created on the **first session touching a new instrument** — no
   pre-emptive backfill for instruments with only historical work (rules earn
   their place; so do ledgers).
@@ -508,7 +512,7 @@ For a retained dormant limb, name its unavailable input, a meaningful re-arm
 condition and the surviving coverage. For an approved permanent retirement,
 record the reason with its owner or tombstone; do not invent a restoration
 trigger for the removed mechanism. Frozen research evidence is corrected by
-addendum; approved effective ADR revisions follow Rule 14. No other obligation
+addendum; approved effective ADR revisions follow §14. No other obligation
 is discharged merely by association with the retired surface.
 
 **Origin:** 2026-07-01 programme audit. The 2026-06-30 CFD-retirement ADR
@@ -745,10 +749,10 @@ Owner: [`ADR 2026-08-08-great-prune`](adr/2026-08-08-great-prune.md) (§2 test, 
 
 ## 17. Quarterly programme-audit checklist — standing tooling census
 
-This checklist's first entry is the mechanical partial-check for *Rule 11*'s obligation (a
+This checklist's first entry is the mechanical partial-check for *§11*'s obligation (a
 falsifier whose input can no longer accrue is not "in force" regardless of unchanged threshold
-text) — see Rule 11 for the underlying duty; coverage here is a minority of falsifiers and blind
-to retirement (per the script's own docstring), so a clean run is never a substitute for a Rule 11
+text) — see §11 for the underlying duty; coverage here is a minority of falsifiers and blind
+to retirement (per the script's own docstring), so a clean run is never a substitute for a §11
 sweep.
 
 At each quarterly programme audit (`programme-audit` skill cadence; next **2026-11-08**), run:
@@ -784,6 +788,7 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-10-25** — Living citations repointed from bare "Rule N" to `operational_rules §N`; legacy citation map added (consolidation ruling D2, [plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §4). No rule text changed.
 - **2026-10-24** — Rule 10 Phase-0 cost-geometry pre-gate made report-only (operator ruling, option (b)): the 0.05R PASS/FAIL ceiling and the blocking FAIL removed; `cost_R`, band and sub-ATR flag still recorded. Replaces the same-day pending-decision banner. [`ADR`](adr/2026-06-22-cost-geometry-pregate.md)
 - **2026-10-15** — Rule 9 rewritten from "sync Pine into the worktree" to "read Pine
   in place by the primary checkout's absolute path"; the copy tool is retired because
@@ -834,3 +839,37 @@ allocation, `dd_protection`, Pine, or rail touched.
 - **2026-07-02** — Rule 8 sub-rule 7: shipped the queued mechanical check (`ops/sentinel/scan.py` `preregistration_scan`).
 - **2026-07-01** — Rules 11 + 12 added (falsifier back-propagation on retirement; DRAFT/HOLD needs an explicit lift artifact); Rule 8 sub-rule 7 added (pre-registration freeze is a separate earlier commit) — programme-audit remediation.
 - **2026-06-22** — Rule 10 gained the Phase-0 cost-geometry pre-gate (`scripts/cost_geometry_pregate.py`). [`ADR`](adr/2026-06-22-cost-geometry-pregate.md)
+
+## Legacy citation map
+
+Records dated before the core rule list lands in AGENTS.md (consolidation step 2) keep their
+original wording; read their numbered citations here. Living text cites the right-hand forms. The
+core rule numbers are the ruled list in the
+[consolidation plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §3.
+
+| Citation in an older record | Means | Core rule |
+|---|---|---|
+| Rule 0 (canon, `rule_0.md`) | audit first | Rule 0 |
+| Rule 1 (canon), regime-gate "Rule 1 extension" | small-cell variance prior | Rule 1 |
+| Rule 2 (canon) and its corollaries | budget before acting | Rule 2 |
+| Rule 1, op-Rule 1 (this file) | operational_rules §1 | Rule 1 |
+| Rule 2, op-Rule 2 (this file) | operational_rules §2 | Rule 0 |
+| Rule 3 | operational_rules §3 (dormant) | Rule 10 |
+| Rule 4 | operational_rules §4 | Rule 1 |
+| Rule 5, Rule 6 | operational_rules §5, §6 | Rule 14 |
+| Rule 7 | operational_rules §7 | Rule 29 (STATE/SESSIONS rows: Rule 34) |
+| Rule 8, Rule 8.N, "Rule 8 sub-rule N" | operational_rules §8 | Rule 0 (8.8 → Rule 8; 8.9 → Rule 26; 8.10 → Rule 29; prereg freeze → Rule 23) |
+| Rule 9 | operational_rules §9 | Rule 13 |
+| Rule 10 | operational_rules §10 | Rule 27 |
+| Rule 11, Rule 17 | operational_rules §11, §17 | Rule 28 |
+| Rule 12 | operational_rules §12 | Rule 6 |
+| Rule 13 | operational_rules §13 | Rule 17 |
+| Rule 14 | operational_rules §14 | Rule 30 |
+| Rule 15 | operational_rules §15 | Rule 41 |
+| Rule 16, R1–R5 | operational_rules §16 | Rule 31 |
+| futures-anomaly-discovery Rule 1 / 2 / 3 | Discovery check 1 / 2 / 3 | Rule 23 / 25 / 25 |
+| repo-hygiene Rule 1 / 2–5 | the skill's hard rules | Rule 3 / 6 |
+| trade-csv-reconcile Rule 0 | Reconcile check 0 (file paths are not data provenance) | Rule 14 |
+| surface-allocation ADR Rule 1 / 2 / 3 / 4 | card narrows / approval bound to object / IN_DOUBT / enforcement points | Rule 4 / 3 / 11 / 36 |
+| incident contract Rules 4a–12 | its named clauses | Rule 11 |
+| `Rule 0-T` | regression test reaches the changed path | Rule 21 |

@@ -80,4 +80,4 @@ figure in it.**
 
 **Adding a row.** A number earns a row here only when it has **two** values readable in the tree and
 a reader landing on the wrong one would act on it. One value with one owner needs no row — that is
-ordinary Rule 7, and the owner is enough.
+ordinary operational_rules §7, and the owner is enough.

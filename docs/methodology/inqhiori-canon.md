@@ -349,6 +349,6 @@ Three rules the ADR fixes that this loop's users must not un-learn:
 
 1. **STOP is a ratified extension, not v1 restatement.** v1's exit is binary (Integrate / Iterate). STOP — Iterate with budget zero, recording the re-proposal bar — is new doctrine owned by the ADR.
 2. **ITERATE names a successor; it never opens one.** Parent-Q convention ("named, not opened"): the entry packet freezes what a successor must carry; opening it is a fresh operator GO. Automation never promotes here, same asymmetry as the authorization lifecycle.
-3. **Ownership split (Rule 7):** the closure Iterate block owns the per-Q forward disposition; a STATE forward-board row is the cross-session pointer mirror; the SESSIONS Open/next block is the session-level carry. The block's Board-write field records which pointer was written.
+3. **Ownership split (operational_rules §7):** the closure Iterate block owns the per-Q forward disposition; a STATE forward-board row is the cross-session pointer mirror; the SESSIONS Open/next block is the session-level carry. The block's Board-write field records which pointer was written.
 
 This composes with observation routing (§10) rather than competing: narrative-observation routing (Notice-log, per §10's 2026-08-15 correction) routes *observations* between decision points; INTEGRATE / ITERATE / STOP routes *closure verdicts* at the loop exit, pre-registered per verdict in the brief's §6.

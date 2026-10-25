@@ -196,7 +196,7 @@ def test_instrument_owners_trigger_partition_gate(monkeypatch, path):
 def test_check_tier_selects_ci_composition_ids():
     """CI gate-manifest.yml calls --tier check; every always/path-conditional
     id plus forced data-manifests must be selected. pursuit-records was
-    retired from gates.yml entirely 2026-08-24 (Rule 16 R5 — the underlying
+    retired from gates.yml entirely 2026-08-24 (operational_rules §16 R5 — the underlying
     check always exits 0 as invoked, so it could never fail regardless of
     tier); this assertion now holds vacuously and is kept as a regression
     guard against re-adding it as a --tier check member.

@@ -1,4 +1,4 @@
-"""Adversarial tests for check_supersession_placement (operational_rules.md Rule 14).
+"""Adversarial tests for check_supersession_placement (operational_rules.md §14).
 
 Per lesson_discipline_guards_need_adversarial_tests: a guard earns trust only by
 FAILING on a planted defect. The planted-violation cases here are the load-bearing
