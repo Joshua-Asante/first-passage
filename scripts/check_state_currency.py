@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """STATE.md currency gate — Last curated, recurring deadlines, past dated sections.
 
-Owns the mechanical limb of docs/operational_rules.md Rule 7 STATE currency
+Owns the mechanical limb of docs/operational_rules.md §7 STATE currency
 (rolling dates and Last curated must not go stale when the
 daily-repo-truth-sync digest is skipped). Reads only STATE.md.
 

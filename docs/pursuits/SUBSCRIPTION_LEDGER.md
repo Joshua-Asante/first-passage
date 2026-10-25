@@ -1,7 +1,7 @@
 # Subscription / venue-account ledger
 
 One row per `docs/pursuits/d11-d19` cost-carrying record. Canonical source for every $/mo
-figure — the pursuit records themselves link here rather than restating the number (Rule 7,
+figure — the pursuit records themselves link here rather than restating the number (operational_rules §7,
 one canonical owner). Built per
 [`docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md`](../adr/2026-08-21-cfo-subscription-ledger-consolidation.md),
 closing GSUB-1's concern C-1 (subscription $ figures not discoverable in-repo, open

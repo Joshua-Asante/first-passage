@@ -101,7 +101,7 @@ FXIFY (historical): DXTrade via Alchemy Markets (CFD) — venue closed. Bulenox 
 
 ### Locked allocations (challenge = funded phase; no re-sizing at pass)
 
-**Not restated here (Rule 7).** Human-readable lock table + versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference. Live sizing authority: `core/firm_rules.py` `_BASE_RISK` / `core/dd_protection.py` `BASE_RISK`. Per-strategy mechanics (session/hour filters, SL/TP structure): [`references/strategy_reference.md`](references/strategy_reference.md) (Pine remains source of truth for parameters).
+**Not restated here (operational_rules §7).** Human-readable lock table + versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference. Live sizing authority: `core/firm_rules.py` `_BASE_RISK` / `core/dd_protection.py` `BASE_RISK`. Per-strategy mechanics (session/hour filters, SL/TP structure): [`references/strategy_reference.md`](references/strategy_reference.md) (Pine remains source of truth for parameters).
 
 Bust attribution under the historical Pepperstone calibration is record-only — `docs/mc_anchor_history.md` (tombstone via `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-24-pepperstone-executable-anchor-tombstone.md`). Engine regression: `tests/core/test_mc_synthetic_engine.py`.
 
@@ -132,7 +132,7 @@ Reintroduce only if: (1) single-tier DD-only fails to hold bust below the progra
 
 ## Position sizing by venue
 
-Live sizing funnels through `ops/c1_rail/c1_sizing_host_reference.py` (integer-qty rail; the continuous-lot multiplier spine is deleted). CFD lot sizing is retired with manual trading; its DXTrade `contractValue` safety fact is owned by [`operational_rules.md` Rule 3](../../../docs/operational_rules.md#3-dxtrade-contractvalue-for-dj30-must-be-10).
+Live sizing funnels through `ops/c1_rail/c1_sizing_host_reference.py` (integer-qty rail; the continuous-lot multiplier spine is deleted). CFD lot sizing is retired with manual trading; its DXTrade `contractValue` safety fact is owned by [`operational_rules.md` §3](../../../docs/operational_rules.md#3-dxtrade-contractvalue-for-dj30-must-be-10).
 
 ### Futures venues (e.g. Bulenox CME micros)
 
@@ -189,7 +189,7 @@ Implemented in `core/portfolio_mc.py`. Answers one question: given locked strate
 
 ### Locked anchor (FXIFY historical — engine regression pin; not a live pass-probability)
 
-**Literals not restated here (Rule 7).** Read the pin + panel provenance from
+**Literals not restated here (operational_rules §7).** Read the pin + panel provenance from
 [`docs/mc_anchor_history.md`](../../../docs/mc_anchor_history.md) and the gated human headline in
 [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference (⚠ AGENTS.md's three bolded literals are also
 parsed by `ops/recall/guard.py` — do not "fix" them in isolation). Engine regression:

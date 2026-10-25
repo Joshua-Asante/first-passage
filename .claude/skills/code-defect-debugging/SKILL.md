@@ -336,7 +336,7 @@ a failure into success is a band-aid whatever the comment above it says.
      the bytes.
    - **First-unintended-write hunt** — state-shaped bugs, a wrong value present and nobody
      obviously wrote it. Ask whether the write, mutation or request should have happened at all.
-     List the canonical source of truth and every competing one (Rule 7;
+     List the canonical source of truth and every competing one (operational_rules §7;
      [firm-constants single source](../../../docs/adr/2026-06-06-firm-constants-single-source.md);
      M-24's independent re-encodings). Audit the hidden writers: `SessionStart` / `PostToolUse`
      hooks, startup code, boot-time caching, restore and migration paths, worker pools that

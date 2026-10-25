@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """PostToolUse hook — fire verify_lock_anchors.py only on lock-event edits.
 
-Per docs/operational_rules.md Rule 6: per-edit hooks on dd_protection.py /
+Per docs/operational_rules.md §6: per-edit hooks on dd_protection.py /
 firm_rules.py are too aggressive (routine code-only edits without locks fire
 false positives). Filter to: a numeric on a `# LOCKED` line, or a version
 string of form vN.N, or one of the known locked-constant names.

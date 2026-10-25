@@ -132,7 +132,7 @@ Without this gate, the sweep would have produced a LOCK CANDIDATE recommendation
 ## Worked non-example: candidate-1 rider (2026-07-15/16)
 
 Documented in [`2026-08-24 ADR — regime-gate scope worked non-example and F1 discharge`](../adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md);
-summarized here per Rule 14 (corrections land where the error is read).
+summarized here per operational_rules §14 (corrections land where the error is read).
 
 The `FROZEN` prop-survivor-scoring pre-registration
 ([G1](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) in the gate-stack
@@ -156,7 +156,7 @@ rider's FAIL was driven partly by a bust limb Part C does not contain) while its
 relaxed to non-blocking. The defect is narrower and more specific: importing this gate outside its
 own scope, as a rider, with the outcome fixed in advance — bindingness theater, not a broken test.
 **Both source documents stay `FROZEN` and byte-unedited** (Trap #12); this section is the
-upstream-of-the-claim correction Rule 14 requires, not an edit to either.
+upstream-of-the-claim correction operational_rules §14 requires, not an edit to either.
 
 ---
 

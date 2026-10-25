@@ -41,7 +41,7 @@ Guardian Gold / Aegis USDJPY are **historical CFD book**, not living `BASE_RISK`
 Risk% and pyramid are mirrored here from `firm_rules.py` / Pine as the human-readable record; every
 other strategy parameter (SL/TP/ATR/session/BE/trail) lives in **Pine only** and is never duplicated
 in markdown. The `contractValue=10` requirement is owned by
-[`docs/operational_rules.md`](../../docs/operational_rules.md) Rule 3 (dormant — DXTrade is retired).
+[`docs/operational_rules.md`](../../docs/operational_rules.md) §3 (dormant — DXTrade is retired).
 Lock lineage: [allocation refresh 2](../../docs/adr/2026-05-23-allocation-refresh-2.md).
 
 ## Registry

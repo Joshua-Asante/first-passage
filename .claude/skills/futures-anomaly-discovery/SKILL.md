@@ -96,7 +96,7 @@ candidate's evaluation now estimates its own net return, execution uncertainty
 and cost sensitivity ([`strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
 §1 row 5); `scripts/cost_geometry_pregate.py` reports stop-distance R only.
 
-## Rule 1 — every candidate carries a K; declare it before you look
+## Discovery check 1 — every candidate carries a K; declare it before you look
 
 Every tool here manufactures multiple-comparisons risk at industrial scale:
 STUMPY over thousands of subsequences, tsfresh over hundreds of features, PySR
@@ -223,7 +223,7 @@ re-centre the null across the full searched universe — lives in
 `strategy-validation` and needs the returns of all K strategies. This layer just
 makes K a recorded fact so that correction is possible.
 
-## Rule 2 — least-overfit tool first, escalate deliberately
+## Discovery check 2 — least-overfit tool first, escalate deliberately
 
 Reach for the lower-K, more-constrained option before the flexible one, because
 flexibility is snooping surface:
@@ -238,7 +238,7 @@ flexibility is snooping surface:
 
 Per-tool footguns and the K each contributes: `reference/tool-discipline.md`.
 
-## Rule 3 — discovery outputs are candidates, not signals
+## Discovery check 3 — discovery outputs are candidates, not signals
 
 STUMPY discords are anomalies *by construction*. ruptures change points and
 hmmlearn states are **conditioning variables**, not entries. A tsfresh feature is
