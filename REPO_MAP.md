@@ -83,7 +83,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_96 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_97 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -97,6 +97,7 @@ _96 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (audit) | — |
 | `scripts/author_book_session_calendar.py` | governance† | — | — |
 | `scripts/author_contract_roll.py` | ops | — | — |
+| `scripts/azure_vm_watch.py` | governance† | — | — |
 | `scripts/beta_cohesion_read.py` | lab | — | — |
 | `scripts/certification_power.py` | governance† | — | — |
 | `scripts/check_adr_graph.py` | governance† | `adr-graph` (path-conditional) | — |
