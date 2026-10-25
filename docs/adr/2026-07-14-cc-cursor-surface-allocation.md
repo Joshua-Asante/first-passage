@@ -64,7 +64,7 @@ landed change first, operator attention second. Throughput is not a metric.**
 | **Coordinator** | Claude Code, Opus (default effort; raise effort before changing model) | Decompose the milestone into frozen cards, dispatch, steer, adjudicate `DONE_WITH_CONCERNS`, integrate, write the evidence pack and the campaign record | Be the sole signer on a diff whose card it wrote; implement the hard 20 % by default instead of escalating; touch `main` |
 | **Worker** | Codex sessions (GPT 6.1 Sol or GPT 6 Astra) or Claude Code sessions, as the operator or coordinator routes the packet (GLM dropped [2026-10-24](#addendum-2026-10-24--operator-ruling-seats-bound-to-claude-and-codex-glm-dropped)) | Bounded implementation, tests, docs and refactors in a worktree against a frozen card; return the four-state status with the evidence the card names | Change architecture, expand scope, resolve a spec ambiguity, write reserved files, merge |
 | **Escalation** | Claude Code, ~~Fable 5.1~~ Opus in a separate session at raised effort (amended 2026-09-30) | Only on a named trigger (below): milestone adjudication, the rebuild after a second failed round, load-bearing contract authoring | Daily decomposition, worker supervision, a second executive |
-| **Operator** | Joshua | Merge, GO/NO-GO, every irreversible act, arming | — (no model owns these) |
+| **Operator** | Joshua | Merge (agents merge only under the conditioned standing GO, [2026-10-24b](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody)), GO/NO-GO, every irreversible act, arming | — (no model owns these) |
 
 Worker branches use `codex/` or `claude/`. **Cursor stays retired** (2026-09-15) — no
 Cursor lane, no `@cursor` dispatch, no `cursor/*` branches, no `cursor[bot]` allow-listing; that
@@ -139,7 +139,7 @@ about which vendor runs the session, so all four survive the retirement unchange
   `research.run`, whatever seat it declares ([Addendum 2026-09-26b](#addendum-2026-09-26b)).
 - **Return contract:** a worker branch (`codex/*` or `claude/*`), a PR with tests green, and a
   four-state status — `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`. **No commit
-  or merge without the operator.** `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
+  or merge without the operator** (except an agent merge under the conditioned standing GO, [2026-10-24b](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody)). `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
   merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then returns to the coordinator
   (two bounces means the spec was not freezable and the packet was mis-routed). The coordinator
   owns that return and performs the restart on the escalation lane (trigger 1 below) rather than
