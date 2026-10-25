@@ -20,18 +20,18 @@ Decide `environment: local` vs `cloud` **before** launching a Task / cloud-capab
 ## Standing preferences
 
 - **Cloud default (operator, 2026-10-13).** Owner: [AGENTS.md §Purpose](../../../AGENTS.md#purpose). A local packet without the "Must run locally" line and its reason is malformed.
-- **Cloud return channel (operator, 2026-10-24).** A cloud session cannot message its coordinator, and no note arrives when it ends. So the coordinator fixes the return destination before launch, and the brief names it: a session that will commit opens its own PR whose description begins `Cloud-task: <session name>`; a session that may commit nothing (a read-only review, or work on a branch that already has a PR) posts on an existing PR the brief names, in a comment beginning `Cloud-task: <session name>`. Either way, the final report or any blocking question goes there as a PR comment. The coordinator finds results with `gh pr list --search "Cloud-task"` (GitHub search also matches comments), and answers by messaging the session. Push the branch the cloud session starts from before launching it. Work that will need the operator's decisions partway through goes to a local session, whose turns report back.
+- **Cloud return channel (operator, 2026-10-24).** A cloud session cannot message its coordinator, and no note arrives when it ends. So every cloud brief names where results go: a PR the session opens, whose description begins `Cloud-task: <session name>`, or an existing PR or issue, for work that may commit nothing or that commits to a branch that already has a PR (a read-only review names the PR it reviews). The session posts its final report, or any blocking question, there as a comment beginning `Cloud-task: <session name>`; if an open PR already carries that name, it posts there instead of opening a second. The coordinator reads the target it named, finds opened PRs with `gh pr list --search "Cloud-task"`, and answers by messaging the session. A PR stacked on another open PR says so; when that PR merges, the coordinator retargets it to `main` (merged branches are kept, so GitHub does not). Cloud clocks run on UTC: date records by the operator's ET day (`TZ=America/New_York date +%F`). Work that will need the operator's decisions partway through goes to a local session, whose turns report back.
 - **Cloud review (operator, 2026-09-27).** A cloud reviewer of a pushed, pinned revision returns findings without writing to the reviewed branch.
 
 ## Local-only checklist
 
 Any hit forces `local`:
 
-- Needs gitignored / vendor data not present in a fresh remote checkout
-- Needs secrets, API keys, or credentials
+- Needs gitignored inputs a fresh clone lacks (vendor CSVs, `.cache` verification records)
+- Needs secrets, API keys, or credentials (including `.env`)
 - Needs local-only services (DB, Docker, VPN, hardware, private network)
 - Needs GUI, interactive approval, or browser-on-this-machine
-- Depends on uncommitted, unpushed, or worktree-only state
+- Depends on uncommitted or untracked changes. An unpushed branch is not a hit: the cloud clones its start branch from `origin`, so push it before launch (a fresh branch from `main`: `git fetch origin main && git push origin origin/main:refs/heads/<branch>`)
 - Needs durable local disk or paths outside a fresh cloud checkout
 - Needs the private read surface or other private evidence writes ([AGENTS.md §Public-clone posture](../../../AGENTS.md#public-clone-posture)) or the operator's machine or VM
 

@@ -14,7 +14,7 @@ Recorded separately from the study findings, in Joshua's words:
 
 **The §2.3 items as ruled:**
 1. The D1 window is **unchanged**.
-2. **No** standing weekly-trade GO is granted.
+2. **No** standing weekly-trade GO is granted. *(Superseded 2026-10-25: Joshua granted a standing, revocable GO for the weekly account-preservation trade; see [STATE](../../STATE.md#scheduled-forward-triggers) and [ADR Addendum 2026-09-30b](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b).)*
 3. **D1** is the single authority for paid-pilot approval.
 4. The owned Select 100K decision stays at the **11-08 sitting**.
 

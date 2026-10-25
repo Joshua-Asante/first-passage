@@ -65,7 +65,8 @@ Owners hold canonical criteria; rows are pointers.
 ### Weekly — recurring (rolling; next deadline **2026-10-30**, bucket 10-26→10-30)
 
 - **Account-preservation trade:** at least one per Mon–Fri week, by the operator, or by an
-  agent at the operator's direction for that specific trade ([Addendum 2026-09-30b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b));
+  agent under the operator's **standing GO** (Joshua, 2026-10-25, revocable: "I approve a Standing GO, GO on the 10-26 trade"; [Addendum 2026-09-30b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b));
+  no per-trade GO is needed for this trade. Any other order still needs his direction for that order;
   the rail stays disarmed. A missed venue week risks account deletion; venue-session
   boundaries apply. [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)/[idle-clock audit](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md). An X-3 or X-4 fill counts in the week it fills, as X-1's did ([ruling 2026-10-02](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#20-rules-common-to-x-1--x-5)).
 - **Coverage** (operator-attested unless browser verification is stated; earlier private compliance rows are not independently verified):
