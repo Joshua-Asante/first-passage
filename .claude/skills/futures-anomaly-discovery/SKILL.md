@@ -73,7 +73,7 @@ all closed 2026-07-16 without a successor. The ADR's idle guard sits on the
  gap); the stronger "therefore the gate is over-correcting" inference does
  not survive.
 
-Externally-published mechanisms enter **only** via the five admission
+Externally-published mechanisms enter **only** via the four admission
 requirements in [`docs/methodology/strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
 §1, checked *before* screening. Do not restate the list here. Req-3 is
 mandatory disclosure, not a gate
@@ -82,7 +82,7 @@ mandatory disclosure, not a gate
 Screen with `lab/research_utils/axis_screen.py` (manifest-driven; screen
 constants Cap/DSR/power/K-floor are frozen, never tuned per-seed). **A PASS
 never blesses** — it licenses campaign scoping only; downstream (HARV
-reachability HARD gate, cost gate, universe gate, realism, survivor scoring)
+reachability HARD gate, the candidate's own cost estimate, universe gate, realism, survivor scoring)
 still binds. **Confirm, don't mine:** K_intrinsic ≤ 3 declared at admission;
 any post-admission widening voids the screen and is a new axis.
 
@@ -91,9 +91,10 @@ attestation only discharges the gate it's simulated *in that gate's own units,
 at the basis the gate actually scores on*. Two funded campaigns (D5, H-OD-1)
 both confirmed their mechanism yet died at Stage-2 cost-law because §R argued
 Sharpe-space against the Stage-6 floor instead of simulating the bp-space cost
-gate — see [`strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
-§1 Requirement 5 for the mandatory cost-law inequality, now checked at both
-sourcing time and admission.
+gate. That universal 4× gate (Requirement 5) was deleted 2026-10-24: each
+candidate's evaluation now estimates its own net return, execution uncertainty
+and cost sensitivity ([`strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
+§1 row 5); `scripts/cost_geometry_pregate.py` reports stop-distance R only.
 
 ## Rule 1 — every candidate carries a K; declare it before you look
 
