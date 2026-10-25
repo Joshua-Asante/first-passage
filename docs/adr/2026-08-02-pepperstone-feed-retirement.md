@@ -8,6 +8,7 @@
 **Superseded-in-part-by:** [`2026-08-03-bar-data-cfd-and-candidates-retirement.md`](2026-08-03-bar-data-cfd-and-candidates-retirement.md) — narrows §2-F KEEP from all of `bar_data/` to CME micros only (MYM/MNQ/6J); CFD panels deleted
 **Retain-until:** none
 **Completes:** [`docs/adr/2026-07-22-challenge-era-substrate-retirement.md`](2026-07-22-challenge-era-substrate-retirement.md) — Phase 3 emptied the executable panel registry; this ADR retires the feed the registry used to point at, and applies the Phase-5 data pattern to it.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR08-3, ADR08-8, ADR08-9); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -61,11 +62,12 @@ readable as record; they gain no successor.
 
 ### 2-B — A5 and P1 are RETIRED, not deferred
 
-- **A5** (decompound-HOLD limb 2 / `regime_gate.py --regime-check`) — **struck from Class A.** Not
-  re-pointed: its panel, its instruments and its venue are all retired. `regime_gate.py` and
-  `decompound.py` stay on disk as the historical record of the 2026-06-07 HOLD; they become
-  **unrunnable** once the inputs are deleted, which is honest rather than a defect.
-- **P1** (fresh 4-leg Pepperstone export, operator-owed ~08-05) — **struck.** No export is owed.
+- **A5** (decompound-HOLD limb 2 / `regime_gate.py --regime-check`) — struck from Class A on
+  2026-08-02, not re-pointed: its panel, its instruments and its venue are all retired.
+  `regime_gate.py` and `decompound.py`, the historical record of the 2026-06-07 HOLD, became
+  **unrunnable** once the inputs were deleted, which is honest rather than a defect (the study
+  directory is now archived; see `lab/ARCHIVED.json`).
+- **P1** (fresh 4-leg Pepperstone export, operator-owed ~08-05) — struck on 2026-08-02.
 - **A1** (accept-beta fork) loses its stated input. It is **not** thereby decided — see §2-C.
 
 ### 2-C — A1 is re-scoped, not silently orphaned
@@ -111,9 +113,9 @@ dormant book since the CFD venue closed. The failure predates today.
 
 ### 2-E — Tier 2: data + manifest contract
 
-- `core/data/tv_exports/pepperstone/` and `core/data/tv_exports/pepperstone/bar_export/` **leave the
-  active manifest contract** (`check_data_manifests.py`), reducing five dirs to three.
-- **The bytes are deleted from the checkout** (35 files), matching the Phase-5 precedent, which
+- `core/data/tv_exports/pepperstone/` and `core/data/tv_exports/pepperstone/bar_export/` left the
+  active manifest contract (`check_data_manifests.py`) on 2026-08-02, reducing five dirs to three.
+- The bytes (35 files) were deleted from the checkout, matching the Phase-5 precedent, which
   deleted rather than de-scoped.
 - **A verified offline copy was taken first** — 35/35 hash-verified, 0 mismatches — and the hashes
   are recorded in [`2026-08-02-pepperstone-data-tombstone.md`](../ltm/notes/2026-08-02-pepperstone-data-tombstone.md).
@@ -121,8 +123,10 @@ dormant book since the CFD venue closed. The failure predates today.
 
 ### 2-F — Out of scope, explicitly
 
-`core/data/bar_data/` **stays** — on disk and in the manifest contract. It is derived M15 data, and
-deleting it would break more than it cleans. But its **producer is now dead**
+`core/data/bar_data/` was left out of this ADR's scope: it is derived M15 data, and deleting it
+would have broken more than it cleaned. Its later disposition is owned by the
+[2026-08-03 bar-data retirement](2026-08-03-bar-data-cfd-and-candidates-retirement.md). Its
+**producer is now dead**
 (`parse_bar_export.py` reads the deleted `pepperstone/bar_export/`), so those panels are **frozen:
 usable, not regenerable** without an offline restore. Recorded rather than hidden.
 
@@ -178,7 +182,6 @@ the offline copy is its remedy.
    retired its predecessor outright rather than re-pointing it.
 5. **Treating "no canonical CFD feed" as "no canonical feed."** CME futures exports are canonical
    for everything live.
-6. **Quietly deleting `core/data/bar_data/`** under this ADR's authority. Out of scope (§2-F).
 
 ---
 
@@ -199,8 +202,8 @@ mitigation for all of it is the offline copy, which is exactly why §5-1 protect
 ## §7 — Implementation
 
 1. Tombstone with all 35 hashes + the offline path — **done before deletion**.
-2. `check_data_manifests.py`: drop both Pepperstone dirs (5 → 3).
-3. Delete `core/data/tv_exports/pepperstone/` from the checkout.
+2. `check_data_manifests.py`: both Pepperstone dirs dropped (5 → 3) — done 2026-08-02.
+3. `core/data/tv_exports/pepperstone/` deleted from the checkout — done 2026-08-02.
 4. Docs: `CLAUDE.md` canonical-feed + manifest-dir claims; `STATE.md` A5/P1 forward-board lines; the
    08-08 packet's A5/P1/A1 rows and §2 sequence.
 5. **Not done here:** no deletion of `bar_data/`, no destruction of the offline copy, no A1 decision,

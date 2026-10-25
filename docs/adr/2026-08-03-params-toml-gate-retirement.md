@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR08-46, ADR08-53); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 **Related:** [`docs/adr/2026-07-22-challenge-era-substrate-retirement.md`](2026-07-22-challenge-era-substrate-retirement.md) (Phase 3 already removed `[mc_anchor_pepperstone]` from the living manifest); [`docs/adr/2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) (futures-first charter; CFD code retirement separately gated); SESSIONS carry-forward that authorized retiring the `params.toml` gate as a follow-on packet.
 
@@ -41,8 +42,8 @@ That book has **no live venue**. The futures-first charter keeps Striker sizing 
 
 | Surface | Disposition |
 |---|---|
-| `core/config/params.toml` (+ empty `core/config/`) | **RETIRE** (`git rm`) |
-| `scripts/validate_params.py` + fixtures/tests | **RETIRE** |
+| `core/config/params.toml` (+ empty `core/config/`) | **RETIRED** 2026-08-03 (`git rm`) |
+| `scripts/validate_params.py` + fixtures/tests | **RETIRED** 2026-08-03 |
 | `check_skills_no_constants` | **EXTRACT** to `scripts/check_skills_no_constants.py`; keep wired in pre-commit / CI / Makefile |
 | `scripts/check_path_liveness.py` | **KEEP** MANIFEST-parent leg only; drop params.toml leg |
 | `scripts/verify_lock_anchors.py` | **SLIM** to `dd_protection.py` only (Guardian safe band + readable DD literals); no toml Forward/Action |
@@ -79,7 +80,6 @@ That book has **no live venue**. The futures-first charter keeps Striker sizing 
 - Reintroducing a derived `params.toml` (or equivalent hub mirror) without a new ADR.
 - Weakening `check_pine_manifest` / path-liveness / skill no-constants to "make retirement green."
 - Editing `DD_TRIGGER` / `DD_SCALE` / `BASE_RISK` / `_BASE_RISK` / Pine as part of this change.
-- Claiming this discharges the futures-refocus ADR §7 CFD **code** retirement (Guardian/Aegis) — that remains separately gated.
 
 ---
 

@@ -12,6 +12,7 @@
 **Superseded-in-part-by:** `2026-08-07-loop-s2-signal-host-fork.md` — §4 item 5 **signal-origin definition only** (TradingView-only → ruled Python-native host). Item 5 itself, expected sizing, Stage-1 `dry_run`, deletion decline, and the bar on **silent** redefinition stand.
 **Superseded-in-part-by:** `2026-08-07-loop-s5-bounded-promotion-lane.md` — §5 forbidden move *“Creating a second tier/state writer or autonomous promotion path”* **autonomous promotion path limb only** (bounded sandbox lane). No second tier/state writer; arm-gate, reflex layer, and unattended bar **stand**.
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR06-80); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 **Related:** `2026-07-11-ops-cfd-estate-retirement.md` (venue-native rebuild
 rule); `2026-07-10-strategies-never-locked-lifecycle-governance.md`;
@@ -486,18 +487,11 @@ declare the statistical monitoring gap closed before data exists.
   intended fail-safe. Mitigation: explicit exit/flat tests and no automatic
   retry.
 
-**Downstream artifacts required on implementation:**
-
-- `ops/c1_rail/c1_rail_telemetry.py` and tests;
-- `ops/c1_rail/c1_rail_http_server.py`, `ops/c1_rail/c1_rail_listener.py`, and config examples;
-- read-only reconciliation CLI/module and evidence schema;
-- `scripts/validate_c1_monitoring_acceptance.py` plus a machine-readable,
-  secret-free `docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json`;
-- `docs/notes/rail_build/RUNBOOK.md` M1 gate and session export procedure;
-- `PIPELINES.md` P6 status: venue-native M1 rebuilt, M2/M3 staged;
-- c1 GO ADR reverse partial-supersession edge when this ADR is accepted;
-- `STATE.md` forward board and `docs/SESSIONS.md`;
-- fresh Q-NAS-ECR successor Pre-Q only after M1 and first fill.
+**Downstream artifacts:** built; M1 `RESOLVED` 2026-09-14 (`docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json`).
+The list covered the telemetry module and tests, server/listener wiring, the reconciler, the acceptance
+validator and JSON, the `docs/notes/rail_build/RUNBOOK.md` M1 gate and session export procedure,
+PIPELINES P6, the c1 GO ADR reverse edge, and STATE/SESSIONS. The fresh Q-NAS-ECR successor Pre-Q
+still waits for a first fill (§2 M2).
 
 ---
 
