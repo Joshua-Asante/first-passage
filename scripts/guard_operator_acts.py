@@ -115,8 +115,8 @@ call, because one answer approves all of them.
   * ``gh pr merge --admin`` stays askable when pinned (operator ruling 2026-09-26: record
     only, no change).
 
-**Scope — what this hook is not.** It covers the Claude Code harness only (Codex and
-Z Code sessions are not hooked). It adds a prompt where an agent session holds a
+**Scope — what this hook is not.** It covers the Claude Code harness only (Codex sessions
+are not hooked). It adds a prompt where an agent session holds a
 credential that could otherwise act; it does not replace the ruleset, the repository
 setting, the arming interlock or keeping credentials off agent environments. It cannot
 see broker actions: since the 2026-09-30 amendment, ``trade.submit`` is an operator act,
@@ -221,7 +221,7 @@ MESSAGES = {
     "main.direct_push": ("Pushing to main is forbidden (main.direct_push): main takes PRs "
                          "only.",
                          "`main` requires a PR and the required status; a direct push "
-                         "bypasses both. Push a `glm/`, `codex/` or `claude/` branch and "
+                         "bypasses both. Push a `codex/` or `claude/` branch and "
                          "open a PR."),
     "rail.arm": ("Arming the c1 rail is an operator act (rail.arm): M1 RESOLVED and a GO "
                  "for this armed session. Confirm to proceed.",

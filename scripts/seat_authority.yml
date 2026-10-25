@@ -38,7 +38,7 @@ capabilities:
   tests.run:            {risk: low}
   worktree.write:       {risk: low}      # edits inside the card's own worktree/branch
   research.run:         {risk: low}      # lab/ research inside its approved campaign contract
-  branch.push:          {risk: medium}   # glm/*, codex/*, claude/* branches only; never main
+  branch.push:          {risk: medium}   # codex/*, claude/* branches only; never main
   pr.open:              {risk: medium}
   pr.review:            {risk: medium}   # review comments; not an approval to merge
   ci.dispatch:          {risk: medium}   # e.g. the S2 Linux workflow (s2-linux-run skill)

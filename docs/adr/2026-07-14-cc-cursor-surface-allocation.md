@@ -62,11 +62,11 @@ landed change first, operator attention second. Throughput is not a metric.**
 |---|---|---|---|
 | **Executive** | Codex ("Astra") | Goal, constraints, next milestone; accept/reject on the evidence pack (diff, test log, reviewer dissent) — never on the coordinator's synthesis alone; independent PR review of the diff against the *goal* (the 2026-08-29 addendum #1 review path, retained) | Author tickets, implement, merge |
 | **Coordinator** | Claude Code, Opus (default effort; raise effort before changing model) | Decompose the milestone into frozen cards, dispatch, steer, adjudicate `DONE_WITH_CONCERNS`, integrate, write the evidence pack and the campaign record | Be the sole signer on a diff whose card it wrote; implement the hard 20 % by default instead of escalating; touch `main` |
-| **Worker** | Z Code (GLM 5.3) sessions; a Claude Code or Codex session may take a packet when the operator routes one there | Bounded implementation, tests, docs and refactors in a worktree against a frozen card; return the four-state status with the evidence the card names | Change architecture, expand scope, resolve a spec ambiguity, write reserved files, merge |
+| **Worker** | Codex sessions (GPT 6.1 Sol or GPT 6 Astra) or Claude Code sessions, as the operator or coordinator routes the packet (GLM dropped [2026-10-24](#addendum-2026-10-24--operator-ruling-seats-bound-to-claude-and-codex-glm-dropped)) | Bounded implementation, tests, docs and refactors in a worktree against a frozen card; return the four-state status with the evidence the card names | Change architecture, expand scope, resolve a spec ambiguity, write reserved files, merge |
 | **Escalation** | Claude Code, ~~Fable 5.1~~ Opus in a separate session at raised effort (amended 2026-09-30) | Only on a named trigger (below): milestone adjudication, the rebuild after a second failed round, load-bearing contract authoring | Daily decomposition, worker supervision, a second executive |
 | **Operator** | Joshua | Merge, GO/NO-GO, every irreversible act, arming | — (no model owns these) |
 
-Worker branches use `glm/`, `codex/` or `claude/`. **Cursor stays retired** (2026-09-15) — no
+Worker branches use `codex/` or `claude/`. **Cursor stays retired** (2026-09-15) — no
 Cursor lane, no `@cursor` dispatch, no `cursor/*` branches, no `cursor[bot]` allow-listing; that
 election carries no falsifier and no review cadence. The 2026-09-15 text described the
 coordinator as a Claude Code session with Claude Code and Codex as workers; this revision does not
@@ -77,7 +77,7 @@ The executive's PR review and the operator's merge are the independent signature
 coordinator's adjudication of a worker return is an input to them, not a substitute. The executive
 reviews against its own stated goal, not against the coordinator's cards.
 
-**Committed-handoff rule.** Nothing crosses a seat boundary except as a committed, dated file:
+**Committed-handoff rule.** *[⚠ SUPERSEDED 2026-10-24 by operator ruling ([addendum](#addendum-2026-10-24--operator-ruling-seats-bound-to-claude-and-codex-glm-dropped)): a direction or card may cross a seat boundary as a direct prompt (chat, session message or `codex exec`); the return contract — pushed branch plus PR — still holds.]* Nothing crosses a seat boundary except as a committed, dated file:
 an executive direction lands in `STATE.md`'s operator queue or the owning campaign plan; a
 coordinator → worker card lands under `docs/briefs/handoffs/**` (or the lightweight issue below)
 at a pinned SHA; a worker return is a pushed branch plus its PR; the coordinator's synthesis lands
@@ -137,7 +137,7 @@ about which vendor runs the session, so all four survive the retirement unchange
   positions or shutdown semantics it carries the state model (M-39). Since 2026-09-26 the checker
   requires named acceptance tests on any card whose authority block grants `worktree.write` or
   `research.run`, whatever seat it declares ([Addendum 2026-09-26b](#addendum-2026-09-26b)).
-- **Return contract:** a worker branch (`glm/*`, `codex/*` or `claude/*`), a PR with tests green, and a
+- **Return contract:** a worker branch (`codex/*` or `claude/*`), a PR with tests green, and a
   four-state status — `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`. **No commit
   or merge without the operator.** `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
   merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then returns to the coordinator
@@ -267,7 +267,7 @@ canonical list of capability names, their class and which seat a card may grant 
 | Class (registry name) | Meaning | Examples | Who may do it |
 |---|---|---|---|
 | **low** (`low`) | Read-only or isolated | read the repo, local tests, edits in the card's own worktree, lab research inside its campaign contract | any seat the card grants it to |
-| **medium** (`medium`) | Reversible change to shared development state | push a `glm/`/`codex/`/`claude/` branch, open a PR, dispatch the S2 workflow, a cloud dispatch (with task-routing's GO), governance drafting (coordinator only, routing test 1) | the highest class a card may grant an agent seat |
+| **medium** (`medium`) | Reversible change to shared development state | push a `codex/`/`claude/` branch, open a PR, dispatch the S2 workflow, a cloud dispatch (with task-routing's GO), governance drafting (coordinator only, routing test 1) | the highest class a card may grant an agent seat |
 | **operator act** (`high`) | Irreversible, external, financial or ratifying | merge, ratify, spend, deploy the rail, arm the rail, operator-directed orders/exits/cancels (`trade.submit`) | the operator, through an act they already perform; for `trade.submit`, an agent may perform the specific operator-directed act ([2026-09-30b](#addendum-2026-09-30b)); never delegated by a card |
 | **forbidden** (`forbidden:` map) | Un-grantable to every seat; no approval unlocks it for an agent | auto-merge, a direct push to `main`, TV login automation, edit a locked parameter, edit the frozen protection constants, commit private data | nobody among the agents; the frozen protection constants keep their own governed route (pre-registration → re-MC → both-halves gate → admitting ADR, ratified by the operator) |
 
@@ -291,7 +291,7 @@ Rules:
    idempotency is disproven at the venue. This is the qualification service's START_INTENT /
    IN_DOUBT rule stated for every seat.
 4. **Enforcement points, not a new service.** The runtime is the set of points below plus git
-   as the event log (committed-handoff rule). An orchestrator service is built only if a
+   as the event log (committed-handoff rule, superseded 2026-10-24; returns stay pushed branches plus PRs). An orchestrator service is built only if a
    recorded failure shows these points are insufficient.
 
 | Act | Enforcement point | Status 2026-09-25 |
@@ -317,7 +317,7 @@ PowerShell variables, `Invoke-Expression`, `Start-Process`, stdin, encodings oth
 dot-sourcing; user-defined `gh` / `git` aliases, push configuration (`push.default`,
 `remote.<r>.push`, `remote.<r>.mirror`) and flags missing from its tables; GitHub API writes to
 `main` other than a merge, other GitHub clients; remote execution on the rail other than
-`fly ssh console -C`; and every Codex / Z Code session. Still open for the operator, with the
+`fly ssh console -C`; and every Codex session. Still open for the operator, with the
 hook's current behaviour unchanged meanwhile: whether an agent may use
 `--acknowledge-m1-unresolved` under a prompt (today it asks, with an M1-unresolved prompt) or is
 denied; the Fly deploy scope (today every `fly deploy` asks, not only the rail's); whether an
@@ -740,7 +740,7 @@ pointing here. Ratifies on operator merge of the PR that carries it.
 - This rules the last question the operator-act paragraph above leaves open ("how a card's seat
   is bound to the worker seat"), and supersedes any record of it as still under consideration.
 
-**C. GLM credentials — "isolate GLM".**
+**C. GLM credentials — "isolate GLM".** *[Moot 2026-10-24: GLM dropped as a seat ([addendum](#addendum-2026-10-24--operator-ruling-seats-bound-to-claude-and-codex-glm-dropped)); the credential-custody question for the remaining seats is open there, not discharged here.]*
 
 - *Decision:* GLM workers must run without the operator's merge-capable `gh` credential and
   without the operator's Fly configuration — a separate OS user or a sandbox with no keyring
@@ -848,8 +848,8 @@ would let a card that omits §0.5 and the four-state return pass as `generic`. O
 The gate adds scope, not rules: the handoff contract is `check_brief.py`'s own. It runs at
 pre-commit whenever a brief, the checker, its engine, the block reader or the historical list is
 staged, and in the required
-`skills (3.12)` check on every PR. A card is committed before it is dispatched (committed-handoff
-rule), so a malformed card now fails before dispatch. The scope:
+`skills (3.12)` check on every PR. A committed card is checked before dispatch (the committed-handoff
+rule that required committing is superseded 2026-10-24), so a malformed committed card fails before dispatch. The scope:
 - every card anywhere under `docs/briefs/handoffs/`, where the committed-handoff rule places cards
   (`docs/briefs/handoffs/**`), except that directory's own `README.md` and the historical cards:
   the 74 direct children dated before 2026-09-27 that were on `main` at `38e62ee`, listed by name in
@@ -929,6 +929,16 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 
 **Verification.** The registry test asserts that `trade.submit` is absent from `forbidden:` and has risk `high`; the existing parametrized `test_operator_act_is_never_delegated` covers it automatically. Run through the checkout's launcher: `python -m pytest tests/scripts/test_check_handoff_authority.py tests/scripts -q`, `python scripts/check_handoff_authority.py --all` (0 violations), and `check`. Verification records belong on PR #566. **Historical sequencing condition:** the sweep and ready status were held until X-1 finished and Joshua gave GO. X-1 is complete; Joshua authorized ready status and folding the sweep into #566. The 2026-10-01 sweep updates live authority statements and explicitly labels retained historical or task-scoped wording; its file inventory and verification are retained in the PR body. No merge is authorized.
 
+## Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped
+
+**Ruling (Joshua, 2026-10-24, in session):** "rebind the seats to claude and codex, drop glm".
+
+- Seats are filled only by Claude (Claude Code, Opus 5.5) and Codex (GPT 6.1 Sol or GPT 6 Astra). The Worker row now names Codex and Claude Code sessions; Z Code / GLM is no longer a surface for any seat.
+- Worker branches are `codex/*` or `claude/*`; `glm/*` is withdrawn (`scripts/seat_authority.yml`, `scripts/guard_operator_acts.py`).
+- Addendum 2026-09-26b part C is moot: its subject is gone. It is not discharged, so credential custody for the Codex and Claude seats stays an open question for the operator.
+- **Committed-handoff rule superseded** (Joshua, 2026-10-24: "the committed handoff rule is superceded"). A direction or card may now cross a seat boundary as a direct prompt (chat, a session message or a `codex exec` prompt); it no longer has to be a committed, dated file first. Still in force: Joshua's direct instruction is the only authority (AGENTS.md §Purpose), a worker return is a pushed branch plus its PR, and a card that *is* committed under `docs/briefs/handoffs/` still passes `check_brief.py`.
+- How work divides between the three models is out of scope here; that research (2026-10-24) feeds a later revision of the seat table.
+
 ## Change history
 
 | Date | Change | By |
@@ -947,3 +957,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check, GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
 | 2026-09-27 | Addendum 2026-09-27 — operator ruling on handoff-contract item 1: the H4, H5b and H8c cards (dispatched and returned without passing `check_brief.py`) are exempted as recorded deviations, not retro-fitted; the staged-acceptance set is exempted as a set file whose copied-out cards must pass; the undispatched M2 card is restructured instead. Enforcement at the operator's same-day direction: the `handoff-brief-form` gate (forward-only from 2026-09-27, plus any card with an authority block; the four exempt files named). Item 1 gains a pointer; the enforcement-point table gains a *card form* row. | Joshua (ruling, direction) + Claude Code |
 | 2026-09-30 | Addendum 2026-09-30b — proposed: operator-directed orders, exits and cancels are `trade.submit`, operator act (`high`), never grantable in a card; ratified on operator merge. Original X-1 sweep hold is historical; completed sweep inventory and evidence are on #566 (2026-10-01). | Joshua (direction) + Codex |
+| 2026-10-24 | Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped; `glm/*` branches withdrawn; 2026-09-26b part C moot; committed-handoff rule superseded | Joshua |
