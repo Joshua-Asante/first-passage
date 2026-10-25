@@ -314,6 +314,8 @@ Lifecycle overlay: STRATEGIC funds stage 1 (alpha research) and owns kill/scale 
 
 **Canonical source:** `docs/adr/2026-06-16-rule-2-budget-before-acting.md` (ADR of record, **Accepted 2026-08-21 — operator override, ahead of §4/§6's evidentiary graduation gate; see the ADR's Addendum 2026-08-21**). This section is the canon-side statement; if it and the ADR ever disagree, the ADR wins. **Numeral note:** the originating handoff proposed "Rule 1"; that slot is held by the small-cell-variance-prior rule (§10/§12), so this is **Rule 2** (owner-adjudicated 2026-06-16). It binds both loops (the test for earning a numeral): a budget is OODA's time-boundedness restated, and it is the discipline the unbudgeted cfg00–12 sweep visibly lacked. Reversibility-classification is its *sizing function*, not a separate rule — which is why it earns no numeral of its own.
 
+**Scope:** all substantial work, not only INQHIORI-loop entry ([ADR Addendum 2026-10-24](../adr/2026-06-16-rule-2-budget-before-acting.md#addendum-2026-10-24--scope-widened-to-all-substantial-work) defines it and the one-line budget).
+
 **Rule 2 — Budget before acting, scaled to reversibility.**
 
 Before starting a task, declare a spend budget bounded by the cost of being wrong. Time is the intent; the budget is counted in *iterations* — one complete attempt-and-check cycle, mapped to the task's natural unit (config run; drafted-and-reviewed section; hypothesis–edit–test cycle; query-and-read pass). The loop class (LoR, §0) sets the magnitude:
