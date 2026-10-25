@@ -120,6 +120,15 @@ def watch(vm, ledger: Ledger, state_dir: Path, *, hours: float, poll: float, gra
           rate: float, cap: float, max_unreadable: float, clock=time.time, sleep=time.sleep) -> int:
     start = last = clock()
     deadline, seen_allocated, unreadable_since = start + hours * 3600, False, None
+
+    def stop(reason: str) -> int:
+        rc = deallocate_verified(vm, state_dir, reason, sleep)
+        try:  # conservatively bill the whole deallocation window, retries included
+            ledger.add(clock(), clock() - last)
+        except (OSError, ValueError) as e:
+            log(f"ledger unavailable; deallocation time not recorded: {e}")
+        return rc
+
     while True:
         keep_awake()
         try:
@@ -128,7 +137,7 @@ def watch(vm, ledger: Ledger, state_dir: Path, *, hours: float, poll: float, gra
             log(f"power read failed: {redact(str(e))}")
             unreadable_since = unreadable_since or clock()
             if clock() - unreadable_since >= max_unreadable:
-                return deallocate_verified(vm, state_dir, "power state unreadable", sleep)
+                return stop("power state unreadable")
             state = None
         now = clock()  # after the read, so a slow read cannot defer the checks below
         try:
@@ -138,13 +147,13 @@ def watch(vm, ledger: Ledger, state_dir: Path, *, hours: float, poll: float, gra
             dollars = ledger.seconds(now) * rate / 3600
         except (OSError, ValueError) as e:  # the cap cannot be enforced without the ledger
             log(f"ledger unavailable: {e}")
-            return deallocate_verified(vm, state_dir, "weekly ledger unavailable", sleep)
+            return stop("weekly ledger unavailable")
         last = now
         reason = ("deadline" if now >= deadline else
                   f"weekly cap ${cap:.0f} reached (${dollars:.2f})" if dollars >= cap else
                   "stopped but still allocated" if state == STOPPED else None)
         if reason and state != DEALLOCATED:
-            return deallocate_verified(vm, state_dir, reason, sleep)
+            return stop(reason)
         if state == DEALLOCATED and (seen_allocated or now - start >= grace):
             log("VM deallocated; watcher done" if seen_allocated else "VM never started within grace; watcher done")
             return 0

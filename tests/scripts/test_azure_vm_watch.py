@@ -172,3 +172,9 @@ def test_power_read_timeout_is_short(monkeypatch):
     with pytest.raises(subprocess.TimeoutExpired):
         w.Vm("az", "g", "n").power()
     assert seen["get-instance-view"] <= 120
+
+
+def test_deallocation_retries_are_billed(tmp_path):
+    vm = FakeVm([RUN], deallocate_works=False)
+    rc, ledger, clock = run(vm, tmp_path, hours=1)
+    assert rc == 2 and ledger.seconds(clock()) == pytest.approx(3600 + 3 * 60)
