@@ -20,7 +20,6 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 
    | Action | Agent may run? | Conditions |
    |---|---|---|
-   | `fly deploy` (listener **or** signal-daemon app) | **YES** | All six deploy pre-conditions below, **scoped per app**. |
    | `--disarm` | **YES** | Only once flatness is **broker-verified** — `dry_run=true` blocks *everything including exits*, so disarming over an open position **orphans** it. Flat first, then disarm. |
    | `--status`, pre-flight reads, boot-line verification | **YES** | Read-only; always permitted. |
    | `--arm` (`dry_run=false`) | **Operator act, never card-granted** | Arming and M1 requirements per invariant 2; operator-act prompt route per the surface-allocation ADR's [2026-09-26](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26) and [2026-09-30b](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b) addenda (an arming GO does not direct a trade). No config-edit bypass: hand-editing `/data/c1_rail_config.json` is the same act without the audit trail. |
@@ -86,8 +85,8 @@ MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python ops/c1_rail/c1_rail_arm
 # Expect dry_run=True (armed_until absent/cleared). Windows: fly ssh console -C may exit 1 with
 # "Error: The handle is invalid." AFTER printing correct output — judge by the command's own print
 # (Windows fly ssh console -C notes, 2026-07-27).
-# Agent authority (2026-08-02 grant): deploy YES (six pre-conditions), disarm YES (flat-verified
-# first — disarm blocks exits and orphans an open position), status/read-only YES.
+# Agent authority (2026-08-02 grant): disarm YES (flat-verified first — disarm blocks exits and
+# orphans an open position), status/read-only YES.
 # `--arm` is an operator act, never card-granted — see invariant 2 §Agent-session authority.
 ```
 

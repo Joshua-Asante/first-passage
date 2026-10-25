@@ -1312,10 +1312,7 @@ match the §2.4 hook + `validation/disposition.py` `DispositionRecord`):
 
 **Extended attributes (ADR [`2026-06-14-rejected-candidate-patterns.md`](adr/2026-06-14-rejected-candidate-patterns.md) §D, additive).** Hand-authored / ADR-sourced entries from 2026-06-14 also carry `class`, `role_tested`, `falsifier_failed`, `addback_condition`, `config_fingerprint` on the same comment. `dedup` ignores unknown attributes (it keys only on `mechanism_family`×`instrument`), so this is backward-compatible; `role_tested`+`falsifier_failed` are mandatory on new entries. First use: the `mean-reversion-spike-fade × USOIL` entry below.
 
-The four locked-book strategies (Guardian Gold v5.5 / XAUUSD, Striker DJ30 v4.5 /
-DJ30, Aegis USDJPY v4.3 / USDJPY, Striker NAS100 v1 / NAS100) are pinned in the
-gate's `admissibility_contract.yaml` `locked_book` block and are also dedup
-targets. **Additions only** — never edit or delete a prior rejection; the gate's
+**Additions only** — never edit or delete a prior rejection; the gate's
 loop depends on the lineage staying intact.
 
 ---

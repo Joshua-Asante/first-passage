@@ -11,6 +11,7 @@
 **Layer:** portfolio / governance (claim scope + documentation + provenance labels) — **no** locked parameter, allocation, `dd_protection` constant, test pin, or Pine byte is touched.
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR04-13); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Revision:** 2026-10-25 — rule consolidation D5 removed the §2 item 3 dormant-tooling and `ACTIVE_FIRM` retention clause (ADR04-5); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the anchor-pin retention and 08-08-diagnostic quotation forbidden moves, superseded by the substrate-retirement pin deletion and the retired diagnostic (ADR04-11, ADR04-15); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -85,10 +86,8 @@ FXIFY formally closed 2026-07-10; the futures-prop path closed NO-GO the same da
 ## §5 — Forbidden moves (under this ADR)
 
 - **Editing `dd_protection` constants, the display banner, or any executable line "while we're here."** Genuinely tempting (the FXIFY banner is now anachronistic; C2's grounds are void) — but constants are frozen re-MC-gated, and the zero-behavior-change scope is what makes this ADR safe to accept without a re-MC. D2 owns the calibration question at 08-08.
-- **Deleting or weakening the anchor test pins / lock-criteria test.** They are re-scoped to engine regression pins, not removed — deleting them severs byte-reproducibility of the engine against its only validated benchmark.
 - **Treating the re-scope as license to re-open rejected candidates or re-optimize.** Venue retirement is not new mechanism evidence; every `docs/rejected_candidates.md` bar stands (audit K7).
 - **Running successor-semantics MC numbers before the D1 Pre-Q freeze.** Numbers-before-question is the family's own pre-registration violation; the first self-funded MC result must land against a frozen question set.
-- **Letting the 08-08 diagnostic output be quoted as a live pass-claim.** The run is a fixed-benchmark health read; quoting its pass-rate as a live probability re-creates exactly the unfalsifiable claim this ADR retires.
 
 ---
 

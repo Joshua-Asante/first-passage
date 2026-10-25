@@ -5,6 +5,7 @@
 **Superseded-in-part-by:** `2026-07-22-challenge-era-substrate-retirement.md` - the ACTIVE_FIRM-selector-mechanism clause only (Phase 4, merged 2026-07-30, PR #572: ACTIVE_FIRM/FIRM_RULES["FXIFY"]/BASELINE_BALANCE deleted outright, not renamed). The broader "one canonical firm_rules.py home for firm constants" principle this ADR established is still honored in spirit — core/dd_protection.py now derives challenge constants from core/historical_challenge.py instead.
 **Retain-until:** none
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-29); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the derivation-edit bundling forbidden move, moot since Phase 4 deleted the selector (ADR02-31); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 **Decision date:** 2026-06-06
 **Authors:** Joshua + claude.ai (Tech Advisor)
 **Supersedes:** none
@@ -95,7 +96,6 @@ If any fires, the derivation introduced drift (or a representation was mis-deriv
 
 1. **Removing or renaming any of the ten public attributes.** The `lab/validation` harness and `test_sweep_controls.py` import them by attribute. Preserve the names; change only their right-hand side. (Tempting because "just import firm_rules everywhere" looks cleaner — it breaks the harness.)
 2. **Changing any numeric value or representation a consumer relies on.** The derivation must reproduce today's exact values in today's units (absolute $ for `portfolio_mc.PROFIT_TARGET`, signed fractions for its DD/loss, unsigned for `dd_protection`). This ADR adds zero behavior. (Tempting to "fix" the unit inconsistency in the same pass — out of scope, behavior-change risk on P0.)
-3. **Bundling with the `portfolio_mc.py` file decomposition.** Isolated diff, isolated lock cycle.
 4. **Touching `_BASE_RISK` / allocations / `DD_TRIGGER` / `DD_SCALE`.** Different locks; not this decision.
 5. **Performing the edit from this ADR without the lock cycle.** Both modules are P0. This artifact is the *why*; the *how* is §7.
 

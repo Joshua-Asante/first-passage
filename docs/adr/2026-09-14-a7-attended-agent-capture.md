@@ -9,6 +9,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D8 removed the hold-M1-until-A8 clause, discharged by the A8 signed acceptance (`docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json` reads RESOLVED, 2026-09-14) (ADR13-122); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ## §0 — Rule 0 reads
 
@@ -48,7 +49,7 @@ If any attempt cannot establish the exact closed target, captures unrelated acco
 
 The input workflow removes operator transcription but requires compatible control/source/projector deployment and honest provenance. CLI actor declarations are not authentication: session GO and actual tool/command receipts remain necessary. Chart timestamp conversion is an operational risk; observed chart EDT and application CDT must not be conflated.
 
-Code acceptance is PASS only when the targeted tests and independent review pass. Operational readiness is PASS only when the source/actor procedure, compatible deployed revisions, current host preflight, exact fresh candle binding and attendance are established; otherwise FAIL and do not enable. M1 acceptance stays unchanged until A8 obtains the required actual evidence and dated signoff.
+Code acceptance is PASS only when the targeted tests and independent review pass. Operational readiness is PASS only when the source/actor procedure, compatible deployed revisions, current host preflight, exact fresh candle binding and attendance are established; otherwise FAIL and do not enable.
 
 Downstream updates: S2b and M1 receive scoped supersession notices; A7 and A8 point to this variant and its evidence semantics. No historical append-only return is overwritten.
 
