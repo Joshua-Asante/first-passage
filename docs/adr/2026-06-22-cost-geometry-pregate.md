@@ -10,7 +10,7 @@
 **Related:** [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](2026-06-11-instrument-ledger-and-cfg-fingerprint.md) (the instrument-ledger rule this extends) · [`docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md`](2026-06-14-reject-usoil-rdm-spike-fader.md) + [`docs/adr/2026-06-14-rejected-candidate-patterns.md`](2026-06-14-rejected-candidate-patterns.md) (the paid-for failure + the venue/cost add-back condition this mechanizes) · [`docs/ltm/briefs/Q-5LEG-DATA-instrument-regime-public-data.md`](../ltm/briefs/Q-5LEG-DATA-instrument-regime-public-data.md) (the search that motivates it)
 **Layer:** methodology / infrastructure (R&D session governance) — **does not touch strategy code, allocations, dd_protection, or MC calibration.** Locked config untouched.
 
-> ⚠ **2026-10-25 — decision pending on the 0.05R ceiling.** §2a's only stated derivation of the PASS ceiling is consistency with the standing 4×-median-cost hurdle, which [Joshua's 2026-10-24 ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) deleted. Whether the ceiling is re-derived, made report-only or retired with its code is Joshua's decision (decision packet: [PR #900](https://github.com/Joshua-Asante/first-passage/pull/900)). Until Joshua decides, this ADR, Rule 10's Phase-0 obligation and `scripts/cost_geometry_pregate.py` stand as written.
+> ⚠ **2026-10-24 — report-only.** The 0.05R PASS/FAIL ceiling (§2a) and the blocking FAIL (§2c) are retired by operator ruling; Phase 0 records `cost_R`, its band and the sub-ATR flag, and blocks nothing. See [Addendum 2026-10-24](#addendum-2026-10-24--report-only-operator-ruling-option-b). The body below is the 2026-06-22 decision as ratified.
 
 ---
 
@@ -152,8 +152,18 @@ grep -q "cost_geometry_pregate" docs/operational_rules.md && echo "Rule 10 wired
 
 ---
 
+## Addendum 2026-10-24 — report-only (operator ruling, option (b))
+
+**Ruling (Joshua, 2026-10-24):** "option (b), report-only. Keep cost_R, the band and the sub-ATR flag recorded at Phase 0; drop the blocking 0.05R FAIL." Decision packet: [PR #900](https://github.com/Joshua-Asante/first-passage/pull/900).
+
+- **Why.** §2a's only derivation of the 0.05R ceiling was consistency with the universal 4×-median-cost hurdle, which the [2026-10-24 ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) deleted. The ceiling also sat on no boundary of the gate's own cost bands. The arithmetic and the realized-stop rule (§2b) have their own paid-for derivation (the USOIL trap) and stay.
+- **What changes.** §2a's PASS/FAIL ceiling and `--ceiling` are retired; §2c's blocking FAIL is retired. Phase 0 still runs `scripts/cost_geometry_pregate.py` on a new candidate mechanism and records `cost_R`, its band (comfortable / acceptable / marginal / crippling) and the realized stop-in-ATR with the sub-ATR flag in the ledger disposition. These feed the candidate's own net-return and cost-sensitivity estimate ([strategy_harvest](../methodology/strategy_harvest.md)); nothing blocks a backtest automatically. The script exits 0 when it produces the report.
+- **Still binding.** §2b (use the realized stop, not an assumed k·ATR) and the §5 moves on the assumed stop, non-canonical feeds and cross-feed proxies. The §5 moves on PASS and `--ceiling` lapse with the ceiling.
+- **§4 falsifier, reworded.** Limb (b), a false kill, can no longer occur. At the 2026-11-08 sitting the remaining question is whether recording `cost_R` and the sub-ATR flag at Phase 0 surfaced every cost-infeasible candidate whose inputs were knowable before a probe was spent. If not, retire the obligation and keep only the formula. Fewer than one new cost-sensitive candidate by then means AMBIGUOUS; carry it forward.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-06-22 | Initial authoring — runnable cost-geometry pre-gate added to instrument-ledger Phase-0 (Rule 10); script + test + Rule 10 amendment; additive, no locked config touched | Joshua + Claude Code |
+| 2026-10-24 | Addendum 2026-10-24 — report-only (option (b)): 0.05R ceiling, `--ceiling` and the blocking FAIL retired; `cost_R`, band and sub-ATR flag still recorded at Phase 0; §4 falsifier reworded | Joshua (ruling); Claude Code |

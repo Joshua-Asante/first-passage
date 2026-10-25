@@ -90,8 +90,7 @@ No universal cost hurdle applies at admission/harvest: each candidate's evaluati
 estimates its own net return, execution uncertainty and cost sensitivity, and any
 cost gate a contract declares is scored in its own units. The per-trade
 stop-distance-R check in [`cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py)
-remains separate at design time; whether its 0.05R PASS ceiling survives the
-deletion is pending Joshua's decision ([pre-gate ADR banner](2026-06-22-cost-geometry-pregate.md)).
+remains separate at design time and is report-only since 2026-10-24 ([pre-gate ADR addendum](2026-06-22-cost-geometry-pregate.md#addendum-2026-10-24--report-only-operator-ruling-option-b)).
 Pin authority and revision at freeze; a later authority/scope revision voids and
 refreezes the affected campaign under the new authority, including its
 attestation, instead of silently rescoring it.

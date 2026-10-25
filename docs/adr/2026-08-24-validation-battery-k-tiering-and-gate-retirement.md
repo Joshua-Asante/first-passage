@@ -163,7 +163,7 @@ construction (`SR0` is a function of K) and does not need a declared-no-op conve
 K-tiering addition is scoped to §8a/§8c only, which are gated as DORMANT-unless-re-armed
 independent of K.
 
-> ⚠ **2026-10-24 — D2 is partly superseded.** Its per-event bp-of-panel-price owner, [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-four-admission-requirements-all-mandatory-before-screening), and the skill's "target ≥ 4× hurdle" convention were deleted by [Joshua's ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24). `cost_geometry_pregate.py` stays the owner of the per-trade stop-distance-R formula; whether its 0.05R PASS ceiling survives is pending Joshua's decision ([pre-gate ADR banner](2026-06-22-cost-geometry-pregate.md)). The text below is the 2026-08-24 decision as ratified.
+> ⚠ **2026-10-24 — D2 is partly superseded.** Its per-event bp-of-panel-price owner, [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-four-admission-requirements-all-mandatory-before-screening), and the skill's "target ≥ 4× hurdle" convention were deleted by [Joshua's ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24). `cost_geometry_pregate.py` stays the owner of the per-trade stop-distance-R formula; its 0.05R PASS ceiling is retired and the check is report-only ([pre-gate ADR addendum](2026-06-22-cost-geometry-pregate.md#addendum-2026-10-24--report-only-operator-ruling-option-b)). The text below is the 2026-08-24 decision as ratified.
 
 **D2 — Cost-law: two owners, correctly separated, not one.**
 - Per-event bp-of-panel-price form: `docs/methodology/strategy_harvest.md` §1 Requirement 5
