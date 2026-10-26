@@ -1,17 +1,10 @@
 # Execution Lessons Registry
 
 This file is the canonical anchor for behavioral lessons surfaced via the
-live-execution-journal pipeline. Each lesson must be tied to:
-
-1. A **dated incident** (specific trade, specific date)
-2. A **dollar cost or counterfactual gain** (so the lesson is load-bearing, not ceremonial)
-3. A **rule statement** in imperative form (do X, never do Y)
-4. A **watch-point** (which Step 6 pattern check fires for this lesson)
-
-**Promotion criteria:** A pattern graduates from candidate to promoted lesson
-when EITHER (a) a single incident with dollar cost >$3K surfaces, OR (b) the
-same pattern fires across three separate review windows. E1 and E2 promoted
-on (a); E3 currently candidate awaiting (b).
+live-execution-journal pipeline. New entries use the light format and the
+standing-guidance bar in [`methodology_lessons.md` §Format spec](methodology_lessons.md#format-spec):
+a dated incident, an imperative rule and a link to the anchor; no dollar field or
+dollar threshold.
 
 > ⚠ **2026-08-14 — E1–E4 promotion/demotion frozen.** Watch-point source
 > (`scripts/journal_review.py`) retired 2026-07-11, so firings cannot accrue.
@@ -185,6 +178,9 @@ These lessons interlock with standing doctrine in `fxify-challenge`:
   `journal_review.py` above are now **historical** (the lessons themselves stand;
   the tool that surfaced them is gone with manual trading). This registry survives
   because it is $-anchored methodology, not execution machinery.
+- 2026-10-26: Rule consolidation step 5 (D10(c)): header moved to the light format; the
+  per-lesson promotion criteria of E1–E4 (dollar threshold, three-window count) no longer
+  bind; the entries are not rewritten.
 - 2026-08-14: E1–E4 Status fields marked DORMANT — watch-points structurally
   unreachable after `journal_review.py` retirement; E1/E2 demotion clock flagged
   as measuring calendar time against a dead feeder, not live pattern survival.
