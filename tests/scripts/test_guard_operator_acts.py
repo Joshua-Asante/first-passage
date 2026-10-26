@@ -71,7 +71,7 @@ def test_deny_wins_over_ask_in_one_command(command):
     "gh api graphql -f query='mutation { enablePullRequest" + "AutoMerge(input: {}) { x } }'",
 ])
 def test_auto_merge_denied(command):
-    # Fails if auto-merge (retired, no automated exception) is merely asked, not refused.
+    # Fails if auto-merge (retired; agents merge only pinned) is merely asked, not refused.
     assert g.classify_command(command) == ("deny", "pr.auto_merge")
 
 
@@ -517,7 +517,7 @@ def test_merge_options_are_read_as_pflag_reads_them(command, expected):
     ("gh -d 501 pr " + "merge", ("deny", "pr.merge_unpinned")),
     ("gh --auto 501 pr " + "merge", ("deny", "pr.auto_merge")),
     ("gh pr --auto 501 " + "merge", ("deny", "pr.auto_merge")),
-    (f"gh --admin 501 pr merge {PIN}", ("pass", "pr.merge")),
+    (f"gh --admin 501 pr merge {PIN}", ("ask", "pr.merge_admin")),
     ("gh -i repos/o/r/pulls/1/" + "merge api -X PUT", ("deny", "pr.merge_unpinned")),
     ("gh --silent repos/o/r/pulls/1/" + "merge api -X PUT", ("deny", "pr.merge_unpinned")),
     ("gh -i graphql api -f query='mutation { merge" + "PullRequest(input: {}) { x } }'",
@@ -1253,3 +1253,29 @@ def test_merge_pass_never_pre_approves_a_bundled_command():
     block = _reason(f"{MERGE} 501 {PIN} && python scripts/anything.py")
     assert "permissionDecision" not in block
     assert "independent review" in block["additionalContext"]
+
+
+# --- 2026-10-25: pinned --admin merges ask (operator ruling 2026-09-26) ---
+
+@pytest.mark.parametrize("command,expected", [
+    (f"{MERGE} 501 --admin --merge {PIN}", ("ask", "pr.merge_admin")),
+    (f"{MERGE} 501 --admin=true {PIN}", ("ask", "pr.merge_admin")),
+    (f"{MERGE} 501 --admin=false --admin {PIN}", ("ask", "pr.merge_admin")),
+    (f"bash -c '{MERGE} 501 --admin {PIN}'", ("ask", "pr.merge_admin")),
+    (f"{MERGE} 501 --admin --admin=false {PIN}", ("pass", "pr.merge")),
+    (f"{MERGE} 501 --admin", ("deny", "pr.merge_unpinned")),
+    (f"{MERGE} 501 --admin {PIN} && {MERGE} 502 --auto", ("deny", "pr.auto_merge")),
+])
+def test_pinned_admin_merge_asks(command, expected):
+    # Fails if a pinned `--admin` merge passes silently under the standing GO, which does
+    # not cover merging past unmet requirements ("askable admin merges", 2026-09-26;
+    # merge-train hard rule 5), or if the ask outranks an unpinned or auto-merge deny.
+    assert g.classify_command(command) == expected
+
+
+def test_admin_merge_prompt_names_the_sha():
+    # Fails if the operator approves an admin merge without seeing the head it pins.
+    block = _reason(f"{MERGE} 501 --admin {PIN}")
+    assert block["permissionDecision"] == "ask"
+    assert "pr.merge_admin" in block["permissionDecisionReason"]
+    assert SHA in block["permissionDecisionReason"]
