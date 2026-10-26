@@ -16,7 +16,7 @@ Recorded separately from the study findings, in Joshua's words:
 1. The D1 window is **unchanged**.
 2. **No** standing weekly-trade GO is granted. *(Superseded 2026-10-25: Joshua granted a standing, revocable GO for the weekly account-preservation trade; see [STATE](../../STATE.md#scheduled-forward-triggers) and [ADR Addendum 2026-09-30b](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b).)*
 3. **D1** is the single authority for paid-pilot approval.
-4. The owned Select 100K decision stays at the **11-08 sitting**.
+4. The owned Select 100K decision stays at the **11-08 sitting**. *(Superseded by later operator rulings on D6 (2026-10-24) and the owned evaluation (2026-10-25), held in private records and not restated here; ask Joshua for the current text.)*
 
 **Implementation:** a separate PR, with deletions only.
 **Public-clone posture:** this report contains no account identifiers, account balances, budget amounts or backtest P&L. Dollar figures are published firm rules or synthetic-model outputs. The private returns are cited by content hash.
@@ -76,7 +76,7 @@ No replacement formula, calibration project or review step.
 | Cash and time limits | Joshua's money and attention | D1 limits ruling (private relay record). Not restated in other documents |
 | The chosen firm's actual rules | The account | `core/firm_rules.py` and the venue edition, checked against the firm's published pages |
 | Honest treatment of evidence | Deployment claims | D4 (untouched validation for any deployment claim), with K and exposure records. Evidence reported from a common start date for every attempt, never only from accounts that reached a payout |
-| Controls against unintended trading | Accounts and capital | `AGENTS.md` §Live-execution posture: M1, the arming interlock, per-session GO, and D6 (the owned evaluation never hosts an unqualified strategy) |
+| Controls against unintended trading | Accounts and capital | `AGENTS.md` §Live-execution posture: M1, the arming interlock, per-session GO, and D6 (the owned evaluation never hosts an unqualified strategy) *(Superseded by later operator rulings on D6 (2026-10-24) and the owned evaluation (2026-10-25), held in private records and not restated here; ask Joshua for the current text.)* |
 
 ### 2.3 Bring to Joshua: only deletions that change exposure, permissions or claimed evidence
 
@@ -86,7 +86,7 @@ No replacement formula, calibration project or review step.
    - **Keep 90 days, or set a longer window?**
 2. **Account permissions: a standing, revocable GO for the owned evaluation's weekly maintenance trade** (chip 4), replacing a GO each week.
 3. **Account permissions: one home for paid-pilot approval.** S5 (an automated sandbox admit without a GO) and D1 (a GO for each paid pilot) both claim this step. **Recommend D1 as the single home.**
-4. **Financial exposure: the owned Select 100K.** Keep it while it costs $0 in cash, and buy nothing now (chip 4). Decide at the 11-08 sitting.
+4. **Financial exposure: the owned Select 100K.** Keep it while it costs $0 in cash, and buy nothing now (chip 4). Decide at the 11-08 sitting. *(Superseded by later operator rulings on D6 (2026-10-24) and the owned evaluation (2026-10-25), held in private records and not restated here; ask Joshua for the current text.)*
 
 **Sizing method, withdrawal timing and Flex vs Daily:** deferred until a viable strategy exists. This report selects none of these policies. Routine choices within an approved operating scope stay with the owner. Material changes to financial exposure or account permissions come to Joshua. Flex vs Daily is a permanent account choice.
 

@@ -982,5 +982,5 @@ operational controls or standing instructions.
 **Not changed:**
 - the incumbent evaluation stays retained and disarmed, and the weekly preservation trade continues;
 - Tradeify remains an optional separate native lane for a strategy run only at Tradeify;
-- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal in [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), open).
+- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), auto-closed unmerged 2026-10-19 by a closing keyword in commit `4355887`, not by a ruling; reopening it is Joshua's call).
 
