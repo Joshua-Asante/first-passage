@@ -4,7 +4,7 @@
 
 **Question.** Is there a strategy that can run natively at Tradeify, exclusively there, with enough edge that running it on the Select 100K evaluation and funded account has positive expected net cash over 126 trading days within a fee budget? **The decision it changes:** whether a nominated candidate may proceed to native implementation and the deployment gates, or the lane stays parked under draft 11-08 branch (d).
 
-**Budget.** Drafting this document: one session, $0, K = 0. Each candidate later nominated by amendment adds K = 1. Spend (for example a NinjaTrader licence) is not authorised here.
+**Budget.** Drafting this document: one session, $0, K = 0. Each candidate later nominated by amendment counts its disclosed search trials plus one against the lane cap K_max (§3). Spend (for example a NinjaTrader licence) is not authorised here.
 
 ## §D — Disclosure: what was seen before this draft was written
 
@@ -50,12 +50,13 @@ A candidate is eligible only if all of the following hold:
 
 - **Data:** daily net P&L from the canonical feed only, CME futures TV exports ([Rule 18](../../operational_rules.md#rule-18--feeds-are-admitted-never-assumed)).
   - At least 3 years of business days, on a complete calendar.
-  - Costs at `cost_per_side_usd` from `firm_rules.py`.
+  - Costs at the all-in per-side rate that `core/firm_rules.py` records for the candidate's instrument. The `Tradeify_Select_100K` `cost_per_side_usd` scalar covers index micros only; its source comment records other instruments, for example MGC and MCL at $1.06. An instrument with no recorded rate is ineligible until the owner records one. The rate is frozen in the nominating amendment.
   - The intraday low per day is required for the drawdown clock.
 - **Edge statistic:**
   - SR̂ is the annualised net Sharpe.
   - SR_LB is the one-sided 80% lower bound, SR̂ − z·SE, with Lo's (2002) standard error adjusted for autocorrelation at lags 1–5.
-  - z = Φ⁻¹(1 − 0.20/K), where K is the lane's cumulative nominated-candidate count.
+  - z = Φ⁻¹(1 − 0.20/K_max). K_max is the lane's total trial cap, fixed at ratification (§11) and never raised, so the 80% bound holds across the whole lane.
+  - Each nominating amendment discloses its candidate's trial ledger: every variant, parameter set and strategy tested in the search that produced it, including discovery K carried in under [Rule 25](../../operational_rules.md#rule-25--generation-never-blesses). Those disclosed trials, plus the nomination itself, count against K_max. Once K_max is reached, the lane accepts no further nomination.
 - **Private inputs** (Pine source, ports, account state) are read in place only. Their values never enter the repo ([Rule 13](../../operational_rules.md#rule-13--private-data-and-the-public-clone)).
 
 ## §4 — Gates, in evaluation order ([Rule 24](../../operational_rules.md#rule-24--verdicts-from-the-pre-registered-gates-in-order))
@@ -78,7 +79,7 @@ G5 is not part of this verdict. Deployment still needs the NinjaTrader instance'
 - Treat an evaluation pass, by simulation or live, as evidence of edge.
 - Nominate a strategy that runs, or is planned, at another firm, or route anything through CrossTrade, an API or a bridge.
 - Commit account figures, Pine source or port bodies.
-- Score a candidate before its nominating amendment is merged.
+- Score a candidate before its nominating amendment is merged, or nominate one without a complete trial ledger and frozen instrument cost.
 
 ## §6 — Verdict table (first matching row wins)
 
@@ -100,7 +101,7 @@ G5 is not part of this verdict. Deployment still needs the NinjaTrader instance'
 
 ## §8 — Gate reachability (computed for this draft; [Rule 23](../../operational_rules.md#rule-23--pre-register-count-k-honestly))
 
-SR_LB at K = 1 (z = 0.84), for an i.i.d. daily series. The annualised SE is √((1 + SR̂²/504)/Y) for Y years, so SR_LB ≈ SR̂ − 0.84/√Y:
+SR_LB at K_max = 1 (z = 0.84), for an i.i.d. daily series. The annualised SE is √((1 + SR̂²/504)/Y) for Y years, so SR_LB ≈ SR̂ − 0.84/√Y:
 
 | SR̂ \ years | 3 | 5 | 8 |
 |---|---|---|---|
@@ -109,7 +110,7 @@ SR_LB at K = 1 (z = 0.84), for an i.i.d. daily series. The annualised SE is √(
 | 2.5 | 2.01 | 2.12 | 2.20 |
 | 3.0 | 2.51 | 2.62 | 2.70 |
 
-Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate with SR̂ ≈ 2 over 3 or more years can reach G2, SR̂ ≈ 1.5 is marginal, and anything below that cannot. Autocorrelation and fat tails widen the SE and lower these bounds. The gate is reachable for a strong candidate, not for a typical one. That is intended.
+Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate with SR̂ ≈ 2 over 3 or more years can reach G2, SR̂ ≈ 1.5 is marginal, and anything below that cannot. Autocorrelation and fat tails widen the SE and lower these bounds. A larger K_max lowers them too: at K_max = 10, z = 2.05, so SR̂ = 2 over 5 years gives SR_LB ≈ 1.08, which is marginal. The gate is reachable for a strong candidate, not for a typical one. That is intended.
 
 **Binding:** the 11-08 branch (b) decision consumes the G0 item 4 output, and a GO-CANDIDATE is the only route into the deployment gates.
 
@@ -124,7 +125,7 @@ Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate wit
 1. Fee budget B, for example $1,000.
 2. Whether the lane uses the incumbent Select 100K evaluation (G3) or a fresh Select 50K. [PASS63_CHECK.md](../../../lab/analysis/_inbox/prop_payout_geometry_2026-10/PASS63_CHECK.md) favours the 50K on fees.
 3. The 126-day window start rule: the date the GO-CANDIDATE is reached, or the first trade.
-4. Who nominates candidates, and the cap on K for this lane.
+4. Who nominates candidates, and K_max, the lane's total trial cap including disclosed search trials. A small K_max keeps the gate reachable; a large one makes it hard to clear.
 
 ## §12 — Freeze procedure
 
