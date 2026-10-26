@@ -113,7 +113,7 @@ FALSIFIED/AMENDED: per §4 otherwise-branch.
 ## §7 — Consequences
 
 - The R-plan's phase ordering acquires doctrinal force: Accelerate-tier builds (sweep engine) are licensed only after Question/Delete/Simplify have run at the appropriate tier — recorded in the sweep-engine ADR's own Algorithm pass.
-- Programme-audit checklist gains two items: STRATEGIC-Delete declaration compliance; add-back rate computation. (Fold into `programme-audit` skill in the same R0 handoff.)
+- Programme-audit checklist gains two items: STRATEGIC-Delete declaration compliance; add-back rate computation. (Now in [programme-audit](../../.claude/skills/programme-audit/SKILL.md#discipline-check-summary).)
 - Kill records and registry entries become the add-back metric's data source — no new artifact type required; existing conventions already carry the needed fields (date, tier, re-open trigger).
 - *(Removed 2026-10-25, rule consolidation D5, ADR02-81: the Plan T telemetry consumer rule, every alert or report naming its consuming loop and cadence. Plan T's Copygram/DXTrade estate was retired 2026-07-11; the lifecycle map keeps consumer-loop routing descriptively.)*
 

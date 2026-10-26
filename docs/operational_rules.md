@@ -281,17 +281,29 @@ run a doc/code skew audit before closing the lock commit. The audit checks:
    "Guardian v<X> observed" must be either re-measured or marked as
    pre-version-bump archival.
 
+**Lock-change sequence.** Land the ADR first; then code, pins and doc edits in one
+coordinated commit; then the closure note; downstream surfaces follow as standalone
+work ([precedent](adr/2026-05-16-fxify-correct-timeout-semantic.md#forbidden-moves)).
+
 **Audit trigger is the lock event itself**, not calendar. Calendar audits
 (weekly, monthly) produce mostly no-ops between locks and miss the high-risk
 zero-day-after-lock window. Per-commit-touching-`core/strategies/` is too aggressive
 (routine code-only edits without locks fire false positives, and `core/strategies/`
 may not even be tracked).
 
+**Scope isolation.** A lock or risk-control PR changes only its own lock: no drive-by
+edits at other comparison sites and no bundled unrelated lock changes; surface those
+through a deliberate audit ([precedent](adr/2026-05-10-dd-protection-ulp-rounding.md#alternatives-considered)).
+
 **Fallback**: if the audit cannot run inline with the lock (e.g., lock is
 committed off-hours), fire it on the *next* repo-touch session and gate that
 session on completing the audit before any new decision work. The skew window
 must be measured and logged on every lock — even a 0-day window is a logged
 0.
+
+A Pine parameter change found during a panel refresh is a lock change: document it
+explicitly in its ADR, never as a routine refresh
+([precedent](adr/2026-05-23-allocation-refresh-2.md#forbidden-moves)).
 
 **Origin:** 2026-04-23 lock of Guardian v5.5 / Striker v4.4 / Aegis v4.3 (and
 Guardian risk 0.30% → 0.34%) introduced a 2-day doc/code skew window
@@ -341,6 +353,8 @@ This generalizes §5 (Pine owns strategy parameters) from constants to
 | Session-specific "open / next" | Optional historical context in that session's entry; never a replacement for the current STATE queue or campaign plan |
 | Per-Q forward disposition (Iterate exit) | closure's own `## Iterate` block (`docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`); a STATE forward-board row is a labeled pointer mirror only |
 | Durable atomic facts | Their owning specification, campaign record, plan, PR, ADR or [`methodology lesson`](methodology/lessons/). Claude-project `MEMORY.md` + memory files (outside this worktree) are **assistive-only** — never a §7 owner, never Rule 0 / §0 or sub-rule 8/10 attestation. Same class as `repo_retrieve.py` ([Limb B](../lab/analysis/harvest/limb_b_remeasure_2026-08/RESULTS.md)). |
+
+**Cite by symbol, not line.** Cite code, pins and paths by literal or symbol (for example `from lifecycle import TIER_MULTIPLIER`), never by line anchor, so the reference cannot re-stale when the file changes.
 
 Roles that must **not** restate canonical values:
 - **`STATE.md`** — current operator queue, compact executed-decision index,
@@ -697,7 +711,9 @@ proposal P1 the same day. Decision record:
 When a decision retires a venue, feed, role or other input to a standing
 falsifier, identify each affected obligation and explicitly migrate, discharge,
 supersede or retire it. An input that can no longer accrue is not live coverage
-and does not count as a passing check.
+and does not count as a passing check. Judge reachability by running the falsifier's
+instrument; a path-existence check can score a dark limb reachable
+([example](adr/2026-05-23-allocation-refresh-2.md#addendum--2026-08-02--limb-1-also-dormant-this-adr-now-has-zero-live-catch-paths)).
 
 For a retained dormant limb, name its unavailable input, a meaningful re-arm
 condition and the surviving coverage. For an approved permanent retirement,
@@ -850,6 +866,10 @@ documents are restating surfaces too, and they are precisely the ones the
 author skips because the correction feels "already handled" by the addendum
 they just wrote.
 
+**Dead audit hooks.** When an ADR's runnable audit hook cites a moved or deleted path,
+repoint it in place under a dated `HOOK WIDENED YYYY-MM-DD:` note naming what moved,
+never leaving a dead check ([example](adr/2026-05-16-fxify-correct-timeout-semantic.md#audit-hooks)).
+
 **Mechanical backstop (deliberately narrow):**
 `scripts/check_supersession_placement.py` (the `supersession-placement` gate,
 [`scripts/gates.yml`](../scripts/gates.yml)) hard-fails any
@@ -923,14 +943,16 @@ Pointers: `deploy/c1_rail/README.md` · `.claude/skills/c1-rail/SKILL.md`.
 These tests justify preserving the needed content or evidence, not necessarily
 its present file. Consolidate duplicate owners, then retrieve completed episodes
 from immutable history. A citation alone is a dependency to resolve, not a retention
-entitlement. For each removed ADR, record path, commit/blob, disposition and current
+entitlement. A removal repoints each surviving link to an immutable archive URL with
+its anchor; it never leaves broken navigation. For each removed ADR, record path, commit/blob, disposition and current
 owner (if any) in `docs/adr/TOMBSTONES.md`; no mandatory hot-stub/cold-body pair.
-Non-regenerable bytes still require verified preservation. Looking up history does
+Non-regenerable bytes still require verified preservation. Before removing files, verify their archive preservation against the remote by immutable commit and blob SHA. Looking up history does
 not revive a retired authorization or evade a research re-proposal bar.
 
 **The classification instrument (this is the part that was paid for).** "It lives under `docs/` so it is prose" is **false** and cost four near-misses, including the c1 arming artifact. Before any deletion commit lands, run all four:
 
-1. quoted-path scan for `docs/…` and `lab/…` literals across `core/ ops/ scripts/ tests/ lab/`;
+1. quoted-path scan for `docs/…` and `lab/…` literals across `core/ ops/ scripts/ tests/ lab/`,
+   run with `rg --no-ignore` (indexed search misses gitignored dependents);
 2. **pathlib-join scan** (`"docs" / "notes" / …`) — constructed paths have no literal to grep;
 3. incoming file, Markdown-fragment and section-reference validation from surviving
    documents, plus content/glob readers (including Sentinel schedules and A8 counts);
@@ -957,6 +979,9 @@ At each quarterly programme audit (`programme-audit` skill cadence; next **2026-
   at the checkpoint; its explicit audit tier owns this and the other report-only diagnostics. They
   do not run at pre-commit or in required CI because output that cannot change a merge verdict is
   observation, not a gate.
+- Read `docs/notes/audits/rule-2-trip-log.md`: confirm at least one entry per active loop
+  class (else flag Rule 2 inert) and judge whether trips fired at hindsight-correct stops
+  ([ADR](adr/2026-06-16-rule-2-budget-before-acting.md)).
 
 This is the checklist's first entry — future standing per-cycle tooling runs are added here as
 additional bullets, not as new rules.

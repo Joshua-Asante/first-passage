@@ -63,7 +63,7 @@ Rationale + the surrogate/bar-permutation designs this doesn't cover: `docs/meth
 
 Required sections, all fixed before the first forward trade: frozen-config table; **power disclosure** (per-trade σ in R, SE at each checkpoint n — at typical 1.1R σ and n=25, SE≈±0.23R: decision rules are expectation-based stops, not significance tests, and the doc must say so); checkpoints with kill/extend/escalate rules; trade-rate clause (signal frequency is part of the hypothesis); forbidden moves; append-only audit hook ("was any criterion moved after data arrived? any yes voids the checkpoint").
 
-**Path-independence phrasing:** validation/unpark conditions must name what must be independent (price path, period, instrument) — never just "a different feed." Pepperstone↔OANDA entry-date Jaccard was 0.96: a different source, the same path.
+**Path-independence phrasing:** validation/unpark conditions must name what must be independent (price path, period, instrument) — never just "a different feed." Pepperstone↔OANDA entry-date Jaccard was 0.96: a different source, the same path. Each replication across path-independent instruments gets its own registration, with the joint k-of-n reading pre-specified.
 
 ## 7. Epistemic-status metadata
 
@@ -77,7 +77,8 @@ series — the case the `futures-anomaly-discovery` ledger is built to feed. Its
 `register_search.py close` step emits K and a cheap Bonferroni/BH triage; §8 is the
 rigorous version. **Trigger:** any candidate that is the winner of a search over K
 strategies/configs (ledger output, grid winner, mined signal). If it came from a
-search, its naive p-value and Sharpe are inflated until corrected here.
+search, its naive p-value and Sharpe are inflated until corrected here. §8 adds to the
+within-panel protocols (§1–§7), never replaces them.
 
 **K-tiering (declared, not silently skipped — 2026-08-24).** §8a (SPA/StepM/MCS) and §8c
 (PBO-via-CPCV) are gated on the declared search-space size K:

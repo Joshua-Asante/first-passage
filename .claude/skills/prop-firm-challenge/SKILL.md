@@ -175,6 +175,7 @@ Implemented in `core/portfolio_mc.py`. Answers one question: given locked strate
 - Before considering any allocation or parameter change — ALWAYS re-MC before locking
 - At any Re-MC trigger (see Protection System section)
 - Before onboarding a new firm tier key / re-MC against a new firm
+- For each risk multiplier or reduced-risk arm: run it; never scale a bust delta measured at one multiplier to another, because barrier interaction is non-linear ([S4 withdrawal §5](../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md))
 
 ### Methodology (enshrined after 2026-04-17 error; feed-calibration fixed 2026-04-20; Pepperstone re-basis 2026-04-23)
 
@@ -186,6 +187,8 @@ Implemented in `core/portfolio_mc.py`. Answers one question: given locked strate
 6. **Week-block bootstrap**: Mon-anchored 5-day non-overlapping blocks, sampled with replacement until horizon filled.
 7. **Simulation**: start at the active firm's starting balance, apply daily P&L with `dd_protection` scaling, terminate on PASS, BUST (mode depends on the active firm's `dd_type` — `bust_static`/`bust_daily` for a static-DD firm, `bust_trailing` for a trailing-DD firm), or INACTIVITY (per that firm's `inactivity_max_idle_days`).
 8. **Aggregate**: 10K sims × 3 seeds, report mean and σ.
+
+Intraday-barrier runs (`simulate_path(intraday_low=...)`): take each day's excursion as the position's side-aware worst post-entry mark, never session `min(Low)`, and apply the same drawn block indices to both paired panels ([ORB Addendum 2026-08-02](../../../docs/adr/2026-07-31-orb-mnq-unpark-payability-target.md)).
 
 ### Locked anchor (FXIFY historical — engine regression pin; not a live pass-probability)
 
@@ -200,7 +203,7 @@ not a live pass-probability.
 
 This pin is FXIFY-rule-shaped (static DD, one-shot eval). A trailing-DD firm's simulation is a
 **different** run — do not apply the FXIFY pin to Bulenox or other trailing-DD tiers. Successor
-self-funded risk questions need a fresh Pre-Q (hard date per the rescope ADR).
+self-funded risk questions need a fresh Pre-Q (hard date per the rescope ADR). Any new MC pin comes from a deterministic re-run of production code, never from a side script or eyeballed output ([forbidden moves](../../../docs/adr/2026-05-16-fxify-correct-timeout-semantic.md)).
 
 ### Known methodology traps
 

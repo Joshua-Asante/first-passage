@@ -2,7 +2,7 @@
 
 Standing registry of strategy / instrument / parameter combinations investigated and rejected as portfolio additions. One entry per direction. Re-proposal of any entry on this list requires **new mechanism evidence**, not new parameters or a wider sweep.
 
-This file is appended to at the close of any Pre-Q that closes FALSIFIED on strategy grounds, or at the close of a parent programme on SNAG-budget-exhaustion grounds (the Guardian-on-XAGUSD precedent below). New entries link to the closure artifact authoritative for the rejection.
+This file is appended to at the close of any Pre-Q that closes FALSIFIED on strategy grounds, or at the close of a parent programme on SNAG-budget-exhaustion grounds (the Guardian-on-XAGUSD precedent below). New entries link to the closure artifact authoritative for the rejection. Additions only: never rewrite or delete a prior entry to apply a new schema; new fields apply to new entries only ([ADR](adr/2026-06-14-rejected-candidate-patterns.md) §5).
 
 The intake bar is the same as for any candidate: a mechanism-level claim with falsifiable specifics, not "let's try a wider grid."
 

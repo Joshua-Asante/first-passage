@@ -45,7 +45,7 @@ For each decision class below: the governing instrument(s), each one's denominat
 
 **Governing instrument:** `ops/prop_envelope_default.md` §4a (venue-derived; hard structural, no discretion) + `docs/adr/2026-07-17-c1-rail-build-account-registration-go.md` §5 forbidden-move addendum (2026-07-22) + third-leg spec §7.1 S4 (RATIFIED).
 
-**Absolute, no exceptions:** a short-capable or opposing-sign Equity Index Product Group leg cannot coexist with a long Equity Index leg on the same account **or any account under the same control** — regardless of what the risk-breadth gate would otherwise reward.
+**Absolute, no exceptions:** the [envelope §4a](../../ops/prop_envelope_default.md) sign constraint binds regardless of what the risk-breadth gate would otherwise reward.
 
 **Precedence with the decorrelation/risk-breadth admission gate:** hard-structural — Product Group + sign screen before risk-breadth scoring. Named in three places that now agree: `ops/prop_envelope_default.md` §4a (design-consequence precedence clause, updated 2026-07-30 from the prior unresolved "note this interacts" wording — T4 residual of [`Q-OBJCOHERE-1`](../briefs/closures/Q-OBJCOHERE-1-closure-falsified-coherent.md)), the GO ADR's 2026-07-22 addendum ("Decorrelation candidates must now be screened for **Product Group + sign** before scoring"), and the third-leg spec's mechanical adjudication order (S4 kills the candidate before R4 ever runs).
 

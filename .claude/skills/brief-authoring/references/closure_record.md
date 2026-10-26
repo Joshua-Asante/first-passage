@@ -6,6 +6,8 @@ closure vocabulary). This template distills the observed strong closures (Q-GEOF
 Q-COSTGEO-2, Q-HARV-0, Q-CAPALLOC-2) plus the mandatory Iterate block ratified by
 `docs/adr/2026-08-04-iterate-closure-exit-mandatory.md`.
 
+`**Closed:**` and `**Lane:**` are machine-read (PREREG F3 grammar): aliases such as `Closed (explore record):` or `Date:` are non-compliant, and `UNASSIGNED` replaces an invented slug. Apply forward only; never retro-edit older closures.
+
 **Verdict:** `[as filed — RESOLVED / FALSIFIED / AMBIGUOUS[-qualifier] / VOID / MOOT / ABORT / operator-stopped / screen-fail / …]`
 **Closed:** YYYY-MM-DD
 **Lane:** `<preregistered-question lane slug from Q-SCORE-1 PREREG F2 | UNASSIGNED>`

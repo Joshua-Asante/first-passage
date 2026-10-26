@@ -7,7 +7,7 @@ execution safeguards and the recorded rail posture are in
 
 ## Source of truth
 
-The five root documents have separate jobs:
+The five root documents have separate jobs ([charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#decision)):
 
 | File | Job |
 |---|---|
@@ -39,8 +39,8 @@ when checking claims about code, parameters, or risk controls.
 | Interpret identifiers or routine governance | [Governance index](docs/governance/INDEX.md) |
 | Retrieve a removed artifact | [Archive retrieval](docs/ltm/README.md), [removed-path manifest](lab/ARCHIVED.json) |
 
-Layer READMEs point to their catalogs. **In flight** means a question is not spent
-or on HOLD; **hot** means its body is on disk. Neither denotes queue priority.
+Layer READMEs point to their catalogs. The [lab catalog](lab/CATALOG.md) header defines **In flight**
+and **hot**.
 Default search excludes cold stores, and private inputs are gitignored: an empty
 search is not evidence that prior work or source bytes never existed.
 

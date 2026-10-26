@@ -102,7 +102,7 @@ Every tool here manufactures multiple-comparisons risk at industrial scale:
 STUMPY over thousands of subsequences, tsfresh over hundreds of features, PySR
 over vast expression spaces. This is the "explosion" the Simons criterion guards
 against. A p-value or a Sharpe read off a mined candidate is meaningless without
-the size of the search that produced it.
+the size of the search that produced it. K is the reachability budget, never free: the DSR floor rises with K, so prefer low-K mechanism-first axes over high-K blind mining ([M-19](../../../docs/methodology/lessons/methodology_lessons.md)).
 
 **Register the search space K *before* examining results.** The bundled script
 makes this mechanical. Default lane is **mechanism-first** (SPEC S6 + TNEC-1): it
@@ -191,7 +191,7 @@ intention). `close` refuses to run without a prior `open` — you cannot declare
 after seeing results. It computes the Bonferroni floor (α/K), BH-FDR survivors at
 K, and the expected number of false positives under the global null (K·α), then
 emits a manifest whose verdict is **always a hand-off to `strategy-validation`,
-never a promotion.** Nothing exits discovery without its manifest.
+never a promotion.** Nothing exits discovery without its manifest, written to `discovery_manifests/<run_id>.json` and committed; the commit is the pin.
 
 ### Stage-2/4 campaign runner (Mine → Bind-K → Score → emit-matrix)
 

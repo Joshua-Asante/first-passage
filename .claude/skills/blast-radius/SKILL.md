@@ -44,6 +44,8 @@ rg -n --hidden -g '!.git' "<old-token>" \
   docs/ .claude/skills/ lab/CATALOG.md ops/instruments/ core/strategies/
 ```
 
+Paste the raw output, not a summary, and disposition every hit in §3; if new hits could have landed since the sweep, re-run it before acceptance.
+
 Also run mechanical backstops when paths moved or status words flipped:
 
 ```bash
@@ -56,8 +58,8 @@ python scripts/sync_liveness_indexes.py
 (Link/status gates only — they do not prove semantic currency. The liveness
 script is **report-only**: stale INDEX Open rows whose named successor is
 already Recently-closed, and CATALOG `ACTIVE` + “archive owed”. Repair clear
-cases in-session. Do **not** auto-rewrite INDEX. CATALOG status flips go
-through `archive_lab_analysis.py --regenerate-catalog`, not hand-edits.)
+cases in-session. Do **not** auto-rewrite INDEX. CATALOG status flips: see
+[lab/analysis/README](../../../lab/analysis/README.md).)
 
 ### 3. Triage each hit
 
@@ -122,6 +124,7 @@ Default: **report + fix clear silent restatements and stale one-line pointers** 
 |---|---|
 | "I updated the ADR; mirrors can wait." | Stale pointers read as truth (operational_rules §7). Sweep now. |
 | "grep was clean on the new phrase." | Search the **old** token and the decision slug. |
+| "The formula's symbolic form no longer appears." | Also search paraphrased prose restatements of a changed formula or value. |
 | "STATE already mentions it." | STATE may still carry the prior obligation as open — open the bytes. |
 | "handoff-verify post-execution judging will catch this." | Judge checks claims vs diff; it does not hunt undischarged mirrors. |
 | "I'll note it in SESSIONS only." | A SESSIONS line is not a mirror repair. |

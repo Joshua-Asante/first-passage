@@ -2,7 +2,9 @@
 
 Open [INDEX.md](INDEX.md) for current decisions and [TOMBSTONES.md](TOMBSTONES.md)
 for removed records. Generate the index with
-`python scripts/check_adr_graph.py --regenerate-index`; do not hand-edit it.
+`python scripts/check_adr_graph.py --regenerate-index`; do not hand-edit it. A green
+`check_adr_graph.py` run on a Proposed ADR is not acceptance evidence: A2 checks
+reciprocal edges only on Accepted ADRs, so simulate the run with the status set to Accepted.
 
 ADRs are a selective record, not a log of every decision. Use a new one only for
 durable architecture/governance rationale or authority that an existing owner cannot

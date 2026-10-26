@@ -21,7 +21,7 @@ Post-W4 shape: [`W4 ADR`](../adr/2026-08-07-w4-minimal-gate-set-dormancy.md).
 
 ## 1. The four admission requirements (all mandatory before screening)
 
-A seed that fails any requirement is not screened — it is either routed to a recovery path (see the relief-valve note below) or dropped with the failure named.
+A seed that fails any requirement is not screened — it is either routed to a recovery path (see the relief-valve note below) or dropped with the failure named. Never loosen these requirements to raise the finding rate ([ADR 2026-08-08 §2-C](../adr/2026-08-08-edge-cohort-correction-and-necessity-retarget.md)).
 
 | # | Requirement | Kill precedent |
 |---|---|---|
@@ -84,7 +84,9 @@ no further campaign opens pending that consequence. Before ratification, audit w
 ceiling can fire within the channel's realistic operating envelope and whether campaign
 opening actually consults it. `UNREACHABLE` and `UNBINDING` both fail the requirement. Do not
 substitute a universal ceiling, yield unit or Confirm-only success measure: a zero-K intake
-channel can have a meaningful yield before Confirm exists.
+channel can have a meaningful yield before Confirm exists. Re-running an exhausted channel under
+a new channel name is another pass over the same classes, not a new channel
+([MSL ratification](../adr/2026-08-12-msl-sourcing-channel-ratification.md)).
 
 This is the Accepted August 30 requirement, migrated from the
 [channel-liveness decision](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-30-channel-liveness-gate.md)
@@ -181,8 +183,9 @@ Copy this block into the seed's admission artifact (lives with the inventory add
   break-even δ/σ; net-of-cost caveat>
 - **N + event frequency (req 4):** <declared OOS event count; events/yr>
 - **power:** <Φ(√N·|δ|/σ − 1.96)>
-- **dedup attestation:** <rejected_candidates.md + closed manifests + rejected_signals.md
-  checked YYYY-MM-DD; nearest dead class and why this is not it>
+- **dedup attestation:** <searched by mechanism family across rejected_candidates.md + docs/briefs/**
+  bar-rulings + closed manifests + rejected_signals.md, YYYY-MM-DD, with pasted command output
+  (none ⇒ void); nearest dead class and why this is not it>
 - **screen verdict:** PASS / FAIL(K) / FAIL(N) / UNSCREENABLE(<missing input + route>)
 - **operator ratification:** <date + G-anchor, or PENDING>
 ```

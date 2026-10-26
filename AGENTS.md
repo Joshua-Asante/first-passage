@@ -18,9 +18,8 @@ The [surface-allocation ADR](docs/adr/2026-07-14-cc-cursor-surface-allocation.md
 seats and escalation-lane triggers
 ([M-26 … M-48](docs/methodology/lessons/methodology_lessons.md) hold the evidence).
 Chip tasks, handoffs and dispatch cards run in the cloud by default. One that must
-run locally says **"Must run locally"** near its top, with the reason (for example
-the private read surface below, the operator's machine or VM, or private evidence
-writes). Operator direction 2026-10-13.
+run locally says **"Must run locally"** near its top, with the reason
+([task-routing checklist](.claude/skills/task-routing/SKILL.md#local-only-checklist)). Operator direction 2026-10-13.
 
 Decisions live with their owning specification, campaign, plan or PR; ADRs follow the
 [admission rule](docs/adr/2026-08-08-adr-ceremony-tiering.md); other documents link the
@@ -134,10 +133,9 @@ live claim** ([`docs/mc_anchor_history.md`](docs/mc_anchor_history.md)). ⚠ Kee
 `ops/recall/guard.py` regex-reads them from this file for its denylist; `mc_anchor_history.md`'s
 first match is a *different* (Q-SWAP) triple, so moving them denylists the wrong numbers.
 Reword only alongside that parser.
-Read effective lifecycle multipliers from `core/lifecycle.py` and its state, never from historical rail
-operation; [strategy_lifecycle.md](docs/methodology/strategy_lifecycle.md) owns the lifecycle and
+[strategy_lifecycle.md](docs/methodology/strategy_lifecycle.md) owns the lifecycle, including where effective multipliers are read, and
 [venue editions](ops/venue_editions/Tradeify_Select_100K.md) the venue binding.
-Engine regression is vendor-free (`tests/core/test_mc_synthetic_engine.py`). Canonical feed: CME
+Engine regression is vendor-free (`tests/core/test_mc_synthetic_engine.py`; keep its historical 4-leg synthetic fixtures through any leg removal). Canonical feed: CME
 futures TV exports (`core/data/tv_exports/cme/`); OANDA and Pepperstone are retired.
 
 ## Protection
@@ -177,13 +175,8 @@ execution sequence before it fails. Bounds:
 2. A frozen worker card stays frozen: a worker returns contradictions, scope changes
    and improvement evidence to its coordinator; other seats route out-of-scope changes
    by seat under that ADR.
-3. At most one durable intervention per failure mechanism, at the cheapest reliable layer:
-   source fix or test (`tests/`) → hook ([`scripts/gates.yml`](scripts/gates.yml),
-   `scripts/githooks/`, `.claude/hookify.*.local.md`, harness hooks in
-   [`.claude/settings.json`](.claude/settings.json)) → skill (`.claude/skills/`) →
-   AGENTS.md → ADR/lesson ([`docs/adr/`](docs/adr/),
-   [`docs/methodology/lessons/`](docs/methodology/lessons/), indexed in
-   `docs/methodology/LESSONS_INDEX.jsonl`).
+3. At most one durable intervention per failure mechanism, at the cheapest reliable layer
+   ([ladder](.claude/skills/agent-improvement/SKILL.md#choose-and-carry-out-the-next-action)).
 4. Retain evidence with the existing task/plan/PR/campaign owner, writing into an owner
    record only when the current card's authority block grants `governance.author` (no
    card: only an owner the direct operator instruction puts in scope); otherwise route
@@ -230,12 +223,12 @@ records the ruleset); other path-filtered checks are not required merge checks.
 ## Python environment and local checks
 
 - Use the launcher of the checkout being tested: `.\fp.ps1 doctor` before project Python work; `.\fp.ps1 python ...` for operations Python; `.\fp.ps1 test`, `test-ops` and `check` for the standard suites and gates; `.\fp.ps1 python -m pytest <paths>` for selected tests. Without PowerShell 7.3+: `python -I scripts/fp.py <command>`.
-- If validation fails, diagnose it ([launcher setup](scripts/README.md#local-operations-launcher)); never silently fall back to system Python or bypass validation. Keep the separately pinned research environment separate.
+- If validation fails, diagnose it ([launcher setup](scripts/README.md#local-operations-launcher)); never silently fall back to system Python or bypass validation.
 - When project Python starts another Python process, use `sys.executable`, not bare `python`.
 - Report the command, interpreter, tested revision or working-tree state, and actual results. Disclose any pre-existing gate failure; do not describe the complete gate suite as passing.
 - Cite the printed `record.json` and keep source and Git state unchanged while a recorded check runs. A verification claim needs `status: completed`, exit zero, stable source, complete capture, valid expected reports and, where applicable, successful Docker cleanup ([record format](scripts/README.md#automatic-verification-evidence)); `not_started`, `running`, `failed` and `interrupted` are not acceptance. Never infer a pass from a record merely existing.
 - **Standing CI substitution (Joshua, 2026-10-16):** when a local full suite (`fp test` or `test-ops`) does not complete only because a qualification child hits the local 3,600 s timeout, the PR's CI at the same head, with every check COMPLETED and green, substitutes for that local run. No per-PR ruling is needed. The return still discloses the timeout and cites the incomplete record, so the local run never counts as a pass. Any other local failure needs a clean-base reproduction, or else a fix.
-- For independent pytest cases, select the affected tests first, then add workers: `.\fp.ps1 --workers 2 python -m pytest <paths>`; worker count does not replace related-case coverage. Docker sequence checks use `tools/local_verification/run.ps1` and are recorded too.
+- Worker and Docker-sequence check usage: [verification evidence](scripts/README.md#automatic-verification-evidence).
 
 ## Configuration as code
 

@@ -26,8 +26,8 @@ Those failures are already prevented by:
   physical ground-truth; no overlay from regime story alone.
 - **Overlay-proposal trigger discipline** — only a live-PnL gap vs MC justifies
   an overlay; bar-stat shifts do not.
-- **Documented re-MC triggers** — 6mo live data, version bump, allocation
-  outside G 0.30–0.34% safe band, `dd_protection` constant change.
+- **Documented re-MC triggers** — listed in
+  [prop-firm-challenge](../../.claude/skills/prop-firm-challenge/SKILL.md#re-mc-triggers).
 
 With those four rules in place, the Notice phase's protective benefit is
 redundant. Audit of the original 2026-04 Notice run: of three threads (A / B / C),

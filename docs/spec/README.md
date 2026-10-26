@@ -15,4 +15,5 @@ Other families (not a roster — open the named file):
 | Superpower specs | [`../superpowers/specs/`](../superpowers/specs/) |
 
 ADRs own the *decision*; specs here commission or describe a build.
+A spec that amends canon cites the ADR that decides it; the audit-tier `spec-provenance` gate reports any that cite none.
 Do not treat a `PROPOSED` spec as authorization.

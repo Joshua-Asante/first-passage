@@ -18,10 +18,7 @@ Heavy pyramid architecture. **Day soft-stop** (live value is a TV override of th
 Pine-only, redacted 2026-10-15) — halts new Striker entries when realized day P&L hits threshold. **CRITICAL
 safety rule.**
 
-**Cross-feed $ deltas are contract-spec, not signal drift.** OANDA US30.pro is $5/pt (E-mini
-DJIA futures) vs Pepperstone US30 CFD $1/pt — Pine `calcSize` doesn't account for per-point
-value, so dollar figures differ ~5× on the same trade selection even though signal counts
-match. Don't diagnose a dollar mismatch across feeds as a signal bug.
+**Cross-feed $ deltas are contract-spec, not signal drift:** see [trade-csv-reconcile Trap #8](../../trade-csv-reconcile/SKILL.md).
 
 **Primary bust risk: solo gap-fill on non-pyramid breakouts** (1–7 bar holds, 15min close
 2.5–6× past intended stop). Pyramid-reversal is a secondary tail. The day-stop catches

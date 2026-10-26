@@ -38,9 +38,13 @@ coordinator rather than being silently repaired by a worker.
 | Speculative, incidental, already addressed, or unlikely to repay its interruption cost | Leave it alone. Record a lead only if its owner has a concrete reason or trigger to revisit it. |
 
 Before acting, identify the changed behavior, its permitted scope, verification and
-how to undo the change without reverting someone else's work. Prefer a source fix
-or existing test/validator over another instruction. At most one durable preventive
-intervention per failure mechanism; consolidate existing protection where possible.
+how to undo the change without reverting someone else's work. At most one durable
+preventive intervention per failure mechanism, at the cheapest reliable layer: source
+fix or test (`tests/`), then hook (`scripts/gates.yml`, `scripts/githooks/`,
+`.claude/hookify.*.local.md`, harness hooks in `.claude/settings.json`), skill
+(`.claude/skills/`), AGENTS.md, then ADR or lesson (`docs/adr/`,
+`docs/methodology/lessons/`, indexed in `docs/methodology/LESSONS_INDEX.jsonl`);
+consolidate existing protection where possible.
 A local repair need not become a universal rule. Standing instruction changes still
 require an explicit user request; this workflow does not grant self-edit authority.
 Registering or changing a harness hook in `.claude/settings.json` is such a change:

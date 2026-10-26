@@ -141,6 +141,7 @@ Run before declaring an audit complete:
 [ ] Seven diagnostic questions answered, each with evidence anchor
 [ ] Belt churn balance counted (adds vs removes, numbers explicit)
 [ ] Falsifier check executed (grep / diff against locked thresholds)
+[ ] STRATEGIC-Delete declarations checked; add-back rate computed from kill records and registry entries
 [ ] Cross-layer contamination check passed (no cross-citations)
 [ ] Disposition verdict assigned (one of five), with reasoning
 [ ] If Degenerating or Falsified, follow-up actions named with owner and date
@@ -279,7 +280,7 @@ where cost should concentrate (most of the corpus clears Phase 1 clean).
 2. **A stale claim mirrored in an index file.** If the corpus maintains a summary/index document
    (a table of every ADR with a one-line status), check whether it repeats the same stale claim
    the source ADR carries — fixing the ADR without fixing its index mirror leaves the drift alive
-   in the more-frequently-read surface.
+   in the more-frequently-read surface. Correct the mirror in the same commit as the discharge addendum.
 3. **Conflating "decayed" with "wrong when written."** This audit is about drift *since*
    ratification, not original authoring error. An ADR that was correct when accepted and has since
    been overtaken by events is decay; an ADR that was wrong on day one is a different problem

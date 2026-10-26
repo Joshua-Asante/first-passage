@@ -12,6 +12,8 @@ Derived M15 OHLC panels for CME futures micros. CSV bytes are **gitignored**
 | `MNQ_M15.csv` | CME MNQ | **KEEP · REFRESHED 2026-09-03** — CME BAR EXPORT v0.2 `MNQ1!` (`…_4cea4.csv`), operator-supplied; 94,503 bars, span 2022-09-01T00:00Z→2026-09-03T00:00Z; sha256 `cceaac41…27fc8`. Sidecar `MNQ_M15.meta.json` pins `mintick 0.25 · pointvalue 2 · tz America/Chicago`. `flat_frac` 0.0000, `max_close_decimals` 2 — clean decode, no encoding trap (c1 / Striker NAS venue edition research) |
 | `MYM_M15.csv` | CBOT MYM | **KEEP · REFRESHED 2026-09-03** — CME BAR EXPORT v0.2 `MYM1!` (`…_23dd6.csv`), operator-supplied; 94,499 bars, span 2022-09-01T00:00Z→2026-09-03T00:00Z; sha256 `15b34615…6b156`. Sidecar `MYM_M15.meta.json` pins `mintick 1 · pointvalue 0.5 · tz America/Chicago`. `flat_frac` 0.0000, `max_close_decimals` 1 — clean decode, no encoding trap (c1 / Striker DJ30 venue edition research) |
 
+The canonical decoder is `core/bar_export_loader.py` (BAR EXPORT v0.1/v0.2; [Dukascopy retirement ADR](../../../docs/adr/2026-06-17-dukascopy-retirement.md) §2), run through `scripts/parse_bar_export.py`.
+
 **Pepperstone producer is dead.** `scripts/parse_bar_export.py` defaulted to
 Pepperstone `bar_export/` inputs retired 2026-08-02
 ([Pepperstone feed ADR](../../../docs/adr/2026-08-02-pepperstone-feed-retirement.md)).
@@ -34,6 +36,8 @@ consumed.
 [`docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md`](../../../docs/adr/2026-08-03-bar-data-cfd-and-candidates-retirement.md);
 hashes in
 [`docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`](../../../docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md).
+
+Only canonical `<SYMBOL>_M15.csv` panels and their `.meta.json` sidecars belong here; never write producer intermediates (`*_pep.csv`, `*.bars.csv`), which `feed_loader` would load silently.
 
 Integrity gate: `python scripts/check_data_manifests.py --check` (regen + commit
 `SHA256SUMS` in the same commit as any CSV change).

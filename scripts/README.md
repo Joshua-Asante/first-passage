@@ -31,7 +31,8 @@ Relative explicit paths resolve from the invoking directory. Invalid explicit
 or existing local environments fail rather than falling back. The launcher does
 not use `.venv`, install packages, or modify global PATH. Create a separate venv
 with a supported Python and install `requirements-ops.lock` with `--require-hashes`
-if an environment is missing. Select it with `--env` or `FP_OPS_ENV`. Full test runs
+if an environment is missing. Select it with `--env` or `FP_OPS_ENV`. Keep the separately
+pinned research environment (`requirements-research.txt`) separate from it. Full test runs
 (`test`, `test-ops`) also need the shared verification supplements in
 `tools/local_verification/requirements-extra.txt`, which CI's `tests.yml` installs on
 top of the lock. Without its `cryptography`, signed settlement tests skip, but the
@@ -119,7 +120,9 @@ For faster focused feedback, use the existing pytest-xdist installation:
 Workers are opt-in, bounded from 0 through 8, and use `loadscope` to group each
 module/class on one worker. Use 0 for serial execution. Startup overhead and
 imbalanced modules can outweigh parallelism; measure the same selection before
-choosing workers. Tests with shared resources may need serial execution.
+choosing workers. Tests with shared resources may need serial execution. Select the
+affected tests first, then add workers; worker count never replaces related-case coverage.
+Docker sequence checks use `tools/local_verification/run.ps1` and are recorded too.
 
 ### Detached runs
 
@@ -577,7 +580,9 @@ The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
 HARD in repository mode: missing Iterate heading/Next/Board-write tokens,
 missing required Registry token, or an applicable terminal campaign claim
 without a hot/LTM closure record returns 1. Each limb acts independently.
-Historical ADR Status tokens do not configure these checks.
+Historical ADR Status tokens do not configure these checks. Verify current
+enforcement with the checker and [its focused tests](../tests/test_check_closure_disposition.py),
+not the historical ADR Status-flip or audit commands.
 
 Revision 2026-09-08 — the approved ADR-pruning migration replaces the
 former M-22 downgrade on missing/unparseable Status owners with this
@@ -688,6 +693,9 @@ it is never candidate acceptance evidence.
 Before removing a baseline, require a terminal run, no live child, retained
 finalized evidence outside the worktree and a clean owned tree (including review
 of ignored resources). Then use `git worktree remove <exact registered path>`.
+The `PreToolUse` hook [`guard_worktree_evidence.py`](guard_worktree_evidence.py) first copies
+every linked worktree's launcher records into the primary checkout's
+`local_artifacts/fp-verification-archive/`.
 Never force-remove dirty or unowned worktrees. Reconcile interrupted/uncertain
 runs first; retaining an owned baseline with its evidence is safe.
 

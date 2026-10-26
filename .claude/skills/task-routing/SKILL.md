@@ -25,7 +25,7 @@ Decide `environment: local` vs `cloud` **before** launching a Task / cloud-capab
 
 ## Local-only checklist
 
-Any hit forces `local`:
+The checklist keys on environment, never on vendor or surface: Claude Code and Codex also run in cloud containers, so no surface is exempt. Any hit forces `local`:
 
 - Needs gitignored inputs a fresh clone lacks (vendor CSVs, `.cache` verification records)
 - Needs secrets, API keys, or credentials (including `.env`)

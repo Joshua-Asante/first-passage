@@ -206,7 +206,7 @@ AST scanner.
 
 | Module / use | Required import root |
 |---|---|
-| `c1_rail_arm`, other flat listener tools | `ops/c1_rail` (follow the rail runbook for commands) |
+| `c1_rail_arm`, other flat listener tools | `ops/c1_rail` (commands: [arming procedure](docs/notes/rail_build/ARMING_PROCEDURE.md)) |
 | `c1_signal_daemon` package | `ops` |
 | `research_utils.deflated_sharpe`, `research_utils.step0_battery`, `research_utils.selection_tests` | `lab` |
 | `discovery.register_search` | `lab` |

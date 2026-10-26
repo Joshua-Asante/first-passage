@@ -420,8 +420,7 @@ gates:
       - scripts/check_rule2_trip_log_liveness.py
       - --stats
 
-  # M-41: every pinned private digest has a second copy in first-passage-archive.
-  # Report-only; without an archive clone (CI, most cloud sessions) it prints UNVERIFIED.
+  # M-41 report-only audit; contract: scripts/README.md#private-evidence-archive.
   - id: evidence-archive
     tier: audit
     cmd:

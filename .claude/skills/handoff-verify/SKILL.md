@@ -180,7 +180,7 @@ Target: the most recent completed work in this conversation, or whatever the ope
 | **Unauthorized action** | Push to `main`, merge, publish, account registration, or live spend with no operator quote behind it — rail build and registration are explicitly ADR-gated (no live spend). |
 | **Stale-posture claims** | Any assumption on the Phase-0 §5 stale list; challenge-era MC numbers quoted as live pass-probabilities (re-scoped 2026-07-11); R6 treated as pending; quarterly pass-rate output quoted outside its historical-semantics lens. |
 | **Cohort-free metrics** | PF/WR/p99/DD quoted without (n, filter, window) — a value whose denominator did not travel with it. |
-| **Spec betrayal** | Code changed to satisfy a check that contradicts the ADR/LOCK.md. Authority order: explicit operator statement > ADR/LOCK > tests > current code behavior. |
+| **Spec betrayal** | Code changed to satisfy a check that contradicts the ADR/LOCK.md; authority order per [fable-method Intent gate](../fable-method/SKILL.md). |
 | **Debris** | Scratch files, debug prints, orphan worktrees, commented-out code. Cleanup itself routes to `repo-hygiene`. |
 
 ### Standing rules

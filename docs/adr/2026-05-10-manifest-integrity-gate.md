@@ -9,7 +9,7 @@
 **Retain-until:** none
 **Issue:** [GH #62](https://github.com/Joshua-Asante/multi_firm_operations/issues/62)  
 **Phase A anchor:** `2026-05-10-pr59-manifest-drift-rca.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-10-pr59-manifest-drift-rca.md`)
-**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-48); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-48); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`. 2026-10-26 — step 6 added the operator-checkout and atomic pin-retirement consequences (ADR06-114, ADR06-116); prior at `484ad3cb77c4ef97ad881376cbc95f0c36d2ebea`.
 
 ## Context
 
@@ -47,7 +47,9 @@ There was **no** manifest-generation script in `scripts/` at Phase A; Phase B **
 
 - Any normal commit that stages vendor-tree paths must pass `check_data_manifests.py --check` or the commit aborts.
 - After deliberate re-exports, the operator runs `--regenerate` (dry-run first) and commits manifest updates **with** the data change.
+- Destructive vendor-byte steps run only in the operator checkout; bytes missing from a cloud clone are not evidence of safe deletion ([substrate retirement](2026-07-22-challenge-era-substrate-retirement.md) §0).
 - CI catches malformed manifest lines and accidental `git add -f` of vendor CSVs; it does **not** replace the hook.
+- Retire a pin atomically across data, config, verifier, tests and living claims; no pin test stays skip-gated after its bytes are deleted ([substrate retirement](2026-07-22-challenge-era-substrate-retirement.md) §5).
 
 ## GH #62 closing comment (template)
 

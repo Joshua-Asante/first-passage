@@ -65,6 +65,8 @@ qty_add   = floor( qty_base × pyr_pct/100 )                             # sized
 > `pre_2026_07_22_whole_cap_per_leg` key — it is **not** the current expected output. The §10 hook
 > was re-pinned to `(8, 60)` on 2026-08-02; this §2 text was not corrected in the same motion and
 > asserted the superseded pair until 2026-08-05.
+>
+> Pyramid parity under a WATCH haircut is base-dependent (exact at even reserve bases, lossy at odd): judge it at the current base, where `floor(8 × 0.50)/8 = 0.500` is exact; the superseded pair's `floor(9 × 0.5)/9 = 0.444` is provenance only.
 
 **Effective:** upon operator ratification; consumed by Q-RAIL-1 Phases 1 and 3.
 **Scope:** c1's two pyramided futures legs on any discharge-tier firm. Flat (non-pyramided) legs and any future CFD-style venue are out of scope (risk-input scaling was only falsified for the pyramided/ceiling path).
