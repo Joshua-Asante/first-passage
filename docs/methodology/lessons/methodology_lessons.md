@@ -43,15 +43,21 @@ unedited — this is not a retroactive rewrite. **New entries use this light for
 ## M-N — short title
 
 **Date:** YYYY-MM-DD · **Anchor:** the dated brief/ADR/commit/finding that surfaced this
-**What broke:** the incident and its cost (dollar figure or audit-instance count), in 1-3 sentences.
+**What broke:** the dated incident and what it cost, in 1-3 sentences.
 **Rule:** imperative, one sentence — "Always X." / "Never Y." / "Before Z, do W."
 **Mechanism (optional):** one line on why this fails, if not obvious from the rule alone.
 **Link:** the anchor artifact.
 ```
 
-A lesson is added when a real incident earns it — no promotion ceremony, no dollar threshold, no
-CANDIDATE→PROMOTED state machine to track separately. Once written, it's in force. A superseded
-lesson stays (history-preserving, never deleted), marked `[SUPERSEDED — see M-N]` at its own top.
+A lesson is added when a dated incident earns it — no promotion ceremony, no dollar threshold, no
+CANDIDATE→PROMOTED state machine. Once written, it is in force as a registry lesson that work
+touching its anchor reads and applies; promoting it into standing guidance (a skill, hook,
+AGENTS.md or rule edit) still needs a high-severity incident or independent recurrence
+([AGENTS.md §Continuous improvement](../../../AGENTS.md#continuous-improvement) item 5). A
+superseded or retired lesson follows the existing retention and retrieval rules
+([Rule 31](../../operational_rules.md#rule-31--artifacts-earn-their-place),
+[`docs/ltm/README.md`](../../ltm/README.md)): keep the evidence still needed and repair surviving
+references to it; no tombstone is required per deleted sentence.
 
 **Legacy 8-field format** (M-7 onward, pre-2026-08-29): Status (`CANDIDATE`/`PROMOTED`/`DEMOTED`) ·
 Anchor incident · Cost (dollar / audit-instance / wrong-verdict count) · Rule · Mechanism ·
@@ -66,12 +72,10 @@ next session install (same repo-wins convention as `operational_rules.md` §8's 
 
 ---
 
-## Migration plan (M-1..M-6)
+## Numbering
 
-If a future brief authors a fresh M-class lesson before any of M-1..M-6 are
-cited, that fresh lesson lands here directly under its own M-N tag (using the
-next free integer above the highest currently-pointed-to in memory; check
-both Notion and `~/.claude/projects/.../memory/` before claiming a number).
+A new M-class lesson takes the next free integer above the highest M-N in this file. M-1..M-6
+were never migrated here (no headings exist) and M-25 was never assigned; neither is backfilled.
 
 ---
 
@@ -329,7 +333,7 @@ lines for FXIFY.
 Aegis USDJPY silent-zone trade; below $3K promotion threshold. Pattern surfaced
 2026-05-19; brief landed retroactively 2026-05-28 per Path A of Q-PARITY-1
 §0-grounding review). Slot allocated as the next free integer above M-10 per
-the [§Migration plan](#migration-plan-m-1m-6) registry rule; Appendix B of the
+the [§Numbering](#numbering) registry rule; Appendix B of the
 landed brief originally targeted M-8, which was already taken (mechanical
 thresholds need a qualitative override channel, PROMOTED 2026-05-10).
 
@@ -1517,6 +1521,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to this section's own
 "maintained at the bottom" convention) — content unedited by the move.
 
+- **2026-10-26:** Rule consolidation step 5 (D10(c), D10(e)): the per-lesson promotion criteria of legacy entries (CANDIDATE→PROMOTED, dollar thresholds) no longer bind; the entries are not rewritten. Standing-guidance bar and retention rule stated in §Format spec; numbering rule in §Numbering.
 - **2026-09-20:** M-26 through M-48 migrated from the Claude-memory store (process / verification / multi-agent review lessons) in the light format, so every harness reading this repo sees them; each carries its memory twin in `LESSONS_INDEX.jsonl`. Operator direction 2026-09-20 (AGENTS.md single instruction file; three-seat delegation). No retroactive edit to M-7 … M-24.
 - **2026-08-29:** Format spec lightened for entries going forward: light 5-field format (Date /
   Anchor / What broke / Rule / optional Mechanism / Link) replaces the 8-field template + dollar-

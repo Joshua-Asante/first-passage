@@ -258,7 +258,7 @@ Failure modes that recur, ranked by frequency:
 
 **8. Briefs floating from doctrine.** New brief that doesn't reference standing doctrine (prop-firm-challenge Core Principles, lessons registries, prior ADRs). Repair: §1 Context must connect to existing doctrine where any exists. Orphan briefs accumulate as noise.
 
-**9. Lessons captured without dollar anchor.** Methodology lesson entries that name a pattern but no measurable cost or counterfactual. These do not graduate to load-bearing. Repair: name the dated incident AND the dollar figure (or counterfactual). Below the threshold (E1/E2 standard: single-incident >$3K, OR three firings across separate windows), the lesson stays candidate-status.
+**9. Lessons captured without a dated incident.** Lesson entries that name a pattern but no dated incident or source artifact. Repair: name the dated incident and link its anchor, in the light format ([`methodology_lessons.md` §Format spec](../../../docs/methodology/lessons/methodology_lessons.md#format-spec)); no dollar field or threshold. A lesson becomes standing guidance only on a high-severity incident or independent recurrence (AGENTS.md §Continuous improvement item 5).
 
 **10. Unowned checks.** A promised check needs a meaningful action and a date or wake condition. Migrate or explicitly retire obsolete checks; do not give every ADR a quarterly obligation merely because it exists.
 
