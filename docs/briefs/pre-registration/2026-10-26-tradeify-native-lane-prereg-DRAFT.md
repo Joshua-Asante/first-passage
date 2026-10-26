@@ -63,10 +63,10 @@ A candidate is eligible only if all of the following hold:
 | Gate | Test | Inputs frozen before it runs |
 |---|---|---|
 | **G0** Eligibility | §2 items 1–4 all hold | Nominating amendment, with exclusivity signature |
-| **G1** Edge, both halves | SR̂ > 0 in each chronological half, and SR_LB computed | Data window and cost settings |
-| **G2** Economics | At SR_LB, with daily σ and intraday lows taken from the candidate's own series (not Gaussian), all three must hold: E[net cash] > 0; P(net cash > 0) ≥ 0.50; P(fees > B) ≤ 0.05 under the stop rule | The calibrated funded model (#940); the multi-payout simulator (§7); B; eval and funded sizes chosen by the frozen optimiser (§7), not by hand |
+| **G1** Edge, both halves | SR̂ > 0 in each chronological half, and SR_LB computed | Data window, cost settings, and all of §7 (frozen before G1, not before G2) |
+| **G2** Economics | On the candidate's own days moved to SR_LB by the §7 item 4 transform (not Gaussian), all three must hold: E[net cash] > 0; P(net cash > 0) ≥ 0.50; P(fees > B) ≤ 0.05 under the stop rule | The §7 recipe, frozen before G1: the calibrated funded model (#940), the multi-payout simulator, the optimiser, the SR_LB transform and B. Eval and funded sizes come from the optimiser, not by hand |
 | **G3** Incumbent state | G2 re-run from the incumbent evaluation's real state through `EvaluationState`, privately on the operator's machine. Only the verdict leaves the machine | Same as G2 |
-| **G4** Native parity | Over a frozen window, the NinjaScript port on NinjaTrader playback matches the research reference: ≥ 95% of trades on the same entry and exit bar, and total P&L within 5% | Port commit; window; tolerance |
+| **G4** Native parity | Over a frozen window, the NinjaScript port on NinjaTrader playback matches the research reference on the risk path G2 used: (a) every trade has the same quantity, and ≥ 95% of trades have the same entry and exit bar; (b) on ≥ 95% of days, net P&L and the intraday low each differ by ≤ max($25, 5%); (c) replaying both day series through the evaluation rules gives the same breach days; (d) G2 re-run on the port's own day series still passes | Port commit; window; tolerances (a)–(c) |
 
 G5 is not part of this verdict. Deployment still needs the NinjaTrader instance's own monitoring acceptance, a separate operator GO to arm, and a GO for each session ([Rule 10](../../operational_rules.md#rule-10--live-execution-gates), [Rule 11](../../operational_rules.md#rule-11--rail-operating-invariants)).
 
@@ -85,30 +85,31 @@ G5 is not part of this verdict. Deployment still needs the NinjaTrader instance'
 | Outcome | Verdict | Consequence |
 |---|---|---|
 | G0 fails | INELIGIBLE | Candidate rejected for this lane. Any re-proposal needs new mechanism evidence |
-| Under 3 years of admissible data, or #940 or the §7 simulator missing | UNDETERMINED | No scoring. Fix the input, not the gate |
+| Under 3 years of admissible data, or the frozen §7 recipe (including #940) missing | UNDETERMINED | No scoring. Fix the input, not the gate |
 | G1 fails (a non-positive half) | NO-GO (edge) | Registry line, [Rule 26](../../operational_rules.md#rule-26--rejections-bar-re-proposal) |
 | G2 or G3 fails | NO-GO (economics) | Registry line. Lane stays parked |
 | G4 fails | NO-GO (port) | Fix the port. One re-test, counted in K |
 | All pass | GO-CANDIDATE | Eligible to enter the deployment gates. No capital, arming or spend authority |
 
-## §7 — Tooling that must exist and be frozen before G2
+## §7 — Recipe that must exist and be frozen before G1
 
 1. **Multi-payout simulator.** It extends `payout_sim.first_payout` to every payout within 126 days, with Tradeify's funded payout cadence, cap and buffer. It must pass a parity test: its first payout matches `first_payout` on fixed seeds.
 2. **Calibrated funded rules and settings** from #940.
-3. **Optimiser.** It chooses eval σ and funded σ, mapped to integer contracts within the 80-micro cap, to maximise §1 under the constraints. It uses the candidate's empirical day distribution, resampled in weekly blocks with intraday lows paired to their days.
+3. **Optimiser.** It chooses eval and funded contract counts (integers within the 80-micro cap) to maximise §1 under the constraints. It uses the transformed day distribution from item 4, resampled in 5-day blocks with each day's intraday low paired to it. Path count, seeds and the contract grid are fixed in the frozen recipe.
+4. **SR_LB transform.** Each day's net P&L x is replaced by x + Δ, where Δ = (SR_LB − SR̂)·σ̂/√252 per contract and σ̂ is the daily standard deviation, so the volatility is unchanged. Each day's intraday low ℓ is replaced by min(ℓ + Δ, 0, x + Δ): because Δ ≤ 0, the full shift is applied to the low, which is conservative. No other transformation of returns or paths is permitted.
 
 ## §8 — Gate reachability (computed for this draft; [Rule 23](../../operational_rules.md#rule-23--pre-register-count-k-honestly))
 
-SR_LB at K = 1 (z = 0.84), for an i.i.d. series:
+SR_LB at K = 1 (z = 0.84), for an i.i.d. daily series. The annualised SE is √((1 + SR̂²/504)/Y) for Y years, so SR_LB ≈ SR̂ − 0.84/√Y:
 
 | SR̂ \ years | 3 | 5 | 8 |
 |---|---|---|---|
-| 1.5 | 0.79 | 0.95 | 1.07 |
-| 2.0 | 1.16 | 1.35 | 1.48 |
-| 2.5 | 1.51 | 1.74 | 1.90 |
-| 3.0 | 1.86 | 2.12 | 2.30 |
+| 1.5 | 1.01 | 1.12 | 1.20 |
+| 2.0 | 1.51 | 1.62 | 1.70 |
+| 2.5 | 2.01 | 2.12 | 2.20 |
+| 3.0 | 2.51 | 2.62 | 2.70 |
 
-Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate with SR̂ of about 2.0–2.5 over 5 years can reach G2, and one with SR̂ of 1.5 essentially cannot. The gate is reachable for a strong candidate, not for a typical one. That is intended.
+Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate with SR̂ ≈ 2 over 3 or more years can reach G2, SR̂ ≈ 1.5 is marginal, and anything below that cannot. Autocorrelation and fat tails widen the SE and lower these bounds. The gate is reachable for a strong candidate, not for a typical one. That is intended.
 
 **Binding:** the 11-08 branch (b) decision consumes the G0 item 4 output, and a GO-CANDIDATE is the only route into the deployment gates.
 
@@ -130,4 +131,5 @@ Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate wit
 1. Codex adjudicates this draft.
 2. The operator fills §11 and ratifies it.
 3. Merge freezes it.
-4. Each candidate enters only by a merged nominating amendment (G0 inputs plus its fixed parameters) before any G1 computation.
+4. The §7 recipe is merged and frozen, with its tests, before any nominating amendment.
+5. Each candidate enters only by a merged nominating amendment (G0 inputs plus its fixed parameters) before any G1 computation.
