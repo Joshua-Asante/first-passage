@@ -292,6 +292,20 @@ def test_sessions_queue_bind_reaches_each_additional_consumed_file(
     assert "sessions-queue-bind" in selected
 
 
+@pytest.mark.parametrize(
+    "staged_path",
+    ["STATE.md", "docs/adr/2026-01-01-example.md", "docs/briefs/x/y.md", "docs/notes/z.md"],
+)
+def test_governance_prose_control_chars_reaches_its_scan_scope(monkeypatch, staged_path):
+    """The script scans STATE, ADRs, briefs and notes; edits there must select it."""
+    data = gm.load_manifest(MANIFEST)
+    monkeypatch.setattr(gm, "staged_names", lambda: [staged_path])
+
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+
+    assert "governance-prose-control-chars" in selected
+
+
 def test_lifecycle_consistency_reaches_agents_md(monkeypatch):
     """AGENTS.md succeeded the retired CLAUDE.md (2026-09-20); a tier restated
     there must select the gate at pre-commit."""

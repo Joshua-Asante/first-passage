@@ -189,57 +189,7 @@ instrument-lane eligibility; ORB payability and paid/new-venue generation routes
 or a **venue class whose survival geometry differs** (not an EOD-trailing prop clone) —
 **not** new cells, new instruments, or ATR-input spend alone.
 
-### Striker NAS100 → MYM sibling-swap (Q-TXG-1 cell #1) — DEAD(cost)
-
-**Rejection scope:** the Striker NAS100 v1 → CBOT MYM cross-underlying sibling-swap cell
-(execution-mechanics port only; locked parameters untouched), not Striker-on-NAS100 and not
-the WITHDRAWN(F1) striker_nas100×MNQ redeploy.
-**Closure date:** 2026-08-12
-**Authoritative artifact:** [docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) ·
-[cell PREREG](briefs/pre-registration/2026-08-12-q-txg-1-striker-nas100-mym-cell-prereg.md) ·
-[manifest](../discovery_manifests/q_txg1_striker_nas100_mym_20260812.json)
-**Closure basis:** native-TV panel cost FAIL vs frozen `required_net_r` 0.06 / `port_must_beat`
-(N=190; Net +$4,356.40; mean_net_r **0.0129** < 0.06; PF 1.110; static-equity recompute OK).
-N-SURV not reached.
-**Re-proposal bar:** subsumed by the lane-level Q-TXG-1 FALSIFIED-at-walls bar above (different loss-side shape or different venue-class survival geometry) — not a locked-parameter retune, not amending `required_net_r`, not firm-shopping, not a silent third election.
-
-### Striker DJ30 → MNQ sibling-swap (Q-TXG-1 cell #2) — DEAD(N-SURV)
-
-**Rejection scope:** the Striker DJ30 v4.5 → CME MNQ cross-underlying sibling-swap cell
-(execution-mechanics port only; locked parameters untouched), not Striker-on-DJ30 and not
-the WITHDRAWN(F1) striker×MYM redeploy.
-**Closure date:** 2026-08-12
-**Authoritative artifact:** [docs/briefs/closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md](briefs/closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) ·
-[cell PREREG](briefs/pre-registration/2026-08-12-q-txg-1-striker-mnq-cell-prereg.md) ·
-[manifest](../discovery_manifests/q_txg1_striker_mnq_20260812.json)
-**Closure basis:** native-TV panel cost PASS (mean_net_r 0.0419 > required_net_r 0.03; N=222) then
-
-surv_channel.py on bar-derived MNQ_M15 daily series (n=164) against Tradeify_Select_100K at the
-frozen 2026-07-13 floors (bust ≤3.0% ∧ P(pass)≥50%). Bust **98.13%** full / **96.76%** H1 /
-**99.37%** H2 — ~32×–33× over ceiling on every partition.
-**Re-proposal bar:** subsumed by the lane-level Q-TXG-1 FALSIFIED-at-walls bar above (different loss-side shape or different venue-class survival geometry) — not a locked-parameter retune, not amending the 3.0% floor, not inventing an ENV-1 panel N, not a silent third election.
-
-
-### Guardian→MGC transfer cell (R7 / b8) — DEAD(N-SURV)
-
-**Rejection scope:** the Guardian Gold v5.5 → MGC venue-transfer cell (execution-mechanics
-port only; locked parameters untouched), not Guardian-on-XAUUSD and not MGC-the-instrument.
-**Closure date:** 2026-08-11
-**Authoritative artifact:** [`docs/briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md`](briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) ·
-[`cell PREREG (retroactive)`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/2026-08-11-guardian-mgc-transfer-cell-prereg.md) ·
-[`b8`](pursuits/b8-guardian-mgc-transfer-lane.md)
-**Closure basis:** `nsurv_channel.py` on the v0.3 native MGC1! panel (N=329 / daily n=276)
-against `Tradeify_Select_100K` at the frozen 2026-07-13 floors (bust ≤3.0% ∧ P(pass)≥50%).
-Bust **42.2%** full / **72.4%** H1 / **16.5%** H2 — 5.5×–24× over ceiling on every
-partition. Same trailing-survival failure class as Aegis→6J J4b, more severe. Two
-disclosed caveats (unpre-registered half-boundary; AE-approximated `intraday_low`) keep
-the score exploratory-grade; the margin settles the qualitative DEAD.
-**Surviving finding (NOT rejected):** MGC remains venue-legal / instrument-lane eligible;
-Guardian v5.5 on XAUUSD is untouched. ⚠ Q-TXG-1 lane later **FALSIFIED-at-walls** (operator A, 2026-08-12) — further transfer elections under that Q-ID are barred; see lane row above.
-**Re-proposal bar:** new mechanism evidence (fresh cell PREREG + operator election under
-Q-TXG-1 or equivalent) — **not** locked-parameter retune, **not** re-reading the
-AE-approximated score, **not** amending the 3.0% floor.
-
+<!-- concept-intake-entry mechanism_family="locked-mechanism-cross-underlying-transfer-expression" instrument="ENV-1" rejection_reason="lane FALSIFIED-at-walls (H_A re-argument, design §6): two consecutive elected-cell kills — striker_nas100×MYM DEAD(cost) mean_net_r 0.0129<required_net_r 0.06 (N=190, net +$4,356.40, PF 1.110); striker×MNQ PASS_COST (mean_net_r 0.0419>0.03, N=222, net +$22,789.58) then DEAD(N-SURV) bust 98.13%/96.76%/99.37% full/H1/H2 vs ≤3.0% ceiling — forced re-argument; operator elected CLOSE. All four positive-net transfer expressions died at the same composition of frozen cost floor + trailing-DD survival ceiling: Guardian→MGC DEAD(N-SURV) bust 42.2%/72.4%/16.5%; Aegis→6J J4b best cell 3.88% bust (1.3× over) + J14 composed 3-leg 0/3 tiers and cap-infeasible. Edge transfer itself was never falsified — GRID_RESULTS.json confirms 25 compile-open cells, 23 stop-unscreenable (Aegis 7 / Guardian 6 / Striker 5 / Striker_NAS100 5), only the 2 mapped-stop cells (the elected, now-dead pair) were scorable without ATR-median spend." harness_disposition_ref="Q-TXG-1 H_A re-argument (docs/briefs/Q-TXG-1-ha-reargument.md); lane closure docs/briefs/closures/Q-TXG-1-closure-falsified-at-walls.md" date="2026-08-12" class="falsified-at-walls" role_tested="cross-underlying locked-mechanism transfer/expression port (cost-tax + trailing-DD N-SURV gates)" falsifier_failed="composition of frozen required_net_r/port_must_beat cost floor AND trailing-DD bust≤3.0% N-SURV ceiling across all four positive-net transfer expressions (lesson_trailing_dd_survival_is_skew_governed)" addback_condition="new mechanism evidence with a demonstrably different loss-side shape, or a venue class whose survival geometry differs (not an EOD-trailing prop clone) — NOT new cells, new instruments, or ATR-input spend alone" -->
 
 ### Guardian-family strategy on XAGUSD (Silver)
 
@@ -685,28 +635,6 @@ box, **not** treating this FAIL as reopening the base 2026-08-14 Stage-1 FAIL ve
 
 <!-- concept-intake-entry mechanism_family="sweep-failure-filtered-continuation" instrument="MYM" rejection_reason="D2 cheap-falsifier route-B closure (ADR 2026-08-16 sec 2 D2): reused MSL-C1's PDH/PDL sweep+failed-extension-reclaim signal on the flip side, S2B's own 40/120 placeholder box, IS-only; 850/1605 eligible sessions fired (coverage 52.96%); mean signed gross -1.00 pt; WR 25.41% (~rr=3 breakeven); gross/(4xRT) -0.044x vs +0.5x (11.28 pt) pass bar. D2_FAIL." harness_disposition_ref="MSL-S2B D2 cheap-falsifier LOG (lab/analysis/c1/cheap_falsifiers_2026-08/_cheap_falsifier_s2b_con5_d2_2026-08-17_LOG.md)" date="2026-08-17" class="edge-failure" role_tested="entry (route-B/D2 falsifier)" falsifier_failed="ADR 2026-08-16 D2 pass bar: mean signed gross -1.00 pt < +11.28 pt (0.5x4xRT); WR 25.41% ~= rr=3 breakeven; gross/(4xRT) -0.044x" addback_condition="different entry-trigger operationalization of sweep-failure-filtered-continuation (not this C1-flip-signal/40-120-box pairing), tested under its own fresh D2-class falsifier -- NOT a re-run of this signal/box pairing, NOT reopening the base 2026-08-14 Stage-1 FAIL route verdict" -->
 
-### Third-Friday derivative-settlement reversal on MYM
-
-**Rejection scope:** the exact Baltussen/Terstegge/Whelan derivative-payoff-bias expression on native MYM: short the calendar third-Friday 09:30 ET open and cover at 12:00 ET. The overnight Thursday-close→Friday-open spike is a mechanism-faithfulness measurement, not a traded limb.
-**Closure date:** 2026-07-21
-**Class:** edge-failure (underpowered, unstable) + venue/cost-geometry
-**Authoritative artifact:** [`lab/archive/mym_3fps_recon_2026-07/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/mym_3fps_recon_2026-07/RESULTS.md) + [`closure`](briefs/closures/MYM-3FPS-1-closure-falsified.md).
-**Closure basis:** frozen K=0 native-micro extraction, 2019-05-06→2026-07-21, exact timestamps and no nearest-bar substitutions. Coverage passed (84/87, 96.6%), but the overnight spike was only +1.54 bp (`delta/sigma=0.0256`, power 0.042) and the open-to-noon short only +2.68 bp (`delta/sigma=0.0500`, power 0.067), both far below the frozen 0.2139 standardized-effect floor. The short also failed the Tradeify cost law: +2.68 bp vs 6.57 bp 4× hurdle. Year signs were unstable and the tradable limb was negative in 2019, 2024, 2025, and 2026. The published ~12 bp DJIA effect does not transfer at useful magnitude to the native MYM era.
-**Re-proposal bar:** new target-instrument mechanism evidence. NOT a 09:15/09:20 entry, different exit, quarterly/triple-witch subset, MNQ rescue, overnight limb, or pooled-index version; each is a new hypothesis and the first three are precisely the post-result selection moves this probe froze out.
-
-<!-- concept-intake-entry mechanism_family="third-friday-derivative-settlement-reversal" instrument="MYM" rejection_reason="edge-failure + venue/cost-geometry: frozen K=0 native-MYM third-Friday 09:30->12:00 short, n=84/87 exact events (96.6%). Overnight spike +1.54bp, delta/sigma 0.0256, power 0.042; open-to-noon short +2.68bp, delta/sigma 0.0500, power 0.067; both below 0.2139 floor. Cost-law FAIL: +2.68bp vs 6.57bp 4x Tradeify hurdle. Year signs unstable; short negative 2019/2024/2025/2026. Published ~12bp DJIA effect absent at useful magnitude in native MYM era." harness_disposition_ref="MYM-3FPS-1 Phase-0 (K=0 delta extraction; lab/archive/mym_3fps_recon_2026-07/RESULTS.md)" date="2026-07-21" class="edge-failure+venue-cost-geometry" role_tested="entry" falsifier_failed="P0.1 overnight delta/sigma 0.0256; P0.2 reversal delta/sigma 0.0500 vs 0.2139 floor; P0.3 +2.68bp vs 6.57bp hurdle" addback_condition="new target-instrument mechanism evidence - NOT timing/exit/expiry-subtype retune, MNQ rescue, overnight limb, or pooled-index variant" config_fingerprint="3fps/MYM.v.0/calendar-third-Friday/short-open09:30ET->12:00ET/cost=Tradeify0.91+1tick-side/feed=Databento-GLBX-MYM.v.0-ohlcv1m-2019-05-06..2026-07-21" -->
-
-### Opening-volume × directional-efficiency pressure map on MNQ/MYM
-
-**Rejection scope:** the continuous BAR EXPORT opening-pressure mechanism — high opening volume as continuation when the first 30 minutes are directionally efficient and as reversal when absorbed into a low-efficiency range — on native MNQ and MYM M15 panels. Not a strategy or entry rule.
-**Closure date:** 2026-07-21
-**Class:** edge-failure (underpowered / wrong-signed on development)
-**Authoritative artifact:** [`lab/archive/opening_pressure_map_2026-07/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/opening_pressure_map_2026-07/RESULTS.md) + [`closure`](briefs/closures/OPENPRESS-1-closure-falsified.md).
-**Closure basis:** frozen K=0 hash-pinned diagnostic (`MNQ_M15.csv` `ddb14f…e1f7e3ac`, `MYM_M15.csv` `298ab8…f9059c`). Neither instrument passed. MNQ development t=1.53 and pooled t=1.60 (both <2) despite positive slopes and a cost-clearing P90−P10 spread; MYM development slope wrong-signed (−3.63 bp) and predicted spread 1.71 bp below the 6.41 bp 4× Tradeify hurdle. Exactly-zero instruments passed → overall `FALSIFIED` (not AMBIGUOUS).
-**Re-proposal bar:** new modality / mechanism evidence (e.g. true order-flow or absorption measures). NOT an RV threshold, alternate opening window, weekday slice, single-instrument selection after seeing the pair, or re-pin to a newer BAR EXPORT panel to rescue the slope.
-
-<!-- concept-intake-entry mechanism_family="opening-volume-directional-efficiency" instrument="MNQ+MYM" rejection_reason="edge-failure: frozen K=0 BAR EXPORT pressure-alignment diagnostic. MNQ FAIL (dev t=1.53, pooled t=1.60 <2); MYM FAIL (dev slope -3.63bp wrong-signed; pred spread 1.71bp < 6.41bp 4x cost). Neither PASS → FALSIFIED." harness_disposition_ref="OPENPRESS-1 (lab/archive/opening_pressure_map_2026-07/RESULTS.md)" date="2026-07-21" class="edge-failure" role_tested="mechanism-diagnostic" falsifier_failed="MNQ HAC t<2; MYM wrong-signed + cost FAIL" addback_condition="new modality/mechanism - NOT threshold/window/instrument rescue on same OHLCV" -->
-
 ### OR-window net signed aggressor size × MNQ — FALSIFIED (CI includes 0)
 
 **Rejection scope:** the Q-CAPFLOW-1 Cap-spend cell testing OR-window **net signed aggressor
@@ -1101,33 +1029,6 @@ symbology artifact, not a property of the data the backtests ran on).
 <!-- concept-intake-entry mechanism_family="tv-bar-coverage-artifact-hypothesis" instrument="MNQ" rejection_reason="H FALSIFIED -- break real: corrected canonical (.v.0) 96.35% pre / 99.04% post (delta +2.69pp, limb-a NOT MET, fully explained by the pre-2021 16:15-ET equity-index halt-slot elimination); TV within +/-0.1% all pre-break months (limb-b NOT MET, +/-1% falsifier MET)." harness_disposition_ref="Q-TVCOV-1 RESULTS.md sec.Falsifier disposition (lab/analysis/c1/tvcov_2026-07/RESULTS.md)" date="2026-07-13" class="data-integrity-coverage-artifact-falsified" role_tested="n/a -- data-coverage audit (K=0, no strategy candidate mined), not entry/exit/filter/size" falsifier_failed="canonical coverage complete (delta +2.69pp < 5pp, halt-slot-explained); TV max +0.1% deviation all pre-break months (< 5% and < 1%)" addback_condition="new mechanism evidence about bar availability (different feed class, different roll protocol, or a previously-missing day TV actually served) -- NOT a re-census of the same 9 quarterly-expiry months on .c.0" -->
 <!-- concept-intake-entry mechanism_family="tv-bar-coverage-artifact-hypothesis" instrument="MYM" rejection_reason="Grid AMBIGUOUS -> operator-accepted BREAK-REAL 2026-07-13: corrected canonical (.v.0) 96.35% pre / 99.04% post (delta +2.69pp, limb-a NOT MET); TV matches exactly 4/5 pre-break months, 2020-03 -4.3% = single missing TV day (2020-03-16 COVID limit-down, 29/31 slots) not era-wide thinness -- below limb-b bar (needs >=5% on >=2 months); +/-1%-match falsifier NOT MET on 2020-03 alone." harness_disposition_ref="Q-TVCOV-1 RESULTS.md sec.Falsifier disposition + sec.Operator disposition (lab/analysis/c1/tvcov_2026-07/RESULTS.md)" date="2026-07-13" class="data-integrity-coverage-artifact-falsified" role_tested="n/a -- data-coverage audit (K=0, no strategy candidate mined), not entry/exit/filter/size" falsifier_failed="grid AMBIGUOUS on +/-1% limb (2020-03 -4.3%, single day); limb-b NOT MET (one month, needs >=2-month bar); operator parent call taken, not a mechanical FALSIFIED" addback_condition="new mechanism evidence about bar availability (different feed class, different roll protocol, or a previously-missing day TV actually served) -- NOT a re-census of the same 9 quarterly-expiry months on .c.0; standing 2020-03-16 annotation obligation stays wherever 2020-Q1 Striker-MYM behavior is analyzed" -->
 
-### Transfer/expression lane (Q-TXG-1) — FALSIFIED-at-walls
-
-**Rejection scope:** the Q-TXG-1 transfer/expression programme — incumbent locked mechanisms
-(Guardian / Striker / Striker NAS100 / Aegis) × ENV-1 7-micro pool at Tradeify Select
-EOD-trailing survival geometry — as a *lane*, not any single home-instrument strategy and not
-ENV-1 instruments as a class.
-**Closure date:** 2026-08-12
-**Authoritative artifact:** [`docs/briefs/Q-TXG-1-ha-reargument.md`](briefs/Q-TXG-1-ha-reargument.md)
-(operator elected **(A) CLOSE**) ·
-[`lane closure`](briefs/closures/Q-TXG-1-closure-falsified-at-walls.md) ·
-cell closures [`nas100×MYM DEAD(cost)`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/2026-08-12-q-txg-1-striker-nas100-mym-cell-dead-cost.md) ·
-[`striker×MNQ DEAD(N-SURV)`](briefs/closures/2026-08-12-q-txg-1-striker-mnq-cell-dead-nsurv.md) ·
-[`Guardian→MGC DEAD(N-SURV)`](briefs/closures/2026-08-11-guardian-mgc-transfer-cell-dead-nsurv.md) ·
-Aegis→6J both-layers ([`ops/instruments/6J.md`](../ops/instruments/6J.md) J4b+J14)
-**Closure basis:** two consecutive elected-cell FALSIFIEDs forced H_A re-argument (design §6);
-operator elected CLOSE. Four positive-net transfers; zero survivors against the composition of
-the frozen per-trade cost floor and the trailing-DD survival ceiling
-(`lesson_trailing_dd_survival_is_skew_governed`). Remaining 23 OPEN cells are stop-unscreenable
-(ATR-median unlock refused without new mechanism evidence).
-**Surviving finding (NOT rejected):** locked-book mechanisms on home instruments; ENV-1
-instrument-lane eligibility; ORB payability and paid/new-venue generation routes.
-**Re-proposal bar:** new mechanism evidence with a **demonstrably different loss-side shape**,
-or a **venue class whose survival geometry differs** (not an EOD-trailing prop clone) —
-**not** new cells, new instruments, or ATR-input spend alone.
-
-<!-- concept-intake-entry mechanism_family="locked-mechanism-cross-underlying-transfer-expression" instrument="ENV-1" rejection_reason="lane FALSIFIED-at-walls (H_A re-argument, design §6): two consecutive elected-cell kills — striker_nas100×MYM DEAD(cost) mean_net_r 0.0129<required_net_r 0.06 (N=190, net +$4,356.40, PF 1.110); striker×MNQ PASS_COST (mean_net_r 0.0419>0.03, N=222, net +$22,789.58) then DEAD(N-SURV) bust 98.13%/96.76%/99.37% full/H1/H2 vs ≤3.0% ceiling — forced re-argument; operator elected CLOSE. All four positive-net transfer expressions died at the same composition of frozen cost floor + trailing-DD survival ceiling: Guardian→MGC DEAD(N-SURV) bust 42.2%/72.4%/16.5%; Aegis→6J J4b best cell 3.88% bust (1.3× over) + J14 composed 3-leg 0/3 tiers and cap-infeasible. Edge transfer itself was never falsified — GRID_RESULTS.json confirms 25 compile-open cells, 23 stop-unscreenable (Aegis 7 / Guardian 6 / Striker 5 / Striker_NAS100 5), only the 2 mapped-stop cells (the elected, now-dead pair) were scorable without ATR-median spend." harness_disposition_ref="Q-TXG-1 H_A re-argument (docs/briefs/Q-TXG-1-ha-reargument.md); lane closure docs/briefs/closures/Q-TXG-1-closure-falsified-at-walls.md" date="2026-08-12" class="falsified-at-walls" role_tested="cross-underlying locked-mechanism transfer/expression port (cost-tax + trailing-DD N-SURV gates)" falsifier_failed="composition of frozen required_net_r/port_must_beat cost floor AND trailing-DD bust≤3.0% N-SURV ceiling across all four positive-net transfer expressions (lesson_trailing_dd_survival_is_skew_governed)" addback_condition="new mechanism evidence with a demonstrably different loss-side shape, or a venue class whose survival geometry differs (not an EOD-trailing prop clone) — NOT new cells, new instruments, or ATR-input spend alone" -->
-
 ### SLR-MYM-1 liquidity sweep-and-reclaim × MYM — FALSIFIED (as scoped; Stage 0, pre-G0)
 
 **Rejection scope:** the frozen SLR-MYM-1 `liquidity-sweep-and-reclaim` construct (§1: long-only,
@@ -1185,9 +1086,10 @@ the power floor. Neither a re-tuned day set, a different level menu, nor a wider
 > ⚠ **Amended 2026-08-09 — that consumer list was incomplete, and the omission is the load-bearing
 > one.** A **third** consumer exists and it is a **hard gate**: `ops/instruments/profiles.json`
 > carries `source` pointers into this file, consumed by `scripts/instrument_profiles.py` (gate id
+> `instrument-profiles`, **tier=path-conditional**, runs when `ops/instruments/` is staged; `scripts/gates.yml`), whose `_resolve()` treats a
 > `instrument-profiles`, **path-conditional** on `^ops/instruments/` in `scripts/gates.yml`), whose `_resolve()` treats a
 > missing source as a failure — *"an unsourced claim must fail the gate"*. **Deleting or moving this
-> file hard-fails CI today.** So the liveness posture is not "a registry appended-to but never
+> file hard-fails that gate on its next run.** So the liveness posture is not "a registry appended-to but never
 > read": its *domain-bar* tier is machine-consulted and blocking (verified —
 > `python scripts/instrument_profiles.py cell MNQ ict-liquidity` prints `BINDING BAR` and blocks),
 > while its *per-direction* tier has no enforcement instrument at all. Those two tiers must be
@@ -1581,6 +1483,7 @@ census later reaches the SNAG bar **and** the survivor is retired to 0.
    > `K_intrinsic` · the F2 guard and every downstream gate unchanged. **Price and hold-time stay mapped and
    > exhausted** (hold-time additionally re-falsified 2026-08-10 by a $0 stop-width sweep: 0.02–0.10× the 4× cost
    > bar across the whole ratified 5–20 pt band); **cross-index selection stays closed at its own entry below.**
+   > ⚠ Enforcement note: this bar is machine-consulted (`scripts/instrument_profiles.py cell`, **tier=path-conditional** on `ops/instruments/`,
    > ⚠ Enforcement note: this bar is machine-consulted (`scripts/instrument_profiles.py cell`; its `instrument-profiles` gate is path-conditional on `ops/instruments/`,
    > exit 1 when it binds) — but two dense-1m campaigns (CON-1, CON-2) nonetheless ran **unbound** because their
    > lane's door check never reached domain-level bars. Repaired at that lane's step 1a; `lesson_gate_reachability_preregistration`
@@ -1766,6 +1669,7 @@ grep -n "Re-proposal bar" docs/rejected_candidates.md
 > flagged. Recorded per [`ADR 2026-08-09`](adr/2026-08-09-rejection-register-topology-and-bar-wiring.md) D5.
 >
 > **Do not append here.** Per that ADR's D3, per-direction instrument-scoped mechanism rejections
+> belong in `ops/instruments/<SYM>.md` (which has a live machine consult at a path-conditional gate);
 > belong in `ops/instruments/<SYM>.md` (which has a live machine consult at the path-conditional `instrument-profiles` gate);
 > this file owns domain-level and cross-instrument bars. Entries below are **frozen historical
 > record**.
