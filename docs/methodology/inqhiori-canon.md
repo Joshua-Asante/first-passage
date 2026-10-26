@@ -16,7 +16,7 @@
 
 **What changed.** D-S-A was previously framed as a post-validation system-shaping discipline (apply The Algorithm *after* INQHIORI delivers a finding). It is now also formalized as a **pre-Q gate inside INQHIORI**: D-S-A operates on the I/N corpus to focus questioning before any Q is asked. Same operators, different domain.
 
-**Status.** Codified 2026-04-25. v2 codification 2026-04-27: added Sources Read declaration block (§3) + forbidden patterns; promoted Rule 0 from §10 reference to mandatory brief-header structure. Separated from OODA 2026-05-09; OODA's canon now lives standalone in its skill file. First test case: the in-flight Inquire-phase work (Q1 / Q5 / Q8) and the already-executed Notice-phase compression. The 2026-04-27 Q-meta-a brief is the canonical case study of how Rule 0 in weakened form produces wrong audit verdicts; its gate-audit path (`docs/methodology/gate_audits/2026-04-27_meta_partition_test.md`) was never instantiated — Case B audits that did land are recoverable via `git show pre-prune-2026-06-05:archive/docs/methodology/archive/gate_audits/` (e.g. `2026-04-25_q3_halt_rules_design_skew.md`).
+**Status.** Codified 2026-04-25. v2 codification 2026-04-27: added Sources Read declaration block (§3) + forbidden patterns; promoted Rule 0 from §10 reference to mandatory brief-header structure. Separated from OODA 2026-05-09; OODA's canon now lives standalone in its skill file. First test case: the in-flight Inquire-phase work (Q1 / Q5 / Q8) and the already-executed Notice-phase compression. The 2026-04-27 Q-meta-a brief is the canonical case study of how Rule 0 in weakened form produces wrong audit verdicts; its gate-audit path (`docs/methodology/gate_audits/2026-04-27_meta_partition_test.md`) was never instantiated — Case B audits that did land are recoverable from `archive/docs/methodology/archive/gate_audits/` per [`docs/ltm/README.md`](../ltm/README.md) (e.g. `2026-04-25_q3_halt_rules_design_skew.md`).
 
 ---
 
@@ -243,7 +243,7 @@ Each of these is an opportunity to **explicitly run the gate and log the audit t
 - **Rule 1 (small-cell variance prior) still binds.** Small cohorts trigger caution at the Observe / Reflect phase regardless of how the gate filtered the corpus.
 - **Overlay policy is unchanged.** No overlays without full INQHIORI. The gate is the front of that loop, not a relaxation of the back.
 - **Observation routing** operates *after* the pre-Q gate — observations that pass the gate get routed to a decision. The two gates compose; they don't compete. ⚠ **Corrected 2026-08-15** ([`ADR`](../adr/2026-08-15-notice-log-is-the-live-observation-routing-convention.md)): narrative observations (findings, anomalies, "interesting things") route via the Notice-log convention (`docs/notes/notice/N-YYYY-MM-DD-slug.md`, `GRADUATE / DROP / HOLD`) — `observation_routing.md`'s Closed/Action/Forward vocabulary did not displace it in practice and now governs only one mechanical gate (`scripts/verify_lock_anchors.py`), not narrative routing.
-- **Audit trail location:** `docs/notes/audits/YYYY-MM-DD_gate_<slug>.md`. Required fields: deleted items, D-test applied, S-compression rationale, A-index used, regret events. Historical Case B audits (pre-2026-06-05 archive): `archive/docs/methodology/archive/gate_audits/` at private-archive tag `pre-prune-2026-06-05` ([retrieval](../ltm/README.md)).
+- **Audit trail location:** `docs/notes/audits/YYYY-MM-DD_gate_<slug>.md`. Required fields: deleted items, D-test applied, S-compression rationale, A-index used, regret events. Historical Case B audits (pre-2026-06-05 archive): `archive/docs/methodology/archive/gate_audits/`; retrieve per [`docs/ltm/README.md`](../ltm/README.md) (`pre-prune-*` tags are not on this public clone).
 
 ## 11. What this does not change
 
@@ -264,10 +264,10 @@ This document codifies methodology. It governs how future loops are run, not wha
   - Rule 0 — read production code before any risk-control decision (codified in prop-firm-challenge skill)
   - Rule 1 — small-cell variance prior — `docs/methodology/archive/notion/rule-1-small-cell-variance-prior.md` (Notion `34cdc0b53c11812cbb4ff637ba44736e`)
   - Rule 2 — budget before acting, scaled to reversibility — `docs/adr/2026-06-16-rule-2-budget-before-acting.md` (full statement at §15 below)
-- **Hard lesson:** Iran-Hormuz overlay deactivation — Notion `34bdc0b53c1181fe9dc3fd93eadf3e8e` (page retired/404; private-archive tag `pre-prune-2026-06-05`, path `archive/docs/methodology/archive/overlays/guardian_conflict_risk.md` ([retrieval](../ltm/README.md)); see redirect map)
+- **Hard lesson:** Iran-Hormuz overlay deactivation — Notion `34bdc0b53c1181fe9dc3fd93eadf3e8e` (page retired/404; repo history `archive/docs/methodology/archive/overlays/guardian_conflict_risk.md`, retrieve per [`docs/ltm/README.md`](../ltm/README.md) (`pre-prune-*` tags are not on this public clone); see redirect map)
 - **First test case:** Claude Code brief — 1R diagnosis + Open Questions reorder + Notice phase compression — 2026-04-25 — Notion `34ddc0b53c1181199976c9b1b4effb17` (page retired/404 — superseded by `docs/methodology/observation_routing.md`; see redirect map)
 - **Repo touchpoints:**
-  - Gate-audit write-target (live): `docs/notes/audits/YYYY-MM-DD_gate_<slug>.md`. Historical directory `docs/methodology/gate_audits/` was archived 2026-04-29 and evicted 2026-06-05 — recover `archive/docs/methodology/archive/gate_audits/` from private-archive tag `pre-prune-2026-06-05` ([retrieval](../ltm/README.md)) (Case B example: `2026-04-25_q3_halt_rules_design_skew.md`)
+  - Gate-audit write-target (live): `docs/notes/audits/YYYY-MM-DD_gate_<slug>.md`. Historical directory `docs/methodology/gate_audits/` was archived 2026-04-29 and evicted 2026-06-05 — recover `archive/docs/methodology/archive/gate_audits/` per [`docs/ltm/README.md`](../ltm/README.md) (Case B example: `2026-04-25_q3_halt_rules_design_skew.md`)
   - This file supersedes the unexecuted `docs/methodology/inqhiori_dsa_gate.md` mirror plan noted in the archive README.
 
 ## 13. Usage notes for Claude Code and web Claude

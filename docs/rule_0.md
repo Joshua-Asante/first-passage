@@ -21,4 +21,4 @@ Order: production file → brief against ground truth → validate → lock → 
 ## Scope
 
 New rules are written only against observed failures during execution phase, not hypothesized ones.
-Resurrection rule + 90-day review gate: `archive/docs/methodology/archive/README.md` at tag `pre-prune-2026-06-05`, which exists only in the private archive; see [retrieval guidance](ltm/README.md).
+Resurrection rule + 90-day review gate: `archive/docs/methodology/archive/README.md` (evicted 2026-06-05); retrieve per [`docs/ltm/README.md`](ltm/README.md) (`pre-prune-*` tags are not on this public clone).

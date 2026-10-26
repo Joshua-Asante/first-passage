@@ -19,16 +19,17 @@ The recurring failure mode this lesson captures, stated as a pattern not a story
 
 ## Anchor incidents
 
-Per Known Trap #9: a lesson without a dated incident does not graduate. It becomes standing guidance only when high-severity or independently recurring; otherwise it stays `Candidate`.
+Per Known Trap #9: every lesson carries at least one dated incident and its source artifact; there is no dollar field or dollar threshold ([`methodology_lessons.md` §Format spec](../../../../docs/methodology/lessons/methodology_lessons.md#format-spec)). Once written, the lesson is in force as a registry lesson; it becomes a `Standing rule` (standing guidance in a skill, hook, AGENTS.md or rule) only on a high-severity incident or independent recurrence (AGENTS.md §Continuous improvement item 5); otherwise it stays `Candidate`.
 
-| Date | Incident | Source brief |
-|---|---|---|
-| YYYY-MM-DD | [one sentence describing the firing and its consequence] | [path to Pre-Q / ADR / audit note] |
-| YYYY-MM-DD | [independent recurrence, if any] | [source] |
+| Date | Incident | Impact | Source brief |
+|---|---|---|---|
+| YYYY-MM-DD | [one sentence describing the firing] | [what it cost: wrong verdict, rework, or counterfactual] | [path to Pre-Q / ADR / audit note] |
+| YYYY-MM-DD | [second firing if applicable] | [impact] | [source] |
+| YYYY-MM-DD | [third firing if applicable] | [impact] | [source] |
 
-**Promotion gate status:**
+**Standing-guidance bar:**
 - [ ] High-severity incident
-- [ ] OR independently recurring (separate windows)
+- [ ] OR independent recurrence
 
 ---
 
@@ -63,7 +64,7 @@ If the rule has no canonical enforcement point, it's a wish, not a discipline. F
 Skip unless Status = `Standing rule`.
 
 - **Promoted on:** YYYY-MM-DD
-- **Promoted by:** [Joshua decision | structural argument approved | empirical gate met]
+- **Promoted by:** [Joshua decision | high-severity incident | independent recurrence]
 - **Promotion rationale:** [one paragraph — why this earned standing-rule status]
 - **Promoting brief / chat / decision:** [path or chat URL]
 
@@ -83,7 +84,7 @@ Skip unless Status = `Retired`.
 
 ```bash
 # Confirm the lesson is referenced by the briefs/skills it claims to enforce
-grep -rn "E-[N]" docs/ /mnt/skills/user/ 2>/dev/null
+grep -rn "E-[N]" docs/ .claude/skills/ 2>/dev/null
 # Expected: matches "Briefs citing" and "Skills enforcing" lists above
 
 # If Status = Candidate: check for an independent recurrence

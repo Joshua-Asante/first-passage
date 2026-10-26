@@ -1,16 +1,10 @@
 # Execution Lessons Registry
 
 This file is the canonical anchor for behavioral lessons surfaced via the
-live-execution-journal pipeline. New lessons use the light format in
-[`methodology_lessons.md`](methodology_lessons.md): a **dated incident** (specific
-trade, specific date), an imperative **rule**, and its anchor link; no dollar field
-is required, and account figures stay private.
-
-**Promotion criteria:** a lesson becomes standing guidance only when it is
-high-severity or recurs independently ([AGENTS.md §Continuous improvement](../../../AGENTS.md#continuous-improvement)
-item 5); there is no dollar threshold. The legacy entries below record their
-original status: E1 and E2 were promoted under the retired >$3K-incident rule,
-E3 was a candidate awaiting three separate firings.
+live-execution-journal pipeline. New entries use the light format and the
+standing-guidance bar in [`methodology_lessons.md` §Format spec](methodology_lessons.md#format-spec):
+a dated incident, an imperative rule and a link to the anchor; no dollar field or
+dollar threshold.
 
 > ⚠ **2026-08-14 — E1–E4 promotion/demotion frozen.** Watch-point source
 > (`scripts/journal_review.py`) retired 2026-07-11, so firings cannot accrue.
@@ -184,6 +178,9 @@ These lessons interlock with standing doctrine in `fxify-challenge`:
   `journal_review.py` above are now **historical** (the lessons themselves stand;
   the tool that surfaced them is gone with manual trading). This registry survives
   because it is $-anchored methodology, not execution machinery.
+- 2026-10-26: Rule consolidation step 5 (D10(c)): header moved to the light format; the
+  per-lesson promotion criteria of E1–E4 (dollar threshold, three-window count) no longer
+  bind; the entries are not rewritten.
 - 2026-08-14: E1–E4 Status fields marked DORMANT — watch-points structurally
   unreachable after `journal_review.py` retirement; E1/E2 demotion clock flagged
   as measuring calendar time against a dead feeder, not live pattern survival.
