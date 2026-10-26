@@ -21,6 +21,7 @@ i.i.d. Gaussian daily edge at annualised Sharpe `S` and daily σ `sd`, with intr
 | `run_ranking.py` → `ranking_output.txt`, `ranking_results.json` | Cross-firm 50K ranking, first payout ≥ $1,000 net within 120 trading days (payout memo §2) |
 | `run_zero_edge.py` | Zero/low-edge calibration (payout memo §2) |
 | `pass63_check.py` → [`PASS63_CHECK.md`](PASS63_CHECK.md) | Independent check of the Select 100K pass-within-63-days curve, plus 126 days and 200 days against metrics memo §3 |
+| `pass63_followups.py` | Follow-ups in `PASS63_CHECK.md`: 90-day 80% pass, resets 100K vs 50K, fee vs time optimum, time to first payout |
 
 Reproduce: `python -I lab/analysis/_inbox/prop_payout_geometry_2026-10/run_ranking.py` (about 5 minutes; fixed seeds).
 

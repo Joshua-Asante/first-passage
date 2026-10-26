@@ -124,6 +124,47 @@ Still running at day 200 (A / B): 0.000 / 0.000, 0.004 / 0.005, 0.097 / 0.102, 0
   - `run_funded_sweep.py`'s "eval finer grid" covers $150–$1,000, including $300. For example, SR 2.0 at $300 gives 0.633 / 0.296 / 105.5.
 - **63 vs 200 days.** At SR 2.0, P(pass) rises from 0.384 (σ $600) to 0.630 (σ $300), so the best σ halves. Zero edge stays flat (0.150 → 0.152).
 
+## Follow-ups (2026-10-26)
+
+Produced by `pass63_followups.py` (sections `pass90`, `resets`, `renewal`, `payout`). Full tables are in its output; key rows below.
+
+**Single attempt, 90 days, 80% pass.** P(pass ≤ 90) = 0.800 at a true Sharpe of 4.0 and σ $400 (`simulate_path`, SE 0.003). A fresh seed gives 0.800, and `payout_sim` crosses at 3.98. At 3.5 the probability is 0.726; at 5.0 it is 0.913.
+
+**Resets allowed, P(funded within the window)** (`payout_sim`, Select Flex; P / mean fees at the cheapest σ within 1 pp of the best):
+
+| Days | Sharpe | 100K | 50K |
+|---|---|---|---|
+| 63 | 0 | 0.75 / $1,175 | 0.80 / $711 |
+| 63 | 2 | 0.90 / $730 | 0.92 / $371 |
+| 90 | 0 | 0.88 / $1,348 | 0.90 / $719 |
+| 90 | 2 | 0.97 / $750 | 0.97 / $348 |
+
+The P-maximising σ is $900–1,800 a day. On the 100K it often sits at the top of the grid.
+
+**Fee vs time optimum to funded.** Under unlimited resets, attempts are geometric: E[fees] = price + reset·(1/p − 1) and E[days] ≈ L/p, where p is the per-attempt pass rate and L the mean attempt length. For a value of time λ ($/day), the best σ minimises (reset + λL)/p. At λ = $25/day, each cell is σ / E[fees] / E[days]:
+
+| Sharpe | 100K | 50K |
+|---|---|---|
+| 0 | $1,350 / $1,273 / 52 | $850 / $668 / 44 |
+| 2 | $1,250 / $705 / 33 | $750 / $367 / 29 |
+| 3 | $1,250 / $571 / 27 | $750 / $305 / 24 |
+
+Under this measure, the 50K is cheaper and at least as fast in every cell.
+
+**Time to first payout** of at least $1,000 net (`payout_sim.first_payout`, eval and funded σ swept separately, re-buy after a funded bust, 8,000 paths). At λ = $10/day, each cell is eval σ / funded σ, fees, first payout, median days, and cash net of the first payout:
+
+| Sharpe | 100K | 50K |
+|---|---|---|
+| 0 | $1,250 / $700, $2,746, $1,280, 111 days, −$1,510 | $700 / $700, $1,756, $1,297, 123 days, −$538 |
+| 1 | $1,000 / $700, $1,467, $1,296, 90 days, −$181 | $550 / $700, $969, $1,313, 100 days, +$313 |
+| 2 | $1,000 / $1,400, $1,366, $2,170, 76 days, +$795 | $550 / $1,000, $752, $1,649, 77 days, +$889 |
+| 3 | $1,000 / $2,000 (grid top), $1,218, $2,771, 68 days, +$1,549 | $550 / $1,400 (grid top), $659, $2,001, 65 days, +$1,340 |
+
+- Zero edge loses money on both tiers.
+- The tiers are close once payouts count: the 50K has lower fees, the 100K bigger first payouts.
+- Funded σ should sit below eval σ at Sharpe 0–1. At Sharpe 2 and above, a patient trader raises funded σ to enlarge the first payout.
+- **Limits.** The funded model uses Tradeify's funded rules as recorded in `programs.py`, which the metrics memo found give zero-edge payouts far above the observed rate, so read these rows as upper bounds. Only the first payout is counted. Days are medians. All rows assume Gaussian days, 26 discrete steps (about 1 pp optimistic per attempt), the 2026-10-21 fees, and a reset that starts the next trading day.
+
 ## Limits
 
 All engines share the claim's model, so this checks the implementation, not the model:
@@ -142,3 +183,4 @@ The [RESULTS.md limit](RESULTS.md#known-limits) applies: the i.i.d. Gaussian ass
 - A second launcher run, and a plain `python3 -I lab/analysis/_inbox/prop_payout_geometry_2026-10/pass63_check.py` on system Python 3.13.17 (numpy 2.5.3), both exited 0 with byte-identical output. The script's SHA-256 was unchanged across the runs.
 - The 63- and 126-day output is identical to the first version's (base `86995cf`), apart from the header line and one fixed table-separator line.
 - The memo's own scripts, `eval_barrier_sim.py` and `run_funded_sweep.py`, were run as committed through the same launcher.
+- `python -I scripts/fp.py python lab/analysis/_inbox/prop_payout_geometry_2026-10/pass63_followups.py` runs all four follow-ups in about 30 minutes; exit 0. Its output matched, row for row, the earlier scratch runs of the same code with the same seeds.
