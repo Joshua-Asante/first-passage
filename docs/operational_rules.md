@@ -402,7 +402,7 @@ duplicating canonical state with no link back, so it silently became wrong.
 `STATE.md` was demoted to in-flight-only the same day and this rule written to
 prevent the class.
 
-**Wrapper accretion is not a Rule-7 violation on its own, but it can hide one.** A labeled mirror that
+**Wrapper accretion is not a §7 violation on its own, but it can hide one.** A labeled mirror that
 correctly cites its canonical owner (a spec, a diagram, a design doc) still costs review and reading
 time every time a new one is built over the *same* fact family. When that family already carries a
 named, dated reconciliation debt — an owed addendum, an owed STATE.md row, owed enforcement code —
@@ -517,7 +517,7 @@ sub-rules of Rule 0 / §2 — each anchored to a specific brief failure.
    corpus now includes `ops/instruments/*.md` + `docs/briefs/rnd-pipeline/*.md`
    so a mechanism-specific keyword probe surfaces it too — but the ledger read
    is the primary check; the probe is the cheap companion, same relationship
-   as CATALOG/INDEX above. This is the creation-side mirror of sub-rule 1's
+   as CATALOG/INDEX above. This is the creation-side mirror of §8.1's
    deletion-side "cross-reference grep before classifying isolated cruft,"
    lifting the binding procedure from the 2026-07-26 forced-flow census past
    its harvest-only origin. _(Anchored:
@@ -562,7 +562,7 @@ sub-rules of Rule 0 / §2 — each anchored to a specific brief failure.
    resumed 2026-08-11 only when sessions remembered the checklist.)_
 10. **Use the existing owner before minting a sibling.** Check the current
     owner before opening a new ADR, brief, notice or research slug. Research
-    dedup evidence remains required under sub-rule 8. Routine fixes, file moves,
+    dedup evidence remains required under §8.8. Routine fixes, file moves,
     citation corrections and in-envelope campaign decisions use the owner or PR,
     without a new ADR or a mandatory search transcript in the permanent record.
     ADRs are for consequential, durable rationale or authority boundaries under

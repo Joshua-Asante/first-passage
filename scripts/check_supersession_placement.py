@@ -29,10 +29,10 @@ the mechanizable subset):
   What this deliberately does NOT catch: a file with NO addendum heading at all -
   scan_file returns early, so a document that simply never corrects itself (e.g. a
   mooted desk card) scans clean. Missing-intercept-entirely is a human obligation
-  under Rules 11/14, not a gated one.
+  under operational_rules §11/§14, not a gated one.
 
 SCOPE (the doc class consumed top-down under time pressure; extension is a
-Rule-14 edit, not a flag):
+operational_rules §14 edit, not a flag):
   - lab/analysis/**/RESULTS*.md         (theme nest; lab/archive/ is LTM — excluded)
 
   docs/notes/rail_build/*DESK_CARD*.md was the second class until 2026-10-15. The
