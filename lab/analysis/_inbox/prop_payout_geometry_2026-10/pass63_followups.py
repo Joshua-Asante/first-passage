@@ -163,8 +163,11 @@ def _t_day(nu):
 def _payout_cell(t):
     size, sr, se, sf, nu = t
     payout_sim._day = _GAUSS_DAY if nu is None else _t_day(nu)  # module function read by run_phase
-    r = first_payout(PROG[size], sr, se, sd_f=sf, H=PO_H, N=PO_N, seed=size * 100 + int(sr * 10),
-                     min_net=PO_MIN_NET)
+    try:
+        r = first_payout(PROG[size], sr, se, sd_f=sf, H=PO_H, N=PO_N, seed=size * 100 + int(sr * 10),
+                         min_net=PO_MIN_NET)
+    finally:
+        payout_sim._day = _GAUSS_DAY  # workers persist across sections: never leave Student-t days installed
     return r["p_pay"], r["cost"], r["first_pay"], r["days_med"]
 
 
