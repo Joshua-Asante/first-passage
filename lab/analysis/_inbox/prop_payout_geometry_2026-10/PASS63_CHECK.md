@@ -165,6 +165,32 @@ Under this measure, the 50K is cheaper and at least as fast in every cell.
 - Funded σ should sit below eval σ at Sharpe 0–1. At Sharpe 2 and above, a patient trader raises funded σ to enlarge the first payout.
 - **Limits.** The funded model uses Tradeify's funded rules as recorded in `programs.py`, which the metrics memo found give zero-edge payouts far above the observed rate, so read these rows as upper bounds. Only the first payout is counted. Days are medians. All rows assume Gaussian days, 26 discrete steps (about 1 pp optimistic per attempt), the 2026-10-21 fees, and a reset that starts the next trading day.
 
+**Fat-tailed days** (sections `payout_t4`, `payout_t3`). Daily P&L is Student-t with ν = 4 (ν = 3 as a stress case), with the same mean and σ, made by scaling each path-day's σ. The path within each day stays Brownian. Cells are cash net of the first payout and median days at λ = $10/day, Gaussian → ν = 4:
+
+| Sharpe | 100K | 50K |
+|---|---|---|
+| 0 | −$1,510, 111 days → −$1,583, 165 days | −$538, 123 days → −$572, 174 days |
+| 1 | −$181, 90 → −$396, 92 | +$313, 100 → +$300, 117 |
+| 2 | +$795, 76 → +$933, 99 | +$889, 77 → +$892, 85 |
+| 3 | +$1,549, 68 → +$1,640, 80 | +$1,340, 65 → +$1,320, 66 |
+
+- With σ re-optimised, fat tails barely move cash net (within about ±$200, near the noise of 8,000 paths). They mainly lengthen the time, most at zero edge: 50–60 more days at ν = 4.
+- At ν = 3 and zero edge on the 100K, the λ = $10 optimum reaches a payout within 500 days only 51% of the time.
+- The ranking does not change: zero edge loses, Sharpe 1 is about break-even, Sharpe 2 and above is positive, and the two tiers are close.
+
+## Proposed restated objective (2026-10-26, for the operator to ratify)
+
+Over a fixed window of 126 trading days (about 6 months), maximise **expected net cash = E[total payouts received − total fees paid]**, subject to:
+- a fee budget: P(total fees > B) ≤ 5%, with B set by the operator;
+- a stop rule: stop buying attempts once fees reach B without a payout.
+
+Report alongside it: P(net > 0), the median time to first payout, and the fee distribution.
+
+- **Choices:** firm and tier, eval σ, funded σ, reset policy, and strategy.
+- **Uncertain input:** the strategy's true Sharpe. Evaluate at a conservative value, such as the lower confidence bound of the measured Sharpe, not the point estimate.
+- **Why:** P(pass) ranks a zero-edge gambler well, because with resets nearly everyone passes. Net cash ranks it correctly, as a loser, and it prices time through the window instead of through an arbitrary λ.
+- **Not yet computable.** `first_payout` stops at the first payout, and the funded model is uncalibrated ([Joshua-Asante/first-passage#940](https://github.com/Joshua-Asante/first-passage/issues/940)). Until both are fixed, first-payout cash net is the proxy, and it understates positive-edge outcomes.
+
 ## Limits
 
 All engines share the claim's model, so this checks the implementation, not the model:
@@ -184,3 +210,4 @@ The [RESULTS.md limit](RESULTS.md#known-limits) applies: the i.i.d. Gaussian ass
 - The 63- and 126-day output is identical to the first version's (base `86995cf`), apart from the header line and one fixed table-separator line.
 - The memo's own scripts, `eval_barrier_sim.py` and `run_funded_sweep.py`, were run as committed through the same launcher.
 - `python -I scripts/fp.py python lab/analysis/_inbox/prop_payout_geometry_2026-10/pass63_followups.py` runs all four follow-ups in about 30 minutes; exit 0. Its output matched, row for row, the earlier scratch runs of the same code with the same seeds.
+- `payout_t4` and `payout_t3` were run with `payout` in one command (about 24 minutes; exit 0). The re-run `payout` section matched its earlier output row for row.

@@ -4,6 +4,8 @@
   resets    P(funded within 63 / 90 days), resets allowed, Select Flex 100K vs 50K (payout_sim)
   renewal   per-attempt p(sd) and length L(sd); argmin_sd (reset + lam*L)/p, time to funded
   payout    time to first payout >= $1,000 net (payout_sim.first_payout), eval and funded sd separate
+  payout_t4 / payout_t3   the same with fat-tailed days: Student-t daily P&L (nu = 4 / 3) via a per-day
+            volatility scale mixture, same mean and sd, Brownian path within the day
 
 Reproduce (fixed seeds): python -I scripts/fp.py python lab/analysis/_inbox/prop_payout_geometry_2026-10/pass63_followups.py <section>
 """
@@ -144,15 +146,30 @@ PO_SDF = {100: [250, 500, 700, 1000, 1400, 2000], 50: [165, 330, 465, 700, 1000,
 PO_LAMS = (10, 25, 100)
 
 
+_GAUSS_DAY = payout_sim._day
+
+
+def _t_day(nu):
+    """payout_sim._day with each path-day's sd scaled by sqrt((nu-2)/chi2_nu): unit-variance Student-t days."""
+    def day(rng, n, mu, s, stop, take):
+        v = np.sqrt((nu - 2) / rng.chisquare(nu, n))[:, None]
+        inc = mu / payout_sim.SUB + s * v * rng.standard_normal((n, payout_sim.SUB))
+        cum = np.concatenate([np.zeros((n, 1)), np.cumsum(inc, axis=1)], axis=1)
+        assert stop is None and take is None  # first_payout is called without stops or takes here
+        return cum
+    return day
+
+
 def _payout_cell(t):
-    size, sr, se, sf = t
+    size, sr, se, sf, nu = t
+    payout_sim._day = _GAUSS_DAY if nu is None else _t_day(nu)  # module function read by run_phase
     r = first_payout(PROG[size], sr, se, sd_f=sf, H=PO_H, N=PO_N, seed=size * 100 + int(sr * 10),
                      min_net=PO_MIN_NET)
     return r["p_pay"], r["cost"], r["first_pay"], r["days_med"]
 
 
-def payout(ex):
-    tasks = [(z, sr, se, sf) for z in PROG for sr in RS_SRS for se in PO_SDE[z] for sf in PO_SDF[z]]
+def payout(ex, nu=None):
+    tasks = [(z, sr, se, sf, nu) for z in PROG for sr in RS_SRS for se in PO_SDE[z] for sf in PO_SDF[z]]
     r = dict(zip(tasks, ex.map(_payout_cell, tasks)))
     print(f"H={PO_H} days, N={PO_N}, first payout >= ${PO_MIN_NET} net; min P(paid by H) over grid:",
           round(min(v[0] for v in r.values()), 3))
@@ -172,7 +189,8 @@ def payout(ex):
 
 
 if __name__ == "__main__":
-    sections = {"pass90": pass90, "resets": resets, "renewal": renewal, "payout": payout}
+    sections = {"pass90": pass90, "resets": resets, "renewal": renewal, "payout": payout,
+                "payout_t4": lambda ex: payout(ex, 4), "payout_t3": lambda ex: payout(ex, 3)}
     chosen = sys.argv[1:] or list(sections)
     with ProcessPoolExecutor(4) as ex:
         for name in chosen:
