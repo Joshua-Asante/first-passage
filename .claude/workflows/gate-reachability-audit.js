@@ -193,8 +193,7 @@ const auditPrompt = (chunk) =>
   `choreography: does any step of THIS campaign's declared procedure actually reach this gate before ` +
   `scoring/freeze? An executor that exists but is never reached is UNBINDING.\n` +
   `Special check for streak/consecutive counters: verify the counting rule explicitly counts ` +
-  `AMBIGUOUS-HOLD-class outcomes toward the threshold (ADR ` +
-  `2026-08-16-ambiguous-hold-counts-toward-null-run-thresholds) -- an uncounted outcome class is the unbinding ` +
+  `AMBIGUOUS-HOLD-class outcomes toward the threshold -- an uncounted outcome class is the unbinding ` +
   `failure in counter form (the CON-2 through CON-5 sequence ran past the old counter uncounted).\n` +
   `Set flagged=true for any gate that is not both REACHABLE and BINDING. For flagged gates, state the specific ` +
   `repair: the mechanical consult to add, the threshold to recompute, or the door-check scope to widen.`

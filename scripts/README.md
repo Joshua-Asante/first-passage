@@ -600,7 +600,8 @@ semantic completeness, or successor authorization.
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
 owns its review mechanics. Reviewers assess the source independently of the proposer's
 reasoning; synthesis is advisory and cannot supply operator ratification or execution
-authority. Reviewer/delegate assignment never grants permission to edit locked surfaces.
+authority. A Claude panel on Claude work is optional author input, not the independent
+review: Codex owns that (Rule 5). Reviewer/delegate assignment never grants permission to edit locked surfaces.
 
 Its existing GRAND-only safety scan reads committed target text. A safety-invariant
 citation flags a hard block on synthesis; missing text flags a coverage failure, also
