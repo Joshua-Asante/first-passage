@@ -137,11 +137,11 @@ Once the hypothesis is confirmed, the fix follows — through the §11 band-aid 
 
 ## 5. Phase 4.5 — Architecture questioning (mandatory after 2 failed fixes)
 
-If two fix attempts have failed (Phase 3 hypothesis confirmed, Phase 4 fix applied, Phase 1.1 reproduction still fails or a different test breaks), STOP. Do not author Hypothesis 3 (`AGENTS.md` Rule 7: two failed corrections).
+If two fix attempts have failed (Phase 3 hypothesis confirmed, Phase 4 fix applied, Phase 1.1 reproduction still fails or a different test breaks), STOP (Rule 7). Do not author Hypothesis 3.
 
 The pattern is: two good-faith fixes failing in sequence is not "I need a smarter hypothesis." It is "the architecture of the code in this region is wrong." The fix is at a different level than the bug.
 
-**Convergence note.** This rule appears independently in `inqhiori` §6 (tail-methodology-exhaustion: 3 hypotheses falsified → question the question). Same invariant, different domain. The methodology version applies to investigation; the code version applies to debugging. Both say: when repeated serious attempts at the same level fail, the level is wrong; for code fixes the bound is two.
+**Convergence note.** A sibling rule appears in `inqhiori` §6 (tail-methodology-exhaustion: 3 hypotheses falsified → question the question). The methodology version applies to investigation; the code version applies to debugging. Both say: when serious attempts at the same level keep failing, the level is wrong.
 
 **What 4.5 looks like for this skill:**
 
@@ -150,7 +150,7 @@ The pattern is: two good-faith fixes failing in sequence is not "I need a smarte
 - Ask: is the bug actually a code defect, or has the reframe revealed it as a methodology question? (If yes, hand off to INQHIORI — the loop selection in §0 was wrong.)
 - Document the architecture concern as an ADR candidate (via `brief-authoring`), then escalate.
 
-**Do not skip 4.5 by trying a 3rd hypothesis.** That is the failure mode this rule prevents.
+**Do not skip 4.5 by trying a third fix.** That is the failure mode this rule prevents.
 
 ---
 

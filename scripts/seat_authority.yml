@@ -48,10 +48,11 @@ capabilities:
   governance.author:    {risk: medium}   # drafting ADRs/briefs/STATE/campaign records (routing test 1)
   core_anchor.edit:     {risk: medium}   # edits to routing test 1's core/ anchor paths
   pr.merge:             {risk: high}     # operator act — GitHub merge; standing-GO exception (ADR Addendum 2026-10-24b):
-                                       # an agent may merge a PR pinned to its head SHA once an
-                                       # independent review (not the PR's author) has passed and
-                                       # every CI check is COMPLETED and green at that head; never
-                                       # grantable in a card; auto-merge stays forbidden.
+                                       # an agent may merge a PR pinned to its head SHA once a
+                                       # Codex review at that head is clean (within three reviews,
+                                       # or a clean fourth; Rule 6) and every CI check is COMPLETED
+                                       # and green at that head; never grantable in a card;
+                                       # auto-merge stays forbidden.
   governance.ratify:    {risk: high}     # operator act — ratifying an ADR/prereg/closure
   spend:                {risk: high}     # operator act — any paid service or subscription
   rail.deploy:          {risk: high}     # operator act — fly deploy of c1-rail
