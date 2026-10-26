@@ -70,7 +70,7 @@ def test_trailing_bust_does_not_fire_below_threshold():
 # ── 3. ULP-precision boundary (mirrors test_simulate_path_direct_call_at_daily_loss_boundary) ──
 
 def test_trailing_dd_boundary_ulp_precision():
-    """Rule 0-T: the new comparison must apply the same round(...,6) ULP
+    """Rule 21 (Rule 0-T): the new comparison must apply the same round(...,6) ULP
     handling as the existing daily/static checks (Q-MCFP-1), not a raw <=.
 
     Construction: day 1 makes a $250,000 peak. Day 2's loss is one ULP
