@@ -43,15 +43,21 @@ unedited — this is not a retroactive rewrite. **New entries use this light for
 ## M-N — short title
 
 **Date:** YYYY-MM-DD · **Anchor:** the dated brief/ADR/commit/finding that surfaced this
-**What broke:** the incident and its cost (dollar figure or audit-instance count), in 1-3 sentences.
+**What broke:** the dated incident and what it cost, in 1-3 sentences.
 **Rule:** imperative, one sentence — "Always X." / "Never Y." / "Before Z, do W."
 **Mechanism (optional):** one line on why this fails, if not obvious from the rule alone.
 **Link:** the anchor artifact.
 ```
 
-A lesson is added when a real incident earns it — no promotion ceremony, no dollar threshold, no
-CANDIDATE→PROMOTED state machine to track separately. Once written, it's in force. A superseded
-lesson stays (history-preserving, never deleted), marked `[SUPERSEDED — see M-N]` at its own top.
+A lesson is added when a dated incident earns it — no promotion ceremony, no dollar threshold, no
+CANDIDATE→PROMOTED state machine. Once written, it is in force as a registry lesson that work
+touching its anchor reads and applies; promoting it into standing guidance (a skill, hook,
+AGENTS.md or rule edit) still needs a high-severity incident or independent recurrence
+([AGENTS.md §Continuous improvement](../../../AGENTS.md#continuous-improvement) item 5). A
+superseded or retired lesson follows the existing retention and retrieval rules
+([Rule 31](../../operational_rules.md#rule-31--artifacts-earn-their-place),
+[`docs/ltm/README.md`](../../ltm/README.md)): keep the evidence still needed and repair surviving
+references to it; no tombstone is required per deleted sentence.
 
 **Legacy 8-field format** (M-7 onward, pre-2026-08-29): Status (`CANDIDATE`/`PROMOTED`/`DEMOTED`) ·
 Anchor incident · Cost (dollar / audit-instance / wrong-verdict count) · Rule · Mechanism ·
@@ -66,12 +72,10 @@ next session install (same repo-wins convention as `operational_rules.md` §8's 
 
 ---
 
-## Migration plan (M-1..M-6)
+## Numbering
 
-If a future brief authors a fresh M-class lesson before any of M-1..M-6 are
-cited, that fresh lesson lands here directly under its own M-N tag (using the
-next free integer above the highest currently-pointed-to in memory; check
-both Notion and `~/.claude/projects/.../memory/` before claiming a number).
+A new M-class lesson takes the next free integer above the highest M-N in this file. M-1..M-6
+were never migrated here (no headings exist) and M-25 was never assigned; neither is backfilled.
 
 ---
 
@@ -104,11 +108,10 @@ DJ30 2d / NAS100 2d bugged) is to be measured by
 on 2026-05-11. Promotion threshold (≥$3K cumulative) clears the backfill
 gate.
 
-**Rule:** Before declaring a Pine strategy LOCK complete, audit the alert
-plumbing: every signal-emitting condition MUST have a paired `alert()` call
-(not just `alertcondition()`), and the active-window guard must wrap both.
-The lock checklist (§7 sub-rule #5: "operational-tooling integration phase")
-extends with an "anticipation alerts wired" item.
+**Rule:** Retired 2026-10-25 (rule consolidation D6; LESSONS-M1-12, M1-13): the
+Python daemon, not TradingView alerts, is the signal origin
+([S2](../../adr/2026-08-07-loop-s2-signal-host-fork.md)); Pine-edition alert changes
+follow c1-rail invariant 9.
 
 **Mechanism (why this fails):** `alertcondition()` declares an alert template
 that the user must manually wire in TV's UI. `alert()` fires immediately at
@@ -127,18 +130,6 @@ alerts are wired.
 **Watch-point:** During lock-event hook (`scripts/lock_event_hook.py`) and
 during §0 of any "lock complete" brief — grep the locked Pine source for
 `alert(` calls and confirm one fires inside each entry-condition branch.
-
-**Output trigger:** When the watch-point catches missing `alert()` plumbing,
-halt the lock, patch in same-session, and update this lesson's Cost section
-with the audit-instance count (third firing → cumulative-firing route to
-PROMOTED).
-
-**Forbidden moves:**
-- Do NOT declare a lock complete on the strength of an `alertcondition()`-
-  only audit. The `alert()` call is the load-bearing surface; the
-  `alertcondition()` is decoration.
-- Do NOT defer alert-plumbing fixes "to next lock cycle"; same-session patch
-  preserves the audit window cleanly.
 
 **Reproducer / worked example:** Backfill script at
 [ops/live_journal/scripts/m7_anticipation_gap_backfill.py](../../../ops/live_journal/scripts/m7_anticipation_gap_backfill.py)
@@ -342,7 +333,7 @@ lines for FXIFY.
 Aegis USDJPY silent-zone trade; below $3K promotion threshold. Pattern surfaced
 2026-05-19; brief landed retroactively 2026-05-28 per Path A of Q-PARITY-1
 §0-grounding review). Slot allocated as the next free integer above M-10 per
-the [§Migration plan](#migration-plan-m-1m-6) registry rule; Appendix B of the
+the [§Numbering](#numbering) registry rule; Appendix B of the
 landed brief originally targeted M-8, which was already taken (mechanical
 thresholds need a qualitative override channel, PROMOTED 2026-05-10).
 
@@ -622,12 +613,11 @@ pyramid ~33% under-sized (500 vs 750). Dollar cost unmeasured (depends on
 whether NAS/DJ30 fired live in-window); no measured loss isolated, so anchored
 on instance count, not dollars.
 
-**Rule:** Every Pine parameter-lock change (allocation refresh, risk / pyramid /
-contract-value / day-stop / hour-block edit) must be applied to BOTH the
-strategy `.pine` AND the indicator `.pine`, and both must be re-exported to
-TradingView. A refresh applied to only one file silently splits backtest from
-live. The `params.toml` 5-step same-commit workflow gains a step: "update the
-indicator `.pine` alongside the strategy `.pine`."
+**Rule:** Retired 2026-10-25 (rule consolidation D6; LESSONS-M1-30, M1-31, M1-32):
+locked parameters and Pine are immutable (AGENTS.md Rule 14), indicator `.pine` files
+survive only under `core/strategies/_archive/`, and the `params.toml` gate is
+[retired](../../adr/2026-08-03-params-toml-gate-retirement.md). The finding stands: a
+refresh applied to only one of two files silently splits backtest from live.
 
 **Mechanism (why this fails):** Each strategy ships as two Pine files with
 duplicated parameter inputs — the strategy (`strategy.*`, the backtest/MC
@@ -676,12 +666,6 @@ case is covered by M-12 (deployment verification) + the manifest hash gate.
 Not yet covered by the gate: `contractValue` / `maxTradesDay` (future extension).
 
 **Forbidden moves:**
-- Do NOT declare an allocation refresh / Pine lock change complete after
-  editing only the strategy file.
-- Do NOT treat `validate_params.py` 0/0 as evidence the indicators are
-  current when Pine is ABSENT from the clone — it emits a "no Pine present"
-  WARN and checks nothing. When Pine IS present it now covers risk +
-  `pyramidSize` on both files (but still not `contractValue` / `maxTradesDay`).
 - Do NOT assume the indicator and strategy agree because they share a
   shorttitle; they have independent `input.float` defaults (see
   `MEMORY.md/feedback_audit_doc_unreliable_for_pine_defaults.md`).
@@ -803,12 +787,7 @@ infrastructure), M-9 (gitignored bytes not git-reconcilable).
 
 **Anchor incident:** US500 discovery, first-passage analysis of the ORB candidate. **(a)** A Sharpe-~0.6, ~1-trade/day edge caps at **~58% challenge pass-rate regardless of risk sizing** — low risk times out before +5%, high risk busts at −5%. That ceiling is computable a-priori from (per-trade edge × frequency) vs the ±5% barrier geometry; no 20k-path MC is needed to see it. **(b)** An exit-policy sweep showed a low-variance, high-information-ratio **give-back-33%-of-open-profit** trailing exit (WR 0.755, std 0.49) **beats** a max-positive-skew lottery exit (breakeven@+0.5R, skew +2.52) for the 120-day-capped FXIFY challenge — the deadline rewards reaching +5% fast with controlled variance, not waiting for a fat right tail.
 
-**Rule:** The FXIFY objective ("reach +5% before −5% within a horizon") is a **Sharpe-race-with-a-deadline**, not a symmetric first-passage where skew dominates. Two consequences: **(1)** screen candidates early on the **analytic pass-ceiling** — a thin single-setup edge (low edge×frequency vs the barrier) has a computable ceiling near coin-flip and is dead-for-the-objective even when the edge is genuinely real; this is *why* "more independent setups per day" beats "a fatter single edge." **(2)** Among exits, prefer the **highest information ratio** (drift/variance) over the highest skew; truncating variance to reach the target faster lowers bust within the horizon. Applies to every leg's challenge-phase sizing, not just new candidates.
-
-**Forbidden moves:**
-- Do NOT optimize a challenge exit for maximum positive skew; optimize for information ratio + time-to-target under the horizon cap.
-- Do NOT commission a full first-passage MC before computing the analytic edge×frequency-vs-barrier ceiling (it may already disqualify the candidate).
-- Do NOT treat a "real, positive-expectancy" edge as challenge-viable without its frequency-scaled pass-ceiling.
+**Rule:** Retired 2026-10-25 (rule consolidation D6; LESSONS-M1-50, M1-51): no `core/firm_rules.py` tier carries a deadline cap, and the FXIFY challenge is a historical fixture (`core/historical_challenge.py`). The finding stands: the FXIFY objective ("reach +5% before −5% within a horizon") was a **Sharpe-race-with-a-deadline**, not a symmetric first-passage where skew dominates — a thin single-setup edge has a computable pass-ceiling near coin-flip, which is *why* "more independent setups per day" beats "a fatter single edge", and truncating variance to reach the target faster lowers bust within the horizon.
 
 **Sibling lessons:** extends `prop-firm-challenge` (challenge MC / first-passage) and the portfolio first-passage framing [[project_decompound_remc_canonical_shift_2026_06_07]]; sibling to the single-setup frequency-starvation note in `ops/instruments/SPX500.md`.
 
@@ -1219,11 +1198,10 @@ When an investigation's half-panel split lands within ±2 months of 2024-04-30 a
 
 ### Rule
 
-When an investigation's half-panel split (regime-robustness or otherwise) lands within ±2 months of 2024-04-30:
-
-1. Treat the H1/H2 spread as priors-shifting; do NOT discount as sample-size noise.
-2. If the spread is verdict-deciding (FALSIFIED / AMBIGUOUS-HOLD turns on it), consider running `portfolio_mc.py --boundary-sweep --ga4` (or analogous multi-boundary sweep) as a cheap-falsifier check — even when the canonical mid-panel boundary is the only one specified. The sweep takes ~5 minutes and discriminates "specifically 2024-04-30" from "any boundary."
-3. If the brief frames the spread as artifact-vs-structural, the search-space MUST include ≥3 non-2024 boundary dates with ≥18 months per side (or document the narrowing per the Q-REGIME-1 2025-01-31 precedent).
+Retired 2026-10-25 (rule consolidation D6; LESSONS-M2-24, M2-26, M2-27): the anchor is the
+retired Pepperstone legacy panel ([retirement](../../adr/2026-08-02-pepperstone-feed-retirement.md)),
+its transfer to CME panels is unestablished, and `--boundary-sweep` is wired to the legacy GA-4
+configuration (`core/mc/modes.py`). The finding and its evidence above stand.
 
 ### Mechanism (why this matters)
 
@@ -1249,7 +1227,6 @@ Promote from CANDIDATE → PROMOTED on the first of:
 
 ### Forbidden moves
 
-- **Discount a verdict-deciding H1/H2 spread as "H2-shorter sample-size variance" without running the multi-boundary sweep.** The sample-size confound is real (it was the original `accumulating_signal.md` flagged confound), but Q-REGIME-1 ran the discriminator and rejected the null at +2.06σ. Future investigations cannot reach for the discount unfalsified.
 - **Open Q-REGIME-2 (or any mechanism follow-up) as a fishing expedition without mechanism hypotheses.** Anti-p-hacking commitment from Q-REGIME-1 §5 forbids solution-baked Pre-Q authoring; Q-REGIME-2 must specify (a)/(b)/(c) candidate mechanisms in §4 before it spawns.
 - **Treat M-Q-REGIME-1 as confirming a specific mechanism.** It confirms that *some* structural inflection exists at 2024-04-30; the mechanism is unfalsified pending Q-REGIME-2.
 
@@ -1544,6 +1521,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to this section's own
 "maintained at the bottom" convention) — content unedited by the move.
 
+- **2026-10-26:** Rule consolidation step 5 (D10(c), D10(e)): the per-lesson promotion criteria of legacy entries (CANDIDATE→PROMOTED, dollar thresholds) no longer bind; the entries are not rewritten. Standing-guidance bar and retention rule stated in §Format spec; numbering rule in §Numbering.
 - **2026-09-20:** M-26 through M-48 migrated from the Claude-memory store (process / verification / multi-agent review lessons) in the light format, so every harness reading this repo sees them; each carries its memory twin in `LESSONS_INDEX.jsonl`. Operator direction 2026-09-20 (AGENTS.md single instruction file; three-seat delegation). No retroactive edit to M-7 … M-24.
 - **2026-08-29:** Format spec lightened for entries going forward: light 5-field format (Date /
   Anchor / What broke / Rule / optional Mechanism / Link) replaces the 8-field template + dollar-
@@ -1640,9 +1618,7 @@ Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to t
   half-application (strategy `.pine` updated to DJ30 pyramid 750 / NAS risk
   0.37; indicator `.pine` left at the 2026-05-14 values pyramid 500 / NAS 0.45,
   surfaced 2026-05-28 during the 8-file Pine drop + strategy-vs-indicator
-  divergence audit). Pattern: Pine parameter-lock changes must update BOTH the
-  strategy and indicator `.pine`, and both must be re-exported to TV — a
-  one-file refresh silently splits backtest from live. Mechanism: gitignored
+  divergence audit). Mechanism: gitignored
   Pine is absent on CI/public clones (gate WARNs, checks nothing); even when
   present, the pre-fix Pine check covered only the risk input on both files —
   `pyramidSize` was unchecked, so the DJ30 indicator 500-vs-750 drift had no
@@ -1705,3 +1681,7 @@ Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to t
   pool (2026-07-22 `dd_lock_offset_usd` boot-95th 4.54%→6.69% incident).
 - **2026-08-01 (approx.):** M-24 added — a config fix does not reach an independent hard-coded
   reimplementation (`gap_stage2_capbound.eval_sim` 2026-07-28 incident).
+- **2026-10-25:** Rule consolidation ruling D6 retired the M-7, M-13, M-18 and M-Q-REGIME-1
+  rule statements tied to retired surfaces (rows LESSONS-M1-12, M1-13, M1-30, M1-31, M1-32,
+  M1-50, M1-51, M2-24, M2-26, M2-27, M2-99); anchors, costs and incident evidence are kept.
+  Prior text at `91ccd984693d62c5c83ff3f428188dd47085633d`.

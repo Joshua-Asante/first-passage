@@ -108,7 +108,7 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 - Disarm **before** absolute `armed_until` expiry; lapse-while-armed previously caused a host crash-loop.
 - Live spend requires M1 `RESOLVED` **and** separate operator GO; every armed session needs its own GO.
 - **Agents may place orders, exit positions and cancel orders when directed by the operator**, including through computer use ([operator amendment 2026-09-30](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b)); arming, live-spend and per-session operator GO requirements still apply. Weekly account-preservation trades may be operator- or agent-placed at the operator's direction; deadline in [STATE](STATE.md#scheduled-forward-triggers).
-- The arming interlock (`ops/c1_rail/c1_rail_arm.py` calling `validate_c1_monitoring_acceptance.validate(require_resolved=True)`) gates only the arm helper. It checks structure, `RESOLVED` status and `operator_signoff` presence, not a signature: a status-only file fails; a complete forged `RESOLVED` file passes. The rail host's boot gate (`c1_rail_http_server.load_config`) does not check M1, so editing the `/data` config bypasses it; the host-side activation gate is owed at TB-I3 ([admission](docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md)). `--acknowledge-m1-unresolved` overrides a structurally valid unresolved artifact (operator-ratified discretion; writes an `arming_deviation` record); agents may invoke it only through the operator-act prompt ([ruling 2026-09-26](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26)).
+- The arming interlock (`ops/c1_rail/c1_rail_arm.py` calling `validate_c1_monitoring_acceptance.validate(require_resolved=True)`) gates only the arm helper. It checks structure, `RESOLVED` status and `operator_signoff` presence, not a signature: a status-only file fails; a complete forged `RESOLVED` file passes. The rail host's boot gate (`c1_rail_http_server.load_config`) does not check M1, so editing the `/data` config bypasses it; the host-side activation gate is owed ([self-funded lane ADR item 8](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-25--owed-item-8-host-side-activation-gate-from-tb-i3), from TB-I3). `--acknowledge-m1-unresolved` overrides a structurally valid unresolved artifact (operator-ratified discretion; writes an `arming_deviation` record); agents may invoke it only through the operator-act prompt ([ruling 2026-09-26](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26)).
 
 **Account:** used, not pristine; canned-payload and weekly token trades have filled, but no strategy-signal fill has occurred. `order_id` idempotency is **DISPROVEN**; every payload gets a fresh tag. Private account figures stay private.
 
@@ -120,7 +120,7 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 | Rail build/account registration GO; spend ceiling $700 | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
 | Licensed test strategy can discharge M1 item 5 / B7 Stage 1 independently of strategy selection | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) |
 | Four-firm program falsifier remains dated 2026-11-08; Tradeify counts again | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md), [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) |
-| Tradeify eval accounts: strategy logic must be native, with no external engine, bridge or direct API (support, 2026-10-12); Track B suspended 2026-10-13 until the 11-08 sitting or an operator ruling; the weekly trade (supported platform only, never CrossTrade or the API) and the personal lane continue | [route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [suspension](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft) |
+| Tradeify eval accounts: strategy logic must be native, with no external engine, bridge or direct API (support, 2026-10-12); Track B superseded for Tradeify 2026-10-16; the weekly trade (supported platform only, never CrossTrade or the API) and the personal lane continue | [route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [supersession](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify) |
 
 ## Strategy Reference (LOCKED legacy book — do not modify)
 
@@ -206,8 +206,8 @@ Do not commit account identifiers/P&L, vendor-licensed CSVs, Pine source, or
 executable Python ports of locked strategy logic. `SHA256SUMS`,
 `core/strategies/MANIFEST.sha256` and `core/strategies/PORT_MANIFEST.sha256` pin
 private sources; new locked ports follow the same policy. Vendor-dependent tests skip
-when inputs are absent. `core/data/bar_data/` is retained but frozen: usable panels,
-no regenerable producer.
+when inputs are absent. `core/data/bar_data/` is retained: usable panels that change
+only by a fresh operator CME export plus its SHA256SUMS delta.
 
 **Private read surface.** Agents may read the accepted book's four Pine sources and
 accepted runtime ports listed in `core/strategies/BOOK_SOURCES.sha256`, and the effective-input

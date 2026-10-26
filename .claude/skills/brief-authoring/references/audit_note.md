@@ -100,7 +100,7 @@ If no structural repair exists, the failure is likely to recur. Flag this explic
 
 ## §6 — Lessons to capture
 
-Candidate lessons emerging from this audit. Per Known Trap #9, lessons need dated anchor + dollar cost / counterfactual to graduate. This section seeds lesson_capture entries.
+Candidate lessons emerging from this audit. Per Known Trap #9, lessons need a dated incident, and high severity or independent recurrence, to graduate. This section seeds lesson_capture entries.
 
 - **Candidate lesson 1:** [pattern statement]
   - Anchor: [this audit]

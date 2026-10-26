@@ -13,6 +13,7 @@
 **Superseded-in-part-by:** `2026-08-07-loop-s5-bounded-promotion-lane.md` — §5 forbidden move *“Creating a second tier/state writer or autonomous promotion path”* **autonomous promotion path limb only** (bounded sandbox lane). No second tier/state writer; arm-gate, reflex layer, and unattended bar **stand**.
 **Retain-until:** none
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR06-80); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed Addendum 2026-07-31's §2b re-measurement pointer (owned by Q-SIGID-1) and hook 4's status-only interlock caveat (the arm helper now runs the validator; AGENTS.md §Live-execution posture owns the scope) (ADR06-88, ADR06-94); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 **Related:** `2026-07-11-ops-cfd-estate-retirement.md` (venue-native rebuild
 rule); `2026-07-10-strategies-never-locked-lifecycle-governance.md`;
@@ -769,8 +770,7 @@ The 2026-08-02 reachability certification ("a trigger that cannot fire is not a 
 ### What this addendum does not do
 
 It changes no acceptance item, authorizes no armed send, and does not touch `operator_signoff`,
-sizing, Pine, allocations, or DD rules. The §2b clean mid-bar re-measurement remains owed
-independently — an execution-quality question, not an M1 item.
+sizing, Pine, allocations, or DD rules.
 
 ---
 
@@ -942,10 +942,6 @@ grep -n "M1_MONITORING_ACCEPTANCE" ops/c1_rail/c1_rail_arm.py
 # INVERTED 2026-08-08: actual is NON-empty (c1_rail_arm.py:58) — the escalation WAS built
 # (PR #601, m1_acceptance_reason). Non-empty is now the CORRECT state and empty would be the
 # regression. Read this hook inverted until the comment above is rewritten.
-# ⚠ Scope caveat, measured: the interlock reads ONLY the artifact's `status` field. A 24-byte
-# {"status":"RESOLVED"} clears it while scripts/validate_c1_monitoring_acceptance.py FAILs the
-# same bytes with 19 errors, and the arm path never invokes that validator. Non-empty here means
-# "a gate exists", NOT "the artifact was validated".
 ```
 
 ---

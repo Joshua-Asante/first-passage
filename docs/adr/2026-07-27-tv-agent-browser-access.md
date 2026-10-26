@@ -9,6 +9,7 @@
 **Authors:** Joshua (operator directive) + Claude Code (Opus 5)
 **Related:** `2026-06-23-tv-backtest-egress-automation.md` (+ its Addendum 2026-07-27); `2026-06-30-no-manual-trading-cfd-retirement.md`; `2026-07-17-c1-rail-build-account-registration-go.md`
 **Layer:** infrastructure
+**Revision:** 2026-10-25 — rule consolidation D8 removed the signal-window unattended-access bullet, subsumed by this ADR's §5 ban on unattended TV automation (ADR07-77); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -97,7 +98,6 @@ Note the falsifier is deliberately asymmetric: one enforcement signal reverts it
 - **Scripted, looped or unattended TV automation** — the grant is for human-cadence, operator-directed work. A polling loop against TV is the shape the 2026-06-23 risk model was actually about.
 - **Treating a tool refusal as a problem to engineer around** — report it and stop.
 - **Citing this ADR to reopen backtest egress** — §2.2 is explicit that egress stays closed on technical grounds and that manual export remains the sanctioned default.
-- **Agent TV access during the live signal window (the locked Pine session window *(Redaction 2026-10-09 — operator decision 2026-10-09, option 2: Striker DJ30 v4.5 Pine-only parameter values removed from the public copy; no other content changed; original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `7df79240c146ec8a3e9799bb882431c5ab13b9a7`; values live in the locked Pine only — [CATALOG §Locked parameter record](../../core/strategies/CATALOG.md#locked-parameter-record-cfd-era-book).)*) unattended** — attended is fine; unattended is not, because that is when alert delivery is in flight.
 
 ---
 

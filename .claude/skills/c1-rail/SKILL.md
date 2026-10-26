@@ -20,9 +20,8 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 
    | Action | Agent may run? | Conditions |
    |---|---|---|
-   | `fly deploy` (listener **or** signal-daemon app) | **YES** | All six deploy pre-conditions below, **scoped per app**. |
-   | `--disarm` | **YES** | Only once flatness is **broker-verified** — `dry_run=true` blocks *everything including exits*, so disarming over an open position **orphans** it. Flat first, then disarm. |
-   | `--status`, pre-flight reads, boot-line verification | **YES** | Read-only; always permitted. |
+   | `--disarm` (host, via `fly ssh`) | **Operator-run** — agents hold no Fly credential ([2026-10-24b](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) B) | Only once flatness is **broker-verified** — `dry_run=true` blocks *everything including exits*, so disarming over an open position **orphans** it. Flat first, then disarm. |
+   | `--status`, pre-flight reads, boot-line verification | **Repo-side: YES. Host (`fly ssh`, logs): operator-run** — no agent Fly credential | Read-only. |
    | `--arm` (`dry_run=false`) | **Operator act, never card-granted** | Arming and M1 requirements per invariant 2; operator-act prompt route per the surface-allocation ADR's [2026-09-26](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26) and [2026-09-30b](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b) addenda (an arming GO does not direct a trade). No config-edit bypass: hand-editing `/data/c1_rail_config.json` is the same act without the audit trail. |
 
    **Two Fly apps (S2b):** (1) **listener** — `deploy/c1_rail/` (sizing + DD state); (2) **signal daemon** — `deploy/c1_signal_daemon/` (own machine/volume; never shares listener `peak_equity`). Deploy pre-conditions apply **per app**; items 1/4/5/6 are listener-specific until the daemon has its own arm/M1 surface.
@@ -36,7 +35,6 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
    6. **Know the crash-loop recovery path before starting** — [`deploy/c1_rail/README.md`](../../../deploy/c1_rail/README.md) + GO ADR + [`ARMING_PROCEDURE.md`](../../../docs/notes/rail_build/ARMING_PROCEDURE.md); the B1–B7 runbook stays in the private archive. An expired `armed_until` makes the host refuse to boot, and `fly ssh` needs a booted machine, so a restart cannot fix it.
 3. **Fail-safe sizing.** ANY unreadable/malformed state input (missing file, bad JSON, unlisted leg key, unknown tier) halts entry/add sizing for that signal — qty 0, no submit. A halt or floored decision NEVER reaches the sender.
 4. **Transport honesty (M1).** An HTTP response is `accepted`, never execution-verified; a timeout/reset after bytes may have left is `unknown` — blocks further risk-add and is never auto-retried. Exit/flat are best-effort.
-5. *Retired 2026-10-24 (operator ruling): the CrossTrade Alert History rule assumed the rejected Tradeify CrossTrade route; a revived route needs its own source-of-truth rule ([tombstone](../../../docs/adr/TOMBSTONES.md#2026-10-24-skills-consolidation)).*
 6. **Attended-only, spend ceiling per the GO ADR** (`docs/adr/2026-07-17-c1-rail-build-account-registration-go.md` — read it for the ceiling; do not quote from memory).
 7. **Sizing law lives in `dd_protection`/lifecycle, not here:** `r_eff = BASE_RISK × DD_SCALE × lifecycle`, integer-qty flooring, proven against the committed F2 oracle `lab/analysis/c1/q_rail_1_2026-07/f2_floors.json`. WATCH haircuts on the pyramided legs realize at the **account-multiplier layer**, never via TV risk%-input scaling (Q-PYRPARITY-1).
 8. **Venue facts live with their owners — never re-derive them from an older brief or from this file.** Owners: the [venue edition](../../../ops/venue_editions/Tradeify_Select_100K.md), `docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md` and the GO ADR's Addenda **2026-07-22** and **2026-07-24**. Shape only: the contract cap is **account-aggregate and allocated per leg** (an earlier read gave each leg the full amount — a measured over-count). Bust/DD figures follow [`docs/load_bearing_numbers.md`](../../../docs/load_bearing_numbers.md).
@@ -70,8 +68,8 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 **Suite / pins (repo-side — these run from a clean checkout; they do not report armed/disarmed):**
 
 ```bash
-pytest tests/ops/ tests/rail_crosstrade/ -q          # sizing host + payload + arming suites
-python scripts/check_pine_manifest.py                # venue-edition pins; exit 0 (WARN EXTRA for unpinned candidates/ is OK)
+./fp.ps1 python -m pytest tests/ops/ tests/rail_crosstrade/ -q   # sizing host + payload + arming suites
+./fp.ps1 python scripts/check_pine_manifest.py                # venue-edition pins; exit 0 (WARN EXTRA for unpinned candidates/ is OK)
 ```
 
 **Armed / disarmed state — host read only.** The live config is `/data/c1_rail_config.json` on the Fly volume (`DEFAULT_CONFIG_PATH` in `ops/c1_rail/c1_rail_arm.py`). There is no `ops/data/c1_rail_config.json` (deleted) in the tree. A local grep, a gitignored root `c1_rail_config.json`, or the committed `.example.json` files do **not** establish armed/disarmed state — only a host read does. Confirm before/after any session that touched the rail. (Protects the 2026-07-27 failure class: restart re-reads the volume file; an unedited `dry_run:false` reboots armed. Owner: GO ADR + `deploy/c1_rail/README.md`; `armed_until` design.)
@@ -87,8 +85,8 @@ MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python ops/c1_rail/c1_rail_arm
 # Expect dry_run=True (armed_until absent/cleared). Windows: fly ssh console -C may exit 1 with
 # "Error: The handle is invalid." AFTER printing correct output — judge by the command's own print
 # (Windows fly ssh console -C notes, 2026-07-27).
-# Agent authority (2026-08-02 grant): deploy YES (six pre-conditions), disarm YES (flat-verified
-# first — disarm blocks exits and orphans an open position), status/read-only YES.
+# Host reads and disarm are operator-run: agents hold no Fly credential (Addendum 2026-10-24b).
+# Disarm only flat-verified first — disarm blocks exits and orphans an open position.
 # `--arm` is an operator act, never card-granted — see invariant 2 §Agent-session authority.
 ```
 

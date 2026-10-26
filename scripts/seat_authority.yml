@@ -49,10 +49,10 @@ capabilities:
   core_anchor.edit:     {risk: medium}   # edits to routing test 1's core/ anchor paths
   pr.merge:             {risk: high}     # operator act — GitHub merge; standing-GO exception (ADR Addendum 2026-10-24b):
                                        # an agent may merge a PR pinned to its head SHA once a
-                                       # Codex review is clean at that head (within three reviews,
-                                       # or on a clean fourth: 2026-10-25 amendment) and
-                                       # every CI check is COMPLETED and green at that head; never
-                                       # grantable in a card; auto-merge stays forbidden.
+                                       # Codex review at that head is clean (within three reviews,
+                                       # or a clean fourth; Rule 6) and every CI check is COMPLETED
+                                       # and green at that head; never grantable in a card;
+                                       # auto-merge stays forbidden.
   pr.merge_admin:       {risk: high}     # operator act — `gh pr merge --admin` (past unmet requirements);
                                        # outside pr.merge's standing GO; never grantable in a card.
   governance.ratify:    {risk: high}     # operator act — ratifying an ADR/prereg/closure

@@ -602,14 +602,12 @@ Codex is the separate reviewer; Claude does not review its own work
 On a PR, comment `@codex review` after each push; the merge rule and review limit are
 [Addendum 2026-10-24b A](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody),
 applied by `merge_train.py gate` ([merge-train skill](../.claude/skills/merge-train/SKILL.md)).
-Before ratification of an ADR, prereg or closure, Codex's review also covers premises,
-calculations, gate evidence and contradictions (Rule 5).
 
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
-is optional author input on Claude-authored work, never that review, and owns its review
-mechanics. Reviewers assess the source independently of the proposer's
+owns its review mechanics. Reviewers assess the source independently of the proposer's
 reasoning; synthesis is advisory and cannot supply operator ratification or execution
-authority. Reviewer/delegate assignment never grants permission to edit locked surfaces.
+authority. A Claude panel on Claude work is optional author input, not the independent
+review: Codex owns that (Rule 5). Reviewer/delegate assignment never grants permission to edit locked surfaces.
 
 Its existing GRAND-only safety scan reads committed target text. A safety-invariant
 citation flags a hard block on synthesis; missing text flags a coverage failure, also

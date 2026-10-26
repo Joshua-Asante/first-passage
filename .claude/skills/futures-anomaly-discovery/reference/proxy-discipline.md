@@ -50,7 +50,7 @@ Resolved with live CME Globex data (record:
 1. **Instrument code: `MJY` (Micro JPY/USD).** `M6J` did **not** resolve as a CME
    Globex product — the reported "Micro USD/JPY M6J" does not exist there. `MJY`
    resolves live (outrights MJYU6 / MJYZ6 + calendar spread, 2026-07-13). Listing
-   is thin (2 outrights) — check liquidity fresh before any campaign sizing.
+   is thin (2 outrights).
 2. **Quote convention: identical to `6J` (JPY/USD).** MJYU6 closes 0.006188 /
    0.006194 vs 6JU6 0.006188 / 0.006195 on 2026-07-13/14 — the micro is a 1/10
    `6J` clone, no micro-specific inversion exists. The **Aegis mapping rule
@@ -59,10 +59,9 @@ Resolved with live CME Globex data (record:
    handle "long USDJPY" ≈ "short 6J/MJY", with USD tick value off the JPY/USD
    price. Get the sign right before a single backtest row is generated.
 
-Also: check the micro's margin/liquidity fresh (the Bulenox margin row is an
-operator-owed task). The resolved instrument and quote convention are recorded in
-[`ops/instruments/MJY.md`](../../../../ops/instruments/MJY.md) M4 so this
-reconciliation happens once, not every session.
+The resolved instrument and quote convention are recorded in
+[`ops/instruments/MJY.md`](../../../../ops/instruments/MJY.md) M4, which owns the symbology
+rule; MJY is retired as an execution and replay venue there (M1).
 
 ## Hand-offs
 

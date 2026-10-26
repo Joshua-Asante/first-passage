@@ -97,7 +97,7 @@ The canonical research feed is the CME TV exports; retired feeds and vendors sta
 
 #### Rule 19 — Vendor-data integrity
 
-Commit each SHA256SUMS delta with its data change; `bar_data` changes only by a fresh operator CME export; install hooks per clone and never use `--no-verify` as the standing path; verify non-regenerable bytes before removing them. *Owner:* [manifest-integrity ADR](adr/2026-05-10-manifest-integrity-gate.md).
+Commit each SHA256SUMS delta with its data change; `bar_data` changes only by a fresh operator CME export plus its SHA256SUMS delta; install hooks per clone and never use `--no-verify` as the standing path; verify non-regenerable bytes before removing them. *Owner:* [manifest-integrity ADR](adr/2026-05-10-manifest-integrity-gate.md).
 
 #### Rule 20 — Figures come from their owner
 
@@ -107,7 +107,7 @@ Quote prop-tier figures through the load-bearing-numbers index and their owners:
 
 #### Rule 21 — Report verification honestly
 
-Report command, interpreter, revision, actual result and record.json; a pass needs completed, exit 0 and stable source; disclose pre-existing failures; a form check is not semantic proof and an unexercised gate is unproven; a regression test exercises the changed production path and distinguishes the defective from the corrected behavior; a re-implementation reproduces its baseline before a delta counts; numbers that feed a gate are computed in code; an override is logged beside the honest result. *Owner:* [AGENTS.md §Python environment](../AGENTS.md); [scripts/README verification evidence](../scripts/README.md#automatic-verification-evidence).
+Report command, interpreter, revision, actual result and record.json; a pass needs completed, exit 0 and stable source; disclose pre-existing failures; a form check is not semantic proof and an unexercised gate is unproven; a regression test exercises the changed production path and distinguishes the defective from the corrected behavior (Rule 0-T); a re-implementation reproduces its baseline before a delta counts; numbers that feed a gate are computed in code; an override is logged beside the honest result. *Owner:* [AGENTS.md §Python environment](../AGENTS.md); [scripts/README verification evidence](../scripts/README.md#automatic-verification-evidence).
 
 #### Rule 22 — Use the checkout's launcher
 
@@ -225,8 +225,9 @@ under the [`2026-06-30 retirement ADR`](adr/2026-06-30-no-manual-trading-cfd-ret
 
 Default DXTrade `contractValue` is 1. At `contractValue=1`, Striker position sizing produces approximately **7% per-trade risk** against a 1% intended risk. This is catastrophic and silent — the platform will execute the trade without warning.
 
-**Conditional check:** If DXTrade is explicitly reactivated, verify
-`contractValue=10` before any Striker trade.
+*(The conditional pre-trade check for a DXTrade reactivation was removed 2026-10-25, rule
+consolidation D5, OPS-4; the value 10 stays recorded above and in the
+[`core/strategies/CATALOG.md`](../core/strategies/CATALOG.md) locked table.)*
 
 **Origin:** Prop firm setup phase. Caught during Pine-to-platform parameter reconciliation. Would have been account-ending if missed.
 
@@ -236,10 +237,10 @@ Default DXTrade `contractValue` is 1. At `contractValue=1`, Striker position siz
 
 Do not adjust strategy parameters, reduce size, or skip signals in response to 3+ consecutive losses on a single strategy. This is within the normal variance distribution of every strategy in the portfolio.
 
-**What to do instead:** Log the losing streak in `docs/SESSIONS.md` (and, if on the c1 rail, note it against M1 telemetry / fill evidence — not a deleted weekly-review feeder). Continue executing signals per the Pine code / c1 rail. Only consider intervention if ALL of the following hold:
+**What to do instead:** Record the streak's disposition in the instrument ledger (`ops/instruments/<SYM>.md`, Rule 27; if on the c1 rail, against M1 telemetry / fill evidence); write a `docs/SESSIONS.md` entry only for an actual judgment call (§7). Account figures and detailed trade evidence stay private (Rule 13). Continue executing signals per the Pine code / c1 rail. Only consider intervention if ALL of the following hold:
 - Losing streak exceeds 5yr backtest p99 for that strategy
 - No identifiable regime shift explains it (e.g., conflict overlay applies)
-- Session log / c1 telemetry shows a systematic issue (e.g., execution slippage materially different from backtest)
+- The ledger record / c1 telemetry shows a systematic issue (e.g., execution slippage materially different from backtest)
 
 **Origin:** The Algorithm (Delete before Optimize). Reactive parameter tuning during drawdown is the most common failure mode in systematic trading. Intervention during losing streaks has, historically, made things worse more often than better.
 
@@ -401,7 +402,7 @@ duplicating canonical state with no link back, so it silently became wrong.
 `STATE.md` was demoted to in-flight-only the same day and this rule written to
 prevent the class.
 
-**Wrapper accretion is not a Rule-7 violation on its own, but it can hide one.** A labeled mirror that
+**Wrapper accretion is not a §7 violation on its own, but it can hide one.** A labeled mirror that
 correctly cites its canonical owner (a spec, a diagram, a design doc) still costs review and reading
 time every time a new one is built over the *same* fact family. When that family already carries a
 named, dated reconciliation debt — an owed addendum, an owed STATE.md row, owed enforcement code —
@@ -516,7 +517,7 @@ sub-rules of Rule 0 / §2 — each anchored to a specific brief failure.
    corpus now includes `ops/instruments/*.md` + `docs/briefs/rnd-pipeline/*.md`
    so a mechanism-specific keyword probe surfaces it too — but the ledger read
    is the primary check; the probe is the cheap companion, same relationship
-   as CATALOG/INDEX above. This is the creation-side mirror of sub-rule 1's
+   as CATALOG/INDEX above. This is the creation-side mirror of §8.1's
    deletion-side "cross-reference grep before classifying isolated cruft,"
    lifting the binding procedure from the 2026-07-26 forced-flow census past
    its harvest-only origin. _(Anchored:
@@ -561,7 +562,7 @@ sub-rules of Rule 0 / §2 — each anchored to a specific brief failure.
    resumed 2026-08-11 only when sessions remembered the checklist.)_
 10. **Use the existing owner before minting a sibling.** Check the current
     owner before opening a new ADR, brief, notice or research slug. Research
-    dedup evidence remains required under sub-rule 8. Routine fixes, file moves,
+    dedup evidence remains required under §8.8. Routine fixes, file moves,
     citation corrections and in-envelope campaign decisions use the owner or PR,
     without a new ADR or a mandatory search transcript in the permanent record.
     ADRs are for consequential, durable rationale or authority boundaries under
@@ -852,8 +853,9 @@ they just wrote.
 **Mechanical backstop (deliberately narrow):**
 `scripts/check_supersession_placement.py` (the `supersession-placement` gate,
 [`scripts/gates.yml`](../scripts/gates.yml)) hard-fails any
-in-scope document (desk cards, `lab/analysis/*/RESULTS*.md`) whose
-addendum-confined supersession token has no upstream marker or pointer. It
+in-scope document (`lab/analysis/**/RESULTS*.md`) whose
+addendum-confined supersession token has no upstream marker or pointer; desk
+cards and other living documents are judgment under this rule. It
 catches the addendum-shaped instance only; the in-section instance (a claim
 retracted below itself inside one section) is judgment and stays owned by this
 rule's prose — a gate pretending to cover it would be vacuous assurance (M-8).
