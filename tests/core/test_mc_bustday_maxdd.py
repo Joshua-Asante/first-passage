@@ -11,7 +11,7 @@ metric was biased downward, growing with bust rate — largest in exactly the
 Cursor-audit Issue 3, adversarially verified 2026-07-06; fix governed by
 docs/adr/2026-07-06-bust-day-maxdd-inclusion.md (anchor re-run + re-pin).
 
-Direct _simulate_path calls (Rule 21 (ex-Rule 0-T) style, same idiom as
+Direct _simulate_path calls (Rule 21 (Rule 0-T) style, same idiom as
 test_mc_anchors.test_simulate_path_direct_call_at_daily_loss_boundary).
 dd_trigger=1.0 disables dd_protection scaling where hand-math needs raw
 pnl; production DD_TRIGGER/DD_SCALE are irrelevant to day-1 paths.

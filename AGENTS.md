@@ -206,8 +206,8 @@ Do not commit account identifiers/P&L, vendor-licensed CSVs, Pine source, or
 executable Python ports of locked strategy logic. `SHA256SUMS`,
 `core/strategies/MANIFEST.sha256` and `core/strategies/PORT_MANIFEST.sha256` pin
 private sources; new locked ports follow the same policy. Vendor-dependent tests skip
-when inputs are absent. `core/data/bar_data/` is retained: usable panels that
-change only by a fresh operator export plus its SHA256SUMS delta.
+when inputs are absent. `core/data/bar_data/` is retained: usable panels that change
+only by a fresh operator CME export plus its SHA256SUMS delta.
 
 **Private read surface.** Agents may read the accepted book's four Pine sources and
 accepted runtime ports listed in `core/strategies/BOOK_SOURCES.sha256`, and the effective-input
