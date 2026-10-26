@@ -1,9 +1,26 @@
 ---
 name: strategy-validation
-description: Test protocols for validating trading-strategy backtests against overfitting, selection bias, and relay defects. ALWAYS use this skill when Joshua uploads a TradingView backtest CSV, asks whether a backtest result is real or overfit, runs a parameter sweep or config grid, mentions robustness, plateau, placebo, permutation test, multiplicity, selection effect, Step-0, panel integrity, pre-registration, forward test design, day-of-week or subset effects, deflated Sharpe / DSR, probabilistic Sharpe, probability of backtest overfitting / PBO, reality check, SPA / superior predictive ability, Romano-Wolf / StepM, model confidence set, universe-level correction, combinatorial purged cross-validation / CPCV, or asks "what config should we test next" or "does the best of K survive". Also fires before ANY re-run is proposed (direction flip, exit redesign, new filter) — the excursion-bounded counterfactual and cost-law pre-flight may answer it for zero runs, and consumes the trial count K from the futures-anomaly-discovery ledger. Covers test mechanics only; hand off to inqhiori for when-to-investigate framing, brief-authoring for artifact structure, trade-csv-reconcile for metric definitions.
+description: Plan, reproduce or assess First Passage backtests across TradingView inspection and offline/native-oriented research. Use for execution and fill assumptions, cost sensitivity, panel integrity, rerun design, chronological evaluation, robustness, selection bias, overfitting, trial counts and statistical validation (DSR, PBO, SPA, CPCV). Reuse existing engines; route CSV metric definitions to trade-csv-reconcile and candidate generation to futures-anomaly-discovery.
 ---
 
 # Strategy Validation
+
+## Backtesting entrypoint
+
+Use this skill to plan, reproduce or assess First Passage backtests, including
+TradingView inspection and offline/native-oriented research. Before a run, read
+[execution and reproducibility](references/backtesting-execution.md); it routes to
+existing engines and commands and identifies what their evidence can support.
+For selection, overfitting, counterfactuals or statistical tests, continue below.
+Load only the route needed for the current claim.
+
+The owning campaign and [AGENTS.md](../../../AGENTS.md) retain project rules,
+protected windows and frozen configurations. This skill grants no market-data,
+trading, account or spending authority. Within an approved research scope, proceed
+without routine reapproval; changes to protected scope still follow its owner.
+Evidence sufficiency depends on the claim: there is no universal cost multiple,
+component Sharpe hurdle, sample size or mandatory multi-agent review for every run.
+Campaign-specific requirements and dormant-test restrictions below still apply.
 
 Protocols proven 2026-06-11 (USDCAD investigation: Aegis→BPC→plateau→placebo→permutation chain). Provenance: SESSION-RECORD-USDCAD-BPC-2026-06-11 §Method lessons L1–L7.
 
@@ -23,9 +40,19 @@ Caught on 2026-06-11: a 4H chart masquerading as 15m, a duplicate export, a two-
 
 ## 2. Cost-law pre-flight (before designing, not after failing)
 
-Under risk-based sizing, **cost-in-R ∝ price / stop_distance** (tight stop → huge notional per $risk → commission on notional). Compute the round-trip hurdle from the intended stop width BEFORE building, using `scripts/cost_geometry_pregate.py` (canonical implementation — `round_trip_cost_price()` + `cost_r()`) — or the empirical version in `scripts/selection_tests.py costs` on any comparable panel. Use the result to estimate net expectancy and its cost sensitivity; there is no universal multiple to clear (the 4× convention was deleted by operator ruling 2026-10-24). Reference points: 0.097R at 1.42×ATR(15m) USDCAD (crippling); 0.055–0.072R at 2.5×ATR.
+Compute explicit round-trip commissions and slippage for the intended instrument,
+quantity and stop width before designing a rerun. Under risk-based sizing, tight
+stops increase cost per unit of risk; percentage-notional commissions and futures
+per-contract fees require different calculations. The empirical helper
+`scripts/selection_tests.py costs` supports percentage commissions; inspect its
+units and pass explicit inputs rather than applying its FX defaults to futures.
+Use the campaign's existing cost model for per-contract fees.
 
-This is the **per-trade, stop-distance-normalized** cost. `cost_geometry_pregate.py` owns the formula; don't restate it from memory.
+Estimate net expectancy and its cost sensitivity; there is no universal multiple
+to clear (the 4x convention was deleted by operator ruling 2026-10-24). Do not
+reinstate a fixed cost-in-R ceiling or the deleted harvest cost gate. Follow any
+remaining campaign-specific cost assumptions without generalizing them to every
+backtest.
 
 ## 3. Excursion-bounded counterfactuals (zero-run kill test)
 
