@@ -20,9 +20,10 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 
    | Action | Agent may run? | Conditions |
    |---|---|---|
-   | `--disarm` | **YES** | Only once flatness is **broker-verified** — `dry_run=true` blocks *everything including exits*, so disarming over an open position **orphans** it. Flat first, then disarm. |
-   | `--status`, pre-flight reads, boot-line verification | **YES** | Read-only; always permitted. |
+   | `--disarm` | **Operator-run** (agents hold no Fly credential, [Addendum 2026-10-24b](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody)) | Only once flatness is **broker-verified** — `dry_run=true` blocks *everything including exits*, so disarming over an open position **orphans** it. Flat first, then disarm. |
+   | `--status`, pre-flight reads, boot-line verification | **Operator-run** on the host (`fly ssh`); agents read the operator's pasted output | Read-only. |
    | `--arm` (`dry_run=false`) | **Operator act, never card-granted** | Arming and M1 requirements per invariant 2; operator-act prompt route per the surface-allocation ADR's [2026-09-26](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26) and [2026-09-30b](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b) addenda (an arming GO does not direct a trade). No config-edit bypass: hand-editing `/data/c1_rail_config.json` is the same act without the audit trail. |
+   | `fly deploy` (`rail.deploy`) | **Operator act** | Agents hold no Fly credential (Addendum 2026-10-24b); the pre-conditions below are the operator's checklist. |
 
    **Two Fly apps (S2b):** (1) **listener** — `deploy/c1_rail/` (sizing + DD state); (2) **signal daemon** — `deploy/c1_signal_daemon/` (own machine/volume; never shares listener `peak_equity`). Deploy pre-conditions apply **per app**; items 1/4/5/6 are listener-specific until the daemon has its own arm/M1 surface.
 
@@ -68,8 +69,8 @@ This skill is pointer-first by design. **Never restate rail constants (quantitie
 **Suite / pins (repo-side — these run from a clean checkout; they do not report armed/disarmed):**
 
 ```bash
-pytest tests/ops/ tests/rail_crosstrade/ -q          # sizing host + payload + arming suites
-python scripts/check_pine_manifest.py                # venue-edition pins; exit 0 (WARN EXTRA for unpinned candidates/ is OK)
+.\fp.ps1 python -m pytest tests/ops/ tests/rail_crosstrade/ -q   # sizing host + payload + arming suites
+.\fp.ps1 python scripts/check_pine_manifest.py                  # venue-edition pins; exit 0 (WARN EXTRA for unpinned candidates/ is OK)
 ```
 
 **Armed / disarmed state — host read only.** The live config is `/data/c1_rail_config.json` on the Fly volume (`DEFAULT_CONFIG_PATH` in `ops/c1_rail/c1_rail_arm.py`). There is no `ops/data/c1_rail_config.json` (deleted) in the tree. A local grep, a gitignored root `c1_rail_config.json`, or the committed `.example.json` files do **not** establish armed/disarmed state — only a host read does. Confirm before/after any session that touched the rail. (Protects the 2026-07-27 failure class: restart re-reads the volume file; an unedited `dry_run:false` reboots armed. Owner: GO ADR + `deploy/c1_rail/README.md`; `armed_until` design.)
@@ -85,8 +86,8 @@ MSYS_NO_PATHCONV=1 fly ssh console -a c1-rail -C "python ops/c1_rail/c1_rail_arm
 # Expect dry_run=True (armed_until absent/cleared). Windows: fly ssh console -C may exit 1 with
 # "Error: The handle is invalid." AFTER printing correct output — judge by the command's own print
 # (Windows fly ssh console -C notes, 2026-07-27).
-# Agent authority (2026-08-02 grant): disarm YES (flat-verified first — disarm blocks exits and
-# orphans an open position), status/read-only YES.
+# Operator-run: agents hold no Fly credential (Addendum 2026-10-24b). Disarm only flat-verified
+# (disarm blocks exits and orphans an open position).
 # `--arm` is an operator act, never card-granted — see invariant 2 §Agent-session authority.
 ```
 

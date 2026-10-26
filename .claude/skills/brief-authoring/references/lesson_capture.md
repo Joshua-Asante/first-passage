@@ -5,7 +5,7 @@
 **Captured:** YYYY-MM-DD
 **Promoted to standing rule:** YYYY-MM-DD (or `N/A` if Candidate)
 **Author:** Joshua | claude.ai
-**Registry file:** `references/execution_lessons.md` | `references/methodology_lessons.md` | etc.
+**Registry file:** `docs/methodology/lessons/execution_lessons.md` | `docs/methodology/lessons/methodology_lessons.md`
 
 ---
 
@@ -19,18 +19,16 @@ The recurring failure mode this lesson captures, stated as a pattern not a story
 
 ## Anchor incidents
 
-Per Known Trap #9: a lesson without a dated incident AND a dollar cost / counterfactual does not graduate. Below the promotion gate (single-incident >$3K, OR three firings across separate windows), the lesson stays `Candidate`.
+Per Known Trap #9: a lesson without a dated incident does not graduate. It becomes standing guidance only when high-severity or independently recurring; otherwise it stays `Candidate`.
 
-| Date | Incident | Cost / counterfactual | Source brief |
-|---|---|---|---|
-| YYYY-MM-DD | [one sentence describing the firing] | $[N] realized OR [counterfactual description] | [path to Pre-Q / ADR / audit note] |
-| YYYY-MM-DD | [second firing if applicable] | $[N] OR counterfactual | [source] |
-| YYYY-MM-DD | [third firing if applicable] | $[N] OR counterfactual | [source] |
+| Date | Incident | Source brief |
+|---|---|---|
+| YYYY-MM-DD | [one sentence describing the firing and its consequence] | [path to Pre-Q / ADR / audit note] |
+| YYYY-MM-DD | [independent recurrence, if any] | [source] |
 
 **Promotion gate status:**
-- [ ] Single incident >$3K dollar anchor (promotes immediately)
-- [ ] OR three firings across separate windows (promotes on third)
-- [ ] OR structural argument (rare — must explicitly justify why empirical gate is bypassed; see CC-handoff hygiene 2026-05-15 anchor)
+- [ ] High-severity incident
+- [ ] OR independently recurring (separate windows)
 
 ---
 
@@ -88,7 +86,7 @@ Skip unless Status = `Retired`.
 grep -rn "E-[N]" docs/ /mnt/skills/user/ 2>/dev/null
 # Expected: matches "Briefs citing" and "Skills enforcing" lists above
 
-# If Status = Candidate: check for third firing
+# If Status = Candidate: check for an independent recurrence
 # Re-evaluate quarterly: YYYY-MM-DD
 ```
 

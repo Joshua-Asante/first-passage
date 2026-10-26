@@ -186,6 +186,6 @@ Target: the most recent completed work in this conversation, or whatever the ope
 ### Standing rules
 
 - **Judging changes nothing.** Read and run only; fixes happen only if the operator asks afterward. (This is what makes the CC-adjudicator role safe.)
-- This is a gate, not a second implementation: minutes, not hours. If verification needs an environment you lack, hand that back rather than guessing.
+- This is a gate, not a second implementation: keep it small. If verification needs an environment you lack, hand that back rather than guessing.
 - **Layer boundary:** this section checks the claims-vs-artifacts layer (RESULTS said X — does the on-disk output say X? was the command actually run?). Whether a backtest verdict is *statistically* sound (overfitting, multiplicity, SNAG) is `strategy-validation` territory; route there when the claims reproduce but the inference is the question.
 - If the work touched nothing runnable, say plainly what a judge can and cannot check here.

@@ -97,8 +97,8 @@ value is fine — it is not a competing canonical source), and states any overri
    world; do not open the search until every clause is reachable or redesigned. Per
    [ADR 2026-07-16](../../../adr/2026-07-16-harv-attestation-same-units-supersession.md)
    (`Accepted`): simulate **every** gate in **that gate's own units** (not just the
-   confirm-floor gate in Sharpe space), exhibit the cost-law inequality explicitly for
-   any cost/kill gate, and price every quantity at the basis that gate actually scores
+   confirm-floor gate in Sharpe space), give each candidate its own net-of-cost estimate
+   for any cost/kill gate (the universal cost-law inequality was deleted 2026-10-24), and price every quantity at the basis that gate actually scores
    on — not present-day or convenience levels.
 3. Commit the pre-registration **before** the first `db_fetch.py pull` (freeze
    ordering is checkable via git — see `strategy-validation` §6). For mechanism-first,

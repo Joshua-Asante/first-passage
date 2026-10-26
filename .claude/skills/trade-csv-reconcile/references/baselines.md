@@ -128,7 +128,6 @@ their own panel; cite whichever with its vintage, never mix. Values redacted fro
 differs (Pepperstone vs OANDA).
 
 **BE logic IS the edge:** a substantial share of winners are BE-manufactured.
-**Binary-event pause rule applies** (BOJ, central-bank decisions) — manual, not a Pine condition.
 **Regime risk:** USDJPY range-regime sensitive; 2022 was a materially weaker year.
 
 ---

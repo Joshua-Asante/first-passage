@@ -934,6 +934,10 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Work Claude authors (a diff, a plan or a proposal) needs a review from a separate reviewer, and Codex is that reviewer. A Claude self-review, a Claude-run panel or workflow, or the Claude escalation lane's refute-first pass (item 2) on Claude-authored work may inform the author but does not count as that review.
 - This is the review under reviewer ≠ planner and condition (1) of the [conditioned merge GO](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody). Neither changes otherwise.
 
+## Addendum 2026-10-25b — CI credential reconciliation
+
+Per ruling D10(a) of the [rule-consolidation plan](../superpowers/plans/2026-10-25-rule-consolidation-step-1.md): §8's standing bar (this repo's CI grants Codex no write/push credential without a superseding ADR) and [2026-10-24b](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) part B (agents' scoped PATs; `claude.yml` keeps its write permissions) are read by named actor and credential path: the §8 bar still applies to Codex in CI; 10-24b governs agents' PATs and `.github/workflows/claude.yml`. Neither is a general CI write grant.
+
 ## Change history
 
 | Date | Change | By |
@@ -956,4 +960,5 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-10-24 | Addendum 2026-10-24b — operator rulings: conditioned agent merge GO (independent review + green CI + pinned head); credential custody (agent PAT, no agent Fly credential, unused credentials removed, rail CrossTrade secrets wiped, no standing Fly login) | Joshua |
 | 2026-10-25 | Addendum 2026-10-25 — operator ruling: Claude does not review its own work; Codex is the separate reviewer | Joshua |
 | 2026-10-25 | Addendum 2026-10-24b A amended — operator ruling: a clean fourth Codex review still clears the merge gate; beyond the fourth unruled | Joshua (ruling) + Claude Code |
+| 2026-10-25 | Addendum 2026-10-25b — CI credential reconciliation (ruling D10(a)): §8's Codex CI bar and 10-24b part B read by actor and credential path | Joshua (ruling) + Claude Code |
 | 2026-10-25 | Addendum 2026-09-30b amended — standing, revocable GO for the weekly account-preservation trade; other orders still need per-act direction | Joshua |

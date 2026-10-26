@@ -97,7 +97,7 @@ The canonical research feed is the CME TV exports; retired feeds and vendors sta
 
 #### Rule 19 — Vendor-data integrity
 
-Commit each SHA256SUMS delta with its data change; `bar_data` changes only by a fresh operator CME export; install hooks per clone and never use `--no-verify` as the standing path; verify non-regenerable bytes before removing them. *Owner:* [manifest-integrity ADR](adr/2026-05-10-manifest-integrity-gate.md).
+Commit each SHA256SUMS delta with its data change; `bar_data` changes only by a fresh operator export plus its SHA256SUMS delta; install hooks per clone and never use `--no-verify` as the standing path; verify non-regenerable bytes before removing them. *Owner:* [manifest-integrity ADR](adr/2026-05-10-manifest-integrity-gate.md).
 
 #### Rule 20 — Figures come from their owner
 
@@ -237,7 +237,7 @@ consolidation D5, OPS-4; the value 10 stays recorded above and in the
 
 Do not adjust strategy parameters, reduce size, or skip signals in response to 3+ consecutive losses on a single strategy. This is within the normal variance distribution of every strategy in the portfolio.
 
-**What to do instead:** Log the losing streak in `docs/SESSIONS.md` (and, if on the c1 rail, note it against M1 telemetry / fill evidence — not a deleted weekly-review feeder). Continue executing signals per the Pine code / c1 rail. Only consider intervention if ALL of the following hold:
+**What to do instead:** Record the streak's disposition in the instrument ledger (`ops/instruments/<SYM>.md`, Rule 27; on the c1 rail, against M1 telemetry / fill evidence — not a deleted weekly-review feeder); add a `docs/SESSIONS.md` entry only when an actual judgment call is made (§7). Account figures and detailed trade evidence stay private. Continue executing signals per the Pine code / c1 rail. Only consider intervention if ALL of the following hold:
 - Losing streak exceeds 5yr backtest p99 for that strategy
 - No identifiable regime shift explains it (e.g., conflict overlay applies)
 - Session log / c1 telemetry shows a systematic issue (e.g., execution slippage materially different from backtest)
@@ -852,10 +852,11 @@ they just wrote.
 
 **Mechanical backstop (deliberately narrow):**
 `scripts/check_supersession_placement.py` (the `supersession-placement` gate,
-[`scripts/gates.yml`](../scripts/gates.yml)) hard-fails any
-in-scope document (desk cards, `lab/analysis/*/RESULTS*.md`) whose
-addendum-confined supersession token has no upstream marker or pointer. It
-catches the addendum-shaped instance only; the in-section instance (a claim
+[`scripts/gates.yml`](../scripts/gates.yml), run when one is staged) hard-fails any
+non-archived `lab/analysis/**/RESULTS*.md` whose
+addendum-confined supersession token has no upstream marker or pointer. Only that
+scope is enforced; desk cards and the other documents above follow the rule as
+practice. It catches the addendum-shaped instance only; the in-section instance (a claim
 retracted below itself inside one section) is judgment and stays owned by this
 rule's prose — a gate pretending to cover it would be vacuous assurance (M-8).
 

@@ -1,17 +1,16 @@
 # Execution Lessons Registry
 
 This file is the canonical anchor for behavioral lessons surfaced via the
-live-execution-journal pipeline. Each lesson must be tied to:
+live-execution-journal pipeline. New lessons use the light format in
+[`methodology_lessons.md`](methodology_lessons.md): a **dated incident** (specific
+trade, specific date), an imperative **rule**, and its anchor link; no dollar field
+is required, and account figures stay private.
 
-1. A **dated incident** (specific trade, specific date)
-2. A **dollar cost or counterfactual gain** (so the lesson is load-bearing, not ceremonial)
-3. A **rule statement** in imperative form (do X, never do Y)
-4. A **watch-point** (which Step 6 pattern check fires for this lesson)
-
-**Promotion criteria:** A pattern graduates from candidate to promoted lesson
-when EITHER (a) a single incident with dollar cost >$3K surfaces, OR (b) the
-same pattern fires across three separate review windows. E1 and E2 promoted
-on (a); E3 currently candidate awaiting (b).
+**Promotion criteria:** a lesson becomes standing guidance only when it is
+high-severity or recurs independently ([AGENTS.md §Continuous improvement](../../../AGENTS.md#continuous-improvement)
+item 5); there is no dollar threshold. The legacy entries below record their
+original status: E1 and E2 were promoted under the retired >$3K-incident rule,
+E3 was a candidate awaiting three separate firings.
 
 > ⚠ **2026-08-14 — E1–E4 promotion/demotion frozen.** Watch-point source
 > (`scripts/journal_review.py`) retired 2026-07-11, so firings cannot accrue.

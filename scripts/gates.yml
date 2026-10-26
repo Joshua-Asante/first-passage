@@ -321,7 +321,7 @@ gates:
   - id: governance-prose-control-chars
     tier: path-conditional
     when:
-      staged_regex: '^(docs/SESSIONS[.]md|docs/rejected_candidates[.]md|docs/mc_anchor_history[.]md)'
+      staged_regex: '^(docs/SESSIONS[.]md|docs/rejected_candidates[.]md|docs/mc_anchor_history[.]md|STATE[.]md|docs/(adr|briefs|notes)/.*[.]md)$'
     cmd:
       - python
       - scripts/check_governance_prose_control_chars.py
