@@ -28,6 +28,7 @@ disposition table. This revised text is the effective decision. Prior decision t
 and unedited, at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`
 (`git show 0bcd6699fd683a18b9493e25bb053797dcf4fafe`), commit
 `b448e2b6f852a49c2a46e278ade95a4c4e2c4c54`.
+**Revision:** 2026-10-26 — rule consolidation step 5 reconciles the CI-credential sentences by named actor (D10(a)); prior decision at `1f9d70629f13cbb2bd0e05a3644471e5d56afe90`.
 **Supersedes:** `2026-08-14-cc-cursor-autonomous-loop.md` full — its entire subject (Cursor
 dispatch without chip approval, `cursor/*` webhook detection, and auto-merge on a binary gate)
 retires with the Cursor lane; the surviving general rule is restated in §2 below.
@@ -924,7 +925,7 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Fly and rail: agents hold no Fly credential and the operator keeps no standing Fly login (`fly logout`; per-app expiring deploy tokens when deploying); `rail.deploy` stays an operator act. The dormant rail's CrossTrade secrets are wiped from the Fly volume and revoked; revival preconditions live in `docs/notes/rail_build/ARMING_PROCEDURE.md` §7.
 - Unused credentials are removed rather than guarded: the Databento key (and its persistent User environment variable), `NOTION_TOKEN` in `.env`, and the standing Azure CLI login.
 - Codex sessions are not hooked; for Codex the limits are the sandbox mode, `scripts/dispatch_codex.ps1` (agent token only, refuses a directory holding `.env`) and the scoped PAT.
-- CI: `claude.yml` keeps its write permissions; the ruleset, not CI permissions, is the merge boundary.
+- CI: `claude.yml` keeps its write permissions for the Claude workflow; the ruleset, not CI permissions, is the merge boundary. This does not touch the [§8](#8--disposition-of-the-prior-decisions-clauses-and-addenda) bar on credentials CI grants Codex, and neither is a general CI write grant.
 *Status:* host steps are the operator's (checklist in the carrying PR); until done, agents still reach the owner token through `gh`.
 
 ## Addendum 2026-10-25 — operator ruling: Claude does not review its own work
