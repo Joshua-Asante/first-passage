@@ -13,8 +13,8 @@ on their permitted surface. The proposed first pilot uses synthetic fixtures onl
 | Question | Does assisted capture reduce decision time without losing adverse or failed trials? |
 | Owner / writer / reviewer | Joshua chooses named session owner, sole writer and independent reviewer before start |
 | Surface | Existing text editor and saved fabricated result tables; no strategy runner needed |
-| Bound | Option: 30 minutes Joshua attention, 60 minutes agent effort, six draft trial records and twelve fixture checks, ten minutes local compute; no paid services. Not adopted by this document |
-| Work | Reconstruct the synthetic comparison below, then perform the twelve record-level checks using the six-trial mapping below; compare with an equivalent manual worksheet task |
+| Bound | Option: 30 minutes Joshua attention, 60 minutes agent effort, six draft trial records and thirteen fixture checks, ten minutes local compute; no paid services. Not adopted by this document |
+| Work | Reconstruct the synthetic comparison below, then perform the thirteen record-level checks using the six-trial mapping below; compare with an equivalent manual worksheet task |
 | Decision rule | Option: all integrity cases handled; zero missing/duplicate trials; correct synthetic decision; at least 20% less active owner time than the matched manual task. Otherwise revise once or stop, within the original bound |
 | Stop | First exhausted bound; permission/surface drift; unresolved process/output; actual strategy/account data appears |
 | Output | Private session card/log with sanitized review summary; record practice/order effects and uncertainty, not a general speed claim |
@@ -95,6 +95,10 @@ attempt. Joshua's explicit selection is required before preparation/readback, an
 the existing permission and dispatch checks still apply. Set `attempts: []` for an
 unselected proposal; the attempt stub below describes later fields, not a started
 run. Record an edited idea as a linked draft rather than overwriting the original.
+Use `pending_selection` while awaiting Joshua's choice, `declined` for an explicit
+rejection before selection, and `abandoned` for selected then cancelled before
+application, as defined in the design's Dispositions paragraph. Retain the selection
+history; neither disposition can erase attempts that already happened.
 
 ```yaml
 trial_id: unset
@@ -165,7 +169,7 @@ after output publication, receipt reconciled and adopted once, no rerun;
 walkthrough, not a report that those runs occurred.
 
 The six IDs are proposal/trial records, not six checks or six executions. For
-Pilot 1, assign the twelve checks below as follows; each check operates on a
+Pilot 1, assign the thirteen checks below as follows; each check operates on a
 separate fabricated copy of its named trial record. Log `fixture_check_id`,
 `trial_id`, any attempt transitions, expected/observed outcome and evidence. Copies
 are independent so an injected stop or contamination cannot silently resume the
@@ -176,16 +180,19 @@ an actual new proposal would consume another trial and exceed this pilot's bound
 |---|---|
 | SYN-01 | Requested/actual config mismatch; wrong digest on control restoration |
 | SYN-02 | Missing pair arm/rule mismatch; debit before bank receipt |
-| SYN-03 | Draft cancellation/human override; fabricated early-confirmation-open event |
+| SYN-03 | Never-selected agent proposal declined; selected draft cancellation/human override; fabricated early-confirmation-open event |
 | SYN-04 | Duplicate attempt submission; interruption during publication |
 | SYN-05 | Crash before output; manual change without settings export |
 | SYN-06 | Missing cost/fill assumption; exhausted budget |
 
 Every check is recorded, including blocked/failed observations. The simulated
 retry in the example log is an attempt within SYN-05, not a seventh trial. Real
-pilot checks or rechecks still consume attention/compute and the twelve-check
+pilot checks or rechecks still consume attention/compute and the thirteen-check
 allowance; if any required coverage is incomplete when a bound is reached, stop
 and report the pilot incomplete rather than silently adding cases or time.
+The thirteen-check proposal preserves all twelve earlier checks and adds the
+never-selected boundary as SYN-03's third independent fixture. The revised proposed
+count still requires Joshua's approval; it does not increase any approved budget.
 
 ### Synthetic settlement trace
 
@@ -211,7 +218,8 @@ and claims none of these checks have run.
 | Same trial/attempt submitted twice | Reconcile original receipt; one adopted result, duplicate event logged |
 | Trial crashes before output | Failed attempt/error captured; trial remains visible, metrics unavailable |
 | Manual change without export | Log manual exposure; block valid result until actual settings are recovered |
-| Joshua cancels draft / overrides choice | Abandonment/override and rationale persist; locked/scope gates still apply |
+| Agent proposal presented but never selected | First observe `pending_selection`; after Joshua explicitly rejects it, retain draft ID, originator/request and rationale as `declined`. At both observations: actual settings unchanged; preparation blocked; `attempts: []`; no dispatch. An idea request or silence must not advance the proposal |
+| Joshua cancels a selected draft / overrides choice | Selection and cancellation/override history persist; cancelled unapplied draft is `abandoned`; locked/scope gates still apply |
 | Stop during publication | Inspect process and receipt; reconcile once or remain uncertain; no blind retry |
 | Restore control with wrong digest | Next trial blocked until actual frozen digest is verified |
 | Confirmation chart opened early | Contamination logged; confirmatory interpretation stopped |

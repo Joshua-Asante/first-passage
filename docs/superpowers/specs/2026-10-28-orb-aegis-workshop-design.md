@@ -135,7 +135,14 @@ lineage and explicit reason. Never infer order/API idempotency from a research I
 On owner/writer handoff, the old writer stops and the successor records custody
 before mutation. Concurrent reading is fine; two dispatchers are not.
 
-**Stop and undo:** Joshua can cancel an unapplied draft and record `abandoned`.
+**Dispositions:** `pending_selection` means Joshua has not yet made a choice;
+`declined` means he explicitly rejected a proposal without selecting it. Both retain
+the draft ID and rationale, keep settings unchanged, block preparation and have
+`attempts: []`. `abandoned` means he selected the draft, then cancelled it before
+application; preserve the selection and cancellation history. Neither label erases
+an earlier attempt or data exposure.
+
+**Stop and undo:** Joshua can cancel a selected, unapplied draft and record `abandoned`.
 For an applied change, restore the frozen research configuration and verify its
 actual digest. A running task receives a stop request; record observed termination
 and partial outputs, or `uncertain`. Restoring settings does not erase results or
