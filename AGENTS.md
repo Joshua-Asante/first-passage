@@ -37,14 +37,14 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 
 **Authority, review and orientation**
 
-- **Rule 0 — Audit first.** Read the source or primary artifact before any claim, brief, decision or edit; verify premises and returned work. [→](docs/operational_rules.md#rule-0--audit-first)
+- **Rule 0 — Audit first.** Read the source or primary artifact before any claim, brief, decision or edit; verify premises and returned work; no review round on an unobserved, unnamed external fact. [→](docs/operational_rules.md#rule-0--audit-first)
 - **Rule 1 — Small-cell variance prior.** Small samples and streaks are variance: no change, override or regime overlay on them. [→](docs/operational_rules.md#rule-1--small-cell-variance-prior)
-- **Rule 2 — Budget before acting.** Budget substantial work in one line (iterations, plus $ and K); stop structurally at the bound. [→](docs/operational_rules.md#rule-2--budget-before-acting)
-- **Rule 3 — The operator decides; grants are literal.** Operator instructions govern; grants are literal; operator acts need direction or a named standing GO; refusals are reported. [→](docs/operational_rules.md#rule-3--the-operator-decides-grants-are-literal)
+- **Rule 2 — Budget before acting.** Budget substantial work in one line (iterations including review rounds, plus $ and K); stop structurally at the bound. [→](docs/operational_rules.md#rule-2--budget-before-acting)
+- **Rule 3 — The operator decides; grants are literal.** Operator instructions govern; grants are literal; operator acts need direction or a named standing GO; refusals are reported; scope cuts, new assumptions, evidence-claim changes and account permissions are his. [→](docs/operational_rules.md#rule-3--the-operator-decides-grants-are-literal)
 - **Rule 4 — Seats, action classes and cards.** Act within seat grants and the card's authority block; cards only narrow; frozen cards return contradictions. [→](docs/operational_rules.md#rule-4--seats-action-classes-and-cards)
 - **Rule 5 — A separate reviewer.** Codex reviews Claude's work and Claude reviews Codex's; neither reviews its own, including the pre-ratification adjudication. [→](docs/operational_rules.md#rule-5--a-separate-reviewer)
 - **Rule 6 — PRs and merges.** Land by PR; merge pinned to a head the other agent reviewed clean (within three, or a clean fourth; before a fourth Claude review, ask the operator) with all checks green. [→](docs/operational_rules.md#rule-6--prs-and-merges)
-- **Rule 7 — Stop after two failed corrections.** After two failed corrections, stop and restart cleaner on the escalation lane. [→](docs/operational_rules.md#rule-7--stop-after-two-failed-corrections)
+- **Rule 7 — Stop after two failed corrections.** After two failed corrections of one failure family, stop and restart cleaner in a fresh coordinator session; at a review stop, ship only reviewer-marked non-blocking residuals, or ask the operator. [→](docs/operational_rules.md#rule-7--stop-after-two-failed-corrections)
 - **Rule 8 — Orient and dedup first.** Orient from STATE and the owner; dedup with pasted search output before new work. [→](docs/operational_rules.md#rule-8--orient-and-dedup-first)
 - **Rule 9 — Name the question; pick the loop.** Name the question and the decision it changes; pick the loop tier by reversibility. [→](docs/operational_rules.md#rule-9--name-the-question-pick-the-loop)
 
