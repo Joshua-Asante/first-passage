@@ -46,8 +46,8 @@ on [STATE](STATE.md) do not suspend it; campaign amendments are explicit owner d
 | Evaluate | Evaluation order, [survivor-scoring prereg](docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) | Typed verdict and evidence; scoring by `lab/discovery/prop_survivor_scoring.py` |
 | Admit and monitor | Admitting decision, calibrated decay monitor | [Strategy lifecycle](docs/methodology/strategy_lifecycle.md), then venue/deployment gates |
 
-The `databento-data` skill refuses estimate/pull/batch/download even with retained scripts
-or keys. Skill owners: `futures-anomaly-discovery` (candidate generation), `strategy-validation`
+The `c1-rail` skill's data-source rule refuses Databento estimate/pull/batch/download even with
+retained scripts or keys. Skill owners: `futures-anomaly-discovery` (candidate generation), `strategy-validation`
 (validation mechanics). [Campaign defaults](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)
 own temporal evidence and budget conventions; [W4](docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md)
 governs dormant SPA/StepM, PBO/CPCV and breadth producers.

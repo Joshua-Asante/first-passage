@@ -5,6 +5,23 @@ retain their original archive retrieval instructions. A tombstone records histor
 not renewed permission; the linked current owner governs present work.
 
 
+<a id="2026-10-24-skills-consolidation"></a>
+
+## 2026-10-24 skills consolidation (operator ruling, in session)
+
+Operator rulings 2026-10-24: approve the 28 → 22 skills plan; retire the legacy prohibitions that assumed the barred book or the rejected Tradeify CrossTrade route; agents may commit and push their own `codex/`/`claude/` branch and open a PR, never push `main`, and merging follows the operator's merge rule. Older ADRs and records that name a removed skill resolve through this table; their bodies are not edited.
+
+Also retired in place: the `c1-rail` CrossTrade Alert History invariant (5), `prop-firm-challenge`'s legacy-book execution principles and Aegis pause / Guardian overlay sections (narrowed to firm rules and MC), and its token-trade mandate (each account-preservation trade needs the operator's GO). `sync_skills.py` `RETIRED_SKILLS` lists the six names plus the user-level `cursor-fleet` so `--prune` can remove deployed copies.
+
+| Removed path | Disposition / current owner | Immutable body |
+|---|---|---|
+| `.claude/skills/databento-data/SKILL.md` | Retired; its no-pull rule moved to [`c1-rail`](../../.claude/skills/c1-rail/SKILL.md) Hand-offs (vendor retired 2026-09-10). | `git show a93e17a78b9e7c0e52abb9a09866a9c6dc98fcd0:.claude/skills/databento-data/SKILL.md`; blob `0d314d40edac10d19ed580d88e8c58a3e63b753b` |
+| `.claude/skills/ooda-loop/SKILL.md` | Retired: CFD-era system-lot and manual-entry action surface; rail-only eligible actions retired with it. Live execution follows [`c1-rail`](../../.claude/skills/c1-rail/SKILL.md) and AGENTS.md; OODA stays a loop in the [canon](../methodology/inqhiori-canon.md). | `git show a93e17a78b9e7c0e52abb9a09866a9c6dc98fcd0:.claude/skills/ooda-loop/SKILL.md`; blob `0071bbddf4e586e0f4e5d8aca12af5db5c8219da` |
+| `.claude/skills/root-cause-first/SKILL.md` | Merged into [`code-defect-debugging`](../../.claude/skills/code-defect-debugging/SKILL.md) §11 (provenance table dropped). | `git show a93e17a78b9e7c0e52abb9a09866a9c6dc98fcd0:.claude/skills/root-cause-first/SKILL.md`; blob `1a8c660cd8d9d1a6adeebe58094fd7eca64fe27e` |
+| `.claude/skills/question-decomposition/SKILL.md` | Merged into [`refine-question`](../../.claude/skills/refine-question/SKILL.md) §Decompose a contested question (illustrative worked example dropped). | `git show a93e17a78b9e7c0e52abb9a09866a9c6dc98fcd0:.claude/skills/question-decomposition/SKILL.md`; blob `0c6175a6dff7a97f1b040056ff2c28eedc563eef` |
+| `.claude/skills/fable-judge/SKILL.md` | Merged into [`handoff-verify`](../../.claude/skills/handoff-verify/SKILL.md) §Post-execution. | `git show a93e17a78b9e7c0e52abb9a09866a9c6dc98fcd0:.claude/skills/fable-judge/SKILL.md`; blob `5d2d962bb5889e1807d4ec5f9a22f462e7718fb3` |
+| `.claude/skills/adr-decay-audit/SKILL.md` | Merged into [`programme-audit`](../../.claude/skills/programme-audit/SKILL.md) §ADR decay sweep. | `git show a93e17a78b9e7c0e52abb9a09866a9c6dc98fcd0:.claude/skills/adr-decay-audit/SKILL.md`; blob `46fb53e4b5d356eb89e9245beb1dcb723ac998e2` |
+
 <a id="2026-10-15-public-exposure-removal"></a>
 
 ## 2026-10-15 public-exposure removal

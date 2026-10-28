@@ -1,9 +1,9 @@
 """Private Pine is read in place, never copied into a worktree.
 
-docs/operational_rules.md Rule 9 and campaign §60 rule 1: the accepted book's Pine
+docs/operational_rules.md §9 and campaign §60 rule 1: the accepted book's Pine
 and runtime ports are read by the primary checkout's absolute path. The retired
 worktree-copy tool copied every ``*.pine`` under the primary checkout, book files
-included; these tests keep it retired and keep Rule 9 on the in-place mechanism.
+included; these tests keep it retired and keep operational_rules §9 on the in-place mechanism.
 """
 from __future__ import annotations
 

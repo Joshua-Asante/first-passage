@@ -12,6 +12,7 @@
 **Superseded-in-part-by:** none
 **Related:** [`2026-07-14-prop-portfolio-existing-strategy-candidates.md`](2026-07-14-prop-portfolio-existing-strategy-candidates.md) (Class-S route) · [`2026-07-17-c1-rail-build-account-registration-go.md`](2026-07-17-c1-rail-build-account-registration-go.md) (**not** overturned — see §6) · measurement [`lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md`](../../lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/RESULTS.md) · superseded scoring [`class_s_candidate1_scoring_2026-07-15/RESULTS.md`](../../lab/analysis/c1/class_s_candidate1_scoring_2026-07-15/RESULTS.md)
 **Layer:** research-gate status. **No locked parameter, allocation, `dd_protection` constant, or Pine file is touched.**
+**Revision:** 2026-10-25 — rule consolidation D8 removed the close-before-B7 recommendation, discharged by the published corrected-geometry full-panel reference (`class_s_c1_haircut_regime_remc_2026-07-16/CORRECTED_FULLPANEL.md`, lab/ARCHIVED.json) (ADR07-9); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 > ## ⚠ Reader-intercept 2026-10-02 — the 2026-09-03 restoration below is WITHDRAWN
 >
@@ -110,7 +111,7 @@ Admissible routes: a new candidate book, a corrected-geometry re-score of an exi
 
 **The c1 rail GO stands.** It rests on Q-RAIL-1 execution fidelity and the WATCH-1 0.50× haircut re-MC — a different harness and a different gate from the Part A screen withdrawn here. Nothing about the rail build, the registered account, or the attended posture changes.
 
-**But one real open input to B7:** the GO's §6 risk framing cites WATCH-1 0.50× figures (full-panel bust 0.08%, H1 0.14%, bootstrap-95th 0.77%) computed under the **defective** geometry. They are known-optimistic by an **unmeasured** amount — the corrected run was stopped on runtime cost before reaching that arm. Closing it needs only the full-panel reference (≈3 min), not the n=100 bootstrap. **Recommend closing before B7 arms.**
+**But one real open input to B7:** the GO's §6 risk framing cites WATCH-1 0.50× figures (full-panel bust 0.08%, H1 0.14%, bootstrap-95th 0.77%) computed under the **defective** geometry. They are known-optimistic by an **unmeasured** amount — the corrected run was stopped on runtime cost before reaching that arm. Closing it needs only the full-panel reference (≈3 min), not the n=100 bootstrap.
 
 **Program-level:** the prop-portfolio §4 falsifier returns to undischarged with ~3.5 months to the hard date. Whether that shifts research priority is an operator call, not a consequence this ADR asserts.
 

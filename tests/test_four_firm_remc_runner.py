@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import copy
+from datetime import date
 import hashlib
 import importlib.util
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -17,7 +19,8 @@ _spec.loader.exec_module(runner)
 
 from discovery.prop_survivor_scoring import load_scoring_thresholds  # noqa: E402
 
-THR = load_scoring_thresholds()
+PREREG_V2 = REPO / "docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md"
+THR = load_scoring_thresholds(PREREG_V2)
 CONSISTENCY = ("Tradeify_Select_100K", "MFFU_Rapid_100K", "BluSky_Premium_100K")
 BULENOX, TRADEIFY, MFFU = "Bulenox_100K", "Tradeify_Select_100K", "MFFU_Rapid_100K"
 CSHA, RSHA = "c" * 64, "r" * 64
@@ -276,3 +279,84 @@ def test_rehash_blocks_when_primary_manifest_and_source_drift_together(tmp_path)
     m.write_text("\n".join(text) + "\n")
     with pytest.raises(runner.Blocked, match="manifest"):
         _rehash(root, msha, tmp_path)
+
+
+@pytest.fixture
+def synthetic_stages(tmp_path, monkeypatch):
+    """Run the real stage adapters with synthetic files and no private reads or MC."""
+    import discovery.prop_survivor_scoring as scoring
+
+    series = tmp_path / "series"
+    series.mkdir()
+    manifest = {"window": {"start": "2026-01-05", "end": "2026-01-16"},
+                "mffu_admissible": False, "mffu_flagged_days": [],
+                "columns": {"normal": {"gross": [0.01] * 10}}}
+    (series / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    for tier in THR.tier_keys:
+        runner.pd.DataFrame({"normal_pnl": [0.01] * 10, "normal_low": [-1.] * 10,
+                             "protected_pnl": [0.01] * 10, "protected_low": [-1.] * 10}).to_csv(
+                                 series / f"{tier}.csv", index=False)
+    runner.pd.DataFrame({"striker": [0.01] * 10, "striker_nas100": [0.] * 10,
+                         "aegis": [0.] * 10, "intraday_low": [-1.] * 10}).to_csv(
+                             tmp_path / "reference_panel.csv", index=False)
+    (tmp_path / "prep.json").write_text(json.dumps({**PREP, "envelope": "YES",
+                                                   "full_res_trades": [0.01] * 10}), encoding="utf-8")
+    monkeypatch.setattr(runner, "REF", tmp_path)
+    monkeypatch.setattr(runner, "SERIES_INPUTS", {
+        ("aegis_6j", "normal"): (tmp_path / "synthetic-trades.csv", "0" * 64)})
+    monkeypatch.setattr(runner, "start_gate", lambda: {"main_sha": "0" * 40})
+    monkeypatch.setattr(runner, "rehash", lambda: {"n": 20, "all_match": True})
+    monkeypatch.setattr(runner.rsb, "main", lambda argv: 0)
+    monkeypatch.setattr(runner.rsb, "load_trade_table", lambda *a, **kw: [
+        SimpleNamespace(session_date=date(2026, 1, 5), gross_usd=0.01)])
+    monkeypatch.setattr(runner.rsb, "apply_quantity_rule", lambda trades, *a, **kw: trades)
+    monkeypatch.setattr(runner, "candidate_trigger", lambda: "1/100")
+    monkeypatch.setattr(runner, "reference_trades", lambda: [0.01] * 10)
+    monkeypatch.setattr(scoring, "assert_intraday_channel_nonvacuous", lambda *a, **kw: None)
+    monkeypatch.setattr(scoring, "run_tier_remc", lambda *a, **kw: {
+        "headline_bust": 0.5, "pass_rate": 0.5, "summary": {"rates": {}}})
+    return tmp_path
+
+
+def test_prep_stage_keeps_historical_per_leg_g2(synthetic_stages):
+    runner.stage_prep(synthetic_stages)
+    prep = json.loads((synthetic_stages / "prep.json").read_text())
+    assert prep["envelope"] == "NO"
+    assert set(prep["g2_killed_tiers"]) == set(THR.tier_keys)
+    assert prep["g2_per_leg"] == {tier: {"aegis_6j": False} for tier in THR.tier_keys}
+    assert prep["full_res_trades"] == [0.01]
+
+
+@pytest.mark.parametrize("stage", ["candidate", "reference"])
+def test_score_stages_keep_v2_report_and_g2(synthetic_stages, stage):
+    getattr(runner, f"stage_{stage}")(synthetic_stages)
+    report = json.loads((synthetic_stages / f"{stage}_report.json").read_text())
+    assert report["thresholds_source"] == str(PREREG_V2)
+    assert report["halted_at"] is None
+    assert set(report["g2_by_tier"]) == set(THR.tier_keys)
+    assert all(row["passed"] == (stage == "reference") for row in report["g2_by_tier"].values())
+    depth = json.loads((synthetic_stages / f"{stage}_report.depth.json").read_text())
+    if stage == "candidate":
+        assert all(row["gated_on"] == "g2_killed" for row in report["tiers"].values())
+        assert depth["arms"] == {}
+    else:
+        assert depth["arms"] == _record("unused")["arms"]
+
+
+def test_verdict_stage_loads_frozen_v2(tmp_path, monkeypatch):
+    (tmp_path / "prep.json").write_text(json.dumps(PREP), encoding="utf-8")
+    _write(tmp_path, "candidate", _report(), THR.sims_per_seed)
+    _write(tmp_path, "reference", _report(0.55, 0.70), THR.sims_per_seed)
+    derive = runner.derive_verdict
+
+    def frozen_verdict(prep, cand, ref, thr, **kwargs):
+        assert thr.cost_law_multiple == 4.0
+        assert thr.source_path == str(PREREG_V2)
+        assert thr.addenda == ()
+        return derive(prep, cand, ref, thr, **kwargs)
+
+    monkeypatch.setattr(runner, "derive_verdict", frozen_verdict)
+    runner.stage_verdict(tmp_path)
+    verdict = json.loads((tmp_path / "verdict.json").read_text())
+    assert verdict["verdict"] == EARLY
+    assert verdict["insufficient_reasons"] == []

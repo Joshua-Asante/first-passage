@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Repo-local retrieval over hot liveness surfaces (Q-XMEM-1 Limb B).
 
-Not a Rule-7 owner. Returns paths + snippets; the agent must Read the owner.
+Not an operational_rules §7 owner. Returns paths + snippets; the agent must Read the owner.
 Does not ingest docs/ltm/ or lab/archive/ bodies (LTM stays catalog-gated).
 
 FTS5 over a curated hot corpus is the cheap slice. A local-embedder vector

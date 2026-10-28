@@ -28,6 +28,7 @@ disposition table. This revised text is the effective decision. Prior decision t
 and unedited, at blob `0bcd6699fd683a18b9493e25bb053797dcf4fafe`
 (`git show 0bcd6699fd683a18b9493e25bb053797dcf4fafe`), commit
 `b448e2b6f852a49c2a46e278ade95a4c4e2c4c54`.
+**Revision:** 2026-10-26 — rule consolidation step 5 reconciles the CI-credential sentences by named actor (D10(a)); prior decision at `1f9d70629f13cbb2bd0e05a3644471e5d56afe90`.
 **Supersedes:** `2026-08-14-cc-cursor-autonomous-loop.md` full — its entire subject (Cursor
 dispatch without chip approval, `cursor/*` webhook detection, and auto-merge on a binary gate)
 retires with the Cursor lane; the surviving general rule is restated in §2 below.
@@ -38,7 +39,7 @@ retires with the Cursor lane; the surviving general rule is restated in §2 belo
 **Layer:** infrastructure
 
 > ⚠ **REVISED 2026-09-25 — action classes, authority blocks, decision packets** (on top of the
-> 2026-09-20 three seats, one escalation lane and committed handoffs, and the 2026-09-15 rescoping
+> 2026-09-20 three seats and one escalation lane, and the 2026-09-15 rescoping
 > that retired Cursor). The body below is the effective decision text. The clause-by-clause record of what each revision kept, restated or retired is
 > §8. Each revision's pre-revision text is pinned at a blob in the header.
 
@@ -62,11 +63,11 @@ landed change first, operator attention second. Throughput is not a metric.**
 |---|---|---|---|
 | **Executive** | Codex ("Astra") | Goal, constraints, next milestone; accept/reject on the evidence pack (diff, test log, reviewer dissent) — never on the coordinator's synthesis alone; independent PR review of the diff against the *goal* (the 2026-08-29 addendum #1 review path, retained) | Author tickets, implement, merge |
 | **Coordinator** | Claude Code, Opus (default effort; raise effort before changing model) | Decompose the milestone into frozen cards, dispatch, steer, adjudicate `DONE_WITH_CONCERNS`, integrate, write the evidence pack and the campaign record | Be the sole signer on a diff whose card it wrote; implement the hard 20 % by default instead of escalating; touch `main` |
-| **Worker** | Z Code (GLM 5.3) sessions; a Claude Code or Codex session may take a packet when the operator routes one there | Bounded implementation, tests, docs and refactors in a worktree against a frozen card; return the four-state status with the evidence the card names | Change architecture, expand scope, resolve a spec ambiguity, write reserved files, merge |
-| **Escalation** | Claude Code, ~~Fable 5.1~~ Opus in a separate session at raised effort (amended 2026-09-30) | Only on a named trigger (below): milestone adjudication, the rebuild after a second failed round, load-bearing contract authoring | Daily decomposition, worker supervision, a second executive |
-| **Operator** | Joshua | Merge, GO/NO-GO, every irreversible act, arming | — (no model owns these) |
+| **Worker** | Codex sessions (GPT 6.1 Sol or GPT 6 Astra) or Claude Code sessions, as the operator or coordinator routes the packet (GLM dropped [2026-10-24](#addendum-2026-10-24--operator-ruling-seats-bound-to-claude-and-codex-glm-dropped)) | Bounded implementation, tests, docs and refactors in a worktree against a frozen card; return the four-state status with the evidence the card names | Change architecture, expand scope, resolve a spec ambiguity, write reserved files, merge |
+| **Escalation** | Claude Code, Opus in a separate session with a fresh context, at raised effort | Only on a named trigger (below): milestone adjudication, the rebuild after a second failed round, load-bearing contract authoring | Daily decomposition, worker supervision, a second executive |
+| **Operator** | Joshua | Merge (agents merge only under the conditioned standing GO, [2026-10-24b](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody)), GO/NO-GO, every irreversible act, arming | — (no model owns these) |
 
-Worker branches use `glm/`, `codex/` or `claude/`. **Cursor stays retired** (2026-09-15) — no
+Worker branches use `codex/` or `claude/`. **Cursor stays retired** (2026-09-15) — no
 Cursor lane, no `@cursor` dispatch, no `cursor/*` branches, no `cursor[bot]` allow-listing; that
 election carries no falsifier and no review cadence. The 2026-09-15 text described the
 coordinator as a Claude Code session with Claude Code and Codex as workers; this revision does not
@@ -76,18 +77,13 @@ retire either surface, it names the seat each normally occupies.
 The executive's PR review and the operator's merge are the independent signatures; the
 coordinator's adjudication of a worker return is an input to them, not a substitute. The executive
 reviews against its own stated goal, not against the coordinator's cards.
+Claude does not review its own work; Codex is the separate reviewer ([2026-10-25](#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work)).
 
-**Committed-handoff rule.** Nothing crosses a seat boundary except as a committed, dated file:
-an executive direction lands in `STATE.md`'s operator queue or the owning campaign plan; a
-coordinator → worker card lands under `docs/briefs/handoffs/**` (or the lightweight issue below)
-at a pinned SHA; a worker return is a pushed branch plus its PR; the coordinator's synthesis lands
-in the campaign record or `docs/SESSIONS.md`. A direction that exists only in a chat, or a packet
-that exists only untracked on a disk, has not been given and is not dispatchable —
-`AGENTS.md` already forbids inferring work from historical dispatches, and a worker cannot tell a
-current chat direction from a stale one. Private evidence follows M-41 (primary checkout, never a
-worktree). This extends the single-writer rule below to every seat boundary. **One permitted
-non-file card:** the lightweight dispatch issue (below), whose freeze is a content hash rather
-than a commit SHA; nothing else is exempt.
+**Handoffs.** A direction or card may cross a seat boundary as a direct prompt (chat, a session
+message or a `codex exec` prompt) or as a committed file. Joshua's direct instruction is the only
+authority (`AGENTS.md` §Purpose); a worker return is a pushed branch plus its PR; a card committed
+under `docs/briefs/handoffs/` passes `check_brief.py`. Private evidence follows M-41 (primary
+checkout, never a worktree).
 
 **Routing test (apply in order).** The tests are about the *work* and the *environment*, not
 about which vendor runs the session, so all four survive the retirement unchanged:
@@ -137,9 +133,9 @@ about which vendor runs the session, so all four survive the retirement unchange
   positions or shutdown semantics it carries the state model (M-39). Since 2026-09-26 the checker
   requires named acceptance tests on any card whose authority block grants `worktree.write` or
   `research.run`, whatever seat it declares ([Addendum 2026-09-26b](#addendum-2026-09-26b)).
-- **Return contract:** a worker branch (`glm/*`, `codex/*` or `claude/*`), a PR with tests green, and a
+- **Return contract:** a worker branch (`codex/*` or `claude/*`), a PR with tests green, and a
   four-state status — `DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`. **No commit
-  or merge without the operator.** `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
+  or merge without the operator** (except an agent merge under the conditioned standing GO, [2026-10-24b](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody)). `DONE_WITH_CONCERNS` is adjudicated by the coordinator before
   merge; `NEEDS_CONTEXT` gets one re-anchor and re-dispatch, then returns to the coordinator
   (two bounces means the spec was not freezable and the packet was mis-routed). The coordinator
   owns that return and performs the restart on the escalation lane (trigger 1 below) rather than
@@ -189,7 +185,7 @@ still needs [`task-routing`](../../.claude/skills/task-routing/SKILL.md)'s GO (i
 the operator already chose the environment for that work (its step 1); a proactive dispatch to a
 worker session on the operator's own machine needs neither.
 
-**Escalation lane (~~Fable 5.1~~ Opus, amended 2026-09-30) — named triggers only.** *[Amended 2026-09-30: the lane runs on Opus, not Fable — see [Addendum 2026-09-30](#addendum-2026-09-30--operator-ruling-the-escalation-lane-runs-on-opus).]* Fable is not a seat; it is an interrupt
+**Escalation lane (Opus, separate fresh-context session) — named triggers only.** The lane is not a seat; it is an interrupt
 with a budget (one milestone review per milestone, one unstick per day, unless the operator
 raises it). It fires on exactly these triggers, and the coordinator states the trigger in the
 dispatch:
@@ -198,15 +194,14 @@ dispatch:
    coordinator + worker (a second `NEEDS_CONTEXT`, a second red acceptance run, or a second
    review round whose finding count did not fall — M-37/M-38). The restart that `AGENTS.md`
    §Continuous improvement already requires ("stop, summarize, restart with a cleaner prompt")
-   is taken on Fable as a **rebuild from invariants or from the state model**, not as a third
-   worker retry and not as a third fold. Raising Opus effort is tried first when the failure is
-   a reasoning gap rather than a missing model.
+   is taken on the lane as a **rebuild from invariants or from the state model**, not as a third
+   worker retry and not as a third fold. Raising the coordinator's own effort is tried first.
 2. **Milestone adjudication.** Before the operator ratifies a campaign gate, an ADR, a
    pre-registration or a closure, the refute-first pass that M-42 requires (`fable-judge`,
-   `pre-ratification-adversarial-panel`) runs on Fable. The diff reviewer does not cover this
-   gate (M-47).
+   `pre-ratification-adversarial-panel`) runs on the lane. The diff reviewer does not cover this
+   gate (M-47). The adjudicator is the other agent: Codex for Claude-authored artifacts, Claude for Codex-authored ones ([Addendum 2026-10-26](#addendum-2026-10-26--operator-ruling-cross-agent-review)).
 3. **Load-bearing contract authoring.** A card or spec that touches routing test 1's locked
-   surfaces or the rail is authored (or rebuilt after a failed round) on Fable; daily cards are
+   surfaces or the rail is authored (or rebuilt after a failed round) on the lane; daily cards are
    not.
 
 **Ownership and precedence.** The escalation lane is not a seat. Dispatching to it is an act of
@@ -214,17 +209,18 @@ the coordinator, the item stays on the coordinator's board, and the result retur
 coordinator for integration and to the executive for the next direction like any other return.
 Wherever older wording in this ADR sends an event to the coordinator — routing test 1's
 "→ coordinator, full stop", the return contract's second `NEEDS_CONTEXT` bounce — and a trigger
-above names Fable for the same event, both hold and this paragraph governs: **the coordinator owns
-the item and executes the named rebuild or authoring on Fable instead of in its default session.**
+above names the lane for the same event, both hold and this paragraph governs: **the coordinator owns
+the item and executes the named rebuild or authoring on the lane instead of in its default session.**
 No trigger transfers ownership, and none of the three triggers may be read as a worker retry on a
 stronger model.
 
-Fable never takes the coordinator seat, never supervises the worker day to day, and never
+The lane never takes the coordinator seat, never supervises the worker day to day, and never
 sits beside the executive as a second planner.
 
-**Merge authority is the operator's, with no automated exception.** The 2026-08-14 binary
-auto-merge gate is retired with the mechanism it drove (§8). Neither a green CI run, nor a clean
-automated review, nor an adjudication verdict is merge authority.
+**Merge authority is the operator's; agents merge only under the conditioned standing GO of
+[Addendum 2026-10-24b A](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody).**
+The 2026-08-14 binary auto-merge gate is retired with the mechanism it drove (§8). Neither a
+green CI run, nor a clean automated review, nor an adjudication verdict alone is merge authority.
 
 **Orchestrating more than one worker at a time.** When work decomposes into 2+ independent
 spec-freezable packets, the coordinator owns the claim manifest and every packet still clears
@@ -267,7 +263,7 @@ canonical list of capability names, their class and which seat a card may grant 
 | Class (registry name) | Meaning | Examples | Who may do it |
 |---|---|---|---|
 | **low** (`low`) | Read-only or isolated | read the repo, local tests, edits in the card's own worktree, lab research inside its campaign contract | any seat the card grants it to |
-| **medium** (`medium`) | Reversible change to shared development state | push a `glm/`/`codex/`/`claude/` branch, open a PR, dispatch the S2 workflow, a cloud dispatch (with task-routing's GO), governance drafting (coordinator only, routing test 1) | the highest class a card may grant an agent seat |
+| **medium** (`medium`) | Reversible change to shared development state | push a `codex/`/`claude/` branch, open a PR, dispatch the S2 workflow, a cloud dispatch (with task-routing's GO), governance drafting (coordinator only, routing test 1) | the highest class a card may grant an agent seat |
 | **operator act** (`high`) | Irreversible, external, financial or ratifying | merge, ratify, spend, deploy the rail, arm the rail, operator-directed orders/exits/cancels (`trade.submit`) | the operator, through an act they already perform; for `trade.submit`, an agent may perform the specific operator-directed act ([2026-09-30b](#addendum-2026-09-30b)); never delegated by a card |
 | **forbidden** (`forbidden:` map) | Un-grantable to every seat; no approval unlocks it for an agent | auto-merge, a direct push to `main`, TV login automation, edit a locked parameter, edit the frozen protection constants, commit private data | nobody among the agents; the frozen protection constants keep their own governed route (pre-registration → re-MC → both-halves gate → admitting ADR, ratified by the operator) |
 
@@ -291,16 +287,16 @@ Rules:
    idempotency is disproven at the venue. This is the qualification service's START_INTENT /
    IN_DOUBT rule stated for every seat.
 4. **Enforcement points, not a new service.** The runtime is the set of points below plus git
-   as the event log (committed-handoff rule). An orchestrator service is built only if a
+   as the event log (returns are pushed branches plus PRs). An orchestrator service is built only if a
    recorded failure shows these points are insufficient.
 
 | Act | Enforcement point | Status 2026-09-25 |
 |---|---|---|
 | card grants | `check_handoff_authority.py` (`handoff-authority` gate): binds a card's grants to the seat the card **declares** and never binds that seat to the executor; a worker card must name its parent; parents must be inside the repository, are checked recursively, and a cycle is refused; a parent without a block narrows nothing beyond the seat; any card granting `worktree.write` or `research.run` names its acceptance tests whatever its seat ([2026-09-26b](#addendum-2026-09-26b)) | enforced for cards with a block; seat-to-executor binding is the coordinator's pre-dispatch read plus the executive review (human, not code) |
 | card form (item 1) | `check_handoff_brief_form.py` (`handoff-brief-form` gate, pre-commit when a brief, the checker or its engine is staged; required CI `skills (3.12)` via `--tier check`): requires `check_brief.py`'s `RESULT: well-formed` on every card anywhere under `docs/briefs/handoffs/` except the 74 historical cards listed in `scripts/handoff_brief_form_grandfathered.txt`, and on any `docs/briefs/**` card with an authority block; a card whose staged and unstaged copies differ fails when either copy is in scope; the four files of the [2026-09-27 ruling](#addendum-2026-09-27) are exempt by name | enforced from 2026-09-27 for cards in scope; earlier cards are not retrofitted (item 7's precedent), so item 1 binds them only through the coordinator's pre-dispatch read |
-| merge | the operator merges on GitHub; the ruleset makes every change to `main` a PR with a green strict `skills (3.12)`; best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) asks before a Claude Code session merges in the forms it recognises (MCP tool; `gh pr merge` or a `gh api` merge from the Bash or PowerShell tool), only when the call pins the head SHA, and denies the unpinned forms it recognises | **not enforced server-side against an agent:** the ruleset does not stop a write credential from merging a green PR, so the limit is the operator not giving an agent a merge-capable credential (operator-held); the hook is a best-effort prompt for Claude Code only. **That limit does not hold for GLM workers today:** they run as the operator's user with the operator's `gh` credential; isolation ruled 2026-09-26, host change **OWED** ([2026-09-26b](#addendum-2026-09-26b)) |
-| auto-merge | the repository setting `allow_auto_merge: false` (GitHub refuses to enable auto-merge on any PR); CI holds no write credential (2026-08-29 addendum #1 bar); best effort: the hook denies the auto-merge forms it recognises | **enforced server-side** by the repository setting (verified read-only 2026-09-25); the setting itself is operator-held |
-| push to `main` | GitHub ruleset 21071355 `main-protection` on `refs/heads/main`: PR required, `skills (3.12)` required and strict, non-fast-forward and deletion blocked, empty bypass list; best effort: the hook denies the `git push` forms it recognises whose destination is `main` (named, bulk, matching `:` or glob) | **enforced server-side** for every credential (bypass list empty, `current_user_can_bypass: never`, verified read-only 2026-09-25) |
+| merge | the operator merges, or an agent merges under the conditioned GO of [2026-10-24b](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) part A, pinned to the head SHA; the ruleset makes every change to `main` a PR with a green required `skills (3.12)` (not strict); best effort: [`scripts/guard_operator_acts.py`](../../scripts/guard_operator_acts.py) denies the unpinned merge forms it recognises | **enforced server-side** only for the green required check; the independent-review condition is the merging agent's obligation, and the hook covers Claude Code only. Until the [2026-10-24b](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) part B host steps are done, agents reach the owner token through `gh` |
+| auto-merge | the repository setting `allow_auto_merge: false` (GitHub refuses to enable auto-merge on any PR); best effort: the hook denies the auto-merge forms it recognises | **enforced server-side** by the repository setting (verified read-only 2026-09-25); the setting itself is operator-held |
+| push to `main` | GitHub ruleset 21071355 `main-protection` on `refs/heads/main`: PR required, `skills (3.12)` required (not strict at the 2026-10-25 re-read), non-fast-forward and deletion blocked, empty bypass list; best effort: the hook denies the `git push` forms it recognises whose destination is `main` (named, bulk, matching `:` or glob) | **enforced server-side** for every credential (bypass list empty, `current_user_can_bypass: never`, verified read-only 2026-09-25) |
 | rail deploy | where the Fly credential is held; best effort: the hook asks on `fly deploy` / `flyctl deploy` whose target is a live execution-path app (`c1-rail`, `c1-signal-daemon`) or cannot be determined, naming the app, and is silent for other apps ([scoped 2026-09-26](#addendum-2026-09-26)) | **no server-side enforcement**: nothing on Fly's side refuses a deploy from a session that holds the credential; operator-held credential + best-effort prompt only |
 | rail arm | `c1_rail_arm.py` interlock (`validate(require_resolved=True)`): refuses to arm unless the M1 artifact validates as RESOLVED, or `--acknowledge-m1-unresolved` is given against a structurally valid unresolved artifact (writes an `arming_deviation` record); best effort: the hook asks on `--arm` (never on `--disarm` / `--status`) | **enforced** for M1 by the interlock; the per-session operator GO is not checked by code (operator-held + best-effort prompt) |
 | trade.submit (`high`) | A3 rejects every card grant; operator direction must name the specific order, exit or cancel. Broker credentials stay outside agent environments (boundary OF-5, re-verified at G-ARM); an agent acts only through an already-authenticated attended or computer-use surface; the hook cannot observe broker calls | operator act, never grantable in a card; arming, live-spend and per-session GO unchanged ([2026-09-30b](#addendum-2026-09-30b)); no new broker-side enforcement |
@@ -317,7 +313,7 @@ PowerShell variables, `Invoke-Expression`, `Start-Process`, stdin, encodings oth
 dot-sourcing; user-defined `gh` / `git` aliases, push configuration (`push.default`,
 `remote.<r>.push`, `remote.<r>.mirror`) and flags missing from its tables; GitHub API writes to
 `main` other than a merge, other GitHub clients; remote execution on the rail other than
-`fly ssh console -C`; and every Codex / Z Code session. Still open for the operator, with the
+`fly ssh console -C`; and every Codex session. Still open for the operator, with the
 hook's current behaviour unchanged meanwhile: whether an agent may use
 `--acknowledge-m1-unresolved` under a prompt (today it asks, with an M1-unresolved prompt) or is
 denied; the Fly deploy scope (today every `fly deploy` asks, not only the rail's); whether an
@@ -346,14 +342,14 @@ repo use other names; they are translated at the boundary and never adopted as a
 |---|---|
 | Executive / Principal (human) | **Operator** |
 | Chief of Staff | **Executive** (Codex "Astra") — may author the mandate (goal, constraints, milestone, success criteria), never cards, so its PR review against its goal stays independent |
-| COO | **Coordinator** (Opus); the escalation lane (Opus in a separate session since 2026-09-30; Fable before) never takes this seat |
+| COO | **Coordinator** (Opus); the escalation lane (Opus in a separate session) never takes this seat |
 | Execution teams | **Workers** |
 | Review / verification | reviewer ≠ planner signatures plus deterministic gates |
 
 **Measure and falsifier for the three-seat model.** The existing §4 limbs stand (judgment-defect
 worker PRs; overhead exceeding value). Added: the model is measured on **operator-minutes per
 accepted change** and **defects found after merge**, never on cards closed. If, over a rolling
-8-week window, the Fable lane fires on more than a third of cards, the cards are not being
+8-week window, the escalation lane fires on more than a third of cards, the cards are not being
 frozen and the coordinator seat — not the lane — is the defect to fix; if it never fires while
 post-merge defects recur, the two-failure rule is not being applied. Added 2026-09-25, logged by
 the coordinator in the campaign record and read at the quarterly check: packets the operator
@@ -408,11 +404,7 @@ synthesis the executive steers by — is the documented fold-loop failure (M-37,
 on PRs #360, #395 and #401; reviewer ≠ planner is its structural fix (M-46). Fable is placed as a
 lane rather than a seat because its cost is per-instance and its edge is on long, messy,
 high-reasoning work; vendor benchmark and pricing claims about it were treated as unverified
-and are non-load-bearing, as the 2026-07-14 text did for the Cursor comparison. The fifteen untracked
-handoff packets found in the main checkout's `docs/briefs/handoffs/` on 2026-09-20 (two GLM, one
-Astra, twelve coordinator/operator packets; `git status --short -- docs/briefs/handoffs/`) are the
-committed-handoff rule's first application: each is committed or tombstoned before the next
-dispatch that would rely on it.
+and are non-load-bearing, as the 2026-07-14 text did for the Cursor comparison.
 
 **Why this is a revision and not a new ADR.** The subject of this record *is* surface
 allocation; retiring one of the two surfaces is a change of scope to this decision, not a
@@ -431,7 +423,7 @@ recommended sequence "in full". The review kept the drafts' central boundary (mo
 deterministic code authorises and records), their escalation format (options, consequences,
 recommendation, evidence) and their ask that authority only narrow. It did not adopt: a second
 seat chart whose "Executive" means the human (this ADR's executive is Astra); Fable as COO (Fable
-is a lane); `trade.submit` as an approvable high-risk act (**historical rejection, superseded by [2026-09-30b](#addendum-2026-09-30b): now an operator act at risk `high`, never grantable in a card**); five
+is a lane); `trade.submit` as an approvable high-risk act (it is an operator act at risk `high`, never grantable in a card: [2026-09-30b](#addendum-2026-09-30b)); five
 runtime schema levels (STATE, the umbrella, the plan and the card already carry them, and git
 already records them); a new orchestrator service (the enforcement points above already exist);
 and two new ADRs (they would be second owners of this record's seat table — Rule 7). Operator
@@ -442,7 +434,7 @@ rubber stamp.
 ## Current owner
 
 - **This ADR** owns the seat table, the routing test, the handoff contract (including the
-  acceptance-tests-in-the-card item), the committed-handoff rule, the escalation-lane triggers,
+  acceptance-tests-in-the-card item), the escalation-lane triggers,
   the return contract and merge authority.
 - [`methodology_lessons.md`](../methodology/lessons/methodology_lessons.md) M-26 … M-48 own the
   dated failure evidence the seat rules cite; this ADR states the rules, not the incidents.
@@ -515,13 +507,13 @@ discharged, superseded or explicitly retired"). Full prior text at blob
 | "Surfaces" paragraph (coordinator = Claude Code; workers = Claude Code and Codex; Cursor retired) | **Superseded** by the seat table. Cursor's retirement and its no-falsifier election are **retained** verbatim in substance. |
 | Routing tests 0–3 | **Retained** unchanged; test 1's `CLAUDE.md` reference updated to `AGENTS.md` (the file was retired the same day). |
 | Handoff contract, five items | **Retained**; a sixth item (acceptance tests named in the card) **added**. |
-| Lightweight dispatch issue (items 2–5 in place of a brief) | **Retained in shape, re-scoped**: must carry items 2–6 including the predeclared acceptance tests; its freeze is the body hash in the coordinator's read comment, the one permitted non-file card under the committed-handoff rule. |
-| Routing test 1 "→ coordinator, full stop"; return contract "two bounces fall back to the coordinator" | **Retained**; *Ownership and precedence* under the escalation lane governs the overlap — the coordinator keeps ownership and performs the named authoring/rebuild on Fable. |
+| Lightweight dispatch issue (items 2–5 in place of a brief) | **Retained in shape, re-scoped**: must carry items 2–6 including the predeclared acceptance tests; its freeze is the body hash in the coordinator's read comment. |
+| Routing test 1 "→ coordinator, full stop"; return contract "two bounces fall back to the coordinator" | **Retained**; *Ownership and precedence* under the escalation lane governs the overlap — the coordinator keeps ownership and performs the named authoring/rebuild on the lane. |
 | Return contract branches `codex/*` / `claude/*` | **Retained**, `glm/*` **added**. |
 | Merge authority is the operator's | **Retained** verbatim. |
-| Orchestration rules (disjoint footprints, dispatch-moment Phase-0, review round part of the freeze, pointer SHA) | **Retained** verbatim; the committed-handoff rule generalises the single-writer rule to every seat boundary. |
+| Orchestration rules (disjoint footprints, dispatch-moment Phase-0, review round part of the freeze, pointer SHA) | **Retained** verbatim. |
 | Addendum 2026-08-29 #1 (Codex native review, retained) | **Retained and re-seated** — it is now the executive's independent signature under reviewer ≠ planner. |
-| `AGENTS.md` §Continuous improvement, "after two failed corrections… restart with a cleaner prompt" (external rule, not this ADR's) | **Bound, not changed** — the restart is where the Fable lane's trigger 1 fires. |
+| `AGENTS.md` §Continuous improvement, "after two failed corrections… restart with a cleaner prompt" (external rule, not this ADR's) | **Bound, not changed** — the restart is where the escalation lane's trigger 1 fires. |
 
 ### 2026-09-25 revision — disposition of the 2026-09-20 clauses it touches
 
@@ -593,7 +585,7 @@ them. Recorded here, in the hot record, so the retirement is not mistaken for co
 account level. **Items 1 and 2 verified already gone on 2026-09-15** (same-day follow-up session,
 run on the operator's machine and account):
 
-1. **The GitHub webhook trigger** created under the now-superseded autonomous-loop ADR (routine
+1. **The GitHub webhook trigger** created under the autonomous-loop ADR (routine
    `trig_012nvuH7jqmjFUFgoFVpZ6RP`, firing unfiltered on `pull_request: opened`) — an
    account-level routine, not a repo file. **Deleted.** `RemoteTrigger get` on the id returns
    HTTP 404 `Trigger not found` from the same account whose 2026-08-15 session transcript holds
@@ -738,22 +730,7 @@ pointing here. Ratifies on operator merge of the PR that carries it.
   deferred until a mislabelled card is recorded; if one is, the preferred next step is a
   return-side check on `glm/*` and `codex/*` PRs.
 - This rules the last question the operator-act paragraph above leaves open ("how a card's seat
-  is bound to the worker seat"), and supersedes any record of it as still under consideration.
-
-**C. GLM credentials — "isolate GLM".**
-
-- *Decision:* GLM workers must run without the operator's merge-capable `gh` credential and
-  without the operator's Fly configuration — a separate OS user or a sandbox with no keyring
-  and no `~/.fly` — because `glm_agent`'s `run_bash` is an unrestricted shell running as the
-  operator's user.
-- *Status: **OWED**, operator action.* The host-level change is the operator's to make; this
-  repository changes no host configuration. Until it is done, **GLM workers hold merge- and
-  deploy-capable credentials**: the merge row's limit (no merge-capable credential in an agent's
-  hands) and the rail-deploy row's (where the Fly credential is held) do not hold for a GLM
-  worker, and the best-effort hook reads Claude Code tool calls, not commands run inside
-  `glm_agent`.
-- *Discharge:* a dated line here recording the isolation as verified from the GLM worker's own
-  user (no `gh` authentication, no `~/.fly`).
+  is bound to the worker seat").
 
 **Verification.** `tests/scripts/test_check_handoff_authority.py` (2026-09-26 section: a
 coordinator, escalation or worker card granting `worktree.write` or `research.run` without named
@@ -787,7 +764,7 @@ rail-deploy row of the enforcement-point table is updated to the ruled scope.
 | May an agent use `--acknowledge-m1-unresolved`? | "agents can use the arming override" | **Permitted.** An agent may invoke `c1_rail_arm.py --arm --acknowledge-m1-unresolved '<reason>'`; the hook **asks** (never denies) on it, as on every `--arm`, under a prompt that says M1 is unresolved, that the helper accepts the override only against a structurally valid unresolved artifact, and that it writes an `arming_deviation` record. Unchanged: the override remains the operator-ratified discretion of the [monitoring ADR's Addendum 2026-07-31b](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-07-31b--the-two-knowing-deviations-past-the-m1-gate-recorded-and-the-gates-trigger-is-proposed-to-move-from-send-to-arm) (cited by `plan_arm` and recorded in each deviation event); every armed session needs its own operator GO, and answering the prompt is that act (§Decision rule 2); an arming GO does not direct a trade. **Trade-authority correction 2026-10-01:** [2026-09-30b](#addendum-2026-09-30b) permits operator-directed orders, exits and cancels as `trade.submit` (`high`), never grantable in a card; arming, live-spend and per-session GO requirements are unchanged. The hook is best effort (ruling 2026-09-25), so this is a **permission, not an enforcement claim**. |
 | Fly deploy scope | "deploy prompt shouldn't fire more than it needs to" | `rail.deploy` asks only when the target app is on the live execution path — `c1-rail` (listener) and `c1-signal-daemon`, the `app` names in `deploy/c1_rail/fly.toml` and `deploy/c1_signal_daemon/fly.toml` — and names the app in the prompt. It is silent for other apps and for invocations that deploy nothing (`--help`). If the target cannot be determined (no `-a`/`--app`, no readable `--config`/`-c` fly.toml, no fly.toml in the effective working directory, `FLY_APP` set, or a directory the hook cannot see), it **asks** (fail closed). Codex review of #511 at `b9d71f2`: a fly.toml is trusted only when nothing the call runs before the deploy, beside it (pipeline, background job) or in a loop with it may have changed the environment or files it reads; a variable assignment, a file-writing redirection, a prefix or wrapper on the deploy, or any program off a short read-only list (`cat`, `echo`, `ls`, `grep`, directory changes …) leaves only `-a` to name the target, so `sed -i … fly.toml && fly deploy` and `export FLY_APP=…; fly deploy` ask. A directory change unanchors only the deploys that run after it (every deploy, when the call has a loop or defines a function, whose body runs where it is called). A relative `--config` beside a working-directory argument is read against both directories (`fly deploy --help` does not say which flyctl uses) and names an app only when both agree, so the READMEs' `fly deploy . --config deploy/…/fly.toml` names its app. Capability id stays `rail.deploy`; no registry change. |
 | `gh pr merge --admin` | "askable admin merges" | **Record only.** A pinned `--admin` merge stays askable (the hook's current behaviour); an unpinned one stays denied as `pr.merge_unpinned`. |
-| How a card's seat is bound to the worker seat | "Let's consider how a card is bound to the worker seat" | **Not decided — under consideration.** No mechanism is adopted; `check_handoff_authority.py` behaviour is unchanged. The question stays open for the operator. *Superseded the same day: ruled in [Addendum 2026-09-26b](#addendum-2026-09-26b) (human-read binding plus A6 on cards granting `worktree.write` or `research.run`).* |
+| How a card's seat is bound to the worker seat | "Let's consider how a card is bound to the worker seat" | Ruled in [Addendum 2026-09-26b](#addendum-2026-09-26b): human-read binding plus A6 on cards granting `worktree.write` or `research.run`. |
 | Activation-gap wording (AGENTS.md, Live-execution posture) | "correct the wording in the activation gap" | The bullet that read "a forged or status-only artifact fails closed" is corrected to what the code does, verified on `main` at `7211fa1`: `validate_c1_monitoring_acceptance.validate(require_resolved=True)` checks structure and `RESOLVED` status, and `operator_signoff` only for a non-empty `operator` field (no signature), so a complete forged `RESOLVED` file passes; a status-only file fails. The interlock gates only the arm helper: the rail host's boot gate (`c1_rail_http_server.load_config`) checks `events_log_path` and `armed_until`, not M1, so arming by editing the `/data` config bypasses it. The host-side activation gate is owed at TB-I3 ([book-protection instance admission](2026-09-12-tradeify-book-protection-instance-admission.md)). The bullet also states the override and this addendum's agent permission. The rail-arm row's "enforced for M1 by the interlock" above is read with these limits. |
 
 **Verification.** `tests/scripts/test_guard_operator_acts.py` (2026-09-26 section: live-path
@@ -848,10 +825,8 @@ would let a card that omits §0.5 and the four-state return pass as `generic`. O
 The gate adds scope, not rules: the handoff contract is `check_brief.py`'s own. It runs at
 pre-commit whenever a brief, the checker, its engine, the block reader or the historical list is
 staged, and in the required
-`skills (3.12)` check on every PR. A card is committed before it is dispatched (committed-handoff
-rule), so a malformed card now fails before dispatch. The scope:
-- every card anywhere under `docs/briefs/handoffs/`, where the committed-handoff rule places cards
-  (`docs/briefs/handoffs/**`), except that directory's own `README.md` and the historical cards:
+`skills (3.12)` check on every PR. A committed card is checked before dispatch, so a malformed committed card fails before dispatch. The scope:
+- every card anywhere under `docs/briefs/handoffs/**`, except that directory's own `README.md` and the historical cards:
   the 74 direct children dated before 2026-09-27 that were on `main` at `38e62ee`, listed by name in
   [`scripts/handoff_brief_form_grandfathered.txt`](../../scripts/handoff_brief_form_grandfathered.txt).
   Because the list is by name, a new card with a backdated name is still checked. The gate
@@ -906,9 +881,8 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - ownership and precedence: the coordinator owns the item, and no trigger is a worker retry on a stronger model;
 - the restrictions: the lane never takes the coordinator seat, never supervises the worker day to day, and never sits beside the executive as a second planner.
 
-**What now distinguishes the lane from the coordinator.** Both run on Opus, so the difference is no longer the model. An escalation is taken in a **separate Opus session or subagent with a fresh context**, at raised effort, briefed from the invariants or the state model rather than from the coordinator's working context. It is not a continuation of the coordinator's own session. Trigger 1's clause "Raising Opus effort is tried first when the failure is a reasoning gap rather than a missing model" now reads: raising the coordinator's own effort is tried first. The escalation is the fresh-context rebuild.
+**What now distinguishes the lane from the coordinator.** Both run on Opus, so the difference is no longer the model. An escalation is taken in a **separate Opus session or subagent with a fresh context**, at raised effort, briefed from the invariants or the state model rather than from the coordinator's working context. It is not a continuation of the coordinator's own session.
 
-**Wherever this ADR says "Fable" for the lane,** in the trigger text, the precedence paragraph and the §4-style measure ("the Fable lane fires on more than a third of cards"), read "the escalation lane". The seat table, the lane heading and the COO row are marked in place. Historical records naming Fable, such as dated authorship lines, earlier addenda and the S5 build's escalation-lane commits, are left as they were: they describe what ran at the time.
 
 **Not changed:** the `fable-judge` and `fable-method` skills. Those are methodology names, not model assignments; they run on whatever model the lane uses.
 
@@ -921,13 +895,54 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 
 > **Agents may place orders, exit positions, and cancel orders when directed by the operator**, including through computer use. This operator amendment (2026-09-30) supersedes the categorical prohibition on agent-placed trades; existing arming, live-spend, and session-specific operator GO requirements still apply. Weekly account-preservation trades may be operator-placed or agent-placed at the operator's direction; deadline in [STATE](../../STATE.md#scheduled-forward-triggers).
 
-**Decision.** `trade.submit` moves from `forbidden:` to the **operator-act class (`high`)** in `scripts/seat_authority.yml`. It is **never grantable in a card**: rule A3 of `scripts/check_handoff_authority.py` rejects it on every card, including worker, coordinator and handoff cards. The authority is the operator's direction for that specific order, exit or cancel, together with the existing arming, live-spend and per-session GO requirements. An arming GO does not direct a trade. This addendum supersedes the earlier forbidden-class trade example and the trade credential-custody row above only to this extent; arming, live spend and per-session GO are unchanged. The registry/ADR reconciliation is proposed and ratifies on operator merge of the PR that carries it; the AGENTS.md amendment is already ratified.
+**Decision.** `trade.submit` moves from `forbidden:` to the **operator-act class (`high`)** in `scripts/seat_authority.yml`. It is **never grantable in a card**: rule A3 of `scripts/check_handoff_authority.py` rejects it on every card, including worker, coordinator and handoff cards. The authority is the operator's direction for that specific order, exit or cancel, together with the existing arming, live-spend and per-session GO requirements. **Standing GO (Joshua, 2026-10-25, revocable):** "I approve a Standing GO, GO on the 10-26 trade". The weekly account-preservation trade on the owned evaluation ([STATE](../../STATE.md#scheduled-forward-triggers)) needs no per-trade direction; it still runs on a supported platform through an already-authenticated attended or computer-use surface, never CrossTrade or the API, with the rail disarmed. Every other order, exit or cancel still needs direction for that act. An arming GO does not direct a trade. This addendum supersedes the earlier forbidden-class trade example and the trade credential-custody row above only to this extent; arming, live spend and per-session GO are unchanged. The registry/ADR reconciliation is proposed and ratifies on operator merge of the PR that carries it; the AGENTS.md amendment is already ratified.
 
 **What this does not authorize.** No card-granted trading, automated or unattended order, change to the arming interlock, M1 requirements, the $700 spend ceiling or the incident contract. No handoff or seat grant substitutes for the operator's direction for the specific act. Classing trading as medium or low would permit card delegation and is rejected; retaining it in `forbidden:` would contradict the ratified amendment.
 
 **Enforcement points.** The registry change in this PR makes A3 reject card delegation; the operator's direction and credential custody govern the act itself. Broker credentials stay outside agent environments: no agent holds them, per boundary row OF-5 of the [qualification execution boundary](../superpowers/specs/2026-09-17-qualification-execution-boundary-design.md) and its G-ARM re-verification at every arm and session GO ([host obligations](../notes/2026-09-27-host-obligations-assignment.md)). An agent acts on a directed order only through an already-authenticated attended or computer-use surface. This addendum does not amend that boundary. The operator-act hook cannot observe broker calls, so its behavior and `DECISION` / `MESSAGES` tables are unchanged; only its explanatory text is reconciled. This is not a claim of new broker-side enforcement.
 
 **Verification.** The registry test asserts that `trade.submit` is absent from `forbidden:` and has risk `high`; the existing parametrized `test_operator_act_is_never_delegated` covers it automatically. Run through the checkout's launcher: `python -m pytest tests/scripts/test_check_handoff_authority.py tests/scripts -q`, `python scripts/check_handoff_authority.py --all` (0 violations), and `check`. Verification records belong on PR #566. **Historical sequencing condition:** the sweep and ready status were held until X-1 finished and Joshua gave GO. X-1 is complete; Joshua authorized ready status and folding the sweep into #566. The 2026-10-01 sweep updates live authority statements and explicitly labels retained historical or task-scoped wording; its file inventory and verification are retained in the PR body. No merge is authorized.
+
+## Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped
+
+**Ruling (Joshua, 2026-10-24, in session):** "rebind the seats to claude and codex, drop glm".
+
+- Seats are filled only by Claude (Claude Code, Opus 5.5) and Codex (GPT 6.1 Sol or GPT 6 Astra). The Worker row now names Codex and Claude Code sessions; Z Code / GLM is no longer a surface for any seat.
+- Worker branches are `codex/*` or `claude/*` (`scripts/seat_authority.yml`, `scripts/guard_operator_acts.py`).
+- Credential-read backstop (operator direction 2026-10-24, "deny rules and local settings"): tracked `.claude/settings.json` denies `Read` of `~/.fly`, `~/.azure`, the gcloud and GitHub CLI config directories, `~/.ssh` and any `.env`. Claude Code applies it to Read, Grep and Glob, and to `cat`-style Bash commands it recognizes. It is best effort: Codex sessions and scripts that open files themselves are not covered, so it does not replace the custody rules of [2026-10-24b](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) part B.
+- Handoffs (Joshua, 2026-10-24: "the committed handoff rule is superceded"): a direction or card may cross a seat boundary as a direct prompt; the body's **Handoffs** paragraph states the rule.
+- How work divides between the three models is out of scope here; that research (2026-10-24) feeds a later revision of the seat table.
+
+## Addendum 2026-10-24b — operator rulings: conditioned merge GO and credential custody
+
+**Rulings (Joshua, 2026-10-24, in session):** "merges still have a standing GO from me unless I auto approve a merge when independent review and ci is green"; asked which reading applies, he chose "agents may merge". On credentials he chose a fine-grained PAT agent identity and the revocations recorded in the operator checklist below.
+
+**A. Conditioned merge GO.** An agent may merge a PR without a per-PR prompt when all hold: (1) an independent review has passed: a Codex review at the head reports no findings (or a reviewer other than the PR's author, where Codex is unavailable and the operator names the substitute). Review loop (operator ruling 2026-10-24, later): after fixing findings, the PR's owner pushes and comments `@codex review` to request a fresh review of the new head; a PR is mergeable only if a review comes back clean within three Codex reviews, and once three reviews have found issues it stops being fixed in place and returns to its original owner for a rewrite; (2) every CI check is `COMPLETED` and green at the head; (3) the merge is pinned to that head SHA. `scripts/guard_operator_acts.py` no longer prompts on a pinned merge; it emits no permission decision, so normal permission evaluation still covers the rest of the call (it still denies an unpinned merge), and an ask or deny elsewhere in the same call still wins. GitHub auto-merge stays forbidden (`pr.auto_merge`). Enforcement: GitHub enforces condition (2) only for the required `skills (3.12)` check, and not strictly (ruleset re-read 2026-10-25); the other checks and condition (1) are the merging agent's obligation. Asked whether GitHub should require an approving review, the operator chose no: agents and the operator share one account, and review bots only comment, so a required approval would force an operator approval on every PR.
+
+*Amended 2026-10-25 (Joshua, to the merge-train coordinator): "a clean fourth review counts, it can still merge then".* A Codex review that comes back clean at the exact head on the fourth review still clears condition (1) after three reviews with findings; reviews beyond the fourth are not ruled on and go to the operator. First case: #906 (merged `b8524d1`). `scripts/merge_train.py gate` applies this count.
+
+**B. Credential custody.** Agents act under their own scoped credentials, never the operator's:
+- GitHub: agents use a fine-grained, repo-scoped PAT (Contents and Pull requests: write; no Administration) set as `GH_TOKEN` in agent environments. The operator's owner token stays in the keyring for the operator. The `main` ruleset's bypass list is empty (`current_user_can_bypass: never` for the owner account, re-read 2026-10-25), so no token can bypass the required check.
+- Fly and rail: agents hold no Fly credential and the operator keeps no standing Fly login (`fly logout`; per-app expiring deploy tokens when deploying); `rail.deploy` stays an operator act. The dormant rail's CrossTrade secrets are wiped from the Fly volume and revoked; revival preconditions live in `docs/notes/rail_build/ARMING_PROCEDURE.md` §7.
+- Unused credentials are removed rather than guarded: the Databento key (and its persistent User environment variable), `NOTION_TOKEN` in `.env`, and the standing Azure CLI login.
+- Codex sessions are not hooked; for Codex the limits are the sandbox mode, `scripts/dispatch_codex.ps1` (agent token only, refuses a directory holding `.env`) and the scoped PAT.
+- CI: `claude.yml` keeps its write permissions for the Claude workflow; the ruleset, not CI permissions, is the merge boundary. This does not touch the [§8](#8--disposition-of-the-prior-decisions-clauses-and-addenda) bar on credentials CI grants Codex, and neither is a general CI write grant.
+*Status:* host steps are the operator's (checklist in the carrying PR); until done, agents still reach the owner token through `gh`.
+
+## Addendum 2026-10-25 — operator ruling: Claude does not review its own work
+
+**Ruling (Joshua, 2026-10-25, in session):** "claude doesn't review it's own work. a separate reviewer is required, in this case codex."
+
+- Work Claude authors (a diff, a plan or a proposal) needs a review from a separate reviewer, and Codex is that reviewer. A Claude self-review, a Claude-run panel or workflow, or the Claude escalation lane's refute-first pass (item 2) on Claude-authored work may inform the author but does not count as that review.
+- This is the review under reviewer ≠ planner and condition (1) of the [conditioned merge GO](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody). Neither changes otherwise.
+
+## Addendum 2026-10-26 — operator ruling: cross-agent review
+
+**Ruling (Joshua, 2026-10-26, in session):** "let's keep it simple. codex reviews for claude, and claude reviews for codex"
+
+- Review is cross-agent: Codex reviews work Claude authors, and Claude reviews work Codex authors. Neither reviews its own work; a self-review or a same-agent panel or workflow may inform the author but does not count as the review. This extends [Addendum 2026-10-25](#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work) to Codex-authored work.
+- Item 2 (milestone adjudication) follows the same rule: Codex adjudicates a Claude-authored ADR, pre-registration, closure or campaign gate before ratification, and Claude adjudicates a Codex-authored one.
+- Merges (Joshua, 2026-10-27, in session): "Yes: a clean Claude review at head satisfies merge GO condition (1) for a Codex-authored PR." Condition (1) of the [conditioned merge GO](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) is therefore a clean review at the head by the other agent: Codex for a Claude-authored PR, Claude for a Codex-authored one. Not ruled: how the three-review limit counts Claude reviews; ask the operator before a fourth. `scripts/merge_train.py gate` reads Codex reviews only, so for a Codex-authored PR the merging agent checks condition (1) by hand.
 
 ## Change history
 
@@ -947,3 +962,10 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-09-26 | Addendum 2026-09-26b — operator rulings: seat binding (human-read binding of seat to executor; A6 named acceptance tests on any card granting `worktree.write` or `research.run`), staged-debris 2 MB allowlist ceiling and force-added-ignored check, GLM credential isolation recorded as an owed operator host action. Card-grants and merge enforcement rows corrected; Addendum 2026-09-26's seat-binding row gains a supersession pointer. | Joshua (rulings) + Claude Code |
 | 2026-09-27 | Addendum 2026-09-27 — operator ruling on handoff-contract item 1: the H4, H5b and H8c cards (dispatched and returned without passing `check_brief.py`) are exempted as recorded deviations, not retro-fitted; the staged-acceptance set is exempted as a set file whose copied-out cards must pass; the undispatched M2 card is restructured instead. Enforcement at the operator's same-day direction: the `handoff-brief-form` gate (forward-only from 2026-09-27, plus any card with an authority block; the four exempt files named). Item 1 gains a pointer; the enforcement-point table gains a *card form* row. | Joshua (ruling, direction) + Claude Code |
 | 2026-09-30 | Addendum 2026-09-30b — proposed: operator-directed orders, exits and cancels are `trade.submit`, operator act (`high`), never grantable in a card; ratified on operator merge. Original X-1 sweep hold is historical; completed sweep inventory and evidence are on #566 (2026-10-01). | Joshua (direction) + Codex |
+| 2026-10-24 | Addendum 2026-10-24 — operator ruling: seats bound to Claude and Codex; GLM dropped; direct-prompt handoffs | Joshua |
+| 2026-10-24 | Addendum 2026-10-24b — operator rulings: conditioned agent merge GO (independent review + green CI + pinned head); credential custody (agent PAT, no agent Fly credential, unused credentials removed, rail CrossTrade secrets wiped, no standing Fly login) | Joshua |
+| 2026-10-25 | Addendum 2026-10-25 — operator ruling: Claude does not review its own work; Codex is the separate reviewer | Joshua |
+| 2026-10-25 | Addendum 2026-10-24b A amended — operator ruling: a clean fourth Codex review still clears the merge gate; beyond the fourth unruled | Joshua (ruling) + Claude Code |
+| 2026-10-25 | Drift corrections (proposed): §Decision merge-authority line points to 10-24b A; enforcement rows and 10-24b A/B match the live ruleset (`skills (3.12)` required, not strict; bypass list empty) | Claude Code (proposed; needs Joshua's go) |
+| 2026-10-25 | Addendum 2026-09-30b amended — standing, revocable GO for the weekly account-preservation trade; other orders still need per-act direction | Joshua |
+| 2026-10-26 | Addendum 2026-10-26 — operator ruling: cross-agent review (Codex reviews Claude, Claude reviews Codex); amended 2026-10-27: a clean Claude review at head meets merge GO condition (1) for a Codex-authored PR | Joshua |

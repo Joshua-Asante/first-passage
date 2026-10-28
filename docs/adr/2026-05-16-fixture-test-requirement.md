@@ -9,6 +9,7 @@
 **Authored:** 2026-05-16
 **Author:** claude.ai (Tech Advisor)
 **Lock owner:** Joshua
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-60); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ## §0 Rule 0 reads
 
@@ -98,8 +99,7 @@ criteria mirror M-class.
 `scripts/fetch_oanda_bars.py`, `firm_rules.py`, `accounts.py`. Each retrofit
 takes ~30–60 min (fixture design + test authoring + first-run verification).
 One-time cost; ongoing cost is the author-time gate adding ~15 min per new
-analysis script. Hook 1 exit status remains 1 until retrofit completes —
-that exit code IS the canonical retrofit inventory.
+analysis script.
 
 **Methodology layer is NOT modified.** This ADR is engineering hygiene.
 INQHIORI's hard core (falsifiable-H gate to investigation) remains textual
@@ -160,14 +160,6 @@ later."
 ## §10 Audit hooks (runnable at next cycle)
 
 ```bash
-# Hook 1: RETIRED 2026-06-08 (see Amendment). The script
-# scripts/check_brief_evidence_coverage.py is deleted — its basename heuristic
-# (tests/test_<basename>.py) did not match the repo's test-naming convention,
-# it scanned §0 (broader than §2's §3/§4-evidence scope), and it globbed closed
-# briefs with pre-monorepo/confabulated paths, so it was all-false-positive and
-# unwireable. The §2 read-AND-fixture-tested discipline is now a human check at
-# §0-authoring time, backed by Hook 2 (pytest) and scripts/check_brief.py.
-
 # Hook 2: fixture-test suite runs green.
 pytest tests/ -v
 

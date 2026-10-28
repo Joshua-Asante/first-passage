@@ -20,6 +20,7 @@ one marked U1 in the dense-1m lane's own vocabulary, this one does not, see §5)
 [`docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-5-closure-ambiguous-hold.md)
 and [`Q-TNEC-CON-4-closure-ambiguous-hold.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-TNEC-CON-4-closure-ambiguous-hold.md)
 (the 9-consecutive-null thread this override is evaluated against)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR11-50, ADR11-51, ADR11-52); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -94,18 +95,9 @@ separately) — an evidence-free exercise of standing operator authority, not a 
 **Decision:** `Q-ICT-OTE-1` is admitted to the standard TNEC/ICT construct lifecycle — parent-side
 cheap falsifier → `PREREG_G0` freeze → operator explore GO → EXPLORATION score → typed closure —
 **as if the analogue-modality pause did not apply to it**, specifically and only for this construct.
+The exception was spent 2026-08-20: the cheap falsifier returned `FALSIFIED`, `PREREG_G0` was never
+frozen, and `Q-ICT-OTE-1` closed `STOP` at $0/K=0 (change history).
 
-**What this ADR licenses right now:** the parent-side cheap falsifier only (§7 Phase 1) — $0, cache
-reuse of the already-on-disk MNQ 1m panel (pulled this session for `Q-TNEC-CON-4`'s CONFIRM run), no
-manifest, no Q-ID spend, generous-by-design per `lesson_run_cheap_falsifier_before_authoring`.
-
-**What this ADR does NOT license:** the `PREREG_G0` freeze or any real-panel EXPLORATION score. Those
-remain gated behind a **separate, later operator explore GO** — the same two-step discipline every
-TNEC/ICT cell in this corpus (including `Q-TNEC-CON-4`/`CON-5` themselves) has always used, and the
-same discipline the CON-4 override ADR applied to its own Phase 3. This ADR's own approval does not
-collapse that gate.
-
-**Effective:** immediately upon acceptance, for the cheap-falsifier step only.
 **Scope:** `Q-ICT-OTE-1` alone. No other candidate from the wider-ICT-vocabulary ranking (Order
 Blocks, Breaker Blocks, SMT Divergence) is admitted by this decision.
 
@@ -149,11 +141,6 @@ those need the separate operator decision named in §2.
   `CON-1–5` or licensing `CON-6`. `Q-ICT-OTE-1` is filed outside that lane by its own scoping §0; this
   ADR's exception is to the analogue-modality ADR's Boundary clause specifically, a different governing
   mechanism, and touches nothing in the dense-1m lane.
-- **Skipping or reordering the cheap falsifier's stop-geometry test.** The scoping doc's §2.4 names
-  this as the first thing to check, not a disclosure after the fact — the falsifier must report mean
-  stop_dist alongside mean gross pts, exactly as CON-4/CON-5 did.
-- **Treating a cheap-falsifier PASS as license for `PREREG_G0` freeze or real-panel scoring.** §2 is
-  explicit: those need a separate explore GO.
 - **Retuning the Fib band (0.62–0.79) or the FVG-precondition choice (scoping §2.2) after seeing any
   falsifier or explore number** — both were named before any measurement exists specifically to
   prevent this (Known Trap #12).
@@ -192,7 +179,7 @@ separate GO) bounds the downside to $0 unless the operator separately authorizes
   falsifier for `Q-ICT-OTE-1`: reuse the existing `_mnq_1m.parquet` panel; test the raid→confirmed-leg→
   Fib-zone→sweep-extreme-stop construct's mean signed gross against a generous pass bar (same
   discipline as every prior `_cheap_falsifier_*` in `lab/analysis/c1/cheap_falsifiers_2026-08/`),
-  reporting stop_dist first per §5's forbidden-move guard. File the result as a `_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md`
+  reporting stop_dist first. File the result as a `_cheap_falsifier_ict_ote_1_2026-08-20_LOG.md`
   in that directory, matching house convention.
 - **Phase 2 (NOT licensed by this ADR)** — if Phase 1 passes: `PREREG_G0` freeze, still no K spent
   until an explore GO is separately granted.

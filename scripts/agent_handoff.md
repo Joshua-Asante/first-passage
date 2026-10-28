@@ -1,6 +1,9 @@
 # Durable Claude handoffs
 
-Use `dispatch_claude.ps1` for local CLI dispatches. The Cursor wrapper
+Use `dispatch_claude.ps1` for local CLI dispatches. For Codex, `dispatch_codex.ps1` is a thin
+wrapper (no receipts): app-bundled `codex.exe`, `-C <worktree>`, `-s workspace-write|read-only`,
+`-o <file>`, and the agent token from `FP_AGENT_GH_TOKEN` as `GH_TOKEN` for the child only; it
+refuses a directory holding `.env`, and `-DryRun` prints the command without the token. The Cursor wrapper
 (`dispatch_cursor.ps1`) and its `-Slug` worktree, `-Copy` staging and
 `-ForceCommands` options retired with the Cursor lane on 2026-09-15
 ([worker-surface allocation](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md),

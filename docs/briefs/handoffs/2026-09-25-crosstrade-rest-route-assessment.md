@@ -382,3 +382,6 @@ Asked (20:17Z) which permitted interface, if any, lets a privately owned Python 
 
 **Status:** the evaluation account has **no approved Python-engine route** on current support guidance (UNRESOLVED pending human compliance review). The rail stays disarmed. New Tradeify-route work and native-platform rewrites stay deferred under Joshua's confirmed sequencing (2026-10-12). No native runtime is approved; a proposal is open as a draft (#807). Existing code and evidence are preserved.
 
+## Addendum 2026-10-25 — pointer: route superseded 2026-10-16
+
+The 2026-10-12 deferral above is overtaken. Joshua recorded Track B as superseded for Tradeify on 2026-10-16: this record's bridge route is not a permitted Tradeify destination, and the 11-08 branch (a) (resume on a compliance reversal) is withdrawn. Tradeify remains an optional native-only lane for a strategy run only at Tradeify. Owner: [checklist Addendum 2026-10-16](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify).

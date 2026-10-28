@@ -1,4 +1,4 @@
-"""Adversarial tests for check_supersession_placement (operational_rules.md Rule 14).
+"""Adversarial tests for check_supersession_placement (operational_rules.md §14).
 
 Per lesson_discipline_guards_need_adversarial_tests: a guard earns trust only by
 FAILING on a planted defect. The planted-violation cases here are the load-bearing
@@ -53,7 +53,7 @@ def test_lowercase_superseded_in_addendum_heading_fails(tmp_path):
 # ---------------------------------------------------------------- valid patterns
 
 def test_head_banner_passes(tmp_path):
-    """The Rule-14 repair: a banner upstream satisfies the intercept."""
+    """The operational_rules §14 repair: a banner upstream satisfies the intercept."""
     assert _scan(tmp_path, (
         "# Title\n\n> ⚠ SUPERSEDED — see Addendum c before citing §2.\n\n"
         "## §2 — Results\n\nThe answer is 4 in 5.\n\n"
@@ -78,7 +78,7 @@ def test_additive_addendum_passes(tmp_path):
 
 
 def test_no_addendum_passes(tmp_path):
-    """In-place corrections (no addendum heading) are Rule-14 prose territory,
+    """In-place corrections (no addendum heading) are operational_rules §14 prose territory,
     deliberately outside the mechanical gate's scope."""
     assert _scan(tmp_path, (
         "# Title\n\n## §1\n\n~~Old claim~~ WITHDRAWN — corrected in place.\n"

@@ -43,15 +43,21 @@ unedited — this is not a retroactive rewrite. **New entries use this light for
 ## M-N — short title
 
 **Date:** YYYY-MM-DD · **Anchor:** the dated brief/ADR/commit/finding that surfaced this
-**What broke:** the incident and its cost (dollar figure or audit-instance count), in 1-3 sentences.
+**What broke:** the dated incident and what it cost, in 1-3 sentences.
 **Rule:** imperative, one sentence — "Always X." / "Never Y." / "Before Z, do W."
 **Mechanism (optional):** one line on why this fails, if not obvious from the rule alone.
 **Link:** the anchor artifact.
 ```
 
-A lesson is added when a real incident earns it — no promotion ceremony, no dollar threshold, no
-CANDIDATE→PROMOTED state machine to track separately. Once written, it's in force. A superseded
-lesson stays (history-preserving, never deleted), marked `[SUPERSEDED — see M-N]` at its own top.
+A lesson is added when a dated incident earns it — no promotion ceremony, no dollar threshold, no
+CANDIDATE→PROMOTED state machine. Once written, it is in force as a registry lesson that work
+touching its anchor reads and applies; promoting it into standing guidance (a skill, hook,
+AGENTS.md or rule edit) still needs a high-severity incident or independent recurrence
+([AGENTS.md §Continuous improvement](../../../AGENTS.md#continuous-improvement) item 5). A
+superseded or retired lesson follows the existing retention and retrieval rules
+([Rule 31](../../operational_rules.md#rule-31--artifacts-earn-their-place),
+[`docs/ltm/README.md`](../../ltm/README.md)): keep the evidence still needed and repair surviving
+references to it; no tombstone is required per deleted sentence.
 
 **Legacy 8-field format** (M-7 onward, pre-2026-08-29): Status (`CANDIDATE`/`PROMOTED`/`DEMOTED`) ·
 Anchor incident · Cost (dollar / audit-instance / wrong-verdict count) · Rule · Mechanism ·
@@ -66,23 +72,10 @@ next session install (same repo-wins convention as `operational_rules.md` §8's 
 
 ---
 
-## Migration plan (M-1..M-6)
+## Numbering
 
-**Decision (2026-05-08):** the lesson-registry on-disk format spec above is
-confirmed. M-1..M-6 (currently in user memory entries + Notion lesson page)
-migrate to this file when next a brief or §0 cites them and the format
-mismatch surfaces. Until then, the Notion / memory pointers remain
-authoritative for those six and this file holds only newly-authored or newly-
-PROMOTED methodology lessons (M-7 onward).
-
-This is a deliberate "grow on evidence" choice: porting six lessons cold is
-cheap-but-ceremonial; porting on first cite is load-bearing. The migration
-order will be the order in which they are next cited.
-
-If a future brief authors a fresh M-class lesson before any of M-1..M-6 are
-cited, that fresh lesson lands here directly under its own M-N tag (using the
-next free integer above the highest currently-pointed-to in memory; check
-both Notion and `~/.claude/projects/.../memory/` before claiming a number).
+A new M-class lesson takes the next free integer above the highest M-N in this file. M-1..M-6
+were never migrated here (no headings exist) and M-25 was never assigned; neither is backfilled.
 
 ---
 
@@ -115,11 +108,10 @@ DJ30 2d / NAS100 2d bugged) is to be measured by
 on 2026-05-11. Promotion threshold (≥$3K cumulative) clears the backfill
 gate.
 
-**Rule:** Before declaring a Pine strategy LOCK complete, audit the alert
-plumbing: every signal-emitting condition MUST have a paired `alert()` call
-(not just `alertcondition()`), and the active-window guard must wrap both.
-The lock checklist (§7 sub-rule #5: "operational-tooling integration phase")
-extends with an "anticipation alerts wired" item.
+**Rule:** Retired 2026-10-25 (rule consolidation D6; LESSONS-M1-12, M1-13): the
+Python daemon, not TradingView alerts, is the signal origin
+([S2](../../adr/2026-08-07-loop-s2-signal-host-fork.md)); Pine-edition alert changes
+follow c1-rail invariant 9.
 
 **Mechanism (why this fails):** `alertcondition()` declares an alert template
 that the user must manually wire in TV's UI. `alert()` fires immediately at
@@ -138,18 +130,6 @@ alerts are wired.
 **Watch-point:** During lock-event hook (`scripts/lock_event_hook.py`) and
 during §0 of any "lock complete" brief — grep the locked Pine source for
 `alert(` calls and confirm one fires inside each entry-condition branch.
-
-**Output trigger:** When the watch-point catches missing `alert()` plumbing,
-halt the lock, patch in same-session, and update this lesson's Cost section
-with the audit-instance count (third firing → cumulative-firing route to
-PROMOTED).
-
-**Forbidden moves:**
-- Do NOT declare a lock complete on the strength of an `alertcondition()`-
-  only audit. The `alert()` call is the load-bearing surface; the
-  `alertcondition()` is decoration.
-- Do NOT defer alert-plumbing fixes "to next lock cycle"; same-session patch
-  preserves the audit window cleanly.
 
 **Reproducer / worked example:** Backfill script at
 [ops/live_journal/scripts/m7_anticipation_gap_backfill.py](../../../ops/live_journal/scripts/m7_anticipation_gap_backfill.py)
@@ -317,11 +297,7 @@ surfaced only as a volatile flag string with no persisted audit timestamp.
 status table adjacency, `cmd_update` duplicate metrics, silent daily-loss
 reference, phase-complete persistence ambiguity); instance count over dollars.
 
-**Rule:** For firm-specific rule validators, **route display and failure through the
-validator exclusively** for that firm; keep simplified accounting properties only
-for firms that do not use the validator. Never default fake inputs that defeat
-explicit skip paths. Persist audit-worthy completion (`phase_completed_at` per-phase
-dict of ISO timestamps) when adopting completion semantics.
+**Rule:** Never default fake inputs that defeat explicit skip paths.
 
 **Mechanism (why tests missed it):** Integration tests exercised validator math;
 they did not assert **single-truth UI** (no adjacent contradictory columns) or
@@ -357,7 +333,7 @@ lines for FXIFY.
 Aegis USDJPY silent-zone trade; below $3K promotion threshold. Pattern surfaced
 2026-05-19; brief landed retroactively 2026-05-28 per Path A of Q-PARITY-1
 §0-grounding review). Slot allocated as the next free integer above M-10 per
-the [§Migration plan](#migration-plan-m-1m-6) registry rule; Appendix B of the
+the [§Numbering](#numbering) registry rule; Appendix B of the
 landed brief originally targeted M-8, which was already taken (mechanical
 thresholds need a qualitative override channel, PROMOTED 2026-05-10).
 
@@ -637,12 +613,11 @@ pyramid ~33% under-sized (500 vs 750). Dollar cost unmeasured (depends on
 whether NAS/DJ30 fired live in-window); no measured loss isolated, so anchored
 on instance count, not dollars.
 
-**Rule:** Every Pine parameter-lock change (allocation refresh, risk / pyramid /
-contract-value / day-stop / hour-block edit) must be applied to BOTH the
-strategy `.pine` AND the indicator `.pine`, and both must be re-exported to
-TradingView. A refresh applied to only one file silently splits backtest from
-live. The `params.toml` 5-step same-commit workflow gains a step: "update the
-indicator `.pine` alongside the strategy `.pine`."
+**Rule:** Retired 2026-10-25 (rule consolidation D6; LESSONS-M1-30, M1-31, M1-32):
+locked parameters and Pine are immutable (AGENTS.md Rule 14), indicator `.pine` files
+survive only under `core/strategies/_archive/`, and the `params.toml` gate is
+[retired](../../adr/2026-08-03-params-toml-gate-retirement.md). The finding stands: a
+refresh applied to only one of two files silently splits backtest from live.
 
 **Mechanism (why this fails):** Each strategy ships as two Pine files with
 duplicated parameter inputs — the strategy (`strategy.*`, the backtest/MC
@@ -691,12 +666,6 @@ case is covered by M-12 (deployment verification) + the manifest hash gate.
 Not yet covered by the gate: `contractValue` / `maxTradesDay` (future extension).
 
 **Forbidden moves:**
-- Do NOT declare an allocation refresh / Pine lock change complete after
-  editing only the strategy file.
-- Do NOT treat `validate_params.py` 0/0 as evidence the indicators are
-  current when Pine is ABSENT from the clone — it emits a "no Pine present"
-  WARN and checks nothing. When Pine IS present it now covers risk +
-  `pyramidSize` on both files (but still not `contractValue` / `maxTradesDay`).
 - Do NOT assume the indicator and strategy agree because they share a
   shorttitle; they have independent `input.float` defaults (see
   `MEMORY.md/feedback_audit_doc_unreliable_for_pine_defaults.md`).
@@ -818,12 +787,7 @@ infrastructure), M-9 (gitignored bytes not git-reconcilable).
 
 **Anchor incident:** US500 discovery, first-passage analysis of the ORB candidate. **(a)** A Sharpe-~0.6, ~1-trade/day edge caps at **~58% challenge pass-rate regardless of risk sizing** — low risk times out before +5%, high risk busts at −5%. That ceiling is computable a-priori from (per-trade edge × frequency) vs the ±5% barrier geometry; no 20k-path MC is needed to see it. **(b)** An exit-policy sweep showed a low-variance, high-information-ratio **give-back-33%-of-open-profit** trailing exit (WR 0.755, std 0.49) **beats** a max-positive-skew lottery exit (breakeven@+0.5R, skew +2.52) for the 120-day-capped FXIFY challenge — the deadline rewards reaching +5% fast with controlled variance, not waiting for a fat right tail.
 
-**Rule:** The FXIFY objective ("reach +5% before −5% within a horizon") is a **Sharpe-race-with-a-deadline**, not a symmetric first-passage where skew dominates. Two consequences: **(1)** screen candidates early on the **analytic pass-ceiling** — a thin single-setup edge (low edge×frequency vs the barrier) has a computable ceiling near coin-flip and is dead-for-the-objective even when the edge is genuinely real; this is *why* "more independent setups per day" beats "a fatter single edge." **(2)** Among exits, prefer the **highest information ratio** (drift/variance) over the highest skew; truncating variance to reach the target faster lowers bust within the horizon. Applies to every leg's challenge-phase sizing, not just new candidates.
-
-**Forbidden moves:**
-- Do NOT optimize a challenge exit for maximum positive skew; optimize for information ratio + time-to-target under the horizon cap.
-- Do NOT commission a full first-passage MC before computing the analytic edge×frequency-vs-barrier ceiling (it may already disqualify the candidate).
-- Do NOT treat a "real, positive-expectancy" edge as challenge-viable without its frequency-scaled pass-ceiling.
+**Rule:** Retired 2026-10-25 (rule consolidation D6; LESSONS-M1-50, M1-51): no `core/firm_rules.py` tier carries a deadline cap, and the FXIFY challenge is a historical fixture (`core/historical_challenge.py`). The finding stands: the FXIFY objective ("reach +5% before −5% within a horizon") was a **Sharpe-race-with-a-deadline**, not a symmetric first-passage where skew dominates — a thin single-setup edge has a computable pass-ceiling near coin-flip, which is *why* "more independent setups per day" beats "a fatter single edge", and truncating variance to reach the target faster lowers bust within the horizon.
 
 **Sibling lessons:** extends `prop-firm-challenge` (challenge MC / first-passage) and the portfolio first-passage framing [[project_decompound_remc_canonical_shift_2026_06_07]]; sibling to the single-setup frequency-starvation note in `ops/instruments/SPX500.md`.
 
@@ -848,6 +812,8 @@ infrastructure), M-9 (gitignored bytes not git-reconcilable).
 
 **Worked example:** [`docs/briefs/closures/Q-GATECART-1-survivor-gate-cartography.md`](../../briefs/closures/Q-GATECART-1-survivor-gate-cartography.md) + pre-registration §F (freeze `453148a`); anchors reproduce from `breadth.load_baseline_panel` (S_A) and `research_utils.deflated_sharpe` (S_floor / K-sweep).
 
+**Closed form + n-invariance (ST-EH-1, 2026-07-26):** annualized floor ≈ `(E[max Z_K] + 1.645) / sqrt(years_of_scoring_era)` with `E[max Z_K] = (1−γ)·Φ⁻¹(1−1/K) + γ·Φ⁻¹(1−1/(K·e))`, γ = 0.5772. The per-trade floor and the annualization factor both scale with sqrt(trades/yr), so trade frequency cancels and the floor is nearly n-invariant (family K = 44 over the 7.2-year confirm era gives ≈ 1.44 whether cells trade 150 or 550 times a year). Corollaries: (a) dual-window selection reads double the grid K, because each window read can fire a lane (ST-EH-1 banked K = 84, not 44); (b) an unreachable floor need not kill a campaign: ST-EH-1 disclosed before freeze that promotion was expected to be unreachable at cohort scale and was authorized on its other value (H1 adjudication, flag detection, engine and panel infrastructure). Disclosing and proceeding is legitimate; discovering unreachability after results is not. Reproducible via the Verification block of [`docs/briefs/pre-registration/2026-07-26-st-eh-1-preregistration.md`](../../briefs/pre-registration/2026-07-26-st-eh-1-preregistration.md).
+
 ---
 
 ## M-20 — Reachability must be simulated per-gate, in the gate's own units, at the adjudication panel's price basis
@@ -856,7 +822,7 @@ infrastructure), M-9 (gitignored bytes not git-reconcilable).
 
 **Anchor incidents (both 2026-07-16):** the first two mechanism-first campaigns after the HARV lane ADR both died at the **Stage-2 cost-law (bp space)** while their §R reachability attestations argued in **annualized-Sharpe space against the Stage-6 confirm floor**. D5: §R attested Stage-6 (gross 1.79 vs floor 0.65) and never simulated Stage-2 — cohort-implied edge ≈2.97bp vs hurdle 11.06bp, unreachable ~3.7×. H-OD-1: §R did simulate Stage-2 but in the wrong basis (recent index ~4400 vs the IS panel median 1942 that Stage-2 actually scores on — ~2.3× the cost fraction) with a ×10 commission mis-scaling ("≤0.03bp" vs actual 0.27bp @4400 / 0.62bp @IS) — corrected, the true world (cohort +1.5bp) passes at **no** commissions-included basis (hurdle 5.05bp IS / 2.23bp @4400). H-OD-1's mechanism meanwhile CONFIRMED in-sample (+1.444bp, t≈5.0, 9/9 years positive) — the gate, not the transfer premise, was the failure. HARV lane ADR §4 falsifier FIRED (both conjuncts, twice); amending ADR `Proposed` ([`2026-07-16-harv-attestation-same-units-supersession.md`](../../adr/2026-07-16-harv-attestation-same-units-supersession.md)).
 
-**Rule:** a §R attestation discharges a gate only when simulated **in that gate's own units** (a Sharpe-space argument does not discharge a bp-space cost gate), **at the basis the gate is scored on** (IS panel for Stage-2, OOS for Stage-6 — never a present-day or convenience basis), **with commissions divided out explicitly** (never waived as "negligible" without showing the division). For cost-law clauses the mandatory inequality is [`docs/methodology/strategy_harvest.md`](../strategy_harvest.md) §1 Requirement 5's — **derived mirror, not restated here**; that section is the sole authority for its exact form. Run it at admission too — seeds whose event-scale cannot clear it die for the cost of one division (both anchor campaigns would have).
+**Rule:** a §R attestation discharges a gate only when simulated **in that gate's own units** (a Sharpe-space argument does not discharge a bp-space cost gate), **at the basis the gate is scored on** (IS panel for Stage-2, OOS for Stage-6 — never a present-day or convenience basis), **with commissions divided out explicitly** (never waived as "negligible" without showing the division).
 
 **Forbidden moves:**
 - Do NOT attest "REACHABLE" from the confirm-floor argument alone when the campaign carries an upstream cost/kill gate — every gate the campaign can die at gets its own same-units simulation.
@@ -947,7 +913,7 @@ Mechanical audit hooks (grep regexes, count assertions, presence checks) are rep
 
 Mental form ≠ storage form. The hook author imagines the value as it reads in conversation or specification; the artifact stores it in whichever form the storage convention dictates. When the two diverge, the hook silently passes or fails on the wrong property.
 
-### Anchors (four instances: three 2026-05-10, one 2026-07-06)
+### Anchors (five instances: three 2026-05-10, one 2026-07-06, one 2026-09-11)
 
 | # | Round | Hook intent | Author's mental form | Storage form | Failure mode |
 |---|---|---|---|---|---|
@@ -955,6 +921,7 @@ Mental form ≠ storage form. The hook author imagines the value as it reads in 
 | 2 | GH #55 ratification, round 2 (commit `50664cd`) | Verify MC anchor pins in test file | `98.09% / 0.36% / 4.73%` (percent form) | `0.9809 / 0.0036 / 0.0473` (decimal form) | Hook matched zero pins; required round-trip correction |
 | 3 | PR #73 hook 4 (CC handoff for feed-equivalence-brief-commit) | Verify trashed Notion page ID doesn't leak outside §Lock metadata | `notion.so/358dc0b53c11818085d0cc36692e0185` (URL form) | `358dc0b53c11818085d0cc36692e0185` (bare page ID) | CC correctly used bare-ID grep to verify the property; surfaced hook over-scoping as a defect rather than a content failure |
 | 4 | Q-MECH-1 review, 2026-07-06 (`docs/ltm/briefs/Q-MECH-1_identify_notice_question.md` §H hooks 1–3) | Verify (a) exactly 4 Pre-Q gate blocks, (b) no causal language after Notices, (c) no hypothesis leakage | *"Grep the file, get the count/emptiness I saw pre-commit"* | The §H "audit hooks — outputs" block quotes the hook commands verbatim inside the same file it audits | Once committed, re-running hooks 1–3 self-matches on the quoted command text (`"Pre-Q gate:"`, `"because"` inside the causal-language pattern, `"hypothesis:"` inside the leak pattern) — claimed 4/empty/empty reproduces as 5/non-empty/non-empty. Hook 4 unaffected (its pattern text doesn't self-match). Substance underneath was independently re-verified clean by eye; only the hooks' post-commit re-runnability broke. |
+| 5 | PR #340 Track A A1 → A1r, 2026-09-11 | Verify the ADR has exactly one `## Addendum 2026-09-11` heading | *"1 hit, as at authoring"* | The same ADR's fenced option-D amendment template opens with a `## Addendum 2026-09-…` heading, and a second hook's own command line sits in the fenced §10 block | A later date fill (`2026-09-DD` → `2026-09-11`) inside the template made the hook return 2 hits, and a new `grep -c "Revised in place 2026-09-11"` returned 3 by matching its own line. Codex flagged it; re-running only the just-edited hooks did not. `check_brief.py` checks that a fenced hook exists, not that its stated baseline still holds |
 
 Instance 3 differs from 1 and 2 in cost: CC's autonomy absorbed the form-fidelity gap by interpreting the hook's *intent* (property: page ID does not leak) rather than its *expression* (form: URL string present). No round-trip, no dollar cost. The pattern still fired — CC's report flagged the discrepancy explicitly as a handoff-authoring defect.
 
@@ -1072,16 +1039,6 @@ by the always-on `pytest tests/` suite. The ADR's former mechanical Hook 1
 `tests/test_<basename>.py` basename heuristic did not match the repo's
 test-naming convention and it was all-false-positive.
 
-### Promotion criteria for F-class
-
-Same shape as M-class:
-- (a) single instance with dollar cost ≥ $3,000 OR
-- (b) three separate fixture-caught defects across the registry.
-
-F-1 stays CANDIDATE as a retroactive seed; PROMOTION fires on the second
-genuinely fixture-caught defect (i.e. one where the fixture suite, not
-manual inspection, surfaced the defect first).
-
 ---
 
 ## M-SWAP-1 — Risk-normalized MC absorbs additive-cost shocks via implied_1r recalibration
@@ -1151,7 +1108,6 @@ If the watch-point fires, the brief's Pre-Q gate must specify both adaptive-1R M
 - **Cite a FALSIFIED adaptive-1R MC as proof that an additive-cost shock is immaterial.** Q-SWAP-1 is this exact failure shape; cite it as worked example. The cost is real even when adaptive-1R MC absorbs it.
 - **Use adaptive-1R MC to set `dd_protection` calibration in the presence of a known additive-cost shock.** dd_protection was tuned assuming MC bust attribution reflects live risk; hidden costs invalidate that assumption.
 - **Tweak swap rates / cost magnitudes to make adaptive-1R MC produce a verdict-meaningful delta.** This is p-hacking through cost calibration. The right fix is fixed-1R MC, not rate tweaking.
-- **Treat M-SWAP-1 as falsifying the swap question** — it falsifies the *adaptive-1R MC's answer* to the swap question; the swap question itself is open until Q-SWAP-2 RESOLVES or FALSIFIES.
 
 ### Reproducer / worked example
 
@@ -1245,12 +1201,10 @@ When an investigation's half-panel split lands within ±2 months of 2024-04-30 a
 
 ### Rule
 
-When an investigation's half-panel split (regime-robustness or otherwise) lands within ±2 months of 2024-04-30:
-
-1. Treat the H1/H2 spread as priors-shifting; do NOT discount as sample-size noise.
-2. Reference `MEMORY.md/project_2024_regime_shift_accumulating_signal.md` (PROMOTED) explicitly in the brief's §1 / §4.
-3. If the spread is verdict-deciding (FALSIFIED / AMBIGUOUS-HOLD turns on it), consider running `portfolio_mc.py --boundary-sweep --ga4` (or analogous multi-boundary sweep) as a cheap-falsifier check — even when the canonical mid-panel boundary is the only one specified. The sweep takes ~5 minutes and discriminates "specifically 2024-04-30" from "any boundary."
-4. If the brief frames the spread as artifact-vs-structural, the search-space MUST include ≥3 non-2024 boundary dates with ≥18 months per side (or document the narrowing per the Q-REGIME-1 2025-01-31 precedent).
+Retired 2026-10-25 (rule consolidation D6; LESSONS-M2-24, M2-26, M2-27): the anchor is the
+retired Pepperstone legacy panel ([retirement](../../adr/2026-08-02-pepperstone-feed-retirement.md)),
+its transfer to CME panels is unestablished, and `--boundary-sweep` is wired to the legacy GA-4
+configuration (`core/mc/modes.py`). The finding and its evidence above stand.
 
 ### Mechanism (why this matters)
 
@@ -1276,7 +1230,6 @@ Promote from CANDIDATE → PROMOTED on the first of:
 
 ### Forbidden moves
 
-- **Discount a verdict-deciding H1/H2 spread as "H2-shorter sample-size variance" without running the multi-boundary sweep.** The sample-size confound is real (it was the original `accumulating_signal.md` flagged confound), but Q-REGIME-1 ran the discriminator and rejected the null at +2.06σ. Future investigations cannot reach for the discount unfalsified.
 - **Open Q-REGIME-2 (or any mechanism follow-up) as a fishing expedition without mechanism hypotheses.** Anti-p-hacking commitment from Q-REGIME-1 §5 forbids solution-baked Pre-Q authoring; Q-REGIME-2 must specify (a)/(b)/(c) candidate mechanisms in §4 before it spawns.
 - **Treat M-Q-REGIME-1 as confirming a specific mechanism.** It confirms that *some* structural inflection exists at 2024-04-30; the mechanism is unfalsified pending Q-REGIME-2.
 
@@ -1409,6 +1362,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 - **Anchor:** a sub-agent's 2,000-sim proxy at non-c1 parameters was transcribed into a closure as a signed direction ("anti-clearing, therefore conservative"); a measured 0.55–1.09pp per-cell sd was answered with N = 5 replications against a ±0.5pp tolerance without computing `SE = sd/sqrt(N)`.
 - **What broke:** both errors entered at a transcription boundary — the moment a number moved from someone else's output into the artifact — where attention is lowest and qualifiers are cheapest to drop.
 - **Rule:** at borrow time, in the same edit: convert the finding to your parameters; never state a direction from a proxy run (a proxy establishes "an effect may exist", never its sign); before any N-replication design print `2*SE` against the tolerance and raise N or switch to paired arms if it cannot answer; check sigma before believing a verdict that fires near the tolerance; mark provenance in the artifact as written, and fix the generator, not only the rendered document.
+- **Recurred 2026-10-01 (S5, PR #569):** a coordinator relayed a reviewer's derived ceiling ("k ≈ 6.12, so a 160 s ceiling") to the operator as the host-normalized ceiling. That figure scaled the whole charge, while the standing trigger-5 ruling scales compute only, which gives 130 s; the worker caught it. Before relaying a reviewer's derived number, check its basis against the standing rulings.
 - **Link:** siblings `lesson_metric_cohort_provenance_binding`, M-32.
 
 ## M-30 — Fetch and read `origin/main` before every multi-step build, before push, and before every irreversible or budget-spending step
@@ -1472,7 +1426,8 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 - **Date:** 2026-09-20 (migrated from Claude memory `lesson_llm_reviewer_fold_loop_needs_stopping_rule`; PRs #335 and #336, 2026-09-10/11)
 - **Anchor:** two sessions ran "fold every Codex finding, post `@codex review`, repeat": per-round counts 14, 15, 11, 7, 10, 14, 3, 8 (#336) and 7, 5, 5, 4, 3, 4, 1, 2 (#335); pushback 1 partial of 99; the umbrella doubled 66 KB → 133 KB and grew 18 → 31 packets and 11 → 16 operator decisions, four created by the reviewer. Codex was grounded — every cited line checked out — so the loop was a stopping-rule failure. A Codex "simplify" that replaced the plan and eight briefs with one 167-line plan re-found five defects the deleted briefs had already fixed within ten minutes; reverted.
 - **What broke:** a fix to finding X in round k landed on one surface and the reviewer found the other surfaces still restating the old design in round k+1 (M-26); unchosen conditional branches were specified instead of removed.
-- **Rule:** count findings per round and stop when the count fails to fall for two rounds or the document grows on a "fix" round; triage each finding with M-43 and expect nonzero pushback; route unchosen operator options out of the document before specifying them; end with N one-line folds, an explicit "Open items (recorded, not folded)" section, one reply per thread, and merge — no further review request. A simplification that deletes verified specifics must carry them forward. Never mention `@codex` in a coordination comment.
+- **Rule:** count findings per round and stop when the count fails to fall for two rounds or the document grows on a "fix" round; triage each finding with M-43 and expect nonzero pushback; route unchosen operator options out of the document before specifying them. A simplification that deletes verified specifics must carry them forward. Never mention `@codex` in a coordination comment.
+- **Recurred 2026-10-01 (PR #551, X-1 packet):** an operator ruling took about seven Codex rounds; each round found one more mirror (STATE, checklist addendum, commissioning, packet headline) that restated the ruling differently, or a case its wording left open. It converged once one verbatim rule went into the owner with a short linked form in every mirror, swept with `rg` in a single commit, and a stopping test was posted: fold a finding only if it changes who may act or when; list wording-only findings and ask the operator about merging with them open.
 - **Link:** siblings M-38, M-39, M-40, M-43, M-47.
 
 ## M-38 — Code-review fold loop on contract-driven code: after two rounds, rebuild from the invariant table
@@ -1489,6 +1444,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 - **Anchor:** three Codex rounds (6 → 6 → 7 findings) after two paragraph-level folds. Operator root cause: interface change under-scoped though the adapter protocol showed it; safety specified per feature (kill, EOD, restart, timeout) with no shared model of positions / working orders / unknown state / risk-reducing vs risk-adding actions; each fold left dependent requirements behind; the acceptance gate checked requirement coverage by test *name*, which green CI cannot falsify for a markdown-only PR. The rebuilt spec's next round still let four compositions conflict (a fallback branch that was a different strategy from the emulator-qualified one; cancel/replace of a protective stop vs "never unprotected").
 - **What broke:** a paragraph fold satisfies the quoted finding and nothing else; the finding count is a missing model.
 - **Rule:** write first (a) a state table with exactly one writer per state and an explicit `UNKNOWN`, (b) action classes with the fail-closed rule for `UNKNOWN`, (c) end-to-end sequences adapter intent → transport → admission → broker outcome → crash recovery with a cut at every step, (d) an event × state matrix for shutdown, EOD, feed failure, restart; derive requirements from those, each citing the sequences it serves. Any live-execution path is checked against the qualified (emulator) semantics — a recorded deviation does not qualify a substitute. Make the gate require executable sequence tests, not test names.
+- **Recurred 2026-10-21 (PR #882, runbook A2 G7 partial-close trim):** a ruling recommendation was drafted without a state model, and one fold took Codex from 1 P1 to 4 P1s (no quantity field on `Terminal`, no timer after an `Ack`, a blanket second-cancel guard, the HALT late-`Ack` case). The operator parked the PR; the parking comment requires states, events, timeouts and permitted repeats to be defined together. The rule covers ruling recommendations, not only specs.
 - **Link:** siblings M-37, M-38.
 
 ## M-40 — Stacked PR: request review only after the parent lands, or retarget the child's base
@@ -1515,7 +1471,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 - **Date:** 2026-09-20 (migrated from Claude memory `feedback_adversarial_review_before_ratification`; SLR-MYM-1 scoping brief, 2026-07-28)
 - **Anchor:** authored with full §0 Rule-0 reads, verbatim quotes and per-file git anchors, both `check_brief.py` gates 6/6 — a 14-agent refute-first review still returned 14 BLOCKER / 39 MAJOR raw findings. Six applied BLOCKERs invisible to the checkers: a double-applied multiplier (a 16× gate unreachable by construction); §2-C of an ADR cited while §2-A of the same document named the brief's mechanism inadmissible; S1–S6 claimed scored "verbatim", none scored; an N-basis mismatch across stages; the mandatory §R reachability attestation missing; a false bounding claim. The synthesizer's discard function mattered as much: it re-read source and dropped three unfounded reviewer claims, including a fabricated venue min-hold rule.
 - **What broke:** careful authoring plus green mechanical checkers is not enough; the checkers verify form.
-- **Rule:** before ratifying any Pre-Q, ADR, spec or closure, run a refute-first multi-lens pass (the pre-ratification panel workflow when licensed, else sequential fable-judge passes) whose synthesizer adjudicates by re-reading source and discards unfounded findings before reporting. In the three-seat model this is the Fable escalation lane's milestone job.
+- **Rule:** before ratifying any Pre-Q, ADR, spec or closure, run a refute-first multi-lens pass (the pre-ratification panel workflow when licensed, else sequential fable-judge passes) whose synthesizer adjudicates by re-reading source and discards unfounded findings before reporting. In the three-seat model this is the Fable escalation lane's milestone job. Since 2026-10-26 the pass is cross-agent: Codex adjudicates Claude-authored artifacts and Claude adjudicates Codex-authored ones; a same-agent pass is author input only ([surface-allocation ADR Addendum 2026-10-26](../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review)).
 - **Link:** `.claude/workflows/pre-ratification-adversarial-panel.js`; siblings M-32, M-34, M-43.
 
 ## M-43 — Three questions per reviewer finding: is the flagged text wrong, is the reviewer's fix right, is my fix right
@@ -1554,7 +1510,7 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 
 - **Date:** 2026-09-20 (migrated from Claude memory `feedback_codex_pr_review_replaces_inchat_workflow_verification`; operator ruling 2026-08-30)
 - **Anchor:** operator, interrupting an in-chat Workflow launch: "we will get adversarial verification when we open the pr… codex will take care of the adversarial review, we no longer have to conduct it in chat." Earlier in-chat passes had caught real defects, so the ruling is "don't duplicate", not "adds no value".
-- **What broke:** running both is redundant spend on a review that already fires at PR time.
+- **What broke:** running both is redundant spend on the Codex review the PR gets anyway (requested with `@codex review` after each push, per the merge-train skill).
 - **Rule:** for work headed into a PR, go from drafting to commit → push → open/update PR and let the PR review surface issues; in-chat multi-lens review stays available for work not entering a PR cycle and for the ratification gate (M-42), which the diff reviewer does not cover.
 - **Link:** the surface-allocation ADR (2026-08-29 addendum #1, retained); siblings M-37, M-43.
 
@@ -1566,11 +1522,21 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 - **Rule:** when a fix is ready and the PR is open, push first and refine the body afterward. For a gate that fails locally, reproduce it in a clean worktree from `origin/main` before diagnosing against local state — "byte-identical on main" cleared four implicated environment artifacts in one session. The rule is about not delaying a *verified* fix (M-45), not about skipping the read.
 - **Link:** siblings M-30, M-45.
 
+## M-49 — A pre-registered gate fails two ways: unreachable (cannot fire) or unbinding (live but never consulted); check both at freeze
+
+- **Date:** 2026-10-26 (migrated from Claude memory `lesson_gate_reachability_preregistration`; five firings recorded through 2026-08-10)
+- **Anchor:** unreachable: Q-HARV-0, DISC-CAMP-0 (`k_dsr=3177`), MNQPROX-2 (`n_paired=15`). Unbinding: the dense-1m entry lane's step-1 door check was scoped to C1–C11 and the MNQ DEAD list and never reached the `index-intraday-ohlcv-directional-timing-2026-07-21` domain bar, so `Q-TNEC-CON-1` and `Q-TNEC-CON-2` both ran unbound by a `tier=always` machine-consulted gate (`scripts/instrument_profiles.py cell`, which exits 1 when a prior binds). Repaired 2026-08-10 as lane-spec step 1a ([ADR 2026-08-10](../../adr/2026-08-10-temporal-selectivity-outside-mapped-levers.md) §2-D).
+- **What broke:** an unbinding gate reads as assurance in every artifact that cites the checklist while its predicate is never evaluated; the same family as M-27 (assurance inferred from a gate's name, not its predicate).
+- **Rule:** at every G0 or pre-registration freeze, ask of each gate (a) can it fire at the declared N, power, threshold and real K, and (b) what executes it, and did that run? Prefer a mechanical consult that exits nonzero over prose a reader must remember, paste its executed output, and check that a door check's scope reaches domain-level bars, not only instrument-scoped ones.
+- **Link:** `.claude/workflows/gate-reachability-audit.js`; that ADR's trigger T3 escalates the door check to a `gates.yml` limb if a lane G0 freezes with an unanswered `BINDING BAR`; siblings M-19 (its DSR-specific, quantified instance), M-20, M-27.
+
 ## Versioning & change-log
 
 Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to this section's own
 "maintained at the bottom" convention) — content unedited by the move.
 
+- **2026-10-26:** M-49 migrated from the Claude-memory store (`lesson_gate_reachability_preregistration`, until now cited here and in `LESSONS_INDEX.jsonl` as an external lesson). Later firings recorded from their memory twins: M-29 (#569), M-37 (#551), M-39 (#882), M-AHF anchor 5 (#340), and the ST-EH-1 closed form on M-19. M-42's pass made cross-agent (Addendum 2026-10-26).
+- **2026-10-26:** Rule consolidation step 5 (D10(c), D10(e)): the per-lesson promotion criteria of legacy entries (CANDIDATE→PROMOTED, dollar thresholds) no longer bind; the entries are not rewritten. Standing-guidance bar and retention rule stated in §Format spec; numbering rule in §Numbering.
 - **2026-09-20:** M-26 through M-48 migrated from the Claude-memory store (process / verification / multi-agent review lessons) in the light format, so every harness reading this repo sees them; each carries its memory twin in `LESSONS_INDEX.jsonl`. Operator direction 2026-09-20 (AGENTS.md single instruction file; three-seat delegation). No retroactive edit to M-7 … M-24.
 - **2026-08-29:** Format spec lightened for entries going forward: light 5-field format (Date /
   Anchor / What broke / Rule / optional Mechanism / Link) replaces the 8-field template + dollar-
@@ -1667,9 +1633,7 @@ Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to t
   half-application (strategy `.pine` updated to DJ30 pyramid 750 / NAS risk
   0.37; indicator `.pine` left at the 2026-05-14 values pyramid 500 / NAS 0.45,
   surfaced 2026-05-28 during the 8-file Pine drop + strategy-vs-indicator
-  divergence audit). Pattern: Pine parameter-lock changes must update BOTH the
-  strategy and indicator `.pine`, and both must be re-exported to TV — a
-  one-file refresh silently splits backtest from live. Mechanism: gitignored
+  divergence audit). Mechanism: gitignored
   Pine is absent on CI/public clones (gate WARNs, checks nothing); even when
   present, the pre-fix Pine check covered only the risk input on both files —
   `pyramidSize` was unchecked, so the DJ30 indicator 500-vs-750 drift had no
@@ -1732,3 +1696,7 @@ Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to t
   pool (2026-07-22 `dd_lock_offset_usd` boot-95th 4.54%→6.69% incident).
 - **2026-08-01 (approx.):** M-24 added — a config fix does not reach an independent hard-coded
   reimplementation (`gap_stage2_capbound.eval_sim` 2026-07-28 incident).
+- **2026-10-25:** Rule consolidation ruling D6 retired the M-7, M-13, M-18 and M-Q-REGIME-1
+  rule statements tied to retired surfaces (rows LESSONS-M1-12, M1-13, M1-30, M1-31, M1-32,
+  M1-50, M1-51, M2-24, M2-26, M2-27, M2-99); anchors, costs and incident evidence are kept.
+  Prior text at `91ccd984693d62c5c83ff3f428188dd47085633d`.

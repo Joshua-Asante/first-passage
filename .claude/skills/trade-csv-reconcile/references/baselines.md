@@ -21,13 +21,6 @@ the Pine source on disk; this file is a cache for fast reconciliation.
 > 2026-05-23 allocation refresh is the in-repo precedent for one landing without a version bump. On re-arm,
 > steps 1–4 apply **in full**.
 
-> **Repo copy.** This is the in-repo canonical cache at the path AGENTS.md
-> references. The `trade-csv-reconcile` skill is also installed as a plugin with
-> its own `references/baselines.md` — `scripts/reconcile.py --baseline` reads the
-> *plugin* copy, so until that copy is updated too, a `--baseline` run will report
-> DRIFT against the pre-2026-05-23 anchors it still holds. Keep the two in sync on
-> every re-lock.
-
 > **2026-08-14 — parameter/backtest values redacted from the public tree.** This file's per-strategy
 > Pine-config blocks and PF/WR/Net/DD tables (below, and their archival predecessors) are redacted per
 > [`docs/adr/2026-08-14-repo-public-visibility-transition.md`](../../../../docs/adr/2026-08-14-repo-public-visibility-transition.md)
@@ -53,7 +46,7 @@ TradingView's intra-trade (intrabar) max DD; do not cross-compare the two.
 
 ## Locked allocations / protection / MC pin (mirrors — not owned here)
 
-**Rule 7:** risk% / versions → [`AGENTS.md`](../../../../AGENTS.md) §Strategy Reference · `core/firm_rules.py` `_BASE_RISK`.
+**operational_rules §7:** risk% / versions → [`AGENTS.md`](../../../../AGENTS.md) §Strategy Reference · `core/firm_rules.py` `_BASE_RISK`.
 `dd_protection` literals → `core/dd_protection.py` · CLAUDE §Protection.
 Portfolio MC pin → [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md) · CLAUDE historical headline · engine `tests/core/test_mc_synthetic_engine.py`.
 Allocation-refresh ADR: [`2026-05-23`](../../../../docs/adr/2026-05-23-allocation-refresh-2.md).
@@ -135,7 +128,6 @@ their own panel; cite whichever with its vintage, never mix. Values redacted fro
 differs (Pepperstone vs OANDA).
 
 **BE logic IS the edge:** a substantial share of winners are BE-manufactured.
-**Binary-event pause rule applies** (BOJ, central-bank decisions) — manual, not a Pine condition.
 **Regime risk:** USDJPY range-regime sensitive; 2022 was a materially weaker year.
 
 ---

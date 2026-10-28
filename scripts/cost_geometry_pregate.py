@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""cost_geometry_pregate.py — instrument-ledger Phase-0 cost-geometry pre-gate.
+"""cost_geometry_pregate.py — instrument-ledger Phase-0 cost-geometry report (report-only).
 
 A *mechanical pre-flight* that makes the L-COST-GEOMETRY lesson a gate instead of
 a post-hoc finding. Run it on a candidate instrument's canonical TV/Pepperstone
@@ -28,11 +28,11 @@ headline cost-geometry ratio reported is `median(spread) / median(ATR15m)` — t
 cost in R the design would pay at a 1xATR stop; dividing by the stop ATR-multiple
 gives the realized `cost_R`.
 
-PASS iff `cost_R < ceiling` (default 0.05R). The 0.05R ceiling is the round-trip
-cost a PF~2.0, after-cost leg can absorb with margin: it is consistent with the
-standing 4x-median-cost hurdle (post-cost E[R] must clear 4*median_cost ->
-0.05R cost implies a 0.20R hurdle, comfortable against a >=0.2R gross edge).
-Tune with `--ceiling`.
+REPORT-ONLY (operator ruling 2026-10-24, option (b); ADR addendum 2026-10-24):
+there is no pass/fail threshold. The former 0.05R threshold existed only as an
+implication of the deleted universal 4x cost hurdle. The script records cost_R,
+its band and the realized stop-in-ATR (sub-ATR flag) for the Phase-0 ledger
+disposition; the candidate's own net-return and cost-sensitivity estimate decides.
 
 THE LOAD-BEARING CAVEAT (use the REALIZED stop, not the assumed one)
 --------------------------------------------------------------------
@@ -67,7 +67,7 @@ Usage
     python scripts/cost_geometry_pregate.py \
         --csv panel.csv --spread 0.08 --realized-stop 0.9
 
-Exit codes: 0 PASS (cost_R < ceiling) · 1 FAIL · 2 usage / data error.
+Exit codes: 0 report produced · 2 usage / data error.
 """
 from __future__ import annotations
 
@@ -127,9 +127,8 @@ class GateResult:
     realized_stop_in_atr: float     # realized_stop / median_atr (sub-ATR flag)
     cost_ratio_1x_atr: float        # median(spread)/median(ATR15m)
     cost_r: float                   # round_trip_cost_price / realized_stop
-    ceiling: float
-    band: str
-    verdict: str                    # PASS | FAIL
+    band: str                       # comfortable | acceptable | marginal | crippling
+    sub_atr_stop: bool              # realized stop < 1x median ATR (the USOIL trap)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -284,11 +283,10 @@ def evaluate(
     realized_stop: Optional[float],
     slippage_per_side: float = 0.0,
     commission_bps_per_side: float = 0.0,
-    ceiling: float = 0.05,
     atr_period: int = 14,
     symbol: str = "",
 ) -> GateResult:
-    """Run the cost-geometry pre-gate and return a verdict record.
+    """Compute the cost-geometry report record (report-only).
 
     Exactly one of `spread` (scalar, price units) or `bars.spread` (a per-bar
     column) supplies the spread term; exactly one of `stop_atr` or `realized_stop`
@@ -319,7 +317,7 @@ def evaluate(
     rt_cost = round_trip_cost_price(rt_spread, slippage_per_side,
                                     commission_bps_per_side, ref_price)
     cr = cost_r(rt_cost, stop_dist)
-    verdict = "PASS" if (not math.isnan(cr) and not math.isinf(cr) and cr < ceiling) else "FAIL"
+    stop_in_atr = stop_dist / med_atr if med_atr else math.inf
 
     return GateResult(
         symbol=symbol,
@@ -334,19 +332,18 @@ def evaluate(
         round_trip_cost_price=rt_cost,
         stop_atr_mult=stop_mult,
         realized_stop=stop_dist,
-        realized_stop_in_atr=(stop_dist / med_atr if med_atr else math.inf),
+        realized_stop_in_atr=stop_in_atr,
         cost_ratio_1x_atr=(rt_spread / med_atr if med_atr else math.inf),
         cost_r=cr,
-        ceiling=ceiling,
         band=classify_band(cr),
-        verdict=verdict,
+        sub_atr_stop=stop_in_atr < 1.0,
     )
 
 
 def format_report(r: GateResult) -> str:
     sym = f" [{r.symbol}]" if r.symbol else ""
     lines = [
-        f"COST-GEOMETRY PRE-GATE{sym}  (instrument-ledger Phase-0)",
+        f"COST-GEOMETRY REPORT{sym}  (instrument-ledger Phase-0, report-only)",
         "=" * 64,
         f"  bars                 : {r.n_bars}  (ATR defined on {r.n_atr}, period {r.atr_period})",
         f"  median ATR15m        : {r.median_atr:.6g}  (price units, feed-sourced)",
@@ -368,18 +365,16 @@ def format_report(r: GateResult) -> str:
             f"  stop (realized)      : {r.realized_stop:.6g}  "
             f"= {r.realized_stop_in_atr:.2f} x ATR"
         )
-    if r.realized_stop_in_atr < 1.0:
+    if r.sub_atr_stop:
         lines.append(
             f"  !! SUB-ATR STOP ({r.realized_stop_in_atr:.2f} x ATR) — the USOIL trap: an "
             "assumed kxATR stop understates this; confirm the REALIZED geometry."
         )
     lines += [
         f"  realized cost_R      : {r.cost_r:.4f} R   [{r.band}]",
-        f"  ceiling              : {r.ceiling:.4f} R   (PF~2.0 after-cost; 4x-hurdle-consistent)",
         "-" * 64,
-        f"  VERDICT: {r.verdict}"
-        + ("" if r.verdict == "PASS"
-           else "  — cost geometry swamps the edge; do NOT backtest as specified."),
+        "  Record cost_R, band and stop-in-ATR in the ledger disposition; they feed",
+        "  the candidate's net-return and cost-sensitivity estimate.",
     ]
     return "\n".join(lines)
 
@@ -406,8 +401,6 @@ def main(argv: Optional[list[str]] = None) -> int:
                     help="per-side slippage in price units (round-trip = 2x)")
     ap.add_argument("--commission-bps", type=float, default=0.0,
                     help="per-side commission in bps of notional (round-trip = 2x)")
-    ap.add_argument("--ceiling", type=float, default=0.05,
-                    help="cost_R ceiling; PASS iff realized cost_R < ceiling (default 0.05)")
     ap.add_argument("--atr-period", type=int, default=14, help="ATR period (default 14)")
     ap.add_argument("--symbol", default="", help="label for the report")
     ap.add_argument("--json", action="store_true", help="emit the result record as JSON")
@@ -432,19 +425,18 @@ def main(argv: Optional[list[str]] = None) -> int:
             realized_stop=args.realized_stop,
             slippage_per_side=args.slippage,
             commission_bps_per_side=args.commission_bps,
-            ceiling=args.ceiling,
             atr_period=args.atr_period,
             symbol=args.symbol,
         )
     except ValueError as exc:
-        print(f"cost-geometry pre-gate error: {exc}", file=sys.stderr)
+        print(f"cost-geometry report error: {exc}", file=sys.stderr)
         return 2
 
     if args.json:
         print(json.dumps(result.to_dict(), indent=2))
     else:
         print(format_report(result))
-    return 0 if result.verdict == "PASS" else 1
+    return 0
 
 
 if __name__ == "__main__":

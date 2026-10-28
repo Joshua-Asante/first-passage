@@ -1,6 +1,6 @@
 """Boundary tests for MC simulation FP comparisons (Q-MCFP-1 §2.4).
 
-Rule 0-T compliance: each test exercises the inner FP comparison via paths
+Rule 21 (Rule 0-T) compliance: each test exercises the inner FP comparison via paths
 constructed within ULP of the relevant threshold. Aggregator-level pass/fail
 is insufficient — these tests are the discrimination evidence that
 round(x, N) collapses ULP noise that the raw `<=` / `>=` comparisons admit.
@@ -30,10 +30,10 @@ from portfolio_mc import (
 )
 
 
-# ── Rule 0-T — direct _simulate_path call (vendor-free) ────────────────────
+# ── Rule 21 (Rule 0-T) — direct _simulate_path call (vendor-free) ────────────────────
 
 def test_simulate_path_direct_call_at_daily_loss_boundary():
-    """Rule 0-T: exercise the inner FP comparison directly via _simulate_path.
+    """Rule 21 (Rule 0-T): exercise the inner FP comparison directly via _simulate_path.
 
     Aggregator-level MC tests call `compute_default_config` over thousands of
     bootstrap paths, but no individual path is constructed to test the
@@ -47,7 +47,7 @@ def test_simulate_path_direct_call_at_daily_loss_boundary():
     `round(..., 6)` collapses ULP noise and the comparison fires, busting
     the simulation as `bust_daily` on day 1.
 
-    Q-MCFP-1 §2.7 Rule 0-T compliance evidence.
+    Q-MCFP-1 §2.7 Rule 21 (Rule 0-T) compliance evidence.
     """
     n_strats = len(STRATS)
     horizon = INACTIVITY_LIMIT + 1

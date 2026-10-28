@@ -3,7 +3,7 @@
 Q-XMEM-1's Delete route (parent brief Phase A2). Retrieval is deterministic and
 verbatim — there is no LLM anywhere in this path. That is the whole point: it
 DELETES the extraction-LLM/embedder exposure boundary rather than localising
-it, which is what let the Rule-7 denylist become a mechanical reject-list
+it, which is what let the operational_rules §7 denylist become a mechanical reject-list
 (see `guard.py`).
 
 Two invariants worth stating because they are easy to erode:
@@ -155,7 +155,7 @@ def search(conn: sqlite3.Connection, query: str, limit: int = 10) -> list[Hit]:
 
 def stage_note(conn: sqlite3.Connection, text: str,
                repo_root: Path) -> guard.Verdict:
-    """Write a note for operator review, refusing Rule-7 content outright."""
+    """Write a note for operator review, refusing operational_rules §7 content outright."""
     verdict = guard.check(text, guard.load_denylist(Path(repo_root)))
     if not verdict.ok:
         return verdict

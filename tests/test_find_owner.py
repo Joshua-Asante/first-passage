@@ -1,4 +1,4 @@
-"""Thin Rule 7 lookup — scripts/find_owner.py. Not a second owner table."""
+"""Thin operational_rules §7 lookup — scripts/find_owner.py. Not a second owner table."""
 from __future__ import annotations
 
 import importlib.util

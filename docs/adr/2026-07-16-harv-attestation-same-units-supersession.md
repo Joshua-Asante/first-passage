@@ -4,11 +4,12 @@
 **Decision date:** 2026-07-16
 **Supersedes:** `2026-07-13-harv-discovery-lane-ratification.md` in part — the §2 attestation *specification* only. The mechanism-first lane itself, the HARD gate (attestation blocks `register_search open`), and the register wiring all STAND.
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** operator ruling 2026-10-24 — §2 item 2 cost-law clause (Requirement 5) deleted; see Change history
 **Retain-until:** none
 **Trigger:** the parent ADR's own §4 falsifier **FIRED** on the H-OD-1 closure (2026-07-16),
 with the same defect retro-diagnosed in the D5 closure (2026-07-16) — per its §Revert action
 ("superseding ADR citing the dated campaign closure; do not edit §2 in place").
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR05-161); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -42,11 +43,7 @@ The parent §2 HARD gate stands, with the attestation requirement re-specified:
 1. **Per-gate, same-units.** §R must simulate **every** gate the campaign can die at —
    Stage-2 cost-law, Stage-6 confirm, placebo, temporal battery where bundled — **in that
    gate's own units**. A Sharpe-space argument discharges only a Sharpe-denominated gate.
-2. **Cost-law clause (mandatory formula).** The attestation must exhibit the inequality
-   `cohort δ (bp/event) ≥ 4 × RT_frac(panel-era median price)` with `RT_frac` computed from
-   the frozen execution model **plus commissions — never waived as negligible without the
-   division shown**. If the inequality fails at the adjudication panel's price basis, the
-   clause is UNREACHABLE: redesign the gate/instrument or do not open the campaign.
+2. *Cost-law clause deleted 2026-10-24 (operator ruling; see Change history).*
 3. **Adjudication-basis rule.** Every reachability quantity is computed at the basis the gate
    will actually be scored on (IS panel for Stage-2; OOS panel for Stage-6) — never a
    present-day or convenience basis.
@@ -89,3 +86,4 @@ Stage-0 already decided.
 | 2026-07-16 | Initial `Proposed` draft — same-units/per-gate/panel-basis §R attestation specification, triggered by the parent HARV-lane ADR's §4 falsifier firing twice (D5 + H-OD-1 Stage-2 cost-law kills under unreachable gates) | Claude Code (drafting) |
 | 2026-07-16 | `Proposed` → `Accepted` (operator). Acceptance sweep executed same session: §2.2's cost-law inequality landed as **Requirement 5** in [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) §1 admission requirements (was previously non-binding sourcing guidance pending this acceptance); discovery-campaign template §R checklist rows added; same-units rule noted in `.claude/skills/futures-anomaly-discovery/SKILL.md`; M-20 lesson already CANDIDATE-status in `methodology_lessons.md` from same-day drafting, unchanged by acceptance | Joshua (accept) + Claude Code (sweep) |
 | 2026-08-19 | §4/§6's named "optional later handoff" built: a `register_search open` pre-flight computing the §2.2 inequality from declared manifest fields and refusing (`lab/discovery/register_search.py::_require_cost_law`, new `--cost-law-*` CLI flags). Restates no formula — calls `cost_model.bp_hurdle`'s existing arithmetic; Requirement 5 stays the sole authority. **Opt-in, all-or-nothing, not yet mandatory** — omitting the flags keeps the pre-existing manual-attestation status quo unchanged on every lane; graduating it to a hard-required flag needs its own follow-up decision once exercised (same graduate-after-use pattern as the 2026-08-03 gate-stack audit's G10 F3/R3 items), not a silent default here. Paired with a separate, previously-missing K-ledger backing check (`lab/discovery/k_ledger_check.py`, wired as an optional `discovery_run_id` field into `promotion_packet.py`'s validator — additive, no `SCHEMA_VERSION` bump) closing a Rule-0 finding that nothing verified a candidate had a closed backing manifest before promotion. Both scoped narrowly after a Rule-0 audit found the two pieces were mostly wiring around existing, already-ratified math (G3 cost-law, G7 K-ledger per the gate-stack audit); a third piece originally proposed alongside these (statistical near-duplicate/IC-similarity detection over candidate signals) was found to be a genuine, unbuilt gap and deliberately deferred as a separate decision, distinct from and not blocked by this pair. 25 new/updated tests (`tests/test_register_search_cost_law.py`, `tests/test_discovery_k_ledger_check.py`, additions to `tests/test_promotion_packet.py`), paired positive/negative per this repo's own house style; full adjacent register_search/promotion suite re-run clean (100 passed, 0 regressions). | Claude Code (drafted + built at operator request, "GO on option E" / "proceed on that split") |
+| 2026-10-24 | **§2 item 2 cost-law clause deleted** (Requirement 5 and its sourcing copy, plus the `register_search` pre-flight), by Joshua's [2026-10-24 ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24). No replacement test. The same-units, per-gate and panel-basis attestation rules for the gates a campaign actually declares are unchanged. | Joshua (ruling); Claude Code (edit) |

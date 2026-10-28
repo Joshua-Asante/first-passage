@@ -13,7 +13,7 @@ help:
 	@echo "test / test-ops       pytest (all / ops/)"
 	@echo "root-doc-liveness     five-root-doc markdown link gate"
 	@echo "sync-liveness         INDEX/CATALOG liveness census (report-only)"
-	@echo "find-owner            Rule 7 owner lookup (path or token)"
+	@echo "find-owner            operational_rules §7 owner lookup (path or token)"
 	@echo "sync-skills           publish skills; requires REVISION and TARGET (or CHECK=1)"
 	@echo "sync-skills-check     read-only skill deploy drift check"
 
@@ -77,7 +77,7 @@ lab-path-relocation:
 sync-liveness:
 	@python scripts/sync_liveness_indexes.py
 
-# Rule 7 lookup. Not a sixth index; prints the owner row + pointer.
+# operational_rules §7 lookup. Not a sixth index; prints the owner row + pointer.
 find-owner:
 	@python scripts/find_owner.py $(Q)
 
@@ -113,7 +113,7 @@ lab-catalog:
 lab-archive-check:
 	@python scripts/archive_lab_analysis.py --check
 
-# Rule 11 floor: do standing ADR falsifiers still name inputs that exist?
+# operational_rules §11 floor: do standing ADR falsifiers still name inputs that exist?
 # Manual `--stats` wrapper. Same census already runs at the explicit `make audit`
 # cadence as report-only `--stats` (never `--strict`; see the script docstring).
 # A hard / `--strict` gate would block commits on ADRs nobody is touching (M-22).

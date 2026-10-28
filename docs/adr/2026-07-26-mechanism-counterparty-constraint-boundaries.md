@@ -5,8 +5,9 @@
 **Authors:** Joshua (direction) + Claude Code (Opus 5, drafter)
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** `2026-08-24-sourcing-phase-channel-retirement.md` — clause 2-B only (structural flow census sourcing channel); 2-A and 2-C untouched
+**Superseded-in-part-by:** `2026-08-24-sourcing-phase-channel-retirement.md` — clause 2-B only (structural flow census sourcing channel); 2-A and 2-C untouched · [operator ruling 2026-10-24](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) — the §5 micro-capacity forbidden move's 4× hurdle (Requirement 5 deleted); see the dated note there
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR07-53, ADR07-54, ADR07-60); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Amends-in-part:** [`2026-07-15-external-mechanism-harvest-intake.md`](2026-07-15-external-mechanism-harvest-intake.md) / [`docs/methodology/strategy_harvest.md`](../methodology/strategy_harvest.md) (Requirement 1a sharpened; §2.3 sourcing channel added; edits land on ratification, not before) and [`2026-07-11-discovery-campaign-defaults-ratified.md`](2026-07-11-discovery-campaign-defaults-ratified.md) Default #5 (decay monitor extended for constraint-flow seeds) + Default #2 K semantics (executed-vs-declared clause for operator-stopped campaigns).
 **Related:** [`2026-07-26-regime-candidate-flag-lane.md`](2026-07-26-regime-candidate-flag-lane.md) (sibling ADR, same session, Accepted 2026-08-21); ST-EH-1 closure (first case for §2-C).
 **Layer:** methodology (research rules of evidence only). No strategy/risk-control parameter, allocation, `dd_protection` constant, or Pine source is touched.
@@ -44,15 +45,7 @@ Separately, ST-EH-1's operator-stop exposed a hole in K semantics: `register_sea
 3. **WHY it survives — a capacity/awkwardness argument.** An explicit reason arbitrage capital has not consumed the rent: capacity below institutional minimum size, assembly-awkward data, or mandate-inelastic demand. "Nobody has noticed" is inadmissible. This clause operationalizes "lesser-mined": mined-ness is a property of (data × expressibility × capacity) triples, and a seed must claim its niche on at least one axis.
 4. **HOW it dies — a constraint observable.** For constraint-flow seeds, the Default-#5 decay monitor must watch the constraint's own observable (AUM, fix volume, imbalance size, OI) alongside the edge-series CUSUM. The constraint disappearing is the death certificate; PnL decay is only the symptom.
 
-**2-B. Structural flow census as a sourcing channel.** §2.3's channel portfolio gains a rank: **direct enumeration of mandated/mechanical flows on venue-legal instruments** (census artifact: a Notice-phase log; first instance `docs/notes/notice/N-2026-07-26-forced-flow-census.md`, pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`). A census entry is an observation, not a seed: it consumes **zero K** (no PnL examined) until it graduates via the unchanged admission path — five requirements, δ via citation or extraction probe, screen, pre-registration. Census entries must carry the four §2-A clauses, a venue check, the family K-floor arithmetic, and a graveyard-adjacency attestation.
-
-> ⚠ **Addendum 2026-08-08 — the "family K-floor arithmetic" limb is narrowed to a DISCLOSURE.**
-> [`ADR 2026-08-04 — family K-bank is disclosure, not a gate`](2026-08-04-family-k-bank-disclosure-not-gate.md)
-> (`Accepted`) sets `K_eff = K_intrinsic` and rules that `K_banked(family)` **cannot fail a seed** — there is no
-> floor for the arithmetic above to compute. A census entry must still **disclose** the family bank; it must no
-> longer derive or apply a floor from it, and a burned family no longer kills a seed. The §2-B clause text is left
-> unedited (dated-decision integrity); this note is the reader intercept. Live enforcement surface:
-> `lab/research_utils/axis_screen.py`, which deliberately does **not** sum `k_banked`.
+**2-B. Structural flow census as a sourcing channel.** §2.3's channel portfolio gains a rank: **direct enumeration of mandated/mechanical flows on venue-legal instruments** (census artifact: a Notice-phase log; first instance `docs/notes/notice/N-2026-07-26-forced-flow-census.md`, pruned at the Great Prune; retrieve via `git show pre-prune-2026-08-08:docs/notes/notice/N-2026-07-26-forced-flow-census.md`). A census entry is an observation, not a seed: it consumes **zero K** (no PnL examined) until it graduates via the unchanged admission path — five requirements, δ via citation or extraction probe, screen, pre-registration.
 
 > ⚠ **Addendum 2026-08-24 — clause 2-B retired (rank struck from `strategy_harvest.md` §2.3).**
 > [`ADR 2026-08-24 — sourcing-phase channel retirement`](2026-08-24-sourcing-phase-channel-retirement.md)
@@ -61,8 +54,8 @@ Separately, ST-EH-1's operator-stop exposed a hole in K semantics: `register_sea
 > 4–5 census passes (2026-07-26 → 2026-08-01), satisfying 2-B's own falsifier — the operator elected
 > to act on this now rather than wait for the formal second-quarterly-audit check date (2027-02-08).
 > The census's "1-tie" rank, its Notice-phase recording convention, and its required-fields template
-> are retired alongside it; no future entry opens under this rank. The 2-B clause text above is left
-> unedited (dated-decision integrity); this note is the reader intercept.
+> are retired alongside it; no future entry opens under this rank. The 2-B clause text above is otherwise
+> left unedited (dated-decision integrity); this note is the reader intercept.
 
 **2-C. Executed-K closure rule for operator-stopped campaigns.** When a campaign is stopped by operator direction before declared reads execute, the manifest closes banking **executed selection events** (reads whose results any human or artifact examined), with the declared K preserved in provenance — subject to ALL of: (i) zero results artifacts exist; (ii) execution impossibility or non-occurrence is git-auditable (missing data, absent outputs, guard evidence); (iii) the closure note enumerates every executed look and its examiner; (iv) the operator signs the closure. Where any condition fails, the declared K banks in full ("abandoned campaigns still bank their K" is unchanged for campaigns that *looked*). First case: ST-EH-1 (declared 84; executed = 2 one-year TV baseline examinations, 1/family; manifest held OPEN pending the operator's ruling, which this clause's ratification would supply).
 
@@ -101,12 +94,10 @@ Separately, ST-EH-1's operator-stop exposed a hole in K semantics: `register_sea
 ## §5 — Forbidden moves (under this ADR)
 
 - **Laundering a behavioral story through constraint vocabulary** ("dealers must hedge" without naming the instrument, size driver, and schedule) — the four clauses are each specific; a clause that cannot be written specifically is failing, not pending.
-- **Quoting any PnL, edge, or δ inside a census entry** — the census is Notice-phase; the first number comes from a δ-extraction probe or citation under an opened pre-registration, never from the census author "just checking."
 - **Using §2-C on a campaign that examined results** — the clause is for stopped-before-looking, and its conditions are auditable; stretching it voids it (§4).
 - **Touching Clause K's cap (K_eff ≤ 3), the floor table, or family pooling** — explicitly out of scope here and flagged as the tempting-but-disqualified move this session.
-- **Re-opening graveyard classes via census packaging** — month-end from a flow census is still month-end; the registry's new-mechanism-evidence bar binds census entries identically (each entry carries a graveyard-adjacency attestation).
 - **Writing an adjacency attestation without executing its searches.** Enforced retrospectively on this ADR's own first census the day it was authored: two entries (LETF rebalance, WMR fix flow) were graded live/"strongest" while already dead by rulings in `docs/briefs/` — the attestations were fields filled, not searches run. An attestation must paste **command output**, searched by **mechanism family** (not instrument), across `rejected_candidates.md` **+ `docs/briefs/**` bar-rulings + closed manifests + `rejected_signals.md`**; bar-rulings do NOT all live in the registry. Without executed output the entry is void.
-- **Grading a micro-capacity claim before running the cost-law arithmetic.** Clause 2-A(iii) and Requirement 5 pull in opposite directions for small-δ mechanisms: the littleness that keeps institutions out multiplies fixed per-contract cost against a fixed-size edge (measured: the M6E fix expression is 11.8× over its own break-even, ~4× WORSE than the CFD that was already rejected). Every capacity-niche entry must carry RT-in-δ-units vs the 4× hurdle **before** any comparative grading language.
+- **Grading a micro-capacity claim before running the cost-law arithmetic.** Clause 2-A(iii) and per-contract cost pull in opposite directions for small-δ mechanisms: the littleness that keeps institutions out multiplies fixed per-contract cost against a fixed-size edge (measured: the M6E fix expression is 11.8× over its own break-even, ~4× WORSE than the CFD that was already rejected). Every capacity-niche entry must carry its own net-of-cost and cost-sensitivity estimate (RT in δ units) **before** any comparative grading language. *Dated note, 2026-10-24:* this line previously required RT-in-δ-units "vs the 4× hurdle" (strategy_harvest Requirement 5), deleted by [Joshua's ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24); no universal hurdle replaces it.
 
 ---
 
@@ -190,3 +181,4 @@ for p in glob.glob('discovery_manifests/*.json'):
 |---|---|---|
 | 2026-07-26 | Drafted `Proposed` at operator direction (post-ST-EH-1 close): four-clause 1a sharpening, flow-census sourcing channel, executed-K closure rule (ST-EH-1 as first case, manifest held open pending ruling). | Joshua (direction) + Claude Code (Opus 5) |
 | 2026-07-26 | **RATIFIED — all three clauses `Accepted`** ("Bank executed K per 2-C, and ratify all three clauses"). Same-session execution: `--operator-stopped` closure path added to `register_search.py` + 10 guard tests; ST-EH-1 closed banking executed K=2 (declared 84 retained); §6 downstream edits landed in `strategy_harvest.md`, `discovery-campaign-template.md`, `STATE.md`. Resulting runways: MNQ floor 0.98 (at cap), MYM / 6E floor 0.85. | Joshua (ratification) |
+| 2026-10-24 | §5 micro-capacity forbidden move: "vs the 4× hurdle" (strategy_harvest Requirement 5) replaced by the entry's own net-of-cost and cost-sensitivity estimate, per Joshua's [2026-10-24 ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24); no threshold changed. | Joshua (ruling); Claude Code (edit) |

@@ -45,7 +45,7 @@ fi
 # transition) and catches this class at PR time, before the bytes are gone —
 # this post-merge limb is the backstop for anything that job's checkout-based
 # view can miss, not the only detection point anymore. Neither limb blocks:
-# main carries no branch protection or required checks (Q-GATESTACK-1 Limb-A).
+# main requires a PR and only the `skills (3.12)` check (Q-GATESTACK-1 addendum).
 #
 # It CANNOT block — the pin is already committed upstream and the bytes are
 # already gone. Detection is still worth having: acting now, while the authoring

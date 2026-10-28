@@ -5,14 +5,14 @@ Ported 2026-09-15 from `.cursor/hooks/before_shell.py`, whose carrier (the
 `.cursor/` harness) is removed by the Cursor retirement
 (`docs/adr/2026-07-14-cc-cursor-surface-allocation.md`, Revision 2026-09-15).
 The *discipline* had no surviving owner on the Claude/Codex surfaces, so it is
-migrated here rather than dropped — `docs/operational_rules.md` Rule 16 R5: an
+migrated here rather than dropped — `docs/operational_rules.md` §16 R5: an
 obligation is resolved, migrated or explicitly retired, never silently lost.
 
 Two classes are surfaced so the operator confirms before they run:
 
   * **Git hook / signing bypass** — ``--no-verify`` / ``--no-gpg-sign``. Not the
-    standing path (AGENTS.md §Vendor-data integrity gate: "`git commit
-    --no-verify` is not the standing path"). A git hook cannot guard this by
+    standing path (AGENTS.md §Core rules, Rule 19: "never use `--no-verify` as
+    the standing path"). A git hook cannot guard this by
     construction — ``--no-verify`` is precisely what skips git hooks — so an
     agent-facing check is the only place the rule can be enforced at all.
   * **Destructive git / fs** — ``reset --hard``, ``clean -f``, ``checkout --``,

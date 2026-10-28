@@ -3,9 +3,9 @@
 
 Extracted from the retired validate_params hub (ADR
 docs/adr/2026-08-03-params-toml-gate-retirement.md).
-Current four-skill contract: scripts/README.md#skill-lifecycle.
+Current three-skill contract: scripts/README.md#skill-lifecycle.
 
-CARVE-OUT: scans ONLY the four *methodology* skills, where a restated
+CARVE-OUT: scans ONLY the three *methodology* skills, where a restated
 operational constant is pure drift. Operational-reference skills
 (prop-firm-challenge, code-defect-debugging) and pinescript-v6 are EXEMPT.
 
@@ -26,7 +26,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-GUARDED_SKILLS = ("inqhiori", "ooda-loop", "programme-audit", "brief-authoring")
+GUARDED_SKILLS = ("inqhiori", "programme-audit", "brief-authoring")
 
 # Tuned to avoid false positives on legitimate pointer prose (e.g. lines that
 # cite an allocation ADR path without restating a live constant).
@@ -54,7 +54,7 @@ class Violation:
 
 
 def check_skills_no_constants(repo_root: Path) -> list[Violation]:
-    """Flag operational constants restated in the four GUARDED methodology skills."""
+    """Flag operational constants restated in the three GUARDED methodology skills."""
     violations: list[Violation] = []
     skills_root = repo_root / ".claude" / "skills"
     if not skills_root.is_dir():

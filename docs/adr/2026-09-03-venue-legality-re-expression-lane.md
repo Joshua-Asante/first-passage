@@ -9,6 +9,8 @@
 **Authors:** Joshua (direction) + Claude Code (drafter)
 **Layer:** methodology + campaign scope. No `dd_protection`, `firm_rules`, allocation, lifecycle, locked Pine, or rail config touched; nothing armed; no venue action; no spend.
 **Tier:** full — the record gates whether a class of results is admissible at all, so the ceremony-tiering escalation rule ("ambiguous tier → FULL") applies.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR13-11, ADR13-14); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D4 removed the spent lane's directives (ADR13-3, ADR13-4, ADR13-7, ADR13-8, ADR13-9, ADR13-10, ADR13-15, ADR13-16, ADR13-20, ADR13-21), restating them as the record of what was admitted; prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -75,17 +77,20 @@ replacement results were inspected would be worthless.
 
 ## §2 — Decision
 
-A **venue-legality re-expression lane** is admitted inside this campaign, bounded as follows.
+A **venue-legality re-expression lane** was admitted inside this campaign, bounded as follows.
+*(2026-10-25: the lane is spent. Campaign selection closed 2026-09-10, meeting Retain-until, and Track B was
+superseded for Tradeify 2026-10-16. Locked parameters stay immutable under AGENTS.md Rule 14; nothing below
+directs further work.)*
 
-1. **Trigger is exogenous and named.** The lane may be entered for a strategy **only** on a venue-legality
-   flag raised by the Phase 1 audit — a `FORCE_FLAT_VIOLATION`, a weekend/overnight hold, or a
-   contract-cap breach. It may **never** be entered on a performance result: not net P&L, win rate, profit
-   factor, drawdown, Sharpe, bust probability, or any ranking derived from them.
-2. **The permitted change is the session bound and nothing else.** A re-expression may add or tighten an
-   entry cut-off and a forced flatten so that every exit fills strictly before the venue deadline. Every
-   other parameter — entry logic, stop, target, ATR, trail, break-even, risk percent, pyramid, day-of-week
-   filter, instrument, bar size — is carried across **byte-identical in intent** and re-verified by diff.
-   The permitted edit is specified in
+1. **Trigger was exogenous and named.** The lane was entered for a strategy only on a venue-legality flag
+   raised by the Phase 1 audit — a `FORCE_FLAT_VIOLATION`, a weekend/overnight hold, or a contract-cap
+   breach — never on a performance result (net P&L, win rate, profit factor, drawdown, Sharpe, bust
+   probability, or any ranking derived from them).
+2. **The permitted change was the session bound and nothing else**: an added or tightened entry cut-off
+   and forced flatten, so every exit fills strictly before the venue deadline. Every other parameter —
+   entry logic, stop, target, ATR, trail, break-even, risk percent, pyramid, day-of-week filter,
+   instrument, bar size — was carried across byte-identical in intent and re-verified by diff. The edit is
+   specified in
    [`2026-09-03-venue-bound-session-guard.md`](../superpowers/specs/2026-09-03-venue-bound-session-guard.md).
 3. **A replacement is a new expression, not a repaired one.** It gets a new strategy id, a new Pine filename,
    its own hash pin, and a fresh config entry. The superseded entry is retained as a
@@ -94,15 +99,14 @@ A **venue-legality re-expression lane** is admitted inside this campaign, bounde
 4. **The replacement's export is development data.** It is produced by the operator on the whole span and
    is viewed, so it carries the same whole-export ruling as the original set: model-fitted, never
    out-of-sample, and the `EXPLORATORY` claim class stands.
-5. **The full Phase 1 gate reapplies.** Each replacement passes G1.1–G1.10 on the replaced set, with its own
-   inventory, reconciliation anchors, per-row hashes, byte sizes and venue audit. The twelve-item delta read
-   covers the current exports only and never a replacement.
-6. **The original stays retired either way.** If a replacement fails the gate or is not produced, the
-   strategy is **dropped**; the venue-illegal export never advances as it stands.
+5. **The full Phase 1 gate reapplied.** Each replacement faced G1.1–G1.10 on the replaced set, with its own
+   inventory, reconciliation anchors, per-row hashes, byte sizes and venue audit; the twelve-item delta read
+   covered the current exports only.
+6. **The original stayed retired either way.** A replacement that failed the gate or was not produced
+   dropped its strategy; the venue-illegal export never advanced as it stood.
 
-**Ratification order is load-bearing.** This record must be `Accepted` **before** any replacement export's
-results are inspected — by the operator, the orchestrator, or any worker. Inspecting first and ratifying
-afterwards voids the lane and the affected strategies drop.
+**Ratification order was load-bearing and was met:** this record was `Accepted` 2026-09-03, before any
+replacement export's results could be inspected (Status).
 
 ---
 
@@ -133,14 +137,10 @@ disliked, tuning anything beyond the session bound, or re-running until a replac
 
 ## §4 — Forbidden moves
 
-- Entering the lane on any performance result, or on a hunch, rather than a named venue flag.
-- Changing any parameter other than the entry cut-off and the forced flatten.
-- Producing more than **one** replacement per strategy. A second attempt at the same strategy is a search
-  over session bounds and is void; the strategy drops instead. ⚠ **The count starts at the first export taken
-  against the VERIFIED D12 early-close calendar.** An export run against the interim placeholder list is not a
-  replacement at all and must not be produced; the one-attempt rule must never be satisfied by a body whose
-  holiday dates were known-unverified, or the rule would consume the single attempt on a configuration nobody
-  intended to test. **The clock starts 2026-09-03**, with the re-pointed bodies below.
+- The lane allowed **one** replacement per strategy; a second attempt would have been a search over session
+  bounds, void, with the strategy dropped. The count started at the first export taken against the VERIFIED
+  D12 early-close calendar (an export against the interim placeholder list was not a replacement), on
+  **2026-09-03**, with the re-pointed bodies below.
 - ~~**Exporting any of the three before the verified per-product-group early-close calendar replaces the interim
   list.**~~ **DISCHARGED 2026-09-03 — the calendar is landed and the three bodies are re-pointed; exporting is
   permitted from this date.** The prohibition stood because the interim list was carried over from
@@ -162,18 +162,15 @@ disliked, tuning anything beyond the session bound, or re-running until a replac
   `FULL_CLOSURE` resolution — conservative; and an unruled-out ad-hoc closure 2026-05-28…09-02 — **not**
   conservative); and every non-calendar cap still binds. See campaign-state §6 D19.
 
-  ⚠ **Two conditions rode with the discharge.** (1) ~~The calendar's provenance is **SECONDARY** — no CME primary
-  source was reachable — so a replacement export inherits a `NEEDS_CONTEXT` provenance cap it cannot clear on its
-  own; that is a cap on the *verdict*, not a bar on the *export*.~~ **(Superseded by D19, above.)** (2) Three dates close **before** 12:59 ET
+  ⚠ **Two conditions rode with the discharge.** (1) A verdict cap for the calendar's **SECONDARY** provenance —
+  **superseded by D19, above.** (2) Three dates close **before** 12:59 ET
   (2023-04-07, 2026-04-03, 2025-01-09) and no deadline can express them; Aegis 6J is the live exposure, trading
-  to 11:15 ET on both Good Fridays. Those need a no-trade block, and a replacement that silently relies on the
-  deadline there is not venue-legal. See the campaign-state artifact §12.
+  to 11:15 ET on both Good Fridays. Those dates needed a no-trade block, not a deadline (campaign-state
+  artifact §12c; the standing flat-before-deadline rule is `ops/prop_envelope_default.md` §1 E1).
 - Carrying the original expression's Phase 1 verdict, reconciliation anchors, or TradingView summary
   anchors onto the replacement.
-- Inspecting replacement results before this record is `Accepted`.
-- Using the lane for the two dropped Q-TXG-1 swap-port exports (D10 (ii)). Those were dropped for a sizing
-  defect, not a venue flag, and a mis-sized export is not re-expressible — it is re-runnable only with the
-  point-value input corrected, which is a different matter requiring its own ruling.
+- The two dropped Q-TXG-1 swap-port exports (D10 (ii)) were outside the lane: they were dropped for a sizing
+  defect, not a venue flag.
 - Treating the venue's auto-flatten as the backstop that makes a late exit acceptable
   (`prop_envelope_default.md` §1 E1, verbatim).
 
@@ -229,8 +226,8 @@ the comparison then rests on recollection rather than record.
 - The campaign's Phase 1 population becomes: two unchanged strategies (`striker_dj30_mym_pyramid_250`,
   `striker_nas100_mnq_dow_wed_excluded`), up to three replacements, two provenance-only `dropped_sources`
   records, and up to three `superseded_sources` records.
-- Contract item 14's per-template contract count stays **five** — a replacement is a cell of the same
-  template as the body it supersedes, not a sixth template.
-- Rule 2: each replacement's Phase 1 cycle is a counted iteration against constituent (i) of contract
-  item 13. It is not exempt, and the ≤8 ceiling is unchanged.
+- Contract item 14's per-template contract count stayed **five**: a replacement was a cell of the template
+  of the body it superseded, not a sixth template.
+- Rule 2: each replacement's Phase 1 cycle counted as an iteration against constituent (i) of contract
+  item 13, not exempt; the ≤8 ceiling was unchanged.
 - The `EXPLORATORY` claim class and the whole-export development-data ruling are unchanged.

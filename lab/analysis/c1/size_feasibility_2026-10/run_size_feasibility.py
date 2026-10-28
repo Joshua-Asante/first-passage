@@ -591,7 +591,8 @@ def main(argv=None) -> int:
         c.add_argument(a, required=True)
     c.add_argument("--all-tiers", action="store_true")
     a = ap.parse_args(argv)
-    thr = load_scoring_thresholds()
+    # Frozen 2026-10-08 study: bound to v2 alone, before v2 Addendum 1 (2026-10-24).
+    thr = load_scoring_thresholds(pss.DEFAULT_PREREG)
     if (thr.sims_per_seed, tuple(thr.seeds), thr.horizon) != FROZEN_DEPTH:
         raise Invalid("thresholds are not the frozen v2 depth")
     out, bundle = Path(a.out), Path(a.bundle)
