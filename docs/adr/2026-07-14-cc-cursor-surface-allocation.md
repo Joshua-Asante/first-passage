@@ -956,11 +956,12 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 6. Rule 7: "Yes, the family" (one issue means one failure family, the same mechanism, so a second failed correction in a family stops the loop even while the finding count falls).
 7. Rule 3: "Amend Rule 3 (Recommended)" (add cutting a deliverable's scope, accepting a new assumption or weakening a guarantee, changing an evidence claim, and account permissions; none may carry a silent default; the skill points to Rule 3 and keeps no list of its own).
 8. Rule 2: "go with your recommendation for the review rounds" (each review round of a spec, card or PR is one iteration of the review loop; the round budget is declared before round 1; at the bound, a structured stop, never a silent extension).
+9. Merge-train name (later the same day, in his words): "i would like to include the merge train 'conductor' role, so there is no overlap in the use of the term coordinator here. the merge train conductor does what the merge train coordinator has done up to this point, and is cleanly complementary to the coordinator".
 
 **A. Seats.**
 - The executive seat is folded: goal-setting, value checks and review-stop decisions move to the coordinator, acceptance to the operator, goal review to the cross-agent reviewer. Its seat-table row and its `scripts/seat_authority.yml` entry stay as history, because earlier cards and tests name it; no new card grants it.
 - The escalation lane is the coordinator's fresh-session rebuild (Rule 7).
-- Merges stay with the merge-train seat under [Addendum 2026-10-24b A](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody).
+- Merges stay with the merge-train conductor (`.claude/skills/merge-train`, until now called the merge-train coordinator) under [Addendum 2026-10-24b A](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody). It orders and merges PRs; the coordinator runs the work that produces them and hands PRs to it. "Coordinator" alone names only the coordinator role (ruling 9).
 - The operator assigns who holds the coordinator role, per session.
 
 **B. Consistency-only delegation.**
@@ -971,7 +972,7 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 
 **C. Reviewer marks.** In a coordinator-run review loop the cross-agent reviewer marks each finding blocking or non-blocking; only its mark makes a finding a shippable residual (Rule 7).
 
-**D. Owners.** Rules 0, 2, 3 and 7 in `docs/operational_rules.md` carry rulings 3–8 as rules; this addendum holds rulings 1–2 and items A–C; the `coordinator` repo skill holds the procedure; M-50 in `docs/methodology/lessons/methodology_lessons.md` holds the evidence.
+**D. Owners.** Rules 0, 2, 3 and 7 in `docs/operational_rules.md` carry rulings 3–8 as rules; this addendum holds rulings 1–2 and 9 and items A–C; the `coordinator` repo skill holds the procedure; M-50 in `docs/methodology/lessons/methodology_lessons.md` holds the evidence.
 
 ## Change history
 
