@@ -13,21 +13,33 @@ on their permitted surface. The proposed first pilot uses synthetic fixtures onl
 | Question | Does assisted capture reduce decision time without losing adverse or failed trials? |
 | Owner / writer / reviewer | Joshua chooses named session owner, sole writer and independent reviewer before start |
 | Surface | Existing text editor and saved fabricated result tables; no strategy runner needed |
-| Bound | Option: 30 minutes Joshua attention, 60 minutes agent effort, six draft trials, ten minutes local compute; no paid services. Not adopted by this document |
-| Work | Reconstruct the synthetic comparison below, then inject the listed failures; compare with an equivalent manual worksheet task |
+| Bound | Option: 30 minutes Joshua attention, 60 minutes agent effort, six draft trial records and twelve fixture checks, ten minutes local compute; no paid services. Not adopted by this document |
+| Work | Reconstruct the synthetic comparison below, then perform the twelve record-level checks using the six-trial mapping below; compare with an equivalent manual worksheet task |
 | Decision rule | Option: all integrity cases handled; zero missing/duplicate trials; correct synthetic decision; at least 20% less active owner time than the matched manual task. Otherwise revise once or stop, within the original bound |
 | Stop | First exhausted bound; permission/surface drift; unresolved process/output; actual strategy/account data appears |
 | Output | Private session card/log with sanitized review summary; record practice/order effects and uncertainty, not a general speed claim |
 | Approval | Pending Joshua and owning coordinator's acceptance of exact scope, bounds and identities |
 
-This pilot tests the process, not ORB or Aegis performance. No parameter campaign
-starts from this card. A later empirical pilot must bind all fields below and get
-the applicable research/data/execution approvals first.
+Pilot 1 measures capture/integrity overhead only. It does not exercise hypothesis
+selection or visual diagnosis, and cannot establish their speed or decision-quality
+benefit. A separate later pilot needs plots, actual diagnosis/comparison choices
+and its own approved bounds and rubric before those benefits can be assessed.
+It can use static fabricated plots and existing tools; this is not a framework-build
+dependency or approval to run that pilot. No parameter campaign starts from this
+card. A later empirical pilot must bind all fields below and get the applicable
+research/data/execution approvals first.
 
 ## Session binding template
 
 Copy into an approved private session record; replace `unset` before dispatch.
 Public review uses sanitized reference IDs rather than private values or paths.
+Each expression's `source_config_pins_ref` identifies its own source revision,
+resolved settings export/digest and execution semantics; `evidence_scope` records
+what was actually tested/accepted and what remains unknown. Use `not_applicable`
+with a reason for unused expressions, never copy another row's evidence. O-N/O-0
+are ORB labels; Aegis uses its own identities in the corresponding contexts.
+The control/candidate/runtime fields below bind only to the explicitly selected
+workshop expressions and must agree with their pins at readback.
 
 ```yaml
 session_id: unset
@@ -39,9 +51,16 @@ independent_reviewer: unset
 approval_reference_and_scope: unset
 budget_trial_compute_attention_cost: unset
 stop_conditions_and_deadline: unset
-strategy_expressions: # separate rows for workshop, O-N, O-0; no equivalence assumed
-  orb: unset
-  aegis: unset
+strategy_expressions:
+  orb:
+    workshop: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
+    o_n_portfolio: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
+    o_0_native_solo: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
+  aegis:
+    workshop: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
+    portfolio_model: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
+    native: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
+selected_workshop_expression_refs: {orb: unset, aegis: unset}
 control_source_commit_and_private_manifest_ref: unset
 candidate_resolved_config_digest: unset
 source_and_runtime_version: unset
@@ -120,6 +139,29 @@ after output publication, receipt reconciled and adopted once, no rerun;
 `SYN-05/a1` known failure with error retained, `a2` explicit retry;
 `SYN-06` manual override requested, missing cost model blocks dispatch. This is a
 walkthrough, not a report that those runs occurred.
+
+The six IDs are proposal/trial records, not six checks or six executions. For
+Pilot 1, assign the twelve checks below as follows; each check operates on a
+separate fabricated copy of its named trial record. Log `fixture_check_id`,
+`trial_id`, any attempt transitions, expected/observed outcome and evidence. Copies
+are independent so an injected stop or contamination cannot silently resume the
+same session. They introduce no new hypothesis or executed parameter variant;
+an actual new proposal would consume another trial and exceed this pilot's bound.
+
+| Trial record | Assigned fixture checks |
+|---|---|
+| SYN-01 | Requested/actual config mismatch; wrong digest on control restoration |
+| SYN-02 | Missing pair arm/rule mismatch; debit before bank receipt |
+| SYN-03 | Draft cancellation/human override; fabricated early-confirmation-open event |
+| SYN-04 | Duplicate attempt submission; interruption during publication |
+| SYN-05 | Crash before output; manual change without settings export |
+| SYN-06 | Missing cost/fill assumption; exhausted budget |
+
+Every check is recorded, including blocked/failed observations. The simulated
+retry in the example log is an attempt within SYN-05, not a seventh trial. Real
+pilot checks or rechecks still consume attention/compute and the twelve-check
+allowance; if any required coverage is incomplete when a bound is reached, stop
+and report the pilot incomplete rather than silently adding cases or time.
 
 ### Synthetic settlement trace
 

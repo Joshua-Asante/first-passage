@@ -202,6 +202,14 @@ acceptance remain distinct evidence levels.
 
 Use the kit's synthetic tasks to compare the current manual method and this
 assisted method with equivalent task difficulty and recorded order/practice effects.
+Pilot 1 tests capture and integrity overhead only; it does not test Joshua's
+hypothesis selection or visual diagnosis. Passing it supports trying the recording
+process, not adopting the full human-led research premise. A separately approved
+later pilot must include plot-based diagnosis and hypothesis/comparison choices,
+with matched tasks and a predeclared decision-quality rubric, before evaluating
+those contributions. Existing plots or a simple static synthetic plot can suffice;
+a notebook, dashboard or strategy experiment is not a prerequisite.
+
 One pilot is descriptive. Measure time to a correctly supported decision, active
 owner minutes, feedback latency, capture errors/omissions, duplicate dispatches,
 reconciliation time and reviewer corrections. Decision quality means correct
