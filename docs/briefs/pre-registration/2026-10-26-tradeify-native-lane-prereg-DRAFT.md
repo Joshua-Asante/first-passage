@@ -4,6 +4,8 @@
 
 **Question.** Is there a strategy that can run natively at Tradeify, exclusively there, with enough edge that running it on a Tradeify Select evaluation (the account chosen in §11 item 2) and its funded account has positive expected net cash over 126 trading days within a fee budget? **The decision it changes:** whether a nominated candidate may proceed to native implementation and the deployment gates, or the lane stays parked under draft 11-08 branch (d).
 
+**Scope (operator ruling 2026-10-28).** This lane governs new-candidate qualification only. It does not govern the forward-test route on the owned Select 100K evaluation, which the operator's 2026-10-24 ruling opened for a frozen, not-yet-qualified native strategy, with a GO for each session. Book-lineage configurations may use that route without passing G0 here. Rule 26 and that route's own conditions (a rule frozen before its first session, every signal, fill and rule event logged, a GO for each session, native implementation, flat by 16:45 ET, M1 for any armed instance) are unchanged.
+
 **Budget.** Drafting this document: one session, $0, K = 0. Each candidate later nominated by amendment counts its disclosed search trials plus one against the lane cap K_max (§3). Spend (for example a NinjaTrader licence) is not authorised here.
 
 ## §D — Disclosure: what was seen before this draft was written
@@ -111,7 +113,7 @@ SR_LB at K_max = 1 (z = 0.84), for an i.i.d. daily series. The annualised SE is 
 
 Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate with SR̂ ≈ 2 over 3 or more years can reach G2, SR̂ ≈ 1.5 is marginal, and anything below that cannot. Autocorrelation and fat tails widen the SE and lower these bounds. A larger K_max lowers them too: at K_max = 10, z = 2.05, so SR̂ = 2 over 5 years gives SR_LB ≈ 1.08, which is marginal. The gate is reachable for a strong candidate, not for a typical one. That is intended.
 
-**Binding:** G0 item 4 consumes #807 stage 1's written finding, which exists only if the 11-08 sitting takes draft branch (b). Under branch (d), G0 item 4 cannot be met and this pre-registration is withdrawn, not frozen. A GO-CANDIDATE is the only route into the deployment gates.
+**Binding:** G0 item 4 consumes #807 stage 1's written finding, which exists only if the 11-08 sitting takes draft branch (b). Under branch (d), G0 item 4 cannot be met and this pre-registration is withdrawn, not frozen. A GO-CANDIDATE is this lane's only route into the deployment gates. The forward-test route in the Scope paragraph is separate and is not governed here.
 
 ## §10 — Audit hooks
 
