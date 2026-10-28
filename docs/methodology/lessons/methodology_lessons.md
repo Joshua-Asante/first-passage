@@ -1530,11 +1530,20 @@ re-run usually wins. Siblings: M-23 (the process-boundary case), M-9 / M-12 / M-
 - **Rule:** at every G0 or pre-registration freeze, ask of each gate (a) can it fire at the declared N, power, threshold and real K, and (b) what executes it, and did that run? Prefer a mechanical consult that exits nonzero over prose a reader must remember, paste its executed output, and check that a door check's scope reaches domain-level bars, not only instrument-scoped ones.
 - **Link:** `.claude/workflows/gate-reachability-audit.js`; that ADR's trigger T3 escalates the door check to a `gates.yml` limb if a lane G0 freezes with an unanswered `BINDING BAR`; siblings M-19 (its DSR-specific, quantified instance), M-20, M-27.
 
+## M-50 — Review loops stop on a recurring failure family; host facts are observed before review; the operator decides only what changes exposure
+
+- **Date:** 2026-10-28 (native Aegis rebuild, 2026-10-26 to 10-28)
+- **Anchor:** the execution-actor spec took 13 versions and 12 Codex rounds; findings fell 12, 9, 7, 4, 3, 3, 3, 2 while timestamp correlation of change confirmations recurred in four rounds. Two worker cards took 24 dispatch attempts and 29 freeze records; attempts stopped on the sandbox, the read allowlist, an assembly-metadata read and writes to pinned files. A stale contract constraint survived two hand re-pins. A field-level check passed while the comparator rejected the whole profile. One-token fixes each took an operator round trip, and two rulings arrived cut at the app's button limit.
+- **What broke:** every stop rule counted findings or rounds, never a failure family, so a falling count hid a recurring mechanism; review ran ahead of host facts nobody had observed; only the operator could approve fixes that changed nothing.
+- **Rule:** Rules 0, 2, 3 and 7 as amended 2026-10-28. The `coordinator` repo skill applies them and adds one freeze record as the pin source, a throwaway-card harness rehearsal before a freeze, and acceptance through the consumer's real entry point.
+- **Link:** surface-allocation ADR Addendum 2026-10-28; siblings M-37, M-38, M-39, M-43; M-27 (assurance from a gate's name).
+
 ## Versioning & change-log
 
 Relocated here 2026-08-29 (was drifting mid-file, above M-23/M-24, contrary to this section's own
 "maintained at the bottom" convention) — content unedited by the move.
 
+- **2026-10-28:** M-50 added (coordinator rulings; surface-allocation ADR Addendum 2026-10-28).
 - **2026-10-26:** M-49 migrated from the Claude-memory store (`lesson_gate_reachability_preregistration`, until now cited here and in `LESSONS_INDEX.jsonl` as an external lesson). Later firings recorded from their memory twins: M-29 (#569), M-37 (#551), M-39 (#882), M-AHF anchor 5 (#340), and the ST-EH-1 closed form on M-19. M-42's pass made cross-agent (Addendum 2026-10-26).
 - **2026-10-26:** Rule consolidation step 5 (D10(c), D10(e)): the per-lesson promotion criteria of legacy entries (CANDIDATE→PROMOTED, dollar thresholds) no longer bind; the entries are not rewritten. Standing-guidance bar and retention rule stated in §Format spec; numbering rule in §Numbering.
 - **2026-09-20:** M-26 through M-48 migrated from the Claude-memory store (process / verification / multi-agent review lessons) in the light format, so every harness reading this repo sees them; each carries its memory twin in `LESSONS_INDEX.jsonl`. Operator direction 2026-09-20 (AGENTS.md single instruction file; three-seat delegation). No retroactive edit to M-7 … M-24.

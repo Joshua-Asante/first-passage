@@ -944,6 +944,35 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Item 2 (milestone adjudication) follows the same rule: Codex adjudicates a Claude-authored ADR, pre-registration, closure or campaign gate before ratification, and Claude adjudicates a Codex-authored one.
 - Merges (Joshua, 2026-10-27, in session): "Yes: a clean Claude review at head satisfies merge GO condition (1) for a Codex-authored PR." Condition (1) of the [conditioned merge GO](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) is therefore a clean review at the head by the other agent: Codex for a Claude-authored PR, Claude for a Codex-authored one. Not ruled: how the three-review limit counts Claude reviews; ask the operator before a fourth. `scripts/merge_train.py gate` reads Codex reviews only, so for a Codex-authored PR the merging agent checks condition (1) by hand.
 
+## Addendum 2026-10-28 — operator rulings: executive folded into the coordinator; consistency-only delegation
+
+**Rulings (Joshua, 2026-10-28, in session).** Each is the option label he chose, verbatim, with the option text he was shown in parentheses.
+
+1. Seats: "Fold into coordinator" (follow the 2026-10-25 roles note: no project-manager seat; the coordinator absorbs goal-setting, value checks and stop decisions; Joshua keeps acceptance). Confirmed later, unprompted: "after considering it, having the project manager role folded into the coordinator makes the most sense, less coordination work".
+2. Delegation: "Consistency-only (Recommended)" (pins, hashes, version labels, self-references, stale tokens, and harness or tooling fixes that change no behaviour, plus one delta review per fix; Joshua keeps behaviour, scope, spend, risk, governance text and every dispatch GO).
+3. Review stops: "PM, then you (Recommended)" (decide between shipping with logged residuals and one more bounded round; cutting scope, accepting a new assumption or weakening a guarantee, spending money, or changing an evidence claim goes to Joshua as one decision). Given before ruling 1 removed the project-manager seat, so the coordinator makes this decision.
+4. Residuals: "Reviewer classifies (Recommended)" (the cross-agent reviewer marks each finding blocking or non-blocking; the coordinator may ship only with findings the reviewer marked non-blocking, logged in the artifact; waiving a blocking finding goes to Joshua).
+5. Evidence gate: "No reviews until settled (Recommended)" (drafting may continue, but no review round starts until each such fact is observed by a cheap probe or accepted by Joshua as a named assumption).
+6. Rule 7: "Yes, the family" (one issue means one failure family, the same mechanism, so a second failed correction in a family stops the loop even while the finding count falls).
+7. Rule 3: "Amend Rule 3 (Recommended)" (add cutting a deliverable's scope, accepting a new assumption or weakening a guarantee, changing an evidence claim, and account permissions; none may carry a silent default; the skill points to Rule 3 and keeps no list of its own).
+8. Rule 2: "go with your recommendation for the review rounds" (each review round of a spec, card or PR is one iteration of the review loop; the round budget is declared before round 1; at the bound, a structured stop, never a silent extension).
+
+**A. Seats.**
+- The executive seat is folded: goal-setting, value checks and review-stop decisions move to the coordinator, acceptance to the operator, goal review to the cross-agent reviewer. Its seat-table row and its `scripts/seat_authority.yml` entry stay as history, because earlier cards and tests name it; no new card grants it.
+- The escalation lane is the coordinator's fresh-session rebuild (Rule 7).
+- Merges stay with the merge-train seat under [Addendum 2026-10-24b A](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody).
+- The operator assigns who holds the coordinator role, per session.
+
+**B. Consistency-only delegation.**
+- The coordinator may make, without asking, an edit that changes only pins, hashes, version labels, self-references or stale tokens, or that fixes harness or tooling without changing behaviour. Each such edit cites the exact file hash or head SHA it changes and gets one cross-agent delta review.
+- It never touches frozen evidence bodies, an agreed rule, ruling text or what is claimed, so it is not a ratification. A file whose hash is frozen or under review is fixed as a new version-named file with its own freeze record.
+- Approval stays bound to its object (Rule 3): a dispatch GO given for the prior hash is asked again for the new one.
+- Merge-train hard rule 4 does not require the operator's direct confirmation for a PR whose body declares "consistency-only (surface-allocation ADR Addendum 2026-10-28)" and whose reviewer confirms its diff changes no ruling or rule text.
+
+**C. Reviewer marks.** In a coordinator-run review loop the cross-agent reviewer marks each finding blocking or non-blocking; only its mark makes a finding a shippable residual (Rule 7).
+
+**D. Owners.** Rules 0, 2, 3 and 7 in `docs/operational_rules.md` carry rulings 3–8 as rules; this addendum holds rulings 1–2 and items A–C; the `coordinator` repo skill holds the procedure; M-50 in `docs/methodology/lessons/methodology_lessons.md` holds the evidence.
+
 ## Change history
 
 | Date | Change | By |
@@ -969,3 +998,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-10-25 | Drift corrections (proposed): §Decision merge-authority line points to 10-24b A; enforcement rows and 10-24b A/B match the live ruleset (`skills (3.12)` required, not strict; bypass list empty) | Claude Code (proposed; needs Joshua's go) |
 | 2026-10-25 | Addendum 2026-09-30b amended — standing, revocable GO for the weekly account-preservation trade; other orders still need per-act direction | Joshua |
 | 2026-10-26 | Addendum 2026-10-26 — operator ruling: cross-agent review (Codex reviews Claude, Claude reviews Codex); amended 2026-10-27: a clean Claude review at head meets merge GO condition (1) for a Codex-authored PR | Joshua |
+| 2026-10-28 | Addendum 2026-10-28 — operator rulings: executive folded into the coordinator; consistency-only delegation; reviewer marks | Joshua (rulings) + Claude Code |

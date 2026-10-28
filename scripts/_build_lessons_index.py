@@ -582,6 +582,17 @@ FULL = [
          siblings=['M-19', 'M-20', 'M-27'],
          memory_twin='lesson_gate_reachability_preregistration',
          last_verified_date="2026-10-26"),
+    dict(id="M-50", cls="M", status="CANDIDATE",
+         status_note="2026-10-28 operator rulings; recorded in methodology_lessons.md (light format)",
+         title='Review loops stop on a recurring failure family; host facts are observed before review; the operator decides only what changes exposure',
+         one_line_lesson='Count review failures by family and stop at the second failed correction of one family; observe or name external facts before review; let the coordinator make consistency-only fixes and bring only exposure-changing decisions to the operator.',
+         cost_if_repeated='12 actor-spec rounds, 24 dispatch attempts and 29 freeze records on one offline Sim parity check (native Aegis rebuild, 2026-10-26 to 10-28).',
+         trigger_globs=[".claude/skills/coordinator/**", "docs/briefs/handoffs/**"],
+         trigger_keywords=["review round", "failure family", "stopping rule", "freeze record", "harness rehearsal", "consistency-only"],
+         full_ref=lambda: resolve_anchor(METH, "M-50"),
+         siblings=['M-37', 'M-38', 'M-39', 'M-43'],
+         memory_twin=None,
+         last_verified_date="2026-10-28"),
 ]
 
 # ---------------------------------------------------------------------------

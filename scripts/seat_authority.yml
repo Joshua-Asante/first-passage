@@ -99,6 +99,8 @@ acceptance_required_for: [worktree.write, research.run]
 # The capabilities a card may grant to each seat. High-risk capabilities appear nowhere
 # here: the operator seat is never the subject of a card.
 seats:
+  # executive: folded into the coordinator (surface-allocation ADR Addendum 2026-10-28).
+  # Kept because historical cards and tests name it; grant it on no new card.
   executive:
     max_risk: medium
     grantable: [repository.read, tests.run, pr.review, governance.author]
