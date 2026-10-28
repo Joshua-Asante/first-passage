@@ -37,6 +37,7 @@ The 2026-10-25 roles research (`docs/notes/2026-10-25-repeated-agent-roles.md`) 
 | 7 | Rule 3 | "Amend Rule 3 (Recommended)": add the classes above, with no silent default |
 | 8 | Rule 2 | "go with your recommendation for the review rounds": each review round is one iteration, budgeted before round 1 |
 | 9 | Scope | Practices 1–6 of §1, including "add 4-6 too" |
+| 10 | Merge-train name | "the merge train conductor does what the merge train coordinator has done up to this point, and is cleanly complementary to the coordinator" (full text in the ADR addendum, ruling 9) |
 
 ## 3. PR 1: rules, rulings, lesson
 
@@ -61,7 +62,7 @@ Amend existing rules, because the Rule 0–41 list is fixed. Log each change in 
   - The executive seat is folded. Goal-setting, value checks and review-stop decisions move to the coordinator. Acceptance moves to the operator, and goal review to the cross-agent reviewer.
   - The executive row stays in the table as history, marked folded. Its `scripts/seat_authority.yml` entry stays too, with a comment, because historical cards and tests name it.
   - The escalation lane is the coordinator's fresh-session rebuild; it already was not a seat.
-  - Merges stay with the merge-train seat under Addendum 2026-10-24b A.
+  - Merges stay with the merge-train conductor (`merge-train`, formerly "merge-train coordinator") under Addendum 2026-10-24b A; it is complementary to the coordinator, which hands it PRs (ruling 9).
   - Who holds the coordinator role is assigned by the operator, per session.
 - **Consistency-only delegation:**
   - **Scope:** an act changes only pins, hashes, version labels, self-references or stale tokens, or fixes harness or tooling without changing behaviour.
