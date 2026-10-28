@@ -373,7 +373,7 @@ Untested and ranked. None is a prerequisite for §5 or a remedy for a failure. E
 
 **Record gaps** (corrections belong to their owners):
 - the S4 terminal stop is not in a committed owner;
-- the Q-ORPREM-1 deferral is not on its pre-registration;
+- the Q-ORPREM-1 deferral is recorded on closed [#875](https://github.com/Joshua-Asante/first-passage/pull/875#issuecomment-6482842920) at `f1b6827` (2026-10-28);
 - #876's "#873 open" is stale (#873 closed 2 s after the merge);
 - the T00 manifest's trial-9 closure is owed;
 - the 10-18/19 timing reads are not logged;

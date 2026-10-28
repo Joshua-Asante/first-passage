@@ -71,7 +71,7 @@ Act under the agent's own scoped credentials, never the operator's; hold no Fly 
 
 #### Rule 13 — Private data and the public clone
 
-Never commit or quote account identifiers, P&L, locked-book backtest figures or parameter values, vendor CSVs, Pine or locked ports; read the private surface in place only and never pass it to an external service; the VM copy exception is the §60 addenda's alone. *Owner:* [AGENTS.md §Public-clone posture](../AGENTS.md); campaign §60; [VM policy](governance/azure-compute-vm-policy.md); visibility-transition ADR.
+Never commit or quote account identifiers, P&L, locked-book backtest figures or parameter values, vendor CSVs, Pine or locked ports; research backtest dollar figures appear only in lab RESULTS files; read the private surface in place only and pass it to no external service beyond the reading agent's own provider, and never to Codex; cite private inputs by repo-relative path and hash; the VM copy exception is the §60 addenda's alone. Data movement follows the class rules in AGENTS.md §Public-clone posture, whatever the source. *Owner:* [AGENTS.md §Public-clone posture](../AGENTS.md); campaign §60; [VM policy](governance/azure-compute-vm-policy.md); visibility-transition ADR.
 
 #### Rule 14 — Locked parameters and protection
 

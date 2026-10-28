@@ -406,6 +406,21 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 
 **Not changed:** the hard date (2026-11-08), the demotion rule, S1 (a non-incumbent venue still needs its venue admission before any execution), and the native experiment's separate admissions.
 
+## Addendum 2026-10-28 — scope of the §4 bust ceiling (Accepted)
+
+**Ruling:** Joshua, 2026-10-28, in chat with Claude, verbatim:
+- "I think that self imposing unnecessary rules, like passing with 63 days or keeping bust rate lower than 5%, makes the challenge harder than it needs to be. We should eliminate these self imposed rules to have a better idea of the levers we have at our disposal to make this book as profitable as possible"
+- after being shown this addendum's draft: "Four-firm PR".
+
+**Scope.** The §4 5.0% bust ceiling is the clearance criterion of this program's falsifier. It decides only whether a candidate discharges §4. It does **not** bind:
+- an individual account's operating objective;
+- the owned Tradeify Select 100K evaluation, whose objective is held in its private owner record;
+- any evaluation run for positive expected net cash under the firm's own rules.
+
+**Not changed:** the 5.0% value, the 50% pass floor, `trailing_locking`, the intraday-honest clock, the inactivity-barrier-OFF convention, the 2026-11-08 hard date and the demotion rule. Falsifiers do not move (AGENTS.md Rule 28); this addendum states the ceiling's scope only.
+
+**Why:** with repeated paid attempts, an account can have positive expected net cash at bust rates well above 5% when a reset costs little relative to a payout. The falsifier asks a different question — whether a low-bust candidate exists across the families — and keeps its own ceiling.
+
 ---
 
 ## Change history
@@ -421,3 +436,4 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 | 2026-10-16 | Addendum (Accepted, operator rulings): §4 ceiling 5.0%; fresh §4 candidate ORB MNQ v7 authorized with prior-failure disclosure; FXIFY Futures Flex registration directed (counts toward §4 only once its firm_rules row, pre-flight and re-verified facts exist) | Joshua + Claude |
 | 2026-10-17 | Pointer only: by Joshua's 2026-10-17 instruction, the 2026-10-16 addendum's "under Codex" owner wording now reads as the Claude coordinator for integration and dispatch; Codex owners keep technical execution ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-transfer--claude-deployment-coordinator-2026-10-17)). No rule changed. | Claude coordinator |
 | 2026-10-25 | Pointer only: the 2026-10-16 addendum's ORB v7 schedule (freeze 10-23, re-MC 10-30) is overtaken; ORB v7 is paused, not closed, and S4 stays stopped. No rule changed. | Claude Code |
+| 2026-10-28 | Addendum (Accepted, operator ruling): the §4 5.0% bust ceiling is scoped to this program's falsifier and does not bind account operating objectives; no value or §4 text changed | Joshua (ruling) + Claude Code (record) |

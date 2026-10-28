@@ -299,13 +299,16 @@ def load_adr_headers(adr_dir: Path) -> dict[str, AdrHeader]:
 def load_tombstoned_names(adr_dir: Path) -> frozenset[str]:
     """Filenames of pruned ADRs recorded in TOMBSTONES.md. A supersession edge
     pointing at a tombstoned ADR is resolved (the decision record survives as a
-    tombstone line + the pre-prune tag), while a typo'd target still fails A2."""
+    tombstone line + the pre-prune tag), while a typo'd target still fails A2.
+    Rows also name current owners, so a name still present in `adr_dir` is not
+    pruned and keeps its A2 reverse-edge check."""
     fp = adr_dir / "TOMBSTONES.md"
     if not fp.is_file():
         return frozenset()
     text = fp.read_text(encoding="utf-8", errors="replace")
     return frozenset(m.group(0) for m in re.finditer(
-        r"\d{4}-\d{2}-\d{2}[a-z]?-[a-z0-9-]+\.md", text))
+        r"\d{4}-\d{2}-\d{2}[a-z]?-[a-z0-9-]+\.md", text)
+        if not (adr_dir / m.group(0)).is_file())
 
 
 def check_a1(headers: dict[str, AdrHeader]) -> list[Finding]:
