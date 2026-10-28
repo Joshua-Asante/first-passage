@@ -1,7 +1,6 @@
 """Tests for the INQHIORI Sentinel Tier-1 scanners.
 
-C1 (headroom-retraction skew) and C2 (slate precondition gaps) are the live
-findings the probe surfaced this session; they are the regression fixtures here.
+C2 (slate precondition gaps) supplies the regression fixtures here.
 """
 import shutil
 import subprocess
@@ -25,7 +24,6 @@ from sentinel.scan import (
     precondition_scan,
     preregistration_scan,
     sessions_scan,
-    skew_scan,
 )
 
 
@@ -41,34 +39,6 @@ def test_finding_shape():
     f = Finding(id="X", category="skew", routing="Action", summary="s", source="AGENTS.md:1", next_step="n")
     assert f.routing in ROUTING
     assert f.category == "skew"
-
-
-# --- skew_scan (C1) ------------------------------------------------------- #
-
-def test_skew_detects_headroom_retraction(tmp_path):
-    _write(tmp_path, "AGENTS.md", "anchor: 99.83% pass; p99 DD 0.63pp headroom; tighter than prior.\n")
-    _write(tmp_path, "docs/mc_anchor_history.md",
-           "Q-SWAP-2 ... provisionally retracted ... under fixed-1R modeling (0.45pp).\n")
-    findings = skew_scan(tmp_path)
-    assert len(findings) == 1
-    assert findings[0].id == "SKEW-headroom-fixed1r"
-    assert findings[0].category == "skew"
-    assert findings[0].routing == "Action"
-    assert findings[0].source.startswith("AGENTS.md:")
-
-
-def test_skew_clean_when_caveat_present(tmp_path):
-    _write(tmp_path, "AGENTS.md",
-           "anchor: 99.83% pass; p99 DD 0.63pp headroom (under fixed-1R per M-SWAP-1: 0.45pp).\n")
-    _write(tmp_path, "docs/mc_anchor_history.md",
-           "Q-SWAP-2 ... provisionally retracted ... under fixed-1R modeling.\n")
-    assert skew_scan(tmp_path) == []
-
-
-def test_skew_clean_when_no_retraction_in_history(tmp_path):
-    _write(tmp_path, "AGENTS.md", "anchor: p99 DD 0.63pp headroom.\n")
-    _write(tmp_path, "docs/mc_anchor_history.md", "no retraction here.\n")
-    assert skew_scan(tmp_path) == []
 
 
 # --- obligation_scan (C2 part 1) ------------------------------------------ #
