@@ -467,6 +467,53 @@ def check_pin_provenance(
     return result
 
 
+DEFAULT_BOOK_SOURCES = REPO_ROOT / "core" / "strategies" / "BOOK_SOURCES.sha256"
+CARD_ROOT = REPO_ROOT / "core" / "strategies"
+# Card pin line: "- `<64 hex>  <name or repo-relative path>`"; a bare name resolves
+# against the card's backticked **Body:** directory.
+CARD_PIN_RE = re.compile(r"^- `([0-9a-f]{64})\s+([^`]+?)`", re.MULTILINE)
+CARD_BODY_RE = re.compile(r"^\*\*Body:\*\* `([^`]+)`", re.MULTILINE)
+
+
+def check_card_pins(
+    card_root: Path = CARD_ROOT,
+    manifest_paths: list[Path] | None = None,
+    repo_root: Path = REPO_ROOT,
+) -> CheckResult:
+    """Cards restate manifest pins by hand; fail any that no longer match.
+
+    Needs no Pine bytes, so it runs the same on every clone. 2026-10-28: the
+    ORB card and both Striker locks still cited pins superseded by re-pins.
+    """
+    if manifest_paths is None:
+        manifest_paths = DEFAULT_MANIFESTS + [DEFAULT_BOOK_SOURCES]
+    result = CheckResult()
+    pins: dict[str, str] = {}
+    for manifest_path in manifest_paths:
+        entries, errs = parse_manifest(manifest_path)
+        result.failures.extend(errs)
+        pins.update(entries)
+    for card in sorted(card_root.rglob("*_CARD.md")):
+        text = card.read_text(encoding="utf-8", errors="replace")
+        rel_card = card.relative_to(repo_root).as_posix()
+        body = CARD_BODY_RE.search(text)
+        for digest, name in CARD_PIN_RE.findall(text):
+            if "/" in name:
+                rel = name
+            elif body:
+                rel = body.group(1).rstrip("/") + "/" + name
+            else:
+                result.failures.append(f"CARD_PIN_UNRESOLVED {rel_card} {name}")
+                continue
+            if rel not in pins:
+                result.failures.append(f"CARD_PIN_UNPINNED {rel_card} {rel}")
+            elif pins[rel] != digest:
+                result.failures.append(
+                    f"CARD_PIN_STALE {rel_card} {rel} card={digest[:8]} manifest={pins[rel][:8]}"
+                )
+    return result
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -487,7 +534,18 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Base ref for --check-pin-provenance range mode (e.g. origin/main).",
     )
+    parser.add_argument(
+        "--check-card-pins",
+        action="store_true",
+        help="Instead of hashing, verify every *_CARD.md hash pin matches the manifests.",
+    )
     args = parser.parse_args(argv)
+
+    if args.check_card_pins:
+        result = check_card_pins()
+        for f in result.failures:
+            print(f, file=sys.stderr)
+        return 0 if result.ok else 1
 
     if args.check_pin_provenance:
         result = check_pin_provenance(base=args.base)

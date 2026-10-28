@@ -7,7 +7,7 @@
 ## Hash pins
 
 - `df05512deb959acf12b56bf27189b4cabea305c7e18b0d69c9927d45570c49e0  orb_mnq_v0_1.pine`
-- `e3b3785734c68e5ef275846a0c9635b3146ebabe2d8b9710da9c8918b2f08056  orb_mnq_v0_2.pine`
+- `8e4fccd97f3a4f70a3051613bc67365e16c2344261a24ca1463930e2062df0f0  orb_mnq_v0_2.pine`
 
 ## ADR
 

@@ -22,6 +22,7 @@ EXPECTED_ALWAYS = {
     "skill-refs",
     "pine-manifest",
     "pine-pin-provenance",
+    "card-pins",
     "boundaries",
     # 2026-08-15 (governance-belt audit action 3): reverted from
     # path-conditional -- both gates detect dead links, and a link target

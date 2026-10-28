@@ -119,7 +119,7 @@ _98 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_lifecycle_consistency.py` | governance† | `lifecycle-consistency` (path-conditional) | — |
 | `scripts/check_md_relative_links.py` | governance† | — | — |
 | `scripts/check_path_liveness.py` | governance | `path-liveness` (always) | — |
-| `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always) | — |
+| `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always); `card-pins` (always) | — |
 | `scripts/check_pursuit_records.py` | governance† | — | — |
 | `scripts/check_push_collision.py` | governance† | — | — |
 | `scripts/check_qualification_invariants.py` | governance† | — | — |
