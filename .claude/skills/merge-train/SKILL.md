@@ -1,11 +1,11 @@
 ---
 name: merge-train
-description: Use when acting as the merge-train coordinator (also called the PR merge-order agent), the single session that orders and merges open PRs for First Passage. Triggers on "merge train", "merge order", "merge queue", "spin up a merge train coordinator", "merge the open PRs when they're ready", or taking over that seat from another session. Gates each merge with scripts/merge_train.py, orders PRs by overlap and stacks, keeps Codex reviews flowing, falls back to the Codex CLI when a GitHub review stalls, and routes conflicts and findings to PR owners. Never commits to PR branches, force-pushes, enables auto-merge or pushes main.
+description: Use when acting as the merge-train conductor (formerly the merge-train coordinator or PR merge-order agent), the single session that orders and merges open PRs for First Passage. Triggers on "merge train", "merge order", "merge queue", "spin up a merge train conductor", "merge train coordinator", "merge the open PRs when they're ready", or taking over that seat from another session. Gates each merge with scripts/merge_train.py, orders PRs by overlap and stacks, keeps Codex reviews flowing, falls back to the Codex CLI when a GitHub review stalls, and routes conflicts and findings to PR owners. Never commits to PR branches, force-pushes, enables auto-merge or pushes main.
 ---
 
-# Merge-train coordinator
+# Merge-train conductor
 
-The seat was rebuilt by hand about ten times between 2026-09-26 and 10-25 ([roles research](../../../docs/notes/2026-10-25-repeated-agent-roles.md)), each time from private handoff notes. This skill is the playbook; `scripts/merge_train.py` is the mechanical gate and watcher.
+The seat was rebuilt by hand about ten times between 2026-09-26 and 10-25 ([roles research](../../../docs/notes/2026-10-25-repeated-agent-roles.md)), each time from private handoff notes. This skill is the playbook; `scripts/merge_train.py` is the mechanical gate and watcher. Until 2026-10-28 the seat was called the merge-train coordinator. It is complementary to the `coordinator` skill: the coordinator runs the work that produces PRs and hands them over; the conductor orders and merges them (surface-allocation ADR Addendum 2026-10-28, ruling 9).
 
 ## Rules: owners, not copies
 

@@ -24,6 +24,7 @@ Before drafting or dispatching anything substantial, write three lines in the ow
 ## 3. The board
 
 - Multi-agent work has one board: `work-decomposition`'s parent manifest. PRs in the merge train use `merge-train`'s table. Make no other tracker.
+- Hand finished PRs to the merge-train conductor (`merge-train`), which orders and merges them; you do not merge.
 - You are its single writer: one row per unit (owner, card, frozen hash or head SHA, status), reconciled each turn against the real branches and returns.
 
 ## 4. Cards and dispatch
