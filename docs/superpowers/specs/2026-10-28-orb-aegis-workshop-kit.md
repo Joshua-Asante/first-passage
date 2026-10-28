@@ -38,8 +38,12 @@ resolved settings export/digest and execution semantics; `evidence_scope` record
 what was actually tested/accepted and what remains unknown. Use `not_applicable`
 with a reason for unused expressions, never copy another row's evidence. O-N/O-0
 are ORB labels; Aegis uses its own identities in the corresponding contexts.
-The control/candidate/runtime fields below bind only to the explicitly selected
-workshop expressions and must agree with their pins at readback.
+`bound_strategy_expression_refs` selects the identity row used for each enabled
+strategy in this session; it may reference any declared row, not just the row
+literally named `workshop`. The control/candidate/runtime fields below bind only
+to those selected rows and must agree with their pins at readback. For example,
+`orb: strategy_expressions.orb.o_0_native_solo` selects O-0; it does not inherit
+the `workshop` or O-N row's evidence or grant permission to execute it.
 
 ```yaml
 session_id: unset
@@ -60,7 +64,7 @@ strategy_expressions:
     workshop: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
     portfolio_model: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
     native: {identity_ref: unset, source_config_pins_ref: unset, evidence_scope: unset}
-selected_workshop_expression_refs: {orb: unset, aegis: unset}
+bound_strategy_expression_refs: {orb: unset, aegis: unset}
 control_source_commit_and_private_manifest_ref: unset
 candidate_resolved_config_digest: unset
 source_and_runtime_version: unset
