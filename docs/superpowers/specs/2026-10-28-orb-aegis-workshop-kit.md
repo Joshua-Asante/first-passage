@@ -52,6 +52,7 @@ decision_if_better_worse_or_inconclusive: unset
 session_owner: unset
 single_writer: unset
 independent_reviewer: unset
+agent_idea_request_scope_and_proposal_limit: unset
 approval_reference_and_scope: unset
 budget_trial_compute_attention_cost: unset
 stop_conditions_and_deadline: unset
@@ -87,12 +88,24 @@ One row is one proposal; attempts are append-only child events. Record at alloca
 not just when a successful result is available. `not_applicable` requires a reason;
 `unknown` blocks any claim needing that field. Keep private configuration values,
 account state and outputs on the permitted private surface.
+Agent-originated and Joshua-originated proposals use the same log. Record every
+presented candidate, including declined ideas; an idea request is not a test GO.
+Unselected proposals retain their draft ID and selection state but have no execution
+attempt. Joshua's explicit selection is required before preparation/readback, and
+the existing permission and dispatch checks still apply. Set `attempts: []` for an
+unselected proposal; the attempt stub below describes later fields, not a started
+run. Record an edited idea as a linked draft rather than overwriting the original.
 
 ```yaml
 trial_id: unset
 parent_trial_and_attempt_id: unset
 allocated_utc_and_actor: unset
+proposal_originator_and_idea_request_ref: unset
 hypothesis_parameter_delta_rationale: unset
+expected_effect: unset
+tradeoffs: unset
+supporting_evidence_refs_and_uncertainty: unset
+human_selection_decision_reason_and_time: unset
 information_seen_before_choice: unset
 requested_config_and_control_ref: unset
 actual_applied_settings_export_and_digest_before_after: unset
@@ -116,7 +129,13 @@ decision_and_reason_next_question: unset
 Fabricated toy strategies `Toy-O` and `Toy-A` do not encode either strategy.
 Control is O-window `2`, A-window `3`, integer quantity `1` for each enabled leg.
 Candidate changes only Toy-O's window to `1`; A and all costs/rules stay frozen.
-The hypothesis is faster eligibility with no additional breaches. There are four
+In this fabricated dialogue, Joshua asks for an improvement idea. The agent proposes
+that delta: hypothesis/expected effect is faster eligibility with no additional
+breaches; rationale is to isolate the window's timing effect; tradeoff is possible
+extra capacity use and floor exposure; evidence is only the toy setup, with the
+effect unknown before this comparison. Joshua selects it as SYN-02; the agent then
+prepares the matched comparison. The proposal itself applies no setting and runs
+nothing. A two-factor alternative remains logged as declined SYN-03. There are four
 shared scenario IDs, one fixed horizon and an absorbing evaluation stop. Costs
 are already deducted. Each arm evolves its own floor and capacity. A later funded
 stage is deliberately absent, so this cannot answer a first-landed-payout objective.
@@ -137,8 +156,9 @@ it. Joshua's declared rule rejects this candidate for the pair and records the
 interaction question. Four fabricated paths support no population probability or
 confidence claim. Keep the rejected trial and all plotted information in exposure.
 
-Example log: `SYN-01` control captured; `SYN-02` candidate prepared and completed;
-`SYN-03` two-factor draft abandoned before application; `SYN-04/a1` interrupted
+Example log: `SYN-01` control captured; `SYN-02` agent proposal selected by Joshua,
+then candidate prepared and completed; `SYN-03` two-factor proposal declined before
+application; `SYN-04/a1` interrupted
 after output publication, receipt reconciled and adopted once, no rerun;
 `SYN-05/a1` known failure with error retained, `a2` explicit retry;
 `SYN-06` manual override requested, missing cost model blocks dispatch. This is a

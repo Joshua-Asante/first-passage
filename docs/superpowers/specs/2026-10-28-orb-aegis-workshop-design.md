@@ -60,8 +60,9 @@ session record; public commits contain sanitized process and fabricated examples
 Use one Markdown session card, one append-only trial log and existing result
 exports. Joshua sees a short status strip: question, control identity, draft versus
 applied delta, remaining attention/compute/trial allowance, last valid comparison,
-integrity warnings and next decision. He changes one draft factor or chooses a
-comparison; the agent reads back the exact applied settings before dispatch.
+integrity warnings and next decision. When he asks for improvement ideas, agents
+propose changes; Joshua chooses, edits or declines them. He may also originate a
+change. The agent reads back the selected actual settings before dispatch.
 
 | Approach | Benefit | Cost / decision |
 |---|---|---|
@@ -78,8 +79,14 @@ to reconstruct settings from memory.
 
 ## Roles and session lifecycle
 
-Joshua selects the mechanism question, interprets plots and chooses draft changes.
-These are plausible human advantages, to be measured rather than assumed. One
+Joshua chooses the mechanism question and which proposed changes to test, and
+interprets plots. He need not originate every hypothesis. When he asks for ideas,
+agents propose a bounded set of changes, each stating its hypothesis, parameter
+delta, rationale, expected effect, tradeoffs and supporting evidence/uncertainty.
+They use only the already-permitted evidence surface. Asking for ideas does not
+authorize applying settings, running a test or expanding research permissions;
+proposal generation stops at the proposal until Joshua selects it. These human
+and agent contributions are to be measured rather than assumed. One
 named session owner resolves scope and hands off to the existing campaign owner.
 One agent is the sole writer/dispatcher and automates IDs, setting capture,
 integrity checks, aggregation and budget accounting. An independent reviewer
@@ -90,24 +97,32 @@ permissions, source fidelity or a confirmation protocol.
 1. **Bind:** record the card fields in the kit, freeze the control, inventory prior
    data exposure, and agree the question, comparison, action map and stop bounds.
    Unknown fidelity is `unmatched/diagnostic-only`; stop claims requiring matching.
-2. **Draft:** Joshua names the hypothesis, delta and reason. The writer allocates a
-   trial ID *before* applying anything, records its parent and exposed information,
-   then prepares the comparison and cost model. Log abandoned drafts too.
-3. **Check:** read actual resolved settings from the bound tool/export, compare
+2. **Propose:** when Joshua asks for improvement ideas, agents provide the bounded
+   proposals described above; Joshua can also supply one himself. The writer
+   allocates a draft trial ID before presenting a candidate change, records its
+   originator/request, parent and exposed information, and retains declined or
+   abandoned proposals. Proposals consume the declared draft/attention allowance.
+3. **Select and draft:** Joshua chooses which proposal to test, edits it or declines
+   it, with the decision recorded. An edited variant retains its original proposal
+   through a linked draft and consumes the same declared allowance. Only a selected
+   proposal proceeds to comparison
+   and cost-model preparation, within the already-approved workshop scope. Selection
+   does not waive execution/data permissions or the following readback checks.
+4. **Check:** read actual resolved settings from the bound tool/export, compare
    with the requested delta and frozen control, and verify the approved surface,
    integer quantities, cost/fill model and remaining allowance. Missing fields
    block dispatch. Joshua acknowledges the readback; in-envelope choices then
    proceed under the workshop grant without repeated permission prompts.
-4. **Run or observe:** persist `prepared -> running -> completed/failed/interrupted/
+5. **Run or observe:** persist `prepared -> running -> completed/failed/interrupted/
    uncertain`. A manual action producing an output is a trial even if no automated
    command ran. Capture actual settings again with result identity and timestamps.
    `completed` alone is not valid: source/config pins, complete output and integrity
    checks must agree. Failed variants stay in the denominator of workflow errors.
-5. **Compare:** return the scorecard, uncertainty, path diagnostics and integrity
+6. **Compare:** return the scorecard, uncertainty, path diagnostics and integrity
    status together. Joshua records `discard`, `refine`, `defer`, or `package for
    independent review`, with rationale and the next question. Do not quietly
    broaden bounds, change the control, or lower a threshold to keep iterating.
-6. **Close:** freeze the log and package, reconcile every allocated ID and any
+7. **Close:** freeze the log and package, reconcile every allocated ID and any
    remaining processes, record consumed budget and unresolved outcomes. Existing
    owners decide subsequent qualification or release.
 
