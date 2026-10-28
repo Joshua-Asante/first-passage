@@ -29,8 +29,8 @@ Before drafting or dispatching anything substantial, write three lines in the ow
 
 ## 4. Cards and dispatch
 
-- Author with `brief-authoring`; gate with `handoff-verify`.
-- **One pin source.** The freeze record holds every hash. Generate a card's pin tables from it and diff card against record before each review and before dispatch; never hand-copy a hash.
+- Author with `brief-authoring`; gate with `handoff-verify`. Before freezing and before dispatch, run `python -I scripts/check_handoff_authority.py <card>` and `python -I scripts/check_brief.py --type handoff <card>`; both must be clean.
+- **One pin source.** The freeze record holds every hash. Generate a card's pin tables from it and diff card against record before each review and before dispatch; never hand-copy a hash. For a Claude dispatch, also pass the record's pinned inputs as `scripts/dispatch_claude.ps1 -InputFile`, so the runner rehashes them on resume.
 - **Rehearse the harness.** Before freezing a real card, run a throwaway card through the same launcher (`scripts/dispatch_codex.ps1` or `scripts/dispatch_claude.ps1`), sandbox roots, skills, read allowlist and writes near pinned files. Fix what breaks once.
 - **Real-consumer acceptance.** An acceptance check calls the consumer's own entry point, never a sub-validation. Bind every exemption to an exact span and give it a negative test.
 - Name the cross-agent reviewer (Rule 5).
@@ -52,11 +52,11 @@ Without asking, fix only what Addendum 2026-10-28 B covers: pins, hashes, versio
 
 ## 7. Bringing a decision to Joshua
 
-- One decision per ask, recommendation first, with its critical-path status.
+- One decision per ask, recommendation first, with its critical-path status, in the decision-packet form of the surface-allocation ADR. A Rule 3 item never defaults on silence.
 - Keep each reply option under 300 characters, or put the options in a file he confirms.
 - Record his answer verbatim in its owner before anything cites it.
 
 ## 8. Returns
 
 - Statuses are Rule 4's four. `NEEDS_CONTEXT` gets one re-anchor, then a re-cut (`work-decomposition`); `BLOCKED` follows its sub-case (`brief-authoring`).
-- Judge a return against its artifacts (`handoff-verify`, `fable-judge`). Your adjudication is input; Joshua accepts on the evidence pack.
+- Judge a return against its artifacts (`handoff-verify` §Post-execution). Your adjudication is input; Joshua accepts on the evidence pack.
