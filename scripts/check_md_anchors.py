@@ -20,6 +20,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 HEADING_RE = re.compile(r"^ {0,3}#{1,6}(?:[ \t]+(.*?)|[ \t]*)$")
 PINNED_RE = re.compile(r"(?:^|/)(?:blob|tree)/[0-9a-f]{7,40}(?:/|$)", re.I)
+CODE_SPAN_RE = re.compile(r"(`+)(.+?)\1")
+REF_DEF_RE = re.compile(r"^ {0,3}\[[^\]]+\]:[ \t]*<?([^\s>]+)>?")
 URL_RE = re.compile(r"^(?:[a-z][a-z0-9+.-]*:|//)", re.I)
 
 
@@ -36,8 +38,15 @@ class ExplicitAnchors(HTMLParser):
 
 def heading_slug(heading: str) -> str:
     """Slug rendered heading text, preserving spaces and consecutive hyphens."""
-    heading = LINK_RE.sub(lambda match: match.group(0).split("]", 1)[0].lstrip("!["), heading)
-    heading = html.unescape(re.sub(r"<[^>]*>", "", heading)).lower()
+    rendered = []
+    # re.split yields text, backtick run, code span, text, ...; code renders literally.
+    for index, part in enumerate(CODE_SPAN_RE.split(heading)):
+        if index % 3 == 0:
+            part = LINK_RE.sub(lambda match: match.group(0).split("]", 1)[0].lstrip("!["), part)
+            rendered.append(html.unescape(re.sub(r"<[^>]*>", "", part)))
+        elif index % 3 == 2:
+            rendered.append(part)
+    heading = "".join(rendered).lower()
     return "".join(char for char in heading
                    if char in "-_ " or unicodedata.category(char)[0] in "LNM").replace(" ", "-")
 
@@ -80,8 +89,23 @@ def anchors(text: str) -> set[str]:
 def document_links(text: str):
     """Use the shared policy, supplementing its deliberately omitted bare fragments."""
     yield from markdown_links(text)
+    fence = ""
     for number, line in enumerate(text.splitlines(), 1):
+        marker = FENCE_RE.match(line)
+        if fence:
+            if marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence):
+                fence = ""
+            continue
+        if marker:
+            fence = marker[1]
+            continue
         if HISTORICAL_LINE_RE.search(line):
+            continue
+        # Reference-style links resolve through their definition line.
+        definition = REF_DEF_RE.match(line)
+        if definition:
+            target = definition[1]
+            yield number, target, target.split("#", 1)[0]
             continue
         for match in LINK_RE.finditer(line):
             target = match[1].strip().split(" ", 1)[0]
