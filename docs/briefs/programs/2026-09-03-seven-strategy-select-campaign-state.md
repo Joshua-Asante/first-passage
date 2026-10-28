@@ -4084,6 +4084,8 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 
 Standing host rules (cost, deallocation, access, teardown) are owned by the [Azure compute VM policy](../../governance/azure-compute-vm-policy.md); the addenda above remain the per-run admissions.
 
+**Addendum 2026-10-28 — Codex excluded; providers.** *Operator ruling 2026-10-28, given by Joshua directly in session.* "Any agent" above now excludes Codex. Codex does not read or receive the Pine sources, the runtime ports or `effective_inputs.json`. A reading agent's own provider may receive what it reads, and rule 1's "external service" means any service beyond that. [AGENTS.md §Public-clone posture](../../../AGENTS.md#public-clone-posture) (*Data movement*) owns the class rules.
+
 ## §61 — X-1 observed route acceptance (2026-09-30)
 
 Joshua directed the continuation review of the completed September 30 X-1

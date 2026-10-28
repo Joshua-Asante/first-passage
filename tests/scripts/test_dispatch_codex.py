@@ -34,9 +34,19 @@ def test_dry_run_builds_sandboxed_exec(tmp_path):
 
 def test_token_is_never_printed(tmp_path):
     # Fails if the agent token's value reaches output.
-    out = _run(tmp_path, env_token="SECRET-VALUE-123")
+    out = _run(tmp_path, env_token="github_pat_SECRET123")
     assert "agent token set" in out.stdout
-    assert "SECRET-VALUE-123" not in out.stdout + out.stderr
+    assert "SECRET123" not in out.stdout + out.stderr
+
+
+@pytest.mark.parametrize("token", ["gho_OPERATOR123", "ghp_CLASSIC123"])
+def test_refuses_token_that_is_not_a_fine_grained_pat(tmp_path, token):
+    # Fails if an OAuth or classic token (likely the operator's) can be handed to Codex, or
+    # if the refusal prints it.
+    out = _run(tmp_path, env_token=token)
+    assert out.returncode != 0
+    assert "fine-grained PAT" in out.stderr + out.stdout
+    assert token not in out.stdout + out.stderr
 
 
 def test_refuses_to_launch_without_agent_token(tmp_path):

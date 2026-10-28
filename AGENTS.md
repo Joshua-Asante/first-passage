@@ -53,7 +53,7 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 - **Rule 10 — Live-execution gates.** Arm, spend, trade, deploy and reach hosts only as the gates and operator direction allow. [→](docs/operational_rules.md#rule-10--live-execution-gates)
 - **Rule 11 — Rail operating invariants.** Fresh tags, sends are not fills, IN_DOUBT reconciled, protective actions never wait, attended only. [→](docs/operational_rules.md#rule-11--rail-operating-invariants)
 - **Rule 12 — Credentials.** Own scoped credentials only; no operator tokens, no Fly or broker credentials; never embed secrets. [→](docs/operational_rules.md#rule-12--credentials)
-- **Rule 13 — Private data and the public clone.** No account data, locked figures, vendor CSVs, Pine or ports in commits; private surface read in place only. [→](docs/operational_rules.md#rule-13--private-data-and-the-public-clone)
+- **Rule 13 — Private data and the public clone.** No account data, locked figures, vendor CSVs, Pine or ports in commits; private surface read in place only; data moves by class, and Codex never receives Pine, ports or account data. [→](docs/operational_rules.md#rule-13--private-data-and-the-public-clone)
 - **Rule 14 — Locked parameters and protection.** Locked parameters, allocations and Pine are immutable; protection changes only through its gate chain. [→](docs/operational_rules.md#rule-14--locked-parameters-and-protection)
 - **Rule 15 — Capital authorization is separate and revocable.** Lock, capital authorization and deployment are separate axes; authorization moves down only; nothing grants capital. [→](docs/operational_rules.md#rule-15--capital-authorization-is-separate-and-revocable)
 
@@ -217,6 +217,26 @@ Never copy them into a worktree, commit or quote their bodies or values, edit th
 or pass them to any external service
 ([campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
 The single exception covers the ports and `effective_inputs.json` (not Pine), copied to the Joshua-controlled Windows VM only for the runs, and on the terms, that the [§60 VM addenda](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) (2026-10-07 onward) admit; the [VM policy](docs/governance/azure-compute-vm-policy.md) owns the standing host rules.
+
+**Data movement (Joshua, 2026-10-28).** These rules apply by data class, whatever the
+source: a private local area, the archive, the VM or this repository.
+
+- *Providers.* Whatever an agent may read may reach that agent's own provider (Anthropic
+  for Claude, OpenAI for Codex). Handing data to another agent or service follows that
+  recipient's permissions.
+- *Codex.* Codex never receives Pine, runtime ports, `effective_inputs.json` or account
+  data, and does not read them in place. Public research figures in PRs it reviews are exempt.
+- *Archive.* Claude may read `first-passage-archive`. Anything extracted from it follows
+  these class rules, and a Codex ticket carries only identities, hashes, windows and counts.
+- *Research backtest dollars.* Allowed in lab `RESULTS` files only, never in PR text, cards,
+  STATE or briefs; elsewhere cite the RESULTS file or a hash.
+- *Account data.* Agents read it only for a task that names it, and never quote it or hand it off.
+- *Private inputs.* An input a frozen run binds lives in a registered location with a hash
+  index (`SHA256SUMS`, `BOOK_SOURCES.sha256` or `docs/evidence/PRIVATE_EVIDENCE.sha256`).
+  New public text cites private inputs by repo-relative path and hash, never by an absolute
+  home path. Archive links in public docs are fine.
+- *Existing text.* These rules apply from now on. Editing a file does not remove the content
+  from git history, and rewriting history is a separate operator decision.
 
 ### Gate composition authority
 

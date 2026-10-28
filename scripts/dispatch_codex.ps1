@@ -6,7 +6,7 @@ Uses the Codex app's bundled CLI (...\app\resources\codex.exe); the ~\.codex\.sa
 copy lacks codex-code-mode-host.exe and cannot run tools. The child authenticates to GitHub
 only with the agent's own token (FP_AGENT_GH_TOKEN -> GH_TOKEN; GITHUB_TOKEN cleared). With
 no agent token it refuses to launch, because gh would fall back to the operator's stored
-credential. -DryRun prints the command and runs nothing; the token is never printed.
+credential, and it refuses a token that is not a fine-grained PAT. -DryRun prints the command and runs nothing; the token is never printed.
 -ReviewBase <ref> runs `codex exec review --base <ref>` instead of a prompt, forced to the
 read-only sandbox: the Codex CLI review fallback the merge-train skill uses when a GitHub
 Codex review stalls.
@@ -37,6 +37,10 @@ if ($ReviewBase) {
   $codexArgs += $Prompt
 }
 $token = $env:FP_AGENT_GH_TOKEN
+# The agent identity is a fine-grained PAT; an OAuth or classic token here is likely the operator's.
+if ($token -and -not $token.StartsWith('github_pat_')) {
+  throw 'Refusing: FP_AGENT_GH_TOKEN is not a fine-grained PAT (github_pat_), so it may be the operator credential.'
+}
 if ($DryRun) {
   "codex: $Codex"
   "args: $($codexArgs -join ' | ')"
