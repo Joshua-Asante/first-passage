@@ -468,7 +468,7 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
    - **Stage 1 (operator).** Confirm both Fly apps, `c1-rail` and `c1-signal-daemon`, are disarmed (`dry_run=true`, `emit_enabled=false`), then stop them (scale to zero). Keep the apps for about two weeks as rollback.
    - **Stage 2 (operator).** Once the code and CI assessment confirms no remaining consumer, destroy both apps and cancel CrossTrade at its next renewal. The [subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md) records both.
    - **Stage 3 (agents, by PR).** Reduce code, tests, CI, deployment files and documentation in stages. Each PR carries its own consumer evidence and a retrieval row in [`docs/ltm/README.md`](../ltm/README.md). Shared libraries, reference models, fixtures and evidence producers stay until their consumers are shown.
-3. [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) stays frozen and paused. If it is ever dispatched, it runs at its pinned freeze commit.
+3. [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) stays frozen and paused, as evidence. Its dispatch conditions stay with its owners, including the successor freeze routed on 2026-10-20 ([campaign §62](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#62--aegis-capture-cost-basis-zero-slippage-2026-10-20)). Removing code from `main` does not remove the code at its freeze commit.
 4. A future personal-account route needs its own build decision. It inherits none of this rail's B-gates, M1 acceptance or test evidence.
 
 **Not changed.**
