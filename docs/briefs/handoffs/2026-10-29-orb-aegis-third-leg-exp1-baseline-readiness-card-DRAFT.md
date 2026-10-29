@@ -3,12 +3,12 @@
 **Must run locally** — reads the operator's local ORB/Aegis diagnostic and the accepted book's private read surface in place in the primary checkout (AGENTS.md §Public-clone posture); neither exists in a cloud clone.
 
 **Date:** 2026-10-29
-**Status:** DRAFT — not admitted, not frozen, not dispatched. Joshua asked for this draft only; admission items A1–A3 (§0.5) are his.
+**Status:** FROZEN 2026-10-29 (admission and freeze in §11). Not dispatched.
 **Parent session:** Claude cloud session 2026-10-29, reviewing Codex's eight-experiment third-leg decomposition (Experiment 1 extended with existing-leg comparison arms and native feasibility).
 **Spawn target:** Claude Code, `local`. Not Codex: the reads include a private diagnostic and the private read surface, which Codex may not receive (AGENTS.md §Data movement).
 **Repo:** `first-passage`; base `origin/main` = `0d8e72b141a6f87a12e7d13f7d151eb44c0964cc` at drafting. Refresh at dispatch.
 **Brief type:** CC handoff (multi-step)
-**Parent question:** `N/A` — no owning record yet; A1 asks Joshua to name it.
+**Parent question:** owned by the native plan's [§7 third-leg research](../../superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md#7-third-leg-research-beside-orb--aegis) (A1, §11).
 **Authority:** Joshua (operator). The worker may commit and push its own `claude/` branch and open one PR (operator ruling 2026-10-24). Merge follows Rule 6. `DONE` grants nothing further.
 
 **Question:** Can the intended ORB + Aegis pair be measured faithfully with existing evidence, together with the two existing-leg comparison arms, and could each leg run natively on a Tradeify 50K or 100K account?
@@ -55,11 +55,11 @@ python -I scripts/check_advisor_dedup.py --keywords "third leg ORB Aegis pair ba
 
 ## §0.5 — Clarifying questions (HALT-ON-AMBIGUITY required)
 
-**Admission — Joshua, before freeze:**
+**Admission — ruled by Joshua 2026-10-29 (§11); each default below was adopted as written:**
 
-- **A1 Owner and decision.** Which record owns third-leg research, and which decision does it feed (the 11-08 sitting, the native-lane pre-registration's account choice, or the self-funded lane)? **Recommended default:** a new campaign-plan entry under the native-lane owner. The decision fed: whether a third leg beside the shared native ORB/Aegis account is worth a research campaign. The §5.1 `parent` is a placeholder pending this answer.
-- **A2 Diagnostic read.** Grant the worker an in-place read of the local diagnostic. **Recommended default:** granted, read-only, hash and identities reported only.
-- **A3 Pair identity.** Which ORB and Aegis expressions are "the intended pair"? **Recommended default:** the accepted pins in `BOOK_SOURCES.sha256` (ORB v7 reconstruction venue-bound, Aegis 6J1 venue-bound), the editions the native-lane draft names. Earlier pair studies use different editions (ORB-MNQ-1 v6, Aegis v3) and are context, not baseline.
+- **A1 Owner and decision.** Which record owns third-leg research, and which decision does it feed (the 11-08 sitting, the native-lane pre-registration's account choice, or the self-funded lane)? **Recommended default:** a new campaign-plan entry under the native-lane owner. The decision fed: whether a third leg beside the shared native ORB/Aegis account is worth a research campaign. **Ruled:** default adopted.
+- **A2 Diagnostic read.** Grant the worker an in-place read of the local diagnostic. **Recommended default:** granted, read-only, hash and identities reported only. **Ruled:** granted.
+- **A3 Pair identity.** Which ORB and Aegis expressions are "the intended pair"? **Recommended default:** the accepted pins in `BOOK_SOURCES.sha256` (ORB v7 reconstruction venue-bound, Aegis 6J1 venue-bound), the editions the native-lane draft names. Earlier pair studies use different editions (ORB-MNQ-1 v6, Aegis v3) and are context, not baseline. **Ruled:** the accepted pins.
 
 **Worker — apply these defaults unless Phase 0 contradicts them, then return `NEEDS_CONTEXT` with the conflict quoted:**
 
@@ -149,14 +149,14 @@ Codex's 2026-10-29 diagnostic located long weak stretches for ORB and Aegis, but
 
 ```yaml authority
 seat: worker
-parent: docs/superpowers/specs/2026-10-28-orb-aegis-workshop-design.md
+parent: docs/superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md
 max_risk: medium
 capabilities: [repository.read, worktree.write, branch.push, pr.open]
 constraints: [no_main_write, no_runs, private_data_not_committed, single_output_folder, reserved_files_untouched]
 acceptance: [AC1_hash_citations_reproduce, AC2_public_class_scan_clean, AC3_folder_only_diff, AC4_launcher_check]
 ```
 
-`parent` is a placeholder for A1: the workshop spec is the nearest existing ORB/Aegis research owner. Its evidence boundary and exposure rules apply here. This card is not a workshop session.
+`parent` is the A1 owner (native plan §7). The [workshop spec](../../superpowers/specs/2026-10-28-orb-aegis-workshop-design.md)'s evidence boundary and exposure rules still apply; this card is not a workshop session.
 
 ---
 
@@ -246,3 +246,12 @@ python -I scripts/check_handoff_authority.py docs/briefs/handoffs/2026-10-29-orb
 ```
 
 `NOT INDEXED` lines are expected only for the R9 diagnostic hash, which has no public index; AC1 covers it by in-place `sha256sum`.
+
+---
+
+## §11 — Admission record
+
+- **Draft requested:** Joshua, 2026-10-29, in the Claude session: "draft the Experiment 1 handoff card".
+- **Admission:** GRANTED — Joshua, 2026-10-29, in the Claude session: "A1 default is fine, A2 granted, A3 use the accepted pins". A1: the owner is the native plan's §7, and the decision fed is whether a third leg beside the shared native ORB/Aegis account is worth a research campaign. A2: in-place, read-only read of the local diagnostic; hash and identities only leave it. A3: the pair is the accepted `core/strategies/BOOK_SOURCES.sha256` pins for ORB v7 reconstruction venue-bound and Aegis 6J1 venue-bound.
+- **Freeze:** GRANTED — Joshua, 2026-10-29, in the Claude session: "go ahead, and freeze the card too". The frozen revision is the one in the commit that adds this record; any later change needs a new freeze.
+- **Dispatch:** not yet. Needs Joshua's GO. It must run locally in his primary checkout, from the merge commit that lands this record, with its full SHA recorded at dispatch.
