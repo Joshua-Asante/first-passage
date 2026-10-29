@@ -943,6 +943,8 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Review is cross-agent: Codex reviews work Claude authors, and Claude reviews work Codex authors. Neither reviews its own work; a self-review or a same-agent panel or workflow may inform the author but does not count as the review. This extends [Addendum 2026-10-25](#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work) to Codex-authored work.
 - Item 2 (milestone adjudication) follows the same rule: Codex adjudicates a Claude-authored ADR, pre-registration, closure or campaign gate before ratification, and Claude adjudicates a Codex-authored one.
 - Merges (Joshua, 2026-10-27, in session): "Yes: a clean Claude review at head satisfies merge GO condition (1) for a Codex-authored PR." Condition (1) of the [conditioned merge GO](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) is therefore a clean review at the head by the other agent: Codex for a Claude-authored PR, Claude for a Codex-authored one. Not ruled: how the three-review limit counts Claude reviews; ask the operator before a fourth. `scripts/merge_train.py gate` reads Codex reviews only, so for a Codex-authored PR the merging agent checks condition (1) by hand.
+- Ports (Joshua, 2026-10-29, in session): "codex reviews code claude originally wrote." A port of Claude-written code is reviewed by Codex, whoever implements the port.
+- #951 (Joshua, 2026-10-29, in session): "yes, a post-merge Claude review counts for #951." The ruling covers #951 only (review record: #951 comment 6484255054).
 
 ## Addendum 2026-10-28 — operator rulings: executive folded into the coordinator; consistency-only delegation
 
@@ -1000,3 +1002,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-10-25 | Addendum 2026-09-30b amended — standing, revocable GO for the weekly account-preservation trade; other orders still need per-act direction | Joshua |
 | 2026-10-26 | Addendum 2026-10-26 — operator ruling: cross-agent review (Codex reviews Claude, Claude reviews Codex); amended 2026-10-27: a clean Claude review at head meets merge GO condition (1) for a Codex-authored PR | Joshua |
 | 2026-10-28 | Addendum 2026-10-28 — operator rulings: executive folded into the coordinator; consistency-only delegation; reviewer marks | Joshua (rulings) + Claude Code |
+| 2026-10-29 | Addendum 2026-10-26 extended — operator rulings: Codex reviews ports of Claude-written code; a post-merge Claude review counts for #951 only | Joshua (rulings) + Claude Code |
