@@ -118,3 +118,12 @@ Reaching any phase's bound triggers reassessment, not expansion.
 
   Recommendation: decide after P5, using the measured distribution in the payout model.
 - **D4. Personal lane reuse:** whether to also run the strategy on the personal Tradovate account. Tradeify's terms are in recorded conflict (§1), so this needs Tradeify's written clarification before any concurrent use. Live capital there stays under that lane's own clearance standard ([ADR](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md)).
+
+## 7. Third-leg research beside ORB + Aegis
+
+**Owner record** (Joshua, 2026-10-29: A1 of the Experiment 1 card). Research only; grants no phase GO above.
+
+- **Question:** does a third leg exist that earns while the shared native ORB + Aegis account is weak or inactive, without adding losses at the same moments?
+- **Decision it feeds:** whether a third leg beside that account is worth a research campaign.
+- **Sequence:** baseline readiness → pair-only weakness map, with Vanguard and Striker as comparison arms → missing-contribution ranking → one mechanism at a time. Each later step needs its own card and GO; native buildability and contract size are admission checks, not evaluation findings.
+- **Experiment 1:** [baseline-readiness card](../../briefs/handoffs/2026-10-29-orb-aegis-third-leg-exp1-baseline-readiness-card-DRAFT.md), FROZEN 2026-10-29; dispatch needs Joshua's GO.
