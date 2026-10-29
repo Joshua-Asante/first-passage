@@ -1,16 +1,41 @@
 # Tradeify Deployment Checklist Implementation Plan
 
-> **Proposed roadmap refresh:** [2026-10-08 viability-to-release amendment](#proposed-amendment-2026-10-08--viability-diagnosis-to-an-exact-deployable-release). Existing owner records remain authoritative; this proposal grants no execution authority.
+## Current routing — 2026-10-29 (derived mirror)
 
-> **For agentic workers:** Execute with superpowers:executing-plans; use superpowers:subagent-driven-development when bounded delegation is useful and authorized. Preserve the behavioral contract and integration owner. Steps use checkbox (`- [ ]`) syntax for tracking.
+This checklist retains Track B's dated sequence and decisions. **Track B is
+superseded for Tradeify**, not the current delivery plan. The
+[10-16 ruling](#addendum-2026-10-16--track-b-superseded-for-tradeify) governs;
+[shared obligations](../../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-25--d4-tradeify-scoped-supersession-and-where-preserved-items-live)
+remain with their recorded owners. The retained evaluation and weekly
+preservation trade continue under their existing conditions; the personal lane's
+Q-SFCLEAR-3 dispatch preparation remains paused under the
+[10-19 ruling](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation).
 
-**Goal:** Deliver the fixed four-strategy Tradeify portfolio as an authorized attended release, with bounded execution assignments and evidence-backed acceptance.
+| Record | Read as | Remaining boundary |
+|---|---|---|
+| [Native NinjaScript plan](2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md) | DRAFT sequence for the separate native lane | Its expanded P1 assessment and later phase GOs are not supplied by this checklist |
+| [ORB/Aegis workshop](../specs/2026-10-28-orb-aegis-workshop-design.md#evidence-and-ownership-boundary) | Research workflow and identity boundary | Workshop ORB, O-N portfolio ORB and O-0 native solo ORB do not inherit each other's evidence or acceptance |
+| [#959](https://github.com/Joshua-Asante/first-passage/pull/959), open at `55bc390` when checked | Pending incorporation of the 10-28 branch (b) ruling and proposed order state model | Records only the original #807 stage 1 grant; expanded P1 and ORB joining it remain owed. The expected shared ORB/Aegis account needs its own evidence case and exclusivity disposition; SM-1–SM-3 remain proposed |
+| [#961](https://github.com/Joshua-Asante/first-passage/pull/961), open at `a8dc7ac` when checked | Successor to #941; DRAFT net-cash qualification framework | Pre-ratification adjudication, operator values and ratification remain owed; its formal nomination and exact account binding are open. It is not an approved replacement for an existing objective |
+| [#807 closure](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6483857542) | Closed unmerged; pinned parity/isolation methods retained for later candidate-specific work | No implementation was accepted. Closing this planning PR does not revoke a separately recorded operator grant |
 
-**Architecture:** Retain the protected qualification service selected by B0. Complete synthetic E1 engineering while progressing settlement, route feasibility, source preparation and attended operations independently. Freeze only after behavior and launch feasibility are settled; production qualification, final binding and activation remain separate decisions.
+The [four-firm ceiling scope ruling](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-28--scope-of-the-4-bust-ceiling-accepted)
+keeps the program falsifier separate from the owned Select 100K operating
+objective. The historical 5% references below establish no new account ceiling.
+The [10-19 finding](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)
+still governs its book-lineage scope; whether an exact ORB/Aegis pairing falls
+inside it is an owner decision, not settled by a shared label. No candidate,
+account, sizing, evidence gate or deployment approval is ratified by this routing
+note. Pending PRs must be rechecked before use.
 
-**Tech Stack:** Existing Python replay/qualification service, Linux execution harness, durable account owner/settlement verifier, production feed and broker adapters, signed release/configuration evidence.
+## Historical Track B delivery plan (superseded for Tradeify)
 
-**Spec:** Existing full-E1 S1-S8 specification/roadmap, Phase 3/4 completion handoffs, Phase 5 attended operations and Phase 6 exact-release launch. This checklist organizes those requirements; it changes no portfolio, statistical criterion, authority or source-evidence requirement.
+The original goal was delivery of the fixed four-strategy Tradeify portfolio via
+the protected Python qualification service, feed and broker adapters, followed by
+production qualification, binding and activation. The T01–T17 packets, audits and
+[10-08 proposed roadmap refresh](#proposed-amendment-2026-10-08--viability-diagnosis-to-an-exact-deployable-release)
+below retain that history; they are not a native-lane dispatch sequence. Their
+acceptances and outstanding evidence remain at the linked owners.
 
 ## Current state — September 26, 2026 (refreshed from the acceptance ledger)
 

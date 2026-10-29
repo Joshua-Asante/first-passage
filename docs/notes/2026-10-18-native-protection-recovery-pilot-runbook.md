@@ -2,6 +2,14 @@
 
 **Status:** PROPOSAL, 2026-10-18. Planning only. It grants no build, launch, connection, arm, order, session or spend, and changes no accepted contract. Every `⟨L-…⟩` limit is unbound until the portfolio and account are selected; a pilot cannot start with any limit unbound.
 
+**Current routing (2026-10-29, derived mirror):**
+[#959](https://github.com/Joshua-Asante/first-passage/pull/959) is the open
+successor to #882; it carries A2 rulings and proposes one order state model
+(SM-1–SM-3), still awaiting ruling. This main-branch text predates that proposal;
+it is not evidence that the later model has been accepted. Candidate/account
+binding and qualification remain separate: see the
+[checklist routing note](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-routing--2026-10-29-derived-mirror).
+
 **Question and decision.** Which of the accepted protection and recovery rules carry over to a firm-approved native runtime, and what must be proved before one attended pilot session? The answer decides whether a native pilot card can be frozen, and what it must test first.
 
 **Sources adapted** (owners; they govern where this note differs, except where a §5 operator ruling records the departure):
