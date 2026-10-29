@@ -235,6 +235,11 @@ source: a private local area, the archive, the VM or this repository.
   index (`SHA256SUMS`, `BOOK_SOURCES.sha256` or `docs/evidence/PRIVATE_EVIDENCE.sha256`).
   New public text cites private inputs by repo-relative path and hash, never by an absolute
   home path. Archive links in public docs are fine.
+- *Derived outputs (Joshua, 2026-10-28).* A figure derived from a private export keeps that
+  export's class, except these fields, which lab analysis files may publish with the source
+  hash: the hash match, trade count, date window, and aggregate counts of venue-rule breaches
+  (e.g. trades held past a flat deadline or over a weekend). Never prices, P&L, sizes,
+  parameter values, per-trade timestamps or trade lists.
 - *Existing text.* These rules apply from now on. Editing a file does not remove the content
   from git history, and rewriting history is a separate operator decision.
 
