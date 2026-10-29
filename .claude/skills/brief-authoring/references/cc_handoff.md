@@ -189,13 +189,13 @@ CC reports back with EXACTLY one of these four statuses (Discipline Check #8). T
 | `DONE` | All §2 steps passed; all per-step gates green; no scope creep; no off-pattern observations. | Review under §7; accept/close after required checks. Merge requires separate applicable authorization. |
 | `DONE_WITH_CONCERNS` | Work completed but CC flags correctness, scope, or methodology doubts the parent should resolve before accepting. Every gate passed but CC noticed something off-pattern. | Parent reviews concerns; accept or re-dispatch with clarification. |
 | `NEEDS_CONTEXT` | Cannot proceed without missing input that can be supplied. (§0.5 ambiguity unresolved, file referenced but not on disk, parameter underspecified.) | Parent supplies context once (one re-anchor); a second bounce is re-cut per `work-decomposition`. |
-| `BLOCKED` | Cannot proceed; structural obstruction. Sub-case required (see below). | Parent escalates, decomposes, or re-spawns with stronger model. |
+| `BLOCKED` | Cannot proceed; structural obstruction. Sub-case required (see below). | Parent follows the sub-case below. |
 
 **`BLOCKED` sub-cases (mandatory):**
 - `BLOCKED — context-problem`: re-dispatch with more context.
-- `BLOCKED — capability-problem`: re-dispatch with stronger model or escalate to human.
+- `BLOCKED — capability-problem`: re-dispatch with a stronger model, or take it to Joshua.
 - `BLOCKED — scope-problem`: decompose into smaller tasks.
-- `BLOCKED — plan-itself-wrong`: escalate to parent session; the §2 plan is structurally broken.
+- `BLOCKED — plan-itself-wrong`: the §2 plan is structurally broken; the coordinator rebuilds it in a fresh session (`coordinator` §5, Rule 7).
 
 **Closure report format:**
 ```

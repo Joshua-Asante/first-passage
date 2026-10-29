@@ -326,7 +326,7 @@ FULL = [
          siblings=["M-19", "M-20", "M-49"],
          last_verified_date="2026-10-26"),
     dict(id="feedback_adversarial_review_before_ratification", cls="feedback", status="PROMOTED",
-         status_note="per .claude/workflows/pre-ratification-adversarial-panel.js's own whenToUse text, verified by direct read 2026-08-26",
+         status_note="per .claude/workflows/pre-ratification-adversarial-panel.js's own whenToUse text, verified by direct read 2026-08-26; rescoped 2026-10-28 to Rule 5 adjudication of Codex-authored work, optional author input otherwise",
          title="A green check_brief.py pass is FORM-only and has missed real BLOCKERs",
          one_line_lesson="A mechanical check_brief.py pass verifies form, not substance -- run a refute-first adversarial review before ratifying any Pre-Q brief, ADR, lock decision, or closure, since a green mechanical check has missed real BLOCKERs before.",
          cost_if_repeated="A real R&D pipeline scoping brief carried 6 BLOCKERs invisible to a mechanical 6/6 PASS: a doubled/double-applied 4x cost multiplier, an N-basis mismatch between two gates, an unread ADR clause, a claimed-but-never-scored screen, a missing dedup attestation, a false bounding claim. Reproduced in a controlled 2026-08-22 test with an external reviewer. Mitigated by the pre-ratification-adversarial-panel workflow (6 refute-first lenses + 2 skeptics + adjudicator).",

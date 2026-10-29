@@ -85,7 +85,7 @@ qualification on Linux; complete E1 is still in development.
 `deploy/qualification/bootstrap.py` is its isolated-Python role launcher;
 [`tools/qualification_verification/`](tools/qualification_verification/README.md) the
 disposable Ubuntu host. `.github/workflows/qualification-*.yml` collect boundary, S2
-supervision, host and dispatch-only S5 Part A evidence for coordinator acceptance and run the
+supervision, host and dispatch-only S5 Part A evidence for the coordinator's adjudication and Joshua's acceptance and run the
 platform-independent suite on Windows; none is a required check. The [B0 decision](docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)
 kept this service over an operator-launched batch.
 

@@ -226,11 +226,14 @@ MESSAGES = {
                           "<sha>`, a REST `sha` field, or GraphQL `expectedHeadOid`."),
     "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
                  "Standing GO (surface-allocation ADR, Addendum 2026-10-24b A, amended "
-                 "2026-10-25): merge only if an independent review (a Codex review clean at "
-                 "this head, within three reviews or on a clean fourth) has passed and every "
-                 "CI check is COMPLETED and green at the pinned head; if no review is clean "
-                 "by the fourth, return the PR to its owner for a rewrite; otherwise report "
-                 "the PR as ready and stop. `scripts/merge_train.py gate` applies the count."),
+                 "2026-10-25): merge only if an independent review has passed and every CI "
+                 "check is COMPLETED and green at the pinned head. For a Claude-authored PR "
+                 "that is a Codex review clean at this head, within three reviews or on a "
+                 "clean fourth (`scripts/merge_train.py gate` applies the count); if none is "
+                 "clean by the fourth, return the PR to its owner for a rewrite. For a "
+                 "Codex-authored PR it is a Claude review clean at this head, checked by hand "
+                 "(the gate counts Codex reviews only); ask the operator before a fourth Claude "
+                 "review. Otherwise report the PR as ready and stop."),
     "pr.merge_admin": ("Admin merge (pr.merge_admin): --admin asks GitHub to merge past "
                        "unmet requirements, outside the agents' standing GO. Confirm only if "
                        "you, the operator, are making this merge.",
