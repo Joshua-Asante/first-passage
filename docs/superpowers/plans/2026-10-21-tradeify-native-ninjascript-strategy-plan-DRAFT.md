@@ -1,9 +1,39 @@
 # Tradeify-only native NinjaScript strategy: plan (DRAFT)
 
-**Status:** DRAFT, 2026-10-21. Proposes a sequence; grants nothing. Every phase marked **GO** needs its own operator ruling. Under the [11-08 decision rules](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft), only branch (b), [#807](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/notes/2026-10-12-native-ninjatrader-runtime-PROPOSAL.md#7--evidence-stages-and-effort) stage 1, is in scope before the sitting.
+**Status:** DRAFT, 2026-10-21. Proposes a sequence; grants nothing. Every phase marked **GO** needs its own operator ruling. Read the [current routing note](2026-09-20-tradeify-deployment-checklist.md#current-routing--2026-10-29-derived-mirror) before the dated phase table. The [11-08 decision rules](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft) remain draft except for separately recorded rulings.
 **Question:** can a strategy dedicated to Tradeify, with all logic native to NinjaTrader 8, reach a first Select Flex payout of ≥ $1,000 net at acceptable fee cost?
 **Decision it changes:** whether Tradeify gets a native lane at the 11-08 sitting (branch (b) and onward), or parks under branch (d).
-**Inputs:** [Q-PATH-TO-PAYOUT-1](../../notes/research/2026-10-21-q-path-to-payout-1-memo.md) (geometry, sizing, §5 verification); [compliant automation routes](../../notes/2026-10-13-tradeify-compliant-automation-routes.md) (route 1); #807, closed unmerged 2026-10-28 ([closing comment](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6483857542)), at head `e6e4422`: [native runtime proposal](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/notes/2026-10-12-native-ninjatrader-runtime-PROPOSAL.md) and [Aegis experiment plan](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/superpowers/plans/2026-10-12-aegis-disconnected-decision-experiment-PROPOSAL.md).
+**Inputs:** [Q-PATH-TO-PAYOUT-1](../../notes/research/2026-10-21-q-path-to-payout-1-memo.md) (geometry, sizing, §5 verification); [compliant automation routes](../../notes/2026-10-13-tradeify-compliant-automation-routes.md) (route 1); #807 closed unmerged 2026-10-29 ([settled comment](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6498292027)); its proposal stays retrievable at `e6e4422` (branch `codex/native-runtime-proposal` kept); no implementation was accepted: [native runtime proposal](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/notes/2026-10-12-native-ninjatrader-runtime-PROPOSAL.md) and [Aegis experiment plan](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/superpowers/plans/2026-10-12-aegis-disconnected-decision-experiment-PROPOSAL.md).
+
+## Reading limits — 2026-10-29 (consistency note)
+
+- The [branch (b) owner record](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting)
+  incorporates merged #959 and #965: original #807 stage 1 is granted, ORB joins
+  Aegis in that read-only assessment, and the pair counts as one candidate.
+  This does not grant this plan's expanded P1 scope. P0/D1 below must not be read
+  as requiring the recorded grant again, or as extending it.
+- #807 closed unmerged 2026-10-29 ([settled comment](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6498292027));
+  its proposal stays retrievable at `e6e4422` (branch
+  `codex/native-runtime-proposal` kept); no implementation was accepted. Its
+  pinned parity/isolation methods remain references for P4; closure itself
+  grants or revokes no authority.
+- The [qualification framework](../../briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md),
+  merged in #961, succeeds #941 and remains DRAFT. Its pre-ratification
+  adjudication, operator values and ratification remain owed. This plan's
+  first-payout targets, Select 50K assumptions and phase gates are still
+  proposals. The objective/account/gate relationship needs an owner disposition
+  before freeze; neither proposal silently replaces the other or the owned
+  Select 100K objective.
+- D2's original candidate-source menu below does not bind an exact ORB/Aegis
+  expression. The [workshop identity boundary](../specs/2026-10-28-orb-aegis-workshop-design.md#evidence-and-ownership-boundary)
+  distinguishes workshop ORB, O-N portfolio ORB and O-0 native solo ORB. The
+  10-19 finding's applicability to an exact pair, its own evidence case and
+  Tradeify exclusivity remain owed under the branch (b) owner record. Counting
+  the pair as one candidate does not nominate it under the draft framework.
+  This note makes no nomination or reassignment.
+
+Recheck the linked owners before dispatch. No phase GO, qualification acceptance
+or deployment authority follows from this note.
 
 ## 1. Constraints (verified 2026-10-21 unless noted)
 
@@ -21,7 +51,7 @@
 
 ## 2. Prerequisites, by what they gate
 
-**For bounded offline research and prototyping (P1–P4):** only the existing internal approvals. That means the 11-08 ruling granting branch (b) for P1, and the phase GOs below. Tradeify's answers are not a prerequisite for this work.
+**For bounded offline research and prototyping (P1–P4):** only the existing internal approvals. That means the original stage 1 grant and ORB extension recorded in the branch (b) owner record, a separate explicit ruling for the repurposed P1 scope, and the phase GOs below (see reading limits). Tradeify's answers are not a prerequisite for this work.
 
 **For enabling a strategy on an evaluation account (P6):**
 1. **A written Tradeify answer on ownership and exclusivity** for the chosen candidate: a private, AI-assisted implementation of a published rule. This is the [follow-up draft](../../notes/2026-10-21-tradeify-native-followup-questions-DRAFT.md), unsent, which needs D2 to name the rule.
@@ -48,7 +78,7 @@ These come from the Q-PATH model (i.i.d. Gaussian; an upper bound on what a fat-
 
 | Phase | Work | Exit gate | Owner / authority |
 |---|---|---|---|
-| P0 | 11-08 ruling (branch (b)); send the follow-up once D2 names a candidate | Ruling; follow-up sent | Joshua |
+| P0 | Bind the assessment scope against the recorded branch (b) rulings; send the follow-up only under its existing owner authorization once the exact candidate is bound | Original stage 1 distinguished from expanded P1; follow-up disposition | Joshua |
 | P1 | [#807 stage 1](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/notes/2026-10-12-native-ninjatrader-runtime-PROPOSAL.md#7--evidence-stages-and-effort), repurposed: it was scoped as an Aegis dependency/toolchain assessment. Here it means a read-only NinjaTrader toolchain assessment for this candidate, plus a check that the installed Tradeify entitlement supports the features this strategy needs. Feature list comes from the candidate; a menu being present is not evidence of trading permission or correct execution | Assessment report naming any concrete entitlement gap; no strategy code | Branch (b) GO, which must state this repurposed scope explicitly |
 | P2 | Candidate sourcing under the [evaluation order](../../adr/2026-08-30-evaluation-order.md), steps 1–6: structural screen; Confirm reservation; contract freeze with Tradeify Select 50K as the role; TRADEABLE-REACHABLE; bind K; Explore; selection freeze. Check the [rejected register](../../rejected_candidates.md) first | Frozen candidate contract and selection freeze | **GO** (campaign envelope) |
 | P3 | Confirm/holdout per the evaluation order, steps 7–10, on the Python reference. Intraday-honest scoring against `Tradeify_Select_50K` (EOD-clock results are lower bounds) | Confirm verdict; first-payout model rerun with the measured return distribution in place of Gaussian | Campaign owner |
@@ -77,7 +107,7 @@ Reaching any phase's bound triggers reassessment, not expansion.
 
 ## 6. Decisions for Joshua
 
-- **D1.** Pursue a Tradeify native lane at all (11-08 branch (b)), or park (branch (d)).
+- **D1 (dated proposal; read with the branch (b) owner).** Original stage 1 and ORB joining it are recorded as granted; this plan's expanded P1 and later phase GOs still need their own rulings. Branch (d) is not decided by that grant.
 - **D2. Candidate source:**
   - (a) a new candidate through P2;
   - (b) reassign ORB MNQ v7 from the four-firm §4 slot to Tradeify-only;
