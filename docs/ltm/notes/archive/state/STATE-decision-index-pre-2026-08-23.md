@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Roll 2026-10-29** (automated keep-15 roll; `scripts/state_roll.py`):
+
+- **2026-09-25** — Agents may read the accepted book's four Pine sources and accepted runtime ports, in place in the primary checkout only, under AGENTS.md's private-read rules. [§60](../../../../../docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)
+
 **Roll 2026-10-28** (automated keep-15 roll; `scripts/state_roll.py`):
 
 - **2026-09-25** — [§59 rulings](../../../../../docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#59--route-native-expressions-for-the-accepted-book-three-operator-rulings-2026-09-25): Vanguard/Aegis attested to fit the narrowed shape; T08 vendor question sent; route-native ORB MNQ and Striker MYM editions adopted as a pre-registered K=1 requalification (D-B4 (a) amended that far only). Pre-registration owed (operator), now as successor pre-registrations ([checklist item 7](../../../../../docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts)); requalification through the owed production E1. T08 drills D1–D4 (in principle) and T07 reads [authorized](../../../../../docs/notes/2026-09-25-t08-drills-t07-reads-operator-session.md) ([§A11.1](../../../../../docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md#a111--operator-ruling-close-direction-2026-09-26)); route drills superseded for Tradeify 2026-10-16.
