@@ -9,6 +9,7 @@
 **Retain-until:** superseded by an ADR recording BluSky's actual published activity rule (§4 T1), or by a firm-rules change that retires the BluSky tiers
 **Related:** [`2026-08-04-firm-rules-eval-lock-fix-applied.md`](2026-08-04-firm-rules-eval-lock-fix-applied.md) (same file, same defect *class* — a field whose recorded value did not match the phase it models; **different field**, and that ADR's §5 forbidden move against widening the `dd_lock_offset_usd` fix to BluSky is respected, see §5 below) · measurement [`lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/f3_cadence_successor_venues_2026-08-05/RESULTS.md) §1 · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) §7 F3 (the fork whose verdict this field silently decides)
 **Layer:** production config correctness (provenance defect) + one engine-plumbing guard in `core/mc/preflight.py`. **No `dd_protection` constant, allocation, Pine file, lifecycle state, or frozen gate threshold is touched. No measured number changes.**
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR09-3, ADR09-11, ADR09-14); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -44,11 +45,9 @@ The result is a field that reports an assumption in the grammar of a measurement
 
 ## §2 — Decision
 
-**1. Both `BluSky_Premium_*` tiers are marked unsourced on this field.** `inactivity_max_idle_days: 30` is **retained** (deleting it would break consumers and destroy a reproducible published cell) and gains `inactivity_rule_sourced: False`, plus an `OPEN DEFECT` block naming the billing-window provenance, the measured consequence, the containment, and the actual fix.
+**1. `core/mc/preflight.py::firm_kwargs` refuses to silently use an unsourced limit.** A new keyword `allow_unsourced_inactivity: bool = False`; when a caller requests `inactivity_off=False` on a tier carrying `inactivity_rule_sourced: False` without it, `firm_kwargs` raises `ValueError` naming the tier, the value, why it is not a measurement, and both routes forward. **Absent the key, a tier is treated as sourced** — matching every tier whose value cites a venue article, so no other row changes behaviour.
 
-**2. `core/mc/preflight.py::firm_kwargs` refuses to silently use an unsourced limit.** A new keyword `allow_unsourced_inactivity: bool = False`; when a caller requests `inactivity_off=False` on a tier carrying `inactivity_rule_sourced: False` without it, `firm_kwargs` raises `ValueError` naming the tier, the value, why it is not a measurement, and both routes forward. **Absent the key, a tier is treated as sourced** — matching every tier whose value cites a venue article, so no other row changes behaviour.
-
-**3. No measured number changes, and no verdict moves.** Inactivity-OFF — the default, and every published figure in the repo — never consults the flag. The F3 study declares the acknowledgement explicitly and reproduces its BluSky cell exactly (§8).
+**2. No measured number changes, and no verdict moves.** Inactivity-OFF — the default, and every published figure in the repo — never consults the flag. The F3 study declares the acknowledgement explicitly and reproduces its BluSky cell exactly (§8).
 
 **Effective:** immediately upon acceptance.
 **Scope:** `core/firm_rules.py` (2 tiers), `core/mc/preflight.py` (1 guard), `tests/core/test_mc_preflight.py` (6 tests), and the F3 harness's explicit acknowledgement. No `core/mc/simulation.py`, `core/dd_protection.py`, `core/lifecycle.py`, allocation, or Pine file is touched.
@@ -84,7 +83,7 @@ The result is a field that reports an assumption in the grammar of a measurement
 
 **Not admissible as a revert route:** deleting `inactivity_rule_sourced` to make a run proceed, or substituting a sibling firm's value for BluSky's. Both re-introduce the exact defect this ADR contains.
 
-**Revert action:** author a superseding ADR. Never edit this ADR's §2 in place.
+**Revert action:** author a superseding ADR.
 
 **Trigger check schedule:** T1 at the next 90-day venue-fact re-verify (next due ~2026-10-20, standing cadence) **and** as the named first limb of F3's resolution (RESULTS §6 item 1). T2 on any new `FIRM_RULES` tier addition. T3/T4 at each programme audit.
 
@@ -93,7 +92,6 @@ The result is a field that reports an assumption in the grammar of a measurement
 ## §5 — Forbidden moves (under this ADR)
 
 - **Treating containment as sourcing.** This ADR does not establish what BluSky's activity rule is. It establishes that we do not know. A BluSky inactivity figure remains an assumption with a flag on it, not a measurement.
-- **Reading this as electing, or excluding, a successor venue.** F3 is untouched and remains operator-owned at 2026-08-08. This ADR makes F3's evidence honest; it does not rule it.
 - **Substituting a sibling firm's value** (Bulenox's 5, Tradeify's 5) for BluSky's, in code or in prose.
 - **Deleting or defaulting away the flag** to make a harness run. The acknowledgement keyword exists for that need and leaves a greppable trace.
 - **Widening this to the `dd_lock_offset_usd` fix's territory.** The 2026-08-04 ADR §5 forbids widening *that* fix to Bulenox/BluSky on the grounds those tiers are `dd_type: "trailing"` and structurally never read that field. That remains true and is **not** disturbed here: this ADR touches `inactivity_max_idle_days` only, adds no lock field, and changes no `dd_type`. Its §10 audit hook #2 (seven `"dd_type": "trailing"` rows) stays green.

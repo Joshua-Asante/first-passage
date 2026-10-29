@@ -22,6 +22,7 @@ facts remain with the linked owners; this page does not restate locked values.
 - [`../../core/strategies/CATALOG.md`](../../core/strategies/CATALOG.md) — strategy dispositions.
 - [`../../ops/instruments/PROFILES.md`](../../ops/instruments/PROFILES.md) — mechanism × instrument matrix.
 - [`../adr/INDEX.md`](../adr/INDEX.md) — derived ADR lifecycle index.
+- [`azure-compute-vm-policy.md`](azure-compute-vm-policy.md) — standing rules for the Azure compute VM.
 - [`../../STATE.md`](../../STATE.md) — cross-session open threads and forward
   obligations.
 
@@ -42,7 +43,7 @@ facts remain with the linked owners; this page does not restate locked values.
   `make audit`). Wired [`../../scripts/gates.yml`](../../scripts/gates.yml)
   `tier: audit` — not pre-commit/`make check`/required CI. Script still exits
   0; INDEX moves stay judgment.
-- Rule 7 owner lookup: `make find-owner Q=<token>`. Not a sixth index.
+- operational_rules §7 owner lookup: `make find-owner Q=<token>`. Not a sixth index.
 - Current priorities: [`../../STATE.md`](../../STATE.md), then the linked campaign
   implementation plan. Session history: [`../SESSIONS.md`](../SESSIONS.md).
 

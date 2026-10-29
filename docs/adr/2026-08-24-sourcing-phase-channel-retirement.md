@@ -10,6 +10,7 @@
 **Retain-until:** none
 **Authors:** Joshua (direction) + Claude Code (drafter)
 **Layer:** methodology (sourcing-phase channel taxonomy + research rules of evidence only). No `dd_protection`, allocation, lifecycle, Pine, or rail config touched; nothing armed; no venue action; no spend.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR12-12, ADR12-17); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -123,7 +124,7 @@ Presented with this record, the operator elected **full retirement** of Route B 
 ## §7 — Implementation plan
 
 - **Phase 0** — DONE, this session: §0 reads verified current; repo-wide grep sweep run (raw output §10); the two ambiguous hits most likely to carry live claims (`c5-q-mschan-1.md`, `lab/discovery/grammar.py`) individually read and dispositioned.
-- **Phase 1** — OWED, gated on operator Accept: execute the eleven file edits enumerated in §6, in the order: (i) addendum on 2026-07-26 clause 2-B; (ii) addendum on 2026-08-08 §2-C row L1 — **append** a second `Superseded-in-part-by` line below the existing 2026-08-12 MSL-ratification entry (L2), never overwrite it; (iii) withdraw the Route B addendum block on the 2026-07-24 brief §6; (iv) mark `avenue_a_generate_confirm.md` Withdrawn; (v) strike the "1-tie" row in `strategy_harvest.md` §2.3; (vi) intercept on Q-MSCHAN-1's entry condition (a); (vii) banner on `c5-q-mschan-1.md`; (viii) banner on `a3-mnq-discovery-pipeline.md`'s title/body; (ix) three STATE.md forward-trigger row edits (2-B early-discharge note, new §4-limb-2 row, new §4-limb-3 row due 2027-02-08); (x) disposition the `approach_scoreboard_2026-08` and `tnec_envelope_compile_2026-08` census citations found by the corrected sweep (no edit expected — confirm and record); (xi) full accept+retire of `2026-08-05-avenue-a-generate-confirm-route.md` via `scripts/retire_adr.py 2026-08-05-avenue-a-generate-confirm-route --reason superseded --by 2026-08-24-sourcing-phase-channel-retirement` (or hand-equivalent), including its own residual-inbound-refs sweep.
+- **Phase 1** — executed 2026-08-24, including the full accept+retire of `2026-08-05-avenue-a-generate-confirm-route.md` (Change history, `Accepted` row).
 - **Phase 2** — OWED: dispositioning of the remaining raw grep hits not already covered in Phase 1 (confirm none require action beyond what §6 already dispositions); `check_adr_graph.py --regenerate-index` run and diff included; `check_brief.py` + `check_adr_graph.py` both exit clean.
 - **Phase 3** — OWED: adversarial pre-ratification review, then explicit operator GO; only then does Status flip `Proposed` → `Accepted` in the same change as Phase 1–2 landing.
 

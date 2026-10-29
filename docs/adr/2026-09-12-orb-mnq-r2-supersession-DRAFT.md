@@ -1,6 +1,6 @@
 # ADR 2026-09-12 — ORB-MNQ recon v7 in the Tradeify portfolio: R2 supersession (DRAFT skeleton, evidence slots empty)
 
-**Status:** `PROPOSED` — skeleton authored by TB-P1; the Decision slot is filled by **TB-D1** from the TB-E1 book-level result at integer size, and the operator's fresh GO is recorded as a dated addendum; until then this file decides nothing
+**Status:** `PROPOSED` — skeleton authored by TB-P1; this file decides nothing. Its Decision slot will not be filled: Track B, whose TB-E1 and TB-D1 would have filled it, was [superseded for Tradeify 2026-10-16](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify); withdrawing this record is the operator's
 **Decision date:** 2026-09-12
 **Fill date:** — (slot; TB-D1 records the fill and the operator's GO in a dated addendum)
 **Authors:** Joshua (D20-c ruling 2026-09-04; GO owed) + Claude Code coordinator (skeleton)
@@ -11,6 +11,7 @@
 **Retain-until:** the Tradeify portfolio's registry row is retired
 **Related:** [campaign record D20-c](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · [acceptance record](../notes/2026-09-10-tradeify-protection-selection.md) · [TB-P2 admission ADR](2026-09-12-tradeify-book-protection-instance-admission.md) · [TB-R2 read](../notes/2026-09-12-track-b-scaling-faithfulness-read.md)
 **Tier:** full (it re-points a FALSIFIED venue target for a live leg; the light tier is not available)
+**Revision:** 2026-10-25 — rule consolidation D4 removed the Track B fill and obligation directives (ADRX-7, ADRX-14, ADRX-16); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -67,7 +68,6 @@ What this ADR does **not** do, whatever the slot says: unpark the standalone ORB
 
 ## §5 — Forbidden moves
 
-- Filling a PASS/GO-request Decision without TB-E1's qualifying seal. A completed, identified TB-E1 failure/closure record may support only the "not superseded" refusal branch without that seal. No pre-E1 or feasibility-screen / weighting-study evidence may fill either branch (unregistered exploratory evidence).
 - Quoting any bound, curve or replay statistic here (D-B12: digests and verdict labels only).
 - Re-pointing the standalone ORB-MNQ-1 construct, its ledger row or pursuit on this ADR.
 - Treating a withheld GO as a FALSIFIED verdict; treating this ADR as deployment authority.
@@ -78,7 +78,6 @@ What this ADR does **not** do, whatever the slot says: unpark the standalone ORB
 
 **If accepted:** R2 of the 2026-08-03 ADR is superseded for this one leg at this one size; TB-V1 may land the ORB venue-edition row gated on the GO; the ORB ledger row for the *standalone* book stays `SCREEN-DEAD`.
 **If a confirmation criterion fails:** nothing changes on the 2026-08-03 ADR; the Tradeify portfolio attempt closes with no qualifying configuration. **If prerequisites or operator GO are missing/withheld:** it remains BLOCKED, with no technical rejection or automatic attempt closure.
-**Obligations:** TB-D1 fills the slot within the umbrella's wave-3 order (after TB-E1, before TB-V1 and the image tested/sealed at B7; TB-D0 may proceed independently after TB-E1 under its own policy gates); the operator's GO is a dated addendum; STATE's decision index gains the row.
 **Verdict vocabulary:** RESOLVED when the slot records a pass and the operator's GO is recorded; FALSIFIED when the slot records a failed bound (attempt ends); a withheld GO is `BLOCKED — context-problem`, never a verdict.
 
 ---

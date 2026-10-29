@@ -8,6 +8,7 @@
 **Retain-until:** none
 **Superseded-in-part-by:** `2026-05-08-dd-trigger-c2-relock.md` - DD_TRIGGER re-locked to C2 (1.5%); DD_SCALE 0.40x unchanged.
 **Scope:** `dd_protection.py`, drawdown protection behavior
+**Revision:** 2026-10-25 — rule consolidation D5 removed the queued-retune-is-inactive instruction (ADR01-3); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ## Context
 
@@ -35,7 +36,7 @@ MC sweep across trigger × scale grid. Key points tested:
 
 - **1.5% / 0.40× (initial retune).** Bust rate higher than 1.0%/0.40× because the trigger fired too late to meaningfully protect the 5% static DD bound. Rejected.
 - **2.0% / 0.40× with multiplicative two-tier (3a).** Bust 1.66% — worse than single-tier 1.0%/0.40× despite additional complexity. Rejected in favor of single-tier deletion.
-- **2.0% / 0.50× (post-challenge retune proposal).** Bust rate acceptable but only under relaxed challenge constraints (no 5% static DD cap). Proposal is queued for post-challenge, NOT active. See Notion: "dd_protection recalibration to 2.0%/0.50× — post-challenge — 2026-04-17".
+- **2.0% / 0.50× (post-challenge retune proposal).** Bust rate acceptable but only under relaxed challenge constraints (no 5% static DD cap). *(Removed 2026-10-25, rule consolidation D5, ADR01-3: the instruction to treat this queued post-challenge proposal as inactive. The FXIFY challenge is retired; AGENTS.md §Protection owns the frozen constants and the only retune path.)* See Notion: "dd_protection recalibration to 2.0%/0.50× — post-challenge — 2026-04-17".
 - **0.50× scale (looser protection).** Preserves more upside but crosses the 5% challenge threshold with higher probability. Rejected for the challenge phase.
 - **0.30× scale (tighter protection).** Reduces bust rate marginally but compresses profit distribution enough to drop pass rate below 90%. Rejected.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """STATE.md roller — recurring deadline rolls plus decision-index keep-15.
 
-Applies the mechanical limb of docs/operational_rules.md Rule 7 STATE currency
+Applies the mechanical limb of docs/operational_rules.md §7 STATE currency
 that `check_state_currency.py` only reports: rolls the Weekly/Monthly recurring
 deadlines forward and moves decision-index overflow rows into the archive. The
 output is a pure function of (input bytes, today) — no timestamps, no

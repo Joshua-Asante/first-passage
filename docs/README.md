@@ -1,7 +1,7 @@
 # `docs/` — governance prose
 
 Facts stay with their owners
-([`operational_rules.md`](operational_rules.md) Rule 7). This page is hops only.
+([`operational_rules.md`](operational_rules.md) §7). This page is hops only.
 
 | Need | Open first |
 |---|---|

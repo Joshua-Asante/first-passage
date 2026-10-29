@@ -1,12 +1,12 @@
-# Owner surfaces (Rule 7 — pointer, not a second owner)
+# Owner surfaces (operational_rules §7 — pointer, not a second owner)
 
-Canonical table lives in [`docs/operational_rules.md`](../../../docs/operational_rules.md) §7. This file is a **sweep checklist** for blast-radius greps — if it drifts, trust Rule 7.
+Canonical table lives in [`docs/operational_rules.md`](../../../docs/operational_rules.md) §7. This file is a **sweep checklist** for blast-radius greps — if it drifts, trust operational_rules §7.
 
 ## Fact → owner (abbreviated)
 
 | Fact class | Canonical owner |
 |---|---|
-| Strategy parameters | Pine (Rule 5) |
+| Strategy parameters | Pine (operational_rules §5) |
 | Lock state + hashes | `core/strategies/_archive/<family>/LOCK.md` |
 | `dd_protection` / allocations | `core/dd_protection.py` / `core/firm_rules.py` |
 | MC anchors | `docs/mc_anchor_history.md` + synthetic engine tests |

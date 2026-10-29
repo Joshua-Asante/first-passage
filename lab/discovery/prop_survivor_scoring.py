@@ -48,6 +48,12 @@ DEFAULT_PREREG = (
     / "pre-registration"
     / "2026-08-26-prop-survivor-scoring-prereg-v2.md"
 )
+#: Prospective addenda to DEFAULT_PREREG, applied by default (Joshua, 2026-10-24).
+#: Addendum 1 removes only the universal ≥4× cost hurdle (G2); v2 stays frozen.
+DEFAULT_ADDENDA = (
+    Path(__file__).resolve().parents[2]
+    / "docs/briefs/pre-registration/2026-10-24-prop-survivor-scoring-prereg-v2-addendum-1.md",
+)
 
 
 class StaleGateWarning(UserWarning):
@@ -80,8 +86,14 @@ class ScoringThresholds:
     seeds: tuple[int, ...]
     sims_per_seed: int
     horizon: int
-    cost_law_multiple: float
+    #: ``None`` when the pre-registration declares no ≥N× cost hurdle: G2 is then
+    #: skipped. The universal 4× gate was deleted by operator ruling 2026-10-24
+    #: (docs/notes/2026-10-24-assumption-challenge-rulings-proposal.md); frozen
+    #: pre-registrations that declare G2 are still scored as written.
+    cost_law_multiple: float | None
     source_path: str
+    #: Addenda applied on top of ``source_path``; together they are the governing spec.
+    addenda: tuple[str, ...] = ()
     #: Non-None when the parsed pre-registration's own Status line says it is CLOSED
     #: or superseded — i.e. these numbers are a historical record, not the live gate.
     #: Carries the Status text verbatim so a caller can print it. See
@@ -263,12 +275,17 @@ class ScoringReport:
 
 def load_scoring_thresholds(
     path: Path | str | None = None,
+    addenda: tuple[Path | str, ...] | None = None,
 ) -> ScoringThresholds:
     """Parse frozen ceiling / tiers / seeds from the survivor-scoring pre-reg.
 
     Refuses to guess — any missing number raises ``ValueError``.
     """
     prereg = Path(path) if path is not None else DEFAULT_PREREG
+    if addenda is None:
+        # The default spec carries its addenda; an explicit path reproduces that
+        # pre-registration alone (historical runs).
+        addenda = DEFAULT_ADDENDA if path is None else ()
     text = prereg.read_text(encoding="utf-8")
 
     def _req(pattern: str, label: str) -> str:
@@ -372,9 +389,7 @@ def load_scoring_thresholds(
     horizon = int(horizon_m.group(1))
 
     cost_m = re.search(r"[≥>=]\s*([0-9]*\.?[0-9]+)\s*[×x]\s*cost", text, re.IGNORECASE)
-    if not cost_m:
-        raise ValueError(f"pre-registration {prereg} has no parseable ≥N× cost hurdle.")
-    cost_law_multiple = float(cost_m.group(1))
+    cost_law_multiple = float(cost_m.group(1)) if cost_m else None
 
     for key in tier_keys:
         if key not in FIRM_RULES:
@@ -412,10 +427,22 @@ def load_scoring_thresholds(
         seeds=seeds,
         sims_per_seed=sims_per_seed,
         horizon=horizon,
-        cost_law_multiple=cost_law_multiple,
+        cost_law_multiple=_apply_addenda(prereg, addenda, cost_law_multiple),
         source_path=str(prereg),
+        addenda=tuple(str(Path(a)) for a in addenda),
         superseded_note=superseded_note,
     )
+
+
+def _apply_addenda(prereg: Path, addenda, cost_law_multiple):
+    """Apply prospective addenda. Each must name ``prereg`` in its Applies-to line."""
+    for a in addenda:
+        text = Path(a).read_text(encoding="utf-8")
+        if f"`{prereg.name}`" not in text.splitlines()[2]:
+            raise ValueError(f"addendum {a} does not apply to {prereg.name}")
+        if "**Removes: G2**" in text:
+            cost_law_multiple = None
+    return cost_law_multiple
 
 
 def reduce_to_deployable(
@@ -874,7 +901,7 @@ def score_candidate(
     report = ScoringReport(
         strategy_label=strategy_label,
         g1=g1,
-        thresholds_source=thr.source_path,
+        thresholds_source=" + ".join((thr.source_path, *thr.addenda)),
     )
     gate_reasons: list[str] = []
     if not channel_given:
@@ -900,14 +927,17 @@ def score_candidate(
         blocks = blocks_from_daily_pnl(candidate_daily_pnl)
 
     for firm_key in tier_keys:
-        g2 = cost_law_kill(
-            firm_key,
-            r_deploy=g1.r_deploy,
-            gross_edge_usd=edge,
-            thresholds=thr,
-        )
-        report.g2_by_tier[firm_key] = g2
-        if not g2.passed:
+        if thr.cost_law_multiple is None:
+            g2 = None
+        else:
+            g2 = cost_law_kill(
+                firm_key,
+                r_deploy=g1.r_deploy,
+                gross_edge_usd=edge,
+                thresholds=thr,
+            )
+            report.g2_by_tier[firm_key] = g2
+        if g2 is not None and not g2.passed:
             # Cost-law kill stops this tier; continue others (per-firm cost schedules).
             report.tiers[firm_key] = TierScore(
                 firm_key=firm_key,
@@ -1030,6 +1060,7 @@ def naive_daily_static_bust(summary_rates: dict) -> float:
 __all__ = [
     "CANDIDATE_STRAT",
     "DD_SCALE",
+    "DEFAULT_ADDENDA",
     "DEFAULT_PREREG",
     "NO_PROTECTION_TRIGGER",
     "G1Result",
@@ -1084,7 +1115,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="DEPLOYABLE-DEFAULT-ENVELOPE verdict from the producing brief",
     )
     ap.add_argument("--out", required=True, help="output JSON path")
-    ap.add_argument("--prereg", default=str(DEFAULT_PREREG), help="pre-registration path")
+    ap.add_argument(
+        "--prereg", default=None,
+        help="pre-registration path (omitted: v2 + addenda; explicit path: that specification alone)",
+    )
     ap.add_argument(
         "--n-sims",
         type=int,

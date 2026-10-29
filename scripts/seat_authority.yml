@@ -24,7 +24,8 @@
 #   high    — an operator act. Never grantable in a card: the operator performs it through
 #             an act they already perform (GitHub merge, arming GO, ratification, spend).
 #             One performer exception: trade.submit stays an operator act, but an agent may
-#             perform it when the operator directs that specific order, exit or cancel
+#             perform it when the operator directs that specific order, exit or cancel, or
+#             under his standing GO for the weekly account-preservation trade (2026-10-25)
 #             (see its entry below).
 #   forbidden (the `forbidden:` map, not a level) — un-grantable to any seat, and no
 #             approval unlocks it for an agent. Some have a separate governed route for the
@@ -38,7 +39,7 @@ capabilities:
   tests.run:            {risk: low}
   worktree.write:       {risk: low}      # edits inside the card's own worktree/branch
   research.run:         {risk: low}      # lab/ research inside its approved campaign contract
-  branch.push:          {risk: medium}   # glm/*, codex/*, claude/* branches only; never main
+  branch.push:          {risk: medium}   # codex/*, claude/* branches only; never main
   pr.open:              {risk: medium}
   pr.review:            {risk: medium}   # review comments; not an approval to merge
   ci.dispatch:          {risk: medium}   # e.g. the S2 Linux workflow (s2-linux-run skill)
@@ -46,14 +47,22 @@ capabilities:
   handoff.dispatch:     {risk: medium}   # opening a worker session against a frozen card
   governance.author:    {risk: medium}   # drafting ADRs/briefs/STATE/campaign records (routing test 1)
   core_anchor.edit:     {risk: medium}   # edits to routing test 1's core/ anchor paths
-  pr.merge:             {risk: high}     # operator act — GitHub merge
+  pr.merge:             {risk: high}     # operator act — GitHub merge; standing-GO exception (ADR Addendum 2026-10-24b):
+                                       # an agent may merge a PR pinned to its head SHA once a
+                                       # Codex review at that head is clean (within three reviews,
+                                       # or a clean fourth; Rule 6) and every CI check is COMPLETED
+                                       # and green at that head; never grantable in a card;
+                                       # auto-merge stays forbidden.
+  pr.merge_admin:       {risk: high}     # operator act — `gh pr merge --admin` (past unmet requirements);
+                                       # outside pr.merge's standing GO; never grantable in a card.
   governance.ratify:    {risk: high}     # operator act — ratifying an ADR/prereg/closure
   spend:                {risk: high}     # operator act — any paid service or subscription
   rail.deploy:          {risk: high}     # operator act — fly deploy of c1-rail
   rail.arm:             {risk: high}     # operator act — M1 RESOLVED + a GO per armed session
   trade.submit:         {risk: high}     # operator act; an order, exit or cancel only when the operator directs it;
                                        # performer exception: the operator, or an agent at the operator's
-                                       # direction for that specific act, acting only through an
+                                       # direction for that specific act or under his standing GO for the
+                                       # weekly account-preservation trade (2026-10-25), acting only through an
                                        # already-authenticated attended or computer-use surface; broker
                                        # credentials are never given to an agent (boundary OF-5);
                                        # AGENTS.md amendment 2026-09-30; ADR Addendum 2026-09-30b;
@@ -61,14 +70,14 @@ capabilities:
 
 forbidden:
   pr.auto_merge:
-    rule: "Merge authority is the operator's, with no automated exception."
+    rule: "GitHub auto-merge is retired; agent merges run only under pr.merge's standing-GO exception."
     owner: docs/adr/2026-07-14-cc-cursor-surface-allocation.md
   tv.login_automation:
     rule: "TV login automation prohibited."
     owner: docs/adr/2026-08-07-loop-s2-signal-host-fork.md
   locked_parameter.edit:
     rule: "Locked parameters are immutable."
-    owner: AGENTS.md#strategy-authorization-lifecycle
+    owner: AGENTS.md#strategy-reference-locked-legacy-book--do-not-modify
   protection_constant.edit:
     rule: "DD_TRIGGER / DD_SCALE are frozen."
     owner: AGENTS.md#protection
@@ -90,6 +99,8 @@ acceptance_required_for: [worktree.write, research.run]
 # The capabilities a card may grant to each seat. High-risk capabilities appear nowhere
 # here: the operator seat is never the subject of a card.
 seats:
+  # executive: folded into the coordinator (surface-allocation ADR Addendum 2026-10-28).
+  # Kept because historical cards and tests name it; grant it on no new card.
   executive:
     max_risk: medium
     grantable: [repository.read, tests.run, pr.review, governance.author]

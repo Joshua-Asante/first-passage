@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR08-14); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 **Related:** Pepperstone data tombstone [`docs/ltm/notes/2026-08-02-pepperstone-data-tombstone.md`](../ltm/notes/2026-08-02-pepperstone-data-tombstone.md); this retirement's hash record [`docs/ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md`](../ltm/notes/2026-08-03-bar-data-cfd-candidates-tombstone.md); futures-first charter [`docs/adr/2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md).
 
@@ -39,9 +40,9 @@ Separately, `tv_exports/candidates/` held one uncertified FX concept (`concept-g
 
 | Surface | Disposition |
 |---|---|
-| `bar_data/{NAS100USD,NAS100_M15,US30USD,US30_M15,USDJPY,USDJPY_M15,XAGUSD,XAUUSD,XAUUSD_M15}.csv` (+ CFD metas) | **DELETE** from checkout; strip from `bar_data/SHA256SUMS` |
+| `bar_data/{NAS100USD,NAS100_M15,US30USD,US30_M15,USDJPY,USDJPY_M15,XAGUSD,XAUUSD,XAUUSD_M15}.csv` (+ CFD metas) | **DELETED** 2026-08-03 from checkout and `bar_data/SHA256SUMS` (offline backup hash-verified first) |
 | `bar_data/{6J,MNQ,MYM}_M15.csv` (+ metas) | **KEEP** — still in manifest; still **FROZEN** (producer dead) |
-| `tv_exports/candidates/` (entire tree, incl. tracked JSON sidecars) | **DELETE** |
+| `tv_exports/candidates/` (entire tree, incl. tracked JSON sidecars) | **DELETED** 2026-08-03 |
 | `tv_exports/cme/` (incl. PARKED Aegis/Guardian CSVs) | **KEEP** unchanged |
 | `external/` | **KEEP** unchanged (R7c RETAINED) |
 | `MANIFEST_DIRS` | **unchanged** (still three dirs); `bar_data/SHA256SUMS` shrinks 12 → 3 rows |

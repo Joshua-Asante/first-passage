@@ -29,7 +29,7 @@ These rows are not hypothetical here — each maps to a documented burn:
 
 - **5 / recall gate** → `verify-source`'s worked example: three fresh agents grepped a pinned anchor off a stale branch, all citing Rule-0 compliance.
 - **14 / verification theater** → the §7 review-skip lesson (`feedback_section_7_skip_cost_concrete`): validator reasoning lived only in a review section that was skipped.
-- **15 / unauthorized action + fake claims** → `feedback_web_advisor_handoff_confabulates_repo_state`: "I stamped <path>" — nothing was stamped. Pre-execution direction is `handoff-verify`; post-execution is `fable-judge`.
+- **15 / unauthorized action + fake claims** → `feedback_web_advisor_handoff_confabulates_repo_state`: "I stamped <path>" — nothing was stamped. Pre-execution direction is `handoff-verify`; post-execution is `handoff-verify` post-execution judging.
 - **17 / missed twins** → the `daily_loss_pct: None` TypeError at four division sites (`dd_protection.py`, `core/mc/modes.py`, `core/mc/simulation.py`, `core/mc/preflight.py`), fixed as a class in PR #356.
 - **13 / retry thrash** → the shared 3-strikes invariant: `code-defect-debugging` Phase 4.5 and `inqhiori` §6 (three failures at one level → the level is wrong).
 

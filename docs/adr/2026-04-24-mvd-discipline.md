@@ -8,6 +8,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-22, ADR01-26, ADR01-27); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ## Status
 
@@ -48,15 +49,14 @@ Adopt a Minimum Viable Defense (MVD) discipline scoped to artifacts that cross t
 
 **Prevention with minimal friction.** Defenses are inline assertions and template preambles in code-resident artifacts, not checklists or memory rules. Inline `assert` runs on every invocation regardless of attention state.
 
-### Mandatory MVD triggers (5)
+### Mandatory MVD triggers (4)
 
 An artifact requires MVD if and only if it falls under one of:
 
 1. **MC input panels** — anything `portfolio_mc.py` reads (`data/tv_exports/pepperstone/` or successor canonical paths).
 2. **Lock decision inputs** — every performance number (PF, RF, DD, trade count, $, WR) cited in any lock brief must be reproducible by a script with identity assertions.
 3. **Risk-control production code** — `dd_protection.py`, Pine `risk_pct` / `dayStopPct` / SL / TP / session blocks. Any change requires self-validation that guards fire and fallbacks don't.
-4. **Allocation changes** — lot/risk per strategy in `accounts.json`; CLI `update`/`lots` operations.
-5. **Specific numbers or named behavior cited in memory, ADR, or CHANGELOG** — every "PF 4.186 / $178,208" or "EOM = days 29–31" must trace to a reproducing script with identity assertions.
+4. **Specific numbers or named behavior cited in memory, ADR, or CHANGELOG** — every "PF 4.186 / $178,208" or "EOM = days 29–31" must trace to a reproducing script with identity assertions.
 
 Out of scope (no mandatory tax): exploratory scripts, methodology drafts, ad-hoc charts, broker-feed comparisons not yet promoted, datasets on disk until used in scope (e.g. the OANDA bar dataset until cited in a load-bearing brief).
 
@@ -73,24 +73,6 @@ Implemented in `multi_firm_operations/lib/mvd.py` as importable helpers:
 ### Producer-side rule
 
 For any artifact in scope, identity assertions appear within ~5 lines of identifier declaration. Cardinality and contract assertions appear at producing site, not consuming site (the author is the only one with full context to write them).
-
-### Consumer-side promotion check
-
-Any brief, ADR, memory entry, or CHANGELOG entry that cites specific numbers or named behavior must include a one-line attestation:
-
-> **MVD-attest:** For each cited number, the producing script's first ~5 lines include identity assertions.
-
-If the check fails, the artifact is not promoted: either the producing script is hardened, or the citation is removed. This is the explicit defense against the moment-of-promotion gap, since promotion happens in the head and not in a file. Placing a small share of the burden on the consumer also aligns with how catches actually happen — by independent re-derivation, never by closer inspection.
-
-### Update protocol
-
-Every new caught bug post-MVD-launch:
-
-1. Adds a row to the audit table in `docs/methodology/mvd.md`.
-2. If the catch reveals a new family or a new identity sub-pattern, adds a worked example and (if applicable) a new helper in `lib/mvd.py`.
-3. Enforced as a step in any post-mortem or CHANGELOG entry that records the bug.
-
-This is the defense against library decay (catching the previous war while current risk drifts un-covered).
 
 ### Artifact homes
 
@@ -112,8 +94,7 @@ This is the defense against library decay (catching the previous war while curre
 
 ### What changes
 
-- The standing Rule 0 (risk-control decision audit) is generalized to the 4 additional triggers above, plus the consumer-side promotion check.
-- Lock briefs and CHANGELOG entries gain a one-line attestation.
+- The standing Rule 0 (risk-control decision audit) is generalized to the additional triggers above.
 - Calibration scripts gain ~3–5 lines of assertions at the top.
 - `portfolio_mc.py` 1R compute gains an `assert_no_fallback` check.
 

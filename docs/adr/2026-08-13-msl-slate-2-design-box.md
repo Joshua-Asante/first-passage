@@ -10,10 +10,11 @@
 **Authors:** Joshua (election: "go straight to P3.4") + Cursor (recorder)
 **Related:** [re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) · [second slate](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-13-msl-second-slate.md) · [charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md) · [Magdon-Ismail RESULTS](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/mc/mc_mdd_closed_form_2026-08/RESULTS.md)
 **Layer:** MSL hunting-region election only. **$0 / K=0.** No arming, no Pine, no `core/`, no gate/threshold change.
+**Revision:** 2026-10-25 — rule consolidation D7 removed the slate-2 authoring and lane directives with the MSL channel's closure (ADR10-86, ADR10-88); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ## Decision
 
-Elect the [re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) §7 box for **slate 2**: `rr` ∈ [2, 3] · target WR 0.30–0.42 · `R` at the bust-≤3.0% **diffusion** frontier (provisional) · hard stop mandatory · k=1 · no pyramiding. Sequence **S2A (MCL) now**. Do not wait on Magdon-Ismail as a calibration. Do not open the eval-sprint lane.
+Elected 2026-08-13: the [re-derivation](../notes/notice/N-2026-08-13-msl-design-box-rederivation.md) §7 box for **slate 2**: `rr` ∈ [2, 3] · target WR 0.30–0.42 · `R` at the bust-≤3.0% **diffusion** frontier (provisional) · hard stop mandatory · k=1 · no pyramiding, with S2A (MCL) sequenced first, not waiting on Magdon-Ismail as a calibration, and the eval-sprint lane not opened. Slate 2 is exhausted (S2A FALSIFIED, S2B STAGE-1 FAIL) and the MSL channel closed 2026-10-07 ([ratification ADR](2026-08-12-msl-sourcing-channel-ratification.md), Addendum 2026-10-25), so the election directs no further MSL cards; the box geometry stays the reference other records cite.
 
 ## Grounds
 
@@ -29,4 +30,4 @@ RESOLVED when this ADR is Accepted and S2A Stage-0 may proceed under the elected
 
 ## Boundary
 
-Do **not** loosen bust ≤ 3.0% or P(pass) ≥ 50%. Do not open the sprint/retry lane. Do not rewrite the first-slate header. Do not treat Magdon-Ismail validation as an `R_max` recalibration — every frontier dollar here stays the diffusion approximation until a separate calibration artifact exists.
+Do **not** loosen bust ≤ 3.0% or P(pass) ≥ 50%. Do not rewrite the first-slate header. Do not treat Magdon-Ismail validation as an `R_max` recalibration — every frontier dollar here stays the diffusion approximation until a separate calibration artifact exists.

@@ -4082,6 +4082,10 @@ The repair is authorized as a bounded synthetic repair. The real evidence produc
 
 **Addendum 2026-10-14 — the same VM for the Q-SFCLEAR-3 FG evidence and clearance runs.** *Operator ruling 2026-10-14, given by Joshua directly to the Deployment Coordinator, verbatim: "go ahead will 1-3", item 3 being the coordinator's request to extend §60 to Q-SFCLEAR-3's FG and clearance runs on the same terms, adding the source-build folder.* Q-SFCLEAR-3 ([pre-registration](../pre-registration/Q-SFCLEAR-3-verdict-preregistration.md)) supersedes Q-SFCLEAR-2 before any run, so the 2026-10-12 and 2026-10-13 addenda do not carry over. For the Q-SFCLEAR-3 FG evidence run ([executor card](../handoffs/2026-10-12-q-sfclear-2-fg-private-executor-card-DRAFT.md)) and its clearance run (run-path card E's run) only, agents may copy to the same VM, on the terms of those addenda, everything they admit for the corresponding Q-SFCLEAR-2 run, plus: the hash-bound source-build folder (`t00-step3-console/sfclear3-source-<UTC>/`, verified against the `SHA256SUMS` digest bound in the Q-SFCLEAR-3 freeze record), the reviewed, hash-bound FG driver, the Q-SFCLEAR-3 freeze-record folder, and the private scoring inputs (`sfclear_score_inputs/v1` and the derived fee file, [card E D-1 addendum](../handoffs/2026-10-12-q-sfclear-2-run-path-e-run-record-card-DRAFT.md)). The Pine sources are not admitted; the `E_0` file stays consumed solely by the verified envelope, never opened or printed. Every 2026-10-07 condition stays in force; copies are removed and listed absent at each run's teardown, then the VM is deallocated. Not changed: any other run, host or use.
 
+Standing host rules (cost, deallocation, access, teardown) are owned by the [Azure compute VM policy](../../governance/azure-compute-vm-policy.md); the addenda above remain the per-run admissions.
+
+**Addendum 2026-10-28 — Codex excluded; providers.** *Operator ruling 2026-10-28, given by Joshua directly in session.* "Any agent" above now excludes Codex. Codex does not read or receive the Pine sources, the runtime ports or `effective_inputs.json`. A reading agent's own provider may receive what it reads, and rule 1's "external service" means any service beyond that. [AGENTS.md §Public-clone posture](../../../AGENTS.md#public-clone-posture) (*Data movement*) owns the class rules.
+
 ## §61 — X-1 observed route acceptance (2026-09-30)
 
 Joshua directed the continuation review of the completed September 30 X-1
@@ -4119,3 +4123,20 @@ readiness and CP-3 remain later gates. No implementation or live action is grant
 *[2026-10-01: the card's full tool suite is superseded by the deployment
 checklist's [reduced X-4 build path](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts),
 which owns the build scope.]*
+
+## §62 — Aegis capture cost basis: zero slippage (2026-10-20)
+
+The `aegis_6j1` source (`Aegis_6J1_VB_CME_6J1!_2026-09-03_cc310.csv`, `71e732fc…`) was captured at **0 ticks of slippage** and **$3.10 per contract per side**. The source is Joshua's TradingView Properties screenshot (2026-10-20), confirmed by an in-place read of the hash-pinned effective inputs. $3.10 is Tradeify's all-in 6J rate per side. The Pine declares $1.30 and 1 tick. This explains the "commission/slippage properties differ" entry in the [track-b note](../../notes/2026-09-11-track-b-adapters-and-book-rules.md) and the §52 effective-input record for Aegis. Joshua ruled on 2026-10-20 that the label may be public.
+
+**Consequences.** Recorded here as the campaign mirror; the owner record is [6J ledger J17](../../../ops/instruments/6J.md).
+- `remc_series_builder`, which serves the four-firm re-MC and size feasibility, keeps this zero embedded slippage. It also charges 6J at the tier's index-micro rate ($0.91 on Tradeify) instead of $3.10. Both biases are optimistic.
+- The T00 qualification path charges $3.10 per side. Its slippage follows the runtime effective inputs.
+- No negative verdict can improve. Size feasibility's FEASIBLE is the one positive verdict whose sensitivity must be re-read.
+- `cc310` stays unchanged as the parity reference. Economic reads use ≥1 tick per side as a scenario, not a bound.
+
+**Routing (Joshua, 2026-10-20, through the Deployment PM):**
+- builder per-symbol netting plus a slippage-scenario parameter;
+- the size-feasibility sensitivity re-read;
+- a Q-SFCLEAR-3 successor freeze adding an Aegis-only reference-slippage deduction before dispatch resumes.
+
+Nothing is rerun or requalified by this entry. S4 stays stopped, FLOOR-HALF stays parked and Q-SFCLEAR-3 dispatch stays paused.

@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** [`2026-08-12-msl-mym-occupancy-release.md`](2026-08-12-msl-mym-occupancy-release.md) in part — the Addendum 2026-08-06 "Out of scope" claim that `MYM1!`/`MNQ1!` remain retained-not-released is superseded (see Addendum 2026-08-14 below). **S7 itself (the core §2 decision) is untouched.**
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR07-85, ADR07-89); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Amends-in-part:** [`docs/spec/2026-07-27-third-leg-target-spec.md`](../spec/2026-07-27-third-leg-target-spec.md) — adds **S7** to §7.1, corrects §2.2's sufficiency claim, narrows §2.4 Slot 2, and adds a sixth failing row to the §7.5 negative control. This is the instrument that spec's own change-control clause requires (*"§7 thresholds change only by a superseding ADR or by the §6.1 verdict firing"*); §6.1 has **not** fired (no candidate has reached a composed re-MC).
 **Related:** [`SLR-MYM-1 closure`](../briefs/closures/SLR-MYM-1-closure-falsified-stage0.md) F1 (the finding that produced this).
 **Layer:** screening standard for a same-account third c1 leg. **No** strategy parameter, allocation, `dd_protection` constant, Pine source, rail code, or live constant is touched.
@@ -68,7 +69,7 @@ long-only directionality.
 
 **Redaction 2026-10-09 (operator decision 2026-10-09, option 2):** the Striker DJ30 v4.5 day-of-week set and session window are Pine-only (`core/strategies/CATALOG.md` §Locked parameter record). In this document weekdays are therefore named by **class** — the *MNQ-only weekday*, the *shared weekday* (both incumbents can fire), the *MYM-only weekday* and the *two free weekdays* — and entry windows by reference to the locked Pine filters. Every number, gate, slot and verdict is unchanged. Original preserved in first-passage-archive `archive/preserve-exposure-2026-10-09` `f5f978ab90855e0b64d5981d7d8ffd4a0bbe8e26`.
 
-**2-C. §2.4 Slot 2 narrowed.** Slot 2 (the two single-incumbent weekdays) was derived on cap grounds alone. Under S7 it is **unavailable to a candidate on an occupied symbol**: the incumbent MNQ leg can fire on **the MNQ-only weekday**, and the incumbent MYM leg on **the MYM-only weekday**. Slot 2 therefore survives **only for a candidate on an unoccupied symbol**. Slot 1 (the two free weekdays) is **unaffected** — neither incumbent can fire on those days, so no symbol is occupied.
+**2-C. §2.4 Slot 2 narrowed.** Slot 2 (the two single-incumbent weekdays) was derived on cap grounds alone. Under S7 it is **unavailable to a candidate on an occupied symbol**: the incumbent MNQ leg can fire on **the MNQ-only weekday**, and the incumbent MYM leg on **the MYM-only weekday**. Slot 1 (the two free weekdays) is **unaffected** — neither incumbent can fire on those days, so no symbol is occupied.
 
 **2-D. §7.5 negative control gains a sixth failing row.** ORB-MNQ-1 trades **MNQ daily**; the incumbent Striker NAS100→MNQ leg can fire on **its locked weekdays**. ORB therefore **fails S7** in addition to S5, R1, R3, M2 and the S4 directionality question. The known-bad candidate is re-rejected by the new limb, which is the non-vacuity check this ADR owes.
 
@@ -143,7 +144,7 @@ long-only directionality.
 
 - **Phase 0 — DONE 2026-07-29.** This ADR authored on a verified production read.
 - **Phase 1 — DONE 2026-07-29.** Spec amended: S7 added to §7.1; §2.2 sufficiency correction; §2.4 Slot-2 narrowing; §7.5 negative control gains the S7 row; spec header records this ADR as amending-in-part.
-- **Phase 2 — owed at next use.** The next third-leg proposal scores S7 explicitly in its §7.1 table. No retroactive re-scoring is owed: the only prior candidates are ORB-MNQ (already SCREEN-FAIL on five other grounds) and SLR-MYM (closed).
+- **Phase 2.** No retroactive re-scoring is owed: the only prior candidates are ORB-MNQ (already SCREEN-FAIL on five other grounds) and SLR-MYM (closed).
 - **Phase 3.** §4 checks ride the programme-audit dates.
 
 ---

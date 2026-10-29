@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR10-33); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Related:** [`three-loop binding`](2026-06-12-three-loop-methodology-binding.md) (D4 add-back metric reads these registers) · [`GRAND tier`](2026-08-09-grand-tier-quintessentials-binding.md) (pursuit-layer sibling; this ADR is object-layer) · [`iterate-closure-exit`](2026-08-04-iterate-closure-exit-mandatory.md) (the gate that checks closures) · [`2026-08-08 quarterly audit`](../notes/audits/programme-audit/2026-08-08-quarterly-audit.md) §1.2 diagnostic 4 (the RED this ADR answers)
 **Layer:** governance convention + object-layer register topology. **$0 / K=0.** Tier: **FULL** (ceremony-tiering limb 4 — amends doctrine binding future work).
 **Loop-of-Record:** STRATEGIC — this rules which register carries kill-record authority, i.e. governance of a stopping rule. D2 channel (c).
@@ -116,8 +117,7 @@ discipline collapse** — with one real residual: ledger coverage is itself part
 
 **D4 — The per-direction feed gets an enforcement instrument or an honest downgrade.** Rule (1) is
 currently enforced by nothing. Until an instrument exists, no artifact may cite the per-direction feed
-as an operative stopping rule. Building the check (does every terminal-negative closure with a named
-instrument have a ledger DEAD row?) is **owed and is dispatched, not assumed** — see §7.
+as an operative stopping rule.
 
 **D5 — Corrections landed with this ADR** (each a `lesson_corrections_land_where_read` firing):
 - `rejected_candidates.md:455` "Reviewed at the 2026-08-08 slate" — **false as a record**; rewritten to
@@ -187,7 +187,7 @@ in. Mitigated by the table in D3 and by `profiles.json` pointers being the singl
 
 **Risk:** MNQ carries the 2026-07-21 bar under `inherited_bars`, **not** `bars` — its binding is
 transitive through the parent class. Editing that inheritance edge would silently unbind the instrument
-at the centre of the estate's densest kill run. Flagged here; hardening is part of the §7 dispatch.
+at the centre of the estate's densest kill run. Flagged here.
 
 **Downstream artifacts updated in this commit:** `docs/rejected_candidates.md` (D1 stamp + three D5
 corrections); `docs/pursuits/a3-mnq-discovery-pipeline.md` (the open concern this ADR resolves).
@@ -198,8 +198,6 @@ corrections); `docs/pursuits/a3-mnq-discovery-pipeline.md` (the open concern thi
 
 - **Phase 0** — §0 reads (done, adversarially re-verified).
 - **Phase 1** — land D1 stamp + D5 corrections in `rejected_candidates.md`; update the a3 pursuit record.
-- **Phase 2** — the D4 enforcement instrument and the `inherited_bars` hardening are **dispatched as a
-  separate packet**, not built here (they are code+tests, and this ADR is the ruling).
 - **Phase 3** — verification block below; status `Accepted` on ratification (this commit).
 
 ---

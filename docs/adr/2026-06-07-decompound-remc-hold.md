@@ -4,6 +4,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-39); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Decision date:** 2026-06-07
 **Authors:** Joshua + claude.ai (advisor)
 **Supersedes:** none (does NOT supersede the 2026-05-23 allocation-refresh-2 lock — that config is HELD)
@@ -198,9 +199,8 @@ HELD config are unaffected.
 
 **Flagged for the 2026-08-08 regime trigger (not run here):** because H1 is materially less
 severe on clean data, the regime-robust deep-de-risk frontier may now clear at a more
-practical risk/median than §3's "k≈0.25, 367-591d." Re-run `h1_check.py` on the clean vintage
-at the trigger; a practical regime-robust config would reopen the de-risk option this ADR
-closed. Today's HOLD is unchanged either way.
+practical risk/median than §3's "k≈0.25, 367-591d"; a practical regime-robust config would
+reopen the de-risk option this ADR closed. Today's HOLD is unchanged either way.
 
 ---
 

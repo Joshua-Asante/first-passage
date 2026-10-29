@@ -9,6 +9,7 @@
 **Supersedes:** none — **admits** a new falsifiable claim set; does not edit or revive the retired challenge-era numbers (99.83/0.17/4.37 stay historical per the rescope ADR).
 **Related:** [`docs/adr/2026-07-11-challenge-era-claims-rescope.md`](2026-07-11-challenge-era-claims-rescope.md) (§4 completion falsifier, discharged by this ADR — see its dated addendum); [`docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-SFRISK-1-successor-self-funded-risk-framework.md) (parent Pre-Q, `H-SFRISK-1`); [`docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/pre-registration/Q-SFRISK-1-verdict-preregistration.md) (T1's frozen numbers); [`docs/briefs/closures/Q-SFRISK-1-closure-resolved.md`](../briefs/Q-SFRISK-1-closure-resolved.md) (the closure this ADR is promoted from); [`docs/adr/2026-06-07-decompound-remc-hold.md`](2026-06-07-decompound-remc-hold.md) (the instrument this framework runs on; its HOLD is unaffected — see §2); [`docs/adr/2026-07-06-bust-day-maxdd-inclusion.md`](2026-07-06-bust-day-maxdd-inclusion.md) (explains the F1 fidelity delta, §0).
 **Layer:** portfolio / governance (a new risk-characterization claim; **zero** locked parameter, allocation, `dd_protection` constant, or MC-anchor touch)
+**Revision:** 2026-10-25 — rule consolidation D5 removed T1's use as the Aegis→M6J go-live input (ADR05-150); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -36,13 +37,13 @@ The 2026-07-11 rescope ADR retired the challenge-era P(pass)/bust/p99-DD claims 
 
 ## §2 — Decision
 
-**T1 is admitted as the self-funded successor risk framework, replacing the retired challenge-era P(pass) claim as the risk-characterization input for any future Aegis→M6J go-live decision.** Concretely:
+**T1 is admitted as the self-funded successor risk framework, replacing the retired challenge-era P(pass) claim.** *(Removed 2026-10-25, rule consolidation D5, ADR05-150: T1's use as the risk-characterization input for any Aegis→M6J go-live decision. That lane is parked by [`2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) §2.1; the reopened self-funded lane clears on the 15% standard, [`2026-10-09-self-funded-tradovate-lane-reopen.md`](2026-10-09-self-funded-tradovate-lane-reopen.md) Decision 4.)* Concretely:
 
 1. **The claim (what T1 says):** On the clean-vintage decompound instrument (2020–2026, locked book, dd_protection C2), under the withdrawal model **ADOPTED** as-is (+5% skim / $200K base / reset-to-base), evaluated separately on both the 2020–2023 chop half and the 2023–2026 trend half:
    - The 99th-percentile peak-relative max-DD does **not** exceed **10%** on either half (observed: H1 8.00%, H2 4.53%).
    - The lane is **not operationally impractical** by the median-days-to-first-skim measure — observed medians (H1 51 bd, H2 16 bd) sit far inside the 252-bd ceiling on both halves.
 2. **What this claim is a successor to:** the retired challenge-era 99.83%/0.17%/4.37% P(pass)/bust/p99-DD headline, which answered a different question (probability of passing a $200K FXIFY challenge) that no longer has a live referent. T1 answers the self-funded question directly — capital-ruin risk and cashflow-return cadence — on both the regime that already broke both old challenge gates (H1) and the regime that didn't (H2).
-3. **What this claim is NOT:** a go-live authorization, a relock of any locked parameter, or a revival of the historical anchor as a live number. Aegis→M6J go-live is a separately gated operator decision (`CLAUDE.md` Live-execution posture) that may now cite this ADR as its risk-characterization input.
+3. **What this claim is NOT:** a go-live authorization, a relock of any locked parameter, or a revival of the historical anchor as a live number. Aegis→M6J go-live is a separately gated operator decision (`CLAUDE.md` Live-execution posture).
 4. **F2 (TUW) status:** remains explicitly deferred. T1 is admitted as a 3-dimension triple (F1+F3+F4) by the operator's own Phase-0 scoping decision; a future amendment may add a TUW clause without reopening or altering this admission.
 
 **Effective:** immediately (ratified 2026-07-15).

@@ -2,6 +2,10 @@
 
 Rolled from [`STATE.md`](../../../../../STATE.md) decision index under pain-point **P8** approach A (keep-15). Newest 15 stay on STATE. Older bullets below, newest first. Do not edit in place to add new decisions — append on STATE, then re-roll.
 
+**Roll 2026-10-19** (automated keep-15 roll; `scripts/state_roll.py`):
+
+- **2026-09-24** — Bracket-convention build GO, engine layer only ([GO](../../../../../docs/briefs/phase3-preparation/2026-09-15/schedule-execution-evidence.md#addendum-2026-09-23--path-position-bracket-convention-ratified-2026-09-23)). T00 step 1 RESOLVED (P7 MET) at `2baa516`; step-1b P7 re-run done and accepted 2026-10-02 (`b2c9f9c`, landed `c3ab0cc`; [closure §7](../../../../../docs/briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md#step-1b-re-run-return--2026-10-02-executor-local-claude-opus)). Production-feed work waits for a T00 verdict outside {INSUFFICIENT, NO-GO-evidence} (in practice, GO-evidence) and ~~T10's F1 packet~~, since the 2026-10-02 D-feed (b) re-rule, a bound equivalence spec and A9-PREP ([CP-7](../../../../../docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken); [§3](../../../../../docs/notes/2026-09-29-t00-t10-cp7-sequence.md) is historical); T00 supplies its own P7 (b) inputs ([§7.9](../../../../../docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#79-recovery-accepted-shortest-path-continuation-2026-09-24)).
+
 **Roll 2026-10-17** (automated keep-15 roll; `scripts/state_roll.py`):
 
 - **2026-09-24** — T08 R3 = NONE (no documented unknown-request fence; D-broker void; T09 unspecifiable): live release held; one narrow operator-sent CrossTrade question authorized, written answer retained as evidence; bounded-exposure amendment scoped. [§7.8](../../../../../docs/briefs/handoffs/2026-09-21-tradeify-t08-broker-protection-feasibility.md#78-operator-ruling-on-the-return-2026-09-24)/[scope](../../../../../docs/superpowers/specs/2026-09-24-bounded-exposure-unknown-request-amendment-scope.md)

@@ -11,6 +11,8 @@
 **Supersedes:** `2026-06-14-rejected-candidate-patterns.md` in part - dedup.py/feedback.py mechanism only. Retires the CFD-era research pipeline that `docs/adr/2026-07-10-databento-research-stack.md` (Gen-2) functionally replaced.
 **Related:** `docs/adr/2026-07-10-databento-research-stack.md` (Gen-2 discovery stack — the supersessor; §3 of it *forbids* hand-rolling the DSR/PBO/CPCV layer, which retroactively frames the Gen-1 harness); `docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md` (R6 = NO-GO — no prop rail exit for any Gen-1 output); `docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md` (P2 edge-transfer FALSIFIED — no ported CFD edges enter); `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` (2026-07-10 addendum — FXIFY/DXTrade closed, no CFD candidates enter); `docs/adr/2026-06-05-monorepo-layer-boundaries.md` + `REPO_MAP.md` (the boundary contract + tier map the retirement must survive; `sweep/` and `scripts/wfo/` already classified lab/P3); `docs/adr/2026-06-05-concept-admissibility.md` (the concept-intake contract being retired); `docs/adr/2026-06-05-sweep-engine.md` (the two-tier sweep engine being retired); the three prior retirement ADRs whose pattern this copies — `docs/adr/2026-06-12-notion-surface-retirement.md`, `docs/adr/2026-06-17-dukascopy-retirement.md`, `docs/adr/2026-06-24-oanda-retirement.md`.
 **Layer:** methodology + research tooling (`lab/validation/**`, `scripts/wfo/**`). **Not** strategy/risk-control: no Pine source, no `dd_protection`/`firm_rules`/`portfolio_mc` constant, no allocation, no MC anchor (99.83/0.17/4.37) is touched. `core/` is untouched.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR04-28, ADR04-30, ADR04-33, ADR04-38); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the executed one-off scope guard on core, Pine, locked constants and the MC anchor, which Rule 14 and AGENTS.md §Protection state (ADR04-31); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -76,7 +78,7 @@ Per-subsystem disposition:
 | `lab/codification/**` | **PARK — do NOT delete** | Pine is still the execution language of the **KEEP** rail (TV → CrossTrade → NT8 → Bulenox). A Gen-2 survivor that ever goes live must cross Python→Pine with an identity check (the Aegis→6J 129/129 pattern). Codification is the only machinery pointed at that bridge. Wrong *input format* today (concept YAML, not a Python strategy spec), so park with a re-point trigger, don't maintain or delete. | Re-point trigger: "first DISC-CAMP survivor reaches admission." Until then: sever its dead `→validation` import (Phase-0 0a) so it is inert-and-import-clean. |
 | `scripts/validate_candidate.py` | **RETIRE or re-point** (Phase-0 decides) | Imports `validation` (REPO_MAP). If it only invokes the retired harness, it retires with it; if a live caller exists, re-point to the §8 gate. | — |
 
-**Explicitly NOT retired:** any `lab/analysis/**` closure directory, any `docs/briefs/pre-registration/**`, any `docs/rejected_candidates.md` entry, any banked K, any PREREG-* artifact. These are **evidence**, governed by the repo's annotate-never-delete discipline; they are what makes cumulative-K and the rejected registry honest. Retirement touches *machinery*, never *evidence*.
+**Explicitly NOT retired:** any `lab/analysis/**` closure directory, any `docs/briefs/pre-registration/**`, any `docs/rejected_candidates.md` entry, any banked K, any PREREG-* artifact. These are **evidence**; they are what makes cumulative-K and the rejected registry honest.
 
 **Effective:** on the ratification commit, **and** only after §7 Phase 0 passes. **Scope:** `lab/validation/**`, `scripts/wfo/**`, `scripts/validate_candidate.py`, plus REPO_MAP/CLAUDE/STATE provenance edits. No `core/`, no Pine, no locked constant.
 
@@ -109,11 +111,7 @@ A retirement's falsifier is: *did removing this break or lose something the repl
 ## §5 — Forbidden moves (under this ADR)
 
 - **Executing any `git rm` before §7 Phase 0 passes.** The reverse-dependency audit + the three extractions + the two concept-intake verification gates are blocking. Deleting first and fixing imports after is the build-breaking move this ADR exists to prevent.
-- **Deleting `codification/`.** It is the KEEP rail's only Python→Pine bridge. Park, sever its dead import, re-point later — never delete.
-- **Deleting evidence.** No `lab/analysis/**` closure dir, no pre-registration, no `rejected_candidates.md` entry, no banked K. Retirement is machinery-only; evidence is annotate-never-delete.
-- **"Improving" a subsystem while extracting it.** `controls.py` and the rank-ρ invariant move **as-is** (re-pointed, not rewritten). A cleanup-during-extraction is scope creep and a fresh overfitting surface (mirrors `databento-research-stack` §5 "improving the delivered skills during integration").
 - **Retiring `concept_intake` before verifying `corpus/` and the `rejected_candidates.md` mirror.** The most-hedged row; skipping its two gates risks silently dropping the dedup/negative-rediscovery registry. Gates 0b/0c are hard.
-- **Letting the retirement touch `core/`, any Pine source, any locked constant, or the MC anchor.** Research-layer only. A diff that touches `core/dd_protection.py`/`firm_rules.py`/`portfolio_mc.py`/`config/params.toml` or any `.pine` is an integrity failure of this change.
 - **Marking this ADR `Accepted` without operator STRATEGIC-LoR sign-off.** Subsystem-tier Delete authority is reserved (three-loop binding ADR). The advisor draft cannot self-ratify.
 
 ---
@@ -174,7 +172,7 @@ A retirement's falsifier is: *did removing this break or lose something the repl
 
 **Phase 2 — Retire.** `git rm` the RETIRE rows; re-point/retire `validate_candidate.py`; sever `codification → validation`. Then: `check_boundaries` green, `validate_params` green, full `pytest` green (retired fixtures removed, not skipped).
 
-**Phase 3 — Provenance.** `REPO_MAP.md` struck-through retirement rows (weekly-review-feeder pattern); `STATE.md`/`CLAUDE.md` edits only where a retired path is named. Commit on a branch; PR for operator confirmation — **no self-merge** (mirrors `databento-research-stack` Phase 3).
+**Phase 3 — Provenance.** `REPO_MAP.md` struck-through retirement rows (weekly-review-feeder pattern); `STATE.md`/`CLAUDE.md` edits only where a retired path is named. Commit on a branch.
 
 ---
 

@@ -21,6 +21,7 @@ that verdict).
 attestation-library spec
 **Layer:** research governance — no live-risk surface; no locked parameter; no allocation; no
 arming; no Databento spend (code + synthetic-data build only).
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR11-77); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -71,19 +72,8 @@ before its own commit says so.
    charter's `campaigns completed / survivors falsified / abandoned` counts. A GROW-0 fix-and-rerun
    is not an "abandonment"; the charter's counting machinery (§4(b)–(d)) is untouched for every
    *campaign* (GROW-1 onward), which counts exactly as DL-1 did.
-2. **Part A tooling is commissioned**, build order per the packet's step numbering:
-   - `lab/discovery/deep_lane_admission.py` — the charter §2.2 three-conjunct predicate (K ≤ 33
-     · `floor_at_k(K, confirm_years) ≤ 2.0` · power ≥ 0.50), reusing `axis_screen.floor_at_k`/
-     `clause_n_power` verbatim.
-   - `lab/discovery/grammar.py` — grammar schema (operator families × ranges × generation budget
-     G) with SHA256 pin/drift check.
-   - `--lane deep` on `register_search.py` — wires the above two into `open_run`; refuses with
-     no manifest write on any conjunct fail, prereg fail, or grammar-hash mismatch, mirroring
-     the existing per-lane gate shape (`_require_admission`, `_require_prereg`).
-   - `discovery_manifests/burned_segments.json` + `lab/discovery/burned_segments.py` — seeds the
-     shared CON window (MNQ, 2025-09-01→2026-08-05, read 2026-08-20) as burned, per dual-panel
-     finding B1; wired into `open_run` for `--lane deep` 2026-08-23 (see §7). Unlisted is
-     disclosure-only, not a pass.
+2. **Part A tooling is commissioned**, build order per the packet's step numbering (first slice landed
+   `a5ee05e`; see §7):
    - **Named forward work, not built in this ADR's first slice:** GROW-0 harness (Limb A/B/RED),
      charter §4 streak checker, `gates.yml` door-check limb, LOCKED-leg denylist, Rule-0 anchor
      checker, `universe_gate` exit-code propagation. Each ships as its own dated commit against

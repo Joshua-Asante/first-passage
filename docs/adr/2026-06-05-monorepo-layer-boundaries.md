@@ -5,6 +5,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-17); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 > **Status:** ACCEPTED 2026-06-05 — ratified by PO (Joshua). This flip unblocks Phase C of the monorepo-boundaries CC handoff (the irreversible tree move), executed on branch `claude/monorepo-phase-c` (off the Phase-A+B branch / PR #137). Phases A/B did not require ACCEPTED and already landed.
 > **Execution-time amendment (2026-06-06, status remains ACCEPTED):** §2.1 reconciled to the tree as built — governance is **root-resident** (no physical `governance/` dir; relocating it breaks tooling for zero contract benefit) and the four surfaced edges (`tv_export_loader`→core, `trade_to_signal_event`→ops, two skill validators→ops) are folded in as the ratified classification; §2.6 "verbatim" softened to "content-preserving" (a prune executed inside the move re-paths retained text). These were reconciled, not silently changed — see the §2.1 amendment block. Execution landed on PR #138; H1 (0 illegal edges) + H2 (anchors reproduce, locked files byte-identical) verified green.
@@ -166,7 +167,7 @@ Evaluated when the CC handoff Phase C completes:
 
 ## §7 — Consequences
 
-- **Execution vehicle:** the monorepo-boundaries CC handoff. Phase A (this ADR) + Phase B (archive eviction, SNAG dossier) need no ACCEPT; **Phase C (context prune, tree move, enforcement, layer-map authoring) is gated on this ADR being flipped to ACCEPTED.**
+- **Execution vehicle:** the monorepo-boundaries CC handoff.
 - **`REPO_MAP.md` becomes the standing layer map** — the authoritative path→layer assignment and the human-readable companion to `check_boundaries.py`'s path-prefix logic. (The prior REPO_MAP-as-deletion-input chain is dead: a parallel session retired both `deletion_candidate_report.py` (`a9d16d0`) and the old REPO_MAP (`f341648`). This is a fresh, purpose-rebuilt map.)
 - **The manifest gate's blast radius narrows to `core/`** — `lab/`/`ops/`/`governance/` developers stop hitting manifest friction on unrelated churn.
 - **One shared parser is widened to core** (`tv_export_loader`) and one duplicate is removed (`journal_review.py`, §8 Q-b) — net importable surface shrinks, not grows.

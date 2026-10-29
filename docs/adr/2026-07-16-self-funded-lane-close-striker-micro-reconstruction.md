@@ -10,6 +10,7 @@
 **Supersedes:** `2026-07-10-r6-nogo-futures-residual-disposition.md` in part - R6's "sole active scale lane = self-funded Aegis->M6J" clause only. R6's locked-book futures-prop fan-out NO-GO, R5/P2 falsifiers, and rail-dormancy stand.
 **Related:** R5 DJ30→MYM prototype FALSIFIED ([`lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md`](../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md)); P2 as-mapped MNQ/MYM FALSIFIED ([`docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md`](2026-07-03-hardcore-p2-edge-transfer-gate.md)); Aegis→6J panel of record ([`ops/instruments/6J.md`](../../ops/instruments/6J.md)); Phase-A micro floors ([`lab/analysis/legacy/futures_conversion_2026-07-01/RESULTS_phaseA.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/legacy/futures_conversion_2026-07-01/RESULTS_phaseA.md)).
 **Layer:** execution + portfolio research priority — **not** locked-parameter. No change to locked CFD allocations, `dd_protection` constants, FXIFY MC pins, or the locked Striker/Guardian/Aegis Pine sources.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR05-181); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -46,7 +47,6 @@ Aegis→6J retains measured panel evidence (~50% haircut, PF 2.318) but is no lo
 1. **Self-funded scale lane = CLOSED (parked).** Effective immediately:
    - **Aegis→M6J** is **PARKED** (not killed). Panel/ledger artifacts ([`ops/instruments/6J.md`](../../ops/instruments/6J.md), `lab/analysis/aegis/aegis_6j_transfer_2026-07-05/`) remain provenance. No go-live authorization, no live capital allocation, no rail build *for this lane* may cite R6 §2.2 or this ADR's predecessor posture.
    - **Guardian-MGC (R7)** remains **PARKED** (unchanged from R6).
-   - There is **no active self-funded scale lane**. Live automated execution remains nowhere; the standing research/ops program is the **prop-portfolio** track (four FRIENDLY firms), still gated on rail/account/live spend.
 
 2. **Active research priority — Striker→MYM / Striker→MNQ venue-native reconstruction.** Under the prop-portfolio program, authorize a research lane to design **new** Striker-family candidate editions engineered for CME micro microstructure (commission, tick value, integer sizing, EOD force-flat / session calendar, roll seams), using operator-supplied BAR EXPORT panels where available. Survivors that clear a **pre-registered** gate may later enter Class-S-style firm-tier scoring or lifecycle intake — **as new candidates**, not as locked-Pine transfers.
 

@@ -9,6 +9,7 @@
 **Supersedes:** — (corrects an undocumented `_simulate_path` semantic; no prior ADR claimed the exclusion as intended)
 **Related:** 2026-07-06 external code audit (Cursor) Issue 3, adversarially verified in-session; companion closure [`docs/ltm/briefs/Q-DDTRIG-1-finding1-daily-loss-denominator-closure.md`](../ltm/briefs/Q-DDTRIG-1-finding1-daily-loss-denominator-closure.md) (Issue 10 / MC-audit Finding #1, closed no-action same session)
 **Layer:** portfolio (MC lock-gate metric semantics; no allocation, dd_protection, or Pine constant touched)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-66); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -79,7 +80,6 @@ p50/p95 byte-identity is the empirical proof of surviving-path invariance at sca
 ## §5 — Forbidden moves (under this ADR)
 
 - **Widening the `test_mc_anchors.py` tolerance to absorb future semantic drift** — tempting since this fix happened to land inside `1e-4`; any future change that breaches the pin takes the full re-run + ADR path, not a tolerance edit.
-- **"Fixing" the `bust_inactivity` return for symmetry** — genuinely tempting for completeness; it is a zero-effect change (an idle day has `pnl == 0`, DD unchanged) that would churn the locked file for nothing. Ruled out.
 - **Extending into DD-definition unification across the codebase** (the external audit's architecture recommendation) — refuted in verification: static-from-start (FXIFY rule), peak-to-trough (protection trigger / this metric), and %-of-notional (regime_bootstrap gate convention) are intentionally distinct semantics; unification would be a correctness regression.
 - **Retro-editing historical p99 figures** (decompound 5.93%/5.32%/7.58%, Q-SWAP-2 4.55%, prior anchors) — they are mild underestimates under the old semantic; they stay as published, caveated once in `docs/mc_anchor_history.md`.
 

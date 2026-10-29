@@ -65,11 +65,18 @@ ANTHROPIC_SOURCES = frozenset({"anthropic", "anthropic-example"})
 # Retired skill -> owner record. A retired name has no repo copy and is never
 # released or imported; --prune removes only these names from a target.
 RETIRED_SKILLS: dict[str, str] = {
+    "adr-decay-audit": "docs/adr/TOMBSTONES.md",
+    "cursor-fleet": "docs/adr/TOMBSTONES.md",
+    "databento-data": "docs/adr/TOMBSTONES.md",
+    "fable-judge": "docs/adr/TOMBSTONES.md",
     "fxify-challenge": "docs/pursuits/d7-fxify-challenge-plugin.md",
     "inqhiori-algorithm": "docs/pursuits/d9-inqhiori-algorithm-plugin.md",
     "live-execution-journal": "docs/pursuits/d8-live-execution-journal-plugin.md",
     "mql-developer": "docs/pursuits/d5-mql-developer-user-skill.md",
     "notion-mcp-api-patterns": "docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md",
+    "ooda-loop": "docs/adr/TOMBSTONES.md",
+    "question-decomposition": "docs/adr/TOMBSTONES.md",
+    "root-cause-first": "docs/adr/TOMBSTONES.md",
 }
 
 STOCK_SKILLS_EXEMPT = frozenset({

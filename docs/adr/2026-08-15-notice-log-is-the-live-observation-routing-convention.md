@@ -7,6 +7,7 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Tier:** full — limb 4 fires (amends doctrine: `observation_routing.md`'s standing claim that it replaced the prior Notice/Inquire framework, cited as active/current by at least six other methodology docs and ADRs).
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR10-153); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -100,7 +101,7 @@ The three-bucket classification is not deleted or declared worthless for narrati
 - `docs/methodology/observation_routing.md` — Status line corrected, cross-reference to this ADR added (this session).
 - `docs/methodology/inqhiori-canon.md` §8/§10/§16 — citation corrected to reflect this ADR's finding (this session, where cheap; flagged if not).
 - `docs/methodology/regime_robustness_gate.md:199`, `docs/methodology/strategy_lifecycle.md:25,104` — citation corrected or flagged.
-- `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:23`, `docs/adr/2026-08-04-iterate-closure-exit-mandatory.md:21` — these are themselves ADRs; per this repo's own discipline (`Material amendment... is never a silent edit`), a citation inside an already-`Accepted` ADR's body is prose, not a locked decision text, so a corrective annotation is legal without a superseding ADR — but only if the citation itself isn't load-bearing to that ADR's own decision. Dispositioned per-file in §7/blast-radius sweep, not assumed here.
+- `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md:23`, `docs/adr/2026-08-04-iterate-closure-exit-mandatory.md:21` — these are themselves ADRs; dispositioned per-file in §7/blast-radius sweep, not assumed here.
 - `.claude/skills/inqhiori/SKILL.md:197,229`, `.claude/skills/fable-method/SKILL.md:40`, `.claude/commands/lock-check.md:15` — skill/command doc citations, corrected or flagged.
 
 ---

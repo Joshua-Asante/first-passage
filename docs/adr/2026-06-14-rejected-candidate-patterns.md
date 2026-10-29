@@ -14,6 +14,7 @@ owns confirm verdicts. The original parser descriptions below are historical; se
 **Authors:** Joshua + claude.ai (advisor, web session) → reconciled against repo by Claude Code
 **Related:** [`2026-06-14-reject-usoil-rdm-spike-fader.md`](2026-06-14-reject-usoil-rdm-spike-fader.md) (companion — the worked exemplar this ADR's taxonomy classifies) · [`2026-06-05-concept-admissibility.md`](2026-06-05-concept-admissibility.md) (the standing concept-intake-gate decision this extends)
 **Layer:** methodology
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-117); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 > **Reconciliation note (Rule 0).** Authored in a web session with no repo access. The original draft proposed a *replacement* pipe-delimited registry schema and referenced `docs/registry/rejected_candidates.md` + `scripts/registry/check_registry.py`. Both are confabulations: the registry lives at `docs/rejected_candidates.md`, is **additions-only**, and is consumed by a **live parser** (`lab/validation/concept_intake/dedup.py`). This version *extends* the existing schema rather than replacing it, and corrects every path. See §3.
 
@@ -158,7 +159,6 @@ The taxonomy is **Progressive/working** iff: (a) every registry entry since this
 - **Phase 0** — re-verify §0 anchors current at implementation time. ✅
 - **Phase 1 (policy, adopted)** — taxonomy/dedup-axes/add-back gate adopted; new entries follow §D. No code change needed for `dedup.py` to keep working. ✅ First entry written under §D: `mean-reversion-spike-fade × USOIL` (companion ADR), `dedup.load_registry` parses it, 16/16 intake tests green.
 - **Phase 2 (flipped Proposed→Accepted)** — ✅ SCHEMA.md "End-to-end consistency" note added; ✅ `docs/rejected_candidates.md` queryable-index pointer added; ✅ `feedback.py` `build_registry_entry()` extended to emit `class/role_tested/falsifier_failed/addback_condition` (+ optional `config_fingerprint`) with harness-suitable defaults (edge-failure/entry; add-back derived per §A), `append_rejection` forwards overrides, 3 round-trip tests added (`test_gate_controls.py`), 19/19 intake tests green. The harness-auto path now emits compliant entries with no caller change.
-- **Phase 3 (optional enforcer, not blocking)** — write `lab/validation/concept_intake/check_registry.py` to assert every post-2026-06-14 entry carries the mandatory attributes. Until then, §10 hook #1 (grep) is the manual check. *(The web draft's `scripts/registry/check_registry.py` path does not exist and is not adopted.)*
 
 ---
 

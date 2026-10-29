@@ -11,6 +11,8 @@
 **Superseded-in-part-by:** `2026-07-22-prop-portfolio-s4-discharge-withdrawal.md` - the §4 discharge status only (Class-S candidate #1's 2026-07-15 result withdrawn on corrected eval-lock geometry). Program, four-firm target set, envelope, and the 2026-11-08 hard date stand unchanged.
 **Superseded-in-part-by:** `docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md` (not an ADR — a pre-registration; recorded here per this file's own convention of tracking every citation touching the "bust ≤3.0%" wording below) - the §4 falsifier's operationalized Part A eval ceiling only (3.0% → 5.0%, operator risk-tolerance override, 2026-08-26; full rationale in that document's own §8). H's "clears the bust ceiling" text, the ≥2-of-4 discharge shape, and the 2026-11-08 hard date all stand unchanged — only the numeric ceiling the scoring harness reads moved.
 **Related:** [`docs/ltm/briefs/Q-AUTO-FIRM-1-attended-automation-survey.md`](../ltm/briefs/Q-AUTO-FIRM-1-attended-automation-survey.md) (eligibility survey); [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) (E1–E7 build envelope); [`docs/notes/2026-07-06-rail-reconciliation-traderspost-vs-crosstrade.md`](../notes/2026-07-06-rail-reconciliation-traderspost-vs-crosstrade.md) (KEEP rail = TV→CrossTrade→NT8); [`docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md`](../ltm/briefs/rnd-pipeline/discovery-campaign-template.md) (Gen-2 discover→admit pipeline); [`docs/adr/2026-06-06-firm-constants-single-source.md`](2026-06-06-firm-constants-single-source.md) (`firm_rules` canonical).
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR04-74, ADR04-85); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D4 removed the TV → CrossTrade → NT8 route directive (ADR04-76); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 **Layer:** execution + portfolio operations — **not** locked-parameter. No change to the locked four-strategy allocations, `dd_protection` constants, Pine source, or FXIFY MC regression pin.
 
 ---
@@ -49,8 +51,8 @@ The operator directive (2026-07-12) reframes **multi-firm operations**: not rede
 **Operational program (end-to-end):**
 
 1. **Discover** — Gen-2 lab pipeline (`lab/` discovery campaigns). Candidates must declare `DEPLOYABLE-DEFAULT-ENVELOPE: YES/NO` against [`ops/prop_envelope_default.md`](../../ops/prop_envelope_default.md) at closure; portfolio composition is a first-class design target (multi-leg books that pass together, not single-strategy heroics).
-2. **Productionalize** — admitted survivors (`CANDIDATE` lifecycle intake per [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md)) through codification → sweep → validation; prop-firm constraints pulled from `firm_rules.FIRM_RULES[<tier>]` + envelope overlays, never hard-coded in research artifacts.
-3. **Execute** — attended automation on **TV → CrossTrade → NT8 → Rithmic/Tradovate** per the 2026-07-06 rail note. **Rail build and account registration remain gated** — this ADR sets the *target* and *constraint registry*, not a live-start authorization.
+2. **Productionalize** — prop-firm constraints pulled from `firm_rules.FIRM_RULES[<tier>]` + envelope overlays, never hard-coded in research artifacts.
+3. **Execute** — attended automation. The route has its own owners: the signal host by the [S2 fork](2026-08-07-loop-s2-signal-host-fork.md), and for Tradeify eval accounts native strategy logic only (AGENTS.md standing consequences); the 2026-07-06 rail note's TV → CrossTrade → NT8 route is history. **Rail build and account registration remain gated** — this ADR sets the *target* and *constraint registry*, not a live-start authorization.
 
 **`firm_rules` registry:** `AUTOMATION_FRIENDLY_PROP_FIRMS` maps each family to its tier keys; all tier dicts carry challenge targets/constraints (profit target, DD type/level, flat posture, contract caps, consistency where applicable). `ACTIVE_FIRM` stays **`FXIFY`** — the 99.83/0.17/4.37 MC anchor remains a historical regression pin, not the live prop target.
 
@@ -338,10 +340,6 @@ no second distinct firm has also cleared:
   the withdrawn Striker book, counts). F1 is a different question — orthogonal to *how many*
   tiers clear — and stays a separate, still-open queue item (STATE.md row 1). Deciding it here
   would be exactly the pre-emption STATE.md's own F1 note warns against.
-- **Treating the sanitized external-lens pass as evidence for or against this ruling.** Per
-  [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md)
-  §2/§5, that lane is zero-authority tripwire input only; this ruling stands or falls on the real
-  artifacts cited in §0, not on that lane's output.
 
 ### What is unchanged
 
@@ -393,7 +391,7 @@ gap.
 - Q-RANGECOND-1 and Q-ORBCUSH-1 are FALSIFIED.
 - Any differences between v7 and the ORB-MNQ-1 that was tested.
 
-Clearance is read on the intraday-honest clock with `headline_bust`. The pre-registration freezes by **2026-10-23**, and the dated re-MC runs by **2026-10-30**, so a verdict exists before the 2026-11-08 hard date. Evidence: existing technical owners, under Codex's integration and dispatch.
+Clearance is read on the intraday-honest clock with `headline_bust`. The pre-registration freezes by **2026-10-23**, and the dated re-MC runs by **2026-10-30**, so a verdict exists before the 2026-11-08 hard date. Evidence: existing technical owners, under Codex's integration and dispatch. *(2026-10-25 pointer: this schedule is overtaken. ORB v7 is paused by Joshua, not closed ([checklist 10-19](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)), and S4 stays stopped ([campaign §62](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#62--aegis-capture-cost-basis-zero-slippage-2026-10-20)). No rule changed.)*
 
 **3. FXIFY Futures Flex registration.** FXIFY Futures Flex is added to the program's firm set and directed into `AUTOMATION_FRIENDLY_PROP_FIRMS`. This is FXIFY's futures program. It is distinct from the retired FX/CFD `FXIFY` substrate ([2026-07-22 retirement](2026-07-22-challenge-era-substrate-retirement.md)), so it takes its own registry key and never `ACTIVE_FIRM="FXIFY"`.
 - **Eligibility basis, recorded as it stands:** a generic, platform-scoped automation permission ([venue note 2026-10-14](../notes/2026-10-14-funded-venue-alternatives-assessment.md) §§1, 5, 12). It was read from search excerpts because direct reads were blocked. No written, clause-cited confirmation exists. The secondary (eligibility) trigger of §4 applies to this family.
@@ -408,6 +406,21 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 
 **Not changed:** the hard date (2026-11-08), the demotion rule, S1 (a non-incumbent venue still needs its venue admission before any execution), and the native experiment's separate admissions.
 
+## Addendum 2026-10-28 — scope of the §4 bust ceiling (Accepted)
+
+**Ruling:** Joshua, 2026-10-28, in chat with Claude, verbatim:
+- "I think that self imposing unnecessary rules, like passing with 63 days or keeping bust rate lower than 5%, makes the challenge harder than it needs to be. We should eliminate these self imposed rules to have a better idea of the levers we have at our disposal to make this book as profitable as possible"
+- after being shown this addendum's draft: "Four-firm PR".
+
+**Scope.** The §4 5.0% bust ceiling is the clearance criterion of this program's falsifier. It decides only whether a candidate discharges §4. It does **not** bind:
+- an individual account's operating objective;
+- the owned Tradeify Select 100K evaluation, whose objective is held in its private owner record;
+- any evaluation run for positive expected net cash under the firm's own rules.
+
+**Not changed:** the 5.0% value, the 50% pass floor, `trailing_locking`, the intraday-honest clock, the inactivity-barrier-OFF convention, the 2026-11-08 hard date and the demotion rule. Falsifiers do not move (AGENTS.md Rule 28); this addendum states the ceiling's scope only.
+
+**Why:** with repeated paid attempts, an account can have positive expected net cash at bust rates well above 5% when a reset costs little relative to a payout. The falsifier asks a different question — whether a low-bust candidate exists across the families — and keeps its own ceiling.
+
 ---
 
 ## Change history
@@ -421,3 +434,6 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 | 2026-08-22 | **Addendum drafted (`Proposed`, not yet `Accepted`):** §4's success/revert dichotomy does not cover an exactly-one-of-four-tiers-clears state; proposes a fourth `PARTIAL` disposition holding the falsifier open to the existing 2027-02-08 quarterly check rather than firing either branch on the wrong evidence. No §2/§4 original text edited; awaits operator ratification. | Claude Code |
 | 2026-10-02 | §4 status pointer only: the operator withdrew the 2026-09-03 EOD-clock discharge and requires an intraday-honest clear, recorded at the status owner ([withdrawal ADR Addendum 2026-10-02](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)). Its exactly-one-tier clause bears on Addendum 2026-08-22 above, which stays `Proposed`. No §2/§4 text edited. | Joshua (ruling) + Claude Code (record) |
 | 2026-10-16 | Addendum (Accepted, operator rulings): §4 ceiling 5.0%; fresh §4 candidate ORB MNQ v7 authorized with prior-failure disclosure; FXIFY Futures Flex registration directed (counts toward §4 only once its firm_rules row, pre-flight and re-verified facts exist) | Joshua + Claude |
+| 2026-10-17 | Pointer only: by Joshua's 2026-10-17 instruction, the 2026-10-16 addendum's "under Codex" owner wording now reads as the Claude coordinator for integration and dispatch; Codex owners keep technical execution ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-transfer--claude-deployment-coordinator-2026-10-17)). No rule changed. | Claude coordinator |
+| 2026-10-25 | Pointer only: the 2026-10-16 addendum's ORB v7 schedule (freeze 10-23, re-MC 10-30) is overtaken; ORB v7 is paused, not closed, and S4 stays stopped. No rule changed. | Claude Code |
+| 2026-10-28 | Addendum (Accepted, operator ruling): the §4 5.0% bust ceiling is scoped to this program's falsifier and does not bind account operating objectives; no value or §4 text changed | Joshua (ruling) + Claude Code (record) |

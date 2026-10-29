@@ -9,6 +9,7 @@
 **Supersedes:** none. **Ratifies** the standing "Campaign defaults" table defined in `docs/ltm/briefs/rnd-pipeline/discovery-campaign-template.md` §Campaign-defaults — moving those defaults from *proposed* to *operator-ratified standing policy* that discovery campaigns inherit by reference.
 **Related:** `docs/adr/2026-07-10-databento-research-stack.md` (the stack these defaults govern); `docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md` (discovery-first is the sole new-leg path — these defaults are its rules of evidence); `docs/adr/2026-07-10-strategies-never-locked-lifecycle-governance.md` (the admission route a survivor exits into); `docs/methodology/references/statistics-of-tradable-anomalies.md` (the field guide whose Domains 4–8 are the rationale for each default); memories `project_futures_prop_pivot`, Q-NEFF-1 / Q-DECAY-1 closures.
 **Layer:** methodology (research rules of evidence only). **No** strategy/risk-control parameter, allocation, `dd_protection` constant, `portfolio_mc.py`, or Pine source is touched. Locked MC anchor 99.83/0.17/4.37 untouched.
+**Revision:** 2026-10-25 — rule consolidation D5 removed campaign default 6, the Databento per-campaign cost gate (ADR04-27); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -46,7 +47,7 @@ The discovery-campaign template (2026-07-10) surfaced a set of open decisions th
 3. **Universe correction** — SPA (family gate) + StepM (superior set), block bootstrap with an explicitly-chosen `block_size` (never sqrt(T)); **DSR ≥ 0.95**; **PBO < 0.5** via CPCV where config selection occurred.
 4. **Temporal-consistency battery** — sub-era sign consistency **≥ ⌈0.7·Y⌉ of Y**; drop-top-year concentration; regime-slice survival (labels as *test conditions*, never filters — Q-REGIME-COND-1 scar); CUSUM on the candidate's own edge series over the OOS era.
 5. **Decay-monitor-at-admission** — a candidate is inadmissible unless it ships with a CUSUM decay-monitor spec whose null was calibrated during validation (Q-DECAY-1: live decay coverage ≈ 0 because detectors were never designed at admission).
-6. **Per-campaign cost gate** — declared `--max-cost` total, checked against the summed `estimate` before any `pull`; first campaigns inside the $125 free-credit window.
+6. *(Removed 2026-10-25, rule consolidation D5, ADR04-27: the per-campaign Databento `--max-cost` / `estimate` cost gate. Databento is [retired](2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento) with no approved replacement; any new data spend is an operator act.)*
 
 **Inheritance semantics:** a campaign brief inherits these by reference ("inherits ratified Campaign defaults per ADR 2026-07-11") and does **not** re-ratify. An override of any single default is legal only when stated with its reason in that campaign's §8 pre-registration — an in-place edit of a ratified default is forbidden (§5).
 

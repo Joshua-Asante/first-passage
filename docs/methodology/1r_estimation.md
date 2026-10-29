@@ -185,12 +185,10 @@ The Forward question therefore narrows: **does the initial-entry
 distribution's max (3.56%) plus realistic correlated-day pairings
 challenge `dd_protection`'s working envelope?** This is decidable from the
 existing panel + the existing simulator output without re-MC and without
-new data. **Tag: re-cal-trigger candidate** — flag this for the next MC
-pre-flight reconciliation so it surfaces immediately rather than being
-re-discovered. The trigger does not fire today (no version bump, no 6mo
-live data, no allocation change, no `dd_protection` constant change), but
-it is the kind of structural finding that justifies an early MC pass if
-the inflation factor *grows* in live data.
+new data. It was tagged a re-cal-trigger candidate on 2026-04-25; the tag was
+retired 2026-10-25 (rule consolidation D5, METHOD-188) because the CFD Striker legs
+were [withdrawn](../adr/2026-08-04-tradeify-venue-descope-eval-included.md) and the
+legacy book has no live venue, so no MC pre-flight or live reconciliation will consume it.
 
 **Empirical answer to the narrowed question (combined-account simulator,
 `archive/analysis/dd_protection_trace.py`):** of the three branches (a) trigger
@@ -232,41 +230,9 @@ calibrated system, not a detachable post-hoc overlay. The 44.9% panel
 trigger frequency from the trace above is therefore a property of the same
 system whose pass/bust numbers are anchored.
 
-**Pre-staged Forward question — category-gap fix vs live-monitor.** The
-2025-02-07 result is a structural category gap, not a configuration miss:
-`dd_protection`'s daily cadence cannot, by construction, attenuate a
-fresh-peak single-trade outlier. Two structurally distinct responses are
-on the table; do not decide now (`dd_protection` constants are
-out-of-scope for this brief), but pre-stage the choice so the next
-allocation review or 6-month live reconciliation walks into a known
-question, not a fresh one:
-
-  1. **Within-day per-trade hard-cap** — a separate tripwire layered on
-     top of the existing daily-cadence rule, capping any single trade's
-     realized loss at e.g. 2.0% of equity at entry. Closes the category
-     gap by construction. Cost: adds operational surface area, requires
-     re-MC to confirm the cap value does not over-attenuate Striker's
-     pyramid-driven PF (94% of historical Striker profit sits above the
-     cap-clip threshold for the largest pyramid stacks).
-  2. **Leave the rule and observe live** — accept that the gap is real
-     but the base rate of fresh-peak single-trade outliers is, in the
-     panel, exactly one event in four years. With n=1, the conditional
-     probability of a *second* outlier inside the budget-consumption
-     window of a first is unestimable from history (you would be fitting
-     a Poisson on n=1). The honest framing is that this question may be
-     decidable **only from live data** — meaning the gap cannot be closed
-     pre-launch and has to be monitored live with a tripwire (e.g., an
-     alert that fires when any single trade exceeds 2.0% of equity at
-     entry, even if `dd_protection` itself does not engage).
-
-The choice is between closing-by-construction (option 1) and
-closing-by-observation (option 2 with a live tripwire). Option 2 is
-cheaper today and falsifiable in 6 months from live data; option 1 is
-permanent insurance whose price (potential PF drag on pyramid extensions)
-is currently unquantified. Tagged Forward, gated downstream on either
-allocation review or 6-month live reconciliation, whichever fires first.
-Tradeify election owner (this CFD-era fork is not the
-live option set): [`Q-TRADECAP-2`](../briefs/Q-TRADECAP-2-per-trade-bound-election.md)
+**Per-trade bound.** The 2025-02-07 result is a structural category gap: `dd_protection`'s daily
+cadence cannot attenuate a fresh-peak single-trade outlier. The per-trade bound is elected for
+Tradeify under [`Q-TRADECAP-2`](../briefs/Q-TRADECAP-2-per-trade-bound-election.md)
 · [`elect-2`](../adr/2026-08-24-q-tradecap-2-elect-alert-tripwire.md)
 · [`closure`](../briefs/closures/Q-TRADECAP-2-closure-resolved.md).
 
@@ -291,12 +257,10 @@ layer-1 was at the moment layer-2 fires. Quantification requires per-trade
 open-profit data, which the current CSV panel does not directly expose.
 Routed Forward as part of the same re-cal-trigger-candidate question.
 
-> **Forward signpost for the 6-month live reconciliation:** 94% of historical
-> Striker profit is pyramid-driven; live undersizing on layer-2 (no
-> open-profit credit on the weekly-balance multiplier) is therefore the
+> **Finding (the 6-month live-reconciliation signpost was retired 2026-10-25, D5,
+> METHOD-188):** 94% of historical Striker profit is pyramid-driven; live undersizing on
+> layer-2 (no open-profit credit on the weekly-balance multiplier) was therefore the
 > dominant expected live-vs-backtest PF gap on Striker, magnitude TBD.
-> The reconciliation should be looking for this specific divergence — not
-> discovering it as a surprise.
 
 The program-level prior this specific divergence sits *inside* — expect live to
 retain only a fraction (≈30–70%) of backtest edge before any strategy-specific gap —

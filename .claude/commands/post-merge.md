@@ -3,7 +3,7 @@ description: Post-merge housekeeping checklist (CATALOG/STATE/SESSIONS/make chec
 allowed-tools: Bash(git:*), Bash(python:*), Bash(make:*), Read, Grep
 ---
 
-After a PR merges (or a topic branch lands on `main`), run this checklist. Do **not** invent extra doc rewrites; only surface what the merge actually requires. Owners per `docs/operational_rules.md` Rule 7.
+After a PR merges (or a topic branch lands on `main`), run this checklist. Do **not** invent extra doc rewrites; only surface what the merge actually requires. Owners per `docs/operational_rules.md` §7.
 
 ## 0. Orient
 

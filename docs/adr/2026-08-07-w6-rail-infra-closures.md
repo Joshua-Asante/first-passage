@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR09-90); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Related:** [SPEC S7](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) · [RUNBOOK](../notes/rail_build/RUNBOOK.md) · [GO ADR](2026-07-17-c1-rail-build-account-registration-go.md) · [operational Rule 15](../operational_rules.md)
 **Layer:** rail ops docs + exporter stub. **$0 / K=0** — no deploy, no arm, no spend tally invention beyond documented facts.
 
@@ -35,7 +36,7 @@ Several rail infra facts lived only in agent memory or one-off session notes: Cr
 2. **Committed exporter** `ops/c1_rail/export_session_evidence.py` — copies/exports events + evidence (+ optional alert acks) to a local directory; **dry-run safe** (default `--dry-run` prints plan; `--apply` copies). RUNBOOK Post-disarm lists the export step.
 3. **Config writes:** document invocation of `c1_rail_arm.py` for arm/disarm and a committed **volume-config merge helper** `ops/c1_rail/write_volume_config.py` for non-secret key merges (aborts unless `dry_run` is true unless `--force-armed` — default refuse). Prefer these over hand-JSON edits (07-20/07-27 defect class). Notes in RUNBOOK + `deploy/c1_rail/README.md`.
 4. **New operational Rule 15:** desktop = console-only for always-on processes; always-on hosting = Fly (or successor always-on host), not a personal desktop. Scope limited so it does not collide with cursor-fleet’s route-LOCAL rule for interactive sessions. Pointers in deploy README + c1-rail skill.
-5. **`requirements-research.lock`:** **owed** — do not invent a fake lockfile. Recipe: recreate research venv per `requirements-research.txt` header, then `pip-compile` / `pip freeze` hash-pin into `requirements-research.lock` under a dedicated GO. REPO_MAP row corrected to name `.txt` as the live pin surface until the lock lands.
+5. **`requirements-research.lock`:** recipe: recreate research venv per `requirements-research.txt` header, then `pip-compile` / `pip freeze` hash-pin into `requirements-research.lock`. REPO_MAP row corrected to name `.txt` as the live pin surface until the lock lands.
 6. Pro-tier spend tally and NT8 dormant-fallback lines: refresh with dated notes only where facts are already in RUNBOOK (no new spend invented).
 
 ---
@@ -61,7 +62,6 @@ Several rail infra facts lived only in agent memory or one-off session notes: Cr
 ## §5 — Forbidden moves
 
 - Arming, deploying, or flipping `dry_run` under this ADR.
-- Fabricating a lockfile hash set.
 - Expanding Rule 15 to ban route-LOCAL interactive agent work.
 
 ---

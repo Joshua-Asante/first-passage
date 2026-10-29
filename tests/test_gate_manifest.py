@@ -22,6 +22,7 @@ EXPECTED_ALWAYS = {
     "skill-refs",
     "pine-manifest",
     "pine-pin-provenance",
+    "card-pins",
     "boundaries",
     # 2026-08-15 (governance-belt audit action 3): reverted from
     # path-conditional -- both gates detect dead links, and a link target
@@ -196,7 +197,7 @@ def test_instrument_owners_trigger_partition_gate(monkeypatch, path):
 def test_check_tier_selects_ci_composition_ids():
     """CI gate-manifest.yml calls --tier check; every always/path-conditional
     id plus forced data-manifests must be selected. pursuit-records was
-    retired from gates.yml entirely 2026-08-24 (Rule 16 R5 — the underlying
+    retired from gates.yml entirely 2026-08-24 (operational_rules §16 R5 — the underlying
     check always exits 0 as invoked, so it could never fail regardless of
     tier); this assertion now holds vacuously and is kept as a regression
     guard against re-adding it as a --tier check member.
@@ -290,6 +291,20 @@ def test_sessions_queue_bind_reaches_each_additional_consumed_file(
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
 
     assert "sessions-queue-bind" in selected
+
+
+@pytest.mark.parametrize(
+    "staged_path",
+    ["STATE.md", "docs/adr/2026-01-01-example.md", "docs/briefs/x/y.md", "docs/notes/z.md"],
+)
+def test_governance_prose_control_chars_reaches_its_scan_scope(monkeypatch, staged_path):
+    """The script scans STATE, ADRs, briefs and notes; edits there must select it."""
+    data = gm.load_manifest(MANIFEST)
+    monkeypatch.setattr(gm, "staged_names", lambda: [staged_path])
+
+    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
+
+    assert "governance-prose-control-chars" in selected
 
 
 def test_lifecycle_consistency_reaches_agents_md(monkeypatch):

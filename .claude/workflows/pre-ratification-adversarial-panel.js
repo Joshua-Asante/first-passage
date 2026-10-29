@@ -99,9 +99,9 @@ const LENSES = [
       `that the brief (or a script/artifact it points to) actually SHOWS the computation -- not just asserts the verdict. ` +
       `Grep for the referenced script/output/CSV and confirm the claimed number appears in it. A "claimed-but-unscored ` +
       `screen" (the brief says a screen passed but no artifact anywhere actually computed it) is a real BLOCKER class ` +
-      `that has previously survived a green mechanical checker. Also check docs/operational_rules.md Rule 8's dedup-first ` +
+      `that has previously survived a green mechanical checker. Also check docs/operational_rules.md §8's dedup-first ` +
       `sub-rule: is the brief's dedup-first attestation an EXECUTED, pasted search-tool output, or just a claim that ` +
-      `dedup was done? An attestation without executed output is void per Rule 8 sub-rule 8 -- flag as BLOCKER if the ` +
+      `dedup was done? An attestation without executed output is void per operational_rules §8 sub-rule 8 -- flag as BLOCKER if the ` +
       `brief asserts dedup was done without pasted grep / check_advisor_dedup.py output. Return findings via ` +
       `schema.${extraContextLine}`,
   },
@@ -142,9 +142,9 @@ const LENSES = [
       `drifting into generic "strict lock criteria" language (a documented failure mode); (b) if the brief records any ` +
       `deliberate "watch, don't act" / restraint decision, is there an explicit "Watch-items" (or equivalent) section ` +
       `giving it the same prominence as action items, not a silent omission; (c) if this is a new ADR/brief/notice, does ` +
-      `it show an "amend-before-mint" search (Rule 8 sub-rule 10) confirming no existing owner document should have ` +
+      `it show an "amend-before-mint" search (operational_rules §8 sub-rule 10) confirming no existing owner document should have ` +
       `taken this as an addendum instead; (d) if this is a closure doc, does it carry a "- **Registry:**" line pointing ` +
-      `into docs/rejected_candidates.md or stating n/a (Rule 8 sub-rule 9). Return findings via schema.${extraContextLine}`,
+      `into docs/rejected_candidates.md or stating n/a (operational_rules §8 sub-rule 9). Return findings via schema.${extraContextLine}`,
   },
 ]
 

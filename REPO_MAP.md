@@ -83,7 +83,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_96 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_98 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -97,6 +97,7 @@ _96 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/audit_notice_grade_k_correction.py` | lab | `notice-grade-k-correction` (audit) | — |
 | `scripts/author_book_session_calendar.py` | governance† | — | — |
 | `scripts/author_contract_roll.py` | ops | — | — |
+| `scripts/azure_vm_watch.py` | governance† | — | — |
 | `scripts/beta_cohesion_read.py` | lab | — | — |
 | `scripts/certification_power.py` | governance† | — | — |
 | `scripts/check_adr_graph.py` | governance† | `adr-graph` (path-conditional) | — |
@@ -118,7 +119,7 @@ _96 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_lifecycle_consistency.py` | governance† | `lifecycle-consistency` (path-conditional) | — |
 | `scripts/check_md_relative_links.py` | governance† | — | — |
 | `scripts/check_path_liveness.py` | governance | `path-liveness` (always) | — |
-| `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always) | — |
+| `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always); `card-pins` (always) | — |
 | `scripts/check_pursuit_records.py` | governance† | — | — |
 | `scripts/check_push_collision.py` | governance† | — | — |
 | `scripts/check_qualification_invariants.py` | governance† | — | — |
@@ -159,6 +160,7 @@ _96 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/layer_bootstrap.py` | governance† | — | — |
 | `scripts/link_policy.py` | governance† | — | — |
 | `scripts/lock_event_hook.py` | ops | — | — |
+| `scripts/merge_train.py` | governance† | — | — |
 | `scripts/parse_bar_export.py` | governance | — | — |
 | `scripts/pine_check.py` | governance | — | — |
 | `scripts/pine_lint.py` | lab | — | — |

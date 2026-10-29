@@ -7,7 +7,7 @@ validation-phase-cuts plan (2026-08-24); see Ratification note.
 **Supersedes:** nothing. No prior ADR states a K-tiering rule for §8's universe-level correction,
 names a canonical cost-law owner, or rules on `pursuit-records`.
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** operator ruling 2026-10-24 — D2's per-event owner (strategy_harvest Requirement 5) deleted and the skill's 4× convention removed; see the marker above D2 and Change history
 **Retain-until:** none
 **Related:** [Rule 16 — retention](../operational_rules.md#16-retention) · [great-prune ADR](2026-08-08-great-prune.md)
 (§2 retention test, cited as authority) · [three-loop methodology binding](2026-06-12-three-loop-methodology-binding.md)
@@ -22,6 +22,7 @@ no allocation; no arming. **$0 / K=0.**
 accounting and a deletion from the repo's gate-composition manifest (`scripts/gates.yml`),
 governed by Rule 16 (retention), not by D2's programme/track/instrument-tier Delete channel — see
 §2 D5 below for why.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR12-26, ADR12-29); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -163,22 +164,18 @@ construction (`SR0` is a function of K) and does not need a declared-no-op conve
 K-tiering addition is scoped to §8a/§8c only, which are gated as DORMANT-unless-re-armed
 independent of K.
 
+> ⚠ **2026-10-24 — D2 is partly superseded.** Its per-event bp-of-panel-price owner, [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-four-admission-requirements-all-mandatory-before-screening), and the skill's "target ≥ 4× hurdle" convention were deleted by [Joshua's ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24). `cost_geometry_pregate.py` stays the owner of the per-trade stop-distance-R formula; its 0.05R PASS ceiling is retired and the check is report-only ([pre-gate ADR addendum](2026-06-22-cost-geometry-pregate.md#addendum-2026-10-24--report-only-operator-ruling-option-b)). The superseded parts of D2 below were removed 2026-10-25 (see Revision line).
+
 **D2 — Cost-law: two owners, correctly separated, not one.**
-- Per-event bp-of-panel-price form: `docs/methodology/strategy_harvest.md` §1 Requirement 5
-  remains sole canonical owner (already self-declared as such; unedited). `methodology_lessons.md`
-  M-20 is rewritten from a verbatim restatement into an explicitly-labeled derived mirror per
-  Rule 7(b) — the lesson's narrative content stays, the formula is replaced with a pointer.
 - Per-trade stop-distance-R form: `scripts/cost_geometry_pregate.py` becomes canonical owner (it
   is the runnable implementation with an enforced PASS/FAIL verdict).
-  `.claude/skills/strategy-validation/SKILL.md` §2 is rewritten to state the convention (target ≥
-  4× hurdle) and point to the script instead of restating its formula inline.
+  `.claude/skills/strategy-validation/SKILL.md` §2 is rewritten to point to the script instead of
+  restating its formula inline.
 - `lab/discovery/register_search.py`'s cost-law pre-flight needs no edit — already compliant.
 
-**D3 — Retire `pursuit-records` from `scripts/gates.yml`.** Deletes the `id: pursuit-records`
-entry (lines 42–52) and `scripts/check_pursuit_records.py`'s gate wiring. Governed by Rule 16 R5:
+**D3 — Retire `pursuit-records` from `scripts/gates.yml`.** Governed by Rule 16 R5:
 an obligation whose check cannot fire does not qualify, "unfalsifiable ceremony is deletable even
-when signed." Execution follows Rule 16's mandatory four-part scan (§4 below) before the deletion
-commit lands, per Rule 16's own procedure — not a separate adjudication step.
+when signed."
 
 **D4 — Record the profile_cell/profile_consult/admission/prereg enforcement as already-closed.**
 No code change. This ADR is the record that `register_search.py open --lane mechanism-first`
@@ -195,8 +192,7 @@ plan is, independent of D2's applicability, sufficient authorization under Rule 
 framework — Rule 16 does not itself require a distinct "adjudication" precondition beyond passing
 its retention test.
 
-**Effective:** immediately upon Accept (2026-08-24), with D3's deletion landing only after the
-Rule 16 four-part scan (§4) and full `pytest` pass. **$0 / K=0** — no risk constant, no
+**Effective:** immediately upon Accept (2026-08-24). **$0 / K=0** — no risk constant, no
 allocation, no lifecycle authorization touched.
 
 ---
@@ -340,3 +336,4 @@ manifests; any edit to `core/`, `ops/`, `dd_protection`, or allocations; any cha
 | Date | Change | By |
 |---|---|---|
 | 2026-08-24 | Initial authoring and ratification — K-tiering scoped to §8, cost-law split into its true two owners, pursuit-records retirement, profile-field question recorded as already-closed. | Claude Code, operator-directed |
+| 2026-10-25 | D2 partly superseded by the 2026-10-24 ruling: the per-event owner (Requirement 5) and the skill's 4× convention are deleted; the per-trade formula owner stands. Header and a reader marker above D2 added; D2 body unedited. | Claude Code (propagation of Joshua's ruling) |
