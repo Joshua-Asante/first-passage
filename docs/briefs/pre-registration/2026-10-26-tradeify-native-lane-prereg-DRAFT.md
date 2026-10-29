@@ -2,7 +2,7 @@
 
 **Status: DRAFT. Proposed; decides nothing** ([Rule 32](../../operational_rules.md#rule-32--adrs-only-under-the-admission-rule)). It takes effect only after a Codex pre-ratification adjudication ([Rule 5](../../operational_rules.md#rule-5--a-separate-reviewer)), then a ratifying commit that sets this line to `RATIFIED <date>` with the §11 values (§12). Merging this draft freezes nothing. No candidate is nominated here, no run is authorised, and no capital, arming or spend authority is granted ([Rule 15](../../operational_rules.md#rule-15--capital-authorization-is-separate-and-revocable)).
 
-**Question.** Is there a strategy that can run natively at Tradeify, exclusively there, with enough edge that running it on a Tradeify Select evaluation (the account chosen in §11 item 2) and its funded account has positive expected net cash over 126 trading days within a fee budget? **The decision it changes:** whether a nominated candidate may proceed to native implementation and the deployment gates, or the lane stays parked under draft 11-08 branch (d).
+**Question.** Is there a strategy, or an ORB+Aegis pair counted as one candidate (§2), that can run natively at Tradeify, exclusively there, with enough edge that running it on a Tradeify Select evaluation (the account chosen in §11 item 2) and its funded account has positive expected net cash over 126 trading days within a fee budget? **The decision it changes:** whether a nominated candidate may proceed to native implementation and the deployment gates, or the lane stays parked under draft 11-08 branch (d).
 
 **Budget.** Drafting this document: one session, $0, K = 0. Each candidate later nominated by amendment counts its disclosed search trials plus one against the lane cap K_max (§3). Spend (for example a NinjaTrader licence) is not authorised here.
 
@@ -25,7 +25,7 @@
 ## §0 — Reads (owners)
 
 - **Route:** [Track B superseded for Tradeify](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify). Tradeify permits native NinjaScript automation. It prohibits external Python signals, bridges and the same bot across firms.
-- **Draft 11-08 rules:** [addendum 2026-10-13](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft). Branch (b) is #807 stage 1, a read-only native toolchain assessment.
+- **Draft 11-08 rules:** [addendum 2026-10-13](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft). Branch (b) is #807 stage 1, a read-only native toolchain assessment ([frozen definition at `e6e4422`](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/notes/2026-10-12-native-ninjatrader-runtime-PROPOSAL.md#7--evidence-stages-and-effort), §7 item 1; #807 closed unmerged). Joshua granted it on 2026-10-28 ([checklist addendum 2026-10-28](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting)). Later that day he ruled "ORB joins stage 1; the pair counts as one candidate" (relayed via the merge-train coordinator; not yet in that addendum).
 - **Firm rules:** `core/firm_rules.py`, the row for the account chosen in §11 item 2: `Tradeify_Select_100K` or `Tradeify_Select_50K` ([Rule 16](../../operational_rules.md#rule-16--firm-rules-one-source-and-a-pre-flight)).
 - **Funded-model calibration:** [Joshua-Asante/first-passage#940](https://github.com/Joshua-Asante/first-passage/issues/940).
 - **Live-execution posture and gates:** [AGENTS.md](../../../AGENTS.md#live-execution-posture).
@@ -38,17 +38,19 @@ B is an operator input (§11). P(pass) is reported but decides nothing.
 
 ## §2 — Eligibility (G0; binary, checked before any scoring)
 
+**Candidate:** one strategy, or the ORB+Aegis pair on one native account, which counts as one candidate (Joshua, 2026-10-28, §0). For a pair, items 1–3 apply to each member; the gates run on the pair's combined day series; the pair is one nomination; and its trial ledger (§3) is the union of both strategies' trials.
+
 A candidate is eligible only if all of the following hold:
 1. **Native:** all signal and order logic can live in NinjaScript, with parameters fixed in the nominating amendment. There are no external signals, parameter feeds or bridges. NinjaScript-only is a deliberate narrowing (operator, 2026-10-28): Tradeify support's 2026-10-12 reply also names Tradovate and TradingView via the Tradovate integration as native platforms ([route record](../handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts)). Admitting either needs a ratified amendment to this item and to G4.
 2. **Exclusive:** the operator signs that the strategy is not deployed, and not planned, at any other firm, as the same-bot rule requires.
 3. **Not closed:** it is not a member of the book lineage closed on 2026-10-19, unless the amendment cites new mechanism evidence ([Rule 26](../../operational_rules.md#rule-26--rejections-bar-re-proposal)).
-4. **Toolchain feasible:** #807 stage 1 has returned a written read-only finding that the native toolchain can express the strategy and its fixed sizing on the account.
+4. **Toolchain feasible:** #807 stage 1 has returned a written read-only finding that the native toolchain can express the strategy (for a pair, both ORB and Aegis) and its fixed sizing on the account.
 
 ## §3 — Admissible evidence
 
 - **Data:** daily net P&L from the canonical feed only, CME futures TV exports ([Rule 18](../../operational_rules.md#rule-18--feeds-are-admitted-never-assumed)).
   - At least 3 years of business days, on a complete calendar.
-  - Costs at the all-in per-side rate that `core/firm_rules.py` records for the candidate's instrument on the account chosen in §11 item 2. The Tradeify Select `cost_per_side_usd` scalar covers index micros only; its source comment records other instruments, for example MGC and MCL at $1.06. An instrument with no recorded rate is ineligible until the owner records one. The rate is frozen in the nominating amendment.
+  - Costs at the all-in per-side rate that `core/firm_rules.py` records for the candidate's instrument on the account chosen in §11 item 2. The Tradeify Select `cost_per_side_usd` scalar covers index micros only; its source comment records other instruments, for example MGC and MCL at $1.06. An instrument with no recorded rate is ineligible until the owner records one. Aegis trades full 6J, recorded at $3.10 per side, and one 6J counts as 10 micros against the account cap (`core/firm_rules.py` :243, :228; Joshua, 2026-10-29, relayed via the merge-train coordinator). The rate is frozen in the nominating amendment.
   - The intraday low per day is required for the drawdown clock.
 - **Edge statistic:**
   - SR̂ is the annualised net Sharpe.
@@ -62,10 +64,10 @@ A candidate is eligible only if all of the following hold:
 | Gate | Test | Inputs frozen before it runs |
 |---|---|---|
 | **G0** Eligibility | §2 items 1–4 all hold | Nominating amendment, with exclusivity signature |
-| **G1** Edge, both halves | SR̂ > 0 in each chronological half, and SR_LB computed | Data window, cost settings, and all of §7 (frozen before G1, not before G2) |
+| **G1** Edge, both halves | SR̂ > 0 in each chronological half, and SR_LB computed. For a pair, the series G1 binds on is open operator decision §11 item 5 | Data window, cost settings, and all of §7 (frozen before G1, not before G2) |
 | **G2** Economics | On the candidate's own days moved to SR_LB by the §7 item 4 transform (not Gaussian), both must hold, with the §1 fee budget enforced: E[net cash] > 0; P(net cash > 0) ≥ 0.50 | The §7 recipe, frozen before G1: the calibrated funded model (#940), the multi-payout simulator, the optimiser, the SR_LB transform and B. Eval and funded sizes come from the optimiser, not by hand |
 | **G3** Incumbent state | Applies only when §11 item 2 selects the incumbent evaluation; otherwise not applicable. G2 re-run from the incumbent evaluation's real state through `EvaluationState`, privately on the operator's machine. Only the verdict leaves the machine | Same as G2 |
-| **G4** Native parity | Over a frozen window, the NinjaScript port on NinjaTrader playback matches the research reference on the risk path G2 used: (a) every trade has the same quantity, and ≥ 95% of trades have the same entry and exit bar; (b) on ≥ 95% of days, net P&L and the intraday low each differ by ≤ max($25, 5%); (c) replaying both day series through the evaluation rules gives the same breach days; (d) G2 re-run on the port's own day series still passes | Port commit; window; tolerances (a)–(c) |
+| **G4** Native parity | Over a frozen window, the NinjaScript port on NinjaTrader playback matches the research reference on the risk path G2 used: (a) every trade has the same quantity, and ≥ 95% of trades have the same entry and exit bar; (b) on ≥ 95% of days, net P&L and the intraday low each differ by ≤ max($25, 5%); (c) replaying both day series through the evaluation rules gives the same breach days; (d) G2 re-run on the port's own day series still passes. For a pair (Joshua, 2026-10-29): (b)–(d) use the combined per-day net P&L and intraday lows, and (a) is one pooled test over both ports' trades; no per-port pass is required | Port commit; window; tolerances (a)–(c) |
 
 G5 is not part of this verdict. Deployment still needs the NinjaTrader instance's own monitoring acceptance, a separate operator GO to arm, and a GO for each session ([Rule 10](../../operational_rules.md#rule-10--live-execution-gates), [Rule 11](../../operational_rules.md#rule-11--rail-operating-invariants)).
 
@@ -94,7 +96,7 @@ G5 is not part of this verdict. Deployment still needs the NinjaTrader instance'
 
 1. **Multi-payout simulator.** It extends `payout_sim.first_payout` to every payout within 126 days, with Tradeify's funded payout cadence, cap and buffer. It must pass a parity test: its first payout matches `first_payout` on fixed seeds.
 2. **Calibrated funded rules and settings** from #940.
-3. **Optimiser.** It chooses eval and funded contract counts (integers within the `micro_contract_cap` that `core/firm_rules.py` records for the account chosen in §11 item 2) to maximise §1 under the fee budget. It uses the transformed day distribution from item 4, resampled in 5-day blocks with each day's intraday low paired to it. Path count, seeds and the contract grid are fixed in the frozen recipe.
+3. **Optimiser.** It chooses eval and funded contract counts (integers within the `micro_contract_cap` that `core/firm_rules.py` records for the account chosen in §11 item 2) to maximise §1 under the fee budget. For a pair it chooses integer contracts per leg (whole lots only) within the shared cap, a full 6J counting as 10 micros (Joshua, 2026-10-29, relayed). It uses the transformed day distribution from item 4, resampled in 5-day blocks with each day's intraday low paired to it. Path count, seeds and the contract grid are fixed in the frozen recipe.
 4. **SR_LB transform.** Each day's net P&L x is replaced by x + Δ, where Δ = (SR_LB − SR̂)·σ̂/√252 per contract and σ̂ is the daily standard deviation, so the volatility is unchanged. Each day's intraday low ℓ is replaced by min(ℓ + Δ, 0, x + Δ): because Δ ≤ 0, the full shift is applied to the low, which is conservative. No other transformation of returns or paths is permitted.
 5. **Fill semantics.** TV-export P&L assumes TradingView fills, which a native venue cannot obtain (`ops/c1_signal_daemon/fidelity_emulator.py`). Where the candidate has a replay adapter, G1 and G2 are computed under both FidelityEmulator `native_low` and `native_high` modes, and each gate must pass under both. Without an adapter, G1 and G2 use the TV fills and G4 (d) is the native check.
 
@@ -111,7 +113,7 @@ SR_LB at K_max = 1 (z = 0.84), for an i.i.d. daily series. The annualised SE is 
 
 Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate with SR̂ ≈ 2 over 3 or more years can reach G2, SR̂ ≈ 1.5 is marginal, and anything below that cannot. Autocorrelation and fat tails widen the SE and lower these bounds. A larger K_max lowers them too: at K_max = 10, z = 2.05, so SR̂ = 2 over 5 years gives SR_LB ≈ 1.08, which is marginal. The gate is reachable for a strong candidate, not for a typical one. That is intended.
 
-**Binding:** G0 item 4 consumes #807 stage 1's written finding, which exists only if the 11-08 sitting takes draft branch (b). Under branch (d), G0 item 4 cannot be met and this pre-registration is withdrawn, not frozen. A GO-CANDIDATE is the only route into the deployment gates.
+**Binding:** G0 item 4 consumes #807 stage 1's written finding. Branch (b) was granted on 2026-10-28 (§0), so the finding can exist; until it is returned, G0 item 4 cannot be met. A GO-CANDIDATE is the only route into the deployment gates.
 
 ## §10 — Audit hooks
 
@@ -125,6 +127,7 @@ Under the Gaussian proxy, G2 breaks even near Sharpe 1–1.5. So a candidate wit
 2. Whether the lane uses the incumbent Select 100K evaluation (G3) or a fresh Select 50K. [PASS63_CHECK.md](../../../lab/analysis/_inbox/prop_payout_geometry_2026-10/PASS63_CHECK.md) favours the 50K on fees.
 3. The 126-day window start rule: the date the GO-CANDIDATE is reached, or the first trade.
 4. Who nominates candidates, and K_max, the lane's total trial cap including disclosed search trials. A small K_max keeps the gate reachable; a large one makes it hard to clear.
+5. For an ORB+Aegis pair, whether G1 binds on the combined series only or also on each leg. The merge-train coordinator recommends that the combined series binds and each leg's both-halves result is reported but does not gate.
 
 ## §12 — Freeze procedure
 
