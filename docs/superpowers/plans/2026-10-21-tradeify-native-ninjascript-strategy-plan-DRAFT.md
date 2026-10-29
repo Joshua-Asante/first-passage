@@ -3,7 +3,7 @@
 **Status:** DRAFT, 2026-10-21. Proposes a sequence; grants nothing. Every phase marked **GO** needs its own operator ruling. Read the [current routing note](2026-09-20-tradeify-deployment-checklist.md#current-routing--2026-10-29-derived-mirror) before the dated phase table. The [11-08 decision rules](2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft) remain draft except for separately recorded rulings.
 **Question:** can a strategy dedicated to Tradeify, with all logic native to NinjaTrader 8, reach a first Select Flex payout of ≥ $1,000 net at acceptable fee cost?
 **Decision it changes:** whether Tradeify gets a native lane at the 11-08 sitting (branch (b) and onward), or parks under branch (d).
-**Inputs:** [Q-PATH-TO-PAYOUT-1](../../notes/research/2026-10-21-q-path-to-payout-1-memo.md) (geometry, sizing, §5 verification); [compliant automation routes](../../notes/2026-10-13-tradeify-compliant-automation-routes.md) (route 1); #807, closed unmerged 2026-10-28 ([closing comment](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6483857542)), at head `e6e4422`: [native runtime proposal](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/notes/2026-10-12-native-ninjatrader-runtime-PROPOSAL.md) and [Aegis experiment plan](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/superpowers/plans/2026-10-12-aegis-disconnected-decision-experiment-PROPOSAL.md).
+**Inputs:** [Q-PATH-TO-PAYOUT-1](../../notes/research/2026-10-21-q-path-to-payout-1-memo.md) (geometry, sizing, §5 verification); [compliant automation routes](../../notes/2026-10-13-tradeify-compliant-automation-routes.md) (route 1); #807 closed unmerged 2026-10-29 ([settled comment](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6498292027)); its proposal stays retrievable at `e6e4422` (branch `codex/native-runtime-proposal` kept); no implementation was accepted: [native runtime proposal](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/notes/2026-10-12-native-ninjatrader-runtime-PROPOSAL.md) and [Aegis experiment plan](https://github.com/Joshua-Asante/first-passage/blob/e6e4422b1a144136c7b0e4f188e5f8a81215947e/docs/superpowers/plans/2026-10-12-aegis-disconnected-decision-experiment-PROPOSAL.md).
 
 ## Reading limits — 2026-10-29 (consistency note)
 
@@ -12,9 +12,11 @@
   Aegis in that read-only assessment, and the pair counts as one candidate.
   This does not grant this plan's expanded P1 scope. P0/D1 below must not be read
   as requiring the recorded grant again, or as extending it.
-- [#807 closed unmerged](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6483857542).
-  Its pinned parity/isolation methods remain references for P4; no implementation
-  was accepted, and closure itself grants or revokes no authority.
+- #807 closed unmerged 2026-10-29 ([settled comment](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6498292027));
+  its proposal stays retrievable at `e6e4422` (branch
+  `codex/native-runtime-proposal` kept); no implementation was accepted. Its
+  pinned parity/isolation methods remain references for P4; closure itself
+  grants or revokes no authority.
 - The [qualification framework](../../briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md),
   merged in #961, succeeds #941 and remains DRAFT. Its pre-ratification
   adjudication, operator values and ratification remain owed. This plan's

@@ -2,15 +2,6 @@
 
 **Status:** PROPOSAL, 2026-10-18; amended 2026-10-28 (A2 rulings D-N10 to D-N16) and 2026-10-29 (the order state model, §6.10, ruled as SM-1 to SM-3). Planning only. It grants no build, launch, connection, arm, order, session or spend, and changes no accepted contract. Every `⟨L-…⟩` limit is unbound until the portfolio and account are selected; a pilot cannot start with any limit unbound.
 
-**Current routing (2026-10-29, derived mirror):**
-[#959](https://github.com/Joshua-Asante/first-passage/pull/959) merged as the
-successor to #882, carrying A2 rulings and the order state model. The
-[§5 owner record](#5-decisions) now records SM-1–SM-3 as ruled 2026-10-29;
-U-18 still owes native callback evidence. The reference-model correction round
-has its own authorization at [card §11](../briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md#11-admission-record).
-Candidate/account binding and qualification remain separate: see the
-[checklist routing note](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-routing--2026-10-29-derived-mirror).
-
 **Question and decision.** Which of the accepted protection and recovery rules carry over to a firm-approved native runtime, and what must be proved before one attended pilot session? The answer decides whether a native pilot card can be frozen, and what it must test first.
 
 **Sources adapted** (owners; they govern where this note differs, except where a §5 operator ruling records the departure):
