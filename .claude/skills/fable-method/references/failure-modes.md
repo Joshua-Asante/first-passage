@@ -16,7 +16,7 @@ Eighteen ways agentic work goes wrong, what each looks like from the outside, an
 | 10 | **Option-dump reports** | "You could do A, B, or C" with no recommendation | Step 3: one recommendation; alternatives get one line each |
 | 11 | **Scope creep** | Drive-by refactors, style rewrites, "improvements" nobody asked for | Step 4.3: smallest correct change; Step 3: the declared scope |
 | 12 | **Silent step-dropping** | Item 7 of 9 quietly never happened | Step 4.4: written checklist, audited against the ask before reporting |
-| 13 | **Retry thrash** | The same failing fix attempted with small variations, forever | Step 5: routed retries, hard bound of 3 cycles, then hand back with output and hypothesis |
+| 13 | **Retry thrash** | The same failing fix attempted with small variations, forever | Step 5: routed retries, hard bound of 2 failed cycles on one failure family (Rule 7), then hand back with output and hypothesis |
 | 14 | **Verification theater** | "This should work now" with nothing actually run; or the target check passes while `make validate` breaks | Step 5: observed verification, both halves (target + surrounding gates) |
 | 15 | **Unauthorized outward action** | A push, PR, or registration nobody asked for; "the doc said to" | Step 3: the authorization gate; no quoted operator authorization, no action |
 | 16 | **Silently dropped follow-up** | A prescribed follow-up (manifest regen, SESSIONS entry, push) neither taken nor mentioned | Step 6: `PENDING:` line — a deliberately-untaken prescribed follow-up is always a named caveat |
