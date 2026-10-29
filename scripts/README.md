@@ -597,17 +597,17 @@ semantic completeness, or successor authorization.
 
 ## Independent review
 
-Codex is the separate reviewer; Claude does not review its own work
-([surface-allocation ADR Addendum 2026-10-25](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work)).
-On a PR, comment `@codex review` after each push; the merge rule and review limit are
+Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's (Rule 5;
+[surface-allocation ADR Addendum 2026-10-26](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review)).
+The merge rule and review limit are
 [Addendum 2026-10-24b A](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody),
-applied by `merge_train.py gate` ([merge-train skill](../.claude/skills/merge-train/SKILL.md)).
+applied by `merge_train.py gate`; requesting reviews is [merge-train](../.claude/skills/merge-train/SKILL.md) step 3.
 
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
 owns its review mechanics. Reviewers assess the source independently of the proposer's
 reasoning; synthesis is advisory and cannot supply operator ratification or execution
 authority. A Claude panel on Claude work is optional author input, not the independent
-review: Codex owns that (Rule 5). Reviewer/delegate assignment never grants permission to edit locked surfaces.
+review: the other agent owns that (Rule 5). Reviewer/delegate assignment never grants permission to edit locked surfaces.
 
 Its existing GRAND-only safety scan reads committed target text. A safety-invariant
 citation flags a hard block on synthesis; missing text flags a coverage failure, also

@@ -1,6 +1,6 @@
 ---
 name: s2-linux-run
-description: Use for ANY task that needs Linux evidence from the qualification S2 supervision workflow (`qualification-s2-supervision.yml`) — dispatching a run on a branch, reading its artifact, deciding whether a failure is a defect or a re-roll, and sequencing the run against the Windows `fp.ps1` verification lines so the two clocks overlap. Triggers on "S2 run", "fifteen green", "--s2", "qualification_boundary_verification", "S2 workflow", "Linux evidence", "dispatch the workflow", "read the artifact", or any worker packet's Linux verification step. Encodes the 2026-09-19/20 lessons: serial Windows-then-Linux clocks wasted ~25 min per iteration; two 50-minute Windows sequences were voided by writing into the tree mid-record; three Linux runs were cancelled by mid-run pushes; same-SHA re-rolls chased a real race. Does not decide acceptance (coordinator), change the workflow, or touch allowances.
+description: Use for ANY task that needs Linux evidence from the qualification S2 supervision workflow (`qualification-s2-supervision.yml`) — dispatching a run on a branch, reading its artifact, deciding whether a failure is a defect or a re-roll, and sequencing the run against the Windows `fp.ps1` verification lines so the two clocks overlap. Triggers on "S2 run", "fifteen green", "--s2", "qualification_boundary_verification", "S2 workflow", "Linux evidence", "dispatch the workflow", "read the artifact", or any worker packet's Linux verification step. Encodes the 2026-09-19/20 lessons: serial Windows-then-Linux clocks wasted ~25 min per iteration; two 50-minute Windows sequences were voided by writing into the tree mid-record; three Linux runs were cancelled by mid-run pushes; same-SHA re-rolls chased a real race. Does not decide acceptance (Joshua), change the workflow, or touch allowances.
 ---
 
 # S2 Linux run — dispatch, read, decide, overlap
@@ -59,7 +59,7 @@ Known-benign classes so far: `warm_service` `Slice==''` (unit GC within the same
 ## 4. Who may claim what
 
 - Worker packets: report the run as evidence; "Linux acceptance pending" if no green run on the final bytes.
-- Coordinator: acceptance needs the integrated PR run on the final head, artifact-read, plus independent review — never a branch run alone.
+- Acceptance (Joshua, on the coordinator's adjudication) needs the integrated PR run on the final head, artifact-read, plus independent review — never a branch run alone.
 - Windows/mock/`simulated_control_timer` results are never Linux evidence.
 
 ## 5. Diagnostic subset runs, and faster loops still open

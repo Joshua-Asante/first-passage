@@ -29,7 +29,7 @@ Before drafting or dispatching anything substantial, write three lines in the ow
 
 ## 4. Cards and dispatch
 
-- Author with `brief-authoring`; gate with `handoff-verify`. Before freezing and before dispatch, run them through the checkout's launcher (`.p.ps1 doctor`, then `.p.ps1 python scripts/check_handoff_authority.py <card>` and `.p.ps1 python scripts/check_brief.py --type handoff <card>`); both must be clean.
+- Author with `brief-authoring`; gate with `handoff-verify`. Before freezing and before dispatch, run them through the checkout's launcher (`.\fp.ps1 doctor`, then `.\fp.ps1 python scripts/check_handoff_authority.py <card>` and `.\fp.ps1 python scripts/check_brief.py --type handoff <card>`); both must be clean.
 - **One pin source.** The freeze record holds every hash. Generate a card's pin tables from it and diff card against record before each review and before dispatch; never hand-copy a hash. For a Claude dispatch, also pass the record's pinned inputs as `scripts/dispatch_claude.ps1 -InputFile`, so the runner rehashes them on resume.
 - **Rehearse the harness.** Before freezing a real card, run a throwaway card through the same launcher (`scripts/dispatch_codex.ps1` or `scripts/dispatch_claude.ps1`), sandbox roots, skills, read allowlist and writes near pinned files. Fix what breaks once.
 - **Real-consumer acceptance.** An acceptance check calls the consumer's own entry point, never a sub-validation. Bind every exemption to an exact span and give it a negative test.

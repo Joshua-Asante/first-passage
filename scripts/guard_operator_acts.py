@@ -226,8 +226,9 @@ MESSAGES = {
                           "<sha>`, a REST `sha` field, or GraphQL `expectedHeadOid`."),
     "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
                  "Standing GO (surface-allocation ADR, Addendum 2026-10-24b A, amended "
-                 "2026-10-25): merge only if an independent review (a Codex review clean at "
-                 "this head, within three reviews or on a clean fourth) has passed and every "
+                 "2026-10-25): merge only if an independent review (the cross-agent review "
+                 "clean at this head: Codex for a Claude-authored PR, Claude for a Codex-authored "
+                 "one; within three reviews or on a clean fourth) has passed and every "
                  "CI check is COMPLETED and green at the pinned head; if no review is clean "
                  "by the fourth, return the PR to its owner for a rewrite; otherwise report "
                  "the PR as ready and stop. `scripts/merge_train.py gate` applies the count."),
