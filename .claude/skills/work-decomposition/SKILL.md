@@ -15,15 +15,9 @@ into children that each fit one session or one packet) and **input-shaped** (cut
 the input does not fit one context). It produces sized units and a manifest; it does not build,
 dispatch implementation workers, or adjudicate; the input-shaped protocol below does run read-only
 sub-agent waves inside the session, which is evidence gathering, not work dispatch. Worker surfaces
-are Claude Code sessions and Codex tasks; Cursor was retired as a worker surface by operator
-instruction on 2026-09-15. The record is the
-[surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)'s
-2026-09-15 revision, whose §Decision clause "Orchestrating more than one worker at a time" now
-owns the surviving fleet-orchestration rules — claim manifest, disjoint footprints (single-writer
-rule), dispatch-time Phase-0 re-check, review-round-as-freeze, frozen-SHA dispatch pointer —
-surface-agnostically. The `cursor-fleet` skill that stated them is deleted by that revision;
-[TOMBSTONES](../../../docs/adr/TOMBSTONES.md) pins its body and names where each surviving
-clause now lives.
+are Claude Code sessions and Codex tasks, dispatched by the coordinator (`coordinator` skill) under the
+[surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)'s §Decision
+clause "Orchestrating more than one worker at a time".
 
 Provenance: adapted 2026-09-15 from three external drafts — `troykelly/claude-skills`
 issue-decomposition (oversize thresholds, child-quality checklist, dependency status),

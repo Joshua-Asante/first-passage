@@ -1,18 +1,16 @@
 # Handoff packets — routing rule
 
-**Earlier handoffs remain historical evidence; current dispatch follows the September 20 deployment checklist as amended, and the latest specifically assigned handoff.**
+**Earlier handoffs remain historical evidence; current dispatch is the coordinator's board row plus its frozen card.**
 
-A packet in this directory is a record of an assignment, its context and its provenance at the date in its filename. Committing a packet does not dispatch it, and an older packet's ownership statements do not override later ownership decisions. To find the current assignment for a workstream, start from [the deployment checklist](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) and its [amendment](../../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md), then the newest packet that names the workstream.
-
-**Current coordinator handoff (2026-09-24):** [2026-09-24 coordinator handoff](2026-09-24-full-e1-coordinator-handoff.md) — start there; it supersedes the 2026-09-22 handoff named in the assignments line below, whose status notes are as of 2026-09-22.
+A packet in this directory is a record of an assignment, its context and its provenance at the date in its filename. Committing a packet does not dispatch it, and an older packet's ownership statements do not override later ownership decisions. To find the current assignment for a workstream, read the coordinator's board (`coordinator` skill §3); Joshua assigns the coordinator per session (§1).
 
 ## Pre-mortem (every multi-loop packet)
 
-Before dispatch, the coordinator adds a pre-mortem section covering loop cost and full-run budget, the decisions the executor will hit (ruled on in one batch before freeze), what would make the work moot, and the measurements the return fills in. The rule is brief-authoring check 11 (including its evidence-binding line: which head and run types count, and what invalidates them); its first application is the S4 packet's §0.6. Checks 12–14 add, from the S2/S3 record, the local preconditions owed before the first full run (harness shape-contract tests that pass on Windows and Linux, the PR's own gates, lock stress tests), the independent review at the interface freeze with invariant tests, and working-tree and claim discipline.
+Multi-loop packets carry the pre-mortem and pre-run checks of `brief-authoring` checks 11–14.
 
-## Status of the September 12–19 packets
+## Packet status
 
-The eleven packets PR #444 committed on 2026-09-20 from previously untracked files, plus the E1 coordinator handoff, which was already tracked and which #444 only amended with its publication addendum.
+The eleven packets PR #444 committed on 2026-09-20 from previously untracked files, the E1 coordinator handoff, which was already tracked and which #444 only amended with its publication addendum, and the later coordinator snapshots.
 
 | Packet | Status |
 |---|---|
@@ -25,5 +23,5 @@ The eleven packets PR #444 committed on 2026-09-20 from previously untracked fil
 | `2026-09-19-full-e1-s1-budget-recovery.md` | COMPLETED — S1 accepted (PR #428) |
 | `2026-09-19-glm-s2-enforcement-continuation.md`, `…-glm-s2-linux-diagnostic-steering.md` | COMPLETED — S2 continuations; returns in the execution-slices ledger |
 | [`2026-09-19-jev-experimentation-claude.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/handoffs/2026-09-19-jev-experimentation-claude.md) | REMOVED 2026-10-15 — unrelated to the Tradeify deployment track; the pilot falsified its saving prediction and no integration was enabled (pinned blob) |
+| `2026-09-22-full-e1-coordinator-handoff.md`, `2026-09-24-full-e1-coordinator-handoff.md`, `2026-09-25-full-e1-claude-continuation.md` | HISTORICAL — coordinator snapshots; the coordinator role is assigned per session (surface-allocation ADR Addendum 2026-10-28) |
 
-Current bounded assignments on the deployment track (as of 2026-09-22): the [coordinator handoff](2026-09-22-full-e1-coordinator-handoff.md) (start here), [T00 step 1](2026-09-22-tradeify-t00-step1-producer-inventory.md) (returned 2026-09-22: INSUFFICIENT — the relocated qualification replay meets P1–P6 and fails P7; accepted 2026-09-23 with condition 4 ruled no; see its §7), [S4/T03](2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md) (FROZEN, in flight), [T05](2026-09-21-full-e1-t05-result-and-seal.md) (build frozen; integration after T04), [S5/T04](2026-09-21-full-e1-s5-part-a-DRAFT.md) (drafted and ruled; freezes on S4's merge), [T07](2026-09-21-tradeify-t07-manual-settlement-procedure.md), [T08](2026-09-21-tradeify-t08-broker-protection-feasibility.md) (step 1 returned 2026-09-24: R3 = NONE, so T09 cannot be specified and D-broker is void; operator decision owed, see its §7.7), [T10](2026-09-21-tradeify-t10-source-and-freeze-packet.md) (phase 1 done). [S3/T02](2026-09-21-full-e1-s3-n1-genuine-capture.md) is COMPLETED — accepted and merged 2026-09-22 (PR #455).
