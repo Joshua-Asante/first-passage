@@ -149,10 +149,18 @@ def collect_runtime_inventory(contract, *, loaded_modules, retained_source_bytes
         if path in by_origin and (alias!=by_origin[path] or module is not loaded_modules[by_name[by_origin[path]]]):
             raise ValueError('same-origin sys.modules alias is forbidden')
 
+    bases=(repository,repository/'core',repository/'ops',repository/'lab',repository/'governance')
+    # One collection asks about the same names thousands of times; probe each
+    # path once per collection (ten stats per name dominate on Windows).
+    probed={}
+    def is_file(path):
+        if path not in probed:probed[path]=path.is_file()
+        return probed[path]
+
     def local_source_exists(name):
         relative=Path(*name.split('.'))
-        return any((base/relative.with_suffix('.py')).is_file() or (base/relative/'__init__.py').is_file()
-                   for base in (repository,repository/'core',repository/'ops',repository/'lab',repository/'governance'))
+        return any(is_file(base/relative.with_suffix('.py')) or is_file(base/relative/'__init__.py')
+                   for base in bases)
 
     def first_party(name):
         if name in by_name or name in _PORT_MODULES.values() or name.split('.')[0] in _FIRST_PARTY:return True
@@ -178,8 +186,7 @@ def collect_runtime_inventory(contract, *, loaded_modules, retained_source_bytes
         for count in range(1,len(name.split('.'))):
             parent='.'.join(name.split('.')[:count])
             relative=Path(*parent.split('.'))/'__init__.py'
-            if any((base/relative).is_file() for base in
-                   (repository,repository/'core',repository/'ops',repository/'lab',repository/'governance')):
+            if any(is_file(base/relative) for base in bases):
                 require(parent)
         for value in tuple(vars(module).values()):
             if type(value) is ModuleType:require(value.__name__)

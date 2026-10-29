@@ -224,6 +224,30 @@ def _blob(commit: str, path: str) -> bytes | None:
     return out if status == 0 else None
 
 
+def _blobs(commit: str, paths) -> dict:
+    """``_blob`` for many paths in one ``git cat-file --batch`` (one process start, not one per
+    path; each start costs ~0.15 s on Windows). Names arrive on stdin, never as options."""
+    paths = list(paths)
+    if any('\n' in path for path in paths):
+        return {path: _blob(commit, path) for path in paths}
+    done = subprocess.run(['git', '-C', str(REPOSITORY_ROOT), '-c', 'core.autocrlf=false', 'cat-file', '--batch'],
+                          input=''.join(f'{commit}:{path}\n' for path in paths).encode('utf-8'),
+                          capture_output=True, check=False)
+    if done.returncode != 0:
+        return dict.fromkeys(paths)
+    out, at, found = done.stdout, 0, {}
+    for path in paths:
+        end = out.index(b'\n', at)
+        header, at = out[at:end], end + 1
+        if header.endswith((b' missing', b' ambiguous')):
+            found[path] = None
+            continue
+        kind, size = header.split()[1:]
+        found[path] = out[at:at + int(size)] if kind == b'blob' else None
+        at += int(size) + 1
+    return found
+
+
 # ---- step 1: the bytes alone (rows A1, A4, A11) ----------------------------------------------
 
 def _check_document(doc) -> None:
@@ -920,10 +944,10 @@ def _closure_holds(opened: dict, closure: dict, authority) -> bool:
     for family in ('first_party', 'third_party', 'ports'):
         if any(closure[family][name] != row for name, row in opened[family].items()):
             return False
-    for row in closure['first_party'].values():
-        if row.get('path') is None:
-            continue
-        blob = _blob(authority.code_head, row['path'])
+    rows = [row for row in closure['first_party'].values() if row.get('path') is not None]
+    blobs = _blobs(authority.code_head, [row['path'] for row in rows])
+    for row in rows:
+        blob = blobs[row['path']]
         if not _file_is(REPOSITORY_ROOT / row['path'], row['sha256']) or blob is None or _sha(blob) != row['sha256']:
             return False
     site = getattr(getattr(sys, 'p7_recorder', None), 'site_packages_path', None)

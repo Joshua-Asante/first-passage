@@ -26,12 +26,17 @@ def installed_code_root():
 def source_closure(root, role):
     root = Path(root)
     roots = [root / part for part in ('ops', 'core', 'lab', 'governance', '')]
+    located = {}
     def locate(name):
-        relative = Path(*name.split('.'))
-        found = [path for base in roots for path in (base / relative.with_suffix('.py'), base / relative / '__init__.py') if path.is_file()]
-        if len(found) > 1:
-            raise ValueError('ambiguous ordinary source origin: ' + name)
-        return found[0] if found else None
+        # Names repeat across the closure; probe each once per call (ten stats
+        # per probe dominate this function on Windows).
+        if name not in located:
+            relative = Path(*name.split('.'))
+            found = [path for base in roots for path in (base / relative.with_suffix('.py'), base / relative / '__init__.py') if path.is_file()]
+            if len(found) > 1:
+                raise ValueError('ambiguous ordinary source origin: ' + name)
+            located[name] = found[0] if found else None
+        return located[name]
     pending, sources = [ENTRYPOINTS[role], __name__], {}
     while pending:
         name = pending.pop()

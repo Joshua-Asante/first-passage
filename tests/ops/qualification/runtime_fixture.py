@@ -31,7 +31,7 @@ class OrdinaryModule:
     dependencies: tuple[str,...]
 
 
-def ordinary_runtime_fixture(*, role_modules, seeds=DEFAULT_SEEDS):
+def ordinary_runtime_fixture(*, role_modules, seeds=DEFAULT_SEEDS, _located=None):
     """Collect actual ordinary modules and exact bytes under canonical names.
 
     Explicit role assignments must be one-to-one. Additional transitive modules
@@ -41,9 +41,16 @@ def ordinary_runtime_fixture(*, role_modules, seeds=DEFAULT_SEEDS):
     if len(set(role_modules.values()))!=len(role_modules):
         raise ValueError('multiple roles cannot designate one ordinary module')
     roots=(ROOT/'ops',ROOT/'core',ROOT/'lab',ROOT/'governance',ROOT)
+    # One capture asks about the same names ~10k times; each uncached answer
+    # costs ten stat calls, which dominate test time on Windows. The memo is
+    # per capture (shared by its recapture) so a later capture re-probes.
+    located={} if _located is None else _located
     def locate(name):
         if name.startswith(('fp_port_','fp_qualification_port_')):
             raise ValueError('private ports are outside the ordinary fixture helper')
+        if name not in located:located[name]=_locate(name)
+        return located[name]
+    def _locate(name):
         relative=Path(*name.split('.'))
         paths=[]
         for root in roots:
@@ -107,7 +114,7 @@ def ordinary_runtime_fixture(*, role_modules, seeds=DEFAULT_SEEDS):
         # package is identical to a fresh minimal import. Recapture every byte
         # and retain the same canonical-origin and alias checks below.
         return ordinary_runtime_fixture(role_modules=role_modules,
-            seeds=tuple(sorted(set(paths)|loaded_dependencies)))
+            seeds=tuple(sorted(set(paths)|loaded_dependencies)),_located=located)
     actual_origins={path:name for name,path in paths.items()}
     for alias,module in tuple(sys.modules.items()):
         raw=getattr(module,'__file__',None) if type(module) is ModuleType else None
