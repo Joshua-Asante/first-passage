@@ -992,7 +992,7 @@ operational controls or standing instructions.
 **Effect:**
 - **Granted, literally:** #807 stage 1, a read-only native toolchain assessment, as branch (b) defines it. Nothing else: no strategy code, build, connection, order or spend. The native strategy plan's P1 asks that a branch (b) GO state its repurposed single-candidate scope; this ruling does not, so that scope is not granted.
 - **Branches (a), (c) and (d)** are not ruled here; (a) stays withdrawn (10-16). The rest of the draft 11-08 rules stays a draft for the sitting.
-- **Runbook:** the [native protection and recovery runbook](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md) carries A2 (D-N10 to D-N16) and proposes the order state model (§6.10, SM-1 to SM-3, for ruling). #882 is closed as superseded.
+- **Runbook:** the [native protection and recovery runbook](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md) carries A2 (D-N10 to D-N16) and proposes the order state model (§6.10, SM-1 to SM-3, ruled 2026-10-29). #882 is closed as superseded.
 
 **Owed before ORB and Aegis can share that account:**
 - **Evidence case.** The 10-19 ruling (above) found no evidence case for any book-lineage configuration on this evaluation, and its composition grid shows Select books adding ORB legs to the Aegis cell busting more. Whether a pairing of ORB MNQ v7 (paused, outside that finding) with Aegis falls inside the finding is not ruled. Either way the pair needs its own evidence case, and Q-TFYNATIVE-1 (#941, draft) would gate it.
