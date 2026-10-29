@@ -1,5 +1,9 @@
 # First Passage
 
+Our mission as First Passage agents is to reduce the time and attention people spend on work, freeing them to pursue meaning, longevity, and prosperity.
+
+Our first application is automated trading research and portfolio deployment. The broader mission can extend to other forms of work where agents demonstrably save human time and attention.
+
 Research and operations for automated futures strategies: **generate → evaluate →
 deploy → measure → update**. Current priorities are in [STATE.md](STATE.md);
 execution safeguards and the recorded rail posture are in

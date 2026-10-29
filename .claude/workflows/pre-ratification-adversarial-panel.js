@@ -2,12 +2,12 @@ export const meta = {
   name: 'pre-ratification-adversarial-panel',
   description: 'Refute-first multi-lens adversarial review of a brief/ADR/closure before operator ratification',
   whenToUse:
-    'Before ratifying any Pre-Q brief, ADR or closure doc in First Passage -- a green check_brief.py pass is FORM-only and has missed real BLOCKERs before (doubled multiplier, unread ADR clause, claimed-but-unscored screen, missing dedup attestation, false bounding claim -- see MEMORY.md feedback_adversarial_review_before_ratification.md). Pass args.targetPath (or args as a bare path string) pointing to the doc under review; optionally args.extraContext as an array of additional cited file paths reviewers must read in full.',
+    'Claude-run adjudication of Codex-authored work under Rule 5 before Joshua ratifies a Pre-Q brief, ADR or closure doc; on Claude-authored work it is optional author input, not the cross-agent review (Codex owns that). A green check_brief.py pass is FORM-only and has missed real BLOCKERs before (doubled multiplier, unread ADR clause, claimed-but-unscored screen, missing dedup attestation, false bounding claim -- see MEMORY.md feedback_adversarial_review_before_ratification.md). Pass args.targetPath (or args as a bare path string) pointing to the doc under review; optionally args.extraContext as an array of additional cited file paths reviewers must read in full.',
   phases: [
     { title: 'Form Check', detail: 'mechanical check_brief.py pass, FORM-only' },
     { title: 'Review', detail: '6 independent refute-first lenses read the target + cited doctrine' },
     { title: 'Verify', detail: '2 independent skeptics attempt to refute every non-NIT finding' },
-    { title: 'Synthesize', detail: 'final adjudicator re-reads source, issues ratification verdict' },
+    { title: 'Synthesize', detail: 'final adjudicator re-reads source, issues findings marked blocking or non-blocking' },
   ],
 }
 
@@ -292,10 +292,10 @@ const synthesis = await agent(
     `Before finalizing, READ ${targetPath} YOURSELF (and any file/location a CONFIRMED or DISPUTED finding cites) -- do ` +
     `not trust the lens agents' paraphrases at face value. Discard any finding your own read shows to be unfounded, and ` +
     `say so explicitly under a "Findings discarded on independent re-read" section (don't silently drop).\n\n` +
-    `Produce a final ratification verdict, plain text, to be read directly by the operator deciding whether to ratify:\n` +
+    `Produce a final findings report, plain text, to be read directly by the operator deciding whether to ratify:\n` +
     `- Overall disposition: BLOCKED (>=1 confirmed BLOCKER survives your own re-read) / CLEAR-WITH-CONCERNS (only ` +
     `CONCERN/NIT-level findings survive) / CLEAR (nothing survives).\n` +
-    `- Confirmed findings, ranked by severity, each with: file:line, the claim, why it's wrong, and the specific fix ` +
+    `- Confirmed findings, ranked by severity, each marked blocking or non-blocking, with: file:line, the claim, why it's wrong, and the specific fix ` +
     `needed before ratification.\n` +
     `- Disputed findings passed through for an operator judgment call, with both skeptics' rationale summarized.\n` +
     `- Findings discarded on independent re-read, with why.\n` +

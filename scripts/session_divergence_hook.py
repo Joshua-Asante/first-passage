@@ -18,8 +18,10 @@ missing). A context-injection hook must never block a session from starting.
 """
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
+from pathlib import Path
 
 # DELIBERATE DUPLICATE of scripts/check_push_collision.py's governance class —
 # keep the two in sync BY HAND and do not refactor into a shared import. This hook
@@ -43,10 +45,10 @@ _PREREG_STEM = "PREREG"
 MAX_COMMITS_SHOWN = 8
 
 
-def _git(*args: str, timeout: int = 20) -> str | None:
+def _git(checkout: Path, *args: str, timeout: int = 20) -> str | None:
     try:
         proc = subprocess.run(
-            ["git", *args],
+            ["git", "-C", str(checkout), *args],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -71,25 +73,43 @@ def _is_governance(path: str) -> bool:
 
 
 def main() -> int:
-    # Fetch is best-effort and time-boxed; a slow network must not stall startup.
-    _git("fetch", "origin", "main", "--quiet", timeout=25)
+    checkout = Path.cwd()
+    try:
+        # A terminal stdin means a manual run with no hook payload; never wait on it.
+        payload = None if sys.stdin.isatty() else json.load(sys.stdin)
+        cwd = payload.get("cwd") if isinstance(payload, dict) else None
+        if isinstance(cwd, str) and cwd and Path(cwd).is_dir():
+            checkout = Path(cwd)
+    except Exception:
+        pass  # Empty, invalid or unreadable hook input uses the process cwd.
 
-    base = _git("merge-base", "HEAD", "origin/main")
+    # Fetch is best-effort and time-boxed; a slow network must not stall startup.
+    _git(checkout, "fetch", "origin", "main", "--quiet", timeout=25)
+
+    toplevel = _git(checkout, "rev-parse", "--show-toplevel")
+    if not toplevel:
+        return 0
+    branch = _git(checkout, "symbolic-ref", "--quiet", "--short", "HEAD") or "detached HEAD"
+    prefix = f"[base check] {toplevel} on {branch}:"
+
+    base = _git(checkout, "merge-base", "HEAD", "origin/main")
     if not base:
         return 0
 
-    log = _git("log", "--oneline", f"{base}..origin/main")
+    log = _git(checkout, "log", "--oneline", f"{base}..origin/main")
     if log is None:
         return 0
     if not log:
-        print("[base check] origin/main: up to date with this branch's merge-base.")
+        print(f"{prefix} origin/main: up to date with this branch's merge-base.")
         return 0
 
     commits = log.splitlines()
-    changed = _git("diff", "--name-only", f"{base}..origin/main") or ""
+    changed = _git(checkout, "diff", "--name-only", f"{base}..origin/main")
+    if changed is None:
+        return 0
     gov = sorted({p for p in changed.splitlines() if p.strip() and _is_governance(p.strip())})
 
-    print(f"[base check] origin/main is {len(commits)} commit(s) AHEAD of this branch's merge-base.")
+    print(f"{prefix} origin/main is {len(commits)} commit(s) AHEAD of this branch's merge-base.")
     for line in commits[:MAX_COMMITS_SHOWN]:
         print(f"  {line}")
     if len(commits) > MAX_COMMITS_SHOWN:

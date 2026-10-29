@@ -11,7 +11,7 @@
 1. **This file**, §1–§3.
 2. **The merged #483 C2 ruling** in the [execution-slices ledger](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c2--s4-changes-required-06-decisions-and-the-n2-ceiling-ruled-2026-09-24): the S4 repair contract (R1–R5), the operator's M13 ceiling and the Linux discipline.
 3. [S4 packet](2026-09-21-full-e1-s4-joint-n2-part-b-DRAFT.md): §0 anchors, §0.6 pre-mortem, and the S4-D1..D4 rulings.
-4. [T10 step-4 note](../../notes/2026-09-24-t10-step4-representative-measurement.md) §2 and §4: the per-path `verify_for` cost finding (§2.2 below).
+4. [T10 step-4 note](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-09-24-t10-step4-representative-measurement.md) §2 and §4: the per-path `verify_for` cost finding (§2.2 below).
 5. [T08 packet](2026-09-21-tradeify-t08-broker-protection-feasibility.md) §7 on PR #482, and §7.8 on PR #488: R3 = NONE and the operator's item-1 ruling.
 6. [T00 step 1](2026-09-22-tradeify-t00-step1-producer-inventory.md) §7–§7.8, the [seven-strategy recovery return](2026-09-24-seven-strategy-evidence-recovery.md) §7.1 and §7.7, and PR #486 (the bracket build).
 

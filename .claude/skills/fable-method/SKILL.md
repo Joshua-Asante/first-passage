@@ -62,7 +62,7 @@ Name the scope — the files or surfaces the change will touch. Needing somethin
 - **(b)** The surrounding system still works: `make validate`, the touched area's tests, `check_boundaries.py` when layers were crossed; the MC anchor re-run when anything on the MC path was touched. A green targeted check with a broken gate is a failed verification.
 - **(c) Twin check, whenever you fixed a defect.** A defect found at one site is presumed to recur wherever the construct was copied — the `daily_loss_pct: None` TypeError lived at four division sites and was fixed as a class (PR #356) only because all four were swept. Name the wrong construct, search the whole repo, and write verbatim: `TWINS: searched <pattern> — found <N> other sites: <files|none>`. Fix them or list them.
 
-On failure: a mechanical mistake goes back to Step 4; a surprise goes back to Step 2. Hard bound: 2 failed fix-verify cycles on the same issue (Rule 7), or a blocker outside your control → stop, report what was tried with actual output and your hypothesis, hand back. (Same invariant as `code-defect-debugging` Phase 4.5; sibling of `inqhiori` §6: repeated serious failures at one level mean the level is wrong.)
+On failure: a mechanical mistake goes back to Step 4; a surprise goes back to Step 2. Hard bound: 2 failed fix-verify cycles in one failure family (Rule 7), or a blocker outside your control → stop, report what was tried with actual output and your hypothesis, hand back. (Same invariant as `code-defect-debugging` Phase 4.5; sibling of `inqhiori` §6: repeated serious failures at one level mean the level is wrong.)
 
 If something cannot be verified (no local vendor CSVs, TV-side behavior, needs operator eyes), say exactly that — never let an unverified claim pass as verified.
 
