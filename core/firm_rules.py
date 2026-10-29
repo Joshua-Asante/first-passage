@@ -9,7 +9,8 @@ updated 2026-07-30, docs/adr/2026-07-22-challenge-era-substrate-retirement.md Ph
   Historical challenge semantics live in ``core/historical_challenge.py``
   (opt-in fixture only). Live c1 uses the explicit tier key
   ``Tradeify_Select_100K`` (rail JSON / ``generate_constants(tier)``).
-- AUTOMATION_FRIENDLY_PROP_FIRMS (Bulenox, Tradeify, MyFundedFutures, BluSky) —
+- AUTOMATION_FRIENDLY_PROP_FIRMS (Bulenox, Tradeify, MyFundedFutures, BluSky,
+  FXIFY Futures [provisional]) —
   **operational target** for the prop-portfolio program (discover → productionalize
   → execute). Challenge-pass re-MC + rail build remain separately gated.
 - R6 locked-book fan-out stays NO-GO; these configs serve **new** prop-envelope
@@ -562,6 +563,34 @@ FIRM_RULES = {
         "BluSky_Premium_100K": {"starting_balance": 100_000, "max_dd_pct": 3.0, "micro_contract_cap": 100},  # $3,000 EOD trail; 10 mini / 100 micro
     }),
 
+    # Futures ONLY; never restore the retired FX/CFD "FXIFY" key or its defaults.
+    # Source: PR #964 at 37f9cd46a96090615292aabb8e58b59ca6f7be83,
+    # docs/notes/2026-10-17-fxify-futures-flex-150k-evaluation-rule-sheet.md.
+    # FAQ figures are reported verified there, not independently accepted here.
+    # Reconciled 2026-10-29 against the 2026-10-19 record: the eval lock is at
+    # the starting balance (sheet B1; no-lock is optional stress S1 = 1_000_000.0), and the
+    # news policy is an open conflict (sheet D1), so no news field is encoded.
+    # Still provisional: commissions are unpublished and the FAQ capture is not
+    # byte-verified. Hold final field acceptance / ADR §4 counting until those
+    # clear. Preflight requires explicit provisional opt-in meanwhile.
+    "FXIFY_Futures_Flex_150K": {
+        "rules_status": "provisional",
+        "rules_source_revision": "37f9cd46a96090615292aabb8e58b59ca6f7be83",
+        "starting_balance": 150_000,
+        "dd_type": "trailing_locking",  # fixed-$ EOD trail, NOT %-of-peak
+        "max_dd_pct": 3.0,              # $4,500, initial floor $145,500
+        "dd_lock_offset_usd": 0.0,      # B1: locks at the starting balance; stress S1 = 1_000_000.0
+        "daily_loss_pct": None,         # engine hard bust must NOT model a soft stop
+        "soft_daily_loss_pct": 2.0,     # $3,000 read-only; bundle removes it
+        "profit_target_pct": 6.0,       # $9,000
+        "min_trading_days": 2,          # derived from 50% gate, not a venue minimum
+        "consistency_rule_pct": 50.0,   # soft at-pass gate; caller opts in
+        "weekend_holds": False,
+        "micro_contract_cap": 100,      # ordinary 1:10 micros; MBT/MET/SIL differ
+        "inactivity_max_idle_days": None,  # 14 calendar days + 7 grace != engine bdays
+        "cost_per_side_usd": None,      # unknown: do not borrow another venue's fees
+    },
+
     # Personal Tradovate account -- self-funded lane, ADR 2026-10-09 owed item 2.
     # Not a prop tier: no venue drawdown, target or activity rule. max_dd_pct is
     # the operator's 15% running-peak halt (Decision 4), measured intraday; it is
@@ -633,6 +662,7 @@ AUTOMATION_FRIENDLY_PROP_FIRMS = {
         "BluSky_Premium_50K",
         "BluSky_Premium_100K",
     ],
+    "fxify_futures": ["FXIFY_Futures_Flex_150K"],  # provisional; see row hold
 }
 
 # Unified allocations — challenge phase = funded phase.
