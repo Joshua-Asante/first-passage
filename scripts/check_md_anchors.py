@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import bisect
 from collections import Counter
 import html
 from html.parser import HTMLParser
@@ -22,6 +23,7 @@ HEADING_RE = re.compile(r"^ {0,3}#{1,6}(?:[ \t]+(.*?)|[ \t]*)$")
 PINNED_RE = re.compile(r"(?:^|/)(?:blob|tree)/[0-9a-f]{7,40}(?:/|$)", re.I)
 CODE_SPAN_RE = re.compile(r"(`+)(.+?)\1")
 REF_DEF_RE = re.compile(r"^ {0,3}\[[^\]]+\]:[ \t]*<?([^\s>]+)>?")
+QUOTE_RE = re.compile(r"^(?: {0,3}>[ \t]?)+")
 URL_RE = re.compile(r"^(?:[a-z][a-z0-9+.-]*:|//)", re.I)
 
 
@@ -38,11 +40,12 @@ class ExplicitAnchors(HTMLParser):
 
 def heading_slug(heading: str) -> str:
     """Slug rendered heading text, preserving spaces and consecutive hyphens."""
+    # Links render as their labels; a label may itself hold a code span.
+    heading = LINK_RE.sub(lambda match: match.group(0).split("]", 1)[0].lstrip("!["), heading)
     rendered = []
     # re.split yields text, backtick run, code span, text, ...; code renders literally.
     for index, part in enumerate(CODE_SPAN_RE.split(heading)):
         if index % 3 == 0:
-            part = LINK_RE.sub(lambda match: match.group(0).split("]", 1)[0].lstrip("!["), part)
             rendered.append(html.unescape(re.sub(r"<[^>]*>", "", part)))
         elif index % 3 == 2:
             rendered.append(part)
@@ -51,20 +54,29 @@ def heading_slug(heading: str) -> str:
                    if char in "-_ " or unicodedata.category(char)[0] in "LNM").replace(" ", "-")
 
 
-def anchors(text: str) -> set[str]:
-    parser = ExplicitAnchors()
-    generated: set[str] = set()
+def lines(text: str):
+    """Yield (number, line without blockquote markers, fenced) for each line."""
     fence = ""
-    previous = ""
-    for line in text.splitlines():
+    for number, raw in enumerate(text.splitlines(), 1):
+        line = QUOTE_RE.sub("", raw)
         marker = FENCE_RE.match(line)
         if fence:
             if marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence) and not marker[2].strip():
                 fence = ""
-            previous = ""
-            continue
-        if marker and (marker[1][0] != "`" or "`" not in marker[2]):
+            yield number, line, True
+        elif marker and (marker[1][0] != "`" or "`" not in marker[2]):
             fence = marker[1]
+            yield number, line, True
+        else:
+            yield number, line, False
+
+
+def anchors(text: str) -> set[str]:
+    parser = ExplicitAnchors()
+    generated: set[str] = set()
+    previous = ""
+    for _, line, fenced in lines(text):
+        if fenced:
             previous = ""
             continue
         parser.feed(line + "\n")
@@ -88,18 +100,14 @@ def anchors(text: str) -> set[str]:
 
 def document_links(text: str):
     """Use the shared policy, supplementing its deliberately omitted bare fragments."""
-    yield from markdown_links(text)
-    fence = ""
-    for number, line in enumerate(text.splitlines(), 1):
-        marker = FENCE_RE.match(line)
-        if fence:
-            if marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence):
-                fence = ""
-            continue
-        if marker:
-            fence = marker[1]
-            continue
-        if HISTORICAL_LINE_RE.search(line):
+    numbered = list(lines(text))
+    fenced = {number for number, _, inside in numbered if inside}
+    starts = [0] + [match.end() for match in re.finditer("\n", text)]
+    for match, target, path in markdown_links(text):
+        if bisect.bisect_right(starts, match.start()) not in fenced:
+            yield match, target, path
+    for number, line, inside in numbered:
+        if inside or HISTORICAL_LINE_RE.search(line):
             continue
         # Reference-style links resolve through their definition line.
         definition = REF_DEF_RE.match(line)

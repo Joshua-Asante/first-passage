@@ -44,6 +44,8 @@ def write(repo, name, text):
     ("Title\n====", "title"),
     ("## Edit result_g5 (2026-10-02)", "edit-result_g5-2026-10-02"),
     ("# Use `<name>` and `test_ac_<n>_*`", "use-name-and-test_ac_n_"),
+    ("> ## Quoted", "quoted"),
+    ("# [`foo`](target.md)", "foo"),
     ("## **Bold** [link](https://example.org) `code` ##", "bold-link-code"),
 ])
 def test_rendered_heading_and_explicit_anchors(checker, repo, heading, fragment):
@@ -72,6 +74,12 @@ def test_missing_file_anchor_same_file_and_document_resolution(checker, repo):
         "sub/a.md:5 -> target.md#gone [missing-anchor]",
         "sub/a.md:6 -> sub/lost.md#gone [missing-file]",
     ]
+
+
+def test_inline_links_inside_fences_are_not_links(checker, repo):
+    write(repo, "a.md", "```\n[example](missing.md)\n```\n> ~~~\n> [quoted](gone.md)\n> ~~~\n"
+          "[real](lost.md)\n")
+    assert checker.scan(repo) == ["a.md:7 -> lost.md [missing-file]"]
 
 
 def test_reference_style_definitions_are_checked(checker, repo):
