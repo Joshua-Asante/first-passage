@@ -154,3 +154,15 @@ Support's 20:19Z reply on 2026-10-12, recorded at the [route owner](../briefs/ha
 8. **Host-side activation gate.** The rail host itself refuses activation (booting with `dry_run=false`, or enabling risk-add) unless the instance's M1 acceptance and its other arm gates hold. Today `c1_rail_http_server.load_config` does not check M1, so editing the `/data` config bypasses the arm helper's interlock ([AGENTS.md §Live-execution posture](../../AGENTS.md#live-execution-posture)). Item 8 gates the first live order on the personal account, with items 1–7.
    - *Design inputs, not adopted requirements:* the [instance ADR](2026-09-12-tradeify-book-protection-instance-admission.md) §2b validator, T11 effective activation and its 2026-10-11 addendum; the [synthetic interlock card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md); and the [incident ADR](2026-09-17-bounded-platform-protection-incident-contract.md) §A12.5 items it assigns to TB-I3 (the stale-evidence latch and the halt-on-unknown implementation), where this lane's instance uses the rail.
    - Nothing is implemented, armed or authorized by this addendum.
+
+## Addendum 2026-10-29 — c1 route retired for this lane
+
+**Ruling:** Joshua retired the personal Python route on 2026-10-29. The canonical record, with his words, scope and staging, is the [rail ADR addendum](2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission).
+
+**Effect on this ADR.**
+
+- The lane stays open as an objective: maximum growth, under the 15% clearance standard. Its execution route is unselected.
+- Decision 3 (the personal account as the signal daemon's data source) and owed items 6 (rail binding) and 8 (host-side activation gate) existed only for the c1 route. They lapse with it.
+- Items 1, 2, 4, 5 and 7 stay owed by whatever route is chosen. Item 3 applies only if that route uses the Tradovate API. A future route re-derives its own item list at its build decision.
+- [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) stays frozen and paused.
+- Nothing is implemented, armed or authorized by this addendum.
