@@ -27,6 +27,15 @@ commit in the archive. Owner:
 | [`notes/2026-08-23-substrate-phase-6-completion.md`](notes/2026-08-23-substrate-phase-6-completion.md) | Substrate Phase 6 docs + §10 checklist (destroy-copy still operator-gated) |
 | [`notes/archive/state/STATE-decision-index-pre-2026-08-23.md`](notes/archive/state/STATE-decision-index-pre-2026-08-23.md) | STATE executed-decision index older than keep-15 (P8) |
 
+## Removal batches
+
+One row per removal PR ([cleanup spec D3](../superpowers/specs/2026-10-28-org-cleanup-programme-spec.md)).
+Retrieve any listed path with `git show <parent>:<path>`.
+
+| Merge | Pre-removal parent | Paths | Retrieval | Path list |
+|---|---|---|---|---|
+| #971 merge commit | `128989543d94d38d0962ee2d3c37eac7384efa8a` | 16 | `git show 128989543d94d38d0962ee2d3c37eac7384efa8a:<path>` | `docs/notes/2026-09-15-account-close-calculation-component.md`<br>`docs/notes/2026-09-15-account-close-evidence-component.md`<br>`docs/notes/2026-09-15-tradeify-packet1-intake-progress.md`<br>`docs/notes/2026-09-16-production-capability-inquiries.md`<br>`docs/notes/2026-09-16-tradeify-production-feasibility-decision.md`<br>`docs/notes/2026-09-24-t10-step4-representative-measurement.md`<br>`docs/notes/2026-09-25-tradeify-assurance-review.md`<br>`docs/notes/2026-09-26-ub8-availability-comparison.md`<br>`docs/notes/2026-09-27-h8c-omission-incident-evidence.md`<br>`docs/notes/2026-09-27-s5-owner-text-and-rc6-draft.md`<br>`docs/notes/2026-10-02-dot-deployment-responsibility.md`<br>`docs/notes/2026-10-02-openai-dots-portfolio-deployment-brainstorm.md`<br>`docs/notes/2026-10-02-tradeify-b4-observed-pilot-PROPOSED.md`<br>`docs/notes/2026-10-02-tradeify-q7-d3-recovery-PROPOSED.md`<br>`docs/notes/2026-10-04-feed-overlap-and-october-exception-proposals.md`<br>`docs/notes/2026-10-05-four-firm-remc-616-open-items-sheet.md` |
+
 Most pre-prune LTM (rolled SESSIONS, closed-brief bodies, notes) is
 **not** on this clone — retrieve via `git show` / the private archive.
 Do not recreate the evicted corpus here.

@@ -1,0 +1,16 @@
+"""Re-run the two recorded 500-session synthetic benchmarks at HEAD (3 sequential repeats each)."""
+import gc, json, subprocess, sys, time
+from pathlib import Path
+out = Path(sys.argv[1]); rows = []
+env = dict(__import__('os').environ, PYTHONDONTWRITEBYTECODE='1', PYTHONPATH=';'.join(['ops', 'core', 'ops/c1_rail']))
+for mod in ('c1_rail.qualification.benchmark', 'c1_rail.qualification.benchmark_part_a'):
+    for r in range(1, 4):
+        gc.collect(); t = time.perf_counter()
+        p = subprocess.run([sys.executable, '-m', mod, '--horizon', '500', '--seed', '791946223'], capture_output=True, text=True, env=env)
+        wall = time.perf_counter() - t
+        if p.returncode: raise SystemExit(p.stderr[-2000:])
+        res = json.loads(p.stdout)
+        res.pop('source_sha256', None)
+        rows.append({'module': mod, 'repeat': r, 'subprocess_wall_seconds': wall, 'result': res})
+        print(mod, r, round(wall, 3), res.get('equivalence_sha256'), res.get('timings', ''), flush=True)
+out.write_text(json.dumps({'schema': 't10-step4-synthetic-500-session-rerun/v1', 'decision_bearing': False, 'rows': rows}, indent=2), encoding='utf-8')

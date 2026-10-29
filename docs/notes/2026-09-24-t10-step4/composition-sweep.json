@@ -1,0 +1,854 @@
+{
+  "artifact_class": "TEST_ONLY_SYNTHETIC_REDUCED_DEPTH_NOT_DECISION_BEARING",
+  "decision_bearing": false,
+  "harness_sha256": "3f536ee36b2945017780b32c5ad4236a6bbe19742ef3a1634176bd1f0c636a21",
+  "processes": 1,
+  "recorded_utc": "2026-09-24T18:13:35Z",
+  "rows": [
+    {
+      "bytes": {
+        "journal_sqlite": 94208,
+        "path_inventory": 4209,
+        "result_envelope": 2693
+      },
+      "confirmation_depth": 2,
+      "decision_alpha": "0.95",
+      "horizon_sessions": 5,
+      "passed": true,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 2
+        },
+        "PART_A": {
+          "REGIME": 4
+        },
+        "PART_B": {
+          "H1": 2,
+          "H2": 2
+        }
+      },
+      "paths_total": 16,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 23.15625,
+          "wall": 33.280279400001746
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.046875,
+          "wall": 0.04957859999558423
+        },
+        "e1_run": {
+          "components": {
+            "proof.part_a_panel_proof": {
+              "calls": 3,
+              "cpu": 0.03125,
+              "inclusive_wall": 4.538518100001966,
+              "wall": 0.051603500003693625
+            },
+            "proof.source_reverify": {
+              "calls": 32,
+              "cpu": 33.640625,
+              "inclusive_wall": 38.6359400999645,
+              "wall": 38.6359400999645
+            },
+            "runtime.path_replay": {
+              "calls": 28,
+              "cpu": 2.28125,
+              "inclusive_wall": 36.59849799997755,
+              "wall": 2.721536199998809
+            }
+          },
+          "controller_residual_cpu": 0.953125,
+          "controller_residual_wall": 1.3535571000247728,
+          "cpu": 36.90625,
+          "proof_cpu": 33.671875,
+          "proof_wall": 38.687543599968194,
+          "runtime_cpu": 2.28125,
+          "runtime_wall": 2.721536199998809,
+          "wall": 42.762636899991776
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 2.015625,
+              "inclusive_wall": 2.2589909999951487,
+              "wall": 2.2589909999951487
+            }
+          },
+          "cpu": 11.171875,
+          "wall": 15.736727099996642
+        }
+      },
+      "process_peak_memory_bytes": 121028608,
+      "repeat": 1,
+      "result_sha256": "432ef0eb596fd907ebe3b4ecf86686b100752a038d56abf8074d89ea365e6a56",
+      "synthetic": true
+    },
+    {
+      "bytes": {
+        "journal_sqlite": 94208,
+        "path_inventory": 4209,
+        "result_envelope": 2693
+      },
+      "confirmation_depth": 2,
+      "decision_alpha": "0.95",
+      "horizon_sessions": 5,
+      "passed": true,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 2
+        },
+        "PART_A": {
+          "REGIME": 4
+        },
+        "PART_B": {
+          "H1": 2,
+          "H2": 2
+        }
+      },
+      "paths_total": 16,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 21.953125,
+          "wall": 31.580446099993424
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.03125,
+          "wall": 0.04491789999883622
+        },
+        "e1_run": {
+          "components": {
+            "proof.part_a_panel_proof": {
+              "calls": 3,
+              "cpu": 0.046875,
+              "inclusive_wall": 4.510891199999605,
+              "wall": 0.054187700006878003
+            },
+            "proof.source_reverify": {
+              "calls": 32,
+              "cpu": 33.109375,
+              "inclusive_wall": 38.2583094000438,
+              "wall": 38.2583094000438
+            },
+            "runtime.path_replay": {
+              "calls": 28,
+              "cpu": 2.390625,
+              "inclusive_wall": 36.167336599944974,
+              "wall": 2.7286753999069333
+            }
+          },
+          "controller_residual_cpu": 0.890625,
+          "controller_residual_wall": 1.6143179000355303,
+          "cpu": 36.4375,
+          "proof_cpu": 33.15625,
+          "proof_wall": 38.31249710005068,
+          "runtime_cpu": 2.390625,
+          "runtime_wall": 2.7286753999069333,
+          "wall": 42.65549039999314
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 2.0,
+              "inclusive_wall": 2.353741600003559,
+              "wall": 2.353741600003559
+            }
+          },
+          "cpu": 10.65625,
+          "wall": 18.615538799989736
+        }
+      },
+      "process_peak_memory_bytes": 122392576,
+      "repeat": 2,
+      "result_sha256": "7cc5a3af68e97f85d428598cabb0173ae94da01f477ef46ce27060493883653b",
+      "synthetic": true
+    },
+    {
+      "bytes": {
+        "journal_sqlite": 94208,
+        "path_inventory": 4209,
+        "result_envelope": 2693
+      },
+      "confirmation_depth": 2,
+      "decision_alpha": "0.95",
+      "horizon_sessions": 5,
+      "passed": true,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 2
+        },
+        "PART_A": {
+          "REGIME": 4
+        },
+        "PART_B": {
+          "H1": 2,
+          "H2": 2
+        }
+      },
+      "paths_total": 16,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 22.5625,
+          "wall": 30.05559920000087
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.03125,
+          "wall": 0.053118299998459406
+        },
+        "e1_run": {
+          "components": {
+            "proof.part_a_panel_proof": {
+              "calls": 3,
+              "cpu": 0.0625,
+              "inclusive_wall": 4.523013000012725,
+              "wall": 0.05463230001623742
+            },
+            "proof.source_reverify": {
+              "calls": 32,
+              "cpu": 32.671875,
+              "inclusive_wall": 38.00119230002747,
+              "wall": 38.00119230002747
+            },
+            "runtime.path_replay": {
+              "calls": 28,
+              "cpu": 2.28125,
+              "inclusive_wall": 35.877029199997196,
+              "wall": 2.6101523999823257
+            }
+          },
+          "controller_residual_cpu": 0.953125,
+          "controller_residual_wall": 1.5190931999823079,
+          "cpu": 35.96875,
+          "proof_cpu": 32.734375,
+          "proof_wall": 38.05582460004371,
+          "runtime_cpu": 2.28125,
+          "runtime_wall": 2.6101523999823257,
+          "wall": 42.18507020000834
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 1.875,
+              "inclusive_wall": 2.3758279999892693,
+              "wall": 2.3758279999892693
+            }
+          },
+          "cpu": 10.359375,
+          "wall": 16.846336399990832
+        }
+      },
+      "process_peak_memory_bytes": 124071936,
+      "repeat": 3,
+      "result_sha256": "29e11140af70d45020aef28bc2cccccad33a5a605fa40ba98144df82a31bb511",
+      "synthetic": true
+    },
+    {
+      "bytes": {
+        "journal_sqlite": 114688,
+        "path_inventory": 9929,
+        "result_envelope": 2696
+      },
+      "confirmation_depth": 10,
+      "decision_alpha": "0.95",
+      "horizon_sessions": 5,
+      "passed": true,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 10
+        },
+        "PART_A": {
+          "REGIME": 4
+        },
+        "PART_B": {
+          "H1": 10,
+          "H2": 10
+        }
+      },
+      "paths_total": 40,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 23.609375,
+          "wall": 33.418765000009444
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.046875,
+          "wall": 0.05259130000195
+        },
+        "e1_run": {
+          "components": {
+            "proof.part_a_panel_proof": {
+              "calls": 3,
+              "cpu": 0.078125,
+              "inclusive_wall": 4.453507700003684,
+              "wall": 0.06833130000450183
+            },
+            "proof.source_reverify": {
+              "calls": 56,
+              "cpu": 58.375,
+              "inclusive_wall": 68.35516779997852,
+              "wall": 68.35516779997852
+            },
+            "runtime.path_replay": {
+              "calls": 52,
+              "cpu": 2.765625,
+              "inclusive_wall": 66.66098689998034,
+              "wall": 3.1723480000073323
+            }
+          },
+          "controller_residual_cpu": 1.28125,
+          "controller_residual_wall": 1.9627771000086796,
+          "cpu": 62.5,
+          "proof_cpu": 58.453125,
+          "proof_wall": 68.42349909998302,
+          "runtime_cpu": 2.765625,
+          "runtime_wall": 3.1723480000073323,
+          "wall": 73.55862419999903
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 1.984375,
+              "inclusive_wall": 2.4908082999900216,
+              "wall": 2.4908082999900216
+            }
+          },
+          "cpu": 10.75,
+          "wall": 17.77713390000281
+        }
+      },
+      "process_peak_memory_bytes": 125886464,
+      "repeat": 1,
+      "result_sha256": "c62de330ab28013480276a1c2eeeca1bf6ca48f2ac43ded5b415c69ace3a1aa0",
+      "synthetic": true
+    },
+    {
+      "bytes": {
+        "journal_sqlite": 114688,
+        "path_inventory": 9929,
+        "result_envelope": 2696
+      },
+      "confirmation_depth": 10,
+      "decision_alpha": "0.95",
+      "horizon_sessions": 5,
+      "passed": true,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 10
+        },
+        "PART_A": {
+          "REGIME": 4
+        },
+        "PART_B": {
+          "H1": 10,
+          "H2": 10
+        }
+      },
+      "paths_total": 40,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 23.875,
+          "wall": 46.12513350001245
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.03125,
+          "wall": 0.05374879999726545
+        },
+        "e1_run": {
+          "components": {
+            "proof.part_a_panel_proof": {
+              "calls": 3,
+              "cpu": 0.0625,
+              "inclusive_wall": 5.045291200003703,
+              "wall": 0.10379829999874346
+            },
+            "proof.source_reverify": {
+              "calls": 56,
+              "cpu": 58.75,
+              "inclusive_wall": 69.87398929998744,
+              "wall": 69.87398929998744
+            },
+            "runtime.path_replay": {
+              "calls": 52,
+              "cpu": 2.921875,
+              "inclusive_wall": 68.50302430000738,
+              "wall": 3.5023919000232127
+            }
+          },
+          "controller_residual_cpu": 1.375,
+          "controller_residual_wall": 2.0636550999915926,
+          "cpu": 63.109375,
+          "proof_cpu": 58.8125,
+          "proof_wall": 69.97778759998619,
+          "runtime_cpu": 2.921875,
+          "runtime_wall": 3.5023919000232127,
+          "wall": 75.54383460000099
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 2.0,
+              "inclusive_wall": 2.288359500002116,
+              "wall": 2.288359500002116
+            }
+          },
+          "cpu": 11.125,
+          "wall": 18.074137099989457
+        }
+      },
+      "process_peak_memory_bytes": 127492096,
+      "repeat": 2,
+      "result_sha256": "dcbe9da08a32223a54f1d84d9b45122d9dd7c975cc27152f77af4065592d16cc",
+      "synthetic": true
+    },
+    {
+      "bytes": {
+        "journal_sqlite": 114688,
+        "path_inventory": 9929,
+        "result_envelope": 2696
+      },
+      "confirmation_depth": 10,
+      "decision_alpha": "0.95",
+      "horizon_sessions": 5,
+      "passed": true,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 10
+        },
+        "PART_A": {
+          "REGIME": 4
+        },
+        "PART_B": {
+          "H1": 10,
+          "H2": 10
+        }
+      },
+      "paths_total": 40,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 25.671875,
+          "wall": 49.53642210000544
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.03125,
+          "wall": 0.059503500000573695
+        },
+        "e1_run": {
+          "components": {
+            "proof.part_a_panel_proof": {
+              "calls": 3,
+              "cpu": 0.046875,
+              "inclusive_wall": 6.6706633000139846,
+              "wall": 0.06551140001101885
+            },
+            "proof.source_reverify": {
+              "calls": 56,
+              "cpu": 60.890625,
+              "inclusive_wall": 72.5904836999689,
+              "wall": 72.5904836999689
+            },
+            "runtime.path_replay": {
+              "calls": 52,
+              "cpu": 2.96875,
+              "inclusive_wall": 71.62490339999204,
+              "wall": 3.8940919000306167
+            }
+          },
+          "controller_residual_cpu": 1.3125,
+          "controller_residual_wall": 2.1041891999921063,
+          "cpu": 65.21875,
+          "proof_cpu": 60.9375,
+          "proof_wall": 72.65599509997992,
+          "runtime_cpu": 2.96875,
+          "runtime_wall": 3.8940919000306167,
+          "wall": 78.65427620000264
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 2.046875,
+              "inclusive_wall": 2.6071500000107335,
+              "wall": 2.6071500000107335
+            }
+          },
+          "cpu": 11.140625,
+          "wall": 15.406145999993896
+        }
+      },
+      "process_peak_memory_bytes": 129118208,
+      "repeat": 3,
+      "result_sha256": "25f966f5318e5d125a83133f35fab35e295f13483a8103dcca685832f2b10007",
+      "synthetic": true
+    },
+    {
+      "bytes": {
+        "journal_sqlite": 188416,
+        "path_inventory": 23069,
+        "result_envelope": 2480
+      },
+      "confirmation_depth": 30,
+      "decision_alpha": "0.05",
+      "horizon_sessions": 5,
+      "passed": false,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 30
+        },
+        "PART_B": {
+          "H1": 30,
+          "H2": 30
+        }
+      },
+      "paths_total": 96,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 26.78125,
+          "wall": 52.46439829999872
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.03125,
+          "wall": 0.07589989999542013
+        },
+        "e1_run": {
+          "components": {
+            "proof.source_reverify": {
+              "calls": 107,
+              "cpu": 124.125,
+              "inclusive_wall": 170.05099159998645,
+              "wall": 170.05099159998645
+            },
+            "runtime.path_replay": {
+              "calls": 104,
+              "cpu": 3.4375,
+              "inclusive_wall": 170.23397159998422,
+              "wall": 4.726756800009753
+            }
+          },
+          "controller_residual_cpu": 2.0,
+          "controller_residual_wall": 3.3350844999949913,
+          "cpu": 129.5625,
+          "proof_cpu": 124.125,
+          "proof_wall": 170.05099159998645,
+          "runtime_cpu": 3.4375,
+          "runtime_wall": 4.726756800009753,
+          "wall": 178.1128328999912
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 2.203125,
+              "inclusive_wall": 3.605104100002791,
+              "wall": 3.605104100002791
+            }
+          },
+          "cpu": 12.125,
+          "wall": 28.764890899998136
+        }
+      },
+      "process_peak_memory_bytes": 131211264,
+      "repeat": 1,
+      "result_sha256": "1b6d2a226337885e7e71a3f6e289d0d6edd37b38edc54ddf28d9e7ec1c96b14f",
+      "synthetic": true
+    },
+    {
+      "bytes": {
+        "journal_sqlite": 188416,
+        "path_inventory": 23069,
+        "result_envelope": 2480
+      },
+      "confirmation_depth": 30,
+      "decision_alpha": "0.05",
+      "horizon_sessions": 5,
+      "passed": false,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 30
+        },
+        "PART_B": {
+          "H1": 30,
+          "H2": 30
+        }
+      },
+      "paths_total": 96,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 23.71875,
+          "wall": 35.20768069999758
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.03125,
+          "wall": 0.09624109999276698
+        },
+        "e1_run": {
+          "components": {
+            "proof.source_reverify": {
+              "calls": 107,
+              "cpu": 115.21875,
+              "inclusive_wall": 161.47556930000428,
+              "wall": 161.47556930000428
+            },
+            "runtime.path_replay": {
+              "calls": 104,
+              "cpu": 3.328125,
+              "inclusive_wall": 161.5400788998959,
+              "wall": 4.844083199874149
+            }
+          },
+          "controller_residual_cpu": 1.90625,
+          "controller_residual_wall": 2.991013300110353,
+          "cpu": 120.453125,
+          "proof_cpu": 115.21875,
+          "proof_wall": 161.47556930000428,
+          "runtime_cpu": 3.328125,
+          "runtime_wall": 4.844083199874149,
+          "wall": 169.31066579998878
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 2.203125,
+              "inclusive_wall": 3.3114820000046166,
+              "wall": 3.3114820000046166
+            }
+          },
+          "cpu": 12.203125,
+          "wall": 24.483346099994378
+        }
+      },
+      "process_peak_memory_bytes": 136695808,
+      "repeat": 2,
+      "result_sha256": "c41346b325065c822725cfd997c9229104c959b75de22a0aafc027a40a6dac34",
+      "synthetic": true
+    },
+    {
+      "bytes": {
+        "journal_sqlite": 188416,
+        "path_inventory": 23069,
+        "result_envelope": 2480
+      },
+      "confirmation_depth": 30,
+      "decision_alpha": "0.05",
+      "horizon_sessions": 5,
+      "passed": false,
+      "path_counts": {
+        "LEGALITY": {},
+        "N1": {
+          "FULL": 2,
+          "H1": 2,
+          "H2": 2
+        },
+        "N2": {
+          "FULL": 30
+        },
+        "PART_B": {
+          "H1": 30,
+          "H2": 30
+        }
+      },
+      "paths_total": 96,
+      "phases": {
+        "adjudication_runtime_capture_envelope": {
+          "components": {},
+          "cpu": 24.59375,
+          "wall": 33.17680180000025
+        },
+        "controller_preflight_journal_open": {
+          "cpu": 0.03125,
+          "wall": 0.07816629999433644
+        },
+        "e1_run": {
+          "components": {
+            "proof.source_reverify": {
+              "calls": 107,
+              "cpu": 118.09375,
+              "inclusive_wall": 157.86445160000585,
+              "wall": 157.86445160000585
+            },
+            "runtime.path_replay": {
+              "calls": 104,
+              "cpu": 3.359375,
+              "inclusive_wall": 158.12394709995715,
+              "wall": 4.6653047999570845
+            }
+          },
+          "controller_residual_cpu": 2.0,
+          "controller_residual_wall": 3.054289800027618,
+          "cpu": 123.453125,
+          "proof_cpu": 118.09375,
+          "proof_wall": 157.86445160000585,
+          "runtime_cpu": 3.359375,
+          "runtime_wall": 4.6653047999570845,
+          "wall": 165.58404619999055
+        },
+        "setup_fixture_domain_contract_source": {
+          "components": {
+            "proof.source_build": {
+              "calls": 1,
+              "cpu": 2.09375,
+              "inclusive_wall": 2.754827500000829,
+              "wall": 2.754827500000829
+            }
+          },
+          "cpu": 12.375,
+          "wall": 21.257126500000595
+        }
+      },
+      "process_peak_memory_bytes": 136695808,
+      "repeat": 3,
+      "result_sha256": "6e830fa695fee5ded7286a05ac9f430e192211c7b44425fab57605b94bbb2bd9",
+      "synthetic": true
+    }
+  ],
+  "runtime": {
+    "executable_sha256": "d70fced7f461f38f9f224d8673fb74e96e4facb4283ff4e8697543b457fea8a0",
+    "implementation": "CPython",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.2"
+  },
+  "schema": "t10-step4-signed-test-only-composition-measurement/v1",
+  "source_sha256": {
+    "core/firm_rules.py": "1da4bdda22a87e6167300c3f8d19c744c9cd52599c09dbdd1dfa41ab9178f7be",
+    "core/lifecycle.py": "0a70785dada705b6ea1e6b0951ad0caaa00944bd8a3b49b5d9d3a365c83eaf87",
+    "ops/c1_rail/book_account_owner.py": "724667a250ed6998d8f2cd303960728d818043ece99573cc65344d3e2dccb601",
+    "ops/c1_rail/book_capacity.py": "95381097d27991751895ae3a73f73c84130b60d8e03ea3bf41c19a647e85999e",
+    "ops/c1_rail/book_policy.py": "ffcd3aab3e74235e60c711f266f884f96874072c3d84d0b3e1d25d67abd8567a",
+    "ops/c1_rail/qualification/__init__.py": "873079acf61ba556c36b141452026ae576a62fca675e9d19348711ca31394d5e",
+    "ops/c1_rail/qualification/adjudication.py": "a384b438675488c8edaab07b3e5555e8cba5fd2c3911c7f4e2f4558c22690a8f",
+    "ops/c1_rail/qualification/attempt.py": "7e0b6bbeae26d7c4ba2fca693faf44041d19ba8e451269b7d2fe42027c6811e9",
+    "ops/c1_rail/qualification/benchmark.py": "d19b87feb04fc8708b0e7cb5af942cdd1660afea852e26fab3dda18c52029dda",
+    "ops/c1_rail/qualification/benchmark_part_a.py": "17f498d9ce7eec0fc9830f1f148fdc04c81a09102192dc288d693ce9ac9adb98",
+    "ops/c1_rail/qualification/blocks.py": "0765d4b855e9144fd80e1e7be1c1826cdcbb54a4628ff6f6c9ab99616f4212be",
+    "ops/c1_rail/qualification/checkpoint_plan.py": "969bda24fff09dec611c1196fec7db6ec85de7811333068fb1c180e600e01020",
+    "ops/c1_rail/qualification/clock.py": "17aceea2a673ffc38c2bc00cc4aa3bb4c57dd23bd76c70050c91591a3103e63d",
+    "ops/c1_rail/qualification/contract.py": "c36a114c32180491a516b52f6691d49f117b10e99334dfb27dab428b70d057b6",
+    "ops/c1_rail/qualification/evidence.py": "fdee70fc527a6f0b136417401ef5e49025b89b488d8c4e2d81e99824807ca52a",
+    "ops/c1_rail/qualification/execution/__init__.py": "4861b9bbe6d5ad1a7f501ae10a6ca27226a5684127914791114847f966eb1a29",
+    "ops/c1_rail/qualification/execution/admission.py": "3ad50f9358ec625083eed9cbb69180d71aafd79ceb6b57f045a90d19d9d2b123",
+    "ops/c1_rail/qualification/execution/archive.py": "422cc51e3ab2330d14e224876412d5b9c3d461fee30a5b6edee558d755ee1442",
+    "ops/c1_rail/qualification/execution/budget.py": "ea3cebcf2cc17857fcbebb4f129ac9a189d02c8fc3b30784dfb226403ada2a9d",
+    "ops/c1_rail/qualification/execution/campaign_budget.py": "c9e09079e35a0190ce9049c0aa239467078c74f3d7638c35e32e85fcd7c7bffb",
+    "ops/c1_rail/qualification/execution/campaign_funding.py": "dc0613a7fa42a9157c8225788d46de8ecda7e71deffa2174ebc4aa6ac9da6534",
+    "ops/c1_rail/qualification/execution/campaign_probe.py": "2b35cbf62d47b56cb3aa79ab3f34a54c4f09292d384f9ed05791637f91d0c48c",
+    "ops/c1_rail/qualification/execution/campaign_protocol.py": "bc38c86f90292af514b83f51497e3f4d4c8fe3ce418459602ac46691e2a39e43",
+    "ops/c1_rail/qualification/execution/campaign_store.py": "5313a86aee66677a2136993c70a1ccc4322d44ce9fe9a7994d466b820b7c1882",
+    "ops/c1_rail/qualification/execution/campaign_supervisor.py": "ceec160293a179f1c22c4dff8a2fb80b58862ac3608d45f09df0c7749c0d03a6",
+    "ops/c1_rail/qualification/execution/client.py": "e7989dd13478963f051a1923c07db67b93e11d74f6c7c9c5bb126bd542d7d843",
+    "ops/c1_rail/qualification/execution/compute.py": "c1efc7b5e3bb16be72ee0dac905a7ed976b958d0627318bb8bfe36aabfa1270a",
+    "ops/c1_rail/qualification/execution/credentials.py": "2062c04a462d828cbebafae24269e71e857788750e13ae2ef27c1b7b4f3043f5",
+    "ops/c1_rail/qualification/execution/evidence.py": "c8e2958fedf41630c869b793600b73323a27cb47968acf7b851dcfc0959b0f7c",
+    "ops/c1_rail/qualification/execution/files.py": "43fb61669db876945a2e2f58c6a503463b349f3ed7969c2ccbd0109f6f24c635",
+    "ops/c1_rail/qualification/execution/g5.py": "ff11ce8f9f30b9b7afc6354e1b41dafeb4a76490a287dd384c93c45a7f4f3156",
+    "ops/c1_rail/qualification/execution/image.py": "b5a968bca0c5f54995ed4b2500d727f3a529f680f441bc05d226949b5ca03297",
+    "ops/c1_rail/qualification/execution/keys.py": "47f7b17d5e0e5adf6e4c0671c54c75d59f80a893f4e77364841ad3f4273aa4da",
+    "ops/c1_rail/qualification/execution/launcher.py": "5dab89dc2c8d4c6aeb1806478458e806e4414e3ee65ff36648fb1ec369e3ac8a",
+    "ops/c1_rail/qualification/execution/plan.py": "7abd9d59c1191f8230ae0bf2e7bfc816121a292d04369e48fa8a286a6965dcd1",
+    "ops/c1_rail/qualification/execution/preflight.py": "073971d734f0950be9b96bbce1660925ba67d7024cec707e24a3180783616e19",
+    "ops/c1_rail/qualification/execution/profile.py": "252f3aea20ef349d2f59a6cfdf4b5aaff5ab56502a65d7fe34613491fcfe8c9d",
+    "ops/c1_rail/qualification/execution/protocol.py": "ac890bbe059be589f5f5f5f3f488713676ef403464bc0e7d44b3938a16a21dd7",
+    "ops/c1_rail/qualification/execution/release.py": "4ad360b785129c45aeb2641d4ad0a78cfa4a5187ee23f78fc24c2b07b0518e5c",
+    "ops/c1_rail/qualification/execution/release_schema.py": "c9fd8c66b5ac3fe1130081a64fd56255189314e5f9283df5b833e1e81d785492",
+    "ops/c1_rail/qualification/execution/runtime.py": "f546629093f3b532db0f4a7a31180671d24b8f720b7932135f06764b2ee3ab62",
+    "ops/c1_rail/qualification/execution/service.py": "0c20fbf2ae5b3307810a19fe26fde436a90159eb38e065ae0a367817cd4c2e1e",
+    "ops/c1_rail/qualification/execution/signing.py": "0bb03398edfe1e6cc7d7e619bf300304e61cc49fef6182d01a2b9d79449159dc",
+    "ops/c1_rail/qualification/execution/store.py": "260369a7083d0fa3f73d4f22f742a931edd0b20d6ecc52e0b7f831dd8db81b8c",
+    "ops/c1_rail/qualification/execution/transport.py": "ff6d233265cff07972d725e387f23d4be5047e5e20413229505304e142d33df4",
+    "ops/c1_rail/qualification/execution/verification.py": "dd93c677fa15e2b4069280479cbabd1b91818fb4af65dbde058e170171b92df0",
+    "ops/c1_rail/qualification/execution/worker.py": "10f49b67b4451e9759c45b514b721a0eafc7c3ea57ef4c00ed40adbf36db9fa3",
+    "ops/c1_rail/qualification/journal_snapshot.py": "c76a1ea3d8b3de181053daad2884e0802b3b9526ddaf409c4166dcd4b7beefe6",
+    "ops/c1_rail/qualification/legality.py": "1670727a1fbb397f7b5742293bb18dbcacc63ab7c97bc3a193ff7907c485a122",
+    "ops/c1_rail/qualification/model.py": "bb2996e58e3bb351ebdff7db8d9b94f3cb656459b286047e713f769b0ed73580",
+    "ops/c1_rail/qualification/orchestration.py": "8fa2239ff0aea7b812433651dfbc4f07ddc452f2309baa255b6ca3820ec1449f",
+    "ops/c1_rail/qualification/panel.py": "8c2e9d4ff78ed7bfd19ca3172796441b402e447515316479d1966247fab254bb",
+    "ops/c1_rail/qualification/part_a.py": "6c164842a5d5bbdf6a3e5e4a6d0c54b7f4eb2dfa253dc37e670b76567a70e82e",
+    "ops/c1_rail/qualification/paths.py": "7363e05cb7608658d5547b3ea457c9790c256f111ba23a5c62f60609310fc9c6",
+    "ops/c1_rail/qualification/policy.py": "687648afcaa38148127335bc9a7c2a398cd758549da6d9ba71819ec4c7995ab2",
+    "ops/c1_rail/qualification/policy_sources.py": "665cec424763007c0cd32e07bf5d5742c7ba7c38c742fab22e9deeef216f47b4",
+    "ops/c1_rail/qualification/preflight.py": "34277217803c6459c056ca3da651c905575b1324035d3a5489e1f442b3ec7d00",
+    "ops/c1_rail/qualification/prepare_compute.py": "a8408600f9de3f54f12b583a8e16a239be2589efea56bb0e55d99d001168e587",
+    "ops/c1_rail/qualification/production.py": "407bae732f4c5c44d6fb0252c77c8d430daa4ea63a50261ad73c5971b4831fff",
+    "ops/c1_rail/qualification/production_source.py": "3390e642f42232474d394994b2f612ad1012dad6d42cb34cc2f5893df801da41",
+    "ops/c1_rail/qualification/provider.py": "2490bea7ae00353329080066ef553fd42233841d802f0d5b94b54d85dd865779",
+    "ops/c1_rail/qualification/regime.py": "c582cf274ce8bd930fe5f50ac67f278d4450d3dba64a010211ebe49a14489ff3",
+    "ops/c1_rail/qualification/replay.py": "cda7f53f51451a5d1dd924be020918ee75e9939edd3a431502f1e5e0262ec38c",
+    "ops/c1_rail/qualification/result_adjudication.py": "f328b28652accfe116a9bcd00b4dbcb054ebbb23a81dfbc40d36cc0224a3cb00",
+    "ops/c1_rail/qualification/runner.py": "a1c2f7cf37799be9c9ef47419164070897b5fe59b219d40b2abc16c76f4eb1f8",
+    "ops/c1_rail/qualification/runtime_inventory.py": "2967e3485d44677357b0876751b229edc20fc2e1c4de73e51cc5f8c49ef21b92",
+    "ops/c1_rail/qualification/seal.py": "eaaae5b8a52a1677fdfe3ee183694f3ad2ba19a45d82bd659728298bf2756bde",
+    "ops/c1_rail/qualification/seed_identity.py": "604fff8ff87b2290ea46ba7ff79cd5e68b4bc2c289a55e145ec7a15a53d60338",
+    "ops/c1_rail/qualification/sessions.py": "296916955291ef59fd2865a5837aa202265f59b1aeb34f15b766e2dcc76778f0",
+    "ops/c1_rail/qualification/source_admission.py": "e109fafe7f2de2c78748fa7ba483c80a923c508e7794cf12d72342ca43cb05aa",
+    "ops/c1_rail/qualification/trust_domain.py": "c4b669383b3006892c2c50c136e0238c7077163fbaae801321772e7c37e9afa7",
+    "ops/c1_signal_daemon/book_adapters.py": "c6ad40bd54d11545d29ebddcfec2ae871ba6c96fa49a71763e8fb251f3935aeb",
+    "ops/c1_signal_daemon/book_protocol.py": "743117ea79af2a83d8dd9957225390f11d92d7bf9876ad0f86269e2a8def9d17",
+    "ops/c1_signal_daemon/pine_ta.py": "7816638aec5a456e4fc8bbde7e52120466686e58465f3a7f1d0a0d311753d69c",
+    "ops/c1_signal_daemon/tv_broker_emulator.py": "2be77babd618995dc5d9ed5b9ded215c4d0ddf41f8c1b3e823cf614318b0f678",
+    "requirements-ops.lock": "9aa7c17c82a71cb862dd33180f6f06aa855a662ae03489fcb72f87cb03f82017",
+    "scripts/certification_power.py": "896a5a1f9b57d10be6364193ed1f35974621528e080e063fbe73965d5459b91d",
+    "tests/ops/qualification/composition_fixture.py": "c8d04d3f2c285035b3a7c32284e4e9c2a5bfb5ca8279f56d940733970d17d6da",
+    "tests/ops/qualification/composition_result_fixture.py": "1f17a2531b2f72176aca36a819320daafba7fcfafdf1488f2b1b3887038b00bf",
+    "tests/ops/qualification/runtime_fixture.py": "af30e382ecd4eafd8d12496d0b1de3de5322ecfd7816d5a9d26166ce0f763b91"
+  }
+}

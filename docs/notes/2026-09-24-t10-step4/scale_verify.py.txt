@@ -1,0 +1,47 @@
+"""T10 step 4: how ProductionSource.verify_for scales with synthetic source size (TEST_ONLY, invented data)."""
+import hashlib, json, sys, tempfile, time, types
+from pathlib import Path
+ROOT = Path.cwd()
+for p in ('core','lab','ops','ops/c1_rail','ops/c1_signal_daemon','.','tests/ops/qualification','tests/ops'):
+    sys.path.insert(0, str(ROOT / p))
+
+FIXTURE = ROOT / 'tests/ops/qualification/composition_fixture.py'
+BASE = FIXTURE.read_text(encoding='utf-8')
+OLD_START = 'current=date(2024,1,2)'
+OLD_END = 'while current<date(2024,9,1):'
+OLD_TS = 'timestamps=[instant(h,m) for h,m in ((9,0),(9,15),(15,45),(16,0))]'
+assert BASE.count(OLD_START) == BASE.count(OLD_END) == BASE.count(OLD_TS) == 1
+
+def fixture_module(start, end, extra_bars):
+    # Same fixture, longer interval and/or more bars per session. extra_bars adds
+    # quarter-hour bars from 09:30 ET inside the retained interval (after the ORB 09:00/09:15 fixture legs).
+    ts = ('timestamps=[instant(h,m) for h,m in ' + repr(tuple(divmod(570+15*i, 60) for i in range(extra_bars)))
+          + '+((15,45),(16,0))]').replace('timestamps=[instant(h,m) for h,m in ', 'timestamps=[instant(h,m) for h,m in ((9,0),(9,15))+')
+    src = BASE.replace(OLD_START, f'current=date{start}').replace(OLD_END, f'while current<date{end}:').replace(OLD_TS, ts)
+    mod = types.ModuleType('composition_fixture'); mod.__file__ = str(FIXTURE)
+    exec(compile(src, str(FIXTURE), 'exec'), mod.__dict__)
+    sys.modules['composition_fixture'] = mod
+    return mod
+
+rows = []
+for label, start, end, extra in [('8mo x4', (2024,1,2), (2024,9,1), 0), ('16mo x4', (2023,5,1), (2024,9,1), 0),
+                                 ('32mo x4', (2022,1,3), (2024,9,1), 0), ('8mo x16', (2024,1,2), (2024,9,1), 12),
+                                 ('8mo x29', (2024,1,2), (2024,9,1), 25)]:
+    mod = fixture_module(start, end, extra)
+    with tempfile.TemporaryDirectory(prefix='t10-step4-scale-') as tmp:
+        t0 = time.perf_counter()
+        setup = mod.build_verified_composition(Path(tmp) / 'in', confirmation_depth=2, decision_alpha='0.95')
+        build = time.perf_counter() - t0
+        rb = dict(setup.source.prepared.retained_bytes)
+        panel_bytes = sum(len(rb[k]) for k in rb if k.endswith('_panel'))
+        bars = sum(rb[k].count(b'\n') - 1 for k in rb if k.endswith('_panel'))
+        times = []
+        for _ in range(3):
+            t = time.perf_counter(); setup.source.verify_for(setup.contract); times.append(time.perf_counter() - t)
+        row = {'label': label, 'sessions': len(setup.source.sessions), 'panel_bars_all_legs': bars,
+               'panel_bytes': panel_bytes, 'build_verified_composition_s': round(build, 3),
+               'verify_for_s': [round(x, 3) for x in times]}
+        rows.append(row); print(json.dumps(row), flush=True)
+Path(sys.argv[1]).write_text(json.dumps({'schema': 't10-step4-verify-scaling/v1', 'artifact_class': 'TEST_ONLY_SYNTHETIC_NOT_DECISION_BEARING',
+    'fixture_sha256': hashlib.sha256(BASE.encode()).hexdigest(), 'harness_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    'rows': rows}, indent=2), encoding='utf-8')

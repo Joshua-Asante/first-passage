@@ -22,7 +22,7 @@ Umbrella row O-10 routes K3 here, and TB-F1 no longer owns it (`docs/briefs/hand
 - serves the client a digests-only plan view, bound into the admission receipt;
 - refuses a v3 admission on a release without that view;
 - lands the S5 draft §1.6 tests, including the negative client cases already written test-first in [`tests/ops/qualification/execution/test_k3_rc4_client_view.py`](../../../tests/ops/qualification/execution/test_k3_rc4_client_view.py);
-- encodes the operator's Q9 decision ([Q9 note](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-10-02-s5-q9-in-doubt-closure-and-salt-reveal.md)).
+- encodes the operator's Q9 decision ([Q9 note](../../notes/2026-10-02-s5-q9-in-doubt-closure-and-salt-reveal.md)).
 
 It lands before S8/T06 dispatch, and before F1 in every case (CP-6, checklist `:492`).
 
@@ -140,7 +140,7 @@ Cryptographic material **fixed by the owners**:
 
 | # | Decision | Owner | Note |
 |---|---|---|---|
-| Q9 | Closing a never-retried, retry-eligible IN_DOUBT, and the salt-reveal timing | Operator | [Q9 note](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-10-02-s5-q9-in-doubt-closure-and-salt-reveal.md). It recommends **A**: automatic closure once no re-execution can fit (`BUDGET_EXHAUSTED`), with the reveal projected from the commit that irrevocably closes the campaign. Before D3 lands, the predicate reduces to "terminal, settled, no recovery barrier pending" |
+| Q9 | Closing a never-retried, retry-eligible IN_DOUBT, and the salt-reveal timing | Operator | [Q9 note](../../notes/2026-10-02-s5-q9-in-doubt-closure-and-salt-reveal.md). It recommends **A**: automatic closure once no re-execution can fit (`BUDGET_EXHAUSTED`), with the reveal projected from the commit that irrevocably closes the campaign. Before D3 lands, the predicate reduces to "terminal, settled, no recovery barrier pending" |
 | D-2 | G5's private salt route (S5 draft Q8, `:408`) | Coordinator, then operator | (i) A new checkpoint member served to the `g5` role over the existing authenticated member route; G5 already reads the canonical plan this way (`g5.py:698`). (ii) A `qg5`-private staged object. (i) keeps custody in `qexec`'s store under the `0700` data tree. (ii) adds a filesystem object to the OF-7 read. The draft leans to (i) but decides nothing |
 | c1 | How the salt enters the v3 seed payload. The owner text says only "`tb-s2-rng-v2` with the service-generated attempt salt added" | Coordinator routes to the owner text (operator-accepted) | **Not chosen here** |
 | c2 | The commitment's preimage bytes: the 32 raw bytes or the 64-hex text | Same | Not chosen. The test detectors accept either; if another encoding is chosen, extend `_salt_leaks` and its self-test first |

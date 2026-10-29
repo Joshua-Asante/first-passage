@@ -1,0 +1,165 @@
+{
+  "schema": "t10-step4-synthetic-500-session-rerun/v1",
+  "decision_bearing": false,
+  "rows": [
+    {
+      "module": "c1_rail.qualification.benchmark",
+      "repeat": 1,
+      "subprocess_wall_seconds": 15.385400500003016,
+      "result": {
+        "adapter_bars": 184000,
+        "elapsed_seconds": 12.463070500001777,
+        "equivalence_sha256": "744a5972e672e4c6059431449d87e988812ba9c4fed3298ed4dfe788b49152ca",
+        "events": 54022,
+        "fills": 5012,
+        "path_bars": 46000,
+        "platform": "Windows-11-10.0.26200-SP0",
+        "processes": 1,
+        "python": "3.13.2",
+        "schema": "synthetic-replay-benchmark/v1",
+        "seed": 791946223,
+        "serialized_bytes": 7185415,
+        "sessions": 500,
+        "synthetic": true
+      }
+    },
+    {
+      "module": "c1_rail.qualification.benchmark",
+      "repeat": 2,
+      "subprocess_wall_seconds": 13.742820100000245,
+      "result": {
+        "adapter_bars": 184000,
+        "elapsed_seconds": 11.538507999997819,
+        "equivalence_sha256": "744a5972e672e4c6059431449d87e988812ba9c4fed3298ed4dfe788b49152ca",
+        "events": 54022,
+        "fills": 5012,
+        "path_bars": 46000,
+        "platform": "Windows-11-10.0.26200-SP0",
+        "processes": 1,
+        "python": "3.13.2",
+        "schema": "synthetic-replay-benchmark/v1",
+        "seed": 791946223,
+        "serialized_bytes": 7185415,
+        "sessions": 500,
+        "synthetic": true
+      }
+    },
+    {
+      "module": "c1_rail.qualification.benchmark",
+      "repeat": 3,
+      "subprocess_wall_seconds": 15.553748000005726,
+      "result": {
+        "adapter_bars": 184000,
+        "elapsed_seconds": 13.06686570000602,
+        "equivalence_sha256": "744a5972e672e4c6059431449d87e988812ba9c4fed3298ed4dfe788b49152ca",
+        "events": 54022,
+        "fills": 5012,
+        "path_bars": 46000,
+        "platform": "Windows-11-10.0.26200-SP0",
+        "processes": 1,
+        "python": "3.13.2",
+        "schema": "synthetic-replay-benchmark/v1",
+        "seed": 791946223,
+        "serialized_bytes": 7185415,
+        "sessions": 500,
+        "synthetic": true
+      }
+    },
+    {
+      "module": "c1_rail.qualification.benchmark_part_a",
+      "repeat": 1,
+      "subprocess_wall_seconds": 25.236859700002242,
+      "result": {
+        "equivalence_sha256": "185561d9d90e53550c558c95c7e6099b8dd729708f087bd967b5f53d0163b196",
+        "events": 54022,
+        "fills": 5012,
+        "inner_candidates": 171,
+        "path_bars": 46000,
+        "path_sessions": 500,
+        "platform": "Windows-11-10.0.26200-SP0",
+        "processes": 1,
+        "proof_bars": 16100,
+        "proof_sessions": 175,
+        "python": "3.13.2",
+        "schema": "synthetic-part-a-workload/v1",
+        "seed": 791946223,
+        "serialized_bytes": 9696449,
+        "source_months": 8,
+        "source_sessions": 175,
+        "synthetic": true,
+        "timings": {
+          "outer_selection": 0.0014931999903637916,
+          "path_replay_kernel": 10.759565900007146,
+          "proof_rebuild": 4.103394100005971,
+          "serialization": 1.885973999989801,
+          "source_build": 0.8590160000021569,
+          "total": 17.60944319999544
+        }
+      }
+    },
+    {
+      "module": "c1_rail.qualification.benchmark_part_a",
+      "repeat": 2,
+      "subprocess_wall_seconds": 14.639542699995218,
+      "result": {
+        "equivalence_sha256": "185561d9d90e53550c558c95c7e6099b8dd729708f087bd967b5f53d0163b196",
+        "events": 54022,
+        "fills": 5012,
+        "inner_candidates": 171,
+        "path_bars": 46000,
+        "path_sessions": 500,
+        "platform": "Windows-11-10.0.26200-SP0",
+        "processes": 1,
+        "proof_bars": 16100,
+        "proof_sessions": 175,
+        "python": "3.13.2",
+        "schema": "synthetic-part-a-workload/v1",
+        "seed": 791946223,
+        "serialized_bytes": 9696449,
+        "source_months": 8,
+        "source_sessions": 175,
+        "synthetic": true,
+        "timings": {
+          "outer_selection": 0.0011338999902363867,
+          "path_replay_kernel": 7.988125600008061,
+          "proof_rebuild": 2.3799671000015223,
+          "serialization": 1.6078474999958416,
+          "source_build": 0.4926302000094438,
+          "total": 12.469704300005105
+        }
+      }
+    },
+    {
+      "module": "c1_rail.qualification.benchmark_part_a",
+      "repeat": 3,
+      "subprocess_wall_seconds": 15.202459099993575,
+      "result": {
+        "equivalence_sha256": "185561d9d90e53550c558c95c7e6099b8dd729708f087bd967b5f53d0163b196",
+        "events": 54022,
+        "fills": 5012,
+        "inner_candidates": 171,
+        "path_bars": 46000,
+        "path_sessions": 500,
+        "platform": "Windows-11-10.0.26200-SP0",
+        "processes": 1,
+        "proof_bars": 16100,
+        "proof_sessions": 175,
+        "python": "3.13.2",
+        "schema": "synthetic-part-a-workload/v1",
+        "seed": 791946223,
+        "serialized_bytes": 9696449,
+        "source_months": 8,
+        "source_sessions": 175,
+        "synthetic": true,
+        "timings": {
+          "outer_selection": 0.0016940000059548765,
+          "path_replay_kernel": 7.326899299994693,
+          "proof_rebuild": 2.7304690000019036,
+          "serialization": 1.825893699991866,
+          "source_build": 0.7557992999936687,
+          "total": 12.640755299988086
+        }
+      }
+    }
+  ]
+}
