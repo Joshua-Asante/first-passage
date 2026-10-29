@@ -19,18 +19,7 @@ Companion to [REPO_MAP.md](REPO_MAP.md). [STATE.md](STATE.md) owns priorities an
 
 **Personal lane (active):** [Q-SFCLEAR-3](docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) tests whether the Tradeify book at R1 clears the personal Tradovate account's standards, under the [self-funded lane ADR](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md); [STATE](STATE.md) holds its next steps.
 
-**Track B (suspended 2026-10-13):** Tradeify-specific build and spend are frozen until the 11-08 sitting or an operator ruling; code and evidence are kept ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft)). Tradeify support ruled on 2026-10-12 that evaluation-account strategy logic must be native, with no external engine or bridge ([route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts)). Owners:
-[umbrella](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) (scope, authority, gates),
-[deployment checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) (cross-workstream sequence),
-[execution-slices plan](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md) (qualification engineering requirements;
-[acceptance ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#progress-ledger-and-present-disposition)),
-bounded handoffs (assignments),
-[campaign record](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#55--track-b-release--d-b1d-b15-recorded-2026-09-11)
-§55–§60 (rulings, evidence,
-[ownership](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#58--campaign-ownership-the-current-coordinating-task-2026-09-20)).
-Synthetic E1 evidence and host readiness are not a qualified book. Separate from M1
-`RESOLVED` and still owed: production feed (umbrella O-4, deferred 2026-09-11; none
-selected), deployment GO, the arm.
+**Track B:** superseded for Tradeify 2026-10-16 ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify)). Synthetic E1 evidence and host readiness are not a qualified book. Separate from M1 `RESOLVED` and still owed: production feed (umbrella O-4, deferred 2026-09-11; none selected), deployment GO, the arm.
 
 ## P1 — Discovery / research pipeline (Gen-2) — available
 
@@ -46,8 +35,8 @@ on [STATE](STATE.md) do not suspend it; campaign amendments are explicit owner d
 | Evaluate | Evaluation order, [survivor-scoring prereg](docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) | Typed verdict and evidence; scoring by `lab/discovery/prop_survivor_scoring.py` |
 | Admit and monitor | Admitting decision, calibrated decay monitor | [Strategy lifecycle](docs/methodology/strategy_lifecycle.md), then venue/deployment gates |
 
-The `databento-data` skill refuses estimate/pull/batch/download even with retained scripts
-or keys. Skill owners: `futures-anomaly-discovery` (candidate generation), `strategy-validation`
+The `c1-rail` skill's data-source rule refuses Databento estimate/pull/batch/download even with
+retained scripts or keys. Skill owners: `futures-anomaly-discovery` (candidate generation), `strategy-validation`
 (validation mechanics). [Campaign defaults](docs/adr/2026-07-11-discovery-campaign-defaults-ratified.md)
 own temporal evidence and budget conventions; [W4](docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md)
 governs dormant SPA/StepM, PBO/CPCV and breadth producers.
@@ -96,7 +85,7 @@ qualification on Linux; complete E1 is still in development.
 `deploy/qualification/bootstrap.py` is its isolated-Python role launcher;
 [`tools/qualification_verification/`](tools/qualification_verification/README.md) the
 disposable Ubuntu host. `.github/workflows/qualification-*.yml` collect boundary, S2
-supervision, host and dispatch-only S5 Part A evidence for coordinator acceptance and run the
+supervision, host and dispatch-only S5 Part A evidence for the coordinator's adjudication and Joshua's acceptance and run the
 platform-independent suite on Windows; none is a required check. The [B0 decision](docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)
 kept this service over an operator-launched batch.
 

@@ -132,7 +132,7 @@ Without this gate, the sweep would have produced a LOCK CANDIDATE recommendation
 ## Worked non-example: candidate-1 rider (2026-07-15/16)
 
 Documented in [`2026-08-24 ADR — regime-gate scope worked non-example and F1 discharge`](../adr/2026-08-24-regime-gate-scope-worked-nonexample-f1-discharge.md);
-summarized here per Rule 14 (corrections land where the error is read).
+summarized here per operational_rules §14 (corrections land where the error is read).
 
 The `FROZEN` prop-survivor-scoring pre-registration
 ([G1](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) in the gate-stack
@@ -156,7 +156,7 @@ rider's FAIL was driven partly by a bust limb Part C does not contain) while its
 relaxed to non-blocking. The defect is narrower and more specific: importing this gate outside its
 own scope, as a rider, with the outcome fixed in advance — bindingness theater, not a broken test.
 **Both source documents stay `FROZEN` and byte-unedited** (Trap #12); this section is the
-upstream-of-the-claim correction Rule 14 requires, not an edit to either.
+upstream-of-the-claim correction operational_rules §14 requires, not an edit to either.
 
 ---
 
@@ -181,17 +181,10 @@ upstream-of-the-claim correction Rule 14 requires, not an edit to either.
 
 ## Implementation notes
 
-The procedure above is implementation-agnostic. **Rewritten 2026-08-08:** the two paragraphs that stood here
-directed the next author to a template in the evicted `archive/` tree, a `docs/briefs/Q-XXX/` convention that no
-longer exists, and a graduation target (`multi_firm_operations/regime_robustness_gate.py`) that predates both the
-repo rename and the 2026-06-05 four-layer boundary contract. **The graduation they described has already
-happened** — it landed in `core/mc/`, and the doc was never told.
-
-Use, in this order:
+The procedure above is implementation-agnostic. Use, in this order:
 
 1. **Canonical implementation — `core/mc/modes.py::_run_half_panel`.** Its own docstring names the Q-DDP-1 and
-   Q-SWAP-3 half-panel patterns as what it mirrors. This is the library the "graduate when a second brief invokes
-   it" clause was waiting for; treat the clause as **discharged**, not pending.
+   Q-SWAP-3 half-panel patterns as what it mirrors.
 2. **Live on-disk reference script — `docs/ltm/briefs/Q-SWAP-3/_run_regime_robustness.py`.** A readable file beats
    a `git show` pointer. ⚠ `docs/ltm/` is excluded from default agent search, so `rg` will not surface it — Read
    the path directly.

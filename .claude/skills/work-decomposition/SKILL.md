@@ -1,6 +1,6 @@
 ---
 name: work-decomposition
-description: Use when a unit of work — a handoff brief, a lightweight dispatch issue, a campaign-plan step, a PR, or this session's own task — is too big for one focused session or one packet, or when the input to be read is too big for one context (10+ files, 50k+ tokens, or pairwise/multi-hop reasoning across scattered sources). Triggers on "break this down", "split this", "too big for one session", "decompose the work", "chunk this", a brief with more than 5 gate conditions or more than 3 unrelated code areas, a `BLOCKED — scope-problem` return, a second `NEEDS_CONTEXT` bounce on the same packet, or a task whose worst-case iteration count exceeds its Rule 2 budget. Produces sized child units each with its own gate plus a parent manifest (work-shaped), or a sized batch plan with depth-1 sub-agents and a source spot-check (input-shaped). Sibling of question-decomposition (a question with too many axes, not work with too many parts). Does not dispatch implementation workers (the coordinator does, under the surface-allocation ADR's orchestration rules), pick environments (task-routing), author the packets (brief-authoring), or verify returns (fable-judge); its input-shaped protocol does run read-only sub-agent waves in-session, which is evidence gathering, not work dispatch; changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
+description: Use when a unit of work — a handoff brief, a lightweight dispatch issue, a campaign-plan step, a PR, or this session's own task — is too big for one focused session or one packet, or when the input to be read is too big for one context (10+ files, 50k+ tokens, or pairwise/multi-hop reasoning across scattered sources). Triggers on "break this down", "split this", "too big for one session", "decompose the work", "chunk this", a brief with more than 5 gate conditions or more than 3 unrelated code areas, a `BLOCKED — scope-problem` return, a second `NEEDS_CONTEXT` bounce on the same packet, or a task whose worst-case iteration count exceeds its Rule 2 budget. Produces sized child units each with its own gate plus a parent manifest (work-shaped), or a sized batch plan with depth-1 sub-agents and a source spot-check (input-shaped). Sibling of refine-question (contested-question decomposition) (a question with too many axes, not work with too many parts). Does not dispatch implementation workers (the coordinator does, under the surface-allocation ADR's orchestration rules), pick environments (task-routing), author the packets (brief-authoring), or verify returns (handoff-verify post-execution judging); its input-shaped protocol does run read-only sub-agent waves in-session, which is evidence gathering, not work dispatch; changes no strategy parameters, allocations, dd_protection constants, or MC calibration.
 ---
 
 # work-decomposition — size it before you start it
@@ -15,15 +15,9 @@ into children that each fit one session or one packet) and **input-shaped** (cut
 the input does not fit one context). It produces sized units and a manifest; it does not build,
 dispatch implementation workers, or adjudicate; the input-shaped protocol below does run read-only
 sub-agent waves inside the session, which is evidence gathering, not work dispatch. Worker surfaces
-are Claude Code sessions and Codex tasks; Cursor was retired as a worker surface by operator
-instruction on 2026-09-15. The record is the
-[surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)'s
-2026-09-15 revision, whose §Decision clause "Orchestrating more than one worker at a time" now
-owns the surviving fleet-orchestration rules — claim manifest, disjoint footprints (single-writer
-rule), dispatch-time Phase-0 re-check, review-round-as-freeze, frozen-SHA dispatch pointer —
-surface-agnostically. The `cursor-fleet` skill that stated them is deleted by that revision;
-[TOMBSTONES](../../../docs/adr/TOMBSTONES.md) pins its body and names where each surviving
-clause now lives.
+are Claude Code sessions and Codex tasks, dispatched by the coordinator (`coordinator` skill) under the
+[surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)'s §Decision
+clause "Orchestrating more than one worker at a time".
 
 Provenance: adapted 2026-09-15 from three external drafts — `troykelly/claude-skills`
 issue-decomposition (oversize thresholds, child-quality checklist, dependency status),
@@ -37,7 +31,7 @@ grounds; §Provenance lists what was dropped and why.
 
 | Shape | Tell | Owner |
 |---|---|---|
-| **Question-shaped** | One yes/no that two people with the same facts answer differently; a verdict that would drive reporting, escalation and precedent at once | `question-decomposition` |
+| **Question-shaped** | One yes/no that two people with the same facts answer differently; a verdict that would drive reporting, escalation and precedent at once | `refine-question` (contested-question decomposition) |
 | **Work-shaped** | One brief / issue / plan step / PR whose deliverables, gates or footprint exceed what one session or one packet can carry to a verified return | §Work-shaped, below |
 | **Input-shaped** | The evidence to read exceeds one context, or the answer needs pairwise / multi-hop reasoning across scattered files | §Input-shaped, below |
 
@@ -60,7 +54,7 @@ imported numbers as calibration candidates — record the firing when one bites,
 | More than **one context window** of work | One CC session; after compaction the summary keeps the plan and loses the detail the gate needs | One child per session-sized deliverable, each with its own resume handoff |
 | **Multiple independent deliverables** | §1 "What CC is being asked to produce" bullets that do not consume each other's outputs | One child per deliverable |
 | **Internal sequencing** — step N's input is step N−1's output, which does not exist yet | §2 Step 2.x chains whose later specs cannot be frozen until earlier steps return | Cut at the first output that must exist before the next spec can be frozen |
-| **Worst-case iterations exceed the Rule 2 budget** — *INQHIORI-loop work only*, i.e. a unit with a declared Loop-of-Record (INNER 3 / OUTER 8 / STRATEGIC 3 constituent OUTER investigations — [canon §15](../../../docs/methodology/inqhiori-canon.md)); the [Rule 2 ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)'s 2026-08-15 addendum instructs budget declaration from INQHIORI entry only, so this row never turns a non-loop task into a budgeted one | Attempt-and-check cycles (INNER / OUTER); constituent OUTER investigations (STRATEGIC) | The tripwire would fire mid-unit. Cutting does not mint budget: an INNER or OUTER parent's iterations are allocated across its children and their worst cases must sum inside it; a STRATEGIC parent's budget is a *count* of OUTER children (at most three), each carrying its own full OUTER budget. A sum or count that exceeds the parent's is the parent's tripwire firing at cut time — a structured stop and, for OUTER / STRATEGIC, the owner's extension authority before anything is dispatched |
+| **Worst-case iterations exceed the Rule 2 budget** — any unit carrying a Rule 2 budget (INNER 3 / OUTER 8 / STRATEGIC 3 constituent OUTER investigations — [canon §15](../../../docs/methodology/inqhiori-canon.md)); the [Rule 2 ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md#addendum-2026-10-24--scope-widened-to-all-substantial-work) budgets all substantial work, routine fixes excluded | Attempt-and-check cycles (INNER / OUTER); constituent OUTER investigations (STRATEGIC) | The tripwire would fire mid-unit. Cutting does not mint budget: an INNER or OUTER parent's iterations are allocated across its children and their worst cases must sum inside it; a STRATEGIC parent's budget is a *count* of OUTER children (at most three), each carrying its own full OUTER budget. A sum or count that exceeds the parent's is the parent's tripwire firing at cut time — a structured stop and, for OUTER / STRATEGIC, the owner's extension authority before anything is dispatched |
 | A `BLOCKED — scope-problem` return, or a **second** `NEEDS_CONTEXT` bounce on the same packet | brief-authoring check 8; the surface-allocation ADR's return contract ("two bounces means the spec was not freezable and the packet was mis-routed") | The packet was mis-sized or mis-routed; re-cut before any re-dispatch |
 
 Dated repo instances of the output this skill prescribes: the 2026-08-25 first-look residuals
@@ -87,7 +81,7 @@ That umbrella is the reference shape for this skill's work-shaped output.
    edges make explicit. A revert that would silently break a sibling with no edge to it means the
    footprint or the edge is wrong.
 4. **Fits one session with margin** — no step whose detail must survive a compaction. For
-   INQHIORI-loop work only: an INNER or OUTER child's worst-case iterations fit the share
+   a budgeted unit: an INNER or OUTER child's worst-case iterations fit the share
    allocated to it from the parent's Rule 2 budget, never a fresh budget of its own; a STRATEGIC
    parent's children are whole OUTER investigations, each with its own OUTER budget, and the
    parent's budget bounds how many of them there are.
@@ -95,7 +89,7 @@ That umbrella is the reference shape for this skill's work-shaped output.
    explicit *depends-on* edge that makes it sequential. `docs/SESSIONS.md`, `STATE.md`, boards and
    index files are reserved to the parent's integration commit.
 6. **Frozen, or explicitly judgment-owned** — a child that needs a judgment call mid-build stays
-   with the orchestrating Claude session; a child on a locked surface (core anchor code, Pine,
+   with the coordinator; a child on a locked surface (core anchor code, Pine,
    ADRs / pre-registrations / `AGENTS.md` / `STATE.md`) stays there regardless of size. The
    [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) tests 1–2
    record the rule; its Cursor lane is retired (2026-09-15 revision), the rule is not. Never launder a judgment task into
@@ -123,17 +117,16 @@ inline under the session's own checklist (fable-method Step 4.4).
    cycles — a cycle means one boundary is wrong. Sequence for **incremental integration**: merge in
    dependency order with the fast gates between merges, never one end-of-track consolidation.
 4. **Write the parent manifest** before anything is dispatched — one row per child:
-   `child · owner/lane · branch · footprint · depends-on · budget · status`. Lifecycle statuses
+   `child · owner/lane · branch · card @ frozen hash | head SHA · footprint · depends-on · budget · status`. Lifecycle statuses
    `STUB / QUEUED / DISPATCHED / RETURNED / MERGED / OVERTAKEN / WITHDRAWN` (`STUB` = not yet
    freezable; nothing is dispatched from a stub). `RETURNED` always carries the four-state return
    and its disposition — `RETURNED (DONE)`, `RETURNED (DONE_WITH_CONCERNS — <concern>)`,
    `RETURNED (NEEDS_CONTEXT — re-anchor 1 of 1 | re-cut)`, `RETURNED (BLOCKED — <sub-case>)` — so
    the row says whether work is still owed; a child never stays `DISPATCHED` after its return, and
    a `NEEDS_CONTEXT` child goes back to `QUEUED` only once, then is re-cut. The `budget` column
-   is filled only for INQHIORI-loop parents (a declared Loop-of-Record): each child's share of an
-   INNER / OUTER parent's iterations, summing inside the parent's, or `OUTER (own 8)` under a
-   STRATEGIC parent; for every other unit it reads `n/a — one session`, per the Rule 2 ADR's
-   2026-08-15 propagation limit. The
+   is filled for every budgeted parent: each child's share of an INNER / OUTER parent's
+   iterations, summing inside the parent's, or `OUTER (own 8)` under a STRATEGIC parent; a
+   routine-fix child reads `n/a — routine`. The
    parent lists every child; a child absent from the manifest does not exist. This is the
    anti-duplication device: before any session opens work in the area, the manifest says who holds
    it.
@@ -142,11 +135,11 @@ inline under the session's own checklist (fable-method Step 4.4).
    per the surface-allocation ADR's §Decision clause "Orchestrating more than one worker at a
    time"; one frozen build above the handoff-overhead
    threshold → a single `cc_handoff` brief for a Claude Code session, or a Codex task carrying the
-   same §0 / §0.5 / §0.75 / §5 / §6 content; judgment or locked-surface work → the orchestrating Claude
-   session; work that still fits one session but needs ordering → the session's own checklist.
+   same §0 / §0.5 / §0.75 / §5 / §6 content; judgment or locked-surface work → the
+   coordinator; work that still fits one session but needs ordering → the session's own checklist.
    Environment per child → the local-only checklist in `task-routing`.
 6. **Hand the children off.** Packet authoring is `brief-authoring` (cc_handoff template),
-   pre-dispatch verification is `handoff-verify`, returns are adjudicated by `fable-judge`. This
+   pre-dispatch verification is `handoff-verify`, returns are adjudicated by `handoff-verify` post-execution judging. This
    skill's deliverable ends at the manifest and the child specs.
 
 ### Child quality checklist
@@ -242,7 +235,7 @@ partition fan-outs; replication fan-outs are exempt from them as described below
   join; disjoint batches alone cannot see a relationship whose endpoints sit in different batches.
 
 Two fan-out shapes, one protocol each. **Partition fan-outs** join disjoint evidence: the batch
-and inventory rules above apply in full — `adr-decay-audit`'s batch-scan-then-adversarial-verify
+and inventory rules above apply in full — the `programme-audit` ADR decay sweep's batch-scan-then-adversarial-verify
 and the 14-agent Algorithm review of 2026-07-24 (record pinned in
 [TOMBSTONES](../../../docs/adr/TOMBSTONES.md)) are instances.
 **Replication fan-outs** deliberately have every agent read the *same* target through a different
@@ -265,7 +258,7 @@ fits the question; author an ad-hoc wave only when none does.
 | "The parent's acceptance list is good enough for the children." | Copied-wholesale criteria are the top anti-pattern: no child can pass or fail alone, so nothing is verifiable until everything is. |
 | "Just read all the files first for context." | That is the input-shaped tell. Size, filter, batch. |
 | "The merge looks thin — spawn another level." | Depth 2 is never the fix; re-read the disputed span. |
-| "This packet is small, it can carry a judgment call." | Size does not move a judgment task off CC — surface-allocation test 2, no exception. |
+| "This packet is small, it can carry a judgment call." | Size does not move a judgment task off the coordinator — surface-allocation test 2, no exception. |
 | "I'll keep the manifest in my head." | The manifest is the anti-duplication device; unwritten means two sessions answer the same question (the Q-SFRISK-1 collision, pinned in [TOMBSTONES](../../../docs/adr/TOMBSTONES.md)). |
 
 ## Red flags
@@ -283,14 +276,13 @@ fits the question; author an ad-hoc wave only when none does.
 
 | Skill | Boundary with this one |
 |---|---|
-| `question-decomposition` | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. |
-| `refine-question` | If the parent's done cannot be stated in two sentences, refine before decomposing. |
+| `refine-question` (contested-question decomposition) | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. If the parent's done cannot be stated in two sentences, refine before decomposing. |
 | [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) §Decision "Orchestrating more than one worker at a time" | Owns the orchestration rules that consume this skill's manifest and children when 2+ packets are frozen implementation — claim manifest, disjoint footprints (single-writer rule), dispatch-time Phase-0 re-check, review-round-as-freeze, frozen-SHA dispatch pointer. Its disjoint-footprints rule is the atomic test's point 5 applied at dispatch. Worker surfaces are Claude Code sessions and Codex tasks. |
 | `brief-authoring` | Authors each child as a `cc_handoff` brief; check 8's `BLOCKED — scope-problem` sub-case sends the packet back here for re-cutting. |
 | `handoff-verify` / `handoff-verify-panel` | Pre-dispatch verification of a child; the panel is the input-shaped protocol applied to a many-claim packet. |
 | `task-routing` | Picks local vs cloud per child after the cut. |
 | `fable-method` | Step 2 owns evidence gathering and points here when the input is oversize; Step 4.4's checklist is the in-session lane for work that still fits one session. |
-| `fable-judge` | Adjudicates each child's return; this skill renders no verdict on returned work. |
+| `handoff-verify` post-execution judging | Adjudicates each child's return; this skill renders no verdict on returned work. |
 | Rule 2 ([ADR](../../../docs/adr/2026-06-16-rule-2-budget-before-acting.md)) | Sets the per-child iteration budget; this skill is how a unit is cut so the tripwire fires at a child boundary rather than mid-unit. |
 
 ## Provenance — what was imported, what was dropped

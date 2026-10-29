@@ -8,7 +8,7 @@ and archive-owed ACTIVE rows; it does not move INDEX rows unless
 live successor named).
 
 Folded into blast-radius as the session-end liveness sweep (Q-XMEM-1 Limb B
-companion). Not a Rule-7 owner.
+companion). Not an operational_rules §7 owner.
 """
 from __future__ import annotations
 

@@ -10,6 +10,7 @@
 **Authors:** Joshua (operator GO) + Cursor (SDD Task 1 recorder)
 **Related:** [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 (CFD code retirement scoped in 08-03; living-key retirement is the [`Phase C ADR`](2026-08-23-strategy-coldstore-phase-c.md), not this ADR) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (Striker stays `AUTHORIZED · MECHANISM @ 1.00×`; venue-fit ≠ decay) · design `docs/superpowers/specs/2026-08-04-strategy-coldstore-retirement-design.md` (pruned; 2026-08-23 retrieve `BLOCKED` — [note](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-23-coldstore-phase-b-prego-blocked.md)) · plan [`docs/superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md`](../superpowers/plans/2026-08-04-strategy-coldstore-phase-a.md)
 **Layer:** strategy surface (filesystem + discoverability). **No** `BASE_RISK`, lifecycle, `LEG_MAP`, or Pine-parameter edit.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR08-100); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -118,7 +119,6 @@ After Tradeify de-scope ([`2026-08-04`](2026-08-04-tradeify-venue-descope-eval-i
 - **Editing `BASE_RISK`, lifecycle state, or `LEG_MAP` “while we’re moving files.”** Genuinely tempting — cold-store makes CFD keys look dead. Barred: Phase C + Call-5 + F2 own those axes; this ADR’s non-touch list is load-bearing.
 - **Reading `VENUE_WITHDRAWN` as lifecycle `RETIRED` for Striker.** Tempting after Tradeify de-scope. Barred by ADR 2026-08-04 §2–§3; catalog ≠ authorization.
 - **Hard-deleting Pine or dropping hash pins** instead of archive + re-pin. Tempting under “gitignored anyway.” Barred: prior PORT_MANIFEST pin-loss failure mode; Approach 3 was rejected.
-- **Starting Phase B or Phase C because this ADR is `Accepted`.** Acceptance admits Phase A only; B and C need separate operator GO + (for C) a fresh admitting ADR.
 - **Loosening §4 triggers without a superseding ADR.** Silent amendment is methodology-layer `p`-hacking (Known Trap #12).
 
 ---

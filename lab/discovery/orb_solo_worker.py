@@ -126,10 +126,11 @@ def verify_loaded_sources(plan,root):
 def evaluate_phase(plan,configuration,*,plan_sha256=None):
     """Fixed candidate/reference routing, separately testable without a kernel run."""
     from discovery.prop_survivor_scoring import (
-        score_candidate,load_scoring_thresholds,TierSeries,discharges_falsifier,
+        DEFAULT_PREREG,score_candidate,load_scoring_thresholds,TierSeries,discharges_falsifier,
     )
     from discovery.orb_solo_release import digest
-    thresholds=load_scoring_thresholds()
+    # S4 froze under v2 alone, matching the admission derivation and source pins.
+    thresholds=load_scoring_thresholds(DEFAULT_PREREG)
     if (list(thresholds.seeds)!=DEPTH['seeds'] or thresholds.horizon!=1500 or
             thresholds.sims_per_seed!=10000 or tuple(thresholds.tier_keys)!=TIERS):
         raise ReleaseError('frozen depth/tier drift')

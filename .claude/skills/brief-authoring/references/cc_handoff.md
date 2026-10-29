@@ -6,7 +6,7 @@
 **Repo:** `first-passage` (or specific repo path)
 **Brief type:** CC handoff (single-step | multi-step)
 **Parent question:** Q-X (if executing a Pre-Q) | <owning specification, campaign, plan, PR or dated ADR> (if executing an approved decision) | `N/A`
-**Authority:** Joshua (operator). The parent authors this brief; the selected agent executes within its authorized scope. Record any existing scoped authorization here. No commit/merge without Joshua's go; a `DONE` status or recommended next action supplies no permission.
+**Authority:** Joshua (operator). The parent authors this brief; the selected agent executes within its authorized scope. Record any existing scoped authorization here. Committing and pushing the agent's own `codex/`/`claude/` branch and opening a PR need no per-action go (operator ruling 2026-10-24); merges follow the conditioned merge GO (`AGENTS.md` Rule 6); a `DONE` status or recommended next action supplies no permission.
 
 ---
 
@@ -33,7 +33,7 @@ Capture the process exit code, stdout, stderr, and session identifier when avail
 
 On failure, preserve the exact error and identify the supported cause: launch approval, worker permission, filesystem access, authentication/network, CLI invocation, or unknown. Correct demonstrated invocation errors within existing authority. Do not change launchers or disable controls to evade a denial. Before retrying an uncertain run, check whether it is still running or has already changed files; resume the existing worker when supported.
 
-For local CLI dispatch **when Spawn target is Claude Code**, use the repository's `scripts/dispatch_claude.ps1` and the `scripts/agent_handoff.md` recovery procedure. **Do not use it for a Codex packet** — that launcher hard-codes `--provider claude`, and `agent_handoff.py --provider` accepts only `claude`, so a Codex packet routed through it is silently handed to Claude. Codex packets are dispatched through Codex's own surface (its cloud/CLI), not through this repo's runner; this repo provisions Codex no launcher and no push credential (2026-08-29 bar, retained). Supply expected outputs and required check names; the runner injects a correlated JSON return contract. Preserve the request receipt, use its request ID for continuation, and reconcile uncertain outcomes before retrying. A valid return with worker status BLOCKED/NEEDS_CONTEXT is not completed work; DONE still requires parent verification.
+For local CLI dispatch **when Spawn target is Claude Code**, use the repository's `scripts/dispatch_claude.ps1` and the `scripts/agent_handoff.md` recovery procedure. **Do not use it for a Codex packet** — that launcher hard-codes `--provider claude`, and `agent_handoff.py --provider` accepts only `claude`, so a Codex packet routed through it is silently handed to Claude. With the Claude runner, supply expected outputs and required check names; the runner injects a correlated JSON return contract. Preserve the request receipt, use its request ID for continuation, and reconcile uncertain outcomes before retrying. Dispatch a Codex packet with `scripts/dispatch_codex.ps1` (agent token only; it refuses a directory holding `.env`; surface-allocation ADR Addendum 2026-10-24b B). It runs `codex exec` directly, with no receipts, no continuation ID and no runner validation. So the packet's prompt carries the return contract itself: the four-state status, expected outputs and required checks. The parent verifies the `-OutputFile` last message and the pushed branch against that contract, and before retrying an uncertain run it checks the worktree for changes. A valid return with worker status BLOCKED/NEEDS_CONTEXT is not completed work; DONE still requires parent verification.
 
 ---
 
@@ -188,14 +188,14 @@ CC reports back with EXACTLY one of these four statuses (Discipline Check #8). T
 |---|---|---|
 | `DONE` | All §2 steps passed; all per-step gates green; no scope creep; no off-pattern observations. | Review under §7; accept/close after required checks. Merge requires separate applicable authorization. |
 | `DONE_WITH_CONCERNS` | Work completed but CC flags correctness, scope, or methodology doubts the parent should resolve before accepting. Every gate passed but CC noticed something off-pattern. | Parent reviews concerns; accept or re-dispatch with clarification. |
-| `NEEDS_CONTEXT` | Cannot proceed without missing input that can be supplied. (§0.5 ambiguity unresolved, file referenced but not on disk, parameter underspecified.) | Parent supplies context; CC re-dispatches the same plan with added input. |
-| `BLOCKED` | Cannot proceed; structural obstruction. Sub-case required (see below). | Parent escalates, decomposes, or re-spawns with stronger model. |
+| `NEEDS_CONTEXT` | Cannot proceed without missing input that can be supplied. (§0.5 ambiguity unresolved, file referenced but not on disk, parameter underspecified.) | Parent supplies context once (one re-anchor); a second bounce is re-cut per `work-decomposition`. |
+| `BLOCKED` | Cannot proceed; structural obstruction. Sub-case required (see below). | Parent follows the sub-case below. |
 
 **`BLOCKED` sub-cases (mandatory):**
 - `BLOCKED — context-problem`: re-dispatch with more context.
-- `BLOCKED — capability-problem`: re-dispatch with stronger model or escalate to human.
+- `BLOCKED — capability-problem`: re-dispatch with a stronger model, or take it to Joshua.
 - `BLOCKED — scope-problem`: decompose into smaller tasks.
-- `BLOCKED — plan-itself-wrong`: escalate to parent session; the §2 plan is structurally broken.
+- `BLOCKED — plan-itself-wrong`: the §2 plan is structurally broken; the coordinator rebuilds it in a fresh session (`coordinator` §5, Rule 7).
 
 **Closure report format:**
 ```

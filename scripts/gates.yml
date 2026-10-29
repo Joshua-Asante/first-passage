@@ -56,12 +56,6 @@ gates:
       - scripts/check_data_manifests.py
       - --check
 
-  # pursuit-records retired 2026-08-24 (Rule 16 R5 — docs/operational_rules.md;
-  # docs/adr/2026-08-24-validation-battery-k-tiering-and-gate-retirement.md):
-  # scripts/check_pursuit_records.py always exits 0 as invoked, so this entry
-  # could never fail regardless of tier — unfalsifiable ceremony, deletable
-  # even when signed. Script retained on disk, runnable manually.
-
   - id: pine-manifest
     tier: always
     cmd:
@@ -74,6 +68,13 @@ gates:
       - python
       - scripts/check_pine_manifest.py
       - --check-pin-provenance
+
+  - id: card-pins
+    tier: always
+    cmd:
+      - python
+      - scripts/check_pine_manifest.py
+      - --check-card-pins
 
   # Durability invariant for the rail's authoritative SQLite stores. The regex
   # is deliberately the whole of ops/: the scanner's registry check fires on a
@@ -327,7 +328,7 @@ gates:
   - id: governance-prose-control-chars
     tier: path-conditional
     when:
-      staged_regex: '^(docs/SESSIONS[.]md|docs/rejected_candidates[.]md|docs/mc_anchor_history[.]md)'
+      staged_regex: '^(docs/SESSIONS[.]md|docs/rejected_candidates[.]md|docs/mc_anchor_history[.]md|STATE[.]md$|docs/(adr|briefs|notes)/.*[.]md$)'
     cmd:
       - python
       - scripts/check_governance_prose_control_chars.py

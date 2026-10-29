@@ -17,6 +17,7 @@ ADR" gate this ADR clears) · [Stage-8 variance-dominance ADR](2026-07-20-stage8
 (content of record — this ADR is a pointer-tier registration, per CLAUDE.md's "ADRs carry pointers
 only, never a retelling")
 **Layer:** infrastructure (data-registry admission, not a strategy/engine/allocation change)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR11-48); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -191,11 +192,8 @@ particular way.
 ## §7 — Implementation plan
 
 - **Phase 0** — this ADR; re-verify §0 anchors at ratification time if more than a session elapses.
-- **Phase 1** — on acceptance, register the three dict entries in `core/mc/modes.py` per §2's table.
-- **Phase 2** — run `python lab/research_utils/breadth.py --self-test --panel cme`; record the
-  resulting anchor as a new named constant (not overwriting `NEFF_DEPENDENCE_ANCHOR`/
-  `NEFF_RISK_ANCHOR`, which remain the historical 4-leg Pepperstone record).
-- **Phase 3** — design spec Change History update; STATE.md pointer line.
+- Phases 1–3 (registration, `cme` anchor, design-spec and STATE pointers) executed 2026-08-19 — see
+  the Ratification note.
 
 ---
 

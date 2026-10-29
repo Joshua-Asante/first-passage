@@ -370,7 +370,20 @@ def test_reference_and_candidate_routes_use_source_shaped_reports(monkeypatch):
     import discovery.orb_solo_worker as worker
     import discovery.prop_survivor_scoring as scoring
     from types import SimpleNamespace
-    from discovery.orb_solo_release import digest
+    from discovery.orb_solo_release import digest, required_source_paths, WorkerPolicy
+    # Apply the real worker policy at each threshold-file read without installing
+    # an irreversible process-wide audit hook in the pytest process.
+    root=Path(__file__).resolve().parents[1]
+    frozen_v2=root/'docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md'
+    sources=required_source_paths(root)
+    assert frozen_v2 in sources
+    assert not set(scoring.DEFAULT_ADDENDA).intersection(sources)
+    policy=WorkerPolicy(sources,runtime_roots=[])
+    original_read_text=Path.read_text
+    def pinned_read_text(path,*args,**kwargs):
+        policy('open',(str(path),'r',os.O_RDONLY))
+        return original_read_text(path,*args,**kwargs)
+    monkeypatch.setattr(Path,'read_text',pinned_read_text)
     fixture=plan()
     configuration={}
     admission={'schema':'orb-s4-admission/v1','input_sha256':fixture['input_sha256'],
@@ -383,6 +396,9 @@ def test_reference_and_candidate_routes_use_source_shaped_reports(monkeypatch):
     def fake_score(**kwargs):
         calls.append(kwargs)
         assert kwargs['thresholds'].sims_per_seed==10000
+        assert kwargs['thresholds'].cost_law_multiple==4.0
+        assert kwargs['thresholds'].source_path==str(frozen_v2)
+        assert kwargs['thresholds'].addenda==()
         report=scoring.ScoringReport('synthetic',scoring.G1Result(2,1.,'YES',False))
         for key in fixture['tiers']:
             report.tiers[key]=scoring.TierScore(key,'trailing_locking',None,True,{}, {},False,False,'run2')

@@ -14,6 +14,8 @@
 **Loop-of-Record:** STRATEGIC — this amends a canon calibration metric (governance of what governs); low-reversibility canon edit. Landed PROPOSED; graduation PROPOSED→ACCEPTED is the owner's Strategic act (no-borrowing per `docs/adr/2026-06-12-three-loop-methodology-binding.md` D3 — CC proposes, owner ratifies).
 **Rule-2 budget:** OUTER (8 iterations) for the authoring execution. Landed under budget.
 **Amends / extends:** `docs/adr/2026-06-12-three-loop-methodology-binding.md` §2 **D4** (add-back-rate metric) + its canon mirror `docs/methodology/inqhiori-canon.md` §14. For the **add-back metric definition specifically, this ADR governs**; the three-loop ADR governs the binding.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-48); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the stale Guardian Silver anchor rule, D4 (ADR03-44); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -53,7 +55,7 @@ The definition-as-written is a **latent cross-layer contamination** (programme-a
 
 **D3 — The 10%-rule interpretation bands apply per-instrument, within each layer's own audit.** Each rate is judged against the ~10% band separately (0 over ≥2 cycles → deletion too conservative; sustained ≫10–15% → too aggressive / kill evidence too thin). Pooling would let object-layer strategy reversals mask meta-layer signal calibration and vice versa — the precise failure this ADR prevents.
 
-**D4 — Guardian Silver is retained as the object-layer (b) anchor only.** It is removed from the meta-layer statement. No object-layer constant, strategy, allocation, or MC value is touched by this ADR.
+**D4 — Guardian Silver anchor.** *(Removed 2026-10-25, rule consolidation D5, ADR03-44: the rule using Guardian Silver as the object-layer (b) anchor only. Its admission was reversed 2026-07-01, so the object-layer rate is 0/1 ([three-loop ADR](2026-06-12-three-loop-methodology-binding.md) hook #6); D2 carries the cross-layer ban.)* No object-layer constant, strategy, allocation, or MC value is touched by this ADR.
 
 **Effective:** immediately upon acceptance. **Scope:** the D4 add-back calibration metric and its canon §14 mirror; all future programme audits (meta and object).
 
@@ -84,7 +86,6 @@ The definition-as-written is a **latent cross-layer contamination** (programme-a
 2. **Using Guardian Silver — or any strategy/track/instrument reversal — as evidence in a *methodology* audit.** Object-layer anchor for (b) only. Symmetric: no rejected-signal re-accept in a *portfolio* audit.
 3. **Amending the metric definition in place without an ADR of record.** A Strategic canon edit needs a recorded decision (this ADR); a silent in-canon patch is the no-borrowing violation (three-loop D3).
 4. **Letting either band auto-tune a threshold.** The three-loop ADR §5 #6 already forbids self-tuning governance; restated here per-instrument. Bands inform the audit; the audit decides.
-5. **Editing `docs/rejected_candidates.md` per-entry `addback_condition` fields or the 2026-06-14 rejected-candidate-patterns §C gate.** Those are the object-layer per-candidate *gate* (a distinct device); this ADR splits the aggregate *rate*, not the gate. Out of scope.
 
 ---
 

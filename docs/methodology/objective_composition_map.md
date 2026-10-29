@@ -14,8 +14,7 @@ For each decision class below: the governing instrument(s), each one's denominat
 
 ## Candidate admission (new, unproven strategies/candidates)
 
-**Governing instrument:** survivor-scoring Part A gate — `docs/briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md` (FROZEN 2026-07-13). Survival-denominated: bust ≤3.0% ∧ pass ≥50%, discharged iff both hold on ≥2 firms.
-⚠ **Superseded 2026-08-26:** [`2026-08-26-prop-survivor-scoring-prereg-v2.md`](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) (FROZEN) supersedes the above in full — Part A eval bust ceiling raised 3.0% → 5.0% (operator risk-tolerance override, v2 §8), discharge unchanged at pass ≥50% on ≥2 firms, ≥1 of which must be `trailing_locking`. v1's own Status line now reads `CLOSED — superseded by v2`.
+**Governing instrument:** survivor-scoring Part A gate — [`2026-08-26-prop-survivor-scoring-prereg-v2.md`](../briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md) (FROZEN 2026-08-26). Survival-denominated: eval bust ≤5.0% (operator risk-tolerance override, v2 §8) ∧ pass ≥50%, discharged iff both hold on ≥2 firms, ≥1 of which must be `trailing_locking`.
 
 **Does NOT govern:** rung selection of an already-admitted book (see below) — the fork-B ADR states this is forbidden to conflate: "Extending the EV objective to candidate ADMISSION" (`2026-07-23-c1-rung-selection-ev-objective.md`, §5 forbidden moves).
 

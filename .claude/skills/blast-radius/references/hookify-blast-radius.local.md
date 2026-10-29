@@ -23,7 +23,5 @@ This turn wrote/edited files. Before ending, run the `blast-radius` skill
 3. Emit a `BLAST-RADIUS: CLEAN|OWED|REPAIRED` report table
 
 Report-first. Fix clear silent restatements and stale one-line pointers owed
-by this change. Do **not** restate canonical values (Rule 7). Skip if the turn
+by this change. Do **not** restate canonical values (operational_rules §7). Skip if the turn
 was read-only or only touched the blast-radius skill/hooks themselves.
-
-This rule is the sole carrier of the stop nudge.

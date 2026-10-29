@@ -1,6 +1,6 @@
 ---
 name: prop-firm-challenge
-description: Use this skill for firm/venue rules, portfolio MC, dd_protection, lifecycle sizing, broker CSV P&L analysis, or ops questions about Guardian/Striker/Aegis/NAS100 — including the four-firm configs in core/firm_rules.py, the historical FXIFY fixture, self-funded lane sizing questions, MNQ/MYM/MGC, trailing-DD/eval/consistency rules, or c1 rail sizing questions. Triggers on strategy parameters in an ops (not Pine) context, uploaded broker CSVs, drawdown/P&L, or firm-tier questions. Current eval and rail posture is owned by AGENTS.md §Live-execution posture; live execution questions route to the `c1-rail` skill. This skill is durable firm/sizing/MC mechanics + historical challenge-era reference — use pinescript-v6 for strategy-code work.
+description: Use this skill for firm/venue rules and portfolio Monte Carlo — the four-firm configs in core/firm_rules.py, the historical FXIFY fixture, trailing-DD/eval/consistency/inactivity rules, dd_protection mechanics, integer-contract sizing (MNQ/MYM/MGC), firm onboarding pre-flight, re-MC triggers, and portfolio_mc methodology. Triggers on firm-tier questions, drawdown/bust semantics, MC runs, or sizing math. Live execution, arming and order questions route to `c1-rail`; current eval and rail posture is owned by AGENTS.md §Live-execution posture; broker CSV parsing goes to `trade-csv-reconcile`; strategy code to `pinescript-v6`. Narrowed 2026-10-24 to firm rules and MC: legacy-book execution rules were retired.
 ---
 
 # Prop Firm / Portfolio Operations
@@ -101,23 +101,9 @@ FXIFY (historical): DXTrade via Alchemy Markets (CFD) — venue closed. Bulenox 
 
 ### Locked allocations (challenge = funded phase; no re-sizing at pass)
 
-**Not restated here (Rule 7).** Human-readable lock table + versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference. Live sizing authority: `core/firm_rules.py` `_BASE_RISK` / `core/dd_protection.py` `BASE_RISK`. Per-strategy mechanics (session/hour filters, SL/TP structure): [`references/strategy_reference.md`](references/strategy_reference.md) (Pine remains source of truth for parameters).
+**Not restated here (operational_rules §7).** Human-readable lock table + versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference. Live sizing authority: `core/firm_rules.py` `_BASE_RISK` / `core/dd_protection.py` `BASE_RISK`. Per-strategy mechanics (session/hour filters, SL/TP structure): [`references/strategy_reference.md`](references/strategy_reference.md) (Pine remains source of truth for parameters).
 
 Bust attribution under the historical Pepperstone calibration is record-only — `docs/mc_anchor_history.md` (tombstone via `git show pre-prune-2026-08-08:docs/ltm/notes/2026-07-24-pepperstone-executable-anchor-tombstone.md`). Engine regression: `tests/core/test_mc_synthetic_engine.py`.
-
-### Guardian risk lock (no ramp / no overlays)
-
-No funded-phase ramp, no active overlays — challenge and funded phase run identical parameters. Exact risk% lives with the owners above. Prior conditional overlay concepts (equity-ramp ladder, Iran-Israel/Hormuz conflict overlay, regime-indexed sizing) are retired; historical record preserved at git tag `pre-prune-2026-06-05` (retrieve: `git show pre-prune-2026-06-05:archive/docs/methodology/archive/overlays/guardian_conflict_risk.md`).
-
-**Rationale (locked lesson):** the strategies are inherently regime-adaptive — Guardian's EMA slope, Striker's breakout-distance thresholds, and Aegis's BB+ATR gates already respond to volatility regime, trend strength, and range expansion. Overlays bolted on top double-adjust what the base strategy already captures. Don't reintroduce without a fresh INQHIORI loop demonstrating the base logic is demonstrably insufficient.
-
-### Binary macro events — Aegis pause rule
-
-For known binary volatility events (central-bank decisions, major scheduled geopolitical releases), Aegis is paused for the session — mean-reversion edge inverts on binary regime breaks. Not a general news filter; applies only to pre-scheduled binary-outcome events. Generic FOMC/NFP/CPI days are NOT binary-event pauses — those are handled by each strategy's existing session/hour filters. Guardian and Striker continue normal operation unless independently flagged.
-
-⚠ **Correction:** Aegis has no live instrument on any venue today — CFD execution (including USDJPY) is retired ([2026-06-30 no-manual-trading/CFD retirement](../../../docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md); [2026-07-11 ops CFD estate retirement](../../../docs/adr/2026-07-11-ops-cfd-estate-retirement.md)), Aegis holds no living `BASE_RISK` key after Phase C ([2026-08-23 coldstore Phase C](../../../docs/adr/2026-08-23-strategy-coldstore-phase-c.md)), and the 2026-07-16 Aegis→M6J scale path is not active (the self-funded lane reopened 2026-10-09 with no portfolio selected — see Posture above). The paragraph above is durable pause-rule mechanic for the locked legacy edition only; the accepted book's Aegis 6J edition is owned by the accepted book's records (see the top of this file).
-
----
 
 ## Protection system
 
@@ -146,7 +132,7 @@ Reintroduce only if: (1) single-tier DD-only fails to hold bust below the progra
 
 ## Position sizing by venue
 
-Live sizing funnels through `ops/c1_rail/c1_sizing_host_reference.py` (integer-qty rail; the continuous-lot multiplier spine is deleted). CFD lot sizing is retired with manual trading; its DXTrade `contractValue` safety fact is owned by [`operational_rules.md` Rule 3](../../../docs/operational_rules.md#3-dxtrade-contractvalue-for-dj30-must-be-10).
+Live sizing funnels through `ops/c1_rail/c1_sizing_host_reference.py` (integer-qty rail; the continuous-lot multiplier spine is deleted). CFD lot sizing is retired with manual trading; its DXTrade `contractValue` safety fact is owned by [`operational_rules.md` §3](../../../docs/operational_rules.md#3-dxtrade-contractvalue-for-dj30-must-be-10).
 
 ### Futures venues (e.g. Bulenox CME micros)
 
@@ -165,7 +151,7 @@ Pointer-heavy — these are the load-bearing differences from CFD operation, eac
 
 - **Trailing vs static DD, and EOD vs real-time.** A firm's trailing DD may ratchet in real time (Bulenox "Option 1") or only at end-of-day ("Option 2" / MFFU / Tradeify-style EOD-lock) — these are materially different risk profiles, not interchangeable. `core/portfolio_mc.py`'s `bust_trailing` currently models %-of-peak, EOD — confirm which real-time/EOD semantic the target firm actually uses before trusting a re-MC's bust rate.
 - **Force-flat / no overnight.** Futures-prop venues typically force-flatten before session close — no overnight or weekend carry. Strategies with multi-day holds (Guardian) do not fit a force-flat venue as-is; see `docs/adr/2026-06-30-no-manual-trading-cfd-retirement.md` and the futures-pivot project memory for the venue-fit determination per strategy.
-- **Consistency + inactivity rules.** Most futures-prop firms require profit concentration below some % of total (a "consistency rule," typically since-inception-cumulative on funded accounts, not per-payout-window) and a minimum trading cadence (an "inactivity rule," e.g. Bulenox's ≥1 trade per 5 trading days). A strategy that goes quiet past the inactivity window needs a scheduled token-micro-trade mitigation at the execution layer — this is NOT optional if the strategy's natural trade cadence can exceed the window.
+- **Consistency + inactivity rules.** Most futures-prop firms require profit concentration below some % of total (a "consistency rule," typically since-inception-cumulative on funded accounts, not per-payout-window) and a minimum trading cadence (an "inactivity rule," e.g. Bulenox's ≥1 trade per 5 trading days). Published MC figures assume the inactivity barrier OFF ([`load_bearing_numbers.md` §2](../../../docs/load_bearing_numbers.md#2-standing-rule--every-published-figure-assumes-the-inactivity-barrier-is-off)); on a live account, each account-preservation trade needs the operator's GO (the standing token-trade mandate was retired 2026-10-24).
 - **Eval economics.** Futures-prop evals are typically cheap-retry (a failed eval costs a modest monthly fee, re-purchasable) vs FXIFY's one-shot challenge purchase. This changes which bust-rate gate is appropriate — a 1% bust gate calibrated for a one-shot purchase may be needlessly conservative for a cheap-retry eval. Gate provenance (which economic model a bust-rate threshold assumes) must be pre-registered before reading results against it, not chosen after seeing the numbers.
 - **Venue-transfer gates.** A strategy locked and backtested on one feed/venue does not automatically transfer its edge to a new feed/venue — treat every venue switch as a gated hypothesis, not a free port. Run the feed-equivalence pre-flight (`docs/spec/feed_equivalence_discovery_test_LOCKED.md`) before trusting a locked MC on a new feed. the P2 edge-transfer gate is the worked example (tombstoned 2026-08-08; body via `git show pre-prune-2026-08-08:docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md`): a two-sided gate that FALSIFIED on the as-mapped CME-micro venue for two of the four strategies (structural under-firing). The R5 DJ30→MYM successor also FALSIFIED (2026-07-09); residual futures-**prop** program closed at R6 NO-GO — see `docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md` and historical brief via `git show pre-prune-2026-08-08:docs/ltm/briefs/futures_residual_program_2026-07-05.md`.
 
@@ -203,7 +189,7 @@ Implemented in `core/portfolio_mc.py`. Answers one question: given locked strate
 
 ### Locked anchor (FXIFY historical — engine regression pin; not a live pass-probability)
 
-**Literals not restated here (Rule 7).** Read the pin + panel provenance from
+**Literals not restated here (operational_rules §7).** Read the pin + panel provenance from
 [`docs/mc_anchor_history.md`](../../../docs/mc_anchor_history.md) and the gated human headline in
 [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference (⚠ AGENTS.md's three bolded literals are also
 parsed by `ops/recall/guard.py` — do not "fix" them in isolation). Engine regression:
@@ -229,16 +215,12 @@ self-funded risk questions need a fresh Pre-Q (hard date per the rescope ADR).
 
 ## Core principles
 
-1. **Trade the system, not your opinion.** Edge comes from 4+ years of tested data, not today's macro read.
-2. **No discretionary overrides.** Rule logged from the February override incident on a valid Guardian long that would have been a winner.
-3. **Live trades only via the c1 rail** under the arming gates in [`AGENTS.md`](../../../AGENTS.md#live-execution-posture) §Live-execution posture. Manual FIRE/SETUP/PROXIMITY desk semantics are retired.
-4. **One trade at a time per strategy.** Aegis max 1/day, Striker respects pyramid rules, Guardian one position.
-5. **Respect each strategy's own session filters.** Trading days and hours are Pine session-filter properties of the strategy, not of the venue — read them from the Pine and `core/strategies/CATALOG.md`, never improvise.
-6. **Export CSVs weekly** for performance tracking, whichever firm/venue is active.
-7. **The portfolio is locked at the parameter axis** — risk% / versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference; live authority `core/firm_rules.py` `_BASE_RISK`. Parameter/allocation changes require MC-validated re-locks. Capital **authorization** is a separate revocable axis owned by [`docs/methodology/strategy_lifecycle.md`](../../../docs/methodology/strategy_lifecycle.md) (current tier state lives there / AGENTS.md §Strategy Authorization Lifecycle — do not restate here).
-8. **Audit-first for risk-control decisions.** Read `dd_protection.py` (and any other production risk file) before authoring any decision brief that touches it.
-9. **Headlines drive markets, not physical ground-truth.** No regime overlays built on physical facts. Strategies already adapt to regime through their base signal logic; overlays are redundant. Lesson locked from the Guardian conflict-overlay rejection.
-10. **Do not quote challenge-era pass/bust rates as live probabilities.** The MC pin is historical / regression-only until a successor self-funded risk Pre-Q lands.
+Narrowed 2026-10-24 (operator ruling): the legacy-book execution principles (trade the system, no discretionary overrides, live trades only via the c1 rail, one trade at a time, session filters, weekly CSV exports) were retired with the [skills consolidation](../../../docs/adr/TOMBSTONES.md#2026-10-24-skills-consolidation); live execution follows `c1-rail` and AGENTS.md.
+
+1. **The portfolio is locked at the parameter axis** — risk% / versions: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference; live authority `core/firm_rules.py` `_BASE_RISK`. Parameter/allocation changes require MC-validated re-locks. Capital **authorization** is a separate revocable axis owned by [`docs/methodology/strategy_lifecycle.md`](../../../docs/methodology/strategy_lifecycle.md).
+2. **Audit-first for risk-control decisions.** Read `dd_protection.py` (and any other production risk file) before authoring any decision brief that touches it.
+3. **No overlays.** No regime or conflict overlays built on physical facts; the base strategies already adapt to regime. Reintroducing one needs a fresh INQHIORI loop showing the base logic is insufficient (prior overlays retired; record at git tag `pre-prune-2026-06-05`).
+4. **Do not quote challenge-era pass/bust rates as live probabilities.** The MC pin is historical / regression-only until a successor self-funded risk Pre-Q lands.
 
 ---
 

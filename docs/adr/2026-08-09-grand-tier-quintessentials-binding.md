@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR10-12, ADR10-15); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Related:** [`three-loop binding`](2026-06-12-three-loop-methodology-binding.md) (`Accepted` — extended one tier up, not amended) · [`GSUB-1 run spec`](../briefs/programs/GSUB-1-first-grand-subtract-pass.md) (arms §4; ratifies alongside) · [`ceremony tiering`](2026-08-08-adr-ceremony-tiering.md) (limb-4 → FULL tier: creates doctrine)
 **Layer:** meta-process (tier binding); additionally creates a fourth operator domain — **pursuit** (§2.4). **$0 / K=0.**
 **Loop-of-Record:** STRATEGIC — binding methodology authority to tiers is governance-of-what-governs (same LoR class as the three-loop binding ADR's own declaration). On ACCEPT, the tier vocabulary itself gains GRAND.
@@ -149,8 +150,7 @@ conflation remains the primary guarded failure mode.
 
 Opening a new pursuit requires a GRAND-level **entry record** (minimum one paragraph): Aim
 served, Measure (what counts as progress), Survive bound (resource ceiling), and a review date.
-No side-door pursuits. Existing pursuits are **not** grandfathered — GSUB-1 backfills entry
-records for every KEEP.
+No side-door pursuits. Existing pursuits are **not** grandfathered.
 
 ### §2.6 Cadence
 
@@ -196,7 +196,6 @@ after GSUB-1 closes (**2026-11-08**; the 2026-08-08 vehicle has run).
 - Creating a new standing review ceremony instead of binding to the existing gate.
 - Grandfathering current pursuits past the intake rule.
 - Relabeling existing parks as compliant without adding re-entry + expiry fields.
-- Ratifying with an unpopulated §0.
 
 ---
 

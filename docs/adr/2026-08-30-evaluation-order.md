@@ -4,8 +4,9 @@
 **Decision date:** 2026-08-30
 **Supersedes:** none
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** operator ruling 2026-10-24 — §Reachability's Requirement 5 cost limb and its blind-only exception (Requirement 5 deleted); see the dated note in §Reachability
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR12-111); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Format:** concise
 **Layer:** methodology
 
@@ -41,8 +42,7 @@ a current owner.
    including discriminator, costs, scoped compliance snapshot, succession policy
    and alpha/M/procedure. No unscored shape limb may pass this point.
 5. **TRADEABLE-REACHABLE, before Explore.** Delegate cost, latency, firm geometry
-   and payoff shape to their owners as below; the named blind cost exception
-   satisfies that limb by citation of its accepted deferred order.
+   and payoff shape to their owners as below.
 6. **Bind K, Explore, then selection-freeze.** Open the register_search manifest
    against declared K/alpha/window before any exploration data read or cell score.
    Score the entire frozen catalogue, select at most M cells, and append the full
@@ -86,20 +86,24 @@ No fit screen or this ordering decision substitutes for that gate.
 ### Reachability
 
 TRADEABLE-REACHABLE orchestrates existing authorities and derives no new formula.
-Cost at admission/harvest uses [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-five-admission-requirements-all-mandatory-before-screening),
-the per-event bp-of-panel-price form. The per-trade stop-distance-R check in
-[`cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) remains
-separate and additive at design time. The [August 24 D2 split](2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
-settled these owners. Pin authority and revision at freeze; a later authority/scope
-revision voids and refreezes the affected campaign under the new authority,
-including its attestation, instead of silently rescoring it.
+No universal cost hurdle applies at admission/harvest: each candidate's evaluation
+estimates its own net return, execution uncertainty and cost sensitivity, and any
+cost gate a contract declares is scored in its own units. The per-trade
+stop-distance-R check in [`cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py)
+remains separate at design time and is report-only since 2026-10-24 ([pre-gate ADR addendum](2026-06-22-cost-geometry-pregate.md#addendum-2026-10-24--report-only-operator-ruling-option-b)).
+Pin authority and revision at freeze; a later authority/scope revision voids and
+refreezes the affected campaign under the new authority, including its
+attestation, instead of silently rescoring it.
 
-**Blind-only cost exception:** the [no-counterparty statistical/geometric channel](2026-08-15-no-counterparty-statistical-sourcing-channel.md)
-uses its own Confirm-measured effect in Requirement 5. Its pre-Explore cost limb
-therefore cites that accepted deferred order; its own post-confirm cost check
-still runs. Do not invent a cohort prior or read Confirm early. Other channels
-run cost pre-Explore; any future exception needs its own prospectively named,
-cited ruling and cannot be inferred from this one.
+*Dated scope note, 2026-10-24:* [strategy_harvest Requirement 5](../methodology/strategy_harvest.md#1-the-four-admission-requirements-all-mandatory-before-screening)
+(the per-event bp-of-panel-price 4× form this paragraph routed to, with the
+[August 24 D2 split](2026-08-24-validation-battery-k-tiering-and-gate-retirement.md)
+as owner record) was deleted by [Joshua's ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24).
+The blind-only cost exception, which let the
+[no-counterparty channel](2026-08-15-no-counterparty-statistical-sourcing-channel.md)
+defer its Requirement 5 limb to its Confirm-measured effect, lapses with it; that
+channel's own post-confirm cost check still runs. Prior text is at
+[`4ed30d0`](https://github.com/Joshua-Asante/first-passage/blob/4ed30d0/docs/adr/2026-08-30-evaluation-order.md#reachability).
 
 Latency and firm geometry use the checks named by the channel/venue binding.
 Every channel needs conservative citable win-rate/mean-win/mean-loss shape priors,

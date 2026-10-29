@@ -73,7 +73,7 @@ all closed 2026-07-16 without a successor. The ADR's idle guard sits on the
  gap); the stronger "therefore the gate is over-correcting" inference does
  not survive.
 
-Externally-published mechanisms enter **only** via the five admission
+Externally-published mechanisms enter **only** via the four admission
 requirements in [`docs/methodology/strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
 §1, checked *before* screening. Do not restate the list here. Req-3 is
 mandatory disclosure, not a gate
@@ -82,7 +82,7 @@ mandatory disclosure, not a gate
 Screen with `lab/research_utils/axis_screen.py` (manifest-driven; screen
 constants Cap/DSR/power/K-floor are frozen, never tuned per-seed). **A PASS
 never blesses** — it licenses campaign scoping only; downstream (HARV
-reachability HARD gate, cost gate, universe gate, realism, survivor scoring)
+reachability HARD gate, the candidate's own cost estimate, universe gate, realism, survivor scoring)
 still binds. **Confirm, don't mine:** K_intrinsic ≤ 3 declared at admission;
 any post-admission widening voids the screen and is a new axis.
 
@@ -91,11 +91,12 @@ attestation only discharges the gate it's simulated *in that gate's own units,
 at the basis the gate actually scores on*. Two funded campaigns (D5, H-OD-1)
 both confirmed their mechanism yet died at Stage-2 cost-law because §R argued
 Sharpe-space against the Stage-6 floor instead of simulating the bp-space cost
-gate — see [`strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
-§1 Requirement 5 for the mandatory cost-law inequality, now checked at both
-sourcing time and admission.
+gate. That universal 4× gate (Requirement 5) was deleted 2026-10-24: each
+candidate's evaluation now estimates its own net return, execution uncertainty
+and cost sensitivity ([`strategy_harvest.md`](../../../docs/methodology/strategy_harvest.md)
+§1 row 5); `scripts/cost_geometry_pregate.py` reports stop-distance R only.
 
-## Rule 1 — every candidate carries a K; declare it before you look
+## Discovery check 1 — every candidate carries a K; declare it before you look
 
 Every tool here manufactures multiple-comparisons risk at industrial scale:
 STUMPY over thousands of subsequences, tsfresh over hundreds of features, PySR
@@ -198,8 +199,8 @@ The missing middle between a pulled dataset and (when re-armed) `universe_gate`
 / `temporal_consistency` lives in `lab/discovery/stage24_runner.py`. It mines
 (STUMPY / catch22-covariate / ruptures), binds K_DSR via `discovery.k_count`
 (ADR 2026-07-12 non-overlap floor), scores frozen IS rules, and emits the
-option-(i) Stage-4 return matrix. Synthetic-only until the
-operator authorizes a real `register_search open` / `db_fetch pull`.
+option-(i) Stage-4 return matrix. Synthetic-only: no data source is approved
+(`db_fetch` is the retired Databento client; [PIPELINES.md](../../../PIPELINES.md) Acquire data row).
 **W4:** SPA/PBO path dormant — prefer temporal-consistency + campaign-named
 limbs; when calling DSR/`universe_gate`, the module default is `var_trials=1/n`
 (audit R5, flipped 2026-08-15). An explicit pin still overrides.
@@ -222,7 +223,7 @@ re-centre the null across the full searched universe — lives in
 `strategy-validation` and needs the returns of all K strategies. This layer just
 makes K a recorded fact so that correction is possible.
 
-## Rule 2 — least-overfit tool first, escalate deliberately
+## Discovery check 2 — least-overfit tool first, escalate deliberately
 
 Reach for the lower-K, more-constrained option before the flexible one, because
 flexibility is snooping surface:
@@ -237,7 +238,7 @@ flexibility is snooping surface:
 
 Per-tool footguns and the K each contributes: `reference/tool-discipline.md`.
 
-## Rule 3 — discovery outputs are candidates, not signals
+## Discovery check 3 — discovery outputs are candidates, not signals
 
 STUMPY discords are anomalies *by construction*. ruptures change points and
 hmmlearn states are **conditioning variables**, not entries. A tsfresh feature is

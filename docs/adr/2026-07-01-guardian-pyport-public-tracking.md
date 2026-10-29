@@ -9,6 +9,7 @@
 **Authors:** Joshua + Claude Code
 **Related:** ADR `2026-06-23-tv-backtest-egress-automation.md` (commissioned the port; its §2/§5 edge-protection reasoning walled off the live TV *account* and third-party *Pine uploads* but never weighed public tracking of the port artifact itself); `lab/analysis/legacy/tom_spx/PINE_MANIFEST.sha256` (the hash-pin-for-untracked-source precedent, and the 2026-06-16 local-copy-loss anchor); CLAUDE.md §Public-clone posture; ADR `2026-05-10-manifest-integrity-gate.md` (M-9: a manifest without a gate drifts)
 **Layer:** governance / public-clone posture
+**Revision:** 2026-10-25 — rule consolidation D8 removed the no-unilateral-redaction forbidden move, superseded when the 2026-08-14 visibility ADR §2 resolved §2.6 toward redaction (ADR03-54); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -85,7 +86,6 @@ re-disclose them.)*
 
 - **Purging or force-rewriting public history to "clean up" the exposure** — it breaks clones/PRs and does not un-disclose; the pre-prune precedent keeps history. Tempting as the "thorough" fix; rejected in §3.
 - **Presenting this untracking as having closed the disclosure** — in any doc, PR, or memory. The bytes are public at `dc07898` and in every fork. The honest claim is amplification-limiting only.
-- **Redacting `LOCK.md`'s locked-config block (or the MQL5 spec table) unilaterally in this change** — tempting for coherence, but those are lock-governance artifacts and the class-wide question is the operator's (§2.6 Forward).
 - **Porting the next locked strategy (Aegis/DJ30/NAS100) into a tracked path because "Guardian already leaked"** — prior leakage is not a license; §2.4 makes gitignored + hash-pinned the default.
 - **Registering the untracked port as a `.gitignore` narrow *exception* later without re-running this ADR's calculus** — the tom_spx exception was justified by RESOLVED-ABSENT / no-live-edge; Guardian is the opposite case.
 

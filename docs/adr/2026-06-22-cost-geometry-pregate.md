@@ -9,6 +9,7 @@
 **Supersedes:** none (additive — extends Rule 10 / ADR 2026-06-11)
 **Related:** [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](2026-06-11-instrument-ledger-and-cfg-fingerprint.md) (the instrument-ledger rule this extends) · [`docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md`](2026-06-14-reject-usoil-rdm-spike-fader.md) + [`docs/adr/2026-06-14-rejected-candidate-patterns.md`](2026-06-14-rejected-candidate-patterns.md) (the paid-for failure + the venue/cost add-back condition this mechanizes) · [`docs/ltm/briefs/Q-5LEG-DATA-instrument-regime-public-data.md`](../ltm/briefs/Q-5LEG-DATA-instrument-regime-public-data.md) (the search that motivates it)
 **Layer:** methodology / infrastructure (R&D session governance) — **does not touch strategy code, allocations, dd_protection, or MC calibration.** Locked config untouched.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-12, ADR03-16); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -48,11 +49,11 @@ cost_ratio@1xATR = median(spread) / median(ATR15m)
 cost_R           = round_trip_cost_price / realized_stop_distance
 ```
 
-with `realized_stop_distance = stop_atr · median(ATR15m)` (or an explicit realized stop in price units for confirmation/structural-stop designs), and `round_trip_cost_price = spread + 2·slippage + 2·commission`. **PASS iff `cost_R < 0.05R`** (the default ceiling). The 0.05R ceiling is the round-trip cost a PF~2.0 after-cost leg absorbs with margin and is consistent with the standing 4×-median-cost hurdle (0.05R cost ⇒ a 0.20R post-cost hurdle, comfortable against a ≥0.2R gross edge). The ceiling is a config arg (`--ceiling`), set once per investigation — not re-tuned per candidate.
+with `realized_stop_distance = stop_atr · median(ATR15m)` (or an explicit realized stop in price units for confirmation/structural-stop designs), and `round_trip_cost_price = spread + 2·slippage + 2·commission`. The 0.05R ceiling is the round-trip cost a PF~2.0 after-cost leg absorbs with margin and is consistent with the standing 4×-median-cost hurdle (0.05R cost ⇒ a 0.20R post-cost hurdle, comfortable against a ≥0.2R gross edge).
 
 **§2b — The realized-stop rule (load-bearing).** The stop fed to the gate **must be the stop the strategy actually uses, computed from its realized geometry** — not an assumed comfortable k·ATR. This is the exact USOIL trap: an assumed 2.5×ATR stop reads "comfortable" while the realized spike-high confirmation stop is sub-ATR, ~8× the assumed cost. The gate echoes the implied stop-in-ATR and flags any sub-ATR stop.
 
-**§2c — Disposition.** The Phase-0 ledger disposition for a new-mechanism session records `cost_R`, the ceiling, and the verdict. A **FAIL** means the mechanism *as specified* is cost-infeasible and does not proceed to backtest without a stop-geometry change (wider stop, higher execution TF) or a lower-cost venue — mirroring the §A venue/cost add-back. A **PASS is necessary-not-sufficient**: the pre-registered backtest still runs.
+**§2c — Disposition.** The Phase-0 ledger disposition for a new-mechanism session records `cost_R`.
 
 **Effective:** immediately, all surfaces (CC, claude.ai, cursor). **Implementation:** [`scripts/cost_geometry_pregate.py`](../../scripts/cost_geometry_pregate.py) (stdlib-only, runnable on a public clone) + [`tests/test_cost_geometry_pregate.py`](../../tests/test_cost_geometry_pregate.py) (pins the USOIL/USDCAD anchors); Rule 10 amended with a dated maintenance-log entry pointing here.
 
@@ -87,8 +88,6 @@ with `realized_stop_distance = stop_atr · median(ATR15m)` (or an explicit reali
 
 - **Running the gate on the *assumed* k·ATR stop when the design's realized stop is sub-ATR.** The exact USOIL trap. The realized stop (`--realized-stop`) governs for confirmation/structural-stop designs; the gate flags sub-ATR stops precisely so this move is visible.
 - **Sourcing ATR15m from a non-canonical feed** (the `FX_USOIL`/`TVC:USOIL` corruption class). Canonical TV-export / Pepperstone series only (2026-06-12 policy). A new execution feed clears the feed-equivalence pre-flight first.
-- **Treating a PASS as edge validation.** The pre-gate is necessary-not-sufficient; it spends zero forward days and makes zero edge claim. The pre-registered, placebo-controlled backtest still runs.
-- **Loosening `--ceiling` per candidate to manufacture a PASS.** The design-layer analogue of "widen the stop post-hoc to cut cost" (ADR 2026-06-14-reject-usoil-rdm §5c). The ceiling is set once per investigation; a candidate clears it or changes its geometry/venue.
 - **Citing one feed's spread/ATR as a proxy for another's** (the feed-equivalence + XAGUSD instrument-vs-strategy-correlation belt). Geometry is feed-specific.
 
 ---
@@ -150,8 +149,18 @@ grep -q "cost_geometry_pregate" docs/operational_rules.md && echo "Rule 10 wired
 
 ---
 
+## Addendum 2026-10-24 — report-only (operator ruling, option (b))
+
+**Ruling (Joshua, 2026-10-24):** "option (b), report-only. Keep cost_R, the band and the sub-ATR flag recorded at Phase 0; drop the blocking 0.05R FAIL." Decision packet: [PR #900](https://github.com/Joshua-Asante/first-passage/pull/900).
+
+- **Why.** §2a's only derivation of the 0.05R ceiling was consistency with the universal 4×-median-cost hurdle, which the [2026-10-24 ruling](../notes/2026-10-24-assumption-challenge-rulings-proposal.md#operator-ruling-joshua-2026-10-24) deleted. The ceiling also sat on no boundary of the gate's own cost bands. The arithmetic and the realized-stop rule (§2b) have their own paid-for derivation (the USOIL trap) and stay.
+- **What changes.** §2a's PASS/FAIL ceiling and `--ceiling` are retired; §2c's blocking FAIL is retired. Phase 0 still runs `scripts/cost_geometry_pregate.py` on a new candidate mechanism and records `cost_R`, its band (comfortable / acceptable / marginal / crippling) and the realized stop-in-ATR with the sub-ATR flag in the ledger disposition. These feed the candidate's own net-return and cost-sensitivity estimate ([strategy_harvest](../methodology/strategy_harvest.md)); nothing blocks a backtest automatically. The script exits 0 when it produces the report.
+- **Still binding.** §2b (use the realized stop, not an assumed k·ATR) and the §5 moves on the assumed stop, non-canonical feeds and cross-feed proxies. The §5 moves on PASS and `--ceiling` lapse with the ceiling.
+- **§4 falsifier, reworded.** Limb (b), a false kill, can no longer occur. At the 2026-11-08 sitting the remaining question is whether recording `cost_R` and the sub-ATR flag at Phase 0 surfaced every cost-infeasible candidate whose inputs were knowable before a probe was spent. If not, retire the obligation and keep only the formula. Fewer than one new cost-sensitive candidate by then means AMBIGUOUS; carry it forward.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
 | 2026-06-22 | Initial authoring — runnable cost-geometry pre-gate added to instrument-ledger Phase-0 (Rule 10); script + test + Rule 10 amendment; additive, no locked config touched | Joshua + Claude Code |
+| 2026-10-24 | Addendum 2026-10-24 — report-only (option (b)): 0.05R ceiling, `--ceiling` and the blocking FAIL retired; `cost_R`, band and sub-ATR flag still recorded at Phase 0; §4 falsifier reworded | Joshua (ruling); Claude Code |

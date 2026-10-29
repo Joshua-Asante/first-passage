@@ -2,7 +2,7 @@
 
 **Purpose.** The falsifier of record for Rule 2 (budget before acting). Canon: `docs/methodology/inqhiori-canon.md` §15. ADR: `docs/adr/2026-06-16-rule-2-budget-before-acting.md` (§4 falsifier).
 
-This is **one table, not a telemetry subsystem** (ADR §5). Append one row each time a budget *trips* (the wire fires). A budgeted investigation that completes *under* budget is recorded as a non-trip baseline row so the log is never empty-theater and the audit can see the threshold was not even approached.
+This is **one table, not a telemetry subsystem** (ADR §5). Append one row each time a budget *trips* (the wire fires). A budgeted INQHIORI investigation that completes *under* budget is recorded as a non-trip baseline row so the log is never empty-theater and the audit can see the threshold was not even approached; other substantial work ([ADR Addendum 2026-10-24](../../adr/2026-06-16-rule-2-budget-before-acting.md#addendum-2026-10-24--scope-widened-to-all-substantial-work)) logs trips only.
 
 **The thresholds under test (set 2026-06-16, validated forward only — never re-derived from the cfg00–12 history that set them):**
 

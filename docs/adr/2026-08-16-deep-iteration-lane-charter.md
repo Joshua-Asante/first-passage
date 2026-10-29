@@ -1,6 +1,6 @@
 # ADR 2026-08-16 — Deep-iteration lane charter (mechanism-family refinement at declared K, survivor-measured admission)
 
-**Status:** `Accepted` — operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. The GO carries the two recommended sequencing conditions as binding: **(GO-1)** the first campaign prereg freezes only after the P2 policy-frontier measurement lands **[LANDED 2026-08-16 — RESOLVED-QUANTIFIED, median R_max ratio 5.107×; the intraday-clock caveat in its closure §3 is a MANDATORY named risk in the first campaign's prereg, not optional]** and the Databento parent-era cost dry-run is on record **[LANDED 2026-08-16 — bar schemas (1d/1h/1m) on the design-box triad price at $0.0000 both windows; GO-1 fully discharged, see Addendum below]**; **(GO-2)** the first campaign declares **K ≈ 10** (floor 1.265 at a 6.5-year confirm; ≈ 0.93 Gaussian-approx power against a true-1.83 target), reserving the K=33 corner for a family that has earned it.
+**Status:** `Accepted` — operator GO (JA) 2026-08-16 ("P2 + GO", electing the recommendation as given), **an explicit overriding election against this charter's own HOLD default**, on the independent-grounds argument in §1. Its two first-campaign sequencing conditions were discharged 2026-08-16: **GO-1** (P2 policy-frontier measurement `RESOLVED-QUANTIFIED`, median R_max ratio 5.107×, its closure §3 intraday-clock caveat carried as a named risk; Databento parent-era cost dry-run on record, bar schemas $0.0000 — see Addendum below) and **GO-2** (first campaign at **K ≈ 10** — floor 1.265 at a 6.5-year confirm, ≈ 0.93 Gaussian-approx power against a true-1.83 target; DL-1 froze at K=10).
 **Tier:** full — limb 4 of the [ceremony-tiering ADR](2026-08-08-adr-ceremony-tiering.md) fires (creates doctrine: a new candidate-producing channel with its own falsifier).
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-08-22-grow0-two-ledger-k-question.md` — adds §2.2(iv), a
@@ -13,6 +13,8 @@ disclosure-only fourth conjunct (cross-campaign sealed-consultation ledger); §2
 **Supersedes:** nothing. `CAP` / `DSR_MIN` / `axis_screen.py` constants untouched; the blind channel (D-K1/D-K2/D-K3), MSL, harvest intake, and every existing admission predicate stand byte-unedited.
 **Related:** [no-counterparty channel](2026-08-15-no-counterparty-statistical-sourcing-channel.md) (sibling charter; this lane mirrors its structure) · [family-K disclosure](2026-08-04-family-k-bank-disclosure-not-gate.md) · [W4 dormancy](2026-08-07-w4-minimal-gate-set-dormancy.md) · [Q-CAPBAND-1 closure](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/closures/Q-CAPBAND-1-closure-resolved.md) · [M-19](../methodology/lessons/methodology_lessons.md) · [MSL slate-2 design box](2026-08-13-msl-slate-2-design-box.md)
 **Layer:** research governance — no live-risk surface; no locked parameter; no allocation; no arming.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR11-1, ADR11-2, ADR11-5, ADR11-26); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D5 removed the Databento dry-run, pull and cost-gate procedures (ADR11-19, ADR11-38); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -49,7 +51,7 @@ All three hits are literature-search contexts (WSTRUCT archetype deep-search; 07
 
 Every current channel is a **one-shot** channel: K ≤ 3 at open (blind D-K1; EM0 catalogue cap; S6 refusal), re-proposal bars forbid θ-retune, and campaigns are one explore + one reserved confirm. The CFD-era book was built the opposite way — tens of revisions per strategy — un-deflated, and its product demonstrably regime-fragile (§0 row 8). Neither corner is adequate: the one-shot corner has produced zero deployable candidates from generation; the un-controlled corner produced fragile survivors. This charter is the priced middle.
 
-**Third-door engagement (stated plainly, eyes-open).** This charter is a candidate-producing channel drafted one day after two operator elections counsel against exactly this class of act absent independent grounds: the blind channel's N=3 addendum, disposition (d) — "It is **not** a license to open a third sourcing channel (§3: if this channel also falsifies, the fallback is the source-class post-mortem, not a third door)" — and the same-day empty-naming addendum's "**Stop generating this session.**" Strictly, neither letter is violated: the blind channel has not falsified (N sits 1/3; §4 unread), and the bar is on *dryness-as-authority*, while this charter's ground is the iteration-depth gap (no existing channel can host K > 3 inside one family — a structural absence, not a dryness reading). But the adjacency is real and is not soft-pedaled: **the default disposition is to HOLD this charter until the blind channel's 2026-11-08 §4 reading**; ratifying it earlier is an explicit overriding election the operator makes against that default, on the independent-grounds argument above — not a routine GO.
+**Third-door engagement (stated plainly, eyes-open).** This charter is a candidate-producing channel drafted one day after two operator elections counsel against exactly this class of act absent independent grounds: the blind channel's N=3 addendum, disposition (d) — "It is **not** a license to open a third sourcing channel (§3: if this channel also falsifies, the fallback is the source-class post-mortem, not a third door)" — and the same-day empty-naming addendum's "**Stop generating this session.**" Strictly, neither letter is violated: the blind channel has not falsified (N sits 1/3; §4 unread), and the bar is on *dryness-as-authority*, while this charter's ground is the iteration-depth gap (no existing channel can host K > 3 inside one family — a structural absence, not a dryness reading). But the adjacency is real and is not soft-pedaled: the operator's 2026-08-16 GO ratified this charter as an explicit overriding election against a HOLD-until-2026-11-08 default, on the independent-grounds argument above (Status line).
 
 ---
 
@@ -80,13 +82,11 @@ Charter a **deep-iteration lane** (`--lane deep`) with the following properties,
    landed in its own dated commit, not this one).
 
    **This is not a Cap change:** `CAP = 1.0` remains the reachability prior for every one-shot channel; this lane replaces the *prior* with a *measured demand* — the survivor must itself clear `floor_at_k(K, confirm_years)` on data the search never touched. The K-cap addendum's rationale (refuse expensive deaths at the cheapest possible moment) is traded against deliberately here: the lane buys potentially-expensive confirm-stage deaths, bounded by §4's two-campaign falsification budget — that trade is the charter's price, stated, not hidden.
-3. **Frozen train/confirm partition, confirm ≥ the years the floor was computed at.** Named in the prereg before any variant is scored. All iteration feedback reads **train only**; the confirm partition is read **once**, on the single pre-nominated survivor (nomination rule frozen at prereg: best-on-train under a stated statistic — selection is in-sample only). Per-variant confirm results are never computed. A 6.5-year confirm in practice means parent-era Databento history on the train side (cost dry-run mandatory before any pull) with the native panel era reserved for confirm, or an explicitly shorter confirm with the floor honestly recomputed at that length.
+3. **Frozen train/confirm partition, confirm ≥ the years the floor was computed at.** Named in the prereg before any variant is scored. All iteration feedback reads **train only**; the confirm partition is read **once**, on the single pre-nominated survivor (nomination rule frozen at prereg: best-on-train under a stated statistic — selection is in-sample only). Per-variant confirm results are never computed. A 6.5-year confirm in practice means parent-era history on the train side *(the Databento cost-dry-run-then-pull procedure was removed 2026-10-25, rule consolidation D5, ADR11-19: Databento is retired)* with the native panel era reserved for confirm, or an explicitly shorter confirm with the floor honestly recomputed at that length.
 4. **Regime-fragility control (the CFD lesson, priced).** The prereg freezes an own-series half-split on the confirm partition — split point and per-half floor named before the read; deliberately **not** named "regime-robustness gate" (that gate is scoped to dd_protection-class sweeps; mirror of the blind channel's forbidden move 5). A survivor whose confirm passes pooled but fails a half is `FALSIFIED-FRAGILE`, not admissible — this is the control whose absence produced the locked book's H1 13.84%.
 5. **Everything downstream is unchanged.** Cost-law ≥ 4× at the venue-legal expression (arithmetic run at family selection, before the search opens); N-SURV (intraday-honest bust ≤ 3.0% ∧ P(pass) ≥ 50%) byte-unedited; native-TV anchor before admission; lifecycle intake at SURVIVAL-ONLY / WATCH-1; M1 + per-session GO for anything live. The lane supplies candidates *to the existing gauntlet*; it admits nothing by itself.
 6. **Multi-shot correction re-armed.** At K in the tens the frozen split is no longer the "explicit, weaker, disclosed substitute" it is at K ≤ 3: the campaign prereg must name SPA/StepM thresholds — and, if cross-validated selection is used, PBO/CPCV thresholds **plus the time-series-leakage argument W4's PBO row requires** — discharging W4's re-arm condition with the operator GO that ratifies the prereg (GO dated after 2026-08-07). The `universe_gate` orchestrator re-arms only when SPA + DSR + PBO are all re-armed for the family (W4's own all-three condition).
 7. **Counter hygiene.** Lane campaigns are not blind-channel constructs (N=3 count untouched) and not MSL cards (E1/WHO untouched). The harvest boundary is the §2.1 channel-origin rule: externally-published families clear harvest intake first (their intake-stage kills count on limb 2 **there** — this lane is never a route around the R10 limb the operator armed 2026-08-15); only internally-generated or intake-cleared families are lane-resident, and their lane kills are recorded on this ADR with dates. A candidate may live in exactly one channel; double-homing to shop for the softest counter is forbidden (§5).
-
-**Effective:** nothing is effective at `Proposed`. On operator GO: §7 step 1 (first campaign prereg) is the only immediately licensed act.
 
 ---
 
@@ -124,7 +124,6 @@ Charter a **deep-iteration lane** (`--lane deep`) with the following properties,
 
 ## §5 — Forbidden moves (under this charter)
 
-- **Self-ratify / run anything at `Proposed`.** Operator GO is the only activation.
 - **θ-retune laundering.** A family in `docs/rejected_candidates.md` enters only by clearing its own re-proposal bar first, in writing, in the prereg — the lane never overrides a bar. Dedup attestation (executed, output pasted) is mandatory per prereg.
 - **Reading confirm during iteration**, computing per-variant confirm results, or re-nominating after a confirm read. One survivor, one read, ever, per campaign.
 - **Retroactive K.** Variants explored informally before the prereg count in K (D-K1 language imported); a prereg that under-declares is void.
@@ -151,7 +150,7 @@ Charter a **deep-iteration lane** (`--lane deep`) with the following properties,
 2. **Code:** `--lane deep` flag on `register_search` (open requires the prereg path + declared K + partition; refuses on the §2.2(i)–(iii) predicate), lane-scoped tests. No change to other lanes' predicates.
 3. **Doc scoping:** one-line lane-scoping note on `docs/methodology/strategy_harvest.md` Clause-K and a reader-intercept on M-19 (its K-sweep will otherwise be quoted against the lane without §2.2's answer).
 4. **Skill wiring:** `futures-anomaly-discovery` SKILL K-accounting section gains the lane row.
-5. **Data (if the 6.5-year-confirm geometry is elected):** Databento parent-era cost dry-run → operator GO → pull → panel manifest.
+5. **Data (if the 6.5-year-confirm geometry is elected):** *(Removed 2026-10-25, D5, ADR11-19: the Databento parent-era dry-run → GO → pull → manifest step. Databento is [retired](2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento) with no approved replacement; any new data spend is an operator act.)*
 6. **§2.2(iv) code (owned by [`2026-08-22-grow0-two-ledger-k-question.md`](2026-08-22-grow0-two-ledger-k-question.md), not this charter's own §7)** — `lab/discovery/burned_segments.py`'s `consultation_count`/`consultation_history` extension lands in that ADR's own dated commit; §2.2(iv) is enforced by human review at prereg-authoring time until `register_search.open_run` wiring (build-authorization ADR forward work) lands. This charter's own item 2 above is unaffected — `--lane deep`'s code-enforced refusal predicate stays §2.2(i)–(iii) only.
 
 ---
@@ -236,22 +235,18 @@ crossed by anything this charter's first campaign (K≈10, bar-level mechanism-f
 needs.
 
 **Ruling:** bar-level discovery on `GC/CL/6A` (train) and `MGC/MCL/M6A` (confirm) is **free at
-any of the three tested granularities** — the first lane campaign's prereg may name whichever
-of `ohlcv-1d/1h/1m` its mechanism family needs without a cost gate, and may pull immediately on
-its own operator GO (no separate `--max-cost` negotiation required for bars). **Escalating past
-bars (`tbbo` or finer) is a real-money decision** ($200s–$2,000s at this symbol/window scope)
-and stays gated exactly as Rule 2 already requires — only after a candidate survives on bars,
-and only with an explicit `--max-cost` + operator sign-off at pull time, never inferred from
-this dry-run.
+any of the three tested granularities**; **escalating past bars (`tbbo` or finer) is a real-money
+decision** ($200s–$2,000s at this symbol/window scope). *(Removed 2026-10-25, rule consolidation
+D5, ADR11-38: the pull permissions and gates this ruling set — bar pulls on the campaign's operator
+GO alone, `tbbo` or finer only after bar survival with an explicit `--max-cost` and operator
+sign-off. Databento was retired 2026-09-10 with no replacement.)*
 
 **GO-1 status: fully discharged.** Both conditions met — Q-POLFRONT-1 landed
 `RESOLVED-QUANTIFIED` (2026-08-16) and this dry-run is on record. §7 step 1 (first campaign
 prereg) is now the only remaining gate before the lane's first candidate.
 
 **Forbidden moves added:** citing this addendum's $0.00 bar-schema figures as if they extended
-to `tbbo`/`mbp-1`/`mbp-10`/`mbo` — they do not, the table above shows the actual jump; treating
-this estimate-only dry-run as authorization for any `pull` — a pull is a separate, campaign-scoped
-act under its own `--max-cost`; re-deriving the TRAIN/CONFIRM boundary — `2018-12-31` is the
+to `tbbo`/`mbp-1`/`mbp-10`/`mbo` — they do not, the table above shows the actual jump; re-deriving the TRAIN/CONFIRM boundary — `2018-12-31` is the
 estate's own ratified IS boundary, reused, not re-struck.
 
 ---

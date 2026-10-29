@@ -9,6 +9,7 @@
 **Authors:** Joshua + Claude Code
 **Related:** PR #217 (`scripts/pine_check.py` compile gate — the adoption that motivated the broader egress question); ADR `2026-06-05-sweep-engine.md` (the Python-prefilter/native-confirm two-tier this builds on); ADR `2026-06-12` (TV CSV canonical-feed policy)
 **Layer:** infrastructure
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR03-24, ADR03-27); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -78,7 +79,6 @@ TradingView exposes **no public API** to run a backtest and return results; the 
 ## §5 — Forbidden moves (under this ADR)
 
 - **Running any TV automation (A/B/D) on the live-edge account** — ruled out absolutely; a backtest-automation ban takes down live execution. Account isolation is structural, not a login switch.
-- **Loosening the parity band (`PARITY_NET_PF_BAND` / ρ floor) to force a Path-E pass** — that is methodology p-hacking (sweep-ADR §5 #3). If Guardian can't clear 2%, that is the §4 finding, not a band to widen.
 - **Treating Path A1 (DOM scrape) or Path C (alert backtest egress) as viable** — both were refuted; re-proposing requires new evidence (a de-virtualized table; historical-bar alert firing), not a restated plan.
 - **Circumventing the browser safety allowlist** to reach TV through the MCP — the restriction is a safety control; the answer is a different driver under isolation, not a bypass.
 - **Uploading private Pine to any third-party compiler/optimizer** to shortcut the local port — edge-protection doctrine; the DIY runtime is the only acceptable form.
@@ -170,8 +170,7 @@ the consequence that motivated §1 — automation-triggered enforcement against 
 down live execution — holds identically; only the downstream venue names changed.
 
 **Scope note, for accuracy:** §5's forbidden move is *"Running any TV automation (A/B/D)"* — the
-three **backtest-egress** paths. It is not, on its face, a rule about page-level reads. Anyone
-extending it to reads should say they are extending it. The durable core is the
+three **backtest-egress** paths. It is not, on its face, a rule about page-level reads. The durable core is the
 **consequence asymmetry**, not a probability claim: this ADR nowhere establishes that a given
 interaction triggers enforcement, and it explicitly accepts *"non-zero residual ban risk"*
 elsewhere.

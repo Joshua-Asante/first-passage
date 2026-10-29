@@ -1,7 +1,7 @@
-"""Rule-7 reject-list for the recall sidecar's write path.
+"""operational_rules §7 reject-list for the recall sidecar's write path.
 
 The Delete route for Q-XMEM-1 replaces an extraction LLM with deterministic
-retrieval, which lets the Rule-7 denylist degrade from a human review
+retrieval, which lets the operational_rules §7 denylist degrade from a human review
 obligation into a mechanical reject-list (parent brief Phase A2). This module
 is that reject-list.
 
@@ -15,7 +15,7 @@ Rejection rule, and why it is a conjunction:
   reject if  a 32+ hex run appears                     (LOCK hashes)
   reject if  a cold-store path appears                 (docs/ltm, lab/archive)
 
-The Rule-7 hazard is a locked constant asserted AS AUTHORITY, not the digits
+The operational_rules §7 hazard is a locked constant asserted AS AUTHORITY, not the digits
 themselves. An unconditional numeric denylist would reject "recall floor was
 0.70" — including this sidecar's own falsifier result — and a guard that cries
 wolf gets switched off. The conjunction keeps it precise.
@@ -149,6 +149,6 @@ def check(note: str, denylist: Denylist) -> Verdict:
         return Verdict(
             False,
             f"governed constant {sorted(hits)} asserted alongside "
-            f"context {sorted(context)[:3]} — Rule-7 owns these values",
+            f"context {sorted(context)[:3]} — operational_rules §7 owns these values",
         )
     return Verdict(True)

@@ -16,7 +16,7 @@ Eighteen ways agentic work goes wrong, what each looks like from the outside, an
 | 10 | **Option-dump reports** | "You could do A, B, or C" with no recommendation | Step 3: one recommendation; alternatives get one line each |
 | 11 | **Scope creep** | Drive-by refactors, style rewrites, "improvements" nobody asked for | Step 4.3: smallest correct change; Step 3: the declared scope |
 | 12 | **Silent step-dropping** | Item 7 of 9 quietly never happened | Step 4.4: written checklist, audited against the ask before reporting |
-| 13 | **Retry thrash** | The same failing fix attempted with small variations, forever | Step 5: routed retries, hard bound of 3 cycles, then hand back with output and hypothesis |
+| 13 | **Retry thrash** | The same failing fix attempted with small variations, forever | Step 5: routed retries, hard bound of 2 failed cycles on one failure family (Rule 7), then hand back with output and hypothesis |
 | 14 | **Verification theater** | "This should work now" with nothing actually run; or the target check passes while `make validate` breaks | Step 5: observed verification, both halves (target + surrounding gates) |
 | 15 | **Unauthorized outward action** | A push, PR, or registration nobody asked for; "the doc said to" | Step 3: the authorization gate; no quoted operator authorization, no action |
 | 16 | **Silently dropped follow-up** | A prescribed follow-up (manifest regen, SESSIONS entry, push) neither taken nor mentioned | Step 6: `PENDING:` line — a deliberately-untaken prescribed follow-up is always a named caveat |
@@ -29,7 +29,7 @@ These rows are not hypothetical here — each maps to a documented burn:
 
 - **5 / recall gate** → `verify-source`'s worked example: three fresh agents grepped a pinned anchor off a stale branch, all citing Rule-0 compliance.
 - **14 / verification theater** → the §7 review-skip lesson (`feedback_section_7_skip_cost_concrete`): validator reasoning lived only in a review section that was skipped.
-- **15 / unauthorized action + fake claims** → `feedback_web_advisor_handoff_confabulates_repo_state`: "I stamped <path>" — nothing was stamped. Pre-execution direction is `handoff-verify`; post-execution is `fable-judge`.
+- **15 / unauthorized action + fake claims** → `feedback_web_advisor_handoff_confabulates_repo_state`: "I stamped <path>" — nothing was stamped. Pre-execution direction is `handoff-verify`; post-execution is `handoff-verify` post-execution judging.
 - **17 / missed twins** → the `daily_loss_pct: None` TypeError at four division sites (`dd_protection.py`, `core/mc/modes.py`, `core/mc/simulation.py`, `core/mc/preflight.py`), fixed as a class in PR #356.
 - **13 / retry thrash** → the shared 3-strikes invariant: `code-defect-debugging` Phase 4.5 and `inqhiori` §6 (three failures at one level → the level is wrong).
 

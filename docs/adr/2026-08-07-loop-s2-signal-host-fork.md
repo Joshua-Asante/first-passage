@@ -10,6 +10,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR09-59); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Related:** [SPEC S2](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s2-signal-host-fork-spec.md) · [SPEC S2b](../spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md) · [S1 ADR](2026-08-07-loop-s1-environment-ratification.md) · [M1 ADR](2026-07-22-c1-venue-native-monitoring-maturity.md) · [rail GO ADR](2026-07-17-c1-rail-build-account-registration-go.md) · [loop index](../spec/2026-08-07-loop-spec-index.md) · [TV backtest-egress automation ADR](2026-06-23-tv-backtest-egress-automation.md) (added 2026-08-29, adr-decay-audit discharge — this ADR makes Pine/TV the research/export surface rather than the live signal origin for new strategies; see that ADR's 2026-08-29 addendum for the open forward question this raises) · [`2026-07-10-databento-research-stack.md`](2026-07-10-databento-research-stack.md) (added 2026-08-29, adr-decay-audit discharge — superseded in part by this ADR: its §2 rail-verdict clause named TradingView as the live signal origin, which this ADR replaces with the ruled Python-native host. See that ADR's 2026-08-29 addendum)
 **Layer:** signal-host / M1 origin definition only. **$0 / K=0** — this ADR authorizes no daemon build, no arming, no agent trade. Downstream: S2b Accepted + [build ADR](2026-08-08-s2b-signal-daemon-build.md) Accepted + operator build GO 2026-08-08 — daemon warm (`emit_enabled=false`); strategy emit + M1 item 5 still owed.
 
@@ -79,7 +80,6 @@ M1 §4 item 5 still requires a real strategy signal with expected sizing at `dry
 
 ## §5 — Forbidden moves
 
-- Building the daemon under this ADR alone (S2b + separate build GO required).
 - TV login/actuation automation.
 - Arming the rail or setting `dry_run=false`.
 - Treating this ADR as M1 `RESOLVED` or fabricating `dry_run_strategy_signal_event_id`.

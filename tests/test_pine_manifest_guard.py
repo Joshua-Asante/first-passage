@@ -309,3 +309,42 @@ def test_missing_port_manifest_hard_fails(tmp_path: Path) -> None:
     )
     assert not res.ok
     assert any(f.startswith("MISSING_MANIFEST ") for f in res.failures), res.failures
+
+
+def _card(root: Path, body: str, pins: list[str]) -> None:
+    c = root / "strategies" / "x" / "x_CARD.md"
+    c.parent.mkdir(parents=True, exist_ok=True)
+    c.write_text(f"# x\n\n**Body:** `{body}`\n\n## Hash pins\n\n" + "".join(f"- `{p}`\n" for p in pins), encoding="utf-8")
+
+
+def _card_check(root: Path):
+    return cpm.check_card_pins(
+        card_root=root / "strategies",
+        manifest_paths=[_write_manifest(root, [f"{'a' * 64}  strategies/_archive/x/x.pine"])],
+        repo_root=root,
+    )
+
+
+def test_card_pin_matching_manifest_passes(tmp_path: Path) -> None:
+    _card(tmp_path, "strategies/_archive/x/", [f"{'a' * 64}  x.pine"])
+    assert _card_check(tmp_path).ok
+
+
+def test_card_pin_full_path_passes(tmp_path: Path) -> None:
+    _card(tmp_path, "unused/", [f"{'a' * 64}  strategies/_archive/x/x.pine"])
+    assert _card_check(tmp_path).ok
+
+
+def test_card_pin_stale_fails(tmp_path: Path) -> None:
+    _card(tmp_path, "strategies/_archive/x/", [f"{'b' * 64}  x.pine"])
+    r = _card_check(tmp_path)
+    assert [f.split()[0] for f in r.failures] == ["CARD_PIN_STALE"]
+
+
+def test_card_pin_unpinned_fails(tmp_path: Path) -> None:
+    _card(tmp_path, "strategies/_archive/x/", [f"{'a' * 64}  y.pine"])
+    assert [f.split()[0] for f in _card_check(tmp_path).failures] == ["CARD_PIN_UNPINNED"]
+
+
+def test_card_pins_clean_on_real_repo() -> None:
+    assert cpm.check_card_pins().failures == []

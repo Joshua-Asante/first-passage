@@ -23,7 +23,7 @@ plans/records. Search lessons/history when reuse is plausible; use the
 Do not turn every opportunity into a repository-wide search. Read any relevant
 prior improvement entry and its later outcomes before reusing its recommendation.
 
-For an observed defect use [root-cause-first](../root-cause-first/SKILL.md), which
+For an observed defect use [code-defect-debugging §11](../code-defect-debugging/SKILL.md), which
 owns diagnosis and regression evidence. For external or frozen handoffs use
 [handoff-verify](../handoff-verify/SKILL.md); a contradiction returns to the
 coordinator rather than being silently repaired by a worker.
@@ -34,7 +34,7 @@ coordinator rather than being silently repaired by a worker.
 |---|---|
 | Mechanism established; correction is local, reversible, within the current task, the seat's granted capabilities and any authority block on the current card; outcome and acceptance criteria unchanged | Implement and verify it now. Do not ask again for authority already granted. This includes correcting an agent-owned execution sequence before it fails. |
 | Benefit uncertain, but a bounded evaluation fits the existing scope, budget and granted capabilities | State what result would justify adoption and the stopping condition; run the evaluation. Retain the current approach if the result is inconclusive or adverse. |
-| Required change crosses a frozen card, the seat's or card's capabilities, footprint or budget, or needs an operator act or forbidden capability | Prepare a concrete finding/proposal and route it by seat under the surface-allocation ADR's [seat and committed-handoff rules](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#decision): a worker returns it to its coordinator; the coordinator raises it to the executive on its PR or in the owning campaign record, or takes it to the escalation lane when one of that section's named triggers applies; work on the escalation lane returns to the coordinator; the executive takes it to the owning record's owner. A decision only the operator can make, from any seat, goes as an [operator decision packet](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#operator-decision-packets). Continue independent work only where the card permits it. |
+| Required change crosses a frozen card, the seat's or card's capabilities, footprint or budget, or needs an operator act or forbidden capability | Prepare a concrete finding/proposal and route it by seat under the surface-allocation ADR's [seat and handoff rules](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#decision): a worker returns it to its coordinator; the coordinator decides it under `coordinator` §5, or rebuilds in a fresh session (Rule 7). A decision only the operator can make (Rule 3), from any seat, goes to Joshua as an [operator decision packet](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#operator-decision-packets). Continue independent work only where the card permits it. |
 | Speculative, incidental, already addressed, or unlikely to repay its interruption cost | Leave it alone. Record a lead only if its owner has a concrete reason or trigger to revisit it. |
 
 Before acting, identify the changed behavior, its permitted scope, verification and

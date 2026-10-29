@@ -1,7 +1,7 @@
-"""Controls for the recall sidecar's Rule-7 reject-list.
+"""Controls for the recall sidecar's operational_rules §7 reject-list.
 
 The parent brief (2026-07-27 Hermes adoption ruling, Phase A2) requires the
-Rule-7 denylist be "a mechanical reject-list in the writer, not a review
+operational_rules §7 denylist be "a mechanical reject-list in the writer, not a review
 obligation". These controls feed the guard denylisted content and assert it
 REFUSES. A guard that admits a locked constant as authority is unusable.
 
@@ -94,7 +94,7 @@ def test_clean_pointer_note_is_allowed(dl):
 
 
 def test_bare_number_without_context_is_allowed(dl):
-    """A number alone is not a Rule-7 leak; the guard needs a context term.
+    """A number alone is not an operational_rules §7 leak; the guard needs a context term.
 
     Without this the guard would reject its own falsifier result, which
     legitimately contains 0.70 as a recall floor.

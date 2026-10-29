@@ -5,6 +5,7 @@
 **Retain-until:** none
 **Superseded-in-part-by:** `2026-06-17-dukascopy-retirement.md` - Section 2.3 + Section 4 Forbidden-move #3 (tooling retained / don't-delete) superseded; TV-exports-canonical clause stands.
 **Decision date:** 2026-06-12
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-85); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Addendum 2026-08-08 (substrate, not doctrine):** the core clause — *TV CSV exports are canonical for analysis* —
 **stands and is load-bearing** (24 citing surfaces incl. six live `ops/instruments/*.md` ledgers). What has died
 underneath it is the substrate this ADR named: the **canonical family is now CME futures TV exports**
@@ -38,7 +39,6 @@ The operator's executive decision removes that per-case argument: **one canonica
 
 1. **Canonical analyses, verdicts, locks, and registry entries rest on TV CSV exports** (chart exports or Strategy Tester exports) or on **official non-bar series** (central-bank / treasury / statistical-agency data, e.g. BoC Valet, treasury.gov), which are not bar feeds and are unaffected.
 2. **Programmatic bar feeds (Dukascopy, broker REST) are staging-only**: prototyping, ranking, smoke tests, pre-filtering. Nothing staged on a bar feed becomes canonical without TV verification (the rank-cert pattern: python stages, TV native runs certify).
-3. **Tooling is retained, not deleted**: `core/lib/dukascopy.py`, `scripts/fetch_oanda_bars.py`, and pinned `core/data/bar_data/` files stay (staging + historical reproducibility). The Stage-3 sweep survives explicitly under this policy as a staging consumer.
 4. A canonical artifact citing price data must name its TV export (or official series) the same way MC anchors name their panel CSVs.
 
 ## §3 — Falsifier / revert triggers

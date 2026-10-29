@@ -982,5 +982,20 @@ operational controls or standing instructions.
 **Not changed:**
 - the incumbent evaluation stays retained and disarmed, and the weekly preservation trade continues;
 - Tradeify remains an optional separate native lane for a strategy run only at Tradeify;
-- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal in [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), open).
+- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), auto-closed unmerged 2026-10-19 by a closing keyword in commit `4355887`, not by a ruling; reopening it is Joshua's call).
 
+
+## Addendum 2026-10-28 — branch (b) ruled ahead of the 11-08 sitting
+
+**Ruling (Joshua, 2026-10-28, in the Claude session adjudicating #882):** branch (b) of the draft 11-08 rules, and a rewrite of the native runbook's order rules as one state model. He expects ORB and Aegis to share one native Tradeify account.
+
+**Effect:**
+- **Granted, literally:** #807 stage 1, a read-only native toolchain assessment, as branch (b) defines it. Nothing else: no strategy code, build, connection, order or spend. The native strategy plan's P1 asks that a branch (b) GO state its repurposed single-candidate scope; this ruling does not, so that scope is not granted.
+- **Branches (a), (c) and (d)** are not ruled here; (a) stays withdrawn (10-16). The rest of the draft 11-08 rules stays a draft for the sitting.
+- **Runbook:** the [native protection and recovery runbook](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md) carries A2 (D-N10 to D-N16) and proposes the order state model (§6.10, SM-1 to SM-3, ruled 2026-10-29). #882 is closed as superseded.
+
+**Owed before ORB and Aegis can share that account:**
+- **Evidence case.** The 10-19 ruling (above) found no evidence case for any book-lineage configuration on this evaluation, and its composition grid shows Select books adding ORB legs to the Aegis cell busting more. Whether a pairing of ORB MNQ v7 (paused, outside that finding) with Aegis falls inside the finding is not ruled. Either way the pair needs its own evidence case, and Q-TFYNATIVE-1 (#941, draft) would gate it.
+- **Exclusivity.** Tradeify bars the same bot across firms; both strategies must be run only at Tradeify.
+
+**Ruling (Joshua, 2026-10-28, ~23:58Z, given directly to the merge-train coordinator session, relayed; confirmed in the session that recorded the addendum above):** "ORB joins stage 1; the pair counts as one candidate". #807 stage 1's read-only toolchain assessment covers ORB as well as Aegis, and ORB and Aegis together are one candidate. Stage 1 remains read-only; the evidence case and exclusivity above are still owed.

@@ -152,6 +152,51 @@ relative `--env`/`FP_OPS_ENV` resolved against the caller's directory; launcher
 options are never abbreviated. Completion is still judged only from `record.json` as before: poll
 it, and accept nothing but `completed` with verification exit zero.
 
+### Azure VM deallocation watcher
+
+Standing rules: [Azure compute VM policy](../docs/governance/azure-compute-vm-policy.md).
+
+The session that starts the Azure compute VM verifies `VM deallocated` before its
+turn ends (Joshua, 2026-10-24). For runs of up to 12 hours, keep the PC plugged in
+and this watcher running for the whole allocation, started before or right after
+the VM starts (with Joshua's `az login`):
+
+```powershell
+.\fp.ps1 python scripts/azure_vm_watch.py --hours 6
+```
+
+It only reads power state and calls `az vm deallocate`. It deallocates at the
+deadline, at the weekly dollar cap (default $125 at $2.90/h, counting only time
+it watched, by UTC week from Monday), when the VM is stopped but still allocated,
+or after 10 minutes of unreadable power state. It keeps the PC awake while it
+runs, exits 0 once the VM is verified deallocated or has not started within the
+grace period, and exits 2 with `.cache/azure-vm-watch/ALARM.txt` if deallocation
+cannot be verified. Run one watcher per VM; it never prints the subscription ID.
+
+## Agent CLI dispatch
+
+`dispatch_claude.ps1` (receipts and return validation; see `agent_handoff.md`) and
+`dispatch_codex.ps1` (thin Codex wrapper):
+
+```powershell
+.\scripts\dispatch_codex.ps1 -Worktree <worktree> -Prompt 'Read TICKET.md and execute it.' -OutputFile <scratch>\last.txt [-Sandbox read-only] [-Model gpt-6.1-sol] [-DryRun]
+```
+
+It runs the Codex app's bundled `app\resources\codex.exe` (the `.sandbox-bin` copy cannot run tools),
+passes `FP_AGENT_GH_TOKEN` as `GH_TOKEN` to the child only, and refuses a directory containing `.env`.
+Tests: `tests/scripts/test_dispatch_codex.py` (dry-run).
+
+### Merge train
+
+`merge_train.py` is the read-only gate and watcher used by the [merge-train skill](../.claude/skills/merge-train/SKILL.md), which owns how to use it:
+
+```powershell
+.\fp.ps1 python scripts/merge_train.py gate 912 913      # READY / WAIT / HOLD; exit 0 only if all READY
+.\fp.ps1 python scripts/merge_train.py watch --min 911   # NEW / CHANGED / CLOSED / STALLED lines
+```
+
+`dispatch_codex.ps1 -ReviewBase origin/main` runs the read-only Codex CLI review fallback. Tests: `tests/scripts/test_merge_train.py` (a fake `gh`; no network) and `tests/scripts/test_dispatch_codex.py`.
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via
@@ -331,7 +376,7 @@ or CLI input; 3 source/target/release-policy refusal.
 remain `always` gates. [`check_skill_refs.py`](check_skill_refs.py) checks eligible
 repository references with its documented exceptions.
 [`check_skills_no_constants.py`](check_skills_no_constants.py) scans only `SKILL.md`
-of `inqhiori`, `ooda-loop`, `programme-audit` and `brief-authoring`;
+of `inqhiori`, `programme-audit` and `brief-authoring`;
 operational-reference skills and `pinescript-v6` remain exempt.
 
 The [PostToolUse skill hook](sync_skills_hook.py), registered in
@@ -552,10 +597,17 @@ semantic completeness, or successor authorization.
 
 ## Independent review
 
+Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's (Rule 5;
+[surface-allocation ADR Addendum 2026-10-26](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review)).
+The merge rule and review limit are
+[Addendum 2026-10-24b A](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody),
+applied by `merge_train.py gate`; requesting reviews is [merge-train](../.claude/skills/merge-train/SKILL.md) step 3.
+
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
 owns its review mechanics. Reviewers assess the source independently of the proposer's
 reasoning; synthesis is advisory and cannot supply operator ratification or execution
-authority. Reviewer/delegate assignment never grants permission to edit locked surfaces.
+authority. A Claude panel on Claude work is optional author input, not the independent
+review: the other agent owns that (Rule 5). Reviewer/delegate assignment never grants permission to edit locked surfaces.
 
 Its existing GRAND-only safety scan reads committed target text. A safety-invariant
 citation flags a hard block on synthesis; missing text flags a coverage failure, also
