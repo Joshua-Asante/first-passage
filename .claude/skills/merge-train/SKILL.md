@@ -1,24 +1,24 @@
 ---
 name: merge-train
-description: Use when acting as the merge-train coordinator (also called the PR merge-order agent), the single session that orders and merges open PRs for First Passage. Triggers on "merge train", "merge order", "merge queue", "spin up a merge train coordinator", "merge the open PRs when they're ready", or taking over that seat from another session. Gates each merge with scripts/merge_train.py, orders PRs by overlap and stacks, keeps Codex reviews flowing, falls back to the Codex CLI when a GitHub review stalls, and routes conflicts and findings to PR owners. Never commits to PR branches, force-pushes, enables auto-merge or pushes main.
+description: Use when acting as the merge-train conductor (formerly the merge-train coordinator or PR merge-order agent), the single session that orders and merges open PRs for First Passage. Triggers on "merge train", "merge order", "merge queue", "spin up a merge train conductor", "merge train coordinator", "merge the open PRs when they're ready", or taking over that seat from another session. Gates each merge with scripts/merge_train.py, orders PRs by overlap and stacks, keeps Codex reviews flowing, falls back to the Codex CLI when a GitHub review stalls, and routes conflicts and findings to PR owners. Never commits to PR branches, force-pushes, enables auto-merge or pushes main.
 ---
 
-# Merge-train coordinator
+# Merge-train conductor
 
-The seat was rebuilt by hand about ten times between 2026-09-26 and 10-25 ([roles research](../../../docs/notes/2026-10-25-repeated-agent-roles.md)), each time from private handoff notes. This skill is the playbook; `scripts/merge_train.py` is the mechanical gate and watcher.
+The seat was rebuilt by hand about ten times between 2026-09-26 and 10-25 ([roles research](../../../docs/notes/2026-10-25-repeated-agent-roles.md)), each time from private handoff notes. This skill is the playbook; `scripts/merge_train.py` is the mechanical gate and watcher. Until 2026-10-28 the seat was called the merge-train coordinator. It is complementary to the `coordinator` skill: the coordinator runs the work that produces PRs and hands them over; the conductor orders and merges them (surface-allocation ADR Addendum 2026-10-28, ruling 9).
 
 ## Rules: owners, not copies
 
 - **Merge rule and review limit:** [Addendum 2026-10-24b A](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody), with its 2026-10-25 amendment. Summarized in [AGENTS.md §Gate composition authority](../../../AGENTS.md#gate-composition-authority).
-- **Who reviews:** [Addendum 2026-10-25](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work). The reviewer is Codex. No approval, Claude review or panel counts, and `gate` reads only Codex.
+- **Who reviews:** Review is cross-agent ([Addendum 2026-10-26](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review); `docs/operational_rules.md` Rule 5): Codex for Claude-authored PRs, Claude for Codex-authored ones, and Codex for a port of Claude-written code, whoever ports it (same addendum, 2026-10-29). A PR holding both agents' commits needs both reviews clean at the head, and a commit attributed to neither agent goes to Joshua ([Addendum 2026-10-29](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-29--operator-ruling-mixed-author-prs)). No approval, same-agent review or panel counts. `gate` reads only Codex reviews, so a Codex-authored PR merges by hard rule 2's exception, and a mixed-author PR also needs its Claude review confirmed by hand.
 - **Talking to cloud sessions:** [task-routing](../task-routing/SKILL.md), "Cloud return channel".
 
 ## Hard rules
 
 1. You are the only session that merges in this train. Never commit to a PR branch. The one exception is a conflict-free `gh pr update-branch` on the next PR in line (Joshua's standing permission, 2026-09-30). A conflict or a finding goes to the PR's owner.
-2. Merge only on `gate` READY, re-run right before merging. Paste its printed command, which carries the literal 40-hex SHA: `scripts/guard_operator_acts.py` refuses a SHA passed in a variable or `$(...)`.
+2. Merge only on `gate` READY, re-run right before merging. Paste its printed command, which carries the literal 40-hex SHA: `scripts/guard_operator_acts.py` refuses a SHA passed in a variable or `$(...)`. One exception covers a Codex-authored PR, because `gate` reads only Codex reviews. If `gate`'s only reasons are "no Codex review at head" or "Codex review running", a clean Claude review at the exact head satisfies condition (1) (Addendum 2026-10-26). Confirm that review's head SHA by hand, and count that PR's Claude reviews by hand, because `gate` does not: merge only on a clean Claude review within three, and ask Joshua before requesting a fourth (Rule 6). Then merge with `gh pr merge <n> --repo <owner/repo> --merge --match-head-commit <literal 40-hex head SHA>`. Any other `gate` reason still blocks.
 3. Act on `gate`'s HOLD reasons; they apply the review limit. Return the PR to its owner, or ask Joshua where the reason says so.
-4. Confirm with Joshua directly, not through a relay, before merging a PR that records his ruling, ratifies, freezes or narrows a decision, or carries a RESULTS verdict. Also hold a PR whose description says he still has to decide something.
+4. Confirm with Joshua directly, not through a relay, before merging a PR that records his ruling, ratifies, freezes or narrows a decision, or carries a RESULTS verdict. Also hold a PR whose description says he still has to decide something. Exception: a PR whose body declares "consistency-only (surface-allocation ADR Addendum 2026-10-28)" and whose reviewer confirms its diff changes no ruling or rule text needs no direct confirmation.
 5. Never `--admin`, auto-merge, force-push, push `main` or `git stash`.
 
 ## Procedure

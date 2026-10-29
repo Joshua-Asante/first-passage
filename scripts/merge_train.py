@@ -2,7 +2,7 @@
 """merge_train.py — read-only merge-gate check and change watcher for the PR merge train.
 
 Mechanizes what merge-train coordinator sessions kept re-deriving by hand (merge-order
-agent 2026-10-04..07, merge-train coordinator 2026-10-25): per PR, read the head, the
+agent 2026-10-04..07, merge-train coordinator 2026-10-25, now the merge-train conductor): per PR, read the head, the
 Codex review state *at that exact head*, every check in ``statusCheckRollup``,
 ``mergeStateStatus``, the base branch and unresolved review threads, and say whether the
 merge rule holds (surface-allocation ADR, Addendum 2026-10-24b A and its 2026-10-25

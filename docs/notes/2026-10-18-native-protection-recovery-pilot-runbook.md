@@ -1,13 +1,14 @@
 # Native protection and recovery: bounded pilot runbook
 
-**Status:** PROPOSAL, 2026-10-18. Planning only. It grants no build, launch, connection, arm, order, session or spend, and changes no accepted contract. Every `⟨L-…⟩` limit is unbound until the portfolio and account are selected; a pilot cannot start with any limit unbound.
+**Status:** PROPOSAL, 2026-10-18; amended 2026-10-28 (A2 rulings D-N10 to D-N16) and 2026-10-29 (the order state model, §6.10, ruled as SM-1 to SM-3). Planning only. It grants no build, launch, connection, arm, order, session or spend, and changes no accepted contract. Every `⟨L-…⟩` limit is unbound until the portfolio and account are selected; a pilot cannot start with any limit unbound.
 
 **Current routing (2026-10-29, derived mirror):**
-[#959](https://github.com/Joshua-Asante/first-passage/pull/959) is the open
-successor to #882; it carries A2 rulings and proposes one order state model
-(SM-1–SM-3), still awaiting ruling. This main-branch text predates that proposal;
-it is not evidence that the later model has been accepted. Candidate/account
-binding and qualification remain separate: see the
+[#959](https://github.com/Joshua-Asante/first-passage/pull/959) merged as the
+successor to #882, carrying A2 rulings and the order state model. The
+[§5 owner record](#5-decisions) now records SM-1–SM-3 as ruled 2026-10-29;
+U-18 still owes native callback evidence. The reference-model correction round
+has its own authorization at [card §11](../briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md#11-admission-record).
+Candidate/account binding and qualification remain separate: see the
 [checklist routing note](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-routing--2026-10-29-derived-mirror).
 
 **Question and decision.** Which of the accepted protection and recovery rules carry over to a firm-approved native runtime, and what must be proved before one attended pilot session? The answer decides whether a native pilot card can be frozen, and what it must test first.
@@ -43,7 +44,7 @@ binding and qualification remain separate: see the
 
 1. One account owner hosts every selected leg for that account, with a fixed leg priority. Several strategies may run on one account wherever the firm's rules allow it (D-N3). Separate strategy instances sharing one account are not admitted: their positions are tracked separately, so the account can net flat or reverse while each instance still holds protective orders.
 2. Priority is the strategies' expected-value rank, highest first (D-N2). The rank is a fixed, strictly ordered list bound at portfolio selection and unchanged during a session. Signals that complete on the same bar are admitted in that order, one at a time. Each admission sees every earlier reservation from that bar, so a lower-ranked signal is refused, never clipped, when a higher-ranked one has used the room.
-3. One leg per instrument per account. If the selected portfolio has two legs on one instrument, the selection must state whether they are serialized or refused. Opposing positions in one instrument are refused; firms commonly prohibit hedging (bind per firm).
+3. One leg per instrument per account. If the selected portfolio has two legs on one instrument, they are refused; `serialize` is rejected until a ruling defines it (D-N14). Opposing positions in one instrument are refused; firms commonly prohibit hedging (bind per firm).
 4. Adds count as entries. They need a confirmed executed base, never an accepted order (capacity §2).
 
 ### 2.2 Shared exposure limits
@@ -151,6 +152,7 @@ None of these has native evidence today. Each is INCONCLUSIVE until its named te
 | U-15 | Firm-side external actors (auto-liquidation, server-side risk rules) inventoried and raced safely | Firm documentation plus one observed event | none |
 | U-16 | Wrong-account and profile-swap refusal on the real loader, key and outbound destination | Packet I1 and I2 on the platform, not a fixture | I1, I2 |
 | U-17 | §2.8 incident close cannot reverse a position when a protective order fills at the same time, and sends nothing for uncertain exposure | Trigger the stop while the close is in flight; close with exposure known exactly, partially known and unknown | R3 (partial) |
+| U-18 | The firm route reduces a working close's and a protective stop's quantity, and the native callbacks report the new working quantity (`OrderState`, `ProtectionState`) within `outcome_window` (§6.10, SM-2, SM-3) | Reduce each on the real connection; compare the callbacks with reads A and B | none |
 
 ## 5. Decisions
 
@@ -183,11 +185,27 @@ Coordinator readings A1 adopts as interface completion, accepted by Joshua on 20
 - A `Connection(down)` before `OperatorStart` latches nothing; `OperatorStart` then needs a snapshot pair taken after the reconnect (§6.5).
 - A replacement close after a definitive rejection is sent on that rejection, which is a fresh fact (§6.9 item 6).
 - The adapter delivers a `Fill` before the terminal that reports it (§6.3); U-9 must show the native callbacks allow this.
-- The day-loss stop needs a fresh P&L reading only while exposure is open or permission is `RUNNING`, and excess policy-exit close quantity after a protective fill is cancelled under any permission (§6.6, §6.8).
+- The day-loss stop needs a fresh P&L reading only while exposure is open or permission is `RUNNING`, and excess policy-exit close quantity after a protective fill is trimmed under any permission (§6.6, §6.8).
+
+Operator rulings, amendment A2 (2026-10-21; Joshua in the Codex relay chat 01a1515e at 15:40:38Z, verified as a user turn by the PM, local_f54afc68: "Accept G1–G7 as recommended."; confirmed by Joshua directly in the build acceptor's session, local_2714ae58: "I rule G1–G6 as recommended (G1 A, G2 A, G3 B, G4 B, G5 A, G6 C) and take G7 as recommended."). The accepted text is the runbook author's `RUNBOOK-G1-G6-RECOMMENDATIONS-1.md` (SHA-256 `3e4b4d7a4b2db41272f8252c196137dc6228175b2ff175faee222c45387f0853`; primary checkout, `.agent-handoffs/relay/risk-review-20261021/`, unpublished). A2 closes gaps G1–G7, which the build acceptor's static review of the reference-model candidate found (`RISK-REVIEW-ACCEPTANCE-1.md`, same folder, SHA-256 `caecdc24a39b8cade2c3e67eee14ef2bcb44935592a9ef7a91eb5c17aaf5cc64`). A2 was first drafted in [#882](https://github.com/Joshua-Asante/first-passage/pull/882), where review folds changed G3 and G7 beyond the accepted text; Joshua parked it on 2026-10-21 and on 2026-10-28 chose to rewrite the order rules as one state model instead (§6.10). Each D-N below records only the ruled option. Behavior that the folds or the model add is in §6.10, ruled as SM-1 to SM-3. The reference-model card is unchanged; Joshua authorized its correction round on 2026-10-29 ([card §11](../briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md#11-admission-record)).
+
+- **D-N10 (G1, option A): close accounting per leg.** §6.9 sends one `Close` per leg, for the leg's total known exposure. Close fills are allocated across the leg's entry orders, oldest first, and each entry's protection is reduced to match (§6.7 stays per entry order). A leg gets at most one replacement close in the session. Exposure that appears later (§6.9 item 1) gets its own close, but no further replacement. New row IC-5.
+- **D-N11 (G2, option A): closes need fresh exposure, not P&L.** Exits and closes need exposure from correlated facts or an accepted pair. P&L is needed only by admission row 7 and the day-loss stop (§6.8). New row IC-6.
+- **D-N12 (G3, option B): every `HALT` cancels resting entries.** Every `HALT` latch cancels the owner's own resting entries and adds at once, or at the next `Connection(up)` while the connection is down, within D-N8's limits (§6.8, §6.10). New row CX-6.
+- **D-N13 (G4, option B): an order gap.** On any accepted pair, a non-terminal journal order whose `Ack` arrived before both reads' `as_of`, and which neither read shows, is a gap: `INCIDENT` (§6.8). This is also the gap reconnect reconciliation looks for. An unacknowledged order that the reads do not show is left to its `outcome_window`. New row RC-7.
+- **D-N14 (G5, option A): `serialize` is rejected.** Loading rejects `same_instrument: serialize` until a ruling defines it (§6.2). The `opposing` refusal stays in §6.6 row 3 as a defense; load validation makes it unreachable.
+- **D-N15 (G6, option C): conservative open-risk valuation.** For `max_open_risk`, close quantity is allocated to the fills with the smallest |price − stop| first, so open quantity is valued at its highest-risk fills (§6.5). This is independent of the protection allocation in D-N10. New row CE-6.
+- **D-N16 (G7): a partial close trim.** §6.9 item 5 removes exactly the excess close quantity, and the close counts at its pre-trim quantity as a close in flight until the trim is confirmed. An owner-made trim or cancel is not a definitive rejection or cancellation: it uses no replacement (§6.9 item 6), and the policy-exit `INCIDENT` row reads "its quantity" as the quantity after the trim (§6.8). The accepted text also let a `Fill` or `Terminal` consistent with the reduced quantity confirm the trim and stopped its window at an `Ack`. Review on #882 found both unsafe: a fill fits the trimmed and the untrimmed order alike, `Terminal` carries no order quantity, and an acknowledged but unconfirmed trim never times out. §6.10 replaces those mechanics (SM-2).
+
+State-model rulings (2026-10-29, Joshua, in session: "I rule SM-1, SM-2 A and SM-3 as recommended"). On 2026-10-28 Joshua chose to rewrite the order rules as one state model ("I'm going with branch b and a state model rewrite"), as his #882 parking comment required: states, events, timeouts and permitted repeats defined together ([M-39](../methodology/lessons/methodology_lessons.md)). The model was drafted in [#959](https://github.com/Joshua-Asante/first-passage/pull/959) and reviewed clean by Codex there.
+
+- **SM-1: adopt §6.10 as the one order model.** It governs every order the owner sends; §6.4 to §6.9 cite it rather than restating order rules. It brings four consequences: a latched owner cancels a resting entry when a late `Ack` binds it (the `HALT` late-`Ack` case Codex found on #882; row CX-7); a confirmed trim may be followed by another; a cancel may follow a pending resize, while nothing follows a pending cancel; and a close or protective order whose target moves while a request is pending is reconciled to the latest target once it can take a request (a protection resize for a further fill thus waits under the deficit clock, §6.7 item 2).
+- **SM-2 (option A): how a trim is confirmed.** A trim is a `ResizeClose`, confirmed only by the broker's quantity at the new size: an `OrderState` fact or an accepted pair's order record. Its `outcome_window` runs until that confirmation; unconfirmed at expiry, the close is `UNKNOWN`. The confirming fact comes with the broker's own order update, so confirmation does not wait on the snapshot cadence, the gap #882 left open; U-18 must prove the native callbacks deliver it. Option B (confirmation by accepted pair only, with a pair taken at each trim's `Ack`) was not chosen. Row IC-7.
+- **SM-3: a downward protection resize is confirmed the same way.** A protective stop left larger than its position can reverse the position when it fills, the same risk as an untrimmed close. Today an `Ack(op=resize)` stops its window (A1). Under SM-3 the window runs until `ProtectionState(working)` at the new quantity. No existing row changes, because the fixture confirms protection 0.5 s after each send.
 
 ## 6. Shared account-risk interface
 
-*Added 2026-10-18, revised 2026-10-19 for D-N4 to D-N6, and amended 2026-10-20 (A1) to close the reference-model card's gaps, with rulings D-N7 to D-N9 (§5); same proposal status as above.* §2 states the rules; this section states the contract every account owner implements. One contract serves three uses: the NinjaScript owner (P1, P2); a pure Python reference model, the P0 oracle ([build card](../briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md)); and the offline check of exported journals (§2.7 step 7), where replaying a session's journal through the reference model must reproduce every decision, command and latch. The reference model is an offline specification and test oracle, never a service in the live execution path; passing it proves nothing about NinjaTrader or broker behavior. It generalizes the laws of the Python book reducer (`ops/c1_rail/book_capacity.py`: reserve before send, whole or refuse, partial fills move only filled quantity, a terminal must match its fills, invalid evidence adds a block and never a release) from the fixed four-leg book to configured legs and limits.
+*Added 2026-10-18, revised 2026-10-19 for D-N4 to D-N6, and amended 2026-10-20 (A1) to close the reference-model card's gaps, with rulings D-N7 to D-N9 (§5); amended 2026-10-28 for A2 (D-N10 to D-N16) and 2026-10-29 for the order state model (§6.10, ruled as SM-1 to SM-3); same proposal status as above.* §2 states the rules; this section states the contract every account owner implements. One contract serves three uses: the NinjaScript owner (P1, P2); a pure Python reference model, the P0 oracle ([build card](../briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md)); and the offline check of exported journals (§2.7 step 7), where replaying a session's journal through the reference model must reproduce every decision, command and latch. The reference model is an offline specification and test oracle, never a service in the live execution path; passing it proves nothing about NinjaTrader or broker behavior. It generalizes the laws of the Python book reducer (`ops/c1_rail/book_capacity.py`: reserve before send, whole or refuse, partial fills move only filled quantity, a terminal must match its fills, invalid evidence adds a block and never a release) from the fixed four-leg book to configured legs and limits.
 
 ### 6.1 Roles
 
@@ -206,7 +224,7 @@ One `AccountRiskConfig` per account instance, bound by the portfolio-selection r
 |---|---|---|
 | `account_id`, `instance` | The only account the owner may touch | Account admission |
 | `legs[]` | `leg_id`, `instrument`, `order_symbol`, `micro_equiv`, `point_value`, `entry_side`, `rank`, `adds_allowed` | Portfolio selection |
-| `same_instrument` | `refuse` or `serialize` (§2.1 item 3) | Portfolio selection |
+| `same_instrument` | `refuse` (§2.1 item 3); `serialize` is rejected until a ruling defines it (D-N14) | Portfolio selection |
 | `cap_micro` | `⟨L-cap⟩` | §2.2 |
 | `instrument_cap{}` | `⟨L-inst⟩` per instrument | §2.2 |
 | `max_legs` | `⟨L-legs⟩` | §2.2 |
@@ -218,7 +236,7 @@ One `AccountRiskConfig` per account instance, bound by the portfolio-selection r
 | `fact_max_age` | Maximum age of a snapshot or P&L reading used for a decision | Pilot card |
 | `barrier_timeout` | How long a bar batch waits for every leg's report, from the bar's close time | Pilot card, from timing observed in P1 |
 
-Loading rejects the configuration, and the owner stays `HALTED`, if any field is unbound, ranks are not unique, a `micro_equiv` or `point_value` is not positive, or two legs share an instrument with opposite `entry_side` or without `same_instrument` bound.
+Loading rejects the configuration, and the owner stays `HALTED`, if any field is unbound, ranks are not unique, a `micro_equiv` or `point_value` is not positive, or two legs share an instrument with opposite `entry_side` or without `same_instrument` bound, or `same_instrument` is `serialize` (D-N14).
 
 ### 6.3 Inputs
 
@@ -233,6 +251,7 @@ Every input carries `event_id`, a strictly increasing `sequence`, `as_of`, `acco
 | `Ack` | `client_tag`, `order_id`, `op` (`submit`, `resize` or `cancel`) | Broker |
 | `Fill` | `execution_id`, `order_id`, `quantity`, `price` | Broker |
 | `Terminal` | `order_id`, `status` (`filled`/`cancelled`/`rejected`), `cumulative_filled` | Broker |
+| `OrderState` (SM-2) | `order_id`, `state` (`working`), `quantity` (the order's total quantity after a resize) | Broker |
 | `ProtectionState` | `order_id` (the protective order's own ID), `entry_order_id`, `state` (`working`/`rejected`/`terminal`), `terminal_status` (`filled` or `cancelled`, with `terminal` only), `quantity`, `stop_price` | Broker |
 | `Connection` | `up` or `down` | Adapter |
 | `Snapshot` | `source` (`A` native, `B` firm platform); `pair_id` (the pair of reads it belongs to); `watermark` (the journal sequence of the last pair the owner accepted); `positions[]` (instrument, signed quantity); `orders[]` (`order_id`, `client_tag`, instrument, kind, status `working`/`filled`/`cancelled`/`rejected`, quantity, cumulative filled); `executions[]` (`execution_id`, `order_id`, quantity, price) since the watermark | Adapter |
@@ -254,26 +273,27 @@ Every input carries `event_id`, a strictly increasing `sequence`, `as_of`, `acco
 
 ### 6.4 Outputs
 
-Before any command the owner appends the decision and the command to its journal (write-ahead, §6.3). A failed write sets the dirty epoch and sends nothing (§2.6). Every command (`SubmitEntry`, `SubmitProtection`, `ResizeProtection`, `Cancel`, `Close`) carries a fresh `client_tag`.
+Before any command the owner appends the decision and the command to its journal (write-ahead, §6.3). A failed write sets the dirty epoch and sends nothing (§2.6). Every command (`SubmitEntry`, `SubmitProtection`, `ResizeProtection`, `ResizeClose`, `Cancel`, `Close`) carries a fresh `client_tag`. Which command an order in each state may receive is §6.10's.
 
 | Output | Meaning |
 |---|---|
 | `Decision` | `intent_id` (or the `OperatorStart` session ID), `ADMITTED` or `REFUSED`, reason (§6.6) |
 | `SubmitEntry` | Exactly the admitted quantity |
 | `SubmitProtection`, `ResizeProtection` | Stop (and target) linked to the entry `order_id`, sized to its filled quantity |
-| `Cancel` | A resting entry or add (`CancelIntent`; cutoff and day-loss stop, §6.8; §6.9 item 1; §2.7 step 1); close quantity exceeding known exposure after a protective fill (§6.6, §6.9 item 5); protection only under §6.7 item 4. Never a second cancel for an order whose cancel is sent, acknowledged or `UNKNOWN` |
+| `Cancel` | A resting entry or add (`CancelIntent`; any `HALT` latch, including cutoff and the day-loss stop, D-N12, §6.8; §6.9 item 1; §2.7 step 1); a close whose whole remainder exceeds known exposure after a protective fill (§6.6, §6.9 item 5); protection only under §6.7 item 4 |
+| `ResizeClose` (SM-2) | A working close reduced to exactly the quantity it may still close after a protective fill (§6.9 item 5, D-N16) |
 | `Close` | Policy exit (§2.4, `ExitIntent`) or incident close (§6.9), sized to exactly known quantity |
 | `Latch` | `HALT` or `INCIDENT`, with the §6.8 condition as reason. Emitted when the latch level rises (none < `HALT` < `INCIDENT`; an unlatched `HALTED` start is level none). A later condition at or below the current level is journaled with its reason and emits no `Latch`. One event, together with the timers that expire before it, emits at most one `Latch`, at the highest level reached. Never cleared within the session |
 
 ### 6.5 State and accounting
 
-Per order: requested quantity, fills by `execution_id`, terminal, and state `SENT → ACKED → TERMINAL`, or `UNKNOWN` once `outcome_window` passes with no `Ack`. A resize or cancel request has its own window: `Ack(op=resize)` is not coverage (§6.7 item 2) and `Ack(op=cancel)` changes no reservation; a request with neither its `Ack` nor its outcome (a `ProtectionState` at the new quantity, or a `Terminal`) within `outcome_window` makes the order `UNKNOWN`. An order is **resting** while the owner holds it non-terminal with remaining reservation above zero. Per leg: confirmed open quantity (entry and add fills minus correlated close fills and protective-order fills) and its protection.
+Per order: requested quantity, fills by `execution_id`, terminal, and its state, request windows and permitted requests under §6.10. An order is **resting** while the owner holds it non-terminal with remaining reservation above zero. Per leg: confirmed open quantity (entry and add fills minus correlated close fills and protective-order fills) and its protection.
 
-- **Timers.** A timer of length T started at s expires on the first event or `Tick` whose `as_of` is greater than s + T. The rule is strict, so "passes", "within", "longer than" and "beyond" all mean the same. Expired timers are applied in expiry order before that event, and their outputs carry its `as_of`. The timers are `outcome_window` (from the send, resize or cancel request), `barrier_timeout` (from `bar_time`), `unprotected_max` (from the first uncovered fill) and `disconnect_max` (from `Connection(down)`). The schedule instants `cutoff_at`, flatten start (`cutoff_at` + 10 min) and `D` (`cutoff_at` + 15 min, §1) follow the same rule.
+- **Timers.** A timer of length T started at s expires on the first event or `Tick` whose `as_of` is greater than s + T. The rule is strict, so "passes", "within", "longer than" and "beyond" all mean the same. Expired timers are applied in expiry order before that event, and their outputs carry its `as_of`. The timers are `outcome_window` (from the send, resize or cancel request, until §6.10 table B's confirming fact), `barrier_timeout` (from `bar_time`), `unprotected_max` (from the first uncovered fill) and `disconnect_max` (from `Connection(down)`). The schedule instants `cutoff_at`, flatten start (`cutoff_at` + 10 min) and `D` (`cutoff_at` + 15 min, §1) follow the same rule.
 
 - **Reservation** of an entry or add order: requested minus filled while it is not terminal (§2.2). An `UNKNOWN` order keeps its full remaining reservation; a terminal order reserves nothing.
-- **Usage** per limit: confirmed open plus every reservation, including partial, unknown and recovery-pending ones, in the limit's unit. Micro-equivalents for `cap_micro` and `instrument_cap`; legs holding confirmed or reserved quantity for `max_legs`; Σ |quantity| × |price − stop| × `point_value` for `max_open_risk`, using the fill price for open quantity and `reference_price` for reservations.
-- **Permission (D-N4):** `RUNNING`; `HALTED`, which stops new risk and continues controlled risk reduction (policy exits, §6.9); or `INCIDENT`, where ordinary strategy behavior is no longer trusted and only the §6.9 procedure runs. Every session starts `HALTED`. The operator's start moves it to `RUNNING` only with a clean epoch and a verified-flat account (§2.7). Any exit or close also needs the connection up and exposure reconciled from facts fresher than `fact_max_age`. Correlated `Fill`, `Terminal` and `ProtectionState` facts are fresh when they arrive and do not age; `fact_max_age` bounds only `Snapshot` and `AccountPnl` readings (§6.2). The connection is up from a `Connection(up)` until the next `Connection(down)`; a session starts with it not up, which latches nothing. `disconnect_max` only decides when a disconnect becomes an incident; it never pauses the protection deficit clock (§6.7).
+- **Usage** per limit: confirmed open plus every reservation, including partial, unknown and recovery-pending ones, in the limit's unit. Micro-equivalents for `cap_micro` and `instrument_cap`; legs holding confirmed or reserved quantity for `max_legs`; Σ |quantity| × |price − stop| × `point_value` for `max_open_risk`, using the fill price for open quantity and `reference_price` for reservations. After a partial close, open quantity is valued at its highest-risk fills: close quantity is allocated to the fills with the smallest |price − stop| first (D-N15).
+- **Permission (D-N4):** `RUNNING`; `HALTED`, which stops new risk and continues controlled risk reduction (policy exits, §6.9); or `INCIDENT`, where ordinary strategy behavior is no longer trusted and only the §6.9 procedure runs. Every session starts `HALTED`. The operator's start moves it to `RUNNING` only with a clean epoch and a verified-flat account (§2.7). Any exit or close also needs the connection up and exposure reconciled from facts fresher than `fact_max_age`; it never needs P&L (D-N11). Correlated `Fill`, `Terminal` and `ProtectionState` facts are fresh when they arrive and do not age; `fact_max_age` bounds only `Snapshot` and `AccountPnl` readings (§6.2). The connection is up from a `Connection(up)` until the next `Connection(down)`; a session starts with it not up, which latches nothing. `disconnect_max` only decides when a disconnect becomes an incident; it never pauses the protection deficit clock (§6.7).
 - **Verified flat** is derived (§2.7 step 5): the connection is up; the latest accepted snapshot pair was taken after the last request, the last `Connection(up)` and any latch, and is no older than `fact_max_age`; both reads show zero gross positions and no working orders; every journal request is terminal; every execution is correlated. Otherwise it is false, and a stale or missing pair raises no latch by itself. `OperatorStart` needs it. Evaluating it sends nothing; §2.7 steps 1–2 still send their cancels and exits.
 - **Uncertain set:** instruments whose exposure is not known exactly. The owner sends nothing on them except cancels of its own resting entries and adds and, outside `INCIDENT`, protection for correlated fills (D-N8); they wait for the operator (§2.6). An instrument leaves the set only when its position follows exactly from correlated executions and every order on it is terminal with a uniquely correlated outcome (A12 F2), the owner's own protective order confirmed working at a known quantity by fresh facts, or the owner's own entry or add, whose `order_id` an `Ack` bound and that has never been `UNKNOWN`, confirmed working by an accepted pair at a cumulative filled equal to its correlated fills. An instrument gained from a `Connection(down)` or a `Restart` (§6.8) leaves only on an accepted pair taken after both that event and the last `Connection(up)`; facts journaled before them do not remove it. Working protection never blocks the exit and is never cancelled to clear the set. Leaving the set permits a §6.9 close; it never lifts a latch.
 
@@ -287,13 +307,13 @@ An intent is admitted only if every row holds. Otherwise it is refused whole, ne
 |---|---|---|
 | 1 | Permission `RUNNING` | `halted` |
 | 2 | `intent_id` not seen before | `duplicate` |
-| 3 | Leg configured; side equals `entry_side`; no opposite position on the instrument | `invalid_leg`, `opposing` |
+| 3 | Leg configured; side equals `entry_side`; no opposite position on the instrument (unreachable while load rejects opposite-side legs, D-N14) | `invalid_leg`, `opposing` |
 | 4 | An add: `adds_allowed`, and `base_order_id` has a confirmed fill on this leg | `add_without_base` |
 | 5 | `same_instrument` rule satisfied | `same_instrument` |
 | 6 | `cap_micro`, `instrument_cap`, `max_legs`, `max_open_risk` each hold after the request | `cap`, `instrument`, `legs`, `risk` |
 | 7 | P&L above −`day_loss_stop` (a reading older than `fact_max_age` is a block, §6.8) | `day_loss` |
 
-A refused intent has no later effect: it is not queued, retried or resized. An `ExitIntent` is refused with the first failing reason: `incident` (permission `INCIDENT`; §6.9 governs), `disconnected` (connection down), `uncertain` (its instrument is in the uncertain set). Otherwise, while `RUNNING` or `HALTED`, it becomes a `Close` only for quantity known exactly on that leg net of closes already in flight, so it cannot reverse the position. If a protective fill leaves a working policy-exit close larger than known exposure, the excess is cancelled as §6.9 item 5 does; U-17 proves the native race.
+A refused intent has no later effect: it is not queued, retried or resized. An `ExitIntent` is refused with the first failing reason: `incident` (permission `INCIDENT`; §6.9 governs), `disconnected` (connection down), `uncertain` (its instrument is in the uncertain set). Otherwise, while `RUNNING` or `HALTED`, it becomes a `Close` only for quantity known exactly on that leg net of closes already in flight, so it cannot reverse the position. If a protective fill leaves a working policy-exit close larger than known exposure, it is trimmed as §6.9 item 5 does; U-17 proves the native race.
 
 A `CancelIntent` (D-N7) is processed on arrival and never batched. It becomes a `Cancel` only while `RUNNING` or `HALTED`, only for a resting entry or add order of that leg whose broker `order_id` an `Ack` bound and that has never been `UNKNOWN` (D-N8), and only with the connection up. It latches nothing. Otherwise it is refused with the first of `incident`, `disconnected`, `not_owned` (including an order never bound by an `Ack`, or ever `UNKNOWN`), `not_resting` (terminal, or no remaining reservation) or `cancel_pending` (a cancel already sent, acknowledged or `UNKNOWN`). The order's reservation is released only by its `Terminal` (§6.5).
 
@@ -301,7 +321,7 @@ An `OperatorStart` is `ADMITTED` only with a clean epoch, no latch, the connecti
 
 ### 6.7 Protection ownership
 
-1. For each entry order, the owner keeps protection whose working quantity equals that order's confirmed open quantity. Each `Fill` produces `SubmitProtection` or `ResizeProtection` to the new filled total; each correlated close reduces it.
+1. For each entry order, the owner keeps protection whose working quantity equals that order's confirmed open quantity. Each `Fill` produces `SubmitProtection` or `ResizeProtection` to the new filled total; each correlated close reduces it, confirmed as §6.10 requires (SM-3).
 2. Coverage counts only on `ProtectionState(working)` at the target quantity. A deficit clock runs from the first uncovered fill until coverage is confirmed. A deficit longer than `unprotected_max`, or `ProtectionState(rejected)`, latches `INCIDENT` (§2.3 item 3).
 3. Strategy logic may move a stop only toward less risk; protection is never widened. Under `INCIDENT` no protection is submitted, resized upward, tightened or moved (D-N5); it is only reduced or cancelled as §6.9 allows.
 4. Protection is cancelled only after fills confirm the position it covers is flat (§2.8 item 4). The cancel counts only when `ProtectionState(terminal, cancelled)` arrives; `ProtectionState(terminal, filled)` with its `Fill` is a stop fill.
@@ -313,15 +333,16 @@ Each condition latches as shown. No later fact lifts a latch within the session;
 
 | Condition | Latch | Uncertain set gains |
 |---|---|---|
-| Order `UNKNOWN` (§6.5) | `INCIDENT` | Its instrument |
+| Order `UNKNOWN` (§6.10) | `INCIDENT` | Its instrument |
 | `Ack` with a `client_tag` the journal does not hold | `INCIDENT` | All instruments |
-| A `Fill`, `Terminal` or `ProtectionState` whose `order_id` is not bound (§6.3); a `Fill` exceeding that order's requested quantity (for protection, its size after the last resize) minus its earlier correlated fills; any fill on an order already terminal; an `execution_id` repeated with different content | `INCIDENT` | Its instrument; all instruments when the `order_id` is not bound |
+| A `Fill`, `Terminal` or `ProtectionState` whose `order_id` is not bound (§6.3); a `Fill` exceeding that order's requested quantity (for protection or a close, its size after the last confirmed resize, or the larger of its two sizes while a resize is pending, §6.10) minus its earlier correlated fills; any fill on an order already terminal; an `execution_id` repeated with different content | `INCIDENT` | Its instrument; all instruments when the `order_id` is not bound |
 | `Terminal.cumulative_filled` differs from the sum of correlated fills (the terminal is not accepted, §6.3) | `INCIDENT` | Its instrument |
 | A snapshot position, order or execution the journal cannot correlate | `INCIDENT` | Its instrument |
 | The two reads of one snapshot pair disagree | `INCIDENT` | The disagreeing instruments |
+| An order gap: in an accepted pair, a non-terminal journal order whose `Ack` arrived before both reads' `as_of` and which neither read shows (D-N13) | `INCIDENT` | Its instrument |
 | Protection deficit beyond `unprotected_max`, or protection rejected | `INCIDENT` | None while the position is known exactly |
 | `Connection(down)` after `OperatorStart` | `HALT`; `INCIDENT` if it lasts beyond `disconnect_max`, occurs after `cutoff_at`, or reconnect reconciliation finds a gap | Instruments with a non-terminal order at the drop, working protection included |
-| P&L or snapshot older than `fact_max_age` when an admission (row 7), an exit, a close or the day-loss stop needs it. The day-loss stop needs it only while exposure is open or permission is `RUNNING`; verified flat is not such a need | `INCIDENT` | None |
+| P&L older than `fact_max_age` when admission row 7 or the day-loss stop needs it; a snapshot older than `fact_max_age` when an exit or a close needs it. Exits and closes never need P&L (D-N11). The day-loss stop needs it only while exposure is open or permission is `RUNNING`; verified flat is not such a need | `INCIDENT` | None |
 | `JournalWriteFailed`; a start or `Restart` with an unclosed dirty epoch | `INCIDENT` | All instruments |
 | Event under another `config_id`, account or epoch; a `Restart` whose epoch equals `prior_epoch`; conflicting `event_id` | `INCIDENT` | None |
 | `Restart` with `session_started` true (D-N9) | `INCIDENT` | Every instrument with a position or a non-terminal order |
@@ -330,8 +351,10 @@ Each condition latches as shown. No later fact lifts a latch within the session;
 | A fill that would take a leg's position through zero | `INCIDENT` | Its instrument |
 | `cutoff_at` reached | `HALT`; cancel resting entries and adds at once; positions keep their protection (rev9 §2) | None |
 | Flatten start (`cutoff_at` + 10 min) reached, or the day-loss stop | `HALT` (the day-loss stop also cancels resting entries and adds at once), then the policy exit of every leg (§2.4); a leg whose instrument is uncertain gets its exit once it leaves the set, before `D` | None |
-| A policy-exit `Close` (an `ExitIntent`, flatten start or the day-loss stop) that ends other than filled to its quantity (rev9 §4.2) | `INCIDENT` | Its instrument when the outcome is ambiguous; none when it is definitive (then §6.9 item 6 governs the one replacement, D-N1) |
+| A policy-exit `Close` (an `ExitIntent`, flatten start or the day-loss stop) that ends other than filled to its quantity after any owner trim (rev9 §4.2; D-N16) | `INCIDENT` | Its instrument when the outcome is ambiguous; none when it is definitive (then §6.9 item 6 governs the one replacement, D-N1) |
 | Exposure, a working order or an unresolved request at `D` (`cutoff_at` + 15 min) | `INCIDENT` | Its instrument |
+
+Every `HALT` latch, and so every `INCIDENT`, also cancels the owner's own resting entries and adds as §6.10 table D's latch row states (D-N12, D-N8).
 
 Reconnect never resumes trading. After `Connection(up)` the owner reconciles from its watermark (§2.5 item 3) and stays latched. A `Restart` never restores `RUNNING`. Before `OperatorStart`, a `Connection(down)` latches nothing, because there is no risk to stop; `OperatorStart` then needs a snapshot pair taken after the reconnect (§6.5).
 
@@ -339,13 +362,72 @@ Reconnect never resumes trading. After `Connection(up)` the owner reconciles fro
 
 Under `INCIDENT` the owner ends exposure rather than repairing it. This implements §2.8 with the D-N5 policy; U-17 must still prove the native mechanism before P2 relies on it.
 
-1. **Stop new exposure.** At once, and again whenever an `Ack` later binds one of them, cancel every one of the owner's own resting entries and adds whose broker `order_id` an `Ack` bound and that has never been `UNKNOWN`, on every instrument, including instruments in the uncertain set (D-N8). An order whose cancel is already sent, acknowledged or `UNKNOWN` is not cancelled again. Nothing else is sent on an uncertain instrument. Each keeps its remaining reservation until its `Terminal` arrives; a fill that arrives before the terminal joins the leg's known exposure and is closed under this procedure.
+1. **Stop new exposure.** Cancel the owner's own resting entries and adds on every instrument, including instruments in the uncertain set, as §6.10 table D's latch row states (D-N8, D-N12). Nothing else is sent on an uncertain instrument. Each keeps its remaining reservation until its `Terminal` arrives; a fill that arrives before the terminal joins the leg's known exposure and is closed under this procedure.
 2. **Protection stays.** Working protection is left in place at its current price. It is resized only downward, to match confirmed closes, and cancelled only under §6.7 item 4. No new or tightened protection is submitted.
-3. **Close known exposure.** For each leg outside the uncertain set, send one `Close` for the exactly known open quantity minus closes already in flight. Exposure that appears later (item 1) gets its own close on fresh facts.
+3. **Close known exposure.** For each leg outside the uncertain set, send one `Close` for the leg's exactly known open quantity, summed over its entry orders, minus closes already in flight. Close fills are allocated to the leg's entry orders oldest first, and each entry's protection is reduced to match (D-N10). Exposure that appears later (item 1) gets its own close on fresh facts.
 4. **Partial close fill.** Reduce known exposure and protection by the filled quantity; the remainder of the close keeps working.
-5. **Protective stop fills during a close.** Reduce known exposure by the stop fill, then cancel any close quantity now exceeding known exposure. If a close fill would take the position through zero, the instrument enters the uncertain set (§6.8); the native mechanism that prevents this is U-17.
-6. **Close rejected or ambiguous.** After a definitive rejection or cancellation, at most one replacement close follows. It is sent on the definitive `Terminal` itself, a fresh fact (§6.5), while the position is still known exactly (§2.8 item 5). An ambiguous outcome (`UNKNOWN`, or a terminal that disagrees with fills) puts the instrument in the uncertain set; nothing is resent.
+5. **Protective stop fills during a close.** Reduce known exposure by the stop fill, then fit the leg's closes to it (D-N16). Closes that can take no request (`SENT`, `CANCEL_PENDING`, §6.10 table C) count first at their in-flight quantity. The leg's `WORKING` and `RESIZE_PENDING` closes, oldest first, then each keep the smaller of their unfilled quantity (for a pending trim, at its larger size) and the exposure still uncovered. What a close keeps, plus its fills, is its target. A close whose target is its fills is cancelled at once, a pending trim included; a `WORKING` close above its target is trimmed to it; a pending trim with a non-zero target waits for its confirmation. No request is ever for a negative quantity. The fit runs again whenever known exposure falls and whenever a close becomes able to take a request (§6.10). §6.10's reconciliation rule brings each close to its latest target, and governs confirmation, windows and repeats (SM-2). An owner-made trim or cancel is not a rejection or cancellation under item 6, so exposure it leaves without a close keeps its protection and waits for the operator. If a close fill would take the position through zero, the instrument enters the uncertain set (§6.8); the native mechanism that prevents this is U-17.
+6. **Close rejected or ambiguous.** After a definitive rejection or cancellation, at most one replacement close follows, and at most one per leg in the session (D-N10). It is sent on the definitive `Terminal` itself, a fresh fact (§6.5), while the position is still known exactly (§2.8 item 5). An ambiguous outcome (`UNKNOWN`, or a terminal that disagrees with fills) puts the instrument in the uncertain set; nothing is resent.
 7. **Done.** A leg is closed when correlated fills show it flat and its protection is `ProtectionState(terminal)`. The session then ends through §2.7.
+
+### 6.10 Order state model (SM-1 to SM-3)
+
+*Added 2026-10-28; ruled 2026-10-29 (SM-1 to SM-3, §5). §6.4 to §6.9 cite it, so a later ruling changes one place.* One model covers every order the owner sends: entries, adds, protection and closes. The owner's fold of journaled facts is the only writer of these states (§6.5). Protection coverage stays a separate fact: it counts only on `ProtectionState(working)` at the target quantity, under the deficit clock (§6.7 item 2).
+
+**A. States.**
+
+| State | Meaning | Accounting while in it |
+|---|---|---|
+| `SENT` | Command journaled and released; no `Ack` | Entry or add: full reservation. Close: in flight at its quantity |
+| `WORKING` | An `Ack(submit)` bound its `order_id`; no request pending | Entry or add: requested minus filled. Close: in flight at its quantity minus its fills |
+| `RESIZE_PENDING` | A resize to q′ is sent and not yet confirmed | Close: in flight at the larger of its size before and after the resize, minus its fills. Protection: coverage only as §6.7 item 2 states |
+| `CANCEL_PENDING` | A cancel is sent | Counted as `WORKING` until its `Terminal`: the reservation, the close in flight and the coverage all stay. A cancel sent while a resize was pending keeps that resize's window and its larger count |
+| `TERMINAL` | An accepted terminal (§6.3) | Nothing |
+| `UNKNOWN` | A window in table B expired unconfirmed | Its full remaining quantity; its instrument is uncertain (§6.8) |
+
+**B. Requests: what an unconfirmed outcome risks, and what confirms it.** Each window is `outcome_window` from the request; at expiry the order is `UNKNOWN`.
+
+| Request | Risk while unconfirmed | Confirmed by; the window stops there |
+|---|---|---|
+| Submit an entry, add or close | Exposure added, or a close that outlives its position | `Ack(submit)` |
+| Submit protection, or resize it upward | Exposure unprotected | `Ack` for the window; coverage needs `ProtectionState(working)` at the target before `unprotected_max` (§6.7 item 2) |
+| Trim a close (`ResizeClose`, SM-2) | The close stays larger than the exposure it may close, so it can reverse the position | `OrderState(working)` at q′, or an accepted pair's order record at q′. Not an `Ack`, `Fill` or `Terminal` |
+| Resize protection downward (SM-3) | The stop stays larger than its position, so its fill can reverse the position | `ProtectionState(working)` at q′, or an accepted pair's order record at q′. Not an `Ack` |
+| Cancel | None added: the order keeps its reservation, in-flight quantity or coverage until its `Terminal` | `Ack(cancel)` (A1). A cancel that follows a pending trim or downward resize does not stop that resize's window: only its quantity confirmation or an accepted terminal does |
+
+**C. Permitted requests.** A request is sent only in the state shown, under the permissions §6.6 to §6.9 give it.
+
+| State | May send |
+|---|---|
+| `SENT` | Nothing: there is no `order_id` |
+| `WORKING` | One resize or one cancel |
+| `RESIZE_PENDING` | A cancel only, since it can only reduce |
+| `CANCEL_PENDING`, `TERMINAL`, `UNKNOWN` | Nothing. A cancel is never repeated, and nothing is ever sent for an order that was `UNKNOWN` (A12 F1(a), D-N8) |
+
+Nothing is resent: §6.9 item 6's replacement is a new order.
+
+**Reconciliation.** Each close and each protective order has one target: a close's from the §6.9 item 5 fit, protection's from §6.7 item 1. Whenever its target changes, and whenever the order becomes able to take a request (an `Ack(submit)` or a pair's record binds it, an upward resize is acknowledged, or a resize is confirmed), the owner sends the one request table C permits that moves the order toward its latest target. Protection is cancelled only under §6.7 item 4. A further trim or resize follows a confirmed one this way, and a target that moved while a request was pending is never lost.
+
+**D. Events.** Latches follow §6.8; "—" means the event changes nothing in that state.
+
+| Event | `SENT` | `WORKING` | `RESIZE_PENDING` | `CANCEL_PENDING` | `TERMINAL` | `UNKNOWN` |
+|---|---|---|---|---|---|---|
+| `Ack(submit)` | Binds `order_id` → `WORKING`; then the latch row for an entry or add, and reconciliation for a close or protection | Repeat: no-op | Repeat: no-op | Repeat: no-op | Repeat: no-op | Binds `order_id`; stays `UNKNOWN` |
+| `Ack(resize)` | — | — | Upward protection resize: → `WORKING` at q′, while coverage still needs `ProtectionState` (§6.7 item 2); then reconciliation. Trim or downward resize: journaled; the window keeps running | — | — | — |
+| `Ack(cancel)` | — | — | — | Stops the cancel's window; a carried resize window keeps running | — | — |
+| `Fill` | Unbound `order_id`: §6.8 | Applied | Applied, bounded by the larger size | Applied | §6.8 (fill on a terminal order) | Applied when bound |
+| Quantity at q′ (table B) | — | — | → `WORKING` at q′; then reconciliation | Stops a carried resize window | — | — |
+| Any other quantity | — | — | Stays pending; the window runs | — | — | — |
+| Accepted pair's order record with the order's `client_tag` (§6.3) | Binds `order_id` → `WORKING` without an `Ack`, so the order is never cancel-eligible (D-N8); the record then applies as a terminal | Applies as a terminal | Applies as a terminal; at q′ it confirms the resize | Applies as a terminal | As the next row | As the next row |
+| Accepted terminal | — (an order is bound first, by its `Ack` or a pair's record) | → `TERMINAL` | → `TERMINAL` | → `TERMINAL` | Identical: no-op; contradicting: §6.8 | → `TERMINAL` only if uniquely correlated (A12 F2) |
+| Window expiry | → `UNKNOWN` | — | → `UNKNOWN` | The cancel's window without an `Ack`, or a carried resize window: → `UNKNOWN` | — | — |
+| Accepted pair that does not show the order, both reads after its `Ack` | — (its window governs) | Order gap (D-N13) | Order gap | Order gap | — | — |
+| Latch at `HALT` or above, and every later `Ack` binding an entry or add while it holds | An entry or add is cancelled when its `Ack` binds it | An entry or add: `Cancel` → `CANCEL_PENDING`, at once or at the next `Connection(up)` (D-N12, SM-1) | — | — | — | Never cancelled |
+
+**E. Sequences, with a cut at each step.**
+
+1. **Entry under a latch (CX-6, CX-7).** Admission is journaled before the send; a failed write sends nothing (§6.3). The entry is `SENT`. A `HALT` latches; there is no `order_id`, so nothing is sent. *Cut: no `Ack` within the window* → `UNKNOWN`, `INCIDENT`, its instrument uncertain, no cancel (RC-1). The `Ack` binds it → `Cancel` at once. *Cut: connection down at the `Ack`* → the cancel waits for `Connection(up)`. `Ack(cancel)` → `CANCEL_PENDING`, reservation held (CX-1). A fill before the `Terminal` joins exposure: protected under `HALT`, closed under `INCIDENT` (IC-1). `Terminal(cancelled)` releases the reservation.
+2. **Close trim (IC-7, IC-2).** Under `INCIDENT` a close of 3 is `WORKING`. A stop fill of 1 leaves known exposure 2 → `ResizeClose` to 2; the close counts 3 in flight. *Cut: a close fill arrives* → applied against 3; a fill through zero makes the instrument uncertain (§6.8). `Ack(resize)` changes nothing. `OrderState(working, 2)` → `WORKING` at 2. *Cut: no confirmation within the window* → `UNKNOWN`, instrument uncertain, nothing more sent on it. A second stop fill of 1 → a second `ResizeClose` to 1. A stop fill that leaves no exposure → `Cancel` (IC-2). *Cut: the close is still `SENT` at that stop fill* → nothing is sendable; its `Ack` binds it and the fit cancels it at once (IC-8). *Cut: two closes on the leg* → the older keeps what exposure allows and the newer is cancelled (IC-9). *Cut: the rest of the exposure goes while a trim is pending* → the close is cancelled at once (IC-10). *Cut: two close fills before protection's first downward resize is confirmed* → the second resize follows the confirmation (IC-11).
 
 ## 7. Deterministic scenarios
 
@@ -356,8 +438,8 @@ These are the interface's acceptance fixtures. The reference model must pass eac
 **Defaults**, unless a row says otherwise:
 - Preamble at t = 0: `Connection(up)`, a flat snapshot pair `A` and `B` (one `pair_id`, `watermark` 0), `AccountPnl` 0, then `OperatorStart`, so each scenario starts `RUNNING`, connected, flat and unblocked.
 - Bars close every 10 s from t = 0. At each bar's close a fresh `AccountPnl` 0 arrives first, and every leg the row gives no report for in that bar sends an empty `BarReport`.
-- Every command is acknowledged at its send time: `op` `submit` for `SubmitEntry`, `SubmitProtection` and `Close`, `resize` for `ResizeProtection`, and `cancel` for `Cancel`.
-- Each `SubmitProtection` or `ResizeProtection` is confirmed working 0.5 s after it is sent.
+- Every command is acknowledged at its send time: `op` `submit` for `SubmitEntry`, `SubmitProtection` and `Close`, `resize` for `ResizeProtection` and `ResizeClose`, and `cancel` for `Cancel`.
+- Each `SubmitProtection` or `ResizeProtection` is confirmed working 0.5 s after it is sent, and each `ResizeClose` by `OrderState(working)` at its new quantity 0.5 s after it is sent.
 - An entry or add whose fills reach its requested quantity receives `Terminal(filled)` with that cumulative at its last fill.
 - Snapshots a row names come as an agreeing pair.
 - A starting state a row names ("X long 2 …", "PF-2 state", `INCIDENT`) is reached by ordinary admitted, filled and protected events after the preamble. An `INCIDENT` set-up uses a `Tick` under another `config_id` (§6.8), which adds nothing to the uncertain set.
@@ -370,6 +452,7 @@ These are the interface's acceptance fixtures. The reference model must pass eac
 | CE-3 | Bar 1: `A` 3 admitted, 1 filled, 2 working. Bar 2: `B` 2 | `B` refused `cap` (1 confirmed + 2 reserved + 2 > 4) | Only confirmed quantity counted |
 | CE-4 | Preamble at t = −20; bar 0 closes at t = −10, where `A`'s entry of 1 is admitted and left working. Bar 1 closes at t = 0: `A` reports no intent and `B` entry 1 at t = 0.5; `A`'s working entry fills 1 at t = 1; `C` reports entry 1 at t = 2.5 | Protection for `A` sent at t = 1, not at batch close; the batch deadline (t = 2, strict) is applied when `C`'s report arrives at t = 2.5, before that report, and `B` is admitted; `C` refused `late` and journaled as a missed signal, never carried to bar 2 | Fill or protection held until the batch closes; batch reopened for `C`; `C` decided against stale usage |
 | CE-5 | `A` add 1 whose `base_order_id` is acknowledged but unfilled | Refused `add_without_base` | Acknowledgment treated as an executed base |
+| CE-6 | This row binds `max_open_risk` at 10. Bar 1: `A` 2 admitted, `reference_price` 94, stop 90; fills 1 at 95, then 1 at 91; protection working at 2; `A` `ExitIntent` 1, filled. Bar 2: `B` 1, `reference_price` 105, stop 99 | `B` refused `risk`: `A`'s remaining 1 is valued at the 95 fill (risk 5), and 5 + 6 > 10 (D-N15) | FIFO (risk 1 + 6) or average-price valuation (3 + 6) admits `B` |
 | **Partial fills** | | | |
 | PF-1 | `A` 3 admitted; fill 1 at t = 1; working (1) at 1.5; fill 2 at t = 2; working (3) at 2.5 | Usage 3 throughout; protection commands sized 1, then 3; no deficit beyond 0.5 s; no latch | Protection sized to the requested 3 before fills; reservation released at the first fill |
 | PF-2 | `A` 3 admitted; fill 1 at t = 1; protection acknowledged, never working | `INCIDENT` at the first event or `Tick` after t = 6; new intents refused `halted`; the resting 2 are cancelled and keep their reservation until `Terminal`; no new protection is sent; one §6.9 close of exactly 1 | Acknowledged protection counted as coverage; the resting 2 left working or forgotten |
@@ -380,6 +463,8 @@ These are the interface's acceptance fixtures. The reference model must pass eac
 | CX-3 | `A` 3 admitted; fill 1; `Terminal(cancelled, cumulative 2)` | `INCIDENT`; `X` uncertain; reservation 2 held; the order, not accepted as terminal, is cancelled (D-N8) and nothing else is sent on `X` | Terminal accepted and the missing fill assumed |
 | CX-4 | `A` 3 admitted; `Terminal(rejected, cumulative 0)`; next bar `B` 1 | Reservation released; nothing resent; `HALT` (D-N6); `B` refused `halted` | Rejected order resent; rejection treated as harmless and trading continues |
 | CX-5 | `A` 3 admitted; `Terminal(rejected, cumulative 0)`; then a `Fill` of 1 on that order | `HALT` on the rejection, then `INCIDENT` on the fill; `X` uncertain; the rejected order stays terminal, so no cancel is sent and nothing is sent on `X` | The late fill ignored because the order was terminal |
+| CX-6 | One bar: `A` 3 and `B` 1 admitted, both acknowledged; `B`'s `Terminal(rejected, cumulative 0)` | `HALT` (D-N6); a `Cancel` for `A`'s resting 3, which keeps its reservation until `Terminal` (D-N12); nothing else is sent | `A`'s resting entry left working under `HALT` |
+| CX-7 | One bar: `A` 3 and `B` 1 admitted at t = 0; `A`'s `Ack` withheld; `B` acknowledged, then `B`'s `Terminal(rejected, cumulative 0)` at t = 0.5; `A`'s `Ack` at t = 1 | `HALT` at t = 0.5 (D-N6), with no cancel for `A`, which has no `order_id` (D-N8); a `Cancel` for `A`'s resting 3 at t = 1, on its `Ack`; `A` keeps its reservation until `Terminal` (§6.10, SM-1) | `A` left working because its `Ack` came after the latch; a cancel sent before the `Ack` |
 | **Reconnects** | | | |
 | RC-1 | `A` 2 sent at t = 0, no `Ack`; `Connection(down)` at t = 1; `Tick` at t = 3.5; `up` at t = 4; snapshots `A` and `B` agree: `X` long 2, the order's record (with its `client_tag`) `filled` with cumulative 2, one execution of 2 | `HALT` at t = 1; `INCIDENT` at the t = 3.5 `Tick` (`UNKNOWN`; the window expires strictly after t = 3); after reconnect `X` leaves the uncertain set with 2 known exactly; permission stays `INCIDENT`; one §6.9 close of 2, with no protection submitted first (D-N5); no entry or resend | Reconnect restores `RUNNING`; the order is resent |
 | RC-2 | As RC-1, but the snapshot pair shows `X` long 2, no record of the order and no execution since the watermark | `X` stays uncertain; the owner holds no `order_id` for the unacknowledged order, so it sends nothing on `X`; operator recovery | Owner closes 2 on the position read alone |
@@ -387,10 +472,18 @@ These are the interface's acceptance fixtures. The reference model must pass eac
 | RC-4 | `Connection(down)` at t = 1, `up` at t = 4; then a pair whose read `A` shows no working orders and whose read `B` shows a working order on `Y` absent from the journal | `HALT` at t = 1; `INCIDENT`; `Y` uncertain; no command is sent; flat not verified (§2.7 step 5) | Snapshot `A` alone accepted |
 | RC-5 | No preamble. (a) A new session boots: `Restart` carries a stored `RUNNING` from the prior session, `session_started` false and a clean epoch; then `A` reports entry 1. (b) `Restart` carries a stored `RUNNING`, `session_started` false and `prior_epoch_closed` false; then `OperatorStart`. (c) `Restart` carries `session_started` true and a clean epoch; then `OperatorStart` | (a) Permission stays `HALTED`; `A` refused `halted`. (b) `INCIDENT` on the `Restart`, every instrument uncertain; `OperatorStart` refused `dirty_epoch`. (c) `INCIDENT` latched (reason `restart`, D-N9); `OperatorStart` refused `latched` | Stored `RUNNING` honoured; (c) a restart after the start latches nothing or only `HALT` |
 | RC-6 | `X` long 2 with protection working at 2; `Connection(down)` at t = 1; `A` `ExitIntent` 2 at t = 2; `up` at t = 4; `A` `ExitIntent` 2 at t = 4.5; a snapshot pair at t = 5 agrees: position 2 correlated, protection working at 2, no other orders | `HALT` only (3 s, not beyond `disconnect_max`); the exit at t = 2 refused `disconnected`; the exit at t = 4.5 refused `uncertain` (no pair yet after the reconnect); after the pair `X` is known exactly despite its working stop; protection untouched; a new `ExitIntent` after reconciliation becomes a `Close` of 2; no entries | `X` held uncertain because its stop is not terminal; protection cancelled to clear it; exit sent while down or after the reconnect before the pair; `RUNNING` restored |
+| RC-7 | After the start. (a) `A` 1 sent at t = 0, no `Ack`; an accepted flat pair whose reads are at t = 0.5 and show no orders; `Ack` at t = 1. (b) Then an accepted pair at t = 2 whose reads do not show `A`'s acknowledged working entry | (a) No latch from the pair. (b) `INCIDENT` (order gap, D-N13); `X` uncertain; the resting entry is cancelled (§6.9 item 1, D-N8) | (a) `INCIDENT` on the send/read race; (b) no latch for the vanished acknowledged order |
 | **Incident close (§6.9)** | | | |
 | IC-1 | PF-2 state: close of 1 working, cancel of the resting 2 sent; one of the 2 fills before `Terminal(cancelled, cumulative 2)` (cumulative counts both fills) | Known exposure becomes 2; a second close of 1 follows on that fill; reservation 0 after the terminal; protection never resized upward | The late entry fill dropped, or protected instead of closed |
 | IC-2 | `X` long 2, protection working at 2, `INCIDENT`; close of 2 sent; the stop's `Fill` of 2, then its `ProtectionState(terminal, filled)`, before the close fills; then a close fill of 1 arrives | Known exposure 0; the close is cancelled; the late close fill takes `X` through zero, so `X` enters the uncertain set and nothing more is sent on `X` | Close left working; a fill through zero treated as normal |
 | IC-3 | `X` long 1, `INCIDENT`; close of 1 rejected definitively; replacement also rejected; then a fresh snapshot pair still shows long 1 | Exactly one replacement close, sent on the first rejection; after the second rejection nothing is sent, on the later snapshot pair included, and `X` waits for the operator, outside the uncertain set because both outcomes were definitive; protection stays working | A third close; protection cancelled |
 | IC-4 | `X` long 1, `INCIDENT`; close of 1 sent at t = s with no `Ack`; `Tick` at s + 3.5 | `X` enters the uncertain set; nothing resent; protection stays working | Close resent |
+| IC-5 | `A` base 1 and add 1, each filled and protected (working at 1); `INCIDENT`; the close is rejected definitively; the replacement is rejected definitively; then a fresh pair shows `X` long 2 | One `Close` of 2; exactly one replacement of 2, sent on the first rejection; after the second rejection nothing is sent and `X` waits for the operator; both protective orders stay working (D-N10) | A close per entry order; a replacement per entry order |
+| IC-6 | `X` long 1 known exactly, protection working; the last P&L reading at t = 0; `INCIDENT` at t = 61 | One §6.9 close of 1 is sent at t = 61. The stale reading is journaled for the day-loss stop and emits no `Latch` (D-N11) | Close withheld for stale P&L |
+| IC-7 | `X` long 3, protection working at 3, `INCIDENT`; close of 3 sent at t = s. (a) The stop fills 1 at s + 1. (b) Then the stop fills 1 more at s + 2. (c) As (a), but no `OrderState` or pair shows quantity 2; a `Tick` at s + 4.5 | (a) Known exposure 2; one `ResizeClose` to 2; the close counts 3 in flight until `OrderState(working, 2)` at s + 1.5. (b) A second `ResizeClose`, to 1, at s + 2. (c) At the `Tick` the close is `UNKNOWN`; `X` uncertain; nothing more is sent on `X` (§6.10, SM-2) | (a) The `Ack(resize)` or a close fill taken as confirmation; (b) the second trim refused as a repeated cancel; (c) the trim left pending, or resent |
+| IC-8 | `X` long 2, protection working at 2, `INCIDENT`; close of 2 sent at t = s, its `Ack` withheld; the stop's `Fill` of 2, then its `ProtectionState(terminal, filled)`, at s + 1; the close's `Ack` at s + 2 | Known exposure 0 at s + 1, and nothing is sent then, since the close has no `order_id`; a `Cancel` for the close at s + 2, on its `Ack` (§6.9 item 5) | The close left working after its late `Ack`; a cancel sent before the `Ack` |
+| IC-9 | `A` 4 admitted; 3 fill; protection working at 3; `INCIDENT`; a close of 3 and a cancel of the resting 1 are sent; the 1 fills before its `Terminal`, so a second close of 1 is sent; both closes acknowledged, neither filled; then the stop fills 3 | Known exposure 1. The close of 3, the older, is trimmed to 1; the close of 1 is cancelled (§6.9 item 5) | A resize to a negative quantity; both closes cancelled; both left working |
+| IC-10 | `X` long 3, protection working at 3, `INCIDENT`; close of 3 acknowledged; the stop fills 1 at s + 1 (a trim to 2 is sent, confirmation due at s + 1.5); the stop fills 2 at s + 1.2 | Known exposure 0 at s + 1.2; a `Cancel` for the close at s + 1.2, while its trim is pending; the cancel carries the trim's window (§6.10) | The cancel held until the trim is confirmed |
+| IC-11 | `X` long 3, protection working at 3, `INCIDENT`; close of 3 acknowledged; the close fills 1 at s + 1 (`ResizeProtection` to 2 sent); the close fills 1 at s + 1.2; protection confirmed at 2 at s + 1.5 | No second resize at s + 1.2, while the first is pending; a `ResizeProtection` to 1 at s + 1.5 (§6.10 reconciliation) | Protection left at 2 with exposure 1 |
 
 Every scenario also asserts that each command follows its journal record, and that replaying the journal through the model reproduces the same decisions, commands and latches.

@@ -15,8 +15,8 @@ Q-SFCLEAR-3 dispatch preparation remains paused under the
 |---|---|---|
 | [Native NinjaScript plan](2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md) | DRAFT sequence for the separate native lane | Its expanded P1 assessment and later phase GOs are not supplied by this checklist |
 | [ORB/Aegis workshop](../specs/2026-10-28-orb-aegis-workshop-design.md#evidence-and-ownership-boundary) | Research workflow and identity boundary | Workshop ORB, O-N portfolio ORB and O-0 native solo ORB do not inherit each other's evidence or acceptance |
-| [#959](https://github.com/Joshua-Asante/first-passage/pull/959), open at `55bc390` when checked | Pending incorporation of the 10-28 branch (b) ruling and proposed order state model | Records only the original #807 stage 1 grant; expanded P1 and ORB joining it remain owed. The expected shared ORB/Aegis account needs its own evidence case and exclusivity disposition; SM-1–SM-3 remain proposed |
-| [#961](https://github.com/Joshua-Asante/first-passage/pull/961), open at `a8dc7ac` when checked | Successor to #941; DRAFT net-cash qualification framework | Pre-ratification adjudication, operator values and ratification remain owed; its formal nomination and exact account binding are open. It is not an approved replacement for an existing objective |
+| [Branch (b) rulings](#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting), merged in [#959](https://github.com/Joshua-Asante/first-passage/pull/959) and [#965](https://github.com/Joshua-Asante/first-passage/pull/965) | Read-only stage 1 covers ORB and Aegis together as one candidate; this does not grant the native plan's expanded P1 | The pair's own evidence case and exclusivity remain owed. [Runbook §5](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md#5-decisions) records SM-1–SM-3 as ruled 10-29; native evidence, including U-18, remains owed |
+| [Qualification framework](../../briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md), merged in [#961](https://github.com/Joshua-Asante/first-passage/pull/961) | Successor to #941; document remains DRAFT after merge | Pre-ratification adjudication, operator values and ratification remain owed; its formal nomination and exact account binding are open. It is not an approved replacement for an existing objective |
 | [#807 closure](https://github.com/Joshua-Asante/first-passage/pull/807#issuecomment-6483857542) | Closed unmerged; pinned parity/isolation methods retained for later candidate-specific work | No implementation was accepted. Closing this planning PR does not revoke a separately recorded operator grant |
 
 The [four-firm ceiling scope ruling](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-28--scope-of-the-4-bust-ceiling-accepted)
@@ -26,7 +26,7 @@ The [10-19 finding](#addendum-2026-10-19--no-book-lineage-configuration-has-an-e
 still governs its book-lineage scope; whether an exact ORB/Aegis pairing falls
 inside it is an owner decision, not settled by a shared label. No candidate,
 account, sizing, evidence gate or deployment approval is ratified by this routing
-note. Pending PRs must be rechecked before use.
+note. Recheck the linked owners before use.
 
 ## Historical Track B delivery plan (superseded for Tradeify)
 
@@ -1009,3 +1009,18 @@ operational controls or standing instructions.
 - Tradeify remains an optional separate native lane for a strategy run only at Tradeify;
 - Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), auto-closed unmerged 2026-10-19 by a closing keyword in commit `4355887`, not by a ruling; reopening it is Joshua's call).
 
+
+## Addendum 2026-10-28 — branch (b) ruled ahead of the 11-08 sitting
+
+**Ruling (Joshua, 2026-10-28, in the Claude session adjudicating #882):** branch (b) of the draft 11-08 rules, and a rewrite of the native runbook's order rules as one state model. He expects ORB and Aegis to share one native Tradeify account.
+
+**Effect:**
+- **Granted, literally:** #807 stage 1, a read-only native toolchain assessment, as branch (b) defines it. Nothing else: no strategy code, build, connection, order or spend. The native strategy plan's P1 asks that a branch (b) GO state its repurposed single-candidate scope; this ruling does not, so that scope is not granted.
+- **Branches (a), (c) and (d)** are not ruled here; (a) stays withdrawn (10-16). The rest of the draft 11-08 rules stays a draft for the sitting.
+- **Runbook:** the [native protection and recovery runbook](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md) carries A2 (D-N10 to D-N16) and proposes the order state model (§6.10, SM-1 to SM-3, ruled 2026-10-29). #882 is closed as superseded.
+
+**Owed before ORB and Aegis can share that account:**
+- **Evidence case.** The 10-19 ruling (above) found no evidence case for any book-lineage configuration on this evaluation, and its composition grid shows Select books adding ORB legs to the Aegis cell busting more. Whether a pairing of ORB MNQ v7 (paused, outside that finding) with Aegis falls inside the finding is not ruled. Either way the pair needs its own evidence case, and Q-TFYNATIVE-1 (#941, draft) would gate it.
+- **Exclusivity.** Tradeify bars the same bot across firms; both strategies must be run only at Tradeify.
+
+**Ruling (Joshua, 2026-10-28, ~23:58Z, given directly to the merge-train coordinator session, relayed; confirmed in the session that recorded the addendum above):** "ORB joins stage 1; the pair counts as one candidate". #807 stage 1's read-only toolchain assessment covers ORB as well as Aegis, and ORB and Aegis together are one candidate. Stage 1 remains read-only; the evidence case and exclusivity above are still owed.
