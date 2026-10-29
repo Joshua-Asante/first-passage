@@ -232,8 +232,8 @@ MESSAGES = {
                  "clean fourth (`scripts/merge_train.py gate` applies the count); if none is "
                  "clean by the fourth, return the PR to its owner for a rewrite. For a "
                  "Codex-authored PR it is a Claude review clean at this head, checked by hand "
-                 "(the gate counts Codex reviews only); ask the operator before a fourth Claude "
-                 "review. Otherwise report the PR as ready and stop."),
+                 "(the gate counts Codex reviews only), within three reviews or on a clean "
+                 "fourth, counted by hand. Otherwise report the PR as ready and stop."),
     "pr.merge_admin": ("Admin merge (pr.merge_admin): --admin asks GitHub to merge past "
                        "unmet requirements, outside the agents' standing GO. Confirm only if "
                        "you, the operator, are making this merge.",
