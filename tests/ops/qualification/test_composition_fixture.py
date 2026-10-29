@@ -39,6 +39,20 @@ def test_complete_live_runtime_can_bind_adjudicator(tmp_path, monkeypatch):
         bound.verify_for(setup.contract)
 
 
+def test_binding_rejects_verifier_replaced_before_freezing(tmp_path, monkeypatch):
+    # frozen_adjudicator must check the retained classes itself, not trust verify_for.
+    from composition_fixture import build_verified_composition
+    from c1_rail.qualification import result_adjudication
+    setup = build_verified_composition(tmp_path)
+    monkeypatch.setattr(result_adjudication.FrozenAdjudicator, 'verify_for', lambda self, contract: None)
+    with pytest.raises(ValueError):
+        result_adjudication.frozen_adjudicator(setup.contract, retained_source_bytes=setup.retained_source_bytes,
+                                               runtime_inventory=setup.runtime_inventory)
+    with pytest.raises(ValueError):
+        result_adjudication.frozen_adjudicator(setup.contract, retained_source_bytes=setup.retained_source_bytes,
+                                               runtime_inventory=None)
+
+
 def test_retained_fixture_is_self_consistent_and_uses_actual_source_schemas(tmp_path):
     fixture = build_artifacts(tmp_path)
     raw = fixture.payloads

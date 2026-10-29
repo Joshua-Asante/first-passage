@@ -313,7 +313,7 @@ def frozen_adjudicator(contract, *, retained_source_bytes, runtime_inventory):
     if observed!=dict(contract.runtime_load_sha256):
         raise ValueError('retained runtime source bytes differ')
     functions=_runtime_dependencies()
-    # verify_for below checks the runtime inventory against these functions.
+    _verify_runtime_inventory(contract, runtime_inventory, functions)
     result=FrozenAdjudicator(
         contract,contract.contract_sha256,_closure_identity(observed),
         tuple(sorted(observed.items())),adjudicate_e1_outcomes,
