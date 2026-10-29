@@ -997,4 +997,5 @@ operational controls or standing instructions.
 **Owed before ORB and Aegis can share that account:**
 - **Evidence case.** The 10-19 ruling (above) found no evidence case for any book-lineage configuration on this evaluation, and its composition grid shows Select books adding ORB legs to the Aegis cell busting more. Whether a pairing of ORB MNQ v7 (paused, outside that finding) with Aegis falls inside the finding is not ruled. Either way the pair needs its own evidence case, and Q-TFYNATIVE-1 (#941, draft) would gate it.
 - **Exclusivity.** Tradeify bars the same bot across firms; both strategies must be run only at Tradeify.
-- **Scope of #807 stage 1.** #807 scopes stage 1 to Aegis; ORB needs a ruling to join it.
+
+**Ruling (Joshua, 2026-10-28, ~23:58Z, given directly to the merge-train coordinator session, relayed; confirmed in the session that recorded the addendum above):** "ORB joins stage 1; the pair counts as one candidate". #807 stage 1's read-only toolchain assessment covers ORB as well as Aegis, and ORB and Aegis together are one candidate. Stage 1 remains read-only; the evidence case and exclusivity above are still owed.
