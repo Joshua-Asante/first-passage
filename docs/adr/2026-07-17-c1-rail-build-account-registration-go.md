@@ -457,9 +457,9 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
 
 ## Addendum 2026-10-29 — c1 retired as an execution route; staged decommission
 
-**Ruling** (Joshua, 2026-10-29, in the repository cleanup assessment): "Retire the personal Python route. That is the biggest simplification decision. Keeping a future personal-account option does not necessarily require maintaining this particular implementation." To the follow-up questions he answered "Whole stack, staged" (scope), "Keep frozen and paused" (Q-SFCLEAR-3) and "Staged" (hosts).
+**Ruling** (Joshua, 2026-10-29, in the repository cleanup assessment): "Retire the personal Python route. That is the biggest simplification decision. Keeping a future personal-account option does not necessarily require maintaining this particular implementation." To the follow-up questions he answered "Whole stack, staged" (scope), "Keep frozen and paused" (Q-SFCLEAR-3) and "Staged" (hosts). Later the same day he confirmed: "Anything that is tied to the Python rail is retired." He then removed the personal-account objective altogether ([lane closure](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed)).
 
-**Why the whole stack.** The personal lane was this rail's last consumer. Tradeify bars external routes for evaluation accounts (support reply 2026-10-12; Track B [superseded for Tradeify](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify) 2026-10-16), and no other objective names the rail.
+**Why the whole stack.** The personal lane was this rail's last consumer, and it is now closed. Tradeify bars external routes for evaluation accounts (support reply 2026-10-12; Track B [superseded for Tradeify](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify) 2026-10-16), and no other objective names the rail.
 
 **Effect.**
 
@@ -468,8 +468,8 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
    - **Stage 1 (operator).** Confirm both Fly apps, `c1-rail` and `c1-signal-daemon`, are disarmed (`dry_run=true`, `emit_enabled=false`), then stop them (scale to zero). Keep the apps for about two weeks as rollback.
    - **Stage 2 (operator).** Once the code and CI assessment confirms no remaining consumer, destroy both apps and cancel CrossTrade at its next renewal. The [subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md) records both.
    - **Stage 3 (agents, by PR).** Reduce code, tests, CI, deployment files and documentation in stages. Each PR carries its own consumer evidence and a retrieval row in [`docs/ltm/README.md`](../ltm/README.md). Shared libraries, reference models, fixtures and evidence producers stay until their consumers are shown.
-3. [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) stays frozen and paused, as evidence. Its dispatch conditions stay with its owners, including the successor freeze routed on 2026-10-20 ([campaign §62](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#62--aegis-capture-cost-basis-zero-slippage-2026-10-20)). Removing code from `main` does not remove the code at its freeze commit.
-4. A future personal-account route needs its own build decision. It inherits none of this rail's B-gates, M1 acceptance or test evidence.
+3. [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) is not run; see the [lane closure](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed). Its frozen pre-registration stays as evidence.
+4. Any future route to a broker needs its own build decision. It inherits none of this rail's B-gates, M1 acceptance or test evidence.
 
 **Not changed.**
 
@@ -478,4 +478,4 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
 - `dd_protection` constants and the frozen controls in AGENTS.md. Arming rules apply to the hosts until Stage 2.
 - The [M1 acceptance](../notes/rail_build/M1_MONITORING_ACCEPTANCE.json) and its validator stay as evidence and gates until Stage 3 decides them. M1 acceptance never transfers to another instance.
 - The spend ceiling and its exemptions stay as recorded.
-- Lane-level consequences are in the [self-funded lane ADR](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--c1-route-retired-for-this-lane).
+- The lane closure is in the [self-funded lane ADR](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed), and the single program is in the [four-firm program ADR](2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-29--one-program-the-multi-firm-operation-accepted).

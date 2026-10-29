@@ -155,14 +155,14 @@ Support's 20:19Z reply on 2026-10-12, recorded at the [route owner](../briefs/ha
    - *Design inputs, not adopted requirements:* the [instance ADR](2026-09-12-tradeify-book-protection-instance-admission.md) §2b validator, T11 effective activation and its 2026-10-11 addendum; the [synthetic interlock card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md); and the [incident ADR](2026-09-17-bounded-platform-protection-incident-contract.md) §A12.5 items it assigns to TB-I3 (the stale-evidence latch and the halt-on-unknown implementation), where this lane's instance uses the rail.
    - Nothing is implemented, armed or authorized by this addendum.
 
-## Addendum 2026-10-29 — c1 route retired for this lane
+## Addendum 2026-10-29 — personal-account objective removed; lane closed
 
-**Ruling:** Joshua retired the personal Python route on 2026-10-29. The canonical record, with his words, scope and staging, is the [rail ADR addendum](2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission).
+**Ruling** (Joshua, 2026-10-29, in the repository cleanup assessment, verbatim): "remove the personal account objective altogether. The Select 100k challenge is the first step in the four firm program, it is one program which is the multi firm operation". Earlier that day he retired the c1 Python route, recorded in the [rail ADR addendum](2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission), and confirmed: "Anything that is tied to the Python rail is retired."
 
-**Effect on this ADR.**
+**Effect.**
 
-- The lane stays open as an objective: maximum growth, under the 15% clearance standard. Its execution route is unselected.
-- Decision 3 (the personal account as the signal daemon's data source) and owed items 6 (rail binding) and 8 (host-side activation gate) existed only for the c1 route. They lapse with it.
-- Items 1, 2, 4, 5 and 7 stay owed by whatever route is chosen. Item 3 applies only if that route uses the Tradovate API. A future route re-derives its own item list at its build decision.
-- [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) stays frozen and paused.
+- The self-funded lane is closed. Its objective, Decisions 1–4 and owed items 1–8 are withdrawn, with no successor. Nothing on the personal account is pursued.
+- [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) has no remaining purpose and is not run. No run occurred, so no result is lost. The frozen pre-registration stays unedited as evidence. The successor freeze routed on 2026-10-20 ([campaign §62](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#62--aegis-capture-cost-basis-zero-slippage-2026-10-20)) lapses with it.
+- The project's single program is recorded in the [four-firm program ADR](2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-29--one-program-the-multi-firm-operation-accepted).
+- This addendum is the operative record. The ADR's formal retirement (Status and TOMBSTONES) follows the ADR-removal process of the [cleanup programme](../superpowers/specs/2026-10-28-org-cleanup-programme-spec.md).
 - Nothing is implemented, armed or authorized by this addendum.
