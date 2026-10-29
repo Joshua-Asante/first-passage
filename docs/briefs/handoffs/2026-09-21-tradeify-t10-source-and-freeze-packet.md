@@ -47,7 +47,7 @@ Guessing a historical deadline or coverage; extrapolating calendars; using a rea
 
 **Rulings and F10 (2026-09-21 → 09-24):** R1 reading (a), R2 panel-derived, R5 no F1 row consumes actual-close evidence. F10 hold item (i) is closed: the operator confirmed on 2026-09-24 that Step 3 is enough parity evidence for the corrected Striker port `efd479b6…`. See the note's §Operator confirmation for the checks. Hold item (ii), the moved emulator, stays with F11.
 
-**Step 4 (representative measurement) — started 2026-09-24, first pass:** [`docs/notes/2026-09-24-t10-step4-representative-measurement.md`](../../notes/2026-09-24-t10-step4-representative-measurement.md). All runs were signed TEST_ONLY on synthetic data at reduced depth, and none is decision bearing.
+**Step 4 (representative measurement) — started 2026-09-24, first pass:** [`docs/notes/2026-09-24-t10-step4-representative-measurement.md`](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-09-24-t10-step4-representative-measurement.md). All runs were signed TEST_ONLY on synthetic data at reduced depth, and none is decision bearing.
 - **Main finding:** per-path `ProductionSource.verify_for`, the whole-source execution snapshot, dominates composition cost. Linear extrapolation to the real source's size puts it at roughly 9× the illustrated replay time. This is a design question for the qualification owner.
 - **Synthetic benchmarks:** the 500-session path and Part A digests are unchanged at HEAD.
 - **Still owed:** signed composition at horizon 500, a `verify_for` probe at real-source object counts, and the execution-service and G5 costs.

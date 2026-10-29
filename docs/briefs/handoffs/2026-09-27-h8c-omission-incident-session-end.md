@@ -178,7 +178,7 @@ The operator merges. The coordinator keeps acceptance.
 
 ## Executor return (2026-09-27)
 
-**Status: DONE_WITH_CONCERNS.** All 11 acceptance nodes pass. The firm recovery/evidence condition is met. The concerns are two disclosed failures that predate this change, both outside the worker's write scope (below). Branch `claude/h8c-omission-incident-tests`: test commit `19bf582`, on the coordinator's `e1635d8` over the dispatch revision `08196100`. Evidence: [H8(c) evidence note](../../notes/2026-09-27-h8c-omission-incident-evidence.md), whose §0 lists the owner anchors relied on. Every §0 path exists at the dispatch revision.
+**Status: DONE_WITH_CONCERNS.** All 11 acceptance nodes pass. The firm recovery/evidence condition is met. The concerns are two disclosed failures that predate this change, both outside the worker's write scope (below). Branch `claude/h8c-omission-incident-tests`: test commit `19bf582`, on the coordinator's `e1635d8` over the dispatch revision `08196100`. Evidence: [H8(c) evidence note](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-09-27-h8c-omission-incident-evidence.md), whose §0 lists the owner anchors relied on. Every §0 path exists at the dispatch revision.
 
 | Node | Result | Incidents (reason; generation at insert) |
 |---|---|---|

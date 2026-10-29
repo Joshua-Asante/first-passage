@@ -14,7 +14,7 @@ production-feasibility gaps described in #411, add the evening approval
 requirement to the operating design". Section 6.1 records that requirement and
 its proposed detailed contract. Earlier approval does not ratify these new
 mechanics or amend production authority implicitly. Investigation results are in
-the [capability decision record](../../notes/2026-09-16-tradeify-production-feasibility-decision.md).
+the [capability decision record](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-09-16-tradeify-production-feasibility-decision.md).
 
 Purpose: determine whether the incumbent account and execution route can support
 the accepted portfolio, then select the smallest feasible attended release.
