@@ -564,7 +564,7 @@ FIRM_RULES = {
     }),
 
     # Futures ONLY; never restore the retired FX/CFD "FXIFY" key or its defaults.
-    # Source: PR #867 at 2d5bc8f69f7536c9fb6a3856f8559a1f3ddfc395,
+    # Source: PR #867 at 3424e580898d58ca91d03fbfb14ec28a6510604e,
     # docs/notes/2026-10-17-fxify-futures-flex-150k-evaluation-rule-sheet.md.
     # FAQ figures are reported verified there, not independently accepted here.
     # Reconciled 2026-10-17 with that revision: the eval lock is at the starting
@@ -575,7 +575,7 @@ FIRM_RULES = {
     # clear. Preflight requires explicit provisional opt-in meanwhile.
     "FXIFY_Futures_Flex_150K": {
         "rules_status": "provisional",
-        "rules_source_revision": "2d5bc8f69f7536c9fb6a3856f8559a1f3ddfc395",
+        "rules_source_revision": "3424e580898d58ca91d03fbfb14ec28a6510604e",
         "starting_balance": 150_000,
         "dd_type": "trailing_locking",  # fixed-$ EOD trail, NOT %-of-peak
         "max_dd_pct": 3.0,              # $4,500, initial floor $145,500
