@@ -109,7 +109,7 @@ Codex's 2026-10-29 diagnostic located long weak stretches for ORB and Aegis, but
   - **R9 Diagnostic provenance:** SHA-256, editions, account configuration, input hashes, windows; whether the three difficult windows come from the four-leg account.
   - **R10 Exposure:** per dataset, which windows earlier studies and the diagnostic already viewed (counts and windows only), per the workshop spec.
 - **Expected output:** READINESS.md rows.
-- **Per-step gate:** No empty cell; every non-`UNKNOWN` cell cited.
+- **Per-step gate:** No empty cell; every non-`UNKNOWN` cell cited; every `UNKNOWN` cell names its owner.
 
 ### Step 2.3 — Consistency check
 
@@ -129,7 +129,7 @@ Codex's 2026-10-29 diagnostic located long weak stretches for ORB and Aegis, but
 
 ## §4 — Falsifiable hypothesis
 
-`N/A — no hypothesis under test`; this is a no-run inventory. The readiness claim is decided mechanically: **if** R1, R2, R3 and R9 each resolve to cited identities for both pair legs on a common window, **then** Experiment 2 is dispatchable (READY or READY_WITH_GAPS); **otherwise** the claim is falsified for now and the return is the blocker list (NOT_READY).
+`N/A — no hypothesis under test`; this is a no-run inventory. The readiness claim is decided mechanically: **if** R1, R2, R3 and R9 each resolve to cited identities for both pair legs on a common window, **then** Experiment 2 is dispatchable (READY when no cell is `UNKNOWN`, else READY_WITH_GAPS, per the §6 precedence); **otherwise** the claim is falsified for now and the return is the blocker list (NOT_READY).
 
 ---
 
@@ -175,11 +175,15 @@ The return carries one verdict from rows R1–R10 (READY / READY_WITH_GAPS / NOT
 
 ### Verdict (mechanical, from rows)
 
+Apply in order; the first matching row is the verdict, so exactly one applies. "Core" means R1, R2, R3 and R9 resolved for both pair legs on a common window.
+
 | Verdict | Trigger | Maps to |
 |---|---|---|
-| **READY** | R1, R2, R3, R9 resolved for both pair legs on a common window; R5, R7 resolved for at least one tier | RESOLVED |
-| **READY_WITH_GAPS** | READY's R1/R2/R3/R9 condition holds; R4–R8 or R10 carry `UNKNOWN` cells, each with a named owner | AMBIGUOUS |
-| **NOT_READY** | Any of R1, R2, R3, R9 unresolved for either pair leg | FALSIFIED (for now) |
+| **NOT_READY** | Core does not hold | FALSIFIED (for now) |
+| **READY_WITH_GAPS** | Core holds and at least one cell in R4–R8 or R10 is `UNKNOWN` | AMBIGUOUS |
+| **READY** | Core holds and no cell in any row is `UNKNOWN` | RESOLVED |
+
+Every `UNKNOWN` cell names the owner that can clear it (Step 2.2 gate); an `UNKNOWN` without an owner is a `DONE_WITH_CONCERNS` item, not a verdict change.
 
 ### Return status
 
