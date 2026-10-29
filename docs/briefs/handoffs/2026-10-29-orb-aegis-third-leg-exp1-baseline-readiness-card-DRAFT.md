@@ -129,7 +129,7 @@ Codex's 2026-10-29 diagnostic located long weak stretches for ORB and Aegis, but
 
 ## §4 — Falsifiable hypothesis
 
-`N/A — no hypothesis under test`; this is a no-run inventory. The readiness claim is decided mechanically: **if** R1, R2, R3 and R9 each resolve to cited identities for both pair legs on a common window, **then** Experiment 2 is dispatchable (READY when no cell is `UNKNOWN`, else READY_WITH_GAPS, per the §6 precedence); **otherwise** the claim is falsified for now and the return is the blocker list (NOT_READY).
+`N/A — no hypothesis under test`; this is a no-run inventory. The readiness claim is decided mechanically: **if** Core holds as defined in §6 (R1, R2, R3 and R9 positively established, including usable same-instant coverage for both legs), **then** Experiment 2 is dispatchable (READY when no cell is `UNKNOWN`, else READY_WITH_GAPS, per the §6 precedence); **otherwise** the claim is falsified for now and the return is the blocker list (NOT_READY).
 
 ---
 
@@ -175,7 +175,12 @@ The return carries one verdict from rows R1–R10 (READY / READY_WITH_GAPS / NOT
 
 ### Verdict (mechanical, from rows)
 
-Apply in order; the first matching row is the verdict, so exactly one applies. "Core" means R1, R2, R3 and R9 resolved for both pair legs on a common window.
+Apply in order; the first matching row is the verdict, so exactly one applies. "Core" holds only when all four are positively established, each cited; a cited absence, an unsuitable clock or `UNKNOWN` in any of them fails Core:
+
+- **R1:** at least one export for each pair leg is bound to its accepted pin (code hash and export hash).
+- **R2:** those bound exports share a non-empty common window.
+- **R3:** both legs have timestamped trades and an admitted bar panel (or another recorded intraday-honest basis) covering that common window, so same-instant adverse excursion can be computed (§0.5(C)). EOD-only or proxy evidence for either leg fails Core.
+- **R9:** the diagnostic's hash, editions and account configuration are identified.
 
 | Verdict | Trigger | Maps to |
 |---|---|---|
