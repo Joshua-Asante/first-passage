@@ -83,7 +83,7 @@ Reaching any phase's bound triggers reassessment, not expansion.
   - (b) reassign ORB MNQ v7 from the four-firm §4 slot to Tradeify-only;
   - (c) another non-lineage strategy you name.
 
-  Recommendation: (a), unless the §4 run on ORB v7 is dropped. (b) trades the four-firm falsifier's candidate for a faster Tradeify route. **Update 2026-10-21:** a [sourcing pass](../../notes/research/2026-10-21-tradeify-published-rule-candidates.md) found no published rule on index or gold micros that clears the existing gates; (a) now needs a different modality or non-index mechanism evidence.
+  Recommendation: (a), unless the §4 run on ORB v7 is dropped. (b) trades the four-firm falsifier's candidate for a faster Tradeify route.
 - **D3. First account:** the incumbent Select 100K eval (no new fee, but 2.0 geometry and a used state) or a new Select 50K (1.5 geometry, $165).
 
   Recommendation: decide after P5, using the measured distribution in the payout model.

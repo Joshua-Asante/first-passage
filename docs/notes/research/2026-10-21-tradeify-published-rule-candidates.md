@@ -4,6 +4,7 @@
 - **Cost:** zero K, $0, no data read.
 - **What it doesn't do:** it opens no manifest and admits nothing.
 - **What it serves:** decision D2 of the [native strategy plan](../../superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md#6-decisions-for-joshua), and the bracketed rule in the [follow-up draft](../2026-10-21-tradeify-native-followup-questions-DRAFT.md).
+- **Since 2026-10-28:** #807 stage 1 covers the ORB+Aegis pair as one candidate ([checklist addendum 2026-10-28](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting)); the Q-TFYNATIVE-1 draft still admits a single-strategy candidate. This note stands as the dated published-rule sourcing result; its ORB references below predate that ruling.
 
 **Question:** is there a published intraday rule, with published parameters and flat by the close, that is native-implementable on a Tradeify Select account and clears this repo's harvest admission?
 
@@ -46,7 +47,7 @@
 
 | # | Published rule | Tradeify fit | Cost law (sniff) | Bars / dedup | Verdict |
 |---|---|---|---|---|---|
-| 1 | **Noise-area breakout + VWAP trail** (Zarattini, Aziz, Barbon 2024, SSRN 4824172; working paper). Details below | Fits: intraday, about 1.8 trades a day | **FAIL on MNQ.** About 2.1 bp gross per trade vs 4.2 bp at 13,500. ES is negative after publication. Details below | Domain bar applies: same gamma-hedging mechanism as D5, so it needs route 3 (beat ORB-MNQ net). MNQ N3 says the class is "statistically absent on modern MNQ" | **Not admissible.** Closest candidate; fails cost by about 2× |
+| 1 | **Noise-area breakout + VWAP trail** (Zarattini, Aziz, Barbon 2024, SSRN 4824172; working paper). Details below | Fits: intraday, about 1.8 trades a day | **INDETERMINATE on MNQ.** The NQ replication publishes no trade count, so gross per trade can't be recovered. ES is negative after publication. Details below | Domain bar applies: same gamma-hedging mechanism as D5, so it needs route 3 (beat ORB-MNQ net). MNQ N3 says the class is "statistically absent on modern MNQ" | **Not admissible** (domain bar; D5 mechanism). Closest candidate |
 | 2 | **5-min opening-range breakout** (Zarattini & Aziz 2023, SSRN 4416622). Direction of the first 5-min candle; stop at its extreme; 10R target or exit at the close [FT]. QQQ 2016–2023: Sharpe 1.12, +0.13R per trade, no slippage [FT] | Fits | Third-party CFD replication (2015–2026, paper parameters): net NQ +0.002R; SPX, Dow and FTSE −0.08R [3P] | ORB family: a different ORB window is the "exhausted move" under the bar. Same class as ORB-MNQ, the four-firm §4 candidate, so the "same bot" risk applies | **Excluded** |
 | 3 | **Last-half-hour momentum** (Gao, Han, Li, Zhou 2018, *JFE*). Sign of r(prior close → 10:00) sets the 15:30–16:00 trade [FT]. SPY Sharpe 1.08; about 2.6 bp gross per trade [FT/INF] | Fits | FAIL: about 2.6 bp vs 3.5–9 bp | D5 class: dead on cost (2026-07-16) and decayed OOS (D5-RECOST, 2026-07-21) | **Dead class** |
 | 4 | **Hedging-demand intraday momentum** (Baltussen et al. 2021, *JFE*) [ABS] | Fits | Was D5's δ: 1.46 bp vs 11.06 bp | Is D5 | **Dead** |
@@ -56,33 +57,24 @@
 | 8 | Gap fade, VWAP/Bollinger reversion, 8:30 macro drift | — | — | No peer-reviewed or working-paper rule with parameters found; theses and blogs only | **None found** |
 
 **Row 1 detail: the rule** [FT]
-- **Bands:** max(open, prior close) × (1 ± σ14). σ14 is the 14-day mean absolute move from the open to each half-hour.
+- **Bands:** upper = max(open, prior close) × (1 + σ14); lower = min(open, prior close) × (1 − σ14). σ14 is the 14-day mean absolute move from the open to each half-hour.
 - **Entry:** checked only on the half-hour.
 - **Exit:** stop at the band or the regular-hours VWAP, whichever is tighter; flat at 16:00.
 - **Sizing:** volatility-targeted to 2% a day, capped at 4×.
 - **Reported:** SPY 2007–2024, Sharpe 1.33, 19.6% a year, max drawdown 25%, about 1.8 trades per traded day.
 
-**Row 1 detail: the cost sniff.** The third-party MNQ replication used 1 micro, $1.75 round trip plus 1 tick a fill [3P]:
-
-| Market | Daily result | t | Post-publication |
-|---|---|---|---|
-| NQ 2010–2026 | +$5.35 | 2.74 | t = 1.37 |
-| ES | −$0.25 | — | −$5.56 a day |
-
-Converting the NQ figure:
-- per trade gross ≈ $5.35/1.8 + $2.75 ≈ $5.7;
-- at MNQ notional 13,500 × $2, that is ≈ **2.1 bp** [INF];
-- the 4× floor at the same price is **4.2 bp**.
+**Row 1 detail: the cost sniff.** The third-party NQ replication (1 micro, $1.75 round trip plus 1 tick a fill) reports a positive daily mean on NQ 2010–2026 (t = 2.74; t = 1.37 after publication) and a negative one on ES [3P]. It publishes no trade count, and its daily mean may include no-trade sessions, so gross per trade can't be recovered from it; borrowing the SPY study's 1.8 trades per traded day would mix two samples. The per-event cost comparison is therefore **indeterminate** [INF]. On that replication's all-period mean, the 4.2 bp floor at 13,500 would be cleared only if it averaged fewer than about 0.6 trades per session [INF]. Row 1 stays not admissible on the domain bar and the D5 mechanism finding, not on cost.
 
 ## 3. What this means for D2
 
-1. **The published-rule route is effectively closed on index micros** for a Tradeify-only strategy.
-   - The one rule that fits Tradeify's mechanics (row 1) fails the cost law by about 2× on the best index, MNQ.
-   - It also sits under the same mechanism finding that killed D5.
-   - The ORB family is the incumbent and is already allocated elsewhere.
+1. **No published rule found in this pass clears the existing gates on index or gold micros** for a Tradeify-only strategy.
+   - Row 1, the one rule that fits Tradeify's mechanics, sits under the domain bar and the mechanism finding that killed D5; its cost comparison is indeterminate (row 1 detail).
+   - The ORB family is the incumbent.
 2. **Options still open** (none is recommended here):
    - **D2(b):** reassign ORB MNQ v7 to Tradeify-only. It is the domain's only survivor, and it trades the four-firm candidate.
    - **Domain-bar route 2:** a different modality, for example order flow computed natively in NinjaScript from Tradeify's data. No published, parameterised order-flow rule with δ above the cost floor was found in this pass, and it would need its own sourcing pass. Native order-flow features may also depend on a NinjaTrader entitlement, which is a P1 check.
+   - **Domain-bar route 1:** within-instrument temporal selectivity, causally named and frozen a priori ([rejected register](../../rejected_candidates.md), scope ruling 2026-08-10), subject to the 2026-08-16 cheap-falsifier gate for non-dense-1m cards.
+   - **Domain-bar route 3:** evidence that beats incumbent ORB-MNQ net of costs.
    - **Non-index micros:** CL/MCL, FX and gold intraday literature is already largely closed in the register: EIA, TAS, FX fixing, gold fix. A new pass would need new mechanism evidence.
    - **Park Tradeify:** 11-08 branch (d).
 3. **Follow-up draft:** the bracketed rule cannot be filled from this pass. Sending the ownership question is premature until D2 picks a candidate; if D2(b) is chosen, the question changes, because ORB v7 is an in-house strategy, not a published rule.
