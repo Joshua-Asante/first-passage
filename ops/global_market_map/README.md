@@ -75,17 +75,13 @@ SHA-256 of the exact UTF-8 registry bytes in downstream evidence.
 
 ## Observation bridge coordination
 
-Dependency: [PR #786](https://github.com/Joshua-Asante/first-passage/pull/786),
-README inspected at
-[`c948e9e4e2f2948bad796ffb08819e584e5323ab`](https://github.com/Joshua-Asante/first-passage/blob/c948e9e4e2f2948bad796ffb08819e584e5323ab/scripts/global_pulse/README.md).
+No observation bridge is on `main`. [PR #786](https://github.com/Joshua-Asante/first-passage/pull/786)
+(head `4e388a18d3c4118e5896e74241c255b1f74a37e8`) was closed unmerged on 2026-10-28:
+it imported a module deleted in `2bd9aecd` and had no consumer. A future consumer
+must meet the contract below, pinned to this registry's revision and SHA-256, and
+must not relabel production metadata synthetic.
 
-That revision deliberately accepts only `global-pulse-synthetic-registry/v1`.
-Its fixture is a test interface and is **not** this production specification.
-This PR publishes the registry; it does not add production support to the bridge.
-The bridge must continue rejecting this registry until a separately reviewed
-adapter and compatibility tests land. Do not relabel production metadata synthetic.
-
-The adapter should validate this contract and retain the full pinned registry
+A consumer adapter must validate this contract and retain the full pinned registry
 alongside its internal projection:
 
 | Bridge lookup | Production source / required behavior |
