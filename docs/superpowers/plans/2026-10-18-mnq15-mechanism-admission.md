@@ -18,6 +18,8 @@
 
 **H4 execution:** Joshua's approved [scheduled Nasdaq-futures benchmark rehedging audit](#h4-execution-return--parked-at-payersign-checkpoint) returned **PARKED — NOT ADMITTED** at the payer/sign checkpoint. Noise-band remains parked. No research contract was prepared.
 
+**H5 outcome (2026-10-19):** the provisional pilot's selected expression E1 is **PARKED — DATA FEASIBILITY, UNRUN**; see the [pilot's H5-D return](2026-10-18-mnq15-provisional-probe-pilot.md#h5-d--bounded-e1-data-feasibility-return-2026-10-19). Noise-band and H4 remain parked.
+
 ## Global constraints
 
 - New research candidate; the accepted book, immutable strategy sources and concurrent ORB solo study retain their identities and owners.
@@ -476,3 +478,5 @@ recasting the prior no-admission findings as passes. Noise-band and H4 remain
 parked. Point-in-time inputs, cost bindings, committed Confirm reservation and a
 guarded registration/loader path are execution prerequisites. This handoff
 prepares the protocol; it does not run or register the probe.
+
+**Outcome (2026-10-19):** H5-D returned E1 **PARKED — DATA FEASIBILITY, UNRUN**; see the [pilot's H5-D return](2026-10-18-mnq15-provisional-probe-pilot.md#h5-d--bounded-e1-data-feasibility-return-2026-10-19).
