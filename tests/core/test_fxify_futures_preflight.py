@@ -1,6 +1,6 @@
-"""Provisional #867 plumbing, not acceptance of the venue's disputed rules.
+"""Provisional #964 plumbing (closed predecessor #867), not acceptance of the venue's disputed rules.
 
-Pin: 3424e580898d58ca91d03fbfb14ec28a6510604e (refined sheet). B1's eval lock at
+Pin: 37f9cd46a96090615292aabb8e58b59ca6f7be83 (sheet reconciled 2026-10-29 against the 2026-10-19 record). B1's eval lock at
 the starting balance is encoded; the no-lock reading is optional stress S1. B2's
 intraday-equity breach reading remains a house-convention assumption. These
 examples deliberately expose their effect before any re-MC.
@@ -34,7 +34,7 @@ def test_distinct_futures_identity_and_reported_fields():
     row = FIRM_RULES[TIER]
     assert AUTOMATION_FRIENDLY_PROP_FIRMS["fxify_futures"] == [TIER]
     assert "FXIFY" not in FIRM_RULES
-    assert row["rules_source_revision"] == "3424e580898d58ca91d03fbfb14ec28a6510604e"
+    assert row["rules_source_revision"] == "37f9cd46a96090615292aabb8e58b59ca6f7be83"
     assert row["starting_balance"] == 150_000
     assert row["micro_contract_cap"] == 100
     assert row["consistency_rule_pct"] == 50.0
