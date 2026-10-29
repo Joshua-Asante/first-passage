@@ -87,7 +87,7 @@ Owners hold canonical criteria; rows are pointers.
   - 10-05→10-09: placed Monday 10-05; the operator attests (10-08, to the Deployment Coordinator) it was verified and reported at the time. The capture's location is not recalled, so this record is not independently checked.
   - 10-12→10-16: placed Monday 10-12 by the operator: a market round trip, both legs filled (per-trade detail is in the private capture; operator-attested 10-12 to the Deployment Coordinator with an orders-tab capture, kept privately in the primary checkout's `local_artifacts/preservation-2026-10/` with `SHA256SUMS`). Placed directly on the trading platform, not via CrossTrade (Joshua, 10-12: "placed directly").
   - 10-19→10-23: **COMPLETE** — native Tradovate round trip on 10-21; both fills, position zero, open P&L zero and working orders zero verified through the browser in the operator's session. Private transcription: `local_artifacts/preservation-2026-10/2026-10-21-trade.private.json` (hashed in `SHA256SUMS`); final account snapshot: `local_artifacts/tradeify-pilot-2026-10/account-state.private.json`.
-  - 10-26→10-30: **COMPLETE (operator-attested 2026-10-29)** — Joshua reports opening and closing the weekly preservation trade directly in Tradovate; not independently browser-verified.
+  - 10-26→10-30: placed Thursday 10-29 by the operator directly in Tradovate, opened and closed (operator-attested 2026-10-29 in an agent session). No capture was taken, so this record is not independently checked.
 - Preserve missed-week records when advancing; record coverage only when attested;
   `daily-repo-truth-sync` reads this board's dated obligations.
 
