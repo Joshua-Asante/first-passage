@@ -169,6 +169,7 @@ structure:
 
 ## SESSION LOG
 
+- **2026-10-21** — **M15 redesign: two mechanisms PARKED; provisional pilot E1 PARKED, UNRUN (data feasibility).** [Mechanism-admission evidence](../../docs/superpowers/plans/2026-10-18-mnq15-mechanism-admission.md) parks noise-band continuation and scheduled Nasdaq-futures benchmark rehedging under their reopening bars. The approved [provisional pilot](../../docs/superpowers/plans/2026-10-18-mnq15-provisional-probe-pilot.md) selected only E1, dividend-payment pressure (K_declared=1, unregistered; ceiling three; one probe); its bounded audit found no complete lawful $0 input route. Reopen data readiness only on H5-D's coverage, rights, provenance, calendars and restricted-custody package. The pilot instance expires unfrozen at its 2026-10-30 16:00 ET sunset; reopening needs new prospective authority. The Confirm exclusion 2026-11-02–2027-10-29 remains as a record (commit `ed073d2`). No probe read, discovery registration or K spent; these are sourcing/admission decisions, not empirical rejection or strategy admission. Promotion and account-risk gates are unchanged.
 - **2026-08-29** — **Notice-phase 5-candidate bars-only geometry screen (MNQ M15) — 2 GRADUATE, 1
   split GRADUATE/DROP, 1 HOLD (real, VOIDs under the frozen battery), 1 HOLD (real, route
   unresolved). Zero new DEAD-list rows.** `--lane blind` registration (Rule 1: K declared before
