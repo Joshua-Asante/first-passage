@@ -3,7 +3,7 @@ description: Generate per-decision Q8a-style audit table for a doc/code skew win
 allowed-tools: Bash(git log:*), Bash(git show:*), Bash(git diff:*), Read, Grep
 ---
 
-Per Rule 6 in [docs/operational_rules.md](../../docs/operational_rules.md), §Q8a audit result.
+Per [operational_rules §6](../../docs/operational_rules.md), §Q8a audit result.
 
 Steps:
 

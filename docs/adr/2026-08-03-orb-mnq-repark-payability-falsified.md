@@ -10,6 +10,7 @@
 **Authors:** Joshua (three rulings, chat 2026-08-03) + Claude Code (adjudication mechanics + recorder)
 **Related:** [`RESULTS_t2_intraday_bust.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/orb/orb_mnq_2026-07/RESULTS_t2_intraday_bust.md) (the measurement this rests on) · [`2026-07-13-prop-survivor-scoring-prereg.md`](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (the frozen protocol both limbs fail) · [`2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md`](2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md) (the lane ADR whose reopen bar governs any future unpark) · [`Q-COMPOSE-1 closure`](../briefs/closures/Q-COMPOSE-1-closure-falsified.md) (book-leg role, independently FALSIFIED and untouched)
 **Layer:** research-authorization status. **No locked parameter, allocation, `dd_protection` constant, `core/lifecycle.py` entry, rail, `LEG_MAP`, Pine construct, or K ledger is touched. $0 spend. Nothing armed.**
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR08-41); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -110,7 +111,6 @@ Measured, at the corrected eval geometry, 10,000 sims/seed × 3 seeds:
 - **Reading this ADR as falsifying ORB-MNQ as a mechanism.** It falsifies **one deployment target at one firm**. The construct's edge (meanR +0.0626, n=1,846), its cost-law PASS, and its Stage-7 result at other firms are untouched. Recording it in `docs/rejected_candidates.md` as a rejected *mechanism family* would be over-recording; the entry made there is scoped to the target.
 - **Moving the target to whichever firm survives.** §3 Alternative C was declined by the operator; re-proposing it without the §4 R3 sequence (survivor-scoring pass *before* unpark) is target-shopping after seeing the data.
 - **Treating the re-park as a lifecycle demotion.** `CANDIDATE @ 1.00×` is unchanged and no `core/lifecycle.py` write occurs. Parking is operational standing; conflating the two axes is the exact error the 2026-07-10 lifecycle ADR exists to prevent.
-- **Spending the MNQ Cap seat under cover of this ADR.** `K_banked(MNQ) = 2` with one `K_intrinsic=1` seat left, and Req 3 has no recovery route. Spending it is an operator decision, not an author's.
 - **Quoting the EOD bust arm (74.00% at k=2) as the current figure.** Superseded by the intraday-honest 77.01%. Equally: neither arm's `p99 DD` is intraday-honest — `peak` stays EOD-denominated in both by design.
 - **Loosening any §4 trigger above without a superseding ADR** — Known Trap #12.
 

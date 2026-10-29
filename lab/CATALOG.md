@@ -36,6 +36,7 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | mnq_dailygeom_notice_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/ | — |
 | mym_mechanism_harvest_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/ | — |
+| prop_payout_geometry_2026-10 | _inbox | ACTIVE | yes | research input only. 50K tiers (target/drawdown 1.5) beat 100K (2.0) on fees per first payout at every Sharpe tested;... | lab/analysis/_inbox/prop_payout_geometry_2026-10/ | — |
 | volregime_byyear_l4_2026-08-31 | _inbox | ACTIVE | yes | L4 PASS independently on MNQ and MYM; L3 subsequently PASS on both, leaving L5 attribution open. | lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/ | — |
 | volregime_l3_2026-08-31 | _inbox | ACTIVE | yes | `ACTIVE` — L3 PASS independently on MNQ and MYM; the presence battery is complete on both instruments and L5... | lab/analysis/_inbox/volregime_l3_2026-08-31/ | — |
 | volregime_l5_design_2026-08-31 | _inbox | ACTIVE | yes | L5 attribution design frozen; Packet C1 next | lab/analysis/_inbox/volregime_l5_design_2026-08-31/ | — |
@@ -57,6 +58,7 @@ documents the camp boundary for humans/tools.
 | sfgrowth_2026-10 | c1 | ACTIVE | yes | evidence store for Q-SFCLEAR-3 via Q-SFCLEAR-2 (Phase-0 sizing classification; F6 manifest reference). Q-SFGROWTH-1... | lab/analysis/c1/sfgrowth_2026-10/ | — |
 | shape_feasibility_map_2026-08 | c1 | ACTIVE | yes | 945-cell region published (Tradeify Select / MFFU / **Tradeify Growth**, the last added 2026-08-24); Select≡MFFU... | lab/analysis/c1/shape_feasibility_map_2026-08/ | — |
 | size_feasibility_2026-10 | c1 | ACTIVE | yes | — | lab/analysis/c1/size_feasibility_2026-10/ | — |
+| strategy_data_inventory_2026-10 | c1 | ACTIVE | yes | — | lab/analysis/c1/strategy_data_inventory_2026-10/ | — |
 | tradeify_book_composition_2026-09 | c1 | ACTIVE | yes | informal Downloads-lane measurement, not pre-registered, no K entry; the harness reuses `core/mc/simulation.py` and... | lab/analysis/c1/tradeify_book_composition_2026-09/ | inputs gitignored |
 | tradeify_eval_lock_correction_2026-07-22 | c1 | ACTIVE | yes | Tradeify/MFFU eval drawdown-lock correction re-MC | lab/analysis/c1/tradeify_eval_lock_correction_2026-07-22/ | — |
 | tradeify_seven_strategy_phase1_2026-09 | c1 | ACTIVE | yes | strict five-source Tradeify source, accounting, deadline, cap, and provenance normalization | lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/ | inputs gitignored |

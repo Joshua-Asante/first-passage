@@ -23,9 +23,9 @@ Caught on 2026-06-11: a 4H chart masquerading as 15m, a duplicate export, a two-
 
 ## 2. Cost-law pre-flight (before designing, not after failing)
 
-Under risk-based sizing, **cost-in-R ∝ price / stop_distance** (tight stop → huge notional per $risk → commission on notional). Compute the round-trip hurdle from the intended stop width BEFORE building, using `scripts/cost_geometry_pregate.py` (canonical implementation — `round_trip_cost_price()` + `cost_r()`) — or the empirical version in `scripts/selection_tests.py costs` on any comparable panel. Convention: target expectancy ≥ 4× the hurdle (default ceiling `cost_R < 0.05`). Reference points: 0.097R at 1.42×ATR(15m) USDCAD (crippling); 0.055–0.072R at 2.5×ATR.
+Under risk-based sizing, **cost-in-R ∝ price / stop_distance** (tight stop → huge notional per $risk → commission on notional). Compute the round-trip hurdle from the intended stop width BEFORE building, using `scripts/cost_geometry_pregate.py` (canonical implementation — `round_trip_cost_price()` + `cost_r()`) — or the empirical version in `scripts/selection_tests.py costs` on any comparable panel. Use the result to estimate net expectancy and its cost sensitivity; there is no universal multiple to clear (the 4× convention was deleted by operator ruling 2026-10-24). Reference points: 0.097R at 1.42×ATR(15m) USDCAD (crippling); 0.055–0.072R at 2.5×ATR.
 
-This is the **per-trade, stop-distance-normalized** form. It is a distinct fact from `docs/methodology/strategy_harvest.md` §1 Requirement 5's **per-event, panel-price-bp** cost-law inequality (`cohort δ (bp/event) ≥ 4 × RT_frac`) — same 4× convention and round-trip-cost skeleton, different normalization basis and different use (this one is a pre-build design check; Requirement 5 is the harvest/admission-time reachability gate). Do not conflate the two or restate either formula from memory — `cost_geometry_pregate.py` owns this one; Requirement 5 owns the other.
+This is the **per-trade, stop-distance-normalized** cost. `cost_geometry_pregate.py` owns the formula; don't restate it from memory.
 
 ## 3. Excursion-bounded counterfactuals (zero-run kill test)
 

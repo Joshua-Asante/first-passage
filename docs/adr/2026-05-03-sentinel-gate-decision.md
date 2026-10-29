@@ -9,6 +9,7 @@
 **Scope:** No production code change. Records the gate verdict on a candidate
 strategy that never reached build phase.
 **Supersedes:** Sentinel v2.0 design intent (filed 2026-04-13, off-repo).
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-34); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ## Context
 
@@ -89,9 +90,6 @@ Full numerical record:
   operationalization (different timeframe, different pair-correlation
   signal, different direction) would be a separate brief with its own
   pre-Q gate.
-- **Neutral.** Bar panel
-  `data/bar_data/USDCHF_pepperstone_h4_2020-06-25_to_2026-05-03.csv` stays
-  in repo as audit-trail substrate; not migrated to operational pipeline.
 
 ## Forbidden-D-test audit
 

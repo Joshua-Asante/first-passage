@@ -13,6 +13,7 @@ Striker allocation is **0.70%** (single DJ30 leg; NAS100 is a separate 0.37% lin
 **Retain-until:** none
 **Superseded-in-part-by:** `2026-04-23-guardian-risk-relock-0.34.md` - Guardian allocation only (0.30% to 0.34%).
 **Scope:** `firm_rules.py`, portfolio risk allocation
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-8); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ## Context
 
@@ -47,7 +48,6 @@ Negative:
 
 Risks:
 - BOJ April 28, 2026 meeting is a binary vol event that could shift USDJPY regime away from Aegis's edge window. If regime shift is confirmed post-meeting, allocation may need downward adjustment. Monitor, do not preemptively cut.
-- ~~Guardian funded ramp (0.30 → 0.40 at $210K, 0.50 at $220K, 0.55 at $225K) changes the allocation profile as challenge clears. Each ramp step requires portfolio MC rerun before activation.~~ (Superseded same day, 2026-04-17, by the unified-allocation decision: challenge phase = funded phase, no re-sizing at pass. See `firm_rules.py` `RISK_TIERS` and `CLAUDE.md` Multiplier System.)
 
 ## Cross-references
 

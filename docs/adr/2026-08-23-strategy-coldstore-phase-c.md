@@ -11,6 +11,7 @@
 **Related:** [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md) (authorization axis unchanged) · [`2026-08-03-claude-md-futures-refocus.md`](2026-08-03-claude-md-futures-refocus.md) §7 · [`2026-05-23-allocation-refresh-2.md`](2026-05-23-allocation-refresh-2.md) (lock lineage of the frozen percents) · [Phase C plan](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/plans/2026-08-23-coldstore-phase-c-implementation.md)
 **Layer:** live-sizing constants (LOCKED risk% key set). **No** `DD_TRIGGER` / `DD_SCALE` / `LEG_MAP` / Pine-parameter edit.
 **Tier:** full — live-risk + LOCKED surface.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR11-105); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -58,7 +59,7 @@ Call-4 is 2-of-4 / 3-of-4 over `STRATEGY_KEYS`. Dropping two living `BASE_RISK` 
 
 ## §2 — Decision
 
-**Decision:** Retire **Guardian** and **Aegis** from living `firm_rules._BASE_RISK` and `dd_protection.BASE_RISK`. Move the frozen 4-leg percent book to `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK` (bytes unchanged: guardian 0.0034 / striker 0.0070 / aegis 0.0150 / striker_nas100 0.0037). Historical MC `ALLOCATIONS` / `PINE_SHRINK_ALLOCATIONS` / sweep REG derive from that historical dict. `lifecycle.STRATEGY_KEYS` stays the four-leg authorization book. Call-4 assessment uses `STRATEGY_KEYS`, not living `BASE_RISK.keys()`. Striker living keys and `LEG_MAP` Striker rows stay. `DD_TRIGGER` / `DD_SCALE` stay. CLAUDE Strategy Reference CFD rows become pointer-only historical.
+**Decision:** Retire **Guardian** and **Aegis** from living `firm_rules._BASE_RISK` and `dd_protection.BASE_RISK`. Move the frozen 4-leg percent book to `historical_challenge.HISTORICAL_CHALLENGE_BASE_RISK` (bytes unchanged: guardian 0.0034 / striker 0.0070 / aegis 0.0150 / striker_nas100 0.0037). Historical MC `ALLOCATIONS` / `PINE_SHRINK_ALLOCATIONS` / sweep REG derive from that historical dict. `lifecycle.STRATEGY_KEYS` stays the four-leg authorization book. Call-4 assessment uses `STRATEGY_KEYS`, not living `BASE_RISK.keys()`. Striker living keys and `LEG_MAP` Striker rows stay. `DD_TRIGGER` / `DD_SCALE` stay.
 
 **Effective:** immediately upon acceptance (this GO).
 **Scope:** living key set + historical owner + verifier + CLAUDE pointer + tests. **Out of scope:** F2 rail teardown; Pine parameters; `lifecycle_state.json`; Call-4 constant recalibration (2/3/0.50 stay); authorization `RETIRED`.

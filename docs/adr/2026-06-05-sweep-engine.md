@@ -13,6 +13,7 @@ builds on ("the Python-prefilter/native-confirm two-tier this builds on").
 **Superseded-by:** none
 **Superseded-in-part-by:** `2026-07-11-gen1-pipeline-retirement.md` - machinery only, the doctrine survives per the Machinery-status line above.
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-22, ADR02-25); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Decision date:** 2026-06-05
 **Authors:** Joshua (CEO, decider) + Claude (Tech Advisor)
 **Related:** `docs/ltm/briefs/rnd-pipeline/CC-HANDOFF-sweep-layer.md` (§0.5-Q1, §2.3 parity gate), `docs/ltm/briefs/rnd-pipeline/CC-HANDOFF-validation-harness.md` (§2.4 DSR / §2.3 PBO, both N-aware), `docs/ltm/briefs/rnd-pipeline/CC-HANDOFF-codification-scaffold.md` (§2.5 sweep sidecar), `docs/notes/2026-06-05-rnd-pipeline-anchor-correction.md` (anchor corrections this ADR rests on)
@@ -87,7 +88,6 @@ The binding constraint: **there is no first-class programmatic Pine sweep API.**
 Both are binary and runnable: a rank-correlation script on a config sample, and an emitter unit test asserting reported N == expanded grid size.
 
 **Revert action:** supersede this ADR; sweep §2.2 engine adapter switches to native-only.
-**Trigger check schedule:** re-run the rank-correlation falsifier on each new strategy family added to the pipeline (sweep §10 hook).
 
 ---
 
@@ -124,7 +124,7 @@ Both are binary and runnable: a rank-correlation script on a config sample, and 
 
 **Sub-decision — how the native tier is driven. RESOLVED 2026-06-05 (deferral ratified):** the **first cut is locked as Python pre-filter + documented manual confirm** of the native Strategy Tester — the option this ADR already named valid. The two automation paths are dispositioned, not merely deferred:
 - *Vetted third-party optimizer* — **rejected** on the repo's own security posture: it hands private Pine strategy logic and account access to an external party, which directly contradicts the "Pine held privately to protect the live edge" doctrine (CLAUDE.md §Public-clone posture). Re-proposal requires a posture change, not just a faster vendor.
-- *Own Claude-in-Chrome Strategy-Tester automation* — **deferred, not rejected.** Building it now is premature: stage 3 (sweep) is not yet built, so there is no live pre-filter shortlist to drive, and the manual-confirm volume that would justify automation is zero. **Revisit trigger:** once the sweep layer is built AND manual native confirmation of pre-filter shortlists becomes a measured throughput bottleneck (or the shortlist cadence exceeds what manual confirm can clear), open a follow-up ADR for the in-house driver. Until then, manual confirm is the authority path.
+- *Own Claude-in-Chrome Strategy-Tester automation* — **deferred, not rejected.** Building it now is premature: stage 3 (sweep) is not yet built, so there is no live pre-filter shortlist to drive, and the manual-confirm volume that would justify automation is zero.
 
 **Downstream artifacts that need updating on ACCEPT:**
 - `CC-HANDOFF-sweep-layer.md` §2.5 — propagate the total-N amendment before that handoff is dispatched.
@@ -158,8 +158,6 @@ ls docs/notes/notice/N-2026-05-29-pepperstone-alchemy-feed-divergence.md
 
 # No stale 78% anchor in this ADR or the staged briefs
 grep -rn "78%" docs/adr/2026-06-05-sweep-engine.md docs/briefs/rnd-pipeline/ ; echo "expected: no matches"
-
-# Schedule: re-check rank-correlation falsifier on each new strategy family added to the pipeline
 ```
 
 ---

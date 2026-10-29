@@ -7,6 +7,8 @@
 **Superseded-in-part-by:** none
 **Retain-until:** none
 **Format:** concise
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR13-124, ADR13-147); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D4 added owed item 8 (host-side activation gate, migrated from Track B's TB-I3; Addendum 2026-10-25); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ## Decision
 
@@ -14,10 +16,8 @@
    personal Tradovate account (broker chosen 2026-10-09 over Ironbeam, a Rithmic FCM,
    tastytrade and IBKR). Planned starting capital is recorded privately (the public record names it `E_0`).
 2. **Objective and book.** The lane's objective is **maximum growth** of the
-   account. The portfolio is **not yet selected**; it is not the Tradeify book by
-   default (operator, 2026-10-09). Selection is owed against the growth objective,
-   with candidates drawn from existing strategies under their locks; whatever is
-   chosen gets its own (portfolio, firm-tier) protection and sizing binding, keyed to the
+   account. Its strategy pool is set by Addendum 2026-10-11b; the chosen portfolio
+   gets its own (portfolio, firm-tier) protection and sizing binding, keyed to the
    personal-account tier (owed item 2), under the
    [concept-not-constant ADR](2026-07-13-dd-protection-concept-not-constant.md),
    never an edit of the Tradeify binding or of `dd_protection` constants.
@@ -84,7 +84,7 @@ first live order on the personal account:
 
 ## Current owner
 
-This ADR owns the lane's scope until a campaign or plan owner is named for items 1–7;
+This ADR owns the lane's scope until a campaign or plan owner is named for items 1–8;
 [STATE.md](../../STATE.md) carries the forward row. Venue rules stay with
 [`core/firm_rules.py`](../../core/firm_rules.py); feed questions with the
 [feed-provider note](../notes/2026-10-03-feed-provider-questions-narrowed-DRAFT.md).
@@ -119,7 +119,6 @@ rg -n "2026-10-09-self-funded" docs/adr/2026-07-16-self-funded-lane-close-strike
 - **Personal sizing and protection policy.** The current book path is bounded by Tradeify limits, not unbounded: 80 micro-equivalents per account, and at most 22 base + 55 add for Striker (`ops/c1_rail/book_policy.py:64-65,163-167,537-546,822`), with protection fixed at trailing 1%/0.40 (`:101-117`). A tier with no micro cap makes that path refuse to load rather than run unbounded. The personal tier therefore needs its own defined cap source, risk-dollar basis and protection policy (owed items 1–2).
 - **Decision 4 is unchanged:** the portfolio and its sizing clear only on the intraday-honest p99 peak-to-trough drawdown ≤ 15% after Tradovate costs and whole-contract rounding, with the live 15% halt. A Tradeify screen result does not establish the personal-account drawdown, growth, fee or margin results; those are tested at `E_0`. Authoritative personal margin inputs (dated Tradovate per-contract margins for 6J, MYM, MGC and MNQ) are not yet recorded anywhere in the repo.
 - **Evidence standing.** Every admitted panel is already fully exposed (book lineage manifest `exposure`), so a result is feasibility on exposed history, not out-of-sample evidence; excluding a configuration after another result has been read does not restore a holdout. Exposure history is retained, further choices are frozen before any `E_0` scoring output, and the trial accounting is justified in the study, not by a K count alone.
-- **Owner:** the Deployment Coordinator owns #752 (Q-SFGROWTH-1) and re-scopes it in place by default. A new study ID is optional for clarity; closing #752 or opening a replacement is not a prerequisite. Existing implementation owners of #775–#777, #779, #782 and #783 are preserved.
 
 **Agreement restrictions** (Tradeify Funded Trader Agreement, page marked last modified May 2026, read 2026-10-10):
 - **Published exception, no permission gate.** §6.6's Exclusive Use bullet has three parts: the trader "may use the bot on the Trader's personal accounts"; use across multiple firms is against Tradeify's policy; and "The bot must be solely for the Trader's own use within Tradeify." On Joshua's correction 1, the personal brokerage account is read as one of the trader's personal accounts, not another firm. That is the adopted reading, not the text's own statement: §6.7(a) lists a broker among External Accounts, which binds the opposing-exposure rule below. The residual ambiguity ("personal accounts" is undefined, beside the "within Tradeify" sentence) is Joshua's to weigh; it is not a gate.
@@ -148,3 +147,10 @@ Support's 20:19Z reply on 2026-10-12, recorded at the [route owner](../briefs/ha
 
 **Effect on item 5:** none. The §6.6 reading (addendum 2026-10-11b) and the binding §6.7 opposing-exposure restriction, switch check and ownership evidence are unchanged. The personal lane's own broker/API, data, qualification and readiness gates are unchanged.
 
+## Addendum 2026-10-25 — owed item 8, host-side activation gate (from TB-I3)
+
+**Ruling** (Joshua, 2026-10-25, rule consolidation D4, [plan §5](../superpowers/plans/2026-10-25-rule-consolidation-step-1.md#5-rulings-joshua-2026-10-25)): the host-side activation-gate obligation (TB-I3) gets a named surviving owner. Its Track B owner was [superseded for Tradeify 2026-10-16](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify); this ADR now owns it for the rail.
+
+8. **Host-side activation gate.** The rail host itself refuses activation (booting with `dry_run=false`, or enabling risk-add) unless the instance's M1 acceptance and its other arm gates hold. Today `c1_rail_http_server.load_config` does not check M1, so editing the `/data` config bypasses the arm helper's interlock ([AGENTS.md §Live-execution posture](../../AGENTS.md#live-execution-posture)). Item 8 gates the first live order on the personal account, with items 1–7.
+   - *Design inputs, not adopted requirements:* the [instance ADR](2026-09-12-tradeify-book-protection-instance-admission.md) §2b validator, T11 effective activation and its 2026-10-11 addendum; the [synthetic interlock card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md); and the [incident ADR](2026-09-17-bounded-platform-protection-incident-contract.md) §A12.5 items it assigns to TB-I3 (the stale-evidence latch and the halt-on-unknown implementation), where this lane's instance uses the rail.
+   - Nothing is implemented, armed or authorized by this addendum.

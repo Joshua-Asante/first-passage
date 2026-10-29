@@ -27,7 +27,7 @@ _spec = importlib.util.spec_from_file_location(
 rsf = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(rsf)
 
-THR = load_scoring_thresholds()
+THR = load_scoring_thresholds(rsf.pss.DEFAULT_PREREG)  # frozen study: v2 alone
 SMALL = dataclasses.replace(THR, sims_per_seed=8, horizon=60)
 T = rsf.TRADEIFY
 N = 60

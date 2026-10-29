@@ -17,7 +17,7 @@ Canonical pipeline for parsing TradingView (and related) trade CSVs, computing h
 
 ---
 
-## Rule 0 — File paths are not data provenance
+## Reconcile check 0 — File paths are not data provenance
 
 A CSV at `data/tv_exports/pepperstone/aegis.csv` (retired) is not necessarily Pepperstone data. The 2026-04-23 morning Aegis arm corrupted the entire portfolio MC run because Alchemy data sat in the Pepperstone directory under a Pepperstone filename — produced Pass 84.37% / Bust 1.03% (invalidated). When a baseline reconcile is in scope: **halt if any leg fails; do not proceed to portfolio scaling, MC, or any decision artefact.**
 
@@ -27,7 +27,7 @@ A CSV at `data/tv_exports/pepperstone/aegis.csv` (retired) is not necessarily Pe
 
 **Sub-rule — last exit << chart last bar is a pane claim, not automatically “the strategy died.”** Last-N Deep and entire-history Deep are different requests — flip that chip on the same script before treating the CSV as a full-window backtest. Can also be session-edge adjacency on gapped bars; dated front month dying in the same week does not by itself prove a warehouse hole, and Last-N emptiness on `MNQ1!` does not by itself prove adjacency. Inventory the testing period (Deep / Available chart range / Last-N vs entire-history), then read [`docs/notes/research/2026-08-28-tradingview-strategy-report-july-2026.md`](../../../docs/notes/research/2026-08-28-tradingview-strategy-report-july-2026.md) before computing PF/WR or reconciling a lock. A prior export of the same construct through a later date beats the short pane.
 
-**Sub-rule — DXTrade `contractValue` (HISTORICAL / DORMANT).** FXIFY/DXTrade execution is retired. If an old DXTrade CSV appears: XAUUSD=100, USDJPY=default(1), DJ30=10 (CRITICAL), NAS100=10. Not a live sizing check — see operational Rule 3.
+**Sub-rule — DXTrade `contractValue` (HISTORICAL / DORMANT).** FXIFY/DXTrade execution is retired. If an old DXTrade CSV appears: XAUUSD=100, USDJPY=default(1), DJ30=10 (CRITICAL), NAS100=10. Not a live sizing check — see operational_rules §3.
 
 ---
 
@@ -192,7 +192,7 @@ Failure modes that have actually happened, ranked by frequency:
 
 ## When NOT to use this skill
 
-- **No CSV in scope.** Pure methodology questions, framework discussions, brief authoring without data — route to `inqhiori` or `ooda-loop`.
+- **No CSV in scope.** Pure methodology questions, framework discussions, brief authoring without data — route to `inqhiori`.
 - **Pine code authoring/audit.** Hand off to `pinescript-v6`. This skill consumes CSV outputs of Pine; it doesn't write Pine.
 - **MC simulation, dd_protection decisions, allocation locks, c1 arming.** Hand off to `prop-firm-challenge` / `c1-rail`. This skill produces verified metrics; those skills own the decisions.
 - **Bar data rather than trade data.** 15-min OHLCV / tick exports use a different parser. This skill is trade-CSV-specific.

@@ -12,6 +12,7 @@ gitignored + hash-pinned) stands unchanged and is not touched by this ADR.
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D8 removed the executed LICENSE-timing and separate-repo forbidden moves (LICENSE and the separate seed landed in `027a7295`) (ADR10-100); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -147,12 +148,6 @@ monitoring in between.
   windows). The operator's decision was full parameter-block + backtest-results removal down to
   name/version/lock-date/risk%/hash; a softer redaction wasn't the option chosen and defeats the
   purpose of resolving the 2026-07-01 ADR's Forward question decisively.
-- **Deferring the LICENSE file to a follow-up.** Ships with the public repo's first commit, not
-  added later — an unlicensed public repo of live trading strategies is not the intended posture
-  for even a single day.
-- **Reusing this repo's existing remote/name for the new public repo** (rename-in-place, transfer,
-  or toggling `isPrivate` on the current repo). That is the in-place approach this ADR rejects; the
-  new repo must be a genuinely separate GitHub resource seeded from a clean tree.
 
 ---
 

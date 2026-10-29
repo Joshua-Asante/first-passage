@@ -14,6 +14,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR06-103, ADR06-107, ADR06-108, ADR06-119); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -137,30 +138,26 @@ The retirement has five coupled dispositions:
 
 ### A. OANDA frozen data — DELETE
 
-- Delete the eight gitignored CSVs under `core/data/tv_exports/oanda/`.
-- Remove `core/data/tv_exports/oanda/SHA256SUMS` from the active manifest
-  contract and remove the directory from `MANIFEST_DIRS`.
-- Preserve the retired filenames and hashes in one LTM tombstone record; do
-  not preserve runnable OANDA panels.
+- Executed in Phase 5 (2026-07-30): the eight CSVs were deleted and the OANDA
+  directory left the manifest contract and `MANIFEST_DIRS`; filenames and hashes
+  went to an LTM tombstone (since pruned to the private archive). No runnable
+  OANDA panel is kept.
 - Repair living documentation that still describes the OANDA directory as a
   required local restore target. Historical ADR bodies remain historical.
 
 ### B. Dukascopy cached data — DELETE
 
-- Delete the three `core/data/bar_data/*_duka.csv` files and their active
-  manifest rows.
-- Close/archive or explicitly mark non-runnable every study that still reads
-  those bytes before deletion.
-- Preserve producer-retirement history and hashes in the same LTM tombstone;
-  do not restore the Dukascopy adapter or retain a runnable frozen panel.
+- Executed in Phase 5 (2026-07-30): the three `*_duka.csv` files and their
+  manifest rows were deleted after their studies were blocked; hashes are in the
+  same tombstone. Do not restore the Dukascopy adapter or retain a runnable
+  frozen panel.
 
 ### C. Pepperstone historical anchor — RETIRE AS AN EXECUTABLE PIN
 
-- Delete the four 2026-05-24 anchor CSV bytes only after the Phase-0 operator
-  checkout records a clean final reproduction and an offline rollback copy.
-- Remove those four rows from the active Pepperstone `SHA256SUMS`; preserve
-  filenames, hashes, final reproduced metrics, seeds, and panel cardinality in
-  historical documentation.
+- Executed in Phase 3 (PR #488, 2026-07-24), after the Phase-0 reproduction and
+  offline rollback copy: the four 2026-05-24 anchor CSVs and their manifest rows
+  were removed; filenames, hashes, final metrics, seeds and panel cardinality stay
+  in historical documentation (`docs/mc_anchor_history.md` header).
 - Remove `[mc_anchor_pepperstone]` from `core/config/params.toml`, the
   `PEPPERSTONE_PANELS`/`DEFAULT_PANEL` historical-default contract, anchor
   parsing from `scripts/verify_lock_anchors.py`, and the skip-gated anchor tests.
@@ -176,19 +173,12 @@ The retirement has five coupled dispositions:
 
 ### D. Multiplier spine — DELETE; tearsheet survives separately
 
-- Delete `ops/accounts.py`, `tests/ops/test_accounts.py`, and the gitignored
-  `ops/data/accounts.json` after confirming no account is registered.
-- Remove `add`, `update`, `status`, and `lots` from `ops/cli.py`, together with
-  account persistence and continuous-lot multiplier documentation.
-- Extract the independent `tearsheet` command to a narrow historical-analysis
-  entry point before deleting the general account CLI surface.
+- Executed in Phase 2 (PR #485, 2026-07-24): `ops/accounts.py`, its tests and
+  state, the `add`/`update`/`status`/`lots` commands, and `RISK_TIERS`/
+  `BASELINE_RISK` were removed after a zero-consumer sweep; `tearsheet` survives
+  in `ops/cli.py`.
 - Keep `core/csv_parser.py` and `core/lib/tearsheet.py` only while that extracted
-  entry point consumes them. Independently, preserve or relocate
-  `csv_parser.STRATEGY_DAYS`, which `scripts/validate_params.py` consumes as a
-  live parameter-drift gate; parser disposition requires both consumers to be
-  removed or migrated.
-- Remove `RISK_TIERS`, `BASELINE_RISK`, and any $200K multiplier-only aliases
-  from `core/firm_rules.py` after the consumer sweep is empty.
+  entry point consumes them.
 
 This deletes only the legacy continuous-lot account spine. It does **not**
 delete or weaken c1’s active rail-side sizing law:
@@ -384,17 +374,8 @@ gate.
   documentation. Mitigation: root-doc and path-liveness sweeps in the same
   program.
 
-**Downstream artifacts to update during implementation:**
-
-- `CLAUDE.md`, `PIPELINES.md`, `REPO_MAP.md`, `STATE.md`, `README.md`
-- `docs/mc_anchor_history.md` and a new LTM data-manifest tombstone
-- the four partially superseded ADR headers when this proposal is accepted
-- `core/config/params.toml`, `scripts/verify_lock_anchors.py`,
-  `scripts/validate_params.py`, `scripts/check_data_manifests.py`
-- `core/firm_rules.py`, `core/dd_protection.py`, `core/mc/*`
-- `ops/accounts.py`, `ops/cli.py`, extracted tearsheet entry point
-- corresponding tests, Makefile targets, skills, and operational references
-- `docs/SESSIONS.md`
+**Downstream artifacts:** updated during Phases 1–6; Phase 6 docs landed 2026-08-23
+([completion](../ltm/notes/2026-08-23-substrate-phase-6-completion.md)).
 
 ---
 

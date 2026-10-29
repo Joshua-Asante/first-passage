@@ -9,6 +9,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR10-50, ADR10-58); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -48,13 +49,11 @@ Both substance preconditions are now met: PR #745 cleared 9 → 0 and named this
 
 ## §2 — Decision
 
-**Decision:** The coverage limb of gate 14 self-arms HARD from this ADR's Status token. Specifically:
+**Decision:** The coverage limb of gate 14 is HARD. Specifically:
 
-1. **Severity owner split.** Iterate-token violations continue to read `OWNING_ADR` = `2026-08-04-iterate-closure-exit-mandatory.md`. Coverage violations read `COVERAGE_OWNING_ADR` = this file. Proposed ⇒ WARN + exit 0 for that limb; Accepted ⇒ HARD + exit 1 for that limb. Missing/unparseable ADR ⇒ that limb degrades to WARN (M-22 fail-open).
-2. **What fires HARD (once Accepted).** A campaign ID that newly claims a terminal verdict (INDEX Open terminal Status; INDEX Recently closed; CATALOG Q-ID ∧ archive-owed/CLOSED/FALSIFIED/…) with no joinable closure filename under `docs/briefs/closures/` or `docs/ltm/briefs/`.
-3. **Historical / grandfathered gaps stay excluded.** `COVERAGE_GRANDFATHERED` is the permanent forward-only boundary (same posture as the Iterate `GRANDFATHERED` filename set). Snapshot at authoring: **empty** — PR #745 cleared the backlog. A HARD fire on pre-promotion gaps would block unrelated work (the belt-churn concern the prior docstring recorded). Never append IDs to dodge; a genuine newly discovered pre-promotion gap requires a superseding ADR.
-4. **Narrowness preserved (M-8).** This ADR does **not** add semantic completeness checks, does **not** enforce `Lane:`/`Closed:` header tokens (those are authoring-template grammar from PR #755; a separate decision would be needed to gate them), and does **not** reopen the dropped C1/C4 class.
-5. **Arming is the Status flip.** Merging this ADR while `Proposed` lands the wiring and keeps coverage WARN. Operator ratification = flip Status to `Accepted` (and add the reverse `Superseded-in-part-by` on the 2026-08-04 ADR in the same commit). No second hook edit.
+1. **What fires HARD.** A campaign ID that newly claims a terminal verdict (INDEX Open terminal Status; INDEX Recently closed; CATALOG Q-ID ∧ archive-owed/CLOSED/FALSIFIED/…) with no joinable closure filename under `docs/briefs/closures/` or `docs/ltm/briefs/`.
+2. **Historical / grandfathered gaps stay excluded.** `COVERAGE_GRANDFATHERED` is the permanent forward-only boundary (same posture as the Iterate `GRANDFATHERED` filename set). Snapshot at authoring: **empty** — PR #745 cleared the backlog. A HARD fire on pre-promotion gaps would block unrelated work (the belt-churn concern the prior docstring recorded). Never append IDs to dodge; a genuine newly discovered pre-promotion gap requires a superseding ADR.
+3. **Narrowness preserved (M-8).** This ADR does **not** add semantic completeness checks, does **not** enforce `Lane:`/`Closed:` header tokens (those are authoring-template grammar from PR #755; a separate decision would be needed to gate them), and does **not** reopen the dropped C1/C4 class.
 
 **Effective:** immediately upon acceptance (self-arming). Forward-only for coverage debt.
 **Scope:** gate 14 coverage limb only. Iterate limb, grandfathered Iterate filenames, lab `RESULTS*`, and adjudication notes unchanged.
@@ -89,7 +88,6 @@ Both substance preconditions are now met: PR #745 cleared 9 → 0 and named this
 
 ## §5 — Forbidden moves (under this ADR)
 
-- **Flipping Status to `Accepted` in the same PR that lands this ADR as a drive-by** — arming is a separate operator GO; the PR body must say so in plain language.
 - **Appending campaign IDs to `COVERAGE_GRANDFATHERED` to clear a HARD fire** — dodge. A real pre-promotion gap needs a superseding ADR that extends the set with evidence.
 - **HARD-firing on the Iterate `GRANDFATHERED` filename set for missing Iterate tokens via this limb** — orthogonal; those files count as closure *records* for coverage. Iterate exemption ≠ coverage exemption.
 - **Adding semantic / `Lane:` / `Closed:` checks under this ADR's umbrella** — scope creep past M-8; separate ADR if those tokens become mechanical.

@@ -323,7 +323,7 @@ def check_audit(text: str) -> list[Violation]:
 def check_lesson(text: str) -> list[Violation]:
     """lesson — NOT numbered sections; keyed on named headings
     (lesson_capture.md read in full). Promotion record / Retirement are only
-    owed when the header Status field says so. Dollar-anchor QUALITY (trap #9)
+    owed when the header Status field says so. Incident-evidence QUALITY (trap #9)
     stays judgment-only per SKILL.md's own text — not mechanically enforced
     here beyond requiring the section exist."""
     named = split_named_sections(text)

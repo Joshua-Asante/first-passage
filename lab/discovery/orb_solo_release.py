@@ -433,7 +433,7 @@ def derive_candidate_admission(trades,daily_gross,plan):
     It does not change per-contract cost netting of the separate MC series.
     """
     from dataclasses import asdict
-    from discovery.prop_survivor_scoring import load_scoring_thresholds, cost_law_kill, reduce_to_deployable
+    from discovery.prop_survivor_scoring import DEFAULT_PREREG, load_scoring_thresholds, cost_law_kill, reduce_to_deployable
     from discovery.orb_solo_executor import admit_tier
     from firm_rules import FIRM_RULES
     from discovery.orb_solo_series import _validate_trades
@@ -443,7 +443,8 @@ def derive_candidate_admission(trades,daily_gross,plan):
     if int(quantity) != quantity:
         raise ReleaseError('noninteger elected quantity')
     _validate_trades(trades,int(quantity))
-    thr=load_scoring_thresholds()
+    # S4 was frozen against v2 alone, before v2 Addendum 1 (2026-10-24); keep it bound to v2.
+    thr=load_scoring_thresholds(DEFAULT_PREREG)
     if thr.cost_law_multiple != 4 or thr.seeds != (42,123,2026) or thr.horizon != 1500:
         raise ReleaseError('frozen scoring criteria drift')
     gross=[trade.gross_usd for trade in trades]

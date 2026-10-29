@@ -46,7 +46,7 @@ discover by hand. It is a search assistant, not a verdict: a match means
 no match does not mean the content is new — still verify claimed repo state
 directly (`handoff-verify`) either way. Also open `lab/CATALOG.md` and
 `docs/briefs/INDEX.md` and paste literal search output into §0
-(`docs/operational_rules.md` Rule 8 sub-rule 8).
+(`docs/operational_rules.md` §8 sub-rule 8).
 
 Grounding: [`ADR 2026-08-13`](docs/adr/2026-08-13-dedup-first-before-new-work.md);
 2026-07-24 SESSIONS entry "Q-ICT-1 + composite-closure gate audit:

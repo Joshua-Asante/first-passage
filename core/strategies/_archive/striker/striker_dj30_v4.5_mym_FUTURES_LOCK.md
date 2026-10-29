@@ -3,6 +3,7 @@
 **Status:** JSON-ONLY ALERT PATH 2026-07-21 (informational `alert()` removal — rail alert-shadowing fix) after ALERT-PAYLOAD CONTRACT ADDED 2026-07-17 (Q-RAIL-1 B1, GO ADR [`2026-07-17-c1-rail-build-account-registration-go.md`](../../../docs/adr/2026-07-17-c1-rail-build-account-registration-go.md)). Supersedes B1 pin `42166af8…` (prior D1–D5-only pin `f89178d2…`; earlier `fd91f37b…` was already drifted/unrecoverable). **F3 acceptance PASS (2026-07-17) was scored against `f89178d2…`; both the B1 add and the 2026-07-21 JSON-only delta are alert-only — no `strategy.entry`/`strategy.exit`/`strategy.close_all`/sizing/DD/session logic changed, so F3's compile+parity+C3 evidence stands unmodified.** **NOT live.**
 **Source:** `striker_dj30_v4.5.pine`, hash-verified vs `core/strategies/MANIFEST.sha256` at Gate B0 (2026-07-03).
 **Edition file:** `striker_dj30_v4.5_mym.pine` (gitignored; hash pinned in [`PORT_MANIFEST.sha256`](../PORT_MANIFEST.sha256) — **`9439e3ff…`**, supersedes `42166af8…`).
+*Correction 2026-10-28: superseded; the current pin is **`2b895317…`** (2026-07-22 re-pin adding `useSession` / `useDowFilter` bypass toggles, default ON = lock-identical). [`PORT_MANIFEST.sha256`](../../PORT_MANIFEST.sha256) owns the pin.*
 
 ## Venue deltas (the ONLY changes vs the locked CFD source)
 

@@ -17,6 +17,7 @@ pasted (see that registry's own corrected §Queryable index, 2026-08-08).
 **Supersedes:** none
 **Related:** `docs/adr/2026-06-05-sweep-engine.md` (stage-3 companion) · `docs/adr/2026-06-04-lean-portfolio-meta-layer.md` (parent doctrine: the pass-rate objective) · `docs/notes/2026-06-05-rnd-pipeline-anchor-correction.md` (source-doc anchor correction)
 **Layer:** infrastructure (R&D pipeline stage 1) — operationalizes methodology doctrine; does not author it
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-101, ADR01-102, ADR01-103); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -46,11 +47,9 @@ The R&D-automation architecture (concept → codify → sweep → validate) plac
 
 ## §2 — Decision
 
-**Decision:** The concept-intake gate's **admissibility contract** is ratified as the front gate of the R&D-automation pipeline. A concept record is admissible **iff** it carries all six required fields (`mechanism`, `falsifier`, `regime`, `portfolio_fit`, `logic_family_hint`, `provenance`), carries **no** parameter-grid field, and satisfies three semantic contracts enforced by `check_concept.py`:
+**Decision:** The concept-intake gate's **admissibility contract** is ratified as the front gate of the R&D-automation pipeline. A concept record must carry:
 
 1. **Economic mechanism, not a backtest observation** — `mechanism` is ≥8 words and, if it uses a backtest-performance phrase, must also carry an economic-claim marker (`because` / `exploits` / `inefficiency` / `order flow` / …). A record reducing to "backtested well" FAILS.
-2. **Binary, observable, self-immunization-free falsifier** — `falsifier` is ≥6 words with a condition marker AND a death marker, and contains **no** unfalsifiable marker (`always works`, `in all regimes`, `eventually`, …). Mirrors the skill-side `check_brief.py` falsifier check.
-3. **Non-trivial portfolio complementarity, not standalone edge** — `portfolio_fit` is ≥6 words naming decorrelation / gap-coverage / regime-complementarity vs the existing four (Guardian/Striker/Aegis/NAS100); a standalone-Sharpe-only claim FAILS (the lean-portfolio pass-rate objective pushed upstream).
 
 Dedup uses the composite key **(mechanism_family × instrument)**: an exact match is a hard `DUPLICATE`; a high mechanism-text Jaccard overlap (≥ `0.45`) is a `NEAR_MATCH` routed to **human review** (never auto-rejected); both are checked against the pinned `locked_book` and against `docs/rejected_candidates.md` read at call time. The contract is loaded **read-only**; the gate enforces it and never tunes it — threshold/required-field changes route through programme-audit by editing the YAML in a reviewed commit and bumping `contract_id`/`version`.
 
@@ -94,7 +93,6 @@ This gate is a calibration; it can be wrong by being non-discriminating (admits 
 - **Tuning the contract to admit a borderline concept** — forbidden move #1. The YAML is read-only at runtime (`ContractMutationError` on assignment); any threshold/field change is a reviewed YAML commit through programme-audit, never a gate-side adjustment.
 - **Silently editing thresholds in place instead of superseding** — `p`-hacking at the gate layer (Known Trap #12). A wrong threshold is fixed by bumping `contract_id`/`version` + a superseding ADR, not an in-place edit.
 - **Adding autonomous concept generation** — forbidden move #2. Proposers stay human/advisor-sourced; a self-generating, self-gating loop is out of scope.
-- **Pre-specifying a parameter grid** — the sweep finds params (`forbidden_fields`); admitting a record that smuggles a grid pre-overfits the pipeline.
 - **Auto-rejecting a `NEAR_MATCH`** — near-matches route to human review only. A near-rephrasing may be a genuine variant; auto-reject would re-introduce the false-negative the §4 trigger guards against.
 - **Letting the rejected-candidates registry become append-only** — dedup must read `docs/rejected_candidates.md` at call time. A registry written but never read is a graveyard, not a control; `dedup` raising on a missing registry (rather than returning CLEAR) is the deliberate guard.
 - **Re-proposing a `DUPLICATE` with new parameters instead of new mechanism evidence** — re-proposal requires new *mechanism* evidence (the rejected-candidates re-proposal rule), not a parameter tweak.

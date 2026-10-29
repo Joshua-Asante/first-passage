@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none — standing law; §4 falsifiers ride the 2026-11-08 audit
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR09-134); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Operator direction (verbatim):** *"there is a lot of unnecessary documentation that introduces undue friction in our research and deployment pipeline. I want to do an aggressive deletion of docs that are not aiding in the mission of the strategy pipeline, which is to generate → evaluate → deploy → measure → update. … I expect the total repo size to reduce by 25-50%."*
 **Snapshot tag:** `pre-prune-2026-08-08` (annotated, pushed; = `origin/main` @ `71b516c` branch point). **Every deleted byte is retrievable:** `git show pre-prune-2026-08-08:<path>`.
 **Evidentiary basis:** [`2026-08-08 quarterly audit`](../notes/audits/programme-audit/2026-08-08-quarterly-audit.md) — both layers **Degenerating**; this prune is the named repair action the protocol requires.
@@ -136,7 +137,6 @@ the commit lands. The pre-commit gate battery does **not** run tests and is not 
 - Restating a tombstoned decision's narrative in CLAUDE.md/STATE.md (the tombstone line + tag is the record; anti-accretion is the point).
 - Reviving deleted material by lookup — fresh pre-registration under the standing chain, always.
 - Treating this prune as precedent for deleting **measurement evidence** wholesale — R3 keeps kill evidence in-tree by design.
-- Using the prune to alter any live decision (MNQDTL-1 §6, lifecycle states, F1, §4 dates all pass through unchanged).
 
 ## §6 — Gate (binary, at PR merge)
 

@@ -1,7 +1,7 @@
 # ADR 2026-06-16 — Rule 2: Budget Before Acting (scaled to reversibility)
 
 **Path:** `docs/adr/2026-06-16-rule-2-budget-before-acting.md`
-**Status:** Accepted — ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4/§6's evidentiary graduation gate (trip-log has not accrued ≥1 entry per active loop class). See Addendum 2026-08-21.
+**Status:** Accepted — ratified by operator (JA) 2026-08-21, as an explicit override ahead of §4/§6's evidentiary graduation gate (trip-log has not accrued ≥1 entry per active loop class). See Addendum 2026-08-21. Scope widened 2026-10-24 to all substantial work (operator direction; Addendum 2026-10-24).
 **Decision date:** 2026-06-16
 **Supersedes:** none
 **Superseded-by:** none
@@ -12,6 +12,8 @@
 **Author:** Claude (Tech Advisor), authored in claude.ai (briefs/methodology/no-commits role); landed to repo via Claude Code 2026-06-16. **Numeral reconciled at landing: the handoff proposed "Rule 1"; Phase-0 read found "Rule 1" already occupied by the live canon rule "small-cell variance prior" (`inqhiori-canon.md:245`/`:268`). Owner adjudicated the new rule as "Rule 2" on 2026-06-16. See §0/§1.**
 **Loop-of-Record:** STRATEGIC — this commits a new constitutional numeral that binds all future artifacts (a governance act on what governs); low-reversibility canon edit. Load-bearing clause: §2 inserts a standing rule into `inqhiori-canon.md`. Switch-gate: N/A (no lower-loop execution component).
 **Amends / extends:** the three-loop binding ADR (`docs/adr/2026-06-12-three-loop-methodology-binding.md`, PROPOSED) — Rule 2's magnitude is set by the Loop-of-Record / reversibility class that ADR defines. Canon home: `docs/methodology/inqhiori-canon.md` §15 (full statement) + §12 Hard-rules pointer + §14 loop-budget mirror.
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-140, ADR02-141); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
+**Revision:** 2026-10-25 — rule consolidation D8 removed the discharged authoring-time own-ADR forbidden move (ADR02-136); prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
 
 ---
 
@@ -95,25 +97,17 @@ Thresholds are validated **forward, never by retrodiction.** Retrodiction onto p
 
 ## §5 — Forbidden moves (each genuinely tempting; each would corrupt the commit)
 
-1. **Folding Rule 2 into the three-loop ADR.** Tempting (they are adjacent) — but Rule 2 is a new numeral, not a clarification of the loops. Own-ADR. Conflating them buries it.
 2. **Expressing the budget in minutes** anywhere in canon or ADR. Neither client can meter wall-clock; minutes evaporate, iteration counts enforce. Iterations only.
 3. **Tuning 3/8/3 to match the historical record** during authoring. That is the selection-bias trap §4 exists to bar. The numbers are authored as given; only the forward log moves them.
 4. **Auto-killing at budget** (writing the rule as a hard wall). It is a *tripwire* — a forced extend-or-stop decision, asymmetric by reversibility. A wall is a different, worse rule.
 5. **"While I'm in here" canon edits.** Editing anything in `inqhiori-canon.md` beyond the Rule 2 insertion points (§15 + §12 pointer + §14 mirror line). The diff must be insertion-only.
 6. **Building a Rule-2 telemetry subsystem** (dashboard / logger / metrics module). The validation instrument is one table. Proposing more is itself a Rule-2 violation — over-spending on the rule about not over-spending — and is the explicit tripwire on authoring this commit.
 7. **Renaming the existing canon Rule 1 (small-cell variance prior) to free up "Rule 1."** Rejected at adjudication: it edits a live hard rule (not insertion-only) and is the exact "while-I'm-in-here" creep move #5 forbids. The new rule took the next free numeral instead.
-8. **Deconflicting the three "Rule N" namespaces here** (canon vs `regime_robustness_gate.md` vs `operational_rules.md`). Out of scope — a separate STRATEGIC act. This ADR only commits Rule 2 into the canon namespace and records the fragmentation in §0.
+8. **Deconflicting the three "Rule N" namespaces here** (canon vs `regime_robustness_gate.md` vs `operational_rules.md`). Out of scope — a separate STRATEGIC act. This ADR only commits Rule 2 into the canon namespace and records the fragmentation in §0. **Lifted 2026-10-25 for the rule consolidation** ([Addendum 2026-10-25](#addendum-2026-10-25--58-lifted-for-the-rule-consolidation)).
 
 ---
 
 ## §6 — Gate (binary adoption criteria)
-
-**Commit gate (all must hold for the landing to be DONE):**
-
-1. This ADR committed to `docs/adr/` (date-prefixed filename), Status PROPOSED, §0 lists the Phase-0 reads with commit anchors.
-2. `inqhiori-canon.md` contains the Rule 2 statement (§15) + the §12 Hard-rules pointer + the §14 mirror line; **no other canon text changed** (diff insertion-only).
-3. `docs/notes/audits/rule-2-trip-log.md` exists with the five-column table.
-4. The 3/8/3 magnitudes read identically across ADR §2, canon §15, canon §14, and the trip-log seed (no cross-artifact drift).
 
 **Graduation:** PROPOSED→ACCEPTED at the first programme audit where §4 H holds (≥1 trip-log entry per active loop class, wire firing at hindsight-correct stops). **FALSIFIED / AMENDED** per the §4 otherwise-branch (wire fires at productive moments) or the inert-rule branch (empty trip-log across ≥2 audit cycles). If neither has accrued evidence by the audit, disposition is **AMBIGUOUS** — hold PROPOSED one more cycle, do not silently retain.
 
@@ -124,7 +118,7 @@ Thresholds are validated **forward, never by retrodiction.** Retrodiction onto p
 - Every future artifact may now declare a Rule-2 budget in its header alongside its Loop-of-Record; the magnitude follows directly from the LoR. This very ADR carried one (OUTER, 8 iterations — landed at iteration ~3, no overrun).
 - The programme-audit checklist gains one item: read `docs/notes/audits/rule-2-trip-log.md`; confirm ≥1 entry per active loop class (else flag the rule inert per §4) and check whether the wire fired at hindsight-correct stops.
 - The trip-log becomes the calibration data source; no new artifact type beyond the single table is licensed.
-- Rule-numbering fragmentation (§0) is now documented but unresolved; a future STRATEGIC pass may deconflict the three namespaces (forbidden to do so here, §5.8).
+- Rule-numbering fragmentation (§0) is now documented but unresolved; a future STRATEGIC pass may deconflict the three namespaces (forbidden to do so here, §5.8; [lifted 2026-10-25](#addendum-2026-10-25--58-lifted-for-the-rule-consolidation) for the rule consolidation).
 
 ---
 
@@ -142,6 +136,10 @@ grep -n "Rule 0\|Rule 1\|Rule 2" docs/methodology/inqhiori-canon.md | head   # a
 # 3. The 3/8/3 magnitudes match across the three artifacts (no drift)
 grep -rn "3 iterations\|8 iterations\|3 constituent OUTER" \
   docs/methodology/inqhiori-canon.md docs/adr/2026-06-16-rule-2-budget-before-acting.md
+
+# 4. Forward trip-log exists (the falsifier is live, not theater)
+ls docs/notes/audits/ | grep -i "rule-2-trip-log"
+# at each programme audit: confirm >=1 entry per active loop class, else flag the rule inert
 ```
 
 ## Addendum 2026-08-15 — pointer propagation narrowed to inqhiori only
@@ -169,14 +167,9 @@ concern). `docs/methodology/inqhiori-canon.md` §15 remains the full statement;
 canon §12/§14 mirrors are untouched (§5.5 forbids editing them outside this
 ADR); the `.claude/skills/inqhiori/SKILL.md` pointer stays, since INQHIORI-loop
 work is this rule's most specific applicable context and canon §15 is already
-its natural home. Declaring a Rule-2 budget is no longer instructed from
-brief-authoring, cursor-fleet dispatch, or general session-start discipline —
-only from INQHIORI-loop entry.
+its natural home.
 
 **Not a repeal.** The ADR stays `PROPOSED`; §4's graduation path is unchanged.
-Re-widening propagation is available once the trip-log actually accrues
-evidence at the next programme audit — narrower footprint until then, per the
-same "run tight, loosen only on evidence" bias §4 already states.
 
 ## Addendum 2026-08-19 — §0 "third meaning" is the Rule 1 extension
 
@@ -225,10 +218,6 @@ validated forward only (§4). Ratification does not retroactively manufacture tr
 the log stays exactly as sparse as it is, and future audits should read it as such, not as
 "already validated."
 
-# 4. Forward trip-log exists (the falsifier is live, not theater)
-ls docs/notes/audits/ | grep -i "rule-2-trip-log"
-# at each programme audit: confirm >=1 entry per active loop class, else flag the rule inert
-```
 
 ---
 
@@ -367,6 +356,54 @@ grep -c "Rule 2\|trip log" docs/notes/audits/programme-audit/2026-11-08*.md 2>/d
 # §6 graduation is still separately gated on a per-loop-class basis (not satisfied by the STRATEGIC trip alone)
 grep -n "INNER" docs/notes/audits/rule-2-trip-log.md
 ```
+
+---
+
+## Addendum 2026-10-24 — scope widened to all substantial work
+
+**Operator direction (Joshua, 2026-10-24):** "the rule 2 budget should be reevaluated to cover all
+substantial work". This supersedes the [2026-08-15 addendum](#addendum-2026-08-15--pointer-propagation-narrowed-to-inqhiori-only)'s
+limit (budget declared "only from INQHIORI-loop entry"). Its pointer removals stay removed:
+[AGENTS.md §Core rules](../../AGENTS.md#core-rules) (Rule 2) states the
+rule once for every seat and links here. §2's magnitudes, tripwire and corollaries, §4 and §6 are
+unchanged.
+
+**Substantial work** — Rule 2 applies when any of these holds, at the start or as soon as it
+becomes true:
+
+1. the work creates or changes a decision artifact (ADR, pre-registration, brief or card, plan,
+   closure, RESULTS, ruling, STATE or campaign record);
+2. it runs research or spends: a backtest, MC, sweep, data pull, paid service, or trial count K;
+3. it changes more than one file;
+4. it is expected to need more than about ten tool calls.
+
+**Excluded — routine fixes:** a change one check proves correct (a typo, link, lint or format fix;
+a failing test with a known cause; a mechanical rename or regeneration), answering from reads, and
+an operator-directed operational act already governed by its own gate. These carry no budget even
+when they touch several files.
+
+**The budget is one line, written where the work is already recorded** (the card, plan, PR
+description or the first status message): the decision the work changes, the loop class by
+reversibility (recoverable → INNER, low-reversibility or statistical → OUTER, programme tier →
+STRATEGIC, per §2), and the bound — `Rule 2: <decision> · <class> <n> iterations` plus `· $<ceiling>
+· K=<n>` where the work spends. Minutes stay barred (§5.2). No new file, ledger, form or approval.
+Reaching the bound is §2's structured stop: reassess (extend under corollary 2, cut, or stop); never
+expand silently or weaken acceptance.
+
+**Trip-log.** Rows still record only trips, plus the baseline of an INQHIORI investigation; other
+work that finishes under budget writes no row. Trips from non-INQHIORI work are logged like any
+other, and INNER trips are the class §6 still lacks.
+
+## Addendum 2026-10-25 — §5.8 lifted for the rule consolidation
+
+**Operator ruling (Joshua, 2026-10-25):** "keep §5.7, lift §5.8 for the consolidation".
+
+- **§5.8 is lifted for the 2026-10-24 rule consolidation only.** That consolidation is the
+  STRATEGIC pass §7 anticipated and may deconflict the "Rule N" namespaces (canon,
+  `operational_rules.md`, `regime_robustness_gate.md`, skill-local) and renumber or rename their
+  citations. Outside that pass, §5.8 still stands.
+- **§5.7 stands:** canon Rule 1 (small-cell variance prior) keeps its numeral; the consolidation
+  may not rename it to free "Rule 1".
 
 ---
 

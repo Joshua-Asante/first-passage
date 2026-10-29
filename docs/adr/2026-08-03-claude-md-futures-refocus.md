@@ -9,6 +9,7 @@
 **Supersedes:** none (extends [`2026-07-16-root-doc-charter-dedup.md`](2026-07-16-root-doc-charter-dedup.md) — same demotion discipline applied to the Purpose + reference sections; adds the era-closure aggregation form)
 **Related:** [`2026-07-16-root-doc-charter-dedup.md`](2026-07-16-root-doc-charter-dedup.md); [`2026-07-22-challenge-era-substrate-retirement.md`](2026-07-22-challenge-era-substrate-retirement.md); [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md); [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md)
 **Layer:** infrastructure (governance docs)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR08-27); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -81,7 +82,6 @@ Concretely (all executed with this ADR):
 
 - **Editing the Strategy Reference table cells or §Protection constants while trimming** — they are validator-pinned mirrors of live constants (and the Striker rows feed live c1 sizing); any value change requires its own re-MC governance, never a doc-cleanup ride-along. Inherited verbatim from charter §5; it was live temptation again this pass ("delete the CFD strategies" reads naturally as "delete the table").
 - **Deleting the era-closure pointer line entirely** — genuinely tempting under "futures focus"; ruled out because a future session that rediscovers FXIFY/CFD code paths, docs, or data needs the closure signal one hop away ("retire, but do not over-retire", 2026-07-11 directive).
-- **Starting the CFD code retirement now because §7 already contains the scope** — the scope sketch is not a GO. Execution needs its own admitting ADR, an engine-support pre-flight (§Firm Expansion doctrine), and an operator lifecycle disposition for the four legs.
 - **Re-expanding the posture intro at the next incident** — that is exactly how the arming chronicle accreted (07-20 → 07-31, one incident at a time). RUNBOOK owns the chronicle; the intro carries only standing invariants.
 
 ---
@@ -112,7 +112,7 @@ Concretely (all executed with this ADR):
 
 Executed in the same PR as this ADR: the §2 edits, the downstream artifact updates, and the §10 verification battery.
 
-**Scoped follow-up — CFD-strategy code retirement (NOT executed here; separately gated):**
+**Scoped follow-up — CFD-strategy code retirement (not executed here; later executed under [`2026-08-23-strategy-coldstore-phase-b.md`](2026-08-23-strategy-coldstore-phase-b.md) and [`2026-08-23-strategy-coldstore-phase-c.md`](2026-08-23-strategy-coldstore-phase-c.md)):**
 
 - **Target:** remove the venue-less CFD legs (**Guardian XAUUSD, Aegis USDJPY**) from the active code path. **Striker DJ30 / Striker NAS100 constants STAY** — they are live c1 sizing inputs via the sizing-host leg map (§0 read).
 - **Touch list (from the §0 reads):** `core/dd_protection.py::BASE_RISK`, `core/firm_rules.py::_BASE_RISK`, `core/mc/modes.py::ALLOCATIONS`, `core/csv_parser.py::STRATEGY_DAYS`, `core/config/params.toml [strategies]`, `scripts/validate_params.py` key maps + `tests/validator_fixtures/`, the CLAUDE.md table rows, per-strategy `LOCK.md`s, `core/strategies/MANIFEST.sha256`, and dependent tests. Recommended retention: the 4-leg synthetic fixtures in `tests/core/test_mc_synthetic_engine.py` (vendor-free engine regression is calibration-independent and should survive the leg removal).

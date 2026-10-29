@@ -9,6 +9,7 @@
 **Authors:** Joshua (direction + both design rulings) + Claude Code (authoring)
 **Related:** [`2026-07-10-strategies-never-locked-lifecycle-governance.md`](2026-07-10-strategies-never-locked-lifecycle-governance.md) (the two existing axes — **extended, not modified**) · [`docs/methodology/strategy_lifecycle.md`](../methodology/strategy_lifecycle.md) (canonical owner of the authorization axis) · [`2026-08-04-tradeify-venue-descope-eval-included.md`](2026-08-04-tradeify-venue-descope-eval-included.md) (the decision that exposed the gap) · [`2026-07-12-prop-portfolio-four-friendly-firms.md`](2026-07-12-prop-portfolio-four-friendly-firms.md) (the four-firm programme this axis serves) · [`docs/spec/2026-07-27-third-leg-target-spec.md`](../spec/2026-07-27-third-leg-target-spec.md) (a screen whose limbs this ADR re-homes) · [`2026-08-05 claim-alignment audit`](../notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md) (B3 + the 112-site premise-dead estate this axis would have prevented)
 **Layer:** governance / strategy organization. **No locked parameter, allocation, `dd_protection` constant, `core/lifecycle.py` tier multiplier, Pine file, or `LEG_MAP` entry is changed by this ADR.**
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR09-32); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ---
 
@@ -254,12 +255,6 @@ This ADR buys a vocabulary and a place to put facts. It changes no arithmetic, n
 ## §7 — Implementation plan
 
 **Phase 0 — acceptance.** Operator ratifies `Proposed → Accepted`. Nothing below runs first.
-
-**Phase 1 — record what already exists (no new state invented).** Create `ops/venue_editions/Tradeify_Select_100K.md` with the three rows that are already true: `Striker@…` **WITHDRAWN** (2026-08-04), `Striker NAS100@…` **WITHDRAWN** (2026-08-04), `ORB-MNQ-1@…` **SCREEN-DEAD** (S7, 2026-08-04). **The live edition set is then visibly EMPTY — which is §1.3's fact, now recorded.**
-
-**Phase 2 — pointers, one line each** (`docs/methodology/strategy_lifecycle.md` §two-axes → three; `CLAUDE.md` §Strategy Authorization Lifecycle; the 08-04 ADR gains a *"re-expressed under the venue-binding axis"* pointer). **No existing decision text is rewritten.**
-
-**Phase 3 — the §2.5 re-homing** recorded as a dated note on the third-leg spec. Spec body unedited (Trap #12).
 
 **Phase 4 — first live use: F2/F3 on 2026-08-08** produce edition transitions rather than prose. This is **T1's reachability test** and the earliest real evidence the axis pays.
 

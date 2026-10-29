@@ -9,6 +9,7 @@
 **Retain-until:** none
 **Issue:** [GH #62](https://github.com/Joshua-Asante/multi_firm_operations/issues/62)  
 **Phase A anchor:** `2026-05-10-pr59-manifest-drift-rca.md` (evicted 2026-06-05; retrieve via `git show pre-prune-2026-06-05:archive/docs/briefs/2026-05-10-pr59-manifest-drift-rca.md`)
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR01-48); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 
 ## Context
 
@@ -25,7 +26,7 @@ There was **no** manifest-generation script in `scripts/` at Phase A; Phase B **
 ## Decision
 
 1. Add [`scripts/check_data_manifests.py`](../../scripts/check_data_manifests.py) (stdlib only): `--check` (default), `--regenerate`, `--regenerate --dry-run`, walking the four directories that hold tracked `SHA256SUMS`.
-2. Add a **git-native** `pre-commit` hook (tracked template at [`scripts/githooks/pre-commit`](../../scripts/githooks/pre-commit)) installed per clone via [`scripts/install_hooks.sh`](../../scripts/install_hooks.sh) or [`scripts/install_hooks.bat`](../../scripts/install_hooks.bat). The hook runs `--check` when any staged path is under `data/tv_exports/`, `data/bar_data/`, or `data/external/`. `git commit --no-verify` remains the explicit escape hatch.
+2. Add a **git-native** `pre-commit` hook (tracked template at [`scripts/githooks/pre-commit`](../../scripts/githooks/pre-commit)) installed per clone via [`scripts/install_hooks.sh`](../../scripts/install_hooks.sh) or [`scripts/install_hooks.bat`](../../scripts/install_hooks.bat). The hook runs `--check` when any staged path is under `data/tv_exports/`, `data/bar_data/`, or `data/external/`.
 3. Add [`.github/workflows/manifest-check.yml`](../../.github/workflows/manifest-check.yml): **format-only** validation of `SHA256SUMS` lines plus enforcement that no `data/tv_exports/**/*.csv` or `data/bar_data/**/*.csv` is **tracked**. Hash equality against bytes is **local-only** — CI does not have gitignored CSVs.
 4. Document the standing regen-with-data workflow in [`CLAUDE.md`](../../CLAUDE.md).
 5. Graduate methodology lesson **M-9** in [`docs/methodology/lessons/methodology_lessons.md`](../methodology/lessons/methodology_lessons.md).

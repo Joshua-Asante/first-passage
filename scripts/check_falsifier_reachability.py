@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """WARN-tier gate: do standing ADR falsifiers still have inputs that exist?
 
-Operational-rules Rule 11 says a falsifier whose input can no longer accrue is not
-"in force" regardless of unchanged threshold text. Rule 11 is prose plus a hookify
+operational_rules §11 says a falsifier whose input can no longer accrue is not
+"in force" regardless of unchanged threshold text. operational_rules §11 is prose plus a hookify
 nudge; nothing mechanical checks it. `check_adr_graph.py` validates header grammar,
 edge reciprocity, stub shape and INDEX freshness -- it never asks whether a §4
 clause's inputs still exist.
@@ -41,7 +41,7 @@ EXEMPTIONS (both non-semantic, both measured to suppress real false positives):
      A missing path is exempt if the ADR mentions it near deletion/retirement
      language. Suppresses e.g. 2026-07-11-fxify-ops-surface-retirement (`accounts.py`).
 
-  2. RECORDED DORMANCY. An ADR that already carries a Rule 11 dormancy record has
+  2. RECORDED DORMANCY. An ADR that already carries an operational_rules §11 dormancy record has
      complied; re-flagging it is noise. Suppresses e.g. 2026-07-03-hardcore-p3,
      whose existence-bar dormancy was correctly back-propagated by the R6 NO-GO.
 
@@ -239,7 +239,7 @@ def exempt_self_deletion(full_text: str, token: str) -> bool:
 
 
 def exempt_recorded_dormancy(full_text: str) -> bool:
-    """The ADR already carries a Rule 11 dormancy record -> already compliant."""
+    """The ADR already carries an operational_rules §11 dormancy record -> already compliant."""
     return bool(DORMANCY.search(full_text))
 
 
@@ -285,7 +285,7 @@ def main() -> int:
         for tok in sorted(paths):
             if r.path(tok)[0] != "MISSING":
                 continue
-            # Dormancy is checked FIRST: an ADR carrying a Rule 11 record has actually
+            # Dormancy is checked FIRST: an ADR carrying an operational_rules §11 record has actually
             # complied, which is a stronger and more accurate reason than the
             # deletion-language heuristic (which also fires on the dormancy note itself).
             if dormant:
@@ -297,7 +297,7 @@ def main() -> int:
         for tok in sorted(cmds):
             if r.cmd(tok)[0] != "MISSING":
                 continue
-            # Dormancy is checked FIRST: an ADR carrying a Rule 11 record has actually
+            # Dormancy is checked FIRST: an ADR carrying an operational_rules §11 record has actually
             # complied, which is a stronger and more accurate reason than the
             # deletion-language heuristic (which also fires on the dormancy note itself).
             if dormant:
@@ -336,7 +336,7 @@ def main() -> int:
     for adr, tok, why in findings:
         print(f"  {adr}")
         print(f"    missing: {tok}  ({why})")
-    print(f"\n  {len(findings)} finding(s). Rule 11: append a dated dormancy + re-arm "
+    print(f"\n  {len(findings)} finding(s). operational_rules §11: append a dated dormancy + re-arm "
           "addendum to the affected ADR;")
     print("  never edit the falsifier text in place.")
     return 1 if args.strict else 0

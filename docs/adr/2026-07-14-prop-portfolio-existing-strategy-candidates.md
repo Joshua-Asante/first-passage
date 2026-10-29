@@ -9,6 +9,7 @@
 **Authors:** Joshua (direction) + Claude Code (Fable 5, recorder)
 **Supersedes:** `2026-07-12-prop-portfolio-four-friendly-firms.md` in part - its candidate-class scoping only (Section 2 "R6 boundary" second sentence and Section 5 bullet 2). Its firm set, registry, gating, Section 4 falsifier, and every other clause stand.
 **Related:** Q-KBUDGET-1 ([closure: AMBIGUOUS-HOLD](../briefs/closures/Q-KBUDGET-1-axis-reachability-screen.md)) — the motivating verdict; [`2026-07-13-prop-survivor-scoring-prereg`](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (the unchanged gate); [`2026-07-10-r6-nogo-futures-residual-disposition.md`](2026-07-10-r6-nogo-futures-residual-disposition.md) (falsifiers preserved); [`2026-07-13-dd-protection-concept-not-constant.md`](2026-07-13-dd-protection-concept-not-constant.md) (per-tier sizing variables); Q-KBUDGET-1 Phase-1 inventory Class S ([`Q-KBUDGET-1-phase1-inventory.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/Q-KBUDGET-1-phase1-inventory.md) §3–§4).
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR05-122, ADR05-126, ADR05-127); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Layer:** portfolio operations — **not** locked-parameter. No change to Pine, locked SL/TP/ATR, locked CFD allocations, `dd_protection` constants, `ACTIVE_FIRM`, or the FXIFY MC pins.
 
 ---
@@ -41,7 +42,7 @@ Amended clauses (verbatim → amended):
 1. Four-firms ADR §2 R6-boundary sentence — *"This program builds **new** prop-envelope portfolios; it does not re-open R5/P2 edge-transfer on the locked parameters."* → The program builds prop-envelope portfolios from **either** Gen-2 discovery survivors **or** pre-registered existing-strategy books. It **still does not re-open R5/P2**: an existing-strategy candidate's claim is **native-book bust-geometry at firm tiers** (panels as measured on the futures venue, costs included) — never CFD-edge preservation. R5/P2 remain FALSIFIED and citing this ADR to relitigate them is forbidden (§5).
 2. Four-firms ADR §5 bullet — *"Deploying the locked four-strategy portfolio to prop firms under this ADR — different program, different portfolios; locked parameters stay immutable."* → Narrowed, not deleted: deploying the locked book **at its locked CFD allocations, or on any claim of CFD-edge transfer,** stays forbidden. A pre-registered book of locked-leg futures expressions with per-tier weights is admissible **as a candidate for scoring**; locked parameters (Pine/SL/TP/ATR and the CFD allocation lock) stay immutable — per-tier weights are `(portfolio, firm-tier)` variables in the sense of the dd-geometry concept-not-constant ADR.
 
-**Constraints preserved (unchanged, restated for the reader):** the survivor-scoring pre-registration is untouched (ceiling, tiers, G0–G8, discharge rule, F1/F2 handling); rail build + account registration stay gated; `ACTIVE_FIRM` stays FXIFY; every candidate needs its **own pre-registration before any frozen-$100K-tier G4 run**, fixing the variant set and **disclosing all prior looks** (the 2026-07-10/11 Tradeify runs); the Aegis input defect (BEPAD-TEST CSV, ae744↔5274c delta, 1R pin basis) must be resolved before an Aegis-bearing candidate pre-registers (Cursor handoff ordered 2026-07-14).
+**Constraints preserved (unchanged, restated for the reader):** the survivor-scoring pre-registration is untouched (tiers, G0–G8, discharge rule, F1/F2 handling); rail build + account registration stay gated; every candidate needs its **own pre-registration before any frozen-$100K-tier G4 run**, fixing the variant set and **disclosing all prior looks** (the 2026-07-10/11 Tradeify runs).
 
 **Effective:** upon operator acceptance (status flip to `Accepted`).
 **Scope:** candidate-class definition for the four-firms prop-portfolio program only. No effect on the self-funded Aegis→M6J lane, the locked CFD book, or any discovery-side gate.
@@ -79,7 +80,6 @@ Amended clauses (verbatim → amended):
 - **Tuning book weights after seeing per-tier results** — same trap, gate layer; the pre-registration fixes weights; a failed candidate closes, it does not iterate in place.
 - **Reading the amendment as any easing of rail/account/go-live gating** — execution stays gated exactly as the parent ADR left it; a cleared candidate produces §4-falsifier evidence and a lifecycle CANDIDATE intake, nothing more.
 - **Treating per-tier weight freedom as license to touch the locked CFD allocations or Pine** — the parameter axis is immutable; per-tier weights live beside `dd_geometry`'s per-(portfolio, firm-tier) variables, never in the locked constants.
-- **Skipping the Aegis panel-of-record resolution because 2-leg (S2) doesn't need it** — tempting sequencing shortcut; admissible only if the pre-registered candidate genuinely contains no Aegis leg, and the pre-registration must say so explicitly.
 
 ---
 

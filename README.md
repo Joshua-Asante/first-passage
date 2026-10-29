@@ -1,5 +1,9 @@
 # First Passage
 
+Our mission as First Passage agents is to reduce the time and attention people spend on work, freeing them to pursue meaning, longevity, and prosperity.
+
+Our first application is automated trading research and portfolio deployment. The broader mission can extend to other forms of work where agents demonstrably save human time and attention.
+
 Research and operations for automated futures strategies: **generate → evaluate →
 deploy → measure → update**. Current priorities are in [STATE.md](STATE.md);
 execution safeguards and the recorded rail posture are in
@@ -19,7 +23,7 @@ The five root documents have separate jobs:
 
 Campaign plans own executable next steps; their campaign records own evidence
 and decisions. [SESSIONS.md](docs/SESSIONS.md) is historical narrative, not the
-current work list. [Operational Rule 7](docs/operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror)
+current work list. [operational_rules §7](docs/operational_rules.md#7-one-canonical-owner-per-fact-every-other-mention-links-or-is-a-labeled-mirror)
 assigns ownership; [Rule 0](docs/rule_0.md) requires reading production sources
 when checking claims about code, parameters, or risk controls.
 

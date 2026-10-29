@@ -71,24 +71,8 @@ _UNVERIFIED_REGIME_TAG = re.compile(r"^\|\s*20\d{2}.*\|\s*\[([ML])\]\s*\|?\s*$")
 
 # Registry of "retraction skews": a canonical claim whose source-of-truth has
 # superseded/retracted it but whose canonical line carries no caveat token.
-# v1 ships the one proven case (C1); add entries here (<=6) as new skews are found.
-_RETRACTION_CHECKS = (
-    {
-        "id": "SKEW-headroom-fixed1r",
-        "canonical_needle": "p99 DD 0.63pp headroom",
-        "history_needles": ("provisionally retracted", "fixed-1R"),
-        "caveat_token": "fixed-1R",
-        "summary": (
-            "AGENTS.md asserts 'p99 DD 0.63pp headroom' with no fixed-1R caveat, but "
-            "docs/mc_anchor_history.md (Q-SWAP-2) provisionally retracted that margin to "
-            "0.45pp under fixed-1R modeling (M-SWAP-1). Lock criterion still passes (4.55% < 5%)."
-        ),
-        "next_step": (
-            "Append a fixed-1R caveat + Q-SWAP-2 cross-ref to the headroom line at AGENTS.md, "
-            "mirroring the regime and gross-of-swap caveats already inline."
-        ),
-    },
-)
+# Add entries here (<=6) as new skews are found.
+_RETRACTION_CHECKS = ()
 
 
 def skew_scan(root: Path) -> list[Finding]:
@@ -560,7 +544,7 @@ def memory_scan(mem_dir: Path | None, repo_root: Path | None = None,
 # preregistration_scan (Tier-1: freeze-before-results commit hygiene)
 # --------------------------------------------------------------------------- #
 #
-# Convention (operational_rules.md Rule 8 sub-rule 7): a pre-registration /
+# Convention (operational_rules.md §8 sub-rule 7): a pre-registration /
 # freeze artifact must land in a SEPARATE, EARLIER commit than the results or
 # closure it gates — so "frozen before the run" is git-verifiable, not
 # self-attested. The 2026-07-01 programme audit (R4) found flagship pre-regs
@@ -726,7 +710,7 @@ def _pair_violations(
 
 
 # A prereg's closure stamp lives on this header line; the body is retained unedited
-# (docs/operational_rules.md Rule 8 sub-rule 7).
+# (docs/operational_rules.md §8 sub-rule 7).
 _STATUS_HEADER = "**Status:**"
 
 
@@ -835,7 +819,7 @@ def preregistration_scan(root: Path, asof: date, lookback_days: int = 14) -> lis
     with a corresponding pre-registration. Two distinct findings, never conflated:
 
       PREREG-SAMECOMMIT — the prereg is ADDED alongside the results: the freeze is
-          self-attested, not git-verifiable (Rule 8.7's core case).
+          self-attested, not git-verifiable (operational_rules §8.7's core case).
       PREREG-RUNEDIT    — the prereg predates the results but the run commit edited
           it beyond its status header: the freeze may be a proper ancestor, so the
           claim is only that frozen text moved (a cheap proxy for the 3935d2c
@@ -873,14 +857,14 @@ def preregistration_scan(root: Path, asof: date, lookback_days: int = 14) -> lis
                 summary=(
                     f"Commit {short} introduces results/closure `{rp}` together with its "
                     f"pre-registration `{pp}`{extra} — the freeze is self-attested, not "
-                    f"git-verifiable (Rule 8.7: prereg must be a separate, earlier commit)."
+                    f"git-verifiable (operational_rules §8.7: prereg must be a separate, earlier commit)."
                 ),
                 source=rp,
                 next_step=(
                     "Freeze the pre-registration in a separate, EARLIER commit than its results "
                     "(gold standard: 46f47d1 freeze -> 913829b run). For already-merged history, "
                     "log it Closed; catch the next one pre-merge by splitting the freeze commit "
-                    "out. See docs/operational_rules.md Rule 8 sub-rule 7."
+                    "out. See docs/operational_rules.md §8 sub-rule 7."
                 ),
             ))
 
@@ -893,7 +877,7 @@ def preregistration_scan(root: Path, asof: date, lookback_days: int = 14) -> lis
                 summary=(
                     f"Commit {short} introduces results/closure `{rp}` and also edits the "
                     f"pre-existing pre-registration `{pp}`{extra} beyond its status header — "
-                    f"the run commit must not move frozen verdict logic (Rule 8.7)."
+                    f"the run commit must not move frozen verdict logic (operational_rules §8.7)."
                 ),
                 source=rp,
                 next_step=(
@@ -901,7 +885,7 @@ def preregistration_scan(root: Path, asof: date, lookback_days: int = 14) -> lis
                     "(`git log --diff-filter=A -- <prereg>`, then `git diff <freeze> <run> -- "
                     "<prereg>`) and confirm no gate, threshold, or verdict rule moved. A "
                     "closure `**Status:**` stamp alone is exempt and never reaches here. "
-                    "See docs/operational_rules.md Rule 8 sub-rule 7."
+                    "See docs/operational_rules.md §8 sub-rule 7."
                 ),
             ))
     return findings

@@ -7,6 +7,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** none
 **Retain-until:** none
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR09-85, ADR09-86); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Related:** [SPEC S7](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-07-loop-s7-repo-alignment-spec.md) · [alignment manifest](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-07-posture-a-alignment-manifest.md) · [gate-stack audit R3/R5/R6](../notes/audits/programme-audit/2026-08-03-gate-stack-audit.md) · [survivor-scoring prereg](../briefs/pre-registration/2026-07-13-prop-survivor-scoring-prereg.md) (frozen — close+reopen only)
 **Layer:** research-gate composition. **$0 / K=0** — no campaign open, no K spend, no frozen-prereg body edit.
 
@@ -65,21 +66,9 @@ Posture-A collapses the research gate surface to a **minimal live set** and puts
 | **Plateau protocol** (`plateau_tracker`) | **Archived** (skill banner) | Fresh pre-reg with same-feed baseline rule; not the standing validation path |
 | **Breadth / risk-N_eff** (`breadth.py`) | **Tombstoned as live producer** | Envelope §2 item 6 coordinates stay doctrine but are **report-optional / no sole producer** until a re-arm ADR restores a producer; skill launcher not the default path |
 
-### `var_trials` / audit R5
-
-> ⚠ **2026-08-15 reader-intercept:** the paragraph below is stale — the module default flipped to `1/n` at `universe_gate.py:363-365`; self-tests were rewritten against it (see Addendum below). Frozen text unedited per Trap #12.
-
-`universe_gate.py` still defaults to the empirical `Var(col_sr)` estimator (self-tests depend on it). **Do not flip the module default in this PR.** Campaigns should continue to **pass `var_trials=1/n`** (or pin V) until a separate change lands with green self-tests. Audit R5 schedule **2026-09-01** stands unless absorbed by that later change.
-
 ### Audit board absorption (pointers)
 
-| Audit row | Disposition under W4 |
-|---|---|
-| **R3** (`sentinel` prereg↔RESULTS pairing) | Absorbed-or-redated by two-tier / closed-loop PREREG discipline; sentinel repair remains its own owner if still red — dated pointer, not silent drop |
-| **R5** (`var_trials=1/n` default) | Absorbed as **standing caveat** (pass V explicitly); schedule 09-01 left standing for the code default flip |
-| **R6** (`DEFAULT_FIRM_KEY` in `cost_mnq.py`) | Schedule 09-01 left standing — not discharged by dormancy alone |
-
-> ⚠ **2026-08-15 reader-intercept:** the R5 row above is stale — R5 was fully discharged (not merely held as a caveat) by the 2026-08-15 gate-stack repair pass, ahead of the 09-01 schedule date it names (see Addendum below). Table text unedited per Trap #12.
+Audit rows R3, R5 (`var_trials=1/n` module default) and R6 were discharged by the 2026-08-15 gate-stack repair pass (Addendum below).
 
 ### Envelope §2 item 6
 

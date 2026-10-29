@@ -6,6 +6,7 @@
 **Superseded-by:** none  
 **Superseded-in-part-by:** none  
 **Retain-until:** none  
+**Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR12-126, ADR12-128, ADR12-129, ADR12-138, ADR12-139); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Authors:** Joshua (operator elections) + Codex (record and boundary reconciliation)  
 **Layer:** research-program objective, campaign authorization, and candidate/edition separation.
 No candidate admission, lifecycle promotion, allocation, rail arming, or capital authority.
@@ -36,37 +37,11 @@ No candidate admission, lifecycle promotion, allocation, rail arming, or capital
 
 ### 1. Commercial objective
 
-The campaign optimizes first for a **portable genuine edge**. `Tradeify_Select_100K` is the
-preferred edition, not the definition of edge. A confirmed edge remains confirmed if Select or
+A confirmed edge remains confirmed if Select or
 another edition fails; the edition verdict is recorded separately.
 
 Manual weekly account preservation is an accepted account-level control. Candidate alpha is not
 required to manufacture weekly activity merely to keep the account alive.
-
-### 2. Campaign authorization and bounds
-
-The campaign is authorized for 2–3 calendar days, research/paper scope only. It may examine at most
-three cultivation seats and may open at most one prospectively valid candidate contract with one
-Confirm selection (`M=1`, family alpha `0.05`, Bonferroni identity). These are campaign mechanics,
-not evidence that a candidate exists.
-
-The initial approved spend envelope is **$0 external data/cloud spend and at most 48 local
-core-hours**. “Flexible” means the operator is willing to consider priced extensions; it is not
-advance authority to incur them. Any paid dataset, cloud run, wider schema/window, or other spend
-above the initial envelope requires a **new explicit operator GO after the priced sub-line is
-recorded**.
-
-### 3. Rule-2 iteration tripwire
-
-The STRATEGIC budget is three constituent OUTER investigations, mapped one-to-one to seats A/B/C.
-Each seat has at most **8 complete attempt-and-check iterations**. An iteration is one natural
-candidate unit: source-and-identity check; parse/normalize/test cycle; reachability run-and-review;
-or bounded primary-source query-and-read pass.
-
-At 8/8 on any seat, work stops for the Rule-2 structured report: spent, remaining, current state,
-and extend-or-stop recommendation. There is no OUTER self-extension. Only explicit operator
-adjudication or a Rule-0 re-audit may extend a seat. The 2–3 day clock and 48-core-hour ceiling are
-additional limits, not substitutes for iteration accounting.
 
 ### 4. Cultivation boundary
 
@@ -239,15 +214,11 @@ All eight findings were verified against the cited owners and accepted.
    of the pooled 135,958-bar MNQ presence battery. Volume-conditioned ORB still fails on the
    forbidden “more range means breakout” sentence. Exact P50 stays ineligible.
 2. **Campaign terminal is `PRE-CONTRACT DROP`** under §1.6. `EXPRESSION-FAIL` remains unavailable
-   until a candidate-contract state exists. L1–L4 stay class findings. Do not open T1/T2, a
-   contract, or a third template.
+   until a candidate-contract state exists. L1–L4 stay class findings.
 3. **The 2026-09-03 L5-skip did not waive the raised-bar Route.** Q-VOLREGIME-1 §5 still requires
    a Route 1/2/3 argument before any entry construct
    ([`rejected_candidates.md`](../rejected_candidates.md) 2026-07-21). Unpaid; moot for this
    close because no template proceeds.
-4. **A pre-freeze extraction probe is not authorized.** It needs its own operator envelope and an
-   append-only Confirm reservation before any read. The campaign $0 / 48-core-hour envelope is
-   not that approval.
 5. **Rule-2 seats are remapped** on the cultivation plan ledger. Retired P50 source-identity
    stays Seat A at 1/8 STOPPED. Translation T0 is Seat B at 2/8 and now STOPPED by this drop.
    Seat C unused.
