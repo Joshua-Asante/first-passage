@@ -25,3 +25,5 @@ matches `**/*.md` or `.claude/**`. Its canonical test list lives in
 [`tests.yml`](../.github/workflows/tests.yml), under `Run docs readers`.
 Code or mixed changes run the full `pytest` job; an unavailable diff also runs
 the full suite.
+
+<!-- docs-readers demo; this PR is closed unmerged -->
