@@ -982,6 +982,7 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 
 - A PR holding commits by both agents is reviewed per commit under [Addendum 2026-10-26](#addendum-2026-10-26--operator-ruling-cross-agent-review): Codex reviews the Claude-authored commits and Claude reviews the Codex-authored ones. Condition (1) of the [conditioned merge GO](#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody) needs both reviews clean at the head.
 - A commit whose message attributes it to neither agent (no Claude `Co-Authored-By` trailer and no Codex attribution line) goes to Joshua. Reading: the PR does not merge under the conditioned merge GO until he has dealt with that commit.
+- Scope (Joshua, 2026-10-29, in session): "yes, the untrailered rule covers single-author PRs too". The previous bullet applies to every PR, not only mixed-author ones. First single-author case: [#936](https://github.com/Joshua-Asante/first-passage/pull/936), whose only commit `59e0927` carries neither attribution.
 - Not ruled: how the three-review limit counts the two reviews.
 - First case: [#867](https://github.com/Joshua-Asante/first-passage/pull/867), whose `fc68c1e` and `a82792f` carry neither attribution.
 
@@ -1013,3 +1014,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-10-28 | Addendum 2026-10-28 — operator rulings: executive folded into the coordinator; consistency-only delegation; reviewer marks | Joshua (rulings) + Claude Code |
 | 2026-10-29 | Addendum 2026-10-29 — operator ruling: mixed-author PRs are reviewed per commit by the other agent; untrailered commits go to Joshua | Joshua (ruling) + Claude Code |
 | 2026-10-29 | Addendum 2026-10-26 extended — operator rulings: Codex reviews ports of Claude-written code; a post-merge Claude review counts for #951 only | Joshua (rulings) + Claude Code |
+| 2026-10-29 | Addendum 2026-10-29 extended — operator ruling: the untrailered-commit rule covers single-author PRs too | Joshua (ruling) + Claude Code |
