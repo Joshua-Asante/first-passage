@@ -154,3 +154,15 @@ Support's 20:19Z reply on 2026-10-12, recorded at the [route owner](../briefs/ha
 8. **Host-side activation gate.** The rail host itself refuses activation (booting with `dry_run=false`, or enabling risk-add) unless the instance's M1 acceptance and its other arm gates hold. Today `c1_rail_http_server.load_config` does not check M1, so editing the `/data` config bypasses the arm helper's interlock ([AGENTS.md §Live-execution posture](../../AGENTS.md#live-execution-posture)). Item 8 gates the first live order on the personal account, with items 1–7.
    - *Design inputs, not adopted requirements:* the [instance ADR](2026-09-12-tradeify-book-protection-instance-admission.md) §2b validator, T11 effective activation and its 2026-10-11 addendum; the [synthetic interlock card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md); and the [incident ADR](2026-09-17-bounded-platform-protection-incident-contract.md) §A12.5 items it assigns to TB-I3 (the stale-evidence latch and the halt-on-unknown implementation), where this lane's instance uses the rail.
    - Nothing is implemented, armed or authorized by this addendum.
+
+## Addendum 2026-10-29 — personal-account objective removed; lane closed
+
+**Ruling** (Joshua, 2026-10-29, in the repository cleanup assessment, verbatim): "remove the personal account objective altogether. The Select 100k challenge is the first step in the four firm program, it is one program which is the multi firm operation". Earlier that day he retired the c1 Python route, recorded in the [rail ADR addendum](2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission), and confirmed: "Anything that is tied to the Python rail is retired."
+
+**Effect.**
+
+- The self-funded lane is closed. Its objective, Decisions 1–4 and owed items 1–8 are withdrawn, with no successor. Nothing on the personal account is pursued.
+- [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) has no remaining purpose and is not run. No run occurred, so no result is lost. The frozen pre-registration stays unedited as evidence. The successor freeze routed on 2026-10-20 ([campaign §62](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#62--aegis-capture-cost-basis-zero-slippage-2026-10-20)) lapses with it.
+- The project's single program is recorded in the [four-firm program ADR](2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-29--one-program-the-multi-firm-operation-accepted).
+- This addendum is the operative record. The ADR's formal retirement (Status and TOMBSTONES) follows the ADR-removal process of the [cleanup programme](../superpowers/specs/2026-10-28-org-cleanup-programme-spec.md).
+- Nothing is implemented, armed or authorized by this addendum.
