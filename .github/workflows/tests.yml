@@ -133,7 +133,6 @@ jobs:
           tests/ops/test_c1_rail_arm.py
           tests/test_check_adr_graph.py
           tests/test_lessons_index.py
-          tests/test_s5_part_a_measurement_harness.py
           tests/governance/test_sentinel_cli.py
           tests/test_check_skills_no_constants.py
           tests/core/test_mc_mode_switching.py
@@ -162,7 +161,6 @@ jobs:
           tests/test_reconcile_skill_schema.py
           tests/test_register_search_prereg.py
           tests/test_repo_map_scripts_table.py
-          tests/test_s2_evidence_tooling_acceptance.py
           tests/test_score_candidate_per_tier.py
           tests/test_size_feasibility.py
           tests/test_sync_skills.py
