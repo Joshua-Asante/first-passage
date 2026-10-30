@@ -151,7 +151,6 @@ jobs:
           tests/test_check_lifecycle_consistency.py
           tests/test_coldstore_phase_b.py
           tests/test_four_firm_remc_runner.py
-          tests/test_guard_s2_runs_acceptance.py
           tests/test_harness_guards_acceptance.py
           tests/test_lifecycle_call1.py
           tests/test_msl_score.py

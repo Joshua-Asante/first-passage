@@ -79,11 +79,12 @@ tracked on [STATE](STATE.md); its bust ceiling does not bind the Select 100K's o
 ([listener](deploy/c1_rail/README.md), [daemon](deploy/c1_signal_daemon/README.md)). Track B's book modules (`book_*`, `account_close_*`) stay offline until a deployment
 GO. [`nautilus_trader`](docs/adr/2026-07-10-databento-research-stack.md) remains research-only.
 
-**Qualification (offline).** `ops/c1_rail/qualification/` is the fixed-book machinery; its `execution/` subpackage is the protected
-TEST_ONLY service ([B0](docs/superpowers/plans/2026-09-19-attended-batch-qualification.md#b0-decision--2026-09-19)),
-launched by `deploy/qualification/bootstrap.py` on the
-[disposable host](tools/qualification_verification/README.md). The
-`.github/workflows/qualification-*.yml` evidence workflows are not required checks.
+**Qualification (retired).** The qualification service went with the c1 rail
+([rail ADR addendum 2026-10-29](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission)):
+its `execution/` service, launcher, host tooling, workflows and S2/S5 evidence tooling were
+removed 2026-10-30 (retrieval: [Removal batches](docs/ltm/README.md#removal-batches)).
+`ops/c1_rail/qualification/` keeps the contracts and the panel, replay, adjudication and seal
+modules that rail and daemon tests still consume; they leave with the rail.
 
 ## P6 — Monitoring — M1 RESOLVED (2026-09-14), incumbent rail Stage 1 only
 

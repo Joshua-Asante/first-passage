@@ -13,9 +13,7 @@ governance_prefixes:
   - docs/
   - .claude/
   - .github/
-  # deploy/qualification/bootstrap.py and tools/qualification_verification/
-  # (2026-09-20): explicit, matching the prior default. Static first-party
-  # imports are tools/ -> scripts/ only; bootstrap's ops imports are dynamic.
+  # Explicit since 2026-09-20, matching the prior default.
   - deploy/
   - tools/
 
@@ -46,8 +44,6 @@ scripts_layer:
   check_cost_model_closed_world: lab
   # ops — live-ops tooling (run_ecr / preprocess_pine_ecr_logs retired 2026-07-11)
   lock_event_hook: ops
-  # imports the H checkout's c1_rail.qualification modules (T00 Tier-1 diagnostic card 2026-10-08)
-  t00_tier1_diagnostic: ops
   author_contract_roll: ops
 
 # Import roots that are flat in practice (pyproject pythonpath,

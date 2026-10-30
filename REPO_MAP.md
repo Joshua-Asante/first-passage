@@ -83,7 +83,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_98 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_89 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -122,7 +122,6 @@ _98 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always); `card-pins` (always) | — |
 | `scripts/check_pursuit_records.py` | governance† | — | — |
 | `scripts/check_push_collision.py` | governance† | — | — |
-| `scripts/check_qualification_invariants.py` | governance† | — | — |
 | `scripts/check_repo_map_layers.py` | governance† | `repo-map-layers` (path-conditional) | — |
 | `scripts/check_repo_map_scripts_table.py` | governance† | `repo-map-scripts-table` (path-conditional) | — |
 | `scripts/check_root_doc_liveness.py` | governance† | `root-doc-liveness` (always) | — |
@@ -152,7 +151,6 @@ _98 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/gate_manifest.py` | governance† | — | gate runner (reads gates.yml); not itself a gated id |
 | `scripts/guard_open_verification_record.py` | governance† | — | — |
 | `scripts/guard_operator_acts.py` | governance† | — | — |
-| `scripts/guard_s2_runs.py` | governance† | — | — |
 | `scripts/guard_shell_command.py` | governance† | — | — |
 | `scripts/guard_worktree_evidence.py` | governance† | — | — |
 | `scripts/import_skill_from_cache.py` | governance† | — | — |
@@ -166,24 +164,17 @@ _98 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/pine_lint.py` | lab | — | — |
 | `scripts/pytest_junit_subtests.py` | governance† | — | — |
 | `scripts/pytest_progress.py` | governance† | — | — |
-| `scripts/pytest_qualification_collection.py` | governance† | — | — |
-| `scripts/qualification_boundary_environment.py` | governance† | — | — |
-| `scripts/qualification_boundary_verification.py` | governance† | — | — |
 | `scripts/record_verification.py` | governance† | — | — |
 | `scripts/repo_hygiene.py` | governance† | — | — |
 | `scripts/repo_retrieve.py` | governance† | — | — |
 | `scripts/retire_adr.py` | governance† | — | — |
 | `scripts/roll_sessions.py` | governance† | `sessions-order` (path-conditional); `sessions-append-only` (path-conditional) | — |
-| `scripts/s2_run_evidence.py` | governance† | — | — |
 | `scripts/seal_account_snapshot.py` | governance† | — | — |
 | `scripts/session_divergence_hook.py` | governance† | — | — |
 | `scripts/state_roll.py` | governance† | — | — |
 | `scripts/sync_liveness_indexes.py` | governance† | `sync-liveness` (audit) | — |
 | `scripts/sync_skills.py` | governance | — | — |
 | `scripts/sync_skills_hook.py` | governance† | — | — |
-| `scripts/t00_screen.py` | governance† | — | — |
-| `scripts/t00_screen_label_check.py` | governance† | — | — |
-| `scripts/t00_tier1_diagnostic.py` | ops | — | — |
 | `scripts/validate_bar_export_v2.py` | governance† | — | — |
 | `scripts/validate_c1_monitoring_acceptance.py` | governance† | `m1-artifact-structure` (always); `m1-tree-skew` (audit) | --check-tree-skew (report-only) |
 | `scripts/verify_lock_anchors.py` | governance | — | — |
