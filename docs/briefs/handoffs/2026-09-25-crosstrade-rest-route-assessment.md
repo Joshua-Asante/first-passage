@@ -406,7 +406,8 @@ Recorded 2026-10-30 from Joshua's Gmail by the coordinating Claude session, from
 
 - **Ownership and exclusivity:** answered in general for a private native implementation. Eligibility of the exact candidate stays open.
 - **Verification timing** (before enabling, or only on request): open.
-- **Cross-firm use:** a strategy run at Tradeify may not run at another prop firm. Its bearing on the multi-firm program (one program with the Select 100K as its first step; PR #992) is an owner question and is not settled here.
-- **Source review:** Tradeify has asked for it. Whether to share, and what, is Joshua's decision. Agents never send private strategy source to an external party.
+- **Cross-firm use:** a strategy run at Tradeify may not run at another prop firm.
+- **Source review:** Tradeify has asked for it. Joshua ruled on 2026-10-30, verbatim: "We will provide them with the source code once we have it established". So the source goes to Tradeify only after the release candidate is frozen, and Joshua sends it. Agents never send private strategy source to an external party.
+- **Cross-firm use, ruled:** Joshua ruled on 2026-10-30 that the program scales first within Tradeify and that other firms get distinct strategies sourced through research. The canonical record is the four-firm program ADR addendum in PR #992.
 - Data-provider details are in the [vendor ticket log](../../notes/2026-10-01-feed-provider-questions-DRAFT.md#41-answer-table-replies-to-2026-10-10).
 - Nothing is enabled, sent or authorized by this addendum.
