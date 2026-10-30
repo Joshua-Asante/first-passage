@@ -66,8 +66,8 @@ jobs:
     needs: classify
     if: ${{ !cancelled() && needs.classify.outputs.docs-only != 'true' }}
     runs-on: ubuntu-latest
-    # Hang bound, not a performance gate. Serial runs took 46-74 min (2026-10-13);
-    # without this the job inherits GitHub's 360 min default.
+    # Hang bound, not a performance gate; without it the job inherits GitHub's
+    # 360 min default.
     timeout-minutes: 90
     strategy:
       matrix:
@@ -86,21 +86,12 @@ jobs:
         run: python -m pip install -r tools/local_verification/requirements-extra.txt
       # check_boundaries.py lives in scripts/gates.yml (always) and runs via
       # gate-manifest.yml --tier check (W5 H6 land). Do not re-list it here.
-      # --junitxml keeps per-test timings for the parent run; the qualification
-      # bridge (tests/ops/test_qualification_isolation.py) derives its child's
-      # report root from the parent's xmlpath, so the child's junit.xml and
-      # output.log land beside it. Before 2026-09-19 both were discarded and CI
-      # had no per-test evidence for the 18-25 min child.
-      # -n 3 runs the bridge's two shard cases (~85% of serial test time) in
-      # parallel with each other and the rest of the suite. Both cases are
-      # adjacent items of one module: loadscope pins a module to one worker,
-      # and plain load hands each worker a block of consecutive items, so
-      # either runs them serially (run 38435226409: 58.4 min).
-      # --maxschedchunk 1 schedules one item at a time, so a busy worker
-      # never holds the second case.
+      # --junitxml keeps per-test timings. tests/ops/conftest.py leaves the
+      # retired qualification suite out of this whole-suite run (c1 rail
+      # retired 2026-10-29).
       - name: Run pytest
-        run: pytest tests/ -v -n 3 --dist load --maxschedchunk 1 --junitxml="$RUNNER_TEMP/pytest-evidence/junit.xml"
-      - name: Retain pytest evidence (parent junit, qualification child junit/output)
+        run: pytest tests/ -v -n 3 --dist load --junitxml="$RUNNER_TEMP/pytest-evidence/junit.xml"
+      - name: Retain pytest evidence (junit)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

@@ -34,12 +34,8 @@ with a supported Python and install `requirements-ops.lock` with `--require-hash
 if an environment is missing. Select it with `--env` or `FP_OPS_ENV`. Full test runs
 (`test`, `test-ops`) also need the shared verification supplements in
 `tools/local_verification/requirements-extra.txt`, which CI's `tests.yml` installs on
-top of the lock. Without its `cryptography`, signed settlement tests skip, but the
-qualification bridge (`tests/ops/test_qualification_isolation.py`) fails by design:
-it requires the signed composition cases to pass, not skip. Debian/Ubuntu system
-interpreters ship their own `sitecustomize.py` in the standard library, which shadows
-the one `tests/ops/qualification/test_p7_evidence.py` plants for its control run, so
-that test fails on them; CI uses an `actions/setup-python` interpreter.
+top of the lock. Without its `cryptography`, signed settlement tests skip. Whole-suite
+runs leave out the retired qualification suite (`tests/ops/conftest.py`).
 
 Before each command, the launcher checks that the interpreter starts, the venv
 excludes system site-packages, and all locked distribution versions match this
