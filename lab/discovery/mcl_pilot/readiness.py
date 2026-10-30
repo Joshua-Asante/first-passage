@@ -180,13 +180,13 @@ def signal_status(bars: dict[int, Bar], d: date, clock: str) -> tuple[str, list[
     dec = local_epoch_ms(d, clock)
     opens = [dec - BAR_MS * k for k in range(5, 0, -1)]  # t-4..t; t closes exactly at the decision
     fb = [bars.get(t) for t in opens]
+    for t, b in zip(opens, fb):  # every existing feature bar, even in a window that is unavailable
+        if b is not None and not _valid_ohlc(b):
+            raise InputError(f"invalid OHLC in feature bar at epoch {t}")
     missing = [datetime.fromtimestamp(t / 1000, NY).strftime("%H:%M") for t, b in zip(opens, fb)
                if b is None or b.close_ms - t != BAR_MS]
     if missing:
         return "missing_feature", missing
-    for t, b in zip(opens, fb):
-        if not _valid_ohlc(b):
-            raise InputError(f"invalid OHLC in feature bar at epoch {t}")
     r = [b.h - b.l for b in fb]
     last4 = fb[1:]
     den = {"F1": r[4], "F2": sum(r[1:]), "F3": max(b.h for b in last4) - min(b.l for b in last4),

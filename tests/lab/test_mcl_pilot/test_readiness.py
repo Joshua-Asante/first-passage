@@ -104,6 +104,16 @@ def test_invalid_feature_ohlc_stops_phase():
         R.signal_status(bars, d, "09:45")
 
 
+def test_invalid_feature_ohlc_stops_phase_even_when_window_is_missing_a_bar():
+    d = date(2023, 1, 10)
+    bars = day_bars(d)
+    del bars[R.local_epoch_ms(d, "09:30")]
+    e = R.local_epoch_ms(d, "09:00")
+    bars[e] = R.Bar(70.0, 69.0, 69.5, 70.0, 1, e + R.BAR_MS)
+    with pytest.raises(R.InputError, match="invalid OHLC"):
+        R.signal_status(bars, d, "09:45")
+
+
 def test_duplicates_abort_before_decoding(tmp_path):
     d = date(2023, 1, 10)
     e = R.local_epoch_ms(d, "09:00")
