@@ -429,6 +429,7 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 
 - This program is the project's single operating objective: the multi-firm operation across the automation-friendly firms in [`core/firm_rules.py`](../../core/firm_rules.py).
 - The owned Tradeify Select 100K evaluation is its first step. Work toward it is program work; today that is the ORB+Aegis native route, [STATE](../../STATE.md) queue item 1.
+- **Order of expansion** (Joshua, 2026-10-30, verbatim: "we will start with scaling within Tradeify, and we can research other strategies to expand to other firms"). Tradeify support's guidance of 2026-10-24 bars running a strategy at another prop firm while it trades at Tradeify, and allows one strategy across several of the trader's own Tradeify accounts ([route record](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md)). The program therefore scales first by adding Tradeify accounts for the released strategy. Later firms need distinct strategies, sourced through research. Whether a current §4 candidate counts as the same strategy as one released at Tradeify is not settled here.
 - The self-funded lane is closed ([lane closure](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed)). No personal-account objective competes with this program.
 
 **Not changed:**
@@ -455,3 +456,4 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 | 2026-10-25 | Pointer only: the 2026-10-16 addendum's ORB v7 schedule (freeze 10-23, re-MC 10-30) is overtaken; ORB v7 is paused, not closed, and S4 stays stopped. No rule changed. | Claude Code |
 | 2026-10-28 | Addendum (Accepted, operator ruling): the §4 5.0% bust ceiling is scoped to this program's falsifier and does not bind account operating objectives; no value or §4 text changed | Joshua (ruling) + Claude Code (record) |
 | 2026-10-29 | Addendum (Accepted, operator ruling): one program, the multi-firm operation; the owned Select 100K evaluation is its first step; the personal-account objective is removed. §4, its ceiling and scope, and the 11-08 date are unchanged | Joshua + Claude Code |
+| 2026-10-30 | Same addendum, operator ruling added: scale first within Tradeify; later firms need distinct strategies sourced through research. §4 unchanged | Joshua + Claude Code |
