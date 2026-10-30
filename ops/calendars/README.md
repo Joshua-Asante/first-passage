@@ -203,8 +203,8 @@ operator's ratification before activation. Never edit a ratified file in place.
 ### Personal instance registry (G0-a)
 
 The personal instance (`personal_tradovate`) consumes these `book_session_calendar/v1` files
-unchanged, through [`deploy/c1_rail_personal/calendar_binding.json`](../../deploy/c1_rail_personal/calendar_binding.json)
-and `ops/c1_rail/personal_calendar_binding.py`. It admits a session only for a digest listed in
+unchanged, through [`deploy/c1_rail_personal/calendar_binding.json`](https://github.com/Joshua-Asante/first-passage/blob/066d22b250cff97785b6cf142aacf84e2d7e1301/deploy/c1_rail_personal/calendar_binding.json)
+and [`ops/c1_rail/personal_calendar_binding.py`](https://github.com/Joshua-Asante/first-passage/blob/066d22b250cff97785b6cf142aacf84e2d7e1301/ops/c1_rail/personal_calendar_binding.py) (both removed 2026-10-30 with the closed personal lane). It admits a session only for a digest listed in
 [`personal/RATIFIED.json`](personal/RATIFIED.json), its own `calendar_ratification/v1` registry.
 **A row in the Tradeify `RATIFIED.json` does not admit the personal instance.** Each personal row
 is an operator act naming its digest. The binding pins every calendar and overlay digest and adds
