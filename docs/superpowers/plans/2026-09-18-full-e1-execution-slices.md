@@ -1802,7 +1802,7 @@ The failed run `36673465130` stays on record as the stop. This addendum's PR sta
 
 ### Stage 2 / PA-5 (2026-09-30)
 
-**Record:** [`stage2.json`](../../notes/2026-09-27-s5-part-a-measurement/stage2.json), produced by [`stage2.py.txt`](../../notes/2026-09-27-s5-part-a-measurement/stage2.py.txt) (arithmetic over retained evidence only). The work was done by an Opus worker seat under the C3 Linux grant's step 5, with no new dispatch.
+**Record:** [`stage2.json`](https://github.com/Joshua-Asante/first-passage/blob/4e14a198946bd80f1e3e6214ae8c355d01187229/docs/notes/2026-09-27-s5-part-a-measurement/stage2.json), produced by [`stage2.py.txt`](https://github.com/Joshua-Asante/first-passage/blob/4e14a198946bd80f1e3e6214ae8c355d01187229/docs/notes/2026-09-27-s5-part-a-measurement/stage2.py.txt) (arithmetic over retained evidence only). The work was done by an Opus worker seat under the C3 Linux grant's step 5, with no new dispatch.
 
 **Source.** The green full S4-plus-Part-A run `36766144433` at `606e6e0`. `s2_run_evidence.py 36766144433 --expect-head 606e6e0 --expect-scope S5_PART_A`, run through the launcher at `606e6e0`, reads `ok: true` with no refusals (27 required nodes; junit 27/0/0/0). The SR-8 export `boundary/part_a_observations.json` (SHA-256 `d4b682ce…`) comes from node (a), attempt `linux-cca27e50…`, `FULL_PASS_READY`, 2 → 2 panels.
 - **Run binding.** The artifact's contents carry no GitHub run id, so the binding goes through GitHub's own records:
@@ -1858,7 +1858,7 @@ The failed run `36673465130` stays on record as the stop. This addendum's PR sta
 
 ### Operator rulings, 2026-10-01 (trigger 6, host, memory)
 
-**Source.** Joshua, in the coordinating session: "Go with recommendations for all 4" (the fourth is the trigger 5 basis, recorded in the entry above). The coordinator relayed the rulings to the Stage 2 worker seat, and Joshua confirmed all three directly there ("Confirmed, record all 3"). They are recorded in [`stage2.json`](../../notes/2026-09-27-s5-part-a-measurement/stage2.json) under `operator_rulings`.
+**Source.** Joshua, in the coordinating session: "Go with recommendations for all 4" (the fourth is the trigger 5 basis, recorded in the entry above). The coordinator relayed the rulings to the Stage 2 worker seat, and Joshua confirmed all three directly there ("Confirmed, record all 3"). They are recorded in [`stage2.json`](https://github.com/Joshua-Asante/first-passage/blob/4e14a198946bd80f1e3e6214ae8c355d01187229/docs/notes/2026-09-27-s5-part-a-measurement/stage2.json) under `operator_rulings`.
 
 1. **Trigger 6 (k = 4.078929 > 1.25).** For TEST_ONLY, the PA-5 re-application leaves the ceilings unchanged at 120 s / 300 s, and that **answers the trigger**. No re-measurement is owed now.
 2. **Faster host: accepted for TEST_ONLY.** The service ran on an EPYC 9V74, and the Stage 1c harness maximum was measured on an EPYC 7763. Three items are carried to production host sizing (T11/CP-8):

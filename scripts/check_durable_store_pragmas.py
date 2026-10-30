@@ -23,16 +23,13 @@ Contract
    - execute `PRAGMA synchronous=FULL` in the same function, or
    - be statically non-writing: a `:memory:` literal, or a URI carrying `mode=ro`.
 3. Every durable store must issue `BEGIN IMMEDIATE` somewhere in the module.
-   This is module-scoped, not function-scoped, on purpose: `execution/store.py`
-   connects in `_connect` and begins in `transaction`, which is legitimate.
+   This is module-scoped, not function-scoped, on purpose: a store may connect
+   in one function and begin in another, which is legitimate.
 
 What this does NOT check
 ------------------------
-`journal_mode`. `qualification/execution/store.py` creates its journal with WAL;
-every other store runs SQLite's default rollback journal. That inconsistency is
-real but unadjudicated — changing either one alters recovery and backup semantics
-for a live store, which is not a scanner's call to make. The scanner pins what is
-already uniform and stays silent on what is not.
+`journal_mode`. Changing it alters recovery and backup semantics for a live
+store, which is not a scanner's call to make.
 
 `foreign_keys=ON` is likewise not required: the book schema declares no
 `REFERENCES` constraints (`book_migration_schema.SOURCE_MANIFESTS`), so the pragma
@@ -55,7 +52,6 @@ DURABLE_STORES: tuple[str, ...] = (
     "ops/c1_rail/book_migration.py",
     "ops/c1_rail/book_settlement.py",
     "ops/c1_rail/qualification/attempt.py",
-    "ops/c1_rail/qualification/execution/store.py",
 )
 
 # Connect sites that are deliberately not durable operational state.
