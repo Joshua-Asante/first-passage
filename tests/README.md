@@ -17,3 +17,11 @@ Pytest import roots are owned by [`pyproject.toml`](../pyproject.toml)
 make test
 make test-ops
 ```
+
+## Docs-only CI
+
+The `docs-readers` job runs on PRs and pushes to main when every changed path
+matches `**/*.md` or `.claude/**`. Its canonical test list lives in
+[`tests.yml`](../.github/workflows/tests.yml), under `Run docs readers`.
+Code or mixed changes run the full `pytest` job; an unavailable diff also runs
+the full suite.
