@@ -385,3 +385,29 @@ Asked (20:17Z) which permitted interface, if any, lets a privately owned Python 
 ## Addendum 2026-10-25 — pointer: route superseded 2026-10-16
 
 The 2026-10-12 deferral above is overtaken. Joshua recorded Track B as superseded for Tradeify on 2026-10-16: this record's bridge route is not a permitted Tradeify destination, and the 11-08 branch (a) (resume on a compliance reversal) is withdrawn. Tradeify remains an optional native-only lane for a strategy run only at Tradeify. Owner: [checklist Addendum 2026-10-16](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify).
+
+## Addendum 2026-10-30 — Tradeify answers on native ownership, exclusivity and source review
+
+Recorded 2026-10-30 from Joshua's Gmail by the coordinating Claude session, from a read-only Codex mailbox check that Claude spot-checked against the messages. This is venue guidance, not a clause. No account data is recorded.
+
+- **Sent 2026-10-22, 15:21Z:** an equivalent of the unsent v2 follow-up in [`docs/notes/2026-10-21-tradeify-native-followup-questions-DRAFT.md`](../../notes/2026-10-21-tradeify-native-followup-questions-DRAFT.md). It disclosed an AI-assisted implementation of publicly described logic.
+- **Tradeify support, 2026-10-24, 15:41Z (ticket #148959547), verbatim:**
+  - "The sole-ownership and exclusive-use requirement applies to your private NinjaScript implementation."
+  - "Even if the logic is publicly described, your implementation must be exclusive to you and not used across multiple firms."
+  - On cross-firm use: "you cannot run a strategy you own at another prop firm while also trading it at Tradeify", "regardless of ownership or whether trades are duplicated."
+  - "Running one strategy across several of your own Tradeify accounts is allowed, as long as you are the sole owner and operator, and the strategy is not used at other prop firms."
+  - Governing provision cited: the [Guidelines for Traders](https://help.tradeify.co/en/articles/10468318-guidelines-for-traders), Bots/Algorithmic Trading section.
+  - Evidence: "Tradeify may require a live video of you enabling the code on your own PC, and may review platform logs to verify activity."
+  - **Scope:** general guidance. It approves no named candidate. It does not expressly address AI assistance or Funded Trader Agreement §6.6–6.7. It does not say whether verification happens before a strategy is enabled or only on request.
+- **Tradeify Compliance Manager, 2026-10-26, 16:35Z,** on the CME ticket #04738415 thread with CME Data Sales copied, verbatim: "Please provide the complete source code for the strategy or scripts you would like us to assess, including any optional export functionality. Market data is provided through CQG. NinjaTrader owns the clearing firm, and they handle the remaining arrangements."
+- **Joshua replied on 2026-10-26, 17:24Z,** asking why complete source is needed and whether an architecture and data-use description would suffice. He also asked for the terms on aggregation, caching, retention and optional export. No answer as of 2026-10-30.
+
+**Status:**
+
+- **Ownership and exclusivity:** answered in general for a private native implementation. Eligibility of the exact candidate stays open.
+- **Verification timing** (before enabling, or only on request): open.
+- **Cross-firm use:** a strategy run at Tradeify may not run at another prop firm.
+- **Source review:** Tradeify has asked for it. Joshua ruled on 2026-10-30, verbatim: "We will provide them with the source code once we have it established". So the source goes to Tradeify only after the release candidate is frozen, and Joshua sends it. Agents never send private strategy source to an external party.
+- **Cross-firm use, ruled:** Joshua ruled on 2026-10-30 that the program scales first within Tradeify and that other firms get distinct strategies sourced through research. The canonical record is the four-firm program ADR addendum in PR #992.
+- Data-provider details are in the [vendor ticket log](../../notes/2026-10-01-feed-provider-questions-DRAFT.md#41-answer-table-replies-to-2026-10-10).
+- Nothing is enabled, sent or authorized by this addendum.
