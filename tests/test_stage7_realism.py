@@ -27,7 +27,6 @@ from discovery.realism_mgc import (
     ratio_clause,
     reconstruct_gross_gc,
     rt_cost_frac,
-    run_real_mgc_pull,
     run_stage7_realism,
 )
 from discovery.synthetic_bars import MotifSpec, default_motif_shape
@@ -417,11 +416,6 @@ def test_reachability_clause_divergence_case():
 
 
 # ------------------------------------------------------------------ §2.6 real-pull path
-
-
-def test_pull_refused_without_operator_go():
-    with pytest.raises(RuntimeError, match="operator-go|Pre-reg §5"):
-        run_real_mgc_pull(operator_go=False)
 
 
 def test_nautilus_stub_documents_followon():

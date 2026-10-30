@@ -1,14 +1,13 @@
 """Stage-7 native-micro realism engine — GC→MGC venue gate (DISC-CAMP-0).
 
 Re-evaluates frozen survivor rules on native MGC 1h bars with two independent
-predicate clauses (ratio + hurdle). Synthetic-only until operator authorizes pull.
+predicate clauses (ratio + hurdle). Synthetic-only: the Databento pull path was
+removed when the vendor retired (2026-10-29).
 """
 from __future__ import annotations
 
 import argparse
 import json
-import subprocess
-import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -403,85 +402,6 @@ def load_stage4_bundle(
     return meta, trades
 
 
-def estimate_mgc_oos_pull(*, python: str | None = None) -> dict[str, Any]:
-    """Cost-gated estimate for MGC 1h OOS pull (no network in tests)."""
-    py = python or sys.executable
-    cmd = [
-        py,
-        "-m",
-        "databento_fetch.db_fetch",
-        "estimate",
-        "--symbols",
-        "MGC.FUT",
-        "--stype",
-        "parent",
-        "--schema",
-        "ohlcv-1h",
-        "--start",
-        OOS_START,
-        "--end",
-        OOS_END,
-        "--phase",
-        "oos",
-    ]
-    env = {"PYTHONPATH": str(repo_root() / "lab")}
-    proc = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        env={**dict(**__import__("os").environ), **env},
-        check=False,
-    )
-    return {
-        "command": cmd,
-        "returncode": proc.returncode,
-        "stdout": proc.stdout,
-        "stderr": proc.stderr,
-    }
-
-
-def assert_campaign_cost_gate(estimate_cost_usd: float) -> None:
-    """Pre-reg §5 — HALT if summed estimate exceeds $5.00."""
-    if estimate_cost_usd > CAMPAIGN_MAX_COST_USD:
-        raise RuntimeError(
-            f"Campaign cost gate: estimate ${estimate_cost_usd:.4f} exceeds "
-            f"frozen --max-cost ${CAMPAIGN_MAX_COST_USD:.2f} "
-            f"(docs/ltm/briefs/pre-registration/DISC-CAMP-0-preregistration.md §5)."
-        )
-
-
-def run_real_mgc_pull(*, operator_go: bool = False, max_cost: float = CAMPAIGN_MAX_COST_USD) -> None:
-    """Pull MGC OOS bars — refuses without explicit operator authorization."""
-    if not operator_go:
-        raise RuntimeError(
-            "Refusing MGC pull without --operator-go. Pre-reg §5 requires summed "
-            "estimate ≤ $5.00 recorded before the first pull; synthetic-only "
-            "until Joshua authorizes."
-        )
-    cmd = [
-        sys.executable,
-        "-m",
-        "databento_fetch.db_fetch",
-        "pull",
-        "--symbols",
-        "MGC.FUT",
-        "--stype",
-        "parent",
-        "--schema",
-        "ohlcv-1h",
-        "--start",
-        OOS_START,
-        "--end",
-        OOS_END,
-        "--phase",
-        "oos",
-        "--max-cost",
-        f"{max_cost:.2f}",
-    ]
-    env = {**dict(**__import__("os").environ), "PYTHONPATH": str(repo_root() / "lab")}
-    subprocess.run(cmd, check=True, env=env)
-
-
 def nautilus_realism_stub(*, candidate_id: str, passed_bar_level: bool) -> dict[str, str]:
     """Survivor-gated Nautilus placeholder — full integration is follow-on."""
     if not passed_bar_level:
@@ -534,18 +454,9 @@ def _self_test() -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Stage-7 MGC realism engine")
     parser.add_argument("--self-test", action="store_true")
-    parser.add_argument("--estimate-mgc-oos", action="store_true")
-    parser.add_argument("--operator-go", action="store_true", help="Authorize real MGC pull")
-    parser.add_argument("--pull-mgc-oos", action="store_true")
     args = parser.parse_args(argv)
     if args.self_test:
         return _self_test()
-    if args.estimate_mgc_oos:
-        print(json.dumps(estimate_mgc_oos_pull(), indent=2))
-        return 0
-    if args.pull_mgc_oos:
-        run_real_mgc_pull(operator_go=args.operator_go)
-        return 0
     parser.print_help()
     return 0
 
