@@ -76,11 +76,12 @@ EXPECTED_WITHIN_PP = {'forced': 1.0, 'prescribed': 0.01}
 # r2 names no literal for sessions, bars per session or legs: they are fixed by the fixture's
 # own source, so the fixture is pinned by SHA-256 (identical at r2's base 875ecf29 and at this
 # harness revision). A changed fixture is a workload change, a re-measurement trigger (r2 §9).
+# runtime_fixture.py was re-pinned 2026-10-29 (PR #991, operator-accepted workload change; see README).
 PINNED_FIXTURE_SHA256 = {
     'tests/ops/qualification/composition_fixture.py':
         '727166d55b7a3f26e437ae577017eb36067d0dbe77f7ac8fb5157d7c55a9cf23',
     'tests/ops/qualification/runtime_fixture.py':
-        'cca04e61d2f259026f76b026c023c74e06cd25dc9360f4826524a7518186e5db',
+        '566668d575a1f182af07e5bb7958f5a59b1e55a2875ab6d7180b9ede331264ee',
 }
 FORCING_LABEL = 'TEST_ONLY_MEASUREMENT_FORCED_EXPANSION'  # r2 §7.3 label; seam=harness_request at 1b
 RECIPE = "build_verified_composition(tmp, confirmation_depth=60, decision_alpha='0.05', idle=False)"

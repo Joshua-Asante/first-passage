@@ -217,6 +217,14 @@ The r2 §12 bounded measurement ran under the [execution dispatch](../../superpo
 - **Committed Linux files.** Each job directory holds the r2 §12.3 file list: `record.json`, `probe-in-unit.json`, `probe.unit`, `host-facts.txt`, the per-repeat `.json` and `.unit` files, and `cleanup-receipt.json`. The complete artifacts are private: `journal.log`, `summarize.log`, `probe.json` and `git-head.txt`. So are the Stage 1a launcher logs, including the first invocation that argparse refused before any repeat ran, and the raw Stage 0 extracts. All of them are in `h1b-stage1b-measurement-evidence-2026-09-28.tar.gz`, which is pinned in `docs/evidence/PRIVATE_EVIDENCE.sha256` and pushed to first-passage-archive#844. It counts as ARCHIVED once that PR merges.
 - **Stage 0 public-clone review.** The extraction used r2 §16.4's block as it stood at `7675c088`, over both `journal.log` and `systemd-units.log`. So systemd CPU lines appear twice and carry no run labels; #536's corrected block post-dates the read. Every one of the 836 lines in `stage0/lines.txt` has the form `<UTC timestamp> <runner VM name> systemd[1]: <unit>: Consumed <CPU> CPU time[, <memory> memory peak, <swap> memory swap peak].` The unit names use only `[A-Za-z0-9._-]`. There is no host path, account or token, and the fixed journal prefix is kept verbatim. Two `Binary file … journal.sqlite matches` rows were dropped from `stage0/memory_peak.txt`; they were grep noise naming a local path. The preserved set's `SHA256SUMS` is cited by its SHA-256, `e2c142281d819e071d15f99a242358f93389a479dcc5e6b5c1f6a20d5db189a7`, not committed. A tracked `*SHA256SUMS` would register its 222 files as pinned private evidence (`scripts/evidence_archive.py`). Two of those files, the `boundary/journal.sqlite` files at about 110 MB each, exceed GitHub's per-file limit and cannot be archived.
 - **Stage 1a bundle.** The bundle is committed unmodified, because r2 §12.9 (2) forbids altering a bundle. Its per-repeat `environment` records the local checkout and venv paths.
+## Addendum 2026-10-29: runtime_fixture.py re-pinned (workload change)
+
+Joshua accepted the change on [#991](https://github.com/Joshua-Asante/first-passage/pull/991). That PR memoizes module-path probes in `tests/ops/qualification/runtime_fixture.py` to cut local test time, so the pinned SHA-256 moves from `cca04e61d2f259026f76b026c023c74e06cd25dc9360f4826524a7518186e5db` to `566668d575a1f182af07e5bb7958f5a59b1e55a2875ab6d7180b9ede331264ee`.
+
+- Under r2 §9 this is a workload change: the measured fixture's run time changes.
+- The 2026-09-28 results above stay valid for `7675c088`, the commit they measured. They do not carry to the new fixture.
+- S5 Part A must be re-measured before S5 resumes.
+
 ## Not run
 
 *[History: this section describes the harness as returned on #526, before the 2026-09-28 execution above.]*
