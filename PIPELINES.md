@@ -13,7 +13,7 @@ The owned Select 100K evaluation is step 1 of the [multi-firm program](docs/adr/
 - forward-test route ruled privately (D6; [held privately](docs/notes/2026-10-24-assumption-challenge-rulings-proposal.md));
 - per-session operator GO.
 
-Execution logic stays in NinjaTrader; Python only receives exported records after the session ([runbook](docs/notes/2026-10-18-native-protection-recovery-pilot-runbook.md) native premise). The Python signal daemon, listener/sizing host, CrossTrade route and Fly hosts are **not** native dependencies. Monitoring: P6.
+Execution logic stays in NinjaTrader; Python only receives exported records after the session ([runbook](docs/notes/2026-10-18-native-protection-recovery-pilot-runbook.md) native premise; Tradeify requires native logic for evaluation accounts: [route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [10-16 ruling](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify)). The Python signal daemon, listener/sizing host, CrossTrade route and Fly hosts are **not** native dependencies. Monitoring: P6.
 
 ## Pipeline inventory
 
@@ -70,7 +70,8 @@ rerun (legacy ingestion gate); use the owning plan's harness or `prop_survivor_s
 engine support; the campaign owns population, replay and design;
 [prop_envelope_default.md](ops/prop_envelope_default.md) is the standing envelope. The
 [four-firm program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) falsifier is
-tracked on [STATE](STATE.md).
+tracked on [STATE](STATE.md); its bust ceiling does not bind the Select 100K's own objective
+([scope](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-28--scope-of-the-4-bust-ceiling-accepted)).
 
 ## P5 — Python execution rail (c1) — RETIRED 2026-10-29
 
