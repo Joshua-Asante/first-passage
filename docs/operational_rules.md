@@ -127,9 +127,23 @@ Validate mechanically at the declared gates (DSR-at-K, net of costs, intraday-ho
 
 Discovery output and harvested strategies are candidates: state a mechanism before mining, admit external mechanisms only through harvest intake, carry the manifest and K into validation, and retire a channel at its liveness ceiling. *Owner:* [`strategy_harvest.md`](methodology/strategy_harvest.md); `futures-anomaly-discovery` skill.
 
-#### Rule 26 — Rejections bar re-proposal
+<a id="rule-26--rejections-bar-re-proposal"></a>
 
-Re-propose a rejected candidate only with new mechanism evidence; route rejections by scope (instrument ledger or register); the register is additions-only and a bar binds once ratified and wired; every closure names its Registry line. *Owner:* [`docs/rejected_candidates.md`](rejected_candidates.md); rejected-candidate-patterns and rejection-register ADRs.
+#### Rule 26 — Prior rejections are advisory priors
+
+Earlier rejections are advisory priors, not blockers. This covers register entries, closures, survey nulls, class bars and family raised bars. A candidate that re-tests rejected ground may run, and its report shows the prior rejection beside its result.
+
+These still bind:
+- each run's own pre-registered gates (Rules 23–24);
+- honest K, which counts every re-test;
+- the frozen controls (Rules 10–15);
+- venue rules.
+
+Route rejections by scope (instrument ledger or register). The register is additions-only. Every closure names its Registry line.
+
+*Amended 2026-10-31.* Joshua, verbatim: "We shouldn't let previous gates be blockers, more like suggestions". He confirmed the reading above with "yes, it matches". The prior statement ("re-propose a rejected candidate only with new mechanism evidence … a bar binds once ratified and wired") is at `7c06c454936860a220df35fe3ddeafd9a660e27d`.
+
+*Owner:* [`docs/rejected_candidates.md`](rejected_candidates.md); rejected-candidate-patterns and rejection-register ADRs.
 
 #### Rule 27 — Instrument ledgers
 
