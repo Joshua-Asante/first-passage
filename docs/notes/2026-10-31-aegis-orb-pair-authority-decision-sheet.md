@@ -16,7 +16,7 @@
 **D2. How the 10-19 finding applies to the pair (row 2).**
 - **A (Recommended).** The finding is an advisory prior under Rule 26 (amended 10-31). It does not block the pair, and the pair's forward reports show it beside their results.
 - **B.** The finding does not cover the pair at all, because it covers only the book lineage.
-- **C.** The finding covers the pair and blocks it until a new evidence case exists.
+- **C (a new ruling, not a reading of the finding).** Override the 10-31 amendment to Rule 26 for this finding, so that it blocks the pair until a new evidence case exists. Rule 26 as amended makes earlier rejections advisory. Choosing C reverses that for this case and needs your words for the override.
 
 **D3. The 10-19 pause on Q-SFCLEAR-3 (row 3).** Accept that the 10-29 lane closure superseded it: **yes / no**.
 
@@ -60,7 +60,8 @@
 
 **D13. Draft 11-08 rules (row 12).**
 - **A (Recommended).** Withdraw them as overtaken by the 10-29 to 10-31 rulings. Branch (d) does not park the pair.
-- **B.** Rule them at the 11-08 sitting.
+- **B.** Rule them at the 11-08 sitting, and say now that branch (d) does not park the pair in the meantime.
+- **C.** Rule them at the 11-08 sitting, with branch (d) able to park the pair. The first armed session then waits for the sitting.
 
 **D14. The reconciliation as a whole.** **accept / accept with the amendments above / reject.**
 
