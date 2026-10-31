@@ -140,7 +140,7 @@ def test_run_ledgers_cards_before_reading_data_and_writes_reports(tmp_path):
     (tmp_path / "c.yaml").write_text(CARD)
     spec = {"run_id": "r1", "ledger": str(tmp_path / "l.jsonl"), "firm": "Tradeify_Select_100K",
             "data": {"MCL": str(tmp_path / "missing.csv")}, "roll": "as exported", "cards": [str(tmp_path / "c.yaml")],
-            "out": str(tmp_path / "out")}
+            "out": str(tmp_path / "out"), "book": None}
     (tmp_path / "run.yaml").write_text(json.dumps(spec))
     with pytest.raises(FileNotFoundError):
         run.main([str(tmp_path / "run.yaml")])
@@ -195,7 +195,7 @@ def _spec(tmp_path, **kw):
     (tmp_path / "c.yaml").write_text(CARD)
     spec = {"run_id": "r1", "ledger": str(tmp_path / "l.jsonl"), "firm": "Tradeify_Select_100K",
             "data": {"MCL": str(panel_csv)}, "roll": "as exported", "cards": [str(tmp_path / "c.yaml")],
-            "out": str(tmp_path / "out"), **kw}
+            "out": str(tmp_path / "out"), "book": None, **kw}
     (tmp_path / "run.yaml").write_text(json.dumps(spec))
     return run, tmp_path / "run.yaml"
 
@@ -228,3 +228,54 @@ def test_session_opens_sit_on_the_bar_grid():
     from builder.instruments import INSTRUMENTS
     assert INSTRUMENTS["MGC"].session_open == "08:30"
     assert all(int(i.session_open[3:]) % 15 == 0 for i in INSTRUMENTS.values())
+
+
+# --- review fixes (Codex, PR #1003 round 3) -------------------------------------------------
+
+def _export(tmp_path, rows, tf="15"):
+    hdr = "Trade number,Type,Date and time,Signal,Price USD\n"
+    body = "".join(f"{i},Entry long,x,{e}|70|70.1|69.9|70|5|{e + 900000}|2|M|MCL1!|futures|USD||0.01|100|America/New_York|{tf},70\n"
+                   for i, e in enumerate(rows, 1))
+    p = tmp_path / "BAR_EXPORT.csv"
+    p.write_text(hdr + body, encoding="utf-8")
+    return p
+
+
+def test_raw_export_with_duplicate_bars_is_refused(tmp_path):
+    from builder import data
+    e = 1704204000000  # 2024-01-02 14:00Z
+    with pytest.raises(ValueError, match="duplicate"):
+        data.load_bars(_export(tmp_path, [e, e + 900000, e + 900000]), "MCL")
+
+
+def test_raw_export_must_be_15_minute(tmp_path):
+    from builder import data
+    e = 1704204000000
+    with pytest.raises(ValueError, match="15m"):
+        data.load_bars(_export(tmp_path, [e, e + 300000], tf="5"), "MCL")
+
+
+def test_panel_off_the_15m_grid_is_refused(tmp_path):
+    from builder import data
+    p = tmp_path / "MCL_M15.csv"
+    p.write_text("time,open,high,low,close,volume\n2024-01-02T14:00:00Z,70,70.1,69.9,70,1\n"
+                 "2024-01-02T14:05:00Z,70,70.1,69.9,70,1\n")
+    with pytest.raises(ValueError, match="15m grid"):
+        data.load_bars(p, "MCL")
+
+
+def test_zero_variance_fails_5f_instead_of_crashing():
+    g = []
+    assert not gates._dsr_gate(g, np.full(300, 5.0), 1)
+    assert g[0]["value"].startswith("undefined")
+
+
+def test_run_requires_a_declared_book(tmp_path):
+    run, p = _spec(tmp_path)
+    spec = json.loads(p.read_text()); del spec["book"]; p.write_text(json.dumps(spec))
+    with pytest.raises(SystemExit, match="missing book"):
+        run.main([str(p)])
+    (tmp_path / "book.json").write_text("{}")
+    spec["book"] = str(tmp_path / "book.json"); p.write_text(json.dumps(spec))
+    with pytest.raises(SystemExit, match="empty"):
+        run.main([str(p)])

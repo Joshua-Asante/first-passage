@@ -6,7 +6,7 @@ run.yaml:
     firm: Tradeify_Select_100K
     data: {MCL: <path to BAR_EXPORT_v0.2 csv or bar_data panel>}
     roll: "TV 1! continuous series as exported; no roll reconstructed"
-    book: <optional path to JSON {date: book P&L per session}>
+    book: <path to JSON {date: book P&L per session}>  # required; null = empty book, declared
     cards: [<card yaml paths>]
     out: <report directory>
     commission_per_side: {XYZ: 1.00}      # only where FIRM_RULES has no row (refused otherwise); cite it in the prereg
@@ -40,8 +40,8 @@ def _costs(firm: str, instrument: str, override) -> gates.Costs:
 
 def main(argv: list[str]) -> int:
     spec = yaml.safe_load(Path(argv[0]).read_text(encoding="utf-8"))
-    for key in ("run_id", "ledger", "firm", "data", "roll", "cards", "out"):
-        if key not in spec:
+    for key in ("run_id", "ledger", "firm", "data", "roll", "cards", "out", "book"):
+        if key not in spec:  # book is required; `book: null` declares an empty book explicitly
             raise SystemExit(f"run.yaml missing {key}")
     cs = [cards.parse(Path(p).read_text(encoding="utf-8")) for p in spec["cards"]]
     ids = [c.id for c in cs]
@@ -52,8 +52,10 @@ def main(argv: list[str]) -> int:
     missing = {c.instrument for c in cs} - set(spec["data"])
     if missing:
         raise SystemExit(f"no data for {sorted(missing)}")
-    ledger.append_cards(Path(spec["ledger"]), spec["run_id"], cs)  # before any data read
-    book = json.loads(Path(spec["book"]).read_text()) if spec.get("book") else None
+    book = json.loads(Path(spec["book"]).read_text()) if spec["book"] is not None else None
+    if spec["book"] is not None and not book:
+        raise SystemExit(f"book file {spec['book']} is empty; use book: null to declare an empty book")
+    ledger.append_cards(Path(spec["ledger"]), spec["run_id"], cs)  # before any bar is read
     out = Path(spec["out"]); out.mkdir(parents=True, exist_ok=True)
     loaded, verdicts = {}, []
     for c in cs:

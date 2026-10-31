@@ -27,10 +27,14 @@ def load_bars(path: Path, symbol: str) -> pd.DataFrame:
     head = Path(path).open(encoding="utf-8-sig").readline()
     if "Signal" in head:
         from bar_export_loader import parse_bar_export_with_meta
+        raw = pd.read_csv(path, usecols=["Type", "Signal"], encoding="utf-8-sig")
+        epochs = raw.loc[raw["Type"].str.startswith("Entry"), "Signal"].str.split("|").str[0]
+        if epochs.duplicated().any():  # the shared parser keeps the last duplicate; the builder aborts
+            raise ValueError(f"{path}: duplicate bar timestamps in the export")
         df, meta = parse_bar_export_with_meta(path, symbol=symbol)
         if meta is None or meta["ticker"] != inst.ticker or not math.isclose(meta["mintick"], inst.tick) \
-                or not math.isclose(meta["pointvalue"], inst.point_value):
-            raise ValueError(f"{path}: export metadata does not match builder.instruments[{symbol}]")
+                or not math.isclose(meta["pointvalue"], inst.point_value) or str(meta["timeframe"]) != "15":
+            raise ValueError(f"{path}: export metadata does not match builder.instruments[{symbol}] / 15m")
     else:
         df = pd.read_csv(path)
     if df["time"].duplicated().any():
@@ -38,6 +42,8 @@ def load_bars(path: Path, symbol: str) -> pd.DataFrame:
     t = pd.to_datetime(df["time"], utc=True).dt.tz_convert(NY)
     out = pd.DataFrame({c: df[c].astype(float).to_numpy() for c in ("open", "high", "low", "close")}, index=t)
     out = out.sort_index()
+    if ((out.index.minute % 15) != 0).any() or (out.index.second != 0).any():
+        raise ValueError(f"{path}: bar opens are not on the 15m grid")
     lo, hi = out[["open", "close"]].min(axis=1), out[["open", "close"]].max(axis=1)
     if not ((out["low"] <= lo) & (hi <= out["high"])).all():
         raise ValueError(f"{path}: OHLC fails low <= open,close <= high")

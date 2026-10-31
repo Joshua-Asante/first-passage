@@ -146,12 +146,20 @@ def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, 
         lambda: _gate(g, "5e placebo", (s := placebo_beaten_share(card, days, trades, costs, T["5e_placebo_runs"],
                                                                     T["5e_seed"])), T["5e_min_beaten_share"],
                       s >= T["5e_min_beaten_share"]),
-        lambda: _gate(g, "5f deflated Sharpe", (r := dsr(x, k))[0], T["5f_min_dsr"], r[0] >= T["5f_min_dsr"]),
+        lambda: _dsr_gate(g, x, k),
         lambda: _book_gate(g, rep["book"]),
     ]
     rep["stopped_at"] = next((g[-1]["gate"] for ch in checks if not ch()), None)
     rep["verdict"] = "survivor" if rep["stopped_at"] is None else "killed"
     return rep
+
+
+def _dsr_gate(g, x: np.ndarray, k: int) -> bool:
+    try:
+        d, _ = dsr(x, k)
+    except ValueError as e:  # e.g. zero variance: DSR undefined, so the gate fails closed
+        return _gate(g, "5f deflated Sharpe", f"undefined ({e})", THRESHOLDS["5f_min_dsr"], False)
+    return _gate(g, "5f deflated Sharpe", d, THRESHOLDS["5f_min_dsr"], d >= THRESHOLDS["5f_min_dsr"])
 
 
 def _halves(g, card, trades, costs, h1, h2) -> bool:
