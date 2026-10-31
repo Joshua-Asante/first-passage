@@ -1,4 +1,11 @@
-# CrossTrade — KEEP
+# CrossTrade — SUBTRACT (cancelled)
+
+**Class:** (d) meta-belt (subscription) · **Standing:** SUBTRACT — cancelled by the operator,
+reported 2026-10-31, after the c1 rail it bridged was retired
+([addendum](../adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission)).
+Current status belongs to the [subscription ledger](SUBSCRIPTION_LEDGER.md).
+
+## Historical disposition — superseded 2026-10-31
 
 **Class:** (d) meta-belt (subscription) · **Standing:** KEEP
 **Aim served:** A1/A3 — rail bridge (CrossTrade → Tradovate) for the c1 execution path
