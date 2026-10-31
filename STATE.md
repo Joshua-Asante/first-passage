@@ -62,7 +62,7 @@ below). Registry backfill debt: `python scripts/check_closure_disposition.py --l
 
 Owners hold canonical criteria; rows are pointers.
 
-### Weekly — recurring (rolling; next deadline **2026-10-30**, bucket 10-26→10-30)
+### Weekly — recurring (rolling; next deadline **2026-11-06**, bucket 11-02→11-06)
 
 - **Account-preservation trade:** at least one per Mon–Fri week, by the operator, or by an
   agent under the operator's **standing GO** (Joshua, 2026-10-25, revocable: "I approve a Standing GO, GO on the 10-26 trade"; [Addendum 2026-09-30b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b));
