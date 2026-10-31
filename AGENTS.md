@@ -75,7 +75,7 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 - **Rule 23 — Pre-register; count K honestly.** Freeze criteria before results; count K honestly; frozen gates reachable and binding. [→](docs/operational_rules.md#rule-23--pre-register-count-k-honestly)
 - **Rule 24 — Verdicts from the pre-registered gates, in order.** Verdicts come mechanically from the pre-registered gates, in the evaluation order. [→](docs/operational_rules.md#rule-24--verdicts-from-the-pre-registered-gates-in-order)
 - **Rule 25 — Generation never blesses.** Discovery and harvest produce candidates only; intake, manifest and K carry into validation. [→](docs/operational_rules.md#rule-25--generation-never-blesses)
-- **Rule 26 — Rejections bar re-proposal.** Re-propose a rejection only with new mechanism evidence; every closure names its Registry line. [→](docs/operational_rules.md#rule-26--rejections-bar-re-proposal)
+- **Rule 26 — Prior rejections are advisory.** Earlier rejections and bars are priors shown beside results, not blockers; in-run gates, honest K, frozen controls and venue rules still bind; every closure names its Registry line. [→](docs/operational_rules.md#rule-26--prior-rejections-are-advisory-priors)
 - **Rule 27 — Instrument ledgers.** Read the instrument ledger before work on it; append a dated disposition after. [→](docs/operational_rules.md#rule-27--instrument-ledgers)
 - **Rule 28 — Closures, falsifiers and audits.** Typed Iterate exits; falsifiers never move; retired inputs migrate their falsifiers; audits on cadence. [→](docs/operational_rules.md#rule-28--closures-falsifiers-and-audits)
 

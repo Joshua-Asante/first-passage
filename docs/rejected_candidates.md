@@ -1,6 +1,8 @@
 # Rejected portfolio candidates
 
-Standing registry of strategy / instrument / parameter combinations investigated and rejected as portfolio additions. One entry per direction. Re-proposal of any entry on this list requires **new mechanism evidence**, not new parameters or a wider sweep.
+Standing registry of strategy / instrument / parameter combinations investigated and rejected as portfolio additions. One entry per direction.
+
+> **Amended 2026-10-31 ([Rule 26](operational_rules.md#rule-26--prior-rejections-are-advisory-priors)).** Each entry's "re-proposal bar" below is now an **advisory prior**, not a blocker. A re-test may run, and its report shows the entry beside its result. A run's own pre-registered gates, honest K (every re-test counts), the frozen controls and venue rules still bind. The entries themselves are unchanged.
 
 This file is appended to at the close of any Pre-Q that closes FALSIFIED on strategy grounds, or at the close of a parent programme on SNAG-budget-exhaustion grounds (the Guardian-on-XAGUSD precedent below). New entries link to the closure artifact authoritative for the rejection.
 
