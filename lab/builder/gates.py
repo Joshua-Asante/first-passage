@@ -158,7 +158,8 @@ def _halves(g, card, trades, costs, h1, h2) -> bool:
     v1 = net(card, [t for t in trades if t.date in h1], costs)
     v2 = net(card, [t for t in trades if t.date in h2], costs)
     p = [pf(v1), pf(v2)]
-    return _gate(g, "5c halves", p, THRESHOLDS["5c_min_pf_each_half"], min(p) >= THRESHOLDS["5c_min_pf_each_half"])
+    ok = len(v1) > 0 and len(v2) > 0 and min(p) >= THRESHOLDS["5c_min_pf_each_half"]  # an empty half fails
+    return _gate(g, "5c halves", {"pf": p, "trades": [len(v1), len(v2)]}, THRESHOLDS["5c_min_pf_each_half"], ok)
 
 
 def _plateau(g, card, bars, dev, costs, base: float) -> bool:
@@ -172,12 +173,12 @@ def _plateau(g, card, bars, dev, costs, base: float) -> bool:
 def _book(dev: list[str], x: np.ndarray, book: dict[str, float] | None) -> dict:
     common = [i for i, d in enumerate(dev) if book and d in book]
     if not common:
-        return {"sessions": 0}
+        return {"sessions": 0, "supplied": bool(book)}
     b = np.array([book[dev[i]] for i in common])
     c = x[common]
     lose = b < 0
     closs = c < 0
-    return {"sessions": len(common), "book_s": sharpe(b), "book_s_with_card": sharpe(b + c),
+    return {"sessions": len(common), "supplied": True, "book_s": sharpe(b), "book_s_with_card": sharpe(b + c),
             "corr": float(np.corrcoef(b, c)[0, 1]) if c.std() > 0 and b.std() > 0 else 0.0,
             "mean_on_book_losing_days": float(c[lose].mean()) if lose.any() else 0.0,
             "shared_loss_share": float((closs & lose).sum() / closs.sum()) if closs.any() else 0.0,
@@ -187,6 +188,8 @@ def _book(dev: list[str], x: np.ndarray, book: dict[str, float] | None) -> dict:
 
 def _book_gate(g, b: dict) -> bool:
     if not b["sessions"]:
+        if b["supplied"]:  # fail closed: a book was given but covers no development session
+            return _gate(g, "5g book", "book supplied, no overlapping development sessions", "overlap required", False)
         return _gate(g, "5g book", "book empty", "passes while the book is empty", True)
     ok = b["mean_on_book_losing_days"] > 0 and b["shared_loss_share"] <= THRESHOLDS["5g_max_shared_loss_share"]
     keys = ("mean_on_book_losing_days", "shared_loss_share", "book_losing_share_on_active_days")

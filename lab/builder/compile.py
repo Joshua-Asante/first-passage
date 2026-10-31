@@ -87,8 +87,10 @@ def days(card: Card, bars: pd.DataFrame, dates: list[str] | None = None) -> list
         o, h, l, c = (bars[k].to_numpy()[ix] for k in ("open", "high", "low", "close"))
         first = off + n
         cutoff = next((j for j, s in enumerate(t) if s >= card.entry_cutoff), len(t))
+        if first >= min(cutoff, flat):  # range must close before entries stop; checked before indexing
+            continue
         a = atr[ix[first - 1]]
-        if not np.isfinite(a) or a <= 0 or first >= min(cutoff, flat):
+        if not np.isfinite(a) or a <= 0:
             continue
         out.append(Day(d, t, o, h, l, c, first, min(cutoff, flat), flat,
                        float(h[off:first].max()), float(l[off:first].min()), float(a)))

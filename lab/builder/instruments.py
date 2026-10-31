@@ -8,7 +8,11 @@ from dataclasses import dataclass
 
 from instrument_specs import INSTRUMENT_SPECS
 
-SESSION_OPEN = {"MCL": "09:00", "MGC": "08:20", "M2K": "09:30", "MYM": "09:30", "MNQ": "09:30"}
+# On the quarter-hour M15 grid. MGC's 08:20 COMEX day open has no bar boundary, so its range
+# starts with the first whole bar after it, 08:30.
+SESSION_OPEN = {"MCL": "09:00", "MGC": "08:30", "M2K": "09:30", "MYM": "09:30", "MNQ": "09:30"}
+if any(int(o[3:]) % 15 for o in SESSION_OPEN.values()):
+    raise ValueError("session opens must sit on the 15m grid")
 
 
 @dataclass(frozen=True)

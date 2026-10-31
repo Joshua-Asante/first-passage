@@ -140,7 +140,7 @@ def test_run_ledgers_cards_before_reading_data_and_writes_reports(tmp_path):
     (tmp_path / "c.yaml").write_text(CARD)
     spec = {"run_id": "r1", "ledger": str(tmp_path / "l.jsonl"), "firm": "Tradeify_Select_100K",
             "data": {"MCL": str(tmp_path / "missing.csv")}, "roll": "as exported", "cards": [str(tmp_path / "c.yaml")],
-            "out": str(tmp_path / "out"), "commission_per_side": {"MCL": 1.06}}
+            "out": str(tmp_path / "out")}
     (tmp_path / "run.yaml").write_text(json.dumps(spec))
     with pytest.raises(FileNotFoundError):
         run.main([str(tmp_path / "run.yaml")])
@@ -161,3 +161,70 @@ def test_time_window_range_and_atr_stop_compile():
     ds = C.days(c, b, dates)
     assert ds and ds[0].first == 2 and (ds[0].hi, ds[0].lo) == (70.2, 69.9)
     assert all(t.side == 1 for t in C.simulate(c, b, dates))
+
+
+# --- review fixes (Codex, PR #1003 round 1) -------------------------------------------------
+
+def test_book_without_overlap_fails_5g_closed(tmp_path):
+    rep, *_ = run(tmp_path, book={"2019-01-02": -100.0})
+    assert rep["stopped_at"] == "5g book" and not rep["gates"][-1]["pass"]
+
+
+def test_halves_gate_fails_when_one_half_has_no_trades():
+    c = cards.parse(CARD)
+    b, dates = panel(260)
+    trades = [t for t in gates.C.simulate(c, b, dates) if t.date < dates[130]]
+    g = []
+    assert not gates._halves(g, c, trades, COSTS, set(dates[:130]), set(dates[130:]))
+    assert g[0]["value"]["trades"][1] == 0
+
+
+def test_range_reaching_past_flat_is_skipped_not_crashed():
+    from builder import compile as C
+    late = CARD.replace('flat_at: "12:30"', 'flat_at: "10:30"').replace("value: 2, step: 1", "value: 8, step: 1")
+    b, dates = panel(30)
+    assert C.simulate(cards.parse(late), b, dates) == []
+
+
+def _spec(tmp_path, **kw):
+    from builder import run
+    b, _ = panel(260)
+    panel_csv = tmp_path / "MCL_M15.csv"
+    b.assign(time=b.index.tz_convert("UTC").strftime("%Y-%m-%dT%H:%M:%SZ"))[
+        ["time", "open", "high", "low", "close"]].to_csv(panel_csv, index=False)
+    (tmp_path / "c.yaml").write_text(CARD)
+    spec = {"run_id": "r1", "ledger": str(tmp_path / "l.jsonl"), "firm": "Tradeify_Select_100K",
+            "data": {"MCL": str(panel_csv)}, "roll": "as exported", "cards": [str(tmp_path / "c.yaml")],
+            "out": str(tmp_path / "out"), **kw}
+    (tmp_path / "run.yaml").write_text(json.dumps(spec))
+    return run, tmp_path / "run.yaml"
+
+
+def test_override_refused_where_the_firm_has_a_row(tmp_path):
+    run, p = _spec(tmp_path, commission_per_side={"MCL": 0.0})
+    with pytest.raises(SystemExit, match="has a commission row"):
+        run.main([str(p)])
+    assert not (tmp_path / "l.jsonl").exists()
+
+
+def test_override_must_be_positive_where_no_row(tmp_path):
+    run, p = _spec(tmp_path, firm="Bulenox_100K", commission_per_side={"MCL": -1})
+    with pytest.raises(SystemExit, match="positive commission_per_side"):
+        run.main([str(p)])
+
+
+def test_duplicate_card_ids_rejected_before_ledgering(tmp_path):
+    run, p = _spec(tmp_path)
+    spec = json.loads(p.read_text())
+    (tmp_path / "c2.yaml").write_text(CARD.replace("value: 2, step: 1", "value: 3, step: 1"))
+    spec["cards"].append(str(tmp_path / "c2.yaml"))
+    p.write_text(json.dumps(spec))
+    with pytest.raises(SystemExit, match="duplicate card ids"):
+        run.main([str(p)])
+    assert not (tmp_path / "l.jsonl").exists()
+
+
+def test_session_opens_sit_on_the_bar_grid():
+    from builder.instruments import INSTRUMENTS
+    assert INSTRUMENTS["MGC"].session_open == "08:30"
+    assert all(int(i.session_open[3:]) % 15 == 0 for i in INSTRUMENTS.values())
