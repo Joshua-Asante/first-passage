@@ -70,6 +70,42 @@ def test_I_D1_rejects_cards_outside_the_library(old, new, msg):
         card(BASE.replace(old, new))
 
 
+@pytest.mark.parametrize("old,new", [
+    ("order: stop}", 'order: stop, entry_cutoff: "10:00"}'),         # cutoff in the wrong block
+    ('flat_at: "10:30"}', 'flat_at: "10:30", entry_cutoff: "10:00"}'),
+    ("side: both,", "side: both, sides: long,"),
+])
+def test_I_D1_rejects_unknown_entry_and_exit_keys(old, new):
+    with pytest.raises(cards.CardError, match="unknown (entry|exit) keys"):
+        card(BASE.replace(old, new))
+
+
+@pytest.mark.parametrize("old,new", [
+    ("{value: 2, step: 1}", "{value: 2, step: .nan}"),
+    ("{value: 2, step: 1}", "{value: 2, step: .inf}"),
+    ("{value: 2, step: 1}", "{value: .inf, step: 1}"),
+])
+def test_I_D1_rejects_non_finite_int_param_values_and_steps(old, new):
+    with pytest.raises(cards.CardError, match="param n_bars"):
+        card(BASE.replace(old, new))
+
+
+@pytest.mark.parametrize("spec", ["{value: 1, step: .nan}", "{value: 1, step: .inf}", "{value: .inf, step: 0.5}",
+                                  "{value: .nan, step: 0.5}"])
+def test_I_D1_rejects_non_finite_float_param_values_and_steps(spec):
+    atr = BASE.replace("stop: range_opposite", "stop: atr_multiple").replace(
+        "{n_bars: {value: 2, step: 1}}", "{n_bars: {value: 2, step: 1}, stop_atr: %s}" % spec)
+    with pytest.raises(cards.CardError, match="param stop_atr: finite"):
+        card(atr)
+
+
+@pytest.mark.parametrize("extra,msg", [("time: 5\n", "time block"), ("filters: [day_of_week]\ndays: 3\n", "day_of_week"),
+    ("filters: [day_of_week]\ndays: [true]\n", "day_of_week")])
+def test_I_D1_rejects_wrongly_typed_time_and_days(extra, msg):
+    with pytest.raises(cards.CardError, match=msg):
+        card(BASE + extra)
+
+
 def test_I_D1_day_of_week_needs_days_and_vice_versa():
     with pytest.raises(cards.CardError, match="day_of_week"):
         card(BASE + "filters: [day_of_week]\n")

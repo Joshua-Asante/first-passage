@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from dataclasses import dataclass, replace
 
@@ -33,6 +34,8 @@ FILTERS = {"day_of_week": (), "min_range_atr": ("min_range_atr",), "max_trades_p
 SIDES = ("long", "short", "both")
 INT_PARAMS = {"n_bars": 1, "offset_bars": 0, "stop_ticks": 1, "max_trades_per_day": 1}  # name -> minimum
 FLOAT_MIN = {"stop_atr": 0.0, "target_r": 0.0, "target_atr": 0.0, "min_range_atr": 0.0}  # exclusive, except min_range_atr
+ENTRY_KEYS = {"type", "range", "side", "order"}
+EXIT_KEYS = {"stop", "target", "flat_at"}
 TOP_KEYS = {"id", "family", "instrument", "bar", "session", "entry", "exit", "time", "filters", "days", "params"}
 HHMM = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 CARD_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")  # also the report file name
@@ -96,6 +99,8 @@ def _timing_error(c: Card) -> str | None:
 
 
 def _valid_value(name: str, v: float) -> bool:
+    if not math.isfinite(v):
+        return False
     if name in INT_PARAMS:
         return float(v).is_integer() and v >= INT_PARAMS[name]
     return v >= 0 if name == "min_range_atr" else v > FLOAT_MIN[name]
@@ -134,6 +139,10 @@ def parse(text: str) -> Card:
     if d.get("bar", "15m") != "15m" or d.get("session", "day") != "day":
         raise CardError("v1 supports bar: 15m and session: day only")
     entry, exit_ = _need(d, "entry", "card"), _need(d, "exit", "card")
+    for name, block, allowed in (("entry", entry, ENTRY_KEYS), ("exit", exit_, EXIT_KEYS)):
+        if not isinstance(block, dict) or set(block) - allowed:
+            raise CardError(f"unknown {name} keys {sorted(set(block) - allowed) if isinstance(block, dict) else block!r}"
+                            f" (allowed {sorted(allowed)})")
     if _need(entry, "type", "entry") != "breakout" or entry.get("order", "stop") != "stop":
         raise CardError("entry must be type: breakout, order: stop")
     rng, side = _need(entry, "range", "entry"), _need(entry, "side", "entry")
@@ -141,14 +150,18 @@ def parse(text: str) -> Card:
     if rng not in RANGE or side not in SIDES or stop not in STOP or target not in TARGET:
         raise CardError(f"block option outside the library: range={rng} side={side} stop={stop} target={target}")
     flat_at = _hhmm(_need(exit_, "flat_at", "exit"), "exit.flat_at")
-    cutoff = _hhmm((d.get("time") or {}).get("entry_cutoff", flat_at), "time.entry_cutoff")
-    if set(d.get("time") or {}) - {"entry_cutoff"}:
+    time_ = d.get("time") or {}
+    if not isinstance(time_, dict) or set(time_) - {"entry_cutoff"}:
         raise CardError("time block takes entry_cutoff only (flat_at lives in exit)")
+    cutoff = _hhmm(time_.get("entry_cutoff", flat_at), "time.entry_cutoff")
     filters = tuple(d.get("filters") or ())
     if any(f not in FILTERS for f in filters) or len(set(filters)) != len(filters):
         raise CardError(f"filters outside the library or repeated: {filters}")
-    days = tuple(d.get("days") or ())
-    if ("day_of_week" in filters) != bool(days) or any(x not in range(5) for x in days):
+    days = d.get("days") or ()
+    if not isinstance(days, (list, tuple)):
+        raise CardError(f"day_of_week filter needs days: a list of weekday numbers 0-4, got {days!r}")
+    days = tuple(days)
+    if ("day_of_week" in filters) != bool(days) or any(type(x) is not int or x not in range(5) for x in days):
         raise CardError("day_of_week filter needs days: a list of weekday numbers 0-4, and only with that filter")
     need = set(RANGE[rng] + STOP[stop] + TARGET[target] + sum((FILTERS[f] for f in filters), ()))
     raw = d.get("params") or {}
@@ -162,6 +175,8 @@ def parse(text: str) -> Card:
         v, s = spec["value"], spec["step"]
         if isinstance(v, bool) or isinstance(s, bool) or not all(isinstance(x, (int, float)) for x in (v, s)) or s <= 0:
             raise CardError(f"param {n}: numeric value and positive step required")
+        if not (math.isfinite(v) and math.isfinite(s)):
+            raise CardError(f"param {n}: finite value and step required, got {v} and {s}")
         if not _valid_value(n, v) or (n in INT_PARAMS and not float(s).is_integer()):
             raise CardError(f"param {n}: invalid value {v} or step {s}")
         params.append((n, int(v) if n in INT_PARAMS else float(v), int(s) if n in INT_PARAMS else float(s)))
