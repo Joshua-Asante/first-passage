@@ -227,7 +227,7 @@ Steps 4–5 are not part of the brief that ran this gate — they are downstream
 
 - **INQHIORI canon**: `docs/methodology/inqhiori-canon.md` (§14 three-loop binding); skill `.claude/skills/inqhiori/SKILL.md`
 - **Rule 0**: `docs/rule_0.md`
-- **Rule 1 extension (partition-hypothesis permutation):** same INQHIORI Rule 1 as canon §12, not a third numeral. Owner [`rule-1-small-cell-variance-prior.md`](archive/notion/rule-1-small-cell-variance-prior.md) (core top-k + 2026-04-24 partition extension). No `rule1_gate.py` exists; the archive gated that script on CFD-era USDJPY OHLC panel ingestion that never landed — implementation is **not pending**. Build only if a live n≤10 / partition investigation needs it, with that new decision
+- **Rule 1 extension (partition-hypothesis permutation):** same INQHIORI Rule 1 as canon §12, not a third numeral. Owner [Rule 1](../operational_rules.md#rule-1--small-cell-variance-prior) (core top-k + 2026-04-24 partition extension). No `rule1_gate.py` exists; the archive gated that script on CFD-era USDJPY OHLC panel ingestion that never landed — implementation is **not pending**. Build only if a live n≤10 / partition investigation needs it, with that new decision
   recorded in its owner/PR. Keep the numeral; Rule-N prefix changes remain separately
   governed by the conventions audit. Rule 1, the retired MC-calibration history and
   GRAND-tier Anchor have distinct owners; shared metaphor does not justify merging

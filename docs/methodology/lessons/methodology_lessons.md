@@ -83,7 +83,7 @@ were never migrated here (no headings exist) and M-25 was never assigned; neithe
 
 Some lessons are authored as standalone files rather than fitting the per-section M-N format above — typically multi-trap captures, candidate-status meta-methodology, or lessons whose internal structure doesn't compress cleanly to the eight canonical fields. The dual-pattern is provisional pending evidence of recurrence; if more standalone-file lessons accumulate, the `brief-authoring` SKILL.md will canonize it formally.
 
-- **Traps #13/#14/#15 (brief-authoring meta) — CANDIDATE 2026-05-27.** Anchor: Q-JOINT-TAIL-1 brief sequence (revs 1–3 + Phase 0 BLOCKED-RETIRED). Detail: [`docs/lessons/2026-05-27-brief-authoring-traps-13-14-15.md`](../../lessons/2026-05-27-brief-authoring-traps-13-14-15.md). Promotion criteria: 2 additional firings in independent brief sequences (E2 floor) OR single ≥$3K incident (E1 floor).
+- **Traps #13/#14/#15 (brief-authoring meta) — CANDIDATE 2026-05-27.** Anchor: Q-JOINT-TAIL-1 brief sequence (revs 1–3 + Phase 0 BLOCKED-RETIRED). Detail: [`docs/methodology/lessons/2026-05-27-brief-authoring-traps-13-14-15.md`](2026-05-27-brief-authoring-traps-13-14-15.md). Promotion criteria: 2 additional firings in independent brief sequences (E2 floor) OR single ≥$3K incident (E1 floor).
 
 ---
 
@@ -430,7 +430,7 @@ falsifier covered delivery but not timing correctness — M-11 is the
 falsifier-shape lesson that M-7's prior patch series would have needed).
 Brief-authoring traps #13/#14/#15 (sibling brief-authoring discipline
 lessons captured 2026-05-27 in
-[`docs/lessons/2026-05-27-brief-authoring-traps-13-14-15.md`](../../lessons/2026-05-27-brief-authoring-traps-13-14-15.md))
+[`docs/methodology/lessons/2026-05-27-brief-authoring-traps-13-14-15.md`](2026-05-27-brief-authoring-traps-13-14-15.md))
 — shared root principle: briefs encode implicit assumptions about
 reality, and those assumptions need explicit verification at authoring
 time. M-11's specific assumption: the inherited predicate's original

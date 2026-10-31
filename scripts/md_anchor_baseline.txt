@@ -278,9 +278,6 @@ docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md -> l
 docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md -> lab/analysis/orb/d5_nq_intraday_mom_2026-07/stage2_4_report.json [missing-file]	1
 docs/briefs/rnd-pipeline/Q-ICT-OTE-1-optimal-trade-entry-scoping.md -> docs/SESSIONS.md#2026-08-20c--operator-override-u1-exception-reopens-q-tnec-con-4-confirm-inside-the-dense-1m-pause [missing-anchor]	1
 docs/briefs/rnd-pipeline/Q-ICT-OTE-1-optimal-trade-entry-scoping.md -> lab/analysis/_inbox/ict_mnq_2026-08/run_1m_diag.py [missing-file]	1
-docs/external/fxify_swap_rates_2026-05-25.md -> docs/ltm/briefs/Q-SWAP-1-portfolio-swap-impact.md [missing-file]	1
-docs/lessons/2026-07-06-close-vocabulary-gap.md -> docs/ltm/briefs/Q-MECH-1.DJ30_h_register.md [missing-file]	1
-docs/lessons/2026-07-06-close-vocabulary-gap.md -> docs/ltm/briefs/Q-MECH-1.NAS_h_register.md [missing-file]	1
 docs/ltm/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md -> CLAUDE.md [missing-file]	1
 docs/ltm/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md -> docs/briefs/closures/Q-FUNNEL-1-closure-resolved.md [missing-file]	1
 docs/ltm/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md -> docs/briefs/pre-registration/2026-07-16-class-s-c1-lifecycle-haircut-regime-remc-preregistration.md [missing-file]	1
@@ -528,6 +525,8 @@ docs/mc_anchor_history.md -> docs/docs/briefs/Q-SWAP-3-closure-ambiguous.md [mis
 docs/mc_anchor_history.md -> docs/docs/briefs/Q-SWAP-4-closure-ambiguous.md [missing-file]	1
 docs/mc_anchor_history.md -> docs/docs/external/fxify_swap_rates_2026-05-25.md [missing-file]	1
 docs/mc_anchor_history.md -> docs/docs/methodology/lessons/methodology_lessons.md [missing-file]	1
+docs/methodology/lessons/2026-07-06-close-vocabulary-gap.md -> docs/methodology/ltm/briefs/Q-MECH-1.DJ30_h_register.md [missing-file]	1
+docs/methodology/lessons/2026-07-06-close-vocabulary-gap.md -> docs/methodology/ltm/briefs/Q-MECH-1.NAS_h_register.md [missing-file]	1
 docs/methodology/lessons/methodology_lessons.md -> docs/audits/2026-05-28-aegis-v43-indicator-strategy-diff.md [missing-file]	1
 docs/methodology/lessons/methodology_lessons.md -> docs/briefs/Q-REGIME-1-closure-falsified-structural.md [missing-file]	1
 docs/methodology/lessons/methodology_lessons.md -> docs/briefs/Q-SWAP-1-closure-falsified.md [missing-file]	1

@@ -3,7 +3,7 @@
 **What this is.** One JSON object per line (`docs/methodology/LESSONS_INDEX.jsonl`),
 covering every E/M/F-class lesson in [`execution_lessons.md`](lessons/execution_lessons.md)
 and [`methodology_lessons.md`](lessons/methodology_lessons.md), the two standalone
-`docs/lessons/*.md` captures, and every external `feedback_*` / `lesson_*` / `project_*`
+`docs/methodology/lessons/2026-*.md` captures, and every external `feedback_*` / `lesson_*` / `project_*`
 name found cited by name anywhere in this repo.
 
 **Why it exists.** Found during the 2026-08-26 memory-architecture audit: this repo's

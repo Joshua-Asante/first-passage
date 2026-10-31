@@ -258,8 +258,8 @@ This document codifies methodology. It governs how future loops are run, not wha
 ## 12. Cross-references
 
 - **Parent frameworks** (canonical for their respective layers; both remain valid for definitional content):
-  - INQHIORI — the investigation framework — `docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md` (Notion `34cdc0b53c11812d96f8f6e9ee500d5e`)
-  - The Algorithm — default problem-solving framework — `docs/methodology/archive/notion/the-algorithm.md` (Notion `34ddc0b53c11811eb6a0d9192b63d252`)
+  - INQHIORI — the investigation framework — [`docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md`](https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md) (Notion `34cdc0b53c11812d96f8f6e9ee500d5e`)
+  - The Algorithm — default problem-solving framework — [`docs/methodology/archive/notion/the-algorithm.md`](https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/the-algorithm.md) (Notion `34ddc0b53c11811eb6a0d9192b63d252`)
 - **Hard rules:**
   - Rule 0 — read production code before any risk-control decision (codified in prop-firm-challenge skill)
   - Rule 1 — small-cell variance prior — `docs/methodology/archive/notion/rule-1-small-cell-variance-prior.md` (Notion `34cdc0b53c11812cbb4ff637ba44736e`)
@@ -335,7 +335,7 @@ Corollaries:
 
 **Canonical source:** `docs/adr/2026-08-04-iterate-closure-exit-mandatory.md` (ADR of record, `Accepted` 2026-08-04; gate 14 self-armed HARD). This section is the canon-side statement; if it and the ADR ever disagree, the ADR wins.
 
-The loop in §1 ends `… O → R → I`, but this file never defined the terminal phase — the only definition lives in the v1 predecessor (`docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md` §8, preserved per §12 for definitional content): *Iterate = specify which phase to return to and what new information triggered the loop-back*; exit criteria *"The next phase has a clear entry packet. No dangling state."*
+The loop in §1 ends `… O → R → I`, but this file never defined the terminal phase — the only definition lives in the v1 predecessor ([`docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md`](https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md) §8, preserved per §12 for definitional content): *Iterate = specify which phase to return to and what new information triggered the loop-back*; exit criteria *"The next phase has a clear entry packet. No dangling state."*
 
 For compressed Pre-Q work, that exit is discharged **on the closure artifact**, not as a standing phase: Observe is the closure's numbers-vs-§6 assertion (already required by the closure-record format), and Reflect + Iterate collapse into a mandatory typed **`## Iterate`** block — Verdict used / Model update / **Next: INTEGRATE | ITERATE | STOP** / routing / entry packet / stop rule / board write. Template: `.claude/skills/brief-authoring/references/closure_record.md`.
 
