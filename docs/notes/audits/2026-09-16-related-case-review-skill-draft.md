@@ -1,6 +1,6 @@
 # Related case review skill draft evaluation
 
-Artifact: [SKILL.md](../../skill-drafts/related-case-review/SKILL.md).
+Artifact: [SKILL.md](https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/skill-drafts/related-case-review/SKILL.md).
 
 Status: authored and subsequently installed at the user's request into `C:/Users/joshu/.codex/skills/related-case-review`. Installed and source file SHA-256 hashes match. Automatic discovery is expected next turn; selection by a future agent has not been observed. Existing receiving-code-review guidance already covers affected contracts; this skill adds a bounded map with evidence-backed dispositions. No plugin cache was modified.
 

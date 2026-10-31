@@ -11,7 +11,8 @@ registries change enough to warrant a rebuild:
 
 Every "full" entry below was transcribed directly from primary source
 (docs/methodology/lessons/execution_lessons.md, methodology_lessons.md, and
-the two docs/lessons/*.md standalone files) by a full read of each file on
+the two standalone lesson files, then under docs/lessons/ and since P1.6 in
+docs/methodology/lessons/) by a full read of each file on
 2026-08-26 -- not summarized by a subagent, not copied from a prior research
 pass's paraphrase. Every "stub" entry's citing_files were confirmed by a grep
 run on 2026-08-26 against the live tree; stub entries deliberately carry NO
@@ -295,14 +296,14 @@ FULL = [
          cost_if_repeated="Three traps fired sequentially across one Q-JOINT-TAIL-1 brief sequence (2026-05-27): #13 (brief cited a week-stale MC anchor as current), #14 (brief claimed to test an assumption its methodology didn't actually test), #15 (verdict subset turned out to have 1 of 1141 days qualifying, later found N<30 even at the relaxed bar). No dollar cost (~4 review cycles counterfactual).",
          trigger_globs=["docs/briefs/**"],
          trigger_keywords=["brief authoring", "stale numerics", "verdict subset", "panel-shape sanity check"],
-         full_ref=lambda: "docs/lessons/2026-05-27-brief-authoring-traps-13-14-15.md"),
+         full_ref=lambda: "docs/methodology/lessons/2026-05-27-brief-authoring-traps-13-14-15.md"),
     dict(id="M-25", cls="M", status="CANDIDATE", status_note="2026-07-06, registered via structural-argument bypass (not empirical E1/E2 gate); renumbered from a self-assigned M-19 on 2026-08-15 after a 40-day undetected collision with the canonical registry's real M-19",
          title="Close-vocabulary gap: pre-registration freezes the map before the data, but does not guarantee the map covers the eventual finding",
          one_line_lesson="When authoring a §3 outcome->standing map, run a close-label reachability check before freezing it: for each pre-registered terminal close label, confirm at least one reachable discriminator-outcome tuple satisfies it (not foreclosed by an earlier discriminator, not trivially satisfiable by noise alone).",
          cost_if_repeated="Two firings same window (2026-07-06): DJ30's §4 criteria had no multiplicity guard (a single spurious ELEVATED could false-graduate a candidate, repaired in-design); NAS's sole terminal close label ENGINEERED-BETA-CONFIRMED became permanently unreachable once an earlier discriminator returned GENUINE-CONTINUATION-DOMINATED (the map couldn't name the result that actually occurred).",
          trigger_globs=["docs/briefs/**"],
          trigger_keywords=["outcome standing map", "close label", "H-register", "pre-registration coverage"],
-         full_ref=lambda: "docs/lessons/2026-07-06-close-vocabulary-gap.md",
+         full_ref=lambda: "docs/methodology/lessons/2026-07-06-close-vocabulary-gap.md",
          siblings=["brief-authoring-traps-13-14-15"]),
 
     dict(id="feedback_web_advisor_handoff_confabulates_repo_state", cls="feedback", status="PROMOTED",
