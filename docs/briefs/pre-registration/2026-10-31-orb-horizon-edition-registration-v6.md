@@ -21,3 +21,5 @@
 Nothing else in the criteria changes. The specification passed Codex review, READY in round 3 of 3. It carries no figures, parameter values or account data (Rule 13).
 
 **Binding.** No new check result existed at registration; the C1 result above is the only one carried forward. Changing the criteria needs a new version, a new review and a new registration. A failed check stops the edition and returns it to Joshua. Admitting the edition as ORB O-0's successor is Joshua's separate act.
+
+**Superseded 2026-10-31** for every check not yet run: see the [v8 registration](2026-10-31-orb-horizon-edition-registration-v8.md). Its calendar reference check failed against the accepted entries.
