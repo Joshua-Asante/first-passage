@@ -76,6 +76,8 @@ telemetry.jsonl
 !.agents/skills/babysit/**
 !.agents/skills/relay-skill/
 !.agents/skills/relay-skill/**
+!.agents/skills/strategy-validation/
+!.agents/skills/strategy-validation/SKILL.md
 !.agents/skills/coordinator/
 !.agents/skills/coordinator/**
 .codex/
