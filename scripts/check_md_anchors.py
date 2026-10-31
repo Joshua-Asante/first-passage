@@ -110,6 +110,9 @@ def scan(repo_root: Path) -> list[str]:
     result = subprocess.run(["git", "ls-files", "-z", "--", "*.md"], cwd=repo,
                             check=True, stdout=subprocess.PIPE)
     documents = sorted(Path(repo / name) for name in result.stdout.decode("utf-8").split("\0") if name)
+    if not documents:
+        # Rule 38: empty input is never green, and must not erase a baseline.
+        raise ValueError("no tracked Markdown files to check")
     cache: dict[Path, set[str]] = {}
     misses: list[str] = []
     for doc in documents:

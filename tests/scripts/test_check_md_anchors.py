@@ -208,6 +208,17 @@ def test_claude_repo_root_fallback_is_scoped_and_document_first(checker, repo):
 
 
 
+
+@pytest.mark.parametrize("mode", ["", "--baseline", "--update-baseline"])
+def test_empty_tracked_set_fails_closed_without_touching_baseline(checker, repo, capsys, mode):
+    write(repo, "notes.txt", "[bad](lost.md)\n")
+    baseline = repo / "baseline.txt"
+    baseline.write_bytes(b"a.md -> lost.md [missing-file]\t1\n")
+    args = [mode, str(baseline)] if mode else []
+    assert checker.main(args, repo_root=repo) == 2
+    assert "no tracked Markdown files" in capsys.readouterr().err
+    assert baseline.read_bytes() == b"a.md -> lost.md [missing-file]\t1\n"
+
 # One test per Codex finding on #954; each was a regex misread of CommonMark.
 
 def test_finding_reference_links_resolve_through_definitions(checker, repo):
